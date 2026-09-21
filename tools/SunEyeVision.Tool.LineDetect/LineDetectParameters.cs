@@ -245,51 +245,16 @@ namespace SunEyeVision.Tool.LineDetect
                     };
                 }
 
-                // 主卡尺极性方向箭头（与交互层 MeasureBandOverlay 同几何，所见即所得）。
-                // ★ 方向 = 法向（measure 扫描方向，Halcon 沿线方向顺时针 90°），长度 = 法向尺寸的 1/4。
-                var seg = end - start;
-                var totalLen = seg.Length;
-                if (totalLen >= 1e-6)
+                // 主卡尺极性方向箭头：与交互层共用同一几何和屏幕恒定尺寸策略。
+                var arrowTriangles = MeasureBandOverlay.BuildLineDirectionArrowTriangles(
+                    start, end, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures, zoom: 1.0).ToArray();
+                foreach (var triangle in arrowTriangles)
                 {
-                    var dir = seg / totalLen;
-                    var normal = new Vector(-dir.Y, dir.X);   // ★ 极性/测量扫描方向（法向）
-                    int mainIndex = NumMeasures / 2;
-                    double bandLength = MeasureLength2 * 2;   // 切向全长（主卡尺沿线半宽用）
-                    double halfBand = bandLength / 2;
-                    double usable = totalLen - 2 * halfBand;
-                    if (usable < 1e-6) usable = totalLen;
-                    double step = NumMeasures > 1 ? usable / (NumMeasures - 1) : usable;
-                    double t = NumMeasures > 1 ? halfBand + mainIndex * step : totalLen / 2;
-                    var center = start + dir * t;
-                    // ★ 位置 = 竖边中点沿 normal 走 法向全长×1/4；大小 = 独立指定三角尺寸
-                    var midL = center - dir * MeasureLength2;    // 左竖直边中点
-                    var midR = center + dir * MeasureLength2;    // 右竖直边中点
-                    double posOffset = MeasureLength1 * 2 * 0.25;
-                    double triHeight = Math.Max(MeasureLength1 * 2 * 0.15, 4.0);
-                    double triHalfWidth = Math.Max(MeasureLength1 * 2 * 0.07, 2.0);
-
-                    // 左三角：尖端锚在竖边中点 +normal×1/4 处，尖端朝 +normal
-                    var tipL = midL + normal * posOffset;
                     yield return new GraphicsDisplayItem
                     {
                         Style = CaliberStyle,
                         Type = GraphicsType.Polygon,
-                        Geometries = new object[] { new[] { tipL,
-                            tipL - normal * triHeight - dir * triHalfWidth,
-                            tipL - normal * triHeight + dir * triHalfWidth } },
-                        RenderMode = DisplayRenderMode.Unified,
-                        IsFixedScreenSize = true,
-                    };
-
-                    // 右三角
-                    var tipR = midR + normal * posOffset;
-                    yield return new GraphicsDisplayItem
-                    {
-                        Style = CaliberStyle,
-                        Type = GraphicsType.Polygon,
-                        Geometries = new object[] { new[] { tipR,
-                            tipR - normal * triHeight - dir * triHalfWidth,
-                            tipR - normal * triHeight + dir * triHalfWidth } },
+                        Geometries = new object[] { triangle },
                         RenderMode = DisplayRenderMode.Unified,
                         IsFixedScreenSize = true,
                     };

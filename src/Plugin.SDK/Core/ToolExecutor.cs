@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -20,7 +20,7 @@ namespace SunEyeVision.Plugin.SDK.Core
     /// 核心执行器，确保工具调试和工作流执行使用相同的执行路径。
     /// 
     /// 主要功能：
-    /// 1. 参数绑定解析（从参数内部 BindingConfig 读取）
+    /// 1. 参数绑定解析（从节点 ParamSettings 生成本次运行快照）
     /// 2. 执行上下文管理
     /// 3. 结果缓存
     /// 4. 错误处理
@@ -67,6 +67,8 @@ namespace SunEyeVision.Plugin.SDK.Core
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
+            ResolveRuntimeParameters(request);
+            ApplyRuntimeSnapshot(request.Parameters, request.RuntimeParameters!);
             request.Parameters.ResolvedInputImage = request.ResolvedInputImage;
             return Run(
                 tool,
@@ -75,8 +77,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 request.NodeName,
                 request.NodeId,
                 request.CancellationToken,
-                request.GlobalVariables,
-                request.ApplyBindings);
+                request.GlobalVariables);
         }
 
         /// <summary>
@@ -95,6 +96,8 @@ namespace SunEyeVision.Plugin.SDK.Core
                     $"执行请求参数类型应为 {typeof(TParameters).Name}，实际为 {request.Parameters.GetType().Name}",
                     nameof(request));
 
+            ResolveRuntimeParameters(request);
+            ApplyRuntimeSnapshot(parameters, request.RuntimeParameters!);
             parameters.ResolvedInputImage = request.ResolvedInputImage;
             return Run(
                 tool,
@@ -103,8 +106,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 request.NodeName,
                 request.NodeId,
                 request.CancellationToken,
-                request.GlobalVariables,
-                request.ApplyBindings);
+                request.GlobalVariables);
         }
 
         /// <summary>
@@ -124,26 +126,15 @@ namespace SunEyeVision.Plugin.SDK.Core
             var parameters = request.Parameters;
             var stopwatch = Stopwatch.StartNew();
 
+            ResolveRuntimeParameters(request);
+            ApplyRuntimeSnapshot(request.Parameters, request.RuntimeParameters!);
+            request.Parameters.ResolvedInputImage = request.ResolvedInputImage;
+
             // 异步契约的运行数据只存在于请求中，不再污染持久化参数对象。
             request.Context = CreateExecutionContext(tool, request);
 
             try
             {
-                if (request.NodeResults != null && request.ApplyBindings)
-                {
-                    var applyResult = ApplyBindings(parameters, request.NodeResults);
-                    if (!applyResult.IsSuccess)
-                    {
-                        request.Context.Logger?.Error(
-                            $"参数绑定失败: {applyResult.FailureDetail}",
-                            request.Context.GetSourceName());
-                        return CreateTerminalResult(
-                            tool.ResultType,
-                            ExecutionStatus.Failed,
-                            $"参数绑定失败: {applyResult.FailureDetail}");
-                    }
-                }
-
                 request.CancellationToken.ThrowIfCancellationRequested();
                 request.Context.Logger?.Info("开始异步执行工具", request.Context.GetSourceName());
                 var result = await asyncTool.ExecuteAsync(request).ConfigureAwait(false);
@@ -209,7 +200,6 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <param name="nodeId">节点ID（可选）</param>
         /// <param name="cancellationToken">取消令牌（可选）</param>
         /// <param name="globalVariables">本次运行的全局变量（可选）</param>
-        /// <param name="applyBindings">是否由执行器应用参数绑定；调用方已完成绑定时传入 false</param>
         /// <returns>执行结果</returns>
         public TResult Run<TResult>(
             IToolPlugin tool,
@@ -218,8 +208,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             string? nodeName = null,
             string? nodeId = null,
             CancellationToken cancellationToken = default,
-            IDictionary<string, object?>? globalVariables = null,
-            bool applyBindings = true)
+            IDictionary<string, object?>? globalVariables = null)
             where TResult : ToolResults, new()
         {
             if (tool == null)
@@ -244,19 +233,7 @@ namespace SunEyeVision.Plugin.SDK.Core
 
             try
             {
-                // 1. 应用参数绑定（从参数内部 BindingConfig 读取）
-                if (context != null && applyBindings)
-                {
-                    var applyResult = ApplyBindings(parameters, context);
-                    if (!applyResult.IsSuccess)
-                    {
-                        parameters.LogError($"参数绑定失败: {applyResult.FailureDetail}");
-                        return ToolResults.CreateError<TResult>(
-                            $"参数绑定失败: {applyResult.FailureDetail}");
-                    }
-                }
-
-                // 2. 执行工具（图像通过 parameters.ResolvedInputImage 获取）
+                // 执行工具（图像通过 parameters.ResolvedInputImage 获取）
                 parameters.LogInfo($"开始执行工具");
                 var result = tool.Run(parameters);
 
@@ -299,7 +276,6 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <param name="nodeId">节点ID（可选）</param>
         /// <param name="cancellationToken">取消令牌（可选）</param>
         /// <param name="globalVariables">本次运行的全局变量（可选）</param>
-        /// <param name="applyBindings">是否由执行器应用参数绑定；调用方已完成绑定时传入 false</param>
         /// <returns>执行结果</returns>
         public ToolResults Run(
             IToolPlugin tool,
@@ -308,8 +284,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             string? nodeName = null,
             string? nodeId = null,
             CancellationToken cancellationToken = default,
-            IDictionary<string, object?>? globalVariables = null,
-            bool applyBindings = true)
+            IDictionary<string, object?>? globalVariables = null)
         {
             if (tool == null)
                 throw new ArgumentNullException(nameof(tool));
@@ -333,19 +308,7 @@ namespace SunEyeVision.Plugin.SDK.Core
 
             try
             {
-                // 1. 应用参数绑定（从参数内部 BindingConfig 读取）
-                if (context != null && applyBindings)
-                {
-                    var applyResult = ApplyBindings(parameters, context);
-                    if (!applyResult.IsSuccess)
-                    {
-                        parameters.LogError($"参数绑定失败: {applyResult.FailureDetail}");
-                        return ToolResults.CreateError<GenericToolResults>(
-                            $"参数绑定失败: {applyResult.FailureDetail}");
-                    }
-                }
-
-                // 2. 执行工具（图像通过 parameters.ResolvedInputImage 获取）
+                // 执行工具（图像通过 parameters.ResolvedInputImage 获取）
                 parameters.LogInfo($"开始执行工具");
                 var result = tool.Run(parameters);
 
@@ -390,7 +353,6 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <param name="nodeId">节点ID（可选）</param>
         /// <param name="cancellationToken">取消令牌（可选）</param>
         /// <param name="globalVariables">本次运行的全局变量（可选）</param>
-        /// <param name="applyBindings">是否由执行器应用参数绑定；调用方已完成绑定时传入 false</param>
         /// <returns>执行结果</returns>
         public TResult Run<TParams, TResult>(
             IToolPlugin<TParams, TResult> tool,
@@ -399,8 +361,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             string? nodeName = null,
             string? nodeId = null,
             CancellationToken cancellationToken = default,
-            IDictionary<string, object?>? globalVariables = null,
-            bool applyBindings = true)
+            IDictionary<string, object?>? globalVariables = null)
             where TParams : ToolParameters, new()
             where TResult : ToolResults, new()
         {
@@ -426,19 +387,7 @@ namespace SunEyeVision.Plugin.SDK.Core
 
             try
             {
-                // 1. 应用参数绑定（从参数内部 BindingConfig 读取）
-                if (context != null && applyBindings)
-                {
-                    var applyResult = ApplyBindings(parameters, context);
-                    if (!applyResult.IsSuccess)
-                    {
-                        parameters.LogError($"参数绑定失败: {applyResult.FailureDetail}");
-                        return ToolResults.CreateError<TResult>(
-                            $"参数绑定失败: {applyResult.FailureDetail}");
-                    }
-                }
-
-                // 2. 执行工具（图像通过 parameters.ResolvedInputImage 获取）
+                // 执行工具（图像通过 parameters.ResolvedInputImage 获取）
                 parameters.LogInfo($"开始执行工具");
                 var result = tool.Run(parameters);
 
@@ -472,13 +421,77 @@ namespace SunEyeVision.Plugin.SDK.Core
         }
 
         /// <summary>
-        /// 应用参数绑定（从参数内部 BindingConfig 读取）
+        /// 解析本次运行的绑定快照。该路径只生成只读值，不修改设计期参数对象。
+        /// 工具执行只消费解析后的 RuntimeParameters 快照，不修改设计期参数。
         /// </summary>
-        private ParameterApplyResult ApplyBindings(
-            ToolParameters parameters,
-            IDictionary<string, ToolResults> context)
+        public RuntimeParameterSnapshot ResolveRuntimeParameters(ToolExecutionRequest request)
         {
-            return _parameterResolver.ApplyBindings(parameters, context);
+            ArgumentNullException.ThrowIfNull(request);
+            if (request.ParameterBindings.Bindings.Count == 0)
+            {
+                var empty = new RuntimeParameterSnapshot(
+                    new Dictionary<string, object?>(StringComparer.Ordinal));
+                request.RuntimeParameters = empty;
+                return empty;
+            }
+
+            var resolver = new RuntimeParameterSnapshotResolver(_parameterResolver);
+            var targetTypes = request.Parameters.GetType()
+                .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                .Where(property => property.CanWrite)
+                .ToDictionary(property => property.Name, property => property.PropertyType, StringComparer.Ordinal);
+
+            // ParamSettings 可能包含调试控件的展示绑定（例如“位置修正”）。
+            // 这类名称不是 ToolParameters 的可写属性，运行时由对应的
+            // AvailableDataSource/ImageSourceReference 链路处理，不能进入普通
+            // 参数转换，否则会把 AffineMatrix 等对象错误地走 Convert.ChangeType。
+            var executableBindings = request.ParameterBindings.Bindings
+                .Where(binding => targetTypes.ContainsKey(binding.ParameterName))
+                .ToList();
+            if (executableBindings.Count != request.ParameterBindings.Bindings.Count)
+            {
+                _logger?.Log(
+                    LogLevel.Debug,
+                    $"已跳过 {request.ParameterBindings.Bindings.Count - executableBindings.Count} 个非参数绑定，交由专用数据源链路处理",
+                    request.NodeName ?? nameof(ToolExecutor));
+            }
+
+            var snapshot = resolver.Resolve(
+                new ParameterBindingSet(executableBindings),
+                request.NodeResults ?? new Dictionary<string, ToolResults>(),
+                targetTypes);
+            request.RuntimeParameters = snapshot;
+            return snapshot;
+        }
+
+        /// <summary>
+        /// 将运行快照写入本次执行使用的参数副本。设计期参数对象不应传入此方法。
+        /// </summary>
+        public static void ApplyRuntimeSnapshot(ToolParameters parameters, RuntimeParameterSnapshot snapshot)
+        {
+            ArgumentNullException.ThrowIfNull(parameters);
+            ArgumentNullException.ThrowIfNull(snapshot);
+
+            if (!snapshot.IsValid)
+                throw new InvalidOperationException(string.Join("; ", snapshot.Errors));
+
+            foreach (var item in snapshot.Values)
+            {
+                var property = parameters.GetType().GetProperty(
+                    item.Key,
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                if (property == null || !property.CanWrite)
+                    continue;
+
+                if (item.Value == null)
+                {
+                    if (!property.PropertyType.IsValueType || Nullable.GetUnderlyingType(property.PropertyType) != null)
+                        property.SetValue(parameters, null);
+                    continue;
+                }
+
+                property.SetValue(parameters, item.Value);
+            }
         }
 
         /// <summary>

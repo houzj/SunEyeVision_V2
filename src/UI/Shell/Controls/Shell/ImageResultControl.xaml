@@ -186,6 +186,21 @@
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
+                                <DataGridTemplateColumn Header="变量管理" Width="78">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="🔗"
+                                                    FontSize="14"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Padding="4,0"
+                                                    Cursor="Hand"
+                                                    ToolTip="绑定到全局变量"
+                                                    Click="BindResultToGlobalVariable_Click"
+                                                    Visibility="{Binding IsBindable, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
 

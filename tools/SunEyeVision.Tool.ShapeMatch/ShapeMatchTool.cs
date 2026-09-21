@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -258,7 +258,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
 
                         // ===== 结果排序 =====
                         stepSw.Restart();
-                        var sortedMatches = SortResults(allMatches, parameters.SortMode.Value);
+                        var sortedMatches = SortResults(allMatches, parameters.SortMode);
                         stepSw.Stop();
                         stepTimings.Add(("结果排序", stepSw.ElapsedMilliseconds));
 
@@ -267,12 +267,12 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                         // 需按空间重叠做一次跨模板抑制，再截取 MaxMatchCount。
                         stepSw.Restart();
                         var nonOverlapMatches = SuppressCrossTemplateOverlap(
-                            sortedMatches, parameters.MaxOverlap.Value);
+                            sortedMatches, parameters.MaxOverlap);
                         stepSw.Stop();
                         stepTimings.Add(("跨模板去重", stepSw.ElapsedMilliseconds));
 
                         // ===== 截取最大匹配数量 =====
-                        var finalMatches = nonOverlapMatches.Take(parameters.MaxMatchCount.Value).ToList();
+                        var finalMatches = nonOverlapMatches.Take(parameters.MaxMatchCount).ToList();
 
                         // ===== 设置结果 =====
                         result.MatchedItems = finalMatches;
@@ -297,7 +297,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                         else
                         {
                             parameters.LogWarning($"未匹配到任何模板: 搜索了 {enabledTemplates.Count} 个启用模板, " +
-                                $"MinScore={parameters.MinMatchScore.Value:F2}, NumMatches={parameters.NumMatches.Value}");
+                                $"MinScore={parameters.MinMatchScore:F2}, NumMatches={parameters.NumMatches}");
                         }
 
                         // ===== 结果判断 =====
@@ -390,15 +390,15 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
         }
 
         // 解析搜索参数（支持每模型覆盖）
-        double angleStart = parameters.AngleStart.Value;
-        double angleEnd = parameters.AngleEnd.Value;
-        double scaleMin = parameters.ScaleMin.Value;
-        double scaleMax = parameters.ScaleMax.Value;
-        double minScore = parameters.MinMatchScore.Value;
-        int numMatches = parameters.NumMatches.Value;
-        double maxOverlap = parameters.MaxOverlap.Value;
-        double greediness = parameters.Greediness.Value;
-        int timeoutMs = parameters.MatchTimeoutMs.Value;
+        double angleStart = parameters.AngleStart;
+        double angleEnd = parameters.AngleEnd;
+        double scaleMin = parameters.ScaleMin;
+        double scaleMax = parameters.ScaleMax;
+        double minScore = parameters.MinMatchScore;
+        int numMatches = parameters.NumMatches;
+        double maxOverlap = parameters.MaxOverlap;
+        double greediness = parameters.Greediness;
+        int timeoutMs = parameters.MatchTimeoutMs;
 
         // ★ M12/M13：删除 angleStep/scaleStep/minContrast 死代码 —— find_scaled_shape_model
         //   （本机官方文档签名）不含这些参数，它们是 create_scaled_shape_model 的创建期参数，
@@ -407,8 +407,8 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
         // 搜索层级：使用 Parameters 中的搜索层级区间 [起始层(粗), 结束层(细)]
         // Halcon 官方语义：NumLevels=[4,2] = 从第 4 层开始、跟踪匹配到第 2 层（起始层≥结束层）。
         // 0 或未成对时使用 0 = 全层级（用 create 时的层数）。
-        int searchLevelStart = parameters.SearchLevelStart.Value;
-        int searchLevelEnd = parameters.SearchLevelEnd.Value;
+        int searchLevelStart = parameters.SearchLevelStart;
+        int searchLevelEnd = parameters.SearchLevelEnd;
         HTuple numLevelsTuple;
         if (searchLevelStart > 0 && searchLevelEnd > 0 && searchLevelStart >= searchLevelEnd)
         {
@@ -432,7 +432,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             image, modelHandle,
             angleStart * DEG2RAD, angleExtent * DEG2RAD,
             scaleMin, scaleMax, minScore, numMatches, maxOverlap,
-            MapSubPixel(parameters.SubPixelMode.Value),
+            MapSubPixel(parameters.SubPixelMode),
             numLevelsTuple, greediness,
             out HTuple row, out HTuple col,
             out HTuple angle, out HTuple scale, out HTuple score);

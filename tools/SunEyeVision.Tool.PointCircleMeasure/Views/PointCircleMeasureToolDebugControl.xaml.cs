@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -77,20 +77,20 @@ namespace SunEyeVision.Tool.PointCircleMeasure.Views
         private void SyncEnumsFromParameters()
         {
             if (Parameters == null) return;
-            E2TransitionCombo.SelectedIndex = (int)Parameters.E2Transition.Value;
-            E2SelectCombo.SelectedIndex = (int)Parameters.E2Select.Value;
+            E2TransitionCombo.SelectedIndex = (int)Parameters.E2Transition;
+            E2SelectCombo.SelectedIndex = (int)Parameters.E2Select;
         }
 
         private void OnE2TransitionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (Parameters != null && E2TransitionCombo.SelectedIndex >= 0)
-                Parameters.E2Transition.Value = (EdgeTransition)E2TransitionCombo.SelectedIndex;
+                Parameters.E2Transition = (EdgeTransition)E2TransitionCombo.SelectedIndex;
         }
 
         private void OnE2SelectChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (Parameters != null && E2SelectCombo.SelectedIndex >= 0)
-                Parameters.E2Select.Value = (EdgeSelect)E2SelectCombo.SelectedIndex;
+                Parameters.E2Select = (EdgeSelect)E2SelectCombo.SelectedIndex;
         }
 
         private void HookElementsEditor()
@@ -106,18 +106,18 @@ namespace SunEyeVision.Tool.PointCircleMeasure.Views
                 if (e.GeometryType == MeasureGeometryType.Circle && e.Model.EditingCircle.HasValue)
                 {
                     var circle = e.Model.EditingCircle.Value;
-                    Parameters.E2CenterX.Value = circle.Center.X;
-                    Parameters.E2CenterY.Value = circle.Center.Y;
-                    Parameters.E2Radius.Value = circle.Radius;
+                    Parameters.E2CenterX = circle.Center.X;
+                    Parameters.E2CenterY = circle.Center.Y;
+                    Parameters.E2Radius = circle.Radius;
                 }
                 if (e.IsDrawing) ElementsEditor?.ClearElementToolSelection(1);
             };
             Element2Editor.CaliberParamsChanged += (_, e) =>
             {
                 if (Parameters == null || _syncingElement2Caliber) return;
-                Parameters.E2MeasureLength1.Value = e.Width / 2;
-                Parameters.E2MeasureLength2.Value = e.Length / 2;
-                Parameters.E2NumMeasures.Value = e.Count;
+                Parameters.E2MeasureLength1 = e.Width / 2;
+                Parameters.E2MeasureLength2 = e.Length / 2;
+                Parameters.E2NumMeasures = e.Count;
             };
         }
 
@@ -125,10 +125,10 @@ namespace SunEyeVision.Tool.PointCircleMeasure.Views
         {
             if (ElementsEditor == null || Parameters == null) return;
 
-            if (Parameters.E2Radius.Value > 1e-6)
+            if (Parameters.E2Radius > 1e-6)
                 Element2Editor.SetGuide(new Circle2d(
-                    new Point(Parameters.E2CenterX.Value, Parameters.E2CenterY.Value),
-                    Parameters.E2Radius.Value));
+                    new Point(Parameters.E2CenterX, Parameters.E2CenterY),
+                    Parameters.E2Radius));
 
             PushCaliberToEditor();
             // 数据恢复完成后立即刷新画布（测量带 + 角标首屏可见，无需等鼠标进入图像区）
@@ -142,9 +142,9 @@ namespace SunEyeVision.Tool.PointCircleMeasure.Views
             try
             {
                 Element2Editor.SetCaliberParams(
-                    Parameters.E2MeasureLength1.Value * 2,
-                    Parameters.E2MeasureLength2.Value * 2,
-                    Parameters.E2NumMeasures.Value);
+                    Parameters.E2MeasureLength1 * 2,
+                    Parameters.E2MeasureLength2 * 2,
+                    Parameters.E2NumMeasures);
             }
             finally { _syncingElement2Caliber = false; }
         }

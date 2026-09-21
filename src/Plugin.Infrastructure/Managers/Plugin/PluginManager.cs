@@ -140,7 +140,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 var context = new PluginLoadContext(dllPath);
                 var assembly = context.LoadFromAssemblyPath(dllPath);
 
-                // 证件核对（ToolContract）：判定依据是程序集元数据，不要求插件自报版本
+                // 证件核对（ToolContract）：判定依据是插件程序集显式契约元数据，
+                // 与 CLR AssemblyVersion 分离。
                 var pluginContractVersion = ToolContract.GetPluginContractVersion(assembly);
                 if (!ToolContract.IsCompatible(pluginContractVersion))
                 {

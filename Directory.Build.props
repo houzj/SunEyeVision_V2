@@ -69,6 +69,50 @@
     <DebugType Condition="'$(Configuration)'=='Debug'">full</DebugType>
   </PropertyGroup>
 
+  <!-- 版本统一注入（rule-022）：version.json 是唯一可改的真源。
+       前三段由维护者声明（第 1 位需人工审核）；第 4 位构建号由 installer/Pack-Release.ps1
+       打包时 +1 写回。此处构建期读取并注入，使得【任何】构建方式（VS / dotnet build /
+       打包脚本）都自带版本 —— 不再依赖"谁记得传 -p:Version="。
+       命令行显式 -p:Version=（打包脚本注入）优先于真源。
+
+       注意：version.json 内含 "_comment"/"_fields" 说明块，其字段说明文字形如
+       "releaseDate": "发布日期 yyyy-MM-dd…"，会与真实字段同名出现在真实值之前。
+       因此每个字段的正则都自带【格式约束】（日期必须是 yyyy-MM-dd、渠道必须是枚举名…），
+       说明性文字永远不可能满足格式，从而不会取错值；取不到即留空并经下方
+       ValidateVersionSource 报错/告警，绝不静默采用说明文字。 -->
+  <PropertyGroup>
+    <_VersionJsonPath>$(MSBuildThisFileDirectory)version.json</_VersionJsonPath>
+    <_VersionJsonText Condition="Exists('$(_VersionJsonPath)')">$([System.IO.File]::ReadAllText('$(_VersionJsonPath)'))</_VersionJsonText>
+    <_VersionTriple>$([System.Text.RegularExpressions.Regex]::Match('$(_VersionJsonText)', '"version"\s*:\s*"(\d+\.\d+\.\d+)"').Groups[1].Value)</_VersionTriple>
+    <_VersionBuild>$([System.Text.RegularExpressions.Regex]::Match('$(_VersionJsonText)', '"build"\s*:\s*(\d+)').Groups[1].Value)</_VersionBuild>
+    <_VersionBuild Condition="'$(_VersionBuild)'==''">0</_VersionBuild>
+    <_VersionChannel>$([System.Text.RegularExpressions.Regex]::Match('$(_VersionJsonText)', '"channel"\s*:\s*"(alpha|beta|rc|stable)"').Groups[1].Value)</_VersionChannel>
+    <_VersionReleaseDate>$([System.Text.RegularExpressions.Regex]::Match('$(_VersionJsonText)', '"releaseDate"\s*:\s*"(\d{4}-\d{2}-\d{2})"').Groups[1].Value)</_VersionReleaseDate>
+
+    <!-- 产品版本注入所有交付程序集的 Version/FileVersion；SDK 包也默认使用同一产品版本。
+         契约语义由 ToolContractVersionAttribute 承载，AssemblyVersion 只保留 CLR 绑定身份。 -->
+    <Version Condition="'$(Version)'=='' And '$(_VersionTriple)'!=''">$(_VersionTriple).$(_VersionBuild)</Version>
+    <FileVersion Condition="'$(FileVersion)'=='' And '$(Version)'!=''">$(Version)</FileVersion>
+    <!-- SDK 包版本默认跟随产品版本；只有真正独立发布 SDK 时才允许项目显式覆盖。 -->
+    <PackageVersion Condition="'$(PackageVersion)'=='' And '$(Version)'!=''">$(Version)</PackageVersion>
+    <!-- AssemblyVersion = CLR 程序集绑定身份。2.0 是本次契约迁移基线，进入 2.x 后保持 2.0.0.0；
+         契约主/次版本由 ToolContractVersionAttribute 表示，不能再从 AssemblyVersion 推断。 -->
+    <AssemblyVersion Condition="'$(AssemblyVersion)'==''">2.0.0.0</AssemblyVersion>
+  </PropertyGroup>
+
+  <!-- 渠道与发布日期经程序集元数据注入，供 AppVersionInfo 运行期读取（运行时不依赖 version.json） -->
+  <ItemGroup Condition="'$(_VersionChannel)'!=''">
+    <AssemblyMetadata Include="Channel" Value="$(_VersionChannel)" />
+    <AssemblyMetadata Include="ReleaseDate" Value="$(_VersionReleaseDate)" />
+  </ItemGroup>
+
+  <!-- 真源缺失或格式非法时直接报错（rule-015：禁止静默回退到 1.0.0） -->
+  <Target Name="ValidateVersionSource" BeforeTargets="CoreCompile">
+    <Error Condition="'$(_VersionTriple)'==''" Text="version.json 缺失或 version 字段不是三段 MAJOR.MINOR.PATCH：$(_VersionJsonPath)" />
+    <Warning Condition="'$(_VersionChannel)'==''" Text="version.json 的 channel 未识别（应为 alpha/beta/rc/stable）：渠道名将不显示" />
+    <Warning Condition="'$(_VersionReleaseDate)'==''" Text="version.json 的 releaseDate 未识别（应为 yyyy-MM-dd）：关于窗口的发布日期将为空" />
+  </Target>
+
   <!-- 工具插件特殊配置: OutputPath/OutDir 覆盖必须放在 Directory.Build.targets,
        因为 props 评估时 csproj 的 <IsToolPlugin>true</IsToolPlugin> 尚未生效。 -->
 

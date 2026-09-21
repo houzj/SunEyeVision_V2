@@ -43,6 +43,17 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// </summary>
         private readonly List<Func<List<AvailableDataSource>>> _extraDataSourceProviders = new();
 
+        /// <summary>调试执行前可用的方案级全局变量快照。</summary>
+        public IDictionary<string, object?> GlobalVariables { get; private set; }
+            = new Dictionary<string, object?>(StringComparer.Ordinal);
+
+        public void SetGlobalVariables(IDictionary<string, object?>? variables)
+        {
+            GlobalVariables = variables == null
+                ? new Dictionary<string, object?>(StringComparer.Ordinal)
+                : new Dictionary<string, object?>(variables, StringComparer.Ordinal);
+        }
+
         /// <summary>
         /// 注册额外数据源提供者委托
         /// </summary>

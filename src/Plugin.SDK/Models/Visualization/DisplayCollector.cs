@@ -104,6 +104,18 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             }
         }
 
+        /// <summary>
+        /// 添加一个带统一判定状态的批量轮廓。用于大量区域显示，避免每个区域创建
+        /// 一个 ContourGeometry 对象；OK/NG 应分别调用此方法。
+        /// </summary>
+        public void AddContourBatch(GraphicsStyle style, IReadOnlyList<Point[]> contours,
+            bool isPass = true, bool isClosed = true)
+        {
+            if (contours == null || contours.Count == 0) return;
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Contour);
+            AppendGeometry(item, new BatchedContourGeometry(contours, isClosed), isPass);
+        }
+
         /// <summary>添加圆（真圆，由 Circle2d 定义圆心与半径，渲染层按 GraphicsType.Circle 绘制椭圆）</summary>
         public void AddCircle(GraphicsStyle style, Circle2d circle, bool isPass = true)
         {

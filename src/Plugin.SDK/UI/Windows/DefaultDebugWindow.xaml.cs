@@ -565,7 +565,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </remarks>
         private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
+            PluginLogger.Info($"[绑定诊断] 标准调试窗口 Closing | 控件={_control.GetType().Name}", "BindingDiag");
             CommitAllDataGridEdits(ContentHost);
+            // 绑定状态必须在窗口关闭前提交到节点 ParamSettings，不能只依赖
+            // 内部控件的 Unloaded 事件顺序。
+            _toolControl?.PersistParameterBindings();
+            PluginLogger.Info($"[绑定诊断] 标准调试窗口 Closing 完成 | 控件={_control.GetType().Name}", "BindingDiag");
         }
 
         /// <summary>

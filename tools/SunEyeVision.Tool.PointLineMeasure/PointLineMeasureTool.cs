@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -43,28 +43,16 @@ namespace SunEyeVision.Tool.PointLineMeasure
         private static Point ResolvePoint1(PointLineMeasureParameters parameters)
         {
             if (parameters.P1InputMode == PointInputMode.ByCoordinate)
-                return new Point(parameters.P1X.Value, parameters.P1Y.Value);
+                return new Point(parameters.P1X, parameters.P1Y);
 
-            var config = parameters.P1Point.BindingConfig;
-            if (config == null || config.BindingType != BindingType.Binding || string.IsNullOrEmpty(config.SourceNodeId))
-                throw new InvalidOperationException(
-                    "点1 输入方式为「按图形」，但未绑定上游点图形输出（词目 Point）：请在基本参数中选择数据源，或切换为「按参数」输入 X/Y。");
-
-            // 数组口子（决策 4）：单元素即"一次绑定即得 X/Y"；
-            // 多元素配对属向量化（6d），当前**显式报错**（不静默取首元素、不静默用默认值，rule-015）。
-            var pts = parameters.P1Point.Value;
+            var pts = parameters.P1Point;
             if (pts == null || pts.Length == 0)
                 throw new InvalidOperationException(
-                    "点1 绑定的上游点图形为空（0 个点）：请在基本参数中重新选择数据源。");
-
+                    "点1 输入方式为「按图形」，但未绑定上游点图形输出或图形为空：请在基本参数中选择数据源，或切换为「按参数」输入 X/Y。");
             if (pts.Length > 1)
-                throw new InvalidOperationException(
-                    $"点1 绑定的上游点图形含 {pts.Length} 个点：多元素配对（向量化）尚未启用，"
-                    + "请改绑单个点，或切换为「按参数」逐值输入。");
-
+                throw new InvalidOperationException($"点1 绑定的上游点图形含 {pts.Length} 个点：多元素配对（向量化）尚未启用，请改绑单个点，或切换为「按参数」逐值输入。");
             return new Point(pts[0].X, pts[0].Y);
         }
-
         public PointLineMeasureResults Run(PointLineMeasureParameters parameters)
         {
             var result = new PointLineMeasureResults
@@ -78,8 +66,8 @@ namespace SunEyeVision.Tool.PointLineMeasure
             {
                 // ===== 校验（Fail-Fast）=====
                 var p1 = ResolvePoint1(parameters);
-                var lineStart = new Point(parameters.E2StartX.Value, parameters.E2StartY.Value);
-                var lineEnd = new Point(parameters.E2EndX.Value, parameters.E2EndY.Value);
+                var lineStart = new Point(parameters.E2StartX, parameters.E2StartY);
+                var lineEnd = new Point(parameters.E2EndX, parameters.E2EndY);
                 if ((lineEnd - lineStart).Length <= 1e-6)
                     throw new InvalidOperationException("线2 引导线未设置或长度无效");
 
@@ -103,19 +91,19 @@ namespace SunEyeVision.Tool.PointLineMeasure
 
                 var e2Index = metrologyModel.AddMetrologyObjectLineMeasure(
                     lineStartT.Y, lineStartT.X, lineEndT.Y, lineEndT.X,
-                    parameters.E2MeasureLength1.Value, parameters.E2MeasureLength2.Value,
-                    parameters.E2Sigma.Value, parameters.E2Threshold.Value,
+                    parameters.E2MeasureLength1, parameters.E2MeasureLength2,
+                    parameters.E2Sigma, parameters.E2Threshold,
                     BuildLineGenParamName(), BuildLineGenParamValue(
-                        parameters.E2NumMeasures.Value,
-                        TransitionToHalcon(parameters.E2Transition.Value),
-                        SelectToHalcon(parameters.E2Select.Value),
-                        parameters.E2DistanceThreshold.Value));
+                        parameters.E2NumMeasures,
+                        TransitionToHalcon(parameters.E2Transition),
+                        SelectToHalcon(parameters.E2Select),
+                        parameters.E2DistanceThreshold));
 
                 metrologyModel.ApplyMetrologyModel(hImage);
 
                 // 拟合
-                var e2Points = ExtractDiagnosticPoints(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition.Value));
-                var (e2Start, e2End, e2Inliers, e2Rmse) = FitLineRobust(e2Points, parameters.E2DistanceThreshold.Value);
+                var e2Points = ExtractDiagnosticPoints(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition));
+                var (e2Start, e2End, e2Inliers, e2Rmse) = FitLineRobust(e2Points, parameters.E2DistanceThreshold);
 
                 result.Element2FitPoints = e2Inliers;
                 result.Element2RMSE = e2Rmse;
@@ -149,10 +137,10 @@ namespace SunEyeVision.Tool.PointLineMeasure
 
                 // ===== 输入回显 =====
                 result.GuideGeometry2 = BuildLineGuideGeometry(lineStart, lineEnd);
-                result.E2CaliberCount = parameters.E2NumMeasures.Value;
-                result.E2CaliberWidth = parameters.E2MeasureLength1.Value * 2;
-                result.E2CaliberLength = parameters.E2MeasureLength2.Value * 2;
-                result.E2CaliberTransition = parameters.E2Transition.Value.ToString();
+                result.E2CaliberCount = parameters.E2NumMeasures;
+                result.E2CaliberWidth = parameters.E2MeasureLength1 * 2;
+                result.E2CaliberLength = parameters.E2MeasureLength2 * 2;
+                result.E2CaliberTransition = parameters.E2Transition.ToString();
 
                 // ===== 判定 =====
                 var judged = ResultJudgmentEvaluator.EvaluateRanges(

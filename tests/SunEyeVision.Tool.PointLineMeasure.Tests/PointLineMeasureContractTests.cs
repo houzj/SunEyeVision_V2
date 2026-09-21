@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -32,8 +32,8 @@ public class PointLineMeasureContractTests
         {
             P1InputMode = PointInputMode.ByCoordinate,
         };
-        parameters.P1X.Value = 150;
-        parameters.P1Y.Value = 180;
+        parameters.P1X = 150;
+        parameters.P1Y = 180;
         return parameters;
     }
 
@@ -44,10 +44,10 @@ public class PointLineMeasureContractTests
     {
         var options = Options();
         var source = CreateByCoordinateParameters();
-        source.E2Threshold.Value = 42.5;
-        source.E2NumMeasures.Value = 20;
-        source.E2Transition.Value = EdgeTransition.Negative;
-        source.E2Select.Value = EdgeSelect.Last;
+        source.E2Threshold = 42.5;
+        source.E2NumMeasures = 20;
+        source.E2Transition = EdgeTransition.Negative;
+        source.E2Select = EdgeSelect.Last;
         source.ResultPresentation.Judgments.Add(new JudgmentConfigItem
         {
             Key = "custom-distance",
@@ -63,12 +63,12 @@ public class PointLineMeasureContractTests
 
         Assert.NotNull(back);
         Assert.Equal(PointInputMode.ByCoordinate, back!.P1InputMode);
-        Assert.Equal(150.0, back.P1X.Value, 6);
-        Assert.Equal(180.0, back.P1Y.Value, 6);
-        Assert.Equal(42.5, back.E2Threshold.Value, 6);
-        Assert.Equal(20, back.E2NumMeasures.Value);
-        Assert.Equal(EdgeTransition.Negative, back.E2Transition.Value);
-        Assert.Equal(EdgeSelect.Last, back.E2Select.Value);
+        Assert.Equal(150.0, back.P1X, 6);
+        Assert.Equal(180.0, back.P1Y, 6);
+        Assert.Equal(42.5, back.E2Threshold, 6);
+        Assert.Equal(20, back.E2NumMeasures);
+        Assert.Equal(EdgeTransition.Negative, back.E2Transition);
+        Assert.Equal(EdgeSelect.Last, back.E2Select);
 
         // 默认判定项（距离/垂足X/垂足Y）保留 + 新增项完整还原
         Assert.Equal(source.ResultPresentation.Judgments.Count, back.ResultPresentation.Judgments.Count);
@@ -121,7 +121,7 @@ public class PointLineMeasureContractTests
 
         Assert.Contains("xmlns:local=\"clr-namespace:SunEyeVision.Tool.PointLineMeasure\"", xaml);
         Assert.Contains(
-            "d:DataContext=\"{d:DesignInstance Type=local:PointLineMeasureParameters, IsDesignTimeCreatable=True}\"",
+            "d:DataContext=\"{d:DesignInstance Type=designParameters:PointLineMeasureParameters, IsDesignTimeCreatable=True}\"",
             xaml);
 
         var parametersIndex = codeBehind.IndexOf("Parameters = new PointLineMeasureParameters();", StringComparison.Ordinal);

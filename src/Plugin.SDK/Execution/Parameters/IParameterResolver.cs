@@ -68,17 +68,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             ParamSettingContainer container,
             IDictionary<string, ToolResults> nodeResults);
 
-        /// <summary>
-        /// 应用参数绑定 — 直接从参数内部的 BindingConfig 读取绑定并解析
-        /// </summary>
-        /// <param name="parameters">工具参数对象</param>
-        /// <param name="nodeResults">节点结果缓存</param>
-        /// <returns>应用结果</returns>
-        ParameterApplyResult ApplyBindings(
-            ToolParameters parameters,
-            IDictionary<string, ToolResults> nodeResults);
-
-        /// <summary>
+/// <summary>
         /// 验证绑定是否可解析
         /// </summary>
         /// <param name="binding">参数绑定</param>
@@ -158,61 +148,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 ErrorMessage = errorMessage
             };
         }
-    }
-
-    /// <summary>
-    /// 参数应用结果
-    /// </summary>
-    public class ParameterApplyResult
-    {
-        /// <summary>
-        /// 是否成功
-        /// </summary>
-        public bool IsSuccess { get; set; }
-
-        /// <summary>
-        /// 成功应用的参数数量
-        /// </summary>
-        public int AppliedCount { get; set; }
-
-        /// <summary>
-        /// 失败的参数数量
-        /// </summary>
-        public int FailedCount { get; set; }
-
-        /// <summary>
-        /// 各参数的解析结果
-        /// </summary>
-        public Dictionary<string, ParameterResolveResult> Results { get; set; } = new Dictionary<string, ParameterResolveResult>();
-
-        /// <summary>
-        /// 失败详情：<c>Errors</c> + <c>Warnings</c> 合并。
-        /// </summary>
-        /// <remarks>
-        /// 修正"失败原因不可见"：<c>FailedCount</c> 有三条来源，其中「解析值为 null」「类型转换失败」
-        /// 只写 <c>Warnings</c>；若调用方只打印 <c>Errors</c>，就会出现 <c>"参数绑定失败: "</c> 这种**空原因**。
-        /// 报错必须能自解释（rule-015 报错优先 + 可诊断）。
-        /// </remarks>
-        public string FailureDetail
-        {
-            get
-            {
-                var parts = new List<string>();
-                parts.AddRange(Errors);
-                parts.AddRange(Warnings);
-                return string.Join("; ", parts);
-            }
-        }
-
-        /// <summary>
-        /// 错误信息列表
-        /// </summary>
-        public List<string> Errors { get; set; } = new List<string>();
-
-        /// <summary>
-        /// 警告信息列表
-        /// </summary>
-        public List<string> Warnings { get; set; } = new List<string>();
     }
 
     /// <summary>

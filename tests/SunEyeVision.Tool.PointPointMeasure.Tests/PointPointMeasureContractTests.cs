@@ -46,10 +46,10 @@ public class PointPointMeasureContractTests
             P2InputMode = PointInputMode.ByCoordinate,
             ResolvedInputImage = CreateNonEmptyImage(),
         };
-        parameters.P1X.Value = 0;
-        parameters.P1Y.Value = 0;
-        parameters.P2X.Value = x2;
-        parameters.P2Y.Value = y2;
+        parameters.P1X = 0;
+        parameters.P1Y = 0;
+        parameters.P2X = x2;
+        parameters.P2Y = y2;
         return parameters;
     }
 
@@ -85,9 +85,9 @@ public class PointPointMeasureContractTests
         Assert.NotNull(back);
         Assert.Equal(PointInputMode.ByCoordinate, back!.P1InputMode);
         Assert.Equal(PointInputMode.ByCoordinate, back.P2InputMode);
-        Assert.Equal(0.0, back.P1X.Value, 6);
-        Assert.Equal(3.0, back.P2X.Value, 6);
-        Assert.Equal(4.0, back.P2Y.Value, 6);
+        Assert.Equal(0.0, back.P1X, 6);
+        Assert.Equal(3.0, back.P2X, 6);
+        Assert.Equal(4.0, back.P2Y, 6);
 
         // 默认判定项（点距/ΔX/ΔY/连线角度）保留 + 新增项完整还原
         Assert.Equal(source.ResultPresentation.Judgments.Count, back.ResultPresentation.Judgments.Count);
@@ -106,7 +106,7 @@ public class PointPointMeasureContractTests
         var source = new PointPointMeasureParameters
         {
             P1InputMode = PointInputMode.ByShape,
-            P1Point = ParamValue<Point2d[]>.CreateConstant(new[] { new Point2d(7.5, 8.5) }, "P1Point"),
+            P1Point = new[] { new Point2d(7.5, 8.5) },
         };
 
         var json = JsonSerializer.Serialize(source, options);
@@ -114,11 +114,10 @@ public class PointPointMeasureContractTests
 
         Assert.NotNull(back);
         Assert.Equal(PointInputMode.ByShape, back!.P1InputMode);
-        var pts = Assert.IsType<Point2d[]>(back.P1Point.Value);
+        var pts = Assert.IsType<Point2d[]>(back.P1Point);
         Assert.Single(pts);
         Assert.Equal(7.5, pts[0].X, 6);
         Assert.Equal(8.5, pts[0].Y, 6);
-        Assert.False(back.P1Point.IsBinding);
     }
 
     [Fact]

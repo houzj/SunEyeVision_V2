@@ -69,12 +69,12 @@
                                 Visibility="{Binding P1InputMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=ByCoordinate}">
                                 <controls:LabeledControl Label="X 坐标" Margin="0,0,0,4">
                                     <controls:ConfigSetting ParameterName="P1X" DataType="{x:Type sys:Double}"
-                                        Value="{Binding P1X.Value, Mode=TwoWay}" Width="250"
+                                        Value="{Binding P1X, Mode=TwoWay}" Width="250"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                                 </controls:LabeledControl>
                                 <controls:LabeledControl Label="Y 坐标" Margin="0,0,0,4">
                                     <controls:ConfigSetting ParameterName="P1Y" DataType="{x:Type sys:Double}"
-                                        Value="{Binding P1Y.Value, Mode=TwoWay}" Width="250"
+                                        Value="{Binding P1Y, Mode=TwoWay}" Width="250"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                                 </controls:LabeledControl>
                             </StackPanel>
@@ -107,12 +107,12 @@
                                 Visibility="{Binding P2InputMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=ByCoordinate}">
                                 <controls:LabeledControl Label="X 坐标" Margin="0,0,0,4">
                                     <controls:ConfigSetting ParameterName="P2X" DataType="{x:Type sys:Double}"
-                                        Value="{Binding P2X.Value, Mode=TwoWay}" Width="250"
+                                        Value="{Binding P2X, Mode=TwoWay}" Width="250"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                                 </controls:LabeledControl>
                                 <controls:LabeledControl Label="Y 坐标" Margin="0,0,0,4">
                                     <controls:ConfigSetting ParameterName="P2Y" DataType="{x:Type sys:Double}"
-                                        Value="{Binding P2Y.Value, Mode=TwoWay}" Width="250"
+                                        Value="{Binding P2Y, Mode=TwoWay}" Width="250"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                                 </controls:LabeledControl>
                             </StackPanel>

@@ -29,6 +29,10 @@ public class ConsumerBinding
     /// <summary>参数中文显示名称</summary>
     public string ParameterDisplayName { get; set; } = string.Empty;
 
+    /// <summary>消费者稳定键，包含工作流作用域，避免跨工作流节点 ID 冲突。</summary>
+    [JsonIgnore]
+    public string BindingKey => $"{WorkflowId}|{NodeId}|{ParameterName}";
+
     /// <summary>显示路径："工作流名.节点名.参数显示名"</summary>
     [JsonIgnore]
     public string DisplayPath => $"{WorkflowName}.{NodeName}.{ParameterDisplayName}";
@@ -211,7 +215,23 @@ public class GlobalVariable : ObservableObject
     /// 输入来源（可选）。为空表示变量使用方案保存的初值或宿主在运行请求中提供的值。
     /// 非空时表示该变量由一个节点结果产生，并在解决方案级依赖图中连接到所有消费者。
     /// </summary>
-    public ProducerBinding? ProducerBinding { get; set; }
+    private ProducerBinding? _producerBinding;
+    public ProducerBinding? ProducerBinding
+    {
+        get => _producerBinding;
+        set
+        {
+            if (ReferenceEquals(_producerBinding, value))
+                return;
+            _producerBinding = value;
+            OnPropertyChanged(nameof(ProducerBinding));
+            OnPropertyChanged(nameof(InputSourceDisplayText));
+        }
+    }
+
+    /// <summary>输入来源显示文本；为空时变量使用方案初值或运行请求中提供的值。</summary>
+    [JsonIgnore]
+    public string InputSourceDisplayText => ProducerBinding?.DisplayPath ?? "未绑定（使用初值）";
 
     /// <summary>
     /// 目标输出显示文本（用于UI）
@@ -361,6 +381,13 @@ public class GlobalVariable : ObservableObject
     {
         OnPropertyChanged(nameof(OutputTargetDisplayText));
         OnPropertyChanged(nameof(ConsumerBindings));
+    }
+
+    /// <summary>外部修改生产者绑定字段后刷新显示列。</summary>
+    public void NotifyInputSourceDisplayChanged()
+    {
+        OnPropertyChanged(nameof(ProducerBinding));
+        OnPropertyChanged(nameof(InputSourceDisplayText));
     }
 }
 

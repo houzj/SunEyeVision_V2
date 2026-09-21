@@ -32,8 +32,8 @@ namespace SunEyeVision.Tool.Threshold
     /// </summary>
     /// <remarks>
     /// 参数类继承 RoiParameters，自带区域管理功能。
-    /// 使用 ParamValue 包装器，统一管理参数值和绑定配置。
-    /// 算法层直接使用 parameters.Threshold.Value，完全无感。
+    /// 使用 纯 CLR 参数，统一管理参数值和绑定配置。
+    /// 算法层直接使用 parameters.Threshold，完全无感。
     /// 
     /// 多态序列化（rule-010: 方案系统实现规范）：
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "Threshold"。
@@ -75,22 +75,19 @@ namespace SunEyeVision.Tool.Threshold
         /// 二值化阈值(0-255)
         /// </summary>
         [DisplayName("阈值")]
-        public ParamValue<int> Threshold { get; set; } =
-            ParamValue<int>.CreateConstant(128, "Threshold");
+        public int Threshold { get; set; } = 128;
 
         /// <summary>
         /// 超过阈值时使用的最大值(0-255)
         /// </summary>
         [DisplayName("最大值")]
-        public ParamValue<int> MaxValue { get; set; } =
-            ParamValue<int>.CreateConstant(255, "MaxValue");
+        public int MaxValue { get; set; } = 255;
 
         /// <summary>
         /// 二值化方法
         /// </summary>
         [DisplayName("二值化方法")]
-        public ParamValue<ThresholdType> Type { get; set; } =
-            ParamValue<ThresholdType>.CreateConstant(ThresholdType.Binary, "Type");
+        public ThresholdType Type { get; set; } = ThresholdType.Binary;
 
         /// <summary>
         /// 是否反转二值化结果
@@ -106,15 +103,13 @@ namespace SunEyeVision.Tool.Threshold
         /// 自适应阈值方法
         /// </summary>
         [DisplayName("自适应方法")]
-        public ParamValue<AdaptiveMethod> AdaptiveMethod { get; set; } =
-            ParamValue<AdaptiveMethod>.CreateConstant(SunEyeVision.Tool.Threshold.AdaptiveMethod.Mean, "AdaptiveMethod");
+        public AdaptiveMethod AdaptiveMethod { get; set; } = SunEyeVision.Tool.Threshold.AdaptiveMethod.Mean;
 
         /// <summary>
         /// 计算阈值的邻域大小(奇数, 3-31)
         /// </summary>
         [DisplayName("块大小")]
-        public ParamValue<int> BlockSize { get; set; } =
-            ParamValue<int>.CreateConstant(11, "BlockSize");
+        public int BlockSize { get; set; } = 11;
 
         #endregion
 
@@ -143,27 +138,27 @@ namespace SunEyeVision.Tool.Threshold
             var result = base.Validate();
 
             // 块大小必须为奇数
-            if (BlockSize.Value % 2 == 0)
+            if (BlockSize % 2 == 0)
             {
-                result.AddError($"块大小必须为奇数，当前值: {BlockSize.Value}");
+                result.AddError($"块大小必须为奇数，当前值: {BlockSize}");
             }
 
             // 块大小范围检查
-            if (BlockSize.Value < BlockSizeMin || BlockSize.Value > BlockSizeMax)
+            if (BlockSize < BlockSizeMin || BlockSize > BlockSizeMax)
             {
-                result.AddError($"块大小必须在 {BlockSizeMin}-{BlockSizeMax} 范围内，当前值: {BlockSize.Value}");
+                result.AddError($"块大小必须在 {BlockSizeMin}-{BlockSizeMax} 范围内，当前值: {BlockSize}");
             }
 
             // 阈值范围检查
-            if (Threshold.Value < ThresholdMin || Threshold.Value > ThresholdMax)
+            if (Threshold < ThresholdMin || Threshold > ThresholdMax)
             {
-                result.AddError($"阈值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {Threshold.Value}");
+                result.AddError($"阈值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {Threshold}");
             }
 
             // 最大值范围检查
-            if (MaxValue.Value < ThresholdMin || MaxValue.Value > ThresholdMax)
+            if (MaxValue < ThresholdMin || MaxValue > ThresholdMax)
             {
-                result.AddError($"最大值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {MaxValue.Value}");
+                result.AddError($"最大值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {MaxValue}");
             }
 
             // 结果配置验证

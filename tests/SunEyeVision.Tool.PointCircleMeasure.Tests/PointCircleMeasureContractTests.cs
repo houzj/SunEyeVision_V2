@@ -32,8 +32,8 @@ public class PointCircleMeasureContractTests
         {
             P1InputMode = PointInputMode.ByCoordinate,
         };
-        parameters.P1X.Value = 150;
-        parameters.P1Y.Value = 180;
+        parameters.P1X = 150;
+        parameters.P1Y = 180;
         return parameters;
     }
 
@@ -44,10 +44,10 @@ public class PointCircleMeasureContractTests
     {
         var options = Options();
         var source = CreateByCoordinateParameters();
-        source.E2Threshold.Value = 42.5;
-        source.E2NumMeasures.Value = 28;
-        source.E2Transition.Value = EdgeTransition.Positive;
-        source.E2Select.Value = EdgeSelect.First;
+        source.E2Threshold = 42.5;
+        source.E2NumMeasures = 28;
+        source.E2Transition = EdgeTransition.Positive;
+        source.E2Select = EdgeSelect.First;
         source.ResultPresentation.Judgments.Add(new JudgmentConfigItem
         {
             Key = "test-custom",
@@ -63,12 +63,12 @@ public class PointCircleMeasureContractTests
 
         Assert.NotNull(back);
         Assert.Equal(PointInputMode.ByCoordinate, back!.P1InputMode);
-        Assert.Equal(150.0, back.P1X.Value, 6);
-        Assert.Equal(180.0, back.P1Y.Value, 6);
-        Assert.Equal(42.5, back.E2Threshold.Value, 6);
-        Assert.Equal(28, back.E2NumMeasures.Value);
-        Assert.Equal(EdgeTransition.Positive, back.E2Transition.Value);
-        Assert.Equal(EdgeSelect.First, back.E2Select.Value);
+        Assert.Equal(150.0, back.P1X, 6);
+        Assert.Equal(180.0, back.P1Y, 6);
+        Assert.Equal(42.5, back.E2Threshold, 6);
+        Assert.Equal(28, back.E2NumMeasures);
+        Assert.Equal(EdgeTransition.Positive, back.E2Transition);
+        Assert.Equal(EdgeSelect.First, back.E2Select);
 
         // 默认判定项（圆心距/圆周距/半径/最近点X/最近点Y）保留 + 新增项完整还原
         Assert.Equal(source.ResultPresentation.Judgments.Count, back.ResultPresentation.Judgments.Count);
@@ -85,7 +85,7 @@ public class PointCircleMeasureContractTests
         var source = new PointCircleMeasureParameters
         {
             P1InputMode = PointInputMode.ByShape,
-            P1Point = ParamValue<Point2d[]>.CreateConstant(new[] { new Point2d(12.5, 34.5) }, "P1Point"),
+            P1Point = new[] { new Point2d(12.5, 34.5) },
         };
 
         var json = JsonSerializer.Serialize(source, options);
@@ -93,10 +93,9 @@ public class PointCircleMeasureContractTests
 
         Assert.NotNull(back);
         Assert.Equal(PointInputMode.ByShape, back!.P1InputMode);
-        Assert.Single(back.P1Point.Value);
-        Assert.Equal(12.5, back.P1Point.Value[0].X, 6);
-        Assert.Equal(34.5, back.P1Point.Value[0].Y, 6);
-        Assert.False(back.P1Point.IsBinding);
+        Assert.Single(back.P1Point);
+        Assert.Equal(12.5, back.P1Point[0].X, 6);
+        Assert.Equal(34.5, back.P1Point[0].Y, 6);
     }
 
     [Fact]

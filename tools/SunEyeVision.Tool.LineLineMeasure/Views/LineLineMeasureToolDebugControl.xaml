@@ -83,12 +83,12 @@
                         <TextBlock Text="边缘检测参数" FontWeight="SemiBold" Margin="0,4,0,8"/>
                         <controls:LabeledControl Label="平滑 Sigma" Margin="0,0,0,4">
                             <controls:ConfigSetting ParameterName="E1Sigma" DataType="{x:Type sys:Double}"
-                                Value="{Binding E1Sigma.Value, Mode=TwoWay}" Minimum="0.5" Maximum="10" ShowSlider="True" Width="250"
+                                Value="{Binding E1Sigma, Mode=TwoWay}" Minimum="0.5" Maximum="10" ShowSlider="True" Width="250"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                         </controls:LabeledControl>
                         <controls:LabeledControl Label="边缘阈值" Margin="0,0,0,4">
                             <controls:ConfigSetting ParameterName="E1Threshold" DataType="{x:Type sys:Double}"
-                                Value="{Binding E1Threshold.Value, Mode=TwoWay}" Minimum="0" Maximum="255" ShowSlider="True" Width="250"
+                                Value="{Binding E1Threshold, Mode=TwoWay}" Minimum="0" Maximum="255" ShowSlider="True" Width="250"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                         </controls:LabeledControl>
                         <controls:LabeledControl Label="边缘极性" Margin="0,0,0,4">
@@ -104,7 +104,7 @@
                             <StackPanel Margin="16,8">
                                 <controls:LabeledControl Label="距离阈值" Margin="0,0,0,4">
                                     <controls:ConfigSetting ParameterName="E1DistanceThreshold" DataType="{x:Type sys:Double}"
-                                        Value="{Binding E1DistanceThreshold.Value, Mode=TwoWay}" Minimum="0.5" Maximum="20" Width="250"
+                                        Value="{Binding E1DistanceThreshold, Mode=TwoWay}" Minimum="0.5" Maximum="20" Width="250"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                                 </controls:LabeledControl>
                             </StackPanel>
@@ -117,12 +117,12 @@
                         <TextBlock Text="边缘检测参数" FontWeight="SemiBold" Margin="0,4,0,8"/>
                         <controls:LabeledControl Label="平滑 Sigma" Margin="0,0,0,4">
                             <controls:ConfigSetting ParameterName="E2Sigma" DataType="{x:Type sys:Double}"
-                                Value="{Binding E2Sigma.Value, Mode=TwoWay}" Minimum="0.5" Maximum="10" ShowSlider="True" Width="250"
+                                Value="{Binding E2Sigma, Mode=TwoWay}" Minimum="0.5" Maximum="10" ShowSlider="True" Width="250"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                         </controls:LabeledControl>
                         <controls:LabeledControl Label="边缘阈值" Margin="0,0,0,4">
                             <controls:ConfigSetting ParameterName="E2Threshold" DataType="{x:Type sys:Double}"
-                                Value="{Binding E2Threshold.Value, Mode=TwoWay}" Minimum="0" Maximum="255" ShowSlider="True" Width="250"
+                                Value="{Binding E2Threshold, Mode=TwoWay}" Minimum="0" Maximum="255" ShowSlider="True" Width="250"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                         </controls:LabeledControl>
                         <controls:LabeledControl Label="边缘极性" Margin="0,0,0,4">
@@ -138,7 +138,7 @@
                             <StackPanel Margin="16,8">
                                 <controls:LabeledControl Label="距离阈值" Margin="0,0,0,4">
                                     <controls:ConfigSetting ParameterName="E2DistanceThreshold" DataType="{x:Type sys:Double}"
-                                        Value="{Binding E2DistanceThreshold.Value, Mode=TwoWay}" Minimum="0.5" Maximum="20" Width="250"
+                                        Value="{Binding E2DistanceThreshold, Mode=TwoWay}" Minimum="0.5" Maximum="20" Width="250"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                                 </controls:LabeledControl>
                             </StackPanel>

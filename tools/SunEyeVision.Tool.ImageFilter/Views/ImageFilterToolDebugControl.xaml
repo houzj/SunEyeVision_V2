@@ -83,7 +83,7 @@
               <ComboBox x:Name="filterTypeComboBox"
                       Height="32"
                       VerticalContentAlignment="Center" Width="250"
-                      SelectedItem="{Binding FilterTypeValue.Value, Mode=TwoWay, Converter={StaticResource FilterTypeConverter}}">
+                      SelectedItem="{Binding FilterTypeValue, Mode=TwoWay, Converter={StaticResource FilterTypeConverter}}">
                 <sys:String>均值滤波</sys:String>
                 <sys:String>高斯滤波</sys:String>
                 <sys:String>中值滤波</sys:String>
@@ -101,7 +101,7 @@
                                 x:Name="kernelWidthParamBlur"
                                 ParameterName="KernelWidth"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding KernelWidth.Value, Mode=TwoWay}"
+                                Value="{Binding KernelWidth, Mode=TwoWay}"
                                 Minimum="1" Maximum="31"
                                 SmallChange="2" LargeChange="4"
                                 ShowSlider="True" Width="250"
@@ -112,7 +112,7 @@
                                 x:Name="kernelHeightParamBlur"
                                 ParameterName="KernelHeight"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding KernelHeight.Value, Mode=TwoWay}"
+                                Value="{Binding KernelHeight, Mode=TwoWay}"
                                 Minimum="1" Maximum="31"
                                 SmallChange="2" LargeChange="4"
                                 ShowSlider="True" Width="250"
@@ -121,7 +121,7 @@
                 <controls:LabeledControl Label="边界处理" ToolTip="边界处理方式：图像边缘像素的填充策略">
                   <ComboBox x:Name="borderTypeComboBoxBlur"
                           Height="32" VerticalContentAlignment="Center" Width="250"
-                          SelectedItem="{Binding BorderTypeValue.Value, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
+                          SelectedItem="{Binding BorderTypeValue, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
                     <sys:String>镜像反射(Reflect)</sys:String>
                     <sys:String>边缘复制(Replicate)</sys:String>
                     <sys:String>常量填充(Constant)</sys:String>
@@ -149,7 +149,7 @@
                                 x:Name="kernelWidthParamGaussian"
                                 ParameterName="KernelWidth"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding KernelWidth.Value, Mode=TwoWay}"
+                                Value="{Binding KernelWidth, Mode=TwoWay}"
                                 Minimum="1" Maximum="31"
                                 SmallChange="2" LargeChange="4"
                                 ShowSlider="True" Width="250"
@@ -160,7 +160,7 @@
                                 x:Name="kernelHeightParamGaussian"
                                 ParameterName="KernelHeight"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding KernelHeight.Value, Mode=TwoWay}"
+                                Value="{Binding KernelHeight, Mode=TwoWay}"
                                 Minimum="1" Maximum="31"
                                 SmallChange="2" LargeChange="4"
                                 ShowSlider="True" Width="250"
@@ -171,7 +171,7 @@
                                 x:Name="sigmaXParam"
                                 ParameterName="SigmaX"
                                 DataType="{x:Type sys:Double}"
-                                Value="{Binding SigmaX.Value, Mode=TwoWay}"
+                                Value="{Binding SigmaX, Mode=TwoWay}"
                                 Minimum="0" Maximum="100"
                                 SmallChange="0.1" LargeChange="1.0"
                                 Width="250"
@@ -182,7 +182,7 @@
                                 x:Name="sigmaYParam"
                                 ParameterName="SigmaY"
                                 DataType="{x:Type sys:Double}"
-                                Value="{Binding SigmaY.Value, Mode=TwoWay}"
+                                Value="{Binding SigmaY, Mode=TwoWay}"
                                 Minimum="0" Maximum="100"
                                 SmallChange="0.1" LargeChange="1.0"
                                 Width="250"
@@ -191,7 +191,7 @@
                 <controls:LabeledControl Label="边界处理" ToolTip="边界处理方式">
                   <ComboBox x:Name="borderTypeComboBoxGaussian"
                           Height="32" VerticalContentAlignment="Center" Width="250"
-                          SelectedItem="{Binding BorderTypeValue.Value, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
+                          SelectedItem="{Binding BorderTypeValue, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
                     <sys:String>镜像反射(Reflect)</sys:String>
                     <sys:String>边缘复制(Replicate)</sys:String>
                     <sys:String>常量填充(Constant)</sys:String>
@@ -221,7 +221,7 @@
                                 x:Name="kernelWidthParamMedian"
                                 ParameterName="KernelWidth"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding KernelWidth.Value, Mode=TwoWay}"
+                                Value="{Binding KernelWidth, Mode=TwoWay}"
                                 Minimum="3" Maximum="31"
                                 SmallChange="2" LargeChange="4"
                                 ShowSlider="True" Width="250"
@@ -248,7 +248,7 @@
                                 x:Name="kernelWidthParamBilateral"
                                 ParameterName="KernelWidth"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding KernelWidth.Value, Mode=TwoWay}"
+                                Value="{Binding KernelWidth, Mode=TwoWay}"
                                 Minimum="1" Maximum="31"
                                 SmallChange="2" LargeChange="4"
                                 ShowSlider="True" Width="250"
@@ -259,7 +259,7 @@
                                 x:Name="sigmaColorParam"
                                 ParameterName="SigmaColor"
                                 DataType="{x:Type sys:Double}"
-                                Value="{Binding SigmaColor.Value, Mode=TwoWay}"
+                                Value="{Binding SigmaColor, Mode=TwoWay}"
                                 Minimum="0" Maximum="200"
                                 SmallChange="0.5" LargeChange="5.0"
                                 Width="250"
@@ -270,7 +270,7 @@
                                 x:Name="sigmaSpaceParam"
                                 ParameterName="SigmaSpace"
                                 DataType="{x:Type sys:Double}"
-                                Value="{Binding SigmaSpace.Value, Mode=TwoWay}"
+                                Value="{Binding SigmaSpace, Mode=TwoWay}"
                                 Minimum="0" Maximum="200"
                                 SmallChange="0.5" LargeChange="5.0"
                                 Width="250"
@@ -279,7 +279,7 @@
                 <controls:LabeledControl Label="边界处理" ToolTip="边界处理方式">
                   <ComboBox x:Name="borderTypeComboBoxBilateral"
                           Height="32" VerticalContentAlignment="Center" Width="250"
-                          SelectedItem="{Binding BorderTypeValue.Value, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
+                          SelectedItem="{Binding BorderTypeValue, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
                     <sys:String>镜像反射(Reflect)</sys:String>
                     <sys:String>边缘复制(Replicate)</sys:String>
                     <sys:String>常量填充(Constant)</sys:String>
@@ -307,7 +307,7 @@
                 <controls:LabeledControl Label="边界处理" ToolTip="边界处理方式">
                   <ComboBox x:Name="borderTypeComboBoxF2D"
                           Height="32" VerticalContentAlignment="Center" Width="250"
-                          SelectedItem="{Binding BorderTypeValue.Value, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
+                          SelectedItem="{Binding BorderTypeValue, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
                     <sys:String>镜像反射(Reflect)</sys:String>
                     <sys:String>边缘复制(Replicate)</sys:String>
                     <sys:String>常量填充(Constant)</sys:String>

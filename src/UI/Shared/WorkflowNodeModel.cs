@@ -209,6 +209,9 @@ namespace SunEyeVision.UI.Shared
                 Height = baseNode.Height,
                 IsEnabled = baseNode.IsEnabled,
                 Parameters = baseNode.Parameters,
+                // 绑定定义属于设计期节点状态，必须随基础节点转换到 UI 节点；
+                // 遗漏此字段会导致方案文件中已有 ParamSettings 在重启加载时丢失。
+                ParamSettings = baseNode.ParamSettings,
                 SelectedDisplaySource = baseNode.SelectedDisplaySource,
                 SubroutineId = baseNode.SubroutineId,    // ★ SSOT
                 ImageSourceConfig = baseNode.ImageSourceConfig   // ★ 输入源持久化

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;

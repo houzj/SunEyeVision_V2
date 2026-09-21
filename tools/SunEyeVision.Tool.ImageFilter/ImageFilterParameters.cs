@@ -36,20 +36,37 @@ namespace SunEyeVision.Tool.ImageFilter
     /// </summary>
     /// <remarks>
     /// 参数类继承 RoiParameters，自带区域管理功能。
-    /// 使用 ParamValue 包装器，统一管理参数值和绑定配置。
+    /// 使用 纯 CLR 参数，统一管理参数值和绑定配置。
     ///
     /// 多态序列化（rule-010: 方案系统实现规范）：
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "ImageFilter"。
     /// </remarks>
     [JsonDerivedType(typeof(ImageFilterParameters), "ImageFilter")]
-    public class ImageFilterParameters : RoiParameters
+    public class ImageFilterParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract
     {
+        public IReadOnlyList<InputSlotDescriptor> GetInputSlots() => new[]
+        {
+            new InputSlotDescriptor(nameof(InspectionRois), "检测区域", InputSlotKind.Collection,
+                ValueType: typeof(RoiCollection), Required: false),
+            new InputSlotDescriptor(nameof(MaskRois), "屏蔽区域", InputSlotKind.Collection,
+                ValueType: typeof(RoiCollection), Required: false)
+        };
+
+        public IReadOnlyList<RuntimeParameterDescriptor> GetRuntimeParameters() => new[]
+        {
+            new RuntimeParameterDescriptor(nameof(KernelWidth), "内核宽度", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(KernelHeight), "内核高度", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(SigmaX), "Sigma X", "Double", typeof(double)),
+            new RuntimeParameterDescriptor(nameof(SigmaY), "Sigma Y", "Double", typeof(double)),
+            new RuntimeParameterDescriptor(nameof(SigmaColor), "颜色Sigma", "Double", typeof(double)),
+            new RuntimeParameterDescriptor(nameof(SigmaSpace), "空间Sigma", "Double", typeof(double))
+        };
+
         /// <summary>
         /// 构造函数 - 注册 FilterTypeValue 变更通知
         /// </summary>
         public ImageFilterParameters()
         {
-            _filterTypeValue.PropertyChanged += OnFilterTypeValueChanged;
         }
 
         /// <summary>
@@ -57,7 +74,7 @@ namespace SunEyeVision.Tool.ImageFilter
         /// </summary>
         private void OnFilterTypeValueChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ParamValue<int>.Value))
+            if (e.PropertyName == nameof(FilterTypeValue))
             {
                 OnPropertyChanged(nameof(IsBlurMethod));
                 OnPropertyChanged(nameof(IsGaussianMethod));
@@ -80,8 +97,7 @@ namespace SunEyeVision.Tool.ImageFilter
         /// <summary>
         /// 滤波类型后端字段
         /// </summary>
-        private ParamValue<FilterType> _filterTypeValue =
-            ParamValue<FilterType>.CreateConstant(FilterType.Blur, "FilterType");
+        private FilterType _filterTypeValue = FilterType.Blur;
 
         #region 运行参数
 
@@ -89,18 +105,14 @@ namespace SunEyeVision.Tool.ImageFilter
         /// 滤波类型
         /// </summary>
         [DisplayName("滤波类型")]
-        public ParamValue<FilterType> FilterTypeValue
+        public FilterType FilterTypeValue
         {
             get => _filterTypeValue;
             set
             {
                 if (!ReferenceEquals(_filterTypeValue, value))
                 {
-                    if (_filterTypeValue != null)
-                        _filterTypeValue.PropertyChanged -= OnFilterTypeValueChanged;
                     _filterTypeValue = value;
-                    if (_filterTypeValue != null)
-                        _filterTypeValue.PropertyChanged += OnFilterTypeValueChanged;
                     OnPropertyChanged();
                     // 实例被替换时也刷新所有可见性
                     OnPropertyChanged(nameof(IsBlurMethod));
@@ -115,19 +127,19 @@ namespace SunEyeVision.Tool.ImageFilter
         #region 方法可见性属性（运行时计算，用于UI分组显示）
 
         [JsonIgnore]
-        public bool IsBlurMethod => FilterTypeValue.Value == FilterType.Blur;
+        public bool IsBlurMethod => FilterTypeValue == FilterType.Blur;
 
         [JsonIgnore]
-        public bool IsGaussianMethod => FilterTypeValue.Value == FilterType.Gaussian;
+        public bool IsGaussianMethod => FilterTypeValue == FilterType.Gaussian;
 
         [JsonIgnore]
-        public bool IsMedianBlurMethod => FilterTypeValue.Value == FilterType.MedianBlur;
+        public bool IsMedianBlurMethod => FilterTypeValue == FilterType.MedianBlur;
 
         [JsonIgnore]
-        public bool IsBilateralMethod => FilterTypeValue.Value == FilterType.Bilateral;
+        public bool IsBilateralMethod => FilterTypeValue == FilterType.Bilateral;
 
         [JsonIgnore]
-        public bool IsFilter2DMethod => FilterTypeValue.Value == FilterType.Filter2D;
+        public bool IsFilter2DMethod => FilterTypeValue == FilterType.Filter2D;
 
         #endregion
 
@@ -135,50 +147,43 @@ namespace SunEyeVision.Tool.ImageFilter
         /// 内核宽度
         /// </summary>
         [DisplayName("内核宽度")]
-        public ParamValue<int> KernelWidth { get; set; } =
-            ParamValue<int>.CreateConstant(3, "KernelWidth");
+        public int KernelWidth { get; set; } = 3;
 
         /// <summary>
         /// 内核高度
         /// </summary>
         [DisplayName("内核高度")]
-        public ParamValue<int> KernelHeight { get; set; } =
-            ParamValue<int>.CreateConstant(3, "KernelHeight");
+        public int KernelHeight { get; set; } = 3;
 
         /// <summary>
         /// 高斯滤波 SigmaX
         /// </summary>
         [DisplayName("Sigma X")]
-        public ParamValue<double> SigmaX { get; set; } =
-            ParamValue<double>.CreateConstant(0.0, "SigmaX");
+        public double SigmaX { get; set; }
 
         /// <summary>
         /// 高斯滤波 SigmaY
         /// </summary>
         [DisplayName("Sigma Y")]
-        public ParamValue<double> SigmaY { get; set; } =
-            ParamValue<double>.CreateConstant(0.0, "SigmaY");
+        public double SigmaY { get; set; }
 
         /// <summary>
         /// 双边滤波颜色空间 Sigma
         /// </summary>
         [DisplayName("颜色Sigma")]
-        public ParamValue<double> SigmaColor { get; set; } =
-            ParamValue<double>.CreateConstant(10.0, "SigmaColor");
+        public double SigmaColor { get; set; } = 10.0;
 
         /// <summary>
         /// 双边滤波坐标空间 Sigma
         /// </summary>
         [DisplayName("空间Sigma")]
-        public ParamValue<double> SigmaSpace { get; set; } =
-            ParamValue<double>.CreateConstant(10.0, "SigmaSpace");
+        public double SigmaSpace { get; set; } = 10.0;
 
         /// <summary>
         /// 边界处理类型
         /// </summary>
         [DisplayName("边界类型")]
-        public ParamValue<ImageFilter.BorderType> BorderTypeValue { get; set; } =
-            ParamValue<ImageFilter.BorderType>.CreateConstant(ImageFilter.BorderType.Reflect, "BorderType");
+        public ImageFilter.BorderType BorderTypeValue { get; set; } = ImageFilter.BorderType.Reflect;
 
         #endregion
 
@@ -269,18 +274,18 @@ namespace SunEyeVision.Tool.ImageFilter
             var result = base.Validate();
 
             // 内核大小必须为奇数
-            if (KernelWidth.Value % 2 == 0)
-                result.AddError($"内核宽度必须为奇数，当前值: {KernelWidth.Value}");
+            if (KernelWidth % 2 == 0)
+                result.AddError($"内核宽度必须为奇数，当前值: {KernelWidth}");
 
-            if (KernelHeight.Value % 2 == 0)
-                result.AddError($"内核高度必须为奇数，当前值: {KernelHeight.Value}");
+            if (KernelHeight % 2 == 0)
+                result.AddError($"内核高度必须为奇数，当前值: {KernelHeight}");
 
             // 内核大小范围检查
-            if (KernelWidth.Value < KernelMin || KernelWidth.Value > KernelMax)
-                result.AddError($"内核宽度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelWidth.Value}");
+            if (KernelWidth < KernelMin || KernelWidth > KernelMax)
+                result.AddError($"内核宽度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelWidth}");
 
-            if (KernelHeight.Value < KernelMin || KernelHeight.Value > KernelMax)
-                result.AddError($"内核高度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelHeight.Value}");
+            if (KernelHeight < KernelMin || KernelHeight > KernelMax)
+                result.AddError($"内核高度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelHeight}");
 
             // 结果配置验证
             ValidateResultConfig(result);

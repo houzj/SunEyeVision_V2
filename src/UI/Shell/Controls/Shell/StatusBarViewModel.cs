@@ -1,5 +1,9 @@
 using System.ComponentModel;
+using System;
+using System.Windows.Input;
+using System.Windows.Threading;
 using SunEyeVision.UI.Services;
+using SunEyeVision.UI.Services.Workflow;
 
 using SunEyeVision.UI.Core;
 
@@ -18,11 +22,20 @@ namespace SunEyeVision.UI.Shell.Controls
         private string _cameraStatus = string.Empty;
         private bool _isRunning;
         private int _workflowCount;
+        private WorkflowExecutionSnapshot? _executionSnapshot;
+        private readonly DispatcherTimer _executionTimer;
+
+        public Action<WorkflowExecutionSnapshot?>? ShowExecutionSnapshotRequested { get; set; }
+        public ICommand ShowExecutionSnapshotCommand { get; }
 
         public StatusBarViewModel(IRootCoordinator coordinator)
         {
             _coordinator = coordinator;
             _coordinator.PropertyChanged += OnCoordinatorPropertyChanged;
+            ShowExecutionSnapshotCommand = new RelayCommand(() => ShowExecutionSnapshotRequested?.Invoke(ExecutionSnapshot));
+            _executionTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+            _executionTimer.Tick += (_, _) => RefreshExecutionElapsed();
+            _executionTimer.Start();
             RefreshAll();
         }
 
@@ -62,12 +75,35 @@ namespace SunEyeVision.UI.Shell.Controls
             private set => SetProperty(ref _workflowCount, value);
         }
 
+        public WorkflowExecutionSnapshot? ExecutionSnapshot
+        {
+            get => _executionSnapshot;
+            private set
+            {
+                if (SetProperty(ref _executionSnapshot, value))
+                    OnPropertyChanged(nameof(WorkflowExecutionText));
+            }
+        }
+
+        public string WorkflowExecutionText => ExecutionSnapshot?.StatusBarText ?? "--";
+
+        public void SetExecutionSnapshot(WorkflowExecutionSnapshot? snapshot)
+        {
+            if (ReferenceEquals(ExecutionSnapshot, snapshot))
+            {
+                OnPropertyChanged(nameof(WorkflowExecutionText));
+                return;
+            }
+            ExecutionSnapshot = snapshot;
+        }
+
         /// <summary>
         /// 解绑根协调器（窗口关闭时调用）
         /// </summary>
         public void Shutdown()
         {
             _coordinator.PropertyChanged -= OnCoordinatorPropertyChanged;
+            _executionTimer.Stop();
         }
 
         private void OnCoordinatorPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -95,6 +131,15 @@ namespace SunEyeVision.UI.Shell.Controls
             CameraStatus = _coordinator.CameraStatus;
             IsRunning = _coordinator.IsRunning;
             WorkflowCount = _coordinator.WorkflowCount;
+        }
+
+        private void RefreshExecutionElapsed()
+        {
+            if (ExecutionSnapshot?.Status != SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Running)
+                return;
+
+            ExecutionSnapshot.Tick();
+            OnPropertyChanged(nameof(WorkflowExecutionText));
         }
     }
 }

@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
+        xmlns:ver="clr-namespace:SunEyeVision.Core.Versioning;assembly=SunEyeVision.Core"
         mc:Ignorable="d"
         Title="关于 太阳眼视觉" Height="450" Width="500"
         WindowStartupLocation="CenterOwner"
@@ -34,7 +35,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="版本：" FontSize="13" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="1" Text="v1.0.0.0" FontSize="13" Foreground="#0066CC" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="{x:Static ver:AppVersionInfo.Display}" FontSize="13" Foreground="#0066CC" VerticalAlignment="Center"/>
             </Grid>
 
             <Grid Margin="0,5">
@@ -43,7 +44,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="发布日期：" FontSize="13" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="1" Text="2026年2月" FontSize="13" Foreground="#666666" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="{x:Static ver:AppVersionInfo.ReleaseDate}" FontSize="13" Foreground="#666666" VerticalAlignment="Center"/>
             </Grid>
 
             <Grid Margin="0,5">

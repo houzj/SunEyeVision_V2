@@ -86,14 +86,59 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// </summary>
     /// <remarks>
     /// 参数类继承 RoiParameters，自带区域管理功能。
-    /// 使用 ParamValue 包装器，统一管理参数值和绑定配置。
+    /// 使用 纯 CLR 参数，统一管理参数值和绑定配置。
     ///
     /// 多态序列化（rule-010: 方案系统实现规范）：
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "BlobAnalysis"。
     /// </remarks>
     [JsonDerivedType(typeof(BlobAnalysisParameters), "BlobAnalysis")]
-    public class BlobAnalysisParameters : RoiParameters
+    public class BlobAnalysisParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract
     {
+        /// <summary>
+        /// Blob 分析的输入与运行参数契约。
+        /// 这些描述是参数模型的唯一语义来源，UI 只负责展示和选择绑定。
+        /// </summary>
+        public IReadOnlyList<InputSlotDescriptor> GetInputSlots() => new[]
+        {
+            new InputSlotDescriptor(
+                nameof(InspectionRois), "检测区域", InputSlotKind.Collection,
+                ValueType: typeof(RoiCollection), Required: false),
+            new InputSlotDescriptor(
+                nameof(MaskRois), "屏蔽区域", InputSlotKind.Collection,
+                ValueType: typeof(RoiCollection), Required: false)
+        };
+
+        public IReadOnlyList<RuntimeParameterDescriptor> GetRuntimeParameters() => new[]
+        {
+            new RuntimeParameterDescriptor(nameof(Threshold), "阈值", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(MaxValue), "最大值", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(Type), "二值化方法", ValueType: typeof(ThresholdType)),
+            new RuntimeParameterDescriptor(nameof(IsPreprocessingEnabled), "启用预处理", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(PreprocessMethodValue), "预处理方法", ValueType: typeof(PreprocessMethod)),
+            new RuntimeParameterDescriptor(nameof(PreprocessKernelSize), "滤波核大小", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(IsMorphologyEnabled), "启用形态学", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(MorphOperationValue), "形态学操作", ValueType: typeof(MorphOperationType)),
+            new RuntimeParameterDescriptor(nameof(MorphElementShapeValue), "结构元素形状", ValueType: typeof(MorphElementShapeType)),
+            new RuntimeParameterDescriptor(nameof(MorphElementWidth), "结构元素宽度", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(MorphElementHeight), "结构元素高度", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(MorphIterations), "迭代次数", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(IsAreaFilterEnabled), "启用面积筛选", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(FilterAreaMin), "面积最小值", "Double", typeof(double)),
+            new RuntimeParameterDescriptor(nameof(FilterAreaMax), "面积最大值", "Double", typeof(double)),
+            new RuntimeParameterDescriptor(nameof(IsCircularityFilterEnabled), "启用圆度筛选", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(FilterCircularityMin), "圆度最小值", "Double", typeof(double)),
+            new RuntimeParameterDescriptor(nameof(FilterCircularityMax), "圆度最大值", "Double", typeof(double)),
+            new RuntimeParameterDescriptor(nameof(IsRectangularityFilterEnabled), "启用矩形度筛选", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(FilterRectangularityMin), "矩形度最小值", "Double", typeof(double)),
+            new RuntimeParameterDescriptor(nameof(FilterRectangularityMax), "矩形度最大值", "Double", typeof(double)),
+            new RuntimeParameterDescriptor(nameof(SortMode), "排序方式", ValueType: typeof(BlobSortMode)),
+            new RuntimeParameterDescriptor(nameof(IsBlobCountFilterEnabled), "启用查找数量筛选", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(BlobCountLimit), "查找数量", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(OutputBlobImage), "Blob图像输出", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(OutputBinaryImage), "二值化图像输出", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(OutputContours), "轮廓输出", "Boolean", typeof(bool))
+        };
+
         #region 常量定义
 
         /// <summary>
@@ -114,22 +159,19 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 二值化阈值(0-255)
         /// </summary>
         [DisplayName("阈值")]
-        public ParamValue<int> Threshold { get; set; } =
-            ParamValue<int>.CreateConstant(128, "Threshold");
+        public int Threshold { get; set; } = 128;
 
         /// <summary>
         /// 超过阈值时使用的最大值(0-255)
         /// </summary>
         [DisplayName("最大值")]
-        public ParamValue<int> MaxValue { get; set; } =
-            ParamValue<int>.CreateConstant(255, "MaxValue");
+        public int MaxValue { get; set; } = 255;
 
         /// <summary>
         /// 二值化方法（仅支持 Binary/BinaryInv）
         /// </summary>
         [DisplayName("二值化方法")]
-        public ParamValue<ThresholdType> Type { get; set; } =
-            ParamValue<ThresholdType>.CreateConstant(ThresholdType.Binary, "Type");
+        public ThresholdType Type { get; set; } = ThresholdType.Binary;
 
         #endregion
 
@@ -149,15 +191,13 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 预处理方法
         /// </summary>
         [DisplayName("预处理方法")]
-        public ParamValue<PreprocessMethod> PreprocessMethodValue { get; set; } =
-            ParamValue<PreprocessMethod>.CreateConstant(PreprocessMethod.None, "PreprocessMethodValue");
+        public PreprocessMethod PreprocessMethodValue { get; set; } = PreprocessMethod.None;
 
         /// <summary>
         /// 预处理滤波核大小（均值/高斯/中值滤波，奇数3~31）
         /// </summary>
         [DisplayName("滤波核大小")]
-        public ParamValue<int> PreprocessKernelSize { get; set; } =
-            ParamValue<int>.CreateConstant(5, "PreprocessKernelSize");
+        public int PreprocessKernelSize { get; set; } = 5;
 
         #endregion
 
@@ -177,36 +217,31 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 形态学操作类型
         /// </summary>
         [DisplayName("形态学操作")]
-        public ParamValue<MorphOperationType> MorphOperationValue { get; set; } =
-            ParamValue<MorphOperationType>.CreateConstant(MorphOperationType.Erosion, "MorphOperationValue");
+        public MorphOperationType MorphOperationValue { get; set; } = MorphOperationType.Erosion;
 
         /// <summary>
         /// 结构元素形状
         /// </summary>
         [DisplayName("结构元素形状")]
-        public ParamValue<MorphElementShapeType> MorphElementShapeValue { get; set; } =
-            ParamValue<MorphElementShapeType>.CreateConstant(MorphElementShapeType.Rectangle, "MorphElementShapeValue");
+        public MorphElementShapeType MorphElementShapeValue { get; set; } = MorphElementShapeType.Rectangle;
 
         /// <summary>
         /// 结构元素宽度(1~101)
         /// </summary>
         [DisplayName("结构元素宽度")]
-        public ParamValue<int> MorphElementWidth { get; set; } =
-            ParamValue<int>.CreateConstant(5, "MorphElementWidth");
+        public int MorphElementWidth { get; set; } = 5;
 
         /// <summary>
         /// 结构元素高度(1~101)
         /// </summary>
         [DisplayName("结构元素高度")]
-        public ParamValue<int> MorphElementHeight { get; set; } =
-            ParamValue<int>.CreateConstant(5, "MorphElementHeight");
+        public int MorphElementHeight { get; set; } = 5;
 
         /// <summary>
         /// 形态学迭代次数(1~10)
         /// </summary>
         [DisplayName("迭代次数")]
-        public ParamValue<int> MorphIterations { get; set; } =
-            ParamValue<int>.CreateConstant(1, "MorphIterations");
+        public int MorphIterations { get; set; } = 1;
 
         #endregion
 
@@ -293,6 +328,27 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// </summary>
         public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
 
+        /// <summary>
+        /// 是否限制后续结果、区域和显示统一使用的 Blob 数量。
+        /// </summary>
+        [DisplayName("启用查找数量筛选")]
+        public bool IsBlobCountFilterEnabled { get; set; } = true;
+
+        [DisplayName("查找数量")]
+        public int BlobCountLimit { get; set; } = 3000;
+
+        [DisplayName("Blob图像输出")]
+        public bool OutputBlobImage { get; set; } = true;
+
+        [DisplayName("二值化图像输出")]
+        public bool OutputBinaryImage { get; set; }
+
+        [DisplayName("轮廓输出")]
+        public bool OutputContours { get; set; }
+
+        public const int BlobCountLimitMin = 1;
+        public const int BlobCountLimitMax = 1000000;
+
         private static ResultPresentationConfig CreateResultPresentation()
         {
             var config = new ResultPresentationConfig();
@@ -309,8 +365,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
             config.Judgments.Add(new() { Key = "per-blob-circularity", Name = "每个Blob圆度", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 110 });
             config.Judgments.Add(new() { Key = "per-blob-rectangularity", Name = "每个Blob矩形度", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 120 });
             config.Graphics.Add(new() { Key = "blobs", Name = "外接矩形", Order = 10, Style = new() { Name = "Blobs", LineWidth = 2 } });
-            config.Graphics.Add(new() { Key = "centroids", Name = "质心", Order = 20, Style = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8 } });
-            config.Graphics.Add(new() { Key = "contours", Name = "轮廓", Order = 30, Style = new() { Name = "Contours", LineWidth = 1 } });
+            config.Graphics.Add(new() { Key = "centroids", Name = "质心", Order = 20, Style = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8, IsVisible = false } });
+            config.Graphics.Add(new() { Key = "contours", Name = "轮廓", Order = 30, Style = new() { Name = "Contours", LineWidth = 1, IsVisible = false } });
             config.Graphics.Add(new() { Key = "inspection-roi", Name = "检测区", Order = 40, Style = new() { Name = "InspectionRoi", LineWidth = 1, OkColor = Color.FromRgb(0, 0, 255) } });
             config.Graphics.Add(new() { Key = "mask-roi", Name = "屏蔽区", Order = 50, Style = new() { Name = "MaskRoi", LineWidth = 1, OkColor = Color.FromRgb(0xFF, 0xA5, 0x00) } });
             config.Texts.Add(new() { Key = "area", Name = "面积列表", Order = 10, Style = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 0, PositionY = 0 } });
@@ -323,8 +379,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// Blob排序方式
         /// </summary>
         [DisplayName("排序方式")]
-        public ParamValue<BlobSortMode> SortMode { get; set; } =
-            ParamValue<BlobSortMode>.CreateConstant(BlobSortMode.AreaDesc, "SortMode");
+        public BlobSortMode SortMode { get; set; } = BlobSortMode.AreaDesc;
 
         #endregion
 
@@ -371,21 +426,33 @@ namespace SunEyeVision.Tool.BlobAnalysis
             var result = base.Validate();
 
             // 阈值范围检查
-            if (Threshold.Value < ThresholdMin || Threshold.Value > ThresholdMax)
+            if (Threshold < ThresholdMin || Threshold > ThresholdMax)
             {
-                result.AddError($"阈值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {Threshold.Value}");
+                result.AddError($"阈值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {Threshold}");
             }
 
             // 最大值范围检查
-            if (MaxValue.Value < ThresholdMin || MaxValue.Value > ThresholdMax)
+            if (MaxValue < ThresholdMin || MaxValue > ThresholdMax)
             {
-                result.AddError($"最大值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {MaxValue.Value}");
+                result.AddError($"最大值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {MaxValue}");
+            }
+
+            // Halcon threshold 的上下限必须构成有效区间。此前只校验了两个端点的取值范围，
+            // 允许 Threshold > MaxValue，运行时会得到与界面配置不一致的分割结果。
+            if (Threshold > MaxValue)
+            {
+                result.AddError($"阈值下限({Threshold})不能大于阈值上限({MaxValue})");
+            }
+
+            if (BlobCountLimit < BlobCountLimitMin || BlobCountLimit > BlobCountLimitMax)
+            {
+                result.AddError($"查找数量必须在 {BlobCountLimitMin}~{BlobCountLimitMax} 范围内，当前值: {BlobCountLimit}");
             }
 
             // 预处理参数验证
-            if (IsPreprocessingEnabled && PreprocessMethodValue.Value != PreprocessMethod.None)
+            if (IsPreprocessingEnabled && PreprocessMethodValue != PreprocessMethod.None)
             {
-                int kernelSize = PreprocessKernelSize.Value;
+                int kernelSize = PreprocessKernelSize;
                 if (kernelSize < 3 || kernelSize > 31 || kernelSize % 2 == 0)
                 {
                     result.AddError($"滤波核大小必须为 3~31 之间的奇数，当前值: {kernelSize}");
@@ -395,17 +462,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
             // 形态学参数验证
             if (IsMorphologyEnabled)
             {
-                if (MorphElementWidth.Value < 1 || MorphElementWidth.Value > 101)
+                if (MorphElementWidth < 1 || MorphElementWidth > 101)
                 {
-                    result.AddError($"结构元素宽度必须在 1~101 范围内，当前值: {MorphElementWidth.Value}");
+                    result.AddError($"结构元素宽度必须在 1~101 范围内，当前值: {MorphElementWidth}");
                 }
-                if (MorphElementHeight.Value < 1 || MorphElementHeight.Value > 101)
+                if (MorphElementHeight < 1 || MorphElementHeight > 101)
                 {
-                    result.AddError($"结构元素高度必须在 1~101 范围内，当前值: {MorphElementHeight.Value}");
+                    result.AddError($"结构元素高度必须在 1~101 范围内，当前值: {MorphElementHeight}");
                 }
-                if (MorphIterations.Value < 1 || MorphIterations.Value > 10)
+                if (MorphIterations < 1 || MorphIterations > 10)
                 {
-                    result.AddError($"迭代次数必须在 1~10 范围内，当前值: {MorphIterations.Value}");
+                    result.AddError($"迭代次数必须在 1~10 范围内，当前值: {MorphIterations}");
                 }
             }
 

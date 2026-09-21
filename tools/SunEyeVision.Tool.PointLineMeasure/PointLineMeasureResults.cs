@@ -92,8 +92,8 @@ namespace SunEyeVision.Tool.PointLineMeasure
             double scale = matrix?.ScaleFactor() ?? 1.0;
 
             // ---- 元素2：引导线 + 矩形卡尺带 + 拟合线 ----
-            var g2Start = T(new Point(parameters.E2StartX.Value, parameters.E2StartY.Value));
-            var g2End = T(new Point(parameters.E2EndX.Value, parameters.E2EndY.Value));
+            var g2Start = T(new Point(parameters.E2StartX, parameters.E2StartY));
+            var g2End = T(new Point(parameters.E2EndX, parameters.E2EndY));
             double len2g = (g2End - g2Start).Length;
             if (len2g > 1e-6)
                 _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("guide-line-2"), g2Start, g2End, isOk);
@@ -101,9 +101,9 @@ namespace SunEyeVision.Tool.PointLineMeasure
             if (len2g > 1e-6)
             {
                 var bands = MeasureLineBands(g2Start, g2End,
-                    parameters.E2MeasureLength1.Value * scale,
-                    parameters.E2MeasureLength2.Value,
-                    parameters.E2NumMeasures.Value);
+                    parameters.E2MeasureLength1 * scale,
+                    parameters.E2MeasureLength2,
+                    parameters.E2NumMeasures);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliper-band-2"), bands, isClosed: false);
             }

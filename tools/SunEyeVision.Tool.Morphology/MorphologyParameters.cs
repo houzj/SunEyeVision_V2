@@ -43,8 +43,24 @@ namespace SunEyeVision.Tool.Morphology
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "Morphology"。
     /// </remarks>
     [JsonDerivedType(typeof(MorphologyParameters), "Morphology")]
-    public class MorphologyParameters : RoiParameters
+    public class MorphologyParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract
     {
+        public IReadOnlyList<InputSlotDescriptor> GetInputSlots() => new[]
+        {
+            new InputSlotDescriptor(nameof(InspectionRois), "检测区域", InputSlotKind.Collection,
+                ValueType: typeof(RoiCollection), Required: false),
+            new InputSlotDescriptor(nameof(MaskRois), "屏蔽区域", InputSlotKind.Collection,
+                ValueType: typeof(RoiCollection), Required: false)
+        };
+
+        public IReadOnlyList<RuntimeParameterDescriptor> GetRuntimeParameters() => new[]
+        {
+            new RuntimeParameterDescriptor(nameof(KernelWidth), "核宽度", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(KernelHeight), "核高度", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(Iterations), "迭代次数", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(IsPositionCorrectionEnabled), "启用位置修正", "Boolean", typeof(bool))
+        };
+
         #region 常量定义
 
         /// <summary>
@@ -75,36 +91,31 @@ namespace SunEyeVision.Tool.Morphology
         /// 形态学操作类型
         /// </summary>
         [DisplayName("形态学操作")]
-        public ParamValue<MorphOperation> Operation { get; set; } =
-            ParamValue<MorphOperation>.CreateConstant(MorphOperation.Open, "Operation");
+        public MorphOperation Operation { get; set; } = MorphOperation.Open;
 
         /// <summary>
         /// 结构元素形状
         /// </summary>
         [DisplayName("结构元素形状")]
-        public ParamValue<MorphKernelShape> KernelShape { get; set; } =
-            ParamValue<MorphKernelShape>.CreateConstant(MorphKernelShape.Rect, "KernelShape");
+        public MorphKernelShape KernelShape { get; set; } = MorphKernelShape.Rect;
 
         /// <summary>
         /// 结构元素宽度（像素）
         /// </summary>
         [DisplayName("核宽度")]
-        public ParamValue<int> KernelWidth { get; set; } =
-            ParamValue<int>.CreateConstant(3, "KernelWidth");
+        public int KernelWidth { get; set; } = 3;
 
         /// <summary>
         /// 结构元素高度（像素）
         /// </summary>
         [DisplayName("核高度")]
-        public ParamValue<int> KernelHeight { get; set; } =
-            ParamValue<int>.CreateConstant(3, "KernelHeight");
+        public int KernelHeight { get; set; } = 3;
 
         /// <summary>
         /// 迭代次数
         /// </summary>
         [DisplayName("迭代次数")]
-        public ParamValue<int> Iterations { get; set; } =
-            ParamValue<int>.CreateConstant(1, "Iterations");
+        public int Iterations { get; set; } = 1;
 
         #endregion
 
@@ -189,31 +200,31 @@ namespace SunEyeVision.Tool.Morphology
             var result = base.Validate();
 
             // 核宽度范围检查
-            if (KernelWidth.Value < KernelMin || KernelWidth.Value > KernelMax)
+            if (KernelWidth < KernelMin || KernelWidth > KernelMax)
             {
-                result.AddError($"核宽度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelWidth.Value}");
+                result.AddError($"核宽度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelWidth}");
             }
 
             // 核高度范围检查
-            if (KernelHeight.Value < KernelMin || KernelHeight.Value > KernelMax)
+            if (KernelHeight < KernelMin || KernelHeight > KernelMax)
             {
-                result.AddError($"核高度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelHeight.Value}");
+                result.AddError($"核高度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelHeight}");
             }
 
             // 核尺寸必须为奇数
-            if (KernelWidth.Value % 2 == 0)
+            if (KernelWidth % 2 == 0)
             {
-                result.AddError($"核宽度必须为奇数，当前值: {KernelWidth.Value}");
+                result.AddError($"核宽度必须为奇数，当前值: {KernelWidth}");
             }
-            if (KernelHeight.Value % 2 == 0)
+            if (KernelHeight % 2 == 0)
             {
-                result.AddError($"核高度必须为奇数，当前值: {KernelHeight.Value}");
+                result.AddError($"核高度必须为奇数，当前值: {KernelHeight}");
             }
 
             // 迭代次数范围检查
-            if (Iterations.Value < IterationsMin || Iterations.Value > IterationsMax)
+            if (Iterations < IterationsMin || Iterations > IterationsMax)
             {
-                result.AddError($"迭代次数必须在 {IterationsMin}-{IterationsMax} 范围内，当前值: {Iterations.Value}");
+                result.AddError($"迭代次数必须在 {IterationsMin}-{IterationsMax} 范围内，当前值: {Iterations}");
             }
 
             // 结果配置验证

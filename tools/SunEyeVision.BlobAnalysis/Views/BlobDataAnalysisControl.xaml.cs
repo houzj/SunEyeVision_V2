@@ -37,8 +37,8 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         /// <summary>最小面积（px²）</summary>
         public double MinArea => FilteredBlobs.Count > 0 ? FilteredBlobs.Min(b => b.Area) : 0;
 
-        /// <summary>实际阈值</summary>
-        public int ThresholdUsed { get; private set; }
+        /// <summary>阈值分割实际使用的范围</summary>
+        public string ThresholdRangeText { get; private set; } = "-";
 
         /// <summary>阈值类型</summary>
         public string ThresholdTypeText { get; private set; } = "-";
@@ -128,7 +128,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
 
                 // 更新统计摘要（字段）
                 TotalArea = blobResult.FilteredTotalArea;
-                ThresholdUsed = blobResult.ThresholdUsed;
+                ThresholdRangeText = $"{blobResult.ThresholdMinUsed}–{blobResult.ThresholdMaxUsed}";
                 ThresholdTypeText = blobResult.TypeUsed.ToString();
 
                 // Step 2: 数据就绪后，再通知所有计算属性重新计算
@@ -138,7 +138,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 NotifyPropertyChanged(nameof(AverageArea));
                 NotifyPropertyChanged(nameof(MaxArea));
                 NotifyPropertyChanged(nameof(MinArea));
-                NotifyPropertyChanged(nameof(ThresholdUsed));
+                NotifyPropertyChanged(nameof(ThresholdRangeText));
                 NotifyPropertyChanged(nameof(ThresholdTypeText));
 
                 PluginLogger.Success($"[OnResultUpdated] UI通知完成 | 实际Blob数={FilteredBlobs.Count} | 总面积={FilteredTotalArea:F0}", "BlobDataAnalysis");

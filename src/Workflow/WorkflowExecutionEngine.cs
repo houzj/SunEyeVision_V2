@@ -71,6 +71,11 @@ namespace SunEyeVision.Workflow
         public event EventHandler<NodeExecutionStatus>? NodeStatusChanged;
 
         /// <summary>
+        /// 节点完成时发布其结果。订阅者只观察运行事实，不能参与调度或改变执行结果。
+        /// </summary>
+        public event Action<WorkflowNodeBase, NodeExecutionResult>? NodeExecutionFinished;
+
+        /// <summary>
         /// 执行完成事件
         /// </summary>
         public event EventHandler<ExecutionResult>? ExecutionCompleted;
@@ -107,6 +112,10 @@ namespace SunEyeVision.Workflow
             WorkflowExecutionDependencyGraph dependencyGraph,
             IReadOnlyDictionary<string, ToolExecutionProfile> nodeExecutionProfiles)
         {
+            return await ExecuteWorkflowWithReadyQueue(
+                session, workflow, context, dependencyGraph, nodeExecutionProfiles);
+
+#pragma warning disable CS0162 // 保留旧分层实现，便于运行回归期间对照；实际入口已切到全局就绪队列。
             _logger.LogInfo($"[DEBUG ExecuteWorkflowWithParallelGroups] workflow.Id={workflow.Id}, workflow.Name={workflow.Name}, Nodes.Count={workflow.Nodes.Count}, Connections.Count={workflow.Connections.Count}");
 
             var result = new ExecutionResult();
@@ -271,6 +280,122 @@ namespace SunEyeVision.Workflow
 
             ExecutionCompleted?.Invoke(this, result);
             return result;
+#pragma warning restore CS0162
+        }
+
+        /// <summary>
+        /// 持续从整个依赖图选择已就绪节点，而不是等待一个拓扑层全部结束。
+        /// 这样相机等待、外部信号等待或耗时节点不会阻塞与其无依赖关系的后续节点。
+        /// </summary>
+        private async Task<ExecutionResult> ExecuteWorkflowWithReadyQueue(
+            WorkflowRunSession session,
+            Workflow workflow,
+            WorkflowContext context,
+            WorkflowExecutionDependencyGraph dependencyGraph,
+            IReadOnlyDictionary<string, ToolExecutionProfile> nodeExecutionProfiles)
+        {
+            var result = new ExecutionResult();
+            var order = workflow.Nodes.Select(node => node.Id).ToList();
+            var pending = new HashSet<string>(order, StringComparer.Ordinal);
+            var running = new List<(WorkflowNodeBase Node, IDisposable Lease, Task<NodeExecutionResult> Task)>();
+            var leases = new WorkflowResourceLeaseManager();
+            var pruned = new HashSet<string>(StringComparer.Ordinal);
+            var maxConcurrency = Math.Max(1, Math.Min(4, Environment.ProcessorCount - 1));
+
+            try
+            {
+                while (pending.Count > 0 || running.Count > 0)
+                {
+                    await session.WaitIfPausedAsync();
+                    context.CancellationToken.ThrowIfCancellationRequested();
+
+                    // 条件分支已剪掉的节点、禁用节点、或失败前驱的消费者均不进入执行队列。
+                    foreach (var nodeId in pending.Where(id =>
+                                 pruned.Contains(id) ||
+                                 !workflow.Nodes.First(node => node.Id == id).IsEnabled ||
+                                 dependencyGraph.GetPredecessors(id).Any(parent =>
+                                     context.GetNodeStatus(parent) is NodeStatus.Failed or NodeStatus.Skipped)).ToList())
+                    {
+                        pending.Remove(nodeId);
+                        context.UpdateNodeStatus(nodeId, NodeStatus.Skipped);
+                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = nodeId, Status = NodeStatus.Skipped });
+                    }
+
+                    var madeProgress = true;
+                    while (running.Count < maxConcurrency && madeProgress)
+                    {
+                        madeProgress = false;
+                        foreach (var nodeId in order.Where(pending.Contains).ToList())
+                        {
+                            if (running.Count >= maxConcurrency)
+                                break;
+                            if (!dependencyGraph.GetPredecessors(nodeId)
+                                    .All(parent => context.GetNodeStatus(parent) == NodeStatus.Completed))
+                                continue;
+
+                            var node = workflow.Nodes.First(candidate => candidate.Id == nodeId);
+                            var profile = nodeExecutionProfiles.TryGetValue(nodeId, out var declared)
+                                ? declared : ToolExecutionProfile.LegacyExclusive;
+                            var hasExclusive = running.Any(item =>
+                                nodeExecutionProfiles.TryGetValue(item.Node.Id, out var active) &&
+                                active.ConcurrencyKind == ToolConcurrencyKind.WorkflowExclusive);
+                            if ((profile.ConcurrencyKind == ToolConcurrencyKind.WorkflowExclusive && running.Count > 0) ||
+                                hasExclusive ||
+                                !leases.TryAcquire(workflow.Id, node.Id, profile, out var lease))
+                                continue;
+
+                            pending.Remove(nodeId);
+                            PrepareNodeExecution(nodeId, dependencyGraph.GetPredecessors(nodeId));
+                            context.UpdateNodeStatus(nodeId, NodeStatus.Running);
+                            NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = nodeId, Status = NodeStatus.Running });
+                            running.Add((node, lease, Task.Run(() => ExecuteNode(node, context, workflow))));
+                            madeProgress = true;
+                        }
+                    }
+
+                    if (running.Count == 0)
+                    {
+                        if (pending.Count == 0)
+                            break;
+                        throw new InvalidOperationException("全局就绪队列中不存在可派发节点；请检查依赖、资源声明或节点状态。");
+                    }
+
+                    await Task.WhenAny(running.Select(item => item.Task));
+                    foreach (var completed in running.Where(item => item.Task.IsCompleted).ToList())
+                    {
+                        running.Remove(completed);
+                        completed.Lease.Dispose();
+                        var nodeResult = await completed.Task;
+                        context.SetNodeResult(completed.Node.Id, nodeResult);
+                        NodeExecutionFinished?.Invoke(completed.Node, nodeResult);
+                        var status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed;
+                        context.UpdateNodeStatus(completed.Node.Id, status);
+                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = completed.Node.Id, Status = status });
+                        if (!nodeResult.Success)
+                            result.AddError(nodeResult.ErrorMessages?.FirstOrDefault() ?? "执行失败", completed.Node.Id);
+
+                        foreach (var (controlNodeId, targets) in TryExtractControlSignals(
+                                     workflow, new List<string> { completed.Node.Id }, context))
+                        {
+                            var protectedNodes = ComputeProtectedNodes(workflow, targets);
+                            pruned.UnionWith(ComputePrunedNodes(workflow, controlNodeId, targets, protectedNodes, pruned));
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                foreach (var item in running)
+                    item.Lease.Dispose();
+            }
+
+            var allResults = context.GetAllNodeResults().ToDictionary(pair => pair.Key, pair => pair.Value);
+            result.NodeResults = allResults;
+            result.Success = result.Errors.Count == 0 && allResults.Values.All(node => node.Success);
+            result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;
+            result.ExecutionTime = DateTime.Now - context.ExecutionStartTime;
+            ExecutionCompleted?.Invoke(this, result);
+            return result;
         }
 
         /// <summary>
@@ -345,6 +470,7 @@ namespace SunEyeVision.Workflow
                     completed.Lease.Dispose();
                     var nodeResult = await completed.Task;
                     context.SetNodeResult(completed.Node.Id, nodeResult);
+                    NodeExecutionFinished?.Invoke(completed.Node, nodeResult);
                     var status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed;
                     context.UpdateNodeStatus(completed.Node.Id, status);
                     NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = completed.Node.Id, Status = status });
@@ -467,16 +593,16 @@ namespace SunEyeVision.Workflow
                 return ExecutionResult.CreateFailure($"工作流不存在: {workflowId}");
             }
 
-            // 首次进入时检测循环依赖（递归路径跳过此检查，由外层保证无循环）
-            if (!isSubworkflow)
+            // 在生成运行快照前一次性校验定义。执行器不接收不完整或分裂的工作流对象。
+            var definitionErrors = WorkflowDefinitionValidator.Validate(
+                sourceWorkflow,
+                _workflowEngine.GetWorkflowById);
+            if (definitionErrors.Count > 0)
             {
-                var cycles = sourceWorkflow.DetectCycles();
-                if (cycles.Count > 0)
-                {
-                    var cycleMsg = $"检测到循环依赖: {string.Join("; ", cycles)}";
-                    _logger.LogError(cycleMsg);
-                    return ExecutionResult.CreateFailure(cycleMsg);
-                }
+                var definitionError =
+                    $"工作流定义校验失败: {string.Join("; ", definitionErrors)}";
+                _logger.LogError(definitionError);
+                return ExecutionResult.CreateFailure(definitionError);
             }
 
             // 先构建本次运行的冻结计划。后续执行只读取计划，不再直接消费 UI 编辑对象。

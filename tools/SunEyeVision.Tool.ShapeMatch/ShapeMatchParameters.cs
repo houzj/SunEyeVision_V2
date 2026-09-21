@@ -18,63 +18,51 @@ public class ShapeMatchParameters : RoiParameters
 
     /// <summary>最小匹配分数（0~1）</summary>
     [DisplayName("最小匹配分数")]
-    public ParamValue<double> MinMatchScore { get; set; } =
-        ParamValue<double>.CreateConstant(0.5, "MinMatchScore");
+    public double MinMatchScore { get; set; } = 0.5;
 
     /// <summary>最大匹配数量</summary>
     [DisplayName("最大匹配数量")]
-    public ParamValue<int> MaxMatchCount { get; set; } =
-        ParamValue<int>.CreateConstant(1, "MaxMatchCount");
+    public int MaxMatchCount { get; set; } = 1;
 
     /// <summary>匹配超时（毫秒）</summary>
     [DisplayName("匹配超时(毫秒)")]
-    public ParamValue<int> MatchTimeoutMs { get; set; } =
-        ParamValue<int>.CreateConstant(30000, "MatchTimeoutMs");
+    public int MatchTimeoutMs { get; set; } = 30000;
 
     /// <summary>角度范围起始值（度）</summary>
     [DisplayName("角度起始值")]
-    public ParamValue<double> AngleStart { get; set; } =
-        ParamValue<double>.CreateConstant(-45.0, "AngleStart");
+    public double AngleStart { get; set; } = -45.0;
 
     /// <summary>角度范围终止值（度）</summary>
     [DisplayName("角度终止值")]
-    public ParamValue<double> AngleEnd { get; set; } =
-        ParamValue<double>.CreateConstant(45.0, "AngleEnd");
+    public double AngleEnd { get; set; } = 45.0;
 
     /// <summary>缩放范围最小值</summary>
     [DisplayName("缩放最小值")]
-    public ParamValue<double> ScaleMin { get; set; } =
-        ParamValue<double>.CreateConstant(0.8, "ScaleMin");
+    public double ScaleMin { get; set; } = 0.8;
 
     /// <summary>缩放范围最大值</summary>
     [DisplayName("缩放最大值")]
-    public ParamValue<double> ScaleMax { get; set; } =
-        ParamValue<double>.CreateConstant(1.2, "ScaleMax");
+    public double ScaleMax { get; set; } = 1.2;
 
     /// <summary>最大返回匹配数（Halcon NumMatches）</summary>
     [DisplayName("最大返回数")]
-    public ParamValue<int> NumMatches { get; set; } =
-        ParamValue<int>.CreateConstant(1, "NumMatches");
+    public int NumMatches { get; set; } = 1;
 
     /// <summary>搜索起始层（0=使用模型全层级，>0 表示从该层开始粗定位）</summary>
     [DisplayName("搜索起始层")]
-    public ParamValue<int> SearchLevelStart { get; set; } =
-        ParamValue<int>.CreateConstant(0, "SearchLevelStart");
+    public int SearchLevelStart { get; set; } = 0;
 
     /// <summary>搜索结束层（0=全分辨率，>=1 表示搜索到该层结束细定位）</summary>
     [DisplayName("搜索结束层")]
-    public ParamValue<int> SearchLevelEnd { get; set; } =
-        ParamValue<int>.CreateConstant(1, "SearchLevelEnd");
+    public int SearchLevelEnd { get; set; } = 1;
 
     /// <summary>NMS 最大重叠率 0~1（Halcon MaxOverlap）</summary>
     [DisplayName("最大重叠率")]
-    public ParamValue<double> MaxOverlap { get; set; } =
-        ParamValue<double>.CreateConstant(0.5, "MaxOverlap");
+    public double MaxOverlap { get; set; } = 0.5;
 
     /// <summary>贪婪度 0~1（Halcon Greediness）</summary>
     [DisplayName("贪婪度")]
-    public ParamValue<double> Greediness { get; set; } =
-        ParamValue<double>.CreateConstant(0.9, "Greediness");
+    public double Greediness { get; set; } = 0.9;
 
     #endregion
 
@@ -82,8 +70,7 @@ public class ShapeMatchParameters : RoiParameters
 
     /// <summary>亚像素模式</summary>
     [DisplayName("亚像素模式")]
-    public ParamValue<SubPixelMode> SubPixelMode { get; set; } =
-        ParamValue<SubPixelMode>.CreateConstant(Models.SubPixelMode.LeastSquares, "SubPixelMode");
+    public SubPixelMode SubPixelMode { get; set; } = Models.SubPixelMode.LeastSquares;
 
     #endregion
 
@@ -91,8 +78,7 @@ public class ShapeMatchParameters : RoiParameters
 
     /// <summary>排序方式（默认按分数降序：BestMatch=[0] 必须是最高分，见 M8）</summary>
     [DisplayName("排序方式")]
-    public ParamValue<SortMode> SortMode { get; set; } =
-        ParamValue<SortMode>.CreateConstant(Models.SortMode.ScoreDescending, "SortMode");
+    public SortMode SortMode { get; set; } = Models.SortMode.ScoreDescending;
 
     #endregion
 
@@ -186,29 +172,29 @@ public class ShapeMatchParameters : RoiParameters
     {
         var result = base.Validate();
 
-        if (MinMatchScore.Value < 0 || MinMatchScore.Value > 1.0)
-            result.AddError($"最小匹配分数必须在 0~1 范围内，当前值: {MinMatchScore.Value}");
+        if (MinMatchScore < 0 || MinMatchScore > 1.0)
+            result.AddError($"最小匹配分数必须在 0~1 范围内，当前值: {MinMatchScore}");
 
-        if (MaxMatchCount.Value < 1)
-            result.AddError($"最大匹配数量必须大于0，当前值: {MaxMatchCount.Value}");
+        if (MaxMatchCount < 1)
+            result.AddError($"最大匹配数量必须大于0，当前值: {MaxMatchCount}");
 
-        if (MatchTimeoutMs.Value <= 0)
-            result.AddError($"匹配超时必须大于0，当前值: {MatchTimeoutMs.Value}ms");
+        if (MatchTimeoutMs <= 0)
+            result.AddError($"匹配超时必须大于0，当前值: {MatchTimeoutMs}ms");
 
-        if (AngleStart.Value > AngleEnd.Value)
-            result.AddError($"角度范围无效: 起始值({AngleStart.Value})不能大于终止值({AngleEnd.Value})");
+        if (AngleStart > AngleEnd)
+            result.AddError($"角度范围无效: 起始值({AngleStart})不能大于终止值({AngleEnd})");
 
-        if (ScaleMin.Value > ScaleMax.Value)
-            result.AddError($"缩放范围无效: 最小值({ScaleMin.Value})不能大于最大值({ScaleMax.Value})");
+        if (ScaleMin > ScaleMax)
+            result.AddError($"缩放范围无效: 最小值({ScaleMin})不能大于最大值({ScaleMax})");
 
-        if (NumMatches.Value < 1)
-            result.AddError($"NumMatches({NumMatches.Value}) 必须 >= 1");
+        if (NumMatches < 1)
+            result.AddError($"NumMatches({NumMatches}) 必须 >= 1");
 
-        if (MaxOverlap.Value < 0 || MaxOverlap.Value > 1)
-            result.AddError($"MaxOverlap({MaxOverlap.Value}) 必须在 0~1 范围内");
+        if (MaxOverlap < 0 || MaxOverlap > 1)
+            result.AddError($"MaxOverlap({MaxOverlap}) 必须在 0~1 范围内");
 
-        if (Greediness.Value < 0 || Greediness.Value > 1)
-            result.AddError($"Greediness({Greediness.Value}) 必须在 0~1 范围内");
+        if (Greediness < 0 || Greediness > 1)
+            result.AddError($"Greediness({Greediness}) 必须在 0~1 范围内");
 
         return result;
     }

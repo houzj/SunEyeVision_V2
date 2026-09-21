@@ -50,8 +50,8 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="4" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="阈值: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding ThresholdUsed, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries5Brush}}"/>
+                    <TextBlock Text="阈值范围: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding ThresholdRangeText, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries5Brush}}"/>
                 </StackPanel>
 
                 <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{Binding ThresholdTypeText, Mode=OneWay}" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeriesMutedBrush}}" FontSize="11"/>

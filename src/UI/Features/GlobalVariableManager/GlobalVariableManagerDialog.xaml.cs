@@ -357,4 +357,16 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             return null;
         }
     }
+
+    /// <summary>全局变量类型词汇本地化转换器。</summary>
+    public sealed class GlobalVariableTypeTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is string type && SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ChineseNames.TryGetValue(type, out var name)
+                ? name
+                : value?.ToString() ?? string.Empty;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => Binding.DoNothing;
+    }
 }

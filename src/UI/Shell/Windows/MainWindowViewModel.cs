@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Input;
@@ -97,9 +98,12 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 工作流引擎
         private readonly WorkflowEngine _workflowEngine;
+        private readonly WorkflowDefinitionService _workflowDefinitions;
 
         /// <summary>公开工作流引擎访问（供 MainWindow code-behind 等使用）</summary>
         public WorkflowEngine WorkflowEngine => _workflowEngine;
+        /// <summary>工作流定义的统一注册、创建和方案挂接入口。</summary>
+        public WorkflowDefinitionService WorkflowDefinitionService => _workflowDefinitions;
         private readonly ILogger _logger;
 
         // 执行管理
@@ -838,6 +842,7 @@ SplitterPosition = position;
 
             // 初始化状态栏子 VM（就近绑定底部状态栏）
             _statusBar = new SunEyeVision.UI.Shell.Controls.StatusBarViewModel(this);
+            _statusBar.ShowExecutionSnapshotRequested = ShowExecutionSnapshot;
 
             // 初始化顶部标题栏子 VM（就近绑定顶部菜单+工具栏）
             _topBar = new SunEyeVision.UI.Shell.Controls.ShellTopBarViewModel(this);
@@ -848,6 +853,7 @@ SplitterPosition = position;
             // 初始化工作流引擎
             _logger = VisionLogger.Instance;
             _workflowEngine = new WorkflowEngine(_logger);
+            _workflowDefinitions = new WorkflowDefinitionService(_workflowEngine);
 
             // 初始化执行管理器（传入共享的 WorkflowEngine，子程序工作流已注册在其中）
             _executionManager = new Services.Workflow.WorkflowExecutionManager(new SunEyeVision.UI.Services.Interaction.DefaultInputProvider(), _workflowEngine, _runtimeInputSnapshots);
@@ -870,6 +876,7 @@ SplitterPosition = position;
             _executionManager.WorkflowExecutionError += OnWorkflowExecutionError;
             _executionManager.WorkflowExecutionProgress += OnWorkflowExecutionProgress;
             _executionManager.NodeExecutionCompleted += OnNodeExecutionCompleted;
+            _executionManager.ExecutionSnapshotUpdated += OnExecutionSnapshotUpdated;
             // 连续执行每轮开始：自动切换开启时推进输入图并刷新运行时参数
 
             // 初始化当前画布类型
@@ -886,6 +893,7 @@ SplitterPosition = position;
             {
                 tab.NameCommitted -= OnTabNameCommitted;
                 tab.NameCommitted += OnTabNameCommitted;
+                _executionManager.EnsureExecutionSnapshot(tab.RootWorkflowId, tab.Name, tab.WorkflowNodes);
             }
 
             // 订阅工作流状态变化
@@ -977,6 +985,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnSelectedTabChanged(object? sender, EventArgs e)
         {
+            RefreshStatusBarExecutionSnapshot();
             // 更新命令管理器
             SubscribeToCurrentCommandManager();
 
@@ -1002,8 +1011,16 @@ SplitterPosition = position;
                 // 如果引擎中尚未注册该工作流，自动创建（例如新建 Tab 时）
                 if (_workflowEngine.GetWorkflowById(selectedId) == null)
                 {
-                    _workflowEngine.CreateWorkflow(selectedId, selectedName);
+                    var createdWorkflow = _workflowDefinitions.GetOrCreate(selectedId, selectedName);
+                    AttachTabToWorkflowDefinition(WorkflowTabViewModel.SelectedTab, createdWorkflow);
                     _logger?.LogInfo($"OnSelectedTabChanged: Auto-created workflow in engine: {selectedName} (ID: {selectedId})");
+                }
+                else
+                {
+                    // 标签页切换只允许绑定到已有定义，不能让 UI 保留另一份节点/连接集合。
+                    AttachTabToWorkflowDefinition(
+                        WorkflowTabViewModel.SelectedTab,
+                        _workflowEngine.GetWorkflowById(selectedId)!);
                 }
 
                 // 设置当前工作流（引擎是SSOT，无需额外同步）
@@ -1057,7 +1074,7 @@ SplitterPosition = position;
             var engineWorkflow = _workflowEngine.GetWorkflowById(addedTab.Id);
             if (engineWorkflow == null)
             {
-                engineWorkflow = _workflowEngine.CreateWorkflow(addedTab.Id, addedTab.Name);
+                engineWorkflow = _workflowDefinitions.GetOrCreate(addedTab.Id, addedTab.Name);
             }
             else if (engineWorkflow.Name != addedTab.Name)
             {
@@ -1065,8 +1082,59 @@ SplitterPosition = position;
                 engineWorkflow.Name = addedTab.Name;
             }
 
-            // 2. 共享同一实例到 solution.Workflows（不再 new 一个新 Workflow）
+            // 2. 先把 Tab 接到引擎定义的同一份节点/连接集合。
+            //    新建 Tab 可能已经在 UI 集合中添加了节点，此时迁移一次后立即切换为共享集合。
+            AttachTabToWorkflowDefinition(addedTab, engineWorkflow);
+
+            // 3. 共享同一实例到 solution.Workflows（不再 new 一个新 Workflow）
             SyncWorkflowToSolution(engineWorkflow, addedTab.Name);
+        }
+
+        /// <summary>
+        /// 将 Tab 绑定到唯一的工作流定义集合。
+        /// 新建 Tab 的节点可能先进入了 UI 临时集合，因此在首次绑定时迁移到引擎定义；
+        /// 绑定完成后，后续节点和连接只能通过同一集合修改，避免 UI/Engine 分裂。
+        /// </summary>
+        private void AttachTabToWorkflowDefinition(
+            WorkflowTabViewModel? tab,
+            SunEyeVision.Workflow.Workflow workflow)
+        {
+            if (tab == null || workflow == null)
+                return;
+
+            if (!ReferenceEquals(tab.WorkflowNodes, workflow.Nodes))
+            {
+                if (workflow.Nodes.Count == 0 && tab.WorkflowNodes.Count > 0)
+                {
+                    foreach (var node in tab.WorkflowNodes.ToList())
+                        workflow.AddNode(node);
+                }
+
+                tab.SetNodes(workflow.Nodes);
+            }
+
+            if (!ReferenceEquals(tab.WorkflowConnections, workflow.Connections))
+            {
+                if (workflow.Connections.Count == 0 && tab.WorkflowConnections.Count > 0)
+                {
+                    foreach (var connection in tab.WorkflowConnections.ToList())
+                    {
+                        if (workflow.Nodes.Any(node => node.Id == connection.SourceNodeId) &&
+                            workflow.Nodes.Any(node => node.Id == connection.TargetNodeId))
+                        {
+                            workflow.AddConnection(connection);
+                        }
+                    }
+                }
+
+                tab.SetConnections(workflow.Connections);
+            }
+
+            _logger?.LogInfo(
+                $"工作流定义绑定完成: workflow={workflow.Name}({workflow.Id}), " +
+                $"nodes={workflow.Nodes.Count}, connections={workflow.Connections.Count}, " +
+                $"sharedNodes={ReferenceEquals(tab.WorkflowNodes, workflow.Nodes)}, " +
+                $"sharedConnections={ReferenceEquals(tab.WorkflowConnections, workflow.Connections)}");
         }
 
         /// <summary>
@@ -1081,7 +1149,7 @@ SplitterPosition = position;
             var solution = solutionManager?.CurrentSolution;
             if (solution != null && !solution.Workflows.Any(w => w.Id == workflow.Id))
             {
-                solution.Workflows.Add(workflow);
+                _workflowDefinitions.AttachToSolution(solution, workflow);
                 var name = displayName ?? workflow.Name;
                 _logger?.LogInfo(
                     $"SyncWorkflowToSolution: {name} (ID: {workflow.Id}, IsSubroutine: {workflow.IsSubroutine})");
@@ -1100,7 +1168,7 @@ SplitterPosition = position;
             var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             if (solutionManager?.CurrentSolution != null)
             {
-                solutionManager.CurrentSolution.RemoveWorkflow(deletedTab.Id);
+                _workflowDefinitions.DetachFromSolution(solutionManager.CurrentSolution, deletedTab.Id);
                 LogSuccess($"工作流删除事件处理：已从引擎和解决方案中移除工作流: {deletedTab.Name}");
             }
 
@@ -1137,6 +1205,8 @@ SplitterPosition = position;
                     {
                         tab.NameCommitted -= OnTabNameCommitted;
                         tab.NameCommitted += OnTabNameCommitted;
+                        // 快照属于工作流 UI 状态的一部分，创建标签时即建立，而不是首次运行后才生成。
+                        _executionManager?.EnsureExecutionSnapshot(tab.RootWorkflowId, tab.Name, tab.WorkflowNodes);
                     }
                 }
             }
@@ -1625,11 +1695,10 @@ SplitterPosition = position;
                     workflow = _workflowEngine.GetWorkflowById(tab.Id);
                     if (workflow == null)
                     {
-                        workflow = new SunEyeVision.Workflow.Workflow(tab.Id, tab.Name);
-                        _logger?.LogWarning(
-                            $"[SaveSolutionData] 回退创建新 Workflow 实例（引擎中未找到）: {tab.Name} (ID: {tab.Id})");
+                        throw new InvalidOperationException(
+                            $"SaveSolutionData: 工作流定义未注册到 WorkflowEngine: {tab.Name} ({tab.Id})");
                     }
-                    solution.Workflows.Add(workflow);
+                    _workflowDefinitions.AttachToSolution(solution, workflow);
                 }
                 else
                 {
@@ -1637,6 +1706,21 @@ SplitterPosition = position;
                     if (workflow.Name != tab.Name)
                     {
                         workflow.Name = tab.Name;
+                    }
+
+                    // 方案中若残留了同 ID 的旧实例，立即替换为引擎定义实例。
+                    // 继续在旧实例上同步会重新引入 UI/Engine/Solution 三份事实源。
+                    var engineDefinition = _workflowEngine.GetWorkflowById(tab.Id);
+                    if (engineDefinition == null)
+                        throw new InvalidOperationException(
+                            $"SaveSolutionData: 工作流定义未注册到 WorkflowEngine: {tab.Name} ({tab.Id})");
+                    if (!ReferenceEquals(workflow, engineDefinition))
+                    {
+                        var workflowIndex = solution.Workflows.IndexOf(workflow);
+                        if (workflowIndex >= 0)
+                            _workflowDefinitions.AttachToSolution(solution, engineDefinition);
+                            solution.Workflows.Remove(workflow);
+                        workflow = engineDefinition;
                     }
                 }
 
@@ -1647,12 +1731,43 @@ SplitterPosition = position;
                 if (rootWorkflow == null)
                     throw new InvalidOperationException($"SaveSolutionData: 引擎中未找到根工作流 (ID: {tab.Id})");
 
+                // 调试窗口绑定写入的是打开窗口所持有的 UI 节点。保存前按稳定节点
+                // ID 显式同步到引擎节点，避免 UI/引擎实例不一致时 ParamSettings
+                // 只留在内存中的 UI 对象，重启后绑定退回常量。
+                foreach (var uiNode in tab.WorkflowNodes)
+                {
+                    if (uiNode is WorkflowNode uiDiagnosticNode)
+                        LogNodeStorageIdentity(uiDiagnosticNode, "方案保存前");
+
+                    var engineNode = rootWorkflow.Nodes.FirstOrDefault(n => n.Id == uiNode.Id);
+                    if (engineNode == null || ReferenceEquals(engineNode, uiNode))
+                        continue;
+
+                    engineNode.ParamSettings = uiNode.ParamSettings;
+                    var bindingCount = uiNode.ParamSettings?.Count ?? 0;
+                    if (bindingCount > 0)
+                    {
+                        _logger?.LogInfo(
+                            $"[绑定持久化] 保存前同步节点={uiNode.Id} 参数绑定数={bindingCount}",
+                            "MainWindowViewModel");
+                    }
+                }
+
                 foreach (var node in rootWorkflow.Nodes)
                 {
                     if (!workflow.Nodes.Contains(node))
                     {
                         workflow.Nodes.Add(node);
                     }
+                }
+
+                // 最终序列化对象也按 ID 对齐一次，确保 Solution 中保留的是最新
+                // 的 ParamSettings，而不是旧的同 ID 节点实例。
+                foreach (var persistedNode in workflow.Nodes)
+                {
+                    var sourceNode = rootWorkflow.Nodes.FirstOrDefault(n => n.Id == persistedNode.Id);
+                    if (sourceNode != null && !ReferenceEquals(sourceNode, persistedNode))
+                        persistedNode.ParamSettings = sourceNode.ParamSettings;
                 }
 
                 // 移除 Solution 中已从引擎根工作流删除的节点
@@ -1675,7 +1790,7 @@ SplitterPosition = position;
                 .ToList();
             foreach (var subWf in subWorkflows)
             {
-                solution.Workflows.Add(subWf);
+                _workflowDefinitions.AttachToSolution(solution, subWf);
                 LogInfo($"添加子程序工作流到 Solution: {subWf.Name} (ID: {subWf.Id})");
             }
 
@@ -1763,7 +1878,7 @@ SplitterPosition = position;
 
             // 将工作流注册到 WorkflowEngine.Workflows 字典
             // 确保节点可以获取父节点数据
-            _workflowEngine.RegisterWorkflow(workflow);
+            _workflowDefinitions.Register(workflow);
             LogInfo($"工作流已注册到 WorkflowEngine: {workflow.Name} (ID: {workflow.Id})");
 
             // 添加到标签页视图模型
@@ -1838,7 +1953,7 @@ SplitterPosition = position;
                     if (workflow.IsSubroutine)
                     {
                         // 子程序工作流：只注册到引擎，不创建 Tab
-                        _workflowEngine.RegisterWorkflow(workflow);
+                        _workflowDefinitions.Register(workflow);
                         LogInfo($"注册子程序工作流到引擎: {workflow.Name} (ID: {workflow.Id})");
                     }
                     else
@@ -2169,6 +2284,17 @@ SplitterPosition = position;
 
             AddLog($"➕ 添加节点: {node.Name} (ID={node.Id}, 类型={node.ToolType})");
 
+            var definition = _workflowDefinitions.GetRequired(
+                WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
+            if (!ReferenceEquals(WorkflowTabViewModel.SelectedTab.WorkflowNodes, definition.Nodes) ||
+                !ReferenceEquals(WorkflowTabViewModel.SelectedTab.WorkflowConnections, definition.Connections))
+            {
+                throw new InvalidOperationException(
+                    $"工作流定义集合未绑定: {definition.Name} ({definition.Id})。请先完成 Tab 绑定。");
+            }
+            if (definition.Nodes.Any(existing => existing.Id == node.Id))
+                throw new InvalidOperationException($"工作流中已存在节点: {node.Id}");
+
             // ★ 子程序节点：自动创建子工作流并关联（用户无需手动配置）
             if (string.Equals(node.ToolType, "Subroutine", StringComparison.OrdinalIgnoreCase) &&
                 string.IsNullOrEmpty(uiNode.SubroutineId))
@@ -2177,8 +2303,7 @@ SplitterPosition = position;
                 AddLog($"🆕 自动创建子程序工作流: {uiNode.DispName} (ID: {uiNode.SubroutineId})");
             }
 
-            // 添加到节点集合。WorkflowNodes 与引擎 Workflow.Nodes 为同一集合实例（单一数据源），
-            // 节点经 AddNodeCommand 加入后引擎立即可见，无需再手动同步。
+            // 节点集合就是工作流定义集合；命令负责集合修改和撤销记录。
             var command = new AppCommands.AddNodeCommand(WorkflowTabViewModel.SelectedTab.WorkflowNodes, uiNode);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
@@ -2249,8 +2374,14 @@ SplitterPosition = position;
                 c.SourcePort == connection.SourcePort &&
                 c.TargetPort == connection.TargetPort);
 
-            // 获取引擎工作流（同步用）
-            var engineWf = _workflowEngine.GetWorkflow(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
+            // 通过定义服务取得唯一工作流定义，并确认 Tab 没有脱离定义集合。
+            var engineWf = _workflowDefinitions.GetRequired(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
+            if (!ReferenceEquals(connections, engineWf.Connections) ||
+                !ReferenceEquals(WorkflowTabViewModel.SelectedTab.WorkflowNodes, engineWf.Nodes))
+            {
+                throw new InvalidOperationException(
+                    $"工作流定义集合未绑定: {engineWf.Name} ({engineWf.Id})。请先完成 Tab 绑定。");
+            }
 
             if (existingConnection != null)
             {
@@ -2262,13 +2393,7 @@ SplitterPosition = position;
                 var command = new AppCommands.ReplaceConnectionCommand(connections, existingConnection, connection);
                 WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
-                // 同步到引擎工作流
-                if (engineWf != null)
-                {
-                    engineWf.Connections.Remove(existingConnection);
-                    if (!engineWf.Connections.Contains(connection))
-                        engineWf.Connections.Add(connection);
-                }
+                // Tab 与引擎共享同一连接集合，命令已同时更新定义。
             }
             else
             {
@@ -2280,11 +2405,7 @@ SplitterPosition = position;
                 var command = new AppCommands.AddConnectionCommand(connections, connection);
                 WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
-                // 同步到引擎工作流
-                if (engineWf != null && !engineWf.Connections.Contains(connection))
-                {
-                    engineWf.Connections.Add(connection);
-                }
+                // Tab 与引擎共享同一连接集合，命令已同时更新定义。
             }
 
             // 连线建立后自动绑定 ImageSource（所见即所得）
@@ -2518,19 +2639,7 @@ SplitterPosition = position;
                 selectedConnections);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
-            // 同步删除到引擎工作流
-            var engineWf = _workflowEngine.GetWorkflow(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
-            if (engineWf != null)
-            {
-                foreach (var conn in allAffectedConnections)
-                {
-                    engineWf.Connections.Remove(conn);
-                }
-                foreach (var node in selectedNodes)
-                {
-                    engineWf.Nodes.Remove(node);
-                }
-            }
+            // Tab 与引擎共享同一份定义集合，命令执行后引擎已同步，不再重复删除。
 
             // 级联清理：清理被删节点关联的全局变量绑定
             foreach (var node in selectedNodes)
@@ -2589,6 +2698,7 @@ SplitterPosition = position;
 
             try
             {
+                LogNodeStorageIdentity(node, "打开调试窗口");
                 var mainImageControl = GetMainImageControl?.Invoke();
                 var context = new NodeOpenContext(Application.Current.MainWindow, mainImageControl);
                 var decisionChain = new NodeOpenDecisionChain();
@@ -2786,7 +2896,7 @@ SplitterPosition = position;
             var subroutineId = Guid.NewGuid().ToString();
 
             // 注册到工作流引擎
-            var workflow = _workflowEngine.CreateWorkflow(subroutineId, node.Name);
+            var workflow = _workflowDefinitions.GetOrCreate(subroutineId, node.Name);
             workflow.IsSubroutine = true;
 
             // ★ 使用 SubroutineId 属性（不再是 ExtraData 弱类型字典）
@@ -3525,6 +3635,14 @@ SplitterPosition = position;
                     _workflowDsqsCache[workflowId] = queryService;
                 }
 
+                // 数据源服务按工作流缓存，但全局变量是方案级运行态数据，不能只在
+                // 创建服务时复制一次。否则调试窗口先打开、后设置/修改全局变量时，
+                // 立即执行拿不到 __GlobalVars__，必须先跑一遍工作流才会出现结果。
+                queryService.SetGlobalVariables(
+                    SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager
+                        .CurrentSolution?.GlobalVariables?
+                        .ToDictionary(variable => variable.Name, variable => variable.Value));
+
                 return queryService;
             }
             catch (Exception ex)
@@ -3638,6 +3756,12 @@ SplitterPosition = position;
             }
 
             var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider);
+
+            // 调试工具的立即执行也必须看到方案级全局变量；不能等工作流先运行一次
+            // 才由 WorkflowContext 注入 __GlobalVars__ 合成结果。
+            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+            queryService.SetGlobalVariables(solutionManager.CurrentSolution?.GlobalVariables?
+                .ToDictionary(variable => variable.Name, variable => variable.Value));
 
             // SSOT 委托：实时读取 WorkflowContext，无本地缓存拷贝
             queryService.SetSootReader(nodeId =>
@@ -4043,8 +4167,57 @@ SplitterPosition = position;
         private async System.Threading.Tasks.Task ExecuteRunAllWorkflows()
         {
             AddLog("🚀 开始执行所有工作流...");
-            await WorkflowTabViewModel.RunAllWorkflowsAsync();
-            AddLog("✅ 完成所有工作流");
+            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+            var solution = solutionManager.CurrentSolution;
+            if (solution == null)
+            {
+                AddLog("❌ 当前没有已加载的解决方案，无法执行全部流程。");
+                return;
+            }
+
+            try
+            {
+                _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
+                await _executionManager.RunSolutionAsync(WorkflowTabViewModel.Tabs, solution);
+                AddLog("✅ 全部流程执行完成");
+            }
+            catch (Exception ex)
+            {
+                AddLog($"❌ 全部流程执行失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 诊断设计期节点是否仍由 Solution/UI/Engine 共享同一对象。
+        /// 只记录身份，不改变任何运行或保存逻辑。
+        /// </summary>
+        private void LogNodeStorageIdentity(WorkflowNode uiNode, string stage)
+        {
+            var workflowId = WorkflowTabViewModel?.SelectedTab?.Id;
+            var engineNode = workflowId == null
+                ? null
+                : _workflowEngine.GetWorkflowById(workflowId)?.Nodes.FirstOrDefault(n => n.Id == uiNode.Id);
+            var solutionNode = workflowId == null
+                ? null
+                : SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager
+                    .CurrentSolution?.Workflows.FirstOrDefault(w => w.Id == workflowId)?.Nodes
+                    .FirstOrDefault(n => n.Id == uiNode.Id);
+
+            static string Identity(object? value)
+                => value == null ? "null" : $"{value.GetType().Name}@{RuntimeHelpers.GetHashCode(value)}";
+            static string Settings(object? value)
+                => value is WorkflowNodeBase node
+                    ? $"ParamSettings@{RuntimeHelpers.GetHashCode(node.ParamSettings)} count={node.ParamSettings?.Count ?? 0}"
+                    : "ParamSettings=null";
+
+            _logger?.LogInfo(
+                $"[SSOT诊断] {stage} | nodeId={uiNode.Id} | " +
+                $"ui={Identity(uiNode)} {Settings(uiNode)} | " +
+                $"engine={Identity(engineNode)} {Settings(engineNode)} | " +
+                $"solution={Identity(solutionNode)} {Settings(solutionNode)} | " +
+                $"ui==engine={ReferenceEquals(uiNode, engineNode)} | " +
+                $"engine==solution={ReferenceEquals(engineNode, solutionNode)}",
+                "SSOT-Diag");
         }
 
         /// <summary>
@@ -4159,6 +4332,44 @@ SplitterPosition = position;
         {
             SetWorkflowContinuousState(e.WorkflowId, false);
             AddLog($"⏹️ 执行已停止: {e.WorkflowId}");
+        }
+
+        private void OnExecutionSnapshotUpdated(object? sender, Services.Workflow.WorkflowExecutionSnapshot snapshot)
+        {
+            if (WorkflowTabViewModel.SelectedTab?.RootWorkflowId == snapshot.WorkflowId)
+                _statusBar.SetExecutionSnapshot(snapshot);
+        }
+
+        private void RefreshStatusBarExecutionSnapshot()
+        {
+            var tab = WorkflowTabViewModel.SelectedTab;
+            _statusBar.SetExecutionSnapshot(tab == null || string.IsNullOrWhiteSpace(tab.RootWorkflowId)
+                ? null
+                : _executionManager.EnsureExecutionSnapshot(tab.RootWorkflowId, tab.Name, tab.WorkflowNodes));
+        }
+
+        private void ShowExecutionSnapshot(Services.Workflow.WorkflowExecutionSnapshot? snapshot)
+        {
+            // 状态栏可能在标签加载的同一轮尚未完成绑定；打开入口始终以当前标签为准，
+            // 从而保证首次运行前也能看到“尚未运行”的快照窗口。
+            var currentTab = WorkflowTabViewModel.SelectedTab;
+            if (currentTab != null && !string.IsNullOrWhiteSpace(currentTab.RootWorkflowId))
+            {
+                snapshot = _executionManager.EnsureExecutionSnapshot(
+                    currentTab.RootWorkflowId,
+                    currentTab.Name,
+                    currentTab.WorkflowNodes);
+                _statusBar.SetExecutionSnapshot(snapshot);
+            }
+
+            if (snapshot == null)
+                return;
+
+            var window = new WorkflowExecutionSnapshotWindow(snapshot)
+            {
+                Owner = System.Windows.Application.Current?.MainWindow
+            };
+            window.Show();
         }
 
         /// <summary>
@@ -4578,6 +4789,11 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                         PropertyClrType = e.ClrType,
                         IsGroup = false
                     };
+                    var vocabulary = SdkTypeVocabulary.ToTypeVocabulary(e.ClrType);
+                    if (!string.IsNullOrWhiteSpace(nodeId) && !string.IsNullOrWhiteSpace(vocabulary))
+                    {
+                        node.BindingInfo = new ResultBindingInfo(nodeId, e.Name, vocabulary!, e.ClrType);
+                    }
 
                     // 几何数组展开：按形状分组 + 字段聚合（方案：字段聚合防炸，不按 [i] 索引展开树）
                     // 例：检测区 5 项 → 圆(3项)/旋转矩形(2项) 分组，每字段一行，多值用分号串联
@@ -4762,7 +4978,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 {
                     DisplayName = ShapeTypeDisplayName(type),
                     IsGroup = true,
-                    IsExpanded = false
+                    IsExpanded = false,
+                    BindingInfo = CreateShapeBindingInfo(parent.BindingInfo, type)
                 };
                 AppendDesignTimeShapeFields(shapeNode, type);
                 parent.Children.Add(shapeNode);
@@ -4775,17 +4992,14 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// </summary>
         private static void AppendDesignTimeShapeFields(ModuleResultNode shapeNode, ShapeType type)
         {
-            var shape = new RoiShape { Geometry = RoiShape.CreateDefaultGeometry(type) };
-            if (shape.Geometry == null) return;
-
-            var fields = shape.GetMonitorFields();
-            foreach (var (fieldName, _) in fields)
+            foreach (var field in RoiFieldSchema.GetFields(type))
             {
                 shapeNode.Children.Add(new ModuleResultNode
                 {
-                    DisplayName = fieldName,
+                    DisplayName = field.DisplayName,
                     DisplayValue = "--",
-                    IsGroup = false
+                    IsGroup = false,
+                    BindingInfo = CreateFieldBindingInfo(shapeNode.BindingInfo, field)
                 });
             }
         }
@@ -4825,10 +5039,35 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 {
                     DisplayName = $"{ShapeTypeDisplayName(shapeGroup.Key)} ({shapeGroup.Count()}项)",
                     IsGroup = true,
-                    IsExpanded = false
+                    IsExpanded = false,
+                    BindingInfo = CreateShapeBindingInfo(parent.BindingInfo, shapeGroup.Key)
                 };
-                AppendFieldAggregation(shapeNode, shapeGroup);
+                AppendRoiShapeFieldAggregation(shapeNode, shapeGroup, shapeGroup.Key);
                 parent.Children.Add(shapeNode);
+            }
+        }
+
+        /// <summary>运行期 ROI 图形字段仍采用 <see cref="RoiFieldSchema"/> 生成绑定路径，展示值只从实际图形读取。</summary>
+        private static void AppendRoiShapeFieldAggregation(
+            ModuleResultNode parent,
+            IEnumerable<object> items,
+            ShapeType shapeType)
+        {
+            var monitorableItems = items.OfType<IMonitorable>().ToList();
+            foreach (var field in RoiFieldSchema.GetFields(shapeType))
+            {
+                var values = monitorableItems.Select(item =>
+                {
+                    var actual = item.GetMonitorFields().FirstOrDefault(entry => entry.FieldName == field.DisplayName);
+                    return FormatTypedValue(actual.FieldValue, field.ValueType);
+                });
+                parent.Children.Add(new ModuleResultNode
+                {
+                    DisplayName = field.DisplayName,
+                    DisplayValue = string.Join("; ", values),
+                    IsGroup = false,
+                    BindingInfo = CreateFieldBindingInfo(parent.BindingInfo, field)
+                });
             }
         }
 
@@ -4858,6 +5097,37 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     IsGroup = false
                 });
             }
+        }
+
+        private static ResultBindingInfo? CreateShapeBindingInfo(ResultBindingInfo? parent, ShapeType type)
+        {
+            if (parent == null)
+                return null;
+
+            var geometry = RoiShape.CreateDefaultGeometry(type);
+            var vocabulary = SdkTypeVocabulary.ToTypeVocabulary(geometry?.GetType());
+            return string.IsNullOrWhiteSpace(vocabulary)
+                ? null
+                : new ResultBindingInfo(
+                    parent.SourceNodeId,
+                    $"{parent.ResultPath}[Type={type}]",
+                    vocabulary!,
+                    geometry?.GetType());
+        }
+
+        private static ResultBindingInfo? CreateFieldBindingInfo(ResultBindingInfo? parent, RoiFieldDef field)
+        {
+            if (parent == null)
+                return null;
+
+            var vocabulary = SdkTypeVocabulary.ToTypeVocabulary(field.ValueType);
+            return string.IsNullOrWhiteSpace(vocabulary)
+                ? null
+                : new ResultBindingInfo(
+                    parent.SourceNodeId,
+                    $"{parent.ResultPath}[].Geometry.{field.Path}",
+                    vocabulary!,
+                    field.ValueType);
         }
 
         /// <summary>
@@ -4982,6 +5252,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 SourceNodeName = resolvedNodeName,
                 SourcePropertyName = node.SourcePropertyName,
                 PropertyClrType = node.PropertyClrType
+                ,BindingInfo = node.BindingInfo
             };
 
             // 同步展开状态变化
@@ -5542,6 +5813,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
         /// <summary>关联的CLR属性类型（用于类型过滤）</summary>
         public Type? PropertyClrType { get; set; }
+
+        /// <summary>绑定语义与展示层分离；目录节点为空，可展开图形节点也可拥有绑定信息。</summary>
+        public ResultBindingInfo? BindingInfo { get; set; }
     }
 
     /// <summary>
@@ -5614,6 +5888,24 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
         /// <summary>关联的CLR属性类型（用于类型过滤）</summary>
         public Type? PropertyClrType { get; set; }
+        public ResultBindingInfo? BindingInfo { get; set; }
+        public bool IsBindable => BindingInfo != null;
+    }
+
+    /// <summary>模块结果可绑定终点的运行时寻址信息。</summary>
+    public sealed class ResultBindingInfo
+    {
+        public ResultBindingInfo(string sourceNodeId, string resultPath, string valueVocabulary, Type? valueType)
+        {
+            SourceNodeId = sourceNodeId;
+            ResultPath = resultPath;
+            ValueVocabulary = valueVocabulary;
+            ValueType = valueType;
+        }
+        public string SourceNodeId { get; }
+        public string ResultPath { get; }
+        public string ValueVocabulary { get; }
+        public Type? ValueType { get; }
     }
 
     /// <summary>

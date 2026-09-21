@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -294,10 +294,10 @@ public partial class ShapeMatchToolDebugControl
         // 传入运行时的角度/缩放范围作为模板创建参数
         if (Parameters != null)
         {
-            dialog.TemplateAngleStart = Parameters.AngleStart.Value;
-            dialog.TemplateAngleExtent = Parameters.AngleEnd.Value - Parameters.AngleStart.Value;
-            dialog.TemplateScaleMin = Parameters.ScaleMin.Value;
-            dialog.TemplateScaleMax = Parameters.ScaleMax.Value;
+            dialog.TemplateAngleStart = Parameters.AngleStart;
+            dialog.TemplateAngleExtent = Parameters.AngleEnd - Parameters.AngleStart;
+            dialog.TemplateScaleMin = Parameters.ScaleMin;
+            dialog.TemplateScaleMax = Parameters.ScaleMax;
         }
 
         dialog.GetCurrentImage = () =>

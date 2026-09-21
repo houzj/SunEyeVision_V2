@@ -25,12 +25,12 @@ public class CircleCircleMeasureContractTests
     private static CircleCircleMeasureParameters CreateValidGuideParameters()
     {
         var parameters = new CircleCircleMeasureParameters();
-        parameters.E1CenterX.Value = 100;
-        parameters.E1CenterY.Value = 100;
-        parameters.E1Radius.Value = 50;
-        parameters.E2CenterX.Value = 300;
-        parameters.E2CenterY.Value = 100;
-        parameters.E2Radius.Value = 80;
+        parameters.E1CenterX = 100;
+        parameters.E1CenterY = 100;
+        parameters.E1Radius = 50;
+        parameters.E2CenterX = 300;
+        parameters.E2CenterY = 100;
+        parameters.E2Radius = 80;
         return parameters;
     }
 
@@ -41,9 +41,9 @@ public class CircleCircleMeasureContractTests
     {
         var options = Options();
         var source = CreateValidGuideParameters();
-        source.E1Threshold.Value = 42.5;
-        source.E1NumMeasures.Value = 32;
-        source.E2Transition.Value = EdgeTransition.Positive;
+        source.E1Threshold = 42.5;
+        source.E1NumMeasures = 32;
+        source.E2Transition = EdgeTransition.Positive;
         source.ResultPresentation.Judgments.Add(new JudgmentConfigItem
         {
             Key = "test-custom",
@@ -58,12 +58,12 @@ public class CircleCircleMeasureContractTests
         var back = JsonSerializer.Deserialize<CircleCircleMeasureParameters>(json, options);
 
         Assert.NotNull(back);
-        Assert.Equal(100.0, back!.E1CenterX.Value, 6);
-        Assert.Equal(50.0, back.E1Radius.Value, 6);
-        Assert.Equal(42.5, back.E1Threshold.Value, 6);
-        Assert.Equal(32, back.E1NumMeasures.Value);
-        Assert.Equal(80.0, back.E2Radius.Value, 6);
-        Assert.Equal(EdgeTransition.Positive, back.E2Transition.Value);
+        Assert.Equal(100.0, back!.E1CenterX, 6);
+        Assert.Equal(50.0, back.E1Radius, 6);
+        Assert.Equal(42.5, back.E1Threshold, 6);
+        Assert.Equal(32, back.E1NumMeasures);
+        Assert.Equal(80.0, back.E2Radius, 6);
+        Assert.Equal(EdgeTransition.Positive, back.E2Transition);
 
         // 默认判定项（圆心距/交点X/交点Y/半径1/半径2）保留 + 新增项完整还原
         Assert.Equal(source.ResultPresentation.Judgments.Count, back.ResultPresentation.Judgments.Count);
@@ -120,9 +120,9 @@ public class CircleCircleMeasureContractTests
     public void Run_SecondGuideCircleNotSet_FailsFast_WithVisibleError()
     {
         var parameters = new CircleCircleMeasureParameters();
-        parameters.E1CenterX.Value = 100;
-        parameters.E1CenterY.Value = 100;
-        parameters.E1Radius.Value = 50;
+        parameters.E1CenterX = 100;
+        parameters.E1CenterY = 100;
+        parameters.E1Radius = 50;
 
         var result = new CircleCircleMeasureTool().Run(parameters);
 

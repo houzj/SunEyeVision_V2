@@ -524,6 +524,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private void OnConfigSettingLoaded(object sender, RoutedEventArgs e)
         {
             _activeInstances.Add(new WeakReference<ConfigSetting>(this));
+            InstanceLoaded?.Invoke(this);
         }
 
         private void OnConfigSettingUnloaded(object sender, RoutedEventArgs e)
@@ -1223,6 +1224,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     setting.SourceDisplayName = selected.EffectiveLeafDisplayName;
                 }
 
+                // 全局变量使用内部节点 ID 参与执行，但 UI 持久化必须保存稳定的
+                // 语义名称。窗口重开时数据源树可能尚未恢复，不能依赖反查结果。
+                if (string.Equals(nodeId, "__GlobalVars__", StringComparison.Ordinal))
+                {
+                    setting.SourceNodeName = "全局变量";
+                    setting.SourceDisplayName = property;
+                }
+
                 return setting;
             }
         }
@@ -1249,6 +1258,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// App.xaml.cs 订阅此事件，广播到所有已打开的 ConfigSetting 实例
         /// </summary>
         public static event Action<string, string>? GlobalVariableRenamed;
+
+        /// <summary>
+        /// 参数控件完成 Loaded 后通知绑定状态宿主。
+        /// 宿主据此恢复 ParamSettings，避免依赖 TabControl 的视觉树创建时机。
+        /// </summary>
+        public static event Action<ConfigSetting>? InstanceLoaded;
 
         /// <summary>
         /// 通知所有活跃的 ConfigSetting 实例全局变量已重命名
@@ -1426,9 +1441,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     ? setting.SourceNodeId ?? string.Empty
                     : $"{setting.SourceNodeId}.{setting.SourceProperty}";
 
+                // 兼容旧数据或数据源树尚未建立的情况：全局变量的内部 ID 不直接
+                // 暴露给用户，显示层始终使用中文语义名称。
+                var sourceNodeName = setting.SourceNodeName;
+                var sourceDisplayName = setting.SourceDisplayName;
+                if (string.Equals(setting.SourceNodeId, "__GlobalVars__", StringComparison.Ordinal))
+                {
+                    sourceNodeName = "全局变量";
+                    sourceDisplayName = setting.SourceProperty;
+                }
+
                 // 计算 BindingDisplayText
-                var newBindingDisplayText = (!string.IsNullOrEmpty(setting.SourceNodeName) && !string.IsNullOrEmpty(setting.SourceDisplayName))
-                    ? $"{setting.SourceNodeName}.{setting.SourceDisplayName}"
+                var newBindingDisplayText = (!string.IsNullOrEmpty(sourceNodeName) && !string.IsNullOrEmpty(sourceDisplayName))
+                    ? $"{sourceNodeName}.{sourceDisplayName}"
                     : _paramBinding?.GenerateBindingDisplayText(newBindingSource) ?? newBindingSource;
 
                 // 先设置显示文本，再设置绑定源

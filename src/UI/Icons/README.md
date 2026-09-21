@@ -1,111 +1,61 @@
 # 图标资源说明
 
-本目录用于存放应用程序的图标资源文件。
+本目录存放应用程序与解决方案文件的图标资源。
 
 ## 文件结构
 
 ```
 Icons/
-├── solution.ico          # 解决方案文件图标（占位符，待替换）
-└── README.md             # 本说明文件
+├── app_logo.ico          # 应用程序图标（csproj ApplicationIcon，编译进 exe）
+├── solution.ico          # .solution 文件关联图标（安装器 DefaultIcon 指向它）
+├── solution_*.ico        # 历史遗留：按尺寸拆分的单尺寸图标（保留，勿再新增引用）
+├── solution_preview.png  # 预览图
+└── README.md
 ```
 
-## solution.ico - 解决方案文件图标
+## 两个正式图标（2026-09-18 起）
 
-**状态**: ⚠️ 占位图标（使用可执行文件图标）
+| 文件 | 尺寸 | 说明 |
+|---|---|---|
+| `app_logo.ico` | **7 尺寸**：256 / 128 / 64 / 48 / 32 / 24 / 16 | 软件图标。`src/UI/SunEyeVision.UI.csproj` 的 `ApplicationIcon` 指向本文件 |
+| `solution.ico` | **同上 7 尺寸，且与 `app_logo.ico` 同源同内容** | `.solution` 文件在资源管理器中的图标 |
 
-### 设计要求
+> 约束（rule-022 精神）：`solution.ico` 必须与软件图标**保持一致**（当前实现为同源同内容）。
+> 若将来希望"文档图标"与"程序图标"可区分，应改为同源 + 文档角标，而不是换成无关设计。
 
-如果您需要自定义解决方案文件图标，请创建一个符合以下要求的 `.ico` 文件：
+## 生成 / 更新方式
 
-1. **文件名**: `solution.ico`
-2. **尺寸**（多尺寸图标）:
-   - 256x256（高DPI显示）
-   - 128x128
-   - 64x64
-   - 48x48
-   - 32x32
-   - 16x16（列表视图）
+**不要手工拖拽替换**，用参数化脚本（会先自动备份原图标）：
 
-3. **设计建议**:
-   - **主色调**: 使用项目主题色 `#0066CC`
-   - **风格**: 扁平化、现代简洁
-   - **元素**:
-     - 📦 文档图标（体现"解决方案"）
-     - 🔍 眼睛元素（体现"视觉"）
-     - ⚙️ 齿轮元素（体现"配置"）
-     - 📝 工作流（体现"工作流"）
+```powershell
+# 从现有 app_logo.ico 的最大帧提取源图，重建两个 7 尺寸图标
+powershell -NoProfile -ExecutionPolicy Bypass -File installer\Build-Icons.ps1
 
-### 创建方法
-
-#### 方法1: 使用在线工具（推荐）
-
-1. **设计 SVG 图标**:
-   ```xml
-   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-     <!-- 背景：圆角文档 -->
-     <rect x="32" y="16" width="192" height="224" rx="16" fill="#0066CC"/>
-     
-     <!-- 眼睛图标 -->
-     <ellipse cx="128" cy="96" rx="40" ry="24" fill="#ffffff"/>
-     <circle cx="128" cy="96" r="12" fill="#0066CC"/>
-     
-     <!-- 齿轮图标 -->
-     <circle cx="128" cy="176" r="24" fill="none" stroke="#ffffff" stroke-width="8"/>
-     <circle cx="128" cy="176" r="8" fill="#ffffff"/>
-     
-     <!-- 文档折角 -->
-     <path d="M160 16 L224 80 L224 240" fill="#0055AA" opacity="0.3"/>
-   </svg>
-   ```
-
-2. **转换为 ICO 格式**:
-   - 访问 https://icoconvert.com/
-   - 上传 SVG 文件
-   - 选择所有尺寸（256, 128, 64, 48, 32, 16）
-   - 下载生成的 ICO 文件
-
-3. **放置到项目中**:
-   - 将下载的文件重命名为 `solution.ico`
-   - 替换本目录下的占位文件（如果存在）
-
-#### 方法2: 使用专业设计软件
-
-使用 Adobe Illustrator、Figma、Sketch 等工具设计图标，然后导出为 ICO 格式。
-
-### 配置项目文件
-
-图标文件需要在项目文件中正确配置：
-
-```xml
-<ItemGroup>
-  <Content Include="Icons\solution.ico">
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </Content>
-</ItemGroup>
+# 或指定源 PNG（须 ≥256×256）
+powershell -NoProfile -ExecutionPolicy Bypass -File installer\Build-Icons.ps1 -SourcePng "D:\path\logo-256.png"
 ```
 
-### 测试图标
+脚本行为：
+1. 备份现有 `app_logo.ico` / `solution.ico` 到 `build_temp/icon-backup-<时间戳>/`
+2. 从 `app_logo.ico` 的最大帧提取源图（或使用 `-SourcePng`）
+3. 用 HighQualityBicubic 生成 7 个尺寸，写入 PNG 压缩的 ICO 帧
+4. 输出尺寸清单供核对
 
-1. 编译运行程序
-2. 创建一个 `.solution` 文件
-3. 在文件资源管理器中刷新或重启资源管理器
-4. 验证图标是否正确显示
+## 生效范围与注意事项
 
-## 占位图标说明
+| 场景 | 生效条件 |
+|---|---|
+| exe 图标（任务栏/资源管理器） | **需要重新构建** `src/UI`（图标已编译进 exe） |
+| 安装包 Setup.exe 图标 | 重新打包（`.iss` 的 `SetupIconFile` 指向 `app_logo.ico`） |
+| `.solution` 文件图标 | 安装器 `[Registry]` 写入 `DefaultIcon` = `{app}\Icons\solution.ico`；**已有旧注册时需刷新资源管理器图标缓存** |
+| `solution_*.ico`（单尺寸残留） | 历史文件，当前无代码引用；保留仅为避免破坏未知引用 |
 
-当前使用的是可执行文件图标作为占位符，不会影响程序功能。替换为自定义图标后：
+## 已知问题（待 `src/UI` 侧修复）
 
-- ✅ Windows 资源管理器中显示自定义图标
-- ✅ 双击文件时显示自定义图标
-- ✅ 打开/另存为对话框中显示自定义图标
-
-## 注意事项
-
-- 图标文件会自动复制到输出目录
-- 如果图标没有立即更新，请重启文件资源管理器
-- 建议使用多尺寸图标以适应不同的显示缩放比例
+- `FileAssociationService.IsRegistered()` 仅比对 ProgID ⇒ **关联路径不会自愈**：换安装目录后仍指向旧路径（实测当前机器指向 `D:\MyWork\SunEyeVision\SunEyeVision\src\UI\bin\Debug\...`，该文件已不存在）。
+  安装器注册可覆盖新装用户；程序侧自愈逻辑待改（属 `src/UI` 禁区，需 Codex 或授权）。
 
 ## 更新历史
 
-- 2026-03-15: 初始版本，创建占位图标说明
+- 2026-03-15：初始版本，`solution.ico` 为占位图标（单尺寸 48×48 拆分批）
+- 2026-09-18：`app_logo.ico` 与 `solution.ico` 均由 `installer/Build-Icons.ps1` 重建为 7 尺寸且同源（修复"解决方案图标与软件图标不一致"）

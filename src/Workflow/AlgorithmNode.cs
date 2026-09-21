@@ -82,41 +82,32 @@ namespace SunEyeVision.Workflow
                         $"[DIAG] {Name}({Id}): ResolvedInputImage={(inputImage == null ? "null" : $"{inputImage.GetType().Name}, IsEmpty={inputImage.IsEmpty}")}",
                         $"诊断.算法节点");
 
-                    // 2. 应用参数绑定（从参数内部 BindingConfig 读取并解析）
-                    ParameterResolver? resolver = null;
-                    if (nodeResults != null)
-                    {
-                        resolver = new ParameterResolver(VisionLogger.Instance);
-                        var applyResult = resolver.ApplyBindings(typedParams, nodeResults);
+                    // 参数绑定统一由节点 ParamSettings 构造运行快照，在 ToolExecutor 中注入运行副本。
+                    // 设计期参数对象不再读取或写入 旧包装器 内部状态。
+                    var resolver = new ParameterResolver(VisionLogger.Instance);
 
-                        if (!applyResult.IsSuccess && applyResult.Errors.Count > 0)
-                        {
-                            var errors = string.Join("; ", applyResult.Errors);
-                            var result = AlgorithmResult.CreateError($"参数绑定解析失败: {errors}");
-                            OnAfterExecute(result);
-                            return result;
-                        }
-                    }
+                    // 设计参数只保存配置；执行使用独立副本，外部 ParamSettings 解析结果进入运行快照。
+                    var executionParams = CreateExecutionParameters(typedParams);
 
                     // 2a. 刷新所有 AvailableDataSource 属性的运行时 CurrentValue
                     if (nodeResults != null)
                     {
-                        ResolveAvailableDataSources(typedParams, nodeResults);
+                        ResolveAvailableDataSources(executionParams, nodeResults);
                     }
 
                     // 3a. 解析参数中所有 TextStyle 的运行时绑定（工具执行前解析，使 PositionX/Y 绑定值在工具中可用）
                     if (nodeResults != null)
                     {
-                        ResolveTextStyleParameterBindings(typedParams, nodeResults, resolver);
+                        ResolveTextStyleParameterBindings(executionParams, nodeResults, resolver);
                     }
 
                     // ★ 通过 ToolExecutor 统一执行路径（与工具调试共享同一执行器）
                     // ToolExecutor 负责：注入 ExecutionContext（含 WorkflowName/GlobalVariables）、
                     // 强制 NodeResults 非空、捕获异常、设置 ExecutionTimeMs
-                    var executor = new ToolExecutor(resolver ?? new ParameterResolver(VisionLogger.Instance), VisionLogger.Instance);
+                    var executor = new ToolExecutor(resolver, VisionLogger.Instance);
                     var toolResult = await executor.ExecuteAsync(
                         Tool,
-                        new ToolExecutionRequest(typedParams)
+                        new ToolExecutionRequest(executionParams)
                         {
                             NodeResults = nodeResults,
                             ResolvedInputImage = inputImage,
@@ -124,8 +115,16 @@ namespace SunEyeVision.Workflow
                             NodeId = Id,
                             CancellationToken = cancellationToken,
                             GlobalVariables = globalVariables,
-                            ApplyBindings = false
+                            ParameterBindings = ParameterBindingSet.FromSettings(ParamSettings)
                         }).ConfigureAwait(false);
+
+                    if (toolResult.Status == ExecutionStatus.Failed && !string.IsNullOrWhiteSpace(toolResult.ErrorMessage))
+                    {
+                        LastToolResult = toolResult;
+                        LastResult = ConvertToAlgorithmResult(toolResult);
+                        OnAfterExecute(LastResult);
+                        return LastResult;
+                    }
 
                     LastToolResult = toolResult;
                     LastResult = ConvertToAlgorithmResult(toolResult);
@@ -257,6 +256,18 @@ namespace SunEyeVision.Workflow
             // ✅ 如果参数类型不匹配，直接抛出异常
             throw new InvalidOperationException(
                 $"参数类型不匹配。工具 {ToolType} 期望 {Tool.ParamsType?.Name ?? "null"}, 实际为 {Parameters.GetType().Name}");
+        }
+
+        private static ToolParameters CreateExecutionParameters(ToolParameters designParameters)
+        {
+            if (designParameters.GetType().GetConstructor(Type.EmptyTypes) == null)
+                return designParameters;
+
+            if (Activator.CreateInstance(designParameters.GetType()) is not ToolParameters runtimeParameters)
+                return designParameters;
+
+            runtimeParameters.CopyFrom(designParameters);
+            return runtimeParameters;
         }
 
         /// <summary>

@@ -207,6 +207,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
         /// </summary>
         public event Action? ToolActivated;
 
+        /// <summary>
+        /// 绘制前置检查。由管理器注入，用于确认主图像控件当前确实有可显示图像。
+        /// 返回 false 时不会进入绘制状态。
+        /// </summary>
+        public Func<bool>? DrawingAvailabilityCheck { get; set; }
+
         public RoiEditorViewModel ViewModel => _viewModel;
 
         #region 依赖属性
@@ -2489,6 +2495,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                     ClearRubberBand();
                 }
                 EnterSelectMode();
+                return;
+            }
+
+            if (DrawingAvailabilityCheck != null && !DrawingAvailabilityCheck())
+            {
+                ShapeToolBarControl.ClearSelection();
                 return;
             }
 

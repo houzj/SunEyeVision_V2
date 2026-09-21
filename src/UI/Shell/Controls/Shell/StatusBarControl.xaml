@@ -23,10 +23,12 @@
         </StatusBarItem>
         <Separator/>
         <StatusBarItem>
+            <Button Command="{Binding ShowExecutionSnapshotCommand}" Background="Transparent" BorderThickness="0" Padding="2,0" ToolTip="查看当前工作流的本次执行快照">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="流程1:" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding IsRunning, Converter={StaticResource BoolToRunningTextConverter}}" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" VerticalAlignment="Center"/>
+                <TextBlock Text="流程:" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="{Binding WorkflowExecutionText}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" VerticalAlignment="Center"/>
             </StackPanel>
+            </Button>
         </StatusBarItem>
         <StatusBarItem HorizontalAlignment="Right">
             <StackPanel Orientation="Horizontal">

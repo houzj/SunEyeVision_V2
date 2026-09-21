@@ -229,6 +229,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             return !prop.IsDefined(typeof(IgnoreBindAttribute));
         }
 
+        /// <summary>
+        /// 校验已声明的输入槽位和运行参数契约。
+        /// 未实现新契约的旧工具继续使用历史反射兼容路径。
+        /// </summary>
+        public IReadOnlyList<ParameterContractViolation> ValidateParameterContract(
+            bool strictComplete = false)
+            => ParameterContractValidator.Validate(this, strictComplete);
+
         #endregion
     }
 

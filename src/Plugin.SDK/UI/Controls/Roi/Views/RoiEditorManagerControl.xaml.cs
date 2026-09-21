@@ -143,6 +143,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 
             if (_mainImageControl != null)
             {
+                inspectionsEditor.DrawingAvailabilityCheck = EnsureImageAvailable;
+                masksEditor.DrawingAvailabilityCheck = EnsureImageAvailable;
                 _mainImageControl.OverlayHitTestVisible = false;
 
                 // Pass OverlayCanvas to both editors for handle/rubber band drawing
@@ -169,6 +171,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 
                 PluginLogger.Info("[RoiEditorManager] ImageControl set with centralized event routing", "RoiEditorManager");
             }
+            else
+            {
+                inspectionsEditor.DrawingAvailabilityCheck = null;
+                masksEditor.DrawingAvailabilityCheck = null;
+            }
+        }
+
+        /// <summary>
+        /// 绘制 ROI 前统一确认图像显示控件已有图像。
+        /// 图像为空时阻止工具进入绘制状态，并给出可理解的用户提示。
+        /// </summary>
+        private bool EnsureImageAvailable()
+        {
+            if (_mainImageControl?.SourceImage != null)
+                return true;
+
+            MessageBox.Show(Window.GetWindow(this),
+                "当前图像显示控件中没有图像，请先加载或选择一张图像。",
+                "无法绘制区域",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return false;
         }
 
         /// <summary>

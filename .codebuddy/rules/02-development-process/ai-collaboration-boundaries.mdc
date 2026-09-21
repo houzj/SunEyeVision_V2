@@ -1,4 +1,4 @@
----
+﻿---
 id: rule-021
 title: 双 AI 协作写入边界（Codex × CodeBuddy）
 description: 同一工作目录单写者、禁区文件转交 Codex、任务卡读写与代执行授权
@@ -6,8 +6,8 @@ category: development-process
 priority: critical
 alwaysApply: true
 enabled: true
-version: "1.0"
-updatedAt: 2026-09-16
+version: "1.1"
+updatedAt: 2026-09-18
 ---
 
 # rule-021: 双 AI 协作写入边界（Codex × CodeBuddy）
@@ -44,7 +44,14 @@ updatedAt: 2026-09-16
 | Plugin.SDK（契约 / Runtime / Wpf） | `src/Plugin.SDK/**` |
 | 共享主题 | `src/Plugin.SDK/Themes/**`、`src/Plugin.SDK/UI/Themes/**`、`src/UI/Themes/**` |
 | 插件加载 | `src/Plugin.Infrastructure/Managers/Plugin/**` |
-| 发布规则 | `Directory.Build.targets`、`Directory.Build.props`、`SunEyeVision.slnx`、`installer/**` |
+| 发布规则 | `Directory.Build.targets`、`Directory.Build.props`、`SunEyeVision.slnx`（`installer/**` 见下方例外说明） |
+
+> **发布/版本线的归属例外（2026-09-18）**：以下路径归属以 `CURRENT_TASK.md` 的
+> "CodeBuddy 并行授权目录"为准（当前为 CodeBuddy），不再默认转交 Codex：
+> `installer/**`、`version.json`、`CHANGELOG.md`、`src/UI/Icons/**`、
+> `.codebuddy/rules/**`、`.codebuddy/skills/**`。
+> 约束见 rule-022《版本号单一真源》与 Skill《版本发布》。
+> **`Directory.Build.props`、`Directory.Build.targets`、`SunEyeVision.slnx` 仍为禁区。**
 
 需要改动上述任一文件时：**停止 → 按 `docs/collaboration/HANDOFF_TEMPLATE.md` 出交接单 →
 写入 `CURRENT_TASK.md`** → 交 Codex。

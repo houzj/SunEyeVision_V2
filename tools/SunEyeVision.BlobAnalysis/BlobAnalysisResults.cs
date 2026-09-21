@@ -15,7 +15,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
     public class BlobAnalysisResults : ToolResults
     {
         /// <summary>
-        /// 灰度输入图像（预处理后）
+        /// 原始灰度输入图像。预处理和 ROI 限定后的中间图像不应冒充原始输入。
         /// </summary>
         public IVisionImage? GrayImage { get; set; }
 
@@ -45,14 +45,14 @@ namespace SunEyeVision.Tool.BlobAnalysis
         }
 
         /// <summary>
-        /// 实际使用的阈值
+        /// 阈值分割实际使用的下限。
         /// </summary>
-        public int ThresholdUsed { get; set; }
+        public int ThresholdMinUsed { get; set; }
 
         /// <summary>
-        /// 最大值
+        /// 阈值分割实际使用的上限。
         /// </summary>
-        public int MaxValueUsed { get; set; }
+        public int ThresholdMaxUsed { get; set; }
 
         /// <summary>
         /// 使用的阈值类型（如 "Binary", "Truncate"...）
@@ -174,6 +174,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// </summary>
         public IVisionRegion? BlobRegions { get; set; }
 
+        /// <summary>通过判断的区域集合，供结果层批量渲染。</summary>
+        public IVisionRegion? OkBlobRegions { get; set; }
+
+        /// <summary>未通过判断的区域集合，供结果层批量渲染。</summary>
+        public IVisionRegion? NgBlobRegions { get; set; }
+
         /// <summary>
         /// 获取属性映射表
         /// </summary>
@@ -185,8 +191,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("GrayImage",                "灰度图像",               null),
                 new("BinaryMask",               "二值掩码",               null),
                 new("OverlayImage",             "合成显示图像",           null),
-                new("ThresholdUsed",            "实际使用的阈值",         "预处理"),
-                new("MaxValueUsed",             "最大值",                 "预处理"),
+                new("ThresholdMinUsed",         "实际阈值下限",           "预处理"),
+                new("ThresholdMaxUsed",         "实际阈值上限",           "预处理"),
                 new("TypeUsed",                 "阈值类型",               "预处理"),
                 new("FilteredBlobCount",        "Blob数量",               "统计"),
                 new("FilteredTotalArea",        "总面积",                 "统计"),

@@ -3,6 +3,8 @@ using System.Reflection;
 using SunEyeVision.Plugin.SDK.Core;
 using Xunit;
 
+[assembly: ToolContractVersionAttribute(2, 0)]
+
 namespace SunEyeVision.Plugin.SDK.Tests;
 
 /// <summary>
@@ -26,11 +28,12 @@ public class ToolContractVersionContractTests
     }
 
     [Fact]
-    public void IsCompatible_SameMajor_IsCompatible()
+    public void IsCompatible_SameMajorAndSupportedMinor_IsCompatible()
     {
-        // 主版本相同（次版本可不同）⇒ 兼容：旧插件无需重新编译
-        Assert.True(ToolContract.IsCompatible(new Version(ToolContract.Major, 0, 0, 0)));
-        Assert.True(ToolContract.IsCompatible(new Version(ToolContract.Major, 99, 9, 9)));
+        // 主版本相同且插件次版本不高于宿主 ⇒ 兼容。
+        Assert.True(ToolContract.IsCompatible(new Version(ToolContract.Major, ToolContract.Minor)));
+        Assert.True(ToolContract.IsCompatible(new Version(ToolContract.Major, 0)));
+        Assert.False(ToolContract.IsCompatible(new Version(ToolContract.Major, ToolContract.Minor + 1)));
     }
 
     [Fact]
@@ -42,16 +45,12 @@ public class ToolContractVersionContractTests
     }
 
     [Fact]
-    public void GetPluginContractVersion_ReadsReferencedSdkVersion()
+    public void GetPluginContractVersion_ReadsExplicitAssemblyMetadata()
     {
-        // 判定依据必须是**程序集元数据**：本测试程序集引用了 SDK ⇒ 能读出引用的 SDK 版本
+        // 判定依据是插件程序集显式声明的契约元数据，而不是 SDK 的 AssemblyVersion。
         var executing = Assembly.GetExecutingAssembly();
-        var sdkReference = Array.Find(executing.GetReferencedAssemblies(),
-            a => a.Name == ToolContract.AssemblyName);
-
-        Assert.NotNull(sdkReference);                              // 本测试工程确实引用了 SDK
         var referenced = ToolContract.GetPluginContractVersion(executing);
-        Assert.Equal(sdkReference!.Version, referenced);            // 读到的就是元数据里的版本
+        Assert.Equal(new Version(2, 0), referenced);
         Assert.True(ToolContract.IsCompatible(referenced));
     }
 
@@ -69,7 +68,7 @@ public class ToolContractVersionContractTests
     public void Describe_CarriesVersionsForBothCases()
     {
         // 兼容与不兼容两种文案都必须带版本信息，否则开发者无法自助修复
-        var compatible = ToolContract.Describe(new Version(ToolContract.Major, 0, 0, 0));
+        var compatible = ToolContract.Describe(new Version(ToolContract.Major, ToolContract.Minor));
         Assert.Contains(ToolContract.Version, compatible);
         Assert.Contains("兼容", compatible);
 

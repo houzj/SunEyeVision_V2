@@ -87,13 +87,13 @@ namespace SunEyeVision.Tool.ImageFilter
                 int imgHeight = (int)imgH.L;
                 parameters.LogInfo($"开始滤波处理: 图像尺寸 {imgWidth}x{imgHeight}");
 
-                FilterType filterType = parameters.FilterTypeValue.Value;
-                int kernelWidth = parameters.KernelWidth.Value;
-                int kernelHeight = parameters.KernelHeight.Value;
-                double sigmaX = parameters.SigmaX.Value;
-                double sigmaY = parameters.SigmaY.Value;
-                double sigmaColor = parameters.SigmaColor.Value;
-                double sigmaSpace = parameters.SigmaSpace.Value;
+                FilterType filterType = parameters.FilterTypeValue;
+                int kernelWidth = parameters.KernelWidth;
+                int kernelHeight = parameters.KernelHeight;
+                double sigmaX = parameters.SigmaX;
+                double sigmaY = parameters.SigmaY;
+                double sigmaColor = parameters.SigmaColor;
+                double sigmaSpace = parameters.SigmaSpace;
 
                 // ===== Step 1: 灰度转换 (rgb1_to_gray) =====
                 stepSw.Restart();

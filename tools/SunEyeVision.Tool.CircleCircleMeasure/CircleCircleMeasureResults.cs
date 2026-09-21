@@ -133,8 +133,8 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
                 : 0.0;
 
             // ---- 元素1：引导圆 + 环形卡尺带 + 拟合圆 ----
-            var g1c = T(new Point(parameters.E1CenterX.Value, parameters.E1CenterY.Value));
-            double g1r = parameters.E1Radius.Value * scale;
+            var g1c = T(new Point(parameters.E1CenterX, parameters.E1CenterY));
+            double g1r = parameters.E1Radius * scale;
 
             if (g1r > 1e-6)
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle1"), new Circle2d(g1c, g1r), isOk);
@@ -143,8 +143,8 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g1c, g1r),
-                    parameters.E1MeasureLength1.Value, parameters.E1MeasureLength2.Value,
-                    parameters.E1NumMeasures.Value, startPhase);
+                    parameters.E1MeasureLength1, parameters.E1MeasureLength2,
+                    parameters.E1NumMeasures, startPhase);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band1"), bands, isClosed: true);
             }
@@ -152,8 +152,8 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("fit-circle1"), Element1Circle[0], isOk);
 
             // ---- 元素2：引导圆 + 环形卡尺带 + 拟合圆 ----
-            var g2c = T(new Point(parameters.E2CenterX.Value, parameters.E2CenterY.Value));
-            double g2r = parameters.E2Radius.Value * scale;
+            var g2c = T(new Point(parameters.E2CenterX, parameters.E2CenterY));
+            double g2r = parameters.E2Radius * scale;
 
             if (g2r > 1e-6)
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle2"), new Circle2d(g2c, g2r), isOk);
@@ -162,8 +162,8 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g2c, g2r),
-                    parameters.E2MeasureLength1.Value, parameters.E2MeasureLength2.Value,
-                    parameters.E2NumMeasures.Value, startPhase);
+                    parameters.E2MeasureLength1, parameters.E2MeasureLength2,
+                    parameters.E2NumMeasures, startPhase);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band2"), bands, isClosed: true);
             }

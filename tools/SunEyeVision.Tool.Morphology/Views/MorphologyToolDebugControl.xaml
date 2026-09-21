@@ -84,7 +84,7 @@
                       Height="32"
                       VerticalContentAlignment="Center" Width="250"
                       ToolTip="形态学运算类型：腐蚀/膨胀/开运算/闭运算/梯度/顶帽/黑帽"
-                      SelectedItem="{Binding Operation.Value, Mode=TwoWay, Converter={StaticResource MorphOperationConverter}}">
+                      SelectedItem="{Binding Operation, Mode=TwoWay, Converter={StaticResource MorphOperationConverter}}">
                 <sys:String>腐蚀</sys:String>
                 <sys:String>膨胀</sys:String>
                 <sys:String>开运算</sys:String>
@@ -100,7 +100,7 @@
                       Height="32"
                       VerticalContentAlignment="Center" Width="250"
                       ToolTip="结构元素形状：矩形(通用)、十字形(线状特征)、椭圆形(圆形特征)"
-                      SelectedItem="{Binding KernelShape.Value, Mode=TwoWay, Converter={StaticResource MorphShapeConverter}}">
+                      SelectedItem="{Binding KernelShape, Mode=TwoWay, Converter={StaticResource MorphShapeConverter}}">
                 <sys:String>矩形</sys:String>
                 <sys:String>十字形</sys:String>
                 <sys:String>椭圆形</sys:String>
@@ -112,7 +112,7 @@
                                 x:Name="kernelWidthParam"
                                 ParameterName="KernelWidth"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding KernelWidth.Value, Mode=TwoWay}"
+                                Value="{Binding KernelWidth, Mode=TwoWay}"
                                 Minimum="1"
                                 Maximum="51"
                                 SmallChange="2"
@@ -127,7 +127,7 @@
                                 x:Name="kernelHeightParam"
                                 ParameterName="KernelHeight"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding KernelHeight.Value, Mode=TwoWay}"
+                                Value="{Binding KernelHeight, Mode=TwoWay}"
                                 Minimum="1"
                                 Maximum="51"
                                 SmallChange="2"
@@ -142,7 +142,7 @@
                                 x:Name="iterationsParam"
                                 ParameterName="Iterations"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding Iterations.Value, Mode=TwoWay}"
+                                Value="{Binding Iterations, Mode=TwoWay}"
                                 Minimum="1"
                                 Maximum="20"
                                 SmallChange="1"

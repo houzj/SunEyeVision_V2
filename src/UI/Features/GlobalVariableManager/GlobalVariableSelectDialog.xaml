@@ -3,6 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+        xmlns:gv="clr-namespace:SunEyeVision.UI.Features.GlobalVariableManager"
         xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
         mc:Ignorable="d"
         Title="选择变量"
@@ -11,11 +13,47 @@
         MinWidth="600"
         MinHeight="400"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F5F5"
+        Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
         ShowInTaskbar="False">
 
     <Window.Resources>
-        <!-- 按钮样式由全局 CommonStyleResources 提供（PrimaryButtonStyle/SecondaryButtonStyle） -->
+        <gv:GlobalVariableTypeTextConverter x:Key="GlobalVariableTypeTextConverter"/>
+        <gv:GlobalVariableValueTextConverter x:Key="GlobalVariableValueTextConverter"/>
+        <Style TargetType="DataGrid">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"/>
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="0">
@@ -29,7 +67,7 @@
         </Grid.RowDefinitions>
 
         <!-- 过滤工具栏 -->
-        <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="16,10">
+        <Border Grid.Row="0" Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="0,0,0,1" Padding="16,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -54,8 +92,9 @@
                          Padding="8,4"
                          FontSize="13"
                          VerticalAlignment="Center"
-                         Background="White"
-                         BorderBrush="#E0E0E0"
+                         Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                         Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                         BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"
                          BorderThickness="1">
                     <TextBox.Style>
                         <Style TargetType="TextBox">
@@ -77,10 +116,11 @@
                   SelectionMode="Single"
                   GridLinesVisibility="Horizontal"
                   HeadersVisibility="Column"
-                  Background="White"
-                  BorderBrush="#E0E0E0"
+                  Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
+                  Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                  BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"
                   BorderThickness="1"
-                  HorizontalGridLinesBrush="#F0F0F0"
+                  HorizontalGridLinesBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"
                   RowHeight="26"
                   FontSize="12"
                   MouseDoubleClick="DataGrid_MouseDoubleClick">
@@ -105,10 +145,17 @@
                 <DataGridTextColumn Header="变量名称" Binding="{Binding Name}" Width="120" IsReadOnly="True"/>
 
                 <!-- 类型 -->
-                <DataGridTextColumn Header="类型" Binding="{Binding Type}" Width="80" IsReadOnly="True"/>
+                <DataGridTextColumn Header="类型" Width="90" IsReadOnly="True">
+                    <DataGridTextColumn.Binding>
+                        <Binding Path="Type" Converter="{StaticResource GlobalVariableTypeTextConverter}"/>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
 
                 <!-- 当前值 -->
-                <DataGridTextColumn Header="当前值" Binding="{Binding Value}" Width="120" IsReadOnly="True">
+                <DataGridTextColumn Header="当前值" Width="150" IsReadOnly="True">
+                    <DataGridTextColumn.Binding>
+                        <Binding Path="Value" Converter="{StaticResource GlobalVariableValueTextConverter}"/>
+                    </DataGridTextColumn.Binding>
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
@@ -131,7 +178,7 @@
         </DataGrid>
 
         <!-- 底部 -->
-        <Border Grid.Row="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="16,10">
+        <Border Grid.Row="2" Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="0,1,0,0" Padding="16,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

@@ -59,9 +59,28 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public IEnumerable<string> ParameterNames => _settings.Keys;
 
         /// <summary>
-        /// 所有设置
+        /// 所有设置。
+        ///
+        /// 这里必须提供可写集合入口。工作流使用 System.Text.Json 直接序列化
+        /// 节点时，只有 getter 的 IEnumerable 无法把反序列化结果写回私有字典，
+        /// 导致绑定在重开方案/调试窗口后丢失并退回常量。
         /// </summary>
-        public IEnumerable<ParamSetting> Settings => _settings.Values;
+        public List<ParamSetting> Settings
+        {
+            get => _settings.Values.ToList();
+            set
+            {
+                _settings.Clear();
+                if (value == null)
+                    return;
+
+                foreach (var setting in value)
+                {
+                    if (setting != null && !string.IsNullOrWhiteSpace(setting.ParameterName))
+                        _settings[setting.ParameterName] = setting;
+                }
+            }
+        }
 
         /// <summary>
         /// 获取或设置参数设置
@@ -265,7 +284,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             if (dict.TryGetValue("ToolName", out var toolName))
                 container.ToolName = toolName?.ToString();
 
-            if (dict.TryGetValue("Settings", out var settingsObj) && settingsObj is List<object> settingsList)
+            if (dict.TryGetValue("Settings", out var settingsObj) && settingsObj is System.Collections.IEnumerable settingsList)
             {
                 foreach (var settingObj in settingsList)
                 {

@@ -142,6 +142,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </summary>
         private void OnWindowClosed(object? sender, EventArgs e)
         {
+            PluginLogger.Info($"[绑定诊断] 自定义调试窗口 Closed | 控件={_control.GetType().Name}", "BindingDiag");
+            // 关闭窗口时显式提交工具调试控件的绑定状态。
+            // 不能只依赖 UserControl.Unloaded：窗口复用、关闭动画或宿主切换
+            // 都可能让 Unloaded 回调晚于节点清理。
+            try
+            {
+                var persistMethod = _control.GetType().GetMethod("PersistParameterBindings");
+                persistMethod?.Invoke(_control, null);
+                PluginLogger.Info($"[绑定诊断] 自定义调试窗口提交完成 | 控件={_control.GetType().Name}", "BindingDiag");
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"关闭调试窗口时持久化绑定失败: {ex.Message}", "CustomDebugWindow");
+            }
+
             // 清理事件绑定
             if (_control != null)
             {

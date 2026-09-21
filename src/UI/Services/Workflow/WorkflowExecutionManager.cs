@@ -36,6 +36,7 @@ namespace SunEyeVision.UI.Services.Workflow
         private readonly IRuntimeInputSnapshotService _runtimeInputSnapshots;
         private readonly Dictionary<string, CancellationTokenSource> _cancellationTokens;
         private readonly Dictionary<string, Task> _runningTasks;
+        private readonly Dictionary<string, WorkflowExecutionSnapshot> _executionSnapshots = new();
         // 所有执行入口共用的工作流运行租约。不能只依赖某个视图的按钮禁用状态，
         // 否则快捷键、预览图点击或其他直接调用方仍可能并发启动同一个工作流。
         private readonly HashSet<string> _activeWorkflowIds = new();
@@ -67,6 +68,27 @@ namespace SunEyeVision.UI.Services.Workflow
         /// 节点执行完成事件
         /// </summary>
         public event EventHandler<NodeExecutionResultEventArgs>? NodeExecutionCompleted;
+        public event EventHandler<WorkflowExecutionSnapshot>? ExecutionSnapshotUpdated;
+
+        public WorkflowExecutionSnapshot? GetExecutionSnapshot(string workflowId)
+        {
+            lock (_lock)
+                return _executionSnapshots.TryGetValue(workflowId, out var snapshot) ? snapshot : null;
+        }
+
+        /// <summary>
+        /// 为工作流建立长期 UI 快照。它只保存展示状态；真正运行前仍会复制不可变的运行请求。
+        /// </summary>
+        public WorkflowExecutionSnapshot EnsureExecutionSnapshot(
+            string workflowId,
+            string workflowName,
+            IEnumerable<SunEyeVision.Workflow.WorkflowNodeBase>? designNodes = null)
+        {
+            var snapshot = GetOrCreateExecutionSnapshot(workflowId, workflowName);
+            if (designNodes != null)
+                snapshot.SynchronizeDefinition(workflowName, designNodes);
+            return snapshot;
+        }
 
         public WorkflowExecutionManager(
             IInputProvider inputProvider,
@@ -282,7 +304,8 @@ namespace SunEyeVision.UI.Services.Workflow
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var ready = pending
-                    .Where(id => workflowPredecessors[id].All(completed.Contains))
+                    .Where(id => workflowPredecessors[id].All(predecessor =>
+                        completed.Contains(predecessor) || failed.Contains(predecessor)))
                     .OrderBy(id => tabs.FindIndex(tab => tab.RootWorkflowId == id))
                     .ToList();
                 if (ready.Count == 0)
@@ -404,57 +427,20 @@ namespace SunEyeVision.UI.Services.Workflow
                     "[REJECTED] 工作流正在运行，已拒绝重复执行请求")));
         }
 
-        private static Dictionary<string, HashSet<string>> BuildWorkflowPredecessors(
-            SolutionExecutionDependencyGraph plan,
-            IEnumerable<string> workflowIds)
-        {
-            var result = workflowIds.ToDictionary(
-                id => id,
-                _ => new HashSet<string>(StringComparer.Ordinal),
-                StringComparer.Ordinal);
-
-            foreach (var dependency in plan.Dependencies)
-            {
-                var sourceSeparator = dependency.SourceScopedNodeId.IndexOf('/');
-                var targetSeparator = dependency.TargetScopedNodeId.IndexOf('/');
-                if (sourceSeparator <= 0 || targetSeparator <= 0)
-                    continue;
-
-                var sourceWorkflowId = dependency.SourceScopedNodeId[..sourceSeparator];
-                var targetWorkflowId = dependency.TargetScopedNodeId[..targetSeparator];
-                if (!string.Equals(sourceWorkflowId, targetWorkflowId, StringComparison.Ordinal) &&
-                    result.TryGetValue(targetWorkflowId, out var predecessors))
-                {
-                    predecessors.Add(sourceWorkflowId);
-                }
-            }
-
-            return result;
-        }
-
-        private static void ApplyProducedGlobalValues(
-            Solution solution,
-            string workflowId,
-            ExecutionResult executionResult,
-            IDictionary<string, object?> runtimeGlobals)
-        {
-            // 当前执行引擎已将公开输出集中到 ExecutionResult.Outputs；
-            // 绑定回写由后续全局变量运行时服务负责。这里先保留已有值，
-            // 确保方案级调度不会因缺少回写实现而阻断编译和运行。
-            _ = solution;
-            _ = workflowId;
-            _ = executionResult;
-            _ = runtimeGlobals;
-        }
-
         /// <summary>
         /// 执行工作流内部逻辑 — 始终从根工作流（RootWorkflowId）读取节点
         /// </summary>
         private async Task<ExecutionResult> ExecuteWorkflowInternal(
             WorkflowTabViewModel workflow,
             CancellationToken cancellationToken,
-            IDictionary<string, object?>? runtimeGlobals = null)
+            IDictionary<string, object?>? globalVariablesOverride = null)
         {
+            var snapshot = GetOrCreateExecutionSnapshot(workflow.RootWorkflowId, workflow.Name);
+            await InvokeOnUIAsync(() =>
+            {
+                snapshot.Begin(workflow.Name);
+                ExecutionSnapshotUpdated?.Invoke(this, snapshot);
+            });
             // 在开始时先发送一条开始日志
             InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] ====== 开始执行工作流 ======")));
 
@@ -478,7 +464,28 @@ namespace SunEyeVision.UI.Services.Workflow
                 if (rootEngineWorkflow == null)
                 {
                     logger.LogError($"根工作流未找到: {workflow.RootWorkflowId}");
-                    return ExecutionResult.CreateFailure($"根工作流未找到: {workflow.RootWorkflowId}");
+                    var missingResult = ExecutionResult.CreateFailure($"根工作流未找到: {workflow.RootWorkflowId}");
+                    await InvokeOnUIAsync(() =>
+                    {
+                        snapshot.Complete(missingResult, _ => "工作流");
+                        ExecutionSnapshotUpdated?.Invoke(this, snapshot);
+                    });
+                    return missingResult;
+                }
+
+                var definitionConsistencyError = ValidateDefinitionConsistency(
+                    workflow,
+                    rootEngineWorkflow);
+                if (definitionConsistencyError != null)
+                {
+                    logger.LogError(definitionConsistencyError);
+                    var consistencyResult = ExecutionResult.CreateFailure(definitionConsistencyError);
+                    await InvokeOnUIAsync(() =>
+                    {
+                        snapshot.Complete(consistencyResult, _ => "工作流");
+                        ExecutionSnapshotUpdated?.Invoke(this, snapshot);
+                    });
+                    return consistencyResult;
                 }
 
                 // ★ 订阅节点状态事件：引擎状态 → 画布节点（解决状态断点）
@@ -487,24 +494,44 @@ namespace SunEyeVision.UI.Services.Workflow
                 executionEngine.NodeStatusChanged += (_, e) =>
                 {
                     var node = FindNodeRecursive(rootEngineWorkflow, e.NodeId);
+                    var snapshotNodeName = GetSnapshotNodeName(rootEngineWorkflow, e.NodeId);
+                    var statusText = e.Status switch
+                    {
+                        NodeStatus.Running => "运行中",
+                        NodeStatus.Completed => "成功",
+                        NodeStatus.Failed => "失败",
+                        NodeStatus.Skipped => "跳过",
+                        _ => "等待中"
+                    };
                     if (node is SunEyeVision.UI.Shared.WorkflowNode uiNode)
                     {
                         InvokeOnUI(() =>
                         {
-                            uiNode.Status = e.Status switch
-                            {
-                                NodeStatus.Running => "运行中",
-                                NodeStatus.Completed => "成功",
-                                NodeStatus.Failed => "失败",
-                                NodeStatus.Skipped => "跳过",
-                                _ => uiNode.Status
-                            };
+                            uiNode.Status = statusText;
+                            snapshot.UpdateNodeStatus(e.NodeId, snapshotNodeName, statusText);
+                            ExecutionSnapshotUpdated?.Invoke(this, snapshot);
                         });
                     }
                     else
                     {
                         logger.LogWarning($"节点状态事件找不到画布节点: {e.NodeId}");
+                        InvokeOnUI(() =>
+                        {
+                            snapshot.UpdateNodeStatus(e.NodeId, snapshotNodeName, statusText);
+                            ExecutionSnapshotUpdated?.Invoke(this, snapshot);
+                        });
                     }
+                };
+
+                // 引擎在每个节点结束时立即发布结果；快照窗口因而能在流程运行中更新耗时，
+                // 而不必等整个流程结束再回填一张静态表。
+                executionEngine.NodeExecutionFinished += (node, nodeResult) =>
+                {
+                    InvokeOnUI(() =>
+                    {
+                        snapshot.UpdateNodeResult(node.Id, GetSnapshotNodeName(rootEngineWorkflow, node.Id), nodeResult);
+                        ExecutionSnapshotUpdated?.Invoke(this, snapshot);
+                    });
                 };
 
                 // 每轮先复制参数，再覆盖本轮已发布的输入快照，避免 UI 后续切图影响本轮。
@@ -536,10 +563,15 @@ namespace SunEyeVision.UI.Services.Workflow
                 var runRequest = new WorkflowRunRequest(
                     workflow.RootWorkflowId,
                     inputImage as IVisionImage,
-                    runtimeGlobals ?? _globalVariables,
+                    globalVariablesOverride ?? _globalVariables,
                     runtimeParameters,
                     nodeParameterOverrides: nodeParameterOverrides);
                 var result = await executionEngine.ExecuteWorkflowAsync(runRequest, cancellationToken);
+                await InvokeOnUIAsync(() =>
+                {
+                    snapshot.Complete(result, nodeId => GetSnapshotNodeName(rootEngineWorkflow, nodeId));
+                    ExecutionSnapshotUpdated?.Invoke(this, snapshot);
+                });
 
                 // 输出结果
                 logger.LogInfo($"工作流执行完成: {rootEngineWorkflow.Name}");
@@ -602,12 +634,169 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] ====== 工作流执行结束 ======")));
                 }
+
                 return result;
             }
             catch (Exception ex)
             {
+                await InvokeOnUIAsync(() =>
+                {
+                    snapshot.Complete(ExecutionResult.CreateFailure(ex.Message), _ => "工作流");
+                    ExecutionSnapshotUpdated?.Invoke(this, snapshot);
+                });
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, $"[ERROR] ExecuteWorkflowInternal异常: {ex.Message}")));
                 throw;
+            }
+        }
+
+        private WorkflowExecutionSnapshot GetOrCreateExecutionSnapshot(string workflowId, string workflowName)
+        {
+            lock (_lock)
+            {
+                if (!_executionSnapshots.TryGetValue(workflowId, out var snapshot))
+                {
+                    snapshot = new WorkflowExecutionSnapshot(workflowId, workflowName);
+                    _executionSnapshots.Add(workflowId, snapshot);
+                }
+                return snapshot;
+            }
+        }
+
+        /// <summary>
+        /// 执行入口的定义一致性校验。
+        /// 根 Tab 未下钻时，UI、Engine、Solution 必须引用同一份工作流定义；
+        /// 下钻子程序时 Tab 正在展示子工作流集合，因此只校验根定义已注册。
+        /// </summary>
+        private string? ValidateDefinitionConsistency(
+            WorkflowTabViewModel tab,
+            SunEyeVision.Workflow.Workflow engineWorkflow)
+        {
+            if (!tab.IsInSubroutine)
+            {
+                if (!ReferenceEquals(tab.WorkflowNodes, engineWorkflow.Nodes) ||
+                    !ReferenceEquals(tab.WorkflowConnections, engineWorkflow.Connections))
+                {
+                    return $"工作流定义引用不一致：Tab、Engine 的节点或连接集合不是同一实例。" +
+                           $" workflow={engineWorkflow.Name}({engineWorkflow.Id})";
+                }
+            }
+
+            var solution = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
+                .ServiceInitializer.SolutionManager?.CurrentSolution;
+            var solutionWorkflow = solution?.Workflows
+                .FirstOrDefault(item => string.Equals(item.Id, engineWorkflow.Id, StringComparison.Ordinal));
+            if (solutionWorkflow != null && !ReferenceEquals(solutionWorkflow, engineWorkflow))
+            {
+                return $"工作流定义引用不一致：Solution 与 Engine 不是同一实例。" +
+                       $" workflow={engineWorkflow.Name}({engineWorkflow.Id})";
+            }
+
+            return null;
+        }
+
+        private string GetSnapshotNodeName(SunEyeVision.Workflow.Workflow rootWorkflow, string nodeId)
+        {
+            var path = new List<string>();
+            return TryFindNodeSnapshotPath(rootWorkflow, nodeId, new HashSet<string>(), path)
+                ? string.Join(" / ", path)
+                : nodeId;
+        }
+
+        private bool TryFindNodeSnapshotPath(
+            SunEyeVision.Workflow.Workflow workflow,
+            string nodeId,
+            HashSet<string> visited,
+            List<string> path)
+        {
+            if (!visited.Add(workflow.Id))
+                return false;
+
+            var direct = workflow.Nodes.FirstOrDefault(node => node.Id == nodeId);
+            if (direct != null)
+            {
+                path.Add(GetNodeDisplayName(direct));
+                return true;
+            }
+
+            foreach (var parent in workflow.Nodes.Where(node => !string.IsNullOrWhiteSpace(node.SubroutineId)))
+            {
+                var subWorkflow = _workflowEngine.GetWorkflow(parent.SubroutineId!);
+                if (subWorkflow == null)
+                    continue;
+
+                var childPath = new List<string>();
+                if (TryFindNodeSnapshotPath(subWorkflow, nodeId, visited, childPath))
+                {
+                    path.Add(GetNodeDisplayName(parent));
+                    path.AddRange(childPath);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string GetNodeDisplayName(SunEyeVision.Workflow.WorkflowNodeBase node)
+        {
+            return !string.IsNullOrWhiteSpace(node.DispName)
+                ? node.DispName
+                : !string.IsNullOrWhiteSpace(node.Name) ? node.Name : node.Id;
+        }
+
+        private static Dictionary<string, HashSet<string>> BuildWorkflowPredecessors(
+            SolutionExecutionDependencyGraph plan,
+            IEnumerable<string> workflowIds)
+        {
+            var knownIds = new HashSet<string>(workflowIds, StringComparer.Ordinal);
+            var predecessors = knownIds.ToDictionary(
+                id => id,
+                _ => new HashSet<string>(StringComparer.Ordinal),
+                StringComparer.Ordinal);
+
+            foreach (var dependency in plan.Dependencies.Where(item => item.Kind == SolutionDependencyKind.GlobalVariable))
+            {
+                var sourceWorkflowId = GetWorkflowId(dependency.SourceScopedNodeId);
+                var targetWorkflowId = GetWorkflowId(dependency.TargetScopedNodeId);
+                if (!string.Equals(sourceWorkflowId, targetWorkflowId, StringComparison.Ordinal) &&
+                    knownIds.Contains(sourceWorkflowId) && knownIds.Contains(targetWorkflowId))
+                {
+                    predecessors[targetWorkflowId].Add(sourceWorkflowId);
+                }
+            }
+
+            return predecessors;
+        }
+
+        private static string GetWorkflowId(string scopedNodeId)
+        {
+            var separatorIndex = scopedNodeId.IndexOf('/');
+            return separatorIndex > 0 ? scopedNodeId[..separatorIndex] : scopedNodeId;
+        }
+
+        /// <summary>
+        /// 把生产节点的结果写入当前解决方案运行的变量快照。这里刻意不修改 Solution.GlobalVariables.Value，
+        /// 防止一次运行把设计期初值污染到方案文件；下一消费者流程只读取 runtimeGlobals。
+        /// </summary>
+        private static void ApplyProducedGlobalValues(
+            Solution solution,
+            string workflowId,
+            ExecutionResult executionResult,
+            IDictionary<string, object?> runtimeGlobals)
+        {
+            foreach (var variable in solution.GlobalVariables.Where(variable =>
+                         string.Equals(variable.ProducerBinding?.WorkflowId, workflowId, StringComparison.Ordinal)))
+            {
+                var producer = variable.ProducerBinding!;
+                if (!executionResult.NodeResults.TryGetValue(producer.NodeId, out var nodeResult) ||
+                    nodeResult.Result == null)
+                {
+                    throw new InvalidOperationException($"全局变量 {variable.Name} 的输入来源未产生结果：{producer.DisplayPath}。");
+                }
+
+                runtimeGlobals[variable.Name] = OutputVariableResolver.Resolve(
+                    nodeResult.Result,
+                    producer.ResultName,
+                    producer.NodeId);
             }
         }
 

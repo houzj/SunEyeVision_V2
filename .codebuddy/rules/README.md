@@ -19,7 +19,8 @@ provider:
 │   ├── no-silent-fallback.mdc        # rule-015 禁止兜底回退
 │   ├── data-driven-first.mdc         # rule-016 数据驱动优先
 │   ├── gitignore-file-reading.mdc    # rule-017 gitignore 屏蔽目录读取规范
-│   └── skill-priority.mdc            # rule-018 Skill 优先级与选择规范
+│   ├── skill-priority.mdc            # rule-018 Skill 优先级与选择规范
+│   └── version-single-source.mdc     # rule-022 版本号单一真源
 ├── 02-development-process/
 │   ├── solution-design.mdc           # rule-004 方案设计
 │   ├── prototype-design-clean-principle.mdc  # rule-008 开发与代码纯净
@@ -58,3 +59,4 @@ provider:
 | 019 | 说人话 | 方案与回复用通俗表达，禁止术语堆砌 |
 | 020 | 计划任务归类 | 按语义归类提交，不依赖 hook 机械匹配 |
 | 021 | 双 AI 协作边界 | 同一目录单写者；禁区（执行链/SDK/主题/插件加载/发布）停止并转交 Codex；任务卡必读必更；代执行需明示 |
+| 022 | 版本号单一真源 | 版本只写 `version.json`；禁止硬编码版本号；发布必须走 `Pack-Release.ps1`；方案格式版本与产品版本解耦；界面读 `AppVersionInfo` |

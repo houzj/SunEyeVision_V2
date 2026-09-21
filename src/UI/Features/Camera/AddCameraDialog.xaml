@@ -23,6 +23,21 @@
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"/>
         </Style>
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
@@ -67,29 +82,29 @@
         <GroupBox Grid.Row="2" Header="发现的相机" Margin="0,0,0,12" Padding="12">
             <ListBox ItemsSource="{Binding DiscoveredCameras}"
                      SelectedItem="{Binding SelectedCamera}"
+                     SelectionMode="Single"
+                     ItemContainerStyle="{StaticResource {x:Type ListBoxItem}}"
                      Height="200"
                      BorderThickness="1"
                      BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
                      Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <CheckBox IsChecked="{Binding IsSelected}" Margin="4">
-                            <StackPanel>
-                                <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="14" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
-                                <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,2,0,0">
-                                    <Run Text="IP: "/>
-                                    <Run Text="{Binding IpAddress}"/>
-                                </TextBlock>
-                                <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,2,0,0">
-                                    <Run Text="制造商: "/>
-                                    <Run Text="{Binding Manufacturer}"/>
-                                </TextBlock>
-                                <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,2,0,0">
-                                    <Run Text="型号: "/>
-                                    <Run Text="{Binding Model}"/>
-                                </TextBlock>
-                            </StackPanel>
-                        </CheckBox>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="14"/>
+                            <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,2,0,0">
+                                <Run Text="IP: "/>
+                                <Run Text="{Binding IpAddress}"/>
+                            </TextBlock>
+                            <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,2,0,0">
+                                <Run Text="制造商: "/>
+                                <Run Text="{Binding Manufacturer}"/>
+                            </TextBlock>
+                            <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,2,0,0">
+                                <Run Text="型号: "/>
+                                <Run Text="{Binding Model}"/>
+                            </TextBlock>
+                        </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

@@ -49,6 +49,7 @@
     <ProjectReference Include="..\Workflow\SunEyeVision.Workflow.csproj" />
     <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
     <ProjectReference Include="..\Plugin.Infrastructure\SunEyeVision.Plugin.Infrastructure.csproj" />
+    <ProjectReference Include="..\DeviceDriver\SunEyeVision.DeviceDriver.csproj" />
     <!-- CommonControl: 脚本编辑器共享内核（高亮/补全/诊断/workspace）。
          宿主统一加载（对齐 AvalonEdit/Roslyn 重型依赖模式），插件 Assembly.LoadFrom 时
          CLR 在 dev/Debug/ 根目录 probing 解析，运行时才能加载 CommonControl.dll。 -->

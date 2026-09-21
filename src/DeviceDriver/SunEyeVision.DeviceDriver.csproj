@@ -7,12 +7,23 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SunEyeVision.DeviceDriver</RootNamespace>
     <AssemblyName>SunEyeVision.DeviceDriver</AssemblyName>
+    <!-- 不把厂商 SDK 二进制提交到仓库。部署机可通过 MVS_SDK_ROOT 或 MvsSdkRoot 指定安装目录。 -->
+    <MvsSdkRoot Condition="'$(MvsSdkRoot)' == '' and '$(MVS_SDK_ROOT)' != ''">$(MVS_SDK_ROOT)</MvsSdkRoot>
+    <MvsSdkRoot Condition="'$(MvsSdkRoot)' == '' and Exists('D:\Program Files\MVS\Development')">D:\Program Files\MVS\Development</MvsSdkRoot>
+    <DefineConstants Condition="Exists('$(MvsSdkRoot)\DotNet\win64\MvCameraControl.Net.dll')">$(DefineConstants);MVS_SDK_AVAILABLE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" />
     <PackageReference Include="OpenCvSharp4.Extensions" Version="4.13.0.20260222" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260222" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(MvsSdkRoot)\DotNet\win64\MvCameraControl.Net.dll')">
+    <Reference Include="MvCameraControl.Net">
+      <HintPath>$(MvsSdkRoot)\DotNet\win64\MvCameraControl.Net.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

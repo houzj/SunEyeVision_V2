@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Media.Imaging;
+using System.Windows.Media;
 using SunEyeVision.CvAdapter;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
@@ -23,9 +24,35 @@ namespace SunEyeVision.UI.Converters
             {
                 HalImage hal => hal.ToBitmapSource(),
                 CvVisionImageAdapter cv => cv.ToBitmapSource(),
-                _ => throw new NotSupportedException(
-                    $"不支持的图像类型: {image.GetType().FullName}"),
+                _ => CreateBitmapSource(image),
             };
+        }
+
+        private static BitmapSource CreateBitmapSource(IVisionImage image)
+        {
+            // 相机适配器只需要实现 SDK 的像素数据契约即可接入预览，
+            // 不要求每个厂商适配器再依赖 WPF 或重复编写显示转换。
+            var pixels = image.GetPixelData();
+            var format = image.Channels == 1 ? PixelFormats.Gray8 : PixelFormats.Bgr24;
+            var bytesPerPixel = format.BitsPerPixel / 8;
+            var stride = image.Width * bytesPerPixel;
+            var requiredLength = checked(stride * image.Height);
+            if (pixels.Length < requiredLength)
+            {
+                Array.Resize(ref pixels, requiredLength);
+            }
+
+            var bitmap = BitmapSource.Create(
+                image.Width,
+                image.Height,
+                96,
+                96,
+                format,
+                null,
+                pixels,
+                stride);
+            bitmap.Freeze();
+            return bitmap;
         }
     }
 

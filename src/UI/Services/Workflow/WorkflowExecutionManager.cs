@@ -404,10 +404,56 @@ namespace SunEyeVision.UI.Services.Workflow
                     "[REJECTED] 工作流正在运行，已拒绝重复执行请求")));
         }
 
+        private static Dictionary<string, HashSet<string>> BuildWorkflowPredecessors(
+            SolutionExecutionDependencyGraph plan,
+            IEnumerable<string> workflowIds)
+        {
+            var result = workflowIds.ToDictionary(
+                id => id,
+                _ => new HashSet<string>(StringComparer.Ordinal),
+                StringComparer.Ordinal);
+
+            foreach (var dependency in plan.Dependencies)
+            {
+                var sourceSeparator = dependency.SourceScopedNodeId.IndexOf('/');
+                var targetSeparator = dependency.TargetScopedNodeId.IndexOf('/');
+                if (sourceSeparator <= 0 || targetSeparator <= 0)
+                    continue;
+
+                var sourceWorkflowId = dependency.SourceScopedNodeId[..sourceSeparator];
+                var targetWorkflowId = dependency.TargetScopedNodeId[..targetSeparator];
+                if (!string.Equals(sourceWorkflowId, targetWorkflowId, StringComparison.Ordinal) &&
+                    result.TryGetValue(targetWorkflowId, out var predecessors))
+                {
+                    predecessors.Add(sourceWorkflowId);
+                }
+            }
+
+            return result;
+        }
+
+        private static void ApplyProducedGlobalValues(
+            Solution solution,
+            string workflowId,
+            ExecutionResult executionResult,
+            IDictionary<string, object?> runtimeGlobals)
+        {
+            // 当前执行引擎已将公开输出集中到 ExecutionResult.Outputs；
+            // 绑定回写由后续全局变量运行时服务负责。这里先保留已有值，
+            // 确保方案级调度不会因缺少回写实现而阻断编译和运行。
+            _ = solution;
+            _ = workflowId;
+            _ = executionResult;
+            _ = runtimeGlobals;
+        }
+
         /// <summary>
         /// 执行工作流内部逻辑 — 始终从根工作流（RootWorkflowId）读取节点
         /// </summary>
-        private async Task ExecuteWorkflowInternal(WorkflowTabViewModel workflow, CancellationToken cancellationToken)
+        private async Task<ExecutionResult> ExecuteWorkflowInternal(
+            WorkflowTabViewModel workflow,
+            CancellationToken cancellationToken,
+            IDictionary<string, object?>? runtimeGlobals = null)
         {
             // 在开始时先发送一条开始日志
             InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] ====== 开始执行工作流 ======")));
@@ -432,7 +478,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 if (rootEngineWorkflow == null)
                 {
                     logger.LogError($"根工作流未找到: {workflow.RootWorkflowId}");
-                    return;
+                    return ExecutionResult.CreateFailure($"根工作流未找到: {workflow.RootWorkflowId}");
                 }
 
                 // ★ 订阅节点状态事件：引擎状态 → 画布节点（解决状态断点）
@@ -490,7 +536,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 var runRequest = new WorkflowRunRequest(
                     workflow.RootWorkflowId,
                     inputImage as IVisionImage,
-                    _globalVariables,
+                    runtimeGlobals ?? _globalVariables,
                     runtimeParameters,
                     nodeParameterOverrides: nodeParameterOverrides);
                 var result = await executionEngine.ExecuteWorkflowAsync(runRequest, cancellationToken);
@@ -556,6 +602,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] ====== 工作流执行结束 ======")));
                 }
+                return result;
             }
             catch (Exception ex)
             {

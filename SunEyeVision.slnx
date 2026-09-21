@@ -120,4 +120,7 @@
   <Folder Name="/Tests/SunEyeVision.UI.Tests/">
     <Project Path="tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj" />
   </Folder>
+  <Folder Name="/Tests/SunEyeVision.DeviceDriver.Tests/">
+    <Project Path="tests/SunEyeVision.DeviceDriver.Tests/SunEyeVision.DeviceDriver.Tests.csproj" />
+  </Folder>
 </Solution>

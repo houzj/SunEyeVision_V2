@@ -226,37 +226,47 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="16">
 
-                        <!-- 厂商参数设置 -->
-                        <!-- TODO: 未来实现厂商特定参数View（HikvisionParamsView、DahuaParamsView等） -->
-                        <!-- 当前显示占位符 -->
                         <StackPanel Margin="16,0,16,16">
-                            <TextBlock Text="厂商参数设置"
+                            <TextBlock Text="设备参数"
                                        FontSize="14"
                                        FontWeight="Medium"
                                        Margin="0,0,0,12"
                                        Foreground="#333333"/>
-                            
-                            <TextBlock Text="参数编辑功能正在开发中..."
+                            <TextBlock Text="{Binding ParameterStatus}"
                                        FontSize="12"
-                                       Foreground="#999999"
-                                       Margin="0,0,0,8"/>
-                            
-                            <TextBlock Text="当前支持的相机类型："
-                                       FontSize="12"
-                                       Foreground="#666666"
-                                       Margin="0,0,0,8"/>
-                            
-                            <StackPanel Margin="16,0,0,0">
-                                <TextBlock Text="• 海康相机 (Hikvision)"
-                                           FontSize="11"
-                                           Foreground="#666666"/>
-                                <TextBlock Text="• 大华相机 (Dahua)"
-                                           FontSize="11"
-                                           Foreground="#666666"/>
-                                <TextBlock Text="• 巴斯勒相机 (Basler)"
-                                           FontSize="11"
-                                           Foreground="#666666"/>
-                            </StackPanel>
+                                       Foreground="#777777"
+                                       Margin="0,0,0,10"/>
+                            <ItemsControl ItemsSource="{Binding Parameters}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding DisplayName}"
+                                                       VerticalAlignment="Center"/>
+                                            <Grid Grid.Column="1">
+                                                <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                         MinHeight="30" Padding="6"
+                                                         IsReadOnly="{Binding IsReadOnly}"
+                                                         Visibility="{Binding IsTextValue, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                <CheckBox Content="启用"
+                                                          VerticalAlignment="Center"
+                                                          IsChecked="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                          IsEnabled="{Binding IsEditable}"
+                                                          Visibility="{Binding IsBoolean, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                <ComboBox ItemsSource="{Binding EnumValues}"
+                                                          DisplayMemberPath="DisplayName"
+                                                          SelectedValuePath="Value"
+                                                          SelectedValue="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                          IsEnabled="{Binding IsEditable}"
+                                                          Visibility="{Binding IsEnumeration, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                            </Grid>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                         
                         <!-- 底部按钮 -->

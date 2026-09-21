@@ -307,10 +307,11 @@
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"/>
 
-                <!-- Layer 1: 算法结果层（DrawingContext渲染，高性能） -->
+                <!-- Layer 1: 算法结果层（RenderScene + DrawingVisual Tile） -->
                 <local:ResultRenderLayer x:Name="ResultRenderLayer"
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center"
+                                         CacheMode="BitmapCache"
                                          IsHitTestVisible="False"/>
 
                 <!-- Layer 2: ROI 交互层（顶层，调试窗口生命周期） -->

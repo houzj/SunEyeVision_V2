@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 using System.Windows;
 using System.Windows.Controls;
@@ -44,6 +45,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     /// </summary>
     public partial class ImageControl : UserControl, INotifyPropertyChanged
     {
+        private static long _nextImageIdentity;
         #region 私有字段
 
         private double _zoom = 1.0;
@@ -392,6 +394,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             add => AddHandler(CanvasMouseLeftButtonDownEvent, value);
             remove => RemoveHandler(CanvasMouseLeftButtonDownEvent, value);
+        }
+
+        /// <summary>结果图形命中事件。该事件在 CanvasMouseLeftButtonDown 未处理时触发。</summary>
+        public static readonly RoutedEvent ResultHitEvent =
+            EventManager.RegisterRoutedEvent(nameof(ResultHit), RoutingStrategy.Bubble,
+                typeof(EventHandler<ResultHitEventArgs>), typeof(ImageControl));
+
+        public event EventHandler<ResultHitEventArgs> ResultHit
+        {
+            add => AddHandler(ResultHitEvent, value);
+            remove => RemoveHandler(ResultHitEvent, value);
         }
 
         /// <summary>
@@ -745,6 +758,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var oldImage = e.OldValue as BitmapSource;
                 var newImage = e.NewValue as BitmapSource;
                 control.DisplayImage.Source = newImage;
+                control.ResultRenderLayer.SetImageIdentity(Interlocked.Increment(ref _nextImageIdentity));
 
                 // 同步Canvas尺寸和ImageContainer尺寸
                 if (newImage != null)
@@ -1069,6 +1083,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (args.Handled)
             {
                 return;
+            }
+
+            var hitItem = ResultRenderLayer.HitTest(imagePos);
+            if (hitItem != null)
+            {
+                RaiseEvent(new ResultHitEventArgs(hitItem, imagePos, e, ResultHitEvent));
+                if (e.Handled)
+                    return;
             }
 
             if (!EnablePanning) return;

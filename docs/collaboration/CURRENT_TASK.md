@@ -132,10 +132,31 @@
 - 2026-09-19 批量渲染取消源清理修复：`ResultRenderLayer` 的后台构建完成回调在释放 `CancellationTokenSource` 前清空字段，`CancelBatchBuild` 改为先摘除引用并捕获重复释放竞态；关闭调试窗口和清理结果不再抛 `ObjectDisposedException`。同时新增“轮廓提取”阶段耗时记录，用于分析 100 Blob 约 300ms 的真实构成。SDK、Blob Debug 构建均 0 error。
 - 2026-09-19 Blob 显示与筛选一致性：质心、轮廓默认 `IsVisible=false`；Blob 外接矩形改为 Halcon `SmallestRectangle2` 的最小外接旋转矩形；面积筛选在 C# 结果链再次显式校验，确保 UI 参数确实参与保留集合。显示项遵循样式可见性。BlobAnalysis Debug 构建 0 error。
 - 2026-09-19 Blob 输出开关：新增 `OutputBlobImage`、`OutputBinaryImage`、`OutputContours` 运行参数；二值图和灰度图按开关生成，OverlayImage 不再无条件生成，轮廓提取和轮廓图元也由轮廓输出开关控制。Blob筛选页增加“输出”区域，Blob图像默认开、二值化图像和轮廓默认关。BlobAnalysis Debug 构建 0 error。
+- 2026-09-19 交互渲染优化：文本保持可见，不隐藏文本；文本绘制先按当前视口过滤，只排版视口内文本。结果层缩放/视口变化通过 Dispatcher Render 优先级合并连续重绘请求，避免一次拖动触发多次完整重绘；处理 Dispatcher 关闭竞态。Plugin.SDK Debug 构建 0 error。
+- 2026-09-19 文本绘制缓存：结果层按文本内容、颜色、字号和粗体状态缓存 `FormattedText`，最多保留 4096 条并自动淘汰，文本仍始终可见；Plugin.SDK Debug 构建 0 error。
+- 2026-09-19 变换缓存：确认图像、结果层、交互层共享 `ImageContainer` 的缩放/平移变换；结果层启用 WPF `BitmapCache`，平移时优先复用已绘制轮廓和文本缓存，结果内容变化时由 WPF 自动失效重绘。Plugin.SDK Debug 构建 0 error。
+- 2026-09-19 渲染架构基线：保存 `docs/01-方案设计/2026/09/19/大批量结果渲染架构基线-20260919.md`。确认现有单体 `FrameworkElement.OnRender` 全量重绘是轮廓交互卡顿的根本架构风险；后续以 `RenderScene + TileScene + ResultTileHost` 为目标，先完成 WPF DrawingVisual Tile 后端，再评估 Direct2D，不再继续堆叠单体结果层的局部补丁。
+- 2026-09-19 M1 渲染契约启动：新增 SDK `RenderScene`、`RenderTileScene`、`RenderTileKey` 和 `IRenderSceneCompiler`，建立算法结果与 WPF/Direct2D 后端之间的场景编译边界；暂不替换旧结果层，Plugin.SDK Debug 构建 0 error。
+- 2026-09-19 M2 场景编译器第一版：新增 `RenderSceneCompiler`，按图像坐标边界将图形/文本结果项编译到 512×512 Tile，并提供视口 Tile 查询；当前保留结果项引用，后续再将单个大批次细分为独立 Tile 几何。Plugin.SDK Debug 构建 0 error。
+- 2026-09-19 M3 Tile 宿主第一版：`ResultRenderLayer` 改为继承 `ResultTileHost`，结果项异步编译为 `RenderScene`，仅创建和刷新当前视口内的 `DrawingVisual`；平移/缩放不再进入单体 `OnRender` 全量路径，场景编译支持取消和版本隔离。SDK、UI Debug 构建均 0 error；仍需运行时大结果验证及后续 M4 交互空间索引。
+- 2026-09-19 M4 空间索引第一步：`RenderScene` 增加按矩形/点位的去重候选查询，`ResultRenderLayer.QueryHitCandidates` 暴露图像坐标命中候选；索引只缩小候选范围，精确几何命中仍由交互层执行。Plugin.SDK Debug 构建 0 error。
+- 2026-09-19 M4 精确命中第一版：新增 `RenderHitTester`，支持点、线段、轮廓/批量轮廓、圆、旋转矩形、多边形和圆弧的容差命中；`ResultRenderLayer.HitTest` 先走 Tile 候选索引，再执行几何精确测试。Plugin.SDK Debug 构建 0 error；尚未接入具体宿主的点击选择语义。
+- 2026-09-19 M4 宿主接入：`ImageControl` 新增 `ResultHit` 路由事件；现有 `CanvasMouseLeftButtonDown` 未处理时才调用结果命中，ROI/卡尺等已有交互优先，命中事件处理后才阻止平移。Plugin.SDK Debug 构建 0 error。
+- 2026-09-19 M4 契约测试：新增 `RenderHitTestingContractTests`，覆盖圆周容差、旋转矩形内部/边缘命中和跨 Tile 候选去重，3/3 通过；测试构建存在既有 x64/MSIL 架构警告，无新增错误。
+- 2026-09-19 M5 性能基线测试：新增 `RenderScenePerformanceTests`，覆盖 3000、10000、71905、100000 个点结果的场景编译与 Tile 候选查询，4/4 通过；当前 Debug 测试总耗时约 2.7 秒，后续需在真实轮廓、文本和 UI 平移/缩放场景下补充帧率与内存指标。
+- 2026-09-19 M5 Tile 复用优化：`ResultTileHost` 视口变化时复用已存在的 `DrawingVisual`，只为新进入视口的 Tile 首次绘制；样式/缩放/场景变化仍显式强制重绘。Plugin.SDK Debug 构建 0 error。
+- 2026-09-19 M5 运行统计：`ResultTileHost` 新增 `ResultTileHostStats`，统计视口刷新、Tile 创建/重绘/复用/卸载，可在运行时验证平移是否命中 Tile 复用路径。Plugin.SDK Debug 构建 0 error。
+- 2026-09-19 M5 UI 回归：主 UI Debug 构建通过，0 error；现有 XML/nullable/架构警告未因渲染改动新增错误。
+- 2026-09-19 运行卡死修复：用户实测算法已成功但 UI 在渲染阶段未响应、内存约 1.5GB；日志确认卡点位于结果提交之后。根因是场景先于图像布局完成时，`ResultTileHost` 在无视口状态下默认渲染全部 Tile。现改为无视口时清空/不创建 Tile，等待 `ImageControl` 首次提交视口后只渲染可见 Tile；UI Debug 构建 0 error，需用户复测大批量 Blob。
+- 2026-09-20 卡死复核与诊断：最新 `logs/2026/09/20/SunEyeVision_000038.txt` 在图像载入成功后没有出现 Blob 工具“开始执行/成功”，因此不能把该次卡死直接归因于渲染；同时确认 `RenderContours` 的批量几何缓存未完成时存在逐轮廓整批回退，会在每个可见 Tile 重复展开大结果。已新增 `RenderDiag` 阶段日志（场景编译、视口刷新、Tile 创建/重绘/复用）并移除该高风险回退：缓存未就绪时跳过绘制，缓存完成后再刷新。UI Debug 构建 0 error，需依据下一次日志判断实际卡点。
+- 2026-09-20 日志 `logs/2026/09/20/SunEyeVision_001431.txt` 已完成证据闭环：Blob 算法 00:14:49.107 成功、工作流 00:14:49.112 完成；场景编译约 103 ms，但随后 100 个可见 Tile 连续完整重绘两次（1077.8 ms、882.6 ms），与批量缓存未就绪后再次 `RequestRender()` 的代码路径一致。`ResultRenderLayer` 现将场景提交延后到批量几何缓存完成，并记录缓存构建开始/完成耗时，消除首次未命中缓存的整批重绘。Plugin.SDK Debug 构建 0 error；渲染契约/性能测试 7/7 通过，待用户复测并提供新日志确认重绘次数与总耗时。
+- 2026-09-20 日志 `logs/2026/09/20/SunEyeVision_003037.txt` 验证重复重绘已消失：批量缓存构建 1224.9 ms，场景提交后仅一次 `renders=100`，但该次仍耗时 2252.3 ms。代码追溯确认每个 Tile 的 `RenderContours` 原先按整个视口选择缓存几何，导致 100 个 Tile 重复绘制同一批几何。现改为使用当前 Tile 的 `(X,Y)` 只绘制对应缓存几何；SDK Debug 构建 0 error，渲染契约/性能测试 7/7 通过，待 UI Debug 构建及下一次运行日志验证单次渲染耗时。
+- 2026-09-20 Tile 设计复核：日志确认按 Tile 渲染仍可能让 WPF 提交 80–100 个 Visual；同时旧批次几何按 1000 条轮廓合并后再按 Bounds 复制到多个 Tile，单个 Tile 仍承载大几何。结果层现改为按单轮廓空间范围分组、每个 Tile 独立构建几何，并增加 `tileTotalMs`/`tileMaxMs` 诊断；大视口超过 24 个可见 Tile 时合并为单 Visual，局部视口继续使用 Tile。SDK/UI Debug 构建 0 error；渲染契约/性能测试 7/7 通过，待单例运行确认大视口和局部缩放耗时。
+- 2026-09-21 渲染自分析日志：`ResultTileHost` 增加 trace、刷新 reason、viewport、composite/tiles 模式、绘制总耗时、最慢 Tile、管理开销、托管内存/工作集，并在超过 100ms 时输出 `RenderAnalysis` 自动诊断（`single-tile-heavy`、`tile-count-heavy`、`visual-management-heavy`、`composite-geometry-heavy`、`batch-cache-build-heavy`、`scene-compile-heavy`）。Plugin.SDK/UI Debug 构建 0 error；渲染契约/性能测试 7/7 通过。
+- 2026-09-21 单例闭环日志 `logs/2026/09/21/SunEyeVision_081158.txt`：图像路径为 `C:\Users\houzhongjie\Desktop\OK\103821989.png`，图像 5120×5120，Blob 结果 3000 个、总面积 1419758；图像载入约 979 ms，Blob 算法约 600 ms，工作流约 1.7 s。首次全视口结果提交进入 `mode=composite`，`sceneTiles=100`，实际绘制 594.2 ms、刷新总耗时 599.4 ms，自动诊断为 `composite-geometry-heavy`，管理开销仅 5.2 ms，工作集约 942 MB；随后一次大视口变化仍有 158.4 ms 绘制/160.9 ms 总耗时。完成缓存后局部 Tile/composite 缩放平移大多约 0.2–12 ms。证据表明当前首帧瓶颈是合并 Visual 内绘制 322 个 Tile 几何，而不是 Tile Visual 管理；后续优化应先做可独立测量的“首帧几何绘制”实验，不再凭感觉调整 Tile 大小。
+- 2026-09-21 方案固化：新增 `docs/01-方案设计/2026/09/21/全视口大视口GPU几何批处理渲染优化方案-20260921.md`。方案明确不以位图替代矢量作为主方向，改为 GPU 连续顶点/索引 Batch；Tile 退回空间索引、命中候选和局部范围管理，不再作为独立 WPF Visual；记录 Direct3D 11 主路径、Direct2D Geometry Realization 过渡路径、图像切换的 ImageIdentity/RenderGeneration 失效规则及 M1–M4 验收指标。
 
-## 相机架构同步与整改基线（2026-09-21）
-
-- 当前 worktree 已从游离提交 `1eb5aadc` 建立保护分支 `codex/sync-main-20260921`，并保存相机架构改动基线提交 `2f868568`。
-- 已合并主分支 `main` 的已提交代码（基线 `eb22d2b4`），保留主分支最新的参数契约、工作流定义服务、执行快照和批量渲染改动。
-- 相机整改计划：`docs/01-方案设计/2026/09/相机采集架构整改实施计划-20260919.md`。
-- 旧 `ICameraService` / `CameraPoolManager` 不恢复兼容 Facade；相机整改按 Runtime 会话与真实连接 → 管理器状态与持久化 → MVS 真机能力 → 主题完善 → 工作流采集接入 → 全量验收执行。
+- 2026-09-21 GPU Batch 第一阶段实现：新增 SDK 后端无关的 `RenderBatchScene`、`RenderBatch`、`RenderBatchRange` 与 `RenderBatchCompiler`，按颜色/线宽/闭合状态合并普通轮廓和 `BatchedContourGeometry`，连续保存顶点和范围表；结果层后台编译并缓存冻结 WPF 几何，绘制时跳过已编译轮廓，保留变换轮廓兼容路径。新增 `ImageIdentity` 和渲染代次校验，图像切换会取消旧批次并丢弃过期回写。当前实际后端标记为 `wpf-batch`，尚未宣称为 D3D11 设备绘制。
+- 验证：Plugin.SDK Release 构建 0 error；渲染相关测试 22/22 通过；此前 UI Release 构建 0 error。等待重新构建后由用户手动验证大批量 Blob 全视口、缩放/平移、图像切换、OK/NG 可见性、命中高亮及快速刷新。
+- 2026-09-21 日志 `logs/2026/09/21/SunEyeVision_102232.txt` 诊断：选中 Blob 节点时同一组 6000 条轮廓连续启动两次批量/场景编译，第一次约 144 ms 后取消，第二次批量几何编译约 476 ms，首帧 WPF 几何绘制约 218 ms。结果层增加同一显示项引用集合去重，避免 `SetDisplayCollector`/`SetRegionItems` 连续调用重复编译；图像身份变化仍会强制清空并重建。Plugin.SDK Debug 构建、渲染测试 22/22、UI Release 构建均通过。
+- 2026-09-21 取消竞态修复：日志报告图像切换时 `CancelRenderBatchBuild()` 对已由 Dispatcher 回调释放的 `CancellationTokenSource` 再次 `Cancel()`，抛出 `ObjectDisposedException`。取消操作现为幂等，捕获已释放源并安全忽略；Plugin.SDK Debug 构建 0 error，渲染测试 22/22 通过。

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 // 解决 System.Windows.Media.LineSegment 与 SDK LineSegment 的命名冲突
@@ -31,6 +33,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         // 视口裁剪（图像坐标系）
         private double _viewLeft, _viewTop, _viewRight, _viewBottom;
         private bool _hasViewport;
+
+        // 耗时诊断：_renderSw 记录整帧 OnRender 耗时；_contourMs/_vertexCount 记录轮廓批次
+        private readonly Stopwatch _renderSw = Stopwatch.StartNew();
+        private double _contourMs;
+        private int _vertexCount;
 
         // LOD 阈值：当缩放倍率低于此值且 Cross 数量超过阈值时启用密度采样
         private const double LOD_ZOOM_THRESHOLD = 0.15;
@@ -290,6 +297,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
+
+            // 诊断：输出上一帧整体耗时与轮廓分支耗时，用于定位耗时归属（轮廓 vs 其它图元）
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[RenderDiag] OnRender prev: total={_renderSw.Elapsed.TotalMilliseconds:F1}ms, contour={_contourMs:F1}ms, other={Math.Max(0, _renderSw.Elapsed.TotalMilliseconds - _contourMs):F1}ms, contourVerticesUpperBound={_vertexCount}, scale={_viewportScale:F3}",
+                "ResultRenderLayer");
+            _renderSw.Restart();
 
             // ★ 不再清空 _brushCache / _penCache，缓存可跨渲染复用
             // Pen 键已包含厚度信息，不同线宽自动对应不同缓存项
@@ -655,7 +668,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                             ? (isUnified || isPass ? defaultBrush : ngBrush)
                             : null;
                         var cachedPen = isUnified || isPass ? defaultPen : ngPen;
-                        IEnumerable<StreamGeometry> visibleGeometries;
+                        HashSet<StreamGeometry> visibleGeometries;
                         if (!_hasViewport)
                         {
                             visibleGeometries = new HashSet<StreamGeometry>(cachedGeometries.Values.SelectMany(g => g));
@@ -674,10 +687,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                                         selected.Add(geometry);
                             visibleGeometries = selected;
                         }
+                        var contours = batch.Contours;
+                        var verticesUpperBound = 0;
+                        for (var c = 0; c < contours.Count; c++) verticesUpperBound += contours[c].Length;
+                        var drawSw = Stopwatch.StartNew();
+                        var drawn = 0;
                         foreach (var cachedGeometry in visibleGeometries)
                         {
                             dc.DrawGeometry(cachedFill, cachedPen, cachedGeometry);
+                            drawn++;
                         }
+                        drawSw.Stop();
+                        _contourMs = drawSw.Elapsed.TotalMilliseconds;
+                        _vertexCount = verticesUpperBound;
+                        VisionLogger.Instance.Log(LogLevel.Info,
+                            $"[RenderDiag] batch draw: viewport={_hasViewport}, rect=({_viewLeft:F0},{_viewTop:F0},{_viewRight:F0},{_viewBottom:F0}), tiles={cachedGeometries.Count}, selectedGeometries={visibleGeometries.Count}, drawn={drawn}, contours={contours.Count}, verticesUpperBound={verticesUpperBound}, drawMs={drawSw.Elapsed.TotalMilliseconds:F1}, pass={isPass}",
+                            "ResultRenderLayer");
                         continue;
                     }
                     foreach (var pts in batch.Contours)

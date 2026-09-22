@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -429,7 +429,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                             .Where(b => b.HasContour)
                                             .ToList();
                                         var contourStyle = parameters.ResultPresentation.GetGraphicsStyle("contours");
-                                        if (parameters.OutputContours && contourStyle.IsVisible && contourBlobs.Count > 0)
+                                        // 可见性由渲染层按样式控制，执行期不过滤 —— 否则"隐藏后执行、再显示"时几何根本不存在
+                                        if (parameters.OutputContours && contourBlobs.Count > 0)
                                         {
                                             var okContours = contourBlobs
                                                 .Where(b => b.JudgmentPassed)
@@ -444,22 +445,20 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         }
 
                                         // 外接矩形（根据 JudgmentPassed 显示 OK/NG 颜色）
+                                        // 可见性由渲染层按样式控制，执行期不过滤 —— 否则"隐藏后执行、再显示"时几何根本不存在
                                         var blobStyle = parameters.ResultPresentation.GetGraphicsStyle("blobs");
-                                        if (blobStyle.IsVisible)
-                                        {
-                                            var okBoxes = displayBlobs.Where(b => b.JudgmentPassed && b.RotatedBoundingBox is { Length: >= 4 })
-                                                .Select(b => b.RotatedBoundingBox!).ToList();
-                                            var ngBoxes = displayBlobs.Where(b => !b.JudgmentPassed && b.RotatedBoundingBox is { Length: >= 4 })
-                                                .Select(b => b.RotatedBoundingBox!).ToList();
-                                            display.AddContourBatch(blobStyle, okBoxes, true);
-                                            display.AddContourBatch(blobStyle, ngBoxes, false);
-                                        }
+                                        var okBoxes = displayBlobs.Where(b => b.JudgmentPassed && b.RotatedBoundingBox is { Length: >= 4 })
+                                            .Select(b => b.RotatedBoundingBox!).ToList();
+                                        var ngBoxes = displayBlobs.Where(b => !b.JudgmentPassed && b.RotatedBoundingBox is { Length: >= 4 })
+                                            .Select(b => b.RotatedBoundingBox!).ToList();
+                                        display.AddContourBatch(blobStyle, okBoxes, true);
+                                        display.AddContourBatch(blobStyle, ngBoxes, false);
 
                                         // 质心十字（根据 JudgmentPassed 显示 OK/NG 颜色）
                                         var centroidStyle = parameters.ResultPresentation.GetGraphicsStyle("centroids");
                                         foreach (var blob in displayBlobs)
                                         {
-                                            if (centroidStyle.IsVisible && (blob.CentroidX > 0 || blob.CentroidY > 0))
+                                            if (blob.CentroidX > 0 || blob.CentroidY > 0)
                                                 display.AddCross(centroidStyle,
                                                     new WpfPoint(blob.CentroidX, blob.CentroidY), blob.JudgmentPassed);
                                         }

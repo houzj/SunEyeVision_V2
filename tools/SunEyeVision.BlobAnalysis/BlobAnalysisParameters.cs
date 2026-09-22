@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -335,7 +335,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public bool IsBlobCountFilterEnabled { get; set; } = true;
 
         [DisplayName("查找数量")]
-        public int BlobCountLimit { get; set; } = 3000;
+        public int BlobCountLimit { get; set; } = 1000;
 
         [DisplayName("Blob图像输出")]
         public bool OutputBlobImage { get; set; } = true;
@@ -347,7 +347,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public bool OutputContours { get; set; }
 
         public const int BlobCountLimitMin = 1;
-        public const int BlobCountLimitMax = 1000000;
+        public const int BlobCountLimitMax = 20000;
 
         private static ResultPresentationConfig CreateResultPresentation()
         {
@@ -366,7 +366,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
             config.Judgments.Add(new() { Key = "per-blob-rectangularity", Name = "每个Blob矩形度", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 120 });
             config.Graphics.Add(new() { Key = "blobs", Name = "外接矩形", Order = 10, Style = new() { Name = "Blobs", LineWidth = 2 } });
             config.Graphics.Add(new() { Key = "centroids", Name = "质心", Order = 20, Style = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8, IsVisible = false } });
-            config.Graphics.Add(new() { Key = "contours", Name = "轮廓", Order = 30, Style = new() { Name = "Contours", LineWidth = 1 } });
+            config.Graphics.Add(new() { Key = "contours", Name = "轮廓", Order = 30, Style = new() { Name = "Contours", LineWidth = 1, IsVisible = false } });
             config.Graphics.Add(new() { Key = "inspection-roi", Name = "检测区", Order = 40, Style = new() { Name = "InspectionRoi", LineWidth = 1, OkColor = Color.FromRgb(0, 0, 255) } });
             config.Graphics.Add(new() { Key = "mask-roi", Name = "屏蔽区", Order = 50, Style = new() { Name = "MaskRoi", LineWidth = 1, OkColor = Color.FromRgb(0xFF, 0xA5, 0x00) } });
             config.Texts.Add(new() { Key = "area", Name = "面积列表", Order = 10, Style = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 0, PositionY = 0 } });

@@ -27,8 +27,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private readonly Dictionary<uint, SolidColorBrush> _brushCache = new();
         private readonly Dictionary<long, Pen> _penCache = new();
         private readonly Dictionary<BatchedContourGeometry, IReadOnlyDictionary<(int X, int Y), IReadOnlyList<StreamGeometry>>> _batchGeometryCache = new();
+        // 批量轮廓的逐条包围盒（图像坐标）：构建批量几何时一并算好，
+        // 放大视角下用于按件裁剪——只提交与视口相交的轮廓，避免整块几何一起提交。
+        private readonly Dictionary<BatchedContourGeometry, Rect[]> _batchContourBounds = new();
         private CancellationTokenSource? _batchBuildCancellation;
         private int _batchBuildVersion;
+
+        /// <summary>视口（图像坐标）宽度小于该值时，轮廓改走按件裁剪。</summary>
+        private const double ViewportPerContourCropWidth = 1500.0;
+
+        /// <summary>按件裁剪的可见轮廓数上限：超过则退回打包几何（逐帧重建成本会反超）。</summary>
+        private const int PerContourCropLimit = 1500;
 
         // 视口裁剪（图像坐标系）
         private double _viewLeft, _viewTop, _viewRight, _viewBottom;
@@ -65,6 +74,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var buildVersion = ++_batchBuildVersion;
             CancelBatchBuild();
             _batchGeometryCache.Clear();
+            _batchContourBounds.Clear();
             SubscribeItems(_collector?.Items);
             ScheduleBatchGeometryBuild(GetAllItems(), buildVersion);
             InvalidateVisual();
@@ -79,6 +89,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var buildVersion = ++_batchBuildVersion;
             CancelBatchBuild();
             _batchGeometryCache.Clear();
+            _batchContourBounds.Clear();
             ScheduleBatchGeometryBuild(GetAllItems(), buildVersion);
             SubscribeItems(_regionItems);
             InvalidateVisual();
@@ -93,6 +104,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var buildVersion = ++_batchBuildVersion;
             CancelBatchBuild();
             _batchGeometryCache.Clear();
+            _batchContourBounds.Clear();
             UnsubscribeItems(_regionItems);
             _regionItems = items;
             ScheduleBatchGeometryBuild(GetAllItems(), buildVersion);
@@ -122,6 +134,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             ++_batchBuildVersion;
             CancelBatchBuild();
             _batchGeometryCache.Clear();
+            _batchContourBounds.Clear();
             InvalidateVisual();
         }
 
@@ -138,13 +151,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             _batchBuildCancellation = cancellation;
             _ = Task.Run(() =>
             {
-                var built = new List<(BatchedContourGeometry Batch, IReadOnlyDictionary<(int X, int Y), IReadOnlyList<StreamGeometry>> Geometries)>();
+                var built = new List<(BatchedContourGeometry Batch, IReadOnlyDictionary<(int X, int Y), IReadOnlyList<StreamGeometry>> Geometries, Rect[] Bounds)>();
                 foreach (var batch in batches)
                 {
                     if (cancellation.IsCancellationRequested) return;
                     var geometries = BuildBatchGeometries(batch);
+                    var bounds = BuildContourBounds(batch);
                     if (geometries.Count > 0)
-                        built.Add((batch, geometries));
+                        built.Add((batch, geometries, bounds));
                 }
 
                 Dispatcher.BeginInvoke(new Action(() =>
@@ -163,8 +177,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         cancellation.Dispose();
                         return;
                     }
-                    foreach (var (batch, geometries) in built)
+                    foreach (var (batch, geometries, bounds) in built)
+                    {
                         _batchGeometryCache[batch] = geometries;
+                        _batchContourBounds[batch] = bounds;
+                    }
                     if (ReferenceEquals(_batchBuildCancellation, cancellation))
                         _batchBuildCancellation = null;
                     cancellation.Dispose();
@@ -198,6 +215,35 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private const int BatchGeometryChunkSize = 1000;
         private const double GeometryTileSize = 512.0;
+
+        /// <summary>逐条轮廓的包围盒（图像坐标），供放大视角按件裁剪使用。</summary>
+        private static Rect[] BuildContourBounds(BatchedContourGeometry batch)
+        {
+            var bounds = new Rect[batch.Contours.Count];
+            for (int i = 0; i < bounds.Length; i++)
+            {
+                var points = batch.Contours[i];
+                if (points == null || points.Length == 0)
+                {
+                    bounds[i] = Rect.Empty;
+                    continue;
+                }
+
+                double minX = points[0].X, maxX = points[0].X;
+                double minY = points[0].Y, maxY = points[0].Y;
+                for (int p = 1; p < points.Length; p++)
+                {
+                    var point = points[p];
+                    if (point.X < minX) minX = point.X;
+                    else if (point.X > maxX) maxX = point.X;
+                    if (point.Y < minY) minY = point.Y;
+                    else if (point.Y > maxY) maxY = point.Y;
+                }
+
+                bounds[i] = new Rect(minX, minY, maxX - minX, maxY - minY);
+            }
+            return bounds;
+        }
 
         private static IReadOnlyDictionary<(int X, int Y), IReadOnlyList<StreamGeometry>> BuildBatchGeometries(BatchedContourGeometry batch)
         {
@@ -727,10 +773,25 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 if (item.Geometries[i] is BatchedContourGeometry batch)
                 {
+                    var isPass = isUnified || (item.IsPassArray.Length > i && item.IsPassArray[i]);
+
+                    // 放大视角：按件裁剪，只提交与视口相交的轮廓（打包几何按 512px 方块组织，
+                    // 放大后会出现"只用到一小块却提交整块"的浪费）。
+                    if (_hasViewport
+                        && (_viewRight - _viewLeft) < ViewportPerContourCropWidth
+                        && _batchContourBounds.TryGetValue(batch, out var contourBounds)
+                        && CountVisibleContours(contourBounds) <= PerContourCropLimit)
+                    {
+                        var croppedFill = item.IsFilled ? (isUnified || isPass ? defaultBrush : ngBrush) : null;
+                        var croppedPen = isUnified || isPass ? defaultPen : ngPen;
+                        DrawViewportCroppedContours(dc, batch, contourBounds, croppedFill, croppedPen, batch.IsClosed);
+                        continue;
+                    }
+
                     _diagContours += batch.Contours.Count;
                     foreach (var batchPoints in batch.Contours)
                         if (batchPoints != null) _diagContourVertices += batchPoints.Length;
-                    var isPass = isUnified || (item.IsPassArray.Length > i && item.IsPassArray[i]);
+
                     if (_batchGeometryCache.TryGetValue(batch, out var cachedGeometries))
                     {
                         var cachedFill = item.IsFilled
@@ -846,6 +907,60 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 if (batchNgPolylines.Count > 0) { _diagDrawCalls++; _diagBlocks++; }
                 DrawMultipleFigures(dc, batchNgPolylines, null, ngPen, false);
             }
+        }
+
+        /// <summary>统计与当前视口相交的轮廓数，用于判断按件裁剪是否划算。</summary>
+        private int CountVisibleContours(Rect[] contourBounds)
+        {
+            var viewport = new Rect(_viewLeft, _viewTop, _viewRight - _viewLeft, _viewBottom - _viewTop);
+            var count = 0;
+            for (int i = 0; i < contourBounds.Length; i++)
+            {
+                if (contourBounds[i].IsEmpty || contourBounds[i].IntersectsWith(viewport)) count++;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// 放大视角下的轮廓按件裁剪：把与视口相交的轮廓合成一个几何提交。
+        /// 打包几何按 512px 方块组织，放大后只用到方块一小块时仍会整块提交，这里是它的补充路径。
+        /// </summary>
+        private void DrawViewportCroppedContours(DrawingContext dc, BatchedContourGeometry batch,
+            Rect[] contourBounds, Brush? fill, Pen pen, bool isClosed)
+        {
+            var viewport = new Rect(_viewLeft, _viewTop, _viewRight - _viewLeft, _viewBottom - _viewTop);
+            var geometry = new StreamGeometry();
+            var submitted = 0;
+            var submittedVertices = 0;
+
+            using (var ctx = geometry.Open())
+            {
+                for (int i = 0; i < batch.Contours.Count; i++)
+                {
+                    var points = batch.Contours[i];
+                    if (points == null || points.Length < 2) continue;
+                    if (i < contourBounds.Length && !contourBounds[i].IsEmpty
+                        && !contourBounds[i].IntersectsWith(viewport))
+                        continue;
+
+                    bool closeFigure = isClosed && points.Length >= 3;
+                    ctx.BeginFigure(points[0], fill != null, closeFigure);
+                    for (int p = 1; p < points.Length; p++)
+                        ctx.LineTo(points[p], true, true);
+
+                    submitted++;
+                    submittedVertices += points.Length;
+                }
+            }
+
+            if (submitted == 0) return;
+
+            geometry.Freeze();
+            _diagContours += submitted;
+            _diagContourVertices += submittedVertices;
+            _diagDrawCalls++;
+            _diagBlocks++;
+            dc.DrawGeometry(fill, pen, geometry);
         }
 
         private void RenderArrows(DrawingContext dc, GraphicsDisplayItem item, Pen defaultPen)
@@ -981,6 +1096,71 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
+        /// 单条文本的字形数据（字符 → 字形索引、推进宽度、基线/行高，均为 em 比例）。
+        /// 与字号无关：字号只影响绘制时的 em 尺寸，因此缩放无需重排。
+        /// </summary>
+        private sealed class TextGlyphs
+        {
+            public GlyphTypeface Typeface = null!;
+            public ushort[] Indices = Array.Empty<ushort>();
+            public double[] Advances = Array.Empty<double>();
+            public char[] Characters = Array.Empty<char>();
+            public double BaselineEm;
+        }
+
+        // 字形缓存：内容种类过多时整体清空，避免无界增长（同一份结果的文本内容通常稳定）。
+        private const int GlyphCacheLimit = 20000;
+        private readonly Dictionary<(bool IsBold, string Content), TextGlyphs?> _glyphCache = new();
+
+        /// <summary>
+        /// 取文本的字形数据（一次计算、跨帧与跨缩放复用）。
+        /// 返回 null 表示该文本无法用字形直绘（字体缺字形，如需回退字体的中文），调用方回退 FormattedText。
+        /// </summary>
+        private TextGlyphs? GetTextGlyphs(string content, bool isBold)
+        {
+            var key = (isBold, content);
+            if (_glyphCache.TryGetValue(key, out var cached)) return cached;
+
+            TextGlyphs? glyphs = null;
+            var typeface = isBold ? BoldTypeface : RegularTypeface;
+            if (content.Length > 0 && typeface.TryGetGlyphTypeface(out var glyphTypeface))
+            {
+                var indices = new ushort[content.Length];
+                var advances = new double[content.Length];
+                var usable = true;
+
+                for (int i = 0; i < content.Length; i++)
+                {
+                    if (!glyphTypeface.CharacterToGlyphMap.TryGetValue(content[i], out var glyphIndex))
+                    {
+                        usable = false;
+                        break;
+                    }
+
+                    indices[i] = glyphIndex;
+                    if (glyphTypeface.AdvanceWidths.TryGetValue(glyphIndex, out var advance))
+                        advances[i] = advance;
+                }
+
+                if (usable)
+                {
+                    glyphs = new TextGlyphs
+                    {
+                        Typeface = glyphTypeface,
+                        Indices = indices,
+                        Advances = advances,
+                        Characters = content.ToCharArray(),
+                        BaselineEm = glyphTypeface.Baseline,
+                    };
+                }
+            }
+
+            if (_glyphCache.Count >= GlyphCacheLimit) _glyphCache.Clear();
+            _glyphCache[key] = glyphs;
+            return glyphs;
+        }
+
+        /// <summary>
         /// 文本渲染：按锚点分组 → 组内按添加顺序换行（可跨 TextStyle，解决"同锚点多文本重叠"）。
         /// 锚点 = 图像坐标（跟随几何，随缩放移动）；行高与屏幕偏移均与字号同一缩放模型（屏幕恒定），
         /// 因此缩放时不会"字变小、间距变大"，改字号时行距自动适配。
@@ -1106,12 +1286,44 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         + lineOffsetY;
 
                     var color = ArgbToColor(style.GetEffectiveColorArgb(line.IsPass));
-                    var formattedText = CreateFormattedText(line.Data.Content, color, scaledFontSize, style.IsBold);
+                    var brush = GetBrush(ColorToArgb(color));
+                    var glyphs = GetTextGlyphs(line.Data.Content, style.IsBold);
 
                     dc.PushOpacity(style.Opacity);
                     try
                     {
-                        dc.DrawText(formattedText, new Point(drawX, drawY));
+                        if (glyphs != null)
+                        {
+                            // 字形直绘：字形数据（索引 + em 比例字距）已按内容缓存，
+                            // 字号变化只是把 em 比例换算为当前字号的绝对字距，无需重新排版。
+                            var advances = new double[glyphs.Advances.Length];
+                            for (int a = 0; a < advances.Length; a++)
+                                advances[a] = glyphs.Advances[a] * scaledFontSize;
+
+                            var run = new GlyphRun(
+                                glyphs.Typeface,
+                                0,
+                                false,
+                                scaledFontSize,
+                                (float)_pixelsPerDip,
+                                glyphs.Indices,
+                                new Point(drawX, drawY + glyphs.BaselineEm * scaledFontSize),
+                                advances,
+                                null,
+                                glyphs.Characters,
+                                null,
+                                null,
+                                null,
+                                null);
+                            dc.DrawGlyphRun(brush, run);
+                        }
+                        else
+                        {
+                            // 字体缺字形（如需字体回退的中文）→ 退回 FormattedText，保证内容不丢。
+                            dc.DrawText(
+                                CreateFormattedText(line.Data.Content, color, scaledFontSize, style.IsBold),
+                                new Point(drawX, drawY));
+                        }
                     }
                     finally
                     {

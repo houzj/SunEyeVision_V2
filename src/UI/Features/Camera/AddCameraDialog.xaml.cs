@@ -1,6 +1,6 @@
 using System;
 using System.Windows;
-using SunEyeVision.Core.Services.CameraDiscovery;
+using SunEyeVision.DeviceDriver.Cameras;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Shell.Windows;
 
@@ -15,12 +15,12 @@ namespace SunEyeVision.UI.Features.Camera
     {
         private readonly AddCameraViewModel _viewModel;
         
-        public AddCameraDialog(CameraDiscoveryAggregator discoveryAggregator, CameraManagerViewModel cameraManager)
+        public AddCameraDialog(CameraRuntimeComposition runtime, CameraManagerViewModel cameraManager)
         {
             InitializeComponent();
             
             // 创建 ViewModel
-            _viewModel = new AddCameraViewModel(discoveryAggregator, cameraManager);
+            _viewModel = new AddCameraViewModel(runtime, cameraManager);
             DataContext = _viewModel;
             
             // 订阅关闭事件

@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SunEyeVision.UI.Shell.Windows"
+        xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         xmlns:camera="clr-namespace:SunEyeVision.UI.Features.Camera"
         xmlns:converters="clr-namespace:SunEyeVision.UI.Converters.Visibility"
         mc:Ignorable="d"
@@ -14,9 +15,15 @@
         MinHeight="500"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
-        Background="#F5F5F5">
+        Background="{DynamicResource {x:Static base:ThemeKeys.WindowBackgroundBrush}}">
 
     <Window.Resources>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -27,7 +34,9 @@
         </Grid.RowDefinitions>
 
         <!-- 工具栏 -->
-        <ToolBar Grid.Row="0" ToolBarTray.IsLocked="True" Padding="12,8" Background="White">
+        <ToolBar Grid.Row="0" ToolBarTray.IsLocked="True" Padding="12,8"
+                 Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}"
+                 BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}">
             <Button Content="➕添加" Command="{Binding AddCameraCommand}" 
                     Style="{StaticResource ToolButtonStyle}" Width="80" Height="32" Margin="0,0,8,0"/>
       <Button Content="➖删除" Command="{Binding DeleteCameraCommand}" 
@@ -42,7 +51,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- 左侧：相机列表 -->
-            <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="0,0,8,0">
+            <Border Grid.Column="0" Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="1" CornerRadius="4" Margin="0,0,8,0">
                 <Grid Margin="16">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -82,27 +91,27 @@
             </Border>
 
             <!-- 右侧：相机详情 -->
-            <Border Grid.Column="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4">
+            <Border Grid.Column="1" Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="1" CornerRadius="4">
                 <camera:CameraDetailPanel DataContext="{Binding CameraDetailViewModel}"/>
             </Border>
         </Grid>
 
         <!-- 状态栏 -->
-        <StatusBar Grid.Row="2" Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1,1,1,0">
+        <StatusBar Grid.Row="2" Background="{DynamicResource {x:Static base:ThemeKeys.StatusBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="1,1,1,0">
             <StatusBarItem>
-                <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="#757575"/>
+                <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}"/>
             </StatusBarItem>
             <Separator/>
             <StatusBarItem HorizontalAlignment="Right">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="已连接: " FontSize="12" Foreground="#757575"/>
-                    <TextBlock Text="{Binding ConnectedCount}" FontSize="12" FontWeight="Medium" Foreground="#4CAF50" Margin="0,0,16,0"/>
+                    <TextBlock Text="已连接: " FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}"/>
+                    <TextBlock Text="{Binding ConnectedCount}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}" Margin="0,0,16,0"/>
                     
-                    <TextBlock Text="已禁用: " FontSize="12" Foreground="#757575"/>
-                    <TextBlock Text="{Binding DisabledCount}" FontSize="12" FontWeight="Medium" Foreground="#FF9800" Margin="0,0,16,0"/>
+                    <TextBlock Text="已禁用: " FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}"/>
+                    <TextBlock Text="{Binding DisabledCount}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource {x:Static base:ThemeKeys.WarningBrush}}" Margin="0,0,16,0"/>
                     
-                    <TextBlock Text="总计: " FontSize="12" Foreground="#757575"/>
-                    <TextBlock Text="{Binding TotalCount}" FontSize="12" FontWeight="Medium" Foreground="#333333"/>
+                    <TextBlock Text="总计: " FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}"/>
+                    <TextBlock Text="{Binding TotalCount}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
                 </StackPanel>
             </StatusBarItem>
         </StatusBar>

@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 using SunEyeVision.Workflow;
-using SunEyeVision.Core.Services.CameraDiscovery;
+using SunEyeVision.DeviceDriver.Cameras;
 using SunEyeVision.Plugin.SDK.Logging;
 
 using SunEyeVision.UI.Core;
@@ -14,10 +14,10 @@ namespace SunEyeVision.UI.Features.Camera
     /// <summary>
     /// 相机设备模型
     /// </summary>
-    public class CameraDevice : INotifyPropertyChanged
+    public class CameraDevice : SunEyeVision.Plugin.SDK.Models.ObservableObject
     {
         private string _name;
-        private string _cameraType;
+        private string _transport;
         private string _statusText;
         private string _statusIcon;
         private string _ipAddress;
@@ -27,30 +27,32 @@ namespace SunEyeVision.UI.Features.Camera
         private string _manufacturer;
         private string _model;
         private string _description;
-        private string _port;
-        private string _username;
-        private string _password;
         private string _latency;
         private string _frameRate;
+        private string _deviceId;
+
+        public string DeviceId
+        {
+            get => _deviceId;
+            set
+            {
+                SetProperty(ref _deviceId, value);
+            }
+        }
 
         public string Name
         {
             get => _name;
             set
             {
-                _name = value;
-                OnPropertyChanged(nameof(Name));
+                SetProperty(ref _name, value);
             }
         }
 
-        public string CameraType
+        public string Transport
         {
-            get => _cameraType;
-            set
-            {
-                _cameraType = value;
-                OnPropertyChanged(nameof(CameraType));
-            }
+            get => _transport;
+            set => SetProperty(ref _transport, value);
         }
 
         public string StatusText
@@ -58,8 +60,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _statusText;
             set
             {
-                _statusText = value;
-                OnPropertyChanged(nameof(StatusText));
+                SetProperty(ref _statusText, value);
             }
         }
 
@@ -68,8 +69,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _statusIcon;
             set
             {
-                _statusIcon = value;
-                OnPropertyChanged(nameof(StatusIcon));
+                SetProperty(ref _statusIcon, value);
             }
         }
 
@@ -78,8 +78,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _ipAddress;
             set
             {
-                _ipAddress = value;
-                OnPropertyChanged(nameof(IpAddress));
+                SetProperty(ref _ipAddress, value);
             }
         }
 
@@ -88,8 +87,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _lastOperationTime;
             set
             {
-                _lastOperationTime = value;
-                OnPropertyChanged(nameof(LastOperationTime));
+                SetProperty(ref _lastOperationTime, value);
             }
         }
 
@@ -98,8 +96,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _isSelected;
             set
             {
-                _isSelected = value;
-                OnPropertyChanged(nameof(IsSelected));
+                SetProperty(ref _isSelected, value);
             }
         }
 
@@ -108,8 +105,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _isEnabled;
             set
             {
-                _isEnabled = value;
-                OnPropertyChanged(nameof(IsEnabled));
+                SetProperty(ref _isEnabled, value);
             }
         }
 
@@ -118,8 +114,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _manufacturer;
             set
             {
-                _manufacturer = value;
-                OnPropertyChanged(nameof(Manufacturer));
+                SetProperty(ref _manufacturer, value);
             }
         }
 
@@ -128,8 +123,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _model;
             set
             {
-                _model = value;
-                OnPropertyChanged(nameof(Model));
+                SetProperty(ref _model, value);
             }
         }
 
@@ -138,38 +132,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _description;
             set
             {
-                _description = value;
-                OnPropertyChanged(nameof(Description));
-            }
-        }
-
-        public string Port
-        {
-            get => _port;
-            set
-            {
-                _port = value;
-                OnPropertyChanged(nameof(Port));
-            }
-        }
-
-        public string Username
-        {
-            get => _username;
-            set
-            {
-                _username = value;
-                OnPropertyChanged(nameof(Username));
-            }
-        }
-
-        public string Password
-        {
-            get => _password;
-            set
-            {
-                _password = value;
-                OnPropertyChanged(nameof(Password));
+                SetProperty(ref _description, value);
             }
         }
 
@@ -178,8 +141,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _latency;
             set
             {
-                _latency = value;
-                OnPropertyChanged(nameof(Latency));
+                SetProperty(ref _latency, value);
             }
         }
 
@@ -188,17 +150,10 @@ namespace SunEyeVision.UI.Features.Camera
             get => _frameRate;
             set
             {
-                _frameRate = value;
-                OnPropertyChanged(nameof(FrameRate));
+                SetProperty(ref _frameRate, value);
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 
     /// <summary>
@@ -212,6 +167,7 @@ namespace SunEyeVision.UI.Features.Camera
         private int _disabledCount;
         private int _totalCount;
         private CameraDetailViewModel _cameraDetailViewModel;
+        private readonly CameraRuntimeComposition _runtime;
 
         public ObservableCollection<CameraDevice> Cameras { get; set; }
 
@@ -301,10 +257,10 @@ namespace SunEyeVision.UI.Features.Camera
         {
             _solutionManager = solutionManager;
             Cameras = new ObservableCollection<CameraDevice>();
-            CameraDetailViewModel = new CameraDetailViewModel();
+            _runtime = new CameraRuntimeComposition();
+            CameraDetailViewModel = new CameraDetailViewModel(_runtime);
             
-            // 初始化示例数据
-            LoadSampleData();
+            LoadCameraList();
             
             // 初始化 Commands
             AddCameraCommand = new RelayCommand(AddCamera);
@@ -322,111 +278,9 @@ namespace SunEyeVision.UI.Features.Camera
             StatusMessage = "就绪";
         }
 
-        private void LoadSampleData()
+        private void LoadCameraList()
         {
             Cameras.Clear();
-            
-            // 示例数据
-            Cameras.Add(new CameraDevice
-            {
-                Name = "相机1",
-                CameraType = "IP",
-                StatusText = "已连接",
-                StatusIcon = "✅",
-                IpAddress = "192.168.1.100",
-                LastOperationTime = "2024-04-08 10:30",
-                IsSelected = false,
-                IsEnabled = true,
-                Manufacturer = "海康威视",
-                Model = "DS-2CD2043D-IWD",
-                Description = "室内监控相机",
-                Port = "8000",
-                Username = "admin",
-                Password = "********",
-                Latency = "23",
-                FrameRate = "30"
-            });
-            
-            Cameras.Add(new CameraDevice
-            {
-                Name = "相机2",
-                CameraType = "USB",
-                StatusText = "警告",
-                StatusIcon = "⚠️",
-                IpAddress = "-",
-                LastOperationTime = "2024-04-07 15:20",
-                IsSelected = false,
-                IsEnabled = true,
-                Manufacturer = "大华",
-                Model = "DH-IPC-HFW1230S",
-                Description = "USB 接口相机",
-                Port = "-",
-                Username = "-",
-                Password = "-",
-                Latency = "-",
-                FrameRate = "-"
-            });
-            
-            Cameras.Add(new CameraDevice
-            {
-                Name = "相机3",
-                CameraType = "GigE",
-                StatusText = "断开",
-                StatusIcon = "❌",
-                IpAddress = "192.168.1.101",
-                LastOperationTime = "2024-04-08 09:15",
-                IsSelected = false,
-                IsEnabled = false,
-                Manufacturer = "海康威视",
-                Model = "DS-2CD3T45",
-                Description = "工业级 GigE 相机",
-                Port = "554",
-                Username = "admin",
-                Password = "********",
-                Latency = "-",
-                FrameRate = "-"
-            });
-            
-            Cameras.Add(new CameraDevice
-            {
-                Name = "相机4",
-                CameraType = "IP",
-                StatusText = "已连接",
-                StatusIcon = "✅",
-                IpAddress = "192.168.1.102",
-                LastOperationTime = "2024-04-08 11:00",
-                IsSelected = false,
-                IsEnabled = true,
-                Manufacturer = "大华",
-                Model = "DH-IPC-HDBW1431",
-                Description = "室外监控相机",
-                Port = "37777",
-                Username = "admin",
-                Password = "********",
-                Latency = "45",
-                FrameRate = "25"
-            });
-            
-            Cameras.Add(new CameraDevice
-            {
-                Name = "相机5",
-                CameraType = "USB",
-                StatusText = "断开",
-                StatusIcon = "❌",
-                IpAddress = "-",
-                LastOperationTime = "2024-04-08 08:45",
-                IsSelected = false,
-                IsEnabled = true,
-                Manufacturer = "通用",
-                Model = "Generic-Cam",
-                Description = "通用 USB 相机",
-                Port = "-",
-                Username = "-",
-                Password = "-",
-                Latency = "-",
-                FrameRate = "-"
-            });
-            
             UpdateStatistics();
         }
 
@@ -446,14 +300,10 @@ namespace SunEyeVision.UI.Features.Camera
                 VisionLogger.Instance.Log(LogLevel.Info, "打开添加相机对话框", "CameraManagerViewModel");
                 
                 // 创建相机发现聚合服务
-                var discoveryAggregator = new CameraDiscoveryAggregator(
-                    new SunEyeVision.Core.Services.CameraDiscovery.GigeCameraDiscoveryService(),
-                    new SunEyeVision.Core.Services.CameraDiscovery.UsbCameraDiscoveryService(),
-                    new SunEyeVision.Core.Services.CameraDiscovery.IpCameraDiscoveryService()
-                );
+                var runtime = _runtime;
                 
                 // 打开添加相机对话框
-                var addCameraDialog = new SunEyeVision.UI.Features.Camera.AddCameraDialog(discoveryAggregator, this);
+                var addCameraDialog = new SunEyeVision.UI.Features.Camera.AddCameraDialog(runtime, this);
                 var result = addCameraDialog.ShowDialog();
                 
                 if (result == true)
@@ -485,7 +335,7 @@ namespace SunEyeVision.UI.Features.Camera
 
         private void Refresh()
         {
-            LoadSampleData();
+            LoadCameraList();
             StatusMessage = "已刷新相机列表";
         }
 

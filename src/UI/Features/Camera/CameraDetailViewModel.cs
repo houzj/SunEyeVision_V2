@@ -1,6 +1,13 @@
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
+using System.Collections.Generic;
 using System.Windows.Input;
+using System.Windows;
+using SunEyeVision.DeviceDriver.Cameras;
+using SunEyeVision.DeviceDriver.Cameras.Contracts;
+using SunEyeVision.Plugin.SDK.Devices.Camera;
 
 using SunEyeVision.UI.Core;
 
@@ -9,23 +16,38 @@ namespace SunEyeVision.UI.Features.Camera
     /// <summary>
     /// 相机详情 ViewModel - 用于 CameraDetailPanel
     /// </summary>
-    public class CameraDetailViewModel : INotifyPropertyChanged
+    public class CameraDetailViewModel : ViewModelBase
     {
         private CameraDevice _selectedCamera;
         private bool _isCameraSelected;
         private object _manufacturerParamsViewModel;
+        private readonly CameraRuntimeComposition _runtime;
+        private CameraSession? _session;
+        private string _parameterStatus = "请选择相机后加载设备参数";
+
+        public ObservableCollection<CameraParameterItemViewModel> Parameters { get; } = new();
+
+        public string ParameterStatus
+        {
+            get => _parameterStatus;
+            private set
+            {
+                SetProperty(ref _parameterStatus, value);
+            }
+        }
 
         public CameraDevice SelectedCamera
         {
             get => _selectedCamera;
             set
             {
-                _selectedCamera = value;
+                if (!SetProperty(ref _selectedCamera, value))
+                    return;
                 IsCameraSelected = value != null;
-                OnPropertyChanged(nameof(SelectedCamera));
 
                 // 根据厂商类型加载对应的参数视图
                 LoadManufacturerParams();
+                _ = LoadSchemaAsync();
             }
         }
 
@@ -34,8 +56,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _isCameraSelected;
             set
             {
-                _isCameraSelected = value;
-                OnPropertyChanged(nameof(IsCameraSelected));
+                SetProperty(ref _isCameraSelected, value);
             }
         }
 
@@ -44,8 +65,7 @@ namespace SunEyeVision.UI.Features.Camera
             get => _manufacturerParamsViewModel;
             set
             {
-                _manufacturerParamsViewModel = value;
-                OnPropertyChanged(nameof(ManufacturerParamsViewModel));
+                SetProperty(ref _manufacturerParamsViewModel, value);
             }
         }
 
@@ -56,13 +76,46 @@ namespace SunEyeVision.UI.Features.Camera
         public ICommand SaveParamsCommand { get; }
         public ICommand ResetParamsCommand { get; }
 
-        public CameraDetailViewModel()
+        public CameraDetailViewModel(CameraRuntimeComposition runtime)
         {
+            _runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
             ConnectCommand = new RelayCommand(Connect);
             DisconnectCommand = new RelayCommand(Disconnect);
             PreviewCommand = new RelayCommand(Preview);
             SaveParamsCommand = new RelayCommand(SaveParams);
             ResetParamsCommand = new RelayCommand(ResetParams);
+        }
+
+        private async System.Threading.Tasks.Task LoadSchemaAsync()
+        {
+            Parameters.Clear();
+            await ReleaseSessionAsync().ConfigureAwait(true);
+            if (SelectedCamera == null || string.IsNullOrWhiteSpace(SelectedCamera.DeviceId))
+            {
+                ParameterStatus = "请选择已添加的设备";
+                return;
+            }
+
+            try
+            {
+                var reference = new CameraDeviceRef(SelectedCamera.DeviceId);
+                await using var session = await _runtime.Runtime.OpenAsync(
+                    reference, CameraAccessMode.Diagnostic, cancellationToken: default).ConfigureAwait(true);
+                var schema = await session.Adapter.GetParameterSchemaAsync(default).ConfigureAwait(true);
+                var names = schema.Parameters.Select(item => item.Name).ToArray();
+                var values = await session.Adapter.ReadParametersAsync(names, default).ConfigureAwait(true);
+                foreach (var descriptor in schema.Parameters)
+                {
+                    values.TryGetValue(descriptor.Name, out var value);
+                    Parameters.Add(new CameraParameterItemViewModel(descriptor, value ?? descriptor.Value));
+                }
+                await _runtime.Runtime.CloseAsync(reference).ConfigureAwait(true);
+                ParameterStatus = $"已加载 {Parameters.Count} 个设备参数";
+            }
+            catch (Exception ex)
+            {
+                ParameterStatus = $"参数不可用：{ex.Message}";
+            }
         }
 
         private void LoadManufacturerParams()
@@ -80,46 +133,172 @@ namespace SunEyeVision.UI.Features.Camera
 
         private void Connect()
         {
-            if (SelectedCamera != null)
-            {
-                SelectedCamera.StatusText = "已连接";
-                SelectedCamera.StatusIcon = "✅";
-                SelectedCamera.Latency = "23";
-                SelectedCamera.FrameRate = "30";
-            }
+            _ = ConnectAsync();
         }
 
         private void Disconnect()
         {
-            if (SelectedCamera != null)
-            {
-                SelectedCamera.StatusText = "断开";
-                SelectedCamera.StatusIcon = "❌";
-                SelectedCamera.Latency = "-";
-                SelectedCamera.FrameRate = "-";
-            }
+            _ = DisconnectAsync();
         }
 
         private void Preview()
         {
-            // TODO: 实现预览功能
+            if (SelectedCamera == null || string.IsNullOrWhiteSpace(SelectedCamera.DeviceId))
+                return;
+
+            var window = new CameraPreviewWindow(_runtime, new CameraDeviceRef(SelectedCamera.DeviceId));
+            var owner = Application.Current?.Windows.OfType<Window>()
+                .FirstOrDefault(item => ReferenceEquals(item.DataContext, this));
+            if (owner != null)
+                window.Owner = owner;
+            window.Show();
         }
 
         private void SaveParams()
         {
-            // TODO: 实现保存参数功能
+            _ = SaveParamsAsync();
         }
 
         private void ResetParams()
         {
-            // TODO: 实现恢复默认参数功能
+            _ = LoadSchemaAsync();
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName)
+        private async System.Threading.Tasks.Task ConnectAsync()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (SelectedCamera == null || string.IsNullOrWhiteSpace(SelectedCamera.DeviceId))
+                return;
+
+            try
+            {
+                if (_session != null)
+                    return;
+
+                var reference = new CameraDeviceRef(SelectedCamera.DeviceId);
+                _session = await _runtime.Runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
+                SelectedCamera.StatusText = "已连接";
+                SelectedCamera.StatusIcon = "✅";
+                ParameterStatus = "设备已连接";
+            }
+            catch (Exception ex)
+            {
+                _session = null;
+                SelectedCamera.StatusText = "连接失败";
+                SelectedCamera.StatusIcon = "⚠️";
+                ParameterStatus = $"连接失败：{ex.Message}";
+            }
+        }
+
+        private async System.Threading.Tasks.Task DisconnectAsync()
+        {
+            if (SelectedCamera == null || string.IsNullOrWhiteSpace(SelectedCamera.DeviceId))
+                return;
+
+            try
+            {
+                await _runtime.Runtime.CloseAsync(new CameraDeviceRef(SelectedCamera.DeviceId));
+                _session = null;
+                SelectedCamera.StatusText = "断开";
+                SelectedCamera.StatusIcon = "❌";
+                ParameterStatus = "设备已断开";
+            }
+            catch (Exception ex)
+            {
+                ParameterStatus = $"断开失败：{ex.Message}";
+            }
+        }
+
+        private async System.Threading.Tasks.Task ReleaseSessionAsync()
+        {
+            var session = _session;
+            _session = null;
+            if (session != null)
+                await _runtime.Runtime.CloseAsync(session.CameraRef).ConfigureAwait(true);
+        }
+
+        private async System.Threading.Tasks.Task SaveParamsAsync()
+        {
+            if (SelectedCamera == null || string.IsNullOrWhiteSpace(SelectedCamera.DeviceId))
+                return;
+
+            CameraSession? temporarySession = null;
+            try
+            {
+                var reference = new CameraDeviceRef(SelectedCamera.DeviceId);
+                var session = _session;
+                if (session == null)
+                {
+                    temporarySession = await _runtime.Runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
+                    session = temporarySession;
+                }
+
+                var values = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                foreach (var item in Parameters)
+                {
+                    if (item.Value is null || item.Kind is CameraParameterKind.Command)
+                        continue;
+                    values[item.Name] = ConvertParameterValue(item);
+                }
+
+                await session.Adapter.ApplyParametersAsync(values, default);
+                ParameterStatus = $"已写入 {values.Count} 个参数";
+            }
+            catch (Exception ex)
+            {
+                ParameterStatus = $"参数写入失败：{ex.Message}";
+            }
+            finally
+            {
+                if (temporarySession != null)
+                    await _runtime.Runtime.CloseAsync(temporarySession.CameraRef);
+            }
+        }
+
+        private static object? ConvertParameterValue(CameraParameterItemViewModel item)
+        {
+            if (item.Kind == CameraParameterKind.Integer)
+                return Convert.ToInt64(item.Value, System.Globalization.CultureInfo.InvariantCulture);
+            if (item.Kind == CameraParameterKind.Double)
+                return Convert.ToDouble(item.Value, System.Globalization.CultureInfo.InvariantCulture);
+            if (item.Kind == CameraParameterKind.Boolean)
+                return Convert.ToBoolean(item.Value, System.Globalization.CultureInfo.InvariantCulture);
+            return item.Value;
+        }
+
+    }
+
+    public sealed class CameraParameterItemViewModel : ViewModelBase
+    {
+        private object? _value;
+
+        public CameraParameterItemViewModel(CameraParameterDescriptor descriptor, object? value)
+        {
+            Name = descriptor.Name;
+            DisplayName = descriptor.DisplayName;
+            Kind = descriptor.Kind;
+            IsReadOnly = descriptor.IsReadOnly || !descriptor.IsAvailable;
+            EnumValues = descriptor.EnumValues;
+            Unit = descriptor.Description ?? string.Empty;
+            _value = value;
+        }
+
+        public string Name { get; }
+        public string DisplayName { get; }
+        public CameraParameterKind Kind { get; }
+        public bool IsReadOnly { get; }
+        public bool IsEditable => !IsReadOnly;
+        public bool IsBoolean => Kind == CameraParameterKind.Boolean;
+        public bool IsEnumeration => Kind == CameraParameterKind.Enumeration;
+        public bool IsTextValue => !IsBoolean && !IsEnumeration;
+        public IReadOnlyList<CameraEnumValue> EnumValues { get; }
+        public string Unit { get; }
+        public object? Value
+        {
+            get => _value;
+            set
+            {
+                SetProperty(ref _value, value);
+            }
         }
     }
 

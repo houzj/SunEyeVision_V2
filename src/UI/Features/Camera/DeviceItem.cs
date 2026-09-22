@@ -13,7 +13,6 @@ namespace SunEyeVision.UI.Features.Camera
         public bool IsConnected { get; set; }
         public string Status { get; set; }
         public string IpAddress { get; set; }
-        public int Port { get; set; }
 
         public DeviceItem(string id, string name, string type)
         {

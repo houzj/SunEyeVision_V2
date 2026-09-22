@@ -1,10 +1,12 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using SunEyeVision.Core.Services.CameraDiscovery;
+using SunEyeVision.DeviceDriver.Cameras;
+using SunEyeVision.Plugin.SDK.Devices.Camera;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
 
@@ -20,20 +22,11 @@ namespace SunEyeVision.UI.Features.Camera
         #region 属性
         
         /// <summary>
-        /// 选中的相机类型（GigE/USB/IP）
-        /// </summary>
-        private CameraType _selectedType;
-        public CameraType SelectedType
-        {
-            get => _selectedType;
-            set => SetProperty(ref _selectedType, value, "相机类型");
-        }
-        
         /// <summary>
         /// 发现的相机列表
         /// </summary>
-        private ObservableCollection<DiscoveredCamera> _discoveredCameras;
-        public ObservableCollection<DiscoveredCamera> DiscoveredCameras
+        private ObservableCollection<CameraDiscoveryItem> _discoveredCameras;
+        public ObservableCollection<CameraDiscoveryItem> DiscoveredCameras
         {
             get => _discoveredCameras;
             set => SetProperty(ref _discoveredCameras, value);
@@ -42,8 +35,8 @@ namespace SunEyeVision.UI.Features.Camera
         /// <summary>
         /// 选中的相机
         /// </summary>
-        private DiscoveredCamera? _selectedCamera;
-        public DiscoveredCamera? SelectedCamera
+        private CameraDiscoveryItem? _selectedCamera;
+        public CameraDiscoveryItem? SelectedCamera
         {
             get => _selectedCamera;
             set
@@ -70,36 +63,6 @@ namespace SunEyeVision.UI.Features.Camera
         }
         
         /// <summary>
-        /// 用户名
-        /// </summary>
-        private string _username = "admin";
-        public string Username
-        {
-            get => _username;
-            set => SetProperty(ref _username, value, "用户名");
-        }
-        
-        /// <summary>
-        /// 密码
-        /// </summary>
-        private string _password;
-        public string Password
-        {
-            get => _password;
-            set => SetProperty(ref _password, value, "密码");
-        }
-        
-        /// <summary>
-        /// 端口
-        /// </summary>
-        private int _port = 554;
-        public int Port
-        {
-            get => _port;
-            set => SetProperty(ref _port, value, "端口");
-        }
-        
-        /// <summary>
         /// 是否正在搜索
         /// </summary>
         private bool _isSearching;
@@ -110,13 +73,27 @@ namespace SunEyeVision.UI.Features.Camera
         }
         
         /// <summary>
-        /// 是否使用厂商 SDK
+        /// GigE 接口是否参与自动发现
         /// </summary>
-        private bool _useVendorSdk;
-        public bool UseVendorSdk
+        private bool _isGigEVisionSelected = true;
+        public bool IsGigEVisionSelected
         {
-            get => _useVendorSdk;
-            set => SetProperty(ref _useVendorSdk, value);
+            get => _isGigEVisionSelected;
+            set => SetInterfaceSelection(ref _isGigEVisionSelected, value, IsUsb3VisionSelected, IsSimulationSelected);
+        }
+
+        private bool _isUsb3VisionSelected;
+        public bool IsUsb3VisionSelected
+        {
+            get => _isUsb3VisionSelected;
+            set => SetInterfaceSelection(ref _isUsb3VisionSelected, value, IsGigEVisionSelected, IsSimulationSelected);
+        }
+
+        private bool _isSimulationSelected;
+        public bool IsSimulationSelected
+        {
+            get => _isSimulationSelected;
+            set => SetInterfaceSelection(ref _isSimulationSelected, value, IsGigEVisionSelected, IsUsb3VisionSelected);
         }
         
         /// <summary>
@@ -142,20 +119,19 @@ namespace SunEyeVision.UI.Features.Camera
         
         #region 字段
         
-        private readonly CameraDiscoveryAggregator _discoveryAggregator;
+        private readonly CameraRuntimeComposition _runtime;
         private readonly CameraManagerViewModel _cameraManager;
         private CancellationTokenSource? _cancellationTokenSource;
         
         #endregion
         
-        public AddCameraViewModel(CameraDiscoveryAggregator discoveryAggregator, CameraManagerViewModel cameraManager)
+        public AddCameraViewModel(CameraRuntimeComposition runtime, CameraManagerViewModel cameraManager)
         {
-            _discoveryAggregator = discoveryAggregator;
+            _runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
             _cameraManager = cameraManager;
             
             // 初始化属性
-            _selectedType = CameraType.GigE;
-            _discoveredCameras = new ObservableCollection<DiscoveredCamera>();
+            _discoveredCameras = new ObservableCollection<CameraDiscoveryItem>();
             _searchStatus = "就绪";
             
             // 初始化命令
@@ -165,6 +141,26 @@ namespace SunEyeVision.UI.Features.Camera
             CancelCommand = new RelayCommand(Cancel);
             
             VisionLogger.Instance.Log(LogLevel.Info, "添加相机 ViewModel 初始化完成", "AddCameraViewModel");
+        }
+
+        private void SetInterfaceSelection(ref bool field, bool value, bool otherOne, bool otherTwo)
+        {
+            // 至少保留一个接口，避免点击搜索时产生“什么都没搜”的隐式行为。
+            if (!value && !otherOne && !otherTwo)
+            {
+                return;
+            }
+
+            SetProperty(ref field, value);
+        }
+
+        private IReadOnlySet<CameraTransportKind> GetSelectedTransports()
+        {
+            var transports = new HashSet<CameraTransportKind>();
+            if (IsGigEVisionSelected) transports.Add(CameraTransportKind.GigEVision);
+            if (IsUsb3VisionSelected) transports.Add(CameraTransportKind.Usb3Vision);
+            if (IsSimulationSelected) transports.Add(CameraTransportKind.Simulation);
+            return transports;
         }
         
         #region 搜索
@@ -182,11 +178,14 @@ namespace SunEyeVision.UI.Features.Camera
                 SearchStatus = "搜索中...";
                 DiscoveredCameras.Clear();
                 
-                VisionLogger.Instance.Log(LogLevel.Info, $"开始搜索 {SelectedType} 相机...", "AddCameraViewModel");
+                VisionLogger.Instance.Log(LogLevel.Info, "开始自动发现相机...", "AddCameraViewModel");
                 
                 _cancellationTokenSource = new CancellationTokenSource();
                 
-                var cameras = await _discoveryAggregator.DiscoverAsync(SelectedType, _cancellationTokenSource.Token);
+                var descriptors = await _runtime.Discovery.DiscoverAsync(
+                    GetSelectedTransports(), _cancellationTokenSource.Token);
+                _runtime.Runtime.RegisterDevices(descriptors);
+                var cameras = descriptors.Select(ToDiscoveredCamera).ToList();
                 
                 foreach (var camera in cameras)
                 {
@@ -217,6 +216,22 @@ namespace SunEyeVision.UI.Features.Camera
             {
                 IsSearching = false;
             }
+        }
+
+        private static CameraDiscoveryItem ToDiscoveredCamera(CameraDescriptor descriptor)
+        {
+            return new CameraDiscoveryItem
+            {
+                Name = descriptor.DisplayName,
+                Manufacturer = descriptor.Manufacturer,
+                Model = descriptor.Model,
+                IpAddress = descriptor.IpAddress ?? string.Empty,
+                SerialNumber = descriptor.SerialNumber,
+                MacAddress = descriptor.MacAddress,
+                DeviceId = descriptor.DeviceId,
+                Transport = descriptor.Transport,
+                IsAvailable = true
+            };
         }
         
         private bool CanStop()
@@ -271,13 +286,11 @@ namespace SunEyeVision.UI.Features.Camera
                 var newCamera = new CameraDevice
                 {
                     Name = CameraName,
-                    CameraType = SelectedCamera.CameraType.ToString(),
+                    Transport = SelectedCamera.Transport.ToString(),
                     Manufacturer = SelectedCamera.Manufacturer,
                     Model = SelectedCamera.Model,
                     IpAddress = SelectedCamera.IpAddress,
-                    Port = SelectedCamera.Port == 0 ? Port.ToString() : SelectedCamera.Port.ToString(),
-                    Username = Username,
-                    Password = Password,
+                    DeviceId = SelectedCamera.DeviceId,
                     StatusText = "断开",
                     StatusIcon = "❌",
                     IsSelected = false,

@@ -10,12 +10,12 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         public double Y { get; set; }
 
         /// <summary>
-        /// 相对锚点的**屏幕像素**偏移 X（渲染层按 InvScale 反除，与字号同一缩放模型）。
-        /// 用于"文本避开几何"的微偏移：缩放时与字号等比，不会出现间距被放大/缩小。
+        /// 相对锚点的基础屏幕像素偏移 X（以 zoom=1 为基准）。
+        /// 渲染层与同一 Item 的文本内容一起应用幂律缩放矩阵。
         /// </summary>
         public double ScreenOffsetX { get; set; }
 
-        /// <summary>相对锚点的**屏幕像素**偏移 Y（同上）</summary>
+        /// <summary>相对锚点的基础屏幕像素偏移 Y（同上）</summary>
         public double ScreenOffsetY { get; set; }
     }
 }

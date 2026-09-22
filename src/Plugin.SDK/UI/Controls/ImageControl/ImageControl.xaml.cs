@@ -60,6 +60,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         // 窗口自适应相关
         private System.Windows.Threading.DispatcherTimer? _resizeTimer;
 
+        // 平移/缩放输入可能远快于 WPF 渲染帧。只保留最新视图状态，
+        // 将结果层视口同步合并到下一次 Render，避免每个 MouseMove 都触发一次完整结果层刷新。
+        private bool _viewTransformSyncPending;
+
         // 全屏相关
         private bool _isFullscreen = false;
         private Window? _fullscreenWindow;
@@ -237,7 +241,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     ImageScaleTransform.ScaleX = value;
                     ImageScaleTransform.ScaleY = value;
                     OnZoomChanged();
-                    OnViewTransformed(); // 同步触发视图变换事件（使线宽、手柄等随缩放更新）
+                    RequestViewTransformSync(); // 图像立即跟手，结果层同步合并到 Render 帧
                 }
             }
         }
@@ -796,7 +800,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             ImageTranslateTransform.X = _offsetX;
             ImageTranslateTransform.Y = _offsetY;
 
-            OnViewTransformed();
+            RequestViewTransformSync();
         }
 
         private void OnImageLoaded()
@@ -809,7 +813,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             RaiseEvent(new ZoomChangedEventArgs(Zoom, ZoomChangedEvent));
         }
 
-        private void OnViewTransformed()
+        private void RequestViewTransformSync()
+        {
+            if (_viewTransformSyncPending || Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished)
+                return;
+
+            _viewTransformSyncPending = true;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _viewTransformSyncPending = false;
+                if (!Dispatcher.HasShutdownStarted && !Dispatcher.HasShutdownFinished)
+                    ApplyViewTransform();
+            }), System.Windows.Threading.DispatcherPriority.Render);
+        }
+
+        private void ApplyViewTransform()
         {
             // 根据缩放倍率动态切换插值模式
             // 放大 ≥1x: 最近邻插值(像素方块清晰可见)

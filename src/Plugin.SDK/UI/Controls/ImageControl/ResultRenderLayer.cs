@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -29,21 +30,57 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private readonly Dictionary<BatchedContourGeometry, IReadOnlyDictionary<(int X, int Y), IReadOnlyList<StreamGeometry>>> _batchGeometryCache = new();
         private CancellationTokenSource? _batchBuildCancellation;
         private int _batchBuildVersion;
+        private bool _batchRefreshPending;
 
         // 视口裁剪（图像坐标系）
         private double _viewLeft, _viewTop, _viewRight, _viewBottom;
         private bool _hasViewport;
 
-        // 耗时诊断：_renderSw 记录整帧 OnRender 耗时；_contourMs/_vertexCount 记录轮廓批次
+        // 耗时诊断：_renderSw 记录整帧 OnRender 耗时；_intervalSw 记录相邻两帧间隔；
+        // _contourMs/_vertexCount 记录轮廓批次
         private readonly Stopwatch _renderSw = Stopwatch.StartNew();
+        private readonly Stopwatch _intervalSw = Stopwatch.StartNew();
         private double _contourMs;
         private int _vertexCount;
+
+        // 上一帧真实 OnRender 耗时（_renderSw 在进入绘制前重启、绘制结束处读取）
+        private double _lastFrameMs;
+
+        // 诊断计数：缓存失效次数 / 批量缓存命中与未命中 / 回退路径规模
+        private int _invalidateCount;
+        private int _cacheHits;
+        private int _cacheMisses;
+        private int _fallbackContours;
+        private int _fallbackVertices;
+        private double _textMs;
+        private int _textCount;
+
+        // 文本排版缓存：同一（内容 / 颜色 / 字号 / 粗体）只排版一次并跨帧复用（显示结果完全一致）
+        private readonly Dictionary<(string Content, uint Argb, double FontSize, bool Bold), FormattedText> _formattedTextCache = new();
+        private const int FormattedTextCacheLimit = 8192;
+        private TextDrawingCacheEntry? _regionTextDrawingCache;
+        private TextDrawingCacheEntry? _collectorTextDrawingCache;
+        private TextDrawingCacheEntry? _highlightTextDrawingCache;
+
+        private sealed class TextDrawingCacheEntry
+        {
+            public required int Fingerprint { get; init; }
+            public required DrawingGroup Drawing { get; init; }
+            public required int TextCount { get; init; }
+            public required IReadOnlyList<TextGroupDrawingEntry> Groups { get; init; }
+        }
+
+        private sealed class TextGroupDrawingEntry
+        {
+            public required Point Anchor { get; init; }
+            public required DrawingGroup Drawing { get; init; }
+            public required ScaleTransform Transform { get; init; }
+        }
 
         // LOD 阈值：当缩放倍率低于此值且 Cross 数量超过阈值时启用密度采样
         private const double LOD_ZOOM_THRESHOLD = 0.15;
         private const int LOD_MAX_CROSSES = 2000;
         private const int LOD_MAX_CONTOURS = 5000;
-        private const int LOD_MAX_TEXTS = 2000;
 
         #endregion
 
@@ -54,11 +91,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             UnsubscribeItems(_collector?.Items);
             _collector = collector;
-            var buildVersion = ++_batchBuildVersion;
-            CancelBatchBuild();
-            _batchGeometryCache.Clear();
+            _invalidateCount++;
+            InvalidateTextDrawingCaches();
             SubscribeItems(_collector?.Items);
-            ScheduleBatchGeometryBuild(GetAllItems(), buildVersion);
+            RequestBatchGeometryRefresh();
             InvalidateVisual();
         }
 
@@ -67,11 +103,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             UnsubscribeItems(_regionItems);
             _regionItems = items?.ToList();
-            var buildVersion = ++_batchBuildVersion;
-            CancelBatchBuild();
-            _batchGeometryCache.Clear();
-            ScheduleBatchGeometryBuild(GetAllItems(), buildVersion);
+            _invalidateCount++;
+            InvalidateTextDrawingCaches();
             SubscribeItems(_regionItems);
+            RequestBatchGeometryRefresh();
             InvalidateVisual();
         }
 
@@ -80,13 +115,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             UnsubscribeItems(_collector?.Items);
             _collector = null; // 直接设置 items 时清除 collector 引用
-            var buildVersion = ++_batchBuildVersion;
-            CancelBatchBuild();
-            _batchGeometryCache.Clear();
+            _invalidateCount++;
+            InvalidateTextDrawingCaches();
             UnsubscribeItems(_regionItems);
             _regionItems = items;
-            ScheduleBatchGeometryBuild(GetAllItems(), buildVersion);
             SubscribeItems(_regionItems);
+            RequestBatchGeometryRefresh();
             InvalidateVisual();
         }
 
@@ -95,7 +129,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             UnsubscribeItems(_highlightItems);
             _highlightItems = items?.ToList();
+            InvalidateTextDrawingCaches();
             SubscribeItems(_highlightItems);
+            RequestBatchGeometryRefresh();
             InvalidateVisual();
         }
 
@@ -108,10 +144,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             _collector = null;
             _regionItems = null;
             _highlightItems = null;
+            _invalidateCount++;
+            InvalidateTextDrawingCaches();
             ++_batchBuildVersion;
             CancelBatchBuild();
             _batchGeometryCache.Clear();
             InvalidateVisual();
+        }
+
+        /// <summary>
+        /// 合并同一 Dispatcher 周期内的结果、区域和高亮更新，只启动一次批量几何构建。
+        /// 结果刷新通常会连续调用 SetDisplayCollector/SetRegionItems；如果每个入口立即
+        /// 构建，会先构建不完整集合再立刻取消，造成无效 CPU 消耗。
+        /// </summary>
+        private void RequestBatchGeometryRefresh()
+        {
+            ++_batchBuildVersion;
+            CancelBatchBuild();
+            _batchGeometryCache.Clear();
+
+            if (_batchRefreshPending) return;
+            _batchRefreshPending = true;
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _batchRefreshPending = false;
+                var buildVersion = _batchBuildVersion;
+                ScheduleBatchGeometryBuild(GetAllItems(), buildVersion);
+            }), System.Windows.Threading.DispatcherPriority.DataBind);
         }
 
         private void ScheduleBatchGeometryBuild(IReadOnlyList<DisplayItemBase>? items, int buildVersion)
@@ -192,25 +252,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             if (batch.Contours.Count == 0)
                 return new Dictionary<(int X, int Y), IReadOnlyList<StreamGeometry>>();
-            var tiles = new Dictionary<(int X, int Y), List<StreamGeometry>>();
-            for (var start = 0; start < batch.Contours.Count; start += BatchGeometryChunkSize)
+
+            // 先按单条轮廓的真实 Bounds 分配 Tile，再在 Tile 内合并几何。
+            // 旧实现按 1000 条轮廓组成的大块 Bounds 分配：只要大块碰到当前视口，
+            // 就会把整块轮廓提交给 WPF，导致局部视口也绘制大量不可见顶点。
+            var tileContours = new Dictionary<(int X, int Y), List<Point[]>>();
+            foreach (var points in batch.Contours)
             {
-                var geometry = new StreamGeometry();
-                using (var ctx = geometry.Open())
-                {
-                    var end = Math.Min(start + BatchGeometryChunkSize, batch.Contours.Count);
-                    for (var i = start; i < end; i++)
-                    {
-                        var points = batch.Contours[i];
-                        if (points == null || points.Length < 2) continue;
-                        var closed = batch.IsClosed && points.Length >= 3;
-                        ctx.BeginFigure(points[0], false, closed);
-                        for (var pointIndex = 1; pointIndex < points.Length; pointIndex++)
-                            ctx.LineTo(points[pointIndex], true, true);
-                    }
-                }
-                geometry.Freeze();
-                var bounds = geometry.Bounds;
+                if (points == null || points.Length < 2) continue;
+
+                var bounds = new Rect(points[0], points[0]);
+                for (var pointIndex = 1; pointIndex < points.Length; pointIndex++)
+                    bounds.Union(points[pointIndex]);
+
                 var minX = (int)Math.Floor(bounds.Left / GeometryTileSize);
                 var maxX = (int)Math.Floor(bounds.Right / GeometryTileSize);
                 var minY = (int)Math.Floor(bounds.Top / GeometryTileSize);
@@ -219,12 +273,37 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 for (var tileY = minY; tileY <= maxY; tileY++)
                 {
                     var key = (tileX, tileY);
-                    if (!tiles.TryGetValue(key, out var tileGeometries))
-                        tiles[key] = tileGeometries = new List<StreamGeometry>();
-                    tileGeometries.Add(geometry);
+                    if (!tileContours.TryGetValue(key, out var contours))
+                        tileContours[key] = contours = new List<Point[]>();
+                    contours.Add(points);
                 }
             }
-            return tiles.ToDictionary(p => p.Key, p => (IReadOnlyList<StreamGeometry>)p.Value);
+
+            var tiles = new Dictionary<(int X, int Y), IReadOnlyList<StreamGeometry>>();
+            foreach (var (key, contours) in tileContours)
+            {
+                var geometries = new List<StreamGeometry>();
+                for (var start = 0; start < contours.Count; start += BatchGeometryChunkSize)
+                {
+                    var geometry = new StreamGeometry();
+                    using (var ctx = geometry.Open())
+                    {
+                        var end = Math.Min(start + BatchGeometryChunkSize, contours.Count);
+                        for (var i = start; i < end; i++)
+                        {
+                            var points = contours[i];
+                            var closed = batch.IsClosed && points.Length >= 3;
+                            ctx.BeginFigure(points[0], false, closed);
+                            for (var pointIndex = 1; pointIndex < points.Length; pointIndex++)
+                                ctx.LineTo(points[pointIndex], true, true);
+                        }
+                    }
+                    geometry.Freeze();
+                    geometries.Add(geometry);
+                }
+                tiles[key] = geometries;
+            }
+            return tiles;
         }
 
         /// <summary>清空高亮元素</summary>
@@ -232,6 +311,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             UnsubscribeItems(_highlightItems);
             _highlightItems = null;
+            InvalidateTextDrawingCaches();
             InvalidateVisual();
         }
 
@@ -253,7 +333,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 item.PropertyChanged -= OnItemPropertyChanged;
         }
 
-        private void OnItemPropertyChanged(object? sender, EventArgs e) => InvalidateVisual();
+        private void OnItemPropertyChanged(object? sender, EventArgs e)
+        {
+            InvalidateTextDrawingCaches();
+            InvalidateVisual();
+        }
+
+        private void InvalidateTextDrawingCaches()
+        {
+            _regionTextDrawingCache = null;
+            _collectorTextDrawingCache = null;
+            _highlightTextDrawingCache = null;
+        }
 
         #endregion
 
@@ -269,6 +360,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 if (Math.Abs(_viewportScale - value) > 0.001)
                 {
                     _viewportScale = value;
+                    // 文本缓存使用基础字号和基础布局；缩放只更新组级幂律矩阵，
+                    // 不得因为 viewport scale 变化而重建全部 FormattedText/DrawingGroup。
                     InvalidateVisual();
                 }
             }
@@ -298,27 +391,47 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             base.OnRender(dc);
 
-            // 诊断：输出上一帧整体耗时与轮廓分支耗时，用于定位耗时归属（轮廓 vs 其它图元）
+            // 诊断口径：
+            //   total    = 上一帧【真实 OnRender 耗时】（_renderSw 在进入绘制前重启、绘制结束处读取）
+            //   interval = 相邻两帧 OnRender 开始点的间隔（含帧间空档）
+            //   idle     = interval - total ⇒ 帧间空档（不等于绘制耗时）
+            //   contour / text = 【本帧】归属耗时（每帧入口清零，分支内累加）
+            var intervalMs = _intervalSw.Elapsed.TotalMilliseconds;
+            _intervalSw.Restart();
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[RenderDiag] OnRender prev: total={_renderSw.Elapsed.TotalMilliseconds:F1}ms, contour={_contourMs:F1}ms, other={Math.Max(0, _renderSw.Elapsed.TotalMilliseconds - _contourMs):F1}ms, contourVerticesUpperBound={_vertexCount}, scale={_viewportScale:F3}",
+                $"[RenderDiag] OnRender prev: total={_lastFrameMs:F1}ms, contour={_contourMs:F1}ms, text={_textMs:F1}ms, other={Math.Max(0, _lastFrameMs - _contourMs - _textMs):F1}ms, interval={intervalMs:F1}ms, idle={Math.Max(0, intervalMs - _lastFrameMs):F1}ms, invalidate={_invalidateCount}, cacheHits={_cacheHits}, cacheMisses={_cacheMisses}, fallbackContours={_fallbackContours}, fallbackVertices={_fallbackVertices}, textCount={_textCount}, textCache={_formattedTextCache.Count}, contourVerticesUpperBound={_vertexCount}, scale={_viewportScale:F3}",
                 "ResultRenderLayer");
             _renderSw.Restart();
+            _intervalSw.Restart();
+            _invalidateCount = 0;
+            _cacheHits = 0;
+            _cacheMisses = 0;
+            _fallbackContours = 0;
+            _fallbackVertices = 0;
+            _contourMs = 0;
+            _textMs = 0;
 
             // ★ 不再清空 _brushCache / _penCache，缓存可跨渲染复用
             // Pen 键已包含厚度信息，不同线宽自动对应不同缓存项
 
             // 渲染顺序：区域(底层) → 工具输出(中层) → 高亮(顶层)
             // 每层内：图形项立即绘制，文本项收集后统一分组排版（同锚点协同换行）
-            RenderLayer(dc, _regionItems);
-            RenderLayer(dc, _collector?.Items);
-            RenderLayer(dc, _highlightItems);
+            RenderLayer(dc, _regionItems, ref _regionTextDrawingCache);
+            RenderLayer(dc, _collector?.Items, ref _collectorTextDrawingCache);
+            RenderLayer(dc, _highlightItems, ref _highlightTextDrawingCache);
+
+            // 本帧真实绘制耗时（_renderSw 在进入绘制前重启，此处读取）
+            _lastFrameMs = _renderSw.Elapsed.TotalMilliseconds;
         }
 
         /// <summary>
         /// 渲染一层：图形项按原顺序立即绘制；文本项收集后统一分组排版，
         /// 保证"同一锚点的多条文本（可跨 TextStyle）"协同换行而非相互重叠。
         /// </summary>
-        private void RenderLayer(DrawingContext dc, IReadOnlyList<DisplayItemBase>? items)
+        private void RenderLayer(
+            DrawingContext dc,
+            IReadOnlyList<DisplayItemBase>? items,
+            ref TextDrawingCacheEntry? textDrawingCache)
         {
             if (items == null) return;
 
@@ -336,7 +449,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
 
             if (texts != null)
-                RenderTextsGrouped(dc, texts);
+                RenderTextsGrouped(dc, texts, ref textDrawingCache);
         }
 
         private void RenderItem(DrawingContext dc, DisplayItemBase item)
@@ -664,6 +777,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     var isPass = isUnified || (item.IsPassArray.Length > i && item.IsPassArray[i]);
                     if (_batchGeometryCache.TryGetValue(batch, out var cachedGeometries))
                     {
+                        _cacheHits++;
                         var cachedFill = item.IsFilled
                             ? (isUnified || isPass ? defaultBrush : ngBrush)
                             : null;
@@ -705,22 +819,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                             "ResultRenderLayer");
                         continue;
                     }
-                    foreach (var pts in batch.Contours)
-                    {
-                        if (pts == null || pts.Length < 2) continue;
-                        if (batch.IsClosed && pts.Length >= 3)
-                        {
-                            if (isUnified) batchPolygons.Add(pts);
-                            else if (isPass) batchOkPolygons.Add(pts);
-                            else batchNgPolygons.Add(pts);
-                        }
-                        else
-                        {
-                            if (isUnified) batchPolylines.Add(pts);
-                            else if (isPass) batchOkPolylines.Add(pts);
-                            else batchNgPolylines.Add(pts);
-                        }
-                    }
+                    _cacheMisses++;
+                    // 批量几何正在后台构建时跳过本帧绘制，避免在 UI 线程回退展开
+                    // 整批轮廓。构建完成后会 InvalidateVisual，下一帧直接命中缓存。
                     continue;
                 }
 
@@ -894,7 +995,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #region 文本渲染（同锚点分组自动排版：屏幕恒定行高，字号变更自动适配间距）
 
-        /// <summary>同锚点判定容差（屏幕像素；缩放时容差自适应，避免放大后误分组）</summary>
+        /// <summary>同锚点判定容差（基础图像坐标）。缓存布局不随 viewport zoom 变化。</summary>
         private const double TextAnchorToleranceScreen = 2.0;
 
         /// <summary>行高系数（行高 = 该行字号 × 系数；字号变更时间距自动跟随）</summary>
@@ -915,8 +1016,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 锚点 = 图像坐标（跟随几何，随缩放移动）；行高与屏幕偏移均与字号同一缩放模型（屏幕恒定），
         /// 因此缩放时不会"字变小、间距变大"，改字号时行距自动适配。
         /// </summary>
-        private void RenderTextsGrouped(DrawingContext dc, List<TextDisplayItem> items)
+        private void RenderTextsGrouped(
+            DrawingContext dc,
+            List<TextDisplayItem> items,
+            ref TextDrawingCacheEntry? textDrawingCache)
         {
+            var textSw = Stopwatch.StartNew();
+            var fingerprint = ComputeTextFingerprint(items);
+            if (textDrawingCache != null && textDrawingCache.Fingerprint == fingerprint)
+            {
+                ApplyTextTransforms(textDrawingCache);
+                dc.DrawDrawing(textDrawingCache.Drawing);
+                _textMs = textSw.Elapsed.TotalMilliseconds;
+                _textCount = textDrawingCache.TextCount;
+                return;
+            }
+
             var lines = new List<TextLine>();
             foreach (var item in items)
             {
@@ -924,7 +1039,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
                 var texts = item.Texts;
                 var passArray = item.IsPassArray;
-                for (int i = 0; i < texts.Length && lines.Count < LOD_MAX_TEXTS; i++)
+                // 所见即所得：不因缩放级别、文本数量或采样步长丢弃任何结果文本。
+                for (int i = 0; i < texts.Length; i++)
                 {
                     var td = texts[i];
                     lines.Add(new TextLine
@@ -939,29 +1055,108 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
             if (lines.Count == 0) return;
 
-            // 同锚点分组（锚点屏幕距离 ≤ 容差）
-            double anchorTolerance = ViewportScaling.InvScale(_viewportScale, TextAnchorToleranceScreen);
+            // 同锚点分组（锚点屏幕距离 ≤ 容差）：以"锚点网格"定位候选组（仅查相邻 9 格），
+            // 命中后仍用原判定式精确比较，并按组的创建顺序取最靠前者 ⇒ 分组结果与原 O(n²)
+            // 实现完全一致，复杂度由 O(n²) 降为 O(n)。
+            // 分组属于内容布局，不属于视口变换；固定在基础图像坐标中，
+            // 避免 zoom 改变时仅因容差变化而让整层文本缓存失效。
+            const double anchorTolerance = TextAnchorToleranceScreen;
             var groups = new List<List<TextLine>>();
+            var groupGrid = new Dictionary<(long X, long Y), List<(int Index, List<TextLine> Group)>>();
             foreach (var line in lines)
             {
+                long cellX = (long)Math.Floor(line.AnchorX / anchorTolerance);
+                long cellY = (long)Math.Floor(line.AnchorY / anchorTolerance);
                 List<TextLine>? target = null;
-                foreach (var group in groups)
+                var bestIndex = int.MaxValue;
+                for (var dx = -1; dx <= 1; dx++)
+                for (var dy = -1; dy <= 1; dy++)
                 {
-                    if (Math.Abs(group[0].AnchorX - line.AnchorX) <= anchorTolerance &&
-                        Math.Abs(group[0].AnchorY - line.AnchorY) <= anchorTolerance)
+                    if (!groupGrid.TryGetValue((cellX + dx, cellY + dy), out var candidates)) continue;
+                    foreach (var (candidateIndex, candidate) in candidates)
                     {
-                        target = group;
-                        break;
+                        if (candidateIndex >= bestIndex) continue;
+                        if (Math.Abs(candidate[0].AnchorX - line.AnchorX) <= anchorTolerance &&
+                            Math.Abs(candidate[0].AnchorY - line.AnchorY) <= anchorTolerance)
+                        {
+                            target = candidate;
+                            bestIndex = candidateIndex;
+                        }
                     }
                 }
                 if (target == null)
                 {
                     target = new List<TextLine>();
                     groups.Add(target);
+                    if (!groupGrid.TryGetValue((cellX, cellY), out var bucket))
+                    {
+                        bucket = new List<(int Index, List<TextLine> Group)>();
+                        groupGrid[(cellX, cellY)] = bucket;
+                    }
+                    bucket.Add((groups.Count - 1, target));
                 }
                 target.Add(line);
             }
 
+            // 以 zoom=1 的基础字号构建内容。缩放不再改变 FormattedText，
+            // 只更新每个锚点组的矩阵；这保留幂律视觉规则，同时避免逐条文本重建。
+            var drawing = new DrawingGroup();
+            var groupEntries = new List<TextGroupDrawingEntry>(groups.Count);
+            using (var textDc = drawing.Open())
+            {
+                foreach (var group in groups)
+                {
+                    if (group.Count == 0) continue;
+
+                    var groupDrawing = new DrawingGroup();
+                    using (var groupDc = groupDrawing.Open())
+                    {
+                        // 基础字号和基础间距只创建一次，缩放交给组级矩阵。
+                        RenderTextLines(groupDc, new List<List<TextLine>> { group });
+                    }
+                    var anchor = new Point(group[0].AnchorX, group[0].AnchorY);
+                    var transform = new ScaleTransform(1.0, 1.0, anchor.X, anchor.Y);
+                    groupDrawing.Transform = transform;
+                    textDc.DrawDrawing(groupDrawing);
+                    groupEntries.Add(new TextGroupDrawingEntry
+                    {
+                        Anchor = anchor,
+                        Drawing = groupDrawing,
+                        Transform = transform,
+                    });
+                }
+            }
+
+            textDrawingCache = new TextDrawingCacheEntry
+            {
+                Fingerprint = fingerprint,
+                Drawing = drawing,
+                TextCount = lines.Count,
+                Groups = groupEntries,
+            };
+            ApplyTextTransforms(textDrawingCache);
+            dc.DrawDrawing(drawing);
+            _textMs = textSw.Elapsed.TotalMilliseconds;
+            _textCount = lines.Count;
+        }
+
+        private void ApplyTextTransforms(TextDrawingCacheEntry cache)
+        {
+            // ImageControl 还会对结果层整体应用 viewport zoom，因此这里使用
+            // 1 / zoom^(1+power)，最终屏幕字号为 base / zoom^power。
+            var zoom = Math.Max(_viewportScale, 0.001);
+            var localScale = ViewportScaling.Power(zoom, 1.0, 1.0 + ViewportScaling.DecorPower);
+            foreach (var group in cache.Groups)
+            {
+                group.Transform.CenterX = group.Anchor.X;
+                group.Transform.CenterY = group.Anchor.Y;
+                group.Transform.ScaleX = localScale;
+                group.Transform.ScaleY = localScale;
+            }
+        }
+
+        private void RenderTextLines(DrawingContext dc, List<List<TextLine>> groups)
+        {
             // 逐组排版：组内按添加顺序换行；行高 = 该行字号 × 系数（屏幕恒定 → 逻辑尺寸）
             foreach (var group in groups)
             {
@@ -969,16 +1164,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 foreach (var line in group)
                 {
                     var style = line.Item.Style!;
-                    double scaledFontSize = ViewportScaling.InvScale(_viewportScale, style.FontSize);
-
                     double drawX = line.AnchorX
-                        + ViewportScaling.InvScale(_viewportScale, line.Data.ScreenOffsetX);
+                        + line.Data.ScreenOffsetX;
                     double drawY = line.AnchorY
-                        + ViewportScaling.InvScale(_viewportScale, line.Data.ScreenOffsetY)
+                        + line.Data.ScreenOffsetY
                         + lineOffsetY;
 
-                    var color = ArgbToColor(style.GetEffectiveColorArgb(line.IsPass));
-                    var formattedText = CreateFormattedText(line.Data.Content, color, scaledFontSize, style.IsBold);
+                    var textArgb = style.GetEffectiveColorArgb(line.IsPass);
+                    var color = ArgbToColor(textArgb);
+                    var textKey = (line.Data.Content, textArgb, style.FontSize, style.IsBold);
+                    if (!_formattedTextCache.TryGetValue(textKey, out var formattedText))
+                    {
+                        formattedText = CreateFormattedText(line.Data.Content, color, style.FontSize, style.IsBold);
+                        if (_formattedTextCache.Count < FormattedTextCacheLimit)
+                            _formattedTextCache[textKey] = formattedText;
+                    }
 
                     dc.PushOpacity(style.Opacity);
                     try
@@ -990,8 +1190,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         dc.Pop();
                     }
 
-                    lineOffsetY += scaledFontSize * TextLineHeightFactor;
+                    lineOffsetY += style.FontSize * TextLineHeightFactor;
                 }
+            }
+        }
+
+        private static int ComputeTextFingerprint(IReadOnlyList<TextDisplayItem> items)
+        {
+            unchecked
+            {
+                var hash = 17;
+                foreach (var item in items)
+                {
+                    hash = hash * 31 + RuntimeHelpers.GetHashCode(item);
+                    hash = hash * 31 + RuntimeHelpers.GetHashCode(item.Texts);
+                    hash = hash * 31 + item.Texts.Length;
+                }
+                return hash;
             }
         }
 

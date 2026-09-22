@@ -38,8 +38,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private const long RenderSlowThresholdMs = 100;
         private readonly Stopwatch _renderStopwatch = new();
         private int _diagItems, _diagContours, _diagCrosses, _diagTexts;
+        private int _diagDrawCalls, _diagBlocks, _diagContourVertices;
         private int _diagLastItems = -1, _diagLastContours = -1, _diagLastCrosses = -1, _diagLastTexts = -1;
+        private int _diagLastDrawCalls = -1, _diagLastBlocks = -1, _diagLastContourVertices = -1;
         private long _diagLastSlowLogTimestamp;
+
+        // 文本绘制缓存（按层：区域层 / 工具输出层 / 高亮层）：
+        // 文本排版取决于缩放、内容与样式，三者都不变时复用已录制的绘制内容，一次提交完成。
+        private const int TextCacheLayerCount = 3;
+        private readonly DrawingGroup?[] _textDrawingCaches = new DrawingGroup?[TextCacheLayerCount];
+        private readonly int[] _textCacheTextCounts = new int[TextCacheLayerCount];
+        private readonly double[] _textCacheZooms = new double[TextCacheLayerCount];
+        private readonly int[] _textCacheVersions = new int[TextCacheLayerCount];
+        private int _textSourceVersion;
 
         #endregion
 
@@ -50,6 +61,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             UnsubscribeItems(_collector?.Items);
             _collector = collector;
+            _textSourceVersion++;
             var buildVersion = ++_batchBuildVersion;
             CancelBatchBuild();
             _batchGeometryCache.Clear();
@@ -63,6 +75,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             UnsubscribeItems(_regionItems);
             _regionItems = items?.ToList();
+            _textSourceVersion++;
             var buildVersion = ++_batchBuildVersion;
             CancelBatchBuild();
             _batchGeometryCache.Clear();
@@ -76,6 +89,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             UnsubscribeItems(_collector?.Items);
             _collector = null; // 直接设置 items 时清除 collector 引用
+            _textSourceVersion++;
             var buildVersion = ++_batchBuildVersion;
             CancelBatchBuild();
             _batchGeometryCache.Clear();
@@ -104,6 +118,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             _collector = null;
             _regionItems = null;
             _highlightItems = null;
+            _textSourceVersion++;
             ++_batchBuildVersion;
             CancelBatchBuild();
             _batchGeometryCache.Clear();
@@ -249,7 +264,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 item.PropertyChanged -= OnItemPropertyChanged;
         }
 
-        private void OnItemPropertyChanged(object? sender, EventArgs e) => InvalidateVisual();
+        private void OnItemPropertyChanged(object? sender, EventArgs e)
+        {
+            // 样式（颜色/字号/可见性等）或图元属性变化 → 文本绘制缓存必须失效（NotifyChanged 会转发样式变化）。
+            _textSourceVersion++;
+            InvalidateVisual();
+        }
 
         #endregion
 
@@ -298,13 +318,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // Pen 键已包含厚度信息，不同线宽自动对应不同缓存项
 
             _diagItems = _diagContours = _diagCrosses = _diagTexts = 0;
+            _diagDrawCalls = _diagBlocks = _diagContourVertices = 0;
+            // GetDpi(this) 在本元素未连接可视树时返回默认 96 DPI，不依赖 MainWindow。
+            _pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
             _renderStopwatch.Restart();
 
             // 渲染顺序：区域(底层) → 工具输出(中层) → 高亮(顶层)
             // 每层内：图形项立即绘制，文本项收集后统一分组排版（同锚点协同换行）
-            RenderLayer(dc, _regionItems);
-            RenderLayer(dc, _collector?.Items);
-            RenderLayer(dc, _highlightItems);
+            RenderLayer(dc, _regionItems, 0);
+            RenderLayer(dc, _collector?.Items, 1);
+            RenderLayer(dc, _highlightItems, 2);
 
             _renderStopwatch.Stop();
             WriteRenderDiagnostics();
@@ -319,7 +342,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var elapsedMs = _renderStopwatch.ElapsedMilliseconds;
             var isSlow = elapsedMs >= RenderSlowThresholdMs;
             var contentChanged = _diagItems != _diagLastItems || _diagContours != _diagLastContours
-                || _diagCrosses != _diagLastCrosses || _diagTexts != _diagLastTexts;
+                || _diagCrosses != _diagLastCrosses || _diagTexts != _diagLastTexts
+                || _diagDrawCalls != _diagLastDrawCalls || _diagBlocks != _diagLastBlocks
+                || _diagContourVertices != _diagLastContourVertices;
             if (!isSlow && !contentChanged) return;
 
             var now = Stopwatch.GetTimestamp();
@@ -333,10 +358,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             _diagLastContours = _diagContours;
             _diagLastCrosses = _diagCrosses;
             _diagLastTexts = _diagTexts;
+            _diagLastDrawCalls = _diagDrawCalls;
+            _diagLastBlocks = _diagBlocks;
+            _diagLastContourVertices = _diagContourVertices;
 
             VisionLogger.Instance.Log(
                 isSlow ? LogLevel.Warning : LogLevel.Info,
-                $"[RenderDiag] items={_diagItems} contours={_diagContours} crosses={_diagCrosses} texts={_diagTexts} renderMs={elapsedMs}",
+                $"[RenderDiag] items={_diagItems} contours={_diagContours} crosses={_diagCrosses} texts={_diagTexts}"
+                + $" drawCalls={_diagDrawCalls} blocks={_diagBlocks} contourVerts={_diagContourVertices} renderMs={elapsedMs}",
                 "ResultRenderLayer");
         }
 
@@ -344,7 +373,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 渲染一层：图形项按原顺序立即绘制；文本项收集后统一分组排版，
         /// 保证"同一锚点的多条文本（可跨 TextStyle）"协同换行而非相互重叠。
         /// </summary>
-        private void RenderLayer(DrawingContext dc, IReadOnlyList<DisplayItemBase>? items)
+        private void RenderLayer(DrawingContext dc, IReadOnlyList<DisplayItemBase>? items, int layerIndex)
         {
             if (items == null) return;
 
@@ -363,7 +392,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
 
             if (texts != null)
-                RenderTextsGrouped(dc, texts);
+                RenderTextsGrouped(dc, texts, layerIndex);
         }
 
         private void RenderItem(DrawingContext dc, DisplayItemBase item)
@@ -421,8 +450,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private void RenderPoints(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, Pen defaultPen)
         {
             bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
-            double s = GetScaledLineWidth(2.5, ViewportScaling.MarkerPower);
-            double crossThickness = GetScaledLineWidth(1.0, ViewportScaling.MarkerPower);
+            // 点标记同样接入 Clamped（放大不低于基准，缩小时最多放大 1.5 倍）。
+            double s = ViewportScaling.Clamped(_viewportScale, 2.5, ViewportScaling.MarkerPower, 2.5, 3.75);
+            double crossThickness = ViewportScaling.Clamped(_viewportScale, 1.0, ViewportScaling.MarkerPower, 1.0, 1.5);
             var defaultColorArgb = style.GetEffectiveColorArgb(true);
             var crossPen = GetPen(defaultColorArgb, crossThickness);
 
@@ -449,6 +479,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     }
                 }
                 geometry.Freeze();
+                _diagDrawCalls++;
                 dc.DrawGeometry(null, crossPen, geometry);
             }
             else
@@ -480,6 +511,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 }
                 okGeo.Freeze();
                 ngGeo.Freeze();
+                _diagDrawCalls += 2;
                 dc.DrawGeometry(null, crossPen, okGeo);
                 dc.DrawGeometry(null, ngPen, ngGeo);
             }
@@ -498,6 +530,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     if (item.Geometries[i] is SdkLineSegment line)
                         okPoints.Add(new[] { line.Start, line.End });
                 }
+                if (okPoints.Count > 0) _diagDrawCalls++;
                 DrawMultipleFigures(dc, okPoints, null, defaultPen, false);
             }
             else
@@ -519,7 +552,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                             ngPoints.Add(pts);
                     }
                 }
+                if (okPoints.Count > 0) _diagDrawCalls++;
                 DrawMultipleFigures(dc, okPoints, null, defaultPen, false);
+                if (ngPoints.Count > 0) _diagDrawCalls++;
                 DrawMultipleFigures(dc, ngPoints, null, ngPen, false);
             }
         }
@@ -541,9 +576,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     : null;
 
                 if (geom is Rect rect)
+                {
+                    _diagDrawCalls++;
                     dc.DrawRectangle(effectiveBrush, effectivePen, rect);
+                }
                 else if (geom is Point[] polygonPoints && polygonPoints.Length >= 3)
                 {
+                    _diagDrawCalls++;
                     DrawPolygon(dc, polygonPoints, effectiveBrush, effectivePen);
                 }
             }
@@ -559,6 +598,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     var effectiveColorArgb = style.GetEffectiveColorArgb(isPass);
                     var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth), style.LineDashStyle);
                     var effectiveBrush = item.IsFilled ? (isPass ? brush : GetBrush(effectiveColorArgb)) : null;
+                    _diagDrawCalls++;
                     dc.DrawEllipse(effectiveBrush, effectivePen,
                         circle.Center, circle.Radius, circle.Radius);
                 }
@@ -575,11 +615,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     // ★ Arc2d（弧度 + IsMajorArc/IsClockwise 连续模型）：按 AngularSpan 连续采样折线，
                     //   与交互层 MeasureBandOverlay.AddArc 同源，兼容大/小弧、顺/逆时针、跨 2π。
+                    _diagDrawCalls++;
                     dc.DrawGeometry(null, effectivePen, CreateArc2dGeometry(arc2d));
                 }
                 else if (item.Geometries[i] is ArcGeometry arc)
                 {
                     var geometry = CreateArcGeometry(arc);
+                    _diagDrawCalls++;
                     dc.DrawGeometry(null, effectivePen, geometry);
                 }
             }
@@ -621,6 +663,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     if (item.Geometries[i] is Point[] points && points.Length >= 2)
                         allPoints.Add(item.IsFixedScreenSize ? ScaleScreenStable(points) : points);
                 }
+                if (allPoints.Count > 0) _diagDrawCalls++;
                 DrawMultipleFigures(dc, allPoints, item.IsFilled ? defaultBrush : null, defaultPen, true);
             }
             else
@@ -640,7 +683,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                             ngPoints.Add(points);
                     }
                 }
+                if (okPoints.Count > 0) _diagDrawCalls++;
                 DrawMultipleFigures(dc, okPoints, item.IsFilled ? defaultBrush : null, defaultPen, true);
+                if (ngPoints.Count > 0) _diagDrawCalls++;
                 DrawMultipleFigures(dc, ngPoints, ngBrush, ngPen, true);
             }
         }
@@ -683,6 +728,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 if (item.Geometries[i] is BatchedContourGeometry batch)
                 {
                     _diagContours += batch.Contours.Count;
+                    foreach (var batchPoints in batch.Contours)
+                        if (batchPoints != null) _diagContourVertices += batchPoints.Length;
                     var isPass = isUnified || (item.IsPassArray.Length > i && item.IsPassArray[i]);
                     if (_batchGeometryCache.TryGetValue(batch, out var cachedGeometries))
                     {
@@ -711,6 +758,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         }
                         foreach (var cachedGeometry in visibleGeometries)
                         {
+                            _diagDrawCalls++;
+                            _diagBlocks++;
                             dc.DrawGeometry(cachedFill, cachedPen, cachedGeometry);
                         }
                         continue;
@@ -738,6 +787,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     var pts = contour.Points;
                     if (pts.Length < 2) continue;
+                    _diagContourVertices += pts.Length;
 
                     bool isPass = isUnified || (item.IsPassArray.Length > i ? item.IsPassArray[i] : true);
                     bool isClosed = contour.IsClosed && pts.Length >= 3;
@@ -780,14 +830,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // 批量绘制无变换的轮廓
             if (isUnified)
             {
+                if (batchPolygons.Count > 0) { _diagDrawCalls++; _diagBlocks++; }
                 DrawMultipleFigures(dc, batchPolygons, item.IsFilled ? defaultBrush : null, defaultPen, true);
+                if (batchPolylines.Count > 0) { _diagDrawCalls++; _diagBlocks++; }
                 DrawMultipleFigures(dc, batchPolylines, null, defaultPen, false);
             }
             else
             {
+                if (batchOkPolygons.Count > 0) { _diagDrawCalls++; _diagBlocks++; }
                 DrawMultipleFigures(dc, batchOkPolygons, item.IsFilled ? defaultBrush : null, defaultPen, true);
+                if (batchOkPolylines.Count > 0) { _diagDrawCalls++; _diagBlocks++; }
                 DrawMultipleFigures(dc, batchOkPolylines, null, defaultPen, false);
+                if (batchNgPolygons.Count > 0) { _diagDrawCalls++; _diagBlocks++; }
                 DrawMultipleFigures(dc, batchNgPolygons, ngBrush, ngPen, true);
+                if (batchNgPolylines.Count > 0) { _diagDrawCalls++; _diagBlocks++; }
                 DrawMultipleFigures(dc, batchNgPolylines, null, ngPen, false);
             }
         }
@@ -803,6 +859,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
                     var effectivePen = isPass ? defaultPen : GetPen(style!.GetEffectiveColorArgb(false), GetScaledLineWidth(lineWidth), style.LineDashStyle);
                     var geometry = CreateArrowGeometry(line.Start, line.End, GetScaledLineWidth(lineWidth));
+                    _diagDrawCalls++;
                     dc.DrawGeometry(null, effectivePen, geometry);
                 }
             }
@@ -814,7 +871,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var scale = GetScaledLineWidth(style.LineWidth);
             var ngColorArgb = style.GetEffectiveColorArgb(false);
             var ngPen = GetPen(ngColorArgb, scale);
-            var s = GetScaledLineWidth(style.CrossSize, ViewportScaling.MarkerPower);
+            // 十字尺寸接入 Clamped：放大时不低于配置尺寸，缩小时最多放大 1.5 倍，保证始终可见。
+            var s = ViewportScaling.Clamped(_viewportScale, style.CrossSize,
+                ViewportScaling.MarkerPower, style.CrossSize, style.CrossSize * 1.5);
 
             int totalCount = item.Geometries.Length;
 
@@ -840,6 +899,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     }
                 }
                 geometry.Freeze();
+                _diagDrawCalls++;
                 dc.DrawGeometry(null, defaultPen, geometry);
             }
             else
@@ -869,6 +929,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 }
                 okGeo.Freeze();
                 ngGeo.Freeze();
+                _diagDrawCalls += 2;
                 dc.DrawGeometry(null, defaultPen, okGeo);
                 dc.DrawGeometry(null, ngPen, ngGeo);
             }
@@ -924,7 +985,39 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 锚点 = 图像坐标（跟随几何，随缩放移动）；行高与屏幕偏移均与字号同一缩放模型（屏幕恒定），
         /// 因此缩放时不会"字变小、间距变大"，改字号时行距自动适配。
         /// </summary>
-        private void RenderTextsGrouped(DrawingContext dc, List<TextDisplayItem> items)
+        private void RenderTextsGrouped(DrawingContext dc, List<TextDisplayItem> items, int layerIndex)
+        {
+            // 缩放、内容、样式三者都不变时复用已录制的绘制内容：一次提交替代逐行提交。
+            if (_textDrawingCaches[layerIndex] is { } cached
+                && _textCacheVersions[layerIndex] == _textSourceVersion
+                && Math.Abs(_textCacheZooms[layerIndex] - _viewportScale) < 0.0001)
+            {
+                _diagTexts += _textCacheTextCounts[layerIndex];
+                _diagDrawCalls++;
+                dc.DrawDrawing(cached);
+                return;
+            }
+
+            var lines = CollectTextLines(items);
+            _diagTexts += lines.Count;
+            if (lines.Count == 0) return;
+
+            var textGroup = new DrawingGroup();
+            using (var textContext = textGroup.Open())
+                DrawTextLines(textContext, lines);
+            textGroup.Freeze();
+
+            _textDrawingCaches[layerIndex] = textGroup;
+            _textCacheZooms[layerIndex] = _viewportScale;
+            _textCacheVersions[layerIndex] = _textSourceVersion;
+            _textCacheTextCounts[layerIndex] = lines.Count;
+
+            _diagDrawCalls++;
+            dc.DrawDrawing(textGroup);
+        }
+
+        /// <summary>展开一层内的全部文本行（每个 DisplayTextData = 一行）。</summary>
+        private static List<TextLine> CollectTextLines(List<TextDisplayItem> items)
         {
             var lines = new List<TextLine>();
             foreach (var item in items)
@@ -946,17 +1039,36 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     });
                 }
             }
-            _diagTexts = lines.Count;
-            if (lines.Count == 0) return;
+            return lines;
+        }
 
-            // 同锚点分组（锚点屏幕距离 ≤ 容差）
+        /// <summary>文本排版绘制：分桶分组 → 组内按添加顺序换行。</summary>
+        private void DrawTextLines(DrawingContext dc, List<TextLine> lines)
+        {
+
+            // 同锚点分组（锚点屏幕距离 ≤ 容差）：按容差划格，只在 3×3 邻格内查找，
+            // 避免"逐组线性扫描"在文本上千行时的平方级开销；候选组按加入顺序排序，结果与线性实现一致。
             double anchorTolerance = ViewportScaling.InvScale(_viewportScale, TextAnchorToleranceScreen);
+            double cellSize = Math.Max(anchorTolerance, 0.5);
             var groups = new List<List<TextLine>>();
+            var buckets = new Dictionary<(int X, int Y), List<int>>();
+            var candidateIndices = new List<int>();
             foreach (var line in lines)
             {
+                int cellX = (int)Math.Floor(line.AnchorX / cellSize);
+                int cellY = (int)Math.Floor(line.AnchorY / cellSize);
+
+                candidateIndices.Clear();
+                for (int dx = -1; dx <= 1; dx++)
+                for (int dy = -1; dy <= 1; dy++)
+                    if (buckets.TryGetValue((cellX + dx, cellY + dy), out var indices))
+                        candidateIndices.AddRange(indices);
+                candidateIndices.Sort();
+
                 List<TextLine>? target = null;
-                foreach (var group in groups)
+                foreach (var index in candidateIndices)
                 {
+                    var group = groups[index];
                     if (Math.Abs(group[0].AnchorX - line.AnchorX) <= anchorTolerance &&
                         Math.Abs(group[0].AnchorY - line.AnchorY) <= anchorTolerance)
                     {
@@ -964,10 +1076,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         break;
                     }
                 }
+
                 if (target == null)
                 {
                     target = new List<TextLine>();
                     groups.Add(target);
+                    if (!buckets.TryGetValue((cellX, cellY), out var cellGroups))
+                        buckets[(cellX, cellY)] = cellGroups = new List<int>();
+                    cellGroups.Add(groups.Count - 1);
                 }
                 target.Add(line);
             }
@@ -979,7 +1095,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 foreach (var line in group)
                 {
                     var style = line.Item.Style!;
-                    double scaledFontSize = ViewportScaling.InvScale(_viewportScale, style.FontSize);
+                    // 字号统一走唯一缩放源：放大时不低于配置字号，缩小时最多放大 1.5 倍，保证任何缩放档都可见。
+                    double scaledFontSize = ViewportScaling.Clamped(_viewportScale, style.FontSize,
+                        ViewportScaling.DecorPower, style.FontSize, style.FontSize * 1.5);
 
                     double drawX = line.AnchorX
                         + ViewportScaling.InvScale(_viewportScale, line.Data.ScreenOffsetX);
@@ -1094,17 +1212,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             (byte)((argb >> 24) & 0xFF), (byte)((argb >> 16) & 0xFF),
             (byte)((argb >> 8) & 0xFF), (byte)(argb & 0xFF));
 
+        // 字体对象与画刷都是可复用的重对象：逐行重建纯属浪费，改为静态/缓存复用；
+        // DPI 每帧取一次（见 OnRender），不再逐行调用 VisualTreeHelper.GetDpi。
+        private static readonly Typeface RegularTypeface = new(new FontFamily("Segoe UI"),
+            FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+
+        private static readonly Typeface BoldTypeface = new(new FontFamily("Segoe UI"),
+            FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
+
+        private double _pixelsPerDip = 1.0;
+
+        private static uint ColorToArgb(Color color) =>
+            (uint)((color.A << 24) | (color.R << 16) | (color.G << 8) | color.B);
+
         private FormattedText CreateFormattedText(string text, Color color, double fontSize, bool isBold)
-        {
-            var typeface = new Typeface(new FontFamily("Segoe UI"),
-                FontStyles.Normal, isBold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal);
-            // 使用自身实例的 DPI，而非依赖 Application.Current.MainWindow。
-            // 依赖 MainWindow 在脚本工具/独立上下文渲染时可能为 null，导致 VisualTreeHelper.GetDpi(null) 抛 NullReferenceException。
-            // GetDpi(this) 即使本元素尚未连接可视树也不会抛异常，返回默认 96 DPI。
-            var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-            return new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight, typeface, fontSize, new SolidColorBrush(color), pixelsPerDip);
-        }
+            => new(text, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+                isBold ? BoldTypeface : RegularTypeface, fontSize, GetBrush(ColorToArgb(color)), _pixelsPerDip);
 
         private static StreamGeometry CreateArcGeometry(ArcGeometry arc)
         {

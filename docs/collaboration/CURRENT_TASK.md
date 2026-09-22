@@ -81,6 +81,25 @@
 - 2026-09-18 收尾：移除 `ToolExecutionRequest.ApplyBindings` 及 `ToolExecutor` 的旧执行开关，执行 API 统一只使用 `ParameterBindingSet`/`RuntimeParameterSnapshot`；迁移测试改为纯 CLR 参数往返契约。
 - Release 验证：Plugin.SDK 测试 443/443；点圆、点线、点点、线圆、线线测量测试全部通过；SDK、UI、全量 `SunEyeVision.slnx` 构建均 0 error。工具目录不再包含 `ParamValue<T>` 参数声明或 `BindingConfig` 执行依赖。
 - 当前状态：代码实现和自动化验证完成，等待用户统一进行端到端手动验证（绑定持久化、全局变量传递、工具调试执行、工作流执行、结果显示）。
+- **结果渲染统一 WPF 方案基线（2026-09-21）**：已记录于
+  `docs/01-方案设计/2026/09/21/统一WPF结果渲染与调试预览分层优化方案-20260921.md`。
+  方案要求上层按 `Pass/Fail/Neutral/Highlight` 结果状态组织显示，几何类型仅作为渲染器内部数据；
+  工作流结果与调试预览分层，关闭调试窗口只清理调试预览/交互层，不误清理工作流结果；
+  统一走 WPF 批量 Geometry 与少量 Visual，不按小结果/大结果切换多套公共渲染模式。
+  当前由 CodeBuddy 按该方案实施；完成后由 Codex 审核代码、生命周期语义、性能回归、构建和测试。
+- **渲染实施设计决策（2026-09-21）**：
+  1. 本次明确授权 CodeBuddy 修改 `src/Plugin.SDK/**`、`tools/SunEyeVision.BlobAnalysis/**`、
+     `src/UI/Services/Workflow/**`、`src/UI/Shell/Windows/**`；仅限本次统一 WPF 结果渲染任务，
+     不修改 `src/Workflow/**` 执行核心；同一时段 CodeBuddy 为唯一代码写入者，Codex 只读审核。
+  2. 调试窗口立即执行结果**不写入生产工作流的 `WorkflowContext`**，避免污染工作流结果、数据源和下游执行；
+     如调试数据分析或调试链路需要缓存，使用独立的 DebugExecutionContext/调试结果缓存。
+  3. 关闭调试窗口后**自动恢复已缓存的工作流结果**，但不重新执行算法；清除 DebugPreview/交互层后，
+     从生产工作流结果缓存重新提交 WorkflowResult。该结论取代“重新选中节点后才恢复”的临时建议。
+- **区域渲染最终决策（2026-09-21）**：本轮**不实施** CodeBuddy 提出的甲/乙/丙区域栅格化方案。
+  工作流结果区域继续纳入统一 WPF 矢量结果层，按 `Pass/Fail/Neutral` 结果状态组织，沿用统一坐标、缩放、
+  图像身份和命中语义。不得因为区域数量引入矢量/栅格自动切换，也不增加逐显示项的矢量/栅格配置开关。
+  原始 `HRegion`/轮廓数据继续保留用于算法、结果树和下游绑定。透明栅格贴图仅作为未来有明确性能证据、
+  且确认静态区域不需要逐个点选后的可选后端优化；本轮施工不得引入贴图生命周期、图像身份同步和独立区域命中路径。
 - 2026-09-18 位置修正回归修复：运行快照解析现在只接收工具参数类型中真实存在的可写属性；调试控件的“位置修正”等展示绑定不会再被当作普通参数做 `Convert.ChangeType`，继续由 `AvailableDataSource/ImageSourceReference` 专用链路处理。Plugin.SDK 针对性 Release 构建 0 error。
 - 2026-09-18 绑定重开修复：`ToolDebugControlBase` 在派生控件完成 `Parameters` 注入后通过 Dispatcher 再恢复一次 `ParamSettings` 绑定，并在窗口卸载前做最终持久化；全局变量选择表增加深色/浅色主题下的行、选中行、单元格颜色适配。
 - 2026-09-18 绑定持久化根因修复：`ParamSettingContainer.Settings` 原先只有只读 `IEnumerable`，System.Text.Json 能写出设置但不能把设置回填到私有字典；现改为可读写 `List<ParamSetting>`，setter 统一重建字典，并放宽旧字典反序列化的枚举读取，确保调试窗口/方案重开后仍保留绑定。
@@ -160,3 +179,4 @@
 - 验证：Plugin.SDK Release 构建 0 error；渲染相关测试 22/22 通过；此前 UI Release 构建 0 error。等待重新构建后由用户手动验证大批量 Blob 全视口、缩放/平移、图像切换、OK/NG 可见性、命中高亮及快速刷新。
 - 2026-09-21 日志 `logs/2026/09/21/SunEyeVision_102232.txt` 诊断：选中 Blob 节点时同一组 6000 条轮廓连续启动两次批量/场景编译，第一次约 144 ms 后取消，第二次批量几何编译约 476 ms，首帧 WPF 几何绘制约 218 ms。结果层增加同一显示项引用集合去重，避免 `SetDisplayCollector`/`SetRegionItems` 连续调用重复编译；图像身份变化仍会强制清空并重建。Plugin.SDK Debug 构建、渲染测试 22/22、UI Release 构建均通过。
 - 2026-09-21 取消竞态修复：日志报告图像切换时 `CancelRenderBatchBuild()` 对已由 Dispatcher 回调释放的 `CancellationTokenSource` 再次 `Cancel()`，抛出 `ObjectDisposedException`。取消操作现为幂等，捕获已释放源并安全忽略；Plugin.SDK Debug 构建 0 error，渲染测试 22/22 通过。
+- 2026-09-21 调试预览生命周期收口：`UpdateDebugPreview()` 使用独立 debug collector，`ClearDebugPreview()` 不再调用结果层整体 `Clear()`；关闭调试后 `RestoreWorkflowResult()` 现从生产 `WorkflowContext` 同步恢复结果树、图像源和几何层，避免调试结果残留覆盖生产显示。渲染事务测试 5/5 通过；UI Release 串行构建 0 error（795 个既有警告）。

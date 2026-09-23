@@ -1,9 +1,22 @@
 # 当前协作任务
 
+- 2026-09-23 相机预览问题日志证据链：新增 `CameraDiagnosticScope` 与 `camera-trace`，串联参数提交（旧值→新值）、MVS逐节点 SDK 写入返回码、设备真实回读、预览读回的 AcquisitionMode/TriggerMode/TriggerSource、预览流模式、MVS取帧状态、帧尺寸/像素格式/采样均值、帧到达及图像提交控件结果。MVS `MV_E_NODATA (0x80000007)` 与其他 SDK 取帧错误分开记录；无数据日志首发并按 5 秒节流，帧数据首帧及每 120 帧采样记录，避免日志刷屏。软触发命令和曝光/增益自动控制切换也记录节点及 SDK 返回码。日志目标为应用文件日志及 UI，按 camera id 和 trace id 过滤。`git diff --check`、相机 XAML XML 解析及调用点静态核对通过；**2026-09-23 UI Debug 构建成功**（`dotnet build src/UI/SunEyeVision.UI.csproj -c Debug --no-restore -m:1`，0 错误、1106 警告），产物输出 `dev\Debug`。未构建 Release，未启动应用或做实机验证。
+- 2026-09-23 相机预览与真实参数联动：对照本机 MVS BasicDemo，确认采集模式/触发模式由相机实际节点控制，TriggerMode 关闭时连续取帧，TriggerMode 开启时按触发源等待；预览仅显示相机帧，不调度工作流、不覆盖设备参数。修复预览只在 TriggerMode/Source 改变时刷新的问题：任意参数应用后重新读取 AcquisitionMode/TriggerMode/TriggerSource 并重启预览；状态栏显示 SDK 读回模式。修复预览刷新等待流结束导致参数保存挂起：采集流改为后台观察，启动/重启操作立即返回。MVS 取帧改用官方示例的 GetImageBuffer/FreeImageBuffer 配对，取帧超时改为继续等待而非终止预览；手动修改曝光/增益前按 MVS 示例关闭对应自动控制。已通过 `git diff --check` 与预览 XAML XML 解析；用户批准后 UI Debug 构建成功（0 错误，761 警告），输出 `dev\Debug`；未启动程序/实机验证。
+- 2026-09-23 相机参数可编辑状态与所见所得第一阶段：读取失败/无枚举选项/不支持类型的字段不得显示为可编辑文本框；数值、枚举、布尔控件按 SDK 权限及实际值状态统一禁用。参数页导航精简为“常用参数/全部属性”；保存后重新读取完整 Schema 与设备值（写入部分失败时也尽力回读），刷新依赖参数的权限和选项并保留当前分类。`git diff --check`、参数页 XAML XML 解析通过；UI Debug 构建成功（0 错误，742 警告），输出 `dev\Debug`；未运行程序、未实机验收。基线 `8a66d177884bdb038b6082b1b36c2041464e6237`，保留工作区已有改动。
+- 2026-09-23 相机参数控件映射修正：只读数值/布尔/枚举显示只读值，不再呈现 NumericUpDown、ToggleSwitch 或禁用 ComboBox；只有 SDK 返回至少两个选项的可写枚举才显示下拉框。MVS 枚举值由 `MV_CC_GetEnumValue_NET` 与 `MV_CC_GetEnumEntrySymbolic_NET` 获取；模拟适配器仍用固定测试数据。静态检查通过；这是上条 Debug 构建后的新增修改，尚未重新构建/实机验收。
+- 2026-09-23 预览调参闭环调整：移除预览窗口软触发按钮，软件触发统一从动态参数树的 `TriggerSoftware` 命令执行；预览窗口复用参数面板相机会话。修改 TriggerMode/TriggerSource 后重新读取配置并重启预览。MVS 预览启停不再临时改写/恢复 TriggerMode 和 TriggerSource，避免关闭时覆盖用户新值。曝光/增益手动设置后若自动控制仍开启，状态提示其可能接管每帧亮度。UI Debug 构建通过（0 错误，757 警告），输出 `dev\Debug`；未启动程序、未实机验收。
+
 - 基线提交：当前 `main` 的最新已提交版本。
 - 当前执行者：Codex。
-- 当前任务：工作流运行引擎架构优化（M3 全局就绪队列、M4 执行快照 UI、M5 全局变量数据总线与绑定 UI）。
-- 修改权限：`src/Workflow/`、`src/Plugin.SDK/`、`src/UI/Services/Workflow/`、`src/UI/Shell/Windows/`、`src/UI/Features/GlobalVariableManager/`、`src/UI/Features/ParameterSetting/`、`tests/`、`docs/`。
+- 当前任务：相机参数动态节点接入与预览按设备触发配置运行（保留显式强制连续模式）；首轮实现已完成，待真实设备验证。
+- 修改权限：`src/DeviceDriver/Cameras/`、`src/Plugin.SDK/Devices/Camera/`、`src/UI/Features/Camera/`、`tests/`、`docs/`。
+- 当前任务基线与限制：保留工作区已有未提交内容；开发验证仅构建 Debug，Release 留待发布前；如本轮实现完成，追加记录实际改动与验证结果。
+- 本轮相机管理器改动（2026-09-23）：增加设备重复识别与添加拦截；搜索可取消并保留已发现结果；连续预览不受触发设置影响，另增触发调试模式（软触发单帧按钮/硬触发等待提示），适配 MVS 与模拟相机。验证：`dotnet build src/UI/SunEyeVision.UI.csproj -c Debug --no-restore` 成功（0 错误，742 警告）；未构建 Release，未进行连接真实相机的运行验收。
+- 参数与预览优化实施（2026-09-23）：MVS 从 SDK GenICam 类别树动态枚举参数节点，读取节点类型/访问权限/可见级别；接入整数、浮点、布尔、字符串、枚举读写和命令执行；参数 UI 按节点类别路径构建可折叠树，不再静默过滤读取失败项；预览默认按设备已应用 TriggerMode/TriggerSource 运行，强制连续作为显式覆盖并在状态栏说明。Debug UI 构建通过（0 错误，742 警告）；未构建 Release，未连接真实相机验证。后续仍需真实设备节点盘点/完整性报告，并验证 SDK 树遍历、命令节点与触发模式实机效果；底层 Register/Port 等非普通参数节点当前不开放通用编辑。
+- 相机管理 UI 收敛优化（2026-09-23）：预览移除“按相机参数预览/强制连续预览”双模式按钮，打开窗口即按相机真实触发配置启动；唯一“软触发一次”按钮常驻，仅在 TriggerMode=On 且 TriggerSource=Software 时可用，其他配置禁用并说明原因。参数树为常见 GenICam 类别和节点增加中文显示映射，未知 SDK 节点保留原名避免误译；树行加宽并调整标签列；管理窗口默认 1040×760、最小宽度 850。经审批执行 Debug UI 构建成功（0 错误，742 警告）；未构建 Release，尚未实机验收。
+- 相机参数树与管理器交互修正（2026-09-23）：扩展相机节点/枚举项中文映射，并将 MVS AM_NI/AM_NA 访问状态显示为中文；修复主题 ComboBox 模板遗漏命名 ItemsPresenter 的问题；树选中/悬停改用主题色，增加参数搜索及全部展开/折叠；连接/断开和预览按钮移动到 Tab 外公共操作栏，连接状态、IP、延迟、帧率移动到详情底部状态栏。经审批执行 Debug UI 构建成功（0 错误，757 警告）；XAML XML 解析和 git diff --check 通过；未构建 Release，未进行运行时/实机验收。
+- 参数树过滤未实现项（2026-09-23）：普通参数树隐藏 SDK 标记为 AM_NI/AM_NA 的未实现或当前不可用节点；Schema/内存节点集合保留完整，顶部统计显示 SDK 节点总数、实际显示数、成功读取/可写数和过滤数。文档同步修订。尚未重新构建。
+- 相机参数页改为左侧分类导航、右侧属性表单；增加常用属性/触发/高级属性快捷视图，搜索结果跨类别展示。相机管理窗口宽度调整为 1320（可缩放，最小 1120），相机列表与详情按 1:2 分配宽度；参数详情内部按类别导航与表单分配空间。经审批 Debug UI 构建通过（0 错误，742 警告），XAML XML 解析与 git diff --check 通过；未构建 Release，未启动程序做视觉验收。
 - CodeBuddy 并行授权目录（2026-09-18 起，"发布与版本管理"线；与上表**不重叠**，rule-021 §3 的 `installer/**` 禁区在本次授权范围内）：
   `installer/`、`src/UI/Icons/`、`.codebuddy/rules/`、`.codebuddy/skills/`、`version.json`、`CHANGELOG.md`。
   方案见 `docs/01-方案设计/2026/09/18/内测版发布与版本管理最终方案-20260918-112404.md`。

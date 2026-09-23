@@ -30,7 +30,12 @@ public sealed record CameraParameterDescriptor
         = new List<CameraEnumValue>();
     public bool IsReadOnly { get; init; }
     public bool IsAvailable { get; init; } = true;
+    public bool IsReadable { get; init; } = true;
+    public bool IsWritable { get; init; } = true;
+    public bool IsImplemented { get; init; } = true;
     public bool RequiresStopped { get; init; }
+    public string? Visibility { get; init; }
+    public string? StatusMessage { get; init; }
     public string? Description { get; init; }
 }
 

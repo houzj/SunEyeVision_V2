@@ -16,7 +16,11 @@ public sealed class MvsCameraAdapterFactory : ICameraAdapterFactory
 
     public bool CanCreate(CameraDescriptor descriptor)
         => descriptor.Protocol == CameraProtocolKind.GenICam
-           && string.Equals(descriptor.Manufacturer, "Hikvision", System.StringComparison.OrdinalIgnoreCase);
+           && (string.Equals(descriptor.Manufacturer, "Hikvision", System.StringComparison.OrdinalIgnoreCase)
+               || string.Equals(descriptor.Manufacturer, "Hikrobot", System.StringComparison.OrdinalIgnoreCase)
+               || descriptor.DeviceId.StartsWith("hikvision-mvs:", System.StringComparison.OrdinalIgnoreCase)
+               || (descriptor.Metadata.TryGetValue("adapter", out var adapter)
+                   && string.Equals(adapter as string, AdapterId, System.StringComparison.OrdinalIgnoreCase)));
 
     public ICameraAdapter Create(CameraDescriptor descriptor)
     {

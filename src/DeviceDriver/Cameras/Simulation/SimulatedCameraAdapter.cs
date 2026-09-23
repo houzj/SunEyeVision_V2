@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Cameras.Contracts;
@@ -14,9 +15,13 @@ public sealed class SimulatedCameraAdapter : ICameraAdapter
     private readonly object _gate = new();
     private CancellationTokenSource? _streamCancellation;
     private Task? _streamTask;
+    private readonly SemaphoreSlim _softwareTriggerSignal = new(0, int.MaxValue);
+    private bool _softwareTriggerStream;
     private long _frameId;
     private CameraState _state = CameraState.Offline;
     private bool _disposed;
+    private int _triggerMode;
+    private int _triggerSource = 7;
 
     public SimulatedCameraAdapter(
         CameraDescriptor descriptor,
@@ -129,10 +134,33 @@ public sealed class SimulatedCameraAdapter : ICameraAdapter
             }
 
             _streamCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _softwareTriggerStream = request.TriggerMode == CameraTriggerMode.Software;
             SetStateUnsafe(CameraState.Capturing);
-            _streamTask = RunStreamAsync(sink, _streamCancellation.Token);
+            _streamTask = RunStreamAsync(sink, request.TriggerMode, _streamCancellation.Token);
             return _streamTask;
         }
+    }
+
+    public Task ExecuteSoftwareTriggerAsync(CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (_gate)
+        {
+            if (_streamTask is null || !_softwareTriggerStream)
+                throw new InvalidOperationException("请先启动软件触发预览。");
+        }
+
+        _softwareTriggerSignal.Release();
+        return Task.CompletedTask;
+    }
+
+    public Task ExecuteCommandAsync(string name, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+        cancellationToken.ThrowIfCancellationRequested();
+        throw new CameraAdapterException(CameraErrorCode.ParameterUnsupported,
+            $"模拟相机未实现命令节点：{name}");
     }
 
     public async Task StopStreamAsync(CancellationToken cancellationToken)
@@ -187,6 +215,18 @@ public sealed class SimulatedCameraAdapter : ICameraAdapter
                     Name = "FrameRate", DisplayName = "帧率", Category = "采集",
                     Kind = CameraParameterKind.Double, Value = _options.FrameRate,
                     Minimum = 1d, Maximum = 240d, Increment = 0.1d
+                },
+                new CameraParameterDescriptor
+                {
+                    Name = "TriggerMode", DisplayName = "触发模式", Category = "触发",
+                    Kind = CameraParameterKind.Enumeration, Value = _triggerMode.ToString(CultureInfo.InvariantCulture),
+                    EnumValues = new[] { new CameraEnumValue("0", "关闭"), new CameraEnumValue("1", "开启") }
+                },
+                new CameraParameterDescriptor
+                {
+                    Name = "TriggerSource", DisplayName = "触发源", Category = "触发",
+                    Kind = CameraParameterKind.Enumeration, Value = _triggerSource.ToString(CultureInfo.InvariantCulture),
+                    EnumValues = new[] { new CameraEnumValue("7", "Software") }
                 }
             }
         });
@@ -203,6 +243,8 @@ public sealed class SimulatedCameraAdapter : ICameraAdapter
             if (name.Equals("Width", StringComparison.OrdinalIgnoreCase)) values[name] = _options.Width;
             if (name.Equals("Height", StringComparison.OrdinalIgnoreCase)) values[name] = _options.Height;
             if (name.Equals("FrameRate", StringComparison.OrdinalIgnoreCase)) values[name] = _options.FrameRate;
+            if (name.Equals("TriggerMode", StringComparison.OrdinalIgnoreCase)) values[name] = _triggerMode.ToString(CultureInfo.InvariantCulture);
+            if (name.Equals("TriggerSource", StringComparison.OrdinalIgnoreCase)) values[name] = _triggerSource.ToString(CultureInfo.InvariantCulture);
         }
 
         return Task.FromResult<IReadOnlyDictionary<string, object?>>(values);
@@ -213,6 +255,16 @@ public sealed class SimulatedCameraAdapter : ICameraAdapter
         CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
+        cancellationToken.ThrowIfCancellationRequested();
+        foreach (var pair in values)
+        {
+            if (pair.Value is null)
+                continue;
+            if (pair.Key.Equals("TriggerMode", StringComparison.OrdinalIgnoreCase))
+                _triggerMode = Convert.ToInt32(pair.Value, CultureInfo.InvariantCulture);
+            else if (pair.Key.Equals("TriggerSource", StringComparison.OrdinalIgnoreCase))
+                _triggerSource = Convert.ToInt32(pair.Value, CultureInfo.InvariantCulture);
+        }
         return Task.CompletedTask;
     }
 
@@ -231,15 +283,18 @@ public sealed class SimulatedCameraAdapter : ICameraAdapter
         {
             _disposed = true;
             SetState(CameraState.Disposed);
+            _softwareTriggerSignal.Dispose();
         }
     }
 
-    private async Task RunStreamAsync(ICameraFrameSink sink, CancellationToken cancellationToken)
+    private async Task RunStreamAsync(ICameraFrameSink sink, CameraTriggerMode triggerMode, CancellationToken cancellationToken)
     {
         try
         {
             while (!cancellationToken.IsCancellationRequested)
             {
+                if (triggerMode == CameraTriggerMode.Software)
+                    await _softwareTriggerSignal.WaitAsync(cancellationToken).ConfigureAwait(false);
                 await Task.Delay(_options.FrameDelay, cancellationToken).ConfigureAwait(false);
                 var frameNumber = Interlocked.Read(ref _frameId) + 1;
                 if (_options.DropEveryNthFrame > 0 && frameNumber % _options.DropEveryNthFrame == 0)

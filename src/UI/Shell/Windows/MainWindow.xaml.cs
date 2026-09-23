@@ -387,11 +387,36 @@ namespace SunEyeVision.UI.Shell.Windows
         }
         protected override void OnClosed(EventArgs e)
         {
+            // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
+            // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。
+            var childWindows = Application.Current?.Windows
+                .OfType<Window>()
+                .Where(window => !ReferenceEquals(window, this))
+                .ToArray();
+            if (childWindows != null)
+            {
+                foreach (var childWindow in childWindows)
+                {
+                    try
+                    {
+                        childWindow.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Warning,
+                            $"关闭子窗口失败: {childWindow.GetType().Name}, {ex.Message}", "MainWindow");
+                    }
+                }
+            }
+
             // 取消订阅图像预览事件（经图像结果区退订），防止内存泄漏
             ImageResultHost.Shutdown();
             SaveLayoutConfig();
             _viewModel?.StopWorkflowCommand.Execute(null);
             base.OnClosed(e);
+
+            // 防止存在无 Owner 的窗口或其他 WPF Dispatcher 对象使进程继续驻留。
+            Application.Current?.Shutdown();
         }
 
         /// <summary>

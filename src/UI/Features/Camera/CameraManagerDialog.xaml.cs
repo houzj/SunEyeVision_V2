@@ -17,6 +17,14 @@ namespace SunEyeVision.UI.Features.Camera
             
             // 设置 ViewModel
             DataContext = viewModel;
+            Closed += OnClosed;
+        }
+
+        private async void OnClosed(object? sender, System.EventArgs e)
+        {
+            Closed -= OnClosed;
+            if (DataContext is CameraManagerViewModel viewModel)
+                await viewModel.DisposeAsync();
         }
     }
 }

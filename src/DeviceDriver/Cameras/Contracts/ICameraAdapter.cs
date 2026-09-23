@@ -38,6 +38,8 @@ public interface ICameraAdapter : IAsyncDisposable
 
     Task StopStreamAsync(CancellationToken cancellationToken);
 
+    Task ExecuteSoftwareTriggerAsync(CancellationToken cancellationToken);
+
     Task<CameraParameterSchema> GetParameterSchemaAsync(
         CancellationToken cancellationToken);
 
@@ -48,4 +50,6 @@ public interface ICameraAdapter : IAsyncDisposable
     Task ApplyParametersAsync(
         IReadOnlyDictionary<string, object?> values,
         CancellationToken cancellationToken);
+
+    Task ExecuteCommandAsync(string name, CancellationToken cancellationToken);
 }

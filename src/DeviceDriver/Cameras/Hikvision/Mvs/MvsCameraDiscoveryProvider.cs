@@ -37,7 +37,10 @@ public sealed class MvsCameraDiscoveryProvider : ICameraDiscoveryProvider
         var transportMask = (discoverGigE ? GigE : 0u) | (discoverUsb3 ? Usb3 : 0u);
 
 #if MVS_SDK_AVAILABLE
-        return Task.FromResult(DiscoverWithMvs(cancellationToken, transportMask));
+        // SDK 枚举是同步原生调用，放到后台线程执行，避免搜索窗口冻结，
+        // 让 UI 能响应“停止搜索”并在枚举返回后取消结果提交。
+        return Task.Run<IReadOnlyList<CameraDescriptor>>(
+            () => DiscoverWithMvs(cancellationToken, transportMask), cancellationToken);
 #else
         // 没有安装 MVS 时，该供应商是可选能力，不阻断其他发现器。
         return Task.FromResult<IReadOnlyList<CameraDescriptor>>(Array.Empty<CameraDescriptor>());
@@ -64,7 +67,8 @@ public sealed class MvsCameraDiscoveryProvider : ICameraDiscoveryProvider
 
         for (var i = 0; i < list.nDeviceNum; i++)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+                break;
             var info = Marshal.PtrToStructure<MyCamera.MV_CC_DEVICE_INFO>(list.pDeviceInfo[i]);
             var descriptor = CreateDescriptor(info);
             _deviceInfos[descriptor.DeviceId] = info;

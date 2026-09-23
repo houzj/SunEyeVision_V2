@@ -17,6 +17,7 @@ public sealed class CameraDiscoveryItem : ObservableObject
     public string DeviceId { get; init; } = string.Empty;
     public CameraTransportKind Transport { get; init; }
     public bool IsAvailable { get; init; } = true;
+    public bool IsAlreadyAdded { get; init; }
 
     private bool _isSelected;
     public bool IsSelected

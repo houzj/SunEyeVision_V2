@@ -32,7 +32,19 @@ public sealed class CameraDiscoveryCoordinator
         var tasks = _providers
             .Select(provider => DiscoverProviderAsync(provider, transports, cancellationToken))
             .ToArray();
-        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        IReadOnlyList<CameraDescriptor>[] results;
+        try
+        {
+            results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // 用户停止扫描时保留已完成发现器的结果；取消的发现器不应丢掉其他接口已找到的设备。
+            results = tasks
+                .Where(task => task.Status == TaskStatus.RanToCompletion)
+                .Select(task => task.Result)
+                .ToArray();
+        }
 
         return results
             .SelectMany(result => result)

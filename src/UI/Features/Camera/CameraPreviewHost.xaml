@@ -11,11 +11,12 @@
                           EnablePanning="True"
                           EnableZoom="True"
                           AutoFitMode="FirstOnly"
-                          ShowChessboardBackground="False"/>
+                          ShowChessboardBackground="True"/>
         <Border HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 Margin="12"
                 Padding="8,4"
+                IsHitTestVisible="False"
                 Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
                 Opacity="0.9">
             <TextBlock x:Name="StatusText"

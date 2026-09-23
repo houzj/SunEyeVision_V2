@@ -43,6 +43,7 @@ namespace SunEyeVision.UI.Features.Camera
             {
                 if (SetProperty(ref _selectedCamera, value))
                 {
+                    CommandManager.InvalidateRequerySuggested();
                     // 当选中相机变化时，自动生成名称
                     if (value != null && string.IsNullOrEmpty(CameraName))
                     {
@@ -69,8 +70,14 @@ namespace SunEyeVision.UI.Features.Camera
         public bool IsSearching
         {
             get => _isSearching;
-            set => SetProperty(ref _isSearching, value);
+            set
+            {
+                if (SetProperty(ref _isSearching, value))
+                    CommandManager.InvalidateRequerySuggested();
+            }
         }
+
+        public string SearchButtonText => IsSearching ? "搜索中…" : "搜索相机";
         
         /// <summary>
         /// GigE 接口是否参与自动发现
@@ -175,25 +182,39 @@ namespace SunEyeVision.UI.Features.Camera
             try
             {
                 IsSearching = true;
+                OnPropertyChanged(nameof(SearchButtonText));
                 SearchStatus = "搜索中...";
-                DiscoveredCameras.Clear();
                 
                 VisionLogger.Instance.Log(LogLevel.Info, "开始自动发现相机...", "AddCameraViewModel");
                 
-                _cancellationTokenSource = new CancellationTokenSource();
+                var searchCts = new CancellationTokenSource();
+                _cancellationTokenSource = searchCts;
                 
                 var descriptors = await _runtime.Discovery.DiscoverAsync(
-                    GetSelectedTransports(), _cancellationTokenSource.Token);
+                    GetSelectedTransports(), searchCts.Token);
                 _runtime.Runtime.RegisterDevices(descriptors);
-                var cameras = descriptors.Select(ToDiscoveredCamera).ToList();
-                
+                var cameras = descriptors.Select(descriptor => ToDiscoveredCamera(
+                    descriptor, IsAlreadyAdded(descriptor.DeviceId, descriptor.SerialNumber, descriptor.MacAddress,
+                        descriptor.Manufacturer, descriptor.Transport))).ToList();
+
+                DiscoveredCameras.Clear();
                 foreach (var camera in cameras)
                 {
                     DiscoveredCameras.Add(camera);
                 }
                 
-                SearchStatus = $"搜索完成，发现 {cameras.Count} 台相机";
-                VisionLogger.Instance.Log(LogLevel.Success, $"搜索完成，发现 {cameras.Count} 台相机", "AddCameraViewModel");
+                var addedCount = cameras.Count(camera => camera.IsAlreadyAdded);
+                SearchStatus = addedCount == 0
+                    ? $"搜索完成，发现 {cameras.Count} 台相机"
+                    : $"搜索完成，发现 {cameras.Count} 台相机，其中 {addedCount} 台已添加";
+                if (searchCts.IsCancellationRequested)
+                    SearchStatus = $"搜索已停止，保留已发现的 {cameras.Count} 台相机";
+                VisionLogger.Instance.Log(
+                    searchCts.IsCancellationRequested ? LogLevel.Info : LogLevel.Success,
+                    searchCts.IsCancellationRequested
+                        ? $"搜索已停止，保留已发现 {cameras.Count} 台相机"
+                        : $"搜索完成，发现 {cameras.Count} 台相机",
+                    "AddCameraViewModel");
                 
                 // 自动选中第一台相机
                 if (cameras.Count > 0)
@@ -204,7 +225,7 @@ namespace SunEyeVision.UI.Features.Camera
             }
             catch (OperationCanceledException)
             {
-                SearchStatus = "搜索已取消";
+                SearchStatus = $"搜索已取消，保留搜索前的结果（{DiscoveredCameras.Count} 台）";
                 VisionLogger.Instance.Log(LogLevel.Info, "搜索已取消", "AddCameraViewModel");
             }
             catch (Exception ex)
@@ -215,10 +236,14 @@ namespace SunEyeVision.UI.Features.Camera
             finally
             {
                 IsSearching = false;
+                OnPropertyChanged(nameof(SearchButtonText));
+                var completedCts = _cancellationTokenSource;
+                _cancellationTokenSource = null;
+                completedCts?.Dispose();
             }
         }
 
-        private static CameraDiscoveryItem ToDiscoveredCamera(CameraDescriptor descriptor)
+        private static CameraDiscoveryItem ToDiscoveredCamera(CameraDescriptor descriptor, bool isAlreadyAdded)
         {
             return new CameraDiscoveryItem
             {
@@ -230,8 +255,24 @@ namespace SunEyeVision.UI.Features.Camera
                 MacAddress = descriptor.MacAddress,
                 DeviceId = descriptor.DeviceId,
                 Transport = descriptor.Transport,
-                IsAvailable = true
+                IsAvailable = true,
+                IsAlreadyAdded = isAlreadyAdded
             };
+        }
+
+        private bool IsAlreadyAdded(string deviceId, string serialNumber, string? macAddress, string manufacturer, CameraTransportKind transport)
+        {
+            static bool Same(string? left, string? right)
+                => !string.IsNullOrWhiteSpace(left) && !string.IsNullOrWhiteSpace(right)
+                   && string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+
+            return _cameraManager.Cameras.Any(existing =>
+                Same(existing.DeviceId, deviceId)
+                || (Same(existing.SerialNumber, serialNumber)
+                    && Same(existing.Manufacturer, manufacturer)
+                    && string.Equals(existing.Transport, transport.ToString(), StringComparison.OrdinalIgnoreCase))
+                || (Same(existing.MacAddress, macAddress)
+                    && string.Equals(existing.Transport, transport.ToString(), StringComparison.OrdinalIgnoreCase)));
         }
         
         private bool CanStop()
@@ -242,6 +283,7 @@ namespace SunEyeVision.UI.Features.Camera
         private void Stop()
         {
             _cancellationTokenSource?.Cancel();
+            SearchStatus = "正在停止设备搜索…";
             VisionLogger.Instance.Log(LogLevel.Info, "停止搜索", "AddCameraViewModel");
         }
         
@@ -269,7 +311,8 @@ namespace SunEyeVision.UI.Features.Camera
         
         private bool CanConfirm()
         {
-            return SelectedCamera != null && !string.IsNullOrEmpty(CameraName);
+            return SelectedCamera != null && !SelectedCamera.IsAlreadyAdded
+                && !string.IsNullOrEmpty(CameraName) && !IsSearching;
         }
         
         private void Confirm()
@@ -279,6 +322,13 @@ namespace SunEyeVision.UI.Features.Camera
                 if (SelectedCamera == null)
                 {
                     VisionLogger.Instance.Log(LogLevel.Warning, "请先选择相机", "AddCameraViewModel");
+                    return;
+                }
+
+                if (IsAlreadyAdded(SelectedCamera.DeviceId, SelectedCamera.SerialNumber,
+                    SelectedCamera.MacAddress, SelectedCamera.Manufacturer, SelectedCamera.Transport))
+                {
+                    SearchStatus = "该相机已经添加到设备列表，不能重复添加。";
                     return;
                 }
                 
@@ -291,6 +341,8 @@ namespace SunEyeVision.UI.Features.Camera
                     Model = SelectedCamera.Model,
                     IpAddress = SelectedCamera.IpAddress,
                     DeviceId = SelectedCamera.DeviceId,
+                    SerialNumber = SelectedCamera.SerialNumber,
+                    MacAddress = SelectedCamera.MacAddress,
                     StatusText = "断开",
                     StatusIcon = "❌",
                     IsSelected = false,

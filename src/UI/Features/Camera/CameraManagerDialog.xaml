@@ -9,10 +9,10 @@
         xmlns:converters="clr-namespace:SunEyeVision.UI.Converters.Visibility"
         mc:Ignorable="d"
         Title="相机管理器"
-        Width="700"
-        Height="700"
-        MinWidth="500"
-        MinHeight="500"
+        Width="1320"
+        Height="820"
+        MinWidth="1120"
+        MinHeight="650"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
         Background="{DynamicResource {x:Static base:ThemeKeys.WindowBackgroundBrush}}">
@@ -46,8 +46,8 @@
         <!-- 主内容区 -->
         <Grid Grid.Row="1" Margin="12,8,12,8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*" MinWidth="360"/>
+                <ColumnDefinition Width="4*" MinWidth="700"/>
             </Grid.ColumnDefinitions>
 
             <!-- 左侧：相机列表 -->

@@ -6,6 +6,7 @@ using System.Windows.Input;
 using SunEyeVision.Workflow;
 using SunEyeVision.DeviceDriver.Cameras;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.Devices.Camera;
 
 using SunEyeVision.UI.Core;
 
@@ -30,6 +31,9 @@ namespace SunEyeVision.UI.Features.Camera
         private string _latency;
         private string _frameRate;
         private string _deviceId;
+        private string _serialNumber;
+        private string _macAddress;
+        private CameraState _state = CameraState.Offline;
 
         public string DeviceId
         {
@@ -37,6 +41,34 @@ namespace SunEyeVision.UI.Features.Camera
             set
             {
                 SetProperty(ref _deviceId, value);
+            }
+        }
+
+        public string SerialNumber { get => _serialNumber; set => SetProperty(ref _serialNumber, value); }
+        public string MacAddress { get => _macAddress; set => SetProperty(ref _macAddress, value); }
+
+        public CameraState State
+        {
+            get => _state;
+            set
+            {
+                if (!SetProperty(ref _state, value))
+                    return;
+                StatusText = value switch
+                {
+                    CameraState.Connected or CameraState.Capturing => "已连接",
+                    CameraState.Connecting => "连接中",
+                    CameraState.Faulted => "故障",
+                    CameraState.Disposed => "已释放",
+                    _ => "断开"
+                };
+                StatusIcon = value switch
+                {
+                    CameraState.Connected or CameraState.Capturing => "✅",
+                    CameraState.Connecting => "⏳",
+                    CameraState.Faulted => "⚠️",
+                    _ => "❌"
+                };
             }
         }
 
@@ -159,7 +191,7 @@ namespace SunEyeVision.UI.Features.Camera
     /// <summary>
     /// 相机管理器 ViewModel
     /// </summary>
-    public class CameraManagerViewModel : INotifyPropertyChanged
+    public class CameraManagerViewModel : INotifyPropertyChanged, IAsyncDisposable
     {
         private CameraDevice _selectedCamera;
         private string _statusMessage;
@@ -257,6 +289,7 @@ namespace SunEyeVision.UI.Features.Camera
         {
             _solutionManager = solutionManager;
             Cameras = new ObservableCollection<CameraDevice>();
+            Cameras.CollectionChanged += Cameras_CollectionChanged;
             _runtime = new CameraRuntimeComposition();
             CameraDetailViewModel = new CameraDetailViewModel(_runtime);
             
@@ -280,14 +313,33 @@ namespace SunEyeVision.UI.Features.Camera
 
         private void LoadCameraList()
         {
+            foreach (var camera in Cameras)
+                camera.PropertyChanged -= Camera_PropertyChanged;
             Cameras.Clear();
             UpdateStatistics();
+        }
+
+        private void Cameras_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.OldItems != null)
+                foreach (CameraDevice camera in e.OldItems)
+                    camera.PropertyChanged -= Camera_PropertyChanged;
+            if (e.NewItems != null)
+                foreach (CameraDevice camera in e.NewItems)
+                    camera.PropertyChanged += Camera_PropertyChanged;
+            UpdateStatistics();
+        }
+
+        private void Camera_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(CameraDevice.State) or nameof(CameraDevice.IsEnabled))
+                UpdateStatistics();
         }
 
         private void UpdateStatistics()
         {
             TotalCount = Cameras.Count;
-            ConnectedCount = Cameras.Count(c => c.StatusIcon == "✅");
+            ConnectedCount = Cameras.Count(c => c.State is CameraState.Connected or CameraState.Capturing);
             DisabledCount = Cameras.Count(c => !c.IsEnabled);
         }
 
@@ -322,8 +374,10 @@ namespace SunEyeVision.UI.Features.Camera
         {
             if (SelectedCamera != null)
             {
-                Cameras.Remove(SelectedCamera);
-                StatusMessage = $"已删除相机: {SelectedCamera.Name}";
+                var camera = SelectedCamera;
+                Cameras.Remove(camera);
+                SelectedCamera = null;
+                StatusMessage = $"已删除相机: {camera.Name}";
                 UpdateStatistics();
             }
         }
@@ -357,24 +411,18 @@ namespace SunEyeVision.UI.Features.Camera
         private void BatchConnect()
         {
             var selected = Cameras.Where(c => c.IsSelected).ToList();
-            foreach (var camera in selected)
-            {
-                camera.StatusText = "已连接";
-                camera.StatusIcon = "✅";
-            }
-            StatusMessage = $"已连接 {selected.Count} 台相机";
+            StatusMessage = selected.Count == 0
+                ? "请先选择相机"
+                : "批量连接暂未接入运行时，请在右侧详情面板连接相机";
             UpdateStatistics();
         }
 
         private void BatchDisconnect()
         {
             var selected = Cameras.Where(c => c.IsSelected).ToList();
-            foreach (var camera in selected)
-            {
-                camera.StatusText = "断开";
-                camera.StatusIcon = "❌";
-            }
-            StatusMessage = $"已断开 {selected.Count} 台相机";
+            StatusMessage = selected.Count == 0
+                ? "请先选择相机"
+                : "批量断开暂未接入运行时，请在右侧详情面板断开相机";
             UpdateStatistics();
         }
 
@@ -407,6 +455,13 @@ namespace SunEyeVision.UI.Features.Camera
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (CameraDetailViewModel != null)
+                await CameraDetailViewModel.DisposeAsync().ConfigureAwait(true);
+            await _runtime.DisposeAsync().ConfigureAwait(true);
         }
     }
 }

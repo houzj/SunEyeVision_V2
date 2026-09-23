@@ -29,6 +29,9 @@
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
             <Style.Triggers>
+                <DataTrigger Binding="{Binding IsAlreadyAdded}" Value="True">
+                    <Setter Property="Opacity" Value="0.72"/>
+                </DataTrigger>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
                 </Trigger>
@@ -66,12 +69,12 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button Content="🔍 搜索相机"
+            <Button Content="{Binding SearchButtonText}"
                     Command="{Binding SearchCommand}"
                     MinWidth="146" Height="36" Padding="12,0" Margin="0,0,8,0"
                     Grid.Row="0" Grid.Column="0"
                     Style="{StaticResource PrimaryButtonStyle}"/>
-            <Button Content="⏹ 停止"
+            <Button Content="停止搜索"
                     Command="{Binding StopCommand}"
                     MinWidth="92" Height="36" Padding="12,0"
                     Grid.Row="0" Grid.Column="1"
@@ -103,7 +106,23 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel>
-                            <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="14"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="14"/>
+                                <TextBlock Text="已添加" Margin="8,0,0,0"
+                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}"
+                                           FontSize="12" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsAlreadyAdded}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
                             <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,2,0,0">
                                 <Run Text="IP: "/>
                                 <Run Text="{Binding IpAddress}"/>

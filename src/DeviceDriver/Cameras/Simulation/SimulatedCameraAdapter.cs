@@ -200,31 +200,32 @@ public sealed class SimulatedCameraAdapter : ICameraAdapter
             {
                 new CameraParameterDescriptor
                 {
-                    Name = "Width", DisplayName = "宽度", Category = "图像格式",
+                    Name = "Width", DisplayName = "宽度", StandardFeature = "image.width", Category = "图像格式",
                     Kind = CameraParameterKind.Integer, Value = _options.Width,
                     Minimum = 1, Maximum = _options.Width, IsReadOnly = true
                 },
                 new CameraParameterDescriptor
                 {
-                    Name = "Height", DisplayName = "高度", Category = "图像格式",
+                    Name = "Height", DisplayName = "高度", StandardFeature = "image.height", Category = "图像格式",
                     Kind = CameraParameterKind.Integer, Value = _options.Height,
                     Minimum = 1, Maximum = _options.Height, IsReadOnly = true
                 },
                 new CameraParameterDescriptor
                 {
-                    Name = "FrameRate", DisplayName = "帧率", Category = "采集",
+                    Name = "FrameRate", DisplayName = "帧率", StandardFeature = "acquisition.frame-rate", Category = "采集",
                     Kind = CameraParameterKind.Double, Value = _options.FrameRate,
                     Minimum = 1d, Maximum = 240d, Increment = 0.1d
                 },
                 new CameraParameterDescriptor
                 {
-                    Name = "TriggerMode", DisplayName = "触发模式", Category = "触发",
+                    Name = "TriggerMode", DisplayName = "触发模式", StandardFeature = "trigger.mode", Category = "触发",
                     Kind = CameraParameterKind.Enumeration, Value = _triggerMode.ToString(CultureInfo.InvariantCulture),
+                    AffectsSchema = true,
                     EnumValues = new[] { new CameraEnumValue("0", "关闭"), new CameraEnumValue("1", "开启") }
                 },
                 new CameraParameterDescriptor
                 {
-                    Name = "TriggerSource", DisplayName = "触发源", Category = "触发",
+                    Name = "TriggerSource", DisplayName = "触发源", StandardFeature = "trigger.source", Category = "触发",
                     Kind = CameraParameterKind.Enumeration, Value = _triggerSource.ToString(CultureInfo.InvariantCulture),
                     EnumValues = new[] { new CameraEnumValue("7", "Software") }
                 }
@@ -266,6 +267,22 @@ public sealed class SimulatedCameraAdapter : ICameraAdapter
                 _triggerSource = Convert.ToInt32(pair.Value, CultureInfo.InvariantCulture);
         }
         return Task.CompletedTask;
+    }
+
+    public Task<CameraCaptureConfiguration> ReadCaptureConfigurationAsync(CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+        cancellationToken.ThrowIfCancellationRequested();
+        var mode = _triggerMode == 0
+            ? CameraTriggerMode.Continuous
+            : _triggerSource == 7 ? CameraTriggerMode.Software : CameraTriggerMode.Hardware;
+        return Task.FromResult(new CameraCaptureConfiguration
+        {
+            StreamMode = mode,
+            AcquisitionModeName = "连续",
+            TriggerSourceName = _triggerMode == 0 ? string.Empty : _triggerSource == 7 ? "软件触发" : "外部触发",
+            IsValid = true
+        });
     }
 
     public async ValueTask DisposeAsync()

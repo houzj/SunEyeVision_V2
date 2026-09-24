@@ -6,24 +6,132 @@
         xmlns:local="clr-namespace:SunEyeVision.UI.Shell.Windows"
         xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         xmlns:camera="clr-namespace:SunEyeVision.UI.Features.Camera"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:converters="clr-namespace:SunEyeVision.UI.Converters.Visibility"
         mc:Ignorable="d"
         Title="相机管理器"
-        Width="1320"
+        Width="1020"
         Height="820"
-        MinWidth="1120"
+        MinWidth="880"
         MinHeight="650"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
         Background="{DynamicResource {x:Static base:ThemeKeys.WindowBackgroundBrush}}">
 
     <Window.Resources>
-        <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"/>
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
-            <Setter Property="Padding" Value="8,6"/>
+        <camera:OneBasedIndexConverter x:Key="OneBasedIndexConverter"/>
+        <Style x:Key="CameraDeviceListItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="MinHeight" Value="58"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <EventSetter Event="PreviewMouseRightButtonDown" Handler="CameraItem_PreviewMouseRightButtonDown"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="ItemBorder"
+                                Background="Transparent"
+                                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+                                BorderThickness="0,0,0,1"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                <Setter TargetName="ItemBorder" Property="BorderThickness" Value="0,0,0,2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
+        <DataTemplate x:Key="CameraDeviceListItemTemplate">
+            <Grid MinHeight="48">
+                <Grid.ContextMenu>
+                    <ContextMenu MinWidth="132">
+                        <MenuItem Header="重命名" Click="RenameCameraMenuItem_Click"/>
+                        <Separator/>
+                        <MenuItem Header="删除" Click="DeleteCameraMenuItem_Click"/>
+                    </ContextMenu>
+                </Grid.ContextMenu>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="22"/>
+                    <ColumnDefinition Width="48"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" VerticalAlignment="Top" Margin="0,1,2,0"
+                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                           Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/>
+                <Grid Grid.Column="1" VerticalAlignment="Center">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Name}" FontSize="14"
+                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRenaming}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock Text="{Binding ConnectionSummary}" FontSize="11" Margin="0,2,0,0"
+                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+                    </StackPanel>
+                    <TextBox Text="{Binding RenameText, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="4,2" VerticalContentAlignment="Center"
+                             KeyDown="RenameTextBox_KeyDown" LostFocus="RenameTextBox_LostFocus"
+                             IsVisibleChanged="RenameTextBox_IsVisibleChanged">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsRenaming}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                </Grid>
+                <Ellipse Grid.Column="2" Width="10" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Ellipse.Style>
+                        <Style TargetType="Ellipse">
+                            <Setter Property="Fill" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding StatusText}" Value="已连接">
+                                    <Setter Property="Fill" Value="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding StatusText}" Value="连接中">
+                                    <Setter Property="Fill" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding StatusText}" Value="故障">
+                                    <Setter Property="Fill" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Ellipse.Style>
+                </Ellipse>
+                <controls:ToggleSwitch Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       SwitchWidth="40" SwitchHeight="20"
+                                       IsChecked="{Binding IsConnected, Mode=OneWay}"
+                                       IsEnabled="{Binding CanToggleConnection}"
+                                       ToolTip="连接/断开相机"
+                                       CheckedChanged="CameraConnectionToggle_CheckedChanged"/>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -33,60 +141,39 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 工具栏 -->
+        <!-- 工具栏：添加入口；删除和重命名位于设备项右键菜单。 -->
         <ToolBar Grid.Row="0" ToolBarTray.IsLocked="True" Padding="12,8"
                  Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}"
                  BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}">
-            <Button Content="➕添加" Command="{Binding AddCameraCommand}" 
-                    Style="{StaticResource ToolButtonStyle}" Width="80" Height="32" Margin="0,0,8,0"/>
-      <Button Content="➖删除" Command="{Binding DeleteCameraCommand}" 
-                    Style="{StaticResource ToolButtonStyle}" Width="80" Height="32" Margin="0,0,8,0"/>
-    </ToolBar>
+            <TextBlock Text="设备列表" FontSize="16" FontWeight="SemiBold"
+                       VerticalAlignment="Center" Margin="0,0,10,0"
+                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Button Content="＋" Command="{Binding AddCameraCommand}"
+                    ToolTip="添加相机" Style="{StaticResource ToolButtonStyle}"
+                    Width="32" Height="30" FontSize="20" Padding="0"/>
+        </ToolBar>
 
         <!-- 主内容区 -->
         <Grid Grid.Row="1" Margin="12,8,12,8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" MinWidth="360"/>
-                <ColumnDefinition Width="4*" MinWidth="700"/>
+                <ColumnDefinition Width="2*" MinWidth="300"/>
+                <ColumnDefinition Width="3*" MinWidth="480"/>
             </Grid.ColumnDefinitions>
 
-            <!-- 左侧：相机列表 -->
-            <Border Grid.Column="0" Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="1" CornerRadius="4" Margin="0,0,8,0">
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- 相机列表 DataGrid -->
-                    <DataGrid x:Name="CameraListDataGrid"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="False"
-                              CanUserDeleteRows="False"
-                              SelectionMode="Extended"
-                              SelectedItem="{Binding SelectedCamera}"
-                              ItemsSource="{Binding Cameras}"
-                              Style="{StaticResource CameraDataGridStyle}">
-                        <DataGrid.Columns>
-                            <!-- 选择列 -->
-                            <DataGridCheckBoxColumn Header="启用" Width="40" Binding="{Binding IsSelected, Mode=TwoWay}"/>
-                            
-                            <!-- 名称列 -->
-                            <DataGridTextColumn Header="名称" Width="150" Binding="{Binding Name}"/>
-                            
-                            <!-- 状态列 -->
-              <DataGridTemplateColumn Header="状态" Width="80">
-                <DataGridTemplateColumn.CellTemplate>
-                  <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                      <TextBlock Text="{Binding StatusIcon}" Margin="0,0,4,0"/>
-                    </StackPanel>
-                  </DataTemplate>
-                </DataGridTemplateColumn.CellTemplate>
-              </DataGridTemplateColumn>
-            </DataGrid.Columns>
-                    </DataGrid>
-
+            <!-- 左侧：按新版通讯管理器样式展示相机设备列表。 -->
+            <Border Grid.Column="0" Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
+                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+                    BorderThickness="1" CornerRadius="4" Margin="0,0,8,0">
+                <Grid>
+                    <ListBox ItemsSource="{Binding Cameras}"
+                             SelectedItem="{Binding SelectedCamera, Mode=TwoWay}"
+                             AlternationCount="1000000"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             ItemContainerStyle="{StaticResource CameraDeviceListItemStyle}"
+                             ItemTemplate="{StaticResource CameraDeviceListItemTemplate}"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
                 </Grid>
             </Border>
 
@@ -106,9 +193,6 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="已连接: " FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}"/>
                     <TextBlock Text="{Binding ConnectedCount}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}" Margin="0,0,16,0"/>
-                    
-                    <TextBlock Text="已禁用: " FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}"/>
-                    <TextBlock Text="{Binding DisabledCount}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource {x:Static base:ThemeKeys.WarningBrush}}" Margin="0,0,16,0"/>
                     
                     <TextBlock Text="总计: " FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}"/>
                     <TextBlock Text="{Binding TotalCount}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>

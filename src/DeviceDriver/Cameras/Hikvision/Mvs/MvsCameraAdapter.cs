@@ -23,13 +23,16 @@ public sealed class MvsCameraAdapter : ICameraAdapter
 #if MVS_SDK_AVAILABLE
     private MyCamera.MV_CC_DEVICE_INFO _deviceInfo;
     private readonly MyCamera _camera = new();
+    // Keep blocking GetImageBuffer from holding the parameter-operation gate: MVS BasicDemo
+    // applies parameter/trigger changes from the UI while its receive thread is fetching frames.
     private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly SemaphoreSlim _captureGate = new(1, 1);
     private CancellationTokenSource? _streamCancellation;
     private Task? _streamTask;
     private bool _opened;
     private bool _grabbing;
     private bool _disposed;
-    private bool _softwareTriggerPreview;
+    private volatile bool _softwareTriggerPreview;
     private long _streamFrameCount;
     private long _consecutiveNoDataCount;
     private long _lastNoDataLogUtcTicks;
@@ -101,7 +104,7 @@ public sealed class MvsCameraAdapter : ICameraAdapter
         using var diagnosticScope = CameraDiagnosticScope.Begin(request.DiagnosticCorrelationId);
         cancellationToken.ThrowIfCancellationRequested();
 #if MVS_SDK_AVAILABLE
-        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await _captureGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             EnsureConnected();
@@ -114,6 +117,11 @@ public sealed class MvsCameraAdapter : ICameraAdapter
             if (error != MyCamera.MV_OK)
             {
                 captureTimer.Stop();
+                // StopGrabbing may interrupt a blocked SDK read and return a vendor-specific
+                // error rather than MV_E_NODATA. Once cancellation was requested, this is
+                // the normal stream shutdown path, not a camera failure.
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException("MVS 取帧因停止采集而中断。", cancellationToken);
                 if (error == MyCamera.MV_E_NODATA)
                 {
                     var noDataCount = Interlocked.Increment(ref _consecutiveNoDataCount);
@@ -127,7 +135,6 @@ public sealed class MvsCameraAdapter : ICameraAdapter
                     }
                     throw new CameraAdapterException(CameraErrorCode.FrameTimeout, $"MVS 等待图像超时/无数据: 0x{error:X8}");
                 }
-
                 LogCamera(LogLevel.Error,
                     $"GetImageBuffer SDK失败 sdk=0x{error:X8} waitMs={captureTimer.Elapsed.TotalMilliseconds:F1} timeoutMs={timeout} requestMode={request.TriggerMode}");
                 throw new CameraAdapterException(CameraErrorCode.Unknown, $"MVS 取帧 SDK 错误: 0x{error:X8}");
@@ -161,7 +168,10 @@ public sealed class MvsCameraAdapter : ICameraAdapter
                 State = CameraState.Connected;
             }
         }
-        finally { _gate.Release(); }
+        finally
+        {
+            _captureGate.Release();
+        }
 #else
         await Task.Yield();
         throw new CameraAdapterException(CameraErrorCode.DriverUnavailable, "未找到海康 MVS SDK");
@@ -285,7 +295,7 @@ public sealed class MvsCameraAdapter : ICameraAdapter
                         or MyCamera.MV_XML_InterfaceType.IFT_IPort)
                         continue;
 
-                    var descriptor = DescribeNode(node, categoryPath);
+                    var descriptor = DescribeNode(node, categoryPath, parameters.Count);
                     _parameterDescriptors[descriptor.Name] = descriptor;
                     parameters.Add(descriptor);
                 }
@@ -299,6 +309,65 @@ public sealed class MvsCameraAdapter : ICameraAdapter
         await Task.CompletedTask;
         return new CameraParameterSchema { AdapterId = AdapterId, Parameters = Array.Empty<CameraParameterDescriptor>() };
 #endif
+    }
+
+    public async Task<CameraCaptureConfiguration> ReadCaptureConfigurationAsync(CancellationToken cancellationToken)
+    {
+        EnsureConnected();
+        var values = await ReadParametersAsync(
+            new[] { "AcquisitionMode", "TriggerMode", "TriggerSource" }, cancellationToken).ConfigureAwait(false);
+        var acquisitionRaw = values.TryGetValue("AcquisitionMode", out var acquisitionValue)
+            ? Convert.ToString(acquisitionValue, CultureInfo.InvariantCulture) : null;
+        var (acquisitionName, singleFrame) = acquisitionRaw switch
+        {
+            "0" => ("单帧", true),
+            "1" => ("多帧", false),
+            "2" => ("连续", false),
+            _ => ("未知采集模式", false)
+        };
+
+        if (!values.TryGetValue("TriggerMode", out var triggerMode))
+        {
+            _softwareTriggerPreview = false;
+            return Capabilities.SupportsSoftwareTrigger || Capabilities.SupportsHardwareTrigger
+                ? new CameraCaptureConfiguration { AcquisitionModeName = acquisitionName, IsSingleFrame = singleFrame, IsValid = false, StatusMessage = "无法读取触发模式" }
+                : new CameraCaptureConfiguration { AcquisitionModeName = acquisitionName, IsSingleFrame = singleFrame, StatusMessage = "设备不支持触发" };
+        }
+
+        if (!IsMvsEnabled(triggerMode))
+        {
+            _softwareTriggerPreview = false;
+            return new CameraCaptureConfiguration
+            {
+                StreamMode = CameraTriggerMode.Continuous,
+                AcquisitionModeName = acquisitionName,
+                IsSingleFrame = singleFrame,
+                StatusMessage = "触发关闭"
+            };
+        }
+
+        if (!values.TryGetValue("TriggerSource", out var triggerSource) || triggerSource is null)
+        {
+            _softwareTriggerPreview = false;
+            return new CameraCaptureConfiguration { AcquisitionModeName = acquisitionName, IsSingleFrame = singleFrame, IsValid = false, StatusMessage = "触发已开启，但无法读取触发源" };
+        }
+
+        var sourceRaw = Convert.ToString(triggerSource, CultureInfo.InvariantCulture);
+        var software = sourceRaw == "7";
+        _softwareTriggerPreview = software;
+        return new CameraCaptureConfiguration
+        {
+            StreamMode = software ? CameraTriggerMode.Software : CameraTriggerMode.Hardware,
+            AcquisitionModeName = acquisitionName,
+            TriggerSourceName = sourceRaw switch { "7" => "软件触发", "0" => "线路 0", "1" => "线路 1", "2" => "线路 2", "3" => "线路 3", _ => $"外部触发 ({sourceRaw})" },
+            IsSingleFrame = singleFrame
+        };
+    }
+
+    private static bool IsMvsEnabled(object? value)
+    {
+        var text = Convert.ToString(value, CultureInfo.InvariantCulture);
+        return text is "1" or "On" or "ON" or "开启" or "True";
     }
 
     public Task ExecuteSoftwareTriggerAsync(CancellationToken cancellationToken)
@@ -324,7 +393,8 @@ public sealed class MvsCameraAdapter : ICameraAdapter
     }
 
 #if MVS_SDK_AVAILABLE
-    private CameraParameterDescriptor DescribeNode(MyCamera.MV_XML_NODE_FEATURE node, string categoryPath)
+    private CameraParameterDescriptor DescribeNode(
+        MyCamera.MV_XML_NODE_FEATURE node, string categoryPath, int sourceOrder = int.MaxValue)
     {
         var interfaceType = node.enType;
         var typeError = _camera.MV_XML_GetNodeInterfaceType_NET(node.strName, ref interfaceType);
@@ -354,6 +424,8 @@ public sealed class MvsCameraAdapter : ICameraAdapter
         {
             Name = node.strName,
             DisplayName = displayName,
+            SourceOrder = sourceOrder,
+            StandardFeature = GetStandardFeature(node.strName),
             Category = categoryPath,
             Kind = kind,
             IsReadOnly = !writable,
@@ -362,6 +434,9 @@ public sealed class MvsCameraAdapter : ICameraAdapter
             IsImplemented = implemented,
             IsAvailable = available,
             Visibility = node.enVisivility.ToString(),
+            RequiresStopped = RequiresStoppedForMvsNode(node.strName),
+            AffectsSchema = node.strName.EndsWith("Selector", StringComparison.OrdinalIgnoreCase)
+                || node.strName is "AcquisitionMode" or "Width" or "Height" or "OffsetX" or "OffsetY" or "PixelFormat",
             Description = description
         };
 
@@ -398,6 +473,39 @@ public sealed class MvsCameraAdapter : ICameraAdapter
             EnumValues = enumValues
         };
     }
+
+    private static string? GetStandardFeature(string nodeName) => nodeName switch
+    {
+        "AcquisitionMode" => "acquisition.mode",
+        "AcquisitionStart" => "acquisition.start",
+        "AcquisitionStop" => "acquisition.stop",
+        "AcquisitionFrameRate" or "AcquisitionFrameRateAbs" or "ResultingFrameRate" => "acquisition.frame-rate",
+        "AcquisitionFrameRateEnable" => "acquisition.frame-rate-enable",
+        "TriggerMode" => "trigger.mode",
+        "TriggerSource" => "trigger.source",
+        "TriggerSoftware" => "trigger.software",
+        "ExposureMode" => "exposure.mode",
+        "ExposureTime" or "ExposureTimeRaw" => "exposure.time",
+        "ExposureAuto" => "exposure.auto",
+        "Gain" or "GainRaw" => "gain.value",
+        "GainAuto" => "gain.auto",
+        "BlackLevel" => "image.black-level",
+        "Gamma" => "image.gamma",
+        "GammaEnable" => "image.gamma-enable",
+        "BalanceWhiteAuto" => "image.white-balance-auto",
+        "Width" => "image.width",
+        "Height" => "image.height",
+        "OffsetX" => "image.offset-x",
+        "OffsetY" => "image.offset-y",
+        "PixelFormat" => "image.pixel-format",
+        "GevSCPSPacketSize" => "transport.packet-size",
+        "GevSCPD" => "transport.packet-delay",
+        "GevPauseFrameReception" => "transport.pause-frame",
+        _ => null
+    };
+
+    private static bool RequiresStoppedForMvsNode(string nodeName) => nodeName is
+        "AcquisitionMode" or "Width" or "Height" or "OffsetX" or "OffsetY" or "PixelFormat";
 
     private static string DescribeAccessMode(MyCamera.MV_XML_AccessMode accessMode) => accessMode switch
     {
@@ -602,6 +710,9 @@ public sealed class MvsCameraAdapter : ICameraAdapter
                     ? cached : DescribeNodeByName(item.Key);
                 if (descriptor is null || !descriptor.IsWritable || item.Value is null)
                     throw new CameraAdapterException(CameraErrorCode.ParameterUnsupported, $"MVS 参数 {item.Key} 不可写或未发现");
+                if (_grabbing && descriptor.RequiresStopped)
+                    throw new CameraAdapterException(CameraErrorCode.ParameterUnsupported,
+                        $"MVS 参数 {item.Key} 要求先停止采集；请通过相机设置窗口应用，以便按流程暂停并恢复取流。");
 
                 var error = descriptor.Kind switch
                 {
@@ -695,6 +806,7 @@ public sealed class MvsCameraAdapter : ICameraAdapter
         _disposed = true;
         await DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
         _gate.Dispose();
+        _captureGate.Dispose();
 #else
         await Task.CompletedTask;
 #endif
@@ -769,12 +881,22 @@ public sealed class MvsCameraAdapter : ICameraAdapter
 
     private async Task StopStreamAndWaitAsync(Task streamTask, CancellationToken cancellationToken)
     {
+        // Match the MVS BasicDemo shutdown order: stop SDK grabbing immediately so a
+        // blocked GetImageBuffer call is released, then wait for the receive loop to
+        // finish processing/freeing any frame it already acquired.
+        var stopTimer = Stopwatch.StartNew();
+        StopGrabbing();
+        stopTimer.Stop();
+        LogCamera(LogLevel.Info, $"停止取流SDK调用完成 sdkStopMs={stopTimer.Elapsed.TotalMilliseconds:F1}");
+
+        var waitTimer = Stopwatch.StartNew();
         try
         {
             await streamTask.WaitAsync(cancellationToken).ConfigureAwait(false);
         }
         finally
         {
+            waitTimer.Stop();
             lock (this)
             {
                 StopGrabbing();
@@ -783,6 +905,7 @@ public sealed class MvsCameraAdapter : ICameraAdapter
                 _streamCancellation = null;
                 if (!_disposed) State = CameraState.Connected;
             }
+            LogCamera(LogLevel.Info, $"停止取流完成 loopWaitMs={waitTimer.Elapsed.TotalMilliseconds:F1}");
         }
     }
 
@@ -801,10 +924,10 @@ public sealed class MvsCameraAdapter : ICameraAdapter
                 {
                     frame = await CaptureAsync(request, cancellationToken).ConfigureAwait(false);
                 }
-                catch (CameraAdapterException ex) when (
-                    ex.ErrorCode == CameraErrorCode.FrameTimeout
-                    && !cancellationToken.IsCancellationRequested)
+                catch (CameraAdapterException ex) when (ex.ErrorCode == CameraErrorCode.FrameTimeout)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                        break;
                     // 超时表示本次等待区间没有帧，不等于采集已结束：可能是触发未到、曝光较长，
                     // 也可能是连续采集中的暂时空档。继续取帧，直到收到新帧或显式停止。
                     continue;

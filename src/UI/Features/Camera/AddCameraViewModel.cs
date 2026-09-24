@@ -295,6 +295,16 @@ namespace SunEyeVision.UI.Features.Camera
         {
             if (SelectedCamera != null)
             {
+                var existingCamera = _cameraManager.Cameras.FirstOrDefault(existing =>
+                    SameIdentity(existing, SelectedCamera));
+                if (existingCamera is not null)
+                {
+                    CameraName = existingCamera.Name;
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"使用设备列表中的相机名称: {CameraName}", "AddCameraViewModel");
+                    return;
+                }
+
                 // 自动生成名称: 制造商-型号-001
                 var manufacturer = SelectedCamera.Manufacturer;
                 var model = SelectedCamera.Model;
@@ -303,6 +313,20 @@ namespace SunEyeVision.UI.Features.Camera
                 
                 VisionLogger.Instance.Log(LogLevel.Info, $"自动生成相机名称: {CameraName}", "AddCameraViewModel");
             }
+        }
+
+        private static bool SameIdentity(CameraDevice existing, CameraDiscoveryItem discovered)
+        {
+            static bool Same(string? left, string? right)
+                => !string.IsNullOrWhiteSpace(left) && !string.IsNullOrWhiteSpace(right)
+                   && string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+
+            return Same(existing.DeviceId, discovered.DeviceId)
+                || (Same(existing.SerialNumber, discovered.SerialNumber)
+                    && string.Equals(existing.Manufacturer, discovered.Manufacturer, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(existing.Transport, discovered.Transport.ToString(), StringComparison.OrdinalIgnoreCase))
+                || (Same(existing.MacAddress, discovered.MacAddress)
+                    && string.Equals(existing.Transport, discovered.Transport.ToString(), StringComparison.OrdinalIgnoreCase));
         }
         
         #endregion
@@ -352,9 +376,11 @@ namespace SunEyeVision.UI.Features.Camera
                 
                 // 添加到相机管理器
                 _cameraManager.Cameras.Add(newCamera);
-                
+                _cameraManager.SelectedCamera = newCamera;
+
                 VisionLogger.Instance.Log(LogLevel.Success, $"相机添加成功: {CameraName}", "AddCameraViewModel");
-                _cameraManager.StatusMessage = $"相机添加成功: {CameraName}";
+                _cameraManager.StatusMessage = $"相机添加成功，正在连接: {CameraName}";
+                _ = _cameraManager.SetCameraConnectionAsync(newCamera, shouldConnect: true);
                 
                 // 关闭窗口
                 RequestClose?.Invoke(this, EventArgs.Empty);

@@ -34,7 +34,9 @@ namespace SunEyeVision.UI.Features.Camera
             ["Event Control"] = "事件控制", ["Chunk Data Control"] = "附加数据控制",
             ["File Access Control"] = "文件访问控制", ["User Set Control"] = "用户配置集",
             ["Action Control"] = "动作控制", ["GigE Vision"] = "GigE 网络参数",
-            ["USB Control"] = "USB 控制", ["Other"] = "其他"
+            ["USB Control"] = "USB 控制", ["Other"] = "其他",
+            ["Shading Correction"] = "阴影校正", ["Transfer Control"] = "传输控制",
+            ["Color Transformation Control"] = "色彩转换", ["Digital I/O Control"] = "数字 I/O 控制"
         };
 
         private static readonly Dictionary<string, string> ParameterNames = new(StringComparer.OrdinalIgnoreCase)
@@ -82,18 +84,24 @@ namespace SunEyeVision.UI.Features.Camera
         private readonly CameraRuntimeComposition _runtime;
         private CameraSession? _session;
         private CameraPreviewWindow? _previewWindow;
+        private bool _previewOwnsSession;
         private bool _connectionBusy;
+        private bool _parameterSchemaLoaded;
         private string _parameterStatus = "请选择相机后加载设备参数";
         private string _parameterSearchText = string.Empty;
         private CameraParameterGroupViewModel? _selectedParameterCategory;
         private CancellationTokenSource? _schemaLoadCts;
+        private CancellationTokenSource? _autoApplyCts;
+        private readonly SemaphoreSlim _parameterApplyGate = new(1, 1);
 
-        private static readonly HashSet<string> CommonParameterKeys = new(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> CommonStandardFeatures = new(StringComparer.OrdinalIgnoreCase)
         {
-            "Width", "Height", "OffsetX", "OffsetY", "PixelFormat", "AcquisitionMode",
-            "AcquisitionFrameRate", "AcquisitionFrameRateEnable", "ExposureMode", "ExposureTime",
-            "ExposureTimeRaw", "ExposureAuto", "Gain", "GainRaw", "GainAuto", "BlackLevel",
-            "Gamma", "GammaEnable", "BalanceWhiteAuto", "TriggerMode", "TriggerSource"
+            "acquisition.mode", "acquisition.frame-rate", "acquisition.frame-rate-enable",
+            "trigger.mode", "trigger.source", "exposure.mode", "exposure.time", "exposure.auto",
+            "gain.value", "gain.auto", "image.black-level", "image.gamma", "image.gamma-enable",
+            "image.white-balance-auto", "image.width", "image.height", "image.offset-x",
+            "image.offset-y", "image.pixel-format", "transport.packet-size",
+            "transport.packet-delay", "transport.pause-frame"
         };
 
         public ObservableCollection<CameraParameterItemViewModel> Parameters { get; } = new();
@@ -135,6 +143,8 @@ namespace SunEyeVision.UI.Features.Camera
             }
         }
 
+        public void ReportOperationStatus(string status) => ParameterStatus = status ?? string.Empty;
+
         public CameraDevice SelectedCamera
         {
             get => _selectedCamera;
@@ -143,6 +153,7 @@ namespace SunEyeVision.UI.Features.Camera
                 if (!SetProperty(ref _selectedCamera, value))
                     return;
                 IsCameraSelected = value != null;
+                _parameterSchemaLoaded = false;
                 _schemaLoadCts?.Cancel();
                 _schemaLoadCts?.Dispose();
                 _schemaLoadCts = new CancellationTokenSource();
@@ -176,11 +187,8 @@ namespace SunEyeVision.UI.Features.Camera
         public ICommand DisconnectCommand { get; }
         public ICommand ToggleConnectionCommand { get; }
         public ICommand PreviewCommand { get; }
-        public ICommand SaveParamsCommand { get; }
         public ICommand ResetParamsCommand { get; }
         public ICommand ExecuteParameterCommand { get; }
-        public ICommand ExpandParameterTreeCommand { get; }
-        public ICommand CollapseParameterTreeCommand { get; }
 
         public bool IsConnected => _session != null;
         public string ConnectionActionText => _connectionBusy
@@ -194,10 +202,7 @@ namespace SunEyeVision.UI.Features.Camera
             DisconnectCommand = new RelayCommand(Disconnect);
             ToggleConnectionCommand = new RelayCommand(ToggleConnection);
             PreviewCommand = new RelayCommand(Preview);
-            SaveParamsCommand = new RelayCommand(SaveParams);
             ResetParamsCommand = new RelayCommand(ResetParams);
-            ExpandParameterTreeCommand = new RelayCommand(() => SetGroupsExpanded(ParameterCategories, true));
-            CollapseParameterTreeCommand = new RelayCommand(() => SetGroupsExpanded(ParameterCategories, false));
             ExecuteParameterCommand = new RelayCommand<CameraParameterItemViewModel>(
                 item => _ = ExecuteParameterAsync(item),
                 item => item is { IsCommand: true, IsAvailable: true, IsWritable: true });
@@ -205,7 +210,7 @@ namespace SunEyeVision.UI.Features.Camera
 
         private async Task LoadSchemaAsync(CancellationToken cancellationToken)
         {
-            Parameters.Clear();
+            ClearParameterItems();
             ParameterCategories.Clear();
             SelectedParameters.Clear();
             SelectedParameterCategory = null;
@@ -236,9 +241,12 @@ namespace SunEyeVision.UI.Features.Camera
                     foreach (var descriptor in schema.Parameters)
                     {
                         values.TryGetValue(descriptor.Name, out var value);
-                        Parameters.Add(new CameraParameterItemViewModel(descriptor, value ?? descriptor.Value));
+                        var item = new CameraParameterItemViewModel(descriptor, value ?? descriptor.Value);
+                        item.PropertyChanged += OnParameterValueChanged;
+                        Parameters.Add(item);
                     }
                     BuildParameterTree();
+                    _parameterSchemaLoaded = true;
                     var readableCount = Parameters.Count(item => item.IsReadable && item.HasValue);
                     var unavailableCount = Parameters.Count(item => !item.IsAvailable || !item.IsImplemented);
                     var editableCount = Parameters.Count(item => item.IsEditable);
@@ -256,6 +264,7 @@ namespace SunEyeVision.UI.Features.Camera
             }
             catch (Exception ex)
             {
+                _parameterSchemaLoaded = false;
                 ParameterStatus = $"参数不可用：{ex.Message}";
             }
         }
@@ -277,10 +286,14 @@ namespace SunEyeVision.UI.Features.Camera
         {
             ParameterCategories.Clear();
             var groups = new Dictionary<string, CameraParameterGroupViewModel>(StringComparer.OrdinalIgnoreCase);
-            var common = new CameraParameterGroupViewModel("常用参数", viewKind: "Common") { IsExpanded = true };
-            var all = new CameraParameterGroupViewModel("全部属性", viewKind: "All") { IsExpanded = true, IsSelected = true };
+            var native = new CameraParameterGroupViewModel("属性树", viewKind: "NativeRoot") { IsExpanded = true };
+            var common = new CameraParameterGroupViewModel("常用属性", viewKind: "Common") { IsExpanded = true };
+            var advanced = new CameraParameterGroupViewModel("高级功能", viewKind: "AdvancedFeatures") { IsExpanded = true };
+            ParameterCategories.Add(native);
             ParameterCategories.Add(common);
-            ParameterCategories.Add(all);
+            ParameterCategories.Add(advanced);
+            var commonGroups = new Dictionary<string, CameraParameterGroupViewModel>(StringComparer.OrdinalIgnoreCase);
+            var advancedGroups = new Dictionary<string, CameraParameterGroupViewModel>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var parameter in Parameters.Where(item => item.IsAvailable && item.IsImplemented))
             {
@@ -289,7 +302,7 @@ namespace SunEyeVision.UI.Features.Camera
                 if (segments.Length == 0)
                     segments = new[] { "其他" };
 
-                var parent = all;
+                var parent = native;
                 var currentPath = string.Empty;
                 foreach (var segment in segments)
                 {
@@ -298,7 +311,8 @@ namespace SunEyeVision.UI.Features.Camera
                     {
                         group = new CameraParameterGroupViewModel(LocalizeCategory(segment), currentPath)
                         {
-                            IsExpanded = false
+                            IsExpanded = false,
+                            SourceOrder = parameter.SourceOrder
                         };
                         groups[currentPath] = group;
                         parent.Children.Add(group);
@@ -306,20 +320,56 @@ namespace SunEyeVision.UI.Features.Camera
                     parent = group;
                 }
 
-                var isCommon = CommonParameterKeys.Contains(parameter.Name) || IsTriggerParameter(parameter);
-                if (isCommon)
+                if (parameter.StandardFeature is { } feature
+                    && CommonStandardFeatures.Contains(feature)
+                    && !parameter.IsCommand
+                    && !IsAcquisitionToolbarCommand(feature))
+                {
                     common.Parameters.Add(parameter);
+                    var commonGroupName = GetCommonGroupName(feature);
+                    if (!commonGroups.TryGetValue(commonGroupName, out var commonGroup))
+                    {
+                        commonGroup = new CameraParameterGroupViewModel(
+                            commonGroupName, $"common/{commonGroupName}", "Common")
+                        {
+                            IsExpanded = false,
+                            SourceOrder = parameter.SourceOrder
+                        };
+                        commonGroups[commonGroupName] = commonGroup;
+                        common.Children.Add(commonGroup);
+                    }
+                    commonGroup.Parameters.Add(parameter);
+                }
                 parent.Parameters.Add(parameter);
+
+                var advancedGroupName = GetAdvancedFeatureGroup(parameter);
+                if (advancedGroupName is not null)
+                {
+                    advanced.Parameters.Add(parameter);
+                    if (!advancedGroups.TryGetValue(advancedGroupName, out var advancedGroup))
+                    {
+                        advancedGroup = new CameraParameterGroupViewModel(
+                            advancedGroupName, $"advanced/{advancedGroupName}", "AdvancedFeature")
+                        {
+                            IsExpanded = false,
+                            SourceOrder = parameter.SourceOrder
+                        };
+                        advancedGroups[advancedGroupName] = advancedGroup;
+                        advanced.Children.Add(advancedGroup);
+                    }
+                    advancedGroup.Parameters.Add(parameter);
+                }
             }
 
             var preferred = preferredViewKind switch
             {
+                "NativeRoot" => native,
                 "Common" => common,
-                "All" when string.IsNullOrEmpty(preferredCategoryPath) => all,
-                "All" => groups.GetValueOrDefault(preferredCategoryPath),
-                _ => null
+                "AdvancedFeatures" when string.IsNullOrEmpty(preferredCategoryPath) => advanced,
+                "AdvancedFeature" => advancedGroups.GetValueOrDefault(preferredCategoryPath),
+                _ => common
             };
-            SelectedParameterCategory = preferred ?? all;
+            SelectedParameterCategory = preferred ?? native;
             RefreshSelectedParameters();
         }
 
@@ -341,34 +391,65 @@ namespace SunEyeVision.UI.Features.Camera
                 items = category.ViewKind switch
                 {
                     "Common" => category.Parameters,
-                    "All" => items,
+                    "NativeRoot" => items,
+                    "AdvancedFeatures" => category.Parameters,
+                    "AdvancedFeature" => category.Parameters,
                     _ => items.Where(item => string.Equals(item.Category, category.CategoryPath, StringComparison.OrdinalIgnoreCase)
                         || item.Category.StartsWith(category.CategoryPath + "/", StringComparison.OrdinalIgnoreCase))
                 };
             }
 
-            foreach (var item in items.OrderBy(item => item.DisplayName, StringComparer.CurrentCulture))
+            foreach (var item in items.OrderBy(item => item.SourceOrder)
+                .ThenBy(item => item.DisplayName, StringComparer.CurrentCulture))
                 SelectedParameters.Add(item);
             OnPropertyChanged(nameof(SelectedCategoryTitle));
         }
 
-        private static bool IsTriggerParameter(CameraParameterItemViewModel item) =>
-            item.Name.StartsWith("Trigger", StringComparison.OrdinalIgnoreCase)
-            || item.Category.Contains("trigger", StringComparison.OrdinalIgnoreCase)
-            || item.Category.Contains("触发", StringComparison.OrdinalIgnoreCase);
+        private static bool IsAcquisitionToolbarCommand(string feature) => feature is
+            "acquisition.start" or "acquisition.stop" or "trigger.software";
 
-        private static void SetGroupsExpanded(IEnumerable<CameraParameterGroupViewModel> groups, bool expanded)
+        private static string GetCommonGroupName(string feature) => feature switch
         {
-            foreach (var group in groups)
-            {
-                group.IsExpanded = expanded;
-                SetGroupsExpanded(group.Children, expanded);
-            }
+            "image.gamma" or "image.gamma-enable" or "image.black-level"
+                or "image.white-balance-auto" => "ISP",
+            "transport.packet-size" or "transport.packet-delay" or "transport.pause-frame"
+                => "传输层控制",
+            _ => "基本属性"
+        };
+
+        private static string? GetAdvancedFeatureGroup(CameraParameterItemViewModel parameter)
+        {
+            var name = parameter.Name;
+            var category = parameter.Category;
+            if (name.Contains("LUT", StringComparison.OrdinalIgnoreCase)
+                || name.Contains("UserLut", StringComparison.OrdinalIgnoreCase))
+                return "查找表";
+            if (name.Contains("Chunk", StringComparison.OrdinalIgnoreCase)
+                || category.Contains("Chunk", StringComparison.OrdinalIgnoreCase))
+                return "Chunk 数据";
+            if (name.Contains("Event", StringComparison.OrdinalIgnoreCase)
+                || category.Contains("Event", StringComparison.OrdinalIgnoreCase))
+                return "事件控制信息";
+            if (name.Contains("UserSet", StringComparison.OrdinalIgnoreCase)
+                || category.Contains("User Set", StringComparison.OrdinalIgnoreCase))
+                return "用户集操作";
+            if (name.Contains("Aoi", StringComparison.OrdinalIgnoreCase)
+                || name.Contains("AutoFunction", StringComparison.OrdinalIgnoreCase)
+                || name.Contains("AutoExposure", StringComparison.OrdinalIgnoreCase))
+                return "AOI";
+            if (category.Contains("Image Format", StringComparison.OrdinalIgnoreCase)
+                && (name.Equals("Width", StringComparison.OrdinalIgnoreCase)
+                    || name.Equals("Height", StringComparison.OrdinalIgnoreCase)
+                    || name.Equals("OffsetX", StringComparison.OrdinalIgnoreCase)
+                    || name.Equals("OffsetY", StringComparison.OrdinalIgnoreCase)
+                    || name.Equals("RegionSelector", StringComparison.OrdinalIgnoreCase)))
+                return "ROI";
+            return null;
         }
 
         private async Task ExecuteParameterAsync(CameraParameterItemViewModel? item)
         {
-            if (item is not { IsCommand: true, IsAvailable: true, IsWritable: true }
+            if (item is not { IsCommand: true, IsAvailable: true, IsWritable: true, CanExecuteCommand: true }
                 || SelectedCamera is null)
                 return;
 
@@ -428,8 +509,10 @@ namespace SunEyeVision.UI.Features.Camera
                 Connect();
         }
 
-        private void Preview()
+        private async void Preview()
         {
+            if (_connectionBusy)
+                return;
             if (SelectedCamera == null || string.IsNullOrWhiteSpace(SelectedCamera.DeviceId))
                 return;
 
@@ -439,7 +522,43 @@ namespace SunEyeVision.UI.Features.Camera
                 return;
             }
 
-            var window = new CameraPreviewWindow(_runtime, new CameraDeviceRef(SelectedCamera.DeviceId), _session);
+            var wasConnectedBeforePreview = IsConnected;
+            await ConnectAsync();
+            if (_session is null)
+            {
+                MessageBox.Show(ParameterStatus, "相机连接失败", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // 只有预览前未连接时，预览窗口才拥有这次会话的生命周期。
+            // 预览前已经由设备列表连接的相机，关闭预览后必须保持连接。
+            _previewOwnsSession = !wasConnectedBeforePreview;
+
+            // 选中设备时可能因被厂商相机软件占用而无法读取参数树；连接成功后用当前会话重试，
+            // 不要求用户删除并重新添加设备。使用当前会话，避免再开第二个 SDK 句柄。
+            if (!_parameterSchemaLoaded)
+            {
+                ParameterStatus = "设备已连接，正在重新读取参数…";
+                try
+                {
+                    await RefreshParameterSchemaAsync(
+                        _session.Adapter,
+                        SelectedParameterCategory?.ViewKind,
+                        SelectedParameterCategory?.CategoryPath).ConfigureAwait(true);
+                    _parameterSchemaLoaded = true;
+                    var availableCount = Parameters.Count(item => item.IsAvailable && item.IsImplemented);
+                    var readableCount = Parameters.Count(item => item.IsReadable && item.HasValue);
+                    var editableCount = Parameters.Count(item => item.IsEditable);
+                    ParameterStatus = $"已加载 {availableCount} 项可用参数 · {readableCount} 项可读 · {editableCount} 项可编辑";
+                }
+                catch (Exception ex)
+                {
+                    _parameterSchemaLoaded = false;
+                    ParameterStatus = $"已连接，但参数读取失败：{ex.Message}";
+                }
+            }
+
+            var window = new CameraPreviewWindow(_runtime, new CameraDeviceRef(SelectedCamera.DeviceId), _session, this);
             _previewWindow = window;
             window.Closed += (_, _) =>
             {
@@ -451,18 +570,117 @@ namespace SunEyeVision.UI.Features.Camera
                     && ReferenceEquals(manager.CameraDetailViewModel, this));
             if (owner != null)
                 window.Owner = owner;
-            window.Show();
+            window.ShowDialog();
         }
 
-        private void SaveParams()
+        public async Task ClosePreviewSessionAsync()
         {
-            _ = SaveParamsAsync();
+            _autoApplyCts?.Cancel();
+            _autoApplyCts?.Dispose();
+            _autoApplyCts = null;
+            await _parameterApplyGate.WaitAsync().ConfigureAwait(true);
+            try
+            {
+            if (_session is null)
+            {
+                _previewOwnsSession = false;
+                return;
+            }
+
+            var camera = SelectedCamera;
+            if (!_previewOwnsSession)
+            {
+                if (camera is not null)
+                    camera.State = CameraState.Connected;
+                ParameterStatus = "预览已关闭，设备保持连接";
+                OnPropertyChanged(nameof(IsConnected));
+                OnPropertyChanged(nameof(ConnectionActionText));
+                return;
+            }
+
+            await ReleaseSessionAsync().ConfigureAwait(true);
+            _previewOwnsSession = false;
+            if (camera is not null)
+                camera.State = CameraState.Offline;
+            ParameterStatus = "预览已关闭，相机连接已释放";
+            OnPropertyChanged(nameof(IsConnected));
+            OnPropertyChanged(nameof(ConnectionActionText));
+            }
+            finally
+            {
+                _parameterApplyGate.Release();
+            }
+        }
+
+        public Task<bool> ApplyPendingParametersAsync() => SaveParamsAsync();
+
+        public async Task SetConnectionAsync(CameraDevice camera, bool shouldConnect)
+        {
+            if (camera == null)
+                return;
+
+            SelectedCamera = camera;
+            if (shouldConnect)
+                await ConnectAsync().ConfigureAwait(true);
+            else
+                await DisconnectAsync().ConfigureAwait(true);
+        }
+
+        private void OnParameterValueChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(CameraParameterItemViewModel.Value)
+                || sender is not CameraParameterItemViewModel item
+                || !item.IsDirty)
+                return;
+
+            ParameterStatus = $"{item.DisplayName} 已修改，正在写入设备…";
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[CameraParameterTrace] UI参数变更，已排队自动写入 camera={SelectedCamera?.DeviceId} node={item.Name} value={FormatDiagnosticValue(item.Value)} requiresStopped={item.RequiresStopped} affectsSchema={item.AffectsSchema}",
+                "CameraParameterTrace", target: LogTarget.All);
+
+            _autoApplyCts?.Cancel();
+            _autoApplyCts?.Dispose();
+            _autoApplyCts = new CancellationTokenSource();
+            _ = ApplyParameterAfterEditAsync(_autoApplyCts.Token);
+        }
+
+        private async Task ApplyParameterAfterEditAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                // NumericUpDown / text editing often emits several intermediate values; merge them into one SDK write.
+                await Task.Delay(350, cancellationToken).ConfigureAwait(true);
+                await SaveParamsAsync().ConfigureAwait(true);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+            }
         }
 
         private void ResetParams()
         {
-            _schemaLoadCts?.Cancel();
-            _ = LoadSchemaAsync(_schemaLoadCts?.Token ?? CancellationToken.None);
+            _ = ReloadParametersAsync();
+        }
+
+        private async Task ReloadParametersAsync()
+        {
+            if (_session is null)
+            {
+                _schemaLoadCts?.Cancel();
+                await LoadSchemaAsync(_schemaLoadCts?.Token ?? CancellationToken.None).ConfigureAwait(true);
+                return;
+            }
+
+            try
+            {
+                await RefreshParameterSchemaAsync(_session.Adapter,
+                    SelectedParameterCategory?.ViewKind, SelectedParameterCategory?.CategoryPath).ConfigureAwait(true);
+                ParameterStatus = "已重新读取相机当前参数";
+            }
+            catch (Exception ex)
+            {
+                ParameterStatus = $"重新读取失败：{ex.Message}";
+            }
         }
 
         private async System.Threading.Tasks.Task ConnectAsync()
@@ -477,6 +695,7 @@ namespace SunEyeVision.UI.Features.Camera
 
                 _connectionBusy = true;
                 OnPropertyChanged(nameof(ConnectionActionText));
+                SelectedCamera.State = CameraState.Connecting;
 
                 var reference = new CameraDeviceRef(SelectedCamera.DeviceId);
                 _session = await _runtime.Runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
@@ -506,6 +725,7 @@ namespace SunEyeVision.UI.Features.Camera
             {
                 _connectionBusy = true;
                 OnPropertyChanged(nameof(ConnectionActionText));
+                SelectedCamera.State = CameraState.Connecting;
                 await _runtime.Runtime.CloseAsync(new CameraDeviceRef(SelectedCamera.DeviceId));
                 _session = null;
                 SelectedCamera.State = CameraState.Offline;
@@ -513,6 +733,7 @@ namespace SunEyeVision.UI.Features.Camera
             }
             catch (Exception ex)
             {
+                SelectedCamera.State = _session != null ? CameraState.Connected : CameraState.Faulted;
                 ParameterStatus = $"断开失败：{ex.Message}";
             }
             finally
@@ -536,13 +757,20 @@ namespace SunEyeVision.UI.Features.Camera
             _schemaLoadCts?.Cancel();
             _schemaLoadCts?.Dispose();
             _schemaLoadCts = null;
-            await ReleaseSessionAsync().ConfigureAwait(true);
+            _autoApplyCts?.Cancel();
+            _autoApplyCts?.Dispose();
+            _autoApplyCts = null;
+            await _parameterApplyGate.WaitAsync().ConfigureAwait(true);
+            try { await ReleaseSessionAsync().ConfigureAwait(true); }
+            finally { _parameterApplyGate.Release(); }
         }
 
-        private async System.Threading.Tasks.Task SaveParamsAsync()
+        private async Task<bool> SaveParamsAsync()
         {
             if (SelectedCamera == null || string.IsNullOrWhiteSpace(SelectedCamera.DeviceId))
-                return;
+                return false;
+
+            await _parameterApplyGate.WaitAsync().ConfigureAwait(true);
 
             var traceId = Guid.NewGuid().ToString("N");
             var cameraId = SelectedCamera.DeviceId;
@@ -551,6 +779,8 @@ namespace SunEyeVision.UI.Features.Camera
             CameraSession? session = null;
             var values = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
             var writeAttempted = false;
+            var wasCapturing = false;
+            var pausedForParameterApply = false;
             var previousViewKind = SelectedParameterCategory?.ViewKind;
             var previousCategoryPath = SelectedParameterCategory?.CategoryPath;
             try
@@ -576,8 +806,18 @@ namespace SunEyeVision.UI.Features.Camera
 
                 if (values.Count == 0)
                 {
-                    ParameterStatus = "没有可写入的有效参数";
-                    return;
+                    ParameterStatus = "没有待应用的参数修改";
+                    return true;
+                }
+
+                var requiresStopped = values.Keys.Any(name => Parameters.FirstOrDefault(item =>
+                    string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase))?.RequiresStopped == true);
+                wasCapturing = _previewWindow?.IsAcquiring == true;
+                if (requiresStopped && wasCapturing && _previewWindow is not null)
+                {
+                    ParameterStatus = "该参数需要停止采集；正在暂停取流后应用";
+                    await _previewWindow.StopAcquisitionAsync();
+                    pausedForParameterApply = true;
                 }
 
                 var submittedSummary = string.Join("; ", values.Select(pair =>
@@ -595,9 +835,22 @@ namespace SunEyeVision.UI.Features.Camera
                     $"[camera-trace={traceId}] 适配器参数写入调用完成 camera={reference.Value} count={values.Count}",
                     "CameraParameterTrace", target: LogTarget.All);
 
-                // selector/模式类参数会改变其他节点的可用性、范围和选项；提交后重新读取完整设备参数，
-                // 以设备当前状态为准，避免界面继续显示旧权限和旧选项。
-                var readbackValues = await RefreshParameterSchemaAsync(session.Adapter, previousViewKind, previousCategoryPath);
+                // 普通参数只回读已写节点，避免每次改曝光/增益都重建整棵参数树；Selector/模式参数才刷新完整 Schema。
+                IReadOnlyDictionary<string, object?> readbackValues;
+                var affectsSchema = values.Keys.Any(name => Parameters.FirstOrDefault(item =>
+                    string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase))?.AffectsSchema == true);
+                if (affectsSchema)
+                    readbackValues = await RefreshParameterSchemaAsync(session.Adapter, previousViewKind, previousCategoryPath);
+                else
+                {
+                    readbackValues = await session.Adapter.ReadParametersAsync(values.Keys.ToArray(), CancellationToken.None);
+                    foreach (var pair in values)
+                    {
+                        if (readbackValues.TryGetValue(pair.Key, out var actual))
+                            Parameters.FirstOrDefault(item => string.Equals(item.Name, pair.Key, StringComparison.OrdinalIgnoreCase))
+                                ?.AcceptReadback(actual, pair.Value);
+                    }
+                }
                 var readCount = Parameters.Count(item => item.IsReadable && item.HasValue);
                 var readbackSummary = string.Join("; ", values.Keys.Select(name =>
                     $"{name}={(readbackValues.TryGetValue(name, out var actualValue) ? FormatDiagnosticValue(actualValue) : "<read-failed-or-unavailable>")}"));
@@ -607,13 +860,18 @@ namespace SunEyeVision.UI.Features.Camera
                 var adjustmentNote = GetAutomaticControlNote(values.Keys)
                     + GetManualAutoTransitionNote(values, session.Adapter.AdapterId,
                         exposureAutoWasEnabled, gainAutoWasEnabled);
-                // 预览行为取相机读回的完整采集配置；任何参数应用后都让预览重新读设备并开始新帧，
-                // 尤其覆盖 AcquisitionMode 变化（不能只盯 TriggerMode/TriggerSource）。
-                await (_previewWindow?.RefreshFromDeviceParametersAsync(traceId) ?? Task.CompletedTask);
+                // 只刷新设备实际采集配置，不打断可实时应用参数的取流。
+                await (_previewWindow?.RefreshConfigurationAsync(traceId) ?? Task.CompletedTask);
+                if (pausedForParameterApply && wasCapturing && _previewWindow is not null)
+                {
+                    await _previewWindow.StartAcquisitionAsync();
+                    pausedForParameterApply = false;
+                }
                 VisionLogger.Instance.Log(LogLevel.Info,
                     $"[camera-trace={traceId}] 参数应用流程完成 camera={reference.Value} previewOpen={_previewWindow is not null}",
                     "CameraParameterTrace", target: LogTarget.All);
-                ParameterStatus = $"设备参数已刷新：{readCount} 项可读；已提交 {values.Count} 项修改{adjustmentNote}";
+                ParameterStatus = $"参数已实时写入并回读：{values.Count} 项{adjustmentNote}";
+                return true;
             }
             catch (Exception ex)
             {
@@ -634,11 +892,25 @@ namespace SunEyeVision.UI.Features.Camera
                     }
                 }
                 ParameterStatus = $"参数写入失败：{ex.Message}{refreshNote}";
+                return false;
             }
             finally
             {
+                if (pausedForParameterApply && wasCapturing && _previewWindow is not null)
+                {
+                    try
+                    {
+                        await _previewWindow.RefreshConfigurationAsync(traceId);
+                        await _previewWindow.StartAcquisitionAsync();
+                    }
+                    catch (Exception resumeException)
+                    {
+                        ParameterStatus += $"；恢复采集失败：{resumeException.Message}";
+                    }
+                }
                 if (temporarySession != null)
                     await _runtime.Runtime.CloseAsync(temporarySession.CameraRef);
+                _parameterApplyGate.Release();
             }
         }
 
@@ -657,14 +929,24 @@ namespace SunEyeVision.UI.Features.Camera
                 .Select(item => item.Name)
                 .ToArray();
             var values = await adapter.ReadParametersAsync(names, CancellationToken.None);
-            Parameters.Clear();
+            ClearParameterItems();
             foreach (var descriptor in schema.Parameters)
             {
                 values.TryGetValue(descriptor.Name, out var value);
-                Parameters.Add(new CameraParameterItemViewModel(descriptor, value ?? descriptor.Value));
+                var item = new CameraParameterItemViewModel(descriptor, value ?? descriptor.Value);
+                item.PropertyChanged += OnParameterValueChanged;
+                Parameters.Add(item);
             }
             BuildParameterTree(preferredViewKind, preferredCategoryPath);
+            _parameterSchemaLoaded = true;
             return values;
+        }
+
+        private void ClearParameterItems()
+        {
+            foreach (var item in Parameters)
+                item.PropertyChanged -= OnParameterValueChanged;
+            Parameters.Clear();
         }
 
         private string GetAutomaticControlNote(IEnumerable<string> changedNames)
@@ -775,12 +1057,16 @@ namespace SunEyeVision.UI.Features.Camera
         {
             Name = descriptor.Name;
             DisplayName = CameraDetailViewModel.LocalizeParameter(descriptor.Name, descriptor.DisplayName);
+            SourceOrder = descriptor.SourceOrder;
+            StandardFeature = descriptor.StandardFeature;
             Category = descriptor.Category;
             Kind = descriptor.Kind;
             IsAvailable = descriptor.IsAvailable;
             IsImplemented = descriptor.IsImplemented;
             IsReadable = descriptor.IsReadable && descriptor.IsAvailable && descriptor.IsImplemented;
             IsWritable = descriptor.IsWritable && descriptor.IsAvailable && descriptor.IsImplemented;
+            RequiresStopped = descriptor.RequiresStopped;
+            AffectsSchema = descriptor.AffectsSchema;
             StatusMessage = descriptor.StatusMessage;
             if (value is null && IsReadable && Kind != CameraParameterKind.Command)
                 StatusMessage ??= "当前值读取失败";
@@ -796,8 +1082,10 @@ namespace SunEyeVision.UI.Features.Camera
         }
 
         public string Name { get; }
+        public int SourceOrder { get; }
         public bool IsExpanded { get; set; }
         public string DisplayName { get; }
+        public string? StandardFeature { get; }
         public string Category { get; }
         public CameraParameterKind Kind { get; }
         public bool IsReadOnly => !IsEditable;
@@ -805,8 +1093,13 @@ namespace SunEyeVision.UI.Features.Camera
         public bool IsImplemented { get; }
         public bool IsReadable { get; }
         public bool IsWritable { get; }
+        public bool RequiresStopped { get; }
+        public bool AffectsSchema { get; }
         public string? StatusMessage { get; private set; }
         public bool IsCommand => Kind == CameraParameterKind.Command;
+        public bool CanExecuteCommand => IsCommand && IsAvailable && IsWritable
+            && StandardFeature is not ("acquisition.start" or "acquisition.stop" or "trigger.software");
+        public string CommandActionText => CanExecuteCommand ? "执行" : "由上方操作栏控制";
         public bool IsEditable => IsWritable && !IsCommand && Value is not null
             && (Kind != CameraParameterKind.Enumeration || EnumValues.Count > 1)
             && Kind != CameraParameterKind.Custom;
@@ -935,6 +1228,21 @@ namespace SunEyeVision.UI.Features.Camera
             }
         }
 
+        public void AcceptReadback(object? actualValue, object? submittedValue)
+        {
+            _originalValue = actualValue;
+            if (ValuesEqual(Value, submittedValue))
+                Value = actualValue;
+            OnPropertyChanged(nameof(OriginalValue));
+            OnPropertyChanged(nameof(IsDirty));
+        }
+
+        private static bool ValuesEqual(object? left, object? right)
+            => left is null || right is null
+                ? left is null && right is null
+                : string.Equals(Convert.ToString(left, System.Globalization.CultureInfo.InvariantCulture),
+                    Convert.ToString(right, System.Globalization.CultureInfo.InvariantCulture), StringComparison.Ordinal);
+
         public void SetDeviceValue(object? value)
         {
             if (value is null)
@@ -953,16 +1261,19 @@ namespace SunEyeVision.UI.Features.Camera
         private bool _isExpanded;
         private bool _isSelected;
 
-        public CameraParameterGroupViewModel(string name, string? categoryPath = null, string? viewKind = null)
+        public CameraParameterGroupViewModel(
+            string name, string? categoryPath = null, string? viewKind = null, int sourceOrder = int.MaxValue)
         {
             Name = name;
             CategoryPath = categoryPath;
             ViewKind = viewKind;
+            SourceOrder = sourceOrder;
         }
 
         public string Name { get; }
         public string? CategoryPath { get; }
         public string? ViewKind { get; }
+        public int SourceOrder { get; set; }
         public bool IsExpanded
         {
             get => _isExpanded;

@@ -1,4 +1,3 @@
-using System.Windows;
 using System.Windows.Controls;
 
 namespace SunEyeVision.UI.Features.Camera
@@ -13,11 +12,5 @@ namespace SunEyeVision.UI.Features.Camera
             InitializeComponent();
         }
 
-        private void OnParameterCategorySelected(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            if (DataContext is CameraDetailViewModel viewModel
-                && e.NewValue is CameraParameterGroupViewModel category)
-                viewModel.SelectedParameterCategory = category;
-        }
     }
 }

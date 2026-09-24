@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using SunEyeVision.Workflow;
 using SunEyeVision.DeviceDriver.Cameras;
@@ -19,8 +20,8 @@ namespace SunEyeVision.UI.Features.Camera
     {
         private string _name;
         private string _transport;
-        private string _statusText;
-        private string _statusIcon;
+        private string _statusText = "断开";
+        private string _statusIcon = "●";
         private string _ipAddress;
         private string _lastOperationTime;
         private bool _isSelected;
@@ -34,6 +35,8 @@ namespace SunEyeVision.UI.Features.Camera
         private string _serialNumber;
         private string _macAddress;
         private CameraState _state = CameraState.Offline;
+        private bool _isRenaming;
+        private string _renameText = string.Empty;
 
         public string DeviceId
         {
@@ -64,12 +67,40 @@ namespace SunEyeVision.UI.Features.Camera
                 };
                 StatusIcon = value switch
                 {
-                    CameraState.Connected or CameraState.Capturing => "✅",
-                    CameraState.Connecting => "⏳",
-                    CameraState.Faulted => "⚠️",
-                    _ => "❌"
+                    _ => "●"
                 };
+                OnPropertyChanged(nameof(IsConnected));
+                OnPropertyChanged(nameof(CanToggleConnection));
+                OnPropertyChanged(nameof(ConnectionSummary));
             }
+        }
+
+        public bool IsConnected => State is CameraState.Connected or CameraState.Capturing;
+
+        public bool CanToggleConnection => State != CameraState.Disposed;
+
+        public string ConnectionSummary
+        {
+            get
+            {
+                var identity = string.Join(" · ", new[] { Manufacturer, Transport }
+                    .Where(value => !string.IsNullOrWhiteSpace(value)));
+                return string.IsNullOrWhiteSpace(identity)
+                    ? StatusText
+                    : $"{identity} · {StatusText}";
+            }
+        }
+
+        public bool IsRenaming
+        {
+            get => _isRenaming;
+            set => SetProperty(ref _isRenaming, value);
+        }
+
+        public string RenameText
+        {
+            get => _renameText;
+            set => SetProperty(ref _renameText, value);
         }
 
         public string Name
@@ -272,6 +303,7 @@ namespace SunEyeVision.UI.Features.Camera
         // Commands
         public ICommand AddCameraCommand { get; }
         public ICommand DeleteCameraCommand { get; }
+        public ICommand RenameCameraCommand { get; }
         public ICommand RefreshCommand { get; }
         public ICommand ExportCommand { get; }
         public ICommand SaveCommand { get; }
@@ -297,7 +329,8 @@ namespace SunEyeVision.UI.Features.Camera
             
             // 初始化 Commands
             AddCameraCommand = new RelayCommand(AddCamera);
-            DeleteCameraCommand = new RelayCommand(DeleteCamera, CanDeleteCamera);
+            DeleteCameraCommand = new RelayCommand<CameraDevice>(DeleteCamera, CanDeleteCamera);
+            RenameCameraCommand = new RelayCommand<CameraDevice>(BeginRename, camera => camera != null);
             RefreshCommand = new RelayCommand(Refresh);
             ExportCommand = new RelayCommand(Export);
             SaveCommand = new RelayCommand(Save);
@@ -370,21 +403,43 @@ namespace SunEyeVision.UI.Features.Camera
             }
         }
 
-        private void DeleteCamera()
+        private void BeginRename(CameraDevice? camera)
         {
-            if (SelectedCamera != null)
+            if (camera is null)
+                return;
+            camera.RenameText = camera.Name;
+            camera.IsRenaming = true;
+            StatusMessage = $"正在重命名：{camera.Name}";
+        }
+
+        public void CommitRename(CameraDevice? camera, bool cancel = false)
+        {
+            if (camera is null)
+                return;
+            if (!cancel && !string.IsNullOrWhiteSpace(camera.RenameText))
             {
-                var camera = SelectedCamera;
+                var oldName = camera.Name;
+                camera.Name = camera.RenameText.Trim();
+                StatusMessage = oldName == camera.Name ? $"名称未修改：{camera.Name}" : $"已重命名为：{camera.Name}";
+            }
+            camera.IsRenaming = false;
+        }
+
+        private void DeleteCamera(CameraDevice? camera)
+        {
+            if (camera != null && Cameras.Contains(camera))
+            {
                 Cameras.Remove(camera);
-                SelectedCamera = null;
+                if (ReferenceEquals(SelectedCamera, camera))
+                    SelectedCamera = Cameras.FirstOrDefault();
                 StatusMessage = $"已删除相机: {camera.Name}";
                 UpdateStatistics();
             }
         }
 
-        private bool CanDeleteCamera()
+        private bool CanDeleteCamera(CameraDevice? camera)
         {
-            return SelectedCamera != null;
+            return camera != null && Cameras.Contains(camera);
         }
 
         private void Refresh()
@@ -423,6 +478,22 @@ namespace SunEyeVision.UI.Features.Camera
             StatusMessage = selected.Count == 0
                 ? "请先选择相机"
                 : "批量断开暂未接入运行时，请在右侧详情面板断开相机";
+            UpdateStatistics();
+        }
+
+        public async Task SetCameraConnectionAsync(CameraDevice camera, bool shouldConnect)
+        {
+            if (camera == null || !Cameras.Contains(camera) || CameraDetailViewModel == null)
+                return;
+
+            SelectedCamera = camera;
+            if (camera.IsConnected == shouldConnect)
+                return;
+
+            await CameraDetailViewModel.SetConnectionAsync(camera, shouldConnect);
+            StatusMessage = shouldConnect
+                ? (camera.IsConnected ? $"已连接相机: {camera.Name}" : $"相机连接失败: {camera.Name}")
+                : $"相机已断开: {camera.Name}";
             UpdateStatistics();
         }
 

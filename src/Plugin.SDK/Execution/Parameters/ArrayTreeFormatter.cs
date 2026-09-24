@@ -12,8 +12,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// <remarks>
     /// - RoI(RoiShape[])：绑定树由 <see cref="BuildRoiTypedChildren"/> 按目标词目定型
     ///   （ROI/几何→类型集合叶；数值→类型容器+字段叶），不逐元素展开。
-    /// - 其余数组默认折叠态单行显示，展开态逐元素 `[i]` 封顶；所有展开子节点均封顶（默认 100），
-    ///   超出部分用溢出节点引导索引查看（防炸，rule-008 KISS）。
+    /// - 其余数组默认折叠态单行显示，展开态引导索引查看（防炸，rule-008 KISS）。
     /// </remarks>
     public static class ArrayTreeFormatter
     {

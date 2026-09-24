@@ -31,7 +31,9 @@ namespace SunEyeVision.UI.Features.Camera
         
         private void AddCameraDialog_Loaded(object sender, RoutedEventArgs e)
         {
-            // 窗口加载完成后的初始化逻辑
+            // 打开窗口即开始发现设备；接口选择仍可由用户调整后再次搜索。
+            if (_viewModel.SearchCommand.CanExecute(null))
+                _viewModel.SearchCommand.Execute(null);
         }
         
         private void ViewModel_RequestClose(object? sender, EventArgs e)

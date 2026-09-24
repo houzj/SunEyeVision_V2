@@ -43,6 +43,9 @@ public interface ICameraAdapter : IAsyncDisposable
     Task<CameraParameterSchema> GetParameterSchemaAsync(
         CancellationToken cancellationToken);
 
+    Task<CameraCaptureConfiguration> ReadCaptureConfigurationAsync(
+        CancellationToken cancellationToken);
+
     Task<IReadOnlyDictionary<string, object?>> ReadParametersAsync(
         IReadOnlyCollection<string> names,
         CancellationToken cancellationToken);

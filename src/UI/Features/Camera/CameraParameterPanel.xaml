@@ -1,0 +1,137 @@
+<UserControl x:Class="SunEyeVision.UI.Features.Camera.CameraParameterPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:SunEyeVision.UI.Features.Camera"
+             xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+             xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+             Background="Transparent">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <Style TargetType="TextBox">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"/>
+            <Setter Property="Padding" Value="6,4"/>
+        </Style>
+        <Style TargetType="TreeViewItem">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="3,2"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+        </Style>
+    </UserControl.Resources>
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="CategoryColumn" Width="190" MinWidth="0"/>
+            <ColumnDefinition x:Name="CategorySplitterColumn" Width="8"/>
+            <ColumnDefinition Width="*" MinWidth="300"/>
+        </Grid.ColumnDefinitions>
+        <Border x:Name="CategoryNavigationPanel" Grid.Column="0" Padding="8"
+                Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
+                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+                BorderThickness="1" CornerRadius="4">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="参数分类" FontWeight="SemiBold" Margin="4,2,4,8"
+                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                <TextBox Grid.Row="1" MinHeight="30" Margin="2,0,2,8"
+                         Text="{Binding ParameterSearchText, UpdateSourceTrigger=PropertyChanged, Delay=250}"
+                         ToolTip="搜索参数中文名称、SDK 名称或类别"/>
+                <TreeView Grid.Row="2" ItemsSource="{Binding ParameterCategories}"
+                          SelectedItemChanged="OnParameterCategorySelected"
+                          Background="Transparent" BorderThickness="0"
+                          Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
+                    <TreeView.Resources>
+                        <!-- 覆盖 WPF 默认的白色失焦选中色，保证深色主题下节点始终可读。 -->
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                         Color="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackground}}"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
+                                         Color="{DynamicResource {x:Static base:ThemeKeys.TextPrimary}}"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"
+                                         Color="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackground}}"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
+                                         Color="{DynamicResource {x:Static base:ThemeKeys.TextPrimary}}"/>
+                        <HierarchicalDataTemplate DataType="{x:Type local:CameraParameterGroupViewModel}"
+                                                  ItemsSource="{Binding Children}">
+                            <TextBlock Text="{Binding Name}" Padding="4,6"
+                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                        </HierarchicalDataTemplate>
+                    </TreeView.Resources>
+                </TreeView>
+            </Grid>
+        </Border>
+        <Border Grid.Column="2" Padding="10"
+                Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
+                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+                BorderThickness="1" CornerRadius="4">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="{Binding SelectedCategoryTitle}" FontSize="15" FontWeight="SemiBold"
+                           Margin="2,0,0,8" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                <TextBlock Grid.Row="1" Text="{Binding ParameterStatus}" FontSize="12" Margin="2,0,0,8"
+                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding SelectedParameters}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type local:CameraParameterItemViewModel}">
+                                <Grid Margin="2,3,8,4" ToolTip="{Binding ToolTipText}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="145"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding DisplayName}" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" ToolTip="{Binding Unit}"
+                                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                                    <Grid Grid.Column="1">
+                                        <controls:NumericUpDown Value="{Binding NumericValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Minimum="{Binding MinimumValue}" Maximum="{Binding MaximumValue}"
+                                                SmallChange="{Binding IncrementValue}" LargeChange="{Binding LargeIncrementValue}"
+                                                DecimalPlaces="{Binding DecimalPlaces}" ShowSlider="False" MinHeight="32"
+                                                Visibility="{Binding IsNumeric, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                        <TextBox Text="{Binding ValueText, UpdateSourceTrigger=PropertyChanged}" MinHeight="32" Padding="6"
+                                                 IsReadOnly="{Binding IsReadOnly}"
+                                                 Visibility="{Binding IsTextValue, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                        <controls:ToggleSwitch IsChecked="{Binding BooleanValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                OnText="启用" OffText="关闭" ShowText="True" VerticalAlignment="Center"
+                                                IsEnabled="{Binding IsEditable}"
+                                                Visibility="{Binding IsBoolean, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                        <ComboBox ItemsSource="{Binding EnumValues}" Style="{StaticResource ThemeComboBoxStyle}"
+                                                  ItemContainerStyle="{StaticResource ThemeComboBoxItemStyle}"
+                                                  SelectedValuePath="Value" SelectedValue="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                  IsEnabled="{Binding IsEditable}"
+                                                  Visibility="{Binding IsEnumeration, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate><TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/></DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <Button Content="{Binding CommandActionText}" IsEnabled="{Binding CanExecuteCommand}"
+                                                MinHeight="32" Style="{StaticResource SecondaryButtonStyle}"
+                                                Command="{Binding DataContext.ExecuteParameterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Visibility="{Binding IsCommand, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    </Grid>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                    <Button Content="重新读取" Width="96" Height="32"
+                            Style="{StaticResource SecondaryButtonStyle}" Command="{Binding ResetParamsCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

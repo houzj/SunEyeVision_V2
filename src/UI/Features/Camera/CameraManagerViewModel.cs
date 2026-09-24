@@ -26,6 +26,7 @@ namespace SunEyeVision.UI.Features.Camera
         private string _lastOperationTime;
         private bool _isSelected;
         private bool _isEnabled;
+        private bool _autoConnect = true;
         private string _manufacturer;
         private string _model;
         private string _description;
@@ -170,6 +171,12 @@ namespace SunEyeVision.UI.Features.Camera
             {
                 SetProperty(ref _isEnabled, value);
             }
+        }
+
+        public bool AutoConnect
+        {
+            get => _autoConnect;
+            set => SetProperty(ref _autoConnect, value);
         }
 
         public string Manufacturer
@@ -322,7 +329,7 @@ namespace SunEyeVision.UI.Features.Camera
             _solutionManager = solutionManager;
             Cameras = new ObservableCollection<CameraDevice>();
             Cameras.CollectionChanged += Cameras_CollectionChanged;
-            _runtime = new CameraRuntimeComposition();
+            _runtime = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime;
             CameraDetailViewModel = new CameraDetailViewModel(_runtime);
             
             LoadCameraList();
@@ -342,6 +349,7 @@ namespace SunEyeVision.UI.Features.Camera
             BatchDisableCommand = new RelayCommand(BatchDisable);
             
             StatusMessage = "就绪";
+            _ = RestoreAutoConnectionsAsync();
         }
 
         private void LoadCameraList()
@@ -349,7 +357,115 @@ namespace SunEyeVision.UI.Features.Camera
             foreach (var camera in Cameras)
                 camera.PropertyChanged -= Camera_PropertyChanged;
             Cameras.Clear();
+
+            var savedDevices = _solutionManager.CurrentSolution?.Devices
+                ?.Where(device => device.Type == DeviceType.Camera)
+                .ToList() ?? new List<Device>();
+            foreach (var device in savedDevices)
+            {
+                Cameras.Add(new CameraDevice
+                {
+                    Name = device.Name,
+                    Manufacturer = device.Manufacturer,
+                    Model = device.Model,
+                    SerialNumber = device.SerialNumber,
+                    IpAddress = device.IpAddress,
+                    IsEnabled = device.IsEnabled,
+                    AutoConnect = ReadSetting(device, "AutoConnect", true),
+                    Description = device.Description,
+                    DeviceId = ReadSetting(device, "DeviceId", device.Id),
+                    MacAddress = ReadSetting(device, "MacAddress", string.Empty),
+                    Transport = ReadSetting(device, "Transport", string.Empty),
+                    State = CameraState.Offline
+                });
+            }
             UpdateStatistics();
+        }
+
+        public void PersistCameraList()
+        {
+            var solution = _solutionManager.CurrentSolution;
+            if (solution == null)
+            {
+                StatusMessage = "当前没有打开的方案，设备配置暂不能保存";
+                return;
+            }
+
+            solution.Devices.RemoveAll(device => device.Type == DeviceType.Camera);
+            foreach (var camera in Cameras)
+            {
+                var device = new Device(camera.Name, DeviceType.Camera)
+                {
+                    Manufacturer = camera.Manufacturer,
+                    Model = camera.Model,
+                    SerialNumber = camera.SerialNumber,
+                    IpAddress = camera.IpAddress,
+                    IsEnabled = camera.IsEnabled,
+                    Description = camera.Description,
+                    Status = DeviceStatus.Disconnected,
+                    ModifiedTime = DateTime.Now
+                };
+                device.Id = string.IsNullOrWhiteSpace(camera.DeviceId) ? device.Id : camera.DeviceId;
+                device.Settings["DeviceId"] = camera.DeviceId ?? string.Empty;
+                device.Settings["MacAddress"] = camera.MacAddress ?? string.Empty;
+                device.Settings["Transport"] = camera.Transport ?? string.Empty;
+                device.Settings["AutoConnect"] = camera.AutoConnect;
+                solution.Devices.Add(device);
+            }
+
+            if (string.IsNullOrWhiteSpace(solution.FilePath))
+            {
+                StatusMessage = "设备配置已更新，保存方案后将写入本地文件";
+            }
+            else if (_solutionManager.SaveSolution(solution.FilePath))
+                StatusMessage = "设备配置已保存到当前方案";
+        }
+
+        private async Task RestoreAutoConnectionsAsync()
+        {
+            try
+            {
+                // 每次打开管理器都会创建新的运行时注册表；先重新发现设备，
+                // 否则持久化的 DeviceId 虽然存在，但 Runtime.OpenAsync 会认为设备未注册。
+                await _runtime.Discovery.DiscoverAsync().ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"设备重新发现失败：{ex.Message}";
+            }
+
+            foreach (var camera in Cameras)
+            {
+                if (_runtime.Runtime.TryGetSession(new CameraDeviceRef(camera.DeviceId), out _))
+                    camera.State = CameraState.Connected;
+            }
+
+            foreach (var camera in Cameras.Where(item => item.AutoConnect && item.IsEnabled).ToList())
+            {
+                try
+                {
+                    await SetCameraConnectionAsync(camera, shouldConnect: true).ConfigureAwait(true);
+                }
+                catch (Exception ex)
+                {
+                    StatusMessage = $"自动连接失败：{camera.Name}（{ex.Message}）";
+                }
+            }
+        }
+
+        private static T ReadSetting<T>(Device device, string key, T fallback)
+        {
+            if (!device.Settings.TryGetValue(key, out var value) || value == null)
+                return fallback;
+            if (value is T typed)
+                return typed;
+            if (value is System.Text.Json.JsonElement element)
+            {
+                try { return System.Text.Json.JsonSerializer.Deserialize<T>(element.GetRawText()) ?? fallback; }
+                catch { return fallback; }
+            }
+            try { return (T)Convert.ChangeType(value, typeof(T)); }
+            catch { return fallback; }
         }
 
         private void Cameras_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -365,8 +481,13 @@ namespace SunEyeVision.UI.Features.Camera
 
         private void Camera_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName is nameof(CameraDevice.State) or nameof(CameraDevice.IsEnabled))
+            if (e.PropertyName is nameof(CameraDevice.State))
                 UpdateStatistics();
+            else if (e.PropertyName is nameof(CameraDevice.IsEnabled) or nameof(CameraDevice.AutoConnect))
+            {
+                UpdateStatistics();
+                PersistCameraList();
+            }
         }
 
         private void UpdateStatistics()
@@ -420,6 +541,7 @@ namespace SunEyeVision.UI.Features.Camera
             {
                 var oldName = camera.Name;
                 camera.Name = camera.RenameText.Trim();
+                PersistCameraList();
                 StatusMessage = oldName == camera.Name ? $"名称未修改：{camera.Name}" : $"已重命名为：{camera.Name}";
             }
             camera.IsRenaming = false;
@@ -430,6 +552,7 @@ namespace SunEyeVision.UI.Features.Camera
             if (camera != null && Cameras.Contains(camera))
             {
                 Cameras.Remove(camera);
+                PersistCameraList();
                 if (ReferenceEquals(SelectedCamera, camera))
                     SelectedCamera = Cameras.FirstOrDefault();
                 StatusMessage = $"已删除相机: {camera.Name}";
@@ -530,9 +653,9 @@ namespace SunEyeVision.UI.Features.Camera
 
         public async ValueTask DisposeAsync()
         {
-            if (CameraDetailViewModel != null)
-                await CameraDetailViewModel.DisposeAsync().ConfigureAwait(true);
-            await _runtime.DisposeAsync().ConfigureAwait(true);
+            // 管理器是临时视图，关闭窗口不能释放方案级相机运行时和连接会话。
+            // 运行时由 ServiceInitializer 持有，在应用退出或方案切换时统一释放。
+            await Task.CompletedTask.ConfigureAwait(true);
         }
     }
 }

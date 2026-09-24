@@ -546,6 +546,15 @@ public partial class App : Application
         // 停止监控定时器
         _monitorTimer?.Stop();
 
+        try
+        {
+            ServiceInitializer.DisposeCameraRuntimeAsync().AsTask().GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            VisionLogger.Instance.Log(LogLevel.Warning, $"退出时释放相机运行时失败: {ex.Message}", "App", ex);
+        }
+
         base.OnExit(e);
     }
 

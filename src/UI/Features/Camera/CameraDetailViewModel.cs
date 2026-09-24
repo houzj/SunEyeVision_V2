@@ -698,6 +698,14 @@ namespace SunEyeVision.UI.Features.Camera
                 SelectedCamera.State = CameraState.Connecting;
 
                 var reference = new CameraDeviceRef(SelectedCamera.DeviceId);
+                if (_runtime.Runtime.TryGetSession(reference, out var existingSession))
+                {
+                    _session = existingSession;
+                    SelectedCamera.State = CameraState.Connected;
+                    ParameterStatus = "设备已连接";
+                    return;
+                }
+
                 _session = await _runtime.Runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
                 SelectedCamera.State = CameraState.Connected;
                 ParameterStatus = "设备已连接";

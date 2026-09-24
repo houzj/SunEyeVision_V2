@@ -376,6 +376,7 @@ namespace SunEyeVision.UI.Features.Camera
                 
                 // 添加到相机管理器
                 _cameraManager.Cameras.Add(newCamera);
+                _cameraManager.PersistCameraList();
                 _cameraManager.SelectedCamera = newCamera;
 
                 VisionLogger.Instance.Log(LogLevel.Success, $"相机添加成功: {CameraName}", "AddCameraViewModel");

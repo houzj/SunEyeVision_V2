@@ -26,6 +26,9 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
 
     public IReadOnlyCollection<CameraDescriptor> Devices => _descriptors.Values.ToArray();
 
+    public bool TryGetSession(CameraDeviceRef cameraRef, out CameraSession session)
+        => _sessions.TryGetValue(cameraRef.Value, out session!);
+
     public void RegisterDevice(CameraDescriptor descriptor)
     {
         ArgumentNullException.ThrowIfNull(descriptor);

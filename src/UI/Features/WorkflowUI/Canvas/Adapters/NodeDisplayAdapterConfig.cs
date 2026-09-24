@@ -3,6 +3,7 @@ using System.IO;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Workflow;
+using SunEyeVision.DeviceDriver.Cameras;
 
 using SunEyeVision.UI.Shell.Windows;
 
@@ -67,6 +68,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
     {
         private static UILogWriter? _uiLogWriter;
         private static SolutionManager? _solutionManager;
+        private static CameraRuntimeComposition? _cameraRuntime;
 
         /// <summary>
         /// 获取 UI 日志写入器（供 LogPanelViewModel 使用）
@@ -91,6 +93,17 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// 获取解决方案管理器
         /// </summary>
         public static SolutionManager SolutionManager => _solutionManager ?? throw new InvalidOperationException("SolutionManager 未初始化，请先调用 InitializeSolutionManager()");
+
+        public static CameraRuntimeComposition CameraRuntime
+            => _cameraRuntime ??= new CameraRuntimeComposition();
+
+        public static async ValueTask DisposeCameraRuntimeAsync()
+        {
+            if (_cameraRuntime is null)
+                return;
+            await _cameraRuntime.DisposeAsync().ConfigureAwait(false);
+            _cameraRuntime = null;
+        }
 
         /// <summary>
         /// 初始化所有服务。

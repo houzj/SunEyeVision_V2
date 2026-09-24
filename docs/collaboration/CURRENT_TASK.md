@@ -2,8 +2,8 @@
 
 - 基线提交：当前 `main` 的最新已提交版本。
 - 当前执行者：Codex。
-- 当前任务：工作流运行引擎架构优化（M3 全局就绪队列、M4 执行快照 UI、M5 全局变量数据总线与绑定 UI）。
-- 修改权限：`src/Workflow/`、`src/Plugin.SDK/`、`src/UI/Services/Workflow/`、`src/UI/Shell/Windows/`、`src/UI/Features/GlobalVariableManager/`、`src/UI/Features/ParameterSetting/`、`tests/`、`docs/`。
+- 当前任务：通讯管理器协议驱动完整接入（TCP Client/Server、UDP 已实现；继续接入 Serial、Modbus TCP/RTU、EtherNet/IP CIP TCP、Siemens S7 TCP、OPC UA Client，并完成协议专属操作 UI、测试及阶段验收）。
+- 本任务修改权限：`src/Workflow/`、`src/UI/Features/CommunicationManager/`、通讯相关 `tests/`、`docs/` 及为协议驱动所需的通讯专属项目/依赖配置；第三方依赖必须先核对许可、目标框架、原生部署及离线构建可用性，不得将 UI 配置存在误报为驱动已接入。
 - CodeBuddy 并行授权目录（2026-09-18 起，"发布与版本管理"线；与上表**不重叠**，rule-021 §3 的 `installer/**` 禁区在本次授权范围内）：
   `installer/`、`src/UI/Icons/`、`.codebuddy/rules/`、`.codebuddy/skills/`、`version.json`、`CHANGELOG.md`。
   方案见 `docs/01-方案设计/2026/09/18/内测版发布与版本管理最终方案-20260918-112404.md`。
@@ -55,7 +55,48 @@
 - 最新实现：主界面“全部流程运行”已接入 `WorkflowExecutionManager.RunSolutionAsync`，不再使用标签页中的模拟延时；生产节点结果只更新当前批次快照，不回写设计期全局变量值。
 - 已执行验证：`dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore` 成功（0 error，已有 742 warnings）；`SolutionExecutionDependencyGraph` 测试 2/2 通过。
 - 当前基线提交：`ba2b3ab9 feat(workflow): 运行请求、依赖图、资源租约与工具执行画像`。
-- 首批工作包：Codex C0（运行契约冻结）与 CodeBuddy B0（测试/验收矩阵）；必须使用独立 Worktree，
+
+## 通讯能力设计任务（2026-09-21）
+
+- 2026-09-23 用户授权开始按最终方案接入真实协议实现。实施从真实 TCP Client 运行闭环开始：本机异步运行时、连接测试、连接/断开、UTF-8 发送、接收数据回显到调试区；TCP Server/UDP/Serial/Modbus/CIP/S7/OPC UA 尚未接入，未支持协议必须返回明确错误而非伪成功。工业协议 SDK/许可评估与验证按阶段进行。
+- 当前进行中实现：`src/Workflow/CommunicationRuntimeManager.cs` 提供 TCP 客户端会话生命周期；通讯管理 UI 的按钮和收发框已绑定该运行时，异常断线会更新状态，删除/关闭会释放连接。验证：用户授权后执行 `dotnet build src/UI/SunEyeVision.UI.csproj -c Debug --no-restore -p:OutputPath=../../dev/Debug/`，成功（0 error，831 warnings）；未启动程序，待用户手工验收。
+- 用户手工验收反馈：TCP 客户端配合调试助手，发送与接收交互正常（2026-09-23）。后续实施转入 TCP Server 与 UDP。
+- TCP Server/UDP 代码增量已接入同一运行时：Server 执行真实本机 bind/listen，接收多个连接并向最近活跃客户端发送；UDP 真实 bind/receive 并向配置目标端点发送。用户再次授权构建后，执行相同 Debug 构建成功（0 error，831 warnings）；未启动程序，待用户手工验收。
+- UI 交互修订：TCP Server 的单一状态切换按钮显示“开始监听/停止监听”；TCP Client 显示“连接/断开”；UDP 显示“绑定端口/解除绑定”。已移除重复的连接、断开双按钮，测试连接仍单独保留。此交互修订尚未重新构建。
+- 2026-09-23 用户进一步确认设备列表交互：改为垂直选项卡式设备项，标题序号/名称，副标题显示协议类型与状态，圆形状态灯呈现连接状态；每个设备项使用 SDK ToggleSwitch 执行对应协议启停，未接入驱动的设备禁用该开关。右侧保留参数、调试区和测试连接，不再放独立启停按钮。本轮 XAML/VM 改动尚未构建。
+- 已按该反馈替换 DataGrid 为主题化 ListBox 选项卡项；副标题绑定协议+状态，圆形指示灯区分连接中/已连接/故障/断开，SDK ToggleSwitch 按设备直接启停，未接入的协议开关禁用。当前二进制尚未包含此改动，等待用户要求后再构建。
+- 2026-09-23 右键菜单样式修复：通讯设备菜单不再使用局部不完整的 ContextMenu/MenuItem 样式，改复用应用全局主题菜单模板，并设置合理最小宽度；UI Release 构建成功（0 error，1117 warnings）。本轮未启动 UI，待用户实际检查不同主题下菜单背景、文字间距与边缘显示。
+- 本轮基线提交：`8a66d177884bdb038b6082b1b36c2041464e6237`。
+
+- 2026-09-23 最终范围修订：基于用户逐协议截图与确认，新增完整架构基线 `docs/01-方案设计/2026/09/通讯管理器运行时架构与协议扩展最终设计方案-20260923.md`。已明确 OPC UA 仅客户端；当前纳入 TCP Client/Server、UDP、Serial、Modbus TCP/Serial、EtherNet/IP CIP TCP、Siemens S7 TCP；不纳入 HTTP 与 OPC UA Server。
+- 新方案覆盖传输/工业协议/角色术语边界、运行时分层和契约、配置 schema/迁移、连接生命周期、安全凭据与证书、协议扩展流程、各协议参数基线、OPC UA Client 安全/身份/会话参数，以及完整主窗口/创建设备/OPC UA 编辑器 ASCII 线框、按协议差异化调试和分阶段验收。
+- 用户截图确认 Modbus 的 TCP Client/串口切换，但尚未提供 Modbus 串口模式的详细参数截图；新方案将字段标为待确认，避免把建议字段误写为 VM 既定行为。此前的“当前仅做 UI、不实施通用通讯协议”阶段性说明不构成本次最终协议范围；本次目标是按新架构逐步实现真实驱动，尚未宣称驱动已接通。
+
+- 已完成现状审计：`src/Workflow/Communication.cs` 和 `src/UI/Features/CommunicationManager/CommunicationManagerViewModel.cs` 仍为弱类型配置与 `Thread.Sleep(500)` 占位测试，尚未接入真实通讯运行时。
+- 已形成设计基线：`docs/01-方案设计/2026/09/通讯管理器与通讯工具完整设计方案-20260921.md`。
+- 方案覆盖配置 schema、运行时连接管理器、传输层/协议适配器、通讯工具、工作流快照集成、UI、持久化迁移、安全可靠性及 M0–M4 实施验收；UI 章节已补充参考界面收敛方案、设备/控制器分层、六类功能页面、协议创建对话框、测试/删除对话框、交互时序、验收清单及 ASCII 线框图。
+- 历史阶段记录（已被 2026-09-23 的真实协议接入授权取代）：曾以 VisionMaster 通讯管理器 UI 为参考，仅做设备管理骨架；现按本节最新实现范围逐步接入通用通讯驱动。
+- UI 反馈修订：移除设备管理页的“控制器列表”；协议下拉框只保留 TCP 客户端、TCP 服务端、UDP、串口、HTTP、Modbus TCP、Modbus RTU、OPC UA，厂商专用协议通过后续协议适配器扩展。
+- UI 交互修正：保留参考 VM 的左侧功能导航和控制器列表布局；当前只实现设备管理页，控制器列表不实现业务逻辑；内容区顶部工具栏移除，设备新增入口保留在设备列表标题旁。
+- 当前已开始设备管理 UI 实施：通信设备创建对话框和选中设备详情均按 TCP 客户端/服务端、UDP、Modbus TCP/RTU、串口、OPC UA、HTTP 显示差异化参数；开关统一使用 SDK `ToggleSwitch`。未选中设备时右侧隐藏所有参数控件并显示空状态提示；设备管理对话框文本和输入控件使用主题资源。接收结束符关闭时隐藏编辑框和快捷按钮，开启后显示可滚动多行编辑框及 `\r`、`\n`、`\r\n` 快捷输入，默认值为空，不再预填 `0D 0A`。Debug 构建已验证 0 error。
+- 最新主题与布局修正：SDK ComboBox 当前值和 ComboBoxItem 下拉项显式继承主题 Foreground，并补充禁用项主题色；通信设备 DataGrid 的行、单元格、列文本统一使用主题资源，选中/失焦状态不再使用固定白字或系统默认失焦色；协议类型列显示协议名称而非枚举名；参数绑定属性补齐正确的属性变更通知。Debug 构建通过，0 error，产物位于 `dev/Debug/`，尚未做本轮运行时人工验收。
+- 本轮布局修正：按当前阶段要求移除控制器列表及空占位，设备列表区域占满左侧；接收结束符改为“标签/SDK 开关同一行 + 自适应多行文本框 + 等宽三列快捷符号按钮”的结构。Debug 构建通过，0 error，尚未做本轮运行时人工验收。
+- 调试数据区补齐：接收数据页增加带主题背景/边框的只读多行 TextBox，发送数据页增加带主题背景/边框的可编辑多行 TextBox 和禁用发送按钮；16 进制显示改用 SDK ToggleSwitch。Debug 构建通过，0 error。
+- 接收/发送记录均保留独立历史框并带毫秒时间戳与 `RECV/SEND UTF-8` 标记；发送区使用紧凑主题化圆角组合输入器、空值提示、强调色发送按钮水平并排，单行约 50px、支持多行扩展，Enter 发送、Shift+Enter 换行，成功后清空。已删除“测试连接”按钮及对应命令/运行时方法。最新视觉修订待 Debug 构建及运行时人工验收。
+- 设备解耦方案 `docs/01-方案设计/2026/09/通讯管理器按设备解耦与收发调试优化方案-20260923.md`：M1 每设备 Workspace 已实施，接收事件按设备 ID 路由；M3 收发格式已实施，RX/TX 保留原始字节与时间戳，接收文本/HEX 显示可独立切换，发送文本/HEX 输入可独立切换，HEX 发送经校验后走原始字节发送；RX 清空和 TX 历史清空分别绑定当前设备 Workspace。HEX 解析覆盖常见分隔符、0x 前缀、非法字符、奇数半字节和空输入。2026-09-23 UI Debug 构建成功（0 error，829 warnings）；待用户验收多设备切换、HEX 收发和独立清空。M2 设置草稿事务与 M4 界面全状态验收仍待实施。
+- 2026-09-23 Tab 工具项布局修正：接收/发送 Tab 名称先并排显示，格式/清空操作区固定在“发送数据”右侧，并按 SelectedIndex 切换接收/发送各自控件；格式状态提示仅显示“文本”或“HEX”，徽标前景/输入背景/边框均使用动态主题资源；两个“清空”分别只作用于各自历史。自定义 TabControl 顶栏模板，内容区不增加额外工具栏行。UI Debug 构建成功（0 error，740 warnings），待运行时检查。
+- 2026-09-23 文本接收可见性修正：调试助手发送 HEX `11` 时，该字节解码为 ASCII 控制码 DC1，UTF-8 文本模式正文不可见。现在纯不可显示/无效 UTF-8 数据会显示解释、原始 HEX 和“切换 HEX 查看”提示；可读文本与控制码混合时，保留文本并转义显示控制字符。针对性 UI 测试 4/4 通过；全量 Debug UI 由测试项目依赖构建通过，0 error。
+- 2026-09-23 设备列表右键菜单：列表项右键先选中目标，提供主题化“重命名/删除”；重命名使用独立轻量对话框并修改目标设备名称，删除复用现有运行时断开和配置删除流程。
+- 2026-09-23 TCP Server 多客户端发送语义确认：用户要求向所有已连接客户端发送。服务端现逐个向连接写入相同负载，并返回实际成功写入数，UI 反馈客户端数量；该应用层 fan-out 不是 UDP 广播包。新增两个 TCP 客户端集成测试，验证两者都收到数据。通讯相关测试 5/5 通过；UI Debug 构建 0 error（987 warnings），产物 `dev/Debug/SunEyeVision.UI.exe`，待用户手工验证右键菜单与调试助手多客户端收发。
+- 2026-09-23 完整协议接入 M1：Workflow 已接入串口打开/收发（System.IO.Ports 9.0.0，MIT）及 Modbus TCP/RTU 主站（NModbus 3.0.81，MIT）；Modbus 类型化支持 FC1/2/3/4/5/6/15/16，禁止任意原始字节发送。UI 有串口、Modbus 参数和专属读写操作。Modbus TCP 本地模拟端覆盖 FC3 读、FC6/15/16 写；串口必填校验已测。**未完成验收**：串口/RTU 尚无真实 COM/RS-485 测试。
+- 2026-09-23 完整协议接入 M2：引入 S7netplus 0.20.0（MIT）与 OPC Foundation UA Client 1.5.378.176；S7 TCP Client 支持 CPU 型号、rack/slot 及 DB/Marker/Input/Output 区域字节读写；原始字节发送会明确拒绝。CIP TCP 已实现 EtherNet/IP RegisterSession、SendRRData、逻辑路径显式消息及 UnregisterSession；本地 CIP 服务器模拟器验证会话注册、Get_Attribute_Single 请求路径、响应和注销，CIP 当前是通用显式消息入口，**不包含隐式 I/O、Scanner/Adapter 或厂商 Tag 浏览层**。
+- 2026-09-23 完整协议接入 M3（按用户当前范围收敛）：OPC UA Client 支持匿名身份、按配置安全模式发现端点、证书校验（默认拒绝未知证书）、Browse/Read/Write/Subscribe/Unsubscribe；`Sign` 与 `SignAndEncrypt` 两种安全模式本地端到端测试通过，包含取消订阅后无后续通知。通讯面板有独立“订阅/取消订阅”，按 NodeId 移除监视项，移除最后一项后释放底层 Subscription；断开设备统一释放剩余项。测试曾揭示并修复写响应列表校验问题。安全模式 `None` 的同版本测试服务端在空客户端证书时自身抛 NullReference；未通过放宽客户端证书验证规避。**用户名/密码及用户证书身份本阶段不实现**：用户确认当前设备未配置凭据，按需再开发；遗留配置中若身份不是“匿名”，运行时明确拒绝，不尝试连接或读取凭据。S7 尚无真实 PLC/仿真器数据读写验收；Modbus RTU 和串口尚无真实设备验收。
+- 当前验证记录：2026-09-23 UI Debug 构建通过；合并通讯专项测试 11/11 通过（OPC UA `Sign`/`SignAndEncrypt` 浏览、读、写、订阅、取消订阅；Modbus TCP FC3/6/15/16；CIP 回环模拟端；TCP Server 多客户端；设备工作区）；最新 UI Release 重建通过（0 错误，869 个既有警告）。Release 目录确认包含 `System.IO.Ports.dll`、`NModbus.dll`、`S7.Net.dll` 与 OPC UA Client 栈 DLL。未启动 UI，未验证 Visual Studio 设计时和运行时交互；仍需用户/设备人工验收。
+- 2026-09-23 OPC UA 显式证书信任管理已实施：通讯面板可查看可信对端证书主题/指纹，选择 `.der/.cer/.crt/.pem` 后先校验有效期并展示主题、指纹和 UTC 到期时间，用户二次确认后才导入；支持逐张撤销。未知证书仍默认拒绝，导入/撤销只影响新连接，不会静默接受或强制断开现有会话。信任存储复用 OPC UA Directory Certificate Store 的 `UA Applications/certs`；自动测试覆盖 DER 导入、列表、撤销、过期拒绝，并由 OPC UA 本地 E2E 通过同一信任存储导入测试端点证书后完成两种安全模式浏览/读写/订阅/取消订阅。按用户决定，身份收敛为匿名，新增旧用户名身份配置的快速拒绝测试；合并通讯回归 14/14 通过，UI Release 构建 0 错误（869 个既有警告）。尚未做设计器视觉检查或运行时人工 UI 验收。
+- 2026-09-23 依赖边界复核：System.IO.Ports 9.0.0 包元数据标记 MIT；NModbus 3.0.81 和 OPC Foundation UA 1.5.378.176 包内均带 MIT license；S7netplus 0.20.0 的 nuspec 未声明 license 字段，但对应上游仓库 License.txt 为 MIT（应在第三方声明/发布清单中显式收录）。当前 Release 输出实查含 System.IO.Ports.dll、NModbus.dll、S7.Net.dll、Opc.Ua.Client/Core/Configuration/Security.Certificates/Types 等运行时依赖。该核查仅覆盖通讯直接依赖和 UI Release 目录，不等于全量传递依赖 SBOM/许可审计。
+- 2026-09-24 串口参数 UI 优化：新建设备页和已选设备详情页的普通串口、Modbus RTU 串口号均改为不可编辑 ComboBox，数据来自当前主机 `SerialPort.GetPortNames()`；已保存但暂时未枚举到的端口会保留在列表首项，避免旧配置无法显示。UI Release 构建 0 错误（758 个既有警告），通讯专项回归 14/14 通过；尚未启动程序做实际 COM 设备人工验收。
+- 下一阶段仍在进行：OPC UA 当前只验收匿名身份，不再投入用户名/密码凭据实现，待用户明确需要时另立工作；对串口/RTU、S7、CIP 及 OPC UA 用兼容设备/仿真器验证；完成全量传递依赖许可/SBOM 和安装包部署审计。真实串口硬件、PLC/设备验收仍需要可用设备或兼容仿真器。HTTP 与 OPC UA Server 不在已确认范围。
+- 历史首批工作包记录：Codex C0（运行契约冻结）与 CodeBuddy B0（测试/验收矩阵）；必须使用独立 Worktree，
   且 CodeBuddy 不得修改执行核心。
 
 ## CodeBuddy 侧协作配置（2026-09-16）
@@ -180,3 +221,6 @@
 - 2026-09-21 日志 `logs/2026/09/21/SunEyeVision_102232.txt` 诊断：选中 Blob 节点时同一组 6000 条轮廓连续启动两次批量/场景编译，第一次约 144 ms 后取消，第二次批量几何编译约 476 ms，首帧 WPF 几何绘制约 218 ms。结果层增加同一显示项引用集合去重，避免 `SetDisplayCollector`/`SetRegionItems` 连续调用重复编译；图像身份变化仍会强制清空并重建。Plugin.SDK Debug 构建、渲染测试 22/22、UI Release 构建均通过。
 - 2026-09-21 取消竞态修复：日志报告图像切换时 `CancelRenderBatchBuild()` 对已由 Dispatcher 回调释放的 `CancellationTokenSource` 再次 `Cancel()`，抛出 `ObjectDisposedException`。取消操作现为幂等，捕获已释放源并安全忽略；Plugin.SDK Debug 构建 0 error，渲染测试 22/22 通过。
 - 2026-09-21 调试预览生命周期收口：`UpdateDebugPreview()` 使用独立 debug collector，`ClearDebugPreview()` 不再调用结果层整体 `Clear()`；关闭调试后 `RestoreWorkflowResult()` 现从生产 `WorkflowContext` 同步恢复结果树、图像源和几何层，避免调试结果残留覆盖生产显示。渲染事务测试 5/5 通过；UI Release 串行构建 0 error（795 个既有警告）。
+- 2026-09-24 串口参数下拉优化：新建设备与设备详情中的普通串口、Modbus RTU 波特率统一改为 ComboBox，提供 300–921600 的标准波特率并保留非标准已保存值；校验位统一改为 ComboBox，支持无、奇、偶、标记、空格五种校验。运行时解析兼容既有中文值及 Odd/Even/Mark/Space 英文值。UI Release 构建 0 error；通信回归测试 14/14 通过；尚未进行真实串口硬件人工验收。
+- 2026-09-24 创建通讯设备后参数为空修复：`CommunicationDeviceEditorViewModel` 创建对象时改用 `Communication` 的类型化属性写入协议键、串口、波特率、网络端点、Modbus/S7/OPC UA 等初始参数，避免直接写 `Settings` 字典绕过属性通知导致创建后详情页 ComboBox/TextBox 显示空值。UI Debug 构建通过（0 error，既有警告）；默认 `dev/Debug` 被运行中程序锁定，本轮使用 `BuildProjectReferences=false` 完成编译验证，未执行 Release。
+- 2026-09-24 串口/Modbus RTU 下拉值继续为空的根因修复：详情页刷新串口和波特率选项时，ComboBox 双向绑定在 `ItemsSource.Clear()` 瞬间把 `SelectedCommunication.SerialPort`/`BaudRate` 回写为空值或 0；现刷新前保存值、刷新后恢复，避免仅串口协议受影响。UI Debug 构建通过（0 error，既有警告）。

@@ -20,6 +20,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NSubstitute" Version="5.*" />
+    <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua.Server" Version="1.5.378.176" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/UI/SunEyeVision.UI.csproj" />

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Workflow;
@@ -51,10 +52,21 @@ public enum CommunicationType
 }
 
 /// <summary>
+/// 通讯设备运行状态，由通讯运行时更新，不写入方案文件。
+/// </summary>
+public enum CommunicationRuntimeStatus
+{
+    Disconnected,
+    Connecting,
+    Connected,
+    Faulted
+}
+
+/// <summary>
 /// 通讯模型
 /// </summary>
 /// <remarks>
-/// 用于管理解决方案中的通讯配置，包括HTTP、Modbus、OPC UA等。
+/// 用于管理解决方案中的通讯设备配置；具体运行行为由协议驱动实现。
 /// </remarks>
 public class Communication : ObservableObject
 {
@@ -62,6 +74,8 @@ public class Communication : ObservableObject
     private bool _enabled = true;
     private CommunicationType _connectionType = CommunicationType.HTTP;
     private string _description = "";
+    private CommunicationRuntimeStatus _runtimeStatus = CommunicationRuntimeStatus.Disconnected;
+    private bool _isRuntimeOperationInProgress;
 
     /// <summary>
     /// 通讯ID
@@ -102,6 +116,250 @@ public class Communication : ObservableObject
     {
         get => _description;
         set => SetProperty(ref _description, value, "通讯描述");
+    }
+
+    /// <summary>
+    /// 当前运行时连接状态。该状态不写入方案文件。
+    /// </summary>
+    [JsonIgnore]
+    public CommunicationRuntimeStatus RuntimeStatus
+    {
+        get => _runtimeStatus;
+        set
+        {
+            if (SetProperty(ref _runtimeStatus, value, "通讯状态"))
+            {
+                OnPropertyChanged(nameof(IsRuntimeActive));
+                OnPropertyChanged(nameof(ProtocolStatusText));
+                OnPropertyChanged(nameof(RuntimeStatusText));
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public bool IsRuntimeActive => RuntimeStatus is CommunicationRuntimeStatus.Connecting or CommunicationRuntimeStatus.Connected;
+
+    [JsonIgnore]
+    public bool IsRuntimeOperationInProgress
+    {
+        get => _isRuntimeOperationInProgress;
+        set
+        {
+            if (SetProperty(ref _isRuntimeOperationInProgress, value))
+                OnPropertyChanged(nameof(CanToggleRuntime));
+        }
+    }
+
+    [JsonIgnore]
+    public bool CanToggleRuntime => SupportsRuntimeToggle && !IsRuntimeOperationInProgress;
+
+    [JsonIgnore]
+    public string ProtocolStatusText => $"{ProtocolDisplayName} · {RuntimeStatusText}";
+
+    /// <summary>
+    /// 设备端点地址。使用 Settings 保存，兼容旧的 host/ipAddress 键。
+    /// </summary>
+    [JsonIgnore]
+    public string Host
+    {
+        get
+        {
+            if (Settings.TryGetValue("host", out var host)) return Convert.ToString(host) ?? "";
+            return Settings.TryGetValue("ipAddress", out var ip) ? Convert.ToString(ip) ?? "" : "";
+        }
+        set
+        {
+            var normalized = value?.Trim() ?? "";
+            Settings["host"] = normalized;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ConnectionString));
+        }
+    }
+
+    /// <summary>
+    /// 设备端口。使用 Settings 保存。
+    /// </summary>
+    [JsonIgnore]
+    public int Port
+    {
+        get
+        {
+            if (!Settings.TryGetValue("port", out var port)) return 0;
+            return port switch
+            {
+                int value => value,
+                long value => (int)value,
+                _ when int.TryParse(Convert.ToString(port), out var value) => value,
+                _ => 0
+            };
+        }
+        set
+        {
+            Settings["port"] = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ConnectionString));
+        }
+    }
+
+    [JsonIgnore]
+    public bool AutoReconnect
+    {
+        get => GetBoolSetting("autoReconnect");
+        set { Settings["autoReconnect"] = value; OnPropertyChanged(); }
+    }
+
+    [JsonIgnore]
+    public bool EnableDataUpload
+    {
+        get => GetBoolSetting("enableDataUpload");
+        set { Settings["enableDataUpload"] = value; OnPropertyChanged(); }
+    }
+
+    [JsonIgnore]
+    public bool EnableReceiveTerminator
+    {
+        get => GetBoolSetting("enableReceiveTerminator");
+        set { Settings["enableReceiveTerminator"] = value; OnPropertyChanged(); }
+    }
+
+    [JsonIgnore]
+    public string ReceiveTerminator
+    {
+        get => Settings.TryGetValue("receiveTerminator", out var value) ? Convert.ToString(value) ?? "" : "";
+        set { Settings["receiveTerminator"] = value ?? ""; OnPropertyChanged(); }
+    }
+
+    [JsonIgnore] public string ProtocolKey
+    {
+        get
+        {
+            if (Settings.TryGetValue("protocolKey", out var value)) return Convert.ToString(value) ?? "";
+            return ConnectionType switch
+            {
+                CommunicationType.UDP => "udp",
+                CommunicationType.Serial => "serial",
+                CommunicationType.ModbusTCP or CommunicationType.ModbusRTU => "modbus",
+                CommunicationType.OPCUA => "opcua",
+                CommunicationType.HTTP => "http",
+                _ => "tcp-client"
+            };
+        }
+        set { Settings["protocolKey"] = value ?? ""; OnPropertyChanged(); OnPropertyChanged(nameof(ProtocolStatusText)); OnPropertyChanged(nameof(IsTcpClient)); OnPropertyChanged(nameof(IsTcpServer)); OnPropertyChanged(nameof(IsUdp)); OnPropertyChanged(nameof(SupportsRuntimeToggle)); OnPropertyChanged(nameof(CanToggleRuntime)); OnPropertyChanged(nameof(IsModbus)); OnPropertyChanged(nameof(IsPlainSerial)); OnPropertyChanged(nameof(IsS7)); OnPropertyChanged(nameof(IsCip)); OnPropertyChanged(nameof(IsOpcUa)); OnPropertyChanged(nameof(IsHttp)); OnPropertyChanged(nameof(IsRawProtocol)); }
+    }
+
+    [JsonIgnore] public string ProtocolDisplayName => Settings.TryGetValue("protocolDisplayName", out var value) ? Convert.ToString(value) ?? ConnectionType.ToString() : ProtocolKey == "modbus" ? "Modbus通信" : ConnectionType switch
+    {
+        CommunicationType.TCP => "TCP客户端", CommunicationType.UDP => "UDP", CommunicationType.Serial => "串口",
+        CommunicationType.ModbusTCP => "Modbus TCP", CommunicationType.ModbusRTU => "Modbus RTU", CommunicationType.OPCUA => "OPC UA",
+        CommunicationType.HTTP => "HTTP", _ => ConnectionType.ToString()
+    };
+
+    [JsonIgnore] public bool IsTcpClient => ProtocolKey == "tcp-client";
+    [JsonIgnore] public bool IsTcpServer => ProtocolKey == "tcp-server";
+    [JsonIgnore] public bool IsUdp => ProtocolKey == "udp";
+    [JsonIgnore] public bool SupportsRuntimeToggle => IsTcpClient || IsTcpServer || IsUdp || IsPlainSerial || IsModbus || IsS7 || IsOpcUa || IsCip;
+    [JsonIgnore] public bool IsModbus => ProtocolKey is "modbus" or "modbus-tcp" or "modbus-rtu";
+    [JsonIgnore] public bool IsPlainSerial => ProtocolKey == "serial";
+    [JsonIgnore] public bool IsS7 => ProtocolKey == "s7";
+    [JsonIgnore] public bool IsCip => ProtocolKey == "cip";
+    [JsonIgnore] public string S7Area { get => GetStringSetting("s7Area", "DataBlock"); set => SetSetting("s7Area", value); }
+    [JsonIgnore] public int S7DataBlock { get => GetIntSetting("s7DataBlock", 1); set => SetSetting("s7DataBlock", value); }
+    [JsonIgnore] public bool IsOpcUa => ProtocolKey == "opcua";
+    [JsonIgnore] public bool IsHttp => ProtocolKey == "http";
+    [JsonIgnore] public bool IsRawProtocol => ProtocolKey is "tcp-client" or "tcp-server" or "udp" or "serial";
+
+    [JsonIgnore] public string LocalHost { get => GetStringSetting("localHost", "127.0.0.1"); set => SetSetting("localHost", value); }
+    [JsonIgnore] public int LocalPort { get => GetIntSetting("localPort", 7930); set => SetSetting("localPort", value); }
+    [JsonIgnore] public string RemoteHost { get => GetStringSetting("remoteHost", "127.0.0.1"); set => SetSetting("remoteHost", value); }
+    [JsonIgnore] public int RemotePort { get => GetIntSetting("remotePort", 7920); set => SetSetting("remotePort", value); }
+    [JsonIgnore] public string SerialPort { get => GetStringSetting("serialPort"); set => SetSetting("serialPort", value); }
+    [JsonIgnore] public int BaudRate { get => GetIntSetting("baudRate", 115200); set => SetSetting("baudRate", value); }
+    [JsonIgnore] public int DataBits { get => GetIntSetting("dataBits", 8); set => SetSetting("dataBits", value); }
+    [JsonIgnore] public string Parity { get => GetStringSetting("parity", "无校验"); set => SetSetting("parity", value); }
+    [JsonIgnore] public int StopBits { get => GetIntSetting("stopBits", 1); set => SetSetting("stopBits", value); }
+    [JsonIgnore] public int CharacterTimeout { get => GetIntSetting("characterTimeout", 10); set => SetSetting("characterTimeout", value); }
+    [JsonIgnore] public int PollInterval { get => GetIntSetting("pollInterval", 10); set => SetSetting("pollInterval", value); }
+    [JsonIgnore] public int UnitId { get => GetIntSetting("unitId", 1); set => SetSetting("unitId", value); }
+    [JsonIgnore] public int Rack { get => GetIntSetting("rack", 0); set => SetSetting("rack", value); }
+    [JsonIgnore] public int Slot { get => GetIntSetting("slot", 0); set => SetSetting("slot", value); }
+    [JsonIgnore] public string S7CpuType { get => GetStringSetting("s7CpuType", "S71200"); set => SetSetting("s7CpuType", value); }
+    [JsonIgnore] public string ModbusMode
+    {
+        get => GetStringSetting("modbusMode", ProtocolKey == "modbus-rtu" ? "串口" : "TcpClient");
+        set
+        {
+            SetSetting("modbusMode", value);
+            OnPropertyChanged(nameof(IsModbusTcp));
+            OnPropertyChanged(nameof(IsModbusRtu));
+        }
+    }
+    [JsonIgnore] public string EndpointUrl { get => GetStringSetting("endpointUrl", "opc.tcp://127.0.0.1:4840"); set => SetSetting("endpointUrl", value); }
+    [JsonIgnore] public string SecurityMode { get => GetStringSetting("securityMode", "None"); set => SetSetting("securityMode", value); }
+    [JsonIgnore] public string OpcUaIdentityMode { get => GetStringSetting("opcUaIdentityMode", "匿名"); set => SetSetting("opcUaIdentityMode", value); }
+    [JsonIgnore] public int RequestTimeout { get => GetIntSetting("requestTimeout", 3000); set => SetSetting("requestTimeout", value); }
+    [JsonIgnore] public string HttpMethod { get => GetStringSetting("httpMethod", "POST"); set => SetSetting("httpMethod", value); }
+
+    [JsonIgnore] public bool IsModbusRtu => IsModbus && (ModbusMode is "串口" or "Serial" or "Rtu");
+    [JsonIgnore] public bool IsModbusTcp => IsModbus && !IsModbusRtu;
+
+    private string GetStringSetting(string key, string fallback = "") => Settings.TryGetValue(key, out var value) ? Convert.ToString(value) ?? fallback : fallback;
+    private int GetIntSetting(string key, int fallback = 0)
+    {
+        if (!Settings.TryGetValue(key, out var value)) return fallback;
+        return value switch { int integer => integer, long longValue => (int)longValue, _ when int.TryParse(Convert.ToString(value), out var parsed) => parsed, _ => fallback };
+    }
+    private void SetSetting(string key, object? value)
+    {
+        Settings[key] = value ?? "";
+        OnPropertyChanged(key);
+        OnPropertyChanged(key switch
+        {
+            "localHost" => nameof(LocalHost),
+            "localPort" => nameof(LocalPort),
+            "remoteHost" => nameof(RemoteHost),
+            "remotePort" => nameof(RemotePort),
+            "serialPort" => nameof(SerialPort),
+            "baudRate" => nameof(BaudRate),
+            "dataBits" => nameof(DataBits),
+            "parity" => nameof(Parity),
+            "stopBits" => nameof(StopBits),
+            "characterTimeout" => nameof(CharacterTimeout),
+            "pollInterval" => nameof(PollInterval),
+            "unitId" => nameof(UnitId),
+            "rack" => nameof(Rack),
+            "slot" => nameof(Slot),
+            "s7CpuType" => nameof(S7CpuType),
+            "modbusMode" => nameof(ModbusMode),
+            "endpointUrl" => nameof(EndpointUrl),
+            "securityMode" => nameof(SecurityMode),
+            "opcUaIdentityMode" => nameof(OpcUaIdentityMode),
+            "requestTimeout" => nameof(RequestTimeout),
+            "httpMethod" => nameof(HttpMethod),
+            _ => key
+        });
+    }
+
+    [JsonIgnore]
+    public string ConnectionString => GetConnectionString();
+
+    [JsonIgnore]
+    public string RuntimeStatusText => RuntimeStatus switch
+    {
+        CommunicationRuntimeStatus.Connected => "已连接",
+        CommunicationRuntimeStatus.Connecting => "连接中",
+        CommunicationRuntimeStatus.Faulted => "故障",
+        _ => "已断开"
+    };
+
+    private bool GetBoolSetting(string key)
+    {
+        if (!Settings.TryGetValue(key, out var value)) return false;
+        return value switch
+        {
+            bool boolean => boolean,
+            _ when bool.TryParse(Convert.ToString(value), out var parsed) => parsed,
+            _ => false
+        };
     }
 
     /// <summary>
@@ -184,6 +442,9 @@ public class Communication : ObservableObject
     /// </summary>
     public string GetConnectionString()
     {
+        if (ProtocolKey == "tcp-server") return $"{LocalHost}:{LocalPort} (listen)";
+        if (ProtocolKey == "udp") return $"{LocalHost}:{LocalPort} → {RemoteHost}:{RemotePort}";
+        if (IsModbusRtu || IsPlainSerial) return $"{SerialPort} · {BaudRate},{DataBits},{Parity},{StopBits}";
         if (Settings.TryGetValue("host", out var host) && Settings.TryGetValue("port", out var port))
         {
             return $"{host}:{port}";

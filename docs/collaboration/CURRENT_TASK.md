@@ -1,5 +1,82 @@
 # 当前协作任务
 
+- 2026-09-25 为一次性定位方案启动问题新增第二层真实调用链回归测试：`SolutionManager.LoadSolutionOnly + SetCurrentSolution`、STA 线程上的 `MainWindowViewModel.OnCurrentSolutionChanged -> LoadSolutionToWorkflowTabs`。首次测试在未创建 `Application.Current` 的测试环境中命中 `UpdateUndoRedoCommands` 的空引用；补齐真实 WPF `Application` 后 5/5 测试全部通过（Workflow、Devices、Repository.Load、SolutionManager 链路、STA 工作流标签页链路）。当前证据表明核心加载和工作流 UI 加载链路在规范 WPF 环境下均可完成，之前单测异常是测试环境缺失 Dispatcher，不是生产代码异常；仍需用新 exe 采集一次完整 `[StartupTrace]` 日志，确认实际启动实例是否走到 `MainWindow.Show`。
+- 2026-09-25 将生产启动顺序中的 `ServiceInitializer.InitializeServices()` 也加入 STA 回归测试后，`MainWindowViewModel + CurrentSolutionChanged` 链路仍通过（1/1）；说明当前日志系统/服务初始化本身未能在测试环境复现 `Workflow constructor begin` 后停止的问题。最新已有日志 `SunEyeVision_002531.txt` 仍是旧进程记录，下一步必须用当前测试通过的构建启动一次并拿到新时间戳日志，避免继续分析旧日志。
+
+- 2026-09-25 新增 `SolutionLoadRegressionTests`，分别测试 Workflow 反序列化、Devices JSON 读取和 `SolutionRepository.Load`，每阶段带超时；测试执行成功：3/3 通过，总耗时约 1 秒。说明当前方案文件和核心反序列化路径在脱离 UI 后均可完成，之前 UI 日志中的卡点很可能来自 UI/日志埋点/重复探针路径，而不是 JSON 数据本身。
+
+- 2026-09-25 按“一次性定位并避免设备字段阻塞”方案实施：方案加载时不再使用通用 `JsonSerializer` 反序列化 `Devices`，改为从 `JsonElement` 明确读取设备持久化字段和 Settings；通用 Solution 反序列化前移除 `Devices` 属性，完成后注入手动恢复的设备列表。UI Debug 构建成功，0 个错误、829 个既有警告，输出更新至 `dev\Debug`。待用户复测方案加载。
+
+- 2026-09-25 查看最新日志 `logs/2026/09/25/SunEyeVision_001947.txt`：`RuntimeIdentity` 已正常记录，确认实际运行的是 `D:\MyWork\SunEyeVision_V2\dev\Debug\SunEyeVision.UI.exe`，版本 `2.0.0.1+9603e18d...`，PID=31280。方案加载中 Workflow、GlobalVariables 和设备字段已完成至 `Port`；`Port` 已完成，当前停在 `Device field begin | field=Status, type=DeviceStatus`，说明不是旧 exe，下一步继续检查 Status/后续字段。
+
+- 2026-09-25 将 `RuntimeIdentity` 调用移动到 `Service.Initialize` 完成之后，确保启动身份日志在日志系统初始化后写入；UI Debug 构建成功，0 个错误、740 个既有警告，输出更新至 `dev\Debug`。
+
+- 2026-09-25 查看最新日志 `logs/2026/09/25/SunEyeVision_001650.txt`：本次已进入新增设备字段探针；设备字段依次完成到 `IpAddress`，在 `Device field begin | field=Port, type=Int32` 后没有继续。Workflow 和 GlobalVariables 均已完成。日志中暂未看到 `RuntimeIdentity`，说明该启动身份日志调用时机过早或未被当前日志系统接收，后续应在日志系统初始化完成后再记录一次。
+
+- 2026-09-25 增加启动运行身份日志 `RuntimeIdentity`：记录 PID、程序集位置、进程路径、InformationalVersion、FileVersion、文件修改时间和文件大小，用于确认测试实际运行的 exe；UI Debug 构建成功，0 个错误、740 个既有警告，输出更新至 `dev\Debug`。
+
+- 2026-09-25 查看最新日志 `logs/2026/09/25/SunEyeVision_001059.txt`：本次启动完成 JSON 文档解析后停在 `Property probe begin | property=Workflows`，没有进入 `WorkflowJsonConverter`，也没有到达新增的设备字段探针；本次未能获得 `Devices` 字段结果，需确认测试启动的是最新 exe 且无其他实例干扰后再复测。
+
+- 2026-09-25 重试构建包含设备字段级探针的 UI Debug 版本，已成功：0 个错误、740 个既有警告，`dev\Debug` 已更新。此前 DLL 占用已释放。
+
+- 2026-09-25 构建包含设备字段级探针的 UI Debug 版本失败：`SunEyeVision.Workflow.dll` 和 `CommonControl.dll` 被残留进程占用，MSB3021/MSB3027，共 4 个错误、121 个警告；代码已编译到中间产物，但 `dev\Debug` 未能完成更新。需释放占用进程后重试。
+
+- 2026-09-25 针对 `Devices` 反序列化卡点增加设备字段级探针：先逐设备记录基础字段、`Settings`、时间字段的独立反序列化开始/完成/异常，再继续原 `List<Device>` 探针，用于确认具体阻塞字段。本轮已修改 `SolutionRepository.cs`，待构建后测试。
+
+- 2026-09-25 查看最新日志 `logs/2026/09/25/SunEyeVision_000521.txt`：本次单实例测试已正常完成 JSON 解析、Workflow 反序列化和 GlobalVariables 反序列化，随后稳定停在 `Property probe begin | property=Devices`；说明当前确定是 `Devices` 字段反序列化卡住，尚未进入相机连接或主界面显示。
+
+- 2026-09-25 查看最新日志 `logs/2026/09/24/SunEyeVision_235910.txt`：本次新进程在 `JsonDocument.Parse begin` 后没有继续输出，尚未进入 Workflow/Devices 探针；进程仍存活且无主窗口句柄。与上一轮已进入 `Devices` 探针的日志相比，本次可能受残留旧进程/多实例日志竞争影响，需先关闭全部旧 `SunEyeVision.UI.exe` 后再单实例复测。
+
+- 2026-09-24 查看新构建后的日志 `logs/2026/09/24/SunEyeVision_235641.txt`：最新埋点已生效，Workflow 已完整反序列化（Id、Name、构造函数、Nodes、Connections 全部完成），GlobalVariables 也完成；随后停在 `SolutionRepository` 的 `Property probe begin | property=Devices`，没有出现 Devices probe completed，也未进入完整 Solution 反序列化完成或主界面显示。当前卡点已从 Workflow 收敛到 `Devices` 字段的反序列化，下一步检查 Device 类型/转换器及其中的初始化逻辑。
+
+- 2026-09-24 按用户建议重新构建包含最新方案加载细粒度埋点的 UI Debug 版本：`dotnet build src/UI/SunEyeVision.UI.csproj -c Debug --no-restore -m:1 -v:minimal`，成功，0 个错误、829 个既有警告，输出已更新至 `dev\Debug`。待关闭旧进程后用新 exe 复测方案加载。
+
+- 2026-09-24 查看最新日志 `logs/2026/09/24/SunEyeVision_235003.txt`：文件读取、序列化选项初始化、JSON 文档解析均完成；顶层 `Workflows` 属性探针已开始，并进入 `WorkflowJsonConverter.Read`。日志已记录“Workflow JSON parsed”，但未出现“Workflow instance created”，说明当前卡点位于读取 `Id/Name` 或执行 `new Workflow(id, name)` 之前/期间。已增加基本属性读取和 Workflow 构造函数前的细粒度埋点，下一次运行可区分具体位置。
+
+- 2026-09-24 增加方案顶层字段探针：在完整 `Solution` 反序列化前，依次记录 `Workflows`、`GlobalVariables`、`Devices`、`Communications`、`DatabaseConfiguration`、`ExecutionStrategy`、`VersionHistory` 的独立反序列化开始/完成/异常及耗时；用于进一步锁定顶层字段卡点。UI Debug 构建成功（0 错误、829 个既有警告）。
+
+- 2026-09-24 继续增加方案反序列化埋点：`SolutionRepository` 在完整反序列化前记录 JSON 顶层属性及 Workflows/GlobalVariables/Devices/Communications 数量；`WorkflowJsonConverter` 记录工作流 JSON 解析、实例创建、节点数组、连接数组和完成阶段。UI Debug 构建成功（0 错误、829 个既有警告）。
+
+- 2026-09-24 查看新埋点日志 `SunEyeVision_234252.txt`：已确认文件读取完成（1646 字符）、`WorkflowSerializationOptions.Default` 初始化完成（1ms），随后停在 `JsonSerializer.Deserialize<Solution> begin`；进程仍存活但 `MainWindowHandle=0`，没有进入 `LoadSolutionOnly returned`、`SetCurrentSolution` 或主窗口显示。当前卡点已精确收敛到 `JsonSerializer.Deserialize<Solution>` 内部，下一步需检查 `WorkflowJsonConverter`/多态参数转换或增加转换器级埋点。
+
+- 2026-09-24 增加方案加载细粒度日志：`SolutionConfigurationDialogViewModel` 记录 LoadSolutionOnly 调用前后；`SolutionManager` 记录 Repository.Load 前后和耗时；`SolutionRepository` 分段记录文件读取、序列化选项初始化、`JsonSerializer.Deserialize<Solution>` 开始/结束、线程号、字符数和耗时，用于定位无主窗口实例卡在反序列化的具体阶段。UI Debug 构建成功（0 错误、740 个既有警告）。
+
+- 2026-09-24 检查最新日志：`SunEyeVision_233144.txt` 与 `SunEyeVision_233211.txt` 均停在 `SolutionRepository` 的“开始反序列化解决方案”之后，没有进入 `LoadSolutionOnly completed`、`SetCurrentSolution` 或相机连接恢复；对应进程仍存活但无主窗口句柄，属于启动卡死/窗口不可见，不是已确认的进程闪退。此前 `SunEyeVision_232501.txt` 同一方案曾正常显示主窗口并完成相机连接。当前系统同时存在多个 `SunEyeVision.UI.exe` 实例，后续需先清理残留实例并对反序列化前后增加更细日志。
+
+- 2026-09-24 调整相机连接生命周期：自动连接从 `CameraManagerViewModel` 构造函数移到方案加载完成后的 `App.RestoreCameraConnections`；打开方案后先按已保存传输类型发现、注册并自动连接相机，再显示主界面。相机管理器打开时只刷新运行时连接状态，不再触发发现/自动连接；无相机方案跳过发现，避免默认模拟设备混入。UI Debug 构建成功（0 错误、740 个既有警告）。
+
+- 2026-09-24 分析最新日志 `SunEyeVision_231708.txt`：真实设备确实只有 1 台，但恢复日志显示“持久化设备=1，重新发现设备=2，运行时注册=0”；第二台来自默认 `SimulatedCameraDiscoveryProvider`，而运行时发现结果又未注册到 `CameraRuntimeManager`，因此自动连接最终故障。已修复：恢复时按已保存的传输类型过滤发现器，并显式 `Runtime.RegisterDevices(discovered)`；完整 UI Debug 构建成功（0 错误、740 个既有警告）。
+
+- 2026-09-24 定位相机重启后故障：方案文件 `C:\Users\houzhongjie\Desktop\1.solution` 已确认保存设备、稳定 DeviceId、IsEnabled=true、AutoConnect=true，排除配置未持久化。增强 `CameraManagerViewModel.RestoreAutoConnectionsAsync`：记录重新发现/运行时注册数量，按 DeviceId、序列号+厂商+传输类型、MAC+传输类型重新绑定设备身份，绑定变化后回写方案，并记录自动连接开始/结束/异常详情。UI Debug 构建成功（0 错误、740 个既有警告）；待用新构建重启后打开相机管理器验证日志。
+
+- 2026-09-24 用户关闭运行实例后重新执行完整 UI Debug 构建，成功：0 个错误、740 个既有警告；输出已更新至 `dev\Debug`。
+
+- 2026-09-24 用户要求构建：完整 UI Debug 构建仍因运行实例占用 `dev\Debug\CommonControl.dll` 失败；未结束用户进程，改用 `--no-dependencies` 仅构建 UI 项目验证本次 XAML，结果 0 错误、728 个既有警告。关闭运行实例后可执行完整构建。
+
+- 2026-09-24 按用户比例要求调整相机管理器尺寸：基于 600×420，宽度降低 30% 为 420，高度增加 20% 为 504；最小尺寸同步为 400×360。构建因运行中程序再次占用 `dev\Debug\CommonControl.dll` 失败（2 个文件占用错误），XAML 修改已完成，关闭运行实例后可重试。
+
+- 2026-09-24 二次收紧相机界面：设备管理器默认尺寸由 720×500 调整为 600×420，最小尺寸为 520×320；相机设置窗口图像/参数比例由 6:5 调整为 7:4，参数分类栏由 170 调整为 160，进一步突出图像显示。UI Debug 构建成功（0 错误、740 个既有警告）。
+
+- 2026-09-24 优化相机预览窗口图像/参数区域比例：主布局由图像 5*、参数 6* 调整为图像 6*、参数 5*；参数分类导航宽度由 190 调整为 170，参数编辑区最小宽度由 520 调整为 460，给图像预览更多空间。UI Debug 构建成功（0 错误、740 个既有警告）。
+
+- 2026-09-24 优化相机管理器窗口尺寸和布局：移除已无实际用途的右侧说明分区，设备列表铺满主体区域；默认窗口由 1020×820 调整为 720×500，最小尺寸调整为 560×360，保留设备名称、预览按钮和连接 ToggleButton 的显示空间。Debug 构建因运行中程序占用 `dev\Debug\CommonControl.dll` 失败（2 个文件占用错误，非本次 XAML 编译错误），待关闭运行实例后重试。
+
+- 2026-09-24 复核用户仍看不到配置窗口的问题：当前 `SunEyeVision.UI` PID 57140 的主窗口为“太阳眼视觉 - 打开解决方案”，Win32 状态为可见、未最小化，并已强制置前；置前后系统前台窗口仍为该配置窗口。结合其运行在 Session 1/Default 桌面，应用内部启动和配置窗口显示均正常，后续应优先核对远程查看端是否连接到同一交互会话/桌面，不再继续修改配置窗口业务流程。
+
+- 2026-09-24 验证启动页优化日志 `logs/2026/09/24/SunEyeVision_221542.txt`：配置模式下 `Splash closed before configuration dialog` 在 +1829ms 记录，随后 `SolutionConfigurationDialog constructed` 与 `ShowDialog begin`；日志出现“新建”按钮悬停事件，说明启动页已关闭、配置界面已显示并可交互。由于用户尚未选择/新建方案，没有进入主窗口显示阶段，属于预期行为。
+
+- 2026-09-24 启动页优化第一阶段已实施：增加阶段说明文本和 `UpdateStage(stage, progress, detail)`，启动页显示“正在启动/加载模块/初始化服务/初始化解决方案/打开工作区/显示主界面/启动完成”等真实阶段；配置方案模式进入 `ShowConfigurationDialog` 前立即关闭启动页，避免遮挡“打开解决方案”窗口；跳过配置模式保留启动页直到主窗口 `Show()` 前后。新增 `CloseImmediately`，保留已有 UI 消息泵以保证同步初始化期间阶段可见。UI Debug 构建成功（0 错误、740 个既有警告）；`git diff --check` 通过，未实机验证。
+
+- 2026-09-24 进一步定位 `SunEyeVision_220255.txt` 对应实例：Win32 枚举确认配置窗口 `太阳眼视觉 - 打开解决方案` 实际存在，句柄 `0xCF1456`，坐标 `(373,193)-(1333,833)`，`visible=True`、未最小化；启动页句柄 `0x1721850` 也仍可见并覆盖在同一桌面。已临时隐藏启动页并将配置窗口置前验证。根因是 `ShowConfigurationDialog` 在 `ShowDialog()` 期间没有关闭启动页，导致用户视觉上只看到启动页；后续应在进入配置对话框前关闭启动页并激活配置窗口。
+
+- 2026-09-24 分析启动日志 `logs/2026/09/24/SunEyeVision_220255.txt`：本次启动没有卡在工作流加载，`Startup decision resolved | decision=ShowConfiguration`；由于 `Desktop\solution_settings.json` 不存在、已知方案数为 0，主窗口保持 `Collapsed` 是当前设计行为，程序进入 `SolutionConfigurationDialog.ShowDialog` 等待选择/新建方案。日志中已出现配置对话框“新建”按钮悬停记录，说明配置对话框实际已创建并接收输入；启动页未关闭导致用户容易误以为仍停在启动页。建议后续在 `ShowConfigurationDialog` 前先关闭启动页，或让配置对话框明确置前显示。
+
+- 2026-09-24 根据启动日志 `logs/2026/09/24/SunEyeVision_215853.txt` 继续细化启动埋点：已确认 `Service.Initialize`、`SolutionManager.Initialize`、启动决策和 `MainWindow` 构造完成；程序在 `SetCurrentSolution` 触发的工作流加载阶段停止输出，尚未到达 `mainWindow.Show()`。新增 `OnCurrentSolutionChanged`、工作流列表遍历、`CreateWorkflowTab.SetNodes/Register/Tabs.Add` 前后埋点，用于区分具体工作流加载步骤。UI Debug 构建成功（0 错误，既有警告）；待使用新构建重新启动采集日志。
+
+- 2026-09-24 增加应用启动诊断埋点：在 `App.OnStartup` 覆盖线程池预热、启动页、插件加载、服务初始化、方案初始化、启动决策等阶段；为主窗口增加 `SourceInitialized/Loaded/ContentRendered/Activated/StateChanged/Closed` 生命周期日志，记录窗口句柄、可见性、WindowState、坐标、尺寸、任务栏状态和 PresentationSource，并记录 `Show()` 后的 UI 空闲状态。日志统一带 `[StartupTrace]` 和耗时，启动早期日志失败不会阻断应用。UI Debug 构建成功（0 错误、740 个既有警告，输出 `dev\Debug`）；未启动新构建实测。
+
+- 2026-09-24 相机管理器最终方案第一阶段已实施：设备卡片新增“预览”按钮，继续打开现有 `CameraPreviewWindow`；管理器右侧移除参数详情面板，改为设备管理操作说明；普通选中设备不再触发参数树读取，只有点击“预览”才把设备交给预览会话并按需加载参数。连接/断开仍由卡片 ToggleSwitch 管理，连接会话继续复用应用级运行时。UI Debug 构建成功（0 错误、874 个既有警告，输出 `dev\Debug`）；`git diff --check` 通过，未做真实相机运行验收。
+
 - 2026-09-24 新增《相机管理器最终重构方案》本地文档：明确设备管理器仅负责设备列表和连接入口，现有预览窗口继续承载采集与全部参数调试；定义统一连接会话、参数状态解耦、方案持久化、窗口/方案/应用生命周期和分阶段实施计划。本轮仅保存方案文档，未修改业务代码，未构建。
 - 2026-09-24 修复相机管理器窗口生命周期：`CameraRuntimeComposition` 提升为 `ServiceInitializer` 持有的应用级共享运行时；关闭设备管理器不再释放相机连接，重新打开时可接管已有会话；新运行时先重新发现并注册持久化设备，避免 `is not registered`；应用退出时统一释放运行时。UI Debug 构建成功（0 错误、755 个既有警告，输出 `dev\Debug`），未做真实相机开关窗口验收。
 
@@ -236,3 +313,16 @@
 - 2026-09-24 设备列表失焦选中样式补强：截图确认白色块来自 `DataGridCell` 的系统失焦选中背景；在相机管理器窗口增加主题化系统高亮资源及 `DataGridCell` 的正常、悬停、选中和失焦选中样式。UI Debug 构建 0 错误、744 个既有警告，输出 `dev\\Debug`，未构建 Release。
 - 2026-09-24 相机列表按通讯设备列表模式优化：启用列改为独立绑定 `CameraDevice.IsEnabled`，不再误用列表选中状态；设备列显示名称和型号，状态列保留主题色圆点与状态文字，列表改为单选和紧凑行高，继续支持名称区域右键重命名/删除。UI Debug 构建 0 错误、744 个既有警告，输出 `dev\\Debug`，未构建 Release。
 - 2026-09-24 相机列表启用控件统一：启用列改用项目现有主题化 `ToggleSwitch`，与通讯设备列表的开关交互保持一致。UI Debug 构建 0 错误、744 个既有警告，输出 `dev\\Debug`，未构建 Release。
+- 2026-09-25 方案启动日志复核：`logs/2026/09/25/SunEyeVision_085207.txt` 已证明用户点击方案后确实进入 `SolutionManager.LoadSolutionOnly`，并完成文件读取、JSON 解析及 `Workflows` 属性探测入口；随后未出现 `Repository.Load returned`、`SetCurrentSolution` 或 `MainWindow.Show`，对应进程 PID 48708 已退出。该次故障阶段位于工作流反序列化/属性探测之后、方案返回之前，不能再归因于配置窗口点击未触发。另一次最新启动 `SunEyeVision_085646.txt` 仅记录到插件目录发现 18 个程序集，未出现 RuntimeIdentity；Windows Application 日志在该时间段没有对应的 .NET/Application Error 事件，说明还需增加进程级启动哨兵/崩溃转储或逐插件边界日志，不能仅凭当前 313 字节日志断定具体异常。
+- 2026-09-25 生产插件回归测试：新增 `SolutionLoadAfterProductionPluginLoadCompletesOnStaThread`，按生产插件目录加载后直接调用 `SolutionRepository.Load`，Debug 测试 1/1 通过；因此“插件加载 + 仓库加载”在测试进程中可完成，尚未复现真实 UI 进程退出，下一步需补齐 `PluginLoader.MarkAsLoaded`、节点转换器装配及实际配置窗口启动链路，并在进程级边界记录未捕获退出原因。
+- 2026-09-25 启动链路完整埋点：补充“配置流程开始/配置窗口构造/ShowDialog 返回/启动命令 01~08/LoadSolutionOnly 前后/SetCurrentSolution 前后及事件回调/相机恢复/主窗口 Show 前后”的阶段、耗时、线程、方案 ID、窗口可见性和异常日志；UI Debug 构建成功，0 个错误、1002 个既有警告，输出 `dev\\Debug`，待用户按同一路径重新启动并点击方案后提供最新日志。
+- 2026-09-25 双击加载复核：`logs/2026/09/25/SunEyeVision_090558.txt` 显示双击入口和 `LoadSolutionOnly` 均已进入，但停在 `Repository.Load begin`；进程 PID 58468 当时仍存活且未到 `File.ReadAllText` 日志。已在 `SolutionRepository.Load` 最前增加 `Repository.Load entered`、`File.Exists` 前后、`EnsurePluginsLoaded` 前后埋点，用于区分文件检查、插件状态检查和反序列化前置阶段。UI Debug 重建成功，0 个错误、829 个既有警告，输出 `dev\\Debug`。
+- 2026-09-25 工作流连接空数组隔离：最新 `SunEyeVision_091209.txt` 已证明插件状态、文件读取、JSON 解析、节点列表均正常，卡在 `WorkflowJsonConverter` 的 `Connections begin | count=0`，未进入完成日志。对空连接数组增加直接创建空集合的 fast path，并保留连接反序列化前/后埋点；UI Debug 构建成功，0 个错误、829 个既有警告，输出 `dev\\Debug`，待用户复测确认是否继续进入方案加载后续阶段。
+- 2026-09-25 真实相机连接诊断测试：新增 `RealMvsConnectionDiagnosticTests.DiscoverAndOpenPersistedHikrobotCamera`，实际发现序列号 `DA5892282` 的 GigE 相机耗时 543ms，DeviceId 匹配 `hikvision-mvs:DA5892282`，MVS 打开耗时约 13ms，关闭约 167ms，测试通过。新增 `RealCameraRestoreDiagnosticTests.RestorePersistedHikrobotCameraThroughUiManager`，真实走 `CameraManagerViewModel.RestoreConnectionsForCurrentSolutionAsync`，耗时约 1011ms，测试通过。结论：相机发现、DeviceId、MVS 工厂和 UI 管理器恢复链路均能完成；当前启动卡点不是相机连接失败，而是 UI 线程同步调用 `.GetAwaiter().GetResult()` 等待异步恢复导致的同步上下文死等。下一步补 STA/WPF 同步等待回归测试并改为异步启动链路。
+- 2026-09-25 启动死等修复：`App.OnStartup`、`HandleStartupDecision`、`ShowConfigurationDialog`、相机恢复链路改为异步调用，移除 `RestoreConnectionsForCurrentSolutionAsync(...).GetAwaiter().GetResult()`；方案加载后使用 `await` 完成相机恢复，再显示主窗口。UI Debug 构建成功，0 个错误、740 个既有警告，输出 `dev\\Debug`。
+- 2026-09-25 启动连接超时策略：`App` 对相机恢复增加 10 秒 `Task.WhenAny` 超时；连接成功、失败、部分成功或超时均继续显示主界面，超时任务保留后台观察并记录最终结果，避免 UI 再次同步阻塞。真实 MVS 测试串行通过、UI 管理器真实相机恢复测试串行通过（约 934ms）；UI 方案回归测试单独执行通过，但与其它测试并行/批量执行时既有生产插件 STA 测试偶发 15 秒超时，需后续处理测试全局静态状态隔离，不能归因于本次启动改动。
+- 2026-09-25 相机与解决方案启动流程最终方案落盘：新增 `docs/01-方案设计/2026/09/25/相机与解决方案启动流程最终优化方案-20260925.md`。方案明确启动页只负责基础初始化；解决方案管理器显示后启动页退出；双击方案后使用管理器内加载遮罩显示读取方案、恢复相机连接和最多 10 秒等待进度；连接成功、失败或超时均进入主界面；相机连接由应用级管理器持有，参数统一在现有预览窗口调试，设备管理器和预览窗口关闭不改变连接状态；同时固化设备唯一标识、持久化、日志链路和验收标准。
+- 2026-09-25 启动方案调整并开始实施：最终采用“主界面先显示 + 主界面加载遮罩”模式，不再新增独立方案加载窗口。解决方案设置完成后立即显示主界面，遮罩展示相机恢复阶段、最多 10 秒等待、成功/失败/超时结果，完成后解除遮罩；当前已接入 `MainWindow` 遮罩控件和 `App` 配置方案启动链路，待 Debug 构建验证。
+- 2026-09-25 主界面加载遮罩实施完成：`MainWindow` 新增方案加载遮罩及阶段/耗时显示；配置方案流程在 `SetCurrentSolution` 后立即显示主界面并覆盖遮罩，异步恢复相机最多等待 10 秒，成功、失败或超时后更新提示并解除遮罩；不再新增独立加载窗口，现有预览窗口保持不变。UI Debug 构建成功，0 个错误、1002 个既有警告，输出 `dev\\Debug`，待用户启动并双击方案验收。
+- 2026-09-25 相机预览参数类型转换修复：确认 `17301505` 是 GenICam/MVS `PixelFormat=Mono8` 枚举值（`0x01080001`），不是布尔值。根因是参数模板为所有参数创建隐藏 ToggleSwitch，WPF 仍提前读取 `BooleanValue`，旧实现无条件 `Convert.ToBoolean` 导致枚举值触发 `FormatException`。现改为 `BooleanValue` 先检查 `Kind == Boolean`，布尔转换仅接受 `true/false` 或 `0/1`；枚举值保留原值并继续走枚举显示/写入路径。UI Debug 构建成功，0 个错误、740 个既有警告。
+- 2026-09-25 预览关闭保持连接修复：确认设备列表的已连接状态可能来自应用级运行时会话，而 `CameraDetailViewModel._session` 尚未同步；预览前只检查后者会误判为预览新建连接，关闭时释放原连接。现同时检查 `Runtime.TryGetSession`、详情会话和 `CameraDevice.IsConnected`，只有预览前确实未连接时才由预览关闭释放会话。UI Debug 构建成功，0 个错误、740 个既有警告。

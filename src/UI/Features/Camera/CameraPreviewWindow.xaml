@@ -47,9 +47,9 @@
         </Border>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="5*" MinWidth="420"/>
+                <ColumnDefinition Width="7*" MinWidth="600"/>
                 <ColumnDefinition Width="8"/>
-                <ColumnDefinition Width="6*" MinWidth="520"/>
+                <ColumnDefinition Width="4*" MinWidth="420"/>
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" BorderThickness="1"
                     BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -248,12 +249,6 @@ namespace SunEyeVision.UI.Features.Camera
             {
                 _selectedCamera = value;
                 OnPropertyChanged(nameof(SelectedCamera));
-                
-                // 同步到 CameraDetailViewModel
-                if (CameraDetailViewModel != null)
-                {
-                    CameraDetailViewModel.SelectedCamera = value;
-                }
             }
         }
 
@@ -349,7 +344,24 @@ namespace SunEyeVision.UI.Features.Camera
             BatchDisableCommand = new RelayCommand(BatchDisable);
             
             StatusMessage = "就绪";
-            _ = RestoreAutoConnectionsAsync();
+            RefreshRuntimeConnectionStates();
+        }
+
+        /// <summary>
+        /// 方案加载完成后恢复设备连接。相机管理器本身只负责展示和手动操作，
+        /// 不再在窗口构造时触发发现或自动连接。
+        /// </summary>
+        public static async Task RestoreConnectionsForCurrentSolutionAsync(SolutionManager solutionManager)
+        {
+            var manager = new CameraManagerViewModel(solutionManager);
+            try
+            {
+                await manager.RestoreAutoConnectionsAsync().ConfigureAwait(true);
+            }
+            finally
+            {
+                await manager.DisposeAsync().ConfigureAwait(true);
+            }
         }
 
         private void LoadCameraList()
@@ -423,34 +435,122 @@ namespace SunEyeVision.UI.Features.Camera
 
         private async Task RestoreAutoConnectionsAsync()
         {
+            if (Cameras.Count == 0)
+            {
+                VisionLogger.Instance.Log(LogLevel.Info, "当前方案没有相机，跳过相机发现和自动连接", "CameraManagerViewModel");
+                return;
+            }
+
+            IReadOnlyList<CameraDescriptor> discovered = Array.Empty<CameraDescriptor>();
             try
             {
                 // 每次打开管理器都会创建新的运行时注册表；先重新发现设备，
                 // 否则持久化的 DeviceId 虽然存在，但 Runtime.OpenAsync 会认为设备未注册。
-                await _runtime.Discovery.DiscoverAsync().ConfigureAwait(true);
+                // 恢复时只扫描方案中实际保存的接口，避免默认模拟发现器把“模拟相机”
+                // 混入真实相机列表。
+                var transports = Cameras
+                    .Select(camera => camera.Transport)
+                    .Where(value => !string.IsNullOrWhiteSpace(value))
+                    .Select(value => Enum.TryParse<CameraTransportKind>(value, true, out var transport)
+                        ? (CameraTransportKind?)transport
+                        : null)
+                    .Where(transport => transport.HasValue)
+                    .Select(transport => transport!.Value)
+                    .ToHashSet();
+                discovered = transports.Count == 0
+                    ? await _runtime.Discovery.DiscoverAsync().ConfigureAwait(true)
+                    : await _runtime.Discovery.DiscoverAsync(transports).ConfigureAwait(true);
+                // DiscoveryCoordinator 只负责聚合发现结果，不会修改运行时注册表；
+                // 重启后的自动连接必须显式注册本次发现到的设备描述。
+                _runtime.Runtime.RegisterDevices(discovered);
+                VisionLogger.Instance.Log(
+                    LogLevel.Info,
+                    $"启动恢复相机：持久化设备={Cameras.Count}，重新发现设备={discovered.Count}，" +
+                    $"运行时注册={_runtime.Runtime.Devices.Count}，扫描接口={string.Join(',', transports)}",
+                    "CameraManagerViewModel");
             }
             catch (Exception ex)
             {
                 StatusMessage = $"设备重新发现失败：{ex.Message}";
+                VisionLogger.Instance.Log(
+                    LogLevel.Error,
+                    $"启动恢复相机时重新发现失败: {ex}",
+                    "CameraManagerViewModel",
+                    ex);
             }
 
-            foreach (var camera in Cameras)
+            var identityChanged = false;
+            foreach (var camera in Cameras.ToList())
             {
-                if (_runtime.Runtime.TryGetSession(new CameraDeviceRef(camera.DeviceId), out _))
+                var descriptor = FindMatchingDescriptor(camera, discovered);
+                if (descriptor is not null && !string.Equals(camera.DeviceId, descriptor.DeviceId, StringComparison.OrdinalIgnoreCase))
+                {
+                    var oldDeviceId = camera.DeviceId;
+                    camera.DeviceId = descriptor.DeviceId;
+                    camera.SerialNumber = descriptor.SerialNumber;
+                    camera.MacAddress = descriptor.MacAddress ?? camera.MacAddress;
+                    camera.IpAddress = descriptor.IpAddress ?? camera.IpAddress;
+                    camera.Transport = descriptor.Transport.ToString();
+                    identityChanged = true;
+                    VisionLogger.Instance.Log(
+                        LogLevel.Info,
+                        $"启动恢复相机重新绑定: name={camera.Name}, oldDeviceId={oldDeviceId}, newDeviceId={camera.DeviceId}",
+                        "CameraManagerViewModel");
+                }
+
+                var runtimeDeviceId = descriptor?.DeviceId ?? camera.DeviceId;
+                if (_runtime.Runtime.TryGetSession(new CameraDeviceRef(runtimeDeviceId), out _))
                     camera.State = CameraState.Connected;
+                else
+                    camera.State = CameraState.Offline;
             }
+
+            if (identityChanged)
+                PersistCameraList();
 
             foreach (var camera in Cameras.Where(item => item.AutoConnect && item.IsEnabled).ToList())
             {
                 try
                 {
+                    VisionLogger.Instance.Log(
+                        LogLevel.Info,
+                        $"启动自动连接开始: name={camera.Name}, deviceId={camera.DeviceId}, " +
+                        $"discovered={discovered.Any(item => string.Equals(item.DeviceId, camera.DeviceId, StringComparison.OrdinalIgnoreCase))}",
+                        "CameraManagerViewModel");
                     await SetCameraConnectionAsync(camera, shouldConnect: true).ConfigureAwait(true);
+                    VisionLogger.Instance.Log(
+                        camera.IsConnected ? LogLevel.Success : LogLevel.Error,
+                        $"启动自动连接结束: name={camera.Name}, deviceId={camera.DeviceId}, state={camera.State}, status={camera.StatusText}",
+                        "CameraManagerViewModel");
                 }
                 catch (Exception ex)
                 {
                     StatusMessage = $"自动连接失败：{camera.Name}（{ex.Message}）";
+                    VisionLogger.Instance.Log(
+                        LogLevel.Error,
+                        $"启动自动连接异常: name={camera.Name}, deviceId={camera.DeviceId}, state={camera.State}, error={ex}",
+                        "CameraManagerViewModel",
+                        ex);
                 }
             }
+        }
+
+        private static CameraDescriptor? FindMatchingDescriptor(
+            CameraDevice camera,
+            IReadOnlyList<CameraDescriptor> descriptors)
+        {
+            static bool Same(string? left, string? right)
+                => !string.IsNullOrWhiteSpace(left)
+                   && !string.IsNullOrWhiteSpace(right)
+                   && string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+
+            return descriptors.FirstOrDefault(descriptor =>
+                Same(camera.DeviceId, descriptor.DeviceId)
+                || (Same(camera.SerialNumber, descriptor.SerialNumber)
+                    && string.Equals(camera.Manufacturer, descriptor.Manufacturer, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(camera.Transport, descriptor.Transport.ToString(), StringComparison.OrdinalIgnoreCase))
+                || (Same(camera.MacAddress, descriptor.MacAddress)
+                    && string.Equals(camera.Transport, descriptor.Transport.ToString(), StringComparison.OrdinalIgnoreCase)));
         }
 
         private static T ReadSetting<T>(Device device, string key, T fallback)
@@ -495,6 +595,17 @@ namespace SunEyeVision.UI.Features.Camera
             TotalCount = Cameras.Count;
             ConnectedCount = Cameras.Count(c => c.State is CameraState.Connected or CameraState.Capturing);
             DisabledCount = Cameras.Count(c => !c.IsEnabled);
+        }
+
+        private void RefreshRuntimeConnectionStates()
+        {
+            foreach (var camera in Cameras)
+            {
+                camera.State = _runtime.Runtime.TryGetSession(new CameraDeviceRef(camera.DeviceId), out _)
+                    ? CameraState.Connected
+                    : CameraState.Offline;
+            }
+            UpdateStatistics();
         }
 
         #region Commands Implementation
@@ -618,6 +729,21 @@ namespace SunEyeVision.UI.Features.Camera
                 ? (camera.IsConnected ? $"已连接相机: {camera.Name}" : $"相机连接失败: {camera.Name}")
                 : $"相机已断开: {camera.Name}";
             UpdateStatistics();
+        }
+
+        /// <summary>
+        /// 从设备卡片打开现有预览窗口。设备列表选中动作本身不再触发参数读取，
+        /// 只有用户明确点击预览时才把设备交给详情/预览会话。
+        /// </summary>
+        public void OpenPreview(CameraDevice camera)
+        {
+            if (camera == null || !Cameras.Contains(camera) || CameraDetailViewModel == null)
+                return;
+
+            SelectedCamera = camera;
+            CameraDetailViewModel.SelectedCamera = camera;
+            if (CameraDetailViewModel.PreviewCommand.CanExecute(null))
+                CameraDetailViewModel.PreviewCommand.Execute(null);
         }
 
         private void BatchEnable()

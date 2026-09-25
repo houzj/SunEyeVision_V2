@@ -87,6 +87,15 @@ namespace SunEyeVision.UI.Features.Camera
             });
         }
 
+        private void CameraPreviewButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement { DataContext: CameraDevice camera }
+                && DataContext is CameraManagerViewModel manager)
+            {
+                manager.OpenPreview(camera);
+            }
+        }
+
         private void RenameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement { DataContext: CameraDevice camera } && camera.IsRenaming

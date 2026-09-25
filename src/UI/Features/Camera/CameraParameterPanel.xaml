@@ -25,7 +25,7 @@
     </UserControl.Resources>
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="CategoryColumn" Width="190" MinWidth="0"/>
+            <ColumnDefinition x:Name="CategoryColumn" Width="160" MinWidth="0"/>
             <ColumnDefinition x:Name="CategorySplitterColumn" Width="8"/>
             <ColumnDefinition Width="*" MinWidth="300"/>
         </Grid.ColumnDefinitions>

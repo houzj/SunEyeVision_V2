@@ -158,9 +158,9 @@ namespace SunEyeVision.UI.Features.Camera
                 _schemaLoadCts?.Dispose();
                 _schemaLoadCts = new CancellationTokenSource();
 
-                // 根据厂商类型加载对应的参数视图
+                // 设备列表只负责选择设备，不在选择时读取参数。
+                // 预览窗口打开后由 Preview() 使用当前会话按需加载参数。
                 LoadManufacturerParams();
-                _ = LoadSchemaAsync(_schemaLoadCts.Token);
             }
         }
 
@@ -522,7 +522,13 @@ namespace SunEyeVision.UI.Features.Camera
                 return;
             }
 
-            var wasConnectedBeforePreview = IsConnected;
+            var cameraReference = new CameraDeviceRef(SelectedCamera.DeviceId);
+            // 设备列表的连接状态可能来自应用级运行时会话，而不一定已经同步到本详情 VM 的 _session。
+            // 预览前必须同时检查运行时会话和设备状态，否则会误认为预览新建了连接，关闭预览时错误释放原连接。
+            var runtimeAlreadyConnected = _runtime.Runtime.TryGetSession(cameraReference, out _);
+            var wasConnectedBeforePreview = IsConnected
+                || runtimeAlreadyConnected
+                || SelectedCamera.IsConnected;
             await ConnectAsync();
             if (_session is null)
             {
@@ -1130,7 +1136,11 @@ namespace SunEyeVision.UI.Features.Camera
                 if (Value is null)
                     return StatusMessage ?? "不可读取";
                 if (Kind == CameraParameterKind.Boolean)
-                    return Convert.ToBoolean(Value, System.Globalization.CultureInfo.InvariantCulture) ? "开启" : "关闭";
+                {
+                    return TryReadBoolean(Value, out var booleanValue)
+                        ? (booleanValue ? "开启" : "关闭")
+                        : Convert.ToString(Value, System.Globalization.CultureInfo.InvariantCulture) ?? "不可读取";
+                }
                 if (Kind == CameraParameterKind.Enumeration)
                 {
                     var raw = Convert.ToString(Value, System.Globalization.CultureInfo.InvariantCulture);
@@ -1158,8 +1168,16 @@ namespace SunEyeVision.UI.Features.Camera
 
         public bool BooleanValue
         {
-            get => Convert.ToBoolean(Value, System.Globalization.CultureInfo.InvariantCulture);
-            set => Value = value;
+            // DataTemplate 会为所有参数创建 ToggleSwitch，即使控件随后被折叠，
+            // WPF 仍可能先读取绑定属性，因此不能无条件转换枚举/数值参数。
+            get => Kind == CameraParameterKind.Boolean
+                && TryReadBoolean(Value, out var booleanValue)
+                && booleanValue;
+            set
+            {
+                if (Kind == CameraParameterKind.Boolean)
+                    Value = value;
+            }
         }
         public IReadOnlyList<CameraEnumValue> EnumValues { get; }
         public string Unit { get; }
@@ -1199,6 +1217,50 @@ namespace SunEyeVision.UI.Features.Camera
         private static double ToDouble(object? value, double fallback)
             => value is null ? fallback : Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
 
+        private static bool TryReadBoolean(object? value, out bool result)
+        {
+            result = false;
+            if (value is bool boolean)
+            {
+                result = boolean;
+                return true;
+            }
+
+            if (value is string text)
+            {
+                if (bool.TryParse(text, out result))
+                    return true;
+                if (text == "0")
+                    return true;
+                if (text == "1")
+                {
+                    result = true;
+                    return true;
+                }
+                return false;
+            }
+
+            // 仅接受 0/1 数值，不能把 PixelFormat 的 17301505 等任意非零值当作 true。
+            if (value is byte or sbyte or short or ushort or int or uint or long or ulong)
+            {
+                try
+                {
+                    var number = Convert.ToInt64(value, System.Globalization.CultureInfo.InvariantCulture);
+                    if (number == 0 || number == 1)
+                    {
+                        result = number == 1;
+                        return true;
+                    }
+                }
+                catch (OverflowException)
+                {
+                    // 非法数值按无效布尔值处理。
+                }
+            }
+
+            return false;
+        }
+
         private static int CalculateDecimalPlaces(double value)
         {
             var text = value.ToString("0.########", System.Globalization.CultureInfo.InvariantCulture);
@@ -1221,7 +1283,8 @@ namespace SunEyeVision.UI.Features.Camera
                 {
                     CameraParameterKind.Integer => Convert.ToInt64(Value, System.Globalization.CultureInfo.InvariantCulture),
                     CameraParameterKind.Double => Convert.ToDouble(Value, System.Globalization.CultureInfo.InvariantCulture),
-                    CameraParameterKind.Boolean => Convert.ToBoolean(Value, System.Globalization.CultureInfo.InvariantCulture),
+                    CameraParameterKind.Boolean when TryReadBoolean(Value, out var booleanValue) => booleanValue,
+                    CameraParameterKind.Boolean => throw new FormatException("相机布尔参数的当前值不是有效的 true/false 或 0/1"),
                     _ => Value
                 };
                 return true;

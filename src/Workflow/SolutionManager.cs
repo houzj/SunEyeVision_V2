@@ -365,8 +365,9 @@ public class SolutionManager
     /// <returns>解决方案对象，失败返回 null</returns>
     public Solution? LoadSolutionOnly(string filePath)
     {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         _logger.Log(LogLevel.Info,
-            $"[LoadSolutionOnly] 开始加载解决方案: FilePath={filePath}", "SolutionManager");
+            $"[LoadSolutionOnly] 开始加载解决方案: FilePath={filePath}, thread={Environment.CurrentManagedThreadId}", "SolutionManager");
 
         if (string.IsNullOrEmpty(filePath))
         {
@@ -382,7 +383,11 @@ public class SolutionManager
 
         try
         {
+            _logger.Log(LogLevel.Info,
+                $"[LoadSolutionOnly] Repository.Load begin | elapsedMs={stopwatch.ElapsedMilliseconds}", "SolutionManager");
             var solution = _repository.Load(filePath);
+            _logger.Log(LogLevel.Info,
+                $"[LoadSolutionOnly] Repository.Load returned | null={solution is null}, elapsedMs={stopwatch.ElapsedMilliseconds}", "SolutionManager");
 
             if (solution == null)
             {
@@ -391,7 +396,7 @@ public class SolutionManager
             }
 
             _logger.Log(LogLevel.Success,
-                $"[LoadSolutionOnly] 加载成功: Solution.Id={solution.Id}, Workflows={solution.Workflows.Count}, GlobalVariables={solution.GlobalVariables?.Count ?? 0}, Devices={solution.Devices?.Count ?? 0}",
+                $"[LoadSolutionOnly] 加载成功: Solution.Id={solution.Id}, Workflows={solution.Workflows.Count}, GlobalVariables={solution.GlobalVariables?.Count ?? 0}, Devices={solution.Devices?.Count ?? 0}, elapsedMs={stopwatch.ElapsedMilliseconds}",
                 "SolutionManager");
 
             return solution;
@@ -1720,6 +1725,11 @@ public class SolutionManager
         if (solution == null)
             throw new ArgumentNullException(nameof(solution));
 
+        var setSolutionStopwatch = System.Diagnostics.Stopwatch.StartNew();
+        _logger.Log(LogLevel.Info,
+            $"[SolutionLifecycleTrace] SetCurrentSolution begin | id={solution.Id}, filePath={solution.FilePath}, thread={Environment.CurrentManagedThreadId}",
+            "SolutionManager");
+
         // 诊断日志：开始设置
         _logger.Log(LogLevel.Info, 
             $"[诊断] 开始设置当前解决方案: Solution.Id={solution.Id}", 
@@ -1734,7 +1744,13 @@ public class SolutionManager
         MarkSettingsDirty();
 
         // 触发事件（同时触发两个事件，与 OpenSolution 保持一致）
+        _logger.Log(LogLevel.Info,
+            $"[SolutionLifecycleTrace] SolutionOpened invoke begin | elapsedMs={setSolutionStopwatch.ElapsedMilliseconds}",
+            "SolutionManager");
         SolutionOpened?.Invoke(this, CurrentSolution);
+        _logger.Log(LogLevel.Info,
+            $"[SolutionLifecycleTrace] SolutionOpened invoke returned | elapsedMs={setSolutionStopwatch.ElapsedMilliseconds}",
+            "SolutionManager");
 
         // 诊断日志：查找元数据前的状态
         _logger.Log(LogLevel.Info, 
@@ -1794,10 +1810,16 @@ public class SolutionManager
             Metadata = metadata,
             SolutionId = metadata.Id
         };
+        _logger.Log(LogLevel.Info,
+            $"[SolutionLifecycleTrace] CurrentSolutionChanged invoke begin | metadataId={metadata.Id}, elapsedMs={setSolutionStopwatch.ElapsedMilliseconds}",
+            "SolutionManager");
         CurrentSolutionChanged?.Invoke(this, currentSolutionArgs);
+        _logger.Log(LogLevel.Info,
+            $"[SolutionLifecycleTrace] CurrentSolutionChanged invoke returned | elapsedMs={setSolutionStopwatch.ElapsedMilliseconds}",
+            "SolutionManager");
 
         _logger.Log(LogLevel.Info, 
-            $"设置当前解决方案成功: Id={CurrentSolution.Id}", 
+            $"设置当前解决方案成功: Id={CurrentSolution.Id}, elapsedMs={setSolutionStopwatch.ElapsedMilliseconds}", 
             "SolutionManager");
     }
 

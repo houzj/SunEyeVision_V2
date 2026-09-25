@@ -1644,6 +1644,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnCurrentSolutionChanged(object? sender, SolutionMetadataEventArgs e)
         {
+            _logger?.LogInfo($"[StartupTrace] MainWindowViewModel.OnCurrentSolutionChanged begin | solutionId={e.SolutionId}", "MainWindowViewModel");
             UpdateCurrentSolutionInfo();
 
             // 加载解决方案到工作流标签页
@@ -1652,7 +1653,9 @@ SplitterPosition = position;
 
             if (currentSolution != null)
             {
+                _logger?.LogInfo($"[StartupTrace] LoadSolutionToWorkflowTabs begin | workflows={currentSolution.Workflows.Count}", "MainWindowViewModel");
                 LoadSolutionToWorkflowTabs(currentSolution);
+                _logger?.LogInfo("[StartupTrace] LoadSolutionToWorkflowTabs completed", "MainWindowViewModel");
             }
             else
             {
@@ -1842,6 +1845,7 @@ SplitterPosition = position;
         private void CreateWorkflowTab(SunEyeVision.Workflow.Workflow workflow, string? filePath)
         {
             LogInfo($"创建标签页: {workflow.Name}");
+            _logger?.LogInfo($"[StartupTrace] CreateWorkflowTab begin | name={workflow.Name}, id={workflow.Id}", "MainWindowViewModel");
 
             // 创建 WorkflowTabViewModel
             var tabViewModel = new SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel();
@@ -1856,7 +1860,9 @@ SplitterPosition = position;
             // 因此 FromBase 为恒等转换（同一对象），不再创建副本
             try
             {
+                _logger?.LogInfo($"[StartupTrace] CreateWorkflowTab.SetNodes begin | name={workflow.Name}", "MainWindowViewModel");
                 tabViewModel.SetNodes(workflow.Nodes);
+                _logger?.LogInfo($"[StartupTrace] CreateWorkflowTab.SetNodes completed | name={workflow.Name}", "MainWindowViewModel");
             }
             catch (Exception ex)
             {
@@ -1878,11 +1884,15 @@ SplitterPosition = position;
 
             // 将工作流注册到 WorkflowEngine.Workflows 字典
             // 确保节点可以获取父节点数据
+            _logger?.LogInfo($"[StartupTrace] CreateWorkflowTab.Register begin | name={workflow.Name}", "MainWindowViewModel");
             _workflowDefinitions.Register(workflow);
+            _logger?.LogInfo($"[StartupTrace] CreateWorkflowTab.Register completed | name={workflow.Name}", "MainWindowViewModel");
             LogInfo($"工作流已注册到 WorkflowEngine: {workflow.Name} (ID: {workflow.Id})");
 
             // 添加到标签页视图模型
+            _logger?.LogInfo($"[StartupTrace] CreateWorkflowTab.Tabs.Add begin | name={workflow.Name}", "MainWindowViewModel");
             WorkflowTabViewModel?.Tabs.Add(tabViewModel);
+            _logger?.LogInfo($"[StartupTrace] CreateWorkflowTab.Tabs.Add completed | name={workflow.Name}", "MainWindowViewModel");
             LogInfo($"标签页已添加: {workflow.Name}");
         }
 
@@ -1945,6 +1955,7 @@ SplitterPosition = position;
 
                 foreach (var workflow in solution.Workflows)
                 {
+                    _logger?.LogInfo($"[StartupTrace] LoadSolution workflow begin | name={workflow.Name}, subroutine={workflow.IsSubroutine}", "MainWindowViewModel");
                     LogInfo($"\n--- 加载工作流: {workflow.Name} (ID: {workflow.Id}) ---");
                     LogInfo($"节点数量: {workflow.Nodes.Count}");
                     LogInfo($"连接数量: {workflow.Connections.Count}");
@@ -1960,6 +1971,8 @@ SplitterPosition = position;
                     {
                         CreateWorkflowTab(workflow, solution.FilePath);
                     }
+
+                    _logger?.LogInfo($"[StartupTrace] LoadSolution workflow completed | name={workflow.Name}", "MainWindowViewModel");
 
                     totalNodes += workflow.Nodes.Count;
                     totalConnections += workflow.Connections.Count;

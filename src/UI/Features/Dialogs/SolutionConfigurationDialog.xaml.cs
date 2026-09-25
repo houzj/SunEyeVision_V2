@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using SunEyeVision.Core.Versioning;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
 
@@ -67,6 +68,10 @@ public partial class SolutionConfigurationDialog : Window
     /// </summary>
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
+        VisionLogger.Instance.Log(LogLevel.Info,
+            $"[SolutionConfigTrace] dialog closing | isLaunched={_viewModel.IsLaunched}, launchResult={_viewModel.LaunchResult?.Id ?? "null"}, dialogResult={DialogResult?.ToString() ?? "null"}",
+            "SolutionConfigurationDialog");
+
         // ✅ 统一保存设置（包括 SkipStartupConfig）
         // 无论通过什么方式关闭，都统一保存设置
         _viewModel.SaveSettings();

@@ -60,6 +60,19 @@ namespace SunEyeVision.UI.Shell.Windows
         }
 
         /// <summary>
+        /// 同时更新启动阶段、进度和阶段说明。
+        /// </summary>
+        public void UpdateStage(string stage, double progress, string? detail = null)
+        {
+            if (!string.IsNullOrWhiteSpace(stage))
+                StatusText.Text = stage;
+            if (detail != null)
+                DetailText.Text = detail;
+            Progress.Value = Math.Clamp(progress, 0, 100);
+            PumpForRender();
+        }
+
+        /// <summary>
         /// 泵 UI 消息队列，强制启动页渲染出中间阶段。
         /// OnStartup 在 UI 线程同步执行耗时初始化，期间若不泵消息，启动页的
         /// 状态文字/进度条即便更新了属性也不会真正重绘。这里在处理完 Render
@@ -105,10 +118,22 @@ namespace SunEyeVision.UI.Shell.Windows
         /// </summary>
         public void CloseWithFade()
         {
+            if (!IsVisible)
+                return;
             _elapsedTimer.Stop();
             var fade = new DoubleAnimation(Opacity, 0, TimeSpan.FromMilliseconds(200));
             fade.Completed += (_, _) => Close();
             BeginAnimation(OpacityProperty, fade);
+        }
+
+        /// <summary>
+        /// 进入需要用户交互的配置窗口前立即关闭启动页。
+        /// </summary>
+        public void CloseImmediately()
+        {
+            _elapsedTimer.Stop();
+            if (IsVisible)
+                Close();
         }
 
         protected override void OnClosed(EventArgs e)

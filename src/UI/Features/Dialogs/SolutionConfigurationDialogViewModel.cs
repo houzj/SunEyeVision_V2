@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Shell;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Workflow;
@@ -62,6 +63,7 @@ namespace SunEyeVision.UI.Features.Dialogs
             {
                 if (SetProperty(ref _selectedMetadata, value))
                 {
+                    LogInfo($"[SolutionConfigTrace] SelectedMetadata changed | id={value?.Id ?? "null"}, name={value?.Name ?? "null"}, path={value?.FilePath ?? "null"}");
                     // 选中时只标记状态，不加载完整解决方案
                     OnPropertyChanged(nameof(SelectedMetadataId));
                     OnPropertyChanged(nameof(HasSelectedSolution));
@@ -322,14 +324,19 @@ namespace SunEyeVision.UI.Features.Dialogs
         /// </summary>
         private void SelectSolution(object? parameter)
         {
+            LogInfo($"[SolutionConfigTrace] SelectCommand execute | parameterType={parameter?.GetType().FullName ?? "null"}");
             if (parameter is SolutionMetadata metadata)
             {
                 SelectedMetadata = metadata;
-                LogInfo($"选中解决方案: {metadata.Name}");
+                LogInfo($"[SolutionConfigTrace] solution selected | id={metadata.Id}, name={metadata.Name}, path={metadata.FilePath}");
             }
             else if (parameter != null)
             {
                 LogWarning($"SelectCommand收到未知类型参数: {parameter.GetType().Name}");
+            }
+            else
+            {
+                LogWarning("[SolutionConfigTrace] SelectCommand received null parameter");
             }
         }
 
@@ -427,8 +434,15 @@ namespace SunEyeVision.UI.Features.Dialogs
 
             try
             {
+                var loadStartedAt = System.Diagnostics.Stopwatch.StartNew();
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[SolutionOpenTrace] LoadSolutionOnly begin | path={filePath}, thread={Environment.CurrentManagedThreadId}",
+                    "SolutionConfigurationDialog");
                 // ✅ 仅加载解决方案对象（不设置为当前解决方案）
                 var solution = _solutionManager.LoadSolutionOnly(filePath);
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[SolutionOpenTrace] LoadSolutionOnly returned | success={solution is not null}, elapsedMs={loadStartedAt.ElapsedMilliseconds}",
+                    "SolutionConfigurationDialog");
                 if (solution == null)
                 {
                     ThemeMessageDialog.Show("加载解决方案文件失败", "错误",
@@ -851,11 +865,16 @@ namespace SunEyeVision.UI.Features.Dialogs
 
         private void Launch(object? parameter)
         {
-            // 获取要启动的元数据
-            var metadataToLaunch = parameter as SolutionMetadata ?? SelectedMetadata;
-
-            if (metadataToLaunch != null)
+            var launchStopwatch = System.Diagnostics.Stopwatch.StartNew();
+            LogInfo($"[SolutionLaunchTrace] 01 LaunchCommand begin | thread={Environment.CurrentManagedThreadId}, parameterType={parameter?.GetType().FullName ?? "null"}, selectedId={SelectedMetadata?.Id ?? "null"}");
+            try
             {
+                // 获取要启动的元数据
+                var metadataToLaunch = parameter as SolutionMetadata ?? SelectedMetadata;
+
+                if (metadataToLaunch != null)
+                {
+                    LogInfo($"[SolutionLaunchTrace] 02 target resolved | id={metadataToLaunch.Id}, name={metadataToLaunch.Name}, path={metadataToLaunch.FilePath}, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
                 // [诊断] 记录双击的选项卡
                 LogInfo($"[诊断-双击] 双击的解决方案ID: {metadataToLaunch.Id}");
                 LogInfo($"[诊断-双击] 双击的解决方案名称: {metadataToLaunch.Name}");
@@ -872,11 +891,13 @@ namespace SunEyeVision.UI.Features.Dialogs
                 }
 
                 // ✅ 懒加载：仅在启动时加载完整 Solution 对象
+                LogInfo($"[SolutionLaunchTrace] 03 LoadSolutionOnly begin | path={metadataToLaunch.FilePath}, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
                 var fullSolution = _solutionManager.LoadSolutionOnly(metadataToLaunch.FilePath);
+                LogInfo($"[SolutionLaunchTrace] 04 LoadSolutionOnly returned | success={fullSolution is not null}, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
                 if (fullSolution != null)
                 {
                     SelectedSolution = fullSolution;
-                    LogInfo($"加载完整解决方案对象: Id={fullSolution.Id}");
+                    LogInfo($"[SolutionLaunchTrace] 05 launch result prepared | id={fullSolution.Id}, workflows={fullSolution.Workflows.Count}, devices={fullSolution.Devices?.Count ?? 0}, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
 
                     // ✅ 记录打开时间（RegisterKnownSolution → AddKnownSolution → UpdateLastAccessTime）
                     // 使"最近打开"排序和打开时间显示在下次打开对话框时生效
@@ -891,11 +912,13 @@ namespace SunEyeVision.UI.Features.Dialogs
 
                     if (_ownerWindow != null)
                     {
+                        LogInfo($"[SolutionLaunchTrace] 06 dialog close begin | dialogResult=true, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
                         _ownerWindow.DialogResult = true;
                         _ownerWindow.Close();
+                        LogInfo($"[SolutionLaunchTrace] 07 dialog close returned | elapsedMs={launchStopwatch.ElapsedMilliseconds}");
                     }
 
-                    LogSuccess($"启动解决方案: {metadataToLaunch.Name}");
+                    LogSuccess($"[SolutionLaunchTrace] 08 LaunchCommand completed | name={metadataToLaunch.Name}, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
                 }
                 else
                 {
@@ -903,6 +926,16 @@ namespace SunEyeVision.UI.Features.Dialogs
                     ThemeMessageDialog.Show($"加载解决方案失败: {metadataToLaunch.Name}", "错误",
                         MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                 }
+                }
+                else
+                {
+                    LogError("[SolutionLaunchTrace] no target solution");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"[SolutionLaunchTrace] LaunchCommand exception | type={ex.GetType().FullName}, message={ex.Message}, elapsedMs={launchStopwatch.ElapsedMilliseconds}\n堆栈: {ex.StackTrace}");
+                throw;
             }
         }
 

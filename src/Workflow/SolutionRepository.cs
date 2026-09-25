@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -86,35 +87,78 @@ public class SolutionRepository
     /// </remarks>
     public Solution? Load(string filePath)
     {
+        var loadStopwatch = Stopwatch.StartNew();
+        _logger.Log(LogLevel.Info,
+            $"[LoadTrace] Repository.Load entered | path={filePath}, thread={Environment.CurrentManagedThreadId}, pluginLoaded={PluginLoader.IsLoaded}",
+            "SolutionRepository");
+
         if (string.IsNullOrEmpty(filePath))
         {
+            _logger.Log(LogLevel.Warning, $"[LoadTrace] file path empty | elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
             _logger.Log(LogLevel.Warning, "加载解决方案失败：文件路径为空", "SolutionRepository");
             return null;
         }
 
+        _logger.Log(LogLevel.Info, $"[LoadTrace] File.Exists begin | elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
         if (!File.Exists(filePath))
         {
+            _logger.Log(LogLevel.Warning, $"[LoadTrace] File.Exists=false | elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
             _logger.Log(LogLevel.Warning, $"加载解决方案失败：文件不存在: {filePath}", "SolutionRepository");
             return null;
         }
+        _logger.Log(LogLevel.Info, $"[LoadTrace] File.Exists=true | elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
 
         // ✅ Fail Fast：确保插件在反序列化前加载
+        _logger.Log(LogLevel.Info, $"[LoadTrace] EnsurePluginsLoaded begin | pluginLoaded={PluginLoader.IsLoaded}, elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
         if (!EnsurePluginsLoaded())
         {
+            _logger.Log(LogLevel.Error, $"[LoadTrace] EnsurePluginsLoaded returned false | elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
             _logger.Log(LogLevel.Error, "加载解决方案失败：插件加载未完成", "SolutionRepository");
             return null;
         }
+        _logger.Log(LogLevel.Info, $"[LoadTrace] EnsurePluginsLoaded returned true | pluginLoaded={PluginLoader.IsLoaded}, elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
 
         try
         {
+            var stopwatch = Stopwatch.StartNew();
+            var threadId = Environment.CurrentManagedThreadId;
+            var persistedDevices = new List<Device>();
             _logger.Log(LogLevel.Info, $"开始反序列化解决方案: {filePath}", "SolutionRepository");
+            _logger.Log(LogLevel.Info, $"[LoadTrace] File.ReadAllText begin | thread={threadId}", "SolutionRepository");
             var json = File.ReadAllText(filePath);
-            var solution = JsonSerializer.Deserialize<Solution>(json, WorkflowSerializationOptions.Default);
+            _logger.Log(LogLevel.Info, $"[LoadTrace] File.ReadAllText completed | chars={json.Length}, elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
+            _logger.Log(LogLevel.Info, $"[LoadTrace] WorkflowSerializationOptions.Default begin | elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
+            var options = WorkflowSerializationOptions.Default;
+            _logger.Log(LogLevel.Info, $"[LoadTrace] WorkflowSerializationOptions.Default completed | elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
+            _logger.Log(LogLevel.Info, $"[LoadTrace] JsonDocument.Parse begin | elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
+            using (var diagnosticDocument = JsonDocument.Parse(json))
+            {
+                var root = diagnosticDocument.RootElement;
+                var properties = root.EnumerateObject().Select(property => property.Name).ToArray();
+                _logger.Log(LogLevel.Info,
+                    $"[LoadTrace] JsonDocument.Parse completed | properties={string.Join(',', properties)}, " +
+                    $"workflows={GetArrayLength(root, "Workflows")}, globalVariables={GetArrayLength(root, "GlobalVariables")}, " +
+                    $"devices={GetArrayLength(root, "Devices")}, communications={GetArrayLength(root, "Communications")}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                    "SolutionRepository");
+
+                ProbeProperty<List<Workflow>>(root, "Workflows", options, stopwatch);
+                ProbeProperty<List<GlobalVariable>>(root, "GlobalVariables", options, stopwatch);
+                persistedDevices = ReadPersistedDevices(root, stopwatch);
+                ProbeProperty<List<Communication>>(root, "Communications", options, stopwatch);
+                ProbeProperty<DatabaseConfiguration>(root, "DatabaseConfiguration", options, stopwatch);
+                ProbeProperty<ExecutionStrategy>(root, "ExecutionStrategy", options, stopwatch);
+                ProbeProperty<List<SolutionVersion>>(root, "VersionHistory", options, stopwatch);
+            }
+            _logger.Log(LogLevel.Info, $"[LoadTrace] JsonSerializer.Deserialize<SolutionWithoutDevices> begin | elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
+            var solutionJson = RemoveDevicesProperty(json);
+            var solution = JsonSerializer.Deserialize<Solution>(solutionJson, options);
+            _logger.Log(LogLevel.Info, $"[LoadTrace] JsonSerializer.Deserialize<Solution> completed | elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
 
             if (solution != null)
             {
+                solution.Devices = persistedDevices;
                 solution.FilePath = filePath;
-                _logger.Log(LogLevel.Success, $"加载解决方案成功: Id={solution.Id} -> {filePath}", "SolutionRepository");
+                _logger.Log(LogLevel.Success, $"加载解决方案成功: Id={solution.Id} -> {filePath}, workflows={solution.Workflows.Count}, devices={solution.Devices.Count}, elapsedMs={stopwatch.ElapsedMilliseconds}", "SolutionRepository");
             }
             else
             {
@@ -128,6 +172,195 @@ public class SolutionRepository
             _logger.Log(LogLevel.Error, $"加载解决方案失败: {filePath}, 错误: {ex.Message}", "SolutionRepository", ex);
             return null;
         }
+    }
+
+    private string RemoveDevicesProperty(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        var properties = new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase);
+        foreach (var property in document.RootElement.EnumerateObject())
+        {
+            if (!string.Equals(property.Name, "Devices", StringComparison.OrdinalIgnoreCase))
+                properties[property.Name] = property.Value.Clone();
+        }
+
+        return JsonSerializer.Serialize(properties);
+    }
+
+    private static int GetArrayLength(JsonElement root, string propertyName)
+        => root.TryGetProperty(propertyName, out var property)
+           && property.ValueKind == JsonValueKind.Array
+            ? property.GetArrayLength()
+            : -1;
+
+    private void ProbeProperty<T>(
+        JsonElement root,
+        string propertyName,
+        JsonSerializerOptions options,
+        Stopwatch stopwatch)
+    {
+        if (!root.TryGetProperty(propertyName, out var property))
+            return;
+
+        _logger.Log(LogLevel.Info,
+            $"[LoadTrace] Property probe begin | property={propertyName}, type={typeof(T).Name}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+            "SolutionRepository");
+        try
+        {
+            var value = JsonSerializer.Deserialize<T>(property.GetRawText(), options);
+            _logger.Log(LogLevel.Info,
+                $"[LoadTrace] Property probe completed | property={propertyName}, null={value is null}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                "SolutionRepository");
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(LogLevel.Error,
+                $"[LoadTrace] Property probe failed | property={propertyName}, error={ex.Message}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                "SolutionRepository",
+                ex);
+        }
+    }
+
+    private List<Device> ReadPersistedDevices(
+        JsonElement root,
+        Stopwatch stopwatch)
+    {
+        var result = new List<Device>();
+        if (!root.TryGetProperty("Devices", out var devices)
+            || devices.ValueKind != JsonValueKind.Array)
+        {
+            return result;
+        }
+
+        _logger.Log(LogLevel.Info,
+            $"[LoadTrace] Persisted device read begin | count={devices.GetArrayLength()}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+            "SolutionRepository");
+
+        var index = 0;
+        foreach (var device in devices.EnumerateArray())
+        {
+            var deviceStopwatch = Stopwatch.StartNew();
+            _logger.Log(LogLevel.Info,
+                $"[LoadTrace] Persisted device read item begin | index={index}",
+                "SolutionRepository");
+
+            var restored = new Device
+            {
+                Id = ReadString(device, "Id", Guid.NewGuid().ToString()),
+                Name = ReadString(device, "Name", string.Empty),
+                Type = ReadEnum(device, "Type", DeviceType.Camera),
+                Manufacturer = ReadString(device, "Manufacturer", string.Empty),
+                Model = ReadString(device, "Model", string.Empty),
+                SerialNumber = ReadString(device, "SerialNumber", string.Empty),
+                IpAddress = ReadString(device, "IpAddress", string.Empty),
+                Port = ReadInt32(device, "Port", 0),
+                Status = ReadEnum(device, "Status", DeviceStatus.Unknown),
+                IsEnabled = ReadBoolean(device, "IsEnabled", true),
+                WorkflowRef = ReadNullableString(device, "WorkflowRef"),
+                Description = ReadString(device, "Description", string.Empty),
+                Settings = ReadSettings(device),
+                CreatedTime = ReadDateTime(device, "CreatedTime", DateTime.Now),
+                ModifiedTime = ReadDateTime(device, "ModifiedTime", DateTime.Now)
+            };
+
+            result.Add(restored);
+
+            _logger.Log(LogLevel.Info,
+                $"[LoadTrace] Persisted device read item completed | index={index}, id={restored.Id}, settings={restored.Settings.Count}, elapsedMs={deviceStopwatch.ElapsedMilliseconds}",
+                "SolutionRepository");
+            index++;
+        }
+
+        _logger.Log(LogLevel.Info,
+            $"[LoadTrace] Persisted device read completed | count={result.Count}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+            "SolutionRepository");
+        return result;
+    }
+
+    private static string ReadString(JsonElement element, string propertyName, string fallback)
+    {
+        return element.TryGetProperty(propertyName, out var property)
+            && property.ValueKind == JsonValueKind.String
+            ? property.GetString() ?? fallback
+            : fallback;
+    }
+
+    private static string? ReadNullableString(JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var property)
+           && property.ValueKind == JsonValueKind.String
+            ? property.GetString()
+            : null;
+
+    private static int ReadInt32(JsonElement element, string propertyName, int fallback)
+        => element.TryGetProperty(propertyName, out var property)
+           && property.ValueKind == JsonValueKind.Number
+           && property.TryGetInt32(out var value)
+            ? value
+            : fallback;
+
+    private static bool ReadBoolean(JsonElement element, string propertyName, bool fallback)
+        => element.TryGetProperty(propertyName, out var property)
+           && (property.ValueKind == JsonValueKind.True || property.ValueKind == JsonValueKind.False)
+            ? property.GetBoolean()
+            : fallback;
+
+    private static TEnum ReadEnum<TEnum>(JsonElement element, string propertyName, TEnum fallback)
+        where TEnum : struct, Enum
+    {
+        if (!element.TryGetProperty(propertyName, out var property))
+            return fallback;
+
+        if (property.ValueKind == JsonValueKind.Number
+            && property.TryGetInt32(out var numericValue)
+            && Enum.IsDefined(typeof(TEnum), numericValue))
+        {
+            return (TEnum)Enum.ToObject(typeof(TEnum), numericValue);
+        }
+
+        if (property.ValueKind == JsonValueKind.String
+            && Enum.TryParse<TEnum>(property.GetString(), true, out var parsed))
+        {
+            return parsed;
+        }
+
+        return fallback;
+    }
+
+    private static DateTime ReadDateTime(JsonElement element, string propertyName, DateTime fallback)
+    {
+        if (!element.TryGetProperty(propertyName, out var property)
+            || property.ValueKind != JsonValueKind.String)
+            return fallback;
+
+        return DateTime.TryParse(property.GetString(), out var value) ? value : fallback;
+    }
+
+    private static Dictionary<string, object> ReadSettings(JsonElement device)
+    {
+        var settings = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        if (!device.TryGetProperty("Settings", out var element)
+            || element.ValueKind != JsonValueKind.Object)
+            return settings;
+
+        foreach (var property in element.EnumerateObject())
+        {
+            settings[property.Name] = ReadJsonValue(property.Value);
+        }
+
+        return settings;
+    }
+
+    private static object ReadJsonValue(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => element.GetString() ?? string.Empty,
+            JsonValueKind.True or JsonValueKind.False => element.GetBoolean(),
+            JsonValueKind.Number when element.TryGetInt64(out var integer) => integer,
+            JsonValueKind.Number when element.TryGetDouble(out var number) => number,
+            JsonValueKind.Array or JsonValueKind.Object => element.GetRawText(),
+            _ => string.Empty
+        };
     }
 
     /// <summary>

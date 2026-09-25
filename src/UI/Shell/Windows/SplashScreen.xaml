@@ -7,7 +7,7 @@
         Background="Transparent"
         WindowStartupLocation="CenterScreen"
         Width="420"
-        Height="300"
+        Height="330"
         ShowInTaskbar="False"
         ResizeMode="NoResize">
     <Border Background="#FF1E1E1E"
@@ -17,6 +17,7 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -80,9 +81,17 @@
                            VerticalAlignment="Center"/>
             </Grid>
 
+            <TextBlock x:Name="DetailText"
+                       Grid.Row="3"
+                       Text="准备应用环境"
+                       FontSize="11"
+                       Foreground="#FF9E9E9E"
+                       TextTrimming="CharacterEllipsis"
+                       Margin="40,0,40,10"/>
+
             <!-- 底部版本：由程序集注入的版本自报（rule-022），禁止硬编码 -->
             <TextBlock x:Name="VersionText"
-                       Grid.Row="3"
+                       Grid.Row="4"
                        FontSize="11"
                        Foreground="#FF6E6E6E"
                        HorizontalAlignment="Center"

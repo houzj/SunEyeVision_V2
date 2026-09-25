@@ -10,6 +10,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Diagnostics;
 using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Shell.Controls.Panels;
@@ -53,6 +54,7 @@ namespace SunEyeVision.UI.Shell.Windows
         };
 
         private readonly MainWindowViewModel _viewModel;
+        private readonly Stopwatch _solutionLoadingStopwatch = new();
 
         /// <summary>Win32 消息：查询窗口最小/最大尺寸限制</summary>
         private const int WM_GETMINMAXINFO = 0x0024;
@@ -417,6 +419,32 @@ namespace SunEyeVision.UI.Shell.Windows
 
             // 防止存在无 Owner 的窗口或其他 WPF Dispatcher 对象使进程继续驻留。
             Application.Current?.Shutdown();
+        }
+
+        public void ShowSolutionLoadingOverlay(string stage, string detail)
+        {
+            _solutionLoadingStopwatch.Restart();
+            UpdateSolutionLoadingOverlay(stage, detail);
+            SolutionLoadingOverlay.Visibility = Visibility.Visible;
+        }
+
+        public void UpdateSolutionLoadingOverlay(string stage, string detail)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(() => UpdateSolutionLoadingOverlay(stage, detail));
+                return;
+            }
+
+            SolutionLoadingStageText.Text = stage;
+            SolutionLoadingDetailText.Text = detail;
+            SolutionLoadingElapsedText.Text = $"已用时 {_solutionLoadingStopwatch.Elapsed.TotalSeconds:0.0} 秒";
+        }
+
+        public void HideSolutionLoadingOverlay()
+        {
+            SolutionLoadingOverlay.Visibility = Visibility.Collapsed;
+            _solutionLoadingStopwatch.Stop();
         }
 
         /// <summary>

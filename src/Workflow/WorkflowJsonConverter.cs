@@ -22,6 +22,10 @@ namespace SunEyeVision.Workflow
     {
         public override Workflow Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[WorkflowLoadTrace] Workflow.Read begin | token={reader.TokenType}",
+                "WorkflowJsonConverter");
             if (reader.TokenType != JsonTokenType.StartObject)
             {
                 throw new JsonException("Expected StartObject token");
@@ -29,13 +33,31 @@ namespace SunEyeVision.Workflow
 
             var document = JsonDocument.ParseValue(ref reader);
             var root = document.RootElement;
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[WorkflowLoadTrace] Workflow JSON parsed | properties={string.Join(',', root.EnumerateObject().Select(property => property.Name))}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                "WorkflowJsonConverter");
 
             // 读取基本属性
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[WorkflowLoadTrace] Basic properties read begin | elapsedMs={stopwatch.ElapsedMilliseconds}",
+                "WorkflowJsonConverter");
             var id = root.GetProperty("Id").GetString() ?? Guid.NewGuid().ToString();
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[WorkflowLoadTrace] Id read completed | id={id}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                "WorkflowJsonConverter");
             var name = root.GetProperty("Name").GetString() ?? "Unnamed Workflow";
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[WorkflowLoadTrace] Name read completed | name={name}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                "WorkflowJsonConverter");
 
             // 创建工作流实例
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[WorkflowLoadTrace] Workflow constructor begin | elapsedMs={stopwatch.ElapsedMilliseconds}",
+                "WorkflowJsonConverter");
             var workflow = new Workflow(id, name);
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[WorkflowLoadTrace] Workflow instance created | id={id}, name={name}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                "WorkflowJsonConverter");
 
             // 恢复子程序标记（防止加载后被子程序当成主工作流创建独立标签页）
             if (root.TryGetProperty("IsSubroutine", out var isSubroutineProp))
@@ -47,6 +69,9 @@ namespace SunEyeVision.Workflow
             // Phase 2：反序列化后通过工厂转换为 WorkflowNode 实例
             if (root.TryGetProperty("Nodes", out var nodesElement))
             {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[WorkflowLoadTrace] Nodes begin | count={nodesElement.GetArrayLength()}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                    "WorkflowJsonConverter");
                 workflow.Nodes = new ObservableCollection<WorkflowNodeBase>();
                 foreach (var nodeElement in nodesElement.EnumerateArray())
                 {
@@ -72,6 +97,9 @@ namespace SunEyeVision.Workflow
                         workflow.Nodes.Add(node);
                     }
                 }
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[WorkflowLoadTrace] Nodes completed | count={workflow.Nodes.Count}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                    "WorkflowJsonConverter");
             }
 
             // 反序列化连接（加载时一次性过滤孤立连接，运行时信任不变量）
@@ -79,10 +107,38 @@ namespace SunEyeVision.Workflow
             {
                 try
                 {
+                    var connectionCount = connElement.ValueKind == JsonValueKind.Array
+                        ? connElement.GetArrayLength()
+                        : -1;
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[WorkflowLoadTrace] Connections begin | count={connectionCount}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                        "WorkflowJsonConverter");
+
+                    // 空连接集合无需经过带有工作流序列化选项的通用反序列化路径。
+                    // 该路径可能触发不必要的类型/转换器初始化；空数组直接创建集合，
+                    // 同时保留与非空连接一致的生命周期日志。
+                    if (connectionCount == 0)
+                    {
+                        workflow.Connections = new ObservableCollection<WorkflowConnection>();
+                        VisionLogger.Instance.Log(LogLevel.Info,
+                            $"[WorkflowLoadTrace] Connections completed | count=0, path=empty-fast-path, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                            "WorkflowJsonConverter");
+                        VisionLogger.Instance.Log(LogLevel.Info,
+                            $"[WorkflowLoadTrace] Workflow.Read completed | id={workflow.Id}, path=empty-connections-fast-path, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                            "WorkflowJsonConverter");
+                        return workflow;
+                    }
+
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[WorkflowLoadTrace] Connections deserialize begin | count={connectionCount}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                        "WorkflowJsonConverter");
                     var connList = JsonSerializer.Deserialize<List<WorkflowConnection>>(
                         connElement.GetRawText(),
                         options
                     );
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[WorkflowLoadTrace] Connections deserialize returned | count={connList?.Count ?? 0}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                        "WorkflowJsonConverter");
                     // 收集所有合法节点 ID
                     var validNodeIds = new HashSet<string>(workflow.Nodes.Select(n => n.Id));
                     var filteredCount = 0;
@@ -103,6 +159,9 @@ namespace SunEyeVision.Workflow
                             "WorkflowJsonConverter");
                     }
                     workflow.Connections = new ObservableCollection<WorkflowConnection>(validConnections);
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[WorkflowLoadTrace] Connections completed | count={workflow.Connections.Count}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                        "WorkflowJsonConverter");
                 }
                 catch (Exception ex)
                 {
@@ -115,6 +174,9 @@ namespace SunEyeVision.Workflow
                 workflow.Connections = new ObservableCollection<WorkflowConnection>();
             }
 
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[WorkflowLoadTrace] Workflow.Read completed | id={workflow.Id}, elapsedMs={stopwatch.ElapsedMilliseconds}",
+                "WorkflowJsonConverter");
             return workflow;
         }
 

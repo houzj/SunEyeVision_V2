@@ -40,6 +40,7 @@
         </ResourceDictionary>
     </Window.Resources>
 
+    <Grid>
     <DockPanel>
         <shell:ShellTopBarControl x:Name="TopBarHost" DockPanel.Dock="Top" DataContext="{Binding TopBar}"/>
 
@@ -169,4 +170,38 @@
             <shell:StatusBarControl Grid.ColumnSpan="4" Grid.Row="1" DataContext="{Binding StatusBar}"/>
         </Grid>
     </DockPanel>
+
+        <!-- 方案加载遮罩：主界面先显示，方案和相机异步恢复期间阻止操作并提供明确进度。 -->
+        <Grid x:Name="SolutionLoadingOverlay"
+              Panel.ZIndex="1000"
+              Visibility="Collapsed"
+              Background="#CC15171A"
+              IsHitTestVisible="True">
+            <Border Width="480" MinHeight="250" Padding="32"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Background="{DynamicResource ThemePanelBackgroundBrush}"
+                    BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1"
+                    CornerRadius="6">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="正在加载解决方案" FontSize="20" FontWeight="SemiBold"
+                               Foreground="{DynamicResource ThemeTextPrimaryBrush}"/>
+                    <TextBlock x:Name="SolutionLoadingStageText" Grid.Row="1" Margin="0,20,0,0"
+                               FontSize="14" Foreground="{DynamicResource ThemeTextPrimaryBrush}"/>
+                    <TextBlock x:Name="SolutionLoadingDetailText" Grid.Row="2" Margin="0,7,0,0"
+                               FontSize="12" Foreground="{DynamicResource ThemeTextSecondaryBrush}"
+                               TextWrapping="Wrap"/>
+                    <ProgressBar x:Name="SolutionLoadingProgressBar" Grid.Row="3" Height="8"
+                                 Margin="0,24,0,0" IsIndeterminate="True"/>
+                    <TextBlock x:Name="SolutionLoadingElapsedText" Grid.Row="4" Margin="0,16,0,0"
+                               HorizontalAlignment="Right" FontSize="11"
+                               Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
 </Window>

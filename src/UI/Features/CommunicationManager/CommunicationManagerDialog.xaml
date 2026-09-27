@@ -5,39 +5,42 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:workflow="clr-namespace:SunEyeVision.Workflow;assembly=SunEyeVision.Workflow"
+        xmlns:comm="clr-namespace:SunEyeVision.UI.Features.CommunicationManager"
         mc:Ignorable="d"
         Title="通讯管理器"
-        Width="900"
-        Height="600"
+        Width="1100"
+        Height="680"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
         Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
 
     <Window.Resources>
-        <!-- 按钮样式由全局 CommonStyleResources 提供（PrimaryButtonStyle/SecondaryButtonStyle/ToolButtonStyle/DangerButtonStyle）。
-             本弹窗工具栏为 36×36 图标按钮特殊形态，作别名桥接全局 ToolButtonStyle 并覆盖尺寸 -->
-        <Style x:Key="ToolbarButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolButtonStyle}">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="36"/>
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="FontSize" Value="18"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <comm:OneBasedIndexConverter x:Key="OneBasedIndexConverter"/>
+        <Style x:Key="CommunicationDeviceTabItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <EventSetter Event="PreviewMouseRightButtonDown" Handler="DeviceItem_PreviewMouseRightButtonDown"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"/>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="ItemBorder" Background="Transparent"
+                                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+                                BorderThickness="0,0,0,1" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
                             </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
-                                <Setter Property="Cursor" Value="Arrow"/>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                <Setter TargetName="ItemBorder" Property="BorderThickness" Value="0,0,0,2"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -45,92 +48,693 @@
             </Setter>
         </Style>
 
-        <!-- 删除按钮样式：沿用全局 DangerButtonStyle 同名，这里桥接 ToolbarButtonStyle 图标形态 -->
-        <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolbarButtonStyle}">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
-        </Style>
-
-        <!-- DataGrid 列头样式 -->
-        <Style x:Key="CommDataGridHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"/>
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
-            <Setter Property="BorderThickness" Value="0,0,1,1"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-
-        <!-- DataGrid 行样式 -->
-        <Style x:Key="CommDataGridRowStyle" TargetType="DataGridRow">
-            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
-                </Trigger>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- DataGrid 单元格样式 -->
-        <Style x:Key="CommDataGridCellStyle" TargetType="DataGridCell">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="8,4"/>
-        </Style>
+        <DataTemplate x:Key="CommunicationDeviceTabTemplate" DataType="{x:Type workflow:Communication}">
+            <Grid MinHeight="48">
+                <Grid.ContextMenu>
+                    <ContextMenu MinWidth="132">
+                        <MenuItem Header="重命名" Click="RenameDevice_Click"/>
+                        <Separator/>
+                        <MenuItem Header="删除" Click="DeleteDevice_Click"/>
+                    </ContextMenu>
+                </Grid.ContextMenu>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="22"/>
+                    <ColumnDefinition Width="48"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" VerticalAlignment="Top" Margin="0,1,2,0"
+                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                           Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Name}" FontSize="14" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                    <TextBlock Text="{Binding ProtocolStatusText}" FontSize="11" Margin="0,2,0,0"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+                </StackPanel>
+                <Ellipse Grid.Column="2" Width="10" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Ellipse.Style>
+                        <Style TargetType="Ellipse">
+                            <Setter Property="Fill" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RuntimeStatus}" Value="{x:Static workflow:CommunicationRuntimeStatus.Connecting}">
+                                    <Setter Property="Fill" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding RuntimeStatus}" Value="{x:Static workflow:CommunicationRuntimeStatus.Connected}">
+                                    <Setter Property="Fill" Value="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding RuntimeStatus}" Value="{x:Static workflow:CommunicationRuntimeStatus.Faulted}">
+                                    <Setter Property="Fill" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Ellipse.Style>
+                </Ellipse>
+                <controls:ToggleSwitch Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       SwitchWidth="40" SwitchHeight="20"
+                                       IsChecked="{Binding IsRuntimeActive, Mode=OneWay}"
+                                       IsEnabled="{Binding CanToggleRuntime}"
+                                       CheckedChanged="DeviceToggle_CheckedChanged"/>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Margin="0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="145"/>
+            <ColumnDefinition Width="370"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <!-- 工具栏 -->
-        <ToolBar Grid.Row="0" Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="0,0,0,1">
-            <Button Content="+" ToolTip="添加通讯" Command="{Binding AddCommunicationCommand}" Style="{StaticResource ToolbarButtonStyle}"/>
-            <Button Content="-" ToolTip="删除通讯" Command="{Binding DeleteCommunicationCommand}" Style="{StaticResource DangerButtonStyle}"/>
-            <Button Content="🔗" ToolTip="测试连接" Command="{Binding TestConnectionCommand}" Style="{StaticResource ToolbarButtonStyle}"/>
-            <Separator/>
-            <Button Content="💾" ToolTip="保存" Command="{Binding SaveCommand}" Style="{StaticResource ToolbarButtonStyle}"/>
-        </ToolBar>
+        <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="0,0,1,0">
+            <StackPanel>
+                <Button Content="设备管理" Height="64" FontSize="15" HorizontalContentAlignment="Left" Padding="24,0"
+                        Background="{DynamicResource {x:Static base:ThemeKeys.ControlSelectedBackgroundBrush}}"
+                        Foreground="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}" BorderThickness="0"/>
+                <Button Content="接收事件" Height="64" FontSize="15" HorizontalContentAlignment="Left" Padding="24,0"
+                        IsEnabled="False" ToolTip="后续阶段实现" BorderThickness="0"/>
+                <Button Content="发送事件" Height="64" FontSize="15" HorizontalContentAlignment="Left" Padding="24,0"
+                        IsEnabled="False" ToolTip="后续阶段实现" BorderThickness="0"/>
+                <Button Content="触发配置" Height="64" FontSize="15" HorizontalContentAlignment="Left" Padding="24,0"
+                        IsEnabled="False" ToolTip="后续阶段实现" BorderThickness="0"/>
+                <Separator Margin="18,8"/>
+                <Button Content="响应配置" Height="64" FontSize="15" HorizontalContentAlignment="Left" Padding="24,0"
+                        IsEnabled="False" ToolTip="后续阶段实现" BorderThickness="0"/>
+                <Button Content="心跳管理" Height="64" FontSize="15" HorizontalContentAlignment="Left" Padding="24,0"
+                        IsEnabled="False" ToolTip="后续阶段实现" BorderThickness="0"/>
+            </StackPanel>
+        </Border>
 
-        <!-- DataGrid -->
-        <DataGrid Grid.Row="1"
-                  Margin="16"
-                  AutoGenerateColumns="False"
-                  ItemsSource="{Binding Communications}"
-                  SelectedItem="{Binding SelectedCommunication}"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  SelectionMode="Single"
-                  GridLinesVisibility="Horizontal"
-                  HeadersVisibility="Column"
-                  Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
-                  BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
-                  BorderThickness="1"
-                  HorizontalGridLinesBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
-                  ColumnHeaderStyle="{StaticResource CommDataGridHeaderStyle}"
-                  RowStyle="{StaticResource CommDataGridRowStyle}"
-                  CellStyle="{StaticResource CommDataGridCellStyle}">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="1*" IsReadOnly="False"/>
-                <DataGridTextColumn Header="类型" Binding="{Binding ConnectionType}" Width="120" IsReadOnly="False"/>
-                <DataGridTextColumn Header="连接地址" Binding="{Binding Path=Settings[ipAddress]}" Width="120" IsReadOnly="False"/>
-                <DataGridTextColumn Header="端口" Binding="{Binding Path=Settings[port]}" Width="80" IsReadOnly="False"/>
-                <DataGridCheckBoxColumn Header="启用" Binding="{Binding IsEnabled}" Width="60"/>
-                <DataGridTextColumn Header="描述" Binding="{Binding Description}" Width="2*" IsReadOnly="False"/>
-            </DataGrid.Columns>
-        </DataGrid>
+        <Grid Grid.Row="0" Grid.Column="1" Margin="0,0,1,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="42"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="0" Margin="14,10,14,0">
+                <TextBlock Text="通讯设备列表" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <Button Content="＋" DockPanel.Dock="Right" Width="30" Height="30" Command="{Binding AddCommunicationCommand}"/>
+            </DockPanel>
+            <ListBox Grid.Row="1" Margin="14,8,14,10" ItemsSource="{Binding Communications}"
+                     SelectedItem="{Binding SelectedCommunication, Mode=TwoWay}"
+                     AlternationCount="1000000" BorderThickness="0"
+                     Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
+                     ItemContainerStyle="{StaticResource CommunicationDeviceTabItemStyle}"
+                     ItemTemplate="{StaticResource CommunicationDeviceTabTemplate}"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+        </Grid>
 
-        <!-- 底部按钮 -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0">
+        <Grid Grid.Row="0" Grid.Column="2" Margin="0,0,14,0">
+            <TextBlock Text="请选择一个通信设备查看参数" FontSize="16"
+                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Visibility="{Binding HasNoSelectedCommunication, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            <Grid Visibility="{Binding HasSelectedCommunication, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="42"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Text="通讯参数" FontSize="17" FontWeight="SemiBold" Margin="14,10,0,0"/>
+            <ScrollViewer Grid.Row="1" Margin="14,10,0,4" MaxHeight="310" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="{Binding SelectedCommunication.ProtocolDisplayName}" FontSize="13" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,0,0,6"/>
+                    <Grid Visibility="{Binding SelectedCommunication.IsTcpClient, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/></Grid.RowDefinitions>
+                        <TextBlock Text="目标IP"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.Host, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Column="2" Text="目标端口" Margin="18,0,0,0"/><TextBox Grid.Column="3" Text="{Binding SelectedCommunication.Port, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                    </Grid>
+                    <Grid Visibility="{Binding SelectedCommunication.IsS7, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/></Grid.RowDefinitions>
+                        <TextBlock Text="目标IP"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.Host, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Column="2" Text="目标端口" Margin="18,0,0,0"/><TextBox Grid.Column="3" Text="{Binding SelectedCommunication.Port, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                        <TextBlock Grid.Row="1" Text="机架号"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedCommunication.Rack, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="槽号" Margin="18,0,0,0"/><TextBox Grid.Row="1" Grid.Column="3" Text="{Binding SelectedCommunication.Slot, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                        <TextBlock Grid.Row="2" Text="CPU型号"/><ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding S7CpuTypeOptions}" SelectedItem="{Binding SelectedCommunication.S7CpuType}" Height="32"/>
+                    </Grid>
+                    <Grid Visibility="{Binding SelectedCommunication.IsCip, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/></Grid.RowDefinitions>
+                        <TextBlock Text="目标IP"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.Host, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Column="2" Text="目标端口" Margin="18,0,0,0"/><TextBox Grid.Column="3" Text="{Binding SelectedCommunication.Port, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                        <TextBlock Grid.Row="1" Text="轮询间隔(ms)"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedCommunication.PollInterval, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="自动重连" Margin="18,0,0,0"/><controls:ToggleSwitch Grid.Row="1" Grid.Column="3" IsChecked="{Binding SelectedCommunication.AutoReconnect, Mode=TwoWay}" SwitchWidth="40" SwitchHeight="20" Margin="18,0,0,0"/>
+                    </Grid>
+                    <Grid Visibility="{Binding SelectedCommunication.IsTcpServer, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/></Grid.RowDefinitions>
+                        <TextBlock Text="本机IP"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.LocalHost, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Column="2" Text="本机端口" Margin="18,0,0,0"/><TextBox Grid.Column="3" Text="{Binding SelectedCommunication.LocalPort, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                    </Grid>
+                    <Grid Visibility="{Binding SelectedCommunication.IsUdp, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/></Grid.RowDefinitions>
+                        <TextBlock Text="本机IP"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.LocalHost, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Row="1" Text="本机端口"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedCommunication.LocalPort, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Column="2" Text="目标IP" Margin="18,0,0,0"/><TextBox Grid.Column="3" Text="{Binding SelectedCommunication.RemoteHost, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="目标端口" Margin="18,0,0,0"/><TextBox Grid.Row="1" Grid.Column="3" Text="{Binding SelectedCommunication.RemotePort, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                    </Grid>
+                    <StackPanel Visibility="{Binding SelectedCommunication.IsModbus, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="通信方式"/><ComboBox Grid.Column="1" ItemsSource="{Binding ModbusModeOptions}" SelectedItem="{Binding SelectedCommunication.ModbusMode, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                            <TextBlock Grid.Column="2" Text="站号" Margin="18,0,0,0"/><TextBox Grid.Column="3" Text="{Binding SelectedCommunication.UnitId, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                        </Grid>
+                        <Grid Visibility="{Binding SelectedCommunication.IsModbusTcp, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="目标IP"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.Host, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                            <TextBlock Grid.Column="2" Text="目标端口" Margin="18,0,0,0"/><TextBox Grid.Column="3" Text="{Binding SelectedCommunication.Port, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                        </Grid>
+                        <Grid Visibility="{Binding SelectedCommunication.IsModbusRtu, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="串口号"/><ComboBox Grid.Column="1" ItemsSource="{Binding SerialPortOptions}" SelectedItem="{Binding SelectedCommunication.SerialPort, UpdateSourceTrigger=PropertyChanged}" IsEditable="False" ToolTip="选择当前主机检测到的串口" Height="32"/>
+                            <TextBlock Grid.Column="2" Text="波特率" Margin="18,0,0,0"/><ComboBox Grid.Column="3" ItemsSource="{Binding BaudRateOptions}" SelectedItem="{Binding SelectedCommunication.BaudRate, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                        </Grid>
+                        <Grid Visibility="{Binding SelectedCommunication.IsModbusRtu, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="数据位"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.DataBits, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                            <TextBlock Grid.Column="2" Text="校验位" Margin="18,0,0,0"/><ComboBox Grid.Column="3" ItemsSource="{Binding ParityOptions}" SelectedItem="{Binding SelectedCommunication.Parity, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                        </Grid>
+                        <Grid Visibility="{Binding SelectedCommunication.IsModbusRtu, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="停止位"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.StopBits, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                            <TextBlock Grid.Column="2" Text="超时(ms)" Margin="18,0,0,0"/><TextBox Grid.Column="3" Text="{Binding SelectedCommunication.RequestTimeout, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                        </Grid>
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="轮询间隔(ms)"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.PollInterval, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                            <TextBlock Grid.Column="2" Text="自动重连" Margin="18,0,0,0"/><controls:ToggleSwitch Grid.Column="3" IsChecked="{Binding SelectedCommunication.AutoReconnect, Mode=TwoWay}" SwitchWidth="40" SwitchHeight="20" Margin="18,0,0,0"/>
+                        </Grid>
+                    </StackPanel>
+                    <Grid Visibility="{Binding SelectedCommunication.IsPlainSerial, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/></Grid.RowDefinitions>
+                        <TextBlock Text="串口号"/><ComboBox Grid.Column="1" ItemsSource="{Binding SerialPortOptions}" SelectedItem="{Binding SelectedCommunication.SerialPort, UpdateSourceTrigger=PropertyChanged}" IsEditable="False" ToolTip="选择当前主机检测到的串口" Height="32"/>
+                        <TextBlock Grid.Row="1" Text="波特率"/><ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding BaudRateOptions}" SelectedItem="{Binding SelectedCommunication.BaudRate, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Row="2" Text="数据位"/><TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SelectedCommunication.DataBits, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Row="3" Text="校验位"/><ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding ParityOptions}" SelectedItem="{Binding SelectedCommunication.Parity, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="停止位" Margin="18,0,0,0"/><TextBox Grid.Column="3" Text="{Binding SelectedCommunication.StopBits, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="字符超时(ms)" Margin="18,0,0,0"/><TextBox Grid.Row="1" Grid.Column="3" Text="{Binding SelectedCommunication.CharacterTimeout, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                    </Grid>
+                    <Grid Visibility="{Binding SelectedCommunication.IsOpcUa, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <TextBlock Text="服务端点"/><TextBox Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding SelectedCommunication.EndpointUrl, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Row="1" Text="安全模式"/><ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding OpcUaSecurityModeOptions}" SelectedItem="{Binding SelectedCommunication.SecurityMode, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="请求超时(ms)" Margin="18,0,0,0"/><TextBox Grid.Row="1" Grid.Column="3" Text="{Binding SelectedCommunication.RequestTimeout, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                        <TextBlock Grid.Row="2" Grid.ColumnSpan="4" Text="当前仅支持匿名身份；服务器若要求用户名/密码凭据，暂不支持连接。" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" VerticalAlignment="Center" Margin="0,2,0,6"/>
+                        <StackPanel Grid.Row="3" Grid.ColumnSpan="4" Margin="0,4,0,0">
+                            <TextBlock Text="服务器证书信任（仅显式导入的证书会被信任；变更在下次连接时生效）" FontSize="12" Margin="0,0,0,5"/>
+                            <ListBox Height="88" ItemsSource="{Binding TrustedOpcUaCertificates}" SelectedItem="{Binding SelectedTrustedOpcUaCertificate, Mode=TwoWay}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="4,2">
+                                            <TextBlock Text="{Binding Subject}" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Thumbprint}" FontSize="10" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                <Button Content="导入并信任证书…" Click="ImportOpcUaCertificate_Click" Height="28" Padding="10,2"/>
+                                <Button Content="撤销所选信任" Click="RemoveOpcUaCertificate_Click" Height="28" Padding="10,2" Margin="8,0,0,0" IsEnabled="{Binding HasSelectedTrustedOpcUaCertificate}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                    <Grid Visibility="{Binding SelectedCommunication.IsHttp, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/></Grid.RowDefinitions>
+                        <TextBlock Text="请求地址"/><TextBox Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding SelectedCommunication.Host, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Row="1" Text="请求方式"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedCommunication.HttpMethod, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="请求超时(ms)" Margin="18,0,0,0"/><TextBox Grid.Row="1" Grid.Column="3" Text="{Binding SelectedCommunication.RequestTimeout, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
+                    </Grid>
+                    <Grid Visibility="{Binding SelectedCommunication.IsRawProtocol, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <TextBlock Text="数据上传"/><controls:ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedCommunication.EnableDataUpload, Mode=TwoWay}" SwitchWidth="40" SwitchHeight="20"/>
+                        <TextBlock Grid.Column="2" Text="自动重连" Margin="18,0,0,0"/><controls:ToggleSwitch Grid.Column="3" IsChecked="{Binding SelectedCommunication.AutoReconnect, Mode=TwoWay}" SwitchWidth="40" SwitchHeight="20" Margin="18,0,0,0"/>
+                        <TextBlock Grid.Row="1" Text="接收结束符" VerticalAlignment="Center"/>
+                        <controls:ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding SelectedCommunication.EnableReceiveTerminator, Mode=TwoWay}" SwitchWidth="40" SwitchHeight="20"/>
+                        <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,2,0,0" Visibility="{Binding SelectedCommunication.EnableReceiveTerminator, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <TextBox MinHeight="76" MaxHeight="140" HorizontalAlignment="Stretch" FontSize="14" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" Padding="8,7" Text="{Binding SelectedCommunication.ReceiveTerminator, UpdateSourceTrigger=PropertyChanged}"/>
+                            <UniformGrid Columns="3" HorizontalAlignment="Left" Width="224" Margin="0,8,0,0">
+                                <Button Content="\r" Tag="\r" Height="30" Margin="0,0,6,0" Click="ReceiveTerminatorShortcut_Click"/>
+                                <Button Content="\n" Tag="\n" Height="30" Margin="0,0,6,0" Click="ReceiveTerminatorShortcut_Click"/>
+                                <Button Content="\r\n" Tag="\r\n" Height="30" Click="ReceiveTerminatorShortcut_Click"/>
+                            </UniformGrid>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+            <TabControl Grid.Row="2" Margin="14,4,0,10"
+                        Visibility="{Binding SelectedCommunication.IsRawProtocol, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TabControl.Template>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TabPanel Grid.Row="0" Grid.Column="0" IsItemsHost="True" Background="Transparent"/>
+                            <Grid Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                <StackPanel x:Name="ReceiveActions" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                                            Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                                            BorderThickness="1" CornerRadius="3" Padding="7,2" Margin="0,0,8,0">
+                                        <TextBlock Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                                                   FontWeight="SemiBold" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="文本"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedWorkspace.IsReceiveHexDisplay}" Value="True">
+                                                            <Setter Property="Text" Value="HEX"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                    <controls:ToggleSwitch IsChecked="{Binding SelectedWorkspace.IsReceiveHexDisplay, Mode=TwoWay}"
+                                                           SwitchWidth="42" SwitchHeight="20" Margin="0,0,8,0"/>
+                                    <Button Content="清空" Command="{Binding ClearReceivedDataCommand}"
+                                            Width="52" Height="24" Padding="4,0"/>
+                                </StackPanel>
+                                <StackPanel x:Name="SendActions" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
+                                    <Border BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                                            Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                                            BorderThickness="1" CornerRadius="3" Padding="7,2" Margin="0,0,8,0">
+                                        <TextBlock Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                                                   FontWeight="SemiBold" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="文本"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedWorkspace.IsSendHexInput}" Value="True">
+                                                            <Setter Property="Text" Value="HEX"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                    <controls:ToggleSwitch IsChecked="{Binding SelectedWorkspace.IsSendHexInput, Mode=TwoWay}"
+                                                           SwitchWidth="42" SwitchHeight="20" Margin="0,0,8,0"/>
+                                    <Button Content="清空" Command="{Binding ClearSentDataCommand}"
+                                            Width="52" Height="24" Padding="4,0"/>
+                                </StackPanel>
+                            </Grid>
+                            <ContentPresenter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                              ContentSource="SelectedContent" Margin="0,6,0,0"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="SelectedIndex" Value="1">
+                                <Setter TargetName="ReceiveActions" Property="Visibility" Value="Collapsed"/>
+                                <Setter TargetName="SendActions" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </TabControl.Template>
+                <TabItem Header="接收数据">
+                    <Grid Margin="8">
+                        <Border BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                                Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                                BorderThickness="1" CornerRadius="3">
+                            <TextBox Text="{Binding SelectedWorkspace.ReceivedText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
+                                     TextWrapping="Wrap" VerticalContentAlignment="Top" Padding="8"
+                                     BorderThickness="0" Background="Transparent"
+                                     Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                                     VerticalScrollBarVisibility="Auto" TextChanged="TrafficLog_TextChanged"/>
+                        </Border>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="发送数据">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Border BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                                Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                                BorderThickness="1" CornerRadius="3" Margin="0,0,0,8">
+                            <TextBox Text="{Binding SelectedWorkspace.SentText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
+                                     TextWrapping="Wrap" VerticalContentAlignment="Top" Padding="8"
+                                     BorderThickness="0" Background="Transparent"
+                                     Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                                     VerticalScrollBarVisibility="Auto" TextChanged="TrafficLog_TextChanged"/>
+                        </Border>
+                        <Border Grid.Row="1" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                                Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                                BorderThickness="1" CornerRadius="6" Padding="4" Margin="0,0,0,6"
+                                MaxHeight="112">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="72"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid Grid.Column="0" MinHeight="40">
+                                    <TextBox Text="{Binding SelectedWorkspace.SendText, UpdateSourceTrigger=PropertyChanged}"
+                                             MinHeight="40" MaxHeight="96" AcceptsReturn="True" TextWrapping="Wrap"
+                                             VerticalContentAlignment="Center" Padding="7,4"
+                                             BorderThickness="0" Background="Transparent"
+                                             Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                                             ToolTip="Enter 发送，Shift+Enter 换行"
+                                             VerticalScrollBarVisibility="Auto"
+                                             PreviewKeyDown="SendTextBox_PreviewKeyDown"/>
+                                    <TextBlock Text="输入消息…  Enter 发送，Shift+Enter 换行"
+                                               Margin="8,0,4,0" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
+                                               IsHitTestVisible="False">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedWorkspace.SendText}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                                <Button Grid.Column="1" Content="发送" Command="{Binding SendDataCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Height="32" Padding="10,4" FontSize="13"
+                                        VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+            <Border Grid.Row="2" Margin="14,8,0,10" Padding="12"
+                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                    Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
+                    BorderThickness="1" CornerRadius="4"
+                    Visibility="{Binding SelectedCommunication.IsModbus, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="寄存器地址" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <Grid Grid.Row="1" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="150"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="首地址" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <controls:NumericUpDown Grid.Column="1" Height="30" Minimum="0" Maximum="65535"
+                                                DecimalPlaces="0" ShowSlider="False"
+                                                IntValue="{Binding SelectedWorkspace.ModbusRegisterStartAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Column="2" Text="寄存器个数" VerticalAlignment="Center" Margin="20,0,8,0"/>
+                        <controls:NumericUpDown Grid.Column="3" Height="30" Minimum="1"
+                                                Maximum="{Binding SelectedWorkspace.MaxModbusRegisterCount}"
+                                                DecimalPlaces="0" ShowSlider="False"
+                                                IntValue="{Binding SelectedWorkspace.ModbusRegisterCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
+                    <DockPanel Grid.Row="2" Margin="0,0,0,6">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button Content="最大化" Style="{StaticResource SecondaryButtonStyle}" Height="28" Padding="10,2" Margin="4,0,0,0"/>
+                            <Button Content="隐藏空白行" Style="{StaticResource SecondaryButtonStyle}" Height="28" Padding="10,2" Margin="4,0,0,0"/>
+                            <Button Content="清空" Style="{StaticResource SecondaryButtonStyle}" Height="28" Padding="10,2" Margin="4,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock Text="地址空间" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <ScrollViewer Grid.Row="3" MinHeight="170" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,6">
+                        <StackPanel>
+                            <UniformGrid Columns="11" Height="30">
+                                <TextBlock Text="地址" TextAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="0" TextAlignment="Center" VerticalAlignment="Center"/><TextBlock Text="1" TextAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Text="2" TextAlignment="Center" VerticalAlignment="Center"/><TextBlock Text="3" TextAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Text="4" TextAlignment="Center" VerticalAlignment="Center"/><TextBlock Text="5" TextAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Text="6" TextAlignment="Center" VerticalAlignment="Center"/><TextBlock Text="7" TextAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Text="8" TextAlignment="Center" VerticalAlignment="Center"/><TextBlock Text="9" TextAlignment="Center" VerticalAlignment="Center"/>
+                            </UniformGrid>
+                            <ItemsControl ItemsSource="{Binding SelectedWorkspace.AddressSpaceRows}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                                        <Grid Height="54">
+                                                            <Grid.RowDefinitions><RowDefinition Height="18"/><RowDefinition Height="36"/></Grid.RowDefinitions>
+                                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Row="0"
+                                                    Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
+                                                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+                                                    BorderThickness="0,0,1,1">
+                                            </Border>
+                                            <Border Grid.Row="1"
+                                                    Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
+                                                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+                                                    BorderThickness="0,0,1,1">
+                                                <TextBlock Text="{Binding StartAddress}"
+                                                           TextAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
+                                            <Border Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="10"
+                                                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+                                                    BorderThickness="0,0,0,1">
+                                                <ItemsControl ItemsSource="{Binding Bars}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                                                                </Grid.ColumnDefinitions>
+                                                            </Grid>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemContainerStyle>
+                                                        <Style TargetType="ContentPresenter">
+                                                            <Setter Property="Grid.Column" Value="{Binding StartColumn}"/>
+                                                            <Setter Property="Grid.ColumnSpan" Value="{Binding ColumnSpan}"/>
+                                                        </Style>
+                                                    </ItemsControl.ItemContainerStyle>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Tag="{Binding}" MouseLeftButtonUp="ModbusAddressBar_Click"
+                                                                    ToolTip="点击编辑当前地址配置" Height="18"
+                                                                    BorderThickness="1,1,1,0">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.WarningBrush}}"/>
+                                                                        <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.WarningBrush}}"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Point.HasReceivedData}" Value="True">
+                                                                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}"/>
+                                                                                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}"/>
+                                                                            </DataTrigger>
+                                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                                <Setter Property="Opacity" Value="0.82"/>
+                                                                            </Trigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                                <Grid>
+                                                                    <TextBlock Text="{Binding BlockLabel}" Margin="3,0,22,0" FontSize="11"
+                                                                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                                                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                                                    <Border Tag="{Binding}" Width="20" Height="18" HorizontalAlignment="Right"
+                                                                            Background="Transparent" MouseLeftButtonUp="RemoveModbusAddressBar_Click">
+                                                                        <TextBlock Text="×" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
+                                                                            <TextBlock.Style>
+                                                                                <Style TargetType="TextBlock">
+                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                    <Style.Triggers>
+                                                                                        <MultiDataTrigger>
+                                                                                            <MultiDataTrigger.Conditions>
+                                                                                                <Condition Binding="{Binding IsLast}" Value="True"/>
+                                                                                                <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=Border}, Path=IsMouseOver}" Value="True"/>
+                                                                                            </MultiDataTrigger.Conditions>
+                                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                                        </MultiDataTrigger>
+                                                                                    </Style.Triggers>
+                                                                                </Style>
+                                                                            </TextBlock.Style>
+                                                                        </TextBlock>
+                                                                    </Border>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Border>
+                                            <ItemsControl Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="10" ItemsSource="{Binding Cells}">
+                                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="10"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Tag="{Binding}" MouseLeftButtonUp="ModbusAddressCell_Click"
+                                                                ToolTip="点击查看接收记录或配置地址">
+                                                            <Grid>
+                                                                <TextBlock Text="{Binding ValueText}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                            <Style.Triggers>
+                                                                                <MultiDataTrigger>
+                                                                                    <MultiDataTrigger.Conditions>
+                                                                                        <Condition Binding="{Binding IsConfigured}" Value="False"/>
+                                                                                        <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=Border}, Path=IsMouseOver}" Value="True"/>
+                                                                                    </MultiDataTrigger.Conditions>
+                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                </MultiDataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                                <TextBlock Text="＋" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            <Style.Triggers>
+                                                                                <MultiDataTrigger>
+                                                                                    <MultiDataTrigger.Conditions>
+                                                                                        <Condition Binding="{Binding IsConfigured}" Value="False"/>
+                                                                                        <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=Border}, Path=IsMouseOver}" Value="True"/>
+                                                                                    </MultiDataTrigger.Conditions>
+                                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                                </MultiDataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                            </Grid>
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
+                                                                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
+                                                                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsInRange}" Value="False">
+                                                                            <Setter Property="IsHitTestVisible" Value="False"/>
+                                                                            <Setter Property="Opacity" Value="0.45"/>
+                                                                        </DataTrigger>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
+                                                                        </Trigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                    <DockPanel Grid.Row="4" Margin="0,0,0,6">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button Content="数据同步" Click="SyncModbusData_Click" Style="{StaticResource SecondaryButtonStyle}" Height="30" Padding="12,3" Margin="4,0,0,0"/>
+                            <Button Content="发送测试" Click="SendModbusTest_Click" Style="{StaticResource SecondaryButtonStyle}" Height="30" Padding="12,3" Margin="4,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock Text="创建总数：" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding SelectedWorkspace.ModbusAddressPoints.Count}" VerticalAlignment="Center"/>
+                    </DockPanel>
+                </Grid>
+            </Border>
+            <Border Grid.Row="2" Margin="14,8,0,10" Padding="12"
+                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                    Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
+                    BorderThickness="1" CornerRadius="4"
+                    Visibility="{Binding SelectedCommunication.IsS7, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <TextBlock Text="S7 PLC 字节读写" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="95"/><ColumnDefinition Width="150"/><ColumnDefinition Width="60"/><ColumnDefinition Width="70"/><ColumnDefinition Width="65"/><ColumnDefinition Width="70"/><ColumnDefinition Width="65"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <ComboBox Grid.Column="0" ItemsSource="{Binding SelectedWorkspace.S7Areas}" SelectedItem="{Binding SelectedWorkspace.S7Area}" Height="32"/>
+                        <TextBlock Grid.Column="2" Text="DB" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                        <TextBox Grid.Column="3" Text="{Binding SelectedWorkspace.S7DataBlock, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Column="4" Text="起始字节" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                        <TextBox Grid.Column="5" Text="{Binding SelectedWorkspace.S7StartByte, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <TextBlock Grid.Column="6" Text="读取数" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                        <TextBox Grid.Column="7" Text="{Binding SelectedWorkspace.S7ByteCount, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="0,0,8,0"/>
+                        <Button Grid.Column="8" Content="执行" Command="{Binding ExecuteS7OperationCommand}" Style="{StaticResource PrimaryButtonStyle}" Height="32" Padding="12,4"/>
+                    </Grid>
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                        <DockPanel Margin="0,0,0,6">
+                            <TextBlock Text="写入 HEX（留空为读取）" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBox Width="230" Height="30" Text="{Binding SelectedWorkspace.S7WriteHex, UpdateSourceTrigger=PropertyChanged}"/>
+                        </DockPanel>
+                        <TextBox Grid.Row="1" Text="{Binding SelectedWorkspace.S7ResultText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Padding="8" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"/>
+                    </Grid>
+                </Grid>
+            </Border>
+            <Border Grid.Row="2" Margin="14,8,0,10" Padding="12"
+                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                    Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
+                    BorderThickness="1" CornerRadius="4"
+                    Visibility="{Binding SelectedCommunication.IsOpcUa, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <TextBlock Text="OPC UA 客户端" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <Grid Grid.Row="1" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="70"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="NodeId" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding SelectedWorkspace.OpcUaNodeId, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                        <Button Grid.Column="2" Content="浏览" Command="{Binding BrowseOpcUaCommand}" Height="32" Padding="12,4" Margin="8,0,0,0"/>
+                        <Button Grid.Column="3" Content="读取" Command="{Binding ReadOpcUaCommand}" Height="32" Padding="12,4" Margin="6,0,0,0"/>
+                        <Button Grid.Column="4" Content="订阅" Command="{Binding SubscribeOpcUaCommand}" Height="32" Padding="12,4" Margin="6,0,0,0"/>
+                        <Button Grid.Column="5" Content="取消订阅" Command="{Binding UnsubscribeOpcUaCommand}" Height="32" Padding="12,4" Margin="6,0,0,0"/>
+                    </Grid>
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <ListBox Grid.Column="0" ItemsSource="{Binding SelectedWorkspace.OpcUaBrowseItems}" DisplayMemberPath="DisplayName"
+                                 SelectedValuePath="NodeId" SelectedValue="{Binding SelectedWorkspace.OpcUaNodeId, UpdateSourceTrigger=PropertyChanged}"/>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="读写值" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding SelectedWorkspace.OpcUaValueText, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+                            <Button Content="写入" Command="{Binding WriteOpcUaCommand}" Height="32" Padding="12,4" Margin="0,8,0,0" HorizontalAlignment="Left"/>
+                            <DockPanel Margin="0,14,0,0">
+                                <TextBlock Text="采样间隔(ms)" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBox Text="{Binding SelectedWorkspace.OpcUaSamplingInterval, UpdateSourceTrigger=PropertyChanged}" Height="30" Width="90"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </Grid>
+                    <TextBox Grid.Row="3" Text="{Binding SelectedWorkspace.OpcUaResultText, Mode=OneWay}" IsReadOnly="True"
+                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="48" MaxHeight="100" Margin="0,8,0,0" Padding="8"
+                             VerticalScrollBarVisibility="Auto" Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                             BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"/>
+                </Grid>
+            </Border>
+            <Border Grid.Row="2" Margin="14,8,0,10" Padding="12"
+                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                    Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
+                    BorderThickness="1" CornerRadius="4"
+                    Visibility="{Binding SelectedCommunication.IsCip, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <TextBlock Text="EtherNet/IP CIP 显式消息" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <Grid Grid.Row="1" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="70"/><ColumnDefinition Width="72"/><ColumnDefinition Width="70"/><ColumnDefinition Width="90"/><ColumnDefinition Width="70"/><ColumnDefinition Width="80"/><ColumnDefinition Width="70"/><ColumnDefinition Width="80"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="服务码" VerticalAlignment="Center"/><TextBox Grid.Column="1" Text="{Binding SelectedWorkspace.CipService, UpdateSourceTrigger=PropertyChanged}" Height="30"/>
+                        <TextBlock Grid.Column="2" Text="Class" VerticalAlignment="Center" Margin="8,0,4,0"/><TextBox Grid.Column="3" Text="{Binding SelectedWorkspace.CipClassId, UpdateSourceTrigger=PropertyChanged}" Height="30"/>
+                        <TextBlock Grid.Column="4" Text="Instance" VerticalAlignment="Center" Margin="8,0,4,0"/><TextBox Grid.Column="5" Text="{Binding SelectedWorkspace.CipInstanceId, UpdateSourceTrigger=PropertyChanged}" Height="30"/>
+                        <TextBlock Grid.Column="6" Text="Attribute" VerticalAlignment="Center" Margin="8,0,4,0"/><TextBox Grid.Column="7" Text="{Binding SelectedWorkspace.CipAttributeId, UpdateSourceTrigger=PropertyChanged}" Height="30"/>
+                    </Grid>
+                    <Grid Grid.Row="2" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="请求数据 HEX（可空）" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding SelectedWorkspace.CipRequestDataHex, UpdateSourceTrigger=PropertyChanged}" Height="30"/>
+                        <Button Grid.Column="2" Content="执行" Command="{Binding ExecuteCipCommand}" Style="{StaticResource PrimaryButtonStyle}" Height="30" Padding="12,3" Margin="8,0,0,0"/>
+                    </Grid>
+                    <TextBox Grid.Row="3" Text="{Binding SelectedWorkspace.CipResultText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Padding="8" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"/>
+                </Grid>
+            </Border>
+            </Grid>
+        </Grid>
+
+        <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0">
             <Button Content="保存" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButtonStyle}" Width="80" Margin="0,0,10,0"/>
             <Button Content="关闭" Click="Close_Click" Style="{StaticResource SecondaryButtonStyle}" Width="80"/>
         </StackPanel>

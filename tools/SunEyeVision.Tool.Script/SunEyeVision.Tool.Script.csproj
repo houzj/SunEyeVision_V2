@@ -26,6 +26,8 @@
          · 部署规则「宿主有的不带」保证它们不进入 plugins\<工具>\。 -->
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+    <!-- Workflow 的 OPC UA 依赖要求 System.Text.Json >= 10.0.8；覆盖工具通用基线以避免包降级。 -->
+    <PackageReference Update="System.Text.Json" Version="10.0.8" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.12.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.12.0" />

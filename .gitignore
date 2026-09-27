@@ -213,3 +213,6 @@ plans/weekly.json
 # AI 会话记忆 (私有数据,不随 git 分发)
 .workbuddy/
 
+# MSBuild 隔离构建临时目录 (重定向的 obj 输出,含绝对路径与缓存,不入库)
+build_temp_verify/
+

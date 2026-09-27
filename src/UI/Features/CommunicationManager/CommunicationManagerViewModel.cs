@@ -6,7 +6,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Input;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
@@ -23,6 +25,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         private readonly SolutionManager _solutionManager;
         private readonly CommunicationRuntimeManager _runtimeManager = new();
         private readonly Dictionary<string, CommunicationDeviceWorkspaceViewModel> _deviceWorkspaces = new();
+        private readonly Dictionary<string, CancellationTokenSource> _modbusPollers = new();
 
         private CommunicationDeviceWorkspaceViewModel? _selectedWorkspace;
         public CommunicationDeviceWorkspaceViewModel? SelectedWorkspace
@@ -226,6 +229,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private void RemoveWorkspace(string communicationId)
         {
+            StopModbusPolling(communicationId);
             if (!_deviceWorkspaces.Remove(communicationId, out var workspace))
                 return;
 
@@ -255,7 +259,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             {
                 if (workspace.ModbusAddress is < 0 or > ushort.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(workspace.ModbusAddress), "地址必须在 0 到 65535 之间。");
-                var maxQuantity = workspace.ModbusOperation is "读取线圈" or "读取离散输入" ? 2000 : 125;
+                var maxQuantity = workspace.ModbusOperation == "读取离散输入" ? 2000 : 125;
                 if (workspace.ModbusCount < 1 || workspace.ModbusCount > maxQuantity)
                     throw new ArgumentOutOfRangeException(nameof(workspace.ModbusCount), $"当前操作的读取数量必须在 1 到 {maxQuantity} 之间。");
 
@@ -264,13 +268,6 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 string result;
                 switch (workspace.ModbusOperation)
                 {
-                    case "读取线圈":
-                    {
-                        if (workspace.ModbusCount > 2000) throw new ArgumentOutOfRangeException(nameof(workspace.ModbusCount), "线圈读取数量不能超过 2000。");
-                        var values = await _runtimeManager.ReadModbusCoilsAsync(workspace.Communication.Id, address, (ushort)workspace.ModbusCount);
-                        result = string.Join(", ", values.Select((value, index) => $"{address + index}: {(value ? 1 : 0)}"));
-                        break;
-                    }
                     case "读取离散输入":
                     {
                         if (workspace.ModbusCount > 2000) throw new ArgumentOutOfRangeException(nameof(workspace.ModbusCount), "离散输入读取数量不能超过 2000。");
@@ -290,37 +287,12 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                         result = string.Join(", ", values.Select((value, index) => $"{address + index}: {value} (0x{value:X4})"));
                         break;
                     }
-                    case "写单线圈":
-                    {
-                        bool value;
-                        if (bool.TryParse(workspace.ModbusWriteValue, out var parsedValue)) value = parsedValue;
-                        else if (workspace.ModbusWriteValue is "0" or "1") value = workspace.ModbusWriteValue == "1";
-                        else throw new FormatException("线圈值请输入 true/false 或 1/0。");
-                        await _runtimeManager.WriteModbusCoilAsync(workspace.Communication.Id, address, value);
-                        result = $"已写入线圈 {address}：{workspace.ModbusWriteValue}";
-                        break;
-                    }
                     case "写单寄存器":
                     {
                         if (!ushort.TryParse(workspace.ModbusWriteValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                             throw new FormatException("寄存器值请输入 0 到 65535 的整数。");
                         await _runtimeManager.WriteModbusRegisterAsync(workspace.Communication.Id, address, value);
                         result = $"已写入寄存器 {address}：{value} (0x{value:X4})";
-                        break;
-                    }
-                    case "写多个线圈":
-                    {
-                        var values = workspace.ModbusWriteValue.Split(new[] { ',', ';', ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                            .Select(token => token switch
-                            {
-                                "1" => true,
-                                "0" => false,
-                                _ when bool.TryParse(token, out var parsed) => parsed,
-                                _ => throw new FormatException($"线圈值“{token}”无效，请使用 true/false 或 1/0，并以逗号或空格分隔。")
-                            }).ToArray();
-                        if (values.Length != workspace.ModbusCount) throw new FormatException("多线圈写入数量必须与“数量”字段一致。");
-                        await _runtimeManager.WriteModbusCoilsAsync(workspace.Communication.Id, address, values);
-                        result = $"已写入 {values.Length} 个线圈：{string.Join(", ", values.Select(value => value ? "1" : "0"))}";
                         break;
                     }
                     case "写多个寄存器":
@@ -598,12 +570,14 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         {
             var device = target ?? SelectedCommunication;
             if (device == null || !_deviceWorkspaces.TryGetValue(device.Id, out var workspace)) return;
+            LogInfo($"[Modbus诊断] 设备开关触发：设备={device.Name}({device.Id}), 当前连接={_runtimeManager.IsConnected(device.Id)}, 协议={device.ProtocolDisplayName}, 端点={device.GetConnectionString()}", target: LogTarget.File | LogTarget.UI);
             workspace.IsBusy = true;
             device.IsRuntimeOperationInProgress = true;
             try
             {
                 if (_runtimeManager.IsConnected(device.Id))
                 {
+                    StopModbusPolling(device.Id);
                     await _runtimeManager.DisconnectAsync(device.Id);
                     device.RuntimeStatus = CommunicationRuntimeStatus.Disconnected;
                     LogInfo(device.IsTcpServer ? $"已停止监听 {device.Name}" : device.IsUdp ? $"已解除 UDP 绑定 {device.Name}" : $"已断开 {device.Name}");
@@ -613,11 +587,15 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                     device.RuntimeStatus = CommunicationRuntimeStatus.Connecting;
                     await _runtimeManager.ConnectAsync(device);
                     device.RuntimeStatus = CommunicationRuntimeStatus.Connected;
+                    if (device.IsModbus)
+                        StartModbusPolling(device, workspace);
+                    LogInfo($"[Modbus诊断] 设备连接完成：设备={device.Name}({device.Id}), 站号={device.UnitId}, 设备轮询间隔={device.PollInterval}ms, 地址块总数={workspace.ModbusAddressPoints.Count}, 已启用地址块={workspace.ModbusAddressPoints.Count(point => point.PollEnabled)}", target: LogTarget.File | LogTarget.UI);
                     LogSuccess(device.IsTcpServer ? $"已开始监听 {device.GetConnectionString()}" : device.IsUdp ? $"UDP 本机端口已绑定：{device.GetConnectionString()}" : $"已连接 {device.Name}");
                 }
             }
             catch (Exception ex)
             {
+                StopModbusPolling(device.Id);
                 device.RuntimeStatus = CommunicationRuntimeStatus.Faulted;
                 LogError($"连接失败：{ex.Message}");
             }
@@ -628,6 +606,205 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 if (SelectedCommunication?.Id == device.Id)
                     OnPropertyChanged(nameof(IsSelectedConnected));
                 CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        private void StartModbusPolling(Communication device, CommunicationDeviceWorkspaceViewModel workspace)
+        {
+            StopModbusPolling(device.Id);
+            var cancellation = new CancellationTokenSource();
+            _modbusPollers[device.Id] = cancellation;
+            LogInfo($"[Modbus诊断] 启动持续轮询：设备={device.Name}({device.Id}), 设备轮询间隔={Math.Clamp(device.PollInterval, 100, 60000)}ms, 地址块={workspace.ModbusAddressPoints.Count}, 启用={workspace.ModbusAddressPoints.Count(point => point.PollEnabled)}", target: LogTarget.File | LogTarget.UI);
+            _ = PollModbusAddressPointsAsync(device, workspace, cancellation.Token);
+        }
+
+        private void StopModbusPolling(string communicationId)
+        {
+            if (_modbusPollers.Remove(communicationId, out var cancellation))
+            {
+                cancellation.Cancel();
+                LogInfo($"[Modbus诊断] 停止轮询任务：设备={communicationId}", target: LogTarget.File | LogTarget.UI);
+            }
+            if (_deviceWorkspaces.TryGetValue(communicationId, out var workspace))
+                workspace.ClearModbusPollStatus();
+        }
+
+        public async Task SyncModbusDataAsync()
+        {
+            var workspace = SelectedWorkspace;
+            if (workspace == null || workspace.IsBusy || !workspace.Communication.IsModbus)
+                return;
+            var device = workspace.Communication;
+            if (!_runtimeManager.IsConnected(device.Id))
+            {
+                LogWarning("请先连接 Modbus 设备，再执行数据同步。");
+                return;
+            }
+            var points = workspace.ModbusAddressPoints.Where(point => point.AccessMode != "只写").ToArray();
+            if (points.Length == 0)
+            {
+                LogWarning("没有已配置的可读地址块，无法执行数据同步。");
+                return;
+            }
+
+            workspace.IsBusy = true;
+            var updates = new List<ModbusPollUpdate>();
+            var failures = 0;
+            try
+            {
+                var lifetime = _modbusPollers.TryGetValue(device.Id, out var poller)
+                    ? poller.Token : CancellationToken.None;
+                foreach (var point in points)
+                {
+                    if (lifetime.IsCancellationRequested) break;
+                    var startAddress = point.StartAddress;
+                    var count = point.Count;
+                    if (count is < 1 or > 125 || startAddress < 0 ||
+                        (long)startAddress + count - 1 > ushort.MaxValue)
+                    {
+                        failures++;
+                        LogWarning($"数据同步跳过“{point.Name}”：FC03 一次最多读取 125 个有效寄存器。");
+                        continue;
+                    }
+                    try
+                    {
+                        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(lifetime);
+                        timeout.CancelAfter(Math.Clamp(point.TimeoutMs, 50, 120000));
+                        var values = await _runtimeManager.ReadModbusHoldingRegistersAsync(device.Id,
+                            (ushort)startAddress, (ushort)count, timeout.Token);
+                        updates.Add(new ModbusPollUpdate(point, values, DateTimeOffset.Now, startAddress));
+                    }
+                    catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { break; }
+                    catch (OperationCanceledException)
+                    {
+                        failures++;
+                        LogWarning($"数据同步读取“{point.Name}”超时（{point.TimeoutMs} ms）。");
+                    }
+                    catch (Exception ex)
+                    {
+                        failures++;
+                        LogWarning($"数据同步读取“{point.Name}”失败：{ex.Message}");
+                    }
+                }
+                if (lifetime.IsCancellationRequested)
+                {
+                    workspace.ModbusResultText = "设备已断开，数据同步已取消。";
+                    LogWarning($"{device.Name}：{workspace.ModbusResultText}");
+                    return;
+                }
+                var applied = workspace.ApplyModbusSyncResults(updates);
+                workspace.ModbusResultText = $"数据同步完成：更新 {applied} 个地址块，失败 {failures} 个。";
+                LogInfo($"{device.Name}：{workspace.ModbusResultText}", target: LogTarget.File | LogTarget.UI);
+            }
+            finally
+            {
+                workspace.IsBusy = false;
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        public async Task SendModbusTestAsync(CommunicationDeviceWorkspaceViewModel workspace,
+            ModbusAddressPoint point, string dataType, string content)
+        {
+            if (workspace.IsBusy || !workspace.Communication.IsModbus ||
+                !_runtimeManager.IsConnected(workspace.Communication.Id))
+                throw new InvalidOperationException("请先连接 Modbus 设备，且等待当前操作完成。");
+            if (!workspace.ModbusAddressPoints.Contains(point))
+                throw new InvalidOperationException("所选地址块已被删除，请重新选择。");
+            var startAddress = point.StartAddress;
+            var configuredCount = point.Count;
+            var payload = ModbusSendTestEncoder.EncodeDetailed(point, dataType, content);
+            var values = payload.Registers;
+            workspace.IsBusy = true;
+            var writtenCount = 0;
+            try
+            {
+                var lifetime = _modbusPollers.TryGetValue(workspace.Communication.Id, out var poller)
+                    ? poller.Token : CancellationToken.None;
+                while (writtenCount < values.Length)
+                {
+                    if (!workspace.ModbusAddressPoints.Contains(point) ||
+                        point.StartAddress != startAddress || point.Count != configuredCount ||
+                        point.AccessMode == "只读")
+                        throw new InvalidOperationException("地址块在发送过程中发生变更，已停止后续写入。");
+                    var maxChunk = dataType is "int" or "float" && point.IntBits == "32bit" ? 122 : 123;
+                    var chunkCount = Math.Min(maxChunk, values.Length - writtenCount);
+                    using var timeout = CancellationTokenSource.CreateLinkedTokenSource(lifetime);
+                    timeout.CancelAfter(Math.Clamp(point.TimeoutMs, 50, 120000));
+                    var address = checked((ushort)(startAddress + writtenCount));
+                    if (chunkCount == 1)
+                        await _runtimeManager.WriteModbusRegisterAsync(workspace.Communication.Id,
+                            address, values[writtenCount], timeout.Token);
+                    else
+                    {
+                        var chunk = new ushort[chunkCount];
+                        Array.Copy(values, writtenCount, chunk, 0, chunkCount);
+                        await _runtimeManager.WriteModbusRegistersAsync(workspace.Communication.Id,
+                            address, chunk, timeout.Token);
+                    }
+                    writtenCount += chunkCount;
+                }
+                workspace.ModbusResultText =
+                    $"发送测试成功：{point.Name}，地址 {startAddress}–{startAddress + writtenCount - 1}，写入 {writtenCount}/{configuredCount} 个寄存器。" +
+                    (payload.TruncationMessage.Length > 0 ? $" {payload.TruncationMessage}" : string.Empty);
+                LogSuccess($"{workspace.Communication.Name}：{workspace.ModbusResultText}");
+            }
+            catch (Exception ex)
+            {
+                var detail = writtenCount > 0
+                    ? $"已写入前 {writtenCount} 个寄存器，后续失败：{ex.Message}"
+                    : ex.Message;
+                LogError($"{workspace.Communication.Name} 发送测试失败：{detail}");
+                throw new InvalidOperationException(detail, ex);
+            }
+            finally
+            {
+                workspace.IsBusy = false;
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        private async Task PollModbusAddressPointsAsync(Communication device, CommunicationDeviceWorkspaceViewModel workspace, CancellationToken cancellationToken)
+        {
+            int? lastEnabledPointCount = null;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var pendingUpdates = new List<ModbusPollUpdate>();
+                var points = workspace.ModbusAddressPoints.Where(point => point.PollEnabled && point.AccessMode != "只写").ToArray();
+                var delay = Math.Clamp(device.PollInterval, 100, 60000);
+                if (lastEnabledPointCount != points.Length)
+                {
+                    lastEnabledPointCount = points.Length;
+                    LogInfo($"[Modbus诊断] 轮询地址块快照：设备={device.Name}({device.Id}), 启用数量={points.Length}, 地址={string.Join(",", points.Select(point => $"{point.Name}:{point.StartAddress}+{point.Count}"))}", target: LogTarget.File | LogTarget.UI);
+                }
+                foreach (var point in points)
+                {
+                    if (cancellationToken.IsCancellationRequested) break;
+                    var startAddress = point.StartAddress;
+                    var count = point.Count;
+                    try
+                    {
+                        using var requestTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                        var timeoutMs = Math.Clamp(point.TimeoutMs, 50, 120000);
+                        requestTimeout.CancelAfter(timeoutMs);
+                        LogInfo($"[Modbus诊断] 发起轮询读取：设备={device.Name}({device.Id}), 站号={device.UnitId}, 地址={point.StartAddress}, 数量={point.Count}, 超时={timeoutMs}ms, 名称={point.Name}", target: LogTarget.File);
+                        var values = await _runtimeManager.ReadModbusHoldingRegistersAsync(device.Id, checked((ushort)startAddress), checked((ushort)count), requestTimeout.Token);
+                        LogInfo($"[Modbus诊断] 读取返回：设备={device.Name}({device.Id}), 地址={startAddress}, 数量={values.Length}, 原始值={string.Join(",", values.Select(value => $"0x{value:X4}"))}", target: LogTarget.File);
+                        pendingUpdates.Add(new ModbusPollUpdate(point, values, DateTimeOffset.Now, startAddress));
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return; }
+                    catch (OperationCanceledException) { LogWarning($"[Modbus诊断] {device.Name} 地址 {point.RangeText} 轮询超时（{point.TimeoutMs} ms）。", target: LogTarget.File | LogTarget.UI); }
+                    catch (Exception ex) { LogWarning($"[Modbus诊断] {device.Name} 地址 {point.RangeText} 轮询失败：{ex.Message}", target: LogTarget.File | LogTarget.UI); }
+                }
+
+                if (pendingUpdates.Count > 0 && !cancellationToken.IsCancellationRequested)
+                {
+                    var appliedCount = await System.Windows.Application.Current.Dispatcher.InvokeAsync(
+                        () => workspace.ApplyModbusPollResults(pendingUpdates));
+                    LogInfo($"[Modbus诊断] 地址空间批量回写完成：设备={device.Name}({device.Id}), 返回块数={pendingUpdates.Count}, 实际更新={appliedCount}", target: LogTarget.File);
+                }
+                try { await Task.Delay(delay, cancellationToken); }
+                catch (OperationCanceledException) { return; }
             }
         }
 
@@ -684,6 +861,9 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         {
             System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
             {
+                if (_runtimeManager.IsConnected(e.CommunicationId))
+                    return;
+                StopModbusPolling(e.CommunicationId);
                 if (!_deviceWorkspaces.TryGetValue(e.CommunicationId, out var workspace)) return;
                 workspace.Communication.RuntimeStatus = CommunicationRuntimeStatus.Disconnected;
                 if (SelectedCommunication?.Id == e.CommunicationId)
@@ -733,6 +913,8 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         private void Close()
         {
             LogInfo("关闭通讯管理器");
+            foreach (var communicationId in _modbusPollers.Keys.ToArray())
+                StopModbusPolling(communicationId);
             _ = _runtimeManager.DisposeAsync();
         }
 
@@ -740,6 +922,8 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         {
             _runtimeManager.DataReceived -= RuntimeManager_DataReceived;
             _runtimeManager.ConnectionClosed -= RuntimeManager_ConnectionClosed;
+            foreach (var communicationId in _modbusPollers.Keys.ToArray())
+                StopModbusPolling(communicationId);
             await _runtimeManager.DisposeAsync();
             foreach (var workspace in _deviceWorkspaces.Values)
                 workspace.PropertyChanged -= Workspace_PropertyChanged;

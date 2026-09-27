@@ -17,6 +17,7 @@ using InvalidDataException = System.IO.InvalidDataException;
 using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.Configuration;
+using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.Workflow;
 
@@ -25,6 +26,10 @@ public sealed class CommunicationRuntimeManager : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<string, ICommunicationSession> _sessions = new();
     private readonly string _opcUaCertificateStoreRoot;
+
+    private static void ModbusDiagnostic(LogLevel level, string message, Exception? exception = null) =>
+        VisionLogger.Instance.Log(level, $"[Modbus诊断] {message}", "CommunicationRuntime", exception,
+            LogTarget.File | LogTarget.UI);
 
     public CommunicationRuntimeManager(string? opcUaCertificateStoreRoot = null)
     {
@@ -48,6 +53,8 @@ public sealed class CommunicationRuntimeManager : IAsyncDisposable
     public async Task ConnectAsync(Communication communication, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(communication);
+        if (communication.IsModbus)
+            ModbusDiagnostic(LogLevel.Info, $"运行时连接开始：设备={communication.Name}({communication.Id}), 模式={communication.ModbusMode}, 目标={communication.Host}:{communication.Port}, 串口={communication.SerialPort}, 波特率={communication.BaudRate}, 站号={communication.UnitId}, 请求超时={communication.RequestTimeout}ms");
         ValidateSupportedSettings(communication);
         ICommunicationSession session = communication.ProtocolKey switch
         {
@@ -73,9 +80,13 @@ public sealed class CommunicationRuntimeManager : IAsyncDisposable
         try
         {
             await session.ConnectAsync(cancellationToken).ConfigureAwait(false);
+            if (communication.IsModbus)
+                ModbusDiagnostic(LogLevel.Info, $"运行时连接成功：设备={communication.Name}({communication.Id}), 会话类型={session.GetType().Name}, IsConnected={session.IsConnected}");
         }
-        catch
+        catch (Exception ex)
         {
+            if (communication.IsModbus)
+                ModbusDiagnostic(LogLevel.Error, $"运行时连接失败：设备={communication.Name}({communication.Id}), 错误={ex.Message}", ex);
             _sessions.TryRemove(communication.Id, out _);
             session.DataReceived -= OnDataReceived;
             session.ConnectionClosed -= OnConnectionClosed;
@@ -87,6 +98,8 @@ public sealed class CommunicationRuntimeManager : IAsyncDisposable
     public async Task DisconnectAsync(string communicationId)
     {
         if (!_sessions.TryRemove(communicationId, out var session)) return;
+        if (session is ModbusSession)
+            ModbusDiagnostic(LogLevel.Info, $"运行时断开连接：设备={communicationId}");
         session.DataReceived -= OnDataReceived;
         session.ConnectionClosed -= OnConnectionClosed;
         await session.DisposeAsync().ConfigureAwait(false);
@@ -887,6 +900,7 @@ public sealed class CommunicationRuntimeManager : IAsyncDisposable
         private PortStreamResource? _serialResource;
         private IModbusMaster? _master;
         private int _disposed;
+        private long _operationSequence;
 
         public event EventHandler<CommunicationDataReceivedEventArgs>? DataReceived;
         public event EventHandler<CommunicationConnectionClosedEventArgs>? ConnectionClosed;
@@ -897,6 +911,7 @@ public sealed class CommunicationRuntimeManager : IAsyncDisposable
         public async Task ConnectAsync(CancellationToken cancellationToken)
         {
             var factory = new ModbusFactory();
+            ModbusDiagnostic(LogLevel.Info, $"Modbus会话连接：设备={_communication.Name}({_communication.Id}), 类型={(_communication.IsModbusRtu ? "RTU" : "TCP")}, 站号={_communication.UnitId}, 请求超时={GetTimeout(_communication).TotalMilliseconds:0}ms");
             if (!_communication.IsModbusRtu)
             {
                 _tcpClient = new TcpClient();
@@ -920,6 +935,7 @@ public sealed class CommunicationRuntimeManager : IAsyncDisposable
             _master.Transport.ReadTimeout = (int)GetTimeout(_communication).TotalMilliseconds;
             _master.Transport.WriteTimeout = (int)GetTimeout(_communication).TotalMilliseconds;
             _master.Transport.Retries = 0;
+            ModbusDiagnostic(LogLevel.Info, $"Modbus会话已就绪：设备={_communication.Name}({_communication.Id}), 传输读超时={_master.Transport.ReadTimeout}ms, 写超时={_master.Transport.WriteTimeout}ms, 重试={_master.Transport.Retries}, TCP已连接={_tcpClient?.Connected}, 串口已打开={_serialPort?.IsOpen}");
         }
 
         public Task<int> SendAsync(ReadOnlyMemory<byte> payload, CancellationToken cancellationToken) =>
@@ -931,8 +947,27 @@ public sealed class CommunicationRuntimeManager : IAsyncDisposable
         public Task<bool[]> ReadInputsAsync(ushort address, ushort count, CancellationToken cancellationToken) =>
             ExecuteAsync(master => master.ReadInputsAsync(GetUnitId(), address, count), cancellationToken);
 
-        public Task<ushort[]> ReadHoldingRegistersAsync(ushort address, ushort count, CancellationToken cancellationToken) =>
-            ExecuteAsync(master => master.ReadHoldingRegistersAsync(GetUnitId(), address, count), cancellationToken);
+        public async Task<ushort[]> ReadHoldingRegistersAsync(ushort address, ushort count, CancellationToken cancellationToken)
+        {
+            var operationId = Interlocked.Increment(ref _operationSequence);
+            var started = System.Diagnostics.Stopwatch.GetTimestamp();
+            var unitId = GetUnitId();
+            ModbusDiagnostic(LogLevel.Info, $"FC03请求开始：设备={_communication.Name}({_communication.Id}), 操作={operationId}, 站号={unitId}, 地址={address}, 数量={count}, 取消状态={cancellationToken.IsCancellationRequested}");
+            try
+            {
+                var values = await ExecuteAsync(master => master.ReadHoldingRegistersAsync(unitId, address, count), cancellationToken).ConfigureAwait(false);
+                var elapsedMs = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                ModbusDiagnostic(LogLevel.Info, $"FC03请求完成：设备={_communication.Name}({_communication.Id}), 操作={operationId}, 耗时={elapsedMs:0.0}ms, 返回数量={values.Length}, 返回值={string.Join(",", values.Select(value => $"0x{value:X4}"))}");
+                return values;
+            }
+            catch (Exception ex)
+            {
+                var elapsedMs = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                ModbusDiagnostic(ex is OperationCanceledException ? LogLevel.Warning : LogLevel.Error,
+                    $"FC03请求失败：设备={_communication.Name}({_communication.Id}), 操作={operationId}, 耗时={elapsedMs:0.0}ms, 地址={address}, 数量={count}, 错误类型={ex.GetType().Name}, 错误={ex.Message}", ex);
+                throw;
+            }
+        }
 
         public Task<ushort[]> ReadInputRegistersAsync(ushort address, ushort count, CancellationToken cancellationToken) =>
             ExecuteAsync(master => master.ReadInputRegistersAsync(GetUnitId(), address, count), cancellationToken);

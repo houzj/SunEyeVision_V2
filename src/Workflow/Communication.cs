@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 
@@ -373,6 +374,11 @@ public class Communication : ObservableObject
     public Dictionary<string, object> Mapping { get; set; } = new();
 
     /// <summary>
+    /// Modbus 地址空间配置。每项代表一个连续的寄存器地址块。
+    /// </summary>
+    public List<ModbusAddressPoint> ModbusAddressPoints { get; set; } = new();
+
+    /// <summary>
     /// 创建时间
     /// </summary>
     public DateTime CreatedTime { get; set; } = DateTime.Now;
@@ -412,6 +418,7 @@ public class Communication : ObservableObject
             Description = Description,
             Settings = new Dictionary<string, object>(Settings),
             Mapping = new Dictionary<string, object>(Mapping),
+            ModbusAddressPoints = ModbusAddressPoints.Select(point => point.Clone()).ToList(),
             CreatedTime = CreatedTime,
             ModifiedTime = DateTime.Now
         };

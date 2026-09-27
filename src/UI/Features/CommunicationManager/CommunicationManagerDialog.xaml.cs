@@ -83,6 +83,112 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             Close();
         }
 
+        private void AddModbusAddressPoint_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager && manager.SelectedWorkspace != null)
+                manager.SelectedWorkspace.AddModbusAddressPoint();
+        }
+
+        private void RemoveModbusAddressPoint_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager &&
+                manager.SelectedWorkspace != null &&
+                sender is FrameworkElement { Tag: ModbusAddressPoint point })
+            {
+                manager.SelectedWorkspace.RemoveModbusAddressPoint(point);
+            }
+        }
+
+        private void ModbusAddressCell_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is not CommunicationManagerViewModel manager ||
+                manager.SelectedWorkspace == null ||
+                sender is not FrameworkElement cell ||
+                cell.Tag is not ModbusAddressSpaceCell { IsInRange: true } addressCell)
+                return;
+
+            if (addressCell.Point == null)
+            {
+                var editor = new ModbusAddressPointEditorViewModel(addressCell.Address);
+                var dialog = new ModbusAddressPointDialog(editor) { Owner = this };
+                if (dialog.ShowDialog() != true || editor.Result == null)
+                    return;
+
+                SaveModbusAddressPoint(manager, editor.Result);
+                return;
+            }
+
+            var recordsDialog = new ModbusReceiveRecordsDialog(addressCell.Point) { Owner = this };
+            recordsDialog.ShowDialog();
+        }
+
+        private void ModbusAddressBar_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is not CommunicationManagerViewModel manager ||
+                manager.SelectedWorkspace == null ||
+                sender is not FrameworkElement { Tag: ModbusAddressBarSegment { Point: { } point } })
+                return;
+
+            var editor = new ModbusAddressPointEditorViewModel(point.StartAddress, point);
+            var dialog = new ModbusAddressPointDialog(editor) { Owner = this };
+            if (dialog.ShowDialog() == true && editor.Result != null)
+                SaveModbusAddressPoint(manager, editor.Result);
+        }
+
+        private void SaveModbusAddressPoint(CommunicationManagerViewModel manager, ModbusAddressPoint point)
+        {
+            if (manager.SelectedWorkspace == null)
+                return;
+
+            if (!manager.SelectedWorkspace.TrySaveModbusAddressPoint(point, out var error))
+            {
+                MessageBox.Show(this, error, "地址配置冲突", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            manager.SelectedWorkspace.ModbusAddress = point.StartAddress;
+            manager.SelectedWorkspace.ModbusCount = point.Count;
+            manager.SelectedWorkspace.ModbusResultText = $"已配置地址 {point.Name}（{point.RangeText}）。";
+        }
+
+        private void RemoveModbusAddressBar_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement { Tag: ModbusAddressBarSegment { Point: { } point } } &&
+                DataContext is CommunicationManagerViewModel manager &&
+                manager.SelectedWorkspace != null)
+            {
+                manager.SelectedWorkspace.RemoveModbusAddressPoint(point);
+                e.Handled = true;
+            }
+        }
+
+        private async void SyncModbusData_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not CommunicationManagerViewModel manager)
+                return;
+            try
+            {
+                await manager.SyncModbusDataAsync();
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "数据同步失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void SendModbusTest_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not CommunicationManagerViewModel manager ||
+                manager.SelectedWorkspace is not { } workspace)
+                return;
+            if (workspace.ModbusAddressPoints.Count == 0)
+            {
+                MessageBox.Show(this, "请先分配至少一个地址块。", "发送测试", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            new ModbusSendTestDialog(manager, workspace) { Owner = this }.ShowDialog();
+        }
+
         private void TrafficLog_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender is TextBox textBox)

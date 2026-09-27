@@ -86,21 +86,14 @@ namespace SunEyeVision.UI.Features.Camera
         public bool IsGigEVisionSelected
         {
             get => _isGigEVisionSelected;
-            set => SetInterfaceSelection(ref _isGigEVisionSelected, value, IsUsb3VisionSelected, IsSimulationSelected);
+            set => SetInterfaceSelection(ref _isGigEVisionSelected, value, IsUsb3VisionSelected);
         }
 
         private bool _isUsb3VisionSelected;
         public bool IsUsb3VisionSelected
         {
             get => _isUsb3VisionSelected;
-            set => SetInterfaceSelection(ref _isUsb3VisionSelected, value, IsGigEVisionSelected, IsSimulationSelected);
-        }
-
-        private bool _isSimulationSelected;
-        public bool IsSimulationSelected
-        {
-            get => _isSimulationSelected;
-            set => SetInterfaceSelection(ref _isSimulationSelected, value, IsGigEVisionSelected, IsUsb3VisionSelected);
+            set => SetInterfaceSelection(ref _isUsb3VisionSelected, value, IsGigEVisionSelected);
         }
         
         /// <summary>
@@ -150,10 +143,10 @@ namespace SunEyeVision.UI.Features.Camera
             VisionLogger.Instance.Log(LogLevel.Info, "添加相机 ViewModel 初始化完成", "AddCameraViewModel");
         }
 
-        private void SetInterfaceSelection(ref bool field, bool value, bool otherOne, bool otherTwo)
+        private void SetInterfaceSelection(ref bool field, bool value, bool otherOne)
         {
             // 至少保留一个接口，避免点击搜索时产生“什么都没搜”的隐式行为。
-            if (!value && !otherOne && !otherTwo)
+            if (!value && !otherOne)
             {
                 return;
             }
@@ -166,7 +159,6 @@ namespace SunEyeVision.UI.Features.Camera
             var transports = new HashSet<CameraTransportKind>();
             if (IsGigEVisionSelected) transports.Add(CameraTransportKind.GigEVision);
             if (IsUsb3VisionSelected) transports.Add(CameraTransportKind.Usb3Vision);
-            if (IsSimulationSelected) transports.Add(CameraTransportKind.Simulation);
             return transports;
         }
         

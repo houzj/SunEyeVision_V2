@@ -84,7 +84,6 @@
                 <TextBlock Text="搜索接口：" VerticalAlignment="Center" FontSize="13"/>
                 <CheckBox Content="GigE" IsChecked="{Binding IsGigEVisionSelected}" Margin="4,0,12,0"/>
                 <CheckBox Content="USB3" IsChecked="{Binding IsUsb3VisionSelected}" Margin="0,0,12,0"/>
-                <CheckBox Content="模拟" IsChecked="{Binding IsSimulationSelected}"/>
             </StackPanel>
             <TextBlock Text="{Binding SearchStatus}" Grid.ColumnSpan="3"
                        Grid.Row="1" VerticalAlignment="Center" Margin="0,8,0,0"

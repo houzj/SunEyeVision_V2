@@ -326,3 +326,7 @@
 - 2026-09-25 主界面加载遮罩实施完成：`MainWindow` 新增方案加载遮罩及阶段/耗时显示；配置方案流程在 `SetCurrentSolution` 后立即显示主界面并覆盖遮罩，异步恢复相机最多等待 10 秒，成功、失败或超时后更新提示并解除遮罩；不再新增独立加载窗口，现有预览窗口保持不变。UI Debug 构建成功，0 个错误、1002 个既有警告，输出 `dev\\Debug`，待用户启动并双击方案验收。
 - 2026-09-25 相机预览参数类型转换修复：确认 `17301505` 是 GenICam/MVS `PixelFormat=Mono8` 枚举值（`0x01080001`），不是布尔值。根因是参数模板为所有参数创建隐藏 ToggleSwitch，WPF 仍提前读取 `BooleanValue`，旧实现无条件 `Convert.ToBoolean` 导致枚举值触发 `FormatException`。现改为 `BooleanValue` 先检查 `Kind == Boolean`，布尔转换仅接受 `true/false` 或 `0/1`；枚举值保留原值并继续走枚举显示/写入路径。UI Debug 构建成功，0 个错误、740 个既有警告。
 - 2026-09-25 预览关闭保持连接修复：确认设备列表的已连接状态可能来自应用级运行时会话，而 `CameraDetailViewModel._session` 尚未同步；预览前只检查后者会误判为预览新建连接，关闭时释放原连接。现同时检查 `Runtime.TryGetSession`、详情会话和 `CameraDevice.IsConnected`，只有预览前确实未连接时才由预览关闭释放会话。UI Debug 构建成功，0 个错误、740 个既有警告。
+- 2026-09-25 相机接入范围收口：按用户要求，正式相机管理和添加相机界面不再接入/显示模拟相机；`CameraRuntimeComposition` 仅注册海康 MVS 工厂和发现器，添加相机仅保留 GigE/USB3 真实接口。模拟相机底层源码暂不删除，保留给已有独立测试项目使用；UI Debug 构建待本次改动完成后验证。
+- 2026-09-25 模拟相机正式入口移除已完成：`CameraRuntimeComposition` 仅保留海康 MVS 发现器/工厂，添加相机界面仅显示 GigE 和 USB3，不再显示模拟接口；模拟相机底层源码保留给已有独立测试项目。两次 UI Debug 构建均被运行中进程锁定输出文件（先是 Plugin.SDK/CvEngine XML，后是 `build_temp` 中对应 DLL），未产生代码编译错误汇总，需关闭占用进程后重建确认。
+- 2026-09-25 模拟相机正式入口移除最终构建：修复 `AddCameraViewModel` 中残留的接口选择条件后，UI Debug 构建已成功完成，0 个错误、740 个既有警告；输出目录为 `D:\MyWork\SunEyeVision_V2\dev\Debug`。正式运行时相机管理仅接入真实海康 MVS GigE/USB3，相机模拟源码仍保留给独立测试使用。
+- 2026-09-25 相机实现与开发说明落盘：新增 `docs/05-框架架构/2026/09/25/相机实现与开发说明-20260925.md`，整合 SDK 契约、DeviceDriver 核心实现、App 组装、UI/Workflow 调用边界、运行时会话生命周期、方案持久化、厂商适配器扩展、参数类型兼容、项目拆分策略和新增相机验收要求。

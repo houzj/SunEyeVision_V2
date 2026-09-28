@@ -26,10 +26,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private MainWindowViewModel _viewModel = null!;
 
         /// <summary>
-        /// 自动切换"首轮不推进"标记：手动在预览器选图（点击/方向键）后，下一轮 run 沿用该图；
-        /// 再下一轮才推进到下一张。保证"点一次跑当前、再点执行才切换"。
+        /// 当前选中图像用于本轮；成功完成后才推进到下一张。
         /// </summary>
-        private bool _skipNextAdvance = true;
 
         public ImageResultControl()
         {
@@ -114,7 +112,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
             var workflow = _viewModel.WorkflowTabViewModel.SelectedTab;
             // 手动在预览器选中图片（点击/方向键）：以该图为下一轮 run 起点（首轮不自动推进）
-            _skipNextAdvance = true;
             RunWorkflowWithImage(workflow, e.ImageInfo, e.Index);
         }
 
@@ -172,9 +169,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>
-        /// 自动切换推进：run 开始前把运行时图像参数推进到下一张应运行图（含全部/选择运行模式过滤）。
-        /// 由 MainWindowViewModel.AdvancePreviewImageHook 在单次执行 / 连续执行每轮开始前调用。
-        /// 语义：手动选图后的第一轮沿用当前图，其后每轮推进一张（点一次跑当前、再点执行才切换）。
+        /// 自动切换推进：本轮成功后才选择下一张；失败时保留当前图供重试。
         /// </summary>
         private bool TryAdvancePreviewImageFromPreview()
         {
@@ -182,14 +177,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
 
             if (!ImagePreviewContent.AutoSwitchEnabled)
             {
-                _skipNextAdvance = true;   // 关闭自动切换：下次再开启时从当前图起算
-                return false;
-            }
-
-            if (_skipNextAdvance)
-            {
-                // 首轮（或刚手动选图后）：本次沿用当前选中图，不推进
-                _skipNextAdvance = false;
                 return false;
             }
 

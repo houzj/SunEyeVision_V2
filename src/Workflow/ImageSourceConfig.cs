@@ -23,6 +23,15 @@ namespace SunEyeVision.Workflow
         /// <summary>相机取帧等待上限，毫秒。</summary>
         public int CameraTimeoutMs { get; set; } = 3000;
 
+        /// <summary>两种来源共用的输出格式；旧方案默认保持原图。</summary>
+        public ImageOutputFormat OutputFormat { get; set; } = ImageOutputFormat.Original;
+
+        /// <summary>逻辑输出序号初始值，不等于相机原生帧号。</summary>
+        public long SNInitialValue { get; set; } = 1;
+
+        /// <summary>本地序列自动切换时，成功处理末张后停止连续运行。</summary>
+        public bool StopAtLastImage { get; set; }
+
         /// <summary>
         /// 关联节点ID
         /// </summary>

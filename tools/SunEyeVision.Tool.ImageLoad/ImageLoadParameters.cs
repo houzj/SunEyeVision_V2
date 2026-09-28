@@ -15,6 +15,8 @@ namespace SunEyeVision.Tool.ImageLoad
         private ImageSourceKind _sourceKind;
         private string _cameraDeviceId = string.Empty;
         private int _cameraTimeoutMs = 3000;
+        private ImageOutputFormat _outputFormat;
+        private long _sequenceNumber = 1;
 
         public ImageSourceKind SourceKind
         {
@@ -32,6 +34,19 @@ namespace SunEyeVision.Tool.ImageLoad
         {
             get => _cameraTimeoutMs;
             set => SetProperty(ref _cameraTimeoutMs, value, "取帧超时");
+        }
+
+        public ImageOutputFormat OutputFormat
+        {
+            get => _outputFormat;
+            set => SetProperty(ref _outputFormat, value, "输出格式");
+        }
+
+        /// <summary>宿主按工作流运行代次提供的本轮逻辑序号。</summary>
+        public long SequenceNumber
+        {
+            get => _sequenceNumber;
+            set => SetProperty(ref _sequenceNumber, value, "SN");
         }
 
         /// <summary>
@@ -54,6 +69,10 @@ namespace SunEyeVision.Tool.ImageLoad
                 result.AddError("请选择方案中的相机");
             if (SourceKind == ImageSourceKind.Camera && CameraTimeoutMs <= 0)
                 result.AddError("取帧超时必须大于零");
+            if (!System.Enum.IsDefined(OutputFormat))
+                result.AddError("输出格式无效");
+            if (SequenceNumber < 0)
+                result.AddError("SN 不能为负数");
             return result;
         }
     }

@@ -127,6 +127,16 @@ namespace SunEyeVision.Workflow
                             ParameterBindings = ParameterBindingSet.FromSettings(ParamSettings)
                         }).ConfigureAwait(false);
 
+                    // Stateful calibration points are committed only after execution, never
+                    // by mutating the parameter snapshot seen by the tool. A stale concurrent
+                    // capture is rejected by the parameter implementation.
+                    if (typedParams is IWorkflowResultCommitter committer
+                        && toolResult.Status != ExecutionStatus.Failed
+                        && !committer.TryCommit(toolResult, out var commitError))
+                    {
+                        toolResult.SetError(commitError ?? "标定点保存失败");
+                    }
+
                     if (toolResult.Status == ExecutionStatus.Failed && !string.IsNullOrWhiteSpace(toolResult.ErrorMessage))
                     {
                         LastToolResult = toolResult;

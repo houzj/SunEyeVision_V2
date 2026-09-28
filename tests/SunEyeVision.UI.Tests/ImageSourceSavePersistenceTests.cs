@@ -25,7 +25,10 @@ public class ImageSourceSavePersistenceTests
                 NodeId = "node-merge",
                 SourceKind = ImageSourceKind.Camera,
                 CameraDeviceId = "camera-001",
-                CameraTimeoutMs = 4200
+                CameraTimeoutMs = 4200,
+                OutputFormat = ImageOutputFormat.Rgb24,
+                SNInitialValue = 25,
+                StopAtLastImage = true
             }
         };
         var input = node.EnsureInputSource();
@@ -35,6 +38,9 @@ public class ImageSourceSavePersistenceTests
         Assert.Equal(ImageSourceKind.Camera, node.ImageSourceConfig.SourceKind);
         Assert.Equal("camera-001", node.ImageSourceConfig.CameraDeviceId);
         Assert.Equal(4200, node.ImageSourceConfig.CameraTimeoutMs);
+        Assert.Equal(ImageOutputFormat.Rgb24, node.ImageSourceConfig.OutputFormat);
+        Assert.Equal(25, node.ImageSourceConfig.SNInitialValue);
+        Assert.True(node.ImageSourceConfig.StopAtLastImage);
         Assert.Single(node.ImageSourceConfig.FilePaths);
         Assert.Equal(0, node.ImageSourceConfig.CurrentIndex);
 
@@ -42,6 +48,9 @@ public class ImageSourceSavePersistenceTests
         var restored = System.Text.Json.JsonSerializer.Deserialize<WorkflowNodeBase>(json, WorkflowSerializationOptions.Default);
         Assert.Equal(ImageSourceKind.Camera, restored!.ImageSourceConfig!.SourceKind);
         Assert.Equal("camera-001", restored.ImageSourceConfig.CameraDeviceId);
+        Assert.Equal(ImageOutputFormat.Rgb24, restored.ImageSourceConfig.OutputFormat);
+        Assert.Equal(25, restored.ImageSourceConfig.SNInitialValue);
+        Assert.True(restored.ImageSourceConfig.StopAtLastImage);
         Assert.Single(restored.ImageSourceConfig.FilePaths);
     }
 

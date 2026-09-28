@@ -100,6 +100,38 @@ public sealed class ImageSourceExecutionTests
     }
 
     [Theory]
+    [InlineData(ImageOutputFormat.Original, 1, new byte[] { 7, 8 })]
+    [InlineData(ImageOutputFormat.Mono8, 1, new byte[] { 7, 8 })]
+    [InlineData(ImageOutputFormat.Rgb24, 3, new byte[] { 7, 7, 7, 8, 8, 8 })]
+    public async Task CameraOutputFormatConvertsPixelsWithoutChangingDeviceFrame(
+        ImageOutputFormat format, int channels, byte[] expected)
+    {
+        var original = Substitute.For<IVisionImage>();
+        original.Width.Returns(2);
+        original.Height.Returns(1);
+        original.Channels.Returns(1);
+        original.GetPixelData().Returns(new byte[] { 7, 8 });
+        using var frame = new CameraFrame(new CameraDeviceRef("camera-1"), 99,
+            DateTimeOffset.UtcNow, original);
+        var result = (ImageLoadResults)await new ImageLoadTool().ExecuteAsync(new ToolExecutionRequest(
+            new ImageLoadParameters
+            {
+                SourceKind = ImageSourceKind.Camera,
+                CameraDeviceId = "camera-1",
+                OutputFormat = format,
+                SequenceNumber = 12
+            }) { CameraFrame = frame });
+
+        Assert.True(result.IsSuccess, result.ErrorMessage);
+        Assert.Equal(channels, result.Channels);
+        Assert.Equal(expected, result.OutputImage.GetPixelData());
+        Assert.Equal(12, result.SequenceNumber);
+        Assert.Equal(99, result.FrameId);
+        Assert.Equal(channels == 1 ? "MONO8" : "RGB24", result.PixelFormat);
+        result.OutputImage.Dispose();
+    }
+
+    [Theory]
     [InlineData(ImageSourceKind.Local)]
     [InlineData(ImageSourceKind.Camera)]
     public void ResultContractUsesSupportedTypesForSourceMetadata(ImageSourceKind sourceKind)
@@ -117,6 +149,7 @@ public sealed class ImageSourceExecutionTests
         Assert.Contains(outputs, item => item.Name == "SourceKindText" && item.VariableType == "String");
         Assert.Contains(outputs, item => item.Name == "FrameIdText" && item.VariableType == "String");
         Assert.Contains(outputs, item => item.Name == "FrameTimestampText" && item.VariableType == "String");
+        Assert.Contains(outputs, item => item.Name == "SequenceNumber" && item.VariableType == "Integer");
         Assert.Equal(sourceKind.ToString(), result.SourceKindText);
         Assert.Equal(sourceKind == ImageSourceKind.Camera ? "42" : string.Empty, result.FrameIdText);
         Assert.Equal(sourceKind == ImageSourceKind.Camera ? timestamp.ToString("O") : string.Empty,

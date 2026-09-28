@@ -2118,9 +2118,6 @@ SplitterPosition = position;
                 return;
             }
 
-            // 单次与连续执行共用运行时输入服务；等待输入推进并发布本轮快照。
-            await _runtimeInputSnapshots.AdvanceAsync(System.Threading.CancellationToken.None);
-
             AddLog("=== 开始执行工作流 ===");
 
             if (WorkflowTabViewModel == null)

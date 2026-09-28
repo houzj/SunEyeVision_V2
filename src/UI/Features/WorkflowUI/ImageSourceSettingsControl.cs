@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Devices.Camera;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
@@ -30,7 +31,7 @@ public sealed class ImageSourceSettingsControl : UserControl
         _node.ImageSourceConfig ??= new ImageSourceConfig { NodeId = node.Id };
 
         var root = new StackPanel { Margin = new Thickness(14) };
-        root.Children.Add(new TextBlock { Text = "图像源", FontSize = 16, FontWeight = FontWeights.SemiBold });
+        root.Children.Add(new TextBlock { Text = "基本参数", FontSize = 16, FontWeight = FontWeights.SemiBold });
         root.Children.Add(new TextBlock { Text = "图像来源", Margin = new Thickness(0, 15, 0, 4) });
         var sourcePicker = new ComboBox();
         sourcePicker.Items.Add("本地图像");
@@ -53,14 +54,24 @@ public sealed class ImageSourceSettingsControl : UserControl
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 8, 0, 0)
         });
-        var locatePreview = new Button { Content = "定位到图像预览器", Margin = new Thickness(0, 12, 0, 0) };
-        locatePreview.Click += (_, _) =>
+        var autoSwitch = new CheckBox
         {
-            _main.ForceRefreshImagePreview();
-            Application.Current?.Windows.OfType<MainWindow>()
-                .FirstOrDefault()?.ImageResultHost.FocusLocalPreview();
+            Content = "自动切换（成功处理后切换到下一张）",
+            IsChecked = _node.ImageSourceConfig.AutoSwitchEnabled,
+            Margin = new Thickness(0, 12, 0, 0)
         };
-        _localPanel.Children.Add(locatePreview);
+        autoSwitch.Checked += (_, _) => SetAutoSwitch(true);
+        autoSwitch.Unchecked += (_, _) => SetAutoSwitch(false);
+        _localPanel.Children.Add(autoSwitch);
+        var stopAtLast = new CheckBox
+        {
+            Content = "最后一张处理成功后停止连续运行",
+            IsChecked = _node.ImageSourceConfig.StopAtLastImage,
+            Margin = new Thickness(0, 8, 0, 0)
+        };
+        stopAtLast.Checked += (_, _) => _node.ImageSourceConfig.StopAtLastImage = true;
+        stopAtLast.Unchecked += (_, _) => _node.ImageSourceConfig.StopAtLastImage = false;
+        _localPanel.Children.Add(stopAtLast);
         root.Children.Add(_localPanel);
 
         _cameraPanel.Children.Add(new TextBlock { Text = "关联相机", FontWeight = FontWeights.SemiBold });
@@ -124,7 +135,51 @@ public sealed class ImageSourceSettingsControl : UserControl
         _cameraPanel.Children.Add(managerButton);
         root.Children.Add(_cameraPanel);
 
-        Content = new ScrollViewer { Content = root, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        var advanced = new StackPanel { Margin = new Thickness(14) };
+        advanced.Children.Add(new TextBlock { Text = "输出格式", Margin = new Thickness(0, 4, 0, 4) });
+        var formatPicker = new ComboBox
+        {
+            ItemsSource = new[] { "保持原图", "MONO8", "RGB24" },
+            SelectedIndex = Enum.IsDefined(_node.ImageSourceConfig.OutputFormat)
+                ? (int)_node.ImageSourceConfig.OutputFormat : 0
+        };
+        formatPicker.SelectionChanged += (_, _) =>
+            _node.ImageSourceConfig.OutputFormat = (ImageOutputFormat)formatPicker.SelectedIndex;
+        advanced.Children.Add(formatPicker);
+        advanced.Children.Add(new TextBlock { Text = "SN 初始值", Margin = new Thickness(0, 12, 0, 4) });
+        var sn = new TextBox { Text = _node.ImageSourceConfig.SNInitialValue.ToString() };
+        sn.LostFocus += (_, _) =>
+        {
+            if (long.TryParse(sn.Text, out var value) && value >= 0)
+                _node.ImageSourceConfig.SNInitialValue = value;
+            else
+                sn.Text = _node.ImageSourceConfig.SNInitialValue.ToString();
+        };
+        advanced.Children.Add(sn);
+        advanced.Children.Add(new TextBlock
+        {
+            Text = "每次开始运行从此值计数；仅图像源成功输出时递增。设备帧号另行显示。",
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = Brushes.Gray,
+            Margin = new Thickness(0, 4, 0, 0)
+        });
+
+        Content = new TabControl
+        {
+            Items =
+            {
+                new TabItem
+                {
+                    Header = "基本参数",
+                    Content = new ScrollViewer { Content = root, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }
+                },
+                new TabItem
+                {
+                    Header = "高级",
+                    Content = new ScrollViewer { Content = advanced, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }
+                }
+            }
+        };
         var input = _node.EnsureInputSource();
         input.CurrentImageChanged += OnCurrentImageChanged;
         input.CollectionChanged += OnImageCollectionChanged;
@@ -138,6 +193,12 @@ public sealed class ImageSourceSettingsControl : UserControl
 
     private void OnCurrentImageChanged(object? sender, int index) => RefreshLocalSummary();
     private void OnImageCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args) => RefreshLocalSummary();
+
+    private void SetAutoSwitch(bool enabled)
+    {
+        _node.ImageSourceConfig.AutoSwitchEnabled = enabled;
+        _node.EnsureInputSource().AutoSwitchEnabled = enabled;
+    }
 
     private void RefreshMode()
     {

@@ -49,6 +49,8 @@ namespace SunEyeVision.Tool.ImageLoad
         public string SourceDeviceId { get; set; } = string.Empty;
         public long? FrameId { get; set; }
         public DateTimeOffset? FrameTimestamp { get; set; }
+        public long SequenceNumber { get; set; }
+        public string PixelFormat { get; set; } = string.Empty;
 
         // 节点内部保留强类型元数据；对外输出契约仅使用 SdkTypeVocabulary 支持的通用类型。
         // 不把枚举/Nullable<T>/DateTimeOffset 注册成全局变量类型。
@@ -246,6 +248,8 @@ namespace SunEyeVision.Tool.ImageLoad
                 new("SourceDeviceId",      "相机ID",       "图像源"),
                 new("FrameIdText",         "设备帧号",     "图像源"),
                 new("FrameTimestampText",  "采集时间",     "图像源"),
+                new("SequenceNumber",     "SN",           "图像源"),
+                new("PixelFormat",        "像素格式",      "图像源"),
             ];
         }
 

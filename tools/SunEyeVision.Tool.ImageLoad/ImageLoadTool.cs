@@ -83,7 +83,8 @@ namespace SunEyeVision.Tool.ImageLoad
                         for (var i = 0; i < pixels.Length; i += 3)
                             (pixels[i], pixels[i + 2]) = (pixels[i + 2], pixels[i]);
                     }
-                    var output = HalImage.CreateFromBytes(pixels, frame.Image.Width, frame.Image.Height, channels);
+                    var native = HalImage.CreateFromBytes(pixels, frame.Image.Width, frame.Image.Height, channels);
+                    var output = ConvertOutput(native, parameters.OutputFormat);
                     if (output.IsEmpty)
                     {
                         output.Dispose();
@@ -98,6 +99,8 @@ namespace SunEyeVision.Tool.ImageLoad
                     result.Depth = 8;
                     result.FrameId = frame.FrameId;
                     result.FrameTimestamp = frame.Timestamp;
+                    result.SequenceNumber = parameters.SequenceNumber;
+                    result.PixelFormat = output.Channels == 1 ? "MONO8" : "RGB24";
                     result.PrimePixelStatistics();
                     result.SetSuccess(0);
                 }
@@ -162,7 +165,8 @@ namespace SunEyeVision.Tool.ImageLoad
                 result.FileFormat = fileInfo.Extension.ToUpperInvariant();
 
                 // 经 HalAdapter 统一加载图像（SDK 门面不携带引擎实现，对称架构）
-                result.OutputImage = HalImage.CreateFromFile(parameters.FilePath);
+                var source = HalImage.CreateFromFile(parameters.FilePath);
+                result.OutputImage = ConvertOutput(source, parameters.OutputFormat);
                 if (result.OutputImage == null || result.OutputImage.IsEmpty)
                 {
                     result.SetError($"无法加载图像: {parameters.FilePath}");
@@ -173,6 +177,8 @@ namespace SunEyeVision.Tool.ImageLoad
                 result.Height = result.OutputImage.Height;
                 result.Channels = result.OutputImage.Channels;
                 result.Depth = 8; // Halcon "byte" 类型 = 8bit
+                result.PixelFormat = result.Channels == 1 ? "MONO8" : "RGB24";
+                result.SequenceNumber = parameters.SequenceNumber;
 
                 // 灰度转换：彩色->灰度，灰度输入直接克隆
                 if (result.Channels > 1)
@@ -183,6 +189,8 @@ namespace SunEyeVision.Tool.ImageLoad
                 {
                     result.GrayImage = result.OutputImage;
                 }
+
+                result.PrimePixelStatistics();
 
                 stopwatch.Stop();
                 result.SetSuccess(stopwatch.Elapsed.TotalMilliseconds);
@@ -195,6 +203,34 @@ namespace SunEyeVision.Tool.ImageLoad
             }
 
             return result;
+        }
+
+        private static HalImage ConvertOutput(HalImage source, ImageOutputFormat format)
+        {
+            if (format == ImageOutputFormat.Original
+                || (format == ImageOutputFormat.Mono8 && source.Channels == 1)
+                || (format == ImageOutputFormat.Rgb24 && source.Channels == 3))
+                return source;
+
+            try
+            {
+                HalImage converted;
+                if (format == ImageOutputFormat.Mono8 && source.Channels == 3)
+                    converted = HalImage.CreateGrayFromColor(source);
+                else if (format == ImageOutputFormat.Rgb24 && source.Channels == 1)
+                {
+                    var gray = source.GetPixelData();
+                    var rgb = new byte[checked(gray.Length * 3)];
+                    for (var i = 0; i < gray.Length; i++)
+                        rgb[i * 3] = rgb[i * 3 + 1] = rgb[i * 3 + 2] = gray[i];
+                    converted = HalImage.CreateFromBytes(rgb, source.Width, source.Height, 3);
+                }
+                else
+                    throw new NotSupportedException($"无法把 {source.Channels} 通道图像转换为 {format}");
+
+                return converted;
+            }
+            finally { source.Dispose(); }
         }
     }
 }

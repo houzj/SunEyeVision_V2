@@ -149,8 +149,15 @@ namespace SunEyeVision.UI.Services.Workflow
             try
             {
                 OnWorkflowExecutionStarted(workflowId);
-                await ExecuteSingleTriggeredAsync(workflow, cancellationToken);
-                OnWorkflowExecutionCompleted(workflowId);
+                var execution = await ExecuteSingleTriggeredAsync(workflow, cancellationToken);
+                if (execution.Success)
+                {
+                    if (HasLocalImageSource(workflow))
+                        await _runtimeInputSnapshots.AdvanceAsync(cancellationToken);
+                    OnWorkflowExecutionCompleted(workflowId);
+                }
+                else
+                    OnWorkflowExecutionError(workflowId, string.Join("; ", execution.Errors));
             }
             catch (OperationCanceledException)
             {
@@ -198,6 +205,7 @@ namespace SunEyeVision.UI.Services.Workflow
                         CameraWorkflowFrameFeed? cameraFeed = null;
                         CameraSourceBinding? cameraSource = null;
                         var nextCameraSummary = DateTime.UtcNow.AddSeconds(1);
+                        var sequenceNumbers = new Dictionary<string, long>();
 
                         try
                         {
@@ -216,23 +224,46 @@ namespace SunEyeVision.UI.Services.Workflow
                             while (true)
                             {
                                 cts.Token.ThrowIfCancellationRequested();
+                                ExecutionResult execution;
+                                var stopAfterCurrent = false;
                                 if (cameraFeed is not null && cameraSource is not null)
                                 {
                                     // 相机先产出本轮帧，节点只消费该帧。软件触发下一次命令
                                     // 仅在上一轮处理完成之后由 NextFrameAsync 发出。
                                     using var frame = await cameraFeed.NextFrameAsync(cts.Token, continuous: true);
-                                    await ExecuteWorkflowInternal(workflow, cts.Token,
-                                        cameraFrame: frame, cameraNodeId: cameraSource.Value.NodeId);
+                                    execution = await ExecuteWorkflowInternal(workflow, cts.Token,
+                                        cameraFrame: frame, cameraNodeId: cameraSource.Value.NodeId,
+                                        sequenceNumbers: sequenceNumbers);
                                 }
                                 else
                                 {
-                                    // 本地图像沿用原有输入推进语义。
-                                    try { await _runtimeInputSnapshots.AdvanceAsync(cts.Token); }
-                                    catch { /* 钩子异常不应中断连续执行 */ }
                                     cts.Token.ThrowIfCancellationRequested();
-                                    await ExecuteWorkflowInternal(workflow, cts.Token);
+                                    execution = await ExecuteWorkflowInternal(workflow, cts.Token,
+                                        sequenceNumbers: sequenceNumbers);
+                                    if (execution.Success)
+                                    {
+                                        var stopAtLast = ShouldStopAfterCurrentLocalImage(workflow);
+                                        if (stopAtLast)
+                                            stopAfterCurrent = true;
+                                        else if (HasLocalImageSource(workflow))
+                                            await _runtimeInputSnapshots.AdvanceAsync(cts.Token);
+                                    }
                                 }
+                                // 完成通知表示本轮执行结束（也供停止交互复位），不表示成功。
+                                // 只有 Success 才允许推进本地图片和 SN。
                                 OnWorkflowExecutionCompleted(workflowId);
+                                cts.Token.ThrowIfCancellationRequested();
+                                if (!execution.Success)
+                                {
+                                    OnWorkflowExecutionError(workflowId, string.Join("; ", execution.Errors));
+                                    if (cameraFeed is null)
+                                        await Task.Delay(250, cts.Token);
+                                }
+                                if (stopAfterCurrent)
+                                {
+                                    canceled = true;
+                                    break;
+                                }
 
                                 if (cameraFeed is not null && DateTime.UtcNow >= nextCameraSummary)
                                 {
@@ -492,7 +523,8 @@ namespace SunEyeVision.UI.Services.Workflow
             CancellationToken cancellationToken,
             IDictionary<string, object?>? globalVariablesOverride = null,
             CameraFrame? cameraFrame = null,
-            string? cameraNodeId = null)
+            string? cameraNodeId = null,
+            Dictionary<string, long>? sequenceNumbers = null)
         {
             var snapshot = GetOrCreateExecutionSnapshot(workflow.RootWorkflowId, workflow.Name);
             await InvokeOnUIAsync(() =>
@@ -614,6 +646,16 @@ namespace SunEyeVision.UI.Services.Workflow
                     rootEngineWorkflow,
                     logger,
                     new HashSet<string>());
+                if (sequenceNumbers is not null)
+                {
+                    foreach (var pair in nodeParameterOverrides)
+                    {
+                        var configured = (long)pair.Value["SequenceNumber"]!;
+                        if (!sequenceNumbers.TryGetValue(pair.Key, out var current))
+                            sequenceNumbers[pair.Key] = current = configured;
+                        ((Dictionary<string, object?>)pair.Value)["SequenceNumber"] = current;
+                    }
+                }
                 var hasCameraSource = nodeParameterOverrides.Values.Any(values =>
                     values.TryGetValue("SourceKind", out var kind)
                     && kind is SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera);
@@ -635,6 +677,14 @@ namespace SunEyeVision.UI.Services.Workflow
                         ? new Dictionary<string, CameraFrame> { [cameraNodeId] = cameraFrame }
                         : null);
                 var result = await executionEngine.ExecuteWorkflowAsync(runRequest, cancellationToken);
+                if (sequenceNumbers is not null)
+                {
+                    foreach (var pair in result.NodeResults)
+                    {
+                        if (nodeParameterOverrides.ContainsKey(pair.Key) && pair.Value.Success)
+                            sequenceNumbers[pair.Key] = checked(sequenceNumbers[pair.Key] + 1);
+                    }
+                }
                 await InvokeOnUIAsync(() =>
                 {
                     snapshot.Complete(result, nodeId => GetSnapshotNodeName(rootEngineWorkflow, nodeId));
@@ -893,14 +943,45 @@ namespace SunEyeVision.UI.Services.Workflow
 
         private readonly record struct CameraSourceBinding(string NodeId, string CameraId, int TimeoutMs);
 
+        private bool ShouldStopAfterCurrentLocalImage(WorkflowTabViewModel workflow)
+        {
+            var root = _workflowEngine.GetWorkflow(workflow.RootWorkflowId);
+            if (root is null) return false;
+            foreach (var node in root.Nodes)
+            {
+                var config = node.ImageSourceConfig;
+                if (!IsImageLoadToolType(node.ToolType) || config is null
+                    || config.SourceKind != SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local
+                    || !config.AutoSwitchEnabled || !config.StopAtLastImage)
+                    continue;
+                var currentPath = _runtimeInputSnapshots.GetSnapshot(workflow.RootWorkflowId)?.ImagePath;
+                if (string.IsNullOrWhiteSpace(currentPath)) continue;
+                var runnables = config.RunMode == 1
+                    ? config.FilePaths.Where(path => config.ForRunPaths.Contains(path)).ToList()
+                    : config.FilePaths;
+                if (runnables.Count > 0 && string.Equals(runnables[^1], currentPath, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
+
+        private bool HasLocalImageSource(WorkflowTabViewModel workflow)
+        {
+            var root = _workflowEngine.GetWorkflow(workflow.RootWorkflowId);
+            return root?.Nodes.Any(node => IsImageLoadToolType(node.ToolType)
+                && node.ImageSourceConfig?.SourceKind != SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera) == true;
+        }
+
         private async Task<ExecutionResult> ExecuteSingleTriggeredAsync(
             WorkflowTabViewModel workflow,
             CancellationToken cancellationToken,
-            IDictionary<string, object?>? globalVariablesOverride = null)
+            IDictionary<string, object?>? globalVariablesOverride = null,
+            Dictionary<string, long>? sequenceNumbers = null)
         {
             var cameraSource = ResolveSingleCameraSource(workflow);
             if (cameraSource is null)
-                return await ExecuteWorkflowInternal(workflow, cancellationToken, globalVariablesOverride);
+                return await ExecuteWorkflowInternal(workflow, cancellationToken, globalVariablesOverride,
+                    sequenceNumbers: sequenceNumbers);
 
             // 单次执行可从 WPF 命令直接进入；SDK 参数读取、启动取流、软件触发及
             // 停止取流均可能同步调用厂商 DLL，必须在工作线程进行。
@@ -913,7 +994,7 @@ namespace SunEyeVision.UI.Services.Workflow
             {
                 using var frame = await Task.Run(() => feed.NextFrameAsync(cancellationToken), cancellationToken);
                 return await ExecuteWorkflowInternal(workflow, cancellationToken, globalVariablesOverride,
-                    frame, cameraSource.Value.NodeId);
+                    frame, cameraSource.Value.NodeId, sequenceNumbers);
             }
             finally
             {
@@ -983,6 +1064,8 @@ namespace SunEyeVision.UI.Services.Workflow
                         ["SourceKind"] = SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera,
                         ["CameraDeviceId"] = config.CameraDeviceId,
                         ["CameraTimeoutMs"] = config.CameraTimeoutMs,
+                        ["OutputFormat"] = config.OutputFormat,
+                        ["SequenceNumber"] = config.SNInitialValue,
                         ["FilePath"] = string.Empty
                     };
                     continue;
@@ -997,6 +1080,8 @@ namespace SunEyeVision.UI.Services.Workflow
                     overrides[wn.Id] = new Dictionary<string, object?>
                     {
                         ["SourceKind"] = SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local,
+                        ["OutputFormat"] = config?.OutputFormat ?? SunEyeVision.Plugin.SDK.Vision.Contracts.ImageOutputFormat.Original,
+                        ["SequenceNumber"] = config?.SNInitialValue ?? 1L,
                         ["FilePath"] = currentImage.FilePath
                     };
                     logger.LogInfo($"从 InputSource 创建路径快照: '{wn.Name}' -> '{currentImage.FilePath}'");
@@ -1007,6 +1092,8 @@ namespace SunEyeVision.UI.Services.Workflow
                     overrides[wn.Id] = new Dictionary<string, object?>
                     {
                         ["SourceKind"] = SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local,
+                        ["OutputFormat"] = config?.OutputFormat ?? SunEyeVision.Plugin.SDK.Vision.Contracts.ImageOutputFormat.Original,
+                        ["SequenceNumber"] = config?.SNInitialValue ?? 1L,
                         ["FilePath"] = string.Empty
                     };
                     logger.LogWarning($"InputSource 无有效图像，已在运行快照清空 '{wn.Name}' 的 FilePath");

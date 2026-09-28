@@ -136,6 +136,10 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 节点结果管理
         private readonly Services.Workflow.NodeResultManager _nodeResultManager;
+        private readonly Dictionary<string, (SunEyeVision.UI.Shared.WorkflowNode Node, ToolResults Result)>
+            _pendingCameraPresentations = new();
+        private System.Windows.Threading.DispatcherTimer? _cameraPresentationTimer;
+        private DateTime _lastCameraPerfWarningUtc;
 
         // 工作流执行协调器（图像切换优化）
         private WorkflowExecutionOrchestrator? _executionOrchestrator;
@@ -2159,7 +2163,7 @@ SplitterPosition = position;
                 _executionManager.SetGlobalVariables(globalVars);
 
                 await _executionManager.RunSingleAsync(WorkflowTabViewModel.SelectedTab);
-                AddLog("✅ 执行完成");
+                // 成功/失败由执行管理器事件报告；等待相机帧失败不能误报成功。
             }
             catch (Exception ex)
             {
@@ -2714,8 +2718,18 @@ SplitterPosition = position;
                 LogNodeStorageIdentity(node, "打开调试窗口");
                 var mainImageControl = GetMainImageControl?.Invoke();
                 var context = new NodeOpenContext(Application.Current.MainWindow, mainImageControl);
-                var decisionChain = new NodeOpenDecisionChain();
-                var success = decisionChain.Execute(node.ToWorkflowNode(), context);
+                // 图像源的配置由 UI 宿主提供；工具插件只负责执行，不依赖 WPF 编辑器。
+                // 使用原始 UI 节点，确保弹窗直接编辑当前方案中的 ImageSourceConfig。
+                var success = true;
+                if (node.IsImageLoadNode)
+                {
+                    context.DebugControl = new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(node, this);
+                }
+                else
+                {
+                    var decisionChain = new NodeOpenDecisionChain();
+                    success = decisionChain.Execute(node.ToWorkflowNode(), context);
+                }
 
                 if (!success)
                 {
@@ -2787,6 +2801,8 @@ SplitterPosition = position;
                         notifier.OutputContractChanged -= refreshContract;
 
                     _openDebugWindow = null;
+                    if (node.IsImageLoadNode && ReferenceEquals(SelectedNode, node))
+                        _ = UpdateDataAnalysisControl(node);
                     var imgCtrl = GetMainImageControl?.Invoke();
                     if (imgCtrl != null) imgCtrl.OverlayHitTestVisible = false;
                     if (SelectedNode?.IsSelected == true)
@@ -3541,6 +3557,14 @@ SplitterPosition = position;
 
                 if (selectedNode == null)
                     return System.Threading.Tasks.Task.CompletedTask;
+
+                if (selectedNode.IsImageLoadNode)
+                {
+                    DataAnalysisControlTitle = $"{selectedNode.Name} - 图像源";
+                    SelectedNodeDataAnalysisControl = new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(selectedNode, this);
+                    HasDataAnalysisControl = true;
+                    return System.Threading.Tasks.Task.CompletedTask;
+                }
 
                 // 获取工具注册信息
                 var toolType = selectedNode.ToolType;
@@ -4416,6 +4440,32 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
         {
             try
             {
+                if (e.IsCameraDriven)
+                {
+                    if (e.UiQueueDelayMs >= 200 &&
+                        DateTime.UtcNow - _lastCameraPerfWarningUtc >= TimeSpan.FromSeconds(5))
+                    {
+                        _lastCameraPerfWarningUtc = DateTime.UtcNow;
+                        AddLog($"⚠️ 相机结果等待 UI 线程 {e.UiQueueDelayMs:F0} ms");
+                    }
+                    // 工作流结果逐轮入缓存；图像/结果树/调试窗口的展示按 UI 节奏合并。
+                    // 不读取全部反射属性，避免在 UI 线程触发整幅图像的懒统计。
+                    _nodeResultManager.UpdateNodeResult(e.Node, e.Result, refreshDisplay: false);
+                    _pendingCameraPresentations[e.Node.Id] = (e.Node, e.Result);
+                    if (_cameraPresentationTimer is null)
+                    {
+                        _cameraPresentationTimer = new System.Windows.Threading.DispatcherTimer(
+                            System.Windows.Threading.DispatcherPriority.Background)
+                        {
+                            Interval = TimeSpan.FromMilliseconds(200)
+                        };
+                        _cameraPresentationTimer.Tick += (_, _) => FlushCameraResultPresentation();
+                    }
+                    if (!_cameraPresentationTimer.IsEnabled)
+                        _cameraPresentationTimer.Start();
+                    return;
+                }
+
                 // ★ 关键日志：节点执行完成 - 记录节点类型和顺序
                 var outputValues = e.Result?.GetOutputValues();
                 bool hasImageOutput = outputValues?.Any(kv => kv.Value is OpenCvSharp.Mat) ?? false;
@@ -5335,104 +5385,69 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// </remarks>
         public void UpdateImagePreviewVisibility(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)
         {
-            // 1.没有选中节点时
             if (selectedNode == null)
             {
-                // 只在当前状态不一致时才更新
-                if (ShowImagePreview || ActiveInputSource != null || _currentDisplayNodeId != null)
-                {
-                    ShowImagePreview = false;
-                    ActiveInputSource = null;
-                    _currentDisplayNodeId = null;
-                }
+                HideLocalImagePreview();
                 return;
             }
 
-            // 2.选中图像载入节点时，初始化显示图像预览（因为需要选择本地文件）
-            if (selectedNode.IsImageLoadNode)
+            var sourceNode = selectedNode.IsImageLoadNode
+                ? selectedNode
+                : FindUpstreamImageLoadNode(selectedNode);
+            if (sourceNode == null)
             {
-                // 新架构：确保 InputSource 已初始化
-                var inputSource = selectedNode.EnsureInputSource();
-
-                // 检查是否是同一节点
-                bool isSameNode = _currentDisplayNodeId == selectedNode.Id;
-
-                if (!isSameNode)
-                {
-                    // 不同节点才更新
-                    _currentDisplayNodeId = selectedNode.Id;
-                    inputSource.PrepareForDisplay();
-                    ActiveInputSource = inputSource;
-                }
-
-                // 只有真正变化时才设置
-                if (!ShowImagePreview)
-                {
-                    ShowImagePreview = true;
-                }
-                return;
-            }
-
-            // 3.选中处理节点时，检查连接和上游图像载入节点
-            // 核心原则：预览器必须绑定到图像载入节点的InputSource
-
-            var connections = WorkflowTabViewModel?.SelectedTab?.WorkflowConnections;
-
-            // 3.1 检查当前节点是否有输入连接
-            bool hasInputConnection = connections?.Any(c => c.TargetNodeId == selectedNode.Id) ?? false;
-
-            if (!hasInputConnection)
-            {
-                // ★ 子程序内部：不隐藏预览器，保持当前父工作流的图像预览
-                if (WorkflowTabViewModel?.SelectedTab?.IsInSubroutine == true)
+                // 子程序入口可以沿用父级已绑定的本地列表；没有有效绑定时不能显示空壳。
+                if (WorkflowTabViewModel?.SelectedTab?.IsInSubroutine == true
+                    && ActiveInputSource != null && _currentDisplayNodeId != null)
                     return;
-
-                // 没有输入连接，隐藏预览器
-                if (ShowImagePreview || ActiveInputSource != null || _currentDisplayNodeId != null)
-                {
-                    ShowImagePreview = false;
-                    ActiveInputSource = null;
-                    _currentDisplayNodeId = null;
-                }
+                HideLocalImagePreview();
                 return;
             }
 
-            // 3.2 有输入连接，尝试逆向查找图像载入节点
-            var sourceLoadNode = FindUpstreamImageLoadNode(selectedNode);
-
-            if (sourceLoadNode != null)
+            // 上方结果画布独立显示；这里仅控制下方本地文件预览器。
+            if (sourceNode.ImageSourceConfig?.SourceKind == SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera)
             {
-                // 找到上游图像载入节点，显示预览器（绑定到该节点）
-                var sourceInputSource = sourceLoadNode.InputSource ?? sourceLoadNode.EnsureInputSource();
-
-                bool isSameNode = _currentDisplayNodeId == sourceLoadNode.Id;
-
-                if (!isSameNode)
-                {
-                    _currentDisplayNodeId = sourceLoadNode.Id;
-                    sourceInputSource.PrepareForDisplay();
-                    ActiveInputSource = sourceInputSource;
-                }
-
-                if (!ShowImagePreview)
-                {
-                    ShowImagePreview = true;
-                }
+                HideLocalImagePreview();
+                return;
             }
-            else
+
+            var source = sourceNode.EnsureInputSource();
+            if (_currentDisplayNodeId != sourceNode.Id || !ReferenceEquals(ActiveInputSource, source))
             {
-                // ★ 子程序内部：不隐藏预览器，保持当前父工作流的图像预览
-                if (WorkflowTabViewModel?.SelectedTab?.IsInSubroutine == true)
-                    return;
-
-                // 找不到上游图像载入节点，隐藏预览器（没有数据源可绑定）
-                if (ShowImagePreview || ActiveInputSource != null || _currentDisplayNodeId != null)
-                {
-                    ShowImagePreview = false;
-                    ActiveInputSource = null;
-                    _currentDisplayNodeId = null;
-                }
+                _currentDisplayNodeId = sourceNode.Id;
+                source.PrepareForDisplay();
+                ActiveInputSource = source;
             }
+            ShowImagePreview = true;
+        }
+
+        private void FlushCameraResultPresentation()
+        {
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            _cameraPresentationTimer?.Stop();
+            var latest = _pendingCameraPresentations.Values.ToArray();
+            _pendingCameraPresentations.Clear();
+            foreach (var (node, result) in latest)
+            {
+                if (node.IsSelected)
+                    _nodeResultManager.RefreshResultDisplay(node, result);
+            }
+            if (latest.Length > 0)
+                NotifyAllDebugWindowsExternalResult();
+            timer.Stop();
+            if (timer.ElapsedMilliseconds >= 100 &&
+                DateTime.UtcNow - _lastCameraPerfWarningUtc >= TimeSpan.FromSeconds(5))
+            {
+                _lastCameraPerfWarningUtc = DateTime.UtcNow;
+                AddLog($"⚠️ 相机结果界面刷新耗时 {timer.ElapsedMilliseconds} ms");
+            }
+        }
+
+        private void HideLocalImagePreview()
+        {
+            ShowImagePreview = false;
+            ActiveInputSource = null;
+            _currentDisplayNodeId = null;
         }
 
         /// <summary>
@@ -5448,9 +5463,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// 逆向追踪选中节点的图像载入节点（BFS）
         /// </summary>
         /// <remarks>
-        /// 当存在多个载入节点时返回第一个找到的载入节点:
-        /// 1. BFS保证路径最短
-        /// 2. 节点ID排序保证选择一致
+        /// 多个上游来源时优先使用显式选择；否则不猜测，以免展示错误的本地列表。
         /// </remarks>
         /// <param name="node">起始节点</param>
         /// <returns>第一个找到的图像载入节点，未找到返回null</returns>
@@ -5464,6 +5477,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
             var visited = new HashSet<string>();
             var queue = new Queue<SunEyeVision.UI.Shared.WorkflowNode>();
+            var sources = new List<SunEyeVision.UI.Shared.WorkflowNode>();
             queue.Enqueue(node);
             visited.Add(node.Id);
 
@@ -5492,10 +5506,12 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                         continue;
                     }
 
-                    // 找到图像载入节点，返回（第一个找到的）
+                    // 收集所有可达来源，而非按节点 ID 随意取一个。
                     if (upstreamNode.IsImageLoadNode)
                     {
-                        return upstreamNode;
+                        visited.Add(upstreamNodeId);
+                        sources.Add(upstreamNode);
+                        continue;
                     }
 
                     // 不是载入节点，继续追踪
@@ -5504,6 +5520,23 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 }
             }
 
+            if (sources.Count == 1)
+                return sources[0];
+            if (sources.Count > 1 && node.SelectedDisplaySource != null)
+            {
+                var selectedId = node.SelectedDisplaySource.SourceNodeId;
+                var directSource = sources.FirstOrDefault(source => source.Id == selectedId);
+                if (directSource != null)
+                    return directSource;
+                // 显式显示源可能是中间处理节点，继续沿所选分支追溯。
+                if (selectedId != node.Id && visited.Contains(selectedId))
+                {
+                    var branch = selectedTab.WorkflowNodes.OfType<WorkflowNode>()
+                        .FirstOrDefault(candidate => candidate.Id == selectedId);
+                    if (branch != null)
+                        return FindUpstreamImageLoadNode(branch);
+                }
+            }
             return null;
         }
 

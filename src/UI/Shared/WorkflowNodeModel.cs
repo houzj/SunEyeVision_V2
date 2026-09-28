@@ -60,7 +60,11 @@ namespace SunEyeVision.UI.Shared
                 // 与全局变量/参数实时同步模式对齐；保存时序列化 ImageSourceConfig 即得最新状态。
                 if (value != null)
                 {
-                    value.ConfigChanged = cfg => ImageSourceConfig = cfg;
+                    value.ConfigChanged = cfg =>
+                    {
+                        ImageSourceConfig ??= new ImageSourceConfig { NodeId = Id };
+                        ImageSourceConfig.UpdateLocalInput(cfg);
+                    };
                 }
             }
         }

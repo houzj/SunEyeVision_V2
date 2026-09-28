@@ -542,9 +542,12 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             if (sender is Button button && button.Tag is WorkflowTabViewModel workflow)
             {
+                var wasRunning = workflow.IsRunning;
                 _viewModel.WorkflowTabViewModel.ToggleContinuous(workflow);
-                var action = workflow.IsRunning ? "开始连续运行" : "停止";
-                _viewModel.StatusText = $"{action}: {workflow.Name}";
+                if (wasRunning)
+                    _viewModel.StatusText = $"正在停止: {workflow.Name}";
+                else if (workflow.IsRunning)
+                    _viewModel.StatusText = $"开始连续运行: {workflow.Name}";
             }
         }
 

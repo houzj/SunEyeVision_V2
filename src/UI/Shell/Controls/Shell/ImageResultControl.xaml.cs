@@ -36,6 +36,14 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             InitializeComponent();
         }
 
+        /// <summary>将焦点移到现有本地图片预览器，不创建第二份图像列表。</summary>
+        public void FocusLocalPreview()
+        {
+            ImagePreviewContent.BringIntoView();
+            ImagePreviewContent.Focus();
+            Keyboard.Focus(ImagePreviewContent);
+        }
+
         /// <summary>
         /// 注入 ViewModel 并订阅图像预览事件
         /// </summary>

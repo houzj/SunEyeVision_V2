@@ -73,7 +73,7 @@ namespace SunEyeVision.UI.Services.Workflow
         /// <summary>
         /// 更新节点结果并刷新UI
         /// </summary>
-        public void UpdateNodeResult(WorkflowNodeBase node, ToolResults result)
+        public void UpdateNodeResult(WorkflowNodeBase node, ToolResults result, bool refreshDisplay = true)
         {
             if (node == null || result == null)
                 return;
@@ -92,7 +92,7 @@ namespace SunEyeVision.UI.Services.Workflow
             _getContext()?.SetNodeResult(node.Id, executionResult);
 
             // 2. 如果当前节点被选中，立即刷新UI（图像显示由 ViewModel 统一解析）
-            if (node.IsSelected)
+            if (refreshDisplay && node.IsSelected)
             {
                 RefreshResultDisplay(node, result);
             }

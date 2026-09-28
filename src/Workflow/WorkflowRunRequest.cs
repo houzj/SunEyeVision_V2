@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.SDK.Devices.Camera;
 
 namespace SunEyeVision.Workflow;
 
@@ -15,7 +16,9 @@ public sealed class WorkflowRunRequest
         IDictionary<string, object?>? globalVariables = null,
         IDictionary<string, object>? runtimeParameters = null,
         IDictionary<string, object>? contextVariables = null,
-        IDictionary<string, IReadOnlyDictionary<string, object?>>? nodeParameterOverrides = null)
+        IDictionary<string, IReadOnlyDictionary<string, object?>>? nodeParameterOverrides = null,
+        ICameraCaptureService? cameraCaptureService = null,
+        IReadOnlyDictionary<string, CameraFrame>? cameraFrames = null)
     {
         if (string.IsNullOrWhiteSpace(workflowId))
             throw new ArgumentException("工作流 ID 不能为空。", nameof(workflowId));
@@ -29,6 +32,8 @@ public sealed class WorkflowRunRequest
             .ToDictionary(
                 pair => pair.Key,
                 pair => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?>(pair.Value));
+        CameraCaptureService = cameraCaptureService;
+        CameraFrames = new Dictionary<string, CameraFrame>(cameraFrames ?? new Dictionary<string, CameraFrame>());
     }
 
     public string WorkflowId { get; }
@@ -39,4 +44,7 @@ public sealed class WorkflowRunRequest
 
     /// <summary>仅应用到深拷贝后的执行参数，绝不写回方案节点参数。</summary>
     public IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> NodeParameterOverrides { get; }
+    public ICameraCaptureService? CameraCaptureService { get; }
+    /// <summary>以节点 ID 寻址的本轮相机帧。宿主在执行完成后释放帧。</summary>
+    public IReadOnlyDictionary<string, CameraFrame> CameraFrames { get; }
 }

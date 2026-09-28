@@ -45,6 +45,16 @@ namespace SunEyeVision.Tool.ImageLoad
         public string FilePath { get; set; } = string.Empty;
         public long FileSize { get; set; }
         public string FileFormat { get; set; } = string.Empty;
+        public ImageSourceKind SourceKind { get; set; }
+        public string SourceDeviceId { get; set; } = string.Empty;
+        public long? FrameId { get; set; }
+        public DateTimeOffset? FrameTimestamp { get; set; }
+
+        // 节点内部保留强类型元数据；对外输出契约仅使用 SdkTypeVocabulary 支持的通用类型。
+        // 不把枚举/Nullable<T>/DateTimeOffset 注册成全局变量类型。
+        public string SourceKindText => SourceKind.ToString();
+        public string FrameIdText => FrameId?.ToString() ?? string.Empty;
+        public string FrameTimestampText => FrameTimestamp?.ToString("O") ?? string.Empty;
 
         #endregion
 
@@ -187,6 +197,20 @@ namespace SunEyeVision.Tool.ImageLoad
             _meanPixelValue = mean.D;
         }
 
+        /// <summary>相机帧在工作线程预先计算统计值，避免结果树绑定时阻塞 WPF UI。</summary>
+        public void PrimePixelStatistics()
+        {
+            try { CalculatePixelValues(); }
+            catch (Exception ex)
+            {
+                // 统计信息不是采集成败的判据；缓存缺省值，避免 UI getter 再次执行失败运算。
+                _minPixelValue = 0;
+                _maxPixelValue = 0;
+                _meanPixelValue = 0;
+                AddWarning($"像素统计不可用: {ex.Message}");
+            }
+        }
+
         #endregion
 
         #region 重写方法
@@ -218,6 +242,10 @@ namespace SunEyeVision.Tool.ImageLoad
                 new("FilePath",             "路径",         "文件"),
                 new("FileSize",             "大小",         "文件"),
                 new("FileFormat",           "格式",         "文件"),
+                new("SourceKindText",      "来源",         "图像源"),
+                new("SourceDeviceId",      "相机ID",       "图像源"),
+                new("FrameIdText",         "设备帧号",     "图像源"),
+                new("FrameTimestampText",  "采集时间",     "图像源"),
             ];
         }
 

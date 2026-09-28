@@ -4,6 +4,7 @@ using System.Threading;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.SDK.Devices.Camera;
 using ToolExecutionContext = SunEyeVision.Plugin.SDK.Execution.Parameters.ExecutionContext;
 
 namespace SunEyeVision.Plugin.SDK.Core
@@ -40,6 +41,12 @@ namespace SunEyeVision.Plugin.SDK.Core
 
         /// <summary>本次运行的取消令牌。</summary>
         public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>宿主提供的应用级相机采集服务；不参与参数持久化。</summary>
+        public ICameraCaptureService? CameraCaptureService { get; init; }
+
+        /// <summary>宿主在启动本轮前绑定的相机帧；所有权仍属于本轮运行请求。</summary>
+        public CameraFrame? CameraFrame { get; init; }
 
         /// <summary>
         /// 本次运行的服务上下文。由 <see cref="ToolExecutor"/> 在执行前建立，

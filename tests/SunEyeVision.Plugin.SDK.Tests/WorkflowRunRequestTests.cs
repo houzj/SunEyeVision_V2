@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using NSubstitute;
+using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Workflow;
 using Xunit;
 
@@ -26,5 +29,20 @@ public class WorkflowRunRequestTests
         Assert.Equal(1, request.RuntimeParameters["ImageIndex"]);
         Assert.Equal(50d, request.GlobalVariables["Threshold"]);
         Assert.Equal("first.png", request.NodeParameterOverrides["image-load"]["FilePath"]);
+    }
+
+    [Fact]
+    public void Constructor_FreezesCameraFrameNodeMappingWithoutTakingOwnership()
+    {
+        var image = Substitute.For<IVisionImage>();
+        using var frame = new CameraFrame(new CameraDeviceRef("camera-1"), 123,
+            DateTimeOffset.UtcNow, image);
+        var frames = new Dictionary<string, CameraFrame> { ["source-node"] = frame };
+
+        var request = new WorkflowRunRequest("workflow", cameraFrames: frames);
+        frames.Clear();
+
+        Assert.Same(frame, request.CameraFrames["source-node"]);
+        Assert.False(frame.IsDisposed);
     }
 }

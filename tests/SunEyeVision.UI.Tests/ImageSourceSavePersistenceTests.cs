@@ -2,6 +2,7 @@
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Shell.Controls.Panels;
 using SunEyeVision.Workflow;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using Xunit;
 
 namespace SunEyeVision.UI.Tests;
@@ -14,6 +15,36 @@ namespace SunEyeVision.UI.Tests;
 /// </summary>
 public class ImageSourceSavePersistenceTests
 {
+    [Fact]
+    public void LocalPreviewChangesPreserveCameraSelectionAndSourceMode()
+    {
+        var node = new WorkflowNode("node-merge", "图像源", "图像源", "ImageLoad")
+        {
+            ImageSourceConfig = new ImageSourceConfig
+            {
+                NodeId = "node-merge",
+                SourceKind = ImageSourceKind.Camera,
+                CameraDeviceId = "camera-001",
+                CameraTimeoutMs = 4200
+            }
+        };
+        var input = node.EnsureInputSource();
+        input.AddImage(new ImageInfo { FilePath = @"C:\samples\a.bmp", Name = "a" });
+        input.CurrentIndex = 0;
+
+        Assert.Equal(ImageSourceKind.Camera, node.ImageSourceConfig.SourceKind);
+        Assert.Equal("camera-001", node.ImageSourceConfig.CameraDeviceId);
+        Assert.Equal(4200, node.ImageSourceConfig.CameraTimeoutMs);
+        Assert.Single(node.ImageSourceConfig.FilePaths);
+        Assert.Equal(0, node.ImageSourceConfig.CurrentIndex);
+
+        var json = System.Text.Json.JsonSerializer.Serialize<WorkflowNodeBase>(node, WorkflowSerializationOptions.Default);
+        var restored = System.Text.Json.JsonSerializer.Deserialize<WorkflowNodeBase>(json, WorkflowSerializationOptions.Default);
+        Assert.Equal(ImageSourceKind.Camera, restored!.ImageSourceConfig!.SourceKind);
+        Assert.Equal("camera-001", restored.ImageSourceConfig.CameraDeviceId);
+        Assert.Single(restored.ImageSourceConfig.FilePaths);
+    }
+
     [Fact]
     public void AddImages_PopulatesTruthSource_ToConfig_HasNonEmptyFilePaths()
     {

@@ -7,24 +7,124 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.HalAdapter;
+using System.Threading.Tasks;
+using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 
 namespace SunEyeVision.Tool.ImageLoad
 {
     /// <summary>
-    /// 图像载入工具 - 从文件读取图像，作为工作流的图像源
+    /// 图像源工具：本地文件或方案相机均输出统一图像契约。
     /// </summary>
-    [Tool("ImageLoad", "图像载入",
-        Description = "从文件载入图像，作为工作流的图像源",
-        Icon = "📁", Category = "采集",
+    [Tool("ImageLoad", "图像源",
+        Description = "从本地图像或方案相机获取图像，作为工作流输入",
+        Icon = "🖼️", Category = "采集",
         Version = "2.0.0", HasDebugWindow = false)]
-    public class ImageLoadTool : IToolPlugin<ImageLoadParameters, ImageLoadResults>
+    public class ImageLoadTool : IToolPlugin<ImageLoadParameters, ImageLoadResults>, IAsyncToolPlugin
     {
+        public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)
+        {
+            if (request.Parameters is not ImageLoadParameters parameters)
+                throw new ArgumentException("图像源参数类型不正确", nameof(request));
+            if (parameters.SourceKind == ImageSourceKind.Local)
+                return Run(parameters);
+
+            var result = new ImageLoadResults
+            {
+                ToolName = "ImageLoad",
+                ToolId = "image_load",
+                SourceKind = ImageSourceKind.Camera,
+                SourceDeviceId = parameters.CameraDeviceId,
+                Timestamp = DateTime.Now
+            };
+            var validation = parameters.Validate();
+            if (!validation.IsValid)
+            {
+                result.SetError($"参数验证失败: {string.Join(", ", validation.Errors)}");
+                return result;
+            }
+            if (request.CameraFrame == null && request.CameraCaptureService == null)
+            {
+                result.SetError("相机采集服务不可用");
+                return result;
+            }
+
+            try
+            {
+                // 工作流帧驱动时只消费宿主已绑定的帧；旧调用方仍可使用单次采集兼容入口。
+                var ownsFrame = request.CameraFrame == null;
+                var frame = request.CameraFrame ?? await request.CameraCaptureService!.CaptureAsync(
+                    new CameraCaptureRequest
+                    {
+                        CameraRef = new CameraDeviceRef(parameters.CameraDeviceId),
+                        TriggerMode = CameraTriggerMode.Continuous,
+                        Timeout = TimeSpan.FromMilliseconds(parameters.CameraTimeoutMs)
+                    }, request.CancellationToken).ConfigureAwait(false);
+                try
+                {
+                    if (!string.Equals(frame.CameraRef.Value, parameters.CameraDeviceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result.SetError($"本轮帧来自相机 {frame.CameraRef.Value}，与关联相机 {parameters.CameraDeviceId} 不一致");
+                        return result;
+                    }
+                    // 厂商帧可能不是 HalImage；统一转换为现有算法/显示链所用的图像类型。
+                    // CreateFromBytes 建立结果自有图像，之后释放 Frame 不影响下游。
+                    var pixels = frame.Image.GetPixelData();
+                    var channels = frame.Image.Channels;
+                    var expectedLength = checked(frame.Image.Width * frame.Image.Height * channels);
+                    if (channels is not (1 or 3) || pixels.Length != expectedLength)
+                    {
+                        result.SetError($"不支持的相机帧：{channels} 通道，数据长度 {pixels.Length}，预期 {expectedLength}");
+                        return result;
+                    }
+                    if (channels == 3 && frame.Metadata.TryGetValue("pixelType", out var pixelType)
+                        && pixelType?.ToString()?.Contains("BGR", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        for (var i = 0; i < pixels.Length; i += 3)
+                            (pixels[i], pixels[i + 2]) = (pixels[i + 2], pixels[i]);
+                    }
+                    var output = HalImage.CreateFromBytes(pixels, frame.Image.Width, frame.Image.Height, channels);
+                    if (output.IsEmpty)
+                    {
+                        output.Dispose();
+                        result.SetError("相机返回空图像");
+                        return result;
+                    }
+                    result.OutputImage = output;
+                    result.GrayImage = output.Channels == 1 ? output : HalImage.CreateGrayFromColor(output);
+                    result.Width = output.Width;
+                    result.Height = output.Height;
+                    result.Channels = output.Channels;
+                    result.Depth = 8;
+                    result.FrameId = frame.FrameId;
+                    result.FrameTimestamp = frame.Timestamp;
+                    result.PrimePixelStatistics();
+                    result.SetSuccess(0);
+                }
+                finally
+                {
+                    if (ownsFrame)
+                        frame.Dispose();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                result.SetError($"相机取帧失败: {ex.Message}", ex);
+            }
+            return result;
+        }
+
         public ImageLoadResults Run(ImageLoadParameters parameters)
         {
             var result = new ImageLoadResults
             {
                 ToolName = "ImageLoad",
                 ToolId = "image_load",
+                SourceKind = ImageSourceKind.Local,
                 Timestamp = DateTime.Now
             };
 
@@ -32,6 +132,11 @@ namespace SunEyeVision.Tool.ImageLoad
 
             try
             {
+                if (parameters.SourceKind == ImageSourceKind.Camera)
+                {
+                    result.SetError("相机模式需要异步执行请求和宿主相机服务");
+                    return result;
+                }
                 var validationResult = parameters.Validate();
                 if (!validationResult.IsValid)
                 {

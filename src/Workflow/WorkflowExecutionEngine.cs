@@ -863,6 +863,10 @@ namespace SunEyeVision.Workflow
 
                 // 复制参数绑定配置
                 executionNode.ParamSettings = node.ParamSettings?.Clone() ?? new ParamSettingContainer();
+                executionNode.CameraCaptureService = request?.CameraCaptureService;
+                executionNode.CameraFrame = request != null && request.CameraFrames.TryGetValue(node.Id, out var cameraFrame)
+                    ? cameraFrame
+                    : null;
 
                 // ★ 委托注入：Subroutine 节点通过委托调用 ExecuteWorkflowAsync 执行子工作流
                 if (executionParameters is ISubWorkflowExecutor executor)

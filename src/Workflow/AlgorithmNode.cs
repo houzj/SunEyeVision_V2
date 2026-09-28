@@ -11,6 +11,7 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.Devices.Camera;
 
 namespace SunEyeVision.Workflow
 {
@@ -23,6 +24,12 @@ namespace SunEyeVision.Workflow
         /// 工具实例
         /// </summary>
         public IToolPlugin? Tool { get; set; }
+
+        /// <summary>运行请求提供的共享采集服务，不属于节点持久化状态。</summary>
+        public ICameraCaptureService? CameraCaptureService { get; set; }
+
+        /// <summary>本轮运行在启动节点前绑定的帧；节点不拥有其生命周期。</summary>
+        public CameraFrame? CameraFrame { get; set; }
 
         /// <summary>
         /// 上次执行结果
@@ -114,6 +121,8 @@ namespace SunEyeVision.Workflow
                             NodeName = Name,
                             NodeId = Id,
                             CancellationToken = cancellationToken,
+                            CameraCaptureService = CameraCaptureService,
+                            CameraFrame = CameraFrame,
                             GlobalVariables = globalVariables,
                             ParameterBindings = ParameterBindingSet.FromSettings(ParamSettings)
                         }).ConfigureAwait(false);

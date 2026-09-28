@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Workflow
 {
@@ -13,6 +14,15 @@ namespace SunEyeVision.Workflow
     /// </remarks>
     public class ImageSourceConfig
     {
+        /// <summary>旧方案缺少该字段时默认为本地图像。</summary>
+        public ImageSourceKind SourceKind { get; set; } = ImageSourceKind.Local;
+
+        /// <summary>方案设备列表中的稳定相机引用；不是 SDK 句柄。</summary>
+        public string CameraDeviceId { get; set; } = string.Empty;
+
+        /// <summary>相机取帧等待上限，毫秒。</summary>
+        public int CameraTimeoutMs { get; set; } = 3000;
+
         /// <summary>
         /// 关联节点ID
         /// </summary>
@@ -42,5 +52,15 @@ namespace SunEyeVision.Workflow
         /// 运行选择模式下勾选的图像路径（保留勾选路径）
         /// </summary>
         public List<string> ForRunPaths { get; set; } = new();
+
+        /// <summary>只合并预览器负责的本地字段，保留相机配置与来源模式。</summary>
+        public void UpdateLocalInput(ImageSourceConfig local)
+        {
+            FilePaths = new List<string>(local.FilePaths);
+            CurrentIndex = local.CurrentIndex;
+            AutoSwitchEnabled = local.AutoSwitchEnabled;
+            RunMode = local.RunMode;
+            ForRunPaths = new List<string>(local.ForRunPaths);
+        }
     }
 }

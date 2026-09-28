@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -23,6 +24,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI
     {
         private ObservableCollection<WorkflowTabViewModel> _tabs = new ObservableCollection<WorkflowTabViewModel>();
         private WorkflowTabViewModel? _selectedTab;
+        private readonly Dictionary<string, long> _recentStopRequests = new();
+        private const long StopClickGuardMilliseconds = 500;
 
 
         /// <summary>
@@ -269,8 +272,14 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             if (workflow == null || workflow.IsRunning)
                 return;
 
+            // 上一轮停止刚被确认时，忽略按钮抖动/连点造成的立即重启。
+            if (_recentStopRequests.TryGetValue(workflow.RootWorkflowId, out var stoppedAt)
+                && Environment.TickCount64 - stoppedAt < StopClickGuardMilliseconds)
+                return;
+
             if (StartContinuousExecution?.Invoke(workflow) == true)
             {
+                _recentStopRequests.Remove(workflow.RootWorkflowId);
                 workflow.IsRunning = true;
                 WorkflowStatusChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -285,7 +294,11 @@ namespace SunEyeVision.UI.Features.WorkflowUI
                 return;
 
             // 取消请求发出后，仍保持“运行中”直到执行管理器确认当前轮已退出。
-            StopContinuousExecution?.Invoke(workflow);
+            if (_recentStopRequests.TryGetValue(workflow.RootWorkflowId, out var stoppedAt)
+                && Environment.TickCount64 - stoppedAt < StopClickGuardMilliseconds)
+                return;
+            if (StopContinuousExecution?.Invoke(workflow) == true)
+                _recentStopRequests[workflow.RootWorkflowId] = Environment.TickCount64;
         }
 
         /// <summary>

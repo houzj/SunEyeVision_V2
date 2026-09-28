@@ -1,5 +1,9 @@
 # 当前协作任务
 
+- 2026-09-27 按用户复测意见调整通讯方案恢复：移除新建/详情中的“打开方案时连接”开关，方案加载时直接尝试连接 `Solution.Communications` 中已启用的设备；旧 `autoConnect=false` 不再阻止连接，新保存方案移除遗留键。相机管理的加载时机作为参考，但通讯无需相机的独立自动连接选项。仅做 Debug 构建与测试，结果见本轮交接单。
+
+- 2026-09-27 Codex 在 `feature/comm`、基线 `313f2457` 上实施通讯架构方案：新增 Plugin.SDK 通用通讯契约；将 TCP/UDP/串口、Modbus、S7、CIP、OPC UA 驱动迁入 `DeviceDriver/Communications`，建立内部工厂注册及不可变配置快照；应用级服务接管方案打开/关闭、自动连接、退避重连、连接与轮询生命周期，通讯窗口关闭只解除订阅；地址表首地址/容量随方案保存，越界调整拒绝并提示受影响地址，清空地址块需确认；配置保存采用同目录临时文件、原子替换与 `.bak` 恢复副本，运行值/短期记录退出方案写入。只做 Debug 构建与测试，未做 Release，也未做 VS 设计时/真实设备人工验收。后续需确认 UI 按实际设备交互、超大地址表性能，以及明确的工作流协议操作消费场景。详见 `HANDOFF-communication-20260927.md`。
+
 - 2026-09-25 为一次性定位方案启动问题新增第二层真实调用链回归测试：`SolutionManager.LoadSolutionOnly + SetCurrentSolution`、STA 线程上的 `MainWindowViewModel.OnCurrentSolutionChanged -> LoadSolutionToWorkflowTabs`。首次测试在未创建 `Application.Current` 的测试环境中命中 `UpdateUndoRedoCommands` 的空引用；补齐真实 WPF `Application` 后 5/5 测试全部通过（Workflow、Devices、Repository.Load、SolutionManager 链路、STA 工作流标签页链路）。当前证据表明核心加载和工作流 UI 加载链路在规范 WPF 环境下均可完成，之前单测异常是测试环境缺失 Dispatcher，不是生产代码异常；仍需用新 exe 采集一次完整 `[StartupTrace]` 日志，确认实际启动实例是否走到 `MainWindow.Show`。
 - 2026-09-25 将生产启动顺序中的 `ServiceInitializer.InitializeServices()` 也加入 STA 回归测试后，`MainWindowViewModel + CurrentSolutionChanged` 链路仍通过（1/1）；说明当前日志系统/服务初始化本身未能在测试环境复现 `Workflow constructor begin` 后停止的问题。最新已有日志 `SunEyeVision_002531.txt` 仍是旧进程记录，下一步必须用当前测试通过的构建启动一次并拿到新时间戳日志，避免继续分析旧日志。
 
@@ -409,3 +413,8 @@
 - 2026-09-27 修复发送测试地址下拉显示对象类型名：不再依赖主题 ComboBox 的 DisplayMemberPath 展示记录对象，改以“序号 + 地址名称”纯文本填充，SelectedIndex 映射原地址块。标准 UI Debug 输出因运行中 CommonControl.dll 被占用未能覆盖；隔离目录的 UI Debug 编译成功（0 错误、744 个警告），隔离输出已删除，需关闭运行程序后重新构建并启动才能看到修复。
 - 2026-09-27 发送测试写入数量修正：地址块 Count 改为容量上限，输入少于容量只编码并写入实际寄存器数，不补零覆盖剩余寄存器；输入超出容量时截取前面完整的 int/float 值或 UTF-8 字符，并在成功结果提示截取。32bit 值不拆分；超过 FC16 单次 123 寄存器上限时分批写入，失败时提示已写入的前缀数量。用户关闭运行程序后，标准 `dev/Debug` UI 构建成功（0 错误、758 个警告），发送编码测试 11/11 通过；真实设备部分写入/分批写入待人工验收。
 - 2026-09-27 主线通讯代码同步：基线 `main=3473225c`、`feature/comm=b6b7c8ec`；将通讯分支的设备管理 UI、Workflow 协议运行时、Modbus 地址空间、收发调试、测试和设计文档合入主线，保留相机与启动流程主线实现。仅协作记录存在文本冲突，已保留双方记录。OPC UA 引入的 `System.Text.Json >= 10.0.8` 与脚本工具默认 10.0.3 冲突，已在脚本工具项目单独提升至 10.0.8。离线还原成功；UI Debug 构建 0 错误、873 警告；全量 Release 构建 0 错误、1246 警告；通讯相关 Debug/Release 测试各 30/30 通过。方案加载回归 5/6 通过，其中生产插件 STA 测试仍在 15 秒超时（合并前协作记录已记载该偶发现象），尚未作根因归因。通讯管理器关闭仍按现有实现释放通讯连接；真实通讯设备、VS 设计时和运行时 UI 验收待用户执行。
+- 2026-09-27 `feature/comm` 合并后本地输出更新：在基线 `313f2457` 上执行 `dotnet build src/UI/SunEyeVision.UI.csproj -c Debug --no-restore -m:1 -p:UseSharedCompilation=false -v:q -clp:ErrorsOnly` 成功，0 错误、1159 警告；本工作目录 `dev/Debug/SunEyeVision.UI.exe` 已更新至 18:37:52。未执行 Release。
+- 2026-09-27 通讯管理最终架构方案落盘：新增 `docs/01-方案设计/2026/09/通讯管理最终架构与持久化方案-20260927.md`，整合相机架构对齐、SDK/DeviceDriver 文件结构、应用级会话与轮询所有权、协议扩展、配置/运行数据持久化边界、Modbus 地址空间和操作规则、分阶段验收。基线 `313f2457`；本次仅文档，无代码修改或构建；当前目标结构尚未实施。
+- 2026-09-27 通讯方案细化：原文单列 SDK `IModbusService` 易误导，现明确首批 SDK 不预建 Modbus/其他协议专用接口，按 Workflow/插件实际消费者需求统一提升；补 SDK 准入规则、DeviceDriver 内部契约、逐文件迁移、配置 JSON 示意、保存/迁移事务、会话状态机、并发与过时结果规则、新协议最小变更集及回归矩阵。仍仅修改文档，未实施代码或构建。
+- 2026-09-27 通讯目录方案按用户要求收敛：第一阶段通讯引用、状态、内部契约、运行时和各协议驱动统一放在 `src/DeviceDriver/Communications/`，与相机的 `Cameras/` 并列；不预建 `Plugin.SDK/Devices/Communication/`，仅当 Workflow/第三方插件有明确跨层消费需求时再提升最小公共契约。已更新本地最终方案，未修改代码或构建。
+- 2026-09-27 修正通讯目录方案误解：用户要求通讯驱动集中在 `src/DeviceDriver/Communications/`，并未要求删除 SDK 层。最终文档已恢复 `src/Plugin.SDK/Devices/Communication/` 的通用设备引用、状态、错误、能力、事件及只读状态契约；DeviceDriver 仅放内部工厂/适配器/会话/协议实现；Modbus 等协议专用 SDK 接口仍按真实跨层需求再增加。前条记录保留为修订历史，本次仅文档，无代码或构建。

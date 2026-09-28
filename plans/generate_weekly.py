@@ -55,7 +55,8 @@ keywordMap = [
     (["位姿", "Pose", "OutputVariable", "输出契约"], "M-SRC-POSE"),
     (["运行UI", "运行界面", "RunUI", "操作员界面", "运行器"], "M-SRC-RUNUI"),
     (["联调", "集成", "Integrate", "端到端"], "M-SRC-INTEG"),
-    (["交付", "上线", "手册", "Delivery"], "M-SRC-DELIVERY"),
+    (["图像源", "ImageSource", "图像采集工具", "采集工具", "采图工具", "相机采集", "ImageCapture"], "T-IMGCAPTURE"),
+    (["交付", "上线", "手册", "Delivery", "安装包", "内测版", "打包", "Release"], "M-SRC-DELIVERY"),
     (["全局变量", "GlobalVariable"], "M-HIST-GLOBALVAR"),
     (["小地图", "MiniMap", "工作区"], "M-HIST-CANVAS"),
     (["画布", "节点", "连线", "工作流编辑器", "缩放", "撤销", "多选", "命中", "虚拟化"], "M-HIST-CANVAS"),
@@ -96,12 +97,19 @@ pathMap = [
     (["tools/SunEyeVision.Tool.ArcCaliper"], "T-ARCCALIPER"),
     (["tools/SunEyeVision.Tool.ShapeMatch"], "T-SHAPEMATCH"),
     (["tools/SunEyeVision.BlobAnalysis"], "T-BLOB"),
-    (["tools/SunEyeVision.Tool.PointToPoint"], "T-P2P"),
-    (["tools/SunEyeVision.Tool.PointToLine"], "T-P2L"),
-    (["tools/SunEyeVision.Tool.PointToCircle"], "T-P2C"),
-    (["tools/SunEyeVision.Tool.LineToLine"], "T-L2L"),
-    (["tools/SunEyeVision.Tool.LineToCircle"], "T-L2C"),
-    (["tools/SunEyeVision.Tool.CircleToCircle"], "T-C2C"),
+    (["tools/SunEyeVision.Tool.PointPointMeasure", "tools/SunEyeVision.Tool.PointToPoint"], "T-P2P"),
+    (["tools/SunEyeVision.Tool.PointLineMeasure", "tools/SunEyeVision.Tool.PointToLine"], "T-P2L"),
+    (["tools/SunEyeVision.Tool.PointCircleMeasure", "tools/SunEyeVision.Tool.PointToCircle"], "T-P2C"),
+    (["tools/SunEyeVision.Tool.LineLineMeasure", "tools/SunEyeVision.Tool.LineToLine"], "T-L2L"),
+    (["tools/SunEyeVision.Tool.LineCircleMeasure", "tools/SunEyeVision.Tool.LineToCircle"], "T-L2C"),
+    (["tools/SunEyeVision.Tool.CircleCircleMeasure", "tools/SunEyeVision.Tool.CircleToCircle"], "T-C2C"),
+    (["src/Workflow/ImageSourceConfig", "src/Plugin.SDK/Vision/Contracts/ImageSourceKind", "src/UI/Features/WorkflowUI/ImageSourceSettingsControl"], "T-IMGCAPTURE"),
+    (["tools/SunEyeVision.Tool.ImageLoad"], "T-IMAGELOAD"),
+    (["tools/SunEyeVision.Tool.ImageThreshold"], "T-IMAGETHRESHOLD"),
+    (["tools/SunEyeVision.Tool.ImageFilter"], "T-IMAGEFILTER"),
+    (["tools/SunEyeVision.Tool.Morphology"], "T-MORPHOLOGY"),
+    (["tools/SunEyeVision.Tool.Threshold"], "T-THRESHOLD"),
+    (["installer/", "version.json", "Help/"], "M-SRC-DELIVERY"),
     (["tools/SunEyeVision.Tool.CalibPlate"], "T-CALIBPLATE"),
     (["tools/SunEyeVision.Tool.Undistort"], "T-UNDIST"),
     (["tools/SunEyeVision.Tool.HECap"], "T-HECAP"),
@@ -130,34 +138,97 @@ pathMap = [
     (["src/Plugin.SDK/Execution/Parameters", "src/Plugin.SDK/Models/SubroutineOutputConfig"], "M-HIST-DATAMODEL"),
 ]
 
-def match_module(msg, files):
-    """返回 (主模块, 关联工具列表)。工具提交可能同时命中多个工具目录
-    （如「圆/直线查找拟合统一」同时改 CircleDetect + LineDetect），
-    主归属给第一个命中者，关联列表让该提交也计入其他工具模块的周统计/日志。"""
-    related = []
-    # ★ 优先：工具专属路径精确匹配（tools/SunEyeVision.Tool.X → T-X）。
+def _tool_hits(files):
+    """返回该提交命中的工具模块列表（按 pathMap 顺序去重）。"""
+    hits = []
     for paths, mid in pathMap:
         if not mid.startswith("T-"):
             continue
-        hit = False
         for p in paths:
-            for f in files:
-                if p.lower() in f.lower():
-                    hit = True
-                    break
-            if hit:
+            if any(p.lower() in f.lower() for f in files):
+                hits.append(mid)
                 break
-        if hit:
-            related.append(mid)
+    seen, uniq = set(), []
+    for m in hits:
+        if m not in seen:
+            seen.add(m)
+            uniq.append(m)
+    return uniq
+
+# ---------- 历史提交语义覆盖表（人工判定，优先于路径/关键词匹配） ----------
+# 交叉性「工具基座 / 契约 / 结果呈现」提交会同时改十几个工具目录，
+# 单靠路径匹配会误认领给第一个命中者（如 T-CIRCLEFINDER），此处显式钉死真实归属；
+# 命中的工具目录仍作为「关联模块」计入各自周统计与日志。
+manualOverrides = {
+    # —— 参数契约 / 绑定 / 运行快照 → M-HIST-PARAM
+    "d975ece8": "M-HIST-PARAM", "0f1823f0": "M-HIST-PARAM", "da3944aa": "M-HIST-PARAM",
+    "7ab9013d": "M-HIST-PARAM", "e90f5c2b": "M-HIST-PARAM", "d8163274": "M-HIST-PARAM",
+    "038dda82": "M-HIST-PARAM", "abe0ce2f": "M-HIST-PARAM", "2ebb4ce0": "M-HIST-PARAM",
+    # —— 工具契约 / 能力声明 / 结果结构与值分离 → M-HIST-CONTRACT
+    "bc1ec5ae": "M-HIST-CONTRACT", "74f913ad": "M-HIST-CONTRACT", "f24fa8b7": "M-HIST-CONTRACT",
+    # —— 结果树 / 结果命名 / 判定显示 → M-HIST-RESULTTREE
+    "86673059": "M-HIST-RESULTTREE", "cea13947": "M-HIST-RESULTTREE",
+    "e6f62dfa": "M-HIST-RESULTTREE", "e6b558e0": "M-HIST-RESULTTREE",
+    "ae3b330b": "M-HIST-RESULTTREE",
+    # —— SDK 控件（结果页数据驱动 / 双卡尺编辑器） → M-HIST-SDKCTRL
+    "35b78e87": "M-HIST-SDKCTRL", "151a2121": "M-HIST-SDKCTRL", "c11ed704": "M-HIST-SDKCTRL",
+    "eb09aa95": "M-HIST-SDKCTRL",
+    # —— 渲染 / 图像预览 → M-HIST-PREVIEW
+    "d2307dae": "M-HIST-PREVIEW", "0dee4701": "M-HIST-PREVIEW", "93c01884": "M-HIST-PREVIEW",
+    "e621dffc": "M-HIST-PREVIEW", "3f22d184": "M-HIST-PREVIEW", "fb0beb2c": "M-HIST-PREVIEW",
+    "8eb3d974": "M-HIST-PREVIEW", "51efe833": "M-HIST-PREVIEW", "1efe8331": "M-HIST-PREVIEW",
+    # —— 工作流执行引擎（执行器 / 中断隔离 / 运行会话 / 租约） → M-HIST-CANVAS
+    "78dd45fd": "M-HIST-CANVAS", "45a8834a": "M-HIST-CANVAS", "9489ce4f": "M-HIST-CANVAS",
+    "07215632": "M-HIST-CANVAS", "ba2b3ab9": "M-HIST-CANVAS", "f6830203": "M-HIST-CANVAS",
+    "378dd45f": "M-HIST-CANVAS", "4cb278ea": "M-HIST-CANVAS",
+    # —— 相机设备列表随方案持久化（语义在相机管理） → M-SRC-CAM
+    "d200be39": "M-SRC-CAM",
+    # —— 版本注入 / 安装包 / 打包流水线 → M-SRC-DELIVERY
+    "4bfe67c5": "M-SRC-DELIVERY", "cfcc77ce": "M-SRC-DELIVERY",
+    # —— 构建体系（语言资源裁剪 / 构建路径基准） → M-HIST-CORE
+    "d9675564": "M-HIST-CORE", "3792688e": "M-HIST-CORE",
+    # —— 测试基建（测试工程入解决方案 / e2e 测试图 / 验证总计划） → M-SRC-TEST
+    "5afa422b": "M-SRC-TEST", "e21fb5d5": "M-SRC-TEST",
+    "1caceffb": "M-SRC-TEST", "3574c9f2": "M-SRC-TEST",
+    # —— 工具分组声明式折叠（框架契约） → M-HIST-CONTRACT
+    "af07153e": "M-HIST-CONTRACT",
+    # —— 几何测量工具集诞生提交 → 点-点测量（六个测量工具共同计入）
+    "ca2b9592": "T-P2P",
+    # —— ROI 形状收敛 / 区域订阅 / 绑定源树 → M-HIST-REGION
+    "c8024b3c": "M-HIST-REGION", "b3eedf0d": "M-HIST-REGION", "8ed840ba": "M-HIST-REGION",
+    # —— 工具插件自包含改造（构建反转 / 隔间加载） → M-HIST-CORE
+    "d1968cba": "M-HIST-CORE",
+    # —— 渲染文本排版 → M-HIST-PREVIEW
+    "3f22d184": "M-HIST-PREVIEW",
+    # —— 目标参数与全局变量绑定 UI 方案 → M-HIST-GLOBALVAR
+    "abbb9416": "M-HIST-GLOBALVAR", "485daf33": "M-HIST-GLOBALVAR",
+}
+
+# ---------- 不计入产品计划的提交（无产品语义，避免污染看板） ----------
+skipCommits = {
+    "72dddc7c",  # chore: checkpoint main worktree before sync（同步前临时检查点）
+    "1ed32066",  # chore(collab): 协作规则 rule-021 与协作文档（非产品模块）
+}
+
+def match_module(msg, files):
+    """返回 (主模块, 关联工具列表)。工具提交可能同时命中多个工具目录
+    （如「圆/直线查找拟合统一」同时改 CircleDetect + LineDetect），
+    主归属给第一个命中者，关联列表让该提交也计入其他工具模块的周统计/日志。
+
+    例外：交叉性「工具基座 / 契约 / 结果呈现」提交会同时改十几个工具目录、
+    每个只改 1~2 个文件（命中面广而浅），这类提交不应认领给某个具体工具，
+    改判给 src 侧模块（契约/参数/结果树等），工具目录全部作为关联模块。"""
+    related = _tool_hits(files)
     if related:
-        # 去重保序
-        seen = set()
-        uniq = []
-        for m in related:
-            if m not in seen:
-                seen.add(m)
-                uniq.append(m)
-        return uniq[0], uniq[1:]
+        # 浅命中判定：命中 ≥4 个工具模块且单模块命中文件数 ≤2 → 视为基座/契约类提交
+        counts = []
+        for mid in related:
+            paths = [p for ps, m in pathMap if m == mid for p in ps]
+            n = sum(1 for f in files if any(p.lower() in f.lower() for p in paths))
+            counts.append(n)
+        shallow = len(related) >= 4 and max(counts) <= 2
+        if not shallow:
+            return related[0], related[1:]
     # 路径匹配：按「命中文件数」选归属，而非「先到先得」。
     # 修复 bug：7605075 主要改 UI（src/ 32 + tools/ 13）但顺带改 tests/(3)，
     # 原逻辑 tests/ 规则排在前面，抢先归到 M-SRC-TEST，导致 UI 提交被错记。
@@ -176,13 +247,24 @@ def match_module(msg, files):
             best_count = cnt
             best_mid = mid
     if best_mid and best_count > 0:
-        return best_mid, []
+        return best_mid, related
     # 关键词匹配（仅当无路径命中时兜底）
     for kws, mid in keywordMap:
         for k in kws:
             if k.lower() in msg.lower():
-                return mid, []
-    return "UNKNOWN", []
+                return mid, related
+    return "UNKNOWN", related
+
+def match_module_for(hash_, msg, files):
+    """带人工覆盖表的匹配入口：hash 命中覆盖表时，主归属直接取覆盖值；
+    命中 skipCommits 时返回 (None, [])，调用方应直接跳过该提交。"""
+    if hash_[:8] in skipCommits:
+        return None, []
+    mid, related = match_module(msg, files)
+    ov = manualOverrides.get(hash_[:8])
+    if ov:
+        return ov, [m for m in related if m != ov]
+    return mid, related
 
 def _finalize_commit(cur, weeks, module_weeks, module_commits):
     """处理一个完整提交：按周聚合 + 模块匹配 + 记录提交日志"""
@@ -197,12 +279,16 @@ def _finalize_commit(cur, weeks, module_weeks, module_commits):
 
     # 纯计划系统自我更新提交（无业务代码改动）跳过，与 sync_plan.ps1 的跳过逻辑一致。
     # 避免这类提交进入 moduleCommits/UNKNOWN，污染「最近提交追溯」。
-    _business_prefixes = ("src/", "tools/", "tests/", "docs/", "libs/", "PluginDevKit/", "Help/")
+    _business_prefixes = ("src/", "tools/", "tests/", "docs/", "libs/", "PluginDevKit/", "Help/",
+                          "installer/", "version.json", "scripts/", "testdata/", "suneyevision.slnx",
+                          "Directory.Build.props", "Directory.Build.targets")
     _has_biz = any(f.lower().startswith(_business_prefixes) for f in files)
     if not _has_biz:
         return
 
-    mid, related = match_module(subject, files)
+    mid, related = match_module_for(hash_, subject, files)
+    if mid is None:      # 命中 skipCommits：不计入产品计划
+        return
     # 主归属计入周模块统计（不重复计 commit 总数）
     w = weeks.setdefault(week, {"commits": 0, "modules": {}})
     w["commits"] += 1

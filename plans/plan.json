@@ -156,6 +156,50 @@
                                     {
                                         "date":  "2026-02-22",
                                         "note":  "Plugin.Abstractions 分层重构完成（c66624a），插件可独立开发"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[b6ca5bcf6a4c4133bb24a662929f16e45a352a35] docs: 新增工作流与执行引擎架构审视并同步协作状态"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[6f0f7b8da6513b848a5ffb0d0ede12af69af0626] fix(tools): 工具参数与调试控件调整"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[95cd10958cdfa43a5037bde35910919bd1ab3117] docs: 新增参数契约与运行快照方案及架构审查文档"
+                                    },
+                                    {
+                                        "date":  "2026-09-17",
+                                        "note":  "[1eb5aadce8cf28a0e327cf22bfc954e08744be8f] docs(方案设计): 新增参数契约与工具插件分层最终方案（总纲）"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[f6c438fbba3cb951d1a209a2918e096ee234bc1b] docs(workflow): 工作流运行引擎重构设计与审计文档"
+                                    },
+                                    {
+                                        "date":  "2026-09-15",
+                                        "note":  "[d96755644fe38b25a97c4799216c338bec7f950f] build: 语言资源只保留中英，裁剪发布体积"
+                                    },
+                                    {
+                                        "date":  "2026-09-14",
+                                        "note":  "[5992730f0093614cc5cb7e400066009f39d2aaab] docs: 工具插件两目录模型架构（最终）—— 依赖归属判据/超平台三分支/实证盘点"
+                                    },
+                                    {
+                                        "date":  "2026-09-14",
+                                        "note":  "[0f4a27971e751053e430d373d70b0b700974159a] docs: 工具插件自包含方案补实施进度与事故档案 + 显示配置归属决策"
+                                    },
+                                    {
+                                        "date":  "2026-09-14",
+                                        "note":  "[d1968cbaaa805324267949c90dd7a48447f2f7a8] build(plugin): 工具插件自包含改造（构建反转+隔间加载+契约版本+设计器修复）"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[3792688ec8cfec7bd225c260ca09224fd716568a] build: 构建路径基准改用 MSBuildThisFileDirectory 消除项目层级依赖"
+                                    },
+                                    {
+                                        "date":  "2026-09-09",
+                                        "note":  "[9ec20611f95cf64fff799b339f709a2a09675651] docs: 订阅模型 Source 激活与几何测量工具基座方案 v4 落盘"
                                     }
                                 ]
                     },
@@ -349,6 +393,46 @@
                                     {
                                         "date":  "2026-09-10",
                                         "note":  "[45a8834a709864067e465d67c9d8d177ac4f0f9a] feat(workflow): 执行中断隔离，失败节点下游跳过、无关分支继续"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[4cb278ea56e73198961a7050e011cc44854a2f73] fix(workflow): 连续运行停止通知与连点保护，相机结果展示合并"
+                                    },
+                                    {
+                                        "date":  "2026-09-22",
+                                        "note":  "[7d69f53abff26a29bf8e5124666da025df3701cc] docs(render): 归档结果渲染统一空间索引与批量提交优化方案并重建文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-09-22",
+                                        "note":  "[43c109ed2245d8d0a40b67b3c5295f4dab70e4dd] docs(render): 归档结果渲染系列方案与审核意见并重建文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[a467a70931c65acac2634b3943daaf635f5973d3] refactor(workflow): 工作流定义服务与执行引擎调整"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[ba2b3ab9ac492b6e3d286dec7ec234064c7167bf] feat(workflow): 运行请求、依赖图、资源租约与工具执行画像"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[0721563211ff3cddfa3a1af3176908d90517d4ba] feat(ui): 运行态输入快照与执行租约，连续执行统一由宿主驱动"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[f6830203d6f2b289e31f0348508bb927752ab4c3] feat(sdk): 执行状态与业务判定分离，未启用判定不再误报 OK"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[378dd45fd7662ae8d356919c02ca535896a5fe63] refactor(sdk): 工具调试执行走统一执行器"
+                                    },
+                                    {
+                                        "date":  "2026-09-15",
+                                        "note":  "[9489ce4f3f7aa0960594811277557dabdcb49cda] feat(workflow): 单次运行会话、运行计划与作用域，取消不再算失败"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[582fa35d1e2397b2988ed85c6ee5ef481d8b9aae] docs: 执行中断隔离与图像显示回退方案、真异步独立方案、测试报告"
                                     }
                                 ]
                     },
@@ -523,6 +607,34 @@
                                     {
                                         "date":  "2026-08-18",
                                         "note":  "[8586419a8d7743398fbb1638acb7dfec5777389c] 图像预览持久化修复：内存实时同步 + 统一保存入口（ImageInputSource ConfigChanged 回调 / 节点挂接 / 统一保存入口 / 删图清空走真相源）"
+                                    },
+                                    {
+                                        "date":  "2026-09-22",
+                                        "note":  "[0dee4701ac736ffa99680ddca74107b4967c0df8] perf(render): 批几何按轮廓真实包围盒分 Tile + 文本绘制缓存 + 视图同步合并到渲染帧"
+                                    },
+                                    {
+                                        "date":  "2026-09-22",
+                                        "note":  "[93c01884cb5600d1cc871c1364214c101bf5a8e9] chore(render): 增加结果层渲染耗时诊断（临时）"
+                                    },
+                                    {
+                                        "date":  "2026-09-22",
+                                        "note":  "[e621dffc3f559ec3f7f4ab6bee2f496161e99dc9] sync(render): 渲染架构回退到已确认版本 eb22d2b4（批量轮廓 + 异步构建 + 分块缓存）"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[d2307dae14a2b92736f1cb90157a72bb3c68dc15] perf(sdk): 区域批量渲染优化（批量轮廓几何 + 异步构建 + 清理幂等）"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[51efe83317a4d74bb2b47b74ba3b8d1e592c1f8b] fix(ui): 选中节点图像显示按可用性回退，消除取图双份实现"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[fb0beb2c140a349f4327bf7cd366d5cfeb97a20a] feat(sdk): 渲染层线型（虚线）支持与 DisplayCollector.AddArc"
+                                    },
+                                    {
+                                        "date":  "2026-09-09",
+                                        "note":  "[8eb3d974acf77a50671c44454b1f04e74c6e34f7] feat(ui): 图像预览执行交互增强与流程驱动自动切换"
                                     }
                                 ]
                     },
@@ -629,6 +741,10 @@
                                     {
                                         "date":  "2026-09-01",
                                         "note":  "[635cd0364baa0c07a8217339529d6e14f95cffe7] fix(measure): 修复引导线端点持久化与拖动无效"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[9a614ea030400e3c99c94ecb3dc47bb1d9988cc8] refactor(tool): 删除 EdgeDetect 遗留工具并从解决方案注销"
                                     }
                                 ]
                     },
@@ -857,6 +973,66 @@
                                     {
                                         "date":  "2026-09-09",
                                         "note":  "[f39a248c977276190676cb295d275834d3cfac05] fix(measure): 双卡尺编辑器角标按位置修正显示 + 绑定恢复后即时渲染"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[7ab9013d1a0c5cc637e6529c9e5c7b489594fda9] feat(ui): 全局变量绑定与执行快照适配"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[0f1823f0ab2d886153c1de78530f40d54dd11974] refactor(tools): 工具参数纯值化与契约清单迁移"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[da3944aa1ad3b996dcb0b88391508063eb67a3a2] feat(workflow): 执行链路接入参数绑定与运行快照"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[d975ece884a76111cff69fadafb0d61deee76c8f] feat(sdk): 参数契约与运行快照落地"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[d81632742b5cfc8194b8e44a2baf815e2ef3e31f] fix(binding): 位置修正绑定显示名反查识别对象绑定路径"
+                                    },
+                                    {
+                                        "date":  "2026-09-15",
+                                        "note":  "[2ebb4ce06c261db512a2397bb4a2ec3da048f51c] refactor(sdk): 统一工具执行请求，运行数据移出参数对象"
+                                    },
+                                    {
+                                        "date":  "2026-09-14",
+                                        "note":  "[038dda82ba219d31d5ae885c2887669c6bf1bbf9] feat(sdk): 显示名 SSOT 收口 —— 持久化解耦 + 只读投影"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[9b15be4545ca05fea5aeebde2c5059d1318f6eb4] docs: ROI 形状收敛专项并入「按图形」绑定优化方案（v4）"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[13b616baa078b4d2ec9e6b6b14b3b4c35d173dd5] docs: 按图形绑定优化方案更新至 v4，新增能力层根治阶段"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[abe0ce2f53838fcf00a709066cf26878c69b684a] feat(measure): 点参数按图形订阅 + 绑定显示名收敛为单一真相源"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[1940fffd4f97ac7897a01c509921b488e31cac04] docs: 按图形绑定优化方案更新至 v3，新增绑定显示名 SSOT 重构阶段"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[e90f5c2b527a277e375deb2d008988befc00dc40] fix(sdk): 参数绑定显示名反查修复，统一读写路径规则并订阅数据源变更"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[e75d69ab02323fe86890e8fe89c51b37e5494f6e] docs: 新增按图形绑定优化方案并更新文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-09-09",
+                                        "note":  "[d5cdbebb6f3d098908d0c76b428dde13e1188f8e] docs: 绑定树 DataType 定型优化方案"
+                                    },
+                                    {
+                                        "date":  "2026-09-08",
+                                        "note":  "[580444b] docs: 几何输入订阅链路单模型重构方案落盘 v3 定稿"
                                     }
                                 ]
                     },
@@ -936,6 +1112,22 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状核实：结果树/绑定树 12+ 专门提交（4e399b1/7e8991a/5e2cd85/57bf5c3 等），核心代码 NodeResultManager 631 + ArrayTreeFormatter 392 + INodeResultSink 46 = 1000+ 行。此前未独立登记，用户指出后补充"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[ae3b330bc8bb16de1c8f0b7531518db31344b8b3] refactor(result): 图形显示列表取消分组改平铺"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[e6b558e0e97e83cafe553968cbf9b98c19176413] fix(result): 结果显示样式与可见性即时生效"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[cea13947eba128787c8a660a37148caf4de96eaa] refactor(sdk): 判定状态下沉基类 IsPass，结果树统一显示 OK/NG"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[e6f62dfaba54d6d22c9e55df5591302123165e61] refactor(tools): 模块结果节点状态与分组顺序统一，显示默认颜色回归 SDK 默认"
                                     }
                                 ]
                     },
@@ -1072,6 +1264,30 @@
                                     {
                                         "date":  "2026-09-08",
                                         "note":  "[1520b1908f1466a54fa3869526158d0bf055239e] docs: ROI 几何单一数据源归一化重构方案落盘"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[eb22d2b4bdacd2c0005d03f8ca0e480f926049d9] docs: 新增大规模区域批量渲染优化方案并重建文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-09-14",
+                                        "note":  "[8ed840bab2ce9da2f937fb9d96f183358de3b521] feat(roi): ROI 形状收敛专项（取消整体/区域订阅图形类型）+ 框架契约单源修复 + 圆环弧形拼装补全"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[c8024b3cdcc3320892887d31f90755fda36747ed] feat(roi): 取消「整体」+ 区域订阅图形类型收敛（方案 §11）"
+                                    },
+                                    {
+                                        "date":  "2026-09-09",
+                                        "note":  "[b3eedf0d3936c428a68f137b47fffe7654db3507] feat(roi): 绑定源树叶子化与 Roi.Source 激活订阅模型，切换模式按来源重置并清空显示"
+                                    },
+                                    {
+                                        "date":  "2026-09-09",
+                                        "note":  "[ebbc77b74f9f8edea819aa2d24099fdec2d684e7] refactor(roi): 数据源写入统一走 EnsureTargetRoiSlot 区域槽兜底"
+                                    },
+                                    {
+                                        "date":  "2026-09-09",
+                                        "note":  "[7975a00dde45de7b8036311cd5455de0c1024d9e] docs: 区域数据源模型重构方案 + ROI 单一数据源归一化测试报告"
                                     }
                                 ]
                     },
@@ -1371,6 +1587,26 @@
                                     {
                                         "date":  "2026-07-31",
                                         "note":  "契约收敛完成（RegionConverter/结果树递归/SdkTypeVocabulary）"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[bc1ec5ae0b79d52664aabac2af34d8b9df655708] feat(sdk): 插件契约迁移到显式元数据 ToolContractVersionAttribute"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[9c528d648e88351177935894a264c6cebd8f8519] docs: 记录 R02/R03/R04 人工复验结果"
+                                    },
+                                    {
+                                        "date":  "2026-09-15",
+                                        "note":  "[f24fa8b7bbf76077973377149db95651b1df3b69] feat(sdk): 结果呈现契约与图形/文本/判定共享编辑器控件"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[af07153e7fe029cd0a4099a84086e43c4251a1fb] feat(sdk): 分组占位声明式折叠 —— Shell 不再硬编码工具分组名"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[74f913ad0d39fada41ce97208872b3f8c3ad6b36] feat(sdk): 工具能力显式声明 + 框架契约单源 + 结果结构与值分离"
                                     }
                                 ]
                     },
@@ -1435,6 +1671,26 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状核实：SDK/UI 下 86 文件 27,695 行；Roi 控件 12,822 行、ParamBinding 系 1,370 行。此块此前未登记，用户指出后补充"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[eb09aa95578b3d564ae811af2210458b4fa93cbb] fix(sdk-ui): 测量与 RoI 编辑器渲染调整"
+                                    },
+                                    {
+                                        "date":  "2026-09-15",
+                                        "note":  "[151a2121d6444975a06e7a843d3de27654e6477e] refactor(tools): 其余工具改数据驱动结果页"
+                                    },
+                                    {
+                                        "date":  "2026-09-15",
+                                        "note":  "[35b78e8799e07063a093a54eb7a0f0b8760eedac] refactor(measure): 六个测量工具改数据驱动结果页与声明式元素配置"
+                                    },
+                                    {
+                                        "date":  "2026-09-09",
+                                        "note":  "[c11ed7041a96037f739763edd0139a3514b7c897] feat(measure): SDK 双卡尺编辑器容器 MeasureElementsEditorControl 互斥路由"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[b3f20b7a39018c424d7b95ce701e77d5adb7d54a] fix(measure): 位置修正交互层按几何有向性对齐，修复直线测量带二次变换"
                                     }
                                 ]
                     },
@@ -1507,6 +1763,14 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状核实：git 历史大量数据结构/绑定模型/结果管理专门提交（4d8dc66/cd899ba/23ac71b/4e399b1 等）。此块此前未登记，用户指出后补充"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[f36f81bedad2f5970fd93c270b9fa660a0f3c717] refactor(sdk): 拆分测量引导参数基类，测量工具不再携带区域能力"
+                                    },
+                                    {
+                                        "date":  "2026-09-09",
+                                        "note":  "[842658c5c1a49f6e27418c283d4b756038683c2b] feat(roi): 区域统一运行时出口 + 订阅优先过滤 + 纯订阅自动建 Roi"
                                     }
                                 ]
                     },
@@ -1686,6 +1950,18 @@
                                     {
                                         "date":  "2026-09-10",
                                         "note":  "[51efe83317a4d74bb2b47b74ba3b8d1e592c1f8b] fix(ui): 选中节点图像显示按可用性回退，消除取图双份实现"
+                                    },
+                                    {
+                                        "date":  "2026-09-15",
+                                        "note":  "[7339d405619bc1629dd6471f8a5f7f96d278ef95] docs: 主题整合、结果页数据驱动与架构优化方案及验收记录"
+                                    },
+                                    {
+                                        "date":  "2026-09-15",
+                                        "note":  "[8dff49e10ec2490cf36ae233553a8ba9f31392be] feat(ui): 宿主主题与 SDK Token 对齐"
+                                    },
+                                    {
+                                        "date":  "2026-09-15",
+                                        "note":  "[d0133315a132fdd7ee19aed3854294bb9d9e69d9] feat(sdk): 主题 Token 统一与设计期可见性修复"
                                     }
                                 ]
                     },
@@ -1765,6 +2041,26 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状核实：全局变量管理 7 文件 2518 行（ManagerVM 929/对话框 659/选择器 235 等）；原计划仅作为 M-HIST-PARAM 子任务，低估；拆为独立模块并补测试任务"
+                                    },
+                                    {
+                                        "date":  "2026-09-17",
+                                        "note":  "[abbb941631ddfbd6c7bf81d24f39b8d1239be016] docs(方案设计): A/B 子方案标注主从关系并上收待确认事项"
+                                    },
+                                    {
+                                        "date":  "2026-09-17",
+                                        "note":  "[485daf3320ebb9fc337ceecabfa9c29d97b1e400] docs(方案设计): 更新方案文档，补充实测证据与判据落地依据"
+                                    },
+                                    {
+                                        "date":  "2026-09-17",
+                                        "note":  "[c6cd39ddb4d17188c93b052fea918458714b27cf] docs(方案设计): 目标参数与全局变量绑定UI优化方案定稿（含可绑目标判据v3）"
+                                    },
+                                    {
+                                        "date":  "2026-09-17",
+                                        "note":  "[2eeb81022f46d217a84a398244b405243f484094] docs(方案设计): 目标参数与全局变量绑定UI优化方案更新为最终版"
+                                    },
+                                    {
+                                        "date":  "2026-09-17",
+                                        "note":  "[cfe304d67d541a24fb6b7fa58e718cf1791f16fd] docs(方案设计): 新增目标参数与全局变量绑定UI优化方案"
                                     }
                                 ]
                     },
@@ -1774,7 +2070,7 @@
                         "type":  "module",
                         "layer":  "source",
                         "stage":  "CD",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2026-10-26",
                         "end":  "2026-11-13",
                         "goal":  "相机采集链路真实可用：软触发采图 → 图像帧 → 工作流输入",
@@ -1790,7 +2086,7 @@
                                           "name":  "采集链路打通（软触发→CameraFrameInfo→图像转换→工作流）",
                                           "phase":  "算法实现",
                                           "hours":  16,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2026-W37"
                                       },
                                       {
@@ -1798,7 +2094,7 @@
                                           "name":  "相机参数配置读写闭环（曝光/增益/白平衡）",
                                           "phase":  "算法实现",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2026-W38"
                                       },
                                       {
@@ -1806,7 +2102,7 @@
                                           "name":  "相机管理 UI（连接状态/实时预览/异常监控）",
                                           "phase":  "UI交互",
                                           "hours":  20,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2026-W39"
                                       },
                                       {
@@ -1814,7 +2110,7 @@
                                           "name":  "相机驱动测试（模拟相机+海康真机验证）",
                                           "phase":  "测试验证",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W39"
                                       }
                                   ],
@@ -1826,6 +2122,70 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状盘点：DeviceDriver 有海康 SDK 骨架（48 个 P/Invoke），采集链路未打通，Camera UI 仅有对话框骨架"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[c5b1c046a4e5f50555353d005f50da17317a8d30] docs: 归档图像源工具与相机调度方案并同步协作状态与文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[b206c1a96f21f84bde73775e3633008899530efa] feat(camera): 相机帧驱动接入工作流，设备级租约互斥与最新帧邮箱"
+                                    },
+                                    {
+                                        "date":  "2026-09-27",
+                                        "note":  "[3473225cff5ee79745a523f543a509400556f43b] docs: 归档相机实现与开发说明并同步协作状态与文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-09-27",
+                                        "note":  "[57e0449052cf1c4439afca1c16a2a561d2ba4578] feat(camera): 正式运行时移除模拟相机入口，仅保留海康 MVS"
+                                    },
+                                    {
+                                        "date":  "2026-09-25",
+                                        "note":  "[bb4d738b675077b516433fc3834151b61420aad9] docs(camera): 归档相机与解决方案启动流程优化方案并同步协作状态与文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-09-25",
+                                        "note":  "[256ed355d4f872e6eba1ca0ff109d8038cf655c9] feat(camera): 相机管理器接入设备持久化与自动连接恢复"
+                                    },
+                                    {
+                                        "date":  "2026-09-25",
+                                        "note":  "[d200be39de3cabe26a8a665ce78a7ff50f0c0447] feat(solution): 方案持久化相机设备列表并在启动流程中加载"
+                                    },
+                                    {
+                                        "date":  "2026-09-24",
+                                        "note":  "[9603e18d4429afe8db01ca84783356b05c816c2b] docs(camera): 归档相机管理器最终重构方案并同步协作状态与文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-09-24",
+                                        "note":  "[85ded35a70a80ca3bf690d0a75db646f0cb3e0f9] feat(camera): 相机管理器支持设备列表持久化与自动连接，运行时退出统一释放"
+                                    },
+                                    {
+                                        "date":  "2026-09-24",
+                                        "note":  "[1d6d6586861864b8cd53c2aef0a1f3bd9d6f8264] docs(camera): 归档相机设备管理持久化方案并更新调参界面方案与文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-09-24",
+                                        "note":  "[e489107adf1c9c1e3218cb8c56a3478d40a39205] feat(camera): 参数面板抽为独立控件并重构相机管理器与预览窗口"
+                                    },
+                                    {
+                                        "date":  "2026-09-23",
+                                        "note":  "[6afde50df5de72a68906669b542b85f7249be9c2] docs(camera): 归档相机管理器与预览调参界面优化方案并同步协作状态与索引"
+                                    },
+                                    {
+                                        "date":  "2026-09-23",
+                                        "note":  "[7f2f24908381042fad264768d59e9af54abdd4fe] feat(camera): 相机详情只保留基本信息，预览与参数设置合并到统一设置窗口"
+                                    },
+                                    {
+                                        "date":  "2026-09-22",
+                                        "note":  "[8a66d177884bdb038b6082b1b36c2041464e6237] docs: 重建文档索引，收录相机采集架构系列方案"
+                                    },
+                                    {
+                                        "date":  "2026-09-22",
+                                        "note":  "[64aff849a19647d6f7148478059dca02971acb4a] feat(camera): 同步相机架构与相机管理器到主分支"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[b206c1a96f21f84bde73775e3633008899530efa] feat(camera): 相机帧驱动接入工作流，设备级租约互斥与最新帧邮箱"
                                     }
                                 ]
                     },
@@ -1995,7 +2355,7 @@
                                           "name":  "通信驱动抽象层（ICommunicationDriver：TCP/UDP/串口）",
                                           "phase":  "算法实现",
                                           "hours":  16,
-                                          "status":  "in_progress",
+                                          "status":  "done",
                                           "week":  "2027-W03"
                                       },
                                       {
@@ -2003,7 +2363,7 @@
                                           "name":  "TCP 驱动真实实现（连接/收发/心跳/重连）",
                                           "phase":  "算法实现",
                                           "hours":  24,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W04"
                                       },
                                       {
@@ -2011,7 +2371,7 @@
                                           "name":  "通讯管理 UI 完整化（配置/测试/状态监控/日志）",
                                           "phase":  "UI交互",
                                           "hours":  24,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W05"
                                       },
                                       {
@@ -2019,7 +2379,7 @@
                                           "name":  "通信链路测试（协议帧/应答/异常场景）",
                                           "phase":  "测试验证",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2027-W05"
                                       }
                                   ],
@@ -2034,6 +2394,30 @@
                                     {
                                         "date":  "2026-08-29",
                                         "note":  "[78db9c9c00c722cb7d525968d28f0ec917c63794] theme dialog buttons and converge MessageBox to ThemeMessageDialog"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[ba31c74915953a1d63f8e6c31eb1f2fcfc703803] docs(core): 新增通讯最终架构与持久化方案并记录落地交接"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[8f48a09a902a152914fcdaeec6d064b7869152bf] refactor(core): 通讯运行时下沉 DeviceDriver 并由应用层统一生命周期"
+                                    },
+                                    {
+                                        "date":  "2026-09-27",
+                                        "note":  "[64fd9aad332ba5e1efe305ea3acc97ea662bb6a7] docs(core): 补充 Modbus 地址空间最终优化方案并更新协作任务卡"
+                                    },
+                                    {
+                                        "date":  "2026-09-27",
+                                        "note":  "[7da2685532326eaa25d429a6a12f8cf4e24af109] feat(core): 实现 Modbus 地址空间视图与真实收发调试"
+                                    },
+                                    {
+                                        "date":  "2026-09-24",
+                                        "note":  "[fa40911f0fa94b1898d63e64822221ef9821a906] docs(core): 新增通讯管理器设计方案并更新协作任务卡"
+                                    },
+                                    {
+                                        "date":  "2026-09-24",
+                                        "note":  "[23f9133cb03b5b3a6a964219e2b4381cacbc31da] feat(core): 实现通讯管理器运行时与按设备解耦配置"
                                     }
                                 ]
                     },
@@ -2167,7 +2551,10 @@
 
                                  ],
                         "log":  [
-
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[f427fe6356324c2e6509bc83bf2b7ffba4aceed2] docs(test): 新增全局变量运行快照端到端验证执行记录"
+                                    }
                                 ]
                     },
                     {
@@ -2306,6 +2693,62 @@
                                     {
                                         "date":  "2026-09-08",
                                         "note":  "[94b8af04d912ff84febb4bbd0b7f3145e56e4fd6] test(measure): 弧交互契约测试对齐三点定弧治本语义"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[e21fb5d50284e7b8c6f2adfead5d3b6463ad92a5] test(e2e): 新增确定性灰度测试图用于阈值与面积判据"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[1caceffbe24663e3dcf9dc326004548f4dc7daf7] docs: 更新验收总计划运行时项进展"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[5afa422b320fde6f4f1338890ccca5919afce138] build: 三个测试工程纳入解决方案，使测试随构建执行"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[3574c9f21520c9416cbe2b2c5e3c0c8aaa120ff8] docs: 更新设计时与运行时验证总计划"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[590618eed7c9035c9340c771e8eadacfffd6ee0f] fix(ui): 位置修正显示取当前结果，测量引导端点与参数一致"
+                                    },
+                                    {
+                                        "date":  "2026-09-15",
+                                        "note":  "[f3e2d4f3f3fe44217253e89962233cb39e403360] feat(plugin): 插件部署检查与工具目录抽象"
+                                    },
+                                    {
+                                        "date":  "2026-09-14",
+                                        "note":  "[8aa32d8b32fc156764bacf8804f4b52a0d5200cc] feat(sdk): 完全删除 WPF Rect（契约层/适配器）+ 契约封口守卫 + 抠几何"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[92600534dc9708c5c09181ff62329235e293192c] test(sdk): 能力↔契约与占位声明的守卫契约测试"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[402a48151c0a9f7356091e4c7ae8c5b97580a087] test(sdk): ROI 形状收敛守卫契约测试（方案 §11 防御机制）"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[53b1cc41dee73af9b5677bed5417bd62e4484d60] test(sdk): 同步 P0-2 后的契约测试并新增老工程 Rect 迁移契约"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[c8667305918d441060040c41c520dbf025212ffe] feat(measure): 测量结果命名用户域化（弃「元素N」）与输入层组名统一"
+                                    },
+                                    {
+                                        "date":  "2026-09-11",
+                                        "note":  "[bc026b7110a6706d5b21ac75ab16a1740df67831] feat(sdk): ROI 下钻形状收敛 + 数组展开按场景分流 + ConfigSetting 数据源即时转发"
+                                    },
+                                    {
+                                        "date":  "2026-09-09",
+                                        "note":  "[76e8f9ac2c47a108b814d144ad2901526c6bd767] feat(sdk): MeasureThreshold 判定基座与 MeasureJudge 契约测试锁定判定语义"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[4cb278ea56e73198961a7050e011cc44854a2f73] fix(workflow): 连续运行停止通知与连点保护，相机结果展示合并"
                                     }
                                 ]
                     },
@@ -2315,7 +2758,7 @@
                         "type":  "module",
                         "layer":  "source",
                         "stage":  "P9",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2027-03-29",
                         "end":  "2027-04-09",
                         "goal":  "V1.0 交付上线",
@@ -2330,7 +2773,7 @@
                                           "name":  "完整测试套件（相机/标定/定位/测量/通信/运行UI回归）",
                                           "phase":  "测试验证",
                                           "hours":  16,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2027-W13"
                                       },
                                       {
@@ -2338,7 +2781,7 @@
                                           "name":  "用户手册与标定指南（docs 归档，含运行UI操作说明）",
                                           "phase":  "UI交互",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2027-W14"
                                       },
                                       {
@@ -2346,7 +2789,7 @@
                                           "name":  "交付验证与上线",
                                           "phase":  "测试验证",
                                           "hours":  8,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2027-W14"
                                       }
                                   ],
@@ -2354,7 +2797,70 @@
 
                                  ],
                         "log":  [
-
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[f5f5f442257449298ad87c4e2aed7e57a2e1a044] docs(release): 新增版本体系最终方案（交付版本统一、契约编号独立、绑定身份恒定）"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[cfcc77ce7a464a19ee051fac4d65c94ffb2df7fc] fix(release): 修正版本注入的两处缺陷（插件契约被破坏、releaseDate 取到说明文字）"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[4bfe67c526a8ac09bbb5921d1d3f447319ae1174] feat(release): 版本由构建期注入并支持程序自报"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[e52743ac37b5b7ceb7d97886edb5bfff55feadfc] chore(release): 记录 2.0.0.1 内测版产物"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[2bb3823b7858dee85fffad3fee94d801074ef307] fix(installer): 修正无 tag 时取上次 tag 的报错"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[7c49b36b321e3aaa2917899f5cfef8bf277c42ef] refactor(release): 打包改为只读真源、构建号递增与单产物保证"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[3618b9ffdbb2ab3fc4a8145403b7b79264eb9179] docs(release): 版本管理再设计与单产物方案"
+                                    },
+                                    {
+                                        "date":  "2026-09-18",
+                                        "note":  "[5b43c262d438cc77d8a62b2bd5b955be7972829b] chore(release): 记录 1.0.1.0 内测版发布产物"
+                                    },
+                                    {
+                                        "date":  "2026-09-18",
+                                        "note":  "[49a59e47c371ef8e2f4817500b90cf7a48b911e2] docs(release): 新增内测版发布与版本管理最终方案"
+                                    },
+                                    {
+                                        "date":  "2026-09-18",
+                                        "note":  "[3f4ea382b768238596152aa9716e5e3f117abe5b] fix(installer): 补齐安装包版本资源与 .solution 文件关联，图标改用应用图标"
+                                    },
+                                    {
+                                        "date":  "2026-09-18",
+                                        "note":  "[183b374a3f0e59e59b65bf0d9a122fbf58061279] chore(release): 引入版本单一真源与自动推导发布流水线"
+                                    },
+                                    {
+                                        "date":  "2026-09-17",
+                                        "note":  "[429dd454fbba048f8536b130a22ad53167e3a757] docs(collab): 记录安装包重编译结果、图标验证并更正两处判断"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[e1713d9ade2ced3b79814732133bd9a6d66c5e11] fix(installer): 安装包图标改用应用程序图标并补 UTF-8 BOM"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[b6c0e2f7617134df3bb9cc596fca480b838d62c6] docs(collab): 记录 Release 重建与安装包重打包结果"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[fb49f6b2623bba445a8677d95e66d0578b0c6222] chore(release): 生成 1.0.0 安装包并记录产物"
+                                    },
+                                    {
+                                        "date":  "2026-09-16",
+                                        "note":  "[3425df2acceb27bf9971eced83f4fd9294cb2854] build(installer): 打包脚本与 HALCON 托管程序集部署"
+                                    }
                                 ]
                     },
                     {
@@ -2561,6 +3067,14 @@
                                     {
                                         "date":  "2026-09-08",
                                         "note":  "代码核实：CircleDetect 1897 行完整（Tool/Params/Results/Views/DebugControl），提交均 measure 标签（8-29 起：拆分/鲁棒拟合/屏蔽区/卡尺交互/位置修正），9-08 ROI 几何输入收敛。用户确认开发完成。测试项目已建（PlaceholderTests 占位），真实用例替换归 M-SRC-TEST 主线"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[08f59957c8682726b0e6dd43d9eeebcd8085d494] fix(measure): 卡尺参数去重，Tab2 只保留检测参数"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[ddd0d27] feat(ui): 查找工具卡尺输入回显（引导线/测量带）到模块结果树"
                                     }
                                 ]
                     },
@@ -2913,6 +3427,14 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[37015cf1571e1e54aefe27e8f0d75465cd78f162] refactor(measure): 区域管线收缩为纯 ROI（HalconRegionPipeline），reduce/所有权归还算法层"
+                                    },
+                                    {
+                                        "date":  "2026-09-22",
+                                        "note":  "[748d7873215c662984fd42279c86b990ab6446bd] fix(blob): 显示项可见性不再在执行期过滤，修复隐藏后再显示无法显示"
+                                    },
+                                    {
+                                        "date":  "2026-09-19",
+                                        "note":  "[fb7c25c93139e91ab85e0b701dee3f2182df24dc] perf(blob): Blob 分析接入批量区域显示与显示预算"
                                     }
                                 ]
                     },
@@ -2922,7 +3444,7 @@
                         "type":  "tool",
                         "layer":  "tool",
                         "stage":  "CC",
-                        "status":  "todo",
+                        "status":  "done",
                         "start":  "2026-09-14",
                         "end":  "2026-09-18",
                         "goal":  "两点距离/角度测量",
@@ -2936,7 +3458,7 @@
                                           "name":  "点点测量核心算法",
                                           "phase":  "算法实现",
                                           "hours":  10,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2026-W53"
                                       },
                                       {
@@ -2944,7 +3466,7 @@
                                           "name":  "点点测量调试控件",
                                           "phase":  "UI交互",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2026-W53"
                                       },
                                       {
@@ -2952,7 +3474,7 @@
                                           "name":  "点点测量测试",
                                           "phase":  "测试验证",
                                           "hours":  6,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2026-W53"
                                       }
                                   ],
@@ -2961,7 +3483,22 @@
                                      "docs/04-工具设计/测量工具/2026/05/点点测量工具核心算法设计方案-20260508.md"
                                  ],
                         "log":  [
-
+                                    {
+                                        "date":  "2026-09-14",
+                                        "note":  "[93d799459d0cc0d8bb8d54305038a30da7ac8e40] feat(measure): 点-点测量点参数改数组口子 + 失败可见性"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[e258a3dae2e3bbee3873a70ca27f1c59b0c9558f] fix(measure): 点-点测量补调试窗口入口并移除重复的位置修正"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[ca2b959271cdb8a8696c1cf0d98d3fdcc3edbde2] feat(tool): 新增几何测量工具集并打通按图形绑定链路"
+                                    },
+                                    {
+                                        "date":  "2026-09-07",
+                                        "note":  "[8075050] docs: 几何测量工具集设计方案落盘 v1.0 与 v2.0 收敛版（六工具共用）"
+                                    }
                                 ]
                     },
                     {
@@ -2970,7 +3507,7 @@
                         "type":  "tool",
                         "layer":  "tool",
                         "stage":  "CC",
-                        "status":  "todo",
+                        "status":  "done",
                         "start":  "2026-09-21",
                         "end":  "2026-09-25",
                         "goal":  "点到直线距离测量",
@@ -2984,7 +3521,7 @@
                                           "name":  "点线测量核心算法",
                                           "phase":  "算法实现",
                                           "hours":  10,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W01"
                                       },
                                       {
@@ -2992,7 +3529,7 @@
                                           "name":  "点线测量调试控件",
                                           "phase":  "UI交互",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W01"
                                       },
                                       {
@@ -3000,7 +3537,7 @@
                                           "name":  "点线测量测试",
                                           "phase":  "测试验证",
                                           "hours":  6,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W01"
                                       }
                                   ],
@@ -3018,7 +3555,7 @@
                         "type":  "tool",
                         "layer":  "tool",
                         "stage":  "CC",
-                        "status":  "todo",
+                        "status":  "done",
                         "start":  "2026-09-28",
                         "end":  "2026-10-02",
                         "goal":  "点到圆距离测量",
@@ -3032,7 +3569,7 @@
                                           "name":  "点圆测量核心算法",
                                           "phase":  "算法实现",
                                           "hours":  10,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W01"
                                       },
                                       {
@@ -3040,7 +3577,7 @@
                                           "name":  "点圆测量调试控件",
                                           "phase":  "UI交互",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W02"
                                       },
                                       {
@@ -3048,7 +3585,7 @@
                                           "name":  "点圆测量测试",
                                           "phase":  "测试验证",
                                           "hours":  6,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W02"
                                       }
                                   ],
@@ -3066,7 +3603,7 @@
                         "type":  "tool",
                         "layer":  "tool",
                         "stage":  "CC",
-                        "status":  "todo",
+                        "status":  "done",
                         "start":  "2026-10-05",
                         "end":  "2026-10-09",
                         "goal":  "两线平行/角度/间距测量",
@@ -3080,7 +3617,7 @@
                                           "name":  "线线测量核心算法",
                                           "phase":  "算法实现",
                                           "hours":  10,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W02"
                                       },
                                       {
@@ -3088,7 +3625,7 @@
                                           "name":  "线线测量调试控件",
                                           "phase":  "UI交互",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W02"
                                       },
                                       {
@@ -3096,7 +3633,7 @@
                                           "name":  "线线测量测试",
                                           "phase":  "测试验证",
                                           "hours":  6,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W02"
                                       }
                                   ],
@@ -3108,6 +3645,22 @@
                                     {
                                         "date":  "2026-09-09",
                                         "note":  "[6a2c9a8cd299ae1118737d2686e5e4d08809ad5f] fix(measure): 线线测量参数持久化丢失修复，只读属性改可写回填"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[53f22d18452c2588c664e9775307463b432583d5] fix(render): 文本同锚点自动排版 + 屏幕像素偏移，缩放不再错位"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[70a6bce438dbc3ab25ff93717e9ec6bc3704139c] feat(measure): 线-线测量 HALCON 几何量与距离/角度可视化，模块结果按规范补全"
+                                    },
+                                    {
+                                        "date":  "2026-09-09",
+                                        "note":  "[f39a248c977276190676cb295d275834d3cfac05] fix(measure): 双卡尺编辑器角标按位置修正显示 + 绑定恢复后即时渲染"
+                                    },
+                                    {
+                                        "date":  "2026-09-09",
+                                        "note":  "[6af751831fea0cd43342c5a5a4f9c9f3a015ed8b] feat(measure): 线-线测量工具工程装配双卡尺容器与判定基座"
                                     }
                                 ]
                     },
@@ -3117,7 +3670,7 @@
                         "type":  "tool",
                         "layer":  "tool",
                         "stage":  "CC",
-                        "status":  "todo",
+                        "status":  "done",
                         "start":  "2026-10-12",
                         "end":  "2026-10-16",
                         "goal":  "线到圆距离测量",
@@ -3131,7 +3684,7 @@
                                           "name":  "线圆测量核心算法",
                                           "phase":  "算法实现",
                                           "hours":  10,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W03"
                                       },
                                       {
@@ -3139,7 +3692,7 @@
                                           "name":  "线圆测量调试控件",
                                           "phase":  "UI交互",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W03"
                                       },
                                       {
@@ -3147,7 +3700,7 @@
                                           "name":  "线圆测量测试",
                                           "phase":  "测试验证",
                                           "hours":  6,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W03"
                                       }
                                   ],
@@ -3165,7 +3718,7 @@
                         "type":  "tool",
                         "layer":  "tool",
                         "stage":  "CC",
-                        "status":  "todo",
+                        "status":  "done",
                         "start":  "2026-10-19",
                         "end":  "2026-10-23",
                         "goal":  "两圆中心距测量",
@@ -3179,7 +3732,7 @@
                                           "name":  "圆圆测量核心算法",
                                           "phase":  "算法实现",
                                           "hours":  10,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W03"
                                       },
                                       {
@@ -3187,7 +3740,7 @@
                                           "name":  "圆圆测量调试控件",
                                           "phase":  "UI交互",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W04"
                                       },
                                       {
@@ -3195,7 +3748,7 @@
                                           "name":  "圆圆测量测试",
                                           "phase":  "测试验证",
                                           "hours":  6,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2027-W04"
                                       }
                                   ],
@@ -3603,7 +4156,7 @@
                         "type":  "tool",
                         "layer":  "tool",
                         "stage":  "CE",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2026-12-07",
                         "end":  "2026-12-18",
                         "goal":  "工作流中采集相机图像节点：相机管理设备 → 采集工具节点采图 → 图像进入工作流",
@@ -3620,7 +4173,7 @@
                                           "name":  "采集工具核心（软触发/连续采集 → 图像契约输出）",
                                           "phase":  "算法实现",
                                           "hours":  16,
-                                          "status":  "todo",
+                                          "status":  "done",
                                           "week":  "2026-W37"
                                       },
                                       {
@@ -3628,7 +4181,7 @@
                                           "name":  "采集调试控件（实时预览/曝光增益参数/触发模式）",
                                           "phase":  "UI交互",
                                           "hours":  16,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W38"
                                       },
                                       {
@@ -3636,7 +4189,7 @@
                                           "name":  "采集工具测试（模拟相机+真机采图验证）",
                                           "phase":  "测试验证",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W39"
                                       }
                                   ],
@@ -3647,6 +4200,18 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状盘点：现有 ImageLoad 仅从文件载入；相机采集节点仅有 UI 适配器（ImageSourceNodeDisplayAdapter），无采集工具插件。工作流编排采图需本工具（管理层管设备，工具层管采图）"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[2f8db9c174f0685f4b0ad49f373d8c0384b3e37e] feat(imagesource): 图像源工具支持本地图像与相机来源，帧随运行请求下发节点"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[2f8db9c174f0685f4b0ad49f373d8c0384b3e37e] feat(imagesource): 图像源工具支持本地图像与相机来源，帧随运行请求下发节点"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[c5b1c046a4e5f50555353d005f50da17317a8d30] docs: 归档图像源工具与相机调度方案并同步协作状态与文档索引"
                                     }
                                 ]
                     },
@@ -4054,7 +4619,7 @@
                    },
                    {
                        "id":  "U0",
-                       "name":  "源码层 UI 项目优化（进行中）",
+                       "name":  "源码层 UI 项目优化",
                        "start":  "2026-08-11",
                        "end":  "2026-08-22",
                        "status":  "done",
@@ -4086,26 +4651,26 @@
                    },
                    {
                        "id":  "CC",
-                       "name":  "测量工具链（提前开发）",
+                       "name":  "测量工具链",
                        "start":  "2026-08-29",
-                       "end":  "2026-11-30",
-                       "status":  "in_progress",
-                       "goal":  "测量工具链：圆查找/直线查找已开发完成；几何测量工具集（P2P/P2L/P2C/L2L/L2C/C2C）方案 v1/v2 落盘待开发"
+                       "end":  "2026-09-28",
+                       "status":  "done",
+                       "goal":  "测量工具链：圆查找/直线查找 + 几何测量工具集（P2P/P2L/P2C/L2L/L2C/C2C）全部完成（算法 + 调试控件 + 契约测试）"
                    },
                    {
                        "id":  "CD",
                        "name":  "相机管理与通讯管理",
-                       "start":  "2026-10-26",
+                       "start":  "2026-09-22",
                        "end":  "2026-12-04",
-                       "status":  "todo",
+                       "status":  "in_progress",
                        "goal":  "设备管理层：相机连接采图 + 通讯会话"
                    },
                    {
                        "id":  "CE",
                        "name":  "图像源与通信工具",
-                       "start":  "2026-12-07",
+                       "start":  "2026-09-28",
                        "end":  "2027-01-15",
-                       "status":  "todo",
+                       "status":  "in_progress",
                        "goal":  "相机采集工具 + 通信工具（OPC UA 优先）"
                    },
                    {
@@ -4191,7 +4756,7 @@
                        {
                            "id":  "M-MEAS",
                            "name":  "测量工具链完成",
-                           "date":  "2026-10-23",
+                           "date":  "2026-09-28",
                            "desc":  "圆查找/直线查找完成，几何测量工具集方案落盘待开发"
                        },
                        {
@@ -4244,67 +4809,6 @@
                        }
                    ],
     "tempTasks":  [
-                      {
-                          "id":  "TMP-b3f20b7",
-                          "message":  "fix(measure): 位置修正交互层按几何有向性对齐，修复直线测量带二次变换",
-                          "date":  "2026-09-05",
-                          "commit":  "b3f20b7a39018c424d7b95ce701e77d5adb7d54a",
-                          "files":  [
-                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-ddd0d27",
-                          "message":  "feat(ui): 查找工具卡尺输入回显（引导线/测量带）到模块结果树",
-                          "date":  "2026-09-05",
-                          "commit":  "ddd0d2745320e4cb6262282fd1d09bfc041aa8db",
-                          "files":  [
-                                        "src/Plugin.SDK/Execution/Results/ToolResults.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectResults.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectTool.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectResults.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-8075050",
-                          "message":  "docs: 几何测量工具集设计方案落盘 v1.0 与 v2.0 收敛版",
-                          "date":  "2026-09-07",
-                          "commit":  "80750501165bb169341bce32654fe139ff20f7c1",
-                          "files":  [
-                                        "docs/00-索引/文档索引.md",
-                                        "docs/04-工具设计/测量工具/2026/09/07/几何测量工具集6独立工具设计方案-20260907-090216.md",
-                                        "docs/04-工具设计/测量工具/2026/09/07/几何测量工具集最终方案-v2.0-20260907-092207.md"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-580444b",
-                          "message":  "docs: 几何输入订阅链路单模型重构方案落盘 v3 定稿",
-                          "date":  "2026-09-08",
-                          "commit":  "580444bdf6a6dd49f465c384888d873172531b65",
-                          "files":  [
-                                        "docs/00-索引/文档索引.md",
-                                        "docs/01-方案设计/2026/09/07/四概念边界与订阅单模型重构最终方案-20260907-103754.md",
-                                        "docs/01-方案设计/2026/09/07/订阅链路单模型重构方案-20260907-102336.md"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-e258a3d",
-                          "message":  "fix(measure): 点-点测量补调试窗口入口并移除重复的位置修正",
-                          "date":  "2026-09-10",
-                          "commit":  "e258a3dae2e3bbee3873a70ca27f1c59b0c9558f",
-                          "files":  [
-                                        "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureResults.cs",
-                                        "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureTool.cs",
-                                        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
-                                        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml.cs"
-                                    ],
-                          "status":  "in_progress"
-                      }
+
                   ]
 }

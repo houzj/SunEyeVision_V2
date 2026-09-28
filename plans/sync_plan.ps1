@@ -16,7 +16,9 @@
 param(
     [string]$PlanDir = "",
     [string]$CommitHash = "",
-    [switch]$Force
+    [switch]$Force,
+    # 批量补齐（sync_catchup.ps1）时逐提交调用，跳过每周追溯与看板重建，由调用方统一重建一次
+    [switch]$NoBoard
 )
 
 $ErrorActionPreference = "Stop"
@@ -76,6 +78,11 @@ $CommitMsg = (git log -1 --format=%s $CommitHash 2>$null).Trim()
 $FilesRaw = git diff-tree --no-commit-id --name-only -r $CommitHash 2>$null
 $Files = @($FilesRaw | Where-Object { $_ -and $_.Trim() -ne "" } | ForEach-Object { $_.Trim() })
 $CommitTime = (git log -1 --format=%ci $CommitHash 2>$null).Trim().Substring(0,10)
+
+# 仅改文档/技能文件（docs/、.codebuddy/）的提交：只记日志，不推进任何任务状态。
+# 否则 commit message 里的"实现/完成/落地"会把模块的未完成子任务误标 done（如「docs: 归档相机实现说明」）。
+$codeFiles = @($Files | Where-Object { $_ -notmatch '^(docs/|\.codebuddy/)' })
+$docsOnly = ($codeFiles.Count -eq 0)
 
 Write-Host "提交: $CommitHash" -ForegroundColor Green
 Write-Host "信息: $CommitMsg" -ForegroundColor Green
@@ -138,7 +145,7 @@ $keywordMap = @(
     @{ kw = @("手眼标定采集", "HECap");                     id = "T-HECAP" },
     @{ kw = @("坐标转换", "坐标变换", "Convert", "Transform"); id = "T-CONVERT" },
     @{ kw = @("机器人通信", "RobotComm", "机器人", "位姿下发"); id = "T-ROBOTCOMM" },
-    @{ kw = @("图像采集工具", "采集工具", "采图工具", "相机采集", "ImageCapture"); id = "T-IMGCAPTURE" },
+    @{ kw = @("图像源", "ImageSource", "图像采集工具", "采集工具", "采图工具", "相机采集", "ImageCapture"); id = "T-IMGCAPTURE" },
     @{ kw = @("通信工具", "通讯工具", "TCP收发", "Modbus读写", "通信节点"); id = "T-COMMTOOL" },
     @{ kw = @("相机管理", "相机", "Camera", "MvCamera", "Hikvision"); id = "M-SRC-CAM" },
     @{ kw = @("通讯", "通信", "Communication", "TCP", "Modbus", "串口", "PLC"); id = "M-SRC-COMM" },
@@ -147,7 +154,7 @@ $keywordMap = @(
     @{ kw = @("位姿", "Pose", "OutputVariable", "输出契约"); id = "M-SRC-POSE" },
     @{ kw = @("运行UI", "运行界面", "RunUI", "操作员界面", "运行器"); id = "M-SRC-RUNUI" },
     @{ kw = @("联调", "集成", "Integrate", "端到端");       id = "M-SRC-INTEG" },
-    @{ kw = @("交付", "上线", "手册", "Delivery");          id = "M-SRC-DELIVERY" },
+    @{ kw = @("交付", "上线", "手册", "Delivery", "安装包", "内测版", "打包", "Release"); id = "M-SRC-DELIVERY" },
     @{ kw = @("子程序", "Subroutine");                      id = "T-SUBROUTINE" },
     @{ kw = @("条件分支", "条件", "Condition", "分支");     id = "T-CONDITION" },
     @{ kw = @("脚本", "Script", "Roslyn", "语法高亮", "监视"); id = "T-SCRIPT" },
@@ -174,17 +181,19 @@ $pathMap = @(
     @{ path = @("tools/SunEyeVision.Tool.ArcCaliper");   id = "T-ARCCALIPER" },
     @{ path = @("tools/SunEyeVision.Tool.ShapeMatch");   id = "T-SHAPEMATCH" },
     @{ path = @("tools/SunEyeVision.BlobAnalysis");      id = "T-BLOB" },
+    @{ path = @("src/Workflow/ImageSourceConfig", "src/Plugin.SDK/Vision/Contracts/ImageSourceKind", "src/UI/Features/WorkflowUI/ImageSourceSettingsControl"); id = "T-IMGCAPTURE" },
     @{ path = @("tools/SunEyeVision.Tool.ImageLoad");     id = "T-IMAGELOAD" },
+    @{ path = @("tools/SunEyeVision.Tool.ImageThreshold"); id = "T-IMAGETHRESHOLD" },
     @{ path = @("tools/SunEyeVision.Tool.Threshold");     id = "T-THRESHOLD" },
     @{ path = @("tools/SunEyeVision.Tool.ImageFilter");   id = "T-IMAGEFILTER" },
-    @{ path = @("tools/SunEyeVision.Tool.ImageThreshold"); id = "T-IMAGETHRESHOLD" },
     @{ path = @("tools/SunEyeVision.Tool.Morphology");    id = "T-MORPHOLOGY" },
-    @{ path = @("tools/SunEyeVision.Tool.PointToPoint"); id = "T-P2P" },
-    @{ path = @("tools/SunEyeVision.Tool.PointToLine");  id = "T-P2L" },
-    @{ path = @("tools/SunEyeVision.Tool.PointToCircle"); id = "T-P2C" },
-    @{ path = @("tools/SunEyeVision.Tool.LineToLine");   id = "T-L2L" },
-    @{ path = @("tools/SunEyeVision.Tool.LineToCircle"); id = "T-L2C" },
-    @{ path = @("tools/SunEyeVision.Tool.CircleToCircle"); id = "T-C2C" },
+    @{ path = @("tools/SunEyeVision.Tool.PointPointMeasure", "tools/SunEyeVision.Tool.PointToPoint"); id = "T-P2P" },
+    @{ path = @("tools/SunEyeVision.Tool.PointLineMeasure", "tools/SunEyeVision.Tool.PointToLine"); id = "T-P2L" },
+    @{ path = @("tools/SunEyeVision.Tool.PointCircleMeasure", "tools/SunEyeVision.Tool.PointToCircle"); id = "T-P2C" },
+    @{ path = @("tools/SunEyeVision.Tool.LineLineMeasure", "tools/SunEyeVision.Tool.LineToLine"); id = "T-L2L" },
+    @{ path = @("tools/SunEyeVision.Tool.LineCircleMeasure", "tools/SunEyeVision.Tool.LineToCircle"); id = "T-L2C" },
+    @{ path = @("tools/SunEyeVision.Tool.CircleCircleMeasure", "tools/SunEyeVision.Tool.CircleToCircle"); id = "T-C2C" },
+    @{ path = @("installer/", "version.json", "Help/");  id = "M-SRC-DELIVERY" },
     @{ path = @("tools/SunEyeVision.Tool.CalibPlate");   id = "T-CALIBPLATE" },
     @{ path = @("tools/SunEyeVision.Tool.Undistort");    id = "T-UNDIST" },
     @{ path = @("tools/SunEyeVision.Tool.HECap");        id = "T-HECAP" },
@@ -203,7 +212,12 @@ $pathMap = @(
     @{ path = @("src/UI/Themes", "src/UI/Shell");          id = "M-SRC-UI" },
     @{ path = @("tools/SunEyeVision.Tool.Subroutine");     id = "T-SUBROUTINE" },
     @{ path = @("tools/SunEyeVision.Tool.Condition");      id = "T-CONDITION" },
-    @{ path = @("tools/SunEyeVision.Tool.Script");         id = "T-SCRIPT" }
+    @{ path = @("tools/SunEyeVision.Tool.Script");         id = "T-SCRIPT" },
+    # 补充：SDK 控件 / 渲染显示 / 结果树 / 数据结构（与 generate_weekly.py 的 pathMap 对齐）
+    @{ path = @("src/Plugin.SDK/UI/Controls/Measure", "src/Plugin.SDK/UI/Controls/ParamBinding", "src/Plugin.SDK/UI/Controls/ImageControl"); id = "M-HIST-SDKCTRL" },
+    @{ path = @("src/Plugin.SDK/Models/Visualization", "src/Plugin.SDK/Execution/Results"); id = "M-HIST-PREVIEW" },
+    @{ path = @("src/UI/Services/Workflow/NodeResultManager", "src/UI/Services/Workflow/INodeResultSink", "src/Plugin.SDK/Execution/Parameters/ArrayTreeFormatter"); id = "M-HIST-RESULTTREE" },
+    @{ path = @("src/Plugin.SDK/Execution/Parameters", "src/Plugin.SDK/Models/SubroutineOutputConfig"); id = "M-HIST-DATAMODEL" }
 )
 
 # 状态推断：完成词 / 开始词
@@ -213,14 +227,25 @@ $logOnlyWords = @("修复", "优化", "调整", "重构", "改进", "fix", "refa
 
 function Match-ModuleId([string]$msg, [string[]]$files) {
     # 1. 工具目录路径优先（文件在哪个工具目录就归哪个模块，避免提交信息关键词串模块）
+    #    例外：交叉性「工具基座/契约/结果呈现」提交会同时改十几个工具目录、每处仅 1~2 个文件，
+    #    命中面广而浅，不应认领给某个具体工具，改走 src 侧归属。
+    $toolHits = @()
+    $toolCounts = @{}
     foreach ($rule in $pathMap) {
         if ($rule.id -like "T-*") {
+            $n = 0
             foreach ($p in $rule.path) {
                 foreach ($f in $files) {
-                    if ($f -like "*$p*") { return $rule.id }
+                    if ($f -like "*$p*") { $n++ }
                 }
             }
+            if ($n -gt 0) { $toolHits += $rule.id; $toolCounts[$rule.id] = $n }
         }
+    }
+    if ($toolHits.Count -gt 0) {
+        $maxHit = ($toolCounts.Values | Measure-Object -Maximum).Maximum
+        $shallow = ($toolHits.Count -ge 4) -and ($maxHit -le 2)
+        if (-not $shallow) { return $toolHits[0] }
     }
     # 2. 源码层路径（src/ 精确目录）
     foreach ($rule in $pathMap) {
@@ -270,6 +295,10 @@ $logNote = "[$CommitHash] $CommitMsg"
 if ($matchedId) {
     Write-Host "匹配模块: $matchedId" -ForegroundColor Green
     $status = Get-IntendedStatus $CommitMsg
+    if ($docsOnly) {
+        $status = "log"
+        Write-Host "文档/Skill 提交：仅记日志，不推进任务状态" -ForegroundColor DarkGray
+    }
     Write-Host "推断状态: $status" -ForegroundColor Green
 
     $mod = $null
@@ -293,6 +322,10 @@ if ($matchedId) {
         $anyProg = @($mod.tasks | Where-Object { $_.status -eq "in_progress" }).Count -gt 0
         if ($allDone) { $mod.status = "done" }
         elseif ($anyProg) { $mod.status = "in_progress" }
+        elseif ($mod.status -eq "todo") {
+            # 有提交落地即视为已开工：避免"已在开发但看板仍显示未开始"（相机/通讯/图像源这一类新模块常踩）
+            $mod.status = "in_progress"
+        }
 
         # 追加开发日志（log 属性不存在时需先 Add-Member）
         $log = [pscustomobject]@{ date = $CommitTime; note = $logNote }
@@ -371,6 +404,14 @@ if ($planChanged) {
 # ---------- 刷新周追溯数据（weekly.json） ----------
 # 关键：weekly.json 由 generate_weekly.py 独立生成，若不随提交刷新，看板"最近提交追溯"会缺最新提交。
 # 这里在每次提交同步后自动重跑，保证最近提交追溯跟得上（同时重建各模块 gitlogs/）。
+# -NoBoard（批量补齐通道）时跳过：调用方在补齐完成后统一重建一次，避免 N 次全量重建。
+if ($NoBoard) {
+    Write-Host "[-NoBoard] 跳过周追溯与看板重建（由补齐流程统一重建）" -ForegroundColor DarkGray
+    Write-Host "同步完成 ✔" -ForegroundColor Green
+    Write-Host ""
+    exit 0
+}
+
 $WeeklyGen = Join-Path $PlanDir "generate_weekly.py"
 if (Test-Path $WeeklyGen) {
     $py = $null

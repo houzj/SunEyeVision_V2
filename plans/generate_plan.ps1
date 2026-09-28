@@ -267,12 +267,15 @@ $routeSteps = @(
     @{ id = "P8";  num = 11; name = "运行 UI";            stage = "P8" },
     @{ id = "P9";  num = 12; name = "交付上线";           stage = "P9" }
 )
-# 找到当前进行中的阶段（取最早 in_progress 的非 HIST/T0 阶段）
-$currentStage = ""
+# 找到当前进行中的阶段（所有 in_progress 的非 HIST/T0 阶段；允许并行推进，
+# 如「相机管理与通讯管理」与「图像源与通信工具」同时在建）
+$currentStages = @()
 foreach ($s in $stages) {
-    if ($s.status -eq "in_progress" -and $s.id -ne "HIST" -and $s.id -ne "T0") { $currentStage = $s.id; break }
+    if ($s.status -eq "in_progress" -and $s.id -ne "HIST" -and $s.id -ne "T0") { $currentStages += $s.id }
 }
-if ($currentStage -eq "") { $currentStage = "U0" }
+if ($currentStages.Count -eq 0) { $currentStages = @("U0") }
+$currentStage = $currentStages[0]                       # 兼容旧引用：主当前阶段
+$currentStageLabel = ($currentStages -join " / ")
 $routeCards = ""
 for ($i = 0; $i -lt $routeSteps.Count; $i++) {
     $rs = $routeSteps[$i]
@@ -281,9 +284,10 @@ for ($i = 0; $i -lt $routeSteps.Count; $i++) {
     $stg = $null
     foreach ($s in $stages) { if ($s.id -eq $rs.stage) { $stg = $s; break } }
     if ($stg -and $stg.status -eq "done") { $cls += " done" }
-    if ($rs.stage -eq $currentStage) { $cls += " current" }
+    $isCurrent = $currentStages -contains $rs.stage
+    if ($isCurrent) { $cls += " current" }
     $badge = ""
-    if ($rs.stage -eq $currentStage) { $badge = "<span class='route-now'>NOW</span>" }
+    if ($isCurrent) { $badge = "<span class='route-now'>NOW</span>" }
     $routeCards += @"
           <div class="$cls">
             <div class="route-num">$($rs.num)</div>
@@ -294,7 +298,7 @@ for ($i = 0; $i -lt $routeSteps.Count; $i++) {
 }
 $routeOverviewHtml = @"
   <div class="card route-card">
-    <h2>开发路线总览<span class="route-hint">本周 $(Get-WeekLabel $thisWeekLabel) · 所处步骤 → $currentStage</span></h2>
+    <h2>开发路线总览<span class="route-hint">本周 $(Get-WeekLabel $thisWeekLabel) · 所处步骤 → $currentStageLabel</span></h2>
     <div class="route-seg">
       <span class="route-seg-label">历史开发（2026-01 ~ 07 · 已完成）</span>
       <div class="route-track">
@@ -425,7 +429,7 @@ foreach ($m in $modulesSorted) {
     # 状态显示：只在"当前开发中"模块加右上角徽标（避免与底部 status 重复）
     $curBadge = ""
     $curCls = ""
-    if ($infStatus -eq "in_progress" -and $m.stage -eq $currentStage) {
+    if ($infStatus -eq "in_progress" -and ($currentStages -contains $m.stage)) {
         $curBadge = "<span class='cur-tag'>▶ 当前开发中</span>"
         $curCls = " mod-current"
     }

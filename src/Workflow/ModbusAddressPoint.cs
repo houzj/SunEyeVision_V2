@@ -111,6 +111,7 @@ public sealed class ModbusAddressPoint : ObservableObject
         set => SetProperty(ref _timeoutMs, Math.Clamp(value, 50, 120000));
     }
 
+    [JsonIgnore]
     public string CurrentValue
     {
         get => _currentValue;
@@ -120,6 +121,7 @@ public sealed class ModbusAddressPoint : ObservableObject
     /// <summary>
     /// 地址级接收记录。必须使用可通知集合，因为记录窗口可能在轮询期间保持打开状态。
     /// </summary>
+    [JsonIgnore]
     public ObservableCollection<string> ReceiveRecords { get; set; } = new();
 
     [JsonIgnore]

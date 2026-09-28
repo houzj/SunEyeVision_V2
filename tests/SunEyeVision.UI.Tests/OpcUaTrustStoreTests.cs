@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using SunEyeVision.Workflow;
+using SunEyeVision.DeviceDriver.Communications;
 using Xunit;
 
 namespace SunEyeVision.UI.Tests;

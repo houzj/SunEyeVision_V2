@@ -7,6 +7,8 @@ using Opc.Ua;
 using Opc.Ua.Configuration;
 using Opc.Ua.Server;
 using SunEyeVision.Workflow;
+using SunEyeVision.DeviceDriver.Communications;
+using SunEyeVision.UI.Features.CommunicationManager;
 using Xunit;
 
 namespace SunEyeVision.UI.Tests;
@@ -24,7 +26,7 @@ public sealed class OpcUaRuntimeTests
             OpcUaIdentityMode = "用户名密码"
         };
 
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(() => runtime.ConnectAsync(communication));
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(() => runtime.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(communication)));
 
         Assert.Contains("仅支持匿名身份", exception.Message, StringComparison.Ordinal);
         Assert.False(runtime.IsConnected(communication.Id));
@@ -62,7 +64,7 @@ public sealed class OpcUaRuntimeTests
         var stage = "Connect";
         try
         {
-            await runtime.ConnectAsync(communication);
+            await runtime.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(communication));
 
             stage = "Browse Objects";
             var objects = await runtime.BrowseOpcUaAsync(communication.Id, "i=85");

@@ -2,6 +2,8 @@ using System.Buffers.Binary;
 using System.Net;
 using System.Net.Sockets;
 using SunEyeVision.Workflow;
+using SunEyeVision.DeviceDriver.Communications;
+using SunEyeVision.UI.Features.CommunicationManager;
 using Xunit;
 
 namespace SunEyeVision.UI.Tests;
@@ -25,7 +27,7 @@ public sealed class CipRuntimeTests
             Port = port
         };
 
-        await runtime.ConnectAsync(communication, timeout.Token);
+        await runtime.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(communication), timeout.Token);
         var response = await runtime.SendCipExplicitAsync(communication.Id, 0x0E, 1, 1, 1, ReadOnlyMemory<byte>.Empty, timeout.Token);
         Assert.Equal((byte)0x8E, response.Service);
         Assert.Equal((byte)0, response.GeneralStatus);

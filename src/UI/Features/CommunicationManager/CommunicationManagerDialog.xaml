@@ -436,6 +436,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
@@ -452,15 +453,17 @@
                                                 DecimalPlaces="0" ShowSlider="False"
                                                 IntValue="{Binding SelectedWorkspace.ModbusRegisterCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </Grid>
-                    <DockPanel Grid.Row="2" Margin="0,0,0,6">
+                    <TextBlock Grid.Row="2" Text="{Binding SelectedWorkspace.AddressRangeWarning}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.WarningBrush}}"/>
+                    <DockPanel Grid.Row="3" Margin="0,0,0,6">
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                             <Button Content="最大化" Style="{StaticResource SecondaryButtonStyle}" Height="28" Padding="10,2" Margin="4,0,0,0"/>
                             <Button Content="隐藏空白行" Style="{StaticResource SecondaryButtonStyle}" Height="28" Padding="10,2" Margin="4,0,0,0"/>
-                            <Button Content="清空" Style="{StaticResource SecondaryButtonStyle}" Height="28" Padding="10,2" Margin="4,0,0,0"/>
+                            <Button Content="清空" Click="ClearModbusAddresses_Click" Style="{StaticResource SecondaryButtonStyle}" Height="28" Padding="10,2" Margin="4,0,0,0"/>
                         </StackPanel>
                         <TextBlock Text="地址空间" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </DockPanel>
-                    <ScrollViewer Grid.Row="3" MinHeight="170" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,6">
+                    <ScrollViewer Grid.Row="4" MinHeight="170" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,6">
                         <StackPanel>
                             <UniformGrid Columns="11" Height="30">
                                 <TextBlock Text="地址" TextAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold"/>
@@ -631,7 +634,7 @@
                             </ItemsControl>
                         </StackPanel>
                     </ScrollViewer>
-                    <DockPanel Grid.Row="4" Margin="0,0,0,6">
+                    <DockPanel Grid.Row="5" Margin="0,0,0,6">
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                             <Button Content="数据同步" Click="SyncModbusData_Click" Style="{StaticResource SecondaryButtonStyle}" Height="30" Padding="12,3" Margin="4,0,0,0"/>
                             <Button Content="发送测试" Click="SendModbusTest_Click" Style="{StaticResource SecondaryButtonStyle}" Height="30" Padding="12,3" Margin="4,0,0,0"/>

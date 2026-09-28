@@ -4,6 +4,8 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Workflow;
 using SunEyeVision.DeviceDriver.Cameras;
+using SunEyeVision.DeviceDriver.Communications;
+using SunEyeVision.UI.Services.Communication;
 
 using SunEyeVision.UI.Shell.Windows;
 
@@ -69,6 +71,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         private static UILogWriter? _uiLogWriter;
         private static SolutionManager? _solutionManager;
         private static CameraRuntimeComposition? _cameraRuntime;
+        private static CommunicationRuntimeComposition? _communicationRuntime;
+        private static CommunicationApplicationService? _communicationService;
 
         /// <summary>
         /// 获取 UI 日志写入器（供 LogPanelViewModel 使用）
@@ -96,6 +100,24 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 
         public static CameraRuntimeComposition CameraRuntime
             => _cameraRuntime ??= new CameraRuntimeComposition();
+
+        public static CommunicationRuntimeComposition CommunicationRuntime
+            => _communicationRuntime ??= new CommunicationRuntimeComposition();
+
+        public static CommunicationApplicationService CommunicationService
+            => _communicationService ??= new CommunicationApplicationService(SolutionManager, CommunicationRuntime);
+
+        public static async ValueTask DisposeCommunicationRuntimeAsync()
+        {
+            if (_communicationService is not null)
+            {
+                await _communicationService.DisposeAsync().ConfigureAwait(false);
+                _communicationService = null;
+            }
+            if (_communicationRuntime is null) return;
+            await _communicationRuntime.DisposeAsync().ConfigureAwait(false);
+            _communicationRuntime = null;
+        }
 
         public static async ValueTask DisposeCameraRuntimeAsync()
         {
@@ -139,6 +161,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 
             // 创建解决方案管理器
             _solutionManager = new SolutionManager(solutionsDirectory);
+            // Subscribe before any solution is opened, even when the manager window is never shown.
+            _ = CommunicationService;
             logger.Info($"解决方案管理器初始化完成，目录: {_solutionManager.SolutionsDirectory}", "ServiceInitializer");
         }
 

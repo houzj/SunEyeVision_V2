@@ -2,6 +2,8 @@ using System.Buffers.Binary;
 using System.Net;
 using System.Net.Sockets;
 using SunEyeVision.Workflow;
+using SunEyeVision.DeviceDriver.Communications;
+using SunEyeVision.UI.Features.CommunicationManager;
 using Xunit;
 
 namespace SunEyeVision.UI.Tests;
@@ -18,7 +20,7 @@ public sealed class ModbusRuntimeTests
             SerialPort = string.Empty
         };
 
-        await Assert.ThrowsAsync<ArgumentException>(() => runtime.ConnectAsync(communication));
+        await Assert.ThrowsAsync<ArgumentException>(() => runtime.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(communication)));
         Assert.False(runtime.IsConnected(communication.Id));
     }
 
@@ -32,7 +34,7 @@ public sealed class ModbusRuntimeTests
             EndpointUrl = "http://127.0.0.1:4840"
         };
 
-        await Assert.ThrowsAsync<ArgumentException>(() => runtime.ConnectAsync(communication));
+        await Assert.ThrowsAsync<ArgumentException>(() => runtime.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(communication)));
         Assert.False(runtime.IsConnected(communication.Id));
     }
 
@@ -56,7 +58,7 @@ public sealed class ModbusRuntimeTests
             RequestTimeout = 2000
         };
 
-        await runtime.ConnectAsync(communication, timeout.Token);
+        await runtime.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(communication), timeout.Token);
         var registers = await runtime.ReadModbusHoldingRegistersAsync(communication.Id, 12, 2, timeout.Token);
         Assert.Equal(new ushort[] { 0x1234, 0xABCD }, registers);
 

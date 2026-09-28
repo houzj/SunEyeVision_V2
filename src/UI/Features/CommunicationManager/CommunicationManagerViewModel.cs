@@ -10,8 +10,11 @@ using System.Threading;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Devices.Communication;
 using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
+using SunEyeVision.DeviceDriver.Communications;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using S7.Net;
 
 
@@ -23,9 +26,9 @@ namespace SunEyeVision.UI.Features.CommunicationManager
     public class CommunicationManagerViewModel : ViewModelBase
     {
         private readonly SolutionManager _solutionManager;
-        private readonly CommunicationRuntimeManager _runtimeManager = new();
+        private readonly CommunicationRuntimeManager _runtimeManager = ServiceInitializer.CommunicationService.Composition.Runtime;
+        private readonly CommunicationPollingCoordinator _polling = ServiceInitializer.CommunicationService.Composition.Polling;
         private readonly Dictionary<string, CommunicationDeviceWorkspaceViewModel> _deviceWorkspaces = new();
-        private readonly Dictionary<string, CancellationTokenSource> _modbusPollers = new();
 
         private CommunicationDeviceWorkspaceViewModel? _selectedWorkspace;
         public CommunicationDeviceWorkspaceViewModel? SelectedWorkspace
@@ -157,13 +160,18 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             _runtimeManager.DataReceived += RuntimeManager_DataReceived;
             _runtimeManager.ConnectionClosed += RuntimeManager_ConnectionClosed;
+            _runtimeManager.StatusChanged += RuntimeManager_StatusChanged;
+            _polling.BatchReceived += Polling_BatchReceived;
 
             var currentSolution = _solutionManager.CurrentSolution;
             Communications = new ObservableCollection<Communication>(
                 currentSolution?.Communications ?? Enumerable.Empty<Communication>()
             );
             foreach (var communication in Communications)
+            {
                 AddWorkspace(communication);
+                communication.RuntimeStatus = MapStatus(_runtimeManager.GetStatus(new CommunicationDeviceRef(communication.Id)).State);
+            }
 
             RefreshSerialPorts();
 
@@ -224,7 +232,18 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
             var workspace = new CommunicationDeviceWorkspaceViewModel(communication);
             workspace.PropertyChanged += Workspace_PropertyChanged;
+            workspace.AddressConfigurationChanged += Workspace_AddressConfigurationChanged;
+            communication.PropertyChanged += Communication_PropertyChanged;
             _deviceWorkspaces.Add(communication.Id, workspace);
+            var cached = _polling.GetLatest(communication.Id)
+                .Select(result => workspace.ModbusAddressPoints.FirstOrDefault(point => point.Id == result.AddressId) is { } point
+                    ? new ModbusPollUpdate(point, result.Values, result.Timestamp, result.StartAddress)
+                    : (ModbusPollUpdate?)null)
+                .Where(update => update.HasValue)
+                .Select(update => update!.Value)
+                .ToArray();
+            if (cached.Length > 0)
+                workspace.ApplyModbusPollResults(cached);
         }
 
         private void RemoveWorkspace(string communicationId)
@@ -234,12 +253,27 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 return;
 
             workspace.PropertyChanged -= Workspace_PropertyChanged;
+            workspace.AddressConfigurationChanged -= Workspace_AddressConfigurationChanged;
+            workspace.Communication.PropertyChanged -= Communication_PropertyChanged;
             if (SelectedWorkspace == workspace)
                 SelectedWorkspace = null;
         }
 
         private static void Workspace_PropertyChanged(object? sender, PropertyChangedEventArgs e) =>
             CommandManager.InvalidateRequerySuggested();
+
+        private void Workspace_AddressConfigurationChanged(object? sender, EventArgs e)
+        {
+            if (sender is CommunicationDeviceWorkspaceViewModel workspace)
+                UpdateModbusPollPlan(workspace);
+        }
+
+        private void Communication_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Communication.PollInterval) && sender is Communication device &&
+                _deviceWorkspaces.TryGetValue(device.Id, out var workspace))
+                UpdateModbusPollPlan(workspace);
+        }
 
         private bool CanSendData() =>
             SelectedWorkspace is { IsBusy: false } workspace &&
@@ -568,6 +602,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private async Task ToggleConnectionAsync(Communication? target)
         {
+            await ServiceInitializer.CommunicationService.ReadyAsync();
             var device = target ?? SelectedCommunication;
             if (device == null || !_deviceWorkspaces.TryGetValue(device.Id, out var workspace)) return;
             LogInfo($"[Modbus诊断] 设备开关触发：设备={device.Name}({device.Id}), 当前连接={_runtimeManager.IsConnected(device.Id)}, 协议={device.ProtocolDisplayName}, 端点={device.GetConnectionString()}", target: LogTarget.File | LogTarget.UI);
@@ -585,7 +620,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 else
                 {
                     device.RuntimeStatus = CommunicationRuntimeStatus.Connecting;
-                    await _runtimeManager.ConnectAsync(device);
+                    await _runtimeManager.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(device));
                     device.RuntimeStatus = CommunicationRuntimeStatus.Connected;
                     if (device.IsModbus)
                         StartModbusPolling(device, workspace);
@@ -611,22 +646,45 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private void StartModbusPolling(Communication device, CommunicationDeviceWorkspaceViewModel workspace)
         {
-            StopModbusPolling(device.Id);
-            var cancellation = new CancellationTokenSource();
-            _modbusPollers[device.Id] = cancellation;
+            _polling.Start(device.Id, device.PollInterval, CreateModbusPollPlan(workspace));
             LogInfo($"[Modbus诊断] 启动持续轮询：设备={device.Name}({device.Id}), 设备轮询间隔={Math.Clamp(device.PollInterval, 100, 60000)}ms, 地址块={workspace.ModbusAddressPoints.Count}, 启用={workspace.ModbusAddressPoints.Count(point => point.PollEnabled)}", target: LogTarget.File | LogTarget.UI);
-            _ = PollModbusAddressPointsAsync(device, workspace, cancellation.Token);
         }
 
         private void StopModbusPolling(string communicationId)
         {
-            if (_modbusPollers.Remove(communicationId, out var cancellation))
-            {
-                cancellation.Cancel();
-                LogInfo($"[Modbus诊断] 停止轮询任务：设备={communicationId}", target: LogTarget.File | LogTarget.UI);
-            }
+            _polling.Stop(communicationId);
             if (_deviceWorkspaces.TryGetValue(communicationId, out var workspace))
                 workspace.ClearModbusPollStatus();
+        }
+
+        private static ModbusPollAddress[] CreateModbusPollPlan(CommunicationDeviceWorkspaceViewModel workspace) =>
+            workspace.ModbusAddressPoints
+                .Where(point => point.PollEnabled && point.AccessMode != "只写")
+                .Select(point => new ModbusPollAddress(point.Id, point.StartAddress, point.Count, point.TimeoutMs))
+                .ToArray();
+
+        private void UpdateModbusPollPlan(CommunicationDeviceWorkspaceViewModel workspace)
+        {
+            if (_runtimeManager.IsConnected(workspace.Communication.Id))
+                _polling.UpdatePlan(workspace.Communication.Id, workspace.Communication.PollInterval,
+                    CreateModbusPollPlan(workspace));
+        }
+
+        private void Polling_BatchReceived(object? sender, ModbusPollBatch batch)
+        {
+            System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (!_polling.IsCurrentBatch(batch)) return;
+                if (!_deviceWorkspaces.TryGetValue(batch.CommunicationId, out var workspace)) return;
+                var updates = batch.Results
+                    .Select(result => workspace.ModbusAddressPoints.FirstOrDefault(point => point.Id == result.AddressId) is { } point
+                        ? new ModbusPollUpdate(point, result.Values, result.Timestamp, result.StartAddress)
+                        : (ModbusPollUpdate?)null)
+                    .Where(update => update.HasValue)
+                    .Select(update => update!.Value)
+                    .ToArray();
+                workspace.ApplyModbusPollResults(updates);
+            }));
         }
 
         public async Task SyncModbusDataAsync()
@@ -652,8 +710,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             var failures = 0;
             try
             {
-                var lifetime = _modbusPollers.TryGetValue(device.Id, out var poller)
-                    ? poller.Token : CancellationToken.None;
+                var lifetime = _polling.GetLifetimeToken(device.Id);
                 foreach (var point in points)
                 {
                     if (lifetime.IsCancellationRequested) break;
@@ -719,8 +776,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             var writtenCount = 0;
             try
             {
-                var lifetime = _modbusPollers.TryGetValue(workspace.Communication.Id, out var poller)
-                    ? poller.Token : CancellationToken.None;
+                var lifetime = _polling.GetLifetimeToken(workspace.Communication.Id);
                 while (writtenCount < values.Length)
                 {
                     if (!workspace.ModbusAddressPoints.Contains(point) ||
@@ -761,50 +817,6 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             {
                 workspace.IsBusy = false;
                 CommandManager.InvalidateRequerySuggested();
-            }
-        }
-
-        private async Task PollModbusAddressPointsAsync(Communication device, CommunicationDeviceWorkspaceViewModel workspace, CancellationToken cancellationToken)
-        {
-            int? lastEnabledPointCount = null;
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var pendingUpdates = new List<ModbusPollUpdate>();
-                var points = workspace.ModbusAddressPoints.Where(point => point.PollEnabled && point.AccessMode != "只写").ToArray();
-                var delay = Math.Clamp(device.PollInterval, 100, 60000);
-                if (lastEnabledPointCount != points.Length)
-                {
-                    lastEnabledPointCount = points.Length;
-                    LogInfo($"[Modbus诊断] 轮询地址块快照：设备={device.Name}({device.Id}), 启用数量={points.Length}, 地址={string.Join(",", points.Select(point => $"{point.Name}:{point.StartAddress}+{point.Count}"))}", target: LogTarget.File | LogTarget.UI);
-                }
-                foreach (var point in points)
-                {
-                    if (cancellationToken.IsCancellationRequested) break;
-                    var startAddress = point.StartAddress;
-                    var count = point.Count;
-                    try
-                    {
-                        using var requestTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                        var timeoutMs = Math.Clamp(point.TimeoutMs, 50, 120000);
-                        requestTimeout.CancelAfter(timeoutMs);
-                        LogInfo($"[Modbus诊断] 发起轮询读取：设备={device.Name}({device.Id}), 站号={device.UnitId}, 地址={point.StartAddress}, 数量={point.Count}, 超时={timeoutMs}ms, 名称={point.Name}", target: LogTarget.File);
-                        var values = await _runtimeManager.ReadModbusHoldingRegistersAsync(device.Id, checked((ushort)startAddress), checked((ushort)count), requestTimeout.Token);
-                        LogInfo($"[Modbus诊断] 读取返回：设备={device.Name}({device.Id}), 地址={startAddress}, 数量={values.Length}, 原始值={string.Join(",", values.Select(value => $"0x{value:X4}"))}", target: LogTarget.File);
-                        pendingUpdates.Add(new ModbusPollUpdate(point, values, DateTimeOffset.Now, startAddress));
-                    }
-                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return; }
-                    catch (OperationCanceledException) { LogWarning($"[Modbus诊断] {device.Name} 地址 {point.RangeText} 轮询超时（{point.TimeoutMs} ms）。", target: LogTarget.File | LogTarget.UI); }
-                    catch (Exception ex) { LogWarning($"[Modbus诊断] {device.Name} 地址 {point.RangeText} 轮询失败：{ex.Message}", target: LogTarget.File | LogTarget.UI); }
-                }
-
-                if (pendingUpdates.Count > 0 && !cancellationToken.IsCancellationRequested)
-                {
-                    var appliedCount = await System.Windows.Application.Current.Dispatcher.InvokeAsync(
-                        () => workspace.ApplyModbusPollResults(pendingUpdates));
-                    LogInfo($"[Modbus诊断] 地址空间批量回写完成：设备={device.Name}({device.Id}), 返回块数={pendingUpdates.Count}, 实际更新={appliedCount}", target: LogTarget.File);
-                }
-                try { await Task.Delay(delay, cancellationToken); }
-                catch (OperationCanceledException) { return; }
             }
         }
 
@@ -857,6 +869,26 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             }));
         }
 
+        private static CommunicationRuntimeStatus MapStatus(CommunicationState state) => state switch
+        {
+            CommunicationState.Connecting => CommunicationRuntimeStatus.Connecting,
+            CommunicationState.Connected => CommunicationRuntimeStatus.Connected,
+            CommunicationState.Faulted => CommunicationRuntimeStatus.Faulted,
+            _ => CommunicationRuntimeStatus.Disconnected
+        };
+
+        private void RuntimeManager_StatusChanged(object? sender, CommunicationStatusSnapshot status)
+        {
+            System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (!_deviceWorkspaces.TryGetValue(status.Device.Value, out var workspace)) return;
+                workspace.Communication.RuntimeStatus = MapStatus(status.State);
+                if (SelectedCommunication?.Id == status.Device.Value)
+                    OnPropertyChanged(nameof(IsSelectedConnected));
+                CommandManager.InvalidateRequerySuggested();
+            }));
+        }
+
         private void RuntimeManager_ConnectionClosed(object? sender, CommunicationConnectionClosedEventArgs e)
         {
             System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
@@ -885,8 +917,10 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             {
                 try
                 {
-                    _solutionManager.SaveSolution(currentSolution.FilePath);
-                    LogSuccess("通讯配置保存成功");
+                    if (_solutionManager.SaveSolution(currentSolution.FilePath))
+                        LogSuccess("通讯配置保存成功");
+                    else
+                        LogError("通讯配置保存失败，原方案文件未被替换。");
                 }
                 catch (Exception ex)
                 {
@@ -913,22 +947,23 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         private void Close()
         {
             LogInfo("关闭通讯管理器");
-            foreach (var communicationId in _modbusPollers.Keys.ToArray())
-                StopModbusPolling(communicationId);
-            _ = _runtimeManager.DisposeAsync();
         }
 
         public async ValueTask DisposeAsync()
         {
             _runtimeManager.DataReceived -= RuntimeManager_DataReceived;
             _runtimeManager.ConnectionClosed -= RuntimeManager_ConnectionClosed;
-            foreach (var communicationId in _modbusPollers.Keys.ToArray())
-                StopModbusPolling(communicationId);
-            await _runtimeManager.DisposeAsync();
+            _runtimeManager.StatusChanged -= RuntimeManager_StatusChanged;
+            _polling.BatchReceived -= Polling_BatchReceived;
             foreach (var workspace in _deviceWorkspaces.Values)
+            {
                 workspace.PropertyChanged -= Workspace_PropertyChanged;
+                workspace.AddressConfigurationChanged -= Workspace_AddressConfigurationChanged;
+                workspace.Communication.PropertyChanged -= Communication_PropertyChanged;
+            }
             _deviceWorkspaces.Clear();
             SelectedWorkspace = null;
+            await Task.CompletedTask;
         }
     }
 }

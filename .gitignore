@@ -184,6 +184,9 @@ UsageExample.cs
 libs/halcon/runtime/
 build_output/
 runtime/
+# 通讯设备运行时是源码，不属于二进制运行目录。
+!/src/DeviceDriver/Communications/Runtime/
+!/src/DeviceDriver/Communications/Runtime/*.cs
 
 # 安装包第三方工具（Inno Setup 安装器 10.3MB，按需从官网下载）
 installer/third-party/
@@ -215,4 +218,3 @@ plans/weekly.json
 
 # MSBuild 隔离构建临时目录 (重定向的 obj 输出,含绝对路径与缓存,不入库)
 build_temp_verify/
-

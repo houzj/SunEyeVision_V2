@@ -5,7 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-namespace SunEyeVision.Workflow;
+namespace SunEyeVision.DeviceDriver.Communications;
 
 /// <summary>Explicit, leaf-certificate trust management for OPC UA server peers.</summary>
 public sealed class OpcUaTrustStore

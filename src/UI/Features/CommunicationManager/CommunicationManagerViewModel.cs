@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.ComponentModel;
@@ -16,6 +17,7 @@ using SunEyeVision.Workflow;
 using SunEyeVision.DeviceDriver.Communications;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using S7.Net;
+using Opc.Ua;
 
 
 namespace SunEyeVision.UI.Features.CommunicationManager
@@ -29,6 +31,32 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         private readonly CommunicationRuntimeManager _runtimeManager = ServiceInitializer.CommunicationService.Composition.Runtime;
         private readonly CommunicationPollingCoordinator _polling = ServiceInitializer.CommunicationService.Composition.Polling;
         private readonly Dictionary<string, CommunicationDeviceWorkspaceViewModel> _deviceWorkspaces = new();
+        private readonly Dictionary<string, OpcUaConfigurationSnapshot> _opcUaOriginals = new();
+        private readonly HashSet<string> _newOpcUaDeviceIds = new(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<(string DeviceId, string NodeId), OpcUaPointValueEventArgs> _pendingOpcUaUpdates = new();
+        private int _opcUaUpdateScheduled;
+        private bool _hasUnsavedChanges;
+        public bool HasUnsavedChanges { get => _hasUnsavedChanges; private set => SetProperty(ref _hasUnsavedChanges, value); }
+
+        private string _activePage = "Devices";
+        private CommunicationReceiveEventViewModel? _selectedReceiveEvent;
+        public string ActivePage { get => _activePage; set => SetProperty(ref _activePage, value); }
+        public ObservableCollection<CommunicationReceiveEventViewModel> ReceiveEvents { get; } = new();
+        public CommunicationReceiveEventViewModel? SelectedReceiveEvent
+        {
+            get => _selectedReceiveEvent;
+            set => SetProperty(ref _selectedReceiveEvent, value);
+        }
+
+        private sealed record OpcUaConfigurationSnapshot(string EndpointUrl, Dictionary<string, object> Settings,
+            OpcUaDataPoint[] Points);
+
+        private static OpcUaConfigurationSnapshot CaptureOpcUaConfiguration(Communication device) =>
+            new(device.EndpointUrl, new Dictionary<string, object>(device.Settings),
+                (device.OpcUaDataPoints ?? new()).Select(point => new OpcUaDataPoint
+                {
+                    Id = point.Id, NamespaceIndex = point.NamespaceIndex, TagName = point.TagName
+                }).ToArray());
 
         private CommunicationDeviceWorkspaceViewModel? _selectedWorkspace;
         public CommunicationDeviceWorkspaceViewModel? SelectedWorkspace
@@ -48,19 +76,6 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         public ObservableCollection<int> BaudRateOptions { get; } = new(SerialPortCatalog.GetBaudRates(115200));
         public ObservableCollection<string> ParityOptions { get; } =
             new(new[] { "无校验", "奇校验", "偶校验", "标记校验", "空格校验" });
-        public ObservableCollection<string> OpcUaSecurityModeOptions { get; } = new(new[] { "None", "Sign", "SignAndEncrypt" });
-        public ObservableCollection<TrustedOpcUaCertificate> TrustedOpcUaCertificates { get; } = new();
-        private TrustedOpcUaCertificate? _selectedTrustedOpcUaCertificate;
-        public TrustedOpcUaCertificate? SelectedTrustedOpcUaCertificate
-        {
-            get => _selectedTrustedOpcUaCertificate;
-            set
-            {
-                if (SetProperty(ref _selectedTrustedOpcUaCertificate, value))
-                    OnPropertyChanged(nameof(HasSelectedTrustedOpcUaCertificate));
-            }
-        }
-        public bool HasSelectedTrustedOpcUaCertificate => SelectedTrustedOpcUaCertificate != null;
         public ObservableCollection<string> S7CpuTypeOptions { get; } = new(new[] { "S7200", "S7200Smart", "S7300", "S7400", "S71200", "S71500" });
 
         /// <summary>
@@ -74,6 +89,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             {
                 if (SetProperty(ref _selectedCommunication, value))
                 {
+                    if (_selectedWorkspace != null) _selectedWorkspace.SelectedOpcUaPoint = null;
                     OnPropertyChanged(nameof(HasSelectedCommunication));
                     OnPropertyChanged(nameof(HasNoSelectedCommunication));
                     OnPropertyChanged(nameof(IsSelectedConnected));
@@ -81,7 +97,6 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                         ? workspace
                         : null;
                     RefreshSerialPorts();
-                    RefreshTrustedOpcUaCertificates();
                     CommandManager.InvalidateRequerySuggested();
                 }
             }
@@ -90,31 +105,12 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         public bool HasSelectedCommunication => SelectedCommunication != null;
         public bool HasNoSelectedCommunication => SelectedCommunication == null;
 
-        public void RefreshTrustedOpcUaCertificates()
+        public void AddReceiveEvent(CommunicationReceiveEventViewModel definition)
         {
-            TrustedOpcUaCertificates.Clear();
-            foreach (var certificate in _runtimeManager.GetTrustedOpcUaCertificates())
-                TrustedOpcUaCertificates.Add(certificate);
-            SelectedTrustedOpcUaCertificate = null;
-        }
-
-        public TrustedOpcUaCertificate TrustOpcUaServerCertificate(string filePath)
-        {
-            var certificate = _runtimeManager.TrustOpcUaServerCertificate(filePath);
-            RefreshTrustedOpcUaCertificates();
-            LogWarning($"已显式信任 OPC UA 服务器证书：{certificate.Subject}（{certificate.Thumbprint}）。新信任将在重新连接后生效。");
-            return certificate;
-        }
-
-        public TrustedOpcUaCertificate InspectOpcUaServerCertificate(string filePath) => OpcUaTrustStore.InspectFile(filePath);
-
-        public bool RemoveTrustedOpcUaServerCertificate(string thumbprint)
-        {
-            var removed = _runtimeManager.RemoveTrustedOpcUaServerCertificate(thumbprint);
-            RefreshTrustedOpcUaCertificates();
-            if (removed)
-                LogWarning($"已撤销 OPC UA 证书信任：{thumbprint}。已建立的会话不会自动断开。");
-            return removed;
+            ReceiveEvents.Add(definition);
+            SelectedReceiveEvent = definition;
+            ActivePage = "ReceiveEvents";
+            HasUnsavedChanges = true;
         }
 
         /// <summary>
@@ -133,11 +129,6 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         public ICommand ClearSentDataCommand { get; private set; }
         public ICommand ExecuteModbusOperationCommand { get; private set; }
         public ICommand ExecuteS7OperationCommand { get; private set; }
-        public ICommand BrowseOpcUaCommand { get; private set; }
-        public ICommand ReadOpcUaCommand { get; private set; }
-        public ICommand WriteOpcUaCommand { get; private set; }
-        public ICommand SubscribeOpcUaCommand { get; private set; }
-        public ICommand UnsubscribeOpcUaCommand { get; private set; }
         public ICommand ExecuteCipCommand { get; private set; }
 
         /// <summary>
@@ -161,6 +152,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             _runtimeManager.DataReceived += RuntimeManager_DataReceived;
             _runtimeManager.ConnectionClosed += RuntimeManager_ConnectionClosed;
             _runtimeManager.StatusChanged += RuntimeManager_StatusChanged;
+            _runtimeManager.OpcUaPointValueChanged += RuntimeManager_OpcUaPointValueChanged;
             _polling.BatchReceived += Polling_BatchReceived;
 
             var currentSolution = _solutionManager.CurrentSolution;
@@ -170,6 +162,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             foreach (var communication in Communications)
             {
                 AddWorkspace(communication);
+                if (communication.IsOpcUa) _opcUaOriginals[communication.Id] = CaptureOpcUaConfiguration(communication);
                 communication.RuntimeStatus = MapStatus(_runtimeManager.GetStatus(new CommunicationDeviceRef(communication.Id)).State);
             }
 
@@ -215,13 +208,8 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             ExecuteModbusOperationCommand = new RelayCommand(
                 async () => await ExecuteModbusOperationAsync(), CanExecuteModbusOperation);
             ExecuteS7OperationCommand = new RelayCommand(async () => await ExecuteS7OperationAsync(), CanExecuteS7Operation);
-            BrowseOpcUaCommand = new RelayCommand(async () => await BrowseOpcUaAsync(), CanExecuteOpcUaOperation);
-            ReadOpcUaCommand = new RelayCommand(async () => await ReadOpcUaAsync(), CanExecuteOpcUaOperation);
-            WriteOpcUaCommand = new RelayCommand(async () => await WriteOpcUaAsync(), CanExecuteOpcUaOperation);
-            SubscribeOpcUaCommand = new RelayCommand(async () => await SubscribeOpcUaAsync(), CanExecuteOpcUaOperation);
-            UnsubscribeOpcUaCommand = new RelayCommand(async () => await UnsubscribeOpcUaAsync(), CanExecuteOpcUaOperation);
             ExecuteCipCommand = new RelayCommand(async () => await ExecuteCipAsync(), CanExecuteCipOperation);
-            SaveCommand = new RelayCommand(Save, CanSave);
+            SaveCommand = new RelayCommand(async () => await SaveChangesAsync(), CanSave);
             CloseCommand = new RelayCommand(Close, () => true);
         }
 
@@ -235,6 +223,11 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             workspace.AddressConfigurationChanged += Workspace_AddressConfigurationChanged;
             communication.PropertyChanged += Communication_PropertyChanged;
             _deviceWorkspaces.Add(communication.Id, workspace);
+            foreach (var row in workspace.OpcUaPoints)
+                if (_runtimeManager.TryGetLatestOpcUaPoint(communication.Id, row.NodeId, out var latest) && latest != null)
+                    row.Apply(latest);
+            if (!_runtimeManager.IsConnected(communication.Id))
+                foreach (var row in workspace.OpcUaPoints) row.MarkDisconnected();
             var cached = _polling.GetLatest(communication.Id)
                 .Select(result => workspace.ModbusAddressPoints.FirstOrDefault(point => point.Id == result.AddressId) is { } point
                     ? new ModbusPollUpdate(point, result.Values, result.Timestamp, result.StartAddress)
@@ -273,7 +266,114 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             if (e.PropertyName == nameof(Communication.PollInterval) && sender is Communication device &&
                 _deviceWorkspaces.TryGetValue(device.Id, out var workspace))
                 UpdateModbusPollPlan(workspace);
+            if (sender is Communication { IsOpcUa: true } && e.PropertyName is nameof(Communication.OpcUaHost) or nameof(Communication.OpcUaPort) or nameof(Communication.RequestTimeout) or nameof(Communication.AutoReconnect))
+                HasUnsavedChanges = true;
         }
+
+        public async Task<string?> AddOpcUaPointAsync(OpcUaDataPoint point)
+        {
+            var workspace = SelectedWorkspace;
+            if (workspace == null || !workspace.Communication.IsOpcUa) return "请先选择 OPC UA 设备。";
+            if (point.NamespaceIndex is < 0 or > ushort.MaxValue || string.IsNullOrWhiteSpace(point.TagName))
+                return "命名空间索引或标签名称无效。";
+            if (workspace.OpcUaPoints.Any(row => row.NodeId == point.NodeId))
+            {
+                workspace.SelectedOpcUaPoint = workspace.OpcUaPoints.First(row => row.NodeId == point.NodeId);
+                return "该 NodeId 已在数据点表中。";
+            }
+            workspace.Communication.OpcUaDataPoints ??= new();
+            workspace.Communication.OpcUaDataPoints.Add(point);
+            var added = new OpcUaPointRowViewModel(point);
+            workspace.OpcUaPoints.Add(added);
+            workspace.SelectedOpcUaPoint = added;
+            HasUnsavedChanges = true;
+            await ServiceInitializer.CommunicationService.MonitorOpcUaPointAsync(workspace.Communication.Id, point.NodeId);
+            return null;
+        }
+
+        public async Task<string?> EditOpcUaPointAsync(OpcUaPointRowViewModel row, OpcUaDataPoint edited)
+        {
+            var workspace = SelectedWorkspace;
+            if (workspace == null || !workspace.Communication.IsOpcUa || !workspace.OpcUaPoints.Contains(row))
+                return "请先选择 OPC UA 数据点。";
+            if (edited.NamespaceIndex is < 0 or > ushort.MaxValue || string.IsNullOrWhiteSpace(edited.TagName))
+                return "命名空间索引或标签名称无效。";
+            if (workspace.OpcUaPoints.Any(item => item != row && item.NodeId == edited.NodeId))
+                return "该 NodeId 已在数据点表中。";
+
+            var oldNodeId = row.NodeId;
+            if (!string.Equals(oldNodeId, edited.NodeId, StringComparison.Ordinal))
+            {
+                try { await ServiceInitializer.CommunicationService.UnmonitorOpcUaPointAsync(workspace.Communication.Id, oldNodeId); }
+                catch (Exception ex) { LogWarning($"切换 OPC UA 数据点监视失败：{ex.Message}"); }
+            }
+
+            row.UpdatePointConfiguration(edited);
+            row.IsEditing = false;
+            workspace.SelectedOpcUaPoint = row;
+            HasUnsavedChanges = true;
+
+            if (!string.Equals(oldNodeId, row.NodeId, StringComparison.Ordinal))
+                await ServiceInitializer.CommunicationService.MonitorOpcUaPointAsync(workspace.Communication.Id, row.NodeId);
+            return null;
+        }
+
+        public async Task RemoveOpcUaPointAsync(OpcUaPointRowViewModel row)
+        {
+            var workspace = SelectedWorkspace;
+            if (workspace == null || !workspace.OpcUaPoints.Contains(row)) return;
+            try { await ServiceInitializer.CommunicationService.UnmonitorOpcUaPointAsync(workspace.Communication.Id, row.NodeId); }
+            catch (Exception ex) { LogWarning($"取消 OPC UA 数据点监视失败：{ex.Message}"); }
+            workspace.Communication.OpcUaDataPoints.Remove(row.Point);
+            workspace.OpcUaPoints.Remove(row);
+            if (workspace.SelectedOpcUaPoint == row) workspace.SelectedOpcUaPoint = null;
+            HasUnsavedChanges = true;
+        }
+
+        public async Task RefreshOpcUaPointsAsync()
+        {
+            var workspace = SelectedWorkspace;
+            if (workspace == null || !_runtimeManager.IsConnected(workspace.Communication.Id)) return;
+            foreach (var row in workspace.OpcUaPoints.ToArray())
+            {
+                try { await _runtimeManager.RefreshOpcUaPointAsync(workspace.Communication.Id, row.NodeId); }
+                catch (Exception ex) { _runtimeManager.ReportOpcUaPointError(workspace.Communication.Id, row.NodeId, ex.Message); }
+            }
+        }
+
+        public async Task WriteOpcUaPointAsync(OpcUaPointRowViewModel row)
+        {
+            var workspace = SelectedWorkspace;
+            if (workspace == null || !workspace.OpcUaPoints.Contains(row) || !row.CanEdit || !row.IsEditing) return;
+            row.IsWriting = true;
+            try
+            {
+                var value = ConvertOpcUaWriteValue(row.DraftValue, row.BuiltInType);
+                await _runtimeManager.WriteOpcUaValueAsync(workspace.Communication.Id, row.NodeId, value);
+                row.IsEditing = false;
+                row.ErrorText = string.Empty;
+                await _runtimeManager.RefreshOpcUaPointAsync(workspace.Communication.Id, row.NodeId);
+            }
+            catch (Exception ex) { row.ErrorText = $"写入失败：{ex.Message}"; }
+            finally { row.IsWriting = false; }
+        }
+
+        private static object ConvertOpcUaWriteValue(string text, BuiltInType type) => type switch
+        {
+            BuiltInType.Boolean => bool.Parse(text),
+            BuiltInType.SByte => sbyte.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            BuiltInType.Byte => byte.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            BuiltInType.Int16 => short.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            BuiltInType.UInt16 => ushort.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            BuiltInType.Int32 => int.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            BuiltInType.UInt32 => uint.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            BuiltInType.Int64 => long.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            BuiltInType.UInt64 => ulong.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            BuiltInType.Float => float.Parse(text, NumberStyles.Float, CultureInfo.InvariantCulture),
+            BuiltInType.Double => double.Parse(text, NumberStyles.Float, CultureInfo.InvariantCulture),
+            BuiltInType.String => text,
+            _ => throw new NotSupportedException($"暂不支持编辑 {type} 类型。")
+        };
 
         private bool CanSendData() =>
             SelectedWorkspace is { IsBusy: false } workspace &&
@@ -410,89 +510,6 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             }
         }
 
-        private bool CanExecuteOpcUaOperation() => SelectedWorkspace is { IsBusy: false } workspace &&
-            workspace.Communication.IsOpcUa && _runtimeManager.IsConnected(workspace.Communication.Id) &&
-            !string.IsNullOrWhiteSpace(workspace.OpcUaNodeId);
-
-        private async Task BrowseOpcUaAsync()
-        {
-            var workspace = SelectedWorkspace;
-            if (workspace == null || !workspace.Communication.IsOpcUa || workspace.IsBusy) return;
-            await RunOpcUaOperationAsync(workspace, async () =>
-            {
-                var items = await _runtimeManager.BrowseOpcUaAsync(workspace.Communication.Id, workspace.OpcUaNodeId);
-                workspace.OpcUaBrowseItems.Clear();
-                foreach (var item in items) workspace.OpcUaBrowseItems.Add(item);
-                return $"浏览完成：{items.Count} 个子节点";
-            });
-        }
-
-        private async Task ReadOpcUaAsync()
-        {
-            var workspace = SelectedWorkspace;
-            if (workspace == null || !workspace.Communication.IsOpcUa || workspace.IsBusy) return;
-            await RunOpcUaOperationAsync(workspace, async () =>
-            {
-                var value = await _runtimeManager.ReadOpcUaValueAsync(workspace.Communication.Id, workspace.OpcUaNodeId);
-                workspace.OpcUaValueText = Convert.ToString(value.Value, CultureInfo.InvariantCulture) ?? string.Empty;
-                return $"值：{workspace.OpcUaValueText}\n类型：{value.WrappedValue.TypeInfo?.BuiltInType}\n状态：{value.StatusCode}\n源时间：{value.SourceTimestamp:yyyy-MM-dd HH:mm:ss.fff}";
-            });
-        }
-
-        private async Task WriteOpcUaAsync()
-        {
-            var workspace = SelectedWorkspace;
-            if (workspace == null || !workspace.Communication.IsOpcUa || workspace.IsBusy) return;
-            await RunOpcUaOperationAsync(workspace, async () =>
-            {
-                object value = bool.TryParse(workspace.OpcUaValueText, out var boolean) ? boolean :
-                    long.TryParse(workspace.OpcUaValueText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer) ? integer :
-                    double.TryParse(workspace.OpcUaValueText, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ? number : workspace.OpcUaValueText;
-                await _runtimeManager.WriteOpcUaValueAsync(workspace.Communication.Id, workspace.OpcUaNodeId, value);
-                return $"已写入值：{workspace.OpcUaValueText}";
-            });
-        }
-
-        private async Task SubscribeOpcUaAsync()
-        {
-            var workspace = SelectedWorkspace;
-            if (workspace == null || !workspace.Communication.IsOpcUa || workspace.IsBusy) return;
-            await RunOpcUaOperationAsync(workspace, async () =>
-            {
-                await _runtimeManager.SubscribeOpcUaValueAsync(workspace.Communication.Id, workspace.OpcUaNodeId, workspace.OpcUaSamplingInterval);
-                return $"已订阅 {workspace.OpcUaNodeId}，采样间隔 {workspace.OpcUaSamplingInterval} ms；通知将显示在接收数据中。";
-            });
-        }
-
-        private async Task UnsubscribeOpcUaAsync()
-        {
-            var workspace = SelectedWorkspace;
-            if (workspace == null || !workspace.Communication.IsOpcUa || workspace.IsBusy) return;
-            await RunOpcUaOperationAsync(workspace, async () =>
-            {
-                await _runtimeManager.UnsubscribeOpcUaValueAsync(workspace.Communication.Id, workspace.OpcUaNodeId);
-                return $"已取消订阅 {workspace.OpcUaNodeId}。";
-            });
-        }
-
-        private static async Task RunOpcUaOperationAsync(CommunicationDeviceWorkspaceViewModel workspace, Func<Task<string>> operation)
-        {
-            try
-            {
-                workspace.IsBusy = true;
-                workspace.OpcUaResultText = $"[{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fff}] {await operation()}";
-            }
-            catch (Exception ex)
-            {
-                workspace.OpcUaResultText = $"[{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fff}] 操作失败\n{ex.Message}";
-            }
-            finally
-            {
-                workspace.IsBusy = false;
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
-
         private bool CanExecuteCipOperation() => SelectedWorkspace is { IsBusy: false } workspace &&
             workspace.Communication.IsCip && _runtimeManager.IsConnected(workspace.Communication.Id);
 
@@ -551,6 +568,11 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             Communications.Add(communication);
             _solutionManager.CurrentSolution?.Communications.Add(communication);
             AddWorkspace(communication);
+            if (communication.IsOpcUa)
+            {
+                _newOpcUaDeviceIds.Add(communication.Id);
+                HasUnsavedChanges = true;
+            }
             SelectedCommunication = communication;
             // SelectedCommunication 的绑定和右侧编辑区可能在同一轮布局中建立，
             // 再刷新一次选项集合，确保新设备的串口/波特率值能匹配到 ComboBox。
@@ -624,6 +646,9 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                     device.RuntimeStatus = CommunicationRuntimeStatus.Connected;
                     if (device.IsModbus)
                         StartModbusPolling(device, workspace);
+                    if (device.IsOpcUa)
+                        foreach (var row in workspace.OpcUaPoints.ToArray())
+                            await ServiceInitializer.CommunicationService.MonitorOpcUaPointAsync(device.Id, row.NodeId);
                     LogInfo($"[Modbus诊断] 设备连接完成：设备={device.Name}({device.Id}), 站号={device.UnitId}, 设备轮询间隔={device.PollInterval}ms, 地址块总数={workspace.ModbusAddressPoints.Count}, 已启用地址块={workspace.ModbusAddressPoints.Count(point => point.PollEnabled)}", target: LogTarget.File | LogTarget.UI);
                     LogSuccess(device.IsTcpServer ? $"已开始监听 {device.GetConnectionString()}" : device.IsUdp ? $"UDP 本机端口已绑定：{device.GetConnectionString()}" : $"已连接 {device.Name}");
                 }
@@ -869,6 +894,29 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             }));
         }
 
+        private void RuntimeManager_OpcUaPointValueChanged(object? sender, OpcUaPointValueEventArgs update)
+        {
+            _pendingOpcUaUpdates[(update.CommunicationId, update.NodeId)] = update;
+            ScheduleOpcUaUpdateDrain();
+        }
+
+        private void ScheduleOpcUaUpdateDrain()
+        {
+            var dispatcher = System.Windows.Application.Current?.Dispatcher;
+            if (dispatcher == null || Interlocked.CompareExchange(ref _opcUaUpdateScheduled, 1, 0) != 0) return;
+            dispatcher.BeginInvoke(new Action(() =>
+            {
+                foreach (var key in _pendingOpcUaUpdates.Keys.ToArray())
+                {
+                    if (!_pendingOpcUaUpdates.TryRemove(key, out var update) ||
+                        !_deviceWorkspaces.TryGetValue(update.CommunicationId, out var workspace)) continue;
+                    workspace.OpcUaPoints.FirstOrDefault(point => point.NodeId == update.NodeId)?.Apply(update);
+                }
+                Interlocked.Exchange(ref _opcUaUpdateScheduled, 0);
+                if (!_pendingOpcUaUpdates.IsEmpty) ScheduleOpcUaUpdateDrain();
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
         private static CommunicationRuntimeStatus MapStatus(CommunicationState state) => state switch
         {
             CommunicationState.Connecting => CommunicationRuntimeStatus.Connecting,
@@ -883,6 +931,8 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             {
                 if (!_deviceWorkspaces.TryGetValue(status.Device.Value, out var workspace)) return;
                 workspace.Communication.RuntimeStatus = MapStatus(status.State);
+                if (workspace.Communication.IsOpcUa && status.State != CommunicationState.Connected)
+                    foreach (var row in workspace.OpcUaPoints) row.MarkDisconnected();
                 if (SelectedCommunication?.Id == status.Device.Value)
                     OnPropertyChanged(nameof(IsSelectedConnected));
                 CommandManager.InvalidateRequerySuggested();
@@ -910,15 +960,42 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         /// <summary>
         /// 保存
         /// </summary>
-        private void Save()
+        public async Task<bool> SaveChangesAsync()
         {
             var currentSolution = _solutionManager.CurrentSolution;
             if (currentSolution?.FilePath != null)
             {
                 try
                 {
+                    foreach (var device in Communications.Where(item => item.IsOpcUa))
+                        if (string.IsNullOrWhiteSpace(device.OpcUaHost) || device.OpcUaPort is < 1 or > 65535 ||
+                            device.RequestTimeout is < 250 or > 120000 ||
+                            !Uri.TryCreate(device.EndpointUrl, UriKind.Absolute, out var uri) || uri.Scheme != "opc.tcp")
+                        {
+                            LogError($"{device.Name} 的 OPC UA 服务器地址、端口或请求超时无效，配置未保存。");
+                            return false;
+                        }
                     if (_solutionManager.SaveSolution(currentSolution.FilePath))
+                    {
+                        HasUnsavedChanges = false;
+                        _newOpcUaDeviceIds.Clear();
                         LogSuccess("通讯配置保存成功");
+                        foreach (var device in Communications.Where(item => item.IsOpcUa))
+                        {
+                            var previous = _opcUaOriginals.TryGetValue(device.Id, out var original) ? original.EndpointUrl : device.EndpointUrl;
+                            _opcUaOriginals[device.Id] = CaptureOpcUaConfiguration(device);
+                            if (previous == device.EndpointUrl || !_runtimeManager.IsConnected(device.Id)) continue;
+                            try
+                            {
+                                await _runtimeManager.DisconnectAsync(device.Id);
+                                await _runtimeManager.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(device));
+                                foreach (var point in device.OpcUaDataPoints ?? new())
+                                    await ServiceInitializer.CommunicationService.MonitorOpcUaPointAsync(device.Id, point.NodeId);
+                            }
+                            catch (Exception ex) { LogError($"{device.Name} 配置已保存，但重新连接失败：{ex.Message}"); }
+                        }
+                        return true;
+                    }
                     else
                         LogError("通讯配置保存失败，原方案文件未被替换。");
                 }
@@ -931,6 +1008,42 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             {
                 LogWarning("解决方案未保存，无法保存通讯配置");
             }
+            return false;
+        }
+
+        public async Task DiscardOpcUaChangesAsync()
+        {
+            foreach (var id in _newOpcUaDeviceIds.ToArray())
+            {
+                var added = Communications.FirstOrDefault(item => item.Id == id);
+                if (added == null) continue;
+                await _runtimeManager.DisconnectAsync(id);
+                RemoveWorkspace(id);
+                Communications.Remove(added);
+                _solutionManager.CurrentSolution?.Communications.Remove(added);
+                if (SelectedCommunication == added) SelectedCommunication = null;
+            }
+            _newOpcUaDeviceIds.Clear();
+            foreach (var device in Communications.Where(item => item.IsOpcUa))
+            {
+                if (!_opcUaOriginals.TryGetValue(device.Id, out var original)) continue;
+                var current = (device.OpcUaDataPoints ?? new()).Select(point => point.NodeId).ToHashSet(StringComparer.Ordinal);
+                var restored = original.Points.Select(point => new OpcUaDataPoint
+                {
+                    Id = point.Id, NamespaceIndex = point.NamespaceIndex, TagName = point.TagName
+                }).ToList();
+                var wanted = restored.Select(point => point.NodeId).ToHashSet(StringComparer.Ordinal);
+                foreach (var nodeId in current.Except(wanted))
+                {
+                    try { await ServiceInitializer.CommunicationService.UnmonitorOpcUaPointAsync(device.Id, nodeId); }
+                    catch (Exception ex) { LogWarning($"撤销监视 {nodeId} 失败：{ex.Message}"); }
+                }
+                device.Settings = new Dictionary<string, object>(original.Settings);
+                device.OpcUaDataPoints = restored;
+                foreach (var nodeId in wanted.Except(current))
+                    await ServiceInitializer.CommunicationService.MonitorOpcUaPointAsync(device.Id, nodeId);
+            }
+            HasUnsavedChanges = false;
         }
 
         /// <summary>
@@ -954,6 +1067,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             _runtimeManager.DataReceived -= RuntimeManager_DataReceived;
             _runtimeManager.ConnectionClosed -= RuntimeManager_ConnectionClosed;
             _runtimeManager.StatusChanged -= RuntimeManager_StatusChanged;
+            _runtimeManager.OpcUaPointValueChanged -= RuntimeManager_OpcUaPointValueChanged;
             _polling.BatchReceived -= Polling_BatchReceived;
             foreach (var workspace in _deviceWorkspaces.Values)
             {

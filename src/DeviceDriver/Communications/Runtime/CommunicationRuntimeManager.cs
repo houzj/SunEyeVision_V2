@@ -29,6 +29,7 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
     private readonly ConcurrentDictionary<string, ICommunicationAdapter> _sessions = new();
     private readonly IReadOnlyDictionary<string, ICommunicationProtocolFactory> _factories;
     private readonly ConcurrentDictionary<string, CommunicationStatusSnapshot> _statuses = new();
+    private readonly ConcurrentDictionary<(string DeviceId, string NodeId), OpcUaPointValueEventArgs> _opcUaValues = new();
     private readonly string _opcUaCertificateStoreRoot;
 
     private static void ModbusDiagnostic(LogLevel level, string message, Exception? exception = null) =>
@@ -46,6 +47,7 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
     public event EventHandler<CommunicationDataReceivedEventArgs>? DataReceived;
     public event EventHandler<CommunicationConnectionClosedEventArgs>? ConnectionClosed;
     public event EventHandler<CommunicationStatusSnapshot>? StatusChanged;
+    public event EventHandler<OpcUaPointValueEventArgs>? OpcUaPointValueChanged;
 
     public CommunicationStatusSnapshot GetStatus(CommunicationDeviceRef device)
     {
@@ -73,15 +75,6 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
         _factories.TryGetValue(communication.ProtocolKey, out var factory)
             ? factory.Capabilities : CommunicationCapabilities.None;
 
-    public IReadOnlyList<TrustedOpcUaCertificate> GetTrustedOpcUaCertificates() =>
-        new OpcUaTrustStore(_opcUaCertificateStoreRoot).List();
-
-    public TrustedOpcUaCertificate TrustOpcUaServerCertificate(string certificatePath) =>
-        new OpcUaTrustStore(_opcUaCertificateStoreRoot).TrustFile(certificatePath);
-
-    public bool RemoveTrustedOpcUaServerCertificate(string thumbprint) =>
-        new OpcUaTrustStore(_opcUaCertificateStoreRoot).Remove(thumbprint);
-
     public async Task ConnectAsync(Communication communication, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(communication);
@@ -99,6 +92,7 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
 
         session.DataReceived += OnDataReceived;
         session.ConnectionClosed += OnConnectionClosed;
+        if (session is OpcUaSession opcUaSession) opcUaSession.PointValueChanged += OnOpcUaPointValueChanged;
         PublishStatus(communication.Device, CommunicationState.Connecting, GetCapabilities(communication));
         try
         {
@@ -117,6 +111,7 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
             _sessions.TryRemove(communication.Id, out _);
             session.DataReceived -= OnDataReceived;
             session.ConnectionClosed -= OnConnectionClosed;
+            if (session is OpcUaSession failedOpcUa) failedOpcUa.PointValueChanged -= OnOpcUaPointValueChanged;
             await session.DisposeAsync().ConfigureAwait(false);
             PublishStatus(communication.Device, CommunicationState.Faulted, GetCapabilities(communication),
                 new CommunicationError(ex is OperationCanceledException ? CommunicationErrorCode.Cancelled : CommunicationErrorCode.ConnectionFailed, ex.Message));
@@ -134,6 +129,7 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
             ModbusDiagnostic(LogLevel.Info, $"运行时断开连接：设备={communicationId}");
         session.DataReceived -= OnDataReceived;
         session.ConnectionClosed -= OnConnectionClosed;
+        if (session is OpcUaSession opcUaSession) opcUaSession.PointValueChanged -= OnOpcUaPointValueChanged;
         await session.DisposeAsync().ConfigureAwait(false);
         PublishStatus(device, CommunicationState.Disconnected, capabilities);
     }
@@ -184,6 +180,22 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
     public Task<DataValue> ReadOpcUaValueAsync(string communicationId, string nodeId, CancellationToken cancellationToken = default) =>
         RequireOpcUaSession(communicationId).ReadValueAsync(nodeId, cancellationToken);
 
+    public async Task<OpcUaPointValueEventArgs> RefreshOpcUaPointAsync(string communicationId, string nodeId, CancellationToken cancellationToken = default)
+    {
+        var value = await RequireOpcUaSession(communicationId).ReadPointAsync(nodeId, cancellationToken).ConfigureAwait(false);
+        OnOpcUaPointValueChanged(this, value);
+        return value;
+    }
+
+    public bool TryGetLatestOpcUaPoint(string communicationId, string nodeId, out OpcUaPointValueEventArgs? value) =>
+        _opcUaValues.TryGetValue((communicationId, nodeId), out value);
+
+    public void ReportOpcUaPointError(string communicationId, string nodeId, string message)
+    {
+        OnOpcUaPointValueChanged(this, new OpcUaPointValueEventArgs(communicationId, nodeId,
+            null, BuiltInType.Null, false, StatusCodes.Bad, DateTimeOffset.UtcNow, message));
+    }
+
     public Task WriteOpcUaValueAsync(string communicationId, string nodeId, object value, CancellationToken cancellationToken = default) =>
         RequireOpcUaSession(communicationId).WriteValueAsync(nodeId, value, cancellationToken);
 
@@ -209,12 +221,24 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
     private void OnDataReceived(object? sender, CommunicationDataReceivedEventArgs e) =>
         DataReceived?.Invoke(this, e);
 
+    private void OnOpcUaPointValueChanged(object? sender, OpcUaPointValueEventArgs value)
+    {
+        if (!_sessions.TryGetValue(value.CommunicationId, out var active) || active is not OpcUaSession || !active.IsConnected ||
+            sender is OpcUaSession && !ReferenceEquals(sender, active))
+            return;
+        _opcUaValues[(value.CommunicationId, value.NodeId)] = value;
+        OpcUaPointValueChanged?.Invoke(this, value);
+    }
+
     private void OnConnectionClosed(object? sender, CommunicationConnectionClosedEventArgs e)
     {
+        if (!_sessions.TryGetValue(e.CommunicationId, out var active) || !ReferenceEquals(active, sender))
+            return;
         if (_sessions.TryRemove(e.CommunicationId, out var session))
         {
             session.DataReceived -= OnDataReceived;
             session.ConnectionClosed -= OnConnectionClosed;
+            if (session is OpcUaSession closedOpcUa) closedOpcUa.PointValueChanged -= OnOpcUaPointValueChanged;
             _ = DisposeClosedSessionAsync(session, e.CommunicationId);
         }
         var device = new CommunicationDeviceRef(e.CommunicationId);
@@ -241,8 +265,6 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
         {
             if (!Uri.TryCreate(communication.EndpointUrl, UriKind.Absolute, out var endpoint) || endpoint.Scheme != "opc.tcp")
                 throw new ArgumentException("OPC UA 服务端点必须是有效的 opc.tcp:// URL。", nameof(communication));
-            if (communication.OpcUaIdentityMode != "匿名")
-                throw new NotSupportedException("当前版本的 OPC UA 客户端仅支持匿名身份；用户名/密码凭据按当前需求暂不接入。请将服务器配置为允许匿名访问。");
         }
         else if (communication.ProtocolKey == "cip")
         {

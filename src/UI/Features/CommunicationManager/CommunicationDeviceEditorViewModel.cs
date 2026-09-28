@@ -34,8 +34,7 @@ public sealed class CommunicationDeviceEditorViewModel : ViewModelBase
     private int _slot;
     private string _s7CpuType = "S71200";
     private string _modbusMode = "TcpClient";
-    private string _endpointUrl = "opc.tcp://127.0.0.1:4840";
-    private string _securityMode = "None";
+    private string _endpointUrl = "opc.tcp://127.0.0.1:49320";
     private int _requestTimeout = 3000;
     private string _httpMethod = "POST";
     private bool _enableDataUpload = true;
@@ -65,6 +64,8 @@ public sealed class CommunicationDeviceEditorViewModel : ViewModelBase
                 }
                 if (value?.Key == "s7" && Port == 7920) Port = 102;
                 if (value?.Key == "cip" && Port == 7920) Port = 44818;
+                if (value?.Key == "opcua" && Port == 7920) Port = 49320;
+                if (value?.Key == "opcua") AutoReconnect = true;
                 OnPropertyChanged(nameof(IsNetworkProtocol));
                 OnPropertyChanged(nameof(IsSerialProtocol));
                 OnPropertyChanged(nameof(IsPlainSerial));
@@ -97,13 +98,24 @@ public sealed class CommunicationDeviceEditorViewModel : ViewModelBase
     public string Host
     {
         get => _host;
-        set => SetProperty(ref _host, value);
+        set { if (SetProperty(ref _host, value)) OnPropertyChanged(nameof(OpcUaEndpointPreview)); }
     }
 
     public int Port
     {
         get => _port;
-        set => SetProperty(ref _port, value);
+        set { if (SetProperty(ref _port, value)) OnPropertyChanged(nameof(OpcUaEndpointPreview)); }
+    }
+
+    public string OpcUaEndpointPreview
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Host) || Port is < 1 or > 65535) return "请输入有效的服务器地址和端口";
+            try { return new UriBuilder("opc.tcp", Host.Trim(), Port).Uri.ToString().TrimEnd('/'); }
+            catch (UriFormatException) { return "服务器地址格式无效"; }
+            catch (ArgumentException) { return "服务器地址格式无效"; }
+        }
     }
 
     public string LocalHost { get => _localHost; set => SetProperty(ref _localHost, value); }
@@ -146,7 +158,6 @@ public sealed class CommunicationDeviceEditorViewModel : ViewModelBase
         }
     }
     public string EndpointUrl { get => _endpointUrl; set => SetProperty(ref _endpointUrl, value); }
-    public string SecurityMode { get => _securityMode; set => SetProperty(ref _securityMode, value); }
     public int RequestTimeout { get => _requestTimeout; set => SetProperty(ref _requestTimeout, value); }
     public string HttpMethod { get => _httpMethod; set => SetProperty(ref _httpMethod, value); }
 
@@ -155,7 +166,6 @@ public sealed class CommunicationDeviceEditorViewModel : ViewModelBase
     public ObservableCollection<int> DataBitsOptions { get; } = new(new[] { 7, 8 });
     public ObservableCollection<int> StopBitsOptions { get; } = new(new[] { 1, 2 });
     public ObservableCollection<string> ModbusModeOptions { get; } = new(new[] { "TcpClient", "串口" });
-    public ObservableCollection<string> SecurityModeOptions { get; } = new(new[] { "None", "Sign", "SignAndEncrypt" });
     public ObservableCollection<string> S7CpuTypeOptions { get; } = new(new[] { "S7200", "S7200Smart", "S7300", "S7400", "S71200", "S71500" });
     public ObservableCollection<string> HttpMethodOptions { get; } = new(new[] { "GET", "POST", "PUT" });
 
@@ -229,7 +239,9 @@ public sealed class CommunicationDeviceEditorViewModel : ViewModelBase
     {
         return !string.IsNullOrWhiteSpace(DeviceName) &&
                SelectedProtocol != null &&
-               (SelectedProtocol.Key == "modbus"
+               (SelectedProtocol.Key == "opcua"
+                   ? Uri.TryCreate(OpcUaEndpointPreview, UriKind.Absolute, out var opcUaEndpoint) && opcUaEndpoint.Scheme == "opc.tcp" && RequestTimeout is >= 250 and <= 120000
+                   : SelectedProtocol.Key == "modbus"
                    ? (IsModbusRtu ? !string.IsNullOrWhiteSpace(SerialPort) : !string.IsNullOrWhiteSpace(Host) && Port is > 0 and <= 65535)
                    : SelectedProtocol.IsSerial
                    ? !string.IsNullOrWhiteSpace(SerialPort)
@@ -275,9 +287,13 @@ public sealed class CommunicationDeviceEditorViewModel : ViewModelBase
         communication.Slot = Slot;
         communication.S7CpuType = S7CpuType;
         communication.ModbusMode = ModbusMode;
-        communication.EndpointUrl = EndpointUrl.Trim();
-        communication.SecurityMode = SecurityMode;
-        communication.OpcUaIdentityMode = "匿名";
+        if (communication.IsOpcUa)
+        {
+            communication.OpcUaHost = Host.Trim();
+            communication.OpcUaPort = Port;
+        }
+        else
+            communication.EndpointUrl = EndpointUrl.Trim();
         communication.RequestTimeout = RequestTimeout;
         communication.HttpMethod = HttpMethod;
         communication.AutoReconnect = AutoReconnect;

@@ -31,8 +31,6 @@ public static class CommunicationDeviceSnapshotFactory
         Rack = device.Rack,
         Slot = device.Slot,
         S7CpuType = device.S7CpuType,
-        EndpointUrl = device.EndpointUrl,
-        SecurityMode = device.SecurityMode,
-        OpcUaIdentityMode = device.OpcUaIdentityMode
+        EndpointUrl = device.EndpointUrl
     };
 }

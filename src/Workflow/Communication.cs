@@ -83,6 +83,9 @@ public class Communication : ObservableObject
     /// </summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
+    /// <summary>Persisted communication configuration schema version. Missing legacy values default to 1.</summary>
+    public int SchemaVersion { get; set; } = 1;
+
     /// <summary>
     /// 通讯名称
     /// </summary>
@@ -280,6 +283,16 @@ public class Communication : ObservableObject
     [JsonIgnore] public int StopBits { get => GetIntSetting("stopBits", 1); set => SetSetting("stopBits", value); }
     [JsonIgnore] public int CharacterTimeout { get => GetIntSetting("characterTimeout", 10); set => SetSetting("characterTimeout", value); }
     [JsonIgnore] public int PollInterval { get => GetIntSetting("pollInterval", 10); set => SetSetting("pollInterval", value); }
+    [JsonIgnore] public int ModbusRegisterStartAddress
+    {
+        get => GetIntSetting("modbusRegisterStartAddress", 0);
+        set => SetSetting("modbusRegisterStartAddress", Math.Clamp(value, 0, ushort.MaxValue));
+    }
+    [JsonIgnore] public int ModbusRegisterCount
+    {
+        get => GetIntSetting("modbusRegisterCount", 50);
+        set => SetSetting("modbusRegisterCount", Math.Clamp(value, 1, ushort.MaxValue + 1 - ModbusRegisterStartAddress));
+    }
     [JsonIgnore] public int UnitId { get => GetIntSetting("unitId", 1); set => SetSetting("unitId", value); }
     [JsonIgnore] public int Rack { get => GetIntSetting("rack", 0); set => SetSetting("rack", value); }
     [JsonIgnore] public int Slot { get => GetIntSetting("slot", 0); set => SetSetting("slot", value); }
@@ -326,6 +339,8 @@ public class Communication : ObservableObject
             "stopBits" => nameof(StopBits),
             "characterTimeout" => nameof(CharacterTimeout),
             "pollInterval" => nameof(PollInterval),
+            "modbusRegisterStartAddress" => nameof(ModbusRegisterStartAddress),
+            "modbusRegisterCount" => nameof(ModbusRegisterCount),
             "unitId" => nameof(UnitId),
             "rack" => nameof(Rack),
             "slot" => nameof(Slot),
@@ -412,6 +427,7 @@ public class Communication : ObservableObject
         return new Communication
         {
             Id = Guid.NewGuid().ToString(),
+            SchemaVersion = SchemaVersion,
             Name = Name,
             IsEnabled = IsEnabled,
             ConnectionType = ConnectionType,

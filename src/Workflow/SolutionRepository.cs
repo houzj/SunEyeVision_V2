@@ -457,8 +457,14 @@ public class SolutionRepository
             return false;
         }
 
+        string? temporaryPath = null;
         try
         {
+            ValidateCommunicationConfigurations(solution);
+            // The device list (subject to IsEnabled) now controls restore. Retire the
+            // obsolete per-device autoConnect switch from newly saved plans.
+            foreach (var communication in solution.Communications)
+                communication.Settings.Remove("autoConnect");
             solution.FilePath = filePath;
 
             // 确保目录存在
@@ -473,7 +479,18 @@ public class SolutionRepository
 
             _logger.Log(LogLevel.Info, $"[Save #{callId}] 序列化完成，开始写入文件", "SolutionRepository");
 
-            File.WriteAllText(filePath, json);
+            // Write beside the target so replacement stays on the same volume. Keep the previous
+            // solution as a recoverable .bak; a failed serialization/write never truncates it.
+            using (JsonDocument.Parse(json)) { }
+            var destination = Path.GetFullPath(filePath);
+            temporaryPath = Path.Combine(Path.GetDirectoryName(destination)!,
+                $".{Path.GetFileName(destination)}.{Guid.NewGuid():N}.tmp");
+            File.WriteAllText(temporaryPath, json);
+            if (File.Exists(destination))
+                File.Replace(temporaryPath, destination, destination + ".bak", ignoreMetadataErrors: true);
+            else
+                File.Move(temporaryPath, destination);
+            temporaryPath = null;
 
             var fileInfo = new FileInfo(filePath);
             _logger.Log(LogLevel.Success, $"[Save #{callId}] 保存解决方案成功: Id={solution.Id} -> {filePath}, 文件大小: {fileInfo.Length} 字节\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository");
@@ -483,6 +500,37 @@ public class SolutionRepository
         {
             _logger.Log(LogLevel.Error, $"[Save #{callId}] 保存解决方案失败: {filePath}, 错误: {ex.Message}\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository", ex);
             return false;
+        }
+        finally
+        {
+            if (temporaryPath != null && File.Exists(temporaryPath))
+            {
+                try { File.Delete(temporaryPath); }
+                catch (IOException) { /* The original file is still intact. */ }
+                catch (UnauthorizedAccessException) { /* Report the save failure, not cleanup. */ }
+            }
+        }
+    }
+
+    private static void ValidateCommunicationConfigurations(Solution solution)
+    {
+        var deviceIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var device in solution.Communications)
+        {
+            if (string.IsNullOrWhiteSpace(device.Id) || !deviceIds.Add(device.Id))
+                throw new InvalidDataException($"通讯设备 ID 为空或重复：{device.Id}");
+            var addressIds = new HashSet<string>(StringComparer.Ordinal);
+            var previousEnd = -1;
+            foreach (var point in device.ModbusAddressPoints.OrderBy(point => point.StartAddress))
+            {
+                if (string.IsNullOrWhiteSpace(point.Id) || !addressIds.Add(point.Id))
+                    throw new InvalidDataException($"通讯设备“{device.Name}”地址块 ID 为空或重复。");
+                if (point.Count < 1 || point.StartAddress < 0 ||
+                    (long)point.StartAddress + point.Count - 1 > ushort.MaxValue ||
+                    point.StartAddress <= previousEnd)
+                    throw new InvalidDataException($"通讯设备“{device.Name}”地址块“{point.Name}”范围无效或重叠。");
+                previousEnd = point.EndAddress;
+            }
         }
     }
 

@@ -14,12 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NModbus" Version="3.0.81" />
-    <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua.Client" Version="1.5.378.176" />
     <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260222" />
-    <PackageReference Include="S7netplus" Version="0.20.0" />
-    <PackageReference Include="System.IO.Ports" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>

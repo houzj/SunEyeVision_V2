@@ -741,6 +741,15 @@ public partial class App : Application
             VisionLogger.Instance.Log(LogLevel.Warning, $"退出时释放相机运行时失败: {ex.Message}", "App", ex);
         }
 
+        try
+        {
+            ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask().GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            VisionLogger.Instance.Log(LogLevel.Warning, $"退出时释放通讯运行时失败: {ex.Message}", "App", ex);
+        }
+
         base.OnExit(e);
     }
 

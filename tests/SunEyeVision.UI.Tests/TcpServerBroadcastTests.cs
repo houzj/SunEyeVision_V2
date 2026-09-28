@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Channels;
 using SunEyeVision.Workflow;
+using SunEyeVision.DeviceDriver.Communications;
+using SunEyeVision.UI.Features.CommunicationManager;
 using Xunit;
 
 namespace SunEyeVision.UI.Tests;
@@ -27,7 +29,7 @@ public sealed class TcpServerBroadcastTests
         runtime.DataReceived += (_, args) => received.Writer.TryWrite(args.Data);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-        await runtime.ConnectAsync(communication, timeout.Token);
+        await runtime.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(communication), timeout.Token);
         using var clientA = new TcpClient();
         using var clientB = new TcpClient();
         await clientA.ConnectAsync(IPAddress.Loopback, port, timeout.Token);

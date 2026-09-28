@@ -6,6 +6,7 @@ using System.Text;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
+using SunEyeVision.DeviceDriver.Communications;
 
 namespace SunEyeVision.UI.Features.CommunicationManager;
 
@@ -14,6 +15,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager;
 /// </summary>
 public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
 {
+    public event EventHandler? AddressConfigurationChanged;
     private const int MaxHistoryRecords = 512;
     private readonly List<TrafficRecord> _receivedRecords = new();
     private readonly List<TrafficRecord> _sentRecords = new();
@@ -29,6 +31,7 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
     private int _modbusCount = 1;
     private int _modbusRegisterStartAddress;
     private int _modbusRegisterCount = 50;
+    private string _addressRangeWarning = string.Empty;
     private string _modbusWriteValue = "0";
     private string _modbusResultText = string.Empty;
     private string _s7Area = "DataBlock";
@@ -53,6 +56,16 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
         Communication = communication ?? throw new ArgumentNullException(nameof(communication));
         foreach (var point in Communication.ModbusAddressPoints)
             ModbusAddressPoints.Add(point);
+        _modbusRegisterStartAddress = communication.ModbusRegisterStartAddress;
+        _modbusRegisterCount = Math.Clamp(communication.ModbusRegisterCount, 1,
+            ushort.MaxValue + 1 - _modbusRegisterStartAddress);
+        // Legacy plans did not persist table bounds. Keep every allocated block visible.
+        if (!communication.Settings.ContainsKey("modbusRegisterCount") && ModbusAddressPoints.Count > 0)
+        {
+            var last = ModbusAddressPoints.Max(point => point.EndAddress);
+            _modbusRegisterCount = Math.Min(ushort.MaxValue + 1 - _modbusRegisterStartAddress,
+                Math.Max(_modbusRegisterCount, last - _modbusRegisterStartAddress + 1));
+        }
         RefreshAddressSpaceRows();
     }
 
@@ -74,10 +87,21 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
         get => _modbusRegisterStartAddress;
         set
         {
-            if (SetProperty(ref _modbusRegisterStartAddress, Math.Clamp(value, 0, ushort.MaxValue)))
+            var next = Math.Clamp(value, 0, ushort.MaxValue);
+            var nextCount = Math.Min(_modbusRegisterCount, ushort.MaxValue + 1 - next);
+            var affected = ModbusAddressPoints.Where(point => point.StartAddress < next || point.EndAddress >= next + nextCount).ToArray();
+            if (affected.Length > 0)
+            {
+                AddressRangeWarning = $"调整会影响已分配地址：{string.Join("、", affected.Select(point => $"{point.Name}({point.RangeText})"))}。请先删除相关地址块或清空地址空间。";
+                return;
+            }
+            AddressRangeWarning = string.Empty;
+            if (SetProperty(ref _modbusRegisterStartAddress, next))
             {
                 OnPropertyChanged(nameof(MaxModbusRegisterCount));
-                SetProperty(ref _modbusRegisterCount, Math.Min(_modbusRegisterCount, MaxModbusRegisterCount), nameof(ModbusRegisterCount));
+                SetProperty(ref _modbusRegisterCount, nextCount, nameof(ModbusRegisterCount));
+                Communication.ModbusRegisterStartAddress = next;
+                Communication.ModbusRegisterCount = nextCount;
                 RefreshAddressSpaceRows();
             }
         }
@@ -85,29 +109,49 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
 
     public int MaxModbusRegisterCount => ushort.MaxValue + 1 - ModbusRegisterStartAddress;
 
+    public string AddressRangeWarning
+    {
+        get => _addressRangeWarning;
+        private set => SetProperty(ref _addressRangeWarning, value);
+    }
+
     public int ModbusRegisterCount
     {
         get => _modbusRegisterCount;
         set
         {
-            if (SetProperty(ref _modbusRegisterCount, Math.Clamp(value, 1, MaxModbusRegisterCount)))
+            var next = Math.Clamp(value, 1, MaxModbusRegisterCount);
+            var affected = ModbusAddressPoints.Where(point => point.StartAddress < ModbusRegisterStartAddress ||
+                point.EndAddress >= ModbusRegisterStartAddress + next).ToArray();
+            if (affected.Length > 0)
+            {
+                AddressRangeWarning = $"调整会影响已分配地址：{string.Join("、", affected.Select(point => $"{point.Name}({point.RangeText})"))}。请先删除相关地址块或清空地址空间。";
+                return;
+            }
+            AddressRangeWarning = string.Empty;
+            if (SetProperty(ref _modbusRegisterCount, next))
+            {
+                Communication.ModbusRegisterCount = next;
                 RefreshAddressSpaceRows();
+            }
         }
     }
 
     public ModbusAddressPoint AddModbusAddressPoint(int? startAddress = null)
     {
         var nextAddress = ModbusAddressPoints.Count == 0
-            ? 0
+            ? ModbusRegisterStartAddress
             : ModbusAddressPoints.Max(point => point.EndAddress + 1);
         var point = new ModbusAddressPoint
         {
             Name = $"地址{ModbusAddressPoints.Count + 1}",
-            StartAddress = Math.Clamp(startAddress ?? nextAddress, 0, ushort.MaxValue)
+            StartAddress = Math.Clamp(startAddress ?? nextAddress, ModbusRegisterStartAddress,
+                ModbusRegisterStartAddress + ModbusRegisterCount - 1)
         };
         Communication.ModbusAddressPoints.Add(point);
         ModbusAddressPoints.Add(point);
         RefreshAddressSpaceRows();
+        AddressConfigurationChanged?.Invoke(this, EventArgs.Empty);
         return point;
     }
 
@@ -119,6 +163,18 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
         Communication.ModbusAddressPoints.Remove(point);
         ModbusAddressPoints.Remove(point);
         RefreshAddressSpaceRows();
+        AddressConfigurationChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void ClearAllModbusAddressPoints()
+    {
+        if (ModbusAddressPoints.Count == 0) return;
+        Communication.ModbusAddressPoints.Clear();
+        ModbusAddressPoints.Clear();
+        _registerValues.Clear();
+        AddressRangeWarning = string.Empty;
+        RefreshAddressSpaceRows();
+        AddressConfigurationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public bool TrySaveModbusAddressPoint(ModbusAddressPoint draft, out string error)
@@ -127,6 +183,13 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
         if (draft.StartAddress < 0 || draft.Count < 1 || (long)draft.StartAddress + draft.Count - 1 > ushort.MaxValue)
         {
             error = "地址范围必须在 0 到 65535 之间。";
+            return false;
+        }
+
+        if (draft.StartAddress < ModbusRegisterStartAddress || draft.EndAddress >=
+            ModbusRegisterStartAddress + ModbusRegisterCount)
+        {
+            error = $"地址块必须位于当前地址空间 {ModbusRegisterStartAddress}～{ModbusRegisterStartAddress + ModbusRegisterCount - 1} 内。";
             return false;
         }
 
@@ -167,6 +230,7 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
         }
 
         RefreshAddressSpaceRows();
+        AddressConfigurationChanged?.Invoke(this, EventArgs.Empty);
         return true;
     }
 

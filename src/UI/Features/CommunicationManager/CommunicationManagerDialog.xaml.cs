@@ -99,6 +99,18 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             }
         }
 
+        private void ClearModbusAddresses_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not CommunicationManagerViewModel manager ||
+                manager.SelectedWorkspace is not { } workspace || workspace.ModbusAddressPoints.Count == 0)
+                return;
+            if (MessageBox.Show(this,
+                    $"确定删除当前设备的全部 {workspace.ModbusAddressPoints.Count} 个地址块吗？此操作会清除当前值和接收记录，保存方案后无法撤销。",
+                    "清空地址空间", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                return;
+            workspace.ClearAllModbusAddressPoints();
+        }
+
         private void ModbusAddressCell_Click(object sender, MouseButtonEventArgs e)
         {
             if (DataContext is not CommunicationManagerViewModel manager ||

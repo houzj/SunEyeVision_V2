@@ -2003,7 +2003,7 @@
                                           "name":  "TCP 驱动真实实现（连接/收发/心跳/重连）",
                                           "phase":  "算法实现",
                                           "hours":  24,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2027-W04"
                                       },
                                       {
@@ -2034,6 +2034,10 @@
                                     {
                                         "date":  "2026-08-29",
                                         "note":  "[78db9c9c00c722cb7d525968d28f0ec917c63794] theme dialog buttons and converge MessageBox to ThemeMessageDialog"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[2684706d50b6ca328d9e568bd15b755b8a15ec1c] feat(core): OPC UA 收敛匿名联调并新增数据点表与事件窗口"
                                     }
                                 ]
                     },
@@ -4244,67 +4248,6 @@
                        }
                    ],
     "tempTasks":  [
-                      {
-                          "id":  "TMP-b3f20b7",
-                          "message":  "fix(measure): 位置修正交互层按几何有向性对齐，修复直线测量带二次变换",
-                          "date":  "2026-09-05",
-                          "commit":  "b3f20b7a39018c424d7b95ce701e77d5adb7d54a",
-                          "files":  [
-                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-ddd0d27",
-                          "message":  "feat(ui): 查找工具卡尺输入回显（引导线/测量带）到模块结果树",
-                          "date":  "2026-09-05",
-                          "commit":  "ddd0d2745320e4cb6262282fd1d09bfc041aa8db",
-                          "files":  [
-                                        "src/Plugin.SDK/Execution/Results/ToolResults.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectResults.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectTool.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectResults.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-8075050",
-                          "message":  "docs: 几何测量工具集设计方案落盘 v1.0 与 v2.0 收敛版",
-                          "date":  "2026-09-07",
-                          "commit":  "80750501165bb169341bce32654fe139ff20f7c1",
-                          "files":  [
-                                        "docs/00-索引/文档索引.md",
-                                        "docs/04-工具设计/测量工具/2026/09/07/几何测量工具集6独立工具设计方案-20260907-090216.md",
-                                        "docs/04-工具设计/测量工具/2026/09/07/几何测量工具集最终方案-v2.0-20260907-092207.md"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-580444b",
-                          "message":  "docs: 几何输入订阅链路单模型重构方案落盘 v3 定稿",
-                          "date":  "2026-09-08",
-                          "commit":  "580444bdf6a6dd49f465c384888d873172531b65",
-                          "files":  [
-                                        "docs/00-索引/文档索引.md",
-                                        "docs/01-方案设计/2026/09/07/四概念边界与订阅单模型重构最终方案-20260907-103754.md",
-                                        "docs/01-方案设计/2026/09/07/订阅链路单模型重构方案-20260907-102336.md"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-e258a3d",
-                          "message":  "fix(measure): 点-点测量补调试窗口入口并移除重复的位置修正",
-                          "date":  "2026-09-10",
-                          "commit":  "e258a3dae2e3bbee3873a70ca27f1c59b0c9558f",
-                          "files":  [
-                                        "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureResults.cs",
-                                        "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureTool.cs",
-                                        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
-                                        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml.cs"
-                                    ],
-                          "status":  "in_progress"
-                      }
+
                   ]
 }

@@ -49,6 +49,7 @@
     <Project Path="tools/SunEyeVision.Tool.PointLineMeasure/SunEyeVision.Tool.PointLineMeasure.csproj" />
     <Project Path="tools/SunEyeVision.Tool.PointCircleMeasure/SunEyeVision.Tool.PointCircleMeasure.csproj" />
     <Project Path="tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.csproj" />
   </Folder>
   <Folder Name="/Tests/" />
   <Folder Name="/Tests/SunEyeVision.Plugin.Infrastructure.Tests/">
@@ -110,6 +111,9 @@
   </Folder>
   <Folder Name="/Tests/SunEyeVision.Tool.PointPointMeasure.Tests/">
     <Project Path="tests/SunEyeVision.Tool.PointPointMeasure.Tests/SunEyeVision.Tool.PointPointMeasure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.NPointCalibration.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.NPointCalibration.Tests/SunEyeVision.Tool.NPointCalibration.Tests.csproj" />
   </Folder>
   <Folder Name="/Tests/SunEyeVision.Tool.CircleDetect.Tests/">
     <Project Path="tests/SunEyeVision.Tool.CircleDetect.Tests/SunEyeVision.Tool.CircleDetect.Tests.csproj" />

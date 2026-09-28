@@ -1,5 +1,19 @@
 # 当前协作任务
 
+- 2026-09-28 N 点标定工具箱不可见修复：原因是上轮只构建 Release，用户从 `dev/Debug` 启动，而 `dev/Debug/plugins/SunEyeVision.Tool.NPointCalibration/` 原先不存在。已完成全量 Debug 构建（0 错误，1122 警告），按插件目录与同名主 DLL 的发现约定核对 `dev/Debug/plugins/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.dll` 已生成；Debug N 点定向测试 8/8 通过。需要重新启动 `dev/Debug/SunEyeVision.UI.exe` 才会重新扫描插件，工具应在“标定”分类显示；可见界面仍待用户验收。未结束用户进程，也未触碰其他在途改动。
+
+- 2026-09-28 N 点标定首版实施（基线 `4a2b8a52`）：新增独立 `SunEyeVision.Tool.NPointCalibration` 插件及三页调试界面、铅笔入口的标定点表编辑/CSV 导入导出、手动/触发采点、平移与旋转样本生命周期、固定相机上视的 HALCON 相似/仿射/投影求解、误差与当前点物理坐标输出、版本化标定文件。工作流节点通过 `IWorkflowResultCommitter` 将一次执行采集的有效样本提交回设计参数，避免运行快照丢失点表；重复触发序号与并发修订冲突会拒绝提交。N 点工具定向测试 8/8、全量 Release 构建 0 错误（1084 警告）、`git diff --check` 通过。当前机器存在运行中的 UI 实例，未另启 Release 程序争用相机；真实相机/通讯事件链路、VS 设计时和可见 UI 待人工验收。移动相机模式、稳健权重拟合和生产级不可变标定版本未实现，界面标注待实现并显式拒绝，不能当成 VM 全功能对齐。保留工作区原有图像源、通讯和计划文件改动。
+
+- 2026-09-28 标定工具链方案沟通基线：根据用户提供的 VM 4.4 本机帮助与既有图像源/插件/工作流架构，新增 `docs/04-工具设计/标定工具/2026/09/28/标定工具链与定位抓取设计基线-20260928.md`。保留 VM 九个独立标定工具入口，以 HALCON 实现、独立标定结果契约、2D 固定平面抓取为首条交付链，并记录采集模式、持久化、UI、验收与待确认工位条件。本轮仅文档，无代码修改或构建；工作区原有改动保留。
+
+- 2026-09-28 图像源本轮实施与验证（主线代码由 Codex 独占写入）：移除“定位到图像预览器”，调试配置分基本/高级页签；来源切换适配本地序列与相机；新增输出格式 Original/MONO8/RGB24、逻辑 SN 初始值与本地末张停止配置；参数通过工作流运行快照覆盖到插件，连续运行按成功输出递增 SN；本地图像改为成功执行后切换，失败不跳图并退避。全量 Release 0 错误（1137 警告），全量 Debug 0 错误（1233 警告），图像源工具定向测试 9/9、UI 持久化/停止定向测试 4/4 通过。Release 隐藏启动冒烟 PID 20148 已结束；日志 `logs/2026/09/28/SunEyeVision_095346.txt` 记录方案加载与 `LoadSolutionToWorkflowTabs begin`，但 15 秒测试期内未记录 `MainWindow.Show completed`，故不宣称主界面显示成功。真实相机、VS 设计时和用户可见运行时验收仍待测试。用户原有 `plans/*` 和 `.codebuddy/*` 改动未触碰。
+
+- 2026-09-28 更新图像源 UI 方案：按用户确认移除目标设计中的“定位到图像预览器”按钮，本地模式仅显示当前图片/序列摘要，文件管理继续由主界面预览器负责。已同步修订 ASCII 示意、交互说明及实施记录；代码中的现有按钮尚未删除，留待后续 UI 实施。本轮只改图像源方案和协作记录，未构建；保留工作区其他改动。
+
+- 2026-09-28 按用户确认更新图像源方案：本地图像的“添加文件/添加文件夹”由现有图像预览器负责，图像源只消费其运行快照，不重复实现入口。已核对预览器当前文件夹操作仅扫描所选文件夹顶层并一次性追加图片，不会持续监听；将“订阅图片文件夹”从图像源待办中移除，未来若有实时文件输入需求再单独设计。本轮仅更新 `docs/04-工具设计/图像源/2026/09/27/图像源工具UI与执行设计方案-20260927-200728.md` 及协作记录，未修改代码或构建；其他现有工作区改动保留。
+
+- 2026-09-28 应用户要求构建同步后的 Debug：`main` 与 `feature/comm` 均在共同基线 `4a2b8a52` 上执行全量 `dotnet build SunEyeVision.slnx -c Debug --no-restore -m:1 -p:UseSharedCompilation=false -v:q -clp:ErrorsOnly`，两边均成功，0 错误、1245 警告；通讯工作区先完成 NuGet 还原。两工作区的 `dev/Debug/SunEyeVision.UI.exe` 与图像源插件 DLL 时间戳均更新。未启动 Debug UI，也未重复运行测试；此前 Release 定向回归结果见下一条。主线现有 `plans/generate_weekly.py`、`plans/sync_plan.ps1` 用户改动未触碰。
+
 - 2026-09-28 设备管理层双向基线同步：从 `main=c5b1c046`、`feature/comm=ba31c749` 合并通讯运行时下沉改动，保留主线相机图像源/帧调度改动与双方协作记录。发现通讯分支 `src/DeviceDriver/Communications/Runtime/` 的两份核心源码被通用 `runtime/` 规则忽略、未进入 Git；已补入并添加定向忽略例外。NuGet 依赖重新还原后，全量 Release 构建成功（0 错误、976 警告），通讯聚焦测试 36/36、相机/图像源/停止与 SDK 聚焦测试 23/23 通过。Release 程序短暂启动验证：方案加载、Modbus 会话连接、相机自动连接及 `MainWindow.after Show` 已记录；测试用 PID 41032 已结束。测试环境 TCP 客户端目标拒绝连接，属于外部服务状态；真实设备、通讯窗口 UI、VS 设计时仍待人工验收。详情见 `HANDOFF-device-baseline-sync-20260928.md`。
 
 - 2026-09-27 本轮收尾验证：全量 Release 构建 0 错误、806 既有警告；全量 Debug 构建 0 错误、840 既有警告，`dev/Debug` 已更新。最终 Debug 定向测试 DeviceDriver 5/5、ImageLoad 6/6、UI 相机取流/连续停止 4/4、WorkflowRunRequest 2/2 全部通过；同类 Release 定向测试此前通过。单次相机运行的 SDK 启动、触发、停止已显式放到工作线程，避免从 WPF 命令同步进入原生调用。Release 启动冒烟日志 `logs/2026/09/27/SunEyeVision_230826.txt` 仅确认方案加载及海康设备自动连接；为清理本次隐藏测试实例，按精确 PID 22556 结束进程，未确认 `MainWindow.Show completed`。真实海康相机的工作流帧驱动、UI 卡顿和触发关闭原故障仍需用户可见界面复测；VS 设计时未验收。现有工作区未提交改动均保留。

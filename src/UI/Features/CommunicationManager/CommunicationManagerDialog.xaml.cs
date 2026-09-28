@@ -1,8 +1,9 @@
 using System.Windows;
+using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using Microsoft.Win32;
+using System.Windows.Media;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Workflow;
@@ -14,6 +15,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
     /// </summary>
     public partial class CommunicationManagerDialog : ThemeDialogWindow
     {
+        private bool _allowClosing;
         public CommunicationManagerDialog(CommunicationManagerViewModel viewModel)
         {
             InitializeComponent();
@@ -83,10 +85,94 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             Close();
         }
 
+        private void DevicePage_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager) manager.ActivePage = "Devices";
+        }
+
+        private void ReceiveEventsPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager) manager.ActivePage = "ReceiveEvents";
+        }
+
+        private void AddReceiveEvent_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not CommunicationManagerViewModel manager) return;
+            var dialog = new CommunicationEventDialog { Owner = this };
+            if (dialog.ShowDialog() == true && dialog.Result != null)
+                manager.AddReceiveEvent(dialog.Result);
+        }
+
         private void AddModbusAddressPoint_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is CommunicationManagerViewModel manager && manager.SelectedWorkspace != null)
                 manager.SelectedWorkspace.AddModbusAddressPoint();
+        }
+
+        private async void AddOpcUaPoint_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not CommunicationManagerViewModel manager || manager.SelectedWorkspace == null) return;
+            var dialog = new OpcUaDataPointDialog { Owner = this };
+            if (dialog.ShowDialog() != true || dialog.Result == null) return;
+            var error = await manager.AddOpcUaPointAsync(dialog.Result);
+            if (error != null) MessageBox.Show(this, error, "添加数据点", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
+        private async void OpcUaDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is TextBox or Button || DataContext is not CommunicationManagerViewModel manager) return;
+
+            var current = e.OriginalSource as DependencyObject;
+            while (current != null && current is not DataGridRow)
+                current = VisualTreeHelper.GetParent(current);
+            if (current is not DataGridRow { DataContext: OpcUaPointRowViewModel row } || manager.SelectedWorkspace == null) return;
+
+            manager.SelectedWorkspace.SelectedOpcUaPoint = row;
+            var dialog = new OpcUaDataPointDialog(row.Point) { Owner = this };
+            if (dialog.ShowDialog() != true || dialog.Result == null) return;
+            var error = await manager.EditOpcUaPointAsync(row, dialog.Result);
+            if (error != null) MessageBox.Show(this, error, "编辑数据点", MessageBoxButton.OK, MessageBoxImage.Warning);
+            e.Handled = true;
+        }
+
+        private async void RefreshOpcUaPoints_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager)
+                await manager.RefreshOpcUaPointsAsync();
+        }
+
+        private async void RemoveOpcUaPoint_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not CommunicationManagerViewModel manager || sender is not FrameworkElement { DataContext: OpcUaPointRowViewModel row }) return;
+            if (row.IsWriting) return;
+            if (manager.SelectedWorkspace != null) manager.SelectedWorkspace.SelectedOpcUaPoint = row;
+            await manager.RemoveOpcUaPointAsync(row);
+        }
+
+        private async void OpcUaValueEditor_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            if (sender is not TextBox editor || editor.DataContext is not OpcUaPointRowViewModel row ||
+                !row.CanEdit || DataContext is not CommunicationManagerViewModel manager ||
+                string.Equals(editor.Text, row.ValueText, System.StringComparison.Ordinal)) return;
+            row.DraftValue = editor.Text;
+            row.IsEditing = true;
+            await manager.WriteOpcUaPointAsync(row);
+        }
+
+        private async void OpcUaValueEditor_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (sender is not FrameworkElement { DataContext: OpcUaPointRowViewModel row }) return;
+            if (e.Key == Key.Escape) { row.CancelEdit(); e.Handled = true; }
+            else if (e.Key == Key.Enter && DataContext is CommunicationManagerViewModel manager)
+            {
+                e.Handled = true;
+                if (sender is TextBox editor)
+                {
+                    row.DraftValue = editor.Text;
+                    row.IsEditing = row.DraftValue != row.ValueText;
+                }
+                await manager.WriteOpcUaPointAsync(row);
+            }
         }
 
         private void RemoveModbusAddressPoint_Click(object sender, RoutedEventArgs e)
@@ -230,58 +316,6 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             }
         }
 
-        private void ImportOpcUaCertificate_Click(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is not CommunicationManagerViewModel manager || manager.SelectedCommunication?.IsOpcUa != true)
-                return;
-
-            var picker = new OpenFileDialog
-            {
-                Title = "选择 OPC UA 服务器证书",
-                Filter = "X.509 证书 (*.der;*.cer;*.crt;*.pem)|*.der;*.cer;*.crt;*.pem|所有文件 (*.*)|*.*",
-                CheckFileExists = true,
-                Multiselect = false
-            };
-            if (picker.ShowDialog(this) != true) return;
-
-            try
-            {
-                var certificate = manager.InspectOpcUaServerCertificate(picker.FileName);
-                var decision = MessageBox.Show(this,
-                    $"请核对证书来源后再信任。导入后此证书将被作为 OPC UA 服务器对端证书信任：\n\n主题：{certificate.Subject}\n指纹：{certificate.Thumbprint}\n有效期至（UTC）：{certificate.ExpiresUtc:yyyy-MM-dd HH:mm:ss}\n\n是否明确加入信任列表？",
-                    "确认信任 OPC UA 服务器证书", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (decision != MessageBoxResult.Yes) return;
-
-                manager.TrustOpcUaServerCertificate(picker.FileName);
-                MessageBox.Show(this, "证书已加入信任列表。请断开并重新连接 OPC UA 设备后生效。", "证书信任已更新", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(this, $"无法导入证书：{ex.Message}", "OPC UA 证书导入失败", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void RemoveOpcUaCertificate_Click(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is not CommunicationManagerViewModel manager || manager.SelectedTrustedOpcUaCertificate is not { } certificate)
-                return;
-
-            var decision = MessageBox.Show(this,
-                $"撤销此证书信任？新连接将不再信任该证书。\n\n{certificate.Subject}\n{certificate.Thumbprint}",
-                "撤销 OPC UA 证书信任", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (decision != MessageBoxResult.Yes) return;
-
-            try
-            {
-                manager.RemoveTrustedOpcUaServerCertificate(certificate.Thumbprint);
-                MessageBox.Show(this, "已撤销信任。现有会话不会自动断开；新信任状态在下一次连接时生效。", "证书信任已撤销", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(this, $"无法撤销证书信任：{ex.Message}", "OPC UA 证书操作失败", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
         private void DeviceToggle_CheckedChanged(object sender, RoutedPropertyChangedEventArgs<bool> e)
         {
             if (sender is not ToggleSwitch toggle || toggle.DataContext is not Communication communication)
@@ -314,6 +348,36 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             }
 
             base.OnClosed(e);
+        }
+
+        protected override async void OnClosing(CancelEventArgs e)
+        {
+            if (_allowClosing || DataContext is not CommunicationManagerViewModel { HasUnsavedChanges: true } manager)
+            {
+                base.OnClosing(e);
+                return;
+            }
+            e.Cancel = true;
+            var choice = MessageBox.Show(this, "OPC UA 配置有未保存更改。是否保存后关闭？\n选择“否”将撤销本次未保存的 OPC UA 配置。",
+                "未保存的通讯配置", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+            if (choice == MessageBoxResult.Cancel) return;
+            if (choice == MessageBoxResult.Yes)
+            {
+                if (!await manager.SaveChangesAsync()) return;
+            }
+            else
+            {
+                try { await manager.DiscardOpcUaChangesAsync(); }
+                catch (System.Exception ex)
+                {
+                    MessageBox.Show(this, ex.Message, "撤销通讯配置失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
+            _allowClosing = true;
+            // OnClosing is still executing here; defer the final Close until this
+            // Closing event has returned to avoid WPF's VerifyNotClosing re-entry.
+            Dispatcher.BeginInvoke(new System.Action(Close));
         }
     }
 }

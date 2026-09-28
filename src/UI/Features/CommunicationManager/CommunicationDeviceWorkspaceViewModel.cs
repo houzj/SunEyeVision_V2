@@ -40,10 +40,6 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
     private int _s7ByteCount = 1;
     private string _s7WriteHex = string.Empty;
     private string _s7ResultText = string.Empty;
-    private string _opcUaNodeId = "i=85";
-    private string _opcUaValueText = string.Empty;
-    private int _opcUaSamplingInterval = 100;
-    private string _opcUaResultText = string.Empty;
     private string _cipService = "0E";
     private string _cipClassId = "1";
     private string _cipInstanceId = "1";
@@ -54,8 +50,11 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
     public CommunicationDeviceWorkspaceViewModel(Communication communication)
     {
         Communication = communication ?? throw new ArgumentNullException(nameof(communication));
+        OpcUaPoints.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasNoOpcUaPoints));
         foreach (var point in Communication.ModbusAddressPoints)
             ModbusAddressPoints.Add(point);
+        foreach (var point in Communication.OpcUaDataPoints ?? new())
+            OpcUaPoints.Add(new OpcUaPointRowViewModel(point));
         _modbusRegisterStartAddress = communication.ModbusRegisterStartAddress;
         _modbusRegisterCount = Math.Clamp(communication.ModbusRegisterCount, 1,
             ushort.MaxValue + 1 - _modbusRegisterStartAddress);
@@ -81,6 +80,19 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
     /// </summary>
     public ObservableCollection<ModbusAddressPoint> ModbusAddressPoints { get; } = new();
     public ObservableCollection<ModbusAddressSpaceRow> AddressSpaceRows { get; } = new();
+    public ObservableCollection<OpcUaPointRowViewModel> OpcUaPoints { get; } = new();
+    public bool HasNoOpcUaPoints => OpcUaPoints.Count == 0;
+    private OpcUaPointRowViewModel? _selectedOpcUaPoint;
+    public OpcUaPointRowViewModel? SelectedOpcUaPoint
+    {
+        get => _selectedOpcUaPoint;
+        set
+        {
+            if (SetProperty(ref _selectedOpcUaPoint, value))
+                OnPropertyChanged(nameof(SelectedOpcUaNodeId));
+        }
+    }
+    public string SelectedOpcUaNodeId => SelectedOpcUaPoint?.NodeId ?? "未选择数据点";
 
     public int ModbusRegisterStartAddress
     {
@@ -340,12 +352,6 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
     public int S7ByteCount { get => _s7ByteCount; set => SetProperty(ref _s7ByteCount, value); }
     public string S7WriteHex { get => _s7WriteHex; set => SetProperty(ref _s7WriteHex, value); }
     public string S7ResultText { get => _s7ResultText; set => SetProperty(ref _s7ResultText, value); }
-
-    public string OpcUaNodeId { get => _opcUaNodeId; set => SetProperty(ref _opcUaNodeId, value); }
-    public string OpcUaValueText { get => _opcUaValueText; set => SetProperty(ref _opcUaValueText, value); }
-    public int OpcUaSamplingInterval { get => _opcUaSamplingInterval; set => SetProperty(ref _opcUaSamplingInterval, value); }
-    public string OpcUaResultText { get => _opcUaResultText; set => SetProperty(ref _opcUaResultText, value); }
-    public ObservableCollection<CommunicationRuntimeManager.OpcUaBrowseItem> OpcUaBrowseItems { get; } = new();
 
     public string CipService { get => _cipService; set => SetProperty(ref _cipService, value); }
     public string CipClassId { get => _cipClassId; set => SetProperty(ref _cipClassId, value); }

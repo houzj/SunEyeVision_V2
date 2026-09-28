@@ -29,6 +29,7 @@ public sealed partial class CommunicationRuntimeManager
     {
         Task<IReadOnlyList<OpcUaBrowseItem>> BrowseAsync(string nodeId, CancellationToken cancellationToken);
         Task<DataValue> ReadValueAsync(string nodeId, CancellationToken cancellationToken);
+        Task<OpcUaPointValueEventArgs> ReadPointAsync(string nodeId, CancellationToken cancellationToken);
         Task WriteValueAsync(string nodeId, object value, CancellationToken cancellationToken);
         Task SubscribeAsync(string nodeId, int samplingIntervalMs, CancellationToken cancellationToken);
         Task UnsubscribeAsync(string nodeId, CancellationToken cancellationToken);
@@ -41,10 +42,13 @@ public sealed partial class CommunicationRuntimeManager
         private readonly SemaphoreSlim _serviceGate = new(1, 1);
         private readonly List<Subscription> _subscriptions = new();
         private readonly Dictionary<string, (Subscription Subscription, MonitoredItem Item, SubscriptionNotificationGate Gate)> _monitoredItems = new(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, (BuiltInType Type, bool CanWrite, bool IsSupportedScalar)> _pointMetadata = new(StringComparer.Ordinal);
         private Session? _session;
         private int _disposed;
+        private int _connectionClosedSignaled;
 
         public event EventHandler<CommunicationDataReceivedEventArgs>? DataReceived;
+        public event EventHandler<OpcUaPointValueEventArgs>? PointValueChanged;
         public event EventHandler<CommunicationConnectionClosedEventArgs>? ConnectionClosed;
         public bool IsConnected => _session?.Connected == true;
 
@@ -83,27 +87,28 @@ public sealed partial class CommunicationRuntimeManager
             var application = new ApplicationInstance(configuration);
             await application.CheckApplicationInstanceCertificatesAsync(true, 2048, cancellationToken).ConfigureAwait(false);
 
-            var requestedMode = _communication.SecurityMode;
-            var requiredMode = requestedMode switch
-            {
-                "None" => MessageSecurityMode.None,
-                "Sign" => MessageSecurityMode.Sign,
-                "SignAndEncrypt" => MessageSecurityMode.SignAndEncrypt,
-                _ => throw new ArgumentException($"不支持的 OPC UA 安全模式：{requestedMode}。", nameof(_communication))
-            };
             using var discovery = await DiscoveryClient.CreateAsync(configuration, new Uri(_communication.EndpointUrl),
                 EndpointConfiguration.Create(configuration), DiagnosticsMasks.None, cancellationToken).ConfigureAwait(false);
             var discoveredEndpoints = await discovery.GetEndpointsAsync(null, cancellationToken).ConfigureAwait(false);
             var selectedEndpoint = discoveredEndpoints
-                .Where(endpoint => endpoint.SecurityMode == requiredMode && endpoint.UserIdentityTokens.Any(token => token.TokenType == UserTokenType.Anonymous))
+                .Where(endpoint => endpoint.SecurityMode == MessageSecurityMode.None && endpoint.UserIdentityTokens.Any(token => token.TokenType == UserTokenType.Anonymous))
                 .OrderByDescending(endpoint => endpoint.SecurityLevel)
                 .FirstOrDefault();
             if (selectedEndpoint == null)
-                throw new InvalidOperationException($"服务器未发现同时满足安全模式 {requestedMode} 与匿名身份的 OPC UA Endpoint。");
+                throw new InvalidOperationException("服务器未发现同时支持 None 安全模式与匿名身份的 OPC UA Endpoint。");
 
             var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, EndpointConfiguration.Create(configuration));
             _session = await Session.Create(configuration, endpoint, false, _communication.Name,
                 (uint)Math.Clamp(_communication.RequestTimeout * 10, 10_000, 600_000), new UserIdentity(), null, cancellationToken).ConfigureAwait(false);
+            _session.KeepAlive += Session_KeepAlive;
+        }
+
+        private void Session_KeepAlive(ISession session, KeepAliveEventArgs e)
+        {
+            if (e.Status == null || !StatusCode.IsBad(e.Status.StatusCode) ||
+                Interlocked.CompareExchange(ref _connectionClosedSignaled, 1, 0) != 0 || Volatile.Read(ref _disposed) != 0)
+                return;
+            ConnectionClosed?.Invoke(this, new CommunicationConnectionClosedEventArgs(_communication.Id));
         }
 
         public async Task<IReadOnlyList<OpcUaBrowseItem>> BrowseAsync(string nodeId, CancellationToken cancellationToken)
@@ -124,7 +129,46 @@ public sealed partial class CommunicationRuntimeManager
         {
             var session = RequireSession();
             await _serviceGate.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try { cancellationToken.ThrowIfCancellationRequested(); return session.ReadValue(NodeId.Parse(nodeId)); }
+            try { return await Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); return session.ReadValue(NodeId.Parse(nodeId)); }, cancellationToken).ConfigureAwait(false); }
+            finally { _serviceGate.Release(); }
+        }
+
+        public async Task<OpcUaPointValueEventArgs> ReadPointAsync(string nodeId, CancellationToken cancellationToken)
+        {
+            var session = RequireSession();
+            var parsedNode = NodeId.Parse(nodeId);
+            var key = parsedNode.ToString();
+            await _serviceGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var reads = new ReadValueIdCollection
+                {
+                    new ReadValueId { NodeId = parsedNode, AttributeId = Attributes.Value },
+                    new ReadValueId { NodeId = parsedNode, AttributeId = Attributes.UserAccessLevel },
+                    new ReadValueId { NodeId = parsedNode, AttributeId = Attributes.AccessLevel }
+                };
+                return await Task.Run(() =>
+                {
+                    session.Read(null, 0, TimestampsToReturn.Both, reads, out var values, out _);
+                    if (values.Count < 3) throw new ServiceResultException(StatusCodes.BadUnexpectedError);
+                    var value = values[0];
+                    if (StatusCode.IsBad(value.StatusCode)) throw new ServiceResultException(value.StatusCode);
+                    var type = value.WrappedValue.TypeInfo?.BuiltInType ?? BuiltInType.Null;
+                    var accessValue = StatusCode.IsGood(values[1].StatusCode) ? values[1] : values[2];
+                    var access = StatusCode.IsGood(accessValue.StatusCode) ? Convert.ToByte(accessValue.Value) : (byte)0;
+                    var serverAccess = StatusCode.IsGood(values[2].StatusCode) ? Convert.ToByte(values[2].Value) : access;
+                    var writable = (access & AccessLevels.CurrentWrite) != 0 && (serverAccess & AccessLevels.CurrentWrite) != 0;
+                    var supported = value.Value is not Array and not ExtensionObject && type is
+                        BuiltInType.Boolean or BuiltInType.SByte or BuiltInType.Byte or BuiltInType.Int16 or
+                        BuiltInType.UInt16 or BuiltInType.Int32 or BuiltInType.UInt32 or BuiltInType.Int64 or
+                        BuiltInType.UInt64 or BuiltInType.Float or BuiltInType.Double or BuiltInType.String;
+                    _pointMetadata[key] = (type, writable, supported);
+                    return new OpcUaPointValueEventArgs(_communication.Id, key, value.Value, type, writable,
+                        value.StatusCode, value.SourceTimestamp == DateTime.MinValue ? DateTimeOffset.UtcNow : new DateTimeOffset(value.SourceTimestamp.ToUniversalTime()),
+                        isSupportedScalar: supported);
+                }, cancellationToken).ConfigureAwait(false);
+            }
             finally { _serviceGate.Release(); }
         }
 
@@ -137,10 +181,13 @@ public sealed partial class CommunicationRuntimeManager
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var write = new WriteValue { NodeId = NodeId.Parse(nodeId), AttributeId = Attributes.Value, Value = new DataValue(new Variant(value)) };
-                session.Write(null, new WriteValueCollection { write }, out var results, out _);
-                if (results.Count != 1)
-                    throw new ServiceResultException(StatusCodes.BadUnexpectedError, $"OPC UA 写入响应数量异常：请求 1 项，服务端返回 {results.Count} 项。");
-                if (StatusCode.IsBad(results[0])) throw new ServiceResultException(results[0]);
+                await Task.Run(() =>
+                {
+                    session.Write(null, new WriteValueCollection { write }, out var results, out _);
+                    if (results.Count != 1)
+                        throw new ServiceResultException(StatusCodes.BadUnexpectedError, $"OPC UA 写入响应数量异常：请求 1 项，服务端返回 {results.Count} 项。");
+                    if (StatusCode.IsBad(results[0])) throw new ServiceResultException(results[0]);
+                }, cancellationToken).ConfigureAwait(false);
             }
             finally { _serviceGate.Release(); }
         }
@@ -170,16 +217,31 @@ public sealed partial class CommunicationRuntimeManager
                 {
                     if (notificationGate.IsActive && args.NotificationValue is MonitoredItemNotification notification)
                     {
-                        var text = $"{item.DisplayName}: {notification.Value.Value} [{notification.Value.StatusCode}]";
-                        DataReceived?.Invoke(this, new CommunicationDataReceivedEventArgs(_communication.Id, Encoding.UTF8.GetBytes(text), DateTimeOffset.Now));
+                        var metadata = _pointMetadata.TryGetValue(key, out var known) ? known : (BuiltInType.Null, false, false);
+                        try
+                        {
+                            PointValueChanged?.Invoke(this, new OpcUaPointValueEventArgs(_communication.Id, key,
+                                notification.Value.Value, metadata.Item1, metadata.Item2, notification.Value.StatusCode,
+                                notification.Value.SourceTimestamp == DateTime.MinValue ? DateTimeOffset.UtcNow :
+                                    new DateTimeOffset(notification.Value.SourceTimestamp.ToUniversalTime()),
+                                isSupportedScalar: metadata.Item3));
+                        }
+                        catch (Exception ex)
+                        {
+                            VisionLogger.Instance.Log(LogLevel.Warning, $"OPC UA 数据点通知处理失败：{ex.Message}",
+                                "CommunicationRuntime", ex, LogTarget.File);
+                        }
                     }
                 };
-                subscription.AddItem(item);
-                session.AddSubscription(subscription);
-                subscription.Create();
-                subscription.ApplyChanges();
-                _subscriptions.Add(subscription);
-                _monitoredItems.Add(key, (subscription, item, notificationGate));
+                await Task.Run(() =>
+                {
+                    subscription.AddItem(item);
+                    session.AddSubscription(subscription);
+                    subscription.Create();
+                    subscription.ApplyChanges();
+                    _subscriptions.Add(subscription);
+                    _monitoredItems.Add(key, (subscription, item, notificationGate));
+                }, cancellationToken).ConfigureAwait(false);
             }
             finally { _serviceGate.Release(); }
         }
@@ -195,25 +257,28 @@ public sealed partial class CommunicationRuntimeManager
                 if (!_monitoredItems.TryGetValue(key, out var monitored))
                     return;
 
-                monitored.Gate.IsActive = false;
-                monitored.Subscription.RemoveItem(monitored.Item);
-                try
+                await Task.Run(() =>
                 {
-                    monitored.Subscription.ApplyChanges();
-                    _monitoredItems.Remove(key);
-                    if (!monitored.Subscription.MonitoredItems.Any())
+                    monitored.Gate.IsActive = false;
+                    monitored.Subscription.RemoveItem(monitored.Item);
+                    try
                     {
-                        monitored.Subscription.Delete(true);
-                        session.RemoveSubscription(monitored.Subscription);
-                        _subscriptions.Remove(monitored.Subscription);
+                        monitored.Subscription.ApplyChanges();
+                        _monitoredItems.Remove(key);
+                        if (!monitored.Subscription.MonitoredItems.Any())
+                        {
+                            monitored.Subscription.Delete(true);
+                            session.RemoveSubscription(monitored.Subscription);
+                            _subscriptions.Remove(monitored.Subscription);
+                        }
                     }
-                }
-                catch
-                {
-                    monitored.Subscription.AddItem(monitored.Item);
-                    monitored.Gate.IsActive = true;
-                    throw;
-                }
+                    catch
+                    {
+                        monitored.Subscription.AddItem(monitored.Item);
+                        monitored.Gate.IsActive = true;
+                        throw;
+                    }
+                }, cancellationToken).ConfigureAwait(false);
             }
             finally { _serviceGate.Release(); }
         }
@@ -242,6 +307,7 @@ public sealed partial class CommunicationRuntimeManager
                 _monitoredItems.Clear();
                 if (_session != null)
                 {
+                    _session.KeepAlive -= Session_KeepAlive;
                     try { await _session.CloseAsync().ConfigureAwait(false); } catch { }
                     _session.Dispose();
                     _session = null;

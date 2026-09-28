@@ -307,9 +307,71 @@ public class Communication : ObservableObject
             OnPropertyChanged(nameof(IsModbusRtu));
         }
     }
-    [JsonIgnore] public string EndpointUrl { get => GetStringSetting("endpointUrl", "opc.tcp://127.0.0.1:4840"); set => SetSetting("endpointUrl", value); }
-    [JsonIgnore] public string SecurityMode { get => GetStringSetting("securityMode", "None"); set => SetSetting("securityMode", value); }
-    [JsonIgnore] public string OpcUaIdentityMode { get => GetStringSetting("opcUaIdentityMode", "匿名"); set => SetSetting("opcUaIdentityMode", value); }
+    /// <summary>Legacy endpointUrl is authoritative until this OPC UA device is edited with split fields.</summary>
+    [JsonIgnore]
+    public string OpcUaHost
+    {
+        get => HasOpcUaEndpointParts ? GetStringSetting("opcUaHost", "") : ReadLegacyOpcUaEndpoint()?.Host ?? (Settings.ContainsKey("endpointUrl") ? "" : "127.0.0.1");
+        set
+        {
+            var normalized = value?.Trim() ?? "";
+            if (string.Equals(OpcUaHost, normalized, StringComparison.Ordinal) &&
+                (HasOpcUaEndpointParts || Settings.ContainsKey("endpointUrl"))) return;
+            EnsureOpcUaEndpointParts(); SetSetting("opcUaHost", normalized); OnPropertyChanged(nameof(EndpointUrl));
+        }
+    }
+
+    [JsonIgnore]
+    public int OpcUaPort
+    {
+        get => HasOpcUaEndpointParts ? GetIntSetting("opcUaPort", 0) : ReadLegacyOpcUaEndpoint()?.Port ?? (Settings.ContainsKey("endpointUrl") ? 0 : 49320);
+        set
+        {
+            if (OpcUaPort == value) return;
+            EnsureOpcUaEndpointParts(); SetSetting("opcUaPort", value); OnPropertyChanged(nameof(EndpointUrl));
+        }
+    }
+
+    [JsonIgnore]
+    public string EndpointUrl
+    {
+        get
+        {
+            if (!HasOpcUaEndpointParts) return GetStringSetting("endpointUrl", "opc.tcp://127.0.0.1:49320");
+            if (string.IsNullOrWhiteSpace(OpcUaHost) || OpcUaPort is < 1 or > 65535) return string.Empty;
+            try
+            {
+                var builder = new UriBuilder("opc.tcp", OpcUaHost, OpcUaPort, GetStringSetting("opcUaEndpointPath", "/"))
+                {
+                    Query = GetStringSetting("opcUaEndpointQuery"),
+                    Fragment = GetStringSetting("opcUaEndpointFragment")
+                };
+                var endpoint = builder.Uri.ToString();
+                return endpoint.EndsWith('/') && GetStringSetting("opcUaEndpointPath", "/") == "/" ? endpoint[..^1] : endpoint;
+            }
+            catch (UriFormatException) { return string.Empty; }
+            catch (ArgumentException) { return string.Empty; }
+        }
+        set { SetSetting("endpointUrl", value); OnPropertyChanged(nameof(OpcUaHost)); OnPropertyChanged(nameof(OpcUaPort)); }
+    }
+
+    [JsonIgnore] private bool HasOpcUaEndpointParts => GetIntSetting("opcUaEndpointPartsVersion", 0) >= 1;
+
+    private Uri? ReadLegacyOpcUaEndpoint() =>
+        Uri.TryCreate(GetStringSetting("endpointUrl", "opc.tcp://127.0.0.1:49320"), UriKind.Absolute, out var uri) &&
+        uri.Scheme == "opc.tcp" && uri.Port is > 0 and <= 65535 ? uri : null;
+
+    private void EnsureOpcUaEndpointParts()
+    {
+        if (HasOpcUaEndpointParts) return;
+        var legacy = ReadLegacyOpcUaEndpoint();
+        Settings["opcUaHost"] = legacy?.Host ?? (Settings.ContainsKey("endpointUrl") ? "" : "127.0.0.1");
+        Settings["opcUaPort"] = legacy?.Port ?? (Settings.ContainsKey("endpointUrl") ? 0 : 49320);
+        Settings["opcUaEndpointPath"] = legacy?.AbsolutePath ?? "/";
+        Settings["opcUaEndpointQuery"] = legacy?.Query ?? "";
+        Settings["opcUaEndpointFragment"] = legacy?.Fragment ?? "";
+        Settings["opcUaEndpointPartsVersion"] = 1;
+    }
     [JsonIgnore] public int RequestTimeout { get => GetIntSetting("requestTimeout", 3000); set => SetSetting("requestTimeout", value); }
     [JsonIgnore] public string HttpMethod { get => GetStringSetting("httpMethod", "POST"); set => SetSetting("httpMethod", value); }
 
@@ -347,8 +409,6 @@ public class Communication : ObservableObject
             "s7CpuType" => nameof(S7CpuType),
             "modbusMode" => nameof(ModbusMode),
             "endpointUrl" => nameof(EndpointUrl),
-            "securityMode" => nameof(SecurityMode),
-            "opcUaIdentityMode" => nameof(OpcUaIdentityMode),
             "requestTimeout" => nameof(RequestTimeout),
             "httpMethod" => nameof(HttpMethod),
             _ => key
@@ -393,6 +453,9 @@ public class Communication : ObservableObject
     /// </summary>
     public List<ModbusAddressPoint> ModbusAddressPoints { get; set; } = new();
 
+    /// <summary>Configured OPC UA string NodeIds. Runtime values are intentionally not persisted.</summary>
+    public List<OpcUaDataPoint> OpcUaDataPoints { get; set; } = new();
+
     /// <summary>
     /// 创建时间
     /// </summary>
@@ -435,6 +498,7 @@ public class Communication : ObservableObject
             Settings = new Dictionary<string, object>(Settings),
             Mapping = new Dictionary<string, object>(Mapping),
             ModbusAddressPoints = ModbusAddressPoints.Select(point => point.Clone()).ToList(),
+            OpcUaDataPoints = (OpcUaDataPoints ?? new()).Select(point => point.Clone()).ToList(),
             CreatedTime = CreatedTime,
             ModifiedTime = DateTime.Now
         };
@@ -465,6 +529,7 @@ public class Communication : ObservableObject
     /// </summary>
     public string GetConnectionString()
     {
+        if (IsOpcUa) return EndpointUrl;
         if (ProtocolKey == "tcp-server") return $"{LocalHost}:{LocalPort} (listen)";
         if (ProtocolKey == "udp") return $"{LocalHost}:{LocalPort} → {RemoteHost}:{RemotePort}";
         if (IsModbusRtu || IsPlainSerial) return $"{SerialPort} · {BaudRate},{DataBits},{Parity},{StopBits}";

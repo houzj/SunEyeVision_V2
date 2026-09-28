@@ -84,11 +84,13 @@
                     <TextBlock Grid.Row="5" Text="字符超时(ms)"/><TextBox Grid.Row="5" Grid.Column="1" Text="{Binding CharacterTimeout, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
                 <Grid Visibility="{Binding IsOpcUa, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,8">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="服务端点"/><TextBox Grid.Row="0" Grid.Column="1" Text="{Binding EndpointUrl, UpdateSourceTrigger=PropertyChanged}"/>
-                    <TextBlock Grid.Row="1" Text="安全模式"/><ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding SecurityModeOptions}" SelectedItem="{Binding SecurityMode}"/>
-                    <TextBlock Grid.Row="2" Text="请求超时(ms)"/><TextBox Grid.Row="2" Grid.Column="1" Text="{Binding RequestTimeout, UpdateSourceTrigger=PropertyChanged}"/>
-                    <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Text="当前仅支持匿名身份；若服务器要求账号凭据，需后续版本接入。" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="服务器地址"/><TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Host, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Grid.Row="1" Text="服务器端口"/><controls:NumericUpDown Grid.Row="1" Grid.Column="1" IntValue="{Binding Port, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="1" Maximum="65535" DecimalPlaces="0" Height="32"/>
+                    <TextBlock Grid.Row="2" Text="请求超时(ms)"/><controls:NumericUpDown Grid.Row="2" Grid.Column="1" IntValue="{Binding RequestTimeout, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="250" Maximum="120000" DecimalPlaces="0" Height="32"/>
+                    <TextBlock Grid.Row="3" Text="端点预览"/><TextBox Grid.Row="3" Grid.Column="1" Text="{Binding OpcUaEndpointPreview, Mode=OneWay}" IsReadOnly="True"/>
+                    <TextBlock Grid.Row="4" Text="自动重连"/><controls:ToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding AutoReconnect, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22"/>
+                    <TextBlock Grid.Row="5" Grid.ColumnSpan="2" Text="匿名连接（None；仅适用于隔离测试网络）" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,4,0,0"/>
                 </Grid>
                 <Grid Visibility="{Binding IsHttp, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,8">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/></Grid.RowDefinitions>

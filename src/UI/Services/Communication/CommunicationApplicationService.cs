@@ -18,7 +18,7 @@ namespace SunEyeVision.UI.Services.Communication;
 public sealed class CommunicationApplicationService : IAsyncDisposable
 {
     private sealed record ConnectionPlan(CommunicationDeviceSnapshot Configuration, int PollInterval,
-        ModbusPollAddress[] Addresses);
+        ModbusPollAddress[] Addresses, string[] OpcUaNodeIds);
 
     private readonly SolutionManager _solutions;
     private readonly object _gate = new();
@@ -56,7 +56,8 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             .Select(item => new ConnectionPlan(CommunicationDeviceSnapshotFactory.Create(item), item.PollInterval,
                 item.ModbusAddressPoints.Where(point => point.PollEnabled && point.AccessMode != "只写")
                     .Select(point => new ModbusPollAddress(point.Id, point.StartAddress, point.Count, point.TimeoutMs))
-                    .ToArray()))
+                    .ToArray(),
+                item.IsOpcUa ? (item.OpcUaDataPoints ?? new()).Select(point => point.NodeId).ToArray() : Array.Empty<string>()))
             .ToArray() ?? Array.Empty<ConnectionPlan>();
         lock (_gate)
         {
@@ -93,6 +94,8 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
                     .ConfigureAwait(false);
                 if (plan.Configuration.IsModbus)
                     Composition.Polling.Start(plan.Configuration.Id, plan.PollInterval, plan.Addresses);
+                if (plan.Configuration.ProtocolKey == "opcua")
+                    await MonitorOpcUaPointsAsync(plan.Configuration.Id, plan.OpcUaNodeIds, token).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { return; }
             catch (Exception ex) { LogWarning($"自动连接通讯设备“{plan.Configuration.Name}”失败：{ex.Message}"); }
@@ -130,6 +133,9 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
                         Composition.Polling.Start(device.Id, device.PollInterval,
                             device.ModbusAddressPoints.Where(point => point.PollEnabled && point.AccessMode != "只写")
                                 .Select(point => new ModbusPollAddress(point.Id, point.StartAddress, point.Count, point.TimeoutMs)));
+                    if (device.IsOpcUa)
+                        await MonitorOpcUaPointsAsync(device.Id,
+                            (device.OpcUaDataPoints ?? new()).Select(point => point.NodeId), token).ConfigureAwait(false);
                     return;
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested) { return; }
@@ -146,6 +152,37 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
 
     private static void LogWarning(string message) =>
         VisionLogger.Instance.Log(LogLevel.Warning, message, "CommunicationApplication");
+
+    public async Task MonitorOpcUaPointAsync(string communicationId, string nodeId, CancellationToken token = default)
+    {
+        if (!Composition.Runtime.IsConnected(communicationId)) return;
+        try
+        {
+            await Composition.Runtime.RefreshOpcUaPointAsync(communicationId, nodeId, token).ConfigureAwait(false);
+            await Composition.Runtime.SubscribeOpcUaValueAsync(communicationId, nodeId, 100, token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+        catch (Exception ex)
+        {
+            Composition.Runtime.ReportOpcUaPointError(communicationId, nodeId, ex.Message);
+            LogWarning($"OPC UA 数据点 {nodeId} 监视失败：{ex.Message}");
+        }
+    }
+
+    public async Task UnmonitorOpcUaPointAsync(string communicationId, string nodeId, CancellationToken token = default)
+    {
+        if (Composition.Runtime.IsConnected(communicationId))
+            await Composition.Runtime.UnsubscribeOpcUaValueAsync(communicationId, nodeId, token).ConfigureAwait(false);
+    }
+
+    private async Task MonitorOpcUaPointsAsync(string communicationId, IEnumerable<string> nodeIds, CancellationToken token)
+    {
+        foreach (var nodeId in nodeIds)
+        {
+            token.ThrowIfCancellationRequested();
+            await MonitorOpcUaPointAsync(communicationId, nodeId, token).ConfigureAwait(false);
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {

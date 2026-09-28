@@ -70,4 +70,47 @@ public sealed class CameraRuntimeManagerTests
         Assert.Equal(reference, second.CameraRef);
         await manager.DisposeAsync();
     }
+
+    [Fact]
+    public async Task CaptureReusesExistingSessionWithoutDisconnectingIt()
+    {
+        var options = new SimulatedCameraOptions
+        {
+            DeviceId = "sim-test-reuse",
+            FrameDelay = System.TimeSpan.Zero
+        };
+        await using var manager = new CameraRuntimeManager(new[] { new SimulatedCameraFactory(options) });
+        await manager.DiscoverAsync(new[] { new SimulatedCameraDiscoveryProvider(options) });
+        var cameraRef = new CameraDeviceRef(options.DeviceId);
+        await using var session = await manager.OpenAsync(cameraRef, CameraAccessMode.Exclusive);
+
+        using var frame = await manager.CaptureAsync(new CameraCaptureRequest
+        {
+            CameraRef = cameraRef,
+            Timeout = System.TimeSpan.FromSeconds(1)
+        }, CancellationToken.None);
+
+        Assert.False(frame.Image.IsEmpty);
+        Assert.True(manager.TryGetSession(cameraRef, out var retained));
+        Assert.Same(session, retained);
+    }
+
+    [Fact]
+    public async Task PreviewAndWorkflowCannotOwnAcquisitionAtTheSameTime()
+    {
+        var options = new SimulatedCameraOptions { DeviceId = "sim-capture-lease" };
+        await using var manager = new CameraRuntimeManager(new[] { new SimulatedCameraFactory(options) });
+        var cameraRef = new CameraDeviceRef(options.DeviceId);
+
+        using (manager.AcquireCaptureLease(cameraRef, "相机设置预览"))
+        {
+            var error = Assert.Throws<System.InvalidOperationException>(() =>
+                manager.AcquireCaptureLease(cameraRef, "工作流"));
+            Assert.Contains("相机设置预览", error.Message);
+        }
+
+        using var workflowLease = manager.AcquireCaptureLease(cameraRef, "工作流");
+        Assert.Throws<System.InvalidOperationException>(() =>
+            manager.AcquireCaptureLease(cameraRef, "相机设置预览"));
+    }
 }

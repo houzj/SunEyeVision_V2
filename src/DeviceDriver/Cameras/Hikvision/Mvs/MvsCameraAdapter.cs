@@ -109,6 +109,12 @@ public sealed class MvsCameraAdapter : ICameraAdapter
         {
             EnsureConnected();
             EnsureGrabbing();
+            if (request.TriggerMode == CameraTriggerMode.Software
+                && request.Parameters.TryGetValue("FireSoftwareTrigger", out var fire)
+                && fire is true)
+            {
+                await ExecuteSoftwareTriggerAsync(cancellationToken).ConfigureAwait(false);
+            }
             State = CameraState.Capturing;
             var frame = new MyCamera.MV_FRAME_OUT { nReserved = new uint[16] };
             var timeout = (int)Math.Clamp(request.Timeout.TotalMilliseconds, 1, int.MaxValue);
@@ -147,10 +153,18 @@ public sealed class MvsCameraAdapter : ICameraAdapter
                 if (length > 0 && frame.pBufAddr == IntPtr.Zero)
                     throw new CameraAdapterException(CameraErrorCode.FrameTimeout, "MVS 返回空图像缓冲区");
                 Marshal.Copy(frame.pBufAddr, bytes, 0, length);
-                // MVS 可能返回 Mono/Bayer 原始单通道数据；以实际字节长度判断，
-                // 避免把 width*height 的数据误标成 BGR24 后被 WPF 按三通道解释。
+                // 长度不能区分 Mono8 与 Bayer8，也不能区分 RGB 与 BGR。
+                // 首版只放行已明确映射的原生格式，其余格式需单独做真实转换。
                 var pixelCount = checked((long)info.nWidth * info.nHeight);
-                var channels = length == pixelCount * 3 ? 3 : 1;
+                var pixelType = info.enPixelType.ToString();
+                int channels;
+                if (pixelType.EndsWith("Mono8", StringComparison.OrdinalIgnoreCase) && length == pixelCount)
+                    channels = 1;
+                else if (pixelType.EndsWith("BGR8_Packed", StringComparison.OrdinalIgnoreCase) && length == pixelCount * 3)
+                    channels = 3;
+                else
+                    throw new CameraAdapterException(CameraErrorCode.ParameterUnsupported,
+                        $"暂不支持相机像素格式 {pixelType}（{length} 字节）；请在相机设置中选择 Mono8 或 BGR8 Packed。");
                 var frameIndex = Interlocked.Increment(ref _streamFrameCount);
                 var previousTimeouts = Interlocked.Exchange(ref _consecutiveNoDataCount, 0);
                 if (previousTimeouts > 0)

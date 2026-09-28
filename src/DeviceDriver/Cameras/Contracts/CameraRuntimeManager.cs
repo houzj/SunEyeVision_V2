@@ -17,6 +17,40 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
     private readonly IReadOnlyList<ICameraAdapterFactory> _factories;
     private readonly ConcurrentDictionary<string, CameraDescriptor> _descriptors = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, CameraSession> _sessions = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _captureGates = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, CaptureOwner> _captureOwners = new(StringComparer.OrdinalIgnoreCase);
+
+    private sealed record CaptureOwner(Guid Token, string Name);
+
+    /// <summary>协调调试预览与工作流采集；仅采集互斥，不改变设备连接所有权。</summary>
+    public IDisposable AcquireCaptureLease(CameraDeviceRef cameraRef, string owner)
+    {
+        ArgumentNullException.ThrowIfNull(cameraRef);
+        if (cameraRef.IsEmpty || string.IsNullOrWhiteSpace(owner))
+            throw new ArgumentException("相机引用和采集用途不能为空。");
+        var lease = new CaptureOwner(Guid.NewGuid(), owner);
+        if (!_captureOwners.TryAdd(cameraRef.Value, lease))
+        {
+            var current = _captureOwners[cameraRef.Value];
+            throw new InvalidOperationException($"相机 {cameraRef.Value} 正由{current.Name}采集，请先停止该采集。");
+        }
+        return new CaptureLease(() =>
+        {
+            if (_captureOwners.TryGetValue(cameraRef.Value, out var current)
+                && current.Token == lease.Token)
+                _captureOwners.TryRemove(cameraRef.Value, out _);
+        });
+    }
+
+    private sealed class CaptureLease(Action release) : IDisposable
+    {
+        private int _disposed;
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+                release();
+        }
+    }
 
     public CameraRuntimeManager(IEnumerable<ICameraAdapterFactory> factories)
     {
@@ -130,33 +164,70 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var gate = _captureGates.GetOrAdd(request.CameraRef.Value, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            // 已由设备列表连接的会话归应用所有；本次取帧绝不能关闭它。
+            if (_sessions.TryGetValue(request.CameraRef.Value, out var existing))
+                return await CaptureConfiguredFrameAsync(existing, request, cancellationToken).ConfigureAwait(false);
 
-        await using var session = await OpenAsync(
-            request.CameraRef,
-            CameraAccessMode.Exclusive,
-            new CameraConnectionOptions { Timeout = request.Timeout },
-            cancellationToken).ConfigureAwait(false);
+            await using var temporary = await OpenAsync(
+                request.CameraRef,
+                CameraAccessMode.Exclusive,
+                new CameraConnectionOptions { Timeout = request.Timeout },
+                cancellationToken).ConfigureAwait(false);
+            return await CaptureConfiguredFrameAsync(temporary, request, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
 
-        return await session.Adapter.CaptureAsync(request, cancellationToken)
+    private static async Task<CameraFrame> CaptureConfiguredFrameAsync(
+        CameraSession session, CameraCaptureRequest request, CancellationToken cancellationToken)
+    {
+        var configuration = await session.Adapter.ReadCaptureConfigurationAsync(cancellationToken)
             .ConfigureAwait(false);
+        if (!configuration.IsValid)
+            throw new InvalidOperationException(configuration.StatusMessage ?? "无法读取相机触发配置");
+
+        var parameters = new Dictionary<string, object?>(request.Parameters)
+        {
+            // 仅工作流单帧请求自动执行一次软件触发；预览流不带此标记。
+            ["FireSoftwareTrigger"] = configuration.StreamMode == CameraTriggerMode.Software
+        };
+        var configuredRequest = request with
+        {
+            TriggerMode = configuration.StreamMode,
+            Parameters = parameters
+        };
+        return await session.Adapter.CaptureAsync(configuredRequest, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task CloseAsync(
         CameraDeviceRef cameraRef,
         CancellationToken cancellationToken = default)
     {
-        if (!_sessions.TryRemove(cameraRef.Value, out var session))
-        {
-            return;
-        }
-
+        var gate = _captureGates.GetOrAdd(cameraRef.Value, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await session.Adapter.DisconnectAsync(cancellationToken).ConfigureAwait(false);
+            if (!_sessions.TryRemove(cameraRef.Value, out var session))
+                return;
+            try
+            {
+                await session.Adapter.DisconnectAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                await session.DisposeAsync().ConfigureAwait(false);
+            }
         }
         finally
         {
-            await session.DisposeAsync().ConfigureAwait(false);
+            gate.Release();
         }
     }
 

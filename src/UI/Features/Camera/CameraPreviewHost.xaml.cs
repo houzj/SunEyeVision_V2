@@ -25,6 +25,7 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     private readonly CancellationTokenSource _lifetime = new();
     private CameraSession? _session;
     private Task? _streamTask;
+    private IDisposable? _captureLease;
     private CameraTriggerMode _activeMode = CameraTriggerMode.Continuous;
     private string _activeDescription = "准备预览";
     private string? _activeCorrelationId;
@@ -36,6 +37,7 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     private int _stopped;
     private int _singleFrameStopScheduled;
     private int _singleShotRequested;
+    private int _stopRequested;
 
     public event EventHandler? CaptureStateChanged;
     public bool IsAcquiring { get; private set; }
@@ -160,6 +162,7 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
             return;
 
         Interlocked.Exchange(ref _singleShotRequested, 0);
+        Interlocked.Exchange(ref _stopRequested, 1);
         try
         {
             await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(true);
@@ -168,6 +171,9 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
         finally
         {
             _streamTask = null;
+            Interlocked.Exchange(ref _stopRequested, 0);
+            _captureLease?.Dispose();
+            _captureLease = null;
             IsAcquiring = false;
             Interlocked.Exchange(ref _singleFrameStopScheduled, 0);
             RaiseCaptureStateChanged();
@@ -235,6 +241,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
             if (_streamTask is not null)
                 throw new InvalidOperationException("采集任务状态不一致：已有取流任务。");
 
+            _captureLease = _runtime.Runtime.AcquireCaptureLease(_cameraRef, "相机设置预览");
+
             _activeMode = mode;
             _activeDescription = description;
             _activeCorrelationId = correlationId ?? "user-start";
@@ -262,6 +270,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
         }
         catch
         {
+            _captureLease?.Dispose();
+            _captureLease = null;
             IsAcquiring = false;
             CaptureStatus = "启动采集失败，请检查相机日志";
             RaiseCaptureStateChanged();
@@ -285,6 +295,29 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
                 "CameraPreviewTrace", ex, LogTarget.All);
             if (IsLoaded && ReferenceEquals(_streamTask, streamTask))
                 StatusText.Text = $"预览采集已停止：{ex.Message}";
+        }
+        finally
+        {
+            if (ReferenceEquals(_streamTask, streamTask))
+            {
+                // 取流异常自行结束时仍需释放适配器的流状态；主动停止/窗口销毁
+                // 由各自入口清理，避免与其 StopStreamAsync 并发。
+                if (Volatile.Read(ref _stopRequested) == 0
+                    && Volatile.Read(ref _stopped) == 0 && _session is not null)
+                {
+                    try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(true); }
+                    catch (Exception ex)
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Warning,
+                            $"预览异常退出后清理取流失败: {ex.Message}", "CameraPreviewTrace");
+                    }
+                }
+                _streamTask = null;
+                IsAcquiring = false;
+                _captureLease?.Dispose();
+                _captureLease = null;
+                RaiseCaptureStateChanged();
+            }
         }
     }
 
@@ -373,8 +406,11 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
         {
             if (_session is not null)
             {
-                try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }
-                catch (Exception) when (_lifetime.IsCancellationRequested) { }
+                if (_streamTask is not null)
+                {
+                    try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }
+                    catch (Exception) when (_lifetime.IsCancellationRequested) { }
+                }
                 if (_ownsSession)
                     await _runtime.Runtime.CloseAsync(_cameraRef).ConfigureAwait(false);
                 _session = null;
@@ -382,6 +418,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
         }
         finally
         {
+            _captureLease?.Dispose();
+            _captureLease = null;
             _lifetime.Dispose();
         }
     }

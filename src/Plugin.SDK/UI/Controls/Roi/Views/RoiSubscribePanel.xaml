@@ -59,6 +59,7 @@
                 </controls:LabeledControl>
                 <controls:LabeledControl Label="区域源" LabelWidth="70" Margin="0,0,0,4">
                     <controls:ParamBinding x:Name="WholeRegionBinding"
+                                           AllowGlobalVariableBinding="True"
                                            Width="200"
                                            ParameterName="WholeRegion"
                                            BindingSource="{Binding WholeRegionBindingPath, Mode=OneWay}"
@@ -89,6 +90,7 @@
                         <DataTemplate>
                             <controls:LabeledControl Label="{Binding DisplayName}" LabelWidth="70" Margin="0,0,0,8">
                                 <controls:ParamBinding Width="200"
+                                                       AllowGlobalVariableBinding="True"
                                                        ParameterName="{Binding ParameterName}"
                                                        DataType="{Binding DataType}"
                                                        BindingSource="{Binding BindingPath, Mode=TwoWay}"

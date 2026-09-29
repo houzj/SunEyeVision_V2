@@ -124,6 +124,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 typeof(ParamBinding),
                 new PropertyMetadata(null, OnShapeTypeFilterChanged));
 
+        /// <summary>
+        /// 是否允许当前绑定场景使用全局变量。默认不允许；需要全局变量的调用方必须显式开启。
+        /// </summary>
+        public static readonly DependencyProperty AllowGlobalVariableBindingProperty =
+            DependencyProperty.Register(
+                nameof(AllowGlobalVariableBinding),
+                typeof(bool),
+                typeof(ParamBinding),
+                new PropertyMetadata(false, OnAllowGlobalVariableBindingChanged));
+
         #endregion
 
         #region 属性封装
@@ -225,6 +235,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             get => (ShapeType?)GetValue(ShapeTypeFilterProperty);
             set => SetValue(ShapeTypeFilterProperty, value);
+        }
+
+        public bool AllowGlobalVariableBinding
+        {
+            get => (bool)GetValue(AllowGlobalVariableBindingProperty);
+            set => SetValue(AllowGlobalVariableBindingProperty, value);
         }
 
         #endregion
@@ -526,6 +542,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
         }
 
+        private static void OnAllowGlobalVariableBindingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ParamBinding control)
+            {
+                control.RebuildTreeNodes();
+            }
+        }
+
         #endregion
 
         #region 树形结构构建
@@ -562,14 +586,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 DataSource = null,
             });
 
-            // 始终在末尾追加"全局变量"动作节点（点击打开选择对话框，保留搜索/分组/表格等便捷能力）
-            nodes.Add(new TreeNodeData
+            // 全局变量是显式能力，不属于所有绑定场景的默认数据源。
+            if (AllowGlobalVariableBinding)
             {
-                Text = "全局变量",
-                IsSelectable = true,
-                IsActionNode = true,
-                DataSource = null,
-            });
+                nodes.Add(new TreeNodeData
+                {
+                    Text = "全局变量",
+                    IsSelectable = true,
+                    IsActionNode = true,
+                    DataSource = null,
+                });
+            }
 
             TreeNodes = nodes;
 

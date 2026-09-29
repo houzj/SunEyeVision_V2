@@ -6,6 +6,9 @@
         Title="事件管理" Width="630" Height="430" MinWidth="580" MinHeight="380"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
     <Grid Margin="0" TextElement.Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
         <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="50"/></Grid.RowDefinitions>
         <Grid Margin="16,14">
@@ -20,20 +23,19 @@
                     <ComboBoxItem Content="脚本" Tag="Script"/>
                 </ComboBox>
             </Grid>
-            <Grid Grid.Row="2">
+            <Grid Grid.Row="2" Visibility="{Binding HasEventType, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                 <TextBlock Grid.ColumnSpan="2" Text="处理类型" FontSize="16" Margin="0,0,0,12"/>
                 <TextBlock Grid.Row="1" Text="事件类型" FontSize="15" VerticalAlignment="Top" Margin="34,10,0,0"/>
-                <ComboBox Grid.Row="1" Grid.Column="1" Height="36" SelectedIndex="{Binding EventTypeIndex, Mode=TwoWay}">
-                    <ComboBoxItem Content="协议解析" Tag="ProtocolParse"/>
-                    <ComboBoxItem Content="协议比对" Tag="ProtocolCompare"/>
-                </ComboBox>
+                <ComboBox Grid.Row="1" Grid.Column="1" Height="36"
+                          ItemsSource="{Binding AvailableEventTypeNames}"
+                          SelectedItem="{Binding SelectedEventTypeName, Mode=TwoWay}"/>
             </Grid>
         </Grid>
         <Border Grid.Row="1" Background="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}" Padding="14,8">
             <DockPanel>
-                <TextBlock Text="说明：按照配置的规则解析收到的数据" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding ProcessingDescription}" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" VerticalAlignment="Center"/>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                     <Button Content="取消" IsCancel="True" Style="{StaticResource SecondaryButtonStyle}" Width="76" Margin="0,0,8,0"/>
                     <Button Content="创建" IsDefault="True" Style="{StaticResource PrimaryButtonStyle}" Width="76" Click="Create_Click"/>

@@ -36,7 +36,16 @@ namespace SunEyeVision.UI.Features.Camera
             ["Action Control"] = "动作控制", ["GigE Vision"] = "GigE 网络参数",
             ["USB Control"] = "USB 控制", ["Other"] = "其他",
             ["Shading Correction"] = "阴影校正", ["Transfer Control"] = "传输控制",
-            ["Color Transformation Control"] = "色彩转换", ["Digital I/O Control"] = "数字 I/O 控制"
+            ["Analog Controls"] = "模拟控制", ["Image Format Controls"] = "图像格式",
+            ["AOI Controls"] = "感兴趣区域 (AOI)", ["Image Quality Controls"] = "图像质量",
+            ["Acquisition Controls"] = "采集控制", ["Digital I/O Controls"] = "数字 I/O 控制",
+            ["Sequence Control"] = "序列控制", ["Counter and Timer Controls"] = "计数器与定时器",
+            ["Basler Light Control"] = "巴斯勒光源控制", ["LUT Controls"] = "查找表 (LUT)",
+            ["User Defined Values"] = "用户自定义值", ["Device Information"] = "设备信息",
+            ["Chunk Data Streams"] = "附加数据流", ["Events Generation"] = "事件生成",
+            ["Configuration Sets"] = "配置集", ["Transport Layer"] = "传输层",
+            ["Auto Functions"] = "自动功能", ["Remove Parameter Limits"] = "解除参数限制",
+            ["Expert Feature Access"] = "专家功能访问"
         };
 
         private static readonly Dictionary<string, string> ParameterNames = new(StringComparer.OrdinalIgnoreCase)
@@ -795,6 +804,7 @@ namespace SunEyeVision.UI.Features.Camera
             var writeAttempted = false;
             var wasCapturing = false;
             var pausedForParameterApply = false;
+            var captureConfigurationChanged = false;
             var previousViewKind = SelectedParameterCategory?.ViewKind;
             var previousCategoryPath = SelectedParameterCategory?.CategoryPath;
             try
@@ -824,12 +834,19 @@ namespace SunEyeVision.UI.Features.Camera
                     return true;
                 }
 
-                var requiresStopped = values.Keys.Any(name => Parameters.FirstOrDefault(item =>
+                captureConfigurationChanged = values.Keys.Any(name => name is
+                    "AcquisitionMode" or "TriggerMode" or "TriggerSource" or "TriggerSelector");
+                var requiresStopped = captureConfigurationChanged || values.Keys.Any(name => Parameters.FirstOrDefault(item =>
                     string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase))?.RequiresStopped == true);
                 wasCapturing = _previewWindow?.IsAcquiring == true;
                 if (requiresStopped && wasCapturing && _previewWindow is not null)
                 {
-                    ParameterStatus = "该参数需要停止采集；正在暂停取流后应用";
+                    ParameterStatus = captureConfigurationChanged
+                        ? "触发或采集模式已修改；正在停止旧取流并重新读取设备配置"
+                        : "该参数需要停止采集；正在暂停取流后应用";
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[camera-trace={traceId}] 参数应用前暂停取流 camera={reference.Value} captureConfigurationChanged={captureConfigurationChanged}",
+                        "CameraParameterTrace", target: LogTarget.All);
                     await _previewWindow.StopAcquisitionAsync();
                     pausedForParameterApply = true;
                 }
@@ -874,12 +891,16 @@ namespace SunEyeVision.UI.Features.Camera
                 var adjustmentNote = GetAutomaticControlNote(values.Keys)
                     + GetManualAutoTransitionNote(values, session.Adapter.AdapterId,
                         exposureAutoWasEnabled, gainAutoWasEnabled);
-                // 只刷新设备实际采集配置，不打断可实时应用参数的取流。
+                // Topology changes have already stopped the old request; ordinary live parameters do not interrupt it.
                 await (_previewWindow?.RefreshConfigurationAsync(traceId) ?? Task.CompletedTask);
                 if (pausedForParameterApply && wasCapturing && _previewWindow is not null)
                 {
-                    await _previewWindow.StartAcquisitionAsync();
+                    // Do not let the error path retry a failed restart with an uncertain configuration.
                     pausedForParameterApply = false;
+                    await _previewWindow.StartAcquisitionAsync();
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[camera-trace={traceId}] 参数回读后已按新配置恢复取流 camera={reference.Value}",
+                        "CameraParameterTrace", target: LogTarget.All);
                 }
                 VisionLogger.Instance.Log(LogLevel.Info,
                     $"[camera-trace={traceId}] 参数应用流程完成 camera={reference.Value} previewOpen={_previewWindow is not null}",
@@ -898,6 +919,8 @@ namespace SunEyeVision.UI.Features.Camera
                     try
                     {
                         await RefreshParameterSchemaAsync(session.Adapter, previousViewKind, previousCategoryPath);
+                        if (captureConfigurationChanged && _previewWindow is not null)
+                            await _previewWindow.RefreshConfigurationAsync(traceId);
                         refreshNote = "；设备当前值已重新读取";
                     }
                     catch (Exception refreshException)
@@ -910,7 +933,8 @@ namespace SunEyeVision.UI.Features.Camera
             }
             finally
             {
-                if (pausedForParameterApply && wasCapturing && _previewWindow is not null)
+                if (pausedForParameterApply && wasCapturing && _previewWindow is not null
+                    && !captureConfigurationChanged)
                 {
                     try
                     {
@@ -1013,10 +1037,12 @@ namespace SunEyeVision.UI.Features.Camera
 
         public static string LocalizeCategory(string value)
         {
-            if (CategoryNames.TryGetValue(value, out var localized))
+            // 原生类别中的 '/' 已由适配器转义为全角斜杠，避免被当成层级分隔符。
+            var categoryName = value.Replace('／', '/').Trim();
+            if (CategoryNames.TryGetValue(categoryName, out var localized))
                 return localized;
 
-            var normalized = value.Replace('_', ' ').Trim();
+            var normalized = categoryName.Replace('_', ' ');
             return CategoryNames.TryGetValue(normalized, out localized) ? localized : normalized;
         }
 

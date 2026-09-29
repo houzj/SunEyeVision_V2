@@ -6,9 +6,11 @@ namespace SunEyeVision.UI.Features.CommunicationManager;
 
 public partial class CommunicationRenameDialog : ThemeDialogWindow
 {
-    public CommunicationRenameDialog(string currentName)
+    public CommunicationRenameDialog(string currentName, string entityLabel = "设备")
     {
         InitializeComponent();
+        Title = $"重命名{entityLabel}";
+        NameLabel.Text = $"{entityLabel}名称";
         NameTextBox.Text = currentName;
         Loaded += (_, _) =>
         {

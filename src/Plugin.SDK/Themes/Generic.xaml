@@ -296,6 +296,7 @@
 
                             <!-- 绑定模式 - 嵌入ParamBinding控件 -->
                             <controls:ParamBinding x:Name="PART_ParamBinding"
+                                                AllowGlobalVariableBinding="True"
                                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource TemplatedParent}}"
                                                 DataType="{Binding DataType, RelativeSource={RelativeSource TemplatedParent}}"
                                                 ParameterName="{Binding ParameterName, RelativeSource={RelativeSource TemplatedParent}}"

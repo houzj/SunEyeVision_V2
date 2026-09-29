@@ -103,6 +103,127 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 manager.AddReceiveEvent(dialog.Result);
         }
 
+        private void ReceiveEventItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var current = e.OriginalSource as DependencyObject ?? sender as DependencyObject;
+            while (current != null && current is not ListBoxItem)
+                current = VisualTreeHelper.GetParent(current);
+
+            if (current is ListBoxItem item)
+            {
+                item.IsSelected = true;
+                item.Focus();
+            }
+        }
+
+        private static CommunicationReceiveEventViewModel? GetContextMenuReceiveEvent(object sender)
+        {
+            if (sender is not MenuItem menuItem ||
+                ItemsControl.ItemsControlFromItemContainer(menuItem) is not ContextMenu contextMenu ||
+                contextMenu.PlacementTarget is not FrameworkElement target)
+                return null;
+            return target.DataContext as CommunicationReceiveEventViewModel;
+        }
+
+        private void RenameReceiveEvent_Click(object sender, RoutedEventArgs e)
+        {
+            var definition = GetContextMenuReceiveEvent(sender);
+            if (definition == null || DataContext is not CommunicationManagerViewModel manager) return;
+            manager.SelectedReceiveEvent = definition;
+            var dialog = new CommunicationRenameDialog(definition.DisplayName, "事件") { Owner = this };
+            if (dialog.ShowDialog() == true)
+                manager.RenameReceiveEvent(definition, dialog.DeviceName);
+        }
+
+        private void DeleteReceiveEvent_Click(object sender, RoutedEventArgs e)
+        {
+            var definition = GetContextMenuReceiveEvent(sender);
+            if (definition == null || DataContext is not CommunicationManagerViewModel manager) return;
+            var result = MessageBox.Show(this, $"确定删除接收事件“{definition.DisplayName}”吗？", "删除接收事件",
+                MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Yes)
+                manager.RemoveReceiveEvent(definition);
+        }
+
+        private void AddReceiveEventOutput_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager)
+                manager.AddReceiveEventOutput();
+        }
+
+        private void RemoveReceiveEventOutput_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager &&
+                sender is FrameworkElement { DataContext: CommunicationEventOutputViewModel output })
+                manager.RemoveReceiveEventOutput(output);
+        }
+
+        private void ClearReceiveEventMessage_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager)
+                manager.ClearReceiveEventMessage();
+        }
+
+        private void CompareInputTab_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager && manager.SelectedReceiveEvent != null)
+                manager.SelectedReceiveEvent.IsAssemblyConfigTab = false;
+        }
+
+        private void CompareAssemblyTab_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager && manager.SelectedReceiveEvent != null)
+                manager.SelectedReceiveEvent.IsAssemblyConfigTab = true;
+        }
+
+        private void RemoveCompareInput_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager &&
+                sender is FrameworkElement { DataContext: CommunicationCompareInputViewModel input } &&
+                manager.SelectedReceiveEvent != null)
+            {
+                manager.RemoveCompareInput(input);
+            }
+        }
+
+        private void RemoveAssemblyOutput_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager &&
+                sender is FrameworkElement { DataContext: CommunicationAssemblyOutputViewModel output } &&
+                manager.SelectedReceiveEvent != null)
+            {
+                manager.RemoveAssemblyOutput(output);
+            }
+        }
+
+        private void ReceiveEventDataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (sender is not DataGrid dataGrid ||
+                FindVisualChild<ScrollViewer>(dataGrid) is not { } scrollViewer)
+                return;
+
+            var nextOffset = scrollViewer.VerticalOffset - e.Delta / 3.0;
+            var maxOffset = Math.Max(0, scrollViewer.ExtentHeight - scrollViewer.ViewportHeight);
+            if (nextOffset <= 0 && e.Delta > 0)
+                return;
+            if (nextOffset >= maxOffset && e.Delta < 0)
+                return;
+
+            scrollViewer.ScrollToVerticalOffset(Math.Clamp(nextOffset, 0, maxOffset));
+            e.Handled = true;
+        }
+
+        private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (var index = 0; index < VisualTreeHelper.GetChildrenCount(parent); index++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, index);
+                if (child is T match) return match;
+                if (FindVisualChild<T>(child) is { } nested) return nested;
+            }
+            return null;
+        }
+
         private void AddModbusAddressPoint_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is CommunicationManagerViewModel manager && manager.SelectedWorkspace != null)

@@ -253,10 +253,11 @@
                     <TextBlock Text="（参数绑定控件：支持直接输入和绑定到其他节点）" FontSize="11" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" Margin="0,0,0,12"/>
 
                     <!-- 未绑定状态 -->
-                    <controls:ParamBinding Margin="0,0,0,12"/>
+                    <controls:ParamBinding Margin="0,0,0,12" AllowGlobalVariableBinding="True"/>
 
                     <!-- 模拟绑定状态（使用固定文本模拟） -->
-                    <controls:ParamBinding IsBound="True"
+                    <controls:ParamBinding AllowGlobalVariableBinding="True"
+                                          IsBound="True"
                                           BindingDisplayText="节点1.阈值"/>
                 </StackPanel>
             </Border>

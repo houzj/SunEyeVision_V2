@@ -31,6 +31,7 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     private string? _activeCorrelationId;
     private IReadOnlyDictionary<string, object?> _activeCaptureParameters = new Dictionary<string, object?>();
     private bool _configurationValid;
+    private bool _activeConfigurationStale;
     private bool _singleFrameMode;
     private long _displayedFrameCount;
     private long _previewGeneration;
@@ -49,9 +50,11 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     public bool CanToggleAcquisition => IsAcquiring
         ? !IsSingleCaptureInProgress
         : _configurationValid;
-    public bool CanCaptureSingle => _configurationValid && !IsSingleCaptureInProgress;
+    public bool CanCaptureSingle => _configurationValid
+        && (!IsAcquiring || !_activeConfigurationStale) && !IsSingleCaptureInProgress;
     public bool CanSoftwareTrigger => IsAcquiring
         && _activeMode == CameraTriggerMode.Software
+        && _configurationValid && !_activeConfigurationStale
         && _session?.Adapter.Capabilities.SupportsSoftwareTrigger == true;
     public string ConfigurationSummary { get; private set; } = "正在读取设备采集配置";
     public string CaptureStatus { get; private set; } = "已连接，尚未开始采集";
@@ -92,14 +95,11 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[camera-trace={correlationId ?? "preview-open"}] 标准化采集配置 camera={_cameraRef.Value} adapter={_session.Adapter.AdapterId} generation={generation} acquisition={configuration.AcquisitionModeName} streamMode={configuration.StreamMode} triggerSource={configuration.TriggerSourceName} valid={configuration.IsValid}",
                 "CameraPreviewTrace", target: LogTarget.All);
-            _activeMode = configuration.StreamMode;
-            _singleFrameMode = configuration.IsSingleFrame;
-            _activeCaptureParameters = new Dictionary<string, object?>();
             _configurationValid = configuration.IsValid;
             var sourceDescription = string.IsNullOrWhiteSpace(configuration.TriggerSourceName)
                 ? configuration.StatusMessage
                 : configuration.TriggerSourceName;
-            _activeDescription = configuration.StreamMode switch
+            var configuredDescription = configuration.StreamMode switch
             {
                 CameraTriggerMode.Software => $"{configuration.AcquisitionModeName} · 等待软件触发",
                 CameraTriggerMode.Hardware => $"{configuration.AcquisitionModeName} · 等待外部触发 {sourceDescription}",
@@ -108,11 +108,29 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
             ConfigurationSummary = string.IsNullOrWhiteSpace(sourceDescription)
                 ? configuration.AcquisitionModeName
                 : $"{configuration.AcquisitionModeName} · {sourceDescription}";
-            CaptureStatus = IsAcquiring
-                ? (_activeMode == CameraTriggerMode.Software ? "采集中，等待软件触发"
-                    : _activeMode == CameraTriggerMode.Hardware ? "采集中，等待外部触发" : "采集中")
-                : configuration.IsValid ? "已连接，尚未开始采集"
+            if (IsAcquiring)
+            {
+                // A running request keeps its original mode until stopped. Never relabel that stream
+                // as the newly read device mode merely because a parameter changed elsewhere.
+                _activeConfigurationStale |= !configuration.IsValid
+                    || _activeMode != configuration.StreamMode
+                    || _singleFrameMode != configuration.IsSingleFrame
+                    || !string.Equals(_activeDescription, configuredDescription, StringComparison.Ordinal);
+                CaptureStatus = _activeConfigurationStale
+                    ? "设备采集配置已改变，请停止后重新启动"
+                    : _activeMode == CameraTriggerMode.Software ? "采集中，等待软件触发"
+                    : _activeMode == CameraTriggerMode.Hardware ? "采集中，等待外部触发" : "采集中";
+            }
+            else
+            {
+                _activeMode = configuration.StreamMode;
+                _singleFrameMode = configuration.IsSingleFrame;
+                _activeDescription = configuredDescription;
+                _activeCaptureParameters = new Dictionary<string, object?>();
+                _activeConfigurationStale = false;
+                CaptureStatus = configuration.IsValid ? "已连接，尚未开始采集"
                     : configuration.StatusMessage ?? "采集配置无效";
+            }
             RaiseCaptureStateChanged();
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -187,6 +205,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
         await RefreshConfigurationAsync("single-capture").ConfigureAwait(true);
         if (!_configurationValid)
             throw new InvalidOperationException(ConfigurationSummary);
+        if (_activeConfigurationStale)
+            throw new InvalidOperationException("设备采集配置已改变，请先停止并重新启动采集。");
 
         Interlocked.Exchange(ref _singleShotRequested, 1);
         RaiseCaptureStateChanged();
@@ -381,7 +401,9 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
         await Dispatcher.InvokeAsync(() =>
         {
             ImageDisplay.SourceImage = bitmap;
-            if (_activeMode == CameraTriggerMode.Continuous)
+            if (_activeConfigurationStale)
+                StatusText.Text = "设备采集配置已改变，请停止后重新启动";
+            else if (_activeMode == CameraTriggerMode.Continuous)
                 StatusText.Text = $"{_activeDescription} · 帧 {frameId}";
             else if (_activeMode == CameraTriggerMode.Software)
                 StatusText.Text = $"已收到软件触发帧 {frameId}";

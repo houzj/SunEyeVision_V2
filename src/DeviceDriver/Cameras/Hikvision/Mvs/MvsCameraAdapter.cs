@@ -113,7 +113,9 @@ public sealed class MvsCameraAdapter : ICameraAdapter
                 && request.Parameters.TryGetValue("FireSoftwareTrigger", out var fire)
                 && fire is true)
             {
-                await ExecuteSoftwareTriggerAsync(cancellationToken).ConfigureAwait(false);
+                // One-shot workflow capture has no preview stream; its mode was verified by
+                // CameraRuntimeManager before setting FireSoftwareTrigger.
+                SendSoftwareTriggerCommand(cancellationToken);
             }
             State = CameraState.Capturing;
             var frame = new MyCamera.MV_FRAME_OUT { nReserved = new uint[16] };
@@ -297,6 +299,8 @@ public sealed class MvsCameraAdapter : ICameraAdapter
                     {
                         var categoryName = string.IsNullOrWhiteSpace(node.strDisplayName)
                             ? node.strName : node.strDisplayName;
+                        // '/' 是 Category 路径分隔符；保留设备类别里的 I/O 等字样为单个节点。
+                        categoryName = categoryName.Replace('/', '／');
                         var nextPath = string.IsNullOrWhiteSpace(categoryPath)
                             ? categoryName : $"{categoryPath}/{categoryName}";
                         EnumerateChildren(node, nextPath, depth + 1);
@@ -328,60 +332,31 @@ public sealed class MvsCameraAdapter : ICameraAdapter
     public async Task<CameraCaptureConfiguration> ReadCaptureConfigurationAsync(CancellationToken cancellationToken)
     {
         EnsureConnected();
-        var values = await ReadParametersAsync(
-            new[] { "AcquisitionMode", "TriggerMode", "TriggerSource" }, cancellationToken).ConfigureAwait(false);
-        var acquisitionRaw = values.TryGetValue("AcquisitionMode", out var acquisitionValue)
-            ? Convert.ToString(acquisitionValue, CultureInfo.InvariantCulture) : null;
-        var (acquisitionName, singleFrame) = acquisitionRaw switch
+#if MVS_SDK_AVAILABLE
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            "0" => ("单帧", true),
-            "1" => ("多帧", false),
-            "2" => ("连续", false),
-            _ => ("未知采集模式", false)
-        };
-
-        if (!values.TryGetValue("TriggerMode", out var triggerMode))
-        {
-            _softwareTriggerPreview = false;
-            return Capabilities.SupportsSoftwareTrigger || Capabilities.SupportsHardwareTrigger
-                ? new CameraCaptureConfiguration { AcquisitionModeName = acquisitionName, IsSingleFrame = singleFrame, IsValid = false, StatusMessage = "无法读取触发模式" }
-                : new CameraCaptureConfiguration { AcquisitionModeName = acquisitionName, IsSingleFrame = singleFrame, StatusMessage = "设备不支持触发" };
+            // Read each current enum value and its device-provided symbolic choices under one gate.
+            // The same numeric value can mean Software on one camera and Line0 on another.
+            var acquisition = DescribeNodeByName("AcquisitionMode");
+            var triggerMode = DescribeNodeByName("TriggerMode");
+            var triggerSource = DescribeNodeByName("TriggerSource");
+            var selector = DescribeNodeByName("TriggerSelector");
+            var configuration = MvsCaptureConfigurationParser.Parse(
+                acquisition, triggerMode, triggerSource, selector);
+            LogCamera(configuration.IsValid ? LogLevel.Info : LogLevel.Warning,
+                $"采集配置读回 acquisition={MvsCaptureConfigurationParser.Describe(acquisition)} " +
+                $"triggerMode={MvsCaptureConfigurationParser.Describe(triggerMode)} " +
+                $"triggerSource={MvsCaptureConfigurationParser.Describe(triggerSource)} " +
+                $"triggerSelector={MvsCaptureConfigurationParser.Describe(selector)} " +
+                $"normalized={configuration.StreamMode} valid={configuration.IsValid} reason={configuration.StatusMessage ?? "<none>"}");
+            return configuration;
         }
-
-        if (!IsMvsEnabled(triggerMode))
-        {
-            _softwareTriggerPreview = false;
-            return new CameraCaptureConfiguration
-            {
-                StreamMode = CameraTriggerMode.Continuous,
-                AcquisitionModeName = acquisitionName,
-                IsSingleFrame = singleFrame,
-                StatusMessage = "触发关闭"
-            };
-        }
-
-        if (!values.TryGetValue("TriggerSource", out var triggerSource) || triggerSource is null)
-        {
-            _softwareTriggerPreview = false;
-            return new CameraCaptureConfiguration { AcquisitionModeName = acquisitionName, IsSingleFrame = singleFrame, IsValid = false, StatusMessage = "触发已开启，但无法读取触发源" };
-        }
-
-        var sourceRaw = Convert.ToString(triggerSource, CultureInfo.InvariantCulture);
-        var software = sourceRaw == "7";
-        _softwareTriggerPreview = software;
-        return new CameraCaptureConfiguration
-        {
-            StreamMode = software ? CameraTriggerMode.Software : CameraTriggerMode.Hardware,
-            AcquisitionModeName = acquisitionName,
-            TriggerSourceName = sourceRaw switch { "7" => "软件触发", "0" => "线路 0", "1" => "线路 1", "2" => "线路 2", "3" => "线路 3", _ => $"外部触发 ({sourceRaw})" },
-            IsSingleFrame = singleFrame
-        };
-    }
-
-    private static bool IsMvsEnabled(object? value)
-    {
-        var text = Convert.ToString(value, CultureInfo.InvariantCulture);
-        return text is "1" or "On" or "ON" or "开启" or "True";
+        finally { _gate.Release(); }
+#else
+        await Task.CompletedTask;
+        return new CameraCaptureConfiguration { IsValid = false, StatusMessage = "未找到海康 MVS SDK" };
+#endif
     }
 
     public Task ExecuteSoftwareTriggerAsync(CancellationToken cancellationToken)
@@ -390,8 +365,22 @@ public sealed class MvsCameraAdapter : ICameraAdapter
 #if MVS_SDK_AVAILABLE
         EnsureConnected();
         if (!_grabbing || !_softwareTriggerPreview)
-            throw new InvalidOperationException("请先在预览窗口启动软件触发调试。");
+            throw new InvalidOperationException("当前取流任务未启用软件触发。");
 
+        SendSoftwareTriggerCommand(cancellationToken);
+        return Task.CompletedTask;
+#else
+        throw new CameraAdapterException(CameraErrorCode.DriverUnavailable, "未找到海康 MVS SDK");
+#endif
+    }
+
+#if MVS_SDK_AVAILABLE
+    private void SendSoftwareTriggerCommand(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        EnsureConnected();
+        if (!_grabbing)
+            throw new InvalidOperationException("相机尚未开始采集，不能发送软件触发。");
         LogCamera(LogLevel.Info, "执行软件触发命令 node=TriggerSoftware");
         var error = _camera.MV_CC_SetCommandValue_NET("TriggerSoftware");
         if (error != MyCamera.MV_OK)
@@ -400,11 +389,8 @@ public sealed class MvsCameraAdapter : ICameraAdapter
             throw new CameraAdapterException(CameraErrorCode.TriggerTimeout, $"MVS 软件触发失败: 0x{error:X8}");
         }
         LogCamera(LogLevel.Info, "软件触发命令成功 node=TriggerSoftware");
-        return Task.CompletedTask;
-#else
-        throw new CameraAdapterException(CameraErrorCode.DriverUnavailable, "未找到海康 MVS SDK");
-#endif
     }
+#endif
 
 #if MVS_SDK_AVAILABLE
     private CameraParameterDescriptor DescribeNode(

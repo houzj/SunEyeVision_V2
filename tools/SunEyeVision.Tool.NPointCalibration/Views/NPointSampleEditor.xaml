@@ -1,0 +1,142 @@
+<Window x:Class="SunEyeVision.Tool.NPointCalibration.Views.NPointSampleEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
+        Title="编辑标定点" Width="1050" Height="650" MinWidth="820" MinHeight="420"
+        WindowStartupLocation="CenterOwner" WindowStyle="None" ResizeMode="CanResizeWithGrip"
+        ShowInTaskbar="False"
+        Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
+        Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <themes:DesignTimeThemeResourceDictionary/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TableHeaderBackgroundBrush}}"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TableHeaderTextBrush}}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TableGridLineBrush}}"/>
+                <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                <Setter Property="Padding" Value="8,0"/>
+                <Setter Property="Height" Value="34"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            </Style>
+            <Style TargetType="DataGridRow">
+                <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TableRowBackgroundBrush}}"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+                <Setter Property="MinHeight" Value="36"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TableRowHoverBackgroundBrush}}"/>
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Style TargetType="DataGridCell">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TableGridLineBrush}}"/>
+                <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                <Setter Property="Padding" Value="6,0"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="PointCellText" TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+            </Style>
+            <Style x:Key="PointCellNumber" TargetType="controls:NumericUpDown"
+                   BasedOn="{StaticResource {x:Type controls:NumericUpDown}}">
+                <Setter Property="Minimum" Value="-1000000000"/>
+                <Setter Property="Maximum" Value="1000000000"/>
+                <Setter Property="DecimalPlaces" Value="3"/>
+                <Setter Property="ShowSlider" Value="False"/>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="38"/>
+            <RowDefinition Height="52"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="58"/>
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0" Background="{DynamicResource {x:Static themes:SdkThemeKeys.TitleBarBackgroundBrush}}"
+                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+            <DockPanel Margin="14,0,5,0">
+                <Button DockPanel.Dock="Right" Content="×" Width="34" Height="28" FontSize="19"
+                        Click="Cancel_Click" ToolTip="关闭"/>
+                <TextBlock Text="编辑标定点" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"
+                           Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TitleBarTextBrush}}"/>
+            </DockPanel>
+        </Border>
+        <Border Grid.Row="1" Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelHeaderBackgroundBrush}}"
+                BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0">
+                <TextBlock Text="标定点矩阵" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center"/>
+                <TextBlock Text="  ·  勾选有效点，双击数值编辑" Margin="10,0,0,0" VerticalAlignment="Center"
+                           Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
+            </StackPanel>
+        </Border>
+        <Border Grid.Row="2" Margin="12" BorderThickness="1"
+                BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.TableGridLineBrush}}">
+            <DataGrid x:Name="SampleGrid" AutoGenerateColumns="False" CanUserAddRows="False"
+                      CanUserDeleteRows="False" HeadersVisibility="Column" RowHeaderWidth="0"
+                      GridLinesVisibility="None" SelectionMode="Single" IsReadOnly="False"
+                      Background="{DynamicResource {x:Static themes:SdkThemeKeys.TableRowBackgroundBrush}}"
+                      Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                      BorderThickness="0" FontSize="12">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="序号" Binding="{Binding Id}" IsReadOnly="True" Width="50"/>
+                    <DataGridTextColumn Header="类别" Binding="{Binding KindText}" IsReadOnly="True" Width="72"/>
+                    <DataGridTemplateColumn Header="有效" Width="60">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate><CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center"/></DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="图像 X" Width="*">
+                        <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource PointCellText}" Text="{Binding ImageX, StringFormat=F3}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><controls:NumericUpDown Style="{StaticResource PointCellNumber}" Value="{Binding ImageX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="图像 Y" Width="*">
+                        <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource PointCellText}" Text="{Binding ImageY, StringFormat=F3}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><controls:NumericUpDown Style="{StaticResource PointCellNumber}" Value="{Binding ImageY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="物理 X" Width="*">
+                        <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource PointCellText}" Text="{Binding PhysicalX, StringFormat=F3}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><controls:NumericUpDown Style="{StaticResource PointCellNumber}" Value="{Binding PhysicalX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="物理 Y" Width="*">
+                        <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource PointCellText}" Text="{Binding PhysicalY, StringFormat=F3}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><controls:NumericUpDown Style="{StaticResource PointCellNumber}" Value="{Binding PhysicalY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="图像角度" Width="*">
+                        <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource PointCellText}" Text="{Binding ImageAngle, StringFormat=F3}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><controls:NumericUpDown Style="{StaticResource PointCellNumber}" Value="{Binding ImageAngle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="物理角度" Width="*">
+                        <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource PointCellText}" Text="{Binding PhysicalAngle, StringFormat=F3}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><controls:NumericUpDown Style="{StaticResource PointCellNumber}" Value="{Binding PhysicalAngle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+        <Border Grid.Row="3" Background="{DynamicResource {x:Static themes:SdkThemeKeys.ToolBarBackgroundBrush}}"
+                BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0">
+                <Button Content="导入 CSV" Click="Import_Click" Margin="4,0" Padding="12,6"/>
+                <Button Content="导出 CSV" Click="Export_Click" Margin="4,0" Padding="12,6"/>
+                <Button Content="清空" Click="Clear_Click" Margin="4,0,12,0" Padding="12,6"/>
+                <Button Content="取消" Click="Cancel_Click" Margin="4,0" Padding="14,6"/>
+                <Button Content="确定" Click="Confirm_Click" Margin="4,0" Padding="16,6"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

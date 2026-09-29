@@ -111,6 +111,28 @@ public class NPointCalibrationTests
     }
 
     [Fact]
+    public void PointEditorLoadsThemedGridWithoutMainWindow()
+    {
+        Exception? error = null;
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                var editor = new Views.NPointSampleEditor(new NPointCalibrationParameters());
+                var grid = Assert.IsType<System.Windows.Controls.DataGrid>(editor.FindName("SampleGrid"));
+                Assert.Equal(9, grid.Columns.Count);
+                Assert.Equal(12, grid.Items.Count);
+                editor.Close();
+            }
+            catch (Exception ex) { error = ex; }
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+        Assert.Null(error);
+    }
+
+    [Fact]
     public void RelativeCoordinatesUseSelectedOrigin()
     {
         var p = new NPointCalibrationParameters

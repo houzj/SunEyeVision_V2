@@ -22,6 +22,8 @@ public sealed class NPointSample
 {
     public int Id { get; set; }
     public NPointSampleKind Kind { get; set; }
+    [JsonIgnore]
+    public string KindText => Kind == NPointSampleKind.Translation ? "平移" : "旋转";
     public double ImageX { get; set; }
     public double ImageY { get; set; }
     public double PhysicalX { get; set; }

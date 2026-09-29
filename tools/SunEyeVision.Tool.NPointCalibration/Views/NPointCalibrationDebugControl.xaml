@@ -18,6 +18,8 @@
                 <themes:DesignTimeThemeResourceDictionary/>
             </ResourceDictionary.MergedDictionaries>
             <converters:EnumToVisibilityConverter x:Key="EnumVisibility"/>
+            <converters:EnumToBoolConverter x:Key="EnumToBool"/>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>
     </controls:ToolDebugControlBase.Resources>
     <DockPanel>
@@ -38,10 +40,12 @@
                             </ComboBox>
                         </controls:LabeledControl>
                         <controls:LabeledControl Label="标定点输入">
-                            <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding InputMode, Mode=TwoWay}" Width="240">
-                                <ComboBoxItem Content="按点" Tag="{x:Static local:NPointInputMode.Point}"/>
-                                <ComboBoxItem Content="按坐标" Tag="{x:Static local:NPointInputMode.Coordinates}"/>
-                            </ComboBox>
+                            <StackPanel Orientation="Horizontal" Width="240">
+                                <RadioButton Content="按点" GroupName="NPointInputMode" Margin="0,0,16,0"
+                                             IsChecked="{Binding InputMode, Mode=TwoWay, Converter={StaticResource EnumToBool}, ConverterParameter=Point}"/>
+                                <RadioButton Content="按坐标" GroupName="NPointInputMode"
+                                             IsChecked="{Binding InputMode, Mode=TwoWay, Converter={StaticResource EnumToBool}, ConverterParameter=Coordinates}"/>
+                            </StackPanel>
                         </controls:LabeledControl>
                         <StackPanel Visibility="{Binding InputMode, Converter={StaticResource EnumVisibility}, ConverterParameter=Point}">
                         <controls:LabeledControl Label="图像点">
@@ -81,40 +85,56 @@
                             <controls:ConfigSetting ParameterName="PhysicalAngle" DataType="{x:Type sys:Double}" Value="{Binding PhysicalAngle, Mode=TwoWay}" Width="240"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                         </controls:LabeledControl>
+                        <controls:LabeledControl Label="平移次数">
+                            <controls:NumericUpDown Width="240" IntValue="{Binding TranslationCount, Mode=TwoWay}"
+                                                    Minimum="1" Maximum="1000" ShowSlider="False"/>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="旋转次数">
+                            <StackPanel Orientation="Horizontal">
+                                <controls:NumericUpDown Width="194" IntValue="{Binding RotationCount, Mode=TwoWay}"
+                                                        Minimum="0" Maximum="1000" ShowSlider="False"/>
+                                <Button Content="✎" ToolTip="编辑标定点" Width="38" Margin="8,0,0,0" Click="EditSamples_Click"/>
+                            </StackPanel>
+                        </controls:LabeledControl>
                         <controls:LabeledControl Label="示教触发">
                             <controls:ConfigSetting ParameterName="TeachSignal" DataType="{x:Type sys:Boolean}" Value="{Binding TeachSignal, Mode=TwoWay}" Width="240"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                         </controls:LabeledControl>
-                        <CheckBox Content="启用字符示教触发" IsChecked="{Binding TeachEnabled, Mode=TwoWay}"/>
-                        <controls:LabeledControl Label="外部输入字符">
-                            <controls:ConfigSetting ParameterName="ExternalInputText" DataType="{x:Type sys:String}" Value="{Binding ExternalInputText, Mode=TwoWay}" Width="240"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        <controls:LabeledControl Label="字符示教">
+                            <controls:ToggleSwitch IsChecked="{Binding TeachEnabled, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/>
                         </controls:LabeledControl>
-                        <controls:LabeledControl Label="外部触发字符"><TextBox Width="240" Text="{Binding TeachTriggerText, Mode=TwoWay}"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="示教事件序号">
-                            <controls:ConfigSetting ParameterName="TeachEventId" DataType="{x:Type sys:Int64}" Value="{Binding TeachEventId, Mode=TwoWay}" Width="240"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        <TextBlock Text="事件序号可绑定通讯消息序号；未绑定时需先释放触发，再次触发才能采下一点。" TextWrapping="Wrap" Margin="0,4,0,8"/>
-                        <controls:LabeledControl Label="平移次数"><TextBox Width="240" Text="{Binding TranslationCount, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="旋转次数">
-                            <StackPanel Orientation="Horizontal"><TextBox Width="194" Text="{Binding RotationCount, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
-                                <Button Content="✎" ToolTip="编辑标定点" Width="38" Margin="8,0,0,0" Click="EditSamples_Click"/></StackPanel>
-                        </controls:LabeledControl>
+                        <StackPanel Visibility="{Binding TeachEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <controls:LabeledControl Label="输入字符">
+                                <controls:ConfigSetting ParameterName="ExternalInputText" DataType="{x:Type sys:String}" Value="{Binding ExternalInputText, Mode=TwoWay}" Width="240"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="触发字符"><TextBox Width="240" Text="{Binding TeachTriggerText, Mode=TwoWay}"/></controls:LabeledControl>
+                            <controls:LabeledControl Label="事件序号">
+                                <controls:ConfigSetting ParameterName="TeachEventId" DataType="{x:Type sys:Int64}" Value="{Binding TeachEventId, Mode=TwoWay}" Width="240"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                            </controls:LabeledControl>
+                        </StackPanel>
                         <TextBlock Text="物理坐标系参数" FontWeight="Bold" Margin="0,16,0,8"/>
-                        <CheckBox Content="由基准点和偏移自动生成物理点（计划位置，不是机构实际回读）" IsChecked="{Binding UseGeneratedPhysical, Mode=TwoWay}"/>
-                        <controls:LabeledControl Label="基准点 X"><TextBox Width="240" Text="{Binding BaseX, Mode=TwoWay}"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="基准点 Y"><TextBox Width="240" Text="{Binding BaseY, Mode=TwoWay}"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="偏移 X"><TextBox Width="240" Text="{Binding OffsetX, Mode=TwoWay}"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="偏移 Y"><TextBox Width="240" Text="{Binding OffsetY, Mode=TwoWay}"/></controls:LabeledControl>
-                        <CheckBox Content="X 优先" IsChecked="{Binding XFirst, Mode=TwoWay}"/>
-                        <controls:LabeledControl Label="换向移动次数"><TextBox Width="240" Text="{Binding ReverseAfter, Mode=TwoWay}"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="基准角度"><TextBox Width="240" Text="{Binding BaseAngle, Mode=TwoWay}"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="角度偏移"><TextBox Width="240" Text="{Binding AngleStep, Mode=TwoWay}"/></controls:LabeledControl>
-                        <CheckBox Content="使用相对坐标" IsChecked="{Binding UseRelativeCoordinates, Mode=TwoWay}"/>
-                        <controls:LabeledControl Label="标定原点点号"><TextBox Width="240" Text="{Binding OriginIndex, Mode=TwoWay}"/></controls:LabeledControl>
+                        <controls:LabeledControl Label="自动生成物理点">
+                            <controls:ToggleSwitch IsChecked="{Binding UseGeneratedPhysical, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="基准点 X"><controls:NumericUpDown Width="240" Value="{Binding BaseX, Mode=TwoWay}" Minimum="-1000000000" Maximum="1000000000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
+                        <controls:LabeledControl Label="基准点 Y"><controls:NumericUpDown Width="240" Value="{Binding BaseY, Mode=TwoWay}" Minimum="-1000000000" Maximum="1000000000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
+                        <controls:LabeledControl Label="偏移 X"><controls:NumericUpDown Width="240" Value="{Binding OffsetX, Mode=TwoWay}" Minimum="-1000000000" Maximum="1000000000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
+                        <controls:LabeledControl Label="偏移 Y"><controls:NumericUpDown Width="240" Value="{Binding OffsetY, Mode=TwoWay}" Minimum="-1000000000" Maximum="1000000000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
+                        <controls:LabeledControl Label="移动优先方向">
+                            <ComboBox Width="240" SelectedValuePath="Tag" SelectedValue="{Binding XFirst, Mode=TwoWay}">
+                                <ComboBoxItem Content="X 优先"><ComboBoxItem.Tag><sys:Boolean>True</sys:Boolean></ComboBoxItem.Tag></ComboBoxItem>
+                                <ComboBoxItem Content="Y 优先"><ComboBoxItem.Tag><sys:Boolean>False</sys:Boolean></ComboBoxItem.Tag></ComboBoxItem>
+                            </ComboBox>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="换向移动次数"><controls:NumericUpDown Width="240" IntValue="{Binding ReverseAfter, Mode=TwoWay}" Minimum="1" Maximum="1000" ShowSlider="False"/></controls:LabeledControl>
+                        <controls:LabeledControl Label="基准角度"><controls:NumericUpDown Width="240" Value="{Binding BaseAngle, Mode=TwoWay}" Minimum="-36000" Maximum="36000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
+                        <controls:LabeledControl Label="角度偏移"><controls:NumericUpDown Width="240" Value="{Binding AngleStep, Mode=TwoWay}" Minimum="-36000" Maximum="36000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
+                        <controls:LabeledControl Label="使用相对坐标"><controls:ToggleSwitch IsChecked="{Binding UseRelativeCoordinates, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/></controls:LabeledControl>
+                        <controls:LabeledControl Label="标定原点点号"><controls:NumericUpDown Width="240" IntValue="{Binding OriginIndex, Mode=TwoWay}" Minimum="0" Maximum="1000" ShowSlider="False"/></controls:LabeledControl>
                         <TextBlock Text="标定文件" FontWeight="Bold" Margin="0,16,0,8"/>
-                        <CheckBox Content="求解成功后更新文件" IsChecked="{Binding UpdateFileAfterSolve, Mode=TwoWay}"/>
+                        <controls:LabeledControl Label="求解后更新文件"><controls:ToggleSwitch IsChecked="{Binding UpdateFileAfterSolve, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/></controls:LabeledControl>
                         <controls:LabeledControl Label="标定文件路径">
                             <StackPanel Orientation="Horizontal"><TextBox Width="194" Text="{Binding CalibrationFilePath, Mode=TwoWay}"/>
                                 <Button Content="…" Width="38" Margin="8,0,0,0" Click="ChooseFile_Click"/></StackPanel>
@@ -146,7 +166,7 @@
                             <ComboBoxItem Content="Tukey（待实现）" Tag="{x:Static local:NPointWeightFunction.Tukey}"/>
                         </ComboBox>
                     </controls:LabeledControl>
-                    <controls:LabeledControl Label="权重系数"><TextBox Width="240" Text="{Binding WeightCoefficient, Mode=TwoWay}"/></controls:LabeledControl>
+                    <controls:LabeledControl Label="权重系数"><controls:NumericUpDown Width="240" Value="{Binding WeightCoefficient, Mode=TwoWay}" Minimum="0" Maximum="1000000" DecimalPlaces="2" ShowSlider="False"/></controls:LabeledControl>
                 </StackPanel></ScrollViewer>
             </TabItem>
             <TabItem Header="结果显示">

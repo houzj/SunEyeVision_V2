@@ -2753,6 +2753,10 @@
                                     {
                                         "date":  "2026-09-28",
                                         "note":  "[2243736c287b512a627b76542434732871f752e8] feat(calibration): 新增 N 点标定工具插件与三页调试界面"
+                                    },
+                                    {
+                                        "date":  "2026-09-29",
+                                        "note":  "[965bb03d5e1de5d05b4ab97c9da2adb6fd8a2b5c] refactor(calibration): N 点标定参数布局对齐 VM，标定点编辑窗改为独立主题化 XAML"
                                     }
                                 ]
                     },
@@ -4821,6 +4825,15 @@
                        }
                    ],
     "tempTasks":  [
-
+                      {
+                          "id":  "TMP-05c8803",
+                          "message":  "docs: 同步协作任务卡（N 点标定 UI 对齐与验证记录）",
+                          "date":  "2026-09-29",
+                          "commit":  "05c88036ffc934ba2af741ae64564f7176a1335a",
+                          "files":  [
+                                        "docs/collaboration/CURRENT_TASK.md"
+                                    ],
+                          "status":  "in_progress"
+                      }
                   ]
 }

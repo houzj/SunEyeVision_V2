@@ -2038,6 +2038,10 @@
                                     {
                                         "date":  "2026-09-28",
                                         "note":  "[2684706d50b6ca328d9e568bd15b755b8a15ec1c] feat(core): OPC UA 收敛匿名联调并新增数据点表与事件窗口"
+                                    },
+                                    {
+                                        "date":  "2026-09-29",
+                                        "note":  "[acb05d61bb0881ee6a852a6c71d5bf92ec63034e] feat(core): 通讯解析字段与统一绑定模型并修复管理器打开异常"
                                     }
                                 ]
                     },
@@ -2124,7 +2128,7 @@
                         "type":  "module",
                         "layer":  "source",
                         "stage":  "P7",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2027-02-08",
                         "end":  "2027-02-26",
                         "goal":  "抓取成功率 ≥ 95%（首期目标）",
@@ -2139,7 +2143,7 @@
                                           "name":  "端到端联调（相机采图 → 定位 → 坐标转换 → 下发）",
                                           "phase":  "算法实现",
                                           "hours":  24,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2027-W06"
                                       },
                                       {
@@ -2171,7 +2175,10 @@
 
                                  ],
                         "log":  [
-
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[3513c3f36d2fb4c17dd540c3525de612399d9f7c] docs(core): 新增 OPC UA 数据点表与匿名联调优化方案"
+                                    }
                                 ]
                     },
                     {

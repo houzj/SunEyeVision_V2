@@ -1,5 +1,11 @@
 # 当前协作任务
 
+- 2026-09-29 应用户关闭程序后的要求构建巴斯勒属性树修复：确认 UI 进程为 0 后执行 `dotnet build src/UI/SunEyeVision.UI.csproj -c Debug --no-restore -m:1 -p:UseSharedCompilation=false -v:q -clp:ErrorsOnly`，成功，0 错误、1048 警告。核对 `dev/Debug/SunEyeVision.UI.exe` 和 UI DLL 时间为 14:31:31、DeviceDriver DLL 为 14:30:57；`git diff --check` 通过。未启动应用、未触碰相机，用户可见中文分类和 VS 设计时仍待验收。
+
+- 2026-09-29 巴斯勒相机属性树中文分类：用户实机确认连接和参数操作正常，但 SDK 类别以英文复数名称显示。UI 补齐巴斯勒常见分类映射，保留未知厂商类别原名；MVS 适配器将原生类别名中的 `/` 转义为全角斜杠，避免 `Digital I/O Controls` 被误拆成两级；同时移除分类映射中重复键。因共享 Release 中间目录写入被拒绝，改用 `build_validation` 独立输出运行 UI 定向测试，11/11 通过；`git diff --check` 通过，临时构建目录已清理。未改相机参数键和值，未接触运行中相机程序；Debug 输出和用户可见界面、VS 设计时仍待验收。保留先前跨厂商触发配置的未提交改动。
+
+- 2026-09-29 跨厂商 MVS 触发配置修复（基线 `12cf0a16`）：信捷相机 `TriggerSource=0/Software` 被旧硬编码误判为 `Line0`。新增 `MvsCaptureConfigurationParser`，MVS 在同一设备操作门内读取枚举原始值及设备符号名，以符号名归一化采集/触发模式和 FrameStart 选择器；未知值拒绝采集并记录 raw/symbolic/归一化诊断，不再用跨厂商固定数字。预览运行中改动 AcquisitionMode/TriggerMode/TriggerSource/TriggerSelector 时先停旧流、写入回读、按新配置重启，失败后保持停止；其他来源改动运行配置时不把旧取流任务误标为新模式。单次工作流软件触发改走已归一化请求的命令路径，不依赖预览取流标记。更新相机开发说明。全量 Release 构建 0 错误（815 警告）、UI Debug 构建 0 错误（907 警告），DeviceDriver Release 非真实硬件测试 11/11、跨厂商解析 Release/Debug 各 6/6、UI 工作流帧测试 Release/Debug 各 2/2 通过，`git diff --check` 无空白错误。未启动额外 Release UI 或争用真机；信捷/海康实时触发、VS 设计时和用户可见 UI 仍待人工验收。Debug 输出已更新，需重启现有应用加载新程序集。
+
 - 2026-09-29 N 点标定 UI 对齐 VM 参数布局：标定点输入改为“按点/按坐标”单选，平移/旋转次数紧随物理角度；字符示教改开关并仅启用时显示输入字符/触发字符/事件序号，移除大段说明；自动生成物理点、相对坐标和文件更新改为开关；X/Y 优先改下拉框；无需绑定的次数、基准/偏移/角度等数据用 SDK NumericUpDown。标定点编辑窗由原生代码拼装 DataGrid 改为独立 XAML 主题化窗口，包含暗色标题/表格/按钮、中文类别、数字单元格编辑，保留 CSV 和确认/取消语义。全量 Release 0 错误（994 警告），N 点 Release/Debug 测试各 9/9 通过（新增窗口加载测试），N 点插件 Debug 构建 0 错误并更新 `dev/Debug/plugins/SunEyeVision.Tool.NPointCalibration/`，`git diff --check` 无空白错误。当前 UI 实例运行中，未另启 Release 程序或完成 VS 设计时/用户可见界面验收；须重启 Debug 实例后人工确认主题切换、数值编辑和布局。
 
 - 2026-09-28 N 点标定工具箱不可见修复：原因是上轮只构建 Release，用户从 `dev/Debug` 启动，而 `dev/Debug/plugins/SunEyeVision.Tool.NPointCalibration/` 原先不存在。已完成全量 Debug 构建（0 错误，1122 警告），按插件目录与同名主 DLL 的发现约定核对 `dev/Debug/plugins/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.dll` 已生成；Debug N 点定向测试 8/8 通过。需要重新启动 `dev/Debug/SunEyeVision.UI.exe` 才会重新扫描插件，工具应在“标定”分类显示；可见界面仍待用户验收。未结束用户进程，也未触碰其他在途改动。

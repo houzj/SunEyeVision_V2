@@ -1,5 +1,7 @@
 # 当前协作任务
 
+- 2026-09-29 N 点标定 UI 对齐 VM 参数布局：标定点输入改为“按点/按坐标”单选，平移/旋转次数紧随物理角度；字符示教改开关并仅启用时显示输入字符/触发字符/事件序号，移除大段说明；自动生成物理点、相对坐标和文件更新改为开关；X/Y 优先改下拉框；无需绑定的次数、基准/偏移/角度等数据用 SDK NumericUpDown。标定点编辑窗由原生代码拼装 DataGrid 改为独立 XAML 主题化窗口，包含暗色标题/表格/按钮、中文类别、数字单元格编辑，保留 CSV 和确认/取消语义。全量 Release 0 错误（994 警告），N 点 Release/Debug 测试各 9/9 通过（新增窗口加载测试），N 点插件 Debug 构建 0 错误并更新 `dev/Debug/plugins/SunEyeVision.Tool.NPointCalibration/`，`git diff --check` 无空白错误。当前 UI 实例运行中，未另启 Release 程序或完成 VS 设计时/用户可见界面验收；须重启 Debug 实例后人工确认主题切换、数值编辑和布局。
+
 - 2026-09-28 N 点标定工具箱不可见修复：原因是上轮只构建 Release，用户从 `dev/Debug` 启动，而 `dev/Debug/plugins/SunEyeVision.Tool.NPointCalibration/` 原先不存在。已完成全量 Debug 构建（0 错误，1122 警告），按插件目录与同名主 DLL 的发现约定核对 `dev/Debug/plugins/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.dll` 已生成；Debug N 点定向测试 8/8 通过。需要重新启动 `dev/Debug/SunEyeVision.UI.exe` 才会重新扫描插件，工具应在“标定”分类显示；可见界面仍待用户验收。未结束用户进程，也未触碰其他在途改动。
 
 - 2026-09-28 N 点标定首版实施（基线 `4a2b8a52`）：新增独立 `SunEyeVision.Tool.NPointCalibration` 插件及三页调试界面、铅笔入口的标定点表编辑/CSV 导入导出、手动/触发采点、平移与旋转样本生命周期、固定相机上视的 HALCON 相似/仿射/投影求解、误差与当前点物理坐标输出、版本化标定文件。工作流节点通过 `IWorkflowResultCommitter` 将一次执行采集的有效样本提交回设计参数，避免运行快照丢失点表；重复触发序号与并发修订冲突会拒绝提交。N 点工具定向测试 8/8、全量 Release 构建 0 错误（1084 警告）、`git diff --check` 通过。当前机器存在运行中的 UI 实例，未另启 Release 程序争用相机；真实相机/通讯事件链路、VS 设计时和可见 UI 待人工验收。移动相机模式、稳健权重拟合和生产级不可变标定版本未实现，界面标注待实现并显式拒绝，不能当成 VM 全功能对齐。保留工作区原有图像源、通讯和计划文件改动。

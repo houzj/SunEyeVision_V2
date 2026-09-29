@@ -4842,6 +4842,17 @@
                                         "docs/collaboration/CURRENT_TASK.md"
                                     ],
                           "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-4227d9f",
+                          "message":  "docs: 补充跨厂商枚举语义规则并同步协作任务卡",
+                          "date":  "2026-09-29",
+                          "commit":  "4227d9f024a6fca599e8a2f5a77d2275edbab823",
+                          "files":  [
+                                        "docs/05-框架架构/2026/09/25/相机实现与开发说明-20260925.md",
+                                        "docs/collaboration/CURRENT_TASK.md"
+                                    ],
+                          "status":  "in_progress"
                       }
                   ]
 }

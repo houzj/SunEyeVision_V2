@@ -2011,7 +2011,7 @@
                                           "name":  "通讯管理 UI 完整化（配置/测试/状态监控/日志）",
                                           "phase":  "UI交互",
                                           "hours":  24,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2027-W05"
                                       },
                                       {
@@ -2042,6 +2042,10 @@
                                     {
                                         "date":  "2026-09-29",
                                         "note":  "[acb05d61bb0881ee6a852a6c71d5bf92ec63034e] feat(core): 通讯解析字段与统一绑定模型并修复管理器打开异常"
+                                    },
+                                    {
+                                        "date":  "2026-09-29",
+                                        "note":  "[27b46b54db9f1facc05fb069898e272bdc0bbe82] docs(core): 新增通讯解析字段与统一绑定模型最终优化方案"
                                     }
                                 ]
                     },

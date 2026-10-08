@@ -17,6 +17,8 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
 {
     public event EventHandler? AddressConfigurationChanged;
     private const int MaxHistoryRecords = 512;
+    private const int MaxModbusHistoryRecords = 200;
+    private readonly Dictionary<string, long> _modbusReceiveSequences = new();
     private readonly List<TrafficRecord> _receivedRecords = new();
     private readonly List<TrafficRecord> _sentRecords = new();
     private readonly Dictionary<int, ushort> _registerValues = new();
@@ -173,6 +175,7 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
         for (var address = point.StartAddress; address <= point.EndAddress; address++)
             _registerValues.Remove(address);
         Communication.ModbusAddressPoints.Remove(point);
+        _modbusReceiveSequences.Remove(point.Id);
         ModbusAddressPoints.Remove(point);
         RefreshAddressSpaceRows();
         AddressConfigurationChanged?.Invoke(this, EventArgs.Empty);
@@ -182,6 +185,7 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
     {
         if (ModbusAddressPoints.Count == 0) return;
         Communication.ModbusAddressPoints.Clear();
+        _modbusReceiveSequences.Clear();
         ModbusAddressPoints.Clear();
         _registerValues.Clear();
         AddressRangeWarning = string.Empty;
@@ -307,8 +311,10 @@ public sealed class CommunicationDeviceWorkspaceViewModel : ViewModelBase
 
             point.CurrentValue = string.Join(" ", values.Select(value => $"[{value >> 8:X2}][{value & 0xFF:X2}]"));
             point.HasReceivedData = true;
-            point.ReceiveRecords.Add($"#{point.ReceiveRecords.Count + 1} [{update.Timestamp:yyyy-MM-dd HH:mm:ss.fff}] {point.CurrentValue}");
-            if (point.ReceiveRecords.Count > MaxHistoryRecords)
+            var sequence = _modbusReceiveSequences.GetValueOrDefault(point.Id, point.ReceiveRecords.Count) + 1;
+            _modbusReceiveSequences[point.Id] = sequence;
+            point.ReceiveRecords.Add($"#{sequence} [{update.Timestamp:yyyy-MM-dd HH:mm:ss.fff}] {point.CurrentValue}");
+            while (point.ReceiveRecords.Count > MaxModbusHistoryRecords)
                 point.ReceiveRecords.RemoveAt(0);
             UpdateAddressSpaceValues(point);
             appliedCount++;

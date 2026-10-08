@@ -7,6 +7,28 @@ namespace SunEyeVision.UI.Tests;
 
 public sealed class CommunicationDeviceWorkspaceViewModelTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Modbus_history_keeps_latest_200_records_and_sequence_keeps_increasing(bool polling)
+    {
+        var workspace = new CommunicationDeviceWorkspaceViewModel(new Communication());
+        var point = new ModbusAddressPoint { StartAddress = 0, Count = 1, PollEnabled = true };
+        Assert.True(workspace.TrySaveModbusAddressPoint(point, out var error), error);
+        for (var index = 1; index <= 205; index++)
+        {
+            var updates = new[] { new ModbusPollUpdate(point, new[] { (ushort)index },
+                DateTimeOffset.UnixEpoch.AddSeconds(index), 0) };
+            if (polling) workspace.ApplyModbusPollResults(updates);
+            else workspace.ApplyModbusSyncResults(updates);
+        }
+
+        Assert.Equal(200, point.ReceiveRecords.Count);
+        Assert.StartsWith("#6 ", point.ReceiveRecords[0]);
+        Assert.StartsWith("#205 ", point.ReceiveRecords[^1]);
+        Assert.Contains("[00][CD]", point.ReceiveRecords[^1]);
+    }
+
     [Fact]
     public void Manual_sync_updates_readable_block_even_when_polling_is_disabled()
     {

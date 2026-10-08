@@ -9,7 +9,7 @@
     <Grid Margin="18" TextElement.FontSize="14" TextElement.Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
         <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
-        <ListBox Grid.Row="1" ItemsSource="{Binding ReceiveRecords}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+        <ListBox x:Name="RecordsList" Grid.Row="1" ItemsSource="{Binding ReceiveRecords}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
                  Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}" Padding="8">
             <ListBox.ItemTemplate>
                 <DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2"/></DataTemplate>

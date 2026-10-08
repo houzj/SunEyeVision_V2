@@ -16,6 +16,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
     public partial class CommunicationManagerDialog : ThemeDialogWindow
     {
         private bool _allowClosing;
+        private bool _parseHistoryScrollPending;
         public CommunicationManagerDialog(CommunicationManagerViewModel viewModel)
         {
             InitializeComponent();
@@ -463,6 +464,34 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         {
             if (sender is TextBox textBox)
                 textBox.ScrollToEnd();
+        }
+
+        private void ParseHistory_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox textBox) ScheduleParseHistoryScroll(textBox);
+        }
+
+        private void ParseHistory_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox) ScheduleParseHistoryScroll(textBox);
+        }
+
+        private void ParseHistory_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is true && sender is TextBox textBox) ScheduleParseHistoryScroll(textBox);
+        }
+
+        private void ScheduleParseHistoryScroll(TextBox textBox)
+        {
+            if (!textBox.IsVisible || _parseHistoryScrollPending) return;
+            _parseHistoryScrollPending = true;
+            textBox.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new System.Action(() =>
+            {
+                _parseHistoryScrollPending = false;
+                if (!textBox.IsVisible) return;
+                textBox.UpdateLayout();
+                textBox.ScrollToEnd();
+            }));
         }
 
         private void SendTextBox_PreviewKeyDown(object sender, KeyEventArgs e)

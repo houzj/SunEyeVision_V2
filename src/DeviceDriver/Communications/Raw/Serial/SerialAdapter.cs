@@ -29,6 +29,7 @@ public sealed partial class CommunicationRuntimeManager
     {
         private readonly string _communicationId;
         private readonly SerialPort _port;
+        private readonly ReceiveTerminatorFramer? _framer;
         private readonly CancellationTokenSource _lifetime = new();
         private readonly SemaphoreSlim _writeGate = new(1, 1);
         private Task? _receiveTask;
@@ -41,6 +42,8 @@ public sealed partial class CommunicationRuntimeManager
         public SerialSession(Communication communication)
         {
             _communicationId = communication.Id;
+            var terminator = ReceiveTerminatorFramer.GetTerminatorBytes(communication);
+            _framer = terminator == null ? null : new ReceiveTerminatorFramer(terminator);
             _port = new SerialPort(communication.SerialPort, communication.BaudRate,
                 ParseParity(communication.Parity), communication.DataBits, ParseStopBits(communication.StopBits))
             {
@@ -70,9 +73,18 @@ public sealed partial class CommunicationRuntimeManager
                         if (count <= 0) continue;
                         var payload = new byte[count];
                         Buffer.BlockCopy(buffer, 0, payload, 0, count);
-                        DataReceived?.Invoke(this, new CommunicationDataReceivedEventArgs(_communicationId, payload, DateTimeOffset.Now));
+                        if (_framer == null)
+                            DataReceived?.Invoke(this, new CommunicationDataReceivedEventArgs(_communicationId, payload, DateTimeOffset.Now));
+                        else
+                            foreach (var message in _framer.Append(payload))
+                                DataReceived?.Invoke(this, new CommunicationDataReceivedEventArgs(_communicationId, message, DateTimeOffset.Now));
                     }
                     catch (TimeoutException) when (!cancellationToken.IsCancellationRequested) { }
+                    catch (InvalidDataException ex)
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Warning, $"串口接收组帧失败：设备={_communicationId}，{ex.Message}",
+                            "CommunicationRuntime", ex, LogTarget.File);
+                    }
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }

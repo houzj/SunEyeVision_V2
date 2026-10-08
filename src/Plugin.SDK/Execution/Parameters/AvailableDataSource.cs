@@ -45,6 +45,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public string SourceNodeId { get; init; } = string.Empty;
 
         /// <summary>
+        /// 源字段稳定 ID（可选）。
+        /// </summary>
+        /// <remarks>
+        /// 通讯解析、脚本和子程序等动态字段使用该 ID 作为长期绑定身份。
+        /// 旧数据源没有该值时，继续使用 SourceNodeId + PropertyName 兼容识别。
+        /// </remarks>
+        public Guid? SourceFieldId { get; init; }
+
+        /// <summary>
         /// 源节点名称
         /// </summary>
         public string SourceNodeName { get; set; } = string.Empty;

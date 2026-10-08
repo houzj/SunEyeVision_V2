@@ -27,6 +27,7 @@ public sealed class OpcUaPointRowViewModel : ViewModelBase
     public OpcUaPointRowViewModel(OpcUaDataPoint point) => Point = point;
     public OpcUaDataPoint Point { get; }
     public string Name => Point.Name;
+    public string TagName => Point.TagName;
     public string NodeId => Point.NodeId;
     public string ValueText { get => _valueText; private set => SetProperty(ref _valueText, value); }
     public string TypeText { get => _typeText; private set => SetProperty(ref _typeText, value); }
@@ -59,6 +60,7 @@ public sealed class OpcUaPointRowViewModel : ViewModelBase
             ErrorText = error;
             QualityText = "无效";
             ValueText = "—";
+            TypeText = "读取失败";
             _isWritable = false;
             OnPropertyChanged(nameof(CanEdit));
             OnPropertyChanged(nameof(IsValueReadOnly));
@@ -104,6 +106,7 @@ public sealed class OpcUaPointRowViewModel : ViewModelBase
         Point.NamespaceIndex = point.NamespaceIndex;
         Point.TagName = point.TagName;
         OnPropertyChanged(nameof(Name));
+        OnPropertyChanged(nameof(TagName));
         OnPropertyChanged(nameof(NodeId));
         DraftValue = ValueText;
         ErrorText = string.Empty;

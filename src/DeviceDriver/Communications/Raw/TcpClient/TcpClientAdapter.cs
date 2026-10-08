@@ -31,6 +31,7 @@ public sealed partial class CommunicationRuntimeManager
         private readonly string _host;
         private readonly int _port;
         private readonly TimeSpan _connectTimeout;
+        private readonly ReceiveTerminatorFramer? _framer;
         private readonly TcpClient _client = new();
         private readonly CancellationTokenSource _lifetime = new();
         private NetworkStream? _stream;
@@ -42,12 +43,14 @@ public sealed partial class CommunicationRuntimeManager
         public event EventHandler<CommunicationConnectionClosedEventArgs>? ConnectionClosed;
         public bool IsConnected => Volatile.Read(ref _connected) == 1;
 
-        public TcpClientSession(string communicationId, string host, int port, TimeSpan connectTimeout)
+        public TcpClientSession(string communicationId, string host, int port, TimeSpan connectTimeout,
+            byte[]? receiveTerminator)
         {
             _communicationId = communicationId;
             _host = host;
             _port = port;
             _connectTimeout = connectTimeout;
+            _framer = receiveTerminator == null ? null : new ReceiveTerminatorFramer(receiveTerminator);
         }
 
         public async Task ConnectAsync(CancellationToken cancellationToken)
@@ -79,13 +82,22 @@ public sealed partial class CommunicationRuntimeManager
                     if (count == 0) break;
                     var data = new byte[count];
                     Buffer.BlockCopy(buffer, 0, data, 0, count);
-                    DataReceived?.Invoke(this, new CommunicationDataReceivedEventArgs(_communicationId, data, DateTimeOffset.Now));
+                    if (_framer == null)
+                        DataReceived?.Invoke(this, new CommunicationDataReceivedEventArgs(_communicationId, data, DateTimeOffset.Now));
+                    else
+                        foreach (var message in _framer.Append(data))
+                            DataReceived?.Invoke(this, new CommunicationDataReceivedEventArgs(_communicationId, message, DateTimeOffset.Now));
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
             catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested) { }
             catch (IOException) when (cancellationToken.IsCancellationRequested) { }
             catch (SocketException) when (cancellationToken.IsCancellationRequested) { }
+            catch (InvalidDataException ex)
+            {
+                VisionLogger.Instance.Log(LogLevel.Warning, $"TCP 客户端接收组帧失败：设备={_communicationId}，{ex.Message}",
+                    "CommunicationRuntime", ex, LogTarget.File);
+            }
             catch (IOException) { }
             catch (SocketException) { }
             finally

@@ -167,6 +167,9 @@ public sealed class OpcUaRuntimeTests
             using var noNotificationTimeout = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
                 await typedNotifications.Reader.ReadAsync(noNotificationTimeout.Token));
+            stage = "Disconnect and invalidate cached value";
+            await runtime.DisconnectAsync(communication.Id);
+            Assert.False(runtime.TryGetLatestOpcUaPoint(communication.Id, valueNode.NodeId, out _));
         }
         catch (Exception exception)
         {

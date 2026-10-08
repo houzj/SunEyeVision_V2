@@ -19,6 +19,7 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <comm:OneBasedIndexConverter x:Key="OneBasedIndexConverter"/>
+        <comm:CommunicationListViewportConverter x:Key="CommunicationListViewportConverter"/>
         <Style x:Key="OpcUaDataGridHeaderStyle" TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}"/>
@@ -51,6 +52,11 @@
         <Style x:Key="CenteredDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource OpcUaDataGridCellStyle}">
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
+        <Style x:Key="CenteredDataGridTextBlockStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
         <Style x:Key="ReceiveEventOutputTextBoxStyle" TargetType="TextBox">
             <Setter Property="Height" Value="30"/>
             <Setter Property="Padding" Value="8,3"/>
@@ -61,14 +67,45 @@
         </Style>
         <Style x:Key="CompareNumericRangeStyle" TargetType="StackPanel">
             <Setter Property="Visibility" Value="Visible"/>
+            <Setter Property="IsEnabled" Value="False"/>
             <Style.Triggers>
+                <DataTrigger Binding="{Binding CompareRule}" Value="范围内"><Setter Property="IsEnabled" Value="True"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="范围外"><Setter Property="IsEnabled" Value="True"/></DataTrigger>
                 <DataTrigger Binding="{Binding DataType}" Value="string"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                <DataTrigger Binding="{Binding DataType}" Value="Boolean"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="CompareStringValueStyle" TargetType="TextBox" BasedOn="{StaticResource ReceiveEventOutputTextBoxStyle}">
             <Setter Property="Visibility" Value="Collapsed"/>
+            <Setter Property="IsEnabled" Value="False"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding DataType}" Value="string"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                <DataTrigger Binding="{Binding DataType}" Value="Boolean"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="等于"><Setter Property="Visibility" Value="Visible"/><Setter Property="IsEnabled" Value="True"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="不等于"><Setter Property="Visibility" Value="Visible"/><Setter Property="IsEnabled" Value="True"/></DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ByteCompareRangeStyle" TargetType="StackPanel">
+            <Setter Property="Visibility" Value="Visible"/>
+            <Setter Property="IsEnabled" Value="False"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CompareRule}" Value="范围内"><Setter Property="IsEnabled" Value="True"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="范围外"><Setter Property="IsEnabled" Value="True"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="等于"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="不等于"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="上升沿"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="下降沿"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                <DataTrigger Binding="{Binding DataType}" Value="string"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ByteCompareValueStyle" TargetType="TextBox" BasedOn="{StaticResource ReceiveEventOutputTextBoxStyle}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Setter Property="Width" Value="145"/>
+            <Setter Property="Margin" Value="6,0,0,0"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataType}" Value="string"><Setter Property="Visibility" Value="Visible"/><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="等于"><Setter Property="Visibility" Value="Visible"/><Setter Property="IsEnabled" Value="True"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="不等于"><Setter Property="Visibility" Value="Visible"/><Setter Property="IsEnabled" Value="True"/></DataTrigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="ReceiveMessageExpanderStyle" TargetType="Expander">
@@ -100,12 +137,12 @@
                 <DataTrigger Binding="{Binding HasNoSelectedReceiveEvent}" Value="False"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="ReceiveEventParseDetailsStyle" TargetType="StackPanel">
+        <Style x:Key="ReceiveEventParseDetailsStyle" TargetType="Grid">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding SelectedReceiveEvent.IsProtocolCompare}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="ReceiveEventCompareDetailsStyle" TargetType="StackPanel">
+        <Style x:Key="ReceiveEventCompareDetailsStyle" TargetType="Grid">
             <Setter Property="Visibility" Value="Collapsed"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding SelectedReceiveEvent.IsProtocolCompare}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
@@ -244,7 +281,6 @@
     <Grid Margin="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="145"/>
@@ -846,7 +882,13 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="类型" Binding="{Binding TypeText}" Width="90"/>
+                            <DataGridTextColumn Header="类型" Binding="{Binding TypeText}" Width="90">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="ToolTip" Value="{Binding ErrorText}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                             <DataGridTextColumn Header="权限" Binding="{Binding AccessText}" Width="70"/>
                             <DataGridTextColumn Header="更新时间" Binding="{Binding UpdatedText}" Width="90"/>
                             <DataGridTemplateColumn Header="" Width="42" CanUserResize="False">
@@ -926,9 +968,11 @@
 
         <Grid Grid.Row="0" Grid.Column="2" Margin="0,0,14,0" Style="{StaticResource ReceiveEventDetailVisibilityStyle}">
             <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Disabled">
-                <Grid Margin="18,18,18,24">
-                    <StackPanel Style="{StaticResource ReceiveEventParseDetailsStyle}">
+            <Grid Grid.Row="0" ClipToBounds="True">
+                <Grid Margin="18,18,18,8" VerticalAlignment="Stretch">
+                    <Grid Style="{StaticResource ReceiveEventParseDetailsStyle}">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0">
                     <TextBlock Text="绑定设备" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,14"/>
                     <Grid Margin="0,0,0,20">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="300"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -938,6 +982,23 @@
                             <ComboBox.ItemTemplate>
                                 <DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate>
                             </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    <Grid Margin="0,0,0,16" Visibility="{Binding HasSelectedReceiveTarget, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="300"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding SelectedReceiveTargetLabel}" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                        <ComboBox Grid.Column="1" Height="36" ItemsSource="{Binding SelectedReceiveEventDevice.ModbusAddressPoints}" SelectedValuePath="Id"
+                                  SelectedValue="{Binding SelectedModbusReceiveAddress, Mode=TwoWay}" Visibility="{Binding IsSelectedReceiveDeviceModbus, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBox Grid.Column="1" Height="36" Text="{Binding SelectedS7ReceiveAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 ToolTip="仅保存 S7 地址表达式（例如 DB1.DBW0）；接收事件运行时尚未接入" Visibility="{Binding IsSelectedReceiveDeviceS7, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <TextBox Grid.Column="1" Height="36" IsReadOnly="True" Text="请先配置 CIP 属性目标（尚未提供）"
+                                 ToolTip="CIP 属性目标目录与接收事件运行时尚未接入" Visibility="{Binding IsSelectedReceiveDeviceCip, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <ComboBox Grid.Column="1" Height="36" ItemsSource="{Binding SelectedOpcUaReceivePoints}" SelectedValuePath="Point.Id"
+                                  SelectedValue="{Binding SelectedOpcUaReceivePointId, Mode=TwoWay}" Visibility="{Binding IsSelectedReceiveDeviceOpcUa, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                  ToolTip="选择 OPC UA 数据点；接收事件使用该点的原生标量值，不进行文本分割">
+                            <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding TagName}"/></DataTemplate></ComboBox.ItemTemplate>
                         </ComboBox>
                     </Grid>
                     <Separator Margin="0,0,0,16"/>
@@ -957,6 +1018,25 @@
                     </Grid>
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="数据模式" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                        <ComboBox Grid.Column="1" Height="34" SelectedValuePath="Tag" SelectedValue="{Binding SelectedReceiveEvent.DataMode, Mode=TwoWay}">
+                            <ComboBoxItem Content="文本" Tag="Text"/><ComboBoxItem Content="二进制" Tag="Binary"/>
+                        </ComboBox>
+                    </Grid>
+                    <Grid Margin="0,0,0,10" Visibility="{Binding SelectedReceiveEvent.IsBinaryMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="字节序" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                        <ComboBox Grid.Column="1" Height="34" SelectedValuePath="Tag" SelectedValue="{Binding SelectedReceiveEvent.ByteOrder, Mode=TwoWay}">
+                            <ComboBoxItem Content="大端" Tag="BigEndian"/><ComboBoxItem Content="小端" Tag="LittleEndian"/>
+                        </ComboBox>
+                    </Grid>
+                    <Grid Margin="0,0,0,10" Visibility="{Binding SelectedReceiveEvent.IsBinaryMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="起始偏移" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                        <controls:NumericUpDown Grid.Column="1" IntValue="{Binding SelectedReceiveEvent.ByteOffset, Mode=TwoWay}" Minimum="0" Maximum="65535" DecimalPlaces="0" Height="34"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <TextBlock Text="字符长度比较" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
                         <controls:ToggleSwitch Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"
                                                IsChecked="{Binding SelectedReceiveEvent.CharacterLengthCompare, Mode=TwoWay}"
@@ -964,47 +1044,58 @@
                     </Grid>
                     <Grid Margin="0,0,0,20" Visibility="{Binding SelectedReceiveEvent.CharacterLengthCompare, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="300"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                        <TextBlock Text="字节长度" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                        <TextBlock Text="字符长度" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
                         <controls:NumericUpDown Grid.Column="1" IntValue="{Binding SelectedReceiveEvent.CharacterLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Minimum="1" Maximum="65535" DecimalPlaces="0" Height="34"/>
                     </Grid>
                     <Separator Margin="0,0,0,16"/>
                     <TextBlock Text="输出列表" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                    <DataGrid ItemsSource="{Binding SelectedReceiveEvent.Outputs}" AutoGenerateColumns="False"
-                              CanUserAddRows="False" HeadersVisibility="Column" MaxHeight="{Binding SelectedReceiveEvent.OutputListMaxHeight}"
+                    </StackPanel>
+                    <Grid Grid.Row="1" x:Name="ParseListViewport">
+                    <StackPanel>
+                    <DataGrid MaxHeight="{Binding ActualHeight, ElementName=ParseListViewport, Converter={StaticResource CommunicationListViewportConverter}}" ItemsSource="{Binding SelectedReceiveEvent.Outputs}" AutoGenerateColumns="False"
+                              CanUserAddRows="False" HeadersVisibility="Column"
                               AlternationCount="1000000" ColumnHeaderStyle="{StaticResource OpcUaDataGridHeaderStyle}"
                               RowStyle="{StaticResource OpcUaDataGridRowStyle}" CellStyle="{StaticResource OpcUaDataGridCellStyle}"
                               Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
                               BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
                               BorderThickness="1" RowBackground="Transparent" AlternatingRowBackground="Transparent"
-                              HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
                               PreviewMouseWheel="ReceiveEventDataGrid_PreviewMouseWheel">
                         <DataGrid.Columns>
                             <DataGridTemplateColumn Header="序号" Width="55" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}" HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}" HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridCell}}, Path=ActualWidth}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn Header="名称" Width="110">
                                 <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate><TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate>
+                                    <DataTemplate><TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="设备" Width="110">
+                            <DataGridTemplateColumn Header="类型" Width="110">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ComboBox Height="30" SelectedValuePath="Content" SelectedValue="{Binding DataType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                            <ComboBoxItem Content="int"/>
-                                            <ComboBoxItem Content="float"/>
-                                            <ComboBoxItem Content="string"/>
-                                        </ComboBox>
+                                        <ComboBox Height="30" ItemsSource="{Binding DataContext.SelectedReceiveDataTypes, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                  SelectedItem="{Binding DataType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="数据结果" Binding="{Binding Result}" Width="120" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="状态 ⓘ" Binding="{Binding Status}" Width="90" IsReadOnly="True" CellStyle="{StaticResource CenteredDataGridCellStyle}"/>
+                            <DataGridTemplateColumn Header="比较规则配置" Width="300"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+                                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="105"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <ComboBox Height="30" ItemsSource="{Binding CompareRuleOptions}" SelectedItem="{Binding CompareRule, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="CompareRule_SelectionChanged"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="6,0,0,0" Style="{StaticResource CompareNumericRangeStyle}">
+                                        <controls:NumericUpDown IntValue="{Binding Minimum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
+                                        <TextBlock Text=" － " VerticalAlignment="Center"/>
+                                        <controls:NumericUpDown IntValue="{Binding Maximum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1" Style="{StaticResource CompareStringValueStyle}" Margin="6,0,0,0" Text="{Binding CompareValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </Grid>
+                            </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTextColumn Header="数据结果" Binding="{Binding Result}" Width="120" IsReadOnly="True" ElementStyle="{StaticResource CenteredDataGridTextBlockStyle}"/>
+                            <DataGridTextColumn Header="状态 ⓘ" Binding="{Binding Status}" Width="90" IsReadOnly="True" CellStyle="{StaticResource CenteredDataGridCellStyle}" ElementStyle="{StaticResource CenteredDataGridTextBlockStyle}"/>
                             <DataGridTemplateColumn Width="42">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -1014,15 +1105,20 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Button Content="＋" Width="28" Height="28" Padding="0" HorizontalAlignment="Left" Margin="8,4,0,12" Command="{Binding AddReceiveEventOutputCommand}"/>
+                    <Button Content="＋" Width="28" Height="28" Padding="0" HorizontalAlignment="Left" Margin="8,4,0,0" Command="{Binding AddReceiveEventOutputCommand}"/>
                     </StackPanel>
-                    <StackPanel Style="{StaticResource ReceiveEventCompareDetailsStyle}">
-                        <Grid Height="42" Margin="0,0,0,8">
+                    </Grid>
+                    </Grid>
+                    <Grid Style="{StaticResource ReceiveEventCompareDetailsStyle}">
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                        <Grid Grid.Row="0" Height="42" Margin="0,0,0,8">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                             <Button Content="输入配置" Click="CompareInputTab_Click" FontSize="16" FontWeight="SemiBold" Background="Transparent" BorderThickness="0,0,0,3"/>
                             <Button Grid.Column="1" Content="组装配置" Click="CompareAssemblyTab_Click" FontSize="16" FontWeight="SemiBold" Background="Transparent" BorderThickness="0,0,0,3"/>
                         </Grid>
-                        <StackPanel Visibility="{Binding SelectedReceiveEvent.IsInputConfigTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid Grid.Row="1" Visibility="{Binding SelectedReceiveEvent.IsInputConfigTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0">
                             <TextBlock Text="绑定设备" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,14"/>
                             <Grid Margin="0,0,0,16">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="300"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -1033,12 +1129,49 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
                             </Grid>
+                            <Grid Margin="0,0,0,16" Visibility="{Binding HasSelectedReceiveTarget, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="300"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding SelectedReceiveTargetLabel}" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                <ComboBox Grid.Column="1" Height="36" ItemsSource="{Binding SelectedReceiveEventDevice.ModbusAddressPoints}" SelectedValuePath="Id"
+                                          SelectedValue="{Binding SelectedModbusReceiveAddress, Mode=TwoWay}" Visibility="{Binding IsSelectedReceiveDeviceModbus, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBox Grid.Column="1" Height="36" Text="{Binding SelectedS7ReceiveAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         ToolTip="仅保存 S7 地址表达式（例如 DB1.DBW0）；接收事件运行时尚未接入" Visibility="{Binding IsSelectedReceiveDeviceS7, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <TextBox Grid.Column="1" Height="36" IsReadOnly="True" Text="请先配置 CIP 属性目标（尚未提供）"
+                                         ToolTip="CIP 属性目标目录与接收事件运行时尚未接入" Visibility="{Binding IsSelectedReceiveDeviceCip, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <ComboBox Grid.Column="1" Height="36" ItemsSource="{Binding SelectedOpcUaReceivePoints}" SelectedValuePath="Point.Id"
+                                          SelectedValue="{Binding SelectedOpcUaReceivePointId, Mode=TwoWay}" Visibility="{Binding IsSelectedReceiveDeviceOpcUa, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                          ToolTip="选择 OPC UA 数据点；接收事件使用该点的原生标量值，不进行文本分割">
+                                    <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding TagName}"/></DataTemplate></ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
                             <Separator Margin="0,0,0,14"/>
                             <TextBlock Text="基本配置" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                            <StackPanel Visibility="{Binding SelectedReceiveEvent.IsNotByteMatch, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Grid Margin="0,0,0,12">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                 <TextBlock Text="分隔符" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
                                 <TextBox Grid.Column="1" Text="{Binding SelectedReceiveEvent.Separator, UpdateSourceTrigger=PropertyChanged}" Height="34"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="数据模式" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                <ComboBox Grid.Column="1" Height="34" SelectedValuePath="Tag" SelectedValue="{Binding SelectedReceiveEvent.DataMode, Mode=TwoWay}">
+                                    <ComboBoxItem Content="文本" Tag="Text"/><ComboBoxItem Content="二进制" Tag="Binary"/>
+                                </ComboBox>
+                            </Grid>
+                            <Grid Margin="0,0,0,10" Visibility="{Binding SelectedReceiveEvent.IsBinaryMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="字节序" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                <ComboBox Grid.Column="1" Height="34" SelectedValuePath="Tag" SelectedValue="{Binding SelectedReceiveEvent.ByteOrder, Mode=TwoWay}">
+                                    <ComboBoxItem Content="大端" Tag="BigEndian"/><ComboBoxItem Content="小端" Tag="LittleEndian"/>
+                                </ComboBox>
+                            </Grid>
+                            <Grid Margin="0,0,0,10" Visibility="{Binding SelectedReceiveEvent.IsBinaryMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="起始偏移" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                <controls:NumericUpDown Grid.Column="1" IntValue="{Binding SelectedReceiveEvent.ByteOffset, Mode=TwoWay}" Minimum="0" Maximum="65535" DecimalPlaces="0" Height="34"/>
                             </Grid>
                             <Grid Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -1049,28 +1182,109 @@
                             </Grid>
                             <Grid Margin="0,0,0,18" Visibility="{Binding SelectedReceiveEvent.CharacterLengthCompare, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="300"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                <TextBlock Text="字节长度" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                <TextBlock Text="字符长度" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
                                 <controls:NumericUpDown Grid.Column="1" IntValue="{Binding SelectedReceiveEvent.CharacterLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         Minimum="1" Maximum="65535" DecimalPlaces="0" Height="34"/>
                             </Grid>
+                            </StackPanel>
+                            <StackPanel Visibility="{Binding SelectedReceiveEvent.IsByteMatch, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="字节长度比较" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                    <controls:ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedReceiveEvent.ByteLengthCompare, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22"/>
+                                </Grid>
+                                <Grid Margin="0,0,0,10" Visibility="{Binding SelectedReceiveEvent.ByteLengthCompare, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="字节长度" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                    <controls:NumericUpDown Grid.Column="1" IntValue="{Binding SelectedReceiveEvent.ByteLength, Mode=TwoWay}" Minimum="1" Maximum="65535" Height="34"/>
+                                </Grid>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="ASCII数据" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                    <controls:ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedReceiveEvent.AsciiData, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22"/>
+                                </Grid>
+                                <TextBlock Text="关闭时按收到的原始字节配置；开启时按 ASCII 字符对应的字节配置。" TextWrapping="Wrap" Margin="14,0,0,10" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+                                <Grid Margin="0,0,0,18">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="规则匹配逻辑" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                    <ComboBox Grid.Column="1" Height="34" SelectedValuePath="Content" SelectedValue="{Binding SelectedReceiveEvent.ByteMatchLogic, Mode=TwoWay}">
+                                        <ComboBoxItem Content="与"/><ComboBoxItem Content="或"/>
+                                    </ComboBox>
+                                </Grid>
+                                <TextBlock Text="Modbus FC03 已支持 int 字节规则；其他字节类型和协议尚未接入。上升沿为 0→非0，下降沿为非0→0。" Margin="14,0,0,10"
+                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+                            </StackPanel>
                             <TextBlock Text="解析列表" FontSize="17" FontWeight="SemiBold" Margin="0,4,0,10"/>
-                            <DataGrid ItemsSource="{Binding SelectedReceiveEvent.CompareInputs}" AutoGenerateColumns="False" CanUserAddRows="False" MaxHeight="{Binding SelectedReceiveEvent.CompareListMaxHeight}"
+                            </StackPanel>
+                            <Grid Grid.Row="1" x:Name="CompareListViewport">
+                            <StackPanel>
+                            <DataGrid Visibility="{Binding SelectedReceiveEvent.IsNotByteMatch, Converter={StaticResource BooleanToVisibilityConverter}}" MaxHeight="{Binding ActualHeight, ElementName=CompareListViewport, Converter={StaticResource CommunicationListViewportConverter}}" ItemsSource="{Binding SelectedReceiveEvent.CompareInputs}" AutoGenerateColumns="False" CanUserAddRows="False"
                                       HeadersVisibility="Column"
                                       AlternationCount="1000000" ColumnHeaderStyle="{StaticResource OpcUaDataGridHeaderStyle}" RowStyle="{StaticResource OpcUaDataGridRowStyle}" CellStyle="{StaticResource OpcUaDataGridCellStyle}"
                                       Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}" VerticalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
-                                    <DataGridTemplateColumn Header="序号" Width="50" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock HorizontalAlignment="Center" TextAlignment="Center" Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="名称" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="设备" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Height="30" SelectedValuePath="Content" SelectedValue="{Binding DataType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"><ComboBoxItem Content="int"/><ComboBoxItem Content="float"/><ComboBoxItem Content="string"/></ComboBox></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="比较规则配置" Width="300"><DataGridTemplateColumn.CellTemplate><DataTemplate><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="105"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ComboBox Height="30" SelectedValuePath="Content" SelectedValue="{Binding CompareRule, Mode=TwoWay}"><ComboBoxItem Content="不比较"/><ComboBoxItem Content="等于"/><ComboBoxItem Content="不等于"/><ComboBoxItem Content="范围"/></ComboBox><StackPanel Grid.Column="1" Orientation="Horizontal" Margin="6,0,0,0" Style="{StaticResource CompareNumericRangeStyle}"><controls:NumericUpDown IntValue="{Binding Minimum, Mode=TwoWay}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/><TextBlock Text=" － " VerticalAlignment="Center"/><controls:NumericUpDown IntValue="{Binding Maximum, Mode=TwoWay}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/></StackPanel><TextBox Grid.Column="1" Style="{StaticResource CompareStringValueStyle}" Margin="6,0,0,0" Text="{Binding CompareValue, UpdateSourceTrigger=PropertyChanged}"/></Grid></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                                    <DataGridTextColumn Header="数据结果" Binding="{Binding Result}" Width="140" IsReadOnly="True"/>
-                                    <DataGridTextColumn Header="状态 ⓘ" Binding="{Binding Status}" Width="100" IsReadOnly="True" CellStyle="{StaticResource CenteredDataGridCellStyle}"/>
+                                    <DataGridTemplateColumn Header="序号" Width="50" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridCell}}, Path=ActualWidth}" Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="名称" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="类型" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Height="30" ItemsSource="{Binding DataContext.SelectedReceiveDataTypes, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" SelectedItem="{Binding DataType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                     <DataGridTemplateColumn Header="比较规则配置" Width="300"><DataGridTemplateColumn.CellTemplate><DataTemplate><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="105"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ComboBox Height="30" ItemsSource="{Binding CompareRuleOptions}" SelectedItem="{Binding CompareRule, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="CompareRule_SelectionChanged"/><StackPanel Grid.Column="1" Orientation="Horizontal" Margin="6,0,0,0" Style="{StaticResource CompareNumericRangeStyle}"><controls:NumericUpDown IntValue="{Binding Minimum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/><TextBlock Text=" － " VerticalAlignment="Center"/><controls:NumericUpDown IntValue="{Binding Maximum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/></StackPanel><TextBox Grid.Column="1" Style="{StaticResource CompareStringValueStyle}" Margin="6,0,0,0" Text="{Binding CompareValue, UpdateSourceTrigger=PropertyChanged}"/></Grid></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="数据结果" Binding="{Binding Result}" Width="140" IsReadOnly="True" ElementStyle="{StaticResource CenteredDataGridTextBlockStyle}"/>
+                                    <DataGridTextColumn Header="状态 ⓘ" Binding="{Binding Status}" Width="100" IsReadOnly="True" CellStyle="{StaticResource CenteredDataGridCellStyle}" ElementStyle="{StaticResource CenteredDataGridTextBlockStyle}"/>
                                     <DataGridTemplateColumn Width="42"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Content="×" Click="RemoveCompareInput_Click" Style="{StaticResource DangerButtonStyle}" Padding="0" Width="24" Height="24"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <Button Content="＋" Width="28" Height="28" Padding="0" HorizontalAlignment="Left" Margin="8,4,0,12" Command="{Binding AddCompareInputCommand}"/>
-                        </StackPanel>
-                        <StackPanel Visibility="{Binding SelectedReceiveEvent.IsAssemblyConfigTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <DataGrid Visibility="{Binding SelectedReceiveEvent.IsByteMatch, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                      MaxHeight="{Binding ActualHeight, ElementName=CompareListViewport, Converter={StaticResource CommunicationListViewportConverter}}"
+                                      ItemsSource="{Binding SelectedReceiveEvent.CompareInputs}" AutoGenerateColumns="False" CanUserAddRows="False"
+                                      HeadersVisibility="Column" AlternationCount="1000000"
+                                      ColumnHeaderStyle="{StaticResource OpcUaDataGridHeaderStyle}" RowStyle="{StaticResource OpcUaDataGridRowStyle}"
+                                      CellStyle="{StaticResource OpcUaDataGridCellStyle}"
+                                      Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
+                                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="序号" Width="50" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}">
+                                        <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="名称" Width="100"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+                                        <TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" TextAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="字节起止位置 ⓘ" Width="175"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+                                        <StackPanel Orientation="Horizontal"><controls:NumericUpDown IntValue="{Binding ByteStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="65535" Width="70" Height="30" Tag="Start" ValueChanged="ByteRulePosition_ValueChanged"/>
+                                            <TextBlock Text="－" VerticalAlignment="Center"/><controls:NumericUpDown IntValue="{Binding ByteEnd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="65535" Width="70" Height="30" Tag="End" ValueChanged="ByteRulePosition_ValueChanged"/></StackPanel>
+                                    </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="类型" Width="95"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+                                        <ComboBox Height="30" SelectedValuePath="Content" SelectedValue="{Binding DataType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                            <ComboBoxItem Content="int"/><ComboBoxItem Content="float"/><ComboBoxItem Content="string"/>
+                                        </ComboBox>
+                                    </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="顺序 ⓘ" Width="95"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+                                        <ComboBox Height="30" SelectedValuePath="Content" SelectedValue="{Binding ByteOrder, Mode=TwoWay}">
+                                            <ComboBoxItem Content="ABCD"/><ComboBoxItem Content="BADC"/><ComboBoxItem Content="CDAB"/><ComboBoxItem Content="DCBA"/>
+                                        </ComboBox>
+                                    </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="比较规则配置 ⓘ" Width="285"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+                                        <StackPanel Orientation="Horizontal"><ComboBox Width="100" Height="30" ItemsSource="{Binding CompareRuleOptions}" SelectedItem="{Binding CompareRule, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="CompareRule_SelectionChanged"/>
+                                            <StackPanel Orientation="Horizontal" Style="{StaticResource ByteCompareRangeStyle}" Margin="6,0,0,0">
+                                                <controls:NumericUpDown IntValue="{Binding Minimum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ValueChanged="CompareRange_ValueChanged" Tag="Minimum" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
+                                                <TextBlock Text="－" VerticalAlignment="Center"/>
+                                                <controls:NumericUpDown IntValue="{Binding Maximum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ValueChanged="CompareRange_ValueChanged" Tag="Maximum" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
+                                            </StackPanel>
+                                            <TextBox Style="{StaticResource ByteCompareValueStyle}" Text="{Binding CompareValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+                                    </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="数据结果" Binding="{Binding Result}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource CenteredDataGridTextBlockStyle}"/>
+                                    <DataGridTextColumn Header="状态 ⓘ" Binding="{Binding Status}" Width="80" IsReadOnly="True" ElementStyle="{StaticResource CenteredDataGridTextBlockStyle}"/>
+                                    <DataGridTemplateColumn Width="42"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+                                        <Button Content="×" Click="RemoveCompareInput_Click" Style="{StaticResource DangerButtonStyle}" Padding="0" Width="24" Height="24"/>
+                                    </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <Button Content="＋" Width="28" Height="28" Padding="0" HorizontalAlignment="Left" Margin="8,4,0,0" Command="{Binding AddCompareInputCommand}"/>
+                            </StackPanel>
+                            </Grid>
+                        </Grid>
+                        <Grid Grid.Row="1" Visibility="{Binding SelectedReceiveEvent.IsAssemblyConfigTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0">
                             <TextBlock Text="基本配置" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,14"/>
                             <Grid Margin="0,0,0,12">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -1092,24 +1306,29 @@
                             </Grid>
                             <Separator Margin="0,0,0,14"/>
                             <TextBlock Text="组装列表" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                            <DataGrid ItemsSource="{Binding SelectedReceiveEvent.AssemblyOutputs}" AutoGenerateColumns="False" CanUserAddRows="False" MaxHeight="{Binding SelectedReceiveEvent.CompareListMaxHeight}"
+                            </StackPanel>
+                            <Grid Grid.Row="1" x:Name="AssemblyListViewport">
+                            <StackPanel>
+                            <DataGrid MaxHeight="{Binding ActualHeight, ElementName=AssemblyListViewport, Converter={StaticResource CommunicationListViewportConverter}}" ItemsSource="{Binding SelectedReceiveEvent.AssemblyOutputs}" AutoGenerateColumns="False" CanUserAddRows="False"
                                       HeadersVisibility="Column"
                                       AlternationCount="1000000" ColumnHeaderStyle="{StaticResource OpcUaDataGridHeaderStyle}" RowStyle="{StaticResource OpcUaDataGridRowStyle}" CellStyle="{StaticResource OpcUaDataGridCellStyle}"
                                       Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}" VerticalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
-                                    <DataGridTemplateColumn Header="序号" Width="50" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock HorizontalAlignment="Center" TextAlignment="Center" Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="名称" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="设备" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Height="30" SelectedValuePath="Content" SelectedValue="{Binding DataType, Mode=TwoWay}"><ComboBoxItem Content="int"/><ComboBoxItem Content="float"/><ComboBoxItem Content="string"/></ComboBox></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="内容" Width="260"><DataGridTemplateColumn.CellTemplate><DataTemplate><controls:ParamBinding Height="30" ParameterName="Content" NodeId="AssemblyOutput" NodeName="组装列表" IsBound="{Binding IsContentBound, Mode=TwoWay}" BindingSource="{Binding BindingSource, Mode=TwoWay}" BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay}" AvailableDataSources="{Binding AvailableDataSources}" SyncEditingToSource="True"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="序号" Width="50" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridCell}}, Path=ActualWidth}" Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="名称" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="类型" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Height="30" SelectedValuePath="Content" SelectedValue="{Binding DataType, Mode=TwoWay}"><ComboBoxItem Content="int"/><ComboBoxItem Content="float"/><ComboBoxItem Content="string"/></ComboBox></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="内容" Width="260"><DataGridTemplateColumn.CellTemplate><DataTemplate><controls:ParamBinding Height="30" ParameterName="Content" NodeId="AssemblyOutput" NodeName="组装列表" IsBound="{Binding IsContentBound, Mode=TwoWay}" BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay}" AvailableDataSources="{Binding AvailableDataSources}" SyncEditingToSource="True" BindingSourceSelected="AssemblyBindingSourceSelected" LostKeyboardFocus="AssemblyBinding_LostKeyboardFocus"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTextColumn Header="数据结果" Binding="{Binding Result}" Width="140" IsReadOnly="True"/>
                                     <DataGridTemplateColumn Width="42"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Content="×" Click="RemoveAssemblyOutput_Click" Style="{StaticResource DangerButtonStyle}" Padding="0" Width="24" Height="24"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <Button Content="＋" Width="28" Height="28" Padding="0" HorizontalAlignment="Left" Margin="8,4,0,12" Command="{Binding AddAssemblyOutputCommand}"/>
-                        </StackPanel>
-                    </StackPanel>
+                            <Button Content="＋" Width="28" Height="28" Padding="0" HorizontalAlignment="Left" Margin="8,4,0,0" Command="{Binding AddAssemblyOutputCommand}"/>
+                            </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Grid>
                 </Grid>
-            </ScrollViewer>
+            </Grid>
             <Expander Grid.Row="1" Style="{StaticResource ReceiveMessageExpanderStyle}"
                       Header="{Binding SelectedReceiveEvent.MessagePanelHeader}"
                       IsExpanded="{Binding SelectedReceiveEvent.IsMessageExpanded, Mode=TwoWay}" Margin="0,4,0,0">
@@ -1130,7 +1349,7 @@
                                 <Button Content="清空" Click="ClearReceiveEventMessage_Click" Padding="10,2"/>
                             </StackPanel>
                         </DockPanel>
-                        <TextBox Grid.Row="1" Text="{Binding SelectedReceiveEvent.MessageText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Padding="8"
+                        <TextBox Grid.Row="1" Text="{Binding SelectedReceiveEvent.ParseHistoryText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Padding="8"
                                  VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"
                                  Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
                                  Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
@@ -1149,10 +1368,5 @@
             </StackPanel>
         </Grid>
 
-        <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0">
-            <TextBlock Text="*未保存" Visibility="{Binding HasUnsavedChanges, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <Button Content="保存" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButtonStyle}" Width="80" Margin="0,0,10,0"/>
-            <Button Content="关闭" Click="Close_Click" Style="{StaticResource SecondaryButtonStyle}" Width="80"/>
-        </StackPanel>
     </Grid>
 </themeWindows:ThemeDialogWindow>

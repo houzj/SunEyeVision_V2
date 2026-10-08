@@ -186,6 +186,57 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             }
         }
 
+        private void ByteRulePosition_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (sender is not NumericUpDown { DataContext: CommunicationCompareInputViewModel input } control)
+                return;
+
+            // The DataGrid template can display the new Value before its IntValue binding
+            // has written back. Keep the rule model in sync with the visible editor value.
+            var position = (int)System.Math.Round(e.NewValue);
+            if (Equals(control.Tag, "Start")) input.ByteStart = position;
+            else if (Equals(control.Tag, "End")) input.ByteEnd = position;
+        }
+
+        private void CompareRange_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (sender is not NumericUpDown { DataContext: CommunicationCompareInputViewModel input } control)
+                return;
+
+            // The DataGrid editor can show a new bound value before the row model is updated.
+            // Status calculation and persistence must use the same value visible in the editor.
+            var boundary = (int)System.Math.Round(e.NewValue);
+            if (Equals(control.Tag, "Minimum")) input.Minimum = boundary;
+            else if (Equals(control.Tag, "Maximum")) input.Maximum = boundary;
+        }
+
+        private void CompareRule_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not ComboBox { SelectedItem: string selectedRule } combo) return;
+            if (combo.DataContext is CommunicationCompareInputViewModel input &&
+                !string.Equals(input.CompareRule, selectedRule, System.StringComparison.Ordinal))
+                input.CompareRule = selectedRule;
+            else if (combo.DataContext is CommunicationEventOutputViewModel output &&
+                     !string.Equals(output.CompareRule, selectedRule, System.StringComparison.Ordinal))
+                output.CompareRule = selectedRule;
+        }
+
+        private void AssemblyBindingSourceSelected(object sender, RoutedEventArgs e) =>
+            SyncAssemblyBinding(sender);
+
+        private void AssemblyBinding_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) =>
+            SyncAssemblyBinding(sender);
+
+        private static void SyncAssemblyBinding(object sender)
+        {
+            if (sender is not ParamBinding { DataContext: CommunicationAssemblyOutputViewModel output } control)
+                return;
+
+            // ParamBinding may replace its own two-way DP binding when the user selects a source.
+            // Copy the actual selected path into the row model, then resolve its stable FieldId.
+            output.ApplyBindingSelection(control.BindingSource, control.BindingDisplayText);
+        }
+
         private void RemoveAssemblyOutput_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is CommunicationManagerViewModel manager &&

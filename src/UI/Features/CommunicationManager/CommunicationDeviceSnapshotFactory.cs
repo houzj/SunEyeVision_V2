@@ -31,6 +31,8 @@ public static class CommunicationDeviceSnapshotFactory
         Rack = device.Rack,
         Slot = device.Slot,
         S7CpuType = device.S7CpuType,
-        EndpointUrl = device.EndpointUrl
+        EndpointUrl = device.EndpointUrl,
+        EnableReceiveTerminator = device.EnableReceiveTerminator,
+        ReceiveTerminator = device.ReceiveTerminator
     };
 }

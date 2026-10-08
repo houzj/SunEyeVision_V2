@@ -43,9 +43,11 @@ public sealed partial class CommunicationRuntimeManager
         const CommunicationCapabilities readWrite = CommunicationCapabilities.Read | CommunicationCapabilities.Write;
 
         yield return new BuiltInFactory("tcp-client", raw,
-            config => new TcpClientSession(config.Id, config.Host, config.Port, GetTimeout(config)));
+            config => new TcpClientSession(config.Id, config.Host, config.Port, GetTimeout(config),
+                ReceiveTerminatorFramer.GetTerminatorBytes(config)));
         yield return new BuiltInFactory("tcp-server", raw,
-            config => new TcpServerSession(config.Id, ParseBindAddress(config.LocalHost), config.LocalPort));
+            config => new TcpServerSession(config.Id, ParseBindAddress(config.LocalHost), config.LocalPort,
+                ReceiveTerminatorFramer.GetTerminatorBytes(config)));
         yield return new BuiltInFactory("udp", raw,
             config => new UdpSession(config.Id, ParseBindAddress(config.LocalHost), config.LocalPort,
                 config.RemoteHost, config.RemotePort));

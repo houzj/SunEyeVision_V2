@@ -29,6 +29,7 @@ public sealed partial class CommunicationRuntimeManager
     {
         private readonly string _communicationId;
         private readonly TcpListener _listener;
+        private readonly byte[]? _receiveTerminator;
         private readonly CancellationTokenSource _lifetime = new();
         private readonly ConcurrentDictionary<int, TcpClient> _clients = new();
         private readonly ConcurrentDictionary<int, Task> _receiveTasks = new();
@@ -42,10 +43,11 @@ public sealed partial class CommunicationRuntimeManager
         public event EventHandler<CommunicationConnectionClosedEventArgs>? ConnectionClosed;
         public bool IsConnected => Volatile.Read(ref _running) == 1;
 
-        public TcpServerSession(string communicationId, IPAddress address, int port)
+        public TcpServerSession(string communicationId, IPAddress address, int port, byte[]? receiveTerminator)
         {
             _communicationId = communicationId;
             _listener = new TcpListener(address, port);
+            _receiveTerminator = receiveTerminator;
         }
 
         public Task ConnectAsync(CancellationToken cancellationToken)
@@ -82,6 +84,7 @@ public sealed partial class CommunicationRuntimeManager
         private async Task ReceiveClientAsync(int id, TcpClient client, CancellationToken cancellationToken)
         {
             var buffer = new byte[8192];
+            var framer = _receiveTerminator == null ? null : new ReceiveTerminatorFramer(_receiveTerminator);
             try
             {
                 var stream = client.GetStream();
@@ -91,11 +94,20 @@ public sealed partial class CommunicationRuntimeManager
                     if (count == 0) break;
                     var data = new byte[count];
                     Buffer.BlockCopy(buffer, 0, data, 0, count);
-                    DataReceived?.Invoke(this, new CommunicationDataReceivedEventArgs(_communicationId, data, DateTimeOffset.Now));
+                    if (framer == null)
+                        DataReceived?.Invoke(this, new CommunicationDataReceivedEventArgs(_communicationId, data, DateTimeOffset.Now));
+                    else
+                        foreach (var message in framer.Append(data))
+                            DataReceived?.Invoke(this, new CommunicationDataReceivedEventArgs(_communicationId, message, DateTimeOffset.Now));
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
             catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested) { }
+            catch (InvalidDataException ex)
+            {
+                VisionLogger.Instance.Log(LogLevel.Warning, $"TCP 服务端接收组帧失败：设备={_communicationId}，客户端={id}，{ex.Message}",
+                    "CommunicationRuntime", ex, LogTarget.File);
+            }
             catch (IOException) { }
             catch (SocketException) { }
             finally

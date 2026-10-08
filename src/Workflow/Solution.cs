@@ -81,6 +81,12 @@ public class Solution : ObservableObject
     public List<Communication> Communications { get; set; } = new();
 
     /// <summary>
+    /// 通讯接收事件配置。与通讯设备配置分开保存，避免事件列表随通讯设备增删丢失。
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<CommunicationEventDefinition> CommunicationEvents { get; set; } = new();
+
+    /// <summary>
     /// 数据库配置
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

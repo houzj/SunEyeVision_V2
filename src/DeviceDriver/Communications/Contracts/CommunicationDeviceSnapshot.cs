@@ -32,6 +32,8 @@ public sealed record CommunicationDeviceSnapshot
     public int Slot { get; init; }
     public string S7CpuType { get; init; } = string.Empty;
     public string EndpointUrl { get; init; } = string.Empty;
+    public bool EnableReceiveTerminator { get; init; }
+    public string ReceiveTerminator { get; init; } = string.Empty;
 
     public bool IsModbus => ProtocolKey is "modbus" or "modbus-tcp" or "modbus-rtu";
     public bool IsModbusRtu => IsModbus && (ModbusMode is "串口" or "Serial" or "Rtu" || ProtocolKey == "modbus-rtu");

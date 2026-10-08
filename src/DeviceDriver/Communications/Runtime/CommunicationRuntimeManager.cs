@@ -122,6 +122,7 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
     public async Task DisconnectAsync(string communicationId)
     {
         if (!_sessions.TryRemove(communicationId, out var session)) return;
+        ClearOpcUaValues(communicationId);
         var device = new CommunicationDeviceRef(communicationId);
         var capabilities = GetStatus(device).Capabilities;
         PublishStatus(device, CommunicationState.Disconnecting, capabilities);
@@ -236,6 +237,7 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
             return;
         if (_sessions.TryRemove(e.CommunicationId, out var session))
         {
+            ClearOpcUaValues(e.CommunicationId);
             session.DataReceived -= OnDataReceived;
             session.ConnectionClosed -= OnConnectionClosed;
             if (session is OpcUaSession closedOpcUa) closedOpcUa.PointValueChanged -= OnOpcUaPointValueChanged;
@@ -244,6 +246,12 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
         var device = new CommunicationDeviceRef(e.CommunicationId);
         PublishStatus(device, CommunicationState.Disconnected, GetStatus(device).Capabilities);
         ConnectionClosed?.Invoke(this, e);
+    }
+
+    private void ClearOpcUaValues(string communicationId)
+    {
+        foreach (var key in _opcUaValues.Keys.Where(key => key.DeviceId == communicationId))
+            _opcUaValues.TryRemove(key, out _);
     }
 
     private static async Task DisposeClosedSessionAsync(ICommunicationAdapter session, string communicationId)

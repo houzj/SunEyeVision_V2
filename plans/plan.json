@@ -2426,6 +2426,18 @@
                                     {
                                         "date":  "2026-09-24",
                                         "note":  "[23f9133cb03b5b3a6a964219e2b4381cacbc31da] feat(core): 实现通讯管理器运行时与按设备解耦配置"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[c509106d76eefbbe563784fa21589b68444c71e9] feat(core): OPC UA 收敛匿名联调并新增数据点表与事件窗口"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[d5301992fd411840edff84ba2515ff5176002cfd] feat(core): 通讯解析字段与统一绑定模型并修复管理器打开异常"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[85383291d9ed055068828acc92226386746fb34d] feat(core): 通讯接收解析链路与接收来源目标绑定"
                                     }
                                 ]
                     },
@@ -4833,26 +4845,6 @@
                        }
                    ],
     "tempTasks":  [
-                      {
-                          "id":  "TMP-05c8803",
-                          "message":  "docs: 同步协作任务卡（N 点标定 UI 对齐与验证记录）",
-                          "date":  "2026-09-29",
-                          "commit":  "05c88036ffc934ba2af741ae64564f7176a1335a",
-                          "files":  [
-                                        "docs/collaboration/CURRENT_TASK.md"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-4227d9f",
-                          "message":  "docs: 补充跨厂商枚举语义规则并同步协作任务卡",
-                          "date":  "2026-09-29",
-                          "commit":  "4227d9f024a6fca599e8a2f5a77d2275edbab823",
-                          "files":  [
-                                        "docs/05-框架架构/2026/09/25/相机实现与开发说明-20260925.md",
-                                        "docs/collaboration/CURRENT_TASK.md"
-                                    ],
-                          "status":  "in_progress"
-                      }
+
                   ]
 }

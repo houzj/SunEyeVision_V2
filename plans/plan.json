@@ -1995,7 +1995,7 @@
                                           "name":  "通信驱动抽象层（ICommunicationDriver：TCP/UDP/串口）",
                                           "phase":  "算法实现",
                                           "hours":  16,
-                                          "status":  "in_progress",
+                                          "status":  "done",
                                           "week":  "2027-W03"
                                       },
                                       {
@@ -2054,6 +2054,14 @@
                                     {
                                         "date":  "2026-10-08",
                                         "note":  "[11dae1631923ef409b4022689dfe9d0a6f69ac42] feat(core): 通讯接收解析链路与接收来源目标绑定"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[64286423864ce9a0aa02a65d4b50321f81bb471b] feat(core): 通讯接收历史上限统一为 200 条并自动滚动到最新"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[fe30da15b3b63262f8146779875df078c47ac2d3] feat(core): 实现通讯发送事件与宿主发送服务"
                                     }
                                 ]
                     },

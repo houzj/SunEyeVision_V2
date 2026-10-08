@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.ComponentModel;
 using System.Linq;
@@ -33,6 +34,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         private readonly Dictionary<string, CommunicationDeviceWorkspaceViewModel> _deviceWorkspaces = new();
         private readonly Dictionary<string, OpcUaConfigurationSnapshot> _opcUaOriginals = new();
         private readonly Dictionary<CommunicationCompareInputViewModel, string> _compareInputNames = new();
+        private readonly HashSet<CommunicationReceiveEventViewModel> _trackedReceiveEvents = new();
         private readonly HashSet<string> _newOpcUaDeviceIds = new(StringComparer.Ordinal);
         private readonly ConcurrentDictionary<(string DeviceId, string NodeId), OpcUaPointValueEventArgs> _pendingOpcUaUpdates = new();
         private int _opcUaUpdateScheduled;
@@ -52,10 +54,75 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 if (!SetProperty(ref _selectedReceiveEvent, value)) return;
                 OnPropertyChanged(nameof(HasSelectedReceiveEvent));
                 OnPropertyChanged(nameof(HasNoSelectedReceiveEvent));
+                NotifyReceiveEventDeviceChanged();
+                if (value != null) ScheduleOpcUaReceiveReplay(value);
             }
         }
         public bool HasSelectedReceiveEvent => SelectedReceiveEvent != null;
         public bool HasNoSelectedReceiveEvent => SelectedReceiveEvent == null;
+        public Communication? SelectedReceiveEventDevice => Communications.FirstOrDefault(device =>
+            string.Equals(device.Id, SelectedReceiveEvent?.SelectedDeviceId, StringComparison.Ordinal));
+        private CommunicationReceiveTargetKind SelectedReceiveTargetKind =>
+            CommunicationReceiveTargetKinds.For(SelectedReceiveEventDevice);
+        public bool HasSelectedReceiveTarget => SelectedReceiveTargetKind != CommunicationReceiveTargetKind.None;
+        public string SelectedReceiveTargetLabel => CommunicationReceiveTargetKinds.Label(SelectedReceiveTargetKind);
+        public bool IsSelectedReceiveDeviceModbus => SelectedReceiveTargetKind == CommunicationReceiveTargetKind.ModbusAddress;
+        public bool IsSelectedReceiveDeviceS7 => SelectedReceiveTargetKind == CommunicationReceiveTargetKind.S7Memory;
+        public bool IsSelectedReceiveDeviceCip => SelectedReceiveTargetKind == CommunicationReceiveTargetKind.CipAttribute;
+        public bool IsSelectedReceiveDeviceOpcUa => SelectedReceiveTargetKind == CommunicationReceiveTargetKind.OpcUaDataPoint;
+        private static readonly string[] TextReceiveDataTypes =
+            ["int", "float", "string", "Int16", "UInt16", "Int32", "UInt32", "Float32"];
+        private static readonly string[] OpcUaReceiveDataTypes =
+            ["Boolean", "int", "float", "string", "Int16", "UInt16", "Int32", "UInt32", "Float32", "Double"];
+        public IReadOnlyList<string> SelectedReceiveDataTypes =>
+            IsSelectedReceiveDeviceOpcUa ? OpcUaReceiveDataTypes : TextReceiveDataTypes;
+        public ObservableCollection<OpcUaPointRowViewModel>? SelectedOpcUaReceivePoints =>
+            SelectedReceiveEventDevice is { } device && _deviceWorkspaces.TryGetValue(device.Id, out var workspace)
+                ? workspace.OpcUaPoints
+                : null;
+        public string? SelectedModbusReceiveAddress
+        {
+            get => IsSelectedReceiveDeviceModbus ? SelectedReceiveEvent?.SelectedAddress : null;
+            set
+            {
+                if (IsSelectedReceiveDeviceModbus && SelectedReceiveEvent != null)
+                    SelectedReceiveEvent.SelectedAddress = value ?? string.Empty;
+            }
+        }
+        public string SelectedS7ReceiveAddress
+        {
+            get => IsSelectedReceiveDeviceS7 ? SelectedReceiveEvent?.SelectedAddress ?? string.Empty : string.Empty;
+            set
+            {
+                if (IsSelectedReceiveDeviceS7 && SelectedReceiveEvent != null)
+                    SelectedReceiveEvent.SelectedAddress = value ?? string.Empty;
+            }
+        }
+        public string? SelectedOpcUaReceivePointId
+        {
+            get => IsSelectedReceiveDeviceOpcUa ? SelectedReceiveEvent?.SelectedAddress : null;
+            set
+            {
+                if (IsSelectedReceiveDeviceOpcUa && SelectedReceiveEvent != null)
+                    SelectedReceiveEvent.SelectedAddress = value ?? string.Empty;
+            }
+        }
+
+        private void NotifyReceiveEventDeviceChanged()
+        {
+            OnPropertyChanged(nameof(SelectedReceiveEventDevice));
+            OnPropertyChanged(nameof(HasSelectedReceiveTarget));
+            OnPropertyChanged(nameof(SelectedReceiveTargetLabel));
+            OnPropertyChanged(nameof(IsSelectedReceiveDeviceModbus));
+            OnPropertyChanged(nameof(IsSelectedReceiveDeviceS7));
+            OnPropertyChanged(nameof(IsSelectedReceiveDeviceCip));
+            OnPropertyChanged(nameof(IsSelectedReceiveDeviceOpcUa));
+            OnPropertyChanged(nameof(SelectedReceiveDataTypes));
+            OnPropertyChanged(nameof(SelectedOpcUaReceivePoints));
+            OnPropertyChanged(nameof(SelectedModbusReceiveAddress));
+            OnPropertyChanged(nameof(SelectedS7ReceiveAddress));
+            OnPropertyChanged(nameof(SelectedOpcUaReceivePointId));
+        }
 
         private sealed record OpcUaConfigurationSnapshot(string EndpointUrl, Dictionary<string, object> Settings,
             OpcUaDataPoint[] Points);
@@ -114,41 +181,97 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         public bool HasSelectedCommunication => SelectedCommunication != null;
         public bool HasNoSelectedCommunication => SelectedCommunication == null;
 
-        public void AddReceiveEvent(CommunicationReceiveEventViewModel definition)
-        {
-            foreach (var input in definition.CompareInputs)
-                TrackCompareInput(input);
-            ReceiveEvents.Add(definition);
+    public void AddReceiveEvent(CommunicationReceiveEventViewModel definition)
+    {
+        EnsureCompareInputDataSources(definition);
+        TrackReceiveEvent(definition);
+        foreach (var input in definition.CompareInputs)
+            TrackCompareInput(input);
+        ReceiveEvents.Add(definition);
+        SyncCommunicationEventsToSolution();
             SelectedReceiveEvent = definition;
             ActivePage = "ReceiveEvents";
-            HasUnsavedChanges = true;
         }
 
         public void AddReceiveEventOutput()
         {
             if (SelectedReceiveEvent == null) return;
-            var next = SelectedReceiveEvent.Outputs.Count + 1;
-            SelectedReceiveEvent.Outputs.Add(new CommunicationEventOutputViewModel { Name = $"out{next}" });
-            HasUnsavedChanges = true;
+            var next = GetNextIndexedName(SelectedReceiveEvent.Outputs.Select(output => output.Name), "out");
+            SelectedReceiveEvent.Outputs.Add(new CommunicationEventOutputViewModel
+            {
+                Name = next,
+                DataType = GetSelectedOpcUaDataType(SelectedReceiveEvent) ?? "int"
+            });
+            SyncCommunicationEventsToSolution();
+            ScheduleOpcUaReceiveReplay(SelectedReceiveEvent);
         }
 
         public void AddCompareInput()
         {
             if (SelectedReceiveEvent == null) return;
-            var next = SelectedReceiveEvent.CompareInputs.Count + 1;
-            var input = new CommunicationCompareInputViewModel { Name = $"in{next}" };
+            var next = GetNextIndexedName(SelectedReceiveEvent.CompareInputs.Select(input => input.Name), "in");
+            var input = new CommunicationCompareInputViewModel
+            {
+                Name = next,
+                IsByteRule = SelectedReceiveEvent.IsByteMatch,
+                DataType = GetSelectedOpcUaDataType(SelectedReceiveEvent) ?? "int"
+            };
             TrackCompareInput(input);
             SelectedReceiveEvent.CompareInputs.Add(input);
-            SelectedReceiveEvent.CompareInputDataSources.Add(new SunEyeVision.Plugin.SDK.Execution.Parameters.AvailableDataSource
+            SelectedReceiveEvent.CompareInputDataSources.Add(CreateCompareInputDataSource(input));
+            TrackCompareInput(input);
+            SyncCommunicationEventsToSolution();
+            ScheduleOpcUaReceiveReplay(SelectedReceiveEvent);
+        }
+
+        private static SunEyeVision.Plugin.SDK.Execution.Parameters.AvailableDataSource CreateCompareInputDataSource(
+            CommunicationCompareInputViewModel input) => new()
             {
                 SourceNodeId = "ReceiveEventInputs",
                 SourceNodeName = "解析列表",
                 PropertyName = input.Name,
                 DisplayName = input.Name,
                 LeafDisplayName = input.Name,
-                PropertyType = typeof(string)
-            });
-            HasUnsavedChanges = true;
+                PropertyType = typeof(string),
+                SourceFieldId = input.FieldId
+            };
+
+        private static void EnsureCompareInputDataSources(CommunicationReceiveEventViewModel definition)
+        {
+            foreach (var input in definition.CompareInputs)
+            {
+                var source = definition.CompareInputDataSources.FirstOrDefault(item => item.SourceFieldId == input.FieldId)
+                    ?? definition.CompareInputDataSources.FirstOrDefault(item =>
+                        string.Equals(item.PropertyName, input.Name, StringComparison.Ordinal));
+                if (source == null)
+                {
+                    definition.CompareInputDataSources.Add(CreateCompareInputDataSource(input));
+                    continue;
+                }
+
+                // 兼容第一批改造前创建的名称型数据源：保留其显示/类型信息，
+                // 仅通过替换实例补齐稳定字段 ID 和当前字段名称。
+                if (source.SourceFieldId == input.FieldId &&
+                    string.Equals(source.PropertyName, input.Name, StringComparison.Ordinal))
+                    continue;
+
+                var index = definition.CompareInputDataSources.IndexOf(source);
+                definition.CompareInputDataSources.RemoveAt(index);
+                definition.CompareInputDataSources.Insert(index, new SunEyeVision.Plugin.SDK.Execution.Parameters.AvailableDataSource
+                {
+                    SourceNodeId = source.SourceNodeId,
+                    SourceNodeName = source.SourceNodeName,
+                    SourceNodeType = source.SourceNodeType,
+                    PropertyName = input.Name,
+                    DisplayName = input.Name,
+                    LeafDisplayName = input.Name,
+                    PropertyType = source.PropertyType,
+                    SourceFieldId = input.FieldId,
+                    VariableType = source.VariableType,
+                    IsArraySemantics = source.IsArraySemantics,
+                    BindingSuffix = source.BindingSuffix
+                });
+            }
         }
 
         private void TrackCompareInput(CommunicationCompareInputViewModel input)
@@ -160,10 +283,173 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             _compareInputNames[input] = input.Name;
         }
 
+        private void TrackReceiveEvent(CommunicationReceiveEventViewModel definition)
+        {
+            if (!_trackedReceiveEvents.Add(definition))
+                return;
+
+            definition.PropertyChanged += ReceiveEvent_PropertyChanged;
+            definition.Outputs.CollectionChanged += ReceiveEventFields_CollectionChanged;
+            definition.CompareInputs.CollectionChanged += ReceiveEventFields_CollectionChanged;
+            definition.AssemblyOutputs.CollectionChanged += ReceiveEventFields_CollectionChanged;
+            foreach (var output in definition.Outputs)
+                output.PropertyChanged += ReceiveEventField_PropertyChanged;
+            foreach (var input in definition.CompareInputs)
+                TrackCompareInput(input);
+            foreach (var output in definition.AssemblyOutputs)
+                output.PropertyChanged += ReceiveEventField_PropertyChanged;
+        }
+
+        private void ReceiveEvent_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(CommunicationReceiveEventViewModel.Name)
+                or nameof(CommunicationReceiveEventViewModel.SelectedDeviceId)
+                or nameof(CommunicationReceiveEventViewModel.SelectedAddress)
+                or nameof(CommunicationReceiveEventViewModel.ProcessingMethod)
+                or nameof(CommunicationReceiveEventViewModel.EventType)
+                or nameof(CommunicationReceiveEventViewModel.DataMode)
+                or nameof(CommunicationReceiveEventViewModel.ByteOrder)
+                or nameof(CommunicationReceiveEventViewModel.ByteOffset)
+                or nameof(CommunicationReceiveEventViewModel.ByteLengthCompare)
+                or nameof(CommunicationReceiveEventViewModel.ByteLength)
+                or nameof(CommunicationReceiveEventViewModel.AsciiData)
+                or nameof(CommunicationReceiveEventViewModel.ByteMatchLogic)
+                or nameof(CommunicationReceiveEventViewModel.Separator)
+                or nameof(CommunicationReceiveEventViewModel.CharacterLengthCompare)
+                or nameof(CommunicationReceiveEventViewModel.CharacterLength)
+                or nameof(CommunicationReceiveEventViewModel.EchoToDevice))
+                MarkReceiveEventChanged();
+            if (sender is CommunicationReceiveEventViewModel replayDefinition &&
+                e.PropertyName is (nameof(CommunicationReceiveEventViewModel.Separator)
+                    or nameof(CommunicationReceiveEventViewModel.CharacterLengthCompare)
+                    or nameof(CommunicationReceiveEventViewModel.CharacterLength)
+                    or nameof(CommunicationReceiveEventViewModel.DataMode)
+                    or nameof(CommunicationReceiveEventViewModel.ProcessingMethod)
+                    or nameof(CommunicationReceiveEventViewModel.EventType)))
+                ScheduleOpcUaReceiveReplay(replayDefinition);
+            if (sender == SelectedReceiveEvent && e.PropertyName == nameof(CommunicationReceiveEventViewModel.SelectedDeviceId))
+            {
+                SelectedReceiveEvent.SelectedAddress = string.Empty;
+                NotifyReceiveEventDeviceChanged();
+            }
+            if (sender == SelectedReceiveEvent && e.PropertyName == nameof(CommunicationReceiveEventViewModel.SelectedAddress))
+            {
+                OnPropertyChanged(nameof(SelectedModbusReceiveAddress));
+                OnPropertyChanged(nameof(SelectedS7ReceiveAddress));
+                OnPropertyChanged(nameof(SelectedOpcUaReceivePointId));
+                ScheduleOpcUaReceiveReplay(SelectedReceiveEvent);
+            }
+        }
+
+        private void ReceiveEventField_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is CommunicationEventOutputViewModel output && output.Value != null &&
+                e.PropertyName is (nameof(CommunicationEventOutputViewModel.CompareRule)
+                    or nameof(CommunicationEventOutputViewModel.Minimum)
+                    or nameof(CommunicationEventOutputViewModel.Maximum)
+                    or nameof(CommunicationEventOutputViewModel.CompareValue)))
+                output.Status = CommunicationReceiveProcessor.GetOutputStatus(output);
+            if (sender is CommunicationEventOutputViewModel changedType &&
+                e.PropertyName == nameof(CommunicationEventOutputViewModel.DataType))
+            {
+                changedType.Value = null;
+                changedType.Result = string.Empty;
+                changedType.Status = "未接收";
+                var owner = ReceiveEvents.FirstOrDefault(definition => definition.Outputs.Contains(changedType));
+                if (owner != null) ScheduleOpcUaReceiveReplay(owner);
+            }
+            if (e.PropertyName is nameof(CommunicationEventOutputViewModel.Name)
+                or nameof(CommunicationEventOutputViewModel.DataType)
+                or nameof(CommunicationEventOutputViewModel.CompareRule)
+                or nameof(CommunicationEventOutputViewModel.Minimum)
+                or nameof(CommunicationEventOutputViewModel.Maximum)
+                or nameof(CommunicationEventOutputViewModel.CompareValue)
+                or nameof(CommunicationAssemblyOutputViewModel.Name)
+                or nameof(CommunicationAssemblyOutputViewModel.DataType)
+                or nameof(CommunicationAssemblyOutputViewModel.Content)
+                or nameof(CommunicationAssemblyOutputViewModel.BindingSource)
+                or nameof(CommunicationAssemblyOutputViewModel.BindingDisplayText)
+                or nameof(CommunicationAssemblyOutputViewModel.IsContentBound)
+                or nameof(CommunicationAssemblyOutputViewModel.SourceFieldId)
+                or nameof(CommunicationAssemblyOutputViewModel.SourceNodeId)
+                or nameof(CommunicationAssemblyOutputViewModel.SourceNameSnapshot))
+                MarkReceiveEventChanged();
+        }
+
+        private void ReceiveEventFields_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+                foreach (var item in e.NewItems)
+                {
+                    if (item is CommunicationCompareInputViewModel input)
+                        TrackCompareInput(input);
+                    else if (item is INotifyPropertyChanged field)
+                        field.PropertyChanged += ReceiveEventField_PropertyChanged;
+                }
+            MarkReceiveEventChanged();
+        }
+
+        private void MarkReceiveEventChanged()
+        {
+            SyncCommunicationEventsToSolution();
+        }
+
+        private void SyncCommunicationEventsToSolution()
+        {
+            var solution = _solutionManager.CurrentSolution;
+            if (solution != null)
+                solution.CommunicationEvents = CaptureReceiveEvents();
+        }
+
         private void CompareInput_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (sender is not CommunicationCompareInputViewModel input)
+                return;
+
+            if (e.PropertyName is nameof(CommunicationCompareInputViewModel.Name)
+                or nameof(CommunicationCompareInputViewModel.DataType)
+                or nameof(CommunicationCompareInputViewModel.CompareRule)
+                or nameof(CommunicationCompareInputViewModel.Minimum)
+                or nameof(CommunicationCompareInputViewModel.Maximum)
+                or nameof(CommunicationCompareInputViewModel.CompareValue)
+                or nameof(CommunicationCompareInputViewModel.ByteStart)
+                or nameof(CommunicationCompareInputViewModel.ByteEnd)
+                or nameof(CommunicationCompareInputViewModel.ByteOrder))
+                MarkReceiveEventChanged();
+
+            if (e.PropertyName is nameof(CommunicationCompareInputViewModel.DataType)
+                or nameof(CommunicationCompareInputViewModel.CompareRule)
+                or nameof(CommunicationCompareInputViewModel.Minimum)
+                or nameof(CommunicationCompareInputViewModel.Maximum)
+                or nameof(CommunicationCompareInputViewModel.CompareValue))
+            {
+                if (e.PropertyName == nameof(CommunicationCompareInputViewModel.CompareRule) &&
+                    input.IsByteRule && input.CompareRule is ("上升沿" or "下降沿"))
+                {
+                    input.Value = null;
+                    input.Result = string.Empty;
+                    input.Status = "未接收";
+                }
+                else if (input.Value != null)
+                    input.Status = CommunicationReceiveProcessor.GetCompareStatus(input);
+                if (e.PropertyName == nameof(CommunicationCompareInputViewModel.DataType))
+                {
+                    var replayOwner = ReceiveEvents.FirstOrDefault(definition => definition.CompareInputs.Contains(input));
+                    if (replayOwner != null) ScheduleOpcUaReceiveReplay(replayOwner);
+                }
+            }
+
+            if (input.IsByteRule && e.PropertyName is (nameof(CommunicationCompareInputViewModel.DataType)
+                or nameof(CommunicationCompareInputViewModel.ByteStart)
+                or nameof(CommunicationCompareInputViewModel.ByteEnd)
+                or nameof(CommunicationCompareInputViewModel.ByteOrder)))
+            {
+                input.Value = null;
+                input.Result = string.Empty;
+                input.Status = "未接收";
+            }
+
             if (e.PropertyName != nameof(CommunicationCompareInputViewModel.Name) ||
-                sender is not CommunicationCompareInputViewModel input ||
                 _normalizingCompareInputName)
                 return;
 
@@ -198,8 +484,9 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
             // 名称是通讯事件配置中的变量名，不能只改 UI 文本；同步替换绑定源身份，
             // 否则组装列表仍会保留 ReceiveEventInputs.inX 的旧路径。
-            var source = owner.CompareInputDataSources.FirstOrDefault(item =>
-                string.Equals(item.PropertyName, oldName, StringComparison.Ordinal));
+            var source = owner.CompareInputDataSources.FirstOrDefault(item => item.SourceFieldId == input.FieldId)
+                ?? owner.CompareInputDataSources.FirstOrDefault(item =>
+                    string.Equals(item.PropertyName, oldName, StringComparison.Ordinal));
             if (source != null)
             {
                 var sourceIndex = owner.CompareInputDataSources.IndexOf(source);
@@ -213,6 +500,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                     DisplayName = newName,
                     LeafDisplayName = newName,
                     PropertyType = source.PropertyType,
+                    SourceFieldId = input.FieldId,
                     VariableType = source.VariableType,
                     IsArraySemantics = source.IsArraySemantics,
                     BindingSuffix = source.BindingSuffix
@@ -224,12 +512,24 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 var newPath = replacement.GetBindingPath();
                 foreach (var output in owner.AssemblyOutputs)
                 {
-                    if (string.Equals(output.BindingSource, oldPath, StringComparison.Ordinal))
+                    var oldBindingPrefix = $"{source.SourceNodeId}.{oldName}";
+                    var isBoundToRenamedField = output.SourceFieldId == input.FieldId ||
+                        string.Equals(output.BindingSource, oldPath, StringComparison.Ordinal) ||
+                        output.BindingSource.StartsWith(oldBindingPrefix, StringComparison.Ordinal);
+                    if (isBoundToRenamedField)
+                    {
                         output.BindingSource = newPath;
+                        output.SourceFieldId = input.FieldId;
+                        output.SourceNodeId = source.SourceNodeId;
+                        output.SourceNameSnapshot = newName;
 
-                    var oldDisplay = $"{source.SourceNodeName}.{oldName}";
-                    if (string.Equals(output.BindingDisplayText, oldDisplay, StringComparison.Ordinal))
-                        output.BindingDisplayText = $"{source.SourceNodeName}.{newName}";
+                        var oldDisplay = $"{source.SourceNodeName}.{oldName}";
+                        if (string.Equals(output.BindingDisplayText, oldDisplay, StringComparison.Ordinal) ||
+                            string.Equals(output.BindingDisplayText, oldName, StringComparison.Ordinal))
+                        {
+                            output.BindingDisplayText = $"{source.SourceNodeName}.{newName}";
+                        }
+                    }
                 }
             }
 
@@ -240,10 +540,10 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         public void AddAssemblyOutput()
         {
             if (SelectedReceiveEvent == null) return;
-            var next = SelectedReceiveEvent.AssemblyOutputs.Count + 1;
+            var next = GetNextIndexedName(SelectedReceiveEvent.AssemblyOutputs.Select(output => output.Name), "out");
             SelectedReceiveEvent.AssemblyOutputs.Add(new CommunicationAssemblyOutputViewModel
             {
-                Name = $"out{next}",
+                Name = next,
                 AvailableDataSources = SelectedReceiveEvent.CompareInputDataSources
             });
             HasUnsavedChanges = true;
@@ -255,7 +555,6 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             var normalizedName = newName.Trim();
             if (string.Equals(definition.DisplayName, normalizedName, StringComparison.Ordinal)) return false;
             definition.Name = normalizedName;
-            HasUnsavedChanges = true;
             return true;
         }
 
@@ -264,7 +563,6 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             var index = ReceiveEvents.IndexOf(definition);
             if (!ReceiveEvents.Remove(definition)) return;
             SelectedReceiveEvent = ReceiveEvents.Count == 0 ? null : ReceiveEvents[Math.Min(index, ReceiveEvents.Count - 1)];
-            HasUnsavedChanges = true;
         }
 
         public void RemoveCompareInput(CommunicationCompareInputViewModel input)
@@ -272,28 +570,45 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             if (SelectedReceiveEvent == null || !SelectedReceiveEvent.CompareInputs.Remove(input)) return;
             input.PropertyChanged -= CompareInput_PropertyChanged;
             var sourceName = _compareInputNames.TryGetValue(input, out var knownName) ? knownName : input.Name;
-            var source = SelectedReceiveEvent.CompareInputDataSources.FirstOrDefault(item => item.PropertyName == sourceName);
+            var source = SelectedReceiveEvent.CompareInputDataSources.FirstOrDefault(item => item.SourceFieldId == input.FieldId)
+                ?? SelectedReceiveEvent.CompareInputDataSources.FirstOrDefault(item => item.PropertyName == sourceName);
             if (source != null) SelectedReceiveEvent.CompareInputDataSources.Remove(source);
+            foreach (var output in SelectedReceiveEvent.AssemblyOutputs.Where(output => output.SourceFieldId == input.FieldId))
+            {
+                output.SourceFieldId = null;
+                output.SourceNodeId = string.Empty;
+                output.SourceNameSnapshot = string.Empty;
+                output.BindingSource = string.Empty;
+                output.BindingDisplayText = "字段已删除";
+            }
             _compareInputNames.Remove(input);
-            HasUnsavedChanges = true;
+        }
+
+        private static string GetNextIndexedName(IEnumerable<string> names, string prefix)
+        {
+            var used = new HashSet<string>(names.Where(name => !string.IsNullOrWhiteSpace(name)), StringComparer.OrdinalIgnoreCase);
+            for (var index = 1; ; index++)
+            {
+                var candidate = $"{prefix}{index}";
+                if (!used.Contains(candidate))
+                    return candidate;
+            }
         }
 
         public void RemoveAssemblyOutput(CommunicationAssemblyOutputViewModel output)
         {
             if (SelectedReceiveEvent == null || !SelectedReceiveEvent.AssemblyOutputs.Remove(output)) return;
-            HasUnsavedChanges = true;
         }
 
         public void RemoveReceiveEventOutput(CommunicationEventOutputViewModel output)
         {
             if (SelectedReceiveEvent == null || !SelectedReceiveEvent.Outputs.Remove(output)) return;
-            HasUnsavedChanges = true;
         }
 
         public void ClearReceiveEventMessage()
         {
             if (SelectedReceiveEvent == null) return;
-            SelectedReceiveEvent.MessageText = string.Empty;
+            SelectedReceiveEvent.ClearParseHistory();
         }
 
         /// <summary>
@@ -345,6 +660,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             Communications = new ObservableCollection<Communication>(
                 currentSolution?.Communications ?? Enumerable.Empty<Communication>()
             );
+            LoadReceiveEvents(currentSolution?.CommunicationEvents);
             foreach (var communication in Communications)
             {
                 AddWorkspace(communication);
@@ -356,6 +672,152 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
             InitializeCommands();
         }
+
+        private void LoadReceiveEvents(IEnumerable<CommunicationEventDefinition>? definitions)
+        {
+            if (definitions == null) return;
+
+            foreach (var definition in definitions)
+            {
+                if (!Enum.TryParse<CommunicationEventProcessingMethod>(definition.ProcessingMethod, true, out var processingMethod))
+                    processingMethod = CommunicationEventProcessingMethod.Text;
+                if (!Enum.TryParse<CommunicationEventType>(definition.EventType, true, out var eventType))
+                    eventType = CommunicationEventType.ProtocolParse;
+
+                var eventViewModel = new CommunicationReceiveEventViewModel
+                {
+                    EventId = definition.EventId == Guid.Empty ? Guid.NewGuid() : definition.EventId,
+                    Name = definition.Name,
+                    SelectedDeviceId = definition.SelectedDeviceId,
+                    SelectedAddress = definition.SelectedAddress,
+                    ProcessingMethod = processingMethod,
+                    EventType = eventType,
+                    DataMode = definition.DataMode,
+                    ByteOrder = definition.ByteOrder,
+                    ByteOffset = definition.ByteOffset,
+                    ByteLengthCompare = definition.ByteLengthCompare,
+                    ByteLength = definition.ByteLength,
+                    AsciiData = definition.AsciiData,
+                    ByteMatchLogic = definition.ByteMatchLogic,
+                    Separator = definition.Separator,
+                    CharacterLengthCompare = definition.CharacterLengthCompare,
+                    CharacterLength = definition.CharacterLength,
+                    EchoToDevice = definition.EchoToDevice
+                };
+                foreach (var output in definition.Outputs)
+                    eventViewModel.Outputs.Add(new CommunicationEventOutputViewModel
+                    {
+                        FieldId = output.FieldId == Guid.Empty ? Guid.NewGuid() : output.FieldId,
+                        Name = output.Name,
+                        DataType = output.DataType,
+                        CompareRule = output.CompareRule,
+                        Minimum = output.Minimum,
+                        Maximum = output.Maximum,
+                        CompareValue = output.CompareValue
+                    });
+
+                foreach (var input in definition.CompareInputs)
+                {
+                    var inputViewModel = new CommunicationCompareInputViewModel
+                    {
+                        FieldId = input.FieldId == Guid.Empty ? Guid.NewGuid() : input.FieldId,
+                        Name = input.Name,
+                        DataType = input.DataType,
+                        IsByteRule = processingMethod == CommunicationEventProcessingMethod.ByteMatch,
+                        ByteStart = input.ByteStart,
+                        ByteEnd = input.ByteEnd,
+                        ByteOrder = input.ByteOrder,
+                        CompareRule = input.CompareRule,
+                        Minimum = input.Minimum,
+                        Maximum = input.Maximum,
+                        CompareValue = input.CompareValue
+                    };
+                    eventViewModel.CompareInputs.Add(inputViewModel);
+                }
+
+                foreach (var output in definition.AssemblyOutputs)
+                {
+                    eventViewModel.AssemblyOutputs.Add(new CommunicationAssemblyOutputViewModel
+                    {
+                        FieldId = output.FieldId == Guid.Empty ? Guid.NewGuid() : output.FieldId,
+                        Name = output.Name,
+                        DataType = output.DataType,
+                        Content = output.Content,
+                        BindingSource = output.BindingSource,
+                        BindingDisplayText = output.BindingDisplayText,
+                        IsContentBound = output.IsContentBound,
+                        SourceFieldId = output.SourceFieldId,
+                        SourceNodeId = output.SourceNodeId,
+                        SourceNameSnapshot = output.SourceNameSnapshot
+                    });
+                }
+
+                EnsureCompareInputDataSources(eventViewModel);
+                TrackReceiveEvent(eventViewModel);
+                foreach (var output in eventViewModel.AssemblyOutputs)
+                    output.AvailableDataSources = eventViewModel.CompareInputDataSources;
+                foreach (var input in eventViewModel.CompareInputs)
+                    TrackCompareInput(input);
+                ReceiveEvents.Add(eventViewModel);
+            }
+        }
+
+        private List<CommunicationEventDefinition> CaptureReceiveEvents() => ReceiveEvents.Select(definition => new CommunicationEventDefinition
+        {
+            EventId = definition.EventId,
+            Name = definition.Name,
+            SelectedDeviceId = definition.SelectedDeviceId,
+            SelectedAddress = definition.SelectedAddress,
+            ProcessingMethod = definition.ProcessingMethod.ToString(),
+            EventType = definition.EventType.ToString(),
+            DataMode = definition.DataMode,
+            ByteOrder = definition.ByteOrder,
+            ByteOffset = definition.ByteOffset,
+            ByteLengthCompare = definition.ByteLengthCompare,
+            ByteLength = definition.ByteLength,
+            AsciiData = definition.AsciiData,
+            ByteMatchLogic = definition.ByteMatchLogic,
+            Separator = definition.Separator,
+            CharacterLengthCompare = definition.CharacterLengthCompare,
+            CharacterLength = definition.CharacterLength,
+            EchoToDevice = definition.EchoToDevice,
+            Outputs = definition.Outputs.Select(output => new CommunicationEventOutputDefinition
+            {
+                FieldId = output.FieldId,
+                Name = output.Name,
+                DataType = output.DataType,
+                CompareRule = output.CompareRule,
+                Minimum = output.Minimum,
+                Maximum = output.Maximum,
+                CompareValue = output.CompareValue
+            }).ToList(),
+            CompareInputs = definition.CompareInputs.Select(input => new CommunicationCompareInputDefinition
+            {
+                FieldId = input.FieldId,
+                Name = input.Name,
+                DataType = input.DataType,
+                ByteStart = input.ByteStart,
+                ByteEnd = input.ByteEnd,
+                ByteOrder = input.ByteOrder,
+                CompareRule = input.CompareRule,
+                Minimum = input.Minimum,
+                Maximum = input.Maximum,
+                CompareValue = input.CompareValue
+            }).ToList(),
+            AssemblyOutputs = definition.AssemblyOutputs.Select(output => new CommunicationAssemblyOutputDefinition
+            {
+                FieldId = output.FieldId,
+                Name = output.Name,
+                DataType = output.DataType,
+                Content = output.Content,
+                BindingSource = output.BindingSource,
+                BindingDisplayText = output.BindingDisplayText,
+                IsContentBound = output.IsContentBound,
+                SourceFieldId = output.SourceFieldId,
+                SourceNodeId = output.SourceNodeId,
+                SourceNameSnapshot = output.SourceNameSnapshot
+            }).ToList()
+        }).ToList();
 
         public void RefreshSerialPorts()
         {
@@ -446,12 +908,26 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private void Workspace_AddressConfigurationChanged(object? sender, EventArgs e)
         {
-            if (sender is CommunicationDeviceWorkspaceViewModel workspace)
+            if (sender is CommunicationDeviceWorkspaceViewModel workspace && workspace.Communication.IsModbus)
+            {
+                foreach (var receiveEvent in ReceiveEvents.Where(item =>
+                             string.Equals(item.SelectedDeviceId, workspace.Communication.Id, StringComparison.Ordinal) &&
+                             !string.IsNullOrEmpty(item.SelectedAddress) &&
+                             !workspace.ModbusAddressPoints.Any(point => point.Id == item.SelectedAddress)))
+                    receiveEvent.SelectedAddress = string.Empty;
                 UpdateModbusPollPlan(workspace);
+            }
         }
 
         private void Communication_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (sender is Communication changedDevice && e.PropertyName == nameof(Communication.ProtocolKey))
+            {
+                foreach (var receiveEvent in ReceiveEvents.Where(item =>
+                             string.Equals(item.SelectedDeviceId, changedDevice.Id, StringComparison.Ordinal)))
+                    receiveEvent.SelectedAddress = string.Empty;
+                if (sender == SelectedReceiveEventDevice) NotifyReceiveEventDeviceChanged();
+            }
             if (e.PropertyName == nameof(Communication.PollInterval) && sender is Communication device &&
                 _deviceWorkspaces.TryGetValue(device.Id, out var workspace))
                 UpdateModbusPollPlan(workspace);
@@ -515,6 +991,10 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             catch (Exception ex) { LogWarning($"取消 OPC UA 数据点监视失败：{ex.Message}"); }
             workspace.Communication.OpcUaDataPoints.Remove(row.Point);
             workspace.OpcUaPoints.Remove(row);
+            foreach (var receiveEvent in ReceiveEvents.Where(item =>
+                         string.Equals(item.SelectedDeviceId, workspace.Communication.Id, StringComparison.Ordinal) &&
+                         string.Equals(item.SelectedAddress, row.Point.Id, StringComparison.Ordinal)))
+                receiveEvent.SelectedAddress = string.Empty;
             if (workspace.SelectedOpcUaPoint == row) workspace.SelectedOpcUaPoint = null;
             HasUnsavedChanges = true;
         }
@@ -898,7 +1378,25 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                     .Select(update => update!.Value)
                     .ToArray();
                 workspace.ApplyModbusPollResults(updates);
+                foreach (var update in updates)
+                    ProcessModbusReceiveEvents(workspace, update, requirePollEnabled: true);
             }));
+        }
+
+        private void ProcessModbusReceiveEvents(CommunicationDeviceWorkspaceViewModel workspace,
+            ModbusPollUpdate update, bool requirePollEnabled)
+        {
+            var point = update.Point;
+            if (!workspace.ModbusAddressPoints.Contains(point) ||
+                (requirePollEnabled && !point.PollEnabled) ||
+                point.AccessMode == "只写" || point.StartAddress != update.StartAddress ||
+                update.Values.Length != point.Count)
+                return;
+
+            foreach (var receiveEvent in ReceiveEvents.Where(item =>
+                         string.Equals(item.SelectedDeviceId, workspace.Communication.Id, StringComparison.Ordinal) &&
+                         string.Equals(item.SelectedAddress, point.Id, StringComparison.Ordinal)))
+                CommunicationReceiveProcessor.ProcessModbus(receiveEvent, update.Values, update.Timestamp);
         }
 
         public async Task SyncModbusDataAsync()
@@ -964,6 +1462,8 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                     return;
                 }
                 var applied = workspace.ApplyModbusSyncResults(updates);
+                foreach (var update in updates)
+                    ProcessModbusReceiveEvents(workspace, update, requirePollEnabled: false);
                 workspace.ModbusResultText = $"数据同步完成：更新 {applied} 个地址块，失败 {failures} 个。";
                 LogInfo($"{device.Name}：{workspace.ModbusResultText}", target: LogTarget.File | LogTarget.UI);
             }
@@ -1075,12 +1575,104 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             {
                 if (!_deviceWorkspaces.TryGetValue(e.CommunicationId, out var workspace)) return;
                 workspace.AppendReceived(e.Data, e.Timestamp);
+                ProcessReceiveEvents(e.CommunicationId, e.Data, e.Timestamp);
                 workspace.Communication.RuntimeStatus = _runtimeManager.IsConnected(e.CommunicationId)
                     ? CommunicationRuntimeStatus.Connected : CommunicationRuntimeStatus.Disconnected;
                 if (SelectedCommunication?.Id == e.CommunicationId)
                     OnPropertyChanged(nameof(IsSelectedConnected));
                 CommandManager.InvalidateRequerySuggested();
             }));
+        }
+
+        private void ProcessReceiveEvents(string communicationId, byte[] data, DateTimeOffset timestamp)
+        {
+            var communication = Communications.FirstOrDefault(item =>
+                string.Equals(item.Id, communicationId, StringComparison.Ordinal));
+            if (communication?.IsModbus == true || communication?.IsOpcUa == true) return;
+            // Modbus and OPC UA events use their address/point-bound typed paths, not raw text decoding.
+            var matched = 0;
+            foreach (var definition in ReceiveEvents.Where(item =>
+                         IsReceiveEventBoundTo(item, communicationId)))
+            {
+                matched++;
+                CommunicationReceiveProcessor.Process(definition, data, timestamp);
+            }
+
+            if (matched == 0 && ReceiveEvents.Count > 0)
+            {
+                LogWarning($"收到设备 {communication?.Name ?? communicationId} 的数据，但没有匹配的接收事件。当前事件绑定设备：{string.Join(", ", ReceiveEvents.Select(item => string.IsNullOrWhiteSpace(item.SelectedDeviceId) ? "未绑定" : item.SelectedDeviceId))}");
+            }
+        }
+
+        private static bool IsReceiveEventBoundTo(CommunicationReceiveEventViewModel definition,
+            string communicationId)
+        {
+            return string.Equals(definition.SelectedDeviceId, communicationId, StringComparison.Ordinal);
+        }
+
+        private string? GetSelectedOpcUaDataType(CommunicationReceiveEventViewModel definition)
+        {
+            if (!TryGetSelectedOpcUaPoint(definition, out var point)) return null;
+            var type = _runtimeManager.TryGetLatestOpcUaPoint(definition.SelectedDeviceId, point.NodeId, out var latest)
+                && latest != null ? latest.BuiltInType : point.BuiltInType;
+            return type switch
+            {
+                BuiltInType.Boolean => "Boolean",
+                BuiltInType.String => "string",
+                BuiltInType.Int16 => "Int16",
+                BuiltInType.UInt16 => "UInt16",
+                BuiltInType.Int32 => "Int32",
+                BuiltInType.UInt32 => "UInt32",
+                BuiltInType.Float => "Float32",
+                BuiltInType.Double => "Double",
+                _ => null
+            };
+        }
+
+        private bool TryGetSelectedOpcUaPoint(CommunicationReceiveEventViewModel definition,
+            out OpcUaPointRowViewModel point)
+        {
+            point = null!;
+            if (string.IsNullOrWhiteSpace(definition.SelectedAddress) ||
+                !_deviceWorkspaces.TryGetValue(definition.SelectedDeviceId, out var workspace) ||
+                !workspace.Communication.IsOpcUa) return false;
+            point = workspace.OpcUaPoints.FirstOrDefault(row => row.Point.Id == definition.SelectedAddress)!;
+            return point != null;
+        }
+
+        private void ScheduleOpcUaReceiveReplay(CommunicationReceiveEventViewModel definition)
+        {
+            if (!_deviceWorkspaces.TryGetValue(definition.SelectedDeviceId, out var workspace) ||
+                !workspace.Communication.IsOpcUa) return;
+            var dispatcher = System.Windows.Application.Current?.Dispatcher;
+            if (dispatcher == null) ReplayLatestOpcUaValue(definition);
+            else dispatcher.BeginInvoke(new Action(() => ReplayLatestOpcUaValue(definition)),
+                System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void ReplayLatestOpcUaValue(CommunicationReceiveEventViewModel definition)
+        {
+            if (!TryGetSelectedOpcUaPoint(definition, out var point) ||
+                !_runtimeManager.IsConnected(definition.SelectedDeviceId) ||
+                !_runtimeManager.TryGetLatestOpcUaPoint(definition.SelectedDeviceId, point.NodeId, out var latest) ||
+                latest == null)
+            {
+                foreach (var field in definition.Outputs)
+                {
+                    field.Value = null;
+                    field.Result = string.Empty;
+                    field.Status = "未接收";
+                }
+                foreach (var field in definition.CompareInputs)
+                {
+                    field.Value = null;
+                    field.Result = string.Empty;
+                    field.Status = "未接收";
+                }
+                foreach (var field in definition.AssemblyOutputs) field.Result = string.Empty;
+                return;
+            }
+            CommunicationReceiveProcessor.ProcessOpcUa(definition, latest, recordHistory: false);
         }
 
         private void RuntimeManager_OpcUaPointValueChanged(object? sender, OpcUaPointValueEventArgs update)
@@ -1099,7 +1691,13 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 {
                     if (!_pendingOpcUaUpdates.TryRemove(key, out var update) ||
                         !_deviceWorkspaces.TryGetValue(update.CommunicationId, out var workspace)) continue;
-                    workspace.OpcUaPoints.FirstOrDefault(point => point.NodeId == update.NodeId)?.Apply(update);
+                    var point = workspace.OpcUaPoints.FirstOrDefault(row => row.NodeId == update.NodeId);
+                    if (point == null) continue;
+                    point.Apply(update);
+                    foreach (var receiveEvent in ReceiveEvents.Where(item =>
+                                 string.Equals(item.SelectedDeviceId, update.CommunicationId, StringComparison.Ordinal) &&
+                                 string.Equals(item.SelectedAddress, point.Point.Id, StringComparison.Ordinal)))
+                        CommunicationReceiveProcessor.ProcessOpcUa(receiveEvent, update);
                 }
                 Interlocked.Exchange(ref _opcUaUpdateScheduled, 0);
                 if (!_pendingOpcUaUpdates.IsEmpty) ScheduleOpcUaUpdateDrain();
@@ -1156,7 +1754,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             {
                 try
                 {
-                    foreach (var device in Communications.Where(item => item.IsOpcUa))
+                foreach (var device in Communications.Where(item => item.IsOpcUa))
                         if (string.IsNullOrWhiteSpace(device.OpcUaHost) || device.OpcUaPort is < 1 or > 65535 ||
                             device.RequestTimeout is < 250 or > 120000 ||
                             !Uri.TryCreate(device.EndpointUrl, UriKind.Absolute, out var uri) || uri.Scheme != "opc.tcp")
@@ -1164,6 +1762,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                             LogError($"{device.Name} 的 OPC UA 服务器地址、端口或请求超时无效，配置未保存。");
                             return false;
                         }
+                    currentSolution.CommunicationEvents = CaptureReceiveEvents();
                     if (_solutionManager.SaveSolution(currentSolution.FilePath))
                     {
                         HasUnsavedChanges = false;

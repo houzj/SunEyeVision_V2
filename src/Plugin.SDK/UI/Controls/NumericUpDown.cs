@@ -348,11 +348,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         e.Handled = true;
                         break;
                     case Key.Home:
-                        Value = Minimum;
+                        SetCurrentValue(ValueProperty, Minimum);
                         e.Handled = true;
                         break;
                     case Key.End:
-                        Value = Maximum;
+                        SetCurrentValue(ValueProperty, Maximum);
                         e.Handled = true;
                         break;
                 }
@@ -367,7 +367,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private void ChangeValue(double delta)
         {
             var newValue = Math.Round(Value + delta, DecimalPlaces);
-            Value = Clamp(newValue);
+            SetCurrentValue(ValueProperty, Clamp(newValue));
         }
 
         private double Clamp(double value)
@@ -417,7 +417,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (double.TryParse(_textBox.Text, out var newValue))
             {
                 newValue = Math.Round(newValue, DecimalPlaces);
-                Value = Clamp(newValue);
+                SetCurrentValue(ValueProperty, Clamp(newValue));
             }
             UpdateText();
         }
@@ -438,7 +438,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 control._isSyncingValues = true;
                 try
                 {
-                    control.IntValue = (int)Math.Round((double)e.NewValue);
+                    control.SetCurrentValue(IntValueProperty, (int)Math.Round((double)e.NewValue));
                 }
                 finally
                 {
@@ -482,7 +482,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 control._isSyncingValues = true;
                 try
                 {
-                    control.Value = (int)e.NewValue;
+                    control.SetCurrentValue(ValueProperty, (double)(int)e.NewValue);
                 }
                 finally
                 {

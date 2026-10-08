@@ -131,7 +131,17 @@ public sealed class CommunicationReceiveEventViewModel : ViewModelBase
     public int ByteLength { get => _byteLength; set => SetProperty(ref _byteLength, Math.Max(1, value)); }
     public bool AsciiData { get => _asciiData; set => SetProperty(ref _asciiData, value); }
     public string ByteMatchLogic { get => _byteMatchLogic; set => SetProperty(ref _byteMatchLogic, value is "或" ? "或" : "与"); }
-    public string Separator { get => _separator; set => SetProperty(ref _separator, value); }
+    public ObservableCollection<CommunicationSeparatorOption> SeparatorOptions { get; } = CommunicationSeparators.CreateOptions();
+    public string Separator
+    {
+        get => _separator;
+        set
+        {
+            if (value == null) return;
+            CommunicationSeparators.EnsureValue(SeparatorOptions, value);
+            SetProperty(ref _separator, value);
+        }
+    }
     public bool CharacterLengthCompare { get => _characterLengthCompare; set => SetProperty(ref _characterLengthCompare, value); }
     public int CharacterLength { get => _characterLength; set => SetProperty(ref _characterLength, value < 1 ? 1 : value); }
     public bool IsMessageExpanded

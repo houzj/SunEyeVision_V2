@@ -47,6 +47,21 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         lock (_gate) return _switchTask;
     }
 
+    /// <summary>Host entry point for a caller's typed execution snapshot.</summary>
+    public Task<int> SendEventAsync(Guid eventId, IReadOnlyDictionary<Guid, object?> parameterSnapshot,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(parameterSnapshot);
+        var solution = _solutions.CurrentSolution ?? throw new InvalidOperationException("未打开方案。");
+        var definition = solution.CommunicationSendEvents.FirstOrDefault(item => item.EventId == eventId)
+            ?? throw new InvalidOperationException("发送事件不存在或已被删除。");
+        var device = solution.Communications.FirstOrDefault(item => item.Id == definition.DeviceId)
+            ?? throw new InvalidOperationException("发送事件的绑定设备不存在。");
+        var service = new CommunicationSendEventService(Composition.Runtime);
+        var plan = service.Prepare(definition, device, parameterSnapshot);
+        return service.SendAsync(plan, cancellationToken);
+    }
+
     private void OnSolutionOpened(object? sender, Solution solution) => BeginSolutionSwitch(solution);
     private void OnSolutionClosed(object? sender, EventArgs e) => BeginSolutionSwitch(null);
 

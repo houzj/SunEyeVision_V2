@@ -96,6 +96,11 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             if (DataContext is CommunicationManagerViewModel manager) manager.ActivePage = "ReceiveEvents";
         }
 
+        private void SendEventsPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager) manager.ActivePage = "SendEvents";
+        }
+
         private void AddReceiveEvent_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is not CommunicationManagerViewModel manager) return;

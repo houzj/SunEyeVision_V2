@@ -140,7 +140,15 @@ public sealed class OpcUaRuntimeTests
             Assert.Equal(7, point.Value);
 
             stage = "Write value";
-            await runtime.WriteOpcUaValueAsync(communication.Id, valueNode.NodeId, 42);
+            var parsedNode = NodeId.Parse(valueNode.NodeId);
+            var sendTarget = new OpcUaDataPoint { NamespaceIndex = parsedNode.NamespaceIndex, TagName = (string)parsedNode.Identifier };
+            communication.OpcUaDataPoints.Add(sendTarget);
+            var sendDefinition = new CommunicationSendEventDefinition { DeviceId = communication.Id, TargetId = sendTarget.Id,
+                Parameters = new() { new CommunicationSendParameterDefinition { Name = "in1", DataType = "int", Content = "42" } } };
+            var sendService = new CommunicationSendEventService(runtime);
+            await sendService.SendAsync(sendService.Prepare(sendDefinition, communication));
+            sendDefinition.Parameters[0].DataType = "string";
+            Assert.Throws<FormatException>(() => sendService.Prepare(sendDefinition, communication));
             stage = "Read written value";
             var writtenValue = await runtime.ReadOpcUaValueAsync(communication.Id, valueNode.NodeId);
             Assert.Equal(42, writtenValue.Value);

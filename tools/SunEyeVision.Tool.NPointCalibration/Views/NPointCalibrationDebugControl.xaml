@@ -25,156 +25,177 @@
     <DockPanel>
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8">
             <Button Content="清空标定点" Click="ClearSamples_Click" Margin="2" Padding="8,4"/>
-            <Button Content="生成标定文件" Click="SaveCalibration_Click" Margin="2" Padding="8,4"/>
+            <Button Content="记录本次" Click="RecordCurrent_Click" Margin="2" Padding="8,4"
+                    Visibility="{Binding AcquisitionMode, Converter={StaticResource EnumVisibility}, ConverterParameter=Trigger}"/>
+            <Button Content="生成候选文件" Click="SaveCalibration_Click" Margin="2" Padding="8,4"/>
             <Button Content="执行" Command="{x:Static commands:ToolCommands.Execute}" Margin="2" Padding="12,4"/>
         </StackPanel>
-        <TabControl Margin="5,0,5,0">
+        <TabControl x:Name="ParameterTabs" Margin="5,0,5,0">
             <TabItem Header="基本参数" IsSelected="True">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
                     <StackPanel>
                         <TextBlock Text="标定参数" FontWeight="Bold" Margin="0,4,0,10"/>
                         <controls:LabeledControl Label="标定点获取">
-                            <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding AcquisitionMode, Mode=TwoWay}" Width="240">
+                            <ComboBox Width="300" SelectedValuePath="Tag" SelectedValue="{Binding AcquisitionMode, Mode=TwoWay}">
                                 <ComboBoxItem Content="触发获取" Tag="{x:Static local:NPointAcquisitionMode.Trigger}"/>
                                 <ComboBoxItem Content="手动输入" Tag="{x:Static local:NPointAcquisitionMode.Manual}"/>
                             </ComboBox>
                         </controls:LabeledControl>
-                        <controls:LabeledControl Label="标定点输入">
-                            <StackPanel Orientation="Horizontal" Width="240">
-                                <RadioButton Content="按点" GroupName="NPointInputMode" Margin="0,0,16,0"
-                                             IsChecked="{Binding InputMode, Mode=TwoWay, Converter={StaticResource EnumToBool}, ConverterParameter=Point}"/>
-                                <RadioButton Content="按坐标" GroupName="NPointInputMode"
-                                             IsChecked="{Binding InputMode, Mode=TwoWay, Converter={StaticResource EnumToBool}, ConverterParameter=Coordinates}"/>
+
+                        <StackPanel x:Name="TriggerInputsPanel" Visibility="{Binding AcquisitionMode, Converter={StaticResource EnumVisibility}, ConverterParameter=Trigger}">
+                            <controls:LabeledControl Label="标定点输入">
+                                <StackPanel Orientation="Horizontal" Width="300">
+                                    <RadioButton Content="按点" GroupName="NPointInputMode" Margin="0,0,20,0"
+                                        IsChecked="{Binding InputMode, Mode=TwoWay, Converter={StaticResource EnumToBool}, ConverterParameter=Point}"/>
+                                    <RadioButton Content="按坐标" GroupName="NPointInputMode"
+                                        IsChecked="{Binding InputMode, Mode=TwoWay, Converter={StaticResource EnumToBool}, ConverterParameter=Coordinates}"/>
+                                </StackPanel>
+                            </controls:LabeledControl>
+                            <StackPanel Visibility="{Binding InputMode, Converter={StaticResource EnumVisibility}, ConverterParameter=Point}">
+                                <controls:LabeledControl Label="图像点">
+                                    <controls:ParamBinding ParameterName="ImagePoint" DataType="{x:Type geometry:Point2d}"
+                                        BindingSource="{Binding ImagePointBindingSource, Mode=TwoWay}" Width="300"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
+                                <controls:LabeledControl Label="物理点" ToolTip="本模型中为同次采样的 R 轴轴心编码器 XY，不是 Mark 或吸嘴坐标。">
+                                    <controls:ParamBinding ParameterName="AxisPoint" DataType="{x:Type geometry:Point2d}"
+                                        BindingSource="{Binding AxisPointBindingSource, Mode=TwoWay}" Width="300"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
                             </StackPanel>
-                        </controls:LabeledControl>
-                        <StackPanel Visibility="{Binding InputMode, Converter={StaticResource EnumVisibility}, ConverterParameter=Point}">
-                        <controls:LabeledControl Label="图像点">
-                            <controls:ParamBinding ParameterName="ImagePoint" DataType="{x:Type geometry:Point2d}"
-                                BindingSource="{Binding ImagePointBindingSource, Mode=TwoWay}" Width="240"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="物理点">
-                            <controls:ParamBinding ParameterName="PhysicalPoint" DataType="{x:Type geometry:Point2d}"
-                                BindingSource="{Binding PhysicalPointBindingSource, Mode=TwoWay}" Width="240"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
+                            <StackPanel Visibility="{Binding InputMode, Converter={StaticResource EnumVisibility}, ConverterParameter=Coordinates}">
+                                <controls:LabeledControl Label="图像 X">
+                                    <controls:ConfigSetting ParameterName="ImageX" DataType="{x:Type sys:Double}" Value="{Binding ImageX, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
+                                <controls:LabeledControl Label="图像 Y">
+                                    <controls:ConfigSetting ParameterName="ImageY" DataType="{x:Type sys:Double}" Value="{Binding ImageY, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
+                                <controls:LabeledControl Label="物理坐标 X" ToolTip="R 轴轴心的机台编码器 X。">
+                                    <controls:ConfigSetting ParameterName="AxisX" DataType="{x:Type sys:Double}" Value="{Binding AxisX, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
+                                <controls:LabeledControl Label="物理坐标 Y" ToolTip="R 轴轴心的机台编码器 Y。">
+                                    <controls:ConfigSetting ParameterName="AxisY" DataType="{x:Type sys:Double}" Value="{Binding AxisY, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
+                            </StackPanel>
+                            <controls:LabeledControl Label="物理角度 (°)" ToolTip="同次采样的机构 R 轴编码器角度，不是图像特征角度。">
+                                <controls:ConfigSetting ParameterName="AxisAngle" DataType="{x:Type sys:Double}" Value="{Binding AxisAngle, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                            </controls:LabeledControl>
                         </StackPanel>
-                        <StackPanel Visibility="{Binding InputMode, Converter={StaticResource EnumVisibility}, ConverterParameter=Coordinates}">
-                        <controls:LabeledControl Label="图像坐标X">
-                            <controls:ConfigSetting ParameterName="ImageX" DataType="{x:Type sys:Double}" Value="{Binding ImageX, Mode=TwoWay}" Width="240"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="图像坐标Y">
-                            <controls:ConfigSetting ParameterName="ImageY" DataType="{x:Type sys:Double}" Value="{Binding ImageY, Mode=TwoWay}" Width="240"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="物理坐标X">
-                            <controls:ConfigSetting ParameterName="PhysicalX" DataType="{x:Type sys:Double}" Value="{Binding PhysicalX, Mode=TwoWay}" Width="240"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="物理坐标Y">
-                            <controls:ConfigSetting ParameterName="PhysicalY" DataType="{x:Type sys:Double}" Value="{Binding PhysicalY, Mode=TwoWay}" Width="240"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        </StackPanel>
-                        <controls:LabeledControl Label="图像角度">
-                            <controls:ConfigSetting ParameterName="ImageAngle" DataType="{x:Type sys:Double}" Value="{Binding ImageAngle, Mode=TwoWay}" Width="240"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="物理角度">
-                            <controls:ConfigSetting ParameterName="PhysicalAngle" DataType="{x:Type sys:Double}" Value="{Binding PhysicalAngle, Mode=TwoWay}" Width="240"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
+
                         <controls:LabeledControl Label="平移次数">
-                            <controls:NumericUpDown Width="240" IntValue="{Binding TranslationCount, Mode=TwoWay}"
-                                                    Minimum="1" Maximum="1000" ShowSlider="False"/>
+                            <controls:NumericUpDown Width="300" IntValue="{Binding TranslationCount, Mode=TwoWay}" Minimum="4" Maximum="1000" ShowSlider="False"/>
                         </controls:LabeledControl>
                         <controls:LabeledControl Label="旋转次数">
-                            <StackPanel Orientation="Horizontal">
-                                <controls:NumericUpDown Width="194" IntValue="{Binding RotationCount, Mode=TwoWay}"
-                                                        Minimum="0" Maximum="1000" ShowSlider="False"/>
-                                <Button Content="✎" ToolTip="编辑标定点" Width="38" Margin="8,0,0,0" Click="EditSamples_Click"/>
+                            <StackPanel Width="300" Orientation="Horizontal">
+                                <controls:NumericUpDown Width="204" IntValue="{Binding RotationCount, Mode=TwoWay}" Minimum="3" Maximum="1000" ShowSlider="False"/>
+                                <Button Content="编辑点表…" Width="88" Margin="8,0,0,0" Click="EditSamples_Click"/>
                             </StackPanel>
                         </controls:LabeledControl>
-                        <controls:LabeledControl Label="示教触发">
-                            <controls:ConfigSetting ParameterName="TeachSignal" DataType="{x:Type sys:Boolean}" Value="{Binding TeachSignal, Mode=TwoWay}" Width="240"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        <controls:LabeledControl Label="点表进度">
+                            <TextBlock Width="300" Text="{Binding ProgressText, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type views:NPointCalibrationDebugControl}}}"/>
                         </controls:LabeledControl>
-                        <controls:LabeledControl Label="字符示教">
-                            <controls:ToggleSwitch IsChecked="{Binding TeachEnabled, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/>
-                        </controls:LabeledControl>
-                        <StackPanel Visibility="{Binding TeachEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <controls:LabeledControl Label="输入字符">
-                                <controls:ConfigSetting ParameterName="ExternalInputText" DataType="{x:Type sys:String}" Value="{Binding ExternalInputText, Mode=TwoWay}" Width="240"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+
+                        <StackPanel Visibility="{Binding AcquisitionMode, Converter={StaticResource EnumVisibility}, ConverterParameter=Trigger}">
+                            <controls:LabeledControl Label="示教">
+                                <controls:ToggleSwitch IsChecked="{Binding TeachEnabled, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/>
                             </controls:LabeledControl>
-                            <controls:LabeledControl Label="触发字符"><TextBox Width="240" Text="{Binding TeachTriggerText, Mode=TwoWay}"/></controls:LabeledControl>
-                            <controls:LabeledControl Label="事件序号">
-                                <controls:ConfigSetting ParameterName="TeachEventId" DataType="{x:Type sys:Int64}" Value="{Binding TeachEventId, Mode=TwoWay}" Width="240"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                            </controls:LabeledControl>
+                            <StackPanel x:Name="TeachFieldsPanel" Visibility="{Binding TeachEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <controls:LabeledControl Label="输入字符">
+                                    <controls:ConfigSetting ParameterName="ExternalInputText" DataType="{x:Type sys:String}" Value="{Binding ExternalInputText, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
+                                <controls:LabeledControl Label="触发字符"><TextBox Width="300" Text="{Binding TeachTriggerText, Mode=TwoWay}"/></controls:LabeledControl>
+                            </StackPanel>
                         </StackPanel>
-                        <TextBlock Text="物理坐标系参数" FontWeight="Bold" Margin="0,16,0,8"/>
-                        <controls:LabeledControl Label="自动生成物理点">
-                            <controls:ToggleSwitch IsChecked="{Binding UseGeneratedPhysical, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/>
+
+                        <TextBlock Text="标定文件" FontWeight="Bold" Margin="0,18,0,10"/>
+                        <controls:LabeledControl Label="更新文件">
+                            <controls:ToggleSwitch IsChecked="{Binding UpdateFileAfterSolve, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/>
                         </controls:LabeledControl>
-                        <controls:LabeledControl Label="基准点 X"><controls:NumericUpDown Width="240" Value="{Binding BaseX, Mode=TwoWay}" Minimum="-1000000000" Maximum="1000000000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="基准点 Y"><controls:NumericUpDown Width="240" Value="{Binding BaseY, Mode=TwoWay}" Minimum="-1000000000" Maximum="1000000000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="偏移 X"><controls:NumericUpDown Width="240" Value="{Binding OffsetX, Mode=TwoWay}" Minimum="-1000000000" Maximum="1000000000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="偏移 Y"><controls:NumericUpDown Width="240" Value="{Binding OffsetY, Mode=TwoWay}" Minimum="-1000000000" Maximum="1000000000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="移动优先方向">
-                            <ComboBox Width="240" SelectedValuePath="Tag" SelectedValue="{Binding XFirst, Mode=TwoWay}">
-                                <ComboBoxItem Content="X 优先"><ComboBoxItem.Tag><sys:Boolean>True</sys:Boolean></ComboBoxItem.Tag></ComboBoxItem>
-                                <ComboBoxItem Content="Y 优先"><ComboBoxItem.Tag><sys:Boolean>False</sys:Boolean></ComboBoxItem.Tag></ComboBoxItem>
-                            </ComboBox>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="换向移动次数"><controls:NumericUpDown Width="240" IntValue="{Binding ReverseAfter, Mode=TwoWay}" Minimum="1" Maximum="1000" ShowSlider="False"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="基准角度"><controls:NumericUpDown Width="240" Value="{Binding BaseAngle, Mode=TwoWay}" Minimum="-36000" Maximum="36000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="角度偏移"><controls:NumericUpDown Width="240" Value="{Binding AngleStep, Mode=TwoWay}" Minimum="-36000" Maximum="36000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="使用相对坐标"><controls:ToggleSwitch IsChecked="{Binding UseRelativeCoordinates, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/></controls:LabeledControl>
-                        <controls:LabeledControl Label="标定原点点号"><controls:NumericUpDown Width="240" IntValue="{Binding OriginIndex, Mode=TwoWay}" Minimum="0" Maximum="1000" ShowSlider="False"/></controls:LabeledControl>
-                        <TextBlock Text="标定文件" FontWeight="Bold" Margin="0,16,0,8"/>
-                        <controls:LabeledControl Label="求解后更新文件"><controls:ToggleSwitch IsChecked="{Binding UpdateFileAfterSolve, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/></controls:LabeledControl>
                         <controls:LabeledControl Label="标定文件路径">
-                            <StackPanel Orientation="Horizontal"><TextBox Width="194" Text="{Binding CalibrationFilePath, Mode=TwoWay}"/>
-                                <Button Content="…" Width="38" Margin="8,0,0,0" Click="ChooseFile_Click"/></StackPanel>
+                            <StackPanel Width="300" Orientation="Horizontal">
+                                <TextBox Width="254" Text="{Binding CalibrationFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Button Content="…" Width="38" Margin="8,0,0,0" Click="ChooseFile_Click"/>
+                            </StackPanel>
                         </controls:LabeledControl>
+                        <controls:LabeledControl Label="文件状态">
+                            <TextBlock Width="300" Text="{Binding CandidateStatusText, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type views:NPointCalibrationDebugControl}}}"/>
+                        </controls:LabeledControl>
+
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
             <TabItem Header="运行参数">
-                <ScrollViewer Padding="12"><StackPanel>
-                    <TextBlock Text="运行参数" FontWeight="Bold" Margin="0,4,0,10"/>
-                    <controls:LabeledControl Label="相机模式">
-                        <ComboBox Width="240" SelectedValuePath="Tag" SelectedValue="{Binding CameraMode, Mode=TwoWay}">
-                            <ComboBoxItem Content="相机静止上相机位" Tag="{x:Static local:NPointCameraMode.FixedAbove}"/>
-                            <ComboBoxItem Content="相机静止下相机位（待实现）" Tag="{x:Static local:NPointCameraMode.FixedBelow}"/>
-                            <ComboBoxItem Content="相机运动（待实现）" Tag="{x:Static local:NPointCameraMode.Moving}"/>
-                        </ComboBox>
-                    </controls:LabeledControl>
-                    <controls:LabeledControl Label="自由度">
-                        <ComboBox Width="240" SelectedValuePath="Tag" SelectedValue="{Binding TransformModel, Mode=TwoWay}">
-                            <ComboBoxItem Content="相似性" Tag="{x:Static local:NPointTransformModel.Similarity}"/>
-                            <ComboBoxItem Content="仿射" Tag="{x:Static local:NPointTransformModel.Affine}"/>
-                            <ComboBoxItem Content="透视" Tag="{x:Static local:NPointTransformModel.Projective}"/>
-                        </ComboBox>
-                    </controls:LabeledControl>
-                    <controls:LabeledControl Label="权重函数">
-                        <ComboBox Width="240" SelectedValuePath="Tag" SelectedValue="{Binding WeightFunction, Mode=TwoWay}">
-                            <ComboBoxItem Content="最小二乘" Tag="{x:Static local:NPointWeightFunction.LeastSquares}"/>
-                            <ComboBoxItem Content="Huber（待实现）" Tag="{x:Static local:NPointWeightFunction.Huber}"/>
-                            <ComboBoxItem Content="Tukey（待实现）" Tag="{x:Static local:NPointWeightFunction.Tukey}"/>
-                        </ComboBox>
-                    </controls:LabeledControl>
-                    <controls:LabeledControl Label="权重系数"><controls:NumericUpDown Width="240" Value="{Binding WeightCoefficient, Mode=TwoWay}" Minimum="0" Maximum="1000000" DecimalPlaces="2" ShowSlider="False"/></controls:LabeledControl>
-                </StackPanel></ScrollViewer>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+                    <StackPanel>
+                        <TextBlock Text="求解模型" FontWeight="Bold" Margin="0,4,0,10"/>
+                        <controls:LabeledControl Label="相机模式">
+                            <ComboBox Width="300" SelectedValuePath="Tag" SelectedValue="{Binding CameraMode, Mode=TwoWay}">
+                                <ComboBoxItem Content="相机静止上相机位" Tag="{x:Static local:NPointCameraMode.FixedAbove}"/>
+                                <ComboBoxItem Content="相机静止下相机位（暂不支持）" Tag="{x:Static local:NPointCameraMode.FixedBelow}" IsEnabled="False"/>
+                                <ComboBoxItem Content="相机运动（暂不支持）" Tag="{x:Static local:NPointCameraMode.Moving}" IsEnabled="False"/>
+                            </ComboBox>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="自由度">
+                            <ComboBox Width="300" SelectedValuePath="Tag" SelectedValue="{Binding TransformModel, Mode=TwoWay}">
+                                <ComboBoxItem Content="缩放、旋转及平移（暂不支持）" Tag="{x:Static local:NPointTransformModel.Similarity}" IsEnabled="False"/>
+                                <ComboBoxItem Content="缩放、旋转、纵横比、倾斜及平移" Tag="{x:Static local:NPointTransformModel.Affine}"/>
+                                <ComboBoxItem Content="缩放、旋转、纵横比、倾斜、平移及透射（暂不支持）" Tag="{x:Static local:NPointTransformModel.Projective}" IsEnabled="False"/>
+                            </ComboBox>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="权重函数">
+                            <ComboBox Width="300" SelectedValuePath="Tag" SelectedValue="{Binding WeightFunction, Mode=TwoWay}">
+                                <ComboBoxItem Content="最小二乘" Tag="{x:Static local:NPointWeightFunction.LeastSquares}"/>
+                                <ComboBoxItem Content="Huber" Tag="{x:Static local:NPointWeightFunction.Huber}"/>
+                                <ComboBoxItem Content="Tukey" Tag="{x:Static local:NPointWeightFunction.Tukey}"/>
+                            </ComboBox>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="权重系数" Visibility="{Binding IsRobustWeight, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <controls:NumericUpDown Width="300" Value="{Binding WeightCoefficient, Mode=TwoWay}" Minimum="0.01" Maximum="1000000" DecimalPlaces="2" ShowSlider="False"/>
+                        </controls:LabeledControl>
+
+                        <Expander Header="机构角度与质量阈值（高级）" IsExpanded="False" Margin="0,18,0,4">
+                            <StackPanel>
+                                <controls:LabeledControl Label="平移参考 R 角 (°)"><controls:NumericUpDown Width="300" Value="{Binding ReferenceRAngle, Mode=TwoWay}" Minimum="-36000" Maximum="36000" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
+                                <controls:LabeledControl Label="R 轴正方向">
+                                    <ComboBox Width="300" SelectedValuePath="Tag" SelectedValue="{Binding RotationSign, Mode=TwoWay}">
+                                        <ComboBoxItem Content="正向 +1"><ComboBoxItem.Tag><sys:Int32>1</sys:Int32></ComboBoxItem.Tag></ComboBoxItem>
+                                        <ComboBoxItem Content="反向 -1"><ComboBoxItem.Tag><sys:Int32>-1</sys:Int32></ComboBoxItem.Tag></ComboBoxItem>
+                                    </ComboBox>
+                                </controls:LabeledControl>
+                                <controls:LabeledControl Label="平移角容差 (°)"><controls:NumericUpDown Width="300" Value="{Binding TranslationAngleToleranceDeg, Mode=TwoWay}" Minimum="0" Maximum="180" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
+                                <controls:LabeledControl Label="旋转 XY 容差 (mm)"><controls:NumericUpDown Width="300" Value="{Binding RotationAxisToleranceMm, Mode=TwoWay}" Minimum="0" Maximum="1000" DecimalPlaces="4" ShowSlider="False"/></controls:LabeledControl>
+                                <controls:LabeledControl Label="最小旋转跨度 (°)"><controls:NumericUpDown Width="300" Value="{Binding MinimumRotationSpanDeg, Mode=TwoWay}" Minimum="0.001" Maximum="180" DecimalPlaces="3" ShowSlider="False"/></controls:LabeledControl>
+                                <controls:LabeledControl Label="稳健尺度下限 (mm)" Visibility="{Binding IsRobustWeight, Converter={StaticResource BooleanToVisibilityConverter}}"><controls:NumericUpDown Width="300" Value="{Binding RobustScaleFloorMm, Mode=TwoWay}" Minimum="0.000001" Maximum="1000" DecimalPlaces="6" ShowSlider="False"/></controls:LabeledControl>
+                                <controls:LabeledControl Label="训练点最大误差 (mm)"><controls:NumericUpDown Width="300" Value="{Binding MaximumTrainingErrorMm, Mode=TwoWay}" Minimum="0" Maximum="1000000" DecimalPlaces="4" ShowSlider="False"/></controls:LabeledControl>
+                            </StackPanel>
+                        </Expander>
+                        <Expander Header="采样环境与同步绑定（高级）" IsExpanded="False" Margin="0,12,0,4">
+                            <StackPanel>
+                                <controls:LabeledControl Label="相机设备 ID"><controls:ConfigSetting ParameterName="SourceDeviceId" DataType="{x:Type sys:String}" Value="{Binding SourceDeviceId, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/></controls:LabeledControl>
+                                <controls:LabeledControl Label="图像宽度"><controls:ConfigSetting ParameterName="ImageWidth" DataType="{x:Type sys:Int32}" Value="{Binding ImageWidth, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/></controls:LabeledControl>
+                                <controls:LabeledControl Label="图像高度"><controls:ConfigSetting ParameterName="ImageHeight" DataType="{x:Type sys:Int32}" Value="{Binding ImageHeight, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/></controls:LabeledControl>
+                                <controls:LabeledControl Label="图像域"><TextBox Width="300" Text="{Binding ImageDomain, Mode=TwoWay}"/></controls:LabeledControl>
+                                <StackPanel Visibility="{Binding AcquisitionMode, Converter={StaticResource EnumVisibility}, ConverterParameter=Trigger}">
+                                    <controls:LabeledControl Label="采样触发"><controls:ConfigSetting ParameterName="TeachSignal" DataType="{x:Type sys:Boolean}" Value="{Binding TeachSignal, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/></controls:LabeledControl>
+                                    <controls:LabeledControl Label="事件序号"><controls:ConfigSetting ParameterName="TeachEventId" DataType="{x:Type sys:Int64}" Value="{Binding TeachEventId, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/></controls:LabeledControl>
+                                    <controls:LabeledControl Label="图像帧号"><controls:ConfigSetting ParameterName="FrameIdText" DataType="{x:Type sys:String}" Value="{Binding FrameIdText, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/></controls:LabeledControl>
+                                    <controls:LabeledControl Label="图像帧时间"><controls:ConfigSetting ParameterName="FrameTimestampText" DataType="{x:Type sys:String}" Value="{Binding FrameTimestampText, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/></controls:LabeledControl>
+                                    <controls:LabeledControl Label="XYR 回读时间"><controls:ConfigSetting ParameterName="AxisReadUnixMs" DataType="{x:Type sys:Int64}" Value="{Binding AxisReadUnixMs, Mode=TwoWay}" Width="300" AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/></controls:LabeledControl>
+                                    <controls:LabeledControl Label="配对窗口 (ms)"><controls:NumericUpDown Width="300" IntValue="{Binding MaxPairingDelayMs, Mode=TwoWay}" Minimum="1" Maximum="10000" ShowSlider="False"/></controls:LabeledControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
             <TabItem Header="结果显示">
-                <ScrollViewer Padding="12"><StackPanel>
-                    <TextBlock Text="采集与求解结果" FontWeight="Bold" Margin="0,4,0,10"/>
-                    <TextBlock Text="{Binding ResultText, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type views:NPointCalibrationDebugControl}}}" TextWrapping="Wrap"/>
-                    <TextBlock Text="仅求解成功不代表已完成独立验证；发布为生产标定结果需另行确认。" TextWrapping="Wrap" Margin="0,12,0,0"/>
-                </StackPanel></ScrollViewer>
+                <ScrollViewer Padding="12">
+                    <StackPanel>
+                        <TextBlock Text="采集与求解结果" FontWeight="Bold" Margin="0,4,0,10"/>
+                        <TextBlock Text="{Binding ResultText, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type views:NPointCalibrationDebugControl}}}" TextWrapping="Wrap"/>
+                        <TextBlock Text="候选文件不能直接用于生产；请在独立验证工作流中验证并发布。" TextWrapping="Wrap" Margin="0,12,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
     </DockPanel>

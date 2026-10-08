@@ -12,19 +12,30 @@ public sealed class NPointCalibrationResults : ToolResults
     public int RequiredTranslationSamples { get; set; }
     public int RequiredRotationSamples { get; set; }
     public bool CalibrationReady { get; set; }
-    public string CoordinateMode { get; set; } = "Absolute";
     public bool HasConvertedPoint { get; set; }
     public double CurrentImageX { get; set; }
     public double CurrentImageY { get; set; }
-    public double ConvertedPhysicalX { get; set; }
-    public double ConvertedPhysicalY { get; set; }
+    public double MarkMachineX { get; set; }
+    public double MarkMachineY { get; set; }
     public double MeanError { get; set; }
     public double MaxError { get; set; }
+    public double RmsError { get; set; }
+    public double TranslationRmsError { get; set; }
+    public double RotationRmsError { get; set; }
     public double[] HomMat2D { get; set; } = Array.Empty<double>();
-    public double RotationCenterImageX { get; set; }
-    public double RotationCenterImageY { get; set; }
-    public double RotationCenterPhysicalX { get; set; }
-    public double RotationCenterPhysicalY { get; set; }
+    public double AxisToMarkX { get; set; }
+    public double AxisToMarkY { get; set; }
+    public string SourceDeviceId { get; set; } = string.Empty;
+    public int ImageWidth { get; set; }
+    public int ImageHeight { get; set; }
+    public string ImageDomain { get; set; } = "Raw";
+    public double ReferenceRAngle { get; set; }
+    public int RotationSign { get; set; }
+    public NPointWeightFunction WeightFunction { get; set; }
+    public double WeightCoefficient { get; set; }
+    public double RobustScaleMm { get; set; }
+    public double RobustThresholdMm { get; set; }
+    public List<NPointSampleResidual> Residuals { get; set; } = new();
     public string ProgressText => $"平移 {TranslationSamples}/{RequiredTranslationSamples}，旋转 {RotationSamples}/{RequiredRotationSamples}";
 
     // Runtime-only commit instruction. The workflow node applies it to the design
@@ -44,12 +55,16 @@ public sealed class NPointCalibrationResults : ToolResults
         new("HasConvertedPoint", "本轮已转换坐标", "运行"),
         new("CurrentImageX", "本轮图像X", "运行"),
         new("CurrentImageY", "本轮图像Y", "运行"),
-        new("ConvertedPhysicalX", "转换物理X", "运行"),
-        new("ConvertedPhysicalY", "转换物理Y", "运行"),
+        new("MarkMachineX", "Mark 机台 X", "运行"),
+        new("MarkMachineY", "Mark 机台 Y", "运行"),
         new("MeanError", "平均误差", "标定"),
         new("MaxError", "最大误差", "标定"),
-        new("HomMat2D", "像素到物理矩阵", "标定"),
-        new("RotationCenterPhysicalX", "旋转中心物理X", "标定"),
-        new("RotationCenterPhysicalY", "旋转中心物理Y", "标定"),
+        new("RmsError", "整体 RMS", "标定"),
+        new("HomMat2D", "像素到 Mark 机台矩阵", "标定"),
+        new("AxisToMarkX", "轴心到 Mark 偏心 X", "标定"),
+        new("AxisToMarkY", "轴心到 Mark 偏心 Y", "标定"),
     ];
 }
+
+public sealed record NPointSampleResidual(int Id, NPointSampleKind Kind,
+    double ErrorX, double ErrorY, double ErrorMm, double Weight);

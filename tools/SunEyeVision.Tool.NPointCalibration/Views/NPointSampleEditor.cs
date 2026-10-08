@@ -24,14 +24,16 @@ public partial class NPointSampleEditor : Window
         InitializeComponent();
         _translationCount = parameters.TranslationCount;
         int total = parameters.TranslationCount + parameters.RotationCount;
+        var source = parameters.Samples.Concat(parameters.ArchivedSamples.AsEnumerable().Reverse());
         _rows = new ObservableCollection<NPointSample>(Enumerable.Range(0, total).Select(index =>
         {
-            var existing = parameters.Samples.FirstOrDefault(s => s.Id == index);
+            var existing = source.FirstOrDefault(s => s.Id == index);
             return existing?.Copy() ?? new NPointSample
             {
                 Id = index,
                 Kind = index < _translationCount ? NPointSampleKind.Translation : NPointSampleKind.Rotation,
                 Enabled = false,
+                Source = "Placeholder",
             };
         }));
         SampleGrid.ItemsSource = _rows;
@@ -55,9 +57,16 @@ public partial class NPointSampleEditor : Window
         foreach (var row in _rows)
         {
             row.Enabled = false;
-            row.ImageX = row.ImageY = row.PhysicalX = row.PhysicalY = 0;
-            row.ImageAngle = row.PhysicalAngle = 0;
+            row.ImageX = row.ImageY = row.AxisX = row.AxisY = row.AxisAngle = 0;
+            row.Source = "Placeholder";
         }
+        SampleGrid.Items.Refresh();
+    }
+
+    private void Enabled_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox { DataContext: NPointSample row } && row.Enabled && row.Source == "Placeholder")
+            row.Source = "Manual";
         SampleGrid.Items.Refresh();
     }
 
@@ -71,12 +80,13 @@ public partial class NPointSampleEditor : Window
         }
         var valid = _rows.Where(r => r.Enabled).ToList();
         if (valid.Any(r => !double.IsFinite(r.ImageX) || !double.IsFinite(r.ImageY)
-                           || !double.IsFinite(r.PhysicalX) || !double.IsFinite(r.PhysicalY)))
+                           || !double.IsFinite(r.AxisX) || !double.IsFinite(r.AxisY)
+                           || !double.IsFinite(r.AxisAngle)))
         {
             MessageBox.Show("存在非有限数值的标定点。", "点表错误");
             return;
         }
-        Samples = valid.Select(r => r.Copy()).ToArray();
+        Samples = _rows.Where(r => r.Source != "Placeholder").Select(r => r.Copy()).ToArray();
         DialogResult = true;
     }
 
@@ -84,10 +94,9 @@ public partial class NPointSampleEditor : Window
     {
         var dialog = new SaveFileDialog { Filter = "标定点 CSV (*.csv)|*.csv" };
         if (dialog.ShowDialog(this) != true) return;
-        var lines = new List<string> { "Id,Kind,Enabled,ImageX,ImageY,PhysicalX,PhysicalY,ImageAngle,PhysicalAngle" };
-        lines.AddRange(_rows.Select(r => string.Join(",",
-            r.Id, r.Kind, r.Enabled, F(r.ImageX), F(r.ImageY), F(r.PhysicalX), F(r.PhysicalY),
-            F(r.ImageAngle), F(r.PhysicalAngle))));
+        var lines = new List<string> { "Id,Kind,Enabled,ImageX,ImageY,AxisX,AxisY,AxisAngle" };
+        lines.AddRange(_rows.Where(r => r.Source != "Placeholder").Select(r => string.Join(",",
+            r.Id, r.Kind, r.Enabled, F(r.ImageX), F(r.ImageY), F(r.AxisX), F(r.AxisY), F(r.AxisAngle))));
         File.WriteAllLines(dialog.FileName, lines);
     }
 
@@ -97,11 +106,25 @@ public partial class NPointSampleEditor : Window
         if (dialog.ShowDialog(this) != true) return;
         try
         {
-            var loaded = File.ReadLines(dialog.FileName).Skip(1).Where(line => !string.IsNullOrWhiteSpace(line))
+            var lines = File.ReadAllLines(dialog.FileName);
+            if (lines.Length == 0 || lines[0].Trim() != "Id,Kind,Enabled,ImageX,ImageY,AxisX,AxisY,AxisAngle")
+                throw new FormatException("CSV 表头不匹配；旧研发点表不做兼容，请重新采集。");
+            var loaded = lines.Skip(1).Where(line => !string.IsNullOrWhiteSpace(line))
                 .Select(Parse).ToArray();
             if (loaded.Any(r => r.Id < 0 || r.Id >= _rows.Count)
                 || loaded.Select(r => r.Id).Distinct().Count() != loaded.Length)
                 throw new FormatException("点号超出当前平移/旋转次数或存在重复。");
+            if (loaded.Any(r => r.Kind != (r.Id < _translationCount
+                    ? NPointSampleKind.Translation : NPointSampleKind.Rotation)))
+                throw new FormatException("CSV 点类别与当前平移/旋转点号不一致。");
+            for (int i = 0; i < _rows.Count; i++)
+                _rows[i] = new NPointSample
+                {
+                    Id = i,
+                    Kind = i < _translationCount ? NPointSampleKind.Translation : NPointSampleKind.Rotation,
+                    Enabled = false,
+                    Source = "Placeholder",
+                };
             foreach (var row in loaded) _rows[row.Id] = row;
         }
         catch (Exception ex)
@@ -115,7 +138,7 @@ public partial class NPointSampleEditor : Window
     private static NPointSample Parse(string line)
     {
         var values = line.Split(',');
-        if (values.Length != 9) throw new FormatException("CSV 列数错误。");
+        if (values.Length != 8) throw new FormatException("CSV 列数错误。");
         return new NPointSample
         {
             Id = int.Parse(values[0], CultureInfo.InvariantCulture),
@@ -123,10 +146,9 @@ public partial class NPointSampleEditor : Window
             Enabled = bool.Parse(values[2]),
             ImageX = double.Parse(values[3], CultureInfo.InvariantCulture),
             ImageY = double.Parse(values[4], CultureInfo.InvariantCulture),
-            PhysicalX = double.Parse(values[5], CultureInfo.InvariantCulture),
-            PhysicalY = double.Parse(values[6], CultureInfo.InvariantCulture),
-            ImageAngle = double.Parse(values[7], CultureInfo.InvariantCulture),
-            PhysicalAngle = double.Parse(values[8], CultureInfo.InvariantCulture),
+            AxisX = double.Parse(values[5], CultureInfo.InvariantCulture),
+            AxisY = double.Parse(values[6], CultureInfo.InvariantCulture),
+            AxisAngle = double.Parse(values[7], CultureInfo.InvariantCulture),
         };
     }
 }

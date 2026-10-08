@@ -8,7 +8,6 @@ using System.Windows.Interop;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Diagnostics;
 using SunEyeVision.UI.Features.Dialogs;
@@ -58,6 +57,32 @@ namespace SunEyeVision.UI.Shell.Windows
 
         /// <summary>Win32 消息：查询窗口最小/最大尺寸限制</summary>
         private const int WM_GETMINMAXINFO = 0x0024;
+        private const uint MONITOR_DEFAULTTONEAREST = 2;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct Win32Rect
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private struct MonitorInfo
+        {
+            public int CbSize;
+            public Win32Rect Monitor;
+            public Win32Rect Work;
+            public uint Flags;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
 
         [StructLayout(LayoutKind.Sequential)]
         private struct Win32Point
@@ -84,20 +109,23 @@ namespace SunEyeVision.UI.Shell.Windows
             HwndSource.FromHwnd(handle)?.AddHook(WndProc);
         }
 
-        /// <summary>拦截 WM_GETMINMAXINFO：最大化尺寸限制在任务栏以上可用区，不盖任务栏</summary>
+        /// <summary>按窗口所在显示器的工作区限制最大化，兼容副屏任务栏及混合 DPI。</summary>
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (msg != WM_GETMINMAXINFO)
                 return IntPtr.Zero;
 
-            var info = Marshal.PtrToStructure<MinMaxInfo>(lParam);
-            var workArea = SystemParameters.WorkArea;
-            var dpiScale = VisualTreeHelper.GetDpi(this);
+            var monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+            var monitorInfo = new MonitorInfo { CbSize = Marshal.SizeOf<MonitorInfo>() };
+            if (monitor == IntPtr.Zero || !GetMonitorInfo(monitor, ref monitorInfo))
+                return IntPtr.Zero;
 
-            info.PtMaxSize.X = (int)(workArea.Width * dpiScale.DpiScaleX);
-            info.PtMaxSize.Y = (int)(workArea.Height * dpiScale.DpiScaleY);
-            info.PtMaxPosition.X = (int)(workArea.Left * dpiScale.DpiScaleX);
-            info.PtMaxPosition.Y = (int)(workArea.Top * dpiScale.DpiScaleY);
+            var info = Marshal.PtrToStructure<MinMaxInfo>(lParam);
+            // WM_GETMINMAXINFO 使用原生像素，偏移量相对于当前显示器而非虚拟桌面。
+            info.PtMaxSize.X = monitorInfo.Work.Right - monitorInfo.Work.Left;
+            info.PtMaxSize.Y = monitorInfo.Work.Bottom - monitorInfo.Work.Top;
+            info.PtMaxPosition.X = monitorInfo.Work.Left - monitorInfo.Monitor.Left;
+            info.PtMaxPosition.Y = monitorInfo.Work.Top - monitorInfo.Monitor.Top;
 
             Marshal.StructureToPtr(info, lParam, true);
             handled = true;

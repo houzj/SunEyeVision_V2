@@ -17,6 +17,8 @@
         Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
 
     <Window.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="CommunicationUiResources.xaml"/></ResourceDictionary.MergedDictionaries>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <comm:OneBasedIndexConverter x:Key="OneBasedIndexConverter"/>
         <comm:CommunicationListViewportConverter x:Key="CommunicationListViewportConverter"/>
@@ -57,7 +59,7 @@
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
-        <Style x:Key="ReceiveEventOutputTextBoxStyle" TargetType="TextBox">
+        <Style x:Key="ReceiveEventOutputTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource CommunicationTableTextBoxStyle}">
             <Setter Property="Height" Value="30"/>
             <Setter Property="Padding" Value="8,3"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
@@ -200,6 +202,16 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="SendEventPageVisibilityStyle" TargetType="Grid">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding ActivePage}" Value="SendEvents"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+        </Style>
+        <Style x:Key="SendEventNavigationButtonStyle" TargetType="Button" BasedOn="{StaticResource NavigationButtonBaseStyle}">
+            <Style.Triggers><DataTrigger Binding="{Binding ActivePage}" Value="SendEvents">
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+            </DataTrigger></Style.Triggers>
+        </Style>
         <Style x:Key="CommunicationDeviceTabItemStyle" TargetType="ListBoxItem">
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="Margin" Value="0"/>
@@ -276,6 +288,7 @@
                                        CheckedChanged="DeviceToggle_CheckedChanged"/>
             </Grid>
         </DataTemplate>
+        </ResourceDictionary>
     </Window.Resources>
 
     <Grid Margin="0">
@@ -292,8 +305,7 @@
             <StackPanel>
                 <Button Content="设备管理" Style="{StaticResource DeviceNavigationButtonStyle}" Click="DevicePage_Click"/>
                 <Button Content="接收事件" Style="{StaticResource ReceiveEventNavigationButtonStyle}" Click="ReceiveEventsPage_Click"/>
-                <Button Content="发送事件" Style="{StaticResource NavigationButtonBaseStyle}"
-                        IsEnabled="False" ToolTip="后续阶段实现" BorderThickness="0"/>
+                <Button Content="发送事件" Style="{StaticResource SendEventNavigationButtonStyle}" Click="SendEventsPage_Click"/>
                 <Button Content="触发配置" Style="{StaticResource NavigationButtonBaseStyle}"
                         IsEnabled="False" ToolTip="后续阶段实现" BorderThickness="0"/>
                 <Separator Margin="18,8"/>
@@ -866,12 +878,13 @@
                               ScrollViewer.VerticalScrollBarVisibility="Auto"
                               MouseDoubleClick="OpcUaDataGrid_MouseDoubleClick"
                               ToolTip="双击数据点行可编辑命名空间索引和标签名称">
+                        <DataGrid.Resources><Style TargetType="TextBlock" BasedOn="{StaticResource CommunicationTableTextStyle}"/><Style TargetType="ComboBox" BasedOn="{StaticResource CommunicationTableComboBoxStyle}"/></DataGrid.Resources>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="150" MinWidth="120"/>
+                            <DataGridTextColumn ElementStyle="{StaticResource CommunicationTableTextStyle}" Header="名称" Binding="{Binding Name}" Width="150" MinWidth="120"/>
                             <DataGridTemplateColumn Header="值" Width="200" MinWidth="170">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBox Text="{Binding DraftValue, UpdateSourceTrigger=PropertyChanged}"
+                                        <TextBox Text="{Binding DraftValue, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" HorizontalContentAlignment="Center"
                                                  IsReadOnly="{Binding IsValueReadOnly}"
                                                  VerticalContentAlignment="Center" Padding="6,2" Height="28"
                                                  Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
@@ -884,13 +897,13 @@
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="类型" Binding="{Binding TypeText}" Width="90">
                                 <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource CommunicationTableTextStyle}">
                                         <Setter Property="ToolTip" Value="{Binding ErrorText}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Header="权限" Binding="{Binding AccessText}" Width="70"/>
-                            <DataGridTextColumn Header="更新时间" Binding="{Binding UpdatedText}" Width="90"/>
+                            <DataGridTextColumn ElementStyle="{StaticResource CommunicationTableTextStyle}" Header="权限" Binding="{Binding AccessText}" Width="70"/>
+                            <DataGridTextColumn ElementStyle="{StaticResource CommunicationTableTextStyle}" Header="更新时间" Binding="{Binding UpdatedText}" Width="90"/>
                             <DataGridTemplateColumn Header="" Width="42" CanUserResize="False">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -1006,15 +1019,9 @@
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <TextBlock Text="分隔符" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                        <ComboBox Grid.Column="1" Height="34" SelectedValuePath="Tag"
-                                  SelectedValue="{Binding SelectedReceiveEvent.Separator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                            <ComboBoxItem Content="," Tag=","/>
-                            <ComboBoxItem Content=";" Tag=";"/>
-                            <ComboBoxItem Content="空格" Tag=" "/>
-                            <ComboBoxItem Content="\r" Tag="&#xD;"/>
-                            <ComboBoxItem Content="\n" Tag="&#xA;"/>
-                            <ComboBoxItem Content="\r\n" Tag="&#xD;&#xA;"/>
-                        </ComboBox>
+                        <ComboBox x:Name="ReceiveParseSeparator" Grid.Column="1" Style="{StaticResource CommunicationSeparatorStyle}"
+                                  ItemsSource="{Binding SelectedReceiveEvent.SeparatorOptions}"
+                                  SelectedValue="{Binding SelectedReceiveEvent.Separator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </Grid>
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -1062,6 +1069,7 @@
                               BorderThickness="1" RowBackground="Transparent" AlternatingRowBackground="Transparent"
                               HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
                               PreviewMouseWheel="ReceiveEventDataGrid_PreviewMouseWheel">
+                        <DataGrid.Resources><Style TargetType="TextBlock" BasedOn="{StaticResource CommunicationTableTextStyle}"/><Style TargetType="ComboBox" BasedOn="{StaticResource CommunicationTableComboBoxStyle}"/></DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTemplateColumn Header="序号" Width="55" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -1152,7 +1160,9 @@
                             <Grid Margin="0,0,0,12">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                 <TextBlock Text="分隔符" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                                <TextBox Grid.Column="1" Text="{Binding SelectedReceiveEvent.Separator, UpdateSourceTrigger=PropertyChanged}" Height="34"/>
+                                <ComboBox x:Name="ReceiveCompareSeparator" Grid.Column="1" Style="{StaticResource CommunicationSeparatorStyle}"
+                                          ItemsSource="{Binding SelectedReceiveEvent.SeparatorOptions}"
+                                          SelectedValue="{Binding SelectedReceiveEvent.Separator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </Grid>
                             <Grid Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -1222,6 +1232,7 @@
                                       HeadersVisibility="Column"
                                       AlternationCount="1000000" ColumnHeaderStyle="{StaticResource OpcUaDataGridHeaderStyle}" RowStyle="{StaticResource OpcUaDataGridRowStyle}" CellStyle="{StaticResource OpcUaDataGridCellStyle}"
                                       Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}" VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Resources><Style TargetType="TextBlock" BasedOn="{StaticResource CommunicationTableTextStyle}"/><Style TargetType="ComboBox" BasedOn="{StaticResource CommunicationTableComboBoxStyle}"/></DataGrid.Resources>
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Header="序号" Width="50" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridCell}}, Path=ActualWidth}" Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="名称" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
@@ -1240,6 +1251,7 @@
                                       CellStyle="{StaticResource OpcUaDataGridCellStyle}"
                                       Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
                                       HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Resources><Style TargetType="TextBlock" BasedOn="{StaticResource CommunicationTableTextStyle}"/><Style TargetType="ComboBox" BasedOn="{StaticResource CommunicationTableComboBoxStyle}"/></DataGrid.Resources>
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Header="序号" Width="50" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}">
                                         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
@@ -1294,15 +1306,9 @@
                             <Grid Margin="0,0,0,18" Visibility="{Binding SelectedReceiveEvent.EchoToDevice, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                 <TextBlock Text="分隔符" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                                <ComboBox Grid.Column="1" Height="34" SelectedValuePath="Tag"
-                                          SelectedValue="{Binding SelectedReceiveEvent.Separator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                    <ComboBoxItem Content="," Tag=","/>
-                                    <ComboBoxItem Content=";" Tag=";"/>
-                                    <ComboBoxItem Content="空格" Tag=" "/>
-                                    <ComboBoxItem Content="\r" Tag="&#xD;"/>
-                                    <ComboBoxItem Content="\n" Tag="&#xA;"/>
-                                    <ComboBoxItem Content="\r\n" Tag="&#xD;&#xA;"/>
-                                </ComboBox>
+                                <ComboBox x:Name="ReceiveAssemblySeparator" Grid.Column="1" Style="{StaticResource CommunicationSeparatorStyle}"
+                                          ItemsSource="{Binding SelectedReceiveEvent.SeparatorOptions}"
+                                          SelectedValue="{Binding SelectedReceiveEvent.Separator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </Grid>
                             <Separator Margin="0,0,0,14"/>
                             <TextBlock Text="组装列表" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,10"/>
@@ -1313,12 +1319,13 @@
                                       HeadersVisibility="Column"
                                       AlternationCount="1000000" ColumnHeaderStyle="{StaticResource OpcUaDataGridHeaderStyle}" RowStyle="{StaticResource OpcUaDataGridRowStyle}" CellStyle="{StaticResource OpcUaDataGridCellStyle}"
                                       Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}" VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Resources><Style TargetType="TextBlock" BasedOn="{StaticResource CommunicationTableTextStyle}"/><Style TargetType="ComboBox" BasedOn="{StaticResource CommunicationTableComboBoxStyle}"/></DataGrid.Resources>
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Header="序号" Width="50" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridCell}}, Path=ActualWidth}" Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="名称" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="类型" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Height="30" SelectedValuePath="Content" SelectedValue="{Binding DataType, Mode=TwoWay}"><ComboBoxItem Content="int"/><ComboBoxItem Content="float"/><ComboBoxItem Content="string"/></ComboBox></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="内容" Width="260"><DataGridTemplateColumn.CellTemplate><DataTemplate><controls:ParamBinding Height="30" ParameterName="Content" NodeId="AssemblyOutput" NodeName="组装列表" IsBound="{Binding IsContentBound, Mode=TwoWay}" BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay}" AvailableDataSources="{Binding AvailableDataSources}" SyncEditingToSource="True" BindingSourceSelected="AssemblyBindingSourceSelected" LostKeyboardFocus="AssemblyBinding_LostKeyboardFocus"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                                    <DataGridTextColumn Header="数据结果" Binding="{Binding Result}" Width="140" IsReadOnly="True"/>
+                                    <DataGridTextColumn ElementStyle="{StaticResource CommunicationTableTextStyle}" Header="数据结果" Binding="{Binding Result}" Width="140" IsReadOnly="True"/>
                                     <DataGridTemplateColumn Width="42"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Content="×" Click="RemoveAssemblyOutput_Click" Style="{StaticResource DangerButtonStyle}" Padding="0" Width="24" Height="24"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
@@ -1360,6 +1367,9 @@
             </Expander>
         </Grid>
 
+        <Grid Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Style="{StaticResource SendEventPageVisibilityStyle}">
+            <comm:CommunicationSendEventsView/>
+        </Grid>
         <Grid Grid.Row="0" Grid.Column="2" Margin="0,0,14,0" Style="{StaticResource ReceiveEventEmptyVisibilityStyle}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="暂无接收事件" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center"

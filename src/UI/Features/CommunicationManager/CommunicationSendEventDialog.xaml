@@ -1,0 +1,29 @@
+<themeWindows:ThemeDialogWindow x:Class="SunEyeVision.UI.Features.CommunicationManager.CommunicationSendEventDialog"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
+ xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+ xmlns:comm="clr-namespace:SunEyeVision.UI.Features.CommunicationManager"
+ Title="事件管理" Width="630" Height="430" MinWidth="580" MinHeight="380"
+ WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+ Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
+ <Grid TextElement.Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
+  <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="50"/></Grid.RowDefinitions>
+  <StackPanel Margin="16,14">
+   <TextBlock Text="处理方式" FontSize="16" Margin="0,0,0,12"/>
+   <Grid Margin="0,0,0,24"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <TextBlock Text="处理方式" FontSize="15" VerticalAlignment="Center" Margin="34,0,0,0"/>
+    <ComboBox x:Name="ProcessingSelector" Grid.Column="1" Height="36" SelectedIndex="0"><ComboBoxItem Content="文本"/></ComboBox>
+   </Grid>
+   <TextBlock Text="处理类型" FontSize="16" Margin="0,0,0,12"/>
+   <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <TextBlock Text="事件类型" FontSize="15" VerticalAlignment="Center" Margin="34,0,0,0"/>
+    <ComboBox x:Name="ModeSelector" Grid.Column="1" Height="36" ItemsSource="{x:Static comm:CommunicationSendEventViewModel.Modes}" SelectedItem="{Binding ModeDisplayName, Mode=TwoWay}"/>
+   </Grid>
+  </StackPanel>
+  <TextBlock Grid.Row="1" Text="{Binding ProcessingDescription}" TextWrapping="Wrap" Margin="16,12" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+  <Border Grid.Row="2" Background="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}" Padding="14,8">
+   <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><Button Content="取消" IsCancel="True" Style="{DynamicResource SecondaryButtonStyle}" Width="76" Margin="0,0,8,0"/><Button Content="创建" IsDefault="True" Style="{DynamicResource PrimaryButtonStyle}" Width="76" Click="Create_Click"/></StackPanel>
+  </Border>
+ </Grid>
+</themeWindows:ThemeDialogWindow>

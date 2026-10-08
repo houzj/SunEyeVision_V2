@@ -26,7 +26,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
     /// <summary>
     /// 通讯管理器 ViewModel
     /// </summary>
-    public class CommunicationManagerViewModel : ViewModelBase
+    public partial class CommunicationManagerViewModel : ViewModelBase
     {
         private readonly SolutionManager _solutionManager;
         private readonly CommunicationRuntimeManager _runtimeManager = ServiceInitializer.CommunicationService.Composition.Runtime;
@@ -671,6 +671,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             RefreshSerialPorts();
 
             InitializeCommands();
+            InitializeSendEvents(currentSolution?.CommunicationSendEvents);
         }
 
         private void LoadReceiveEvents(IEnumerable<CommunicationEventDefinition>? definitions)
@@ -872,6 +873,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             var workspace = new CommunicationDeviceWorkspaceViewModel(communication);
             workspace.PropertyChanged += Workspace_PropertyChanged;
             workspace.AddressConfigurationChanged += Workspace_AddressConfigurationChanged;
+            workspace.OpcUaPoints.CollectionChanged += SendTargets_CollectionChanged;
             communication.PropertyChanged += Communication_PropertyChanged;
             _deviceWorkspaces.Add(communication.Id, workspace);
             foreach (var row in workspace.OpcUaPoints)
@@ -898,6 +900,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
             workspace.PropertyChanged -= Workspace_PropertyChanged;
             workspace.AddressConfigurationChanged -= Workspace_AddressConfigurationChanged;
+            workspace.OpcUaPoints.CollectionChanged -= SendTargets_CollectionChanged;
             workspace.Communication.PropertyChanged -= Communication_PropertyChanged;
             if (SelectedWorkspace == workspace)
                 SelectedWorkspace = null;
@@ -908,6 +911,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private void Workspace_AddressConfigurationChanged(object? sender, EventArgs e)
         {
+            RefreshSendTargets();
             if (sender is CommunicationDeviceWorkspaceViewModel workspace && workspace.Communication.IsModbus)
             {
                 foreach (var receiveEvent in ReceiveEvents.Where(item =>
@@ -974,6 +978,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             }
 
             row.UpdatePointConfiguration(edited);
+            RefreshSendTargets();
             row.IsEditing = false;
             workspace.SelectedOpcUaPoint = row;
             HasUnsavedChanges = true;
@@ -1763,6 +1768,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                             return false;
                         }
                     currentSolution.CommunicationEvents = CaptureReceiveEvents();
+                    currentSolution.CommunicationSendEvents = CaptureSendEvents();
                     if (_solutionManager.SaveSolution(currentSolution.FilePath))
                     {
                         HasUnsavedChanges = false;
@@ -1861,9 +1867,15 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             {
                 workspace.PropertyChanged -= Workspace_PropertyChanged;
                 workspace.AddressConfigurationChanged -= Workspace_AddressConfigurationChanged;
+                workspace.OpcUaPoints.CollectionChanged -= SendTargets_CollectionChanged;
                 workspace.Communication.PropertyChanged -= Communication_PropertyChanged;
             }
             _deviceWorkspaces.Clear();
+            foreach (var definition in SendEvents)
+            {
+                definition.ConfigurationChanged -= SendEvent_ConfigurationChanged;
+                definition.PropertyChanged -= SendEvent_PropertyChanged;
+            }
             SelectedWorkspace = null;
             await Task.CompletedTask;
         }

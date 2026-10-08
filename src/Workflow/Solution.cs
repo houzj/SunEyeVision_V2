@@ -86,6 +86,9 @@ public class Solution : ObservableObject
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<CommunicationEventDefinition> CommunicationEvents { get; set; } = new();
 
+    /// <summary>Reusable outbound communication event formats.</summary>
+    public List<CommunicationSendEventDefinition> CommunicationSendEvents { get; set; } = new();
+
     /// <summary>
     /// 数据库配置
     /// </summary>

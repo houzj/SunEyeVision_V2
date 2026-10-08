@@ -4857,6 +4857,32 @@
                        }
                    ],
     "tempTasks":  [
-
+                      {
+                          "id":  "TMP-800fdf0",
+                          "message":  "docs: 归档开发汇报与 N 点标定联合标定基线并同步协作状态与索引",
+                          "date":  "2026-10-08",
+                          "commit":  "800fdf04c4410a626eb4ef9755ccdeea84199de7",
+                          "files":  [
+                                        "docs/00-索引/文档索引.md",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/bak/视觉软件SunEyeVision-软件开发汇报-精简版.bak-20261001-144849.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/pid",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/state.json",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/DESIGN.md",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/STORY.md",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/01_cover.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/02_output.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/03_plan.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/04_ending.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V1.0.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-精简版.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报.html",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报（精简版）.html",
+                                        "docs/04-工具设计/标定工具/2026/09/28/标定工具链与定位抓取设计基线-20260928.md",
+                                        "docs/04-工具设计/标定工具/2026/09/29/N点标定9加3联合标定与抓取链沟通基线-20260929.md",
+                                        "docs/collaboration/CURRENT_TASK.md"
+                                    ],
+                          "status":  "in_progress"
+                      }
                   ]
 }

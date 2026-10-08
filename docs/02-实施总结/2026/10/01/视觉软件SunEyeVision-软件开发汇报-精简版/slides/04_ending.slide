@@ -1,0 +1,124 @@
+<Slide style={{
+    width: '1280px', height: '720px', position: 'relative', overflow: 'hidden',
+    background: '#FFFFFF', padding: '20px 60px',
+    fontFamily: '"Microsoft YaHei", "Segoe UI", sans-serif'
+}}>
+    {/* A 区 */}
+    <Box style={{ flexDirection: 'row', alignItems: 'center', height: 100, gap: 14 }}>
+        <Box style={{ width: 6, height: 38, background: '#2196F3', borderRadius: 3 }} />
+        <Box style={{ flexDirection: 'column' }}>
+            <Text style={{ fontSize: 34, fontWeight: 700, color: '#0B2A45' }}>风险与需要的支持</Text>
+            <Text style={{ fontSize: 13, color: '#5B6B7C' }}>
+                风险集中在"硬件与验证"，不是技术路线问题；支持项少而具体
+            </Text>
+        </Box>
+        <Box style={{ flex: 1 }} />
+        <Box style={{
+            flexDirection: 'row', alignItems: 'center', gap: 8,
+            background: 'rgba(33,150,243,0.08)', padding: '7px 14px', borderRadius: 999
+        }}>
+            <FAIcon name='exclamation-circle' style={{ fill: '#2196F3', width: 16, height: 16 }} />
+            <Text style={{ fontSize: 14, color: '#14456E', fontWeight: 'bold' }}>2 项高 · 2 项中</Text>
+        </Box>
+    </Box>
+
+    {/* B 区 */}
+    <Box style={{ flexDirection: 'column', height: 520, gap: 14 }}>
+        {/* 上：4 条风险 */}
+        <Box style={{ flexDirection: 'row', gap: 14, height: 262 }}>
+            <Box style={{ flex: 1, flexDirection: 'column', gap: 12 }}>
+                <Box style={{ flex: 1, background: '#FDF3F3', borderLeft: '4px solid #C0392B', borderRadius: 12, padding: '12px 16px', flexDirection: 'column', gap: 5, justifyContent: 'center' }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='exclamation-circle' style={{ fill: '#C0392B', width: 18, height: 18 }} />
+                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#C0392B', background: '#F7D9D9', padding: '2px 8px', borderRadius: 999 }}>高</Text>
+                        <Text style={{ fontSize: 19, fontWeight: 700, color: '#0B2A45' }}>相机真机验证依赖硬件</Text>
+                    </Box>
+                    <Text style={{ fontSize: 14, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        巴斯勒仅完成属性树映射；机型与标定板不齐，会直接卡住 10 月收口与后续标定
+                    </Text>
+                </Box>
+                <Box style={{ flex: 1, background: '#FDF3F3', borderLeft: '4px solid #C0392B', borderRadius: 12, padding: '12px 16px', flexDirection: 'column', gap: 5, justifyContent: 'center' }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='exclamation-circle' style={{ fill: '#C0392B', width: 18, height: 18 }} />
+                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#C0392B', background: '#F7D9D9', padding: '2px 8px', borderRadius: 999 }}>高</Text>
+                        <Text style={{ fontSize: 19, fontWeight: 700, color: '#0B2A45' }}>CvEngine 算子对标 7 / 16</Text>
+                    </Box>
+                    <Text style={{ fontSize: 14, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        定位与标定的算法效率、精度受制于算子覆盖度，是下阶段技术瓶颈
+                    </Text>
+                </Box>
+            </Box>
+            <Box style={{ flex: 1, flexDirection: 'column', gap: 12 }}>
+                <Box style={{ flex: 1, background: '#FFF8EC', borderLeft: '4px solid #E8930C', borderRadius: 12, padding: '12px 16px', flexDirection: 'column', gap: 5, justifyContent: 'center' }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='clock' style={{ fill: '#E8930C', width: 18, height: 18 }} />
+                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#8A5708', background: '#FBE6C4', padding: '2px 8px', borderRadius: 999 }}>中</Text>
+                        <Text style={{ fontSize: 19, fontWeight: 700, color: '#0B2A45' }}>算法精度用例偏少</Text>
+                    </Box>
+                    <Text style={{ fontSize: 14, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        607 个用例集中在接口契约层；形状匹配/Blob 精度、标定误差用例待补
+                    </Text>
+                </Box>
+                <Box style={{ flex: 1, background: '#FFF8EC', borderLeft: '4px solid #E8930C', borderRadius: 12, padding: '12px 16px', flexDirection: 'column', gap: 5, justifyContent: 'center' }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='clock' style={{ fill: '#E8930C', width: 18, height: 18 }} />
+                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#8A5708', background: '#FBE6C4', padding: '2px 8px', borderRadius: 999 }}>中</Text>
+                        <Text style={{ fontSize: 19, fontWeight: 700, color: '#0B2A45' }}>交付物仍为 alpha</Text>
+                    </Box>
+                    <Text style={{ fontSize: 14, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        缺完整回归测试与用户手册，交付压力集中在 2027 年 4–5 月
+                    </Text>
+                </Box>
+            </Box>
+        </Box>
+
+        {/* 下：3 条支持 + 结论条 */}
+        <Box style={{ flex: 1, flexDirection: 'column', gap: 12 }}>
+            <Box style={{ flexDirection: 'row', gap: 14, flex: 1 }}>
+                <Box style={{ flex: 1, background: 'rgba(33,150,243,0.06)', borderRadius: 12, padding: '13px 16px', flexDirection: 'column', gap: 6 }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='camera' style={{ fill: '#2196F3', width: 20, height: 20 }} />
+                        <Text style={{ fontSize: 18, fontWeight: 700, color: '#0B2A45' }}>硬件</Text>
+                    </Box>
+                    <Text style={{ fontSize: 14, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        海康 / 巴斯勒工业相机各 1 台 + 标定板一套；引导抓取演示还需机器人本体（或客户机械臂联调窗口）
+                    </Text>
+                </Box>
+                <Box style={{ flex: 1, background: 'rgba(33,150,243,0.06)', borderRadius: 12, padding: '13px 16px', flexDirection: 'column', gap: 6 }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='calendar-check' style={{ fill: '#2196F3', width: 20, height: 20 }} />
+                        <Text style={{ fontSize: 18, fontWeight: 700, color: '#0B2A45' }}>现场时间</Text>
+                    </Box>
+                    <Text style={{ fontSize: 14, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        11 月起安排 1–2 次现场验证窗口（相机 + 通讯 + 机器人 场景），验证平台在真实工况下的表现
+                    </Text>
+                </Box>
+                <Box style={{ flex: 1, background: 'rgba(33,150,243,0.06)', borderRadius: 12, padding: '13px 16px', flexDirection: 'column', gap: 6 }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='balance-scale' style={{ fill: '#2196F3', width: 20, height: 20 }} />
+                        <Text style={{ fontSize: 18, fontWeight: 700, color: '#0B2A45' }}>两项决策</Text>
+                    </Box>
+                    <Text style={{ fontSize: 14, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        平台协议栈的先后次序（OPC UA 与 Modbus/S7 谁先做深）；AI 线与平台线的接口边界
+                    </Text>
+                </Box>
+            </Box>
+            <Box style={{
+                height: 78, background: '#0B2A45', borderRadius: 12, padding: '0 22px',
+                flexDirection: 'row', alignItems: 'center', gap: 18
+            }}>
+                <FAIcon name='bullseye' style={{ fill: '#E8930C', width: 30, height: 30 }} />
+                <Text style={{ fontSize: 19, color: '#ffffff', lineHeight: 1.45 }}>
+                    平台与工具链已可支撑"配置流程 → 采图 → 测量判定"的完整演示；
+                    <span style={{ color: '#E8930C', fontWeight: 'bold' }}>10 月把设备层收口</span>，进入引导抓取主线（定位 → 标定 → 机器人通信），<span style={{ color: '#E8930C', fontWeight: 'bold' }}>12/31 具备引导抓取演示能力</span>。
+                </Text>
+            </Box>
+        </Box>
+    </Box>
+
+    {/* C 区 */}
+    <Box style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 40 }}>
+        <Text style={{ fontSize: 13, color: '#8FB4D1' }}>视觉软件 SunEyeVision · 软件开发汇报 · 2026-10-01</Text>
+        <Text style={{ fontSize: 13, color: '#8FB4D1' }}>04 / 4</Text>
+    </Box>
+</Slide>

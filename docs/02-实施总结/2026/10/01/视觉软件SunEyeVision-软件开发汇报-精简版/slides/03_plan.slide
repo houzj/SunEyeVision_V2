@@ -1,0 +1,133 @@
+<Slide style={{
+    width: '1280px', height: '720px', position: 'relative', overflow: 'hidden',
+    background: '#FFFFFF', padding: '20px 60px',
+    fontFamily: '"Microsoft YaHei", "Segoe UI", sans-serif'
+}}>
+    {/* A 区 */}
+    <Box style={{ flexDirection: 'row', alignItems: 'center', height: 100, gap: 14 }}>
+        <Box style={{ width: 6, height: 38, background: '#E8930C', borderRadius: 3 }} />
+        <Box style={{ flexDirection: 'column' }}>
+            <Text style={{ fontSize: 34, fontWeight: 700, color: '#0B2A45' }}>下一步计划</Text>
+            <Text style={{ fontSize: 13, color: '#5B6B7C' }}>
+                10 月设备层收口 → 12 月打通引导抓取演示链路 · V1.0 正式版 2027-05-14
+            </Text>
+        </Box>
+        <Box style={{ flex: 1 }} />
+        <Box style={{
+            flexDirection: 'row', alignItems: 'center', gap: 8,
+            background: 'rgba(232,147,12,0.10)', padding: '7px 14px', borderRadius: 999
+        }}>
+            <FAIcon name='flag-checkered' style={{ fill: '#E8930C', width: 16, height: 16 }} />
+            <Text style={{ fontSize: 14, color: '#8A5708', fontWeight: 'bold' }}>交付目标：12/31 引导抓取演示</Text>
+        </Box>
+    </Box>
+
+    {/* B 区：非对称双栏 60:40 */}
+    <Box style={{ flexDirection: 'row', height: 516, gap: 26 }}>
+        {/* 左：竖向时间轴 */}
+        <Box style={{ flexDirection: 'column', width: 660, gap: 12 }}>
+            <Box style={{ flexDirection: 'row', gap: 14, alignItems: 'stretch' }}>
+                <Box style={{ width: 118, background: '#2196F3', borderRadius: 10, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>10 月</Text>
+                    <Text style={{ fontSize: 12, color: '#DCEAF6' }}>当前阶段</Text>
+                </Box>
+                <Box style={{ flex: 1, background: 'rgba(33,150,243,0.06)', borderRadius: 10, padding: '12px 16px', flexDirection: 'column', gap: 4, justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 700, color: '#0B2A45' }}>设备层收口</Text>
+                    <Text style={{ fontSize: 15, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        相机真机验证（海康 / 巴斯勒）、参数读写闭环；通讯链路测试（协议帧、异常、重连）
+                    </Text>
+                    <Text style={{ fontSize: 13, color: '#2196F3', fontWeight: 'bold' }}>出口：设备层可对外演示</Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flexDirection: 'row', gap: 14, alignItems: 'stretch' }}>
+                <Box style={{ width: 118, background: '#14456E', borderRadius: 10, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>11 月</Text>
+                </Box>
+                <Box style={{ flex: 1, background: '#F5F8FB', borderRadius: 10, padding: '12px 16px', flexDirection: 'column', gap: 4, justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 700, color: '#0B2A45' }}>视觉链路贯通</Text>
+                    <Text style={{ fontSize: 15, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        图像源收口 + 定位工具链首版 + 坐标转换，串起「采图 → 定位 → 位姿输出」；通信工具按平台挂载
+                    </Text>
+                    <Text style={{ fontSize: 13, color: '#14456E', fontWeight: 'bold' }}>出口：视觉链路可跑通</Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flexDirection: 'row', gap: 14, alignItems: 'stretch' }}>
+                <Box style={{ width: 118, background: '#E8930C', borderRadius: 10, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>12 月</Text>
+                    <Text style={{ fontSize: 12, color: '#FBE6C4' }}>交付目标</Text>
+                </Box>
+                <Box style={{ flex: 1, background: 'rgba(232,147,12,0.10)', borderRadius: 10, padding: '12px 16px', flexDirection: 'column', gap: 4, justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 700, color: '#0B2A45' }}>引导抓取演示</Text>
+                    <Text style={{ fontSize: 15, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        机器人通信接入 + 端到端联调 + 演示场景打磨（抓取精度以演示口径验收）
+                    </Text>
+                    <Text style={{ fontSize: 13, color: '#8A5708', fontWeight: 'bold' }}>出口：12/31 具备引导抓取演示能力</Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flexDirection: 'row', gap: 14, alignItems: 'stretch' }}>
+                <Box style={{ width: 118, background: '#0B2A45', borderRadius: 10, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>下一年</Text>
+                    <Text style={{ fontSize: 18, fontWeight: 800, color: '#ffffff' }}>Q1–Q2</Text>
+                </Box>
+                <Box style={{ flex: 1, background: '#F5F8FB', borderRadius: 10, padding: '12px 16px', flexDirection: 'column', gap: 4, justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 700, color: '#0B2A45' }}>精度与产品化</Text>
+                    <Text style={{ fontSize: 15, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        标定精度（内参 / 手眼）、可配置运行 UI（工程师配置 / 操作工运行分层）、用户手册
+                    </Text>
+                    <Text style={{ fontSize: 13, color: '#14456E', fontWeight: 'bold' }}>出口：V1.0 正式版交付 2027-05-14</Text>
+                </Box>
+            </Box>
+        </Box>
+
+        {/* 右：交付目标锚点 + 判断 */}
+        <Box style={{ flex: 1, flexDirection: 'column', gap: 14 }}>
+            <Box style={{
+                background: '#0B2A45', borderRadius: 14, padding: '18px 20px',
+                flexDirection: 'column', gap: 6
+            }}>
+                <Text style={{ fontSize: 13, color: '#8FB4D1' }}>交付目标</Text>
+                <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+                    <Text style={{ fontSize: 84, fontWeight: 800, color: '#E8930C', lineHeight: 1 }}>12/31</Text>
+                </Box>
+                <Text style={{ fontSize: 15, color: '#ffffff', fontWeight: 'bold' }}>
+                    具备引导抓取的演示能力
+                </Text>
+                <Text style={{ fontSize: 14, color: '#BBD6EC', lineHeight: 1.5 }}>
+                    正式版 V1.0 于 2027-05-14 交付；瓶颈仍在<b>硬件与现场验证</b>。
+                </Text>
+            </Box>
+
+            <Box style={{ flex: 1, background: 'rgba(33,150,243,0.06)', borderRadius: 14, padding: '16px 18px', flexDirection: 'column', gap: 10 }}>
+                <Text style={{ fontSize: 17, fontWeight: 700, color: '#0B2A45' }}>本阶段三个判断</Text>
+                <Box style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+                    <FAIcon name='check-circle' style={{ fill: '#2196F3', width: 18, height: 18 }} />
+                    <Text style={{ fontSize: 14, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        12/31 验收的是"演示能力"：优先打通 采图 → 定位 → 抓取 主链路，不追求功能齐备
+                    </Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+                    <FAIcon name='check-circle' style={{ fill: '#2196F3', width: 18, height: 18 }} />
+                    <Text style={{ fontSize: 14, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        相机与机器人本体需尽早到位，硬件是当前最大不确定性
+                    </Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+                    <FAIcon name='check-circle' style={{ fill: '#2196F3', width: 18, height: 18 }} />
+                    <Text style={{ fontSize: 14, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        平台按能力分层交付：协议与机型按现场挂载扩展，不绑定单一客户
+                    </Text>
+                </Box>
+            </Box>
+        </Box>
+    </Box>
+
+    {/* C 区 */}
+    <Box style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 40 }}>
+        <Text style={{ fontSize: 13, color: '#8FB4D1' }}>视觉软件 SunEyeVision · 软件开发汇报</Text>
+        <Text style={{ fontSize: 13, color: '#8FB4D1' }}>03 / 4</Text>
+    </Box>
+</Slide>
+

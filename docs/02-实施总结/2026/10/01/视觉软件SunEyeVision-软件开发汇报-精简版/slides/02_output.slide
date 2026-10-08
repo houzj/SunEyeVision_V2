@@ -1,0 +1,172 @@
+<Slide style={{
+    width: '1280px', height: '720px', position: 'relative', overflow: 'hidden',
+    background: '#FFFFFF', padding: '20px 60px',
+    fontFamily: '"Microsoft YaHei", "Segoe UI", sans-serif'
+}}>
+    {/* A 区：标题块 */}
+    <Box style={{ flexDirection: 'row', alignItems: 'center', height: 100, gap: 14 }}>
+        <Box style={{ width: 6, height: 38, background: '#2196F3', borderRadius: 3 }} />
+        <Box style={{ flexDirection: 'column' }}>
+            <Text style={{ fontSize: 34, fontWeight: 700, color: '#0B2A45' }}>已完成产出</Text>
+            <Text style={{ fontSize: 13, color: '#5B6B7C' }}>
+                可演示 · 可安装 · 可追溯（数据来源：Git 提交 + 计划看板 + docs 文档库）
+            </Text>
+        </Box>
+        <Box style={{ flex: 1 }} />
+        <Box style={{
+            flexDirection: 'row', alignItems: 'center', gap: 8,
+            background: 'rgba(33,150,243,0.08)', padding: '7px 14px', borderRadius: 999
+        }}>
+            <FAIcon name='check-circle' style={{ fill: '#2196F3', width: 16, height: 16 }} />
+            <Text style={{ fontSize: 14, color: '#14456E', fontWeight: 'bold' }}>整体完成 197 / 276 子任务</Text>
+        </Box>
+    </Box>
+
+    {/* B 区：左标题栏 + 右 6 产出块 */}
+    <Box style={{ flexDirection: 'row', height: 440, gap: 24 }}>
+        {/* 左：深蓝标题栏 */}
+        <Box style={{
+            width: 280, background: '#0B2A45', borderRadius: 14, padding: '26px 22px',
+            justifyContent: 'space-between'
+        }}>
+            <Box style={{ flexDirection: 'column', gap: 14 }}>
+                <FAIcon name='layer-group' style={{ fill: '#2196F3', width: 40, height: 40 }} />
+                <Text style={{ fontSize: 25, fontWeight: 800, color: '#ffffff', lineHeight: 1.35 }}>
+                    五条线
+                    <br />
+                    都已出活
+                </Text>
+                <Text style={{ fontSize: 15, color: '#BBD6EC', lineHeight: 1.6 }}>
+                    平台底座、视觉工具、测量工具链、交付工程、质量与文档同时成型，
+                    任一块都可单独拿出来演示或交付。
+                </Text>
+            </Box>
+            <Box style={{ flexDirection: 'column', gap: 6 }}>
+                <Text style={{ fontSize: 13, color: '#8FB4D1' }}>在建（9 月下旬起）</Text>
+                <Text style={{ fontSize: 15, color: '#ffffff', fontWeight: 'bold' }}>
+                    相机 · 通讯 · 图像源
+                </Text>
+            </Box>
+        </Box>
+
+        {/* 右：6 个产出块（两列三行） */}
+        <Box style={{ flex: 1, flexDirection: 'row', gap: 14 }}>
+            {/* 第 1 列 */}
+            <Box style={{ flex: 1, flexDirection: 'column', gap: 12 }}>
+                <Box style={{ flex: 1, background: 'rgba(33,150,243,0.06)', borderRadius: 12, padding: '13px 15px', flexDirection: 'column', gap: 5 }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='cube' style={{ fill: '#2196F3', width: 20, height: 20 }} />
+                        <Text style={{ fontSize: 21, fontWeight: 700, color: '#0B2A45' }}>平台底座（14 模块）</Text>
+                    </Box>
+                    <Text style={{ fontSize: 15, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        工作流画布与编辑器、路径算法、参数绑定、结果树、区域与 RoI、SDK 控件库、契约与类型系统
+                    </Text>
+                </Box>
+                <Box style={{ flex: 1, background: 'rgba(33,150,243,0.06)', borderRadius: 12, padding: '13px 15px', flexDirection: 'column', gap: 5 }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='thumbtack' style={{ fill: '#2196F3', width: 20, height: 20 }} />
+                        <Text style={{ fontSize: 21, fontWeight: 700, color: '#0B2A45' }}>视觉工具插件 19 个</Text>
+                    </Box>
+                    <Text style={{ fontSize: 15, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        图像处理 5 · 引导匹配 3 · 几何测量 6 · 流程控制 3 · 分析标定 2（Blob、N 点标定）
+                    </Text>
+                </Box>
+                <Box style={{ flex: 1, background: 'rgba(232,147,12,0.08)', borderRadius: 12, padding: '13px 15px', flexDirection: 'column', gap: 5 }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='ruler-combined' style={{ fill: '#E8930C', width: 20, height: 20 }} />
+                        <Text style={{ fontSize: 21, fontWeight: 700, color: '#0B2A45' }}>测量工具链（9/28 完工）</Text>
+                    </Box>
+                    <Text style={{ fontSize: 15, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        圆查找、直线查找 + 几何测量六件套：算法 + 双卡尺调试控件 + 契约测试齐备，较原里程碑提前 25 天
+                    </Text>
+                </Box>
+            </Box>
+            {/* 第 2 列 */}
+            <Box style={{ flex: 1, flexDirection: 'column', gap: 12 }}>
+                <Box style={{ flex: 1, background: 'rgba(33,150,243,0.06)', borderRadius: 12, padding: '13px 15px', flexDirection: 'column', gap: 5 }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='box-open' style={{ fill: '#2196F3', width: 20, height: 20 }} />
+                        <Text style={{ fontSize: 21, fontWeight: 700, color: '#0B2A45' }}>交付工程化</Text>
+                    </Box>
+                    <Text style={{ fontSize: 15, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        版本号单一真源 + 一键打包流水线；已产出安装包 2.0.0.1（alpha），含图标与文件关联
+                    </Text>
+                </Box>
+                <Box style={{ flex: 1, background: 'rgba(33,150,243,0.06)', borderRadius: 12, padding: '13px 15px', flexDirection: 'column', gap: 5 }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='clipboard-check' style={{ fill: '#2196F3', width: 20, height: 20 }} />
+                        <Text style={{ fontSize: 21, fontWeight: 700, color: '#0B2A45' }}>质量与文档</Text>
+                    </Box>
+                    <Text style={{ fontSize: 15, color: '#5B6B7C', lineHeight: 1.5 }}>
+                        28 个测试工程 / 607 个用例（已清除 8 个占位假测试）；337 篇文档，52/54 模块有方案文档
+                    </Text>
+                </Box>
+                <Box style={{ flex: 1, background: '#F2F5F9', borderRadius: 12, padding: '13px 15px', flexDirection: 'column', gap: 5 }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <FAIcon name='users' style={{ fill: '#9AA9B7', width: 20, height: 20 }} />
+                        <Text style={{ fontSize: 21, fontWeight: 700, color: '#5B6B7C' }}>并行（开发外任务）</Text>
+                    </Box>
+                    <Text style={{ fontSize: 15, color: '#8A97A5', lineHeight: 1.5 }}>
+                        12prMO 现场实施（5–7 月）· SunAgent AI 原型（独立项目）—— 均不计入本平台开发产出
+                    </Text>
+                </Box>
+            </Box>
+        </Box>
+    </Box>
+
+    {/* 在建状态条 */}
+    <Box style={{ flexDirection: 'row', height: 60, gap: 14, marginTop: 16 }}>
+        <Box style={{
+            flexDirection: 'row', alignItems: 'center', gap: 10,
+            background: '#0B2A45', borderRadius: 12, padding: '0 18px', width: 210
+        }}>
+            <FAIcon name='hammer' style={{ fill: '#E8930C', width: 18, height: 18 }} />
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#ffffff' }}>当前在建</Text>
+        </Box>
+        <Box style={{ flex: 1, flexDirection: 'row', gap: 12 }}>
+            <Box style={{ flex: 1, background: '#F5F8FB', borderRadius: 12, padding: '10px 14px', flexDirection: 'column', gap: 6 }}>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#0B2A45' }}>相机管理</Text>
+                    <Text style={{ fontSize: 14, color: '#E8930C', fontWeight: 'bold' }}>3 / 4</Text>
+                </Box>
+                <Box style={{ height: 6, background: '#E3E9EF', borderRadius: 3 }}>
+                    <Box style={{ width: '75%', height: 6, background: '#2196F3', borderRadius: 3 }} />
+                </Box>
+            </Box>
+            <Box style={{ flex: 1, background: '#F5F8FB', borderRadius: 12, padding: '10px 14px', flexDirection: 'column', gap: 6 }}>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#0B2A45' }}>通讯管理</Text>
+                    <Text style={{ fontSize: 14, color: '#E8930C', fontWeight: 'bold' }}>3 / 4</Text>
+                </Box>
+                <Box style={{ height: 6, background: '#E3E9EF', borderRadius: 3 }}>
+                    <Box style={{ width: '75%', height: 6, background: '#2196F3', borderRadius: 3 }} />
+                </Box>
+            </Box>
+            <Box style={{ flex: 1, background: '#F5F8FB', borderRadius: 12, padding: '10px 14px', flexDirection: 'column', gap: 6 }}>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#0B2A45' }}>图像源工具</Text>
+                    <Text style={{ fontSize: 14, color: '#E8930C', fontWeight: 'bold' }}>1 / 3</Text>
+                </Box>
+                <Box style={{ height: 6, background: '#E3E9EF', borderRadius: 3 }}>
+                    <Box style={{ width: '33%', height: 6, background: '#2196F3', borderRadius: 3 }} />
+                </Box>
+            </Box>
+            <Box style={{
+                flex: 1.2, background: 'rgba(33,150,243,0.08)', borderRadius: 12, padding: '10px 14px',
+                flexDirection: 'column', justifyContent: 'center', gap: 3
+            }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#0B2A45' }}>标定工具链 · N 点标定</Text>
+                <Text style={{ fontSize: 13, color: '#5B6B7C' }}>计划内工作提前启动，已落地 1,291 行</Text>
+            </Box>
+        </Box>
+    </Box>
+
+    {/* C 区：页脚 */}
+    <Box style={{
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        height: 40, marginTop: 0
+    }}>
+        <Text style={{ fontSize: 13, color: '#8FB4D1' }}>视觉软件 SunEyeVision · 软件开发汇报</Text>
+        <Text style={{ fontSize: 13, color: '#8FB4D1' }}>02 / 4</Text>
+    </Box>
+</Slide>

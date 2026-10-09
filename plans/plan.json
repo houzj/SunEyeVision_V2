@@ -1774,7 +1774,7 @@
                         "type":  "module",
                         "layer":  "source",
                         "stage":  "CD",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2026-10-26",
                         "end":  "2026-11-13",
                         "goal":  "相机采集链路真实可用：软触发采图 → 图像帧 → 工作流输入",
@@ -1790,7 +1790,7 @@
                                           "name":  "采集链路打通（软触发→CameraFrameInfo→图像转换→工作流）",
                                           "phase":  "算法实现",
                                           "hours":  16,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W37"
                                       },
                                       {
@@ -1826,6 +1826,10 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状盘点：DeviceDriver 有海康 SDK 骨架（48 个 P/Invoke），采集链路未打通，Camera UI 仅有对话框骨架"
+                                    },
+                                    {
+                                        "date":  "2026-10-09",
+                                        "note":  "[15595c06bb7d079705563c57b2081e0a6601c31e] feat(core): 通讯心跳首批实施与自动化配置接入"
                                     }
                                 ]
                     },
@@ -2062,6 +2066,10 @@
                                     {
                                         "date":  "2026-10-08",
                                         "note":  "[fe30da15b3b63262f8146779875df078c47ac2d3] feat(core): 实现通讯发送事件与宿主发送服务"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[c92d480480ee84c76aead7a32037d11acea77f8a] docs(core): 更新通信管理差异分析与协作任务卡并同步计划看板"
                                     }
                                 ]
                     },

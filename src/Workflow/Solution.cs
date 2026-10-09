@@ -89,6 +89,10 @@ public class Solution : ObservableObject
     /// <summary>Reusable outbound communication event formats.</summary>
     public List<CommunicationSendEventDefinition> CommunicationSendEvents { get; set; } = new();
 
+    public List<CommunicationHeartbeatDefinition> CommunicationHeartbeats { get; set; } = new();
+    public List<CommunicationTriggerDefinition> CommunicationTriggers { get; set; } = new();
+    public CommunicationResponseConfiguration CommunicationResponses { get; set; } = new();
+
     /// <summary>
     /// 数据库配置
     /// </summary>

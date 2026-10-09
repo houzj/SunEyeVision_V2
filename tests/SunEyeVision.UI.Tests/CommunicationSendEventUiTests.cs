@@ -38,6 +38,7 @@ public sealed class CommunicationSendEventUiTests
                 model.AssemblyOutputs.Add(output);
                 output.ApplyBindingSelection("SendEventInputs.in1", "参数列表.in1");
                 var context = new EditorContext { SelectedSendEvent = model }; context.SendEvents.Add(model);
+                model.IsMessageExpanded = true;
                 var view = new CommunicationSendEventsView { DataContext = context };
                 view.Resources.MergedDictionaries.Add(new ResourceDictionary
                 {
@@ -71,7 +72,22 @@ public sealed class CommunicationSendEventUiTests
                 var typeSelector = Assert.Single(VisualDescendants(parameters).OfType<ComboBox>(), box => ReferenceEquals(box.DataContext, input));
                 Assert.Equal(HorizontalAlignment.Center, typeSelector.HorizontalContentAlignment);
                 Assert.Equal(VerticalAlignment.Center, typeSelector.VerticalContentAlignment);
-                Assert.IsType<Button>(view.FindName("SendTestButton"));
+                var sendButton = Assert.IsType<Button>(view.FindName("SendTestButton"));
+                var assemblySendButton = Assert.IsType<Button>(view.FindName("AssemblySendTestButton"));
+                Assert.Same(view.FindName("SendParametersHeader"), sendButton.Parent);
+                Assert.Same(view.FindName("SendAssemblyHeader"), assemblySendButton.Parent);
+                Assert.Equal(Dock.Right, DockPanel.GetDock(sendButton));
+                Assert.Equal(Dock.Right, DockPanel.GetDock(assemblySendButton));
+                Assert.DoesNotContain(VisualDescendants(view).OfType<TextBox>(), box =>
+                    box.GetBindingExpression(TextBox.TextProperty)?.ParentBinding.Path.Path == "SelectedSendEvent.PreviewText");
+                Assert.Single(VisualDescendants(view).OfType<TextBox>(), box =>
+                    box.GetBindingExpression(TextBox.TextProperty)?.ParentBinding.Path.Path == "SelectedSendEvent.HistoryText");
+                model.IsBusy = true;
+                Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
+                Assert.False(sendButton.IsEnabled);
+                Assert.False(assemblySendButton.IsEnabled);
+                model.IsBusy = false;
+                Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
                 Assert.DoesNotContain(VisualDescendants(view).OfType<Button>(), button => Equals(button.Content, "预览") || Equals(button.Content, "保存配置"));
                 Assert.Single(VisualDescendants(view).OfType<DataGrid>(), grid => ReferenceEquals(grid.ItemsSource, model.Parameters));
                 Assert.Equal(Visibility.Visible, inputs.Visibility);
@@ -121,6 +137,8 @@ public sealed class CommunicationSendEventUiTests
                 Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
                 Assert.Equal(Visibility.Collapsed, inputs.Visibility);
                 Assert.Equal(Visibility.Visible, assembly.Visibility);
+                Assert.Equal(Visibility.Visible, assemblySendButton.Visibility);
+                Assert.True(assemblySendButton.IsEnabled);
                 Assert.Same(accentBrush, assemblyTab.BorderBrush);
                 Assert.Same(System.Windows.Media.Brushes.Black, inputTab.Foreground);
                 model.Mode = "Direct";

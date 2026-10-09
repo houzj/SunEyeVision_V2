@@ -68,7 +68,7 @@ namespace SunEyeVision.UI.Shell.Windows
     /// <summary>
     /// 主窗口视图模型
     /// </summary>
-    public class MainWindowViewModel : ViewModelBase, Services.Workflow.INodeResultSink, SunEyeVision.UI.Core.IRootCoordinator
+    public partial class MainWindowViewModel : ViewModelBase, Services.Workflow.INodeResultSink, SunEyeVision.UI.Core.IRootCoordinator
     {
         private string _title = "太阳眼视觉";
         private bool _isRunning = false;
@@ -881,6 +881,7 @@ SplitterPosition = position;
             _executionManager.WorkflowExecutionProgress += OnWorkflowExecutionProgress;
             _executionManager.NodeExecutionCompleted += OnNodeExecutionCompleted;
             _executionManager.ExecutionSnapshotUpdated += OnExecutionSnapshotUpdated;
+            InitializeCommunicationAutomation();
             // 连续执行每轮开始：自动切换开启时推进输入图并刷新运行时参数
 
             // 初始化当前画布类型

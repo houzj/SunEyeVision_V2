@@ -106,7 +106,11 @@ public partial class CommunicationManagerViewModel
         if (_solutionManager.CurrentSolution is { } solution) solution.CommunicationSendEvents = CaptureSendEvents();
     }
 
-    private void SendTargets_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => RefreshSendTargets();
+    private void SendTargets_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        RefreshSendTargets();
+        HeartbeatConfigurationChanged(null, EventArgs.Empty);
+    }
 
     public void AddSendEvent(CommunicationSendEventViewModel definition)
     {

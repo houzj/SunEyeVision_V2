@@ -1,6 +1,6 @@
 ## [{{VERSION}}] - {{DATE}}
 
-> 渠道：{{CHANNEL}}　|　提交：{{COMMIT_SHORT}}　|　本条目由 `installer/Pack-Release.ps1 -AutoVersion` 依据提交历史自动生成
+> 渠道：{{CHANNEL}}　|　提交：{{COMMIT_SHORT}}　|　发布前评审并提交；打包过程只读
 
 ### 新增（feat）
 

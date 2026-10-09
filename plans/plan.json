@@ -2351,7 +2351,7 @@
                         "type":  "module",
                         "layer":  "source",
                         "stage":  "CD",
-                        "status":  "in_progress",
+                        "status":  "done",
                         "start":  "2026-11-16",
                         "end":  "2026-12-04",
                         "goal":  "通讯管理真实可用：TCP 驱动收发数据，位姿成功下发机器人",
@@ -2391,7 +2391,7 @@
                                           "name":  "通信链路测试（协议帧/应答/异常场景）",
                                           "phase":  "测试验证",
                                           "hours":  12,
-                                          "status":  "in_progress",
+                                          "status":  "done",
                                           "week":  "2027-W05"
                                       }
                                   ],
@@ -2446,6 +2446,14 @@
                                     {
                                         "date":  "2026-10-08",
                                         "note":  "[85383291d9ed055068828acc92226386746fb34d] feat(core): 通讯接收解析链路与接收来源目标绑定"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[b86cbd753dcca168a2d269ea593d0feb958acf05] feat(core): 通讯接收历史上限统一为 200 条并自动滚动到最新"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[d703960764e0f1cdd287c8398def759ad638251d] feat(core): 实现通讯发送事件与宿主发送服务"
                                     }
                                 ]
                     },
@@ -2900,6 +2908,10 @@
                                     {
                                         "date":  "2026-09-16",
                                         "note":  "[3425df2acceb27bf9971eced83f4fd9294cb2854] build(installer): 打包脚本与 HALCON 托管程序集部署"
+                                    },
+                                    {
+                                        "date":  "2026-10-09",
+                                        "note":  "[383e7b679156629369263c6a241dbd23b1bbb222] chore(version): 版本声明改用 fileRevision，构建期统一注入发布与包版本"
                                     }
                                 ]
                     },

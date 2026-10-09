@@ -362,6 +362,13 @@
                                 Height="70"
                                 Margin="1"
                                 ToolTip="{Binding Name}">
+                            <Border.ContextMenu>
+                                <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                                             Background="{DynamicResource {x:Static base:ThemeKeys.ContextMenuBackgroundBrush}}"
+                                             Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
+                                    <MenuItem Header="移除图片引用" Click="OnThumbnailRemoveReference"/>
+                                </ContextMenu>
+                            </Border.ContextMenu>
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ThumbnailBackgroundBrush}}"/>

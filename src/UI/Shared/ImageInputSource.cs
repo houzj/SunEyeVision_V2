@@ -199,7 +199,11 @@ namespace SunEyeVision.UI.Shared
             if (_isReadOnly)
                 throw new InvalidOperationException("输入源已锁定为只读，无法移除图像");
 
+            image.CancelThumbnail(); image.ReleaseFullImage(); image.Thumbnail = null;
+            ImagePreviewControl.InvalidateImageCache(image.FilePath);
+            var removedIndex = _images.IndexOf(image);
             _images.Remove(image);
+            if (removedIndex >= 0 && removedIndex < CurrentIndex) CurrentIndex--;
             if (CurrentIndex >= _images.Count)
             {
                 CurrentIndex = _images.Count - 1;
@@ -218,8 +222,10 @@ namespace SunEyeVision.UI.Shared
             if (_isReadOnly)
                 throw new InvalidOperationException("输入源已锁定为只读，无法清空图像");
 
+            foreach (var image in _images) { image.CancelThumbnail(); image.ReleaseFullImage(); image.Thumbnail = null; ImagePreviewControl.InvalidateImageCache(image.FilePath); }
             _images.Clear();
             CurrentIndex = -1;
+            CurrentImageChanged?.Invoke(this, -1);
             OnPropertyChanged(nameof(Count));
             OnPropertyChanged(nameof(HasImages));
             OnPropertyChanged(nameof(GetSelectedImages));
@@ -299,8 +305,11 @@ namespace SunEyeVision.UI.Shared
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
 
+            var selectedPath = config.CurrentIndex >= 0 && config.CurrentIndex < config.FilePaths.Count
+                ? config.FilePaths[config.CurrentIndex] : null;
             var infos = config.FilePaths
-                .Where(p => !string.IsNullOrEmpty(p))
+                .Where(p => !string.IsNullOrEmpty(p) && System.IO.File.Exists(p))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(p => new ImageInfo
                 {
                     FilePath = p,
@@ -309,15 +318,15 @@ namespace SunEyeVision.UI.Shared
                 })
                 .ToList();
 
+            foreach (var oldImage in _images) { oldImage.CancelThumbnail(); oldImage.ReleaseFullImage(); }
             _images.Clear();
             if (infos.Count > 0)
             {
                 _images.AddRange(infos);
             }
 
-            CurrentIndex = config.CurrentIndex >= 0 && config.CurrentIndex < _images.Count
-                ? config.CurrentIndex
-                : -1;
+            CurrentIndex = selectedPath == null ? -1 : infos.FindIndex(image =>
+                string.Equals(image.FilePath, selectedPath, StringComparison.OrdinalIgnoreCase));
             AutoSwitchEnabled = config.AutoSwitchEnabled;
             RunMode = config.RunMode == 1 ? ImageRunMode.运行选择 : ImageRunMode.运行全部;
 
@@ -327,6 +336,24 @@ namespace SunEyeVision.UI.Shared
             OnPropertyChanged(nameof(Count));
             OnPropertyChanged(nameof(HasImages));
             OnPropertyChanged(nameof(GetSelectedImages));
+            NotifyConfigChanged();
+        }
+
+        public void RemoveMissingImages()
+        {
+            foreach (var image in _images.Where(image => !System.IO.File.Exists(image.FilePath)).ToArray()) RemoveImage(image);
+        }
+
+        public void ReplaceImage(ImageInfo image, string path)
+        {
+            if (_isReadOnly) throw new InvalidOperationException("输入源已锁定。");
+            var index = _images.IndexOf(image);
+            if (index < 0) return;
+            image.CancelThumbnail(); image.ReleaseFullImage(); ImagePreviewControl.InvalidateImageCache(image.FilePath);
+            _images[index] = new ImageInfo { FilePath = path, Name = System.IO.Path.GetFileName(path), IsForRun = image.IsForRun };
+            OnPropertyChanged(nameof(CurrentImage));
+            CurrentImageChanged?.Invoke(this, CurrentIndex);
+            NotifyConfigChanged();
         }
     }
 }

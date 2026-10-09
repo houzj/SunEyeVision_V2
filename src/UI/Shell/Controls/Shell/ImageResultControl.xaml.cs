@@ -96,7 +96,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// <summary>
         /// 图像预览请求执行工作流（原 MainWindow.OnWorkflowExecutionRequested）
         /// </summary>
-        private void OnImagePreviewExecutionRequested(object sender, WorkflowExecutionRequestEventArgs e)
+        private async void OnImagePreviewExecutionRequested(object sender, WorkflowExecutionRequestEventArgs e)
         {
             if (_viewModel?.WorkflowTabViewModel?.SelectedTab == null)
             {
@@ -112,7 +112,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
             var workflow = _viewModel.WorkflowTabViewModel.SelectedTab;
             // 手动在预览器选中图片（点击/方向键）：以该图为下一轮 run 起点（首轮不自动推进）
-            RunWorkflowWithImage(workflow, e.ImageInfo, e.Index);
+            await RunWorkflowWithImage(workflow, e.ImageInfo, e.Index);
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>以指定图片作为当前输入执行一次工作流（注入运行时参数后触发执行）</summary>
-        private void RunWorkflowWithImage(WorkflowTabViewModel workflow, ImageInfo image, int index)
+        private async System.Threading.Tasks.Task RunWorkflowWithImage(WorkflowTabViewModel workflow, ImageInfo image, int index)
         {
             // 注入当前图像路径到运行时参数（不设置 ViewModel.CurrentImageIndex）
             _viewModel.PublishRuntimeInput(image.FilePath, index);
@@ -164,8 +164,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             _viewModel.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));
             _viewModel.AddLog(LogLevel.Info, $"路径: {image.FilePath}", LogSource.Runtime(workflowName));
             // 触发工作流执行（DisplayImage 由工作流结果驱动更新）
-            _viewModel.RunWorkflowCommand.Execute(null);
             _viewModel.StatusText = $"运行工作流: {workflow.Name} - {image.Name}";
+            await _viewModel.RunSelectedImageAsync();
         }
 
         /// <summary>

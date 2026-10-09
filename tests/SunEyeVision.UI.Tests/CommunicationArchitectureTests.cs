@@ -93,7 +93,7 @@ public sealed class CommunicationArchitectureTests
         try
         {
             var path = Path.Combine(directory, "test.solution");
-            var repository = new SolutionRepository();
+            var repository = new SolutionRepository(Path.Combine(directory, ".recovery"));
             var solution = new Solution { Version = "first" };
             var legacyDevice = new Communication("legacy", CommunicationType.TCP) { ProtocolKey = "tcp-client" };
             legacyDevice.Settings["autoConnect"] = false;
@@ -103,7 +103,8 @@ public sealed class CommunicationArchitectureTests
             Assert.True(repository.Save(solution, path));
 
             using var current = JsonDocument.Parse(File.ReadAllText(path));
-            using var backup = JsonDocument.Parse(File.ReadAllText(path + ".bak"));
+            using var backup = JsonDocument.Parse(File.ReadAllText(repository.GetRecoveryPath(path)));
+            Assert.False(File.Exists(path + ".bak"));
             Assert.Equal("second", current.RootElement.GetProperty("Version").GetString());
             Assert.Equal("first", backup.RootElement.GetProperty("Version").GetString());
             Assert.DoesNotContain("autoConnect", File.ReadAllText(path));

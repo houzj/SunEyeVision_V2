@@ -70,6 +70,17 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
     {
         private static UILogWriter? _uiLogWriter;
         private static SolutionManager? _solutionManager;
+        private static ApplicationDataPaths? _dataPaths;
+        private static FileLogWriter? _fileLogWriter;
+        public static void ConfigureDataPaths(ApplicationDataPaths paths) => _dataPaths = paths;
+
+        public static void InitializeSolutionManager(ApplicationDataPaths paths)
+        {
+            if (_solutionManager != null) return;
+            _dataPaths = paths;
+            _solutionManager = new SolutionManager(paths);
+            _ = CommunicationService;
+        }
         private static CameraRuntimeComposition? _cameraRuntime;
         private static CommunicationRuntimeComposition? _communicationRuntime;
         private static CommunicationApplicationService? _communicationService;
@@ -156,7 +167,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             // 如果未指定解决方案目录，使用默认目录
             if (string.IsNullOrWhiteSpace(solutionsDirectory))
             {
-                solutionsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "solutions");
+                solutionsDirectory = _dataPaths?.SolutionsDirectory ?? throw new InvalidOperationException("请先选择数据目录。");
             }
 
             // 创建解决方案管理器
@@ -199,9 +210,18 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             // 添加默认日志写入器（确保日志从一开始就有输出）
             // 1. 文件写入器 - 持久化到本地（双轨制：UI显示 + 文件落盘）
             //    日志根目录与 docs/ 平级，位于项目根下 logs/。
-            var logRoot = ResolveProjectRoot() is { } root
-                ? Path.Combine(root, "logs")
-                : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+            var logRoot = _dataPaths?.LogDirectory ?? Path.Combine(Path.GetTempPath(), "SunEyeVision", "startup-logs");
+            if (Directory.Exists(logRoot))
+            {
+                var files = Directory.GetFiles(logRoot, "*.txt", SearchOption.AllDirectories).Select(path => new FileInfo(path)).OrderByDescending(f => f.LastWriteTimeUtc).ToArray();
+                long retained = 0;
+                foreach (var file in files)
+                {
+                    retained += file.Length;
+                    if (file.LastWriteTimeUtc < DateTime.UtcNow.AddDays(-30) || retained > 256L * 1024 * 1024)
+                        try { file.Delete(); } catch (IOException) { }
+                }
+            }
             var fileWriter = new FileLogWriter(logRoot);
             logger.AddWriter(fileWriter);
 

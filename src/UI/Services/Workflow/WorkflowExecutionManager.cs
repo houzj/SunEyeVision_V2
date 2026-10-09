@@ -43,6 +43,39 @@ namespace SunEyeVision.UI.Services.Workflow
         // 否则快捷键、预览图点击或其他直接调用方仍可能并发启动同一个工作流。
         private readonly HashSet<string> _activeWorkflowIds = new();
         private readonly object _lock = new object();
+        private bool _transitionBlocked;
+        private CancellationTokenSource? _solutionRunCts;
+
+        public IDisposable BeginSolutionTransition()
+        {
+            lock (_lock)
+            {
+                if (_transitionBlocked) throw new InvalidOperationException("已有方案切换操作。");
+                _transitionBlocked = true;
+            }
+            return new TransitionLease(() => { lock (_lock) _transitionBlocked = false; });
+        }
+        private sealed class TransitionLease(Action release) : IDisposable
+        {
+            private Action? _release = release;
+            public void Dispose() => Interlocked.Exchange(ref _release, null)?.Invoke();
+        }
+        public async Task StopAndWaitAsync(TimeSpan timeout)
+        {
+            CancellationTokenSource[] sources;
+            lock (_lock)
+            {
+                sources = _cancellationTokens.Values.Concat(_solutionRunCts == null ? Array.Empty<CancellationTokenSource>() : new[] { _solutionRunCts }).Distinct().ToArray();
+            }
+            // Cancellation callbacks may acquire the execution lock; never invoke them while holding it.
+            foreach (var source in sources) { try { source.Cancel(); } catch (ObjectDisposedException) { } }
+            var timer = Stopwatch.StartNew();
+            while (IsAnyRunning())
+            {
+                if (timer.Elapsed > timeout) throw new TimeoutException("工作流尚未停止，已取消方案切换，原方案保持打开。");
+                await Task.Delay(50);
+            }
+        }
         private SynchronizationContext? _synchronizationContext;
 
         /// <summary>
@@ -134,7 +167,8 @@ namespace SunEyeVision.UI.Services.Workflow
         /// <summary>
         /// 执行指定工作流
         /// </summary>
-        public async Task RunSingleAsync(WorkflowTabViewModel workflow, CancellationToken cancellationToken = default)
+        public async Task RunSingleAsync(WorkflowTabViewModel workflow, CancellationToken cancellationToken = default,
+            bool advanceLocalImage = true)
         {
             if (workflow == null)
                 throw new ArgumentNullException(nameof(workflow));
@@ -146,13 +180,16 @@ namespace SunEyeVision.UI.Services.Workflow
                 return;
             }
 
+            using var runCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            lock (_lock) _cancellationTokens[workflowId] = runCancellation;
+            cancellationToken = runCancellation.Token;
             try
             {
                 OnWorkflowExecutionStarted(workflowId);
                 var execution = await ExecuteSingleTriggeredAsync(workflow, cancellationToken);
                 if (execution.Success)
                 {
-                    if (HasLocalImageSource(workflow))
+                    if (advanceLocalImage && HasLocalImageSource(workflow))
                         await _runtimeInputSnapshots.AdvanceAsync(cancellationToken);
                     OnWorkflowExecutionCompleted(workflowId);
                 }
@@ -169,6 +206,7 @@ namespace SunEyeVision.UI.Services.Workflow
             }
             finally
             {
+                lock (_lock) _cancellationTokens.Remove(workflowId);
                 ReleaseExecution(workflowId);
             }
         }
@@ -378,6 +416,15 @@ namespace SunEyeVision.UI.Services.Workflow
             if (solution == null)
                 throw new ArgumentNullException(nameof(solution));
 
+            using var solutionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            lock (_lock)
+            {
+                if (_transitionBlocked || _solutionRunCts != null) throw new InvalidOperationException("已有方案执行或切换操作。");
+                _solutionRunCts = solutionCancellation;
+            }
+            try
+            {
+            cancellationToken = solutionCancellation.Token;
             var tabs = workflows.Where(tab => tab != null).ToList();
             var tabsById = tabs.ToDictionary(tab => tab.RootWorkflowId, StringComparer.Ordinal);
             var plan = SolutionExecutionDependencyGraph.Compile(solution);
@@ -438,6 +485,8 @@ namespace SunEyeVision.UI.Services.Workflow
                     ReleaseExecution(workflowId);
                 }
             }
+            }
+            finally { lock (_lock) _solutionRunCts = null; }
         }
 
         /// <summary>
@@ -486,7 +535,7 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             lock (_lock)
             {
-                return _activeWorkflowIds.Count > 0;
+                return _activeWorkflowIds.Count > 0 || _solutionRunCts != null;
             }
         }
 
@@ -494,7 +543,7 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             lock (_lock)
             {
-                return _activeWorkflowIds.Add(workflowId);
+                return !_transitionBlocked && _activeWorkflowIds.Add(workflowId);
             }
         }
 

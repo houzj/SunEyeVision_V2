@@ -94,6 +94,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         {
             get
             {
+                if (!File.Exists(FilePath)) { _fullImage = null; _isFullImageLoaded = false; return null; }
                 if (!_isFullImageLoaded && _fullImage == null && !string.IsNullOrEmpty(FilePath))
                 {
                     _fullImage = ImagePreviewControl.LoadImageOptimized(FilePath);
@@ -115,6 +116,9 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         /// <summary>
         /// 是否已加载全分辨率图像
         /// </summary>
+        public bool IsMissing => !File.Exists(FilePath);
+        public string FileStatus => IsMissing ? "图像文件不存在" : FilePath;
+
         public bool IsFullImageLoaded => _isFullImageLoaded && _fullImage != null;
 
         public int DisplayIndex
@@ -214,6 +218,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             _thumbnailCts?.Cancel();
             _thumbnailCts?.Dispose();
             _thumbnailCts = null;
+            if (ThumbnailState == ThumbnailState.Loading) ThumbnailState = ThumbnailState.Pending;
         }
 
         /// <summary>
@@ -270,6 +275,8 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         /// </summary>
         public BitmapSource? Get(string filePath)
         {
+            lock (_cacheMap)
+            {
             if (_cacheMap.TryGetValue(filePath, out var node))
             {
                 _lruList.Remove(node);
@@ -277,6 +284,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
                 return node.Value.Bitmap;
             }
             return null;
+            }
         }
 
         /// <summary>
@@ -284,6 +292,8 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         /// </summary>
         public void Set(string filePath, BitmapSource? bitmap)
         {
+            lock (_cacheMap)
+            {
             if (bitmap == null || _cacheMap.ContainsKey(filePath)) return;
 
             var entry = new CacheEntry(filePath, bitmap);
@@ -299,12 +309,22 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
                     _lruList.RemoveLast();
                 }
             }
+            }
+        }
+
+        public void Remove(string path)
+        {
+            lock (_cacheMap)
+                if (_cacheMap.Remove(path, out var node)) _lruList.Remove(node);
         }
 
         public void Clear()
         {
-            _cacheMap.Clear();
-            _lruList.Clear();
+            lock (_cacheMap)
+            {
+                _cacheMap.Clear();
+                _lruList.Clear();
+            }
         }
 
         private class CacheEntry
@@ -373,7 +393,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         public bool AutoSwitchEnabled
         {
             get => (bool)GetValue(AutoSwitchEnabledProperty);
-            set => SetValue(AutoSwitchEnabledProperty, value);
+            set => SetCurrentValue(AutoSwitchEnabledProperty, value);
         }
 
         /// <summary>
@@ -382,7 +402,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         public int CurrentImageIndex
         {
             get => (int)GetValue(CurrentImageIndexProperty);
-            set => SetValue(CurrentImageIndexProperty, value);
+            set => SetCurrentValue(CurrentImageIndexProperty, value);
         }
 
         /// <summary>
@@ -409,7 +429,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         public ImageRunMode ImageRunMode
         {
             get => (ImageRunMode)GetValue(ImageRunModeProperty);
-            set => SetValue(ImageRunModeProperty, value);
+            set => SetCurrentValue(ImageRunModeProperty, value);
         }
 
         /// <summary>
@@ -606,8 +626,11 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
+            _refreshDebounceTimer.Stop();
+            if (_thumbnailListBox != null) _thumbnailListBox.PreviewKeyDown -= OnThumbnailPreviewKeyDown;
             _thumbnailListBox = null;
-            ImageCollection?.Clear();
+            // Unloading a view must not clear the persisted input source.
+            if (ImageCollection != null) foreach (var image in ImageCollection) image.CancelThumbnail();
         }
 
         #region 命令实现
@@ -693,7 +716,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
                 StringComparer.OrdinalIgnoreCase);
 
             var allImages = fileNames
-                .Where(f => !string.IsNullOrEmpty(f))
+                .Where(f => !string.IsNullOrEmpty(f) && File.Exists(f))
                 .Where(f => existing.Add(f))   // ★ 去重：Add 返回 false 表示已存在，跳过
                 .Select(f => new ImageInfo
                 {
@@ -703,8 +726,9 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
                 .ToArray();
 
             // 写真相源 _images（触发 CollectionChanged → OneWay 绑定自动刷新 ImageCollection）
+            if (allImages.Length == 0) return;
             source.AddImages(allImages);
-            if (source.Count > 0)
+            if (allImages.Length > 0)
             {
                 CurrentImageIndex = source.Count - allImages.Length;
             }
@@ -753,50 +777,38 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
             source.RemoveImage(imageInfo);
 
-            // 同步控件选中索引（RemoveImage 内部已修正 CurrentIndex，此处同步 DP）
-            if (source.Count == 0)
-            {
-                CurrentImageIndex = -1;
-            }
-            else if (CurrentImageIndex >= source.Count)
-            {
-                CurrentImageIndex = source.Count - 1;
-            }
-            else if (CurrentImageIndex > index)
-            {
-                CurrentImageIndex--;
-            }
+            // The truth source already adjusted the index; do not decrement twice.
+            CurrentImageIndex = source.CurrentIndex;
 
             RefreshImageDisplayState();
         }
 
         private void ExecuteClearAll()
         {
-            if (ImageCollection.Count == 0) return;
-
-            var result = ThemeMessageDialog.Show(
-                $"确定要清除所有 {ImageCollection.Count} 张图像吗？",
-                "确认清除",
-                MessageBoxButton.YesNo,
-                ThemeMessageDialog.MessageIcon.Question);
-
-            if (result == MessageBoxResult.Yes)
+            if (!CanExecuteClearAll()) return;
+            if (ThemeMessageDialog.Show("清空所有图像引用？不会删除磁盘文件。", "清空图像",
+                MessageBoxButton.YesNo, ThemeMessageDialog.MessageIcon.Question) == MessageBoxResult.Yes)
+                ClearInputReferences();
+        }
+        public void ClearInputReferences()
+        {
+            if (ActiveInputSource != null) ActiveInputSource.ClearImages();
+            else
             {
-                // ★ 走真相源 ActiveInputSource.ClearImages：清 _images 并触发 ConfigChanged 实时写回节点。
-                var source = ActiveInputSource;
-                if (source != null)
-                {
-                    source.ClearImages();
-                }
-                else
-                {
-                    ImageCollection.Clear();
-                }
-                CurrentImageIndex = -1;
+                foreach (var image in ImageCollection) { image.CancelThumbnail(); image.ReleaseFullImage(); InvalidateImageCache(image.FilePath); }
+                ImageCollection.Clear();
             }
+            SetCurrentValue(CurrentImageIndexProperty, -1);
+            RefreshImageDisplayState();
+            CommandManager.InvalidateRequerySuggested();
+        }
+        public static void InvalidateImageCache(string path)
+        {
+            s_fullImageCache.Remove(path);
+            lock (s_thumbnailLock) s_thumbnailCache.Remove(path);
         }
 
-        private bool CanExecuteClearAll() => ImageCollection?.Count > 0;
+        private bool CanExecuteClearAll() => (ActiveInputSource?.Count ?? ImageCollection?.Count ?? 0) > 0 || CurrentImageIndex >= 0;
 
         #endregion
 
@@ -820,8 +832,17 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         private static void OnImageCollectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = (ImagePreviewControl)d;
+            if (e.OldValue is BatchObservableCollection<ImageInfo> oldCollection) oldCollection.CollectionChanged -= control.OnBoundCollectionChanged;
+            if (e.NewValue is BatchObservableCollection<ImageInfo> newCollection) newCollection.CollectionChanged += control.OnBoundCollectionChanged;
             control.UpdateImageSelection();
             control.OnPropertyChanged(nameof(ImageCountDisplay));
+            CommandManager.InvalidateRequerySuggested();
+        }
+        private void OnBoundCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(ImageCountDisplay));
+            CommandManager.InvalidateRequerySuggested();
+            RefreshImageDisplayState();
         }
 
         private static void OnImageRunModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs _)
@@ -877,8 +898,8 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             if (ImageCollection == null || ImageCollection.Count == 0)
                 return new List<ImageInfo>();
             if (ImageRunMode == ImageRunMode.运行选择)
-                return ImageCollection.Where(i => i.IsForRun).ToList();
-            return ImageCollection.ToList();
+                return ImageCollection.Where(i => i.IsForRun && File.Exists(i.FilePath)).ToList();
+            return ImageCollection.Where(i => File.Exists(i.FilePath)).ToList();
         }
 
         /// <summary>
@@ -927,16 +948,27 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
         /// <summary>
         /// 运行选择模式：方向键只在"勾选（IsForRun）应运行图"之间导航，跳过未勾选图。
-        /// 非运行选择模式不拦截，交 ListBox 默认导航。
+        /// 所有模式均从明确的键盘入口请求执行，选中变化本身不触发执行。
         /// </summary>
         private void OnThumbnailPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (ImageRunMode != ImageRunMode.运行选择) return;
             if (_thumbnailListBox == null) return;
+            for (var source = e.OriginalSource as DependencyObject; source != null;)
+            {
+                if (source is System.Windows.Controls.Primitives.ButtonBase) return;
+                source = source is Visual ? VisualTreeHelper.GetParent(source) : LogicalTreeHelper.GetParent(source);
+            }
 
             bool goNext = e.Key == Key.Right || e.Key == Key.Down;
             bool goPrev = e.Key == Key.Left || e.Key == Key.Up;
-            if (!goNext && !goPrev) return;
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                if (_thumbnailListBox.SelectedItem is ImageInfo selected &&
+                    (ImageRunMode != ImageRunMode.运行选择 || selected.IsForRun))
+                    RequestWorkflowExecution(selected, ImageCollection.IndexOf(selected));
+                e.Handled = true; return;
+            }
+            if (!goNext && !goPrev && e.Key != Key.Home && e.Key != Key.End) return;
 
             var runnables = GetRunnableImages();
             if (runnables.Count == 0) return;
@@ -953,7 +985,9 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             }
 
             int target;
-            if (pos < 0) target = goNext ? 0 : -1;
+            if (e.Key == Key.Home) target = 0;
+            else if (e.Key == Key.End) target = runnables.Count - 1;
+            else if (pos < 0) target = goNext ? 0 : -1;
             else target = goNext ? pos + 1 : pos - 1;
 
             if (target < 0 || target >= runnables.Count)
@@ -965,12 +999,19 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
             var targetImage = runnables[target];
             e.Handled = true;
-            _thumbnailListBox.SelectedItem = targetImage;   // 触发 SelectionChanged → Released 分支执行该图
+            _thumbnailListBox.SelectedItem = targetImage;
             _thumbnailListBox.ScrollIntoView(targetImage);
+            RequestWorkflowExecution(targetImage, ImageCollection.IndexOf(targetImage));
+        }
+
+        private void OnThumbnailRemoveReference(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem { DataContext: ImageInfo image }) ExecuteDeleteSingleImage(image);
         }
 
         private void OnThumbnailClick(object sender, MouseButtonEventArgs e)
         {
+            if (e.ChangedButton != MouseButton.Left) return;
             // 如果点击的是删除按钮或 CheckBox，跳过处理
             DependencyObject? current = e.OriginalSource as DependencyObject;
             while (current != null)
@@ -996,6 +1037,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
         private void RequestWorkflowExecution(ImageInfo imageInfo, int index)
         {
+            if (index < 0 || !File.Exists(imageInfo.FilePath)) return;
             CurrentImageIndex = index;
             WorkflowExecutionRequested?.Invoke(this, new WorkflowExecutionRequestEventArgs
             {
@@ -1014,20 +1056,8 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             int index = ImageCollection?.IndexOf(selectedImage) ?? -1;
             if (index < 0) return;
 
-            // 键盘方向键/空格导航产生的选中变化（鼠标按下期间触发的是点击路径，
-            // 由 OnThumbnailClick 请求执行，此处跳过避免双触发）：与鼠标点击对齐，
-            // 直接请求工作流执行当前选中的图片。
-            if (Mouse.LeftButton == MouseButtonState.Released)
-            {
-                if (ImageRunMode == ImageRunMode.运行选择 && !selectedImage.IsForRun)
-                {
-                    CurrentImageIndex = index;   // 仅同步高亮，不执行
-                    return;
-                }
-                RequestWorkflowExecution(selectedImage, index);
-                return;
-            }
-
+            // Selection may come from right-click, binding, restore or keyboard.
+            // Only explicit left-click/key handlers may request execution.
             CurrentImageIndex = index;
         }
 

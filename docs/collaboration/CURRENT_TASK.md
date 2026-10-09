@@ -1,5 +1,126 @@
 # 当前协作任务
 
+## 2026-10-09 桌面快捷方式实际图标修复
+
+- 用户现场截图仍为透明 Logo。复核桌面 SunEyeVision.UI - 快捷方式.lnk 目标已是当前 dev/Debug，但 IconLocation=",0" 自动从 EXE 取图标。按既有桌面图标替换要求，先将原 lnk 备份到 artifacts/validation/desktop-icon/shortcut-before-explicit-icon-20261009-a4684f9c50a54d0ca6c3df977e2eeef4.lnk，再仅将 IconLocation 显式设为当前 dev/Debug/Icons/suneyevision.ico,0；读回目标、参数、工作目录保持不变。定向 SHChangeNotify UPDATEITEM/路径/FLUSH，不重启 Explorer、不删除缓存或其他快捷方式。通过 Windows SHGetFileInfo 对该 lnk 读取实际 Shell 图标为 48x48，顶部背景 A255/R220/G239/B252，确认 Shell 已返回带冰蓝背景图标，屏幕实际重绘仍请用户确认。未改程序代码、未构建/打包/增号，原文件可从备份恢复。
+
+## 2026-10-09 解决方案文件图标更新（实施中）
+
+- 用户明确授权“切换”，已将本机 .solution 临时切到当前 Debug：确认仅 .solution 使用 Applications\SunEyeVision.UI.exe 后，仅修改 HKCU Software\Classes 下该应用身份的 shell\open\command 默认值与 DefaultIcon 默认值，分别为当前 dev/Debug/SunEyeVision.UI.exe "%1" 和 dev/Debug/Icons/solution.ico,0。原值/键存在性/类型及新值备份于 artifacts/validation/solution-icon/association-debug-backup-20261009-7bd165.json；写前检查旧值未变化，写失败恢复原默认值。未改 UserChoice/Hash/扩展名默认身份、HKLM 安装位置或其他扩展名，未启动真实方案或设备。已通知 Shell 刷新；Windows AssocQueryString 指定 open 动作读取 COMMAND/EXECUTABLE/DEFAULTICON 均 S_OK 且指向新 Debug（未指定动作的一次 EXECUTABLE 查询返回 NO_ASSOCIATION，不能以此声称所有查询成功）。此为用户授权的本机测试切换，不修改产品内“开发版不自动劫持关联”规则；桌面视觉刷新/双击实际方案待用户测试，正式安装/修复可能更新此应用身份，未来需按发布状态恢复。未构建/打包/增号，未触及方案内容。
+
+- 资源交付完成：SolutionIcon 为折角文件页 + 共用 C 几何；solution.ico 16/24/32/48/64/128/256 七帧，19162 字节，已部署 dev/Debug/Icons，预览 artifacts/design/branding/c-logo/solution-icon-preview.png。Debug UI 编译及 43 项图标/关于/方案管理回归通过，TRX artifacts/validation/solution-icon/solution-icon.trx；隔离 UI Release 0 错误、930 警告，git diff --check 通过。首次嵌套单项 StaticResource 隐式集合解析失败，改显式 DrawingCollection 后通过；导出器补 Stop 与原子替换，避免解析失败覆盖有效 ICO。应用图标/内部透明 Logo 不变，未打包/增号/提交/推送；可见设计器和实际 Explorer 文件显示待人工验收。
+- 系统关联只读发现：UserChoice ProgId=Applications\SunEyeVision.UI.exe，有效打开命令仍指 D:\MyWork\SunEyeVision_Dev\Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.exe（文件存在），没有显式 DefaultIcon；不是当前 V2 dev/Debug。因此本轮资源更新不能宣称本机桌面文件图标或双击目标已更新。未写注册表、UserChoice 或安装目录；是否临时将本机关联转到当前 Debug 测试版需用户明确确认，默认保留已有安装关联防劫持策略。
+
+- 用户补充解决方案文件图标；新增独立折角文件页 + 同源 C 深蓝/金色 Logo 的 SolutionIcon 原生矢量，输出 Icons/solution.ico 七帧及 PNG 预览。文件关联服务与安装器已引用此物理路径，沿用既有内容部署；不改系统注册表/用户默认关联，Debug 防劫持安装版关联规则保留。仅资源与导出脚本及测试，应用带背景图标和内部透明 Logo 不变，不打包/增号。发现独立旧 installer/Build-Icons.ps1 与安装包 SetupIcon 的默认源仍指旧 Logo，此次不修改发布规则；后续用户批准发布时需统一安装包图标源，不能让旧手动脚本覆盖新 solution.ico。
+
+## 2026-10-09 桌面 Logo 带背景预览（待确认）
+
+- 已完成正式替换：Logo.xaml 拆出冻结共享 BrandDrawing，透明 BrandLogo 不变，新增冰蓝圆角 AppIcon；Export-ApplicationIcon.ps1 从 AppIcon 原 512 画布生成七帧 suneyevision.ico。Debug UI 编译及 17 项图标/关于/单实例回归通过（含所有 ICO 帧实色背景、透明圆角、渐变及与内部透明图形同源断言）；TRX artifacts/validation/desktop-icon/desktop-icon.trx。隔离 UI Release 0 错误、928 警告；git diff --check 通过。实际从 dev/Debug/SunEyeVision.UI.exe 用 Windows ExtractIconEx 提取 48x48 图标，顶部背景 A=255/R220/G239/B252，确认 EXE 内嵌带背景图标，而非只改旁置 ICO。VS 设计时 ApplicationIcon/TargetPath 查询通过，可见设计器及用户桌面缓存显示仍待人工验收。正式 Debug 已更新，程序内部四处透明 Logo 不变，未修改现有用户快捷方式/图标缓存/安装版、不打包/增号/提交/推送；保留原稿、基线和单写入者不变。
+
+- 用户已确认冰蓝背景稿并要求替换。实施为单独 AppIcon 矢量资源，复用同一 BrandDrawing；四处界面仍使用透明 BrandLogo，只有可执行/任务栏/桌面 ICO 加背景。原几何与色板不变，不动工作流、单实例、SDK、安装发布规则。生成 16/24/32/48/64/128/256 帧 ICO，按原 512 画布保持圆角外透明。源 SVG 收入 src/UI/Icons/suneyevision-app-icon.svg；本轮将构建 Debug 验证，不打包、不增号，保留此前全部变更。
+
+- 用户认为浅灰/极浅冰蓝底板变化不明显，要求直接看带背景 Logo。沿用已确认 C 版深蓝/金色/白 Ai 原生几何，新增明确冰蓝渐变圆角底板（#E8F6FF/#B7DAF2/#77B0D9）及细描边，无光晕/模糊。SVG 与实际渲染 PNG 位于 artifacts/design/branding/c-logo/suneyevision-c-background-preview；本轮仅预览，不更换应用资源或 ICO、不构建/打包/增号，保留此前稿件及全部源代码变更。
+
+## 2026-10-09 单实例与旧进程清理（实施中）
+
+- 最终交付：单实例 UI 入口与 IPC 已实施；同一用户/登录会话共享身份，不按目录或版本放行第二实例。重复启动激活可见窗口，方案路径经已有停止/保存/身份冲突/切换流程处理；启动选择、模态框、准备切换、退出及无响应均拒绝新方案或给出提示，第二实例不会进入设备初始化；过期 IPC 不迟到切换，准备转换新增重入保护并在 finally 复位。窗口关闭确认后标记 Closing，后台实例锁持有到进程结束，原卸载保护保持不变。本轮未改设备释放超时策略，App.OnExit 同步等待风险仍需独立定位，不能宣称全部退出风险已解决。
+- 验证：最终全量 Debug 成功（0 错误、1010 警告），dev/Debug/SunEyeVision.UI.exe 更新；隔离 UI Release 成功（0 错误、1041 警告）。82 项相关回归通过（含 10 项单实例与重入/转换链回归、卸载锁、方案/Logo/图像），TRX artifacts/validation/single-instance/single-instance-final.trx。四项跨进程检查通过：互斥及路径转交、关闭拒绝、退出后重新取得锁、真实 Debug 第二实例 PID87996 转交后 exit=0；真实程序走启动前拒绝分支，不载入真实方案、不连接设备、不写真实用户配置。结果 artifacts/validation/single-instance/cross-process-results.txt；测试宿主首次直接程序集引用缺失 System.Text.Json10，改完整 ProjectReference 后通过，其异常留下的测试快照 PID78656/88640 已精确核对测试路径与参数并结束，后续宿主受控树清理。不得把初始宿主依赖失败称为产品验证通过。
+- 环境复核：旧六个 SunEyeVision PID 与本轮两个测试快照均通过原生进程 WaitForSingleObject(0) 确认为 Exited；未终止其他应用、未删除方案/配置/资源。外部句柄持有的已退出系统对象仍可被任务列表枚举，不能保证列表条目清空，但没有这些旧实例继续运行。git diff --check 通过，VS 设计时属性查询通过；可见设计器、实际窗口唤醒和真实方案保存取消/设备退出均待用户现场验收。未打包/增号/提交/推送，基线及单写入者不变；跨 AI 交接前仍按模板创建明确临时提交。
+
+- 用户明确要求实施单实例并清理旧残留后 Debug 测试；Codex 单写入者，基线 main/d703960764e0f1cdd287c8398def759ad638251d，保留此前改动，未提交/推送。六个精确 PID 已核对名称/日期/时段：五个系统等待对象已退出（46004/60576/28256/72988/81700），85836 唯一未结束，已按用户授权 TerminateProcess 成功并等待到退出；不触及其他应用、不删除文件。已退出对象被外部持有时仍可能被列表枚举，不能宣称系统列表完全空。
+- 跨模块评估：新增 UI 启动前互斥与当前用户命名管道，限定同一 Windows 用户/登录会话、跨安装路径版本统一标识；独立后台线程持有实例互斥，避免 async 线程归属错误，保持直到进程结束。原卸载维护 Running/Maintenance 标记及安装脚本不改。重复实例只转交激活/方案路径，不初始化设备；IPC 限长度/期限/当前用户，忙碌/关闭拒绝，UI 只调用已有停止/保存/方案切换流程，不直接调度工作流。设备退出释放超时改造不在本轮范围，禁止自动强杀无响应主实例。无在线更新、打包、增号。
+
+## 2026-10-09 C 版 Logo 透明与主题适配
+
+- 最终交付：四处界面采用同一个原生 DrawingImage（Resources/Branding/Logo.xaml），源 SVG 已保存 src/UI/Icons/suneyevision-logo.svg；亮暗主题均保留用户选定深蓝 #0964AC/金色 #F2AE16/白色 Ai，透明无滤镜。多尺寸 suneyevision.ico 已作为 ApplicationIcon，旧资源保留。UI 隔离 Release 编译 0 错误、1056 警告；正常全量 Debug 最终 0 错误、1004 警告，dev/Debug/SunEyeVision.UI.exe 已更新。Logo/关于/管理器最终回归 31/31 通过，TRX artifacts/validation/c-logo-tests/c-logo-verified.trx；独立测试宿主补齐 WPF pack 注册以消除测试顺序依赖。实际亮暗 Logo 离屏预览已核对，关于窗口实际 Logo 类型断言通过；VS 设计时 ApplicationIcon/TargetPath 查询通过，可见设计器和现场运行效果待用户验收。未打包、增号、提交、推送；未主动启动真实程序。首次 Debug 遇 PID85484 锁定失败，用户要求关闭时该 PID 已不存在，未实际杀进程，随后重构建通过。
+
+- 用户追问旧 PID 残留：本轮只读诊断、不修改退出实现、不清理进程。六 PID 来源于旧测试链：父 PID85368/85792 分别与 _capture_log.txt（11:01:48 启动截图）/_capture_log2.txt（11:05:46 启动截图）一致；后三个命令行指向旧 src/UI/bin/Debug/net9.0-windows 可执行程序及 1.solution，非当前 dev/Debug。原生 OpenProcess/GetExitCodeProcess/WaitForSingleObject(0) 检查：46004/60576/28256 的进程对象已 signaled（退出），虽然 exitcode=259，因此不可单凭 STILL_ACTIVE 判定；72988/85836/81700 返回 WAIT_TIMEOUT，未完成退出。Win32/.NET 未枚举到后三者线程，实际卡住位置和暂停施加来源未证实，不能归因正常关闭泄漏。当前 App.OnExit 同步无总超时等待相机/通讯释放，存在阻塞风险但未证实为本次原因；来源链明确，根因仍需具体挂起/退出现场或堆栈确认。Microsoft 官方进程终止/等待对象说明已核对。不要将六 PID 一概当作正在运行或一概当作已退出。
+
+- 当前追加实施：用户选定亮色版深蓝/金色，所有主题统一该配色，要求正式应用并构建 Debug。跨模块评估：Logo 为 UI 独立矢量资源，不修改 ThemeKeys/SDK 色板、插件、工作流或安装发布规则；AppResources 合入原生 DrawingImage，四处品牌图像消费同一资源。Windows 可执行/任务栏图标从同源矢量导出 16/24/32/48/64/128/256 透明 ICO。只改应用品牌资源和 UI 引用，保留全部旧稿与工作区变更；未打包/增号。验证及构建结果待完成补记。
+
+- 用户选择 C 流线智眼，要求透明并适配主题。使用 imagegen 技能尝试透明提取及亮暗两版，真实 Alpha 已验证，但生成结果含非预期光晕，不作为正式交付；转为按 C 轮廓手工重绘纯路径/圆形 SVG，同一几何亮暗两套蓝金色，Ai 采用不透明白色。文件 artifacts/design/branding/c-logo/suneyevision-c-light.svg 与 dark 对应文件；透明 PNG 与主题底预览由 Render-CLogo.ps1 实际渲染。提示与制作说明 production-record.json。保留原稿，不替换软件资源、不构建/打包/增号；小尺寸应用图标及正式集成未实施。当前仍 Codex 单写入者，基线不变。
+
+## 2026-10-09 矢量 Logo 设计提案（待用户确认）
+
+- 用户要求先提高设计质量、四元素差异较大方案并参考同类成熟品牌。本轮使用 imagegen 技能及内置图像工具，四个初始概念 A 留白融合/B 光束解析/C 流线生长/D 几何识别；C 初稿像植物、D 初稿像光圈，定向修订为 C 流线智眼（太阳内 AI 留白）、D 几何识别（两块眼形与特征切口）。精选 A/B/C/D 为 PNG 概念图，不是 SVG，不替换软件正式资源；源提示/修订提示/官方参考来源保存 artifacts/design/branding/imagegen-20261009/prompts-and-research.json。参考 OpenCV 官方媒体包（https://opencv.org/media-kit/）、MVTec 软件资料（https://www.mvtec.com/press/press-material）、NVIDIA 品牌规范（https://www.nvidia.com/en-us/about-nvidia/legal-info/logo-brand-usage/，仅一般留白/尺寸/单色规范，不借用硬件意象或商标）及 Roboflow 视觉 AI 定位（https://roboflow.com/press）。computer-use 浏览器视觉检查两次 helper_unknown_error 失败，已改官方网页/媒体资料研究，不能宣称全部参考 Logo 都完成截图审查。四元素以眼为主、太阳为焦点、光与智能结合结构，避免拼四图标；小尺寸/单色/亮暗测试和最终矢量重绘留待选择后实施。未构建/打包/增号，旧稿均保留。
+
+- 用户认为光与智能张力不足，要求多个方案。新增四个独立方向：A 光束解码（斜向入射/识别焦点/像素输出）、B 神经光场（特征网格/聚光）、C SV 光轨（品牌字母/光轨/数字化）、D 像素光谱（光流/图像矩阵/高亮特征）。纯 SVG 源及同名 512 PNG 位于 artifacts/design/branding/alternatives/；Render-Comparison.ps1 生成 comparison.png，四版实际统一尺寸对比图已核对。保留全部旧稿，未更换正式 Logo 或修改运行代码、未构建/打包/增号；等待用户选择方向再深化。
+
+- 用户要求视觉软件而非硬件意象，并同时包含光、视觉、智能、科技。第三版“光智视域”已完成：两道渐变光带形成抽象视域，内部特征网格汇聚至明亮识别核心；不使用镜头、光圈、芯片或引脚。文件 artifacts/design/branding/suneyevision-light-intelligence.svg 与 suneyevision-light-intelligence-icon.svg；同名 PNG 为实际渲染预览，图标版已核对。仍为待确认设计稿，保留前两版、不替换正式资源、不构建/打包/增号。
+
+- 用户认为第一版偏通用眼睛图标，要求同时体现智能和视觉。第二版已制作：六叶镜头光圈环绕中央芯片，芯片内四个神经连接节点；蓝/青/绿色、透明版及深蓝应用图标版。源文件 artifacts/design/branding/suneyevision-intelligent-vision.svg 与 suneyevision-intelligent-vision-icon.svg，同名 PNG 为实际渲染预览，图标版已视觉核对。保留第一版；渲染脚本增加 Names 参数，不改程序资源，不构建/打包/增号。第二版仍为待确认设计提案。
+
+- 用户请求设计矢量 Logo，已沿用蓝青色和光学之眼意象制作原创几何提案：眼睛轮廓、镜头核心、三条日光线。透明版 suneyevision-logo-concept.svg 与深色应用图标版 suneyevision-app-icon-concept.svg 保存于 artifacts/design/branding/；均为纯路径、圆形、渐变，无位图、字体依赖或模糊滤镜。
+- 附 Render-Concept.ps1 将矢量提案渲染为同名 512 PNG 供预览；两版实际预览已核对。SVG 为可编辑源文件，PNG 仅用于沟通预览。此为设计草案，不代表品牌定稿；小尺寸 ICO 简化及 WPF DrawingImage 适配留待用户确认后实施。
+- 未替换 app_logo.ico、应用图标或任何 UI 引用，未构建、打包、增号、操作真实方案数据；此前代码及测试成果保留，单写入者及基线不变，未提交推送。
+
+
+## 2026-10-09 图像预览器交互与失效引用优化
+
+- 最终构建：全量 Debug 成功，0 错误、772 警告，dev/Debug/SunEyeVision.UI.exe 已更新。本节下文“构建进行中”为过程记录，当前已完成，等待用户现场测试；未创建安装包、未递增版本。
+
+- 当前执行者 Codex，单写入者；基线 main/d703960764e0f1cdd287c8398def759ad638251d；保留此前全部改动，未提交/推送。范围：ImageInputSource、ImagePreviewControl、ImageResultControl、MainWindowViewModel、WorkflowExecutionManager 及相关 UI 测试。修改执行前已检查请求入口、输入快照、单次/连续执行和成功推进链：UI 只发起明确请求，执行管理器通过每次请求的 advanceLocalImage 参数决定是否推进；不引入全局临时开关，不改 SDK/插件/工作流引擎契约，连续运行和执行按钮默认策略不变。
+- 已实施：添加/恢复时过滤不存在的路径，恢复按原选中路径重映射索引，选中图片失效时为 -1；原配置对象不就地改写，正常保存使用有效列表。移除预览器“移除失效/定位”按钮及命令；保留兼容输入源 API，不再提供 UI 入口。普通 SelectionChanged 只同步高亮；左键和明确键盘入口各请求一次，右键仅选中并提供主题化“移除图片引用”，不执行。手动选图执行不推进，默认成功执行才允许推进，失败/取消不推进；正在执行时拒绝新的执行请求，不改变正在运行的输入快照。索引、模式、自动切换使用 SetCurrentValue 保留双向绑定，移除单图只采用输入源已修正的索引，避免重复扣减；重复/无效添加不改索引或配置。引用操作不删除磁盘文件。
+- 验证：33 项相关回归通过后增加双向绑定/移除身份回归，最终更广泛 Debug 集成 190/190 通过（管理器含本轮 5 项新增回归）；TRX：artifacts/validation/image-preview-policy/tests/houzhongjie_SZDKSNB076_2026-10-09_11_10_01_net9.0.trx；git diff --check 通过。测试提供合法隔离参数及测试工具，临时方案服务/工具注册均还原；没有读取真实方案或连接真实相机。当前全量 Debug 构建进行中，完成后记录最终结果。版本仍 2.0.0.7_alpha，未打包/增号；可见 VS 设计器和现场鼠标/键盘/真实节点运行需用户验收。
+
+
+## 2026-10-09 当前实施：恢复旧版卡片框架与右键交互
+
+- 卡片等高最终构建：用户再次确认关闭并保持关闭后，重试全量 Debug 成功，0 错误、772 警告；dev/Debug/SunEyeVision.UI.exe 为本轮等高版本，可开始现场测试。以下首次构建文件占用为过程记录，已解除。21/21 管理器回归及亮暗实际渲染通过，未打包、未增号。
+
+- 卡片等高追加修复：用户反馈有/无描述的卡片参差不齐，统一 SolutionCardPanel 的 CardHeight=112 逻辑像素、行距=12，排版不再根据描述改变行高，Arrange 使用统一高度；描述 TextBlock 固定保留 16 高度，即使为空也不折叠，修改时间及状态基线保持一致。只修改面板、管理器描述布局及新增等高回归；隔离 Debug 管理器测试 21/21 通过，亮暗 1040 实际渲染已核对，预览目录 solution-cards-uniform；git diff --check 通过，版本仍 revision=7。用户先确认关闭后启动正常全量 Debug 构建，期间用户再次启动程序（PID 74328），Threshold 插件 DLL 被锁，最终 MSB3027/MSB3021：2 错误、1014 警告。主程序已更新，但全量 Debug 未成功，已请用户再次关闭并保持关闭后重试；不得宣称本轮全量构建通过，不强制结束进程，不打包/增号/操作真实方案数据。用户现场等高验收及可见 VS 设计器待验证，单写入者/基线不变、未提交推送。
+
+- 10:12 现场空引用后续修复：用户完整堆栈明确为 SolutionCardPanel.MeasureOverride 原第 60 行，generator.GeneratorPositionFromIndex 调用时 generator 为 null；不是前轮 WindowChrome 跨线程缺陷。原实现先读取 ItemContainerGenerator，再通过 InternalChildren 触发首次宿主连接，导致局部变量仍保留 null。现调整为先访问 InternalChildren 建立连接、再读取生成器，并保护尚未连接面板。只修改 SolutionCardPanel 与 SolutionManagerCardTests：重开回归移除 Render 预热，增加最小 ItemsPresenter 宿主首次测量测试，断言非空实际卡片；测试宿主显式提供数据源，避免未加载绑定的假空列表；撤回试验性的构造时 IsItemsHost 赋值，保留框架模板管理以免影响主题复用。20/20 Debug 管理器回归通过；全量 Debug 0 错误、838 警告，dev/Debug/SunEyeVision.UI.exe 已更新，19 插件目录保留，git diff --check 通过。用户已明确关闭程序后更新，未强制结束进程。未打包/增号/改真实配置；version.json 仍 revision=7。现场“打开方案→主界面重新打开管理器”仍待用户复测，可见 VS 设计器未验证；旧预渲染测试覆盖不充分，本轮已补首测及直接显示路径。
+
+- 10:05 后续故障修复：用户运行反馈删除确认时后台列表白底、从主界面重开管理器失败。白底源于默认 WPF ListBox 禁用模板，新增局部 SolutionList 模板保持透明/主题色（不改共享色板），删除/移除及恢复确认传递管理器 Owner。真实窗口回归在完整测试序列复现共享静态 WindowChrome 的跨 Dispatcher 异常，改为每次构造独立实例并验证启动窗口关闭后有宿主重复重开。原 09:57:40 用户日志只有概括消息、文件通道无堆栈，尚不能认定同一根因；主界面错误现在附完整 ex 并写 UI+File，若现场仍失败可进一步定位。Debug 管理器测试 19/19 通过；全量 Debug 0 错误、772 警告；dev/Debug/SunEyeVision.UI.exe 已更新，版本仍 2.0.0.7_alpha。git diff --check 通过。没有打包、增号、结束用户进程或操作真实方案文件；删除弹窗/主界面重开现场复测与可见 VS 设计器仍待用户验收。修改管理器 XAML/CS/VM、MainWindowViewModel 日志及 SolutionManagerCardTests；基线和单写入规则不变，未提交/推送。
+
+- 追加优化已完成：用户指出固定卡宽造成右侧大量空白，改为最小卡宽 240 逻辑像素、列数按视口宽度计算、各列均分剩余宽度并填满整行。保留最后一行同列宽及视口虚拟化；修改 SolutionCardPanel、管理器 ItemsPanel 与布局回归断言。最新 Debug 管理器回归 17/17 通过（整行右边界、响应式列数、500 项滚动、亮暗切换等）；实际亮暗 1040 预览已核对为三列并填满首行，预览目录 solution-cards-responsive。停止本任务旧 Debug 构建后已重新完成全量 Debug，0 错误、780 警告；程序 dev/Debug/SunEyeVision.UI.exe，19 插件齐全。git diff --check 通过。未打包、未增号、未自动启动真实程序；用户运行验收和可见 VS 设计器仍待验证。以下固定 280 宽度的交付说明属于追加前历史状态。
+
+- 本轮交付状态：代码及自动验证已完成。按最终用户追加要求，左侧最近记录只显示名称，不显示打开时间；仍按 LastAccessTime 排序。固定宽度 280 逻辑像素卡片按视口自动换行，不强制双列，500 条目录仅生成视口及缓冲容器；长描述单行摘要保留完整工具提示；卡片修改时间、已打开和启动默认分别表达；移除详情底栏、三点、编辑铅笔及重复功能按钮。右键先选中目标，另存仅当前选中方案提供，失效方案保留定位/移除，键盘 Enter 限列表范围、Shift+F10/菜单键可管理；最近选择及新登记方案清除隐藏搜索并滚入视口。目录/关联/内部故障恢复收进设置，技术统计只在主题化只读属性窗口出现。主题模板更换的容器复用问题已修复。
+- 已修改文件：SolutionConfigurationDialog.xaml/.xaml.cs、SolutionConfigurationDialogViewModel.cs；新增 SolutionCardPanel.cs、SolutionIdentityVisibilityConverter.cs、SolutionInformationDialog.xaml/.xaml.cs；SolutionManagerUiTests 改为 partial，新增 SolutionManagerCardTests.cs 共 10 项回归；本记录及原最终方案追加本轮实施记录。只改 UI 消费和验证，不改共享主题色板、方案存储、执行调度、SDK/插件/发布规则。此前所有工作区改动保留，未提交或推送；跨 AI 写入交接前仍需按模板创建明确的临时提交。
+- 构建与测试：隔离 UI Release 0 错误（1056 警告）；全量 Release 0 错误（849 警告，增量构建计数），19 插件齐全；最新代码发布级集成回归 181/181 通过（含 17 项 SolutionManagerUiTests）；TRX 位于 artifacts/validation/solution-cards/tests；亮暗、最小窗口、三列/更多列、大列表滚动及主题复用、正常/失效卡片、局部 Enter、右键目标和另存限制均已自动验证。真实 Release exe 隐藏无设备探针 exit=0，2.0.0.7/alpha/Dark/#FF1E1E1E；新程序位于 artifacts/validation/solution-cards/app/SunEyeVision.UI.exe。版本计数仍为 7，未生成新包；旧 dist/2.0.0.7_alpha 不含本轮 UI。
+- 人工验收结果：亮暗离屏 PNG 已核对，正常四方案预览位于 Codex visualizations 的 solution-cards/SolutionConfigurationDialog-Dark-1040.png 和 Light 对应文件；用户未反馈现场运行验收。未运行常规程序载入真实配置/相机、未实际安装/卸载、未写真实关联注册表或用户配置，未结束用户进程。VS 设计时 MSBuild 属性查询通过；可见设计器、实际键鼠/DPI/真实设备仍待人工验收。
+- 发布流程（2026-10-09 用户明确要求）：先构建 Debug 供用户测试；测试确认后，再由用户明确批准发布打包。不得随每次修改自动打包或递增发布版本；如需打包必须先申请，用户直接要求打包时视为该次授权。当前全量 Debug 已完成，等待用户测试；不生成安装包、不修改 version.json；不要用旧 7 号安装包判断本轮界面。
+
+- 当前执行者 Codex，单写入者；基线 main/d703960764e0f1cdd287c8398def759ad638251d。用户最终确认：小卡片按宽度自动换行、保留左侧最近记录、最近只显示名称不显示打开时间、卡片保留修改时间、删除下方详情和重复按钮、取消三点及编辑铅笔、管理操作统一右键；启动模式置于右上，目录/关联/内部故障恢复收进设置，工作流数量和格式版本按需属性查看。
+- 已进入实现：相关管理器 XAML/VM/交互、SolutionCardPanel 虚拟化换行面板、状态及摘要转换器、只读 SolutionInformationDialog；增加现有 SolutionManagerUiTests partial 回归。仅消费主题资源，不改共享色板、存储格式、工作流执行或插件契约；保留先前全部改动，未提交/推送、未改真实配置或注册表。首轮隔离 UI Release 构建 0 错误；交互/布局测试进行中，尚未宣称验收完成。后续交付记录更新本节；没有新安装包，旧 2.0.0.7_alpha 不含本轮界面。
+
+以下为历史交付记录。
+
+## 2026-10-08 本轮交付：解决方案管理器完整实施
+
+- 基线提交：d703960764e0f1cdd287c8398def759ad638251d；当前分支 main；当前执行者 Codex。当前仅一个 AI 写入，保留全部既有改动，未提交或推送，未向其他 AI 交接。
+- 任务目标：完整实施 docs/01-方案设计/2026/10/08/解决方案管理器最终优化方案-20261008.md，并交付包含全部改动的正常安装包。
+- 允许修改目录：src/Workflow、相关 UI、installer、tests/SunEyeVision.UI.Tests、方案及协作文档。
+- 已修改文件：Workflow 的 ApplicationDataPaths/ApplicationDataLocationService/Persistence/AtomicJsonFile、Solution/Metadata/Settings/Repository/Manager/StartupDecisionService；UI 的 App、ServiceInitializer、DataDirectoryDialog、SolutionConfigurationDialog/VM、MainWindow/VM、LayoutConfig、ImageInputSource/ImagePreviewControl、WorkflowExecutionManager、FileAssociationService；installer/SunEyeVision.iss/Pack-Release.ps1；SolutionManagementTests/SolutionManagerUiTests/SolutionTransitionTests 及旧 CommunicationArchitectureTests 恢复策略断言；方案文档和本记录。此前发布/关于/主题等改动保留。
+- 已完成：数据根目录确认/恢复和身份检查；Config 与方案/安装位置分离；布局并入用户设置；旧配置显式导入/验证/回滚；任意路径方案及相对资源处理；名称描述随方案传递；新建/复制/另存/改名冲突和保存失败保护；运行停止等待、未保存切换及重复关闭保护；空工作区退出保存走完整方案而非旧工作流 JSON 导出；失效图像可清空、重定位且空配置持久化；预览卸载不清空真实输入；主题化管理器、虚拟化/失焦选中/长描述滚动、三种启动模式；安装版关联修复及开发版防劫持；内部一份上一保存版本恢复。不创建 Backups/Config、不自动搬动桌面方案、不收集打包资源。
+- 构建与测试：最终隔离全量 Release 0 错误、1143 警告；171/171 发布集成测试通过；46 项方案专项加 6 项通讯架构定向共 52/52；82 项发布脚本检查通过；实际自包含 Release 探针为 2.0.0.7/alpha/Dark/#FF1E1E1E；亮暗及最小窗口选中长描述实际离屏渲染核对；VS 设计时属性查询 Version/FileVersion=2.0.0.7。1208 个源码文件快照与当前代码、安装包/清单/SHA256 三方核验通过。
+- 最终产物：dist/2.0.0.7_alpha/SunEyeVision-Setup-2.0.0.7_alpha-x64.exe（249475561 字节，19 插件，未签名）；SHA256 CBC615AD67D4DEEFAECA546C5EB752811246735A01F848FE9A27A38C210B4FD7；配套 release-manifest-2.0.0.7_alpha.json 和 exe.sha256。实际安装产品名 SunEyeVision 2.0.0.7_alpha，无 Preview。version.json.fileRevision=7；下一正常预检为 2.0.0.8_alpha，未实际增号。构建ID 20261008-185857-d7039607-cc66f9ce。
+- 过程记录：首轮旧测试要求旁置 .bak，与新方案冲突，改为内部恢复路径并保留内容校验，失败未增号；6 号包通过 170 项测试后最终核查补正退出保存入口，6 号产物已可恢复地移入 artifacts/diagnostics/solution-manager-pre-final-2.0.0.6_alpha，不作为最终交付，不回退计数；最终以 7 号包为准。没有停止用户程序；尝试停止已确认构建ID的编译器时它已结束，实际没有终止任何进程。
+- 人工验收结果/未完成：没有实际安装/卸载新包、没有写真实文件关联注册表、没有修改用户桌面配置、没有连接真实相机或外部通讯设备。另一台电脑首次启动/数据选择/旧配置迁移/重装定位/文件图标和双击、关闭取消/运行中卸载、真实设备及可见 VS 设计器仍待人工验收；不能把自动探针或离屏渲染称为现场安装验收完成。
+- 已知风险或禁止改动：保持用户数据与既有源码变更；不自动清理桌面旧文件/旧安装目录；不改 Windows UserChoice/第三方默认应用；未签名包可能需用户确认运行；源代码未提交且清单如实记录。跨 AI 写入交接前仍须按 HANDOFF_TEMPLATE 创建说明明确的临时提交。
+- 下一步：请使用 2.0.0.7_alpha 安装包做外机现场验收；首次启动选择例如非系统盘的 SunEyeVisionData，再新建/传递/重新定位/清空保存方案。旧包不会自动获得本轮实现。
+
+以下为历史记录，当前交付状态以上述记录为准。
+
+- 2026-10-08 Codex 正在完整实施解决方案管理器最终方案（覆盖上一记录中的“仍待实施”状态）。基线 main/d703960764e0f1cdd287c8398def759ad638251d；同工作目录当前仅 Codex 写入，保留全部既有改动，未提交、推送或交接其他 AI。实现范围：用户确认数据根目录、Config/user-settings.json 与 Solutions/Logs 分离、可重建定位及目录身份检查、旧桌面配置显式导入及迁移回滚、名称描述随方案传递、任意路径/相对资源载入、新建复制另存及改名保护、运行停止等待/未保存切换退出保护、失效图像清空持久化/重新定位/缓存取消、主题化虚拟化管理器和三种启动模式、安装版文件关联保护、一份内部上一保存版本恢复。窗口布局改为用户设置中的 WindowLayout，旧 LocalAppData/layout.config 仅读兼容；不创建 Backups/Config，不自动删除桌面文件或收集资源。44 项专项回归通过，亮暗及最小窗口实际离屏渲染已核对；82 项发布脚本回归通过，VS 设计时属性查询成功（可见设计器仍待人工）。正在正常发布 2.0.0.6_alpha，流水线负责全量 Release、集成测试、自包含程序探针和 ISCC；源码已冻结，发布结果待下一更新。未运行实际安装/卸载、未修改真实注册表和用户配置、未连接真实设备；另一台电脑首次启动/重装恢复/文件图标、真实相机通讯与可见 VS 设计器仍需人工验收。允许修改 src/Workflow、相关 UI、installer、tests、方案及协作文档；跨模块影响已覆盖启动/退出、主题消费、执行租约、资源快照及安装关联，未改变插件宿主依赖边界。跨 AI 写入交接前仍需按 HANDOFF_TEMPLATE 记录并创建说明明确的临时提交。
+
+- 2026-10-08 应用户要求实现运行中禁止卸载：新增 ApplicationLifetimeGate，程序在服务/设备初始化前通过全局维护互斥门登记 Global\\SunEyeVision.Running 标记，静态持有直到进程结束，关闭取消/退出保存/设备清理期间不提前释放；维护期间拒绝启动，拒绝启动的 OnExit 跳过未初始化服务。Inno 设置 AppMutex，并在 InitializeUninstall 先持有 Global\\SunEyeVision.Maintenance，运行标记或旧版本 SunEyeVision.UI.exe 的 WMI 检测未确认退出则提示重试/取消；检查失败也阻止卸载；静默模式直接中止，不强杀进程。在 usAppMutexCheck 再检查，早于 usUninstall 的文件关联清理；取消及退出释放维护门。跨模块影响为程序启动/退出和发布卸载规则，未修改设备会话/工作流业务。定向运行标记测试 3/3（多实例、维护阻止启动、释放后恢复），脚本检查 82 项，小载荷真实 ISCC 脚本编译通过；完整隔离 Release 0 错误、1138 既有警告，发布定向测试 125/125；新 Release 程序隐藏无设备探针实测维护锁存在时 exit=1 且无探针输出，释放后 exit=0、版本 2.0.0.5/alpha/Dark，旧进程 WMI 查询可用。生成 dist/2.0.0.5_alpha/SunEyeVision-Setup-2.0.0.5_alpha-x64.exe，实际产品名 SunEyeVision 2.0.0.5_alpha，SHA256 38E1208F69A0F1DAEB5C5DA2A74BCA0C51A5131BD093FCD5D84328F6712D3116，19 插件、未签名，源码前后快照通过；计数器已更新为 5，下一正常预检 2.0.0.6_alpha（未增号）。未执行实际安装/卸载，未结束用户程序或删除旧残留；真实运行中卸载、软件取消关闭、卸载取消/重试后的文件/注册表不变及多会话/权限异常仍待隔离 VM/人工验收，不能宣称取消卸载现场验收完成。已安装的旧卸载器不会自动更新，须退出旧程序后安装新包才获得保护；解决方案管理器方案仍待实施。基线 main/d7039607，既有改动保留，未提交；跨 AI 写入交接前按项目规则创建说明明确的临时提交。
+
+- 2026-10-08 应用户要求保存解决方案管理器最终完整优化方案：新增 `docs/01-方案设计/2026/10/08/解决方案管理器最终优化方案-20261008.md`，状态待实施。确定用户选择非强制系统盘数据根目录，Config/user-settings.json 与方案及安装路径分离，Solutions 仅为默认位置；不建 Backups/Config，不做资源打包/自动收集/复杂备份管理。方案携带名称描述及业务配置，任意可读路径可载入，资源单独传递后重配置；文件失效仍允许移除/清空且清空须持久化，旧异步加载不能恢复已清空内容；图像预览器现象根因待核查。方案包含已核查的另存 ID、复制参数、覆盖保护、切换保护、事件释放问题，启动/文件关联、旧路径迁移、四阶段实施、验收及按交接模板记录的边界。仅文档写入，无代码实现、构建、安装或桌面文件变动；基线 main/d7039607，既有改动保留；跨 AI 修改交接前仍需按项目规则创建说明明确的临时提交。
+
+- 2026-10-08 关于页与完整安装显示版本（覆盖上一条“名称仅 SunEyeVision”的显示策略，固定目录/升级身份保留）：关于页重排为主题化、可调整大小/滚动布局，动态主题覆盖窗口、卡片、文字及按钮；从当前运行程序集显示完整发布版本/渠道/日期/文件版本/代码基线/实际 .NET 与架构/系统/程序目录，支持复制诊断信息，明确提交号仅代码基线。用户明确无在线更新服务，删除检查更新按钮及假“已是最新版”处理，不提供自动更新。关于窗口设置主窗口 Owner。安装名称、快捷方式、卸载条目为 SunEyeVision 2.0.0.4_alpha；AppId/ProgID/默认 C:\Program Files\SunEyeVision 不随版本变化；通过 Inno PreviousData 记录并仅精确替换上一版本快捷方式，兼容无版本与 Preview 旧快捷方式，不清理安装目录/用户数据。跨模块影响仅 UI 信息展示/主题消费与发布可见名称，未修改共享色板、SDK 契约和工作流。新增 AboutSoftwareInformation/AboutWindowTests，亮→暗→亮相关资源及离屏实际渲染已核对（测试实际顺序 Dark/Light/Dark）；定向关于测试 2/2，完整隔离 Release 0 错误、1138 既有警告，发布定向测试 122/122，脚本回归 75 项通过，VS 设计时 MSBuild 版本属性为 2.0.0.4。首次定向测试因共享测试目录残留 app-local hostfxr/hostpolicy 失败，两个生成文件可恢复地移至 artifacts/diagnostics/about-test-runtime-10e1b7bf53e5417fa0986bac6cb09296 后通过；未移动源码/用户数据。新包 dist/2.0.0.4_alpha/SunEyeVision-Setup-2.0.0.4_alpha-x64.exe 成功生成，实际版本资源 ProductName=SunEyeVision 2.0.0.4_alpha；SHA256 FB59852A2A5AD753FB19DD83C7E212F620739C742C4123BCC157713B742C29F2，19 插件、默认 Dark、源码快照前后不变，计数器成功更新为 4。未签名、未安装/卸载用户程序；安装后显示名/快捷方式升级/卸载和 VS 可见设计时、剪贴板现场人工验收仍待用户确认。基线 d7039607；既有工作区变更保留，未提交；跨 AI 写入交接前按模板记录基线并创建说明明确的临时提交。
+
+- 2026-10-08 安装品牌修正（覆盖历史正常/Preview 分离策略）：alpha/beta/rc/stable 统一安装名、快捷方式、卸载名称为 SunEyeVision，默认目录 C:\Program Files\SunEyeVision；渠道仅留在版本与文件名。共享此前 alpha 已分发的 AppId 7A2E9C41，以保持该安装的升级身份；local 独立。安装器禁止复用旧 Preview 默认目录/程序组，仅清理明确的旧 Preview 快捷方式，不删除旧安装目录或用户数据。程序与安装器正常 ProgID 统一 SunEyeVision.SolutionFile，默认扩展名关联仍仅 stable 写入，local 独立；VM 验收脚本同步。跨模块影响为发布身份与文件关联，未改插件契约/工作流。发布回归 72 项通过，全量 Release 0 错误、1138 既有警告、UI 定向测试 120/120；程序探针 2.0.0.3/alpha/Dark/#FF1E1E1E。新包 dist/2.0.0.3_alpha/SunEyeVision-Setup-2.0.0.3_alpha-x64.exe（237.9 MB，19 插件，未签名）成功生成，实际版本资源 ProductName=SunEyeVision、FileDescription=SunEyeVision 安装程序；SHA256 26A43D0988D053D6F05EBD809E7EEB74D8C5265F19670DF323E8451395E12FCA。清单增加 displayName/defaultInstallDirectory/installerAppId/associationId；源码前后快照核验通过，fileRevision=3，下一正常发布预检 2.0.0.4_alpha（不增号）。未安装/卸载用户程序，旧 Preview 目录迁移、安装向导/快捷方式可见效果、VS 可见设计时尚未验收；建议用户先卸载旧 Preview 再安装新包并保留个人方案/设置。基线 d7039607，既有工作区变更保留，未提交源码；跨 AI 交接前仍须按规则创建说明明确的临时提交。
+
+- 2026-10-08 按用户新要求恢复正常发布打包（覆盖前述只读固定版本/强制签名门禁方案）：默认入口按 version.json 渠道发布，产品与文件版本统一四段数字，渠道作为安装包下划线后缀；fileRevision 是上次成功发布号，默认正常发布预留 +1，失败不写回，成功移动产物后原子更新版本声明与当天发布日期。保留 -Local 临时包和 -Repack 原版本重打（源码快照必须一致、不增号），移除强制证书/VM/CHANGELOG/干净工作区门禁；签名、安装验收、RequireClean 为可选，清单如实记录未提交源码和 1196 个输入文件哈希，不自动提交/打标签。NuGet 包独立映射为 2.0.0-alpha.2，CLR/ToolContract 不变。默认正常发布自动流水线成功，生成 dist/2.0.0.2_alpha 下 exe/sha256/json 三个文件；安装包 SunEyeVision-Setup-2.0.0.2_alpha-x64.exe（237.9 MB，19 插件，未签名），SHA256 420098B9556567F25F7DF8300A41CA94AF8C4ED340725248FD029C631297F1B5。全量 Release 0 错误、1138 既有警告；UI 定向测试 120/120，发布脚本回归 52 项通过；程序探针为 2.0.0.2 / alpha / 2026-10-08 / Dark / #FF1E1E1E；完整源码前后快照与重打一致性核验通过，版本文件已更新 fileRevision=2、releaseDate=2026-10-08 并移除旧 channelRevision。只读预检显示下一正常发布为 2.0.0.3_alpha，确认未实际增号。使用说明见 installer/README.md。未安装新包、未执行可选签名/VM 验收、未创建标签或提交源码；基线 d7039607，保留原有工作区变更。
+
+- 2026-10-08 首次安装默认暗色修复：`ThemeManager` 增加统一 `DefaultTheme=Dark`，构造初值和缺失/无效偏好回退改为该值，保留 Light/Dark 枚举数值和有效保存偏好的恢复逻辑；`App.xaml` 在资源末尾加载 DarkTheme，确保启动页及主题管理器初始化前为暗色，后续初始化仍移除初始字典并恢复用户选择。跨模块影响仅涉及启动资源与 SDK 兜底优先级，未改 SDK 色板或工作流执行。扩展无设备版本探针记录默认主题和启动窗口背景，实测 `Dark` / `#FF1E1E1E`。完整隔离 Local 打包流水线自动成功：全量 Release 0 错误、1010 既有警告，UI 定向测试 120/120，SDK 主题资源/契约/设计时契约回归 17/17，设计时 MSBuild 属性正常，安装包 SHA256 校验通过。新包 `dist/local/20261008-140731-d7039607-3d338dc8/SunEyeVision-Setup-2.0.0-local.1-x64.exe`（237.9 MB，19 插件，未签名），SHA256 `2F62372299E66608DAFCB29756E268009763D8004BFE9D5CEF17EF8204C2A10C`；旧 13:29 包不含暗色修复，保留归档。未覆盖现有用户设置、未自动安装或结束用户程序；用户可见首次启动、已有亮色偏好恢复及 VS 可见设计时仍待人工验收。基线 `d7039607`，源码未提交，既有打包与计划改动保留。
+
+- 2026-10-08 打包与版本优化实施（主程序基线 `d7039607`）：发布声明改为 version/channel/channelRevision/fileRevision/releaseDate/schemaVersion；产品/NuGet 使用语义发布版本，Windows 使用四段 fileRevision，CLR 绑定与 ToolContract 保持 2.0 基线。打包只读版本与 CHANGELOG，移除强杀程序、复用陈旧 Release、全 dist 删除和打包后写回计数；新增 OS 独占锁、全新 staging、54 个依赖锁文件、隔离插件构建、自包含 win-x64 publish、原生退出码硬失败、程序无设备版本探针、逐文件哈希、正式签名/安装验收门禁、历史文件版本递增校验及 annotated tag。正式/预览/local AppId 与 ProgID 分离，预览不抢默认文件关联。新增双击 Local/Release 入口与 `installer/README.md`（含版本映射和流程图）。全量隔离 Release 构建 0 错误、1138 既有警告；UI 定向 Release 测试 120/120；脚本回归 36 项通过；VS 设计时 MSBuild 版本属性核对通过。实测修复解决方案级 RID 限制、Inno 数字产品版本限制以及版本字符串尾部填充导致的误判；最后一次自动流水线已通过构建/测试/publish/probe/ISCC，在收尾误判后使用修正后的共享收尾模块复核已有包并完成清单/哈希/移动，未再次全量构建。产物 `dist/local/20261008-132905-d7039607-2bca64e4/SunEyeVision-Setup-2.0.0-local.1-x64.exe`，19 个工具插件，SHA256 `F070656DCA3A84BC055C7774DA7702FE6338104187A891A8B715A0F6A0FCB5DD`；无签名、无正式标签、未安装。代码签名证书和隔离 VM 验收尚不可用，正式发布、实际安装/卸载、主窗口可见运行及 VS 可见设计时待验收。保留既有 plans 和协作记录改动，未提交本轮源码；跨 AI 写入交接前须按项目规则创建说明明确的临时提交。
+
+- 2026-10-08 主程序与通讯管理项目代码同步：同步前确认主程序 `main=039e15bd` 工作树干净、无残留 cherry-pick，通讯项目 `feature/comm=c92d4804` 仅有不影响源码的 `plans/plan.json` 看板注记未提交。主程序此前已包含 OPC UA、统一绑定模型和接收解析链路三个通讯提交；本轮继续同步 `64286423`（接收历史上限 200 条与自动滚动）和 `fe30da15`（通讯发送事件与宿主发送服务），对应主程序提交为 `b86cbd75`、`d7039607`。通讯驱动、通讯管理 UI、通信应用服务、Workflow 通讯模型与通讯测试源码对比无差异；仅保留主程序独有的相机分类和图像源测试。全量 Debug 构建成功，0 错误、1136 警告；通讯／OPC UA／NumericUpDown／TCP Server 定向 Debug 测试 106/106 通过。未启动程序、未连接真实通讯设备，选项卡界面、VS 设计时及真实协议收发仍待人工验收。两工作区的 `plans/plan.json` 会被提交记录同步机制更新，当前计划元数据改动未纳入功能同步。
+
 - 2026-10-01 用户反馈主程序最大化不能适配所有显示器：定位到 `MainWindow.xaml.cs` 的 `WM_GETMINMAXINFO` 使用主屏 `SystemParameters.WorkArea` 再乘当前 DPI，副屏/混合 DPI 会算错边界。改为 Win32 `MonitorFromWindow` + `GetMonitorInfo` 获取窗口所在显示器的工作区，以原生像素设置最大化尺寸及相对于该显示器的偏移；未改其他窗口或内容布局。全量 Debug 构建 0 错误、776 警告；UI Release 构建 0 错误、961 警告。不同屏幕的可见最大化、任务栏位置与 VS 设计时仍待人工验收；如仅有小分辨率内容溢出，需另查主界面列宽约束。保留既有未提交改动；跨 AI 交接前按规则记录基线并创建说明明确的临时提交。
 
 - 2026-09-30 应用户要求重构建 Debug：确认无运行中的 `SunEyeVision.UI` 进程，执行 `dotnet build SunEyeVision.slnx -c Debug --no-restore -m:1 -p:UseSharedCompilation=false -v:q -clp:ErrorsOnly` 成功，0 错误、865 警告；`dev/Debug/SunEyeVision.UI.exe` 与 `dev/Debug/plugins/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.dll` 均已生成。未启动 UI，物理点/物理角度标签的可见运行时验收仍待用户确认。保留既有未提交改动；跨 AI 交接前仍需按规则记录基线提交并创建说明明确的临时提交。

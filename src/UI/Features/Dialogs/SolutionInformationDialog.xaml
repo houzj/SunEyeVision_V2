@@ -1,0 +1,19 @@
+<windows:ThemeDialogWindow x:Class="SunEyeVision.UI.Features.Dialogs.SolutionInformationDialog"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:windows="clr-namespace:SunEyeVision.UI.Shell.Windows" xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+ Width="620" Height="490" MinWidth="520" MinHeight="380" WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
+ Background="{DynamicResource {x:Static base:ThemeKeys.WindowBackgroundBrush}}" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
+ <Grid Margin="20"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <TextBlock x:Name="InformationTitle" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
+  <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+   <ItemsControl x:Name="InformationFields"><ItemsControl.ItemTemplate><DataTemplate>
+    <Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="104"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+     <TextBlock Text="{Binding Key}" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,4,12,0"/>
+     <TextBox Grid.Column="1" Text="{Binding Value, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="120" VerticalScrollBarVisibility="Auto"
+      BorderThickness="0" Background="Transparent" Padding="0,4" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+    </Grid>
+   </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+  </ScrollViewer>
+  <Button Grid.Row="2" Content="关闭" IsCancel="True" HorizontalAlignment="Right" Padding="20,7" Margin="0,12,0,0" Style="{DynamicResource SecondaryButtonStyle}"/>
+ </Grid>
+</windows:ThemeDialogWindow>

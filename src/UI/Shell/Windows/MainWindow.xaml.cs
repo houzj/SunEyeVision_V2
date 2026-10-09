@@ -228,6 +228,7 @@ namespace SunEyeVision.UI.Shell.Windows
         /// 窗口关闭前事件 - 提示保存解决方案
         /// </summary>
         private bool _isClosingPromptInProgress;
+        private bool _closeApproved;
 
         /// <summary>
         /// 窗口关闭前事件 - 提示保存解决方案。
@@ -236,7 +237,7 @@ namespace SunEyeVision.UI.Shell.Windows
         /// </summary>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            if (_isClosingPromptInProgress)
+            if (_closeApproved)
             {
                 // 确认弹窗已弹出，用户再次触发关闭 -> 放行（由弹窗结果决定）
                 e.Cancel = false;
@@ -245,6 +246,7 @@ namespace SunEyeVision.UI.Shell.Windows
 
             // 拦截本次关闭，异步弹确认框后再决定（不能同步 ShowDialog——主窗口关闭流程中模态窗口不显示）
             e.Cancel = true;
+            if (_isClosingPromptInProgress) return;
             _isClosingPromptInProgress = true;
 
             Dispatcher.BeginInvoke(new Action(() => PromptAndMaybeClose()));
@@ -253,99 +255,25 @@ namespace SunEyeVision.UI.Shell.Windows
         /// <summary>
         /// 异步弹出关闭确认框，根据结果决定是否真正关闭窗口。
         /// </summary>
-        private void PromptAndMaybeClose()
+        private async void PromptAndMaybeClose()
         {
             try
             {
-                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-
-                // ==================== 场景1：没有打开的解决方案 ====================
-                if (solutionManager?.CurrentSolution == null)
-                {
-                    var result = ThemeMessageDialog.Show(
-                        "当前没有打开的解决方案，是否新建一个解决方案？",
-                        "新建解决方案",
-                        MessageBoxButton.YesNo,
-                        ThemeMessageDialog.MessageIcon.Question);
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        if (CreateNewSolutionBeforeClosing())
-                        {
-                            // 保持 _isClosingPromptInProgress=true，让 Close() 触发的 OnClosing 放行关闭
-                            Close();
-                        }
-                        else
-                        {
-                            // 取消新建：重置标志，保持窗口打开，下次关闭重新弹窗
-                            _isClosingPromptInProgress = false;
-                        }
-                    }
-                    else
-                    {
-                        _viewModel?.AddLog(LogLevel.Info, "未新建解决方案，直接关闭", LogSource.UIOperation);
-                        Close();
-                    }
-                    return;
+                  if (await _viewModel.PrepareSolutionTransitionAsync())
+                  {
+                      SaveLayoutConfig();
+                      SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.SaveUserSettings();
+                      _closeApproved = true;
+                      (Application.Current as SunEyeVision.UI.App)?.MarkInstanceClosing();
+                      Close();
                 }
-
-                // ==================== 场景2：有打开的解决方案 ====================
-                var metadata = solutionManager.GetMetadata(solutionManager.CurrentSolution.Id);
-                var solutionName = metadata?.Name ?? "未命名解决方案";
-                var saveResult = ThemeMessageDialog.Show(
-                    $"是否保存当前解决方案 '{solutionName}' 的修改？",
-                    "保存解决方案",
-                    MessageBoxButton.YesNoCancel,
-                    ThemeMessageDialog.MessageIcon.Question);
-                switch (saveResult)
-                {
-                    case MessageBoxResult.Yes:
-                        try
-                        {
-                            // ★ 统一保存入口：与工具栏保存共用 MainWindowViewModel.SaveSolutionData（完整同步逻辑），
-                            // 确保图像源（ImageSourceConfig 实时同步）、参数、全局变量、节点、连接全部一致持久化。
-                            _viewModel?.SaveSolutionData(solutionManager);
-                            solutionManager.SaveSolution();
-                            _viewModel?.AddLog(LogLevel.Success, "关闭前已保存解决方案", LogSource.UIOperation);
-                            // 保持 _isClosingPromptInProgress=true，让 Close() 触发的 OnClosing 放行关闭
-                            Close();
-                        }
-                        catch (Exception ex)
-                        {
-                            ThemeMessageDialog.Show(
-                                $"保存解决方案失败: {ex.Message}",
-                                "保存失败",
-                                MessageBoxButton.OK,
-                                ThemeMessageDialog.MessageIcon.Error);
-                            // 保存失败：重置标志，保持窗口打开
-                            _isClosingPromptInProgress = false;
-                        }
-                        break;
-                    case MessageBoxResult.Cancel:
-                        // 取消关闭
-                        _viewModel?.AddLog(LogLevel.Info, "已取消关闭窗口", LogSource.UIOperation);
-                        _isClosingPromptInProgress = false;
-                        break;
-                    case MessageBoxResult.No:
-                        // 不保存，直接关闭
-                        _viewModel?.AddLog(LogLevel.Info, "未保存解决方案，直接关闭", LogSource.UIOperation);
-                        Close();
-                        break;
-                    default:
-                        // 弹窗异常未显示（ShowDialog 静默返回 None），避免卡死，保持标志放行关闭
-                        _viewModel?.AddLog(LogLevel.Warning, "关闭确认框异常未显示，直接关闭", LogSource.UIOperation);
-                        Close();
-                        break;
-                }
+                else _isClosingPromptInProgress = false;
             }
             catch (Exception ex)
             {
-                VisionLogger.Instance.Log(LogLevel.Error, $"[PromptAndMaybeClose] 捕获异常: {ex}", "MainWindow");
-                ThemeMessageDialog.Show(
-                    $"关闭窗口时发生错误: {ex.Message}",
-                    "错误",
-                    MessageBoxButton.OK,
-                    ThemeMessageDialog.MessageIcon.Error);
                 _isClosingPromptInProgress = false;
+                _viewModel.EndSolutionTransition();
+                ThemeMessageDialog.Show(ex.Message, "退出未完成", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
         /// <summary>
@@ -441,7 +369,6 @@ namespace SunEyeVision.UI.Shell.Windows
 
             // 取消订阅图像预览事件（经图像结果区退订），防止内存泄漏
             ImageResultHost.Shutdown();
-            SaveLayoutConfig();
             _viewModel?.StopWorkflowCommand.Execute(null);
             base.OnClosed(e);
 
@@ -485,7 +412,7 @@ namespace SunEyeVision.UI.Shell.Windows
             config.RightColumnWidth = RightPanelColumn.ActualWidth > 0
                 ? RightPanelColumn.ActualWidth
                 : config.RightColumnWidth;
-            config.Save();
+            if (!config.Save()) throw new System.IO.IOException("窗口布局配置保存失败，原配置保留。");
         }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {

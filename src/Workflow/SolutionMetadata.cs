@@ -36,7 +36,10 @@ public class SolutionMetadata : ObservableObject
     private string _directoryPath = "";
     private DateTime _createdTime = DateTime.Now;
     private DateTime _modifiedTime = DateTime.Now;
-    private DateTime _lastAccessTime = DateTime.Now;
+    private DateTime _lastAccessTime = DateTime.MinValue;
+
+    [JsonIgnore] public bool IsMissing => !System.IO.File.Exists(FilePath);
+    [JsonIgnore] public string Availability => IsMissing ? "文件失效，请重新定位" : "文件可用";
     private int _workflowCount;
     private int _globalVariableCount;
     private bool _isDefault;

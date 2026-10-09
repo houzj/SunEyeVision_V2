@@ -57,7 +57,7 @@ public class StartupDecisionService
     public StartupDecision GetStartupDecision()
     {
         // 检查是否跳过配置
-        if (_solutionManager.Settings.SkipStartupConfig)
+        if (_solutionManager.Settings.StartupMode != "Choose")
         {
             return StartupDecision.SkipConfiguration;
         }

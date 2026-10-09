@@ -1,122 +1,73 @@
-﻿using Microsoft.Win32;
+using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
+using Microsoft.Win32;
 
 namespace SunEyeVision.UI.Services;
 
-/// <summary>
-/// 文件关联服务
-/// 负责注册解决方案文件的自定义图标和文件类型关联
-/// </summary>
 public class FileAssociationService
 {
-    private const string FileExtension = ".solution";
-    private const string ProgId = "SunEyeVision.SolutionFile";
-    private const string FriendlyName = "SunEyeVision 解决方案文件";
-    private const string ContentType = "application/vnd.suneyvision.solution";
-
-    /// <summary>
-    /// 注册文件关联（无需管理员权限，仅对当前用户）
-    /// </summary>
+    private const string Extension = ".solution";
+    private static string ProgId => SunEyeVision.Core.Versioning.AppVersionInfo.Channel == "local" ? "SunEyeVision.Local.SolutionFile" : "SunEyeVision.SolutionFile";
+    [DllImport("shell32.dll")] private static extern void SHChangeNotify(uint eventId, uint flags, IntPtr item1, IntPtr item2);
+    public static bool IsInstalledLocation()
+    {
+        using var machine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+        using var installation = machine.OpenSubKey(SunEyeVision.Core.Versioning.AppVersionInfo.Channel == "local" ? @"Software\SunEyeVision\Local" : @"Software\SunEyeVision");
+        var root = installation?.GetValue("InstallLocation") as string;
+        return !string.IsNullOrEmpty(root) && SunEyeVision.Workflow.Persistence.AtomicJsonFile.SamePath(root, AppContext.BaseDirectory);
+    }
     public void RegisterFileAssociation()
     {
-        try
+        if (!IsInstalledLocation()) throw new InvalidOperationException("开发或未安装版本不修改文件关联，请在安装后的软件中修复。");
+        var executable = Environment.ProcessPath ?? throw new InvalidOperationException("无法识别当前程序路径。");
+        var icon = System.IO.Path.Combine(AppContext.BaseDirectory, "Icons", "solution.ico");
+        if (!File.Exists(icon)) throw new FileNotFoundException("方案图标缺失。", icon);
+        using (var extension = Registry.CurrentUser.CreateSubKey(@"Software\Classes\.solution"))
         {
-            var executablePath = Process.GetCurrentProcess().MainModule?.FileName;
-            if (string.IsNullOrEmpty(executablePath))
-                return;
-
-            var iconPath = System.IO.Path.Combine(
-                System.IO.Path.GetDirectoryName(executablePath) ?? "",
-                "Icons",
-                "solution.ico"
-            );
-
-            // 检查自定义图标是否存在
-            if (!File.Exists(iconPath))
+            var current = extension?.GetValue("")?.ToString() ?? "";
+            if (string.IsNullOrEmpty(current))
             {
-                // 如果自定义图标不存在，使用可执行文件图标作为占位
-                iconPath = $"\"{executablePath}\",0";
+                using var effective = Registry.ClassesRoot.OpenSubKey(Extension);
+                current = effective?.GetValue("")?.ToString() ?? "";
             }
-            else
-            {
-                iconPath = $"\"{iconPath}\",0";
-            }
-
-            // 注册文件扩展名 -> ProgID
-            using (var key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{FileExtension}"))
-            {
-                key?.SetValue("", ProgId);
-                key?.SetValue("Content Type", ContentType);
-                key?.SetValue("PerceivedType", "text");
-            }
-
-            // 注册 ProgID
-            using (var key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{ProgId}"))
-            {
-                key?.SetValue("", FriendlyName);
-                key?.SetValue("EditFlags", 65536);
-            }
-
-            // 注册图标
-            using (var key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{ProgId}\DefaultIcon"))
-            {
-                key?.SetValue("", iconPath);
-            }
-
-            // 注册打开命令（双击打开）
-            using (var key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{ProgId}\shell\open\command"))
-            {
-                key?.SetValue("", $"\"{executablePath}\" \"%1\"");
-            }
-
-            // 注册编辑命令
-            using (var key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{ProgId}\shell\edit\command"))
-            {
-                key?.SetValue("", $"\"{executablePath}\" \"%1\"");
-            }
-
-            // 注册文件关联
-            // LogInfo("正在注册文件关联...");  // 可选：如果需要记录日志
+            if (SunEyeVision.Core.Versioning.AppVersionInfo.Channel != "local" &&
+                (string.IsNullOrEmpty(current) || current.StartsWith("SunEyeVision.", StringComparison.OrdinalIgnoreCase) || current == @"Applications\SunEyeVision.UI.exe"))
+                extension?.SetValue("", ProgId);
         }
-        catch (Exception ex)
-        {
-            // 静默失败，不影响程序运行
-        }
+        using (var openWith = Registry.CurrentUser.CreateSubKey(@"Software\Classes\.solution\OpenWithProgids")) openWith?.SetValue(ProgId, "");
+        WriteType(ProgId, executable, icon);
+        // Repair our own Windows Open With identity without changing UserChoice or another application.
+        if (SunEyeVision.Core.Versioning.AppVersionInfo.Channel != "local") WriteType(@"Applications\SunEyeVision.UI.exe", executable, icon);
+        SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero);
     }
-
-    /// <summary>
-    /// 检查是否已注册
-    /// </summary>
+    private static void WriteType(string id, string executable, string icon)
+    {
+        using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + id)) key?.SetValue("", "SunEyeVision 解决方案文件");
+        using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + id + @"\DefaultIcon")) key?.SetValue("", $"\"{icon}\",0");
+        using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + id + @"\shell\open\command")) key?.SetValue("", $"\"{executable}\" \"%1\"");
+    }
     public bool IsRegistered()
     {
         try
         {
-            using var key = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{FileExtension}");
-            return key?.GetValue("")?.ToString() == ProgId;
+            using var command = Registry.CurrentUser.OpenSubKey(@"Software\Classes\" + ProgId + @"\shell\open\command");
+            using var icon = Registry.CurrentUser.OpenSubKey(@"Software\Classes\" + ProgId + @"\DefaultIcon");
+            return command?.GetValue("")?.ToString() == $"\"{Environment.ProcessPath}\" \"%1\"" &&
+                icon?.GetValue("")?.ToString() == $"\"{System.IO.Path.Combine(AppContext.BaseDirectory, "Icons", "solution.ico")}\",0" &&
+                File.Exists(System.IO.Path.Combine(AppContext.BaseDirectory, "Icons", "solution.ico"));
         }
-        catch
-        {
-            return false;
-        }
+        catch { return false; }
     }
-
-    /// <summary>
-    /// 注销文件关联
-    /// </summary>
     public void UnregisterFileAssociation()
     {
-        try
-        {
-            // 删除 ProgID
-            Registry.CurrentUser.DeleteSubKeyTree($@"Software\Classes\{ProgId}", false);
-
-            // 删除文件扩展名关联
-            Registry.CurrentUser.DeleteSubKeyTree($@"Software\Classes\{FileExtension}", false);
-        }
-        catch (Exception ex)
-        {
-            // 静默失败
-        }
+        using var command = Registry.CurrentUser.OpenSubKey(@"Software\Classes\" + ProgId + @"\shell\open\command");
+        if (command?.GetValue("")?.ToString() != $"\"{Environment.ProcessPath}\" \"%1\"") return;
+        Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\" + ProgId, false);
+        using var extension = Registry.CurrentUser.OpenSubKey(@"Software\Classes\.solution", true);
+        if (extension?.GetValue("")?.ToString() == ProgId) extension.DeleteValue("", false);
+        using var openWith = Registry.CurrentUser.OpenSubKey(@"Software\Classes\.solution\OpenWithProgids", true);
+        openWith?.DeleteValue(ProgId, false);
     }
 }

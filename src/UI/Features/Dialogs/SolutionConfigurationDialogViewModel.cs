@@ -1,1171 +1,373 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Win32;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.UI.Shell;
+using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Workflow;
+using SunEyeVision.Workflow.Persistence;
 
-using SunEyeVision.UI.Core;
+namespace SunEyeVision.UI.Features.Dialogs;
 
-namespace SunEyeVision.UI.Features.Dialogs
+public sealed class SolutionConfigurationDialogViewModel : ViewModelBase, IDisposable
 {
-    /// <summary>
-    /// 解决方案配置对话框 ViewModel
-    /// </summary>
-    /// <remarks>
-    /// 已从 Project 迁移到 Solution 架构
-    /// - Project → Solution
-    /// - ProjectManager → SolutionManager
-    /// </remarks>
-    public class SolutionConfigurationDialogViewModel : ViewModelBase
+    private readonly SolutionManager _manager;
+    private readonly Func<Task<bool>>? _beforeTransition;
+    private readonly Action? _synchronizeCurrent;
+    private Window? _owner;
+    private string _search = "";
+    private SolutionMetadata? _selected;
+    private bool _busy;
+    public ObservableCollection<SolutionMetadata> SolutionMetadatas { get; } = new();
+    public ObservableCollection<SolutionMetadata> FilteredMetadatas { get; } = new();
+    public ObservableCollection<SolutionMetadata> RecentSolutions { get; } = new();
+    public Solution? LaunchResult { get; private set; }
+    public bool IsLaunched { get; private set; }
+    public string? CurrentSolutionId => _manager.CurrentSolution?.Id;
+    public string? SelectedMetadataId => SelectedMetadata?.Id;
+    public int AllSolutionsCount => SolutionMetadatas.Count;
+    public bool HasRecentSolutions => RecentSolutions.Count > 0;
+    public bool HasSelectedSolution => SelectedMetadata != null;
+    public bool HasFilteredSolutions => FilteredMetadatas.Count > 0;
+    public string DataRoot => _manager.DataRoot;
+    public string CurrentSolutionName => _manager.CurrentSolution?.Name ?? "未打开方案";
+    public string SolutionStoragePath => SelectedMetadata?.FilePath ?? "未选择方案";
+    public string SolutionInfo => SelectedMetadata == null ? "" : $"格式版本：{SelectedMetadata.Version}  工作流：{SelectedMetadata.WorkflowCount}";
+    public string EmptyMessage => SolutionMetadatas.Count == 0 ? "还没有解决方案。请选择“新建方案”或“添加已有”。" : "没有匹配的方案，请清除搜索。";
+    public string ToggleDefaultButtonText => SelectedMetadata?.IsDefault == true ? "取消启动默认" : "设为启动默认";
+    public string StartupMode { get => _manager.Settings.StartupMode; set { _manager.Settings.StartupMode = value; _manager.MarkSettingsDirty(); OnPropertyChanged(); } }
+    public string SearchText { get => _search; set { if (SetProperty(ref _search, value)) { OnPropertyChanged(nameof(HasSearchText)); Filter(); } } }
+    public bool IsBusy { get => _busy; private set { SetProperty(ref _busy, value); OnPropertyChanged(nameof(CanInteract)); CommandManager.InvalidateRequerySuggested(); } }
+    public bool CanInteract => !IsBusy;
+    public bool HasSearchText => !string.IsNullOrWhiteSpace(SearchText);
+    public bool IsSelectedCurrent => SelectedMetadata != null && SelectedMetadata.Id == CurrentSolutionId;
+    public string OperationStatus => "正在处理方案，请稍候…";
+    public SolutionMetadata? SelectedMetadata
     {
-        private readonly SolutionManager _solutionManager;
-        private readonly string? _preselectSolutionId;
-
-        // 状态1：元数据列表（轻量级，仅用于显示和配置）
-        public ObservableCollection<SolutionMetadata> SolutionMetadatas { get; } = new();
-
-        // 最近打开列表（按 LastAccessTime 倒序取前 N）
-        public ObservableCollection<SolutionMetadata> RecentSolutions { get; } = new();
-
-        // 右侧卡片显示集合（搜索时过滤 SolutionMetadatas）
-        public ObservableCollection<SolutionMetadata> FilteredMetadatas { get; } = new();
-
-        private string _searchText = "";
-        /// <summary>
-        /// 搜索关键字（过滤右侧全部方案卡片）
-        /// </summary>
-        public string SearchText
+        get => _selected;
+        set
         {
-            get => _searchText;
-            set
-            {
-                if (SetProperty(ref _searchText, value))
-                {
-                    ApplyFilter();
-                }
-            }
+            if (!SetProperty(ref _selected, value)) return;
+            foreach (var property in new[] { nameof(SelectedMetadataId), nameof(HasSelectedSolution), nameof(SolutionStoragePath), nameof(SolutionInfo), nameof(ToggleDefaultButtonText), nameof(IsSelectedCurrent) }) OnPropertyChanged(property);
+            CommandManager.InvalidateRequerySuggested();
         }
+    }
 
-        // 状态2：选中的元数据（轻量级）
-        private SolutionMetadata? _selectedMetadata;
-        public SolutionMetadata? SelectedMetadata
+    public ICommand NewSolutionCommand { get; }
+    public ICommand OpenSolutionCommand { get; }
+    public ICommand SaveSolutionAsCommand { get; }
+    public ICommand DeleteSolutionCommand { get; }
+    public ICommand RemoveSolutionCommand { get; }
+    public ICommand CopySolutionCommand { get; }
+    public ICommand EditSolutionCommand { get; }
+    public ICommand SelectCommand { get; }
+    public ICommand ToggleDefaultCommand { get; }
+    public ICommand LaunchCommand { get; }
+    public ICommand ShowAllCommand { get; }
+    public ICommand LocateCommand { get; }
+    public ICommand OpenFolderCommand { get; }
+    public ICommand ChangeDataDirectoryCommand { get; }
+    public ICommand RepairAssociationCommand { get; }
+    public ICommand RestorePreviousCommand { get; }
+    public ICommand PropertiesCommand { get; }
+    public ICommand ClearSearchCommand { get; }
+    public ICommand ShowDataDirectoryCommand { get; }
+    public ICommand CopyDataDirectoryCommand { get; }
+    public ICommand OpenDataDirectoryCommand { get; }
+
+    public SolutionConfigurationDialogViewModel(SolutionManager manager, string? preselectSolutionId = null,
+        Func<Task<bool>>? beforeTransition = null, Action? synchronizeCurrent = null)
+    {
+        _manager = manager; _beforeTransition = beforeTransition; _synchronizeCurrent = synchronizeCurrent;
+        NewSolutionCommand = new RelayCommand(New, () => !IsBusy);
+        OpenSolutionCommand = new RelayCommand(AddExisting, () => !IsBusy);
+        SaveSolutionAsCommand = new RelayCommand(async () => await RunAsync(SaveAs), () => CanSelect() && IsSelectedCurrent);
+        DeleteSolutionCommand = new RelayCommand(async () => await RunAsync(() => Remove(true)), CanSelect);
+        RemoveSolutionCommand = new RelayCommand(async () => await RunAsync(() => Remove(false)), CanSelect);
+        CopySolutionCommand = new RelayCommand(Copy, () => CanSelect() && (!SelectedMetadata!.IsMissing || IsSelectedCurrent));
+        EditSolutionCommand = new RelayCommand(_ => Edit(), _ => CanSelect() && !SelectedMetadata!.IsMissing);
+        SelectCommand = new RelayCommand(value => SelectedMetadata = value as SolutionMetadata);
+        ToggleDefaultCommand = new RelayCommand(ToggleDefault, CanSelect);
+        LaunchCommand = new RelayCommand(async value => await RunAsync(() => Launch(value)), _ => CanSelect() && (!SelectedMetadata!.IsMissing || IsSelectedCurrent));
+        ShowAllCommand = new RelayCommand(() => SearchText = "", () => !IsBusy);
+        LocateCommand = new RelayCommand(Locate, () => CanSelect() && !IsSelectedCurrent);
+        OpenFolderCommand = new RelayCommand(OpenFolder, CanSelect);
+        ChangeDataDirectoryCommand = new RelayCommand(async () => await RunAsync(ChangeDataDirectory), () => !IsBusy);
+        RepairAssociationCommand = new RelayCommand(RepairAssociation, () => !IsBusy);
+        RestorePreviousCommand = new RelayCommand(async () => await RunAsync(RestorePrevious), () => CanSelect() && _manager.HasPreviousSave(SelectedMetadata!.Id));
+        PropertiesCommand = new RelayCommand(ShowProperties, CanSelect);
+        ClearSearchCommand = new RelayCommand(() => SearchText = "", () => !IsBusy && HasSearchText);
+        ShowDataDirectoryCommand = new RelayCommand(ShowDataDirectory, () => !IsBusy);
+        CopyDataDirectoryCommand = new RelayCommand(() => { try { Clipboard.SetText(DataRoot); } catch (Exception ex) { Error(ex); } }, () => !IsBusy);
+        OpenDataDirectoryCommand = new RelayCommand(() => OpenDirectory(DataRoot), () => !IsBusy);
+        _manager.SolutionAdded += Changed; _manager.SolutionRemoved += Changed; _manager.SolutionUpdated += Changed;
+        _manager.SolutionRenamed += Changed; _manager.CurrentSolutionChanged += Changed;
+        _manager.MetadataRefreshed += Refreshed;
+        Reload();
+        SelectedMetadata = SolutionMetadatas.FirstOrDefault(m => m.Id == preselectSolutionId) ?? SolutionMetadatas.FirstOrDefault(m => m.Id == CurrentSolutionId);
+    }
+
+    public void SetOwnerWindow(Window window) => _owner = window;
+    public void SaveCurrentSolution() { } // Closing a catalogue is not a save operation.
+    public void SaveSettings() => _manager.SaveUserSettings();
+    private bool CanSelect() => !IsBusy && SelectedMetadata != null;
+    private void Error(Exception exception) => ThemeMessageDialog.Show(exception.Message, "解决方案", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+    private async Task RunAsync(Func<Task> operation)
+    {
+        if (IsBusy) return;
+        IsBusy = true;
+        try { await operation(); } catch (Exception ex) { Error(ex); } finally { IsBusy = false; }
+    }
+    private async Task<bool> BeforeTransition()
+    {
+        if (_beforeTransition != null) return await _beforeTransition();
+        if (_manager.CurrentSolution != null && _manager.HasUnsavedChanges)
+            throw new InvalidOperationException("当前方案有未保存修改，请从主工作区完成保存或切换。");
+        return true;
+    }
+
+    private void New()
+    {
+        try
         {
-            get => _selectedMetadata;
-            set
-            {
-                if (SetProperty(ref _selectedMetadata, value))
-                {
-                    LogInfo($"[SolutionConfigTrace] SelectedMetadata changed | id={value?.Id ?? "null"}, name={value?.Name ?? "null"}, path={value?.FilePath ?? "null"}");
-                    // 选中时只标记状态，不加载完整解决方案
-                    OnPropertyChanged(nameof(SelectedMetadataId));
-                    OnPropertyChanged(nameof(HasSelectedSolution));
-                    OnPropertyChanged(nameof(SolutionStoragePath));
-                    OnPropertyChanged(nameof(SolutionInfo));
-                    
-                    // ✅ 通知按钮文本和提示更新
-                    // 这些属性依赖 SelectedMetadata，必须在 SelectedMetadata 变化时通知
-                    OnPropertyChanged(nameof(ToggleDefaultButtonText));
-                    OnPropertyChanged(nameof(ToggleDefaultButtonToolTip));
-                }
-            }
-        }
-
-        // 辅助属性：选中的元数据ID（用于XAML数据触发器）
-        public string? SelectedMetadataId => SelectedMetadata?.Id;
-
-        // 辅助属性：当前打开的解决方案ID（用于XAML数据触发器）
-        /// <summary>
-        /// 当前打开的解决方案ID（用于XAML数据触发器）
-        /// </summary>
-        /// <remarks>
-        /// 语义说明：
-        /// - 只返回实际加载的解决方案ID（CurrentSolution）
-        /// - 不使用 Settings.CurrentSolutionId 的回退值
-        /// - 只有用户明确启动解决方案后，才显示"打开"状态
-        /// </remarks>
-        public string? CurrentSolutionId => _solutionManager.CurrentSolution?.Id;
-
-        // 状态3：完整的 Solution 对象（懒加载，仅在启动时加载）
-        private Solution? _selectedSolution;
-        public Solution? SelectedSolution
-        {
-            get => _selectedSolution;
-            private set
-            {
-                if (SetProperty(ref _selectedSolution, value))
-                {
-                    OnPropertyChanged(nameof(SelectedSolutionId));
-                    OnPropertyChanged(nameof(CurrentSolutionId));
-                }
-            }
-        }
-
-        // 辅助属性：选中的Solution ID（用于XAML数据触发器）
-        public string? SelectedSolutionId => SelectedSolution?.Id;
-
-        private bool _skipStartupConfig;
-        private bool _isLaunched;
-        private Solution? _launchResult;
-        private Window? _ownerWindow;
-
-        public SolutionConfigurationDialogViewModel(SolutionManager solutionManager, string? preselectSolutionId = null)
-        {
-            _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
-            _preselectSolutionId = preselectSolutionId;
-
-            InitializeCommands();
-            LoadData();
-
-            // ✅ 监听细粒度事件，实现增量更新
-            _solutionManager.SolutionAdded += OnSolutionAdded;
-            _solutionManager.SolutionRemoved += OnSolutionRemoved;
-            _solutionManager.SolutionRenamed += OnSolutionRenamed;
-            _solutionManager.SolutionUpdated += OnSolutionUpdated;
-            _solutionManager.MetadataRefreshed += OnMetadataRefreshed;
-            _solutionManager.CurrentSolutionChanged += OnCurrentSolutionChanged;
-        }
-
-        /// <summary>
-        /// 设置所有者窗口
-        /// </summary>
-        public void SetOwnerWindow(Window window)
-        {
-            _ownerWindow = window;
-        }
-
-        /// <summary>
-        /// 启动结果
-        /// </summary>
-        public Solution? LaunchResult => _launchResult;
-
-        /// <summary>
-        /// 是否已启动
-        /// </summary>
-        public bool IsLaunched => _isLaunched;
-
-        /// <summary>
-        /// 保存当前解决方案
-        /// </summary>
-        public void SaveCurrentSolution()
-        {
-            if (SelectedSolution != null)
-            {
-                try
-                {
-                    _solutionManager.SaveSolution(SelectedSolution.FilePath);
-                }
-                catch (Exception ex)
-                {
-                    LogError($"保存解决方案失败: {ex.Message}");
-                }
-            }
-        }
-
-        /// <summary>
-        /// 保存设置
-        /// </summary>
-        public void SaveSettings()
-        {
-            try
-            {
-                // ✅ 调用 SolutionManager 的公开方法
-                _solutionManager.SaveUserSettings();
-                LogInfo("设置已保存到文件");
-            }
-            catch (Exception ex)
-            {
-                LogError($"保存设置失败: {ex.Message}");
-            }
-        }
-
-        #region 解决方案相关
-
-        /// <summary>
-        /// 切换默认按钮文本
-        /// </summary>
-        public string ToggleDefaultButtonText
-        {
-            get
-            {
-                if (SelectedMetadata == null)
-                    return "设为默认";
-                return SelectedMetadata.IsDefault ? "取消默认" : "设为默认";
-            }
-        }
-
-        /// <summary>
-        /// 切换默认按钮提示
-        /// </summary>
-        public string ToggleDefaultButtonToolTip
-        {
-            get
-            {
-                if (SelectedMetadata == null)
-                    return "设置默认解决方案";
-                return SelectedMetadata.IsDefault ? "取消默认解决方案" : "设置默认解决方案";
-            }
-        }
-
-        /// <summary>
-        /// 是否选中了解决方案
-        /// </summary>
-        public bool HasSelectedSolution => SelectedMetadata != null;
-
-        /// <summary>
-        /// 解决方案存储路径
-        /// </summary>
-        public string SolutionStoragePath => SelectedMetadata?.FilePath ?? "未选择解决方案";
-
-        /// <summary>
-        /// 解决方案信息
-        /// </summary>
-        public string SolutionInfo
-        {
-            get
-            {
-                if (SelectedMetadata == null) return string.Empty;
-                return $"版本: {SelectedMetadata.Version}\n" +
-                       $"工作流数: {SelectedMetadata.WorkflowCount}";
-            }
-        }
-
-        /// <summary>
-        /// 新建解决方案命令
-        /// </summary>
-        public ICommand NewSolutionCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 打开解决方案命令
-        /// </summary>
-        public ICommand OpenSolutionCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 另存为解决方案命令
-        /// </summary>
-        public ICommand SaveSolutionAsCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 删除解决方案命令
-        /// </summary>
-        public ICommand DeleteSolutionCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 复制解决方案命令
-        /// </summary>
-        public ICommand CopySolutionCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 编辑解决方案命令（名称+描述）
-        /// </summary>
-        public ICommand EditSolutionCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 选中解决方案命令
-        /// </summary>
-        public ICommand SelectCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 切换默认解决方案命令（设为默认/取消默认）
-        /// </summary>
-        public ICommand ToggleDefaultCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 显示全部解决方案命令（清除搜索并选中第一个）
-        /// </summary>
-        public ICommand ShowAllCommand { get; private set; } = null!;
-
-        private void InitializeCommands()
-        {
-            NewSolutionCommand = new RelayCommand(NewSolution, () => true);
-            OpenSolutionCommand = new RelayCommand(OpenSolution, () => true);
-            CopySolutionCommand = new RelayCommand(CopySolution, () => CanCopySolution());
-
-            // ✅ 使用公共版本：有参方法 + 无参 canExecute（使用 _ 忽略参数）
-            EditSolutionCommand = new RelayCommand(EditSolution, _ => CanEditSolution());
-
-            SaveSolutionAsCommand = new RelayCommand(SaveSolutionAs, () => CanSaveSolutionAs());
-            DeleteSolutionCommand = new RelayCommand(DeleteSolution, () => CanDeleteSolution());
-
-            // ✅ 使用公共版本：有参方法 + 无参 canExecute
-            SelectCommand = new RelayCommand(SelectSolution, _ => true);
-
-            // ✅ 新增：切换默认解决方案命令
-            ToggleDefaultCommand = new RelayCommand(ExecuteToggleDefault, CanToggleDefault);
-
-            // ✅ 使用公共版本：有参方法 + 无参 canExecute
-            LaunchCommand = new RelayCommand(Launch, _ => true);
-
-            // 全部解决方案：清除搜索，选中第一个
-            ShowAllCommand = new RelayCommand(ShowAll, _ => true);
-        }
-
-        /// <summary>
-        /// 显示全部解决方案（清除搜索并选中第一个）
-        /// </summary>
-        private void ShowAll(object? parameter)
-        {
-            SearchText = "";
-            if (FilteredMetadatas.Count > 0)
-            {
-                SelectedMetadata = FilteredMetadatas[0];
-            }
-        }
-
-        /// <summary>
-        /// 选中解决方案（单击卡片，只标记选中状态，不加载完整解决方案）
-        /// </summary>
-        private void SelectSolution(object? parameter)
-        {
-            LogInfo($"[SolutionConfigTrace] SelectCommand execute | parameterType={parameter?.GetType().FullName ?? "null"}");
-            if (parameter is SolutionMetadata metadata)
-            {
-                SelectedMetadata = metadata;
-                LogInfo($"[SolutionConfigTrace] solution selected | id={metadata.Id}, name={metadata.Name}, path={metadata.FilePath}");
-            }
-            else if (parameter != null)
-            {
-                LogWarning($"SelectCommand收到未知类型参数: {parameter.GetType().Name}");
-            }
-            else
-            {
-                LogWarning("[SolutionConfigTrace] SelectCommand received null parameter");
-            }
-        }
-
-        private void NewSolution()
-        {
-            LogInfo("开始创建新解决方案");
-
-            // ✅ 统一使用解决方案管理器的默认目录
-            var defaultPath = _solutionManager.SolutionsDirectory;
-
-            try
-            {
-                var dialog = new NewSolutionDialog(defaultPath);
-                var result = dialog.ShowDialog();
-
-                if (result == true && !string.IsNullOrEmpty(dialog.SolutionName))
-                {
-                    LogInfo($"用户输入: 名称={dialog.SolutionName}, 路径={dialog.SolutionPath}, 描述={dialog.Description}");
-
-                    try
-                    {
-                        // ✅ 使用新的 CreateNewSolution 方法，接受元数据
-                        var metadata = new SolutionMetadata
-                        {
-                            Name = dialog.SolutionName,
-                            Description = dialog.Description ?? "",
-                            DirectoryPath = dialog.SolutionPath
-                        };
-
-                        var newMetadata = _solutionManager.CreateNewSolution(metadata);
-
-                        if (newMetadata == null)
-                        {
-                            LogError("SolutionManager.CreateNewSolution 返回了 null");
-                            ThemeMessageDialog.Show("创建解决方案失败: 返回了 null", "错误",
-                                MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-                            return;
-                        }
-
-                        // ✅ 移除手动添加，由 SolutionAdded 事件统一处理
-                        // SolutionMetadatas.Add(newMetadata);
-                        // LogInfo($"添加到列表，当前数量: {SolutionMetadatas.Count}");
-
-                        // 设置选中状态
-                        SelectedMetadata = newMetadata;
-                        LogInfo($"已设置选中解决方案");
-
-                        LogSuccess($"创建解决方案成功: {newMetadata.Name}");
-                    }
-                    catch (Exception ex)
-                    {
-                        LogError($"创建解决方案失败: {ex.Message}");
-                        ThemeMessageDialog.Show($"创建解决方案失败: {ex.Message}", "错误",
-                            MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-                    }
-                }
-                else if (result == true)
-                {
-                    LogWarning("用户点击了创建但未输入解决方案名称");
-                }
-                else
-                {
-                    LogInfo("用户取消了创建解决方案");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogError($"打开新建对话框失败: {ex.Message}");
-                ThemeMessageDialog.Show($"打开新建对话框失败: {ex.Message}", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-            }
-        }
-
-        private void OpenSolution()
-        {
-            // ✅ 使用 OpenFileDialog 直接选择 .solution 文件
-            var openFileDialog = new OpenFileDialog
-            {
-                Title = "选择解决方案文件",
-                Filter = "解决方案文件 (*.solution)|*.solution|所有文件 (*.*)|*.*",
-                FilterIndex = 0,
-                InitialDirectory = _solutionManager.SolutionsDirectory
-            };
-
-            var result = openFileDialog.ShowDialog();
-            if (result != true) return;
-
-            var filePath = openFileDialog.FileName;
-
-            if (string.IsNullOrEmpty(filePath))
-            {
-                LogWarning("未选择文件");
-                return;
-            }
-
-            try
-            {
-                var loadStartedAt = System.Diagnostics.Stopwatch.StartNew();
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[SolutionOpenTrace] LoadSolutionOnly begin | path={filePath}, thread={Environment.CurrentManagedThreadId}",
-                    "SolutionConfigurationDialog");
-                // ✅ 仅加载解决方案对象（不设置为当前解决方案）
-                var solution = _solutionManager.LoadSolutionOnly(filePath);
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[SolutionOpenTrace] LoadSolutionOnly returned | success={solution is not null}, elapsedMs={loadStartedAt.ElapsedMilliseconds}",
-                    "SolutionConfigurationDialog");
-                if (solution == null)
-                {
-                    ThemeMessageDialog.Show("加载解决方案文件失败", "错误",
-                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-                    return;
-                }
-
-                // ✅ 尝试从已知解决方案中获取元数据，否则创建新的
-                var metadata = _solutionManager.Settings.KnownSolutions.Values
-                    .FirstOrDefault(m => m.FilePath == filePath);
-
-                if (metadata == null)
-                {
-                    // 创建新的元数据（使用文件名作为名称）
-                    metadata = new SolutionMetadata
-                    {
-                        Id = solution.Id,
-                        Name = Path.GetFileNameWithoutExtension(filePath),
-                        Description = "",
-                        Version = solution.Version,
-                        FilePath = filePath,
-                        DirectoryPath = Path.GetDirectoryName(filePath) ?? "",
-                        CreatedTime = File.GetCreationTime(filePath),
-                        ModifiedTime = File.GetLastWriteTime(filePath)
-                    };
-                }
-                metadata.UpdateStatistics(solution);
-
-                // ✅ 注册已知解决方案（持久化到Settings + 触发 SolutionAdded 事件
-                //   → OnSolutionAdded 统一刷新 卡片/最近打开/过滤集合）
-                // 不再手动 SolutionMetadatas.Add —— 事件链负责即时同步，避免列表不同步。
-                _solutionManager.RegisterKnownSolution(metadata);
-
-                // 设置选中状态
-                SelectedMetadata = metadata;
-                LogSuccess($"打开解决方案: {metadata.Name}");
-            }
-            catch (Exception ex)
-            {
-                LogError($"打开解决方案失败: {ex.Message}");
-                ThemeMessageDialog.Show($"打开解决方案失败: {ex.Message}", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-            }
-        }
-
-        private bool CanSaveSolutionAs()
-        {
-            return SelectedMetadata != null;
-        }
-
-        private void SaveSolutionAs()
-        {
-            if (SelectedMetadata == null) return;
-
-            var defaultName = $"{SelectedMetadata.Name}_copy";
-            var defaultPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var defaultDescription = SelectedMetadata.Description;
-
-            try
-            {
-                // 显示另存为对话框
-                var dialog = new NewSolutionDialog(defaultPath)
-                {
-                    SolutionName = defaultName,
-                    Description = defaultDescription
-                };
-                var result = dialog.ShowDialog();
-
-                if (result == true && !string.IsNullOrEmpty(dialog.SolutionName))
-                {
-                    var targetFilePath = Path.Combine(dialog.SolutionPath, $"{dialog.SolutionName}.solution");
-
-                    // 智能路由：根据是否另存为当前解决方案选择不同的实现
-                    bool isCurrentSolution = SelectedMetadata.Id == CurrentSolutionId;
-
-                    if (isCurrentSolution)
-                    {
-                        // 另存为打开的解决方案
-                        SaveAsCurrentSolution(dialog.SolutionName, dialog.Description, targetFilePath);
-                    }
-                    else
-                    {
-                        // 另存为未打开的解决方案
-                        SaveAsUnopenedSolution(SelectedMetadata.FilePath, dialog.SolutionName, dialog.Description, targetFilePath);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogError($"另存为失败: {ex.Message}");
-                ThemeMessageDialog.Show($"另存为失败: {ex.Message}", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-            }
-        }
-
-        /// <summary>
-        /// 另存为当前打开的解决方案
-        /// </summary>
-        private void SaveAsCurrentSolution(string newName, string newDescription, string targetFilePath)
-        {
-            LogInfo($"另存为当前打开的解决方案: {SelectedMetadata?.Name} -> {newName}");
-
-            // 调用 SolutionManager 的 SaveAsSolution（带参数版本）
-            var newMetadata = _solutionManager.SaveAsSolution(targetFilePath, newName, newDescription);
-
-            if (newMetadata != null)
-            {
-                // ✅ 移除手动添加，由 SolutionAdded 事件统一处理
-                // SolutionMetadatas.Add(newMetadata);
-                SelectedMetadata = newMetadata;
-                LogSuccess($"另存为当前解决方案成功: {newName}");
-            }
-            else
-            {
-                ThemeMessageDialog.Show("另存为失败", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-            }
-        }
-
-        /// <summary>
-        /// 另存为未打开的解决方案
-        /// </summary>
-        private void SaveAsUnopenedSolution(string sourcePath, string newName, string newDescription, string targetFilePath)
-        {
-            LogInfo($"另存为未打开的解决方案: {Path.GetFileNameWithoutExtension(sourcePath)} -> {newName}");
-
-            // 调用 SolutionManager 的 CopySolution（带参数版本）
-            var newMetadata = _solutionManager.CopySolution(sourcePath, newName, newDescription, Path.GetDirectoryName(targetFilePath));
-
-            if (newMetadata != null)
-            {
-                // ✅ 移除手动添加，由 SolutionAdded 事件统一处理
-                // SolutionMetadatas.Add(newMetadata);
-                SelectedMetadata = newMetadata;
-                LogSuccess($"另存为未打开的解决方案成功: {newName}");
-            }
-            else
-            {
-                ThemeMessageDialog.Show("另存为失败", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-            }
-        }
-
-        private bool CanDeleteSolution()
-        {
-            return SelectedMetadata != null;
-        }
-
-        private void DeleteSolution()
-        {
-            if (SelectedMetadata == null) return;
-
-            // 检查是否是当前打开的解决方案
-            bool isCurrentSolution = SelectedMetadata.Id == CurrentSolutionId;
-
-            // 打开主题化确认框，让用户选择是否同时删除源文件
-            var dialog = new DeleteSolutionDialog(SelectedMetadata.Name)
-            {
-                Owner = _ownerWindow
-            };
-
+            var dialog = new NewSolutionDialog(_manager.SolutionsDirectory) { Owner = _owner };
             if (dialog.ShowDialog() != true) return;
-
-            try
-            {
-                var solutionToDelete = SelectedMetadata;
-                bool deleteFile = dialog.DeleteFile;
-
-                // 从SolutionManager中删除（会自动关闭当前解决方案，如果需要）。
-                // 不再手动 SolutionMetadatas.Remove —— 成功删除会触发 SolutionRemoved 事件，
-                // OnSolutionRemoved 统一移除列表项并刷新 最近打开/过滤集合，避免列表不同步。
-                bool deleted = _solutionManager.DeleteSolution(solutionToDelete.Id, deleteFile);
-
-                if (!deleted)
-                {
-                    // 删除失败（如删源文件被占用）：未触发事件，列表未变更，无需回滚
-                    LogError($"删除解决方案失败: {solutionToDelete.Name}");
-                    ThemeMessageDialog.Show("删除解决方案失败，请重试。", "错误",
-                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-                    return;
-                }
-
-                // 清除选中状态
-                SelectedMetadata = null;
-
-                // ✅ 根据删除场景记录不同的日志
-                if (deleteFile)
-                {
-                    LogSuccess($"删除解决方案及源文件: {solutionToDelete.Name}");
-                }
-                else if (isCurrentSolution)
-                {
-                    LogSuccess($"删除当前打开的解决方案: {solutionToDelete.Name} (已自动关闭)");
-                }
-                else
-                {
-                    LogSuccess($"删除未打开的解决方案: {solutionToDelete.Name}");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogError($"删除解决方案失败: {ex.Message}");
-                ThemeMessageDialog.Show($"删除解决方案失败: {ex.Message}", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-            }
+            var metadata = _manager.CreateNewSolution(new SolutionMetadata { Name = dialog.SolutionName, Description = dialog.Description ?? "", DirectoryPath = dialog.SolutionPath });
+            SelectRegistered(metadata.Id);
         }
-
-        private bool CanCopySolution()
+        catch (Exception ex) { Error(ex); }
+    }
+    private void AddExisting()
+    {
+        var dialog = new OpenFileDialog { Filter = "解决方案 (*.solution)|*.solution", InitialDirectory = _manager.SolutionsDirectory };
+        if (dialog.ShowDialog(_owner) != true) return;
+        try { SelectedMetadata = AddExistingFile(dialog.FileName); } catch (Exception ex) { Error(ex); }
+    }
+    public SolutionMetadata? AddExistingFile(string path)
+    {
+        var metadata = new SolutionRepository().LoadMetadata(path) ?? throw new InvalidDataException("方案格式不支持或文件无法读取。");
+        var existing = _manager.GetMetadata(metadata.Id);
+        if (existing != null && !AtomicJsonFile.SamePath(existing.FilePath, path))
         {
-            return SelectedMetadata != null;
-        }
-
-        /// <summary>
-        /// 复制解决方案（文件级操作 + JSON元数据更新）
-        /// </summary>
-        private void CopySolution()
-        {
-            if (SelectedMetadata == null) return;
-
-            try
+            var result = ThemeMessageDialog.Show("该方案 ID 已登记在其他位置。\n是：替换原位置记录（文件不删除）\n否：创建独立副本\n取消：不添加", "方案身份冲突", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);
+            if (result == MessageBoxResult.Cancel || result == MessageBoxResult.None) return null;
+            if (result == MessageBoxResult.No)
             {
-                var baseName = SelectedMetadata.Name;
-                var copyName = GenerateUniqueCopyName(baseName);
-                var targetDirectory = SelectedMetadata.DirectoryPath;
-
-                LogInfo($"开始复制解决方案: {SelectedMetadata.Name} -> {copyName}");
-                LogInfo($"目标目录: {targetDirectory}");
-
-                var newMetadata = _solutionManager.CopySolution(
-                    SelectedMetadata.FilePath,
-                    copyName,
-                    targetDirectory);
-
-                if (newMetadata != null)
-                {
-                    SelectedMetadata = newMetadata;
-                    LogSuccess($"复制解决方案成功: {copyName} (Id={newMetadata.Id})");
-                }
-                else
-                {
-                    LogError("复制解决方案失败: SolutionManager.CopySolution 返回了 null");
-                    ThemeMessageDialog.Show("复制解决方案失败", "错误",
-                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogError($"复制解决方案失败: {ex.Message}");
-                ThemeMessageDialog.Show($"复制解决方案失败: {ex.Message}", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-            }
-        }
-
-        private bool CanEditSolution()
-        {
-            return SelectedMetadata != null;
-        }
-
-        private void EditSolution(object? parameter)
-        {
-            // 优先使用命令参数，其次使用 SelectedMetadata
-            var metadata = parameter as SolutionMetadata ?? SelectedMetadata;
-
-            if (metadata == null) return;
-
-            try
-            {
-                var dialog = new EditSolutionDialog(metadata.Name, metadata.Description)
-                {
-                    Owner = _ownerWindow
-                };
-
-                var result = dialog.ShowDialog();
-
-                if (result != true)
-                {
-                    LogInfo("用户取消编辑解决方案");
-                    return;
-                }
-
-                // ==================== 步骤1：前置检查 ====================
-                var oldName = metadata.Name;
-                bool nameChanged = dialog.SolutionName != metadata.Name;
-                bool descriptionChanged = (dialog.Description ?? "") != (metadata.Description ?? "");
-
-                if (!nameChanged && !descriptionChanged)
-                {
-                    LogInfo("解决方案信息未变化");
-                    return;
-                }
-
-                // ==================== 步骤2：重命名文件（如果名称变化） ====================
-                if (nameChanged)
-                {
-                    LogInfo($"重命名解决方案: {oldName} → {dialog.SolutionName}");
-
-                    bool renameSuccess = _solutionManager.RenameSolutionFile(metadata.Id, dialog.SolutionName);
-                    if (!renameSuccess)
-                    {
-                        LogError($"重命名解决方案失败: {oldName} → {dialog.SolutionName}");
-                        ThemeMessageDialog.Show("重命名解决方案失败", "错误",
-                            MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-                        return;
-                    }
-
-                    // 获取新的元数据（FilePath 已更新）
-                    var updatedMetadata = _solutionManager.GetMetadata(metadata.Id);
-                    if (updatedMetadata != null)
-                    {
-                        metadata.FilePath = updatedMetadata.FilePath;
-                        metadata.DirectoryPath = updatedMetadata.DirectoryPath;
-                    }
-                }
-
-                // ==================== 步骤3：更新元数据 ====================
-                metadata.Name = dialog.SolutionName;
-                metadata.Description = dialog.Description ?? "";
-                metadata.ModifiedTime = DateTime.Now;
-
-                // ==================== 步骤4：保存元数据（不加载 Solution 文件） ====================
-                _solutionManager.UpdateMetadata(metadata);
-
-                LogSuccess($"解决方案已更新: {dialog.SolutionName}");
-            }
-            catch (Exception ex)
-            {
-                LogError($"编辑解决方案失败: {ex.Message}");
-                ThemeMessageDialog.Show($"编辑解决方案失败: {ex.Message}", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-            }
-        }
-
-        /// <summary>
-        /// 生成唯一的复制名称
-        /// </summary>
-        private string GenerateUniqueCopyName(string baseName)
-        {
-            var existingNames = SolutionMetadatas.Select(s => s.Name).ToHashSet();
-            var copyName = $"{baseName}_副本";
-            var counter = 2;
-
-            while (existingNames.Contains(copyName))
-            {
-                copyName = $"{baseName}_副本{counter}";
-                counter++;
-            }
-
-            return copyName;
-        }
-
-        #endregion
-
-
-
-        #region 配置和启动
-
-        /// <summary>
-        /// 启动时跳过配置界面
-        /// </summary>
-        public bool SkipStartupConfig
-        {
-            get => _solutionManager.Settings.SkipStartupConfig;
-            set
-            {
-                if (_solutionManager.Settings.SkipStartupConfig != value)
-                {
-                    _solutionManager.Settings.SkipStartupConfig = value;
-                    _solutionManager.MarkSettingsDirty();
-                    OnPropertyChanged(nameof(SkipStartupConfig));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 启动命令
-        /// </summary>
-        public ICommand LaunchCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 切换默认解决方案
-        /// </summary>
-        private void ExecuteToggleDefault(object? parameter)
-        {
-            if (SelectedMetadata == null)
-                return;
-
-            if (SelectedMetadata.IsDefault)
-            {
-                // 取消默认
-                _solutionManager.SetDefaultSolution("");
-                LogInfo($"取消默认解决方案: {SelectedMetadata.Name}");
+                var target = ChooseCopyPath(metadata.Name);
+                if (target == null) return null;
+                metadata = _manager.CopySolution(path, Path.GetFileNameWithoutExtension(target), targetDirectory: Path.GetDirectoryName(target))
+                    ?? throw new IOException("创建副本失败。");
             }
             else
             {
-                // 设为默认
-                _solutionManager.SetDefaultSolution(SelectedMetadata.Id);
-                LogSuccess($"设置默认解决方案: {SelectedMetadata.Name}");
-            }
-
-            // 直接更新UI集合中的 IsDefault 属性，避免重新加载列表
-            // LoadSolutions() 会清空并重建对象，导致UI无法正确感知 IsDefault 变化
-            foreach (var metadata in SolutionMetadatas)
-            {
-                // 直接设置 IsDefault，触发 PropertyChanged
-                metadata.IsDefault = (metadata.Id == _solutionManager.Settings.DefaultSolutionId);
-            }
-
-            // 通知按钮文本属性变化
-            OnPropertyChanged(nameof(ToggleDefaultButtonText));
-            OnPropertyChanged(nameof(ToggleDefaultButtonToolTip));
-        }
-
-        /// <summary>
-        /// 是否可以切换默认解决方案
-        /// </summary>
-        private bool CanToggleDefault(object? parameter)
-        {
-            return SelectedMetadata != null;
-        }
-
-        private void Launch(object? parameter)
-        {
-            var launchStopwatch = System.Diagnostics.Stopwatch.StartNew();
-            LogInfo($"[SolutionLaunchTrace] 01 LaunchCommand begin | thread={Environment.CurrentManagedThreadId}, parameterType={parameter?.GetType().FullName ?? "null"}, selectedId={SelectedMetadata?.Id ?? "null"}");
-            try
-            {
-                // 获取要启动的元数据
-                var metadataToLaunch = parameter as SolutionMetadata ?? SelectedMetadata;
-
-                if (metadataToLaunch != null)
-                {
-                    LogInfo($"[SolutionLaunchTrace] 02 target resolved | id={metadataToLaunch.Id}, name={metadataToLaunch.Name}, path={metadataToLaunch.FilePath}, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
-                // [诊断] 记录双击的选项卡
-                LogInfo($"[诊断-双击] 双击的解决方案ID: {metadataToLaunch.Id}");
-                LogInfo($"[诊断-双击] 双击的解决方案名称: {metadataToLaunch.Name}");
-                LogInfo($"[诊断-双击] 双击的解决方案路径: {metadataToLaunch.FilePath}");
-                
-                // [诊断] 记录当前解决方案ID
-                LogInfo($"[诊断-双击] 当前解决方案ID: {_solutionManager.CurrentSolution?.Id ?? "null"}");
-                LogInfo($"[诊断-双击] 默认解决方案ID: {_solutionManager.Settings.DefaultSolutionId ?? "null"}");
-
-                // 如果参数传入的不是当前选中的解决方案，更新选中状态
-                if (SelectedMetadata?.Id != metadataToLaunch.Id)
-                {
-                    SelectedMetadata = metadataToLaunch;
-                }
-
-                // ✅ 懒加载：仅在启动时加载完整 Solution 对象
-                LogInfo($"[SolutionLaunchTrace] 03 LoadSolutionOnly begin | path={metadataToLaunch.FilePath}, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
-                var fullSolution = _solutionManager.LoadSolutionOnly(metadataToLaunch.FilePath);
-                LogInfo($"[SolutionLaunchTrace] 04 LoadSolutionOnly returned | success={fullSolution is not null}, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
-                if (fullSolution != null)
-                {
-                    SelectedSolution = fullSolution;
-                    LogInfo($"[SolutionLaunchTrace] 05 launch result prepared | id={fullSolution.Id}, workflows={fullSolution.Workflows.Count}, devices={fullSolution.Devices?.Count ?? 0}, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
-
-                    // ✅ 记录打开时间（RegisterKnownSolution → AddKnownSolution → UpdateLastAccessTime）
-                    // 使"最近打开"排序和打开时间显示在下次打开对话框时生效
-                    _solutionManager.RegisterKnownSolution(metadataToLaunch);
-
-                    // ✅ 仅设置启动结果，不调用 SetCurrentSolutionSilently
-                    // 由调用方（App.xaml.cs 或 ExecuteShowSolutionConfiguration）决定如何处理
-                    _isLaunched = true;
-
-                    // 设置启动结果
-                    _launchResult = fullSolution;
-
-                    if (_ownerWindow != null)
-                    {
-                        LogInfo($"[SolutionLaunchTrace] 06 dialog close begin | dialogResult=true, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
-                        _ownerWindow.DialogResult = true;
-                        _ownerWindow.Close();
-                        LogInfo($"[SolutionLaunchTrace] 07 dialog close returned | elapsedMs={launchStopwatch.ElapsedMilliseconds}");
-                    }
-
-                    LogSuccess($"[SolutionLaunchTrace] 08 LaunchCommand completed | name={metadataToLaunch.Name}, elapsedMs={launchStopwatch.ElapsedMilliseconds}");
-                }
-                else
-                {
-                    LogError($"加载解决方案失败: {metadataToLaunch.Name}");
-                    ThemeMessageDialog.Show($"加载解决方案失败: {metadataToLaunch.Name}", "错误",
-                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-                }
-                }
-                else
-                {
-                    LogError("[SolutionLaunchTrace] no target solution");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogError($"[SolutionLaunchTrace] LaunchCommand exception | type={ex.GetType().FullName}, message={ex.Message}, elapsedMs={launchStopwatch.ElapsedMilliseconds}\n堆栈: {ex.StackTrace}");
-                throw;
+                if (_manager.CurrentSolution?.Id == existing.Id) throw new InvalidOperationException("当前方案正在打开，请先关闭后替换位置记录。");
+                _manager.ReplaceKnownSolution(metadata);
             }
         }
-
-        #endregion
-
-        #region 数据加载
-
-        /// <summary>
-        /// 加载数据
-        /// </summary>
-        private void LoadData()
+        else _manager.RegisterKnownSolution(metadata);
+        _manager.SaveUserSettings(); SelectRegistered(metadata.Id);
+        return SelectedMetadata;
+    }
+    private string? ChooseCopyPath(string name)
+    {
+        var dialog = new SaveFileDialog { Filter = "解决方案 (*.solution)|*.solution", DefaultExt = ".solution", InitialDirectory = _manager.SolutionsDirectory, FileName = name + "_副本", OverwritePrompt = true };
+        return dialog.ShowDialog(_owner) == true ? dialog.FileName : null;
+    }
+    private void Copy()
+    {
+        try
         {
-            LoadSolutions();
-
-            // 预选指定的解决方案
-            if (!string.IsNullOrEmpty(_preselectSolutionId))
-            {
-                var metadata = SolutionMetadatas.FirstOrDefault(s => s.Id == _preselectSolutionId);
-                if (metadata != null)
-                {
-                    SelectedMetadata = metadata;
-                }
-            }
+            if (SelectedMetadata == null) return;
+            _synchronizeCurrent?.Invoke();
+            var target = ChooseCopyPath(SelectedMetadata.Name);
+            if (target == null) return;
+            var result = _manager.CopySolution(SelectedMetadata.FilePath, Path.GetFileNameWithoutExtension(target), newDescription: SelectedMetadata.Description, targetDirectory: Path.GetDirectoryName(target))
+                ?? throw new IOException("创建副本失败。");
+            SelectRegistered(result.Id);
         }
-
-        /// <summary>
-        /// 从 SolutionManager 加载解决方案元数据列表
-        /// </summary>
-        /// <remarks>
-        /// 架构改进（2026-03-16）：
-        /// - 直接使用 SolutionMetadata，避免不必要的转换层
-        /// - 避免加载 Workflows、NodeParameters、GlobalVariables、Devices、Communications 等大数据
-        /// - 完整 Solution 对象只在需要编辑或执行时通过 LoadSolutionOnly() 加载
-        /// - 性能提升：启动时间从数秒降低到毫秒级
-        ///
-        /// 使用 SolutionManager.GetAllMetadata() 获取所有元数据
-        /// 利用 SolutionCache 和 SolutionRegistry 实现懒加载优化
-        /// </remarks>
-        private void LoadSolutions()
+        catch (Exception ex) { Error(ex); }
+    }
+    private async Task SaveAs()
+    {
+        if (_manager.CurrentSolution == null || !IsSelectedCurrent) return;
+        _synchronizeCurrent?.Invoke();
+        var target = ChooseCopyPath(_manager.CurrentSolution.Name);
+        if (target == null) return;
+        if (_beforeTransition != null && !await _beforeTransition()) return;
+        var metadata = _manager.SaveAsSolution(target, Path.GetFileNameWithoutExtension(target), _manager.CurrentSolution.Description)
+            ?? throw new IOException("另存为失败。");
+        Reload(); SelectedMetadata = SolutionMetadatas.First(m => m.Id == metadata.Id);
+    }
+    private async Task Launch(object? value)
+    {
+        var selected = value as SolutionMetadata ?? SelectedMetadata;
+        if (selected == null) return;
+        var solution = _manager.CurrentSolution?.Id == selected.Id ? _manager.CurrentSolution : _manager.LoadSolutionOnly(selected.FilePath);
+        if (solution == null) throw new IOException(_manager.LastError ?? "方案无法打开，请重新定位文件。");
+        if (solution != _manager.CurrentSolution && !await BeforeTransition()) return;
+        LaunchResult = solution; IsLaunched = true;
+        SaveSettings();
+        if (_owner != null) _owner.DialogResult = true;
+    }
+    private void Edit()
+    {
+        try
         {
-            // 先清空集合
-            SolutionMetadatas.Clear();
-
-            // 使用 SolutionManager.GetAllMetadata() 获取所有元数据
-            var metadataList = _solutionManager.GetAllMetadata();
-
-            // 批量添加，减少 UI 更新次数
-            foreach (var metadata in metadataList)
-            {
-                SolutionMetadatas.Add(metadata);
-            }
-
-            // 刷新最近打开列表（按 LastAccessTime 倒序取前 6）
-            RefreshRecentSolutions();
-
-            // 刷新右侧卡片过滤集合
-            ApplyFilter();
-
-            LogInfo($"加载 {metadataList.Count} 个解决方案（元数据模式 + 缓存优化）");
+            var selected = SelectedMetadata; if (selected == null) return;
+            var dialog = new EditSolutionDialog(selected.Name, selected.Description) { Owner = _owner };
+            if (dialog.ShowDialog() != true) return;
+            if (dialog.SolutionName != selected.Name && !_manager.RenameSolutionFile(selected.Id, dialog.SolutionName)) throw new IOException("重命名失败，目标可能已存在。");
+            var metadata = _manager.GetMetadata(selected.Id)!.Clone();
+            metadata.Name = dialog.SolutionName; metadata.Description = dialog.Description ?? "";
+            _manager.UpdateMetadata(metadata); Reload(); SelectedMetadata = SolutionMetadatas.First(m => m.Id == metadata.Id);
         }
-
-        /// <summary>
-        /// 刷新最近打开列表（按 LastAccessTime 倒序）
-        /// </summary>
-        private void RefreshRecentSolutions()
+        catch (Exception ex) { Error(ex); }
+    }
+    private async Task RestorePrevious()
+    {
+        var selected = SelectedMetadata; if (selected == null) return;
+        if (ThemeMessageDialog.Show("恢复上一成功保存版本并打开？当前磁盘方案将被替换，引用的资源文件不会修改。\n" + selected.FilePath,
+            "恢复方案", MessageBoxButton.YesNo, ThemeMessageDialog.MessageIcon.Warning, _owner) != MessageBoxResult.Yes) return;
+        if (!await BeforeTransition()) return;
+        LaunchResult = _manager.RestorePreviousSave(selected.Id); IsLaunched = true;
+        SaveSettings();
+        if (_owner != null) _owner.DialogResult = true;
+    }
+    private async Task Remove(bool deleteFile)
+    {
+        var selected = SelectedMetadata; if (selected == null) return;
+        var text = deleteFile ? $"删除方案文件？\n{selected.FilePath}\n操作不会删除引用的图片或模型。" : $"仅移除管理记录？\n{selected.FilePath}\n磁盘文件将保留。";
+        if (ThemeMessageDialog.Show(text, deleteFile ? "删除文件" : "移除记录", MessageBoxButton.YesNo, ThemeMessageDialog.MessageIcon.Question, _owner) != MessageBoxResult.Yes) return;
+        if (_manager.CurrentSolution?.Id == selected.Id && !await BeforeTransition()) return;
+        if (!_manager.DeleteSolution(selected.Id, deleteFile)) throw new IOException("操作失败，文件或配置无法修改。");
+        Reload();
+    }
+    private void ToggleDefault()
+    {
+        try { _manager.SetDefaultSolution(SelectedMetadata?.IsDefault == true ? "" : SelectedMetadata!.Id); Reload(); }
+        catch (Exception ex) { Error(ex); }
+    }
+    private void Locate()
+    {
+        try
         {
-            RecentSolutions.Clear();
-            var recent = SolutionMetadatas
-                .Where(m => !string.IsNullOrEmpty(m.FilePath))
-                .OrderByDescending(m => m.LastAccessTime)
-                .Take(6);
-            foreach (var metadata in recent)
-            {
-                RecentSolutions.Add(metadata);
-            }
-            OnPropertyChanged(nameof(HasRecentSolutions));
-            OnPropertyChanged(nameof(AllSolutionsCount));
+            var selected = SelectedMetadata; if (selected == null) return;
+            if (_manager.CurrentSolution?.Id == selected.Id) throw new InvalidOperationException("请先关闭当前方案，再重新定位。");
+            var dialog = new OpenFileDialog { Filter = "解决方案 (*.solution)|*.solution" };
+            if (dialog.ShowDialog(_owner) != true) return;
+            var metadata = new SolutionRepository().LoadMetadata(dialog.FileName) ?? throw new InvalidDataException("所选文件无法读取。");
+            if (metadata.Id != selected.Id) throw new InvalidDataException("所选文件不是该方案，请使用“添加已有”登记。");
+            metadata.LastAccessTime = selected.LastAccessTime;
+            _manager.ReplaceKnownSolution(metadata); Reload(); SelectedMetadata = SolutionMetadatas.First(m => m.Id == metadata.Id);
         }
-
-        /// <summary>
-        /// 是否最近打开列表有记录
-        /// </summary>
-        public bool HasRecentSolutions => RecentSolutions.Count > 0;
-
-        /// <summary>
-        /// 全部解决方案数量
-        /// </summary>
-        public int AllSolutionsCount => SolutionMetadatas.Count;
-
-        /// <summary>
-        /// 应用搜索过滤（按名称/描述/路径）
-        /// </summary>
-        private void ApplyFilter()
+        catch (Exception ex) { Error(ex); }
+    }
+    private void OpenFolder()
+    {
+        try
         {
-            FilteredMetadatas.Clear();
-            var keyword = _searchText?.Trim() ?? "";
-            IEnumerable<SolutionMetadata> query = SolutionMetadatas;
-            if (!string.IsNullOrEmpty(keyword))
-            {
-                query = query.Where(m =>
-                    (m.Name?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (m.Description?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (m.FilePath?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false));
-            }
-            // 按最近访问时间倒序 + 名称升序作次级排序，保证显示顺序稳定可预期
-            // （与 RefreshRecentSolutions 的排序规则保持一致）
-            query = query.OrderByDescending(m => m.LastAccessTime).ThenBy(m => m.Name);
-            foreach (var metadata in query)
-            {
-                FilteredMetadatas.Add(metadata);
-            }
+            var directory = Path.GetDirectoryName(SelectedMetadata!.FilePath)!;
+            if (!Directory.Exists(directory)) throw new DirectoryNotFoundException("目录已失效。");
+            Process.Start(new ProcessStartInfo(directory) { UseShellExecute = true });
         }
-
-        /// <summary>
-        /// 解决方案添加事件处理
-        /// </summary>
-        /// <remarks>
-        /// 增量更新：直接添加到集合，不重新加载
-        /// 防御性编程：添加前检查是否已存在，避免重复添加
-        /// </remarks>
-        private void OnSolutionAdded(object? sender, SolutionMetadataEventArgs e)
+        catch (Exception ex) { Error(ex); }
+    }
+    private async Task ChangeDataDirectory()
+    {
+        if (!await BeforeTransition()) return;
+        var locations = new ApplicationDataLocationService();
+        var dialog = new DataDirectoryDialog(locations, allowLegacy: false) { Owner = _owner };
+        if (dialog.ShowDialog() != true) return;
+        var target = dialog.SelectedPaths!;
+        if (AtomicJsonFile.SamePath(target.Root, _manager.DataRoot)) return;
+        if (ThemeMessageDialog.Show($"复制数据到：{target.Root}\n原数据保留。完成后退出软件，下次启动使用新目录。是否继续？", "迁移数据目录", MessageBoxButton.YesNo, ThemeMessageDialog.MessageIcon.Question) != MessageBoxResult.Yes) return;
+        _manager.MarkSettingsDirty(); _manager.SaveUserSettings();
+        locations.MigrateData(new ApplicationDataPaths(_manager.DataRoot), target);
+        ThemeMessageDialog.Show("数据复制及校验完成，请重新启动软件。原数据未删除。", "数据目录", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
+        Application.Current.Shutdown();
+    }
+    private void RepairAssociation()
+    {
+        try
         {
-            if (e.Metadata != null)
-            {
-                // ✅ 防御性编程：检查是否已存在，避免重复添加
-                if (!SolutionMetadatas.Any(s => s.Id == e.Metadata.Id))
-                {
-                    SolutionMetadatas.Add(e.Metadata);
-                }
-
-                // 无论新增还是已存在（如载入已注册方案、双击打开记录访问时间），
-                // 都刷新 最近打开（按 LastAccessTime 排序）+ 过滤集合，保证列表即时同步。
-                RefreshRecentSolutions();
-                ApplyFilter();
-                LogInfo($"解决方案已同步到列表: {e.Metadata.Name} (Id={e.Metadata.Id})");
-            }
+            new SunEyeVision.UI.Services.FileAssociationService().RegisterFileAssociation();
+            ThemeMessageDialog.Show("文件类型和图标已注册。如果 Windows 仍使用其他默认程序，请在系统默认应用中选择 SunEyeVision。", "文件关联", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
         }
+        catch (Exception ex) { Error(ex); }
+    }
+    private void Reload()
+    {
+        var id = SelectedMetadata?.Id;
+        SolutionMetadatas.Clear();
+        foreach (var item in _manager.GetAllMetadata()) SolutionMetadatas.Add(item);
+        SelectedMetadata = SolutionMetadatas.FirstOrDefault(m => m.Id == id);
+        Filter();
+        OnPropertyChanged(nameof(CurrentSolutionId)); OnPropertyChanged(nameof(DataRoot));
+        OnPropertyChanged(nameof(CurrentSolutionName));
+    }
+    private void Filter()
+    {
+        var selectedId = SelectedMetadata?.Id;
+        RecentSolutions.Clear();
+        foreach (var item in SolutionMetadatas.Where(m => m.LastAccessTime > DateTime.MinValue).OrderByDescending(m => m.LastAccessTime).Take(10)) RecentSolutions.Add(item);
+        FilteredMetadatas.Clear();
+        foreach (var item in SolutionMetadatas.Where(m => string.IsNullOrWhiteSpace(SearchText) || (m.Name + " " + m.Description + " " + m.FilePath).Contains(SearchText.Trim(), StringComparison.OrdinalIgnoreCase)).OrderByDescending(m => m.ModifiedTime).ThenBy(m => m.Name))
+            FilteredMetadatas.Add(item);
+        SelectedMetadata = FilteredMetadatas.FirstOrDefault(m => m.Id == selectedId);
+        foreach (var property in new[] { nameof(AllSolutionsCount), nameof(HasRecentSolutions), nameof(HasFilteredSolutions), nameof(EmptyMessage), nameof(ToggleDefaultButtonText), nameof(IsSelectedCurrent) }) OnPropertyChanged(property);
+    }
 
-        /// <summary>
-        /// 解决方案删除事件处理
-        /// </summary>
-        /// <remarks>
-        /// 增量更新：直接从集合移除，不重新加载
-        /// </remarks>
-        private void OnSolutionRemoved(object? sender, SolutionMetadataEventArgs e)
+    private void SelectRegistered(string id)
+    {
+        SearchText = ""; Reload();
+        SelectedMetadata = FilteredMetadatas.FirstOrDefault(m => m.Id == id);
+    }
+    public bool SelectRecent(SolutionMetadata metadata)
+    {
+        if (IsBusy) return false;
+        SearchText = "";
+        SelectedMetadata = FilteredMetadatas.FirstOrDefault(m => m.Id == metadata.Id);
+        return SelectedMetadata != null;
+    }
+    private static string TimeText(DateTime value) => value == DateTime.MinValue ? "未打开" : value.ToString("yyyy-MM-dd HH:mm");
+    private void ShowProperties()
+    {
+        var selected = SelectedMetadata; if (selected == null) return;
+        var fields = new System.Collections.Generic.KeyValuePair<string, string>[]
         {
-            var toRemove = SolutionMetadatas.FirstOrDefault(s => s.Id == e.SolutionId);
-            if (toRemove != null)
-            {
-                SolutionMetadatas.Remove(toRemove);
-                RefreshRecentSolutions();
-                ApplyFilter();
-                LogInfo($"从列表移除解决方案: {toRemove.Name}");
-            }
-        }
-
-        /// <summary>
-        /// 解决方案重命名事件处理
-        /// </summary>
-        /// <remarks>
-        /// 增量更新：直接更新属性，不重新加载
-        /// </remarks>
-        private void OnSolutionRenamed(object? sender, SolutionMetadataEventArgs e)
+            new("名称", selected.Name), new("文件路径", selected.FilePath),
+            new("描述", string.IsNullOrWhiteSpace(selected.Description) ? "无" : selected.Description),
+            new("修改时间", TimeText(selected.ModifiedTime)), new("最近打开时间", TimeText(selected.LastAccessTime)),
+            new("工作流数量", selected.WorkflowCount.ToString()), new("文件格式版本", selected.Version),
+            new("文件状态", selected.Availability), new("当前工作区", IsSelectedCurrent ? "已打开" : "未打开"),
+            new("启动默认", selected.IsDefault ? "是" : "否")
+        };
+        new SolutionInformationDialog("方案属性", fields) { Owner = _owner }.ShowDialog();
+    }
+    private void ShowDataDirectory() =>
+        new SolutionInformationDialog("数据目录", new System.Collections.Generic.KeyValuePair<string, string>[]
+        { new("数据根目录", DataRoot), new("用户配置", _manager.ConfigurationPath), new("默认方案目录", _manager.SolutionsDirectory),
+          new("说明", "方案可以从任意可读位置添加；更改数据目录会复制并校验数据，原数据保留。") }) { Owner = _owner }.ShowDialog();
+    private void OpenDirectory(string directory)
+    {
+        try
         {
-            var toUpdate = SolutionMetadatas.FirstOrDefault(s => s.Id == e.Metadata?.Id);
-            if (toUpdate != null && e.Metadata != null)
-            {
-                toUpdate.Name = e.Metadata.Name;
-                toUpdate.FilePath = e.Metadata.FilePath;
-                toUpdate.DirectoryPath = e.Metadata.DirectoryPath;
-                toUpdate.ModifiedTime = e.Metadata.ModifiedTime;
-                ApplyFilter();
-                LogInfo($"重命名解决方案: {e.OldName} → {e.NewName}");
-            }
+            if (!Directory.Exists(directory)) throw new DirectoryNotFoundException("目录已失效。");
+            Process.Start(new ProcessStartInfo(directory) { UseShellExecute = true });
         }
-
-        /// <summary>
-        /// 解决方案更新事件处理
-        /// </summary>
-        /// <remarks>
-        /// 增量更新：直接更新属性，不重新加载
-        /// </remarks>
-        private void OnSolutionUpdated(object? sender, SolutionMetadataEventArgs e)
-        {
-            var toUpdate = SolutionMetadatas.FirstOrDefault(s => s.Id == e.Metadata?.Id);
-            if (toUpdate != null && e.Metadata != null)
-            {
-                toUpdate.Name = e.Metadata.Name;
-                toUpdate.Description = e.Metadata.Description;
-                toUpdate.ModifiedTime = e.Metadata.ModifiedTime;
-                ApplyFilter();
-                LogInfo($"更新解决方案元数据: {e.Metadata.Name}");
-            }
-        }
-
-        /// <summary>
-        /// 元数据刷新事件处理
-        /// </summary>
-        /// <remarks>
-        /// 全量刷新：重新加载整个列表
-        /// 触发场景：启动扫描、手动扫描、手动刷新
-        /// </remarks>
-        private void OnMetadataRefreshed(object? sender, EventArgs e)
-        {
-            LoadSolutions();
-            LogInfo("元数据已刷新，重新加载列表");
-        }
-
-        /// <summary>
-        /// 当前解决方案变更事件处理
-        /// </summary>
-        /// <remarks>
-        /// 增量更新：更新 CurrentSolutionId，触发属性通知
-        /// </remarks>
-        private void OnCurrentSolutionChanged(object? sender, SolutionMetadataEventArgs e)
-        {
-            OnPropertyChanged(nameof(CurrentSolutionId));
-            LogInfo($"当前解决方案变更: {e.Metadata?.Name}");
-        }
-
-        /// <summary>
-        /// 清理文件名（移除非法字符）
-        /// </summary>
-        private string SanitizeFileName(string fileName)
-        {
-            var invalidChars = Path.GetInvalidFileNameChars();
-            var sanitized = string.Join("_", fileName.Split(invalidChars));
-            return sanitized;
-        }
-
-        #endregion
+        catch (Exception ex) { Error(ex); }
+    }
+    private void Changed(object? sender, SolutionMetadataEventArgs e) => Reload();
+    private void Refreshed(object? sender, EventArgs e) => Reload();
+    public void Dispose()
+    {
+        _manager.SolutionAdded -= Changed; _manager.SolutionRemoved -= Changed; _manager.SolutionUpdated -= Changed;
+        _manager.SolutionRenamed -= Changed; _manager.CurrentSolutionChanged -= Changed; _manager.MetadataRefreshed -= Refreshed;
+        _owner = null;
     }
 }

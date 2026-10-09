@@ -50,16 +50,10 @@ namespace SunEyeVision.UI.Shared
         {
             try
             {
-                var configPath = GetConfigFilePath();
-                var directory = Path.GetDirectoryName(configPath);
-
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
-                var json = JsonSerializer.Serialize(this, JsonSerializationOptions.Default);
-                File.WriteAllText(configPath, json);
+                var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+                manager.Settings.SetPreference("WindowLayout", this);
+                manager.MarkSettingsDirty();
+                manager.SaveUserSettings();
                 return true;
             }
             catch (Exception)
@@ -77,6 +71,10 @@ namespace SunEyeVision.UI.Shared
         {
             try
             {
+                var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+                var saved = manager.Settings.GetPreference<LayoutConfig>("WindowLayout");
+                if (saved != null) { saved.ValidateAndCorrect(); return saved; }
+                // Read-only compatibility import; subsequent saves use the selected data root.
                 var configPath = GetConfigFilePath();
 
                 if (!File.Exists(configPath))

@@ -16,8 +16,7 @@ namespace SunEyeVision.Workflow;
 /// </summary>
 /// <remarks>
 /// 架构改进（2026-03-25）：
-/// - 移除 Name 和 Description 冗余字段
-/// - 名称和描述由 SolutionMetadata 统一管理
+/// - 名称和描述随方案持久化，SolutionMetadata 仅为管理器缓存
 /// - Solution 只存储业务数据（Workflows、GlobalVariables 等）
 /// - 通过 ID 与 SolutionMetadata 关联
 /// - FilePath 为运行时属性，不序列化到文件
@@ -42,6 +41,11 @@ public class Solution : ObservableObject
     /// 解决方案ID（不可变，与 SolutionMetadata 关联）
     /// </summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    public string Name { get; set; } = "";
+    public string Description { get; set; } = "";
+    public int SchemaVersion { get; set; } = 1;
+    [JsonExtensionData] public Dictionary<string, JsonElement>? AdditionalData { get; set; }
 
     /// <summary>
     /// 解决方案版本
@@ -115,8 +119,6 @@ public class Solution : ObservableObject
         if (string.IsNullOrEmpty(filePath))
             throw new ArgumentException("文件路径不能为空");
 
-        FilePath = filePath;
-
         var directory = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
         {
@@ -128,7 +130,8 @@ public class Solution : ObservableObject
         var json = JsonSerializer.Serialize(this, WorkflowSerializationOptions.Default);
         VisionLogger.Instance.Log(LogLevel.Info, $"序列化完成, JSON长度: {json.Length} 字符", "Solution");
 
-        File.WriteAllText(filePath, json);
+        SunEyeVision.Workflow.Persistence.AtomicJsonFile.Write(filePath, json);
+        FilePath = filePath;
 
         var fileInfo = new FileInfo(filePath);
         VisionLogger.Instance.Log(LogLevel.Success, $"保存解决方案: Id={Id} -> {filePath}, 文件大小: {fileInfo.Length} 字节", "Solution");

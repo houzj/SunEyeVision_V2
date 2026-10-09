@@ -75,7 +75,7 @@ public partial class NewSolutionDialog : ThemeDialogWindow
     /// </summary>
     private void OnBrowseButtonClick(object sender, RoutedEventArgs e)
     {
-        var initialPath = SolutionPathTextBox?.Text ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        var initialPath = SolutionPathTextBox?.Text ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         var selectedPath = FolderBrowserHelper.BrowseForFolder("选择解决方案存储路径", initialPath);
 
         if (!string.IsNullOrEmpty(selectedPath))
@@ -112,6 +112,8 @@ public partial class NewSolutionDialog : ThemeDialogWindow
             return;
         }
 
+        try { SunEyeVision.Workflow.Persistence.AtomicJsonFile.ValidateSolutionName(SolutionName); }
+        catch (Exception ex) { ThemeMessageDialog.Show(ex.Message, "名称无效", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning); return; }
         DialogResult = true;
         Close();
     }

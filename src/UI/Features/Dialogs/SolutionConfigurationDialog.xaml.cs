@@ -1,91 +1,175 @@
-﻿using System.Windows;
+using System;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
+using System.Linq;
 using SunEyeVision.Core.Versioning;
-using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
 
 namespace SunEyeVision.UI.Features.Dialogs;
 
-/// <summary>
-/// SolutionConfigurationDialog.xaml 的交互逻辑
-/// </summary>
 public partial class SolutionConfigurationDialog : Window
 {
     private readonly SolutionConfigurationDialogViewModel _viewModel;
-
-    /// <summary>
-    /// 自定义无边框窗口 Chrome：CaptionHeight 覆盖标题栏高度，边缘可缩放
-    /// </summary>
-    public static System.Windows.Shell.WindowChrome DialogChrome { get; } = new System.Windows.Shell.WindowChrome
+    // WindowChrome carries dispatcher/lifetime state: never share it across windows.
+    public static System.Windows.Shell.WindowChrome DialogChrome => new()
     {
-        CaptionHeight = 64,
-        ResizeBorderThickness = new Thickness(6),
-        GlassFrameThickness = new Thickness(0),
-        CornerRadius = new CornerRadius(0),
-        UseAeroCaptionButtons = false
+        CaptionHeight = 64, ResizeBorderThickness = new Thickness(6),
+        GlassFrameThickness = new Thickness(0), CornerRadius = new CornerRadius(0), UseAeroCaptionButtons = false
     };
-
-    /// <summary>
-    /// 获取启动结果
-    /// </summary>
     public Solution? LaunchResult => _viewModel.LaunchResult;
-
-    /// <summary>
-    /// 是否成功启动
-    /// </summary>
     public bool IsLaunched => _viewModel.IsLaunched;
-
-    /// <summary>
-    /// 构造函数
-    /// </summary>
-    /// <param name="solutionManager">解决方案管理器</param>
-    /// <param name="preselectSolutionId">预选中的解决方案ID</param>
-    public SolutionConfigurationDialog(SolutionManager solutionManager, string? preselectSolutionId = null)
+    public SolutionConfigurationDialog(SolutionManager manager, string? preselectSolutionId = null,
+        Func<Task<bool>>? beforeTransition = null, Action? synchronizeCurrent = null)
     {
         InitializeComponent();
-
-        _viewModel = new SolutionConfigurationDialogViewModel(solutionManager, preselectSolutionId);
-        DataContext = _viewModel;
-
-        // 设置所有者窗口，使双击时能正确关闭
-        _viewModel.SetOwnerWindow(this);
-
-        // 标题栏版本号：读程序集注入的产品版本（rule-022），禁止硬编码
-        VersionTextBlock.Text = "v" + AppVersionInfo.Product;
+        _viewModel = new SolutionConfigurationDialogViewModel(manager, preselectSolutionId, beforeTransition, synchronizeCurrent);
+        DataContext = _viewModel; _viewModel.SetOwnerWindow(this);
+        VersionTextBlock.Text = "v" + AppVersionInfo.Product + (AppVersionInfo.Channel == "stable" ? "" : "_" + AppVersionInfo.Channel);
     }
-
-    /// <summary>
-    /// 标题栏关闭按钮：仅关闭对话框（由调用方决定退出或回主窗口）
-    /// </summary>
-    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    private void CloseButton_Click(object sender, RoutedEventArgs e) { DialogResult = false; }
+    private bool _navigatingRecent;
+    private bool _closed;
+    private void Cards_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        DialogResult = false;
-        Close();
+        var selected = CardList.SelectedItem;
+        if (selected == null) return;
+        Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
+        {
+            if (!_closed && ReferenceEquals(CardList.SelectedItem, selected))
+            { CardList.UpdateLayout(); CardList.ScrollIntoView(selected); }
+        }));
     }
-
-    /// <summary>
-    /// 窗口关闭时
-    /// </summary>
+    private static ListBoxItem? ItemAt(ItemsControl list, DependencyObject? source) =>
+        source == null ? null : ItemsControl.ContainerFromElement(list, source) as ListBoxItem;
+    private static bool FromButton(DependencyObject? source)
+    {
+        while (source != null)
+        {
+            if (source is ButtonBase || source is TextBoxBase || source is ComboBox) return true;
+            source = source is Visual || source is System.Windows.Media.Media3D.Visual3D
+                ? VisualTreeHelper.GetParent(source) : LogicalTreeHelper.GetParent(source);
+        }
+        return false;
+    }
+    private void Solution_DoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left || _viewModel.IsBusy || FromButton(e.OriginalSource as DependencyObject)) return;
+        var item = ItemAt(CardList, e.OriginalSource as DependencyObject);
+        if (item == null) return;
+        item.IsSelected = true;
+        if (_viewModel.LaunchCommand.CanExecute(null)) _viewModel.LaunchCommand.Execute(null);
+    }
+    private void Cards_RightClick(object sender, MouseButtonEventArgs e)
+    {
+        if (_viewModel.IsBusy) { e.Handled = true; return; }
+        var item = ItemAt(CardList, e.OriginalSource as DependencyObject);
+        if (item != null) item.IsSelected = true;
+    }
+    private void Cards_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        if (_viewModel.IsBusy || ItemAt(CardList, e.OriginalSource as DependencyObject) is not ListBoxItem item)
+        { e.Handled = true; return; }
+        item.IsSelected = true;
+    }
+    private void ShowSelectedMenu()
+    {
+        if (_viewModel.IsBusy || CardList.SelectedItem == null) return;
+        CardList.ScrollIntoView(CardList.SelectedItem); CardList.UpdateLayout();
+        if (CardList.ItemContainerGenerator.ContainerFromItem(CardList.SelectedItem) is ListBoxItem item && item.ContextMenu != null)
+        {
+            item.ContextMenu.PlacementTarget = item;
+            item.ContextMenu.Placement = PlacementMode.Bottom;
+            item.ContextMenu.IsOpen = true;
+        }
+    }
+    private void Cards_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (_viewModel.IsBusy || FromButton(e.OriginalSource as DependencyObject)) return;
+        if (e.Key == Key.Apps || e.Key == Key.F10 && Keyboard.Modifiers == ModifierKeys.Shift)
+        { ShowSelectedMenu(); e.Handled = true; return; }
+        if (e.Key == Key.Enter)
+        {
+            if (_viewModel.LaunchCommand.CanExecute(null)) _viewModel.LaunchCommand.Execute(null);
+            e.Handled = true; return;
+        }
+        var columns = FindPanel(CardList)?.ColumnCount ?? 1;
+        var delta = e.Key switch { Key.Left => -1, Key.Right => 1, Key.Up => -columns, Key.Down => columns, _ => 0 };
+        if (CardList.Items.Count == 0 || delta == 0 && e.Key != Key.Home && e.Key != Key.End) return;
+        var index = e.Key == Key.Home ? 0 : e.Key == Key.End ? CardList.Items.Count - 1 :
+            CardList.SelectedIndex < 0 ? 0 : Math.Clamp(CardList.SelectedIndex + delta, 0, CardList.Items.Count - 1);
+        CardList.SelectedIndex = index; CardList.ScrollIntoView(CardList.SelectedItem); CardList.UpdateLayout();
+        (CardList.ItemContainerGenerator.ContainerFromIndex(index) as ListBoxItem)?.Focus();
+        e.Handled = true;
+    }
+    private static SolutionCardPanel? FindPanel(DependencyObject parent)
+    {
+        if (parent is SolutionCardPanel panel) return panel;
+        for (var child = 0; child < VisualTreeHelper.GetChildrenCount(parent); child++)
+        {
+            var found = FindPanel(VisualTreeHelper.GetChild(parent, child));
+            if (found != null) return found;
+        }
+        return null;
+    }
+    private void Recent_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_navigatingRecent || RecentList.SelectedItem is not SolutionMetadata metadata) return;
+        NavigateRecent(metadata);
+    }
+    private void NavigateRecent(SolutionMetadata metadata)
+    {
+        _navigatingRecent = true;
+        try
+        {
+            if (!_viewModel.SelectRecent(metadata)) return;
+            RecentList.SelectedItem = RecentList.Items.OfType<SolutionMetadata>().FirstOrDefault(m => m.Id == metadata.Id);
+            CardList.UpdateLayout(); CardList.ScrollIntoView(_viewModel.SelectedMetadata);
+        }
+        finally { _navigatingRecent = false; }
+    }
+    private void Recent_DoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left || ItemAt(RecentList, e.OriginalSource as DependencyObject)?.DataContext is not SolutionMetadata metadata) return;
+        NavigateRecent(metadata);
+        if (_viewModel.LaunchCommand.CanExecute(null)) _viewModel.LaunchCommand.Execute(null);
+    }
+    private void Recent_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (_viewModel.IsBusy || RecentList.SelectedItem is not SolutionMetadata metadata) return;
+        if (e.Key == Key.Enter)
+        { NavigateRecent(metadata); if (_viewModel.LaunchCommand.CanExecute(null)) _viewModel.LaunchCommand.Execute(null); e.Handled = true; }
+        else if (e.Key == Key.Apps || e.Key == Key.F10 && Keyboard.Modifiers == ModifierKeys.Shift)
+        { NavigateRecent(metadata); ShowSelectedMenu(); e.Handled = true; }
+    }
+    private void Missing_Locate(object sender, RoutedEventArgs e)
+    {
+        if (ItemAt(CardList, e.OriginalSource as DependencyObject) is not ListBoxItem item) return;
+        item.IsSelected = true;
+        if (_viewModel.LocateCommand.CanExecute(null)) _viewModel.LocateCommand.Execute(null);
+        e.Handled = true;
+    }
+    private void Settings_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.ContextMenu != null)
+        {
+            button.ContextMenu.PlacementTarget = button; button.ContextMenu.Placement = PlacementMode.Bottom;
+            button.ContextMenu.IsOpen = true;
+        }
+    }
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
-        VisionLogger.Instance.Log(LogLevel.Info,
-            $"[SolutionConfigTrace] dialog closing | isLaunched={_viewModel.IsLaunched}, launchResult={_viewModel.LaunchResult?.Id ?? "null"}, dialogResult={DialogResult?.ToString() ?? "null"}",
-            "SolutionConfigurationDialog");
-
-        // ✅ 统一保存设置（包括 SkipStartupConfig）
-        // 无论通过什么方式关闭，都统一保存设置
-        _viewModel.SaveSettings();
-
-        // 如果已启动（双击或点击启动按钮），直接关闭
-        if (_viewModel.IsLaunched)
+        if (_viewModel.IsBusy && !_viewModel.IsLaunched) { e.Cancel = true; return; }
+        try { _viewModel.SaveSettings(); }
+        catch (Exception ex)
         {
-            base.OnClosing(e);
-            return;
+            ThemeMessageDialog.Show("配置保存失败，窗口保持打开：" + ex.Message, "保存配置", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+            e.Cancel = true; return;
         }
-
-        // 保存当前解决方案（确保修改的名称和描述被保存）
-        _viewModel.SaveCurrentSolution();
-
         base.OnClosing(e);
     }
+    protected override void OnClosed(EventArgs e) { _closed = true; _viewModel.Dispose(); base.OnClosed(e); }
 }

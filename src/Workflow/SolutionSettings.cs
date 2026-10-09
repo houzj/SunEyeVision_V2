@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Workflow.Persistence;
 
 namespace SunEyeVision.Workflow;
 
@@ -115,6 +116,12 @@ public class SolutionSettings : ObservableObject
     /// <summary>
     /// 构造函数
     /// </summary>
+    public string StartupMode
+    {
+        get => GetPreference<string>("StartupMode", SkipStartupConfig ? "Default" : "Choose");
+        set { if (value is not ("Choose" or "Last" or "Default")) throw new ArgumentException("启动方式无效。"); SetPreference("StartupMode", value); }
+    }
+
     public SolutionSettings()
     {
         _currentSolutionId = "";
@@ -277,8 +284,7 @@ public class SolutionSettings : ObservableObject
             bool alreadyExists = _knownSolutions.ContainsKey(metadata.Id);
             int beforeCount = _knownSolutions.Count;
 
-            // 更新最后访问时间
-            metadata.UpdateLastAccessTime();
+            // 最近打开只由实际打开成功的操作更新，注册/编辑不改变访问时间。
 
             // 添加或更新到字典
             _knownSolutions[metadata.Id] = metadata.Clone();
@@ -398,6 +404,12 @@ public class SolutionSettings : ObservableObject
             // 尝试类型转换
             try
             {
+                if (value is JsonElement json)
+                {
+                    if (json.ValueKind == JsonValueKind.String && typeof(T) != typeof(string))
+                        return (T?)Convert.ChangeType(json.GetString(), typeof(T));
+                    return json.Deserialize<T>();
+                }
                 return (T?)Convert.ChangeType(value, typeof(T));
             }
             catch (Exception ex)
@@ -482,6 +494,8 @@ public class SolutionSettings : ObservableObject
             // 临时反序列化对象（使用手动解析支持相对路径）
             using var jsonDoc = JsonDocument.Parse(json);
             var root = jsonDoc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object || (root.TryGetProperty("SchemaVersion", out var schema) && schema.GetInt32() != 1))
+                throw new InvalidDataException("不支持或损坏的用户配置，禁止覆盖。");
 
             // 加载基本属性
             if (root.TryGetProperty("CurrentSolutionId", out var currentSolutionIdElement))
@@ -501,11 +515,15 @@ public class SolutionSettings : ObservableObject
                 UserPreferences = new Dictionary<string, object>();
                 foreach (var prop in userPreferencesElement.EnumerateObject())
                 {
-                    UserPreferences[prop.Name] = prop.Value.ToString();
+                    UserPreferences[prop.Name] = prop.Value.Clone();
                 }
             }
 
+            if (root.TryGetProperty("StartupMode", out var startup)) StartupMode = startup.GetString() ?? "Choose";
+
             // 加载已知解决方案列表（使用相对路径）
+            if (!root.TryGetProperty("KnownSolutions", out var knownRecords) || knownRecords.ValueKind != JsonValueKind.Object)
+                throw new InvalidDataException("用户配置缺少有效方案目录，不能用空记录覆盖。");
             if (root.TryGetProperty("KnownSolutions", out var knownSolutionsElement) && knownSolutionsElement.ValueKind == JsonValueKind.Object)
             {
                 lock (_knownSolutionsLock)
@@ -513,33 +531,14 @@ public class SolutionSettings : ObservableObject
                     _knownSolutions.Clear();
                     foreach (var prop in knownSolutionsElement.EnumerateObject())
                     {
-                        try
-                        {
-                            // 尝试反序列化为新格式（相对路径）
-                            var serializableMetadata = JsonSerializer.Deserialize<SerializableSolutionMetadata>(prop.Value.GetRawText());
-                            if (serializableMetadata != null)
-                            {
-                                var metadata = FromSerializable(serializableMetadata);
-                                _knownSolutions[metadata.Id] = metadata;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            // 如果新格式失败，尝试旧格式（绝对路径）
-                            try
-                            {
-                                var oldMetadata = JsonSerializer.Deserialize<SolutionMetadata>(prop.Value.GetRawText());
-                                if (oldMetadata != null)
-                                {
-                                    _knownSolutions[oldMetadata.Id] = oldMetadata;
-                                    _logger.Log(LogLevel.Info, $"使用旧格式加载解决方案: {oldMetadata.Name}", "SolutionSettings");
-                                }
-                            }
-                            catch
-                            {
-                                _logger.Log(LogLevel.Warning, $"加载已知解决方案失败（解决方案ID={prop.Name}）: {ex.Message}", "SolutionSettings");
-                            }
-                        }
+                        var serializableMetadata = JsonSerializer.Deserialize<SerializableSolutionMetadata>(prop.Value.GetRawText());
+                        var metadata = prop.Value.TryGetProperty("RelativePath", out _) && serializableMetadata != null
+                            ? FromSerializable(serializableMetadata)
+                            : JsonSerializer.Deserialize<SolutionMetadata>(prop.Value.GetRawText());
+                        if (metadata == null || string.IsNullOrWhiteSpace(metadata.Id) || string.IsNullOrWhiteSpace(metadata.FilePath) ||
+                            _knownSolutions.ContainsKey(metadata.Id))
+                            throw new InvalidDataException("方案管理记录损坏或身份重复，不能丢弃记录后覆盖原配置。");
+                        _knownSolutions.Add(metadata.Id, metadata);
                     }
                 }
 
@@ -590,6 +589,8 @@ public bool Save(string filePath)
 
         var dataToSerialize = new
         {
+            SchemaVersion = 1,
+            StartupMode = StartupMode,
             CurrentSolutionId = _currentSolutionId,
             DefaultSolutionId = _defaultSolutionId,
             UserPreferences = UserPreferences,
@@ -599,7 +600,7 @@ public bool Save(string filePath)
         // 使用独立的序列化选项，避免触发 WorkflowSerializationOptions.Default 的初始化
         // 这是因为 SolutionSettings.Save() 不涉及 ToolParameters 类型
         var json = JsonSerializer.Serialize(dataToSerialize, SettingsSerializationOptions);
-        File.WriteAllText(filePath, json);
+        AtomicJsonFile.Write(filePath, json);
 
         var fileInfo = new FileInfo(filePath);
         _logger.Log(LogLevel.Success, $"保存设置成功: {filePath}, 文件大小: {fileInfo.Length} 字节", "SolutionSettings");

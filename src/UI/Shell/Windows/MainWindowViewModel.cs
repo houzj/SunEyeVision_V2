@@ -1562,12 +1562,16 @@ SplitterPosition = position;
                         var filePath = string.IsNullOrEmpty(metadata.FilePath)
                             ? Path.Combine(metadata.DirectoryPath, $"{metadata.Name}.solution")
                             : metadata.FilePath;
+                        SunEyeVision.Workflow.Persistence.AtomicJsonFile.ValidateSolutionName(metadata.Name);
+                        if (File.Exists(filePath)) throw new IOException("目标方案已存在，不会覆盖，请选择其他名称：" + filePath);
 
                         // ✅ 直接创建 Solution 对象（不使用 CreateNewSolution）
                         // CreateNewSolution 是用于解决方案管理器的"新建解决方案"功能，会创建默认工作流
                         // 这里是"保存功能"，不应该创建默认工作流，而是同步 UI 中的数据
                         var solution = SunEyeVision.Workflow.Solution.Create();
                         solution.Version = metadata.Version;
+                        solution.Name = metadata.Name;
+                        solution.Description = metadata.Description;
                         solution.FilePath = filePath;
 
                         // ✅ 不添加默认工作流，保持 Workflows 为空
@@ -1597,7 +1601,7 @@ SplitterPosition = position;
                 SaveSolutionData(solutionManager);
 
                 // 3. 保存解决方案（此时 Solution 已包含 UI 中的工作流和节点）
-                solutionManager.SaveSolution();
+                if (!solutionManager.SaveSolution()) throw new IOException("保存方案失败：" + solutionManager.LastError);
 
                 // 4. 注册元数据（保存完成后注册）
                 // 注意：SaveSolution 已经自动注册元数据，这里不需要再次注册
@@ -1608,6 +1612,7 @@ SplitterPosition = position;
             catch (Exception ex)
             {
                 LogError($"保存当前解决方案失败: {ex.Message}", null, ex);
+                ThemeMessageDialog.Show(ex.Message, "保存方案失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -2109,7 +2114,9 @@ SplitterPosition = position;
             LogSuccess($"预编译完成: {precompilableNodes.Count} 个节点, 耗时 {sw.ElapsedMilliseconds}ms");
         }
 
-        private async System.Threading.Tasks.Task ExecuteRunWorkflow()
+        public System.Threading.Tasks.Task RunSelectedImageAsync() => ExecuteRunWorkflow(advanceLocalImage: false);
+
+        private async System.Threading.Tasks.Task ExecuteRunWorkflow(bool advanceLocalImage = true)
         {
             // 防抖：上一次工作流仍在执行时忽略重复执行请求（执行按钮/预览连点过快）
             if (_isRunning)
@@ -2159,7 +2166,7 @@ SplitterPosition = position;
                     .ToDictionary(gv => gv.Name, gv => gv.Value);
                 _executionManager.SetGlobalVariables(globalVars);
 
-                await _executionManager.RunSingleAsync(WorkflowTabViewModel.SelectedTab);
+                await _executionManager.RunSingleAsync(WorkflowTabViewModel.SelectedTab, advanceLocalImage: advanceLocalImage);
                 // 成功/失败由执行管理器事件报告；等待相机帧失败不能误报成功。
             }
             catch (Exception ex)
@@ -2193,7 +2200,7 @@ SplitterPosition = position;
 
         private void ExecuteShowAbout()
         {
-            var aboutWindow = new AboutWindow();
+            var aboutWindow = new AboutWindow { Owner = Application.Current?.MainWindow };
             aboutWindow.ShowDialog();
         }
 
@@ -5547,8 +5554,97 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <summary>
         /// 显示解决方案配置界面
         /// </summary>
+        private IDisposable? _solutionTransitionLease;
+        private bool _transitionPreparationInProgress;
+        internal bool CanAcceptExternalActivation => _solutionTransitionLease == null && !_transitionPreparationInProgress;
+        public void EndSolutionTransition() { _solutionTransitionLease?.Dispose(); _solutionTransitionLease = null; }
+        public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync()
+        {
+            if (_transitionPreparationInProgress) return false;
+            _transitionPreparationInProgress = true;
+            try
+            {
+                var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+                if (_executionManager.IsAnyRunning() &&
+                    ThemeMessageDialog.Show("方案正在运行。停止全部执行后继续？", "切换方案", MessageBoxButton.OKCancel,
+                        ThemeMessageDialog.MessageIcon.Question) != MessageBoxResult.OK) return false;
+                _solutionTransitionLease ??= _executionManager.BeginSolutionTransition();
+                await _executionManager.StopAndWaitAsync(TimeSpan.FromSeconds(30));
+                if (manager.CurrentSolution == null)
+                {
+                    if (_isWorkflowModified || WorkflowTabViewModel.Tabs.Any(tab => tab.WorkflowNodes.Count > 0))
+                    {
+                        var answer = ThemeMessageDialog.Show("工作区尚未保存为方案。是否保存？", "保存方案", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);
+                        if (answer == MessageBoxResult.Cancel || answer == MessageBoxResult.None) { EndSolutionTransition(); return false; }
+                        if (answer == MessageBoxResult.Yes)
+                        {
+                            SaveCurrentSolutionCommand.Execute(null);
+                            if (manager.CurrentSolution == null || manager.HasUnsavedChanges) { EndSolutionTransition(); return false; }
+                        }
+                    }
+                    return true;
+                }
+                SaveSolutionData(manager);
+                if (!manager.HasUnsavedChanges) return true;
+                var result = ThemeMessageDialog.Show("当前方案有未保存修改。是否保存？", "保存方案", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);
+                if (result == MessageBoxResult.Cancel || result == MessageBoxResult.None) { EndSolutionTransition(); return false; }
+                if (result == MessageBoxResult.Yes && !manager.SaveSolution())
+                {
+                    var target = new Microsoft.Win32.SaveFileDialog { Filter = "解决方案 (*.solution)|*.solution",
+                        InitialDirectory = manager.SolutionsDirectory, FileName = manager.CurrentSolution.Name + "_副本" };
+                    if (ThemeMessageDialog.Show("原位置无法保存。是否另存到可写位置？", "保存失败", MessageBoxButton.YesNo, ThemeMessageDialog.MessageIcon.Warning) != MessageBoxResult.Yes ||
+                        target.ShowDialog() != true || manager.SaveAsSolution(target.FileName, System.IO.Path.GetFileNameWithoutExtension(target.FileName), manager.CurrentSolution.Description) == null)
+                    { EndSolutionTransition(); return false; }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                EndSolutionTransition();
+                ThemeMessageDialog.Show("操作未完成，原方案保持打开：" + ex.Message, "方案切换", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+                return false;
+            }
+            finally { _transitionPreparationInProgress = false; }
+        }
+
+        /// <summary>External file activation reuses existing stop/save and identity-conflict rules.</summary>
+        internal async Task<bool> OpenExternalSolutionAsync(string path)
+        {
+            var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+            if (!string.IsNullOrEmpty(manager.CurrentFilePath) &&
+                string.Equals(Path.GetFullPath(manager.CurrentFilePath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (_solutionTransitionLease != null) return false;
+            try
+            {
+                // Validate before stopping the current workspace; do not mutate it on bad input.
+                if (manager.LoadSolutionOnly(path) == null)
+                    throw new IOException(manager.LastError ?? "方案无法读取。");
+                if (!await PrepareSolutionTransitionAsync()) return false;
+                using var registration = new SolutionConfigurationDialogViewModel(manager);
+                var metadata = registration.AddExistingFile(path);
+                if (metadata == null) return false;
+                var solution = manager.LoadSolutionOnly(metadata.FilePath)
+                    ?? throw new IOException(manager.LastError ?? "方案无法读取。");
+                manager.SetCurrentSolution(solution);
+                Title = $"太阳眼视觉 - {metadata.Name}";
+                LogSuccess($"已通过外部请求打开方案: {metadata.Name}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogError($"外部方案打开失败: {ex.Message}", null, ex);
+                ThemeMessageDialog.Show("无法打开请求的方案，当前工作区保持不变：" + ex.Message,
+                    "打开方案", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+                return false;
+            }
+            finally { EndSolutionTransition(); }
+        }
+
+
         private void ExecuteShowSolutionConfiguration()
         {
+            if (!CanAcceptExternalActivation) return;
             try
             {
                 LogInfo("打开解决方案配置界面");
@@ -5564,7 +5660,10 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 LogInfo($"[诊断-打开] 默认解决方案ID: {solutionManager.Settings.DefaultSolutionId ?? "null"}");
                 LogInfo($"[诊断-打开] Settings.CurrentSolutionId: {solutionManager.Settings.CurrentSolutionId ?? "null"}");
 
-                var configDialog = new SunEyeVision.UI.Features.Dialogs.SolutionConfigurationDialog(solutionManager);
+                var configDialog = new SunEyeVision.UI.Features.Dialogs.SolutionConfigurationDialog(solutionManager,
+                    beforeTransition: PrepareSolutionTransitionAsync,
+                    synchronizeCurrent: () => { if (solutionManager.CurrentSolution != null) SaveSolutionData(solutionManager); })
+                    { Owner = Application.Current?.MainWindow };
 
                 var result = configDialog.ShowDialog();
 
@@ -5604,8 +5703,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             }
             catch (Exception ex)
             {
-                LogError("打开解决方案配置界面失败", null, ex);
+                LogError($"打开解决方案配置界面失败: {ex}", null, ex, LogTarget.File | LogTarget.UI);
             }
+            finally { EndSolutionTransition(); }
         }
 
         /// <summary>

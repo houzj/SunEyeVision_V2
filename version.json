@@ -1,15 +1,7 @@
-﻿{
-    "_comment":  "版本号单一真源（rule-022）。前三段由维护者声明：第 1 位（主版本）需人工审核、第 2/3 位按语义维护；第 4 位构建号=打包次数，由 installer/Pack-Release.ps1 每次打包 +1 并写回 build 字段。禁止在 UI/脚本/文档中硬编码版本号。",
-    "_fields":  {
-                    "version":  "前三段 MAJOR.MINOR.PATCH（第 4 位构建号不在此声明，由打包脚本生成）",
-                    "build":  "第 4 位构建号 = 打包次数；由打包脚本维护，智能体与人均不得手改",
-                    "channel":  "alpha(内测) | beta(公测) | rc(候选) | stable(正式)。渠道不进版本号，仅用于安装显示名/产物名/发布清单",
-                    "releaseDate":  "发布日期 yyyy-MM-dd，用于“关于”窗口",
-                    "schemaVersion":  "解决方案文件格式版本（整数，单调递增；与产品版本解耦，格式变更必须配迁移器）"
-                },
-    "version":  "2.0.0",
-    "build":  1,
-    "channel":  "alpha",
-    "releaseDate":  "2026-09-19",
-    "schemaVersion":  2
+{
+  "version": "2.0.0",
+  "channel": "alpha",
+  "fileRevision": 7,
+  "releaseDate": "2026-10-08",
+  "schemaVersion": 2
 }

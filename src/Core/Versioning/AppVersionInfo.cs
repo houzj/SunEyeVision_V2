@@ -8,14 +8,14 @@ namespace SunEyeVision.Core.Versioning;
 /// 产品版本的唯一读取入口（rule-022）。
 /// 数据全部来自构建期注入的程序集特性，运行时不读任何外部文件：
 /// <list type="bullet">
-///   <item><see cref="AssemblyInformationalVersionAttribute"/>：四段产品版本 + "+提交 SHA"（SDK 由 SourceRevisionId 自动附加，SHA 属构建元数据、不参与版本比较）</item>
+///   <item><see cref="AssemblyInformationalVersionAttribute"/>：四段产品版本 + "+提交 SHA"（SDK 自动附加提交身份）</item>
 ///   <item><c>AssemblyMetadata("Channel")</c> / <c>AssemblyMetadata("ReleaseDate")</c>：由 Directory.Build.props 从版本真源 version.json 注入</item>
 /// </list>
 /// 界面与脚本禁止硬编码版本号，一律读本类。
 /// </summary>
 public static class AppVersionInfo
 {
-    /// <summary>四段产品版本（MAJOR.MINOR.PATCH.BUILD），例如 2.0.0.1。取不到时为空串。</summary>
+    /// <summary>四段产品版本，例如 2.0.0.2。渠道独立存储。取不到时为空串。</summary>
     public static string Product { get; } = GetInformationalPart(0);
 
     /// <summary>构建时的提交 SHA（构建元数据）。取不到时为空串。</summary>

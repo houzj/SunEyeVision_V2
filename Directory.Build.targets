@@ -57,6 +57,7 @@
                     -getProperty:TargetPath → dev\Debug\SunEyeVision.Tool.PointLineMeasure.dll
                     同时 OutDir 已是 plugins\SunEyeVision.Tool.PointLineMeasure\）
          （同款坑在 Directory.Build.props:30-32 已有记录："仅设 OutDir 时 TargetPath 仍回落"。） -->
+    <OutDir Condition="'$(PackagingRoot)'!=''">$(PackagingRoot)\app\plugins\$(MSBuildProjectName)\</OutDir>
     <OutputPath>$(OutDir)</OutputPath>
     <TargetDir>$(OutDir)</TargetDir>
     <TargetPath>$(OutDir)$(TargetName)$(TargetExt)</TargetPath>
@@ -175,6 +176,7 @@
          Debug→dev/Debug(工具 Debug 部署处); Release→Release 发布目录(工具 Release 部署处)。 -->
     <HostDebugRoot Condition="'$(Configuration)'=='Debug'">$([System.IO.Path]::GetFullPath('$(WorktreeBasePath)dev\Debug\'))</HostDebugRoot>
     <HostDebugRoot Condition="'$(Configuration)'=='Release'">$([System.IO.Path]::GetFullPath('$(WorktreeBasePath)Release\SunEyeVision_v1.0.0\SunEyeVision\'))</HostDebugRoot>
+    <HostDebugRoot Condition="'$(PackagingRoot)'!=''">$(PackagingRoot)\app\</HostDebugRoot>
   </PropertyGroup>
   <ItemGroup Condition="'$(IsTestProject)'=='true'">
     <AssemblyMetadata Include="HostDebugRoot" Value="$(HostDebugRoot)" />

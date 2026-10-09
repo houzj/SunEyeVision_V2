@@ -193,6 +193,7 @@ installer/third-party/
 
 # 安装包产物（Inno Setup 输出，约 158MB，部署时单独分发）
 dist/
+artifacts/
 
 # 打包脚本生成的版本片段（installer/Pack-Release.ps1 每次打包重写）
 installer/.generated/

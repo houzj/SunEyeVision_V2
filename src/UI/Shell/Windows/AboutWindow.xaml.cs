@@ -1,56 +1,35 @@
-﻿using System;
-using System.Diagnostics;
+using System;
 using System.Windows;
 using SunEyeVision.UI.Features.Dialogs;
 
 namespace SunEyeVision.UI.Shell.Windows
 {
-    /// <summary>
-    /// AboutWindow - 关于对话框
-    /// </summary>
     public partial class AboutWindow : ThemeDialogWindow
     {
         public AboutWindow()
         {
             InitializeComponent();
+            DataContext = new AboutSoftwareInformation();
         }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
+        private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 
-        private void CheckUpdate_Click(object sender, RoutedEventArgs e)
+        private void CopyInformation_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: 实现检查更新功能
-            ThemeMessageDialog.Show("已是最新版本！", "检查更新",
-                MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
+            try
+            {
+                Clipboard.SetText(((AboutSoftwareInformation)DataContext).ToDiagnosticText());
+            }
+            catch (Exception ex)
+            {
+                ThemeMessageDialog.Show($"无法复制软件信息：{ex.Message}", "复制软件信息",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+            }
         }
 
         private void HelpManual_Click(object sender, RoutedEventArgs e)
         {
-            var helpWindow = new HelpWindow
-            {
-                Owner = this
-            };
-            helpWindow.ShowDialog();
-        }
-
-        private void Website_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "https://www.suneyevision.com",
-                    UseShellExecute = true
-                });
-            }
-            catch (Exception ex)
-            {
-                ThemeMessageDialog.Show($"无法打开网站：{ex.Message}", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-            }
+            new HelpWindow { Owner = this }.ShowDialog();
         }
     }
 }

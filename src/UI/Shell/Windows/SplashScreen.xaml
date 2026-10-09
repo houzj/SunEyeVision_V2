@@ -32,9 +32,10 @@
                     <ScaleTransform x:Name="LogoScale" ScaleX="0.9" ScaleY="0.9"/>
                 </StackPanel.RenderTransform>
                 <Image x:Name="LogoImage"
-                       Source="/SunEyeVision.UI;component/Icons/app_logo.ico"
-                       Width="128"
-                       Height="128"
+                       Source="{DynamicResource SunEyeVision.BrandLogo}"
+                       Width="180"
+                       Height="80"
+                       Stretch="Uniform"
                        HorizontalAlignment="Center"/>
                 <TextBlock Text="SunEyeVision"
                            FontSize="30"

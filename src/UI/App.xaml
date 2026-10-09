@@ -20,7 +20,8 @@
                 <ResourceDictionary Source="Resources/Styles/MenuStyleResources.xaml"/>
                 <!-- 全局 ToolTip 样式资源（主题化悬浮提示，跟随亮/暗主题） -->
                 <ResourceDictionary Source="Resources/Styles/ToolTipStyleResources.xaml"/>
-                <!-- 语义主题字典由 ThemeManager 在运行时注入并置顶（见 Themes/Light/Dark） -->
+                <!-- 首次启动及启动页默认暗色；ThemeManager 初始化后恢复用户已保存的主题。 -->
+                <ResourceDictionary Source="Themes/Dark/DarkTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

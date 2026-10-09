@@ -16,7 +16,7 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ApplicationIcon>生成光之眼-Logo-_1__副本.ico</ApplicationIcon>
+    <ApplicationIcon>Icons/suneyevision.ico</ApplicationIcon>
   </PropertyGroup>
 
     <ItemGroup>
@@ -81,6 +81,8 @@
     <Content Include="生成光之眼-Logo-_1__副本.ico" />
     <!-- 启动页 Logo（SplashScreen.xaml 用 pack URI 引用） -->
     <Resource Include="Icons/app_logo.ico" />
+    <Resource Include="Icons/suneyevision.ico" />
+    <Resource Include="Icons/solution.ico" />
   </ItemGroup>
 
   

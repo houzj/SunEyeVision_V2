@@ -6,6 +6,7 @@
                     xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base">
 
     <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/SunEyeVision.UI;component/Resources/Branding/Logo.xaml"/>
         <!-- SDK Generic.xaml 同时提供控件样式与 DefaultTheme 兜底。
              ThemeManager 将 Light/Dark 字典追加到 Application 资源末尾覆盖兜底值。 -->
         <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/Themes/Generic.xaml"/>

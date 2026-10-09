@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="SunEyeVision C logo">
+  <title>SunEyeVision — 流线智眼 — light theme</title>
+  <path fill="#0964AC" d="M 28,266 C 120,257 149,153 254,153 C 353,153 388,259 484,247 C 398,270 361,238 335,215 C 313,195 286,177 254,177 C 166,177 107,259 28,266 Z"/>
+  <path fill="#0964AC" d="M 87,257 C 161,219 191,322 262,322 C 328,322 389,253 459,251 C 381,268 342,350 266,350 C 177,350 165,256 87,257 Z"/>
+  <circle fill="#F2AE16" cx="257" cy="245" r="59"/>
+  <path fill="#FFFFFF" d="M 211,280 L 256,200 L 292,292 L 276,300 L 256,237 C 239,247 225,263 211,280 Z"/>
+  <circle fill="#FFFFFF" cx="286" cy="215" r="9"/>
+  <path fill="#FFFFFF" d="M 280,229 L 292,229 L 292,287 L 280,252 Z"/>
+</svg>
+

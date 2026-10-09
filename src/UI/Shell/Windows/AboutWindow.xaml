@@ -4,96 +4,71 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
-        xmlns:ver="clr-namespace:SunEyeVision.Core.Versioning;assembly=SunEyeVision.Core"
+        xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         mc:Ignorable="d"
-        Title="关于 太阳眼视觉" Height="450" Width="500"
-        WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
-        Background="#FFFFFF">
-
-    <Grid Margin="30">
+        Title="关于 SunEyeVision" Width="640" Height="600" MinWidth="520" MinHeight="420"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
+        Background="{DynamicResource {x:Static base:ThemeKeys.WindowBackgroundBrush}}"
+        Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
+    <themeWindows:ThemeDialogWindow.Resources>
+        <Style x:Key="InformationValue" TargetType="TextBox">
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+    </themeWindows:ThemeDialogWindow.Resources>
+    <Grid Margin="24" Background="{Binding Background, RelativeSource={RelativeSource AncestorType=Window}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
-        <!-- Logo和标题 -->
-        <Border Grid.Row="0" Background="#E8F4F8" CornerRadius="10" Padding="20" Margin="0,0,0,20">
-            <StackPanel HorizontalAlignment="Center">
-                <Image Source="/SunEyeVision.UI;component/Icons/app_logo.ico" Width="64" Height="64" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                <TextBlock Text="太阳眼视觉" FontSize="32" FontWeight="Bold" Foreground="#0066CC" HorizontalAlignment="Center"/>
-                <TextBlock Text="SunEye Vision" FontSize="16" Foreground="#666666" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+        <Border Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
+                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="1"
+                CornerRadius="8" Padding="18" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal">
+                <Image Source="{DynamicResource SunEyeVision.BrandLogo}" Width="84" Height="56" Stretch="Uniform" Margin="0,0,16,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="太阳眼视觉" FontSize="24" FontWeight="SemiBold"/>
+                    <TextBlock Text="SunEyeVision · 机器视觉平台" FontSize="13" Margin="0,5,0,0"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+                </StackPanel>
             </StackPanel>
         </Border>
-
-        <!-- 详细信息 -->
-        <StackPanel Grid.Row="1" Margin="0,0,0,20">
-            <Grid Margin="0,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="版本：" FontSize="13" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="1" Text="{x:Static ver:AppVersionInfo.Display}" FontSize="13" Foreground="#0066CC" VerticalAlignment="Center"/>
-            </Grid>
-
-            <Grid Margin="0,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="发布日期：" FontSize="13" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="1" Text="{x:Static ver:AppVersionInfo.ReleaseDate}" FontSize="13" Foreground="#666666" VerticalAlignment="Center"/>
-            </Grid>
-
-            <Grid Margin="0,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="运行平台：" FontSize="13" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="1" Text="Windows 10/11" FontSize="13" Foreground="#666666" VerticalAlignment="Center"/>
-            </Grid>
-
-            <Grid Margin="0,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text=".NET版本：" FontSize="13" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="1" Text="9.0" FontSize="13" Foreground="#666666" VerticalAlignment="Center"/>
-            </Grid>
-
-            <Separator Margin="0,15"/>
-
-            <TextBlock Text="专业的机器视觉平台" FontSize="14" FontWeight="Bold" Foreground="#333333" HorizontalAlignment="Center" Margin="0,10"/>
-            <TextBlock Text="提供强大的图像处理和工作流设计功能" FontSize="12" Foreground="#666666" HorizontalAlignment="Center" TextWrapping="Wrap"/>
-
-            <Border Background="#F0F8FF" BorderBrush="#0066CC" BorderThickness="1" Padding="10" CornerRadius="5" Margin="0,15">
-                <StackPanel>
-                    <TextBlock Text="主要特性：" FontSize="12" FontWeight="Bold" Foreground="#0066CC"/>
-                    <TextBlock Text="• 可视化工作流编辑器" FontSize="11" Foreground="#333333"/>
-                    <TextBlock Text="• 丰富的图像处理算法" FontSize="11" Foreground="#333333"/>
-                    <TextBlock Text="• 灵活的插件系统" FontSize="11" Foreground="#333333"/>
-                    <TextBlock Text="• 多设备支持" FontSize="11" Foreground="#333333"/>
-                </StackPanel>
-            </Border>
-        </StackPanel>
-
-        <!-- 按钮和链接 -->
-        <StackPanel Grid.Row="2">
-            <Button Content="检查更新" Click="CheckUpdate_Click" Style="{StaticResource SecondaryButton}" Padding="10,6" Margin="0,5"/>
-            <Button Content="用户手册" Click="HelpManual_Click" Style="{StaticResource SecondaryButton}" Padding="10,6" Margin="0,5"/>
-            <Button Content="关闭" Click="CloseButton_Click" Style="{StaticResource PrimaryButton}" Padding="10,6" Margin="0,15,0,0"/>
-
-            <TextBlock FontSize="11" Foreground="#999999" HorizontalAlignment="Center" Margin="0,15,0,0">
-                <Run Text="© 2026 SunEye Vision. All rights reserved."/>
-                <LineBreak/>
-                <Hyperlink Click="Website_Click" Foreground="#0066CC">
-                    <Run Text="www.suneyevision.com" Foreground="#0066CC"/>
-                </Hyperlink>
-            </TextBlock>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+                <ItemsControl ItemsSource="{Binding Rows}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,0,8,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="108"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Label}" FontSize="13" VerticalAlignment="Top" Margin="0,2,8,0"
+                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+                                <TextBox Grid.Column="1" Text="{Binding Value, Mode=OneWay}" Style="{StaticResource InformationValue}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="提交号表示代码基线，不代表源码没有未提交修改。" FontSize="12" TextWrapping="Wrap"
+                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,0,8,12"/>
+            </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Margin="0,16,0,0">
+            <WrapPanel HorizontalAlignment="Right">
+                <Button Content="复制软件信息" Click="CopyInformation_Click" Style="{DynamicResource SecondaryButtonStyle}" Padding="12,7" Margin="0,0,8,0"/>
+                <Button Content="用户手册" Click="HelpManual_Click" Style="{DynamicResource SecondaryButtonStyle}" Padding="12,7" Margin="0,0,8,0"/>
+                <Button Content="关闭" IsCancel="True" Click="CloseButton_Click" Style="{DynamicResource PrimaryButtonStyle}" Padding="18,7"/>
+            </WrapPanel>
+            <TextBlock Text="© 2026 SunEyeVision. All rights reserved." FontSize="11" Margin="0,14,0,0"
+                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" HorizontalAlignment="Center"/>
         </StackPanel>
     </Grid>
 </themeWindows:ThemeDialogWindow>

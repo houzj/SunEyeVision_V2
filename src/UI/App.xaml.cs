@@ -48,6 +48,17 @@ public partial class App : Application
 {
     private static readonly TimeSpan CameraRestoreTimeout = TimeSpan.FromSeconds(10);
     private readonly Stopwatch _startupStopwatch = Stopwatch.StartNew();
+    private bool _releaseProbe;
+    private bool _startupRejected;
+    private bool _servicesReady;
+    private ApplicationDataPaths? _dataPaths;
+    private string? _requestedSolutionPath;
+    // Keep the named marker rooted through shutdown cleanup; the OS closes it at process exit.
+    private static IDisposable? _runningApplicationRegistration;
+    private static SingleInstanceCoordinator? _singleInstance;
+    private bool _instanceClosing;
+    private bool _startupActivationReady;
+    private bool _activationInProgress;
     // RPC_S_SERVER_UNAVAILABLE = 0x000006BA = 1722
     private const int RPC_S_SERVER_UNAVAILABLE = 1722;
     private const int HRESULT_RPC_UNAVAILABLE = unchecked((int)0x800706BA);
@@ -68,6 +79,67 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // First-run directory dialogs may temporarily be the only window; do not exit when they close.
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        try
+        {
+            _runningApplicationRegistration = ApplicationLifetimeGate.TryRegister();
+            if (_runningApplicationRegistration == null)
+                throw new InvalidOperationException("SunEyeVision 正在卸载或维护，请等待操作结束后再启动。");
+        }
+        catch (Exception ex)
+        {
+            _startupRejected = true;
+            if (e.Args.Length == 0 || e.Args[0] != "--release-probe")
+                MessageBox.Show($"无法启动 SunEyeVision：{ex.Message}", "SunEyeVision", MessageBoxButton.OK, MessageBoxImage.Information);
+            Shutdown(1);
+            return;
+        }
+        // Release probe runs before device/service initialization, so it cannot connect hardware.
+        if (e.Args.Length == 2 && e.Args[0] == "--release-probe")
+        {
+            _releaseProbe = true;
+            try
+            {
+                var info = new
+                {
+                    releaseVersion = SunEyeVision.Core.Versioning.AppVersionInfo.Product,
+                    channel = SunEyeVision.Core.Versioning.AppVersionInfo.Channel,
+                    releaseDate = SunEyeVision.Core.Versioning.AppVersionInfo.ReleaseDate,
+                    commit = SunEyeVision.Core.Versioning.AppVersionInfo.Commit,
+                    toolContract = SunEyeVision.Plugin.SDK.Core.ToolContract.Version,
+                    defaultTheme = Services.ThemeManager.DefaultTheme.ToString(),
+                    startupWindowBackground = (TryFindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WindowBackgroundBrush) as SolidColorBrush)?.Color.ToString()
+                };
+                File.WriteAllText(e.Args[1], System.Text.Json.JsonSerializer.Serialize(info));
+                Shutdown(0);
+            }
+            catch { Shutdown(1); }
+            return;
+        }
+        _requestedSolutionPath = e.Args.FirstOrDefault(arg => arg.EndsWith(".solution", StringComparison.OrdinalIgnoreCase));
+        try
+        {
+            _singleInstance = SingleInstanceCoordinator.TryStart(HandleInstanceActivationAsync);
+            if (_singleInstance == null)
+            {
+                _startupRejected = true;
+                var activation = await SingleInstanceCoordinator.SendAsync(_requestedSolutionPath);
+                if (!activation.Accepted)
+                    ThemeMessageDialog.Show(activation.Message, "SunEyeVision 已在运行",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
+                Shutdown(activation.Accepted ? 0 : 2);
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            _startupRejected = true;
+            ThemeMessageDialog.Show("无法建立单实例保护，启动已取消：" + ex.Message,
+                "SunEyeVision", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+            Shutdown(1);
+            return;
+        }
         LogStartupStage("OnStartup.Enter", $"args={e.Args.Length}");
         // 设置控制台编码为UTF-8，解决中文乱码问题
         Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -127,6 +199,35 @@ public partial class App : Application
         // HalImage 及其静态工厂方法已内置在 Plugin.SDK.Imaging 中
         // 使用 VisionImage.FromFile / VisionImage.FromBitmapSource 直接加载图像
 
+        // Select/restore the user data root before creating any persistent service.
+        try
+        {
+            var locations = new ApplicationDataLocationService();
+            string? reason = null;
+            try { _dataPaths = locations.Locate(); } catch (Exception ex) { reason = ex.Message; }
+            while (_dataPaths == null)
+            {
+                _splashScreen?.CloseImmediately(); _splashScreen = null;
+                var directoryDialog = new DataDirectoryDialog(locations, reason: reason);
+                if (directoryDialog.ShowDialog() != true) { _startupRejected = true; Shutdown(0); return; }
+                try
+                {
+                    var selected = directoryDialog.SelectedPaths!;
+                    if (directoryDialog.ImportLegacy)
+                        locations.ImportLegacy(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "solution_settings.json"), selected);
+                    locations.Remember(selected); _dataPaths = selected;
+                }
+                catch (Exception ex) { reason = ex.Message; }
+            }
+            ServiceInitializer.ConfigureDataPaths(_dataPaths);
+        }
+        catch (Exception ex)
+        {
+            _startupRejected = true;
+            ThemeMessageDialog.Show("无法初始化数据目录：" + ex.Message, "数据目录", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+            Shutdown(1); return;
+        }
+
         // 3. 初始化服务（包括节点显示适配器）
         _splashScreen?.UpdateStage("正在初始化服务", 50, "注册运行时服务和图像适配器");
         LogStartupStage("Service.Initialize begin");
@@ -147,12 +248,13 @@ public partial class App : Application
             baseNode is SunEyeVision.UI.Shared.WorkflowNode ? baseNode : SunEyeVision.UI.Shared.WorkflowNode.FromBase(baseNode);
 
         // 4. 使用默认路径
-        var defaultPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        var defaultPath = _dataPaths!.SolutionsDirectory;
 
         // 5. 初始化解决方案管理器
         _splashScreen?.UpdateStage("正在初始化解决方案", 65, "准备方案仓库和用户设置");
         LogStartupStage("SolutionManager.Initialize begin", $"defaultPath={defaultPath}");
-        ServiceInitializer.InitializeSolutionManager(defaultPath);
+        ServiceInitializer.InitializeSolutionManager(_dataPaths!);
+        _servicesReady = true;
         _splashScreen?.UpdateStage("正在初始化解决方案", 70, "解决方案管理器准备完成");
         LogStartupStage("SolutionManager.Initialize completed");
 
@@ -184,6 +286,7 @@ public partial class App : Application
         // 启动决策
         LogStartupStage("Startup decision begin");
         await HandleStartupDecisionAsync();
+        _startupActivationReady = true;
         LogStartupStage("HandleStartupDecision returned");
     }
 
@@ -204,8 +307,24 @@ public partial class App : Application
         // ★ 显式注册为主窗口：SplashScreen 先创建会抢占 Application.Current.MainWindow，
         //   不显式赋值则调试窗口 Owner 指向已关闭的 SplashScreen（无效），无法显示在主窗口上方。
         Application.Current.MainWindow = mainWindow;
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
         _splashScreen?.UpdateStage("正在打开工作区", 75, "读取启动方案并准备工作流");
 
+        SolutionMetadata? requested = null;
+        if (_requestedSolutionPath != null)
+        {
+            try
+            {
+                using var registration = new SolutionConfigurationDialogViewModel(solutionManager);
+                requested = registration.AddExistingFile(_requestedSolutionPath);
+                decision = requested == null ? StartupDecision.ShowConfiguration : StartupDecision.SkipConfiguration;
+            }
+            catch (Exception ex)
+            {
+                ThemeMessageDialog.Show("无法打开请求的方案：" + ex.Message, "打开方案", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+                decision = StartupDecision.ShowConfiguration;
+            }
+        }
         switch (decision)
         {
             case StartupDecision.SkipConfiguration:
@@ -216,7 +335,9 @@ public partial class App : Application
                 
                 try
                 {
-                    var defaultMetadata = solutionManager.GetDefaultSolutionMetadata();
+                    var defaultMetadata = requested ?? (solutionManager.Settings.StartupMode == "Last"
+                        ? solutionManager.GetMetadata(solutionManager.Settings.CurrentSolutionId)
+                        : solutionManager.GetDefaultSolutionMetadata());
                     if (defaultMetadata != null)
                     {
                         logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
@@ -258,9 +379,8 @@ public partial class App : Application
                             // 默认解决方案加载失败，记录警告并显示主界面
                             logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Error,
                                 $"默认解决方案加载失败: {defaultMetadata.Name} (LoadSolutionOnly 返回 null)", "App");
-                            ShowMainWindow(mainWindow, "default solution load returned null");
-                            _splashScreen?.UpdateProgress(100);
-                            _splashScreen?.CloseWithFade();
+                            ThemeMessageDialog.Show("自动打开方案失败，请重新选择或定位方案文件。", "启动方案", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
+                            await ShowConfigurationDialogAsync(mainWindow, defaultMetadata.Id);
                         }
                     }
                     else
@@ -268,9 +388,7 @@ public partial class App : Application
                         // 没有设置默认解决方案，直接显示主界面
                         logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Warning,
                             "未找到默认解决方案元数据，将显示空白主界面", "App");
-                        ShowMainWindow(mainWindow, "no default solution");
-                        _splashScreen?.UpdateProgress(100);
-                        _splashScreen?.CloseWithFade();
+                        await ShowConfigurationDialogAsync(mainWindow, null);
                     }
                 }
                 catch (Exception ex)
@@ -279,9 +397,7 @@ public partial class App : Application
                         $"自动打开默认解决方案异常: {ex.Message}\n堆栈: {ex.StackTrace}", "App", ex);
                     MessageBox.Show($"自动打开默认解决方案失败: {ex.Message}",
                         "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                    ShowMainWindow(mainWindow, "default solution load exception");
-                    _splashScreen?.UpdateProgress(100);
-                    _splashScreen?.CloseWithFade();
+                    await ShowConfigurationDialogAsync(mainWindow, null);
                 }
                 break;
 
@@ -385,6 +501,61 @@ public partial class App : Application
             Application.Current.Shutdown();
         }
     }
+
+    /// <summary>Reject new handoffs before closing windows/device cleanup; retain ownership until process exit.</summary>
+    internal void MarkInstanceClosing()
+    {
+        _instanceClosing = true;
+        _singleInstance?.BeginClosing();
+    }
+
+    private Task<InstanceActivationResult> HandleInstanceActivationAsync(InstanceActivationRequest request)
+    {
+        return Dispatcher.InvokeAsync(() =>
+        {
+            if (_instanceClosing || Dispatcher.HasShutdownStarted)
+                return new InstanceActivationResult(false, "SunEyeVision 正在退出，请等待退出完成后再启动。");
+            if (request.ExpiresAt < DateTimeOffset.UtcNow)
+                return new InstanceActivationResult(false, "启动请求已超时，请重试。");
+            var visible = Windows.OfType<Window>().LastOrDefault(window => window.IsVisible && window.IsActive)
+                ?? Windows.OfType<Window>().LastOrDefault(window => window.IsVisible);
+            if (visible != null)
+            {
+                if (visible.WindowState == WindowState.Minimized) visible.WindowState = WindowState.Normal;
+                visible.Activate();
+            }
+            if (string.IsNullOrEmpty(request.SolutionPath))
+                return visible == null
+                    ? new InstanceActivationResult(false, "SunEyeVision 正在启动，请稍后重试。")
+                    : InstanceActivationResult.Delivered;
+            if (!_startupActivationReady || _activationInProgress ||
+                MainWindow is not MainWindow main || !main.IsVisible || !main.IsEnabled ||
+                main.DataContext is not MainWindowViewModel viewModel || !viewModel.CanAcceptExternalActivation)
+                return new InstanceActivationResult(false, "SunEyeVision 正在启动、处理对话框或切换方案，请完成当前操作后重试。");
+            string path;
+            try
+            {
+                path = Path.GetFullPath(request.SolutionPath);
+                if (!path.EndsWith(".solution", StringComparison.OrdinalIgnoreCase) || !File.Exists(path))
+                    return new InstanceActivationResult(false, "方案文件不存在或扩展名不正确。");
+            }
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+            { return new InstanceActivationResult(false, "方案路径无效。"); }
+            _activationInProgress = true;
+            // Ack delivery promptly; save/stop dialogs stay in the existing instance.
+            Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                try
+                {
+                    if (!_instanceClosing && main.IsVisible)
+                        await viewModel.OpenExternalSolutionAsync(path);
+                }
+                finally { _activationInProgress = false; }
+            }));
+            return InstanceActivationResult.Delivered;
+        }).Task;
+    }
+
 
     private void ShowMainWindow(MainWindow mainWindow, string reason)
     {
@@ -648,9 +819,14 @@ public partial class App : Application
     /// </summary>
     private void RegisterFileAssociation()
     {
+#if DEBUG
+        // Development runs must not replace the installed application's file association.
+        return;
+#else
         try
         {
             var fileAssociationService = new FileAssociationService();
+            if (!FileAssociationService.IsInstalledLocation()) return;
             if (!fileAssociationService.IsRegistered())
             {
                 fileAssociationService.RegisterFileAssociation();
@@ -660,6 +836,7 @@ public partial class App : Application
         {
             VisionLogger.Instance.Log(LogLevel.Warning, $"文件关联注册失败: {ex.Message}", "App");
         }
+#endif
     }
 
     /// <summary>
@@ -725,9 +902,16 @@ public partial class App : Application
     /// </summary>
     protected override void OnExit(ExitEventArgs e)
     {
+        MarkInstanceClosing();
+        if (_releaseProbe || _startupRejected || !_servicesReady)
+        {
+            base.OnExit(e);
+            return;
+        }
         // 保存用户设置
         var solutionManager = ServiceInitializer.SolutionManager;
-        solutionManager?.SaveUserSettings();
+        try { solutionManager?.SaveUserSettings(); }
+        catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Error, "退出时配置保存失败，原配置保留：" + ex.Message, "App", ex); }
 
         // 停止监控定时器
         _monitorTimer?.Stop();

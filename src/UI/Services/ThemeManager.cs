@@ -29,6 +29,7 @@ namespace SunEyeVision.UI.Services
     public sealed class ThemeManager
     {
         public const string PreferenceKey = "AppTheme";
+        public const AppTheme DefaultTheme = AppTheme.Dark;
 
         private static readonly Uri LightThemeUri =
             new Uri("pack://application:,,,/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml", UriKind.Absolute);
@@ -53,7 +54,7 @@ namespace SunEyeVision.UI.Services
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _logger = VisionLogger.Instance;
-            _currentTheme = AppTheme.Light;
+            _currentTheme = DefaultTheme;
         }
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace SunEyeVision.UI.Services
                 {
                     _logger.Log(LogLevel.Warning, $"持久化主题值无法识别，回退到默认主题: {saved}", "ThemeManager");
                 }
-                _currentTheme = AppTheme.Light;
+                _currentTheme = DefaultTheme;
             }
 
             ApplyThemeDictionary(_currentTheme);

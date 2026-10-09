@@ -15,6 +15,96 @@ namespace SunEyeVision.UI.Tests;
 public sealed class CommunicationHeartbeatTests
 {
     [Fact]
+    public void Device_popup_contains_configured_targets_and_selects_through_tree_event()
+    {
+        Exception? failure = null;
+        var thread = new Thread(() =>
+        {
+            CommunicationManagerViewModel? manager = null;
+            System.Windows.Window? window = null;
+            try
+            {
+                var directory = Path.Combine(Path.GetTempPath(), "SunEyeHeartbeatPicker", Guid.NewGuid().ToString("N"));
+                ServiceInitializer.InitializeSolutionManager(directory);
+                var solutions = new SolutionManager(directory);
+                var raw = new Communication { Name = "TCP", ProtocolKey = "tcp-client", IsEnabled = false };
+                var modbus = new Communication { Name = "PLC", ProtocolKey = "modbus", IsEnabled = false };
+                modbus.ModbusAddressPoints.Add(new() { Name = "Address", Count = 1 });
+                var opc = new Communication { Name = "UA", ProtocolKey = "opcua", IsEnabled = false };
+                opc.OpcUaDataPoints.Add(new() { TagName = "Heartbeat" });
+                var solution = new Solution { Communications = new() { raw, modbus, opc } };
+                solutions.SetCurrentSolution(solution);
+                manager = new CommunicationManagerViewModel(solutions);
+                manager.AddHeartbeatCommand.Execute(null);
+                var row = Assert.Single(manager.Heartbeats);
+                Assert.Equal(4, row.Targets.Count);
+                var view = new CommunicationHeartbeatsView { DataContext = manager };
+                window = new System.Windows.Window { Content = view, Width = 1200, Height = 650,
+                    Left = -10000, Top = -10000, ShowInTaskbar = false, ShowActivated = false };
+                window.Show();
+                System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                var grid = (System.Windows.Controls.DataGrid)view.FindName("HeartbeatGrid");
+                var host = grid.Columns[1].GetCellContent(row);
+                var cell = FindVisual<System.Windows.Controls.Grid>(host!)!;
+                var button = cell.Children.OfType<System.Windows.Controls.Primitives.ToggleButton>().Single();
+                var popup = cell.Children.OfType<System.Windows.Controls.Primitives.Popup>().Single();
+                var transitions = new List<string>();
+                row.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(row.IsTargetOpen)) transitions.Add("row=" + row.IsTargetOpen); };
+                popup.Opened += (_, _) => transitions.Add("opened");
+                popup.Closed += (_, _) => transitions.Add("closed");
+                button.SetCurrentValue(System.Windows.Controls.Primitives.ToggleButton.IsCheckedProperty, true);
+                System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                Assert.True(popup.IsOpen, $"row={row.IsTargetOpen}; checked={button.IsChecked}; loaded={button.IsLoaded}; target={popup.PlacementTarget}; events={string.Join(",", transitions)}");
+                var tree = (System.Windows.Controls.TreeView)((System.Windows.Controls.Border)popup.Child).Child;
+                Assert.Same(row, tree.DataContext);
+                Assert.Same(row.Targets, tree.ItemsSource);
+                Assert.Equal(4, tree.Items.Count);
+                var target = row.Targets.Single(item => item.DeviceId == raw.Id);
+                var item = Assert.IsType<System.Windows.Controls.TreeViewItem>(tree.ItemContainerGenerator.ContainerFromItem(target));
+                item.SetCurrentValue(System.Windows.Controls.TreeViewItem.IsSelectedProperty, true);
+                System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                Assert.Equal(raw.Id, row.DeviceId);
+                Assert.Equal(raw.Id, Assert.Single(solution.CommunicationHeartbeats).DeviceId);
+                Assert.Contains("TCP", row.TargetLabel);
+                Assert.False(popup.IsOpen);
+
+                foreach (var nativeDevice in new[] { modbus, opc })
+                {
+                    button.SetCurrentValue(System.Windows.Controls.Primitives.ToggleButton.IsCheckedProperty, true);
+                    System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                    Assert.True(popup.IsOpen);
+                    var group = row.Targets.Single(node => node.DeviceId == nativeDevice.Id);
+                    var parent = Assert.IsType<System.Windows.Controls.TreeViewItem>(tree.ItemContainerGenerator.ContainerFromItem(group));
+                    parent.SetCurrentValue(System.Windows.Controls.TreeViewItem.IsExpandedProperty, true);
+                    System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                    var leaf = Assert.Single(group.Children);
+                    var child = Assert.IsType<System.Windows.Controls.TreeViewItem>(parent.ItemContainerGenerator.ContainerFromItem(leaf));
+                    child.SetCurrentValue(System.Windows.Controls.TreeViewItem.IsSelectedProperty, true);
+                    System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                    Assert.Equal(nativeDevice.Id, row.DeviceId);
+                    Assert.Equal(leaf.TargetId, row.TargetId);
+                    Assert.Equal(leaf.TargetId, Assert.Single(solution.CommunicationHeartbeats).TargetId);
+                    Assert.Contains(nativeDevice.Name, row.TargetLabel);
+                    Assert.False(popup.IsOpen);
+                }
+            }
+            catch (Exception ex) { failure = ex; }
+            finally { window?.Close(); manager?.DisposeAsync().AsTask().GetAwaiter().GetResult(); }
+        });
+        thread.SetApartmentState(ApartmentState.STA); thread.IsBackground = true; thread.Start();
+        Assert.True(thread.Join(TimeSpan.FromSeconds(20)), "心跳设备弹层测试超时");
+        if (failure != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+    }
+
+    private static T? FindVisual<T>(System.Windows.DependencyObject parent) where T : System.Windows.DependencyObject
+    {
+        if (parent is T match) return match;
+        for (var i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            if (FindVisual<T>(System.Windows.Media.VisualTreeHelper.GetChild(parent, i)) is { } child) return child;
+        return null;
+    }
+
+    [Fact]
     public void Editor_has_seven_columns_preserves_second_value_and_syncs_shared_configuration()
     {
         Exception? failure = null;

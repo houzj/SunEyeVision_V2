@@ -27,8 +27,8 @@
    <DataGrid.Columns>
     <DataGridTemplateColumn Header="序号" Width="50"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource CommunicationTableTextStyle}" Text="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource Ordinal}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
     <DataGridTemplateColumn Header="设备" Width="240"><DataGridTemplateColumn.CellTemplate><DataTemplate><Grid ToolTip="{Binding Status}">
-     <ToggleButton x:Name="TargetButton" Style="{StaticResource HeartbeatTargetButtonStyle}" Content="{Binding TargetLabel}" IsChecked="{Binding IsTargetOpen, Mode=TwoWay}" Height="32"/>
-     <Popup PlacementTarget="{Binding ElementName=TargetButton}" IsOpen="{Binding IsTargetOpen, Mode=TwoWay}" StaysOpen="False" Opened="Targets_Opened">
+     <ToggleButton x:Name="TargetButton" Style="{StaticResource HeartbeatTargetButtonStyle}" Content="{Binding TargetLabel}" IsChecked="{Binding IsTargetOpen, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
+     <Popup PlacementTarget="{Binding ElementName=TargetButton}" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" IsOpen="{Binding IsTargetOpen, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" StaysOpen="False" Opened="Targets_Opened">
       <Border Padding="6" MinWidth="240" Background="{DynamicResource {x:Static base:ThemeKeys.ContextMenuBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="1">
        <TreeView ItemsSource="{Binding Targets}" SelectedItemChanged="Target_Selected" MaxHeight="280" Background="Transparent" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" BorderThickness="0"/>
       </Border>

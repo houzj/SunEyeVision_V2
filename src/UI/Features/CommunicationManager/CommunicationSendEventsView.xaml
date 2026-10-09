@@ -88,7 +88,14 @@
         <Separator/><TextBlock Text="基本配置" FontSize="17" FontWeight="SemiBold" Margin="0,14"/>
         <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="分隔符" VerticalAlignment="Center" Margin="14,0,0,0"/><ComboBox x:Name="DirectSendSeparator" Grid.Column="1" ItemsSource="{Binding SelectedSendEvent.SeparatorOptions}" Style="{StaticResource CommunicationSeparatorStyle}" SelectedValue="{Binding SelectedSendEvent.Separator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="34"/></Grid>
        </StackPanel>
-       <Separator/><TextBlock Text="参数列表" FontSize="17" FontWeight="SemiBold" Margin="0,14,0,10"/>
+       <Grid Margin="0,0,0,14" Visibility="{Binding IsSendRaw, Converter={StaticResource SendBoolVisibility}}"><Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="结束符" VerticalAlignment="Center" Margin="14,0,0,0"/><ComboBox Grid.Column="1" Height="32" SelectedValuePath="Tag" SelectedValue="{Binding SelectedSendEvent.Terminator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"><ComboBoxItem Content="无" Tag=""/><ComboBoxItem Content="\r" Tag="&#xD;"/><ComboBoxItem Content="\n" Tag="&#xA;"/><ComboBoxItem Content="\r\n" Tag="&#xD;&#xA;"/></ComboBox></Grid>
+       <Separator/>
+       <DockPanel x:Name="SendParametersHeader" Margin="0,14,0,10">
+        <Button x:Name="SendTestButton" DockPanel.Dock="Right" Content="发送测试" Command="{Binding TestSendEventCommand}" MinWidth="90" ToolTip="实际写入绑定设备"/>
+        <TextBlock DockPanel.Dock="Right" Text="{Binding SelectedSendEvent.Status}" MaxWidth="180" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="8,0,12,0" ToolTip="{Binding SelectedSendEvent.Status}" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+        <TextBlock Text="参数列表" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/>
+       </DockPanel>
+       <TextBlock Text="在参数列表填写测试值；“发送测试”会实际写入绑定设备。" TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
       <DataGrid x:Name="SendParametersGrid" ItemsSource="{Binding SelectedSendEvent.Parameters}" AlternationCount="1000000" CanUserSortColumns="False" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" MaxHeight="240"
         ColumnHeaderStyle="{DynamicResource OpcUaDataGridHeaderStyle}" RowStyle="{DynamicResource OpcUaDataGridRowStyle}" CellStyle="{StaticResource CommunicationTableCellStyle}"
         Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}">
@@ -106,7 +113,12 @@
       <StackPanel x:Name="AssemblyConfigurationPanel" Visibility="{Binding SelectedSendEvent.ShowAssemblyConfig, Converter={StaticResource SendBoolVisibility}}">
        <TextBlock Text="分隔符设置" FontSize="17" FontWeight="SemiBold" Margin="0,8,0,14"/>
        <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="分隔符" VerticalAlignment="Center" Margin="14,0,0,0"/><ComboBox x:Name="AssemblySendSeparator" Grid.Column="1" ItemsSource="{Binding SelectedSendEvent.SeparatorOptions}" Style="{StaticResource CommunicationSeparatorStyle}" SelectedValue="{Binding SelectedSendEvent.Separator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="34"/></Grid>
-       <Separator/><TextBlock Text="组装列表" FontSize="17" FontWeight="SemiBold" Margin="0,14,0,10"/>
+       <Separator/>
+       <DockPanel x:Name="SendAssemblyHeader" Margin="0,14,0,10">
+        <Button x:Name="AssemblySendTestButton" DockPanel.Dock="Right" Content="发送测试" Command="{Binding TestSendEventCommand}" MinWidth="90" ToolTip="按组装规则实际写入绑定设备"/>
+        <TextBlock DockPanel.Dock="Right" Text="{Binding SelectedSendEvent.Status}" MaxWidth="180" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="8,0,12,0" ToolTip="{Binding SelectedSendEvent.Status}" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+        <TextBlock Text="组装列表" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/>
+       </DockPanel>
        <DataGrid ItemsSource="{Binding SelectedSendEvent.AssemblyOutputs}" AlternationCount="1000000" CanUserSortColumns="False" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" MaxHeight="240"
         ColumnHeaderStyle="{DynamicResource OpcUaDataGridHeaderStyle}" RowStyle="{DynamicResource OpcUaDataGridRowStyle}" CellStyle="{StaticResource CommunicationTableCellStyle}"
         Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}">
@@ -127,13 +139,6 @@
        </DataGrid>
        <Button Content="＋" Command="{Binding AddSendAssemblyCommand}" Width="28" Height="28" HorizontalAlignment="Left" Margin="8,4,0,10"/>
       </StackPanel>
-     </StackPanel>
-     <StackPanel Margin="0,14,0,8">
-       <TextBlock Text="在参数列表填写测试值；“发送测试”会实际写入绑定设备。" TextWrapping="Wrap" Margin="0,0,0,8"/>
-       <Grid Margin="0,8" IsEnabled="{Binding SelectedSendEvent.IsNotBusy}" Visibility="{Binding IsSendRaw, Converter={StaticResource SendBoolVisibility}}"><Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="结束符" VerticalAlignment="Center"/><ComboBox Grid.Column="1" Height="32" SelectedValuePath="Tag" SelectedValue="{Binding SelectedSendEvent.Terminator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"><ComboBoxItem Content="无" Tag=""/><ComboBoxItem Content="\r" Tag="&#xD;"/><ComboBoxItem Content="\n" Tag="&#xA;"/><ComboBoxItem Content="\r\n" Tag="&#xD;&#xA;"/></ComboBox></Grid>
-       <TextBox Text="{Binding SelectedSendEvent.PreviewText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MinHeight="44" Padding="8" Margin="0,8"/>
-       <TextBlock Text="{Binding SelectedSendEvent.Status}" TextWrapping="Wrap" Margin="0,4"/>
-       <Button x:Name="SendTestButton" Content="发送测试" Command="{Binding TestSendEventCommand}" MinWidth="90" HorizontalAlignment="Right"/>
      </StackPanel>
     </StackPanel>
    </ScrollViewer>

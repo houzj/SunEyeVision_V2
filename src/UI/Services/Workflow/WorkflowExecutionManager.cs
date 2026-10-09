@@ -45,6 +45,7 @@ namespace SunEyeVision.UI.Services.Workflow
         private readonly object _lock = new object();
         private bool _transitionBlocked;
         private CancellationTokenSource? _solutionRunCts;
+        private CancellationTokenSource? _communicationRunCts;
 
         public IDisposable BeginSolutionTransition()
         {
@@ -65,7 +66,9 @@ namespace SunEyeVision.UI.Services.Workflow
             CancellationTokenSource[] sources;
             lock (_lock)
             {
-                sources = _cancellationTokens.Values.Concat(_solutionRunCts == null ? Array.Empty<CancellationTokenSource>() : new[] { _solutionRunCts }).Distinct().ToArray();
+                sources = _cancellationTokens.Values
+                    .Concat(new[] { _solutionRunCts, _communicationRunCts }.OfType<CancellationTokenSource>())
+                    .Distinct().ToArray();
             }
             // Cancellation callbacks may acquire the execution lock; never invoke them while holding it.
             foreach (var source in sources) { try { source.Cancel(); } catch (ObjectDisposedException) { } }
@@ -76,6 +79,9 @@ namespace SunEyeVision.UI.Services.Workflow
                 await Task.Delay(50);
             }
         }
+        private bool _communicationOperation;
+        private readonly AsyncLocal<bool> _communicationOwner = new();
+        private readonly AsyncLocal<CancellationToken> _communicationCancellation = new();
         private SynchronizationContext? _synchronizationContext;
 
         /// <summary>
@@ -187,7 +193,9 @@ namespace SunEyeVision.UI.Services.Workflow
             {
                 OnWorkflowExecutionStarted(workflowId);
                 var execution = await ExecuteSingleTriggeredAsync(workflow, cancellationToken);
-                if (execution.Success)
+                if (execution.Status == ExecutionStatus.Cancelled)
+                    OnWorkflowExecutionStopped(workflowId);
+                else if (execution.Success)
                 {
                     if (advanceLocalImage && HasLocalImageSource(workflow))
                         await _runtimeInputSnapshots.AdvanceAsync(cancellationToken);
@@ -419,7 +427,9 @@ namespace SunEyeVision.UI.Services.Workflow
             using var solutionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             lock (_lock)
             {
-                if (_transitionBlocked || _solutionRunCts != null) throw new InvalidOperationException("已有方案执行或切换操作。");
+                if (_transitionBlocked || _solutionRunCts != null ||
+                    (_communicationOperation && !_communicationOwner.Value))
+                    throw new InvalidOperationException("已有方案执行、通讯操作或切换操作。");
                 _solutionRunCts = solutionCancellation;
             }
             try
@@ -535,7 +545,7 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             lock (_lock)
             {
-                return _activeWorkflowIds.Count > 0 || _solutionRunCts != null;
+                return _activeWorkflowIds.Count > 0 || _solutionRunCts != null || _communicationOperation;
             }
         }
 
@@ -543,8 +553,77 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             lock (_lock)
             {
-                return !_transitionBlocked && _activeWorkflowIds.Add(workflowId);
+                if (_transitionBlocked) return false;
+                if (_communicationOperation && !_communicationOwner.Value) return false;
+                return _activeWorkflowIds.Add(workflowId);
             }
+        }
+
+        /// <summary>Non-waiting application lease shared with manual and continuous workflow execution.</summary>
+        public async Task<bool> RunCommunicationOperationAsync(Func<CancellationToken, Task> operation, CancellationToken token)
+        {
+            using var runCancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
+            lock (_lock)
+            {
+                if (_transitionBlocked || _solutionRunCts != null || _communicationOperation || _activeWorkflowIds.Count > 0) return false;
+                _communicationOperation = true;
+                _communicationRunCts = runCancellation;
+            }
+            token = runCancellation.Token;
+            _communicationOwner.Value = true;
+            _communicationCancellation.Value = token;
+            try { token.ThrowIfCancellationRequested(); await operation(token); return true; }
+            finally
+            {
+                _communicationOwner.Value = false;
+                _communicationCancellation.Value = default;
+                lock (_lock)
+                {
+                    _communicationOperation = false;
+                    _communicationRunCts = null;
+                }
+            }
+        }
+
+        public async Task RunCommunicationNodeAsync(string workflowId, string nodeId, CancellationToken token)
+        {
+            var workflow = _workflowEngine.GetWorkflow(workflowId) ?? throw new InvalidOperationException("触发流程已删除。");
+            var node = FindNodeRecursive(workflow, nodeId) ?? throw new InvalidOperationException("触发模块已删除。");
+            if (!node.IsEnabled) throw new InvalidOperationException("触发模块已禁用，未执行。");
+            var parameters = ToolParameterSnapshot.Create(node.Parameters);
+            var overrides = CreateImageLoadParameterOverrides(workflow, VisionLogger.Instance, new HashSet<string>());
+            if (overrides.TryGetValue(node.Id, out var nodeOverrides))
+                foreach (var item in nodeOverrides)
+                {
+                    var property = parameters.GetType().GetProperty(item.Key);
+                    if (property?.CanWrite != true) throw new InvalidOperationException($"模块输入快照无效：{item.Key}。");
+                    property.SetValue(parameters, item.Value);
+                }
+            var bindings = ParameterBindingSet.FromSettings(node.ParamSettings);
+            if (bindings.Bindings.Any(binding => binding.BindingType != BindingType.Constant &&
+                    !string.IsNullOrWhiteSpace(binding.SourceNodeId) && binding.SourceNodeId != "__GlobalVars__"))
+                throw new InvalidOperationException("单模块执行缺少上游节点结果，请执行完整流程；不使用上一次的缓存结果。");
+            var globals = new Dictionary<string, object?>(_globalVariables ?? new Dictionary<string, object?>());
+            var image = await _inputProvider.GetInputImageAsync() as IVisionImage;
+            token.ThrowIfCancellationRequested();
+            var tool = ToolRegistry.CreateToolInstance(node.ToolType) ?? throw new InvalidOperationException("触发模块的工具尚未加载。");
+            try
+            {
+                OnWorkflowExecutionStarted(workflowId);
+                var executor = new ToolExecutor(new ParameterResolver(), VisionLogger.Instance);
+                var result = await executor.ExecuteAsync(tool, new ToolExecutionRequest(parameters)
+                {
+                    NodeId = node.Id, NodeName = node.Name, ParameterBindings = bindings,
+                    GlobalVariables = globals, ResolvedInputImage = image, CancellationToken = token,
+                    CameraCaptureService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime
+                });
+                if (result.IsCancelled) throw new OperationCanceledException(token);
+                if (!result.IsSuccess) throw new InvalidOperationException(result.ErrorMessage ?? "触发模块执行失败。");
+                OnWorkflowExecutionCompleted(workflowId);
+            }
+            catch (OperationCanceledException) { OnWorkflowExecutionStopped(workflowId); throw; }
+            catch (Exception ex) { OnWorkflowExecutionError(workflowId, ex.Message); throw; }
+            finally { if (tool is IDisposable disposable) disposable.Dispose(); }
         }
 
         private void ReleaseExecution(string workflowId)
@@ -1258,9 +1337,10 @@ namespace SunEyeVision.UI.Services.Workflow
 
         private void InvokeOnUI(Action action)
         {
+            var token = _communicationOwner.Value ? _communicationCancellation.Value : CancellationToken.None;
             if (_synchronizationContext != null)
             {
-                _synchronizationContext.Post(_ => action(), null);
+                _synchronizationContext.Post(_ => { if (!token.IsCancellationRequested) action(); }, null);
             }
             else
             {
@@ -1270,6 +1350,8 @@ namespace SunEyeVision.UI.Services.Workflow
 
         private Task InvokeOnUIAsync(Action action)
         {
+            var token = _communicationOwner.Value ? _communicationCancellation.Value : CancellationToken.None;
+            if (token.IsCancellationRequested) return Task.FromCanceled(token);
             if (_synchronizationContext == null || SynchronizationContext.Current == _synchronizationContext)
             {
                 try
@@ -1286,6 +1368,7 @@ namespace SunEyeVision.UI.Services.Workflow
             var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _synchronizationContext.Post(_ =>
             {
+                if (token.IsCancellationRequested) { completion.TrySetCanceled(token); return; }
                 try
                 {
                     action();
@@ -1296,7 +1379,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     completion.SetException(ex);
                 }
             }, null);
-            return completion.Task;
+            return token.CanBeCanceled ? completion.Task.WaitAsync(token) : completion.Task;
         }
 
         /// <summary>

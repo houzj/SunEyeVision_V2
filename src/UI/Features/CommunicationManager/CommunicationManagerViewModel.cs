@@ -398,7 +398,11 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         {
             var solution = _solutionManager.CurrentSolution;
             if (solution != null)
+            {
                 solution.CommunicationEvents = CaptureReceiveEvents();
+                ServiceInitializer.CommunicationService.RefreshAutomationConfiguration(solution);
+                RefreshAutomationChoices();
+            }
         }
 
         private void CompareInput_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -672,6 +676,8 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
             InitializeCommands();
             InitializeSendEvents(currentSolution?.CommunicationSendEvents);
+            InitializeHeartbeats();
+            InitializeAutomation();
         }
 
         private void LoadReceiveEvents(IEnumerable<CommunicationEventDefinition>? definitions)
@@ -912,6 +918,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         private void Workspace_AddressConfigurationChanged(object? sender, EventArgs e)
         {
             RefreshSendTargets();
+            HeartbeatConfigurationChanged(null, EventArgs.Empty);
             if (sender is CommunicationDeviceWorkspaceViewModel workspace && workspace.Communication.IsModbus)
             {
                 foreach (var receiveEvent in ReceiveEvents.Where(item =>
@@ -937,6 +944,8 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 UpdateModbusPollPlan(workspace);
             if (sender is Communication { IsOpcUa: true } && e.PropertyName is nameof(Communication.OpcUaHost) or nameof(Communication.OpcUaPort) or nameof(Communication.RequestTimeout) or nameof(Communication.AutoReconnect))
                 HasUnsavedChanges = true;
+            if (e.PropertyName is nameof(Communication.Name) or nameof(Communication.ProtocolKey) or nameof(Communication.IsEnabled))
+                HeartbeatConfigurationChanged(null, EventArgs.Empty);
         }
 
         public async Task<string?> AddOpcUaPointAsync(OpcUaDataPoint point)
@@ -979,6 +988,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
             row.UpdatePointConfiguration(edited);
             RefreshSendTargets();
+            HeartbeatConfigurationChanged(null, EventArgs.Empty);
             row.IsEditing = false;
             workspace.SelectedOpcUaPoint = row;
             HasUnsavedChanges = true;
@@ -1242,6 +1252,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             Communications.Add(communication);
             _solutionManager.CurrentSolution?.Communications.Add(communication);
             AddWorkspace(communication);
+            HeartbeatConfigurationChanged(null, EventArgs.Empty);
             if (communication.IsOpcUa)
             {
                 _newOpcUaDeviceIds.Add(communication.Id);
@@ -1283,6 +1294,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             RemoveWorkspace(communication.Id);
             Communications.Remove(communication);
             _solutionManager.CurrentSolution?.Communications.Remove(communication);
+            HeartbeatConfigurationChanged(null, EventArgs.Empty);
 
             LogInfo($"删除通讯配置: {communication.Name}");
             SelectedCommunication = null;
@@ -1858,6 +1870,8 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         public async ValueTask DisposeAsync()
         {
+            DisposeAutomationEditor();
+            DisposeHeartbeatEditor();
             _runtimeManager.DataReceived -= RuntimeManager_DataReceived;
             _runtimeManager.ConnectionClosed -= RuntimeManager_ConnectionClosed;
             _runtimeManager.StatusChanged -= RuntimeManager_StatusChanged;

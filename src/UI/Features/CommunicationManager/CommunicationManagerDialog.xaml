@@ -212,6 +212,24 @@
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
             </DataTrigger></Style.Triggers>
         </Style>
+        <Style x:Key="HeartbeatNavigationButtonStyle" TargetType="Button" BasedOn="{StaticResource NavigationButtonBaseStyle}">
+            <Style.Triggers><DataTrigger Binding="{Binding ActivePage}" Value="Heartbeats">
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+            </DataTrigger></Style.Triggers>
+        </Style>
+        <Style x:Key="TriggerNavigationButtonStyle" TargetType="Button" BasedOn="{StaticResource NavigationButtonBaseStyle}">
+            <Style.Triggers><DataTrigger Binding="{Binding ActivePage}" Value="Triggers">
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+            </DataTrigger></Style.Triggers>
+        </Style>
+        <Style x:Key="ResponseNavigationButtonStyle" TargetType="Button" BasedOn="{StaticResource NavigationButtonBaseStyle}">
+            <Style.Triggers><DataTrigger Binding="{Binding ActivePage}" Value="Responses">
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+            </DataTrigger></Style.Triggers>
+        </Style>
         <Style x:Key="CommunicationDeviceTabItemStyle" TargetType="ListBoxItem">
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="Margin" Value="0"/>
@@ -306,13 +324,12 @@
                 <Button Content="设备管理" Style="{StaticResource DeviceNavigationButtonStyle}" Click="DevicePage_Click"/>
                 <Button Content="接收事件" Style="{StaticResource ReceiveEventNavigationButtonStyle}" Click="ReceiveEventsPage_Click"/>
                 <Button Content="发送事件" Style="{StaticResource SendEventNavigationButtonStyle}" Click="SendEventsPage_Click"/>
-                <Button Content="触发配置" Style="{StaticResource NavigationButtonBaseStyle}"
-                        IsEnabled="False" ToolTip="后续阶段实现" BorderThickness="0"/>
+                <Button Content="触发配置" Style="{StaticResource TriggerNavigationButtonStyle}"
+                        Click="TriggersPage_Click" BorderThickness="0"/>
                 <Separator Margin="18,8"/>
-                <Button Content="响应配置" Style="{StaticResource NavigationButtonBaseStyle}"
-                        IsEnabled="False" ToolTip="后续阶段实现" BorderThickness="0"/>
-                <Button Content="心跳管理" Style="{StaticResource NavigationButtonBaseStyle}"
-                        IsEnabled="False" ToolTip="后续阶段实现" BorderThickness="0"/>
+                <Button Content="响应配置" Style="{StaticResource ResponseNavigationButtonStyle}"
+                        Click="ResponsesPage_Click" BorderThickness="0"/>
+                <Button Content="心跳管理" Style="{StaticResource HeartbeatNavigationButtonStyle}" Click="HeartbeatsPage_Click" BorderThickness="0"/>
             </StackPanel>
         </Border>
 
@@ -1369,6 +1386,24 @@
 
         <Grid Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Style="{StaticResource SendEventPageVisibilityStyle}">
             <comm:CommunicationSendEventsView/>
+        </Grid>
+        <Grid Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2">
+            <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+                <Style.Triggers><DataTrigger Binding="{Binding ActivePage}" Value="Heartbeats"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+            </Style></Grid.Style>
+            <comm:CommunicationHeartbeatsView/>
+        </Grid>
+        <Grid Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2">
+            <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+                <Style.Triggers><DataTrigger Binding="{Binding ActivePage}" Value="Triggers"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+            </Style></Grid.Style>
+            <comm:CommunicationTriggersView/>
+        </Grid>
+        <Grid Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2">
+            <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+                <Style.Triggers><DataTrigger Binding="{Binding ActivePage}" Value="Responses"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+            </Style></Grid.Style>
+            <comm:CommunicationResponsesView/>
         </Grid>
         <Grid Grid.Row="0" Grid.Column="2" Margin="0,0,14,0" Style="{StaticResource ReceiveEventEmptyVisibilityStyle}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">

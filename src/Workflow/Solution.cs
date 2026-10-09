@@ -93,6 +93,9 @@ public class Solution : ObservableObject
     /// <summary>Reusable outbound communication event formats.</summary>
     public List<CommunicationSendEventDefinition> CommunicationSendEvents { get; set; } = new();
 
+    public List<CommunicationHeartbeatDefinition> CommunicationHeartbeats { get; set; } = new();
+    public List<CommunicationTriggerDefinition> CommunicationTriggers { get; set; } = new();
+    public CommunicationResponseConfiguration CommunicationResponses { get; set; } = new();
     /// <summary>
     /// 数据库配置
     /// </summary>
@@ -335,14 +338,26 @@ public class Solution : ObservableObject
     /// </summary>
     public Solution Clone()
     {
+        T CloneConfiguration<T>(T value) => JsonSerializer.Deserialize<T>(
+            JsonSerializer.Serialize(value, WorkflowSerializationOptions.Default),
+            WorkflowSerializationOptions.Default)!;
         return new Solution
         {
             Id = Guid.NewGuid().ToString(),
+            Name = Name,
+            Description = Description,
+            SchemaVersion = SchemaVersion,
+            AdditionalData = AdditionalData == null ? null : new Dictionary<string, JsonElement>(AdditionalData),
             Version = Version,
             Workflows = Workflows.Select(w => w.Clone()).ToList(),
             GlobalVariables = GlobalVariables.Select(v => v.Clone()).ToList(),
             Devices = Devices.Select(d => d.Clone()).ToList(),
             Communications = Communications.Select(c => c.Clone()).ToList(),
+            CommunicationEvents = CloneConfiguration(CommunicationEvents),
+            CommunicationSendEvents = CloneConfiguration(CommunicationSendEvents),
+            CommunicationHeartbeats = CloneConfiguration(CommunicationHeartbeats),
+            CommunicationTriggers = CloneConfiguration(CommunicationTriggers),
+            CommunicationResponses = CloneConfiguration(CommunicationResponses),
             DatabaseConfiguration = DatabaseConfiguration?.Clone(),
             ExecutionStrategy = ExecutionStrategy?.Clone(),
             VersionHistory = new List<SolutionVersion>(VersionHistory)

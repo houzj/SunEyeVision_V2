@@ -116,7 +116,21 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             => _communicationRuntime ??= new CommunicationRuntimeComposition();
 
         public static CommunicationApplicationService CommunicationService
-            => _communicationService ??= new CommunicationApplicationService(SolutionManager, CommunicationRuntime);
+        {
+            get
+            {
+                if (_communicationService == null)
+                {
+                    _communicationService = new CommunicationApplicationService(SolutionManager, CommunicationRuntime);
+                    _communicationService.Automation.CameraConnectionObserver = id =>
+                        _cameraRuntime != null && _cameraRuntime.Runtime.TryGetSession(
+                            new SunEyeVision.Plugin.SDK.Devices.Camera.CameraDeviceRef(id), out var session)
+                        && session.Adapter.State is SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Connected
+                            or SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Capturing;
+                }
+                return _communicationService;
+            }
+        }
 
         public static async ValueTask DisposeCommunicationRuntimeAsync()
         {

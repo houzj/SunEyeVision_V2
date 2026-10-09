@@ -17,6 +17,14 @@ namespace SunEyeVision.UI.Features.CommunicationManager
     {
         private bool _allowClosing;
         private bool _parseHistoryScrollPending;
+        private void TriggersPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager) { manager.RefreshAutomationChoices(); manager.ActivePage = "Triggers"; }
+        }
+        private void ResponsesPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager) { manager.RefreshAutomationChoices(); manager.ActivePage = "Responses"; }
+        }
         public CommunicationManagerDialog(CommunicationManagerViewModel viewModel)
         {
             InitializeComponent();
@@ -86,6 +94,14 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             Close();
         }
 
+        private void HeartbeatsPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CommunicationManagerViewModel manager)
+            {
+                manager.RefreshHeartbeatTargets();
+                manager.ActivePage = "Heartbeats";
+            }
+        }
         private void DevicePage_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is CommunicationManagerViewModel manager) manager.ActivePage = "Devices";

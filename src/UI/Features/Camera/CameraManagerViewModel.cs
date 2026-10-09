@@ -425,6 +425,7 @@ namespace SunEyeVision.UI.Features.Camera
                 solution.Devices.Add(device);
             }
 
+            SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.RefreshAutomationConfiguration(solution);
             if (string.IsNullOrWhiteSpace(solution.FilePath))
             {
                 StatusMessage = "设备配置已更新，保存方案后将写入本地文件";

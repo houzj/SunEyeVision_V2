@@ -122,6 +122,11 @@
     <OutputPath>$(PackagingRoot)\app\</OutputPath>
     <OutDir>$(OutputPath)</OutDir>
   </PropertyGroup>
+  <!-- Keep the Windows release target in dependency locks during ordinary Debug restores.
+       RuntimeIdentifiers affects restore only; ordinary builds remain framework-dependent. -->
+  <PropertyGroup>
+    <RuntimeIdentifiers Condition="'$(RuntimeIdentifiers)'==''">win-x64</RuntimeIdentifiers>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(PackagingRuntimeIdentifier)'!=''">
     <RuntimeIdentifier>$(PackagingRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>

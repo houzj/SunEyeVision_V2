@@ -1,4 +1,32 @@
 <Project>
+  <!-- A framework-dependent apphost must not load a leftover self-contained host.
+       Quarantine only three runtime-owned files, only from our ordinary UI output roots.
+       Do not touch packaging, self-contained builds, design-time builds or custom directories. -->
+  <Target Name="QuarantineStaleRuntimeHost" AfterTargets="Build"
+          Condition="'$(MSBuildProjectName)'=='SunEyeVision.UI'
+                     And '$(SelfContained)'!='true'
+                     And '$(PackagingRoot)'==''
+                     And '$(DesignTimeBuild)'!='true'">
+    <PropertyGroup>
+      <_RuntimeGuardOutDir>$([System.IO.Path]::GetFullPath('$(OutDir)'))</_RuntimeGuardOutDir>
+      <_RuntimeGuardDebugDir>$([System.IO.Path]::GetFullPath('$(WorktreeBasePath)dev\Debug\'))</_RuntimeGuardDebugDir>
+      <_RuntimeGuardReleaseDir>$([System.IO.Path]::GetFullPath('$(WorktreeBasePath)Release\SunEyeVision_v1.0.0\SunEyeVision\'))</_RuntimeGuardReleaseDir>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(_RuntimeGuardOutDir)'=='$(_RuntimeGuardDebugDir)' Or '$(_RuntimeGuardOutDir)'=='$(_RuntimeGuardReleaseDir)'">
+      <_StaleRuntimeHost Include="$(_RuntimeGuardOutDir)hostfxr.dll" Condition="Exists('$(_RuntimeGuardOutDir)hostfxr.dll')" />
+      <_StaleRuntimeHost Include="$(_RuntimeGuardOutDir)hostpolicy.dll" Condition="Exists('$(_RuntimeGuardOutDir)hostpolicy.dll')" />
+      <_StaleRuntimeHost Include="$(_RuntimeGuardOutDir)coreclr.dll" Condition="Exists('$(_RuntimeGuardOutDir)coreclr.dll')" />
+    </ItemGroup>
+    <PropertyGroup Condition="'@(_StaleRuntimeHost)'!=''">
+      <_RuntimeHostBackupDir>$(WorktreeBasePath)artifacts\runtime-host-backups\$(Configuration)\$([System.Guid]::NewGuid())\</_RuntimeHostBackupDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(_RuntimeHostBackupDir)" Condition="'@(_StaleRuntimeHost)'!=''" />
+    <Move SourceFiles="@(_StaleRuntimeHost)" DestinationFolder="$(_RuntimeHostBackupDir)"
+          Condition="'@(_StaleRuntimeHost)'!=''" />
+    <Message Text="[RuntimeHost] 已隔离普通构建中冲突的运行时宿主，原文件保留于 $(_RuntimeHostBackupDir)"
+             Importance="high" Condition="'@(_StaleRuntimeHost)'!=''" />
+  </Target>
+
   <!-- 所有工具插件显式写入契约元数据。宿主在加载前读取该元数据，
        不再把 SDK 的 AssemblyVersion 当成契约版本。 -->
   <ItemGroup Condition="'$(IsToolPlugin)'=='true'">

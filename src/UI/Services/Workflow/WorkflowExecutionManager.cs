@@ -81,6 +81,7 @@ namespace SunEyeVision.UI.Services.Workflow
         }
         private bool _communicationOperation;
         private readonly AsyncLocal<bool> _communicationOwner = new();
+        private readonly AsyncLocal<IReadOnlyList<CommunicationParameterAssignment>?> _communicationAssignments = new();
         private readonly AsyncLocal<CancellationToken> _communicationCancellation = new();
         private SynchronizationContext? _synchronizationContext;
 
@@ -560,7 +561,8 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>Non-waiting application lease shared with manual and continuous workflow execution.</summary>
-        public async Task<bool> RunCommunicationOperationAsync(Func<CancellationToken, Task> operation, CancellationToken token)
+        public async Task<bool> RunCommunicationOperationAsync(Func<CancellationToken, Task> operation, CancellationToken token,
+            IReadOnlyList<CommunicationParameterAssignment>? assignments = null)
         {
             using var runCancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
             lock (_lock)
@@ -571,11 +573,13 @@ namespace SunEyeVision.UI.Services.Workflow
             }
             token = runCancellation.Token;
             _communicationOwner.Value = true;
+            _communicationAssignments.Value = assignments?.ToArray();
             _communicationCancellation.Value = token;
             try { token.ThrowIfCancellationRequested(); await operation(token); return true; }
             finally
             {
                 _communicationOwner.Value = false;
+                _communicationAssignments.Value = null;
                 _communicationCancellation.Value = default;
                 lock (_lock)
                 {
@@ -600,6 +604,13 @@ namespace SunEyeVision.UI.Services.Workflow
                     property.SetValue(parameters, item.Value);
                 }
             var bindings = ParameterBindingSet.FromSettings(node.ParamSettings);
+            var assigned = (_communicationAssignments.Value ?? Array.Empty<CommunicationParameterAssignment>()).Where(a => a.NodeId == node.Id).ToArray();
+            foreach (var assignment in assigned)
+            {
+                CommunicationTriggerEvaluation.ValidateTarget(node, assignment);
+                parameters.GetType().GetProperty(assignment.Property)!.SetValue(parameters, assignment.Value);
+            }
+            bindings = new ParameterBindingSet(bindings.Bindings.Where(b => !assigned.Any(a => a.Property == b.ParameterName)));
             if (bindings.Bindings.Any(binding => binding.BindingType != BindingType.Constant &&
                     !string.IsNullOrWhiteSpace(binding.SourceNodeId) && binding.SourceNodeId != "__GlobalVars__"))
                 throw new InvalidOperationException("单模块执行缺少上游节点结果，请执行完整流程；不使用上一次的缓存结果。");
@@ -787,6 +798,16 @@ namespace SunEyeVision.UI.Services.Workflow
                 var hasCameraSource = nodeParameterOverrides.Values.Any(values =>
                     values.TryGetValue("SourceKind", out var kind)
                     && kind is SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera);
+                var bindingOverrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
+                foreach (var group in (_communicationAssignments.Value ?? Array.Empty<CommunicationParameterAssignment>()).GroupBy(a => a.NodeId))
+                {
+                    var values = group.ToDictionary(a => a.Property, a => (object?)a.Value);
+                    bindingOverrides[group.Key] = values;
+                    if (!nodeParameterOverrides.TryGetValue(group.Key, out var existing)) existing = new Dictionary<string, object?>();
+                    var merged = new Dictionary<string, object?>(existing);
+                    foreach (var value in values) merged[value.Key] = value.Value;
+                    nodeParameterOverrides[group.Key] = merged;
+                }
 
                 // ★ 引擎内部统一完成节点类型转换，主/子工作流共享同一逻辑
                 logger.LogInfo($"开始执行工作流: {rootEngineWorkflow.Name}");
@@ -798,6 +819,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     globalVariablesOverride ?? _globalVariables,
                     runtimeParameters,
                     nodeParameterOverrides: nodeParameterOverrides,
+                    nodeBindingOverrides: bindingOverrides,
                     cameraCaptureService: hasCameraSource
                         ? SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime
                         : null,

@@ -45,6 +45,15 @@ public partial class MainWindowViewModel
                 _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
                 _executionManager.SetGlobalVariables(solution.GlobalVariables.ToDictionary(v => v.Name, v => v.Value));
                 var tabs = WorkflowTabViewModel.Tabs.Where(t => solution.Workflows.Any(w => !w.IsSubroutine && w.Id == t.RootWorkflowId)).ToArray();
+                foreach (var assignment in request.Assignments)
+                {
+                    var flow = solution.Workflows.FirstOrDefault(w => !w.IsSubroutine && w.Nodes.Any(n => n.Id == assignment.NodeId));
+                    var node = flow?.Nodes.FirstOrDefault(n => n.Id == assignment.NodeId);
+                    if (node == null || (request.Command == "执行流程" && request.TargetId != "*" && flow!.Id != request.TargetId) ||
+                        (request.Command == "执行模块" && node.Id != request.TargetId))
+                        throw new InvalidOperationException("参数绑定目标不在本次执行范围内。");
+                    CommunicationTriggerEvaluation.ValidateTarget(node, assignment);
+                }
                 return (Func<Task>)(async () =>
                 {
                     switch (request.Command)
@@ -70,7 +79,7 @@ public partial class MainWindowViewModel
             }, System.Windows.Threading.DispatcherPriority.Normal, cancellation);
             cancellation.ThrowIfCancellationRequested();
             await launch();
-        }, token);
+        }, token, request.Assignments);
 
     private async Task<bool> SwitchCommunicationSolutionAsync(string solutionId, CancellationToken token)
     {

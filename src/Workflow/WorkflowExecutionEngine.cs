@@ -863,6 +863,9 @@ namespace SunEyeVision.Workflow
 
                 // 复制参数绑定配置
                 executionNode.ParamSettings = node.ParamSettings?.Clone() ?? new ParamSettingContainer();
+                if (request != null && request.NodeBindingOverrides.TryGetValue(node.Id, out var overrides))
+                    foreach (var value in overrides)
+                        executionNode.ParamSettings.SetSetting(ParamSetting.CreateConstant(value.Key, value.Value));
                 executionNode.CameraCaptureService = request?.CameraCaptureService;
                 executionNode.CameraFrame = request != null && request.CameraFrames.TryGetValue(node.Id, out var cameraFrame)
                     ? cameraFrame

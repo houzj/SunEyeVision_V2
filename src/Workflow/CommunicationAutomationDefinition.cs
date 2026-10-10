@@ -13,7 +13,7 @@ public sealed class CommunicationTriggerDefinition : ObservableObject
     public Guid? EventId { get => _EventId; set => SetProperty(ref _EventId, value); }
     private string _Text = "";
     public string Text { get => _Text; set => SetProperty(ref _Text, value); }
-    private string _MatchMode = "完全匹配";
+private string _MatchMode = "等于";
     public string MatchMode { get => _MatchMode; set => SetProperty(ref _MatchMode, value); }
     private string _Command = "执行流程";
     public string Command { get => _Command; set => SetProperty(ref _Command, value); }
@@ -21,8 +21,33 @@ public sealed class CommunicationTriggerDefinition : ObservableObject
     public string TargetId { get => _TargetId; set => SetProperty(ref _TargetId, value); }
     private Guid? _FieldId = null;
     public Guid? FieldId { get => _FieldId; set => SetProperty(ref _FieldId, value); }
+    private string? _triggerParameterSource;
+    /// <summary>Current event output path (eventId.fieldId), or a literal trigger value. Null preserves legacy FieldId.</summary>
+    public string? TriggerParameterSource { get => _triggerParameterSource; set => SetProperty(ref _triggerParameterSource, value); }
+    private bool _parameterComparisonEnabled;
+    /// <summary>Legacy persisted flag; equality now depends only on a non-empty trigger parameter source.</summary>
+    public bool ParameterComparisonEnabled { get => _parameterComparisonEnabled; set => SetProperty(ref _parameterComparisonEnabled, value); }
+    private Guid? _comparisonOutputId;
+    public Guid? ComparisonOutputId { get => _comparisonOutputId; set => SetProperty(ref _comparisonOutputId, value); }
+    // New global rules use Source=GlobalData; old String rules are not converted or executed.
     private string _Action = "";
     public string Action { get => _Action; set => SetProperty(ref _Action, value); }
+    private Guid? _conditionFieldId;
+    public Guid? ConditionFieldId { get => _conditionFieldId; set => SetProperty(ref _conditionFieldId, value); }
+    private string _conditionRule = "无附加条件";
+    public string ConditionRule { get => _conditionRule; set => SetProperty(ref _conditionRule, value); }
+    private string _conditionValue = "";
+    public string ConditionValue { get => _conditionValue; set => SetProperty(ref _conditionValue, value); }
+    public List<CommunicationParameterMapping> ParameterMappings { get; set; } = new();
+}
+
+/// <summary>Stable source/target identities; only applied to a per-execution parameter copy.</summary>
+public sealed class CommunicationParameterMapping
+{
+    public Guid SourceFieldId { get; set; }
+    public string TargetNodeId { get; set; } = "";
+    public string TargetProperty { get; set; } = "";
+    public string TargetKind { get; set; } = "运行参数";
 }
 
 public sealed class CommunicationResponseDefinition : ObservableObject

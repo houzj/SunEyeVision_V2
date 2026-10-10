@@ -18,7 +18,8 @@ public sealed class WorkflowRunRequest
         IDictionary<string, object>? contextVariables = null,
         IDictionary<string, IReadOnlyDictionary<string, object?>>? nodeParameterOverrides = null,
         ICameraCaptureService? cameraCaptureService = null,
-        IReadOnlyDictionary<string, CameraFrame>? cameraFrames = null)
+        IReadOnlyDictionary<string, CameraFrame>? cameraFrames = null,
+        IDictionary<string, IReadOnlyDictionary<string, object?>>? nodeBindingOverrides = null)
     {
         if (string.IsNullOrWhiteSpace(workflowId))
             throw new ArgumentException("工作流 ID 不能为空。", nameof(workflowId));
@@ -33,10 +34,13 @@ public sealed class WorkflowRunRequest
                 pair => pair.Key,
                 pair => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?>(pair.Value));
         CameraCaptureService = cameraCaptureService;
+        NodeBindingOverrides = (nodeBindingOverrides ?? new Dictionary<string, IReadOnlyDictionary<string, object?>>())
+            .ToDictionary(p => p.Key, p => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?>(p.Value));
         CameraFrames = new Dictionary<string, CameraFrame>(cameraFrames ?? new Dictionary<string, CameraFrame>());
     }
 
     public string WorkflowId { get; }
+    public IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> NodeBindingOverrides { get; }
     public IVisionImage? InputImage { get; }
     public IReadOnlyDictionary<string, object?> GlobalVariables { get; }
     public IReadOnlyDictionary<string, object> RuntimeParameters { get; }

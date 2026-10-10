@@ -11,6 +11,7 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.UI.Features.CommunicationManager;
 using SunEyeVision.UI.Services.Communication;
 using SunEyeVision.UI.Services.Workflow;
@@ -45,17 +46,17 @@ public sealed class CommunicationAutomationTests
     }
 
     [Theory]
-    [InlineData("完全匹配", "GO", true)]
-    [InlineData("完全匹配", "xxGOxx", false)]
-    [InlineData("部分匹配", "xxGOxx", true)]
-    [InlineData("不匹配", "anything", true)]
+    [InlineData("等于", "GO", true)]
+    [InlineData("等于", "xxGOxx", false)]
+    [InlineData("包含", "xxGOxx", true)]
+    [InlineData("不检查内容", "anything", true)]
     public async Task String_matching_follows_vm_semantics_and_requires_data_upload(string mode, string input, bool expected)
     {
         await using var runtime = new CommunicationRuntimeManager();
         await using var service = new CommunicationAutomationService(runtime);
         var device = new Communication { ProtocolKey = "tcp-client", EnableDataUpload = true };
         var solution = new Solution { Communications = new() { device }, CommunicationTriggers = new()
-            { new() { Source = "String", MatchMode = mode, Text = "GO", TargetId = "flow" } } };
+            { new() { Source = "GlobalData", MatchMode = mode, Text = "GO", TargetId = "flow" } } };
         var count = 0;
         service.Dispatcher = (_, _) => { Interlocked.Increment(ref count); return Task.FromResult(true); };
         service.Reset(solution); service.ProcessRaw(device.Id, Encoding.UTF8.GetBytes(input), DateTimeOffset.Now);
@@ -101,7 +102,7 @@ public sealed class CommunicationAutomationTests
         await using var service = new CommunicationAutomationService(runtime);
         var device = new Communication { ProtocolKey = "tcp-client", EnableDataUpload = true };
         service.Reset(new Solution { Communications = new() { device }, CommunicationTriggers = new()
-            { new() { Source = "String", MatchMode = "不匹配", TargetId = "flow" } } });
+            { new() { Source = "GlobalData", MatchMode = "不检查内容", TargetId = "flow" } } });
         var calls = 0;
         var diagnostics = new ConcurrentQueue<(LogLevel, string)>();
         service.Diagnostic += (level, text) => diagnostics.Enqueue((level, text));
@@ -159,7 +160,7 @@ public sealed class CommunicationAutomationTests
         var device = new Communication { ProtocolKey = "tcp-client", Host = "127.0.0.1",
             Port = ((IPEndPoint)listener.LocalEndpoint).Port, EnableDataUpload = true, IsEnabled = true };
         solutions.SetCurrentSolution(new Solution { Communications = new() { device }, CommunicationTriggers = new()
-            { new() { Source = "String", MatchMode = "完全匹配", Text = "GO", TargetId = "flow" } } });
+            { new() { Source = "GlobalData", MatchMode = "等于", Text = "GO", TargetId = "flow" } } });
         using var peer = await listener.AcceptTcpClientAsync().WaitAsync(TimeSpan.FromSeconds(3));
         await service.ReadyAsync().WaitAsync(TimeSpan.FromSeconds(3));
         await peer.GetStream().WriteAsync(Encoding.UTF8.GetBytes("GO"));
@@ -342,7 +343,55 @@ public sealed class CommunicationAutomationTests
         Assert.False(manager.IsAnyRunning()); manager.Dispose();
     }
 
-    public sealed class AutomationProbeParameters : ToolParameters { public int Value { get; set; } }
+    [Fact]
+    public async Task Communication_mapping_overrides_only_execution_copy_and_does_not_leak_to_next_run()
+    {
+        ToolRegistry.RegisterTool(typeof(AutomationProbeTool));
+        var engine = new WorkflowEngine(VisionLogger.Instance);
+        var workflow = engine.CreateWorkflow("mapping-probe-flow", "参数绑定探针");
+        var parameters = new AutomationProbeParameters { Value = 17 };
+        var node = new WorkflowNodeBase("mapping-probe-node", "探针", "探针", "CommunicationAutomationProbe") { Parameters = parameters };
+        node.ParamSettings.SetSetting(ParamSetting.CreateConstant("Value", 23));
+        workflow.Nodes.Add(node);
+        var manager = new WorkflowExecutionManager(new EmptyInput(), engine, new RuntimeInputSnapshotService());
+        Assert.True(await manager.RunCommunicationOperationAsync(token => manager.RunCommunicationNodeAsync(workflow.Id, node.Id, token),
+            default, new[] { new CommunicationParameterAssignment(node.Id, "Value", "运行参数", 42) }));
+        Assert.Equal(42, AutomationProbeTool.SeenValue);
+        Assert.Equal(17, parameters.Value);
+        Assert.Equal(23, node.ParamSettings.GetSetting("Value")!.ConstantValue);
+        Assert.True(await manager.RunCommunicationOperationAsync(token => manager.RunCommunicationNodeAsync(workflow.Id, node.Id, token), default));
+        Assert.Equal(23, AutomationProbeTool.SeenValue);
+        manager.Dispose();
+    }
+
+    [Fact]
+    public async Task Full_workflow_mapping_overrides_execution_binding_without_changing_design_binding()
+    {
+        ToolRegistry.RegisterTool(typeof(AutomationProbeTool));
+        var logger = VisionLogger.Instance;
+        var engine = new WorkflowEngine(logger);
+        var workflow = engine.CreateWorkflow("binding-override-flow", "完整流程绑定探针");
+        var parameters = new AutomationProbeParameters { Value = 17 };
+        var node = new WorkflowNodeBase("binding-override-node", "探针", "探针", "CommunicationAutomationProbe") { Parameters = parameters };
+        node.ParamSettings.SetSetting(ParamSetting.CreateConstant("Value", 23));
+        workflow.Nodes.Add(node);
+        var overrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>
+        { [node.Id] = new Dictionary<string, object?> { ["Value"] = 42 } };
+        var request = new WorkflowRunRequest(workflow.Id, nodeParameterOverrides: overrides, nodeBindingOverrides: overrides);
+        ((Dictionary<string, object?>)overrides[node.Id])["Value"] = 99;
+        var executor = new WorkflowExecutionEngine(engine, new PluginManager(logger), logger);
+        var result = await executor.ExecuteWorkflowAsync(request, default);
+        Assert.True(result.Success, string.Join(";", result.Errors));
+        Assert.Equal(42, AutomationProbeTool.SeenValue);
+        Assert.Equal(17, parameters.Value);
+        Assert.Equal(23, node.ParamSettings.GetSetting("Value")!.ConstantValue);
+    }
+
+    public sealed class AutomationProbeParameters : ToolParameters, IRuntimeParameterContract
+    {
+        public int Value { get; set; }
+        public IReadOnlyList<RuntimeParameterDescriptor> GetRuntimeParameters() => new[] { new RuntimeParameterDescriptor("Value", "值", ValueType: typeof(int)) };
+    }
     public sealed class AutomationProbeResults : ToolResults { }
     [Tool("CommunicationAutomationProbe", "通讯执行回归探针")]
     public sealed class AutomationProbeTool : IToolPlugin<AutomationProbeParameters, AutomationProbeResults>

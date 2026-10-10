@@ -161,6 +161,10 @@ public sealed class OpcUaRuntimeTests
                     typedNotifications.Writer.TryWrite(args);
             };
             await runtime.SubscribeOpcUaValueAsync(communication.Id, valueNode.NodeId, 50);
+            var revised = await runtime.GetOpcUaMonitoringIntervalsAsync(communication.Id, valueNode.NodeId);
+            Assert.NotNull(revised);
+            Assert.True(revised.Value.Sampling > 0);
+            Assert.True(revised.Value.Publishing > 0);
             await runtime.WriteOpcUaValueAsync(communication.Id, valueNode.NodeId, 43);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             OpcUaPointValueEventArgs typedUpdate;
@@ -176,6 +180,17 @@ public sealed class OpcUaRuntimeTests
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
                 await typedNotifications.Reader.ReadAsync(noNotificationTimeout.Token));
             stage = "Disconnect and invalidate cached value";
+            var polling = new OpcUaPointPolling(runtime);
+            await polling.StartAsync(communication.Id, valueNode.NodeId, 20, default);
+            try
+            {
+                using var pollingTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                var firstPoll = await typedNotifications.Reader.ReadAsync(pollingTimeout.Token);
+                var secondPoll = await typedNotifications.Reader.ReadAsync(pollingTimeout.Token);
+                Assert.Equal(44, firstPoll.Value);
+                Assert.Equal(44, secondPoll.Value); // unchanged value is still published by periodic reads
+            }
+            finally { await polling.StopAllAsync(); }
             await runtime.DisconnectAsync(communication.Id);
             Assert.False(runtime.TryGetLatestOpcUaPoint(communication.Id, valueNode.NodeId, out _));
         }

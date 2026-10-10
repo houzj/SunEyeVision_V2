@@ -246,6 +246,17 @@ public sealed partial class CommunicationRuntimeManager
             finally { _serviceGate.Release(); }
         }
 
+        public async Task<(double Sampling, double Publishing)?> GetMonitoringIntervalsAsync(string nodeId, CancellationToken token)
+        {
+            await _serviceGate.WaitAsync(token).ConfigureAwait(false);
+            try
+            {
+                return _monitoredItems.TryGetValue(NodeId.Parse(nodeId).ToString(), out var monitored)
+                    ? (monitored.Item.SamplingInterval, monitored.Subscription.PublishingInterval) : null;
+            }
+            finally { _serviceGate.Release(); }
+        }
+
         public async Task UnsubscribeAsync(string nodeId, CancellationToken cancellationToken)
         {
             var key = NodeId.Parse(nodeId).ToString();

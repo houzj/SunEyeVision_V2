@@ -23,6 +23,7 @@ public enum CommunicationEventType
 public sealed class CommunicationReceiveEventViewModel : ViewModelBase
 {
     public Guid EventId { get; set; } = Guid.NewGuid();
+    internal Dictionary<Guid, (string Signature, bool Value)> BooleanEdgeHistory { get; } = new();
     private string _selectedDeviceId = string.Empty;
     private string _selectedAddress = string.Empty;
     private string _separator = ",";
@@ -251,6 +252,11 @@ public sealed class CommunicationEventOutputViewModel : ViewModelBase
             {
                 CompareRuleOptions.Add("等于");
                 CompareRuleOptions.Add("不等于");
+                if (string.Equals(value, "Boolean", StringComparison.OrdinalIgnoreCase))
+                {
+                    CompareRuleOptions.Add("上升沿");
+                    CompareRuleOptions.Add("下降沿");
+                }
             }
             else
             {
@@ -332,6 +338,11 @@ public sealed class CommunicationCompareInputViewModel : ViewModelBase
         {
             CompareRuleOptions.Add("等于");
             CompareRuleOptions.Add("不等于");
+            if (IsBoolean)
+            {
+                CompareRuleOptions.Add("上升沿");
+                CompareRuleOptions.Add("下降沿");
+            }
         }
         else
         {

@@ -3,21 +3,27 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
         xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
-        Title="添加 OPC UA 数据点" Width="520" Height="280" MinWidth="500" MinHeight="260"
+        Title="添加 OPC UA 数据点" Width="560" Height="390" MinWidth="500" MinHeight="360"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
     <Grid Margin="18" TextElement.Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
         <Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-        <Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="32"/><RowDefinition Height="36"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="32"/><RowDefinition Height="36"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="*"/></Grid.RowDefinitions>
         <TextBlock Text="命名空间索引" VerticalAlignment="Center"/>
         <TextBox x:Name="NamespaceBox" Grid.Column="1" Text="2" TextChanged="Input_TextChanged" VerticalContentAlignment="Center" Height="32"/>
         <TextBlock Grid.Row="1" Text="标签名称" VerticalAlignment="Center"/>
         <TextBox x:Name="TagBox" Grid.Row="1" Grid.Column="1" TextChanged="Input_TextChanged" VerticalContentAlignment="Center" Height="32"/>
         <TextBlock Grid.Row="2" Text="NodeId 预览" VerticalAlignment="Center"/>
         <TextBox x:Name="PreviewBox" Grid.Row="2" Grid.Column="1" IsReadOnly="True" VerticalContentAlignment="Center" Height="30"/>
-        <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Text="可填标签名称、s=标签名称或完整 ns=数字;s=标签名称；以 NodeId 预览为准。" FontSize="11" VerticalAlignment="Center"/>
-        <TextBlock x:Name="ErrorText" Grid.Row="4" Grid.ColumnSpan="2" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
-        <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <TextBlock x:Name="ActualIntervalText" Grid.Row="3" Grid.ColumnSpan="2" Text="可填标签名称或完整字符串 NodeId；实际订阅间隔以服务器接受结果为准。" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap"/>
+        <TextBlock Grid.Row="4" Text="监视模式" VerticalAlignment="Center"/>
+        <ComboBox x:Name="MonitorModeBox" Grid.Row="4" Grid.Column="1" SelectedIndex="0" Height="32" ToolTip="变化订阅只在通知到达时处理；周期读取每次读取成功后处理。">
+            <ComboBoxItem Content="变化订阅"/><ComboBoxItem Content="周期读取"/>
+        </ComboBox>
+        <TextBlock Grid.Row="5" Text="间隔(ms)" VerticalAlignment="Center"/>
+        <TextBox x:Name="IntervalBox" Grid.Row="5" Grid.Column="1" Text="100" Height="32" ToolTip="10～600000ms。订阅间隔由服务器修订；周期读取不会重叠，短脉冲可能漏检。"/>
+        <TextBlock x:Name="ErrorText" Grid.Row="6" Grid.ColumnSpan="2" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
+        <StackPanel Grid.Row="6" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
             <Button Content="取消" IsCancel="True" Style="{StaticResource SecondaryButtonStyle}" Width="76" Margin="0,0,8,0"/>
             <Button x:Name="ConfirmButton" Content="添加" IsDefault="True" Style="{StaticResource PrimaryButtonStyle}" Width="76" Click="Add_Click"/>
         </StackPanel>

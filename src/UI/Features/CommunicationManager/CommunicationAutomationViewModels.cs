@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
 namespace SunEyeVision.UI.Features.CommunicationManager;
 
@@ -21,10 +22,26 @@ public sealed class CommunicationTriggerRowViewModel : ViewModelBase
         new AutomationChoice("切换方案", "切换方案"), new("执行流程", "执行流程"),
         new("执行模块", "执行模块"), new("执行模块动作", "执行模块动作（暂不支持）", false)
     };
-    public IReadOnlyList<string> MatchModes { get; } = new[] { "完全匹配", "部分匹配", "不匹配" };
+    public IReadOnlyList<string> MatchModes { get; } = new[] { "等于", "不等于", "包含", "不检查内容" };
+    public string MatchMode { get => Definition.MatchMode; set => Definition.MatchMode = value; }
+    public IReadOnlyList<TriggerFieldChoice> ComparisonOutputs { get; private set; } = Array.Empty<TriggerFieldChoice>();
+    public Guid? ComparisonOutputId
+    {
+        get => Definition.ComparisonOutputId ?? (ConditionSources.Count == 1 ? ConditionSources[0].SourceFieldId : null);
+        set => Definition.ComparisonOutputId = value;
+    }
     public IReadOnlyList<TriggerEventChoice> Events { get; private set; } = Array.Empty<TriggerEventChoice>();
     public IReadOnlyList<TriggerFieldChoice> Fields { get; private set; } = Array.Empty<TriggerFieldChoice>();
     public IReadOnlyList<AutomationChoice> Targets { get; private set; } = Array.Empty<AutomationChoice>();
+    public ObservableCollection<AvailableDataSource> ConditionSources { get; } = new();
+    public bool ShowComparisonOutputSelection => ConditionSources.Count != 1 ||
+        (Definition.ComparisonOutputId is { } selected && selected != ConditionSources[0].SourceFieldId);
+    public string TriggerParameterSource
+    {
+        get => Definition.TriggerParameterSource ?? (Definition.FieldId is { } field && Definition.EventId is { } eventId
+            ? $"{eventId:N}.{field:N}" : "");
+        set { Definition.TriggerParameterSource = value; OnPropertyChanged(); }
+    }
     public CommunicationTriggerRowViewModel(CommunicationManagerViewModel owner, CommunicationTriggerDefinition definition)
     {
         _owner = owner; Definition = definition;
@@ -33,10 +50,19 @@ public sealed class CommunicationTriggerRowViewModel : ViewModelBase
     }
     private void Changed(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(Definition.EventId)) Definition.FieldId = null;
+        if (e.PropertyName == nameof(Definition.EventId))
+        {
+            Definition.FieldId = null;
+            Definition.ComparisonOutputId = null;
+            Definition.TriggerParameterSource = "";
+        }
         if (e.PropertyName == nameof(Definition.Command)) Definition.TargetId = "";
         if (e.PropertyName is nameof(Definition.EventId) or nameof(Definition.Command)) RefreshChoices();
         _owner.SyncAutomationConfiguration();
+        OnPropertyChanged(nameof(TriggerParameterSource));
+        OnPropertyChanged(nameof(ComparisonOutputId));
+        OnPropertyChanged(nameof(ShowComparisonOutputSelection));
+        OnPropertyChanged(nameof(MatchMode));
     }
     public void RefreshChoices()
     {
@@ -45,14 +71,35 @@ public sealed class CommunicationTriggerRowViewModel : ViewModelBase
         if (Definition.EventId.HasValue && !Events.Any(e => e.Id == Definition.EventId))
             Events = Events.Append(new(Definition.EventId, "已失效的接收事件")).ToArray();
         var source = _owner.ReceiveEvents.FirstOrDefault(e => e.EventId == Definition.EventId);
-        Fields = new[] { new TriggerFieldChoice(null, "无") }.Concat(source?.AssemblyOutputs.Select(f =>
-            new TriggerFieldChoice(f.FieldId, f.Name)) ?? Enumerable.Empty<TriggerFieldChoice>()).ToArray();
+        IEnumerable<(Guid Id, string Name, string Type)> available = source == null ? Enumerable.Empty<(Guid Id, string Name, string Type)>() : source.IsProtocolCompare
+            ? source.AssemblyOutputs.Select(f => (f.FieldId, f.Name, f.DataType))
+            : source.Outputs.Select(f => (f.FieldId, f.Name, f.DataType));
+        Fields = new[] { new TriggerFieldChoice(null, "无") }.Concat(available.Select(f => new TriggerFieldChoice(f.Id, f.Name))).ToArray();
+        ConditionSources.Clear();
+        foreach (var field in available)
+            ConditionSources.Add(new AvailableDataSource
+            {
+                SourceNodeId = source!.EventId.ToString("N"), SourceNodeName = source.DisplayName,
+                SourceFieldId = field.Id, PropertyName = field.Id.ToString("N"), DisplayName = field.Name,
+                PropertyType = CommunicationTriggerEvaluation.ScalarType(field.Type) ?? typeof(object)
+            });
         if (Definition.FieldId.HasValue && !Fields.Any(f => f.Id == Definition.FieldId))
             Fields = Fields.Append(new(Definition.FieldId, "已失效的输出字段")).ToArray();
+        ComparisonOutputs = new[] { new TriggerFieldChoice(null, "请选择判断输出") }
+            .Concat(ConditionSources.Select(f => new TriggerFieldChoice(f.SourceFieldId, f.DisplayName))).ToArray();
+        if (Definition.ComparisonOutputId == null && ConditionSources.Count == 1)
+            Definition.ComparisonOutputId = ConditionSources[0].SourceFieldId;
+        if (Definition.ComparisonOutputId is { } missing && !ComparisonOutputs.Any(f => f.Id == missing))
+            ComparisonOutputs = ComparisonOutputs.Append(new(missing, "判断输出已失效")).ToArray();
+
         Targets = _owner.GetAutomationTargets(Definition.Command);
         if (!string.IsNullOrEmpty(Definition.TargetId) && !Targets.Any(t => t.Id == Definition.TargetId))
             Targets = Targets.Append(new(Definition.TargetId, "已失效的目标")).ToArray();
         OnPropertyChanged(nameof(Events)); OnPropertyChanged(nameof(Fields)); OnPropertyChanged(nameof(Targets));
+        OnPropertyChanged(nameof(TriggerParameterSource));
+        OnPropertyChanged(nameof(ComparisonOutputs)); OnPropertyChanged(nameof(ComparisonOutputId));
+        OnPropertyChanged(nameof(ShowComparisonOutputSelection));
+        OnPropertyChanged(nameof(MatchMode));
     }
     public void Dispose() => Definition.PropertyChanged -= Changed;
 }

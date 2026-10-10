@@ -105,6 +105,8 @@ public sealed class OpcUaPointRowViewModel : ViewModelBase
     {
         Point.NamespaceIndex = point.NamespaceIndex;
         Point.TagName = point.TagName;
+        Point.MonitorMode = point.MonitorMode;
+        Point.MonitorIntervalMs = point.MonitorIntervalMs;
         OnPropertyChanged(nameof(Name));
         OnPropertyChanged(nameof(TagName));
         OnPropertyChanged(nameof(NodeId));

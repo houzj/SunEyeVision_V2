@@ -30,6 +30,10 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
     private bool _disposed;
     private IReadOnlyList<CommunicationHeartbeatJob> _heartbeatPlans = Array.Empty<CommunicationHeartbeatJob>();
     private bool _heartbeatReady;
+    private readonly OpcUaPointPolling _opcUaPolling;
+    private readonly SemaphoreSlim _monitorGate = new(1, 1);
+    private readonly ConcurrentDictionary<string, string> _monitorStatuses = new();
+    public string GetOpcUaMonitorStatus(string pointId) => _monitorStatuses.GetValueOrDefault(pointId, "尚无实际监视信息；连接后可重新打开查看。");
     private readonly ConcurrentDictionary<Guid, string> _heartbeatStatuses = new();
 
     public CommunicationRuntimeComposition Composition { get; }
@@ -42,6 +46,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         Composition = composition ?? throw new ArgumentNullException(nameof(composition));
         Heartbeats = new CommunicationHeartbeatService(Composition.Runtime);
         Automation = new CommunicationAutomationService(Composition.Runtime);
+        _opcUaPolling = new(Composition.Runtime);
         Composition.Runtime.DataReceived += OnAutomationData;
         Composition.Runtime.OpcUaPointValueChanged += OnAutomationOpcUa;
         Composition.Polling.BatchReceived += OnAutomationModbus;
@@ -125,6 +130,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             _heartbeatReady = false;
             Automation.Reset(solution);
             _heartbeatStatuses.Clear();
+            _monitorStatuses.Clear();
             _heartbeatPlans = heartbeatPlans;
             Heartbeats.Runner.Update(Array.Empty<CommunicationHeartbeatJob>());
             _switchCancellation = new CancellationTokenSource();
@@ -145,7 +151,13 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         await Heartbeats.StopAsync().ConfigureAwait(false);
         await Automation.DrainAsync().ConfigureAwait(false);
         await Composition.Polling.StopAllAsync().ConfigureAwait(false);
-        await Composition.Runtime.DisposeAsync().ConfigureAwait(false);
+        await _monitorGate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            await _opcUaPolling.StopAllAsync().ConfigureAwait(false);
+            await Composition.Runtime.DisposeAsync().ConfigureAwait(false);
+        }
+        finally { _monitorGate.Release(); }
         if (token.IsCancellationRequested) return;
 
         foreach (var plan in plans)
@@ -199,6 +211,10 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
 
     private void OnConnectionClosed(object? sender, CommunicationConnectionClosedEventArgs e)
     {
+        Automation.ResetDeviceHistory(e.CommunicationId);
+        lock (_gate)
+            foreach (var point in _activeSolution?.Communications.Find(d => d.Id == e.CommunicationId)?.OpcUaDataPoints ?? new())
+                _monitorStatuses.TryRemove(point.Id, out _);
         ConfiguredCommunication? device;
         CancellationToken token;
         lock (_gate)
@@ -250,11 +266,48 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
 
     public async Task MonitorOpcUaPointAsync(string communicationId, string nodeId, CancellationToken token = default)
     {
+        CancellationToken lifetime;
+        lock (_gate) { if (_disposed) return; lifetime = _switchCancellation?.Token ?? token; }
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, lifetime);
+        await _monitorGate.WaitAsync(cancellation.Token).ConfigureAwait(false);
+        try { await MonitorOpcUaPointCoreAsync(communicationId, nodeId, cancellation.Token).ConfigureAwait(false); }
+        finally { _monitorGate.Release(); }
+    }
+
+    private async Task MonitorOpcUaPointCoreAsync(string communicationId, string nodeId, CancellationToken token)
+    {
         if (!Composition.Runtime.IsConnected(communicationId)) return;
+        OpcUaDataPoint? point;
+        CancellationToken lifetime;
+        lock (_gate)
+        {
+            if (_disposed) return;
+            point = _activeSolution?.Communications.Find(d => d.Id == communicationId)?.OpcUaDataPoints.Find(p => p.NodeId == nodeId);
+            lifetime = _switchCancellation?.Token ?? token;
+        }
+        if (point == null) return;
+        var mode = point.MonitorMode;
+        var interval = point.MonitorIntervalMs;
         try
         {
+            if (interval is < 10 or > 600000 || mode is not ("变化订阅" or "周期读取"))
+                throw new InvalidOperationException("OPC UA 监视模式或间隔无效，范围为 10～600000ms。");
+            await UnmonitorOpcUaPointCoreAsync(communicationId, nodeId, token).ConfigureAwait(false);
+            Automation.ResetDeviceHistory(communicationId, nodeId);
             await Composition.Runtime.RefreshOpcUaPointAsync(communicationId, nodeId, token).ConfigureAwait(false);
-            await Composition.Runtime.SubscribeOpcUaValueAsync(communicationId, nodeId, 100, token).ConfigureAwait(false);
+            if (mode == "周期读取")
+            {
+                await _opcUaPolling.StartAsync(communicationId, nodeId, interval, lifetime).ConfigureAwait(false);
+                _monitorStatuses[point.Id] = $"周期读取间隔 {interval}ms；实际周期受读取耗时影响。";
+            }
+            else
+            {
+                await Composition.Runtime.SubscribeOpcUaValueAsync(communicationId, nodeId, interval, token).ConfigureAwait(false);
+                var revised = await Composition.Runtime.GetOpcUaMonitoringIntervalsAsync(communicationId, nodeId, token).ConfigureAwait(false);
+                _monitorStatuses[point.Id] = revised is { } actual
+                    ? $"服务器接受：采样 {actual.Sampling}ms，发布 {actual.Publishing}ms。"
+                    : "尚无服务器实际订阅间隔。";
+            }
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
         catch (Exception ex)
@@ -266,6 +319,14 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
 
     public async Task UnmonitorOpcUaPointAsync(string communicationId, string nodeId, CancellationToken token = default)
     {
+        await _monitorGate.WaitAsync(token).ConfigureAwait(false);
+        try { await UnmonitorOpcUaPointCoreAsync(communicationId, nodeId, token).ConfigureAwait(false); }
+        finally { _monitorGate.Release(); }
+    }
+
+    private async Task UnmonitorOpcUaPointCoreAsync(string communicationId, string nodeId, CancellationToken token)
+    {
+        await _opcUaPolling.StopAsync(communicationId, nodeId).ConfigureAwait(false);
         if (Composition.Runtime.IsConnected(communicationId))
             await Composition.Runtime.UnsubscribeOpcUaValueAsync(communicationId, nodeId, token).ConfigureAwait(false);
     }
@@ -304,6 +365,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         try { await Task.WhenAll(pendingRetries).ConfigureAwait(false); }
         catch (Exception ex) { LogWarning($"关闭通讯服务时取消重连：{ex.Message}"); }
         await Heartbeats.DisposeAsync().ConfigureAwait(false);
+        await _opcUaPolling.StopAllAsync().ConfigureAwait(false);
         await Automation.DisposeAsync().ConfigureAwait(false);
         Heartbeats.Runner.StatusChanged -= OnHeartbeatStatus;
         _switchCancellation?.Dispose();

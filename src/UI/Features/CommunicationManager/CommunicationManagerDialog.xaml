@@ -85,6 +85,8 @@
                 <DataTrigger Binding="{Binding DataType}" Value="Boolean"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
                 <DataTrigger Binding="{Binding CompareRule}" Value="等于"><Setter Property="Visibility" Value="Visible"/><Setter Property="IsEnabled" Value="True"/></DataTrigger>
                 <DataTrigger Binding="{Binding CompareRule}" Value="不等于"><Setter Property="Visibility" Value="Visible"/><Setter Property="IsEnabled" Value="True"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="上升沿"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                <DataTrigger Binding="{Binding CompareRule}" Value="下降沿"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="ByteCompareRangeStyle" TargetType="StackPanel">

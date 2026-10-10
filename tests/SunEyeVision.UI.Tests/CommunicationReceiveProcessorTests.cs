@@ -520,7 +520,7 @@ public sealed class CommunicationReceiveProcessorTests
             Name = "in1", DataType = "Boolean", CompareRule = rule, CompareValue = expected
         };
         definition.CompareInputs.Add(field);
-        Assert.Equal(new[] { "不比较", "等于", "不等于" }, field.CompareRuleOptions);
+        Assert.Equal(new[] { "不比较", "等于", "不等于", "上升沿", "下降沿" }, field.CompareRuleOptions);
 
         var update = new OpcUaPointValueEventArgs("device", "ns=2;s=test1", false,
             BuiltInType.Boolean, false, StatusCodes.Good, Timestamp);

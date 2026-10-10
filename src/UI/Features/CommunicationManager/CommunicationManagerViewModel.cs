@@ -131,7 +131,8 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             new(device.EndpointUrl, new Dictionary<string, object>(device.Settings),
                 (device.OpcUaDataPoints ?? new()).Select(point => new OpcUaDataPoint
                 {
-                    Id = point.Id, NamespaceIndex = point.NamespaceIndex, TagName = point.TagName
+                    Id = point.Id, NamespaceIndex = point.NamespaceIndex, TagName = point.TagName,
+                    MonitorMode = point.MonitorMode, MonitorIntervalMs = point.MonitorIntervalMs
                 }).ToArray());
 
         private CommunicationDeviceWorkspaceViewModel? _selectedWorkspace;
@@ -980,7 +981,8 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 return "该 NodeId 已在数据点表中。";
 
             var oldNodeId = row.NodeId;
-            if (!string.Equals(oldNodeId, edited.NodeId, StringComparison.Ordinal))
+            var monitorChanged = oldNodeId != edited.NodeId || row.Point.MonitorMode != edited.MonitorMode || row.Point.MonitorIntervalMs != edited.MonitorIntervalMs;
+            if (monitorChanged)
             {
                 try { await ServiceInitializer.CommunicationService.UnmonitorOpcUaPointAsync(workspace.Communication.Id, oldNodeId); }
                 catch (Exception ex) { LogWarning($"切换 OPC UA 数据点监视失败：{ex.Message}"); }
@@ -993,7 +995,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             workspace.SelectedOpcUaPoint = row;
             HasUnsavedChanges = true;
 
-            if (!string.Equals(oldNodeId, row.NodeId, StringComparison.Ordinal))
+            if (monitorChanged)
                 await ServiceInitializer.CommunicationService.MonitorOpcUaPointAsync(workspace.Communication.Id, row.NodeId);
             return null;
         }
@@ -1711,6 +1713,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                     var point = workspace.OpcUaPoints.FirstOrDefault(row => row.NodeId == update.NodeId);
                     if (point == null) continue;
                     point.Apply(update);
+                    RefreshHeartbeatPointType(update.CommunicationId, point.Point.Id);
                     foreach (var receiveEvent in ReceiveEvents.Where(item =>
                                  string.Equals(item.SelectedDeviceId, update.CommunicationId, StringComparison.Ordinal) &&
                                  string.Equals(item.SelectedAddress, point.Point.Id, StringComparison.Ordinal)))
@@ -1836,7 +1839,8 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 var current = (device.OpcUaDataPoints ?? new()).Select(point => point.NodeId).ToHashSet(StringComparer.Ordinal);
                 var restored = original.Points.Select(point => new OpcUaDataPoint
                 {
-                    Id = point.Id, NamespaceIndex = point.NamespaceIndex, TagName = point.TagName
+                    Id = point.Id, NamespaceIndex = point.NamespaceIndex, TagName = point.TagName,
+                    MonitorMode = point.MonitorMode, MonitorIntervalMs = point.MonitorIntervalMs
                 }).ToList();
                 var wanted = restored.Select(point => point.NodeId).ToHashSet(StringComparer.Ordinal);
                 foreach (var nodeId in current.Except(wanted))
@@ -1846,7 +1850,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 }
                 device.Settings = new Dictionary<string, object>(original.Settings);
                 device.OpcUaDataPoints = restored;
-                foreach (var nodeId in wanted.Except(current))
+                foreach (var nodeId in wanted)
                     await ServiceInitializer.CommunicationService.MonitorOpcUaPointAsync(device.Id, nodeId);
             }
             HasUnsavedChanges = false;

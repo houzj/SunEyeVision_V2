@@ -58,7 +58,10 @@ internal static class CommunicationReceiveProcessor
 
         var statuses = new string[types.Count];
         for (var index = 0; index < types.Count; index++)
-            statuses[index] = (definition.IsProtocolCompare
+            statuses[index] = EvaluateSample(definition,
+                definition.IsProtocolCompare ? definition.CompareInputs[index].FieldId : definition.Outputs[index].FieldId,
+                definition.IsProtocolCompare ? definition.CompareInputs[index].CompareRule : definition.Outputs[index].CompareRule,
+                parsed[index].Value, recordHistory, definition.IsProtocolCompare
                     ? IsCompareMatch(definition.CompareInputs[index], parsed[index])
                     : IsOutputMatch(definition.Outputs[index], parsed[index]))
                 ? "OK" : "NG";
@@ -197,7 +200,7 @@ internal static class CommunicationReceiveProcessor
         if (definition.IsProtocolCompare)
         {
             var field = definition.CompareInputs[0];
-            success = IsCompareMatch(field, parsed);
+            success = EvaluateSample(definition, field.FieldId, field.CompareRule, parsed.Value, recordHistory, IsCompareMatch(field, parsed));
             field.Value = parsed.Value;
             field.Result = parsed.Display;
             field.Status = success ? "OK" : "NG";
@@ -205,7 +208,7 @@ internal static class CommunicationReceiveProcessor
         else
         {
             var field = definition.Outputs[0];
-            success = IsOutputMatch(field, parsed);
+            success = EvaluateSample(definition, field.FieldId, field.CompareRule, parsed.Value, recordHistory, IsOutputMatch(field, parsed));
             field.Value = parsed.Value;
             field.Result = parsed.Display;
             field.Status = success ? "OK" : "NG";
@@ -235,8 +238,27 @@ internal static class CommunicationReceiveProcessor
             _ => false
         };
         if (!typeMatches) return false;
+        if (update.Value is float f && !float.IsFinite(f) || update.Value is double d && !double.IsFinite(d)) return false;
         parsed = (update.Value!, Convert.ToString(update.Value, CultureInfo.InvariantCulture) ?? string.Empty);
         return true;
+    }
+
+    private static bool EvaluateSample(CommunicationReceiveEventViewModel definition, Guid fieldId,
+        string rule, object value, bool realSample, bool levelMatch)
+    {
+        if (rule is not ("上升沿" or "下降沿")) return levelMatch;
+        if (value is not bool current || !realSample) return false;
+        var signature = definition.SelectedDeviceId + "|" + definition.SelectedAddress + "|" + rule;
+        var known = definition.BooleanEdgeHistory.TryGetValue(fieldId, out var old) && old.Signature == signature;
+        definition.BooleanEdgeHistory[fieldId] = (signature, current);
+        return known && (rule == "上升沿" ? !old.Value && current : old.Value && !current);
+    }
+
+    public static void ResetHistory(CommunicationReceiveEventViewModel definition)
+    {
+        definition.BooleanEdgeHistory.Clear();
+        foreach (var field in definition.Outputs) field.Value = null;
+        foreach (var field in definition.CompareInputs) field.Value = null;
     }
 
     private static bool TryDecodeModbusInt(byte[] data, CommunicationCompareInputViewModel field,
@@ -288,6 +310,7 @@ internal static class CommunicationReceiveProcessor
         CommunicationReceiveEventViewModel definition, byte[] data, DateTimeOffset timestamp, string reason,
         bool recordHistory = true)
     {
+        definition.BooleanEdgeHistory.Clear();
         foreach (var field in definition.Outputs)
         {
             field.Value = null;
@@ -402,6 +425,8 @@ internal static class CommunicationReceiveProcessor
         var culture = CultureInfo.InvariantCulture;
         switch (typeName.ToLowerInvariant())
         {
+            case "bool" or "boolean" when bool.TryParse(text, out var boolean):
+                value = (boolean, boolean.ToString()); return true;
             case "string": value = (text, text); return true;
             case "int" or "int32" when int.TryParse(text, NumberStyles.Integer, culture, out var number):
                 value = (number, number.ToString(culture)); return true;
@@ -411,6 +436,8 @@ internal static class CommunicationReceiveProcessor
                 value = (ushortNumber, ushortNumber.ToString(culture)); return true;
             case "uint32" when uint.TryParse(text, NumberStyles.Integer, culture, out var uintNumber):
                 value = (uintNumber, uintNumber.ToString(culture)); return true;
+            case "double" when double.TryParse(text, NumberStyles.Float, culture, out var doubleNumber) && double.IsFinite(doubleNumber):
+                value = (doubleNumber, doubleNumber.ToString(culture)); return true;
             case "float" or "float32" when float.TryParse(text, NumberStyles.Float, culture, out var floatNumber) && float.IsFinite(floatNumber):
                 value = (floatNumber, floatNumber.ToString(culture)); return true;
             default: return false;

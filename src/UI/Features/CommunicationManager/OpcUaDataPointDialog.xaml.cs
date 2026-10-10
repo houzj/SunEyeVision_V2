@@ -20,6 +20,9 @@ public partial class OpcUaDataPointDialog : ThemeDialogWindow
         ConfirmButton.Content = "保存";
         NamespaceBox.Text = point.NamespaceIndex.ToString();
         TagBox.Text = point.TagName;
+        MonitorModeBox.SelectedIndex = point.MonitorMode == "周期读取" ? 1 : 0;
+        IntervalBox.Text = point.MonitorIntervalMs.ToString();
+        ActualIntervalText.Text = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.GetOpcUaMonitorStatus(point.Id);
     }
 
     private void Input_TextChanged(object sender, TextChangedEventArgs e)
@@ -48,6 +51,10 @@ public partial class OpcUaDataPointDialog : ThemeDialogWindow
                 MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
             return;
         point.Id = _editingId ?? Guid.NewGuid().ToString();
+        if (!int.TryParse(IntervalBox.Text, out var interval) || interval is < 10 or > 600000)
+        { ErrorText.Text = "间隔须为 10～600000ms 的整数。"; return; }
+        point.MonitorMode = MonitorModeBox.SelectedIndex == 1 ? "周期读取" : "变化订阅";
+        point.MonitorIntervalMs = interval;
         Result = point;
         DialogResult = true;
     }

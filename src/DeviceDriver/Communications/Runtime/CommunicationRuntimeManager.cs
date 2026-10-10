@@ -205,6 +205,8 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
 
     public Task UnsubscribeOpcUaValueAsync(string communicationId, string nodeId, CancellationToken cancellationToken = default) =>
         RequireOpcUaSession(communicationId).UnsubscribeAsync(nodeId, cancellationToken);
+    public Task<(double Sampling, double Publishing)?> GetOpcUaMonitoringIntervalsAsync(string communicationId,
+        string nodeId, CancellationToken token = default) => RequireOpcUaSession(communicationId).GetMonitoringIntervalsAsync(nodeId, token);
 
     public Task<CipExplicitResponse> SendCipExplicitAsync(string communicationId, byte service, uint classId, uint instanceId, uint attributeId,
         ReadOnlyMemory<byte> requestData, CancellationToken cancellationToken = default) =>
@@ -219,8 +221,12 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
             await DisconnectAsync(id).ConfigureAwait(false);
     }
 
-    private void OnDataReceived(object? sender, CommunicationDataReceivedEventArgs e) =>
+    private void OnDataReceived(object? sender, CommunicationDataReceivedEventArgs e)
+    {
+        if (sender is ICommunicationAdapter adapter &&
+            (!_sessions.TryGetValue(e.CommunicationId, out var active) || !ReferenceEquals(active, adapter) || !adapter.IsConnected)) return;
         DataReceived?.Invoke(this, e);
+    }
 
     private void OnOpcUaPointValueChanged(object? sender, OpcUaPointValueEventArgs value)
     {

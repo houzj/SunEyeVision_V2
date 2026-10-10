@@ -14,7 +14,11 @@ using ConfiguredCommunication = SunEyeVision.Workflow.Communication;
 namespace SunEyeVision.UI.Services.Communication;
 
 public sealed record CommunicationTriggerRequest(Guid RuleId, string Command, string TargetId,
-    string Action, object? TriggerValue);
+    string Action, object? TriggerValue)
+{
+    public IReadOnlyList<CommunicationParameterAssignment> Assignments { get; init; } = Array.Empty<CommunicationParameterAssignment>();
+    public CommunicationUploadSnapshot? Upload { get; init; }
+}
 
 /// <summary>Owns real-sample parsing, trigger dispatch and status responses, independently of the manager window.</summary>
 public sealed class CommunicationAutomationService : IAsyncDisposable
@@ -35,9 +39,12 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
     private bool _cameraWatchStarted;
     private long _version;
     private bool _disposed;
+    private Guid _uploadSession = Guid.NewGuid();
+    internal Guid UploadSession { get { lock (_gate) return _uploadSession; } }
     public Func<CommunicationTriggerRequest, CancellationToken, Task<bool>>? Dispatcher { get; set; }
     public Func<string, bool?>? CameraConnectionObserver { get; set; }
     public event Action<LogLevel, string>? Diagnostic;
+    public event Action<CommunicationUploadSnapshot>? DataUploaded;
 
     public CommunicationAutomationService(CommunicationRuntimeManager runtime) => _runtime = runtime;
     private static T Copy<T>(T value) => JsonSerializer.Deserialize<T>(
@@ -48,6 +55,7 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
         lock (_gate)
         {
             _lifetime.Cancel(); _retired.Add(_lifetime); _lifetime = new();
+            _uploadSession = Guid.NewGuid();
             _receivers.Clear(); _workflowStates.Clear(); _cameraStates.Clear();
             _responseTails.Clear(); _cameraWatchStarted = false;
             Refresh(solution);
@@ -61,7 +69,8 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
             if (_disposed) return;
             _version++;
             _devices = (solution?.Communications ?? new()).Select(Copy).ToDictionary(d => d.Id);
-            _rules = (solution?.CommunicationTriggers ?? new()).Select(Copy).ToArray();
+            var definitions = solution?.CommunicationTriggers ?? new();
+            _rules = definitions.Where(r => r.Source is "Event" or "GlobalData").Select(Copy).ToArray();
             if (solution != null)
             {
                 EnsureIdentifiers(solution.Workflows.Where(w => !w.IsSubroutine).Select(w => w.Id),
@@ -97,11 +106,12 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
             if (!device.EnableDataUpload) return;
             string text;
             try { text = new UTF8Encoding(false, true).GetString(data); }
-            catch (DecoderFallbackException) { return; }
-            foreach (var rule in _rules.Where(r => r.Source == "String"))
-                if (rule.MatchMode == "不匹配" || (!string.IsNullOrEmpty(rule.Text) &&
-                    (rule.MatchMode == "部分匹配" ? text.Contains(rule.Text, StringComparison.Ordinal) : text == rule.Text)))
-                    Dispatch(rule, text);
+            catch (DecoderFallbackException)
+            {
+                ProcessUploadedData(new(_uploadSession, deviceId, null, timestamp, "Byte[]", data, rawData: data));
+                return;
+            }
+            ProcessUploadedData(new(_uploadSession, deviceId, null, timestamp, "String", text, rawData: data));
         }
     }
 
@@ -122,6 +132,29 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
             foreach (var state in _receivers.Values.Select(v => v.State).Where(s =>
                 s.SelectedDeviceId == sample.CommunicationId && s.SelectedAddress == sample.AddressId))
                 Accept(state, CommunicationReceiveProcessor.ProcessModbus(state, sample.Values, sample.Timestamp));
+            if (device.EnableDataUpload && sample.Values.Length == sample.Count)
+            {
+                object value = sample.Values;
+                var type = "UInt16[]";
+                if (point.IntBits == "16bit" && sample.Values.Length == 1)
+                {
+                    var word = sample.Values[0];
+                    if (point.ByteOrder is "BADC" or "DCBA") word = (ushort)((word >> 8) | (word << 8));
+                    else if (point.ByteOrder is not ("ABCD" or "CDAB")) { Warn("Modbus 上传字序无效，已跳过。"); return; }
+                    value = word; type = "UInt16";
+                }
+                else if (point.IntBits == "32bit" && sample.Values.Length == 2)
+                {
+                    uint bits = ((uint)sample.Values[0] << 16) | sample.Values[1];
+                    bits = point.ByteOrder switch { "ABCD" => bits, "CDAB" => (bits << 16) | (bits >> 16),
+                        "BADC" => ((bits & 0x00ff00ff) << 8) | ((bits & 0xff00ff00) >> 8),
+                        "DCBA" => System.Buffers.Binary.BinaryPrimitives.ReverseEndianness(bits), _ => bits };
+                    if (point.ByteOrder is not ("ABCD" or "BADC" or "CDAB" or "DCBA"))
+                    { Warn("Modbus 上传字序无效，已跳过。"); return; }
+                    value = unchecked((int)bits); type = "Int32";
+                }
+                ProcessUploadedData(new(_uploadSession, device.Id, point.Id, sample.Timestamp, type, value));
+            }
         }
     }
 
@@ -135,7 +168,41 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
             foreach (var state in _receivers.Values.Select(v => v.State).Where(s =>
                 s.SelectedDeviceId == sample.CommunicationId && s.SelectedAddress == point.Id))
                 Accept(state, CommunicationReceiveProcessor.ProcessOpcUa(state, sample));
+            if (device.EnableDataUpload && sample.Value is string or bool or byte or sbyte or short or ushort or int or uint or long or ulong or float or double)
+                ProcessUploadedData(new(_uploadSession, device.Id, point.Id, sample.Timestamp,
+                    sample.BuiltInType.ToString(), sample.Value, Opc.Ua.StatusCode.IsGood(sample.StatusCode) &&
+                    sample.IsSupportedScalar && string.IsNullOrEmpty(sample.ErrorMessage)));
         }
+    }
+
+    internal void ProcessUploadedData(CommunicationUploadSnapshot sample)
+    {
+        lock (_gate)
+        {
+            if (_disposed || sample.SessionId != _uploadSession || !_devices.TryGetValue(sample.DeviceId, out var device) ||
+                !device.EnableDataUpload) return;
+            foreach (var subscriber in DataUploaded?.GetInvocationList() ?? Array.Empty<Delegate>())
+            {
+                try { ((Action<CommunicationUploadSnapshot>)subscriber)(sample); }
+                catch (Exception ex) { Warn($"上传订阅处理失败：{ex.Message}"); }
+            }
+            // A subscriber may initiate a solution transition. Never dispatch a now-retired upload.
+            if (sample.SessionId != _uploadSession || _disposed) return;
+            foreach (var rule in _rules.Where(r => r.Source == "GlobalData"))
+            {
+                var result = CommunicationTriggerEvaluation.EvaluateUpload(rule, sample);
+                if (result.Error != null) { Warn($"全局触发 {rule.Id} 已跳过：{result.Error}。"); continue; }
+                if (result.Matches) Dispatch(rule, result.TriggerValue, upload: sample);
+            }
+        }
+    }
+
+    public void ResetDeviceHistory(string deviceId, string? nodeId = null)
+    {
+        lock (_gate)
+            foreach (var state in _receivers.Values.Select(v => v.State).Where(s => s.SelectedDeviceId == deviceId &&
+                (nodeId == null || _devices.GetValueOrDefault(deviceId)?.OpcUaDataPoints.Any(p => p.NodeId == nodeId && p.Id == s.SelectedAddress) == true)))
+                CommunicationReceiveProcessor.ResetHistory(state);
     }
 
     private void Accept(CommunicationReceiveEventViewModel state, CommunicationReceiveOutcome outcome)
@@ -143,23 +210,41 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
         if (!outcome.IsSuccess) return;
         foreach (var rule in _rules.Where(r => r.Source == "Event" && r.EventId == state.EventId))
         {
-            object? value = null;
-            if (rule.FieldId.HasValue)
+            try
             {
-                var field = state.AssemblyOutputs.FirstOrDefault(f => f.FieldId == rule.FieldId);
-                if (field == null) { Warn($"触发 {rule.Id} 的输出字段已失效，已跳过。"); continue; }
-                value = field.Result;
+                var fields = new Dictionary<Guid, CommunicationFieldSample>();
+                if (!state.IsProtocolCompare)
+                    foreach (var field in state.Outputs.Where(f => f.Value != null))
+                        fields.Add(field.FieldId, new(field.FieldId, field.Name, field.DataType, field.Value!));
+                else
+                    foreach (var field in state.AssemblyOutputs)
+                    {
+                        var type = CommunicationTriggerEvaluation.ScalarType(field.DataType);
+                        if (type != null && CommunicationTriggerEvaluation.TryParse(field.Result, type, out var value))
+                            fields.Add(field.FieldId, new(field.FieldId, field.Name, field.DataType, value!));
+                    }
+                var outputIds = state.IsProtocolCompare ? state.AssemblyOutputs.Select(f => f.FieldId).ToArray()
+                    : state.Outputs.Select(f => f.FieldId).ToArray();
+                var condition = CommunicationTriggerEvaluation.EvaluateEquality(rule, state.EventId, outputIds, fields);
+                if (condition.Error != null)
+                { Warn($"触发 {rule.Id} 的条件无效，已跳过：{condition.Error}。"); continue; }
+                if (!condition.Matches)
+                { Emit(LogLevel.Info, $"触发 {rule.Id}：动作条件不相等，未执行。"); continue; }
+                // Conditions do not assign workflow node parameters.
+                Dispatch(rule, condition.TriggerValue);
             }
-            Dispatch(rule, value);
+            catch (Exception ex) { Warn($"触发 {rule.Id} 的绑定无效，已跳过：{ex.Message}"); }
         }
     }
 
-    private void Dispatch(CommunicationTriggerDefinition rule, object? value)
+    private void Dispatch(CommunicationTriggerDefinition rule, object? value,
+        IReadOnlyList<CommunicationParameterAssignment>? assignments = null, CommunicationUploadSnapshot? upload = null)
     {
         var dispatcher = Dispatcher;
         if (dispatcher == null) { Warn($"触发 {rule.Id} 尚无执行宿主，已跳过。"); return; }
         var token = _lifetime.Token;
-        var request = new CommunicationTriggerRequest(rule.Id, rule.Command, rule.TargetId, rule.Action, value);
+        var request = new CommunicationTriggerRequest(rule.Id, rule.Command, rule.TargetId, rule.Action, value)
+        { Assignments = assignments ?? Array.Empty<CommunicationParameterAssignment>(), Upload = upload };
         Task<bool> pending;
         try
         {

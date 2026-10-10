@@ -15,6 +15,31 @@ namespace SunEyeVision.UI.Tests;
 public sealed class CommunicationHeartbeatTests
 {
     [Fact]
+    public void Native_type_is_locked_unknown_type_blocks_and_failures_are_visible()
+    {
+        var row = new CommunicationHeartbeatViewModel { DataType = "int", TargetLabel = "UA.test3" };
+        Assert.True(row.ConfigureType(true, "string"));
+        Assert.True(row.TypeLocked); Assert.True(row.TypeResolved);
+        Assert.False(row.ShowTypeSelector);
+        row.DataType = "int";
+        Assert.Equal("string", row.DataType);
+        Assert.Equal("string", row.Capture().DataType);
+        row.Status = "OPC UA 数据点为 String，输出为 Int32，类型不匹配。";
+        Assert.True(row.HasStatusIssue);
+        Assert.Contains("UA.test3", row.StatusMessage);
+        row.Status = "发送成功";
+        Assert.False(row.HasStatusIssue);
+        row.ConfigureType(true, null);
+        Assert.False(row.TypeResolved);
+        Assert.Equal("未知类型", row.TypeLabel);
+        row.ConfigureType(false, null);
+        row.DataTypes = new[] { "int", "float", "string" };
+        row.DataType = "int";
+        Assert.True(row.ShowTypeSelector);
+        Assert.Equal("int", row.DataType);
+    }
+
+    [Fact]
     public void Device_popup_contains_configured_targets_and_selects_through_tree_event()
     {
         Exception? failure = null;
@@ -61,7 +86,9 @@ public sealed class CommunicationHeartbeatTests
                 Assert.Equal(4, tree.Items.Count);
                 var target = row.Targets.Single(item => item.DeviceId == raw.Id);
                 var item = Assert.IsType<System.Windows.Controls.TreeViewItem>(tree.ItemContainerGenerator.ContainerFromItem(target));
-                item.SetCurrentValue(System.Windows.Controls.TreeViewItem.IsSelectedProperty, true);
+                item.ApplyTemplate();
+                Assert.Equal(System.Windows.Visibility.Hidden, ((System.Windows.UIElement)item.Template.FindName("Expander", item)).Visibility);
+                ClickHeader(item);
                 System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                 Assert.Equal(raw.Id, row.DeviceId);
                 Assert.Equal(raw.Id, Assert.Single(solution.CommunicationHeartbeats).DeviceId);
@@ -75,11 +102,33 @@ public sealed class CommunicationHeartbeatTests
                     Assert.True(popup.IsOpen);
                     var group = row.Targets.Single(node => node.DeviceId == nativeDevice.Id);
                     var parent = Assert.IsType<System.Windows.Controls.TreeViewItem>(tree.ItemContainerGenerator.ContainerFromItem(group));
-                    parent.SetCurrentValue(System.Windows.Controls.TreeViewItem.IsExpandedProperty, true);
+                    parent.ApplyTemplate();
+                    var presenter = (System.Windows.Controls.ItemsPresenter)parent.Template.FindName("ChildrenPresenter", parent);
+                    Assert.Equal(System.Windows.Visibility.Collapsed, presenter.Visibility);
+                    Assert.Equal(1, System.Windows.Controls.Grid.GetColumn(presenter));
+                    Assert.True(((System.Windows.FrameworkElement)parent.Template.FindName("HeaderBorder", parent)).MinHeight >= 32);
+                    var expander = (System.Windows.Controls.Primitives.ToggleButton)parent.Template.FindName("Expander", parent);
+                    Assert.True(expander.Width >= 28 && expander.Height >= 32);
+                    expander.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice, 0, System.Windows.Input.MouseButton.Left)
+                        { RoutedEvent = System.Windows.Input.Mouse.PreviewMouseDownEvent });
+                    Assert.True(parent.IsExpanded);
+                    Assert.True(popup.IsOpen);
+                    Assert.NotEqual(nativeDevice.Id, row.DeviceId);
                     System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                     var leaf = Assert.Single(group.Children);
+                    Assert.DoesNotContain(nativeDevice.Name, leaf.Name);
                     var child = Assert.IsType<System.Windows.Controls.TreeViewItem>(parent.ItemContainerGenerator.ContainerFromItem(leaf));
+                    child.ApplyTemplate();
+                    Assert.Equal(System.Windows.Visibility.Visible, presenter.Visibility);
+                    Assert.Equal(System.Windows.Visibility.Hidden, ((System.Windows.UIElement)child.Template.FindName("Expander", child)).Visibility);
+                    ClickHeader(parent);
+                    Assert.Equal(System.Windows.Visibility.Collapsed, presenter.Visibility);
+                    ClickHeader(parent);
+                    Assert.True(parent.IsExpanded);
                     child.SetCurrentValue(System.Windows.Controls.TreeViewItem.IsSelectedProperty, true);
+                    Assert.True(popup.IsOpen);
+                    Assert.NotEqual(nativeDevice.Id, row.DeviceId);
+                    ClickHeader(child);
                     System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                     Assert.Equal(nativeDevice.Id, row.DeviceId);
                     Assert.Equal(leaf.TargetId, row.TargetId);
@@ -87,6 +136,54 @@ public sealed class CommunicationHeartbeatTests
                     Assert.Contains(nativeDevice.Name, row.TargetLabel);
                     Assert.False(popup.IsOpen);
                 }
+                Assert.Equal("单数据", row.ModeDisplay);
+                var configChanges = 0;
+                row.ConfigurationChanged += (_, _) => configChanges++;
+                button.SetCurrentValue(System.Windows.Controls.Primitives.ToggleButton.IsCheckedProperty, true);
+                System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                var selectedGroup = row.Targets.Single(n => n.DeviceId == opc.Id);
+                var selectedParent = (System.Windows.Controls.TreeViewItem)tree.ItemContainerGenerator.ContainerFromItem(selectedGroup);
+                Assert.True(selectedParent.IsExpanded);
+                var selectedChild = (System.Windows.Controls.TreeViewItem)selectedParent.ItemContainerGenerator.ContainerFromItem(selectedGroup.Children.Single());
+                Assert.True(selectedChild.IsSelected);
+                Assert.Equal(0, configChanges);
+                selectedChild.ApplyTemplate();
+                ((System.Windows.UIElement)selectedChild.Template.FindName("HeaderBorder", selectedChild)).RaiseEvent(
+                    new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice, 0, System.Windows.Input.MouseButton.Right)
+                    { RoutedEvent = System.Windows.Input.Mouse.PreviewMouseDownEvent });
+                Assert.True(popup.IsOpen);
+                Assert.Equal(0, configChanges);
+                tree.RaiseEvent(new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice,
+                    System.Windows.PresentationSource.FromVisual(tree), 0, System.Windows.Input.Key.Enter)
+                    { RoutedEvent = System.Windows.Input.Keyboard.PreviewKeyDownEvent });
+                Assert.False(popup.IsOpen);
+                Assert.Equal(1, configChanges);
+                button.SetCurrentValue(System.Windows.Controls.Primitives.ToggleButton.IsCheckedProperty, true);
+                System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                var rawAgain = (System.Windows.Controls.TreeViewItem)tree.ItemContainerGenerator.ContainerFromItem(row.Targets.Single(n => n.DeviceId == raw.Id));
+                rawAgain.SetCurrentValue(System.Windows.Controls.TreeViewItem.IsSelectedProperty, true);
+                tree.RaiseEvent(new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice,
+                    System.Windows.PresentationSource.FromVisual(tree), 0, System.Windows.Input.Key.Escape)
+                    { RoutedEvent = System.Windows.Input.Keyboard.PreviewKeyDownEvent });
+                Assert.False(popup.IsOpen);
+                Assert.Equal(opc.Id, row.DeviceId);
+                Assert.Equal(1, configChanges);
+                row.ModeDisplay = "多数据";
+                Assert.Equal("Alternate", row.Capture().Mode);
+                var contentHost = grid.Columns[3].GetCellContent(row)!;
+                Assert.Equal(2, Descendants(contentHost).OfType<System.Windows.Controls.TextBox>().Count());
+                Assert.DoesNotContain(Descendants(contentHost).OfType<System.Windows.Controls.TextBlock>(), text => text.Text is "值 A" or "值 B");
+                Assert.True(row.TypeLocked);
+                Assert.False(row.TypeResolved); // no live OPC metadata in this isolated UI test
+                var nativeToggle = FindVisual<SunEyeVision.Plugin.SDK.UI.Controls.ToggleSwitch>(grid.Columns[5].GetCellContent(row)!)!;
+                nativeToggle.IsChecked = true;
+                Assert.False(row.Enabled);
+                Assert.True(row.HasStatusIssue);
+                Assert.Contains("节点类型未确认", row.Status);
+                row.Enabled = true;
+                manager.SelectHeartbeatTarget(row, row.Targets.Single(node => node.DeviceId == ""));
+                Assert.False(row.Enabled);
+                Assert.Equal("", row.DeviceId);
             }
             catch (Exception ex) { failure = ex; }
             finally { window?.Close(); manager?.DisposeAsync().AsTask().GetAwaiter().GetResult(); }
@@ -94,6 +191,20 @@ public sealed class CommunicationHeartbeatTests
         thread.SetApartmentState(ApartmentState.STA); thread.IsBackground = true; thread.Start();
         Assert.True(thread.Join(TimeSpan.FromSeconds(20)), "心跳设备弹层测试超时");
         if (failure != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+    }
+
+    private static void ClickHeader(System.Windows.Controls.TreeViewItem item)
+    {
+        item.ApplyTemplate();
+        var header = (System.Windows.UIElement)item.Template.FindName("HeaderBorder", item);
+        header.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice, 0, System.Windows.Input.MouseButton.Left)
+            { RoutedEvent = System.Windows.Input.Mouse.PreviewMouseDownEvent });
+    }
+    private static IEnumerable<System.Windows.DependencyObject> Descendants(System.Windows.DependencyObject parent)
+    {
+        yield return parent;
+        for (var i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            foreach (var child in Descendants(System.Windows.Media.VisualTreeHelper.GetChild(parent, i))) yield return child;
     }
 
     private static T? FindVisual<T>(System.Windows.DependencyObject parent) where T : System.Windows.DependencyObject
@@ -136,6 +247,14 @@ public sealed class CommunicationHeartbeatTests
                 System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                 Assert.Equal(7, ((System.Windows.Controls.DataGrid)view.FindName("HeartbeatGrid")).Columns.Count);
                 var grid = (System.Windows.Controls.DataGrid)view.FindName("HeartbeatGrid");
+                var delete = FindVisual<System.Windows.Controls.Button>(grid.Columns[6].GetCellContent(row)!)!;
+                Assert.Equal(new System.Windows.Thickness(0), delete.Padding);
+                Assert.Equal("×", delete.Content);
+                Assert.Equal(System.Windows.HorizontalAlignment.Center, delete.HorizontalAlignment);
+                row.Status = "测试写入失败：类型不匹配";
+                view.UpdateLayout();
+                Assert.Contains(Descendants(view).OfType<System.Windows.Controls.TextBlock>(),
+                    text => text.Visibility == System.Windows.Visibility.Visible && text.Text.Contains("测试写入失败"));
                 var toggleHost = grid.Columns[5].GetCellContent(row);
                 var toggle = FindToggle(toggleHost!);
                 Assert.NotNull(toggle);

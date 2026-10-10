@@ -52,7 +52,7 @@
 
 ; 安装包图标来源 = 应用程序自身的图标（与 src/UI/SunEyeVision.UI.csproj 的 ApplicationIcon 内容一致）
 #ifndef AppIcon
-  #define AppIcon "..\src\UI\Icons\app_logo.ico"
+  #define AppIcon "..\src\UI\Icons\suneyevision.ico"
 #endif
 
 ; Release 载荷目录（= Directory.Build.props 的 Release OutputPath，与产品版本解耦）
@@ -99,8 +99,9 @@ ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=admin
 WizardStyle=modern
 UninstallDisplayName={#AppDisplayName}
-UninstallDisplayIcon={app}\{#AppExeName}
+UninstallDisplayIcon={app}\Icons\suneyevision.ico
 SetupIconFile={#AppIcon}
+ChangesAssociations=yes
 
 [Files]
 Source: "{#ReleaseDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -132,8 +133,8 @@ Type: files; Name: "{autodesktop}\SunEyeVision Preview.lnk"
 #endif
 
 [Icons]
-Name: "{autoprograms}\{#AppDisplayName}"; Filename: "{app}\{#AppExeName}"
-Name: "{autodesktop}\{#AppDisplayName}"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\{#AppDisplayName}"; Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\Icons\suneyevision.ico"; IconIndex: 0
+Name: "{autodesktop}\{#AppDisplayName}"; Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\Icons\suneyevision.ico"; IconIndex: 0; Tasks: desktopicon
 
 [Tasks]
 Name: "desktopicon"; Description: "创建桌面快捷方式"; GroupDescription: "附加图标："; Flags: unchecked

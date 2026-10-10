@@ -7,8 +7,13 @@ pwsh -NoProfile -File installer/Pack-Release.ps1
 ```
 
 要求 PowerShell 7、.NET SDK、Inno Setup 6，以及已生成的依赖锁。
+依赖锁同时包含常规框架目标与 win-x64 发布目标；日常 Debug 还原不会再移除发布目标。已有旧锁需先运行一次常规 dotnet restore 更新，之后发布继续严格使用 --locked-mode，不在打包时自动升级依赖。
 签名证书、干净工作区、VM 安装验收均不是正常打包的强制条件；清单如实记录源码状态、签名和安装验收结果。
 不自动提交代码、创建标签或安装程序；请在发布完成后提交源码和 version.json，按项目流程管理标签。
+
+普通 Release 构建仍输出到 Release/SunEyeVision_v1.0.0/SunEyeVision，属于框架依赖程序，直接启动需要本机 .NET 9 Desktop Runtime；打包的自包含载荷在独立 staging 中生成。
+普通 UI 构建会把输出目录中遗留的 hostfxr.dll、hostpolicy.dll、coreclr.dll 移到 artifacts/runtime-host-backups 下保留，避免自包含宿主与框架依赖配置混用；不清空输出目录、不移动用户配置，跳过自包含/打包/设计时/自定义输出目录。
+构建边界回归：pwsh -File utilities/Test-RuntimeOutputGuard.ps1。
 
 version.json 的三段 version 由维护者决定；fileRevision 是上次成功发布序号，正常发布自动 +1。
 序号跨 alpha/beta/rc/stable 统一递增；失败不增加序号，成功才原子写回版本及发布日期。
@@ -63,6 +68,11 @@ alpha/beta/rc/stable 的安装向导、快捷方式、卸载条目统一为 `Sun
 清单包含产品/文件版本、渠道、日期、SDK 包映射、Git HEAD、未提交文件列表、完整源码文件哈希、测试结果、默认主题及载荷哈希。
 源码未提交时 Git SHA 仅标识基线，源码快照才代表本次实际输入，清单不会声称已提交或已签名。
 程序自包含 .NET 运行时，HALCON 许可及厂商相机 SDK 仍按现场条件配置。
+
+图标来源：安装包、程序 EXE、开始菜单/桌面快捷方式、卸载条目统一使用 `Icons/suneyevision.ico`（冰蓝渐变圆角背景）；`.solution` 使用 `Icons/solution.ico`（折角文件页与同源品牌图形）。
+快捷方式显式设置图标路径与索引 0；发布校验两份 ICO 的载荷哈希与源码一致，安装器启用 ChangesAssociations 通知 Windows 刷新关联。
+正常安装同步更新本产品 ProgID 和 Applications\\SunEyeVision.UI.exe 的打开命令/文件图标，保持开发版不自动修改关联、也不改写 Windows UserChoice 或抢占其他软件的默认关联。
+打包不调用旧 Build-Icons.ps1，避免它把独立方案图标重新生成成应用图标；不要用该旧脚本覆盖当前品牌资源。
 
 回归检查：`pwsh -File installer/Test-Release.ps1`。
 

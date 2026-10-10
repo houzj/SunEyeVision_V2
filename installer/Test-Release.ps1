@@ -35,6 +35,16 @@ Assert-Rejected {Get-InstallerBranding 'alpha' '2.0.0.42_beta'}
 Assert-Rejected {Get-InstallerBranding 'stable' '2.0.0.42_alpha'}
 Assert ((Get-InstallerBranding 'alpha' '2.0.0.43_alpha').AppId -eq (Get-InstallerBranding 'alpha' '2.0.0.42_alpha').AppId) 'Revision must not change installation identity.'
 $installerSource=Get-Content "$PSScriptRoot/SunEyeVision.iss" -Raw
+Assert ($installerSource -match '(?m)^ChangesAssociations=yes\r?$') 'Installer must notify Windows of changed file associations.'
+Assert ($installerSource -match '(?m)^UninstallDisplayIcon=\{app\}\\Icons\\suneyevision\.ico\r?$') 'Uninstall entry must use the background application icon.'
+foreach ($line in @($installerSource -split '\r?\n' | Where-Object { $_ -match '^Name: "\{auto(programs|desktop)\}' })) {
+    Assert ($line.Contains('IconFilename: "{app}\Icons\suneyevision.ico"') -and $line.Contains('IconIndex: 0')) 'Shortcut must explicitly use the background application icon.'
+}
+Assert ($installerSource.Contains('ValueData: """{app}\Icons\solution.ico"",0"')) 'Solution association must use its document icon.'
+$packSource=Get-Content "$PSScriptRoot/Pack-Release.ps1" -Raw
+Assert ($packSource.Contains('AppIcon="$app/Icons/suneyevision.ico"')) 'Setup must use the verified application icon from its payload.'
+Assert ($packSource.Contains('-IconSourceRoot "$root/src/UI/Icons"')) 'Packaging must verify both icon source hashes.'
+Assert (!$packSource.Contains('生成光之眼-Logo-')) 'Legacy setup icon must not enter a new release.'
 Assert ($installerSource -match '(?m)^UsePreviousAppDir=no\r?$') 'Installer must not reuse old Preview directory.'
 Assert ($installerSource -match '(?m)^UsePreviousGroup=no\r?$') 'Installer must not reuse old Preview group.'
 Assert ($installerSource -match '(?m)^AppMutex=Global\\SunEyeVision\.Running\r?$') 'Installer must check runtime marker.'

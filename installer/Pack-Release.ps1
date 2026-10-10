@@ -91,7 +91,7 @@ try {
         '-p:ContinuousIntegrationBuild=true','-p:UseSharedCompilation=false','-p:PackagingRuntimeIdentifier=win-x64','-p:SelfContained=true')
     Invoke-ReleaseNative dotnet (@('restore',"$root/SunEyeVision.slnx",'--locked-mode')+$buildArgs)
     Invoke-ReleaseNative dotnet (@('build',"$root/SunEyeVision.slnx",'-c','Release','--no-restore','-m:1','-v:minimal')+$buildArgs)
-    $filter='FullyQualifiedName~Communication|FullyQualifiedName~OpcUa|FullyQualifiedName~CameraCategory|FullyQualifiedName~ImageSourceSavePersistence|FullyQualifiedName~NumericUpDownBinding|FullyQualifiedName~TcpServerBroadcast|FullyQualifiedName~AboutWindowTests|FullyQualifiedName~ApplicationLifetimeGateTests|FullyQualifiedName~SolutionManagementTests|FullyQualifiedName~SolutionManagerUiTests|FullyQualifiedName~SolutionTransitionTests|FullyQualifiedName~ContinuousRunStopNotificationTests'
+    $filter='FullyQualifiedName~Communication|FullyQualifiedName~OpcUa|FullyQualifiedName~CameraCategory|FullyQualifiedName~ImageSourceSavePersistence|FullyQualifiedName~NumericUpDownBinding|FullyQualifiedName~TcpServerBroadcast|FullyQualifiedName~AboutWindowTests|FullyQualifiedName~ApplicationLifetimeGateTests|FullyQualifiedName~SolutionManagementTests|FullyQualifiedName~SolutionManagerUiTests|FullyQualifiedName~SolutionTransitionTests|FullyQualifiedName~ContinuousRunStopNotificationTests|FullyQualifiedName~BaselineIntegrationTests|FullyQualifiedName~SingleInstanceCoordinatorTests|FullyQualifiedName~BrandingLogoTests'
     Invoke-ReleaseNative dotnet (@('test',"$root/tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj",'-c','Release','--no-build','--no-restore',
         '--filter',$filter,'--logger','trx','--results-directory',"$stage/tests")+$buildArgs)
     $tests=Get-ReleaseTestSummary "$stage/tests"
@@ -100,7 +100,7 @@ try {
         '-p:PublishSingleFile=false',"-p:PublishDir=$stage/app/")+$buildArgs)
     $app="$stage/app"
     $tools=@($projects | Where-Object {(Get-Content $_.FullName -Raw) -match '<IsToolPlugin>true</IsToolPlugin>'})
-    Assert-ReleasePayload $app $releaseVersion $tools.BaseName
+    Assert-ReleasePayload $app $releaseVersion $tools.BaseName -IconSourceRoot "$root/src/UI/Icons"
     $probePath="$stage/probe.json"
     $probe=Start-Process "$app/SunEyeVision.UI.exe" -ArgumentList @('--release-probe',"`"$probePath`"") -PassThru -WindowStyle Hidden
     if (!$probe.WaitForExit(30000)) {$probe.Kill();throw '程序探针超时。'}
@@ -119,7 +119,7 @@ try {
     }
     $branding=Get-InstallerBranding $channel $artifactVersion
     $definitions=[ordered]@{AppVersion=$releaseVersion;ReleaseVersion=$artifactVersion;Channel=$channel;AppDisplayName=$branding.DisplayName;AppId=$branding.AppId;
-        DefaultDir=$branding.DefaultDir;ReleaseDir=$app;OutputDir="$stage/output";OutputBaseName=$setupName;AppIcon="$root/src/UI/生成光之眼-Logo-_1__副本.ico";AssociationId=$branding.AssociationId}
+        DefaultDir=$branding.DefaultDir;ReleaseDir=$app;OutputDir="$stage/output";OutputBaseName=$setupName;AppIcon="$app/Icons/suneyevision.ico";AssociationId=$branding.AssociationId}
     $isccArgs=@('/Qp');foreach($key in $definitions.Keys){$isccArgs+="/D$key=$($definitions[$key])"};$isccArgs+="$PSScriptRoot/SunEyeVision.iss"
     Invoke-ReleaseNative $IsccPath $isccArgs
     $setup="$stage/output/$setupName.exe"
@@ -142,6 +142,7 @@ try {
         toolContractVersion=$runtime.toolContract;runtime='win-x64';selfContained=$true;signed=$signed;installationVerified=$installationVerified;
         defaultTheme=$runtime.defaultTheme;displayName=$branding.DisplayName;defaultInstallDirectory="{autopf}\$($branding.DefaultDir)";
         installerAppId=$branding.AppId;associationId=$branding.AssociationId;installer="$setupName.exe";sha256='';plugins=@($tools.BaseName);tests=$tests;
+        icons=@{application='Icons/suneyevision.ico';shortcut='Icons/suneyevision.ico';solution='Icons/solution.ico';sourceHashesVerified=$true};
         externalPrerequisites=@('HALCON runtime license','Camera vendor SDK where required');
         payload=@(Get-ChildItem $app -Recurse -File | ForEach-Object {@{path=[IO.Path]::GetRelativePath($app,$_.FullName);sha256=(Get-FileHash $_.FullName).Hash}})}
     $sha=Write-ReleaseArtifacts "$stage/output" $manifest

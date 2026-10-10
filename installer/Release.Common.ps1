@@ -50,9 +50,17 @@ function Assert-ReleaseFileVersionAdvance {
 }
 
 function Assert-ReleasePayload {
-    param([string]$Path, [string]$FileVersion, [string[]]$Plugins)
-    foreach ($file in 'SunEyeVision.UI.exe', 'SunEyeVision.Core.dll', 'SunEyeVision.Plugin.SDK.dll', 'halcondotnetxl.dll', 'halconxl.dll', 'Icons/solution.ico') {
+    param([string]$Path, [string]$FileVersion, [string[]]$Plugins, [string]$IconSourceRoot)
+    foreach ($file in 'SunEyeVision.UI.exe', 'SunEyeVision.Core.dll', 'SunEyeVision.Plugin.SDK.dll', 'halcondotnetxl.dll', 'halconxl.dll', 'Icons/suneyevision.ico', 'Icons/solution.ico') {
         if (!(Test-Path (Join-Path $Path $file))) { throw "载荷缺失：$file" }
+    }
+    if ($IconSourceRoot) {
+        foreach ($name in 'suneyevision.ico', 'solution.ico') {
+            if ((Get-FileHash (Join-Path $IconSourceRoot $name)).Hash -ne
+                (Get-FileHash (Join-Path $Path "Icons/$name")).Hash) {
+                throw "发布图标与当前品牌源不一致：$name"
+            }
+        }
     }
     foreach ($plugin in $Plugins) {
         if (!(Test-Path "$Path/plugins/$plugin/$plugin.dll")) { throw "插件缺失：$plugin" }

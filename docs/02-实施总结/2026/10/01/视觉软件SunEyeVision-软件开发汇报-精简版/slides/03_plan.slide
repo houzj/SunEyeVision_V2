@@ -34,7 +34,7 @@
                 <Box style={{ flex: 1, background: 'rgba(33,150,243,0.06)', borderRadius: 10, padding: '12px 16px', flexDirection: 'column', gap: 4, justifyContent: 'center' }}>
                     <Text style={{ fontSize: 20, fontWeight: 700, color: '#0B2A45' }}>设备层收口</Text>
                     <Text style={{ fontSize: 15, color: '#5B6B7C', lineHeight: 1.5 }}>
-                        相机真机验证（海康 / 巴斯勒）、参数读写闭环；通讯链路测试（协议帧、异常、重连）
+                        相机真机验证（海康 / 巴斯勒）、参数读写闭环；通讯链路测试收口 + 通讯工具链启动（OPC UA 优先）
                     </Text>
                     <Text style={{ fontSize: 13, color: '#2196F3', fontWeight: 'bold' }}>出口：设备层可对外演示</Text>
                 </Box>
@@ -47,7 +47,7 @@
                 <Box style={{ flex: 1, background: '#F5F8FB', borderRadius: 10, padding: '12px 16px', flexDirection: 'column', gap: 4, justifyContent: 'center' }}>
                     <Text style={{ fontSize: 20, fontWeight: 700, color: '#0B2A45' }}>视觉链路贯通</Text>
                     <Text style={{ fontSize: 15, color: '#5B6B7C', lineHeight: 1.5 }}>
-                        图像源收口 + 定位工具链首版 + 坐标转换，串起「采图 → 定位 → 位姿输出」；通信工具按平台挂载
+                        通讯工具链落地（OPC UA / TCP / Modbus / 串口）+ 定位工具链首版 + 坐标转换，串起「采图 → 定位 → 位姿输出」
                     </Text>
                     <Text style={{ fontSize: 13, color: '#14456E', fontWeight: 'bold' }}>出口：视觉链路可跑通</Text>
                 </Box>

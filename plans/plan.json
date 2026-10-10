@@ -2562,6 +2562,10 @@
                                     {
                                         "date":  "2026-10-10",
                                         "note":  "[6cc48cd54c894f4bbbbfeace69a159051001b447] feat(comm): 通讯触发条件、心跳目标与 OPC UA 监控完善"
+                                    },
+                                    {
+                                        "date":  "2026-10-10",
+                                        "note":  "[7bbba33017749a212d9bebce292c2f5db11a838c] feat(comm): 通讯触发求值与上传快照独立化并完善 OPC UA 数据点"
                                     }
                                 ]
                     },
@@ -2917,6 +2921,10 @@
                                     {
                                         "date":  "2026-10-09",
                                         "note":  "[cdba49e27d7e1eba60ca46b1af5c0665e612b63e] feat(app): 单实例与运行期维护门，关于页显示完整发布信息，默认暗色主题"
+                                    },
+                                    {
+                                        "date":  "2026-10-10",
+                                        "note":  "[a9caaa5e4e9a8c69b2357bcb5b83e969b2d2d1e2] chore(build): 新增运行时输出守卫与测试构建配置"
                                     }
                                 ]
                     },
@@ -5017,6 +5025,41 @@
                                         "docs/04-工具设计/标定工具/2026/09/28/标定工具链与定位抓取设计基线-20260928.md",
                                         "docs/04-工具设计/标定工具/2026/09/29/N点标定9加3联合标定与抓取链沟通基线-20260929.md",
                                         "docs/collaboration/CURRENT_TASK.md"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-319a866",
+                          "message":  "docs: 更新开发汇报与协作记录并同步文档索引",
+                          "date":  "2026-10-10",
+                          "commit":  "319a866d35f888e4f2326e1c41308ce1b3cbc22d",
+                          "files":  [
+                                        "docs/00-索引/文档索引.md",
+                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/existing-delete-reference.png",
+                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/trigger-delete-current.png",
+                                        "docs/01-方案设计/2026/10/通讯事件条件与动作条件及参数绑定优化基线-20261010.md",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/bak/视觉软件SunEyeVision-软件开发汇报-精简版.bak-20261001-144849.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/pid",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/state.json",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/DESIGN.md",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/assets/main_ui.jpg",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/02_output.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/03_plan.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2 -S.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报.html",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报（精简版）.html",
+                                        "docs/collaboration/CURRENT_TASK.md",
+                                        "docs/collaboration/HANDOFF_ACTION_EQUALITY_20261010.md",
+                                        "docs/collaboration/HANDOFF_COMMUNICATION_FINAL_REFINEMENT_20261010.md",
+                                        "docs/collaboration/HANDOFF_COMMUNICATION_TRIGGER_OPTIMIZATION_20261010.md",
+                                        "docs/collaboration/HANDOFF_GLOBAL_DATA_HEARTBEAT_20261010.md",
+                                        "docs/collaboration/HANDOFF_HEARTBEAT_FEEDBACK_20261010.md",
+                                        "docs/collaboration/HANDOFF_PACKAGE_ICONS_20261009.md",
+                                        "docs/collaboration/HANDOFF_RELEASE_STARTUP_20261009.md",
+                                        "docs/collaboration/HANDOFF_TRIGGER_AUTO_CONDITION_20261010.md",
+                                        "docs/collaboration/HANDOFF_TRIGGER_COMPACT_UI_20261010.md",
+                                        "docs/collaboration/HANDOFF_TRIGGER_PARAMETER_SIMPLIFICATION_20261010.md"
                                     ],
                           "status":  "in_progress"
                       }

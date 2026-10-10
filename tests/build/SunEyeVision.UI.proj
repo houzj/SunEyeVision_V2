@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <WorktreeBasePath>$(RuntimeGuardFixtureRoot)</WorktreeBasePath>
+    <Configuration Condition="'$(Configuration)'==''">Release</Configuration>
+    <OutDir Condition="'$(OutDir)'=='' And '$(Configuration)'=='Release'">$(WorktreeBasePath)Release\SunEyeVision_v1.0.0\SunEyeVision\</OutDir>
+    <OutDir Condition="'$(OutDir)'=='' And '$(Configuration)'=='Debug'">$(WorktreeBasePath)dev\Debug\</OutDir>
+  </PropertyGroup>
+  <Import Project="../../Directory.Build.targets" />
+</Project>

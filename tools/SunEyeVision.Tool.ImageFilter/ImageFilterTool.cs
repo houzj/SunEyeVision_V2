@@ -24,12 +24,12 @@ namespace SunEyeVision.Tool.ImageFilter
     ///   3. 统计计算       → 均值/标准差/最值
     ///   4. 结果判断       → OK/NG判定
     /// </summary>
-    [Tool(
+[Tool(
         id: "ImageFilter",
         displayName: "图像滤波",
         Description = "对图像进行滤波处理，支持均值/高斯/中值/双边/自定义卷积",
-        Icon = "🖼️",
-        Category = "图像处理",
+        Icon = "sliders", Order = 10,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing,
         Version = "1.0.0",
         HasDebugWindow = true
     )]

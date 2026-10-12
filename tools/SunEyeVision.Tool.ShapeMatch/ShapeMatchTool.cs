@@ -30,8 +30,8 @@ namespace SunEyeVision.Tool.ShapeMatch;
     id: "ShapeMatch",
     displayName: "轮廓匹配",
     Description = "基于形状的轮廓模板匹配 (Halcon)",
-    Icon = "🔍",
-    Category = "图像处理",
+    Icon = "match", Order = 10,
+    Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Location,
     Version = "2.0.0",
     HasDebugWindow = true
 )]

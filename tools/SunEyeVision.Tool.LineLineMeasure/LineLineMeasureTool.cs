@@ -19,12 +19,12 @@ namespace SunEyeVision.Tool.LineLineMeasure
     /// 拟合两条被测直线 → 计算锐角夹角（主）与平行间距（辅助）→ MeasureJudge 判定 OK/NG。
     /// 引擎无关契约：公开 API 不暴露 HImage；工具引 HalAdapter（v4 B.3 首期统一）。
     /// </summary>
-    [Tool(
+[Tool(
         id: "LineLineMeasure",
         displayName: "线-线测量",
         Description = "线-线测量工具：两卡尺沿引导线测量拟合直线，输出夹角与平行间距并判定",
-        Icon = "📐",
-        Category = "测量工具",
+        Icon = "line-line", Order = 40,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,
         Version = "1.0.0",
         HasDebugWindow = true
     )]

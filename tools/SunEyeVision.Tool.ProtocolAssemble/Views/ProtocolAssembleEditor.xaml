@@ -1,0 +1,55 @@
+<controls:ToolDebugControlBase x:Class="SunEyeVision.Tool.ProtocolAssemble.Views.ProtocolAssembleEditor"
+ xmlns:comm="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Communication;assembly=SunEyeVision.Plugin.SDK"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+ xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
+ xmlns:local="clr-namespace:SunEyeVision.Tool.ProtocolAssemble.Views"
+ Background="{DynamicResource ThemePanelBackgroundBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}">
+ <controls:ToolDebugControlBase.Resources><ResourceDictionary>
+  <ResourceDictionary.MergedDictionaries><themes:DesignTimeThemeResourceDictionary/>
+   <ResourceDictionary Source="/SunEyeVision.Plugin.SDK;component/UI/Controls/Communication/ProtocolEditorResources.xaml"/>
+  </ResourceDictionary.MergedDictionaries>
+ </ResourceDictionary></controls:ToolDebugControlBase.Resources>
+ <Grid Margin="16">
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+  <StackPanel>
+   <TextBlock Text="组装配置" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"
+    ToolTip="按列表顺序组装文本报文，发送由发送数据工具完成。"/>
+   <WrapPanel>
+    <TextBlock Text="分隔符" VerticalAlignment="Center" Margin="0,0,12,0"/>
+    <ComboBox x:Name="DelimiterOptions" Style="{StaticResource ProtocolComboBox}" Width="120" DisplayMemberPath="DisplayName" SelectedValuePath="Value" SelectionChanged="DelimiterChanged"/>
+    <Button Content="自定义" Click="CustomSeparator_Click" Margin="8,0"/>
+    <TextBox x:Name="CustomSeparator" Visibility="Collapsed" Width="120" Height="30" VerticalContentAlignment="Center" Text="{Binding Separator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+   </WrapPanel>
+   <TextBlock Text="组装列表" FontWeight="Bold" FontSize="16" Margin="0,16,0,8"
+    ToolTip="执行结果在模块结果查看；详细片段在主界面数据分析查看。"/>
+  </StackPanel>
+  <Grid Grid.Row="1" x:Name="PartsListViewport">
+   <StackPanel>
+    <DataGrid x:Name="PartsGrid" ItemsSource="{Binding Parts}" AutoGenerateColumns="False" MaxHeight="{Binding ActualHeight, ElementName=PartsListViewport, Converter={StaticResource ListViewport}}" MinHeight="0">
+     <DataGrid.Columns>
+      <DataGridTemplateColumn Header="序号" Width="46"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+       <TextBlock Style="{StaticResource ProtocolFieldText}" Text="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=(comm:ProtocolRowPosition.Index), Converter={StaticResource CommunicationOrdinal}}"/>
+      </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      <DataGridTemplateColumn Header="内容" Width="*" MinWidth="180"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+       <controls:ParamBinding Style="{StaticResource ProtocolBindingInputStyle}" BindingSource="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SyncEditingToSource="True"
+        AvailableDataSources="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=AvailableDataSources}"/>
+      </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      <DataGridTemplateColumn Header="操作" Width="108"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+        <Button Content="↑" Style="{StaticResource ProtocolRowAction}" Click="MoveUp_Click" ToolTip="上移" AutomationProperties.Name="上移组装项">
+         <Button.IsEnabled><MultiBinding Converter="{StaticResource CanMove}" ConverterParameter="-1"><Binding RelativeSource="{RelativeSource AncestorType=DataGridRow}" Path="(comm:ProtocolRowPosition.Index)"/><Binding RelativeSource="{RelativeSource AncestorType=controls:ToolDebugControlBase}" Path="DataContext.Parts.Count"/></MultiBinding></Button.IsEnabled>
+        </Button>
+        <Button Content="↓" Style="{StaticResource ProtocolRowAction}" Click="MoveDown_Click" ToolTip="下移" AutomationProperties.Name="下移组装项">
+         <Button.IsEnabled><MultiBinding Converter="{StaticResource CanMove}" ConverterParameter="1"><Binding RelativeSource="{RelativeSource AncestorType=DataGridRow}" Path="(comm:ProtocolRowPosition.Index)"/><Binding RelativeSource="{RelativeSource AncestorType=controls:ToolDebugControlBase}" Path="DataContext.Parts.Count"/></MultiBinding></Button.IsEnabled>
+        </Button>
+        <Button Content="×" Style="{StaticResource ProtocolDeleteAction}" Click="DeletePart_Click" ToolTip="删除" AutomationProperties.Name="删除组装项"/>
+       </StackPanel>
+      </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+     </DataGrid.Columns>
+    </DataGrid>
+    <Button x:Name="AddPartButton" Content="＋" Width="28" Height="28" Padding="0" HorizontalAlignment="Left" Margin="8,4,0,0" Click="AddPart_Click" ToolTip="添加组装项" AutomationProperties.Name="添加组装项"/>
+   </StackPanel>
+  </Grid>
+ </Grid>
+</controls:ToolDebugControlBase>

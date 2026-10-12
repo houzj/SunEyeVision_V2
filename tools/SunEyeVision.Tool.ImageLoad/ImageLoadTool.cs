@@ -16,9 +16,9 @@ namespace SunEyeVision.Tool.ImageLoad
     /// <summary>
     /// 图像源工具：本地文件或方案相机均输出统一图像契约。
     /// </summary>
-    [Tool("ImageLoad", "图像源",
+[Tool("ImageLoad", "图像源",
         Description = "从本地图像或方案相机获取图像，作为工作流输入",
-        Icon = "🖼️", Category = "采集",
+        Icon = "image", Order = 10, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Acquisition,
         Version = "2.0.0", HasDebugWindow = false)]
     public class ImageLoadTool : IToolPlugin<ImageLoadParameters, ImageLoadResults>, IAsyncToolPlugin
     {

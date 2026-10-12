@@ -26,12 +26,12 @@ namespace SunEyeVision.Tool.Morphology
     ///   5. 区域统计       → Blob计数/面积统计
     ///   6. 结果判断       → OK/NG判定
     /// </summary>
-    [Tool(
+[Tool(
         id: "Morphology",
         displayName: "形态学处理",
         Description = "对二值图像执行形态学操作（腐蚀/膨胀/开闭运算等）",
-        Icon = "🔲",
-        Category = "图像处理",
+        Icon = "morphology", Order = 40,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing,
         Version = "1.0.0",
         HasDebugWindow = true
     )]

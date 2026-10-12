@@ -10,12 +10,12 @@ using ToolExecutionContext = SunEyeVision.Plugin.SDK.Execution.Parameters.Execut
 
 namespace SunEyeVision.Tool.Condition
 {
-    [Tool(
+[Tool(
         id: "Condition",
         displayName: "条件分支",
         Description = "根据参数值判断条件，选择执行分支",
-        Icon = "\U0001F500",
-        Category = "工作流控制",
+        Icon = "branch", Order = 10,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Control,
         Version = "1.0.0",
         HasDebugWindow = true
     )]

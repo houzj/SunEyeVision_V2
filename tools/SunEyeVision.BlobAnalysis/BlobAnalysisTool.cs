@@ -41,12 +41,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// - 消除双抢筛选：IsFiltered + JudgmentPassed → 统一的JudgmentPassed
     /// - 延迟轮廓提取：仅对最终通过的blob提取contour
     /// </remarks>
-    [Tool(
+[Tool(
         id: "BlobAnalysis",
         displayName: "Blob分析",
         Description = "连通域分析与特征提取",
-        Icon = "🔬",
-        Category = "图像处理",
+        Icon = "blob", Order = 10,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Region,
         Version = "3.1.0",
         HasDebugWindow = true
     )]

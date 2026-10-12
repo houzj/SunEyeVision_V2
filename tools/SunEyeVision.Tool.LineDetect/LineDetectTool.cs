@@ -26,12 +26,12 @@ namespace SunEyeVision.Tool.LineDetect
     ///   3. apply_metrology_model → 执行测量（逐测量带取点 + 拟合）
     ///   4. get_metrology_object_result → 获取拟合直线参数 + RMSE
     /// </remarks>
-    [Tool(
+[Tool(
         id: "LineDetect",
         displayName: "直线查找",
         Description = "直线边缘检测工具（引导式 2D Metrology）",
-        Icon = "📏",
-        Category = "定位工具",
+        Icon = "line", Order = 20,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Location,
         Version = "1.0.0",
         HasDebugWindow = true
     )]

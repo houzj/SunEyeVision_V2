@@ -27,12 +27,12 @@ namespace SunEyeVision.Tool.ImageThreshold
     ///   5. 结果判断 → OK/NG判定
     ///   6. RegionToBin → 二值掩码输出
     /// </summary>
-    [Tool(
+[Tool(
         id: "ImageThreshold",
         displayName: "图像二值化",
         Description = "将灰度图像通过阈值分割转换为二值图像，支持固定阈值/Otsu/Triangle/自适应/范围阈值",
-        Icon = "📷",
-        Category = "图像处理",
+        Icon = "binarize", Order = 30,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing,
         Version = "1.0.0",
         HasDebugWindow = true
     )]

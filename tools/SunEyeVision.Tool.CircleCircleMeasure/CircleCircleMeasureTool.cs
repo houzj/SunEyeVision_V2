@@ -19,12 +19,12 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
     /// 拟合两个被测圆 → 计算圆心距（主）与两圆交点/位置关系（辅助）→ MeasureJudge 判定 OK/NG。
     /// 引擎无关契约：公开 API 不暴露 HImage；工具引 HalAdapter（v4 B.3 首期统一）。
     /// </summary>
-    [Tool(
+[Tool(
         id: "CircleCircleMeasure",
         displayName: "圆-圆测量",
         Description = "圆-圆测量工具：两卡尺分别沿引导圆测量，输出圆心距、两圆交点与位置关系并判定",
-        Icon = "◎",
-        Category = "测量工具",
+        Icon = "circle-circle", Order = 60,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,
         Version = "1.0.0",
         HasDebugWindow = true
     )]

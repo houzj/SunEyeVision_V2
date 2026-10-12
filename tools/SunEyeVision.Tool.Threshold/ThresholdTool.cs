@@ -24,12 +24,12 @@ namespace SunEyeVision.Tool.Threshold
     ///   4. 统计计算       → 白色像素/比例/均值/质心
     ///   5. 结果判断       → OK/NG判定（5种条件）
     /// </summary>
-    [Tool(
+[Tool(
         id: "Threshold",
         displayName: "图像阈值化",
         Description = "将灰度图像转换为二值图像",
-        Icon = "📷",
-        Category = "图像处理",
+        Icon = "threshold", Order = 20,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing,
         Version = "3.0.0",
         HasDebugWindow = true
     )]

@@ -32,7 +32,7 @@
   <ItemGroup Condition="'$(IsToolPlugin)'=='true'">
     <AssemblyAttribute Include="SunEyeVision.Plugin.SDK.Core.ToolContractVersionAttribute">
       <_Parameter1>2</_Parameter1>
-      <_Parameter2>0</_Parameter2>
+      <_Parameter2>1</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 

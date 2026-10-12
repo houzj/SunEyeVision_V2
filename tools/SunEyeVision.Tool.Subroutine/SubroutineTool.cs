@@ -23,12 +23,12 @@ namespace SunEyeVision.Tool.Subroutine
     /// 子程序工具 — 本质上是一个"大号工具"，
     /// 内部通过工作流引擎执行子工作流，将结果映射到标准 ToolResults 输出。
     /// </summary>
-    [Tool(
+[Tool(
         id: "Subroutine",
         displayName: "子程序",
         Description = "执行子工作流（大号工具，内部使用工作流节点组织）",
-        Icon = "\U0001F501",
-        Category = "工作流控制",
+        Icon = "subroutine", Order = 20,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Control,
         Version = "1.0.0",
         HasDebugWindow = true
     )]

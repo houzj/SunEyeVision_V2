@@ -27,12 +27,12 @@ namespace SunEyeVision.Tool.CircleDetect
     ///   4. get_metrology_object_result → 获取拟合圆参数 + RMSE
     /// 支持整圆（默认 0~2π）与圆弧（StartAngle/EndAngle 限定角度范围）。
     /// </remarks>
-    [Tool(
+[Tool(
         id: "CircleDetect",
         displayName: "圆查找",
         Description = "圆/圆弧边缘检测工具（引导式 2D Metrology）",
-        Icon = "⭕",
-        Category = "定位工具",
+        Icon = "circle", Order = 30,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Location,
         Version = "1.0.0",
         HasDebugWindow = true
     )]

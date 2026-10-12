@@ -13,7 +13,7 @@ namespace SunEyeVision.Tool.NPointCalibration;
 
 [Tool("NPointCalibration", "N点标定",
     Description = "采集图像/机构对应点并求解平面标定",
-    Icon = "◎", Category = "标定", Version = "1.0.0", HasDebugWindow = true)]
+    Icon = "axes", Order = 10, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Calibration, Version = "1.0.0", HasDebugWindow = true)]
 public sealed class NPointCalibrationTool : IToolPlugin<NPointCalibrationParameters, NPointCalibrationResults>,
     IAsyncToolPlugin, IToolEditorFactory
 {

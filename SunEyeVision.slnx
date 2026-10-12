@@ -31,6 +31,8 @@
     <Project Path="Src/Workflow/SunEyeVision.Workflow.csproj" />
   </Folder>
   <Folder Name="/Tools/">
+    <Project Path="tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj" />
     <Project Path="tools/SunEyeVision.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Threshold/SunEyeVision.Tool.Threshold.csproj" />
     <Project Path="tools/SunEyeVision.Tool.ImageLoad/SunEyeVision.Tool.ImageLoad.csproj" />

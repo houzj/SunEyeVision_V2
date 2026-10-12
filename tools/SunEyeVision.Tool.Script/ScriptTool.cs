@@ -15,12 +15,12 @@ using ToolExecutionContext = SunEyeVision.Plugin.SDK.Execution.Parameters.Execut
 
 namespace SunEyeVision.Tool.Script
 {
-    [Tool(
+[Tool(
         id: "Script",
         displayName: "Script",
         Description = "Execute user-defined C# script with DLL references and Init/Process lifecycle",
-        Icon = "S",
-        Category = "Tools",
+        Icon = "code", Order = 10,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Script,
         Version = "2.0.0",
         HasDebugWindow = true
     )]

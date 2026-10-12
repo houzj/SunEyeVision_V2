@@ -20,12 +20,12 @@ namespace SunEyeVision.Tool.PointPointMeasure
     /// 辅助测量 = ΔX / ΔY / 连线角度。
     /// 引擎无关契约：公开 API 不暴露 HImage；本工具不调用任何引擎算子，故不引 HalAdapter。
     /// </summary>
-    [Tool(
+[Tool(
         id: "PointPointMeasure",
         displayName: "点-点测量",
         Description = "点-点测量工具：两个点元素均仅参数订阅（按图形/按参数），输出两点距离、ΔX、ΔY 与连线角度",
-        Icon = "⊙⊙",
-        Category = "测量工具",
+        Icon = "point-point", Order = 10,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,
         Version = "1.0.0",
         HasDebugWindow = true
     )]

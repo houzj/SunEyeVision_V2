@@ -15,7 +15,7 @@ namespace SunEyeVision.Tool.NPointCalibration;
 /// <summary>Thin workflow node: validate new observations against an existing candidate.</summary>
 [Tool("NPointVerification", "N点标定验证",
     Description = "加载候选标定文件，用独立平移和旋转采样验证并发布",
-    Icon = "✓", Category = "标定", Version = "1.0.0", HasDebugWindow = true)]
+    Icon = "verify", Order = 20, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Calibration, Version = "1.0.0", HasDebugWindow = true)]
 public sealed class NPointVerificationTool : IToolPlugin<NPointVerificationParameters, NPointVerificationResults>,
     IAsyncToolPlugin, IToolEditorFactory
 {

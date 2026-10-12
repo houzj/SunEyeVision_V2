@@ -22,12 +22,12 @@ namespace SunEyeVision.Tool.PointLineMeasure
     /// 辅助测量 = 垂足位置（点在线上的正交投影）。
     /// 引擎无关契约：公开 API 不暴露 HImage；工具引 HalAdapter（v4 B.3 首期统一）。
     /// </summary>
-    [Tool(
+[Tool(
         id: "PointLineMeasure",
         displayName: "点-线测量",
         Description = "点-线测量工具：点元素仅参数订阅 X/Y（无绘制入口），线元素引导 + 卡尺测量，输出点到线距离与垂足位置",
-        Icon = "⊙|",
-        Category = "测量工具",
+        Icon = "point-line", Order = 20,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,
         Version = "1.0.0",
         HasDebugWindow = true
     )]

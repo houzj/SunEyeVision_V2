@@ -32,7 +32,7 @@
        <TextBlock Style="{StaticResource ProtocolFieldText}" Text="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=(comm:ProtocolRowPosition.Index), Converter={StaticResource CommunicationOrdinal}}"/>
       </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
       <DataGridTemplateColumn Header="内容" Width="*" MinWidth="180"><DataGridTemplateColumn.CellTemplate><DataTemplate>
-       <controls:ParamBinding Style="{StaticResource ProtocolBindingInputStyle}" BindingSource="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SyncEditingToSource="True"
+       <controls:ParamBinding Style="{StaticResource ProtocolBindingInputStyle}" AllowedDataTypes="{x:Static comm:CommunicationBindingTypes.Assemble}" BindingSource="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SyncEditingToSource="True"
         AvailableDataSources="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=AvailableDataSources}"/>
       </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
       <DataGridTemplateColumn Header="操作" Width="108"><DataGridTemplateColumn.CellTemplate><DataTemplate>

@@ -1,0 +1,57 @@
+<controls:ToolDebugControlBase x:Class="SunEyeVision.Tool.ReceiveData.Views.ReceiveDataEditor"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+ xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
+ Background="{DynamicResource ThemePanelBackgroundBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}">
+ <controls:ToolDebugControlBase.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
+  <themes:DesignTimeThemeResourceDictionary/>
+  <ResourceDictionary Source="/SunEyeVision.Plugin.SDK;component/UI/Controls/Communication/ProtocolEditorResources.xaml"/>
+ </ResourceDictionary.MergedDictionaries></ResourceDictionary></controls:ToolDebugControlBase.Resources>
+ <Grid Margin="16">
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+  <StackPanel>
+   <TextBlock Text="输入配置" FontSize="16" FontWeight="Bold" Margin="0,0,0,12"/>
+   <Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <TextBlock Text="数据来源" VerticalAlignment="Center"/>
+    <ComboBox Grid.Column="1" Width="160" HorizontalAlignment="Left" Style="{StaticResource ProtocolComboBox}" SelectedValuePath="Tag"
+     SelectedValue="{Binding SourceKind, Mode=TwoWay}" SelectionChanged="SourceKindChanged">
+     <ComboBoxItem Content="通信设备" Tag="Device"/><ComboBoxItem Content="变量管理" Tag="Variable"/>
+    </ComboBox>
+   </Grid>
+   <Grid x:Name="DeviceRow" Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <TextBlock Text="通信设备" VerticalAlignment="Center"/>
+    <ComboBox Grid.Column="1" x:Name="Devices" Style="{StaticResource ProtocolComboBox}" DisplayMemberPath="Name" SelectionChanged="DeviceChanged" DropDownOpened="RefreshDevices"/>
+   </Grid>
+   <Border Height="1" Background="{DynamicResource ThemeBorderBrush}" Margin="0,8,0,16"/>
+   <TextBlock Text="输入数据" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+  </StackPanel>
+  <Grid Grid.Row="1">
+   <StackPanel x:Name="DeviceOutput">
+    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+     <TextBlock Text="名称" Margin="0,0,0,6"/>
+     <TextBlock Grid.Column="1" x:Name="TargetLabel" Text="数据" Margin="8,0,0,6"/>
+    </Grid>
+    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+     <TextBox x:Name="DeviceOutputName" Height="30" VerticalContentAlignment="Center" Text="{Binding OutputName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+     <ComboBox Grid.Column="1" x:Name="Targets" Margin="8,0,0,0" Style="{StaticResource ProtocolComboBox}" DisplayMemberPath="TargetName" SelectionChanged="TargetChanged" DropDownOpened="RefreshDevices"/>
+    </Grid>
+   </StackPanel>
+   <StackPanel x:Name="VariableOutput">
+    <DataGrid x:Name="VariableGrid" ItemsSource="{Binding Variables}" AutoGenerateColumns="False" MaxHeight="350" MinHeight="0">
+     <DataGrid.Columns>
+      <DataGridTemplateColumn Header="名称" Width="100"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+       <TextBox Style="{StaticResource ProtocolFieldEdit}" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      <DataGridTemplateColumn Header="数据" Width="*" MinWidth="160"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+       <Button Content="{Binding VariablePath}" Click="SelectVariable_Click" HorizontalContentAlignment="Left" ToolTip="{Binding VariablePath}" Padding="8,0" MinHeight="30"/>
+      </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      <DataGridTemplateColumn Header="操作" Width="50"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+       <Button Content="×" Click="DeleteVariable_Click" Style="{StaticResource ProtocolDeleteAction}" ToolTip="删除"/>
+      </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+     </DataGrid.Columns>
+    </DataGrid>
+    <Button x:Name="AddVariableButton" Content="＋" Click="AddVariable_Click" Width="28" Height="28" Padding="0" HorizontalAlignment="Left" Margin="8,4,0,0" ToolTip="添加变量"/>
+   </StackPanel>
+  </Grid>
+ </Grid>
+</controls:ToolDebugControlBase>

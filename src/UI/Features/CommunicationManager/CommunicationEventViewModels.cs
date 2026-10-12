@@ -329,12 +329,12 @@ public sealed class CommunicationCompareInputViewModel : ViewModelBase
     }
     public bool IsString => string.Equals(DataType, "string", System.StringComparison.OrdinalIgnoreCase);
     public bool IsBoolean => string.Equals(DataType, "Boolean", System.StringComparison.OrdinalIgnoreCase);
-    public bool IsNumericRange => !IsString && !IsBoolean;
+    public bool IsNumericRange => !IsString && !IsBoolean && !string.Equals(DataType, "Binary", System.StringComparison.OrdinalIgnoreCase);
     private void RefreshCompareRuleOptions()
     {
         CompareRuleOptions.Clear();
         CompareRuleOptions.Add("不比较");
-        if (IsString || IsBoolean)
+        if (IsString || IsBoolean || string.Equals(DataType, "Binary", System.StringComparison.OrdinalIgnoreCase))
         {
             CompareRuleOptions.Add("等于");
             CompareRuleOptions.Add("不等于");
@@ -349,7 +349,7 @@ public sealed class CommunicationCompareInputViewModel : ViewModelBase
             if (IsByteRule) CompareRuleOptions.Add("等于");
             CompareRuleOptions.Add("范围内");
             CompareRuleOptions.Add("范围外");
-            if (IsByteRule)
+            if (IsByteRule && string.Equals(DataType, "int", System.StringComparison.OrdinalIgnoreCase))
             {
                 CompareRuleOptions.Add("上升沿");
                 CompareRuleOptions.Add("下降沿");
@@ -378,6 +378,8 @@ public sealed class CommunicationCompareInputViewModel : ViewModelBase
 
 public sealed class CommunicationAssemblyOutputViewModel : ViewModelBase
 {
+    private object? _value;
+    public object? Value { get => _value; set => SetProperty(ref _value, value); }
     public Guid FieldId { get; set; } = Guid.NewGuid();
     private string _name = string.Empty;
     private string _dataType = "int";

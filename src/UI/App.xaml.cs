@@ -96,11 +96,19 @@ public partial class App : Application
             return;
         }
         // Release probe runs before device/service initialization, so it cannot connect hardware.
-        if (e.Args.Length == 2 && e.Args[0] == "--release-probe")
+        if (e.Args.Length == 2 && (e.Args[0] == "--release-probe" || e.Args[0] == "--toolbox-probe"))
         {
             _releaseProbe = true;
             try
             {
+                // Optional toolbox validation loads plugins and presentation metadata only.
+                // It still exits before device/service/solution initialization.
+                var inspectToolbox = e.Args[0] == "--toolbox-probe";
+                if (inspectToolbox)
+                    new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginManager().LoadPlugins(Path.Combine(AppContext.BaseDirectory, "plugins"));
+                var toolbox = inspectToolbox ? new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel() : null;
+                if (inspectToolbox && (toolbox!.AllTools.Count == 0 || !toolbox.AllTools.Any(t => t.ToolId == "ProtocolParse") || !toolbox.AllTools.Any(t => t.ToolId == "ProtocolAssemble")))
+                    throw new InvalidOperationException("Release通信工具未注册。");
                 var info = new
                 {
                     releaseVersion = SunEyeVision.Core.Versioning.AppVersionInfo.Product,
@@ -109,7 +117,9 @@ public partial class App : Application
                     commit = SunEyeVision.Core.Versioning.AppVersionInfo.Commit,
                     toolContract = SunEyeVision.Plugin.SDK.Core.ToolContract.Version,
                     defaultTheme = Services.ThemeManager.DefaultTheme.ToString(),
-                    startupWindowBackground = (TryFindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WindowBackgroundBrush) as SolidColorBrush)?.Color.ToString()
+                    startupWindowBackground = (TryFindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WindowBackgroundBrush) as SolidColorBrush)?.Color.ToString(),
+                    toolboxCategories = toolbox?.Categories.Select(c => new { name = c.Name, icon = c.Icon, count = c.ToolCount }).ToArray(),
+                    toolboxTools = toolbox?.AllTools.Select(t => new { id = t.ToolId, name = t.Name, category = t.Category, icon = t.Icon }).ToArray()
                 };
                 File.WriteAllText(e.Args[1], System.Text.Json.JsonSerializer.Serialize(info));
                 Shutdown(0);

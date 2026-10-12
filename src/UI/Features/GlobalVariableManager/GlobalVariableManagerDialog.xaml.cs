@@ -319,6 +319,9 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
 
         private static string FormatComplex(object value) => value switch
         {
+            SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload payload => payload.ToString(),
+            SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload[] payloads =>
+                string.Join(" | ", payloads.Select(p => p.ToString())),
             Mat => "[图像]",
             IVisionImage => "[图像]",
             AffineMatrix => "[变换矩阵]",

@@ -2759,6 +2759,9 @@ SplitterPosition = position;
                     }
                 }
 
+                if (context.CreatedWindow is SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow iconWindow)
+                    iconWindow.ToolIconKey = node.Icon;
+
                 // 调试窗口单例管理
                 if (_openDebugWindow?.IsLoaded == true)
                 {

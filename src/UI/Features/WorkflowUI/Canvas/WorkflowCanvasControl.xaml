@@ -12,6 +12,7 @@
              xmlns:common="clr-namespace:SunEyeVision.UI.Shell.Controls.Common"
              xmlns:rendering="clr-namespace:SunEyeVision.UI.Services.Rendering"
              xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+             xmlns:icons="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Icons;assembly=SunEyeVision.Plugin.SDK"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1000">
 
@@ -293,29 +294,22 @@
                                             Background="{Binding Status, Converter={StaticResource NodeIconStatusBackgroundConverter}}"/>
 
                                     <!-- 图标叠上居中；状态时反白；对子程序节点隐藏 -->
-                                    <TextBlock Text="{Binding Icon}"
+                                    <icons:ToolIcon Key="{Binding Icon}" Width="20" Height="20"
                                                Foreground="{Binding Status, Converter={StaticResource NodeIconStatusForegroundConverter}}"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                                Margin="0">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock" BasedOn="{StaticResource NodeIconStyle}">
+                                        <icons:ToolIcon.Style>
+                                            <Style TargetType="icons:ToolIcon">
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding ToolType}" Value="Subroutine">
                                                         <Setter Property="Visibility" Value="Collapsed"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
+                                        </icons:ToolIcon.Style>
+                                    </icons:ToolIcon>
 
-                                    <!-- 子程序设置按钮（仅 Subroutine 类型节点可见，替换图标显示）
-                                         治本：原 Content="{Binding Icon}" (emoji 🔁 U+1F501) 走 Segoe UI Emoji 字体路径，
-                                         Foreground 主题色对 emoji 无效 + emoji 自带紫色在浅色卡片背景上对比度低 →
-                                         暗色主题下肉眼不可见（用户实测截图）。改用 ⚙ (U+2699 BLACK GEAR)：
-                                         1. 标准几何符号，显式指定 IconFontFamily(Segoe UI Symbol) 必含该字形，
-                                            主字体路径渲染（不走 emoji 字体），不依赖 WPF 字体回退链
-                                         2. 纯黑白字形，Foreground 完全可控，亮/暗主题都清晰可见
-                                         3. 与本控件"返回"按钮(↩ U+21A9)设计语言一致 -->
+                                    <!-- 子程序沿用同一语义矢量图标，保留参数设置点击入口。 -->
                                     <Button Background="Transparent"
                                             BorderThickness="0"
                                             Padding="0"
@@ -332,17 +326,15 @@
                                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </ControlTemplate>
                                         </Button.Template>
-                                        <!-- 齿轮前景全部在 TextBlock.Style 内控制（Setter+Triggers），不依赖 Binding Setter：
+                                        <!-- 矢量图标前景在 Style 中控制，状态与点击悬停语义保持不变：
                                              ★ 基础色跟随节点运行状态(与普通类型图标同一转换器的色值)：
                                                待运行→#333333(浅卡片可见)；运行中/成功/失败/跳过→白色(on实色状态色块)。
                                              ★ 悬停变主题蓝提示可点(按钮语义)。Style Trigger 优先级>Style Setter，
                                                且悬停 Trigger 放最后 → 悬停时覆盖状态色。 -->
-                                        <TextBlock Text="&#x2699;"
-                                                   FontFamily="{StaticResource IconFontFamily}"
-                                                   FontSize="{DynamicResource NodeIconFontSize}" FontWeight="Bold"
+                                        <icons:ToolIcon Key="{Binding Icon}" Width="20" Height="20"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
+                                            <icons:ToolIcon.Style>
+                                                <Style TargetType="icons:ToolIcon">
                                                     <Setter Property="Foreground" Value="#FF333333"/>
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding Status}" Value="运行中">
@@ -370,8 +362,8 @@
                                                         </Trigger>
                                                     </Style.Triggers>
                                                 </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
+                                            </icons:ToolIcon.Style>
+                                        </icons:ToolIcon>
                                         <Button.Style>
                                             <Style TargetType="Button">
                                                 <Setter Property="Visibility" Value="Collapsed"/>

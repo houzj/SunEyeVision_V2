@@ -12,7 +12,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// <summary>
         /// 支持的分类
         /// </summary>
-        public string[] SupportedCategories => new[] { "测量" };
+        public string[] SupportedCategories => new[] { SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement };
 
         public string GetDisplayText(WorkflowNode node)
         {

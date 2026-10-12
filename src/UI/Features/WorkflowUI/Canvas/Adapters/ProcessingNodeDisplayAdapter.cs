@@ -12,7 +12,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// <summary>
         /// 支持的分类
         /// </summary>
-        public string[] SupportedCategories => new[] { "图像处理" };
+        public string[] SupportedCategories => new[] { SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing };
 
         public string GetDisplayText(WorkflowNode node)
         {

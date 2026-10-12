@@ -74,8 +74,10 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             ["int", "float", "string", "Int16", "UInt16", "Int32", "UInt32", "Float32"];
         private static readonly string[] OpcUaReceiveDataTypes =
             ["Boolean", "int", "float", "string", "Int16", "UInt16", "Int32", "UInt32", "Float32", "Double"];
+        private static readonly string[] ByteReceiveDataTypes = ["int", "float", "string", "Binary"];
         public IReadOnlyList<string> SelectedReceiveDataTypes =>
-            IsSelectedReceiveDeviceOpcUa ? OpcUaReceiveDataTypes : TextReceiveDataTypes;
+            IsSelectedReceiveDeviceOpcUa ? OpcUaReceiveDataTypes
+                : SelectedReceiveEvent?.IsByteMatch == true ? ByteReceiveDataTypes : TextReceiveDataTypes;
         public ObservableCollection<OpcUaPointRowViewModel>? SelectedOpcUaReceivePoints =>
             SelectedReceiveEventDevice is { } device && _deviceWorkspaces.TryGetValue(device.Id, out var workspace)
                 ? workspace.OpcUaPoints

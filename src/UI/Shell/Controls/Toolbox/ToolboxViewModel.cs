@@ -181,7 +181,9 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox
                 Categories.Add(new ToolCategory(category, categoryIcon, categoryDesc, 0, false));
             }
 
-            var tools = ToolRegistry.GetAllToolMetadata();
+            var tools = ToolRegistry.GetAllToolMetadata()
+                .OrderBy(t => SunEyeVision.Plugin.SDK.Core.ToolCategories.GetDefinition(t.Category).Order)
+                .ThenBy(t => t.Order).ThenBy(t => t.Id, System.StringComparer.Ordinal);
             foreach (var tool in tools)
             {
                 var toolItem = new ToolItem(
@@ -203,16 +205,7 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox
         /// </summary>
         private string GetCategoryIcon(string category)
         {
-            return category switch
-            {
-                "采集" => "📷",
-                "定位" => "🎯",
-                "图像处理" => "🖼️",
-                "识别" => "🔍",
-                "测量" => "📏",
-                "工作流控制" => "🔄",
-                _ => "📦"
-            };
+            return SunEyeVision.Plugin.SDK.Core.ToolCategories.GetDefinition(category).IconKey;
         }
 
         /// <summary>

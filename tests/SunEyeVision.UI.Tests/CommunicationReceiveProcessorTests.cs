@@ -296,7 +296,7 @@ public sealed class CommunicationReceiveProcessorTests
     }
 
     [Fact]
-    public void Byte_match_ui_configuration_is_not_treated_as_an_implemented_parser()
+    public void Byte_match_raw_message_uses_configured_closed_range()
     {
         var definition = new CommunicationReceiveEventViewModel
         {
@@ -307,10 +307,9 @@ public sealed class CommunicationReceiveProcessorTests
 
         var result = CommunicationReceiveProcessor.Process(definition, new byte[] { 0, 0, 0, 4 }, Timestamp);
 
-        Assert.False(result.IsSuccess);
-        Assert.Contains("尚未接入运行时", result.FailureReason);
-        Assert.Equal(string.Empty, definition.CompareInputs[0].Result);
-        Assert.Equal("NG", definition.CompareInputs[0].Status);
+        Assert.True(result.IsSuccess);
+        Assert.Equal("0", definition.CompareInputs[0].Result);
+        Assert.Equal("OK", definition.CompareInputs[0].Status);
     }
 
     [Fact]
@@ -428,19 +427,17 @@ public sealed class CommunicationReceiveProcessorTests
     }
 
     [Fact]
-    public void Text_numeric_type_is_ng_with_empty_result_even_when_comparison_is_disabled()
+    public void Raw_text_numeric_field_converts_using_shared_rules()
     {
         var definition = new CommunicationReceiveEventViewModel { EventType = CommunicationEventType.ProtocolCompare };
         definition.CompareInputs.Add(new CommunicationCompareInputViewModel { Name = "in1", DataType = "int" });
 
         var result = Process(definition, "4");
 
-        Assert.False(result.IsSuccess);
-        Assert.Contains("类型不匹配", result.FailureReason);
-        Assert.Null(definition.CompareInputs[0].Value);
-        Assert.Equal(string.Empty, definition.CompareInputs[0].Result);
-        Assert.Equal("NG", definition.CompareInputs[0].Status);
-        Assert.Contains("类型不匹配", definition.ParseHistoryText);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(4, definition.CompareInputs[0].Value);
+        Assert.Equal("4", definition.CompareInputs[0].Result);
+        Assert.Equal("OK", definition.CompareInputs[0].Status);
     }
 
     [Fact]

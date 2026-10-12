@@ -13,11 +13,8 @@ public sealed record CommunicationSeparatorOption(string DisplayName, string Val
 public static class CommunicationSeparators
 {
     public static IReadOnlyList<CommunicationSeparatorOption> Defaults { get; } =
-        System.Array.AsReadOnly(new CommunicationSeparatorOption[]
-        {
-            new CommunicationSeparatorOption("无", ""), new(",", ","), new(";", ";"),
-            new("空格", " "), new("|", "|"), new(@"\r", "\r"), new(@"\n", "\n"), new(@"\r\n", "\r\n")
-        });
+        System.Array.AsReadOnly(SunEyeVision.Plugin.SDK.Models.Communication.CommunicationDelimiterCatalog.Defaults
+            .Select(option => new CommunicationSeparatorOption(option.DisplayName, option.Value)).ToArray());
 
     public static ObservableCollection<CommunicationSeparatorOption> CreateOptions() => new(Defaults);
 

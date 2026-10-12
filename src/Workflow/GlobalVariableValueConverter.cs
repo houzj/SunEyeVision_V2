@@ -121,6 +121,9 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
             return ParseAdaptive(valueElement, e => e.GetBoolean());
         if (clrType == typeof(double) || clrType == typeof(double[]))
             return ParseAdaptive(valueElement, e => e.GetDouble());
+        if (clrType == typeof(SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload))
+            return ParseAdaptive(valueElement, e => new SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload(
+                Convert.FromBase64String(e.GetString() ?? throw new FormatException("字节序列必须为Base64字符串。"))));
         // 变换矩阵：保持对象形态（非数组），与基础类型的 T[] 强制互不干扰（已知限制：类型对称未统一）。
         if (clrType == typeof(AffineMatrix))
             return ParseAffineMatrix(valueElement);
@@ -190,6 +193,8 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
             string[] strArr => (typeName, strArr),
             bool boolValue  => (typeName, new[] { boolValue }),
             bool[] boolArr  => (typeName, boolArr),
+            SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload payload => (typeName, new[] { payload.ToBase64() }),
+            SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload[] payloads => (typeName, payloads.Select(p => p.ToBase64()).ToArray()),
             RoiShape sp  => (typeName, new[] { sp }),
             RoiShape[] sp => (typeName, sp),
             Mat mat         => (typeName, SerializeImage(mat)),

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Opc.Ua;
 using SunEyeVision.DeviceDriver.Communications;
+using SunEyeVision.Plugin.SDK.Models.Communication;
 
 namespace SunEyeVision.UI.Features.CommunicationManager;
 
@@ -25,7 +26,7 @@ internal static class CommunicationReceiveProcessor
         if (definition.ProcessingMethod == CommunicationEventProcessingMethod.Script)
             return Reject(definition, data, timestamp, "脚本接收事件尚未接入运行时");
         if (definition.ProcessingMethod == CommunicationEventProcessingMethod.ByteMatch)
-            return Reject(definition, data, timestamp, "字节匹配规则尚未接入运行时");
+            return ProcessByteRules(definition, data, timestamp);
 
         var types = definition.IsProtocolCompare
             ? definition.CompareInputs.Select(field => field.DataType).ToArray()
@@ -41,14 +42,14 @@ internal static class CommunicationReceiveProcessor
 
     private static CommunicationReceiveOutcome ProcessDecodedFields(
         CommunicationReceiveEventViewModel definition, byte[] data, DateTimeOffset timestamp,
-        IReadOnlyList<string> types, IReadOnlyList<string> values, bool recordHistory)
+        IReadOnlyList<string> types, IReadOnlyList<string> values, bool recordHistory, bool allowTextConversion = true)
     {
         var parsed = new (object Value, string Display)[types.Count];
         for (var index = 0; index < types.Count; index++)
         {
-            // UTF-8 messages and native OPC UA String fields remain strings after splitting;
-            // a declared numeric type cannot turn text into a native numeric value.
-            if (!definition.IsBinaryMode && !string.Equals(types[index], "string", StringComparison.OrdinalIgnoreCase))
+            // Native OPC UA String fields retain strict type checking; raw text packets may convert.
+            if ((!allowTextConversion || types[index].ToLowerInvariant() is "bool" or "boolean")
+                && !string.Equals(types[index], "string", StringComparison.OrdinalIgnoreCase))
                 return Reject(definition, data, timestamp,
                     $"第 {index + 1} 个字段类型不匹配：文本数据为 string，配置为 {types[index]}", recordHistory);
             if (!TryNormalize(values[index], types[index], out parsed[index]))
@@ -103,60 +104,77 @@ internal static class CommunicationReceiveProcessor
         return new CommunicationReceiveOutcome(success, failureReason);
     }
 
-    /// <summary>Decode the data bytes returned by an FC03 address block, not a Modbus frame.</summary>
-    public static CommunicationReceiveOutcome ProcessModbus(
-        CommunicationReceiveEventViewModel definition, ushort[] registers, DateTimeOffset timestamp)
+    /// <summary>Decode FC03 data registers without framing.</summary>
+    public static CommunicationReceiveOutcome ProcessModbus(CommunicationReceiveEventViewModel definition,
+        ushort[] registers, DateTimeOffset timestamp)
     {
         var data = new byte[registers.Length * 2];
-        for (var index = 0; index < registers.Length; index++)
-        {
-            data[index * 2] = (byte)(registers[index] >> 8);
-            data[index * 2 + 1] = (byte)registers[index];
-        }
-
-        if (definition.ProcessingMethod != CommunicationEventProcessingMethod.ByteMatch ||
-            !definition.IsProtocolCompare)
-            return Reject(definition, data, timestamp, "Modbus 地址块目前仅支持字节匹配－协议比对");
+        for (var i = 0; i < registers.Length; i++)
+        { data[i * 2] = (byte)(registers[i] >> 8); data[i * 2 + 1] = (byte)registers[i]; }
+        if (definition.ProcessingMethod != CommunicationEventProcessingMethod.ByteMatch)
+            return Reject(definition, data, timestamp, "Modbus 地址块目前支持字节匹配－协议比对");
         if (definition.AsciiData)
-            return Reject(definition, data, timestamp, "Modbus 寄存器已是原始字节，整数解析不适用 ASCII 数据转换");
+            return Reject(definition, data, timestamp, "Modbus 寄存器已是原始字节，不适用事件 ASCII 输入转换");
+        return ProcessByteRules(definition, data, timestamp);
+    }
+
+    private static CommunicationReceiveOutcome ProcessByteRules(CommunicationReceiveEventViewModel definition,
+        byte[] data, DateTimeOffset timestamp)
+    {
+        if (!definition.IsProtocolCompare) return Reject(definition, data, timestamp, "字节匹配目前支持协议比对事件");
         if (definition.ByteLengthCompare && data.Length != definition.ByteLength)
-            return Reject(definition, data, timestamp,
-                $"字节长度不符：期望 {definition.ByteLength}，实际 {data.Length}");
-        if (definition.CompareInputs.Count == 0)
-            return Reject(definition, data, timestamp, "未配置字节比对规则");
-
-        var parsed = new int[definition.CompareInputs.Count];
-        var hexValues = new string[parsed.Length];
-        for (var index = 0; index < parsed.Length; index++)
+            return Reject(definition, data, timestamp, $"字节长度不符：期望 {definition.ByteLength}，实际 {data.Length}");
+        if (definition.CompareInputs.Count == 0) return Reject(definition, data, timestamp, "未配置字节比对规则");
+        var parsed = new (object Value, string Display)[definition.CompareInputs.Count];
+        try
         {
-            var field = definition.CompareInputs[index];
-            if (!string.Equals(field.DataType, "int", StringComparison.OrdinalIgnoreCase))
-                return Reject(definition, data, timestamp,
-                    $"第 {index + 1} 条规则类型 {field.DataType} 尚未支持 Modbus 整数解析");
-            if (!TryDecodeModbusInt(data, field, out parsed[index], out hexValues[index], out var reason))
-                return Reject(definition, data, timestamp, $"第 {index + 1} 条规则：{reason}");
+            // Event ASCII validates character bytes; unlike the module it does not parse numeric characters.
+            if (definition.AsciiData) ProtocolValueCodec.EncodingFor("ASCII").GetString(data);
+            for (var i = 0; i < parsed.Length; i++)
+            {
+                var f = definition.CompareInputs[i];
+                var value = ProtocolValueCodec.Decode(data, f.ByteStart, f.ByteEnd, f.DataType, f.ByteOrder);
+                parsed[i] = (value, value is BinaryPayload b ? b.ToString() : Convert.ToString(value, CultureInfo.InvariantCulture) ?? "");
+            }
         }
-
+        catch (Exception ex) when (ex is FormatException or DecoderFallbackException or OverflowException)
+        { return Reject(definition, data, timestamp, ex.Message); }
         var matched = new bool[parsed.Length];
-        for (var index = 0; index < parsed.Length; index++)
+        for (var i = 0; i < parsed.Length; i++)
         {
-            var field = definition.CompareInputs[index];
-            var actual = parsed[index];
-            var previous = field.Value is int previousValue ? previousValue : (int?)null;
-            matched[index] = IsModbusIntMatch(field, actual, previous);
-            field.Value = actual;
-            field.Result = actual.ToString(CultureInfo.InvariantCulture);
-            field.Status = matched[index] ? "OK" : "NG";
+            var f = definition.CompareInputs[i];
+            matched[i] = IsByteRuleMatch(f, parsed[i], f.Value);
+            f.Value = parsed[i].Value; f.Result = parsed[i].Display; f.Status = matched[i] ? "OK" : "NG";
         }
-
-        var success = definition.ByteMatchLogic == "或" ? matched.Any(value => value) : matched.All(value => value);
-        var failureReason = success ? null : "字节规则比较未通过";
-        if (success) ApplyAssemblyResults(definition);
-        else ClearAssemblyResults(definition);
+        var success = definition.ByteMatchLogic == "或" ? matched.Any(v => v) : matched.All(v => v);
+        var reason = success ? null : "字节规则比较未通过";
+        if (success) ApplyAssemblyResults(definition); else ClearAssemblyResults(definition);
         var details = string.Join(", ", definition.CompareInputs.Select((field, index) =>
-            $"{field.ByteStart}-{field.ByteEnd}[{hexValues[index]}]={parsed[index]}"));
-        definition.AddParseHistory(timestamp, data, details, success, failureReason);
-        return new CommunicationReceiveOutcome(success, failureReason);
+            $"{field.ByteStart}-{field.ByteEnd}[{Convert.ToHexString(ProtocolValueCodec.Slice(data, field.ByteStart, field.ByteEnd))}]={parsed[index].Display}"));
+        definition.AddParseHistory(timestamp, data, details, success, reason);
+        return new(success, reason);
+    }
+
+    private static bool IsByteRuleMatch(CommunicationCompareInputViewModel field, (object Value, string Display) actual, object? previous)
+    {
+        if (actual.Value is int n) return IsModbusIntMatch(field, n, previous is int old ? old : null);
+        if (actual.Value is BinaryPayload b)
+        {
+            if (field.CompareRule == "不比较") return true;
+            if (field.CompareRule is not ("等于" or "不等于")) return false;
+            try
+            {
+                var equal = b.ToArray().SequenceEqual(ProtocolValueCodec.ParseHex(field.CompareValue));
+                return field.CompareRule == "等于" ? equal : !equal;
+            }
+            catch (FormatException) { return false; }
+        }
+        if (actual.Value is float f && field.CompareRule is "等于" or "不等于")
+        {
+            if (!float.TryParse(field.CompareValue, NumberStyles.Float, CultureInfo.InvariantCulture, out var expected) || !float.IsFinite(expected)) return false;
+            return field.CompareRule == "等于" ? f == expected : f != expected;
+        }
+        return IsCompareMatch(field, actual);
     }
 
     /// <summary>Consumes one native scalar value from a bound OPC UA data point.</summary>
@@ -185,7 +203,7 @@ internal static class CommunicationReceiveProcessor
             if (!TrySplitText(definition, text, types.Length, out var values, out var splitReason))
                 return Reject(definition, data, update.Timestamp, splitReason, recordHistory);
             // Split the native String directly; UTF-8 bytes above are only for receive history.
-            return ProcessDecodedFields(definition, data, update.Timestamp, types, values, recordHistory);
+            return ProcessDecodedFields(definition, data, update.Timestamp, types, values, recordHistory, allowTextConversion: false);
         }
 
         var fieldCount = definition.IsProtocolCompare ? definition.CompareInputs.Count : definition.Outputs.Count;
@@ -261,38 +279,6 @@ internal static class CommunicationReceiveProcessor
         foreach (var field in definition.CompareInputs) field.Value = null;
     }
 
-    private static bool TryDecodeModbusInt(byte[] data, CommunicationCompareInputViewModel field,
-        out int value, out string hex, out string reason)
-    {
-        value = default;
-        hex = string.Empty;
-        reason = string.Empty;
-        var width = field.ByteEnd - field.ByteStart + 1;
-        if (field.ByteStart < 0 || field.ByteEnd < field.ByteStart || width is < 1 or > 4 || field.ByteEnd >= data.Length)
-        {
-            reason = "字节区间无效：int 需要 1～4 个连续数据字节";
-            return false;
-        }
-
-        var bytes = data.AsSpan(field.ByteStart, width).ToArray();
-        switch (field.ByteOrder)
-        {
-            case "ABCD": break;
-            case "BADC" when width == 2: Array.Reverse(bytes); break;
-            case "BADC" when width == 4: (bytes[0], bytes[1], bytes[2], bytes[3]) = (bytes[1], bytes[0], bytes[3], bytes[2]); break;
-            case "CDAB" when width == 4: (bytes[0], bytes[1], bytes[2], bytes[3]) = (bytes[2], bytes[3], bytes[0], bytes[1]); break;
-            case "DCBA" when width is 2 or 4: Array.Reverse(bytes); break;
-            default:
-                reason = $"{width} 字节不支持顺序 {field.ByteOrder}";
-                return false;
-        }
-
-        // Parsing the concatenated hex preserves raw register bytes. Four-byte values
-        // follow Int32 two's-complement semantics; shorter values remain non-negative.
-        hex = Convert.ToHexString(bytes);
-        value = Convert.ToInt32(hex, 16);
-        return true;
-    }
 
     private static bool IsModbusIntMatch(CommunicationCompareInputViewModel field, int actual, int? previous) =>
         field.CompareRule switch
@@ -422,6 +408,16 @@ internal static class CommunicationReceiveProcessor
     private static bool TryNormalize(string text, string typeName, out (object Value, string Display) value)
     {
         value = default;
+        if (typeName.ToLowerInvariant() is "int" or "int32" or "float" or "float32" or "string")
+        {
+            try
+            {
+                var parsed = ProtocolValueCodec.ConvertText(text, typeName);
+                value = (parsed, Convert.ToString(parsed, CultureInfo.InvariantCulture) ?? string.Empty);
+                return true;
+            }
+            catch (FormatException) { return false; }
+        }
         var culture = CultureInfo.InvariantCulture;
         switch (typeName.ToLowerInvariant())
         {
@@ -487,8 +483,8 @@ internal static class CommunicationReceiveProcessor
         field.Value != null && IsOutputMatch(field, (field.Value, field.Result)) ? "OK" : "NG";
 
     internal static string GetCompareStatus(CommunicationCompareInputViewModel field) =>
-        field.Value != null && (field.IsByteRule && field.Value is int number
-            ? IsModbusIntMatch(field, number, null)
+        field.Value != null && (field.IsByteRule
+            ? IsByteRuleMatch(field, (field.Value, field.Result), null)
             : IsCompareMatch(field, (field.Value, field.Result))) ? "OK" : "NG";
 
     private static void ApplyAssemblyResults(CommunicationReceiveEventViewModel definition)
@@ -499,10 +495,12 @@ internal static class CommunicationReceiveProcessor
                 output.ResolveBindingIdentity();
             if (!output.SourceFieldId.HasValue)
             {
+                output.Value = null;
                 output.Result = string.Empty;
                 continue;
             }
             var input = definition.CompareInputs.FirstOrDefault(field => field.FieldId == output.SourceFieldId.Value);
+            output.Value = input?.Value;
             output.Result = input?.Result ?? string.Empty;
         }
     }
@@ -510,6 +508,9 @@ internal static class CommunicationReceiveProcessor
     private static void ClearAssemblyResults(CommunicationReceiveEventViewModel definition)
     {
         foreach (var output in definition.AssemblyOutputs)
+        {
+            output.Value = null;
             output.Result = string.Empty;
+        }
     }
 }

@@ -1229,10 +1229,9 @@
                                 </Grid>
                                 <Grid Margin="0,0,0,8">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
-                                    <TextBlock Text="ASCII数据" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                    <TextBlock Text="ASCII数据" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0" ToolTip="原始通信输入验证ASCII字符字节后按字节规则解析；Modbus使用原始寄存器字节，不启用此转换。"/>
                                     <controls:ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedReceiveEvent.AsciiData, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22"/>
                                 </Grid>
-                                <TextBlock Text="关闭时按收到的原始字节配置；开启时按 ASCII 字符对应的字节配置。" TextWrapping="Wrap" Margin="14,0,0,10" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
                                 <Grid Margin="0,0,0,18">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="规则匹配逻辑" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
@@ -1240,8 +1239,6 @@
                                         <ComboBoxItem Content="与"/><ComboBoxItem Content="或"/>
                                     </ComboBox>
                                 </Grid>
-                                <TextBlock Text="Modbus FC03 已支持 int 字节规则；其他字节类型和协议尚未接入。上升沿为 0→非0，下降沿为非0→0。" Margin="14,0,0,10"
-                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
                             </StackPanel>
                             <TextBlock Text="解析列表" FontSize="17" FontWeight="SemiBold" Margin="0,4,0,10"/>
                             </StackPanel>
@@ -1284,7 +1281,7 @@
                                     </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="类型" Width="95"><DataGridTemplateColumn.CellTemplate><DataTemplate>
                                         <ComboBox Height="30" SelectedValuePath="Content" SelectedValue="{Binding DataType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                            <ComboBoxItem Content="int"/><ComboBoxItem Content="float"/><ComboBoxItem Content="string"/>
+                                            <ComboBoxItem Content="int"/><ComboBoxItem Content="float"/><ComboBoxItem Content="string"/><ComboBoxItem Content="Binary"/>
                                         </ComboBox>
                                     </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="顺序 ⓘ" Width="95"><DataGridTemplateColumn.CellTemplate><DataTemplate>
@@ -1342,7 +1339,7 @@
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Header="序号" Width="50" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridCell}}, Path=ActualWidth}" Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="名称" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="类型" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Height="30" SelectedValuePath="Content" SelectedValue="{Binding DataType, Mode=TwoWay}"><ComboBoxItem Content="int"/><ComboBoxItem Content="float"/><ComboBoxItem Content="string"/></ComboBox></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="类型" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Height="30" ItemsSource="{Binding DataContext.SelectedReceiveDataTypes, RelativeSource={RelativeSource AncestorType=DataGrid}}" SelectedItem="{Binding DataType, Mode=TwoWay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="内容" Width="260"><DataGridTemplateColumn.CellTemplate><DataTemplate><controls:ParamBinding Height="30" ParameterName="Content" NodeId="AssemblyOutput" NodeName="组装列表" IsBound="{Binding IsContentBound, Mode=TwoWay}" BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay}" AvailableDataSources="{Binding AvailableDataSources}" SyncEditingToSource="True" BindingSourceSelected="AssemblyBindingSourceSelected" LostKeyboardFocus="AssemblyBinding_LostKeyboardFocus"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTextColumn ElementStyle="{StaticResource CommunicationTableTextStyle}" Header="数据结果" Binding="{Binding Result}" Width="140" IsReadOnly="True"/>
                                     <DataGridTemplateColumn Width="42"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Content="×" Click="RemoveAssemblyOutput_Click" Style="{StaticResource DangerButtonStyle}" Padding="0" Width="24" Height="24"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>

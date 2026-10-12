@@ -8,6 +8,7 @@
              xmlns:convertersVisibility="clr-namespace:SunEyeVision.UI.Converters.Visibility"
              xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
              xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+             xmlns:icons="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Icons;assembly=SunEyeVision.Plugin.SDK"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="260">
 
@@ -87,8 +88,9 @@
         </Style>
 
         <!-- 通用工具图标样式 -->
-        <Style x:Key="ToolIconStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="18"/>
+        <Style x:Key="ToolIconStyle" TargetType="icons:ToolIcon">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"/>
@@ -130,13 +132,10 @@
                                                 Tag="{Binding}"
                                                 MouseEnter="CategoryItem_MouseEnter">
                                             <Grid>
-                                                <TextBlock Text="{Binding Icon}" FontSize="22"
+                                                <icons:ToolIcon Key="{Binding Icon}" Width="26" Height="26"
                                                            Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"
                                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <Ellipse Width="6" Height="6" Fill="{DynamicResource {x:Static base:ThemeKeys.ToolboxBadgeBrush}}"
-                                                         VerticalAlignment="Bottom" HorizontalAlignment="Right"
-                                                         Margin="0,0,4,4"
-                                                         Visibility="{Binding ToolCount, Converter={StaticResource IntToVisibilityConverter}}"/>
+                                                <Grid.ToolTip><TextBlock><TextBlock.Text><MultiBinding StringFormat="{}{0}（{1}个工具）"><Binding Path="Name"/><Binding Path="ToolCount"/></MultiBinding></TextBlock.Text></TextBlock></Grid.ToolTip>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -193,8 +192,8 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock Grid.Column="0" Text="{Binding SelectedCategoryIcon}"
-                                           FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <icons:ToolIcon Grid.Column="0" Key="{Binding SelectedCategoryIcon}" Width="24" Height="24"
+                                            Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}" Margin="0,0,12,0" VerticalAlignment="Center"/>
 
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding SelectedCategory}"
@@ -219,7 +218,7 @@
                                                 PreviewMouseLeftButtonDown="ToolItem_PreviewMouseLeftButtonDown"
                                                 Margin="0,0,8,8">
                                             <StackPanel>
-                                                <TextBlock Text="{Binding Icon}" Style="{StaticResource ToolIconStyle}"/>
+                                                <icons:ToolIcon Key="{Binding Icon}" Style="{StaticResource ToolIconStyle}"/>
                                                 <TextBlock Text="{Binding Name}" Style="{StaticResource ToolNameStyle}"/>
                                             </StackPanel>
                                         </Border>
@@ -267,7 +266,7 @@
 
                                                 <!-- 分类图标和名称 -->
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Icon}" FontSize="16" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                    <icons:ToolIcon Key="{Binding Icon}" Width="20" Height="20" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                                     <TextBlock Text="{Binding Name}"
                                                                FontSize="13"
                                                                FontWeight="SemiBold"
@@ -298,7 +297,7 @@
                                                             Tag="{Binding}"
                                                             PreviewMouseLeftButtonDown="ToolItem_PreviewMouseLeftButtonDown">
                                                         <StackPanel>
-                                                            <TextBlock Text="{Binding Icon}" Style="{StaticResource ToolIconStyle}"/>
+                                                            <icons:ToolIcon Key="{Binding Icon}" Style="{StaticResource ToolIconStyle}"/>
                                                             <TextBlock Text="{Binding Name}" Style="{StaticResource ToolNameStyle}"/>
                                                         </StackPanel>
                                                     </Border>

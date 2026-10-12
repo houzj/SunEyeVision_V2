@@ -195,7 +195,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// <returns>该分类下的工具元数据列表</returns>
         public static List<ToolMetadata> GetToolsByCategory(string category)
         {
-            return GetAllToolMetadata().Where(m => m.Category == category).ToList();
+            return GetAllToolMetadata().Where(m => m.Category == category).OrderBy(m => m.Order).ThenBy(m => m.Id, StringComparer.Ordinal).ToList();
         }
 
         /// <summary>
@@ -416,7 +416,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             return GetAllToolMetadata()
                 .Select(m => m.Category)
                 .Distinct()
-                .OrderBy(c => c)
+                .OrderBy(c => ToolCategories.GetDefinition(c).Order)
+                .ThenBy(c => c, StringComparer.Ordinal)
                 .ToList();
         }
 

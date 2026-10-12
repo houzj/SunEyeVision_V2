@@ -4,6 +4,7 @@
         xmlns:commands="clr-namespace:SunEyeVision.Plugin.SDK.Commands"
         xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
         xmlns:local="clr-namespace:SunEyeVision.Plugin.SDK.UI.Windows"
+        xmlns:icons="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Icons"
         Title="工具调试窗口"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
@@ -92,12 +93,15 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- 标题文字 -->
-                    <TextBlock Grid.Column="0"
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <icons:ToolIcon x:Name="TitleToolIcon" Key="{Binding ToolIconKey, RelativeSource={RelativeSource AncestorType=Window}}" Width="20" Height="20" Margin="0,0,8,0" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TitleBarTextBrush}}"/>
+                    <TextBlock
                               x:Name="TitleTextBlock"
                               Text="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}"
                               Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TitleBarTextBrush}}"
                               VerticalAlignment="Center"
                               FontSize="13"/>
+                    </StackPanel>
 
                     <!-- 最大化/还原按钮（WindowChrome Caption 区域内可点击） -->
                     <Button Grid.Column="1"

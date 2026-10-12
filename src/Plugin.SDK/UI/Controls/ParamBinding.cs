@@ -373,6 +373,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 防止程序回填误覆盖 BindingSource（A2 治本）。
         /// </summary>
         private bool _isProgrammaticDisplayUpdate;
+        private bool _isApplyingTemplate;
 
         #endregion
 
@@ -395,9 +396,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             TreeNodes = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>();
 
-            // 插件 XAML 设计器可能在工具根控件补入 SDK 主题前完成默认样式查找。
-            // 始终保留动态样式引用：资源随后可用或运行时主题切换时都会重新解析模板。
-            SetResourceReference(StyleProperty, typeof(ParamBinding));
+        }
+
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+            // A constructor-local Style masks explicit styles supplied by a DataTemplate.
+            // Keep late theme lookup only when the caller did not supply a style.
+            if (DependencyPropertyHelper.GetValueSource(this, StyleProperty).BaseValueSource == BaseValueSource.Default)
+                SetResourceReference(StyleProperty, typeof(ParamBinding));
         }
 
         #endregion
@@ -469,6 +476,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     control.BindingDisplayText = string.IsNullOrEmpty(bindingPath)
                         ? string.Empty
                         : control.GenerateBindingDisplayText(bindingPath);
+                    control._bindingDisplay?.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();
                 }
                 finally
                 {
@@ -516,6 +524,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             try
             {
                 BindingDisplayText = GenerateBindingDisplayText(bindingPath);
+                _bindingDisplay?.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();
             }
             finally
             {
@@ -611,6 +620,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         public override void OnApplyTemplate()
         {
+            if (_bindingButton != null) _bindingButton.Click -= OnBindingButtonClick;
+            if (_bindingTreeView != null)
+            {
+                _bindingTreeView.SelectedItemChanged -= OnBindingTreeViewSelectedItemChanged;
+                _bindingTreeView.PreviewMouseLeftButtonDown -= OnBindingTreeViewPreviewMouseLeftButtonDown;
+            }
+            if (_bindingDisplay != null) _bindingDisplay.TextChanged -= OnBindingDisplayTextChanged;
+            _isApplyingTemplate = true;
+            try
+            {
             base.OnApplyTemplate();
 
             _bindingButton = GetTemplateChild("PART_BindingButton") as Button;
@@ -641,6 +660,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 RebuildTreeNodes();
             }
+            BackfillDisplayTextFromSource();
+            _bindingDisplay?.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();
+            }
+            finally { _isApplyingTemplate = false; }
         }
 
         #endregion
@@ -1051,7 +1074,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </remarks>
         private void OnBindingDisplayTextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_bindingDisplay == null)
+            if (_bindingDisplay == null || _isApplyingTemplate ||
+                (sender != null && !ReferenceEquals(sender, _bindingDisplay)))
                 return;
 
             // 程序回填显示名 → 不触发编辑回写（A2 治本，防程序赋值误覆盖 BindingSource）

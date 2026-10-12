@@ -35,6 +35,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
     /// </remarks>
     public partial class DefaultDebugWindow : Window, IToolControlInitializer
     {
+        public static readonly DependencyProperty ToolIconKeyProperty = DependencyProperty.Register(nameof(ToolIconKey), typeof(string), typeof(DefaultDebugWindow), new PropertyMetadata("generic"));
+        public string ToolIconKey { get => (string)GetValue(ToolIconKeyProperty); set => SetValue(ToolIconKeyProperty, value); }
         #region 事件
 
         /// <summary>

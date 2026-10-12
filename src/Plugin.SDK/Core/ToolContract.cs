@@ -11,8 +11,8 @@ namespace SunEyeVision.Plugin.SDK.Core
     /// 宿主与工具的版本必然会错位。没有显式兼容线时，错位表现为"插件加载了但行为诡异/静默不生效"，
     /// 属最难排查的一类问题。本类把兼容线显式化，并要求宿主在**不兼容时明确拒绝**该插件（rule-008 报错优先）。
     ///
-    /// <b>兼容规则</b>：主版本（<see cref="Major"/>）相同即兼容；次版本（<see cref="Minor"/>）递增表示
-    /// 向后兼容的新增能力 —— 旧插件不需要重新编译。
+    /// <b>开发期规则</b>：宿主和插件统一使用当前契约，主、次版本必须完全一致。
+    /// 不保留旧契约兼容分支；检查用于防止旧构建产物混入。
     ///
     /// <b>判定依据</b>：插件程序集必须声明 <see cref="ToolContractVersionAttribute"/>。
     /// 契约版本是接口语义版本，独立于 CLR 的 AssemblyVersion。
@@ -22,8 +22,8 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <summary>契约主版本：变化表示**不兼容** —— 宿主必须拒绝旧插件并说明原因。</summary>
         public const int Major = 2;
 
-        /// <summary>契约次版本：变化表示**向后兼容的功能新增** —— 旧插件仍可直接使用。</summary>
-        public const int Minor = 0;
+        /// <summary>当前开发契约次版本；全部插件必须按同一基线重新构建。</summary>
+        public const int Minor = 1;
 
         /// <summary>契约版本字符串（形如 <c>"2.0"</c>）。</summary>
         public static string Version => $"{Major}.{Minor}";
@@ -38,7 +38,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         public static bool IsCompatible(Version? pluginContractVersion)
             => pluginContractVersion != null
                && pluginContractVersion.Major == Major
-               && pluginContractVersion.Minor <= Minor;
+               && pluginContractVersion.Minor == Minor;
 
         /// <summary>
         /// 读取插件程序集声明的契约版本。
@@ -65,8 +65,8 @@ namespace SunEyeVision.Plugin.SDK.Core
 
             return IsCompatible(pluginContractVersion)
                 ? $"契约兼容：插件 {pluginText} / 宿主 {Version}"
-                : $"契约不兼容：插件声明 {pluginText}，宿主提供 {Version}（要求主版本 {Major} 且次版本不高于 {Minor}）。"
-                  + "请使用与宿主契约兼容的 SDK 重新编译该工具。";
+                : $"契约不兼容：插件声明 {pluginText}，宿主提供 {Version}（开发期要求版本完全一致）。"
+                  + "请按当前 SDK 基线重新构建全部工具，移除旧构建产物。";
         }
     }
 }

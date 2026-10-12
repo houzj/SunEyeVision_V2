@@ -47,9 +47,12 @@ namespace SunEyeVision.Plugin.SDK.Core
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// 工具图标（Emoji或图标路径）
+        /// 工具语义矢量图标键（由SDK ToolIcon控件统一呈现）
         /// </summary>
-        public string Icon { get; set; } = "?";
+        public string Icon { get; set; } = "generic";
+
+        /// <summary>分类内显式顺序；未声明的扩展工具排在已编排工具之后。</summary>
+        public int Order { get; set; } = 1000;
 
         /// <summary>
         /// 工具分类

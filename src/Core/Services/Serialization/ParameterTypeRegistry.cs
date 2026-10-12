@@ -156,7 +156,21 @@ namespace SunEyeVision.Core.Services.Serialization
             if (typeInfo.Type != typeof(ToolParameters))
                 return;
 
-            typeInfo.PolymorphismOptions = _polymorphismOptions;
+            // JsonPolymorphismOptions belongs to exactly one JsonTypeInfo. Workflow
+            // copies the serializer options, so each resolver call needs its own
+            // metadata rather than assigning the registration catalog itself.
+            lock (_lock)
+            {
+                var catalog = _polymorphismOptions!;
+                var snapshot = new JsonPolymorphismOptions
+                {
+                    TypeDiscriminatorPropertyName = catalog.TypeDiscriminatorPropertyName,
+                    IgnoreUnrecognizedTypeDiscriminators = catalog.IgnoreUnrecognizedTypeDiscriminators,
+                    UnknownDerivedTypeHandling = catalog.UnknownDerivedTypeHandling
+                };
+                foreach (var derived in catalog.DerivedTypes) snapshot.DerivedTypes.Add(derived);
+                typeInfo.PolymorphismOptions = snapshot;
+            }
         }
 
         /// <summary>

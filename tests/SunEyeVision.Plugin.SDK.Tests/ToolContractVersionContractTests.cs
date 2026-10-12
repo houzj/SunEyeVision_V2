@@ -3,7 +3,7 @@ using System.Reflection;
 using SunEyeVision.Plugin.SDK.Core;
 using Xunit;
 
-[assembly: ToolContractVersionAttribute(2, 0)]
+[assembly: ToolContractVersionAttribute(ToolContract.Major, ToolContract.Minor)]
 
 namespace SunEyeVision.Plugin.SDK.Tests;
 
@@ -28,11 +28,11 @@ public class ToolContractVersionContractTests
     }
 
     [Fact]
-    public void IsCompatible_SameMajorAndSupportedMinor_IsCompatible()
+    public void IsCompatible_DevelopmentBuilds_RequireExactContract()
     {
-        // 主版本相同且插件次版本不高于宿主 ⇒ 兼容。
+        // 开发期只接受同一契约，拒绝旧或未来构建产物。
         Assert.True(ToolContract.IsCompatible(new Version(ToolContract.Major, ToolContract.Minor)));
-        Assert.True(ToolContract.IsCompatible(new Version(ToolContract.Major, 0)));
+        Assert.False(ToolContract.IsCompatible(new Version(ToolContract.Major, ToolContract.Minor - 1)));
         Assert.False(ToolContract.IsCompatible(new Version(ToolContract.Major, ToolContract.Minor + 1)));
     }
 
@@ -50,7 +50,7 @@ public class ToolContractVersionContractTests
         // 判定依据是插件程序集显式声明的契约元数据，而不是 SDK 的 AssemblyVersion。
         var executing = Assembly.GetExecutingAssembly();
         var referenced = ToolContract.GetPluginContractVersion(executing);
-        Assert.Equal(new Version(2, 0), referenced);
+        Assert.Equal(new Version(ToolContract.Major, ToolContract.Minor), referenced);
         Assert.True(ToolContract.IsCompatible(referenced));
     }
 

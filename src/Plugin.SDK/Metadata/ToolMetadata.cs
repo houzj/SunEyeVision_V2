@@ -39,7 +39,11 @@ namespace SunEyeVision.Plugin.SDK.Metadata
         /// <summary>
         /// 工具图标
         /// </summary>
-        public string Icon { get; set; } = "?";
+        public string Icon { get; set; } = "generic";
+
+        /// <summary>Read ordering from the same tool attribute as the rest of metadata.</summary>
+        [JsonIgnore]
+        public int Order => ToolType == null ? 1000 : ((ToolAttribute?)Attribute.GetCustomAttribute(ToolType, typeof(ToolAttribute)))?.Order ?? 1000;
 
         /// <summary>
         /// 工具分类

@@ -69,14 +69,15 @@ public class SdkTypeVocabularyContractTests
     [Fact]
     public void GetAllTypeOptions_AllRegisteredConcepts()
     {
-        // 词汇表含 7 个基础概念 + 7 个几何图形（Arc 已补中文名进契约，供下游绑定/下钻属性）
+        // 7个基础概念 + 7个几何图形 + 独立Binary载荷；旧Byte标量不恢复。
         var options = SdkTypeVocabulary.GetAllTypeOptions();
-        Assert.Equal(14, options.Count);
+        Assert.Equal(15, options.Count);
         var values = options.Select(o => o.Value).ToList();
         Assert.Contains("Integer", values);
         Assert.Contains("Double", values);
         Assert.Contains("String", values);
         Assert.Contains("Boolean", values);
+        Assert.Contains("Binary", values);
         Assert.Contains("Image", values);
         Assert.Contains("ROI", values);
         Assert.Contains("Transform", values);

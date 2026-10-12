@@ -40,6 +40,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #region 公共属性
 
+        public static readonly DependencyProperty AllowedDataTypesProperty = DependencyProperty.Register(
+            nameof(AllowedDataTypes), typeof(IReadOnlyList<Type>), typeof(ParamBindingBase), new PropertyMetadata(null, OnDataTypeChanged));
+        public IReadOnlyList<Type>? AllowedDataTypes
+        {
+            get => (IReadOnlyList<Type>?)GetValue(AllowedDataTypesProperty);
+            set => SetValue(AllowedDataTypesProperty, value);
+        }
+        public static List<AvailableDataSource> FilterDataSourcesByTypes(List<AvailableDataSource> sources, IReadOnlyList<Type> types)
+        {
+            var vocabularies = types.Select(SdkTypeVocabulary.ToTypeVocabulary).Where(v => v != null).ToHashSet();
+            return sources.Where(s => s.PropertyType != null && vocabularies.Contains(SdkTypeVocabulary.ToTypeVocabulary(s.PropertyType))).ToList();
+        }
+
         /// <summary>
         /// 数据类型过滤器（精确类型）
         /// </summary>

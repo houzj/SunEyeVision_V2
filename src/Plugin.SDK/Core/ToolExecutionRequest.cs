@@ -44,6 +44,7 @@ namespace SunEyeVision.Plugin.SDK.Core
 
         /// <summary>宿主提供的应用级相机采集服务；不参与参数持久化。</summary>
         public ICameraCaptureService? CameraCaptureService { get; init; }
+        public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; init; }
 
         /// <summary>宿主在启动本轮前绑定的相机帧；所有权仍属于本轮运行请求。</summary>
         public CameraFrame? CameraFrame { get; init; }

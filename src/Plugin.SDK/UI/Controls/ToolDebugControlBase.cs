@@ -129,6 +129,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     /// </remarks>
     public abstract class ToolDebugControlBase : UserControl, System.ComponentModel.INotifyPropertyChanged, IToolControlInitializer
     {
+        private bool _asyncCommandRunning;
         #region INotifyPropertyChanged 实现
 
         /// <summary>
@@ -303,8 +304,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// <summary>
         /// 执行命令处理
         /// </summary>
-        protected virtual void OnExecuteCommand(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
+        protected virtual async void OnExecuteCommand(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
         {
+            if (_asyncCommandRunning) return;
+            _asyncCommandRunning = true;
             PluginLogger.Info("执行命令触发", GetType().Name);
 
             try
@@ -312,7 +315,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var stopwatch = Stopwatch.StartNew();
 
                 // 执行工具逻辑
-                var results = ExecuteTool();
+                var results = await ExecuteToolAsync();
 
                 stopwatch.Stop();
                 ExecutionTime = stopwatch.ElapsedMilliseconds;
@@ -327,6 +330,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 PluginLogger.Error($"工具执行失败: {ex.Message}", GetType().Name, ex);
                 RaiseToolExecutionFailed(ex.Message);
             }
+            finally { _asyncCommandRunning = false; System.Windows.Input.CommandManager.InvalidateRequerySuggested(); }
         }
 
         /// <summary>
@@ -334,7 +338,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </summary>
         protected virtual void CanExecuteCommand(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = CanExecuteTool();
+            e.CanExecute = !_asyncCommandRunning && CanExecuteTool();
         }
 
         /// <summary>
@@ -580,7 +584,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 return;
 
             var control = e.OriginalSource as ParamBinding ?? sender as ParamBinding;
-            if (control == null)
+            if (control == null || string.IsNullOrWhiteSpace(control.ParameterName))
                 return;
 
             if (CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
@@ -705,7 +709,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private static IEnumerable<ParamBinding> FindShapeBindingControls(DependencyObject root)
         {
-            if (root is ParamBinding paramBinding)
+            // Anonymous protocol list inputs persist their own expression in the item parameters.
+            // They must not share an empty ParamSettings key or overwrite each other on reopen.
+            if (root is ParamBinding paramBinding && !string.IsNullOrWhiteSpace(paramBinding.ParameterName))
                 yield return paramBinding;
 
             for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
@@ -770,7 +776,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 .Run(tool, request);
         }
 
-        private ToolExecutionRequest CreateLiveExecutionRequest(
+        protected ToolExecutionRequest CreateLiveExecutionRequest(
             ToolParameters parameters,
             IVisionImage? resolvedInputImage)
         {
@@ -803,6 +809,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
                         as ParamSettingContainer),
                 GlobalVariables = (DataProvider as DataSourceQueryService)?.GlobalVariables,
+                CommunicationInputs = (DataProvider as DataSourceQueryService)?.CommunicationReceiveService,
             };
 
             if (DataProvider is DataSourceQueryService sourceService
@@ -882,6 +889,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </summary>
         /// <returns>执行结果</returns>
         protected abstract object ExecuteTool();
+        protected virtual System.Threading.Tasks.Task<object> ExecuteToolAsync() => System.Threading.Tasks.Task.FromResult(ExecuteTool());
 
         /// <summary>
         /// 判断是否可执行工具 - 子类可重写

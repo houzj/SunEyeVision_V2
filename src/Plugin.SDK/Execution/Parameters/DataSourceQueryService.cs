@@ -23,6 +23,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// </remarks>
     public class DataSourceQueryService : IDataSourceQueryService
     {
+        public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationReceiveService { get; set; }
+        public Func<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource?>? SelectReceiveVariable { get; set; }
         /// <summary>
         /// SSOT 读取器（委托到 WorkflowContext，实时读取持久结果，不维护本地缓存）
         /// </summary>
@@ -293,6 +295,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                         PropertyName = property.PropertyName,
                         DisplayName = property.DisplayName,
                         PropertyType = property.PropertyType,
+                        VariableType = property.VariableType,
                         CurrentValue = property.CurrentValue,
                         Unit = property.Unit,
                         Description = property.Description,

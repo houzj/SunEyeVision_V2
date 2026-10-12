@@ -76,6 +76,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         [JsonIgnore]
         public ExecutionContext? Context { get; internal set; }
 
+        [JsonIgnore]
+        internal SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; set; }
+
         /// <summary>
         /// 上游节点执行结果（由 AlgorithmNode.Execute() 在调用 Tool.Run() 前注入）
         /// </summary>

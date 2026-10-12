@@ -575,7 +575,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var dataSourceList = _currentDataSources.ToList();
 
                 // 使用基类的静态方法进行类型过滤
-                var filteredDataSources = ParamBindingBase.FilterDataSourcesByType(dataSourceList, DataType);
+                var filteredDataSources = AllowedDataTypes == null
+                    ? ParamBindingBase.FilterDataSourcesByType(dataSourceList, DataType)
+                    : ParamBindingBase.FilterDataSourcesByTypes(dataSourceList, AllowedDataTypes);
 
                 // 使用基类的静态方法构建树形结构（传 DataType：RoiShape[] 子树按目标词目定型
                 // —— 数值目标出类型容器+字段叶，ROI/几何目标出类型集合叶；「整体」已取消，见方案 §11）

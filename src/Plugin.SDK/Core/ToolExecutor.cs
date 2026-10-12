@@ -70,6 +70,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             ResolveRuntimeParameters(request);
             ApplyRuntimeSnapshot(request.Parameters, request.RuntimeParameters!);
             request.Parameters.ResolvedInputImage = request.ResolvedInputImage;
+            request.Parameters.CommunicationInputs = request.CommunicationInputs;
             return Run(
                 tool,
                 request.Parameters,
@@ -99,6 +100,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             ResolveRuntimeParameters(request);
             ApplyRuntimeSnapshot(parameters, request.RuntimeParameters!);
             parameters.ResolvedInputImage = request.ResolvedInputImage;
+            parameters.CommunicationInputs = request.CommunicationInputs;
             return Run(
                 tool,
                 parameters,
@@ -129,6 +131,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             ResolveRuntimeParameters(request);
             ApplyRuntimeSnapshot(request.Parameters, request.RuntimeParameters!);
             request.Parameters.ResolvedInputImage = request.ResolvedInputImage;
+            request.Parameters.CommunicationInputs = request.CommunicationInputs;
 
             // 异步契约的运行数据只存在于请求中，不再污染持久化参数对象。
             request.Context = CreateExecutionContext(tool, request);
@@ -169,7 +172,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 nodeName: request.NodeName ?? toolName,
                 nodeId: request.NodeId,
                 cancellationToken: request.CancellationToken,
-                globalVariables: request.GlobalVariables);
+                globalVariables: request.GlobalVariables, communicationInputs: request.CommunicationInputs);
         }
 
         private static ToolResults CreateTerminalResult(
@@ -229,7 +232,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 nodeName: nodeName ?? tool.ParamsType.Name.Replace("Parameters", ""),
                 nodeId: nodeId,
                 cancellationToken: cancellationToken,
-                globalVariables: globalVariables);
+                globalVariables: globalVariables, communicationInputs: parameters.CommunicationInputs);
 
             try
             {
@@ -304,7 +307,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 nodeName: nodeName ?? tool.ParamsType.Name.Replace("Parameters", ""),
                 nodeId: nodeId,
                 cancellationToken: cancellationToken,
-                globalVariables: globalVariables);
+                globalVariables: globalVariables, communicationInputs: parameters.CommunicationInputs);
 
             try
             {
@@ -383,7 +386,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 nodeName: nodeName ?? typeof(TParams).Name.Replace("Parameters", ""),
                 nodeId: nodeId,
                 cancellationToken: cancellationToken,
-                globalVariables: globalVariables);
+                globalVariables: globalVariables, communicationInputs: parameters.CommunicationInputs);
 
             try
             {

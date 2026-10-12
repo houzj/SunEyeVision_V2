@@ -200,6 +200,10 @@
                                     {
                                         "date":  "2026-09-09",
                                         "note":  "[9ec20611f95cf64fff799b339f709a2a09675651] docs: 订阅模型 Source 激活与几何测量工具基座方案 v4 落盘"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[0ef3738c91096a7e0d6ebbb12e58b66127affcf1] feat(tool): 新增协议解析与组装工具并适配工具箱分类"
                                     }
                                 ]
                     },
@@ -2622,6 +2626,10 @@
                                     {
                                         "date":  "2026-10-10",
                                         "note":  "[a0f92a8732f31a2ffe20e10fcc6feb7c792a093f] docs(sync): unify main and communications baseline after heartbeat optimization"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[7ce7a945fc9bf285bf07cf159a5b51c9bf0d0912] feat(core): 通信工具链接入工具箱并优化通讯接收与解析"
                                     }
                                 ]
                     },
@@ -4509,7 +4517,7 @@
                         "type":  "tool",
                         "layer":  "tool",
                         "stage":  "CE",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2026-12-21",
                         "end":  "2027-01-15",
                         "goal":  "工作流中通用通信节点：首先实现 OPC UA，后续扩展 TCP/Modbus/串口",
@@ -4526,7 +4534,7 @@
                                           "name":  "OPC UA 客户端核心（连接/会话/读写变量）",
                                           "phase":  "算法实现",
                                           "hours":  24,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W52"
                                       },
                                       {
@@ -4589,6 +4597,10 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "按真实路线调整：OPC UA 优先开发，TCP/Modbus/串口后置"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[625df27df87d8f7c8170ecf56134696589aaff6a] docs(core): 新增通信工具链方案与交接单并记录协作任务"
                                     }
                                 ]
                     },

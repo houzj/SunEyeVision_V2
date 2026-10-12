@@ -63,7 +63,8 @@ public sealed class WorkflowExecutionDependencyGraph
         return layers;
     }
 
-    public static WorkflowExecutionDependencyGraph Compile(Workflow workflow)
+    public static WorkflowExecutionDependencyGraph Compile(Workflow workflow,
+        IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>? variables = null, string? sourceWorkflowId = null)
     {
         if (workflow == null)
             throw new ArgumentNullException(nameof(workflow));
@@ -96,6 +97,14 @@ public sealed class WorkflowExecutionDependencyGraph
 
         foreach (var node in workflow.Nodes)
         {
+            if (node.Parameters is SunEyeVision.Plugin.SDK.Models.Communication.IReceiveVariableInputProvider receive)
+                foreach (var id in receive.GetReceiveVariableIds())
+                {
+                    var variable = variables?.FirstOrDefault(v => v.Id == id && v.HasProducer);
+                    if (variable != null && knownNodes.Contains(variable.ProducerNodeId)
+                        && (string.IsNullOrEmpty(variable.ProducerWorkflowId) || variable.ProducerWorkflowId == (sourceWorkflowId ?? workflow.Id)))
+                        AddDependency(variable.ProducerNodeId, node.Id, WorkflowDependencyKind.ParameterBinding, "ReceiveVariable");
+                }
             foreach (var setting in node.ParamSettings?.GetDynamicSettings() ?? Enumerable.Empty<ParamSetting>())
             {
                 if (string.IsNullOrWhiteSpace(setting.SourceNodeId) || string.IsNullOrWhiteSpace(setting.SourceProperty))

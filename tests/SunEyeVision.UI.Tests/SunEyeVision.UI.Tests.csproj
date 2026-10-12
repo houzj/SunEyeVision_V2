@@ -26,5 +26,6 @@
     <ProjectReference Include="../../src/UI/SunEyeVision.UI.csproj" />
     <ProjectReference Include="../../tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj" />
     <ProjectReference Include="../../tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.Tool.ReceiveData/SunEyeVision.Tool.ReceiveData.csproj" />
   </ItemGroup>
 </Project>

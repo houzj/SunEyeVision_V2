@@ -97,6 +97,7 @@ public class ProducerBinding
 /// </remarks>
 public class GlobalVariable : ObservableObject
 {
+    public static object ValueGate { get; } = new();
     private string _name = "";
     private string _group = "默认分组";
     private int _index = 0;
@@ -151,8 +152,12 @@ public class GlobalVariable : ObservableObject
     [JsonConverter(typeof(GlobalVariableValueConverter))]
     public object? Value
     {
-        get => _value;
-        set => SetProperty(ref _value, value, "变量值");
+        get { lock (ValueGate) return _value; }
+        set
+        {
+            lock (ValueGate) { if (Equals(_value, value)) return; _value = value; }
+            OnPropertyChanged(nameof(Value));
+        }
     }
 
     /// <summary>

@@ -121,6 +121,12 @@ public sealed class SolutionExecutionDependencyGraph
                 AddDependency(producer, target, SolutionDependencyKind.GlobalVariable,
                     variable.Name, consumer.ParameterName);
             }
+            foreach (var workflow in workflows)
+                foreach (var node in workflow.Nodes)
+                    if (node.Parameters is SunEyeVision.Plugin.SDK.Models.Communication.IReceiveVariableInputProvider input
+                        && input.GetReceiveVariableIds().Contains(variable.Id))
+                        AddDependency(producer, GetScopedNodeId(workflow.Id, node.Id), SolutionDependencyKind.GlobalVariable,
+                            variable.Name, "ReceiveVariable");
         }
 
         var graph = new SolutionExecutionDependencyGraph(predecessors, dependencies);

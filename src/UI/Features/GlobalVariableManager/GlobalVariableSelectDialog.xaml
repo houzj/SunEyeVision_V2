@@ -24,15 +24,28 @@
             <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"/>
         </Style>
-        <Style TargetType="DataGridColumnHeader">
+        <Style x:Key="VariableSelectHeaderStyle" TargetType="DataGridColumnHeader">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}"/>
             <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="8,4"/>
         </Style>
-        <Style TargetType="DataGridCell">
+        <Style x:Key="VariableSelectCellStyle" TargetType="DataGridCell">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
                     <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
@@ -40,7 +53,7 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        <Style TargetType="DataGridRow">
+        <Style x:Key="VariableSelectRowStyle" TargetType="DataGridRow">
             <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
@@ -106,7 +119,7 @@
         </Border>
 
         <!-- DataGrid -->
-        <DataGrid Grid.Row="1"
+        <DataGrid x:Name="VariableList" Grid.Row="1"
                   Margin="16,8"
                   AutoGenerateColumns="False"
                   ItemsSource="{Binding FilteredVariables}"
@@ -114,6 +127,11 @@
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  IsReadOnly="True"
+                  RowStyle="{StaticResource VariableSelectRowStyle}"
+                  CellStyle="{StaticResource VariableSelectCellStyle}"
+                  ColumnHeaderStyle="{StaticResource VariableSelectHeaderStyle}"
                   GridLinesVisibility="Horizontal"
                   HeadersVisibility="Column"
                   Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
@@ -124,12 +142,6 @@
                   RowHeight="26"
                   FontSize="12"
                   MouseDoubleClick="DataGrid_MouseDoubleClick">
-
-            <DataGrid.Resources>
-                <Style TargetType="DataGridRow">
-                    <Setter Property="IsEnabled" Value="True"/>
-                </Style>
-            </DataGrid.Resources>
 
             <DataGrid.Columns>
                 <!-- 序号 -->
@@ -204,7 +216,7 @@
                         Content="确定"
                         IsDefault="True"
                         Click="OK_Click"
-                        Style="{StaticResource PrimaryButtonStyle}"
+                        Style="{DynamicResource PrimaryButtonStyle}"
                         Width="80"
                         Margin="0,0,10,0"/>
 
@@ -212,7 +224,7 @@
                 <Button Grid.Column="2"
                         Content="取消"
                         IsCancel="True"
-                        Style="{StaticResource SecondaryButtonStyle}"
+                        Style="{DynamicResource SecondaryButtonStyle}"
                         Width="80"/>
             </Grid>
         </Border>

@@ -83,6 +83,7 @@ namespace SunEyeVision.UI.Services.Workflow
         private readonly AsyncLocal<bool> _communicationOwner = new();
         private readonly AsyncLocal<IReadOnlyList<CommunicationParameterAssignment>?> _communicationAssignments = new();
         private readonly AsyncLocal<CancellationToken> _communicationCancellation = new();
+        private readonly AsyncLocal<SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService?> _communicationInputs = new();
         private SynchronizationContext? _synchronizationContext;
 
         /// <summary>
@@ -439,7 +440,7 @@ namespace SunEyeVision.UI.Services.Workflow
             var tabs = workflows.Where(tab => tab != null).ToList();
             var tabsById = tabs.ToDictionary(tab => tab.RootWorkflowId, StringComparer.Ordinal);
             var plan = SolutionExecutionDependencyGraph.Compile(solution);
-            var runtimeGlobals = solution.GlobalVariables
+            var runtimeGlobals = solution.GlobalVariables.Where(variable => variable.ProducerBinding == null)
                 .ToDictionary(variable => variable.Name, variable => variable.Value, StringComparer.Ordinal);
             var workflowPredecessors = BuildWorkflowPredecessors(plan, tabsById.Keys);
             var completed = new HashSet<string>(StringComparer.Ordinal);
@@ -562,7 +563,8 @@ namespace SunEyeVision.UI.Services.Workflow
 
         /// <summary>Non-waiting application lease shared with manual and continuous workflow execution.</summary>
         public async Task<bool> RunCommunicationOperationAsync(Func<CancellationToken, Task> operation, CancellationToken token,
-            IReadOnlyList<CommunicationParameterAssignment>? assignments = null)
+            IReadOnlyList<CommunicationParameterAssignment>? assignments = null,
+            SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? receiveInputs = null)
         {
             using var runCancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
             lock (_lock)
@@ -574,12 +576,14 @@ namespace SunEyeVision.UI.Services.Workflow
             token = runCancellation.Token;
             _communicationOwner.Value = true;
             _communicationAssignments.Value = assignments?.ToArray();
+            _communicationInputs.Value = receiveInputs;
             _communicationCancellation.Value = token;
             try { token.ThrowIfCancellationRequested(); await operation(token); return true; }
             finally
             {
                 _communicationOwner.Value = false;
                 _communicationAssignments.Value = null;
+                _communicationInputs.Value = null;
                 _communicationCancellation.Value = default;
                 lock (_lock)
                 {
@@ -617,6 +621,7 @@ namespace SunEyeVision.UI.Services.Workflow
             var globals = new Dictionary<string, object?>(_globalVariables ?? new Dictionary<string, object?>());
             var image = await _inputProvider.GetInputImageAsync() as IVisionImage;
             token.ThrowIfCancellationRequested();
+            var receiveInputs = _communicationInputs.Value ?? SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
             var tool = ToolRegistry.CreateToolInstance(node.ToolType) ?? throw new InvalidOperationException("触发模块的工具尚未加载。");
             try
             {
@@ -626,7 +631,8 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     NodeId = node.Id, NodeName = node.Name, ParameterBindings = bindings,
                     GlobalVariables = globals, ResolvedInputImage = image, CancellationToken = token,
-                    CameraCaptureService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime
+                    CameraCaptureService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime,
+                    CommunicationInputs = receiveInputs
                 });
                 if (result.IsCancelled) throw new OperationCanceledException(token);
                 if (!result.IsSuccess) throw new InvalidOperationException(result.ErrorMessage ?? "触发模块执行失败。");
@@ -679,6 +685,9 @@ namespace SunEyeVision.UI.Services.Workflow
                 // 获取输入图像（可能为 null，工作流引擎会处理）
                 var inputImage = cameraFrame is null ? await _inputProvider.GetInputImageAsync() : null;
                 cancellationToken.ThrowIfCancellationRequested();
+                var receiveInputs = _communicationInputs.Value ?? SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
+                if (globalVariablesOverride != null)
+                    receiveInputs = new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(receiveInputs, globalVariablesOverride);
 
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] 正在创建日志器...")));
                 // 使用全局日志器（自动转发到UILogWriter）
@@ -820,6 +829,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     runtimeParameters,
                     nodeParameterOverrides: nodeParameterOverrides,
                     nodeBindingOverrides: bindingOverrides,
+                    communicationInputs: receiveInputs,
                     cameraCaptureService: hasCameraSource
                         ? SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime
                         : null,

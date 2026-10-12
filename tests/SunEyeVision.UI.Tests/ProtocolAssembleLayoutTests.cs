@@ -15,6 +15,25 @@ namespace SunEyeVision.UI.Tests;
 public sealed class ProtocolAssembleLayoutTests
 {
     [Fact]
+    public void Anonymous_list_bindings_do_not_create_shared_empty_parameter_setting()
+    {
+        OnSta(() =>
+        {
+            var editor = MakeEditor(2);
+            var parameters = (ProtocolAssembleParameters)editor.DataContext;
+            parameters.Parts[0].InputText = Guid.NewGuid() + ".first";
+            parameters.Parts[1].InputText = Guid.NewGuid() + ".second";
+            var expressions = parameters.Parts.Select(p => p.InputText).ToArray();
+            var owner = new SunEyeVision.Workflow.WorkflowNodeBase(Guid.NewGuid().ToString(), "组装", "组装", "ProtocolAssemble") { Parameters = parameters };
+            editor.SetCurrentNode(owner); Layout(editor);
+            editor.PersistParameterBindings();
+            Assert.Empty(owner.ParamSettings.Settings);
+            Assert.Equal(expressions, parameters.Parts.Select(p => p.InputText));
+            editor.SetCurrentNode(owner); Layout(editor);
+            Assert.Equal(expressions, parameters.Parts.Select(p => p.InputText));
+        });
+    }
+    [Fact]
     public void Compact_window_and_add_button_follow_content_sized_grid()
     {
         OnSta(() =>

@@ -24,6 +24,7 @@ internal static class ProtocolTestParameterRegistration
     {
         ParameterTypeRegistry.RegisterParameterType(typeof(ProtocolParseParameters), "ProtocolParseParameters");
         ParameterTypeRegistry.RegisterParameterType(typeof(ProtocolAssembleParameters), "ProtocolAssembleParameters");
+        ParameterTypeRegistry.RegisterParameterType(typeof(SunEyeVision.Tool.ReceiveData.ReceiveDataParameters), "ReceiveDataParameters");
     }
 }
 

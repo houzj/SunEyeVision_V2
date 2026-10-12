@@ -39,6 +39,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
     public CommunicationRuntimeComposition Composition { get; }
     public CommunicationHeartbeatService Heartbeats { get; }
     public CommunicationAutomationService Automation { get; }
+    public SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService Receives { get; } = new();
 
     public CommunicationApplicationService(SolutionManager solutions, CommunicationRuntimeComposition composition)
     {
@@ -46,6 +47,9 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         Composition = composition ?? throw new ArgumentNullException(nameof(composition));
         Heartbeats = new CommunicationHeartbeatService(Composition.Runtime);
         Automation = new CommunicationAutomationService(Composition.Runtime);
+        Receives.ActiveReader = ReadCurrentDeviceAsync;
+        Receives.VariableCatalog = GetCurrentVariables;
+        Receives.VariableReader = ReadCurrentVariables;
         _opcUaPolling = new(Composition.Runtime);
         Composition.Runtime.DataReceived += OnAutomationData;
         Composition.Runtime.OpcUaPointValueChanged += OnAutomationOpcUa;
@@ -54,6 +58,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         _solutions.SolutionOpened += OnSolutionOpened;
         _solutions.SolutionClosed += OnSolutionClosed;
         Composition.Runtime.ConnectionClosed += OnConnectionClosed;
+        Composition.Runtime.StatusChanged += OnReceiveStatus;
         if (_solutions.CurrentSolution is { } current)
             BeginSolutionSwitch(current);
     }
@@ -66,22 +71,148 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
     public void RefreshAutomationConfiguration(Solution solution)
     {
         lock (_gate)
-            if (!_disposed && ReferenceEquals(solution, _activeSolution)) Automation.Refresh(solution);
+            if (!_disposed && ReferenceEquals(solution, _activeSolution)) { ConfigureReceiveSources(solution); Automation.Refresh(solution); }
+    }
+
+    private void ConfigureReceiveSources(Solution? solution, bool reset = false)
+    {
+        var sources = new List<SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSource>();
+        foreach (var device in solution?.Communications.Where(d => d.IsEnabled) ?? Enumerable.Empty<ConfiguredCommunication>())
+        {
+            var signature = System.Text.Json.JsonSerializer.Serialize(device, WorkflowSerializationOptions.Default);
+            if (device.IsRawProtocol) sources.Add(new(device.Id, "", device.Name, "Binary", signature, device.Name));
+            else if (device.IsModbus)
+                foreach (var point in device.ModbusAddressPoints.Where(p => p.AccessMode != "只写"))
+                    sources.Add(new(device.Id, point.Id, $"{device.Name} / {point.Name}", "Binary", signature, device.Name, point.Name, true));
+            else if (device.IsOpcUa)
+                foreach (var point in device.OpcUaDataPoints)
+                    sources.Add(new(device.Id, point.Id, $"{device.Name} / {point.Name}", "Native", signature, device.Name, point.Name, true));
+        }
+        Receives.Configure(sources, reset);
+    }
+    private void OnReceiveStatus(object? sender, SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationStatusSnapshot status)
+    {
+        if (status.State == SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Connected)
+            Receives.MarkConnected(status.Device.Value);
+        if (status.State is SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Disconnected
+            or SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Faulted)
+            Receives.InvalidateDevice(status.Device.Value);
+    }
+
+    private async Task<(object Value, DateTimeOffset? SourceTime)> ReadCurrentDeviceAsync(
+        SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSource source, CancellationToken token)
+    {
+        ConfiguredCommunication device; int start = 0, count = 0; string nodeId = "";
+        lock (_gate)
+        {
+            if (_disposed) throw new ObjectDisposedException(nameof(CommunicationApplicationService));
+            device = _activeSolution?.Communications.FirstOrDefault(d => d.Id == source.DeviceId && d.IsEnabled)
+                ?? throw new InvalidOperationException("设备来源不存在或已禁用。");
+            if (System.Text.Json.JsonSerializer.Serialize(device, WorkflowSerializationOptions.Default) != source.ConfigurationKey)
+                throw new InvalidOperationException("设备配置已变化，请重新选择来源。");
+            if (device.IsModbus)
+            {
+                var point = device.ModbusAddressPoints.FirstOrDefault(p => p.Id == source.TargetId && p.AccessMode != "只写")
+                    ?? throw new InvalidOperationException("地址不存在或不可读。");
+                start = point.StartAddress; count = point.Count;
+            }
+            else if (device.IsOpcUa) nodeId = device.OpcUaDataPoints.FirstOrDefault(p => p.Id == source.TargetId)?.NodeId
+                ?? throw new InvalidOperationException("数据点不存在。");
+            else throw new NotSupportedException("来源不支持主动读取。");
+        }
+        if (device.IsModbus)
+        {
+            if (start < 0 || start > ushort.MaxValue || count < 1 || count > 125 || start + count > 65536)
+                throw new InvalidOperationException("Modbus地址范围无效。");
+            var words = await Composition.Runtime.ReadModbusHoldingRegistersAsync(device.Id, (ushort)start, (ushort)count, token).ConfigureAwait(false);
+            if (words.Length != count) throw new InvalidOperationException("寄存器返回数量不匹配。");
+            var bytes = new byte[words.Length * 2];
+            for (var i = 0; i < words.Length; i++) { bytes[i * 2] = (byte)(words[i] >> 8); bytes[i * 2 + 1] = (byte)words[i]; }
+            ValidateCurrentConfiguration();
+            return (new SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload(bytes), null);
+        }
+        var value = await Composition.Runtime.ReadOpcUaValueAsync(device.Id, nodeId, token).ConfigureAwait(false);
+        if (!Opc.Ua.StatusCode.IsGood(value.StatusCode) || value.Value == null) throw new InvalidOperationException("数据点质量无效或值为空。");
+        ValidateCurrentConfiguration();
+        return (SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService.Normalize(value.Value),
+            value.SourceTimestamp == DateTime.MinValue ? null : new DateTimeOffset(DateTime.SpecifyKind(value.SourceTimestamp, DateTimeKind.Utc)));
+        void ValidateCurrentConfiguration()
+        {
+            token.ThrowIfCancellationRequested();
+            lock (_gate)
+                if (_disposed || _activeSolution?.Communications.FirstOrDefault(d => d.Id == source.DeviceId) != device || !device.IsEnabled
+                    || System.Text.Json.JsonSerializer.Serialize(device, WorkflowSerializationOptions.Default) != source.ConfigurationKey)
+                    throw new InvalidOperationException("读取期间来源配置已变化。");
+        }
+    }
+    private IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource> GetCurrentVariables()
+    {
+        lock (_gate) lock (GlobalVariable.ValueGate)
+            return (_activeSolution?.GlobalVariables ?? new()).Where(v => v.Type is "String" or "Integer" or "Double" or "Boolean" or "Binary")
+                .Select(v => new SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource(v.Id, v.Name, v.Group, v.Type,
+                    v.ProducerBinding != null, v.ProducerBinding?.NodeId ?? "", v.ProducerBinding?.ResultName ?? "", v.ProducerBinding?.WorkflowId ?? "")).ToArray();
+    }
+    private IReadOnlyDictionary<string, SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableValue> ReadCurrentVariables(IReadOnlyList<string> ids)
+    {
+        lock (_gate) lock (GlobalVariable.ValueGate)
+        {
+            if (_disposed || _activeSolution == null) throw new InvalidOperationException("当前方案不可用。");
+            var result = new Dictionary<string, SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableValue>();
+            foreach (var id in ids.Distinct())
+            {
+                var v = _activeSolution.GlobalVariables.FirstOrDefault(v => v.Id == id) ?? throw new InvalidOperationException("所选变量已删除。");
+                if (v.ProducerBinding != null) throw new InvalidOperationException("所选变量有生产者，请在生产者成功后的方案运行中读取，不使用设计初值。");
+                var value = SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService.Normalize(v.Value ?? throw new InvalidOperationException("变量为空。"));
+                if (SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService.ValueType(value) != v.Type) throw new InvalidOperationException("变量声明与实际类型不匹配。");
+                result[id] = new(new(v.Id, v.Name, v.Group, v.Type), value);
+            }
+            return result;
+        }
     }
 
     private void OnAutomationData(object? sender, CommunicationDataReceivedEventArgs e)
     {
-        lock (_gate) if (!_disposed && _heartbeatReady) Automation.ProcessRaw(e.CommunicationId, e.Data, e.Timestamp);
+        lock (_gate) if (!_disposed)
+        {
+            var sample = Receives.Publish(e.CommunicationId, "", e.Timestamp, new SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload(e.Data));
+            if (_heartbeatReady) Automation.ProcessRaw(e.CommunicationId, e.Data, e.Timestamp, sample);
+        }
     }
     private void OnAutomationOpcUa(object? sender, OpcUaPointValueEventArgs e)
     {
-        lock (_gate) if (!_disposed && _heartbeatReady) Automation.ProcessOpcUa(e);
+        lock (_gate) if (!_disposed)
+        {
+            var point = _activeSolution?.Communications.FirstOrDefault(d => d.Id == e.CommunicationId)?.OpcUaDataPoints.FirstOrDefault(p => p.NodeId == e.NodeId);
+            if (point == null) return;
+            object? value = e.Value switch
+            {
+                string or bool => e.Value,
+                byte or sbyte or short or ushort or int or uint or long => Convert.ToInt64(e.Value),
+                ulong n when n <= long.MaxValue => (long)n,
+                float f when float.IsFinite(f) => (double)f,
+                double n when double.IsFinite(n) => n,
+                _ => null
+            };
+            var good = value != null && e.IsSupportedScalar && Opc.Ua.StatusCode.IsGood(e.StatusCode) && string.IsNullOrEmpty(e.ErrorMessage);
+            var sample = Receives.Publish(e.CommunicationId, point.Id, DateTimeOffset.UtcNow, value ?? "", good, sourceTimestamp: e.Timestamp);
+            if (_heartbeatReady) Automation.ProcessOpcUa(e, sample);
+        }
     }
     private void OnAutomationModbus(object? sender, ModbusPollBatch batch)
     {
         lock (_gate)
-            if (!_disposed && _heartbeatReady && Composition.Polling.IsCurrentBatch(batch))
-                foreach (var sample in batch.Results) Automation.ProcessModbus(sample);
+            if (!_disposed && Composition.Polling.IsCurrentBatch(batch))
+                foreach (var sample in batch.Results)
+                {
+                    var point = _activeSolution?.Communications.FirstOrDefault(d => d.Id == sample.CommunicationId)?.ModbusAddressPoints.FirstOrDefault(p => p.Id == sample.AddressId);
+                    if (point == null || point.StartAddress != sample.StartAddress || point.Count != sample.Count)
+                    { Receives.InvalidateDevice(sample.CommunicationId); continue; }
+                    var bytes = new byte[sample.Values.Length * 2];
+                    for (var i = 0; i < sample.Values.Length; i++) { bytes[i * 2] = (byte)(sample.Values[i] >> 8); bytes[i * 2 + 1] = (byte)sample.Values[i]; }
+                    var received = Receives.Publish(sample.CommunicationId, sample.AddressId, sample.Timestamp,
+                        new SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload(bytes), sample.Values.Length == sample.Count);
+                    if (_heartbeatReady) Automation.ProcessModbus(sample, received);
+                }
     }
     /// <summary>Host entry point for a caller's typed execution snapshot.</summary>
     public Task<int> SendEventAsync(Guid eventId, IReadOnlyDictionary<Guid, object?> parameterSnapshot,
@@ -127,6 +258,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             var pendingRetries = _reconnectTasks.ToArray();
             _reconnectTasks.RemoveAll(task => task.IsCompleted);
             _activeSolution = solution;
+            ConfigureReceiveSources(solution, reset: true);
             _heartbeatReady = false;
             Automation.Reset(solution);
             _heartbeatStatuses.Clear();
@@ -350,12 +482,14 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             _disposed = true;
             Heartbeats.Runner.Update(Array.Empty<CommunicationHeartbeatJob>());
             Automation.Reset(null);
+            Receives.Configure(Array.Empty<SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSource>(), reset: true);
             Composition.Runtime.DataReceived -= OnAutomationData;
             Composition.Runtime.OpcUaPointValueChanged -= OnAutomationOpcUa;
             Composition.Polling.BatchReceived -= OnAutomationModbus;
             _solutions.SolutionOpened -= OnSolutionOpened;
             _solutions.SolutionClosed -= OnSolutionClosed;
             Composition.Runtime.ConnectionClosed -= OnConnectionClosed;
+            Composition.Runtime.StatusChanged -= OnReceiveStatus;
             _switchCancellation?.Cancel();
             pending = _switchTask;
             pendingRetries = _reconnectTasks.ToArray();

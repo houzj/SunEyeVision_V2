@@ -3801,6 +3801,14 @@ SplitterPosition = position;
             }
 
             var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider);
+            queryService.CommunicationReceiveService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
+            queryService.SelectReceiveVariable = () =>
+            {
+                var selected = SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableSelectDialog.ShowSelect(
+                    SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager);
+                return selected == null ? null : new SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource(
+                    selected.Id, selected.Name, selected.Group, selected.Type);
+            };
 
             // 调试工具的立即执行也必须看到方案级全局变量；不能等工作流先运行一次
             // 才由 WorkflowContext 注入 __GlobalVars__ 合成结果。

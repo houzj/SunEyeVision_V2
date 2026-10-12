@@ -96,7 +96,7 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
         }
     }
 
-    public void ProcessRaw(string deviceId, byte[] data, DateTimeOffset timestamp)
+    public void ProcessRaw(string deviceId, byte[] data, DateTimeOffset timestamp, SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSample? receiveSample = null)
     {
         lock (_gate)
         {
@@ -122,7 +122,7 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
             if (!numbers.ContainsKey(id)) numbers[id] = checked(++next);
     }
 
-    public void ProcessModbus(ModbusPollResult sample)
+    public void ProcessModbus(ModbusPollResult sample, SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSample? receiveSample = null)
     {
         lock (_gate)
         {
@@ -158,7 +158,7 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
         }
     }
 
-    public void ProcessOpcUa(OpcUaPointValueEventArgs sample)
+    public void ProcessOpcUa(OpcUaPointValueEventArgs sample, SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSample? receiveSample = null)
     {
         lock (_gate)
         {
@@ -244,7 +244,8 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
         if (dispatcher == null) { Warn($"触发 {rule.Id} 尚无执行宿主，已跳过。"); return; }
         var token = _lifetime.Token;
         var request = new CommunicationTriggerRequest(rule.Id, rule.Command, rule.TargetId, rule.Action, value)
-        { Assignments = assignments ?? Array.Empty<CommunicationParameterAssignment>(), Upload = upload };
+        { Assignments = assignments ?? Array.Empty<CommunicationParameterAssignment>(), Upload = upload,
+        };
         Task<bool> pending;
         try
         {

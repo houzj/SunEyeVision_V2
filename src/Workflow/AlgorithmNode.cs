@@ -27,6 +27,7 @@ namespace SunEyeVision.Workflow
 
         /// <summary>运行请求提供的共享采集服务，不属于节点持久化状态。</summary>
         public ICameraCaptureService? CameraCaptureService { get; set; }
+        public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; set; }
 
         /// <summary>本轮运行在启动节点前绑定的帧；节点不拥有其生命周期。</summary>
         public CameraFrame? CameraFrame { get; set; }
@@ -122,6 +123,7 @@ namespace SunEyeVision.Workflow
                             NodeId = Id,
                             CancellationToken = cancellationToken,
                             CameraCaptureService = CameraCaptureService,
+                            CommunicationInputs = CommunicationInputs,
                             CameraFrame = CameraFrame,
                             GlobalVariables = globalVariables,
                             ParameterBindings = ParameterBindingSet.FromSettings(ParamSettings)

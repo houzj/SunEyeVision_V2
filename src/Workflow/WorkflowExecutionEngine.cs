@@ -783,7 +783,7 @@ namespace SunEyeVision.Workflow
         {
             var executableWorkflow = new Workflow(Guid.NewGuid().ToString(), sourceWorkflow.Name);
             ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow, request);
-            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow);
+            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, request?.CommunicationInputs?.GetVariables(), sourceWorkflow.Id);
             var nodeExecutionProfiles = executableWorkflow.Nodes.ToDictionary(
                 node => node.Id,
                 ResolveExecutionProfile,
@@ -867,6 +867,8 @@ namespace SunEyeVision.Workflow
                     foreach (var value in overrides)
                         executionNode.ParamSettings.SetSetting(ParamSetting.CreateConstant(value.Key, value.Value));
                 executionNode.CameraCaptureService = request?.CameraCaptureService;
+                executionNode.CommunicationInputs = request?.CommunicationInputs == null ? null :
+                    new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(request.CommunicationInputs, null, workflowId: source.Id);
                 executionNode.CameraFrame = request != null && request.CameraFrames.TryGetValue(node.Id, out var cameraFrame)
                     ? cameraFrame
                     : null;

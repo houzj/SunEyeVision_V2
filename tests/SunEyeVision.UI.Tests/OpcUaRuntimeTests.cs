@@ -239,6 +239,17 @@ public sealed class OpcUaRuntimeTests
             Assert.True(composition.Runtime.TryGetLatestOpcUaPoint(device.Id, point.NodeId, out var latest));
             Assert.Equal(7, latest?.Value);
             Assert.True(latest?.CanWrite);
+            // With monitoring stopped, the receive tool must issue its own current-value read.
+            await composition.Runtime.UnsubscribeOpcUaValueAsync(device.Id, point.NodeId);
+            await composition.Runtime.WriteOpcUaValueAsync(device.Id, point.NodeId, 42);
+            var received = await service.Receives.ReadAsync(device.Id, point.Id);
+            Assert.Equal(42L, received.Value);
+            var parameters = new SunEyeVision.Tool.ReceiveData.ReceiveDataParameters
+                { DeviceId = device.Id, TargetId = point.Id, OutputType = "Integer" };
+            var execution = new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new SunEyeVision.Plugin.SDK.Execution.Parameters.ParameterResolver(null), SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);
+            var result = await execution.ExecuteAsync(new SunEyeVision.Tool.ReceiveData.ReceiveDataTool(),
+                new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(parameters) { CommunicationInputs = service.Receives });
+            Assert.True(result.IsSuccess, result.ErrorMessage);
             manager.CloseSolution();
             await service.ReadyAsync();
             Assert.False(composition.Runtime.IsConnected(device.Id));

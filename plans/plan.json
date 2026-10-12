@@ -441,6 +441,14 @@
                                     {
                                         "date":  "2026-10-09",
                                         "note":  "[5c6c8edbcd8594ece0f517ed51748cce0c686daf] fix(ui): 图像预览交互与图像源、结果展示修正"
+                                    },
+                                    {
+                                        "date":  "2026-10-09",
+                                        "note":  "[254d65c01dd8e30483c755a20e2bd78e98d0b58b] refactor(solution): 方案管理与数据目录重构"
+                                    },
+                                    {
+                                        "date":  "2026-10-09",
+                                        "note":  "[5c6c8edbcd8594ece0f517ed51748cce0c686daf] fix(ui): 图像预览交互与图像源、结果展示修正"
                                     }
                                 ]
                     },
@@ -753,6 +761,10 @@
                                     {
                                         "date":  "2026-09-10",
                                         "note":  "[9a614ea030400e3c99c94ecb3dc47bb1d9988cc8] refactor(tool): 删除 EdgeDetect 遗留工具并从解决方案注销"
+                                    },
+                                    {
+                                        "date":  "2026-10-09",
+                                        "note":  "[2c17ef773a3d6bed9f67028760b42632eca80555] docs: 归档解决方案管理器最终优化方案并同步协作记录与文档索引"
                                     },
                                     {
                                         "date":  "2026-10-09",
@@ -1978,6 +1990,10 @@
                                     {
                                         "date":  "2026-10-08",
                                         "note":  "[78a762299c988d38112a8cf842876b0c3f656df6] fix(ui): 主窗口最大化按窗口所在显示器工作区计算"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[78a762299c988d38112a8cf842876b0c3f656df6] fix(ui): 主窗口最大化按窗口所在显示器工作区计算"
                                     }
                                 ]
                     },
@@ -2218,6 +2234,14 @@
                                     {
                                         "date":  "2026-10-09",
                                         "note":  "[15595c06bb7d079705563c57b2081e0a6601c31e] feat(core): 通讯心跳首批实施与自动化配置接入"
+                                    },
+                                    {
+                                        "date":  "2026-09-29",
+                                        "note":  "[95b4aef095572d8b78a6ef055108841b5e57a996] fix(camera): MVS 采集与触发配置按设备符号名归一化，未知值拒绝采集"
+                                    },
+                                    {
+                                        "date":  "2026-09-29",
+                                        "note":  "[f3887e26a4298357643860b545a6f71b64f850d3] fix(camera): 巴斯勒相机属性树中文分类映射"
                                     }
                                 ]
                     },
@@ -2566,6 +2590,38 @@
                                     {
                                         "date":  "2026-10-10",
                                         "note":  "[7bbba33017749a212d9bebce292c2f5db11a838c] feat(comm): 通讯触发求值与上传快照独立化并完善 OPC UA 数据点"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[c509106d76eefbbe563784fa21589b68444c71e9] feat(core): OPC UA 收敛匿名联调并新增数据点表与事件窗口"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[d5301992fd411840edff84ba2515ff5176002cfd] feat(core): 通讯解析字段与统一绑定模型并修复管理器打开异常"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[85383291d9ed055068828acc92226386746fb34d] feat(core): 通讯接收解析链路与接收来源目标绑定"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[b86cbd753dcca168a2d269ea593d0feb958acf05] feat(core): 通讯接收历史上限统一为 200 条并自动滚动到最新"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[d703960764e0f1cdd287c8398def759ad638251d] feat(core): 实现通讯发送事件与宿主发送服务"
+                                    },
+                                    {
+                                        "date":  "2026-10-10",
+                                        "note":  "[6cc48cd54c894f4bbbbfeace69a159051001b447] feat(comm): 通讯触发条件、心跳目标与 OPC UA 监控完善"
+                                    },
+                                    {
+                                        "date":  "2026-10-10",
+                                        "note":  "[7bbba33017749a212d9bebce292c2f5db11a838c] feat(comm): 通讯触发求值与上传快照独立化并完善 OPC UA 数据点"
+                                    },
+                                    {
+                                        "date":  "2026-10-10",
+                                        "note":  "[a0f92a8732f31a2ffe20e10fcc6feb7c792a093f] docs(sync): unify main and communications baseline after heartbeat optimization"
                                     }
                                 ]
                     },
@@ -2925,6 +2981,30 @@
                                     {
                                         "date":  "2026-10-10",
                                         "note":  "[a9caaa5e4e9a8c69b2357bcb5b83e969b2d2d1e2] chore(build): 新增运行时输出守卫与测试构建配置"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[2243736c287b512a627b76542434732871f752e8] feat(calibration): 新增 N 点标定工具插件与三页调试界面"
+                                    },
+                                    {
+                                        "date":  "2026-09-29",
+                                        "note":  "[965bb03d5e1de5d05b4ab97c9da2adb6fd8a2b5c] refactor(calibration): N 点标定参数布局对齐 VM，标定点编辑窗改为独立主题化 XAML"
+                                    },
+                                    {
+                                        "date":  "2026-10-08",
+                                        "note":  "[d07926c24830a24f924d307ddde11d9645b88e77] feat(calibration): N 点标定重构并新增 N 点验证工具"
+                                    },
+                                    {
+                                        "date":  "2026-10-09",
+                                        "note":  "[cdba49e27d7e1eba60ca46b1af5c0665e612b63e] feat(app): 单实例与运行期维护门，关于页显示完整发布信息，默认暗色主题"
+                                    },
+                                    {
+                                        "date":  "2026-10-10",
+                                        "note":  "[a9caaa5e4e9a8c69b2357bcb5b83e969b2d2d1e2] chore(build): 新增运行时输出守卫与测试构建配置"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[a3a0815719072933bb6d85a82d6ee453e5e9fdcc] feat(sdk): 通信工具链 SDK 契约、控件与工具箱分类"
                                     }
                                 ]
                     },
@@ -3036,6 +3116,14 @@
                                     {
                                         "date":  "2026-09-16",
                                         "note":  "[3425df2acceb27bf9971eced83f4fd9294cb2854] build(installer): 打包脚本与 HALCON 托管程序集部署"
+                                    },
+                                    {
+                                        "date":  "2026-10-09",
+                                        "note":  "[383e7b679156629369263c6a241dbd23b1bbb222] chore(version): 版本声明改用 fileRevision，构建期统一注入发布与包版本"
+                                    },
+                                    {
+                                        "date":  "2026-10-10",
+                                        "note":  "[9ae7c47ecca18a8e192b4e08a3c6d0db46eadcbb] chore(version): 打包写回版本声明并同步 NuGet 锁定文件"
                                     },
                                     {
                                         "date":  "2026-10-09",
@@ -4404,6 +4492,14 @@
                                     {
                                         "date":  "2026-09-28",
                                         "note":  "[9305defe410348248d9b05afde606f73e239bdb2] docs: 归档标定工具链方案与图像源方案修订并同步协作状态与文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[93e093d8529105c262f254ecc9a0f5f8840e98d4] feat(imagesource): 图像源输出格式、逻辑 SN 与本地序列推进"
+                                    },
+                                    {
+                                        "date":  "2026-09-28",
+                                        "note":  "[9305defe410348248d9b05afde606f73e239bdb2] docs: 归档标定工具链方案与图像源方案修订并同步协作状态与文档索引"
                                     }
                                 ]
                     },
@@ -5001,6 +5097,68 @@
                        }
                    ],
     "tempTasks":  [
+                      {
+                          "id":  "TMP-800fdf0",
+                          "message":  "docs: 归档开发汇报与 N 点标定联合标定基线并同步协作状态与索引",
+                          "date":  "2026-10-08",
+                          "commit":  "800fdf04c4410a626eb4ef9755ccdeea84199de7",
+                          "files":  [
+                                        "docs/00-索引/文档索引.md",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/bak/视觉软件SunEyeVision-软件开发汇报-精简版.bak-20261001-144849.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/pid",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/state.json",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/DESIGN.md",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/STORY.md",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/01_cover.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/02_output.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/03_plan.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/04_ending.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V1.0.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-精简版.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报.html",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报（精简版）.html",
+                                        "docs/04-工具设计/标定工具/2026/09/28/标定工具链与定位抓取设计基线-20260928.md",
+                                        "docs/04-工具设计/标定工具/2026/09/29/N点标定9加3联合标定与抓取链沟通基线-20260929.md",
+                                        "docs/collaboration/CURRENT_TASK.md"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-319a866",
+                          "message":  "docs: 更新开发汇报与协作记录并同步文档索引",
+                          "date":  "2026-10-10",
+                          "commit":  "319a866d35f888e4f2326e1c41308ce1b3cbc22d",
+                          "files":  [
+                                        "docs/00-索引/文档索引.md",
+                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/existing-delete-reference.png",
+                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/trigger-delete-current.png",
+                                        "docs/01-方案设计/2026/10/通讯事件条件与动作条件及参数绑定优化基线-20261010.md",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/bak/视觉软件SunEyeVision-软件开发汇报-精简版.bak-20261001-144849.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/pid",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/state.json",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/DESIGN.md",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/assets/main_ui.jpg",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/02_output.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/03_plan.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2 -S.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报.html",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报（精简版）.html",
+                                        "docs/collaboration/CURRENT_TASK.md",
+                                        "docs/collaboration/HANDOFF_ACTION_EQUALITY_20261010.md",
+                                        "docs/collaboration/HANDOFF_COMMUNICATION_FINAL_REFINEMENT_20261010.md",
+                                        "docs/collaboration/HANDOFF_COMMUNICATION_TRIGGER_OPTIMIZATION_20261010.md",
+                                        "docs/collaboration/HANDOFF_GLOBAL_DATA_HEARTBEAT_20261010.md",
+                                        "docs/collaboration/HANDOFF_HEARTBEAT_FEEDBACK_20261010.md",
+                                        "docs/collaboration/HANDOFF_PACKAGE_ICONS_20261009.md",
+                                        "docs/collaboration/HANDOFF_RELEASE_STARTUP_20261009.md",
+                                        "docs/collaboration/HANDOFF_TRIGGER_AUTO_CONDITION_20261010.md",
+                                        "docs/collaboration/HANDOFF_TRIGGER_COMPACT_UI_20261010.md",
+                                        "docs/collaboration/HANDOFF_TRIGGER_PARAMETER_SIMPLIFICATION_20261010.md"
+                                    ],
+                          "status":  "in_progress"
+                      },
                       {
                           "id":  "TMP-800fdf0",
                           "message":  "docs: 归档开发汇报与 N 点标定联合标定基线并同步协作状态与索引",

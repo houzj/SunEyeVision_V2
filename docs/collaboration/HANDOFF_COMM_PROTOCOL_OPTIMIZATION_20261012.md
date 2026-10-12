@@ -11,4 +11,4 @@
 - 已执行构建与测试：最终UI专项270通过、SDK专项68通过；标准dotnet build SunEyeVision.slnx -c Release --no-restore（quiet／ErrorsOnly）0错误1148警告；标准UI Release同参数0错误947警告。运行常用Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe --toolbox-probe，退出0，9类22工具含ProtocolParse／ProtocolAssemble，SDK2.1、产品2.0.0.8、Dark；证据artifacts/validation/protocol-optimization-20261012/release-probe.json。git diff --check通过。实际WPF渲染图位于artifacts/validation/protocol-assemble-layout-20261012/parse-*.png。
 - 人工验收结果：尚无本轮用户实际UI验收；STA运行时加载和深浅色渲染已检查，VS设计器及高DPI未验证。无硬件启动探针不等于设备收发业务验收。
 - 已知风险或禁止改动：SDK全套前阶段存在两项失败，本轮仅专项不宣称全套通过。标准通信Release已更新，不混用Debug或主项目Release。不连接／写用户设备，不强制结束用户进程，不同步主项目或提交推送。保留既有0／非0边沿语义，不因参考VM改为仅1。
-- 下一步：R3按已确认规则接入样本快照与ReceiveData真实插件。触发运行锁定触发报文；手动运行锁定当前有效已收样本，不隐式等待；新报文不覆盖本次执行。模块结果／主界面分析提供实际来源、样本身份和接收时间，不增加配置页运行预览。有效期数值、会话隔离、跨目标策略与取消行为须在实现时补齐并测试。
+- 下一步：按接收当前值定稿改造执行期服务和ReceiveData，模块结果／分析展示真正读取的来源和时间；不增加配置页运行预览。服务通过执行层注入，复用连接并协调取消／超时。新规则见HANDOFF_RECEIVE_CURRENT_VALUE_DESIGN_20261012.md。

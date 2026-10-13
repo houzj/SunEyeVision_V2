@@ -38,6 +38,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     public class ExecutionContext
     {
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; init; }
+        public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationOutputs { get; init; }
         /// <summary>
         /// 日志记录器（可选）
         /// </summary>
@@ -142,7 +143,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             string? traceId = null,
             CancellationToken cancellationToken = default,
             IDictionary<string, object?>? globalVariables = null,
-            SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? communicationInputs = null)
+            SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? communicationInputs = null,
+            SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? communicationOutputs = null)
         {
             Logger = logger;
             ToolName = toolName;
@@ -155,6 +157,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             CancellationToken = cancellationToken;
             GlobalVariables = globalVariables;
             CommunicationInputs = communicationInputs;
+            CommunicationOutputs = communicationOutputs;
         }
 
         /// <summary>

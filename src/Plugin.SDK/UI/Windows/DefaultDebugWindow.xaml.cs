@@ -187,6 +187,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </summary>
         private void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
         {
+            if (!ToolEditorCommit.TryCommit(_control, out var error))
+            { PluginLogger.Warning(error, "DefaultDebugWindow"); MessageBox.Show(error, "配置未提交", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             // 执行参数验证
             if (ValidateParameters())
             {
@@ -568,30 +570,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             PluginLogger.Info($"[绑定诊断] 标准调试窗口 Closing | 控件={_control.GetType().Name}", "BindingDiag");
-            CommitAllDataGridEdits(ContentHost);
+            if (!ToolEditorCommit.TryCommit(_control, out var error))
+            {
+                e.Cancel = true;
+                PluginLogger.Warning(error, "DefaultDebugWindow");
+                MessageBox.Show(error, "配置未提交", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             // 绑定状态必须在窗口关闭前提交到节点 ParamSettings，不能只依赖
             // 内部控件的 Unloaded 事件顺序。
             _toolControl?.PersistParameterBindings();
             PluginLogger.Info($"[绑定诊断] 标准调试窗口 Closing 完成 | 控件={_control.GetType().Name}", "BindingDiag");
-        }
-
-        /// <summary>
-        /// 递归遍历视觉树，提交或取消所有 DataGrid 的编辑事务
-        /// </summary>
-        private void CommitAllDataGridEdits(DependencyObject root)
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
-            {
-                var child = VisualTreeHelper.GetChild(root, i);
-                if (child is DataGrid dataGrid)
-                {
-                    if (!dataGrid.CommitEdit(DataGridEditingUnit.Row, true))
-                    {
-                        dataGrid.CancelEdit(DataGridEditingUnit.Row);
-                    }
-                }
-                CommitAllDataGridEdits(child);
-            }
         }
 
         /// <summary>

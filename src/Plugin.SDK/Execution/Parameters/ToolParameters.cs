@@ -78,6 +78,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
         [JsonIgnore]
         internal SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        internal SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationOutputs { get; set; }
 
         /// <summary>
         /// 上游节点执行结果（由 AlgorithmNode.Execute() 在调用 Tool.Run() 前注入）

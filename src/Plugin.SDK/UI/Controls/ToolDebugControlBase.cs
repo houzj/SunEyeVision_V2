@@ -315,6 +315,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var stopwatch = Stopwatch.StartNew();
 
                 // 执行工具逻辑
+                if (!ToolEditorCommit.TryCommit(this, out var commitError))
+                    throw new InvalidOperationException(commitError);
+                PersistParameterBindings();
                 var results = await ExecuteToolAsync();
 
                 stopwatch.Stop();
@@ -485,6 +488,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void OnToolDebugControlLoaded(object sender, RoutedEventArgs e)
         {
+            ToolEditorCommit.Register(this);
             ConfigSetting.InstanceLoaded -= OnConfigSettingInstanceLoaded;
             ConfigSetting.InstanceLoaded += OnConfigSettingInstanceLoaded;
             SubscribeParameterBindingControls();
@@ -493,6 +497,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void OnToolDebugControlUnloaded(object sender, RoutedEventArgs e)
         {
+            ToolEditorCommit.Unregister(this);
             ConfigSetting.InstanceLoaded -= OnConfigSettingInstanceLoaded;
             // 关闭/切换调试窗口时做一次最终落盘，避免绑定选择事件在控件
             // 尚未完成 Loaded 或窗口关闭竞态中丢失。
@@ -810,6 +815,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         as ParamSettingContainer),
                 GlobalVariables = (DataProvider as DataSourceQueryService)?.GlobalVariables,
                 CommunicationInputs = (DataProvider as DataSourceQueryService)?.CommunicationReceiveService,
+                CommunicationOutputs = (DataProvider as DataSourceQueryService)?.CommunicationSendService,
             };
 
             if (DataProvider is DataSourceQueryService sourceService

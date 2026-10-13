@@ -8,11 +8,15 @@
   <ResourceDictionary>
    <ResourceDictionary.MergedDictionaries>
     <themes:DesignTimeThemeResourceDictionary/>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.SDK;component/UI/Controls/Communication/ProtocolEditorResources.xaml"/>
    </ResourceDictionary.MergedDictionaries>
    <Style x:Key="CenteredText" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
     <Setter Property="TextAlignment" Value="Center"/>
     <Setter Property="VerticalAlignment" Value="Center"/>
     <Setter Property="Margin" Value="4,2"/>
+    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=Text}"/>
    </Style>
   </ResourceDictionary>
  </UserControl.Resources>
@@ -20,13 +24,15 @@
   <TextBlock x:Name="ExecutionSummary" DockPanel.Dock="Top" Margin="0,0,0,8" Text="尚未执行"/>
   <DataGrid x:Name="AnalysisGrid" AutoGenerateColumns="False" IsReadOnly="True"
     CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column"
-    RowHeaderWidth="0" Background="{DynamicResource ThemePanelBackgroundBrush}"
+    RowHeaderWidth="0" RowStyle="{StaticResource ProtocolGridRow}"
+    CellStyle="{StaticResource ProtocolGridCell}" ColumnHeaderStyle="{StaticResource ProtocolGridHeader}"
+    Background="{DynamicResource ThemePanelBackgroundBrush}"
     Foreground="{DynamicResource ThemeTextPrimaryBrush}">
    <DataGrid.Columns>
     <DataGridTextColumn Header="字段／目标" Binding="{Binding Name}" Width="120" ElementStyle="{StaticResource CenteredText}"/>
-    <DataGridTextColumn Header="来源" Binding="{Binding Source}" Width="*" ElementStyle="{StaticResource CenteredText}"/>
-    <DataGridTextColumn Header="规则" Binding="{Binding Rule}" Width="*" ElementStyle="{StaticResource CenteredText}"/>
-    <DataGridTextColumn Header="分析说明" Binding="{Binding Detail}" Width="2*" ElementStyle="{StaticResource CenteredText}"/>
+    <DataGridTextColumn Header="来源" Binding="{Binding Source}" Width="*" MinWidth="160" ElementStyle="{StaticResource CenteredText}"/>
+    <DataGridTextColumn Header="规则" Binding="{Binding Rule}" Width="*" MinWidth="140" ElementStyle="{StaticResource CenteredText}"/>
+    <DataGridTextColumn Header="分析说明" Binding="{Binding Detail}" Width="2*" MinWidth="240" ElementStyle="{StaticResource CenteredText}"/>
     <DataGridTextColumn Header="校验通过" Binding="{Binding IsValid}" Width="80" ElementStyle="{StaticResource CenteredText}"/>
    </DataGrid.Columns>
   </DataGrid>

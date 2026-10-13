@@ -43,6 +43,7 @@
     <Project Path="tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj" />
     <Project Path="tools/SunEyeVision.Tool.ReceiveData/SunEyeVision.Tool.ReceiveData.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.SendData/SunEyeVision.Tool.SendData.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj" />
     <Project Path="tools/SunEyeVision.Tool.LineDetect/SunEyeVision.Tool.LineDetect.csproj" />
     <Project Path="tools/SunEyeVision.Tool.CircleDetect/SunEyeVision.Tool.CircleDetect.csproj" />

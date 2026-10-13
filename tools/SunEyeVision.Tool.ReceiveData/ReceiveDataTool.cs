@@ -28,8 +28,13 @@ public sealed class ReceiveDataTool : IToolPlugin<ReceiveDataParameters, Communi
             var values = new Dictionary<Guid, object?>();
             if (p.SourceKind == "Device")
             {
+                var source = service.GetSources().FirstOrDefault(s => s.DeviceId == p.DeviceId && s.TargetId == p.TargetId);
                 var sample = await service.ReadAsync(p.DeviceId, p.TargetId, token).ConfigureAwait(false);
-                Add(fields[0], sample.Value, $"{sample.DeviceId}/{sample.TargetId}；读取时间 {sample.Timestamp:O}", sample.Id.ToString());
+                var sourceName = !string.IsNullOrWhiteSpace(source?.DeviceName)
+                    ? source.DeviceName + (string.IsNullOrWhiteSpace(source.TargetName) ? "" : " / " + source.TargetName)
+                    : !string.IsNullOrWhiteSpace(source?.DisplayName) ? source.DisplayName
+                    : string.IsNullOrWhiteSpace(p.TargetId) ? "通信设备" : "通信设备 / 数据点";
+                Add(fields[0], sample.Value, sourceName, $"数据时间 {sample.Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}");
             }
             else if (p.SourceKind == "Variable")
             {
@@ -39,16 +44,20 @@ public sealed class ReceiveDataTool : IToolPlugin<ReceiveDataParameters, Communi
                 foreach (var row in p.Variables)
                 {
                     if (!current.TryGetValue(row.VariableId, out var value)) throw new InvalidOperationException("所选变量已失效。");
-                    Add(row.Definition(), value.Value, $"全局.{value.Source.Name}", value.Source.Id);
+                    var sourceName = "全局 / " + (string.IsNullOrWhiteSpace(value.Source.Group) ? "" : value.Source.Group + " / ") + value.Source.Name;
+                    Add(row.Definition(), value.Value, sourceName, "读取时间 " + DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss.fff zzz"));
                 }
             }
             else throw new NotSupportedException("队列接收尚未实现。");
             token.ThrowIfCancellationRequested(); result.PublishOutputs(values); result.SetSuccess(watch.Elapsed.TotalMilliseconds);
-            void Add(CommunicationOutputField field, object value, string detail, string identity)
+            void Add(CommunicationOutputField field, object value, string sourceName, string time)
             {
                 value = CommunicationReceiveService.Normalize(value);
                 if (CommunicationReceiveService.ValueType(value) != field.VariableType) throw new InvalidOperationException("来源类型已变化，请重新确认绑定。");
-                values.Add(field.FieldId, value); analysis.Add(new(field.FieldId, field.Name, identity, field.VariableType, detail, true));
+                var displayValue = value is BinaryPayload binary ? "HEX " + binary.ToString()
+                    : Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "";
+                values.Add(field.FieldId, value);
+                analysis.Add(new(field.FieldId, field.Name, sourceName, field.VariableType, $"当前值：{displayValue}；{time}", true));
             }
         }
         catch (OperationCanceledException) { result.ClearOutputs(); result.Status = ExecutionStatus.Cancelled; result.ErrorMessage = "接收已取消。"; }

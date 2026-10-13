@@ -22,3 +22,11 @@ public sealed class CommunicationSendParameterDefinition : CommunicationEventFie
     /// <summary>Configured literal used by the manual send test; callers may supply a typed snapshot instead.</summary>
     public string Content { get; set; } = string.Empty;
 }
+
+/// <summary>Presentation only; event identity and persisted names are not rewritten.</summary>
+public static class CommunicationSendEventNames
+{
+    public static string DisplayName(string? name, string? mode) => !string.IsNullOrWhiteSpace(name)
+        ? name.Trim()
+        : mode switch { "Direct" => "文本-直接输出", "Assembly" => "文本-组装输出", _ => "发送事件" };
+}

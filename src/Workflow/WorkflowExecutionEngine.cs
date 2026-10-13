@@ -867,6 +867,7 @@ namespace SunEyeVision.Workflow
                     foreach (var value in overrides)
                         executionNode.ParamSettings.SetSetting(ParamSetting.CreateConstant(value.Key, value.Value));
                 executionNode.CameraCaptureService = request?.CameraCaptureService;
+                executionNode.CommunicationOutputs = request?.CommunicationOutputs;
                 executionNode.CommunicationInputs = request?.CommunicationInputs == null ? null :
                     new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(request.CommunicationInputs, null, workflowId: source.Id);
                 executionNode.CameraFrame = request != null && request.CameraFrames.TryGetValue(node.Id, out var cameraFrame)

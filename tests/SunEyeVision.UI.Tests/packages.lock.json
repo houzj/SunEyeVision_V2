@@ -1809,6 +1809,13 @@
           "System.Text.Json": "[10.0.3, )"
         }
       },
+      "suneyevision.tool.senddata": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
+          "System.Text.Json": "[10.0.3, )"
+        }
+      },
       "suneyevision.ui": {
         "type": "Project",
         "dependencies": {

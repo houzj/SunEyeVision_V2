@@ -37,7 +37,7 @@ public sealed class CommunicationSendEventViewModel : ViewModelBase
     public static IReadOnlyList<string> Modes { get; } = new[] { "直接输出", "组装输出" };
     public ObservableCollection<CommunicationSeparatorOption> SeparatorOptions { get; } = CommunicationSeparators.CreateOptions();
     public string Name { get => _name; set => SetProperty(ref _name, value); }
-    public string DisplayName => string.IsNullOrWhiteSpace(Name) ? $"文本-{ModeDisplayName}" : Name;
+    public string DisplayName => CommunicationSendEventNames.DisplayName(Name, Mode);
     public string DeviceId
     {
         get => _deviceId;

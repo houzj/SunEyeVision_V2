@@ -97,6 +97,13 @@ public sealed class WorkflowExecutionDependencyGraph
 
         foreach (var node in workflow.Nodes)
         {
+            if (node.Parameters is SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationBindingInputProvider rows)
+                foreach (var expression in rows.GetInputExpressions())
+                {
+                    var dot = expression.IndexOf('.');
+                    if (dot > 0 && Guid.TryParse(expression[..dot], out _))
+                        AddDependency(expression[..dot], node.Id, WorkflowDependencyKind.ParameterBinding, "SendInput");
+                }
             if (node.Parameters is SunEyeVision.Plugin.SDK.Models.Communication.IReceiveVariableInputProvider receive)
                 foreach (var id in receive.GetReceiveVariableIds())
                 {

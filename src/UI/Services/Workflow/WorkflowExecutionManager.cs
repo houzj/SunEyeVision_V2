@@ -260,6 +260,8 @@ namespace SunEyeVision.UI.Services.Workflow
                             // Task 本身不传入 cts.Token，保证即使 Stop 紧随 Start，
                             // 清理 finally 仍会执行并归还执行租约。
                             cts.Token.ThrowIfCancellationRequested();
+                            if (!_communicationOwner.Value)
+                                await InvokeOnUIAsync(() => CommitPendingEditors(workflow.RootWorkflowId));
                             cameraSource = ResolveSingleCameraSource(workflow);
                             if (cameraSource is not null)
                             {
@@ -438,6 +440,8 @@ namespace SunEyeVision.UI.Services.Workflow
             {
             cancellationToken = solutionCancellation.Token;
             var tabs = workflows.Where(tab => tab != null).ToList();
+            if (!_communicationOwner.Value)
+                await InvokeOnUIAsync(() => CommitPendingEditors(null));
             var tabsById = tabs.ToDictionary(tab => tab.RootWorkflowId, StringComparer.Ordinal);
             var plan = SolutionExecutionDependencyGraph.Compile(solution);
             var runtimeGlobals = solution.GlobalVariables.Where(variable => variable.ProducerBinding == null)
@@ -632,7 +636,8 @@ namespace SunEyeVision.UI.Services.Workflow
                     NodeId = node.Id, NodeName = node.Name, ParameterBindings = bindings,
                     GlobalVariables = globals, ResolvedInputImage = image, CancellationToken = token,
                     CameraCaptureService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime,
-                    CommunicationInputs = receiveInputs
+                    CommunicationInputs = receiveInputs,
+                    CommunicationOutputs = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends
                 });
                 if (result.IsCancelled) throw new OperationCanceledException(token);
                 if (!result.IsSuccess) throw new InvalidOperationException(result.ErrorMessage ?? "触发模块执行失败。");
@@ -672,6 +677,8 @@ namespace SunEyeVision.UI.Services.Workflow
             Dictionary<string, long>? sequenceNumbers = null)
         {
             var snapshot = GetOrCreateExecutionSnapshot(workflow.RootWorkflowId, workflow.Name);
+            if (!_communicationOwner.Value)
+                await InvokeOnUIAsync(() => CommitPendingEditors(workflow.RootWorkflowId));
             await InvokeOnUIAsync(() =>
             {
                 snapshot.Begin(workflow.Name);
@@ -830,6 +837,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     nodeParameterOverrides: nodeParameterOverrides,
                     nodeBindingOverrides: bindingOverrides,
                     communicationInputs: receiveInputs,
+                    communicationOutputs: SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends,
                     cameraCaptureService: hasCameraSource
                         ? SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime
                         : null,
@@ -1132,12 +1140,34 @@ namespace SunEyeVision.UI.Services.Workflow
                 && node.ImageSourceConfig?.SourceKind != SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera) == true;
         }
 
+        private void CommitPendingEditors(string? workflowId)
+        {
+            var ids = new HashSet<string>();
+            var visited = new HashSet<string>();
+            void Include(string id)
+            {
+                if (!visited.Add(id)) return;
+                var flow = _workflowEngine.GetWorkflowById(id);
+                if (flow == null) return;
+                foreach (var node in flow.Nodes)
+                {
+                    ids.Add(node.Id);
+                    if (!string.IsNullOrWhiteSpace(node.SubroutineId)) Include(node.SubroutineId);
+                }
+            }
+            if (workflowId != null) Include(workflowId);
+            if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryCommitOpenEditors(workflowId == null ? null : ids.Contains, out var error))
+                throw new InvalidOperationException(error);
+        }
+
         private async Task<ExecutionResult> ExecuteSingleTriggeredAsync(
             WorkflowTabViewModel workflow,
             CancellationToken cancellationToken,
             IDictionary<string, object?>? globalVariablesOverride = null,
             Dictionary<string, long>? sequenceNumbers = null)
         {
+            if (!_communicationOwner.Value)
+                await InvokeOnUIAsync(() => CommitPendingEditors(workflow.RootWorkflowId));
             var cameraSource = ResolveSingleCameraSource(workflow);
             if (cameraSource is null)
                 return await ExecuteWorkflowInternal(workflow, cancellationToken, globalVariablesOverride,

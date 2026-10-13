@@ -79,6 +79,9 @@ public class CommunicationReceiveDataToolTests
         var p = new ReceiveDataParameters { SourceKind = "Variable", Variables = new() { new() { VariableId = "v", DataType = type } } };
         p.SetExecutionContext(new ToolContext { CommunicationInputs = service, GlobalVariables = new Dictionary<string, object?> { ["v"] = "OLD" } });
         var result = new ReceiveDataTool().Run(p); Assert.True(result.IsSuccess, result.ErrorMessage);
+        Assert.Equal("全局 / group / v", Assert.Single(result.Analysis).Source);
+        Assert.Contains("当前值：", Assert.Single(result.Analysis).Detail);
+        Assert.Contains("读取时间", Assert.Single(result.Analysis).Detail);
         var field = p.Variables[0].Definition(); Assert.NotNull(Value(result, field));
         var key = field.BindingKey; p.Variables[0].Name = "renamed"; Assert.Equal(key, p.Variables[0].Definition().BindingKey);
         p.Variables.Add(new() { Name = "out1", VariableId = "v", DataType = type == "String" ? "Integer" : "String" });
@@ -97,7 +100,28 @@ public class CommunicationReceiveDataToolTests
         var result = new ReceiveDataTool().Run(p); Assert.True(result.IsSuccess, result.ErrorMessage);
         Assert.Equal(2L, Assert.Single(Assert.IsType<long[]>(Value(result, p.Variables[0].Definition()))));
         variable.Name = "renamed"; Assert.Equal("renamed", app.Receives.ReadVariables(new[] { variable.Id })[variable.Id].Source.Name);
+        result = new ReceiveDataTool().Run(p);
+        Assert.Equal("全局 / group / renamed", Assert.Single(result.Analysis).Source);
+        Assert.DoesNotContain(variable.Id, Assert.Single(result.Analysis).Detail);
         solution.GlobalVariables.Clear(); result = new ReceiveDataTool().Run(p); Assert.False(result.IsSuccess);
+    }
+    [Theory]
+    [InlineData("", "TCP客户端1", "", "TCP客户端1")]
+    [InlineData("point", "OPC UA1", "test1", "OPC UA1 / test1")]
+    [InlineData("address", "Modbus1", "Address1", "Modbus1 / Address1")]
+    [InlineData("", "", "", "通信设备")]
+    public void Device_analysis_shows_source_names_and_read_value_not_internal_ids(string target, string deviceName, string targetName, string expected)
+    {
+        var deviceId = Guid.NewGuid().ToString(); var service = new CommunicationReceiveService();
+        service.Configure(new[] { new CommunicationReceiveSource(deviceId, target, "", "Binary", DeviceName: deviceName, TargetName: targetName) });
+        service.Publish(deviceId, target, DateTimeOffset.UtcNow, new BinaryPayload(new byte[] { 0x41, 0x42 }));
+        var p = new ReceiveDataParameters { DeviceId = deviceId, TargetId = target };
+        p.SetExecutionContext(new ToolContext { CommunicationInputs = service });
+        var result = new ReceiveDataTool().Run(p); Assert.True(result.IsSuccess, result.ErrorMessage);
+        var row = Assert.Single(result.Analysis); Assert.Equal(expected, row.Source);
+        Assert.Contains("HEX 4142", row.Detail); Assert.Contains("数据时间", row.Detail);
+        Assert.DoesNotContain(deviceId, row.Source + row.Detail);
+        Assert.Equal("4142", Assert.Single(Assert.IsType<BinaryPayload[]>(Value(result, p.OutputDefinition()))).ToString());
     }
     [Fact]
     public async Task Async_receive_cancel_or_read_error_clears_business_outputs_without_cache_fallback()

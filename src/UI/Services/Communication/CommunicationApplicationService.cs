@@ -40,11 +40,13 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
     public CommunicationHeartbeatService Heartbeats { get; }
     public CommunicationAutomationService Automation { get; }
     public SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService Receives { get; } = new();
+    public WorkflowCommunicationSendService Sends { get; }
 
     public CommunicationApplicationService(SolutionManager solutions, CommunicationRuntimeComposition composition)
     {
         _solutions = solutions ?? throw new ArgumentNullException(nameof(solutions));
         Composition = composition ?? throw new ArgumentNullException(nameof(composition));
+        Sends = new(() => { lock (_gate) return _disposed ? null : _activeSolution; }, Composition.Runtime);
         Heartbeats = new CommunicationHeartbeatService(Composition.Runtime);
         Automation = new CommunicationAutomationService(Composition.Runtime);
         Receives.ActiveReader = ReadCurrentDeviceAsync;

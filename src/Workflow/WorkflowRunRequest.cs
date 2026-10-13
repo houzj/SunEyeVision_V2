@@ -20,13 +20,15 @@ public sealed class WorkflowRunRequest
         ICameraCaptureService? cameraCaptureService = null,
         IReadOnlyDictionary<string, CameraFrame>? cameraFrames = null,
         IDictionary<string, IReadOnlyDictionary<string, object?>>? nodeBindingOverrides = null,
-        SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? communicationInputs = null)
+        SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? communicationInputs = null,
+        SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? communicationOutputs = null)
     {
         if (string.IsNullOrWhiteSpace(workflowId))
             throw new ArgumentException("工作流 ID 不能为空。", nameof(workflowId));
 
         WorkflowId = workflowId;
         CommunicationInputs = communicationInputs;
+        CommunicationOutputs = communicationOutputs;
         InputImage = inputImage;
         GlobalVariables = new Dictionary<string, object?>(globalVariables ?? new Dictionary<string, object?>());
         RuntimeParameters = new Dictionary<string, object>(runtimeParameters ?? new Dictionary<string, object>());
@@ -43,6 +45,7 @@ public sealed class WorkflowRunRequest
 
     public string WorkflowId { get; }
     public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; }
+    public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationOutputs { get; }
     public IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> NodeBindingOverrides { get; }
     public IVisionImage? InputImage { get; }
     public IReadOnlyDictionary<string, object?> GlobalVariables { get; }

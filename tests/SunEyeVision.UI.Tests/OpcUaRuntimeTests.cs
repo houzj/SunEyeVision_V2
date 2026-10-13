@@ -250,6 +250,29 @@ public sealed class OpcUaRuntimeTests
             var result = await execution.ExecuteAsync(new SunEyeVision.Tool.ReceiveData.ReceiveDataTool(),
                 new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(parameters) { CommunicationInputs = service.Receives });
             Assert.True(result.IsSuccess, result.ErrorMessage);
+            var sending = new SunEyeVision.Tool.SendData.SendDataParameters { DeviceId = device.Id,
+                Rows = new() { new() { TargetId = point.Id, DataType = "Int32", InputText = "__GlobalVars__.number" } } };
+            var sent = await execution.ExecuteAsync(new SunEyeVision.Tool.SendData.SendDataTool(),
+                new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(sending) { CommunicationOutputs = service.Sends,
+                    GlobalVariables = new Dictionary<string, object?> { ["number"] = 77L } });
+            Assert.True(sent.IsSuccess, sent.ErrorMessage);
+            Assert.Equal(77L, (await service.Receives.ReadAsync(device.Id, point.Id)).Value);
+            sending.Rows[0].InputText = "1111";
+            sent = await execution.ExecuteAsync(new SunEyeVision.Tool.SendData.SendDataTool(),
+                new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(sending) { CommunicationOutputs = service.Sends });
+            Assert.True(sent.IsSuccess, sent.ErrorMessage);
+            Assert.Equal(1111L, (await service.Receives.ReadAsync(device.Id, point.Id)).Value);
+            sending.Rows[0].DataType = "Double"; sending.IgnoreErrors = true;
+            sent = await execution.ExecuteAsync(new SunEyeVision.Tool.SendData.SendDataTool(),
+                new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(sending) { CommunicationOutputs = service.Sends });
+            Assert.False(sent.IsSuccess); Assert.Contains("目标要求 Int32", sent.ErrorMessage); Assert.Contains("Double", sent.ErrorMessage);
+            Assert.Equal(1111L, (await service.Receives.ReadAsync(device.Id, point.Id)).Value);
+            sending.Rows[0].DataType = "Int32"; sending.IgnoreErrors = false;
+            sending.Rows[0].InputText = "not-an-integer";
+            sent = await execution.ExecuteAsync(new SunEyeVision.Tool.SendData.SendDataTool(),
+                new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(sending) { CommunicationOutputs = service.Sends });
+            Assert.False(sent.IsSuccess);
+            Assert.Equal(1111L, (await service.Receives.ReadAsync(device.Id, point.Id)).Value);
             manager.CloseSolution();
             await service.ReadyAsync();
             Assert.False(composition.Runtime.IsConnected(device.Id));

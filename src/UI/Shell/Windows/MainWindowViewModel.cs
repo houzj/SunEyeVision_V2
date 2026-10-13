@@ -3802,6 +3802,7 @@ SplitterPosition = position;
 
             var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider);
             queryService.CommunicationReceiveService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
+            queryService.CommunicationSendService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends;
             queryService.SelectReceiveVariable = () =>
             {
                 var selected = SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableSelectDialog.ShowSelect(

@@ -41,6 +41,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
     public CommunicationAutomationService Automation { get; }
     public SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService Receives { get; } = new();
     public WorkflowCommunicationSendService Sends { get; }
+    public OutputBindingChangeService OutputBindings { get; } = new();
 
     public CommunicationApplicationService(SolutionManager solutions, CommunicationRuntimeComposition composition)
     {
@@ -59,6 +60,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         Heartbeats.Runner.StatusChanged += OnHeartbeatStatus;
         _solutions.SolutionOpened += OnSolutionOpened;
         _solutions.SolutionClosed += OnSolutionClosed;
+        _solutions.SolutionSaving += OnSolutionSaving;
         Composition.Runtime.ConnectionClosed += OnConnectionClosed;
         Composition.Runtime.StatusChanged += OnReceiveStatus;
         if (_solutions.CurrentSolution is { } current)
@@ -81,7 +83,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         var sources = new List<SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSource>();
         foreach (var device in solution?.Communications.Where(d => d.IsEnabled) ?? Enumerable.Empty<ConfiguredCommunication>())
         {
-            var signature = System.Text.Json.JsonSerializer.Serialize(device, WorkflowSerializationOptions.Default);
+            var signature = ReceiveConfigurationKey(device);
             if (device.IsRawProtocol) sources.Add(new(device.Id, "", device.Name, "Binary", signature, device.Name));
             else if (device.IsModbus)
                 foreach (var point in device.ModbusAddressPoints.Where(p => p.AccessMode != "只写"))
@@ -91,6 +93,14 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
                     sources.Add(new(device.Id, point.Id, $"{device.Name} / {point.Name}", "Native", signature, device.Name, point.Name, true));
         }
         Receives.Configure(sources, reset);
+    }
+    private static string ReceiveConfigurationKey(ConfiguredCommunication device)
+    {
+        var config = System.Text.Json.Nodes.JsonNode.Parse(System.Text.Json.JsonSerializer.Serialize(device, WorkflowSerializationOptions.Default))!.AsObject();
+        // Labels do not change the current connection or the meaning of received bytes.
+        config.Remove(nameof(ConfiguredCommunication.Name));
+        config.Remove(nameof(ConfiguredCommunication.Description));
+        return config.ToJsonString();
     }
     private void OnReceiveStatus(object? sender, SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationStatusSnapshot status)
     {
@@ -110,7 +120,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             if (_disposed) throw new ObjectDisposedException(nameof(CommunicationApplicationService));
             device = _activeSolution?.Communications.FirstOrDefault(d => d.Id == source.DeviceId && d.IsEnabled)
                 ?? throw new InvalidOperationException("设备来源不存在或已禁用。");
-            if (System.Text.Json.JsonSerializer.Serialize(device, WorkflowSerializationOptions.Default) != source.ConfigurationKey)
+            if (ReceiveConfigurationKey(device) != source.ConfigurationKey)
                 throw new InvalidOperationException("设备配置已变化，请重新选择来源。");
             if (device.IsModbus)
             {
@@ -143,7 +153,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             token.ThrowIfCancellationRequested();
             lock (_gate)
                 if (_disposed || _activeSolution?.Communications.FirstOrDefault(d => d.Id == source.DeviceId) != device || !device.IsEnabled
-                    || System.Text.Json.JsonSerializer.Serialize(device, WorkflowSerializationOptions.Default) != source.ConfigurationKey)
+                    || ReceiveConfigurationKey(device) != source.ConfigurationKey)
                     throw new InvalidOperationException("读取期间来源配置已变化。");
         }
     }
@@ -152,7 +162,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         lock (_gate) lock (GlobalVariable.ValueGate)
             return (_activeSolution?.GlobalVariables ?? new()).Where(v => v.Type is "String" or "Integer" or "Double" or "Boolean" or "Binary")
                 .Select(v => new SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource(v.Id, v.Name, v.Group, v.Type,
-                    v.ProducerBinding != null, v.ProducerBinding?.NodeId ?? "", v.ProducerBinding?.ResultName ?? "", v.ProducerBinding?.WorkflowId ?? "")).ToArray();
+                    v.ProducerBinding != null || !string.IsNullOrEmpty(v.RebindingReason) || !string.IsNullOrEmpty(v.BindingValidationPending), v.ProducerBinding?.NodeId ?? "", v.ProducerBinding?.ResultName ?? "", v.ProducerBinding?.WorkflowId ?? "")).ToArray();
     }
     private IReadOnlyDictionary<string, SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableValue> ReadCurrentVariables(IReadOnlyList<string> ids)
     {
@@ -163,6 +173,8 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             foreach (var id in ids.Distinct())
             {
                 var v = _activeSolution.GlobalVariables.FirstOrDefault(v => v.Id == id) ?? throw new InvalidOperationException("所选变量已删除。");
+                if (!string.IsNullOrEmpty(v.RebindingReason)) throw new InvalidOperationException(v.RebindingReason);
+                if (!string.IsNullOrEmpty(v.BindingValidationPending)) throw new InvalidOperationException(v.BindingValidationPending);
                 if (v.ProducerBinding != null) throw new InvalidOperationException("所选变量有生产者，请在生产者成功后的方案运行中读取，不使用设计初值。");
                 var value = SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService.Normalize(v.Value ?? throw new InvalidOperationException("变量为空。"));
                 if (SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService.ValueType(value) != v.Type) throw new InvalidOperationException("变量声明与实际类型不匹配。");
@@ -239,6 +251,11 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             LogWarning($"心跳 {id} 发送失败：{status}");
     }
     private void OnSolutionOpened(object? sender, Solution solution) => BeginSolutionSwitch(solution);
+    private void OnSolutionSaving(object? sender, Solution solution)
+    {
+        if (ReferenceEquals(solution, _activeSolution)) OutputBindings.ReconcileAll();
+        else { var validation = new OutputBindingChangeService(); validation.Reset(solution); validation.ReconcileAll(); }
+    }
     private void OnSolutionClosed(object? sender, EventArgs e) => BeginSolutionSwitch(null);
 
     private void BeginSolutionSwitch(Solution? solution)
@@ -260,6 +277,8 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             var pendingRetries = _reconnectTasks.ToArray();
             _reconnectTasks.RemoveAll(task => task.IsCompleted);
             _activeSolution = solution;
+            OutputBindings.Reset(solution);
+            OutputBindings.ReconcileAll();
             ConfigureReceiveSources(solution, reset: true);
             _heartbeatReady = false;
             Automation.Reset(solution);
@@ -490,6 +509,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             Composition.Polling.BatchReceived -= OnAutomationModbus;
             _solutions.SolutionOpened -= OnSolutionOpened;
             _solutions.SolutionClosed -= OnSolutionClosed;
+            _solutions.SolutionSaving -= OnSolutionSaving;
             Composition.Runtime.ConnectionClosed -= OnConnectionClosed;
             Composition.Runtime.StatusChanged -= OnReceiveStatus;
             _switchCancellation?.Cancel();

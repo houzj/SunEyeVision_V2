@@ -1317,6 +1317,8 @@ SplitterPosition = position;
             try
             {
                 CurrentCommandManager.Undo();
+                SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
+                SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
                 AddLog($"↩️ 撤销: {CurrentCommandManager.LastCommandDescription}");
             }
             catch (Exception ex)
@@ -1337,6 +1339,8 @@ SplitterPosition = position;
             try
             {
                 CurrentCommandManager.Redo();
+                SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
+                SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
                 AddLog($"↪️ 重做: {CurrentCommandManager.LastCommandDescription}");
             }
             catch (Exception ex)
@@ -2415,6 +2419,9 @@ SplitterPosition = position;
                 var command = new AppCommands.ReplaceConnectionCommand(connections, existingConnection, connection);
                 WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
+                var previousTarget = WorkflowTabViewModel.SelectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == existingConnection.TargetNodeId) as WorkflowNodeBase;
+                AutoBindImageSourceOnConnectionRemoved(existingConnection.SourceNodeId, previousTarget, existingConnection.Id);
+
                 // Tab 与引擎共享同一连接集合，命令已同时更新定义。
             }
             else
@@ -2477,7 +2484,7 @@ SplitterPosition = position;
             var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
                 .FirstOrDefault(n => n.Id == connection.TargetNodeId) as WorkflowNodeBase;
             if (targetNode != null)
-                TryAutoBindImageSource(targetNode);
+                TryAutoBindImageSource(targetNode, connection);
 
             if (connection.SourceNodeId != connection.TargetNodeId)
             {
@@ -2489,44 +2496,14 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 连线删除后自动重设 ImageSource — 确保所见即所得
+        /// 连线删除仅清除它建立的默认图像绑定，保留显式来源，不自动换源。
         /// </summary>
         private void AutoBindImageSourceOnConnectionRemoved(
             string removedSourceNodeId,
-            WorkflowNodeBase? targetNode)
+            WorkflowNodeBase? targetNode, string connectionId)
         {
-            if (targetNode?.Parameters == null) return;
-
-            var imageSourceProp = targetNode.Parameters.GetType().GetProperty("ImageSource");
-            if (imageSourceProp == null) return;
-
-            var currentImageSource = imageSourceProp.GetValue(targetNode.Parameters) as AvailableDataSource;
-            if (currentImageSource?.SourceNodeId != removedSourceNodeId) return;
-
-            // 从 DSQS 获取剩余可用图像源，取第一个
-            // 没有则清空（null），不兜底回退
-            AvailableDataSource? firstImageSource = null;
-            if (targetNode is SunEyeVision.UI.Shared.WorkflowNode uiNode)
-            {
-                var dataProvider = GetDataProviderForNode(uiNode);
-                if (dataProvider is IDataSourceQueryService queryService)
-                {
-                    firstImageSource = queryService.GetAvailableDataSources(targetNode.Id)
-                        .FirstOrDefault(ds => ds.PropertyType != null
-                            && typeof(IVisionImage).IsAssignableFrom(ds.PropertyType));
-                }
-            }
-
-            imageSourceProp.SetValue(targetNode.Parameters, firstImageSource);
-
-            if (firstImageSource != null)
-            {
-                AddLog($"图像源已更新: {targetNode.Name} → {firstImageSource.DropdownDisplayText}");
-            }
-            else
-            {
-                AddLog($"图像源已清空: {targetNode.Name}（无可用上游）");
-            }
+            if (targetNode != null && ConnectionBindingPolicy.RemoveAutomaticImageBinding(targetNode, connectionId))
+                AddLog($"图像源已清空: {targetNode.Name}（自动来源连线已删除，需重新选择）");
         }
 
         /// <summary>
@@ -2535,18 +2512,17 @@ SplitterPosition = position;
         /// 单一路径，无回退 — DataSourceQueryService 返回所有可用数据源
         /// （包含真实上游节点输出 + 子程序合成端口 __SubroutineInputs__）。
         /// </summary>
-        private void TryAutoBindImageSource(WorkflowNodeBase node)
+        private void TryAutoBindImageSource(WorkflowNodeBase node, WorkflowConnection? connection = null)
         {
             if (node?.Parameters == null) return;
 
             var imageSourceProp = node.Parameters.GetType().GetProperty("ImageSource");
             if (imageSourceProp == null) return;
+            if (node.Parameters.RebindingRequired.ContainsKey("ImageSource")) return;
 
-            // 已有用户手动绑定（非自动默认源），不覆盖
-            // ★ 默认源 __SubroutineInputs__（自动产生）允许被连线绑定覆盖（连线优先）
+            // 已有来源不覆盖，包含用户确认的子程序输入。
             if (imageSourceProp.GetValue(node.Parameters) is AvailableDataSource current
-                && !string.IsNullOrEmpty(current.SourceNodeId)
-                && current.SourceNodeId != "__SubroutineInputs__")
+                && !string.IsNullOrEmpty(current.SourceNodeId))
                 return;
 
             if (node is not SunEyeVision.UI.Shared.WorkflowNode uiNode) return;
@@ -2560,7 +2536,7 @@ SplitterPosition = position;
 
             if (firstImageSource != null)
             {
-                imageSourceProp.SetValue(node.Parameters, firstImageSource);
+                imageSourceProp.SetValue(node.Parameters, firstImageSource.WithConnectionOwnership(connection != null && firstImageSource.SourceNodeId == connection.SourceNodeId ? connection.Id : null));
                 AddLog($"自动绑定图像源: {node.Name} → {firstImageSource.DropdownDisplayText}");
             }
         }
@@ -2666,7 +2642,7 @@ SplitterPosition = position;
             // 级联清理：清理被删节点关联的全局变量绑定
             foreach (var node in selectedNodes)
             {
-                CleanupBindingsForDeletedNode(node.Id);
+                CleanupBindingsForDeletedNode(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId, node.Id);
             }
 
             // ★ Phase 3：级联清理子程序工作流（删除 Subroutine 节点时同步清理对应后台工作流）
@@ -2689,11 +2665,13 @@ SplitterPosition = position;
             }
 
             // 处理被删连接的后置副作用（ImageSource 回退、日志）
+            SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
+            SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
             foreach (var conn in allAffectedConnections)
             {
                 var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
                     .FirstOrDefault(n => n.Id == conn.TargetNodeId) as WorkflowNodeBase;
-                AutoBindImageSourceOnConnectionRemoved(conn.SourceNodeId, targetNode);
+                AutoBindImageSourceOnConnectionRemoved(conn.SourceNodeId, targetNode, conn.Id);
 
                 var sourceNodeName = WorkflowTabViewModel.SelectedTab.WorkflowNodes
                     .FirstOrDefault(n => n.Id == conn.SourceNodeId)?.Name ?? conn.SourceNodeId;
@@ -3803,6 +3781,26 @@ SplitterPosition = position;
             var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider);
             queryService.CommunicationReceiveService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
             queryService.CommunicationSendService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends;
+            var bindingWorkflow = (SunEyeVision.Workflow.Workflow)connectionProvider;
+            var bindingService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings;
+            queryService.WorkflowId = bindingWorkflow.Id;
+            queryService.BindingCandidateNodeIds = id => bindingService.GetCandidateNodeIds(bindingWorkflow.Id, id);
+            queryService.ExistingBindingSourceNodeIds = id => bindingService.GetExistingBindingSourceNodeIds(bindingWorkflow.Id, id);
+            queryService.FormalOutputContractReader = id => bindingWorkflow.Nodes.FirstOrDefault(n => n.Id == id) is { } n ? bindingService.ReadContract(n) : null;
+            queryService.CommitOutputConfiguration = id =>
+            {
+                var changes = bindingService.Commit(bindingWorkflow.Id, id);
+                var globals = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution?.GlobalVariables
+                    .Where(v => string.IsNullOrEmpty(v.RebindingReason) && string.IsNullOrEmpty(v.BindingValidationPending)).ToDictionary(v => v.Name, v => v.Value);
+                queryService.SetGlobalVariables(globals);
+                foreach (var cached in _workflowDsqsCache.Values) cached.SetGlobalVariables(globals);
+                SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
+                if (!IsRunning)
+                {
+                    foreach (var affected in bindingService.InvalidatedNodes.Where(n => n.WorkflowId == _workflowEngine.CurrentWorkflow?.Id)) CurrentWorkflowContext?.RemoveNodeResult(affected.NodeId);
+                }
+                if (changes.Count > 0) AddLog("绑定配置需要重新设置：" + string.Join("；", changes.Select(c => c.NodeName + "." + c.InputName + "（" + c.Reason + "）")));
+            };
             queryService.SelectReceiveVariable = () =>
             {
                 var selected = SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableSelectDialog.ShowSelect(
@@ -3815,6 +3813,7 @@ SplitterPosition = position;
             // 才由 WorkflowContext 注入 __GlobalVars__ 合成结果。
             var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             queryService.SetGlobalVariables(solutionManager.CurrentSolution?.GlobalVariables?
+                .Where(variable => string.IsNullOrEmpty(variable.RebindingReason) && string.IsNullOrEmpty(variable.BindingValidationPending))
                 .ToDictionary(variable => variable.Name, variable => variable.Value));
 
             // SSOT 委托：实时读取 WorkflowContext，无本地缓存拷贝
@@ -5755,8 +5754,12 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// 级联清理：删除节点时清理所有关联的 ConsumerBinding
         /// </summary>
         /// <param name="nodeId">被删除的节点ID</param>
-        private void CleanupBindingsForDeletedNode(string nodeId)
+        private void CleanupBindingsForDeletedNode(string workflowId, string nodeId)
         {
+            var changes = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.Commit(workflowId, nodeId);
+            SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
+            if (!IsRunning) foreach (var id in SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.InvalidatedNodes.Where(n => n.WorkflowId == _workflowEngine.CurrentWorkflow?.Id)) CurrentWorkflowContext?.RemoveNodeResult(id.NodeId);
+            if (changes.Count > 0) AddLog("节点删除，已解除绑定：" + string.Join("；", changes.Select(c => c.NodeName + "." + c.InputName)));
             var solution = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
             if (solution?.GlobalVariables == null)
                 return;
@@ -5764,7 +5767,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             foreach (var gv in solution.GlobalVariables)
             {
                 // 清理 ConsumerBinding
-                gv.ConsumerBindings.RemoveAll(c => c.NodeId == nodeId);
+                gv.ConsumerBindings.RemoveAll(c => c.NodeId == nodeId && c.WorkflowId == workflowId);
             }
 
             // 重建模块结果 FlatRows（变更新绑定状态显示）

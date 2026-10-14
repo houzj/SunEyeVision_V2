@@ -444,7 +444,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 await InvokeOnUIAsync(() => CommitPendingEditors(null));
             var tabsById = tabs.ToDictionary(tab => tab.RootWorkflowId, StringComparer.Ordinal);
             var plan = SolutionExecutionDependencyGraph.Compile(solution);
-            var runtimeGlobals = solution.GlobalVariables.Where(variable => variable.ProducerBinding == null)
+            var runtimeGlobals = solution.GlobalVariables.Where(variable => variable.ProducerBinding == null && string.IsNullOrEmpty(variable.RebindingReason) && string.IsNullOrEmpty(variable.BindingValidationPending))
                 .ToDictionary(variable => variable.Name, variable => variable.Value, StringComparer.Ordinal);
             var workflowPredecessors = BuildWorkflowPredecessors(plan, tabsById.Keys);
             var completed = new HashSet<string>(StringComparer.Ordinal);
@@ -681,7 +681,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 await InvokeOnUIAsync(() => CommitPendingEditors(workflow.RootWorkflowId));
             await InvokeOnUIAsync(() =>
             {
-                snapshot.Begin(workflow.Name);
+                BeginRunPresentation(workflow.RootWorkflowId, workflow.Name, snapshot);
                 ExecutionSnapshotUpdated?.Invoke(this, snapshot);
             });
             // 在开始时先发送一条开始日志
@@ -1158,6 +1158,8 @@ namespace SunEyeVision.UI.Services.Workflow
             if (workflowId != null) Include(workflowId);
             if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryCommitOpenEditors(workflowId == null ? null : ids.Contains, out var error))
                 throw new InvalidOperationException(error);
+            SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
+            SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
         }
 
         private async Task<ExecutionResult> ExecuteSingleTriggeredAsync(
@@ -1330,6 +1332,30 @@ namespace SunEyeVision.UI.Services.Workflow
             }
 
             return null;
+        }
+
+        /// <summary>Called on the UI thread once per actual iteration, before any node is dispatched.</summary>
+        internal void BeginRunPresentation(string workflowId, string name, WorkflowExecutionSnapshot snapshot)
+        {
+            var visited = new HashSet<string>(StringComparer.Ordinal);
+            void Reset(string id)
+            {
+                if (!visited.Add(id)) return;
+                var flow = _workflowEngine.GetWorkflow(id);
+                if (flow == null) return;
+                foreach (var node in flow.Nodes)
+                {
+                    node.Status = "等待中";
+                    node.LastResult = null;
+                    if (node.OutputCache is SunEyeVision.UI.Shared.NodeOutputCache cache)
+                        cache.InvalidateExecutionResult();
+                    if (!string.IsNullOrWhiteSpace(node.SubroutineId)) Reset(node.SubroutineId);
+                }
+            }
+            Reset(workflowId);
+            var definition = _workflowEngine.GetWorkflow(workflowId);
+            if (definition != null) snapshot.SynchronizeDefinition(name, definition.Nodes);
+            snapshot.Begin(name);
         }
 
         private void OnWorkflowExecutionStarted(string workflowId)

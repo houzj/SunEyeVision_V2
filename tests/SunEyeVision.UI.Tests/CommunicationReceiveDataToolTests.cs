@@ -43,15 +43,82 @@ public class CommunicationReceiveDataToolTests
     public async Task Current_message_has_no_age_limit_is_not_consumed_and_changes_at_execution()
     {
         var service = Store();
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.ReadAsync("device", ""));
+        var initial = service.ReadAsync("device", ""); Assert.False(initial.IsCompleted);
         service.Publish("device", "", DateTimeOffset.UtcNow.AddDays(-1), new BinaryPayload(new byte[] { 1 }));
+        Assert.Equal("01", (await initial.WaitAsync(TimeSpan.FromSeconds(2))).Value.ToString());
         var request = new WorkflowRunRequest("flow", communicationInputs: service);
         service.Publish("device", "", DateTimeOffset.UtcNow, new BinaryPayload(new byte[] { 2 }));
         var a = await request.CommunicationInputs!.ReadAsync("device", "");
         Assert.Equal("02", a.Value.ToString()); Assert.Equal(a.Id, (await service.ReadAsync("device", "")).Id);
         service.InvalidateDevice("device"); await Assert.ThrowsAsync<InvalidOperationException>(() => service.ReadAsync("device", ""));
         Assert.Null(service.Publish("device", "", DateTimeOffset.UtcNow, new BinaryPayload(new byte[] { 3 })));
-        service.MarkConnected("device"); await Assert.ThrowsAsync<InvalidOperationException>(() => service.ReadAsync("device", ""));
+        service.MarkConnected("device"); using var stop = new CancellationTokenSource();
+        var waiting = service.ReadAsync("device", "", stop.Token); Assert.False(waiting.IsCompleted);
+        stop.Cancel(); await Assert.ThrowsAnyAsync<OperationCanceledException>(() => waiting);
+    }
+    [Fact]
+    public async Task Passive_wait_is_broadcast_and_one_reader_cancel_does_not_cancel_other_readers()
+    {
+        var service = Store(); using var stop = new CancellationTokenSource();
+        var cancelled = service.ReadAsync("device", "", stop.Token);
+        var first = service.ReadAsync("device", ""); var second = service.ReadAsync("device", "");
+        Assert.False(first.IsCompleted); Assert.False(second.IsCompleted);
+        stop.Cancel(); await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
+        Assert.False(first.IsCompleted);
+        service.Publish("device", "", DateTimeOffset.UtcNow, new BinaryPayload(new byte[] { 7 }));
+        var a = await first.WaitAsync(TimeSpan.FromSeconds(2)); var b = await second.WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.Equal(a.Id, b.Id); Assert.Equal("07", a.Value.ToString());
+    }
+    [Theory]
+    [InlineData("disconnect")]
+    [InlineData("reset")]
+    [InlineData("remove")]
+    public async Task Passive_wait_ends_on_session_invalidation_without_reusing_new_session_data(string change)
+    {
+        var service = Store(); var pending = service.ReadAsync("device", ""); Assert.False(pending.IsCompleted);
+        if (change == "disconnect") { service.InvalidateDevice("device"); service.MarkConnected("device"); }
+        else if (change == "reset") service.Configure(service.GetSources(), reset: true);
+        else service.Configure(Array.Empty<CommunicationReceiveSource>());
+        service.Publish("device", "", DateTimeOffset.UtcNow, new BinaryPayload(new byte[] { 9 }));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await pending.WaitAsync(TimeSpan.FromSeconds(2)));
+    }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Workflow_receive_stays_running_until_data_or_stop(bool cancel)
+    {
+        ToolRegistry.RegisterTool(typeof(ReceiveDataTool));
+        var service = Store(); var engine = new WorkflowEngine(VisionLogger.Instance);
+        var flow = engine.CreateWorkflow(Guid.NewGuid().ToString(), "等待接收");
+        var node = new WorkflowNodeBase(Guid.NewGuid().ToString(), "接收", "接收", "ReceiveData") { Parameters = new ReceiveDataParameters { DeviceId = "device" } };
+        flow.Nodes.Add(node);
+        var executor = new WorkflowExecutionEngine(engine, new PluginManager(VisionLogger.Instance), VisionLogger.Instance);
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        executor.NodeStatusChanged += (_, e) => { if (e.NodeId == node.Id && e.Status == NodeStatus.Running) started.TrySetResult(); };
+        using var stop = new CancellationTokenSource();
+        var run = executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id, communicationInputs: service), stop.Token);
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5)); Assert.False(run.IsCompleted);
+        if (cancel) stop.Cancel(); else service.Publish("device", "", DateTimeOffset.UtcNow, new BinaryPayload(new byte[] { 7 }));
+        try
+        {
+            var result = await run.WaitAsync(TimeSpan.FromSeconds(5));
+            if (cancel) Assert.False(result.Success); else
+            {
+                Assert.True(result.Success, string.Join(";", result.Errors));
+                var againStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                executor.NodeStatusChanged += (_, e) => { if (e.NodeId == node.Id && e.Status == NodeStatus.Running) againStarted.TrySetResult(); };
+                var again = executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id, communicationInputs: service), stop.Token);
+                try
+                {
+                    await againStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                    Assert.False(again.IsCompleted); // Same stable node, different frozen run: no cached replay.
+                    service.Publish("device", "", DateTimeOffset.UtcNow, new BinaryPayload(new byte[] { 7 }));
+                    Assert.True((await again.WaitAsync(TimeSpan.FromSeconds(5))).Success);
+                }
+                finally { if (!again.IsCompleted) { stop.Cancel(); await again.WaitAsync(TimeSpan.FromSeconds(5)); } }
+            }
+        }
+        catch (OperationCanceledException) when (cancel) { }
     }
     [Fact]
     public async Task Active_read_never_uses_cache_and_rejects_changed_configuration_or_cancel()
@@ -66,6 +133,61 @@ public class CommunicationReceiveDataToolTests
         service.ActiveReader = (s, _) => { service.Configure(new[] { s with { ConfigurationKey = "changed" } }); return Task.FromResult(((object)"stale", (DateTimeOffset?)null)); };
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.ReadAsync("device", ""));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.ReadAsync("device", "", new CancellationToken(true)));
+    }
+    [Fact]
+    public void Only_declared_passive_sources_can_overlap_workflow_exclusive_tools()
+    {
+        IToolExecutionProfileProvider tool = new ReceiveDataTool();
+        var p = new ReceiveDataParameters { DeviceId = "device" };
+        Assert.Equal(ToolConcurrencyKind.ExternalDataWait, tool.DescribeExecution(p, Store()).ConcurrencyKind);
+        Assert.Equal(ToolConcurrencyKind.WorkflowExclusive, tool.DescribeExecution(p, Store(true)).ConcurrencyKind);
+        Assert.Equal(ToolConcurrencyKind.WorkflowExclusive, tool.DescribeExecution(p, null).ConcurrencyKind);
+        Assert.Equal(ToolConcurrencyKind.WorkflowExclusive, tool.DescribeExecution(new ReceiveDataParameters { DeviceId = "missing" }, Store()).ConcurrencyKind);
+        Assert.Equal(ToolConcurrencyKind.WorkflowExclusive, tool.DescribeExecution(new ReceiveDataParameters { SourceKind = "Variable" }, Store()).ConcurrencyKind);
+    }
+    [Fact]
+    public async Task Many_passive_waits_do_not_block_variable_read_or_exclusive_downstream_chain()
+    {
+        ToolRegistry.RegisterTool(typeof(ReceiveDataTool)); ToolRegistry.RegisterTool(typeof(ProtocolAssembleTool));
+        ToolRegistry.RegisterTool(typeof(ProtocolParseTool));
+        var service = Store();
+        service.VariableReader = ids => ids.ToDictionary(id => id, id => new ReceiveVariableValue(new(id, "v", "", "String"), "7"));
+        var engine = new WorkflowEngine(VisionLogger.Instance);
+        var flow = engine.CreateWorkflow(Guid.NewGuid().ToString(), "等待隔离");
+        // More waiters than the scheduler's maximum computation concurrency (four).
+        for (var i = 0; i < 5; i++) flow.Nodes.Add(new WorkflowNodeBase("wait" + i, "等待", "等待", "ReceiveData")
+            { Parameters = new ReceiveDataParameters { DeviceId = "device" } });
+        var variable = new ReceiveDataParameters { SourceKind = "Variable", Variables = new() { new() { VariableId = "v", DataType = "String" } } };
+        flow.Nodes.Add(new WorkflowNodeBase("variable", "变量", "变量", "ReceiveData") { Parameters = variable });
+        var first = new ProtocolAssembleParameters(); first.Parts[0].InputText = "variable." + variable.Variables[0].Definition().BindingKey;
+        flow.Nodes.Add(new WorkflowNodeBase("first", "组装", "组装", "ProtocolAssemble") { Parameters = first });
+        var last = new ProtocolAssembleParameters(); last.Parts[0].InputText = "first." + ProtocolAssembleParameters.TextOutput.BindingKey;
+        flow.Nodes.Add(new WorkflowNodeBase("last", "下游", "下游", "ProtocolAssemble") { Parameters = last });
+        var dependent = new ProtocolParseParameters();
+        dependent.InputText = "wait0." + ((ReceiveDataParameters)flow.Nodes[0].Parameters).GetOutputContract().First(f => f.Name.StartsWith("Field_")).Name;
+        flow.Nodes.Add(new WorkflowNodeBase("dependent", "真实依赖", "真实依赖", "ProtocolParse") { Parameters = dependent });
+        var executor = new WorkflowExecutionEngine(engine, new PluginManager(VisionLogger.Instance), VisionLogger.Instance);
+        var statuses = new System.Collections.Concurrent.ConcurrentDictionary<string, NodeStatus>();
+        var finished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        executor.NodeStatusChanged += (_, e) => { statuses[e.NodeId] = e.Status; if (e.NodeId == "last" && e.Status == NodeStatus.Completed) finished.TrySetResult(); };
+        using var stop = new CancellationTokenSource();
+        var run = executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id, communicationInputs: service), stop.Token);
+        try
+        {
+            await finished.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(run.IsCompleted);
+            for (var i = 0; i < 5; i++) Assert.Equal(NodeStatus.Running, statuses["wait" + i]);
+            Assert.False(statuses.TryGetValue("dependent", out var status) && status is NodeStatus.Running or NodeStatus.Completed);
+            service.Publish("device", "", DateTimeOffset.UtcNow, new BinaryPayload(new byte[] { 7 }));
+            var result = await run.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(result.Success, string.Join(";", result.Errors));
+            Assert.Equal(NodeStatus.Completed, statuses["dependent"]);
+        }
+        finally
+        {
+            stop.Cancel();
+            try { await run.WaitAsync(TimeSpan.FromSeconds(5)); } catch (OperationCanceledException) { }
+        }
     }
     [Theory]
     [InlineData("String", "ABC")]
@@ -223,7 +345,7 @@ public class CommunicationReceiveDataToolTests
         if (failure != null) ExceptionDispatchInfo.Capture(failure).Throw();
     }
     [Fact]
-    public async Task Real_tcp_new_message_after_trigger_is_current_for_workflow()
+    public async Task Real_tcp_buffered_messages_are_consumed_in_order_across_workflow_runs()
     {
         var solutions = new SolutionManager(Path.Combine(Path.GetTempPath(), "SunEyeReceive", Guid.NewGuid().ToString("N")));
         await using var composition = new CommunicationRuntimeComposition(); await using var app = new CommunicationApplicationService(solutions, composition);
@@ -235,8 +357,45 @@ public class CommunicationReceiveDataToolTests
         await peer.GetStream().WriteAsync(Encoding.UTF8.GetBytes("ABC,2\n")); await first.Task.WaitAsync(TimeSpan.FromSeconds(5));
         var requestService = app.Receives;
         await peer.GetStream().WriteAsync(Encoding.UTF8.GetBytes("NEW,9\n")); await second.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        await ExecuteChain(requestService, device.Id, "", false, "RESULT,NEW,9");
+        await ExecuteChain(requestService, device.Id, "", false, "RESULT,ABC,2", "RESULT,NEW,9");
         solutions.CloseSolution(); await app.ReadyAsync(); await Assert.ThrowsAsync<InvalidOperationException>(() => requestService.ReadAsync(device.Id, ""));
+    }
+    [Fact]
+    public async Task Raw_manual_receive_needs_no_event_and_survives_display_only_configuration_refresh()
+    {
+        var solutions = new SolutionManager(Path.Combine(Path.GetTempPath(), "SunEyeReceive", Guid.NewGuid().ToString("N")));
+        await using var composition = new CommunicationRuntimeComposition(); await using var app = new CommunicationApplicationService(solutions, composition);
+        using var listener = new TcpListener(IPAddress.Loopback, 0); listener.Start();
+        var device = new Communication { Name = "TCP", ProtocolKey = "tcp-client", Host = "127.0.0.1", Port = ((IPEndPoint)listener.LocalEndpoint).Port };
+        var solution = new Solution { Communications = new() { device } };
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        composition.Runtime.DataReceived += (_, _) => received.TrySetResult();
+        solutions.SetCurrentSolution(solution);
+        using var peer = await listener.AcceptTcpClientAsync().WaitAsync(TimeSpan.FromSeconds(5)); await app.ReadyAsync();
+        var p = new ReceiveDataParameters { SourceKind = "Device", DeviceId = device.Id, TargetId = "" };
+        var waitingTool = new ToolExecutor(new ParameterResolver()).ExecuteAsync(new ReceiveDataTool(),
+            new ToolExecutionRequest(p) { CommunicationInputs = app.Receives }).AsTask();
+        Assert.False(waitingTool.IsCompleted);
+        await peer.GetStream().WriteAsync(Encoding.UTF8.GetBytes("7")); await received.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True((await waitingTool.WaitAsync(TimeSpan.FromSeconds(5))).IsSuccess);
+        using var nextStop = new CancellationTokenSource();
+        var next = new ReceiveDataTool().ExecuteAsync(new ToolExecutionRequest(p) { CommunicationInputs = app.Receives, CancellationToken = nextStop.Token }).AsTask();
+        Assert.False(next.IsCompleted);
+        var before = await app.Receives.ReadAsync(device.Id, "");
+        device.Name = "TCP renamed"; device.Description = "display only"; app.RefreshAutomationConfiguration(solution);
+        var after = await app.Receives.ReadAsync(device.Id, "");
+        Assert.Equal(before.Id, after.Id);
+        Assert.False(next.IsCompleted); // Renaming must not reset this node's cursor.
+        await peer.GetStream().WriteAsync(Encoding.UTF8.GetBytes("7"));
+        Assert.True((await next.WaitAsync(TimeSpan.FromSeconds(5))).IsSuccess);
+        Assert.Equal("TCP renamed", app.Receives.GetSources().Single(s => s.DeviceId == device.Id).DeviceName);
+        device.Port++; app.RefreshAutomationConfiguration(solution);
+        using var stop = new CancellationTokenSource();
+        var waiting = app.Receives.ReadAsync(device.Id, "", stop.Token); Assert.False(waiting.IsCompleted);
+        stop.Cancel(); await Assert.ThrowsAnyAsync<OperationCanceledException>(() => waiting);
+        await composition.Runtime.DisconnectAsync(device.Id);
+        var disconnected = await Assert.ThrowsAsync<InvalidOperationException>(() => app.Receives.ReadAsync(device.Id, ""));
+        Assert.Contains("已断线", disconnected.Message);
     }
     [Fact]
     public async Task Real_modbus_with_polling_disabled_reads_once_per_execution_and_flows_to_assembly()
@@ -265,7 +424,7 @@ public class CommunicationReceiveDataToolTests
         await ExecuteChain(app.Receives, device.Id, point.Id, true, "RESULT,93,AD"); Assert.Equal(2, reads);
         solutions.CloseSolution(); await app.ReadyAsync(); timeout.Cancel(); try { await simulator; } catch (OperationCanceledException) { }
     }
-    private static async Task ExecuteChain(ICommunicationReceiveService snapshot, string deviceId, string targetId, bool bytes, string expected)
+    private static async Task ExecuteChain(ICommunicationReceiveService snapshot, string deviceId, string targetId, bool bytes, string expected, string? secondExpected = null)
     {
         ToolRegistry.RegisterTool(typeof(ReceiveDataTool)); ToolRegistry.RegisterTool(typeof(ProtocolParseTool)); ToolRegistry.RegisterTool(typeof(ProtocolAssembleTool));
         var engine = new WorkflowEngine(VisionLogger.Instance); var flow = engine.CreateWorkflow(Guid.NewGuid().ToString(), "接收联合链");
@@ -295,6 +454,13 @@ public class CommunicationReceiveDataToolTests
         var assembled = Assert.IsType<CommunicationToolResults>(result.NodeResults[assembler.Id].Result);
         Assert.Equal(expected, Assert.Single(Assert.IsType<string[]>(Value(assembled, ProtocolAssembleParameters.TextOutput))));
         Assert.NotEmpty(assembled.Analysis);
+        if (secondExpected != null)
+        {
+            var second = await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id, communicationInputs: snapshot), default);
+            Assert.True(second.Success, string.Join(";", second.Errors));
+            var secondAssembly = Assert.IsType<CommunicationToolResults>(second.NodeResults[assembler.Id].Result);
+            Assert.Equal(secondExpected, Assert.Single(Assert.IsType<string[]>(Value(secondAssembly, ProtocolAssembleParameters.TextOutput))));
+        }
     }
     private static object? Value(CommunicationToolResults result, CommunicationOutputField field) => result.GetOutputVariables().Single(v => v.Name == field.BindingKey).RuntimeValue;
 }

@@ -28,5 +28,6 @@
     <ProjectReference Include="../../tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj" />
     <ProjectReference Include="../../tools/SunEyeVision.Tool.ReceiveData/SunEyeVision.Tool.ReceiveData.csproj" />
     <ProjectReference Include="../../tools/SunEyeVision.Tool.SendData/SunEyeVision.Tool.SendData.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj" />
   </ItemGroup>
 </Project>

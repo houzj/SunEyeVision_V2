@@ -57,9 +57,12 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
     }
 
     public void ConfigureVariablePublications(string nodeId, IReadOnlyList<SendVariablePublication> mappings)
+        => ConfigureVariablePublications("", nodeId, mappings);
+
+    public void ConfigureVariablePublications(string workflowId, string nodeId, IReadOnlyList<SendVariablePublication> mappings)
     {
         var solution = Solution;
-        var owners = solution.Workflows.Where(w => w.Nodes.Any(n => n.Id == nodeId)).ToArray();
+        var owners = solution.Workflows.Where(w => (string.IsNullOrEmpty(workflowId) || w.Id == workflowId) && w.Nodes.Any(n => n.Id == nodeId)).ToArray();
         if (owners.Length != 1) throw new InvalidOperationException("无法确定发送节点工作流作用域。");
         if (mappings.Select(m => m.VariableId).Distinct().Count() != mappings.Count) throw new InvalidOperationException("同一变量不能重复配置。");
         var pending = mappings.Select(m => (Mapping: m, Variable: solution.GlobalVariables.FirstOrDefault(v => v.Id == m.VariableId)
@@ -92,7 +95,9 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
             var value = CommunicationReceiveService.Normalize(input.Value);
             if (CommunicationReceiveService.ValueType(value) != variable.Type) throw new FormatException("发送值与变量类型不一致。");
             var producer = variable.ProducerBinding;
-            if (producer == null || producer.NodeId != request.NodeId || producer.ResultName != new CommunicationOutputField(input.FieldId, variable.Name, variable.Type).BindingKey)
+            var owners = solution.Workflows.Where(w => w.Nodes.Any(n => n.Id == request.NodeId)).ToArray();
+            var workflowId = request.WorkflowId ?? (owners.Length == 1 ? owners[0].Id : null);
+            if (producer == null || producer.NodeId != request.NodeId || producer.WorkflowId != workflowId || producer.ResultName != new CommunicationOutputField(input.FieldId, variable.Name, variable.Type).BindingKey)
                 throw new InvalidOperationException("请重新确认发送变量绑定；发送节点不是目标变量生产者。");
             return new(variable.Name, value, ct =>
             {

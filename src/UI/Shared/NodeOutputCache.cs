@@ -229,6 +229,14 @@ namespace SunEyeVision.UI.Shared
             OnPropertyChanged(nameof(Count));
         }
 
+        /// <summary>Invalidate execution metadata without deleting preview images used as the next run's input.</summary>
+        public void InvalidateExecutionResult()
+        {
+            LastResult = null;
+            LastExecutionTime = null;
+            ExecutionError = null;
+        }
+
         /// <summary>
         /// 重置状态
         /// </summary>

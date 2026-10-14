@@ -150,6 +150,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 ResultDisplayName = row.DisplayName
             };
             variable.NotifyInputSourceDisplayChanged();
+            SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
+            SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
             _viewModel.AddLog(LogLevel.Info,
                 $"全局变量“{variable.Name}”的输入来源已绑定为 {variable.ProducerBinding.DisplayPath}",
                 LogSource.UIOperation);

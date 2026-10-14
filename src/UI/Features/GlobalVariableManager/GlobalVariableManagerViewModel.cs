@@ -807,6 +807,8 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                         ClearNodeParamBinding(currentSolution, binding);
 
                     variable.NotifyOutputDisplayChanged();
+                    SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
+                    SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
                     LogSuccess($"更新目标输出 (共 {result.Count} 个消费者)");
                 }
             }

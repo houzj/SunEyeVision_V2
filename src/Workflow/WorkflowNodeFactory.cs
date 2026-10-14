@@ -86,6 +86,9 @@ return null;
                 // 创建AlgorithmNode
                 var algorithmNode = new AlgorithmNode(nodeId, nodeName, dispName, tool)
                 {
+                    // Keep the registry identity in frozen execution nodes. "Algorithm" is
+                    // a node category, not a tool ID or a source output contract.
+                    ToolType = toolId,
                     Parameters = parameters,
                     DebugWindowType = metadata.DebugWindowType,
                     NodeStyleType = metadata.NodeStyleType

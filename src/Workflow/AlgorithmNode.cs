@@ -29,6 +29,8 @@ namespace SunEyeVision.Workflow
         public ICameraCaptureService? CameraCaptureService { get; set; }
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; set; }
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationOutputs { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? ExecutionWorkflowId { get; set; }
 
         /// <summary>本轮运行在启动节点前绑定的帧；节点不拥有其生命周期。</summary>
         public CameraFrame? CameraFrame { get; set; }
@@ -122,6 +124,7 @@ namespace SunEyeVision.Workflow
                             ResolvedInputImage = inputImage,
                             NodeName = Name,
                             NodeId = Id,
+                            WorkflowId = ExecutionWorkflowId,
                             CancellationToken = cancellationToken,
                             CameraCaptureService = CameraCaptureService,
                             CommunicationInputs = CommunicationInputs,
@@ -474,6 +477,8 @@ namespace SunEyeVision.Workflow
                 var dataSource = new AvailableDataSource
                 {
                     SourceNodeId = refValue.SourceNodeId,
+                    SourceWorkflowId = refValue.SourceWorkflowId, SourceFieldId = refValue.SourceFieldId,
+                    AutomaticConnectionId = refValue.AutomaticConnectionId,
                     SourceNodeName = refValue.SourceNodeName ?? "",
                     PropertyName = refValue.PropertyName ?? "",
                     DisplayName = refValue.DisplayName ?? "",

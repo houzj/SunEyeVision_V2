@@ -23,6 +23,7 @@ public sealed class WorkflowRunScope
     public Guid? ParentRunId { get; }
 
     public string WorkflowId { get; }
+    public string ConsumerScope { get; internal set; } = "";
 
     public DateTimeOffset StartedAt { get; }
 

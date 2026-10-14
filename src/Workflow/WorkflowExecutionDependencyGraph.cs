@@ -97,13 +97,24 @@ public sealed class WorkflowExecutionDependencyGraph
 
         foreach (var node in workflow.Nodes)
         {
-            if (node.Parameters is SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationBindingInputProvider rows)
-                foreach (var expression in rows.GetInputExpressions())
+            foreach (var input in BindingRelationCatalog.Describe(node).Where(i => i.Active))
+            {
+                if (input.InternalProjection) continue; // Runs within the called workflow, not the caller's local DAG.
+                if (!BindingInputCatalog.TryReference(input.Read(), knownNodes, input.ReferenceOnly, out var sourceId, out var path)) continue;
+                if (string.IsNullOrWhiteSpace(path)) throw new InvalidOperationException($"节点 {node.Name} 的 {input.Name} 绑定不完整。");
+                if (sourceId is "__GlobalVars__" or "__VariableId__")
                 {
-                    var dot = expression.IndexOf('.');
-                    if (dot > 0 && Guid.TryParse(expression[..dot], out _))
-                        AddDependency(expression[..dot], node.Id, WorkflowDependencyKind.ParameterBinding, "SendInput");
+                    var variable = variables?.FirstOrDefault(v => sourceId == "__VariableId__" ? v.Id == path : v.Name == PropertyPathParser.ExtractPropertyName(path));
+                    if (variable is { HasProducer: true } && knownNodes.Contains(variable.ProducerNodeId) &&
+                        (string.IsNullOrEmpty(variable.ProducerWorkflowId) || variable.ProducerWorkflowId == (sourceWorkflowId ?? workflow.Id)))
+                        AddDependency(variable.ProducerNodeId, node.Id, WorkflowDependencyKind.ParameterBinding, input.Key);
+                    continue;
                 }
+                if (sourceId == "__SubroutineInputs__") continue;
+                if (BindingRelationCatalog.SourceWorkflowId(node, input, sourceWorkflowId ?? workflow.Id) != (sourceWorkflowId ?? workflow.Id))
+                    throw new InvalidOperationException("节点绑定跨出工作流作用域，请使用全局变量。");
+                AddDependency(sourceId, node.Id, WorkflowDependencyKind.ParameterBinding, input.Key);
+            }
             if (node.Parameters is SunEyeVision.Plugin.SDK.Models.Communication.IReceiveVariableInputProvider receive)
                 foreach (var id in receive.GetReceiveVariableIds())
                 {
@@ -112,19 +123,6 @@ public sealed class WorkflowExecutionDependencyGraph
                         && (string.IsNullOrEmpty(variable.ProducerWorkflowId) || variable.ProducerWorkflowId == (sourceWorkflowId ?? workflow.Id)))
                         AddDependency(variable.ProducerNodeId, node.Id, WorkflowDependencyKind.ParameterBinding, "ReceiveVariable");
                 }
-            foreach (var setting in node.ParamSettings?.GetDynamicSettings() ?? Enumerable.Empty<ParamSetting>())
-            {
-                if (string.IsNullOrWhiteSpace(setting.SourceNodeId) || string.IsNullOrWhiteSpace(setting.SourceProperty))
-                    throw new InvalidOperationException(
-                        $"节点 {node.Name} 的参数 {setting.ParameterName} 存在不完整的动态绑定。");
-
-                // 全局快照和子程序入口不是当前节点图中的生产节点；它们由对应运行边界提供。
-                if (string.Equals(setting.SourceNodeId, "__GlobalVars__", StringComparison.Ordinal) ||
-                    string.Equals(setting.SourceNodeId, "__SubroutineInputs__", StringComparison.Ordinal))
-                    continue;
-
-                AddDependency(setting.SourceNodeId, node.Id, WorkflowDependencyKind.ParameterBinding, setting.ParameterName);
-            }
         }
 
         var graph = new WorkflowExecutionDependencyGraph(predecessors, dependencies);

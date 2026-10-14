@@ -322,13 +322,11 @@ namespace SunEyeVision.Workflow
                     }
 
                     var madeProgress = true;
-                    while (running.Count < maxConcurrency && madeProgress)
+                    while (madeProgress)
                     {
                         madeProgress = false;
                         foreach (var nodeId in order.Where(pending.Contains).ToList())
                         {
-                            if (running.Count >= maxConcurrency)
-                                break;
                             if (!dependencyGraph.GetPredecessors(nodeId)
                                     .All(parent => context.GetNodeStatus(parent) == NodeStatus.Completed))
                                 continue;
@@ -336,11 +334,17 @@ namespace SunEyeVision.Workflow
                             var node = workflow.Nodes.First(candidate => candidate.Id == nodeId);
                             var profile = nodeExecutionProfiles.TryGetValue(nodeId, out var declared)
                                 ? declared : ToolExecutionProfile.LegacyExclusive;
+                            var externalWait = profile.ConcurrencyKind == ToolConcurrencyKind.ExternalDataWait;
+                            var executingCount = running.Count(item =>
+                                !nodeExecutionProfiles.TryGetValue(item.Node.Id, out var activeProfile) ||
+                                activeProfile.ConcurrencyKind != ToolConcurrencyKind.ExternalDataWait);
+                            if (!externalWait && executingCount >= maxConcurrency)
+                                continue;
                             var hasExclusive = running.Any(item =>
                                 nodeExecutionProfiles.TryGetValue(item.Node.Id, out var active) &&
                                 active.ConcurrencyKind == ToolConcurrencyKind.WorkflowExclusive);
-                            if ((profile.ConcurrencyKind == ToolConcurrencyKind.WorkflowExclusive && running.Count > 0) ||
-                                hasExclusive ||
+                            if ((!externalWait && ((profile.ConcurrencyKind == ToolConcurrencyKind.WorkflowExclusive && executingCount > 0) ||
+                                hasExclusive)) ||
                                 !leases.TryAcquire(workflow.Id, node.Id, profile, out var lease))
                                 continue;
 
@@ -783,10 +787,11 @@ namespace SunEyeVision.Workflow
         {
             var executableWorkflow = new Workflow(Guid.NewGuid().ToString(), sourceWorkflow.Name);
             ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow, request);
+            OutputBindingChangeService.EnsureExecutable(executableWorkflow, sourceWorkflow.Id);
             var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, request?.CommunicationInputs?.GetVariables(), sourceWorkflow.Id);
             var nodeExecutionProfiles = executableWorkflow.Nodes.ToDictionary(
                 node => node.Id,
-                ResolveExecutionProfile,
+                node => ResolveExecutionProfile(node, request?.CommunicationInputs),
                 StringComparer.Ordinal);
             _logger.LogInfo(
                 $"执行计划已编译: 节点={executableWorkflow.Nodes.Count}, 依赖={dependencyGraph.Dependencies.Count}, " +
@@ -794,10 +799,11 @@ namespace SunEyeVision.Workflow
             return new WorkflowExecutionPlan(scope, executableWorkflow, dependencyGraph, nodeExecutionProfiles);
         }
 
-        private static ToolExecutionProfile ResolveExecutionProfile(WorkflowNodeBase node)
+        private static ToolExecutionProfile ResolveExecutionProfile(WorkflowNodeBase node,
+            SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? communicationInputs)
         {
             if (node is AlgorithmNode { Tool: IToolExecutionProfileProvider provider })
-                return provider.DescribeExecution(node.Parameters) ?? ToolExecutionProfile.LegacyExclusive;
+                return provider.DescribeExecution(node.Parameters, communicationInputs) ?? ToolExecutionProfile.LegacyExclusive;
 
             return ToolExecutionProfile.LegacyExclusive;
         }
@@ -868,8 +874,9 @@ namespace SunEyeVision.Workflow
                         executionNode.ParamSettings.SetSetting(ParamSetting.CreateConstant(value.Key, value.Value));
                 executionNode.CameraCaptureService = request?.CameraCaptureService;
                 executionNode.CommunicationOutputs = request?.CommunicationOutputs;
+                executionNode.ExecutionWorkflowId = source.Id;
                 executionNode.CommunicationInputs = request?.CommunicationInputs == null ? null :
-                    new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(request.CommunicationInputs, null, workflowId: source.Id);
+                    new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(request.CommunicationInputs, null, workflowId: source.Id) { ConsumerScope = scope.ConsumerScope };
                 executionNode.CameraFrame = request != null && request.CameraFrames.TryGetValue(node.Id, out var cameraFrame)
                     ? cameraFrame
                     : null;
@@ -886,7 +893,7 @@ namespace SunEyeVision.Workflow
                             ? new Dictionary<string, object>(ctx)
                             : new Dictionary<string, object>();
                         extendedCtx[SubroutineContextKeys.ParentNodeId] = node.Id;
-                        var childScope = session.CreateChildScope(subId, scope.RunId);
+                        var childScope = session.CreateChildScope(subId, scope.RunId, node.Id);
                         return ExecuteWorkflowCore(
                             session,
                             childScope,

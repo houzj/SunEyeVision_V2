@@ -25,13 +25,14 @@ public class ConsumerBinding
 
     /// <summary>绑定的参数名称（属性名）</summary>
     public string ParameterName { get; set; } = string.Empty;
+    public string? InputKey { get; set; }
 
     /// <summary>参数中文显示名称</summary>
     public string ParameterDisplayName { get; set; } = string.Empty;
 
     /// <summary>消费者稳定键，包含工作流作用域，避免跨工作流节点 ID 冲突。</summary>
     [JsonIgnore]
-    public string BindingKey => $"{WorkflowId}|{NodeId}|{ParameterName}";
+    public string BindingKey => $"{WorkflowId}|{NodeId}|{InputKey ?? ParameterName}";
 
     /// <summary>显示路径："工作流名.节点名.参数显示名"</summary>
     [JsonIgnore]
@@ -44,6 +45,7 @@ public class ConsumerBinding
 /// </summary>
 public class ProducerBinding
 {
+    public Guid? SourceFieldId { get; set; }
     /// <summary>生产者所属工作流 ID。</summary>
     public string WorkflowId { get; set; } = string.Empty;
 
@@ -221,6 +223,8 @@ public class GlobalVariable : ObservableObject
     /// 非空时表示该变量由一个节点结果产生，并在解决方案级依赖图中连接到所有消费者。
     /// </summary>
     private ProducerBinding? _producerBinding;
+    public string RebindingReason { get; set; } = string.Empty;
+    public string BindingValidationPending { get; set; } = string.Empty;
     public ProducerBinding? ProducerBinding
     {
         get => _producerBinding;
@@ -229,6 +233,7 @@ public class GlobalVariable : ObservableObject
             if (ReferenceEquals(_producerBinding, value))
                 return;
             _producerBinding = value;
+            if (value != null) RebindingReason = string.Empty;
             OnPropertyChanged(nameof(ProducerBinding));
             OnPropertyChanged(nameof(InputSourceDisplayText));
         }
@@ -236,7 +241,7 @@ public class GlobalVariable : ObservableObject
 
     /// <summary>输入来源显示文本；为空时变量使用方案初值或运行请求中提供的值。</summary>
     [JsonIgnore]
-    public string InputSourceDisplayText => ProducerBinding?.DisplayPath ?? "未绑定（使用初值）";
+    public string InputSourceDisplayText => ProducerBinding?.DisplayPath ?? (string.IsNullOrEmpty(RebindingReason) ? "未绑定（使用初值）" : "请选择（需重新绑定）");
 
     /// <summary>
     /// 目标输出显示文本（用于UI）
@@ -311,6 +316,7 @@ public class GlobalVariable : ObservableObject
                 NodeName = c.NodeName,
                 WorkflowName = c.WorkflowName,
                 ParameterName = c.ParameterName,
+                InputKey = c.InputKey,
                 ParameterDisplayName = c.ParameterDisplayName
             }).ToList(),
             ProducerBinding = ProducerBinding == null ? null : new ProducerBinding
@@ -320,9 +326,12 @@ public class GlobalVariable : ObservableObject
                 NodeId = ProducerBinding.NodeId,
                 NodeName = ProducerBinding.NodeName,
                 ResultName = ProducerBinding.ResultName,
+                SourceFieldId = ProducerBinding.SourceFieldId,
                 ResultDisplayName = ProducerBinding.ResultDisplayName
             },
             IsInitialized = IsInitialized,
+            RebindingReason = RebindingReason,
+            BindingValidationPending = BindingValidationPending,
             CreatedTime = CreatedTime,
             ModifiedTime = DateTime.Now
         };

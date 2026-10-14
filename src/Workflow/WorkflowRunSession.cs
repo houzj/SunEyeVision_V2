@@ -32,6 +32,7 @@ public sealed class WorkflowRunSession : IDisposable
         StartedAt = DateTimeOffset.UtcNow;
         State = WorkflowExecutionState.Idle;
         RootScope = new WorkflowRunScope(rootWorkflowId, runId: RunId);
+        RootScope.ConsumerScope = rootWorkflowId;
         _scopes.Add(RootScope.RunId, RootScope);
     }
 
@@ -60,7 +61,7 @@ public sealed class WorkflowRunSession : IDisposable
 
     public bool IsActive => State is WorkflowExecutionState.Running or WorkflowExecutionState.Paused;
 
-    public WorkflowRunScope CreateChildScope(string workflowId, Guid parentRunId)
+    public WorkflowRunScope CreateChildScope(string workflowId, Guid parentRunId, string? callerNodeId = null)
     {
         lock (_scopeGate)
         {
@@ -68,6 +69,7 @@ public sealed class WorkflowRunSession : IDisposable
                 throw new ArgumentException("父运行作用域不属于当前会话。", nameof(parentRunId));
 
             var scope = new WorkflowRunScope(workflowId, parentRunId);
+            scope.ConsumerScope = _scopes[parentRunId].ConsumerScope + "/" + (callerNodeId ?? workflowId) + "/" + workflowId;
             _scopes.Add(scope.RunId, scope);
             return scope;
         }

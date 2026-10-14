@@ -63,7 +63,7 @@ public sealed class SolutionExecutionDependencyGraph
 
     public static string GetScopedNodeId(string workflowId, string nodeId) => $"{workflowId}/{nodeId}";
 
-    public static SolutionExecutionDependencyGraph Compile(Solution solution)
+    public static SolutionExecutionDependencyGraph Compile(Solution solution, bool checkReadiness = true)
     {
         if (solution == null)
             throw new ArgumentNullException(nameof(solution));
@@ -108,6 +108,10 @@ public sealed class SolutionExecutionDependencyGraph
 
         foreach (var variable in solution.GlobalVariables ?? Enumerable.Empty<GlobalVariable>())
         {
+            if (checkReadiness && !string.IsNullOrEmpty(variable.RebindingReason))
+                throw new InvalidOperationException(variable.RebindingReason);
+            if (checkReadiness && !string.IsNullOrEmpty(variable.BindingValidationPending))
+                throw new InvalidOperationException(variable.BindingValidationPending);
             if (variable.ProducerBinding == null)
                 continue;
 
@@ -123,10 +127,10 @@ public sealed class SolutionExecutionDependencyGraph
             }
             foreach (var workflow in workflows)
                 foreach (var node in workflow.Nodes)
-                    if (node.Parameters is SunEyeVision.Plugin.SDK.Models.Communication.IReceiveVariableInputProvider input
-                        && input.GetReceiveVariableIds().Contains(variable.Id))
-                        AddDependency(producer, GetScopedNodeId(workflow.Id, node.Id), SolutionDependencyKind.GlobalVariable,
-                            variable.Name, "ReceiveVariable");
+                    foreach (var input in BindingRelationCatalog.Describe(node).Where(i => i.Active))
+                        if (SunEyeVision.Plugin.SDK.Execution.Parameters.BindingInputCatalog.TryReference(input.Read(), workflow.Nodes.Select(n => n.Id), input.ReferenceOnly, out var id, out var path) &&
+                            (id == "__VariableId__" && path == variable.Id || id == "__GlobalVars__" && SunEyeVision.Plugin.SDK.Execution.Parameters.PropertyPathParser.ExtractPropertyName(path) == variable.Name))
+                            AddDependency(producer, GetScopedNodeId(workflow.Id, node.Id), SolutionDependencyKind.GlobalVariable, variable.Name, input.Key);
         }
 
         var graph = new SolutionExecutionDependencyGraph(predecessors, dependencies);

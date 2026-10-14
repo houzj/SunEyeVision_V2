@@ -84,6 +84,7 @@ public class SolutionManager
     /// 解决方案打开事件
     /// </summary>
     public event EventHandler<Solution>? SolutionOpened;
+    public event EventHandler<Solution>? SolutionSaving;
 
     /// <summary>
     /// 解决方案保存事件
@@ -433,6 +434,7 @@ public class SolutionManager
             _logger.Log(LogLevel.Info, $"[SaveSolutionDirect] 开始保存解决方案: Id={solution.Id} -> {filePath}", "SolutionManager");
 
             // 保存到文件
+            SolutionSaving?.Invoke(this, solution);
             bool success = _repository.Save(solution, filePath);
             if (!success)
             {
@@ -493,6 +495,7 @@ public class SolutionManager
 
         if (metadata != null) { metadata.Name = CurrentSolution.Name; metadata.Description = CurrentSolution.Description; }
         // 保存文件
+        SolutionSaving?.Invoke(this, CurrentSolution);
         bool success = _repository.Save(CurrentSolution, savePath);
         if (!success)
         {

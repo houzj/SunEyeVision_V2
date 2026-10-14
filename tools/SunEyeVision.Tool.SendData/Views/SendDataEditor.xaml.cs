@@ -106,7 +106,7 @@ public partial class SendDataEditor : ToolDebugControlBase
     private void ConfigureVariables(IReadOnlyList<SendVariablePublication> mappings)
     {
         var id = CurrentNode?.GetType().GetProperty("Id")?.GetValue(CurrentNode)?.ToString();
-        if (id != null && Service != null) Service.ConfigureVariablePublications(id, mappings);
+        if (id != null && Service != null) Service.ConfigureVariablePublications((DataProvider as DataSourceQueryService)?.WorkflowId ?? "", id, mappings);
     }
     private void AddRow(object sender, RoutedEventArgs e)
     {

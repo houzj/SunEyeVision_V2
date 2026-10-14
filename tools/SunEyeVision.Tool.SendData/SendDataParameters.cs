@@ -10,8 +10,9 @@ using SunEyeVision.Plugin.SDK.Models.Communication;
 namespace SunEyeVision.Tool.SendData;
 
 [JsonDerivedType(typeof(SendDataParameters), "SendDataParameters")]
-public class SendDataParameters : ToolParameters, IOutputContractProvider, INotifyOutputContractChanged, ICommunicationBindingInputProvider
+public class SendDataParameters : ToolParameters, IOutputContractProvider, INotifyOutputContractChanged, ICommunicationBindingInputProvider, IBindingInputProvider
 {
+    public IReadOnlyList<BindingInputReference> GetBindingInputs() => Rows.Select(r => new BindingInputReference("Row:" + r.FieldId, r.Name, () => r.InputText, value => r.InputText = value, r.AllowedDataTypes, ValidateLiteral: r.ValidateLiteral)).ToArray();
     private string _kind = "Device", _device = "", _event = "", _separator = "", _terminator = "";
     private bool _hex, _ignore;
     private ObservableCollection<SendDataRow> _rows = new() { new() };
@@ -50,6 +51,11 @@ public class SendDataParameters : ToolParameters, IOutputContractProvider, INoti
 
 public sealed class SendDataRow : ObservableObject
 {
+    public string? ValidateLiteral(string text)
+    {
+        try { CommunicationSendTypes.ParseLiteral(text, DataType); return null; }
+        catch (Exception ex) when (ex is FormatException or OverflowException) { return ex.Message; }
+    }
     public Guid FieldId { get; set; } = Guid.NewGuid();
     public Guid EventFieldId { get; set; }
     private string _name = "data", _target = "", _path = "请选择", _input = "", _type = "String";

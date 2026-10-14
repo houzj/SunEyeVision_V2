@@ -10,8 +10,19 @@ using SunEyeVision.Plugin.SDK.Models.Communication;
 namespace SunEyeVision.Tool.ProtocolParse;
 
 [JsonDerivedType(typeof(ProtocolParseParameters), "ProtocolParseParameters")]
-public class ProtocolParseParameters : ToolParameters, IOutputContractProvider, INotifyOutputContractChanged
+public class ProtocolParseParameters : ToolParameters, IOutputContractProvider, INotifyOutputContractChanged, IBindingInputProvider
 {
+    public IReadOnlyList<BindingInputReference> GetBindingInputs() => new[] { new BindingInputReference("InputText", "解析内容", () => InputText, value => InputText = value, SunEyeVision.Plugin.SDK.UI.Controls.Communication.CommunicationBindingTypes.Parse,
+        InterpretationKey: Mode == "Bytes" ? $"Bytes/{InputFormat}/{AsciiData}/{StringEncoding}" : "Text/UTF8", ValidateLiteral: ValidateLiteral) };
+    private string? ValidateLiteral(string text)
+    {
+        // Pure parser probe: no runtime context, old results, devices or sends.
+        var probe = new ProtocolParseParameters { InputText = text, Mode = Mode, InputFormat = InputFormat, AsciiData = AsciiData,
+            StringEncoding = StringEncoding, Separator = Separator, Outputs = new(Outputs.Select(f => new ProtocolParseField
+            { FieldId = f.FieldId, Name = f.Name, DataType = f.DataType, Start = f.Start, End = f.End, Order = f.Order, NumericInterpretation = f.NumericInterpretation })) };
+        var result = new ProtocolParseTool().Run(probe);
+        return result.IsSuccess ? null : result.ErrorMessage ?? "解析常量无效。";
+    }
     private string _mode = "Text", _inputText = "", _separator = ",", _inputFormat = "Hex", _encoding = "UTF8";
     private bool _asciiData;
     private ObservableCollection<ProtocolParseField> _outputs = new() { new() };

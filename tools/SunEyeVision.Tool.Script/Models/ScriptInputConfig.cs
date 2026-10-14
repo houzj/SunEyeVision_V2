@@ -11,6 +11,7 @@ namespace SunEyeVision.Tool.Script.Models
     /// </summary>
     public class ScriptInputConfig : ObservableObject
     {
+        public Guid FieldId { get; set; } = Guid.NewGuid();
         private string _name = string.Empty;
         private string _displayName = string.Empty;
         private string _typeName = "Image";
@@ -46,8 +47,8 @@ namespace SunEyeVision.Tool.Script.Models
             {
                 if (SetProperty(ref _source, value))
                 {
-                    if (value != null && !string.IsNullOrEmpty(value.TypeName))
-                        TypeName = value.TypeName;
+                    if (value != null && SdkTypeVocabulary.ToTypeVocabulary(value.PropertyType) is { } vocabulary)
+                        TypeName = vocabulary;
                 }
             }
         }

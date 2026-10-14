@@ -8,8 +8,9 @@ using SunEyeVision.Plugin.SDK.Models.Communication;
 namespace SunEyeVision.Tool.ProtocolAssemble;
 
 [JsonDerivedType(typeof(ProtocolAssembleParameters), "ProtocolAssembleParameters")]
-public class ProtocolAssembleParameters : ToolParameters, IOutputContractProvider
+public class ProtocolAssembleParameters : ToolParameters, IOutputContractProvider, IBindingInputProvider
 {
+    public IReadOnlyList<BindingInputReference> GetBindingInputs() => Parts.Select(p => new BindingInputReference("Part:" + p.PartId, "组装项", () => p.InputText, value => p.InputText = value, SunEyeVision.Plugin.SDK.UI.Controls.Communication.CommunicationBindingTypes.Assemble, true, ValidateLiteral: _ => null)).ToArray();
     private string _separator = ",";
     public string Separator { get => _separator; set => SetProperty(ref _separator, value); }
     public ObservableCollection<ProtocolAssemblyPart> Parts { get; set; } = new() { new() };

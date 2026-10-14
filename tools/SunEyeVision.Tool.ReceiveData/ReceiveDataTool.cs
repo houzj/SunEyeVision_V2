@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Communication;
 using SunEyeVision.Plugin.SDK.UI.Controls.Communication;
@@ -8,16 +9,29 @@ namespace SunEyeVision.Tool.ReceiveData;
 
 [Tool("ReceiveData", "接收数据", Icon = "receive", Order = 10, Category = ToolCategories.Communication,
     Description = "执行时读取设备当前值或全局变量", HasDebugWindow = true)]
-public sealed class ReceiveDataTool : IToolPlugin<ReceiveDataParameters, CommunicationToolResults>, IAsyncToolPlugin, IToolEditorFactory
+public sealed class ReceiveDataTool : IToolPlugin<ReceiveDataParameters, CommunicationToolResults>, IAsyncToolPlugin, IToolEditorFactory, IToolExecutionProfileProvider
 {
+    public ToolExecutionProfile DescribeExecution(ToolParameters parameters) => ToolExecutionProfile.LegacyExclusive;
+    public ToolExecutionProfile DescribeExecution(ToolParameters parameters, ICommunicationReceiveService? communicationInputs)
+    {
+        // Only the host source catalog can distinguish a passive cache read from a device request.
+        if (parameters is ReceiveDataParameters { SourceKind: "Device" } p &&
+            communicationInputs?.GetSources().Any(s => s.DeviceId == p.DeviceId && s.TargetId == p.TargetId && !s.ActiveRead) == true)
+            return new(ToolConcurrencyKind.ExternalDataWait);
+        return ToolExecutionProfile.LegacyExclusive;
+    }
     public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) => new Views.ReceiveDataEditor();
     public System.Windows.FrameworkElement CreateDataAnalysisControl() => new CommunicationDataAnalysisControl();
-    public CommunicationToolResults Run(ReceiveDataParameters p) => ReadAsync(p, p.Context?.CommunicationInputs,
-        p.Context?.CancellationToken ?? default, p.NodeResults).GetAwaiter().GetResult();
+    private static ICommunicationReceiveService? Scoped(ICommunicationReceiveService? service, string? workflowId) =>
+        service == null || service is RuntimeVariableReceiveService || string.IsNullOrEmpty(workflowId) ? service :
+            new RuntimeVariableReceiveService(service, null, workflowId: workflowId);
+    public CommunicationToolResults Run(ReceiveDataParameters p) => ReadAsync(p, Scoped(p.Context?.CommunicationInputs, p.Context?.WorkflowId),
+        p.Context?.CancellationToken ?? default, p.NodeResults, p.Context?.NodeId ?? p.FieldId.ToString("N")).GetAwaiter().GetResult();
     public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request) =>
-        await ReadAsync((ReceiveDataParameters)request.Parameters, request.Context?.CommunicationInputs ?? request.CommunicationInputs, request.CancellationToken, request.NodeResults).ConfigureAwait(false);
+        await ReadAsync((ReceiveDataParameters)request.Parameters, Scoped(request.Context?.CommunicationInputs ?? request.CommunicationInputs, request.WorkflowId), request.CancellationToken, request.NodeResults,
+            request.NodeId ?? ((ReceiveDataParameters)request.Parameters).FieldId.ToString("N")).ConfigureAwait(false);
     private static async Task<CommunicationToolResults> ReadAsync(ReceiveDataParameters p, ICommunicationReceiveService? service, CancellationToken token,
-        IDictionary<string, ToolResults>? nodeResults)
+        IDictionary<string, ToolResults>? nodeResults, string consumerId)
     {
         var result = new CommunicationToolResults(); var watch = Stopwatch.StartNew(); var analysis = new List<CommunicationAnalysisRow>();
         try
@@ -26,15 +40,28 @@ public sealed class ReceiveDataTool : IToolPlugin<ReceiveDataParameters, Communi
             token.ThrowIfCancellationRequested();
             if (service == null) throw new InvalidOperationException("宿主未提供当前值读取服务。");
             var values = new Dictionary<Guid, object?>();
+            var committed = false;
             if (p.SourceKind == "Device")
             {
                 var source = service.GetSources().FirstOrDefault(s => s.DeviceId == p.DeviceId && s.TargetId == p.TargetId);
-                var sample = await service.ReadAsync(p.DeviceId, p.TargetId, token).ConfigureAwait(false);
                 var sourceName = !string.IsNullOrWhiteSpace(source?.DeviceName)
                     ? source.DeviceName + (string.IsNullOrWhiteSpace(source.TargetName) ? "" : " / " + source.TargetName)
                     : !string.IsNullOrWhiteSpace(source?.DisplayName) ? source.DisplayName
                     : string.IsNullOrWhiteSpace(p.TargetId) ? "通信设备" : "通信设备 / 数据点";
-                Add(fields[0], sample.Value, sourceName, $"数据时间 {sample.Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}");
+                if (source == null) throw new InvalidOperationException("所选接收来源已失效。");
+                if (source.ActiveRead)
+                {
+                    var sample = await service.ReadAsync(p.DeviceId, p.TargetId, token).ConfigureAwait(false);
+                    Add(fields[0], sample.Value, sourceName, $"数据时间 {sample.Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}");
+                }
+                else
+                    await service.ConsumeAsync(p.DeviceId, p.TargetId, consumerId, sample =>
+                    {
+                        Add(fields[0], sample.Value, sourceName,
+                            $"报文序号 {sample.Sequence}；会话 {sample.Generation}；数据时间 {sample.Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}");
+                        token.ThrowIfCancellationRequested();
+                        result.PublishOutputs(values); result.SetSuccess(watch.Elapsed.TotalMilliseconds); committed = true;
+                    }, token).ConfigureAwait(false);
             }
             else if (p.SourceKind == "Variable")
             {
@@ -49,7 +76,7 @@ public sealed class ReceiveDataTool : IToolPlugin<ReceiveDataParameters, Communi
                 }
             }
             else throw new NotSupportedException("队列接收尚未实现。");
-            token.ThrowIfCancellationRequested(); result.PublishOutputs(values); result.SetSuccess(watch.Elapsed.TotalMilliseconds);
+            if (!committed) { token.ThrowIfCancellationRequested(); result.PublishOutputs(values); result.SetSuccess(watch.Elapsed.TotalMilliseconds); }
             void Add(CommunicationOutputField field, object value, string sourceName, string time)
             {
                 value = CommunicationReceiveService.Normalize(value);

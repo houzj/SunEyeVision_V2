@@ -18,10 +18,10 @@ public sealed class SendDataTool : IToolPlugin<SendDataParameters, SendDataResul
         p.NodeResults, p.Context?.GlobalVariables, p.Context?.CancellationToken ?? default).GetAwaiter().GetResult();
     public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request) =>
         await SendAsync((SendDataParameters)request.Parameters, request.Context.CommunicationOutputs ?? request.CommunicationOutputs,
-            request.NodeId, request.NodeResults, request.GlobalVariables, request.CancellationToken).ConfigureAwait(false);
+            request.NodeId, request.NodeResults, request.GlobalVariables, request.CancellationToken, request.WorkflowId).ConfigureAwait(false);
 
     private static async Task<SendDataResults> SendAsync(SendDataParameters p, ICommunicationSendService? service, string? nodeId,
-        IDictionary<string, ToolResults>? results, IDictionary<string, object?>? globals, CancellationToken token)
+        IDictionary<string, ToolResults>? results, IDictionary<string, object?>? globals, CancellationToken token, string? workflowId = null)
     {
         var result = new SendDataResults(); var watch = Stopwatch.StartNew(); var analysis = new List<CommunicationAnalysisRow>();
         var submittedValues = new Dictionary<Guid, object?>();
@@ -48,7 +48,7 @@ public sealed class SendDataTool : IToolPlugin<SendDataParameters, SendDataResul
                     var inputs = rows.Select(r => new CommunicationSendInput(p.DestinationKind == "Event" ? r.EventFieldId : r.FieldId,
                         r.TargetId, ResolveInput(r, p.DestinationKind, results, globals), r.DataType)).ToArray();
                     var options = p.DestinationKind == "Device" ? new CommunicationSendOptions(p.Hex, p.Separator, p.Terminator) : new();
-                    var plan = await service.PrepareAsync(new(p.DestinationKind, p.DeviceId, p.EventId, inputs, options, nodeId), token).ConfigureAwait(false);
+                    var plan = await service.PrepareAsync(new(p.DestinationKind, p.DeviceId, p.EventId, inputs, options, nodeId, workflowId), token).ConfigureAwait(false);
                     prepared.Add((rows, plan));
                 }
                 catch (OperationCanceledException) { throw; }
@@ -100,18 +100,8 @@ public sealed class SendDataTool : IToolPlugin<SendDataParameters, SendDataResul
     {
         var value = ProtocolBindingInput.Resolve(row.InputText, results, globals);
         var dot = row.InputText.IndexOf('.');
-        var bound = row.InputText.StartsWith("__GlobalVars__.", StringComparison.Ordinal) || dot > 0 && Guid.TryParse(row.InputText[..dot], out _);
+        var bound = row.InputText.StartsWith("__GlobalVars__.", StringComparison.Ordinal) || dot > 0 && (Guid.TryParse(row.InputText[..dot], out _) || results?.ContainsKey(row.InputText[..dot]) == true);
         if (bound) return CommunicationSendTypes.Validate(value, row.DataType);
-        var culture = System.Globalization.CultureInfo.InvariantCulture;
-        var parsed = row.DataType.ToLowerInvariant() switch
-        {
-            "string" => value,
-            "integer" or "int" or "int16" or "int32" or "int64" or "uint16" or "uint32" when long.TryParse(row.InputText, System.Globalization.NumberStyles.Integer, culture, out var n) => n,
-            "float" or "float32" or "double" when double.TryParse(row.InputText, System.Globalization.NumberStyles.Float, culture, out var n) && double.IsFinite(n) => n,
-            "bool" or "boolean" when bool.TryParse(row.InputText, out var b) => b,
-            "binary" => new BinaryPayload(ProtocolValueCodec.ParseHex(row.InputText)),
-            _ => throw new FormatException("常量与目标声明类型不兼容；字节载荷请绑定上游Binary输出。")
-        };
-        return CommunicationSendTypes.Validate(parsed, row.DataType);
+        return CommunicationSendTypes.ParseLiteral(row.InputText, row.DataType);
     }
 }

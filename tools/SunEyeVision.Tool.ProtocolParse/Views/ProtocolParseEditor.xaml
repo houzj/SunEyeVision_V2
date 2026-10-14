@@ -1,4 +1,4 @@
-<controls:ToolDebugControlBase x:Class="SunEyeVision.Tool.ProtocolParse.Views.ProtocolParseEditor"
+<controls:ToolDebugControlBase x:Class="SunEyeVision.Tool.ProtocolParse.Views.ProtocolParseEditor" IncludeOtherBindingSources="True"
  xmlns:comm="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Communication;assembly=SunEyeVision.Plugin.SDK"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:sys="clr-namespace:System;assembly=mscorlib"

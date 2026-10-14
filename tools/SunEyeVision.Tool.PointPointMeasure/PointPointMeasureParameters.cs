@@ -14,8 +14,16 @@ namespace SunEyeVision.Tool.PointPointMeasure
     [JsonDerivedType(typeof(PointPointMeasureParameters), "PointPointMeasure")]
     // P0.6-4 承载层拆分：测量工具**不使用区域**（Probe 实测：无 InspectionGeometries/MaskGeometries 赋值），
     // 故继承"只含 图像源 + 位置修正 + 测量引导"的基类，参数类上不再物理存在 InspectionRois/MaskRois。
-    public class PointPointMeasureParameters : MeasureGuideParameters
+    public class PointPointMeasureParameters : MeasureGuideParameters, IBindingInputActivityProvider
     {
+        public bool IsBindingInputActive(string key) => key switch
+        {
+            nameof(P1Point) => P1InputMode == PointInputMode.ByShape,
+            nameof(P1X) or nameof(P1Y) => P1InputMode == PointInputMode.ByCoordinate,
+            nameof(P2Point) => P2InputMode == PointInputMode.ByShape,
+            nameof(P2X) or nameof(P2Y) => P2InputMode == PointInputMode.ByCoordinate,
+            _ => true
+        };
         // ============================================================
         // 判定规格列表（v4 C1 基座，六工具同构）
         // ============================================================

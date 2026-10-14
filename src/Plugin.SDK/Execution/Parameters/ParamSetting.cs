@@ -31,6 +31,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// </remarks>
     public class ParamSetting
     {
+        public string? SourceWorkflowId { get; set; }
+        public Guid? SourceFieldId { get; set; }
         /// <summary>
         /// 参数名称
         /// </summary>
@@ -195,6 +197,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 BindingType = BindingType,
                 ConstantValue = ConstantValue,
                 SourceNodeId = SourceNodeId,
+                SourceWorkflowId = SourceWorkflowId, SourceFieldId = SourceFieldId,
                 SourceProperty = SourceProperty,
                 SourceNodeName = SourceNodeName,
                 SourceDisplayName = SourceDisplayName,

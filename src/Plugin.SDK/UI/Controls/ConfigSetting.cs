@@ -209,6 +209,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             private set => SetValue(BindingDisplayTextPropertyKey, value);
         }
 
+        public void ClearCommittedBinding()
+        {
+            BindingDisplayText = string.Empty;
+            BindingSource = string.Empty;
+        }
+
         /// <summary>
         /// 值属性：统一的值入口
         /// </summary>
@@ -1221,6 +1227,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 if (ResolveSelectedDataSource() is { } selected)
                 {
                     setting.SourceNodeName = selected.SourceNodeName;
+                    setting.SourceWorkflowId = selected.SourceWorkflowId;
+                    setting.SourceFieldId = selected.SourceFieldId;
                     setting.SourceDisplayName = selected.EffectiveLeafDisplayName;
                 }
 

@@ -488,6 +488,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void OnToolDebugControlLoaded(object sender, RoutedEventArgs e)
         {
+            SuppressClosePersistence = false;
             ToolEditorCommit.Register(this);
             ConfigSetting.InstanceLoaded -= OnConfigSettingInstanceLoaded;
             ConfigSetting.InstanceLoaded += OnConfigSettingInstanceLoaded;
@@ -501,7 +502,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             ConfigSetting.InstanceLoaded -= OnConfigSettingInstanceLoaded;
             // 关闭/切换调试窗口时做一次最终落盘，避免绑定选择事件在控件
             // 尚未完成 Loaded 或窗口关闭竞态中丢失。
-            PersistParameterBindings();
+            if (!SuppressClosePersistence) PersistParameterBindings();
 
             foreach (var control in _parameterBindingControls)
                 control.BindingConfigChanged -= OnParameterBindingChanged;
@@ -513,6 +514,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void OnConfigSettingInstanceLoaded(ConfigSetting control)
         {
+            if (Dispatcher != control.Dispatcher || !Dispatcher.CheckAccess()) return;
             // ConfigSetting 通过静态事件报告自身已经进入视觉树。只有属于当前
             // 调试控件的实例才触发恢复，避免依赖 TabControl 的轮询时序。
             if (!ReferenceEquals(control, this)
@@ -529,6 +531,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </summary>
         public void PersistParameterBindings()
         {
+            if (SuppressClosePersistence) return;
             SubscribeParameterBindingControls();
             LogBindingDiagnostics("关闭前提交", includeControls: true);
             foreach (var control in _parameterBindingControls)
@@ -578,7 +581,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
             else
             {
-                settings.RemoveSetting(control.ParameterName);
+                var requiresConfiguration = (CurrentNode?.GetType().GetProperty("Parameters")?.GetValue(CurrentNode) as ToolParameters)?.RebindingRequired.ContainsKey(control.ParameterName) == true;
+                if (requiresConfiguration && control.BindingType == BindingType.Constant) settings.SetSetting(control.ToParamSetting());
+                else settings.RemoveSetting(control.ParameterName);
                 PluginLogger.Info($"[绑定清除] 参数={control.ParameterName} | 设置数={settings.Count}", "ToolDebugControlBase");
             }
         }
@@ -615,7 +620,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             settings.SetSetting(ParamSetting.CreateBinding(control.ParameterName, sourceNodeId, sourceProperty));
         }
 
-        private void RestoreExternalParameterBindings()
+        public void RefreshCommittedBindings(bool onlyInvalidated = false)
+        {
+            RestoreExternalParameterBindings(onlyInvalidated);
+            if (DataProvider is DataSourceQueryService query) PopulateParameterSources(query);
+        }
+
+        private void RestoreExternalParameterBindings() => RestoreExternalParameterBindings(false);
+
+        private void RestoreExternalParameterBindings(bool onlyInvalidated)
         {
             if (CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
                 is not ParamSettingContainer settings)
@@ -626,8 +639,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 $"[绑定诊断] 开始恢复 | 节点={GetCurrentNodeStringProperty("Id") ?? "null"} | " +
                 $"设置数={byName.Count} | 标量控件={_parameterBindingControls.Count} | 图形控件={_shapeBindingControls.Count}",
                 "BindingDiag");
-            if (byName.Count == 0)
-                return;
+            var required = (CurrentNode?.GetType().GetProperty("Parameters")?.GetValue(CurrentNode) as ToolParameters)?.RebindingRequired;
+            var pending = (CurrentNode?.GetType().GetProperty("Parameters")?.GetValue(CurrentNode) as ToolParameters)?.BindingValidationPending;
+            foreach (var control in _parameterBindingControls)
+                if (pending?.TryGetValue(control.ParameterName, out var reason) == true) control.ToolTip = "待校验：" + reason;
 
             SubscribeParameterBindingControls();
             if (_parameterBindingControls.Count == 0 && _shapeBindingControls.Count == 0)
@@ -641,6 +656,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 foreach (var control in _parameterBindingControls)
                 {
+                    if (onlyInvalidated && required?.ContainsKey(control.ParameterName) != true) continue;
                     if (byName.TryGetValue(control.ParameterName, out var setting))
                     {
                         PluginLogger.Info(
@@ -649,12 +665,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                             "BindingDiag");
                         control.FromParamSetting(setting);
                     }
+                    else if (required?.ContainsKey(control.ParameterName) == true)
+                    {
+                        control.ClearCommittedBinding();
+                        control.ToolTip = required[control.ParameterName];
+                    }
                 }
                 foreach (var control in _shapeBindingControls)
                 {
+                    if (onlyInvalidated && required?.ContainsKey(control.ParameterName) != true) continue;
                     if (!byName.TryGetValue(control.ParameterName, out var setting)
                         || setting.BindingType != BindingType.Binding)
+                    {
+                        if (required?.ContainsKey(control.ParameterName) == true) { control.BindingSource = string.Empty; control.ToolTip = required[control.ParameterName]; }
                         continue;
+                    }
 
                     var source = string.IsNullOrWhiteSpace(setting.SourceNodeId)
                         ? string.Empty
@@ -714,6 +739,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private static IEnumerable<ParamBinding> FindShapeBindingControls(DependencyObject root)
         {
+            // ConfigSetting owns its template's ParamBinding. Persisting that inner control
+            // separately would erase a constant just written by ConfigSetting for the same key.
+            if (root is ConfigSetting) yield break;
             // Anonymous protocol list inputs persist their own expression in the item parameters.
             // They must not share an empty ParamSettings key or overwrite each other on reopen.
             if (root is ParamBinding paramBinding && !string.IsNullOrWhiteSpace(paramBinding.ParameterName))
@@ -808,6 +836,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 NodeResults = nodeResults,
                 ResolvedInputImage = resolvedInputImage ?? parameters.ResolvedInputImage,
                 NodeId = GetCurrentNodeStringProperty("Id"),
+                WorkflowId = (DataProvider as DataSourceQueryService)?.WorkflowId,
                 NodeName = GetCurrentNodeStringProperty("DisplayName")
                     ?? GetCurrentNodeStringProperty("Name"),
                 ParameterBindings = ParameterBindingSet.FromSettings(
@@ -860,13 +889,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// <summary>
         /// 填充参数数据源
         /// </summary>
+        /// <summary>Opt-in for communication payload editors, not a global candidate expansion.</summary>
+        public bool IncludeOtherBindingSources { get; set; }
+        internal bool SuppressClosePersistence { get; set; }
+
         private void PopulateParameterSources(DataSourceQueryService dataProvider)
         {
             // 清空数据源缓存
             _availableDataSources.Clear();
 
             // 获取所有数据源（保持父节点距离顺序）
-            var allDataSources = dataProvider.GetAvailableDataSources(_currentNodeId ?? "");
+            var allDataSources = dataProvider.GetAvailableDataSources(_currentNodeId ?? "", null, IncludeOtherBindingSources);
 
             // 添加到统一缓存（保持父节点顺序）
             foreach (var ds in allDataSources)

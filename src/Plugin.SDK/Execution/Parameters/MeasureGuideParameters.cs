@@ -123,21 +123,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 return false;
             }
 
-            // 分支2：无序列化引用且无运行时图像源 → 数据驱动自动匹配
-            // 通过 AvailableDataSource.VariableType == "Image" 匹配（统一 Mapper 词汇体系）
-            if (_imageSource == null)
-            {
-                var firstImageSource = dataSources
-                    .FirstOrDefault(ds => ds.VariableType == "Image");
-                if (firstImageSource != null)
-                {
-                    _imageSource = firstImageSource;
-                    _imageSourceRef = ImageSourceReference.FromDataSource(firstImageSource);
-                    OnPropertyChanged(nameof(ImageSource));
-                    return true;
-                }
-            }
-
+            // Default binding belongs to the host's explicit connection policy, never a candidate refresh.
             return false;
         }
 

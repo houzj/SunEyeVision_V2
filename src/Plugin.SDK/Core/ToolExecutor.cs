@@ -70,7 +70,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             ResolveRuntimeParameters(request);
             ApplyRuntimeSnapshot(request.Parameters, request.RuntimeParameters!);
             request.Parameters.ResolvedInputImage = request.ResolvedInputImage;
-            request.Parameters.CommunicationInputs = request.CommunicationInputs;
+            request.Parameters.CommunicationInputs = ScopeCommunicationInputs(request);
             request.Parameters.CommunicationOutputs = request.CommunicationOutputs;
             return Run(
                 tool,
@@ -101,7 +101,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             ResolveRuntimeParameters(request);
             ApplyRuntimeSnapshot(parameters, request.RuntimeParameters!);
             parameters.ResolvedInputImage = request.ResolvedInputImage;
-            parameters.CommunicationInputs = request.CommunicationInputs;
+            parameters.CommunicationInputs = ScopeCommunicationInputs(request);
             parameters.CommunicationOutputs = request.CommunicationOutputs;
             return Run(
                 tool,
@@ -166,6 +166,12 @@ namespace SunEyeVision.Plugin.SDK.Core
             }
         }
 
+        private static SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? ScopeCommunicationInputs(ToolExecutionRequest request)
+        {
+            var service = request.CommunicationInputs;
+            return service == null || service is SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService || string.IsNullOrEmpty(request.WorkflowId)
+                ? service : new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(service, null, workflowId: request.WorkflowId);
+        }
         private ToolExecutionContext CreateExecutionContext(IToolPlugin tool, ToolExecutionRequest request)
         {
             var toolName = tool.ParamsType.Name.Replace("Parameters", "");
@@ -175,7 +181,8 @@ namespace SunEyeVision.Plugin.SDK.Core
                 nodeName: request.NodeName ?? toolName,
                 nodeId: request.NodeId,
                 cancellationToken: request.CancellationToken,
-                globalVariables: request.GlobalVariables, communicationInputs: request.CommunicationInputs, communicationOutputs: request.CommunicationOutputs);
+                globalVariables: request.GlobalVariables, communicationInputs: request.CommunicationInputs, communicationOutputs: request.CommunicationOutputs)
+                { WorkflowId = request.WorkflowId };
         }
 
         private static ToolResults CreateTerminalResult(
@@ -433,6 +440,30 @@ namespace SunEyeVision.Plugin.SDK.Core
         public RuntimeParameterSnapshot ResolveRuntimeParameters(ToolExecutionRequest request)
         {
             ArgumentNullException.ThrowIfNull(request);
+            var inputs = BindingInputCatalog.Describe(request.Parameters);
+            if (!string.IsNullOrEmpty(request.WorkflowId) && request.ParameterBindings.Bindings.Any(b => b.BindingType == BindingType.Binding &&
+                !string.IsNullOrEmpty(b.SourceWorkflowId) && b.SourceNodeId?.StartsWith("__", StringComparison.Ordinal) != true && b.SourceWorkflowId != request.WorkflowId))
+            {
+                var invalid = new RuntimeParameterSnapshot(new Dictionary<string, object?>(), new[] { "绑定来源跨出当前工作流作用域，请使用全局变量。" });
+                request.RuntimeParameters = invalid; return invalid;
+            }
+            foreach (var pending in request.Parameters.BindingValidationPending)
+            {
+                if (!BindingInputCatalog.IsInputActive(request.Parameters, pending.Key)) continue;
+                var input = inputs.FirstOrDefault(i => i.Key == pending.Key);
+                if (input is { Active: false }) continue;
+                var invalid = new RuntimeParameterSnapshot(new Dictionary<string, object?>(), new[] { $"输入待校验，不能执行：{pending.Value}" });
+                request.RuntimeParameters = invalid; return invalid;
+            }
+            foreach (var pending in request.Parameters.RebindingRequired.ToArray())
+            {
+                if (!BindingInputCatalog.IsInputActive(request.Parameters, pending.Key)) continue;
+                var input = inputs.FirstOrDefault(i => i.Key == pending.Key);
+                if (input is { Active: false }) continue;
+                if (input == null && (pending.Key.StartsWith("Row:") || pending.Key.StartsWith("Part:") || pending.Key.StartsWith("Variable:"))) continue;
+                var invalid = new RuntimeParameterSnapshot(new Dictionary<string, object?>(), new[] { $"输入 {pending.Key} 需要重新绑定：{pending.Value}" });
+                request.RuntimeParameters = invalid; return invalid;
+            }
             if (request.ParameterBindings.Bindings.Count == 0)
             {
                 var empty = new RuntimeParameterSnapshot(
@@ -452,7 +483,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             // AvailableDataSource/ImageSourceReference 链路处理，不能进入普通
             // 参数转换，否则会把 AffineMatrix 等对象错误地走 Convert.ChangeType。
             var executableBindings = request.ParameterBindings.Bindings
-                .Where(binding => targetTypes.ContainsKey(binding.ParameterName))
+                .Where(binding => targetTypes.ContainsKey(binding.ParameterName) && BindingInputCatalog.IsInputActive(request.Parameters, binding.ParameterName))
                 .ToList();
             if (executableBindings.Count != request.ParameterBindings.Bindings.Count)
             {

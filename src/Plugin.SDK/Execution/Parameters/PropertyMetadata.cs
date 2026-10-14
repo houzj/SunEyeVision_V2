@@ -16,6 +16,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// </remarks>
     public class ToolPropertyMetadata
     {
+        public Type? DeclaredType { get; set; }
+        public bool? IsCollection { get; set; }
+        public int? FixedCount { get; set; }
+        public Guid? FieldId { get; set; }
         /// <summary>
         /// 属性名称
         /// </summary>

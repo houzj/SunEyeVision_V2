@@ -7,6 +7,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
     /// </summary>
     public sealed class OutputVariable
     {
+        public System.Guid? FieldId { get; set; }
+        /// <summary>Declared, never inferred from a previous result's value or length.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public System.Type? DeclaredType { get; set; }
+        public bool? IsCollection { get; set; }
+        public int? FixedCount { get; set; }
         /// <summary>变量名（工具内唯一，对应绑定路径的 PropertyName）</summary>
         public string Name { get; set; } = string.Empty;
 

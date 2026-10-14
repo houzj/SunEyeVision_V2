@@ -21,7 +21,7 @@ public static class ProtocolBindingInput
             return RequireScalar(value);
         }
         var dot = expression.IndexOf('.');
-        if (dot > 0 && Guid.TryParse(expression[..dot], out _))
+        if (dot > 0 && (Guid.TryParse(expression[..dot], out _) || results?.ContainsKey(expression[..dot]) == true || expression.StartsWith("__SubroutineInputs__.", StringComparison.Ordinal)))
         {
             var id = expression[..dot];
             if (results == null || !results.TryGetValue(id, out var result) || !result.IsSuccess)

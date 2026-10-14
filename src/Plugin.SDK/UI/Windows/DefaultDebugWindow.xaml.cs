@@ -570,11 +570,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             PluginLogger.Info($"[绑定诊断] 标准调试窗口 Closing | 控件={_control.GetType().Name}", "BindingDiag");
-            if (!ToolEditorCommit.TryCommit(_control, out var error))
+            if (!ToolEditorClose.TryClose(_control, this))
             {
                 e.Cancel = true;
-                PluginLogger.Warning(error, "DefaultDebugWindow");
-                MessageBox.Show(error, "配置未提交", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             // 绑定状态必须在窗口关闭前提交到节点 ParamSettings，不能只依赖

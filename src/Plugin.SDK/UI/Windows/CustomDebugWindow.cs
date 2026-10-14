@@ -78,6 +78,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
 
             // 窗口关闭时清理
             Closed += OnWindowClosed;
+            Closing += (_, e) => e.Cancel = !SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorClose.TryClose(_control, this);
 
             PluginLogger.Success("CustomDebugWindow 构造函数完成", "CustomDebugWindow");
         }
@@ -133,6 +134,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </summary>
         private void OnConfirmClicked(object? sender, EventArgs e)
         {
+            if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryCommit(_control, out var error))
+            { MessageBox.Show(this, error, "配置未提交", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             PluginLogger.Info("确认按钮已点击，关闭窗口", "CustomDebugWindow");
             Close();
         }

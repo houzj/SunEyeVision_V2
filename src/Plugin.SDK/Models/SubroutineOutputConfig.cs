@@ -49,6 +49,7 @@ namespace SunEyeVision.Plugin.SDK.Models
 
     public class SubroutineOutputConfig : ObservableObject
     {
+        public Guid FieldId { get; set; } = Guid.NewGuid();
         private string _name = string.Empty;
         private string _typeName = "Float";
         private string? _group;
@@ -116,8 +117,8 @@ namespace SunEyeVision.Plugin.SDK.Models
             {
                 if (SetProperty(ref _source, value))
                 {
-                    if (value != null && !string.IsNullOrEmpty(value.TypeName))
-                        TypeName = value.TypeName;
+                    if (value != null && SdkTypeVocabulary.ToTypeVocabulary(value.PropertyType) is { } vocabulary)
+                        TypeName = vocabulary;
                 }
             }
         }

@@ -17,6 +17,7 @@ public sealed record CommunicationOutputField(Guid FieldId, string Name, string 
         return new OutputVariable
         {
             Name = BindingKey, DisplayName = Name, VariableType = VariableType,
+            FieldId = FieldId, DeclaredType = type, IsCollection = false, FixedCount = 1,
             Kind = OutputVariableKind.Data,
             RuntimeValue = OutputVariableArrayPromoter.Promote(value, VariableType, type)
         };

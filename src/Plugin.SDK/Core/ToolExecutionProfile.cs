@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Models.Communication;
 
 namespace SunEyeVision.Plugin.SDK.Core;
 
@@ -20,7 +21,9 @@ public enum ToolConcurrencyKind
 {
     WorkflowExclusive,
     ResourceExclusive,
-    ParallelSafe
+    ParallelSafe,
+    /// <summary>仅等待外部发布或读取线程安全缓存；不占计算名额，可与独占工具共存。不得用于设备请求或共享算法资源。</summary>
+    ExternalDataWait
 }
 
 /// <summary>
@@ -30,4 +33,6 @@ public enum ToolConcurrencyKind
 public interface IToolExecutionProfileProvider
 {
     ToolExecutionProfile DescribeExecution(ToolParameters parameters);
+    ToolExecutionProfile DescribeExecution(ToolParameters parameters, ICommunicationReceiveService? communicationInputs) =>
+        DescribeExecution(parameters);
 }

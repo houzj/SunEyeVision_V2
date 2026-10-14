@@ -609,6 +609,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 variables.Add(new OutputVariable
                 {
                     Name = entry.PropertyName,
+                    DeclaredType = prop.PropertyType, IsCollection = prop.PropertyType.IsArray, FixedCount = prop.PropertyType.IsArray ? null : 1,
                     VariableType = variableType,
                     DisplayName = entry.DisplayName,
                     Group = entry.GroupName,
@@ -652,6 +653,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             variables.Add(new OutputVariable
             {
                 Name = entry.PropertyName,
+                DeclaredType = prop.PropertyType, IsCollection = prop.PropertyType.IsArray, FixedCount = prop.PropertyType.IsArray ? null : 1,
                 VariableType = variableType,
                 DisplayName = entry.DisplayName,
                 Group = entry.GroupName,

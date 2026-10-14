@@ -26,6 +26,7 @@
     <ProjectReference Include="../../tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <ProjectReference Include="../../src/Workflow/SunEyeVision.Workflow.csproj" />
   </ItemGroup>
   <!-- 工具插件测试共享加载器：ModuleInitializer 从 plugins/<Tool>/ 加载最新工具 dll -->
   <ItemGroup>

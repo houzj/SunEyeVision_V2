@@ -18,6 +18,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// </remarks>
     public class ImageSourceReference
     {
+        public string? SourceWorkflowId { get; set; }
+        public System.Guid? SourceFieldId { get; set; }
+        public string? AutomaticConnectionId { get; set; }
         /// <summary>
         /// 源节点ID（身份层）
         /// </summary>
@@ -64,9 +67,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             if (dataSource == null) return null;
             return new ImageSourceReference(
                 dataSource.SourceNodeId,
-                dataSource.PropertyName,
+                dataSource.GetBindingPath()[(dataSource.SourceNodeId.Length + 1)..],
                 dataSource.SourceNodeName,
-                dataSource.DisplayName);
+                dataSource.DisplayName) { SourceWorkflowId = dataSource.SourceWorkflowId, SourceFieldId = dataSource.SourceFieldId, AutomaticConnectionId = dataSource.AutomaticConnectionId };
         }
 
         /// <summary>
@@ -77,9 +80,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public AvailableDataSource? MatchDataSource(System.Collections.Generic.IEnumerable<AvailableDataSource>? dataSources)
         {
             if (dataSources == null) return null;
-            return dataSources.FirstOrDefault(ds =>
+            var root = PropertyPathParser.ExtractPropertyName(PropertyName.Split('.')[0]);
+            var matched = dataSources.FirstOrDefault(ds =>
                 ds.SourceNodeId == SourceNodeId &&
-                ds.PropertyName == PropertyName);
+                (string.IsNullOrEmpty(SourceWorkflowId) || ds.SourceWorkflowId == SourceWorkflowId) &&
+                (SourceFieldId.HasValue ? ds.SourceFieldId == SourceFieldId : ds.PropertyName == root));
+            if (matched == null) return null;
+            return new AvailableDataSource { SourceNodeId = matched.SourceNodeId, SourceWorkflowId = matched.SourceWorkflowId,
+                SourceFieldId = matched.SourceFieldId, PropertyName = matched.PropertyName, BindingSuffix = PropertyName[root.Length..],
+                SourceNodeName = matched.SourceNodeName, DisplayName = matched.DisplayName, PropertyType = matched.PropertyType,
+                VariableType = matched.VariableType, AutomaticConnectionId = AutomaticConnectionId };
         }
 
         /// <summary>

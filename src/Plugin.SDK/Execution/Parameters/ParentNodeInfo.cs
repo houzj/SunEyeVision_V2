@@ -36,6 +36,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// </remarks>
     public class ParentNodeInfo
     {
+        public string? CandidateSection { get; set; }
         /// <summary>
         /// 节点ID
         /// </summary>

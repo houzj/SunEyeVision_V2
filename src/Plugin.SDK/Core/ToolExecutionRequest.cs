@@ -38,6 +38,7 @@ namespace SunEyeVision.Plugin.SDK.Core
 
         /// <summary>日志中的节点标识。</summary>
         public string? NodeId { get; init; }
+        public string? WorkflowId { get; init; }
 
         /// <summary>本次运行的取消令牌。</summary>
         public CancellationToken CancellationToken { get; init; }

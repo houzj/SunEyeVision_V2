@@ -423,7 +423,7 @@
                                         <ListBox x:Name="PART_ImageSourceList"
                                                  Grid.Row="1"
                                                  ItemsSource="{Binding FilteredImageSources, RelativeSource={RelativeSource TemplatedParent}}"
-                                                 SelectedItem="{Binding SelectedDataSource, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                                 SelectedItem="{Binding SelectedDataSource, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
                                                  BorderThickness="0"
                                                  MaxHeight="250"
                                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">

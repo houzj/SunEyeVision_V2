@@ -53,6 +53,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     [JsonDerivedType(typeof(GenericToolParameters), "Generic")]
     public abstract class ToolParameters : ObservableObject
     {
+        /// <summary>Persisted inputs invalidated by a committed upstream contract change.</summary>
+        public Dictionary<string, string> RebindingRequired { get; set; } = new();
+        /// <summary>References retained because their formal contract cannot yet be proved. Not executable.</summary>
+        public Dictionary<string, string> BindingValidationPending { get; set; } = new();
+        public Dictionary<string, BindingSourceIdentity> BindingSourceIdentities { get; set; } = new();
         /// <summary>
         /// 参数版本（用于序列化兼容性）
         /// </summary>
@@ -167,7 +172,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public IEnumerable<PropertyInfo> GetAllParameterProperties()
         {
             return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.Name != nameof(Version));
+                .Where(p => p.Name != nameof(Version) && p.Name != nameof(RebindingRequired) && p.Name != nameof(BindingValidationPending) && p.Name != nameof(BindingSourceIdentities));
         }
 
         #endregion

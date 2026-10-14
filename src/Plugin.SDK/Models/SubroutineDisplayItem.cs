@@ -13,6 +13,7 @@ namespace SunEyeVision.Plugin.SDK.Models
 {
     public class SubroutineDisplayItem : ObservableObject
     {
+        public Guid FieldId { get; set; } = Guid.NewGuid();
         private string _displayName = string.Empty;
         private SubroutineDisplayType _displayType = SubroutineDisplayType.Circle;
         private string _mappedSource = string.Empty;

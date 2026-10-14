@@ -74,7 +74,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public AvailableDataSource SelectedDataSource
         {
             get => (AvailableDataSource)GetValue(SelectedDataSourceProperty);
-            set => SetValue(SelectedDataSourceProperty, value);
+            set => SetCurrentValue(SelectedDataSourceProperty, value);
         }
 
         /// <summary>
@@ -138,6 +138,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private Popup _popup = null!;
         private ListBox _imageSourceList = null!;
         private ObservableCollection<AvailableDataSource>? _currentDataSources;
+        private bool _syncingSelection;
+        private bool _refreshingSources;
 
         #endregion
 
@@ -173,9 +175,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void OnImageSourceListSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (_syncingSelection || _refreshingSources || _popup?.IsOpen != true) return;
             if (_imageSourceList.SelectedItem is AvailableDataSource selectedSource)
             {
-                SelectedDataSource = selectedSource;
+                SelectedDataSource = selectedSource.WithConnectionOwnership(null);
                 _popup.IsOpen = false;
                 RaiseEvent(new RoutedEventArgs(ImageSourceChangedEvent));
             }
@@ -197,7 +200,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // 点击了已选中项（SelectionChanged 不触发）→ 手动确认写入并关闭
             if (container.Content is AvailableDataSource selectedSource)
             {
-                SelectedDataSource = selectedSource;
+                SelectedDataSource = selectedSource.WithConnectionOwnership(null);
                 _popup.IsOpen = false;
                 RaiseEvent(new RoutedEventArgs(ImageSourceChangedEvent));
             }
@@ -268,11 +271,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 ? AvailableDataSources.Where(ds => ds.PropertyType != null && imageTypeNames.Contains(ds.PropertyType.Name)).ToList()
                 : new List<AvailableDataSource>();
 
-            FilteredImageSources.Clear();
-            foreach (var source in filtered)
+            _refreshingSources = true;
+            try
             {
-                FilteredImageSources.Add(source);
+                FilteredImageSources.Clear();
+                foreach (var source in filtered) FilteredImageSources.Add(source);
             }
+            finally { _refreshingSources = false; }
 
             // 同步选中项引用
             SyncSelectionWithFilteredList();
@@ -290,18 +295,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </remarks>
         private void SyncSelectionWithFilteredList()
         {
+            if (_syncingSelection) return;
             if (FilteredImageSources == null || FilteredImageSources.Count == 0)
                 return;
 
-            // 没有选中项，自动选中第一个（走 setter → 触发 TwoWay 绑定写回参数，保证所见即所得）
-            if (SelectedDataSource == null)
-            {
-                SelectedDataSource = FilteredImageSources[0];
-                PluginLogger.Info(
-                    $"图像源自动选中: {FilteredImageSources[0].DropdownDisplayText}",
-                    "ImageSourceSelector");
-                return;
-            }
+            // Missing selection and temporarily missing candidates never select a replacement.
+            if (SelectedDataSource == null) return;
 
             // 如果已在列表中（引用相同或值相等），确保引用指向列表中的实例
             if (FilteredImageSources.Contains(SelectedDataSource))
@@ -309,13 +308,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var match = FilteredImageSources.First(ds => ds.Equals(SelectedDataSource));
                 if (!ReferenceEquals(match, SelectedDataSource))
                 {
-                    SelectedDataSource = match;
+                    _syncingSelection = true;
+                    try { SelectedDataSource = SelectedDataSource.AutomaticConnectionId is { } id ? match.WithConnectionOwnership(id) : match; }
+                    finally { _syncingSelection = false; }
                 }
                 return;
             }
 
-            // 不在列表中（数据源已移除），回退到第一个或清空
-            SelectedDataSource = FilteredImageSources.Count > 0 ? FilteredImageSources[0] : null;
+            // Candidate visibility is not authoritative binding validity. Commit service checks it.
         }
     }
 }

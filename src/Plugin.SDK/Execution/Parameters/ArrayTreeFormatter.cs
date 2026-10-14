@@ -191,6 +191,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 var groupDs = new AvailableDataSource
                 {
                     SourceNodeId = parentDs.SourceNodeId,
+                    SourceWorkflowId = parentDs.SourceWorkflowId, SourceFieldId = parentDs.SourceFieldId, CandidateSection = parentDs.CandidateSection,
                     SourceNodeName = parentDs.SourceNodeName,
                     PropertyName = parentDs.PropertyName,
                     DisplayName = parentDs.DisplayName,
@@ -227,6 +228,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 var fieldDs = new AvailableDataSource
                 {
                     SourceNodeId = parentDs.SourceNodeId,
+                    SourceWorkflowId = parentDs.SourceWorkflowId, SourceFieldId = parentDs.SourceFieldId, CandidateSection = parentDs.CandidateSection,
                     SourceNodeName = parentDs.SourceNodeName,
                     PropertyName = parentDs.PropertyName,
                     DisplayName = f.DisplayName,
@@ -264,6 +266,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             var fieldDs = new AvailableDataSource
             {
                 SourceNodeId = parentDs.SourceNodeId,
+                SourceWorkflowId = parentDs.SourceWorkflowId, SourceFieldId = parentDs.SourceFieldId, CandidateSection = parentDs.CandidateSection,
                 SourceNodeName = parentDs.SourceNodeName,
                 PropertyName = parentDs.PropertyName,
                 DisplayName = f.DisplayName,

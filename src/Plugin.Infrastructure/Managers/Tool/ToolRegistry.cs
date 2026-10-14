@@ -458,6 +458,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     var metadata = new ToolPropertyMetadata
                     {
                         PropertyName = v.Name,
+                        DeclaredType = v.DeclaredType, IsCollection = v.IsCollection, FixedCount = v.FixedCount, FieldId = v.FieldId,
                         DisplayName = string.IsNullOrEmpty(v.DisplayName) ? v.Name : v.DisplayName,
                         GroupName = v.Group,
                         // 对外元数据提升为数组（绑定树据此展开 [i]）；缓存键仍按标量 typeFullName，不破坏存量查询

@@ -53,6 +53,9 @@ public static class ParameterContractValidator
             foreach (var property in properties.Values)
             {
                 if (property.Name is nameof(ToolParameters.Version)
+                    or nameof(ToolParameters.RebindingRequired)
+                    or nameof(ToolParameters.BindingValidationPending)
+                    or nameof(ToolParameters.BindingSourceIdentities)
                     or nameof(ToolParameters.Context)
                     or nameof(ToolParameters.NodeResults)
                     or nameof(ToolParameters.ResolvedInputImage))

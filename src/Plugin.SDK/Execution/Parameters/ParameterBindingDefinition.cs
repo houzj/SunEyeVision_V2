@@ -11,6 +11,8 @@ public sealed record ParameterBindingDefinition
     public BindingType BindingType { get; init; } = BindingType.Constant;
     public object? ConstantValue { get; init; }
     public string? SourceNodeId { get; init; }
+    public string? SourceWorkflowId { get; init; }
+    public Guid? SourceFieldId { get; init; }
     public string? SourceProperty { get; init; }
     public string? SourceNodeName { get; init; }
     public string? SourceDisplayName { get; init; }
@@ -25,6 +27,7 @@ public sealed record ParameterBindingDefinition
             BindingType = setting.BindingType,
             ConstantValue = setting.ConstantValue,
             SourceNodeId = setting.SourceNodeId,
+            SourceWorkflowId = setting.SourceWorkflowId, SourceFieldId = setting.SourceFieldId,
             SourceProperty = setting.SourceProperty,
             SourceNodeName = setting.SourceNodeName,
             SourceDisplayName = setting.SourceDisplayName,
@@ -39,6 +42,7 @@ public sealed record ParameterBindingDefinition
             BindingType = BindingType,
             ConstantValue = ConstantValue,
             SourceNodeId = SourceNodeId,
+            SourceWorkflowId = SourceWorkflowId, SourceFieldId = SourceFieldId,
             SourceProperty = SourceProperty,
             SourceNodeName = SourceNodeName,
             SourceDisplayName = SourceDisplayName,

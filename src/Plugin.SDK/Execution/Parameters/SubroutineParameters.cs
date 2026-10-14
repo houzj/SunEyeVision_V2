@@ -46,6 +46,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 variables.Add(new OutputVariable
                 {
                     Name = cfg.Name,
+                    FieldId = cfg.FieldId, IsCollection = cfg.IsAccumulated || cfg.ParamType?.IsArray == true,
+                    FixedCount = cfg.IsAccumulated || cfg.ParamType?.IsArray == true ? null : 1,
                     VariableType = cfg.TypeName,
                     DisplayName = cfg.Name,
                     Group = string.IsNullOrEmpty(cfg.Group) ? "输出结果" : cfg.Group,

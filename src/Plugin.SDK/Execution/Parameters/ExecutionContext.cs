@@ -66,6 +66,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 节点ID（用于日志来源标识）
         /// </summary>
         public string? NodeId { get; init; }
+        public string? WorkflowId { get; init; }
 
         /// <summary>
         /// 工作流名称（用于日志来源层级）

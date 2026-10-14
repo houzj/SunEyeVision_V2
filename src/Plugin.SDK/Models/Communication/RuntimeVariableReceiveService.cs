@@ -11,6 +11,9 @@ public sealed class RuntimeVariableReceiveService(ICommunicationReceiveService i
     IDictionary<string, SunEyeVision.Plugin.SDK.Execution.Results.ToolResults>? nodeResults = null, string? workflowId = null) : ICommunicationReceiveService
 {
     public string? WorkflowId { get; } = workflowId;
+    public string ConsumerScope { get; init; } = workflowId ?? "";
+    public Task ConsumeAsync(string deviceId, string targetId, string consumerId, Action<CommunicationReceiveSample> commit,
+        CancellationToken token = default) => inner.ConsumeAsync(deviceId, targetId, ConsumerScope + "/" + consumerId, commit, token);
     public IReadOnlyList<CommunicationReceiveSource> GetSources() => inner.GetSources();
     public IReadOnlyList<ReceiveVariableSource> GetVariables() => inner.GetVariables();
     public Task<CommunicationReceiveSample> ReadAsync(string deviceId, string targetId, CancellationToken token = default) => inner.ReadAsync(deviceId, targetId, token);

@@ -25,6 +25,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     {
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationReceiveService { get; set; }
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationSendService { get; set; }
+        public Action<string>? CommitOutputConfiguration { get; set; }
+        public string? WorkflowId { get; set; }
+        public Func<string, IReadOnlyList<string>>? BindingCandidateNodeIds { get; set; }
+        public Func<string, IReadOnlyList<string>>? ExistingBindingSourceNodeIds { get; set; }
+        public Func<string, IReadOnlyList<OutputVariable>?>? FormalOutputContractReader { get; set; }
         public Func<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource?>? SelectReceiveVariable { get; set; }
         /// <summary>
         /// SSOT 读取器（委托到 WorkflowContext，实时读取持久结果，不维护本地缓存）
@@ -190,6 +195,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
         /// <inheritdoc/>
         public List<ParentNodeInfo> GetParentNodes(string nodeId)
+            => GetParentNodes(nodeId, false);
+
+        private List<ParentNodeInfo> GetParentNodes(string nodeId, bool includeOtherSources)
         {
             var parentNodes = new List<ParentNodeInfo>();
 
@@ -200,7 +208,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             }
 
             // 获取父节点ID列表
-            var parentNodeIds = _connectionProvider.GetParentNodeIds(nodeId);
+            var upstream = _connectionProvider.GetParentNodeIds(nodeId).Distinct().ToArray();
+            var allowed = BindingCandidateNodeIds?.Invoke(nodeId);
+            var existing = ExistingBindingSourceNodeIds?.Invoke(nodeId) ?? Array.Empty<string>();
+            var hasExistingOutside = existing.Any(id => !upstream.Contains(id));
+            var parentNodeIds = (includeOtherSources && allowed != null
+                ? upstream.Concat(allowed).Distinct()
+                : upstream.Concat(existing).Distinct()).Where(id => id != nodeId && (allowed == null || allowed.Contains(id)));
 
             int order = 0;
 
@@ -209,6 +223,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // 直接创建父节点信息
                 var nodeInfo = new ParentNodeInfo
                 {
+                    CandidateSection = includeOtherSources || hasExistingOutside
+                        ? (upstream.Contains(parentNodeId) ? "上游节点" : includeOtherSources ? "其他可绑定节点" : "当前绑定来源（无连线）") : null,
                     NodeId = parentNodeId,
                     NodeName = _nodeInfoProvider?.GetNodeName(parentNodeId) ?? parentNodeId,
                     NodeType = _nodeInfoProvider?.GetNodeType(parentNodeId) ?? "Unknown",
@@ -260,9 +276,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
         /// <inheritdoc/>
         public List<AvailableDataSource> GetAvailableDataSources(string nodeId, Type? targetType = null)
+            => GetAvailableDataSources(nodeId, targetType, false);
+
+        public List<AvailableDataSource> GetAvailableDataSources(string nodeId, Type? targetType, bool includeOtherSources)
         {
             // 获取父节点
-            var parentNodes = GetParentNodes(nodeId);
+            var parentNodes = GetParentNodes(nodeId, includeOtherSources);
             var allDataSources = new List<AvailableDataSource>();
 
             foreach (var parent in parentNodes)
@@ -290,7 +309,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 {
                     var dataSource = new AvailableDataSource
                     {
+                        CandidateSection = parent.CandidateSection,
                         SourceNodeId = parent.NodeId,
+                        SourceWorkflowId = WorkflowId, SourceFieldId = property.SourceFieldId,
                         SourceNodeName = parent.NodeName,
                         SourceNodeType = parent.NodeType,
                         PropertyName = property.PropertyName,
@@ -420,6 +441,23 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             var properties = new List<AvailableDataSource>();
             var context = GetNodeContext(parentNodeId);
+
+            if (FormalOutputContractReader != null)
+            {
+                foreach (var output in FormalOutputContractReader(parentNodeId) ?? Array.Empty<OutputVariable>())
+                {
+                    if (output.Kind != OutputVariableKind.Data) continue;
+                    var declared = output.DeclaredType ?? SdkTypeVocabulary.ToSystemType(output.VariableType);
+                    var type = output.IsCollection == true && declared?.IsArray == false ? declared.MakeArrayType() : declared;
+                    object? value = null;
+                    if (context?.Result is { } result) { try { value = OutputVariableResolver.Resolve(result, output.Name); } catch { } }
+                    properties.Add(new AvailableDataSource { SourceNodeId = parentNodeId, SourceWorkflowId = WorkflowId, SourceFieldId = output.FieldId,
+                        SourceNodeName = context?.NodeName ?? _nodeInfoProvider?.GetNodeName(parentNodeId) ?? "上游节点", PropertyName = output.Name,
+                        DisplayName = string.IsNullOrEmpty(output.DisplayName) ? output.Name : output.DisplayName,
+                        PropertyType = type, VariableType = output.VariableType, CurrentValue = value, GroupName = output.Group });
+                }
+                return properties;
+            }
 
             if (context == null || context.ResultType == null)
             {

@@ -47,7 +47,7 @@ public sealed class RuntimeParameterSnapshotTests
     [Fact]
     public void ToolExecutor_CanAttachRuntimeSnapshotToRequest()
     {
-        var request = new ToolExecutionRequest(new EmptyParameters())
+        var request = new ToolExecutionRequest(new NumericParameters())
         {
             ParameterBindings = new ParameterBindingSet(new[]
             {
@@ -83,6 +83,18 @@ public sealed class RuntimeParameterSnapshotTests
 
     private sealed class EmptyParameters : ToolParameters
     {
+    }
+
+    [Fact]
+    public void ToolExecutor_LeavesNonParameterBindingsToDedicatedResolvers()
+    {
+        var request = new ToolExecutionRequest(new EmptyParameters())
+        {
+            ParameterBindings = new ParameterBindingSet(new[] { new ParameterBindingDefinition
+                { ParameterName = "Threshold", BindingType = BindingType.Constant, ConstantValue = 64, TargetType = typeof(int) } })
+        };
+        var snapshot = new ToolExecutor(new ParameterResolver()).ResolveRuntimeParameters(request);
+        Assert.True(snapshot.IsValid); Assert.Empty(snapshot.Values); Assert.Same(snapshot, request.RuntimeParameters);
     }
 
     private sealed class NumericParameters : ToolParameters

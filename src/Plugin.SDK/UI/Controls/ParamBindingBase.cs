@@ -123,11 +123,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             List<AvailableDataSource> dataSources, Type? targetType = null, ShapeType? shapeFilter = null)
         {
             var rootNodes = new List<TreeNodeData>();
-            var nodeGroups = dataSources.GroupBy(ds => ds.SourceNodeName);
+            var sections = new Dictionary<string, TreeNodeData>();
+            var nodeGroups = dataSources.GroupBy(ds => (ds.CandidateSection, ds.SourceWorkflowId, ds.SourceNodeId, ds.SourceNodeName));
 
             foreach (var nodeGroup in nodeGroups)
             {
-                var rootNode = TreeNodeData.CreateGroupNode(nodeGroup.Key);
+                var rootNode = TreeNodeData.CreateGroupNode(nodeGroup.Key.SourceNodeName);
                 var groupCache = new Dictionary<string, TreeNodeData>();
 
                 foreach (var dataSource in nodeGroup)
@@ -171,7 +172,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     }
                 }
 
-                rootNodes.Add(rootNode);
+                if (string.IsNullOrEmpty(nodeGroup.Key.CandidateSection)) rootNodes.Add(rootNode);
+                else
+                {
+                    var label = nodeGroup.Key.CandidateSection;
+                    if (!sections.TryGetValue(label, out var section))
+                    { section = TreeNodeData.CreateGroupNode(label); sections.Add(label, section); rootNodes.Add(section); }
+                    rootNode.Parent = section; section.Children.Add(rootNode);
+                }
             }
 
             return rootNodes;

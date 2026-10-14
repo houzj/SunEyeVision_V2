@@ -24,6 +24,20 @@ public static class CommunicationSendTypes
     { "String" => typeof(string), "Boolean" => typeof(bool), "Binary" => typeof(BinaryPayload), "Float" or "Double" => typeof(double), _ => typeof(long) };
     public static string WorkflowType(string type) => BindingType(type) == typeof(long) ? "Integer"
         : BindingType(type) == typeof(double) ? "Double" : Canonical(type);
+    public static object ParseLiteral(string text, string type)
+    {
+        var culture = System.Globalization.CultureInfo.InvariantCulture;
+        object value = Canonical(type) switch
+        {
+            "String" => text,
+            "Integer" or "Int16" or "Int32" or "Int64" or "UInt16" or "UInt32" when long.TryParse(text, System.Globalization.NumberStyles.Integer, culture, out var n) => n,
+            "Float" or "Double" when double.TryParse(text, System.Globalization.NumberStyles.Float, culture, out var n) && double.IsFinite(n) => n,
+            "Boolean" when bool.TryParse(text, out var b) => b,
+            "Binary" => new BinaryPayload(ProtocolValueCodec.ParseHex(text)),
+            _ => throw new FormatException("常量与发送声明类型不兼容。")
+        };
+        return Validate(value, type);
+    }
     public static object Validate(object value, string type)
     {
         if (value is double d && !double.IsFinite(d) || value is float f && !float.IsFinite(f))
@@ -46,7 +60,7 @@ public static class CommunicationSendTypes
 }
 public sealed record CommunicationSendOptions(bool Hex = false, string Separator = "", string Terminator = "");
 public sealed record CommunicationSendRequest(string Kind, string DeviceId, string EventId,
-    IReadOnlyList<CommunicationSendInput> Inputs, CommunicationSendOptions Options, string? NodeId = null);
+    IReadOnlyList<CommunicationSendInput> Inputs, CommunicationSendOptions Options, string? NodeId = null, string? WorkflowId = null);
 public sealed record SendVariablePublication(string VariableId, string OutputKey, string DataType);
 
 /// <summary>A validated single-use submission. Preparation performs no writes.</summary>
@@ -69,6 +83,8 @@ public interface ICommunicationSendService
     Task<PreparedCommunicationSend> PrepareAsync(CommunicationSendRequest request, CancellationToken token = default);
     // Explicit design-time binding command; never called by execution or result display.
     void ConfigureVariablePublications(string nodeId, IReadOnlyList<SendVariablePublication> mappings);
+    void ConfigureVariablePublications(string workflowId, string nodeId, IReadOnlyList<SendVariablePublication> mappings)
+        => ConfigureVariablePublications(nodeId, mappings);
 }
 
 /// <summary>Nested expression bindings declared by tools with editable row collections.</summary>

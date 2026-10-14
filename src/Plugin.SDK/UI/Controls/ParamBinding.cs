@@ -189,7 +189,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public string BindingSource
         {
             get => (string)GetValue(BindingSourceProperty);
-            set => SetValue(BindingSourceProperty, value);
+            set => SetCurrentValue(BindingSourceProperty, value);
         }
 
         /// <summary>
@@ -510,6 +510,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 反查数据源树生成中文显示名回填。用抑制标志包住，避免触发编辑回写误覆盖 BindingSource。
         /// 树尚未就绪时翻译会回退原文占位，树重建后（OnAvailableDataSourcesChanged → RebuildTreeNodes）会再次调用本方法。
         /// </summary>
+        public void RefreshBindingDisplay()
+        {
+            _isProgrammaticDisplayUpdate = true;
+            try { BindingDisplayText = string.IsNullOrEmpty(BindingSource) ? string.Empty : GenerateBindingDisplayText(BindingSource); }
+            finally { _isProgrammaticDisplayUpdate = false; }
+        }
+
+        private string? _pendingBindingExpression;
+        private string? _pendingBindingReason;
+        private object? _tooltipBeforePending;
+        /// <summary>Presentation only. Never replaces the persisted binding with status text.</summary>
+        public void SetPendingValidation(string? reason)
+        {
+            if (_pendingBindingReason == null && reason != null) _tooltipBeforePending = ToolTip;
+            if (_pendingBindingReason != null && reason == null) ToolTip = _tooltipBeforePending;
+            _pendingBindingReason = reason; _pendingBindingExpression = reason == null ? null : BindingSource;
+            if (reason != null) ToolTip = "待校验：" + reason;
+            RefreshBindingDisplay();
+        }
+
         private void BackfillDisplayTextFromSource()
         {
             var bindingPath = BindingSource;
@@ -855,7 +875,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             BindingSource = BuildScalarSafeBindingPath(ds);
 
             var rootNode = GetRootNode(selectedNode);
-            var rootName = rootNode?.Text ?? "";
+            var rootName = string.IsNullOrEmpty(ds.SourceNodeName) ? rootNode?.Text ?? "" : ds.SourceNodeName;
             var leafName = GetDisplayLeafName(selectedNode);
 
             VisionLogger.Instance.Log(LogLevel.Info,
@@ -991,6 +1011,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// <returns>绑定显示文本（格式：根节点.叶子节点），未找到则返回绑定路径</returns>
         public string GenerateBindingDisplayText(string bindingPath)
         {
+            if (_pendingBindingReason != null && _pendingBindingExpression == bindingPath) return "已绑定（待校验）";
             var node = FindNodeByBindingPath(bindingPath);
             if (node == null)
             {
@@ -1016,7 +1037,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             // 生成显示文本：根节点.叶子节点
             var rootNode = GetRootNode(node);
-            var rootName = rootNode?.Text ?? "";
+            var rootName = string.IsNullOrEmpty(node.DataSource?.SourceNodeName) ? rootNode?.Text ?? "" : node.DataSource.SourceNodeName;
             var leafName = GetDisplayLeafName(node);
 
             // 从 bindingPath 中提取索引部分，替换默认的 []

@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
+    public sealed record SourceTypeContract(string Vocabulary, bool IsArray);
     /// <summary>
     /// 可用数据源模型
     /// </summary>
@@ -39,6 +41,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     [TypeConverter(typeof(AvailableDataSourceConverter))]
     public class AvailableDataSource : IEquatable<AvailableDataSource>
     {
+        /// <summary>Candidate navigation only; never part of persisted binding identity.</summary>
+        [JsonIgnore] public string? CandidateSection { get; set; }
+        /// <summary>Only host-created connection defaults carry ownership; user picks are explicit.</summary>
+        public string? AutomaticConnectionId { get; set; }
+        public string? SourceWorkflowId { get; init; }
+        public AvailableDataSource WithConnectionOwnership(string? connectionId)
+        {
+            var copy = (AvailableDataSource)MemberwiseClone(); copy.AutomaticConnectionId = connectionId; return copy;
+        }
         /// <summary>
         /// 源节点ID（身份字段，构造后不可变）
         /// </summary>
@@ -115,7 +126,18 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 属性类型
         /// </summary>
+        [JsonIgnore]
         public Type PropertyType { get; set; } = typeof(object);
+
+        public SourceTypeContract TypeContract
+        {
+            get => new(SdkTypeVocabulary.ToTypeVocabulary(PropertyType) ?? "Object", PropertyType.IsArray);
+            set
+            {
+                var type = SdkTypeVocabulary.ToSystemType(value.Vocabulary) ?? typeof(object);
+                PropertyType = value.IsArray ? type.IsArray ? type : type.MakeArrayType() : type.IsArray ? type.GetElementType()! : type;
+            }
+        }
 
         /// <summary>
         /// 全局变量类型名称（SdkTypeVocabulary 词汇，如 "Image"/"Double"/"Circle"）。
@@ -140,6 +162,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 如果节点已执行，则包含当前属性的值。
         /// 用于预览和验证。
         /// </remarks>
+        [JsonIgnore]
         public object? CurrentValue { get; set; }
 
         /// <summary>
@@ -172,6 +195,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <remarks>
         /// 关联的树节点对象，用于支持完整的树形结构导航。
         /// </remarks>
+        [JsonIgnore]
         public TreeNodeData? TreeNode { get; set; }
 
         /// <summary>
@@ -181,6 +205,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 数组属性（Circle2d[]/double[] 等）会附带一个 [i] 子数据源，
         /// 用于绑定路径显式取单个元素（决策1）。
         /// </remarks>
+        [JsonIgnore]
         public List<AvailableDataSource>? Children { get; set; }
 
         /// <summary>
@@ -348,6 +373,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
             return SourceNodeId == other.SourceNodeId
+                && SourceWorkflowId == other.SourceWorkflowId
                 && PropertyName == other.PropertyName;
         }
 
@@ -363,7 +389,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 身份字段（SourceNodeId、PropertyName）使用 init setter，构造后不可变，
         /// 因此 GetHashCode 在对象生命周期内保持稳定，可安全用于字典和集合。
         /// </remarks>
-        public override int GetHashCode() => HashCode.Combine(SourceNodeId, PropertyName);
+        public override int GetHashCode() => HashCode.Combine(SourceWorkflowId, SourceNodeId, PropertyName);
 
         /// <summary>
         /// 相等运算符
@@ -399,6 +425,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// </summary>
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
+            if (value is string empty && string.IsNullOrWhiteSpace(empty)) return null;
             if (value is string str && !string.IsNullOrEmpty(str))
             {
                 var dotIndex = str.IndexOf('.');
@@ -432,6 +459,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// </summary>
         public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
+            if (destinationType == typeof(string) && value == null) return string.Empty;
             if (destinationType == typeof(string) && value is AvailableDataSource ds)
             {
                 return ds.GetBindingPath();

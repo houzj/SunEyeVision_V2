@@ -13,10 +13,46 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls;
 public static class ToolEditorCommit
 {
     private static readonly List<WeakReference<ToolDebugControlBase>> Editors = new();
+    /// <summary>Cancel pending control edits only. Already live-written parameters are not rolled back.</summary>
+    public static void DiscardPendingEdits(FrameworkElement root)
+    {
+        root.Dispatcher.VerifyAccess();
+        var elements = Walk(root).OfType<FrameworkElement>().ToArray();
+        foreach (var editor in elements.OfType<ToolDebugControlBase>()) editor.SuppressClosePersistence = true;
+        foreach (var grid in elements.OfType<DataGrid>())
+        { grid.CancelEdit(DataGridEditingUnit.Cell); grid.CancelEdit(DataGridEditingUnit.Row); }
+        foreach (var group in elements.Select(e => e.BindingGroup).OfType<BindingGroup>().Distinct()) group.CancelEdit();
+        foreach (var binding in elements.SelectMany(Bindings).Distinct())
+        { binding.UpdateTarget(); System.Windows.Controls.Validation.ClearInvalid(binding); }
+    }
     internal static void Register(ToolDebugControlBase editor)
     { lock (Editors) { Editors.RemoveAll(e => !e.TryGetTarget(out var target) || ReferenceEquals(target, editor)); Editors.Add(new(editor)); } }
     internal static void Unregister(ToolDebugControlBase editor)
     { lock (Editors) Editors.RemoveAll(e => !e.TryGetTarget(out var target) || ReferenceEquals(target, editor)); }
+
+    public static void RefreshCommittedBindings()
+    {
+        ToolDebugControlBase[] editors;
+        lock (Editors) editors = Editors.Select(e => e.TryGetTarget(out var target) ? target : null).OfType<ToolDebugControlBase>().ToArray();
+        foreach (var editor in editors.Where(e => e.Dispatcher.CheckAccess() && e.IsLoaded))
+        {
+            editor.RefreshCommittedBindings(onlyInvalidated: true);
+            var parameters = editor.CurrentNode?.GetType().GetProperty("Parameters")?.GetValue(editor.CurrentNode) as SunEyeVision.Plugin.SDK.Execution.Parameters.ToolParameters;
+            var inputs = parameters == null ? Array.Empty<SunEyeVision.Plugin.SDK.Execution.Parameters.BindingInputReference>()
+                : SunEyeVision.Plugin.SDK.Execution.Parameters.BindingInputCatalog.Describe(parameters);
+            foreach (var binding in Walk(editor).OfType<ParamBinding>())
+            {
+                string? reason = null;
+                if (parameters != null)
+                {
+                    parameters.BindingValidationPending.TryGetValue(binding.ParameterName, out reason);
+                    reason ??= inputs.Where(i => i.Read() == binding.BindingSource && parameters.BindingValidationPending.ContainsKey(i.Key))
+                        .Select(i => parameters.BindingValidationPending[i.Key]).FirstOrDefault();
+                }
+                binding.SetPendingValidation(reason);
+            }
+        }
+    }
 
     public static bool TryCommitOpenEditors(Func<string, bool>? includeNode, out string error)
     {
@@ -53,6 +89,12 @@ public static class ToolEditorCommit
         foreach (var group in groups)
             if (group.IsDirty && !group.CommitEdit()) { error = "参数编辑提交失败，请检查当前输入。"; return false; }
         if (elements.Any(System.Windows.Controls.Validation.GetHasError)) { error = "参数验证失败，修改已保留，请检查当前输入。"; return false; }
+        if (root is ToolDebugControlBase editor && editor.DataProvider is SunEyeVision.Plugin.SDK.Execution.Parameters.DataSourceQueryService query &&
+            editor.CurrentNode?.GetType().GetProperty("Id")?.GetValue(editor.CurrentNode) is string nodeId)
+        {
+            try { editor.PersistParameterBindings(); query.CommitOutputConfiguration?.Invoke(nodeId); }
+            catch (Exception ex) { error = "输出配置校验失败：" + ex.Message; return false; }
+        }
         error = ""; return true;
     }
 

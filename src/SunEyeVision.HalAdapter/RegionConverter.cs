@@ -63,7 +63,8 @@ public static class RegionConverter
         HRegion region = roi.Geometry switch
         {
             Circle2d c => GenCircle(c.Center.Y, c.Center.X, c.Radius),
-            RotatedRect2d rr => GenRectangle2(rr.Center.Y, rr.Center.X, rr.AngleRadians, rr.Width / 2, rr.Height / 2),
+            // SDK screen angles are clockwise-positive; HALCON phi is counterclockwise-positive.
+            RotatedRect2d rr => GenRectangle2(rr.Center.Y, rr.Center.X, -rr.AngleRadians, rr.Width / 2, rr.Height / 2),
             // P0-2 封口：删除 WPF Rect 分支（矩形几何恒为 RotatedRect2d，由上一分支的 GenRectangle2 覆盖）。
             Polygon2d poly => GenPolygon(poly.Vertices),
             Annulus2d a => GenAnnulus(a),

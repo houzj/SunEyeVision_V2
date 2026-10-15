@@ -238,7 +238,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     IsArraySemantics = true,
                     PropertyType = f.ValueType,
                     VariableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(f.ValueType),
-                    BindingSuffix = $".{f.Path}",
+                    BindingSuffix = $".{f.Path}[]",
                     CurrentValue = null,
                 };
                 children.Add(new TreeNodeData

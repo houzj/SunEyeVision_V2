@@ -31,7 +31,9 @@ namespace SunEyeVision.Plugin.SDK.Core
         public IDictionary<string, ToolResults>? NodeResults { get; init; }
 
         /// <summary>本次运行已解析的输入图像。</summary>
-        public IVisionImage? ResolvedInputImage { get; init; }
+        private IVisionImage? _resolvedInputImage;
+        public IVisionImage? ResolvedInputImage { get => _resolvedInputImage; init => _resolvedInputImage = value; }
+        internal void SetResolvedInputImage(IVisionImage? image) => _resolvedInputImage = image;
 
         /// <summary>日志中的节点名称。</summary>
         public string? NodeName { get; init; }

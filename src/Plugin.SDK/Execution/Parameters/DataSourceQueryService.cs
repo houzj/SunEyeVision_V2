@@ -27,6 +27,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationSendService { get; set; }
         public Action<string>? CommitOutputConfiguration { get; set; }
         public string? WorkflowId { get; set; }
+        /// <summary>Host's configuration snapshot factory, shared with workflow execution.</summary>
+        public Func<ToolParameters, ToolParameters>? CreateParameterSnapshot { get; set; }
         public Func<string, IReadOnlyList<string>>? BindingCandidateNodeIds { get; set; }
         public Func<string, IReadOnlyList<string>>? ExistingBindingSourceNodeIds { get; set; }
         public Func<string, IReadOnlyList<OutputVariable>?>? FormalOutputContractReader { get; set; }
@@ -210,11 +212,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             // 获取父节点ID列表
             var upstream = _connectionProvider.GetParentNodeIds(nodeId).Distinct().ToArray();
             var allowed = BindingCandidateNodeIds?.Invoke(nodeId);
-            var existing = ExistingBindingSourceNodeIds?.Invoke(nodeId) ?? Array.Empty<string>();
-            var hasExistingOutside = existing.Any(id => !upstream.Contains(id));
-            var parentNodeIds = (includeOtherSources && allowed != null
-                ? upstream.Concat(allowed).Distinct()
-                : upstream.Concat(existing).Distinct()).Where(id => id != nodeId && (allowed == null || allowed.Contains(id)));
+            // A binding never creates execution order. Old/disconnected references stay
+            // in the model for diagnosis, but are not selectable candidates.
+            var parentNodeIds = upstream.Where(id => id != nodeId && (allowed == null || allowed.Contains(id)));
 
             int order = 0;
 
@@ -223,8 +223,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // 直接创建父节点信息
                 var nodeInfo = new ParentNodeInfo
                 {
-                    CandidateSection = includeOtherSources || hasExistingOutside
-                        ? (upstream.Contains(parentNodeId) ? "上游节点" : includeOtherSources ? "其他可绑定节点" : "当前绑定来源（无连线）") : null,
+                    CandidateSection = "上游节点",
                     NodeId = parentNodeId,
                     NodeName = _nodeInfoProvider?.GetNodeName(parentNodeId) ?? parentNodeId,
                     NodeType = _nodeInfoProvider?.GetNodeType(parentNodeId) ?? "Unknown",

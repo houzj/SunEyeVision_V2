@@ -117,6 +117,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         [JsonIgnore]
         public IVisionImage? ResolvedInputImage { get; set; }
 
+        /// <summary>Frozen correction for this invocation; never persisted or inherited by a new run.</summary>
+        [JsonIgnore]
+        public SunEyeVision.Plugin.SDK.Execution.Helpers.PositionCorrectionResolution? ResolvedPositionCorrection { get; internal set; }
+
         /// <summary>
         /// 验证所有参数
         /// </summary>

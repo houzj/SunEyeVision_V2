@@ -114,16 +114,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public MeasureEditorControl GuideEditor => guideEditor;
 
         /// <summary>
-        /// 新建卡尺时按主图像分辨率初始化尺寸。调用后尺寸由参数模型接管，
-        /// 后续参数编辑不会因图像刷新而被覆盖。
+        /// 兼容入口：经工具绑定图像校验及共享首次初始化策略，不读取主预览分辨率。
         /// </summary>
         public bool InitializeGuideCaliberParamsForImage()
         {
-            var image = _mainImageControl?.SourceImage;
-            if (image == null || image.PixelWidth <= 0 || image.PixelHeight <= 0)
-                return false;
-
-            guideEditor.InitializeCaliberParamsForImage(image.PixelWidth, image.PixelHeight);
+            if (guideEditor.DrawingAvailabilityCheck?.Invoke() != true) return false;
+            guideEditor.DrawingStarted?.Invoke();
             return true;
         }
 
@@ -157,7 +153,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
             if (_mainImageControl != null)
             {
-                guideEditor.DrawingAvailabilityCheck = EnsureImageAvailable;
                 maskEditor.DrawingAvailabilityCheck = EnsureImageAvailable;
                 _mainImageControl.OverlayHitTestVisible = false;
 
@@ -182,7 +177,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             }
             else
             {
-                guideEditor.DrawingAvailabilityCheck = null;
                 maskEditor.DrawingAvailabilityCheck = null;
             }
         }
@@ -244,6 +238,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         private void SubscribeEvents()
         {
             if (_mainImageControl == null) return;
+            DependencyPropertyDescriptor.FromProperty(ImageControl.SourceImageProperty, typeof(ImageControl))
+                .AddValueChanged(_mainImageControl, OnDisplayedImageChanged);
             _mainImageControl.ImageMouseMove += OnImageMouseMove;
             _mainImageControl.CanvasMouseLeftButtonDown += OnCanvasMouseLeftButtonDown;
             _mainImageControl.CanvasMouseLeftButtonUp += OnCanvasMouseLeftButtonUp;
@@ -260,6 +256,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         private void UnsubscribeEvents()
         {
             if (_mainImageControl == null) return;
+            DependencyPropertyDescriptor.FromProperty(ImageControl.SourceImageProperty, typeof(ImageControl))
+                .RemoveValueChanged(_mainImageControl, OnDisplayedImageChanged);
             _mainImageControl.ImageMouseMove -= OnImageMouseMove;
             _mainImageControl.CanvasMouseLeftButtonDown -= OnCanvasMouseLeftButtonDown;
             _mainImageControl.CanvasMouseLeftButtonUp -= OnCanvasMouseLeftButtonUp;
@@ -274,6 +272,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         #endregion
+
+        private void OnDisplayedImageChanged(object? sender, EventArgs e)
+        {
+            guideEditor.CancelDrawing();
+            maskEditor.EnterIdleMode();
+            RenderAll();
+        }
 
         #region 事件路由（引导 vs 屏蔽，异质）
 

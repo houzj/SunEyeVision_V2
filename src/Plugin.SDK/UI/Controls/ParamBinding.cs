@@ -537,7 +537,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 return;
 
             // BindingDisplayText == BindingSource 表示上次翻译失败留下的原文占位（树未就绪），需要重试。
-            if (!string.IsNullOrEmpty(BindingDisplayText) && BindingDisplayText != bindingPath)
+            if (!string.IsNullOrEmpty(BindingDisplayText) && BindingDisplayText != bindingPath &&
+                BindingDisplayText != "已绑定（等待来源信息）" && BindingDisplayText != "已绑定（来源不可用）")
                 return;
 
             _isProgrammaticDisplayUpdate = true;
@@ -899,12 +900,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 标量参数选中"数组单值输出"时生成无索引绑定路径。
+        /// 统一生成数组绑定路径；单值适配由消费端完成。
         /// </summary>
         /// <remarks>
-        /// 数据源对外元数据统一提升为数组（单值 = 长度 1 数组，对齐 Halcon tuple 语义），
-        /// 标量参数（DataType 非数组）若绑定默认的 "[]" 路径会保留整个数组，导致执行层类型不匹配。
-        /// 改为无索引路径，让 OutputVariableResolver 自动解包长度 1 数组为单值（决策3 存量兼容）。
+        /// 数据源对外元数据统一提升为数组（单值 = 长度 1 数组）。初始保留[]，
+        /// 只有用户明确指定索引才写入[n]；不按目标CLR属性形状重写路径。
         /// RoI 带 BindingSuffix（[Type=Circle]/[i]）的合成节点不受影响，仍走 GetBindingPath。
         ///
         /// 控件选择数据源时通过此方法生成路径；对象绑定还会由
@@ -913,12 +913,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </remarks>
         private string BuildScalarSafeBindingPath(AvailableDataSource ds)
         {
-            if (DataType != null && !DataType.IsArray
-                && ds.PropertyType?.IsArray == true
-                && ds.BindingSuffix == null)
-            {
-                return $"{ds.SourceNodeId}.{ds.PropertyName}";
-            }
+            // Single and multiple values share the same array path. Adapt at the
+            // consuming input, never by silently removing [] or inserting [0].
             return ds.GetBindingPath();
         }
 
@@ -968,7 +964,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             if (node.DataSource != null
                 && (BuildScalarSafeBindingPath(node.DataSource) == fullBindingPath
-                    || node.DataSource.GetBindingPath() == fullBindingPath))
+                    || node.DataSource.GetBindingPath() == fullBindingPath
+                    || DisplayPathKey(node.DataSource.GetBindingPath()) == DisplayPathKey(fullBindingPath)))
                 return node;
 
             foreach (var child in node.Children)
@@ -980,6 +977,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             return null;
         }
+
+        // Display lookup only: old bare paths and []/[n] share field metadata.
+        // Never normalize the persisted expression or its execution semantics.
+        private static string DisplayPathKey(string path) =>
+            System.Text.RegularExpressions.Regex.Replace(path, @"\[\d*\]", string.Empty);
+
+        private static bool HasDisplaySource(TreeNodeData node) =>
+            node.DataSource != null || node.Children.Any(HasDisplaySource);
 
         /// <summary>
         /// 由宿主（订阅面板等）按模型当前状态显式同步"绑定源 + 显示文本"。
@@ -1019,7 +1024,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 // - 树里还没有任何真实数据源 = 注入尚未到达（可重试）→ Debug 降噪；
                 // - 树已就绪却找不到 = 真实路径错配（写读规则分叉 / 源不在候选）→ Warning，
                 //   避免再次出现"显示成节点 GUID 却无人察觉"的静默降级。
-                bool treeReady = TreeNodes != null && TreeNodes.Any(n => n.DataSource != null);
+                bool treeReady = TreeNodes != null && TreeNodes.Any(HasDisplaySource);
                 if (treeReady)
                 {
                     VisionLogger.Instance.Log(LogLevel.Warning,
@@ -1032,7 +1037,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         $"[ParamBinding] 未找到绑定路径对应的节点（等待树重建重试）: {bindingPath}",
                         "ParamBinding");
                 }
-                return bindingPath;
+                return treeReady ? "已绑定（来源不可用）" : "已绑定（等待来源信息）";
             }
 
             // 生成显示文本：根节点.叶子节点
@@ -1164,6 +1169,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             // 类型过滤 token（可能不存在，如普通数组绑定）
             var typePart = typeFilter != null ? $"[Type={typeFilter}]" : "";
+
+            if (propertyFullName.EndsWith(']') && propertyFullName.Contains('.') ||
+                propertyFullName.Contains('.') && !propertyFullName.Split('.')[0].Contains('['))
+            {
+                // Circle.Center.X[] -> Circle.Center.X[n]: preserve every member.
+                var projected = System.Text.RegularExpressions.Regex.Replace(propertyFullName, @"\[\d*\]$", "");
+                BindingSource = $"{nodeId}.{projected}{indexPart}";
+                return true;
+            }
 
             // 重建属性部分：属性名 + [Type=X] + 新索引。字段下钻子路径（.Geometry.Center.X 等）
             // 位于属性括号之后，需原样保留，否则手动改索引会把字段叶路径退化为数组整体（rule-015 报错优先）。

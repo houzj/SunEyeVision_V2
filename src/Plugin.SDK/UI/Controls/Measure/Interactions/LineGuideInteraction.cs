@@ -46,7 +46,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Interactions
         /// <inheritdoc/>
         public EditHandle[] CreateHandles(MeasureInteractionModel model, double zoom)
         {
-            return HandleRenderer.CreateLineHandles(model.LineStartPoint, model.LineEndPoint, zoom);
+            var handles = HandleRenderer.CreateLineHandles(model.LineStartPoint, model.LineEndPoint, zoom);
+            // Endpoints reshape the line; only its body/caliper band translates it.
+            // Keep the rendered handle cursor consistent with QueryCursor's hit result.
+            foreach (var handle in handles)
+                handle.Cursor = System.Windows.Input.Cursors.Hand;
+            return handles;
         }
 
         /// <inheritdoc/>

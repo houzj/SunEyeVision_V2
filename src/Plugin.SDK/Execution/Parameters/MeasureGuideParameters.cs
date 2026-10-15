@@ -27,8 +27,21 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// <c>[ToolCapability]</c>（标注在结果类上）决定"框架契约条目是否<b>产出</b>"。二者必须一致。</para>
     /// </remarks>
     [JsonDerivedType(typeof(MeasureGuideParameters), "MeasureGuideParameters")]
-    public class MeasureGuideParameters : ToolParameters
+    public class MeasureGuideParameters : ToolParameters, IJsonOnDeserializing, IJsonOnDeserialized
     {
+        /// <summary>New calipers initialize once; saved/manual dimensions survive redraw and reload.</summary>
+        [IgnoreBind, Browsable(false)]
+        public CaliperSizingState CaliperSizing { get; set; } = new();
+
+        void IJsonOnDeserializing.OnDeserializing() => CaliperSizing = null!;
+
+        void IJsonOnDeserialized.OnDeserialized()
+        {
+            // Missing metadata identifies an older saved project, not a new tool.
+            CaliperSizing ??= new CaliperSizingState { PreserveExisting = true };
+            CaliperSizing.InitializedElements ??= new HashSet<int>();
+        }
+
         private ImageSourceReference? _imageSourceRef;
         private AvailableDataSource? _imageSource;
         private bool _isPositionCorrectionEnabled;

@@ -30,7 +30,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
         /// 获取旋转矩形的四个角点（世界坐标）
         /// 参考ROI.GetCorners 345-381行
         /// 角点顺序：TopLeft, TopRight, BottomRight, BottomLeft
-        /// 尺寸语义：Width垂直于箭头方向，Height沿箭头方向
+        /// 尺寸语义：Width沿箭头方向，Height垂直于箭头方向
         /// 屏幕角度系：0°时箭头向右，+90°向下，180°向左，-90°向上（顺时针为正）
         /// </summary>
         public static Point[] GetCorners(Point center, double width, double height, double rotation)
@@ -65,8 +65,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
         /// <summary>
         /// 获取方向箭头几何数据
         /// 参考ROI.GetDirectionArrow 390-411行
-        /// 箭头从中心沿高度方向指向下边中点
-        /// 尺寸语义：Height沿箭头方向（高度），Width垂直于箭头方向（宽度）
+        /// 箭头从中心沿局部X轴指向右边中点
+        /// 尺寸语义：Width沿箭头方向，Height垂直于箭头方向
         /// 屏幕角度系：0°时箭头向右，+90°向下，180°向左，-90°向上（顺时针为正）
         /// </summary>
         public static (Point Start, Point End) GetDirectionArrow(Point center, double width, double rotation)

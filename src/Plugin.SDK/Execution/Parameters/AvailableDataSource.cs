@@ -50,6 +50,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             var copy = (AvailableDataSource)MemberwiseClone(); copy.AutomaticConnectionId = connectionId; return copy;
         }
+        /// <summary>A detached runtime value; candidate and editor objects keep their original values.</summary>
+        public AvailableDataSource WithRuntimeValue(object? value)
+        {
+            var copy = (AvailableDataSource)MemberwiseClone(); copy.CurrentValue = value; return copy;
+        }
         /// <summary>
         /// 源节点ID（身份字段，构造后不可变）
         /// </summary>

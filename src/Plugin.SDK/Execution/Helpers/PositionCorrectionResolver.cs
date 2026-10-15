@@ -12,6 +12,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers;
 /// </summary>
 public static class PositionCorrectionResolver
 {
+    /// <summary>Resolve from the invocation snapshot, never an editor's preview cache.</summary>
+    public static AffineMatrix? Resolve(ToolParameters parameters, IDataSourceQueryService? query = null)
+    {
+        var resolution = query == null ? parameters.ResolvedPositionCorrection : null;
+        resolution ??= PositionCorrectionResolution.Capture(parameters, query,
+            ToolExecutionPreparation.RequiresConformalCorrection(parameters));
+        if (!resolution.CanUse) throw new InvalidOperationException(resolution.Message);
+        return resolution.Matrix;
+    }
     /// <summary>
     /// 从绑定源解析首选位置修正矩阵。
     /// 单值 <see cref="AffineMatrix"/> 直接用；数组输入取 [0]

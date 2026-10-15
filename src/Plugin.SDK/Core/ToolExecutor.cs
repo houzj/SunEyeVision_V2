@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 
@@ -133,7 +134,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             ResolveRuntimeParameters(request);
             ApplyRuntimeSnapshot(request.Parameters, request.RuntimeParameters!);
             request.Parameters.ResolvedInputImage = request.ResolvedInputImage;
-            request.Parameters.CommunicationInputs = request.CommunicationInputs;
+            request.Parameters.CommunicationInputs = ScopeCommunicationInputs(request);
             request.Parameters.CommunicationOutputs = request.CommunicationOutputs;
 
             // 异步契约的运行数据只存在于请求中，不再污染持久化参数对象。
@@ -142,8 +143,13 @@ namespace SunEyeVision.Plugin.SDK.Core
             try
             {
                 request.CancellationToken.ThrowIfCancellationRequested();
+                ToolExecutionPreparation.Apply(parameters, request.NodeResults ?? new Dictionary<string, ToolResults>());
+                request.SetResolvedInputImage(parameters.ResolvedInputImage);
                 request.Context.Logger?.Info("开始异步执行工具", request.Context.GetSourceName());
+                var inputFrame = ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
                 var result = await asyncTool.ExecuteAsync(request).ConfigureAwait(false);
+                ImageFrameProvenance.RecordResult(result, inputFrame,
+                    (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown);
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
                 ApplyJudgmentStatus(parameters, result);
@@ -247,8 +253,13 @@ namespace SunEyeVision.Plugin.SDK.Core
             try
             {
                 // 执行工具（图像通过 parameters.ResolvedInputImage 获取）
+                cancellationToken.ThrowIfCancellationRequested();
+                ToolExecutionPreparation.Apply(parameters, parameters.NodeResults);
                 parameters.LogInfo($"开始执行工具");
+                var inputFrame = ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
                 var result = tool.Run(parameters);
+                ImageFrameProvenance.RecordResult(result, inputFrame,
+                    (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown);
 
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
@@ -322,8 +333,13 @@ namespace SunEyeVision.Plugin.SDK.Core
             try
             {
                 // 执行工具（图像通过 parameters.ResolvedInputImage 获取）
+                cancellationToken.ThrowIfCancellationRequested();
+                ToolExecutionPreparation.Apply(parameters, parameters.NodeResults);
                 parameters.LogInfo($"开始执行工具");
+                var inputFrame = ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
                 var result = tool.Run(parameters);
+                ImageFrameProvenance.RecordResult(result, inputFrame,
+                    (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown);
 
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
@@ -401,8 +417,13 @@ namespace SunEyeVision.Plugin.SDK.Core
             try
             {
                 // 执行工具（图像通过 parameters.ResolvedInputImage 获取）
+                cancellationToken.ThrowIfCancellationRequested();
+                ToolExecutionPreparation.Apply(parameters, parameters.NodeResults);
                 parameters.LogInfo($"开始执行工具");
+                var inputFrame = ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
                 var result = tool.Run(parameters);
+                ImageFrameProvenance.RecordResult(result, inputFrame,
+                    (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown);
 
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;

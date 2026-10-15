@@ -266,10 +266,44 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
                 var sourceType = value.GetType();
 
+                if (targetType.IsArray && targetType.GetArrayRank() == 1 && value is not Array &&
+                    BindingContractValidator.Accept(sourceType, new[] { targetType }) == true)
+                {
+                    var element = ConvertValue(value, targetType.GetElementType()!);
+                    if (!element.IsSuccess) return element;
+                    var promoted = Array.CreateInstance(targetType.GetElementType()!, 1);
+                    promoted.SetValue(element.Value, 0);
+                    return ParameterResolveResult.Success(promoted, targetType);
+                }
+
+                // Outputs use arrays even for a single value. Adapt only at the typed
+                // scalar input boundary, without changing the stored binding expression.
+                if (value is Array array && !targetType.IsArray && targetType != typeof(object) &&
+                    BindingContractValidator.Accept(sourceType, new[] { targetType }) == true)
+                {
+                    if (array.Rank != 1 || array.Length != 1)
+                        return ParameterResolveResult.Failure(
+                            $"当前输入需要单值，但绑定数组包含 {array.Length} 个元素；仅单元素数组可自动适配，请明确选择元素或使用集合输入。");
+                    return ConvertValue(array.GetValue(0)!, targetType);
+                }
+
                 // 相同类型
                 if (sourceType == targetType)
                 {
                     return ParameterResolveResult.Success(value, targetType);
+                }
+
+                if (value is Array items && items.Rank == 1 && targetType.IsArray && targetType.GetArrayRank() == 1 &&
+                    BindingContractValidator.Accept(sourceType, new[] { targetType }) == true)
+                {
+                    var converted = Array.CreateInstance(targetType.GetElementType()!, items.Length);
+                    for (var index = 0; index < items.Length; index++)
+                    {
+                        var item = ConvertValue(items.GetValue(index)!, targetType.GetElementType()!);
+                        if (!item.IsSuccess) return item;
+                        converted.SetValue(item.Value, index);
+                    }
+                    return ParameterResolveResult.Success(converted, targetType);
                 }
 
                 // 可空类型

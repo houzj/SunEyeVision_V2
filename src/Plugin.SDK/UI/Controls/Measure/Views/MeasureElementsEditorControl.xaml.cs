@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -23,6 +24,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
     public partial class MeasureElementsEditorControl : UserControl
     {
         private ImageControl? _mainImageControl;
+        public bool HasImageControl => _mainImageControl != null;
+        public System.Windows.Media.Imaging.BitmapSource? DisplayedImage => _mainImageControl?.SourceImage;
+        public event EventHandler? DisplayedImageChanged;
         private double _viewportZoom = 1.0;
         private int _activeElementIndex = -1;
 
@@ -240,6 +244,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             if (_mainImageControl == imageControl)
                 return;
 
+            CancelActiveEdits();
+
             if (_mainImageControl != null)
             {
                 UnsubscribeEvents();
@@ -278,6 +284,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         {
             try
             {
+                CancelActiveEdits();
                 UnsubscribeEvents();
 
                 if (_mainImageControl?.InteractionOverlayCanvasControl != null)
@@ -307,6 +314,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         private void SubscribeEvents()
         {
             if (_mainImageControl == null) return;
+            DependencyPropertyDescriptor.FromProperty(ImageControl.SourceImageProperty, typeof(ImageControl))
+                .AddValueChanged(_mainImageControl, OnDisplayedImageChanged);
             _mainImageControl.ImageMouseMove += OnImageMouseMove;
             _mainImageControl.CanvasMouseLeftButtonDown += OnCanvasMouseLeftButtonDown;
             _mainImageControl.CanvasMouseLeftButtonUp += OnCanvasMouseLeftButtonUp;
@@ -323,6 +332,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         private void UnsubscribeEvents()
         {
             if (_mainImageControl == null) return;
+            DependencyPropertyDescriptor.FromProperty(ImageControl.SourceImageProperty, typeof(ImageControl))
+                .RemoveValueChanged(_mainImageControl, OnDisplayedImageChanged);
             _mainImageControl.ImageMouseMove -= OnImageMouseMove;
             _mainImageControl.CanvasMouseLeftButtonDown -= OnCanvasMouseLeftButtonDown;
             _mainImageControl.CanvasMouseLeftButtonUp -= OnCanvasMouseLeftButtonUp;
@@ -339,6 +350,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         #endregion
 
         #region 激活互斥
+
+        /// <summary>Discard unfinished edits before changing image or binding context.</summary>
+        public void CancelActiveEdits()
+        {
+            Element1Editor.CancelDrawing();
+            Element2Editor.CancelDrawing();
+        }
+
+        private void OnDisplayedImageChanged(object? sender, EventArgs e)
+        {
+            CancelActiveEdits();
+            DisplayedImageChanged?.Invoke(this, EventArgs.Empty);
+            RenderAll();
+        }
 
         private void ActivateElement(int index)
         {

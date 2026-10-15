@@ -258,7 +258,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             var editor = Editor!;
             var center = new Point(CircleCenterX.Value, CircleCenterY.Value);
             var radius = Math.Max(1.0, CircleRadius.Value);
-            editor.SetGuide(new Circle2d(center, radius));
+            editor.SetGuide(new Circle2d(center, radius), notifyGeometryChanged: true);
         }
 
         private void ApplyArc()
@@ -271,14 +271,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             bool majorArc = ArcMajor.SelectedIndex == 1;
             var arc = Arc2d.FromEndpointsAndRadius(p1, p2, radius, clockwise, majorArc);
             if (arc.IsEmpty) return;
-            editor.SetGuide(arc);
+            editor.SetGuide(arc, notifyGeometryChanged: true);
         }
 
         private void ApplyCaliberValues()
         {
             var editor = Editor;
             if (editor == null) return;
-            editor.SetCaliberParams(
+            editor.EditCaliberParams(
                 CaliberWidth.Value,
                 CaliberHeight.Value,
                 Math.Max(1, (int)Math.Round(CaliberCount.Value)));

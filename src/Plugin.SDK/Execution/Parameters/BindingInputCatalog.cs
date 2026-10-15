@@ -45,7 +45,8 @@ public static class BindingInputCatalog
                     // PositionCorrectionResolver accepts one matrix or the first item of a matrix array.
                     correction ? new[] { typeof(AffineMatrix), typeof(AffineMatrix[]) } : new[] { typeof(IVisionImage) }, ReadWorkflowId: () =>
                         (property.GetValue(parameters) as AvailableDataSource)?.SourceWorkflowId ?? (reference?.GetValue(parameters) as ImageSourceReference)?.SourceWorkflowId,
-                    ReferenceOnly: true, Active: !correction || parameters is not MeasureGuideParameters m || m.IsPositionCorrectionEnabled,
+                    ReferenceOnly: true, Active: (!correction || parameters.GetType().GetProperty("IsPositionCorrectionEnabled")?.GetValue(parameters) is true)
+                        && (parameters is not IBindingInputActivityProvider activity || activity.IsBindingInputActive(property.Name)),
                     ReadFieldId: () => (property.GetValue(parameters) as AvailableDataSource)?.SourceFieldId ?? (reference?.GetValue(parameters) as ImageSourceReference)?.SourceFieldId));
             }
             else if (typeof(ParamValueBase).IsAssignableFrom(property.PropertyType) && property.GetValue(parameters) is ParamValueBase value)

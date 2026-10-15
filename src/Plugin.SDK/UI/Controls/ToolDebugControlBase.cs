@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using SunEyeVision.Plugin.SDK.UI.Themes;
 using SunEyeVision.Plugin.SDK.Commands;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Events;
@@ -474,6 +476,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </remarks>
         public virtual void SetParameters(ToolParameters parameters)
         {
+            if (_previewParameters != null)
+                PropertyChangedEventManager.RemoveHandler(_previewParameters, OnPreviewParameterChanged, "");
+            _previewParameters = parameters;
+            PropertyChangedEventManager.AddHandler(parameters, OnPreviewParameterChanged, "");
             PluginLogger.Info(
                 $"参数已设置: {parameters?.GetType().Name}",
                 GetType().Name);
@@ -488,6 +494,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void OnToolDebugControlLoaded(object sender, RoutedEventArgs e)
         {
+            if (_previewParameters != null)
+            {
+                PropertyChangedEventManager.RemoveHandler(_previewParameters, OnPreviewParameterChanged, "");
+                PropertyChangedEventManager.AddHandler(_previewParameters, OnPreviewParameterChanged, "");
+            }
+            Dispatcher.BeginInvoke(new Action(OnExternalResultArrived));
             SuppressClosePersistence = false;
             ToolEditorCommit.Register(this);
             ConfigSetting.InstanceLoaded -= OnConfigSettingInstanceLoaded;
@@ -498,6 +510,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void OnToolDebugControlUnloaded(object sender, RoutedEventArgs e)
         {
+            if (_previewParameters != null)
+                PropertyChangedEventManager.RemoveHandler(_previewParameters, OnPreviewParameterChanged, "");
             ToolEditorCommit.Unregister(this);
             ConfigSetting.InstanceLoaded -= OnConfigSettingInstanceLoaded;
             // 关闭/切换调试窗口时做一次最终落盘，避免绑定选择事件在控件
@@ -809,39 +823,142 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 .Run(tool, request);
         }
 
+        private ToolParameters? _previewParameters;
+        private readonly List<Measure.Views.MeasureEditorControl> _caliperEditors = new();
+        private void OnPreviewParameterChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is not ("IsPositionCorrectionEnabled" or "PositionCorrectionBindingSource" or "PositionCorrectionSource" or "ImageSource" or "ImageSourceRef")) return;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (IsLoaded && ReferenceEquals(sender, _previewParameters))
+                {
+                    foreach (var editor in _caliperEditors) editor.CancelDrawing();
+                    OnExternalResultArrived();
+                }
+            }));
+        }
+
+        /// <summary>Shared first-draw policy for every caliper, using its actual input binding.</summary>
+        protected void ConfigureCaliperDrawing(Measure.Views.MeasureEditorControl editor,
+            MeasureGuideParameters parameters, int element, double defaultWidth = 40.0, double defaultHeight = 10.0)
+        {
+            if (!_caliperEditors.Contains(editor)) _caliperEditors.Add(editor);
+            editor.CaliberSizeEdited = () => parameters.CaliperSizing.Preserve(element);
+            (int Width, int Height) validatedSize = default;
+            editor.DrawingStarted = () =>
+            {
+                if (!parameters.CaliperSizing.NeedsInitialization(element)) return;
+                // Custom sizes supplied before first draw also belong to the user.
+                if (Math.Abs(editor.CaliberWidth - defaultWidth) < 1e-9 &&
+                    Math.Abs(editor.CaliberHeight - defaultHeight) < 1e-9)
+                    editor.InitializeCaliberParamsForImage(validatedSize.Width, validatedSize.Height);
+                parameters.CaliperSizing.Preserve(element);
+            };
+            editor.DrawingAvailabilityCheck = () =>
+            {
+                try
+                {
+                    if (_caliperImageControl?.SourceImage is not { } preview)
+                        throw new InvalidOperationException("当前没有可绘制的图像，请先显示工具绑定的输入图像。");
+                    if (DataProvider is not IDataSourceQueryService query)
+                        throw new InvalidOperationException("图像数据来源尚未就绪。");
+                    var reference = ToolExecutionPreparation.ReadReference(parameters, "ImageSource")
+                        ?? throw new InvalidOperationException("请先绑定工具的输入图像。");
+                    var result = query.GetNodeContext(reference.SourceNodeId)?.Result;
+                    if (result == null)
+                        throw new InvalidOperationException("绑定的输入图像暂无结果，请先执行图像来源节点。");
+                    var image = ToolExecutionPreparation.ResolveInputImage(parameters,
+                        new Dictionary<string, ToolResults> { [reference.SourceNodeId] = result }, null)!;
+                    if (!ReferenceEquals(result, query.GetNodeContext(reference.SourceNodeId)?.Result))
+                        throw new InvalidOperationException("输入图像正在更新，请稍后重新绘制。");
+                    var frame = ImageFrameProvenance.CaptureInput(image);
+                    var displayedFrame = PreviewFrameProvenance.Read(preview);
+                    if (preview.PixelWidth != image.Width || preview.PixelHeight != image.Height ||
+                        (frame.HasValue && displayedFrame.HasValue && frame != displayedFrame))
+                        throw new InvalidOperationException("预览与工具绑定的输入图像不一致，请先显示绑定图像再绘制。");
+                    validatedSize = (image.Width, image.Height);
+                    return true;
+                }
+                catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+                {
+                    MessageBox.Show(Window.GetWindow(this), ex.Message, "无法绘制卡尺",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return false;
+                }
+            };
+        }
+
+        protected void ApplyPositionCorrectionPreview(ToolParameters parameters,
+            Action<AffineMatrix?> applyMatrix, FrameworkElement? editor = null)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(() => ApplyPositionCorrectionPreview(parameters, applyMatrix, editor)));
+                return;
+            }
+            if (DataProvider is not IDataSourceQueryService query) return;
+            var correction = PositionCorrectionResolution.Capture(parameters, query,
+                ToolExecutionPreparation.RequiresConformalCorrection(parameters));
+            if (editor != null)
+            {
+                editor.IsEnabled = correction.CanUse;
+                editor.ToolTip = correction.Message;
+            }
+            applyMatrix(correction.Matrix);
+        }
+
         protected ToolExecutionRequest CreateLiveExecutionRequest(
             ToolParameters parameters,
-            IVisionImage? resolvedInputImage)
+            IVisionImage? resolvedInputImage,
+            IReadOnlyDictionary<string, ToolResults>? nodeResultsSnapshot = null)
         {
 
-            var nodeResults = parameters.NodeResults != null
+            var provider = DataProvider as IDataSourceQueryService;
+            var bindings = ParameterBindingSet.FromSettings(
+                CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
+                    as ParamSettingContainer);
+            var nodeResults = nodeResultsSnapshot != null
+                ? nodeResultsSnapshot.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal)
+                : provider == null && parameters.NodeResults != null
                 ? new Dictionary<string, ToolResults>(parameters.NodeResults)
                 : new Dictionary<string, ToolResults>();
 
-            var provider = DataProvider as IDataSourceQueryService;
             if (provider != null)
             {
-                var currentNodeId = GetCurrentNodeStringProperty("Id");
-                foreach (var source in provider.GetAvailableDataSources(currentNodeId ?? string.Empty))
+                var currentNodeId = GetCurrentNodeStringProperty("Id") ?? _currentNodeId;
+                var sourceIds = provider.GetAvailableDataSources(currentNodeId ?? string.Empty)
+                    .Select(source => source.SourceNodeId)
+                    .Concat(BindingInputCatalog.Describe(parameters).Where(input => input.Active)
+                        .Select(input => input.Read()).Where(path => !string.IsNullOrWhiteSpace(path) && path.Contains('.'))
+                        .Select(path => path[..path.IndexOf('.')]))
+                    .Concat(bindings.Bindings.Where(binding => binding.BindingType == BindingType.Binding)
+                        .Select(binding => binding.SourceNodeId)).Where(id => !string.IsNullOrEmpty(id)).Distinct().ToArray();
+                if (!string.IsNullOrEmpty(currentNodeId))
                 {
-                    if (string.IsNullOrWhiteSpace(source.SourceNodeId)) continue;
-
-                    if (provider.GetNodeContext(source.SourceNodeId)?.Result is { } result)
-                        nodeResults[source.SourceNodeId] = result;
+                    var upstream = provider.GetParentNodes(currentNodeId).Select(n => n.NodeId).ToHashSet();
+                    if (sourceIds.Any(id => !id.StartsWith("__", StringComparison.Ordinal) && !upstream.Contains(id)))
+                        throw new InvalidOperationException("绑定来源不是画布连接的上游节点，请先建立执行连接或改用全局变量。");
                 }
+                // Never seed a new debug run with runtime fields left on an editable parameter
+                // object by an earlier run. The query provider is the current workflow SSOT.
+                if (nodeResultsSnapshot == null)
+                    nodeResults = ToolDebugResultSnapshot.Capture(provider, sourceIds, requireAll: false)
+                        .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
             }
 
-            var request = new ToolExecutionRequest(parameters)
+            resolvedInputImage = ToolExecutionPreparation.ResolveInputImage(parameters, nodeResults,
+                resolvedInputImage ?? parameters.ResolvedInputImage);
+            var executionParameters = (DataProvider as DataSourceQueryService)?.CreateParameterSnapshot?.Invoke(parameters)
+                ?? ToolExecutionPreparation.CopyParameters(parameters);
+            var request = new ToolExecutionRequest(executionParameters)
             {
                 NodeResults = nodeResults,
-                ResolvedInputImage = resolvedInputImage ?? parameters.ResolvedInputImage,
+                ResolvedInputImage = resolvedInputImage,
                 NodeId = GetCurrentNodeStringProperty("Id"),
                 WorkflowId = (DataProvider as DataSourceQueryService)?.WorkflowId,
                 NodeName = GetCurrentNodeStringProperty("DisplayName")
                     ?? GetCurrentNodeStringProperty("Name"),
-                ParameterBindings = ParameterBindingSet.FromSettings(
-                    CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
-                        as ParamSettingContainer),
+                ParameterBindings = bindings,
                 GlobalVariables = (DataProvider as DataSourceQueryService)?.GlobalVariables,
                 CommunicationInputs = (DataProvider as DataSourceQueryService)?.CommunicationReceiveService,
                 CommunicationOutputs = (DataProvider as DataSourceQueryService)?.CommunicationSendService,
@@ -869,9 +986,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 仅用于区域编辑器等需要在主窗口图像上绘制 ROI 的场景。
         /// 不需要此功能的控件无需重写此方法。
         /// </remarks>
+        private ImageControl? _caliperImageControl;
+
         public virtual void SetMainImageControl(ImageControl? imageControl)
         {
-            // 基类默认空实现
+            _caliperImageControl = imageControl;
         }
 
         /// <summary>
@@ -889,7 +1008,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// <summary>
         /// 填充参数数据源
         /// </summary>
-        /// <summary>Opt-in for communication payload editors, not a global candidate expansion.</summary>
+        /// <summary>Retained for host compatibility; it no longer permits non-upstream candidates.</summary>
         public bool IncludeOtherBindingSources { get; set; }
         internal bool SuppressClosePersistence { get; set; }
 
@@ -899,7 +1018,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             _availableDataSources.Clear();
 
             // 获取所有数据源（保持父节点距离顺序）
-            var allDataSources = dataProvider.GetAvailableDataSources(_currentNodeId ?? "", null, IncludeOtherBindingSources);
+            var allDataSources = dataProvider.GetAvailableDataSources(_currentNodeId ?? "");
 
             // 添加到统一缓存（保持父节点顺序）
             foreach (var ds in allDataSources)

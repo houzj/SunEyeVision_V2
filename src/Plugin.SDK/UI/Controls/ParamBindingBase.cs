@@ -49,8 +49,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
         public static List<AvailableDataSource> FilterDataSourcesByTypes(List<AvailableDataSource> sources, IReadOnlyList<Type> types)
         {
-            var vocabularies = types.Select(SdkTypeVocabulary.ToTypeVocabulary).Where(v => v != null).ToHashSet();
-            return sources.Where(s => s.PropertyType != null && vocabularies.Contains(SdkTypeVocabulary.ToTypeVocabulary(s.PropertyType))).ToList();
+            return types.SelectMany(type => FilterDataSourcesByType(sources, type)).Distinct().ToList();
         }
 
         /// <summary>

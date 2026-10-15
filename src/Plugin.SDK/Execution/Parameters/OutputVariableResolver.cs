@@ -70,6 +70,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             // 语义 = "该类型全部图形的该字段集合"，恒以数组返回（N=1 时也返回 double[1]，
             // 供几何参数订阅向量化拼装"有几个解析几个"）；因此后续段不做长度 1 解包。
             var isRoiTypedPath = firstTypeFilter != null;
+            // A field projection owns its []/[n] on the final segment. Keep the
+            // source collection intact until that segment has been evaluated.
+            var hasExplicitProjectionIndex = parsedPath.Skip(1).Any(p => p.arrayIndex.HasValue);
 
             // 第一段类型过滤（RoI 按图形类型绑定，方案步骤3）
             if (firstTypeFilter != null)
@@ -84,7 +87,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 if (firstIndex.Value >= 0)
                     current = GetArrayElement(current, firstName, firstIndex.Value);
             }
-            else if (firstTypeFilter == null)
+            else if (firstTypeFilter == null && !hasExplicitProjectionIndex)
             {
                 // 无索引且非 [Type=] 过滤 → 长度 1 数组默认取 [0]（存量标量绑定兼容，决策3）
                 current = UnwrapLengthOne(current);
@@ -105,13 +108,18 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // 数组逐元素投影：当前是数组、本段不取索引且不做类型过滤 → 对每个元素取成员并收拢为同构新数组。
                 // 仅当元素自身可承载成员（非 double/string 等纯标量值数组——标量数组无成员访问）时投影；
                 // 投影数组类型按首个成员结果类型创建（几何字段投影 double[]，避免泄漏 object[]）。
-                if (current is not string && current is Array arr && !idx.HasValue && typeFilter == null
-                    && arr.Rank == 1 && arr.Length > 0
+                if (current is not string && current is Array arr && typeFilter == null
+                    && arr.Rank == 1
                     && !IsScalarValueArray(arr))
                 {
-                    var firstMember = ResolveMember(arr.GetValue(0), propName, propertyPath);
-                    var projected = Array.CreateInstance(firstMember?.GetType() ?? typeof(object), arr.Length);
-                    projected.SetValue(firstMember, 0);
+                    var elementType = arr.GetType().GetElementType()!;
+                    var memberType = elementType.GetProperty(propName)?.PropertyType
+                        ?? elementType.GetField(propName)?.FieldType;
+                    var firstMember = arr.Length > 0 ? ResolveMember(arr.GetValue(0), propName, propertyPath) : null;
+                    if (arr.Length == 0 && memberType == null)
+                        throw new InvalidOperationException($"属性路径 '{propertyPath}' 中成员 '{propName}' 不存在。");
+                    var projected = Array.CreateInstance(firstMember?.GetType() ?? memberType ?? typeof(object), arr.Length);
+                    if (arr.Length > 0) projected.SetValue(firstMember, 0);
                     for (int e = 1; e < arr.Length; e++)
                     {
                         projected.SetValue(ResolveMember(arr.GetValue(e), propName, propertyPath), e);
@@ -134,7 +142,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     if (idx.Value >= 0)
                         current = GetArrayElement(current, propName, idx.Value);
                 }
-                else if (typeFilter == null && !isRoiTypedPath)
+                else if (typeFilter == null && !isRoiTypedPath && !hasExplicitProjectionIndex)
                 {
                     // 非 ROI 类型过滤路径保留"长度 1 数组解包为标量"（存量标量绑定兼容，决策3）。
                     // ROI 字段投影路径恒返回数组（长度 = 该类型图形数，含 1），供"有几个解析几个"向量化拼装。

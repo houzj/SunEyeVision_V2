@@ -39,7 +39,6 @@ public static class BindingContractValidator
             if (i > 0)
             {
                 if (collection && (type.IsPrimitive || type == typeof(string))) return Pending("标量集合成员需明确元素索引，等待校验");
-                if (collection && segment.arrayIndex != null) return Pending("嵌套集合的索引语义未声明完整，等待校验");
                 if (type == typeof(object)) return Pending("多态成员缺少形状声明，等待校验");
                 if (type == typeof(RoiShape) && segment.propertyName == "Geometry" && filter != null)
                     type = GeometryType(filter)!;
@@ -50,7 +49,12 @@ public static class BindingContractValidator
                     if (property == null && field == null) return Bad("上游输出成员已不存在，请重新绑定");
                     type = property?.PropertyType ?? field!.FieldType;
                 }
-                if (type.IsArray) { type = type.GetElementType()!; collection = true; count = null; }
+                if (type.IsArray)
+                {
+                    if (collection && segment.arrayIndex != null)
+                        return Pending("嵌套集合的索引语义未声明完整，等待校验");
+                    type = type.GetElementType()!; collection = true; count = null;
+                }
             }
             if (segment.typeFilter != null)
             {
@@ -86,8 +90,18 @@ public static class BindingContractValidator
         }
         type = Normalize(type);
         return allowed.Any(t => t == typeof(object) || Normalize(t).IsAssignableFrom(type) ||
+            type.IsArray && Normalize(t).IsArray &&
+                Accept(type.GetElementType(), new[] { Normalize(t).GetElementType()! }) == true ||
+            type.IsArray && !Normalize(t).IsArray &&
+                Accept(type.GetElementType(), new[] { t }) == true ||
+            !type.IsArray && !Normalize(t).IsArray && IsNumeric(type) && IsNumeric(Normalize(t)) ||
             Normalize(t).IsArray && !type.IsArray && Normalize(t).GetElementType()!.IsAssignableFrom(type));
     }
+
+    private static bool IsNumeric(Type type) => Type.GetTypeCode(type) is
+        TypeCode.Byte or TypeCode.SByte or TypeCode.Int16 or TypeCode.UInt16 or
+        TypeCode.Int32 or TypeCode.UInt32 or TypeCode.Int64 or TypeCode.UInt64 or
+        TypeCode.Single or TypeCode.Double or TypeCode.Decimal;
 
     private static Type? GeometryType(string token) => token switch
     {

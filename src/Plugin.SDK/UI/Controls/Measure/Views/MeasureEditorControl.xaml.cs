@@ -29,7 +29,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
     /// - 手柄编辑：端点/半径/角度（复用 HandleRenderer 静态手柄系统）
     /// - 命中优先级：①手柄 ②引导主体 ③卡尺测量带，命中即编辑/移动
     /// - Delete 删除引导几何
-    /// - 绘制过程中只显示引导几何预览，松开完成后再显示测量带
+    /// - 绘制过程中同时预览引导几何与已初始化的测量带
     /// - Fail-Forward：未绑定 ImageControl 时安全跳过，不崩溃
     /// 通过 GuideGeometryChanged 事件通知宿主同步工具参数。
     /// </remarks>
@@ -37,6 +37,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
     {
         /// <summary>交互状态模型</summary>
         private readonly MeasureInteractionModel _model = new();
+
+        // During an editor -> host notification, partially written host parameters
+        // must not echo back into the authoritative geometry/caliper state.
+        private bool _publishingGuideChange;
+        private bool _publishingCaliberChange;
 
         /// <summary>测量带渲染器（绑定图像控件后创建）</summary>
         private MeasureBandOverlay? _overlay;
@@ -58,6 +63,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         private bool _isDraggingHandle;
         private HandleType _activeHandleType = HandleType.None;
         private Point _lastMouse;
+        private Action? _rollbackEdit;
+
+        private void BeginEdit()
+        {
+            var line = _model.EditingLine;
+            var start = _model.LineStartPoint;
+            var end = _model.LineEndPoint;
+            var circle = _model.EditingCircle;
+            var arc = _model.EditingArc;
+            var width = _bandWidth;
+            var length = _bandLength;
+            var count = _measureCount;
+            _rollbackEdit = () =>
+            {
+                if (line.HasValue) SetGuide(line.Value, start, end);
+                else if (circle.HasValue) SetGuide(circle.Value);
+                else if (arc.HasValue) SetGuide(arc.Value);
+                else ClearGuide();
+                SetCaliberParams(width, length, count);
+                NotifyGuideChanged();
+            };
+        }
 
         /// <summary>当前编辑手柄数组（选中态渲染）</summary>
         private EditHandle[]? _currentHandles;
@@ -67,6 +94,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
         /// <summary>位置修正矩阵（正向：参考坐标→当前图像坐标；null=不修正）</summary>
         private AffineMatrix? _positionCorrectionMatrix;
+        private bool _isCorrectionAvailable = true;
+        /// <summary>False hides this editor's geometry and blocks inverse-coordinate editing without changing its saved guide.</summary>
+        public bool IsCorrectionAvailable
+        {
+            get => _isCorrectionAvailable;
+            set { if (_isCorrectionAvailable == value) return; _isCorrectionAvailable = value; if (!value) CancelDrawing(); else RenderForManager(); }
+        }
 
 
         /// <summary>
@@ -75,9 +109,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void SetPositionCorrectionMatrix(AffineMatrix? matrix)
         {
-            _positionCorrectionMatrix = matrix;
+            if (!SameMatrix(_positionCorrectionMatrix, matrix)) CancelDrawing();
+            _positionCorrectionMatrix = matrix == null ? null : new AffineMatrix(
+                matrix.M11, matrix.M12, matrix.M21, matrix.M22, matrix.OffsetX, matrix.OffsetY);
             RenderForManager();
         }
+
+        private static bool SameMatrix(AffineMatrix? a, AffineMatrix? b) =>
+            a == null ? b == null : b != null && a.ToArray().SequenceEqual(b.ToArray());
+
+        private Point ToReferencePosition(Point display) => _positionCorrectionMatrix == null
+            ? display : _positionCorrectionMatrix.Inverse().TransformWpfPoint(display);
 
                 /// <summary>
         /// 当前交互几何的形状语义解析目标：
@@ -148,6 +190,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// 返回 false 时不会进入卡尺绘制状态。
         /// </summary>
         public Func<bool>? DrawingAvailabilityCheck { get; set; }
+
+        /// <summary>Only explicit size edits notify ownership; parameter restoration does not.</summary>
+        public Action? CaliberSizeEdited { get; set; }
+
+        /// <summary>Runs after input validation at the first mouse-down, before geometry is drawn.</summary>
+        public Action? DrawingStarted { get; set; }
 
         /// <summary>
         /// 标题文本（元素在双卡尺容器中的名字，如"卡尺1/卡尺2"；单编辑器默认"检测区域"）。
@@ -221,6 +269,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void SetCaliberParams(double width, double length, int count)
         {
+            if (_publishingCaliberChange) return;
             _bandWidth = Math.Max(1.0, width);
             _bandLength = Math.Max(1.0, length);
             _measureCount = Math.Max(1, count);
@@ -228,7 +277,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 $"[Diag] SetCaliberParams W={_bandWidth:F2} H={_bandLength:F2} C={_measureCount} overlay={_overlay != null} drawing={_model.IsDrawing} hasGuide={_model.HasGuide}",
                 "MeasureEditorControl");
             Render();
-            CaliberParamsChanged?.Invoke(this, new CaliberParamsChangedEventArgs(_bandWidth, _bandLength, _measureCount));
+            _publishingCaliberChange = true;
+            try
+            {
+                CaliberParamsChanged?.Invoke(this, new CaliberParamsChangedEventArgs(_bandWidth, _bandLength, _measureCount));
+            }
+            finally
+            {
+                _publishingCaliberChange = false;
+            }
         }
 
         /// <summary>
@@ -245,7 +302,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             var scale = Math.Min(imageWidth, imageHeight) / 640.0;
             var width = Math.Clamp(40.0 * scale, 10.0, 512.0);
             var length = Math.Clamp(10.0 * scale, 4.0, 256.0);
-            SetCaliberParams(width, length, _measureCount);
+            // Defaults are current-image pixels; parameters are reference-coordinate pixels.
+            var correctionScale = ResolvedMatrix()?.ScaleFactor() ?? 1.0;
+            if (!double.IsFinite(correctionScale) || correctionScale <= 1e-9)
+                throw new InvalidOperationException("位置修正比例无效，无法初始化卡尺尺寸。");
+            SetCaliberParams(width / correctionScale, length / correctionScale, _measureCount);
+        }
+
+        public void EditCaliberParams(double width, double length, int count)
+        {
+            if (Math.Abs(width - _bandWidth) > 1e-9 || Math.Abs(length - _bandLength) > 1e-9)
+                CaliberSizeEdited?.Invoke();
+            SetCaliberParams(width, length, count);
         }
 
         /// <summary>
@@ -267,7 +335,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void StartDraw(MeasureGeometryType geometryType)
         {
-            if (DrawingAvailabilityCheck != null && !DrawingAvailabilityCheck())
+            if (DrawingAvailabilityCheck == null || !DrawingAvailabilityCheck())
             {
                 ClearCaliberSelection();
                 return;
@@ -304,6 +372,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void CancelDrawing()
         {
+            var rollback = _rollbackEdit;
+            _rollbackEdit = null;
+            _isDragging = false;
+            _isDraggingHandle = false;
+            _activeHandleType = HandleType.None;
             if (_model.Mode == MeasureInteractionMode.Draw)
             {
                 _model.Mode = MeasureInteractionMode.Select;
@@ -311,6 +384,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             }
             _model.Deselect();
             _currentHandles = null;
+            rollback?.Invoke();
             Render();
         }
 
@@ -320,6 +394,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void SetGuide(Line2d line)
         {
+            if (_publishingGuideChange) return;
             _model.SetLine(line);
             SetGeometryStrategy(MeasureGeometryType.Line);
             Render();
@@ -330,6 +405,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void SetGuide(Line2d line, Point start, Point end, bool notifyGeometryChanged = false)
         {
+            if (_publishingGuideChange) return;
             _model.SetLine(line, start, end);
             SetGeometryStrategy(MeasureGeometryType.Line);
             Render();
@@ -340,22 +416,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <summary>
         /// 直接设置引导圆（用于从参数回填渲染，不触发绘制交互）
         /// </summary>
-        public void SetGuide(Circle2d circle)
+        public void SetGuide(Circle2d circle) => SetGuide(circle, notifyGeometryChanged: false);
+
+        public void SetGuide(Circle2d circle, bool notifyGeometryChanged)
         {
+            if (_publishingGuideChange) return;
             _model.SetCircle(circle);
             SetGeometryStrategy(MeasureGeometryType.Circle);
             Render();
+            if (notifyGeometryChanged) NotifyGuideChanged();
         }
 
         /// <summary>
         /// 直接设置引导圆弧（用于从参数回填渲染，不触发绘制交互）。
         /// 同步几何类型与交互策略，确保回填后圆弧命中/手柄走 Arc 策略而非圆策略。
         /// </summary>
-        public void SetGuide(Arc2d arc)
+        public void SetGuide(Arc2d arc) => SetGuide(arc, notifyGeometryChanged: false);
+
+        public void SetGuide(Arc2d arc, bool notifyGeometryChanged)
         {
+            if (_publishingGuideChange) return;
             _model.SetArc(arc);
             SetGeometryStrategy(MeasureGeometryType.Arc);
             Render();
+            if (notifyGeometryChanged) NotifyGuideChanged();
         }
 
         /// <summary>
@@ -397,6 +481,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void HandleDelete()
         {
+            if (!IsCorrectionAvailable) return;
             if (!_model.IsSelected) return;
             _model.Clear();
             _currentHandles = null;
@@ -481,13 +566,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <returns>是否消费该事件（false 表示未命中任何交互对象，交给其他编辑器）</returns>
         public bool ProcessMouseDown(Point pos)
         {
+            if (!IsCorrectionAvailable) return false;
+            var referencePosition = ToReferencePosition(pos);
             // 位置修正：鼠标显示坐标 → 参考系坐标（几何始终存参考系）
             pos = ToReference(pos);
 
             // 绘制模式：创建引导几何
             if (_model.Mode == MeasureInteractionMode.Draw)
             {
-                _model.DrawStart = pos;
+                // Revalidate at mouse-down as the source can change after selecting a tool.
+                if (DrawingAvailabilityCheck == null || !DrawingAvailabilityCheck()) return false;
+                DrawingStarted?.Invoke();
+                BeginEdit();
+                _model.DrawStart = referencePosition;
                 _model.IsDrawing = true;
                 return true;
             }
@@ -501,7 +592,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     var hitType = HitTestHandles(pos);
                     if (hitType != HandleType.None)
                     {
+                        BeginEdit();
                         BeginHandleDrag(hitType, pos);
+                        if (hitType == HandleType.Center) _lastMouse = referencePosition;
                         return true;
                     }
                 }
@@ -509,18 +602,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 // ② 引导主体命中 → 移动
                 if (HitTestGuide(pos, GuideBodyHitTolerance))
                 {
+                    BeginEdit();
                     _model.IsSelected = true;
                     _isDragging = true;
-                    _lastMouse = pos;
+                    _lastMouse = referencePosition;
                     return true;
                 }
 
                 // ③ 卡尺测量带命中 → 移动
                 if (HitTestBand(pos))
                 {
+                    BeginEdit();
                     _model.IsSelected = true;
                     _isDragging = true;
-                    _lastMouse = pos;
+                    _lastMouse = referencePosition;
                     return true;
                 }
             }
@@ -537,10 +632,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void ProcessMouseMove(Point pos)
         {
+            if (!IsCorrectionAvailable) return;
             if (_overlay == null) return;
 
             // 位置修正：鼠标显示坐标 → 参考系坐标
-            pos = ToReference(pos);
+            // Center translation and new geometry use the full inverse. The directionless
+            // circle handle matrix is only appropriate for radius/caliper handle editing.
+            pos = _isDragging || (_isDraggingHandle && _activeHandleType == HandleType.Center) || _model.IsDrawing
+                ? ToReferencePosition(pos) : ToReference(pos);
 
             // 拖动手柄 → 编辑引导几何
             if (_isDraggingHandle)
@@ -581,6 +680,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <param name="displayPos">鼠标在 MainCanvas 的显示坐标</param>
         public Cursor? QueryCursor(Point displayPos)
         {
+            if (!IsCorrectionAvailable) return null;
             if (_overlayCanvas == null || _overlay == null) return null;
 
             // 位置修正：鼠标显示坐标 → 参考系坐标
@@ -680,6 +780,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void ProcessMouseUp()
         {
+            if (!IsCorrectionAvailable) return;
+            _rollbackEdit = null;
             if (_model.IsDrawing)
             {
                 _model.IsDrawing = false;
@@ -865,7 +967,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         #region 绘制逻辑
 
         /// <summary>
-        /// 实时更新绘制预览（委托给当前几何交互策略，只画引导几何不画测量带）
+        /// 实时更新绘制预览（委托给当前几何交互策略，使用本次尺寸显示测量带）
         /// </summary>
         private void UpdateDrawPreview(Point current)
         {
@@ -896,18 +998,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         #region 渲染
 
         /// <summary>
-        /// 渲染当前引导几何 + 测量带（绘制中只画引导几何）
+        /// 渲染当前引导几何 + 测量带（绘制预览也使用同一组尺寸）
         /// </summary>
         private void Render()
         {
             if (_overlay == null) return;
             _overlay.Clear();
+            if (!IsCorrectionAvailable) return;
 
             // 位置修正矩阵：参考系几何 → 当前图像坐标（overlay 内部变换）
             var matrix = _positionCorrectionMatrix;
 
-            // 绘制中只画引导几何预览，不画测量带
-            bool drawBands = !_model.IsDrawing;
+            // Defaults have been initialized before drawing; preview the actual band size.
+            bool drawBands = _model.HasGuide;
 
             if (_model.EditingLine.HasValue)
             {
@@ -1074,7 +1177,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             halfLength = Math.Max(minHalf, halfLength);
             halfWidth = Math.Max(minHalf, halfWidth);
 
-            SetCaliberParams(halfWidth * 2, halfLength * 2, _measureCount);
+            EditCaliberParams(halfWidth * 2, halfLength * 2, _measureCount);
         }
 
         /// <summary>
@@ -1083,6 +1186,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         private void DrawHandles()
         {
             if (_overlayCanvas == null || _currentHandles == null) return;
+            // Rendering and hover routing must describe the same operation.
+            foreach (var handle in _currentHandles)
+                handle.Cursor = CursorForHandle(handle.Type, handle.Position);
             var shapeType = _geometryType switch
             {
                 MeasureGeometryType.Line => ShapeType.Line,
@@ -1117,7 +1223,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <param name="isDrawing">是否来自绘制流程（true=绘制完成，宿主应清除工具栏选中，对齐 Roi）</param>
         private void NotifyGuideChanged(bool isDrawing = false)
         {
-            GuideGeometryChanged?.Invoke(this, new GuideGeometryChangedEventArgs(_model, _geometryType, isDrawing));
+            if (_publishingGuideChange) return;
+            _publishingGuideChange = true;
+            try
+            {
+                GuideGeometryChanged?.Invoke(this, new GuideGeometryChangedEventArgs(_model, _geometryType, isDrawing));
+            }
+            finally
+            {
+                _publishingGuideChange = false;
+            }
         }
 
         #endregion

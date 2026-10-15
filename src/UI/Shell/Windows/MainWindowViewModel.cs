@@ -3779,6 +3779,7 @@ SplitterPosition = position;
             }
 
             var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider);
+            queryService.CreateParameterSnapshot = SunEyeVision.Workflow.ToolParameterSnapshot.Create;
             queryService.CommunicationReceiveService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
             queryService.CommunicationSendService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends;
             var bindingWorkflow = (SunEyeVision.Workflow.Workflow)connectionProvider;

@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
 namespace SunEyeVision.Workflow
@@ -18,13 +17,7 @@ namespace SunEyeVision.Workflow
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            var parameterType = source.GetType();
-            var json = JsonSerializer.Serialize(source, parameterType, WorkflowSerializationOptions.Compact);
-            return (ToolParameters)(JsonSerializer.Deserialize(
-                json,
-                parameterType,
-                WorkflowSerializationOptions.Compact)
-                ?? throw new InvalidOperationException($"无法为参数类型 {parameterType.FullName} 创建运行快照。"));
+            return ToolExecutionPreparation.CopyParameters(source, WorkflowSerializationOptions.Compact);
         }
     }
 }

@@ -61,6 +61,8 @@ public sealed class OutputBindingChangeService
                 if (!BindingInputCatalog.TryReference(input.Read(), nodes.Keys, input.ReferenceOnly, out var id, out var path) || id.StartsWith("__", StringComparison.Ordinal)) continue;
                 if (BindingRelationCatalog.SourceWorkflowId(node, input, sourceWorkflowId ?? workflow.Id) != (sourceWorkflowId ?? workflow.Id))
                     throw new InvalidOperationException("绑定来源跨出当前工作流作用域，请使用全局变量。");
+                if (!workflow.GetParentNodeIds(node.Id).Contains(id))
+                    throw new InvalidOperationException($"{node.Name}.{input.Name}：绑定来源不是画布连接的上游节点，请先建立执行连接或改用全局变量。");
                 var validation = nodes.TryGetValue(id, out var upstream) ? BindingContractValidator.Validate(reader.ReadContract(upstream), path, input.AllowedTypes)
                     : new BindingValidation(BindingCompatibility.Incompatible, "来源节点不存在");
                 if (validation.State != BindingCompatibility.Compatible) throw new InvalidOperationException($"{node.Name}.{input.Name}：{validation.Reason}");
@@ -71,15 +73,7 @@ public sealed class OutputBindingChangeService
     {
         var flow = _solution?.Workflows.FirstOrDefault(w => w.Id == workflowId);
         if (flow == null) return Array.Empty<string>();
-        var forbidden = new HashSet<string> { targetId };
-        var edges = flow.Connections.Select(c => (Source: c.SourceNodeId, Target: c.TargetNodeId)).ToList();
-        foreach (var node in flow.Nodes)
-            foreach (var input in BindingRelationCatalog.Describe(node).Where(i => i.Active))
-                if (BindingInputCatalog.TryReference(input.Read(), flow.Nodes.Select(n => n.Id), input.ReferenceOnly, out var source, out _) && !source.StartsWith("__", StringComparison.Ordinal))
-                    edges.Add((source, node.Id));
-        bool added;
-        do { added = false; foreach (var edge in edges) if (forbidden.Contains(edge.Source)) added |= forbidden.Add(edge.Target); } while (added);
-        return flow.Nodes.Where(n => !forbidden.Contains(n.Id)).Select(n => n.Id).ToArray();
+        return flow.GetParentNodeIds(targetId).Where(id => id != targetId).Distinct().ToArray();
     }
 
     public IReadOnlyList<string> GetExistingBindingSourceNodeIds(string workflowId, string targetId)
@@ -216,6 +210,9 @@ public sealed class OutputBindingChangeService
                 if (source == relation.Target) throw new InvalidOperationException("输入绑定不能引用节点自身。");
                 if (source.WorkflowId != relation.Target.WorkflowId && !input.InternalProjection || !nodes.ContainsKey(source))
                     validation = new(BindingCompatibility.Incompatible, "来源不在当前工作流中；跨流程请使用全局变量，请重新绑定");
+                else if (!input.InternalProjection && !_solution.Workflows.First(w => w.Id == relation.Target.WorkflowId)
+                    .GetParentNodeIds(relation.Target.NodeId).Contains(source.NodeId))
+                    validation = new(BindingCompatibility.Incompatible, "来源不是画布连接的上游节点，请先建立执行连接或改用全局变量");
                 else
                 {
                     _contracts.TryGetValue(source, out var previous);

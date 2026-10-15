@@ -1079,9 +1079,9 @@ namespace SunEyeVision.Workflow
         {
             var result = new NodeExecutionResult { NodeId = node.Id, StartTime = DateTime.Now, EndTime = DateTime.Now };
 
-            // 从 SSOT (WorkflowContext) 构建工具结果字典用于参数绑定解析（过滤空结果）
+            // Failed results are retained for diagnostics only, never as executable inputs.
             var toolResultsDict = context.GetAllNodeResults()
-                .Where(kvp => kvp.Value.Result != null)
+                .Where(kvp => kvp.Value.Success && kvp.Value.Result?.IsSuccess == true)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Result!);
 
             // [DIAG] 记录 toolResultsDict 的内容，便于排查参数绑定问题
@@ -1131,6 +1131,8 @@ namespace SunEyeVision.Workflow
                 result.ErrorMessages = new List<string> { algorithmResult.ErrorMessage };
                 result.Success = false;
                 result.Status = ExecutionStatus.Failed;
+                // Diagnostics are visible on failed nodes; scheduling still follows Failed.
+                result.Result = algorithmResult.ToolResults;
             }
 
             return result;

@@ -5,6 +5,8 @@ using SunEyeVision.CvAdapter;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Vision.Hosting;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
+using SunEyeVision.Plugin.SDK.UI.Controls;
 
 namespace SunEyeVision.UI.Converters
 {
@@ -20,12 +22,17 @@ namespace SunEyeVision.UI.Converters
             if (image == null || image.IsEmpty)
                 return null;
 
-            return image switch
+            var frame = ImageFrameProvenance.CaptureInput(image);
+            var bitmap = image switch
             {
                 HalImage hal => hal.ToBitmapSource(),
                 CvVisionImageAdapter cv => cv.ToBitmapSource(),
                 _ => CreateBitmapSource(image),
             };
+            // Do not publish a bitmap labelled with an identity that changed during conversion.
+            if (frame != ImageFrameProvenance.CaptureInput(image)) return null;
+            PreviewFrameProvenance.Attach(bitmap, frame);
+            return bitmap;
         }
 
         private static BitmapSource CreateBitmapSource(IVisionImage image)

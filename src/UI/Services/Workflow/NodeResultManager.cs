@@ -613,34 +613,15 @@ namespace SunEyeVision.UI.Services.Workflow
             var center = matrix?.TransformWpfPoint(centerRef) ?? centerRef;
             var end = matrix?.TransformWpfPoint(endRef) ?? endRef;
 
-            // ★ 箭头样式在保持结果层箭头线宽/透明度特性的同时，颜色继承区域角色（检测/屏蔽）
-            var arrowStyle = new GraphicsStyle
-            {
-                Name = ResultArrowStyle.Name,
-                OkColor = regionStyle.OkColor,
-                NgColor = regionStyle.OkColor,
-                LineWidth = ResultArrowStyle.LineWidth,
-                Opacity = ResultArrowStyle.Opacity
-            };
-
             return new GraphicsDisplayItem
             {
-                Style = arrowStyle,
+                // One live style for the entire region: hiding/recoloring the outline
+                // must also hide/recolor its direction arrow without another execution.
+                Style = regionStyle,
                 Type = GraphicsType.Arrow,
                 Geometries = new object[] { new LineSegment(center, end) }
             };
         }
 
-        /// <summary>
-        /// 结果显示层旋转矩形方向箭头专用样式（LineWidth=2.0 → 配合 arrowSize=thickness×6，头部=12px）
-        /// </summary>
-        private static readonly GraphicsStyle ResultArrowStyle = new()
-        {
-            Name = "ResultArrow",
-            OkColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
-            NgColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
-            LineWidth = 2.0,
-            Opacity = 0.7
-        };
     }
 }

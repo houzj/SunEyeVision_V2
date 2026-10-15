@@ -1324,6 +1324,10 @@
                                     {
                                         "date":  "2026-09-09",
                                         "note":  "[7975a00dde45de7b8036311cd5455de0c1024d9e] docs: 区域数据源模型重构方案 + ROI 单一数据源归一化测试报告"
+                                    },
+                                    {
+                                        "date":  "2026-10-15",
+                                        "note":  "[0c5c2768c5cf2053250e881422c04f1c6860fd18] feat(sdk): 位置修正解析与调试结果快照统一"
                                     }
                                 ]
                     },
@@ -3053,6 +3057,10 @@
                                     {
                                         "date":  "2026-10-14",
                                         "note":  "[3b2671d3f7f10ad1f0c16469ea49821640fa8328] feat(sdk): 绑定输入契约与工具编辑器提交关闭生命周期"
+                                    },
+                                    {
+                                        "date":  "2026-10-14",
+                                        "note":  "[c89255f25f3031e39737a62bcd1b52a2756fc32d] feat(core): 通信接收逐次消费与发送接入宿主"
                                     }
                                 ]
                     },
@@ -3395,6 +3403,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[ddd0d27] feat(ui): 查找工具卡尺输入回显（引导线/测量带）到模块结果树"
+                                    },
+                                    {
+                                        "date":  "2026-10-15",
+                                        "note":  "[e2c8d53f0b87184a75f258f92b2cc08d64a7597f] feat(tool): 测量工具接入位置修正与统一结果几何"
                                     }
                                 ]
                     },
@@ -3818,6 +3830,10 @@
                                     {
                                         "date":  "2026-09-07",
                                         "note":  "[8075050] docs: 几何测量工具集设计方案落盘 v1.0 与 v2.0 收敛版（六工具共用）"
+                                    },
+                                    {
+                                        "date":  "2026-10-14",
+                                        "note":  "[35368a70f46672aa1af294ca29c4a342610f8aa6] feat(tool): 各工具适配绑定契约与编辑器生命周期"
                                     }
                                 ]
                     },
@@ -5150,29 +5166,37 @@
                    ],
     "tempTasks":  [
                       {
-                          "id":  "TMP-800fdf0",
-                          "message":  "docs: 归档开发汇报与 N 点标定联合标定基线并同步协作状态与索引",
-                          "date":  "2026-10-08",
-                          "commit":  "800fdf04c4410a626eb4ef9755ccdeea84199de7",
+                          "id":  "TMP-319a866",
+                          "message":  "docs: 更新开发汇报与协作记录并同步文档索引",
+                          "date":  "2026-10-10",
+                          "commit":  "319a866d35f888e4f2326e1c41308ce1b3cbc22d",
                           "files":  [
                                         "docs/00-索引/文档索引.md",
+                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/existing-delete-reference.png",
+                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/trigger-delete-current.png",
+                                        "docs/01-方案设计/2026/10/通讯事件条件与动作条件及参数绑定优化基线-20261010.md",
                                         "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/bak/视觉软件SunEyeVision-软件开发汇报-精简版.bak-20261001-144849.pptx",
                                         "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/pid",
                                         "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/state.json",
                                         "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/DESIGN.md",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/STORY.md",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/01_cover.slide",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/assets/main_ui.jpg",
                                         "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/02_output.slide",
                                         "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/03_plan.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/04_ending.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V1.0.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-精简版.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2 -S.pptx",
+                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2.pptx",
                                         "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报.html",
                                         "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报（精简版）.html",
-                                        "docs/04-工具设计/标定工具/2026/09/28/标定工具链与定位抓取设计基线-20260928.md",
-                                        "docs/04-工具设计/标定工具/2026/09/29/N点标定9加3联合标定与抓取链沟通基线-20260929.md",
-                                        "docs/collaboration/CURRENT_TASK.md"
+                                        "docs/collaboration/CURRENT_TASK.md",
+                                        "docs/collaboration/HANDOFF_ACTION_EQUALITY_20261010.md",
+                                        "docs/collaboration/HANDOFF_COMMUNICATION_FINAL_REFINEMENT_20261010.md",
+                                        "docs/collaboration/HANDOFF_COMMUNICATION_TRIGGER_OPTIMIZATION_20261010.md",
+                                        "docs/collaboration/HANDOFF_GLOBAL_DATA_HEARTBEAT_20261010.md",
+                                        "docs/collaboration/HANDOFF_HEARTBEAT_FEEDBACK_20261010.md",
+                                        "docs/collaboration/HANDOFF_PACKAGE_ICONS_20261009.md",
+                                        "docs/collaboration/HANDOFF_RELEASE_STARTUP_20261009.md",
+                                        "docs/collaboration/HANDOFF_TRIGGER_AUTO_CONDITION_20261010.md",
+                                        "docs/collaboration/HANDOFF_TRIGGER_COMPACT_UI_20261010.md",
+                                        "docs/collaboration/HANDOFF_TRIGGER_PARAMETER_SIMPLIFICATION_20261010.md"
                                     ],
                           "status":  "in_progress"
                       },
@@ -5212,64 +5236,41 @@
                           "status":  "in_progress"
                       },
                       {
-                          "id":  "TMP-800fdf0",
-                          "message":  "docs: 归档开发汇报与 N 点标定联合标定基线并同步协作状态与索引",
-                          "date":  "2026-10-08",
-                          "commit":  "800fdf04c4410a626eb4ef9755ccdeea84199de7",
+                          "id":  "TMP-ce71b60",
+                          "message":  "docs(core): 新增输出变更自动解绑与被动报文消费方案并记录交接",
+                          "date":  "2026-10-14",
+                          "commit":  "ce71b606f83331f6d508147ec060cd3ce46bf6d1",
                           "files":  [
-                                        "docs/00-索引/文档索引.md",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/bak/视觉软件SunEyeVision-软件开发汇报-精简版.bak-20261001-144849.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/pid",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/state.json",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/DESIGN.md",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/STORY.md",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/01_cover.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/02_output.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/03_plan.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/04_ending.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V1.0.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-精简版.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报.html",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报（精简版）.html",
-                                        "docs/04-工具设计/标定工具/2026/09/28/标定工具链与定位抓取设计基线-20260928.md",
-                                        "docs/04-工具设计/标定工具/2026/09/29/N点标定9加3联合标定与抓取链沟通基线-20260929.md",
-                                        "docs/collaboration/CURRENT_TASK.md"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-319a866",
-                          "message":  "docs: 更新开发汇报与协作记录并同步文档索引",
-                          "date":  "2026-10-10",
-                          "commit":  "319a866d35f888e4f2326e1c41308ce1b3cbc22d",
-                          "files":  [
-                                        "docs/00-索引/文档索引.md",
-                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/existing-delete-reference.png",
-                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/trigger-delete-current.png",
-                                        "docs/01-方案设计/2026/10/通讯事件条件与动作条件及参数绑定优化基线-20261010.md",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/bak/视觉软件SunEyeVision-软件开发汇报-精简版.bak-20261001-144849.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/pid",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/state.json",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/DESIGN.md",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/assets/main_ui.jpg",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/02_output.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/03_plan.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2 -S.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报.html",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报（精简版）.html",
+                                        "docs/01-方案设计/2026/09/通讯接收来源与目标绑定最终方案-20260930.md",
+                                        "docs/01-方案设计/2026/10/上游输出变更与下游自动解绑优化方案-20261013.md",
+                                        "docs/01-方案设计/2026/10/接收数据工具方案与沟通基线-20261010.md",
+                                        "docs/01-方案设计/2026/10/被动报文逐次消费优化方案-20261014.md",
+                                        "docs/01-方案设计/2026/10/通信工具链实施计划-20261010.md",
                                         "docs/collaboration/CURRENT_TASK.md",
-                                        "docs/collaboration/HANDOFF_ACTION_EQUALITY_20261010.md",
-                                        "docs/collaboration/HANDOFF_COMMUNICATION_FINAL_REFINEMENT_20261010.md",
-                                        "docs/collaboration/HANDOFF_COMMUNICATION_TRIGGER_OPTIMIZATION_20261010.md",
-                                        "docs/collaboration/HANDOFF_GLOBAL_DATA_HEARTBEAT_20261010.md",
-                                        "docs/collaboration/HANDOFF_HEARTBEAT_FEEDBACK_20261010.md",
-                                        "docs/collaboration/HANDOFF_PACKAGE_ICONS_20261009.md",
-                                        "docs/collaboration/HANDOFF_RELEASE_STARTUP_20261009.md",
-                                        "docs/collaboration/HANDOFF_TRIGGER_AUTO_CONDITION_20261010.md",
-                                        "docs/collaboration/HANDOFF_TRIGGER_COMPACT_UI_20261010.md",
-                                        "docs/collaboration/HANDOFF_TRIGGER_PARAMETER_SIMPLIFICATION_20261010.md"
+                                        "docs/collaboration/HANDOFF_BINDING_ADAPTATION_B1_20261013.md",
+                                        "docs/collaboration/HANDOFF_BINDING_ADAPTATION_B2_20261013.md",
+                                        "docs/collaboration/HANDOFF_BINDING_ADAPTATION_B3_CORE_20261014.md",
+                                        "docs/collaboration/HANDOFF_BINDING_ADAPTATION_B3_HOST_20261014.md",
+                                        "docs/collaboration/HANDOFF_BINDING_ADAPTATION_FINAL_DESIGN_20261013.md",
+                                        "docs/collaboration/HANDOFF_BINDING_UI_REGRESSION_20261014.md",
+                                        "docs/collaboration/HANDOFF_CONSTANT_CONFIRM_20261014.md",
+                                        "docs/collaboration/HANDOFF_EXECUTION_TOOL_IDENTITY_20261014.md",
+                                        "docs/collaboration/HANDOFF_IMAGE_SELECTOR_REFRESH_20261014.md",
+                                        "docs/collaboration/HANDOFF_MODE_SUBROUTINE_BINDING_20261014.md",
+                                        "docs/collaboration/HANDOFF_OUTPUT_BINDING_CHANGE_DESIGN_20261013.md",
+                                        "docs/collaboration/HANDOFF_OUTPUT_BINDING_CHANGE_IMPLEMENTATION_20261013.md",
+                                        "docs/collaboration/HANDOFF_OUTPUT_SOURCE_VOCABULARY_20261014.md",
+                                        "docs/collaboration/HANDOFF_POSITION_MATRIX_ARRAY_20261014.md",
+                                        "docs/collaboration/HANDOFF_RECEIVE_CONSUMPTION_20261014.md",
+                                        "docs/collaboration/HANDOFF_RECEIVE_CONSUMPTION_DESIGN_20261014.md",
+                                        "docs/collaboration/HANDOFF_RECEIVE_DECOUPLING_20261014.md",
+                                        "docs/collaboration/HANDOFF_RECEIVE_SCHEDULING_20261014.md",
+                                        "docs/collaboration/HANDOFF_RECEIVE_WAIT_20261014.md",
+                                        "docs/collaboration/HANDOFF_RUN_PRESENTATION_20261014.md",
+                                        "docs/collaboration/HANDOFF_SCRIPT_INPUT_VOCABULARY_20261014.md",
+                                        "docs/collaboration/HANDOFF_SCRIPT_ROW_PROJECTION_20261014.md",
+                                        "docs/collaboration/HANDOFF_SUBROUTINE_INPUT_BINDING_20261014.md",
+                                        "plans/plan.json"
                                     ],
                           "status":  "in_progress"
                       }

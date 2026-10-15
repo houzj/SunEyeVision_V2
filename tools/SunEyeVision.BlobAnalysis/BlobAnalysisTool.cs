@@ -120,28 +120,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 {
                     // ===== Step 2: 区域前置（HalconRegionPipeline：订阅解析 + 位置修正 + 差集）=====
                     // 纯几何：区域 + 位置修正；图像预处理属算法首段（本工具在取得处理图后执行），全图/按域由算法自决
-                    AffineMatrix? correctionMatrix = null;
-                    if (parameters.IsPositionCorrectionEnabled)
-                    {
-                        var bindingSource = parameters.PositionCorrectionBindingSource;
-                        if (PositionCorrectionResolver.ResolveFirstMatrix(bindingSource) is { } matrix)
-                        {
-                            correctionMatrix = matrix;
-                            parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
-                        }
-                        else if (bindingSource != null &&
-                                 !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
-                                 !string.IsNullOrEmpty(bindingSource.PropertyName))
-                        {
-                            // 已配置绑定源但上游节点尚未返回有效矩阵（非错误，降级为信息日志）
-                            parameters.LogInfo("位置修正已启用，但绑定源当前无有效矩阵，跳过位置修正");
-                        }
-                        else
-                        {
-                            // 未配置绑定源：发出警告但不阻断执行（用户可能忘记配置绑定源）
-                            parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
-                        }
-                    }
+                    var correctionMatrix = PositionCorrectionResolver.Resolve(parameters);
 
                     var scope = HalconRegionPipeline.Resolve(
                         imgWidth, imgHeight,
@@ -803,8 +782,10 @@ namespace SunEyeVision.Tool.BlobAnalysis
         {
             var cos = Math.Cos(phi);
             var sin = Math.Sin(phi);
-            var axis = new WpfPoint(cos, sin);
-            var normal = new WpfPoint(-sin, cos);
+            // HALCON rectangle2 phi -> screen coordinates (X=column, Y=row).
+            // Its first axis is (cos(phi), -sin(phi)), not (cos(phi), sin(phi)).
+            var axis = new WpfPoint(cos, -sin);
+            var normal = new WpfPoint(sin, cos);
             return new[]
             {
                 new WpfPoint(col - axis.X * length1 - normal.X * length2, row - axis.Y * length1 - normal.Y * length2),

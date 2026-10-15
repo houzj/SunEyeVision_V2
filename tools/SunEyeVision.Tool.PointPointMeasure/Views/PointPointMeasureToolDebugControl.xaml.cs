@@ -76,8 +76,7 @@ namespace SunEyeVision.Tool.PointPointMeasure.Views
             var image = query.GetPropertyValue(imageSource.SourceNodeId, imageSource.PropertyName) as IVisionImage;
             if (image == null || image.IsEmpty) throw new InvalidOperationException("无法获取图像数据或图像为空");
 
-            Parameters.ResolvedInputImage = image;
-            return ExecuteWithLiveContext(new PointPointMeasureTool(), Parameters);
+            return ExecuteWithLiveContext(new PointPointMeasureTool(), Parameters, image);
         }
 
         protected override bool CanExecuteTool()

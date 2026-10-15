@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Windows;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -33,8 +34,9 @@ namespace SunEyeVision.Tool.Threshold
         Version = "3.0.0",
         HasDebugWindow = true
     )]
-    public class ThresholdTool : IToolPlugin<ThresholdParameters, ThresholdResults>, IToolEditorFactory
+    public class ThresholdTool : IToolPlugin<ThresholdParameters, ThresholdResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider
     {
+        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;
         private readonly ToolAttribute? _attribute;
 
         public ThresholdTool()
@@ -121,7 +123,7 @@ namespace SunEyeVision.Tool.Threshold
                         imgWidth, imgHeight,
                         parameters.GetRoisByType(RoiParameterMode.InspectionRoi),
                         parameters.GetRoisByType(RoiParameterMode.MaskRoi),
-                        parameters.NodeResults);
+                        parameters.NodeResults, PositionCorrectionResolver.Resolve(parameters));
                     stepTimings.AddRange(scope.Timings);
 
                     if (scope.RoiRegion != null)

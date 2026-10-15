@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -34,6 +35,7 @@ namespace SunEyeVision.Tool.CircleDetect.Views
 
         /// <summary>卡尺编辑器事件是否已订阅（幂等标志，构造 + Loaded 只订阅一次）</summary>
         private bool _caliberHooked;
+        private CircleDetectParameters? _observedParameters;
 
         #region Properties
 
@@ -90,12 +92,15 @@ namespace SunEyeVision.Tool.CircleDetect.Views
             {
                 // 确保 XAML 完全加载后订阅成功（防止构造函数时序导致事件漏订阅）
                 HookCaliberEditor();
+                ObserveParameters();
+                UpdatePositionCorrectionMatrix();
                 var window = System.Windows.Window.GetWindow(this);
                 if (window != null)
                 {
                     window.Closing += OnWindowClosing;
                 }
             };
+            Unloaded += (_, _) => Cleanup();
         }
 
         #endregion
@@ -107,6 +112,9 @@ namespace SunEyeVision.Tool.CircleDetect.Views
         /// </summary>
         public void Cleanup()
         {
+            if (_observedParameters != null)
+                PropertyChangedEventManager.RemoveHandler(_observedParameters, OnParameterChanged, "");
+            _observedParameters = null;
             MeasurementManager?.ClearMainOverlay();
         }
 
@@ -138,8 +146,18 @@ namespace SunEyeVision.Tool.CircleDetect.Views
             _caliberHooked = true;
             GuideEditor.GuideGeometryChanged += OnGuideGeometryChanged;
             GuideEditor.CaliberParamsChanged += OnCaliberParamsChanged;
-            Parameters.PropertyChanged += OnParameterChanged;
+            ObserveParameters();
             VisionLogger.Instance.Log(LogLevel.Info, "[Diag] HookCaliberEditor 订阅成功", "CircleDetectToolDebugControl");
+        }
+
+        private void ObserveParameters()
+        {
+            if (ReferenceEquals(_observedParameters, Parameters)) return;
+            if (_observedParameters != null)
+                PropertyChangedEventManager.RemoveHandler(_observedParameters, OnParameterChanged, "");
+            _observedParameters = Parameters;
+            if (_observedParameters != null)
+                PropertyChangedEventManager.AddHandler(_observedParameters, OnParameterChanged, "");
         }
 
         /// <summary>
@@ -147,7 +165,20 @@ namespace SunEyeVision.Tool.CircleDetect.Views
         /// </summary>
         private void OnParameterChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(() => OnParameterChanged(sender, e)));
+                return;
+            }
+            if (!ReferenceEquals(sender, _observedParameters)) return;
             if (Parameters == null || GuideEditor == null) return;
+            if (e.PropertyName is nameof(MeasureGuideParameters.IsPositionCorrectionEnabled)
+                or nameof(MeasureGuideParameters.PositionCorrectionBindingSource)
+                or nameof(MeasureGuideParameters.ImageSource))
+            {
+                GuideEditor.CancelDrawing();
+                UpdatePositionCorrectionMatrix();
+            }
             if (e.PropertyName == nameof(CircleDetectParameters.MeasureLength1) ||
                 e.PropertyName == nameof(CircleDetectParameters.MeasureLength2) ||
                 e.PropertyName == nameof(CircleDetectParameters.NumMeasures))
@@ -221,8 +252,7 @@ namespace SunEyeVision.Tool.CircleDetect.Views
             // 绘制流程完成 → 清除工具栏选中，回到选择模式
             if (e.IsDrawing)
             {
-                // 新建卡尺时按当前图像短边初始化尺寸；之后由参数模型接管，用户调整值优先。
-                MeasurementManager.InitializeGuideCaliberParamsForImage();
+                // 尺寸已由共享策略在首次落笔时初始化，重画完成不再重置。
                 GuideEditor.ClearCaliberSelection();
             }
         }
@@ -282,6 +312,8 @@ namespace SunEyeVision.Tool.CircleDetect.Views
                     $"圆查找节点参数类型异常（期望 CircleDetectParameters，实际 {parameters?.GetType().Name ?? "null"}）。");
             }
             Parameters = circleParams;
+            ConfigureCaliperDrawing(GuideEditor, Parameters, 0);
+            ObserveParameters();
 
             // 屏蔽区域：绑定到 MeasurementEditorManager
             if (MeasurementManager != null)
@@ -296,6 +328,7 @@ namespace SunEyeVision.Tool.CircleDetect.Views
 
             // ★ 同步 ComboBox 选中（反序列化时按已保存值显示）
             SyncEnumsFromParameters();
+            UpdatePositionCorrectionMatrix();
         }
 
         public override void SetDataProvider(object dataProvider)
@@ -328,9 +361,13 @@ namespace SunEyeVision.Tool.CircleDetect.Views
             if (image == null || image.IsEmpty)
                 throw new InvalidOperationException("无法获取图像数据或图像为空");
 
-            Parameters!.ResolvedInputImage = image;
+            // Match workflow execution: runtime binding values and NodeResults belong to a
+            // parameter copy, never the editable instance shared by the node and its window.
+            var execution = new CircleDetectParameters();
+            execution.CopyFrom(Parameters);
+            execution.NodeResults = null;
             var tool = new CircleDetectTool();
-            var result = ExecuteWithLiveContext(tool, Parameters);
+            var result = ExecuteWithLiveContext(tool, execution, image);
 
             // 执行完成后刷新位置修正矩阵到编辑器
             UpdatePositionCorrectionMatrix();
@@ -349,21 +386,17 @@ namespace SunEyeVision.Tool.CircleDetect.Views
         /// </summary>
         private void UpdatePositionCorrectionMatrix()
         {
-            if (Parameters?.IsPositionCorrectionEnabled == true && _dataProvider != null
-                && Parameters.PositionCorrectionBindingSource != null)
+            if (!Dispatcher.CheckAccess())
             {
-                var source = Parameters.PositionCorrectionBindingSource;
-                var matrix = _dataProvider.GetPropertyValue(source.SourceNodeId, source.PropertyName) as AffineMatrix;
-                if (matrix != null)
-                {
-                    MeasurementManager?.SetPositionCorrectionMatrix(matrix);
-                    return;
-                }
+                Dispatcher.BeginInvoke(new Action(UpdatePositionCorrectionMatrix));
+                return;
             }
-            if (_dataProvider != null)
-            {
-                MeasurementManager?.SetPositionCorrectionMatrix(null);
-            }
+            if (Parameters == null || MeasurementManager == null || _dataProvider == null) return;
+            var correction = PositionCorrectionResolution.Capture(Parameters, _dataProvider);
+            MeasurementManager.GuideEditor.IsCorrectionAvailable = correction.CanUse;
+            MeasurementManager.IsEnabled = correction.CanUse;
+            MeasurementManager.ToolTip = correction.Message;
+            MeasurementManager.SetPositionCorrectionMatrix(correction.Matrix);
         }
 
         /// <summary>
@@ -387,6 +420,7 @@ namespace SunEyeVision.Tool.CircleDetect.Views
             MeasurementManager?.GuideEditor.SetAllowedGeometryTypes(
                 MeasureGeometryType.Circle, MeasureGeometryType.Arc);
             RestoreGuideFromParameters();
+            UpdatePositionCorrectionMatrix();
         }
 
         #endregion

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -20,10 +21,10 @@ namespace SunEyeVision.Tool.LineDetect
         /// <summary>全部</summary>
         All,
 
-        /// <summary>正极性（亮到暗）</summary>
+        /// <summary>正极性（暗到亮）</summary>
         Positive,
 
-        /// <summary>负极性（暗到亮）</summary>
+        /// <summary>负极性（亮到暗）</summary>
         Negative,
     }
 
@@ -154,7 +155,7 @@ namespace SunEyeVision.Tool.LineDetect
         }
 
         /// <summary>
-        /// RANSAC 距离阈值（distance_threshold：边缘点到拟合几何的最大距离，默认 5.0px）
+        /// 鲁棒拟合距离阈值（distance_threshold：边缘点到拟合几何的最大距离，默认 5.0px）
         /// </summary>
         public double DistanceThreshold
         {
@@ -164,7 +165,22 @@ namespace SunEyeVision.Tool.LineDetect
 
         #endregion
 
-        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
+        private ResultPresentationConfig _resultPresentation = CreateResultPresentation();
+        public ResultPresentationConfig ResultPresentation
+        {
+            get => _resultPresentation;
+            set
+            {
+                _resultPresentation = value ?? throw new ArgumentNullException(nameof(value));
+                EdgeFitDiagnostics.EnsurePresentation(_resultPresentation);
+                NormalizeFitPresentation(_resultPresentation);
+            }
+        }
+
+        private static void NormalizeFitPresentation(ResultPresentationConfig config)
+        {
+            FittedLineDisplay.RemoveLegacyExtensions(config, "fit-extension");
+        }
 
         private static ResultPresentationConfig CreateResultPresentation()
         {
@@ -181,6 +197,8 @@ namespace SunEyeVision.Tool.LineDetect
             config.Graphics.Add(new() { Key = "caliper", Name = "卡尺", Group = "测量过程", Order = 70, Style = new() { Name = "卡尺", IsVisible = true, LineWidth = 1.0 } });
             config.Texts.Add(new() { Key = "center", Name = "中点坐标", Order = 10, Style = new() { Name = "中点坐标", IsVisible = true } });
             config.Texts.Add(new() { Key = "angle", Name = "直线角度", Order = 20, Style = new() { Name = "直线角度", IsVisible = true } });
+            NormalizeFitPresentation(config);
+            EdgeFitDiagnostics.EnsurePresentation(config);
             return config;
         }
         #region 测量引导显示（与检测/屏蔽区域同通道走结果层，对齐 RoiParameters 虚成员）

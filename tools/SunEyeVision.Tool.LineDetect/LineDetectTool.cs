@@ -24,7 +24,7 @@ namespace SunEyeVision.Tool.LineDetect
     ///   1. create_metrology_model → 创建计量模型
     ///   2. add_metrology_object_line_measure → 添加直线测量对象（自动生成测量带阵列）
     ///   3. apply_metrology_model → 执行测量（逐测量带取点 + 拟合）
-    ///   4. get_metrology_object_result → 获取拟合直线参数 + RMSE
+    ///   4. 提取边缘点 → 屏蔽过滤 → 共同直线方程拟合与真实RMSE
     /// </remarks>
 [Tool(
         id: "LineDetect",
@@ -99,6 +99,8 @@ namespace SunEyeVision.Tool.LineDetect
             try
             {
                 HOperatorSet.GetImageSize(hImage, out var width, out var height);
+                result.ImageWidth = (int)width.L;
+                result.ImageHeight = (int)height.L;
                 metrologyModel.SetMetrologyModelImageSize((int)width.L, (int)height.L);
                 parameters.LogInfo($"[Diag] 图像尺寸: {width.L} x {height.L}");
 
@@ -106,7 +108,7 @@ namespace SunEyeVision.Tool.LineDetect
                 var startP = parameters.LineStartPoint;
                 var endP = parameters.LineEndPoint;
                 if (parameters.IsPositionCorrectionEnabled &&
-                    PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource) is { } matrix)
+                    PositionCorrectionResolver.Resolve(parameters) is { } matrix)
                 {
                     startP = matrix.TransformWpfPoint(startP);
                     endP = matrix.TransformWpfPoint(endP);
@@ -126,28 +128,13 @@ namespace SunEyeVision.Tool.LineDetect
                 metrologyModel.ApplyMetrologyModel(hImage);
                 parameters.LogInfo("[Diag] ApplyMetrologyModel 执行完成（无异常）");
 
-                // 诊断日志：按极性检测到的全部边缘点数（= DiagnosticPoints 来源，不等同于拟合点数）
-                try
-                {
-                    var diagContour = metrologyModel.GetMetrologyObjectMeasures(
-                        objectIndex.I, TransitionToHalcon(parameters.Transition), out var diagRow, out var diagCol);
-                    diagContour?.Dispose();
-                    parameters.LogInfo(
-                        $"[Diag] 检测点(GetMetrologyObjectMeasures)={diagRow.Length} 个 " +
-                        $"| 极性={TransitionToHalcon(parameters.Transition)} | 带内0点→说明极性反/阈值过高/带未覆盖边缘");
-                }
-                catch (Exception diagEx)
-                {
-                    parameters.LogWarning($"[Diag] 查询检测点失败: {diagEx.Message}");
-                }
-
                 // ===== 结果填充（统一管线：取全部检测点 → 屏蔽区空间过滤(可选) → 全点鲁棒拟合）=====
                 // ★ 架构统一：有/无屏蔽区走同一条拟合路径。屏蔽只影响输入点集（剔除屏蔽区内点），
                 //   不改变核心拟合算法。Halcon 2D Metrology 原生拟合不支持屏蔽区概念，
                 //   屏蔽过滤必须在拟合前完成，故统一走自研鲁棒拟合（fit_line_contour_xld）。
                 bool hasEnabledMask = parameters.GetRoisByType(RoiParameterMode.MaskRoi).Any();
                 FillResultWithMask(result, parameters, objectIndex, metrologyModel,
-                    TransitionToHalcon(parameters.Transition), hasEnabledMask);
+                    TransitionToHalcon(parameters.Transition), hasEnabledMask, startP, endP);
 
                 // ===== 诊断日志：结果概要（拟合线有无/参与拟合点/诊断点/角度） =====
                 parameters.LogInfo(
@@ -200,6 +187,9 @@ namespace SunEyeVision.Tool.LineDetect
             {
                 parameters.LogError($"直线查找处理异常: {ex.Message}", ex);
                 result.SetError($"处理失败: {ex.Message}", ex);
+                parameters.LogWarning(result.FitDiagnostics1.Summary);
+                try { result.FillFailureDisplay(parameters); }
+                catch (Exception displayEx) { parameters.LogWarning($"失败诊断绘制异常：{displayEx.Message}"); }
             }
 
             return result;
@@ -276,133 +266,47 @@ namespace SunEyeVision.Tool.LineDetect
             };
         }
 
-        /// <summary>
-        /// 统一结果填充（有/无屏蔽共用）：取全部测量点 → 屏蔽区空间过滤(可选) → 全点鲁棒拟合。
-        /// 屏蔽区内的点不参与拟合，也不作为"拟合点"显示（VisionMaster 屏蔽语义）；
-        /// 无屏蔽区时全量点参与拟合（与屏蔽路径完全同一套核心拟合逻辑）。
-        /// </summary>
+
         private void FillResultWithMask(LineDetectResults result, LineDetectParameters parameters,
-            HTuple objectIndex, HMetrologyModel metrologyModel, string transition, bool hasEnabledMask)
+            HTuple objectIndex, HMetrologyModel model, string transition, bool hasEnabledMask,
+            Point guideStart, Point guideEnd)
         {
-            // 1. 取采样点（transition 过滤后的全部测量点）
-            var measures = ExtractDiagnosticPoints(objectIndex, metrologyModel, transition);
-
-            // 2. 屏蔽区空间过滤：仅在有屏蔽区时剔除落在屏蔽区内的点；无屏蔽区 = 全量点保留
-            Point2d[] kept;
-            Point2d[] excluded;
-            if (hasEnabledMask)
-            {
-                var correction = PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource);
-                (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
-                    measures, parameters.GetRoisByType(RoiParameterMode.MaskRoi), correction);
-                parameters.LogInfo(
-                    $"[Diag] 屏蔽过滤: 采样点={measures.Length}, 保留={kept.Length}, 屏蔽剔除={excluded.Length}");
-            }
-            else
-            {
-                kept = measures;
-                excluded = Array.Empty<Point2d>();
-                parameters.LogInfo(
-                    $"[Diag] 无屏蔽区: 全量测量点={measures.Length} 全部参与拟合（与屏蔽路径同一套鲁棒拟合）");
-            }
-
-            // 3. 保底：有效点数不足以拟合直线 → 明确报错，不硬拟合
-            if (kept.Length < 2)
-                throw new InvalidOperationException($"有效测量点不足({kept.Length} < 2)，无法拟合直线");
-
-            // 4. 全点鲁棒拟合（tukey 预拟合 → 按距离阈值划内点 → 内点精化）
-            var (start, end, inliers) = FitLineRobust(kept, parameters);
-
-            var center = new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2);
-            result.LineStartPoint = start;
-            result.LineEndPoint = end;
-            result.CenterPoint = center;
-            result.Line = new[] { Line2d.FromTwoPoints(start, end) };
-            result.Angle = ComputeLineAngle(start, end);
-            result.RMSE = ComputeLineRmse(inliers, start, end);
-            result.EdgePointCount = inliers.Length;
-            result.MeasurementPoints = inliers;
-            result.ExcludedPoints = excluded;
-            result.DiagnosticPoints = measures;
-            result.HalconMeasureBands = ExtractHalconMeasureBands(objectIndex, metrologyModel, transition);
-        }
-
-        /// <summary>
-        /// 全点鲁棒拟合直线：tukey 预拟合剔除离群 → 按 distance_threshold 划内点
-        /// → 内点 regression 最小二乘精化。
-        /// ★ 无分数门槛：Halcon min_score 依赖"每测量带一点"归一化，自研取点是带内全候选点
-        ///   （无法按带归属），套用分数门槛会误杀可用拟合。鲁棒拟合本身已剔除离群，
-        ///   质量由 RMSE / EdgePointCount 判定窗口把关。
-        /// </summary>
-        private static (Point Start, Point End, Point2d[] Inliers) FitLineRobust(
-            IReadOnlyList<Point2d> points, LineDetectParameters parameters)
-        {
-            var (s0, e0) = FitLineCore(points, "tukey");
-
-            var inliers = points
-                .Where(p => DistancePointToLine(p, s0, e0) <= parameters.DistanceThreshold)
-                .ToArray();
-
-            if (inliers.Length < 2)
-                throw new InvalidOperationException(
-                    $"拟合内点不足({inliers.Length} < 2)：distance_threshold={parameters.DistanceThreshold:F1} 过小或引导偏差过大");
-
-            var (start, end) = inliers.Length == points.Count
-                ? (s0, e0)
-                : FitLineCore(inliers, "regression");
-
-            return (start, end, inliers);
-        }
-
-        /// <summary>
-        /// 用指定算法对点集拟合直线（点集包成多边形 XLD 后调用 fit_line_contour_xld）。
-        /// </summary>
-        private static (Point Start, Point End) FitLineCore(
-            IReadOnlyList<Point2d> points, string algorithm)
-        {
-            var rows = new HTuple(points.Select(p => (double)p.Y).ToArray());
-            var cols = new HTuple(points.Select(p => (double)p.X).ToArray());
-            HOperatorSet.GenContourPolygonXld(out var contour, rows, cols);
+            var diagnostic = result.FitDiagnostics1;
+            var points = MeasuredLineFitting.Capture(model, objectIndex, transition, diagnostic, "直线");
+            result.DiagnosticPoints = points;
+            result.HalconMeasureBands = diagnostic.Bands;
             try
             {
-                HOperatorSet.FitLineContourXld(contour, algorithm, -1, 0, 3, 2.0,
-                    out var rowBegin, out var colBegin, out var rowEnd, out var colEnd, out _, out _, out _);
-                if (rowBegin.Length < 1 || colBegin.Length < 1 || rowEnd.Length < 1 || colEnd.Length < 1)
-                    throw new InvalidOperationException($"直线拟合失败(algorithm={algorithm})：未返回有效结果");
-                return (new Point(colBegin[0].D, rowBegin[0].D), new Point(colEnd[0].D, rowEnd[0].D));
+                diagnostic.Stage = hasEnabledMask ? "直线屏蔽过滤" : "直线取点校验";
+                var kept = points;
+                if (hasEnabledMask)
+                {
+                    var filtered = ToolRegionHelper.FilterPointsOutOfMaskRois(points,
+                        parameters.GetRoisByType(RoiParameterMode.MaskRoi), PositionCorrectionResolver.Resolve(parameters));
+                    kept = filtered.Kept;
+                    diagnostic.ExcludedPoints = filtered.Excluded;
+                    result.ExcludedPoints = filtered.Excluded;
+                }
+                diagnostic.CandidatePoints = kept;
+                if (kept.Length < 2)
+                    throw new InvalidOperationException($"有效点不足：原始={points.Length}，屏蔽={diagnostic.ExcludedPoints.Length}，保留={kept.Length}，至少需要2点");
+                var (start, end, inliers, rmse) = MeasuredLineFitting.Fit(kept, parameters.DistanceThreshold,
+                    guideStart, guideEnd, diagnostic, "直线");
+                result.LineStartPoint = start;
+                result.LineEndPoint = end;
+                result.CenterPoint = new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2);
+                result.Line = new[] { Line2d.FromTwoPoints(start, end) };
+                result.Angle = ComputeLineAngle(start, end);
+                result.RMSE = rmse;
+                result.EdgePointCount = inliers.Length;
+                result.MeasurementPoints = inliers;
+                parameters.LogInfo(diagnostic.Summary);
             }
-            finally
+            catch (Exception ex)
             {
-                contour.Dispose();
+                diagnostic.Error = ex.Message;
+                throw;
             }
-        }
-
-        /// <summary>
-        /// 点 (p) 到过 (a)-(b) 无限直线的垂直距离。
-        /// </summary>
-        private static double DistancePointToLine(Point2d p, Point a, Point b)
-        {
-            var abx = b.X - a.X;
-            var aby = b.Y - a.Y;
-            var len = Math.Sqrt(abx * abx + aby * aby);
-            if (len < 1e-9)
-                return Math.Sqrt((p.X - a.X) * (p.X - a.X) + (p.Y - a.Y) * (p.Y - a.Y));
-            return Math.Abs(abx * (p.Y - a.Y) - aby * (p.X - a.X)) / len;
-        }
-
-        /// <summary>
-        /// 计算点到拟合直线的均方根残差（RMSE）。
-        /// </summary>
-        private static double ComputeLineRmse(IReadOnlyList<Point2d> points, Point start, Point end)
-        {
-            if (points.Count == 0) return 0.0;
-            double sumSq = 0;
-            foreach (var p in points)
-            {
-                var dist = DistancePointToLine(p, start, end);
-                sumSq += dist * dist;
-            }
-            return Math.Sqrt(sumSq / points.Count);
         }
 
         /// <summary>
@@ -416,74 +320,6 @@ namespace SunEyeVision.Tool.LineDetect
                 : 0.0;
         }
 
-
-
-        /// <summary>
-        /// 提取诊断检测点（GetMetrologyObjectMeasures → 指定 transition 下检测到的全部边缘点）。
-        /// 与拟合结果解耦：拟合失败时也有数据，便于定位原因。
-        /// </summary>
-        private static Point2d[] ExtractDiagnosticPoints(
-            HTuple objectIndex, HMetrologyModel metrologyModel, string transition)
-        {
-            try
-            {
-                var contour = metrologyModel.GetMetrologyObjectMeasures(
-                    objectIndex, transition, out var row, out var col);
-                contour?.Dispose();
-                if (row.Length == 0) return Array.Empty<Point2d>();
-                var pts = new Point2d[row.Length];
-                for (int i = 0; i < row.Length; i++)
-                    pts[i] = new Point2d(col[i].D, row[i].D);
-                return pts;
-            }
-            catch
-            {
-                return Array.Empty<Point2d>();
-            }
-        }
-
-        /// <summary>
-        /// 提取 HALCON 实际测量带轮廓（MeasureContour XLD → 每段轮廓的点集）。
-        /// 用于诊断卡尺对齐：与本地计算的卡尺（BuildLineBands）叠加对比，定位相位/步长偏差。
-        /// </summary>
-        private static System.Windows.Point[][] ExtractHalconMeasureBands(
-            HTuple objectIndex, HMetrologyModel metrologyModel, string transition)
-        {
-            try
-            {
-                var contour = metrologyModel.GetMetrologyObjectMeasures(
-                    objectIndex, transition, out var _, out var _);
-                if (contour == null) return Array.Empty<System.Windows.Point[]>();
-
-                try
-                {
-                    int count = contour.CountObj();
-                    if (count <= 0) return Array.Empty<System.Windows.Point[]>();
-
-                    var bands = new System.Windows.Point[count][];
-                    for (int i = 1; i <= count; i++)
-                    {
-                        var single = contour.SelectObj(i);
-                        single.GetContourXld(out var row, out var col);
-                        if (row.Length == 0) { single?.Dispose(); continue; }
-                        var pts = new System.Windows.Point[row.Length];
-                        for (int j = 0; j < row.Length; j++)
-                            pts[j] = new System.Windows.Point(col[j].D, row[j].D);
-                        bands[i - 1] = pts;
-                        single?.Dispose();
-                    }
-                    return bands;
-                }
-                finally
-                {
-                    contour.Dispose();
-                }
-            }
-            catch
-            {
-                return Array.Empty<System.Windows.Point[]>();
-            }
-        }
 
         /// <summary>
         /// 创建调试控件

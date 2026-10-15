@@ -94,6 +94,7 @@ namespace SunEyeVision.Tool.CircleDetect
 
             try
             {
+                var guideMatrix = PositionCorrectionResolver.Resolve(parameters);
                 HOperatorSet.GetImageSize(hImage, out var width, out var height);
                 metrologyModel.SetMetrologyModelImageSize((int)width.L, (int)height.L);
 
@@ -101,11 +102,8 @@ namespace SunEyeVision.Tool.CircleDetect
                 // 弧为有向形状，起止角随矩阵旋转，与交互层 RenderArc 同口径，保证交互/执行/结果三层一致）
                 var guideCenter = parameters.GuideCircle.Value.Center;
                 var guideRadius = parameters.GuideCircle.Value.Radius;
-                AffineMatrix? guideMatrix = null;
-                if (parameters.IsPositionCorrectionEnabled &&
-                    PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource) is { } matrix)
+                if (guideMatrix is { } matrix)
                 {
-                    guideMatrix = matrix;
                     guideCenter = matrix.TransformWpfPoint(guideCenter);
                     guideRadius *= matrix.ScaleFactor();
                 }
@@ -173,7 +171,7 @@ namespace SunEyeVision.Tool.CircleDetect
                 //   不改变核心拟合算法。Halcon 2D Metrology 原生拟合不支持屏蔽区概念，
                 //   屏蔽过滤必须在拟合前完成，故统一走自研鲁棒拟合（fit_circle_contour_xld）。
                 bool hasEnabledMask = parameters.GetRoisByType(RoiParameterMode.MaskRoi).Any();
-                FillResultWithMask(result, parameters, objectIndex, metrologyModel, hasEnabledMask, guideDisplayArc);
+                FillResultWithMask(result, parameters, objectIndex, metrologyModel, hasEnabledMask, guideDisplayArc, guideMatrix);
 
                 // ===== 结果判断（对齐 VisionMaster：半径/中心X/中心Y/拟合误差/匹配点数） =====
                 var isOk = EvaluateResult(result, parameters);
@@ -364,7 +362,7 @@ namespace SunEyeVision.Tool.CircleDetect
         /// 无屏蔽区时全量点参与拟合（与屏蔽路径完全同一套核心拟合逻辑）。
         /// </summary>
         private void FillResultWithMask(CircleDetectResults result, CircleDetectParameters parameters,
-            HTuple objectIndex, HMetrologyModel metrologyModel, bool hasEnabledMask, Arc2d? displayArc)
+            HTuple objectIndex, HMetrologyModel metrologyModel, bool hasEnabledMask, Arc2d? displayArc, AffineMatrix? correction)
         {
             // 1. 取采样点（transition 过滤后的全部测量点）
             var measures = ExtractDiagnosticPoints(
@@ -375,7 +373,6 @@ namespace SunEyeVision.Tool.CircleDetect
             Point2d[] excluded;
             if (hasEnabledMask)
             {
-                var correction = PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource);
                 (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
                     measures, parameters.GetRoisByType(RoiParameterMode.MaskRoi), correction);
                 parameters.LogInfo(

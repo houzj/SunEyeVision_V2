@@ -41,8 +41,7 @@ using LogEntry = SunEyeVision.Tool.Script.Models.LogEntry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Tool.Script.ScriptEngine;
-using SunEyeVision.Workflow;
-using ScriptExecutionContext = SunEyeVision.Plugin.SDK.Execution.Parameters.ExecutionContext;
+using SunEyeVision.Plugin.SDK.Core;
 
 namespace SunEyeVision.Tool.Script.Views
 {
@@ -222,17 +221,14 @@ namespace SunEyeVision.Tool.Script.Views
                 if (_parameters == null || _parameters.Inputs == null || _parameters.Inputs.Count == 0)
                     return;
 
-                var nodeResults = BuildNodeResultsContext();
-                if (nodeResults == null)
-                    return;   // 无上游节点结果，输入绑定无值可解析，跳过
-
-                var globalVars = GetDebugModeGlobalVariables();
+                var request = CreateLiveExecutionRequest(_parameters, null);
+                var nodeResults = request.NodeResults;
+                var globalVars = request.GlobalVariables;
                 var resolved = ScriptBindingResolver.Resolve(
                     _parameters.Inputs,
                     globalVars,
                     nodeResults);
 
-                _parameters.ResolvedInputValues = resolved;
                 InputTabControl.ValueSource = resolved;
                 PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 输入预填充 {resolved.Count} 个值",
                     nameof(ScriptDebugControl));
@@ -310,31 +306,14 @@ namespace SunEyeVision.Tool.Script.Views
             // 清除所有监视数据（输入 + 输出）
             ClearAllMonitorValues();
 
-            // ★ 对齐普通工具（Blob/Threshold）调试模式：
-            //    直接在 UI 层构建上游节点结果上下文和全局变量，
-            //    然后直调 _scriptTool.Run()，不走 ToolRunner/ToolExecutor。
             _scriptTool ??= new ScriptTool();
-
-            // 构建上游节点结果字典（从 DataProvider/DataSourceQueryService 查询）
-            var nodeResults = BuildNodeResultsContext();
-            if (nodeResults != null)
-            {
-                PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 构建了 {nodeResults.Count} 个上游节点结果",
-                    nameof(ScriptDebugControl));
-            }
-
-            var globalVars = GetDebugModeGlobalVariables();
-            _parameters.NodeResults = nodeResults;
-            // 调试模式：工具执行摘要（Script complete/failed）写入 result.LogMessages 供调试窗口展示，
-            // 不写主界面日志（避免调试噪音）；工作流执行时保持写主界面。
-            _parameters.IsDebugMode = true;
-            _parameters.SetExecutionContext(new ScriptExecutionContext(
-                logger: PluginLogger.Logger,
-                toolName: "Script",
-                nodeName: CurrentNode?.GetType().GetProperty("DispName")?.GetValue(CurrentNode) as string,
-                globalVariables: globalVars));
-
-            var result = Task.Run(() => _scriptTool.Run(_parameters)).GetAwaiter().GetResult();
+            var request = CreateLiveExecutionRequest(_parameters, null);
+            var execution = (ScriptParameters)request.Parameters;
+            execution.IsDebugMode = true;
+            var executor = new ToolExecutor(new ParameterResolver(), VisionLogger.Instance);
+            var toolResult = Task.Run(async () => await executor.ExecuteAsync(_scriptTool, request)).GetAwaiter().GetResult();
+            if (toolResult is not ScriptResults result)
+                throw new InvalidOperationException(toolResult.ErrorMessage ?? "脚本工具未返回有效结果。");
 
             if (result == null)
             {
@@ -360,7 +339,7 @@ namespace SunEyeVision.Tool.Script.Views
             OutputTabControl.ValueSource = FilterDefaultValues(result.OutputValues);
 
             // ★ 数据驱动：设置输入数据源
-            InputTabControl.ValueSource = _parameters.ResolvedInputValues;
+            InputTabControl.ValueSource = execution.ResolvedInputValues;
 
             CompileTimeLabel.Content = $"编译: {result.CompileTimeMs}ms";
             ExecTimeLabel.Content = $"执行: {result.ExecutionTimeMs}ms";
@@ -381,10 +360,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         public override void OnExternalResultArrived()
         {
-            // 输入：ScriptParameters.ResolvedInputValues 已被执行引擎原地更新，
-            //       直接赋值新引用触发 DP 变更，无需 RefreshFromSource
-            if (CurrentNode?.GetType().GetProperty("Parameters")?.GetValue(CurrentNode) is ScriptParameters sp)
-                InputTabControl.ValueSource = sp.ResolvedInputValues;
+            TryPrefillInputMonitor();
 
             // 输出：通过 DSQS 查询 SSOT（WorkflowContext）获取最新结果
             var nodeId = GetNodeIdFromCurrentNode();
@@ -398,86 +374,6 @@ namespace SunEyeVision.Tool.Script.Views
 
 
 
-        /// <summary>
-        /// 获取调试模式下的全局变量字典（反射访问 SunEyeVision.UI.Adapters.ServiceInitializer）
-        /// </summary>
-        /// <remarks>
-        /// 工具层不能直接引用 SunEyeVision.UI 程序集（分层架构约束），
-        /// 通过反射访问 SunEyeVision.UI.Adapters.ServiceInitializer.SolutionManager.CurrentSolution.GlobalVariables。
-        /// 反射失败 → 静默返回 null，ScriptBindingResolver 会按规则报错。
-        /// </remarks>
-        private static IDictionary<string, object?>? GetDebugModeGlobalVariables()
-        {
-            try
-            {
-                var serviceInitializerType = AppDomain.CurrentDomain.GetAssemblies()
-                    .Select(a => a.GetType("SunEyeVision.UI.Adapters.ServiceInitializer"))
-                    .FirstOrDefault(t => t != null);
-                if (serviceInitializerType == null) return null;
-
-                var solutionManagerProp = serviceInitializerType.GetProperty(
-                    "SolutionManager",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-                if (solutionManagerProp == null) return null;
-
-                var solutionManager = solutionManagerProp.GetValue(null);
-                if (solutionManager == null) return null;
-
-                var currentSolutionProp = solutionManager.GetType().GetProperty(
-                    "CurrentSolution",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                if (currentSolutionProp == null) return null;
-
-                var currentSolution = currentSolutionProp.GetValue(solutionManager) as SunEyeVision.Workflow.Solution;
-                if (currentSolution == null) return null;
-
-                var dict = new Dictionary<string, object?>();
-                foreach (var v in currentSolution.GlobalVariables)
-                {
-                    dict[v.Name] = v.Value;
-                }
-                return dict;
-            }
-            catch (Exception ex)
-            {
-                PluginLogger.Error($"获取调试模式全局变量失败: {ex.Message}", nameof(ScriptDebugControl));
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// 从 DataProvider（DataSourceQueryService）构建上游节点结果上下文
-        /// </summary>
-        /// <remarks>
-        /// 调试模式下，DataSourceQueryService 已注入 SSOT 读取器（委托到 WorkflowContext），
-        /// 可实时读取上游节点执行结果。将结果构造成 IDictionary&lt;string, ToolResults&gt;
-        /// 供 ScriptBindingResolver 解析节点属性绑定。
-        /// 对齐普通工具（Blob/Threshold）在调试模式下手动从 _dataProvider 取值的做法。
-        /// </remarks>
-        /// <returns>节点 ID → ToolResults 字典（无上游节点时返回 null）</returns>
-        private IDictionary<string, ToolResults>? BuildNodeResultsContext()
-        {
-            var nodeId = GetNodeIdFromCurrentNode();
-            if (string.IsNullOrEmpty(nodeId))
-                return null;
-
-            if (DataProvider is not IDataSourceQueryService queryService)
-                return null;
-
-            var parentNodes = queryService.GetParentNodes(nodeId);
-            if (parentNodes.Count == 0)
-                return null;
-
-            var dict = new Dictionary<string, ToolResults>();
-            foreach (var parent in parentNodes)
-            {
-                var context = queryService.GetNodeContext(parent.NodeId);
-                if (context?.Result != null)
-                    dict[parent.NodeId] = context.Result;
-            }
-
-            return dict.Count > 0 ? dict : null;
-        }
 
         /// <summary>
         /// 从 CurrentNode 反射提取节点 ID

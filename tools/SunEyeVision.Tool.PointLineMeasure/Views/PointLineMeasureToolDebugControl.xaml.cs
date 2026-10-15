@@ -156,6 +156,7 @@ namespace SunEyeVision.Tool.PointLineMeasure.Views
             if (parameters is not PointLineMeasureParameters typed)
                 throw new InvalidOperationException($"点-线测量节点参数类型异常（期望 {nameof(PointLineMeasureParameters)}，实际 {parameters?.GetType().Name ?? "null"}）。");
             Parameters = typed;
+            ConfigureCaliperDrawing(Element2Editor, Parameters, 1, defaultWidth: 10.0, defaultHeight: 40.0);
             RestoreEditorsFromParameters();
             SyncEnumsFromParameters();
         }
@@ -191,8 +192,7 @@ namespace SunEyeVision.Tool.PointLineMeasure.Views
             var image = query.GetPropertyValue(imageSource.SourceNodeId, imageSource.PropertyName) as IVisionImage;
             if (image == null || image.IsEmpty) throw new InvalidOperationException("无法获取图像数据或图像为空");
 
-            Parameters.ResolvedInputImage = image;
-            var result = ExecuteWithLiveContext(new PointLineMeasureTool(), Parameters);
+            var result = ExecuteWithLiveContext(new PointLineMeasureTool(), Parameters, image);
 
             UpdatePositionCorrectionMatrix();
             return result;
@@ -205,11 +205,8 @@ namespace SunEyeVision.Tool.PointLineMeasure.Views
 
         private void UpdatePositionCorrectionMatrix()
         {
-            if (ElementsEditor == null || Parameters == null) return;
-            ElementsEditor.SetPositionCorrectionMatrix(
-                Parameters.IsPositionCorrectionEnabled
-                    ? PositionCorrectionResolver.ResolveFirstMatrix(Parameters.PositionCorrectionBindingSource)
-                    : null);
+            if (Parameters == null || ElementsEditor == null) return;
+            ApplyPositionCorrectionPreview(Parameters, ElementsEditor.SetPositionCorrectionMatrix, ElementsEditor);
         }
 
         #endregion

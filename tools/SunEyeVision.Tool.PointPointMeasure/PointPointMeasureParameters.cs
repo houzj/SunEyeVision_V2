@@ -18,6 +18,7 @@ namespace SunEyeVision.Tool.PointPointMeasure
     {
         public bool IsBindingInputActive(string key) => key switch
         {
+            nameof(PositionCorrectionBindingSource) or "位置修正" => false,
             nameof(P1Point) => P1InputMode == PointInputMode.ByShape,
             nameof(P1X) or nameof(P1Y) => P1InputMode == PointInputMode.ByCoordinate,
             nameof(P2Point) => P2InputMode == PointInputMode.ByShape,

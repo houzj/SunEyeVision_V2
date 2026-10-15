@@ -20,8 +20,9 @@ namespace SunEyeVision.Tool.ImageLoad
         Description = "从本地图像或方案相机获取图像，作为工作流输入",
         Icon = "image", Order = 10, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Acquisition,
         Version = "2.0.0", HasDebugWindow = false)]
-    public class ImageLoadTool : IToolPlugin<ImageLoadParameters, ImageLoadResults>, IAsyncToolPlugin
+    public class ImageLoadTool : IToolPlugin<ImageLoadParameters, ImageLoadResults>, IAsyncToolPlugin, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider
     {
+        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.NewFrame;
         public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)
         {
             if (request.Parameters is not ImageLoadParameters parameters)

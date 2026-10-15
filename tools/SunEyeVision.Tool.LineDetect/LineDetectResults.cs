@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -21,6 +22,14 @@ namespace SunEyeVision.Tool.LineDetect
         | ToolCapabilities.RoiInput | ToolCapabilities.MeasureGuide)]
     public class LineDetectResults : ToolResults
     {
+        public EdgeFitDiagnostics FitDiagnostics1 { get; set; } = new();
+        public string FitDiagnostic1 => FitDiagnostics1.Summary;
+        public Point2d[] RawDiagnosticPoints1 => FitDiagnostics1.RawPoints;
+        public Point2d[] CandidateDiagnosticPoints1 => FitDiagnostics1.CandidatePoints;
+        public Point2d[] ExcludedDiagnosticPoints1 => FitDiagnostics1.ExcludedPoints;
+        public Point2d[] InlierDiagnosticPoints1 => FitDiagnostics1.Inliers;
+        public Point2d[] OutlierDiagnosticPoints1 => FitDiagnostics1.Outliers;
+
         /// <summary>
         /// 拟合直线数组（输出契约，下游可绑定）
         /// </summary>
@@ -36,8 +45,12 @@ namespace SunEyeVision.Tool.LineDetect
         /// </summary>
         public Point LineEndPoint { get; set; }
 
+        /// <summary>Execution image bounds, retained for redraw without consulting a newer image.</summary>
+        public int ImageWidth { get; set; }
+        public int ImageHeight { get; set; }
+
         /// <summary>
-        /// 轮廓点（每个卡尺提取的拟合点，实际参与拟合 = used_edges）
+        /// 轮廓点（共同拟合器筛选后的独立内点，不等同于原生metrology used_edges）
         /// </summary>
         public Point2d[] MeasurementPoints { get; set; } = Array.Empty<Point2d>();
 
@@ -59,7 +72,7 @@ namespace SunEyeVision.Tool.LineDetect
         public System.Windows.Point[][] HalconMeasureBands { get; set; } = Array.Empty<System.Windows.Point[]>();
 
         /// <summary>
-        /// 拟合残差（RMSE，来自 Halcon 'rms'）
+        /// 拟合残差（各内点到最终直线的垂直距离均方根）
         /// </summary>
         public double RMSE { get; set; }
 
@@ -150,10 +163,11 @@ namespace SunEyeVision.Tool.LineDetect
                 _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("halcon-band"), HalconMeasureBands, isClosed: true);
             }
 
-            // 拟合直线（线段起点/终点）
+            // 拟合直线：统一延伸至本次输入图像边界。
             if (Line is { Length: > 0 })
             {
-                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("fit-result"), LineStartPoint, LineEndPoint, isOk);
+                FittedLineDisplay.AddLine(_display, parameters.ResultPresentation.GetGraphicsStyle("fit-result"),
+                    LineStartPoint, LineEndPoint, ImageWidth, ImageHeight, isOk);
             }
 
             // 中点坐标文本
@@ -166,11 +180,20 @@ namespace SunEyeVision.Tool.LineDetect
         /// <summary>
         /// 获取属性映射表
         /// </summary>
+        public void FillFailureDisplay(LineDetectParameters parameters)
+            => EdgeFitDiagnostics.FillFailureDisplay(_display, parameters.ResultPresentation, FitDiagnostics1);
+
         public override List<PropertyMapEntry> GetPropertyMap()
         {
             return
             [
                 .. base.GetPropertyMap(),   // 合并基类：执行耗时 + 节点状态 → 执行信息
+                new("FitDiagnostic1", "元素1取点拟合诊断", "诊断"),
+                new("RawDiagnosticPoints1", "元素1原始检测点", "诊断"),
+                new("CandidateDiagnosticPoints1", "元素1候选点", "诊断"),
+                new("ExcludedDiagnosticPoints1", "元素1屏蔽点", "诊断"),
+                new("InlierDiagnosticPoints1", "元素1内点", "诊断"),
+                new("OutlierDiagnosticPoints1", "元素1离群点", "诊断"),
                 // 测量带(卡尺)输入回显：引导线/测量带 归"输入/卡尺"分组；
                 // GuideGeometry 为**分组占位**（单层折叠：不渲染中间节点，几何元素直接挂到"引导线"组下）
                 new("GuideGeometry",     "引导几何", "输入/卡尺/引导线", IsGroupPlaceholder: true),

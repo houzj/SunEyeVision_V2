@@ -186,23 +186,17 @@ public partial class ShapeMatchToolDebugControl
         if (Tool is not ShapeMatchTool shapeTool)
             throw new InvalidOperationException("工具实例无效");
 
-        var runParams = (ShapeMatchParameters)Parameters!;
-
         // 从数据源获取并注入 HImage
         var image = _dataProvider.GetPropertyValue(
             imageSource.SourceNodeId,
             imageSource.PropertyName);
 
-        if (image is HalImage halImage)
-        {
-            runParams.ResolvedInputImage = halImage;
-        }
-        else
+        if (image is not IVisionImage inputImage || inputImage.IsEmpty)
         {
             throw new InvalidOperationException("输入图像不是 Halcon HImage 类型");
         }
 
-        var result = ExecuteWithLiveContext(shapeTool, runParams);
+        var result = ExecuteWithLiveContext(shapeTool, Parameters!, inputImage);
 
         if (result is ShapeMatchResults shapeResult)
         {
@@ -724,31 +718,8 @@ public partial class ShapeMatchToolDebugControl
     /// </summary>
     internal void UpdatePositionCorrectionMatrix()
     {
-        // ★ 修复误报：未启用 / 无数据源 / 未配置绑定源 → 全部视为"非工作状态"，静默 return
-        //   此前不分场景一律打 Warning 造成误报（用户没启用时也会刷"矩阵为null"）。
-        if (Parameters?.IsPositionCorrectionEnabled != true) return;
-        if (_dataProvider == null) return;
-        if (Parameters.PositionCorrectionBindingSource == null) return;
-
-        var source = Parameters.PositionCorrectionBindingSource;
-
-        var matrix = _dataProvider.GetPropertyValue(
-            source.SourceNodeId, source.PropertyName) as AffineMatrix;
-
-        if (matrix != null)
-        {
-            var matrixValues = $"[{matrix.M11:F4},{matrix.M12:F4},{matrix.M21:F4},{matrix.M22:F4},{matrix.OffsetX:F2},{matrix.OffsetY:F2}]";
-            PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 矩阵查询成功 | Matrix={matrixValues}", "ShapeMatchTool");
-            Parameters.LogInfo($"设置位置修正矩阵到 ROI 编辑器 (实时查询): {matrix}");
-            regionManager?.SetPositionCorrectionMatrix(matrix);
-            return;
-        }
-
-        // 启用 + 已配置绑定源 + 但绑定源未产出矩阵 → 降级为 Info（是上游就绪的预期等待状态，不是错误）
-        PluginLogger.Info(
-            $"[UpdatePositionCorrectionMatrix] 绑定源暂未产出矩阵 | " +
-            $"SourceNodeId={source.SourceNodeId} | PropertyName={source.PropertyName}",
-            "ShapeMatchTool");
+        if (Parameters == null || regionManager == null) return;
+        ApplyPositionCorrectionPreview(Parameters, regionManager.SetPositionCorrectionMatrix, regionManager);
     }
 
     #endregion

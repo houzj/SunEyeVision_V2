@@ -64,6 +64,7 @@ namespace SunEyeVision.Tool.PointCircleMeasure
 
             try
             {
+                result.CaptureExecutionParameters(parameters);
                 // ===== 校验（Fail-Fast）=====
                 var p1 = ResolvePoint1(parameters);
                 var e2Center = new Point(parameters.E2CenterX, parameters.E2CenterY);
@@ -78,7 +79,7 @@ namespace SunEyeVision.Tool.PointCircleMeasure
                 // ===== 位置修正 =====
                 AffineMatrix? matrix = null;
                 if (parameters.IsPositionCorrectionEnabled)
-                    matrix = PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource);
+                    matrix = PositionCorrectionResolver.Resolve(parameters);
 
                 // 圆心随矩阵变换 + 半径随缩放因子缩放 + 环形卡尺阵列起始相位随旋转
                 //（与交互层/结果层 BuildCircleBands 同口径，保证三层一致）

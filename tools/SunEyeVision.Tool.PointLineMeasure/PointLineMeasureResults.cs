@@ -18,6 +18,14 @@ namespace SunEyeVision.Tool.PointLineMeasure
         | ToolCapabilities.MeasureGuide)]
     public class PointLineMeasureResults : ToolResults
     {
+        public EdgeFitDiagnostics FitDiagnostics2 { get; set; } = new();
+        public string FitDiagnostic2 => FitDiagnostics2.Summary;
+        public Point2d[] RawDiagnosticPoints2 => FitDiagnostics2.RawPoints;
+        public Point2d[] CandidateDiagnosticPoints2 => FitDiagnostics2.CandidatePoints;
+        public Point2d[] ExcludedDiagnosticPoints2 => FitDiagnostics2.ExcludedPoints;
+        public Point2d[] InlierDiagnosticPoints2 => FitDiagnostics2.Inliers;
+        public Point2d[] OutlierDiagnosticPoints2 => FitDiagnostics2.Outliers;
+
         /// <summary>元素1：点（仅订阅，无引导）。契约输出（词目 Point）</summary>
         public Point2d[] Point1 { get; set; } = Array.Empty<Point2d>();
 
@@ -27,6 +35,10 @@ namespace SunEyeVision.Tool.PointLineMeasure
         /// <summary>元素2 拟合线段起点/终点（Line2d 无起终点，显示层线段由此二点确定）</summary>
         public Point Element2StartPoint { get; set; }
         public Point Element2EndPoint { get; set; }
+
+        /// <summary>Image bounds captured with this result; never borrowed from the current preview.</summary>
+        public int ImageWidth { get; set; }
+        public int ImageHeight { get; set; }
 
         /// <summary>元素2 拟合内点</summary>
         public Point2d[] Element2FitPoints { get; set; } = Array.Empty<Point2d>();
@@ -76,8 +88,28 @@ namespace SunEyeVision.Tool.PointLineMeasure
                 : "未生成有效拟合结果";
 
         /// <summary>填充结果显示：元素2 拟合线 + 卡尺带 + 检测点 + 点1 + 垂足/垂线/距离文字。</summary>
+        private PointLineMeasureParameters? _executionGeometry;
+        private AffineMatrix? _executionMatrix;
+        internal void CaptureExecutionParameters(PointLineMeasureParameters parameters)
+        {
+            if (_executionGeometry != null) return;
+            _executionMatrix = PositionCorrectionResolver.Resolve(parameters);
+            _executionGeometry = new PointLineMeasureParameters
+            {
+                E2StartX = parameters.E2StartX,
+                E2StartY = parameters.E2StartY,
+                E2EndX = parameters.E2EndX,
+                E2EndY = parameters.E2EndY,
+                E2MeasureLength1 = parameters.E2MeasureLength1,
+                E2MeasureLength2 = parameters.E2MeasureLength2,
+                E2NumMeasures = parameters.E2NumMeasures,
+            };
+        }
+
         public void FillDisplay(bool isOk, PointLineMeasureParameters parameters)
         {
+            CaptureExecutionParameters(parameters);
+            var geometry = _executionGeometry!;
             _display.Clear();
 
             // ---- 检测点（卡尺2）----
@@ -85,15 +117,13 @@ namespace SunEyeVision.Tool.PointLineMeasure
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliper-point-2"), ToWpfPoints(Element2FitPoints));
 
             // ---- 位置修正：引导几何/卡尺带显示与交互层同源变换 ----
-            var matrix = parameters.IsPositionCorrectionEnabled
-                ? PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource)
-                : null;
+            var matrix = _executionMatrix;
             Point T(Point p) => matrix == null ? p : matrix.TransformWpfPoint(p);
             double scale = matrix?.ScaleFactor() ?? 1.0;
 
             // ---- 元素2：引导线 + 矩形卡尺带 + 拟合线 ----
-            var g2Start = T(new Point(parameters.E2StartX, parameters.E2StartY));
-            var g2End = T(new Point(parameters.E2EndX, parameters.E2EndY));
+            var g2Start = T(new Point(geometry.E2StartX, geometry.E2StartY));
+            var g2End = T(new Point(geometry.E2EndX, geometry.E2EndY));
             double len2g = (g2End - g2Start).Length;
             if (len2g > 1e-6)
                 _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("guide-line-2"), g2Start, g2End, isOk);
@@ -101,15 +131,18 @@ namespace SunEyeVision.Tool.PointLineMeasure
             if (len2g > 1e-6)
             {
                 var bands = MeasureLineBands(g2Start, g2End,
-                    parameters.E2MeasureLength1 * scale,
-                    parameters.E2MeasureLength2,
-                    parameters.E2NumMeasures);
+                    geometry.E2MeasureLength1 * scale,
+                    geometry.E2MeasureLength2,
+                    geometry.E2NumMeasures);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliper-band-2"), bands, isClosed: false);
             }
 
             if (Element2Line is { Length: > 0 })
-                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("fit-line-2"), Element2StartPoint, Element2EndPoint, isOk);
+            {
+                FittedLineDisplay.AddLine(_display, parameters.ResultPresentation.GetGraphicsStyle("fit-line-2"),
+                    Element2StartPoint, Element2EndPoint, ImageWidth, ImageHeight, isOk);
+            }
 
             // ---- 点1（十字标记）----
             var p1Wpf = Point1.Length > 0 ? new Point(Point1[0].X, Point1[0].Y) : new Point(0, 0);
@@ -173,11 +206,20 @@ namespace SunEyeVision.Tool.PointLineMeasure
                 .ToList();
 
         /// <summary>属性映射（结果树/输出契约 SSOT；必须合并基类获得执行耗时）</summary>
+        public void FillFailureDisplay(PointLineMeasureParameters parameters)
+            => EdgeFitDiagnostics.FillFailureDisplay(_display, parameters.ResultPresentation, FitDiagnostics2);
+
         public override List<PropertyMapEntry> GetPropertyMap()
         {
             return
             [
                 .. base.GetPropertyMap(),
+                new("FitDiagnostic2", "元素2取点拟合诊断", "诊断"),
+                new("RawDiagnosticPoints2", "元素2原始检测点", "诊断"),
+                new("CandidateDiagnosticPoints2", "元素2候选点", "诊断"),
+                new("ExcludedDiagnosticPoints2", "元素2屏蔽点", "诊断"),
+                new("InlierDiagnosticPoints2", "元素2内点", "诊断"),
+                new("OutlierDiagnosticPoints2", "元素2离群点", "诊断"),
                 // ===== 输入（对齐 6 工具规范：输入/卡尺）=====
                 // 点1：订阅/手输的点（不是拟合产物）→ 归「输入」
                 new("Point1", "点1", "输入/点1"),

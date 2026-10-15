@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
@@ -28,7 +30,17 @@ namespace SunEyeVision.Tool.PointLineMeasure
     public class PointLineMeasureParameters : MeasureGuideParameters
     {
         /// <summary>结果页唯一配置源：模块、项目、顺序和样式均由工具在构造时声明。</summary>
-        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
+        private ResultPresentationConfig _resultPresentation = CreateResultPresentation();
+        public ResultPresentationConfig ResultPresentation
+        {
+            get => _resultPresentation;
+            set
+            {
+                _resultPresentation = value ?? throw new System.ArgumentNullException(nameof(value));
+                EdgeFitDiagnostics.EnsurePresentation(_resultPresentation);
+                FittedLineDisplay.RemoveLegacyExtensions(value, "extension-line-2");
+            }
+        }
 
         // ============================================================
         // 元素1（点）：输入方式二分「按图形 / 按参数」（无引导绘制入口 —— v4 与线/圆等引导元素的核心区别）
@@ -98,6 +110,8 @@ namespace SunEyeVision.Tool.PointLineMeasure
             config.Texts.Add(new() { Key = "line-angle", Name = "线2角度", Group = "测量结果", Order = 30, Style = new() { Name = "线2角度", IsVisible = true } });
             config.Texts.Add(new() { Key = "foot", Name = "垂足", Group = "测量结果", Order = 40, Style = new() { Name = "垂足", IsVisible = true } });
             config.Texts.Add(new() { Key = "distance", Name = "距离", Group = "测量结果", Order = 50, Style = new() { Name = "距离", IsVisible = true } });
+            FittedLineDisplay.RemoveLegacyExtensions(config, "extension-line-2");
+            EdgeFitDiagnostics.EnsurePresentation(config);
             return config;
         }
     }

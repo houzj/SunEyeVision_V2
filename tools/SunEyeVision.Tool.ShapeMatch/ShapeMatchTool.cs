@@ -35,8 +35,9 @@ namespace SunEyeVision.Tool.ShapeMatch;
     Version = "2.0.0",
     HasDebugWindow = true
 )]
-public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResults>, IToolEditorFactory
+public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider
 {
+        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;
     private readonly ToolAttribute? _attribute;
 
     private const double DEG2RAD = Math.PI / 180.0;
@@ -172,26 +173,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                 HRegion? inspHRegion = null;
                 HRegion? maskHRegion = null;
 
-                AffineMatrix? correctionMatrix = null;
-                if (parameters.IsPositionCorrectionEnabled)
-                {
-                    var bindingSource = parameters.PositionCorrectionBindingSource;
-                    if (PositionCorrectionResolver.ResolveFirstMatrix(bindingSource) is { } matrix)
-                    {
-                        correctionMatrix = matrix;
-                        parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
-                    }
-                    else if (bindingSource != null &&
-                             !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
-                             !string.IsNullOrEmpty(bindingSource.PropertyName))
-                    {
-                        parameters.LogInfo("位置修正已启用，但绑定源当前无有效矩阵，跳过位置修正");
-                    }
-                    else
-                    {
-                        parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
-                    }
-                }
+                var correctionMatrix = PositionCorrectionResolver.Resolve(parameters);
 
                 // 位置修正按形状有向性并入 ROI 构建（无向剥转 / 有向完整，对齐 UI 语义）
                 (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(

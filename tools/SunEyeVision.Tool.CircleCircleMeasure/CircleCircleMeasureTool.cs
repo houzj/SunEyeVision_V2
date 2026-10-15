@@ -44,6 +44,8 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
 
             try
             {
+                result.CaptureCorrection(parameters);
+                if (!result.Correction.CanUse) throw new InvalidOperationException(result.Correction.Message);
                 // ===== 参数校验（Fail-Fast）=====
                 var e1Center = new Point(parameters.E1CenterX, parameters.E1CenterY);
                 double e1Radius = parameters.E1Radius;
@@ -61,9 +63,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
                     throw new InvalidOperationException("输入图像为空或无效");
 
                 // ===== 位置修正（同源：交互层与 Run 一致）=====
-                AffineMatrix? matrix = null;
-                if (parameters.IsPositionCorrectionEnabled)
-                    matrix = PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource);
+                var matrix = result.Correction.Matrix;
 
                 // ===== 单 metrology 模型承载"圆 + 圆"两条引导 =====
                 using var metrologyModel = new HMetrologyModel();

@@ -227,9 +227,7 @@ namespace SunEyeVision.Tool.ImageFilter.Views
                 throw new InvalidOperationException("工具实例无效");
             }
 
-            var runParams = (ImageFilterParameters)Parameters!;
-            runParams.ResolvedInputImage = imageVision;
-            var result = ExecuteWithLiveContext(filterTool, runParams);
+            var result = ExecuteWithLiveContext(filterTool, Parameters!, imageVision);
 
             // 执行完成后，设置位置修正矩阵到 ROI 编辑器
             UpdatePositionCorrectionMatrix();
@@ -248,35 +246,8 @@ namespace SunEyeVision.Tool.ImageFilter.Views
         /// </remarks>
         internal void UpdatePositionCorrectionMatrix()
         {
-            PluginLogger.Info("[UpdatePositionCorrectionMatrix] 开始查询矩阵", "ImageFilterTool");
-
-            if (Parameters?.IsPositionCorrectionEnabled == true
-                && _dataProvider != null
-                && Parameters.PositionCorrectionBindingSource != null)
-            {
-                var source = Parameters.PositionCorrectionBindingSource;
-
-                PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 查询参数 | " +
-                    $"SourceNodeId={source.SourceNodeId} | PropertyName={source.PropertyName}",
-                    "ImageFilterTool");
-
-                // 实时查询，保证拿到工作流重新执行后的最新矩阵值
-                var matrix = _dataProvider.GetPropertyValue(
-                    source.SourceNodeId, source.PropertyName) as AffineMatrix;
-
-                if (matrix != null)
-                {
-                    Parameters.LogInfo($"设置位置修正矩阵到 ROI 编辑器 (实时查询): {matrix}");
-                    regionManager?.SetPositionCorrectionMatrix(matrix);
-                    return;
-                }
-            }
-            // ★ _dataProvider 未就绪时不设 null（保留之前的值，如 InitializeAsync 或 SetDataProvider 设置的）
-            if (_dataProvider == null)
-                return;
-
-            PluginLogger.Warning("[UpdatePositionCorrectionMatrix] 矩阵为null，清空区域变换", "ImageFilterTool");
-            regionManager?.SetPositionCorrectionMatrix(null);
+            if (Parameters == null || regionManager == null) return;
+            ApplyPositionCorrectionPreview(Parameters, regionManager.SetPositionCorrectionMatrix, regionManager);
         }
 
         protected override bool CanExecuteTool()

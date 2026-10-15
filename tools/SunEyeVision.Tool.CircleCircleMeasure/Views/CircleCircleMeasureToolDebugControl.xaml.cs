@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
@@ -24,6 +27,32 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
     {
         private readonly CircleCircleMeasureParameters _parameters = new();
         private object? _dataProvider;
+        private CircleCircleMeasureParameters? _observedParameters;
+        private bool _cleanedUp;
+        public PositionCorrectionResolution? CorrectionPreview { get; private set; }
+        private void ObserveParameters()
+        {
+            _cleanedUp = false;
+            if (ReferenceEquals(_observedParameters, Parameters)) return;
+            if (_observedParameters != null) PropertyChangedEventManager.RemoveHandler(_observedParameters, OnCorrectionParameterChanged, "");
+            _observedParameters = Parameters;
+            if (_observedParameters != null) PropertyChangedEventManager.AddHandler(_observedParameters, OnCorrectionParameterChanged, "");
+        }
+        private void OnCorrectionParameterChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(() => OnCorrectionParameterChanged(sender, e)));
+                return;
+            }
+            if (_cleanedUp || !ReferenceEquals(sender, _observedParameters)) return;
+            if (e.PropertyName is nameof(MeasureGuideParameters.IsPositionCorrectionEnabled) or
+                nameof(MeasureGuideParameters.PositionCorrectionBindingSource) or nameof(MeasureGuideParameters.ImageSource))
+            {
+                ElementsEditor?.CancelActiveEdits();
+                UpdatePositionCorrectionMatrix();
+            }
+        }
 
         // 标注全部删除（对齐线-线测量）：不向主图叠加任何结果，图元观察在"模块结果"面板。
         private bool _syncingElement1Caliber;
@@ -56,14 +85,20 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
             RunElementSwitchCombo.SelectedIndex = 0;   // 默认编辑卡尺1 运行参数
             Loaded += (_, _) =>
             {
+                ObserveParameters();
+                UpdatePositionCorrectionMatrix();
                 HookElementsEditor();
                 if (Window.GetWindow(this) is { } window)
                     window.Closing += (_, _) => Cleanup();
             };
+            Unloaded += (_, _) => Cleanup();
         }
 
         public void Cleanup()
         {
+            _cleanedUp = true;
+            if (_observedParameters != null) PropertyChangedEventManager.RemoveHandler(_observedParameters, OnCorrectionParameterChanged, "");
+            _observedParameters = null;
             ElementsEditor?.ClearMainOverlay();
             RemoveLastResultOverlay();
         }
@@ -85,6 +120,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
         {
             if (_elementsHooked) return;
             _elementsHooked = true;
+            ElementsEditor.DisplayedImageChanged += (_, _) => UpdatePositionCorrectionMatrix();
 
             // 元素1 = 圆（只有"圆心 + 半径"三个自由度）
             Element1Editor.GuideGeometryChanged += (_, e) =>
@@ -224,8 +260,12 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
             if (parameters is not CircleCircleMeasureParameters typed)
                 throw new InvalidOperationException($"圆-圆测量节点参数类型异常（期望 {nameof(CircleCircleMeasureParameters)}，实际 {parameters?.GetType().Name ?? "null"}）。");
             Parameters = typed;
+            ConfigureCaliperDrawing(Element1Editor, Parameters, 0);
+            ConfigureCaliperDrawing(Element2Editor, Parameters, 1);
+            ObserveParameters();
             RestoreEditorsFromParameters();
             SyncEnumsFromParameters();
+            UpdatePositionCorrectionMatrix();
         }
 
         public override void SetDataProvider(object dataProvider)
@@ -253,17 +293,51 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
             if (_dataProvider is not DataSourceQueryService query)
                 throw new InvalidOperationException("数据提供者未初始化");
 
-            if (!query.HasNodeExecuted(imageSource.SourceNodeId))
-                throw new InvalidOperationException($"当前工具缺少输入图像：图像源 '{imageSource.SourceNodeId}.{imageSource.PropertyName}' 没有值");
+            var requiredSources = new List<string?> { imageSource.SourceNodeId };
+            if (Parameters.IsPositionCorrectionEnabled)
+                requiredSources.Add(Parameters.PositionCorrectionBindingSource?.SourceNodeId ?? Parameters.PositionCorrectionSource?.SourceNodeId);
+            if (CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode) is ParamSettingContainer settings)
+                requiredSources.AddRange(settings.Settings.Where(setting => setting.BindingType == BindingType.Binding).Select(setting => setting.SourceNodeId));
+            var nodeResults = ToolDebugResultSnapshot.Capture(query, requiredSources);
 
-            var image = query.GetPropertyValue(imageSource.SourceNodeId, imageSource.PropertyName) as IVisionImage;
+            if (!nodeResults.TryGetValue(imageSource.SourceNodeId, out var imageResult) || !imageResult.IsSuccess)
+                throw new InvalidOperationException($"当前工具缺少有效输入图像：上游 '{imageSource.SourceNodeId}.{imageSource.PropertyName}' 本轮没有成功结果。");
+
+            var image = OutputVariableResolver.Resolve(imageResult, imageSource.PropertyName, imageSource.SourceNodeId) as IVisionImage;
             if (image == null || image.IsEmpty) throw new InvalidOperationException("无法获取图像数据或图像为空");
 
-            Parameters.ResolvedInputImage = image;
-            var result = ExecuteWithLiveContext(new CircleCircleMeasureTool(), Parameters);
+            // Capture image, correction and regular bindings from one stable set of upstream result objects.
+            var execution = CreateCorrectionExecutionParameters(nodeResults, image);
+            var request = CreateLiveExecutionRequest(execution, image, nodeResults);
+            var result = new ToolExecutor(new ParameterResolver(_dataProvider as IDataSourceQueryService, VisionLogger.Instance), VisionLogger.Instance)
+                .Run(new CircleCircleMeasureTool(), request);
 
             UpdatePositionCorrectionMatrix();
             return result;
+        }
+
+        private CircleCircleMeasureParameters CreateCorrectionExecutionParameters(
+            IReadOnlyDictionary<string, ToolResults> nodeResults,
+            IVisionImage image)
+        {
+            var execution = new CircleCircleMeasureParameters();
+            execution.CopyFrom(Parameters);
+            execution.NodeResults = nodeResults.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+            execution.ResolvedInputImage = image;
+            var correction = PositionCorrectionResolution.Capture(execution);
+            if (!correction.CanUse) throw new InvalidOperationException(correction.Message);
+            // Binding objects compare by path; clear the copy first so equal-path assignment cannot retain stale CurrentValue.
+            execution.PositionCorrectionBindingSource = null;
+            if (correction.State == PositionCorrectionState.Valid)
+            {
+                execution.PositionCorrectionBindingSource = new AvailableDataSource
+                {
+                    SourceNodeId = Parameters.PositionCorrectionBindingSource?.SourceNodeId ?? Parameters.PositionCorrectionSource!.SourceNodeId,
+                    PropertyName = Parameters.PositionCorrectionBindingSource?.PropertyName ?? Parameters.PositionCorrectionSource!.PropertyName,
+                    CurrentValue = correction.Matrix
+                };
+            }
+            return execution;
         }
 
         protected override bool CanExecuteTool()
@@ -273,11 +347,20 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
 
         private void UpdatePositionCorrectionMatrix()
         {
+            if (!Dispatcher.CheckAccess()) { Dispatcher.BeginInvoke(new Action(UpdatePositionCorrectionMatrix)); return; }
+            if (_cleanedUp) return;
             if (ElementsEditor == null || Parameters == null) return;
-            ElementsEditor.SetPositionCorrectionMatrix(
-                Parameters.IsPositionCorrectionEnabled
-                    ? PositionCorrectionResolver.ResolveFirstMatrix(Parameters.PositionCorrectionBindingSource)
-                    : null);
+            CorrectionPreview = PositionCorrectionResolution.Capture(Parameters, _dataProvider as IDataSourceQueryService);
+            if (ElementsEditor.HasImageControl)
+                CorrectionPreview = CorrectionPreview.ForPreview(PreviewFrameProvenance.Read(ElementsEditor.DisplayedImage), ElementsEditor.DisplayedImage != null);
+            ElementsEditor.Element1.IsCorrectionAvailable = CorrectionPreview.CanUse;
+            ElementsEditor.Element2.IsCorrectionAvailable = CorrectionPreview.CanUse;
+            ElementsEditor.IsEnabled = CorrectionPreview.CanUse;
+            ElementsEditor.ToolTip = CorrectionPreview.Message;
+            ElementsEditor.SetPositionCorrectionMatrix(CorrectionPreview.Matrix);
+            CorrectionStatusText.Text = CorrectionPreview.Message;
+            CorrectionStatusText.ToolTip = CorrectionPreview.Diagnostic;
+            CorrectionStatusText.Visibility = Parameters.IsPositionCorrectionEnabled ? Visibility.Visible : Visibility.Collapsed;
         }
 
         #endregion

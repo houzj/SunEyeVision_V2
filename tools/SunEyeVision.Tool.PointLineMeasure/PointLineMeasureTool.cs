@@ -64,6 +64,7 @@ namespace SunEyeVision.Tool.PointLineMeasure
 
             try
             {
+                result.CaptureExecutionParameters(parameters);
                 // ===== 校验（Fail-Fast）=====
                 var p1 = ResolvePoint1(parameters);
                 var lineStart = new Point(parameters.E2StartX, parameters.E2StartY);
@@ -78,12 +79,14 @@ namespace SunEyeVision.Tool.PointLineMeasure
                 // ===== 位置修正 =====
                 AffineMatrix? matrix = null;
                 if (parameters.IsPositionCorrectionEnabled)
-                    matrix = PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource);
+                    matrix = PositionCorrectionResolver.Resolve(parameters);
 
                 // ===== 单 metrology 模型 =====
                 using var metrologyModel = new HMetrologyModel();
                 metrologyModel.CreateMetrologyModel();
                 HOperatorSet.GetImageSize(hImage, out var width, out var height);
+                result.ImageWidth = (int)width.L;
+                result.ImageHeight = (int)height.L;
                 metrologyModel.SetMetrologyModelImageSize((int)width.L, (int)height.L);
 
                 var lineStartT = Transform(lineStart, matrix);
@@ -102,8 +105,8 @@ namespace SunEyeVision.Tool.PointLineMeasure
                 metrologyModel.ApplyMetrologyModel(hImage);
 
                 // 拟合
-                var e2Points = ExtractDiagnosticPoints(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition));
-                var (e2Start, e2End, e2Inliers, e2Rmse) = FitLineRobust(e2Points, parameters.E2DistanceThreshold);
+                var e2Points = MeasuredLineFitting.Capture(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition), result.FitDiagnostics2, "元素2");
+                var (e2Start, e2End, e2Inliers, e2Rmse) = MeasuredLineFitting.Fit(e2Points, parameters.E2DistanceThreshold, lineStartT, lineEndT, result.FitDiagnostics2, "直线2");
 
                 result.Element2FitPoints = e2Inliers;
                 result.Element2RMSE = e2Rmse;
@@ -162,6 +165,9 @@ namespace SunEyeVision.Tool.PointLineMeasure
             {
                 parameters.LogError($"点-线测量失败: {ex.Message}", ex);
                 result.SetError($"测量失败: {ex.Message}", ex);
+                parameters.LogWarning(result.FitDiagnostics2.Summary);
+                try { result.FillFailureDisplay(parameters); }
+                catch (Exception displayEx) { parameters.LogWarning($"失败诊断绘制异常：{displayEx.Message}"); }
             }
             return result;
         }
@@ -171,94 +177,6 @@ namespace SunEyeVision.Tool.PointLineMeasure
         private static Point Transform(Point p, AffineMatrix? matrix)
             => matrix == null ? p : matrix.TransformWpfPoint(p);
 
-        private static Point2d[] ExtractDiagnosticPoints(HMetrologyModel model, HTuple objectIndex, string transition)
-        {
-            try
-            {
-                var contour = model.GetMetrologyObjectMeasures(objectIndex, transition, out var row, out var col);
-                contour?.Dispose();
-                if (row.Length == 0) return Array.Empty<Point2d>();
-                var pts = new Point2d[row.Length];
-                for (int i = 0; i < row.Length; i++)
-                    pts[i] = new Point2d(col[i].D, row[i].D);
-                return pts;
-            }
-            catch
-            {
-                return Array.Empty<Point2d>();
-            }
-        }
-
-        /// <summary>
-        /// 全点鲁棒拟合线：tukey 预拟合剔除离群 → 按 distance_threshold 划内点 →
-        /// 内点足够时用 regression 精化提高精度（与 FitCircleRobust 思路一致）。
-        /// </summary>
-        private static (Point Start, Point End, Point2d[] Inliers, double Rmse) FitLineRobust(
-            IReadOnlyList<Point2d> points, double distanceThreshold)
-        {
-            if (points.Count < 2)
-                throw new InvalidOperationException($"有效测量点不足({points.Count} < 2)，无法拟合线");
-
-            var (s0, e0) = FitLineCore(points, "tukey");
-            double dx = e0.X - s0.X, dy = e0.Y - s0.Y;
-            double len2 = dx * dx + dy * dy;
-            if (len2 < 1e-12)
-                throw new InvalidOperationException("线拟合退化（起点=终点）");
-
-            var inliers = points.Where(p =>
-            {
-                double tt = ((p.X - s0.X) * dx + (p.Y - s0.Y) * dy) / len2;
-                double projX = s0.X + tt * dx, projY = s0.Y + tt * dy;
-                double dist = Math.Sqrt((p.X - projX) * (p.X - projX) + (p.Y - projY) * (p.Y - projY));
-                return dist <= distanceThreshold;
-            }).ToArray();
-
-            if (inliers.Length < 2)
-                throw new InvalidOperationException(
-                    $"拟合内点不足({inliers.Length} < 2)：distance_threshold={distanceThreshold:F1} 过小或引导偏差过大");
-
-            var (finalStart, finalEnd) = inliers.Length == points.Count
-                ? (s0, e0)
-                : FitLineCore(inliers, "regression");
-
-            return (finalStart, finalEnd, inliers, ComputeLineRmse(inliers, finalStart, finalEnd));
-        }
-
-        private static (Point Start, Point End) FitLineCore(IReadOnlyList<Point2d> points, string algorithm)
-        {
-            var rows = new HTuple(points.Select(p => (double)p.Y).ToArray());
-            var cols = new HTuple(points.Select(p => (double)p.X).ToArray());
-            HOperatorSet.GenContourPolygonXld(out var contour, rows, cols);
-            try
-            {
-                HOperatorSet.FitLineContourXld(contour, algorithm, -1, 0.0, 3, 2.0,
-                    out var rowBegin, out var colBegin, out var rowEnd, out var colEnd, out _, out _, out _);
-                if (rowBegin.Length < 1 || colBegin.Length < 1 || rowEnd.Length < 1 || colEnd.Length < 1)
-                    throw new InvalidOperationException($"线拟合失败(algorithm={algorithm})：未返回有效结果");
-                return (new Point(colBegin[0].D, rowBegin[0].D), new Point(colEnd[0].D, rowEnd[0].D));
-            }
-            finally
-            {
-                contour.Dispose();
-            }
-        }
-
-        private static double ComputeLineRmse(IReadOnlyList<Point2d> points, Point start, Point end)
-        {
-            if (points.Count == 0) return 0.0;
-            double dx = end.X - start.X, dy = end.Y - start.Y;
-            double len2 = dx * dx + dy * dy;
-            if (len2 < 1e-12) return 0.0;
-            double sumSq = 0;
-            foreach (var p in points)
-            {
-                double tt = ((p.X - start.X) * dx + (p.Y - start.Y) * dy) / len2;
-                double projX = start.X + tt * dx, projY = start.Y + tt * dy;
-                double dist = Math.Sqrt((p.X - projX) * (p.X - projX) + (p.Y - projY) * (p.Y - projY));
-                sumSq += dist * dist;
-            }
-            return Math.Sqrt(sumSq / points.Count);
-        }
 
         /// <summary>引导线 → RoiShape[]（模块结果"引导几何"回显）</summary>
         private static RoiShape[]? BuildLineGuideGeometry(Point start, Point end)

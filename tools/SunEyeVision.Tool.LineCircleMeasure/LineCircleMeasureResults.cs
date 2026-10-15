@@ -21,6 +21,22 @@ namespace SunEyeVision.Tool.LineCircleMeasure
         | ToolCapabilities.MeasureGuide)]
     public class LineCircleMeasureResults : ToolResults
     {
+        public EdgeFitDiagnostics FitDiagnostics1 { get; set; } = new();
+        public string FitDiagnostic1 => FitDiagnostics1.Summary;
+        public Point2d[] RawDiagnosticPoints1 => FitDiagnostics1.RawPoints;
+        public Point2d[] CandidateDiagnosticPoints1 => FitDiagnostics1.CandidatePoints;
+        public Point2d[] ExcludedDiagnosticPoints1 => FitDiagnostics1.ExcludedPoints;
+        public Point2d[] InlierDiagnosticPoints1 => FitDiagnostics1.Inliers;
+        public Point2d[] OutlierDiagnosticPoints1 => FitDiagnostics1.Outliers;
+
+        public EdgeFitDiagnostics FitDiagnostics2 { get; set; } = new();
+        public string FitDiagnostic2 => FitDiagnostics2.Summary;
+        public Point2d[] RawDiagnosticPoints2 => FitDiagnostics2.RawPoints;
+        public Point2d[] CandidateDiagnosticPoints2 => FitDiagnostics2.CandidatePoints;
+        public Point2d[] ExcludedDiagnosticPoints2 => FitDiagnostics2.ExcludedPoints;
+        public Point2d[] InlierDiagnosticPoints2 => FitDiagnostics2.Inliers;
+        public Point2d[] OutlierDiagnosticPoints2 => FitDiagnostics2.Outliers;
+
         /// <summary>元素1 拟合被测直线（线段几何）</summary>
         public Line2d[]? Element1Line { get; set; }
 
@@ -114,7 +130,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure
 
         #region 拟合产物（模块结果"拟合结果/元素N"）
 
-        /// <summary>元素1 拟合残差（RMSE，HALCON FitLineContourXld 的 Dist 均方根）</summary>
+        /// <summary>元素1 拟合残差（独立内点到最终直线的垂直距离均方根）</summary>
         public double Element1RMSE { get; set; }
 
         /// <summary>元素2 拟合残差（RMSE，点到拟合圆径向偏差均方根）</summary>
@@ -139,8 +155,34 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                 : "未生成有效拟合结果";
 
         /// <summary>填充结果显示：两卡尺"拟合点"十字（可配样式开关；其余引导/卡尺带/拟合几何/文字标注按样式开关绘制）。</summary>
+        private LineCircleMeasureParameters? _executionGeometry;
+        private AffineMatrix? _executionMatrix;
+        internal void CaptureExecutionParameters(LineCircleMeasureParameters parameters)
+        {
+            if (_executionGeometry != null) return;
+            _executionMatrix = PositionCorrectionResolver.Resolve(parameters);
+            _executionGeometry = new LineCircleMeasureParameters
+            {
+                E1StartX = parameters.E1StartX,
+                E1StartY = parameters.E1StartY,
+                E1EndX = parameters.E1EndX,
+                E1EndY = parameters.E1EndY,
+                E1MeasureLength1 = parameters.E1MeasureLength1,
+                E1MeasureLength2 = parameters.E1MeasureLength2,
+                E1NumMeasures = parameters.E1NumMeasures,
+                E2CenterX = parameters.E2CenterX,
+                E2CenterY = parameters.E2CenterY,
+                E2Radius = parameters.E2Radius,
+                E2MeasureLength1 = parameters.E2MeasureLength1,
+                E2MeasureLength2 = parameters.E2MeasureLength2,
+                E2NumMeasures = parameters.E2NumMeasures,
+            };
+        }
+
         public void FillDisplay(bool isOk, LineCircleMeasureParameters parameters)
         {
+            CaptureExecutionParameters(parameters);
+            var geometry = _executionGeometry!;
             _display.Clear();
 
             if (Element1FitPoints.Length > 0)
@@ -149,33 +191,32 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point2"), ToWpfPoints(Element2FitPoints));
 
             // 位置修正：引导几何/卡尺带显示与交互层同源变换
-            var matrix = parameters.IsPositionCorrectionEnabled
-                ? PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource)
-                : null;
+            var matrix = _executionMatrix;
             Point T(Point p) => matrix == null ? p : matrix.TransformWpfPoint(p);
             double scale = matrix?.ScaleFactor() ?? 1.0;
 
             // ---- 元素1：引导线 + 卡尺带 + 拟合线 ----
             {
-                var g1s = T(new Point(parameters.E1StartX, parameters.E1StartY));
-                var g1e = T(new Point(parameters.E1EndX, parameters.E1EndY));
+                var g1s = T(new Point(geometry.E1StartX, geometry.E1StartY));
+                var g1e = T(new Point(geometry.E1EndX, geometry.E1EndY));
                 if ((g1e - g1s).Length > 1e-6)
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("guide-line1"), g1s, g1e, isOk);
             }
             {
-                var g1s = T(new Point(parameters.E1StartX, parameters.E1StartY));
-                var g1e = T(new Point(parameters.E1EndX, parameters.E1EndY));
-                var bands = MeasureLineBands(g1s, g1e, parameters.E1MeasureLength1, parameters.E1MeasureLength2, parameters.E1NumMeasures);
+                var g1s = T(new Point(geometry.E1StartX, geometry.E1StartY));
+                var g1e = T(new Point(geometry.E1EndX, geometry.E1EndY));
+                var bands = MeasureLineBands(g1s, g1e, geometry.E1MeasureLength1, geometry.E1MeasureLength2, geometry.E1NumMeasures);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band1"), bands, isClosed: true);
             }
             if (Element1Line is { Length: > 0 })
-                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("fit-line1"), Element1StartPoint, Element1EndPoint, isOk);
+                FittedLineDisplay.AddLine(_display, parameters.ResultPresentation.GetGraphicsStyle("fit-line1"),
+                    Element1StartPoint, Element1EndPoint, ImageWidth, ImageHeight, isOk);
 
             // ---- 元素2：引导圆 + 环形卡尺带 + 拟合圆 ----
             // 位置修正：圆心随矩阵变换 + 半径随缩放因子缩放 + 卡尺阵列起始相位随旋转（与 CircleDetect / BuildCircleBands 同口径）
-            var g2c = T(new Point(parameters.E2CenterX, parameters.E2CenterY));
-            double g2r = parameters.E2Radius * scale;
+            var g2c = T(new Point(geometry.E2CenterX, geometry.E2CenterY));
+            double g2r = geometry.E2Radius * scale;
             double startPhase = matrix != null
                 ? PositionCorrectionResolver.DisplayAngleDeg(matrix, 0.0) * Math.PI / 180.0
                 : 0.0;
@@ -187,8 +228,8 @@ namespace SunEyeVision.Tool.LineCircleMeasure
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g2c, g2r),
-                    parameters.E2MeasureLength1, parameters.E2MeasureLength2,
-                    parameters.E2NumMeasures, startPhase);
+                    geometry.E2MeasureLength1, geometry.E2MeasureLength2,
+                    geometry.E2NumMeasures, startPhase);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band2"), bands, isClosed: true);
             }
@@ -224,12 +265,6 @@ namespace SunEyeVision.Tool.LineCircleMeasure
             if (IsIntersecting)
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("intersection-text"), IntersectionX, IntersectionY,
                     $"交点 ({IntersectionX:F1}, {IntersectionY:F1})", 0, 16, isOk);
-
-            // ---- 无限直线延长（虚线，裁到图像范围）：拟合输出是线段，而距离/交点取自无限直线，延长段让语义可见 ----
-            if (ImageWidth > 0 && ImageHeight > 0
-                && Element1Line is { Length: > 0 }
-                && TryClipInfiniteLine(Element1StartPoint, Element1EndPoint, ImageWidth, ImageHeight, out var e1a, out var e1b))
-                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("extension-line1"), e1a, e1b, isOk);
 
             // ---- 距离可视化：圆心 → 元素1 无限直线的垂足（长度 = HALCON distance_pl 的正交距离）+ 数值文字 ----
             if (Element1Line is { Length: > 0 } && Element2Circle is { Length: > 0 }
@@ -268,38 +303,6 @@ namespace SunEyeVision.Tool.LineCircleMeasure
             return result;
         }
 
-        /// <summary>把过两点的无限直线裁剪到 [0,w]×[0,h] 图像矩形（参数化裁剪）</summary>
-        private static bool TryClipInfiniteLine(Point a, Point b, double w, double h, out Point p1, out Point p2)
-        {
-            p1 = default;
-            p2 = default;
-            if (w <= 0 || h <= 0) return false;
-
-            var d = b - a;
-            if (d.Length < 1e-9) return false;
-
-            double tMin = double.NegativeInfinity, tMax = double.PositiveInfinity;
-            if (!ClipAxis(a.X, d.X, 0, w, ref tMin, ref tMax)) return false;
-            if (!ClipAxis(a.Y, d.Y, 0, h, ref tMin, ref tMax)) return false;
-            if (tMin > tMax) return false;
-
-            p1 = new Point(a.X + tMin * d.X, a.Y + tMin * d.Y);
-            p2 = new Point(a.X + tMax * d.X, a.Y + tMax * d.Y);
-            return true;
-        }
-
-        /// <summary>单轴裁剪（更新参数区间；轴平行且区间外时返回 false）</summary>
-        private static bool ClipAxis(double p, double d, double lo, double hi, ref double tMin, ref double tMax)
-        {
-            if (Math.Abs(d) < 1e-12)
-                return p >= lo && p <= hi;
-
-            double t1 = (lo - p) / d, t2 = (hi - p) / d;
-            if (t1 > t2) (t1, t2) = (t2, t1);
-            tMin = Math.Max(tMin, t1);
-            tMax = Math.Min(tMax, t2);
-            return tMin <= tMax;
-        }
 
         /// <summary>直线卡尺测量带四边形（与交互层/结果层共用 BuildLineBands；参数半长 ×2 = 全宽/全长）</summary>
         private static List<Point[]> MeasureLineBands(Point start, Point end, double halfWidth, double halfLength, int count)
@@ -314,11 +317,26 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                 .ToList();
 
         /// <summary>属性映射（结果树/输出契约 SSOT；必须合并基类获得执行耗时）</summary>
+        public void FillFailureDisplay(LineCircleMeasureParameters parameters)
+            => EdgeFitDiagnostics.FillFailureDisplay(_display, parameters.ResultPresentation, FitDiagnostics1, FitDiagnostics2);
+
         public override List<PropertyMapEntry> GetPropertyMap()
         {
             return
             [
                 .. base.GetPropertyMap(),   // 执行耗时 + 节点状态 → 执行信息
+                new("FitDiagnostic1", "元素1取点拟合诊断", "诊断"),
+                new("RawDiagnosticPoints1", "元素1原始检测点", "诊断"),
+                new("CandidateDiagnosticPoints1", "元素1候选点", "诊断"),
+                new("ExcludedDiagnosticPoints1", "元素1屏蔽点", "诊断"),
+                new("InlierDiagnosticPoints1", "元素1内点", "诊断"),
+                new("OutlierDiagnosticPoints1", "元素1离群点", "诊断"),
+                new("FitDiagnostic2", "元素2取点拟合诊断", "诊断"),
+                new("RawDiagnosticPoints2", "元素2原始检测点", "诊断"),
+                new("CandidateDiagnosticPoints2", "元素2候选点", "诊断"),
+                new("ExcludedDiagnosticPoints2", "元素2屏蔽点", "诊断"),
+                new("InlierDiagnosticPoints2", "元素2内点", "诊断"),
+                new("OutlierDiagnosticPoints2", "元素2离群点", "诊断"),
                 // ===== 输入（对齐 LineDetect 规范：输入/卡尺）=====
                 new("GuideGeometry1", "直线1引导几何", "输入/卡尺/引导线", IsGroupPlaceholder: true),
                 new("GuideGeometry2", "圆2引导几何", "输入/卡尺/引导圆"),

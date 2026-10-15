@@ -132,7 +132,7 @@
                         <ComboBox x:Name="E2SelectCombo" Width="250" HorizontalAlignment="Left" Height="32"
                                   VerticalContentAlignment="Center" SelectionChanged="OnE2SelectChanged"/>
                     </controls:LabeledControl>
-                    <Expander Header="高级参数（RANSAC 拟合）" IsExpanded="False" Margin="0,8,0,0"
+                    <Expander Header="高级参数（鲁棒拟合）" IsExpanded="False" Margin="0,8,0,0"
                               BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}" BorderThickness="1">
                         <StackPanel Margin="16,8">
                             <controls:LabeledControl Label="距离阈值" Margin="0,0,0,4">

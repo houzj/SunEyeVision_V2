@@ -56,12 +56,6 @@
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <!-- ⚠️ 待契约化（工作项 #10）：Script 目前直连宿主**源码层**类型 SunEyeVision.Workflow.Solution，
-         使工具无法在"无宿主源码"环境构建。应改为 SDK 契约接口（只读解决方案上下文），
-         见《工具插件两目录模型架构-20260914-174613》§4.6「通用能力应提升为契约」。 -->
-    <ProjectReference Include="..\..\src\Workflow\SunEyeVision.Workflow.csproj">
-      <Private>false</Private>
-    </ProjectReference>
     <!-- 平台适配层编译期锚定（脚本引用候选类型解析用）：Private=false 不复制，运行期由宿主提供。 -->
     <ProjectReference Include="..\..\src\SunEyeVision.HalAdapter\SunEyeVision.HalAdapter.csproj">
       <Private>false</Private>

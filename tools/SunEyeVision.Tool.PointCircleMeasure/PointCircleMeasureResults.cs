@@ -87,8 +87,27 @@ namespace SunEyeVision.Tool.PointCircleMeasure
                 : "未生成有效拟合结果";
 
         /// <summary>填充结果显示：元素2 拟合圆 + 卡尺带 + 检测点 + 点1 + 最近点/连线/文字。</summary>
+        private PointCircleMeasureParameters? _executionGeometry;
+        private AffineMatrix? _executionMatrix;
+        internal void CaptureExecutionParameters(PointCircleMeasureParameters parameters)
+        {
+            if (_executionGeometry != null) return;
+            _executionMatrix = PositionCorrectionResolver.Resolve(parameters);
+            _executionGeometry = new PointCircleMeasureParameters
+            {
+                E2CenterX = parameters.E2CenterX,
+                E2CenterY = parameters.E2CenterY,
+                E2Radius = parameters.E2Radius,
+                E2MeasureLength1 = parameters.E2MeasureLength1,
+                E2MeasureLength2 = parameters.E2MeasureLength2,
+                E2NumMeasures = parameters.E2NumMeasures,
+            };
+        }
+
         public void FillDisplay(bool isOk, PointCircleMeasureParameters parameters)
         {
+            CaptureExecutionParameters(parameters);
+            var geometry = _executionGeometry!;
             _display.Clear();
 
             // ---- 检测点（卡尺2）----
@@ -96,9 +115,7 @@ namespace SunEyeVision.Tool.PointCircleMeasure
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point2"), ToWpfPoints(Element2FitPoints));
 
             // ---- 位置修正：引导几何/卡尺带显示与交互层同源变换 ----
-            var matrix = parameters.IsPositionCorrectionEnabled
-                ? PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource)
-                : null;
+            var matrix = _executionMatrix;
             Point T(Point p) => matrix == null ? p : matrix.TransformWpfPoint(p);
             double scale = matrix?.ScaleFactor() ?? 1.0;
             double startPhase = matrix != null
@@ -106,8 +123,8 @@ namespace SunEyeVision.Tool.PointCircleMeasure
                 : 0.0;
 
             // ---- 元素2：引导圆 + 环形卡尺带 + 拟合圆 ----
-            var g2c = T(new Point(parameters.E2CenterX, parameters.E2CenterY));
-            double g2r = parameters.E2Radius * scale;
+            var g2c = T(new Point(geometry.E2CenterX, geometry.E2CenterY));
+            double g2r = geometry.E2Radius * scale;
 
             if (g2r > 1e-6)
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle2"), new Circle2d(g2c, g2r), isOk);
@@ -116,8 +133,8 @@ namespace SunEyeVision.Tool.PointCircleMeasure
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g2c, g2r),
-                    parameters.E2MeasureLength1, parameters.E2MeasureLength2,
-                    parameters.E2NumMeasures, startPhase);
+                    geometry.E2MeasureLength1, geometry.E2MeasureLength2,
+                    geometry.E2NumMeasures, startPhase);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band2"), bands, isClosed: true);
             }

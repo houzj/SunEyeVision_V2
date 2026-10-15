@@ -171,6 +171,8 @@ namespace SunEyeVision.Tool.Threshold.Views
                 regionManager.AvailableDataSources = AvailableDataSources;
 
                 Parameters?.RestoreImageSource(AvailableDataSources);
+                Parameters?.RestorePositionCorrectionSource(AvailableDataSources);
+                OnExternalResultArrived();
             }
         }
 
@@ -218,14 +220,18 @@ namespace SunEyeVision.Tool.Threshold.Views
                 throw new InvalidOperationException("工具实例无效");
             }
 
-            var runParams = (ThresholdParameters)Parameters!;
-            runParams.ResolvedInputImage = imageVision;
-            return ExecuteWithLiveContext(thresholdTool, runParams);
+            return ExecuteWithLiveContext(thresholdTool, Parameters!, imageVision);
         }
 
         protected override bool CanExecuteTool()
         {
             return Parameters?.ImageSource != null && _dataProvider != null;
+        }
+
+        public override void OnExternalResultArrived()
+        {
+            if (Parameters != null && regionManager != null)
+                ApplyPositionCorrectionPreview(Parameters, regionManager.SetPositionCorrectionMatrix, regionManager);
         }
 
         #endregion

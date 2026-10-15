@@ -233,9 +233,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 throw new InvalidOperationException("工具实例无效");
             }
 
-            var runParams = (BlobAnalysisParameters)Parameters!;
-            runParams.ResolvedInputImage = image;
-            var result = ExecuteWithLiveContext(blobTool, runParams);
+            var result = ExecuteWithLiveContext(blobTool, Parameters!, image);
 
             // 执行完成后，设置位置修正矩阵到 ROI 编辑器
             UpdatePositionCorrectionMatrix();
@@ -254,41 +252,8 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         /// </remarks>
         internal void UpdatePositionCorrectionMatrix()
         {
-            PluginLogger.Info("[UpdatePositionCorrectionMatrix] 开始查询矩阵", "BlobAnalysisTool");
-
-            if (Parameters?.IsPositionCorrectionEnabled == true
-                && _dataProvider != null
-                && Parameters.PositionCorrectionBindingSource != null)
-            {
-                var source = Parameters.PositionCorrectionBindingSource;
-
-                PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 查询参数 | " +
-                    $"SourceNodeId={source.SourceNodeId} | PropertyName={source.PropertyName}",
-                    "BlobAnalysisTool");
-
-                // 实时查询，保证拿到工作流重新执行后的最新矩阵值
-                var matrix = _dataProvider.GetPropertyValue(
-                    source.SourceNodeId, source.PropertyName) as AffineMatrix;
-
-                // ★ 诊断：矩阵详细信息
-                var matrixValues = matrix != null
-                    ? $"[{matrix.M11:F4},{matrix.M12:F4},{matrix.M21:F4},{matrix.M22:F4},{matrix.OffsetX:F2},{matrix.OffsetY:F2}]"
-                    : "null";
-                PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 查询结果 | Matrix={matrixValues}", "BlobAnalysisTool");
-
-                if (matrix != null)
-                {
-                    Parameters.LogInfo($"设置位置修正矩阵到 ROI 编辑器 (实时查询): {matrix}");
-                    regionManager?.SetPositionCorrectionMatrix(matrix);
-                    return;
-                }
-            }
-            // ★ _dataProvider 未就绪时不设 null（保留之前的值，如 InitializeAsync 或 SetDataProvider 设置的）
-            if (_dataProvider == null)
-                return;
-
-            PluginLogger.Warning("[UpdatePositionCorrectionMatrix] 矩阵为null，清空区域变换", "BlobAnalysisTool");
-            regionManager?.SetPositionCorrectionMatrix(null);
+            if (Parameters == null || regionManager == null) return;
+            ApplyPositionCorrectionPreview(Parameters, regionManager.SetPositionCorrectionMatrix, regionManager);
         }
 
         protected override bool CanExecuteTool()

@@ -116,8 +116,8 @@
                             </ComboBox>
                         </controls:LabeledControl>
 
-                        <!-- ===== 高级参数（RANSAC 拟合，默认折叠） ===== -->
-                        <Expander Header="高级参数（RANSAC 拟合）" IsExpanded="False" Margin="0,8,0,0"
+                        <!-- ===== 高级参数（鲁棒直线拟合，默认折叠） ===== -->
+                        <Expander Header="高级参数（鲁棒直线拟合）" IsExpanded="False" Margin="0,8,0,0"
                                   BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1"
                                   Background="{DynamicResource ThemePanelBackgroundBrush}">
                             <StackPanel Margin="16,8">

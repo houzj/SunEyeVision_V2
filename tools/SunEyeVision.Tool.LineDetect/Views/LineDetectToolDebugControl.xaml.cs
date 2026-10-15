@@ -31,9 +31,11 @@ namespace SunEyeVision.Tool.LineDetect.Views
     {
         /// <summary>正在从编辑器同步卡尺参数（防止 参数→编辑器→参数 回写死循环）</summary>
         private bool _syncingCaliberFromEditor;
+        private bool _syncingGuideFromEditor;
 
         /// <summary>卡尺编辑器事件是否已订阅（幂等标志，构造 + Loaded 只订阅一次）</summary>
         private bool _caliberHooked;
+        private LineDetectParameters? _observedParameters;
 
         #region Properties
 
@@ -90,12 +92,14 @@ namespace SunEyeVision.Tool.LineDetect.Views
             {
                 // 确保 XAML 完全加载后订阅成功（防止构造函数时序导致事件漏订阅）
                 HookCaliberEditor();
+                ObserveParameters();
                 var window = System.Windows.Window.GetWindow(this);
                 if (window != null)
                 {
                     window.Closing += OnWindowClosing;
                 }
             };
+            Unloaded += (_, _) => Cleanup();
         }
 
         #endregion
@@ -107,6 +111,9 @@ namespace SunEyeVision.Tool.LineDetect.Views
         /// </summary>
         public void Cleanup()
         {
+            if (_observedParameters != null)
+                PropertyChangedEventManager.RemoveHandler(_observedParameters, OnParameterChanged, "");
+            _observedParameters = null;
             MeasurementManager?.ClearMainOverlay();
         }
 
@@ -138,7 +145,7 @@ namespace SunEyeVision.Tool.LineDetect.Views
             _caliberHooked = true;
             GuideEditor.GuideGeometryChanged += OnGuideGeometryChanged;
             GuideEditor.CaliberParamsChanged += OnCaliberParamsChanged;
-            Parameters.PropertyChanged += OnParameterChanged;
+            ObserveParameters();
             VisionLogger.Instance.Log(LogLevel.Info, "[Diag] HookCaliberEditor 订阅成功", "LineDetectToolDebugControl");
         }
 
@@ -147,6 +154,12 @@ namespace SunEyeVision.Tool.LineDetect.Views
         /// </summary>
         private void OnParameterChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(() => OnParameterChanged(sender, e)));
+                return;
+            }
+            if (!ReferenceEquals(sender, _observedParameters)) return;
             if (Parameters == null || GuideEditor == null) return;
 
             // 参数面板编辑起终点时，回填同一个公共测量编辑器。
@@ -154,6 +167,7 @@ namespace SunEyeVision.Tool.LineDetect.Views
             if (e.PropertyName is nameof(LineDetectParameters.LineStartPoint)
                 or nameof(LineDetectParameters.LineEndPoint))
             {
+                if (_syncingGuideFromEditor) return;
                 var start = Parameters.LineStartPoint;
                 var end = Parameters.LineEndPoint;
                 if ((end - start).Length > 1e-6)
@@ -207,8 +221,20 @@ namespace SunEyeVision.Tool.LineDetect.Views
             var model = e.Model;
             if (e.GeometryType == MeasureGeometryType.Line && model.EditingLine.HasValue)
             {
-                Parameters.LineStartPoint = model.LineStartPoint;
-                Parameters.LineEndPoint = model.LineEndPoint;
+                // Both endpoints belong to one edit. A PropertyChanged callback for the
+                // first write must not restore a half-updated line into this same model.
+                var start = model.LineStartPoint;
+                var end = model.LineEndPoint;
+                _syncingGuideFromEditor = true;
+                try
+                {
+                    Parameters.LineStartPoint = start;
+                    Parameters.LineEndPoint = end;
+                }
+                finally
+                {
+                    _syncingGuideFromEditor = false;
+                }
                 Parameters.LogInfo(
                     $"引导直线已绘制: 起点({model.LineStartPoint.X:F1}, {model.LineStartPoint.Y:F1})");
             }
@@ -216,8 +242,7 @@ namespace SunEyeVision.Tool.LineDetect.Views
             // 绘制流程完成 → 清除工具栏选中，回到选择模式
             if (e.IsDrawing)
             {
-                // 新建卡尺时按当前图像短边初始化尺寸；之后由参数模型接管，用户调整值优先。
-                MeasurementManager.InitializeGuideCaliberParamsForImage();
+                // 尺寸已由共享策略在首次落笔时初始化，重画完成不再重置。
                 GuideEditor.ClearCaliberSelection();
             }
         }
@@ -272,6 +297,8 @@ namespace SunEyeVision.Tool.LineDetect.Views
                     $"直线查找节点参数类型异常（期望 LineDetectParameters，实际 {parameters?.GetType().Name ?? "null"}）。");
             }
             Parameters = lineParams;
+            ConfigureCaliperDrawing(GuideEditor, Parameters, 0);
+            ObserveParameters();
 
             // 屏蔽区域：绑定到 MeasurementEditorManager
             if (MeasurementManager != null)
@@ -338,21 +365,18 @@ namespace SunEyeVision.Tool.LineDetect.Views
         /// </summary>
         private void UpdatePositionCorrectionMatrix()
         {
-            if (Parameters?.IsPositionCorrectionEnabled == true && _dataProvider != null
-                && Parameters.PositionCorrectionBindingSource != null)
-            {
-                var source = Parameters.PositionCorrectionBindingSource;
-                var matrix = _dataProvider.GetPropertyValue(source.SourceNodeId, source.PropertyName) as AffineMatrix;
-                if (matrix != null)
-                {
-                    MeasurementManager?.SetPositionCorrectionMatrix(matrix);
-                    return;
-                }
-            }
-            if (_dataProvider != null)
-            {
-                MeasurementManager?.SetPositionCorrectionMatrix(null);
-            }
+            if (Parameters == null || MeasurementManager == null) return;
+            ApplyPositionCorrectionPreview(Parameters, MeasurementManager.SetPositionCorrectionMatrix, MeasurementManager);
+        }
+
+        private void ObserveParameters()
+        {
+            if (ReferenceEquals(_observedParameters, Parameters)) return;
+            if (_observedParameters != null)
+                PropertyChangedEventManager.RemoveHandler(_observedParameters, OnParameterChanged, "");
+            _observedParameters = Parameters;
+            if (_observedParameters != null)
+                PropertyChangedEventManager.AddHandler(_observedParameters, OnParameterChanged, "");
         }
 
         /// <summary>

@@ -44,6 +44,7 @@
                                                           Element1GeometryType="Circle"
                                                           Element2GeometryType="Circle"/>
 
+                    <TextBlock x:Name="CorrectionStatusText" TextWrapping="Wrap" Margin="0,4,0,4" Visibility="Collapsed"/>
                     <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
                         <controls:ToggleSwitch
                             IsChecked="{Binding IsPositionCorrectionEnabled, Mode=TwoWay}"

@@ -113,9 +113,24 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
                 : "未生成有效拟合结果";
 
         /// <summary>填充结果显示：两卡尺"拟合点"十字（可配样式开关；其余引导/卡尺带/拟合几何/文字标注按样式开关绘制）。</summary>
+        private PositionCorrectionResolution? _correction;
+        private sealed record GuideSnapshot(Circle2d Circle, double HalfWidth, double HalfLength, int Count);
+        private GuideSnapshot? _guide1;
+        private GuideSnapshot? _guide2;
+        internal void CaptureCorrection(CircleCircleMeasureParameters parameters)
+        {
+            _correction ??= parameters.ResolvedPositionCorrection ?? PositionCorrectionResolution.Capture(parameters);
+            _guide1 ??= new GuideSnapshot(new Circle2d(parameters.E1CenterX, parameters.E1CenterY, parameters.E1Radius),
+                parameters.E1MeasureLength1, parameters.E1MeasureLength2, parameters.E1NumMeasures);
+            _guide2 ??= new GuideSnapshot(new Circle2d(parameters.E2CenterX, parameters.E2CenterY, parameters.E2Radius),
+                parameters.E2MeasureLength1, parameters.E2MeasureLength2, parameters.E2NumMeasures);
+        }
+        internal PositionCorrectionResolution Correction => _correction ?? throw new InvalidOperationException("位置修正上下文尚未建立。");
         public void FillDisplay(bool isOk, CircleCircleMeasureParameters parameters)
         {
+            CaptureCorrection(parameters);
             _display.Clear();
+            if (!_correction.CanUse) return;
 
             if (Element1FitPoints.Length > 0)
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point1"), ToWpfPoints(Element1FitPoints));
@@ -123,9 +138,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point2"), ToWpfPoints(Element2FitPoints));
 
             // 位置修正：引导几何/卡尺带显示与交互层同源变换
-            var matrix = parameters.IsPositionCorrectionEnabled
-                ? PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource)
-                : null;
+            var matrix = _correction.Matrix;
             Point T(Point p) => matrix == null ? p : matrix.TransformWpfPoint(p);
             double scale = matrix?.ScaleFactor() ?? 1.0;
             double startPhase = matrix != null
@@ -133,8 +146,8 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
                 : 0.0;
 
             // ---- 元素1：引导圆 + 环形卡尺带 + 拟合圆 ----
-            var g1c = T(new Point(parameters.E1CenterX, parameters.E1CenterY));
-            double g1r = parameters.E1Radius * scale;
+            var g1c = T(_guide1!.Circle.Center);
+            double g1r = _guide1.Circle.Radius * scale;
 
             if (g1r > 1e-6)
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle1"), new Circle2d(g1c, g1r), isOk);
@@ -143,8 +156,8 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g1c, g1r),
-                    parameters.E1MeasureLength1, parameters.E1MeasureLength2,
-                    parameters.E1NumMeasures, startPhase);
+                    _guide1.HalfWidth, _guide1.HalfLength,
+                    _guide1.Count, startPhase);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band1"), bands, isClosed: true);
             }
@@ -152,8 +165,8 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("fit-circle1"), Element1Circle[0], isOk);
 
             // ---- 元素2：引导圆 + 环形卡尺带 + 拟合圆 ----
-            var g2c = T(new Point(parameters.E2CenterX, parameters.E2CenterY));
-            double g2r = parameters.E2Radius * scale;
+            var g2c = T(_guide2!.Circle.Center);
+            double g2r = _guide2.Circle.Radius * scale;
 
             if (g2r > 1e-6)
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle2"), new Circle2d(g2c, g2r), isOk);
@@ -162,8 +175,8 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g2c, g2r),
-                    parameters.E2MeasureLength1, parameters.E2MeasureLength2,
-                    parameters.E2NumMeasures, startPhase);
+                    _guide2.HalfWidth, _guide2.HalfLength,
+                    _guide2.Count, startPhase);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band2"), bands, isClosed: true);
             }

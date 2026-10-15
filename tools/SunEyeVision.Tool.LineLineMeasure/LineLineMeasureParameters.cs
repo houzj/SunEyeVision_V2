@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Tool.LineLineMeasure
@@ -8,7 +10,7 @@ namespace SunEyeVision.Tool.LineLineMeasure
     /// <summary>边缘极性（卡尺参数语义，同 LineDetect）</summary>
     public enum EdgeTransition
     {
-        All, Positive, Negative,      // 全部 / 正极性（亮到暗）/ 负极性（暗到亮）
+        All, Positive, Negative,      // 全部 / 正极性（暗到亮）/ 负极性（亮到暗）
     }
 
     /// <summary>卡尺测点选取模式（卡尺参数语义，同 LineDetect）</summary>
@@ -32,7 +34,18 @@ namespace SunEyeVision.Tool.LineLineMeasure
         // 判定规格列表（v4 C1 基座，SDK MeasureThreshold 复用，六工具同构）
         // ============================================================
         /// <summary>测量输出项判定规格（角度/距离/交点X/交点Y 各一行公差；UI 数据驱动 Toggle+Range）。可写以便 JSON 反序列化回填</summary>
-        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
+        private ResultPresentationConfig _resultPresentation = CreateResultPresentation();
+        public ResultPresentationConfig ResultPresentation
+        {
+            get => _resultPresentation;
+            set
+            {
+                _resultPresentation = value ?? throw new System.ArgumentNullException(nameof(value));
+                EdgeFitDiagnostics.EnsurePresentation(_resultPresentation);
+                FittedLineDisplay.RemoveLegacyExtensions(value, "extension-line1");
+                FittedLineDisplay.RemoveLegacyExtensions(value, "extension-line2");
+            }
+        }
 
         // ============================================================
         // 元素1（卡尺1）：引导直线（起点/终点）—— 全部纯 CLR 支持字段订阅
@@ -131,10 +144,6 @@ namespace SunEyeVision.Tool.LineLineMeasure
             config.Graphics.Add(new() { Key = "caliber-point1", Name = "卡尺1拟合点", Order = 70, Style = new() { Name = "卡尺1拟合点", IsVisible = true, CrossSize = 4.0, } });
             config.Graphics.Add(new() { Key = "caliber-point2", Name = "卡尺2拟合点", Order = 80, Style = new() { Name = "卡尺2拟合点", IsVisible = true, CrossSize = 4.0, } });
             config.Graphics.Add(new() { Key = "intersection-point", Name = "角点", Order = 90, Style = new() { Name = "角点", IsVisible = true, CrossSize = 6.0, } });
-            config.Graphics.Add(new() { Key = "extension-line1", Name = "延长线1", Order = 100, Style = new() { Name = "延长线1", IsVisible = true,
-            LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0, } });
-            config.Graphics.Add(new() { Key = "extension-line2", Name = "延长线2", Order = 110, Style = new() { Name = "延长线2", IsVisible = true,
-            LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0, } });
             config.Graphics.Add(new() { Key = "angle-arc", Name = "夹角弧", Order = 120, Style = new() { Name = "夹角弧", IsVisible = true, LineWidth = 1.5, } });
             config.Texts.Add(new() { Key = "angle-text", Name = "夹角", Order = 10, Style = new() { Name = "夹角", IsVisible = true, } });
             config.Graphics.Add(new() { Key = "distance-line", Name = "距离连线", Order = 130, Style = new() { Name = "距离连线", IsVisible = true,
@@ -149,6 +158,7 @@ namespace SunEyeVision.Tool.LineLineMeasure
             config.Texts.Add(new() { Key = "element2-center-text", Name = "卡尺2中心", Order = 50, Style = new() { Name = "卡尺2中心", IsVisible = true, } });
             config.Texts.Add(new() { Key = "element2-angle-text", Name = "卡尺2角度", Order = 60, Style = new() { Name = "卡尺2角度", IsVisible = true, } });
             config.Texts.Add(new() { Key = "intersection-text", Name = "交点", Order = 70, Style = new() { Name = "交点", IsVisible = true, } });
+            EdgeFitDiagnostics.EnsurePresentation(config);
             return config;
         }
     }

@@ -36,8 +36,9 @@ namespace SunEyeVision.Tool.ImageThreshold
         Version = "1.0.0",
         HasDebugWindow = true
     )]
-    public class ImageThresholdTool : IToolPlugin<ImageThresholdParameters, ImageThresholdResults>, IToolEditorFactory
+    public class ImageThresholdTool : IToolPlugin<ImageThresholdParameters, ImageThresholdResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider
     {
+        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;
         private readonly ToolAttribute? _attribute;
 
         public ImageThresholdTool()
@@ -124,26 +125,7 @@ namespace SunEyeVision.Tool.ImageThreshold
 
                     // ===== Step 2: 区域前置（HalconRegionPipeline：订阅解析 + 位置修正 + 差集）=====
                     // 纯几何：区域 + 位置修正；全图/按域执行由算法层自决（见下 HalImageDomain.Restrict）
-                    AffineMatrix? correctionMatrix = null;
-                    if (parameters.IsPositionCorrectionEnabled)
-                    {
-                        var bindingSource = parameters.PositionCorrectionBindingSource;
-                        if (PositionCorrectionResolver.ResolveFirstMatrix(bindingSource) is { } matrix)
-                        {
-                            correctionMatrix = matrix;
-                            parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
-                        }
-                        else if (bindingSource != null &&
-                                 !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
-                                 !string.IsNullOrEmpty(bindingSource.PropertyName))
-                        {
-                            parameters.LogInfo("位置修正已启用，但绑定源当前无有效矩阵，跳过位置修正");
-                        }
-                        else
-                        {
-                            parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
-                        }
-                    }
+                    var correctionMatrix = PositionCorrectionResolver.Resolve(parameters);
 
                     var scope = HalconRegionPipeline.Resolve(
                         imgWidth, imgHeight,

@@ -32,6 +32,7 @@ public sealed class CommunicationHeartbeatService : IAsyncDisposable
                 if (definition.IntervalMs < 1) throw new FormatException("心跳间隔必须大于 0ms。");
                 var configuredDevice = solution.Communications.FirstOrDefault(device => device.Id == definition.DeviceId)
                     ?? throw new InvalidOperationException("心跳绑定设备已删除。");
+                if (!configuredDevice.IsEnabled) continue;
                 var device = JsonSerializer.Deserialize<SunEyeVision.Workflow.Communication>(
                     JsonSerializer.Serialize(configuredDevice, WorkflowSerializationOptions.Default), WorkflowSerializationOptions.Default)!;
                 var config = JsonSerializer.Deserialize<CommunicationHeartbeatDefinition>(JsonSerializer.Serialize(definition))!;

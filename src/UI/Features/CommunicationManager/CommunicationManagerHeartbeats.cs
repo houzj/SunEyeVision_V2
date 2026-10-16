@@ -38,7 +38,7 @@ public partial class CommunicationManagerViewModel
 
     private void HeartbeatConfigurationChanged(object? sender, EventArgs e)
     {
-        if (_refreshingHeartbeats || !_heartbeatEditorInitialized) return;
+        if (IsConnectionViewInactive || _refreshingHeartbeats || !_heartbeatEditorInitialized) return;
         RefreshAutomationChoices();
         RefreshHeartbeatTargets();
         if (_solutionManager.CurrentSolution is not { } solution) return;
@@ -54,10 +54,12 @@ public partial class CommunicationManagerViewModel
 
     private void HeartbeatStatusChanged(Guid id, string status)
     {
+        if (IsConnectionViewInactive) return;
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher == null) return;
         dispatcher.BeginInvoke(new Action(() =>
         {
+            if (IsConnectionViewInactive) return;
             var row = Heartbeats.FirstOrDefault(item => item.Id == id);
             if (row?.Enabled == true) row.Status = status;
         }));
@@ -177,7 +179,7 @@ public partial class CommunicationManagerViewModel
     private void DisposeHeartbeatEditor()
     {
         _heartbeatEditorInitialized = false;
-        ServiceInitializer.CommunicationService.Heartbeats.Runner.StatusChanged -= HeartbeatStatusChanged;
+        _communicationService.Heartbeats.Runner.StatusChanged -= HeartbeatStatusChanged;
         foreach (var row in Heartbeats) row.ConfigurationChanged -= HeartbeatConfigurationChanged;
     }
 }

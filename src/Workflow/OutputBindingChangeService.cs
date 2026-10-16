@@ -9,6 +9,7 @@ using SunEyeVision.Plugin.SDK.Models;
 namespace SunEyeVision.Workflow;
 
 public sealed record OutputBindingChange(string NodeName, string InputName, string Reason, string NodeId, string? WorkflowId = null);
+public sealed record ExecutionInputIssue(string InputKey, string InputName, string Message);
 
 /// <summary>Design-time formal reconciliation. No controls, no hardware, no scheduler.</summary>
 public sealed class OutputBindingChangeService
@@ -51,22 +52,64 @@ public sealed class OutputBindingChangeService
     /// <summary>Read-only validation of the frozen local execution model; never modifies design configuration.</summary>
     public static void EnsureExecutable(Workflow workflow, string? sourceWorkflowId = null)
     {
+        var first = GetExecutionInputIssues(workflow, sourceWorkflowId).SelectMany(p => p.Value).FirstOrDefault();
+        if (first != null) throw new InvalidOperationException(first.Message);
+    }
+
+    /// <summary>Read-only node-scoped validation of a frozen plan. Invalid inputs never abort unrelated nodes.</summary>
+    public static IReadOnlyDictionary<string, IReadOnlyList<ExecutionInputIssue>> GetExecutionInputIssues(Workflow workflow, string? sourceWorkflowId = null)
+    {
         var reader = new OutputBindingChangeService();
         var nodes = workflow.Nodes.ToDictionary(n => n.Id);
+        var issues = new Dictionary<string, IReadOnlyList<ExecutionInputIssue>>(StringComparer.Ordinal);
         foreach (var node in workflow.Nodes)
-            foreach (var input in BindingRelationCatalog.Describe(node).Where(i => i.Active && !i.InternalProjection))
+        {
+            var nodeIssues = new List<ExecutionInputIssue>();
+            var declaredInputs = BindingRelationCatalog.Describe(node);
+            foreach (var input in declaredInputs.Where(i => i.Active && !i.InternalProjection))
             {
-                if (node.Parameters.RebindingRequired.TryGetValue(input.Key, out var required)) throw new InvalidOperationException($"{node.Name}.{input.Name} 需要重新绑定：{required}");
-                if (node.Parameters.BindingValidationPending.TryGetValue(input.Key, out var pending)) throw new InvalidOperationException($"{node.Name}.{input.Name} 待校验：{pending}");
-                if (!BindingInputCatalog.TryReference(input.Read(), nodes.Keys, input.ReferenceOnly, out var id, out var path) || id.StartsWith("__", StringComparison.Ordinal)) continue;
+                void Add(string reason) => nodeIssues.Add(new(input.Key, input.Name, $"{node.Name}.{input.Name} [{input.Key}]：{reason}"));
+                if (node.Parameters.RebindingRequired.TryGetValue(input.Key, out var required)) { Add("需要重新绑定：" + required); continue; }
+                if (node.Parameters.BindingValidationPending.TryGetValue(input.Key, out var pending)) { Add("待校验：" + pending); continue; }
+                var expression = input.Read();
+                if (!BindingInputCatalog.TryReference(expression, nodes.Keys, input.ReferenceOnly, out var id, out var path))
+                {
+                    if (input.ReferenceOnly && !string.IsNullOrWhiteSpace(expression)) Add("绑定来源格式无效，请重新绑定。");
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(path)) { Add("绑定路径不完整，请重新绑定。"); continue; }
+                if (id.StartsWith("__", StringComparison.Ordinal))
+                {
+                    if (id is not ("__GlobalVars__" or "__VariableId__" or "__SubroutineInputs__")) Add("绑定来源不存在，请重新绑定。");
+                    continue;
+                }
                 if (BindingRelationCatalog.SourceWorkflowId(node, input, sourceWorkflowId ?? workflow.Id) != (sourceWorkflowId ?? workflow.Id))
-                    throw new InvalidOperationException("绑定来源跨出当前工作流作用域，请使用全局变量。");
+                { Add("绑定来源跨出当前工作流作用域，请使用全局变量。"); continue; }
                 if (!workflow.GetParentNodeIds(node.Id).Contains(id))
-                    throw new InvalidOperationException($"{node.Name}.{input.Name}：绑定来源不是画布连接的上游节点，请先建立执行连接或改用全局变量。");
-                var validation = nodes.TryGetValue(id, out var upstream) ? BindingContractValidator.Validate(reader.ReadContract(upstream), path, input.AllowedTypes)
-                    : new BindingValidation(BindingCompatibility.Incompatible, "来源节点不存在");
-                if (validation.State != BindingCompatibility.Compatible) throw new InvalidOperationException($"{node.Name}.{input.Name}：{validation.Reason}");
+                { Add("绑定来源不是画布连接的上游节点，请先建立执行连接或改用全局变量。"); continue; }
+                try
+                {
+                    var validation = nodes.TryGetValue(id, out var upstream) ? BindingContractValidator.Validate(reader.ReadContract(upstream), path, input.AllowedTypes)
+                        : new BindingValidation(BindingCompatibility.Incompatible, "来源节点不存在");
+                    if (validation.State != BindingCompatibility.Compatible) Add(validation.Reason);
+                }
+                catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidOperationException)
+                {
+                    Add("来源输出契约无效：" + ex.Message);
+                }
             }
+            // An invalidated ordinary ParamSetting may already have been removed from the model.
+            foreach (var key in node.Parameters.RebindingRequired.Keys.Concat(node.Parameters.BindingValidationPending.Keys).Distinct())
+            {
+                if (declaredInputs.Any(i => i.Key == key) || !BindingInputCatalog.IsInputActive(node.Parameters, key)) continue;
+                if (key.StartsWith("Row:") || key.StartsWith("Part:") || key.StartsWith("Variable:")) continue;
+                var reason = node.Parameters.RebindingRequired.TryGetValue(key, out var required)
+                    ? "需要重新绑定：" + required : "待校验：" + node.Parameters.BindingValidationPending[key];
+                nodeIssues.Add(new(key, key, $"{node.Name}.{key}：{reason}"));
+            }
+            if (nodeIssues.Count > 0) issues[node.Id] = nodeIssues.ToArray();
+        }
+        return issues;
     }
 
     public IReadOnlyList<string> GetCandidateNodeIds(string workflowId, string targetId)

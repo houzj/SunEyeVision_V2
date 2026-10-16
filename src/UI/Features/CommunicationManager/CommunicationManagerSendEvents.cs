@@ -77,7 +77,7 @@ public partial class CommunicationManagerViewModel
 
     private void SendEvent_ConfigurationChanged(object? sender, EventArgs e)
     {
-        if (_refreshingSendTargets) return;
+        if (IsConnectionViewInactive || _refreshingSendTargets) return;
         if (_solutionManager.CurrentSolution is { } solution) solution.CommunicationSendEvents = CaptureSendEvents();
         // Like receive events, configuration is shared in memory and persisted by solution save.
         // Do not trigger the separate OPC UA device save/discard prompt.
@@ -171,15 +171,18 @@ public partial class CommunicationManagerViewModel
     public async Task ExecuteSelectedSendEventAsync()
     {
         var definition = SelectedSendEvent;
-        if (definition == null || definition.IsBusy) return;
+        if (IsConnectionViewInactive || definition == null || definition.IsBusy) return;
         definition.IsBusy = true; CommandManager.InvalidateRequerySuggested();
         CommunicationSendPlan? plan = null;
         try
         {
             var device = SelectedSendDevice ?? throw new InvalidOperationException("请选择绑定设备。");
+            var token = _communicationService.GetDeviceOperationToken(_viewSolution!, device.Id);
+            var status = _runtimeManager.GetStatus(new(device.Id));
             var service = new CommunicationSendEventService(_runtimeManager);
             plan = service.Prepare(definition.Capture(), device);
-            await service.SendAsync(plan);
+            await service.SendAsync(plan, token, status);
+            if (IsConnectionViewInactive) return;
             foreach (var value in plan.Message.Inputs)
             {
                 var input = definition.Parameters.First(item => item.FieldId == value.FieldId);

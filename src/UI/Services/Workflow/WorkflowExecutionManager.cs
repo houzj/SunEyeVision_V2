@@ -465,14 +465,8 @@ namespace SunEyeVision.UI.Services.Workflow
                 // WorkflowExecutionEngine 当前根会话互斥；此处按已推导的顺序提交。
                 var workflowId = ready[0];
                 var tab = tabsById[workflowId];
-                if (workflowPredecessors[workflowId].Any(failed.Contains))
-                {
-                    pending.Remove(workflowId);
-                    failed.Add(workflowId);
-                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this,
-                        new WorkflowExecutionProgressEventArgs(workflowId, "[SKIPPED] 跨流程上游失败。")));
-                    continue;
-                }
+                // A failed workflow may still have successful producers. Let the next workflow
+                // execute its independent nodes; missing producer values fail only their consumers.
 
                 if (!TryAcquireExecution(workflowId))
                     throw new InvalidOperationException($"流程 {tab.Name} 已在运行，不能加入本次解决方案运行。");
@@ -482,9 +476,9 @@ namespace SunEyeVision.UI.Services.Workflow
                     tab.IsRunning = true;
                     OnWorkflowExecutionStarted(workflowId);
                     var executionResult = await ExecuteSingleTriggeredAsync(tab, cancellationToken, runtimeGlobals);
+                    ApplyProducedGlobalValues(solution, workflowId, executionResult, runtimeGlobals);
                     if (executionResult.Success)
                     {
-                        ApplyProducedGlobalValues(solution, workflowId, executionResult, runtimeGlobals);
                         completed.Add(workflowId);
                         OnWorkflowExecutionCompleted(workflowId);
                     }
@@ -1063,7 +1057,7 @@ namespace SunEyeVision.UI.Services.Workflow
         /// 把生产节点的结果写入当前解决方案运行的变量快照。这里刻意不修改 Solution.GlobalVariables.Value，
         /// 防止一次运行把设计期初值污染到方案文件；下一消费者流程只读取 runtimeGlobals。
         /// </summary>
-        private static void ApplyProducedGlobalValues(
+        private void ApplyProducedGlobalValues(
             Solution solution,
             string workflowId,
             ExecutionResult executionResult,
@@ -1073,16 +1067,24 @@ namespace SunEyeVision.UI.Services.Workflow
                          string.Equals(variable.ProducerBinding?.WorkflowId, workflowId, StringComparison.Ordinal)))
             {
                 var producer = variable.ProducerBinding!;
+                runtimeGlobals.Remove(variable.Name);
+                if (!string.IsNullOrEmpty(variable.RebindingReason) || !string.IsNullOrEmpty(variable.BindingValidationPending)) continue;
                 if (!executionResult.NodeResults.TryGetValue(producer.NodeId, out var nodeResult) ||
-                    nodeResult.Result == null)
+                    !nodeResult.Success || nodeResult.Result?.IsSuccess != true)
                 {
-                    throw new InvalidOperationException($"全局变量 {variable.Name} 的输入来源未产生结果：{producer.DisplayPath}。");
+                    continue;
                 }
 
-                runtimeGlobals[variable.Name] = OutputVariableResolver.Resolve(
-                    nodeResult.Result,
-                    producer.ResultName,
-                    producer.NodeId);
+                try
+                {
+                    runtimeGlobals[variable.Name] = OutputVariableResolver.Resolve(
+                        nodeResult.Result, producer.ResultName, producer.NodeId);
+                }
+                catch (Exception ex)
+                {
+                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this,
+                        new WorkflowExecutionProgressEventArgs(workflowId, $"变量 {variable.Name} 本轮不可用：{ex.Message}")));
+                }
             }
         }
 

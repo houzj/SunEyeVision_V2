@@ -101,7 +101,10 @@ public class Communication : ObservableObject
     public bool IsEnabled
     {
         get => _enabled;
-        set => SetProperty(ref _enabled, value, "是否启用");
+        set
+        {
+            if (SetProperty(ref _enabled, value, "是否启用")) OnPropertyChanged(nameof(CanToggleRuntime));
+        }
     }
 
     /// <summary>
@@ -134,6 +137,7 @@ public class Communication : ObservableObject
             if (SetProperty(ref _runtimeStatus, value, "通讯状态"))
             {
                 OnPropertyChanged(nameof(IsRuntimeActive));
+                OnPropertyChanged(nameof(IsActuallyConnected));
                 OnPropertyChanged(nameof(ProtocolStatusText));
                 OnPropertyChanged(nameof(RuntimeStatusText));
             }
@@ -142,6 +146,54 @@ public class Communication : ObservableObject
 
     [JsonIgnore]
     public bool IsRuntimeActive => RuntimeStatus is CommunicationRuntimeStatus.Connecting or CommunicationRuntimeStatus.Connected;
+
+    [JsonIgnore]
+    public bool IsActuallyConnected => RuntimeStatus == CommunicationRuntimeStatus.Connected;
+
+    private bool _isConnectionEnabled;
+    private bool _isWaitingForReconnect;
+    private string _runtimeConnectionDescription = "";
+    private string _runtimeConnectionError = "";
+
+    /// <summary>Runtime connection intent, independent of the actual transport state.</summary>
+    [JsonIgnore]
+    public bool IsConnectionEnabled
+    {
+        get => _isConnectionEnabled;
+        set => SetProperty(ref _isConnectionEnabled, value);
+    }
+
+    [JsonIgnore]
+    public bool IsWaitingForReconnect
+    {
+        get => _isWaitingForReconnect;
+        set => SetProperty(ref _isWaitingForReconnect, value);
+    }
+
+    [JsonIgnore]
+    public string RuntimeConnectionDescription
+    {
+        get => _runtimeConnectionDescription;
+        set
+        {
+            if (!SetProperty(ref _runtimeConnectionDescription, value)) return;
+            OnPropertyChanged(nameof(RuntimeStatusText));
+            OnPropertyChanged(nameof(ProtocolStatusText));
+        }
+    }
+
+    [JsonIgnore]
+    public string RuntimeConnectionError
+    {
+        get => _runtimeConnectionError;
+        set
+        {
+            if (SetProperty(ref _runtimeConnectionError, value)) OnPropertyChanged(nameof(HasRuntimeConnectionError));
+        }
+    }
+
+    [JsonIgnore]
+    public bool HasRuntimeConnectionError => !string.IsNullOrWhiteSpace(RuntimeConnectionError);
 
     [JsonIgnore]
     public bool IsRuntimeOperationInProgress
@@ -155,7 +207,7 @@ public class Communication : ObservableObject
     }
 
     [JsonIgnore]
-    public bool CanToggleRuntime => SupportsRuntimeToggle && !IsRuntimeOperationInProgress;
+    public bool CanToggleRuntime => SupportsRuntimeToggle && IsEnabled && !IsRuntimeOperationInProgress;
 
     [JsonIgnore]
     public string ProtocolStatusText => $"{ProtocolDisplayName} · {RuntimeStatusText}";
@@ -419,7 +471,7 @@ public class Communication : ObservableObject
     public string ConnectionString => GetConnectionString();
 
     [JsonIgnore]
-    public string RuntimeStatusText => RuntimeStatus switch
+    public string RuntimeStatusText => !string.IsNullOrEmpty(RuntimeConnectionDescription) ? RuntimeConnectionDescription : RuntimeStatus switch
     {
         CommunicationRuntimeStatus.Connected => "已连接",
         CommunicationRuntimeStatus.Connecting => "连接中",

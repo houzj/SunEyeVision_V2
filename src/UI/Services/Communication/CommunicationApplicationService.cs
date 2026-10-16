@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace SunEyeVision.UI.Services.Communication;
 /// <summary>
 /// Owns the solution-level communication lifecycle. It does not access WPF controls.
 /// </summary>
-public sealed class CommunicationApplicationService : IAsyncDisposable
+public sealed partial class CommunicationApplicationService : IAsyncDisposable
 {
     private sealed record ConnectionPlan(CommunicationDeviceSnapshot Configuration, int PollInterval,
         ModbusPollAddress[] Addresses, string[] OpcUaNodeIds);
@@ -25,7 +26,72 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
     private Task _switchTask = Task.CompletedTask;
     private CancellationTokenSource? _switchCancellation;
     private Solution? _activeSolution;
-    private readonly ConcurrentDictionary<string, byte> _reconnecting = new(StringComparer.Ordinal);
+    private volatile bool _connectionsReady;
+    private sealed class DeviceLifetime
+    {
+        public DeviceLifetime(ConfiguredCommunication device, CancellationToken solutionToken)
+        {
+            Device = device;
+            Cancellation = CancellationTokenSource.CreateLinkedTokenSource(solutionToken);
+            Token = Cancellation.Token;
+        }
+        public ConfiguredCommunication Device { get; }
+        public CancellationTokenSource Cancellation { get; }
+        public CancellationToken Token { get; }
+    }
+    private readonly Dictionary<string, DeviceLifetime> _deviceLifetimes = new(StringComparer.Ordinal);
+
+    private DeviceLifetime GetDeviceLifetimeLocked(ConfiguredCommunication device)
+    {
+        if (_deviceLifetimes.TryGetValue(device.Id, out var current) &&
+            ReferenceEquals(current.Device, device) && !current.Cancellation.IsCancellationRequested) return current;
+        if (current != null) CancelDeviceLifetimeLocked(device.Id);
+        var lifetime = new DeviceLifetime(device, _switchCancellation?.Token ?? CancellationToken.None);
+        _deviceLifetimes[device.Id] = lifetime;
+        return lifetime;
+    }
+
+    private void CancelDeviceLifetimeLocked(string id)
+    {
+        if (_deviceLifetimes.Remove(id, out var lifetime))
+        {
+            lifetime.Cancellation.Cancel();
+            lifetime.Cancellation.Dispose();
+        }
+        if (_reconnecting.TryGetValue(id, out var retry)) retry.Cancellation.Cancel();
+    }
+
+    private bool IsCurrentDeviceLocked(ConfiguredCommunication device, CancellationToken solutionToken) =>
+        !_disposed && !solutionToken.IsCancellationRequested &&
+        (_switchCancellation?.Token ?? CancellationToken.None) == solutionToken &&
+        ReferenceEquals(_activeSolution?.Communications.Find(d => d.Id == device.Id), device);
+    private sealed class ReconnectAttempt(CancellationToken lifetime)
+    {
+        public Guid ConnectionOwner { get; } = Guid.NewGuid();
+        public CancellationTokenSource Cancellation { get; } = CancellationTokenSource.CreateLinkedTokenSource(lifetime);
+        public Task Task { get; set; } = Task.CompletedTask;
+        public bool ConnectionLostAgain { get; set; }
+        public bool Waiting { get; set; }
+        public long RetryDueTimestamp { get; set; }
+    }
+    private readonly Dictionary<string, ReconnectAttempt> _reconnecting = new(StringComparer.Ordinal);
+    private const int MaxReconnectFailures = 5;
+    // Runtime-only budget: reopening the manager must not restart an exhausted cycle.
+    private readonly Dictionary<string, int> _reconnectFailures = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _manualDisconnects = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _connectionIntents = new(StringComparer.Ordinal);
+    private readonly HashSet<ConfiguredCommunication> _observedDevices = new();
+    private readonly HashSet<ConfiguredCommunication> _retiredDevices = new();
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _deviceGates = new(StringComparer.Ordinal);
+    private sealed class ConnectionPolicyUpdate(ConfiguredCommunication device, CancellationToken lifetime)
+    {
+        public ConfiguredCommunication Device { get; } = device;
+        public CancellationToken Lifetime { get; } = lifetime;
+        public long Revision { get; set; }
+        // Coalescing must retain a disable even when the final configuration is enabled.
+        public bool RequiresDisconnect { get; set; }
+    }
+    private readonly Dictionary<string, ConnectionPolicyUpdate> _policyUpdates = new(StringComparer.Ordinal);
     private readonly List<Task> _reconnectTasks = new();
     private bool _disposed;
     private IReadOnlyList<CommunicationHeartbeatJob> _heartbeatPlans = Array.Empty<CommunicationHeartbeatJob>();
@@ -47,9 +113,15 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
     {
         _solutions = solutions ?? throw new ArgumentNullException(nameof(solutions));
         Composition = composition ?? throw new ArgumentNullException(nameof(composition));
-        Sends = new(() => { lock (_gate) return _disposed ? null : _activeSolution; }, Composition.Runtime);
+        Sends = new(() => { lock (_gate) return _disposed ? null : _activeSolution; },
+            Composition.Runtime, GetDeviceOperationToken);
         Heartbeats = new CommunicationHeartbeatService(Composition.Runtime);
         Automation = new CommunicationAutomationService(Composition.Runtime);
+        Automation.DeviceLifetimeReader = id =>
+        {
+            lock (_gate)
+                return _activeSolution is { } solution ? GetDeviceOperationToken(solution, id) : new CancellationToken(true);
+        };
         Receives.ActiveReader = ReadCurrentDeviceAsync;
         Receives.VariableCatalog = GetCurrentVariables;
         Receives.VariableReader = ReadCurrentVariables;
@@ -75,7 +147,12 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
     public void RefreshAutomationConfiguration(Solution solution)
     {
         lock (_gate)
-            if (!_disposed && ReferenceEquals(solution, _activeSolution)) { ConfigureReceiveSources(solution); Automation.Refresh(solution); }
+            if (!_disposed && ReferenceEquals(solution, _activeSolution))
+            {
+                ObserveDevicesLocked(solution);
+                ConfigureReceiveSources(solution);
+                Automation.Refresh(solution);
+            }
     }
 
     private void ConfigureReceiveSources(Solution? solution, bool reset = false)
@@ -104,11 +181,23 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
     }
     private void OnReceiveStatus(object? sender, SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationStatusSnapshot status)
     {
+        // During teardown these events still belong to the old runtime generation.
+        // Runtime publishes synchronously under its state gate. Do not acquire the
+        // application gate here: policy cancellation may hold it while invalidating
+        // that runtime. Teardown drains the runtime before enabling the next epoch.
+        if (!_connectionsReady) return;
+        if (status.State == SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Connected)
+            _connectionErrors.TryRemove(status.Device.Value, out _);
+        else if (!string.IsNullOrWhiteSpace(status.LastError?.Message))
+            _connectionErrors[status.Device.Value] = status.LastError.Message;
         if (status.State == SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Connected)
             Receives.MarkConnected(status.Device.Value);
         if (status.State is SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Disconnected
             or SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Faulted)
+        {
+            Composition.Polling.Stop(status.Device.Value);
             Receives.InvalidateDevice(status.Device.Value);
+        }
     }
 
     private async Task<(object Value, DateTimeOffset? SourceTime)> ReadCurrentDeviceAsync(
@@ -229,7 +318,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
                 }
     }
     /// <summary>Host entry point for a caller's typed execution snapshot.</summary>
-    public Task<int> SendEventAsync(Guid eventId, IReadOnlyDictionary<Guid, object?> parameterSnapshot,
+    public async Task<int> SendEventAsync(Guid eventId, IReadOnlyDictionary<Guid, object?> parameterSnapshot,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(parameterSnapshot);
@@ -239,8 +328,22 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         var device = solution.Communications.FirstOrDefault(item => item.Id == definition.DeviceId)
             ?? throw new InvalidOperationException("发送事件的绑定设备不存在。");
         var service = new CommunicationSendEventService(Composition.Runtime);
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, GetDeviceOperationToken(solution, device.Id));
+        var status = Composition.Runtime.GetStatus(new(device.Id));
         var plan = service.Prepare(definition, device, parameterSnapshot);
-        return service.SendAsync(plan, cancellationToken);
+        return await service.SendAsync(plan, cancellation.Token, status).ConfigureAwait(false);
+    }
+
+    internal CancellationToken GetDeviceOperationToken(Solution expectedSolution, string deviceId)
+    {
+        lock (_gate)
+        {
+            var device = _activeSolution?.Communications.Find(d => d.Id == deviceId);
+            if (_disposed || !_connectionsReady || !ReferenceEquals(expectedSolution, _activeSolution) ||
+                device?.IsEnabled != true || _retiredDevices.Contains(device) || _manualDisconnects.Contains(deviceId))
+                return new CancellationToken(true);
+            return GetDeviceLifetimeLocked(device).Token;
+        }
     }
 
     private void OnHeartbeatStatus(Guid id, string status)
@@ -273,10 +376,21 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         lock (_gate)
         {
             if (_disposed) return;
-            _switchCancellation?.Cancel();
+            _connectionsReady = false;
+            var previousCancellation = _switchCancellation;
+            previousCancellation?.Cancel();
+            foreach (var id in _deviceLifetimes.Keys.ToArray()) CancelDeviceLifetimeLocked(id);
+            _manualDisconnects.Clear();
+            _retiredDevices.Clear();
+            _policyUpdates.Clear();
+            _connectionIntents.Clear();
+            foreach (var plan in plans) _connectionIntents.Add(plan.Configuration.Id);
+            _connectionErrors.Clear();
+            _reconnectFailures.Clear();
             var pendingRetries = _reconnectTasks.ToArray();
             _reconnectTasks.RemoveAll(task => task.IsCompleted);
             _activeSolution = solution;
+            ObserveDevicesLocked(solution);
             OutputBindings.Reset(solution);
             OutputBindings.ReconcileAll();
             ConfigureReceiveSources(solution, reset: true);
@@ -287,6 +401,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             _heartbeatPlans = heartbeatPlans;
             Heartbeats.Runner.Update(Array.Empty<CommunicationHeartbeatJob>());
             _switchCancellation = new CancellationTokenSource();
+            previousCancellation?.Dispose();
             var previous = _switchTask;
             var token = _switchCancellation.Token;
             _switchTask = Task.Run(() => SwitchAsync(previous, pendingRetries, plans, token));
@@ -312,25 +427,57 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         }
         finally { _monitorGate.Release(); }
         if (token.IsCancellationRequested) return;
+        lock (_gate)
+        {
+            if (_disposed || token.IsCancellationRequested || _switchCancellation?.Token != token) return;
+            _connectionsReady = true;
+            _connectionErrors.Clear();
+        }
 
         foreach (var plan in plans)
         {
             if (token.IsCancellationRequested) return;
+            DeviceLifetime lifetime;
+            lock (_gate)
+            {
+                var device = _activeSolution?.Communications.Find(d => d.Id == plan.Configuration.Id);
+                if (_switchCancellation?.Token != token || device?.IsEnabled != true ||
+                    !_connectionIntents.Contains(plan.Configuration.Id) || _manualDisconnects.Contains(plan.Configuration.Id)) continue;
+                lifetime = GetDeviceLifetimeLocked(device);
+            }
+            var deviceToken = lifetime.Token;
             try
             {
-                await Composition.Runtime.ConnectAsync(plan.Configuration, token)
+                await Composition.Runtime.ConnectAsync(plan.Configuration, deviceToken)
                     .ConfigureAwait(false);
-                if (plan.Configuration.IsModbus)
-                    Composition.Polling.Start(plan.Configuration.Id, plan.PollInterval, plan.Addresses);
+                lock (_gate)
+                {
+                    if (!IsCurrentDeviceLocked(lifetime.Device, token) || deviceToken.IsCancellationRequested || !lifetime.Device.IsEnabled) continue;
+                    _reconnectFailures.Remove(lifetime.Device.Id);
+                    if (plan.Configuration.IsModbus)
+                        Composition.Polling.Start(plan.Configuration.Id, plan.PollInterval, plan.Addresses);
+                }
                 if (plan.Configuration.ProtocolKey == "opcua")
-                    await MonitorOpcUaPointsAsync(plan.Configuration.Id, plan.OpcUaNodeIds, token).ConfigureAwait(false);
+                    await MonitorOpcUaPointsAsync(plan.Configuration.Id, plan.OpcUaNodeIds, deviceToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { return; }
-            catch (Exception ex) { LogWarning($"自动连接通讯设备“{plan.Configuration.Name}”失败：{ex.Message}"); }
+            catch (OperationCanceledException) when (deviceToken.IsCancellationRequested) { }
+            catch (Exception ex)
+            {
+                LogWarning($"自动连接通讯设备“{plan.Configuration.Name}”失败：{ex.Message}");
+                if (!token.IsCancellationRequested)
+                    OnConnectionClosed(this, new CommunicationConnectionClosedEventArgs(plan.Configuration.Id));
+            }
         }
         lock (_gate)
             if (!token.IsCancellationRequested && !_disposed)
             {
+                // Policy changes during teardown cannot schedule retries until ready.
+                // Include devices enabled after the startup plan was captured.
+                foreach (var device in _activeSolution?.Communications.ToArray() ?? Array.Empty<ConfiguredCommunication>())
+                    if (device.IsEnabled && device.AutoReconnect && !_retiredDevices.Contains(device) &&
+                        _connectionIntents.Contains(device.Id) && !_manualDisconnects.Contains(device.Id))
+                        OnConnectionClosed(this, new CommunicationConnectionClosedEventArgs(device.Id));
                 _heartbeatReady = true;
                 Heartbeats.Runner.Update(_heartbeatPlans);
                 Automation.SolutionLoaded();
@@ -364,54 +511,457 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
 
     private void OnConnectionClosed(object? sender, CommunicationConnectionClosedEventArgs e)
     {
-        Automation.ResetDeviceHistory(e.CommunicationId);
+        CancellationToken eventLifetime;
         lock (_gate)
-            foreach (var point in _activeSolution?.Communications.Find(d => d.Id == e.CommunicationId)?.OpcUaDataPoints ?? new())
-                _monitorStatuses.TryRemove(point.Id, out _);
+        {
+            if (_disposed || !_connectionsReady) return;
+            eventLifetime = _switchCancellation?.Token ?? CancellationToken.None;
+        }
+        if (Composition.Runtime.IsConnected(e.CommunicationId)) return;
+        var state = Composition.Runtime.GetStatus(new SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationDeviceRef(e.CommunicationId)).State;
+        if (state is SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Connecting or
+            SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Disconnecting) return;
         ConfiguredCommunication? device;
         CancellationToken token;
         lock (_gate)
         {
+            if (_disposed || !_connectionsReady || eventLifetime.IsCancellationRequested ||
+                _switchCancellation?.Token != eventLifetime ||
+                (e.RuntimeStatus != null && !Composition.Runtime.IsCurrentStatus(e.RuntimeStatus))) return;
+            Composition.Polling.Stop(e.CommunicationId);
+            Automation.ResetDeviceHistory(e.CommunicationId);
+            foreach (var point in _activeSolution?.Communications.Find(d => d.Id == e.CommunicationId)?.OpcUaDataPoints ?? new())
+                _monitorStatuses.TryRemove(point.Id, out _);
             device = _activeSolution?.Communications.FirstOrDefault(item => item.Id == e.CommunicationId);
             token = _switchCancellation?.Token ?? CancellationToken.None;
-            if (_disposed || device is null || !device.IsEnabled || !device.AutoReconnect ||
-                token.IsCancellationRequested || !_reconnecting.TryAdd(device.Id, 0)) return;
+            if (_disposed || !_connectionsReady || device is null || _retiredDevices.Contains(device) || !device.IsEnabled || !device.AutoReconnect ||
+                token.IsCancellationRequested || !_connectionIntents.Contains(device.Id) || _manualDisconnects.Contains(device.Id)) return;
+            if (_reconnectFailures.GetValueOrDefault(device.Id) >= MaxReconnectFailures) return;
+            if (_reconnecting.TryGetValue(device.Id, out var existing))
+            {
+                existing.ConnectionLostAgain = true;
+                return;
+            }
+            var attempt = new ReconnectAttempt(GetDeviceLifetimeLocked(device).Token);
+            _reconnecting.Add(device.Id, attempt);
             _reconnectTasks.RemoveAll(task => task.IsCompleted);
-            _reconnectTasks.Add(ReconnectAsync(device, token));
+            attempt.Task = ReconnectAsync(device, attempt);
+            _reconnectTasks.Add(attempt.Task);
         }
     }
 
-    private async Task ReconnectAsync(ConfiguredCommunication device, CancellationToken token)
+    private void ObserveDevicesLocked(Solution? solution)
     {
+        var current = (solution?.Communications ?? new()).ToHashSet();
+        foreach (var removed in _observedDevices.Except(current).ToArray())
+        {
+            CancelDeviceLifetimeLocked(removed.Id);
+            _policyUpdates.Remove(removed.Id);
+            _reconnectFailures.Remove(removed.Id);
+            removed.PropertyChanged -= ConnectionPolicyChanged;
+            _observedDevices.Remove(removed);
+            _retiredDevices.Remove(removed);
+            if (!current.Any(device => device.Id == removed.Id)) _connectionIntents.Remove(removed.Id);
+        }
+        foreach (var added in current.Except(_observedDevices))
+        {
+            added.PropertyChanged += ConnectionPolicyChanged;
+            _observedDevices.Add(added);
+        }
+    }
+
+    /// <summary>Reconcile a restored configuration without changing its persisted value.</summary>
+    public void RefreshDeviceConnectionPolicy(string deviceId)
+    {
+        lock (_gate)
+        {
+            if (_disposed) return;
+            var device = _activeSolution?.Communications.Find(d => d.Id == deviceId);
+            if (device != null) ConnectionPolicyChanged(device,
+                new PropertyChangedEventArgs(nameof(ConfiguredCommunication.AutoReconnect)));
+        }
+    }
+
+    private void ConnectionPolicyChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (sender is not ConfiguredCommunication device ||
+            args.PropertyName is not (nameof(ConfiguredCommunication.AutoReconnect) or nameof(ConfiguredCommunication.IsEnabled))) return;
+        lock (_gate)
+        {
+            if (_disposed || !_observedDevices.Contains(device) || _retiredDevices.Contains(device)) return;
+            if (args.PropertyName == nameof(ConfiguredCommunication.IsEnabled)) ConfigureReceiveSources(_activeSolution);
+            if (!device.IsEnabled)
+            {
+                // Do not let startup completion or an unrelated close event schedule
+                // a replacement until this disable has drained, even after re-enable.
+                _connectionIntents.Remove(device.Id);
+                CancelDeviceLifetimeLocked(device.Id);
+            }
+            if ((!device.IsEnabled || !device.AutoReconnect) && _reconnecting.TryGetValue(device.Id, out var retry))
+                retry.Cancellation.Cancel();
+            if (args.PropertyName == nameof(ConfiguredCommunication.IsEnabled) && _activeSolution is { } solution)
+            {
+                Automation.Refresh(solution);
+                RefreshHeartbeatConfiguration(solution);
+            }
+            var lifetime = _switchCancellation?.Token ?? CancellationToken.None;
+            if (_policyUpdates.TryGetValue(device.Id, out var pending) &&
+                ReferenceEquals(pending.Device, device) && pending.Lifetime == lifetime)
+            {
+                pending.RequiresDisconnect |= !device.IsEnabled;
+                pending.Revision++;
+                return;
+            }
+            var update = new ConnectionPolicyUpdate(device, lifetime) { RequiresDisconnect = !device.IsEnabled };
+            _policyUpdates[device.Id] = update;
+            _reconnectTasks.RemoveAll(task => task.IsCompleted);
+            _reconnectTasks.Add(Task.Run(() => DrainConnectionPolicyUpdatesAsync(update)));
+        }
+    }
+
+    private bool IsCurrentPolicyLocked(ConnectionPolicyUpdate update, long revision) =>
+        !_disposed && !_retiredDevices.Contains(update.Device) && !update.Lifetime.IsCancellationRequested &&
+        _policyUpdates.TryGetValue(update.Device.Id, out var current) && ReferenceEquals(current, update) &&
+        current.Revision == revision && _activeSolution?.Communications.Find(d => d.Id == update.Device.Id) == update.Device;
+
+    private async Task DrainConnectionPolicyUpdatesAsync(ConnectionPolicyUpdate update)
+    {
+        try
+        {
+            while (true)
+            {
+                long revision;
+                lock (_gate)
+                {
+                    revision = update.Revision;
+                    if (!IsCurrentPolicyLocked(update, revision)) return;
+                }
+                await ApplyConnectionPolicyAsync(update, revision).ConfigureAwait(false);
+                lock (_gate)
+                {
+                    if (!_policyUpdates.TryGetValue(update.Device.Id, out var current) || !ReferenceEquals(current, update)) return;
+                    if (update.Revision != revision) continue;
+                    _policyUpdates.Remove(update.Device.Id);
+                    return;
+                }
+            }
+        }
+        finally
+        {
+            lock (_gate)
+                if (_policyUpdates.TryGetValue(update.Device.Id, out var current) && ReferenceEquals(current, update))
+                    _policyUpdates.Remove(update.Device.Id);
+        }
+    }
+
+    private async Task ApplyConnectionPolicyAsync(ConnectionPolicyUpdate update, long revision)
+    {
+        var device = update.Device;
+        var lifetime = update.Lifetime;
+        var deviceGate = _deviceGates.GetOrAdd(device.Id, _ => new SemaphoreSlim(1, 1));
+        try
+        {
+            // The old solution switch is allowed to drain these tasks: do not wait for
+            // ReadyAsync here, which would make the next switch wait on itself.
+            await deviceGate.WaitAsync(lifetime).ConfigureAwait(false);
+            try
+            {
+                bool requiresDisconnect;
+                lock (_gate)
+                {
+                    if (!IsCurrentPolicyLocked(update, revision)) return;
+                    requiresDisconnect = update.RequiresDisconnect || !device.IsEnabled;
+                    // A new disable received during the await below sets this again.
+                    update.RequiresDisconnect = false;
+                }
+                if (requiresDisconnect)
+                    await StopDeviceCoreAsync(device, lifetime, manual: false).ConfigureAwait(false);
+                lock (_gate)
+                    if (!IsCurrentPolicyLocked(update, revision)) return;
+                if (device.IsEnabled && device.AutoReconnect)
+                {
+                    Task cancelledRetry = Task.CompletedTask;
+                    lock (_gate)
+                        if (_reconnecting.TryGetValue(device.Id, out var retry) && retry.Cancellation.IsCancellationRequested)
+                            cancelledRetry = retry.Task;
+                    await cancelledRetry.ConfigureAwait(false);
+                    lifetime.ThrowIfCancellationRequested();
+                    if (device.IsEnabled && device.AutoReconnect)
+                    {
+                        lock (_gate)
+                        {
+                            if (!IsCurrentPolicyLocked(update, revision) || !device.IsEnabled || !device.AutoReconnect) return;
+                            _reconnectFailures.Remove(device.Id);
+                            _manualDisconnects.Remove(device.Id);
+                            _connectionIntents.Add(device.Id);
+                        }
+                        OnConnectionClosed(this, new CommunicationConnectionClosedEventArgs(device.Id));
+                    }
+                }
+            }
+            finally { deviceGate.Release(); }
+        }
+        catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
+        catch (Exception ex) { LogWarning($"应用通讯连接策略失败：设备={device.Name}，{ex.Message}"); }
+    }
+
+    /// <summary>Manual stop cancels and drains the retry before disposing the active adapter.</summary>
+    public async Task DisconnectDeviceAsync(string deviceId)
+    {
+        ConfiguredCommunication? device;
+        CancellationToken lifetime;
+        lock (_gate)
+        {
+            device = _activeSolution?.Communications.Find(d => d.Id == deviceId);
+            lifetime = _switchCancellation?.Token ?? CancellationToken.None;
+            if (_disposed || device == null) return;
+            // Invalidate before waiting for a manual connect or policy worker's gate.
+            _retiredDevices.Add(device);
+            _policyUpdates.Remove(deviceId);
+            _manualDisconnects.Add(deviceId);
+            _connectionIntents.Remove(deviceId);
+            CancelDeviceLifetimeLocked(deviceId);
+        }
+        var deviceGate = _deviceGates.GetOrAdd(deviceId, _ => new SemaphoreSlim(1, 1));
+        await deviceGate.WaitAsync().ConfigureAwait(false);
+        try { await StopDeviceCoreAsync(device, lifetime, manual: true).ConfigureAwait(false); }
+        finally { deviceGate.Release(); }
+    }
+
+    /// <summary>Disconnect once without disabling the user's AutoReconnect policy.</summary>
+    public async Task DisconnectConnectionAsync(string deviceId)
+    {
+        ConfiguredCommunication? device;
+        CancellationToken lifetime;
+        lock (_gate)
+        {
+            device = _activeSolution?.Communications.Find(d => d.Id == deviceId);
+            lifetime = _switchCancellation?.Token ?? CancellationToken.None;
+            if (_disposed || device == null) return;
+            _policyUpdates.Remove(deviceId);
+            _manualDisconnects.Add(deviceId);
+            _connectionIntents.Remove(deviceId);
+            CancelDeviceLifetimeLocked(deviceId);
+        }
+        var deviceGate = _deviceGates.GetOrAdd(deviceId, _ => new SemaphoreSlim(1, 1));
+        await deviceGate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            await StopDeviceCoreAsync(device, lifetime, manual: true).ConfigureAwait(false);
+            lock (_gate)
+            {
+                if (!IsCurrentDeviceLocked(device, lifetime) || !device.IsEnabled || !device.AutoReconnect) return;
+                _reconnectFailures.Remove(deviceId);
+                _manualDisconnects.Remove(deviceId);
+                _connectionIntents.Add(deviceId);
+                OnConnectionClosed(this, new CommunicationConnectionClosedEventArgs(deviceId));
+            }
+        }
+        finally { deviceGate.Release(); }
+    }
+
+    private async Task StopDeviceCoreAsync(ConfiguredCommunication device, CancellationToken lifetime, bool manual)
+    {
+        var deviceId = device.Id;
+        Task pending;
+        lock (_gate)
+        {
+            if (!IsCurrentDeviceLocked(device, lifetime)) return;
+            if (manual)
+            {
+                // A queued old enable must not undo a later explicit stop/delete.
+                _policyUpdates.Remove(deviceId);
+                _manualDisconnects.Add(deviceId);
+                _connectionIntents.Remove(deviceId);
+            }
+            else if (_activeSolution?.Communications.Find(d => d.Id == deviceId)?.IsEnabled != true)
+                _connectionIntents.Remove(deviceId);
+            CancelDeviceLifetimeLocked(deviceId);
+            if (_reconnecting.TryGetValue(deviceId, out var attempt))
+            {
+                attempt.Cancellation.Cancel();
+                pending = attempt.Task;
+            }
+            else pending = Task.CompletedTask;
+        }
+        await pending.ConfigureAwait(false);
+        Task disconnect;
+        lock (_gate)
+        {
+            if (!IsCurrentDeviceLocked(device, lifetime)) return;
+            // Runtime removes the current adapter synchronously before its first await.
+            // A solution change cannot interleave between this guard and removal.
+            disconnect = Composition.Runtime.DisconnectAsync(deviceId);
+        }
+        await disconnect.ConfigureAwait(false);
+    }
+
+    public async Task ConnectDeviceAsync(CommunicationDeviceSnapshot configuration)
+    {
+        ConfiguredCommunication device;
+        CancellationToken lifetime;
+        CancellationToken requestToken;
+        Task ready;
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            device = _activeSolution?.Communications.Find(d => d.Id == configuration.Id)
+                ?? throw new InvalidOperationException("通讯设备已删除或不属于当前方案。");
+            lifetime = _switchCancellation?.Token ?? CancellationToken.None;
+            requestToken = GetDeviceLifetimeLocked(device).Token;
+            ready = _switchTask;
+        }
+        await ready.WaitAsync(requestToken).ConfigureAwait(false);
+        var deviceGate = _deviceGates.GetOrAdd(configuration.Id, _ => new SemaphoreSlim(1, 1));
+        await deviceGate.WaitAsync(lifetime).ConfigureAwait(false);
+        try
+        {
+            lock (_gate)
+            {
+                if (!IsCurrentDeviceLocked(device, lifetime) || _retiredDevices.Contains(device) || requestToken.IsCancellationRequested || !device.IsEnabled)
+                    throw new OperationCanceledException("通讯设备已禁用、删除或方案已切换。");
+                _reconnectFailures.Remove(configuration.Id);
+                _manualDisconnects.Remove(configuration.Id);
+                _connectionIntents.Add(configuration.Id);
+            }
+            await StopDeviceCoreAsync(device, lifetime, manual: false).ConfigureAwait(false);
+            lifetime.ThrowIfCancellationRequested();
+            CancellationToken deviceToken;
+            lock (_gate)
+            {
+                if (!IsCurrentDeviceLocked(device, lifetime) || _retiredDevices.Contains(device) || !device.IsEnabled || _manualDisconnects.Contains(device.Id))
+                    throw new OperationCanceledException("通讯设备连接已取消。");
+                deviceToken = GetDeviceLifetimeLocked(device).Token;
+            }
+            try { await Composition.Runtime.ConnectAsync(configuration, deviceToken).ConfigureAwait(false); }
+            catch
+            {
+                if (!deviceToken.IsCancellationRequested)
+                    OnConnectionClosed(this, new CommunicationConnectionClosedEventArgs(configuration.Id));
+                throw;
+            }
+        }
+        finally { deviceGate.Release(); }
+    }
+
+    private async Task ReconnectAsync(ConfiguredCommunication device, ReconnectAttempt attempt)
+    {
+        var token = attempt.Cancellation.Token;
+        var ownsConnection = false;
         try
         {
             var delaySeconds = 1;
             while (!token.IsCancellationRequested && device.IsEnabled && device.AutoReconnect)
             {
+                lock (_gate)
+                {
+                    if (_reconnectFailures.GetValueOrDefault(device.Id) >= MaxReconnectFailures) return;
+                    attempt.Waiting = true;
+                    attempt.RetryDueTimestamp = System.Diagnostics.Stopwatch.GetTimestamp() +
+                        (long)(delaySeconds * (double)System.Diagnostics.Stopwatch.Frequency);
+                }
                 await Task.Delay(TimeSpan.FromSeconds(delaySeconds), token).ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
+                lock (_gate)
+                {
+                    if (_disposed || !device.IsEnabled || !device.AutoReconnect || !_connectionIntents.Contains(device.Id) || _manualDisconnects.Contains(device.Id) ||
+                        _activeSolution?.Communications.Find(d => d.Id == device.Id) != device) return;
+                    attempt.ConnectionLostAgain = false;
+                    attempt.Waiting = false;
+                }
+                VisionLogger.Instance.Log(LogLevel.Info, $"通讯自动重连尝试：设备={device.Name}({device.Id}), 等待={delaySeconds}秒",
+                    "CommunicationApplication", target: LogTarget.File | LogTarget.UI);
                 try
                 {
-                    await Composition.Runtime.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(device), token)
-                        .ConfigureAwait(false);
-                    if (device.IsModbus)
-                        Composition.Polling.Start(device.Id, device.PollInterval,
-                            device.ModbusAddressPoints.Where(point => point.PollEnabled && point.AccessMode != "只写")
-                                .Select(point => new ModbusPollAddress(point.Id, point.StartAddress, point.Count, point.TimeoutMs)));
+                    if (!Composition.Runtime.IsConnected(device.Id))
+                    {
+                        token.ThrowIfCancellationRequested();
+                        ownsConnection = true;
+                        await Composition.Runtime.ConnectOwnedAsync(CommunicationDeviceSnapshotFactory.Create(device), attempt.ConnectionOwner, token)
+                            .ConfigureAwait(false);
+                    }
+                    token.ThrowIfCancellationRequested();
+                    lock (_gate)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        if (!device.IsEnabled || !device.AutoReconnect || _disposed ||
+                            _activeSolution?.Communications.Find(d => d.Id == device.Id) != device)
+                            return;
+                        if (device.IsModbus)
+                            Composition.Polling.Start(device.Id, device.PollInterval,
+                                device.ModbusAddressPoints.Where(point => point.PollEnabled && point.AccessMode != "只写")
+                                    .Select(point => new ModbusPollAddress(point.Id, point.StartAddress, point.Count, point.TimeoutMs)));
+                    }
                     if (device.IsOpcUa)
                         await MonitorOpcUaPointsAsync(device.Id,
                             (device.OpcUaDataPoints ?? new()).Select(point => point.NodeId), token).ConfigureAwait(false);
+                    token.ThrowIfCancellationRequested();
+                    if (!Composition.Runtime.IsConnected(device.Id))
+                        throw new InvalidOperationException("通讯重连后会话再次失效，将继续重试。");
+                    lock (_gate)
+                    {
+                        if (token.IsCancellationRequested || _disposed ||
+                            !ReferenceEquals(_activeSolution?.Communications.Find(d => d.Id == device.Id), device)) return;
+                        _reconnectFailures.Remove(device.Id);
+                    }
+                    VisionLogger.Instance.Log(LogLevel.Info, $"通讯自动重连成功：设备={device.Name}({device.Id})",
+                        "CommunicationApplication", target: LogTarget.File | LogTarget.UI);
                     return;
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested) { return; }
                 catch (Exception ex)
                 {
-                    LogWarning($"通讯设备“{device.Name}”重连失败，{Math.Min(delaySeconds * 2, 30)} 秒后重试：{ex.Message}");
+                    int failures;
+                    lock (_gate)
+                    {
+                        if (token.IsCancellationRequested || _disposed ||
+                            !ReferenceEquals(_activeSolution?.Communications.Find(d => d.Id == device.Id), device) ||
+                            !_reconnecting.TryGetValue(device.Id, out var currentAttempt) ||
+                            !ReferenceEquals(currentAttempt, attempt)) return;
+                        _connectionErrors[device.Id] = ex.Message;
+                        failures = _reconnectFailures.GetValueOrDefault(device.Id) + 1;
+                        _reconnectFailures[device.Id] = failures;
+                        // Update the same setting bound by every protocol's switch.
+                        // Its policy notification cancels this worker; a subsequent
+                        // user enable drains it before resetting the retry budget.
+                        if (failures >= MaxReconnectFailures)
+                            device.AutoReconnect = false;
+                    }
+                    if (failures >= MaxReconnectFailures)
+                    {
+                        LogWarning($"通讯设备“{device.Name}”自动重连已停止并关闭开关：连续失败{MaxReconnectFailures}次。最后原因：{ex.Message}。可手动连接或开启自动重连开始新一轮。 ");
+                        return;
+                    }
+                    LogWarning($"通讯设备“{device.Name}”重连失败（{failures}/{MaxReconnectFailures}），{Math.Min(delaySeconds * 2, 30)} 秒后重试：{ex.Message}");
                     delaySeconds = Math.Min(delaySeconds * 2, 30);
                 }
             }
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { }
-        finally { _reconnecting.TryRemove(device.Id, out _); }
+        finally
+        {
+            // Retire only the adapter created by this attempt. A duplicate connection
+            // attempt or a later manual connection must never be closed by old cleanup.
+            try
+            {
+                if (ownsConnection && (token.IsCancellationRequested || !device.IsEnabled || !device.AutoReconnect))
+                    await Composition.Runtime.DisconnectOwnedAsync(device.Id, attempt.ConnectionOwner).ConfigureAwait(false);
+            }
+            finally
+            {
+                lock (_gate)
+                {
+                    if (_reconnecting.TryGetValue(device.Id, out var current) && ReferenceEquals(current, attempt))
+                        _reconnecting.Remove(device.Id);
+                    var retry = attempt.ConnectionLostAgain && !token.IsCancellationRequested &&
+                        _reconnectFailures.GetValueOrDefault(device.Id) < MaxReconnectFailures;
+                    attempt.Cancellation.Dispose();
+                    // Do not lose a close event that arrived between the final connected check
+                    // and removal of this retry worker.
+                    if (retry) OnConnectionClosed(this, new CommunicationConnectionClosedEventArgs(device.Id));
+                }
+            }
+        }
     }
 
     private static void LogWarning(string message) =>
@@ -420,7 +970,12 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
     public async Task MonitorOpcUaPointAsync(string communicationId, string nodeId, CancellationToken token = default)
     {
         CancellationToken lifetime;
-        lock (_gate) { if (_disposed) return; lifetime = _switchCancellation?.Token ?? token; }
+        lock (_gate)
+        {
+            var device = _activeSolution?.Communications.Find(d => d.Id == communicationId);
+            if (_disposed || !_connectionsReady || device?.IsEnabled != true || _manualDisconnects.Contains(communicationId)) return;
+            lifetime = GetDeviceLifetimeLocked(device).Token;
+        }
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, lifetime);
         await _monitorGate.WaitAsync(cancellation.Token).ConfigureAwait(false);
         try { await MonitorOpcUaPointCoreAsync(communicationId, nodeId, cancellation.Token).ConfigureAwait(false); }
@@ -436,7 +991,9 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         {
             if (_disposed) return;
             point = _activeSolution?.Communications.Find(d => d.Id == communicationId)?.OpcUaDataPoints.Find(p => p.NodeId == nodeId);
-            lifetime = _switchCancellation?.Token ?? token;
+            var device = _activeSolution?.Communications.Find(d => d.Id == communicationId);
+            if (device?.IsEnabled != true || _manualDisconnects.Contains(communicationId)) return;
+            lifetime = GetDeviceLifetimeLocked(device).Token;
         }
         if (point == null) return;
         var mode = point.MonitorMode;
@@ -448,6 +1005,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             await UnmonitorOpcUaPointCoreAsync(communicationId, nodeId, token).ConfigureAwait(false);
             Automation.ResetDeviceHistory(communicationId, nodeId);
             await Composition.Runtime.RefreshOpcUaPointAsync(communicationId, nodeId, token).ConfigureAwait(false);
+            token.ThrowIfCancellationRequested();
             if (mode == "周期读取")
             {
                 await _opcUaPolling.StartAsync(communicationId, nodeId, interval, lifetime).ConfigureAwait(false);
@@ -457,6 +1015,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             {
                 await Composition.Runtime.SubscribeOpcUaValueAsync(communicationId, nodeId, interval, token).ConfigureAwait(false);
                 var revised = await Composition.Runtime.GetOpcUaMonitoringIntervalsAsync(communicationId, nodeId, token).ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
                 _monitorStatuses[point.Id] = revised is { } actual
                     ? $"服务器接受：采样 {actual.Sampling}ms，发布 {actual.Publishing}ms。"
                     : "尚无服务器实际订阅间隔。";
@@ -465,6 +1024,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
+            token.ThrowIfCancellationRequested();
             Composition.Runtime.ReportOpcUaPointError(communicationId, nodeId, ex.Message);
             LogWarning($"OPC UA 数据点 {nodeId} 监视失败：{ex.Message}");
         }
@@ -501,6 +1061,9 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
         {
             if (_disposed) return;
             _disposed = true;
+            _connectionsReady = false;
+            foreach (var device in _observedDevices) device.PropertyChanged -= ConnectionPolicyChanged;
+            _observedDevices.Clear();
             Heartbeats.Runner.Update(Array.Empty<CommunicationHeartbeatJob>());
             Automation.Reset(null);
             Receives.Configure(Array.Empty<SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSource>(), reset: true);
@@ -513,6 +1076,7 @@ public sealed class CommunicationApplicationService : IAsyncDisposable
             Composition.Runtime.ConnectionClosed -= OnConnectionClosed;
             Composition.Runtime.StatusChanged -= OnReceiveStatus;
             _switchCancellation?.Cancel();
+            foreach (var id in _deviceLifetimes.Keys.ToArray()) CancelDeviceLifetimeLocked(id);
             pending = _switchTask;
             pendingRetries = _reconnectTasks.ToArray();
         }

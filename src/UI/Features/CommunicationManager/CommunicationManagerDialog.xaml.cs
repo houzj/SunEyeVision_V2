@@ -538,23 +538,23 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             }
         }
 
-        private void DeviceToggle_CheckedChanged(object sender, RoutedPropertyChangedEventArgs<bool> e)
+        private async void DeviceToggle_CheckedChanged(object sender, RoutedPropertyChangedEventArgs<bool> e)
         {
             if (sender is not ToggleSwitch toggle || toggle.DataContext is not Communication communication)
                 return;
-            if (communication.IsRuntimeActive == e.NewValue)
+            if (communication.IsActuallyConnected == e.NewValue)
                 return;
 
             if (DataContext is CommunicationManagerViewModel manager)
             {
                 manager.SelectedCommunication = communication;
                 if (manager.ToggleDeviceCommand.CanExecute(communication))
-                    manager.ToggleDeviceCommand.Execute(communication);
+                    await manager.SetConnectionStateAsync(communication, e.NewValue);
             }
 
-            // SDK ToggleSwitch handles pointer input internally; reassert the one-way runtime-state binding
+            // SDK ToggleSwitch handles pointer input internally; reassert the actual-state binding
             // after the user gesture so the control's temporary visual state cannot become authoritative.
-            BindingOperations.SetBinding(toggle, ToggleSwitch.IsCheckedProperty, new Binding(nameof(Communication.IsRuntimeActive))
+            BindingOperations.SetBinding(toggle, ToggleSwitch.IsCheckedProperty, new Binding(nameof(Communication.IsActuallyConnected))
             {
                 Source = communication,
                 Mode = BindingMode.OneWay

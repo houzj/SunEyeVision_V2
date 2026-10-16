@@ -5851,9 +5851,17 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 }
 
                 var viewModel = new SunEyeVision.UI.Features.CommunicationManager.CommunicationManagerViewModel(solutionManager);
-                var dialog = new SunEyeVision.UI.Features.CommunicationManager.CommunicationManagerDialog(viewModel);
-
-                dialog.ShowDialog();
+                try
+                {
+                    var dialog = new SunEyeVision.UI.Features.CommunicationManager.CommunicationManagerDialog(viewModel);
+                    dialog.ShowDialog();
+                }
+                finally
+                {
+                    // Also release window subscriptions if creation or ShowDialog fails.
+                    // Disposal is idempotent and never stops the shared communications service.
+                    _ = viewModel.DisposeAsync();
+                }
             }
             catch (Exception ex)
             {

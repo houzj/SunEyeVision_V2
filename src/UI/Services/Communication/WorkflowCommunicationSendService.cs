@@ -13,7 +13,8 @@ using SunEyeVision.Workflow;
 namespace SunEyeVision.UI.Services.Communication;
 
 /// <summary>No controls or scheduling. Reuses the application's existing connection and send core.</summary>
-public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionReader, CommunicationRuntimeManager runtime) : ICommunicationSendService
+public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionReader, CommunicationRuntimeManager runtime,
+    Func<Solution, string, CancellationToken>? lifetimeReader = null) : ICommunicationSendService
 {
     private readonly CommunicationSendEventService _events = new(runtime);
     private Solution Solution => solutionReader() ?? throw new InvalidOperationException("当前通信方案不可用。");
@@ -123,6 +124,8 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
         else throw new NotSupportedException("队列发送尚未实现。");
         var originalDevice = solution.Communications.FirstOrDefault(d => d.Id == definition.DeviceId && d.IsEnabled)
             ?? throw new InvalidOperationException("目标设备不存在或已禁用。");
+        var deviceLifetime = lifetimeReader?.Invoke(solution, originalDevice.Id) ?? CancellationToken.None;
+        deviceLifetime.ThrowIfCancellationRequested();
         var signature = JsonSerializer.Serialize(originalDevice, WorkflowSerializationOptions.Default);
         var device = JsonSerializer.Deserialize<SunEyeVision.Workflow.Communication>(signature, WorkflowSerializationOptions.Default)!;
         var status = runtime.GetStatus(new(device.Id));
@@ -199,7 +202,8 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
                 JsonSerializer.Serialize(solution.Communications.FirstOrDefault(d => d.Id == device.Id), WorkflowSerializationOptions.Default) != signature ||
                 (eventSignature != null && JsonSerializer.Serialize(solution.CommunicationSendEvents.FirstOrDefault(e => e.EventId.ToString() == request.EventId), WorkflowSerializationOptions.Default) != eventSignature))
                 throw new InvalidOperationException("发送前方案、连接或目标配置已变化，未提交。");
-            var count = await _events.SendAsync(plan, ct).ConfigureAwait(false);
+            using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, deviceLifetime);
+            var count = await _events.SendAsync(plan, cancellation.Token, status).ConfigureAwait(false);
             if (count <= 0) throw new InvalidOperationException("没有可发送的连接目标。");
             return count;
         });

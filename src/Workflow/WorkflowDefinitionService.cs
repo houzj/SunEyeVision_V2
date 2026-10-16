@@ -122,6 +122,10 @@ public static class WorkflowDefinitionValidator
     public static IReadOnlyList<string> Validate(
         Workflow workflow,
         Func<string, Workflow?>? workflowResolver = null)
+        => Validate(workflow, workflowResolver, validateBindings: true);
+
+    public static IReadOnlyList<string> Validate(
+        Workflow workflow, Func<string, Workflow?>? workflowResolver, bool validateBindings)
     {
         if (workflow == null)
             throw new ArgumentNullException(nameof(workflow));
@@ -145,7 +149,9 @@ public static class WorkflowDefinitionValidator
 
         foreach (var node in workflow.Nodes)
         {
-            foreach (var setting in node.ParamSettings?.GetDynamicSettings() ?? Enumerable.Empty<SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSetting>())
+            foreach (var setting in validateBindings
+                ? node.ParamSettings?.GetDynamicSettings() ?? Enumerable.Empty<SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSetting>()
+                : Enumerable.Empty<SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSetting>())
             {
                 if (string.IsNullOrWhiteSpace(setting.SourceNodeId) ||
                     string.IsNullOrWhiteSpace(setting.SourceProperty))

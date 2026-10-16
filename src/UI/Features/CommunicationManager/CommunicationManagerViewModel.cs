@@ -29,8 +29,13 @@ namespace SunEyeVision.UI.Features.CommunicationManager
     public partial class CommunicationManagerViewModel : ViewModelBase
     {
         private readonly SolutionManager _solutionManager;
-        private readonly CommunicationRuntimeManager _runtimeManager = ServiceInitializer.CommunicationService.Composition.Runtime;
-        private readonly CommunicationPollingCoordinator _polling = ServiceInitializer.CommunicationService.Composition.Polling;
+        private readonly Solution? _viewSolution;
+        private readonly SunEyeVision.UI.Services.Communication.CommunicationApplicationService _communicationService;
+        private readonly CommunicationRuntimeManager _runtimeManager;
+        private readonly CommunicationPollingCoordinator _polling;
+        private volatile bool _connectionViewDisposed;
+        private bool IsConnectionViewInactive => _connectionViewDisposed ||
+            !ReferenceEquals(_viewSolution, _solutionManager.CurrentSolution);
         private readonly Dictionary<string, CommunicationDeviceWorkspaceViewModel> _deviceWorkspaces = new();
         private readonly Dictionary<string, OpcUaConfigurationSnapshot> _opcUaOriginals = new();
         private readonly Dictionary<CommunicationCompareInputViewModel, string> _compareInputNames = new();
@@ -399,6 +404,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private void SyncCommunicationEventsToSolution()
         {
+            if (IsConnectionViewInactive) return;
             var solution = _solutionManager.CurrentSolution;
             if (solution != null)
             {
@@ -657,6 +663,10 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         public CommunicationManagerViewModel(SolutionManager solutionManager)
         {
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
+            _viewSolution = solutionManager.CurrentSolution;
+            _communicationService = ServiceInitializer.CommunicationService;
+            _runtimeManager = _communicationService.Composition.Runtime;
+            _polling = _communicationService.Composition.Polling;
             _runtimeManager.DataReceived += RuntimeManager_DataReceived;
             _runtimeManager.ConnectionClosed += RuntimeManager_ConnectionClosed;
             _runtimeManager.StatusChanged += RuntimeManager_StatusChanged;
@@ -681,6 +691,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             InitializeSendEvents(currentSolution?.CommunicationSendEvents);
             InitializeHeartbeats();
             InitializeAutomation();
+            InitializeConnectionPresentation();
         }
 
         private void LoadReceiveEvents(IEnumerable<CommunicationEventDefinition>? definitions)
@@ -935,6 +946,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private void Communication_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (e.PropertyName == nameof(Communication.AutoReconnect)) HasUnsavedChanges = true;
             if (sender is Communication changedDevice && e.PropertyName == nameof(Communication.ProtocolKey))
             {
                 foreach (var receiveEvent in ReceiveEvents.Where(item =>
@@ -1251,6 +1263,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         /// </summary>
         public void AddCommunication(Communication communication)
         {
+            if (IsConnectionViewInactive) return;
             ArgumentNullException.ThrowIfNull(communication);
 
             Communications.Add(communication);
@@ -1291,13 +1304,15 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         /// </summary>
         private async Task DeleteCommunicationAsync()
         {
-            if (SelectedCommunication == null) return;
+            if (IsConnectionViewInactive || SelectedCommunication == null) return;
 
             var communication = SelectedCommunication;
-            await _runtimeManager.DisconnectAsync(communication.Id);
+            var solution = _solutionManager.CurrentSolution;
+            await ServiceInitializer.CommunicationService.DisconnectDeviceAsync(communication.Id);
+            if (!ReferenceEquals(solution, _solutionManager.CurrentSolution)) return;
             RemoveWorkspace(communication.Id);
             Communications.Remove(communication);
-            _solutionManager.CurrentSolution?.Communications.Remove(communication);
+            solution?.Communications.Remove(communication);
             HeartbeatConfigurationChanged(null, EventArgs.Empty);
 
             LogInfo($"删除通讯配置: {communication.Name}");
@@ -1312,45 +1327,62 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             return SelectedCommunication != null;
         }
 
-        private async Task ToggleConnectionAsync(Communication? target)
+        private Task ToggleConnectionAsync(Communication? target)
         {
-            await ServiceInitializer.CommunicationService.ReadyAsync();
             var device = target ?? SelectedCommunication;
+            return device == null ? Task.CompletedTask : SetConnectionStateAsync(device, !_runtimeManager.IsConnected(device.Id));
+        }
+
+        public async Task SetConnectionStateAsync(Communication device, bool connect)
+        {
             if (device == null || !_deviceWorkspaces.TryGetValue(device.Id, out var workspace)) return;
+            var solution = _solutionManager.CurrentSolution;
+            bool IsCurrentDevice() => !_connectionViewDisposed && ReferenceEquals(solution, _solutionManager.CurrentSolution) &&
+                ReferenceEquals(solution?.Communications.Find(d => d.Id == device.Id), device);
+            if (!IsCurrentDevice()) return;
             LogInfo($"[Modbus诊断] 设备开关触发：设备={device.Name}({device.Id}), 当前连接={_runtimeManager.IsConnected(device.Id)}, 协议={device.ProtocolDisplayName}, 端点={device.GetConnectionString()}", target: LogTarget.File | LogTarget.UI);
             workspace.IsBusy = true;
             device.IsRuntimeOperationInProgress = true;
             try
             {
-                if (_runtimeManager.IsConnected(device.Id))
+                if (!connect)
                 {
                     StopModbusPolling(device.Id);
-                    await _runtimeManager.DisconnectAsync(device.Id);
-                    device.RuntimeStatus = CommunicationRuntimeStatus.Disconnected;
+                    await ServiceInitializer.CommunicationService.DisconnectConnectionAsync(device.Id);
+                    if (!IsCurrentDevice()) return;
+                    device.RuntimeStatus = MapStatus(_runtimeManager.GetStatus(new CommunicationDeviceRef(device.Id)).State);
                     LogInfo(device.IsTcpServer ? $"已停止监听 {device.Name}" : device.IsUdp ? $"已解除 UDP 绑定 {device.Name}" : $"已断开 {device.Name}");
                 }
                 else
                 {
-                    device.RuntimeStatus = CommunicationRuntimeStatus.Connecting;
-                    await _runtimeManager.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(device));
-                    device.RuntimeStatus = CommunicationRuntimeStatus.Connected;
+                    await ServiceInitializer.CommunicationService.ReadyAsync();
+                    if (!IsCurrentDevice() || !device.IsEnabled) return;
+                    await ServiceInitializer.CommunicationService.ConnectDeviceAsync(CommunicationDeviceSnapshotFactory.Create(device));
+                    if (!IsCurrentDevice() || !device.IsEnabled) return;
+                    device.RuntimeStatus = MapStatus(_runtimeManager.GetStatus(new CommunicationDeviceRef(device.Id)).State);
                     if (device.IsModbus)
                         StartModbusPolling(device, workspace);
                     if (device.IsOpcUa)
                         foreach (var row in workspace.OpcUaPoints.ToArray())
+                        {
+                            if (!IsCurrentDevice() || !device.IsEnabled) return;
                             await ServiceInitializer.CommunicationService.MonitorOpcUaPointAsync(device.Id, row.NodeId);
+                        }
+                    if (!IsCurrentDevice() || !device.IsEnabled) return;
                     LogInfo($"[Modbus诊断] 设备连接完成：设备={device.Name}({device.Id}), 站号={device.UnitId}, 设备轮询间隔={device.PollInterval}ms, 地址块总数={workspace.ModbusAddressPoints.Count}, 已启用地址块={workspace.ModbusAddressPoints.Count(point => point.PollEnabled)}", target: LogTarget.File | LogTarget.UI);
                     LogSuccess(device.IsTcpServer ? $"已开始监听 {device.GetConnectionString()}" : device.IsUdp ? $"UDP 本机端口已绑定：{device.GetConnectionString()}" : $"已连接 {device.Name}");
                 }
             }
             catch (Exception ex)
             {
+                if (!IsCurrentDevice()) return;
                 StopModbusPolling(device.Id);
-                device.RuntimeStatus = CommunicationRuntimeStatus.Faulted;
+                device.RuntimeStatus = MapStatus(_runtimeManager.GetStatus(new CommunicationDeviceRef(device.Id)).State);
                 LogError($"连接失败：{ex.Message}");
             }
             finally
             {
+                if (IsCurrentDevice()) RefreshConnectionPresentation(device);
                 device.IsRuntimeOperationInProgress = false;
                 workspace.IsBusy = false;
                 if (SelectedCommunication?.Id == device.Id)
@@ -1387,8 +1419,10 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private void Polling_BatchReceived(object? sender, ModbusPollBatch batch)
         {
+            if (IsConnectionViewInactive) return;
             System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
             {
+                if (IsConnectionViewInactive) return;
                 if (!_polling.IsCurrentBatch(batch)) return;
                 if (!_deviceWorkspaces.TryGetValue(batch.CommunicationId, out var workspace)) return;
                 var updates = batch.Results
@@ -1592,13 +1626,14 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private void RuntimeManager_DataReceived(object? sender, CommunicationDataReceivedEventArgs e)
         {
+            if (IsConnectionViewInactive) return;
             System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
             {
+                if (IsConnectionViewInactive) return;
                 if (!_deviceWorkspaces.TryGetValue(e.CommunicationId, out var workspace)) return;
                 workspace.AppendReceived(e.Data, e.Timestamp);
                 ProcessReceiveEvents(e.CommunicationId, e.Data, e.Timestamp);
-                workspace.Communication.RuntimeStatus = _runtimeManager.IsConnected(e.CommunicationId)
-                    ? CommunicationRuntimeStatus.Connected : CommunicationRuntimeStatus.Disconnected;
+                RefreshConnectionPresentation(workspace.Communication);
                 if (SelectedCommunication?.Id == e.CommunicationId)
                     OnPropertyChanged(nameof(IsSelectedConnected));
                 CommandManager.InvalidateRequerySuggested();
@@ -1698,16 +1733,24 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private void RuntimeManager_OpcUaPointValueChanged(object? sender, OpcUaPointValueEventArgs update)
         {
+            if (IsConnectionViewInactive) return;
             _pendingOpcUaUpdates[(update.CommunicationId, update.NodeId)] = update;
             ScheduleOpcUaUpdateDrain();
         }
 
         private void ScheduleOpcUaUpdateDrain()
         {
+            if (IsConnectionViewInactive) return;
             var dispatcher = System.Windows.Application.Current?.Dispatcher;
             if (dispatcher == null || Interlocked.CompareExchange(ref _opcUaUpdateScheduled, 1, 0) != 0) return;
             dispatcher.BeginInvoke(new Action(() =>
             {
+                if (IsConnectionViewInactive)
+                {
+                    _pendingOpcUaUpdates.Clear();
+                    Interlocked.Exchange(ref _opcUaUpdateScheduled, 0);
+                    return;
+                }
                 foreach (var key in _pendingOpcUaUpdates.Keys.ToArray())
                 {
                     if (!_pendingOpcUaUpdates.TryRemove(key, out var update) ||
@@ -1736,11 +1779,15 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private void RuntimeManager_StatusChanged(object? sender, CommunicationStatusSnapshot status)
         {
+            if (IsConnectionViewInactive) return;
             System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
             {
+                if (IsConnectionViewInactive) return;
                 if (!_deviceWorkspaces.TryGetValue(status.Device.Value, out var workspace)) return;
-                workspace.Communication.RuntimeStatus = MapStatus(status.State);
-                if (workspace.Communication.IsOpcUa && status.State != CommunicationState.Connected)
+                // Dispatcher work may run after a newer connection generation has published.
+                var current = _runtimeManager.GetStatus(status.Device);
+                RefreshConnectionPresentation(workspace.Communication);
+                if (workspace.Communication.IsOpcUa && current.State != CommunicationState.Connected)
                     foreach (var row in workspace.OpcUaPoints) row.MarkDisconnected();
                 if (SelectedCommunication?.Id == status.Device.Value)
                     OnPropertyChanged(nameof(IsSelectedConnected));
@@ -1750,13 +1797,16 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         private void RuntimeManager_ConnectionClosed(object? sender, CommunicationConnectionClosedEventArgs e)
         {
+            if (IsConnectionViewInactive) return;
             System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
             {
+                if (IsConnectionViewInactive) return;
                 if (_runtimeManager.IsConnected(e.CommunicationId))
                     return;
-                StopModbusPolling(e.CommunicationId);
+                // The application service owns polling lifetime. A delayed window
+                // callback must not stop a successor connection's poller.
                 if (!_deviceWorkspaces.TryGetValue(e.CommunicationId, out var workspace)) return;
-                workspace.Communication.RuntimeStatus = CommunicationRuntimeStatus.Disconnected;
+                RefreshConnectionPresentation(workspace.Communication);
                 if (SelectedCommunication?.Id == e.CommunicationId)
                     OnPropertyChanged(nameof(IsSelectedConnected));
                 CommandManager.InvalidateRequerySuggested();
@@ -1764,13 +1814,14 @@ namespace SunEyeVision.UI.Features.CommunicationManager
         }
 
         private bool CanToggleConnection(Communication? device) => device != null && device.CanToggleRuntime &&
-                                                                    device.Validate().IsValid;
+                                                                    (device.IsActuallyConnected || device.Validate().IsValid);
 
         /// <summary>
         /// 保存
         /// </summary>
         public async Task<bool> SaveChangesAsync()
         {
+            if (IsConnectionViewInactive) return false;
             var currentSolution = _solutionManager.CurrentSolution;
             if (currentSolution?.FilePath != null)
             {
@@ -1791,15 +1842,16 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                         HasUnsavedChanges = false;
                         _newOpcUaDeviceIds.Clear();
                         LogSuccess("通讯配置保存成功");
-                        foreach (var device in Communications.Where(item => item.IsOpcUa))
+                        foreach (var device in Communications.Where(item => item.IsOpcUa).ToArray())
                         {
+                            if (IsConnectionViewInactive) return false;
                             var previous = _opcUaOriginals.TryGetValue(device.Id, out var original) ? original.EndpointUrl : device.EndpointUrl;
                             _opcUaOriginals[device.Id] = CaptureOpcUaConfiguration(device);
-                            if (previous == device.EndpointUrl || !_runtimeManager.IsConnected(device.Id)) continue;
+                            if (previous == device.EndpointUrl || !device.IsEnabled || !_runtimeManager.IsConnected(device.Id)) continue;
                             try
                             {
-                                await _runtimeManager.DisconnectAsync(device.Id);
-                                await _runtimeManager.ConnectAsync(CommunicationDeviceSnapshotFactory.Create(device));
+                                await ServiceInitializer.CommunicationService.ConnectDeviceAsync(CommunicationDeviceSnapshotFactory.Create(device));
+                                if (IsConnectionViewInactive) return false;
                                 foreach (var point in device.OpcUaDataPoints ?? new())
                                     await ServiceInitializer.CommunicationService.MonitorOpcUaPointAsync(device.Id, point.NodeId);
                             }
@@ -1824,19 +1876,23 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         public async Task DiscardOpcUaChangesAsync()
         {
+            if (IsConnectionViewInactive) return;
+            var solution = _viewSolution;
             foreach (var id in _newOpcUaDeviceIds.ToArray())
             {
                 var added = Communications.FirstOrDefault(item => item.Id == id);
                 if (added == null) continue;
-                await _runtimeManager.DisconnectAsync(id);
+                await ServiceInitializer.CommunicationService.DisconnectDeviceAsync(id);
+                if (IsConnectionViewInactive) return;
                 RemoveWorkspace(id);
                 Communications.Remove(added);
-                _solutionManager.CurrentSolution?.Communications.Remove(added);
+                solution?.Communications.Remove(added);
                 if (SelectedCommunication == added) SelectedCommunication = null;
             }
             _newOpcUaDeviceIds.Clear();
-            foreach (var device in Communications.Where(item => item.IsOpcUa))
+            foreach (var device in Communications.Where(item => item.IsOpcUa).ToArray())
             {
+                if (IsConnectionViewInactive) return;
                 if (!_opcUaOriginals.TryGetValue(device.Id, out var original)) continue;
                 var current = (device.OpcUaDataPoints ?? new()).Select(point => point.NodeId).ToHashSet(StringComparer.Ordinal);
                 var restored = original.Points.Select(point => new OpcUaDataPoint
@@ -1849,9 +1905,13 @@ namespace SunEyeVision.UI.Features.CommunicationManager
                 {
                     try { await ServiceInitializer.CommunicationService.UnmonitorOpcUaPointAsync(device.Id, nodeId); }
                     catch (Exception ex) { LogWarning($"撤销监视 {nodeId} 失败：{ex.Message}"); }
+                    if (IsConnectionViewInactive) return;
                 }
+                var previousAutoReconnect = device.AutoReconnect;
                 device.Settings = new Dictionary<string, object>(original.Settings);
                 device.OpcUaDataPoints = restored;
+                if (previousAutoReconnect != device.AutoReconnect)
+                    _communicationService.RefreshDeviceConnectionPolicy(device.Id);
                 foreach (var nodeId in wanted)
                     await ServiceInitializer.CommunicationService.MonitorOpcUaPointAsync(device.Id, nodeId);
             }
@@ -1876,6 +1936,10 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
         public async ValueTask DisposeAsync()
         {
+            if (_connectionViewDisposed) return;
+            _connectionViewDisposed = true;
+            _pendingOpcUaUpdates.Clear();
+            DisposeConnectionPresentation();
             DisposeAutomationEditor();
             DisposeHeartbeatEditor();
             _runtimeManager.DataReceived -= RuntimeManager_DataReceived;

@@ -61,10 +61,10 @@ public sealed class CommunicationHeartbeatRunner : IAsyncDisposable
                         Publish(job.Id, "发送成功");
                         if (job.Alternate) second = !second;
                     }
-                    else Publish(job.Id, "等待连接或接收端");
+                    else if (!token.IsCancellationRequested) Publish(job.Id, "等待连接或接收端");
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested) { break; }
-                catch (Exception ex) { Publish(job.Id, ex.Message); }
+                catch (Exception ex) { if (!token.IsCancellationRequested) Publish(job.Id, ex.Message); }
             }
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { }

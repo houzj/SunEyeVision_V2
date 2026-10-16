@@ -46,7 +46,7 @@ public partial class CommunicationManagerViewModel
     }
     public void SyncAutomationConfiguration()
     {
-        if (!_automationInitialized || _solutionManager.CurrentSolution is not { } solution) return;
+        if (IsConnectionViewInactive || !_automationInitialized || _solutionManager.CurrentSolution is not { } solution) return;
         solution.CommunicationTriggers = EventTriggers.Concat(StringTriggers).Select(r => r.Definition).ToList();
         solution.CommunicationResponses = new()
         {

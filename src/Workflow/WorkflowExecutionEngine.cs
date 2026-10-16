@@ -310,16 +310,22 @@ namespace SunEyeVision.Workflow
                     context.CancellationToken.ThrowIfCancellationRequested();
 
                     // 条件分支已剪掉的节点、禁用节点、或失败前驱的消费者均不进入执行队列。
-                    foreach (var nodeId in pending.Where(id =>
+                    bool skippedAny;
+                    do
+                    {
+                        skippedAny = false;
+                        foreach (var nodeId in pending.Where(id =>
                                  pruned.Contains(id) ||
                                  !workflow.Nodes.First(node => node.Id == id).IsEnabled ||
                                  dependencyGraph.GetPredecessors(id).Any(parent =>
                                      context.GetNodeStatus(parent) is NodeStatus.Failed or NodeStatus.Skipped)).ToList())
-                    {
-                        pending.Remove(nodeId);
-                        context.UpdateNodeStatus(nodeId, NodeStatus.Skipped);
-                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = nodeId, Status = NodeStatus.Skipped });
-                    }
+                        {
+                            pending.Remove(nodeId);
+                            skippedAny = true;
+                            context.UpdateNodeStatus(nodeId, NodeStatus.Skipped);
+                            NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = nodeId, Status = NodeStatus.Skipped });
+                        }
+                    } while (skippedAny);
 
                     var madeProgress = true;
                     while (madeProgress)
@@ -352,7 +358,8 @@ namespace SunEyeVision.Workflow
                             PrepareNodeExecution(nodeId, dependencyGraph.GetPredecessors(nodeId));
                             context.UpdateNodeStatus(nodeId, NodeStatus.Running);
                             NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = nodeId, Status = NodeStatus.Running });
-                            running.Add((node, lease, Task.Run(() => ExecuteNode(node, context, workflow))));
+                            dependencyGraph.InputIssues.TryGetValue(nodeId, out var inputIssues);
+                            running.Add((node, lease, Task.Run(() => ExecuteNode(node, context, workflow, inputIssues))));
                             madeProgress = true;
                         }
                     }
@@ -600,7 +607,7 @@ namespace SunEyeVision.Workflow
             // 在生成运行快照前一次性校验定义。执行器不接收不完整或分裂的工作流对象。
             var definitionErrors = WorkflowDefinitionValidator.Validate(
                 sourceWorkflow,
-                _workflowEngine.GetWorkflowById);
+                _workflowEngine.GetWorkflowById, validateBindings: false);
             if (definitionErrors.Count > 0)
             {
                 var definitionError =
@@ -787,11 +794,12 @@ namespace SunEyeVision.Workflow
         {
             var executableWorkflow = new Workflow(Guid.NewGuid().ToString(), sourceWorkflow.Name);
             ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow, request);
-            OutputBindingChangeService.EnsureExecutable(executableWorkflow, sourceWorkflow.Id);
-            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, request?.CommunicationInputs?.GetVariables(), sourceWorkflow.Id);
+            var inputIssues = OutputBindingChangeService.GetExecutionInputIssues(executableWorkflow, sourceWorkflow.Id);
+            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, request?.CommunicationInputs?.GetVariables(), sourceWorkflow.Id, inputIssues);
             var nodeExecutionProfiles = executableWorkflow.Nodes.ToDictionary(
                 node => node.Id,
-                node => ResolveExecutionProfile(node, request?.CommunicationInputs),
+                node => inputIssues.ContainsKey(node.Id) ? ToolExecutionProfile.LegacyExclusive
+                    : ResolveExecutionProfile(node, request?.CommunicationInputs),
                 StringComparer.Ordinal);
             _logger.LogInfo(
                 $"执行计划已编译: 节点={executableWorkflow.Nodes.Count}, 依赖={dependencyGraph.Dependencies.Count}, " +
@@ -1031,7 +1039,7 @@ namespace SunEyeVision.Workflow
         private async Task<NodeExecutionResult> ExecuteNode(
             WorkflowNodeBase node,
             WorkflowContext context,
-            Workflow workflow)
+            Workflow workflow, IReadOnlyList<ExecutionInputIssue>? inputIssues = null)
         {
             var nodeResult = new NodeExecutionResult
             {
@@ -1041,6 +1049,14 @@ namespace SunEyeVision.Workflow
 
             try
             {
+                if (inputIssues?.Count > 0)
+                {
+                    var message = string.Join("\n", inputIssues.Select(issue => issue.Message));
+                    var diagnostics = new GenericToolResults { ToolId = node.ToolType, ToolName = node.Name };
+                    diagnostics.SetError(message);
+                    nodeResult.Result = diagnostics;
+                    throw new InvalidOperationException(message);
+                }
                 // 所有节点统一为 AlgorithmNode 执行
                 var algorithmNode = node as AlgorithmNode
                     ?? throw new InvalidOperationException($"节点 {node.Name} 不是 AlgorithmNode 类型，实际类型: {node.GetType().Name}");

@@ -26,6 +26,7 @@ internal sealed class OpcUaPointPolling
         try
         {
             await StopCoreAsync((device, node)).ConfigureAwait(false);
+            lifetime.ThrowIfCancellationRequested();
             var cts = CancellationTokenSource.CreateLinkedTokenSource(lifetime);
             var task = Task.Run(async () =>
             {
@@ -37,7 +38,7 @@ internal sealed class OpcUaPointPolling
                         if (!_connected(device)) break;
                         try { await _read(device, node, cts.Token).ConfigureAwait(false); }
                         catch (OperationCanceledException) when (cts.IsCancellationRequested) { break; }
-                        catch (Exception ex) { _error(device, node, ex.Message); }
+                        catch (Exception ex) { if (!cts.IsCancellationRequested) _error(device, node, ex.Message); }
                     }
                 }
                 catch (OperationCanceledException) when (cts.IsCancellationRequested) { }

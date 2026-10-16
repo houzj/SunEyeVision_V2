@@ -281,7 +281,22 @@
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock Text="{Binding Name}" FontSize="14" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
                     <TextBlock Text="{Binding ProtocolStatusText}" FontSize="11" Margin="0,2,0,0"
+                               TextWrapping="Wrap"
                                Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+                    <TextBlock Text="{Binding RuntimeConnectionError, StringFormat='失败原因：{0}'}"
+                               ToolTip="{Binding RuntimeConnectionError}" TextWrapping="Wrap" MaxHeight="48"
+                               FontSize="10" Margin="0,2,4,0"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasRuntimeConnectionError}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
                 <Ellipse Grid.Column="2" Width="10" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Ellipse.Style>
@@ -297,13 +312,17 @@
                                 <DataTrigger Binding="{Binding RuntimeStatus}" Value="{x:Static workflow:CommunicationRuntimeStatus.Faulted}">
                                     <Setter Property="Fill" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding IsWaitingForReconnect}" Value="True">
+                                    <Setter Property="Fill" Value="{DynamicResource {x:Static base:ThemeKeys.WarningBrush}}"/>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Ellipse.Style>
                 </Ellipse>
                 <controls:ToggleSwitch Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center"
                                        SwitchWidth="40" SwitchHeight="20"
-                                       IsChecked="{Binding IsRuntimeActive, Mode=OneWay}"
+                                       IsChecked="{Binding IsActuallyConnected, Mode=OneWay}"
+                                       ToolTip="连接/断开。开启自动重连时，手动断开后也会按倒计时重新连接。"
                                        IsEnabled="{Binding CanToggleRuntime}"
                                        CheckedChanged="DeviceToggle_CheckedChanged"/>
             </Grid>

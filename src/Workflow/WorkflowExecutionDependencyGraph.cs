@@ -23,6 +23,8 @@ public sealed class WorkflowExecutionDependencyGraph
     }
 
     public IReadOnlyList<WorkflowExecutionDependency> Dependencies => _dependencies;
+    public IReadOnlyDictionary<string, IReadOnlyList<ExecutionInputIssue>> InputIssues { get; private set; }
+        = new Dictionary<string, IReadOnlyList<ExecutionInputIssue>>();
 
     public IReadOnlyCollection<string> GetPredecessors(string nodeId) =>
         _predecessors.TryGetValue(nodeId, out var predecessors)
@@ -65,6 +67,11 @@ public sealed class WorkflowExecutionDependencyGraph
 
     public static WorkflowExecutionDependencyGraph Compile(Workflow workflow,
         IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>? variables = null, string? sourceWorkflowId = null)
+        => Compile(workflow, variables, sourceWorkflowId, null);
+
+    public static WorkflowExecutionDependencyGraph Compile(Workflow workflow,
+        IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>? variables, string? sourceWorkflowId,
+        IReadOnlyDictionary<string, IReadOnlyList<ExecutionInputIssue>>? inputIssues)
     {
         if (workflow == null)
             throw new ArgumentNullException(nameof(workflow));
@@ -100,6 +107,7 @@ public sealed class WorkflowExecutionDependencyGraph
             foreach (var input in BindingRelationCatalog.Describe(node).Where(i => i.Active))
             {
                 if (input.InternalProjection) continue; // Runs within the called workflow, not the caller's local DAG.
+                if (inputIssues?.TryGetValue(node.Id, out var failures) == true && failures.Any(f => f.InputKey == input.Key)) continue;
                 if (!BindingInputCatalog.TryReference(input.Read(), knownNodes, input.ReferenceOnly, out var sourceId, out var path)) continue;
                 if (string.IsNullOrWhiteSpace(path)) throw new InvalidOperationException($"节点 {node.Name} 的 {input.Name} 绑定不完整。");
                 if (sourceId is "__GlobalVars__" or "__VariableId__")
@@ -125,7 +133,8 @@ public sealed class WorkflowExecutionDependencyGraph
                 }
         }
 
-        var graph = new WorkflowExecutionDependencyGraph(predecessors, dependencies);
+        var graph = new WorkflowExecutionDependencyGraph(predecessors, dependencies)
+        { InputIssues = inputIssues ?? new Dictionary<string, IReadOnlyList<ExecutionInputIssue>>() };
         graph.GetTopologicalLayers(nodeIds);
         return graph;
     }

@@ -84,6 +84,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         private static CameraRuntimeComposition? _cameraRuntime;
         private static CommunicationRuntimeComposition? _communicationRuntime;
         private static CommunicationApplicationService? _communicationService;
+        private static readonly object CommunicationInitializationGate = new();
 
         /// <summary>
         /// 获取 UI 日志写入器（供 LogPanelViewModel 使用）
@@ -113,22 +114,31 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             => _cameraRuntime ??= new CameraRuntimeComposition();
 
         public static CommunicationRuntimeComposition CommunicationRuntime
-            => _communicationRuntime ??= new CommunicationRuntimeComposition();
+        {
+            get
+            {
+                lock (CommunicationInitializationGate)
+                    return _communicationRuntime ??= new CommunicationRuntimeComposition();
+            }
+        }
 
         public static CommunicationApplicationService CommunicationService
         {
             get
             {
-                if (_communicationService == null)
+                lock (CommunicationInitializationGate)
                 {
-                    _communicationService = new CommunicationApplicationService(SolutionManager, CommunicationRuntime);
-                    _communicationService.Automation.CameraConnectionObserver = id =>
-                        _cameraRuntime != null && _cameraRuntime.Runtime.TryGetSession(
-                            new SunEyeVision.Plugin.SDK.Devices.Camera.CameraDeviceRef(id), out var session)
-                        && session.Adapter.State is SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Connected
-                            or SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Capturing;
+                    if (_communicationService == null)
+                    {
+                        _communicationService = new CommunicationApplicationService(SolutionManager, CommunicationRuntime);
+                        _communicationService.Automation.CameraConnectionObserver = id =>
+                            _cameraRuntime != null && _cameraRuntime.Runtime.TryGetSession(
+                                new SunEyeVision.Plugin.SDK.Devices.Camera.CameraDeviceRef(id), out var session)
+                            && session.Adapter.State is SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Connected
+                                or SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Capturing;
+                    }
+                    return _communicationService;
                 }
-                return _communicationService;
             }
         }
 

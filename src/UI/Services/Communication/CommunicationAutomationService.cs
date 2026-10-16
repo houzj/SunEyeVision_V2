@@ -25,6 +25,7 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
 {
     private readonly object _gate = new();
     private readonly CommunicationRuntimeManager _runtime;
+    internal Func<string, CancellationToken>? DeviceLifetimeReader { get; set; }
     private CancellationTokenSource _lifetime = new();
     private readonly List<CancellationTokenSource> _retired = new();
     private readonly HashSet<Task> _tasks = new();
@@ -330,11 +331,16 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
             if (delay > 0) await Task.Delay(TimeSpan.FromSeconds(delay), token).ConfigureAwait(false);
             token.ThrowIfCancellationRequested();
             lock (_gate) if (version != _version) return;
+            // Resolve outside the automation gate; the host owns the device policy gate.
+            var deviceToken = DeviceLifetimeReader?.Invoke(device.Id) ?? CancellationToken.None;
+            using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, deviceToken);
+            cancellation.Token.ThrowIfCancellationRequested();
+            lock (_gate) if (version != _version) return;
             if (!device.IsEnabled || !_runtime.IsConnected(device.Id)) throw new InvalidOperationException("响应设备未连接，未发送。");
             var sender = new CommunicationSendEventService(_runtime);
             var plan = sender.Prepare(CommunicationResponseFormatter.Create(config, device, content, id), device);
             token.ThrowIfCancellationRequested();
-            if (await sender.SendAsync(plan, token).ConfigureAwait(false) == 0) throw new InvalidOperationException("响应无接收端。");
+            if (await sender.SendAsync(plan, cancellation.Token).ConfigureAwait(false) == 0) throw new InvalidOperationException("响应无接收端。");
         });
     }
 

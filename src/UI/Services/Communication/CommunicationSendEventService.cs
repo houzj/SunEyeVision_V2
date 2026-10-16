@@ -8,6 +8,7 @@ using Opc.Ua;
 using SunEyeVision.DeviceDriver.Communications;
 using SunEyeVision.UI.Features.CommunicationManager;
 using SunEyeVision.Workflow;
+using SunEyeVision.Plugin.SDK.Devices.Communication;
 using ConfiguredCommunication = SunEyeVision.Workflow.Communication;
 
 namespace SunEyeVision.UI.Services.Communication;
@@ -26,6 +27,7 @@ public sealed class CommunicationSendEventService
         ConfiguredCommunication device, IReadOnlyDictionary<Guid, object?>? parameterSnapshot = null)
     {
         if (device.Id != definition.DeviceId) throw new InvalidOperationException("发送事件绑定设备不存在。");
+        if (!device.IsEnabled) throw new InvalidOperationException("发送事件绑定设备已禁用。");
         var message = CommunicationSendEventFormatter.Build(definition, parameterSnapshot);
         if (device.IsRawProtocol)
         {
@@ -71,17 +73,19 @@ public sealed class CommunicationSendEventService
         throw new NotSupportedException("该设备尚未接入发送事件；当前支持 TCP、UDP、串口、Modbus 和 OPC UA。");
     }
 
-    public async Task<int> SendAsync(CommunicationSendPlan plan, CancellationToken cancellationToken = default)
+    public async Task<int> SendAsync(CommunicationSendPlan plan, CancellationToken cancellationToken = default,
+        CommunicationStatusSnapshot? expected = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        expected ??= _runtime.GetStatus(new CommunicationDeviceRef(plan.DeviceId));
         switch (plan.Protocol)
         {
-            case "Raw": return await _runtime.SendBytesAsync(plan.DeviceId, plan.PayloadBytes, cancellationToken).ConfigureAwait(false);
+            case "Raw": return await _runtime.SendBytesAsync(plan.DeviceId, plan.PayloadBytes, expected, cancellationToken).ConfigureAwait(false);
             case "Modbus":
-                await _runtime.WriteModbusRegistersAsync(plan.DeviceId, plan.StartAddress, plan.Registers!, cancellationToken).ConfigureAwait(false);
+                await _runtime.WriteModbusRegistersAsync(plan.DeviceId, plan.StartAddress, plan.Registers!, expected, cancellationToken).ConfigureAwait(false);
                 return 1;
             case "OpcUa":
-                await _runtime.WriteOpcUaValueAsync(plan.DeviceId, plan.NodeId!, plan.Scalar!, cancellationToken).ConfigureAwait(false);
+                await _runtime.WriteOpcUaValueAsync(plan.DeviceId, plan.NodeId!, plan.Scalar!, expected, cancellationToken).ConfigureAwait(false);
                 return 1;
             default: throw new NotSupportedException("无效的发送计划。");
         }

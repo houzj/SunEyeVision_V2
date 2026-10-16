@@ -94,7 +94,9 @@ public sealed class SolutionExecutionDependencyGraph
                 owners.Add(workflow);
             }
 
-            var local = WorkflowExecutionDependencyGraph.Compile(workflow);
+            // Local input faults are owned by their consumer, not by the whole solution.
+            var localIssues = OutputBindingChangeService.GetExecutionInputIssues(workflow, workflow.Id);
+            var local = WorkflowExecutionDependencyGraph.Compile(workflow, null, workflow.Id, localIssues);
             foreach (var dependency in local.Dependencies)
             {
                 AddDependency(
@@ -108,20 +110,21 @@ public sealed class SolutionExecutionDependencyGraph
 
         foreach (var variable in solution.GlobalVariables ?? Enumerable.Empty<GlobalVariable>())
         {
-            if (checkReadiness && !string.IsNullOrEmpty(variable.RebindingReason))
-                throw new InvalidOperationException(variable.RebindingReason);
-            if (checkReadiness && !string.IsNullOrEmpty(variable.BindingValidationPending))
-                throw new InvalidOperationException(variable.BindingValidationPending);
+            // Invalid producer bindings remain unavailable at execution time; unrelated graphs still compile.
+            if (!string.IsNullOrEmpty(variable.RebindingReason) || !string.IsNullOrEmpty(variable.BindingValidationPending))
+                continue;
             if (variable.ProducerBinding == null)
                 continue;
 
             var producer = ResolveNode(variable.ProducerBinding.WorkflowId, variable.ProducerBinding.NodeId,
                 $"全局变量 {variable.Name} 的输入来源");
+            if (producer == null) continue;
 
             foreach (var consumer in variable.ConsumerBindings ?? Enumerable.Empty<ConsumerBinding>())
             {
                 var target = ResolveNode(consumer.WorkflowId, consumer.NodeId,
                     $"全局变量 {variable.Name} 的目标输出");
+                if (target == null) continue;
                 AddDependency(producer, target, SolutionDependencyKind.GlobalVariable,
                     variable.Name, consumer.ParameterName);
             }
@@ -137,25 +140,25 @@ public sealed class SolutionExecutionDependencyGraph
         graph.GetTopologicalLayers(nodeLookup.Keys);
         return graph;
 
-        string ResolveNode(string workflowId, string nodeId, string role)
+        string? ResolveNode(string workflowId, string nodeId, string role)
         {
             if (string.IsNullOrWhiteSpace(nodeId))
-                throw new InvalidOperationException($"{role}缺少节点 ID。");
+                return null;
 
             if (!string.IsNullOrWhiteSpace(workflowId))
             {
                 var scoped = GetScopedNodeId(workflowId, nodeId);
                 if (!nodeLookup.ContainsKey(scoped))
-                    throw new InvalidOperationException($"{role}引用了不存在的节点：{scoped}。");
+                    return null;
                 return scoped;
             }
 
             // 兼容旧方案：旧 ConsumerBinding 未保存工作流 ID。节点 ID 全局唯一时可安全迁移；
             // 若不唯一则拒绝猜测，提示用户重新保存该绑定。
             if (!workflowByNodeId.TryGetValue(nodeId, out var owners) || owners.Count == 0)
-                throw new InvalidOperationException($"{role}引用了不存在的节点：{nodeId}。");
+                return null;
             if (owners.Count != 1)
-                throw new InvalidOperationException($"{role}的节点 ID '{nodeId}' 在多个工作流中重复，无法确定所属流程，请重新设置绑定。");
+                return null;
             return GetScopedNodeId(owners[0].Id, nodeId);
         }
 

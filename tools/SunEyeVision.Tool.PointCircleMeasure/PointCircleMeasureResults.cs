@@ -23,6 +23,14 @@ namespace SunEyeVision.Tool.PointCircleMeasure
         | ToolCapabilities.MeasureGuide)]
     public class PointCircleMeasureResults : ToolResults
     {
+        public EdgeFitDiagnostics FitDiagnostics2 { get; set; } = new();
+        public string FitDiagnostic2 => FitDiagnostics2.Summary;
+        public Point2d[] RawDiagnosticPoints2 => FitDiagnostics2.RawPoints;
+        public Point2d[] CandidateDiagnosticPoints2 => FitDiagnostics2.CandidatePoints;
+        public Point2d[] ExcludedDiagnosticPoints2 => FitDiagnostics2.ExcludedPoints;
+        public Point2d[] InlierDiagnosticPoints2 => FitDiagnostics2.Inliers;
+        public Point2d[] OutlierDiagnosticPoints2 => FitDiagnostics2.Outliers;
+
         /// <summary>元素1：点（仅订阅，无引导）。契约输出（词目 Point）</summary>
         public Point2d[] Point1 { get; set; } = Array.Empty<Point2d>();
 
@@ -118,9 +126,7 @@ namespace SunEyeVision.Tool.PointCircleMeasure
             var matrix = _executionMatrix;
             Point T(Point p) => matrix == null ? p : matrix.TransformWpfPoint(p);
             double scale = matrix?.ScaleFactor() ?? 1.0;
-            double startPhase = matrix != null
-                ? PositionCorrectionResolver.DisplayAngleDeg(matrix, 0.0) * Math.PI / 180.0
-                : 0.0;
+            const double startPhase = 0.0; // Canonical HALCON full circle, independent of correction rotation.
 
             // ---- 元素2：引导圆 + 环形卡尺带 + 拟合圆 ----
             var g2c = T(new Point(geometry.E2CenterX, geometry.E2CenterY));
@@ -203,11 +209,20 @@ namespace SunEyeVision.Tool.PointCircleMeasure
                 .ToList();
 
         /// <summary>属性映射（结果树/输出契约 SSOT；必须合并基类获得执行耗时）</summary>
+        public void FillFailureDisplay(PointCircleMeasureParameters parameters)
+            => EdgeFitDiagnostics.FillFailureDisplay(_display, parameters.ResultPresentation, FitDiagnostics2);
+
         public override List<PropertyMapEntry> GetPropertyMap()
         {
             return
             [
                 .. base.GetPropertyMap(),
+                new("FitDiagnostic2", "元素2取点拟合诊断", "诊断"),
+                new("RawDiagnosticPoints2", "元素2原始检测点", "诊断"),
+                new("CandidateDiagnosticPoints2", "元素2候选点", "诊断"),
+                new("ExcludedDiagnosticPoints2", "元素2屏蔽点", "诊断"),
+                new("InlierDiagnosticPoints2", "元素2内点", "诊断"),
+                new("OutlierDiagnosticPoints2", "元素2未采用检测点", "诊断"),
                 // ===== 输入（对齐 6 工具规范：输入/卡尺）=====
                 // 点1：订阅/手输的点（不是拟合产物）→ 归「输入」；
                 // 整体（词目 Point，供下游"按图形"绑定）+ X/Y 拆解（供"按参数"绑定）

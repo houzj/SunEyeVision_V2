@@ -22,10 +22,10 @@ namespace SunEyeVision.Tool.CircleDetect
         /// <summary>全部</summary>
         All,
 
-        /// <summary>正极性（亮到暗）</summary>
+        /// <summary>正极性（暗到亮）</summary>
         Positive,
 
-        /// <summary>负极性（暗到亮）</summary>
+        /// <summary>负极性（亮到暗）</summary>
         Negative,
     }
 
@@ -197,7 +197,7 @@ namespace SunEyeVision.Tool.CircleDetect
         }
 
         /// <summary>
-        /// RANSAC 距离阈值（distance_threshold：边缘点到拟合几何的最大距离，默认 3.5px）
+        /// Metrology 距离阈值（distance_threshold：边缘点到拟合几何的最大距离，默认 3.5px）
         /// </summary>
         public double DistanceThreshold
         {
@@ -207,7 +207,16 @@ namespace SunEyeVision.Tool.CircleDetect
 
         #endregion
 
-        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
+        private ResultPresentationConfig _resultPresentation = CreateResultPresentation();
+        public ResultPresentationConfig ResultPresentation
+        {
+            get => _resultPresentation;
+            set
+            {
+                _resultPresentation = value ?? throw new ArgumentNullException(nameof(value));
+                EdgeFitDiagnostics.EnsurePresentation(_resultPresentation);
+            }
+        }
 
         private static ResultPresentationConfig CreateResultPresentation()
         {
@@ -226,6 +235,7 @@ namespace SunEyeVision.Tool.CircleDetect
             config.Graphics.Add(new() { Key = "guide", Name = "引导线", Group = "测量过程", Order = 70, Style = new() { Name = "引导线", IsVisible = true, LineWidth = 2.0 } });
             config.Graphics.Add(new() { Key = "caliper", Name = "卡尺", Group = "测量过程", Order = 80, Style = new() { Name = "卡尺", IsVisible = true, LineWidth = 1.0 } });
             config.Texts.Add(new() { Key = "center", Name = "圆心坐标", Order = 10, Style = new() { Name = "圆心坐标", IsVisible = true } });
+            EdgeFitDiagnostics.EnsurePresentation(config);
             return config;
         }
         #region 测量引导显示（与检测/屏蔽区域同通道走结果层，对齐 RoiParameters 虚成员）
@@ -334,10 +344,8 @@ namespace SunEyeVision.Tool.CircleDetect
 
                 if (CaliberStyle != null)
                 {
-                    // 整圆卡尺阵列起始相位随位置修正旋转（与屏蔽区/内容同口径；无修正=0）
-                    double startPhase = correctionMatrix != null
-                        ? PositionCorrectionResolver.DisplayAngleDeg(correctionMatrix, 0.0) * Math.PI / 180.0
-                        : 0.0;
+                    // 整圆采用当前图像0°起始，与原生闭合模型一致。
+                    const double startPhase = 0.0; // Canonical HALCON full circle, independent of correction rotation.
                     var bands = new List<System.Windows.Point[]>();
                     foreach (var quad in MeasureBandOverlay.BuildCircleBands(
                                  circle, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures, startPhase))

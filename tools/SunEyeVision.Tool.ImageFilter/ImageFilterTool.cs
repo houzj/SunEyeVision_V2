@@ -116,6 +116,7 @@ namespace SunEyeVision.Tool.ImageFilter
                 {
                     // 保存灰度图像中间结果
                     result.GrayImage = new HalImage(grayImage.Clone());
+                    parameters.LogInfo($"滤波灰度类型：输入={hImage.GetImageType()}，灰度={grayImage.GetImageType()}；线性卷积使用real工作类型后恢复原类型，不做8位归一化");
                     result.InputWidth = imgWidth;
                     result.InputHeight = imgHeight;
                     result.InputChannels = channels;
@@ -150,37 +151,50 @@ namespace SunEyeVision.Tool.ImageFilter
                             stepSw.Restart();
                             HImage filteredImage;
 
+                            using var filterInput = grayImage.FullDomain();
                             switch (filterType)
                             {
                                 case FilterType.Blur:
-                                    HOperatorSet.MeanImage(reducedImage, out var meanImg,
-                                        kernelWidth, kernelHeight);
-                                    filteredImage = new HImage(meanImg);
+                                    filteredImage = HalconLinearFilters.Apply(filterInput, kernelWidth, kernelHeight,
+                                        0, 0, false, (int)parameters.BorderTypeValue);
                                     break;
                                 case FilterType.Gaussian:
-                                    // Halcon SmoothImage "gauss" 以核尺寸为参数，sigma 仅作保留参数
-                                    HOperatorSet.SmoothImage(reducedImage, out var gaussImg,
-                                        "gauss", Math.Max(kernelWidth, kernelHeight));
-                                    filteredImage = new HImage(gaussImg);
+                                    filteredImage = HalconLinearFilters.Apply(filterInput, kernelWidth, kernelHeight,
+                                        sigmaX, sigmaY, true, (int)parameters.BorderTypeValue);
+                                    parameters.LogInfo("高斯滤波：按核宽高截断；Sigma=0按对应核尺寸的±3Sigma估算（最小0.5像素），非零Sigma直接生效");
                                     break;
                                 case FilterType.MedianBlur:
-                                    HOperatorSet.MedianImage(reducedImage, out var medianImg,
-                                        "circle", kernelWidth / 2, "mirrored");
+                                    HOperatorSet.MedianRect(filterInput, out var medianImg, kernelWidth, kernelHeight);
                                     filteredImage = new HImage(medianImg);
                                     break;
                                 case FilterType.Bilateral:
-                                    HOperatorSet.BilateralFilter(reducedImage, reducedImage,
+                                    if (parameters.BorderTypeValue != BorderType.Reflect)
+                                        throw new NotSupportedException("HALCON双边滤波仅使用原生边界处理，当前仅支持Reflect；其他边界模式不能静默替代");
+                                    if (!double.IsFinite(sigmaSpace) || !double.IsFinite(sigmaColor) || sigmaSpace <= 0 || sigmaColor <= 0)
+                                        throw new ArgumentException("双边滤波的空间Sigma和颜色Sigma必须为有限正数");
+                                    HOperatorSet.BilateralFilter(filterInput, filterInput,
                                         out var bilateralImg, sigmaSpace, sigmaColor,
                                         new HTuple(), new HTuple());
                                     filteredImage = new HImage(bilateralImg);
+                                    kernelWidth = kernelHeight = 0; // Native support is sigma-driven, not the old ignored diameter.
+                                    parameters.LogInfo("双边滤波使用原生Sigma控制邻域，核宽高结果0表示自动邻域；旧直径字段保留但不参与计算");
                                     break;
                                 case FilterType.Filter2D:
-                                    // 默认使用 3x3 锐化核
-                                    var sharpenKernel = new HTuple(
-                                        new double[] { 0, -1, 0, -1, 5, -1, 0, -1, 0 });
-                                    HOperatorSet.ConvolImage(reducedImage, out var convolImg,
-                                        sharpenKernel, "mirrored");
-                                    filteredImage = new HImage(convolImg);
+                                    if (parameters.UseCustomKernel)
+                                    {
+                                        var custom = CustomConvolutionKernel.Parse(parameters.CustomKernelText);
+                                        kernelWidth = custom.Width;
+                                        kernelHeight = custom.Height;
+                                        filteredImage = HalconLinearFilters.ApplyKernel(filterInput, kernelWidth, kernelHeight,
+                                            custom.Coefficients, parameters.CustomKernelDivisor, (int)parameters.BorderTypeValue);
+                                        parameters.LogInfo($"Filter2D：HALCON自定义核相关运算，核={kernelWidth}x{kernelHeight}，除数={parameters.CustomKernelDivisor}；不翻核、不自动归一化，参考点由原生非零核位置决定");
+                                    }
+                                    else
+                                    {
+                                        filteredImage = HalconLinearFilters.Sharpen(filterInput, (int)parameters.BorderTypeValue);
+                                        kernelWidth = kernelHeight = 3;
+                                        parameters.LogInfo("Filter2D：兼容固定3x3锐化核，自定义核未启用");
+                                    }
                                     break;
                                 default:
                                     throw new NotSupportedException($"不支持的滤波类型: {filterType}");
@@ -190,14 +204,17 @@ namespace SunEyeVision.Tool.ImageFilter
 
                             using (filteredImage)
                             {
-                                result.OutputImage = new HalImage(filteredImage.Clone());
+                                // Neighborhood context is full image; output/statistics remain confined to the effective ROI-minus-mask.
+                                using var effectiveDomain = reducedImage.GetDomain();
+                                using var limitedOutput = filteredImage.ReduceDomain(effectiveDomain);
+                                result.OutputImage = new HalImage(limitedOutput.Clone());
                                 result.FilterTypeUsed = filterType.ToString();
                                 result.KernelWidthUsed = kernelWidth;
                                 result.KernelHeightUsed = kernelHeight;
 
                                 // ===== Step 5: 统计信息 =====
                                 stepSw.Restart();
-                                ComputeStatistics(result, filteredImage, imgWidth, imgHeight);
+                                ComputeStatistics(result, limitedOutput, imgWidth, imgHeight);
                                 stepSw.Stop();
                                 stepTimings.Add(("统计计算", stepSw.ElapsedMilliseconds));
 
@@ -292,7 +309,17 @@ namespace SunEyeVision.Tool.ImageFilter
         /// </summary>
         private void ComputeStatistics(ImageFilterResults result, HImage filteredImage, int width, int height)
         {
-            using var fullRegion = new HRegion(0.0, 0.0, (double)height - 1, (double)width - 1);
+            using var fullRegion = filteredImage.GetDomain();
+            using var area = fullRegion.AreaCenter(out HTuple centerRow, out HTuple centerColumn);
+            using var realArea = area.TupleReal();
+            using (centerRow)
+            using (centerColumn)
+                if (realArea.Length == 0 || realArea.D == 0)
+                {
+                    result.OutputMean = result.OutputStd = result.OutputMin = result.OutputMax = 0;
+                    result.ChannelMeans = new[] { 0.0 };
+                    return;
+                }
 
             HOperatorSet.Intensity(fullRegion, filteredImage, out var mean, out var stdDev);
             result.OutputMean = mean.D;

@@ -24,7 +24,7 @@ public class ShapeMatchParameters : RoiParameters
     [DisplayName("最大匹配数量")]
     public int MaxMatchCount { get; set; } = 1;
 
-    /// <summary>匹配超时（毫秒）</summary>
+    /// <summary>每次原生搜索超时（毫秒）；联合搜索组共享该预算，不按模板倍增。</summary>
     [DisplayName("匹配超时(毫秒)")]
     public int MatchTimeoutMs { get; set; } = 30000;
 
@@ -44,7 +44,7 @@ public class ShapeMatchParameters : RoiParameters
     [DisplayName("缩放最大值")]
     public double ScaleMax { get; set; } = 1.2;
 
-    /// <summary>最大返回匹配数（Halcon NumMatches）</summary>
+    /// <summary>每模板最大返回匹配数（Halcon NumMatches，0=全部候选；联合搜索逐模型传入）。</summary>
     [DisplayName("最大返回数")]
     public int NumMatches { get; set; } = 1;
 
@@ -172,7 +172,7 @@ public class ShapeMatchParameters : RoiParameters
     {
         var result = base.Validate();
 
-        if (MinMatchScore < 0 || MinMatchScore > 1.0)
+        if (!double.IsFinite(MinMatchScore) || MinMatchScore < 0 || MinMatchScore > 1.0)
             result.AddError($"最小匹配分数必须在 0~1 范围内，当前值: {MinMatchScore}");
 
         if (MaxMatchCount < 1)
@@ -181,19 +181,23 @@ public class ShapeMatchParameters : RoiParameters
         if (MatchTimeoutMs <= 0)
             result.AddError($"匹配超时必须大于0，当前值: {MatchTimeoutMs}ms");
 
-        if (AngleStart > AngleEnd)
-            result.AddError($"角度范围无效: 起始值({AngleStart})不能大于终止值({AngleEnd})");
+        if (!double.IsFinite(AngleStart) || !double.IsFinite(AngleEnd) || AngleStart > AngleEnd || AngleEnd - AngleStart > 360)
+            result.AddError($"角度范围无效: [{AngleStart},{AngleEnd}]需为有限有序区间且跨度不超过360°");
 
-        if (ScaleMin > ScaleMax)
-            result.AddError($"缩放范围无效: 最小值({ScaleMin})不能大于最大值({ScaleMax})");
+        if (!double.IsFinite(ScaleMin) || !double.IsFinite(ScaleMax) || ScaleMin <= 0 || ScaleMin > ScaleMax)
+            result.AddError($"缩放范围无效: [{ScaleMin},{ScaleMax}]需为有限正数且最小值不大于最大值");
 
-        if (NumMatches < 1)
-            result.AddError($"NumMatches({NumMatches}) 必须 >= 1");
+        if (NumMatches < 0)
+            result.AddError($"NumMatches({NumMatches}) 必须 >= 0；0表示原生返回全部候选");
 
-        if (MaxOverlap < 0 || MaxOverlap > 1)
+        if (SearchLevelStart < 0 || SearchLevelEnd < 0 ||
+            (SearchLevelStart > 0 && (SearchLevelEnd < 1 || SearchLevelStart < SearchLevelEnd)))
+            result.AddError("搜索层级需起始层≥结束层≥1，或起始层为0使用模型全层级");
+
+        if (!double.IsFinite(MaxOverlap) || MaxOverlap < 0 || MaxOverlap > 1)
             result.AddError($"MaxOverlap({MaxOverlap}) 必须在 0~1 范围内");
 
-        if (Greediness < 0 || Greediness > 1)
+        if (!double.IsFinite(Greediness) || Greediness < 0 || Greediness > 1)
             result.AddError($"Greediness({Greediness}) 必须在 0~1 范围内");
 
         return result;

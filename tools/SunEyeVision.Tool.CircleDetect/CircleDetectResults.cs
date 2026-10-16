@@ -21,6 +21,14 @@ namespace SunEyeVision.Tool.CircleDetect
         | ToolCapabilities.RoiInput | ToolCapabilities.MeasureGuide)]
     public class CircleDetectResults : ToolResults
     {
+        public EdgeFitDiagnostics FitDiagnostics1 { get; set; } = new();
+        public string FitDiagnostic1 => FitDiagnostics1.Summary;
+        public Point2d[] RawDiagnosticPoints1 => FitDiagnostics1.RawPoints;
+        public Point2d[] CandidateDiagnosticPoints1 => FitDiagnostics1.CandidatePoints;
+        public Point2d[] ExcludedDiagnosticPoints1 => FitDiagnostics1.ExcludedPoints;
+        public Point2d[] InlierDiagnosticPoints1 => FitDiagnostics1.Inliers;
+        public Point2d[] OutlierDiagnosticPoints1 => FitDiagnostics1.Outliers;
+
         /// <summary>
         /// 拟合圆数组（整圆模式）
         /// </summary>
@@ -54,7 +62,7 @@ namespace SunEyeVision.Tool.CircleDetect
         public System.Windows.Point[][] HalconMeasureBands { get; set; } = Array.Empty<System.Windows.Point[]>();
 
         /// <summary>
-        /// 拟合残差（RMSE，来自 Halcon 'rms'）
+        /// 拟合残差（实际采用点到最终模型的距离均方根）
         /// </summary>
         public double RMSE { get; set; }
 
@@ -174,11 +182,20 @@ namespace SunEyeVision.Tool.CircleDetect
         /// <summary>
         /// 获取属性映射表
         /// </summary>
+        public void FillFailureDisplay(CircleDetectParameters parameters)
+            => EdgeFitDiagnostics.FillFailureDisplay(_display, parameters.ResultPresentation, FitDiagnostics1);
+
         public override List<PropertyMapEntry> GetPropertyMap()
         {
             return
             [
                 .. base.GetPropertyMap(),   // 合并基类：执行耗时 + 节点状态 → 执行信息
+                new("FitDiagnostic1", "元素1取点拟合诊断", "诊断"),
+                new("RawDiagnosticPoints1", "元素1原始检测点", "诊断"),
+                new("CandidateDiagnosticPoints1", "元素1候选点", "诊断"),
+                new("ExcludedDiagnosticPoints1", "元素1屏蔽点", "诊断"),
+                new("InlierDiagnosticPoints1", "元素1内点", "诊断"),
+                new("OutlierDiagnosticPoints1", "元素1未采用检测点", "诊断"),
                 // 测量带(卡尺)输入回显：引导线/测量带 归"输入/卡尺"分组；
                 // GuideGeometry 为**分组占位**（单层折叠：不渲染中间节点，几何元素直接挂到"引导线"组下）
                 new("GuideGeometry",     "引导几何", "输入/卡尺/引导线", IsGroupPlaceholder: true),

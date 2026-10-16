@@ -78,8 +78,8 @@ namespace SunEyeVision.Tool.PointPointMeasure
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("point2-text"), p2.X, p2.Y,
                     $"P2 ({p2.X:F1},{p2.Y:F1})", 6, 0, isOk);
             {
-                var midX = (p1.X + p2.X) / 2;
-                var midY = (p1.Y + p2.Y) / 2;
+                var midX = p1.X / 2 + p2.X / 2;
+                var midY = p1.Y / 2 + p2.Y / 2;
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("distance-text"), midX, midY,
                     $"点距={Distance:F3}px (ΔX={DeltaX:F3}, ΔY={DeltaY:F3})", 6, 0, isOk);
             }

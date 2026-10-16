@@ -21,6 +21,22 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
         | ToolCapabilities.MeasureGuide)]
     public class CircleCircleMeasureResults : ToolResults
     {
+        public EdgeFitDiagnostics FitDiagnostics1 { get; set; } = new();
+        public string FitDiagnostic1 => FitDiagnostics1.Summary;
+        public Point2d[] RawDiagnosticPoints1 => FitDiagnostics1.RawPoints;
+        public Point2d[] CandidateDiagnosticPoints1 => FitDiagnostics1.CandidatePoints;
+        public Point2d[] ExcludedDiagnosticPoints1 => FitDiagnostics1.ExcludedPoints;
+        public Point2d[] InlierDiagnosticPoints1 => FitDiagnostics1.Inliers;
+        public Point2d[] OutlierDiagnosticPoints1 => FitDiagnostics1.Outliers;
+
+        public EdgeFitDiagnostics FitDiagnostics2 { get; set; } = new();
+        public string FitDiagnostic2 => FitDiagnostics2.Summary;
+        public Point2d[] RawDiagnosticPoints2 => FitDiagnostics2.RawPoints;
+        public Point2d[] CandidateDiagnosticPoints2 => FitDiagnostics2.CandidatePoints;
+        public Point2d[] ExcludedDiagnosticPoints2 => FitDiagnostics2.ExcludedPoints;
+        public Point2d[] InlierDiagnosticPoints2 => FitDiagnostics2.Inliers;
+        public Point2d[] OutlierDiagnosticPoints2 => FitDiagnostics2.Outliers;
+
         /// <summary>元素1 拟合被测圆</summary>
         public Circle2d[]? Element1Circle { get; set; }
 
@@ -141,9 +157,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
             var matrix = _correction.Matrix;
             Point T(Point p) => matrix == null ? p : matrix.TransformWpfPoint(p);
             double scale = matrix?.ScaleFactor() ?? 1.0;
-            double startPhase = matrix != null
-                ? PositionCorrectionResolver.DisplayAngleDeg(matrix, 0.0) * Math.PI / 180.0
-                : 0.0;
+            const double startPhase = 0.0; // Canonical HALCON full circle, independent of correction rotation.
 
             // ---- 元素1：引导圆 + 环形卡尺带 + 拟合圆 ----
             var g1c = T(_guide1!.Circle.Center);
@@ -239,11 +253,26 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
                 .ToList();
 
         /// <summary>属性映射（结果树/输出契约 SSOT；必须合并基类获得执行耗时）</summary>
+        public void FillFailureDisplay(CircleCircleMeasureParameters parameters)
+            => EdgeFitDiagnostics.FillFailureDisplay(_display, parameters.ResultPresentation, FitDiagnostics1, FitDiagnostics2);
+
         public override List<PropertyMapEntry> GetPropertyMap()
         {
             return
             [
                 .. base.GetPropertyMap(),   // 执行耗时 + 节点状态 → 执行信息
+                new("FitDiagnostic1", "元素1取点拟合诊断", "诊断"),
+                new("RawDiagnosticPoints1", "元素1原始检测点", "诊断"),
+                new("CandidateDiagnosticPoints1", "元素1候选点", "诊断"),
+                new("ExcludedDiagnosticPoints1", "元素1屏蔽点", "诊断"),
+                new("InlierDiagnosticPoints1", "元素1内点", "诊断"),
+                new("OutlierDiagnosticPoints1", "元素1未采用检测点", "诊断"),
+                new("FitDiagnostic2", "元素2取点拟合诊断", "诊断"),
+                new("RawDiagnosticPoints2", "元素2原始检测点", "诊断"),
+                new("CandidateDiagnosticPoints2", "元素2候选点", "诊断"),
+                new("ExcludedDiagnosticPoints2", "元素2屏蔽点", "诊断"),
+                new("InlierDiagnosticPoints2", "元素2内点", "诊断"),
+                new("OutlierDiagnosticPoints2", "元素2未采用检测点", "诊断"),
                 // ===== 输入（对齐 LineDetect 规范：输入/卡尺）=====
                 new("GuideGeometry1", "圆1引导几何", "输入/卡尺/引导圆"),
                 new("GuideGeometry2", "圆2引导几何", "输入/卡尺/引导圆"),

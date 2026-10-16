@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
@@ -59,7 +60,9 @@ namespace SunEyeVision.Tool.ImageFilter
             new RuntimeParameterDescriptor(nameof(SigmaX), "Sigma X", "Double", typeof(double)),
             new RuntimeParameterDescriptor(nameof(SigmaY), "Sigma Y", "Double", typeof(double)),
             new RuntimeParameterDescriptor(nameof(SigmaColor), "颜色Sigma", "Double", typeof(double)),
-            new RuntimeParameterDescriptor(nameof(SigmaSpace), "空间Sigma", "Double", typeof(double))
+            new RuntimeParameterDescriptor(nameof(SigmaSpace), "空间Sigma", "Double", typeof(double)),
+            new RuntimeParameterDescriptor(nameof(CustomKernelText), "自定义核系数", "String", typeof(string)),
+            new RuntimeParameterDescriptor(nameof(CustomKernelDivisor), "自定义核除数", "Double", typeof(double))
         };
 
         /// <summary>
@@ -154,6 +157,29 @@ namespace SunEyeVision.Tool.ImageFilter
         /// </summary>
         [DisplayName("内核高度")]
         public int KernelHeight { get; set; } = 3;
+
+        private bool _useCustomKernel;
+        private string _customKernelText = CustomConvolutionKernel.DefaultText;
+        private double _customKernelDivisor = 1;
+
+        /// <summary>Explicit opt-in; missing fields in old solutions retain fixed sharpening.</summary>
+        public bool UseCustomKernel
+        {
+            get => _useCustomKernel;
+            set => SetProperty(ref _useCustomKernel, value);
+        }
+
+        public string CustomKernelText
+        {
+            get => _customKernelText;
+            set => SetProperty(ref _customKernelText, value);
+        }
+
+        public double CustomKernelDivisor
+        {
+            get => _customKernelDivisor;
+            set => SetProperty(ref _customKernelDivisor, value);
+        }
 
         /// <summary>
         /// 高斯滤波 SigmaX
@@ -273,19 +299,32 @@ namespace SunEyeVision.Tool.ImageFilter
         {
             var result = base.Validate();
 
-            // 内核大小必须为奇数
-            if (KernelWidth % 2 == 0)
-                result.AddError($"内核宽度必须为奇数，当前值: {KernelWidth}");
+            if (FilterTypeValue == FilterType.Filter2D && UseCustomKernel)
+            {
+                try { CustomConvolutionKernel.Parse(CustomKernelText); }
+                catch (ArgumentException ex) { result.AddError(ex.Message); }
+                if (!double.IsFinite(CustomKernelDivisor) || CustomKernelDivisor <= 0)
+                    result.AddError("自定义核除数必须为有限正数；零和核请显式使用1，不会自动归一化");
+            }
 
-            if (KernelHeight % 2 == 0)
-                result.AddError($"内核高度必须为奇数，当前值: {KernelHeight}");
+            // Custom Filter2D derives its dimensions from the matrix; preserve the
+            // legacy width/height fields and bindings without letting inactive values resize it.
+            if (!(FilterTypeValue == FilterType.Filter2D && UseCustomKernel))
+            {
+                // 内核大小必须为奇数
+                if (KernelWidth % 2 == 0)
+                    result.AddError($"内核宽度必须为奇数，当前值: {KernelWidth}");
 
-            // 内核大小范围检查
-            if (KernelWidth < KernelMin || KernelWidth > KernelMax)
-                result.AddError($"内核宽度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelWidth}");
+                if (KernelHeight % 2 == 0)
+                    result.AddError($"内核高度必须为奇数，当前值: {KernelHeight}");
 
-            if (KernelHeight < KernelMin || KernelHeight > KernelMax)
-                result.AddError($"内核高度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelHeight}");
+                // 内核大小范围检查
+                if (KernelWidth < KernelMin || KernelWidth > KernelMax)
+                    result.AddError($"内核宽度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelWidth}");
+
+                if (KernelHeight < KernelMin || KernelHeight > KernelMax)
+                    result.AddError($"内核高度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelHeight}");
+            }
 
             // 结果配置验证
             ValidateResultConfig(result);

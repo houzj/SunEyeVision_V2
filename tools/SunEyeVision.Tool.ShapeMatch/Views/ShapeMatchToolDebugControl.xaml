@@ -236,12 +236,12 @@
                 </controls:LabeledControl>
 
                 <controls:LabeledControl Label="单模版最大匹配数"
-                    ToolTip="每个Halcon模板返回的最大候选数。多模板时每个模板独立计算，最终结果受「最大匹配数」限制">
+                    ToolTip="每个Halcon模板返回的最大候选数，0表示全部。多模板时每个模板独立计算，最终结果受「最大匹配数」限制">
                   <controls:ConfigSetting
                                     ParameterName="NumMatches"
                                     DataType="{x:Type sys:Int32}"
                                     Value="{Binding NumMatches, Mode=TwoWay}"
-                                    Minimum="1" Maximum="1000"
+                                    Minimum="0" Maximum="1000"
                                     SmallChange="1" LargeChange="10"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
@@ -317,7 +317,7 @@
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                     </controls:LabeledControl>
 
-                    <controls:LabeledControl Label="超时" ToolTip="单位: ms">
+                    <controls:LabeledControl Label="超时" ToolTip="单位: ms。每次HALCON搜索的超时；相同创建对比度的模板联合搜索，共享该预算，不按模板数量倍增。超时明确失败，不降阈值重试。">
                       <controls:ConfigSetting
                                         ParameterName="MatchTimeoutMs"
                                         DataType="{x:Type sys:Int32}"

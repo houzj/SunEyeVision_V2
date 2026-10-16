@@ -225,22 +225,16 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                         stepSw.Stop();
                         stepTimings.Add(("模板筛选", stepSw.ElapsedMilliseconds));
 
-                        // ===== 对每个模板执行匹配 =====
+                        // ===== 按原生创建条件分组执行模板匹配 =====
                         stepSw.Restart();
-                        var allMatches = new List<ShapeMatchResultItem>();
-
-                        foreach (var template in enabledTemplates)
-                        {
-                            var templateMatches = RunSingleTemplateMatch(
-                                processingImage, template, parameters);
-                            allMatches.AddRange(templateMatches);
-                        }
+                        var allMatches = RunTemplateMatches(processingImage, enabledTemplates, parameters);
                         stepSw.Stop();
                         stepTimings.Add(("模板匹配", stepSw.ElapsedMilliseconds));
 
-                        // ===== 结果排序 =====
+                        // Presentation sorting must not choose which competing template survives.
                         stepSw.Restart();
-                        var sortedMatches = SortResults(allMatches, parameters.SortMode);
+                        var sortedMatches = allMatches.OrderByDescending(m => m.Score)
+                            .ThenBy(m => m.TemplateOrderIndex).ToList();
                         stepSw.Stop();
                         stepTimings.Add(("结果排序", stepSw.ElapsedMilliseconds));
 
@@ -254,7 +248,9 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                         stepTimings.Add(("跨模板去重", stepSw.ElapsedMilliseconds));
 
                         // ===== 截取最大匹配数量 =====
-                        var finalMatches = nonOverlapMatches.Take(parameters.MaxMatchCount).ToList();
+                        var finalMatches = SortResults(nonOverlapMatches, parameters.SortMode)
+                            .Take(parameters.MaxMatchCount).ToList();
+                        parameters.LogInfo($"匹配筛选：原生候选={allMatches.Count}，跨模板去重后={nonOverlapMatches.Count}，输出={finalMatches.Count}；去重按分数，显示按配置排序。搜索域/屏蔽限定原生模型参考点，不涂黑屏蔽像素。");
 
                         // ===== 设置结果 =====
                         result.MatchedItems = finalMatches;
@@ -353,10 +349,119 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
         return result;
     }
 
-    /// <summary>
-    /// 对单个模板执行匹配 — 直接调用 Halcon find_scaled_shape_model
-    /// </summary>
-    private static List<ShapeMatchResultItem> RunSingleTemplateMatch(
+    private sealed record PreparedMatchModel(TemplateModel Template, HTuple Handle,
+        int Levels, string MinContrastSignature);
+
+    /// <summary>Keep native creation contrast unchanged while sharing compatible searches.</summary>
+    private static List<ShapeMatchResultItem> RunTemplateMatches(
+        HImage image, List<TemplateModel> templates, ShapeMatchParameters parameters)
+    {
+        lock (_modelCacheLock)
+        {
+            // Validate before loading: duplicate IDs with different contents would otherwise
+            // retire a handle that is already part of the pending joint search.
+            if (templates.Any(t => string.IsNullOrWhiteSpace(t.Id)) ||
+                templates.Select(t => t.Id).Distinct(StringComparer.Ordinal).Count() != templates.Count)
+                throw new InvalidOperationException("启用模板身份为空或重复，无法可靠映射原生匹配结果");
+            var prepared = new List<PreparedMatchModel>(templates.Count);
+            foreach (var template in templates)
+            {
+                try
+                {
+                    var handle = GetOrLoadModelHandle(template);
+                    var info = ReadNativeModelInfo(handle);
+                    prepared.Add(new(template, handle, info.Levels, info.MinContrastSignature));
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"模板 {template.Name} 原生模型准备失败：{ex.Message}", ex);
+                }
+            }
+
+            var byTemplate = new Dictionary<string, List<ShapeMatchResultItem>>(StringComparer.Ordinal);
+            foreach (var group in prepared.GroupBy(m => m.MinContrastSignature))
+            {
+                var models = group.ToList();
+                if (models.Count == 1)
+                    byTemplate[models[0].Template.Id] = RunSingleTemplateMatchCore(image, models[0].Template, parameters);
+                else
+                    foreach (var matches in RunJointTemplateMatch(image, models, parameters))
+                        byTemplate.Add(matches.Key, matches.Value);
+            }
+            // Preserve original template order for equal-score presentation/NMS ties.
+            return templates.SelectMany(t => byTemplate[t.Id]).ToList();
+        }
+    }
+
+    private static Dictionary<string, List<ShapeMatchResultItem>> RunJointTemplateMatch(
+        HImage image, List<PreparedMatchModel> models, ShapeMatchParameters parameters)
+    {
+        var handles = new HTuple();
+        try
+        {
+            foreach (var model in models)
+            {
+                var next = handles.TupleConcat(model.Handle);
+                handles.Dispose();
+                handles = next;
+                HOperatorSet.SetShapeModelParam(model.Handle, "timeout", parameters.MatchTimeoutMs);
+            }
+            using var counts = new HTuple(Enumerable.Repeat(parameters.NumMatches, models.Count).ToArray());
+            using var overlaps = new HTuple(Enumerable.Repeat(parameters.MaxOverlap, models.Count).ToArray());
+            // Always use 2*N entries for explicit ranges; with exactly two models,
+            // [start,end] would mean two separate start levels, NOT a shared range.
+            using var levels = parameters.SearchLevelStart > 0
+                ? new HTuple(models.SelectMany(m => new[] {
+                    Math.Min(parameters.SearchLevelStart, m.Levels),
+                    Math.Min(parameters.SearchLevelEnd, m.Levels) }).ToArray())
+                : new HTuple(0);
+            parameters.LogInfo($"HALCON联合搜索：模板=[{string.Join(",", models.Select(m => m.Template.Name))}]，" +
+                $"模型MinContrast={models[0].MinContrastSignature}，每模板NumMatches={parameters.NumMatches}，" +
+                $"请求层级=[{parameters.SearchLevelStart},{parameters.SearchLevelEnd}]，实际层级={levels}，组超时={parameters.MatchTimeoutMs}ms");
+            HOperatorSet.FindScaledShapeModels(image, handles,
+                parameters.AngleStart * DEG2RAD, (parameters.AngleEnd - parameters.AngleStart) * DEG2RAD,
+                parameters.ScaleMin, parameters.ScaleMax, parameters.MinMatchScore, counts, overlaps,
+                MapSubPixel(parameters.SubPixelMode), levels, parameters.Greediness,
+                out var row, out var col, out var angle, out var scale, out var score, out var modelIndices);
+            using (row) using (col) using (angle) using (scale) using (score) using (modelIndices)
+            {
+                var count = row.Length;
+                if (col.Length != count || angle.Length != count || scale.Length != count ||
+                    score.Length != count || modelIndices.Length != count)
+                    throw new InvalidOperationException("HALCON联合匹配返回元组长度不一致");
+                var indices = modelIndices.ToIArr();
+                if (indices.Any(index => index < 0 || index >= models.Count))
+                    throw new InvalidOperationException("HALCON联合匹配返回模板索引越界");
+                var results = new Dictionary<string, List<ShapeMatchResultItem>>(StringComparer.Ordinal);
+                for (var modelIndex = 0; modelIndex < models.Count; modelIndex++)
+                {
+                    using var selection = new HTuple(Enumerable.Range(0, count)
+                        .Where(i => indices[i] == modelIndex).ToArray());
+                    var model = models[modelIndex];
+                    if (selection.Length == 0)
+                    {
+                        results.Add(model.Template.Id, new());
+                        continue;
+                    }
+                    using var rows = row.TupleSelect(selection);
+                    using var columns = col.TupleSelect(selection);
+                    using var angles = angle.TupleSelect(selection);
+                    using var scales = scale.TupleSelect(selection);
+                    using var scores = score.TupleSelect(selection);
+                    results.Add(model.Template.Id, BuildTemplateResults(model.Handle, model.Template,
+                        parameters, rows, columns, angles, scales, scores));
+                }
+                return results;
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"HALCON联合匹配失败，模板=[{string.Join(",", models.Select(m => m.Template.Name))}]：{ex.Message}", ex);
+        }
+        finally { handles.Dispose(); }
+    }
+
+    private static List<ShapeMatchResultItem> RunSingleTemplateMatchCore(
         HImage image, TemplateModel template, ShapeMatchParameters parameters)
     {
         // 从缓存取得模型句柄（首次按 ModelData 重建，之后复用；句柄生命周期由缓存管理，此处不 Dispose）
@@ -388,20 +493,23 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
 
         // 搜索层级：使用 Parameters 中的搜索层级区间 [起始层(粗), 结束层(细)]
         // Halcon 官方语义：NumLevels=[4,2] = 从第 4 层开始、跟踪匹配到第 2 层（起始层≥结束层）。
-        // 0 或未成对时使用 0 = 全层级（用 create 时的层数）。
+        // 0 means full model hierarchy; malformed explicit ranges fail parameter validation.
         int searchLevelStart = parameters.SearchLevelStart;
         int searchLevelEnd = parameters.SearchLevelEnd;
         HTuple numLevelsTuple;
         if (searchLevelStart > 0 && searchLevelEnd > 0 && searchLevelStart >= searchLevelEnd)
         {
-            int clampedStart = Math.Min(searchLevelStart, template.NumLevels);
-            int clampedEnd = Math.Min(searchLevelEnd, template.NumLevels);
+            int actualLevels = ReadNativeModelLevels(modelHandle);
+            int clampedStart = Math.Min(searchLevelStart, actualLevels);
+            int clampedEnd = Math.Min(searchLevelEnd, actualLevels);
             numLevelsTuple = new HTuple(new int[] { clampedStart, clampedEnd });
+            parameters.LogInfo($"模板 {template.Name} 搜索层级：请求=[{searchLevelStart},{searchLevelEnd}]，模型实际={actualLevels}，使用=[{clampedStart},{clampedEnd}]");
         }
         else
         {
             numLevelsTuple = 0; // 全层级
         }
+        using var ownedNumLevels = numLevelsTuple;
 
         // 设置超时
         HOperatorSet.SetShapeModelParam(modelHandle, "timeout", timeoutMs);
@@ -418,8 +526,22 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             numLevelsTuple, greediness,
             out HTuple row, out HTuple col,
             out HTuple angle, out HTuple scale, out HTuple score);
+        using var ownedRows = row;
+        using var ownedColumns = col;
+        using var ownedAngles = angle;
+        using var ownedScales = scale;
+        using var ownedScores = score;
 
+        return BuildTemplateResults(modelHandle, template, parameters, row, col, angle, scale, score);
+    }
+
+    private static List<ShapeMatchResultItem> BuildTemplateResults(HTuple modelHandle,
+        TemplateModel template, ShapeMatchParameters parameters, HTuple row, HTuple col,
+        HTuple angle, HTuple scale, HTuple score)
+    {
         int matchCount = row.Length;
+        if (col.Length != matchCount || angle.Length != matchCount || scale.Length != matchCount || score.Length != matchCount)
+            throw new InvalidOperationException($"模板 {template.Name} 原生匹配返回元组长度不一致");
         if (matchCount == 0)
             return new List<ShapeMatchResultItem>();
 
@@ -434,6 +556,9 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             double matchAngle = angle[i].D;
             double matchScale = scale[i].D;
             double matchScore = score[i].D;
+            if (!double.IsFinite(matchRow) || !double.IsFinite(matchCol) || !double.IsFinite(matchAngle)
+                || !double.IsFinite(matchScale) || matchScale <= 0 || !double.IsFinite(matchScore))
+                throw new InvalidOperationException($"模板 {template.Name} 原生匹配返回无效姿态或分数，索引={i}");
 
             // ★ 唯一构造出口：由独立工厂从 Halcon 匹配姿态构造 AffineMatrix（仿 HalconArcAdapter 范式）
             var transformMatrix = ShapeMatchTransformFactory.FromMatchPose(
@@ -481,14 +606,33 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
         // 日志
         parameters.LogInfo(
             $"Halcon 匹配 [{template.Name}]: {matchCount}个 结果, " +
-            $"角度=[{angleStart:F1}~{angleEnd:F1}]°, 缩放=[{scaleMin:F3}~{scaleMax:F3}]");
+            $"角度=[{parameters.AngleStart:F1}~{parameters.AngleEnd:F1}]°, 缩放=[{parameters.ScaleMin:F3}~{parameters.ScaleMax:F3}]");
 
         return results;
     }
 
     /// <summary>
-    /// 根据（已变换到图像坐标的）匹配轮廓点直接求包围矩形
+    /// 读取原生模型的实际金字塔层数，不以保存的模板元数据代替。
     /// </summary>
+    private static int ReadNativeModelLevels(HTuple modelHandle) => ReadNativeModelInfo(modelHandle).Levels;
+
+    private static (int Levels, string MinContrastSignature) ReadNativeModelInfo(HTuple modelHandle)
+    {
+        HOperatorSet.GetShapeModelParams(modelHandle, out var levels,
+            out var angleStart, out var angleExtent, out var angleStep,
+            out var scaleMin, out var scaleMax, out var scaleStep, out var metric, out var minContrast);
+        using (levels) using (angleStart) using (angleExtent) using (angleStep)
+        using (scaleMin) using (scaleMax) using (scaleStep) using (metric) using (minContrast)
+        {
+            if (levels.Length != 1 || levels.I < 1)
+                throw new InvalidOperationException("原生模型未返回有效金字塔层数");
+            if (minContrast.Length == 0)
+                throw new InvalidOperationException("原生模型未返回有效MinContrast");
+            return (levels.I, string.Join(",", minContrast.ToIArr()));
+        }
+    }
+
+    /// <summary>根据已变换到图像坐标的匹配轮廓点直接求包围矩形。</summary>
     private static WpfRect ComputeBoundingBoxFromPoints(List<WpfPoint> points)
     {
         if (points.Count == 0) return WpfRect.Empty;
@@ -548,7 +692,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
 
     /// <summary>
     /// 跨模板空间去重 NMS（M10）：抑制与已保留框重叠超过 MaxOverlap 的后续匹配。
-    /// 输入应为已排序列表（建议按分数降序），第一个匹配总是保留。
+    /// 输入按分数降序。只处理跨模板竞争；同模板去重由HALCON MaxOverlap负责。
     /// </summary>
     private static List<ShapeMatchResultItem> SuppressCrossTemplateOverlap(
         List<ShapeMatchResultItem> sortedMatches, double maxOverlap)
@@ -558,14 +702,14 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
         var kept = new List<ShapeMatchResultItem>();
         foreach (var candidate in sortedMatches)
         {
-            if (!candidate.BoundingBox.HasValue)
+            if (!candidate.BoundingBox.HasValue || candidate.BoundingBox.Value.IsEmpty)
             {
                 kept.Add(candidate); // 无包围盒无法判重叠，保留
                 continue;
             }
 
             bool overlapped = kept.Any(k =>
-                k.BoundingBox.HasValue && BoundingBoxOverlapRatio(
+                k.TemplateId != candidate.TemplateId && k.BoundingBox.HasValue && !k.BoundingBox.Value.IsEmpty && BoundingBoxOverlapRatio(
                     candidate.BoundingBox.Value, k.BoundingBox.Value) > maxOverlap);
             if (!overlapped)
                 kept.Add(candidate);
@@ -578,14 +722,12 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
     /// </summary>
     private static double BoundingBoxOverlapRatio(WpfRect a, WpfRect b)
     {
-        var ia = WpfRect.Empty;
-        ia.X = Math.Max(a.X, b.X);
-        ia.Y = Math.Max(a.Y, b.Y);
-        ia.Width = Math.Min(a.X + a.Width, b.X + b.Width) - ia.X;
-        ia.Height = Math.Min(a.Y + a.Height, b.Y + b.Height) - ia.Y;
-        if (ia.Width <= 0 || ia.Height <= 0) return 0;
-
-        double intersection = ia.Width * ia.Height;
+        if (a.IsEmpty || b.IsEmpty) return 0;
+        double overlapWidth = Math.Min(a.Right, b.Right) - Math.Max(a.Left, b.Left);
+        double overlapHeight = Math.Min(a.Bottom, b.Bottom) - Math.Max(a.Top, b.Top);
+        if (overlapWidth <= 0 || overlapHeight <= 0) return 0;
+        // Never assign negative dimensions to WPF Rect (disjoint candidates used to throw).
+        double intersection = overlapWidth * overlapHeight;
         double union = a.Width * a.Height + b.Width * b.Height - intersection;
         return union > 0 ? intersection / union : 0;
     }

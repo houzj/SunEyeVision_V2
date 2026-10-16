@@ -196,14 +196,21 @@ public class TemplateModel : ObservableObject
     public static List<WpfPoint[]> GetShapeModelContours(HTuple modelID, int level)
     {
         HOperatorSet.GetShapeModelContours(out var xldContours, modelID, level);
+        using var ownedContours = xldContours;
         var result = new List<WpfPoint[]>();
         HOperatorSet.CountObj(xldContours, out var numObj);
+        using var ownedCount = numObj;
         int count = numObj.I;
 
         for (int i = 1; i <= count; i++)
         {
             HOperatorSet.SelectObj(xldContours, out var singleObj, i);
+            using var ownedContour = singleObj;
             HOperatorSet.GetContourXld(singleObj, out var rowArr, out var colArr);
+            using var ownedRows = rowArr;
+            using var ownedColumns = colArr;
+            if (rowArr.Length != colArr.Length)
+                throw new InvalidOperationException("原生模型轮廓行列元组长度不一致");
             int ptCount = rowArr.Length;
             var points = new WpfPoint[ptCount];
             for (int j = 0; j < ptCount; j++)
@@ -211,10 +218,8 @@ public class TemplateModel : ObservableObject
                 points[j] = new WpfPoint(colArr[j].D, rowArr[j].D);
             }
             result.Add(points);
-            singleObj.Dispose();
         }
 
-        xldContours.Dispose();
         return result;
     }
 }

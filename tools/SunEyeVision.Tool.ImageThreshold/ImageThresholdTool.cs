@@ -157,31 +157,11 @@ namespace SunEyeVision.Tool.ImageThreshold
                             switch (method)
                             {
                                 case ThresholdMethod.Binary:
-                                    HOperatorSet.Threshold(reducedImage, out var binObj,
-                                        threshold, maxValue);
-                                    binaryRegion = new HRegion(binObj);
-                                    actualThreshold = threshold;
-                                    break;
                                 case ThresholdMethod.BinaryInv:
-                                    HOperatorSet.Threshold(reducedImage, out var binInvObj,
-                                        threshold, maxValue);
-                                    HOperatorSet.Complement(binInvObj, out var complInvObj);
-                                    binaryRegion = new HRegion(complInvObj);
-                                    actualThreshold = threshold;
-                                    break;
                                 case ThresholdMethod.Trunc:
                                 case ThresholdMethod.ToZero:
-                                    // Halcon 无像素级截断算子，以 [threshold, maxValue] 区间区域二值化近似
-                                    HOperatorSet.Threshold(reducedImage, out var truncObj,
-                                        threshold, maxValue);
-                                    binaryRegion = new HRegion(truncObj);
-                                    actualThreshold = threshold;
-                                    break;
                                 case ThresholdMethod.ToZeroInv:
-                                    // 反向截断近似：取 [0, threshold] 区间
-                                    HOperatorSet.Threshold(reducedImage, out var tozeroInvObj,
-                                        0, threshold);
-                                    binaryRegion = new HRegion(tozeroInvObj);
+                                    binaryRegion = HalconThresholdOperations.SelectBasic(reducedImage, (int)method, threshold);
                                     actualThreshold = threshold;
                                     break;
                                 case ThresholdMethod.Otsu:
@@ -191,33 +171,15 @@ namespace SunEyeVision.Tool.ImageThreshold
                                     actualThreshold = usedOtsu.D;
                                     break;
                                 case ThresholdMethod.Triangle:
-                                    var triangleThreshold = ComputeTriangleThreshold(reducedImage, imgWidth, imgHeight);
-                                    HOperatorSet.Threshold(reducedImage, out var triObj,
-                                        triangleThreshold, maxValue);
-                                    binaryRegion = new HRegion(triObj);
+                                    var triangleThreshold = ComputeTriangleThreshold(reducedImage);
+                                    binaryRegion = HalconThresholdOperations.SelectBasic(reducedImage, 0, triangleThreshold);
                                     actualThreshold = triangleThreshold;
                                     break;
                                 case ThresholdMethod.AdaptiveMean:
-                                    HOperatorSet.MeanImage(reducedImage, out var meanImg,
-                                        blockSize, blockSize);
-                                    using (var meanImage = new HImage(meanImg))
-                                    {
-                                        HOperatorSet.Threshold(meanImage, out var adMeanObj,
-                                            (int)(threshold + c), maxValue);
-                                        binaryRegion = new HRegion(adMeanObj);
-                                    }
-                                    actualThreshold = threshold;
-                                    break;
                                 case ThresholdMethod.AdaptiveGaussian:
-                                    HOperatorSet.SmoothImage(reducedImage, out var gaussImg,
-                                        "gauss", blockSize);
-                                    using (var gaussImage = new HImage(gaussImg))
-                                    {
-                                        HOperatorSet.Threshold(gaussImage, out var adGaussObj,
-                                            (int)(threshold + c), maxValue);
-                                        binaryRegion = new HRegion(adGaussObj);
-                                    }
-                                    actualThreshold = threshold;
+                                    binaryRegion = HalconThresholdOperations.SelectAdaptive(reducedImage, blockSize, c,
+                                        method == ThresholdMethod.AdaptiveGaussian);
+                                    actualThreshold = -c; // Local threshold offset, not a global gray threshold.
                                     break;
                                 case ThresholdMethod.InRange:
                                     HOperatorSet.Threshold(reducedImage, out var inRangeObj,
@@ -235,9 +197,9 @@ namespace SunEyeVision.Tool.ImageThreshold
                                                      or ThresholdMethod.AdaptiveMean or ThresholdMethod.AdaptiveGaussian
                                                      or ThresholdMethod.InRange)
                             {
-                                HOperatorSet.Complement(binaryRegion, out var compObj);
+                                var inverse = HalconThresholdOperations.InvertWithinDomain(reducedImage, binaryRegion);
                                 binaryRegion.Dispose();
-                                binaryRegion = new HRegion(compObj);
+                                binaryRegion = inverse;
                             }
                             stepSw.Stop();
                             stepTimings.Add(("阈值分割", stepSw.ElapsedMilliseconds));
@@ -247,7 +209,8 @@ namespace SunEyeVision.Tool.ImageThreshold
                                 // 二值掩码输出
                                 HOperatorSet.RegionToBin(binaryRegion, out var binObj,
                                     255, 0, imgWidth, imgHeight);
-                                result.OutputImage = new HalImage(new HImage(binObj.Clone()));
+                                result.OutputImage = new HalImage(HalconThresholdOperations.Render(reducedImage, binaryRegion,
+                                    (int)method, threshold, maxValue, imgWidth, imgHeight, invert));
                                 result.BinaryMask = new HalImage(new HImage(binObj));
 
                                 result.ThresholdUsed = actualThreshold;
@@ -347,13 +310,17 @@ namespace SunEyeVision.Tool.ImageThreshold
         #region 私有方法
 
         /// <summary>
-        /// 基于灰度直方图的三角形法阈值计算（Halcon 无对应算子，按业界标准算法自实现）
+        /// 旧方案兼容的三角形法；HALCON生成有效域直方图，兼容计算选择较长尾部。
         /// 算法：连接直方图峰值与边界点形成三角形，取到直方图曲线距离最远的谷点作为阈值。
         /// </summary>
-        private int ComputeTriangleThreshold(HImage image, int width, int height)
+        private int ComputeTriangleThreshold(HImage image)
         {
-            using var fullRegion = new HRegion(0.0, 0.0, (double)height - 1, (double)width - 1);
-            HOperatorSet.GrayHisto(fullRegion, image, out var absoluteHisto, out _);
+            if (image.GetImageType() != "byte")
+                throw new NotSupportedException("Triangle兼容模式仅支持byte灰度，未隐式压缩位深；请显式选择输入转换或其他阈值模式");
+            using var fullRegion = image.GetDomain();
+            HOperatorSet.GrayHisto(fullRegion, image, out var absoluteHisto, out var relativeHisto);
+            using var ownedAbsolute = absoluteHisto;
+            using var ownedRelative = relativeHisto;
             var hist = absoluteHisto.LArr;
 
             // 直方图峰值（灰度级）
@@ -368,23 +335,27 @@ namespace SunEyeVision.Tool.ImageThreshold
                 }
             }
 
-            // 以峰值一侧（低灰度侧）构建三角形
+            int left = 0, right = hist.Length - 1;
+            while (left < right && hist[left] == 0) left++;
+            while (right > left && hist[right] == 0) right--;
+            if (left == right || maxCount == 0) return maxIndex;
+            // Include one zero bin beyond each occupied tail where possible.
+            if (left > 0) left--;
+            if (right < hist.Length - 1) right++;
             int start = maxIndex;
-            int end = hist.Length - 1;
-            while (end > start && hist[end] == 0) end--;
+            int end = maxIndex - left > right - maxIndex ? left : right;
 
-            if (end <= start)
+            if (end == start || maxCount == 0)
                 return maxIndex;
 
-            long h = hist[start];
-            double bestThreshold = start;
+            int bestThreshold = start;
             double maxDist = -1;
-            for (int i = start; i <= end; i++)
+            double dx = end - start;
+            double dy = (double)hist[end] - hist[start];
+            double denominator = Math.Sqrt(dx * dx + dy * dy);
+            for (int i = Math.Min(start, end); i <= Math.Max(start, end); i++)
             {
-                // 点 (i, hist[i]) 到直线 (start, h)-(end, 0) 的距离
-                double dx = end - start;
-                double dy = -h;
-                double dist = Math.Abs(dy * i - dx * hist[i] + dx * h) / Math.Sqrt(dx * dx + dy * dy);
+                double dist = Math.Abs(dy * (i - start) - dx * ((double)hist[i] - hist[start])) / denominator;
                 if (dist > maxDist)
                 {
                     maxDist = dist;
@@ -392,7 +363,7 @@ namespace SunEyeVision.Tool.ImageThreshold
                 }
             }
 
-            return (int)Math.Clamp(bestThreshold, 0, 255);
+            return bestThreshold;
         }
 
         /// <summary>
@@ -406,6 +377,13 @@ namespace SunEyeVision.Tool.ImageThreshold
             result.WhitePixelCount = whitePixelCount;
             result.WhitePixelRatio = totalPixels > 0 ? (double)whitePixelCount / totalPixels * 100 : 0;
             result.OutputArea = whitePixelCount;
+
+            if (whitePixelCount == 0)
+            {
+                result.OutputMean = 0;
+                result.HistogramData = new double[256];
+                return;
+            }
 
             HOperatorSet.Intensity(binaryRegion, reducedImage, out var mean, out _);
             result.OutputMean = mean.D;

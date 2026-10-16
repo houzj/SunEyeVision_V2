@@ -219,7 +219,7 @@ namespace SunEyeVision.Tool.PointLineMeasure
                 new("CandidateDiagnosticPoints2", "元素2候选点", "诊断"),
                 new("ExcludedDiagnosticPoints2", "元素2屏蔽点", "诊断"),
                 new("InlierDiagnosticPoints2", "元素2内点", "诊断"),
-                new("OutlierDiagnosticPoints2", "元素2离群点", "诊断"),
+                new("OutlierDiagnosticPoints2", "元素2未采用检测点", "诊断"),
                 // ===== 输入（对齐 6 工具规范：输入/卡尺）=====
                 // 点1：订阅/手输的点（不是拟合产物）→ 归「输入」
                 new("Point1", "点1", "输入/点1"),

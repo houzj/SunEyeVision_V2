@@ -13,7 +13,7 @@ namespace SunEyeVision.Tool.ProtocolParse;
 public class ProtocolParseParameters : ToolParameters, IOutputContractProvider, INotifyOutputContractChanged, IBindingInputProvider
 {
     public IReadOnlyList<BindingInputReference> GetBindingInputs() => new[] { new BindingInputReference("InputText", "解析内容", () => InputText, value => InputText = value, SunEyeVision.Plugin.SDK.UI.Controls.Communication.CommunicationBindingTypes.Parse,
-        InterpretationKey: Mode == "Bytes" ? $"Bytes/{InputFormat}/{AsciiData}/{StringEncoding}" : "Text/UTF8", ValidateLiteral: ValidateLiteral) };
+        InterpretationKey: Mode == "Bytes" ? $"Bytes/{InputFormat}/{AsciiData}/{StringEncoding}" : "Text/UTF8", ValidateLiteral: ValidateLiteral) { Owner = this, MemberPath = nameof(InputText) } };
     private string? ValidateLiteral(string text)
     {
         // Pure parser probe: no runtime context, old results, devices or sends.

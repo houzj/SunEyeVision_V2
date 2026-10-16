@@ -95,7 +95,7 @@
                         </controls:LabeledControl>
 
                         <controls:LabeledControl Label="边缘极性" Margin="0,0,0,4">
-                            <ComboBox x:Name="TransitionCombo"
+                            <ComboBox x:Name="TransitionCombo" ToolTip="沿卡尺箭头扫描：白到黑=灰度下降，黑到白=灰度上升；不要求两侧为纯白或纯黑。"
                                       SelectedIndex="0"
                                       SelectionChanged="TransitionCombo_SelectionChanged"
                                       Width="250" HorizontalAlignment="Left" Height="32" VerticalContentAlignment="Center">
@@ -106,7 +106,7 @@
                         </controls:LabeledControl>
 
                         <controls:LabeledControl Label="选取模式" Margin="0,0,0,4">
-                            <ComboBox x:Name="SelectCombo"
+                            <ComboBox x:Name="SelectCombo" ToolTip="第一个/最后一个按箭头方向选择符合极性的边缘；全部保留多个候选，由原生拟合决定采用点，不保证选择第一条边。"
                                       SelectedIndex="0"
                                       SelectionChanged="SelectCombo_SelectionChanged"
                                       Width="250" HorizontalAlignment="Left" Height="32" VerticalContentAlignment="Center">
@@ -117,7 +117,7 @@
                         </controls:LabeledControl>
 
                         <!-- ===== 高级参数（鲁棒直线拟合，默认折叠） ===== -->
-                        <Expander Header="高级参数（鲁棒直线拟合）" IsExpanded="False" Margin="0,8,0,0"
+                        <Expander Header="高级拟合参数" IsExpanded="False" Margin="0,8,0,0"
                                   BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1"
                                   Background="{DynamicResource ThemePanelBackgroundBrush}">
                             <StackPanel Margin="16,8">

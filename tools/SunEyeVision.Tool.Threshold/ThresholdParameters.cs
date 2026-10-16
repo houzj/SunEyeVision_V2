@@ -105,6 +105,12 @@ namespace SunEyeVision.Tool.Threshold
         [DisplayName("自适应方法")]
         public AdaptiveMethod AdaptiveMethod { get; set; } = SunEyeVision.Tool.Threshold.AdaptiveMethod.Mean;
 
+        /// <summary>Explicit opt-in; old solutions remain fixed-threshold by default.</summary>
+        public bool UseAdaptive { get; set; }
+
+        /// <summary>Local threshold = neighborhood level minus this offset.</summary>
+        public double AdaptiveOffset { get; set; } = 2.0;
+
         /// <summary>
         /// 计算阈值的邻域大小(奇数, 3-31)
         /// </summary>
@@ -136,6 +142,10 @@ namespace SunEyeVision.Tool.Threshold
         public override ValidationResult Validate()
         {
             var result = base.Validate();
+            if (UseAdaptive && !double.IsFinite(AdaptiveOffset))
+                result.AddError("自适应偏移必须为有限数值");
+            if (UseAdaptive && Type is not (ThresholdType.Binary or ThresholdType.BinaryInv))
+                result.AddError("自适应模式仅支持Binary/BinaryInv");
 
             // 块大小必须为奇数
             if (BlockSize % 2 == 0)

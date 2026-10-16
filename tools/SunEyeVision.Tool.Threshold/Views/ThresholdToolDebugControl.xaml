@@ -94,6 +94,9 @@
                       SelectedItem="{Binding Type, Mode=TwoWay, Converter={StaticResource ThresholdTypeConverter}}">
                 <sys:String>Binary</sys:String>
                 <sys:String>BinaryInv</sys:String>
+                <sys:String>Trunc</sys:String>
+                <sys:String>ToZero</sys:String>
+                <sys:String>ToZeroInv</sys:String>
               </ComboBox>
             </controls:LabeledControl>
 
@@ -104,6 +107,10 @@
 
             <Separator Margin="0,8,0,4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" Height="1"/>
             <TextBlock Text="自适应阈值" FontWeight="SemiBold" Margin="0,4,0,0"/>
+            <CheckBox Content="启用局部自适应（仅Binary/BinaryInv）" IsChecked="{Binding UseAdaptive, Mode=TwoWay}"/>
+            <controls:LabeledControl Label="局部阈值偏移C">
+              <TextBox Text="{Binding AdaptiveOffset, Mode=TwoWay}" Width="250"/>
+            </controls:LabeledControl>
 
             <controls:LabeledControl Label="自适应方法">
               <ComboBox Height="32"

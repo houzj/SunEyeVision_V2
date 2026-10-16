@@ -145,7 +145,7 @@ namespace SunEyeVision.Tool.Morphology
                             // ===== Step 4: 固定阈值二值化 =====
                             stepSw.Restart();
                             HOperatorSet.Threshold(reducedImage, out var binRegion,
-                                128, 255);
+                                128, "max");
                             stepSw.Stop();
                             stepTimings.Add(("二值化", stepSw.ElapsedMilliseconds));
 
@@ -155,8 +155,12 @@ namespace SunEyeVision.Tool.Morphology
                                 stepSw.Restart();
                                 HRegion morphRegion;
                                 using (var se = BuildStructuringElement(kernelShape, kernelWidth, kernelHeight))
+                                using (var inputRegion = new HRegion(binRegion))
+                                using (var effectiveDomain = reducedImage.GetDomain())
+                                using (var expanded = ApplyMorphology(inputRegion, se, operation, iterations))
                                 {
-                                    morphRegion = ApplyMorphology(new HRegion(binRegion), se, operation, iterations);
+                                    // Dilation/closing must not resurrect excluded mask pixels or leave the ROI.
+                                    morphRegion = expanded.Intersection(effectiveDomain);
                                 }
                                 stepSw.Stop();
                                 stepTimings.Add(("形态学操作", stepSw.ElapsedMilliseconds));
@@ -304,25 +308,25 @@ namespace SunEyeVision.Tool.Morphology
         /// </summary>
         private static HRegion BuildStructuringElement(MorphKernelShape shape, int width, int height)
         {
+            int rx = width / 2, ry = height / 2;
             switch (shape)
             {
                 case MorphKernelShape.Rect:
+                    // HALCON centers the structuring element by its centroid; keep coordinates nonnegative.
                     HOperatorSet.GenRectangle1(out var rect, 0, 0, height - 1, width - 1);
                     return new HRegion(rect);
                 case MorphKernelShape.Cross:
-                    // 十字核：中心 + 上下左右
-                    int cx = width / 2;
-                    int cy = height / 2;
-                    HOperatorSet.GenRegionPoints(out var cross,
-                        new HTuple(new int[] { cy, cy, cy, 0, height - 1 }),
-                        new HTuple(new int[] { cx, 0, width - 1, cx, cx }));
-                    return new HRegion(cross);
+                    using (var horizontal = new HRegion((double)ry, 0.0, (double)ry, width - 1.0))
+                    using (var vertical = new HRegion(0.0, (double)rx, height - 1.0, (double)rx))
+                        return horizontal.Union2(vertical);
                 case MorphKernelShape.Ellipse:
+                    // A one-pixel axis is a line/point, not an inflated circle.
+                    if (rx == 0 || ry == 0) return new HRegion(0.0, 0.0, height - 1.0, width - 1.0);
+                    HOperatorSet.GenEllipse(out var ellipse, ry, rx,
+                        rx >= ry ? 0 : Math.PI / 2, Math.Max(rx, ry), Math.Min(rx, ry));
+                    return new HRegion(ellipse);
                 default:
-                    int radius = Math.Max(width, height) / 2;
-                    radius = Math.Max(radius, 1);
-                    HOperatorSet.GenCircle(out var circle, radius, radius, radius);
-                    return new HRegion(circle);
+                    throw new NotSupportedException($"不支持的结构元素: {shape}");
             }
         }
 
@@ -340,24 +344,27 @@ namespace SunEyeVision.Tool.Morphology
                     HOperatorSet.Dilation1(inputRegion, se, out var dilateObj, iterations);
                     return new HRegion(dilateObj);
                 case MorphOperation.Open:
-                    HOperatorSet.Opening(inputRegion, se, out var openObj);
-                    return new HRegion(openObj);
+                    using (var eroded = ApplyMorphology(inputRegion, se, MorphOperation.Erode, iterations))
+                    {
+                        HOperatorSet.Dilation1(eroded, se, out var openObj, iterations);
+                        return new HRegion(openObj);
+                    }
                 case MorphOperation.Close:
-                    HOperatorSet.Closing(inputRegion, se, out var closeObj);
-                    return new HRegion(closeObj);
+                    using (var dilated = ApplyMorphology(inputRegion, se, MorphOperation.Dilate, iterations))
+                    {
+                        HOperatorSet.Erosion1(dilated, se, out var closeObj, iterations);
+                        return new HRegion(closeObj);
+                    }
                 case MorphOperation.Gradient:
-                    HOperatorSet.Dilation1(inputRegion, se, out var gradDilate, 1);
-                    HOperatorSet.Erosion1(inputRegion, se, out var gradErode, 1);
-                    HOperatorSet.Difference(gradDilate, gradErode, out var gradientObj);
-                    gradDilate.Dispose();
-                    gradErode.Dispose();
-                    return new HRegion(gradientObj);
+                    using (var dilated = ApplyMorphology(inputRegion, se, MorphOperation.Dilate, iterations))
+                    using (var eroded = ApplyMorphology(inputRegion, se, MorphOperation.Erode, iterations))
+                        return dilated.Difference(eroded);
                 case MorphOperation.TopHat:
-                    HOperatorSet.TopHat(inputRegion, se, out var topHatObj);
-                    return new HRegion(topHatObj);
+                    using (var opened = ApplyMorphology(inputRegion, se, MorphOperation.Open, iterations))
+                        return inputRegion.Difference(opened);
                 case MorphOperation.BlackHat:
-                    HOperatorSet.BottomHat(inputRegion, se, out var bottomHatObj);
-                    return new HRegion(bottomHatObj);
+                    using (var closed = ApplyMorphology(inputRegion, se, MorphOperation.Close, iterations))
+                        return closed.Difference(inputRegion);
                 default:
                     throw new NotSupportedException($"不支持的形态学操作: {operation}");
             }

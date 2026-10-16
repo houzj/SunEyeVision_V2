@@ -477,6 +477,16 @@ namespace SunEyeVision.Tool.BlobAnalysis
             }
 
             // 结果配置验证
+            ValidateFilterRange(IsAreaFilterEnabled, FilterAreaMin, FilterAreaMax, double.MaxValue, "面积筛选");
+            ValidateFilterRange(IsCircularityFilterEnabled, FilterCircularityMin, FilterCircularityMax, 1, "圆度筛选");
+            ValidateFilterRange(IsRectangularityFilterEnabled, FilterRectangularityMin, FilterRectangularityMax, 1, "矩形度筛选");
+
+            void ValidateFilterRange(bool enabled, double min, double max, double upper, string name)
+            {
+                if (enabled && (!double.IsFinite(min) || !double.IsFinite(max) || min < 0 || min > max || max > upper))
+                    result.AddError($"{name}范围无效，需要有限值且0≤最小值≤最大值≤{upper}");
+            }
+
             ValidateResultConfig(result);
 
             return result;

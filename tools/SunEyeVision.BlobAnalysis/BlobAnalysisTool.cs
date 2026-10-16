@@ -138,9 +138,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
                         if (parameters.IsPreprocessingEnabled && parameters.PreprocessMethodValue != PreprocessMethod.None)
                         {
                             stepSw.Restart();
-                            var preprocessed = ApplyPreprocessing(processingImage, parameters);
-                            processingImage.Dispose();
-                            processingImage = preprocessed;
+                            try
+                            {
+                                var preprocessed = ApplyPreprocessing(processingImage, parameters);
+                                processingImage.Dispose();
+                                processingImage = preprocessed;
+                            }
+                            catch
+                            {
+                                processingImage.Dispose();
+                                throw;
+                            }
                             stepSw.Stop();
                             stepTimings.Add(("图像预处理", stepSw.ElapsedMilliseconds));
                         }
@@ -167,8 +175,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                 HRegion binaryRegion;
                                 if (parameters.Type == ThresholdType.BinaryInv)
                                 {
-                                    HOperatorSet.Complement(thresholdObject, out var complementObject);
-                                    binaryRegion = new HRegion(complementObject);
+                                    using var thresholdRegion = new HRegion(thresholdObject);
+                                    binaryRegion = HalconThresholdOperations.InvertWithinDomain(processingImage, thresholdRegion);
                                 }
                                 else
                                 {
@@ -181,9 +189,11 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                     if (parameters.IsMorphologyEnabled)
                                     {
                                         stepSw.Restart();
-                                        var morphed = ApplyMorphology(binaryRegion.Clone(), parameters);
+                                        using var morphed = ApplyMorphology(binaryRegion, parameters);
+                                        using var effectiveDomain = processingImage.GetDomain();
+                                        var limited = morphed.Intersection(effectiveDomain);
                                         binaryRegion.Dispose();
-                                        binaryRegion = morphed;
+                                        binaryRegion = limited;
                                         stepSw.Stop();
                                         stepTimings.Add(("形态学处理", stepSw.ElapsedMilliseconds));
                                     }
@@ -202,14 +212,25 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                     // ===== Step 6~8: 按需特征提取 + Tab3筛选 + Tab4判断 =====
                                     stepSw.Restart();
 
-                                    // Step 6: SelectShape - Halcon原生面积筛选（仅对 Tab3 面积筛选启用时执行）
-                                    bool useAreaFilter = parameters.IsAreaFilterEnabled && rawBlobCount > 0;
+                                    // Tab3 selects with native HALCON features before result extraction.
+                                    var filterFeatures = new List<string>();
+                                    var filterMin = new List<double>();
+                                    var filterMax = new List<double>();
+                                    if (parameters.IsAreaFilterEnabled)
+                                    { filterFeatures.Add("area"); filterMin.Add(parameters.FilterAreaMin); filterMax.Add(parameters.FilterAreaMax); }
+                                    if (parameters.IsCircularityFilterEnabled)
+                                    { filterFeatures.Add("circularity"); filterMin.Add(parameters.FilterCircularityMin); filterMax.Add(parameters.FilterCircularityMax); }
+                                    if (parameters.IsRectangularityFilterEnabled)
+                                    { filterFeatures.Add("rectangularity"); filterMin.Add(parameters.FilterRectangularityMin); filterMax.Add(parameters.FilterRectangularityMax); }
 
                                     HRegion shapeFilteredRegions;
-                                    if (useAreaFilter)
+                                    if (filterFeatures.Count > 0 && rawBlobCount > 0)
                                     {
+                                        using var features = new HTuple(filterFeatures.ToArray());
+                                        using var minima = new HTuple(filterMin.ToArray());
+                                        using var maxima = new HTuple(filterMax.ToArray());
                                         HOperatorSet.SelectShape(connectedRegions, out var selected,
-                                            "area", "and", parameters.FilterAreaMin, parameters.FilterAreaMax);
+                                            features, "and", minima, maxima);
                                         shapeFilteredRegions = new HRegion(selected);
                                     }
                                     else
@@ -229,9 +250,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         var ngRegionIndices = new List<int>();
                                         var regionIndexByBlob = new Dictionary<BlobResult, int>();
                                         var config = parameters.ResultPresentation;
-
-                                        bool tab3FilterCircularity = parameters.IsCircularityFilterEnabled;
-                                        bool tab3FilterRectangularity = parameters.IsRectangularityFilterEnabled;
 
                                         HOperatorSet.AreaCenter(shapeFilteredRegions, out var areas, out var rows, out var cols);
                                         HOperatorSet.SmallestRectangle1(shapeFilteredRegions, out var r1s, out var c1s, out var r2s, out var c2s);
@@ -272,27 +290,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                                     rectPhis[tupleIndex].D, rectLengths1[tupleIndex].D, rectLengths2[tupleIndex].D)
                                             };
 
-                                            // ★ Phase A: Tab3 筛选（不通过则丢弃；面积已由 Halcon SelectShape 筛过，此处仅补圆度/矩形度）
-                                            bool passesTab3Filter = true;
-                                            if (passesTab3Filter && parameters.IsAreaFilterEnabled)
-                                            {
-                                                if (blob.Area < parameters.FilterAreaMin || blob.Area > parameters.FilterAreaMax)
-                                                    passesTab3Filter = false;
-                                            }
-                                            if (passesTab3Filter && tab3FilterCircularity)
-                                            {
-                                                if (blob.Circularity < parameters.FilterCircularityMin || blob.Circularity > parameters.FilterCircularityMax)
-                                                    passesTab3Filter = false;
-                                            }
-                                            if (passesTab3Filter && tab3FilterRectangularity)
-                                            {
-                                                if (blob.Rectangularity < parameters.FilterRectangularityMin || blob.Rectangularity > parameters.FilterRectangularityMax)
-                                                    passesTab3Filter = false;
-                                            }
-
-                                            if (!passesTab3Filter)
-                                                continue; // Tab3 丢弃
-
+                                            // Tab3 area/circularity/rectangularity already share native selection.
                                             // BlobRegions 必须与 FilteredBlobs 使用同一套 Tab3 筛选结果。
                                             // 旧实现直接复制 shapeFilteredRegions，导致区域输出仍包含被圆度/矩形度
                                             // 淘汰的候选，图形结果与数值结果不一致。
@@ -330,10 +328,11 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         okRegionIndices = filteredBlobs.Where(blob => blob.JudgmentPassed).Select(blob => regionIndexByBlob[blob]).ToList();
                                         ngRegionIndices = filteredBlobs.Where(blob => !blob.JudgmentPassed).Select(blob => regionIndexByBlob[blob]).ToList();
                                         var contourSw = Stopwatch.StartNew();
-                                        for (var index = 0; index < filteredBlobs.Count && parameters.OutputContours; index++)
+                                        for (var index = 0; index < filteredBlobs.Count; index++)
                                         {
                                             var blob = filteredBlobs[index];
                                             blob.Label = index + 1;
+                                            if (!parameters.OutputContours) continue;
                                             HOperatorSet.SelectObj(shapeFilteredRegions, out var singleObj, regionIndexByBlob[blob]);
                                             using var singleRegion = new HRegion(singleObj);
                                             var geom = ContourGeometryFactory.FromRegionSmooth(singleRegion);
@@ -378,14 +377,26 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                                         // ===== Step 10: 灰度直方图统计 =====
                                         stepSw.Restart();
-                                        HOperatorSet.GrayHisto(binaryRegion, processingImage,
-                                            out var absoluteHisto, out _);
-                                        
-                                        result.HistogramData = Array.ConvertAll(absoluteHisto.LArr, v => (double)v);
-
-                                        HOperatorSet.Intensity(binaryRegion, processingImage,
-                                            out var meanVal, out var devVal);
-                                        result.ChannelMeans = new[] { meanVal.D };
+                                        HOperatorSet.AreaCenter(binaryRegion, out HTuple selectedArea, out HTuple selectedRow, out HTuple selectedColumn);
+                                        using (selectedArea) using (selectedRow) using (selectedColumn)
+                                        {
+                                            if (selectedArea.L == 0)
+                                            {
+                                                result.HistogramData = new double[256];
+                                                result.ChannelMeans = new[] { 0.0 };
+                                            }
+                                            else
+                                            {
+                                                HOperatorSet.GrayHisto(binaryRegion, processingImage,
+                                                    out var absoluteHisto, out var relativeHisto);
+                                                using (absoluteHisto) using (relativeHisto)
+                                                    result.HistogramData = Array.ConvertAll(absoluteHisto.LArr, v => (double)v);
+                                                HOperatorSet.Intensity(binaryRegion, processingImage,
+                                                    out var meanVal, out var devVal);
+                                                using (meanVal) using (devVal)
+                                                    result.ChannelMeans = new[] { meanVal.D };
+                                            }
+                                        }
                                         stepSw.Stop();
                                         stepTimings.Add(("灰度统计", stepSw.ElapsedMilliseconds));
 
@@ -393,7 +404,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                                         // ===== Step 11: 结果判断 =====
                                         stepSw.Restart();
-                                        EvaluateJudgments(parameters.ResultPresentation, result, new HRegion(binaryRegion), filteredBlobs, imgWidth, imgHeight);
+                                        EvaluateJudgments(parameters.ResultPresentation, result, binaryRegion, filteredBlobs, imgWidth, imgHeight);
                                         stepSw.Stop();
                                         stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
 
@@ -625,7 +636,10 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// </summary>
         private static void SortBlobs(List<BlobResult> blobs, BlobSortMode mode)
         {
-            blobs.Sort((a, b) => mode switch
+            var originalIndices = blobs.Select((blob, index) => (blob, index)).ToDictionary(p => p.blob, p => p.index);
+            blobs.Sort((a, b) =>
+            {
+                int comparison = mode switch
             {
                 BlobSortMode.AreaAsc => a.Area.CompareTo(b.Area),
                 BlobSortMode.AreaDesc => b.Area.CompareTo(a.Area),
@@ -638,6 +652,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 BlobSortMode.YAsc => a.CentroidY.CompareTo(b.CentroidY),
                 BlobSortMode.YDesc => b.CentroidY.CompareTo(a.CentroidY),
                 _ => 0
+                };
+                return comparison != 0 ? comparison : originalIndices[a].CompareTo(originalIndices[b]);
             });
 
             // 排序后重新标注标签
@@ -656,20 +672,24 @@ namespace SunEyeVision.Tool.BlobAnalysis
         {
             var method = parameters.PreprocessMethodValue;
             int kernelSize = parameters.PreprocessKernelSize;
+            using var domain = image.GetDomain();
+            using var fullImage = image.FullDomain();
 
             switch (method)
             {
                 case PreprocessMethod.Mean:
-                    HOperatorSet.MeanImage(image, out var meanImg, kernelSize, kernelSize);
-                    return new HImage(meanImg);
+                    using (var mean = HalconLinearFilters.Apply(fullImage, kernelSize, kernelSize, 0, 0, false, 0))
+                        return mean.ReduceDomain(domain);
 
                 case PreprocessMethod.Gaussian:
-                    HOperatorSet.SmoothImage(image, out var gaussImg, "gauss", kernelSize);
-                    return new HImage(gaussImg);
+                    using (var gaussian = HalconLinearFilters.Apply(fullImage, kernelSize, kernelSize, 0, 0, true, 0))
+                        return gaussian.ReduceDomain(domain);
 
                 case PreprocessMethod.Median:
-                    HOperatorSet.MedianImage(image, out var medianImg, "circle", kernelSize, "mirrored");
-                    return new HImage(medianImg);
+                    HOperatorSet.MedianRect(fullImage, out var medianImg, kernelSize, kernelSize);
+                    using (medianImg)
+                    using (var median = new HImage(medianImg))
+                        return median.ReduceDomain(domain);
 
                 case PreprocessMethod.HistogramEqualization:
                     HOperatorSet.EquHistoImage(image, out var eqImg);
@@ -695,21 +715,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
             int height = parameters.MorphElementHeight;
             int iterations = parameters.MorphIterations;
 
-            // 顶帽/黑帽固定迭代1次
-            if (operation is MorphOperationType.TopHat or MorphOperationType.BottomHat)
-                iterations = 1;
-
             using var se = BuildStructuringElement(elementShape, width, height);
 
             return operation switch
             {
                 MorphOperationType.Erosion => ApplyErosion(inputRegion, se, iterations),
                 MorphOperationType.Dilation => ApplyDilation(inputRegion, se, iterations),
-                MorphOperationType.Opening => ApplyOpening(inputRegion, se),
-                MorphOperationType.Closing => ApplyClosing(inputRegion, se),
-                MorphOperationType.TopHat => ApplyTopHat(inputRegion, se),
-                MorphOperationType.BottomHat => ApplyBottomHat(inputRegion, se),
-                _ => inputRegion.Clone()
+                MorphOperationType.Opening => ApplyOpening(inputRegion, se, iterations),
+                MorphOperationType.Closing => ApplyClosing(inputRegion, se, iterations),
+                MorphOperationType.TopHat => ApplyTopHat(inputRegion, se, iterations),
+                MorphOperationType.BottomHat => ApplyBottomHat(inputRegion, se, iterations),
+                _ => throw new NotSupportedException($"不支持的Blob形态学操作: {operation}")
             };
         }
 
@@ -723,13 +739,14 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 HOperatorSet.GenRectangle1(out var rect, 0, 0, height - 1, width - 1);
                 return new HRegion(rect);
             }
-            else
+            else if (shape == MorphElementShapeType.Circle)
             {
+                // Preserve the serialized Circle contract: larger dimension determines the diameter.
                 int radius = Math.Max(width, height) / 2;
-                radius = Math.Max(radius, 1);
                 HOperatorSet.GenCircle(out var circle, radius, radius, radius);
                 return new HRegion(circle);
             }
+            throw new NotSupportedException($"不支持的Blob结构元素: {shape}");
         }
 
         private static HRegion ApplyErosion(HRegion region, HRegion se, int iterations)
@@ -744,28 +761,28 @@ namespace SunEyeVision.Tool.BlobAnalysis
             return new HRegion(result);
         }
 
-        private static HRegion ApplyOpening(HRegion region, HRegion se)
+        private static HRegion ApplyOpening(HRegion region, HRegion se, int iterations)
         {
-            HOperatorSet.Opening(region, se, out var result);
-            return new HRegion(result);
+            using var eroded = ApplyErosion(region, se, iterations);
+            return ApplyDilation(eroded, se, iterations);
         }
 
-        private static HRegion ApplyClosing(HRegion region, HRegion se)
+        private static HRegion ApplyClosing(HRegion region, HRegion se, int iterations)
         {
-            HOperatorSet.Closing(region, se, out var result);
-            return new HRegion(result);
+            using var dilated = ApplyDilation(region, se, iterations);
+            return ApplyErosion(dilated, se, iterations);
         }
 
-        private static HRegion ApplyTopHat(HRegion region, HRegion se)
+        private static HRegion ApplyTopHat(HRegion region, HRegion se, int iterations)
         {
-            HOperatorSet.TopHat(region, se, out var result);
-            return new HRegion(result);
+            using var opened = ApplyOpening(region, se, iterations);
+            return region.Difference(opened);
         }
 
-        private static HRegion ApplyBottomHat(HRegion region, HRegion se)
+        private static HRegion ApplyBottomHat(HRegion region, HRegion se, int iterations)
         {
-            HOperatorSet.BottomHat(region, se, out var result);
-            return new HRegion(result);
+            using var closed = ApplyClosing(region, se, iterations);
+            return closed.Difference(region);
         }
 
         private static HRegion SelectRegions(HRegion source, IReadOnlyList<int> indices)

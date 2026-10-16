@@ -45,17 +45,12 @@ namespace SunEyeVision.Tool.PointPointMeasure
             double y,
             string label)
         {
-            if (mode == PointInputMode.ByCoordinate)
-                return new Point(x, y);
-
-            var pts = shapePoint;
-            if (pts == null || pts.Length == 0)
-                throw new InvalidOperationException(
-                    $"{label} 输入方式为「按图形」，但未绑定上游点图形输出或图形为空：请在基本参数中选择数据源，或切换为「按参数」输入 X/Y。");
-            if (pts.Length > 1)
-                throw new InvalidOperationException(
-                    $"{label} 绑定的上游点图形含 {pts.Length} 个点：多元素配对（向量化）尚未启用，请改绑单个点，或切换为「按参数」逐值输入。");
-            return new Point(pts[0].X, pts[0].Y);
+            return mode switch
+            {
+                PointInputMode.ByCoordinate => PointMeasurementGeometry.RequireFinite(new Point(x, y), label),
+                PointInputMode.ByShape => PointMeasurementGeometry.ResolveSinglePoint(shapePoint, label),
+                _ => throw new InvalidOperationException($"{label} 输入方式无效：{(int)mode}，请重新选择按图形或按参数。")
+            };
         }
         public PointPointMeasureResults Run(PointPointMeasureParameters parameters)
             => ExecuteCore(parameters, parameters.ResolvedInputImage, parameters.Context);
@@ -81,23 +76,24 @@ namespace SunEyeVision.Tool.PointPointMeasure
                 Timestamp = DateTime.Now,
             };
 
+            var stage = "输入图像校验";
             try
             {
                 // ===== 校验（Fail-Fast）=====
                 if (inputImage == null || inputImage.IsEmpty)
                     throw new InvalidOperationException("输入图像为空或无效");
 
+                stage = "点1解析";
                 var p1 = ResolvePoint(parameters.P1InputMode, parameters.P1Point, parameters.P1X, parameters.P1Y, "点1");
+                stage = "点2解析";
                 var p2 = ResolvePoint(parameters.P2InputMode, parameters.P2Point, parameters.P2X, parameters.P2Y, "点2");
 
                 // ★ 不做位置修正：两个点元素均为上游订阅结果（上游已完成其自身修正），
                 //   坐标已是最终位置，此处再叠加修正矩阵即为重复修正。
 
                 // ===== 主测量：两点距离（纯几何计算）=====
-                double dx = p2.X - p1.X;
-                double dy = p2.Y - p1.Y;
-                double distance = Math.Sqrt(dx * dx + dy * dy);
-                double angleDeg = Math.Atan2(dy, dx) * 180.0 / Math.PI;
+                stage = "几何计算";
+                var (distance, dx, dy, angleDeg) = PointMeasurementGeometry.MeasurePair(p1, p2);
 
                 result.Point1 = new[] { new Point2d(p1.X, p1.Y) };
                 result.Point2 = new[] { new Point2d(p2.X, p2.Y) };
@@ -107,29 +103,31 @@ namespace SunEyeVision.Tool.PointPointMeasure
                 result.AngleDeg = angleDeg;
 
                 // ===== 判定 =====
+                stage = "结果判定";
                 var judged = ResultJudgmentEvaluator.EvaluateRanges(
                     parameters.ResultPresentation.Judgments,
-                    key => parameters.ResultPresentation.GetJudgment(key).Name switch
+                    key => key switch
                     {
-                        "点距" => distance,
-                        "ΔX" => dx,
-                        "ΔY" => dy,
-                        "连线角度" => angleDeg,
+                        "point-distance" => distance,
+                        "delta-x" => dx,
+                        "delta-y" => dy,
+                        "line-angle" => angleDeg,
                         _ => null,
                     });
                 result.IsPass = ResultJudgmentEvaluator.IsAllPass(judged);
                 result.JudgmentDetails = judged.Select(j => j.Message).ToArray();
 
+                stage = "结果显示";
                 result.FillDisplay(result.IsPass, parameters);
                 result.SetSuccess();
             }
             catch (Exception ex)
             {
                 context?.Logger?.Error(
-                    $"点-点测量失败: {ex.Message}",
+                    $"点-点测量失败（{stage}）: {ex.Message}",
                     context.GetSourceName(),
                     ex);
-                result.SetError($"测量失败: {ex.Message}", ex);
+                result.SetError($"测量失败（{stage}）: {ex.Message}", ex);
             }
             return result;
         }

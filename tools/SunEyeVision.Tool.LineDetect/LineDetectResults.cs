@@ -193,7 +193,7 @@ namespace SunEyeVision.Tool.LineDetect
                 new("CandidateDiagnosticPoints1", "元素1候选点", "诊断"),
                 new("ExcludedDiagnosticPoints1", "元素1屏蔽点", "诊断"),
                 new("InlierDiagnosticPoints1", "元素1内点", "诊断"),
-                new("OutlierDiagnosticPoints1", "元素1离群点", "诊断"),
+                new("OutlierDiagnosticPoints1", "元素1未采用检测点", "诊断"),
                 // 测量带(卡尺)输入回显：引导线/测量带 归"输入/卡尺"分组；
                 // GuideGeometry 为**分组占位**（单层折叠：不渲染中间节点，几何元素直接挂到"引导线"组下）
                 new("GuideGeometry",     "引导几何", "输入/卡尺/引导线", IsGroupPlaceholder: true),

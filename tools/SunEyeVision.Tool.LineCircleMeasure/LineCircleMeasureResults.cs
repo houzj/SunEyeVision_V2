@@ -217,9 +217,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure
             // 位置修正：圆心随矩阵变换 + 半径随缩放因子缩放 + 卡尺阵列起始相位随旋转（与 CircleDetect / BuildCircleBands 同口径）
             var g2c = T(new Point(geometry.E2CenterX, geometry.E2CenterY));
             double g2r = geometry.E2Radius * scale;
-            double startPhase = matrix != null
-                ? PositionCorrectionResolver.DisplayAngleDeg(matrix, 0.0) * Math.PI / 180.0
-                : 0.0;
+            const double startPhase = 0.0; // Canonical HALCON full circle, independent of correction rotation.
 
             if (g2r > 1e-6)
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle2"), new Circle2d(g2c, g2r), isOk);
@@ -330,13 +328,13 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                 new("CandidateDiagnosticPoints1", "元素1候选点", "诊断"),
                 new("ExcludedDiagnosticPoints1", "元素1屏蔽点", "诊断"),
                 new("InlierDiagnosticPoints1", "元素1内点", "诊断"),
-                new("OutlierDiagnosticPoints1", "元素1离群点", "诊断"),
+                new("OutlierDiagnosticPoints1", "元素1未采用检测点", "诊断"),
                 new("FitDiagnostic2", "元素2取点拟合诊断", "诊断"),
                 new("RawDiagnosticPoints2", "元素2原始检测点", "诊断"),
                 new("CandidateDiagnosticPoints2", "元素2候选点", "诊断"),
                 new("ExcludedDiagnosticPoints2", "元素2屏蔽点", "诊断"),
                 new("InlierDiagnosticPoints2", "元素2内点", "诊断"),
-                new("OutlierDiagnosticPoints2", "元素2离群点", "诊断"),
+                new("OutlierDiagnosticPoints2", "元素2未采用检测点", "诊断"),
                 // ===== 输入（对齐 LineDetect 规范：输入/卡尺）=====
                 new("GuideGeometry1", "直线1引导几何", "输入/卡尺/引导线", IsGroupPlaceholder: true),
                 new("GuideGeometry2", "圆2引导几何", "输入/卡尺/引导圆"),

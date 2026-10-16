@@ -88,13 +88,10 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                         parameters.E1DistanceThreshold));
 
                 // 元素2 引导圆 → measure 对象
-                // 位置修正：圆心随矩阵变换 + 半径随缩放因子缩放 + 环形卡尺阵列起始相位随旋转
+                // 圆心随矩阵变换、半径随缩放；整圆采用HALCON标准闭合参数
                 //（与交互层/结果层 BuildCircleBands 同口径，保证三层一致）
                 var e2CenterT = Transform(e2Center, matrix);
                 double e2RadiusT = matrix != null ? e2Radius * matrix.ScaleFactor() : e2Radius;
-                double startPhase = matrix != null
-                    ? PositionCorrectionResolver.DisplayAngleDeg(matrix, 0.0) * Math.PI / 180.0
-                    : 0.0;
                 var e2Index = metrologyModel.AddMetrologyObjectCircleMeasure(
                     e2CenterT.Y, e2CenterT.X, e2RadiusT,
                     parameters.E2MeasureLength1, parameters.E2MeasureLength2,
@@ -103,8 +100,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                         parameters.E2NumMeasures,
                         TransitionToHalcon(parameters.E2Transition),
                         SelectToHalcon(parameters.E2Select),
-                        parameters.E2DistanceThreshold,
-                        startPhase));
+                        parameters.E2DistanceThreshold));
 
                 // 执行测量（两引导一次 apply）
                 metrologyModel.ApplyMetrologyModel(hImage);
@@ -114,7 +110,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                 var e2Points = MeasuredLineFitting.Capture(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition), result.FitDiagnostics2, "元素2");
                 var (e1FitStart, e1FitEnd, e1Inliers, e1Rmse) = MeasuredLineFitting.Fit(e1Points, parameters.E1DistanceThreshold, e1StartT, e1EndT, result.FitDiagnostics1, "直线1");
 
-                var (e2FitCenter, e2FitRadius, e2Inliers, e2Rmse) = FitCircleWithDiagnostics(e2Points, parameters.E2DistanceThreshold, result.FitDiagnostics2);
+                var (e2FitCenter, e2FitRadius, e2Inliers, e2Rmse) = MeasuredCircleFitting.Fit(e2Points, parameters.E2DistanceThreshold, result.FitDiagnostics2, "圆2");
 
                 // 拟合内点/残差/点数（模块结果："输入/卡尺"检测点 + "拟合结果"）
                 result.Element1FitPoints = e1Inliers;          // Point2d[]（契约可入表，显示层再转 WPF Point）
@@ -240,94 +236,6 @@ namespace SunEyeVision.Tool.LineCircleMeasure
             => matrix == null ? p : matrix.TransformWpfPoint(p);
 
 
-        /// <summary>
-        /// 全点鲁棒拟合圆：geotukey 预拟合剔除离群 → 按 distance_threshold 划内点（测量点）
-        /// → 内点 geometric 精化提高精度（对齐圆查找工具 FitCircleRobust）。
-        /// ★ fit_circle_contour_xld 无 'tukey'（官方 List: ahuber/algebraic/atukey/geohuber/geometric/geotukey），
-        ///   取几何 Tukey 'geotukey'（与直线 tukey 同族的几何加权鲁棒算法）。
-        /// </summary>
-        private static (Point Center, double Radius, Point2d[] Inliers, double Rmse) FitCircleWithDiagnostics(
-            IReadOnlyList<Point2d> points, double threshold, EdgeFitDiagnostics diagnostic)
-        {
-            diagnostic.Stage = "圆2拟合";
-            try
-            {
-                if (points.Any(p => !double.IsFinite(p.X) || !double.IsFinite(p.Y)))
-                    throw new InvalidOperationException("圆取点结果包含非有限坐标");
-                return FitCircleRobust(points, threshold, diagnostic);
-            }
-            catch (Exception ex)
-            {
-                diagnostic.Error = ex.Message;
-                throw new InvalidOperationException($"{diagnostic.Stage}失败：{ex.Message}", ex);
-            }
-        }
-
-        private static (Point Center, double Radius, Point2d[] Inliers, double Rmse) FitCircleRobust(
-            IReadOnlyList<Point2d> points, double distanceThreshold, EdgeFitDiagnostics diagnostic)
-        {
-            if (points.Count < 3)
-                throw new InvalidOperationException($"有效测量点不足({points.Count} < 3)，无法拟合圆");
-
-            var (c0, r0) = FitCircleCore(points, "geotukey");
-
-            var inliers = points
-                .Where(p => Math.Abs(
-                    Math.Sqrt((p.X - c0.X) * (p.X - c0.X) + (p.Y - c0.Y) * (p.Y - c0.Y)) - r0)
-                    <= distanceThreshold)
-                .ToArray();
-
-            diagnostic.Inliers = inliers;
-            diagnostic.Outliers = points.Except(inliers).ToArray();
-            if (inliers.Length < 3)
-                throw new InvalidOperationException(
-                    $"拟合内点不足({inliers.Length} < 3)：distance_threshold={distanceThreshold:F1}，候选点={points.Count}");
-
-            var (center, radius) = inliers.Length == points.Count
-                ? (c0, r0)
-                : FitCircleCore(inliers, "geometric");
-
-            diagnostic.Stage = "圆2拟合完成";
-            return (center, radius, inliers, ComputeCircleRmse(inliers, center, radius));
-        }
-
-        /// <summary>
-        /// 用指定算法对点集拟合圆（点集包成多边形 XLD 后调用 fit_circle_contour_xld）。
-        /// </summary>
-        private static (Point Center, double Radius) FitCircleCore(
-            IReadOnlyList<Point2d> points, string algorithm)
-        {
-            var rows = new HTuple(points.Select(p => (double)p.Y).ToArray());
-            var cols = new HTuple(points.Select(p => (double)p.X).ToArray());
-            HOperatorSet.GenContourPolygonXld(out var contour, rows, cols);
-            try
-            {
-                HOperatorSet.FitCircleContourXld(contour, algorithm, -1, 0.0, 0, 3, 2.0,
-                    out var row, out var col, out var radius, out _, out _, out _);
-                if (row.Length < 1 || col.Length < 1 || radius.Length < 1)
-                    throw new InvalidOperationException($"圆拟合失败(algorithm={algorithm})：未返回有效结果");
-                return (new Point(col[0].D, row[0].D), radius[0].D);
-            }
-            finally
-            {
-                contour.Dispose();
-            }
-        }
-
-        /// <summary>计算点到拟合圆的均方根残差（RMSE）</summary>
-        private static double ComputeCircleRmse(IReadOnlyList<Point2d> points, Point center, double radius)
-        {
-            if (points.Count == 0) return 0.0;
-            double sumSq = 0;
-            foreach (var p in points)
-            {
-                var dist = Math.Sqrt((p.X - center.X) * (p.X - center.X) + (p.Y - center.Y) * (p.Y - center.Y));
-                var diff = dist - radius;
-                sumSq += diff * diff;
-            }
-            return Math.Sqrt(sumSq / points.Count);
-        }
-
         /// <summary>引导线段 → RoiShape[]（模块结果"引导几何"回显，对齐 LineDetect 规范）</summary>
         private static RoiShape[]? BuildLineGuideGeometry(Point start, Point end)
         {
@@ -393,20 +301,17 @@ namespace SunEyeVision.Tool.LineCircleMeasure
         /// <summary>
         /// 圆 measure 的 gen-param 值（元素2 恒为整圆）。
         /// ★ HALCON 整圆语义：闭合圆 = start_phi 0 + end_phi 2π + point_order "positive"；
-        ///   位置修正含旋转时，起始相位随矩阵旋转（start_phi 取 -相位 归一到 [0, 2π)），
-        ///   与交互层/结果层 BuildCircleBands(startAngle) 同口径，保证卡尺阵列三层一致。
+        ///   整圆仅修正圆心与半径，测量带从当前图像0°等分；圆弧另按有向角度修正。
         /// </summary>
         private static HTuple BuildCircleGenParamValue(
-            int numMeasures, string transition, string select, double distanceThreshold, double startPhase)
+            int numMeasures, string transition, string select, double distanceThreshold)
         {
-            const double TwoPi = 2.0 * Math.PI;
-            double phi = (-startPhase) % TwoPi;
-            if (phi < 0) phi += TwoPi;
+            var (startPhi, endPhi, pointOrder) = HalconArcAdapter.FromFullCircle();
 
             return new(new object[]
             {
                 numMeasures, transition, select,
-                phi, phi + TwoPi, "positive",
+                startPhi, endPhi, pointOrder,
                 distanceThreshold,
             });
         }

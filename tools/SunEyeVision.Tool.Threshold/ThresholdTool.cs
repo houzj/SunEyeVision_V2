@@ -148,30 +148,29 @@ namespace SunEyeVision.Tool.Threshold
                             HRegion binaryRegion;
                             double actualThreshold;
 
-                            if (type == ThresholdType.Binary || type == ThresholdType.BinaryInv)
+                            if (parameters.UseAdaptive)
                             {
-                                HOperatorSet.Threshold(reducedImage, out var binObj,
-                                    (int)threshold, (int)maxValue);
-                                binaryRegion = new HRegion(binObj);
-                                actualThreshold = threshold;
+                                if (type is not (ThresholdType.Binary or ThresholdType.BinaryInv))
+                                    throw new InvalidOperationException("自适应阈值仅支持Binary/BinaryInv；截断与置零使用固定阈值");
+                                binaryRegion = HalconThresholdOperations.SelectAdaptive(reducedImage,
+                                    blockSize, parameters.AdaptiveOffset, adaptiveMethod == AdaptiveMethod.Gaussian);
+                                if (type == ThresholdType.BinaryInv)
+                                {
+                                    var inverse = HalconThresholdOperations.InvertWithinDomain(reducedImage, binaryRegion);
+                                    binaryRegion.Dispose(); binaryRegion = inverse;
+                                }
+                                actualThreshold = -parameters.AdaptiveOffset;
                             }
                             else
                             {
-                                // 自适应阈值：Halcon 以 MeanImage 求局部均值后 Threshold（块大小=均值窗口）
-                                HOperatorSet.MeanImage(reducedImage, out var meanObj,
-                                    blockSize, blockSize);
-                                using var meanImage = new HImage(meanObj);
-                                HOperatorSet.Threshold(meanImage, out var adBinObj,
-                                    (int)threshold, (int)maxValue);
-                                binaryRegion = new HRegion(adBinObj);
+                                binaryRegion = HalconThresholdOperations.SelectBasic(reducedImage, (int)type, threshold);
                                 actualThreshold = threshold;
                             }
 
-                            if (invert)
+                            if (invert && type is ThresholdType.Binary or ThresholdType.BinaryInv)
                             {
-                                HOperatorSet.Complement(binaryRegion, out var complObj);
-                                binaryRegion.Dispose();
-                                binaryRegion = new HRegion(complObj);
+                                var inverse = HalconThresholdOperations.InvertWithinDomain(reducedImage, binaryRegion);
+                                binaryRegion.Dispose(); binaryRegion = inverse;
                             }
                             stepSw.Stop();
                             stepTimings.Add(("阈值分割", stepSw.ElapsedMilliseconds));
@@ -182,7 +181,9 @@ namespace SunEyeVision.Tool.Threshold
                                 HOperatorSet.RegionToBin(binaryRegion, out var binObj,
                                     255, 0, imgWidth, imgHeight);
                                 result.BinaryMask = new HalImage(new HImage(binObj.Clone()));
-                                result.OutputImage = new HalImage(new HImage(binObj));
+                                result.OutputImage = new HalImage(HalconThresholdOperations.Render(reducedImage, binaryRegion,
+                                    (int)type, threshold, maxValue, imgWidth, imgHeight, invert));
+                                binObj.Dispose();
 
                                 result.ThresholdUsed = actualThreshold;
                                 result.MaxValueUsed = maxValue;
@@ -298,6 +299,14 @@ namespace SunEyeVision.Tool.Threshold
             result.WhitePixelRatio = totalPixels > 0 ? (double)whitePixelCount / totalPixels * 100 : 0;
             result.OutputArea = whitePixelCount;
 
+            if (whitePixelCount == 0)
+            {
+                result.OutputMean = 0;
+                result.HistogramData = new double[256];
+                result.ChannelMeans = new[] { 0.0 };
+                return;
+            }
+
             if (whitePixelCount > 0)
             {
                 result.CentroidX = col.D;
@@ -313,7 +322,7 @@ namespace SunEyeVision.Tool.Threshold
             var histArr = absoluteHisto.LArr;
             result.HistogramData = Array.ConvertAll(histArr, v => (double)v);
 
-            double histMean = histArr.Length > 0
+            double histMean = histArr.Length > 0 && histArr.Sum() > 0
                 ? histArr.Select((h, i) => h * i).Sum() / (double)histArr.Sum()
                 : 0;
             result.ChannelMeans = new[] { histMean };

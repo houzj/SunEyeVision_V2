@@ -10,7 +10,7 @@ namespace SunEyeVision.Tool.ProtocolAssemble;
 [JsonDerivedType(typeof(ProtocolAssembleParameters), "ProtocolAssembleParameters")]
 public class ProtocolAssembleParameters : ToolParameters, IOutputContractProvider, IBindingInputProvider
 {
-    public IReadOnlyList<BindingInputReference> GetBindingInputs() => Parts.Select(p => new BindingInputReference("Part:" + p.PartId, "组装项", () => p.InputText, value => p.InputText = value, SunEyeVision.Plugin.SDK.UI.Controls.Communication.CommunicationBindingTypes.Assemble, true, ValidateLiteral: _ => null)).ToArray();
+    public IReadOnlyList<BindingInputReference> GetBindingInputs() => Parts.Select(p => new BindingInputReference("Part:" + p.PartId, "组装项", () => p.InputText, value => p.InputText = value, SunEyeVision.Plugin.SDK.UI.Controls.Communication.CommunicationBindingTypes.Assemble, true, ValidateLiteral: _ => null) { Owner = p, MemberPath = nameof(p.InputText) }).ToArray();
     private string _separator = ",";
     public string Separator { get => _separator; set => SetProperty(ref _separator, value); }
     public ObservableCollection<ProtocolAssemblyPart> Parts { get; set; } = new() { new() };

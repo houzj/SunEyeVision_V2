@@ -128,10 +128,7 @@ namespace SunEyeVision.Tool.LineDetect
                 metrologyModel.ApplyMetrologyModel(hImage);
                 parameters.LogInfo("[Diag] ApplyMetrologyModel 执行完成（无异常）");
 
-                // ===== 结果填充（统一管线：取全部检测点 → 屏蔽区空间过滤(可选) → 全点鲁棒拟合）=====
-                // ★ 架构统一：有/无屏蔽区走同一条拟合路径。屏蔽只影响输入点集（剔除屏蔽区内点），
-                //   不改变核心拟合算法。Halcon 2D Metrology 原生拟合不支持屏蔽区概念，
-                //   屏蔽过滤必须在拟合前完成，故统一走自研鲁棒拟合（fit_line_contour_xld）。
+                // HALCON取点 → 可选屏蔽 → HALCON轮廓拟合；不读取Metrology模型作为成功门槛。
                 bool hasEnabledMask = parameters.GetRoisByType(RoiParameterMode.MaskRoi).Any();
                 FillResultWithMask(result, parameters, objectIndex, metrologyModel,
                     TransitionToHalcon(parameters.Transition), hasEnabledMask, startP, endP);
@@ -149,7 +146,7 @@ namespace SunEyeVision.Tool.LineDetect
 
                 // 屏蔽区几何输出（RoI 契约：结果树"输入/屏蔽区图形"填充，对齐图像工具）
                 ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRois?.Rois,
-                    parameters.NodeResults);
+                    parameters.NodeResults, PositionCorrectionResolver.Resolve(parameters));
 
                 // 卡尺输入回显（模块结果"输入/卡尺"）：引导线 + 测量带参数
                 var guideStart = parameters.LineStartPoint;
@@ -272,6 +269,7 @@ namespace SunEyeVision.Tool.LineDetect
             Point guideStart, Point guideEnd)
         {
             var diagnostic = result.FitDiagnostics1;
+            diagnostic.AlgorithmPath = "HALCON取点＋轮廓拟合（不设卡尺支持率门槛）";
             var points = MeasuredLineFitting.Capture(model, objectIndex, transition, diagnostic, "直线");
             result.DiagnosticPoints = points;
             result.HalconMeasureBands = diagnostic.Bands;
@@ -282,16 +280,14 @@ namespace SunEyeVision.Tool.LineDetect
                 if (hasEnabledMask)
                 {
                     var filtered = ToolRegionHelper.FilterPointsOutOfMaskRois(points,
-                        parameters.GetRoisByType(RoiParameterMode.MaskRoi), PositionCorrectionResolver.Resolve(parameters));
+                        parameters.GetRoisByType(RoiParameterMode.MaskRoi), PositionCorrectionResolver.Resolve(parameters), parameters.NodeResults);
                     kept = filtered.Kept;
                     diagnostic.ExcludedPoints = filtered.Excluded;
                     result.ExcludedPoints = filtered.Excluded;
                 }
                 diagnostic.CandidatePoints = kept;
-                if (kept.Length < 2)
-                    throw new InvalidOperationException($"有效点不足：原始={points.Length}，屏蔽={diagnostic.ExcludedPoints.Length}，保留={kept.Length}，至少需要2点");
-                var (start, end, inliers, rmse) = MeasuredLineFitting.Fit(kept, parameters.DistanceThreshold,
-                    guideStart, guideEnd, diagnostic, "直线");
+                var (start, end, inliers, rmse) = MeasuredLineFitting.Fit(
+                    kept, parameters.DistanceThreshold, guideStart, guideEnd, diagnostic, "直线");
                 result.LineStartPoint = start;
                 result.LineEndPoint = end;
                 result.CenterPoint = new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2);

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Tool.CircleCircleMeasure
@@ -8,7 +9,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
     /// <summary>边缘极性（卡尺参数语义，同 LineDetect）</summary>
     public enum EdgeTransition
     {
-        All, Positive, Negative,      // 全部 / 正极性（亮到暗）/ 负极性（暗到亮）
+        All, Positive, Negative,      // 全部 / 正极性（暗到亮）/ 负极性（亮到暗）
     }
 
     /// <summary>卡尺测点选取模式（卡尺参数语义，同 LineDetect）</summary>
@@ -32,7 +33,16 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
         // 判定规格列表（v4 C1 基座，SDK MeasureThreshold 复用，六工具同构）
         // ============================================================
         /// <summary>测量输出项判定规格（圆心距/交点X/交点Y/半径1/半径2 各一行公差；UI 数据驱动 Toggle+Range）。可写以便 JSON 反序列化回填</summary>
-        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
+        private ResultPresentationConfig _resultPresentation = CreateResultPresentation();
+        public ResultPresentationConfig ResultPresentation
+        {
+            get => _resultPresentation;
+            set
+            {
+                _resultPresentation = value ?? throw new System.ArgumentNullException(nameof(value));
+                EdgeFitDiagnostics.EnsurePresentation(_resultPresentation);
+            }
+        }
 
         // ============================================================
         // 元素1（卡尺1）：引导圆（圆心 + 半径）—— 全部纯 CLR 支持字段订阅
@@ -119,6 +129,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
             config.Texts.Add(new() { Key = "element2-center-text", Name = "卡尺2中心", Order = 40, Style = new() { Name = "卡尺2中心", IsVisible = true, } });
             config.Texts.Add(new() { Key = "element2-radius-text", Name = "卡尺2半径", Order = 50, Style = new() { Name = "卡尺2半径", IsVisible = true, } });
             config.Texts.Add(new() { Key = "intersection-text", Name = "交点", Order = 60, Style = new() { Name = "交点", IsVisible = true, } });
+            EdgeFitDiagnostics.EnsurePresentation(config);
             return config;
         }
     }

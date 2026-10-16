@@ -42,16 +42,12 @@ namespace SunEyeVision.Tool.PointLineMeasure
         /// </summary>
         private static Point ResolvePoint1(PointLineMeasureParameters parameters)
         {
-            if (parameters.P1InputMode == PointInputMode.ByCoordinate)
-                return new Point(parameters.P1X, parameters.P1Y);
-
-            var pts = parameters.P1Point;
-            if (pts == null || pts.Length == 0)
-                throw new InvalidOperationException(
-                    "点1 输入方式为「按图形」，但未绑定上游点图形输出或图形为空：请在基本参数中选择数据源，或切换为「按参数」输入 X/Y。");
-            if (pts.Length > 1)
-                throw new InvalidOperationException($"点1 绑定的上游点图形含 {pts.Length} 个点：多元素配对（向量化）尚未启用，请改绑单个点，或切换为「按参数」逐值输入。");
-            return new Point(pts[0].X, pts[0].Y);
+            return parameters.P1InputMode switch
+            {
+                PointInputMode.ByCoordinate => PointMeasurementGeometry.RequireFinite(new Point(parameters.P1X, parameters.P1Y), "点1"),
+                PointInputMode.ByShape => PointMeasurementGeometry.ResolveSinglePoint(parameters.P1Point, "点1"),
+                _ => throw new InvalidOperationException($"点1 输入方式无效：{(int)parameters.P1InputMode}。")
+            };
         }
         public PointLineMeasureResults Run(PointLineMeasureParameters parameters)
         {
@@ -67,8 +63,8 @@ namespace SunEyeVision.Tool.PointLineMeasure
                 result.CaptureExecutionParameters(parameters);
                 // ===== 校验（Fail-Fast）=====
                 var p1 = ResolvePoint1(parameters);
-                var lineStart = new Point(parameters.E2StartX, parameters.E2StartY);
-                var lineEnd = new Point(parameters.E2EndX, parameters.E2EndY);
+                var lineStart = PointMeasurementGeometry.RequireFinite(new Point(parameters.E2StartX, parameters.E2StartY), "线2引导起点");
+                var lineEnd = PointMeasurementGeometry.RequireFinite(new Point(parameters.E2EndX, parameters.E2EndY), "线2引导终点");
                 if ((lineEnd - lineStart).Length <= 1e-6)
                     throw new InvalidOperationException("线2 引导线未设置或长度无效");
 
@@ -89,8 +85,8 @@ namespace SunEyeVision.Tool.PointLineMeasure
                 result.ImageHeight = (int)height.L;
                 metrologyModel.SetMetrologyModelImageSize((int)width.L, (int)height.L);
 
-                var lineStartT = Transform(lineStart, matrix);
-                var lineEndT = Transform(lineEnd, matrix);
+                var lineStartT = PointMeasurementGeometry.RequireFinite(Transform(lineStart, matrix), "修正后线2起点");
+                var lineEndT = PointMeasurementGeometry.RequireFinite(Transform(lineEnd, matrix), "修正后线2终点");
 
                 var e2Index = metrologyModel.AddMetrologyObjectLineMeasure(
                     lineStartT.Y, lineStartT.X, lineEndT.Y, lineEndT.X,
@@ -124,19 +120,12 @@ namespace SunEyeVision.Tool.PointLineMeasure
                     e2Start.Y, e2Start.X,
                     e2End.Y, e2End.X,
                     out var distance);
-                result.Distance = distance.D;
+                result.Distance = PointMeasurementGeometry.RequireFinite(distance.D, "点线距离");
 
                 // 垂足 = 点在拟合线上的正交投影
-                double dx = e2End.X - e2Start.X;
-                double dy = e2End.Y - e2Start.Y;
-                double len2 = dx * dx + dy * dy;
-                double t = len2 > 1e-12
-                    ? ((p1.X - e2Start.X) * dx + (p1.Y - e2Start.Y) * dy) / len2
-                    : 0.0;
-                result.PerpendicularFoot = new Point(
-                    e2Start.X + t * dx,
-                    e2Start.Y + t * dy);
-                result.PerpendicularT = t;
+                var (foot, parameter) = PointMeasurementGeometry.ProjectOnLine(p1, e2Start, e2End);
+                result.PerpendicularFoot = foot;
+                result.PerpendicularT = parameter;
 
                 // ===== 输入回显 =====
                 result.GuideGeometry2 = BuildLineGuideGeometry(lineStart, lineEnd);

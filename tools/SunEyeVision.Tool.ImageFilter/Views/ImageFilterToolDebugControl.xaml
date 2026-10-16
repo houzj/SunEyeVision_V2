@@ -188,7 +188,7 @@
                                 Width="250"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
-                <controls:LabeledControl Label="边界处理" ToolTip="边界处理方式">
+                <controls:LabeledControl Label="边界处理" ToolTip="线性滤波支持Reflect、Replicate、Constant(0)、Wrap；Reflect101/Isolated无准确映射时明确报错。双边滤波采用原生边界策略，仅接受默认Reflect配置。">
                   <ComboBox x:Name="borderTypeComboBoxGaussian"
                           Height="32" VerticalContentAlignment="Center" Width="250"
                           SelectedItem="{Binding BorderTypeValue, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
@@ -206,7 +206,7 @@
                                Text="高斯滤波(GAUSSIAN_BLUR)：使用高斯核对图像进行加权平均"/>
                     <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" 
                                Margin="0,6,0,0"
-                               Text="距离中心近的权重大；Sigma=0时自动按内核大小计算；边缘保留优于均值滤波"/>
+                               Text="核宽高与SigmaX/Y独立生效；Sigma=0时取max(0.5,(对应核尺寸-1)/6)，有限核内归一化"/>
                 </StackPanel>
             </controls:ParamGroup>
               </StackPanel>
@@ -216,7 +216,7 @@
             <GroupBox Header="中值滤波参数" Margin="0,8,0,0"
                       Visibility="{Binding IsMedianBlurMethod, Converter={StaticResource BoolToVisibilityConverter}}">
               <StackPanel Margin="4,4">
-                <controls:LabeledControl Label="直径(核大小)" ToolTip="直径(奇数, 1-15)：中值滤波窗口大小，抗椒盐噪声效果好">
+                <controls:LabeledControl Label="内核宽度" ToolTip="HALCON矩形中值滤波的宽度（奇数），与高度独立生效">
                   <controls:ConfigSetting
                                 x:Name="kernelWidthParamMedian"
                                 ParameterName="KernelWidth"
@@ -227,13 +227,19 @@
                                 ShowSlider="True" Width="250"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
+                <controls:LabeledControl Label="内核高度">
+                  <controls:ConfigSetting x:Name="kernelHeightParamMedian" ParameterName="KernelHeight"
+                    DataType="{x:Type sys:Int32}" Value="{Binding KernelHeight, Mode=TwoWay}"
+                    Minimum="1" Maximum="31" SmallChange="2" LargeChange="4" Width="250"
+                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
             <controls:ParamGroup Header="参数说明" IsExpanded="False">
                 <StackPanel Margin="8,4">
                     <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" 
                                Text="中值滤波(MEDIAN_BLUR)：邻域像素排序后取中值替换中心像素"/>
                     <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" 
                                Margin="0,6,0,0"
-                               Text="对椒盐噪声效果极佳；不会模糊边缘；直径不宜过大以免丢失细节"/>
+                               Text="矩形核宽高独立生效；可能损失小于核尺寸的细节，边界采用原生处理"/>
                 </StackPanel>
             </controls:ParamGroup>
               </StackPanel>
@@ -243,7 +249,7 @@
             <GroupBox Header="双边滤波参数" Margin="0,8,0,0"
                       Visibility="{Binding IsBilateralMethod, Converter={StaticResource BoolToVisibilityConverter}}">
               <StackPanel Margin="4,4">
-                <controls:LabeledControl Label="直径(像素邻域)" ToolTip="直径(奇数, 1-15)：双边滤波的邻域窗口大小">
+                <controls:LabeledControl Label="旧直径（不参与原生双边滤波）" Visibility="Collapsed">
                   <controls:ConfigSetting
                                 x:Name="kernelWidthParamBilateral"
                                 ParameterName="KernelWidth"
@@ -276,7 +282,7 @@
                                 Width="250"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
-                <controls:LabeledControl Label="边界处理" ToolTip="边界处理方式">
+                <controls:LabeledControl Label="边界处理" ToolTip="线性滤波支持Reflect、Replicate、Constant(0)、Wrap；Reflect101/Isolated无准确映射时明确报错。双边滤波采用原生边界策略，仅接受默认Reflect配置。">
                   <ComboBox x:Name="borderTypeComboBoxBilateral"
                           Height="32" VerticalContentAlignment="Center" Width="250"
                           SelectedItem="{Binding BorderTypeValue, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
@@ -301,10 +307,27 @@
             </GroupBox>
 
             <!-- ====== 自定义卷积(Filter2D): BorderType ====== -->
-            <GroupBox Header="自定义卷积参数" Margin="0,8,0,0"
+            <GroupBox Header="卷积核 (Filter2D)" Margin="0,8,0,0"
                       Visibility="{Binding IsFilter2DMethod, Converter={StaticResource BoolToVisibilityConverter}}">
               <StackPanel Margin="4,4">
-                <controls:LabeledControl Label="边界处理" ToolTip="边界处理方式">
+                <CheckBox Content="使用自定义核（关闭时保留原3×3锐化）" Margin="0,0,0,8"
+                          IsChecked="{Binding UseCustomKernel, Mode=TwoWay}"/>
+                <StackPanel IsEnabled="{Binding UseCustomKernel}">
+                  <TextBlock Text="核系数：每行一行，空格或逗号分列" Margin="0,0,0,4"/>
+                  <TextBox Text="{Binding CustomKernelText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                           AcceptsReturn="True" MinHeight="100" MaxHeight="220"
+                           VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                           FontFamily="Consolas" TextWrapping="NoWrap"
+                           ToolTip="矩形核，每边1至31；支持负数、小数点及科学计数法。换行或分号分行，空格或逗号分列。不自动补齐、截断或归一化。"/>
+                  <controls:LabeledControl Label="核除数" Margin="0,8,0,8"
+                      ToolTip="显式正除数；默认1。均值核可填系数和，零和导数核使用1，不会自动计算或改写。">
+                    <controls:ConfigSetting ParameterName="CustomKernelDivisor"
+                        DataType="{x:Type sys:Double}" Value="{Binding CustomKernelDivisor, Mode=TwoWay}"
+                        Minimum="0" Maximum="1E12" DecimalPlaces="6" SmallChange="1" LargeChange="10"
+                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                  </controls:LabeledControl>
+                </StackPanel>
+                <controls:LabeledControl Label="边界处理" ToolTip="线性滤波支持Reflect、Replicate、Constant(0)、Wrap；Reflect101/Isolated无准确映射时明确报错。双边滤波采用原生边界策略，仅接受默认Reflect配置。">
                   <ComboBox x:Name="borderTypeComboBoxF2D"
                           Height="32" VerticalContentAlignment="Center" Width="250"
                           SelectedItem="{Binding BorderTypeValue, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
@@ -319,10 +342,10 @@
             <controls:ParamGroup Header="参数说明" IsExpanded="False">
                 <StackPanel Margin="8,4">
                     <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" 
-                               Text="自定义卷积(FILTER_2D)：通过用户自定义卷积核实现任意线性滤波"/>
+                               Text="默认保留3×3锐化核 [0,-1,0;-1,5,-1;0,-1,0]，开启自定义后按输入矩阵及显式除数调用HALCON ConvolImage。"/>
                     <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" 
                                Margin="0,6,0,0"
-                               Text="卷积核由用户在运行配置中设置；可实现锐化、浮雕等效果"/>
+                               Text="原生为相关运算，不额外翻转核；参考点按非零核位置的质心取整，非对称/偶数核不保证以矩形中心为参考点。输出恢复原灰度类型，byte的负响应会被截断；有符号响应需显式使用有符号/real输入。屏蔽限制输出域，不阻断邻域读取。"/>
                 </StackPanel>
             </controls:ParamGroup>
               </StackPanel>

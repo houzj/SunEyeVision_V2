@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
@@ -30,7 +31,16 @@ namespace SunEyeVision.Tool.PointCircleMeasure
         // ============================================================
         // 判定规格列表（v4 C1 基座，六工具同构）
         // ============================================================
-        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
+        private ResultPresentationConfig _resultPresentation = CreateResultPresentation();
+        public ResultPresentationConfig ResultPresentation
+        {
+            get => _resultPresentation;
+            set
+            {
+                _resultPresentation = value ?? throw new System.ArgumentNullException(nameof(value));
+                EdgeFitDiagnostics.EnsurePresentation(_resultPresentation);
+            }
+        }
 
         // ============================================================
         // 元素1（点）：输入方式二分「按图形 / 按参数」（无引导绘制入口 —— v4 与线/圆等引导元素的核心区别）
@@ -119,6 +129,7 @@ namespace SunEyeVision.Tool.PointCircleMeasure
             config.Texts.Add(new() { Key = "circle-radius-text", Name = "圆2半径", Order = 30, Style = new() { Name = "圆2半径", IsVisible = true, } });
             config.Texts.Add(new() { Key = "closest-point-text", Name = "最近点", Order = 40, Style = new() { Name = "最近点", IsVisible = true, } });
             config.Texts.Add(new() { Key = "distance-text", Name = "圆心距", Order = 50, Style = new() { Name = "圆心距", IsVisible = true, } });
+            EdgeFitDiagnostics.EnsurePresentation(config);
             return config;
         }
     }

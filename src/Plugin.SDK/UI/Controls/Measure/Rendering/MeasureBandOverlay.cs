@@ -167,11 +167,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 
             if (!drawBands || measureCount <= 0 || circle.Radius <= 0) return;
 
-            // 整圆无极性但卡尺阵列有起始相位：起始相位随位置修正旋转（与屏蔽区/内容同口径），
-            // 均分间距不变，仅整体平移起始角；无修正时 startPhase = 0（与现状一致）。
-            double startPhase = matrix != null
-                ? PositionCorrectionResolver.DisplayAngleDeg(matrix, 0.0) * Math.PI / 180.0
-                : 0.0;
+            // 整圆测量带与原生闭合模型一致：当前图像0°起始，圆心/半径保留位置修正。
+            const double startPhase = 0.0; // Canonical HALCON full circle, independent of correction rotation.
 
             // 环形测量带（与结果层共用同一几何计算）
             foreach (var quad in BuildCircleBands(circle, bandWidth, bandLength, measureCount, startPhase))

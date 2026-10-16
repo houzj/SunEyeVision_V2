@@ -37,20 +37,6 @@ public static class ToolEditorCommit
         foreach (var editor in editors.Where(e => e.Dispatcher.CheckAccess() && e.IsLoaded))
         {
             editor.RefreshCommittedBindings(onlyInvalidated: true);
-            var parameters = editor.CurrentNode?.GetType().GetProperty("Parameters")?.GetValue(editor.CurrentNode) as SunEyeVision.Plugin.SDK.Execution.Parameters.ToolParameters;
-            var inputs = parameters == null ? Array.Empty<SunEyeVision.Plugin.SDK.Execution.Parameters.BindingInputReference>()
-                : SunEyeVision.Plugin.SDK.Execution.Parameters.BindingInputCatalog.Describe(parameters);
-            foreach (var binding in Walk(editor).OfType<ParamBinding>())
-            {
-                string? reason = null;
-                if (parameters != null)
-                {
-                    parameters.BindingValidationPending.TryGetValue(binding.ParameterName, out reason);
-                    reason ??= inputs.Where(i => i.Read() == binding.BindingSource && parameters.BindingValidationPending.ContainsKey(i.Key))
-                        .Select(i => parameters.BindingValidationPending[i.Key]).FirstOrDefault();
-                }
-                binding.SetPendingValidation(reason);
-            }
         }
     }
 

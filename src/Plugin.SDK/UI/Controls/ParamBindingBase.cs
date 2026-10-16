@@ -26,6 +26,35 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     {
         #region 依赖属性
 
+        public static readonly DependencyProperty BindingIssueProperty = DependencyProperty.Register(
+            nameof(BindingIssue), typeof(string), typeof(ParamBindingBase),
+            new PropertyMetadata(null, (d, e) => ((ParamBindingBase)d).OnBindingIssueChanged()));
+        public string? BindingIssue => (string?)GetValue(BindingIssueProperty);
+        public void SetBindingIssue(string? issue) => SetCurrentValue(BindingIssueProperty, issue);
+        private BindingIssueAdorner? _issueAdorner;
+        private System.Windows.Documents.AdornerLayer? _issueLayer;
+        private object? _tooltipBeforeIssue;
+        private bool _hasIssueTooltip;
+
+        protected virtual void OnBindingIssueChanged()
+        {
+            if (string.IsNullOrEmpty(BindingIssue))
+            {
+                if (_issueAdorner != null) _issueLayer?.Remove(_issueAdorner);
+                _issueAdorner = null; _issueLayer = null;
+                if (_hasIssueTooltip) { ToolTip = _tooltipBeforeIssue; _hasIssueTooltip = false; }
+                return;
+            }
+            if (!_hasIssueTooltip) { _tooltipBeforeIssue = ToolTip; _hasIssueTooltip = true; }
+            ToolTip = BindingIssue;
+            if (_issueAdorner == null && IsLoaded && System.Windows.Documents.AdornerLayer.GetAdornerLayer(this) is { } layer)
+            {
+                _issueLayer = layer;
+                _issueAdorner = new BindingIssueAdorner(this);
+                layer.Add(_issueAdorner);
+            }
+        }
+
         /// <summary>
         /// 数据类型过滤器
         /// </summary>
@@ -79,6 +108,25 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         protected ParamBindingBase()
         {
+            Loaded += (_, _) => { OnBindingIssueChanged(); QueueIssueRefresh(); };
+            DataContextChanged += (_, _) => QueueIssueRefresh();
+            GotKeyboardFocus += (_, _) => _issueAdorner?.InvalidateVisual();
+            LostKeyboardFocus += (_, _) => _issueAdorner?.InvalidateVisual();
+            Unloaded += (_, _) =>
+            {
+                if (_issueAdorner != null) _issueLayer?.Remove(_issueAdorner);
+                _issueAdorner = null; _issueLayer = null;
+            };
+        }
+
+        private void QueueIssueRefresh()
+        {
+            DependencyObject? parent = this;
+            while (parent != null)
+            {
+                if (parent is ToolDebugControlBase editor) { editor.QueueBindingIssueRefresh(); return; }
+                parent = System.Windows.Media.VisualTreeHelper.GetParent(parent);
+            }
         }
 
         #endregion

@@ -468,6 +468,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 return;
 
             var bindingPath = e.NewValue as string;
+            // A deliberate source edit clears presentation only; formal commit still owns the model marker.
+            control.SetBindingIssue(null);
             if (control.SyncEditingToSource)
             {
                 control._isProgrammaticDisplayUpdate = true;

@@ -6,7 +6,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters;
 public sealed record BindingInputReference(string Key, string Name, Func<string> Read, Action<string> Write,
     IReadOnlyList<Type> AllowedTypes, bool AllowsTypeChange = false, string InterpretationKey = "",
     Func<string, string?>? ValidateLiteral = null, Func<string?>? ReadWorkflowId = null,
-    bool ReferenceOnly = false, bool Active = true, bool InternalProjection = false, Func<Guid?>? ReadFieldId = null);
+    bool ReferenceOnly = false, bool Active = true, bool InternalProjection = false, Func<Guid?>? ReadFieldId = null)
+{
+    // Optional presentation identity. Does not alter the existing constructor or persisted binding contract.
+    public object? Owner { get; init; }
+    public string? MemberPath { get; init; }
+}
 public interface IBindingInputProvider
 {
     IReadOnlyList<BindingInputReference> GetBindingInputs();

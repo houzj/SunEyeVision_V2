@@ -129,7 +129,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     /// - WPF 控件：https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/
     /// - 路由事件：https://learn.microsoft.com/en-us/dotnet/desktop/wpf/advanced/routed-events-overview
     /// </remarks>
-    public abstract class ToolDebugControlBase : UserControl, System.ComponentModel.INotifyPropertyChanged, IToolControlInitializer
+    public abstract partial class ToolDebugControlBase : UserControl, System.ComponentModel.INotifyPropertyChanged, IToolControlInitializer
     {
         private bool _asyncCommandRunning;
         #region INotifyPropertyChanged 实现
@@ -494,6 +494,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void OnToolDebugControlLoaded(object sender, RoutedEventArgs e)
         {
+            InstallBindingIssueSummary();
             if (_previewParameters != null)
             {
                 PropertyChangedEventManager.RemoveHandler(_previewParameters, OnPreviewParameterChanged, "");
@@ -506,6 +507,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             ConfigSetting.InstanceLoaded += OnConfigSettingInstanceLoaded;
             SubscribeParameterBindingControls();
             RestoreExternalParameterBindings();
+            QueueBindingIssueRefresh();
         }
 
         private void OnToolDebugControlUnloaded(object sender, RoutedEventArgs e)
@@ -638,12 +640,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             RestoreExternalParameterBindings(onlyInvalidated);
             if (DataProvider is DataSourceQueryService query) PopulateParameterSources(query);
+            RefreshBindingIssues();
         }
 
         private void RestoreExternalParameterBindings() => RestoreExternalParameterBindings(false);
 
         private void RestoreExternalParameterBindings(bool onlyInvalidated)
         {
+            QueueBindingIssueRefresh();
             if (CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
                 is not ParamSettingContainer settings)
                 return;
@@ -654,10 +658,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 $"设置数={byName.Count} | 标量控件={_parameterBindingControls.Count} | 图形控件={_shapeBindingControls.Count}",
                 "BindingDiag");
             var required = (CurrentNode?.GetType().GetProperty("Parameters")?.GetValue(CurrentNode) as ToolParameters)?.RebindingRequired;
-            var pending = (CurrentNode?.GetType().GetProperty("Parameters")?.GetValue(CurrentNode) as ToolParameters)?.BindingValidationPending;
-            foreach (var control in _parameterBindingControls)
-                if (pending?.TryGetValue(control.ParameterName, out var reason) == true) control.ToolTip = "待校验：" + reason;
-
             SubscribeParameterBindingControls();
             if (_parameterBindingControls.Count == 0 && _shapeBindingControls.Count == 0)
             {
@@ -682,7 +682,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     else if (required?.ContainsKey(control.ParameterName) == true)
                     {
                         control.ClearCommittedBinding();
-                        control.ToolTip = required[control.ParameterName];
                     }
                 }
                 foreach (var control in _shapeBindingControls)
@@ -691,7 +690,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     if (!byName.TryGetValue(control.ParameterName, out var setting)
                         || setting.BindingType != BindingType.Binding)
                     {
-                        if (required?.ContainsKey(control.ParameterName) == true) { control.BindingSource = string.Empty; control.ToolTip = required[control.ParameterName]; }
+                        if (required?.ContainsKey(control.ParameterName) == true) control.BindingSource = string.Empty;
                         continue;
                     }
 
@@ -827,6 +826,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private readonly List<Measure.Views.MeasureEditorControl> _caliperEditors = new();
         private void OnPreviewParameterChanged(object? sender, PropertyChangedEventArgs e)
         {
+            QueueBindingIssueRefresh();
             if (e.PropertyName is not ("IsPositionCorrectionEnabled" or "PositionCorrectionBindingSource" or "PositionCorrectionSource" or "ImageSource" or "ImageSourceRef")) return;
             Dispatcher.BeginInvoke(new Action(() =>
             {

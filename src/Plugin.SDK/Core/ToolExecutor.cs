@@ -473,7 +473,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 if (!BindingInputCatalog.IsInputActive(request.Parameters, pending.Key)) continue;
                 var input = inputs.FirstOrDefault(i => i.Key == pending.Key);
                 if (input is { Active: false }) continue;
-                var invalid = new RuntimeParameterSnapshot(new Dictionary<string, object?>(), new[] { $"输入待校验，不能执行：{pending.Value}" });
+                var invalid = new RuntimeParameterSnapshot(new Dictionary<string, object?>(), new[] { $"输入 {input?.Name ?? pending.Key} [{pending.Key}] 待校验，不能执行：{pending.Value}" });
                 request.RuntimeParameters = invalid; return invalid;
             }
             foreach (var pending in request.Parameters.RebindingRequired.ToArray())
@@ -482,7 +482,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 var input = inputs.FirstOrDefault(i => i.Key == pending.Key);
                 if (input is { Active: false }) continue;
                 if (input == null && (pending.Key.StartsWith("Row:") || pending.Key.StartsWith("Part:") || pending.Key.StartsWith("Variable:"))) continue;
-                var invalid = new RuntimeParameterSnapshot(new Dictionary<string, object?>(), new[] { $"输入 {pending.Key} 需要重新绑定：{pending.Value}" });
+                var invalid = new RuntimeParameterSnapshot(new Dictionary<string, object?>(), new[] { $"输入 {input?.Name ?? pending.Key} [{pending.Key}] 需要重新绑定：{pending.Value}" });
                 request.RuntimeParameters = invalid; return invalid;
             }
             if (request.ParameterBindings.Bindings.Count == 0)

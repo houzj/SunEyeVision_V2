@@ -84,7 +84,7 @@ public static class BindingInputCatalog
                     // Do not apply this transport rule to scalar script parameters or ordinary tool inputs.
                     }, parameters is SubroutineParameters && type == typeof(AffineMatrix)
                         ? new[] { typeof(AffineMatrix), typeof(AffineMatrix[]) }
-                        : type == null ? Array.Empty<Type>() : new[] { type }, ReadWorkflowId: () => originalSource?.SourceWorkflowId, ReferenceOnly: true));
+                        : type == null ? Array.Empty<Type>() : new[] { type }, ReadWorkflowId: () => originalSource?.SourceWorkflowId, ReferenceOnly: true) { Owner = row, MemberPath = "BindingSource" });
                 }
         }
         if (parameters is SubroutineParameters subroutine)
@@ -94,14 +94,14 @@ public static class BindingInputCatalog
                 var original = row.Source;
                 inputs.Add(new("Output:" + row.FieldId, row.Name, () => row.Source?.GetBindingPath() ?? row.BindingSource,
                     text => { row.BindingSource = text; row.Source = RewriteSource(original, text); if (text.Length == 0) row.BindingDisplayText = ""; },
-                    row.ParamType == null ? Array.Empty<Type>() : new[] { row.ParamType }, ReadWorkflowId: () => subroutine.SubroutineId, ReferenceOnly: true, InternalProjection: true));
+                    row.ParamType == null ? Array.Empty<Type>() : new[] { row.ParamType }, ReadWorkflowId: () => subroutine.SubroutineId, ReferenceOnly: true, InternalProjection: true) { Owner = row, MemberPath = nameof(row.BindingSource) });
             }
             foreach (var row in subroutine.DisplayConfigs)
             {
                 var original = row.BoundDataSource;
                 inputs.Add(new("Display:" + row.FieldId, row.DisplayName, () => row.BoundDataSource?.GetBindingPath() ?? row.BindingSource,
                     text => { row.BindingSource = text; row.BoundDataSource = RewriteSource(original, text); if (text.Length == 0) row.BindingDisplayText = ""; },
-                    row.ParamType == null ? Array.Empty<Type>() : new[] { row.ParamType }, ReadWorkflowId: () => subroutine.SubroutineId, ReferenceOnly: true, InternalProjection: true));
+                    row.ParamType == null ? Array.Empty<Type>() : new[] { row.ParamType }, ReadWorkflowId: () => subroutine.SubroutineId, ReferenceOnly: true, InternalProjection: true) { Owner = row, MemberPath = nameof(row.BindingSource) });
             }
             var loop = subroutine.LoopConfig;
             foreach (var key in new[] { "StartValueBinding", "EndValueBinding", "SourceCompareBinding", "TargetCompareBinding" })

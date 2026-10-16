@@ -34,10 +34,11 @@ public sealed partial class CommunicationRuntimeManager
         private readonly SemaphoreSlim _writeGate = new(1, 1);
         private Task? _receiveTask;
         private int _disposed;
+        private int _receiving;
 
         public event EventHandler<CommunicationDataReceivedEventArgs>? DataReceived;
         public event EventHandler<CommunicationConnectionClosedEventArgs>? ConnectionClosed;
-        public bool IsConnected => _port.IsOpen;
+        public bool IsConnected => Volatile.Read(ref _disposed) == 0 && Volatile.Read(ref _receiving) == 1 && _port.IsOpen;
 
         public SerialSession(Communication communication)
         {
@@ -52,17 +53,24 @@ public sealed partial class CommunicationRuntimeManager
             };
         }
 
-        public Task ConnectAsync(CancellationToken cancellationToken)
+        public async Task ConnectAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            _port.Open();
-            _receiveTask = Task.Run(() => ReceiveLoopAsync(_lifetime.Token), CancellationToken.None);
-            return Task.CompletedTask;
+            await _writeGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+                cancellationToken.ThrowIfCancellationRequested();
+                _port.Open();
+                Volatile.Write(ref _receiving, 1);
+                _receiveTask = Task.Run(() => ReceiveLoopAsync(_lifetime.Token), CancellationToken.None);
+            }
+            finally { _writeGate.Release(); }
         }
 
         private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
         {
             var buffer = new byte[4096];
+            var reason = "串口已关闭或接收任务已停止。";
             try
             {
                 while (!cancellationToken.IsCancellationRequested && _port.IsOpen)
@@ -90,21 +98,28 @@ public sealed partial class CommunicationRuntimeManager
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
             catch (InvalidOperationException) when (cancellationToken.IsCancellationRequested) { }
             catch (IOException) when (cancellationToken.IsCancellationRequested) { }
-            catch (Exception) when (!cancellationToken.IsCancellationRequested) { }
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                reason = ex.Message;
+                VisionLogger.Instance.Log(LogLevel.Warning, $"串口接收停止：设备={_communicationId}, {ex.Message}",
+                    "CommunicationRuntime", ex, LogTarget.File | LogTarget.UI);
+            }
             finally
             {
-                ConnectionClosed?.Invoke(this, new CommunicationConnectionClosedEventArgs(_communicationId));
+                Volatile.Write(ref _receiving, 0);
+                ConnectionClosed?.Invoke(this, new CommunicationConnectionClosedEventArgs(_communicationId, reason));
             }
             await Task.CompletedTask;
         }
 
         public async Task<int> SendAsync(ReadOnlyMemory<byte> payload, CancellationToken cancellationToken)
         {
-            if (!_port.IsOpen) throw new InvalidOperationException("串口尚未打开。");
             await _writeGate.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
+                if (!IsConnected) throw new IOException("串口尚未打开或接收任务已停止。");
                 await Task.Run(() => _port.Write(payload.ToArray(), 0, payload.Length), cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
                 return 1;
             }
             finally { _writeGate.Release(); }
@@ -114,14 +129,15 @@ public sealed partial class CommunicationRuntimeManager
         {
             if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
             _lifetime.Cancel();
-            if (_port.IsOpen) _port.Close();
+            await _writeGate.WaitAsync().ConfigureAwait(false);
+            try { if (_port.IsOpen) _port.Close(); }
+            finally { _writeGate.Release(); }
             if (_receiveTask is not null)
             {
                 try { await _receiveTask.ConfigureAwait(false); }
                 catch (OperationCanceledException) { }
             }
             _port.Dispose();
-            _writeGate.Dispose();
             _lifetime.Dispose();
         }
     }

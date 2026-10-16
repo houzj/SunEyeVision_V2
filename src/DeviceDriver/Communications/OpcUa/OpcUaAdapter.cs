@@ -50,7 +50,8 @@ public sealed partial class CommunicationRuntimeManager
         public event EventHandler<CommunicationDataReceivedEventArgs>? DataReceived;
         public event EventHandler<OpcUaPointValueEventArgs>? PointValueChanged;
         public event EventHandler<CommunicationConnectionClosedEventArgs>? ConnectionClosed;
-        public bool IsConnected => _session?.Connected == true;
+        public bool IsConnected => Volatile.Read(ref _disposed) == 0 &&
+            Volatile.Read(ref _connectionClosedSignaled) == 0 && _session?.Connected == true;
 
         public OpcUaSession(Communication communication, string pkiRoot)
         {
@@ -59,6 +60,19 @@ public sealed partial class CommunicationRuntimeManager
         }
 
         public async Task ConnectAsync(CancellationToken cancellationToken)
+        {
+            // Creation and disposal share the same gate: a cancelled/replaced adapter
+            // must never publish a newly created Session after it has been disposed.
+            await _serviceGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+                await CreateSessionAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally { _serviceGate.Release(); }
+        }
+
+        private async Task CreateSessionAsync(CancellationToken cancellationToken)
         {
             var appName = "SunEyeVision";
             var appUri = $"urn:{Dns.GetHostName()}:SunEyeVision";
@@ -105,42 +119,60 @@ public sealed partial class CommunicationRuntimeManager
 
         private void Session_KeepAlive(ISession session, KeepAliveEventArgs e)
         {
-            if (e.Status == null || !StatusCode.IsBad(e.Status.StatusCode) ||
-                Interlocked.CompareExchange(ref _connectionClosedSignaled, 1, 0) != 0 || Volatile.Read(ref _disposed) != 0)
+            if (!ReferenceEquals(session, _session) || e.Status == null || !StatusCode.IsBad(e.Status.StatusCode))
                 return;
-            ConnectionClosed?.Invoke(this, new CommunicationConnectionClosedEventArgs(_communication.Id));
+            SignalConnectionClosed($"KeepAlive: {e.Status}");
         }
 
         public async Task<IReadOnlyList<OpcUaBrowseItem>> BrowseAsync(string nodeId, CancellationToken cancellationToken)
         {
-            var session = RequireSession();
             var parsedNode = NodeId.Parse(nodeId);
             await _serviceGate.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                session.Browse(null, null, parsedNode, 0u, BrowseDirection.Forward, ReferenceTypeIds.HierarchicalReferences,
-                    true, (uint)(NodeClass.Object | NodeClass.Variable | NodeClass.Method), out _, out var references);
-                return references.Select(reference => new OpcUaBrowseItem(reference.NodeId.ToString(), reference.DisplayName.Text, reference.NodeClass.ToString())).ToArray();
+                var session = RequireSession();
+                return await Task.Run<IReadOnlyList<OpcUaBrowseItem>>(() =>
+                {
+                    session.Browse(null, null, parsedNode, 0u, BrowseDirection.Forward, ReferenceTypeIds.HierarchicalReferences,
+                        true, (uint)(NodeClass.Object | NodeClass.Variable | NodeClass.Method), out var continuation, out var references);
+                    // This UI requests one level/page only; release the server cursor.
+                    if (continuation is { Length: > 0 })
+                        session.BrowseNext(null, true, continuation, out _, out _);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return references.Select(reference => new OpcUaBrowseItem(reference.NodeId.ToString(), reference.DisplayName.Text, reference.NodeClass.ToString())).ToArray();
+                }, cancellationToken).ConfigureAwait(false);
             }
+            catch (Exception ex) { HandleServiceFailure(ex); throw; }
             finally { _serviceGate.Release(); }
         }
 
         public async Task<DataValue> ReadValueAsync(string nodeId, CancellationToken cancellationToken)
         {
-            var session = RequireSession();
             await _serviceGate.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try { return await Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); return session.ReadValue(NodeId.Parse(nodeId)); }, cancellationToken).ConfigureAwait(false); }
+            try
+            {
+                var session = RequireSession();
+                return await Task.Run(() =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var value = session.ReadValue(NodeId.Parse(nodeId));
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (!StatusCode.IsGood(value.StatusCode)) throw new ServiceResultException(value.StatusCode);
+                    return value;
+                }, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) { HandleServiceFailure(ex); throw; }
             finally { _serviceGate.Release(); }
         }
 
         public async Task<OpcUaPointValueEventArgs> ReadPointAsync(string nodeId, CancellationToken cancellationToken)
         {
-            var session = RequireSession();
             var parsedNode = NodeId.Parse(nodeId);
             var key = parsedNode.ToString();
             await _serviceGate.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
+                var session = RequireSession();
                 cancellationToken.ThrowIfCancellationRequested();
                 var reads = new ReadValueIdCollection
                 {
@@ -151,6 +183,7 @@ public sealed partial class CommunicationRuntimeManager
                 return await Task.Run(() =>
                 {
                     session.Read(null, 0, TimestampsToReturn.Both, reads, out var values, out _);
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (values.Count < 3) throw new ServiceResultException(StatusCodes.BadUnexpectedError);
                     var value = values[0];
                     if (StatusCode.IsBad(value.StatusCode)) throw new ServiceResultException(value.StatusCode);
@@ -169,26 +202,29 @@ public sealed partial class CommunicationRuntimeManager
                         isSupportedScalar: supported);
                 }, cancellationToken).ConfigureAwait(false);
             }
+            catch (Exception ex) { HandleServiceFailure(ex); throw; }
             finally { _serviceGate.Release(); }
         }
 
         public async Task WriteValueAsync(string nodeId, object value, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(value);
-            var session = RequireSession();
             await _serviceGate.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
+                var session = RequireSession();
                 cancellationToken.ThrowIfCancellationRequested();
                 var write = new WriteValue { NodeId = NodeId.Parse(nodeId), AttributeId = Attributes.Value, Value = new DataValue(new Variant(value)) };
                 await Task.Run(() =>
                 {
                     session.Write(null, new WriteValueCollection { write }, out var results, out _);
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (results.Count != 1)
                         throw new ServiceResultException(StatusCodes.BadUnexpectedError, $"OPC UA 写入响应数量异常：请求 1 项，服务端返回 {results.Count} 项。");
-                    if (StatusCode.IsBad(results[0])) throw new ServiceResultException(results[0]);
+                    if (!StatusCode.IsGood(results[0])) throw new ServiceResultException(results[0]);
                 }, cancellationToken).ConfigureAwait(false);
             }
+            catch (Exception ex) { HandleServiceFailure(ex); throw; }
             finally { _serviceGate.Release(); }
         }
 
@@ -197,10 +233,10 @@ public sealed partial class CommunicationRuntimeManager
             if (samplingIntervalMs is < 10 or > 600_000) throw new ArgumentOutOfRangeException(nameof(samplingIntervalMs), "OPC UA 采样间隔范围为 10–600000 ms。");
             var parsedNodeId = NodeId.Parse(nodeId);
             var key = parsedNodeId.ToString();
-            var session = RequireSession();
             await _serviceGate.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
+                var session = RequireSession();
                 cancellationToken.ThrowIfCancellationRequested();
                 if (_monitoredItems.ContainsKey(key))
                     throw new InvalidOperationException($"NodeId {key} 已有活动订阅，请先取消订阅再重新设置采样间隔。");
@@ -217,6 +253,8 @@ public sealed partial class CommunicationRuntimeManager
                 {
                     if (notificationGate.IsActive && args.NotificationValue is MonitoredItemNotification notification)
                     {
+                        if (StatusCode.IsBad(notification.Value.StatusCode))
+                            HandleServiceFailure(new ServiceResultException(notification.Value.StatusCode));
                         var metadata = _pointMetadata.TryGetValue(key, out var known) ? known : (BuiltInType.Null, false, false);
                         try
                         {
@@ -237,12 +275,25 @@ public sealed partial class CommunicationRuntimeManager
                 {
                     subscription.AddItem(item);
                     session.AddSubscription(subscription);
-                    subscription.Create();
-                    subscription.ApplyChanges();
-                    _subscriptions.Add(subscription);
-                    _monitoredItems.Add(key, (subscription, item, notificationGate));
+                    try
+                    {
+                        subscription.Create();
+                        subscription.ApplyChanges();
+                        cancellationToken.ThrowIfCancellationRequested();
+                        _subscriptions.Add(subscription);
+                        _monitoredItems.Add(key, (subscription, item, notificationGate));
+                    }
+                    catch
+                    {
+                        notificationGate.IsActive = false;
+                        try { if (subscription.Created) subscription.Delete(true); } catch { }
+                        session.RemoveSubscription(subscription);
+                        subscription.Dispose();
+                        throw;
+                    }
                 }, cancellationToken).ConfigureAwait(false);
             }
+            catch (Exception ex) { HandleServiceFailure(ex); throw; }
             finally { _serviceGate.Release(); }
         }
 
@@ -251,19 +302,21 @@ public sealed partial class CommunicationRuntimeManager
             await _serviceGate.WaitAsync(token).ConfigureAwait(false);
             try
             {
+                _ = RequireSession();
                 return _monitoredItems.TryGetValue(NodeId.Parse(nodeId).ToString(), out var monitored)
                     ? (monitored.Item.SamplingInterval, monitored.Subscription.PublishingInterval) : null;
             }
+            catch (Exception ex) { HandleServiceFailure(ex); throw; }
             finally { _serviceGate.Release(); }
         }
 
         public async Task UnsubscribeAsync(string nodeId, CancellationToken cancellationToken)
         {
             var key = NodeId.Parse(nodeId).ToString();
-            var session = RequireSession();
             await _serviceGate.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
+                var session = RequireSession();
                 cancellationToken.ThrowIfCancellationRequested();
                 if (!_monitoredItems.TryGetValue(key, out var monitored))
                     return;
@@ -275,26 +328,63 @@ public sealed partial class CommunicationRuntimeManager
                     try
                     {
                         monitored.Subscription.ApplyChanges();
-                        _monitoredItems.Remove(key);
-                        if (!monitored.Subscription.MonitoredItems.Any())
-                        {
-                            monitored.Subscription.Delete(true);
-                            session.RemoveSubscription(monitored.Subscription);
-                            _subscriptions.Remove(monitored.Subscription);
-                        }
                     }
                     catch
                     {
                         monitored.Subscription.AddItem(monitored.Item);
-                        monitored.Gate.IsActive = true;
+                        monitored.Gate.IsActive = !cancellationToken.IsCancellationRequested;
                         throw;
+                    }
+                    _monitoredItems.Remove(key);
+                    if (!monitored.Subscription.MonitoredItems.Any())
+                    {
+                        try { monitored.Subscription.Delete(true); }
+                        finally
+                        {
+                            session.RemoveSubscription(monitored.Subscription);
+                            _subscriptions.Remove(monitored.Subscription);
+                            monitored.Subscription.Dispose();
+                        }
                     }
                 }, cancellationToken).ConfigureAwait(false);
             }
+            catch (Exception ex) { HandleServiceFailure(ex); throw; }
             finally { _serviceGate.Release(); }
         }
 
-        private Session RequireSession() => _session is { Connected: true } session ? session : throw new InvalidOperationException("OPC UA 会话尚未连接。");
+        private Session RequireSession()
+        {
+            if (IsConnected && _session is { } session) return session;
+            SignalConnectionClosed("服务调用发现 OPC UA 会话不可用");
+            throw new InvalidOperationException("OPC UA 会话尚未连接；请等待连接恢复后重新执行。");
+        }
+
+        // Used only after the manager has published Connected, never during creation.
+        public void CheckConnection()
+        {
+            if (!IsConnected) SignalConnectionClosed("连接状态检查发现 OPC UA 会话不可用");
+        }
+
+        private void HandleServiceFailure(Exception exception)
+        {
+            if (exception is OperationCanceledException) return;
+            var connectionFailure = exception is ServiceResultException service && service.StatusCode is
+                StatusCodes.BadSessionIdInvalid or StatusCodes.BadSessionClosed or
+                StatusCodes.BadSecureChannelIdInvalid or StatusCodes.BadSecureChannelClosed or
+                StatusCodes.BadConnectionClosed or StatusCodes.BadServerNotConnected or
+                StatusCodes.BadCommunicationError or StatusCodes.BadNotConnected;
+            if (connectionFailure || !IsConnected) SignalConnectionClosed(exception.Message);
+        }
+
+        private void SignalConnectionClosed(string reason)
+        {
+            if (Volatile.Read(ref _disposed) != 0 ||
+                Interlocked.CompareExchange(ref _connectionClosedSignaled, 1, 0) != 0) return;
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                $"OPC UA 会话不可用：设备={_communication.Name}({_communication.Id}), 原因={reason}",
+                "CommunicationRuntime", target: LogTarget.File | LogTarget.UI);
+            ConnectionClosed?.Invoke(this, new CommunicationConnectionClosedEventArgs(_communication.Id, reason));
+        }
 
         private sealed class SubscriptionNotificationGate
         {
@@ -310,6 +400,7 @@ public sealed partial class CommunicationRuntimeManager
             await _serviceGate.WaitAsync().ConfigureAwait(false);
             try
             {
+                foreach (var monitored in _monitoredItems.Values) monitored.Gate.IsActive = false;
                 foreach (var subscription in _subscriptions)
                 {
                     try { subscription.Delete(true); } catch { }
@@ -324,7 +415,8 @@ public sealed partial class CommunicationRuntimeManager
                     _session = null;
                 }
             }
-            finally { _serviceGate.Release(); _serviceGate.Dispose(); }
+            // Queued service calls must still acquire the gate and fail through RequireSession.
+            finally { _serviceGate.Release(); }
         }
     }
 }

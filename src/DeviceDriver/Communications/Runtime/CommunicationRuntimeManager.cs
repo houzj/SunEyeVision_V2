@@ -27,14 +27,18 @@ namespace SunEyeVision.DeviceDriver.Communications;
 public sealed partial class CommunicationRuntimeManager : ICommunicationStatusService, IAsyncDisposable
 {
     private readonly ConcurrentDictionary<string, ICommunicationAdapter> _sessions = new();
+    private readonly object _stateGate = new();
+    private readonly ConcurrentDictionary<string, Task> _retirements = new();
+    private readonly ConcurrentDictionary<ICommunicationAdapter, Guid> _connectionOwners = new();
     private readonly IReadOnlyDictionary<string, ICommunicationProtocolFactory> _factories;
     private readonly ConcurrentDictionary<string, CommunicationStatusSnapshot> _statuses = new();
     private readonly ConcurrentDictionary<(string DeviceId, string NodeId), OpcUaPointValueEventArgs> _opcUaValues = new();
     private readonly string _opcUaCertificateStoreRoot;
 
-    private static void ModbusDiagnostic(LogLevel level, string message, Exception? exception = null) =>
+    private static void ModbusDiagnostic(LogLevel level, string message, Exception? exception = null,
+        LogTarget target = LogTarget.File | LogTarget.UI) =>
         VisionLogger.Instance.Log(level, $"[Modbus诊断] {message}", "CommunicationRuntime", exception,
-            LogTarget.File | LogTarget.UI);
+            target);
 
     public CommunicationRuntimeManager(string? opcUaCertificateStoreRoot = null)
     {
@@ -49,9 +53,23 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
     public event EventHandler<CommunicationStatusSnapshot>? StatusChanged;
     public event EventHandler<OpcUaPointValueEventArgs>? OpcUaPointValueChanged;
 
+    /// <summary>Checks event identity without probing a transport or taking its state gate.</summary>
+    public bool IsCurrentStatus(CommunicationStatusSnapshot status) =>
+        _statuses.TryGetValue(status.Device.Value, out var current) && ReferenceEquals(current, status);
+
     public CommunicationStatusSnapshot GetStatus(CommunicationDeviceRef device)
     {
         ArgumentNullException.ThrowIfNull(device);
+        ICommunicationAdapter? connectedSession = null;
+        lock (_stateGate)
+        {
+            if (_statuses.TryGetValue(device.Value, out var published) && published.State == CommunicationState.Connected &&
+                _sessions.TryGetValue(device.Value, out var adapter))
+                connectedSession = adapter;
+        }
+        if (connectedSession is OpcUaSession opcUa) opcUa.CheckConnection();
+        else if (connectedSession != null && !connectedSession.IsConnected)
+            OnConnectionClosed(connectedSession, new CommunicationConnectionClosedEventArgs(device.Value));
         return _statuses.TryGetValue(device.Value, out var status)
             ? status
             : new CommunicationStatusSnapshot(device, CommunicationState.Disconnected,
@@ -75,7 +93,13 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
         _factories.TryGetValue(communication.ProtocolKey, out var factory)
             ? factory.Capabilities : CommunicationCapabilities.None;
 
-    public async Task ConnectAsync(Communication communication, CancellationToken cancellationToken = default)
+    public Task ConnectAsync(Communication communication, CancellationToken cancellationToken = default) =>
+        ConnectCoreAsync(communication, cancellationToken, null);
+
+    public Task ConnectOwnedAsync(Communication communication, Guid owner, CancellationToken cancellationToken = default) =>
+        ConnectCoreAsync(communication, cancellationToken, owner);
+
+    private async Task ConnectCoreAsync(Communication communication, CancellationToken cancellationToken, Guid? owner)
     {
         ArgumentNullException.ThrowIfNull(communication);
         if (communication.IsModbus)
@@ -83,24 +107,55 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
         if (!_factories.TryGetValue(communication.ProtocolKey, out var factory))
             throw new NotSupportedException($"协议驱动不可用：{communication.ProtocolDisplayName} ({communication.ProtocolKey})。");
         factory.Validate(communication);
-        ICommunicationAdapter session = factory.Create(communication);
-        if (!_sessions.TryAdd(communication.Id, session))
+        ICommunicationAdapter session;
+        bool added;
+        while (true)
+        {
+            Task? retirement;
+            lock (_stateGate)
+            {
+                if (!_retirements.TryGetValue(communication.Id, out retirement) || retirement.IsCompleted)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (_sessions.ContainsKey(communication.Id))
+                        throw new InvalidOperationException("该通讯设备已经处于连接或建连状态。");
+                    session = factory.Create(communication);
+                    added = _sessions.TryAdd(communication.Id, session);
+                    if (added)
+                    {
+                        if (owner is { } ownerId) _connectionOwners[session] = ownerId;
+                        session.DataReceived += OnDataReceived;
+                        session.ConnectionClosed += OnConnectionClosed;
+                        if (session is OpcUaSession opcUaSession) opcUaSession.PointValueChanged += OnOpcUaPointValueChanged;
+                        PublishStatus(communication.Device, CommunicationState.Connecting, GetCapabilities(communication));
+                    }
+                    break;
+                }
+            }
+            await retirement.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        if (!added)
         {
             await session.DisposeAsync().ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
             throw new InvalidOperationException("该通讯设备已经处于连接状态。");
         }
 
-        session.DataReceived += OnDataReceived;
-        session.ConnectionClosed += OnConnectionClosed;
-        if (session is OpcUaSession opcUaSession) opcUaSession.PointValueChanged += OnOpcUaPointValueChanged;
-        PublishStatus(communication.Device, CommunicationState.Connecting, GetCapabilities(communication));
+        // Some transports complete synchronously or cannot abort native creation.
+        // Cancellation must invalidate this exact adapter, not a later connection.
+        using var cancellationRegistration = cancellationToken.Register(() =>
+            OnConnectionClosed(session, new CommunicationConnectionClosedEventArgs(communication.Id, "连接请求已取消。")));
         try
         {
             await session.ConnectAsync(cancellationToken).ConfigureAwait(false);
-            if (!_sessions.TryGetValue(communication.Id, out var current) ||
-                !ReferenceEquals(current, session) || !session.IsConnected)
-                throw new IOException("通讯连接在建立时已关闭。");
-            PublishStatus(communication.Device, CommunicationState.Connected, GetCapabilities(communication));
+            lock (_stateGate)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!_sessions.TryGetValue(communication.Id, out var current) ||
+                    !ReferenceEquals(current, session) || !session.IsConnected)
+                    throw new IOException("通讯连接在建立时已关闭。");
+                PublishStatus(communication.Device, CommunicationState.Connected, GetCapabilities(communication));
+            }
             if (communication.IsModbus)
                 ModbusDiagnostic(LogLevel.Info, $"运行时连接成功：设备={communication.Name}({communication.Id}), 会话类型={session.GetType().Name}, IsConnected={session.IsConnected}");
         }
@@ -108,83 +163,156 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
         {
             if (communication.IsModbus)
                 ModbusDiagnostic(LogLevel.Error, $"运行时连接失败：设备={communication.Name}({communication.Id}), 错误={ex.Message}", ex);
-            _sessions.TryRemove(communication.Id, out _);
+            Task retirement;
+            lock (_stateGate)
+            {
+                // An old failed attempt must never remove or overwrite a newer connection.
+                if (_sessions.TryRemove(new KeyValuePair<string, ICommunicationAdapter>(communication.Id, session)))
+                {
+                    _connectionOwners.TryRemove(session, out _);
+                    PublishStatus(communication.Device, CommunicationState.Faulted, GetCapabilities(communication),
+                        new CommunicationError(ex is OperationCanceledException ? CommunicationErrorCode.Cancelled : CommunicationErrorCode.ConnectionFailed, ex.Message));
+                    retirement = _retirements[communication.Id] = Task.Run(() => DisposeClosedSessionAsync(session, communication.Id));
+                }
+                else retirement = Task.Run(() => DisposeClosedSessionAsync(session, communication.Id));
+            }
             session.DataReceived -= OnDataReceived;
             session.ConnectionClosed -= OnConnectionClosed;
             if (session is OpcUaSession failedOpcUa) failedOpcUa.PointValueChanged -= OnOpcUaPointValueChanged;
-            await session.DisposeAsync().ConfigureAwait(false);
-            PublishStatus(communication.Device, CommunicationState.Faulted, GetCapabilities(communication),
-                new CommunicationError(ex is OperationCanceledException ? CommunicationErrorCode.Cancelled : CommunicationErrorCode.ConnectionFailed, ex.Message));
+            await retirement.ConfigureAwait(false);
             throw;
         }
     }
 
-    public async Task DisconnectAsync(string communicationId)
+    public Task DisconnectAsync(string communicationId) => DisconnectCoreAsync(communicationId, null);
+
+    public Task DisconnectOwnedAsync(string communicationId, Guid owner)
     {
-        if (!_sessions.TryRemove(communicationId, out var session)) return;
-        ClearOpcUaValues(communicationId);
+        ICommunicationAdapter expected;
+        lock (_stateGate)
+        {
+            if (!_sessions.TryGetValue(communicationId, out expected!) ||
+                !_connectionOwners.TryGetValue(expected, out var currentOwner) || currentOwner != owner)
+                return Task.CompletedTask;
+        }
+        return DisconnectCoreAsync(communicationId, expected);
+    }
+
+    private async Task DisconnectCoreAsync(string communicationId, ICommunicationAdapter? expected)
+    {
         var device = new CommunicationDeviceRef(communicationId);
-        var capabilities = GetStatus(device).Capabilities;
-        PublishStatus(device, CommunicationState.Disconnecting, capabilities);
+        ICommunicationAdapter session;
+        CommunicationStatusSnapshot? disconnecting;
+        Task retirement;
+        lock (_stateGate)
+        {
+            if (expected != null && (!_sessions.TryGetValue(communicationId, out var active) || !ReferenceEquals(active, expected)))
+                return;
+            if (!_sessions.TryRemove(communicationId, out session!))
+            {
+                retirement = _retirements.GetValueOrDefault(communicationId, Task.CompletedTask);
+                disconnecting = null;
+            }
+            else
+            {
+                _connectionOwners.TryRemove(session, out _);
+                ClearOpcUaValues(communicationId);
+                var capabilities = _statuses.TryGetValue(communicationId, out var previous)
+                    ? previous.Capabilities : CommunicationCapabilities.None;
+                PublishStatus(device, CommunicationState.Disconnecting, capabilities);
+                disconnecting = _statuses[communicationId];
+                session.DataReceived -= OnDataReceived;
+                session.ConnectionClosed -= OnConnectionClosed;
+                if (session is OpcUaSession opcUaSession) opcUaSession.PointValueChanged -= OnOpcUaPointValueChanged;
+                retirement = _retirements[communicationId] = Task.Run(() => DisposeClosedSessionAsync(session, communicationId));
+            }
+        }
         if (session is ModbusSession)
             ModbusDiagnostic(LogLevel.Info, $"运行时断开连接：设备={communicationId}");
-        session.DataReceived -= OnDataReceived;
-        session.ConnectionClosed -= OnConnectionClosed;
-        if (session is OpcUaSession opcUaSession) opcUaSession.PointValueChanged -= OnOpcUaPointValueChanged;
-        await session.DisposeAsync().ConfigureAwait(false);
-        PublishStatus(device, CommunicationState.Disconnected, capabilities);
+        await retirement.ConfigureAwait(false);
+        if (disconnecting == null)
+        {
+            lock (_stateGate)
+                if (!_sessions.ContainsKey(communicationId) && _statuses.TryGetValue(communicationId, out var stopped) &&
+                    stopped.State == CommunicationState.Faulted)
+                    PublishStatus(device, CommunicationState.Disconnected, stopped.Capabilities);
+            return;
+        }
+        lock (_stateGate)
+            if (!_sessions.ContainsKey(communicationId) && _statuses.TryGetValue(communicationId, out var current) &&
+                ReferenceEquals(current, disconnecting))
+                PublishStatus(device, CommunicationState.Disconnected, disconnecting.Capabilities);
     }
 
     public async Task SendAsync(string communicationId, string text, CancellationToken cancellationToken = default) =>
         _ = await SendBytesAsync(communicationId, Encoding.UTF8.GetBytes(text), cancellationToken).ConfigureAwait(false);
 
     public async Task<int> SendBytesAsync(string communicationId, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default)
+        => await SendBytesAsync(communicationId, payload, null, cancellationToken).ConfigureAwait(false);
+
+    public async Task<int> SendBytesAsync(string communicationId, ReadOnlyMemory<byte> payload,
+        CommunicationStatusSnapshot? expected, CancellationToken cancellationToken)
     {
-        if (!_sessions.TryGetValue(communicationId, out var session))
-            throw new InvalidOperationException("设备尚未连接。");
-        return await session.SendAsync(payload, cancellationToken).ConfigureAwait(false);
+        return await ExecuteConnectedAsync<ICommunicationAdapter, int>(communicationId,
+            session => session.SendAsync(payload, cancellationToken), cancellationToken, expected).ConfigureAwait(false);
     }
 
     public Task<bool[]> ReadModbusCoilsAsync(string communicationId, ushort address, ushort count, CancellationToken cancellationToken = default) =>
-        RequireModbusSession(communicationId).ReadCoilsAsync(address, count, cancellationToken);
+        ExecuteConnectedAsync<ModbusSession, bool[]>(communicationId, session => session.ReadCoilsAsync(address, count, cancellationToken), cancellationToken);
 
     public Task<bool[]> ReadModbusInputsAsync(string communicationId, ushort address, ushort count, CancellationToken cancellationToken = default) =>
-        RequireModbusSession(communicationId).ReadInputsAsync(address, count, cancellationToken);
+        ExecuteConnectedAsync<ModbusSession, bool[]>(communicationId, session => session.ReadInputsAsync(address, count, cancellationToken), cancellationToken);
 
     public Task<ushort[]> ReadModbusHoldingRegistersAsync(string communicationId, ushort address, ushort count, CancellationToken cancellationToken = default) =>
-        RequireModbusSession(communicationId).ReadHoldingRegistersAsync(address, count, cancellationToken);
+        ExecuteConnectedAsync<ModbusSession, ushort[]>(communicationId, session => session.ReadHoldingRegistersAsync(address, count, cancellationToken), cancellationToken);
 
     public Task<ushort[]> ReadModbusInputRegistersAsync(string communicationId, ushort address, ushort count, CancellationToken cancellationToken = default) =>
-        RequireModbusSession(communicationId).ReadInputRegistersAsync(address, count, cancellationToken);
+        ExecuteConnectedAsync<ModbusSession, ushort[]>(communicationId, session => session.ReadInputRegistersAsync(address, count, cancellationToken), cancellationToken);
 
     public Task WriteModbusCoilAsync(string communicationId, ushort address, bool value, CancellationToken cancellationToken = default) =>
-        RequireModbusSession(communicationId).WriteCoilAsync(address, value, cancellationToken);
+        ExecuteConnectedAsync<ModbusSession>(communicationId, session => session.WriteCoilAsync(address, value, cancellationToken), cancellationToken);
 
     public Task WriteModbusRegisterAsync(string communicationId, ushort address, ushort value, CancellationToken cancellationToken = default) =>
-        RequireModbusSession(communicationId).WriteRegisterAsync(address, value, cancellationToken);
+        ExecuteConnectedAsync<ModbusSession>(communicationId, session => session.WriteRegisterAsync(address, value, cancellationToken), cancellationToken);
 
     public Task WriteModbusCoilsAsync(string communicationId, ushort address, bool[] values, CancellationToken cancellationToken = default) =>
-        RequireModbusSession(communicationId).WriteCoilsAsync(address, values, cancellationToken);
+        ExecuteConnectedAsync<ModbusSession>(communicationId, session => session.WriteCoilsAsync(address, values, cancellationToken), cancellationToken);
 
     public Task WriteModbusRegistersAsync(string communicationId, ushort address, ushort[] values, CancellationToken cancellationToken = default) =>
-        RequireModbusSession(communicationId).WriteRegistersAsync(address, values, cancellationToken);
+        ExecuteConnectedAsync<ModbusSession>(communicationId, session => session.WriteRegistersAsync(address, values, cancellationToken), cancellationToken);
+
+    public Task WriteModbusRegistersAsync(string communicationId, ushort address, ushort[] values,
+        CommunicationStatusSnapshot? expected, CancellationToken cancellationToken) =>
+        ExecuteConnectedAsync<ModbusSession>(communicationId, session => session.WriteRegistersAsync(address, values, cancellationToken), cancellationToken, expected);
 
     public Task<byte[]> ReadS7BytesAsync(string communicationId, DataType area, int dataBlock, int startByte, int count,
-        CancellationToken cancellationToken = default) => RequireS7Session(communicationId).ReadBytesAsync(area, dataBlock, startByte, count, cancellationToken);
+        CancellationToken cancellationToken = default) => ExecuteConnectedAsync<S7Session, byte[]>(communicationId,
+            session => session.ReadBytesAsync(area, dataBlock, startByte, count, cancellationToken), cancellationToken);
 
     public Task WriteS7BytesAsync(string communicationId, DataType area, int dataBlock, int startByte, ReadOnlyMemory<byte> value,
-        CancellationToken cancellationToken = default) => RequireS7Session(communicationId).WriteBytesAsync(area, dataBlock, startByte, value, cancellationToken);
+        CancellationToken cancellationToken = default) => ExecuteConnectedAsync<S7Session>(communicationId,
+            session => session.WriteBytesAsync(area, dataBlock, startByte, value, cancellationToken), cancellationToken);
 
     public Task<IReadOnlyList<OpcUaBrowseItem>> BrowseOpcUaAsync(string communicationId, string nodeId, CancellationToken cancellationToken = default) =>
-        RequireOpcUaSession(communicationId).BrowseAsync(nodeId, cancellationToken);
+        ExecuteConnectedAsync<OpcUaSession, IReadOnlyList<OpcUaBrowseItem>>(communicationId,
+            session => session.BrowseAsync(nodeId, cancellationToken), cancellationToken);
 
-    public Task<DataValue> ReadOpcUaValueAsync(string communicationId, string nodeId, CancellationToken cancellationToken = default) =>
-        RequireOpcUaSession(communicationId).ReadValueAsync(nodeId, cancellationToken);
+    public async Task<DataValue> ReadOpcUaValueAsync(string communicationId, string nodeId, CancellationToken cancellationToken = default)
+    {
+        var session = RequireOpcUaSession(communicationId);
+        var value = await session.ReadValueAsync(nodeId, cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        EnsureCurrentOpcUaSession(communicationId, session);
+        return value;
+    }
 
     public async Task<OpcUaPointValueEventArgs> RefreshOpcUaPointAsync(string communicationId, string nodeId, CancellationToken cancellationToken = default)
     {
-        var value = await RequireOpcUaSession(communicationId).ReadPointAsync(nodeId, cancellationToken).ConfigureAwait(false);
-        OnOpcUaPointValueChanged(this, value);
+        var session = RequireOpcUaSession(communicationId);
+        var value = await session.ReadPointAsync(nodeId, cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        EnsureCurrentOpcUaSession(communicationId, session);
+        OnOpcUaPointValueChanged(session, value);
         return value;
     }
 
@@ -198,27 +326,53 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
     }
 
     public Task WriteOpcUaValueAsync(string communicationId, string nodeId, object value, CancellationToken cancellationToken = default) =>
-        RequireOpcUaSession(communicationId).WriteValueAsync(nodeId, value, cancellationToken);
+        ExecuteConnectedAsync<OpcUaSession>(communicationId,
+            session => session.WriteValueAsync(nodeId, value, cancellationToken), cancellationToken);
+
+    public Task WriteOpcUaValueAsync(string communicationId, string nodeId, object value,
+        CommunicationStatusSnapshot? expected, CancellationToken cancellationToken) =>
+        ExecuteConnectedAsync<OpcUaSession>(communicationId,
+            session => session.WriteValueAsync(nodeId, value, cancellationToken), cancellationToken, expected);
 
     public Task SubscribeOpcUaValueAsync(string communicationId, string nodeId, int samplingIntervalMs, CancellationToken cancellationToken = default) =>
-        RequireOpcUaSession(communicationId).SubscribeAsync(nodeId, samplingIntervalMs, cancellationToken);
+        ExecuteConnectedAsync<OpcUaSession>(communicationId,
+            session => session.SubscribeAsync(nodeId, samplingIntervalMs, cancellationToken), cancellationToken);
 
     public Task UnsubscribeOpcUaValueAsync(string communicationId, string nodeId, CancellationToken cancellationToken = default) =>
-        RequireOpcUaSession(communicationId).UnsubscribeAsync(nodeId, cancellationToken);
+        ExecuteConnectedAsync<OpcUaSession>(communicationId,
+            session => session.UnsubscribeAsync(nodeId, cancellationToken), cancellationToken);
     public Task<(double Sampling, double Publishing)?> GetOpcUaMonitoringIntervalsAsync(string communicationId,
-        string nodeId, CancellationToken token = default) => RequireOpcUaSession(communicationId).GetMonitoringIntervalsAsync(nodeId, token);
+        string nodeId, CancellationToken token = default) => ExecuteConnectedAsync<OpcUaSession, (double Sampling, double Publishing)?>(communicationId,
+            session => session.GetMonitoringIntervalsAsync(nodeId, token), token);
 
     public Task<CipExplicitResponse> SendCipExplicitAsync(string communicationId, byte service, uint classId, uint instanceId, uint attributeId,
         ReadOnlyMemory<byte> requestData, CancellationToken cancellationToken = default) =>
-        RequireCipSession(communicationId).SendExplicitAsync(service, classId, instanceId, attributeId, requestData, cancellationToken);
+        ExecuteConnectedAsync<CipSession, CipExplicitResponse>(communicationId,
+            session => session.SendExplicitAsync(service, classId, instanceId, attributeId, requestData, cancellationToken), cancellationToken);
 
-    public bool IsConnected(string communicationId) =>
-        _sessions.TryGetValue(communicationId, out var session) && session.IsConnected;
+    public bool IsConnected(string communicationId)
+    {
+        _ = GetStatus(new CommunicationDeviceRef(communicationId));
+        return _sessions.TryGetValue(communicationId, out var session) && session.IsConnected;
+    }
 
     public async ValueTask DisposeAsync()
     {
         foreach (var id in _sessions.Keys)
             await DisconnectAsync(id).ConfigureAwait(false);
+        await Task.WhenAll(_retirements.Values).ConfigureAwait(false);
+        foreach (var retirement in _retirements.ToArray())
+            if (retirement.Value.IsCompleted) _retirements.TryRemove(retirement);
+        lock (_stateGate)
+        {
+            // This runtime is reused after a solution switch. Old event identities
+            // and capability/error snapshots must not survive into the next epoch.
+            if (_sessions.IsEmpty)
+            {
+                _statuses.Clear();
+                _opcUaValues.Clear();
+            }
+        }
     }
 
     private void OnDataReceived(object? sender, CommunicationDataReceivedEventArgs e)
@@ -239,19 +393,26 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
 
     private void OnConnectionClosed(object? sender, CommunicationConnectionClosedEventArgs e)
     {
-        if (!_sessions.TryGetValue(e.CommunicationId, out var active) || !ReferenceEquals(active, sender))
-            return;
-        if (_sessions.TryRemove(e.CommunicationId, out var session))
+        CommunicationStatusSnapshot closedStatus;
+        lock (_stateGate)
         {
+            if (!_sessions.TryGetValue(e.CommunicationId, out var active) || !ReferenceEquals(active, sender) ||
+                !_sessions.TryRemove(new KeyValuePair<string, ICommunicationAdapter>(e.CommunicationId, active)))
+                return;
+            _connectionOwners.TryRemove(active, out _);
             ClearOpcUaValues(e.CommunicationId);
-            session.DataReceived -= OnDataReceived;
-            session.ConnectionClosed -= OnConnectionClosed;
-            if (session is OpcUaSession closedOpcUa) closedOpcUa.PointValueChanged -= OnOpcUaPointValueChanged;
-            _ = DisposeClosedSessionAsync(session, e.CommunicationId);
+            active.DataReceived -= OnDataReceived;
+            active.ConnectionClosed -= OnConnectionClosed;
+            if (active is OpcUaSession closedOpcUa) closedOpcUa.PointValueChanged -= OnOpcUaPointValueChanged;
+            // Never close the native Session on its own KeepAlive/notification callback.
+            _retirements[e.CommunicationId] = Task.Run(() => DisposeClosedSessionAsync(active, e.CommunicationId));
+            var device = new CommunicationDeviceRef(e.CommunicationId);
+            PublishStatus(device, CommunicationState.Disconnected, GetStatus(device).Capabilities,
+                new CommunicationError(CommunicationErrorCode.ConnectionFailed, e.Reason ?? "连接已中断，底层会话不可用。"));
+            closedStatus = _statuses[e.CommunicationId];
         }
-        var device = new CommunicationDeviceRef(e.CommunicationId);
-        PublishStatus(device, CommunicationState.Disconnected, GetStatus(device).Capabilities);
-        ConnectionClosed?.Invoke(this, e);
+        // Reconnect policy belongs to the application service, not to the state lock.
+        ConnectionClosed?.Invoke(this, new CommunicationConnectionClosedEventArgs(e.CommunicationId, e.Reason, closedStatus));
     }
 
     private void ClearOpcUaValues(string communicationId)
@@ -348,9 +509,26 @@ public sealed partial class CommunicationRuntimeManager : ICommunicationStatusSe
         _sessions.TryGetValue(communicationId, out var session) && session is S7Session s7
             ? s7 : throw new InvalidOperationException("S7 设备尚未连接，或当前设备不是 S7 协议。");
 
-    private OpcUaSession RequireOpcUaSession(string communicationId) =>
-        _sessions.TryGetValue(communicationId, out var session) && session is OpcUaSession opcua
-            ? opcua : throw new InvalidOperationException("OPC UA 设备尚未连接，或当前设备不是 OPC UA 协议。");
+    private OpcUaSession RequireOpcUaSession(string communicationId)
+    {
+        lock (_stateGate)
+        {
+            // A registered adapter is not ready until ConnectAsync has completed.
+            // Never let a read during Connecting invalidate the Session being created.
+            if (_statuses.TryGetValue(communicationId, out var status) && status.State == CommunicationState.Connected &&
+                _sessions.TryGetValue(communicationId, out var session) && session is OpcUaSession opcua)
+                return opcua;
+            throw new InvalidOperationException("OPC UA 设备尚未连接或正在重连，请等待连接恢复后重新执行。");
+        }
+    }
+
+    private void EnsureCurrentOpcUaSession(string communicationId, OpcUaSession expected)
+    {
+        expected.CheckConnection();
+        lock (_stateGate)
+            if (!_sessions.TryGetValue(communicationId, out var current) || !ReferenceEquals(current, expected) || !expected.IsConnected)
+                throw new InvalidOperationException("OPC UA 读取期间连接已失效或更换，本次读取结果未采用，请重新执行。");
+    }
 
     private CipSession RequireCipSession(string communicationId) =>
         _sessions.TryGetValue(communicationId, out var session) && session is CipSession cip
@@ -387,5 +565,14 @@ public sealed class CommunicationDataReceivedEventArgs : EventArgs
 public sealed class CommunicationConnectionClosedEventArgs : EventArgs
 {
     public string CommunicationId { get; }
-    public CommunicationConnectionClosedEventArgs(string communicationId) => CommunicationId = communicationId;
+    public string? Reason { get; }
+    public CommunicationStatusSnapshot? RuntimeStatus { get; }
+    public CommunicationConnectionClosedEventArgs(string communicationId) : this(communicationId, null) { }
+    public CommunicationConnectionClosedEventArgs(string communicationId, string? reason)
+    {
+        CommunicationId = communicationId;
+        Reason = reason;
+    }
+    internal CommunicationConnectionClosedEventArgs(string communicationId, string? reason, CommunicationStatusSnapshot status)
+        : this(communicationId, reason) => RuntimeStatus = status;
 }

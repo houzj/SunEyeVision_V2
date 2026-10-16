@@ -40,16 +40,31 @@ public sealed partial class CommunicationRuntimeManager
 
         public event EventHandler<CommunicationDataReceivedEventArgs>? DataReceived;
         public event EventHandler<CommunicationConnectionClosedEventArgs>? ConnectionClosed;
-        public bool IsConnected => _plc?.IsConnected == true;
+        public bool IsConnected => Volatile.Read(ref _disposed) == 0 && _plc?.IsConnected == true;
 
         public S7Session(Communication communication) { _communication = communication; }
 
         public async Task ConnectAsync(CancellationToken cancellationToken)
         {
+            await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+                await OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally { _operationGate.Release(); }
+        }
+
+        private async Task OpenAsync(CancellationToken cancellationToken)
+        {
             if (!Enum.TryParse<CpuType>(_communication.S7CpuType, true, out var cpuType) || !Enum.IsDefined(cpuType))
                 throw new ArgumentException($"不支持的 S7 CPU 类型：{_communication.S7CpuType}。");
             var plc = new Plc(cpuType, _communication.Host, _communication.Port, (short)_communication.Rack, (short)_communication.Slot);
-            try { await plc.OpenAsync(cancellationToken).ConfigureAwait(false); _plc = plc; }
+            plc.ReadTimeout = (int)GetTimeout(_communication).TotalMilliseconds;
+            plc.WriteTimeout = (int)GetTimeout(_communication).TotalMilliseconds;
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(GetTimeout(_communication));
+            try { await plc.OpenAsync(timeout.Token).ConfigureAwait(false); _plc = plc; }
             catch { plc.Close(); throw; }
         }
 
@@ -57,9 +72,20 @@ public sealed partial class CommunicationRuntimeManager
         {
             if (count is < 1 or > 2000) throw new ArgumentOutOfRangeException(nameof(count), "单次 S7 读取长度必须为 1 到 2000 字节。");
             if (dataBlock < 0 || startByte < 0) throw new ArgumentOutOfRangeException(nameof(startByte), "数据块与起始字节不能为负数。");
-            var plc = _plc ?? throw new InvalidOperationException("S7 会话未连接。");
             await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try { return await plc.ReadBytesAsync(area, dataBlock, startByte, count, cancellationToken).ConfigureAwait(false); }
+            var ioStarted = false;
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!IsConnected) throw new IOException("S7 会话未连接。");
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(GetTimeout(_communication));
+                ioStarted = true;
+                return await _plc!.ReadBytesAsync(area, dataBlock, startByte, count, timeout.Token).ConfigureAwait(false);
+            }
+            // Cancellation after a request was sent can leave an unread response in the
+            // stream. Retire it rather than give that response to the next operation.
+            catch (OperationCanceledException) when (ioStarted) { _plc?.Close(); throw; }
             finally { _operationGate.Release(); }
         }
 
@@ -67,19 +93,30 @@ public sealed partial class CommunicationRuntimeManager
         {
             if (value.IsEmpty || value.Length > 2000) throw new ArgumentOutOfRangeException(nameof(value), "单次 S7 写入长度必须为 1 到 2000 字节。");
             if (dataBlock < 0 || startByte < 0) throw new ArgumentOutOfRangeException(nameof(startByte), "数据块与起始字节不能为负数。");
-            var plc = _plc ?? throw new InvalidOperationException("S7 会话未连接。");
             await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try { await plc.WriteBytesAsync(area, dataBlock, startByte, value, cancellationToken).ConfigureAwait(false); }
+            var ioStarted = false;
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!IsConnected) throw new IOException("S7 会话未连接。");
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(GetTimeout(_communication));
+                ioStarted = true;
+                await _plc!.WriteBytesAsync(area, dataBlock, startByte, value, timeout.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ioStarted) { _plc?.Close(); throw; }
             finally { _operationGate.Release(); }
         }
 
         public Task<int> SendAsync(ReadOnlyMemory<byte> payload, CancellationToken cancellationToken) =>
             throw new NotSupportedException("S7 是类型化 PLC 协议，请使用 S7 数据区读写操作，不支持原始字节发送。");
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            if (Interlocked.Exchange(ref _disposed, 1) == 0) { _plc?.Close(); _plc = null; _operationGate.Dispose(); }
-            return ValueTask.CompletedTask;
+            if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
+            await _operationGate.WaitAsync().ConfigureAwait(false);
+            try { _plc?.Close(); _plc = null; }
+            finally { _operationGate.Release(); }
         }
     }
 }

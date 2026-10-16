@@ -34,15 +34,28 @@ public sealed partial class CommunicationRuntimeManager
         private PortStreamResource? _serialResource;
         private IModbusMaster? _master;
         private int _disposed;
+        private int _broken;
         private long _operationSequence;
 
         public event EventHandler<CommunicationDataReceivedEventArgs>? DataReceived;
         public event EventHandler<CommunicationConnectionClosedEventArgs>? ConnectionClosed;
-        public bool IsConnected => _master != null && (_tcpClient?.Connected ?? _serialPort?.IsOpen ?? false);
+        public bool IsConnected => Volatile.Read(ref _disposed) == 0 && Volatile.Read(ref _broken) == 0 && _master != null &&
+            (_tcpClient?.Connected ?? _serialPort?.IsOpen ?? false);
 
         public ModbusSession(Communication communication) => _communication = communication;
 
         public async Task ConnectAsync(CancellationToken cancellationToken)
+        {
+            await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+                await OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally { _operationGate.Release(); }
+        }
+
+        private async Task OpenAsync(CancellationToken cancellationToken)
         {
             var factory = new ModbusFactory();
             ModbusDiagnostic(LogLevel.Info, $"Modbus会话连接：设备={_communication.Name}({_communication.Id}), 类型={(_communication.IsModbusRtu ? "RTU" : "TCP")}, 站号={_communication.UnitId}, 请求超时={GetTimeout(_communication).TotalMilliseconds:0}ms");
@@ -75,36 +88,52 @@ public sealed partial class CommunicationRuntimeManager
         public Task<int> SendAsync(ReadOnlyMemory<byte> payload, CancellationToken cancellationToken) =>
             throw new NotSupportedException("Modbus 必须通过功能码进行类型化读写，不能发送任意原始数据。");
 
-        public Task<bool[]> ReadCoilsAsync(ushort address, ushort count, CancellationToken cancellationToken) =>
-            ExecuteAsync(master => master.ReadCoilsAsync(GetUnitId(), address, count), cancellationToken);
+        public Task<bool[]> ReadCoilsAsync(ushort address, ushort count, CancellationToken cancellationToken)
+        {
+            ValidateReadRange(address, count, 2000);
+            return ExecuteAsync(master => master.ReadCoilsAsync(GetUnitId(), address, count), cancellationToken);
+        }
 
-        public Task<bool[]> ReadInputsAsync(ushort address, ushort count, CancellationToken cancellationToken) =>
-            ExecuteAsync(master => master.ReadInputsAsync(GetUnitId(), address, count), cancellationToken);
+        public Task<bool[]> ReadInputsAsync(ushort address, ushort count, CancellationToken cancellationToken)
+        {
+            ValidateReadRange(address, count, 2000);
+            return ExecuteAsync(master => master.ReadInputsAsync(GetUnitId(), address, count), cancellationToken);
+        }
 
         public async Task<ushort[]> ReadHoldingRegistersAsync(ushort address, ushort count, CancellationToken cancellationToken)
         {
+            ValidateReadRange(address, count, 125);
             var operationId = Interlocked.Increment(ref _operationSequence);
             var started = System.Diagnostics.Stopwatch.GetTimestamp();
             var unitId = GetUnitId();
-            ModbusDiagnostic(LogLevel.Info, $"FC03请求开始：设备={_communication.Name}({_communication.Id}), 操作={operationId}, 站号={unitId}, 地址={address}, 数量={count}, 取消状态={cancellationToken.IsCancellationRequested}");
+            ModbusDiagnostic(LogLevel.Info, $"FC03请求开始：设备={_communication.Name}({_communication.Id}), 操作={operationId}, 站号={unitId}, 地址={address}, 数量={count}, 取消状态={cancellationToken.IsCancellationRequested}", target: LogTarget.File);
             try
             {
                 var values = await ExecuteAsync(master => master.ReadHoldingRegistersAsync(unitId, address, count), cancellationToken).ConfigureAwait(false);
                 var elapsedMs = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
-                ModbusDiagnostic(LogLevel.Info, $"FC03请求完成：设备={_communication.Name}({_communication.Id}), 操作={operationId}, 耗时={elapsedMs:0.0}ms, 返回数量={values.Length}, 返回值={string.Join(",", values.Select(value => $"0x{value:X4}"))}");
+                ModbusDiagnostic(LogLevel.Info, $"FC03请求完成：设备={_communication.Name}({_communication.Id}), 操作={operationId}, 耗时={elapsedMs:0.0}ms, 返回数量={values.Length}, 返回值={string.Join(",", values.Select(value => $"0x{value:X4}"))}", target: LogTarget.File);
                 return values;
             }
             catch (Exception ex)
             {
                 var elapsedMs = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
                 ModbusDiagnostic(ex is OperationCanceledException ? LogLevel.Warning : LogLevel.Error,
-                    $"FC03请求失败：设备={_communication.Name}({_communication.Id}), 操作={operationId}, 耗时={elapsedMs:0.0}ms, 地址={address}, 数量={count}, 错误类型={ex.GetType().Name}, 错误={ex.Message}", ex);
+                    $"FC03请求失败：设备={_communication.Name}({_communication.Id}), 操作={operationId}, 耗时={elapsedMs:0.0}ms, 地址={address}, 数量={count}, 错误类型={ex.GetType().Name}, 错误={ex.Message}", ex, LogTarget.File);
                 throw;
             }
         }
 
-        public Task<ushort[]> ReadInputRegistersAsync(ushort address, ushort count, CancellationToken cancellationToken) =>
-            ExecuteAsync(master => master.ReadInputRegistersAsync(GetUnitId(), address, count), cancellationToken);
+        public Task<ushort[]> ReadInputRegistersAsync(ushort address, ushort count, CancellationToken cancellationToken)
+        {
+            ValidateReadRange(address, count, 125);
+            return ExecuteAsync(master => master.ReadInputRegistersAsync(GetUnitId(), address, count), cancellationToken);
+        }
+
+        private static void ValidateReadRange(ushort address, ushort count, int maximum)
+        {
+            if (count < 1 || count > maximum || (int)address + count > 65536)
+                throw new ArgumentOutOfRangeException(nameof(count), "Modbus读取数量或地址范围无效。");
+        }
 
         public Task WriteCoilAsync(ushort address, bool value, CancellationToken cancellationToken) =>
             ExecuteAsync(master => master.WriteSingleCoilAsync(GetUnitId(), address, value), cancellationToken);
@@ -130,35 +159,55 @@ public sealed partial class CommunicationRuntimeManager
 
         private async Task<T> ExecuteAsync<T>(Func<IModbusMaster, Task<T>> operation, CancellationToken cancellationToken)
         {
-            var master = _master ?? throw new InvalidOperationException("Modbus 会话尚未建立。");
-            await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(GetTimeout(_communication));
+            await _operationGate.WaitAsync(timeout.Token).ConfigureAwait(false);
             // NModbus does not accept a cancellation token. Do not release the gate while its
             // underlying I/O is still running: a later request would corrupt the same stream.
-            try { return await operation(master).ConfigureAwait(false); }
+            try
+            {
+                timeout.Token.ThrowIfCancellationRequested();
+                if (!IsConnected) throw new IOException("Modbus 会话不可用。");
+                using var registration = timeout.Token.Register(() =>
+                {
+                    // Abort transport I/O, but retain the operation gate until NModbus drains.
+                    Interlocked.Exchange(ref _broken, 1);
+                    try { _tcpClient?.Dispose(); } catch { }
+                    try { _serialPort?.Close(); } catch { }
+                });
+                var result = await operation(_master!).ConfigureAwait(false);
+                timeout.Token.ThrowIfCancellationRequested();
+                return result;
+            }
+            catch (Exception) when (timeout.IsCancellationRequested)
+            { throw new OperationCanceledException("Modbus请求已取消或超时；写入是否生效需由设备确认，不自动重发。", timeout.Token); }
             finally { _operationGate.Release(); }
         }
 
-        private async Task ExecuteAsync(Func<IModbusMaster, Task> operation, CancellationToken cancellationToken)
-        {
-            var master = _master ?? throw new InvalidOperationException("Modbus 会话尚未建立。");
-            await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try { await operation(master).ConfigureAwait(false); }
-            finally { _operationGate.Release(); }
-        }
+        private Task ExecuteAsync(Func<IModbusMaster, Task> operation, CancellationToken cancellationToken) =>
+            ExecuteAsync(async master =>
+            {
+                await operation(master).ConfigureAwait(false);
+                return true;
+            }, cancellationToken);
 
         private byte GetUnitId() => _communication.UnitId is >= 0 and <= 255
             ? (byte)_communication.UnitId
             : throw new ArgumentOutOfRangeException(nameof(_communication.UnitId), "Modbus 站号必须在 0 到 255 之间。");
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            if (Interlocked.Exchange(ref _disposed, 1) != 0) return ValueTask.CompletedTask;
-            _master?.Dispose();
-            _serialResource?.Dispose();
-            _serialPort?.Dispose();
-            _tcpClient?.Dispose();
-            _operationGate.Dispose();
-            return ValueTask.CompletedTask;
+            if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
+            await _operationGate.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                _master?.Dispose();
+                _master = null;
+                _serialResource?.Dispose();
+                _serialPort?.Dispose();
+                _tcpClient?.Dispose();
+            }
+            finally { _operationGate.Release(); }
         }
     }
 

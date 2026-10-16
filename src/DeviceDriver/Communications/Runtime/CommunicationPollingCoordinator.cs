@@ -24,6 +24,9 @@ public sealed class CommunicationPollingCoordinator : IAsyncDisposable
     private sealed class Job
     {
         public readonly CancellationTokenSource Cancellation = new();
+        public CancellationToken Token { get; }
+        public bool Completed;
+        public Job() => Token = Cancellation.Token;
         public ModbusPollAddress[] Addresses = Array.Empty<ModbusPollAddress>();
         public int IntervalMs;
         public Task RunTask = Task.CompletedTask;
@@ -33,6 +36,8 @@ public sealed class CommunicationPollingCoordinator : IAsyncDisposable
 
     private readonly CommunicationRuntimeManager _runtime;
     private readonly ConcurrentDictionary<string, Job> _jobs = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<Job, byte> _runningJobs = new();
+    private readonly object _lifecycleGate = new();
     private readonly ConcurrentDictionary<(string Device, string Address), ModbusPollResult> _latest = new();
     private long _nextGeneration;
 
@@ -45,7 +50,7 @@ public sealed class CommunicationPollingCoordinator : IAsyncDisposable
         _latest.Where(item => item.Key.Device == communicationId).Select(item => item.Value).ToArray();
 
     public CancellationToken GetLifetimeToken(string communicationId) =>
-        _jobs.TryGetValue(communicationId, out var job) ? job.Cancellation.Token : CancellationToken.None;
+        _jobs.TryGetValue(communicationId, out var job) ? job.Token : CancellationToken.None;
 
     public bool IsCurrentBatch(ModbusPollBatch batch) =>
         _jobs.TryGetValue(batch.CommunicationId, out var job) &&
@@ -56,26 +61,30 @@ public sealed class CommunicationPollingCoordinator : IAsyncDisposable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(communicationId);
         ArgumentNullException.ThrowIfNull(addresses);
-        Stop(communicationId);
-        var job = new Job
+        lock (_lifecycleGate)
         {
-            IntervalMs = Math.Clamp(intervalMs, 100, 60_000),
-            Addresses = addresses.ToArray(),
-            Generation = Interlocked.Increment(ref _nextGeneration)
-        };
-        var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        job.RunTask = Task.Run(async () =>
-        {
-            await start.Task.ConfigureAwait(false);
-            await RunAsync(communicationId, job).ConfigureAwait(false);
-        });
-        if (!_jobs.TryAdd(communicationId, job))
-        {
-            job.Cancellation.Cancel();
+            Stop(communicationId);
+            var job = new Job
+            {
+                IntervalMs = Math.Clamp(intervalMs, 100, 60_000),
+                Addresses = addresses.ToArray(),
+                Generation = Interlocked.Increment(ref _nextGeneration)
+            };
+            var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            job.RunTask = Task.Run(async () =>
+            {
+                await start.Task.ConfigureAwait(false);
+                await RunAsync(communicationId, job).ConfigureAwait(false);
+            });
+            _runningJobs.TryAdd(job, 0);
+            if (!_jobs.TryAdd(communicationId, job))
+            {
+                job.Cancellation.Cancel();
+                start.TrySetResult();
+                throw new InvalidOperationException("通讯设备的轮询任务已存在。");
+            }
             start.TrySetResult();
-            throw new InvalidOperationException("通讯设备的轮询任务已存在。");
         }
-        start.TrySetResult();
     }
 
     public void UpdatePlan(string communicationId, int intervalMs, IEnumerable<ModbusPollAddress> addresses)
@@ -93,17 +102,28 @@ public sealed class CommunicationPollingCoordinator : IAsyncDisposable
 
     public void Stop(string communicationId)
     {
-        if (_jobs.TryRemove(communicationId, out var job))
-            job.Cancellation.Cancel();
-        foreach (var key in _latest.Keys.Where(key => key.Device == communicationId).ToArray())
-            _latest.TryRemove(key, out _);
+        lock (_lifecycleGate)
+        {
+            if (_jobs.TryRemove(communicationId, out var job))
+                lock (job)
+                    if (!job.Completed) job.Cancellation.Cancel();
+            foreach (var key in _latest.Keys.Where(key => key.Device == communicationId).ToArray())
+                _latest.TryRemove(key, out _);
+        }
     }
 
     public async Task StopAllAsync()
     {
-        var jobs = _jobs.ToArray();
-        foreach (var item in jobs) Stop(item.Key);
-        await Task.WhenAll(jobs.Select(item => item.Value.RunTask)).ConfigureAwait(false);
+        Job[] jobs;
+        lock (_lifecycleGate)
+        {
+            // Include jobs removed by Stop/Start whose underlying I/O is still draining.
+            jobs = _runningJobs.Keys.ToArray();
+            foreach (var id in _jobs.Keys.ToArray()) Stop(id);
+            foreach (var job in jobs)
+                lock (job) if (!job.Completed) job.Cancellation.Cancel();
+        }
+        await Task.WhenAll(jobs.Select(job => job.RunTask)).ConfigureAwait(false);
     }
 
     private async Task RunAsync(string communicationId, Job job)
@@ -163,9 +183,13 @@ public sealed class CommunicationPollingCoordinator : IAsyncDisposable
         catch (OperationCanceledException) when (job.Cancellation.IsCancellationRequested) { }
         finally
         {
-            if (_jobs.TryGetValue(communicationId, out var current) && ReferenceEquals(current, job))
-                _jobs.TryRemove(communicationId, out _);
-            job.Cancellation.Dispose();
+            lock (job)
+            {
+                _jobs.TryRemove(new KeyValuePair<string, Job>(communicationId, job));
+                job.Completed = true;
+                job.Cancellation.Dispose();
+                _runningJobs.TryRemove(job, out _);
+            }
         }
     }
 

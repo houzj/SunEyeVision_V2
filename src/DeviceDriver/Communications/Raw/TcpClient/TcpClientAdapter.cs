@@ -34,6 +34,7 @@ public sealed partial class CommunicationRuntimeManager
         private readonly ReceiveTerminatorFramer? _framer;
         private readonly TcpClient _client = new();
         private readonly CancellationTokenSource _lifetime = new();
+        private readonly SemaphoreSlim _sendGate = new(1, 1);
         private NetworkStream? _stream;
         private Task? _receiveTask;
         private int _disposed;
@@ -41,7 +42,7 @@ public sealed partial class CommunicationRuntimeManager
 
         public event EventHandler<CommunicationDataReceivedEventArgs>? DataReceived;
         public event EventHandler<CommunicationConnectionClosedEventArgs>? ConnectionClosed;
-        public bool IsConnected => Volatile.Read(ref _connected) == 1;
+        public bool IsConnected => Volatile.Read(ref _disposed) == 0 && Volatile.Read(ref _connected) == 1;
 
         public TcpClientSession(string communicationId, string host, int port, TimeSpan connectTimeout,
             byte[]? receiveTerminator)
@@ -65,15 +66,34 @@ public sealed partial class CommunicationRuntimeManager
 
         public async Task<int> SendAsync(ReadOnlyMemory<byte> payload, CancellationToken cancellationToken)
         {
-            var stream = _stream ?? throw new InvalidOperationException("TCP 连接尚未建立。");
-            await stream.WriteAsync(payload, cancellationToken).ConfigureAwait(false);
-            await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
-            return 1;
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _lifetime.Token);
+            timeout.CancelAfter(_connectTimeout);
+            await _sendGate.WaitAsync(timeout.Token).ConfigureAwait(false);
+            var started = false;
+            try
+            {
+                if (!IsConnected) throw new IOException("TCP 连接不可用。");
+                var stream = _stream ?? throw new InvalidOperationException("TCP 连接尚未建立。");
+                started = true;
+                await stream.WriteAsync(payload, timeout.Token).ConfigureAwait(false);
+                await stream.FlushAsync(timeout.Token).ConfigureAwait(false);
+                timeout.Token.ThrowIfCancellationRequested();
+                return 1;
+            }
+            catch (OperationCanceledException) when (started)
+            {
+                // A partially written frame cannot be safely reused or replayed.
+                Volatile.Write(ref _connected, 0);
+                _client.Close();
+                throw;
+            }
+            finally { _sendGate.Release(); }
         }
 
         private async Task ReceiveLoopAsync(NetworkStream stream, CancellationToken cancellationToken)
         {
             var buffer = new byte[8192];
+            var reason = "TCP 对端已关闭连接。";
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
@@ -95,15 +115,16 @@ public sealed partial class CommunicationRuntimeManager
             catch (SocketException) when (cancellationToken.IsCancellationRequested) { }
             catch (InvalidDataException ex)
             {
+                reason = ex.Message;
                 VisionLogger.Instance.Log(LogLevel.Warning, $"TCP 客户端接收组帧失败：设备={_communicationId}，{ex.Message}",
                     "CommunicationRuntime", ex, LogTarget.File);
             }
-            catch (IOException) { }
-            catch (SocketException) { }
+            catch (IOException ex) { reason = ex.Message; }
+            catch (SocketException ex) { reason = ex.Message; }
             finally
             {
                 Volatile.Write(ref _connected, 0);
-                ConnectionClosed?.Invoke(this, new CommunicationConnectionClosedEventArgs(_communicationId));
+                ConnectionClosed?.Invoke(this, new CommunicationConnectionClosedEventArgs(_communicationId, reason));
                 _stream?.Dispose();
                 _client.Dispose();
                 _lifetime.Cancel();

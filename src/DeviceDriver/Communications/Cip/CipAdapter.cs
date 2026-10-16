@@ -43,11 +43,22 @@ public sealed partial class CommunicationRuntimeManager
 
         public event EventHandler<CommunicationDataReceivedEventArgs>? DataReceived;
         public event EventHandler<CommunicationConnectionClosedEventArgs>? ConnectionClosed;
-        public bool IsConnected => _client?.Connected == true;
+        public bool IsConnected => Volatile.Read(ref _disposed) == 0 && _sessionHandle != 0 && _client?.Connected == true;
 
         public CipSession(Communication communication) => _communication = communication;
 
         public async Task ConnectAsync(CancellationToken cancellationToken)
+        {
+            await _requestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+                await OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally { _requestGate.Release(); }
+        }
+
+        private async Task OpenAsync(CancellationToken cancellationToken)
         {
             var client = new TcpClient();
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -77,9 +88,6 @@ public sealed partial class CommunicationRuntimeManager
             if (service == 0 || service >= 0x80) throw new ArgumentOutOfRangeException(nameof(service), "CIP 请求服务码必须为 0x01–0x7F。");
             if (classId > ushort.MaxValue || instanceId > ushort.MaxValue || attributeId > ushort.MaxValue)
                 throw new ArgumentOutOfRangeException(nameof(classId), "当前 CIP 显式消息路径的 Class/Instance/Attribute 最大为 65535。");
-            var session = _sessionHandle;
-            if (session == 0 || _stream == null) throw new InvalidOperationException("EtherNet/IP CIP 会话未注册。");
-
             var cipRequest = BuildCipRequest(service, classId, instanceId, attributeId, requestData.Span);
             var cpf = new byte[16 + cipRequest.Length];
             BinaryPrimitives.WriteUInt32LittleEndian(cpf, 0); // Interface handle: CIP
@@ -96,6 +104,9 @@ public sealed partial class CommunicationRuntimeManager
             await _requestGate.WaitAsync(timeout.Token).ConfigureAwait(false);
             try
             {
+                timeout.Token.ThrowIfCancellationRequested();
+                if (!IsConnected) throw new IOException("EtherNet/IP CIP 会话未注册或已关闭。");
+                var session = _sessionHandle;
                 var response = await ExchangeEncapsulationAsync(0x006F, session, cpf, timeout.Token).ConfigureAwait(false);
                 if (response.Status != 0) throw new IOException($"EtherNet/IP 封装层返回状态 0x{response.Status:X8}。");
                 var cipResponse = ExtractCipResponse(response.Data);
@@ -130,6 +141,10 @@ public sealed partial class CommunicationRuntimeManager
             var responseLength = BinaryPrimitives.ReadUInt16LittleEndian(responseHeader.AsSpan(2));
             if (BinaryPrimitives.ReadUInt16LittleEndian(responseHeader) != command)
                 throw new InvalidDataException("EtherNet/IP 响应命令与请求不匹配。");
+            if (BinaryPrimitives.ReadUInt64LittleEndian(responseHeader.AsSpan(12)) != context ||
+                (command != 0x0065 && BinaryPrimitives.ReadUInt32LittleEndian(responseHeader.AsSpan(4)) != sessionHandle) ||
+                BinaryPrimitives.ReadUInt32LittleEndian(responseHeader.AsSpan(20)) != 0)
+                throw new InvalidDataException("EtherNet/IP 响应上下文、会话或封装选项与请求不匹配。");
             var responseData = new byte[responseLength];
             if (responseLength > 0) await stream.ReadExactlyAsync(responseData, cancellationToken).ConfigureAwait(false);
             return new EncapsulationResponse(
@@ -218,7 +233,8 @@ public sealed partial class CommunicationRuntimeManager
                         BinaryPrimitives.WriteUInt16LittleEndian(unregister, 0x0066);
                         BinaryPrimitives.WriteUInt32LittleEndian(unregister.AsSpan(4), session);
                         BinaryPrimitives.WriteUInt64LittleEndian(unregister.AsSpan(12), unchecked((ulong)Interlocked.Increment(ref _senderContext)));
-                        await _stream.WriteAsync(unregister, CancellationToken.None).ConfigureAwait(false);
+                        using var timeout = new CancellationTokenSource(GetTimeout(_communication));
+                        await _stream.WriteAsync(unregister, timeout.Token).ConfigureAwait(false);
                     }
                     catch { }
                 }
@@ -227,7 +243,7 @@ public sealed partial class CommunicationRuntimeManager
                 _stream = null;
                 _sessionHandle = 0;
             }
-            finally { _requestGate.Release(); _requestGate.Dispose(); }
+            finally { _requestGate.Release(); }
         }
 
         private sealed record EncapsulationResponse(uint SessionHandle, uint Status, byte[] Data);

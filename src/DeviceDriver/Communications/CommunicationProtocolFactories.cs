@@ -47,10 +47,10 @@ public sealed partial class CommunicationRuntimeManager
                 ReceiveTerminatorFramer.GetTerminatorBytes(config)));
         yield return new BuiltInFactory("tcp-server", raw,
             config => new TcpServerSession(config.Id, ParseBindAddress(config.LocalHost), config.LocalPort,
-                ReceiveTerminatorFramer.GetTerminatorBytes(config)));
+                ReceiveTerminatorFramer.GetTerminatorBytes(config), GetTimeout(config)));
         yield return new BuiltInFactory("udp", raw,
             config => new UdpSession(config.Id, ParseBindAddress(config.LocalHost), config.LocalPort,
-                config.RemoteHost, config.RemotePort));
+                config.RemoteHost, config.RemotePort, GetTimeout(config)));
         yield return new BuiltInFactory("serial", raw, config => new SerialSession(config));
         yield return new BuiltInFactory("modbus", readWrite, config => new ModbusSession(config));
         yield return new BuiltInFactory("modbus-tcp", readWrite, config => new ModbusSession(config));

@@ -1,0 +1,33 @@
+# OPC UA会话状态与自动重连修复交接
+
+- 基线提交：a444b21325eeb6b121cfe6bd059383b65eb172eb。
+- 当前分支：feature/comm。
+- 当前执行者：Codex，当前工作目录单写入。
+- 任务目标：修复通讯管理器显示已连接但工作流报Session未连接时状态未同步、自动重连未触发的问题；主动读取不得回退监视缓存。
+- 允许修改目录：DeviceDriver通讯运行时和OPC UA驱动、UI通讯应用服务与通讯管理器、本地协作记录。
+- 已修改文件：
+  - src/DeviceDriver/Communications/OpcUa/OpcUaAdapter.cs。
+  - src/DeviceDriver/Communications/Runtime/CommunicationRuntimeManager.cs。
+  - src/UI/Services/Communication/CommunicationApplicationService.cs。
+  - src/UI/Features/CommunicationManager/CommunicationManagerViewModel.cs。
+  - docs/collaboration/CURRENT_TASK.md及本交接。
+- 已完成：
+  - 所有OPC UA服务在取得服务门后检查Session；创建与销毁也共享服务门，避免服务操作持有正在释放的Session或销毁后建连泄漏。服务门不主动Dispose，已排队调用仍可正常进入并报告不可用。
+  - KeepAlive异常、服务/订阅中连接级BadSession/BadSecureChannel/BadConnection等状态，以及查询已连接状态时发现底层不可用，共用一次性断线通知；本地标记也纳入IsConnected。普通无权限、数据点不存在、类型错误不主动断线；单次超时不一律断线，若底层确实不可用仍通知。
+  - 当前连接身份校验、条件移除及状态转换防止旧失败操作误删新适配器或旧释放覆盖新状态。Connecting阶段拒绝服务调用而不破坏正在创建的Session。读取完成后拒绝失效或跨代结果。
+  - 断线原生释放由后台任务执行，不在KeepAlive/通知回调中同步关闭Session。仍使用原RequestTimeout和取消传递；不自动重放写入。
+  - 每设备重连任务可取消，遵循原AutoReconnect和设备启用设置，1秒起步退避至30秒；初次连接失败可重试，恢复监视时再断线继续循环，任务收尾收到的断线事件不会丢失。恢复后按原配置重新建立订阅或周期读取。
+  - 手动断开取消并等待重连任务，再释放当前会话，防止后台重连抵消手动断开；手动连接恢复自动重连资格。切方案清除手动意图，旧重连仍受方案取消约束。
+  - WPF仅投影运行时最新状态，不再把异步排队的旧Connected通知或开关完成硬编码成绿灯。调度与底层会话无WPF依赖。
+- 未完成：真实服务端断线、恢复、取消、快速手动开关和方案切换的运行验收。原始10:39故障第一次丢失Session的外部原因仍未由日志证实，本次针对已确认的状态与生命周期缺口修复。
+- 已执行构建与测试：
+  - 首次普通UI构建：48警告2错误，现有中间文件被沙箱禁止写入。
+  - 提权后UI构建：68警告4错误，Release DLL被SunEyeVision.UI进程48016占用；未强制关闭，用户回复已关闭。
+  - 用户关闭后首轮全量Release：1159警告0错误，88.71秒。
+  - 最终全量：dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -clp:ErrorsOnly，821警告0错误，31.80秒。
+  - 最终独立UI：dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore -m:1 -clp:ErrorsOnly，1066警告0错误，16.31秒。
+  - 常用Release中DeviceDriver/UI主DLL均与build_temp的Release编译中间DLL哈希一致；相关git diff --check通过，仅既有换行提示。
+  - 遵此前用户限制，没有新增或运行测试，没有启动程序、设计器或访问设备。
+- 人工验收结果：待用户验收，用户已关闭占用程序不等于功能验收通过。
+- 已知风险或禁止改动：保留脏工作区其他算法和绑定修改；未提交推送；不修改标定、设备配置、安全策略、插件契约或用户方案。自动重连不会替当前已失败工作流补成功，也不使用缓存值兜底；连接恢复后需重新执行真实读取。
+- 下一步：启动常用Release人工确认连接显示、真实工作流读取、断线变更状态及自动恢复；检查点级错误不造成反复重连、手动断开不再自动连回、重连中再次断线仍继续重试。

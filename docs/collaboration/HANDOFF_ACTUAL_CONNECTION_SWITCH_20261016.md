@@ -1,0 +1,21 @@
+# 实际连接开关和自动重连规则修订交接
+
+- 基线提交：a444b21325eeb6b121cfe6bd059383b65eb172eb。
+- 当前分支：feature/comm。
+- 当前执行者：Codex，单写入，保留所有并存修改。
+- 任务目标：按用户最新明确要求，列表开关表示实际连接/断开，删除上方文字；开启AutoReconnect时手动断开也应自动连回。
+- 允许修改目录：UI通讯管理器和通讯应用服务、Workflow通讯模型仅JsonIgnore运行时显示属性、本地协作记录。
+- 已修改文件：CommunicationManagerDialog.xaml及代码后置、CommunicationManagerViewModel.cs、CommunicationApplicationService.cs及Presentation.cs、Workflow/Communication.cs、CURRENT_TASK.md及两份交接记录。
+- 已完成：
+  - 公共设备列表开关绑定IsActuallyConnected，只有实际CommunicationRuntimeStatus.Connected时开启；连接中、断开、等待重连均关闭，状态变化本身不触发重复连接命令。
+  - 移除“启用连接”文字及其StackPanel，开关列恢复48宽，保留状态灯、真实倒计时、失败原因和说明Tooltip；文字使用“已断开/正在断开/设备已停用”，不再用“已停止”暗示手动断开会永久暂停重连。
+  - 事件异步提交用户明确的连接/断开目标，避免异步状态变化把一次断开请求反转为连接请求；事件完成后恢复实际状态单向绑定。
+  - 列表使用DisconnectConnectionAsync：在同一设备串行门内取消并等待旧重连，再断开真实会话；若设备仍启用且AutoReconnect为true，解除暂时的手动抑制标记、恢复后台策略并进入倒计时。若AutoReconnect为false，保持断开。
+  - 已断开后开启AutoReconnect也可解除之前的手动断开标记并启动任务；关闭AutoReconnect仍取消重试，不强制断开健康连接。
+  - 删除设备和撤销新增设备仍调用DisconnectDeviceAsync，禁用设备或切方案仍停止旧任务；这些操作不等同于列表的一次断开，不会因本次规则变更而复活旧连接。
+  - 规则在所有已接入协议的公共入口统一实施；TCP服务端、UDP和串口仍沿用监听/本地绑定/串口打开的准确状态口径。保留已有配置和绑定，不改SDK输出契约，不重放失败业务写入、不用缓存值补成功。
+- 未完成：实际UI和设备断开/连回的人工验收。
+- 已执行构建与测试：首轮全量Release1159警告0错误（75.17秒）；最终全量Release785警告0错误（33.02秒），独立UI Release1066警告0错误（15.26秒）。发布DeviceDriver/Workflow/UI主DLL与Release编译中间DLL哈希一致，相关diff检查通过，仅换行提示。没有新增或运行测试，没有启动程序、设计器或连接设备。
+- 人工验收结果：待用户人工验收，未宣称实机通过。
+- 已知风险或禁止改动：本节按用户最新授权覆盖前一批“手动断开优先于AutoReconnect”的规则。永久保持断开需先关闭AutoReconnect，或禁用设备；不擅自修改这些配置。设备开关上方不显示文字，只在Tooltip解释规则。所有新显示属性均JsonIgnore，保留旧属性兼容，内部意图状态不作为实际连接灯/开关的数据源。
+- 下一步：常用Release中确认AutoReconnect开启后点击列表关闭，实际断开时开关关闭，等待倒计时结束重新连接，真正连接成功后开关开启；关闭AutoReconnect后点击断开应保持断开；删除/禁用/切方案不应恢复旧连接。

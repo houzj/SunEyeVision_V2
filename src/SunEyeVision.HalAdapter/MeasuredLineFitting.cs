@@ -14,9 +14,28 @@ public static class MeasuredLineFitting
     public static Point2d[] Capture(HMetrologyModel model, HTuple index, string transition,
         EdgeFitDiagnostics diagnostic, string label)
     {
+        diagnostic.AlgorithmPath = "HALCON取点＋轮廓拟合（不设卡尺支持率门槛）";
         diagnostic.Stage = $"{label}取点";
         try
         {
+            using var nativeTransition = model.GetMetrologyObjectParam(index, "measure_transition");
+            using var nativeSelection = model.GetMetrologyObjectParam(index, "measure_select");
+            using var objectType = model.GetMetrologyObjectParam(index, "object_type");
+            using var geometry = model.GetMetrologyObjectParam(index, "object_params");
+            diagnostic.Transition = nativeTransition.S;
+            diagnostic.Selection = nativeSelection.S;
+            if (nativeTransition.S != transition)
+                throw new InvalidOperationException($"取点极性{transition}与实际测量极性{nativeTransition.S}不一致");
+            if (objectType.S == "line" && geometry.Length == 4)
+            {
+                double dx = geometry[3].D - geometry[1].D;
+                double dy = geometry[2].D - geometry[0].D;
+                double length = Math.Sqrt(dx * dx + dy * dy);
+                diagnostic.ScanDirection = length > 0
+                    ? $"图像法向({-dy / length:G6},{dx / length:G6})，起点看向终点的左侧→右侧"
+                    : "退化引导线";
+            }
+            else diagnostic.ScanDirection = "内侧→外侧（径向外）";
             using var contours = model.GetMetrologyObjectMeasures(index, transition, out var rows, out var columns);
             using (rows)
             using (columns)
@@ -36,6 +55,13 @@ public static class MeasuredLineFitting
                 using (c)
                     return Enumerable.Range(0, r.Length).Select(j => new Point(c[j].D, r[j].D)).ToArray();
             }).ToArray();
+            // Native classification only. Point order is undefined: never zip points with measurement bands.
+            using var positiveBands = model.GetMetrologyObjectMeasures(index, "positive", out var positiveRows, out var positiveColumns);
+            using (positiveRows)
+            using (positiveColumns) diagnostic.PositivePointCount = positiveRows.Length;
+            using var negativeBands = model.GetMetrologyObjectMeasures(index, "negative", out var negativeRows, out var negativeColumns);
+            using (negativeRows)
+            using (negativeColumns) diagnostic.NegativePointCount = negativeRows.Length;
             diagnostic.Stage = $"{label}取点完成";
             return diagnostic.RawPoints;
         }
@@ -51,6 +77,8 @@ public static class MeasuredLineFitting
         EdgeFitDiagnostics diagnostic, string label)
     {
         diagnostic.CandidatePoints = points.ToArray();
+        diagnostic.AlgorithmPath = "HALCON取点＋轮廓拟合（不设卡尺支持率门槛）";
+        diagnostic.NativeScore = diagnostic.NativeMinimumScore = double.NaN;
         diagnostic.DistanceThreshold = distanceThreshold;
         diagnostic.Stage = $"{label}点集校验";
         try

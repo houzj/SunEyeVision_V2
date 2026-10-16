@@ -15,6 +15,8 @@ public static class MeasuredCircleFitting
         IReadOnlyList<Point2d> points, double distanceThreshold, EdgeFitDiagnostics diagnostic, string label)
     {
         diagnostic.CandidatePoints = points.ToArray();
+        diagnostic.AlgorithmPath = "HALCON取点＋轮廓拟合（不设卡尺支持率门槛）";
+        diagnostic.NativeScore = diagnostic.NativeMinimumScore = double.NaN;
         diagnostic.DistanceThreshold = distanceThreshold;
         diagnostic.Stage = $"{label}点集校验";
         try

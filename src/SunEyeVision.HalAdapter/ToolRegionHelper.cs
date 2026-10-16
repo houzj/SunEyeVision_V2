@@ -138,10 +138,36 @@ namespace SunEyeVision.HalAdapter
             {
                 return BuildHalconPolygonFromPoints(poly.Vertices);
             }
+            else if (shape.Geometry is Annulus2d annulus)
+            {
+                ValidateAnnulus(annulus);
+                // Screen clockwise interval [start,end] maps to mathematical [-end,-start].
+                // Full circles must use GenCircle: GenCircleSector(0,2pi) is empty in HALCON.
+                using var outer = annulus.IsFullCircle
+                    ? new HRegion(annulus.Center.Y, annulus.Center.X, annulus.OuterRadius)
+                    : new HRegion(annulus.Center.Y, annulus.Center.X, annulus.OuterRadius,
+                        NormalizeSectorAngle(-annulus.EndAngle), NormalizeSectorAngle(-annulus.StartAngle));
+                if (annulus.InnerRadius <= 0) return outer.Clone();
+                using var inner = new HRegion(annulus.Center.Y, annulus.Center.X, annulus.InnerRadius);
+                return outer.Difference(inner);
+            }
             // P0-2 封口（完全删除 WPF Rect）：几何值恒为 Models.Geometry 契约类型，
             // 轴对齐矩形即 RotatedRect2d(Angle=0)，故此处不再有 Rect 分支。
 
-            return null;
+            throw new NotSupportedException($"几何类型 {shape.Geometry.GetType().Name} 不支持HALCON处理域，不能静默忽略该区域");
+        }
+
+        private static double NormalizeSectorAngle(double angle)
+            => (angle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+
+        private static void ValidateAnnulus(Annulus2d annulus)
+        {
+            if (!double.IsFinite(annulus.Center.X) || !double.IsFinite(annulus.Center.Y)
+                || !double.IsFinite(annulus.InnerRadius) || !double.IsFinite(annulus.OuterRadius)
+                || !double.IsFinite(annulus.StartAngle) || !double.IsFinite(annulus.EndAngle)
+                || !double.IsFinite(annulus.AngularSpan)
+                || annulus.InnerRadius < 0 || annulus.IsEmpty || annulus.AngularSpan <= 0)
+                throw new ArgumentException("圆环需要有限圆心、0≤内半径<外半径及正向连续角度区间");
         }
 
         private static HRegion Concat(HRegion a, HRegion b)
@@ -261,22 +287,27 @@ namespace SunEyeVision.HalAdapter
         /// 纯 C# 几何判定（无 Halcon 引擎依赖），供圆查找/直线查找等在拟合前剔除屏蔽区内的坏点。
         /// </summary>
         /// <param name="points">测量点集（图像坐标，X=列、Y=行）</param>
-        /// <param name="maskRois">屏蔽几何输入集合（仅支持本地绘制的 Roi；订阅/拼装模式显式报错）</param>
+        /// <param name="maskRois">屏蔽几何输入集合，统一解析本地绘制、订阅和参数拼装</param>
         /// <param name="correctionMatrix">位置修正矩阵（参考坐标 → 当前图像坐标），null=不修正</param>
         /// <returns>保留点（屏蔽区外）与被剔除点（屏蔽区内）</returns>
         public static (Point2d[] Kept, Point2d[] Excluded) FilterPointsOutOfMaskRois(
             IEnumerable<Point2d> points,
             IEnumerable<Roi>? maskRois,
             AffineMatrix? correctionMatrix)
+            => FilterPointsOutOfMaskRois(points, maskRois, correctionMatrix, null);
+
+        /// <summary>Runtime-context overload; keeps the original three-argument binary API available.</summary>
+        public static (Point2d[] Kept, Point2d[] Excluded) FilterPointsOutOfMaskRois(
+            IEnumerable<Point2d> points,
+            IEnumerable<Roi>? maskRois,
+            AffineMatrix? correctionMatrix,
+            IDictionary<string, ToolResults>? nodeResults)
         {
             var src = (points ?? Array.Empty<Point2d>()).ToArray();
-            var masks = (maskRois ?? Array.Empty<Roi>())
-                .Where(r => r.IsEnabled)
-                .ToArray();
-            if (masks.Length == 0)
-                return (src, Array.Empty<Point2d>());
-
-            var shapes = masks.Select(m => ParseMaskShape(m, correctionMatrix)).ToArray();
+            // Preserve subpixel containment and the same runtime geometry as output/preview.
+            var shapes = ExtractRuntimeShapes(maskRois, nodeResults, correctionMatrix)
+                .Select(shape => ParseMaskShape(shape, correctionMatrix: null)).ToArray();
+            if (shapes.Length == 0) return (src, Array.Empty<Point2d>());
             var kept = new List<Point2d>(src.Length);
             var excluded = new List<Point2d>(Math.Min(src.Length, 32));
 
@@ -293,14 +324,10 @@ namespace SunEyeVision.HalAdapter
 
         /// <summary>
         /// 将屏蔽 Roi 解析为几何判定器（位置修正统一在此应用，按形状有向性解析矩阵）。
-        /// 仅支持本地绘制模式（订阅/拼装需运行期解析，测量屏蔽暂不支持）。
+        /// 几何已由运行时出口归一；本地修正一次，订阅/拼装不重复修正。
         /// </summary>
-        private static MaskShape ParseMaskShape(Roi mask, AffineMatrix? correctionMatrix)
+        private static MaskShape ParseMaskShape(RoiShape shape, AffineMatrix? correctionMatrix)
         {
-            var shape = mask.LocalGeometry;
-            if (shape == null)
-                throw new NotSupportedException(
-                    $"屏蔽区域 '{mask.Name}' 仅支持直接绘制模式，当前订阅/拼装模式不被测量工具支持（请在参数中改用直接绘制的屏蔽区域）");
 
             // 无向形状（轴对齐矩形/圆/圆环）剥转 / 有向形状完整跟随（对齐 ROI 构建与 UI 显示语义）
             var resolvedMatrix = PositionCorrectionResolver.ResolveForShape(shape.Geometry, correctionMatrix);
@@ -313,11 +340,10 @@ namespace SunEyeVision.HalAdapter
                     return new CircleMaskShape(cc.X, cc.Y, c.Radius * scale);
 
                 case Annulus2d a:
-                    if (!a.IsFullCircle)
-                        throw new NotSupportedException(
-                            $"屏蔽区域 '{mask.Name}' 的圆环必须是完整圆环，部分扇环暂不支持点过滤");
+                    ValidateAnnulus(a);
                     var ac = resolvedMatrix != null ? resolvedMatrix.TransformWpfPoint(a.Center) : a.Center;
-                    return new AnnulusMaskShape(ac.X, ac.Y, a.InnerRadius * scale, a.OuterRadius * scale);
+                    return new AnnulusMaskShape(new Annulus2d(ac, a.InnerRadius * scale,
+                        a.OuterRadius * scale, a.StartAngle, a.EndAngle));
 
                 case RotatedRect2d rr:
                     return new PolygonMaskShape(TransformPoints(rr.GetCorners(), resolvedMatrix));
@@ -332,7 +358,7 @@ namespace SunEyeVision.HalAdapter
 
                 default:
                     throw new NotSupportedException(
-                        $"屏蔽区域 '{mask.Name}' 的几何类型 {shape.Geometry?.GetType().Name ?? "null"} 不支持用于测量屏蔽" +
+                        $"屏蔽几何类型 {shape.Geometry?.GetType().Name ?? "null"} 不支持用于测量屏蔽" +
                         "（支持：圆/圆环/旋转矩形/多边形/矩形）");
             }
         }
@@ -375,26 +401,9 @@ namespace SunEyeVision.HalAdapter
 
         private sealed class AnnulusMaskShape : MaskShape
         {
-            private readonly double _cx;
-            private readonly double _cy;
-            private readonly double _innerR2;
-            private readonly double _outerR2;
-
-            public AnnulusMaskShape(double cx, double cy, double innerRadius, double outerRadius)
-            {
-                _cx = cx;
-                _cy = cy;
-                _innerR2 = innerRadius * innerRadius;
-                _outerR2 = outerRadius * outerRadius;
-            }
-
-            public override bool Contains(double x, double y)
-            {
-                var dx = x - _cx;
-                var dy = y - _cy;
-                var d2 = dx * dx + dy * dy;
-                return d2 >= _innerR2 && d2 <= _outerR2;
-            }
+            private readonly Annulus2d _annulus;
+            public AnnulusMaskShape(Annulus2d annulus) => _annulus = annulus;
+            public override bool Contains(double x, double y) => _annulus.Contains(new Point(x, y));
         }
 
         private sealed class PolygonMaskShape : MaskShape

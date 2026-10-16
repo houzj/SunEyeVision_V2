@@ -1788,6 +1788,13 @@
           "System.Drawing.Common": "[9.0.0, )"
         }
       },
+      "suneyevision.tool.pointpointmeasure": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
+          "System.Text.Json": "[10.0.3, )"
+        }
+      },
       "suneyevision.tool.protocolassemble": {
         "type": "Project",
         "dependencies": {

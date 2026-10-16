@@ -239,6 +239,14 @@
         "resolved": "13.0.3",
         "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
       },
+      "OpenCvSharp4": {
+        "type": "Transitive",
+        "resolved": "4.13.0.20260222",
+        "contentHash": "mf5PaHlhU/SnO5kWy7QqJnto4EEBVN0g7vQDMeCs4mkparaMUZKYSsnx22s7yLRsif0f7eYYVnViUqUDLA8Ymw==",
+        "dependencies": {
+          "System.Memory": "4.6.3"
+        }
+      },
       "OpenCvSharp4.Extensions": {
         "type": "Transitive",
         "resolved": "4.13.0.20260222",
@@ -338,6 +346,11 @@
         "resolved": "10.0.8",
         "contentHash": "STVNTIVd+UrYvSo31D2tOOTs19IThdjGDN14FS3/NZb4PWsVakAg/VT4sq+JYWGP/GtazzvXwebWL6LPBAwnFQ=="
       },
+      "System.Memory": {
+        "type": "Transitive",
+        "resolved": "4.6.3",
+        "contentHash": "qdcDOgnFZY40+Q9876JUHnlHu7bosOHX8XISRoH94fwk6hgaeQGSgfZd8srWRZNt5bV9ZW2TljcegDNxsf+96A=="
+      },
       "System.Reflection.Metadata": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -417,7 +430,7 @@
           "Microsoft.CodeAnalysis.CSharp": "[4.12.0, )",
           "Microsoft.CodeAnalysis.CSharp.Features": "[4.12.0, )",
           "Microsoft.CodeAnalysis.Features": "[4.12.0, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )"
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.core": {
@@ -427,7 +440,7 @@
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.Extensions": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
           "System.Text.Json": "[10.0.3, )"
         }
       },
@@ -436,8 +449,8 @@
         "dependencies": {
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.CvEngine": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )"
+          "SunEyeVision.CvEngine": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.cvengine": {
@@ -450,7 +463,7 @@
       "suneyevision.haladapter": {
         "type": "Project",
         "dependencies": {
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )"
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.infrastructure": {
@@ -459,8 +472,8 @@
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.Extensions": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.Core": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )"
+          "SunEyeVision.Core": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.sdk": {
@@ -473,14 +486,13 @@
         "type": "Project",
         "dependencies": {
           "AvalonEdit": "[6.3.1.120, )",
-          "CommonControl": "[2.0.0-alpha.7, )",
+          "CommonControl": "[2.0.0-alpha.8, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.12.0, )",
           "Microsoft.CodeAnalysis.CSharp.Features": "[4.12.0, )",
           "Microsoft.CodeAnalysis.Features": "[4.12.0, )",
-          "SunEyeVision.CvAdapter": "[2.0.0-alpha.7, )",
-          "SunEyeVision.HalAdapter": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Workflow": "[2.0.0-alpha.7, )",
+          "SunEyeVision.CvAdapter": "[2.0.0-alpha.8, )",
+          "SunEyeVision.HalAdapter": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
           "System.Text.Json": "[10.0.8, )"
         }
       },
@@ -489,9 +501,9 @@
         "dependencies": {
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.Core": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )"
+          "SunEyeVision.Core": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
         }
       }
     },

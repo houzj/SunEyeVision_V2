@@ -37,12 +37,7 @@ public static class PointMeasurementGeometry
     {
         RequireFinite(first, "点1");
         RequireFinite(second, "点2");
-        var dx = RequireFinite(second.X - first.X, "ΔX");
-        var dy = RequireFinite(second.Y - first.Y, "ΔY");
-        // Hypot avoids overflowing the intermediate squares for representable distances.
-        var distance = RequireFinite(double.Hypot(dx, dy), "点距");
-        var angle = RequireFinite(Math.Atan2(dy, dx) * 180.0 / Math.PI, "连线角度");
-        return (distance, dx, dy, angle);
+        return SunEyeVision.Tool.Kernels.PointPairMath.Measure(first.X, first.Y, second.X, second.Y);
     }
 
     public static (Point Foot, double Parameter) ProjectOnLine(Point point, Point start, Point end)

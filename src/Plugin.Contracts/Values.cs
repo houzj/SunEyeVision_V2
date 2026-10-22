@@ -1,0 +1,67 @@
+using System.Collections.ObjectModel;
+using System.Security.Cryptography;
+using System.Text;
+namespace SunEyeVision.Plugin.Contracts;
+public enum DataType { Boolean, Integer, Number, Text, NumberArray, Image }
+public sealed record Port(string Id, DataType Type, bool Required=true, bool Nullable=false);
+public sealed class ToolSchema
+{
+    public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs)
+    {
+        Inputs=Array.AsReadOnly(inputs.ToArray()); Outputs=Array.AsReadOnly(outputs.ToArray());
+        foreach(var group in new[]{Inputs,Outputs})
+            if(group.Any(p=>string.IsNullOrWhiteSpace(p.Id)) || group.Select(p=>p.Id).Distinct(StringComparer.Ordinal).Count()!=group.Count)
+                throw new ArgumentException("Port identities must be nonempty and unique.");
+        Fingerprint=Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join(";",Inputs.Select(p=>$"I:{p.Id}:{p.Type}:{p.Required}:{p.Nullable}").Concat(Outputs.Select(p=>$"O:{p.Id}:{p.Type}:{p.Required}:{p.Nullable}"))))));
+    }
+    public IReadOnlyList<Port> Inputs { get; }
+    public IReadOnlyList<Port> Outputs { get; }
+    public string Fingerprint { get; }
+}
+public sealed class InputValues
+{
+    private readonly Dictionary<string,object?> _values;
+    public InputValues(IEnumerable<Port> ports,IReadOnlyDictionary<string,object?> values)
+    {
+        var specs=ports.ToDictionary(p=>p.Id,StringComparer.Ordinal);
+        if(values.Keys.Any(k=>!specs.ContainsKey(k)))throw new ArgumentException("Undeclared input/output identity.");
+        _values=new(StringComparer.Ordinal);
+        foreach(var p in specs.Values)
+        {
+            if(!values.TryGetValue(p.Id,out var v)){ if(p.Required)throw new ArgumentException($"Missing required port {p.Id}"); continue; }
+            _values[p.Id]=ValueRules.Freeze(p,v);
+        }
+    }
+    public bool Contains(string id)=>_values.ContainsKey(id);
+    public T Get<T>(string id)
+    {
+        if(!_values.TryGetValue(id,out var v))throw new KeyNotFoundException(id);
+        if(v is T t)return (T)(t is double[] a ? (object)a.Clone() : t!);
+        if(v is null && default(T) is null)return default!;
+        throw new InvalidOperationException($"Port {id} is not {typeof(T).Name}");
+    }
+    public IReadOnlyDictionary<string,object?> CopyValues()=>new ReadOnlyDictionary<string,object?>(_values.ToDictionary(p=>p.Key,p=>p.Value is double[] a?(object)a.Clone():p.Value,StringComparer.Ordinal));
+}
+public static class ValueRules
+{
+    public static object? Freeze(Port port,object? value)
+    {
+        if(value is null)return port.Nullable?null:throw new ArgumentException($"Port {port.Id} disallows null");
+        bool valid=port.Type switch {
+            DataType.Boolean=>value is bool, DataType.Integer=>value is long,
+            DataType.Number=>value is double d && double.IsFinite(d),DataType.Text=>value is string,
+            DataType.NumberArray=>value is double[] a && a.All(double.IsFinite),
+            DataType.Image=>value is IReadOnlyImage, _=>false};
+        if(!valid)throw new ArgumentException($"Invalid value type for {port.Id} ({port.Type})");
+        return value is double[] array?array.Clone():value;
+    }
+}
+public sealed record OutputReference(string NodeId,string PortId,DataType Type);
+public static class BindingValidator
+{
+    public static Diagnostic? Validate(OutputReference reference,ToolSchema source)
+    {
+        var p=source.Outputs.SingleOrDefault(p=>p.Id==reference.PortId);
+        return p is null?new("missing-output","Output removed",reference.PortId):p.Type!=reference.Type?new("type-changed","Output type changed",reference.PortId):null;
+    }
+}

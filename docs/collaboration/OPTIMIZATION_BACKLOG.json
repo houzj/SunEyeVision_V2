@@ -1,0 +1,831 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-10-22",
+  "title": "自研软件优化唯一问题池与批次路线",
+  "authority": "排序和派工以本清单为准；历史专题保留证据，不再维护第二套当前优先级",
+  "scope": "本轮仅文档/看板；B1产品实施尚未批准",
+  "principles": [
+    "业务链驱动、架构配套",
+    "目标合同完整，按依赖迁移",
+    "只补闭环必需能力",
+    "核心链可靠后进入新增开发"
+  ],
+  "priority": [
+    [
+      "P0",
+      "数据丢失、错误执行、不可停止、严重资源泄漏",
+      "高风险未复现先验证，确认后优先修复"
+    ],
+    [
+      "P1",
+      "核心业务链缺口或阻碍后续开发的架构问题",
+      "按依赖进入最近批次"
+    ],
+    [
+      "P2",
+      "兼容、性能、维护与诊断不足",
+      "随所属链整批处理"
+    ],
+    [
+      "P3",
+      "普通视觉、便利功能与非必需新增",
+      "不打断核心主线"
+    ]
+  ],
+  "batches": [
+    {
+      "id": "B0",
+      "title": "当前交付收口",
+      "status": "交付待验",
+      "dependencies": [],
+      "focus": "已交付实现的验收状态与缺口，不重复大改启动页",
+      "scope": "启动、内存方案、参数提交、变量保存",
+      "acceptance": "明确通过/失败/受阻；关键验收缺口有结论",
+      "note": "当前报告12顶层受阻，2个UI子场景通过，5个数据层检查通过；不是整批通过。",
+      "owner": "自研主控",
+      "productImplementationAuthorized": false
+    },
+    {
+      "id": "B1",
+      "title": "保存与读回可靠",
+      "status": "方案待确认",
+      "dependencies": [],
+      "focus": "下一批设计收敛；尚未批准产品实施",
+      "scope": "异常读取、资源引用、图像保真、Reload、最终快照、语义比对",
+      "acceptance": "不静默丢值；失败保留当前内容；代表样本往返一致",
+      "note": "VM-PERSIST-14已复核11框架+7资源结论；3类10维对照已交付。原生坏条目策略/统一相对路径基准/跨机仍未知；下一步按已定路线落实B1改造合同。",
+      "owner": "自研主控",
+      "productImplementationAuthorized": false
+    },
+    {
+      "id": "B2",
+      "title": "编辑行为一致",
+      "status": "待核对",
+      "dependencies": [
+        "B1"
+      ],
+      "focus": "在可信保存模型上统一编辑语义",
+      "scope": "修改状态、编辑事务、撤销重做、删除与引用清理",
+      "acceptance": "dirty与内容一致；撤销域明确；失败不丢历史",
+      "note": "已有静态线索，未完成本批正式设计与验收分母。",
+      "owner": "自研主控",
+      "productImplementationAuthorized": false
+    },
+    {
+      "id": "B3",
+      "title": "执行与停止可控",
+      "status": "待核对",
+      "dependencies": [
+        "B1"
+      ],
+      "focus": "与B4联合设计，先实施运行控制所需合同",
+      "scope": "统一入口、输入快照、调度、单次/连续/子程序、取消与完成",
+      "acceptance": "入口共用状态合同；停止后无迟到结果污染",
+      "note": "既有执行合同是资料，须对当前代码重核，不能当已实施。",
+      "owner": "自研主控",
+      "productImplementationAuthorized": false
+    },
+    {
+      "id": "B4",
+      "title": "结果与资源可靠",
+      "status": "待核对",
+      "dependencies": [
+        "B3"
+      ],
+      "focus": "落实与执行共同约定的代次与Owner",
+      "scope": "结果发布、图像所有权、缓存、切换关闭释放、日志状态",
+      "acceptance": "结果对应正确运行；所有者明确；释放可验证",
+      "note": "不把运行排空等同最后消费者释放。",
+      "owner": "自研主控",
+      "productImplementationAuthorized": false
+    },
+    {
+      "id": "B5",
+      "title": "SDK二开边界",
+      "status": "待核对",
+      "dependencies": [
+        "B3",
+        "B4"
+      ],
+      "focus": "公开稳定运行与数据合同后迁移",
+      "scope": "无UI宿主依赖、公开API、加载部署、旧插件适配",
+      "acceptance": "外部例子独立接入；兼容边界明确；无长期双实现",
+      "note": "先读现有拆分资料，再定工程迁移；本轮不搬工程。",
+      "owner": "自研主控",
+      "productImplementationAuthorized": false
+    },
+    {
+      "id": "B6",
+      "title": "已有工具逐类整改",
+      "status": "待核对",
+      "dependencies": [
+        "B1",
+        "B3",
+        "B4"
+      ],
+      "focus": "按分类及实际工具链推进",
+      "scope": "VM对应、分类、参数/输出/ROI、算法及专业界面",
+      "acceptance": "按工具链验收；单工具不代表整类通过",
+      "note": "阻断前序批次的问题前移，其他仍归工具批；不恢复全量VM工具。",
+      "owner": "自研主控",
+      "productImplementationAuthorized": false
+    }
+  ],
+  "items": [
+    {
+      "id": "O-000",
+      "batch": "B0",
+      "priority": "P1",
+      "title": "既有交付验收缺口",
+      "issue": "完整UI合同尚未验证，构建成功不能替代验收",
+      "evidence": [
+        {
+          "file": "artifacts/independent-testing/EDIT-SAVE-11/REPORT.md",
+          "anchor": ""
+        },
+        {
+          "file": "artifacts/independent-testing/EDIT-SAVE-11/final-results.json",
+          "anchor": ""
+        }
+      ],
+      "impact": "无法把保存链作为已验证依赖",
+      "contract": "按原12项顶层合同补验或逐项说明限制；只统计同分母结果",
+      "dependencies": [],
+      "strategy": "待补证",
+      "acceptance": "通过/失败/受阻分别列；关键未验不标闭环",
+      "status": "交付待验",
+      "confidence": "独立报告确认",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研目标与现有材料分析；非VM已证实现",
+        "evidence": "独立报告确认",
+        "vmStatus": "未新增VM同类行为验证",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      }
+    },
+    {
+      "id": "O-101",
+      "batch": "B1",
+      "priority": "P0",
+      "title": "连接异常退为空边",
+      "issue": "读取异常置空连接、孤立边过滤只写日志",
+      "evidence": [
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S4"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S5"
+        }
+      ],
+      "impact": "可能以缺边方案继续保存",
+      "contract": "坏连接不静默退空，错误有路径与诊断，候选失败不改原件；完整恢复副本系统不强制纳入B1",
+      "dependencies": [],
+      "strategy": "重做或合并",
+      "acceptance": "T06/T07：坏边不空集合成功，原件不覆盖",
+      "status": "方案待确认",
+      "confidence": "代码路径确认；未运行复现",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "混合：VM前置校验与诊断 + 自研结构保护；VM坏边细分类未证",
+        "evidence": "代码路径确认；未运行复现",
+        "vmStatus": "见VM-PERSIST-14已核局部证据，未知边界保留",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      },
+      "vmEvidenceRequest": "VM-READ-01",
+      "vmComparison": {
+        "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "anchor": "vm/VM-READ-01"
+      }
+    },
+    {
+      "id": "O-102",
+      "batch": "B1",
+      "priority": "P0",
+      "title": "变量解析错误退为null",
+      "issue": "缺失字段或解析异常返回null",
+      "evidence": [
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S6"
+        }
+      ],
+      "impact": "坏值与合法空值难区分",
+      "contract": "合法null与损坏值区分；损坏候选不得提交",
+      "dependencies": [],
+      "strategy": "重做或合并",
+      "acceptance": "T04/T05：类型数组保持，损坏值拒绝",
+      "status": "方案待确认",
+      "confidence": "代码路径确认；未运行复现",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "混合：VM分级诊断思路 + 自研类型错误不退null",
+        "evidence": "代码路径确认；未运行复现",
+        "vmStatus": "见VM-PERSIST-14已核局部证据，未知边界保留",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      },
+      "vmEvidenceRequest": "VM-READ-01",
+      "vmComparison": {
+        "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "anchor": "vm/VM-READ-01"
+      }
+    },
+    {
+      "id": "O-103",
+      "batch": "B1",
+      "priority": "P1",
+      "title": "同路径重载与候选装配",
+      "issue": "同路径提前返回，切换后装配可能未完成",
+      "evidence": [
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S9"
+        }
+      ],
+      "impact": "不能用打开动作证明重读，可能部分完成",
+      "contract": "Open激活与Reload重读分开；准备后提交，失败阶段明确",
+      "dependencies": [
+        "O-101",
+        "O-102"
+      ],
+      "strategy": "新增闭环能力",
+      "acceptance": "T15/T16：明确重读，失败保留可操作工作区",
+      "status": "方案待确认",
+      "confidence": "代码路径确认；未运行复现",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研明确Reload/提交边界；参考VM同路径重复派发，不等原生重读已证",
+        "evidence": "代码路径确认；未运行复现",
+        "vmStatus": "见VM-PERSIST-14已核局部证据，未知边界保留",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      },
+      "vmEvidenceRequest": "VM-OPEN-02",
+      "vmComparison": {
+        "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "anchor": "vm/VM-OPEN-02"
+      }
+    },
+    {
+      "id": "O-104",
+      "batch": "B1",
+      "priority": "P1",
+      "title": "外部资源依赖字段名猜测",
+      "issue": "相对路径被原地解析，数组与标量表达式策略不同",
+      "evidence": [
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S8"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S14"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S15"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S18"
+        }
+      ],
+      "impact": "搬目录、未知插件字段和表达式可能失真",
+      "contract": "按资源种类/模式明确URI、内容与运行地址；保留ShapeMatch已有ModelData和现有外链，不默认复制全部资源；表达式/缺失统一",
+      "dependencies": [],
+      "strategy": "重做或合并",
+      "acceptance": "T10—T12：移动与缺失资源可解释，表达式一致",
+      "status": "方案待确认",
+      "confidence": "代码路径确认；未运行复现",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "借鉴VM分模式，保留整改自研已有内容持久化",
+        "evidence": "代码路径确认；未运行复现",
+        "vmStatus": "见VM-PERSIST-14已核局部证据，未知边界保留",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      },
+      "vmEvidenceRequest": "VM-RESOURCE-03",
+      "vmComparison": {
+        "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "anchor": "vm/VM-RESOURCE-03"
+      }
+    },
+    {
+      "id": "O-105",
+      "batch": "B1",
+      "priority": "P0",
+      "title": "内嵌图像保真与错误处理",
+      "issue": "PNG编码、Color解码，错误返回null",
+      "evidence": [
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S7"
+        }
+      ],
+      "impact": "通道/位深可能变化，失败可能被视作空值",
+      "contract": "按图像合同保持像素语义或明确拒绝；不能null成功",
+      "dependencies": [],
+      "strategy": "保留整改",
+      "acceptance": "T13/T14：尺寸通道位深像素一致或明确失败",
+      "status": "方案待确认",
+      "confidence": "代码路径确认；未运行复现",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研目标与现有材料分析；非VM已证实现",
+        "evidence": "代码路径确认；未运行复现",
+        "vmStatus": "见VM-PERSIST-14已核局部证据，未知边界保留",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      },
+      "vmEvidenceRequest": "按需补充，不虚构VM内部机制",
+      "vmComparison": {
+        "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "anchor": "vm/VM-READ-01"
+      }
+    },
+    {
+      "id": "O-106",
+      "batch": "B1",
+      "priority": "P1",
+      "title": "最终磁盘快照和基线统一",
+      "issue": "仓库规范化副本，Manager按进入仓库前written记基线",
+      "evidence": [
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S2"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S3"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S13"
+        }
+      ],
+      "impact": "磁盘语义与保存基线存在不一致风险，需样本验证",
+      "contract": "同一最终持久化快照用于写盘、验证和基线",
+      "dependencies": [],
+      "strategy": "保留整改",
+      "acceptance": "T17/T18：失败不提交；规范化后基线一致",
+      "status": "方案待确认",
+      "confidence": "代码路径确认；未运行复现",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研目标与现有材料分析；非VM已证实现",
+        "evidence": "代码路径确认；未运行复现",
+        "vmStatus": "见VM-PERSIST-14已核局部证据，未知边界保留",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      },
+      "vmEvidenceRequest": "按需补充，不虚构VM内部机制",
+      "vmComparison": {
+        "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "anchor": "vm/VM-READ-01"
+      }
+    },
+    {
+      "id": "O-107",
+      "batch": "B1",
+      "priority": "P2",
+      "title": "读取API与兼容保护不等价",
+      "issue": "Solution.Load直接反序列化，Repository有额外检查",
+      "evidence": [
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S10"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S11"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S12"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S16"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S17"
+        }
+      ],
+      "impact": "其他调用者可能绕过校验；使用范围待核",
+      "contract": "权威读取管线；旧API边界适配；嵌套未知字段策略明确",
+      "dependencies": [],
+      "strategy": "重做或合并",
+      "acceptance": "T08/T09：缺插件/未知类型/版本拒绝或保留不静默丢字段",
+      "status": "方案待确认",
+      "confidence": "代码路径确认；未运行复现",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研目标与现有材料分析；非VM已证实现",
+        "evidence": "代码路径确认；未运行复现",
+        "vmStatus": "见VM-PERSIST-14已核局部证据，未知边界保留",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      },
+      "vmEvidenceRequest": "按需补充，不虚构VM内部机制",
+      "vmComparison": {
+        "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "anchor": "vm/VM-READ-01"
+      }
+    },
+    {
+      "id": "O-108",
+      "batch": "B1",
+      "priority": "P1",
+      "title": "缺少字段级读回一致性证据",
+      "issue": "数量和JSON字符串不能覆盖参数/绑定/ROI语义",
+      "evidence": [
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S1"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S14"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S15"
+        },
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S16"
+        }
+      ],
+      "impact": "配置变化可能漏判或出现伪差异",
+      "contract": "按稳定ID、类型、值、引用和有序集合投影比较",
+      "dependencies": [
+        "O-101",
+        "O-102",
+        "O-104",
+        "O-105",
+        "O-106"
+      ],
+      "strategy": "新增闭环能力",
+      "acceptance": "T01—T03/T19：真实配置差异可定位，忽略仅明示字段",
+      "status": "方案待确认",
+      "confidence": "代码路径确认；未运行复现",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研目标与现有材料分析；非VM已证实现",
+        "evidence": "代码路径确认；未运行复现",
+        "vmStatus": "见VM-PERSIST-14已核局部证据，未知边界保留",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      },
+      "vmEvidenceRequest": "按需补充，不虚构VM内部机制",
+      "vmComparison": {
+        "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "anchor": "vm/VM-READ-01"
+      }
+    },
+    {
+      "id": "O-201",
+      "batch": "B2",
+      "priority": "P1",
+      "title": "修改状态与撤销事务",
+      "issue": "参数/变量与画布撤销域不统一、失败历史处理静态线索",
+      "evidence": [
+        {
+          "file": "artifacts/ui-prototypes/edit-consistency/index.html",
+          "anchor": "summary"
+        }
+      ],
+      "impact": "dirty或历史可能与内容不同",
+      "contract": "明确编辑事务、保存点、撤销域和失败保留",
+      "dependencies": [],
+      "strategy": "保留整改",
+      "acceptance": "设计需覆盖参数/变量/节点、撤销失败及引用清理",
+      "status": "待核对",
+      "confidence": "历史材料线索；当前影响待重核",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研目标与现有材料分析；非VM已证实现",
+        "evidence": "历史材料线索；当前影响待重核",
+        "vmStatus": "未新增VM同类行为验证",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      }
+    },
+    {
+      "id": "O-301",
+      "batch": "B3",
+      "priority": "P1",
+      "title": "统一运行与停止完成",
+      "issue": "准入/调度/完成合同需重核当前链",
+      "evidence": [
+        {
+          "file": "docs/collaboration/DEVELOPMENT_PRIORITY_BATCH01_20261022.md",
+          "anchor": ""
+        }
+      ],
+      "impact": "错误重入、迟到结果与停止完成存在风险线索",
+      "contract": "Run身份、快照、准入、排空和超时Owner统一",
+      "dependencies": [],
+      "strategy": "待补证",
+      "acceptance": "重复启动、停止/异常/超时/连续/迟到结果场景明确",
+      "status": "待核对",
+      "confidence": "历史材料线索；当前影响待重核",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研目标与现有材料分析；非VM已证实现",
+        "evidence": "历史材料线索；当前影响待重核",
+        "vmStatus": "未新增VM同类行为验证",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      }
+    },
+    {
+      "id": "O-401",
+      "batch": "B4",
+      "priority": "P1",
+      "title": "结果代次与图像资源Owner",
+      "issue": "结果发布和最后消费者释放需与执行联合核对",
+      "evidence": [
+        {
+          "file": "docs/collaboration/DEVELOPMENT_PRIORITY_BATCH01_20261022.md",
+          "anchor": ""
+        }
+      ],
+      "impact": "结果污染或资源释放时机错误风险",
+      "contract": "发布代次门、借用复制、缓存退役与最终释放分开",
+      "dependencies": [],
+      "strategy": "待补证",
+      "acceptance": "切方案/停止/关闭下结果和Owner可观测",
+      "status": "待核对",
+      "confidence": "历史材料线索；当前影响待重核",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研目标与现有材料分析；非VM已证实现",
+        "evidence": "历史材料线索；当前影响待重核",
+        "vmStatus": "未新增VM同类行为验证",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      }
+    },
+    {
+      "id": "O-501",
+      "batch": "B5",
+      "priority": "P2",
+      "title": "SDK二开与旧插件适配",
+      "issue": "目标SDK拆分还需稳定执行数据合同",
+      "evidence": [
+        {
+          "file": "docs/collaboration/CURRENT_TASK.md",
+          "anchor": ""
+        }
+      ],
+      "impact": "接口边界不稳会反复迁移和长期双实现",
+      "contract": "公开契约与宿主实现分离；兼容适配有退出条件",
+      "dependencies": [
+        "O-301",
+        "O-401"
+      ],
+      "strategy": "待补证",
+      "acceptance": "外部无UI示例独立运行、旧插件兼容验证",
+      "status": "待核对",
+      "confidence": "历史材料线索；当前影响待重核",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研目标与现有材料分析；非VM已证实现",
+        "evidence": "历史材料线索；当前影响待重核",
+        "vmStatus": "未新增VM同类行为验证",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      }
+    },
+    {
+      "id": "O-601",
+      "batch": "B6",
+      "priority": "P2",
+      "title": "已有工具对应与分类整改",
+      "issue": "历史分类及当前工具链不能默认合理",
+      "evidence": [
+        {
+          "file": "docs/collaboration/TOOL_VM_CORRESPONDENCE_20261022.json",
+          "anchor": ""
+        }
+      ],
+      "impact": "名称相似不等功能/算法/传递相同",
+      "contract": "逐工具链证据决定保留/借鉴/合并/重做",
+      "dependencies": [],
+      "strategy": "待补证",
+      "acceptance": "按类别冻结工具分母后验收，不由代表工具推全类",
+      "status": "待核对",
+      "confidence": "历史材料线索；当前影响待重核",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研目标与现有材料分析；非VM已证实现",
+        "evidence": "历史材料线索；当前影响待重核",
+        "vmStatus": "未新增VM同类行为验证",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      }
+    },
+    {
+      "id": "O-602",
+      "batch": "B1",
+      "priority": "P1",
+      "title": "已删工具的旧方案兼容",
+      "issue": "Threshold/NPointVerification已删除，旧节点需明确处置",
+      "evidence": [
+        {
+          "file": "docs/collaboration/TOOL_DISPOSITION_DECISIONS_20261022.json",
+          "anchor": ""
+        }
+      ],
+      "impact": "旧方案不能静默丢节点后覆盖",
+      "contract": "先明确拒绝与保留原件；迁移需参数算法映射证据",
+      "dependencies": [],
+      "strategy": "待补证",
+      "acceptance": "旧工具样本明确诊断；未证等价不自动换ToolType",
+      "status": "待核对",
+      "confidence": "历史材料线索；当前影响待重核",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研目标与现有材料分析；非VM已证实现",
+        "evidence": "历史材料线索；当前影响待重核",
+        "vmStatus": "见VM-PERSIST-14已核局部证据，未知边界保留",
+        "tradeoff": "正式方案须并列替代方案、兼容影响与代价"
+      },
+      "vmEvidenceRequest": "按需补充，不虚构VM内部机制",
+      "vmComparison": {
+        "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "anchor": "vm/VM-READ-01"
+      }
+    }
+  ],
+  "queues": {
+    "development": [
+      "B1改造合同、文件清单与代表样本落实（不改产品）"
+    ],
+    "testing": [
+      "B0遗留12项验收缺口：待有限验证方案，不重跑逐按钮跨聊流程",
+      "新批交付后按独立产物身份入队"
+    ],
+    "documentation": [
+      "同步当前事实与本看板入口",
+      "后续按批接收最终行为及验收结果"
+    ],
+    "reverse": [
+      "本轮3项局部单已收回核验；不继续全域逆向",
+      "未决原生细分类/路径/跨机问题仅在阻碍B1决策时再派有限任务"
+    ]
+  },
+  "testSnapshot": {
+    "task": "EDIT-SAVE-11",
+    "finishedUtc": "2026-10-22T10:00:43.8831589Z",
+    "head": "f22a5f7490554103fc90014ba848fb87e8fbe665",
+    "deliveryMismatchAfter": [],
+    "topLevel": {
+      "pass": 0,
+      "total": 12,
+      "blocked": 12,
+      "fail": 0
+    },
+    "observedUiSubscenarios": {
+      "pass": 2,
+      "mode": "user-assisted",
+      "cases": [
+        "ES07 duplicate-name variable Save",
+        "ES08 Integer invalid variable Save"
+      ],
+      "fail": 0
+    },
+    "coreDataChecks": {
+      "fail": 0,
+      "pass": 5
+    },
+    "cleanup": {
+      "stillRunning": false,
+      "result": "owned-test-process-terminated",
+      "pid": 30756
+    },
+    "productDefectsReproduced": 0,
+    "reason": "Computer-use frame/coordinate input unavailable; user requested ending slow per-click assistance",
+    "manualDesigner": "not-run",
+    "fullUserAcceptance": "not-run",
+    "productBuildExecuted": false
+  },
+  "sources": [
+    {
+      "file": "artifacts/independent-testing/EDIT-SAVE-11/REPORT.md",
+      "sha256": "ed17e0636f077465dde996f50080b8f0b4564430adfe9c30bc07cd8b864e50ff"
+    },
+    {
+      "file": "artifacts/independent-testing/EDIT-SAVE-11/final-results.json",
+      "sha256": "0ce7ee27f146821ecb96a7498592896d2bbc5b6111801d110a3e54fb79f4be94"
+    },
+    {
+      "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+      "sha256": "6dbc956776adf77d112b127fe1c471eadabd92adc320911e0308a1eead699fd9"
+    },
+    {
+      "file": "artifacts/ui-prototypes/edit-consistency/index.html",
+      "sha256": "bf6dbe56371986eb1b92b7f4d692ce995f5edf64fe5b298f67899a0c3d2d085d"
+    },
+    {
+      "file": "docs/collaboration/DEVELOPMENT_PRIORITY_BATCH01_20261022.md",
+      "sha256": "fceae8c0530db76471c9c08270bcac29a1224c0a7d1e94a0316240ef2844481a"
+    },
+    {
+      "file": "docs/collaboration/CURRENT_TASK.md",
+      "sha256": "3d21339d630309496604d7262e3910caeef5669c115e9e063437bca04dc21718"
+    },
+    {
+      "file": "docs/collaboration/TOOL_VM_CORRESPONDENCE_20261022.json",
+      "sha256": "79668849f00c687355a70b2372b8f2fa5f1ffb6949d1d7beff334f46fb03b1ec"
+    },
+    {
+      "file": "docs/collaboration/TOOL_DISPOSITION_DECISIONS_20261022.json",
+      "sha256": "3306166af3ae4ffa5bed095ffe7ec318d045800863980c44c2e92657f05215da"
+    },
+    {
+      "file": "artifacts/ui-prototypes/save-roundtrip/evidence.json",
+      "sha256": "16c0eeed5a09694b6242fa15d8c63a82e432e3970692619db5eef5d189a0b532"
+    },
+    {
+      "file": "artifacts/ui-prototypes/save-roundtrip/vm-comparison.json",
+      "sha256": "29f58ca3bde1ec1999ecaca6402203e27238aec97c2ab7e0f11d8c6ac0b3ba4e"
+    },
+    {
+      "file": "artifacts/ui-prototypes/save-roundtrip/vm-evidence/framework-verification.json",
+      "sha256": "fd367446af90ed50c30718298a43729a8ff6a4a3467865b581bba2fa89a9d2a0"
+    },
+    {
+      "file": "artifacts/ui-prototypes/save-roundtrip/vm-evidence/resource-verification.json",
+      "sha256": "6ba312b35f06d768ad6e039ce26ddb398cbc278ae07d34be5fa690276000192a"
+    }
+  ],
+  "baseline": "f22a5f7490554103fc90014ba848fb87e8fbe665",
+  "noGlobalCompletionPercent": true,
+  "recommendationPolicy": {
+    "facts": "源码或运行证据说明问题",
+    "origin": "每个推荐单列VM已证参考/自研目标推导/混合方案/待补证",
+    "comparison": "关键行为并列VM方案、自研方案、优缺点和成本；未知不按VM事实填写",
+    "decision": "候选建议不能冒充已证最优，用户确认后实施",
+    "reuse": "已验收只受影响回归；未验只补验；新证据/目标合同/依赖变化才局部重审"
+  },
+  "reverseQuestions": [
+    {
+      "id": "VM-READ-01",
+      "status": "本轮局部证据已复核；未知保留",
+      "question": "坏连接/孤立边、变量类型或值异常时的加载终态、诊断、修复与覆盖保护",
+      "boundary": "只取入口到异常处置的局部链；先复用SDK/现有证据，无需完整恢复",
+      "ownerThread": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+      "task": "VM-PERSIST-14"
+    },
+    {
+      "id": "VM-OPEN-02",
+      "status": "本轮局部证据已复核；未知保留",
+      "question": "同路径打开/重新加载及读取失败的会话提交时机、原工作区保留行为",
+      "boundary": "行为证据与内部推断分开；不要求逆向全部启动和设备系统",
+      "ownerThread": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+      "task": "VM-PERSIST-14"
+    },
+    {
+      "id": "VM-RESOURCE-03",
+      "status": "本轮局部证据已复核；未知保留",
+      "question": "资源路径基准、方案移动、资源缺失、重定位与打包的明确支持范围",
+      "boundary": "先查本地官方开发文档及现有模型，再补局部链，不启动全域资源逆向",
+      "ownerThread": "01a1529c-d351-73c2-bc9c-79e92b0e7582",
+      "task": "VM-PERSIST-14"
+    }
+  ],
+  "reusePolicy": {
+    "verified": "已实现且已验收保留结论，只对受影响部分回归",
+    "unverified": "已实现但验收不足只补验，不重新设计",
+    "reopenTriggers": [
+      "新证据证明原方案缺陷",
+      "目标合同确实改变",
+      "依赖变更影响原验收边界"
+    ],
+    "constraint": "启动/起始页/内存新建/首次保存不因B1整体重做"
+  }
+}

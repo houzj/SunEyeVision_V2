@@ -1,0 +1,6 @@
+{
+  "scope": "HTML and data consistency only; not product acceptance",
+  "widthChecks": 18,
+  "interactionChecks": 6,
+  "errors": []
+}

@@ -1,0 +1,72 @@
+{
+  "task": "VM-PERSIST-14/F",
+  "sourceFiles": [
+    {
+      "name": "projectManager",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+      "expected": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+      "actual": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+      "match": true
+    },
+    {
+      "name": "titleMenu",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs",
+      "expected": "b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187",
+      "actual": "b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187",
+      "match": true
+    },
+    {
+      "name": "vmSolution",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+      "expected": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+      "actual": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+      "match": true
+    },
+    {
+      "name": "solutionManager",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/SolutionManager.cs",
+      "expected": "46b1d8249e3a30fe3bf7a0ed8e92207835f1a8e272833d5462041bc1756f220a",
+      "actual": "46b1d8249e3a30fe3bf7a0ed8e92207835f1a8e272833d5462041bc1756f220a",
+      "match": true
+    },
+    {
+      "name": "serverApi",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ServerSDKAPI.cs",
+      "expected": "f022d4b4e87d4a076dcf42a79b131a0460ddf673d07603b5ba8d6aca35ef4b14",
+      "actual": "f022d4b4e87d4a076dcf42a79b131a0460ddf673d07603b5ba8d6aca35ef4b14",
+      "match": true
+    },
+    {
+      "name": "nativeMethods",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/NativeMethods.cs",
+      "expected": "6a60f612fb385987ff96d6973844a256402f097d1eb371e7ad462c44e57127d0",
+      "actual": "6a60f612fb385987ff96d6973844a256402f097d1eb371e7ad462c44e57127d0",
+      "match": true
+    },
+    {
+      "name": "mainWindowData",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/MainWindowData.cs",
+      "expected": "aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5",
+      "actual": "aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5",
+      "match": true
+    },
+    {
+      "name": "vmModuleSet",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmModuleSet.cs",
+      "expected": "f3b98c4436686b0a9babf8cde4f5f6c83814664b8f7835dfabbeb02e2a64a346",
+      "actual": "f3b98c4436686b0a9babf8cde4f5f6c83814664b8f7835dfabbeb02e2a64a346",
+      "match": true
+    },
+    {
+      "name": "program",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs",
+      "expected": "e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6",
+      "actual": "e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6",
+      "match": true
+    }
+  ],
+  "reportSha256": "74481fc2c974149fce4842ba45cdadedcb62ea238796c0ec4f5cdb6ac23ea6b0",
+  "evidenceSha256": "7506d694604a17ca67874bc9b346b67839a57eb37611ababeeccf43f3d67c834",
+  "claims": 11,
+  "scope": "Independent source identity and reference range verification; no runtime observations"
+}

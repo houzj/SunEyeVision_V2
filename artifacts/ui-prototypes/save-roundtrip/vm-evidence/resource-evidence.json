@@ -1,0 +1,94 @@
+{
+  "task": "VM-PERSIST-14/P / VM-RESOURCE-03",
+  "date": "2026-10-22",
+  "scope": "Existing original evidence for image, model and calibration resource references/save/reload; no new VM run or product changes",
+  "installedVersion": "VisionMaster4.4.0",
+  "originalBinaries": [
+    {"path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Collection/ImageSourceModule/ImageSourceModule.dll", "sha256": "91EA3659BE97E51EDEAB0C913779D4555D51DCD0D6288086FBF9916D35B942DB"},
+    {"path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Collection/ImageSourceModule/ImageSourceModuleCs.dll", "sha256": "1F7C52ABB34EB61EC177E295AEA9812B9FBC3B1C4453BEF28FBC960BF35AA35C"},
+    {"path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Calibration/ReadCalibFileModu/ReadCalibFileModu.dll", "sha256": "86B8B112ADED58DE27A41A5EDE6EC6B41117D7DB8D0C5934647FA9514E6FA403"}
+  ],
+  "versionBoundary": "A locally named V4.4.2 CHM is not treated as matching runtime evidence",
+  "claims": [
+    {
+      "id": "image-managed-path",
+      "claim": "ImageSource GetModel/ImportModel retains selected path and model data; SetImagePath writes supplied path to native input structure.",
+      "evidenceKind": "original-decompiled-source",
+      "source": "D:/MyWork/REA逆向测试/analysis/full-audit/representative-decompiled/ImageSourceModule/ImageSourceModuleCs.decompiled.cs",
+      "members": "ImageSourceModuleTool.GetModel:660-675; ImportModel:677-711; SetImagePath:745-761",
+      "sha256": "3157ED157E3D1F8B346B37A16B560DB5FD91EADAF1363F246999A4C431F2B8A2",
+      "callChain": "GetModel→SelectedPath/GetModelData; ImportModel→ModelData/path list; SetImagePath→IMVS_PF_INPUT_IMAGE_INFO.strImagePath",
+      "boundary": "Relative path base and native transformations unknown"
+    },
+    {
+      "id": "image-native-attachment",
+      "claim": "ImageSource native save has attachment/nonattachment branches; load can materialize attachment bytes to a temporary file and list.",
+      "evidenceKind": "original-native-pseudocode",
+      "sources": [
+        {"path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-extra-7.c", "member": "SaveModuleData:178-180,285-315,328-371", "sha256": "B556956B29291BE7B20B64F97F8193C3BFB8F2F1960F41D1D8D20D042FCE81ED"},
+        {"path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-extra-8.c", "member": "LoadModuleData:150-172,433-460,715-765", "sha256": "6625ABFA9124A309BC2538E0F1666B732DB67896C538D538D827CFB3D612D23A"}
+      ],
+      "callChain": "SaveModuleData→CopyFileFunction/register attachment; LoadModuleData→write attachment bytes→AddImage2CircleList/current path",
+      "boundary": "Native format arguments and exact ABI not fully assembly-checked"
+    },
+    {
+      "id": "image-list-original-runtime",
+      "claim": "One controlled default-list sample ran after SaveAs and source deletion with identical 4x4 MONO8 pixels and attachment-derived temporary path.",
+      "evidenceKind": "confirmed-original-runtime-existing",
+      "source": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/image-source-runtime/run-9a9313c56a3e486199c58f66f763c67e/probe.json",
+      "member": "embed-before-save; embed-save-as; embed-after-source-removed",
+      "sha256": "170BAF9DF443E1D297287C9AD65D00800DC9A4AD077E069049795F4349A1A807",
+      "archive": {"path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/image-source-runtime/run-9a9313c56a3e486199c58f66f763c67e/owned-embedded.sol", "sha256": "DBB566B7B8E4F05206F2103149DDA00767A3008B91FC11F33AF12F2F75863E01", "member": "SolutionFile/ModuleAttachments/0697200-owned.bmp", "memberLength": 1094},
+      "callChain": "SaveAs→source deletion→reload/run→ImageTemp/VM69720ImgSrcTemp/0697200-owned.bmp",
+      "boundary": "One sample/mode, not a universal relocation or cross-machine test"
+    },
+    {
+      "id": "image-folder-original-runtime",
+      "claim": "Existing subscribed-folder sample produced no image and error 3758096899 after source deletion and reload.",
+      "evidenceKind": "confirmed-original-runtime-existing",
+      "source": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/image-source-runtime/run-db179dbe4b004b66a692bf16b988edd2/probe.json",
+      "member": "embed-after-source-removed",
+      "sha256": "4C5D5601582AA194A6DC67A1537BA90B446DAF14E24BD4A6BDA1A2A0B330AEC5",
+      "callChain": "folder mode SaveAs→source deletion→reload/run→empty image",
+      "boundary": "Does not negate default-list attachment result"
+    },
+    {
+      "id": "shipped-sol-attachment",
+      "claim": "The installed 4.4.0 CircleFind sample archive includes a BMP ModuleAttachments member.",
+      "evidenceKind": "shipped-sdk-sample",
+      "source": "D:/Program Files/VisionMaster4.4.0/Development/V4.x/Samples/C#/PlatformSDKSampleCS/CircleFind/CircleFind.sol",
+      "member": "SolutionFile/ModuleAttachments/0106000-20220225180507.bmp (3981366 bytes); SolutionFile/VmServer.xml; SolutionFile/MoudleFrame",
+      "sampleVersion": "VmServer.xml SoftVersion CurrentVersion=V4.4.0",
+      "sha256": "B91A7736F467757E15A55AF7836E22364AE153478E17C69AAEB69E0C30674D0B",
+      "callChain": "ZIP member inventory only",
+      "boundary": "Archive inventory is not a relocation or runtime success test"
+    },
+    {
+      "id": "model-module-ownership",
+      "claim": "Feature-match UI imports selected model file into module ModelData/SpareModel and stores SolModelFile_i metadata in UserData; reload reconstructs from candidate name and UserData.",
+      "evidenceKind": "original-decompiled-source",
+      "sources": [
+        {"path": "D:/MyWork/REA逆向测试/analysis/full-audit/renderer-gap-projects/IMVSHPFeatureMatchModuControl/Apps.XmlParser.ParamTab/FeaturepatMatchConfigPanalData.cs", "member": "LoadModel:171-220", "sha256": "FABC6E4EE48F3DCA82910AFC0C2A895BD3D359BEFB13ED5EB418DA5E740766D9"},
+        {"path": "D:/MyWork/REA逆向测试/analysis/full-audit/renderer-shared-projects/FeatureMatchCommonControl/FeatureMatchCommonControl/FeaturepatMatchConfigPanalDataBase.cs", "member": "AddModelToModule:152-236", "sha256": "79A77BFF53E5E5CE32C4C3450574B52510651CA48A6330E120298AF8D0F3346D"},
+        {"path": "D:/MyWork/REA逆向测试/analysis/full-audit/renderer-shared-projects/FeatureMatchCommonControl/FeatureMatchCommonControl/FeaturepatMatchConfigPanalDataDecorate.cs", "member": "GetModuleList:259-320", "sha256": "FF17F8B93CCF05AE5ABA25A5302FC55E72389BCA81632755C52DD4385AB4E11A"}
+      ],
+      "callChain": "OpenFileDialog.FileName→AnalysisModelItem→LoadModelToList→AddSpareModel/UserData→GetModuleList",
+      "boundary": "No model .sol packaging, relocation or original runtime proof in this task"
+    },
+    {
+      "id": "calibration-filedata",
+      "claim": "ReadCalibFileModu caches file content when FilePath is set and conditionally writes FileData when SaveCalibDataEnable and cache nonempty; mode-0 load can consume FileData.",
+      "evidenceKind": "original-native-pseudocode",
+      "sources": [
+        {"path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/read-calib-file/native/18000d120.c", "member": "SetParam:57-79", "sha256": "35DC0C1699E08DFCE863173B529FBE8BA4E0579BE5D6CE1D3167AEE92D2F57F5"},
+        {"path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/read-calib-file/native/18000cf10.c", "member": "SaveModuleData:12-36", "sha256": "3DA32B425392DB3191E036502F8DAC4328FA0F9002528106F135B08E9708DDAD"},
+        {"path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/read-calib-file/native/18000bef0.c", "member": "LoadModuleData:78-103", "sha256": "EEAC7FA3C98184213039400B00DD423B1708C082B348EF4B384D7C9BC48D9BEB"}
+      ],
+      "callChain": "FilePath→LoadFile/cache→SaveModuleData/FileData→LoadModuleData mode 0",
+      "boundary": "Native pseudocode scope only; not proof of all calibration tools or cross-machine relocation"
+    }
+  ],
+  "unknowns": ["Relative-path resolution base", "Cross-directory and cross-machine relocation behavior", "Native model-byte serialization into .sol", "Exact native image attachment format arguments/ABI", "Whole-solution save/reload exception policy"],
+  "implementationChanged": false,
+  "newOriginalRuntimeExecuted": false
+}

@@ -1,0 +1,299 @@
+[
+  {
+    "id": "F-R01",
+    "kind": "original-decompiled-managed-source",
+    "claim": "菜单加载前先经SDK格式检查；抛异常或nValidFormat非1时返回false而不启动加载任务。",
+    "limit": "只证明菜单前置分支；原生CheckSolution如何识别各损坏内容未知。",
+    "chain": "TitleMenueItemData.OpenSolution -> ProjectManager.LoadSolution -> SolutionManager.CheckSolution -> IMVS_CheckSolution",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+        "sha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+        "member": "ProjectManager.LoadSolution",
+        "location": "552-574",
+        "start": 552,
+        "end": 574,
+        "excerpt": "\t\tif (flag == true)\n\t\t{\n\t\t\tbool flag2 = false;\n\t\t\tuint nHasPwd = 0u;\n\t\t\tuint nValidFormat = 0u;\n\t\t\ttry\n\t\t\t{\n\t\t\t\tServerSDKManager.serverSDKManager.mSolutionManager.CheckSolution(filename, ref nHasPwd, ref nValidFormat);\n\t\t\t}\n\t\t\tcatch (VmException vmException)\n\t\t\t{\n\t\t\t\tShowMessage.ShowVmExceptionMessage(vmException);\n\t\t\t\treturn false;\n\t\t\t}\n\t\t\tstring passWord = \"\";"
+      }
+    ]
+  },
+  {
+    "id": "F-R02",
+    "kind": "original-decompiled-managed-source",
+    "claim": "加密方案需解密窗口或CheckPassword；空路径在VmSolution.CheckSol抛参数异常。",
+    "limit": "密码失败的全部UI文案和原生错误映射未逐一核证。",
+    "chain": "ProjectManager.LoadSolution -> CheckPassword; VmSolution.Load -> CheckSol",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+        "sha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+        "member": "ProjectManager.LoadSolution",
+        "location": "575-597",
+        "start": 575,
+        "end": 597,
+        "excerpt": "\t\t\tif (nHasPwd == 1)\n\t\t\t{\n\t\t\t\tif (solPassWord == null)\n\t\t\t\t{\n\t\t\t\t\tDecryption decryption = new Decryption();\n\t\t\t\t\tdecryption.SolutionPath = filename;\n\t\t\t\t\tif (decryption.ShowDialog() != true)\n\t\t\t\t\t{\n\t\t\t\t\t\tflag2 = true;\n\t\t\t\t\t}\n\t\t\t\t\tpassWord = decryption.AccessAdministatorCode;\n\t\t\t\t}\n\t\t\t\telse\n\t\t\t\t{\n\t\t\t\t\tint nIsCorrect = 0;"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+        "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+        "member": "VmSolution.CheckSol",
+        "location": "1536-1549",
+        "start": 1536,
+        "end": 1549,
+        "excerpt": "\tprivate static void CheckSol(string path, string password)\n\t{\n\t\tif (string.IsNullOrEmpty(path))\n\t\t{\n\t\t\tthrow new VmException(-536870397, string.Format(\"(VmSolution.Load(string path)) path:{0}\", AppLocalizationService.GetLang(\"Lang_ParamErr\")));\n\t\t}\n\t\tuint nHasPwd = 0u;\n\t\tuint nValidFormat = 0u;\n\t\tServerSDKManager.serverSDKManager.mSolutionManager.CheckSolution(path, ref nHasPwd, ref nValidFormat);\n\t\tif (nHasPwd == 1 && string.IsNullOrEmpty(password))\n\t\t{\n\t\t\tthrow new VmException(-536868864, string.Format(\"(VmSolution.Load(string path)) {0}\", AppLocalizationService.GetLang(\"请输入密码\")));\n\t\t}\n\t}"
+      }
+    ]
+  },
+  {
+    "id": "F-R03",
+    "kind": "original-decompiled-managed-source",
+    "claim": "格式失败可提示从最近项删除路径；RemoveRecentSolution修改最近列表而非方案文件。",
+    "limit": "只确认此调用链没有删除原文件；原生层或其他入口的文件策略未证。",
+    "chain": "nValidFormat != 1 -> LoadSolutionFailed -> RemoveSolution -> 用户确认 -> RemoveRecentSolution",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+        "sha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+        "member": "ProjectManager.LoadSolutionFailed/RemoveSolution/RemoveRecentSolution",
+        "location": "840-855,940-986",
+        "start": 840,
+        "end": 855,
+        "excerpt": "\tprivate void LoadSolutionFailed(string solname, string erro, string details)\n\t{\n\t\tif (!RemoveSolution(solname, details))\n\t\t{\n\t\t\tThread thread = new Thread(() =>\n\t\t\t{\n\t\t\t\tApplication.Current.Dispatcher.Invoke(() =>\n\t\t\t\t{\n\t\t\t\t\tHikMessageBox.Show(erro, details, MessageButtons.Normal, MessageIcons.Error);\n\t\t\t\t});\n\t\t\t});\n\t\t\tthread.SetApartmentState(ApartmentState.STA);\n\t\t\tthread.IsBackground = true;\n\t\t\tthread.Start();\n\t\t}"
+      }
+    ]
+  },
+  {
+    "id": "F-R04",
+    "kind": "original-decompiled-managed-source",
+    "claim": "普通非零原生加载结束状态会替换VmSolution.Instance，并在Import回调清路径/密码。",
+    "limit": "回调顺序取决于订阅和SDK触发；原生内部旧图释放状态未知。",
+    "chain": "SyncLoadSolution -> OnSolutionLoadEnd callback -> Instance setter -> Import end callback",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+        "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+        "member": "MSolutionManager_OnSolutionLoadEndCallBack / VmSolution_Import_OnEndCallBack / Instance setter",
+        "location": "3494-3513,2956-2969,513-538",
+        "start": 3494,
+        "end": 3513,
+        "excerpt": "\tinternal static void MSolutionManager_OnSolutionLoadEndCallBack(ImvsSdkDefine.IMVS_SOLUTION_LOAD_END_INFO solutionLoadEndInfo)\n\t{\n\t\tisLoading = false;\n\t\t_failReflashFlag = true;\n\t\tEndEventArgs e = new EndEventArgs();\n\t\te.ClientType = solutionLoadEndInfo.nClientType;\n\t\te.ErrorCode = (int)solutionLoadEndInfo.nStatus;\n\t\tif (e.ErrorCode != -536870093)\n\t\t{\n\t\t\t_failReflashFlag = false;\n\t\t}\n\t\tif (instance.SolutionPath == null)\n\t\t{\n\t\t\tinstance.SolutionPath = Hik.Util.StringUtil.UTF8GetString(solutionLoadEndInfo.strSolPath);\n\t\t}"
+      }
+    ]
+  },
+  {
+    "id": "F-R05",
+    "kind": "original-decompiled-managed-source",
+    "claim": "特殊状态-536870093会保留失败刷新标记，并依据SDK GetMultiObjectLoadState给已有模块标true/false/null。",
+    "limit": "不能映射为未知模块、坏变量、孤立边中的任一种；模块未实例化时行为未知。",
+    "chain": "SDK load-end special status -> _failReflashFlag -> GetMultiObjectLoadState -> VmModule.IsLoadFailed",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+        "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+        "member": "MSolutionManager_OnSolutionLoadEndCallBack",
+        "location": "3501-3503,3528-3575",
+        "start": 3501,
+        "end": 3503,
+        "excerpt": "\t\tif (e.ErrorCode != -536870093)\n\t\t{\n\t\t\t_failReflashFlag = false;"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmModuleSet.cs",
+        "sha256": "f3b98c4436686b0a9babf8cde4f5f6c83814664b8f7835dfabbeb02e2a64a346",
+        "member": "load-state refresh",
+        "location": "572-600",
+        "start": 572,
+        "end": 600,
+        "excerpt": "\t\t\tLogHelper.Info(\"加载方案后失败状态 ---VmModuleSet---begin\");\n\t\t\tif (!VmSolution.IsLoading && VmSolution._failReflashFlag)\n\t\t\t{\n\t\t\t\tlock (VmSolution._failFlagObject)\n\t\t\t\t{\n\t\t\t\t\tImvsSdkDefine.IMVS_MODULE_STATE_LIST value2 = ServerSDKManager.serverSDKManager.mModuleManager.GetMultiObjectLoadState(stModuleId).Value;\n\t\t\t\t\tfor (int num8 = 0; num8 < value2.nNum; num8++)\n\t\t\t\t\t{\n\t\t\t\t\t\tImvsSdkDefine.IMVS_MODULE_STATE_INFO stateInfo2 = value2.astModuState[num8];\n\t\t\t\t\t\tVmModule vmModule5 = modules.FirstOrDefault((VmModule p) => p.ID == stateInfo2.nModuleId);\n\t\t\t\t\t\tif (vmModule5 != null)\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tswitch (stateInfo2.nEnable)\n\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\tcase 1u:"
+      }
+    ]
+  },
+  {
+    "id": "F-R06",
+    "kind": "original-decompiled-managed-source",
+    "claim": "UI的LoadSolution可在异步任务启动后返回true；SDK模式SyncLoadSolution对非零回调码抛异常，UI模式此处不按该码抛。",
+    "limit": "true不是最终成功；UI后续显示结果不由这两个返回值单独决定。",
+    "chain": "ProjectManager.LoadSolution -> Task.Start -> VmSolution.Load -> SyncLoadSolution -> SDK end callback",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+        "sha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+        "member": "ProjectManager.LoadSolution",
+        "location": "724-793",
+        "start": 724,
+        "end": 793,
+        "excerpt": "\t\t\t\t\t\ttry\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tif (!((IVmSolution)VmSolution.Instance).IsLoading)\n\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\tVmSolution.Load(filename, passWord);\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t\tcatch (VmException vmException2)\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tShowMessage.ShowVmExceptionMessage(vmException2);\n\t\t\t\t\t\t\treturn;\n\t\t\t\t\t\t}\n\t\t\t\t\t\tcatch (Exception ex)\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tHikMessageBox.Show(ex.Message);"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/SolutionManager.cs",
+        "sha256": "46b1d8249e3a30fe3bf7a0ed8e92207835f1a8e272833d5462041bc1756f220a",
+        "member": "SolutionManager.SyncLoadSolution/GetSolutionLoadEndCallBackInfo",
+        "location": "272-290,1092-1105",
+        "start": 272,
+        "end": 290,
+        "excerpt": "\tpublic void SyncLoadSolution(string strPath, string strPassword, bool isReportSilent = true)\n\t{\n\t\tint num = -536870657;\n\t\tbool flag = true;\n\t\tnSolutionLoadErrorCode = 0;\n\t\tmWaitLoadSolutionFlag = false;\n\t\tnum = ServerSDKAPI.IMVS_LoadSolution(bCheckSolFlag: CVmObjectBase.GetIsSDKMode() ? true : false, handle: CVmObjectBase.mhandle, strPath: strPath, strPassWord: strPassword, bReportSilenceRunFlag: isReportSilent);\n\t\tif (num != 0)\n\t\t{\n\t\t\tVmException ex = new VmException(num);\n\t\t\tthrow ex;\n\t\t}\n\t\tServerSDKManager.serverSDKManager.mModuleManager.ParamSeted = false;\n\t\tSyncWaitor.Wait(ref mWaitLoadSolutionFlag);\n\t\tif (CVmObjectBase.GetIsSDKMode() && nSolutionLoadErrorCode != 0)"
+      }
+    ]
+  },
+  {
+    "id": "F-R07",
+    "kind": "bounded-negative-search-and-native-boundary",
+    "claim": "未知模块、坏变量类型/值、坏连接/孤立边各自的跳过、默认恢复、数据删除/写回规则在本轮托管链不可判定。",
+    "limit": "需原生解析函数或受控只读差分样本；本轮没有运行或制造损坏方案。",
+    "chain": "VM managed importer -> native IMVS_LoadSolution [first unresolved parser boundary]",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/SolutionManager.cs",
+        "sha256": "46b1d8249e3a30fe3bf7a0ed8e92207835f1a8e272833d5462041bc1756f220a",
+        "member": "SolutionManager.SyncLoadSolution",
+        "location": "272-290",
+        "start": 272,
+        "end": 290,
+        "excerpt": "\tpublic void SyncLoadSolution(string strPath, string strPassword, bool isReportSilent = true)\n\t{\n\t\tint num = -536870657;\n\t\tbool flag = true;\n\t\tnSolutionLoadErrorCode = 0;\n\t\tmWaitLoadSolutionFlag = false;\n\t\tnum = ServerSDKAPI.IMVS_LoadSolution(bCheckSolFlag: CVmObjectBase.GetIsSDKMode() ? true : false, handle: CVmObjectBase.mhandle, strPath: strPath, strPassWord: strPassword, bReportSilenceRunFlag: isReportSilent);\n\t\tif (num != 0)\n\t\t{\n\t\t\tVmException ex = new VmException(num);\n\t\t\tthrow ex;\n\t\t}\n\t\tServerSDKManager.serverSDKManager.mModuleManager.ParamSeted = false;\n\t\tSyncWaitor.Wait(ref mWaitLoadSolutionFlag);\n\t\tif (CVmObjectBase.GetIsSDKMode() && nSolutionLoadErrorCode != 0)"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/NativeMethods.cs",
+        "sha256": "6a60f612fb385987ff96d6973844a256402f097d1eb371e7ad462c44e57127d0",
+        "member": "NativeMethods.IMVS_LoadSolution",
+        "location": "122",
+        "start": 122,
+        "end": 122,
+        "excerpt": "\tpublic static extern int IMVS_LoadSolution(IntPtr handle, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalType = \"VM.PlatformSDKCS.UTF8Marshaler\")] string strPath, string strPassWord, bool bCheckSolFlag, bool bReportSilenceRunFlag);"
+      }
+    ]
+  },
+  {
+    "id": "F-O01",
+    "kind": "original-decompiled-managed-source",
+    "claim": "菜单及最近项同路径请求没有可见路径相等短路；通过前置门后再次调用原生IMVS_LoadSolution。",
+    "limit": "可证明再次派发原生调用，不可证明原生重读磁盘或缓存失效；用户保存提示/忙态可能阻止到达。",
+    "chain": "menu -> LoadSolution -> VmSolution.Load -> Import -> SyncLoadSolution -> IMVS_LoadSolution",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs",
+        "sha256": "b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187",
+        "member": "TitleMenueItemData.OpenSolution/OpenRecentSolution",
+        "location": "444-490",
+        "start": 444,
+        "end": 490,
+        "excerpt": "\tpublic static void OpenSolution()\n\t{\n\t\tif (!ProjectManager.GetInstance().IsCreating && !((IVmSolution)VmSolution.Instance).IsSaving && !((IVmSolution)VmSolution.Instance).IsLoading)\n\t\t{\n\t\t\tStopRun();\n\t\t\tLogHelper.Info(\"OpenSolution\");\n\t\t\tUILogManager.logCreate(\"信息\", \"Lang_OpenSol\", true, true);\n\t\t\tProjectManager.GetInstance().LoadSolution();\n\t\t}\n\t}\n\n\tpublic static void OpenSolutionNative()\n\t{\n\t\tif (!ProjectManager.GetInstance().IsCreating && !((IVmSolution)VmSolution.Instance).IsSaving && !((IVmSolution)VmSolution.Instance).IsLoading)\n\t\t{"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+        "sha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+        "member": "ProjectManager.LoadSolution",
+        "location": "506-793",
+        "start": 506,
+        "end": 793,
+        "excerpt": "\tinternal bool LoadSolution(string filename = null, bool isGuid = false, string solPassWord = null, string initialDirectory = null, bool isRemoteMode = false, bool isFromAppStart = false, bool isFromAppArgs = false, bool isShowSaveNotice = true)\n\t{\n\t\t//IL_0109: Unknown result type (might be due to invalid IL or missing references)\n\t\t//IL_010e: Unknown result type (might be due to invalid IL or missing references)\n\t\t//IL_011a: Unknown result type (might be due to invalid IL or missing references)\n\t\t//IL_0122: Unknown result type (might be due to invalid IL or missing references)\n\t\t//IL_012d: Expected Obj, but got Unknown\n\t\tLogHelper.Info(\"界面LoadSolution----开始加载方案\");\n\t\tbool? flag;\n\t\tif (!string.IsNullOrEmpty(filename))\n\t\t{\n\t\t\tflag = true;\n\t\t}\n\t\telse if (!isRemoteMode)\n\t\t{"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+        "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+        "member": "VmSolution.Load/Import",
+        "location": "2190-2213,2924-2953",
+        "start": 2190,
+        "end": 2213,
+        "excerpt": "\tpublic static void Load(string path, string password = null, bool isSilentExecute = false)\n\t{\n\t\ttry\n\t\t{\n\t\t\tTempVmSolution.Init();\n\t\t\tCheckSol(path, password);\n\t\t\tImport(path, password);\n\t\t\tif (CVmObjectBase.GetIsSDKMode())\n\t\t\t{\n\t\t\t\tif (isSilentExecute)\n\t\t\t\t{\n\t\t\t\t\tServerSDKManager.serverSDKManager.mSolutionManager.SilentExecute(1);\n\t\t\t\t}\n\t\t\t\telse\n\t\t\t\t{"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/SolutionManager.cs",
+        "sha256": "46b1d8249e3a30fe3bf7a0ed8e92207835f1a8e272833d5462041bc1756f220a",
+        "member": "SolutionManager.SyncLoadSolution",
+        "location": "272-290",
+        "start": 272,
+        "end": 290,
+        "excerpt": "\tpublic void SyncLoadSolution(string strPath, string strPassword, bool isReportSilent = true)\n\t{\n\t\tint num = -536870657;\n\t\tbool flag = true;\n\t\tnSolutionLoadErrorCode = 0;\n\t\tmWaitLoadSolutionFlag = false;\n\t\tnum = ServerSDKAPI.IMVS_LoadSolution(bCheckSolFlag: CVmObjectBase.GetIsSDKMode() ? true : false, handle: CVmObjectBase.mhandle, strPath: strPath, strPassWord: strPassword, bReportSilenceRunFlag: isReportSilent);\n\t\tif (num != 0)\n\t\t{\n\t\t\tVmException ex = new VmException(num);\n\t\t\tthrow ex;\n\t\t}\n\t\tServerSDKManager.serverSDKManager.mModuleManager.ParamSeted = false;\n\t\tSyncWaitor.Wait(ref mWaitLoadSolutionFlag);\n\t\tif (CVmObjectBase.GetIsSDKMode() && nSolutionLoadErrorCode != 0)"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ServerSDKAPI.cs",
+        "sha256": "f022d4b4e87d4a076dcf42a79b131a0460ddf673d07603b5ba8d6aca35ef4b14",
+        "member": "ServerSDKAPI.IMVS_LoadSolution",
+        "location": "306-308",
+        "start": 306,
+        "end": 308,
+        "excerpt": "\tpublic static int IMVS_LoadSolution(IntPtr handle, string strPath, string strPassWord, bool bCheckSolFlag = true, bool bReportSilenceRunFlag = true)\n\t{\n\t\treturn NativeMethods.IMVS_LoadSolution(handle, strPath, strPassWord, bCheckSolFlag, bReportSilenceRunFlag);"
+      }
+    ]
+  },
+  {
+    "id": "F-O02",
+    "kind": "bounded-negative-search-plus-source",
+    "claim": "限定检索未发现独立整方案Reload入口；VmModule.ReloadModule是模块级，Program提示字符串不是命令。",
+    "limit": "不是全程序不存在Reload的证明。",
+    "chain": "bounded search of ProjectManager, TitleMenueItemData, VmSolution, SDK wrapper; no whole-solution Reload branch found",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+        "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+        "member": "VmSolution.LoadGlobleModules",
+        "location": "2079-2104",
+        "start": 2079,
+        "end": 2104,
+        "excerpt": "\tinternal void LoadGlobleModules(VmModuleCollection<VmModule> moduleList, bool coverGlobalmodu = false)\n\t{\n\t\ttry\n\t\t{\n\t\t\tImvsSdkDefine.IMVS_MODULE_INFO_LIST? allGlobalModule = ServerSDKManager.serverSDKManager.mGlobalModuleManager.GetAllGlobalModule();\n\t\t\tImvsSdkDefine.IMVS_MODULE_INFO_LIST? iMVS_MODULE_INFO_LIST = allGlobalModule;\n\t\t\tImvsSdkDefine.IMVS_MODULE_INFO_LIST valueOrDefault = iMVS_MODULE_INFO_LIST.GetValueOrDefault();\n\t\t\tif (!iMVS_MODULE_INFO_LIST.HasValue)\n\t\t\t{\n\t\t\t\treturn;\n\t\t\t}\n\t\t\tfor (int i = 0; i < valueOrDefault.nNum; i++)\n\t\t\t{\n\t\t\t\tImvsSdkDefine.IMVS_MODULE_INFO proInfo = valueOrDefault.astModuleInfo[i];\n\t\t\t\tif (moduleList.Count((VmModule p) => p.ID == proInfo.nNodeID) > 0)"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs",
+        "sha256": "e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6",
+        "member": "Program exit notice",
+        "location": "331-339",
+        "start": 331,
+        "end": 339,
+        "excerpt": "\t\tif (IsThirdSoftwareRun())\n\t\t{\n\t\t\tif (ConfigurationHelper.GetConfig(\"IsRunBackground\") == \"0\")\n\t\t\t{\n\t\t\t\tHikMessageBox.Show(\"Lang_DevlopmentAndRunBackground\", MessageIcons.None, isTranslate: true);\n\t\t\t\treturn true;\n\t\t\t}\n\t\t\tHikMessageBox.Show(\"Lang_DevelopmentReloadSolution\", MessageIcons.None, isTranslate: true);\n\t\t}"
+      }
+    ]
+  },
+  {
+    "id": "F-O03",
+    "kind": "original-decompiled-managed-source",
+    "claim": "前置格式拒绝在资源重置之前；开始加载后主窗口重置资源，普通非零结束状态替换当前托管实例。",
+    "limit": "原生先卸后载顺序、物理设备状态和中途异常原子性未知。",
+    "chain": "precheck -> task -> native load begin -> ResetResource -> native load end -> Instance setter",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+        "sha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+        "member": "ProjectManager.LoadSolution",
+        "location": "559-574,661-665,724-744",
+        "start": 559,
+        "end": 574,
+        "excerpt": "\t\t\t\tServerSDKManager.serverSDKManager.mSolutionManager.CheckSolution(filename, ref nHasPwd, ref nValidFormat);\n\t\t\t}\n\t\t\tcatch (VmException vmException)\n\t\t\t{\n\t\t\t\tShowMessage.ShowVmExceptionMessage(vmException);\n\t\t\t\treturn false;\n\t\t\t}\n\t\t\tstring passWord = \"\";\n\t\t\tif (nValidFormat != 1)\n\t\t\t{\n\t\t\t\tif (!isGuid)\n\t\t\t\t{\n\t\t\t\t\tLoadSolutionFailed(filename, AppLocalizationService.GetLang(\"Lang_SolLoad\"), AppLocalizationService.GetLang(\"Lang_SolFmt\"));\n\t\t\t\t}\n\t\t\t\treturn false;"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+        "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+        "member": "MSolutionManager_OnSolutionLoadBeginCallBack/OnSolutionLoadEndCallBack",
+        "location": "3481-3513",
+        "start": 3481,
+        "end": 3513,
+        "excerpt": "\tinternal static void MSolutionManager_OnSolutionLoadBeginCallBack(ImvsSdkDefine.IMVS_SOLUTION_LOAD_BEGEIN_INFO solutionLoadBeginInfo)\n\t{\n\t\tisLoading = true;\n\t\tOnSolutionLoadBeginCallBack?.Invoke(SolObj, new ObjectEventArgs\n\t\t{\n\t\t\tParam = \"方案加载中\"\n\t\t});\n\t\tOnSolutionLoadBeginEvent?.Invoke(solutionLoadBeginInfo);\n\t}\n\n\t/// <summary>\n\t/// 方案加载结束\n\t/// </summary>\n\tinternal static void MSolutionManager_OnSolutionLoadEndCallBack(ImvsSdkDefine.IMVS_SOLUTION_LOAD_END_INFO solutionLoadEndInfo)\n\t{"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/MainWindowData.cs",
+        "sha256": "aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5",
+        "member": "MainWindowData.VmSolution_LoadBegin",
+        "location": "726-734",
+        "start": 726,
+        "end": 734,
+        "excerpt": "\tprivate void VmSolution_LoadBegin(object sender, EventArgs e)\n\t{\n\t\tif (GlobalCommunicationMgr.Instance.IsGet)\n\t\t{\n\t\t\tGlobalCommunicationMgr.Instance.CloseComm();\n\t\t\tGlobalCommunicationMgr.Instance.IsGet = false;\n\t\t}\n\t\tTitleMenueItemData.ResetResource();\n\t}"
+      }
+    ]
+  },
+  {
+    "id": "F-O04",
+    "kind": "original-decompiled-managed-source-plus-inference",
+    "claim": "加载前可能保存旧方案并登记撤销快照；可见代码无候选完成后才提交的托管事务；同路径保存可能先写入再加载。",
+    "limit": "同路径先写是条件性推断；SaveSolution异步与实际写入时序需按其方法体/原生存储进一步核实。",
+    "chain": "save prompt Yes -> SaveSolution(task) -> load task; load callback updates Instance/path",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+        "sha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+        "member": "ProjectManager.LoadSolution",
+        "location": "601-665,761-791",
+        "start": 601,
+        "end": 665,
+        "excerpt": "\t\t\t\tTask task = new Task(() =>\n\t\t\t\t{\n\t\t\t\t\tImvsSdkDefine.IMVS_SOLUTION_VERSION_INFO pstSolutionVersionInfo = default;\n\t\t\t\t\tint num = ServerSDKAPI.IMVS_GetSolutionVersion(CVmObjectBase.mhandle, filename, passWord, ref pstSolutionVersionInfo);\n\t\t\t\t\tif (num != 0)\n\t\t\t\t\t{\n\t\t\t\t\t\tHikMessageBox.Show(AppLocalizationService.GetLang(\"errCode:\") + \" \" + num.ToString(\"X\") + Environment.NewLine + AppLocalizationService.GetLang(ErrorCodeInfo.GetErrorInfo(num)), MessageIcons.Error);\n\t\t\t\t\t}\n\t\t\t\t\telse if (num == 0 && string.Compare(pstSolutionVersionInfo.strTargetSolutionInfo, \"V4.0.0\") < 0)\n\t\t\t\t\t{\n\t\t\t\t\t\tHikMessageBox.Show(AppLocalizationService.GetLang(\"Lang_SolVersion_OutOfDate\") + \"\\r\\n\" + AppLocalizationService.GetLang(\"版本信息\") + pstSolutionVersionInfo.strTargetSolutionInfo, MessageIcons.Error);\n\t\t\t\t\t}\n\t\t\t\t\telse\n\t\t\t\t\t{\n\t\t\t\t\t\tIoc.Get<IUnRedoService>()?.Register(new VM.Core.RootOperation(), AppLocalizationService.GetLang(\"ChangeSolution\") ?? \"\");"
+      }
+    ]
+  }
+]

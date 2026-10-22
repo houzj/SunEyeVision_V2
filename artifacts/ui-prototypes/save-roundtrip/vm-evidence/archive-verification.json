@@ -1,0 +1,26 @@
+[
+  {
+    "path": "D:/Program Files/VisionMaster4.4.0/Development/V4.x/Samples/C#/PlatformSDKSampleCS/CircleFind/CircleFind.sol",
+    "sha256": "b91a7736f467757e15a55af7836e22364ae153478e17c69aaeb69e0c30674d0b",
+    "members": [
+      {
+        "rawName": "SolutionFile\\ModuleAttachments\\0106000-20220225180507.bmp",
+        "normalizedName": "SolutionFile/ModuleAttachments/0106000-20220225180507.bmp",
+        "length": 3981366,
+        "sha256": "690b17333ce8a9f6fe8961c90d7f21fbd6472dbf0f7cc3443fc89da43bb33aba"
+      }
+    ]
+  },
+  {
+    "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/image-source-runtime/run-9a9313c56a3e486199c58f66f763c67e/owned-embedded.sol",
+    "sha256": "dbb566b7b8e4f05206f2103149dda00767a3008b91fc11f33af12f2f75863e01",
+    "members": [
+      {
+        "rawName": "SolutionFile\\ModuleAttachments\\0697200-owned.bmp",
+        "normalizedName": "SolutionFile/ModuleAttachments/0697200-owned.bmp",
+        "length": 1094,
+        "sha256": "4761a5c36ccd4ff7f0063776b390686c6043dcfb99c228c0b91c4d249eb600f9"
+      }
+    ]
+  }
+]

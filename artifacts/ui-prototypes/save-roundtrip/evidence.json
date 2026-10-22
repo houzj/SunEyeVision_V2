@@ -1,0 +1,152 @@
+{
+  "scope": "Static source inspection only; no product build or execution",
+  "evidence": [
+    {
+      "id": "S1",
+      "file": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "line": 1614,
+      "sha256": "3a4b5a2145b92c333b39797898b4d2dabafc05ff95b35d2e65cfb17626e8b364",
+      "snippet": "        /// </summary>\n        /// <param name=\"solutionManager\">解决方案管理器</param>\n        public void SaveSolutionData(SolutionManager solutionManager)\n        {\n            if (solutionManager.CurrentSolution == null)\n            {\n                LogWarning(\"无法保存数据：当前解决方案为空\");\n                return;\n            }\n\n            var solution = solutionManager.CurrentSolution;\n\n            if (WorkflowTabViewModel == null)\n                return;\n\n            foreach (var tab in WorkflowTabViewModel.Tabs)"
+    },
+    {
+      "id": "S2",
+      "file": "src/Workflow/SolutionManager.cs",
+      "line": 490,
+      "sha256": "25857cc27a673fc6856e57c0588594b238f16afdd6608ca93e0b6ba60293e703",
+      "snippet": "    public bool SaveSolution(string? filePath = null) => SaveCurrentDocument(filePath).FileWritten;\n\n    public SolutionSaveResult SaveCurrentDocument(string? filePath = null, bool overwrite = true)\n    {\n        _saveError = null; LastSaveWarning = null;\n        var session = Session;\n        if (session == null) return SaveFailure(\"没有当前内存方案。\");\n        var savePath = filePath ?? session.FilePath;\n        if (string.IsNullOrWhiteSpace(savePath)) return SaveFailure(\"尚未选择方案保存位置。\");\n        string written;\n        try\n        {\n            savePath = Path.GetFullPath(savePath);\n            SolutionSaving?.Invoke(this, session.Document);\n            if (!ReferenceEquals(Session, session)) return SaveFailure(\"保存准备期间方案已切换，请重试。\");\n            written = Fingerprint(session.Document);"
+    },
+    {
+      "id": "S3",
+      "file": "src/Workflow/SolutionRepository.cs",
+      "line": 518,
+      "sha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+      "snippet": "    }\n\n    internal bool SaveSnapshot(Solution solution, string serializedSnapshot, string filePath, bool overwrite = true)\n    {\n        // ✅ 日志监控：生成唯一调用ID\n        long callId = System.Threading.Interlocked.Increment(ref _saveCallCount);\n\n        if (solution == null)\n        {\n            _logger.Log(LogLevel.Warning, $\"[Save #{callId}] 保存解决方案失败：解决方案对象为空\\n堆栈: {GetShortStackTrace(3)}\", \"SolutionRepository\");\n            return false;\n        }\n\n        if (string.IsNullOrEmpty(filePath))\n        {\n            _logger.Log(LogLevel.Warning, $\"[Save #{callId}] 保存解决方案失败：文件路径为空\\n堆栈: {GetShortStackTrace(3)}\", \"SolutionRepository\");"
+    },
+    {
+      "id": "S4",
+      "file": "src/Workflow/WorkflowJsonConverter.cs",
+      "line": 145,
+      "sha256": "483f8025e78a771edf3579f1dbecac56861c818d093efd1408729ee88ab0e50b",
+      "snippet": "                    var validNodeIds = new HashSet<string>(workflow.Nodes.Select(n => n.Id));\n                    var filteredCount = 0;\n                    var validConnections = (connList ?? new())\n                        .Where(c =>\n                        {\n                            if (validNodeIds.Contains(c.SourceNodeId)\n                                && validNodeIds.Contains(c.TargetNodeId))\n                                return true;\n                            filteredCount++;\n                            return false;\n                        })\n                        .ToList();\n                    if (filteredCount > 0)\n                    {\n                        VisionLogger.Instance.Log(LogLevel.Warning,\n                            $\"已过滤 {filteredCount} 个孤立连接（指向不存在节点）\","
+    },
+    {
+      "id": "S5",
+      "file": "src/Workflow/WorkflowJsonConverter.cs",
+      "line": 168,
+      "sha256": "483f8025e78a771edf3579f1dbecac56861c818d093efd1408729ee88ab0e50b",
+      "snippet": "                catch (Exception ex)\n                {\n                    VisionLogger.Instance.Log(LogLevel.Warning, $\"Failed to deserialize connections: {ex.Message}\", \"WorkflowJsonConverter\");\n                    workflow.Connections = new ObservableCollection<WorkflowConnection>();\n                }\n            }\n            else\n            {\n                workflow.Connections = new ObservableCollection<WorkflowConnection>();\n            }\n\n            VisionLogger.Instance.Log(LogLevel.Info,\n                $\"[WorkflowLoadTrace] Workflow.Read completed | id={workflow.Id}, elapsedMs={stopwatch.ElapsedMilliseconds}\",\n                \"WorkflowJsonConverter\");\n            return workflow;\n        }"
+    },
+    {
+      "id": "S6",
+      "file": "src/Workflow/GlobalVariableValueConverter.cs",
+      "line": 34,
+      "sha256": "c8b902fe24b6ac948eb3878271bf88fd1aa78c336d3c54ae617adc243fd57592",
+      "snippet": "    #region 反序列化\n\n    public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)\n    {\n        if (reader.TokenType == JsonTokenType.Null)\n            return null;\n\n        using var document = JsonDocument.ParseValue(ref reader);\n        var root = document.RootElement;\n\n        if (!root.TryGetProperty(\"Type\", out var typeElement))\n        {\n            VisionLogger.Instance.Log(VisionLogLevel.Warning,\n                \"全局变量值缺少Type字段，返回null\",\n                \"GlobalVariableValueConverter\");\n            return null;"
+    },
+    {
+      "id": "S7",
+      "file": "src/Workflow/GlobalVariableValueConverter.cs",
+      "line": 233,
+      "sha256": "c8b902fe24b6ac948eb3878271bf88fd1aa78c336d3c54ae617adc243fd57592",
+      "snippet": "    #region Image (Mat) 序列化\n\n    private static Mat? ParseImage(JsonElement element)\n    {\n        if (element.ValueKind != JsonValueKind.String) return null;\n        try\n        {\n            var base64 = element.GetString();\n            if (string.IsNullOrEmpty(base64)) return null;\n            var bytes = Convert.FromBase64String(base64);\n            return Mat.FromImageData(bytes, ImreadModes.Color);\n        }\n        catch (Exception ex)\n        {\n            VisionLogger.Instance.Log(VisionLogLevel.Error,\n                $\"解析图像数据失败: {ex.Message}\","
+    },
+    {
+      "id": "S8",
+      "file": "src/Workflow/SolutionRepository.cs",
+      "line": 211,
+      "sha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+      "snippet": "        else if (element.ValueKind == JsonValueKind.Array) foreach (var child in element.EnumerateArray()) ValidateTools(child);\n    }\n    internal static string ResolveResourcePaths(string json, string directory)\n    {\n        var root = JsonNode.Parse(json)!;\n        void Resolve(JsonNode? node)\n        {\n            if (node is JsonObject obj)\n            {\n                foreach (var pair in obj.ToArray())\n                {\n                    if (pair.Key is \"FilePath\" or \"ModelPath\" or \"CalibrationFilePath\" && pair.Value is JsonValue value && value.TryGetValue<string>(out var path) &&\n                        !string.IsNullOrWhiteSpace(path) && !Path.IsPathRooted(path) && !path.Contains('{'))\n                        obj[pair.Key] = Path.GetFullPath(path, directory);\n                    else if (pair.Key is \"FilePaths\" or \"ForRunPaths\" && pair.Value is JsonArray array)\n                        for (var i = 0; i < array.Count; i++)"
+    },
+    {
+      "id": "S9",
+      "file": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "line": 5529,
+      "sha256": "3a4b5a2145b92c333b39797898b4d2dabafc05ff95b35d2e65cfb17626e8b364",
+      "snippet": "\n        /// <summary>External file activation reuses existing stop/save and identity-conflict rules.</summary>\n        internal async Task<bool> OpenExternalSolutionAsync(string path)\n        {\n            var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;\n            if (!string.IsNullOrEmpty(manager.CurrentFilePath) &&\n                string.Equals(Path.GetFullPath(manager.CurrentFilePath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase)) return true;\n            if (!CanAcceptExternalActivation) return false;\n            var previous = manager.CurrentSolution;\n            try\n            {\n                Services.Startup.StartupLaunchContext.Current.ValidatePath(path);\n                var candidate = manager.LoadSolutionOnly(path)\n                    ?? throw new IOException(manager.LastError ?? \"方案无法读取。\");\n                Services.Startup.StartupLaunchContext.Current.ValidateCandidate(candidate);\n                if (!await PrepareSolutionTransitionAsync()) return false;"
+    },
+    {
+      "id": "S10",
+      "file": "src/Workflow/SolutionRepository.cs",
+      "line": 75,
+      "sha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+      "snippet": "        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Path.GetFullPath(path).ToUpperInvariant()))) + \".previous.solution\");\n\n    private static void ValidateSchema(JsonElement root)\n    {\n        if (!root.TryGetProperty(\"Id\", out var id) || id.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(id.GetString()))\n            throw new InvalidDataException(\"方案缺少有效身份，不能作为新方案静默载入。\");\n        if (root.TryGetProperty(\"SchemaVersion\", out var schema) && schema.GetInt32() != 1)\n            throw new InvalidDataException(\"当前软件不支持该方案格式版本，请使用兼容的软件打开。\");\n    }\n\n    private bool EnsurePluginsLoaded()\n    {\n        // 检查全局状态\n        if (PluginLoader.IsLoaded)\n        {\n            _logger.Log(LogLevel.Info, \"插件已加载（全局状态），跳过重复检查\", \"SolutionRepository\");"
+    },
+    {
+      "id": "S11",
+      "file": "src/Workflow/SolutionRepository.cs",
+      "line": 200,
+      "sha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+      "snippet": "    }\n\n    private static void ValidateTools(JsonElement element)\n    {\n        if (element.ValueKind == JsonValueKind.Object)\n        {\n            if (element.TryGetProperty(\"ToolType\", out var tool) && tool.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(tool.GetString()) &&\n                ToolRegistry.GetToolMetadata(tool.GetString()!) == null)\n                throw new InvalidDataException(\"缺少工具插件：\" + tool.GetString() + \"。原方案保持不变，请安装兼容插件。\");\n            foreach (var property in element.EnumerateObject()) ValidateTools(property.Value);\n        }\n        else if (element.ValueKind == JsonValueKind.Array) foreach (var child in element.EnumerateArray()) ValidateTools(child);\n    }\n    internal static string ResolveResourcePaths(string json, string directory)\n    {\n        var root = JsonNode.Parse(json)!;"
+    },
+    {
+      "id": "S12",
+      "file": "src/Workflow/Solution.cs",
+      "line": 146,
+      "sha256": "fbde35ebd0669619af5998ee637c8a1f479e1aa5f0709d7ec157b63846ad42af",
+      "snippet": "    /// 从文件加载\n    /// </summary>\n    public static Solution? Load(string filePath)\n    {\n        if (!File.Exists(filePath))\n            return null;\n\n        try\n        {\n            var json = File.ReadAllText(filePath);\n            var solution = JsonSerializer.Deserialize<Solution>(json, WorkflowSerializationOptions.Default);\n            if (solution != null)\n            {\n                solution.FilePath = filePath;\n                VisionLogger.Instance.Log(LogLevel.Info, $\"加载解决方案: Id={solution.Id} -> {filePath}\", \"Solution\");\n            }"
+    },
+    {
+      "id": "S13",
+      "file": "src/Workflow/SolutionSession.cs",
+      "line": 14,
+      "sha256": "61dab9b2104a41489d0381de4338b7c4b8360ace02ce509d118e2069b2472616",
+      "snippet": "    public bool IsUntitled => string.IsNullOrEmpty(FilePath);\n    private string? _savedContent;\n    public bool IsDirty\n    {\n        get\n        {\n            try { return Serialize(Document) != _savedContent; }\n            catch (Exception ex) when (ex is JsonException or NotSupportedException or InvalidOperationException)\n            { return true; } // Incomplete editor values must not appear clean or break the status display.\n        }\n    }\n    internal SolutionSession(Solution document) => Document = document;\n    internal static string Serialize(Solution document) => JsonSerializer.Serialize(document, WorkflowSerializationOptions.Default);\n    internal void CaptureBaseline() => _savedContent = Serialize(Document);\n    internal void CommitSave(string path, string writtenContent)\n    {"
+    },
+    {
+      "id": "S14",
+      "file": "tools/SunEyeVision.Tool.ImageLoad/ImageLoadParameters.cs",
+      "line": 55,
+      "sha256": "868b301235b886bebebda35276cdc29ab77936228e88749c128607fcc49add31",
+      "snippet": "        /// 图像文件路径\n        /// </summary>\n        public string FilePath\n        {\n            get => _filePath;\n            set => SetProperty(ref _filePath, value, \"文件路径\");\n        }\n\n        public override ValidationResult Validate()\n        {\n            var result = base.Validate();\n            if (SourceKind == ImageSourceKind.Local && string.IsNullOrEmpty(FilePath))\n            {\n                result.AddError(\"文件路径不能为空\");\n            }\n            if (SourceKind == ImageSourceKind.Camera && string.IsNullOrWhiteSpace(CameraDeviceId))"
+    },
+    {
+      "id": "S15",
+      "file": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationParameters.cs",
+      "line": 120,
+      "sha256": "85dd4b6dd012801578dbdae7de544694dbf77a2b86dd435da450955025224bfd",
+      "snippet": "    }\n    private string _calibrationFilePath = string.Empty;\n    public string CalibrationFilePath\n    {\n        get => _calibrationFilePath;\n        set => SetProperty(ref _calibrationFilePath, value);\n    }\n    public bool UpdateFileAfterSolve { get; set; }\n    public NPointCameraMode CameraMode { get; set; } = NPointCameraMode.FixedAbove;\n    public NPointTransformModel TransformModel { get; set; } = NPointTransformModel.Affine;\n    /// <summary>Site-specific maximum training-point residual; required before writing a candidate.</summary>\n    public double MaximumTrainingErrorMm { get; set; }\n\n    public List<NPointSample> Samples { get; set; } = new();\n    public List<NPointSample> ArchivedSamples { get; set; } = new();\n    public int SampleRevision { get; set; }"
+    },
+    {
+      "id": "S16",
+      "file": "src/Core/Services/Serialization/ParameterTypeRegistry.cs",
+      "line": 125,
+      "sha256": "d28858439aafd5b813259efb0e5d07911cca712cd2285f5ba72b2baf82e749cf",
+      "snippet": "            {\n                TypeDiscriminatorPropertyName = \"$type\",\n                IgnoreUnrecognizedTypeDiscriminators = false\n            };\n\n            // 注册 GenericToolParameters 作为默认回退类型\n            _polymorphismOptions.DerivedTypes.Add(\n                new JsonDerivedType(typeof(GenericToolParameters), \"Generic\"));\n            _registeredTypes.Add(typeof(GenericToolParameters));\n\n            // 创建类型解析器\n            var defaultResolver = new DefaultJsonTypeInfoResolver();\n\n            // 添加类型修饰器，将多态配置应用到 ToolParameters 类型\n            _typeResolver = defaultResolver.WithAddedModifier(ApplyPolymorphismOptions);\n"
+    },
+    {
+      "id": "S17",
+      "file": "src/Workflow/Solution.cs",
+      "line": 48,
+      "sha256": "fbde35ebd0669619af5998ee637c8a1f479e1aa5f0709d7ec157b63846ad42af",
+      "snippet": "    public string Description { get; set; } = \"\";\n    public int SchemaVersion { get; set; } = 1;\n    [JsonExtensionData] public Dictionary<string, JsonElement>? AdditionalData { get; set; }\n\n    /// <summary>\n    /// 解决方案版本\n    /// </summary>\n    public string Version { get; set; } = \"1.0\";\n\n    /// <summary>\n    /// 解决方案文件完整路径（运行时属性，不序列化）\n    /// </summary>\n    [JsonIgnore]\n    public string? FilePath { get; set; }\n\n    /// <summary>"
+    },
+    {
+      "id": "S18",
+      "file": "src/Workflow/ImageSourceConfig.cs",
+      "line": 63,
+      "sha256": "4be4517cce1aa149e4646d721610b0db2c440cfd607893cb10b7c56574dd1368",
+      "snippet": "        /// 运行选择模式下勾选的图像路径（保留勾选路径）\n        /// </summary>\n        public List<string> ForRunPaths { get; set; } = new();\n\n        /// <summary>只合并预览器负责的本地字段，保留相机配置与来源模式。</summary>\n        public void UpdateLocalInput(ImageSourceConfig local)\n        {\n            FilePaths = new List<string>(local.FilePaths);\n            CurrentIndex = local.CurrentIndex;\n            AutoSwitchEnabled = local.AutoSwitchEnabled;\n            RunMode = local.RunMode;\n            ForRunPaths = new List<string>(local.ForRunPaths);\n        }\n    }\n}\n"
+    },
+    {
+      "id": "S19",
+      "file": "tools/SunEyeVision.Tool.ShapeMatch/Models/TemplateModel.cs",
+      "line": 71,
+      "sha256": "34a6b34588939a38a5d3ea903886ce9714510799c34b47feaef52ffc9bba91eb",
+      "snippet": "\n    /// <summary>序列化的 shape_model 数据（由 serialize_shape_model 输出，Recipe 持久化）</summary>\n    public byte[]? ModelData\n    {\n        get => _modelData;\n        set => SetProperty(ref _modelData, value);\n    }\n\n    /// <summary>创建时实际使用的对比度（auto 时由 Halcon 估算或 UI 值回写）</summary>\n    public float ActualContrast\n    {\n        get => _actualContrast;\n        set => SetProperty(ref _actualContrast, value, \"实际对比度\");\n    }\n\n    /// <summary>金字塔层数（创建时实际生成的总层数）</summary>"
+    },
+    {
+      "id": "S20",
+      "file": "tools/SunEyeVision.Tool.ShapeMatch/ShapeMatchTool.cs",
+      "line": 87,
+      "sha256": "a4203919dee2b06c11eaeb0eb0ed92e29813f0919059dfe1788aac6de59937aa",
+      "snippet": "    }\n\n    private static HTuple ReadModelHandle(TemplateModel template)\n    {\n        // 临时文件是 halcon read_shape_model 的官方输入方式；模型数据来自序列化的 ModelData\n        string tempFile = System.IO.Path.GetTempFileName();\n        try\n        {\n            System.IO.File.WriteAllBytes(tempFile, template.ModelData!);\n            HOperatorSet.ReadShapeModel(tempFile, out var handle);\n            return handle;\n        }\n        finally\n        {\n            if (System.IO.File.Exists(tempFile))\n                System.IO.File.Delete(tempFile);"
+    },
+    {
+      "id": "S21",
+      "file": "tools/SunEyeVision.Tool.ShapeMatch/ShapeMatchParameters.cs",
+      "line": 88,
+      "sha256": "4dff3bcc1d276bd9686bd048734e9a1eeb21e1a92f1054096403b08036d1a374",
+      "snippet": "\n    /// <summary>模板列表</summary>\n    public ObservableCollection<TemplateModel> Templates { get; set; } = new();\n\n    /// <summary>每模型参数覆盖（多模板时覆盖全局参数）</summary>\n    public List<PerModelParamOverride> PerModelOverrides { get; set; } = new();\n\n    #endregion\n\n    #region 结果判断配置\n\n    /// <summary>结果判断配置与显示样式</summary>\n    public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();\n\n    private static ResultPresentationConfig CreateResultPresentation()\n    {"
+    }
+  ]
+}

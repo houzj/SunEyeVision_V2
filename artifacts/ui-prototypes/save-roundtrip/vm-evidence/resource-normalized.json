@@ -1,0 +1,166 @@
+[
+  {
+    "id": "P-image-managed-path",
+    "kind": "original-decompiled-source",
+    "claim": "ImageSource GetModel/ImportModel retains selected path and model data; SetImagePath writes supplied path to native input structure.",
+    "limit": "Relative path base and native transformations unknown",
+    "chain": "GetModel→SelectedPath/GetModelData; ImportModel→ModelData/path list; SetImagePath→IMVS_PF_INPUT_IMAGE_INFO.strImagePath",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/representative-decompiled/ImageSourceModule/ImageSourceModuleCs.decompiled.cs",
+        "sha256": "3157ed157e3d1f8b346b37a16b560db5fd91eadaf1363f246999a4c431f2b8a2",
+        "member": "ImageSourceModuleTool.GetModel:660-675; ImportModel:677-711; SetImagePath:745-761",
+        "location": "660-675",
+        "start": 660,
+        "end": 675,
+        "excerpt": "\tpublic override byte[] GetModel()\n\t{\n\t\tImageSelectParam imageSelectParam = new ImageSelectParam();\n\t\ttry\n\t\t{\n\t\t\tstring autoPlay = ((IUserStringData)Params)[\"AutoPlay\"];\n\t\t\tstring selectedPath = ((IUserStringData)Params)[\"GetAllExecutePic\"];\n\t\t\timageSelectParam.SelectedPath = selectedPath;\n\t\t\timageSelectParam.AutoPlay = autoPlay;\n\t\t\timageSelectParam.ModelData = ((IUserBytesData)Params)[\"GetModelData\"];\n\t\t}\n\t\tcatch\n\t\t{\n\t\t}\n\t\treturn ByteUtil.GetBytes(imageSelectParam.ToXmlStringWithHead());"
+      }
+    ]
+  },
+  {
+    "id": "P-image-native-attachment",
+    "kind": "original-native-pseudocode",
+    "claim": "ImageSource native save has attachment/nonattachment branches; load can materialize attachment bytes to a temporary file and list.",
+    "limit": "Native format arguments and exact ABI not fully assembly-checked",
+    "chain": "SaveModuleData→CopyFileFunction/register attachment; LoadModuleData→write attachment bytes→AddImage2CircleList/current path",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-extra-7.c",
+        "sha256": "b556956b29291be7b20b64f97f8193c3bfb8f2f1960f41d1d8d20d042fce81ed",
+        "member": "SaveModuleData:178-180,285-315,328-371",
+        "location": "178-180",
+        "start": 178,
+        "end": 180,
+        "excerpt": "        if (*(longlong *)(param_1 + 0x610d8) == 0) {\n          FUN_180001ce0((longlong *)&local_8a8,(longlong *)local_8c8,0,0xffffffffffffffff);\n          SaveImageFileToSol(this,&local_8a8);"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-extra-8.c",
+        "sha256": "6625abfa9124a309bc2538e0f1666b732db67896c538d538d827cfb3d612d23a",
+        "member": "LoadModuleData:150-172,433-460,715-765",
+        "location": "150-172",
+        "start": 150,
+        "end": 172,
+        "excerpt": "  SetAllParamList(this,(PARAM_VALUE_INFO_LIST *)param_1);\n  pCVar20 = this + 0x3b8;\n  plVar28 = (longlong *)**(longlong **)pCVar20;\n  local_cc8 = pCVar20;\n  if (plVar28 != *(longlong **)pCVar20) {\n    do {\n      plVar29 = plVar28 + 2;\n      if (0xf < (ulonglong)plVar28[5]) {\n        plVar29 = (longlong *)*plVar29;\n      }\n      pWVar11 = (LPCWSTR)FUN_18000aca0(&local_b98,(LPCSTR)plVar29);\n      if (7 < *(ulonglong *)(pWVar11 + 0xc)) {\n        pWVar11 = *(LPCWSTR *)pWVar11;\n      }\n      DeleteFileW(pWVar11);"
+      }
+    ]
+  },
+  {
+    "id": "P-image-list-original-runtime",
+    "kind": "confirmed-original-runtime-existing",
+    "claim": "One controlled default-list sample ran after SaveAs and source deletion with identical 4x4 MONO8 pixels and attachment-derived temporary path.",
+    "limit": "One sample/mode, not a universal relocation or cross-machine test",
+    "chain": "SaveAs→source deletion→reload/run→ImageTemp/VM69720ImgSrcTemp/0697200-owned.bmp",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/image-source-runtime/run-9a9313c56a3e486199c58f66f763c67e/probe.json",
+        "sha256": "170baf9df443e1d297287c9ad65d00800dc9a4ad077e069049795f4349a1a807",
+        "member": "embed-before-save; embed-save-as; embed-after-source-removed"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/image-source-runtime/run-9a9313c56a3e486199c58f66f763c67e/owned-embedded.sol",
+        "sha256": "dbb566b7b8e4f05206f2103149dda00767a3008b91fc11f33af12f2f75863e01",
+        "member": "SolutionFile/ModuleAttachments/0697200-owned.bmp"
+      }
+    ]
+  },
+  {
+    "id": "P-image-folder-original-runtime",
+    "kind": "confirmed-original-runtime-existing",
+    "claim": "Existing subscribed-folder sample produced no image and error 3758096899 after source deletion and reload.",
+    "limit": "Does not negate default-list attachment result",
+    "chain": "folder mode SaveAs→source deletion→reload/run→empty image",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/image-source-runtime/run-db179dbe4b004b66a692bf16b988edd2/probe.json",
+        "sha256": "4c5d5601582aa194a6dc67a1537ba90b446daf14e24bd4a6bda1a2a0b330aec5",
+        "member": "embed-after-source-removed"
+      }
+    ]
+  },
+  {
+    "id": "P-shipped-sol-attachment",
+    "kind": "shipped-sdk-sample",
+    "claim": "The installed 4.4.0 CircleFind sample archive includes a BMP ModuleAttachments member.",
+    "limit": "Archive inventory is not a relocation or runtime success test",
+    "chain": "ZIP member inventory only",
+    "refs": [
+      {
+        "path": "D:/Program Files/VisionMaster4.4.0/Development/V4.x/Samples/C#/PlatformSDKSampleCS/CircleFind/CircleFind.sol",
+        "sha256": "b91a7736f467757e15a55af7836e22364ae153478e17c69aaeb69e0c30674d0b",
+        "member": "SolutionFile/ModuleAttachments/0106000-20220225180507.bmp (3981366 bytes); SolutionFile/VmServer.xml; SolutionFile/MoudleFrame"
+      }
+    ]
+  },
+  {
+    "id": "P-model-module-ownership",
+    "kind": "original-decompiled-source",
+    "claim": "Feature-match UI imports selected model file into module ModelData/SpareModel and stores SolModelFile_i metadata in UserData; reload reconstructs from candidate name and UserData.",
+    "limit": "No model .sol packaging, relocation or original runtime proof in this task",
+    "chain": "OpenFileDialog.FileName→AnalysisModelItem→LoadModelToList→AddSpareModel/UserData→GetModuleList",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/renderer-gap-projects/IMVSHPFeatureMatchModuControl/Apps.XmlParser.ParamTab/FeaturepatMatchConfigPanalData.cs",
+        "sha256": "fabc6e4ee48f3dca82910afc0c2a895bd3d359befb13ed5eb418da5e740766d9",
+        "member": "LoadModel:171-220",
+        "location": "171-220",
+        "start": 171,
+        "end": 220,
+        "excerpt": "\tpublic override void LoadModel(IList list)\n\t{\n\t\t//IL_00f7: Unknown result type (might be due to invalid IL or missing references)\n\t\t//IL_00fc: Unknown result type (might be due to invalid IL or missing references)\n\t\t//IL_0105: Unknown result type (might be due to invalid IL or missing references)\n\t\t//IL_0113: Expected Obj, but got Unknown\n\t\tLogHelper.objLog.Info(\"Load model strat.\");\n\t\tMicrosoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog\n\t\t{\n\t\t\tFilter = ((FeaturepatMatchConfigPanalDataBase)this).OpenFileDialogFilter\n\t\t};\n\t\tstring text = ConfigurationHelper.INIGetDefaultOpenPath((((NameValueItem)this).ParamsSource as IVmModule)?.ModuleDir);\n\t\tApps.UIHelper.Extern.UIHelper.CheckInitDirectory(openFileDialog, text);\n\t\tLogHelper.objLog.Info($\"Get initpath:{text}.\");\n\t\tif (openFileDialog.ShowDialog() == true)"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/renderer-shared-projects/FeatureMatchCommonControl/FeatureMatchCommonControl/FeaturepatMatchConfigPanalDataBase.cs",
+        "sha256": "79a77bff53e5e5ce32c4c3450574b52510651ca48a6330e120298af8d0f3346d",
+        "member": "AddModelToModule:152-236",
+        "location": "152-236",
+        "start": 152,
+        "end": 236,
+        "excerpt": "\tprotected virtual bool AddModelToModule(ModelItem itemData)\n\t{\n\t\tstring empty = string.Empty;\n\t\ttry\n\t\t{\n\t\t\tempty = InnerGetStringParamValue(\"GetNextAddModelIndex\");\n\t\t}\n\t\tcatch (Exception ex)\n\t\t{\n\t\t\tLogHelper.objLog.Error($\"Get next index error:{ex.Message}.\");\n\t\t\treturn false;\n\t\t}\n\t\tint result = -1;\n\t\tif (int.TryParse(empty, out result))\n\t\t{"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/renderer-shared-projects/FeatureMatchCommonControl/FeatureMatchCommonControl/FeaturepatMatchConfigPanalDataDecorate.cs",
+        "sha256": "ff17f8b93ccf05ae5aba25a5302fc55e72389bca81632755c52dd4385ab4e11a",
+        "member": "GetModuleList:259-320",
+        "location": "259-320",
+        "start": 259,
+        "end": 320,
+        "excerpt": "\tprivate void GetModuleList(IList ls)\n\t{\n\t\tint nIndex = 0;\n\t\tstring empty;\n\t\twhile (true)\n\t\t{\n\t\t\tempty = string.Empty;\n\t\t\ttry\n\t\t\t{\n\t\t\t\tempty = _DecorateSource.InnerGetStringParamValue($\"CandidateName{nIndex}\");\n\t\t\t}\n\t\t\tcatch\n\t\t\t{\n\t\t\t\tLogHelper.Info(string.Format(\"Get userdata:{0} fail,get end.\", \"CandidateName\" + nIndex));\n\t\t\t\treturn;"
+      }
+    ]
+  },
+  {
+    "id": "P-calibration-filedata",
+    "kind": "original-native-pseudocode",
+    "claim": "ReadCalibFileModu caches file content when FilePath is set and conditionally writes FileData when SaveCalibDataEnable and cache nonempty; mode-0 load can consume FileData.",
+    "limit": "Native pseudocode scope only; not proof of all calibration tools or cross-machine relocation",
+    "chain": "FilePath→LoadFile/cache→SaveModuleData/FileData→LoadModuleData mode 0",
+    "refs": [
+      {
+        "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/read-calib-file/native/18000d120.c",
+        "sha256": "35dc0c1699e08dfce863173b529fbe8ba4e0579be5d6ce1d3167aee92d2f57f5",
+        "member": "SetParam:57-79",
+        "location": "57-79",
+        "start": 57,
+        "end": 79,
+        "excerpt": "  iVar5 = strcmp(\"FilePath\",param_2);\n  if (iVar5 == 0) {\n    if (param_4 == 0) {\n      FUN_180002d90((ulonglong *)(param_1 + 0xf8),&DAT_180013728,0);\n      FUN_180002d90((ulonglong *)(param_1 + 0x120),&DAT_180013728,0);\n      FUN_18000f4e0((undefined8 *)(param_1 + 0x20));\n      FUN_18000f4e0((undefined8 *)(param_1 + 0x38));\n      FUN_18000d7c0(param_1 + 0x50,*(ulonglong **)(param_1 + 0x50),*(ulonglong **)(param_1 + 0x58));\n      *(undefined8 *)(param_1 + 0x58) = *(undefined8 *)(param_1 + 0x50);\n      FUN_18000d840(param_1 + 0x68,*(undefined8 **)(param_1 + 0x68),*(undefined8 **)(param_1 + 0x70)\n                   );\n      *(undefined8 *)(param_1 + 0x70) = *(undefined8 *)(param_1 + 0x68);\n      FUN_18000f4e0((undefined8 *)(param_1 + 0x80));\n      FUN_18000f4e0((undefined8 *)(param_1 + 0x98));\n      FUN_18000d7c0(param_1 + 0xb0,*(ulonglong **)(param_1 + 0xb0),*(ulonglong **)(param_1 + 0xb8));"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/read-calib-file/native/18000cf10.c",
+        "sha256": "3da32b425392db3191e036502f8dac4328fa0f9002528106f135b08e9708ddad",
+        "member": "SaveModuleData:12-36",
+        "location": "12-36",
+        "start": 12,
+        "end": 36,
+        "excerpt": "  *(undefined4 *)(param_2 + 0x58490) = 0;\n  if ((param_1[0x178] != (CAbstractUserModule)0x0) && (*(longlong *)(param_1 + 0x130) != 0)) {\n    memcpy_s(param_2 + 0x58498,0x104,\"FileData\",9);\n    pCVar1 = param_1 + 0x120;\n    if (0xf < *(ulonglong *)(param_1 + 0x138)) {\n      pCVar1 = *(CAbstractUserModule **)pCVar1;\n    }\n    *(CAbstractUserModule **)(param_2 + 0x585a0) = pCVar1;\n    *(undefined4 *)(param_2 + 0x585a8) = *(undefined4 *)(param_1 + 0x130);\n    *(int *)(param_2 + 0x58490) = *(int *)(param_2 + 0x58490) + 1;\n  }\n  memcpy_s(param_2 + (longlong)*(int *)(param_2 + 0x58490) * 0x118 + 0x58498,0x104,\"DynamicInData\",\n           0xe);\n  *(undefined4 *)(param_2 + ((longlong)*(int *)(param_2 + 0x58490) + 1) * 0x118 + 0x58490) =\n       *(undefined4 *)(param_1 + 0x148);"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/read-calib-file/native/18000bef0.c",
+        "sha256": "eeac7fa3c98184213039400b00dd423b1708c082b348ef4b384d7c9bc48d9beb",
+        "member": "LoadModuleData:78-103",
+        "location": "78-103",
+        "start": 78,
+        "end": 103,
+        "excerpt": "      iVar6 = strcmp(local_138,\"FileData\");\n      if (iVar6 == 0) {\n        puVar11 = (ulonglong *)(param_1 + 0x24);\n        FUN_180002d90(puVar11,&DAT_180013728,0);\n        FUN_180002d90(puVar11,local_30,(longlong)local_28);\n        if (0xf < (ulonglong)param_1[0x27]) {\n          puVar11 = (ulonglong *)*puVar11;\n        }\n        FUN_18000ab50((longlong)param_1,(LPCSTR)puVar11,'\\0');\n      }\n      iVar13 = iVar13 + 1;\n      piVar12 = piVar12 + 0x46;\n    } while (iVar13 < param_2[0x16124]);\n    if (0 < param_2[0x16124]) {\n      piVar12 = param_2 + 0x16168;"
+      }
+    ]
+  }
+]

@@ -1,0 +1,105 @@
+{
+  "task": "VM-PERSIST-14/P / VM-RESOURCE-03",
+  "sourceFiles": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/representative-decompiled/ImageSourceModule/ImageSourceModuleCs.decompiled.cs",
+      "expected": "3157ed157e3d1f8b346b37a16b560db5fd91eadaf1363f246999a4c431f2b8a2",
+      "actual": "3157ed157e3d1f8b346b37a16b560db5fd91eadaf1363f246999a4c431f2b8a2",
+      "match": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-extra-7.c",
+      "expected": "b556956b29291be7b20b64f97f8193c3bfb8f2f1960f41d1d8d20d042fce81ed",
+      "actual": "b556956b29291be7b20b64f97f8193c3bfb8f2f1960f41d1d8d20d042fce81ed",
+      "match": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-extra-8.c",
+      "expected": "6625abfa9124a309bc2538e0f1666b732db67896c538d538d827cfb3d612d23a",
+      "actual": "6625abfa9124a309bc2538e0f1666b732db67896c538d538d827cfb3d612d23a",
+      "match": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/image-source-runtime/run-9a9313c56a3e486199c58f66f763c67e/probe.json",
+      "expected": "170baf9df443e1d297287c9ad65d00800dc9a4ad077e069049795f4349a1a807",
+      "actual": "170baf9df443e1d297287c9ad65d00800dc9a4ad077e069049795f4349a1a807",
+      "match": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/image-source-runtime/run-9a9313c56a3e486199c58f66f763c67e/owned-embedded.sol",
+      "expected": "dbb566b7b8e4f05206f2103149dda00767a3008b91fc11f33af12f2f75863e01",
+      "actual": "dbb566b7b8e4f05206f2103149dda00767a3008b91fc11f33af12f2f75863e01",
+      "match": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/image-source-runtime/run-db179dbe4b004b66a692bf16b988edd2/probe.json",
+      "expected": "4c5d5601582aa194a6dc67a1537ba90b446daf14e24bd4a6bda1a2a0b330aec5",
+      "actual": "4c5d5601582aa194a6dc67a1537ba90b446daf14e24bd4a6bda1a2a0b330aec5",
+      "match": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Development/V4.x/Samples/C#/PlatformSDKSampleCS/CircleFind/CircleFind.sol",
+      "expected": "b91a7736f467757e15a55af7836e22364ae153478e17c69aaeb69e0c30674d0b",
+      "actual": "b91a7736f467757e15a55af7836e22364ae153478e17c69aaeb69e0c30674d0b",
+      "match": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/renderer-gap-projects/IMVSHPFeatureMatchModuControl/Apps.XmlParser.ParamTab/FeaturepatMatchConfigPanalData.cs",
+      "expected": "fabc6e4ee48f3dca82910afc0c2a895bd3d359befb13ed5eb418da5e740766d9",
+      "actual": "fabc6e4ee48f3dca82910afc0c2a895bd3d359befb13ed5eb418da5e740766d9",
+      "match": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/renderer-shared-projects/FeatureMatchCommonControl/FeatureMatchCommonControl/FeaturepatMatchConfigPanalDataBase.cs",
+      "expected": "79a77bff53e5e5ce32c4c3450574b52510651ca48a6330e120298af8d0f3346d",
+      "actual": "79a77bff53e5e5ce32c4c3450574b52510651ca48a6330e120298af8d0f3346d",
+      "match": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/renderer-shared-projects/FeatureMatchCommonControl/FeatureMatchCommonControl/FeaturepatMatchConfigPanalDataDecorate.cs",
+      "expected": "ff17f8b93ccf05ae5aba25a5302fc55e72389bca81632755c52dd4385ab4e11a",
+      "actual": "ff17f8b93ccf05ae5aba25a5302fc55e72389bca81632755c52dd4385ab4e11a",
+      "match": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/read-calib-file/native/18000d120.c",
+      "expected": "35dc0c1699e08dfce863173b529fbe8ba4e0579be5d6ce1d3167aee92d2f57f5",
+      "actual": "35dc0c1699e08dfce863173b529fbe8ba4e0579be5d6ce1d3167aee92d2f57f5",
+      "match": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/read-calib-file/native/18000cf10.c",
+      "expected": "3da32b425392db3191e036502f8dac4328fa0f9002528106f135b08e9708ddad",
+      "actual": "3da32b425392db3191e036502f8dac4328fa0f9002528106f135b08e9708ddad",
+      "match": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/full-audit/read-calib-file/native/18000bef0.c",
+      "expected": "eeac7fa3c98184213039400b00dd423b1708c082b348ef4b384d7c9bc48d9beb",
+      "actual": "eeac7fa3c98184213039400b00dd423b1708c082b348ef4b384d7c9bc48d9beb",
+      "match": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Collection/ImageSourceModule/ImageSourceModule.dll",
+      "expected": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db",
+      "actual": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db",
+      "match": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Collection/ImageSourceModule/ImageSourceModuleCs.dll",
+      "expected": "1f7c52abb34eb61ec177e295aea9812b9fbc3b1c4453bef28fbc960bf35aa35c",
+      "actual": "1f7c52abb34eb61ec177e295aea9812b9fbc3b1c4453bef28fbc960bf35aa35c",
+      "match": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Calibration/ReadCalibFileModu/ReadCalibFileModu.dll",
+      "expected": "86b8b112aded58de27a41a5ede6ec6b41117d7db8d0c5934647fa9514e6fa403",
+      "actual": "86b8b112aded58de27a41a5ede6ec6b41117d7db8d0c5934647fa9514e6fa403",
+      "match": true
+    }
+  ],
+  "claims": 7,
+  "newRuntimeExecuted": false,
+  "reportSha256": "53d0f922f297f76f721d2b68fd49407a699121f38d5211b2d1f26de234ded301",
+  "evidenceSha256": "e57b35df4aa795cc298e2110445d91ea47e8b2b411ca28a1a303bf12d92019e2"
+}

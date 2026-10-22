@@ -232,38 +232,27 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             }
         }
 
-        /// <summary>
-        /// 名称 TextBox 获得焦点时记录编辑前名称（Tag），用于失焦校验失败时还原
-        /// </summary>
-        private void VariableNameTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        private bool TryValidateNameEditor(TextBox box, out string error)
         {
-            if (sender is TextBox textBox)
-                textBox.Tag = textBox.Text;
+            error = "";
+            if (box.DataContext is not GlobalVariable variable || DataContext is not GlobalVariableManagerViewModel vm) return true;
+            var name = box.Text.Trim();
+            var variables = vm.EditingDocument?.GlobalVariables;
+            if (name.Length == 0) error = "变量名称不能为空，请修改当前输入后再保存。";
+            else if (variables != null && GlobalVariable.IsNameDuplicate(variables, name, variable.Id)) error = $"变量名称“{name}”已存在。";
+            var binding = box.GetBindingExpression(TextBox.TextProperty);
+            if (binding != null)
+            {
+                if (error.Length > 0) System.Windows.Controls.Validation.MarkInvalid(binding, new ValidationError(new ExceptionValidationRule(), binding, error, null));
+                else System.Windows.Controls.Validation.ClearInvalid(binding);
+            }
+            return error.Length == 0;
         }
-
-        /// <summary>
-        /// 名称 TextBox 失焦时提交重命名校验（空名/重名 → 弹窗并还原）
-        /// 名称列改为内嵌可编辑 TextBox（单击即编辑），校验从 DataGrid CellEditEnding 迁移到此。
-        /// </summary>
         private void VariableNameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (sender is not TextBox textBox || textBox.DataContext is not GlobalVariable variable)
-                return;
-            if (DataContext is not GlobalVariableManagerViewModel viewModel)
-                return;
-
-            var newName = textBox.Text.Trim();
-            var oldName = textBox.Tag as string ?? variable.Name;
-            if (string.Equals(oldName, newName, StringComparison.Ordinal))
-                return;
-
-            if (!viewModel.ConfirmVariableRename(variable, newName, oldName))
-            {
-                // 校验失败：还原名称（绑定实时写回，需手动恢复）
-                variable.Name = oldName;
-                textBox.Text = oldName;
-            }
-            textBox.Tag = null;
+            if (sender is TextBox box && box.DataContext is GlobalVariable variable &&
+                DataContext is GlobalVariableManagerViewModel vm && TryValidateNameEditor(box, out _) && box.Text.Trim() != variable.Name)
+                vm.ConfirmVariableRename(variable, box.Text.Trim(), variable.Name);
         }
 
         /// <summary>
@@ -277,16 +266,70 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             if (textBox.IsReadOnly)
                 return;
 
-            var newValue = GlobalVariableValueTextConverter.ParseText(textBox.Text, variable.Type);
-            if (newValue == null)
+            if (!TryParseValueEditor(textBox, out var value, out _)) return;
+            if (value != null) variable.Value = value;
+
+        }
+        private static System.Collections.Generic.IEnumerable<DependencyObject> Visuals(DependencyObject root)
+        {
+            yield return root;
+            for (var i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
+                foreach (var child in Visuals(System.Windows.Media.VisualTreeHelper.GetChild(root, i))) yield return child;
+        }
+        private static bool TryParseValueEditor(TextBox box, out object? parsed, out string error)
+        {
+            parsed = null; error = "";
+            if (box.IsReadOnly || box.DataContext is not GlobalVariable variable) return true;
+            var binding = box.GetBindingExpression(TextBox.TextProperty);
+            var currentText = new GlobalVariableValueTextConverter().Convert(variable.Value!, typeof(string), null!, CultureInfo.InvariantCulture)?.ToString() ?? "";
+            if (box.Text == currentText)
+            { if (binding != null) System.Windows.Controls.Validation.ClearInvalid(binding); return true; }
+            parsed = GlobalVariableValueTextConverter.ParseText(box.Text, variable.Type);
+            if (parsed == null)
             {
-                ThemeMessageDialog.Show($"请输入有效的{variable.Type}值（如 128 / 3.14 / True）",
-                    "提示", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
-                // 不写回：刷新绑定显示旧值
-                textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();
-                return;
+                error = $"变量“{variable.Name}”的{variable.Type}值无效，请修改当前输入后再保存。";
+                if (binding != null) System.Windows.Controls.Validation.MarkInvalid(binding,
+                    new ValidationError(new ExceptionValidationRule(), binding, error, null));
+                return false; // Keep the typed text and existing model value; never UpdateTarget here.
             }
-            variable.Value = newValue;
+            if (binding != null) System.Windows.Controls.Validation.ClearInvalid(binding);
+            return true;
+        }
+        public bool TryValidatePendingEdits(out string error)
+        {
+            foreach (var box in Visuals(this).OfType<TextBox>().Where(b => b.Name == "VariableNameEditor"))
+                if (!TryValidateNameEditor(box, out error)) return false;
+            foreach (var box in Visuals(this).OfType<TextBox>().Where(b => b.Name == "VariableValueEditor"))
+                if (!TryParseValueEditor(box, out _, out error)) return false;
+            return SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryValidate(this, out error);
+        }
+        public bool TryCommitPendingEdits(out string error)
+        {
+            if (!TryValidatePendingEdits(out error)) return false;
+            var nameEditors = Visuals(this).OfType<TextBox>().Where(b => b.Name == "VariableNameEditor").Select(b => (Box: b, Text: b.Text)).ToArray();
+            var valueEditors = Visuals(this).OfType<TextBox>()
+                .Where(b => b.Name == "VariableValueEditor" && !b.IsReadOnly)
+                .Select(b => (Box: b, Text: b.Text)).ToArray();
+            // Commit normal bindings and DataGrid rows first; invalid edits are not cancelled.
+            if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryCommit(this, out error)) return false;
+            foreach (var entry in nameEditors)
+            {
+                entry.Box.SetCurrentValue(TextBox.TextProperty, entry.Text);
+                if (!TryValidateNameEditor(entry.Box, out error)) return false;
+                if (entry.Box.DataContext is GlobalVariable variable && DataContext is GlobalVariableManagerViewModel vm &&
+                    entry.Text.Trim() != variable.Name && !vm.ConfirmVariableRename(variable, entry.Text.Trim(), variable.Name))
+                { error = "变量重命名未完成，当前输入保留。"; return false; }
+            }
+            var parsed = new System.Collections.Generic.List<(GlobalVariable Variable, object Value)>();
+            foreach (var entry in valueEditors)
+            {
+                // A DataGrid commit can refresh OneWay displays. Restore the pending text before parsing.
+                entry.Box.SetCurrentValue(TextBox.TextProperty, entry.Text);
+                if (!TryParseValueEditor(entry.Box, out var value, out error)) return false;
+                if (value != null && entry.Box.DataContext is GlobalVariable variable) parsed.Add((variable, value));
+            }
+            foreach (var item in parsed) item.Variable.Value = item.Value;
+            error = ""; return true;
         }
     }
 

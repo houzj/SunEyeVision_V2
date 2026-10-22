@@ -94,7 +94,6 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 工作流文件管理
         private string? _currentWorkflowFilePath;
-        private bool _isWorkflowModified = false;
 
         // 工作流引擎
         private readonly WorkflowEngine _workflowEngine;
@@ -446,31 +445,12 @@ namespace SunEyeVision.UI.Shell.Windows
         }
 
         // 当前解决方案信息
-        private string _currentSolutionName = string.Empty;
-        private string _currentSolutionPath = string.Empty;
-
-        /// <summary>
-        /// 当前解决方案名称
-        /// </summary>
-        public string CurrentSolutionName
-        {
-            get => _currentSolutionName;
-            set => SetProperty(ref _currentSolutionName, value);
-        }
-
-        /// <summary>
-        /// 当前解决方案路径
-        /// </summary>
-        public string CurrentSolutionPath
-        {
-            get => _currentSolutionPath;
-            set => SetProperty(ref _currentSolutionPath, value);
-        }
-
-        /// <summary>
-        /// 是否有当前解决方案
-        /// </summary>
-        public bool HasCurrentSolution => !string.IsNullOrEmpty(CurrentSolutionName);
+        private static SolutionManager DocumentManager => SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+        public string CurrentSolutionName => DocumentManager.CurrentSolution is { } document
+            ? (string.IsNullOrWhiteSpace(document.Name) ? "未命名方案" : document.Name) : "";
+        public string CurrentSolutionPath => DocumentManager.CurrentFilePath ?? "";
+        public bool HasCurrentSolution => DocumentManager.Session != null;
+        public bool HasUnsavedSolutionChanges => DocumentManager.HasUnsavedChanges;
 
         public string CameraStatus => "相机(2台)";
 
@@ -807,7 +787,6 @@ SplitterPosition = position;
         public ICommand ClearLogCommand { get; }
 
         // 解决方案管理
-        public ICommand ShowSolutionConfigurationCommand { get; }
 
         // 管理器
         public ICommand ShowGlobalVariableManagerCommand { get; }
@@ -962,12 +941,15 @@ SplitterPosition = position;
             ClearLogCommand = new RelayCommand(ClearLog);
 
             // 解决方案管理
-            ShowSolutionConfigurationCommand = new RelayCommand(ExecuteShowSolutionConfiguration);
 
             // 管理器
             ShowGlobalVariableManagerCommand = new RelayCommand(ExecuteShowGlobalVariableManager);
             ShowCameraManagerCommand = new RelayCommand(ExecuteShowCameraManager);
             ShowCommunicationManagerCommand = new RelayCommand(ExecuteShowCommunicationManager);
+            // The default Tab is created silently before subscriptions; bind its editable definition now.
+            if (solutionManager.CurrentSolution == null) SolutionApplication.CreateNew();
+            else OnSelectedTabChanged(this, EventArgs.Empty);
+            solutionManager.SolutionSaved += (_, _) => UpdateCurrentSolutionInfo();
         }
 
         /// <summary>
@@ -1283,6 +1265,7 @@ SplitterPosition = position;
         private void OnCurrentCommandManagerStateChanged(object? sender, EventArgs e)
         {
             UpdateUndoRedoCommands();
+            UpdateCurrentSolutionInfo();
         }
 
         /// <summary>
@@ -1407,7 +1390,6 @@ SplitterPosition = position;
                     CreateWorkflowTab(workflow, filePath);
 
                     _currentWorkflowFilePath = filePath;
-                    _isWorkflowModified = false;
 
                     AddLog($"✅ 工作流已在画布中打开");
                 }
@@ -1457,7 +1439,6 @@ SplitterPosition = position;
 
                 if (success)
                 {
-                    _isWorkflowModified = false;
                     AddLog($"✅ 工作流已成功保存: {_currentWorkflowFilePath}");
                 }
                 else
@@ -1515,7 +1496,6 @@ SplitterPosition = position;
                     if (success)
                     {
                         _currentWorkflowFilePath = filePath;
-                        _isWorkflowModified = false;
                         AddLog($"✅ 工作流已成功保存: {filePath}");
                     }
                     else
@@ -1534,91 +1514,51 @@ SplitterPosition = position;
         /// <summary>
         /// 保存当前解决方案
         /// </summary>
-        private void ExecuteSaveCurrentSolution()
+        private void ExecuteSaveCurrentSolution() => SaveCurrentDocumentWithPrompt();
+
+        private bool SaveCurrentDocumentWithPrompt(Window? owner = null)
         {
+            var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             try
             {
-                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-
-                // 1. 如果没有当前解决方案，弹出新建对话框
-                SolutionMetadata? metadata = null;
-                if (solutionManager.CurrentSolution == null)
+                if (manager.CurrentSolution == null) return false;
+                if (!TryValidateSolutionEditors(out var validationError)) throw new InvalidOperationException(validationError);
+                var target = manager.CurrentFilePath;
+                if (string.IsNullOrEmpty(target))
                 {
-                    LogInfo("没有当前解决方案，弹出新建对话框");
-
-                    // ✅ 统一使用解决方案管理器的默认目录
-                    var defaultPath = solutionManager.SolutionsDirectory;
-                    var dialog = new SunEyeVision.UI.Shell.Windows.NewSolutionDialog(defaultPath)
+                    var dialog = new Microsoft.Win32.SaveFileDialog
                     {
-                        Owner = System.Windows.Application.Current.MainWindow
+                        Title = "保存方案", Filter = "方案文件 (*.solution)|*.solution", DefaultExt = ".solution",
+                        AddExtension = true, OverwritePrompt = true,
+                        InitialDirectory = manager.SolutionsDirectory, FileName = manager.CurrentSolution.Name
                     };
-
-                    if (dialog.ShowDialog() == true)
-                    {
-                        // 创建新解决方案元数据
-                        metadata = new SolutionMetadata
-                        {
-                            Name = dialog.SolutionName,
-                            Description = dialog.Description ?? "",
-                            DirectoryPath = dialog.SolutionPath
-                        };
-
-                        // 构建文件路径
-                        var filePath = string.IsNullOrEmpty(metadata.FilePath)
-                            ? Path.Combine(metadata.DirectoryPath, $"{metadata.Name}.solution")
-                            : metadata.FilePath;
-                        SunEyeVision.Workflow.Persistence.AtomicJsonFile.ValidateSolutionName(metadata.Name);
-                        if (File.Exists(filePath)) throw new IOException("目标方案已存在，不会覆盖，请选择其他名称：" + filePath);
-
-                        // ✅ 直接创建 Solution 对象（不使用 CreateNewSolution）
-                        // CreateNewSolution 是用于解决方案管理器的"新建解决方案"功能，会创建默认工作流
-                        // 这里是"保存功能"，不应该创建默认工作流，而是同步 UI 中的数据
-                        var solution = SunEyeVision.Workflow.Solution.Create();
-                        solution.Version = metadata.Version;
-                        solution.Name = metadata.Name;
-                        solution.Description = metadata.Description;
-                        solution.FilePath = filePath;
-
-                        // ✅ 不添加默认工作流，保持 Workflows 为空
-
-                        LogSuccess($"创建新解决方案对象: {metadata.Name}");
-
-                        // ✅ 静默设置为当前解决方案（不触发事件）
-                        // 注意：SetCurrentSolutionSilently 会设置 CurrentSolution 和 CurrentFilePath
-                        solutionManager.SetCurrentSolutionSilently(solution, filePath);
-
-                        // ✅ 更新必要的UI属性（不调用 UpdateCurrentSolutionInfo，避免触发事件）
-                        CurrentSolutionName = metadata.Name;
-                        CurrentSolutionPath = filePath;
-                        OnPropertyChanged(nameof(HasCurrentSolution));
-
-                        LogSuccess($"已设置当前解决方案: {metadata.Name}");
-                    }
-                    else
-                    {
-                        LogInfo("用户取消新建解决方案");
-                        return;
-                    }
+                    if (dialog.ShowDialog(owner ?? Application.Current?.MainWindow) != true) return false;
+                    target = dialog.FileName;
                 }
-
-                // 2. 同步UI数据到Solution对象
-                // SaveSolutionData 会遍历 UI 中的 Tabs，为每个 Tab 创建 workflow 并同步节点
-                SaveSolutionData(solutionManager);
-
-                // 3. 保存解决方案（此时 Solution 已包含 UI 中的工作流和节点）
-                if (!solutionManager.SaveSolution()) throw new IOException("保存方案失败：" + solutionManager.LastError);
-                if (solutionManager.CurrentSolution != null) (Application.Current as App)?.RecordRecentSolution(solutionManager.CurrentSolution);
-
-                // 4. 注册元数据（保存完成后注册）
-                // 注意：SaveSolution 已经自动注册元数据，这里不需要再次注册
-                // 因为 SaveSolution 内部会调用 _settings.KnownSolutions 和 _registry.Register
-                var solutionName = metadata?.Name ?? CurrentSolutionName;
-                LogSuccess($"已保存当前解决方案: {solutionName}");
+                Services.Startup.StartupLaunchContext.Current.ValidatePath(target);
+                var result = SolutionApplication.Save(target, () =>
+                {
+                    if (!TryCommitSolutionEditors(out var error)) throw new InvalidOperationException(error);
+                    SaveSolutionData(manager);
+                });
+                UpdateCurrentSolutionInfo();
+                if (!result.FileWritten)
+                {
+                    ThemeMessageDialog.Show(result.Error ?? "保存失败，当前内容和路径保留。", "保存方案失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, owner);
+                    return false;
+                }
+                (Application.Current as App)?.RecordRecentSolution(manager.CurrentSolution);
+                LogSuccess($"方案文件已保存: {manager.CurrentFilePath}");
+                if (!string.IsNullOrEmpty(result.Warning))
+                    ThemeMessageDialog.Show("文件已保存；" + result.Warning, "记录更新提示", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning, owner);
+                return true;
             }
             catch (Exception ex)
             {
-                LogError($"保存当前解决方案失败: {ex.Message}", null, ex);
-                ThemeMessageDialog.Show(ex.Message, "保存方案失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+                LogError($"保存方案失败: {ex.Message}", null, ex);
+                UpdateCurrentSolutionInfo();
+                ThemeMessageDialog.Show(ex.Message, "保存方案失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, owner);
+                return false;
             }
         }
 
@@ -1627,30 +1567,12 @@ SplitterPosition = position;
         /// </summary>
         private void UpdateCurrentSolutionInfo()
         {
-            try
-            {
-                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-                var currentSolution = solutionManager.CurrentSolution;
-
-                if (currentSolution != null)
-                {
-                    CurrentSolutionName = string.IsNullOrWhiteSpace(currentSolution.Name) ? "未命名方案" : currentSolution.Name;
-                    CurrentSolutionPath = currentSolution.FilePath ?? "";
-                    LogInfo($"当前解决方案: {CurrentSolutionName}");
-                }
-                else
-                {
-                    CurrentSolutionName = string.Empty;
-                    CurrentSolutionPath = string.Empty;
-                }
-
-                // 通知属性变化
-                OnPropertyChanged(nameof(HasCurrentSolution));
-            }
-            catch (Exception ex)
-            {
-                LogError($"更新解决方案信息失败: {ex.Message}");
-            }
+            OnPropertyChanged(nameof(CurrentSolutionName));
+            OnPropertyChanged(nameof(CurrentSolutionPath));
+            OnPropertyChanged(nameof(HasCurrentSolution));
+            OnPropertyChanged(nameof(HasUnsavedSolutionChanges));
+            var name = HasCurrentSolution ? CurrentSolutionName : "未打开方案";
+            Title = "太阳眼视觉 - " + name + (HasUnsavedSolutionChanges ? " *" : "");
         }
 
         /// <summary>
@@ -1679,8 +1601,8 @@ SplitterPosition = position;
                 {
                     WorkflowTabViewModel.ResetToDefault();
                     LogInfo("已重置为默认状态（解决方案已关闭）");
-                    // ResetToDefault 为静默切换（suppressEvent），需手动广播选中变化让子 VM 刷新绑定
-                    SelectedTabChanged?.Invoke(this, EventArgs.Empty);
+                    // ResetToDefault is silent: initialize the definition and shared collections before broadcasting.
+                    OnSelectedTabChanged(this, EventArgs.Empty);
                 }
             }
         }
@@ -1959,6 +1881,7 @@ SplitterPosition = position;
                     }
                 }
 
+                _workflowEngine.ClearWorkflows();
                 WorkflowTabViewModel.Tabs.Clear();
                 LogInfo($"已清空 {oldTabCount} 个现有标签页");
 
@@ -2011,7 +1934,7 @@ SplitterPosition = position;
                 // 验证加载结果
                 if (WorkflowTabViewModel.Tabs.Count == 0)
                 {
-                    LogWarning("警告：加载后没有标签页，请检查解决方案文件");
+                    WorkflowTabViewModel.AddWorkflow();
                 }
                 else
                 {
@@ -5583,32 +5506,14 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                         ThemeMessageDialog.MessageIcon.Question) != MessageBoxResult.OK) return false;
                 _solutionTransitionLease ??= _executionManager.BeginSolutionTransition();
                 await _executionManager.StopAndWaitAsync(TimeSpan.FromSeconds(30));
-                if (manager.CurrentSolution == null)
-                {
-                    if (_isWorkflowModified || WorkflowTabViewModel.Tabs.Any(tab => tab.WorkflowNodes.Count > 0))
-                    {
-                        var answer = ThemeMessageDialog.Show("工作区尚未保存为方案。是否保存？", "保存方案", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);
-                        if (answer == MessageBoxResult.Cancel || answer == MessageBoxResult.None) { EndSolutionTransition(); return false; }
-                        if (answer == MessageBoxResult.Yes)
-                        {
-                            SaveCurrentSolutionCommand.Execute(null);
-                            if (manager.CurrentSolution == null || manager.HasUnsavedChanges) { EndSolutionTransition(); return false; }
-                        }
-                    }
-                    return true;
-                }
+                if (manager.CurrentSolution == null) return true;
+                if (!TryCommitSolutionEditors(out var editError)) throw new InvalidOperationException(editError);
                 SaveSolutionData(manager);
                 if (!manager.HasUnsavedChanges) return true;
                 var result = ThemeMessageDialog.Show("当前方案有未保存修改。是否保存？", "保存方案", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);
                 if (result == MessageBoxResult.Cancel || result == MessageBoxResult.None) { EndSolutionTransition(); return false; }
-                if (result == MessageBoxResult.Yes && !manager.SaveSolution())
-                {
-                    var target = new Microsoft.Win32.SaveFileDialog { Filter = "解决方案 (*.solution)|*.solution",
-                        InitialDirectory = manager.SolutionsDirectory, FileName = manager.CurrentSolution.Name + "_副本" };
-                    if (ThemeMessageDialog.Show("原位置无法保存。是否另存到可写位置？", "保存失败", MessageBoxButton.YesNo, ThemeMessageDialog.MessageIcon.Warning) != MessageBoxResult.Yes ||
-                        target.ShowDialog() != true || manager.SaveAsSolution(target.FileName, System.IO.Path.GetFileNameWithoutExtension(target.FileName), manager.CurrentSolution.Description) == null)
-                    { EndSolutionTransition(); return false; }
-                }
+                if (result == MessageBoxResult.Yes && (!SaveCurrentDocumentWithPrompt() || manager.HasUnsavedChanges))
+                { EndSolutionTransition(); return false; }
                 return true;
             }
             catch (Exception ex)
@@ -5637,7 +5542,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 if (!await PrepareSolutionTransitionAsync()) return false;
                 // Reuse the same validated candidate. Catalog and identity-conflict UI are optional browser concerns.
                 manager.SetCurrentSolution(candidate, registerInCatalog: false);
-                Title = $"太阳眼视觉 - {candidate.Name}";
+                UpdateCurrentSolutionInfo();
                 (Application.Current as App)?.RecordRecentSolution(candidate);
                 if (Application.Current is App app) await app.CompleteOpenedWorkspaceAsync();
                 LogSuccess($"已打开方案: {candidate.Name}");
@@ -5651,76 +5556,6 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     : "方案已切换，但工作区初始化未完成，请检查日志并重新打开：";
                 ThemeMessageDialog.Show(prefix + ex.Message, "打开方案", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                 return false;
-            }
-            finally { EndSolutionTransition(); }
-        }
-
-        private async void ExecuteShowSolutionConfiguration()
-        {
-            if (!CanAcceptExternalActivation) return;
-            try
-            {
-                LogInfo("打开解决方案配置界面");
-
-                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-
-                // [诊断] 记录打开前的状态
-                var currentMetadata = solutionManager.CurrentSolution != null
-                    ? solutionManager.GetMetadata(solutionManager.CurrentSolution.Id)
-                    : null;
-                LogInfo($"[诊断-打开] 当前解决方案ID: {solutionManager.CurrentSolution?.Id ?? "null"}");
-                LogInfo($"[诊断-打开] 当前解决方案名称: {currentMetadata?.Name ?? "null"}");
-                LogInfo($"[诊断-打开] 默认解决方案ID: {solutionManager.Settings.DefaultSolutionId ?? "null"}");
-                LogInfo($"[诊断-打开] Settings.CurrentSolutionId: {solutionManager.Settings.CurrentSolutionId ?? "null"}");
-
-                var configDialog = new SunEyeVision.UI.Features.Dialogs.SolutionConfigurationDialog(solutionManager,
-                    beforeTransition: PrepareSolutionTransitionAsync,
-                    synchronizeCurrent: () => { if (solutionManager.CurrentSolution != null) SaveSolutionData(solutionManager); })
-                    { Owner = Application.Current?.MainWindow };
-
-                var result = configDialog.ShowDialog();
-
-                if (result == true && configDialog.IsLaunched && configDialog.LaunchResult != null)
-                {
-                    // 用户点击启动，加载解决方案
-                    var solution = configDialog.LaunchResult;
-
-                    try
-                    {
-                        // 设置当前解决方案（会触发 CurrentSolutionChanged 事件自动加载工作流）
-                        Services.Startup.StartupLaunchContext.Current.ValidatePath(solution.FilePath ?? "");
-                        Services.Startup.StartupLaunchContext.Current.ValidateCandidate(solution);
-                        solutionManager.SetCurrentSolution(solution);
-                        (Application.Current as App)?.RecordRecentSolution(solution);
-                        if (Application.Current is App app) await app.CompleteOpenedWorkspaceAsync();
-
-                        var metadata = solutionManager.GetMetadata(solution.Id);
-                        LogSuccess($"已加载解决方案: {metadata?.Name ?? "未命名"}");
-
-                        // 更新标题
-                        Title = $"太阳眼视觉 - {metadata?.Name ?? "未命名"}";
-
-                        // [诊断] 记录加载后的状态
-                        var loadedMetadata = solutionManager.CurrentSolution != null
-                            ? solutionManager.GetMetadata(solutionManager.CurrentSolution.Id)
-                            : null;
-                        LogInfo($"[诊断-加载后] CurrentSolution: {loadedMetadata?.Name ?? "null"}");
-                        LogInfo($"[诊断-加载后] CurrentSolutionId: {solutionManager.Settings.CurrentSolutionId ?? "null"}");
-                    }
-                    catch (Exception ex)
-                    {
-                        LogError($"加载解决方案失败: {ex.Message}", null, ex);
-                        ThemeMessageDialog.Show(
-                            $"加载解决方案失败: {ex.Message}",
-                            "错误",
-                            MessageBoxButton.OK,
-                            ThemeMessageDialog.MessageIcon.Error);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogError($"打开解决方案配置界面失败: {ex}", null, ex, LogTarget.File | LogTarget.UI);
             }
             finally { EndSolutionTransition(); }
         }
@@ -5747,6 +5582,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 var viewModel = new SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerViewModel(solutionManager);
                 var dialog = new SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerDialog(viewModel);
 
+                dialog.Owner = Application.Current?.MainWindow;
+                viewModel.SaveRequested = () => SaveCurrentDocumentWithPrompt(dialog);
                 dialog.ShowDialog();
             }
             catch (Exception ex)

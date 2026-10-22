@@ -40,12 +40,27 @@ public static class ToolEditorCommit
         }
     }
 
-    public static bool TryCommitOpenEditors(Func<string, bool>? includeNode, out string error)
+    /// <summary>Validate every matching open editor before any save-side source updates.</summary>
+    public static bool TryValidateOpenEditors(Func<string, bool>? includeNode, out string error) => TryValidateOpenEditors(includeNode, out error, null);
+    public static bool TryValidateOpenEditors(Func<string, bool>? includeNode, out string error, Func<object, bool>? ownsNode)
+    {
+        ToolDebugControlBase[] editors;
+        lock (Editors) editors = Editors.Select(e => e.TryGetTarget(out var target) ? target : null).OfType<ToolDebugControlBase>().ToArray();
+        foreach (var editor in editors.Where(editor => editor.Dispatcher.CheckAccess() && editor.IsLoaded && PresentationSource.FromVisual(editor) != null &&
+            (includeNode == null || editor.CurrentNode?.GetType().GetProperty("Id")?.GetValue(editor.CurrentNode) is string id && includeNode(id)) &&
+            (ownsNode == null || editor.CurrentNode != null && ownsNode(editor.CurrentNode))))
+            if (!TryValidate(editor, out error)) return false;
+        error = ""; return true;
+    }
+
+    public static bool TryCommitOpenEditors(Func<string, bool>? includeNode, out string error) => TryCommitOpenEditors(includeNode, out error, null);
+    public static bool TryCommitOpenEditors(Func<string, bool>? includeNode, out string error, Func<object, bool>? ownsNode)
     {
         ToolDebugControlBase[] editors;
         lock (Editors) editors = Editors.Select(e => e.TryGetTarget(out var target) ? target : null).OfType<ToolDebugControlBase>().ToArray();
         var selected = editors.Where(editor => editor.Dispatcher.CheckAccess() && editor.IsLoaded && PresentationSource.FromVisual(editor) != null &&
-            (includeNode == null || editor.CurrentNode?.GetType().GetProperty("Id")?.GetValue(editor.CurrentNode) is string id && includeNode(id))).ToArray();
+            (includeNode == null || editor.CurrentNode?.GetType().GetProperty("Id")?.GetValue(editor.CurrentNode) is string id && includeNode(id)) &&
+            (ownsNode == null || editor.CurrentNode != null && ownsNode(editor.CurrentNode))).ToArray();
         foreach (var editor in selected)
             if (!TryValidate(editor, out error)) return false;
         foreach (var editor in selected)
@@ -84,7 +99,7 @@ public static class ToolEditorCommit
         error = ""; return true;
     }
 
-    private static bool TryValidate(FrameworkElement root, out string error)
+    public static bool TryValidate(FrameworkElement root, out string error)
     {
         root.Dispatcher.VerifyAccess();
         var elements = Walk(root).OfType<FrameworkElement>().ToArray();

@@ -446,11 +446,10 @@
                 <DataGridTemplateColumn Header="名称" Width="120">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBox Text="{Binding Name}"
+                            <TextBox x:Name="VariableNameEditor" Text="{Binding Name, Mode=OneWay}"
                                      VerticalContentAlignment="Center"
                                      BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
                                      BorderThickness="1" Padding="4,2"
-                                     GotKeyboardFocus="VariableNameTextBox_GotKeyboardFocus"
                                      LostFocus="VariableNameTextBox_LostFocus"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -493,7 +492,7 @@
                 <DataGridTemplateColumn Header="当前值" Width="120">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBox Text="{Binding Value, Converter={StaticResource ValueTextConverter}, Mode=OneWay}"
+                            <TextBox x:Name="VariableValueEditor" Text="{Binding Value, Converter={StaticResource ValueTextConverter}, Mode=OneWay}"
                                      IsReadOnly="{Binding IsComplexValue}"
                                      VerticalContentAlignment="Center"
                                      BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"

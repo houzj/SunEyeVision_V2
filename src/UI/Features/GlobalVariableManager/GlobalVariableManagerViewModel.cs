@@ -155,9 +155,11 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         public List<TypeOption> TypeOptions { get; } = SdkTypeVocabulary.GetAllTypeOptions();
 
+        public Solution? EditingDocument { get; }
         public GlobalVariableManagerViewModel(SolutionManager solutionManager)
         {
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
+            EditingDocument = solutionManager.CurrentSolution;
 
             Groups = new ObservableCollection<VariableGroupViewModel>();
             CurrentVariables = new ObservableCollection<GlobalVariable>();
@@ -709,47 +711,22 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// <summary>
         /// 保存
         /// </summary>
+        private Func<bool>? _saveRequested;
+        public Func<bool>? SaveRequested
+        {
+            get => _saveRequested;
+            set { _saveRequested = value; CommandManager.InvalidateRequerySuggested(); }
+        }
         private void Save()
         {
-            var currentSolution = _solutionManager.CurrentSolution;
-            if (currentSolution?.FilePath != null)
+            try
             {
-                try
-                {
-                    // 更新所有变量的Index属性（紧凑重排）
-                    foreach (var group in Groups)
-                    {
-                        int index = 1;
-                        foreach (var variable in group.Variables.OrderBy(v => v.Index))
-                        {
-                            variable.Index = index++;
-                        }
-                    }
-
-                    // 清空全局空洞池（保存即 compact）
-                    _releasedIndices.Clear();
-
-                    _solutionManager.SaveSolution(currentSolution.FilePath);
-                    LogSuccess("全局变量保存成功");
-                }
-                catch (Exception ex)
-                {
-                    LogError($"保存全局变量失败: {ex.Message}");
-                }
+                if (SaveRequested?.Invoke() == true) LogSuccess("方案文件已保存（含全局变量）。");
+                else LogWarning("本次未保存，当前编辑内容保留。");
             }
-            else
-            {
-                LogWarning("解决方案未保存，无法保存全局变量");
-            }
+            catch (Exception ex) { LogError("保存未完成，当前编辑保留：" + ex.Message); }
         }
-
-        /// <summary>
-        /// 是否可以保存
-        /// </summary>
-        private bool CanSave()
-        {
-            return _solutionManager.CurrentSolution?.FilePath != null;
-        }
+        private bool CanSave() => EditingDocument != null && ReferenceEquals(EditingDocument, _solutionManager.CurrentSolution) && SaveRequested != null;
 
         /// <summary>
         /// 关闭

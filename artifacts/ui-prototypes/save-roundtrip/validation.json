@@ -1,6 +1,6 @@
 {
   "scope": "HTML only, not product acceptance",
-  "widthChecks": 21,
-  "interactionChecks": 5,
+  "widthChecks": 24,
+  "interactionChecks": 6,
   "errors": []
 }

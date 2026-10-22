@@ -1,7 +1,7 @@
 {
   "canonicalFile": "docs/collaboration/OPTIMIZATION_BACKLOG.json",
-  "canonicalSha256": "663ba20231e84c29fd3aa3c32ae96fe806daa94bf8e8a9189753e9a729030709",
+  "canonicalSha256": "1b9663f4b4f9349ff38c7914d14271c05ef2542b9a1dc02d40f2d664c02943ef",
   "batches": 7,
-  "issues": 15,
+  "issues": 17,
   "scope": "Documentation only; no product changes/build/run"
 }

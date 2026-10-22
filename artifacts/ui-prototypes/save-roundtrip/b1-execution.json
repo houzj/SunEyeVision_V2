@@ -1,0 +1,408 @@
+{
+  "task": "B1-EXECUTION-16",
+  "date": "2026-10-22",
+  "status": "已定路线的实施细化；未改产品，实施未授权",
+  "reuse": "保留启动/起始页/内存新建/首次保存与统一编辑提交；不因B1整体重做。",
+  "api": [
+    [
+      "LoadCandidate(path, resourceBaseOverride?) → SolutionLoadResult",
+      "Workflow层：Candidate、SourceSha256、BaseDirectory、Diagnostics；HasErrors时禁止发布会话。",
+      "只读一次原始字节，结构/插件元数据/兼容/资源预检后再反序列化；不调用UI工厂、不连设备、不运行工具。"
+    ],
+    [
+      "PersistenceDiagnostic",
+      "Code、Stage、Severity、JsonPath、WorkflowId?/NodeId?/VariableId?、Message、Migration?",
+      "稳定错误码用于验收；异常只做诊断来源，不把日志或bool当终态。Converter无可变全局收集器，文档预检负责全路径/实体归属。"
+    ],
+    [
+      "PrepareSnapshot(document, targetPath) → SolutionSnapshot",
+      "最终JSON + CanonicalContent + Diagnostics；只读不可变快照。",
+      "默认名、autoConnect退役等兼容规范化只在这里作用于副本；通信/结构校验也读同一快照，仓库不再读活文档判定。"
+    ],
+    [
+      "WriteSnapshot(snapshot) → SolutionWriteResult",
+      "FileWritten、WrittenSnapshot?、Error?、Warning?",
+      "保留同目录临时文件、旧版恢复备份和原子替换；成功后Session提交WrittenSnapshot的规范基线，失败不绑定路径或清dirty。"
+    ],
+    [
+      "SolutionSemanticComparer / Session baseline",
+      "对同一规范投影比较；对象键序不敏感、数组顺序敏感。",
+      "保留所有持久化字段含未知扩展，不新增随意忽略时间戳/索引规则。仅已有JsonIgnore运行字段、明确autoConnect兼容规范化排除。"
+    ],
+    [
+      "OpenResult",
+      "ActivatedExisting / RejectedBeforeCommit / Opened / CommittedDegraded，另含Committed与Diagnostics。",
+      "同路径Open为激活，Reload必须读盘。读取失败保旧文档；已停止执行/已提交有效编辑不假装回滚。提交后装配/自动恢复失败归Degraded。"
+    ],
+    [
+      "资源解析服务 IResourcePathResolver（窄SDK合同）",
+      "按本请求/会话提供 Resolve(fieldName, reference, FileRead/FileWrite/DirectoryRead)，返回原始引用、实际地址与存在状态。",
+      "原始配置字符串不变。ToolExecutionRequest/ExecutionContext/DataSourceQueryService仅新增可选服务属性，算法、调试及预览在实际I/O处解析；不改全局工作目录，不把解析地址写进N点Fingerprint或设计参数。"
+    ]
+  ],
+  "compat": [
+    [
+      "格式版本",
+      "保持SchemaVersion=1、现有$type、ToolType和ID；不在B1更换整个容器或模型格式。",
+      "未来格式或未知多态类型拒绝，原件保持；旧API委托统一管线。"
+    ],
+    [
+      "基础旧标量",
+      "仅已知Integer/Double/String/Boolean和合法旧形态显式提升为单元素T[]，记录兼容诊断。",
+      "转换在候选副本内；不自动保存旧文件、不把格式错误字符串转成默认值。"
+    ],
+    [
+      "null与类型",
+      "外层Value缺省或JSON null视为既有合法空值；非空wrapper必须有合法Type与Value并与外层声明一致。显式typed null保留空语义并记录兼容说明，不臆造String类型。",
+      "错类型/缺wrapper字段/解析失败必须Error，不能退null。合法null是否跳过属性Converter先由独立基线核实；实现按真实序列化形态测试。"
+    ],
+    [
+      "未知字段",
+      "根、Workflow、WorkflowNode、GlobalVariable、Device持久化层保留扩展JSON；UI转换显式携带，不遍历未知扩展改路径。",
+      "工具参数/几何等无法透明保留的未知字段/不支持版本明确拒绝；不能悄悄删除，也不默认执行未知语义。"
+    ],
+    [
+      "设备配置",
+      "只处理配置：嵌套Object/Array/null按JSON原形保留；必需身份/引用缺失或错类型报Error，不随机新建ID；可缺省的历史可选字段记录迁移。",
+      "不连接设备，不把Settings中的对象转成JSON字符串，不把null变空串；不扩设备执行与调度。"
+    ],
+    [
+      "内嵌图像",
+      "保留V1 Image/Base64 PNG载荷；解码用保留通道/位深的模式，核尺寸/通道/深度和像素，不改成新JSON图像对象。",
+      "输入空Mat/编码失败/坏Base64/空解码报Error；Mat之外不能确定像素格式的IVisionImage不猜测转换，明确不支持。"
+    ],
+    [
+      "已有模型",
+      "保留ShapeMatch.Templates/ModelData与源图字节；坏内容可诊断，不新增第二个ModelPath或模型仓库。",
+      "不执行匹配、不重训，不把VM模型二进制当兼容格式；运行句柄/缓存Owner归B4。"
+    ],
+    [
+      "删除工具",
+      "Threshold/NPointVerification旧节点明确识别并拒绝正常加载，保留文件与定位；不自动删节点。",
+      "只有等价参数/算法证据充足才另做显式迁移；不将ImageThreshold按同名猜测替换。"
+    ],
+    [
+      "旧插件资源",
+      "新增SDK属性为可选，旧公开运行重载继续可用；已支持的绝对路径保持现状。声明使用新资源服务的插件按会话基准解析。",
+      "旧插件未经验证的相对路径不能偷偷依赖进程CWD或改活参数；有限适配仅在已证无状态映射时使用，其他给兼容诊断，后续B5补完，不能声称全部旧插件均已兼容。"
+    ]
+  ],
+  "resources": [
+    [
+      "ImageLoad.Parameters.FilePath",
+      "方案外链输入；相对URI以方案所在目录为准，绝对URI原样保留。",
+      "ImageLoad实际I/O使用请求资源服务；流程与工具调试共用服务，参数FilePath保持原字符串。相机模式不按本地文件要求校验。"
+    ],
+    [
+      "ImageSourceConfig.FilePaths / ForRunPaths",
+      "有序原始引用列表；保留数量、重复、勾选路径与CurrentIndex，缺失文件不自动过滤/写回。",
+      "ImageInfo加SourceReference原始引用，FilePath仅为预览实际地址；ToConfig导出SourceReference；缺文件保留占位与诊断。"
+    ],
+    [
+      "NPointCalibration.CalibrationFilePath",
+      "标定输出/候选写入地址，不能把尚不存在的输出文件当成坏输入。",
+      "候选/活动文件实际I/O使用解析地址；保留声明路径参与既有配置Fingerprint，避免绝对化运行副本破坏N点结果回写门。不改算法/点集。"
+    ],
+    [
+      "ShapeMatch.ModelData",
+      "现有内嵌字节即权威内容，不是需要转绝对的外部URI。",
+      "持久化验证不创建HALCON模型句柄；来源路径不替代字节。"
+    ],
+    [
+      "Script.AssemblyReferenceDir / AssemblyReferences",
+      "插件目录基准与程序集名称是独立含义；不是方案目录资源。",
+      "维持既有TPA/宿主类型锚定/ScriptRefs策略，不把程序集名或BCL路径当图像URI重写；部署兼容另归B5/B6。"
+    ],
+    [
+      "未知插件字段 / 表达式",
+      "只解析登记过且用途明确的资源字段；不做任意字段名扫描或临时改变进程工作目录。",
+      "标量/数组对表达式采用同一识别规则，保留待运行绑定，不调用脚本求值。新增资源字段需登记后才能承诺支持。"
+    ],
+    [
+      "N点Fingerprint与原路径",
+      "路径同时属于参数指纹：改变运行副本中的声明路径可能导致回写指纹不同。",
+      "因此采用I/O服务解析，不以改FilePath字段作为一般资源适配；验收包含相对路径运行后点集/结果提交不误拒。"
+    ]
+  ],
+  "files": [
+    [
+      "src/Workflow/Persistence/SolutionPersistenceResult.cs",
+      "拟新增",
+      "Load/Write结果、诊断与阶段；不引WPF类型。",
+      "A"
+    ],
+    [
+      "src/Workflow/Persistence/SolutionSnapshot.cs",
+      "拟新增",
+      "最终不可变持久化JSON/规范投影；Manager/仓库/Session共用。",
+      "B"
+    ],
+    [
+      "src/Workflow/Persistence/SolutionCompatibilityAdapter.cs",
+      "拟新增",
+      "V1值形态与旧字段迁移；不得隐式改原文件。",
+      "A"
+    ],
+    [
+      "src/Workflow/Persistence/SolutionResourceResolver.cs",
+      "拟新增",
+      "明示资源字段目录/用途，产生运行投影；不改设计URI。",
+      "C"
+    ],
+    [
+      "src/Workflow/Persistence/SolutionSemanticComparer.cs",
+      "拟新增",
+      "单一字段规范化规则，供dirty与往返比较共用。",
+      "B"
+    ],
+    [
+      "src/Workflow/SolutionRepository.cs",
+      "修改",
+      "LoadCandidate、快照写入、结构保真设备配置；删除重复Probe反序列化与全树猜路径。",
+      "A/B/C"
+    ],
+    [
+      "src/Workflow/WorkflowJsonConverter.cs",
+      "修改",
+      "连接异常不吞；去UI工厂副作用，保留工作流扩展字段。",
+      "A"
+    ],
+    [
+      "src/Workflow/GlobalVariableValueConverter.cs",
+      "修改",
+      "合法空值/兼容旧标量/类型错误/图像失败分开，stateless JsonException。",
+      "A"
+    ],
+    [
+      "src/Workflow/WorkflowSerializationOptions.cs",
+      "修改",
+      "每次操作使用受控选项副本，沿用注册多态元数据；禁止修改全局选项收集诊断。",
+      "A"
+    ],
+    [
+      "src/Workflow/Solution.cs; src/Workflow/SolutionManager.cs; src/Workflow/SolutionSession.cs",
+      "修改",
+      "兼容入口转发、纯文档提交与激活分离、统一最终保存基线。CreateUntitled与首存写后绑定复用。",
+      "B/D"
+    ],
+    [
+      "src/Workflow/Workflow.cs; src/Workflow/WorkflowNode.cs; src/Workflow/GlobalVariable.cs; src/Workflow/Device.cs",
+      "修改",
+      "持久化未知扩展保留、必要结构验证；不新增UI宿主依赖。",
+      "A"
+    ],
+    [
+      "src/Plugin.SDK/Execution/Parameters/IResourcePathResolver.cs",
+      "拟新增",
+      "资源用途/解析结果/请求服务窄合同；不依赖UI或Workflow程序集。",
+      "C"
+    ],
+    [
+      "src/Plugin.SDK/Core/ToolExecutionRequest.cs; src/Plugin.SDK/Core/ToolExecutor.cs; src/Plugin.SDK/Execution/Parameters/ExecutionContext.cs; src/Plugin.SDK/Execution/Parameters/DataSourceQueryService.cs",
+      "修改",
+      "可选资源服务从请求传到上下文，旧公开重载保留；不改变设计参数、算法或调度。",
+      "C"
+    ],
+    [
+      "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs; src/Workflow/AlgorithmNode.cs",
+      "修改",
+      "两入口携带会话资源服务；复用既有参数快照，不建立第二执行管线。",
+      "C"
+    ],
+    [
+      "tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs; tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationFile.cs; tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationParameters.cs; tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml.cs",
+      "修改",
+      "只在文件读/候选写/显式应用处解析引用；N点Fingerprint保留原路径，结果提交不受解析地址影响。",
+      "C"
+    ],
+    [
+      "src/UI/Shared/ImageInputSource.cs; src/UI/Shared/WorkflowNodeModel.cs; src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs",
+      "修改",
+      "缺失引用占位、SourceReference/实际地址分开、装载不当编辑回写；UI转换携带扩展字段。",
+      "C/D"
+    ],
+    [
+      "src/UI/Services/Solutions/WorkspaceOpenCoordinator.cs",
+      "拟新增",
+      "阶段化组合读取、旧方案停止/脏处理、提交、工作区激活及结果，不做工具调度。",
+      "D"
+    ],
+    [
+      "src/UI/Services/Solutions/SolutionApplicationService.cs; src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "修改",
+      "复用统一保存门，Open/Reload意图分开；装配错误传播Degraded，不再吞SetNodes后报成功。",
+      "D"
+    ],
+    [
+      "src/UI/Shell/Windows/MainWindowStartupEntries.cs; src/UI/Core/IRootCoordinator.cs; src/UI/Shell/Controls/Shell/ShellTopBarViewModel.cs; src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml",
+      "修改",
+      "文件菜单新增从磁盘重新加载，未命名禁用；Ctrl+O继续打开，不新增冲突快捷键。",
+      "D"
+    ],
+    [
+      "src/UI/App.xaml.cs; src/UI/Services/Communication/CommunicationApplicationService.cs",
+      "修改",
+      "将加载副作用明确放提交后；相机/通信失败或超时映射Degraded，迟到结果校验会话归属。",
+      "D"
+    ],
+    [
+      "tests/SunEyeVision.UI.Tests/SolutionPersistenceContractTests.cs; tests/SunEyeVision.UI.Tests/SolutionReloadContractTests.cs",
+      "拟新增",
+      "只跑隔离无设备样本/可控替身，保存整链与转换器数据往返分层。",
+      "E"
+    ]
+  ],
+  "phases": [
+    [
+      "A",
+      "严格候选读取与V1保真",
+      "先加只读样本与转换器/结构校验，切断吞错退空和UI反序列化副作用。",
+      "坏数据拒绝、合法null/旧标量保值、未知字段政策和嵌套Settings样本通过。"
+    ],
+    [
+      "B",
+      "最终快照与保存点",
+      "将默认名/旧字段规范化集中，Repository只写最终快照，Session基于相同投影。",
+      "首次/已有保存兼容、失败保护、写后基线和修改后dirty均成立。"
+    ],
+    [
+      "C",
+      "资源原URI与运行地址",
+      "替换字段名递归，接入预览/算法/调试三入口；现有模型内嵌保留。",
+      "相对搬目录、缺源占位、顺序/勾选/索引、输出路径及表达式一致。"
+    ],
+    [
+      "D",
+      "Open/Reload与显式终态",
+      "保留Open激活；Reload不隐式保存。纯候选后复用停止门，提交与后续激活分层。",
+      "提交前失败保旧文档，提交后错误Degraded；入口意图与迟到归属门验证。"
+    ],
+    [
+      "E",
+      "Release交付与独立回归",
+      "一次全量Release与UI专项；固定源/产物完整副本交测试；文档同步新行为。",
+      "分母分层报告，阻断项回归通过，关键未验证保留交付待验。"
+    ]
+  ],
+  "extraCases": [
+    [
+      "T21",
+      "设备Settings包含object/array/null及坏ID",
+      "读取→保存→读取纯配置",
+      "JSON类型保持；坏必需身份明确拒绝；不连接设备。"
+    ],
+    [
+      "T22",
+      "注册会抛错/计数的UI节点转换器",
+      "只调用LoadCandidate",
+      "不得调用UI转换、连设备或执行工具；当前Session/Tab完全不变。"
+    ],
+    [
+      "T23",
+      "图片列表含缺文件、重复路径、选中与勾选",
+      "打开→预览装配→保存",
+      "原URI/顺序/重复/勾选/CurrentIndex保持；缺源不被自动删除。"
+    ],
+    [
+      "T24",
+      "根/工作流/节点/变量未知扩展，参数未知字段",
+      "往返写/读",
+      "可保留扩展保持原JSON；不可理解的参数明确拒绝，不静默删字段。"
+    ],
+    [
+      "T25",
+      "外层null/缺省、typed-null、旧标量、内外Type冲突",
+      "独立值形态矩阵",
+      "合法空值与迁移说明明确；冲突或坏wrapper报Error，不造默认值。"
+    ],
+    [
+      "T26",
+      "方案相对资源、脚本插件目录、标定输出地址",
+      "预览/工具调试/流程执行副本",
+      "基准按声明使用；设计URI不变，副本解析正确，无全局CWD副作用。"
+    ],
+    [
+      "T27",
+      "延迟通信/相机替身、节点SetNodes失败",
+      "提交后激活/再次切换",
+      "结果CommittedDegraded；新方案可编辑保存；旧代次不向新会话回填。"
+    ]
+  ],
+  "inputs": [
+    {
+      "file": "src/Workflow/SolutionRepository.cs",
+      "sha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097"
+    },
+    {
+      "file": "src/Workflow/WorkflowJsonConverter.cs",
+      "sha256": "483f8025e78a771edf3579f1dbecac56861c818d093efd1408729ee88ab0e50b"
+    },
+    {
+      "file": "src/Workflow/GlobalVariableValueConverter.cs",
+      "sha256": "c8b902fe24b6ac948eb3878271bf88fd1aa78c336d3c54ae617adc243fd57592"
+    },
+    {
+      "file": "src/Workflow/SolutionSession.cs",
+      "sha256": "61dab9b2104a41489d0381de4338b7c4b8360ace02ce509d118e2069b2472616"
+    },
+    {
+      "file": "src/Workflow/ToolParameterSnapshot.cs",
+      "sha256": "09ecfaeb7bbad5f7cc6a6bd3333a01bf4089fc365092382257f35a475770b696"
+    },
+    {
+      "file": "src/Workflow/AlgorithmNode.cs",
+      "sha256": "deb8b8ab4068db0aa4f3188adccc84267b0c54707b3c0ec1ac12fe7c55186177"
+    },
+    {
+      "file": "src/UI/Shared/ImageInputSource.cs",
+      "sha256": "d6d8a1d7d6876e83b0e5d25d41b3a1a8dc2bd107a95dd7cc798e93281b15b1cb"
+    },
+    {
+      "file": "src/UI/Shared/WorkflowNodeModel.cs",
+      "sha256": "6c5fc9ad8b111f61e5629bca56a086f697dcbc45fb8b3775c35a38058d94ee8f"
+    },
+    {
+      "file": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "3a4b5a2145b92c333b39797898b4d2dabafc05ff95b35d2e65cfb17626e8b364"
+    },
+    {
+      "file": "tests/SunEyeVision.UI.Tests/SolutionLoadRegressionTests.cs",
+      "sha256": "8f4e67c50f36f2f9e8ccb4cfac1773ed0cc94b41f34ad8ef59f9ef2c1c3192ad"
+    },
+    {
+      "file": "tests/SunEyeVision.UI.Tests/SolutionTransitionTests.cs",
+      "sha256": "6e7f09b545c64b7c87131593c5c4d0bf856263f188bce96d24da35a2171560bb"
+    }
+  ],
+  "activation": {
+    "beforeCommit": "读取/校验/资源/用户取消/排空超时保留旧文档引用、路径、基线与Tab；已发生的停止和合法编辑提交不虚构回滚。",
+    "afterCommit": "新文档保留；UI装配/通信/相机失败给CommittedDegraded和阶段诊断，禁止完全成功或原方案未改变的错误提示。",
+    "reloadDirty": "Reload不隐式保存；dirty时只提供放弃当前修改并重新加载/取消。需要保留编辑先显式保存，防止同路径重读前覆盖磁盘。"
+  },
+  "verification": {
+    "existingCases": "T01—T20保留；其中T20是异步交付隔离检查，其余为业务场景。新增T21—T27。",
+    "safeRun": "独立测试副本与隔离root；旧SolutionLoadRegressionTests含桌面文件/Debug插件/设备身份，不能直接全类运行作为新批成绩。",
+    "buildCommands": [
+      "dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore",
+      "dotnet build SunEyeVision.slnx -c Release --no-restore"
+    ],
+    "testCommands": [
+      "dotnet test tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj -c Release --no-build --filter FullyQualifiedName~SolutionPersistenceContractTests",
+      "dotnet test tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj -c Release --no-build --filter FullyQualifiedName~SolutionReloadContractTests"
+    ],
+    "note": "命令仅实施后执行；当前未创建测试文件，不宣称可运行或通过。",
+    "testReview": "既有SolutionTransitionTests的IL命令token检查只证明旧调用形态，重构后须换为行为断言；桌面固定文件/Debug插件及相机身份测试不进入无设备定向批。不得为变绿而删除保存保护断言。"
+  },
+  "outOfScope": [
+    "自动损坏恢复管理系统",
+    "默认全资源打包或更换方案容器",
+    "完整撤销体系",
+    "SDK总体工程拆分",
+    "设备事务回滚/真实硬件接入",
+    "重训模型或算法优化"
+  ],
+  "openEvidence": [
+    "B1-BASELINE-15纯数据基线排在测试者直接用户E2E任务之后，未执行；不互等。",
+    "VM原生坏条目策略/统一路径基准/跨机仍未知，不妨碍以自研明确合同实现。"
+  ]
+}

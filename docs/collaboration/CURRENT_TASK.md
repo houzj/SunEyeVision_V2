@@ -1,3 +1,13 @@
+## 2026-10-22 B1-EXECUTION-16 实施清单细化（产品未改）
+
+- 正式目标仍active。两子智能体只读审查已完成，未写文件/构建/运行；将既定B1路线落实到 artifacts/ui-prototypes/save-roundtrip/b1-execution.json 及 #execution 页：7合同、21文件组、V1兼容、5迁移组、原20+新增7验收（T20为交付隔离，非产品业务）。当前仍受用户先不改产品代码限制，需明确授权才能实施。
+- 新核静态条件性缺口：ReadSettings将Object/Array转JSON文本、null转空串；ImageInputSource.LoadFromConfig按File.Exists过滤/Distinct后NotifyConfigChanged，绑定回调写回ImageSourceConfig。分别登记O-109/O-110，非运行复现，当前问题池17项非全产品分母。自研定位增至S26。
+- 候选当前会经WorkflowNodeFactory.TypeConverter进入UI节点；SetCurrentSolution先发布再触发通信/Tab装配；SetNodes异常被吞，相机恢复超时不等后台取消。合同明确纯候选/提交/激活阶段，提交前保旧文档，提交后Degraded，不许承诺设备回滚。
+- 资源具体消费已核：流程AlgorithmNode、SDK工具调试CreateParameterSnapshot、UI图像原引用与实际地址。N点Fingerprint含声明路径，不能直接绝对化运行副本破坏回写门，因此推荐窄SDK解析服务到I/O边界，不重做算法/点集/整个SDK工程。
+- B1-BASELINE-15已向独立测试排队。核得该角色另有用户直接下达EDIT-SAVE-11真实保存对话框E2E，当前状态waitingOnApproval；已明确直接用户任务优先，B1纯数据不得替换它或抢窗口。无B1纯数据运行结果，旧报告仅代表前一轮结束，不能说所有测试结束。
+- VM-PERSIST-14文档角色实际交付已收回：2页/6宽度/8链接，来源25项与2归档SHA复核，已更新既有入口/持久化专题/DOC_SYNC_STATUS。原型和主控清单未由其修改。B1新增细化待下一次增量交接。
+- 本轮仅原型/清单/文档，save-roundtrip24布局/6交互、roadmap18布局/6交互检查通过；26自研源SHA未漂移。未改src/tools/产品tests/项目，不构建不运行产品。下一步：B1实施授权后按A→B→C→D→E执行；仍不将整目标或B0验收标完成。
+
 ## 2026-10-22 VM-PERSIST-14 原版补证与横向对照（本轮文档交付）
 
 - 用户要求按需逆向补异常读取/重载/资源证据并横向比较，保留不改产品边界；后明确已定计划转换正式持续目标，create_goal已建立active，无token预算。本轮未把创建目标当B1—B6代码授权。

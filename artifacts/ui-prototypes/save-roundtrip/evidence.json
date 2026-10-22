@@ -147,6 +147,41 @@
       "line": 88,
       "sha256": "4dff3bcc1d276bd9686bd048734e9a1eeb21e1a92f1054096403b08036d1a374",
       "snippet": "\n    /// <summary>模板列表</summary>\n    public ObservableCollection<TemplateModel> Templates { get; set; } = new();\n\n    /// <summary>每模型参数覆盖（多模板时覆盖全局参数）</summary>\n    public List<PerModelParamOverride> PerModelOverrides { get; set; } = new();\n\n    #endregion\n\n    #region 结果判断配置\n\n    /// <summary>结果判断配置与显示样式</summary>\n    public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();\n\n    private static ResultPresentationConfig CreateResultPresentation()\n    {"
+    },
+    {
+      "id": "S22",
+      "file": "src/UI/Shared/ImageInputSource.cs",
+      "line": 304,
+      "sha256": "d6d8a1d7d6876e83b0e5d25d41b3a1a8dc2bd107a95dd7cc798e93281b15b1cb",
+      "snippet": "        /// 依据 FilePaths 重建 ImageInfo（保留勾选路径），并恢复当前索引/运行模式/自动切换状态。\n        /// </remarks>\n        public void LoadFromConfig(ImageSourceConfig config)\n        {\n            if (config == null) throw new ArgumentNullException(nameof(config));\n\n            var selectedPath = config.CurrentIndex >= 0 && config.CurrentIndex < config.FilePaths.Count\n                ? config.FilePaths[config.CurrentIndex] : null;\n            var infos = config.FilePaths\n                .Where(p => !string.IsNullOrEmpty(p) && System.IO.File.Exists(p))\n                .Distinct(StringComparer.OrdinalIgnoreCase)\n                .Select(p => new ImageInfo\n                {\n                    FilePath = p,\n                    Name = System.IO.Path.GetFileName(p),\n                    IsForRun = config.ForRunPaths?.Contains(p) == true"
+    },
+    {
+      "id": "S23",
+      "file": "src/Workflow/SolutionRepository.cs",
+      "line": 414,
+      "sha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+      "snippet": "    }\n\n    private static object ReadJsonValue(JsonElement element)\n    {\n        return element.ValueKind switch\n        {\n            JsonValueKind.String => element.GetString() ?? string.Empty,\n            JsonValueKind.True or JsonValueKind.False => element.GetBoolean(),\n            JsonValueKind.Number when element.TryGetInt64(out var integer) => integer,\n            JsonValueKind.Number when element.TryGetDouble(out var number) => number,\n            JsonValueKind.Array or JsonValueKind.Object => element.GetRawText(),\n            _ => string.Empty\n        };\n    }\n\n    /// <summary>"
+    },
+    {
+      "id": "S24",
+      "file": "src/UI/Shared/WorkflowNodeModel.cs",
+      "line": 63,
+      "sha256": "6c5fc9ad8b111f61e5629bca56a086f697dcbc45fb8b3775c35a38058d94ee8f",
+      "snippet": "                if (value != null)\n                {\n                    value.ConfigChanged = cfg =>\n                    {\n                        ImageSourceConfig ??= new ImageSourceConfig { NodeId = Id };\n                        ImageSourceConfig.UpdateLocalInput(cfg);\n                    };\n                }\n            }\n        }\n\n        /// <summary>\n        /// 最近一次执行结果（UI 层专用，强类型）\n        /// 基类属性已 [JsonIgnore]，此处 new 隐藏属性必须显式 [JsonIgnore]。\n        /// </summary>\n        [JsonIgnore]"
+    },
+    {
+      "id": "S25",
+      "file": "src/Workflow/WorkflowJsonConverter.cs",
+      "line": 83,
+      "sha256": "483f8025e78a771edf3579f1dbecac56861c818d093efd1408729ee88ab0e50b",
+      "snippet": "                    {\n                        // Phase 2：通过工厂转换为强类型实例（WorkflowNode）\n                        if (WorkflowNodeFactory.TypeConverter != null)\n                        {\n                            node = WorkflowNodeFactory.TypeConverter(node);\n                        }\n\n                        // 调用反序列化后回调\n                        node.OnDeserialized();\n\n                        // 诊断日志：追踪输入源持久化恢复情况\n                        VisionLogger.Instance.Log(LogLevel.Info,\n                            $\"节点反序列化 | Name={node.Name} | Type={node.GetType().Name} | \" +\n                            $\"ImageSourceConfig={node.ImageSourceConfig?.FilePaths.Count ?? -1}\",\n                            \"WorkflowJsonConverter\");\n"
+    },
+    {
+      "id": "S26",
+      "file": "src/Workflow/ToolParameterSnapshot.cs",
+      "line": 15,
+      "sha256": "09ecfaeb7bbad5f7cc6a6bd3333a01bf4089fc365092382257f35a475770b696",
+      "snippet": "        /// JsonIgnore 标记的运行数据不会进入快照。\n        /// </summary>\n        public static ToolParameters Create(ToolParameters source)\n        {\n            if (source == null)\n                throw new ArgumentNullException(nameof(source));\n\n            return ToolExecutionPreparation.CopyParameters(source, WorkflowSerializationOptions.Compact);\n        }\n    }\n}\n"
     }
   ]
 }

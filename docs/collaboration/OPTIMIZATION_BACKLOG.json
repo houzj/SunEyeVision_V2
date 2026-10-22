@@ -3,7 +3,7 @@
   "updated": "2026-10-22",
   "title": "自研软件优化唯一问题池与批次路线",
   "authority": "排序和派工以本清单为准；历史专题保留证据，不再维护第二套当前优先级",
-  "scope": "本轮仅文档/看板；B1产品实施尚未批准",
+  "scope": "已确认总路线持续目标active；B1合同和文件已细化，当前先不改产品代码限制保留",
   "principles": [
     "业务链驱动、架构配套",
     "目标合同完整，按依赖迁移",
@@ -53,7 +53,7 @@
       "focus": "下一批设计收敛；尚未批准产品实施",
       "scope": "异常读取、资源引用、图像保真、Reload、最终快照、语义比对",
       "acceptance": "不静默丢值；失败保留当前内容；代表样本往返一致",
-      "note": "VM-PERSIST-14已复核11框架+7资源结论；3类10维对照已交付。原生坏条目策略/统一相对路径基准/跨机仍未知；下一步按已定路线落实B1改造合同。",
+      "note": "10组自研问题，26自研定位；VM3主题10维证据对照；执行清单已落实合同、文件组与27验收项，尚未改产品。",
       "owner": "自研主控",
       "productImplementationAuthorized": false
     },
@@ -679,15 +679,83 @@
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "vm/VM-READ-01"
       }
+    },
+    {
+      "id": "O-109",
+      "batch": "B1",
+      "priority": "P0",
+      "title": "设备配置JSON保真",
+      "issue": "手写ReadJsonValue将Object/Array转JSON字符串、null转空串；身份可缺省新建",
+      "evidence": [
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S23"
+        }
+      ],
+      "impact": "嵌套配置可能在读写后变形；历史使用率与运行影响未验",
+      "contract": "保留JSON结构，坏必需身份明确拒绝，不随机修复或连接设备",
+      "dependencies": [
+        "O-104"
+      ],
+      "strategy": "保留整改",
+      "acceptance": "T21：嵌套Settings/null/ID纯配置往返",
+      "status": "方案待确认",
+      "confidence": "代码条件性路径确认；未运行复现",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研完整性目标与实际代码",
+        "evidence": "静态",
+        "vmStatus": "VM同类细节未证，不套用原版"
+      },
+      "vmComparison": {
+        "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "anchor": "execution"
+      }
+    },
+    {
+      "id": "O-110",
+      "batch": "B1",
+      "priority": "P0",
+      "title": "缺源图片引用被装配回写",
+      "issue": "LoadFromConfig按存在性过滤/去重并通知回写ImageSourceConfig",
+      "evidence": [
+        {
+          "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+          "anchor": "evidence/S22"
+        }
+      ],
+      "impact": "缺资源可能导致保存列表损失，非单纯预览告警；本轮未执行UI路径",
+      "contract": "保留原URI/顺序/重复/勾选/索引；装配只投影占位，不当作用户编辑",
+      "dependencies": [
+        "O-104"
+      ],
+      "strategy": "保留整改",
+      "acceptance": "T23/T26：缺源占位和运行地址与存储引用分离",
+      "status": "方案待确认",
+      "confidence": "代码条件性路径确认；未运行复现",
+      "owner": "自研主控",
+      "testOwner": "独立测试负责人",
+      "reverseRequest": null,
+      "recommendationBasis": {
+        "origin": "自研完整性目标与实际代码",
+        "evidence": "静态",
+        "vmStatus": "VM同类细节未证，不套用原版"
+      },
+      "vmComparison": {
+        "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "anchor": "execution"
+      }
     }
   ],
   "queues": {
     "development": [
-      "B1改造合同、文件清单与代表样本落实（不改产品）"
+      "B1执行清单已形成，产品实施需解除当前先不改代码限制"
     ],
     "testing": [
-      "B0遗留12项验收缺口：待有限验证方案，不重跑逐按钮跨聊流程",
-      "新批交付后按独立产物身份入队"
+      "用户直接要求的EDIT-SAVE-11系统对话框E2E在独立副本继续（会话当前waitingOnApproval）；旧报告只代表上一轮",
+      "B1-BASELINE-15纯数据任务已排队，尚未接收运行；不得替换测试者直接用户任务"
     ],
     "documentation": [
       "同步当前事实与本看板入口",
@@ -744,7 +812,7 @@
     },
     {
       "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
-      "sha256": "6dbc956776adf77d112b127fe1c471eadabd92adc320911e0308a1eead699fd9"
+      "sha256": "e45913c9f841dc2030faa9fadd1bef5f73a5d43a5f59f3dcb2a97b78977b5e1f"
     },
     {
       "file": "artifacts/ui-prototypes/edit-consistency/index.html",
@@ -756,7 +824,7 @@
     },
     {
       "file": "docs/collaboration/CURRENT_TASK.md",
-      "sha256": "3d21339d630309496604d7262e3910caeef5669c115e9e063437bca04dc21718"
+      "sha256": "8c464f73498e5a4e7aad5358d3450aabefd8d4d2f738bba413953ae4b2483e29"
     },
     {
       "file": "docs/collaboration/TOOL_VM_CORRESPONDENCE_20261022.json",
@@ -768,7 +836,7 @@
     },
     {
       "file": "artifacts/ui-prototypes/save-roundtrip/evidence.json",
-      "sha256": "16c0eeed5a09694b6242fa15d8c63a82e432e3970692619db5eef5d189a0b532"
+      "sha256": "c2cedf049bca46d5d3ec33f7aac59636ea1b576ae02f3346467260ddfb5a2bed"
     },
     {
       "file": "artifacts/ui-prototypes/save-roundtrip/vm-comparison.json",
@@ -781,6 +849,10 @@
     {
       "file": "artifacts/ui-prototypes/save-roundtrip/vm-evidence/resource-verification.json",
       "sha256": "6ba312b35f06d768ad6e039ce26ddb398cbc278ae07d34be5fa690276000192a"
+    },
+    {
+      "file": "artifacts/ui-prototypes/save-roundtrip/b1-execution.json",
+      "sha256": "7e02f8c56f7cb8b48ae6c4db23ba5fa8b921314a2a7fd5375d6a2c9d53d4a8f4"
     }
   ],
   "baseline": "f22a5f7490554103fc90014ba848fb87e8fbe665",
@@ -827,5 +899,7 @@
       "依赖变更影响原验收边界"
     ],
     "constraint": "启动/起始页/内存新建/首次保存不因B1整体重做"
-  }
+  },
+  "activeTaskPlan": "docs/collaboration/B1_EXECUTION16_TASKS.json",
+  "activeTask": "B1-EXECUTION-16"
 }

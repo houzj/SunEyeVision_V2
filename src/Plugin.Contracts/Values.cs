@@ -12,7 +12,22 @@ public sealed class ToolSchema
         foreach(var group in new[]{Inputs,Outputs})
             if(group.Any(p=>string.IsNullOrWhiteSpace(p.Id)) || group.Select(p=>p.Id).Distinct(StringComparer.Ordinal).Count()!=group.Count)
                 throw new ArgumentException("Port identities must be nonempty and unique.");
-        Fingerprint=Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join(";",Inputs.Select(p=>$"I:{p.Id}:{p.Type}:{p.Required}:{p.Nullable}").Concat(Outputs.Select(p=>$"O:{p.Id}:{p.Type}:{p.Required}:{p.Nullable}"))))));
+        // IDs may contain punctuation. Length-prefixed fields avoid delimiter collisions
+        // between one compound ID and several different ports.
+        using var buffer=new MemoryStream();
+        using(var writer=new BinaryWriter(buffer,Encoding.UTF8,true))
+        {
+            foreach(var group in new[]{Inputs,Outputs})
+            {
+                writer.Write(group.Count);
+                foreach(var port in group)
+                {
+                    writer.Write(port.Id);writer.Write((int)port.Type);
+                    writer.Write(port.Required);writer.Write(port.Nullable);
+                }
+            }
+        }
+        Fingerprint=Convert.ToHexString(SHA256.HashData(buffer.ToArray()));
     }
     public IReadOnlyList<Port> Inputs { get; }
     public IReadOnlyList<Port> Outputs { get; }

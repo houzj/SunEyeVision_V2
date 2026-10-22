@@ -79,7 +79,7 @@ public sealed class NodeHost<TSettings,TOutput>:IAsyncDisposable
             var leases=outputs.Transfer(values.CopyValues());
             return new(identity,RunStatus.Completed,values,result.Judgment,diagnosticCopy,leases);
         }
-        catch(OperationCanceledException) when(cts.IsCancellationRequested){return new(identity,RunStatus.Cancelled,null,BusinessJudgment.NotEvaluated,Array.Empty<Diagnostic>());}
+        catch(OperationCanceledException e) when(cts.IsCancellationRequested && e.CancellationToken==cts.Token){return new(identity,RunStatus.Cancelled,null,BusinessJudgment.NotEvaluated,Array.Empty<Diagnostic>());}
         catch(Exception e){return new(identity,RunStatus.Failed,null,BusinessJudgment.NotEvaluated,new[]{new Diagnostic(e.GetType().Name,e.ToString())});}
         finally{foreach(var l in borrowed)l.Dispose();cts.Dispose();}
     }

@@ -58,6 +58,11 @@ internal static class Program
             Require(BindingValidator.Validate(new("n","answer",DataType.Text),schema)?.Code=="type-changed","type ref");
             Require(schema.Fingerprint!=ScriptSchema.Describe(new("answer",DataType.Text)).Fingerprint,"fingerprint");
         }));
+        await Case("A04c","Schema fingerprint cannot collide through port-ID delimiters",()=>Sync(()=>{
+            var one=new ToolSchema(new[]{new Port("a:Number:True:False;I:b",DataType.Number)},Array.Empty<Port>());
+            var two=new ToolSchema(new[]{new Port("a",DataType.Number),new Port("b",DataType.Number)},Array.Empty<Port>());
+            Require(one.Fingerprint!=two.Fingerprint,"different structures share a fingerprint");
+        }));
         await Case("A04b","Discovery consumes schema without creating model execution session",()=>Sync(()=>{
             var model=new ModelDefinition();var settings=new ModelSettings(new[]{1d});
             var schema=model.Describe(settings);model.Validate(settings);model.Capabilities(settings);
@@ -75,6 +80,11 @@ internal static class Program
         });
         await Case("A05c","Foreign cancellation exception is failure",async()=>{
             await using var host=new NodeHost<TestSettings,MapOutput>(new TestDefinition("foreign-cancel"));using var x=await host.Start(new(),Empty,Id()).Completion;Require(x.Status==RunStatus.Failed,"foreign exception classified cancelled");
+        });
+        await Case("A05d","Foreign token still fails when this invocation was also stopped",async()=>{
+            var definition=new ForeignAfterStopDefinition();await using var host=new NodeHost<TestSettings,NumberOutput>(definition);
+            var run=host.Start(new(),Empty,Id());await definition.Entered.Task;run.RequestStop();definition.Release.TrySetResult();
+            using var result=await run.Completion;Require(result.Status==RunStatus.Failed,"foreign cancellation hidden by local stop");
         });
         await Case("A06a","Business NG differs from execution failure",async()=>{
             await using var host=new NodeHost<TestSettings,MapOutput>(new TestDefinition("ng"));using var x=await host.Start(new(),Empty,Id()).Completion;Require(x.Status==RunStatus.Completed&&x.Judgment==BusinessJudgment.Fail,"NG collapsed into failure");
@@ -124,6 +134,7 @@ internal static class Program
         await Case("A09c","Actual WPF control edits via UI-neutral session",async()=>{
             var done=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);var thread=new Thread(()=>{try{
                 var session=new ParameterEditSession(new[]{new Port("n",DataType.Number)},new Dictionary<string,ParameterSetting>{{"n",new ConstantSetting(1d)}});var editor=new ParameterEditorControl(session,"n");
+                Require(editor.Input.Text=="1","initial committed value not displayed");
                 editor.Input.Text="bad";editor.Commit.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));Require(!editor.LastCommitSucceeded&&editor.Input.Text=="bad","draft lost");editor.Input.Text="2.5";editor.Commit.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));Require(editor.LastCommitSucceeded&&((ConstantSetting)session.Committed["n"]).Value is 2.5d,"WPF commit");done.SetResult();
             }catch(Exception e){done.SetException(e);}});thread.SetApartmentState(ApartmentState.STA);thread.Start();await done.Task;
         });
@@ -179,5 +190,22 @@ public sealed class TestDefinition(string mode):IToolDefinition<TestSettings,Map
                 _=>new Dictionary<string,object?>{{"value",1d}}};
             return ValueTask.FromResult(ToolOutcome<MapOutput>.Completed(new(values),mode=="ng"?BusinessJudgment.Fail:BusinessJudgment.NotEvaluated));
         }
+    }
+}
+
+public sealed class ForeignAfterStopDefinition:IToolDefinition<TestSettings,NumberOutput>
+{
+    public TaskCompletionSource Entered {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public TaskCompletionSource Release {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public string ToolId=>"ForeignCancellation.Regression";
+    public ToolSchema Describe(TestSettings s)=>new(Array.Empty<Port>(),new[]{new Port("value",DataType.Number)});
+    public IReadOnlyList<Diagnostic> Validate(TestSettings s)=>Array.Empty<Diagnostic>();
+    public ToolCapabilities Capabilities(TestSettings s)=>ToolCapabilities.None;
+    public IToolSession<TestSettings,NumberOutput> CreateSession()=>new Session(this);
+    private sealed class Session(ForeignAfterStopDefinition owner):IToolSession<TestSettings,NumberOutput>
+    {
+        public async ValueTask<ToolOutcome<NumberOutput>> ExecuteAsync(ToolInvocation<TestSettings> call)
+        {owner.Entered.TrySetResult();await owner.Release.Task;throw new OperationCanceledException(new CancellationToken(true));}
+        public ValueTask DisposeAsync()=>ValueTask.CompletedTask;
     }
 }

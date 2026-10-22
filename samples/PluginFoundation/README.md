@@ -10,7 +10,7 @@ No old solution conversion or plugin binary compatibility. Contract 3.0 rejects 
 - `Samples`: point calculation, controlled waiting, script schema, model-lifetime substitute.
 - `Host`: independent invocation/resource verification host, no workflow scheduler or production registration.
 - `HalconSample`: real full-domain Gray8 Binary slice, links existing threshold/filter source files rather than duplicating algorithms.
-- `Verification`: 25 local contract scenarios, including real HALCON pixel golden and STA WPF control events.
+- `Verification`: 27 local contract scenarios, including real HALCON pixel golden and STA WPF control events.
 
 ## Run
 `pwsh -NoProfile -File samples/PluginFoundation/Verify.ps1`

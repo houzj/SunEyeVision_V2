@@ -73,6 +73,9 @@ namespace SunEyeVision.UI.Core
         /// 保存当前解决方案命令
         /// </summary>
         ICommand SaveCurrentSolutionCommand { get; }
+        ICommand NewSolutionCommand { get; }
+        ICommand OpenSolutionCommand { get; }
+        ICommand ShowStartPageCommand { get; }
 
         /// <summary>
         /// 停止工作流命令

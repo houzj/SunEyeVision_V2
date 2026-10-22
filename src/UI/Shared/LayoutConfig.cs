@@ -157,6 +157,8 @@ namespace SunEyeVision.UI.Shared
         /// </summary>
         private static string GetConfigFilePath()
         {
+            if (SunEyeVision.UI.Services.Startup.StartupLaunchContext.Current.IsolatedRoot is string isolatedRoot)
+                return Path.Combine(isolatedRoot, "layout.config");
             var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             return Path.Combine(localAppData, "SunEyeVision", "layout.config");
         }

@@ -1413,7 +1413,9 @@ public class SolutionManager
     /// <summary>
     /// 设置当前解决方案
     /// </summary>
-    public void SetCurrentSolution(Solution solution)
+    public void SetCurrentSolution(Solution solution) => SetCurrentSolution(solution, registerInCatalog: true);
+
+    public void SetCurrentSolution(Solution solution, bool registerInCatalog)
     {
         if (solution == null)
             throw new ArgumentNullException(nameof(solution));
@@ -1429,14 +1431,19 @@ public class SolutionManager
             "SolutionManager");
 
         // 直接设置，不重复加载（避免违背惰性加载）
-        var actualMetadata = _repository.LoadMetadata(solution.FilePath ?? "");
-        if (actualMetadata != null) RegisterKnownSolution(actualMetadata);
+        var actualMetadata = registerInCatalog ? _repository.LoadMetadata(solution.FilePath ?? "") : new SolutionMetadata
+        {
+            Id = solution.Id, Name = solution.Name, Description = solution.Description, Version = solution.Version,
+            FilePath = solution.FilePath ?? "", DirectoryPath = Path.GetDirectoryName(solution.FilePath ?? "") ?? "",
+            LastAccessTime = DateTime.Now
+        };
+        if (registerInCatalog && actualMetadata != null) RegisterKnownSolution(actualMetadata);
         CurrentSolution = solution;
         CurrentFilePath = solution.FilePath;
         CaptureSavedState();
 
-        var currentMetadata = GetMetadata(solution.Id);
-        if (currentMetadata != null) { currentMetadata.UpdateLastAccessTime(); _settings.AddKnownSolution(currentMetadata); }
+        var currentMetadata = registerInCatalog ? GetMetadata(solution.Id) : actualMetadata;
+        if (registerInCatalog && currentMetadata != null) { currentMetadata.UpdateLastAccessTime(); _settings.AddKnownSolution(currentMetadata); }
         // 更新设置
         _settings.CurrentSolutionId = solution.Id;
         MarkSettingsDirty();
@@ -1456,7 +1463,7 @@ public class SolutionManager
             "SolutionManager");
 
         // 触发细粒度事件
-        var metadata = _cache.Get(solution.Id) ?? _registry.Get(solution.Id);
+        var metadata = registerInCatalog ? (_cache.Get(solution.Id) ?? _registry.Get(solution.Id)) : actualMetadata;
         if (metadata == null)
         {
             // 诊断日志：列出所有已知的元数据
@@ -1490,7 +1497,7 @@ public class SolutionManager
             }
             
             // ✅ 关键修复：将临时元数据添加到缓存
-            _cache.Set(solution.Id, metadata);
+            if (registerInCatalog) _cache.Set(solution.Id, metadata);
             
             _logger.Log(LogLevel.Warning, 
                 $"创建临时元数据并缓存: Solution.Id={solution.Id}", 

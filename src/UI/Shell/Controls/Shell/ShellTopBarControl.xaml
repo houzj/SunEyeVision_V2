@@ -237,7 +237,11 @@
             <!-- 菜单栏（行1） -->
             <Menu Grid.Row="0" Grid.Column="1" Background="Transparent" BorderThickness="0" VerticalAlignment="Center">
                 <MenuItem Header="文件(_F)" Style="{StaticResource TitleBarMenuButton}">
-                    <MenuItem Header="解决方案配置(_C)" Command="{Binding ShowSolutionConfigurationCommand}" InputGestureText="Ctrl+Alt+S"/>
+                    <MenuItem Header="新建方案(_N)" Command="{Binding NewSolutionCommand}" InputGestureText="Ctrl+N"/>
+                    <MenuItem Header="打开方案(_O)" Command="{Binding OpenSolutionCommand}" InputGestureText="Ctrl+O"/>
+                    <MenuItem Header="起始页 / 最近方案" Command="{Binding ShowStartPageCommand}"/>
+                    <Separator/>
+                    <MenuItem Header="浏览与管理方案(_C)" Command="{Binding ShowSolutionConfigurationCommand}" InputGestureText="Ctrl+Alt+S"/>
                     <Separator/>
                     <MenuItem Header="保存当前(_S)" Command="{Binding SaveCurrentSolutionCommand}" InputGestureText="Ctrl+S"/>
                     <Separator/>
@@ -272,7 +276,7 @@
 
             <!-- 行2：工具栏（图标按钮横排，各占一半空间） -->
             <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
-                <Button ToolTip="解决方案配置 (Ctrl+Alt+S)" Style="{StaticResource TitleBarButton}" Command="{Binding ShowSolutionConfigurationCommand}">
+                <Button ToolTip="浏览与管理方案 (Ctrl+Alt+S)" Style="{StaticResource TitleBarButton}" Command="{Binding ShowSolutionConfigurationCommand}">
                     <!-- ⚙ 改用默认 emoji 字体（与 💾📷🔌🧮 等同字体），统一字符 ascent/descent 度量，
                          避免 Segoe UI Symbol 线条字形与 emoji 字形混排时基线偏移导致整体不对齐 -->
                     <TextBlock Text="⚙" FontSize="16"/>

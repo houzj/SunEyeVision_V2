@@ -209,9 +209,9 @@ namespace SunEyeVision.UI.Shell.Windows
         private void RegisterHotkeys()
         {
             // 文件操作快捷键
-            InputBindings.Add(new KeyBinding(_viewModel.NewWorkflowCommand, Key.N, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(_viewModel.OpenWorkflowCommand, Key.O, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(_viewModel.SaveWorkflowCommand, Key.S, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(_viewModel.NewSolutionCommand, Key.N, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(_viewModel.OpenSolutionCommand, Key.O, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(_viewModel.SaveCurrentSolutionCommand, Key.S, ModifierKeys.Control));
             // 运行控制快捷键
             InputBindings.Add(new KeyBinding(_viewModel.RunWorkflowCommand, Key.F5, ModifierKeys.None));
             InputBindings.Add(new KeyBinding(_viewModel.StopWorkflowCommand, Key.F5, ModifierKeys.Shift));

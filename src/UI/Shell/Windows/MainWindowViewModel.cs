@@ -1607,6 +1607,7 @@ SplitterPosition = position;
 
                 // 3. 保存解决方案（此时 Solution 已包含 UI 中的工作流和节点）
                 if (!solutionManager.SaveSolution()) throw new IOException("保存方案失败：" + solutionManager.LastError);
+                if (solutionManager.CurrentSolution != null) (Application.Current as App)?.RecordRecentSolution(solutionManager.CurrentSolution);
 
                 // 4. 注册元数据（保存完成后注册）
                 // 注意：SaveSolution 已经自动注册元数据，这里不需要再次注册
@@ -1633,9 +1634,8 @@ SplitterPosition = position;
 
                 if (currentSolution != null)
                 {
-                    var metadata = solutionManager.GetMetadata(currentSolution.Id);
-                    CurrentSolutionName = metadata?.Name ?? "未命名解决方案";
-                    CurrentSolutionPath = metadata?.FilePath ?? "";
+                    CurrentSolutionName = string.IsNullOrWhiteSpace(currentSolution.Name) ? "未命名方案" : currentSolution.Name;
+                    CurrentSolutionPath = currentSolution.FilePath ?? "";
                     LogInfo($"当前解决方案: {CurrentSolutionName}");
                 }
                 else
@@ -5625,37 +5625,37 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         {
             var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             if (!string.IsNullOrEmpty(manager.CurrentFilePath) &&
-                string.Equals(Path.GetFullPath(manager.CurrentFilePath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (_solutionTransitionLease != null) return false;
+                string.Equals(Path.GetFullPath(manager.CurrentFilePath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase)) return true;
+            if (!CanAcceptExternalActivation) return false;
+            var previous = manager.CurrentSolution;
             try
             {
-                // Validate before stopping the current workspace; do not mutate it on bad input.
-                if (manager.LoadSolutionOnly(path) == null)
-                    throw new IOException(manager.LastError ?? "方案无法读取。");
-                if (!await PrepareSolutionTransitionAsync()) return false;
-                using var registration = new SolutionConfigurationDialogViewModel(manager);
-                var metadata = registration.AddExistingFile(path);
-                if (metadata == null) return false;
-                var solution = manager.LoadSolutionOnly(metadata.FilePath)
+                Services.Startup.StartupLaunchContext.Current.ValidatePath(path);
+                var candidate = manager.LoadSolutionOnly(path)
                     ?? throw new IOException(manager.LastError ?? "方案无法读取。");
-                manager.SetCurrentSolution(solution);
-                Title = $"太阳眼视觉 - {metadata.Name}";
-                LogSuccess($"已通过外部请求打开方案: {metadata.Name}");
+                Services.Startup.StartupLaunchContext.Current.ValidateCandidate(candidate);
+                if (!await PrepareSolutionTransitionAsync()) return false;
+                // Reuse the same validated candidate. Catalog and identity-conflict UI are optional browser concerns.
+                manager.SetCurrentSolution(candidate, registerInCatalog: false);
+                Title = $"太阳眼视觉 - {candidate.Name}";
+                (Application.Current as App)?.RecordRecentSolution(candidate);
+                if (Application.Current is App app) await app.CompleteOpenedWorkspaceAsync();
+                LogSuccess($"已打开方案: {candidate.Name}");
                 return true;
             }
             catch (Exception ex)
             {
-                LogError($"外部方案打开失败: {ex.Message}", null, ex);
-                ThemeMessageDialog.Show("无法打开请求的方案，当前工作区保持不变：" + ex.Message,
-                    "打开方案", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+                LogError($"方案打开失败: {ex.Message}", null, ex);
+                var prefix = ReferenceEquals(previous, manager.CurrentSolution)
+                    ? "方案未打开，原工作区仍保留（运行可能已停止）："
+                    : "方案已切换，但工作区初始化未完成，请检查日志并重新打开：";
+                ThemeMessageDialog.Show(prefix + ex.Message, "打开方案", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                 return false;
             }
             finally { EndSolutionTransition(); }
         }
 
-
-        private void ExecuteShowSolutionConfiguration()
+        private async void ExecuteShowSolutionConfiguration()
         {
             if (!CanAcceptExternalActivation) return;
             try
@@ -5688,7 +5688,11 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     try
                     {
                         // 设置当前解决方案（会触发 CurrentSolutionChanged 事件自动加载工作流）
+                        Services.Startup.StartupLaunchContext.Current.ValidatePath(solution.FilePath ?? "");
+                        Services.Startup.StartupLaunchContext.Current.ValidateCandidate(solution);
                         solutionManager.SetCurrentSolution(solution);
+                        (Application.Current as App)?.RecordRecentSolution(solution);
+                        if (Application.Current is App app) await app.CompleteOpenedWorkspaceAsync();
 
                         var metadata = solutionManager.GetMetadata(solution.Id);
                         LogSuccess($"已加载解决方案: {metadata?.Name ?? "未命名"}");

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SunEyeVision.UI.Services.Startup;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -53,6 +54,8 @@ public partial class App : Application
     private bool _servicesReady;
     private ApplicationDataPaths? _dataPaths;
     private string? _requestedSolutionPath;
+    public StartPageSettings StartPreferences { get; private set; } = new();
+    private string StartPreferencesFile => Path.Combine(_dataPaths!.Root, "Config", "start-page.json");
     // Keep the named marker rooted through shutdown cleanup; the OS closes it at process exit.
     private static IDisposable? _runningApplicationRegistration;
     private static SingleInstanceCoordinator? _singleInstance;
@@ -127,14 +130,24 @@ public partial class App : Application
             catch { Shutdown(1); }
             return;
         }
-        _requestedSolutionPath = e.Args.FirstOrDefault(arg => arg.EndsWith(".solution", StringComparison.OrdinalIgnoreCase));
         try
         {
-            _singleInstance = SingleInstanceCoordinator.TryStart(HandleInstanceActivationAsync);
+            StartupLaunchContext.Current = StartupLaunchContext.Parse(e.Args);
+            _requestedSolutionPath = StartupLaunchContext.Current.SolutionPath;
+        }
+        catch (Exception ex)
+        {
+            _startupRejected = true;
+            ThemeMessageDialog.Show(ex.Message, "启动参数无效", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+            Shutdown(1); return;
+        }
+        try
+        {
+            _singleInstance = SingleInstanceCoordinator.TryStart(HandleInstanceActivationAsync, StartupLaunchContext.Current.InstanceIdentity);
             if (_singleInstance == null)
             {
                 _startupRejected = true;
-                var activation = await SingleInstanceCoordinator.SendAsync(_requestedSolutionPath);
+                var activation = await SingleInstanceCoordinator.SendAsync(_requestedSolutionPath, identity: StartupLaunchContext.Current.InstanceIdentity);
                 if (!activation.Accepted)
                     ThemeMessageDialog.Show(activation.Message, "SunEyeVision 已在运行",
                         MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
@@ -185,7 +198,7 @@ public partial class App : Application
         DispatcherUnhandledException += OnDispatcherUnhandledException;
 
         // 注册文件关联（仅当前用户，无需管理员权限）
-        RegisterFileAssociation();
+        if (!StartupLaunchContext.Current.IsIsolated) RegisterFileAssociation();
 
         // ===== P0优化：调整启动顺序，先加载插件 =====
         // 原因：SolutionSettings.Save() 使用 WorkflowSerializationOptions.Default
@@ -212,9 +225,11 @@ public partial class App : Application
         // Select/restore the user data root before creating any persistent service.
         try
         {
-            var locations = new ApplicationDataLocationService();
+            var context = StartupLaunchContext.Current;
+            var locations = new ApplicationDataLocationService(context.IsIsolated ? Path.Combine(context.IsolatedRoot!, "data-location.json") : null);
+            if (context.IsIsolated) _dataPaths = locations.Prepare(Path.Combine(context.IsolatedRoot!, "Data"));
             string? reason = null;
-            try { _dataPaths = locations.Locate(); } catch (Exception ex) { reason = ex.Message; }
+            if (_dataPaths == null) { try { _dataPaths = locations.Locate(); } catch (Exception ex) { reason = ex.Message; } }
             while (_dataPaths == null)
             {
                 _splashScreen?.CloseImmediately(); _splashScreen = null;
@@ -230,6 +245,8 @@ public partial class App : Application
                 catch (Exception ex) { reason = ex.Message; }
             }
             ServiceInitializer.ConfigureDataPaths(_dataPaths);
+            try { StartPreferences = StartPageSettings.Load(StartPreferencesFile); }
+            catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Warning, "起始页偏好无法读取，本次显示起始页：" + ex.Message, "App"); StartPreferences = new(); }
         }
         catch (Exception ex)
         {
@@ -305,211 +322,98 @@ public partial class App : Application
     /// </summary>
     private async Task HandleStartupDecisionAsync()
     {
-        LogStartupStage("HandleStartupDecision.Enter");
-        var solutionManager = ServiceInitializer.SolutionManager;
-        var startupDecisionService = new StartupDecisionService(solutionManager);
-        var decision = startupDecisionService.GetStartupDecision();
-        LogStartupStage("Startup decision resolved", $"decision={decision}");
-
         var mainWindow = new MainWindow();
         AttachMainWindowDiagnostics(mainWindow);
-        LogStartupStage("MainWindow constructed", $"visibility={mainWindow.Visibility}, state={mainWindow.WindowState}");
-        // ★ 显式注册为主窗口：SplashScreen 先创建会抢占 Application.Current.MainWindow，
-        //   不显式赋值则调试窗口 Owner 指向已关闭的 SplashScreen（无效），无法显示在主窗口上方。
         Application.Current.MainWindow = mainWindow;
-        ShutdownMode = ShutdownMode.OnMainWindowClose;
-        _splashScreen?.UpdateStage("正在打开工作区", 75, "读取启动方案并准备工作流");
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        _splashScreen?.UpdateStage("正在准备工作区", 85, "启动服务已准备完成");
+        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
+        _splashScreen?.CloseImmediately(); _splashScreen = null;
 
-        SolutionMetadata? requested = null;
         if (_requestedSolutionPath != null)
         {
-            try
+            // A file launch never routes through the browser/registration dialog.
+            if (mainWindow.DataContext is MainWindowViewModel vm && await vm.OpenExternalSolutionAsync(_requestedSolutionPath))
             {
-                using var registration = new SolutionConfigurationDialogViewModel(solutionManager);
-                requested = registration.AddExistingFile(_requestedSolutionPath);
-                decision = requested == null ? StartupDecision.ShowConfiguration : StartupDecision.SkipConfiguration;
+                ShowMainWindow(mainWindow, "file launch");
+                return;
             }
-            catch (Exception ex)
-            {
-                ThemeMessageDialog.Show("无法打开请求的方案：" + ex.Message, "打开方案", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-                decision = StartupDecision.ShowConfiguration;
-            }
+            // A failed file request remains recoverable via the start page, even when hidden by preference.
+            await ShowStartPageAsync(mainWindow);
         }
-        switch (decision)
+        else if (!StartPreferences.HideStartPage && ServiceInitializer.SolutionManager.Settings.UserPreferences.ContainsKey("StartupMode") &&
+                 ServiceInitializer.SolutionManager.Settings.StartupMode is "Last" or "Default")
         {
-            case StartupDecision.SkipConfiguration:
-                // 跳过配置，自动打开默认解决方案
-                var logger = SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance;
-                logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
-                    "启动决策: 跳过配置，准备加载默认解决方案", "App");
-                
-                try
-                {
-                    var defaultMetadata = requested ?? (solutionManager.Settings.StartupMode == "Last"
-                        ? solutionManager.GetMetadata(solutionManager.Settings.CurrentSolutionId)
-                        : solutionManager.GetDefaultSolutionMetadata());
-                    if (defaultMetadata != null)
-                    {
-                        logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
-                            $"找到默认解决方案元数据: Id={defaultMetadata.Id}, Name={defaultMetadata.Name}, FilePath={defaultMetadata.FilePath}", "App");
-                        
-                        // 使用 LoadSolutionOnly 加载解决方案
-                        logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
-                            "开始加载解决方案 (LoadSolutionOnly)...", "App");
-                        _splashScreen?.UpdateStage("正在打开工作区", 82, "正在读取默认方案文件");
-                        
-                        var solution = solutionManager.LoadSolutionOnly(defaultMetadata.FilePath);
-                        
-                        if (solution != null)
-                        {
-                            logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Success,
-                                $"解决方案加载成功: Id={solution.Id}, Workflows={solution.Workflows.Count}, GlobalVariables={solution.GlobalVariables?.Count ?? 0}, Devices={solution.Devices?.Count ?? 0}", "App");
-                            
-                            // 调用 SetCurrentSolution 设置当前解决方案
-                            // 这与配置对话框启动的流程保持一致
-                            logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
-                                "开始设置当前解决方案 (SetCurrentSolution)...", "App");
-                            
-                            solutionManager.SetCurrentSolution(solution);
-                            _splashScreen?.UpdateStage("正在连接设备", 96, "正在恢复方案中的相机连接");
-                            await RestoreCameraConnectionsAsync(solutionManager);
-                            _splashScreen?.UpdateStage("正在打开工作区", 97, "正在构建工作流和主界面");
-                            
-                            logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Success,
-                                $"当前解决方案设置完成: CurrentSolution.Id={solutionManager.CurrentSolution?.Id}, CurrentFilePath={solutionManager.CurrentFilePath}", "App");
-                            
-                            ShowMainWindow(mainWindow, "default solution loaded");
-                            _splashScreen?.UpdateProgress(100);
-                            _splashScreen?.CloseWithFade();
-                            logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Success,
-                                $"主窗口已显示，自动打开默认解决方案完成: {defaultMetadata.Name}", "App");
-                        }
-                        else
-                        {
-                            // 默认解决方案加载失败，记录警告并显示主界面
-                            logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Error,
-                                $"默认解决方案加载失败: {defaultMetadata.Name} (LoadSolutionOnly 返回 null)", "App");
-                            ThemeMessageDialog.Show("自动打开方案失败，请重新选择或定位方案文件。", "启动方案", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
-                            await ShowConfigurationDialogAsync(mainWindow, defaultMetadata.Id);
-                        }
-                    }
-                    else
-                    {
-                        // 没有设置默认解决方案，直接显示主界面
-                        logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Warning,
-                            "未找到默认解决方案元数据，将显示空白主界面", "App");
-                        await ShowConfigurationDialogAsync(mainWindow, null);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Error,
-                        $"自动打开默认解决方案异常: {ex.Message}\n堆栈: {ex.StackTrace}", "App", ex);
-                    MessageBox.Show($"自动打开默认解决方案失败: {ex.Message}",
-                        "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                    await ShowConfigurationDialogAsync(mainWindow, null);
-                }
-                break;
+            // Preserve an explicitly configured legacy restore policy; an explicit file request always takes precedence.
+            var manager = ServiceInitializer.SolutionManager;
+            var selected = manager.Settings.StartupMode == "Last" ? manager.GetMetadata(manager.Settings.CurrentSolutionId) : manager.GetDefaultSolutionMetadata();
+            var restorePath = manager.Settings.StartupMode == "Last" ? StartPreferences.RecentFiles.FirstOrDefault()?.Path ?? selected?.FilePath : selected?.FilePath;
+            if (restorePath != null && mainWindow.DataContext is MainWindowViewModel vm && await vm.OpenExternalSolutionAsync(restorePath))
+                ShowMainWindow(mainWindow, "explicit restore policy");
+            else await ShowStartPageAsync(mainWindow);
+        }
+        else if (StartPreferences.HideStartPage)
+            ShowMainWindow(mainWindow, "start page hidden");
+        else
+            await ShowStartPageAsync(mainWindow);
+    }
 
-            case StartupDecision.ShowConfiguration:
-            default:
-                // 显示配置界面（无预选）
-                await ShowConfigurationDialogAsync(mainWindow, null);
-                break;
+    public void SetStartPageHidden(bool hidden)
+    {
+        bool previous = StartPreferences.HideStartPage;
+        StartPreferences.HideStartPage = hidden;
+        try { StartPreferences.Save(StartPreferencesFile); }
+        catch { StartPreferences.HideStartPage = previous; throw; }
+    }
+
+    public void RecordRecentSolution(Solution solution)
+    {
+        if (string.IsNullOrEmpty(solution.FilePath)) return;
+        StartPreferences.RecordOpened(solution.FilePath, solution.Name);
+        try { StartPreferences.Save(StartPreferencesFile); }
+        catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Warning, "方案已打开，但最近记录未保存：" + ex.Message, "App"); }
+    }
+
+    public async Task ShowStartPageAsync(MainWindow mainWindow)
+    {
+        if (mainWindow.DataContext is not MainWindowViewModel vm) return;
+        bool wasVisible = mainWindow.IsVisible;
+        while (true)
+        {
+            // Existing catalog entries are optional suggestions, not prerequisites for file opening.
+            var recent = StartPreferences.RecentFiles.Concat(ServiceInitializer.SolutionManager.GetAllMetadata()
+                .Select(x => new RecentSolutionFile { Name = x.Name, Path = x.FilePath, LastOpened = x.LastAccessTime }))
+                .Where(x => !string.IsNullOrWhiteSpace(x.Path)).GroupBy(x => Path.GetFullPath(x.Path), StringComparer.OrdinalIgnoreCase)
+                .Select(x => x.First()).Take(12).ToArray();
+            var page = new StartPageWindow(StartPreferences.HideStartPage, recent, SetStartPageHidden);
+            if (wasVisible) page.Owner = mainWindow;
+            page.ShowDialog();
+            switch (page.SelectedAction)
+            {
+                case StartPageAction.OpenFile:
+                    if (page.SelectedPath == null || !await vm.OpenExternalSolutionAsync(page.SelectedPath)) continue;
+                    break;
+                case StartPageAction.NewSolution:
+                    if (!await vm.NewEmptySolutionAsync()) continue;
+                    break;
+                case StartPageAction.ManageSolutions:
+                    if (!mainWindow.IsVisible) ShowMainWindow(mainWindow, "optional solution browser");
+                    vm.ShowSolutionConfigurationCommand.Execute(null);
+                    return;
+                default: break; // Closing a start page never exits the application or discards an open workspace.
+            }
+            if (!mainWindow.IsVisible) ShowMainWindow(mainWindow, "start page selection");
+            return;
         }
     }
 
-    /// <summary>
-    /// 显示配置对话框
-    /// </summary>
-    private async Task ShowConfigurationDialogAsync(MainWindow mainWindow, string? preselectSolutionId = null)
+    internal async Task CompleteOpenedWorkspaceAsync()
     {
-        var logger = SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance;
-        logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
-            "启动决策: 显示配置对话框", "App");
-
-        // 配置窗口需要用户交互，启动页不能继续覆盖它。
-        _splashScreen?.CloseImmediately();
-        _splashScreen = null;
-        LogStartupStage("Splash closed before configuration dialog");
-        
-        var solutionManager = ServiceInitializer.SolutionManager;
-        LogStartupStage("Configuration flow begin", $"preselectSolutionId={preselectSolutionId ?? "null"}, mainWindowVisible={mainWindow.IsVisible}, mainWindowVisibility={mainWindow.Visibility}");
-        var configDialog = new SolutionConfigurationDialog(solutionManager, preselectSolutionId);
-        LogStartupStage("SolutionConfigurationDialog constructed", $"dialogVisibility={configDialog.Visibility}, owner={configDialog.Owner?.GetType().Name ?? "null"}");
-
-        LogStartupStage("SolutionConfigurationDialog.ShowDialog begin");
-        var result = configDialog.ShowDialog();
-        LogStartupStage("SolutionConfigurationDialog.ShowDialog returned", $"result={result}, launched={configDialog.IsLaunched}, launchResultId={configDialog.LaunchResult?.Id ?? "null"}, dialogVisible={configDialog.IsVisible}, elapsedSinceStartupMs={_startupStopwatch.ElapsedMilliseconds}");
-
-        if (result == true && configDialog.IsLaunched && configDialog.LaunchResult != null)
-        {
-            // 用户点击启动，加载解决方案
-            var solution = configDialog.LaunchResult;
-
-            if (solution != null)
-            {
-                logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
-                    $"用户从配置对话框启动解决方案: Id={solution.Id}, Workflows={solution.Workflows.Count}, GlobalVariables={solution.GlobalVariables?.Count ?? 0}, Devices={solution.Devices?.Count ?? 0}", "App");
-                
-                try
-                {
-                    LogStartupStage("Configuration flow solution handoff begin", $"solutionId={solution.Id}, workflows={solution.Workflows.Count}, devices={solution.Devices?.Count ?? 0}");
-                    logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
-                        "开始设置当前解决方案 (SetCurrentSolution)...", "App");
-                    
-                    LogStartupStage("SetCurrentSolution begin", $"solutionId={solution.Id}");
-                    solutionManager.SetCurrentSolution(solution);
-                    LogStartupStage("SetCurrentSolution returned", $"currentSolutionId={solutionManager.CurrentSolution?.Id ?? "null"}, currentFilePath={solutionManager.CurrentFilePath ?? "null"}");
-                    LogStartupStage("Configuration flow before MainWindow.Show");
-                    ShowMainWindow(mainWindow, "configuration solution selected");
-                    mainWindow.ShowSolutionLoadingOverlay("正在恢复相机连接", "正在根据设备列表连接相机，最多等待 10 秒");
-                    LogStartupStage("RestoreCameraConnections begin");
-                    await RestoreCameraConnectionsAsync(solutionManager, mainWindow.UpdateSolutionLoadingOverlay);
-                    LogStartupStage("RestoreCameraConnections returned");
-                    
-                    logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Success,
-                        $"当前解决方案设置完成: CurrentSolution.Id={solutionManager.CurrentSolution?.Id}, CurrentFilePath={solutionManager.CurrentFilePath}", "App");
-                    
-                    mainWindow.UpdateSolutionLoadingOverlay("方案加载完成", "正在完成主界面初始化");
-                    await Task.Delay(250);
-                    mainWindow.HideSolutionLoadingOverlay();
-                    LogStartupStage("Configuration flow after loading overlay", $"visible={mainWindow.IsVisible}, visibility={mainWindow.Visibility}");
-                    _splashScreen?.UpdateProgress(100);
-                    _splashScreen?.CloseWithFade();
-                    logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Success,
-                        "主窗口已显示，从配置对话框启动完成", "App");
-                }
-                catch (Exception ex)
-                {
-                    logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Error,
-                        $"设置当前解决方案失败: {ex.Message}\n堆栈: {ex.StackTrace}", "App", ex);
-                    MessageBox.Show($"加载解决方案失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                    if (!mainWindow.IsVisible)
-                    {
-                        ShowMainWindow(mainWindow, "configuration solution load exception");
-                    }
-                    mainWindow.HideSolutionLoadingOverlay();
-                    _splashScreen?.UpdateProgress(100);
-                    _splashScreen?.CloseWithFade();
-                }
-            }
-            else
-            {
-                logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Warning,
-                    "配置对话框返回的 LaunchResult 为 null", "App");
-                ShowMainWindow(mainWindow, "configuration launch result null");
-                _splashScreen?.UpdateProgress(100);
-                _splashScreen?.CloseWithFade();
-            }
-        }
-        else
-        {
-            // 未选择解决方案：不提供空主界面入口，直接退出程序
-            logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
-                "用户关闭配置对话框且未启动解决方案，退出程序", "App");
-            Application.Current.Shutdown();
-        }
+        if (Application.Current.MainWindow is not MainWindow main) return;
+        if (!main.IsVisible) ShowMainWindow(main, "solution committed");
+        main.ShowSolutionLoadingOverlay("正在恢复设备", "方案已打开，正在恢复已配置相机连接");
+        try { await RestoreCameraConnectionsAsync(ServiceInitializer.SolutionManager, main.UpdateSolutionLoadingOverlay); }
+        finally { main.HideSolutionLoadingOverlay(); }
     }
 
     /// <summary>Reject new handoffs before closing windows/device cleanup; retain ownership until process exit.</summary>
@@ -571,6 +475,7 @@ public partial class App : Application
     {
         _splashScreen?.UpdateStage("正在显示主界面", 98, "主窗口即将显示");
         LogStartupStage("MainWindow.Show begin", $"reason={reason}");
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
         mainWindow.Show();
         LogMainWindowState(mainWindow, "after Show");
         _splashScreen?.UpdateStage("启动完成", 100, "主界面已显示");

@@ -517,9 +517,11 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
         internal static BitmapImage? LoadThumbnail(string filePath, System.Threading.CancellationToken token = default)
         {
+            if (string.IsNullOrWhiteSpace(filePath)) return null;
             try { return LoadThumbnailAsync(filePath, token).GetAwaiter().GetResult() as BitmapImage; }
             catch (OperationCanceledException) { return null; }
             catch (IOException) { return null; }
+            catch (UnauthorizedAccessException) { return null; }
         }
 
         private static BitmapSource DecodeThumbnailCore(string filePath)
@@ -533,7 +535,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             bitmap.StreamSource = stream;
             if (landscape) bitmap.DecodePixelWidth = 100;
             else bitmap.DecodePixelHeight = 100;
-            bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            // Fresh streams have no URI cache key. Content versions are owned by PreviewBitmapCache.
             bitmap.CacheOption = BitmapCacheOption.OnLoad;
             bitmap.EndInit();
             bitmap.Freeze();
@@ -541,14 +543,14 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         }
         /// <summary>
         /// 全分辨率图像加载（简化版）：ImageInfo.FullImage 懒加载入口。
-        /// 用 UriSource + OnLoad 内建解码，替代原自研解码器/CleanupScheduler 链路。
+        /// 用新文件流 + OnLoad 解码，版本由内容哈希校验。
         /// </summary>
         public static BitmapImage? LoadImageOptimized(string filePath)
         {
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
                 return null;
 
-            // 全图懒加载在主 UI 线程触发，无并发竞争；查缓存命中直接返回，未命中解码后写入
+            // The legacy display caller schedules this file/decoder work off the dispatcher.
             try
             {
                 var version = ImageCache.ReadVersion(filePath);
@@ -558,7 +560,6 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
                 var bitmap = new BitmapImage();
                 bitmap.BeginInit();
                 bitmap.StreamSource = stream;
-                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
                 bitmap.Freeze();

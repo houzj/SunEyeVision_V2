@@ -37,6 +37,8 @@ namespace SunEyeVision.Workflow;
 /// </remarks>
 public class Solution : ObservableObject
 {
+    [System.Text.Json.Serialization.JsonIgnore]
+    public SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner ExecutionOwner { get; } = new();
     /// <summary>
     /// 解决方案ID（不可变，与 SolutionMetadata 关联）
     /// </summary>
@@ -162,7 +164,8 @@ public class Solution : ObservableObject
         var workflow = new Workflow
         {
             Id = Guid.NewGuid().ToString(),
-            Name = name
+            Name = name,
+            ExecutionOwner = ExecutionOwner
         };
 
         Workflows.Add(workflow);
@@ -186,6 +189,7 @@ public class Solution : ObservableObject
         if (workflow == null)
             return false;
 
+        foreach (var node in workflow.Nodes) ExecutionOwner.RetireNode(workflow.Id + "/" + node.Id);
         Workflows.Remove(workflow);
         return true;
     }

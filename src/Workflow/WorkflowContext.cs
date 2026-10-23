@@ -204,6 +204,7 @@ namespace SunEyeVision.Workflow
         private readonly Dictionary<string, NodeExecutionResult> _executionResults = new();
         private readonly object _runtimeParametersGate = new();
         private readonly object _nodeResultsGate = new();
+        private readonly Dictionary<string, IDisposable?> _resultLeases = new();
         private readonly object _nodeStatesGate = new();
         private readonly object _logsGate = new();
 
@@ -584,7 +585,15 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public void SetNodeResult(string nodeId, NodeExecutionResult result)
         {
-            lock (_nodeResultsGate) _executionResults[nodeId] = result;
+            IDisposable? previous;
+            lock (_nodeResultsGate)
+            {
+                var lease = result.Result?.Resources?.Retain();
+                _resultLeases.Remove(nodeId, out previous);
+                _resultLeases[nodeId] = lease;
+                _executionResults[nodeId] = result;
+            }
+            previous?.Dispose();
         }
 
         /// <summary>
@@ -622,7 +631,15 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public bool RemoveNodeResult(string nodeId)
         {
-            lock (_nodeResultsGate) return _executionResults.Remove(nodeId);
+            IDisposable? lease;
+            bool removed;
+            lock (_nodeResultsGate)
+            {
+                removed = _executionResults.Remove(nodeId);
+                _resultLeases.Remove(nodeId, out lease);
+            }
+            lease?.Dispose();
+            return removed;
         }
 
         /// <summary>
@@ -630,7 +647,21 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public void ClearNodeResults()
         {
-            lock (_nodeResultsGate) _executionResults.Clear();
+            IDisposable?[] leases;
+            lock (_nodeResultsGate)
+            {
+                leases = _resultLeases.Values.ToArray();
+                _resultLeases.Clear(); _executionResults.Clear();
+            }
+            List<Exception>? errors = null;
+            foreach (var lease in leases)
+                try { lease?.Dispose(); } catch (Exception ex) { (errors ??= new()).Add(ex); }
+            if (errors != null) throw new AggregateException("节点结果回收失败", errors);
+        }
+
+        public NodeResultSnapshot CaptureNodeResults()
+        {
+            lock (_nodeResultsGate) return new NodeResultSnapshot(_executionResults);
         }
 
         /// <summary>

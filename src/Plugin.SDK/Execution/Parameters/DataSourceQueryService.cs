@@ -29,6 +29,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationSendService { get; set; }
         public Action<string>? CommitOutputConfiguration { get; set; }
         public string? WorkflowId { get; set; }
+        public SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? ExecutionOwner { get; set; }
         /// <summary>Host's configuration snapshot factory, shared with workflow execution.</summary>
         public Func<ToolParameters, ToolParameters>? CreateParameterSnapshot { get; set; }
         public Func<string, IReadOnlyList<string>>? BindingCandidateNodeIds { get; set; }

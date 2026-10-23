@@ -280,6 +280,7 @@ namespace SunEyeVision.Tool.Script.Models
         private ScriptIoContractSnapshot? _publishedIo;
         [JsonIgnore] internal SunEyeVision.Tool.Script.ScriptEngine.ScriptCompiler.CompileResult? PreparedCompilation { get; set; }
         [JsonIgnore] internal Func<bool>? ExecutionAdmission { get; set; }
+        [JsonIgnore] internal SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner RuntimeOwner { get; } = new();
         [JsonIgnore] public string IoValidationError { get; private set; } = "";
         [JsonIgnore] public string IoIdentity => _publishedIo?.Identity ?? "";
         public bool TryPublishIoContract(out string error)

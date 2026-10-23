@@ -67,6 +67,8 @@ namespace SunEyeVision.Plugin.SDK.Core
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
+            if (tool is IAsyncToolPlugin) return ExecuteAsync(tool, request).AsTask().GetAwaiter().GetResult();
+            using var inputResources = request;
 
             ResolveRuntimeParameters(request);
             ApplyRuntimeSnapshot(request.Parameters, request.RuntimeParameters!);
@@ -94,6 +96,8 @@ namespace SunEyeVision.Plugin.SDK.Core
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
+            if (tool is IAsyncToolPlugin) return (TResult)ExecuteAsync(tool, request).AsTask().GetAwaiter().GetResult();
+            using var inputResources = request;
             if (request.Parameters is not TParameters parameters)
                 throw new ArgumentException(
                     $"执行请求参数类型应为 {typeof(TParameters).Name}，实际为 {request.Parameters.GetType().Name}",
@@ -124,6 +128,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 throw new ArgumentNullException(nameof(tool));
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
+            using var inputResources = request;
 
             if (tool is not IAsyncToolPlugin asyncTool)
                 return Run(tool, request);
@@ -148,6 +153,14 @@ namespace SunEyeVision.Plugin.SDK.Core
                 request.Context.Logger?.Info("开始异步执行工具", request.Context.GetSourceName());
                 var inputFrame = ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
                 var result = await asyncTool.ExecuteAsync(request).ConfigureAwait(false);
+                result.ExecutionIdentity = request.ExecutionIdentity;
+                if (request.CancellationToken.IsCancellationRequested || request.ExecutionIdentity?.IsCurrent == false)
+                {
+                    (result as IDisposable)?.Dispose();
+                    var cancelled = CreateTerminalResult(tool.ResultType, ExecutionStatus.Cancelled, "运行已取消或身份失效");
+                    cancelled.ExecutionIdentity = request.ExecutionIdentity;
+                    return cancelled;
+                }
                 ImageFrameProvenance.RecordResult(result, inputFrame,
                     (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown);
                 stopwatch.Stop();
@@ -155,11 +168,13 @@ namespace SunEyeVision.Plugin.SDK.Core
                 ApplyJudgmentStatus(parameters, result);
                 return result;
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex) when (request.CancellationToken.IsCancellationRequested && ex.CancellationToken == request.CancellationToken)
             {
                 stopwatch.Stop();
                 request.Context.Logger?.Warning("工具执行被取消", request.Context.GetSourceName());
-                return CreateTerminalResult(tool.ResultType, ExecutionStatus.Cancelled, "执行被取消");
+                var cancelled = CreateTerminalResult(tool.ResultType, ExecutionStatus.Cancelled, ex.Message);
+                cancelled.ExecutionIdentity = request.ExecutionIdentity;
+                return cancelled;
             }
             catch (Exception ex)
             {
@@ -168,7 +183,9 @@ namespace SunEyeVision.Plugin.SDK.Core
                     $"工具执行异常: {ex.Message}",
                     request.Context.GetSourceName(),
                     ex);
-                return CreateTerminalResult(tool.ResultType, ExecutionStatus.Failed, ex.Message, ex);
+                var failed = CreateTerminalResult(tool.ResultType, ExecutionStatus.Failed, ex.Message, ex);
+                failed.ExecutionIdentity = request.ExecutionIdentity;
+                return failed;
             }
         }
 

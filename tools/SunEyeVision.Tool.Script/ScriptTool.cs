@@ -41,33 +41,106 @@ namespace SunEyeVision.Tool.Script
         }
 
         public ScriptResults Run(ScriptParameters parameters)
-            => ExecuteCore(
-                parameters,
-                parameters.Context?.GlobalVariables,
-                parameters.NodeResults,
-                parameters.Context);
+        {
+            var frozen = (ScriptParameters)ToolExecutionPreparation.CopyParameters(parameters);
+            frozen.PreparedCompilation = parameters.PreparedCompilation;
+            frozen.ExecutionAdmission = parameters.ExecutionAdmission;
+            var globals = parameters.Context?.GlobalVariables;
+            using var globalResources = new ScriptOutputSnapshot();
+            var globalSnapshot = SnapshotGlobals(globals, globalResources);
+            using var inputs = parameters.NodeResults == null ? null : new ToolResultSnapshot(new Dictionary<string, ToolResults>(parameters.NodeResults));
+            var nodes = inputs?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+            nodes = SnapshotGlobalBindings(nodes, globalSnapshot);
+            if (!frozen.TryPublishIoContract(out _)) return ReleaseGlobalInputs(globalResources, ExecuteCore(frozen, globalSnapshot, nodes, parameters.Context));
+            var token = parameters.Context?.CancellationToken ?? default;
+            var owner = parameters.RuntimeOwner;
+            ScriptSandboxPool.Attach(owner);
+            var identity = owner.Begin((parameters.Context?.WorkflowId ?? "direct") + "/" + (parameters.Context?.NodeId ?? "script"),
+                Guid.NewGuid(), frozen.IoIdentity, token, frozen.ExecutionAdmission);
+            using var active = owner.EnterRun(identity);
+            try { return ReleaseGlobalInputs(globalResources, ExecuteCore(frozen, globalSnapshot, nodes, parameters.Context, token, identity, globals)); }
+            finally { identity.CompleteCallbacks(); }
+        }
 
         public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)
         {
             var parameters = (ScriptParameters)request.Parameters;
+            using var globalResources = new ScriptOutputSnapshot();
+            var owner = request.ExecutionOwner ?? new ToolExecutionOwner();
+            ScriptSandboxPool.Attach(owner);
+            request.ExecutionIdentity = owner.Begin((request.WorkflowId ?? "standalone") + "/" + (request.NodeId ?? "script"),
+                request.RunId == Guid.Empty ? Guid.NewGuid() : request.RunId,
+                parameters.IoIdentity, request.CancellationToken, parameters.ExecutionAdmission, request.RootRunId);
             if (!parameters.TryPublishIoContract(out var error)) throw new InvalidOperationException(error);
-            parameters.PreparedCompilation ??= await new ScriptCompiler().CompileAsync(
+            var globalSnapshot = SnapshotGlobals(request.GlobalVariables, globalResources);
+            var nodeSnapshot = SnapshotGlobalBindings(request.NodeResults, globalSnapshot);
+            var compiled = parameters.PreparedCompilation ?? await new ScriptCompiler().CompileAsync(
                 new[] { parameters.GeneratedCode, parameters.ScriptCode }, "ScriptExecution", parameters.AssemblyReferenceFullPath,
                 parameters.AssemblyReferences, request.CancellationToken).ConfigureAwait(false);
             request.CancellationToken.ThrowIfCancellationRequested();
+            request.ExecutionIdentity = request.ExecutionIdentity.WithContractIdentity(parameters.IoIdentity + "/" + compiled.CacheKey);
             // 用户代码仍保持逐次实例语义；运行中取消/异常清理的完整合同留S3。
-            return await Task.Run<ToolResults>(() =>
+            var result = await Task.Run<ToolResults>(() =>
             {
                 if (parameters.ExecutionAdmission?.Invoke() == false) throw new OperationCanceledException("执行请求已过时。");
-                return ExecuteCore(parameters, request.GlobalVariables, request.NodeResults, request.Context);
+                using var activeRun = owner.EnterRun(request.ExecutionIdentity);
+                try
+                {
+                    return ExecuteCore(parameters, globalSnapshot, nodeSnapshot, request.Context, request.CancellationToken,
+                        request.ExecutionIdentity, request.GlobalVariables, compiled);
+                }
+                finally { request.ExecutionIdentity.CompleteCallbacks(); }
             }, request.CancellationToken).ConfigureAwait(false);
+            return ReleaseGlobalInputs(globalResources, result);
+        }
+
+        private static T ReleaseGlobalInputs<T>(ScriptOutputSnapshot inputs, T result) where T : ToolResults
+        {
+            try
+            {
+                if (result is ScriptResults script) script.OwnInputs(inputs.TransferResources());
+                else inputs.Dispose();
+                return result;
+            }
+            catch
+            {
+                (result as IDisposable)?.Dispose();
+                throw;
+            }
+        }
+
+        private static Dictionary<string, ToolResults>? SnapshotGlobalBindings(IDictionary<string, ToolResults>? nodes, Dictionary<string, object?>? globals)
+        {
+            if (globals == null) return nodes == null ? null : new Dictionary<string, ToolResults>(nodes);
+            var snapshot = nodes == null ? new Dictionary<string, ToolResults>() : new Dictionary<string, ToolResults>(nodes);
+            var result = new GenericToolResults { Status = ExecutionStatus.Success };
+            foreach (var pair in globals) result.AddResultItem(pair.Key, pair.Value);
+            snapshot["__GlobalVars__"] = result;
+            return snapshot;
+        }
+
+        private static Dictionary<string, object?>? SnapshotGlobals(IDictionary<string, object?>? globals, ScriptOutputSnapshot resources)
+        {
+            if (globals == null) return null;
+            var snapshot = new Dictionary<string, object?>(globals);
+            foreach (var key in snapshot.Keys.ToArray())
+            {
+                var value = snapshot[key];
+                if (value is IDisposable || value is Array)
+                    snapshot[key] = resources.Copy(value, value.GetType());
+            }
+            return snapshot;
         }
 
         private static ScriptResults ExecuteCore(
             ScriptParameters parameters,
             IDictionary<string, object?>? globalVariables,
             IDictionary<string, ToolResults>? nodeResults,
-            ToolExecutionContext? context)
+            ToolExecutionContext? context,
+            System.Threading.CancellationToken cancellationToken = default,
+            ToolExecutionIdentity? identity = null,
+            IDictionary<string, object?>? writeGlobals = null,
+            ScriptCompiler.CompileResult? preparedCompilation = null)
         {
             var result = new ScriptResults
             {
@@ -76,6 +149,7 @@ namespace SunEyeVision.Tool.Script
                 Timestamp = DateTime.Now,
                 ScriptCode = parameters.ScriptCode
             };
+            result.ExecutionIdentity = identity;
 
             try
             {
@@ -96,6 +170,11 @@ namespace SunEyeVision.Tool.Script
                     LogInfo(context, $"Executing script (lines: {parameters.ScriptCode.Split('\n').Length})");
 
                 using var lifecycleManager = new ScriptLifecycleManager();
+                lifecycleManager.CancellationToken = cancellationToken;
+                lifecycleManager.ExecutionIdentity = identity;
+                lifecycleManager.ExecutionAdmission = identity == null ? parameters.ExecutionAdmission : () => identity.IsCurrent;
+                if (identity != null) lifecycleManager.ExecutionDomain = identity.Domain;
+                lifecycleManager.DeclaredOutputs = parameters.Outputs.ToDictionary(output => output.Name, output => ScriptIoTypeDescriptor.From(output.TypeName).ClrType, StringComparer.Ordinal);
 
                 // Global variable delegates - bridge from ExecutionContext.GlobalVariables
                 var globalVars = globalVariables;
@@ -103,8 +182,9 @@ namespace SunEyeVision.Tool.Script
                     globalVars?.TryGetValue(name, out var v) == true ? v : null;
                 Action<string, object?>? setGlobal = (name, value) =>
                 {
-                    if (globalVars != null)
-                        globalVars[name] = value;
+                    void Write() { if ((writeGlobals ?? globalVars) is { } target) target[name] = value; }
+                    if (identity == null) Write();
+                    else if (!identity.TryInvokeCallback(Write)) throw new InvalidOperationException("运行身份失效，拒绝全局变量写入。");
                 };
 
                 // ★ 解析输入绑定（从 ExecutionContext.GlobalVariables 读取）
@@ -126,7 +206,7 @@ namespace SunEyeVision.Tool.Script
                         $"上游节点结果={nodeResults?.Count ?? 0}");
                 }
 
-                lifecycleManager.PreparedCompilation = parameters.PreparedCompilation;
+                lifecycleManager.PreparedCompilation = preparedCompilation ?? parameters.PreparedCompilation;
                 if (parameters.ExecutionAdmission?.Invoke() == false) throw new OperationCanceledException("输入准备期间请求已过时。");
                 var errors = lifecycleManager.Execute(
                     parameters.GeneratedCode,
@@ -149,6 +229,9 @@ namespace SunEyeVision.Tool.Script
                 {
                     result.OutputValues[kvp.Key] = kvp.Value;
                 }
+                cancellationToken.ThrowIfCancellationRequested();
+                if (identity != null && !identity.IsCurrent) throw new InvalidOperationException("运行身份失效，拒绝发布输出。");
+                if (errors.Count == 0) result.OwnOutputs(lifecycleManager.TakeOutputs());
 
                 if (errors.Count == 0)
                 {
@@ -172,8 +255,15 @@ namespace SunEyeVision.Tool.Script
                     result.SetError(errorMsg);
                 }
             }
+            catch (OperationCanceledException ex) when (ex.CancellationToken == cancellationToken && cancellationToken.IsCancellationRequested)
+            {
+                result.Dispose();
+                throw;
+            }
             catch (Exception ex)
             {
+                try { result.Dispose(); }
+                catch (Exception cleanup) { result.CompileErrors.Add("输出回收失败: " + cleanup.Message); }
                 // 调试模式：写调试窗口日志区，不写主界面；工作流执行：写主界面（与摘要分流一致）。
                 if (parameters.IsDebugMode)
                     result.LogMessages.Add($"Script exception: {ex.Message}");

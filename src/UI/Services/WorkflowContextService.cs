@@ -33,12 +33,17 @@ namespace SunEyeVision.UI.Services
 
         public void Remove(string workflowId)
         {
-            _contexts.Remove(workflowId);
+            if (_contexts.Remove(workflowId, out var context)) context.ClearNodeResults();
         }
 
         public void Clear()
         {
+            var contexts = new List<WorkflowContext>(_contexts.Values);
             _contexts.Clear();
+            var errors = new List<Exception>();
+            foreach (var context in contexts)
+                try { context.ClearNodeResults(); } catch (Exception ex) { errors.Add(ex); }
+            if (errors.Count != 0) throw new AggregateException(errors);
         }
     }
 }

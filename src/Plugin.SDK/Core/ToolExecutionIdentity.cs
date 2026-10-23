@@ -1,0 +1,115 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+
+namespace SunEyeVision.Plugin.SDK.Core;
+
+/// <summary>方案/节点的运行准入Owner；退役与受控发布共享同一临界区。</summary>
+public sealed class ToolExecutionOwner
+{
+    private readonly object _gate = new();
+    private readonly Dictionary<string, Guid> _domains = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Guid> _latest = new(StringComparer.Ordinal);
+    private bool _retired;
+    private int _activeRuns;
+    public int ActiveRuns { get { lock (_gate) return _activeRuns; } }
+    public Guid Id { get; } = Guid.NewGuid();
+    public event Action<string>? DomainRetired;
+
+    public ToolExecutionIdentity Begin(string nodeId, Guid runId, string contractIdentity,
+        CancellationToken cancellationToken = default, Func<bool>? admission = null, Guid rootRunId = default)
+    {
+        lock (_gate)
+        {
+            if (_retired) throw new InvalidOperationException("运行Owner已退役。");
+            if (!_domains.TryGetValue(nodeId, out var generation)) _domains[nodeId] = generation = Guid.NewGuid();
+            var requestId = Guid.NewGuid();
+            _latest[nodeId] = requestId;
+            return new ToolExecutionIdentity(this, nodeId, generation, runId, requestId, contractIdentity, cancellationToken, admission, rootRunId);
+        }
+    }
+
+    internal bool Publish(ToolExecutionIdentity identity, Action? publish, bool callback = false)
+    {
+        lock (_gate)
+        {
+            if (_retired || (callback && !identity.CallbacksOpen) || identity.CancellationToken.IsCancellationRequested ||
+                !_domains.TryGetValue(identity.NodeId, out var generation) || generation != identity.NodeGeneration ||
+                !_latest.TryGetValue(identity.NodeId, out var request) || request != identity.RequestId || identity.Admission?.Invoke() == false)
+                return false;
+            publish?.Invoke();
+            return true;
+        }
+    }
+    internal void CompleteCallbacks(ToolExecutionIdentity identity)
+    {
+        lock (_gate) identity.CallbacksOpen = false;
+    }
+
+    public IDisposable EnterRun(ToolExecutionIdentity identity)
+    {
+        lock (_gate)
+        {
+            if (!Publish(identity, null)) throw new InvalidOperationException("脚本运行身份已失效。");
+            _activeRuns++;
+            return new RunLease(this);
+        }
+    }
+    private sealed class RunLease(ToolExecutionOwner owner) : IDisposable
+    {
+        private ToolExecutionOwner? _owner = owner;
+        public void Dispose()
+        {
+            var current = Interlocked.Exchange(ref _owner, null);
+            if (current != null) lock (current._gate) current._activeRuns--;
+        }
+    }
+
+    public void RetireNode(string nodeId)
+    {
+        string? domain = null;
+        lock (_gate)
+            if (_domains.Remove(nodeId, out var generation))
+            { _latest.Remove(nodeId); domain = Domain(nodeId, generation); }
+        if (domain != null) DomainRetired?.Invoke(domain);
+    }
+
+    public void Retire()
+    {
+        List<string> domains = new();
+        lock (_gate)
+        {
+            if (_retired) return;
+            if (_activeRuns != 0) throw new InvalidOperationException("脚本仍在运行或清理，方案保持打开；请停止并等待排空。");
+            _retired = true;
+            foreach (var domain in _domains) domains.Add(Domain(domain.Key, domain.Value));
+            _domains.Clear(); _latest.Clear();
+        }
+        foreach (var domain in domains) DomainRetired?.Invoke(domain);
+    }
+    internal string Domain(string nodeId, Guid generation) => $"{Id:N}/{nodeId}/{generation:N}";
+}
+
+public sealed class ToolExecutionIdentity
+{
+    internal ToolExecutionIdentity(ToolExecutionOwner owner, string nodeId, Guid generation, Guid runId, Guid requestId,
+        string contractIdentity, CancellationToken cancellationToken, Func<bool>? admission, Guid rootRunId = default)
+    { Owner = owner; NodeId = nodeId; NodeGeneration = generation; RunId = runId; RootRunId = rootRunId == Guid.Empty ? runId : rootRunId; RequestId = requestId; ContractIdentity = contractIdentity; CancellationToken = cancellationToken; Admission = admission; }
+    public ToolExecutionOwner Owner { get; }
+    public string NodeId { get; }
+    public Guid NodeGeneration { get; }
+    public Guid RunId { get; }
+    public Guid RootRunId { get; }
+    public Guid RequestId { get; }
+    public string ContractIdentity { get; }
+    public CancellationToken CancellationToken { get; }
+    internal Func<bool>? Admission { get; }
+    internal bool CallbacksOpen = true;
+    public string Domain => Owner.Domain(NodeId, NodeGeneration);
+    public bool IsCurrent => Owner.Publish(this, null);
+    public bool TryPublish(Action publish) => Owner.Publish(this, publish);
+    public bool TryInvokeCallback(Action callback) => Owner.Publish(this, callback, callback: true);
+    public void CompleteCallbacks() => Owner.CompleteCallbacks(this);
+    public ToolExecutionIdentity WithContractIdentity(string contractIdentity)
+        => new(Owner, NodeId, NodeGeneration, RunId, RequestId, contractIdentity, CancellationToken, Admission, RootRunId);
+}

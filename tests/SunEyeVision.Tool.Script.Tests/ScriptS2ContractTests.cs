@@ -195,15 +195,6 @@ public class ScriptS2ContractTests
     { var deadline = DateTime.UtcNow.AddSeconds(30); while (!predicate()) { if (DateTime.UtcNow > deadline) throw new TimeoutException(); await Task.Delay(10); } }
     private static void RunSta(Func<Task> action)
     {
-        Exception? error = null;
-        var thread = new Thread(() =>
-        {
-            var dispatcher = Dispatcher.CurrentDispatcher;
-            SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(dispatcher));
-            dispatcher.BeginInvoke(new Action(async () => { try { await action(); } catch (Exception ex) { error = ex; } finally { dispatcher.InvokeShutdown(); } }));
-            Dispatcher.Run();
-        });
-        thread.SetApartmentState(ApartmentState.STA); thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(60)), "STA test timed out"); Assert.Null(error);
+        ScriptTestDispatcher.Run(action, 60);
     }
 }

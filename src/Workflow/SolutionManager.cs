@@ -416,6 +416,7 @@ public class SolutionManager
             return;
         }
 
+        RetirePreviousExecutionOwners(solution);
         CurrentSolution = solution;
         CurrentFilePath = filePath;
         _settings.CurrentSolutionId = solution.Id;
@@ -568,6 +569,7 @@ public class SolutionManager
     {
         if (saveChanges && HasUnsavedChanges && (string.IsNullOrEmpty(CurrentFilePath) || !SaveSolution()))
             throw new IOException("保存失败，方案保持打开：" + LastError);
+        RetirePreviousExecutionOwners(null);
         CurrentSolution = null;
         CurrentFilePath = null;
         Session = null;
@@ -575,6 +577,13 @@ public class SolutionManager
         MarkSettingsDirty();
         SolutionClosed?.Invoke(this, EventArgs.Empty);
         CurrentSolutionChanged?.Invoke(this, new SolutionMetadataEventArgs { SolutionId = "" });
+    }
+
+    private void RetirePreviousExecutionOwners(Solution? next)
+    {
+        if (!ReferenceEquals(CurrentSolution, next)) CurrentSolution?.ExecutionOwner.Retire();
+        if (next != null)
+            foreach (var workflow in next.Workflows) workflow.ExecutionOwner = next.ExecutionOwner;
     }
 
     /// <summary>
@@ -1419,6 +1428,7 @@ public class SolutionManager
             LastAccessTime = DateTime.Now
         };
         if (registerInCatalog && actualMetadata != null) RegisterKnownSolution(actualMetadata);
+        RetirePreviousExecutionOwners(solution);
         CurrentSolution = solution;
         CurrentFilePath = solution.FilePath;
         CaptureSavedState();

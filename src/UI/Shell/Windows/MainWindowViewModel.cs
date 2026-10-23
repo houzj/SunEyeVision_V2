@@ -135,7 +135,7 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 节点结果管理
         private readonly Services.Workflow.NodeResultManager _nodeResultManager;
-        private readonly Dictionary<string, (SunEyeVision.UI.Shared.WorkflowNode Node, ToolResults Result)>
+        private readonly Dictionary<string, (SunEyeVision.UI.Shared.WorkflowNode Node, ToolResults Result, IDisposable? Lease)>
             _pendingCameraPresentations = new();
         private System.Windows.Threading.DispatcherTimer? _cameraPresentationTimer;
         private DateTime _lastCameraPerfWarningUtc;
@@ -1589,7 +1589,12 @@ SplitterPosition = position;
             foreach (var window in _nodeDebugWindows.Values.Concat(_openDebugWindow == null ? Array.Empty<Window>() : new[] { _openDebugWindow }).Distinct().ToArray())
                 window.Close();
             _nodeDebugWindows.Clear(); _openDebugWindow = null; _workflowDsqsCache.Clear();
-            _cameraPresentationTimer?.Stop(); _pendingCameraPresentations.Clear();
+            _cameraPresentationTimer?.Stop();
+            var pendingPresentations = _pendingCameraPresentations.Values.ToArray();
+            _pendingCameraPresentations.Clear();
+            foreach (var pending in pendingPresentations)
+                try { pending.Lease?.Dispose(); }
+                catch (Exception ex) { _logger?.LogError("相机结果租约清理失败", "MainWindowViewModel", ex); }
             _workflowContextService.Clear(); _executionOrchestrator?.ClearCache(); _nodeResultManager.ClearResultDisplay();
             UpdateCurrentSolutionInfo();
 
@@ -3431,10 +3436,12 @@ SplitterPosition = position;
                 : Enumerable.Range(0, count);
 
             var context = CurrentWorkflowContext;
+            using var sourceSnapshot = context?.CaptureNodeResults();
             foreach (var idx in order)
             {
                 var candidate = DisplayImageSources[idx];
-                var executionResult = context?.GetNodeResult(candidate.SourceNodeId);
+                NodeExecutionResult? executionResult = null;
+                sourceSnapshot?.Results.TryGetValue(candidate.SourceNodeId, out executionResult);
                 if (executionResult?.Result == null) continue;
 
                 var candidateBitmap = _nodeResultManager.GetDisplayImageFromSource(
@@ -3732,6 +3739,8 @@ SplitterPosition = position;
             var bindingWorkflow = (SunEyeVision.Workflow.Workflow)connectionProvider;
             var bindingService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings;
             queryService.WorkflowId = bindingWorkflow.Id;
+            if (DocumentManager.CurrentSolution?.ExecutionOwner is { } solutionOwner) bindingWorkflow.AttachExecutionOwner(solutionOwner);
+            queryService.ExecutionOwner = bindingWorkflow.ExecutionOwner;
             queryService.BindingCandidateNodeIds = id => bindingService.GetCandidateNodeIds(bindingWorkflow.Id, id);
             queryService.ExistingBindingSourceNodeIds = id => bindingService.GetExistingBindingSourceNodeIds(bindingWorkflow.Id, id);
             queryService.FormalOutputContractReader = id => bindingWorkflow.Nodes.FirstOrDefault(n => n.Id == id) is { } n ? bindingService.ReadContract(n) : null;
@@ -3965,6 +3974,7 @@ SplitterPosition = position;
         private void SubscribeToolExecutionCompleted(System.Windows.Window debugWindow, SunEyeVision.UI.Shared.WorkflowNode node,
             IDataSourceQueryService dataProvider)
         {
+            var resultContext = CurrentWorkflowContext;
             var eventInfo = debugWindow.GetType().GetEvent("ToolExecutionCompleted");
             if (eventInfo == null)
             {
@@ -3998,11 +4008,18 @@ SplitterPosition = position;
 
                             if (toolResult != null)
                             {
+                                if (toolResult.ExecutionIdentity is { } identity && (!identity.IsCurrent ||
+                                    !ReferenceEquals(identity.Owner, DocumentManager.CurrentSolution?.ExecutionOwner)))
+                                {
+                                    (toolResult as IDisposable)?.Dispose();
+                                    return;
+                                }
                                 // 执行结果已通过 NodeResultManager.UpdateNodeResult 存储到 WorkflowContext
                                 // 这里不再需要直接赋值给 node.LastResult
 
                                 // 更新图像显示（内部已存储到 WorkflowContext，DSQS 通过 _ssotReader 实时读取）
-                                _nodeResultManager?.UpdateNodeResult(node, toolResult);
+                                _nodeResultManager?.UpdateNodeResult(node, toolResult,
+                                    refreshDisplay: ReferenceEquals(resultContext, CurrentWorkflowContext), targetContext: resultContext);
 
                                 // ★ 通知调试窗口外部结果已到达（用于刷新位置修正矩阵等运行时状态）
                                 NotifyDebugWindowExternalResult(node.Id);
@@ -4010,6 +4027,7 @@ SplitterPosition = position;
                                 // ★ 更新数据分析控件（调试窗口执行后立即刷新）
                                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                                 {
+                                    if (toolResult.ExecutionIdentity?.IsCurrent == false || !ReferenceEquals(resultContext, CurrentWorkflowContext)) return;
                                     if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis daCtrl)
                                     {
                                         try
@@ -4404,6 +4422,7 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
         {
             try
             {
+                if (e.Result.ExecutionIdentity?.IsCurrent == false) return;
                 if (e.IsCameraDriven)
                 {
                     if (e.UiQueueDelayMs >= 200 &&
@@ -4415,7 +4434,9 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                     // 工作流结果逐轮入缓存；图像/结果树/调试窗口的展示按 UI 节奏合并。
                     // 不读取全部反射属性，避免在 UI 线程触发整幅图像的懒统计。
                     _nodeResultManager.UpdateNodeResult(e.Node, e.Result, refreshDisplay: false);
-                    _pendingCameraPresentations[e.Node.Id] = (e.Node, e.Result);
+                    var presentationLease = e.Result.Resources?.Retain();
+                    if (_pendingCameraPresentations.Remove(e.Node.Id, out var previous)) previous.Lease?.Dispose();
+                    _pendingCameraPresentations[e.Node.Id] = (e.Node, e.Result, presentationLease);
                     if (_cameraPresentationTimer is null)
                     {
                         _cameraPresentationTimer = new System.Windows.Threading.DispatcherTimer(
@@ -5391,10 +5412,19 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             _cameraPresentationTimer?.Stop();
             var latest = _pendingCameraPresentations.Values.ToArray();
             _pendingCameraPresentations.Clear();
-            foreach (var (node, result) in latest)
+            foreach (var (node, result, lease) in latest)
             {
-                if (node.IsSelected)
-                    _nodeResultManager.RefreshResultDisplay(node, result);
+                try
+                {
+                    if (node.IsSelected && result.ExecutionIdentity?.IsCurrent != false)
+                        _nodeResultManager.RefreshResultDisplay(node, result);
+                }
+                catch (Exception ex) { _logger?.LogError("相机结果呈现失败", "MainWindowViewModel", ex); }
+                finally
+                {
+                    try { lease?.Dispose(); }
+                    catch (Exception ex) { _logger?.LogError("相机结果租约清理失败", "MainWindowViewModel", ex); }
+                }
             }
             if (latest.Length > 0)
                 NotifyAllDebugWindowsExternalResult();

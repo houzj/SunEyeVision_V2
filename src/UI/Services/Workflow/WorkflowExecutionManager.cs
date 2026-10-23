@@ -194,7 +194,7 @@ namespace SunEyeVision.UI.Services.Workflow
             try
             {
                 OnWorkflowExecutionStarted(workflowId);
-                var execution = await ExecuteSingleTriggeredAsync(workflow, cancellationToken);
+                using var execution = await ExecuteSingleTriggeredAsync(workflow, cancellationToken);
                 if (execution.Status == ExecutionStatus.Cancelled)
                     OnWorkflowExecutionStopped(workflowId);
                 else if (execution.Success)
@@ -274,7 +274,9 @@ namespace SunEyeVision.UI.Services.Workflow
                             while (true)
                             {
                                 cts.Token.ThrowIfCancellationRequested();
-                                ExecutionResult execution;
+                                ExecutionResult? execution = null;
+                                try
+                                {
                                 var stopAfterCurrent = false;
                                 if (cameraFeed is not null && cameraSource is not null)
                                 {
@@ -326,6 +328,8 @@ namespace SunEyeVision.UI.Services.Workflow
 
                                 if (cameraFeed is null)
                                     await Task.Delay(10, cts.Token);
+                                }
+                                finally { execution?.Dispose(); }
                             }
                         }
                         catch (OperationCanceledException)
@@ -475,7 +479,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     tab.IsRunning = true;
                     OnWorkflowExecutionStarted(workflowId);
-                    var executionResult = await ExecuteSingleTriggeredAsync(tab, cancellationToken, runtimeGlobals);
+                    using var executionResult = await ExecuteSingleTriggeredAsync(tab, cancellationToken, runtimeGlobals);
                     ApplyProducedGlobalValues(solution, workflowId, executionResult, runtimeGlobals);
                     if (executionResult.Success)
                     {
@@ -629,11 +633,15 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution),
                     NodeId = node.Id, NodeName = node.Name, ParameterBindings = bindings,
+                    WorkflowId = workflowId,
+                    ExecutionOwner = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution?.ExecutionOwner,
+                    RunId = Guid.NewGuid(),
                     GlobalVariables = globals, ResolvedInputImage = image, CancellationToken = token,
                     CameraCaptureService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime,
                     CommunicationInputs = receiveInputs,
                     CommunicationOutputs = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends
                 });
+                using var resultResources = result.Resources;
                 if (result.IsCancelled) throw new OperationCanceledException(token);
                 if (!result.IsSuccess) throw new InvalidOperationException(result.ErrorMessage ?? "触发模块执行失败。");
                 OnWorkflowExecutionCompleted(workflowId);
@@ -838,7 +846,8 @@ namespace SunEyeVision.UI.Services.Workflow
                         : null,
                     cameraFrames: cameraFrame is not null && cameraNodeId is not null
                         ? new Dictionary<string, CameraFrame> { [cameraNodeId] = cameraFrame }
-                        : null) { ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution) };
+                        : null) { ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution),
+                            ExecutionOwner = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution?.ExecutionOwner };
                 var result = await executionEngine.ExecuteWorkflowAsync(runRequest, cancellationToken);
                 if (sequenceNumbers is not null)
                 {
@@ -1386,10 +1395,26 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         private void OnNodeExecutionCompleted(SunEyeVision.UI.Shared.WorkflowNode node, ToolResults result, bool isCameraDriven)
         {
+            if (result.ExecutionIdentity?.IsCurrent == false) return;
+            var lease = result.Resources?.Retain();
             var queuedAt = Stopwatch.GetTimestamp();
-            InvokeOnUI(() => NodeExecutionCompleted?.Invoke(this,
-                new NodeExecutionResultEventArgs(node, result, isCameraDriven,
-                    Stopwatch.GetElapsedTime(queuedAt).TotalMilliseconds)));
+            var token = _communicationOwner.Value ? _communicationCancellation.Value : CancellationToken.None;
+            void Publish()
+            {
+                try
+                {
+                    if (!token.IsCancellationRequested && result.ExecutionIdentity?.IsCurrent != false)
+                        NodeExecutionCompleted?.Invoke(this, new NodeExecutionResultEventArgs(node, result, isCameraDriven,
+                            Stopwatch.GetElapsedTime(queuedAt).TotalMilliseconds));
+                }
+                finally { lease?.Dispose(); }
+            }
+            try
+            {
+                if (_synchronizationContext != null) _synchronizationContext.Post(_ => Publish(), null);
+                else Publish();
+            }
+            catch { lease?.Dispose(); throw; }
         }
 
         /// <summary>

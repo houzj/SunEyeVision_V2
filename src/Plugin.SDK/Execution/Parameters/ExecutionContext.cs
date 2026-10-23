@@ -37,6 +37,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// </remarks>
     public class ExecutionContext
     {
+        public SunEyeVision.Plugin.SDK.Core.ToolExecutionIdentity? ExecutionIdentity { get; internal set; }
         public IResourcePathResolver? ResourcePaths { get; init; }
 
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; init; }

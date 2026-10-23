@@ -321,12 +321,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     throw new InvalidOperationException(commitError);
                 PersistParameterBindings();
                 var results = await ExecuteToolAsync();
+                if ((results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.ExecutionIdentity?.IsCurrent == false)
+                {
+                    (results as IDisposable)?.Dispose();
+                    return;
+                }
 
                 stopwatch.Stop();
                 ExecutionTime = stopwatch.ElapsedMilliseconds;
 
                 // 触发完成事件
-                RaiseToolExecutionCompleted(results, ExecutionTime);
+                try { RaiseToolExecutionCompleted(results, ExecutionTime); }
+                finally { (results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.Resources?.Dispose(); }
 
                 PluginLogger.Success($"工具执行完成，耗时 {ExecutionTime}ms", GetType().Name);
             }
@@ -910,7 +916,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         protected ToolExecutionRequest CreateLiveExecutionRequest(
             ToolParameters parameters,
             IVisionImage? resolvedInputImage,
-            IReadOnlyDictionary<string, ToolResults>? nodeResultsSnapshot = null)
+            IReadOnlyDictionary<string, ToolResults>? nodeResultsSnapshot = null,
+            System.Threading.CancellationToken cancellationToken = default)
         {
 
             var provider = DataProvider as IDataSourceQueryService;
@@ -922,6 +929,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 : provider == null && parameters.NodeResults != null
                 ? new Dictionary<string, ToolResults>(parameters.NodeResults)
                 : new Dictionary<string, ToolResults>();
+            ToolResultSnapshot? capturedResults = null;
+            try
+            {
 
             if (provider != null)
             {
@@ -942,8 +952,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 // Never seed a new debug run with runtime fields left on an editable parameter
                 // object by an earlier run. The query provider is the current workflow SSOT.
                 if (nodeResultsSnapshot == null)
-                    nodeResults = ToolDebugResultSnapshot.Capture(provider, sourceIds, requireAll: false)
-                        .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+                {
+                    capturedResults = ToolDebugResultSnapshot.Capture(provider, sourceIds, requireAll: false);
+                    nodeResults = capturedResults.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+                }
             }
 
             resolvedInputImage = ToolExecutionPreparation.ResolveInputImage(parameters, nodeResults,
@@ -952,10 +964,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 ?? ToolExecutionPreparation.CopyParameters(parameters);
             var request = new ToolExecutionRequest(executionParameters)
             {
+                InputResources = capturedResults ?? new ToolResultSnapshot(nodeResults),
                 NodeResults = nodeResults,
                 ResolvedInputImage = resolvedInputImage,
-                NodeId = GetCurrentNodeStringProperty("Id"),
+                NodeId = GetCurrentNodeStringProperty("Id") ?? _currentNodeId,
+                CancellationToken = cancellationToken,
                 WorkflowId = (DataProvider as DataSourceQueryService)?.WorkflowId,
+                ExecutionOwner = (DataProvider as DataSourceQueryService)?.ExecutionOwner,
+                RunId = Guid.NewGuid(),
                 ResourcePaths = (DataProvider as DataSourceQueryService)?.ResourcePaths,
                 NodeName = GetCurrentNodeStringProperty("DisplayName")
                     ?? GetCurrentNodeStringProperty("Name"),
@@ -975,6 +991,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
 
             return request;
+            }
+            catch
+            {
+                capturedResults?.Dispose();
+                throw;
+            }
         }
 
         private string? GetCurrentNodeStringProperty(string propertyName)

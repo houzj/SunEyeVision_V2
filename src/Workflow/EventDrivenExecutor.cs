@@ -230,7 +230,7 @@ namespace SunEyeVision.Workflow
                 await _eventBus.PublishAndWaitAsync(startedEvent);
 
                 // Execute workflow
-                var result = await _syncEngine.ExecuteWorkflow(_currentWorkflowId, queueEntry.Image);
+                using var result = await _syncEngine.ExecuteWorkflow(_currentWorkflowId, queueEntry.Image);
 
                 var duration = (long)(DateTime.Now - startTime).TotalMilliseconds;
 

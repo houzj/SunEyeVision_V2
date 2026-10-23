@@ -34,7 +34,8 @@ namespace SunEyeVision.Workflow
         Paused,         // 已暂停
         Stopped,        // 已停止
         Completed,      // 已完成
-        Error           // 错误
+        Error,          // 错误
+        Stopping        // 已请求停止，在途工作与清理仍未结束
     }
 
     /// <summary>
@@ -183,7 +184,7 @@ namespace SunEyeVision.Workflow
 
                 // 并行执行当前组的节点
                 var groupStartTime = DateTime.Now;
-                var groupResult = await ExecuteNodesInParallel(
+                using var groupResult = await ExecuteNodesInParallel(
                     workflow,
                     executable,
                     context,
@@ -204,7 +205,7 @@ namespace SunEyeVision.Workflow
                     //   失败节点的下游由前驱可用性判定（AreParentsAvailable）标 Skipped，避免级联假错误。
                     foreach (var kvp in context.GetAllNodeResults())
                     {
-                        groupResult.NodeResults[kvp.Key] = kvp.Value;
+                        groupResult.SetNodeResult(kvp.Key, kvp.Value);
                     }
                     _logger.LogInfo($"组 {groupIndex + 1} 存在失败节点，按隔离策略继续执行后续组");
                 }
@@ -377,6 +378,7 @@ namespace SunEyeVision.Workflow
                         running.Remove(completed);
                         completed.Lease.Dispose();
                         var nodeResult = await completed.Task;
+                        context.CancellationToken.ThrowIfCancellationRequested();
                         context.SetNodeResult(completed.Node.Id, nodeResult);
                         NodeExecutionFinished?.Invoke(completed.Node, nodeResult);
                         var status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed;
@@ -397,7 +399,12 @@ namespace SunEyeVision.Workflow
             finally
             {
                 foreach (var item in running)
-                    item.Lease.Dispose();
+                {
+                    // 停止只撤销派发；实际用户工作和清理结束后才归还独占资源。
+                    try { await item.Task.ConfigureAwait(false); }
+                    catch { /* 主执行路径保留终态；这里仅观察并排空，不发布迟到结果。 */ }
+                    finally { item.Lease.Dispose(); }
+                }
             }
 
             var allResults = context.GetAllNodeResults().ToDictionary(pair => pair.Key, pair => pair.Value);
@@ -433,8 +440,11 @@ namespace SunEyeVision.Workflow
             var leases = new WorkflowResourceLeaseManager();
             var maxConcurrency = Math.Max(1, Math.Min(4, Environment.ProcessorCount - 1));
 
+            try
+            {
             while (pending.Count > 0 || running.Count > 0)
             {
+                context.CancellationToken.ThrowIfCancellationRequested();
                 for (var index = 0; index < pending.Count && running.Count < maxConcurrency;)
                 {
                     var node = pending[index];
@@ -480,6 +490,7 @@ namespace SunEyeVision.Workflow
                     running.Remove(completed);
                     completed.Lease.Dispose();
                     var nodeResult = await completed.Task;
+                    context.CancellationToken.ThrowIfCancellationRequested();
                     context.SetNodeResult(completed.Node.Id, nodeResult);
                     NodeExecutionFinished?.Invoke(completed.Node, nodeResult);
                     var status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed;
@@ -487,6 +498,17 @@ namespace SunEyeVision.Workflow
                     NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = completed.Node.Id, Status = status });
                     if (!nodeResult.Success)
                         result.AddError(nodeResult.ErrorMessages?.FirstOrDefault() ?? "执行失败", completed.Node.Id);
+                }
+            }
+
+            }
+            finally
+            {
+                foreach (var item in running)
+                {
+                    try { await item.Task.ConfigureAwait(false); }
+                    catch { /* Observe and drain; do not publish after cancellation. */ }
+                    finally { item.Lease.Dispose(); }
                 }
             }
 
@@ -728,6 +750,7 @@ namespace SunEyeVision.Workflow
                 }
                 finally
                 {
+                    ReleaseExecutionResources(subContext, execWorkflow);
                     scope.Context = null;
                 }
             }
@@ -776,6 +799,7 @@ namespace SunEyeVision.Workflow
             }
             finally
             {
+                ReleaseExecutionResources(session.RootContext, execWorkflow);
                 session.RootContext = null;
                 scope.Context = null;
                 if (session.State != WorkflowExecutionState.Paused)
@@ -786,6 +810,17 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 从 UI 编辑模型生成一次运行专属的可执行计划。
         /// </summary>
+        private void ReleaseExecutionResources(WorkflowContext? context, Workflow workflow)
+        {
+            try { context?.ClearNodeResults(); }
+            catch (Exception ex) { _logger.LogError("工作流结果快照清理失败", ex); }
+            foreach (var node in workflow.Nodes.OfType<AlgorithmNode>())
+            {
+                try { node.ReleaseLastResult(); }
+                catch (Exception ex) { _logger.LogError("工作流节点结果清理失败", ex); }
+            }
+        }
+
         private WorkflowExecutionPlan BuildExecutionPlan(
             WorkflowRunSession session,
             WorkflowRunScope scope,
@@ -793,6 +828,7 @@ namespace SunEyeVision.Workflow
             WorkflowRunRequest? request)
         {
             var executableWorkflow = new Workflow(Guid.NewGuid().ToString(), sourceWorkflow.Name);
+            if (request?.ExecutionOwner != null) sourceWorkflow.AttachExecutionOwner(request.ExecutionOwner);
             ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow, request);
             var inputIssues = OutputBindingChangeService.GetExecutionInputIssues(executableWorkflow, sourceWorkflow.Id);
             var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, request?.CommunicationInputs?.GetVariables(), sourceWorkflow.Id, inputIssues);
@@ -884,6 +920,9 @@ namespace SunEyeVision.Workflow
                 executionNode.ResourcePaths = request?.ResourcePaths;
                 executionNode.CommunicationOutputs = request?.CommunicationOutputs;
                 executionNode.ExecutionWorkflowId = source.Id;
+                executionNode.ExecutionOwner = source.ExecutionOwner;
+                executionNode.ExecutionRunId = scope.RunId;
+                executionNode.ExecutionRootRunId = session.RunId;
                 executionNode.CommunicationInputs = request?.CommunicationInputs == null ? null :
                     new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(request.CommunicationInputs, null, workflowId: source.Id) { ConsumerScope = scope.ConsumerScope };
                 executionNode.CameraFrame = request != null && request.CameraFrames.TryGetValue(node.Id, out var cameraFrame)
@@ -1097,7 +1136,8 @@ namespace SunEyeVision.Workflow
             var result = new NodeExecutionResult { NodeId = node.Id, StartTime = DateTime.Now, EndTime = DateTime.Now };
 
             // Failed results are retained for diagnostics only, never as executable inputs.
-            var toolResultsDict = context.GetAllNodeResults()
+            using var inputSnapshot = context.CaptureNodeResults();
+            var toolResultsDict = inputSnapshot.Results
                 .Where(kvp => kvp.Value.Success && kvp.Value.Result?.IsSuccess == true)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Result!);
 

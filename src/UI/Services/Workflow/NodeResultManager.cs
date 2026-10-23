@@ -73,10 +73,11 @@ namespace SunEyeVision.UI.Services.Workflow
         /// <summary>
         /// 更新节点结果并刷新UI
         /// </summary>
-        public void UpdateNodeResult(WorkflowNodeBase node, ToolResults result, bool refreshDisplay = true)
+        public void UpdateNodeResult(WorkflowNodeBase node, ToolResults result, bool refreshDisplay = true, WorkflowCore.WorkflowContext? targetContext = null)
         {
             if (node == null || result == null)
                 return;
+            if (result.ExecutionIdentity?.IsCurrent == false) return;
 
             // 1. 缓存结果到 WorkflowContext
             var executionResult = new NodeExecutionResult
@@ -89,7 +90,12 @@ namespace SunEyeVision.UI.Services.Workflow
                 Result = result
             };
 
-            _getContext()?.SetNodeResult(node.Id, executionResult);
+            var context = targetContext ?? _getContext();
+            if (result.ExecutionIdentity is { } identity)
+            {
+                if (!identity.TryPublish(() => context?.SetNodeResult(node.Id, executionResult))) return;
+            }
+            else context?.SetNodeResult(node.Id, executionResult);
 
             // 2. 如果当前节点被选中，立即刷新UI（图像显示由 ViewModel 统一解析）
             if (refreshDisplay && node.IsSelected)
@@ -103,6 +109,8 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         public void RefreshResultDisplay(WorkflowNodeBase node, ToolResults result)
         {
+            using var resultLease = result?.Resources?.Retain();
+            if (result?.ExecutionIdentity?.IsCurrent == false) return;
             // ★ 诊断：记录入参
             Plugin.SDK.Logging.VisionLogger.Instance?.Log(
                 Plugin.SDK.Logging.LogLevel.Info,

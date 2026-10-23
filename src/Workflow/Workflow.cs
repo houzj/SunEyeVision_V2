@@ -26,6 +26,14 @@ namespace SunEyeVision.Workflow
 /// </remarks>
 public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfoProvider
 {
+    [JsonIgnore]
+    public ToolExecutionOwner ExecutionOwner { get; internal set; } = new();
+    public void AttachExecutionOwner(ToolExecutionOwner owner)
+    {
+        if (ReferenceEquals(ExecutionOwner, owner)) return;
+        ExecutionOwner.Retire();
+        ExecutionOwner = owner;
+    }
     [System.Text.Json.Serialization.JsonExtensionData]
     public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
 
@@ -472,6 +480,7 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
             }
         }
 
+        ExecutionOwner.RetireNode(Id + "/" + nodeId);
         Nodes.Remove(node);
 
         // 触发节点移除事件

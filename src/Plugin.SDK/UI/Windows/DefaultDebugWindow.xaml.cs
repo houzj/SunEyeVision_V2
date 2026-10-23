@@ -241,12 +241,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             var execTimeInfo = e.ExecutionTime > 0 ? $" | 耗时={e.ExecutionTime}ms" : "";
             PluginLogger.Info($"[OnToolExecutionCompleted] 路由事件到达 | 结果={resultInfo}{execTimeInfo}", "DefaultDebugWindow");
 
-            ToolExecutionCompleted?.Invoke(this, e);
-
             Dispatcher.Invoke(() =>
             {
                 _isExecuting = false;
                 SetButtonsEnabled(true);
+                if ((e.Results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.ExecutionIdentity?.IsCurrent == false)
+                {
+                    (e.Results as IDisposable)?.Dispose();
+                    return;
+                }
+                ToolExecutionCompleted?.Invoke(this, e);
                 
                 // 如果是连续运行模式，继续下一次执行
                 if (_isContinuousRunning && IsLoaded)

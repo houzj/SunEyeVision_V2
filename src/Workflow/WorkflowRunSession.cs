@@ -59,7 +59,7 @@ public sealed class WorkflowRunSession : IDisposable
 
     public WorkflowExecutionState State { get; internal set; }
 
-    public bool IsActive => State is WorkflowExecutionState.Running or WorkflowExecutionState.Paused;
+    public bool IsActive => State is WorkflowExecutionState.Running or WorkflowExecutionState.Paused or WorkflowExecutionState.Stopping;
 
     public WorkflowRunScope CreateChildScope(string workflowId, Guid parentRunId, string? callerNodeId = null)
     {
@@ -129,11 +129,12 @@ public sealed class WorkflowRunSession : IDisposable
 
     public void RequestStop()
     {
-        _cancellationSource.Cancel();
         lock (_pauseGate)
         {
+            if (IsActive) State = WorkflowExecutionState.Stopping;
             _resumeSignal.TrySetResult();
         }
+        _cancellationSource.Cancel();
     }
 
     private static TaskCompletionSource CreateCompletedSignal()

@@ -298,7 +298,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
                 requiredSources.Add(Parameters.PositionCorrectionBindingSource?.SourceNodeId ?? Parameters.PositionCorrectionSource?.SourceNodeId);
             if (CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode) is ParamSettingContainer settings)
                 requiredSources.AddRange(settings.Settings.Where(setting => setting.BindingType == BindingType.Binding).Select(setting => setting.SourceNodeId));
-            var nodeResults = ToolDebugResultSnapshot.Capture(query, requiredSources);
+            using var nodeResults = ToolDebugResultSnapshot.Capture(query, requiredSources);
 
             if (!nodeResults.TryGetValue(imageSource.SourceNodeId, out var imageResult) || !imageResult.IsSuccess)
                 throw new InvalidOperationException($"当前工具缺少有效输入图像：上游 '{imageSource.SourceNodeId}.{imageSource.PropertyName}' 本轮没有成功结果。");

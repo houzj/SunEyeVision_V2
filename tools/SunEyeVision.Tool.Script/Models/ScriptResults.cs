@@ -8,8 +8,30 @@ namespace SunEyeVision.Tool.Script.Models
     /// <summary>
     /// 脚本工具执行结果 — 包含输出值、日志、编译错误等信息
     /// </summary>
-    public class ScriptResults : ToolResults
+    public class ScriptResults : ToolResults, IDisposable
     {
+        internal void OwnInputs(IDisposable inputs)
+        {
+            var outputs = Resources;
+            Resources = new ResultResourceOwner(() =>
+            {
+                try { outputs?.Dispose(); }
+                finally { inputs.Dispose(); }
+            });
+        }
+        internal void OwnOutputs(ScriptEngine.ScriptOutputSnapshot? outputs)
+        {
+            if (outputs != null) Resources = new ResultResourceOwner(() =>
+            {
+                try { outputs.Dispose(); }
+                finally { OutputValues.Clear(); }
+            });
+        }
+        public void Dispose()
+        {
+            if (Resources != null) Resources.Dispose();
+            else OutputValues.Clear();
+        }
         /// <summary>
         /// 脚本设置的输出值字典（通过 SetOutput 设置）
         /// </summary>

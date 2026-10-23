@@ -30,6 +30,12 @@ namespace SunEyeVision.Workflow
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationOutputs { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
         public string? ExecutionWorkflowId { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public ToolExecutionOwner? ExecutionOwner { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Guid ExecutionRunId { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Guid ExecutionRootRunId { get; set; }
 
         /// <summary>本轮运行在启动节点前绑定的帧；节点不拥有其生命周期。</summary>
         public CameraFrame? CameraFrame { get; set; }
@@ -104,6 +110,9 @@ namespace SunEyeVision.Workflow
                             NodeName = Name,
                             NodeId = Id,
                             WorkflowId = ExecutionWorkflowId,
+                            ExecutionOwner = ExecutionOwner,
+                            RunId = ExecutionRunId,
+                            RootRunId = ExecutionRootRunId,
                             CancellationToken = cancellationToken,
                             CameraCaptureService = CameraCaptureService,
                             ResourcePaths = ResourcePaths,
@@ -114,11 +123,17 @@ namespace SunEyeVision.Workflow
                             ParameterBindings = ParameterBindingSet.FromSettings(ParamSettings)
                         }).ConfigureAwait(false);
 
+                    if (cancellationToken.IsCancellationRequested || toolResult.ExecutionIdentity?.IsCurrent == false)
+                    {
+                        toolResult.Resources?.Dispose();
+                        cancellationToken.ThrowIfCancellationRequested();
+                        throw new InvalidOperationException("节点运行身份已失效，拒绝提交结果。");
+                    }
                     // Stateful calibration points are committed only after execution, never
                     // by mutating the parameter snapshot seen by the tool. A stale concurrent
                     // capture is rejected by the parameter implementation.
                     if (typedParams is IWorkflowResultCommitter committer
-                        && toolResult.Status != ExecutionStatus.Failed
+                        && toolResult.Status is ExecutionStatus.Success or ExecutionStatus.PartialSuccess
                         && !committer.TryCommit(toolResult, out var commitError))
                     {
                         toolResult.SetError(commitError ?? "标定点保存失败");
@@ -126,13 +141,13 @@ namespace SunEyeVision.Workflow
 
                     if (toolResult.Status == ExecutionStatus.Failed && !string.IsNullOrWhiteSpace(toolResult.ErrorMessage))
                     {
-                        LastToolResult = toolResult;
+                        StoreLastToolResult(toolResult);
                         LastResult = ConvertToAlgorithmResult(toolResult);
                         OnAfterExecute(LastResult);
                         return LastResult;
                     }
 
-                    LastToolResult = toolResult;
+                    StoreLastToolResult(toolResult);
                     LastResult = ConvertToAlgorithmResult(toolResult);
                 }
                 else
@@ -192,6 +207,18 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 将 ToolResults 转换为 AlgorithmResult
         /// </summary>
+        private void StoreLastToolResult(ToolResults result)
+        {
+            var previous = LastToolResult;
+            LastToolResult = result;
+            if (!ReferenceEquals(previous, result)) previous?.Resources?.Dispose();
+        }
+        internal void ReleaseLastResult()
+        {
+            LastToolResult?.Resources?.Dispose();
+            LastToolResult = null;
+        }
+
         private AlgorithmResult ConvertToAlgorithmResult(ToolResults result)
         {
             if (result.Status == ExecutionStatus.Cancelled)

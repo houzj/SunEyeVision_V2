@@ -5,7 +5,7 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Results
 {
-    public class ExecutionResult
+    public class ExecutionResult : IDisposable
     {
         public bool Success { get; set; }
         public ExecutionStatus Status { get; set; } = ExecutionStatus.NotExecuted;
@@ -13,7 +13,32 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public List<string> Errors { get; set; }
         public TimeSpan ExecutionTime { get; set; }
         public bool IsStopped { get; set; }
-        public Dictionary<string, NodeExecutionResult> NodeResults { get; set; }
+        private IReadOnlyDictionary<string, NodeExecutionResult> _nodeResults = new Dictionary<string, NodeExecutionResult>();
+        private NodeResultSnapshot? _resultSnapshot;
+        public IReadOnlyDictionary<string, NodeExecutionResult> NodeResults
+        {
+            get => _nodeResults;
+            set
+            {
+                var snapshot = new NodeResultSnapshot(value);
+                var previous = _resultSnapshot;
+                _resultSnapshot = snapshot;
+                _nodeResults = snapshot.Results;
+                previous?.Dispose();
+            }
+        }
+        public void SetNodeResult(string nodeId, NodeExecutionResult result)
+        {
+            var values = new Dictionary<string, NodeExecutionResult>(_nodeResults) { [nodeId] = result };
+            NodeResults = values;
+        }
+        public void Dispose()
+        {
+            var snapshot = _resultSnapshot;
+            _resultSnapshot = null;
+            _nodeResults = new Dictionary<string, NodeExecutionResult>();
+            snapshot?.Dispose();
+        }
 
         public ExecutionResult()
         {
@@ -63,7 +88,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             ExecutionTime = ExecutionTime.Add(other.ExecutionTime);
             foreach (var kvp in other.Outputs) Outputs[kvp.Key] = kvp.Value;
             foreach (var e in other.Errors) Errors.Add(e);
-            foreach (var nr in other.NodeResults) NodeResults[nr.Key] = nr.Value;
+            foreach (var nr in other.NodeResults) SetNodeResult(nr.Key, nr.Value);
         }
     }
 

@@ -32,7 +32,7 @@ internal sealed class ScriptIoContractSnapshot
             .Concat(outputs.Select(f => new ScriptIoField(f.FieldId, f.Name, ScriptIoTypeDescriptor.From(f.TypeName), false))).ToArray();
         var names = new HashSet<string>(StringComparer.Ordinal);
         var ids = new HashSet<Guid>();
-        var reserved = new HashSet<string>(StringComparer.Ordinal) { "UserScript", "Init", "Process", "Release", "Context", "LogInfo", "LogWarning", "LogError", "GetGlobal", "SetGlobal" };
+        var reserved = new HashSet<string>(StringComparer.Ordinal) { "UserScript", "Init", "Process", "Release", "Context", "LogInfo", "LogWarning", "LogError", "GetGlobal", "SetGlobal", "CancellationToken", "ThrowIfCancellationRequested" };
         foreach (var field in fields)
         {
             if (string.IsNullOrWhiteSpace(field.Name) || field.Name.StartsWith("@", StringComparison.Ordinal)

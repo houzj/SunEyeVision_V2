@@ -61,6 +61,8 @@ namespace SunEyeVision.Tool.Script.Views
         private readonly ObservableCollection<LogEntry> _logEntries = new();
         private ScriptTool? _scriptTool;
         private CancellationTokenSource? _viewCts;
+        private IDisposable? _inputMonitorLease, _outputMonitorLease;
+        public Task ViewPreparation { get; private set; } = Task.CompletedTask;
         private bool _contractRefreshPending;
         private string? _analysisGeneratedCode;
         private string? _observedIoIdentity;
@@ -126,6 +128,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void OnControlUnloaded(object sender, RoutedEventArgs e)
         {
+            ClearAllMonitorValues();
             _viewCts?.Cancel(); _viewCts?.Dispose(); _viewCts = null;
             _parameters.InputContractChanged -= OnContractChanged;
             _parameters.OutputContractChanged -= OnContractChanged;
@@ -200,13 +203,17 @@ namespace SunEyeVision.Tool.Script.Views
             return Task.CompletedTask;
         }
 
-        private async void OnViewLoaded(object sender, RoutedEventArgs e)
+        private void OnViewLoaded(object sender, RoutedEventArgs e)
         {
             _parameters.InputContractChanged -= OnContractChanged; _parameters.InputContractChanged += OnContractChanged;
             _parameters.OutputContractChanged -= OnContractChanged; _parameters.OutputContractChanged += OnContractChanged;
             _parameters.PropertyChanged -= OnParametersEnvironmentChanged; _parameters.PropertyChanged += OnParametersEnvironmentChanged;
             _viewCts?.Cancel(); _viewCts?.Dispose(); _viewCts = new CancellationTokenSource();
             var token = _viewCts.Token;
+            ViewPreparation = PrepareViewAsync(token);
+        }
+        private async Task PrepareViewAsync(CancellationToken token)
+        {
             try
             {
                 await Dispatcher.Yield(DispatcherPriority.Background);
@@ -240,6 +247,9 @@ namespace SunEyeVision.Tool.Script.Views
                 var context = queryService.GetNodeContext(nodeId);
                 if (context?.Result is ScriptResults result)
                 {
+                    if (result.ExecutionIdentity?.IsCurrent == false) return;
+                    var lease = result.Resources?.Retain();
+                    _outputMonitorLease?.Dispose(); _outputMonitorLease = lease;
                     OutputTabControl.ValueSource = FilterDefaultValues(result.OutputValues);
                     PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 输出预填充 {result.OutputValues.Count} 个值",
                         nameof(ScriptDebugControl));
@@ -265,7 +275,7 @@ namespace SunEyeVision.Tool.Script.Views
                 if (_parameters == null || _parameters.Inputs == null || _parameters.Inputs.Count == 0)
                     return;
 
-                var request = CreateLiveExecutionRequest(_parameters, null);
+                using var request = CreateLiveExecutionRequest(_parameters, null);
                 var nodeResults = request.NodeResults;
                 var globalVars = request.GlobalVariables;
                 var resolved = ScriptBindingResolver.Resolve(
@@ -274,6 +284,7 @@ namespace SunEyeVision.Tool.Script.Views
                     nodeResults);
 
                 InputTabControl.ValueSource = resolved;
+                _inputMonitorLease?.Dispose(); _inputMonitorLease = request.TakeInputResources();
                 PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 输入预填充 {resolved.Count} 个值",
                     nameof(ScriptDebugControl));
             }
@@ -353,7 +364,8 @@ namespace SunEyeVision.Tool.Script.Views
             ClearAllMonitorValues();
 
             _scriptTool ??= new ScriptTool();
-            var request = CreateLiveExecutionRequest(_parameters, null);
+            using var request = CreateLiveExecutionRequest(_parameters, null, cancellationToken: token);
+            using var pendingInputLease = request.NodeResults == null ? null : new ToolResultSnapshot(new Dictionary<string, ToolResults>(request.NodeResults));
             var execution = (ScriptParameters)request.Parameters;
             execution.IsDebugMode = true;
             UpdateStatus("排队/编译中，可继续编辑");
@@ -392,7 +404,11 @@ namespace SunEyeVision.Tool.Script.Views
                 errResult.SetError("执行返回 null");
                 return errResult;
             }
-            if (token.IsCancellationRequested || !IsLoaded) return result;
+            if (token.IsCancellationRequested || !IsLoaded || !session.IsCurrent(stamp) || result.ExecutionIdentity?.IsCurrent == false)
+            {
+                result.Dispose();
+                throw new OperationCanceledException("运行结果已过时，不更新当前视图。", token);
+            }
 
             // 收集编译错误到 UI 日志面板
             foreach (var error in result.CompileErrors)
@@ -403,6 +419,9 @@ namespace SunEyeVision.Tool.Script.Views
                 _logEntries.Add(new LogEntry { Text = log, IsError = false });
 
             // ★ 数据驱动：设置输出数据源，过滤掉未赋值的默认值
+            _outputMonitorLease?.Dispose(); _outputMonitorLease = result.Resources?.Retain();
+            _inputMonitorLease?.Dispose();
+            _inputMonitorLease = request.NodeResults == null ? null : new ToolResultSnapshot(new Dictionary<string, ToolResults>(request.NodeResults));
             OutputTabControl.ValueSource = FilterDefaultValues(result.OutputValues);
 
             // ★ 数据驱动：设置输入数据源
@@ -428,15 +447,7 @@ namespace SunEyeVision.Tool.Script.Views
         public override void OnExternalResultArrived()
         {
             TryPrefillInputMonitor();
-
-            // 输出：通过 DSQS 查询 SSOT（WorkflowContext）获取最新结果
-            var nodeId = GetNodeIdFromCurrentNode();
-            if (!string.IsNullOrEmpty(nodeId) && DataProvider is IDataSourceQueryService queryService)
-            {
-                var context = queryService.GetNodeContext(nodeId);
-                if (context?.Result is ScriptResults result)
-                    OutputTabControl.ValueSource = FilterDefaultValues(result.OutputValues);
-            }
+            TryPrefillOutputMonitor();
         }
 
 
@@ -527,8 +538,14 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void ClearAllMonitorValues()
         {
+            InputTabControl.ValueSource = null;
+            OutputTabControl.ValueSource = null;
             InputTabControl.ClearAllValues();
             OutputTabControl.ClearAllValues();
+            var input = _inputMonitorLease; var output = _outputMonitorLease;
+            _inputMonitorLease = _outputMonitorLease = null;
+            try { input?.Dispose(); }
+            finally { output?.Dispose(); }
         }
 
         /// <summary>

@@ -27,6 +27,9 @@ namespace SunEyeVision.Plugin.SDK.Scripting
 
         #region 封装 API 方法（protected，用户可直接调用）
 
+        protected System.Threading.CancellationToken CancellationToken => Context.CancellationToken;
+        protected void ThrowIfCancellationRequested() => Context.ThrowIfCancellationRequested();
+
         protected void LogInfo(string message) => Context.LogInfo(message);
         protected void LogWarning(string message) => Context.LogWarning(message);
         protected void LogError(string message) => Context.LogError(message);

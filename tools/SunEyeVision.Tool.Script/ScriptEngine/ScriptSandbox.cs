@@ -29,11 +29,13 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// 已加载的脚本程序集
         /// </summary>
         public Assembly? LoadedAssembly { get; private set; }
+        public WeakReference ContextReference { get; }
 
         public ScriptSandbox(string contextName, string? userLibDir = null, ScriptReferenceSnapshot? references = null)
         {
             _contextName = contextName;
             _alc = new AssemblyLoadContext(contextName, isCollectible: true);
+            ContextReference = new WeakReference(_alc);
 
             // 只加载本次选中的用户引用字节；目录其他 DLL 不得混入运行环境。
             try

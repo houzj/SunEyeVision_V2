@@ -17,9 +17,35 @@ namespace SunEyeVision.Plugin.SDK.Core
     /// 当前为兼容既有工具，<see cref="ToolExecutor"/> 会在调用工具前将运行时字段映射到参数对象；
     /// 新入口和后续工具契约只应依赖此对象携带运行数据。
     /// </remarks>
-    public sealed class ToolExecutionRequest
+    public sealed class ToolExecutionRequest : IDisposable
     {
         public IResourcePathResolver? ResourcePaths { get; init; }
+        private ToolExecutionIdentity? _executionIdentity;
+        public ToolExecutionIdentity? ExecutionIdentity
+        {
+            get => _executionIdentity;
+            set
+            {
+                _executionIdentity = value;
+                if (!ReferenceEquals(Context, ToolExecutionContext.Empty)) Context.ExecutionIdentity = value;
+            }
+        }
+        public ToolExecutionOwner? ExecutionOwner { get; init; }
+        public Guid RunId { get; init; }
+        public Guid RootRunId { get; init; }
+        internal IDisposable? InputResources { get; set; }
+        public IDisposable? TakeInputResources()
+        {
+            var resources = InputResources;
+            InputResources = null;
+            return resources;
+        }
+        public void Dispose()
+        {
+            var resources = InputResources;
+            InputResources = null;
+            resources?.Dispose();
+        }
 
         public ToolExecutionRequest(ToolParameters parameters)
         {

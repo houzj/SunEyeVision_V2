@@ -39,8 +39,14 @@ public partial class ScriptEditorCore : UserControl
     public static readonly RoutedUICommand CompleteCommand = new("补全", "CompleteScript", typeof(ScriptEditorCore),
         new InputGestureCollection { new KeyGesture(Key.Space, ModifierKeys.Control) });
     public sealed record CompletionTiming(double PreparationMs, double QueryMs, double PresentationMs, int Candidates,
-        double PopupConstructionMs, double PopulationMs, double ShowMs);
+        double PopupConstructionMs, double PopulationMs, double ShowMs,
+        double SourceInitializationMs, double MeasureMs, double ArrangeMs, double BeforeSourceInitializationMs);
     private double _popupConstructionMs, _popupPopulationMs, _popupShowMs;
+    private double _popupSourceMs, _popupMeasureMs, _popupArrangeMs;
+    private double _popupBeforeSourceMs;
+    public sealed record EditorConstructionTiming(double XamlMs, double SetupMs, double WarmupSchedulingMs);
+    public EditorConstructionTiming? ConstructionTiming { get; private set; }
+    public Task AnalysisIdle => _analysisScheduler.WhenIdle;
     public CompletionTiming? LastCompletionTiming { get; private set; }
     public async Task RequestCompletionAsync()
     {
@@ -279,14 +285,18 @@ public partial class ScriptEditorCore : UserControl
     /// </summary>
     public ScriptEditorCore()
     {
+        var construction = System.Diagnostics.Stopwatch.StartNew();
         InitializeComponent();
+        var xamlMs = construction.Elapsed.TotalMilliseconds;
         CodeEditor.CommandBindings.Add(new CommandBinding(CompleteCommand, async (_, e) =>
         {
             e.Handled = true;
             try { await RequestCompletionAsync(); } catch (OperationCanceledException) { }
         }));
         InitializeEditor();
+        var setupMs = construction.Elapsed.TotalMilliseconds - xamlMs;
         WarmupForStartup();
+        ConstructionTiming = new(xamlMs, setupMs, construction.Elapsed.TotalMilliseconds - xamlMs - setupMs);
         // 控件卸载时释放 workspace 与增量桥资源
         Unloaded += (_, _) =>
         {
@@ -959,7 +969,7 @@ public partial class ScriptEditorCore : UserControl
 
         ShowCompletionWindow(items);
         LastCompletionTiming = new(preparationMs, queryMs, timer.Elapsed.TotalMilliseconds - preparationMs - queryMs,
-            items.Length, _popupConstructionMs, _popupPopulationMs, _popupShowMs);
+            items.Length, _popupConstructionMs, _popupPopulationMs, _popupShowMs, _popupSourceMs, _popupMeasureMs, _popupArrangeMs, _popupBeforeSourceMs);
     }
 
     /// <summary>用 Roslyn 结果渲染/更新补全窗口（单次渲染，不重复创建）。</summary>
@@ -967,6 +977,8 @@ public partial class ScriptEditorCore : UserControl
     {
         var presentation = System.Diagnostics.Stopwatch.StartNew();
         _popupConstructionMs = _popupPopulationMs = _popupShowMs = 0;
+        _popupSourceMs = _popupMeasureMs = _popupArrangeMs = 0;
+        _popupBeforeSourceMs = 0;
         var caretOffset = CodeEditor.TextArea.Caret.Offset;
         var prefix = GetPrefixFromCaret();
 
@@ -982,7 +994,7 @@ public partial class ScriptEditorCore : UserControl
         var endOffset = FindEndOfWord(caretOffset);
 
         // 创建新窗口，IsFiltering=true 为默认值，AvalonEdit 自动做智能过滤
-        var window = new CompletionWindow(CodeEditor.TextArea)
+        var window = new MeasuredCompletionWindow(CodeEditor.TextArea)
         {
             StartOffset = startOffset,
             EndOffset = endOffset,
@@ -1010,10 +1022,42 @@ public partial class ScriptEditorCore : UserControl
             _currentItems = [];    // 窗口关闭 → 数据作废，下次重新解析
         };
 
+        var pureShow = System.Diagnostics.Stopwatch.StartNew();
+        window.ShowClock = pureShow;
         window.Show();
-        _popupShowMs = presentation.Elapsed.TotalMilliseconds - _popupConstructionMs - _popupPopulationMs;
+        _popupShowMs = pureShow.Elapsed.TotalMilliseconds;
+        _popupSourceMs = window.SourceInitializationMs;
+        _popupMeasureMs = window.MeasureMs;
+        _popupArrangeMs = window.ArrangeMs;
+        _popupBeforeSourceMs = window.BeforeSourceInitializationMs;
 
         _completionWindow = window;
+    }
+
+    private sealed class MeasuredCompletionWindow(TextArea area) : CompletionWindow(area)
+    {
+        internal double SourceInitializationMs, MeasureMs, ArrangeMs;
+        internal double BeforeSourceInitializationMs;
+        internal System.Diagnostics.Stopwatch? ShowClock;
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            BeforeSourceInitializationMs = ShowClock?.Elapsed.TotalMilliseconds ?? 0;
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            try { base.OnSourceInitialized(e); }
+            finally { SourceInitializationMs += timer.Elapsed.TotalMilliseconds; }
+        }
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            try { return base.MeasureOverride(availableSize); }
+            finally { MeasureMs += timer.Elapsed.TotalMilliseconds; }
+        }
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            try { return base.ArrangeOverride(finalSize); }
+            finally { ArrangeMs += timer.Elapsed.TotalMilliseconds; }
+        }
     }
 
     /// <summary>将 Roslyn CompletionItem[] 直接注入 CompletionList（AvalonEdit 接管客户端过滤）。</summary>

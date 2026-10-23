@@ -19,6 +19,18 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
     {
         private readonly ScriptCompiler _compiler = new();
         internal ScriptCompiler.CompileResult? PreparedCompilation { get; set; }
+        internal System.Threading.CancellationToken CancellationToken { get; set; }
+        internal Func<bool>? ExecutionAdmission { get; set; }
+        internal SunEyeVision.Plugin.SDK.Core.ToolExecutionIdentity? ExecutionIdentity { get; set; }
+        internal string ExecutionDomain { get; set; } = Guid.NewGuid().ToString("N");
+        internal IReadOnlyDictionary<string, Type>? DeclaredOutputs { get; set; }
+        private ScriptOutputSnapshot? _ownedOutputs;
+        internal ScriptOutputSnapshot? TakeOutputs()
+        {
+            var outputs = _ownedOutputs;
+            _ownedOutputs = null;
+            return outputs;
+        }
         private readonly Dictionary<string, object?> _outputValues = new();
         private readonly List<string> _logMessages = new();
         private long _compileTimeMs;
@@ -26,6 +38,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         private readonly object _lock = new();
         private int _runCounter;
         private bool _disposed;
+        private bool _callbacksComplete;
 
         /// <summary>
         /// 输出值字典（执行结束后可读取）
@@ -127,28 +140,50 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             }
 
             // 2. 在沙箱中加载并执行（从常驻池获取，复用 ALC + 程序集 + JIT 缓存）。
+            if (ExecutionAdmission?.Invoke() == false) throw new InvalidOperationException("运行身份已失效，拒绝加载脚本。");
             //    沙箱按编译缓存键分组：相同代码+引用复用，代码变化自动建新沙箱（旧沙箱由池 LRU 淘汰）。
             ScriptSandbox sandbox;
+            ScriptSandboxPool.Lease? lease = null;
             Exception? loadError = null;
             var loadTimer = Stopwatch.StartNew();
 
             try
             {
-                sandbox = ScriptSandboxPool.GetOrCreate(compileResult.CacheKey, assemblyRefDir, compileResult.ReferenceSnapshot);
+                lease = ScriptSandboxPool.Acquire(compileResult.CacheKey, ExecutionDomain, assemblyRefDir, compileResult.ReferenceSnapshot, CancellationToken);
+                sandbox = lease.Sandbox;
                 sandbox.LoadAssembly(compileResult.AssemblyBytes!, compileResult.SymbolBytes);
             }
+            catch (OperationCanceledException ex) when (ex.CancellationToken == CancellationToken && CancellationToken.IsCancellationRequested) { throw; }
             catch (Exception ex)
             {
                 loadError = ex;
                 sandbox = null!;
             }
             LoadTimeMs = loadTimer.Elapsed.TotalMilliseconds;
+            using var executionLease = lease;
 
             if (loadError != null)
             {
                 errors.Add($"加载脚本程序集失败: {loadError.Message}");
                 return errors;
             }
+
+            // 验证并转换全部输入后才允许构造用户实例，非法输入不触发用户副作用。
+            CancellationToken.ThrowIfCancellationRequested();
+            var convertedInputs = new List<(FieldInfo Field, object? Value)>();
+            var entryType = sandbox.LoadedAssembly!.GetType(compileResult.EntryClassName);
+            foreach (var pair in inputValues ?? new Dictionary<string, object?>())
+            {
+                var field = entryType?.GetField(pair.Key, BindingFlags.Public | BindingFlags.Instance);
+                if (field == null) errors.Add($"脚本中未找到输入字段 \"{pair.Key}\"");
+                else
+                {
+                    try { convertedInputs.Add((field, ConvertType(pair.Value, field.FieldType))); }
+                    catch (Exception ex) { errors.Add($"设置输入字段 \"{pair.Key}\" 失败: {ex.Message}"); }
+                }
+            }
+            if (errors.Count != 0) return errors;
+            if (ExecutionAdmission?.Invoke() == false) throw new InvalidOperationException("运行身份已失效，拒绝构造脚本实例。");
 
             // 3. 创建实例（类不存在或类型不匹配时 CreateScriptInstance 直接抛异常，错误信息已含诊断上下文）
             ScriptBase scriptInstance;
@@ -165,100 +200,107 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             finally { ConstructionTimeMs = constructTimer.Elapsed.TotalMilliseconds; }
 
             // 4. 注入上下文（日志 + 全局变量）
-            scriptInstance.Context = new ScriptContext
+            var scriptContext = new ScriptContext
             {
+                CancellationToken = CancellationToken,
+                RunId = ExecutionIdentity?.RunId ?? Guid.Empty,
+                RootRunId = ExecutionIdentity?.RootRunId ?? Guid.Empty,
+                NodeId = ExecutionIdentity?.NodeId,
+                ContractIdentity = ExecutionIdentity?.ContractIdentity,
+                IsExecutionCurrent = ExecutionAdmission,
                 GetGlobalValue = getGlobalValue,
                 SetGlobalValue = setGlobalValue,
                 LogInfoAction = msg =>
                 {
-                    lock (_lock)
-                    {
-                        _logMessages.Add($"[信息] {msg}");
-                    }
+                    PublishLog($"[信息] {msg}");
                 },
                 LogWarningAction = msg =>
                 {
-                    lock (_lock)
-                    {
-                        _logMessages.Add($"[警告] {msg}");
-                    }
+                    PublishLog($"[警告] {msg}");
                 },
                 LogErrorAction = msg =>
                 {
-                    lock (_lock)
-                    {
-                        _logMessages.Add($"[错误] {msg}");
-                    }
+                    PublishLog($"[错误] {msg}");
                 }
             };
+            scriptInstance.Context = scriptContext;
 
             // 5. 反射设置输入字段值（在 Init/Process 之前）
-            if (inputValues != null && inputValues.Count > 0)
+            try
             {
-                var scriptType = scriptInstance.GetType();
-                foreach (var kvp in inputValues)
-                {
-                    var field = scriptType.GetField(kvp.Key, BindingFlags.Public | BindingFlags.Instance);
-                    if (field != null)
-                    {
-                        try
-                        {
-                            var value = ConvertType(kvp.Value, field.FieldType);
-                            field.SetValue(scriptInstance, value);
-                        }
-                        catch (Exception ex)
-                        {
-                            errors.Add($"设置输入字段 \"{kvp.Key}\" 失败: {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        errors.Add($"脚本中未找到输入字段 \"{kvp.Key}\"");
-                    }
-                }
+                foreach (var input in convertedInputs) input.Field.SetValue(scriptInstance, input.Value);
             }
+            catch (Exception ex) { errors.Add($"输入注入失败: {ex.Message}"); }
 
             // 6. 执行生命周期（Init → Process）
             var runSw = Stopwatch.StartNew();
+            OperationCanceledException? cancellation = null;
             try
             {
+                if (errors.Count != 0) return errors;
+                scriptContext.ThrowIfCancellationRequested();
                 var stage = Stopwatch.StartNew();
                 try { scriptInstance.Init(); }
                 finally { InitTimeMs = stage.Elapsed.TotalMilliseconds; }
+                scriptContext.ThrowIfCancellationRequested();
                 stage.Restart();
                 try { scriptInstance.Process(); }
                 finally { ProcessTimeMs = stage.Elapsed.TotalMilliseconds; }
-                stage.Restart();
-                try { scriptInstance.Release(); }
-                finally { ReleaseTimeMs = stage.Elapsed.TotalMilliseconds; }
+                scriptContext.DrainRegisteredTasks();
+                scriptContext.ThrowIfCancellationRequested();
+                // 仅声明输出在Release前取得平台自有快照；用户辅助字段不外传。
+                _ownedOutputs = new ScriptOutputSnapshot();
+                foreach (var output in DeclaredOutputs ?? new Dictionary<string, Type>())
+                {
+                    var field = scriptInstance.GetType().GetField(output.Key, BindingFlags.Public | BindingFlags.Instance)
+                        ?? throw new InvalidOperationException($"未找到声明输出 {output.Key}。");
+                    _ownedOutputs.Values[output.Key] = _ownedOutputs.Copy(field.GetValue(scriptInstance), output.Value);
+                }
             }
+            catch (OperationCanceledException ex) when (ex.CancellationToken == CancellationToken && CancellationToken.IsCancellationRequested) { cancellation = ex; }
             catch (Exception ex)
             {
                 // 提取用户脚本栈帧（含行号），精确匹配用户类，便于快速定位；无脚本帧则回退完整堆栈文本。
                 // 只写 errors（→ CompileErrors → UI 红色展示一次）；不写 _logMessages
                 // （用户脚本 LogError 已通过 ScriptContext 回调进日志，避免同一异常重复报告）。
                 var detail = ExtractUserScriptFrame(ex, compileResult.EntryClassName!);
-                errors.Add($"脚本执行异常: {detail}");
+                errors.Add($"脚本执行异常: {ex.GetType().Name}: {ex.Message}\n{detail}");
             }
+            finally
+            {
+                var releaseTimer = Stopwatch.StartNew();
+                try { scriptContext.DrainRegisteredTasks(); }
+                catch (Exception ex) { errors.Add($"登记任务收尾失败: {ex.Message}"); }
+                try { scriptInstance.Release(); }
+                catch (Exception ex) { errors.Add($"脚本清理异常: {ex.GetType().Name}: {ex.Message}\n{ExtractUserScriptFrame(ex, compileResult.EntryClassName!)}"); }
+                finally
+                {
+                    try { scriptContext.ReleaseRegisteredResources(); }
+                    catch (Exception ex) { errors.Add($"登记资源清理失败: {ex.Message}"); }
+                    ReleaseTimeMs = releaseTimer.Elapsed.TotalMilliseconds;
+                    runSw.Stop();
+                    _executionTimeMs = runSw.Elapsed.TotalMilliseconds;
+                    lock (_lock) _callbacksComplete = true;
+                    scriptContext.CompletePublications();
+                    scriptInstance.Context = null!;
+                }
+            }
+            if (cancellation != null)
+                throw new OperationCanceledException(errors.Count == 0 ? cancellation.Message :
+                    cancellation.Message + "; " + string.Join("; ", errors), cancellation, CancellationToken);
             runSw.Stop();
             _executionTimeMs = runSw.Elapsed.TotalMilliseconds;
             PluginLogger.Info($"[ScriptTiming] key={compileResult.CacheKey}, cacheHit={CompilationCacheHit}, " +
                 $"emitMs={EmitTimeMs:F2}, loadMs={LoadTimeMs:F2}, constructMs={ConstructionTimeMs:F2}, initMs={InitTimeMs:F2}, processMs={ProcessTimeMs:F2}, releaseMs={ReleaseTimeMs:F2}, lifecycleMs={_executionTimeMs:F2}", nameof(ScriptLifecycleManager));
 
             // 7. 反射读取输出字段值
-            var outputType = scriptInstance.GetType();
-            foreach (var field in outputType.GetFields(BindingFlags.Public | BindingFlags.Instance))
+            if (errors.Count != 0)
             {
-                // 跳过 Script 基类继承的字段（如果有）
-                if (field.DeclaringType == typeof(ScriptBase)) continue;
-
-                // 只取 partial class 中声明的 public 字段
-                var value = field.GetValue(scriptInstance);
-                lock (_lock)
-                {
-                    _outputValues[field.Name] = value;
-                }
+                try { _ownedOutputs?.Dispose(); } catch (Exception ex) { errors.Add(ex.Message); }
+                _ownedOutputs = null;
+                return errors;
             }
+            foreach (var output in _ownedOutputs!.Values) _outputValues[output.Key] = output.Value;
 
             return errors;
         }
@@ -328,7 +370,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 }
 
                 // 1. 常驻沙箱按实际缓存键就位（后续执行 GetOrCreate 命中，跳过创建）
-                var sandbox = ScriptSandboxPool.GetOrCreate(cacheKey, assemblyRefDir, compileResult.ReferenceSnapshot);
+                using var warmupLease = ScriptSandboxPool.Acquire(cacheKey, "warmup:" + cacheKey, assemblyRefDir, compileResult.ReferenceSnapshot, default);
+                var sandbox = warmupLease.Sandbox;
 
                 // 2. 加载实际程序集（后续执行 LoadAssembly 命中，跳过加载）
                 sandbox.LoadAssembly(compileResult.AssemblyBytes, compileResult.SymbolBytes);
@@ -383,7 +426,12 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// </summary>
         private static object? ConvertType(object? value, Type targetType)
         {
-            if (value == null) return null;
+            if (value == null)
+            {
+                if (targetType.IsValueType && Nullable.GetUnderlyingType(targetType) == null)
+                    throw new InvalidOperationException($"空值不能赋给 {targetType.Name}。");
+                return null;
+            }
             if (value.GetType() == targetType || targetType.IsInstanceOfType(value))
                 return value;
 
@@ -395,7 +443,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             if (targetType == typeof(string))
                 return value.ToString();
 
-            return value;
+            throw new InvalidOperationException($"无法把 {value.GetType().Name} 转换为 {targetType.Name}。");
         }
 
         private static bool IsNumericType(Type type)
@@ -407,9 +455,20 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 || type == typeof(ushort) || type == typeof(sbyte);
         }
 
+        private void PublishLog(string message)
+        {
+            void Add() { lock (_lock) if (!_disposed && !_callbacksComplete) _logMessages.Add(message); }
+            if (ExecutionIdentity == null) Add();
+            else ExecutionIdentity.TryInvokeCallback(Add);
+        }
+
         public void Dispose()
         {
+            if (_disposed) return;
             _disposed = true;
+            _ownedOutputs?.Dispose();
+            _ownedOutputs = null;
+            _outputValues.Clear();
         }
     }
 }

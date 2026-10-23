@@ -141,10 +141,11 @@ public class ScriptSandboxWarmupTests
             warmup.Invoke(mgr, new object?[] { generatedCode, scriptCode, scriptRefs, assemblyRefs });
 
             // 验证沙箱池已填充：按缓存键取沙箱，LoadedAssembly 非空
-            var getOrCreate = poolType.GetMethod("GetOrCreate",
+            var getOrCreate = poolType.GetMethod("Acquire",
                     BindingFlags.Public | BindingFlags.Static)
                 ?? throw new InvalidOperationException("GetOrCreate 方法未找到");
-            var sandbox = getOrCreate.Invoke(null, new object?[] { cacheKey, scriptRefs, snapshot })!;
+            using var lease = (IDisposable)getOrCreate.Invoke(null, new object?[] { cacheKey, "warmup:" + cacheKey, scriptRefs, snapshot, CancellationToken.None })!;
+            var sandbox = lease.GetType().GetProperty("Sandbox", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(lease)!;
             var loadedAssembly = sandbox.GetType().GetProperty("LoadedAssembly")!.GetValue(sandbox) as Assembly;
 
             Assert.NotNull(loadedAssembly);

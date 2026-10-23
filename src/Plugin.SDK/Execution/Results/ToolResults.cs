@@ -275,6 +275,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
     /// </remarks>
     public abstract class ToolResults
     {
+        [System.Text.Json.Serialization.JsonIgnore]
+        public SunEyeVision.Plugin.SDK.Core.ToolExecutionIdentity? ExecutionIdentity { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public ResultResourceOwner? Resources { get; protected set; }
         /// <summary>
         /// 执行状态
         /// </summary>

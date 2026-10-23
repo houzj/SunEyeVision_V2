@@ -36,6 +36,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             _alc = new AssemblyLoadContext(contextName, isCollectible: true);
 
             // 只加载本次选中的用户引用字节；目录其他 DLL 不得混入运行环境。
+            try
+            {
             if (references != null)
                 foreach (var image in references.Entries.Where(e => e.IsUserReference))
                 {
@@ -44,6 +46,12 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                     using var stream = new MemoryStream(image.Image.ToArray(), writable: false);
                     _alc.LoadFromStream(stream);
                 }
+            }
+            catch
+            {
+                _alc.Unload();
+                throw;
+            }
 
             // OnResolving 兜底（rule-008 报错优先）：
             // 脚本引用但未预加载的 DLL 触发本回调，记录诊断信息后返回 null，

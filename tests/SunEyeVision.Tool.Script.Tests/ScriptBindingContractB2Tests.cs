@@ -47,6 +47,7 @@ public sealed class ScriptBindingContractB2Tests
         var target = new WorkflowNodeBase("target", "Script1", "Script1", "Script") { Parameters = p };
         target.ParamSettings.SetSetting(ParamSetting.CreateBinding("input1", "source", "OutputImage"));
         var flow = new SunEyeVision.Workflow.Workflow("f", "f"); flow.Nodes.Add(source); flow.Nodes.Add(target);
+        flow.Connections.Add(new WorkflowConnection("source-target", source.Id, target.Id));
         var solution = new Solution(); solution.Workflows.Add(flow);
         var service = new OutputBindingChangeService(); service.Reset(solution); service.ReconcileAll();
         Assert.Empty(p.BindingValidationPending); Assert.Empty(p.RebindingRequired);
@@ -54,6 +55,7 @@ public sealed class ScriptBindingContractB2Tests
         var frozenTarget = new WorkflowNodeBase("target", "Script1", "Script1", "Script") { Parameters = ToolParameterSnapshot.Create(p) };
         frozenTarget.ParamSettings.SetSetting(ParamSetting.CreateBinding("input1", "source", "OutputImage"));
         var frozen = new SunEyeVision.Workflow.Workflow("f", "f"); frozen.Nodes.Add(source); frozen.Nodes.Add(frozenTarget);
+        frozen.Connections.Add(new WorkflowConnection("source-target", source.Id, frozenTarget.Id));
         OutputBindingChangeService.EnsureExecutable(frozen);
         Assert.Equal(typeof(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage), BindingRelationCatalog.Describe(frozenTarget).Single(i => i.Key == "input1").AllowedTypes.Single());
     }

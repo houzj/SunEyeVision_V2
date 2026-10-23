@@ -28,9 +28,8 @@ public class AvalonEditBridgeTests
         try { AssemblyLoadContext.Default.LoadFromAssemblyPath(toolDll); }
         catch (FileLoadException) { /* 已加载则忽略 */ }
 
-        var asm = AssemblyLoadContext.Default.Assemblies
-            .First(a => a.GetName().Name == "SunEyeVision.Tool.Script");
-        return asm.GetType("SunEyeVision.Tool.Script.Views.AvalonEditTextContainer")
+        var asm = typeof(CommonControl.ScriptEditorCore).Assembly;
+        return asm.GetType("CommonControl.AvalonEditTextContainer")
             ?? throw new InvalidOperationException("AvalonEditTextContainer 类型未找到");
     }
 

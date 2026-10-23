@@ -248,6 +248,7 @@ public partial class ScriptEditorCore : UserControl
         {
             _sessionClosed = true;
             _analysisSession.Dispose();
+            _semanticColorizer?.Release();
             _workspaceInitialized = false;
             _userTextContainer?.Dispose();
             _userTextContainer = null;
@@ -318,9 +319,12 @@ public partial class ScriptEditorCore : UserControl
             CodeEditor.TextArea.TextEntering -= TextArea_TextEntering;
             _diagnosticsCts?.Cancel();
             _diagnosticsCts?.Dispose();
+            _diagnosticsCts = null;
             _throttleCts?.Cancel();
             _throttleCts?.Dispose();
+            _throttleCts = null;
             _completionWindow?.Close();
+            _insightWindow?.Close();
         };
     }
 
@@ -338,6 +342,16 @@ public partial class ScriptEditorCore : UserControl
             PluginLogger.Info("[Highlighting] 已挂载 Roslyn 语义高亮着色器（workspace 就绪后，对齐参考时序）", typeName);
         }
         _semanticColorizer?.Warmup();
+    }
+
+    private void ResetSemanticHighlighter()
+    {
+        var mounted = _semanticColorizerMounted;
+        if (mounted) CodeEditor.TextArea.TextView.LineTransformers.Remove(_semanticColorizer);
+        _semanticColorizer?.Release();
+        _semanticColorizer = new RoslynHighlightingColorizer(CodeEditor.Document,
+            () => GetUserDocument(), new ClassificationHighlightColors(ThemeResource.IsDarkTheme()));
+        if (mounted) CodeEditor.TextArea.TextView.LineTransformers.Add(_semanticColorizer);
     }
 
     /// <summary>
@@ -428,6 +442,13 @@ public partial class ScriptEditorCore : UserControl
     /// </summary>
     public void ScheduleDiagnosticAsync()
     {
+        if (_sessionClosed) return;
+        try { RebuildWorkspace(); }
+        catch (Exception ex)
+        {
+            PluginLogger.Warning($"[Diagnostic] 引用快照无效: {ex.Message}", typeName);
+            return;
+        }
         _diagnosticsCts?.Cancel();
         _diagnosticsCts?.Dispose();
         _diagnosticsCts = new CancellationTokenSource();
@@ -435,10 +456,11 @@ public partial class ScriptEditorCore : UserControl
 
         // ★ 治本（rule-008）：在 UI 线程捕获用户代码快照，避免后台线程访问 CodeEditor.Text（WPF UI 对象）
         //   触发跨线程 InvalidOperationException（诊断波浪线失效的真因）。RunDiagnosticAsync 只消费这份快照。
-        if (_sessionClosed) return;
         var stamp = _analysisSession.Capture();
         var generatedCodeSnapshot = _getGeneratedCode?.Invoke() ?? string.Empty;
         var userCodeSnapshot = _getUserCode?.Invoke() ?? CodeEditor.Text;
+        var diagnosticDocument = GetUserDocument();
+        if (diagnosticDocument == null) return;
 
         _ = Task.Run(async () =>
         {
@@ -446,7 +468,7 @@ public partial class ScriptEditorCore : UserControl
             {
                 await Task.Delay(500, token);
                 if (!token.IsCancellationRequested)
-                    await RunDiagnosticAsync(userCodeSnapshot, generatedCodeSnapshot, stamp, token);
+                    await RunDiagnosticAsync(diagnosticDocument, userCodeSnapshot, generatedCodeSnapshot, stamp, token);
             }
             catch (OperationCanceledException) { }
         });
@@ -456,7 +478,7 @@ public partial class ScriptEditorCore : UserControl
     /// 更新 workspace 文本（双文档） → 获取诊断 → 波浪线重绘 + 抛 DiagnosticsUpdated。
     /// user 文档已绑定增量通道，随编辑器实时同步；generated 文档仅在实际变化时 WithDocumentText 更新。
     /// </summary>
-    private async Task RunDiagnosticAsync(string userCodeSnapshot, string generatedCode, ScriptAnalysisSession.Stamp stamp, CancellationToken token)
+    private async Task RunDiagnosticAsync(Document userDoc, string userCodeSnapshot, string generatedCode, ScriptAnalysisSession.Stamp stamp, CancellationToken token)
     {
         if (_workspace == null || _userDocumentId == null)
         {
@@ -466,7 +488,7 @@ public partial class ScriptEditorCore : UserControl
 
 
         // 代码未变则跳过诊断（避免同段代码重复 Roslyn 分析）
-        if (!_analysisSession.IsCurrent(stamp) || userCodeSnapshot + generatedCode == _lastDiagnosedCode)
+        if (!_analysisSession.IsCurrent(stamp) || $"{userCodeSnapshot.Length}:{userCodeSnapshot}{generatedCode}" == _lastDiagnosedCode)
         {
             PluginLogger.Info("[Diagnostic] 代码未变，跳过诊断", typeName);
             return;
@@ -477,24 +499,7 @@ public partial class ScriptEditorCore : UserControl
         {
             // 1. 更新 generated 文档文本：仅当 GeneratedCode 实际变化才 WithDocumentText。
             //    user 文档已绑定 SourceTextContainer 增量通道，随编辑器实时增量同步。
-            if (generatedCode != _lastGeneratedCode)
-            {
-                var newSolution = _workspace.CurrentSolution
-                    .WithDocumentText(_documentId, SourceText.From(generatedCode));
-                if (!_workspace.TryApplyChanges(newSolution))
-                {
-                    PluginLogger.Warning("[Diagnostic] TryApplyChanges 失败", typeName);
-                    return;
-                }
-                _lastGeneratedCode = generatedCode;
-            }
-
-            var userDoc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
-            if (userDoc == null)
-            {
-                PluginLogger.Warning("[Diagnostic] workspace 中找不到 user document", typeName);
-                return;
-            }
+            // Document 是 UI 线程捕获的不可变快照，后台不得写回共享 workspace。
 
             // 获取用户文档的语法树，用于过滤诊断
             var userSyntaxTree = await userDoc.GetSyntaxTreeAsync(token);
@@ -553,7 +558,7 @@ public partial class ScriptEditorCore : UserControl
             await Dispatcher.InvokeAsync(() =>
             {
                 if (!_analysisSession.IsCurrent(stamp) || token.IsCancellationRequested) return;
-                _lastDiagnosedCode = userCodeSnapshot + generatedCode;
+                _lastDiagnosedCode = $"{userCodeSnapshot.Length}:{userCodeSnapshot}{generatedCode}";
                 _currentDiagnostics = diagnostics.ToImmutableArray();
                 DiagnosticsUpdated?.Invoke(diagnostics);
                 var textView = CodeEditor.TextArea.TextView;
@@ -1019,6 +1024,10 @@ public partial class ScriptEditorCore : UserControl
     /// </summary>
     private async Task ShowSignatureHelpAsync(int position, char triggerChar, CancellationToken token)
     {
+        if (_sessionClosed) return;
+        var stamp = _analysisSession.Capture();
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, _analysisSession.LifetimeToken);
+        token = linked.Token;
         if (_workspace == null || _userDocumentId == null) return;
 
         var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
@@ -1064,6 +1073,8 @@ public partial class ScriptEditorCore : UserControl
         // 查询在后台线程完成（上面 ConfigureAwait(false)），所有 UI 操作必须切回 UI 线程（WPF 控件需 STA）。
         await CodeEditor.Dispatcher.InvokeAsync(() =>
         {
+            if (token.IsCancellationRequested || !_analysisSession.IsCurrent(stamp)
+                || CodeEditor.TextArea.Caret.Offset != position) return;
             // 返回 null：光标不在任何可签名帮助的方法调用内 → 关闭已打开的浮窗。
             if (items == null || items.Items.Count == 0)
             {
@@ -1150,19 +1161,39 @@ public partial class ScriptEditorCore : UserControl
             _throttleCts?.Cancel();
             _completionWindow?.Close();
             _currentDiagnostics = [];
+            DiagnosticsUpdated?.Invoke([]);
+            _insightWindow?.Close();
+            _semanticColorizer?.Release();
             _workspaceInitialized = false;
             _userTextContainer?.Dispose();
             _userTextContainer = null;
             _workspace?.Dispose();
             _workspace = null;
+            ResetSemanticHighlighter();
+            RedrawVisibleLines();
             throw;
         }
         var identity = snapshot?.Identity ?? "external-provider";
+        var previousStamp = _analysisSession.Capture();
         _analysisSession.SetEnvironment(identity, generatedCode);
+        var environmentChanged = !_analysisSession.IsCurrent(previousStamp) || refreshReferences;
+        if (environmentChanged)
+        {
+            _lastDiagnosedCode = null;
+            _currentDiagnostics = [];
+            DiagnosticsUpdated?.Invoke([]);
+            _insightWindow?.Close();
+            _semanticColorizer?.Release();
+        }
         if (_workspaceInitialized && !refreshReferences && _referenceIdentity == identity)
         {
-            _workspace!.SetCurrentSolution(_workspace.CurrentSolution
-                .WithDocumentText(_documentId!, SourceText.From(generatedCode)));
+            if (_lastGeneratedCode != generatedCode)
+            {
+                _workspace!.SetCurrentSolution(_workspace.CurrentSolution
+                    .WithDocumentText(_documentId!, SourceText.From(generatedCode)));
+                _lastGeneratedCode = generatedCode;
+            }
+            if (environmentChanged) { ResetSemanticHighlighter(); RedrawVisibleLines(); }
             return;
         }
         _referenceIdentity = identity;
@@ -1268,6 +1299,8 @@ public partial class ScriptEditorCore : UserControl
         PluginLogger.Info($"[补全] 文档添加完成: genDocId={_documentId}, userDocId={_userDocumentId}: {sw.ElapsedMilliseconds}ms", typeName);
 
         _workspaceInitialized = true;
+        _lastGeneratedCode = generatedCode;
+        if (environmentChanged) { ResetSemanticHighlighter(); RedrawVisibleLines(); }
 
         var refsCount = _workspace.CurrentSolution.Projects.First().MetadataReferences.Count;
         PluginLogger.Info($"[补全] Workspace 重建完成: {refsCount} 个引用, 总耗时={totalSw.ElapsedMilliseconds}ms", typeName);

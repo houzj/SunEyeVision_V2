@@ -233,6 +233,7 @@ internal sealed class RoslynSemanticHighlighter : IHighlighter
                 }
 
                 // 写 _cachedLines（行进入可视区时 HighlightLine 命中直接复用）
+                if (cancellationToken.IsCancellationRequested || !IsCurrent(document)) return;
                 if (_document.Version != null)
                 {
                     _cachedLines.Add(new CachedLine(highlightedLine, _document.Version));
@@ -242,7 +243,7 @@ internal sealed class RoslynSemanticHighlighter : IHighlighter
             }
 
             // 预热完成触发重绘（AvalonEdit 对受影响行重画，命中缓存显示分类色）
-            HighlightingStateChanged?.Invoke(1, lineCount);
+            if (!cancellationToken.IsCancellationRequested) HighlightingStateChanged?.Invoke(1, lineCount);
             _warmupTcs.TrySetResult();
         }
         catch { /* 预热失败不阻塞主流程 */ }
@@ -297,7 +298,7 @@ internal sealed class RoslynSemanticHighlighter : IHighlighter
             }
 
             // post update on UI thread
-            UpdateHighlightingSections(line, sections);
+            UpdateHighlightingSections(line, sections, cancellationToken, document);
         }
     }
 
@@ -308,7 +309,10 @@ internal sealed class RoslynSemanticHighlighter : IHighlighter
                classifiedSpan.TextSpan.End > documentLine.EndOffset;
     }
 
-    private void UpdateHighlightingSections(HighlightedLine line, List<HighlightedSection> sections)
+    private bool IsCurrent(Document document)
+        => ReferenceEquals(_getUserDocument()?.Project.Solution, document.Project.Solution);
+
+    private void UpdateHighlightingSections(HighlightedLine line, List<HighlightedSection> sections, CancellationToken token, Document document)
     {
         var lineNumber = line.DocumentLine.LineNumber;
         var sync = _syncContext;
@@ -316,6 +320,7 @@ internal sealed class RoslynSemanticHighlighter : IHighlighter
         {
             sync.Post(_ =>
             {
+                if (token.IsCancellationRequested || !IsCurrent(document)) return;
                 line.Sections.Clear();
                 foreach (var section in sections)
                     line.Sections.Add(section);
@@ -324,6 +329,7 @@ internal sealed class RoslynSemanticHighlighter : IHighlighter
         }
         else
         {
+            if (token.IsCancellationRequested || !IsCurrent(document)) return;
             line.Sections.Clear();
             foreach (var section in sections)
                 line.Sections.Add(section);
@@ -416,6 +422,7 @@ internal sealed class RoslynSemanticHighlighter : IHighlighter
 /// </summary>
 internal sealed class RoslynHighlightingColorizer : HighlightingColorizer
 {
+    public void Release() => _highlighter?.Dispose();
     private readonly AvalonTextDocument _document;
     private readonly Func<Document?> _getUserDocument;
     private readonly ClassificationHighlightColors _highlightColors;

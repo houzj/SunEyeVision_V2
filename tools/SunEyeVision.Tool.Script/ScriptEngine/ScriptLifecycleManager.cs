@@ -45,6 +45,13 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// 执行耗时（毫秒，保留亚毫秒精度）
         /// </summary>
         public double ExecutionTimeMs => _executionTimeMs;
+        public double LoadTimeMs { get; private set; }
+        public double ConstructionTimeMs { get; private set; }
+        public bool CompilationCacheHit { get; private set; }
+        public double EmitTimeMs { get; private set; }
+        public double InitTimeMs { get; private set; }
+        public double ProcessTimeMs { get; private set; }
+        public double ReleaseTimeMs { get; private set; }
 
         /// <summary>
         /// 执行指定脚本代码（使用 GeneratedCode + ScriptCode 双段 partial class 编译）
@@ -80,6 +87,9 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 _logMessages.Clear();
                 _compileTimeMs = 0;
                 _executionTimeMs = 0;
+                LoadTimeMs = ConstructionTimeMs = EmitTimeMs = 0;
+                InitTimeMs = ProcessTimeMs = ReleaseTimeMs = 0;
+                CompilationCacheHit = false;
                 _runCounter++;
             }
 
@@ -97,6 +107,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 [generatedCode, userCode], assemblyName, assemblyRefDir, assemblyNames);
             compileSw.Stop();
             _compileTimeMs = compileSw.ElapsedMilliseconds;
+            CompilationCacheHit = compileResult.CacheHit;
+            EmitTimeMs = compileResult.EmitMs;
 
             if (!compileResult.Success)
             {
@@ -112,18 +124,21 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
             // 2. 在沙箱中加载并执行（从常驻池获取，复用 ALC + 程序集 + JIT 缓存）。
             //    沙箱按编译缓存键分组：相同代码+引用复用，代码变化自动建新沙箱（旧沙箱由池 LRU 淘汰）。
-            var combinedCode = string.Join("\n", new[] { generatedCode, userCode });
-            var sandbox = ScriptSandboxPool.GetOrCreate(compileResult.CacheKey, assemblyRefDir, compileResult.ReferenceSnapshot);
+            ScriptSandbox sandbox;
             Exception? loadError = null;
+            var loadTimer = Stopwatch.StartNew();
 
             try
             {
+                sandbox = ScriptSandboxPool.GetOrCreate(compileResult.CacheKey, assemblyRefDir, compileResult.ReferenceSnapshot);
                 sandbox.LoadAssembly(compileResult.AssemblyBytes!, compileResult.SymbolBytes);
             }
             catch (Exception ex)
             {
                 loadError = ex;
+                sandbox = null!;
             }
+            LoadTimeMs = loadTimer.Elapsed.TotalMilliseconds;
 
             if (loadError != null)
             {
@@ -133,6 +148,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
             // 3. 创建实例（类不存在或类型不匹配时 CreateScriptInstance 直接抛异常，错误信息已含诊断上下文）
             ScriptBase scriptInstance;
+            var constructTimer = Stopwatch.StartNew();
             try
             {
                 scriptInstance = sandbox.CreateScriptInstance(compileResult.EntryClassName);
@@ -142,6 +158,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 errors.Add($"创建脚本实例失败: {ex.Message}");
                 return errors;
             }
+            finally { ConstructionTimeMs = constructTimer.Elapsed.TotalMilliseconds; }
 
             // 4. 注入上下文（日志 + 全局变量）
             scriptInstance.Context = new ScriptContext
@@ -201,9 +218,15 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             var runSw = Stopwatch.StartNew();
             try
             {
-                scriptInstance.Init();
-                scriptInstance.Process();
-                scriptInstance.Release();
+                var stage = Stopwatch.StartNew();
+                try { scriptInstance.Init(); }
+                finally { InitTimeMs = stage.Elapsed.TotalMilliseconds; }
+                stage.Restart();
+                try { scriptInstance.Process(); }
+                finally { ProcessTimeMs = stage.Elapsed.TotalMilliseconds; }
+                stage.Restart();
+                try { scriptInstance.Release(); }
+                finally { ReleaseTimeMs = stage.Elapsed.TotalMilliseconds; }
             }
             catch (Exception ex)
             {
@@ -215,6 +238,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             }
             runSw.Stop();
             _executionTimeMs = runSw.Elapsed.TotalMilliseconds;
+            PluginLogger.Info($"[ScriptTiming] key={compileResult.CacheKey}, cacheHit={CompilationCacheHit}, " +
+                $"emitMs={EmitTimeMs:F2}, loadMs={LoadTimeMs:F2}, constructMs={ConstructionTimeMs:F2}, initMs={InitTimeMs:F2}, processMs={ProcessTimeMs:F2}, releaseMs={ReleaseTimeMs:F2}, lifecycleMs={_executionTimeMs:F2}", nameof(ScriptLifecycleManager));
 
             // 7. 反射读取输出字段值
             var outputType = scriptInstance.GetType();

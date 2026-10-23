@@ -23,7 +23,7 @@ public class SemanticHighlightContractTests
         var dir = new DirectoryInfo(testAsmDir);
         for (int i = 0; i < 8 && dir != null; i++)
         {
-            var candidate = Path.Combine(dir.FullName, "tools", "SunEyeVision.Tool.Script", "Views", fileName);
+            var candidate = Path.Combine(dir.FullName, "src", "CommonControl", fileName);
             if (File.Exists(candidate)) return candidate;
             dir = dir.Parent;
         }

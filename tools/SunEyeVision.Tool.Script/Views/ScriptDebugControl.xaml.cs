@@ -572,6 +572,7 @@ namespace SunEyeVision.Tool.Script.Views
                 {
                     SharedMetadataReferenceProvider.InvalidateScriptRefs(refDir);
                     EditorCore.RebuildWorkspace(refreshReferences: true);
+                    EditorCore.ScheduleDiagnosticAsync();
                 }
             }
         }

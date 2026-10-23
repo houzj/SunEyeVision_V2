@@ -124,11 +124,12 @@ public class ScriptSandboxWarmupTests
                 ?? throw new InvalidOperationException("ScriptSandboxPool 类型未找到（工具 DLL 可能为旧版）");
 
             // 计算缓存键（与 CompileOnly 内部一致）
-            var combined = generatedCode + "\n" + scriptCode;
-            var computeKey = compilerType.GetMethod("ComputeCacheKey",
+            var snapshotType = toolAsm.GetType("SunEyeVision.Tool.Script.ScriptEngine.ScriptReferenceSnapshot")!;
+            var snapshot = snapshotType.GetMethod("Capture")!.Invoke(null, new object?[] { assemblyRefs, scriptRefs });
+            var computeKey = compilerType.GetMethod("ComputeCompilationKey",
                     BindingFlags.NonPublic | BindingFlags.Static)
                 ?? throw new InvalidOperationException("ComputeCacheKey 方法未找到（工具 DLL 可能为旧版）");
-            var cacheKey = (string)computeKey.Invoke(null, new object?[] { combined, assemblyRefs })!;
+            var cacheKey = (string)computeKey.Invoke(null, new object?[] { new[] { generatedCode, scriptCode }, snapshot })!;
 
             using var mgr = (IDisposable)Activator.CreateInstance(mgrType)!;
             var compileOnly = mgrType.GetMethod("CompileOnly")!;
@@ -143,7 +144,7 @@ public class ScriptSandboxWarmupTests
             var getOrCreate = poolType.GetMethod("GetOrCreate",
                     BindingFlags.Public | BindingFlags.Static)
                 ?? throw new InvalidOperationException("GetOrCreate 方法未找到");
-            var sandbox = getOrCreate.Invoke(null, new object?[] { cacheKey, scriptRefs })!;
+            var sandbox = getOrCreate.Invoke(null, new object?[] { cacheKey, scriptRefs, snapshot })!;
             var loadedAssembly = sandbox.GetType().GetProperty("LoadedAssembly")!.GetValue(sandbox) as Assembly;
 
             Assert.NotNull(loadedAssembly);

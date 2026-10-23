@@ -20,7 +20,13 @@ public sealed class ParameterEditSession
     private ParameterSetting Freeze(string id,ParameterSetting s)
     {
         var p=_ports[id];
-        if(s is ConstantSetting c)return new ConstantSetting(ValueRules.Freeze(p,c.Value));
+        if(s is ConstantSetting c)
+        {
+            var value=ValueRules.Freeze(p,c.Value);
+            if(ValueRules.Images(value).Any())
+                throw new ArgumentException("Borrowed images cannot be stored as configuration constants; bind an invocation source instead.");
+            return new ConstantSetting(value);
+        }
         if(s is ReferenceSetting b && b.Reference.Type==p.Type && !string.IsNullOrWhiteSpace(b.Reference.NodeId) && !string.IsNullOrWhiteSpace(b.Reference.PortId))return b;
         throw new ArgumentException("Invalid binding");
     }

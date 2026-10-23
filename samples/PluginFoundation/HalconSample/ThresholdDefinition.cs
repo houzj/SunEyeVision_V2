@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 using HalconDotNet;using SunEyeVision.Plugin.Contracts;using SunEyeVision.HalAdapter;
-[assembly:PluginContract(3,0)]
+[assembly:PluginContract(FoundationContract.Major,FoundationContract.Minor)]
 namespace SunEyeVision.Plugin.Foundation.HalconSample;
 public sealed record ThresholdSettings(int Threshold):IToolSettings<ThresholdSettings>{public ThresholdSettings Freeze()=>this;}
 public sealed record ImageOutput(IReadOnlyImage Image):IToolOutput{public IReadOnlyDictionary<string,object?> ToValues()=>new Dictionary<string,object?>{{"image",Image}};}

@@ -46,9 +46,9 @@ internal sealed class OutputResources:IOutputResources,IDisposable
         if(!_inputs.Contains(input)||input is not ImageView view)throw new ArgumentException("Not a borrowed input of this invocation");
         view.State.Retain();var retained=new ImageView(view.State);_owned.Add(retained,view.State);return retained;
     }
-    public List<ImageLease> Transfer(IReadOnlyDictionary<string,object?> outputs)
+    public List<ImageLease> Transfer(IEnumerable<IReadOnlyImage> outputs)
     {
-        var images=outputs.Values.OfType<IReadOnlyImage>().Distinct(ReferenceEqualityComparer.Instance).Cast<IReadOnlyImage>().ToArray();
+        var images=outputs.Distinct(ReferenceEqualityComparer.Instance).Cast<IReadOnlyImage>().ToArray();
         foreach(var image in images)if(!_owned.ContainsKey(image))throw new InvalidOperationException("Output image must be created by this scope or explicitly retained");
         var leases=new List<ImageLease>();foreach(var image in images){leases.Add(new(_owned[image]));_owned.Remove(image);}return leases;
     }

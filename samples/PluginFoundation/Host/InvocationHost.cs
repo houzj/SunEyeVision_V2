@@ -56,7 +56,7 @@ public sealed class NodeHost<TSettings,TOutput>:IAsyncDisposable
             var schema=_definition.Describe(frozen);var input=new InputValues(schema.Inputs,rawInputs);
             var keys=_definition.Capabilities(frozen).ResourceKeys.ToArray();
             var borrowed=new List<ImageLease>();
-            try{foreach(var image in input.CopyValues().Values.OfType<IReadOnlyImage>())borrowed.Add(ImageLease.Borrow(image));}
+            try{foreach(var image in input.Images())borrowed.Add(ImageLease.Borrow(image));}
             catch{foreach(var l in borrowed)l.Dispose();throw;}
             var cts=new CancellationTokenSource();
             var completion=Task.Run(()=>Invoke(frozen,input,schema,identity,keys,borrowed,cts));
@@ -65,7 +65,7 @@ public sealed class NodeHost<TSettings,TOutput>:IAsyncDisposable
     }
     private async Task<RunEnvelope> Invoke(TSettings settings,InputValues input,ToolSchema schema,RunIdentity identity,string[] keys,List<ImageLease> borrowed,CancellationTokenSource cts)
     {
-        using var outputs=new OutputResources(input.CopyValues().Values.OfType<IReadOnlyImage>());
+        using var outputs=new OutputResources(input.Images());
         try
         {
             using var resource=await _broker.AcquireAsync(keys,cts.Token);
@@ -76,7 +76,7 @@ public sealed class NodeHost<TSettings,TOutput>:IAsyncDisposable
             if(result.Output is null)throw new InvalidOperationException("Success without output");
             var diagnosticCopy=(result.Diagnostics??throw new InvalidOperationException("Missing diagnostics collection")).ToArray();
             var values=new InputValues(schema.Outputs,result.Output.ToValues());
-            var leases=outputs.Transfer(values.CopyValues());
+            var leases=outputs.Transfer(values.Images());
             return new(identity,RunStatus.Completed,values,result.Judgment,diagnosticCopy,leases);
         }
         catch(OperationCanceledException e) when(cts.IsCancellationRequested && e.CancellationToken==cts.Token){return new(identity,RunStatus.Cancelled,null,BusinessJudgment.NotEvaluated,Array.Empty<Diagnostic>());}

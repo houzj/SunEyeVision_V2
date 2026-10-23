@@ -7,9 +7,9 @@ using SunEyeVision.Plugin.Foundation.Host;
 using SunEyeVision.Plugin.Foundation.Samples;
 using SunEyeVision.Plugin.Foundation.HalconSample;
 using SunEyeVision.Plugin.Wpf;
-[assembly:PluginContract(3,0)]
+[assembly:PluginContract(FoundationContract.Major,FoundationContract.Minor)]
 
-internal static class Program
+internal static partial class Program
 {
     private static readonly List<object> Results=new();private static int Failures,Blocked;
     private static readonly IReadOnlyDictionary<string,object?> Empty=new Dictionary<string,object?>();
@@ -26,6 +26,27 @@ internal static class Program
     static async Task<int> Main(string[] args)
     {
         string report=args.Length>0?args[0]:"plugin-report.json";
+        await StructuredCases();
+        await Case("FT-A02-count", "Declared sequence count rejects zero/many without inferring schema",()=>Sync(()=>{
+            var type=TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Float64),CountConstraint.Exactly(1));
+            var port=new Port("one",type);
+            Throws<ArgumentException>(()=>new InputValues(new[]{port},new Dictionary<string,object?>{{"one",Array.Empty<double>()}}));
+            Throws<ArgumentException>(()=>new InputValues(new[]{port},new Dictionary<string,object?>{{"one",new[]{1d,2d}}}));
+            var values=new InputValues(new[]{port},new Dictionary<string,object?>{{"one",new[]{1d}}});
+            Require(values.Get<double[]>("one").Single()==1d,"singleton lost");
+            Throws<ArgumentOutOfRangeException>(()=>new CountConstraint(2,1));
+            Require(type!=TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Float64)),"count omitted from declaration identity");
+        }));
+        await Case("FT-M03-declaration", "Record declarations freeze fields and distinguish semantic geometry",()=>Sync(()=>{
+            var fields=new[]{new Port("x",TypeRef.ScalarOf(ScalarKind.Float64))};
+            var record=TypeRef.RecordOf("point-data",fields);var fingerprint=record.Fingerprint;
+            fields[0]=new Port("changed",DataType.Text);
+            Require(record.Fields.Single().Id=="x"&&record.Fingerprint==fingerprint,"mutable declaration escaped");
+            var frame=new CoordinateFrame("image:test",CoordinateDomain.Image,CoordinateUnit.Pixel);
+            Require(TypeRef.GeometryOf(GeometryKind.Point,frame)!=record,"geometry confused with structural record");
+            Require(TypeRef.GeometryOf(GeometryKind.Circle,frame)!=TypeRef.GeometryOf(GeometryKind.Ellipse,frame),"geometry kinds collapsed");
+            Throws<ArgumentException>(()=>TypeRef.RecordOf("duplicate",new[]{new Port("x",DataType.Text),new Port("x",DataType.Number)}));
+        }));
         await Case("A01a","Contracts has no UI/host/native references",()=>Sync(()=>{
             var names=typeof(IToolSettings<>).Assembly.GetReferencedAssemblies().Select(a=>a.Name!).ToArray();
             Require(names.All(n=>n.StartsWith("System.")||n=="System.Runtime"),string.Join(",",names));

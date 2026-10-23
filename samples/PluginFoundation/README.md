@@ -1,7 +1,7 @@
 # PLUGIN-FOUNDATION-01
 
 First-batch contract implementation and independent verification samples. Not registered in the product toolbox.
-No old solution conversion or plugin binary compatibility. Contract 3.0 rejects missing/older metadata.
+No old solution conversion or plugin binary compatibility. Contract 4.0 rejects missing/older metadata.
 
 ## Projects
 - `src/Plugin.Contracts`: UI-free net9.0 contracts, typed schema, frozen built-in values, edit session.

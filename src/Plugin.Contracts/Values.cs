@@ -10,7 +10,7 @@ public sealed class ToolSchema
     {
         Inputs=Array.AsReadOnly(inputs.ToArray()); Outputs=Array.AsReadOnly(outputs.ToArray());
         foreach(var group in new[]{Inputs,Outputs})
-            if(group.Any(p=>string.IsNullOrWhiteSpace(p.Id)) || group.Select(p=>p.Id).Distinct(StringComparer.Ordinal).Count()!=group.Count)
+            if(group.Any(p=>p is null || string.IsNullOrWhiteSpace(p.Id)) || group.Select(p=>p.Id).Distinct(StringComparer.Ordinal).Count()!=group.Count)
                 throw new ArgumentException("Port identities must be nonempty and unique.");
         if (Inputs.Concat(Outputs).Any(p => p.Type is null))
             throw new ArgumentException("Ports require a declared type.");
@@ -53,17 +53,30 @@ public sealed class InputValues
     public T Get<T>(string id)
     {
         if(!_values.TryGetValue(id,out var v))throw new KeyNotFoundException(id);
-        if(v is T t)return (T)(t is double[] a ? (object)a.Clone() : t!);
+        if(v is T t)return (T)ValueRules.Copy(t)!;
         if(v is null && default(T) is null)return default!;
         throw new InvalidOperationException($"Port {id} is not {typeof(T).Name}");
     }
-    public IReadOnlyDictionary<string,object?> CopyValues()=>new ReadOnlyDictionary<string,object?>(_values.ToDictionary(p=>p.Key,p=>p.Value is double[] a?(object)a.Clone():p.Value,StringComparer.Ordinal));
+    public IReadOnlyDictionary<string,object?> CopyValues()=>new ReadOnlyDictionary<string,object?>(_values.ToDictionary(p=>p.Key,p=>ValueRules.Copy(p.Value),StringComparer.Ordinal));
+    public IEnumerable<IReadOnlyImage> Images()=>_values.Values.SelectMany(ValueRules.Images).Distinct(ReferenceEqualityComparer.Instance).Cast<IReadOnlyImage>();
 }
 public static class ValueRules
 {
     public static object? Freeze(Port port,object? value)
     {
         if(value is null)return port.Nullable?null:throw new ArgumentException($"Port {port.Id} disallows null");
+        if(port.Type.Shape==ValueShape.Record)
+        {
+            if(value is RecordValue record && record.Declaration==port.Type)return record;
+            if(value is IReadOnlyDictionary<string,object?> fields)return new RecordValue(port.Type,fields);
+            throw new ArgumentException($"Invalid record for {port.Id}");
+        }
+        if(port.Type.Shape==ValueShape.Sequence && !(port.Type.Element==(TypeRef)DataType.Number && value is double[]))
+        {
+            if(value is SequenceValue sequence && sequence.Declaration==port.Type)return sequence;
+            if(value is Array sourceArray && sourceArray.Rank==1)return new SequenceValue(port.Type,sourceArray.Cast<object?>());
+            throw new ArgumentException($"Invalid sequence for {port.Id}");
+        }
         bool valid = port.Type.Shape switch {
             ValueShape.Scalar => port.Type.Scalar switch {
                 ScalarKind.Boolean => value is bool, ScalarKind.Int64 => value is long,
@@ -72,9 +85,17 @@ public static class ValueRules
             ValueShape.Sequence => port.Type.Element == (TypeRef)DataType.Number &&
                 value is double[] a && port.Type.Count.Accepts(a.Length) && a.All(double.IsFinite),
             ValueShape.Resource => port.Type.Resource == ResourceKind.Image && value is IReadOnlyImage,
+            ValueShape.Geometry => value is GeometryValue geometry && geometry.Kind==port.Type.Geometry && geometry.Frame==port.Type.Frame,
             _ => false };
         if(!valid)throw new ArgumentException($"Invalid value type for {port.Id} ({port.Type})");
         return value is double[] array?array.Clone():value;
+    }
+    internal static object? Copy(object? value)=>value is double[] array?array.Clone():value;
+    internal static IEnumerable<IReadOnlyImage> Images(object? value)
+    {
+        if(value is IReadOnlyImage image)yield return image;
+        else if(value is RecordValue record){foreach(var item in record.Images())yield return item;}
+        else if(value is SequenceValue sequence){foreach(var element in sequence)foreach(var item in Images(element))yield return item;}
     }
 }
 public sealed record OutputReference(string NodeId,string PortId,TypeRef Type);

@@ -1,6 +1,6 @@
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Tool.Kernels;
-[assembly:PluginContract(3,0)]
+[assembly:PluginContract(FoundationContract.Major,FoundationContract.Minor)]
 namespace SunEyeVision.Plugin.Foundation.Samples;
 public sealed record PointSettings(double[] Coordinates):IToolSettings<PointSettings>
 { public PointSettings Freeze()=>new((double[])Coordinates.Clone()); }

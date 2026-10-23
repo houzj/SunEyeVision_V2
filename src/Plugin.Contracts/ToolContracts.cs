@@ -8,7 +8,7 @@ public sealed class PluginContractAttribute(int major, int minor) : Attribute
 }
 public static class FoundationContract
 {
-    public const int Major = 3, Minor = 0;
+    public const int Major = 4, Minor = 0;
     public static void RequireCurrent(Assembly assembly)
     {
         var v = assembly.GetCustomAttribute<PluginContractAttribute>();

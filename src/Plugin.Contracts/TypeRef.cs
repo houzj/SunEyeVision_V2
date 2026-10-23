@@ -29,7 +29,7 @@ public sealed class TypeRef : IEquatable<TypeRef>
 {
     private TypeRef(ValueShape shape, ScalarKind? scalar = null, TypeRef? element = null,
         CountConstraint? count = null, string? recordId = null, IEnumerable<Port>? fields = null,
-        GeometryKind? geometry = null, ResourceKind? resource = null)
+        GeometryKind? geometry = null, ResourceKind? resource = null, CoordinateFrame? frame = null)
     {
         Shape = shape;
         Scalar = scalar;
@@ -37,10 +37,11 @@ public sealed class TypeRef : IEquatable<TypeRef>
         Count = count ?? CountConstraint.Exactly(1);
         RecordId = recordId;
         Fields = Array.AsReadOnly((fields ?? Array.Empty<Port>()).ToArray());
-        if (Fields.Any(p => p is null || string.IsNullOrWhiteSpace(p.Id)) ||
+        if (Fields.Any(p => p is null || string.IsNullOrWhiteSpace(p.Id) || p.Type is null) ||
             Fields.Select(p => p.Id).Distinct(StringComparer.Ordinal).Count() != Fields.Count)
             throw new ArgumentException("Record fields require unique nonempty identities.");
         Geometry = geometry;
+        Frame = frame;
         Resource = resource;
         using var stream = new MemoryStream();
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, true))
@@ -52,6 +53,8 @@ public sealed class TypeRef : IEquatable<TypeRef>
             writer.Write(Count.Maximum ?? -1);
             writer.Write(RecordId ?? string.Empty);
             writer.Write(Geometry is null ? -1 : (int)Geometry.Value);
+            writer.Write(Frame is not null);
+            if(Frame is not null){writer.Write(Frame.Id);writer.Write((int)Frame.Domain);writer.Write((int)Frame.Unit);}
             writer.Write(Resource is null ? -1 : (int)Resource.Value);
             writer.Write(Fields.Count);
             foreach (var field in Fields)
@@ -72,6 +75,7 @@ public sealed class TypeRef : IEquatable<TypeRef>
     public string? RecordId { get; }
     public IReadOnlyList<Port> Fields { get; }
     public GeometryKind? Geometry { get; }
+    public CoordinateFrame? Frame { get; }
     public ResourceKind? Resource { get; }
     public string Fingerprint { get; }
 
@@ -82,8 +86,8 @@ public sealed class TypeRef : IEquatable<TypeRef>
     public static TypeRef RecordOf(string id, IEnumerable<Port> fields) =>
         new(ValueShape.Record, recordId: !string.IsNullOrWhiteSpace(id) ? id : throw new ArgumentException("Record identity is required.", nameof(id)),
             fields: fields ?? throw new ArgumentNullException(nameof(fields)));
-    public static TypeRef GeometryOf(GeometryKind kind) => Enum.IsDefined(kind)
-        ? new(ValueShape.Geometry, geometry: kind) : throw new ArgumentOutOfRangeException(nameof(kind));
+    public static TypeRef GeometryOf(GeometryKind kind, CoordinateFrame frame) => Enum.IsDefined(kind)
+        ? new(ValueShape.Geometry, geometry: kind, frame: frame ?? throw new ArgumentNullException(nameof(frame))) : throw new ArgumentOutOfRangeException(nameof(kind));
     public static TypeRef ResourceOf(ResourceKind kind) => Enum.IsDefined(kind)
         ? new(ValueShape.Resource, resource: kind) : throw new ArgumentOutOfRangeException(nameof(kind));
 

@@ -1,28 +1,28 @@
 {
   "date": "2026-10-22",
   "development": {
-    "title": "自研主程序",
     "threadId": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
     "owns": [
-      "方案讨论与用户确认",
-      "唯一优先级/范围决策及最终验收汇总",
-      "联合协议和角色登记"
-    ]
+      "方案设计",
+      "决策审批",
+      "最终审核"
+    ],
+    "title": "项目成员｜方案主控"
   },
   "documentation": {
-    "title": "自研架构文档维护",
     "threadId": "01a160f7-9c99-72c1-b8bf-d689bf19f1ad",
     "owns": [
       "架构对照HTML",
       "对应生成器和文档验证",
       "DOC_SYNC_STATUS.json"
     ],
-    "initialMode": "只读核对，角色交接写入后按增量维护"
+    "initialMode": "只读核对，角色交接写入后按增量维护",
+    "title": "项目成员｜自研文档维护"
   },
   "reverseIntegration": {
-    "title": "逆向插件同步集成",
     "threadId": "01a160f7-5d5f-7e50-a52e-76ee63f33491",
-    "initialMode": "只读审计，先锁定主程序文件写者再集成"
+    "initialMode": "只读审计，先锁定主程序文件写者再集成",
+    "title": "项目成员｜逆向插件集成"
   },
   "deliveryFields": [
     "batchId",
@@ -38,18 +38,18 @@
     "unknowns",
     "rollback"
   ],
-  "policy": "事件驱动增量维护；不创建定时任务；送达、核实、采用、验证分开；同目录产品唯一写者",
+  "policy": "已批准范围内事件驱动推进；交付跟进由交付协调负责，主控不承担日常定时巡检；事实源独占，产品唯一写者",
   "protocol": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
-  "protocolVersion": "2026-10-23/V2-implementation-role",
-  "adoptionStatus": "implementation-handoff-pending-acknowledgement",
+  "protocolVersion": "2026-10-23/V4-delivery-coordination",
+  "adoptionStatus": "delivery-coordination-handoff-in-progress",
   "acknowledgements": "docs/collaboration/PROTOCOL_ACKNOWLEDGEMENTS_20261022.json",
   "independentTesting": {
-    "title": "自研独立测试",
     "threadId": "01a1620c-5a60-7fb1-a1b1-9b85173896e9",
     "owns": [
-      "用户需求及合同验收审核",
-      "独立测试/复现/回归",
-      "任务指定独立测试产物"
+      "自主测试队列/就绪调度与子智能体",
+      "独立隔离测试能力/实际运行/复现/回归",
+      "结果和阻断直交实施者并通知交付协调",
+      "形成独立验收结论，交协调汇总最终审核材料"
     ],
     "forbidden": [
       "产品代码",
@@ -57,9 +57,38 @@
       "自行扩大目标"
     ],
     "firstTask": "START-TEST-01",
-    "status": "acknowledged-first-task-delivered-awaiting-dispatch",
+    "status": "autonomous-execution-and-infrastructure-owner",
     "output": "artifacts/independent-testing/START-TEST-01/",
-    "firstResult": "artifacts/independent-testing/START-TEST-01/REPORT.md"
+    "firstResult": "artifacts/independent-testing/START-TEST-01/REPORT.md",
+    "dispatchPolicy": {
+      "authorization": "用户2026-10-23明确要求自主调度，不等催促",
+      "skipMissingInput": true,
+      "parallelIsolatedTasks": true,
+      "exclusiveResources": [
+        "共享UI",
+        "共享构建",
+        "性能采样"
+      ],
+      "feedbackToImplementation": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "finalSummaryToControl": "经交付协调汇总审核材料后提交主控最终审核",
+      "selfTestIsNotAcceptance": true,
+      "noScopeExpansion": true,
+      "adoption": "acknowledged-by-independent-tester-and-implementer",
+      "operationalSummaryTo": "01a16695-701e-7523-9c18-1298b9279428"
+    },
+    "title": "项目成员｜独立测试",
+    "testInfrastructureOwnership": {
+      "owns": [
+        "隔离测试宿主/夹具/样本/依赖/构建与运行辅助",
+        "自主环境排障和子智能体",
+        "运行后身份核验及原始日志"
+      ],
+      "hostMissingIsNotProductBlock": true,
+      "beforeBuild": "核所有输出/部署不指向共享产物",
+      "preRun": "固定产品源码与产物身份",
+      "postRun": "测试方生成运行后身份回执",
+      "escalation": "产品缺陷直接实施者；日常跨角色问题交付协调；重大方案/外部约束由协调提交主控"
+    }
   },
   "protocolSupplement": "2026-10-22/自研独立测试",
   "subagentPolicy": {
@@ -71,7 +100,6 @@
     "noAutomaticResume": true
   },
   "implementation": {
-    "title": "自研实施者",
     "threadId": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
     "owns": [
       "已批准任务实施队列",
@@ -81,6 +109,44 @@
       "已授权范围与测试、文档、取证角色互动"
     ],
     "queue": "docs/collaboration/IMPLEMENTATION_QUEUE.json",
-    "canExpandScope": false
+    "canExpandScope": false,
+    "title": "项目成员｜自研实施",
+    "operationalCoordinator": "01a16695-701e-7523-9c18-1298b9279428"
+  },
+  "roleNaming": {
+    "date": "2026-10-23",
+    "label": "项目成员",
+    "convention": "项目成员｜具体职责",
+    "threadTitles": {
+      "01a1528e-6c4c-7663-8f2e-d2f243a1ed84": "项目成员｜方案主控",
+      "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e": "项目成员｜自研实施",
+      "01a1620c-5a60-7fb1-a1b1-9b85173896e9": "项目成员｜独立测试",
+      "01a160f7-9c99-72c1-b8bf-d689bf19f1ad": "项目成员｜自研文档维护",
+      "01a1529c-d351-73c2-bc9c-79e92b0e7582": "项目成员｜VM插件逆向",
+      "01a15280-de08-7361-80d8-92d9b1ddeb25": "项目成员｜VM框架逆向",
+      "01a16169-2c2b-7001-8dda-7bc623dd98bf": "项目成员｜逆向文档维护",
+      "01a160f7-5d5f-7e50-a52e-76ee63f33491": "项目成员｜逆向插件集成",
+      "01a160ff-e34e-7670-90a4-55194265f8a3": "项目成员｜逆向源码审核",
+      "01a159e5-6571-7ab2-a12d-6ece9db18e69": "项目成员｜VM架构恢复",
+      "01a16695-701e-7523-9c18-1298b9279428": "项目成员｜交付协调"
+    }
+  },
+  "deliveryCoordination": {
+    "title": "项目成员｜交付协调",
+    "threadId": "01a16695-701e-7523-9c18-1298b9279428",
+    "owns": [
+      "已批准范围日常派工与跨角色依赖推进",
+      "交付材料检查/送验/修复复测/文档同步",
+      "资源冲突与缺输入协调",
+      "最终审核材料汇总及实质结果通知"
+    ],
+    "queue": "docs/collaboration/DELIVERY_QUEUE.json",
+    "statusFile": "docs/collaboration/DELIVERY_COORDINATION_STATUS.json",
+    "canApproveScope": false,
+    "canChangeAcceptance": false,
+    "canWriteProduct": false,
+    "canReplaceIndependentVerdict": false,
+    "canGiveFinalApproval": false,
+    "handoff": "docs/collaboration/HANDOFF_DELIVERY_COORDINATION_20261023.json"
   }
 }

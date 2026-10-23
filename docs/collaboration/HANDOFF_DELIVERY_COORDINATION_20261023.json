@@ -1,0 +1,64 @@
+{
+  "id": "DELIVERY-COORDINATION-HANDOFF-20261023",
+  "authorization": "用户明确新建项目成员｜交付协调，主控只方案设计/决策审批/最终审核",
+  "baselineCommit": "972f2e0fd947fa7920c77f026bc1a348b968a217",
+  "branch": "main",
+  "handoffKind": "governance-and-approved-task-coordination-only",
+  "productWriteTransferred": false,
+  "coordinatorThread": "01a16695-701e-7523-9c18-1298b9279428",
+  "productOwner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+  "tester": "01a1620c-5a60-7fb1-a1b1-9b85173896e9",
+  "documentation": "01a160f7-9c99-72c1-b8bf-d689bf19f1ad",
+  "control": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+  "scope": [
+    "日常派工/队列依赖/交付送验",
+    "缺陷修复/新包复测/文档同步",
+    "真实证据核验/最终审核材料"
+  ],
+  "ownFiles": [
+    "docs/collaboration/DELIVERY_QUEUE.json",
+    "docs/collaboration/DELIVERY_COORDINATION_STATUS.json"
+  ],
+  "keepOwners": [
+    "实施者保留产品唯一写权及IMPLEMENTATION_QUEUE/CURRENT_TASK实施事实",
+    "测试员独占测试目录/队列/独立验收",
+    "文档角色独占HTML/生成器/DOC_SYNC_STATUS"
+  ],
+  "firstTask": "SCRIPT-S2固定交付及独立验收闭环",
+  "s2": {
+    "source": "WIP，尚无S2固定源码/Release身份",
+    "devRegression": "r6 79/79，通过不等独立验收",
+    "formalSampling": "最后事实0/60进程，需向实施者核后续增量",
+    "currentBlock": "pilot-r4采样宿主System.Text.Json9与产品10冲突，实施者补同产品10.0.8依赖并隔离构建；旧pilot不入正式成绩",
+    "next": [
+      "宿主修复并用同新探针核双方",
+      "正式性能按已批准样本/预热/引用/窗口协议，失败预算如实报",
+      "UI和全量Release、固定源码/完整产物身份/交接",
+      "直接送独立测试、缺陷修复与新包复测",
+      "文档同步并向主控申请最终审核"
+    ]
+  },
+  "s1": {
+    "threeComponentProbes": "独立测试员采用3/3 PASS，非整批验收",
+    "report": "artifacts/independent-testing/SCRIPT-S1/ready-execution/report.html",
+    "identity": "固定627文件漂移0/extra0/sourcezipSHA匹配",
+    "incident": "artifacts/independent-testing/SCRIPT-S1/ready-execution/incident.json",
+    "quarantine": "artifacts/validation/script-s2/shared-probe-quarantine-receipt.json",
+    "limit": "4已知Probe文件逐SHA隔离；无旧DLL事前快照，S2必须源码重建和新manifest"
+  },
+  "s3": {
+    "authorization": "docs/collaboration/SCRIPT_S3_AUTHORIZATION_20261023.json",
+    "gate": "S2固定源码/完整Release源产物身份/交接后实施",
+    "scope": "执行/合作停止/异常清理/资源释放，11合同12验收",
+    "excluded": "独立进程强停、旧方案迁移、旧插件兼容、全工具扩展"
+  },
+  "heartbeat": {
+    "id": "automation",
+    "requestedOwner": "01a16695-701e-7523-9c18-1298b9279428",
+    "rule": "沿用30分钟静默跟进，无变化不通知，仅实质变化/最终审核；主控不做日常巡检"
+  },
+  "productBuildOrTestByControl": false,
+  "humanAcceptance": "未进行",
+  "risk": "测试宿主隔离事故和性能未达均必须保留，不能用材料送达或79通过标闭环",
+  "start": "治理临时提交完成后通知协调者开始写专属队列，先读后续实际增量，不复刻旧状态"
+}

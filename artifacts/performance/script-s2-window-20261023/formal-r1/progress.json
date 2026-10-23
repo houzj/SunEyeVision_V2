@@ -1,0 +1,11 @@
+{
+  "completedProcesses": 33,
+  "plannedProcesses": 60,
+  "failedProcesses": 1,
+  "completeWindows": 96,
+  "lastResult": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-6.json",
+  "running": false,
+  "terminalStatus": "aborted-native-process-exit",
+  "failedExitCode": "-1073741819",
+  "failedExitHex": "0xC0000005"
+}

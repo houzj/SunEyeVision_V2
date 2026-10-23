@@ -1,0 +1,7 @@
+{
+  "pid": 92316,
+  "exitCode": 0,
+  "argument": "--toolbox-probe",
+  "scope": "INVALID: missing required output path; bypassed probe branch; process exit is not proof of toolbox or isolated startup",
+  "validToolboxProbe": false
+}

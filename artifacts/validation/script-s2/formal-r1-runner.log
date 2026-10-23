@@ -1,0 +1,6 @@
+Exception: D:\MyWork\SunEyeVision_V2\artifacts\performance\script-s2-window-20261023\Run-Paired.ps1:29
+Line |
+  29 |  if(-not $ok){throw "Formal sample failed: $resultFile"}
+     |               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Formal sample failed:
+     | D:\MyWork\SunEyeVision_V2\artifacts\performance\script-s2-window-20261023\formal-r1\baseline-1001-6.json

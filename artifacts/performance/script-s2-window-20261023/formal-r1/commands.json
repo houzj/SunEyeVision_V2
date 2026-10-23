@@ -1,0 +1,530 @@
+[
+  {
+    "pid": 29592,
+    "variant": "baseline",
+    "lines": 101,
+    "index": 0,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-0.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-0.json"
+  },
+  {
+    "pid": 15596,
+    "variant": "candidate",
+    "lines": 101,
+    "index": 0,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-0.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-0.json"
+  },
+  {
+    "pid": 23568,
+    "variant": "candidate",
+    "lines": 101,
+    "index": 1,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-1.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-1.json"
+  },
+  {
+    "pid": 73980,
+    "variant": "baseline",
+    "lines": 101,
+    "index": 1,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-1.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-1.json"
+  },
+  {
+    "pid": 92552,
+    "variant": "baseline",
+    "lines": 101,
+    "index": 2,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-2.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-2.json"
+  },
+  {
+    "pid": 92368,
+    "variant": "candidate",
+    "lines": 101,
+    "index": 2,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-2.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-2.json"
+  },
+  {
+    "pid": 91752,
+    "variant": "candidate",
+    "lines": 101,
+    "index": 3,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-3.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-3.json"
+  },
+  {
+    "pid": 96044,
+    "variant": "baseline",
+    "lines": 101,
+    "index": 3,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-3.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-3.json"
+  },
+  {
+    "pid": 92880,
+    "variant": "baseline",
+    "lines": 101,
+    "index": 4,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-4.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-4.json"
+  },
+  {
+    "pid": 40888,
+    "variant": "candidate",
+    "lines": 101,
+    "index": 4,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-4.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-4.json"
+  },
+  {
+    "pid": 51904,
+    "variant": "candidate",
+    "lines": 101,
+    "index": 5,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-5.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-5.json"
+  },
+  {
+    "pid": 50160,
+    "variant": "baseline",
+    "lines": 101,
+    "index": 5,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-5.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-5.json"
+  },
+  {
+    "pid": 79776,
+    "variant": "baseline",
+    "lines": 101,
+    "index": 6,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-6.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-6.json"
+  },
+  {
+    "pid": 29280,
+    "variant": "candidate",
+    "lines": 101,
+    "index": 6,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-6.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-6.json"
+  },
+  {
+    "pid": 92624,
+    "variant": "candidate",
+    "lines": 101,
+    "index": 7,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-7.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-7.json"
+  },
+  {
+    "pid": 91996,
+    "variant": "baseline",
+    "lines": 101,
+    "index": 7,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-7.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-7.json"
+  },
+  {
+    "pid": 63932,
+    "variant": "baseline",
+    "lines": 101,
+    "index": 8,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-8.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-8.json"
+  },
+  {
+    "pid": 43520,
+    "variant": "candidate",
+    "lines": 101,
+    "index": 8,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-8.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-8.json"
+  },
+  {
+    "pid": 56472,
+    "variant": "candidate",
+    "lines": 101,
+    "index": 9,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-9.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-101-9.json"
+  },
+  {
+    "pid": 26404,
+    "variant": "baseline",
+    "lines": 101,
+    "index": 9,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-9.json\"",
+      101,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-101-9.json"
+  },
+  {
+    "pid": 77924,
+    "variant": "baseline",
+    "lines": 1001,
+    "index": 0,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-0.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-0.json"
+  },
+  {
+    "pid": 19400,
+    "variant": "candidate",
+    "lines": 1001,
+    "index": 0,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-0.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-0.json"
+  },
+  {
+    "pid": 63288,
+    "variant": "candidate",
+    "lines": 1001,
+    "index": 1,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-1.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-1.json"
+  },
+  {
+    "pid": 80604,
+    "variant": "baseline",
+    "lines": 1001,
+    "index": 1,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-1.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-1.json"
+  },
+  {
+    "pid": 87452,
+    "variant": "baseline",
+    "lines": 1001,
+    "index": 2,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-2.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-2.json"
+  },
+  {
+    "pid": 67084,
+    "variant": "candidate",
+    "lines": 1001,
+    "index": 2,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-2.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-2.json"
+  },
+  {
+    "pid": 86284,
+    "variant": "candidate",
+    "lines": 1001,
+    "index": 3,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-3.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-3.json"
+  },
+  {
+    "pid": 80588,
+    "variant": "baseline",
+    "lines": 1001,
+    "index": 3,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-3.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-3.json"
+  },
+  {
+    "pid": 63668,
+    "variant": "baseline",
+    "lines": 1001,
+    "index": 4,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-4.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-4.json"
+  },
+  {
+    "pid": 61732,
+    "variant": "candidate",
+    "lines": 1001,
+    "index": 4,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-4.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-4.json"
+  },
+  {
+    "pid": 7504,
+    "variant": "candidate",
+    "lines": 1001,
+    "index": 5,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-5.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\candidate-1001-5.json"
+  },
+  {
+    "pid": 81672,
+    "variant": "baseline",
+    "lines": 1001,
+    "index": 5,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-5.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": 0,
+    "success": true,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-5.json"
+  },
+  {
+    "pid": 46472,
+    "variant": "baseline",
+    "lines": 1001,
+    "index": 6,
+    "arguments": [
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\bin\\WindowProbe.dll\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s1\\delivery-a254710d\\app\"",
+      "\"D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-6.json\"",
+      1001,
+      "3"
+    ],
+    "exitCode": -1073741819,
+    "success": false,
+    "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-6.json"
+  }
+]

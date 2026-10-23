@@ -1,0 +1,158 @@
+[
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\d3dcompiler_47.dll",
+    "path": "d3dcompiler_47.dll",
+    "sourceSha256": "5653BC7B0E2701561464EF36602FF6171C96BFFE96E4C3597359CD7ADDCBA88A",
+    "deployedSha256": "5653BC7B0E2701561464EF36602FF6171C96BFFE96E4C3597359CD7ADDCBA88A"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\hAI2ibOpenVINOLoader.dll",
+    "path": "hAI2ibOpenVINOLoader.dll",
+    "sourceSha256": "EC8E1C36E8EFF5501A076C79E898A4DC927F2FC30DBA880367BD92BFE730F594",
+    "deployedSha256": "EC8E1C36E8EFF5501A076C79E898A4DC927F2FC30DBA880367BD92BFE730F594"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\hAI2ibTensorRT.dll",
+    "path": "hAI2ibTensorRT.dll",
+    "sourceSha256": "5661DBCBC03E2423C51080299A081ACBE6011A61958DEAD89C3C7E10D3762E99",
+    "deployedSha256": "5661DBCBC03E2423C51080299A081ACBE6011A61958DEAD89C3C7E10D3762E99"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\hAI2OpenVINO.dll",
+    "path": "hAI2OpenVINO.dll",
+    "sourceSha256": "11913757FE7FB00CA4C58ECCB1D1A2AAE97F67BB6DFD3F3CAF11CBF63EE489B6",
+    "deployedSha256": "11913757FE7FB00CA4C58ECCB1D1A2AAE97F67BB6DFD3F3CAF11CBF63EE489B6"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\halcon.dll",
+    "path": "halcon.dll",
+    "sourceSha256": "8D21F583137722398D0DBE3D07CA008D315C272EBCB9C094FAF81142051FB509",
+    "deployedSha256": "8D21F583137722398D0DBE3D07CA008D315C272EBCB9C094FAF81142051FB509"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\halconc.dll",
+    "path": "halconc.dll",
+    "sourceSha256": "2D591E8CD893D75BEE5E3685DA30B9F87A4EDCF3E9D20B05BBDE32E4FBD01774",
+    "deployedSha256": "2D591E8CD893D75BEE5E3685DA30B9F87A4EDCF3E9D20B05BBDE32E4FBD01774"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\halconcpp.dll",
+    "path": "halconcpp.dll",
+    "sourceSha256": "0E50E2BDF7147E70EA94E89EEB0A54B940173755D1BEEF93C9D3FA2065412289",
+    "deployedSha256": "0E50E2BDF7147E70EA94E89EEB0A54B940173755D1BEEF93C9D3FA2065412289"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\halconcppxl.dll",
+    "path": "halconcppxl.dll",
+    "sourceSha256": "163E6236EFA36666CC16A02F825E12A132374EFD1D9B4796FAAF2F1C0058C641",
+    "deployedSha256": "163E6236EFA36666CC16A02F825E12A132374EFD1D9B4796FAAF2F1C0058C641"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\halconcxl.dll",
+    "path": "halconcxl.dll",
+    "sourceSha256": "7540B25A8E0F7E7A6D5BDF0368F984D46E7EBF574C77B5148E0FA78B3AAEF7B5",
+    "deployedSha256": "7540B25A8E0F7E7A6D5BDF0368F984D46E7EBF574C77B5148E0FA78B3AAEF7B5"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\halcondl.dll",
+    "path": "halcondl.dll",
+    "sourceSha256": "0E64A3B8AD690818E2B8A448E231F7F8836EA8FBE00A91F5C172D3A7DF7F1010",
+    "deployedSha256": "0E64A3B8AD690818E2B8A448E231F7F8836EA8FBE00A91F5C172D3A7DF7F1010"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\halcondlxl.dll",
+    "path": "halcondlxl.dll",
+    "sourceSha256": "3886B197EBC004374EAB59F40DBA8AE8F8342259598068FD8F695F78BFFD1C44",
+    "deployedSha256": "3886B197EBC004374EAB59F40DBA8AE8F8342259598068FD8F695F78BFFD1C44"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\halconxl.dll",
+    "path": "halconxl.dll",
+    "sourceSha256": "1054836E23F053657671E142B86C98864BCAE9E926D658C622E3121DC735AF27",
+    "deployedSha256": "1054836E23F053657671E142B86C98864BCAE9E926D658C622E3121DC735AF27"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\hcanvas.dll",
+    "path": "hcanvas.dll",
+    "sourceSha256": "41287E4F7A7FBA4D658AF5690ACD6C0F3AB318069792F0ABEAE70F00E70F505A",
+    "deployedSha256": "41287E4F7A7FBA4D658AF5690ACD6C0F3AB318069792F0ABEAE70F00E70F505A"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\hdevenginecpp.dll",
+    "path": "hdevenginecpp.dll",
+    "sourceSha256": "2FA5EE047A39B8208EE02E7B0839E0713F734333081C10AF8272F5D8EDAC27BE",
+    "deployedSha256": "2FA5EE047A39B8208EE02E7B0839E0713F734333081C10AF8272F5D8EDAC27BE"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\hdevenginecppxl.dll",
+    "path": "hdevenginecppxl.dll",
+    "sourceSha256": "B77A7FE61D152FD9EC9A4F95F208F7BE9D69810EF734022B9B195C9D85BAC90E",
+    "deployedSha256": "B77A7FE61D152FD9EC9A4F95F208F7BE9D69810EF734022B9B195C9D85BAC90E"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\libcrypto-3-x64.dll",
+    "path": "libcrypto-3-x64.dll",
+    "sourceSha256": "D737F38E47286A0EA7E60FC25711656EAB7F26666B294C91E4ECA80E95BFCFB4",
+    "deployedSha256": "D737F38E47286A0EA7E60FC25711656EAB7F26666B294C91E4ECA80E95BFCFB4"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\libcurl.dll",
+    "path": "libcurl.dll",
+    "sourceSha256": "D9BC98E7D70F8B6B18568256F9AC60B4D2D5B9BE87E1909DF49FDF83EDB860FB",
+    "deployedSha256": "D9BC98E7D70F8B6B18568256F9AC60B4D2D5B9BE87E1909DF49FDF83EDB860FB"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\libiomp5md.dll",
+    "path": "libiomp5md.dll",
+    "sourceSha256": "0D241ED916A83EE68CD126267E29FDEC3B75EDBB698C07CAFF846EF20649706D",
+    "deployedSha256": "0D241ED916A83EE68CD126267E29FDEC3B75EDBB698C07CAFF846EF20649706D"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\libssl-3-x64.dll",
+    "path": "libssl-3-x64.dll",
+    "sourceSha256": "B8E53028EB580DF21274CE6D04A4787963B07BA24CAA73656F0776374146BB14",
+    "deployedSha256": "B8E53028EB580DF21274CE6D04A4787963B07BA24CAA73656F0776374146BB14"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\libusb-1.0.dll",
+    "path": "libusb-1.0.dll",
+    "sourceSha256": "DAD737644B8A17D52C2EE51688A11F1EF169D5653A78AE5D653C997635D824B4",
+    "deployedSha256": "DAD737644B8A17D52C2EE51688A11F1EF169D5653A78AE5D653C997635D824B4"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\libwdi-usan.dll",
+    "path": "libwdi-usan.dll",
+    "sourceSha256": "82F1957A7466018A747BB2BED053034E2698E3B7D222B67EFA35B7B982EAA671",
+    "deployedSha256": "82F1957A7466018A747BB2BED053034E2698E3B7D222B67EFA35B7B982EAA671"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\MediaInfo.dll",
+    "path": "MediaInfo.dll",
+    "sourceSha256": "6FCF4CBD90F21C62F678818A9ECC80BF6B370E4A1F5D914A7D9699336E014900",
+    "deployedSha256": "6FCF4CBD90F21C62F678818A9ECC80BF6B370E4A1F5D914A7D9699336E014900"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\mvloglib.dll",
+    "path": "mvloglib.dll",
+    "sourceSha256": "5D4C14A72AD3B18615B738D6A6F47005022B98B2280EE3CF195C73B0D41155D6",
+    "deployedSha256": "5D4C14A72AD3B18615B738D6A6F47005022B98B2280EE3CF195C73B0D41155D6"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\ruiSDK_5.6.0.x64.dll",
+    "path": "ruiSDK_5.6.0.x64.dll",
+    "sourceSha256": "7D9DCD0D3F673D74CED181A04685901D0CF5709553CCC03523418C662E0B0C98",
+    "deployedSha256": "7D9DCD0D3F673D74CED181A04685901D0CF5709553CCC03523418C662E0B0C98"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\runtime\\x64-win64\\uastack.dll",
+    "path": "uastack.dll",
+    "sourceSha256": "81D9FA126158B6E9BADBBD5D1F3DB3A8D1DDAE707D8038D9DEDCB6CE63893CD5",
+    "deployedSha256": "81D9FA126158B6E9BADBBD5D1F3DB3A8D1DDAE707D8038D9DEDCB6CE63893CD5"
+  },
+  {
+    "source": "D:\\MyWork\\SunEyeVision_V2\\libs\\halcon\\net\\halcondotnetxl.dll",
+    "path": "halcondotnetxl.dll",
+    "sourceSha256": "A1C8C3EF74F37F751E5CFB08A513B68F36A75511D7B4F9FD4E5A532E45652C57",
+    "deployedSha256": "A1C8C3EF74F37F751E5CFB08A513B68F36A75511D7B4F9FD4E5A532E45652C57"
+  }
+]

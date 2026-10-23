@@ -1,0 +1,13 @@
+{
+  "sourceCommit": "a59f446c4032e26abafc1c6a83296db78575463e",
+  "programFiles": 627,
+  "sourceInputs": 1347,
+  "binaryManifestSha256": "2B393677A21AD79F01C278750CF1BA1975DD8D9047B65327BA6440F37F7142E5",
+  "sourceManifestSha256": "9E5C71D77E0D7EDB1AD6BF5F9B832D0A32AA3627F5549A0E8BD780372A782CD3",
+  "sourceZipSha256": "FBD4DFBD7AE59E9B1C701614B0CFD671E7F91FBB8547B180E693248BC8E885E4",
+  "sourceArchiveManifestSha256": "7736C4FB93F8ACBED38BC03C4F5B496F8AD9DCA1B706139817395A65AAFD6405",
+  "sourceManifestKind": "actual built worktree bytes",
+  "sourceArchiveKind": "git normalized committed bytes",
+  "foreignProbeFiles": 0,
+  "vendorMatches": 26
+}

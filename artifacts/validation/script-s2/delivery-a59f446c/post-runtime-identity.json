@@ -1,0 +1,11 @@
+{
+  "programFiles": 627,
+  "binaryDrift": 0,
+  "extraFiles": 0,
+  "sourceInputs": 1347,
+  "sourceDrift": 0,
+  "changedBinaryPaths": [],
+  "extraPaths": [],
+  "changedSourcePaths": [],
+  "note": "Run before S3 product changes; binary identity concerns fixed app copy only."
+}

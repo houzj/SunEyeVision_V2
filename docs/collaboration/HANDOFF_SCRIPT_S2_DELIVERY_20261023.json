@@ -1,0 +1,122 @@
+{
+  "task": "SCRIPT-S2",
+  "status": "fixed-delivery-formal-aborted-independent-acceptance-pending",
+  "baseline": "972f2e0fd947fa7920c77f026bc1a348b968a217",
+  "sourceCommit": "a59f446c4032e26abafc1c6a83296db78575463e",
+  "branch": "main",
+  "executor": "Codex 01a1663d-2d35-7bd2-bc12-ab0d4051bb8e; sole product writer",
+  "scope": "valid dynamic IO contracts and editor commit, light window and bounded priority analysis, async single-flight compilation",
+  "allowedDirectories": [
+    "src/CommonControl",
+    "src/Plugin.SDK/UI/Controls",
+    "tools/SunEyeVision.Tool.Script",
+    "tests/SunEyeVision.Tool.Script.Tests",
+    "artifacts/performance/script-s2-window-20261023",
+    "artifacts/validation/script-s2"
+  ],
+  "changedFiles": "git show --format= --name-only a59f446c (24 files)",
+  "delivery": "artifacts/validation/script-s2/delivery-a59f446c",
+  "identity": {
+    "programFiles": 627,
+    "sourceInputs": 1347,
+    "vendorMatches": 26,
+    "foreignProbeFiles": 0,
+    "binaryManifestSha256": "2B393677A21AD79F01C278750CF1BA1975DD8D9047B65327BA6440F37F7142E5",
+    "sourceManifestSha256": "9E5C71D77E0D7EDB1AD6BF5F9B832D0A32AA3627F5549A0E8BD780372A782CD3",
+    "sourceZipSha256": "FBD4DFBD7AE59E9B1C701614B0CFD671E7F91FBB8547B180E693248BC8E885E4",
+    "sourceArchiveManifestSha256": "7736C4FB93F8ACBED38BC03C4F5B496F8AD9DCA1B706139817395A65AAFD6405"
+  },
+  "builds": [
+    {
+      "command": "dotnet build SunEyeVision.slnx -c Release --no-restore -t:Rebuild",
+      "errors": 0,
+      "warnings": 1271,
+      "log": "artifacts/validation/script-s2/fixed-full-release.log"
+    },
+    {
+      "command": "dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore",
+      "errors": 0,
+      "warnings": 1175,
+      "log": "artifacts/validation/script-s2/fixed-ui-release.log"
+    }
+  ],
+  "tests": {
+    "command": "dotnet test tests/SunEyeVision.Tool.Script.Tests/SunEyeVision.Tool.Script.Tests.csproj -c Release --no-build --no-restore --logger trx;LogFileName=s2-fixed.trx --results-directory artifacts/validation/script-s2/tests",
+    "passed": 79,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "artifacts/validation/script-s2/tests/s2-fixed.trx",
+    "meaning": "developer regression, not all acceptance contracts closed",
+    "sdkEditorRegression": "8/8 before source freeze; artifacts/validation/script-s2/tests/s2-sdk-editor.trx"
+  },
+  "performance": {
+    "status": "aborted-after-32-successful-processes-one-baseline-native-exit",
+    "run": "artifacts/performance/script-s2-window-20261023/formal-r1",
+    "processes": 60,
+    "windows": 180,
+    "command": "pwsh -NoProfile -File artifacts/performance/script-s2-window-20261023/Run-Paired.ps1 -CandidateRoot artifacts/validation/script-s2/delivery-a59f446c/app -RunName formal-r1",
+    "probeSha256": "A6111693506E074983908E380DF36BB24032C0889381AF7CDBA3E14BE3AC85B8",
+    "protocol": "101/1001/5001 lines; 10 fresh processes and 20 reopens per version and size; alternating version order; actual DefaultDebugWindow and ScriptDebugControl",
+    "limitations": [
+      "WPF routed TextInput, not physical OS keyboard",
+      "baseline has no CtrlSpace command; explicit-query compatibility hook marked unsupported",
+      "semantic readiness moments differ: baseline preShow versus candidate first50 after edits",
+      "no product App/device/services/workflow",
+      "pilot budget failures preserved; no formal pass claimed"
+    ],
+    "finalEvidence": "formal-r1/summary.json; commands.json; progress.json (running=false, exit=-1073741819/0xC0000005); 5001 lines not measured",
+    "budgetResult": "101-line complete group candidate first-input p95 4070.42ms, reopen 543.97ms, hot-popup p95 443.35/318.51ms: 500ms/150ms budgets FAIL. 1001 group partial6 processes/version; 5001 missing. No complete-batch p95 claim."
+  },
+  "acceptance": [
+    {
+      "id": "S2-A01",
+      "status": "formal-running-budget-not-passed"
+    },
+    {
+      "id": "S2-A02",
+      "status": "sizes-running-first50-implemented-scroll-over512-independent-unverified"
+    },
+    {
+      "id": "S2-A03",
+      "status": "developer-tests-pass-0/1/50-and-all22-type-shapes-independent-pending"
+    },
+    {
+      "id": "S2-A04",
+      "status": "developer-STA-DataGrid-invalid-draft-and-close-rejection-pass-independent-pending"
+    },
+    {
+      "id": "S2-A05",
+      "status": "developer-binding-identity-tests-pass-independent-pending"
+    },
+    {
+      "id": "S2-A06",
+      "status": "developer-8waiter-oneEmit-independent-cancel-and-no-old-fallback-pass-independent-pending"
+    },
+    {
+      "id": "S2-A07",
+      "status": "immutable-session-gates-implemented-full-race-matrix-unverified"
+    },
+    {
+      "id": "S2-A08",
+      "status": "formal-heartbeat-and-compile-stages-running"
+    },
+    {
+      "id": "S2-A09",
+      "status": "Release-builds-pass-fixed-copy-delivered-independent-VS-manual-pending"
+    },
+    {
+      "id": "S2-A10",
+      "status": "developer-syntax-error-save-invalid-IO-rejection-pass-reopen-independent-pending"
+    }
+  ],
+  "humanAcceptance": "VS designer and user manual visual results not received; not verified",
+  "knownLimits": [
+    "S3 lifecycle cleanup/active leases/cooperative stop/late result ownership excluded from S2",
+    "existing output scalar-to-array transport promotion preserved; generated field shape and transport normalization are separate",
+    "formal budgets may fail; do not mark all S2 accepted from 79 tests",
+    "no push; unrelated dirty docs/plans/capture files preserved"
+  ],
+  "next": "Independent testing from fixed copy; valid coordinated toolbox probe still pending; formal raw native failure retained, root cause unknown. S3 approved gate met; start from a59f446c without broadening scope.",
+  "postRuntimeIdentity": "delivery-a59f446c/post-runtime-identity.json: binary/source drift0, extra0 before S3",
+  "toolboxIncident": "malformed-toolbox-probe-receipt.json: missing required output file bypassed probe branch; own PID92316 exited; cannot establish device/service isolation. No valid toolbox pass; correct probe pending coordination."
+}

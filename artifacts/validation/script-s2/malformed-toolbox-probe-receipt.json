@@ -1,0 +1,9 @@
+{
+  "pid": 92316,
+  "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s2\\delivery-a59f446c\\app\\SunEyeVision.UI.exe",
+  "malformedArguments": "--toolbox-probe missing required output path",
+  "closeMainWindowSent": true,
+  "exitCode": null,
+  "validToolboxProbe": false,
+  "note": "Own process only. Missing output argument bypassed probe branch; StartupLaunchContext ignores unknown argument. Cannot establish from this receipt whether normal services initialized; do not claim device/service isolation or successful runtime validation."
+}

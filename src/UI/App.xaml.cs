@@ -71,7 +71,7 @@ public partial class App : Application
     private int _monitorReportInterval = 30; // 每30秒报告一次
     private double _imageWarmupBlockingMs;
     private bool _imageWarmupContentRecorded;
-    private ImageWarmupMode EffectiveImageWarmupMode => StartupLaunchContext.Current.ImageWarmupOverride ?? ImageWarmupMode.On;
+    private ImageWarmupMode EffectiveImageWarmupMode => StartupLaunchContext.Current.ImageWarmupOverride ?? ImageWarmupMode.Off;
 
     // 启动页（OnStartup 创建，HandleStartupDecision 关闭）。
     // 用全限定名避免与 System.Windows.SplashScreen（WPF 官方类）冲突。
@@ -170,7 +170,7 @@ public partial class App : Application
         // 设置控制台编码为UTF-8，解决中文乱码问题
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-        // P0优化：预热线程池，消除首次加载延迟
+        // Normal startup avoids forced empty-task warmup; isolated comparisons can explicitly enable it.
         if (EffectiveImageWarmupMode == ImageWarmupMode.On)
         {
             var warmupClock = Stopwatch.StartNew();
@@ -178,7 +178,7 @@ public partial class App : Application
             _imageWarmupBlockingMs = warmupClock.Elapsed.TotalMilliseconds;
         }
         _splashScreen?.UpdateStage("正在启动", 8, "运行环境准备完成");
-        LogStartupStage("OnStartup.Pre warm completed");
+        LogStartupStage("OnStartup.Pre warm completed", $"mode={EffectiveImageWarmupMode}, blockingMs={_imageWarmupBlockingMs:F3}");
 
         // 启动页：在插件加载/服务初始化/解决方案加载等耗时阶段提供品牌反馈（含进度+耗时+动画）。
         // 显示失败不阻塞启动（try-catch 跳过，仅告警）。
@@ -731,8 +731,8 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// P0优化：预热线程池 - 消除首次Task.Run的冷启动延迟
-    /// 预期效果：首张缩略图加载从1783ms降至~50ms
+    /// Thread-pool warmup retained for explicit isolated on/deferred comparisons.
+    /// This adjusts thread minima and waits for empty tasks; it does not predecode images.
     /// </summary>
     private void PrewarmThreadPool()
     {

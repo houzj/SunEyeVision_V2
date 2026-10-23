@@ -1,0 +1,180 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M17 模块结果树/表及绑定到全局变量</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M17 模块结果树/表及绑定到全局变量</h1><article id="compare-M17"><span id="M17"></span><div class="visual-metrics"><div><strong>M17</strong><span>能力条目</span><small>部分实现</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>混合优化</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>GetOutputVariables</b></li><li><small>02</small><b>UpdateModuleResults</b></li><li><small>03</small><b>ModuleResultTree</b></li><li><small>04</small><b>BuildFlatRows</b></li><li><small>05</small><b>DataGrid</b></li><li><small>06</small><b>BindResultToGlobalVariable_Click</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>运行契约生成层级再展平；实际UI是DataGrid，不是TreeView。</p><details><summary>完整缺陷与未闭合调用边</summary><p>刷新→稳定字段键恢复展开/选中；大数组格式化→有界读取；全局绑定动作→改名/删除/类型变化校验</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>VmModule.Outputs/VmIO.Children→TreeView；datalist专用表是另一条通道。</p><p>借鉴原版模块源decorator生命周期及字段IO与专业视图分工，不复制未知SDK。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF05-RESULT-LIFECYCLE.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">目前输出树/表投影不能代替字段身份、动态失效、模块历史和大数组分段消费的完整设计。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：目前输出树/表投影不能代替字段身份、动态失效、模块历史和大数组分段消费的完整设计。 VM参考边界：借鉴原版模块源decorator生命周期及字段IO与专业视图分工，不复制未知SDK。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">重做结果投影会话：稳定字段键、执行代次、选中/展开恢复、大数组懒加载；底层契约是否复用需独立核，不泛称保留结果树。 保留树与DataGrid，建立稳定输出路径的视图状态缓存和有界枚举；失效/失败按本轮状态显示，再核BindResultToGlobalVariable消费者，不凭行序号绑定。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">改名/删除/类型变化/空数组/大数组/失败取消均不误绑、不显示旧成功。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o07.html#O07">O07</a></td></tr></tbody></table></div></section><article id="recommendation-M17"><h2>M17 模块结果树/表及绑定到全局变量 · 借鉴VM重做</h2><p><b>代码依据 / 局限：</b>目前输出树/表投影不能代替字段身份、动态失效、模块历史和大数组分段消费的完整设计。</p><p><b>VM可借鉴与不可推断：</b>借鉴原版模块源decorator生命周期及字段IO与专业视图分工，不复制未知SDK。</p><p><b>具体改法 / 成本：</b>重做结果投影会话：稳定字段键、执行代次、选中/展开恢复、大数组懒加载；底层契约是否复用需独立核，不泛称保留结果树。 保留树与DataGrid，建立稳定输出路径的视图状态缓存和有界枚举；失效/失败按本轮状态显示，再核BindResultToGlobalVariable消费者，不凭行序号绑定。</p><p><b>验收：</b>改名/删除/类型变化/空数组/大数组/失败取消均不误绑、不显示旧成功。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M17">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M17">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S038</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:4746</a></p><p><code>UpdateModuleResults</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null,
+            ToolParameters? parameters = null)
+        {
+            ModuleResultTree.Clear();
+            HasModuleResults = false;
+
+            // 统一以「输出变量契约 SSOT」为数据来源：
+            //  - 运行期：直读 result.GetOutputVariables()（含 RuntimeValue），取代 ReflectGetValue + GetResultItems 兜底
+            //  - 设计期（未运行）：回退到 ToolRegistry 缓存的契约元数据展示属性结构（占位符 --）
+            var entries = new List&lt;(string Name, string DisplayName, string? Group, Type? ClrType, object? RuntimeValue, bool IsGroupPlaceholder)&gt;();
+
+            if (result != null)
+            {
+                foreach (var v in result.GetOutputVariables())</pre></details><details class="source-card"><summary>S039</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5301</a></p><p><code>BuildFlatRows</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        public void BuildFlatRows()
+        {
+            FlatResultRows.Clear();
+
+            foreach (var rootNode in ModuleResultTree)
+            {
+                AddFlatRow(rootNode, 0);
+            }
+        }
+
+        private void AddFlatRow(ModuleResultNode node, int level)
+        {
+            // 解析节点名称
+            string? resolvedNodeName = null;</pre></details><details class="source-card"><summary>S040</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs">src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:122</a></p><p><code>BindResultToGlobalVariable_Click</code></p><p>SHA256 <code>2fdf89495c90b5e269ca9e096b186609eb8c83162f9573479ae4d69d117fbfac</code></p><pre>        private void BindResultToGlobalVariable_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button { DataContext: FlatResultRow row } ||
+                row.BindingInfo == null)
+            {
+                return;
+            }
+
+            var variableType = row.BindingInfo.ValueVocabulary;
+
+            var solutionManager = ServiceInitializer.SolutionManager;
+            var solution = solutionManager?.CurrentSolution;
+            var tab = _viewModel.WorkflowTabViewModel?.SelectedTab;
+            if (solution == null || tab == null)</pre></details><details class="source-card"><summary>R028</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:4746</a></p><p><code>UpdateModuleResults</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null,
+            ToolParameters? parameters = null)
+        {
+            ModuleResultTree.Clear();
+            HasModuleResults = false;
+
+            // 统一以「输出变量契约 SSOT」为数据来源：
+            //  - 运行期：直读 result.GetOutputVariables()（含 RuntimeValue），取代 ReflectGetValue + GetResultItems 兜底
+            //  - 设计期（未运行）：回退到 ToolRegistry 缓存的契约元数据展示属性结构（占位符 --）
+            var entries = new List&lt;(string Name, string DisplayName, string? Group, Type? ClrType, object? RuntimeValue, bool IsGroupPlaceholder)&gt;();
+
+            if (result != null)
+            {
+                foreach (var v in result.GetOutputVariables())
+                {
+                    if (v.Kind != OutputVariableKind.Data)
+                        continue;
+                    if (!v.DisplayInResultPanel)
+                        continue;
+                    entries.Add((</pre></details><details class="source-card"><summary>R029</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5301</a></p><p><code>BuildFlatRows</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        public void BuildFlatRows()
+        {
+            FlatResultRows.Clear();
+
+            foreach (var rootNode in ModuleResultTree)
+            {
+                AddFlatRow(rootNode, 0);
+            }
+        }
+
+        private void AddFlatRow(ModuleResultNode node, int level)
+        {
+            // 解析节点名称
+            string? resolvedNodeName = null;
+            if (node.SourceNodeId != null &amp;&amp; WorkflowTabViewModel.SelectedTab != null)
+            {
+                var srcNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
+                    .FirstOrDefault(n =&gt; n.Id == node.SourceNodeId);
+                if (srcNode != null)
+                    resolvedNodeName = srcNode.Name;</pre></details><details class="source-card"><summary>R030</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs">src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:122</a></p><p><code>BindResultToGlobalVariable_Click</code></p><p>SHA256 <code>2fdf89495c90b5e269ca9e096b186609eb8c83162f9573479ae4d69d117fbfac</code></p><pre>        private void BindResultToGlobalVariable_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button { DataContext: FlatResultRow row } ||
+                row.BindingInfo == null)
+            {
+                return;
+            }
+
+            var variableType = row.BindingInfo.ValueVocabulary;
+
+            var solutionManager = ServiceInitializer.SolutionManager;
+            var solution = solutionManager?.CurrentSolution;
+            var tab = _viewModel.WorkflowTabViewModel?.SelectedTab;
+            if (solution == null || tab == null)
+                return;
+
+            var variable = GlobalVariableSelectDialog.ShowSelect(solutionManager, variableType);
+            if (variable == null)
+                return;
+</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M17&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;模块结果树/表及绑定到全局变量&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;GetOutputVariables&quot;,
+    &quot;UpdateModuleResults&quot;,
+    &quot;ModuleResultTree&quot;,
+    &quot;BuildFlatRows&quot;,
+    &quot;DataGrid&quot;,
+    &quot;BindResultToGlobalVariable_Click&quot;
+  ],
+  &quot;current&quot;: &quot;运行契约生成层级再展平；实际UI是DataGrid，不是TreeView。&quot;,
+  &quot;gap&quot;: &quot;刷新→稳定字段键恢复展开/选中；大数组格式化→有界读取；全局绑定动作→改名/删除/类型变化校验&quot;,
+  &quot;vm&quot;: &quot;VmModule.Outputs/VmIO.Children→TreeView；datalist专用表是另一条通道。&quot;,
+  &quot;vmDoc&quot;: &quot;MF05-RESULT-LIFECYCLE.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;借鉴VM重做&quot;,
+  &quot;reason&quot;: &quot;依据：目前输出树/表投影不能代替字段身份、动态失效、模块历史和大数组分段消费的完整设计。 VM参考边界：借鉴原版模块源decorator生命周期及字段IO与专业视图分工，不复制未知SDK。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;重做结果投影会话：稳定字段键、执行代次、选中/展开恢复、大数组懒加载；底层契约是否复用需独立核，不泛称保留结果树。 保留树与DataGrid，建立稳定输出路径的视图状态缓存和有界枚举；失效/失败按本轮状态显示，再核BindResultToGlobalVariable消费者，不凭行序号绑定。&quot;,
+  &quot;accept&quot;: &quot;改名/删除/类型变化/空数组/大数组/失败取消均不误绑、不显示旧成功。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S038&quot;,
+    &quot;S039&quot;,
+    &quot;S040&quot;,
+    &quot;R028&quot;,
+    &quot;R029&quot;,
+    &quot;R030&quot;
+  ],
+  &quot;optimization&quot;: &quot;O07&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M17&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;UpdateModuleResults读取GetOutputVariables并建树；BuildFlatRows清旧行重建，实际DataGrid绑定平面行。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;刷新→稳定字段键恢复展开/选中&quot;,
+      &quot;大数组格式化→有界读取&quot;,
+      &quot;全局绑定动作→改名/删除/类型变化校验&quot;
+    ],
+    &quot;cause&quot;: &quot;部分机制已证+消费链/规模验证&quot;,
+    &quot;change&quot;: &quot;保留树与DataGrid，建立稳定输出路径的视图状态缓存和有界枚举；失效/失败按本轮状态显示，再核BindResultToGlobalVariable消费者，不凭行序号绑定。&quot;,
+    &quot;acceptance&quot;: &quot;改名/删除/类型变化/空数组/大数组/失败取消均不误绑、不显示旧成功。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S038&quot;,
+      &quot;S039&quot;,
+      &quot;S040&quot;,
+      &quot;R028&quot;,
+      &quot;R029&quot;,
+      &quot;R030&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留契约树和表投影&quot;,
+    &quot;reason&quot;: &quot;可统一输出定义与列操作，但重建行会有分配和状态同步成本。&quot;
+  },
+  &quot;defect&quot;: &quot;目前输出树/表投影不能代替字段身份、动态失效、模块历史和大数组分段消费的完整设计。&quot;,
+  &quot;vmBorrow&quot;: &quot;借鉴原版模块源decorator生命周期及字段IO与专业视图分工，不复制未知SDK。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;混合优化&quot;,
+  &quot;adoptionBasis&quot;: &quot;参考VM已确认的职责/行为，结合自有数据与服务实现；不复用VM二进制、协议或密钥。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;借鉴VM重做&quot;,
+    &quot;defect&quot;: &quot;目前输出树/表投影不能代替字段身份、动态失效、模块历史和大数组分段消费的完整设计。&quot;,
+    &quot;borrow&quot;: &quot;借鉴原版模块源decorator生命周期及字段IO与专业视图分工，不复制未知SDK。&quot;,
+    &quot;action&quot;: &quot;重做结果投影会话：稳定字段键、执行代次、选中/展开恢复、大数组懒加载；底层契约是否复用需独立核，不泛称保留结果树。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;混合优化&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S038&quot;,
+      &quot;S039&quot;,
+      &quot;S040&quot;,
+      &quot;R028&quot;,
+      &quot;R029&quot;,
+      &quot;R030&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

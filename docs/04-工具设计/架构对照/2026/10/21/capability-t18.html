@@ -1,0 +1,142 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T18 模板/匹配编辑与其他专业工具</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>T18 模板/匹配编辑与其他专业工具</h1><article id="compare-T18"><span id="T18"></span><div class="visual-metrics"><div><strong>T18</strong><span>能力条目</span><small>待核实</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>ShapeMatchTemplateEditor等专业入口</b></li><li><small>02</small><b>专用模型/算法</b></li><li><small>03</small><b>保存/结果（完整链待核）</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>工具目录有独立模板编辑、结果分析和测量/通信编辑界面清单。</p><details><summary>完整缺陷与未闭合调用边</summary><p>创建/编辑/保存→模板实例与算法对象配对；原生HImage/模板句柄→最终销毁；其他专业工具不等同模板编辑器</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>恢复模型真实工具集成与专有算法须按工具分别恢复；框架契约不等算法实现。</p><p>以VM工具入口逐项列能力，不从一个匹配编辑器推全算法支持。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/PLUGIN-FRAMEWORK-BOUNDARY.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">模板加载/清除入口不闭合模型句柄最终析构，其他专业工具范围仍未逐个核。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：模板加载/清除入口不闭合模型句柄最终析构，其他专业工具范围仍未逐个核。 VM参考边界：以VM工具入口逐项列能力，不从一个匹配编辑器推全算法支持。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">补创建/编辑/保存/取消/删除的Owner与算法消费；没有这些证据不推荐统一重写或保持现状。 先按模板创建/编辑/切换/删除/取消分别列资源Owner，再抽专业工具接口；不因看到字段就宣称所有权闭合。专业分析页另拆T28。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">每个工具至少正常/输入无效/失败/取消关闭；不能仅注册成功或界面打开算完成。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o12.html#O12">O12</a></td></tr></tbody></table></div></section><article id="recommendation-T18"><h2>T18 模板/匹配编辑与其他专业工具 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>模板加载/清除入口不闭合模型句柄最终析构，其他专业工具范围仍未逐个核。</p><p><b>VM可借鉴与不可推断：</b>以VM工具入口逐项列能力，不从一个匹配编辑器推全算法支持。</p><p><b>具体改法 / 成本：</b>补创建/编辑/保存/取消/删除的Owner与算法消费；没有这些证据不推荐统一重写或保持现状。 先按模板创建/编辑/切换/删除/取消分别列资源Owner，再抽专业工具接口；不因看到字段就宣称所有权闭合。专业分析页另拆T28。</p><p><b>验收：</b>每个工具至少正常/输入无效/失败/取消关闭；不能仅注册成功或界面打开算完成。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T18">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T18">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S100</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml">tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566</code></p><pre>&lt;sdk:SdkDialogWindow x:Class=&quot;SunEyeVision.Tool.ShapeMatch.Views.ShapeMatchTemplateEditorDialog&quot;
+        xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
+        xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot;
+        xmlns:sdk=&quot;clr-namespace:SunEyeVision.Plugin.SDK.UI.Windows;assembly=SunEyeVision.Plugin.SDK&quot;
+        xmlns:controls=&quot;clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK&quot;
+        xmlns:region=&quot;clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views;assembly=SunEyeVision.Plugin.SDK&quot;
+        Title=&quot;模版创建 / 编辑&quot;
+        Width=&quot;1200&quot; Height=&quot;800&quot;
+        WindowStartupLocation=&quot;CenterOwner&quot;
+        ResizeMode=&quot;CanResizeWithGrip&quot;
+        Background=&quot;{DynamicResource ThemePanelBackgroundBrush}&quot;&gt;
+
+  &lt;Grid Margin=&quot;8&quot;&gt;
+    &lt;Grid.RowDefinitions&gt;</pre></details><details class="source-card"><summary>S101</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml">tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>26b665933506dfe9d4e8cec49853162f68f59ac1eafa3532c1f6680df34e9672</code></p><pre>&lt;controls:ToolDebugControlBase x:Class=&quot;SunEyeVision.Tool.ShapeMatch.Views.ShapeMatchToolDebugControl&quot;
+        xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
+        xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot;
+        xmlns:mc=&quot;http://schemas.openxmlformats.org/markup-compatibility/2006&quot;
+        xmlns:d=&quot;http://schemas.microsoft.com/expression/blend/2008&quot;
+        xmlns:designParameters=&quot;clr-namespace:SunEyeVision.Tool.ShapeMatch&quot;
+        xmlns:controls=&quot;clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK&quot;
+             xmlns:themes=&quot;clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK&quot;
+        xmlns:region=&quot;clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views;assembly=SunEyeVision.Plugin.SDK&quot;
+        xmlns:converters=&quot;clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK&quot;
+        xmlns:sys=&quot;clr-namespace:System;assembly=mscorlib&quot;
+        xmlns:local=&quot;clr-namespace:SunEyeVision.Tool.ShapeMatch&quot;
+        xmlns:models=&quot;clr-namespace:SunEyeVision.Tool.ShapeMatch.Models&quot;
+        xmlns:localConverters=&quot;clr-namespace:SunEyeVision.Tool.ShapeMatch.Converters&quot;</pre></details><details class="source-card"><summary>R069</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs">tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs:67</a></p><p><code>LoadImageBeforeShow</code></p><p>SHA256 <code>37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95</code></p><pre>    public void LoadImageBeforeShow()
+    {
+        try
+        {
+            bool isEditing = _isEditingExisting;
+
+            // 编辑模式：从注册图像解码
+            if (isEditing &amp;&amp; _resultTemplate?.SourceImageBytes is { Length: &gt; 0 })
+            {
+                try
+                {
+                    int w = _resultTemplate!.SourceImageWidth;
+                    int h = _resultTemplate!.SourceImageHeight;
+                    if (w &lt;= 0 || h &lt;= 0)
+                        throw new InvalidOperationException(&quot;注册图像尺寸无效&quot;);
+
+                    int stride = w;
+                    var bitmap = BitmapSource.Create(w, h, 96, 96, PixelFormats.Gray8, null,
+                        _resultTemplate.SourceImageBytes, stride);
+                    bitmap.Freeze();</pre></details><details class="source-card"><summary>R070</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs">tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs:298</a></p><p><code>OnClearClick</code></p><p>SHA256 <code>37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95</code></p><pre>    private void OnClearClick(object sender, RoutedEventArgs e)
+    {
+        if (_resultTemplate != null)
+        {
+            _resultTemplate.ModelData = null;
+            _resultTemplate.ContourChains = null;
+            _resultTemplate.LevelContours = null;
+            _resultTemplate.ExtractionStatus = TemplateExtractionStatus.NotExtracted;
+            _resultTemplate.SourceImageBytes = null;
+            _resultTemplate.SourceImageWidth = 0;
+            _resultTemplate.SourceImageHeight = 0;
+        }
+
+        cmbPyramidLevel.Items.Clear();
+        cmbPyramidLevel.IsEnabled = false;
+        ClearContourOverlay();
+        UpdateResultDisplay(TemplateExtractionStatus.NotExtracted, 0, 0, 0, 0, 0);
+
+        PluginLogger.Info(&quot;[ShapeMatchTemplateEditor] 已清除轮廓&quot;, &quot;ShapeMatchTool&quot;);
+    }</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T18&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;模板/匹配编辑与其他专业工具&quot;,
+  &quot;state&quot;: &quot;unknown&quot;,
+  &quot;chain&quot;: [
+    &quot;ShapeMatchTemplateEditor等专业入口&quot;,
+    &quot;专用模型/算法&quot;,
+    &quot;保存/结果（完整链待核）&quot;
+  ],
+  &quot;current&quot;: &quot;工具目录有独立模板编辑、结果分析和测量/通信编辑界面清单。&quot;,
+  &quot;gap&quot;: &quot;创建/编辑/保存→模板实例与算法对象配对；原生HImage/模板句柄→最终销毁；其他专业工具不等同模板编辑器&quot;,
+  &quot;vm&quot;: &quot;恢复模型真实工具集成与专有算法须按工具分别恢复；框架契约不等算法实现。&quot;,
+  &quot;vmDoc&quot;: &quot;PLUGIN-FRAMEWORK-BOUNDARY.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：模板加载/清除入口不闭合模型句柄最终析构，其他专业工具范围仍未逐个核。 VM参考边界：以VM工具入口逐项列能力，不从一个匹配编辑器推全算法支持。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;补创建/编辑/保存/取消/删除的Owner与算法消费；没有这些证据不推荐统一重写或保持现状。 先按模板创建/编辑/切换/删除/取消分别列资源Owner，再抽专业工具接口；不因看到字段就宣称所有权闭合。专业分析页另拆T28。&quot;,
+  &quot;accept&quot;: &quot;每个工具至少正常/输入无效/失败/取消关闭；不能仅注册成功或界面打开算完成。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S100&quot;,
+    &quot;S101&quot;,
+    &quot;R069&quot;,
+    &quot;R070&quot;
+  ],
+  &quot;optimization&quot;: &quot;O12&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;T18&quot;,
+    &quot;before&quot;: &quot;unknown&quot;,
+    &quot;after&quot;: &quot;unknown&quot;,
+    &quot;confirmed&quot;: &quot;ShapeMatch模板编辑器有LoadImageBeforeShow，从注册字节或当前图像加载，持有_ownsHImage/_ownsMat字段和专用ROI集合。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;创建/编辑/保存→模板实例与算法对象配对&quot;,
+      &quot;原生HImage/模板句柄→最终销毁&quot;,
+      &quot;其他专业工具不等同模板编辑器&quot;
+    ],
+    &quot;cause&quot;: &quot;已经补入口代码，完整专业范围仍待核实&quot;,
+    &quot;change&quot;: &quot;先按模板创建/编辑/切换/删除/取消分别列资源Owner，再抽专业工具接口；不因看到字段就宣称所有权闭合。专业分析页另拆T28。&quot;,
+    &quot;acceptance&quot;: &quot;每个工具至少正常/输入无效/失败/取消关闭；不能仅注册成功或界面打开算完成。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S100&quot;,
+      &quot;S101&quot;,
+      &quot;R069&quot;,
+      &quot;R070&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;knownGaps&quot;: [
+    &quot;ShapeMatch主调试载入模板按钮仅日志，局部未实现&quot;
+  ],
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;先做工具级验收矩阵，不统一抹平专业UI&quot;,
+    &quot;reason&quot;: &quot;专业能力不同，万能模板可能丢语义，代价是需要各工具共同合同和专项测试。&quot;
+  },
+  &quot;defect&quot;: &quot;模板加载/清除入口不闭合模型句柄最终析构，其他专业工具范围仍未逐个核。&quot;,
+  &quot;vmBorrow&quot;: &quot;以VM工具入口逐项列能力，不从一个匹配编辑器推全算法支持。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;模板加载/清除入口不闭合模型句柄最终析构，其他专业工具范围仍未逐个核。&quot;,
+    &quot;borrow&quot;: &quot;以VM工具入口逐项列能力，不从一个匹配编辑器推全算法支持。&quot;,
+    &quot;action&quot;: &quot;补创建/编辑/保存/取消/删除的Owner与算法消费；没有这些证据不推荐统一重写或保持现状。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S100&quot;,
+      &quot;S101&quot;,
+      &quot;R069&quot;,
+      &quot;R070&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

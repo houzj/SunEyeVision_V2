@@ -1,0 +1,187 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T08 关闭/X：编辑收尾与事件解绑</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>T08 关闭/X：编辑收尾与事件解绑</h1><article id="compare-T08"><span id="T08"></span><div class="visual-metrics"><div><strong>T08</strong><span>能力条目</span><small>部分实现</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>混合优化</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>OnCloseButtonClick</b></li><li><small>02</small><b>Close</b></li><li><small>03</small><b>OnWindowClosing</b></li><li><small>04</small><b>ToolEditorClose.TryClose/PersistParameterBindings</b></li><li><small>05</small><b>OnWindowClosed</b></li><li><small>06</small><b>停循环/退订</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>Closing可阻止关闭，Closed停止连续模式并解绑完成事件；阈值另清主图叠加。</p><details><summary>完整缺陷与未闭合调用边</summary><p>关闭→在途执行/失败回调最终接收；加载卸载→全部订阅配对；清叠加→图像最后读者仍是另一边 OnClosed逐个childWindow.Close，之后退订图像事件、发StopWorkflowCommand并Application.Shutdown。相机预览OnClosed为async void且await Host.DisposeAsync，主窗口没有汇总这些异步完成任务。不能从Close返回证明每个预览流已结束；具体异常/时序未运行。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>参数窗口关闭、decorator解绑与原生模块销毁不同层次。</p><p>参考原版Window_Closed注销服务、AlgorithmTabRoot.Dispose/DoFinish的配对职责。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF05-PROCESS-LIFETIME-AUDIT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">Closed清标志和退订不等于在途执行排空；必须修订关闭完成合同，具体释放缺边逐工具核。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：Closed清标志和退订不等于在途执行排空；必须修订关闭完成合同，具体释放缺边逐工具核。 VM参考边界：参考原版Window_Closed注销服务、AlgorithmTabRoot.Dispose/DoFinish的配对职责。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">关闭请求先阻止新轮次，等待本会话终态再退订/释放；禁止先Dispose在用帧，成本为异步Closing与失败恢复。 建立可等待调试会话退役，回调先验证会话仍有效；清编辑/清显示/释放帧分开；当前Close被拒绝时不得先销毁资源。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">编辑中关闭/关闭被拒绝/重复Loaded/算法中关闭均无重复回调或残留叠加。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o04.html#O04">O04</a></td></tr></tbody></table></div></section><article id="recommendation-T08"><h2>T08 关闭/X：编辑收尾与事件解绑 · 必须整改</h2><p><b>代码依据 / 局限：</b>Closed清标志和退订不等于在途执行排空；必须修订关闭完成合同，具体释放缺边逐工具核。</p><p><b>VM可借鉴与不可推断：</b>参考原版Window_Closed注销服务、AlgorithmTabRoot.Dispose/DoFinish的配对职责。</p><p><b>具体改法 / 成本：</b>关闭请求先阻止新轮次，等待本会话终态再退订/释放；禁止先Dispose在用帧，成本为异步Closing与失败恢复。 建立可等待调试会话退役，回调先验证会话仍有效；清编辑/清显示/释放帧分开；当前Close被拒绝时不得先销毁资源。</p><p><b>验收：</b>编辑中关闭/关闭被拒绝/重复Loaded/算法中关闭均无重复回调或残留叠加。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T08">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T08">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S076</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:570</a></p><p><code>OnWindowClosing</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            PluginLogger.Info($&quot;[绑定诊断] 标准调试窗口 Closing | 控件={_control.GetType().Name}&quot;, &quot;BindingDiag&quot;);
+            if (!ToolEditorClose.TryClose(_control, this))
+            {
+                e.Cancel = true;
+                return;
+            }
+            // 绑定状态必须在窗口关闭前提交到节点 ParamSettings，不能只依赖
+            // 内部控件的 Unloaded 事件顺序。
+            _toolControl?.PersistParameterBindings();
+            PluginLogger.Info($&quot;[绑定诊断] 标准调试窗口 Closing 完成 | 控件={_control.GetType().Name}&quot;, &quot;BindingDiag&quot;);
+        }
+</pre></details><details class="source-card"><summary>S077</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:587</a></p><p><code>OnWindowClosed</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnWindowClosed(object? sender, EventArgs e)
+        {
+            // 停止连续运行
+            _isContinuousRunning = false;
+            
+            // 清理路由事件订阅
+            UnsubscribeRoutedEvents();
+        }
+
+        #endregion
+    }
+}
+</pre></details><details class="source-card"><summary>S078</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs">tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs:155</a></p><p><code>OnWindowClosing</code></p><p>SHA256 <code>732736f78c6b7ba9b5d9eb36676e04ef249f2de0b7b0481f80985b0de88e0484</code></p><pre>        private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Cleanup();
+        }
+
+        #endregion
+
+        #region 数据提供者设置
+
+        public override void SetDataProvider(object dataProvider)
+        {
+            base.SetDataProvider(dataProvider);
+
+            if (dataProvider is DataSourceQueryService queryService)</pre></details><details class="source-card"><summary>R048</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:570</a></p><p><code>OnWindowClosing</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            PluginLogger.Info($&quot;[绑定诊断] 标准调试窗口 Closing | 控件={_control.GetType().Name}&quot;, &quot;BindingDiag&quot;);
+            if (!ToolEditorClose.TryClose(_control, this))
+            {
+                e.Cancel = true;
+                return;
+            }
+            // 绑定状态必须在窗口关闭前提交到节点 ParamSettings，不能只依赖
+            // 内部控件的 Unloaded 事件顺序。
+            _toolControl?.PersistParameterBindings();
+            PluginLogger.Info($&quot;[绑定诊断] 标准调试窗口 Closing 完成 | 控件={_control.GetType().Name}&quot;, &quot;BindingDiag&quot;);
+        }
+
+        /// &lt;summary&gt;
+        /// 窗口关闭事件处理
+        /// &lt;/summary&gt;
+        private void OnWindowClosed(object? sender, EventArgs e)
+        {
+            // 停止连续运行</pre></details><details class="source-card"><summary>R049</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:587</a></p><p><code>OnWindowClosed</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnWindowClosed(object? sender, EventArgs e)
+        {
+            // 停止连续运行
+            _isContinuousRunning = false;
+            
+            // 清理路由事件订阅
+            UnsubscribeRoutedEvents();
+        }
+
+        #endregion
+    }
+}
+</pre></details><details class="source-card"><summary>R050</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolEditorClose.cs">src/Plugin.SDK/UI/Controls/ToolEditorClose.cs:9</a></p><p><code>TryClose</code></p><p>SHA256 <code>dfe3e0c35236031c5bd38b96bd36defa08eedb95b7b4507246fa576afdfd7792</code></p><pre>    public static bool TryClose(FrameworkElement editor, Window owner, Func&lt;string, bool&gt;? confirmDiscard = null)
+    {
+        if (ToolEditorCommit.TryCommit(editor, out var error)) return true;
+        var prompt = error + &quot;\n\n是否关闭窗口并放弃尚未提交的控件编辑？\n已实时写入参数的修改会保留，不会回滚；无效配置仍不能执行。\n选择“否”返回继续修改。&quot;;
+        var discard = confirmDiscard?.Invoke(prompt) ?? MessageBox.Show(owner, prompt, &quot;配置未提交&quot;, MessageBoxButton.YesNo,
+            MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes;
+        if (!discard) return false;
+        ToolEditorCommit.DiscardPendingEdits(editor);
+        return true;
+    }
+}
+</pre></details><details class="source-card"><summary>N040</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindow.xaml.cs">src/UI/Shell/Windows/MainWindow.xaml.cs:346</a></p><p><code>protected override void OnClosed(EventArgs e)</code></p><p>SHA256 <code>e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219</code></p><pre>        protected override void OnClosed(EventArgs e)
+        {
+            // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
+            // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。
+            var childWindows = Application.Current?.Windows
+                .OfType&lt;Window&gt;()
+                .Where(window =&gt; !ReferenceEquals(window, this))
+                .ToArray();
+            if (childWindows != null)
+            {
+                foreach (var childWindow in childWindows)
+                {
+                    try
+                    {
+                        childWindow.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Warning,
+                            $&quot;关闭子窗口失败: {childWindow.GetType().Name}, {ex.Message}&quot;, &quot;MainWindow&quot;);
+                    }
+                }</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T08&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;关闭/X：编辑收尾与事件解绑&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;OnCloseButtonClick&quot;,
+    &quot;Close&quot;,
+    &quot;OnWindowClosing&quot;,
+    &quot;ToolEditorClose.TryClose/PersistParameterBindings&quot;,
+    &quot;OnWindowClosed&quot;,
+    &quot;停循环/退订&quot;
+  ],
+  &quot;current&quot;: &quot;Closing可阻止关闭，Closed停止连续模式并解绑完成事件；阈值另清主图叠加。&quot;,
+  &quot;gap&quot;: &quot;关闭→在途执行/失败回调最终接收；加载卸载→全部订阅配对；清叠加→图像最后读者仍是另一边 OnClosed逐个childWindow.Close，之后退订图像事件、发StopWorkflowCommand并Application.Shutdown。相机预览OnClosed为async void且await Host.DisposeAsync，主窗口没有汇总这些异步完成任务。不能从Close返回证明每个预览流已结束；具体异常/时序未运行。&quot;,
+  &quot;vm&quot;: &quot;参数窗口关闭、decorator解绑与原生模块销毁不同层次。&quot;,
+  &quot;vmDoc&quot;: &quot;MF05-PROCESS-LIFETIME-AUDIT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;必须整改&quot;,
+  &quot;reason&quot;: &quot;依据：Closed清标志和退订不等于在途执行排空；必须修订关闭完成合同，具体释放缺边逐工具核。 VM参考边界：参考原版Window_Closed注销服务、AlgorithmTabRoot.Dispose/DoFinish的配对职责。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;关闭请求先阻止新轮次，等待本会话终态再退订/释放；禁止先Dispose在用帧，成本为异步Closing与失败恢复。 建立可等待调试会话退役，回调先验证会话仍有效；清编辑/清显示/释放帧分开；当前Close被拒绝时不得先销毁资源。&quot;,
+  &quot;accept&quot;: &quot;编辑中关闭/关闭被拒绝/重复Loaded/算法中关闭均无重复回调或残留叠加。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S076&quot;,
+    &quot;S077&quot;,
+    &quot;S078&quot;,
+    &quot;R048&quot;,
+    &quot;R049&quot;,
+    &quot;R050&quot;,
+    &quot;N040&quot;
+  ],
+  &quot;optimization&quot;: &quot;O04&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;T08&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;Closing调用ToolEditorClose并持久化绑定；Closed停止连续标志和退订完成事件；阈值Closing另清ROI叠加。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;关闭→在途执行/失败回调最终接收&quot;,
+      &quot;加载卸载→全部订阅配对&quot;,
+      &quot;清叠加→图像最后读者仍是另一边&quot;
+    ],
+    &quot;cause&quot;: &quot;已证清理入口但最终所有权未闭合&quot;,
+    &quot;change&quot;: &quot;建立可等待调试会话退役，回调先验证会话仍有效；清编辑/清显示/释放帧分开；当前Close被拒绝时不得先销毁资源。&quot;,
+    &quot;acceptance&quot;: &quot;编辑中关闭/关闭被拒绝/重复Loaded/算法中关闭均无重复回调或残留叠加。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S076&quot;,
+      &quot;S077&quot;,
+      &quot;S078&quot;,
+      &quot;R048&quot;,
+      &quot;R049&quot;,
+      &quot;R050&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留关闭门槛，补会话退役&quot;,
+    &quot;reason&quot;: &quot;已有编辑事务处理需要保留，不能把X简单改成抛弃所有变化。&quot;
+  },
+  &quot;defect&quot;: &quot;Closed清标志和退订不等于在途执行排空；必须修订关闭完成合同，具体释放缺边逐工具核。&quot;,
+  &quot;vmBorrow&quot;: &quot;参考原版Window_Closed注销服务、AlgorithmTabRoot.Dispose/DoFinish的配对职责。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;混合优化&quot;,
+  &quot;adoptionBasis&quot;: &quot;参考VM已确认的职责/行为，结合自有数据与服务实现；不复用VM二进制、协议或密钥。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;必须整改&quot;,
+    &quot;defect&quot;: &quot;Closed清标志和退订不等于在途执行排空；必须修订关闭完成合同，具体释放缺边逐工具核。&quot;,
+    &quot;borrow&quot;: &quot;参考原版Window_Closed注销服务、AlgorithmTabRoot.Dispose/DoFinish的配对职责。&quot;,
+    &quot;action&quot;: &quot;关闭请求先阻止新轮次，等待本会话终态再退订/释放；禁止先Dispose在用帧，成本为异步Closing与失败恢复。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;混合优化&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S076&quot;,
+      &quot;S077&quot;,
+      &quot;S078&quot;,
+      &quot;R048&quot;,
+      &quot;R049&quot;,
+      &quot;R050&quot;,
+      &quot;N040&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

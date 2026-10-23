@@ -1,0 +1,241 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M19 相机管理：连接、参数、预览与正式采集</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M19 相机管理：连接、参数、预览与正式采集</h1><article id="compare-M19"><span id="M19"></span><div class="visual-metrics"><div><strong>M19</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>自研整改</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>ShowCameraManagerCommand</b></li><li><small>02</small><b>CameraManagerDialog/ViewModel</b></li><li><small>03</small><b>Runtime会话/预览</b></li><li><small>04</small><b>CameraWorkflowFrameFeed</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>CaptureAsync串行化单帧请求，复用已连接会话或临时打开；它没有调用AcquireCaptureLease。SDK读锁不等于业务用途互斥。；MVS取得厂商缓冲后复制到byte[]，finally归还SDK缓冲。后续CameraFrame拥有图像；显示位图与算法输出仍是别的寿命。；Feed正常先停流再等流任务；但非取消异常会跳过后续await，finally仍释放用途租约。预览也有停止失败后的释放路径。</p><details><summary>完整缺陷与未闭合调用边</summary><p>CaptureAsync串行化单帧请求，复用已连接会话或临时打开；它没有调用AcquireCaptureLease。SDK读锁不等于业务用途互斥。；MVS取得厂商缓冲后复制到byte[]，finally归还SDK缓冲。后续CameraFrame拥有图像；显示位图与算法输出仍是别的寿命。；Feed正常先停流再等流任务；但非取消异常会跳过后续await，finally仍释放用途租约。预览也有停止失败后的释放路径。 OnClosed逐个childWindow.Close，之后退订图像事件、发StopWorkflowCommand并Application.Shutdown。相机预览OnClosed为async void且await Host.DisposeAsync，主窗口没有汇总这些异步完成任务。不能从Close返回证明每个预览流已结束；具体异常/时序未运行。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>GlobalCameraManager→全局模块包/设备SDK→回调，设备销毁不能由清UI推断。</p><p>VM全局配置及相机注册/注销是参考；厂商驱动内部资源政策未知。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF01-GLOBAL-ENTRY-AUDIT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">公开单帧CaptureAsync没有取得预览/工作流相同用途租约；停止非取消异常可跳过流任务等待而释放占用。整改这两条路径，不推出全驱动重写。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：公开单帧CaptureAsync没有取得预览/工作流相同用途租约；停止非取消异常可跳过流任务等待而释放占用。整改这两条路径，不推出全驱动重写。 VM参考边界：VM全局配置及相机注册/注销是参考；厂商驱动内部资源政策未知。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">统一所有采集入口用途准入，停止抛错仍观察流任务结局；未排空保持故障隔离占用。逐厂商和多相机同步另验，不整包迁移VM。 列每入口借用/自建及关闭权限，逐厂商provider交付；先验借用预览关窗不误断正式采集，再补丢帧/失联/重连策略。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">预览期间单帧、流程期间单帧、临时连接失败与取消分别验；失败无残留连接和错误软件触发。；当前Mono8/BGR8范围外明确报不支持；慢显示、历史保留、算法异常都不得读已归还缓冲。；停止抛错、回调迟到、窗口关闭、重复Dispose分别验；未排空不得宣布设备可重新占用。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o09.html#O09">O09</a></td></tr></tbody></table></div></section><article id="recommendation-M19"><h2>M19 相机管理：连接、参数、预览与正式采集 · 必须整改</h2><p><b>代码依据 / 局限：</b>公开单帧CaptureAsync没有取得预览/工作流相同用途租约；停止非取消异常可跳过流任务等待而释放占用。整改这两条路径，不推出全驱动重写。</p><p><b>VM可借鉴与不可推断：</b>VM全局配置及相机注册/注销是参考；厂商驱动内部资源政策未知。</p><p><b>具体改法 / 成本：</b>统一所有采集入口用途准入，停止抛错仍观察流任务结局；未排空保持故障隔离占用。逐厂商和多相机同步另验，不整包迁移VM。 列每入口借用/自建及关闭权限，逐厂商provider交付；先验借用预览关窗不误断正式采集，再补丢帧/失联/重连策略。</p><p><b>验收：</b>预览期间单帧、流程期间单帧、临时连接失败与取消分别验；失败无残留连接和错误软件触发。；当前Mono8/BGR8范围外明确报不支持；慢显示、历史保留、算法异常都不得读已归还缓冲。；停止抛错、回调迟到、窗口关闭、重复Dispose分别验；未排空不得宣布设备可重新占用。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M19">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M19">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S043</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5794</a></p><p><code>ExecuteShowCameraManager</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void ExecuteShowCameraManager()
+        {
+            try
+            {
+                LogInfo(&quot;打开相机管理器&quot;);
+
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+                LogInfo($&quot;SolutionManager: {solutionManager != null}&quot;);
+
+                var currentSolution = solutionManager?.CurrentSolution;
+                LogInfo($&quot;CurrentSolution: {currentSolution != null}&quot;);
+
+                if (currentSolution == null)
+                {</pre></details><details class="source-card"><summary>S044</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Cameras/CameraRuntimeComposition.cs">src/DeviceDriver/Cameras/CameraRuntimeComposition.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>f9a42a43596a624c9cdb56c15ebbc57ed7109a7f36b4d110401fdc8f49a4020c</code></p><pre>using System;
+using System.Threading.Tasks;
+using SunEyeVision.DeviceDriver.Cameras.Contracts;
+using SunEyeVision.DeviceDriver.Cameras.Hikvision.Mvs;
+
+namespace SunEyeVision.DeviceDriver.Cameras;
+
+/// &lt;summary&gt;
+/// 默认相机运行时装配。宿主只需要持有该对象，不需要知道厂商 SDK 类型。
+/// &lt;/summary&gt;
+public sealed class CameraRuntimeComposition : IAsyncDisposable
+{
+    public CameraRuntimeComposition()
+    {</pre></details><details class="source-card"><summary>S045</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs">src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5</code></p><pre>using System;
+using System.Threading;
+using System.Threading.Tasks;
+using SunEyeVision.DeviceDriver.Cameras.Contracts;
+using SunEyeVision.Plugin.SDK.Devices.Camera;
+
+namespace SunEyeVision.UI.Services.Workflow;
+
+/// &lt;summary&gt;工作流运行期间唯一的相机帧入口；不持有设备连接，也不向 WPF 发布图像。&lt;/summary&gt;
+internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposable
+{
+    private readonly CameraSession _session;
+    private readonly CameraDeviceRef _cameraRef;
+    private readonly TimeSpan _timeout;</pre></details><details class="source-card"><summary>R033</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Cameras/CameraRuntimeComposition.cs">src/DeviceDriver/Cameras/CameraRuntimeComposition.cs:13</a></p><p><code>CameraRuntimeComposition</code></p><p>SHA256 <code>f9a42a43596a624c9cdb56c15ebbc57ed7109a7f36b4d110401fdc8f49a4020c</code></p><pre>    public CameraRuntimeComposition()
+    {
+        MvsDiscovery = new MvsCameraDiscoveryProvider();
+        Runtime = new CameraRuntimeManager(new ICameraAdapterFactory[]
+        {
+            new MvsCameraAdapterFactory(MvsDiscovery)
+        });
+        Discovery = new CameraDiscoveryCoordinator(new ICameraDiscoveryProvider[]
+        {
+            MvsDiscovery
+        });
+    }
+
+    public CameraRuntimeManager Runtime { get; }
+    public CameraDiscoveryCoordinator Discovery { get; }
+    public MvsCameraDiscoveryProvider MvsDiscovery { get; }
+
+    public async ValueTask DisposeAsync() =&gt; await Runtime.DisposeAsync().ConfigureAwait(false);
+}
+</pre></details><details class="source-card"><summary>R034</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs">src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs:187</a></p><p><code>DisposeAsync</code></p><p>SHA256 <code>52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5</code></p><pre>    public async ValueTask DisposeAsync()
+    {
+        CameraFrame? pending;
+        TaskCompletionSource&lt;bool&gt;? waiter;
+        lock (_gate)
+        {
+            if (_disposed) return;
+            _disposed = true;
+            pending = _pending;
+            _pending = null;
+            waiter = _waiter;
+            _waiter = null;
+        }
+        waiter?.TrySetResult(true);
+        _streamCancellation.Cancel();
+        try
+        {
+            if (_streamTask is not null)
+            {
+                try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }</pre></details><details class="source-card"><summary>N017</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Cameras/Contracts/CameraRuntimeManager.cs">src/DeviceDriver/Cameras/Contracts/CameraRuntimeManager.cs:162</a></p><p><code>public async Task&lt;CameraFrame&gt; CaptureAsync</code></p><p>SHA256 <code>07407900baca2a4702e7af87fa86e1a0a3cbd0b4047c6f9770e58f233b56f6ed</code></p><pre>    public async Task&lt;CameraFrame&gt; CaptureAsync(
+        CameraCaptureRequest request,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var gate = _captureGates.GetOrAdd(request.CameraRef.Value, _ =&gt; new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            // 已由设备列表连接的会话归应用所有；本次取帧绝不能关闭它。
+            if (_sessions.TryGetValue(request.CameraRef.Value, out var existing))
+                return await CaptureConfiguredFrameAsync(existing, request, cancellationToken).ConfigureAwait(false);
+
+            await using var temporary = await OpenAsync(
+                request.CameraRef,
+                CameraAccessMode.Exclusive,
+                new CameraConnectionOptions { Timeout = request.Timeout },
+                cancellationToken).ConfigureAwait(false);
+            return await CaptureConfiguredFrameAsync(temporary, request, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {</pre></details><details class="source-card"><summary>N018</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Cameras/Hikvision/Mvs/MvsCameraAdapter.cs">src/DeviceDriver/Cameras/Hikvision/Mvs/MvsCameraAdapter.cs:157</a></p><p><code>Marshal.Copy</code></p><p>SHA256 <code>bc5b365c37e00866c1973c0f9ced07bf69ff53e1880636ff255d9dae5c489257</code></p><pre>                Marshal.Copy(frame.pBufAddr, bytes, 0, length);
+                // 长度不能区分 Mono8 与 Bayer8，也不能区分 RGB 与 BGR。
+                // 首版只放行已明确映射的原生格式，其余格式需单独做真实转换。
+                var pixelCount = checked((long)info.nWidth * info.nHeight);
+                var pixelType = info.enPixelType.ToString();
+                int channels;
+                if (pixelType.EndsWith(&quot;Mono8&quot;, StringComparison.OrdinalIgnoreCase) &amp;&amp; length == pixelCount)
+                    channels = 1;
+                else if (pixelType.EndsWith(&quot;BGR8_Packed&quot;, StringComparison.OrdinalIgnoreCase) &amp;&amp; length == pixelCount * 3)
+                    channels = 3;
+                else
+                    throw new CameraAdapterException(CameraErrorCode.ParameterUnsupported,
+                        $&quot;暂不支持相机像素格式 {pixelType}（{length} 字节）；请在相机设置中选择 Mono8 或 BGR8 Packed。&quot;);
+                var frameIndex = Interlocked.Increment(ref _streamFrameCount);
+                var previousTimeouts = Interlocked.Exchange(ref _consecutiveNoDataCount, 0);
+                if (previousTimeouts &gt; 0)
+                    LogCamera(LogLevel.Info, $&quot;取帧恢复 frame={info.nFrameNum} consecutiveNoDataBeforeRecovery={previousTimeouts}&quot;);
+                if (frameIndex == 1 || frameIndex % 120 == 0)
+                    LogCamera(LogLevel.Info,
+                        $&quot;取帧成功 frame={info.nFrameNum} streamFrameIndex={frameIndex} size={info.nWidth}x{info.nHeight} pixelType={info.enPixelType} bytes={length} channels={channels} sampleMean8={CalculateSampleMean(bytes):F2} sdkWaitMs={captureTimer.Elapsed.TotalMilliseconds:F1}&quot;);
+                var image = new MvsVisionImage((int)info.nWidth, (int)info.nHeight, channels, bytes);
+                return new CameraFrame(Descriptor.CameraRef, info.nFrameNum, DateTimeOffset.UtcNow, image,</pre></details><details class="source-card"><summary>N019</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs">src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs:206</a></p><p><code>try { await _session.Adapter.StopStreamAsync</code></p><p>SHA256 <code>52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5</code></p><pre>                try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }
+                catch (OperationCanceledException) { }
+                try { await _streamTask.ConfigureAwait(false); }
+                catch (OperationCanceledException) { }
+            }
+        }
+        finally
+        {
+            pending?.Dispose();
+            _streamCancellation.Dispose();
+            _captureLease.Dispose();
+        }
+    }
+}
+</pre></details><details class="source-card"><summary>N039</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindow.xaml.cs">src/UI/Shell/Windows/MainWindow.xaml.cs:346</a></p><p><code>protected override void OnClosed(EventArgs e)</code></p><p>SHA256 <code>e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219</code></p><pre>        protected override void OnClosed(EventArgs e)
+        {
+            // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
+            // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。
+            var childWindows = Application.Current?.Windows
+                .OfType&lt;Window&gt;()
+                .Where(window =&gt; !ReferenceEquals(window, this))
+                .ToArray();
+            if (childWindows != null)
+            {
+                foreach (var childWindow in childWindows)
+                {
+                    try
+                    {
+                        childWindow.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Warning,
+                            $&quot;关闭子窗口失败: {childWindow.GetType().Name}, {ex.Message}&quot;, &quot;MainWindow&quot;);
+                    }
+                }</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M19&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;相机管理：连接、参数、预览与正式采集&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;ShowCameraManagerCommand&quot;,
+    &quot;CameraManagerDialog/ViewModel&quot;,
+    &quot;Runtime会话/预览&quot;,
+    &quot;CameraWorkflowFrameFeed&quot;
+  ],
+  &quot;current&quot;: &quot;CaptureAsync串行化单帧请求，复用已连接会话或临时打开；它没有调用AcquireCaptureLease。SDK读锁不等于业务用途互斥。；MVS取得厂商缓冲后复制到byte[]，finally归还SDK缓冲。后续CameraFrame拥有图像；显示位图与算法输出仍是别的寿命。；Feed正常先停流再等流任务；但非取消异常会跳过后续await，finally仍释放用途租约。预览也有停止失败后的释放路径。&quot;,
+  &quot;gap&quot;: &quot;CaptureAsync串行化单帧请求，复用已连接会话或临时打开；它没有调用AcquireCaptureLease。SDK读锁不等于业务用途互斥。；MVS取得厂商缓冲后复制到byte[]，finally归还SDK缓冲。后续CameraFrame拥有图像；显示位图与算法输出仍是别的寿命。；Feed正常先停流再等流任务；但非取消异常会跳过后续await，finally仍释放用途租约。预览也有停止失败后的释放路径。 OnClosed逐个childWindow.Close，之后退订图像事件、发StopWorkflowCommand并Application.Shutdown。相机预览OnClosed为async void且await Host.DisposeAsync，主窗口没有汇总这些异步完成任务。不能从Close返回证明每个预览流已结束；具体异常/时序未运行。&quot;,
+  &quot;vm&quot;: &quot;GlobalCameraManager→全局模块包/设备SDK→回调，设备销毁不能由清UI推断。&quot;,
+  &quot;vmDoc&quot;: &quot;MF01-GLOBAL-ENTRY-AUDIT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;必须整改&quot;,
+  &quot;reason&quot;: &quot;依据：公开单帧CaptureAsync没有取得预览/工作流相同用途租约；停止非取消异常可跳过流任务等待而释放占用。整改这两条路径，不推出全驱动重写。 VM参考边界：VM全局配置及相机注册/注销是参考；厂商驱动内部资源政策未知。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;统一所有采集入口用途准入，停止抛错仍观察流任务结局；未排空保持故障隔离占用。逐厂商和多相机同步另验，不整包迁移VM。 列每入口借用/自建及关闭权限，逐厂商provider交付；先验借用预览关窗不误断正式采集，再补丢帧/失联/重连策略。&quot;,
+  &quot;accept&quot;: &quot;预览期间单帧、流程期间单帧、临时连接失败与取消分别验；失败无残留连接和错误软件触发。；当前Mono8/BGR8范围外明确报不支持；慢显示、历史保留、算法异常都不得读已归还缓冲。；停止抛错、回调迟到、窗口关闭、重复Dispose分别验；未排空不得宣布设备可重新占用。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S043&quot;,
+    &quot;S044&quot;,
+    &quot;S045&quot;,
+    &quot;R033&quot;,
+    &quot;R034&quot;,
+    &quot;N017&quot;,
+    &quot;N018&quot;,
+    &quot;N019&quot;,
+    &quot;N039&quot;
+  ],
+  &quot;optimization&quot;: &quot;O09&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M19&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;CaptureAsync串行化单帧请求，复用已连接会话或临时打开；它没有调用AcquireCaptureLease。SDK读锁不等于业务用途互斥。；MVS取得厂商缓冲后复制到byte[]，finally归还SDK缓冲。后续CameraFrame拥有图像；显示位图与算法输出仍是别的寿命。；Feed正常先停流再等流任务；但非取消异常会跳过后续await，finally仍释放用途租约。预览也有停止失败后的释放路径。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;管理/详情/预览/运行四类所有者的退出配对&quot;,
+      &quot;恢复超时后的最终会话&quot;,
+      &quot;更多厂商必须独立实现不能从接口推断&quot;
+    ],
+    &quot;cause&quot;: &quot;所有权证据缺口+厂商范围&quot;,
+    &quot;change&quot;: &quot;列每入口借用/自建及关闭权限，逐厂商provider交付；先验借用预览关窗不误断正式采集，再补丢帧/失联/重连策略。&quot;,
+    &quot;acceptance&quot;: &quot;借用预览关窗不误断采集；删除/失联/恢复/取消只归还自己持有的资源。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S043&quot;,
+      &quot;S044&quot;,
+      &quot;S045&quot;,
+      &quot;R033&quot;,
+      &quot;R034&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留会话运行时，逐厂商接入&quot;,
+    &quot;reason&quot;: &quot;窗口/连接/工作流周期分开利于复用，代价是所有权和重连协调。&quot;
+  },
+  &quot;defect&quot;: &quot;公开单帧CaptureAsync没有取得预览/工作流相同用途租约；停止非取消异常可跳过流任务等待而释放占用。整改这两条路径，不推出全驱动重写。&quot;,
+  &quot;vmBorrow&quot;: &quot;VM全局配置及相机注册/注销是参考；厂商驱动内部资源政策未知。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;自研整改&quot;,
+  &quot;adoptionBasis&quot;: &quot;针对本项目已见合同/实现修正，尚无采用VM具体实现的充分依据。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;必须整改&quot;,
+    &quot;defect&quot;: &quot;公开单帧CaptureAsync没有取得预览/工作流相同用途租约；停止非取消异常可跳过流任务等待而释放占用。整改这两条路径，不推出全驱动重写。&quot;,
+    &quot;borrow&quot;: &quot;VM全局配置及相机注册/注销是参考；厂商驱动内部资源政策未知。&quot;,
+    &quot;action&quot;: &quot;统一所有采集入口用途准入，停止抛错仍观察流任务结局；未排空保持故障隔离占用。逐厂商和多相机同步另验，不整包迁移VM。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;自研整改&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S043&quot;,
+      &quot;S044&quot;,
+      &quot;S045&quot;,
+      &quot;R033&quot;,
+      &quot;R034&quot;,
+      &quot;N017&quot;,
+      &quot;N018&quot;,
+      &quot;N019&quot;,
+      &quot;N039&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

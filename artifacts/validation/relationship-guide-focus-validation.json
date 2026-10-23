@@ -10,6 +10,7 @@
   ],
   "singleNav": true,
   "currentGraphFirst": true,
+  "visuallyDistinguishedEvidence": true,
   "evidenceCategories": [
     "原版已证事实",
     "自研当前实现",

@@ -1,0 +1,170 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T03 参数编辑与提交输入控件</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>T03 参数编辑与提交输入控件</h1><article id="compare-T03"><span id="T03"></span><div class="visual-metrics"><div><strong>T03</strong><span>能力条目</span><small>部分实现</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>自研整改</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>编辑控件</b></li><li><small>02</small><b>ToolEditorCommit.TryCommit</b></li><li><small>03</small><b>参数/绑定</b></li><li><small>04</small><b>工具读取</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>执行和确定按钮前实际尝试提交编辑，提交失败会中止。</p><details><summary>完整缺陷与未闭合调用边</summary><p>工具参数实例→方案原对象还是草稿；Cancel/X/OK→业务模型提交点；设备/脚本副作用是否可回滚</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>参数树与专用配置页可能即时写入；不能把同名Cancel当事务回滚。</p><p>原版每参数页提交政策未全部恢复，不宣称VM所有编辑都有事务。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/DEBUG-SESSION-CONTRACT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">DiscardPendingEdits仅取消控件待提交值，不回滚已live写入模型；不能对用户承诺通用取消回滚。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：DiscardPendingEdits仅取消控件待提交值，不回滚已live写入模型；不能对用户承诺通用取消回滚。 VM参考边界：原版每参数页提交政策未全部恢复，不宣称VM所有编辑都有事务。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">先标清即时生效或草稿；要求可取消的参数页加业务快照/明确提交点；设备副作用不可假装回滚，成本是逐工具改接。 逐窗口标即时编辑/草稿，字段校验与业务提交分层；对直接写模型的入口不声称Cancel回滚。需要事务的工具引入快照，再验证OK/X/校验失败。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">编辑中点运行/确定/关闭均读到一致值；校验失败保留窗口和编辑内容。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o05.html#O05">O05</a></td></tr></tbody></table></div></section><article id="recommendation-T03"><h2>T03 参数编辑与提交输入控件 · 必须整改</h2><p><b>代码依据 / 局限：</b>DiscardPendingEdits仅取消控件待提交值，不回滚已live写入模型；不能对用户承诺通用取消回滚。</p><p><b>VM可借鉴与不可推断：</b>原版每参数页提交政策未全部恢复，不宣称VM所有编辑都有事务。</p><p><b>具体改法 / 成本：</b>先标清即时生效或草稿；要求可取消的参数页加业务快照/明确提交点；设备副作用不可假装回滚，成本是逐工具改接。 逐窗口标即时编辑/草稿，字段校验与业务提交分层；对直接写模型的入口不声称Cancel回滚。需要事务的工具引入快照，再验证OK/X/校验失败。</p><p><b>验收：</b>编辑中点运行/确定/关闭均读到一致值；校验失败保留窗口和编辑内容。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T03">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T03">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S062</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs">src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>3ab43d254fa156d964880fe6acc76136dcc05c6a3f5d27f84d7283eff0903b91</code></p><pre>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.SDK.UI.Controls;
+
+/// &lt;summary&gt;UI-only pending edit submission. Never reads display text to reconstruct parameters.&lt;/summary&gt;
+public static class ToolEditorCommit
+{</pre></details><details class="source-card"><summary>S063</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs">src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs:309</a></p><p><code>OnExecuteCommand</code></p><p>SHA256 <code>1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0</code></p><pre>        protected virtual async void OnExecuteCommand(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
+        {
+            if (_asyncCommandRunning) return;
+            _asyncCommandRunning = true;
+            PluginLogger.Info(&quot;执行命令触发&quot;, GetType().Name);
+
+            try
+            {
+                var stopwatch = Stopwatch.StartNew();
+
+                // 执行工具逻辑
+                if (!ToolEditorCommit.TryCommit(this, out var commitError))
+                    throw new InvalidOperationException(commitError);
+                PersistParameterBindings();</pre></details><details class="source-card"><summary>S064</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:188</a></p><p><code>OnConfirmCommand</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (!ToolEditorCommit.TryCommit(_control, out var error))
+            { PluginLogger.Warning(error, &quot;DefaultDebugWindow&quot;); MessageBox.Show(error, &quot;配置未提交&quot;, MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            // 执行参数验证
+            if (ValidateParameters())
+            {
+                PluginLogger.Success(&quot;参数验证通过，关闭窗口&quot;, &quot;DefaultDebugWindow&quot;);
+                Close();
+            }
+            else
+            {
+                PluginLogger.Warning(&quot;参数验证失败&quot;, &quot;DefaultDebugWindow&quot;);
+                MessageBox.Show(&quot;参数验证失败，请检查输入参数。&quot;, &quot;验证失败&quot;, </pre></details><details class="source-card"><summary>R042</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs">src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs:17</a></p><p><code>DiscardPendingEdits</code></p><p>SHA256 <code>3ab43d254fa156d964880fe6acc76136dcc05c6a3f5d27f84d7283eff0903b91</code></p><pre>    public static void DiscardPendingEdits(FrameworkElement root)
+    {
+        root.Dispatcher.VerifyAccess();
+        var elements = Walk(root).OfType&lt;FrameworkElement&gt;().ToArray();
+        foreach (var editor in elements.OfType&lt;ToolDebugControlBase&gt;()) editor.SuppressClosePersistence = true;
+        foreach (var grid in elements.OfType&lt;DataGrid&gt;())
+        { grid.CancelEdit(DataGridEditingUnit.Cell); grid.CancelEdit(DataGridEditingUnit.Row); }
+        foreach (var group in elements.Select(e =&gt; e.BindingGroup).OfType&lt;BindingGroup&gt;().Distinct()) group.CancelEdit();
+        foreach (var binding in elements.SelectMany(Bindings).Distinct())
+        { binding.UpdateTarget(); System.Windows.Controls.Validation.ClearInvalid(binding); }
+    }
+    internal static void Register(ToolDebugControlBase editor)
+    { lock (Editors) { Editors.RemoveAll(e =&gt; !e.TryGetTarget(out var target) || ReferenceEquals(target, editor)); Editors.Add(new(editor)); } }
+    internal static void Unregister(ToolDebugControlBase editor)
+    { lock (Editors) Editors.RemoveAll(e =&gt; !e.TryGetTarget(out var target) || ReferenceEquals(target, editor)); }
+
+    public static void RefreshCommittedBindings()
+    {
+        ToolDebugControlBase[] editors;
+        lock (Editors) editors = Editors.Select(e =&gt; e.TryGetTarget(out var target) ? target : null).OfType&lt;ToolDebugControlBase&gt;().ToArray();</pre></details><details class="source-card"><summary>R043</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolEditorClose.cs">src/Plugin.SDK/UI/Controls/ToolEditorClose.cs:9</a></p><p><code>TryClose</code></p><p>SHA256 <code>dfe3e0c35236031c5bd38b96bd36defa08eedb95b7b4507246fa576afdfd7792</code></p><pre>    public static bool TryClose(FrameworkElement editor, Window owner, Func&lt;string, bool&gt;? confirmDiscard = null)
+    {
+        if (ToolEditorCommit.TryCommit(editor, out var error)) return true;
+        var prompt = error + &quot;\n\n是否关闭窗口并放弃尚未提交的控件编辑？\n已实时写入参数的修改会保留，不会回滚；无效配置仍不能执行。\n选择“否”返回继续修改。&quot;;
+        var discard = confirmDiscard?.Invoke(prompt) ?? MessageBox.Show(owner, prompt, &quot;配置未提交&quot;, MessageBoxButton.YesNo,
+            MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes;
+        if (!discard) return false;
+        ToolEditorCommit.DiscardPendingEdits(editor);
+        return true;
+    }
+}
+</pre></details><details class="source-card"><summary>R044</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:188</a></p><p><code>OnConfirmCommand</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (!ToolEditorCommit.TryCommit(_control, out var error))
+            { PluginLogger.Warning(error, &quot;DefaultDebugWindow&quot;); MessageBox.Show(error, &quot;配置未提交&quot;, MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            // 执行参数验证
+            if (ValidateParameters())
+            {
+                PluginLogger.Success(&quot;参数验证通过，关闭窗口&quot;, &quot;DefaultDebugWindow&quot;);
+                Close();
+            }
+            else
+            {
+                PluginLogger.Warning(&quot;参数验证失败&quot;, &quot;DefaultDebugWindow&quot;);
+                MessageBox.Show(&quot;参数验证失败，请检查输入参数。&quot;, &quot;验证失败&quot;, 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// 连续执行命令处理</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T03&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;参数编辑与提交输入控件&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;编辑控件&quot;,
+    &quot;ToolEditorCommit.TryCommit&quot;,
+    &quot;参数/绑定&quot;,
+    &quot;工具读取&quot;
+  ],
+  &quot;current&quot;: &quot;执行和确定按钮前实际尝试提交编辑，提交失败会中止。&quot;,
+  &quot;gap&quot;: &quot;工具参数实例→方案原对象还是草稿；Cancel/X/OK→业务模型提交点；设备/脚本副作用是否可回滚&quot;,
+  &quot;vm&quot;: &quot;参数树与专用配置页可能即时写入；不能把同名Cancel当事务回滚。&quot;,
+  &quot;vmDoc&quot;: &quot;DEBUG-SESSION-CONTRACT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;必须整改&quot;,
+  &quot;reason&quot;: &quot;依据：DiscardPendingEdits仅取消控件待提交值，不回滚已live写入模型；不能对用户承诺通用取消回滚。 VM参考边界：原版每参数页提交政策未全部恢复，不宣称VM所有编辑都有事务。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;先标清即时生效或草稿；要求可取消的参数页加业务快照/明确提交点；设备副作用不可假装回滚，成本是逐工具改接。 逐窗口标即时编辑/草稿，字段校验与业务提交分层；对直接写模型的入口不声称Cancel回滚。需要事务的工具引入快照，再验证OK/X/校验失败。&quot;,
+  &quot;accept&quot;: &quot;编辑中点运行/确定/关闭均读到一致值；校验失败保留窗口和编辑内容。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S062&quot;,
+    &quot;S063&quot;,
+    &quot;S064&quot;,
+    &quot;R042&quot;,
+    &quot;R043&quot;,
+    &quot;R044&quot;
+  ],
+  &quot;optimization&quot;: &quot;O05&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;T03&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;执行/确定前TryCommit；ToolEditorCommit.DiscardPendingEdits明确只取消待提交控件编辑，不回滚已经live写入的参数。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;工具参数实例→方案原对象还是草稿&quot;,
+      &quot;Cancel/X/OK→业务模型提交点&quot;,
+      &quot;设备/脚本副作用是否可回滚&quot;
+    ],
+    &quot;cause&quot;: &quot;已确认语义边界+逐工具证据缺口&quot;,
+    &quot;change&quot;: &quot;逐窗口标即时编辑/草稿，字段校验与业务提交分层；对直接写模型的入口不声称Cancel回滚。需要事务的工具引入快照，再验证OK/X/校验失败。&quot;,
+    &quot;acceptance&quot;: &quot;编辑中点运行/确定/关闭均读到一致值；校验失败保留窗口和编辑内容。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S062&quot;,
+      &quot;S063&quot;,
+      &quot;S064&quot;,
+      &quot;R042&quot;,
+      &quot;R043&quot;,
+      &quot;R044&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留提交门槛，统一编辑策略&quot;,
+    &quot;reason&quot;: &quot;防止未失焦值丢失，代价是逐控件编辑事务与校验整合。&quot;
+  },
+  &quot;defect&quot;: &quot;DiscardPendingEdits仅取消控件待提交值，不回滚已live写入模型；不能对用户承诺通用取消回滚。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版每参数页提交政策未全部恢复，不宣称VM所有编辑都有事务。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;自研整改&quot;,
+  &quot;adoptionBasis&quot;: &quot;针对本项目已见合同/实现修正，尚无采用VM具体实现的充分依据。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;必须整改&quot;,
+    &quot;defect&quot;: &quot;DiscardPendingEdits仅取消控件待提交值，不回滚已live写入模型；不能对用户承诺通用取消回滚。&quot;,
+    &quot;borrow&quot;: &quot;原版每参数页提交政策未全部恢复，不宣称VM所有编辑都有事务。&quot;,
+    &quot;action&quot;: &quot;先标清即时生效或草稿；要求可取消的参数页加业务快照/明确提交点；设备副作用不可假装回滚，成本是逐工具改接。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;自研整改&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S062&quot;,
+      &quot;S063&quot;,
+      &quot;S064&quot;,
+      &quot;R042&quot;,
+      &quot;R043&quot;,
+      &quot;R044&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

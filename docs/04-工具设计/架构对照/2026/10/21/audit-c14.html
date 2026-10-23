@@ -1,0 +1,30 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>C14 构建部署、版本与SDK兼容</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>C14 构建部署、版本与SDK兼容</h1><aside class="scope-notice">以下沿用2026-10-21分析基线与原有状态；未把本次分页或图示当作新增语义证据。最新目标取舍另见 <a href="architecture-target.html">12项目标决策</a>。</aside><figure class="flow-figure" data-visual="flow"><figcaption><b>该工作包需要追踪的关系</b><span class="chip">审计要求；不是完整实现保证</span></figcaption><ol class="flow-path"><li><small>01</small><b>项目引用</b></li><li><small>02</small><b>构建复制</b></li><li><small>03</small><b>包目录</b></li><li><small>04</small><b>干净环境加载</b></li><li><small>05</small><b>版本检查</b></li><li><small>06</small><b>升级/回滚</b></li></ol></figure><section id="C14"><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>目前已见</h2><p>依赖共享优先、不可回收ALC与仅清集合注销已核；部署runtimes宽泛排除需区分插件私有native，不当发布已验。</p><p>正文可评审（具体待证保留）</p></section><section class="reference"><div class="eyebrow">GAP · 未闭合与后续</div><h2>具体缺口与下一步</h2><p>各工具最终依赖布局、ABI/版本政策、升级失败回滚和干净部署未完整验。</p><p>按Directory.Build/各csproj部署目标与运行发现逐包对账；运行/设计器验收另列。</p></section></div><section class="visual-card "><h2>判定范围与追踪入口</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">要回答的问题</th><td data-label="要回答的问题">插件和本机依赖由谁部署，架构/版本不匹配与升级失败如何处理？</td></tr><tr><th class="row-label" scope="row">判定标准</th><td data-label="判定标准">记录实际构建规则和输出目录，区分缺DLL/版本冲突/架构错误；提出后续干净机器验证，未执行不登记通过。</td></tr><tr><th class="row-label" scope="row">正文交付</th><td data-label="正文交付">正文可评审（具体待证保留）：实际依赖选择/目录/部署规则及版本与私有native缺口、未执行干净部署门槛已写。</td></tr><tr><th class="row-label" scope="row">产品/运行验收</th><td data-label="产品/运行验收">未由本次文档任务执行</td></tr><tr><th class="row-label" scope="row">对应能力</th><td data-label="对应能力"><a href="capability-m04.html#compare-M04">M04</a> · <a href="capability-x02.html#compare-X02">X02</a> · <a href="capability-x03.html#compare-X03">X03</a></td></tr><tr><th class="row-label" scope="row">优化方案</th><td data-label="优化方案"><a href="optimization-o10.html#O10">O10</a></td></tr><tr><th class="row-label" scope="row">完整专题</th><td data-label="完整专题"><a href="../现状分析/platform-architecture.html#deploy">实际链与证据</a></td></tr></tbody></table></div></section><details><summary>完整审计条目</summary><pre>{
+  &quot;id&quot;: &quot;C14&quot;,
+  &quot;title&quot;: &quot;构建部署、版本与SDK兼容&quot;,
+  &quot;priority&quot;: &quot;P1&quot;,
+  &quot;question&quot;: &quot;插件和本机依赖由谁部署，架构/版本不匹配与升级失败如何处理？&quot;,
+  &quot;requiredChain&quot;: &quot;项目引用→构建复制→包目录→干净环境加载→版本检查→升级/回滚&quot;,
+  &quot;criterion&quot;: &quot;记录实际构建规则和输出目录，区分缺DLL/版本冲突/架构错误；提出后续干净机器验证，未执行不登记通过。&quot;,
+  &quot;capabilities&quot;: [
+    &quot;M04&quot;,
+    &quot;X02&quot;,
+    &quot;X03&quot;
+  ],
+  &quot;url&quot;: &quot;../现状分析/platform-architecture.html#deploy&quot;,
+  &quot;current&quot;: &quot;依赖共享优先、不可回收ALC与仅清集合注销已核；部署runtimes宽泛排除需区分插件私有native，不当发布已验。&quot;,
+  &quot;gap&quot;: &quot;各工具最终依赖布局、ABI/版本政策、升级失败回滚和干净部署未完整验。&quot;,
+  &quot;next&quot;: &quot;按Directory.Build/各csproj部署目标与运行发现逐包对账；运行/设计器验收另列。&quot;,
+  &quot;decisions&quot;: [
+    &quot;O10&quot;
+  ],
+  &quot;legacyAccepted&quot;: true,
+  &quot;documentation&quot;: {
+    &quot;id&quot;: &quot;C14&quot;,
+    &quot;accepted&quot;: true,
+    &quot;status&quot;: &quot;正文可评审（具体待证保留）&quot;,
+    &quot;url&quot;: &quot;../现状分析/platform-architecture.html#deploy&quot;,
+    &quot;reason&quot;: &quot;实际依赖选择/目录/部署规则及版本与私有native缺口、未执行干净部署门槛已写。&quot;,
+    &quot;remainingProduct&quot;: null
+  },
+  &quot;status&quot;: &quot;正文可评审（具体待证保留）&quot;
+}</pre></details></section></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

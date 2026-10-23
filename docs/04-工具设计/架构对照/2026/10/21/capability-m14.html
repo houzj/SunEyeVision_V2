@@ -1,0 +1,161 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M14 流程Tab连续运行/停止</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M14 流程Tab连续运行/停止</h1><article id="compare-M14"><span id="M14"></span><div class="visual-metrics"><div><strong>M14</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>TabItem_ContinuousRun_Click</b></li><li><small>02</small><b>WorkflowTabViewModel.ToggleContinuous</b></li><li><small>03</small><b>Start/StopContinuousWorkflow</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>Tab入口依据之前运行态显示开始/停止中。</p><details><summary>完整缺陷与未闭合调用边</summary><p>Start/Stop委托→执行管理器会话的身份/完成接收；共相机准入/排队；已请求停止→允许同Tab再次运行</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>ProcessManager与流程运行状态/原生回调协作，不等调试窗口循环。</p><p>借鉴所属流程身份寻址，而非切换当前显示流程。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF05-CONTINUOUS-RUN-CALLCHAIN.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">按流程连续已见，但与全部连续重入的服务准入及设备共享需核。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：按流程连续已见，但与全部连续重入的服务准入及设备共享需核。 VM参考边界：借鉴所属流程身份寻址，而非切换当前显示流程。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">补每流程运行会话键和共享资源冲突规则；根据实际锁与消费者决定迁移，不预判需全引擎重写。 保留逐流程会话，核对StartContinuousExecution/StopContinuousExecution装配消费者；同资源使用租约策略，Stopping时不得通过IsRunning假重启。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">双流程争用单相机、慢工具、取消队列、重启均可追踪。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o02.html#O02">O02</a></td></tr></tbody></table></div></section><article id="recommendation-M14"><h2>M14 流程Tab连续运行/停止 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>按流程连续已见，但与全部连续重入的服务准入及设备共享需核。</p><p><b>VM可借鉴与不可推断：</b>借鉴所属流程身份寻址，而非切换当前显示流程。</p><p><b>具体改法 / 成本：</b>补每流程运行会话键和共享资源冲突规则；根据实际锁与消费者决定迁移，不预判需全引擎重写。 保留逐流程会话，核对StartContinuousExecution/StopContinuousExecution装配消费者；同资源使用租约策略，Stopping时不得通过IsRunning假重启。</p><p><b>验收：</b>双流程争用单相机、慢工具、取消队列、重启均可追踪。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M14">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M14">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S032</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs">src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs:541</a></p><p><code>TabItem_ContinuousRun_Click</code></p><p>SHA256 <code>d08aa3e23138d441149ffc3a66701d538ef3cb03ed87088ad3c6184ee6c78b3a</code></p><pre>        private void TabItem_ContinuousRun_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button &amp;&amp; button.Tag is WorkflowTabViewModel workflow)
+            {
+                var wasRunning = workflow.IsRunning;
+                _viewModel.WorkflowTabViewModel.ToggleContinuous(workflow);
+                if (wasRunning)
+                    _viewModel.StatusText = $&quot;正在停止: {workflow.Name}&quot;;
+                else if (workflow.IsRunning)
+                    _viewModel.StatusText = $&quot;开始连续运行: {workflow.Name}&quot;;
+            }
+        }
+
+        /// &lt;summary&gt;</pre></details><details class="source-card"><summary>S033</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:4328</a></p><p><code>StopContinuousWorkflow</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private bool StopContinuousWorkflow(WorkflowTabViewModel workflow)
+        {
+            var requested = _executionManager.StopContinuousRun(workflow);
+            if (requested)
+            {
+                AddLog($&quot;⏹️ 请求停止连续执行: {workflow.Name}&quot;);
+            }
+
+            return requested;
+        }
+
+        private void SetWorkflowContinuousState(string workflowId, bool isRunning)
+        {
+            var workflow = WorkflowTabViewModel.Tabs</pre></details><details class="source-card"><summary>R021</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs">src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs:541</a></p><p><code>TabItem_ContinuousRun_Click</code></p><p>SHA256 <code>d08aa3e23138d441149ffc3a66701d538ef3cb03ed87088ad3c6184ee6c78b3a</code></p><pre>        private void TabItem_ContinuousRun_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button &amp;&amp; button.Tag is WorkflowTabViewModel workflow)
+            {
+                var wasRunning = workflow.IsRunning;
+                _viewModel.WorkflowTabViewModel.ToggleContinuous(workflow);
+                if (wasRunning)
+                    _viewModel.StatusText = $&quot;正在停止: {workflow.Name}&quot;;
+                else if (workflow.IsRunning)
+                    _viewModel.StatusText = $&quot;开始连续运行: {workflow.Name}&quot;;
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// 右键菜单 - 重命名工作流
+        /// &lt;/summary&gt;
+        private void TabItem_Rename_Click(object sender, RoutedEventArgs e)
+        {
+            var workflow = GetWorkflowFromContextMenu(sender);
+            if (workflow == null) return;</pre></details><details class="source-card"><summary>R022</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs">src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs:307</a></p><p><code>ToggleContinuous</code></p><p>SHA256 <code>553a73a4b3c39a5d77eb94dc5ed2176db2ad41bb3a32b00ed2027638dabdb1d5</code></p><pre>        public void ToggleContinuous(WorkflowTabViewModel workflow)
+        {
+            if (workflow == null)
+                return;
+
+            if (workflow.IsRunning)
+            {
+                StopWorkflow(workflow);
+            }
+            else
+            {
+                StartContinuous(workflow);
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// 单次运行所有工作流
+        /// &lt;/summary&gt;
+        public async Task RunAllWorkflowsAsync()
+        {</pre></details><details class="source-card"><summary>R023</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:4328</a></p><p><code>StopContinuousWorkflow</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private bool StopContinuousWorkflow(WorkflowTabViewModel workflow)
+        {
+            var requested = _executionManager.StopContinuousRun(workflow);
+            if (requested)
+            {
+                AddLog($&quot;⏹️ 请求停止连续执行: {workflow.Name}&quot;);
+            }
+
+            return requested;
+        }
+
+        private void SetWorkflowContinuousState(string workflowId, bool isRunning)
+        {
+            var workflow = WorkflowTabViewModel.Tabs
+                .FirstOrDefault(tab =&gt; tab.RootWorkflowId == workflowId);
+            if (workflow == null || workflow.IsRunning == isRunning)
+                return;
+
+            workflow.IsRunning = isRunning;
+            OnWorkflowStatusChanged(WorkflowTabViewModel, EventArgs.Empty);</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M14&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;流程Tab连续运行/停止&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;TabItem_ContinuousRun_Click&quot;,
+    &quot;WorkflowTabViewModel.ToggleContinuous&quot;,
+    &quot;Start/StopContinuousWorkflow&quot;
+  ],
+  &quot;current&quot;: &quot;Tab入口依据之前运行态显示开始/停止中。&quot;,
+  &quot;gap&quot;: &quot;Start/Stop委托→执行管理器会话的身份/完成接收；共相机准入/排队；已请求停止→允许同Tab再次运行&quot;,
+  &quot;vm&quot;: &quot;ProcessManager与流程运行状态/原生回调协作，不等调试窗口循环。&quot;,
+  &quot;vmDoc&quot;: &quot;MF05-CONTINUOUS-RUN-CALLCHAIN.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：按流程连续已见，但与全部连续重入的服务准入及设备共享需核。 VM参考边界：借鉴所属流程身份寻址，而非切换当前显示流程。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;补每流程运行会话键和共享资源冲突规则；根据实际锁与消费者决定迁移，不预判需全引擎重写。 保留逐流程会话，核对StartContinuousExecution/StopContinuousExecution装配消费者；同资源使用租约策略，Stopping时不得通过IsRunning假重启。&quot;,
+  &quot;accept&quot;: &quot;双流程争用单相机、慢工具、取消队列、重启均可追踪。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S032&quot;,
+    &quot;S033&quot;,
+    &quot;R021&quot;,
+    &quot;R022&quot;,
+    &quot;R023&quot;
+  ],
+  &quot;optimization&quot;: &quot;O02&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M14&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;TabItem_ContinuousRun_Click调用ToggleContinuous；后者依运行态StartContinuous或StopWorkflow。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;Start/Stop委托→执行管理器会话的身份/完成接收&quot;,
+      &quot;共相机准入/排队&quot;,
+      &quot;已请求停止→允许同Tab再次运行&quot;
+    ],
+    &quot;cause&quot;: &quot;证据缺口+并发验证&quot;,
+    &quot;change&quot;: &quot;保留逐流程会话，核对StartContinuousExecution/StopContinuousExecution装配消费者；同资源使用租约策略，Stopping时不得通过IsRunning假重启。&quot;,
+    &quot;acceptance&quot;: &quot;双流程争用单相机、慢工具、取消队列、重启均可追踪。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S032&quot;,
+      &quot;S033&quot;,
+      &quot;R021&quot;,
+      &quot;R022&quot;,
+      &quot;R023&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留按流程会话，补共享仲裁&quot;,
+    &quot;reason&quot;: &quot;逐流程有独立身份有利归属，但共相机/工具要统一资源策略。&quot;
+  },
+  &quot;defect&quot;: &quot;按流程连续已见，但与全部连续重入的服务准入及设备共享需核。&quot;,
+  &quot;vmBorrow&quot;: &quot;借鉴所属流程身份寻址，而非切换当前显示流程。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;按流程连续已见，但与全部连续重入的服务准入及设备共享需核。&quot;,
+    &quot;borrow&quot;: &quot;借鉴所属流程身份寻址，而非切换当前显示流程。&quot;,
+    &quot;action&quot;: &quot;补每流程运行会话键和共享资源冲突规则；根据实际锁与消费者决定迁移，不预判需全引擎重写。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S032&quot;,
+      &quot;S033&quot;,
+      &quot;R021&quot;,
+      &quot;R022&quot;,
+      &quot;R023&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

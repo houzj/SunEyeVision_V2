@@ -1,1 +1,168 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>自研架构文档 · 旧入口</title></head><body data-managed-library-router><p>相关文档已整理到 <a href="自研架构文档维护/现状分析/camera-architecture.html">自研架构文档维护</a>。此页保留旧链接与锚点兼容。</p><script>(()=>{location.replace("自研架构文档维护/现状分析/camera-architecture.html"+location.search+location.hash)})();</script></body></html>
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>相机：连接、预览、取帧与释放</title><link rel="stylesheet" href="../公共资源/entry-pages.css"><style>.camera-map{border:1px solid #52768f;border-radius:12px;padding:20px;margin:20px 0}.camera-map button{font:inherit;color:#eff6ff;background:#1c3c52;border:1px solid #658ca4;border-radius:8px;padding:14px;margin:5px;cursor:pointer}.preview{display:grid;grid-template-columns:2fr 1fr;gap:12px}.preview>div{border:1px dashed #658ca4;padding:20px}article{padding:22px;border:1px solid #52768f;border-radius:12px;margin:20px 0}article[hidden]{display:none}pre{white-space:pre-wrap;overflow-wrap:anywhere}a,small{overflow-wrap:anywhere}button[aria-pressed=true]{outline:3px solid #9fe6ce}@media(max-width:650px){.preview{grid-template-columns:1fr}}@media print{.camera-map{display:none}article[hidden]{display:block!important}}</style><style data-reader-navigation-style>.document-header.reader-header{display:block;position:sticky;top:0;z-index:40;margin:0;width:100%;padding:10px 20px;background:#090f18f5;border-bottom:1px solid #35516b;backdrop-filter:blur(12px);box-sizing:border-box}
+.reader-header .reader-topline{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.reader-header .reader-brand{font-size:12px;font-weight:600;color:#9cb5cc;text-decoration:none;white-space:normal}
+.reader-header .reader-primary,.reader-header .reader-secondary{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0;margin:0;border:0;max-width:100%}
+.reader-header .reader-primary a,.reader-header .reader-secondary a{display:block;text-decoration:none;padding:8px 12px;border-radius:6px;color:#aac5dc;font-size:13px;line-height:1.5;border:1px solid transparent;max-width:100%;white-space:normal}
+.reader-header .reader-primary [aria-current=page]{background:#223f57;color:#f1f8ff;border-bottom:2px solid #78c8ff;font-weight:700}
+.reader-header .reader-primary .reader-vm{margin-left:10px;color:#95b4ca;border-left:1px solid #34526a;border-radius:0}
+.reader-header .reader-secondary{margin-top:8px;padding-top:8px;border-top:1px solid #20374b}
+.reader-header .reader-secondary a{font-size:12px;padding:5px 10px}
+.reader-header .reader-secondary [aria-current=page]{background:#173347;border-color:#497b9c;color:#d7f3ff}
+.reader-header .reader-location{margin-top:7px;color:#809cb5;font-size:11px;overflow-wrap:anywhere}
+@media(max-width:700px){.document-header.reader-header{padding:9px 10px;position:relative}.reader-header .reader-topline{display:block}.reader-header .reader-primary{margin-top:7px}.reader-header .reader-primary a{padding:6px 8px;font-size:12px}.reader-header .reader-primary .reader-vm{margin-left:0}.reader-header .reader-secondary a{padding:5px 7px}}
+@media print{.document-header.reader-header{display:none!important}}
+</style><header class="document-header reader-header" data-reader-section="architecture"><div class="reader-topline"><a class="reader-brand" href="../index.html">SunEyeVision · 文档首页</a><nav class="reader-primary" aria-label="阅读阶段"><a href="system-architecture.html" aria-current="page">整体架构专题</a><a href="../能力对照/comparison.html" >02 横向对照</a><a href="../优化方案/optimization.html" >03 优化方案</a><a href="../证据审计/evidence.html" >证据与范围</a><a class="reader-vm" href="file:///D:/MyWork/REA逆向测试/docs/framework-architecture.html" target="_blank" rel="noopener">VM恢复模型 ↗</a></nav></div><nav class="reader-secondary" aria-label="自研架构专题"><a href="system-architecture.html" >整体架构与执行链</a><a href="suneye-entry-architecture-comparison.html" >主界面入口</a><a href="tools.html" >工具界面入口</a><a href="data-architecture.html" >数据结构与传递</a><a href="camera-architecture.html" aria-current="page">设备与相机</a><a href="persistence-architecture.html" >方案与持久化</a><a href="platform-architecture.html" >SDK · 公共控件 · 部署</a></nav></header><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">相机：连接、预览、取帧与释放</span><a href="system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><main class="wrap"><aside data-doc-index><a href="index.html">文档索引</a> · <a href="architecture-target.html">2026-10-22最新目标取舍</a>（拟议、未实施；本页历史分析状态不自动升级）</aside><h1>相机：连着设备、正在采集、持有一帧，是三件事</h1><p class="notice">当前部分实现。以下是静态代码复核，不是实机验收。已定位准入和异常收尾缺口；没有证据就不宣称自研更优，也不默认迁移VM。</p><p><b>四份责任：</b>方案记设备配置；应用持有连接；预览/工作流占用采集用途；消费者持有一帧。显示和历史还要单独核最后读者。</p><section class="camera-map"><p><a href="#device-admission">查看调度与8类设备准入、接线及未开发项 ↓</a></p><h2>设备管理器实际入口</h2><button data-camera="list">设备列表 / 添加 / 重命名 / 删除</button><button data-camera="list">连接开关</button><button data-camera="preview">预览按钮</button><p>底部：状态信息、连接数、总数。当前列表没有参数右栏，也没有绑定导出/批量连接按钮，不把ViewModel残留命令画成可用功能。</p><h2>预览窗口实际布局</h2><div><button data-camera="preview">连续采集</button><button data-camera="preview">单次采集</button><button data-camera="preview">触发一次</button></div><div class="preview"><div><button data-camera="buffer">左侧：图像预览 / 一帧寿命</button></div><div><button data-camera="parameters">右侧：参数分类 / 搜索 / 参数编辑</button></div></div><p>底部：参数状态。</p><h2>界面背后的运行链</h2><button data-camera="feed">工作流取帧</button><button data-camera="capture">公开单帧服务</button><button data-camera="stop">停止 / 关闭 / 释放</button><button data-camera="support">驱动支持与部署</button></section><p>点击区域只切换文档。按钮涉及的单帧服务与工作流链另列，不把分析入口冒充产品新增按钮。</p><article id="list"><h2>设备列表：保存的是设备身份和配置</h2><h3>存什么、做什么</h3><p>设备名称、序列号、IP和自动连接设置，是方案配置；连接本身由应用运行时持有。关掉管理窗口不等于断开相机。</p><h3>实际调用链</h3><p>添加/发现 → 注册设备描述 → 连接 → CameraSession；预览按钮另开参数与图像窗口。</p><h3>VM对照与缺证</h3><p>VM全局管理器有设备集合、当前设备及参数树；其CloseCamera仅清集合和当前选择，不能当物理关闭证据。</p><h3>方案取舍</h3><p>差异待核；已有列表与持久化继续核查扩展，不据单例或分层方式评优。</p><h3>具体改法</h3><p>明确设备身份匹配、连接状态与配置状态；并发Open在发布会话前可能重复Connect，应按设备串行化连接事务。</p><h3>验收标准（未执行）</h3><p>同设备并发连接、恢复找不到设备和保存失败均返回可读状态；关列表不误关工作流使用的会话。</p><details><summary>源码定位与片段</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/Camera/CameraManagerViewModel.cs">src/UI/Features/Camera/CameraManagerViewModel.cs:397</a><pre>        public void PersistCameraList()
+        {
+            var solution = _solutionManager.CurrentSolution;
+            if (solution == null)
+            {
+                StatusMessage = "当前没有打开的方案，设备配置暂不能保存";
+                return;
+            }
+
+            solution.Devices.RemoveAll(device =&gt; device.Type == DeviceType.Camera);
+            foreach (var camera in Cameras)
+            {
+                var device = new Device(camera.Name, DeviceType.Camera)
+                {
+                    Manufacturer = camera.Manufacturer,
+                    Model = camera.Model,
+                    SerialNumber = camera.SerialNumber,
+                    IpAddress = camera.IpAddress,
+                    IsEnabled = camera.IsEnabled,
+                    Description = camera.Description,
+                    Status = DeviceStatus.Disconnected,
+                    ModifiedTime = DateTime.Now</pre><small>SHA256 76ef4636e4276be0229021a9ebaaa9b77f4b9a168c3eac054568303d7f8c2f7b</small></details></article><article id="preview"><h2>预览：暂时占用采集用途，不等于拥有连接</h2><h3>存什么、做什么</h3><p>连续采集、单次采集和触发一次是三种操作。预览取得用途租约；显示完一帧后释放该CameraFrame。</p><h3>实际调用链</h3><p>单次按钮 → CaptureSingleFrameAsync；触发按钮 → TriggerOnceAsync；预览窗口 → CameraPreviewHost → AcquireCaptureLease → StartStreamAsync → 转显示位图 → Dispatcher → frame.Dispose</p><h3>VM对照与缺证</h3><p>VM设备参数树及原生相机生命周期已有局部证据，预览每帧最后读者和全部厂商异常路径未齐。</p><h3>方案取舍</h3><p>自研准入整改；不迁移未经核实的VM缓冲模型。</p><h3>具体改法</h3><p>统一预览/单帧/工作流的用途准入；连接租约、采集用途、帧和显示位图分别记录所有者。</p><h3>验收标准（未执行）</h3><p>预览占用时后台单帧不可绕过规则；停止失败保留占用或进入故障隔离，不提前显示可用。</p><details><summary>源码定位与片段</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/Camera/CameraPreviewHost.xaml.cs">src/UI/Features/Camera/CameraPreviewHost.xaml.cs:177</a><pre>    public async Task StopAcquisitionAsync()
+    {
+        if (!IsAcquiring || _session is null)
+            return;
+
+        Interlocked.Exchange(ref _singleShotRequested, 0);
+        Interlocked.Exchange(ref _stopRequested, 1);
+        try
+        {
+            await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(true);
+            CaptureStatus = "采集已停止；图像控件保留最后一帧";
+        }
+        finally
+        {
+            _streamTask = null;
+            Interlocked.Exchange(ref _stopRequested, 0);
+            _captureLease?.Dispose();
+            _captureLease = null;
+            IsAcquiring = false;
+            Interlocked.Exchange(ref _singleFrameStopScheduled, 0);
+            RaiseCaptureStateChanged();
+        }</pre><small>SHA256 b5550e2fdd84feb517fb63383a3b34857bf530f4c646b9aa5aedb24cd16f4c6e</small></details></article><article id="parameters"><h2>参数区：读回设备值，不能假装全部写入成功</h2><h3>存什么、做什么</h3><p>右侧参数面板由设备能力和分类树生成；部分参数要求先停采。显示值应以设备读回为准。</p><h3>实际调用链</h3><p>参数变更 → 必要时停止预览 → ApplyParameters → 读回/刷新能力 → 必要时恢复预览</p><h3>VM对照与缺证</h3><p>VM当前设备读取ModuleParam参数根及参数项，可参考能力驱动面板；原生写入事务与回滚缺证。</p><h3>方案取舍</h3><p>已有能力面板局部扩展；批量写失败机制必须明确。</p><h3>具体改法</h3><p>区分请求值、实际值、失败项；部分写入失败不显示整体成功，也不承诺自动回滚已写设备。</p><h3>验收标准（未执行）</h3><p>只读/不可用项禁用；中途写失败显示实际读回值及恢复状态。</p><details><summary>源码定位与片段</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/Camera/CameraDetailViewModel.cs">src/UI/Features/Camera/CameraDetailViewModel.cs:653</a><pre>                $"[CameraParameterTrace] UI参数变更，已排队自动写入 camera={SelectedCamera?.DeviceId} node={item.Name} value={FormatDiagnosticValue(item.Value)} requiresStopped={item.RequiresStopped} affectsSchema={item.AffectsSchema}",
+                "CameraParameterTrace", target: LogTarget.All);
+
+            _autoApplyCts?.Cancel();
+            _autoApplyCts?.Dispose();
+            _autoApplyCts = new CancellationTokenSource();
+            _ = ApplyParameterAfterEditAsync(_autoApplyCts.Token);
+        }
+
+        private async Task ApplyParameterAfterEditAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                // NumericUpDown / text editing often emits several intermediate values; merge them into one SDK write.
+                await Task.Delay(350, cancellationToken).ConfigureAwait(true);
+                await SaveParamsAsync().ConfigureAwait(true);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+            }
+        }
+</pre><small>SHA256 1294ac7588efda05f58f106bf41342349381d09d7e5611791b8e356ee927b5c9</small></details></article><article id="feed"><h2>工作流：单槽保留最新帧，不是无损队列</h2><h3>存什么、做什么</h3><p>正常单相机流程取得工作流用途租约。来不及处理时旧待处理帧被替换并释放；软件触发按轮请求。</p><h3>实际调用链</h3><p>CameraWorkflowFrameFeed.StartAsync → NextFrameAsync → 执行本轮 → using释放本轮帧</p><h3>VM对照与缺证</h3><p>VM工作流与相机原生实现不能仅靠设备UI推导；原版队列策略及停止完成信号仍待补。</p><h3>方案取舍</h3><p>按业务决定缓存政策；不能把最新帧策略宣传成全部场景适用。</p><h3>具体改法</h3><p>显式标注最新帧/逐触发必处理模式；连续硬触发等待仅由取消结束时，界面应说明等待中及超时政策。多相机入口另走回退，不声称已有同步采集屏障。</p><h3>验收标准（未执行）</h3><p>慢算法统计接收/替换/交付数；无触发、取消、多相机分别验，不将SDK单次读超时等同整轮超时。</p><details><summary>源码定位与片段</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs">src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs:115</a><pre>        if (continuous &amp;&amp; _mode != CameraTriggerMode.Software)
+            return await WaitForFrameAsync(cancellationToken).ConfigureAwait(false);
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(_timeout);
+        try { return await WaitForFrameAsync(timeout.Token).ConfigureAwait(false); }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new TimeoutException($"等待相机 {_cameraRef.Value} 新帧超时（{_timeout.TotalMilliseconds:F0} ms）");
+        }
+    }
+
+    private async Task&lt;CameraFrame&gt; WaitForFrameAsync(CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            Task waitTask;
+            lock (_gate)
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                if (_pending is { } frame)
+                {</pre><small>SHA256 52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5</small></details></article><article id="capture"><h2>公开单帧：有读锁，但没有同样的用途门禁</h2><h3>存什么、做什么</h3><p>CaptureAsync串行化单帧请求，复用已连接会话或临时打开；它没有调用AcquireCaptureLease。SDK读锁不等于业务用途互斥。</p><h3>实际调用链</h3><p>ICameraCaptureService → CameraRuntimeManager.CaptureAsync → 配置触发 → adapter.CaptureAsync</p><h3>VM对照与缺证</h3><p>VM同场景门禁尚缺直接实现，不能据缺证判断VM更差。</p><h3>方案取舍</h3><p>必须整改已见路径；整体运行时选型仍暂不能判断。</p><h3>具体改法</h3><p>所有采集入口统一申请操作租约；已有工作流租约需明确内部重入，避免双重申请死锁；明确预览冲突返回值。</p><h3>验收标准（未执行）</h3><p>预览期间单帧、流程期间单帧、临时连接失败与取消分别验；失败无残留连接和错误软件触发。</p><details><summary>源码定位与片段</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Cameras/Contracts/CameraRuntimeManager.cs">src/DeviceDriver/Cameras/Contracts/CameraRuntimeManager.cs:162</a><pre>    public async Task&lt;CameraFrame&gt; CaptureAsync(
+        CameraCaptureRequest request,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var gate = _captureGates.GetOrAdd(request.CameraRef.Value, _ =&gt; new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            // 已由设备列表连接的会话归应用所有；本次取帧绝不能关闭它。
+            if (_sessions.TryGetValue(request.CameraRef.Value, out var existing))
+                return await CaptureConfiguredFrameAsync(existing, request, cancellationToken).ConfigureAwait(false);
+
+            await using var temporary = await OpenAsync(
+                request.CameraRef,
+                CameraAccessMode.Exclusive,
+                new CameraConnectionOptions { Timeout = request.Timeout },
+                cancellationToken).ConfigureAwait(false);
+            return await CaptureConfiguredFrameAsync(temporary, request, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {</pre><small>SHA256 07407900baca2a4702e7af87fa86e1a0a3cbd0b4047c6f9770e58f233b56f6ed</small></details></article><article id="buffer"><h2>一帧的像素：先复制，再归还厂商缓冲</h2><h3>存什么、做什么</h3><p>MVS取得厂商缓冲后复制到byte[]，finally归还SDK缓冲。后续CameraFrame拥有图像；显示位图与算法输出仍是别的寿命。</p><h3>实际调用链</h3><p>GetImageBuffer → Marshal.Copy → CameraFrame → finally FreeImageBuffer → 消费者Dispose</p><h3>VM对照与缺证</h3><p>VM已有代表相机析构静态材料，不能证明所有厂商缓冲引用计数或历史显示最后读者。</p><h3>方案取舍</h3><p>明确现有复制成本；无测量不建议直接零拷贝迁移。</p><h3>具体改法</h3><p>记录采集字节复制、算法再复制、显示转换各边；若改零拷贝，先补租约和最后读者证明。</p><h3>验收标准（未执行）</h3><p>当前Mono8/BGR8范围外明确报不支持；慢显示、历史保留、算法异常都不得读已归还缓冲。</p><details><summary>源码定位与片段</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Cameras/Hikvision/Mvs/MvsCameraAdapter.cs">src/DeviceDriver/Cameras/Hikvision/Mvs/MvsCameraAdapter.cs:157</a><pre>                Marshal.Copy(frame.pBufAddr, bytes, 0, length);
+                // 长度不能区分 Mono8 与 Bayer8，也不能区分 RGB 与 BGR。
+                // 首版只放行已明确映射的原生格式，其余格式需单独做真实转换。
+                var pixelCount = checked((long)info.nWidth * info.nHeight);
+                var pixelType = info.enPixelType.ToString();
+                int channels;
+                if (pixelType.EndsWith("Mono8", StringComparison.OrdinalIgnoreCase) &amp;&amp; length == pixelCount)
+                    channels = 1;
+                else if (pixelType.EndsWith("BGR8_Packed", StringComparison.OrdinalIgnoreCase) &amp;&amp; length == pixelCount * 3)
+                    channels = 3;
+                else
+                    throw new CameraAdapterException(CameraErrorCode.ParameterUnsupported,
+                        $"暂不支持相机像素格式 {pixelType}（{length} 字节）；请在相机设置中选择 Mono8 或 BGR8 Packed。");
+                var frameIndex = Interlocked.Increment(ref _streamFrameCount);
+                var previousTimeouts = Interlocked.Exchange(ref _consecutiveNoDataCount, 0);
+                if (previousTimeouts &gt; 0)
+                    LogCamera(LogLevel.Info, $"取帧恢复 frame={info.nFrameNum} consecutiveNoDataBeforeRecovery={previousTimeouts}");
+                if (frameIndex == 1 || frameIndex % 120 == 0)
+                    LogCamera(LogLevel.Info,
+                        $"取帧成功 frame={info.nFrameNum} streamFrameIndex={frameIndex} size={info.nWidth}x{info.nHeight} pixelType={info.enPixelType} bytes={length} channels={channels} sampleMean8={CalculateSampleMean(bytes):F2} sdkWaitMs={captureTimer.Elapsed.TotalMilliseconds:F1}");
+                var image = new MvsVisionImage((int)info.nWidth, (int)info.nHeight, channels, bytes);
+                return new CameraFrame(Descriptor.CameraRef, info.nFrameNum, DateTimeOffset.UtcNow, image,</pre><small>SHA256 bc5b365c37e00866c1973c0f9ced07bf69ff53e1880636ff255d9dae5c489257</small></details></article><article id="stop"><h2>停止与释放：停止失败也要观察任务结局</h2><h3>存什么、做什么</h3><p>Feed正常先停流再等流任务；但非取消异常会跳过后续await，finally仍释放用途租约。预览也有停止失败后的释放路径。</p><h3>实际调用链</h3><p>停止请求 → Adapter.StopStreamAsync → 等待流任务 → 清待处理帧 → 释放用途 → 必要时断开连接</p><h3>VM对照与缺证</h3><p>VM原CloseCamera只是UI清空；最终析构及在途等待需分开审，不能拿UI关闭作为停止完成。</p><h3>方案取舍</h3><p>必须整改异常收尾；借鉴明确停止完成合同，非直接搬VM代码。</p><h3>具体改法</h3><p>分开捕获停止调用和流任务异常，始终观察在途结局；超时进入隔离状态保留资源占用，最终退役后再允许新用途。</p><h3>验收标准（未执行）</h3><p>停止抛错、回调迟到、窗口关闭、重复Dispose分别验；未排空不得宣布设备可重新占用。</p><details><summary>源码定位与片段</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs">src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs:206</a><pre>                try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }
+                catch (OperationCanceledException) { }
+                try { await _streamTask.ConfigureAwait(false); }
+                catch (OperationCanceledException) { }
+            }
+        }
+        finally
+        {
+            pending?.Dispose();
+            _streamCancellation.Dispose();
+            _captureLease.Dispose();
+        }
+    }
+}
+</pre><small>SHA256 52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5</small></details></article><article id="support"><h2>支持范围：找到驱动文件不等于能交付</h2><h3>存什么、做什么</h3><p>默认装配仅注册MVS发现和工厂；SDK引用有安装路径条件。存在模拟驱动源码不代表默认产品已启用。</p><h3>实际调用链</h3><p>CameraRuntimeComposition → MvsCameraAdapterFactory → 条件SDK引用 → 实际设备连接</p><h3>VM对照与缺证</h3><p>VM逐厂商支持和发布材料需与当前实际厂商矩阵对照，不按目录数量判断成熟度。</p><h3>方案取舍</h3><p>厂商覆盖待核；新增适配器和部署验收是独立任务。</p><h3>具体改法</h3><p>列出厂商/型号/像素格式/触发/SDK版本支持矩阵；干净机器部署和断连恢复列为发布门槛。</p><h3>验收标准（未执行）</h3><p>本轮未运行实机；构建成功也不能代替驱动依赖、网络发现与断连恢复验收。</p><details><summary>源码定位与片段</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Cameras/CameraRuntimeComposition.cs">src/DeviceDriver/Cameras/CameraRuntimeComposition.cs:18</a><pre>            new MvsCameraAdapterFactory(MvsDiscovery)
+        });
+        Discovery = new CameraDiscoveryCoordinator(new ICameraDiscoveryProvider[]
+        {
+            MvsDiscovery
+        });
+    }
+
+    public CameraRuntimeManager Runtime { get; }
+    public CameraDiscoveryCoordinator Discovery { get; }
+    public MvsCameraDiscoveryProvider MvsDiscovery { get; }
+
+    public async ValueTask DisposeAsync() =&gt; await Runtime.DisposeAsync().ConfigureAwait(false);
+}
+</pre><small>SHA256 f9a42a43596a624c9cdb56c15ebbc57ed7109a7f36b4d110401fdc8f49a4020c</small></details></article><details><summary>VM证据边界</summary><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraManager.cs">原GlobalCameraManager</a><p>CloseCamera只清UI集合；不证明物理关闭。原生全厂商/异常退役仍缺证。</p><small>SHA256 4d0db8fb2b9879ab545176a7a3037457c04d1d6afe8f7e314631840c9ea70338</small><p>代表原生相机析构材料：artifacts/validation/vm-round5-camera-dtor-trace.txt；本轮未重新逆向、未升级原42检查点。</p></details><section id="device-admission"><h2>计算与设备准入：不能用“已支持协议”代替完整链</h2><p>10行准入分析：2行调度+8行设备。文档交付与产品、实机和原生证据分别验收。</p><p><b>VM比较边界：</b>原版VM各协议跨根预算、取消I/O、等待完成及厂商最终释放缺直接实现；恢复模型的入口/声明不能补齐此语义，未知不当作VM不支持。</p><p><a href="../能力对照/comparison.html#compare-M20">通信横向对照</a> · <a href="../优化方案/optimization.html#O09">设备优化与实施门槛</a> · <a href="system-architecture.html">整体调度链</a></p><details id="admission-compute" open><summary>计算节点与外部等待 · 已有调度，跨根资源政策仍缺</summary><h3>实际调用链</h3><p>依赖全部Completed → profile → 计算槽/排他检查 → TryAcquire → Task.Run</p><h3>门禁与资源范围</h3><p>每次执行新建leases；计算槽max(1,min(4,CPU-1))。ExternalDataWait不占计算槽，不能等同全局等待数量有界。</p><h3>取消、失败、退役</h3><p>finally释放租约未先等待全部在途任务，已列停止整改；本表不重复算新缺陷。</p><h3>采用什么与为什么、具体改法</h3><p>自研整改：保留依赖调度，按根/全应用分开计算预算、外部等待预算和设备预算；设备互斥不能仅靠每根的租约表。</p><h3>验收（本轮未执行）</h3><p>双根共享设备、外部等待洪峰、排他节点与取消分别验证；未排空不能重用设备。</p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowExecutionEngine.cs">src/Workflow/WorkflowExecutionEngine.cs:301</a><small> SHA256 4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db</small></details><details id="admission-leases" open><summary>资源声明与租约范围 · 已有单次运行门禁</summary><h3>实际调用链</h3><p>profile.ResourceKeys → TryAcquire全部键 → ResourceLease.Dispose</p><h3>门禁与资源范围</h3><p>WorkflowExclusive用workflow键；ResourceExclusive无键回退node键。有同名资源键也只在同一个manager里互斥。</p><h3>取消、失败、退役</h3><p>Interlocked.Exchange保证同一lease重复Dispose不重复释放；不证明最后使用者结束。</p><h3>采用什么与为什么、具体改法</h3><p>自研整改：设备Owner提供全应用租约；声明缺失应诊断，避免node回退被误认设备排他。</p><h3>验收（本轮未执行）</h3><p>同根同键串行、不同根同设备串行；独立资源可并行，迟到完成不可释放新代次资源。</p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowResourceLeaseManager.cs">src/Workflow/WorkflowResourceLeaseManager.cs:17</a><small> SHA256 4d5ecee12b552e028421b2a485c8489daffc80ad416416441049bd0628d60558</small></details><details id="admission-raw" open><summary>TCP客户端/服务端、UDP、串口 · 驱动与通用收发入口已接线，实机未验</summary><h3>实际调用链</h3><p>工作流Send/事件 → Runtime → Raw适配器</p><h3>门禁与资源范围</h3><p>TCP client sendGate、server sendLock、serial writeGate；UDP按数据报，不能用一条“串行发送”概括所有协议。</p><h3>取消、失败、退役</h3><p>客户端写入开始后取消会关闭流以免半帧污染后续请求；其他协议的取消不等撤回对端副作用。</p><h3>采用什么与为什么、具体改法</h3><p>混合优化：保留协议差异与会话代次保护，统一忙/排队/拒绝政策和错误呈现，不复制未经核实的VM传输代码。</p><h3>验收（本轮未执行）</h3><p>各协议分别验同时发送、半写、取消、重连；写入结果不明不可自动重发。</p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Communications/Raw/TcpClient/TcpClientAdapter.cs">src/DeviceDriver/Communications/Raw/TcpClient/TcpClientAdapter.cs:71</a><small> SHA256 d32711fa363c2ab2a7b22f4128ab96d1c5a9d33f9b0443bb62a00e674521076b</small></details><details id="admission-modbus" open><summary>Modbus TCP/RTU · 驱动、点位收发/轮询已接线，实机未验</summary><h3>实际调用链</h3><p>工作流点位 → Runtime → ExecuteAsync → NModbus</p><h3>门禁与资源范围</h3><p>同master operationGate。库无取消令牌，取消关闭TCP/串口，但仍await底层operation后才释放gate。</p><h3>取消、失败、退役</h3><p>写入是否生效需设备确认；Dispose也等待gate，不能把取消返回前强制重用连接。</p><h3>采用什么与为什么、具体改法</h3><p>采用当前取消隔离思路并完善应用收尾；代价是坏I/O可能拖长退役，需故障隔离与观察，非宣称可瞬时停止。</p><h3>验收（本轮未执行）</h3><p>超时写入标结果不明；旧连接排空后才重连；TCP和RTU分别验证。</p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Communications/Modbus/ModbusAdapter.cs">src/DeviceDriver/Communications/Modbus/ModbusAdapter.cs:160</a><small> SHA256 5ae2e96b9c9223965d0138aea742fb9149bb5737d95ecb704fbc5e3a4d5e9d2a</small></details><details id="admission-s7" open><summary>S7类型化读写 · 驱动已实现；通用工作流收发目录未接线</summary><h3>实际调用链</h3><p>Runtime typed read/write → S7Session → PLC</p><h3>门禁与资源范围</h3><p>operationGate串行；已发送请求取消会Close，防旧响应进入下一请求。</p><h3>取消、失败、退役</h3><p>Dispose等待gate。GetTargets/ConfigureReceiveSources仅Raw/Modbus/OPCUA分支；不据此宣称整个软件不能调用S7。</p><h3>采用什么与为什么、具体改法</h3><p>新增工作流类型化点位适配与参数合同；复用现有驱动，先确认目标产品是否需要S7工具入口。</p><h3>验收（本轮未执行）</h3><p>数据区/DB/字节序/长度与类型显式；取消后重连无旧响应；收发目录和保存恢复贯通。</p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Communications/S7/S7Adapter.cs">src/DeviceDriver/Communications/S7/S7Adapter.cs:71</a><small> SHA256 b5a50d1f13a1cc4b0e85e9bcad12d73c7ace67a2540aed20e8c6a6e6f9d4b7dd</small></details><details id="admission-cip" open><summary>CIP显式消息 · 驱动已有；通用工作流目录未接线</summary><h3>实际调用链</h3><p>Runtime → service/class/instance/attribute → SendRRData</p><h3>门禁与资源范围</h3><p>requestGate串行，TCP sessionHandle归会话；这是显式请求，不是隐式实时I/O。</p><h3>取消、失败、退役</h3><p>异常关闭client并清sessionHandle；Dispose退役另验。不得把CIP目录当已完成周期实时控制。</p><h3>采用什么与为什么、具体改法</h3><p>扩展类型化工作流适配，或明确暂不支持；实时I/O若有需求独立设计，不能直接套字节发送。</p><h3>验收（本轮未执行）</h3><p>服务码响应匹配、错误码、取消后重新注册和点位合同；实机时序另验。</p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Communications/Cip/CipAdapter.cs">src/DeviceDriver/Communications/Cip/CipAdapter.cs:52</a><small> SHA256 511f83a86ad3c6c1178f67a387c6cfadbab44194f1aaeb95fd74a21e68313597</small></details><details id="admission-opcua" open><summary>OPCUA读写/浏览/订阅 · 驱动与点位入口已有，实机未验</summary><h3>实际调用链</h3><p>工作流点位 → Runtime → OPCUA Session；订阅/轮询另链</p><h3>门禁与资源范围</h3><p>serviceGate串行；工作流ActiveRead与Raw被动消息游标不同，不能混作同一种接收消费。</p><h3>取消、失败、退役</h3><p>Dispose清监视/订阅/KeepAlive/Session；运行时仍需拒旧会话通知。证书/服务器差异未实测。</p><h3>采用什么与为什么、具体改法</h3><p>保留类型化数据与订阅分层；补状态、质量/时间戳及断线重订阅验收，最终支持合同待产品确认。</p><h3>验收（本轮未执行）</h3><p>读写类型、重订阅、迟到通知、证书错误和关闭逐项验，不把连接成功代证数据可靠。</p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Communications/OpcUa/OpcUaAdapter.cs">src/DeviceDriver/Communications/OpcUa/OpcUaAdapter.cs:397</a><small> SHA256 40f02776ed8eab5c4fdaa5ad1f9bbdb4308c2bbf69b22508a483cce0aeed3863</small></details><details id="admission-preview" open><summary>MVS预览 · 默认MVS路径已有；实机未验</summary><h3>实际调用链</h3><p>PreviewHost → AcquireCaptureLease → StartStream → 转位图 → frame.Dispose</p><h3>门禁与资源范围</h3><p>应用拥有连接，预览拥有用途，消费者拥有一帧；三者不能合并。</p><h3>取消、失败、退役</h3><p>停止抛错后的用途提前释放风险见本页停止链；窗口关闭返回不等异步退役完成。</p><h3>采用什么与为什么、具体改法</h3><p>自研整改：统一可等待停止/隔离与用途协调；不因VM原生细节未知迁移。</p><h3>验收（本轮未执行）</h3><p>预览与工作流冲突、停止异常、关闭迟到帧不得错报设备空闲。</p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/Camera/CameraPreviewHost.xaml.cs">src/UI/Features/Camera/CameraPreviewHost.xaml.cs:264</a><small> SHA256 b5550e2fdd84feb517fb63383a3b34857bf530f4c646b9aa5aedb24cd16f4c6e</small></details><details id="admission-feed" open><summary>工作流图像源Feed · 单相机租约/最新帧已有；多相机同步待证</summary><h3>实际调用链</h3><p>StartAsync → NextFrameAsync → 本轮执行 → using frame</p><h3>门禁与资源范围</h3><p>单槽最新帧，替换旧待处理帧会释放；软件触发逐轮请求。连续非软件等待只依赖调用取消，不是整轮总超时。</p><h3>取消、失败、退役</h3><p>多相机走回退，未证明同步屏障；最新帧丢弃策略不适合所有必处理触发业务。</p><h3>采用什么与为什么、具体改法</h3><p>混合优化：保留最新帧模式并明确统计；按业务新增逐触发必处理和超时政策，先做Owner合同再改缓存。</p><h3>验收（本轮未执行）</h3><p>接收/替换/交付数可核；无触发取消、多相机、慢算法和停止异常分别验。</p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs">src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs:115</a><small> SHA256 52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5</small></details><details id="admission-capture" open><summary>公开单帧Capture · 服务已有；用途门禁不一致</summary><h3>实际调用链</h3><p>ICameraCaptureService → Runtime.CaptureAsync → adapter</p><h3>门禁与资源范围</h3><p>captureGate只串行单帧调用；复用现有或临时会话，没有AcquireCaptureLease。</p><h3>取消、失败、退役</h3><p>临时会话await using不代表所有连接并发已安全；SDK取消能力也有限。</p><h3>采用什么与为什么、具体改法</h3><p>必须整改：所有采集入口统一用途准入；工作流内部重入需显式令牌，避免双重租约死锁。</p><h3>验收（本轮未执行）</h3><p>预览中单帧、流程中单帧、临时连接失败与取消后无误占用/误触发。</p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Cameras/Contracts/CameraRuntimeManager.cs">src/DeviceDriver/Cameras/Contracts/CameraRuntimeManager.cs:162</a><small> SHA256 07407900baca2a4702e7af87fa86e1a0a3cbd0b4047c6f9770e58f233b56f6ed</small></details><details><summary>跨文件接线证据</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Communication/WorkflowCommunicationSendService.cs">src/UI/Services/Communication/WorkflowCommunicationSendService.cs</a><small> 476d47688dbc043c788b54bf6ec264cd44c7e0ac2ab6a90669f43e6658a64dd2</small></p><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Communication/CommunicationApplicationService.cs">src/UI/Services/Communication/CommunicationApplicationService.cs</a><small> 8b5a4f0d26cb9a14fc42de8785e48a7cb288edb2ad31c568cca4d6a06fc006b6</small></p><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Communications/CommunicationProtocolFactories.cs">src/DeviceDriver/Communications/CommunicationProtocolFactories.cs</a><small> a67dccdf44674410fe514747f12d1e9e09bc8af19fcc609816d7e6584e3e5043</small></p><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Communications/Runtime/CommunicationRuntimeManager.Operations.cs">src/DeviceDriver/Communications/Runtime/CommunicationRuntimeManager.Operations.cs</a><small> 9a72d485c5d918201cf8f45aad88f338097e36f189a09ff823152c590480a6bc</small></p><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Communications/Raw/TcpServer/TcpServerAdapter.cs">src/DeviceDriver/Communications/Raw/TcpServer/TcpServerAdapter.cs</a><small> 45b8755446f4e68ee1124f1c9a1c8593c5d0f7a7a48306de33f10b2ee8f8d981</small></p><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Communications/Raw/Udp/UdpAdapter.cs">src/DeviceDriver/Communications/Raw/Udp/UdpAdapter.cs</a><small> ace4a5d00679ec10e29ff2f870edc2ce0a8e4f74406413053230dd65083363ac</small></p><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Communications/Raw/Serial/SerialAdapter.cs">src/DeviceDriver/Communications/Raw/Serial/SerialAdapter.cs</a><small> 42578aaaa5c6617e6436d7cd386283f3cef52b948807d47bc4c8adb178210853</small></p></details></section></main><script>function show(){let id=location.hash.slice(1)||'list';if(!document.getElementById(id))id='list';document.querySelectorAll('article[id]').forEach(a=>a.hidden=a.id!==id);document.querySelectorAll('[data-camera]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.camera===id)))}document.querySelectorAll('[data-camera]').forEach(b=>b.onclick=()=>{history.pushState({},'','#'+b.dataset.camera);show();document.getElementById(b.dataset.camera).scrollIntoView({block:'start'})});addEventListener('popstate',show);addEventListener('hashchange',show);show()</script></html>

@@ -1,0 +1,456 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工具处置 · 拆分组合</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>工具处置 · 拆分组合</h1><aside class="scope-notice">以下沿用2026-10-21分析基线与原有状态；未把本次分页或图示当作新增语义证据。最新目标取舍另见 <a href="architecture-target.html">12项目标决策</a>。</aside><div class="visual-metrics"><div><strong>6</strong><span>本分类目录条目</span><small>目录≠算法等价</small></div></div><div class="filter-bar"><label for="search">搜索本页</label><input id="search" data-filter-input placeholder="输入名称、ID或问题"><output data-filter-count></output></div><div class="record-grid"><section class="record-card" id="tool-14-0" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>二维阵列</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">SplitCombination/IMVS2dArrayCorrectModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;SplitCombination/IMVS2dArrayCorrectModu&quot;,
+  &quot;label&quot;: &quot;二维阵列&quot;,
+  &quot;category&quot;: &quot;拆分组合&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;InputBox&quot;,
+    &quot;ROI CenterPoint&quot;,
+    &quot;roicenterx&quot;,
+    &quot;roicentery&quot;,
+    &quot;roiwidth&quot;,
+    &quot;roiheight&quot;,
+    &quot;roiangle&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;FixBoxNum&quot;,
+    &quot;FixRect&quot;,
+    &quot;FixRectCenter&quot;,
+    &quot;FixRectCenterX&quot;,
+    &quot;FixRectCenterY&quot;,
+    &quot;FixRectBoxWidth&quot;,
+    &quot;FixRectBoxHeight&quot;,
+    &quot;FixRectAngle&quot;,
+    &quot;MinRowNum&quot;,
+    &quot;MinRowRect&quot;,
+    &quot;MinRowRectCenter&quot;,
+    &quot;MinRowRectCenterX&quot;,
+    &quot;MinRowRectCenterY&quot;,
+    &quot;MinRowRectBoxWidth&quot;,
+    &quot;MinRowRectBoxHeight&quot;,
+    &quot;MinRowRectAngle&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\IMVS2dArrayCorrectModu.xml&quot;,
+      &quot;sha256&quot;: &quot;3b15a9fc94a360b24acaab28b7ea2eeb0da83d396d88ae420cc612fb7aabc3ad&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\IMVS2dArrayCorrectModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;f4a07e6166f954c1e6b2025835652949f60b7a526c2b86b98b0c48e4078690ee&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\IMVS2dArrayCorrectModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;561561cad257a126a2e5d17e9301e6daeb6093bde22e3d2cc065c3de690a2e15&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\IMVS2dArrayCorrectModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;2e6fdce2b398e1e598f4e6c6954aa2eace62282258a0c3fc24ee7d43087740a8&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\IMVS2dArrayCorrectModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;b7921312ca85c72d07437d35be5fbdd29a073305f37984f860958262eef3749b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;52e98533e869888f38b0aa6889e959bdd44ad8d7ff7808f9c8587f349ec82d36&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-14-1" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>Box过滤</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">SplitCombination/IMVSBoxFilterModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;SplitCombination/IMVSBoxFilterModule&quot;,
+  &quot;label&quot;: &quot;Box过滤&quot;,
+  &quot;category&quot;: &quot;拆分组合&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;InputRegion&quot;,
+    &quot;ROI CenterPoint&quot;,
+    &quot;roicenterx&quot;,
+    &quot;roicentery&quot;,
+    &quot;roiwidth&quot;,
+    &quot;roiheight&quot;,
+    &quot;roiangle&quot;,
+    &quot;MatchNum&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;ObjBoxIndex&quot;,
+    &quot;FilterBoxNum&quot;,
+    &quot;TargetInfoRect&quot;,
+    &quot;TargetInfoCenterPoint&quot;,
+    &quot;ObjCenterX&quot;,
+    &quot;ObjCenterY&quot;,
+    &quot;ObjBoxWidth&quot;,
+    &quot;ObjBoxHeight&quot;,
+    &quot;ObjBoxAngle&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\IMVSBoxFilterModule.xml&quot;,
+      &quot;sha256&quot;: &quot;80c271b5e51be45cd23e1fcde46f8bba24f70a115dada8d1fd6fd9d2aa143dc7&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\IMVSBoxFilterModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;2c2bb501b99d7f5c7b6c4ef2f5324610c857ec87caca74d856670b10211ac9e0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\IMVSBoxFilterModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;5a672281ec6e2f8268662270e46b5106240a1143f0d597648c761fac6329a705&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\IMVSBoxFilterModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;bbe8b68f7fb20e7f5284507c0f198d787a7d7e0d877ab97518b4c307f7663ef8&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\IMVSBoxFilterModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;73d8882dfc8a5182f6d06edf37417fc90e83f7a185bd8d3f15e3ba5f60fca458&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;f11903dc1a003c62bb6bce96115eb6655685e8184ee675aab5f8b904865d1842&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-14-2" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>Box融合</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">SplitCombination/IMVSBoxMergeModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;SplitCombination/IMVSBoxMergeModu&quot;,
+  &quot;label&quot;: &quot;Box融合&quot;,
+  &quot;category&quot;: &quot;拆分组合&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;InputBOX&quot;,
+    &quot;ROI CenterPoint&quot;,
+    &quot;roicenterx&quot;,
+    &quot;roicentery&quot;,
+    &quot;roiwidth&quot;,
+    &quot;roiheight&quot;,
+    &quot;roiangle&quot;,
+    &quot;BoxLabel&quot;,
+    &quot;FlawPriority&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;MergeBoxNum&quot;,
+    &quot;MergeBoxLabel&quot;,
+    &quot;MergeBox&quot;,
+    &quot;MergeBoxCenter&quot;,
+    &quot;MergeBoxCenterX&quot;,
+    &quot;MergeBoxCenterY&quot;,
+    &quot;MergeBoxWidth&quot;,
+    &quot;MergeBoxHeight&quot;,
+    &quot;MergeBoxAngle&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\IMVSBoxMergeModu.xml&quot;,
+      &quot;sha256&quot;: &quot;df23ccdcd6410dea2c7d6bd1b52814738e4f61749789c4be7acee766efba15b4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\IMVSBoxMergeModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;dfdf2903d514241eaff74b7a07a83e4fef666fe18f0768a951e06480c86b6ae2&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\IMVSBoxMergeModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;217f157f36fd605dde6e308f4ec05b6664b5ab967912d6957457a78be35e5f91&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\IMVSBoxMergeModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;37d930fd4fa3467815978ec69a74fcae8fb8686eaf75ec6a726251a4619f4b86&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\IMVSBoxMergeModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;3217099a3cd48ec248fda43ca4390ea79ba21f1bb4f34c50e4c91b33ad4887b5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;fc2a24ff36c0e8f68469e6ebc2d49126fb3c6b5546470d6925a7d2eb55ed7923&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-14-3" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>Box重叠率计算</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">SplitCombination/IMVSBoxOverlapCalculationModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;SplitCombination/IMVSBoxOverlapCalculationModu&quot;,
+  &quot;label&quot;: &quot;Box重叠率计算&quot;,
+  &quot;category&quot;: &quot;拆分组合&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;InputBOX1&quot;,
+    &quot;ROICenterPoint1&quot;,
+    &quot;roicenterx1&quot;,
+    &quot;roicentery1&quot;,
+    &quot;roiwidth1&quot;,
+    &quot;roiheight1&quot;,
+    &quot;roiangle1&quot;,
+    &quot;InputBOX2&quot;,
+    &quot;ROICenterPoint2&quot;,
+    &quot;roicenterx2&quot;,
+    &quot;roicentery2&quot;,
+    &quot;roiwidth2&quot;,
+    &quot;roiheight2&quot;,
+    &quot;roiangle2&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;OverlapRate&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\IMVSBoxOverlapCalculationModu.xml&quot;,
+      &quot;sha256&quot;: &quot;b9cdd1fa15267156ed072ec22bf52bfb6ae280143847b88a5b662a938fbb2930&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\IMVSBoxOverlapCalculationModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\IMVSBoxOverlapCalculationModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;ea154249bd0d0685bd8ffdfb4e69c868f7e012f94bb3a382d29586fae92fa0aa&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\IMVSBoxOverlapCalculationModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;922c0d9d8f0cfe84a02638c8d88dcb138306f6b8909891657fc1b275a9bbfed1&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\IMVSBoxOverlapCalculationModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;cbc9e40d6be72b4930009eef9ac75fa861b0a87b87ad2833266143f3a2f896cb&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;e6a6084382d6cdee0447e89ae4dcf10f80c1d483a465fbeeaa33672d045ce344&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-14-4" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>划片拆分</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">SplitCombination/IMVSDivideImageModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;SplitCombination/IMVSDivideImageModu&quot;,
+  &quot;label&quot;: &quot;划片拆分&quot;,
+  &quot;category&quot;: &quot;拆分组合&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;InputROI&quot;,
+    &quot;ROI CenterPoint&quot;,
+    &quot;roicenterx&quot;,
+    &quot;roicentery&quot;,
+    &quot;roiwidth&quot;,
+    &quot;roiheight&quot;,
+    &quot;roiangle&quot;,
+    &quot;Position Correction Info&quot;,
+    &quot;Fixtured Point&quot;,
+    &quot;FixtureInitPointX&quot;,
+    &quot;FixtureInitPointY&quot;,
+    &quot;FixtureInitAngle&quot;,
+    &quot;FixtureInitScaleX&quot;,
+    &quot;FixtureInitScaleY&quot;,
+    &quot;Unfixtured Point&quot;,
+    &quot;FixtureRunPointX&quot;,
+    &quot;FixtureRunPointY&quot;,
+    &quot;FixtureRunAngle&quot;,
+    &quot;FixtureRunScaleX&quot;,
+    &quot;FixtureRunScaleY&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;ROI&quot;,
+    &quot;DetectRectCenterPoint&quot;,
+    &quot;DetectCenterX&quot;,
+    &quot;DetectCenterY&quot;,
+    &quot;DetectWidth&quot;,
+    &quot;DetectHeight&quot;,
+    &quot;DetectAngle&quot;,
+    &quot;DivideRect&quot;,
+    &quot;DivideRectCenter&quot;,
+    &quot;DivideRectCenterX&quot;,
+    &quot;DivideRectCenterY&quot;,
+    &quot;DivideRectWidth&quot;,
+    &quot;DivideRectHeight&quot;,
+    &quot;DivideRectAngle&quot;,
+    &quot;DivideCount&quot;,
+    &quot;Output Position Correction Info&quot;,
+    &quot;Output Fixtured Point&quot;,
+    &quot;OutputFixtureInitPointX&quot;,
+    &quot;OutputFixtureInitPointY&quot;,
+    &quot;OutputFixtureInitAngle&quot;,
+    &quot;OutputFixtureInitScaleX&quot;,
+    &quot;OutputFixtureInitScaleY&quot;,
+    &quot;Output Unfixtured Point&quot;,
+    &quot;OutputFixtureRunPointX&quot;,
+    &quot;OutputFixtureRunPointY&quot;,
+    &quot;OutputFixtureRunAngle&quot;,
+    &quot;OutputFixtureRunScaleX&quot;,
+    &quot;OutputFixtureRunScaleY&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\IMVSDivideImageModu.xml&quot;,
+      &quot;sha256&quot;: &quot;897918654c43ba97a8d0dc6bf84f55395ae3d0b7d3de9dbeffc71fa571bd726d&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\IMVSDivideImageModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;fb4651736891c1bc4c1436d9f0dcbbf925f206f593ff91c1479b27e45d793748&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\IMVSDivideImageModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;72a8ef897b1fc5afd8c71198601ea0907b89f812d2a30374ce71f4034683e16b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\IMVSDivideImageModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;9789bb64eae7f724e6dd4f1957e6d05441044f55ca9bcf30e31ea9f7bc9e9d51&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\IMVSDivideImageModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;65de77a4b5501f964eb9e75449d17f0056268cc0b0a1fa56b87be024a3cc3fcd&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;6e7bacb31cd19c3eec5118afd8b251580f8431785a3af770eae3f206c957c642&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-14-5" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>多标签筛选</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">SplitCombination/IMVSMultiLabelFilterModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;SplitCombination/IMVSMultiLabelFilterModu&quot;,
+  &quot;label&quot;: &quot;多标签筛选&quot;,
+  &quot;category&quot;: &quot;拆分组合&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先补类型化集合/Box/图像域与索引、复制/释放合同，再按真实需要新增组合算子。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ClassIndex&quot;,
+    &quot;ClassNum&quot;,
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;OutputImage&quot;,
+    &quot;OutImage&quot;,
+    &quot;OutImageWidth&quot;,
+    &quot;OutImageHeight&quot;,
+    &quot;OutImagePixelFormat&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\IMVSMultiLabelFilterModu.xml&quot;,
+      &quot;sha256&quot;: &quot;62729350982815220c6097bc5f120c77065375048b2d15e87665728dab6fee3b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\IMVSMultiLabelFilterModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;403251e0f7fd681bc24e49ff0c370d3e6f2f5b5714b8b03276f2c2f1487c7f02&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\IMVSMultiLabelFilterModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;2d51e424b5373cbc9bd9846ae3215143e354ccea440383d83b0827f0ded9cbb4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\IMVSMultiLabelFilterModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;29079811e8aac0f63ed0d5c36997cc0fd2d00114ea216095380138c7a17cd01f&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\IMVSMultiLabelFilterModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;f017aa08e524918931f0c9f760eb683ab414973b36e211fae6b95cc60ca58427&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;58e2f3d58b2a7c5fd8324e32dec68c805f5f7e1eeec31d6161758488ed820f9f&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section></div></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

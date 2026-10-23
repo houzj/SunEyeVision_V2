@@ -1,0 +1,91 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T11 图像缩放、适应、平移、全屏</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>T11 图像缩放、适应、平移、全屏</h1><article id="compare-T11"><span id="T11"></span><div class="visual-metrics"><div><strong>T11</strong><span>能力条目</span><small>静态路径已见</small></div><div><strong>差异小</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>ImageControl.xaml Click/Mouse</b></li><li><small>02</small><b>Zoom/FitToWindow</b></li><li><small>03</small><b>UpdateImageTransform；全屏移出父容器再恢复</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>底图/结果/交互层共享父变换；全屏保存Source、DataContext和原父容器。</p><details><summary>完整缺陷与未闭合调用边</summary><p>跨屏DPI、绑定恢复和重复全屏操作需运行验证；不等画布小地图。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>ImageViewBox控制比例/位图质量/命中，按相同像素点变换比较。</p><p>ImageViewBox比例/命中/质量的分工可作测试基线。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF02-OVERVIEW-VIEWPORT-HANDOFF.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">仅限已见基础入口/交互职责相近，不代表内部算法、稳定性或生命周期等价。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">共享父变换和全屏恢复已有代码；没有跨DPI/重复切换与VM同条件比较。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：共享父变换和全屏恢复已有代码；没有跨DPI/重复切换与VM同条件比较。 VM参考边界：ImageViewBox比例/命中/质量的分工可作测试基线。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">先验同像素点和绑定恢复，再选改造；不能以重写成本推现控件更优秀。 像素中心/边界、屏幕/图像/世界坐标明确定义；全屏恢复事件和绑定。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">同像素点在0.1/1/10倍、DPI切换和全屏前后命中一致，不重算算法。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o06.html#O06">O06</a></td></tr></tbody></table></div></section><article id="recommendation-T11"><h2>T11 图像缩放、适应、平移、全屏 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>共享父变换和全屏恢复已有代码；没有跨DPI/重复切换与VM同条件比较。</p><p><b>VM可借鉴与不可推断：</b>ImageViewBox比例/命中/质量的分工可作测试基线。</p><p><b>具体改法 / 成本：</b>先验同像素点和绑定恢复，再选改造；不能以重写成本推现控件更优秀。 像素中心/边界、屏幕/图像/世界坐标明确定义；全屏恢复事件和绑定。</p><p><b>验收：</b>同像素点在0.1/1/10倍、DPI切换和全屏前后命中一致，不重算算法。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T11">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T11">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S084</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml">src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml:255</a></p><p><code>ZoomIn_Click</code></p><p>SHA256 <code>b792ec4d3cbff641131e8decfd00ceb67794bd7007396f5c850eec4d5b87c786</code></p><pre>                            Click=&quot;ZoomIn_Click&quot; ToolTip=&quot;放大 (Ctrl++)&quot;/&gt;
+                    &lt;!-- 缩小 - ZoomOut图标 --&gt;
+                    &lt;Button Content=&quot;&amp;#xE71F;&quot; 
+                            Style=&quot;{StaticResource ToolBarButtonStyle}&quot;
+                            Click=&quot;ZoomOut_Click&quot; ToolTip=&quot;缩小 (Ctrl+-)&quot;/&gt;
+                    &lt;!-- 适应窗口 - 使用Unicode比例符号 --&gt;
+                    &lt;Button Style=&quot;{StaticResource ToolBarButtonStyle}&quot;
+                            Click=&quot;FitToWindow_Click&quot; ToolTip=&quot;适应窗口 (Ctrl+0)&quot;&gt;
+                        &lt;TextBlock Text=&quot;1&amp;#x2236;1&quot; 
+                                   FontFamily=&quot;Segoe UI&quot;
+                                   FontSize=&quot;12&quot; 
+                                   FontWeight=&quot;Bold&quot; 
+                                   VerticalAlignment=&quot;Center&quot;/&gt;
+                    &lt;/Button&gt;</pre></details><details class="source-card"><summary>S085</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs">src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs:794</a></p><p><code>UpdateImageTransform</code></p><p>SHA256 <code>e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68</code></p><pre>        private void UpdateImageTransform()
+        {
+            if (ImageScaleTransform == null || ImageTranslateTransform == null) return;
+
+            ImageScaleTransform.ScaleX = Zoom;
+            ImageScaleTransform.ScaleY = Zoom;
+            ImageTranslateTransform.X = _offsetX;
+            ImageTranslateTransform.Y = _offsetY;
+
+            RequestViewTransformSync();
+        }
+
+        private void OnImageLoaded()
+        {</pre></details><details class="source-card"><summary>S086</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs">src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs:614</a></p><p><code>EnterFullscreen</code></p><p>SHA256 <code>e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68</code></p><pre>        public void EnterFullscreenMode()
+        {
+            if (!_isFullscreen)
+            {
+                EnterFullscreen();
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// 退出全屏（公开方法）
+        /// &lt;/summary&gt;
+        public void ExitFullscreenMode()
+        {
+            ExitFullscreen();</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T11&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;图像缩放、适应、平移、全屏&quot;,
+  &quot;state&quot;: &quot;implemented&quot;,
+  &quot;chain&quot;: [
+    &quot;ImageControl.xaml Click/Mouse&quot;,
+    &quot;Zoom/FitToWindow&quot;,
+    &quot;UpdateImageTransform；全屏移出父容器再恢复&quot;
+  ],
+  &quot;current&quot;: &quot;底图/结果/交互层共享父变换；全屏保存Source、DataContext和原父容器。&quot;,
+  &quot;gap&quot;: &quot;跨屏DPI、绑定恢复和重复全屏操作需运行验证；不等画布小地图。&quot;,
+  &quot;vm&quot;: &quot;ImageViewBox控制比例/位图质量/命中，按相同像素点变换比较。&quot;,
+  &quot;vmDoc&quot;: &quot;MF02-OVERVIEW-VIEWPORT-HANDOFF.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：共享父变换和全屏恢复已有代码；没有跨DPI/重复切换与VM同条件比较。 VM参考边界：ImageViewBox比例/命中/质量的分工可作测试基线。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;先验同像素点和绑定恢复，再选改造；不能以重写成本推现控件更优秀。 像素中心/边界、屏幕/图像/世界坐标明确定义；全屏恢复事件和绑定。&quot;,
+  &quot;accept&quot;: &quot;同像素点在0.1/1/10倍、DPI切换和全屏前后命中一致，不重算算法。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S084&quot;,
+    &quot;S085&quot;,
+    &quot;S086&quot;
+  ],
+  &quot;optimization&quot;: &quot;O06&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留图像控件，补变换验收&quot;,
+    &quot;reason&quot;: &quot;已有变换可复用，重写会影响ROI、文字、命中和导出。&quot;
+  },
+  &quot;defect&quot;: &quot;共享父变换和全屏恢复已有代码；没有跨DPI/重复切换与VM同条件比较。&quot;,
+  &quot;vmBorrow&quot;: &quot;ImageViewBox比例/命中/质量的分工可作测试基线。&quot;,
+  &quot;difference&quot;: &quot;差异小&quot;,
+  &quot;differenceBasis&quot;: &quot;仅限已见基础入口/交互职责相近，不代表内部算法、稳定性或生命周期等价。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;共享父变换和全屏恢复已有代码；没有跨DPI/重复切换与VM同条件比较。&quot;,
+    &quot;borrow&quot;: &quot;ImageViewBox比例/命中/质量的分工可作测试基线。&quot;,
+    &quot;action&quot;: &quot;先验同像素点和绑定恢复，再选改造；不能以重写成本推现控件更优秀。&quot;,
+    &quot;difference&quot;: &quot;差异小&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S084&quot;,
+      &quot;S085&quot;,
+      &quot;S086&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

@@ -1,1 +1,291 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>自研架构文档 · 旧入口</title></head><body data-managed-library-router><p>相关文档已整理到 <a href="自研架构文档维护/目标架构/architecture-a03.html">自研架构文档维护</a>。此页保留旧链接与锚点兼容。</p><script>(()=>{location.replace("自研架构文档维护/目标架构/architecture-a03.html"+location.search+location.hash)})();</script></body></html>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A03 停止和完成</title><link rel="stylesheet" href="architecture-doc-site.css"></head><body><nav aria-label="文档导航"><a href="index.html">文档索引</a><a href="architecture-target.html">最新目标决策</a><a href="framework-overview.html">框架对比</a><a href="framework-sdk-overview.html">SDK设计</a><a href="joint-optimization-plan.html">联合方案</a><a href="architecture-evidence.html">本批证据</a></nav><main><h1>A03 停止和完成</h1><article id="decision-A03"><p class="status">proposed-not-implemented · 全部接口为拟议合同，未编译/运行</p><div class="visual-metrics"><div><strong>A03</strong><span>目标决策</span><small>拟议，未实施</small></div><div><strong>4</strong><span>局部证据条目</span><small>未知单列</small></div><div><strong>2</strong><span>验收用例</span><small>均未运行</small></div></div><figure class="architecture-figure" data-visual="stop"><figcaption><b>停止：请求、执行结束与资源退役分开</b><span class="chip">拟议设计，未实现/运行验收</span></figcaption><div class="diagram-actions"><button type="button" data-diagram-expand>放大查看图</button><span>实线：所标范围内的关系；虚线：条件/待验证边界。箭头表示阶段关系，ResultRetired独立观察，不阻塞未来Acquire。</span></div><div class="svg-scroll"><svg role="img" aria-label="停止：请求、执行结束与资源退役分开；拟议设计，未实现/运行验收" viewBox="0 0 945 339"><title>停止：请求、执行结束与资源退役分开</title><desc>拟议设计，未实现/运行验收。图中节点和箭头与下方文字合同共同解释，不能单独作为运行保证。</desc><defs><marker id="arrow-stop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker></defs><path d="M 260 82 L 350 82" class="graph-edge " marker-end="url(#arrow-stop)"/><text class="edge-label" x="305" y="73">StopAsync</text><path d="M 590 82 L 680 82" class="graph-edge " marker-end="url(#arrow-stop)"/><text class="edge-label" x="635" y="73">真实结束</text><path d="M 350 82 L 260 272" class="graph-edge " marker-end="url(#arrow-stop)"/><text class="edge-label" x="305" y="168">超时</text><path d="M 680 82 L 590 272" class="graph-edge " marker-end="url(#arrow-stop)"/><text class="edge-label" x="635" y="168">内部收尾</text><path d="M 800 124 L 800 230" class="graph-edge uncertain" marker-end="url(#arrow-stop)"/><text class="edge-label" x="800" y="168">另观察结果Owner</text><g class="graph-node"><rect x="20" y="40" width="240" height="84" rx="13"/><text x="36" y="72">Running</text><text class="node-note" x="36" y="100">仍可能持资源</text></g><g class="graph-node"><rect x="350" y="40" width="240" height="84" rx="13"/><text x="366" y="72">StopRequested</text><text class="node-note" x="366" y="100">停派发 · 请求取消</text></g><g class="graph-node"><rect x="680" y="40" width="240" height="84" rx="13"/><text x="696" y="72">ExecutionFinished</text><text class="node-note" x="696" y="100">观察全部在途结局</text></g><g class="graph-node"><rect x="20" y="230" width="240" height="84" rx="13"/><text x="36" y="262">Quarantined</text><text class="node-note" x="36" y="290">超时，保留占用</text></g><g class="graph-node"><rect x="350" y="230" width="240" height="84" rx="13"/><text x="366" y="262">ResourceRetired</text><text class="node-note" x="366" y="290">本轮临时资源</text></g><g class="graph-node"><rect x="680" y="230" width="240" height="84" rx="13"/><text x="696" y="262">ResultRetired</text><text class="node-note" x="696" y="290">handle和外部lease归还</text></g></svg></div><p class="diagram-note">拟议设计，未实现/运行验收 · <a href="architecture-target.html">查看依据、合同与未知</a></p></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前边界</h2><p>现有running任务finally释放lease与StopAndWait轮询不能单独证明全部在途排空。</p></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM已证 / 未知</h2><p>VM Q01-Q04证ContinuousRunEnable及全局/流程停止分支，不证明native在途已结束。</p></section></div><section class="visual-card decision-summary"><h2>本项选择与代价</h2><p><strong>自研重做排空保证；借鉴VM显式停止入口</strong></p><p>停止准入→请求取消→观察全部在途→结束执行→退役临时资源；不可取消超时隔离。</p><div class="tradeoff-grid"><div><h3>收益与成本</h3><p>安全可诊断；保留隔离资源和异步收尾会增加复杂度。</p></div><div><h3>为什么不选替代路线</h3><p>仅传CancellationToken实现简单但缺少安全终态；目标选择可观察排空，承担隔离资源预算、诊断和后续回收成本。</p></div></div></section><h2>拟议接口与数据字段</h2><pre>ValueTask&lt;StopOutcome&gt; StopAsync(RunId run, StopOptions options);
+StopOutcome = Drained | Quarantined(PendingOwners, Reason);
+RunState { Accepted, Running, StopRequested, ExecutionFinished, Quarantined }
+Task&lt;ExecutionSummary&gt; Completion; Task&lt;RetirementSummary&gt; ResourceRetired;
+Task&lt;ResultRetirementSummary&gt; ResultRetired;</pre><h3>状态与生效时点</h3><p>Stop先停派发/连续新轮，再请求取消并观察工具、native和回调；Completion等待执行结束和内部收尾结局，不等待未来Acquire。ResourceRetired只表示本轮临时资源退役；已发布结果的最终Owner通过ResultRetired另观察，须等RunHandle固定版本权及全部ResultLease归还。超时隔离不伪造任务结束。</p><h3>Owner与释放责任</h3><p>Run协调者拥有取消源和收尾任务；资源Owner保留隔离占用；外部结果lease按A08归还。</p><h3>失败、取消与幂等</h3><p>等待Completion的ct只取消等待。重复Stop合用同一收尾任务，不重做Dispose。非协作执行超时返回Quarantined及诊断，不能强制释放仍使用的native资源。</p><h3>版本与兼容</h3><p>状态事件含RunId及递增Sequence；新增状态必须通过能力协商，旧客户遇未知状态不能当成功。</p><h2>验收：尚未执行</h2><section id="A03-T1"><h3>A03-T1 · planned-not-run</h3><p>取消后非协作工具仍在用资源时不得提前复用</p><p>执行方法与判定：<a href="architecture-acceptance.html#A03-T1">查看用例</a></p></section><section id="A03-T2"><h3>A03-T2 · planned-not-run</h3><p>超时返回隔离；重复Stop/Close共享收尾任务，不伪报成功</p><p>执行方法与判定：<a href="architecture-acceptance.html#A03-T2">查看用例</a></p></section><h2>原版证据与局部边界</h2><p>source-confirmed限交接中选定成员；不是整库复核。独立恢复代码 independent-implementation 不作为原版事实。<a href="architecture-evidence.html">本批来源SHA</a></p><details id="evidence-A03-0"><summary>execution-storage:Q01 · source-confirmed · continuous and stop wrappers / VisionMaster.AppMainWindow.TitleMenueItemData::MutiRun / VisionMaster.AppMainWindow.TitleMenueItemData::CheckRun / VisionMaster.AppMainWindow.TitleMenueItemData::MutiOrStopRun / VisionMaster.AppMainWindow.TitleMenueItemData::StopRun</summary><p>MutiRun在CheckRun放行后传true并记日志；CheckRun只拒绝首个WorkState非Ready且IsEnabled的流程。StopRun不走CheckRun，直接传false。MutiRun catch仅对VmException显示全局脚本错误，其它异常无该提示；StopRun没有此catch。</p><ul><li>未知/限制：外层反射吞异常、全部运行前提和实际完成另查。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs:1480–1508</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187</code></p><pre>	public static void MutiRun()
+	{
+		try
+		{
+			if (CheckRun())
+			{
+				MutiOrStopRun(isContinousRunEnable: true);
+				UILogManager.logCreate(&quot;信息&quot;, AppLocalizationService.GetLang(&quot;连续运行开始&quot;), false, true);
+			}
+		}
+		catch (Exception ex)
+		{
+			if (ex is VmException ex2)
+			{
+				string strMsg = AppLocalizationService.GetLang(&quot;Lang_GlobalScript&quot;) + &quot;:&quot; + ErrorCodeInfo.GetErrorInfo(ex2.errorCode);
+				HikMessageBox.Show(strMsg, MessageIcons.Error);
+			}
+		}
+	}
+
+	private static void MutiOrStopRun(bool isContinousRunEnable)
+	{
+		((IVMRun)VmSolution.Instance).ContinuousRunEnable = isContinousRunEnable;
+	}
+
+	public static void StopRun()
+	{
+		MutiOrStopRun(isContinousRunEnable: false);
+	}</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/run-exit-cil-evidence.json">docs/architecture-recovery/run-exit-cil-evidence.json:1745–1764</a> · original-managed-cil · 原二进制身份：42e2437780ec21c9d1ade2d07ace0a26635961f5c90559934a7fde7e233e0c23 / MVID 77c739a5-b0ec-4834-8a1e-64dd9b618ae5</p><p>SHA256 <code>daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304</code></p><pre>          &quot;token&quot;: &quot;0x060002e7&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x060002e7&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VisionMaster.AppMainWindow.TitleMenueItemData&quot;,
+            &quot;name&quot;: &quot;MutiRun&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Public, Static, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;000001&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 115,
+          &quot;ilSha256&quot;: &quot;4fdb3478e252bf544a9bdc7203f30839efbb844b7fcfa848963217343c3d65a9&quot;,
+          &quot;ilBytes&quot;: &quot;000028e502000616fe010a062c02de621728e802000600725500007072293d0070282d00000a1617282e00000a2600de410b00077527000001250c14fe030d092c2d0072053d0070282d00000a728b390070086f7500000a287800000a287900000a130411041916282c01000a260000de002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/run-exit-cil-evidence.json">docs/architecture-recovery/run-exit-cil-evidence.json:873–892</a> · original-managed-cil · 原二进制身份：42e2437780ec21c9d1ade2d07ace0a26635961f5c90559934a7fde7e233e0c23 / MVID 77c739a5-b0ec-4834-8a1e-64dd9b618ae5</p><p>SHA256 <code>daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304</code></p><pre>          &quot;token&quot;: &quot;0x060002e5&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x060002e5&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VisionMaster.AppMainWindow.TitleMenueItemData&quot;,
+            &quot;name&quot;: &quot;CheckRun&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Private, Static, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;000002&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 236,
+          &quot;ilSha256&quot;: &quot;8f94dd9be985bd723d7d7c534eb3ba808eb1362704081a6251be27375797932e&quot;,
+          &quot;ilBytes&quot;: &quot;00288800000a6feb00000a280400002b7ee6010004252d17267ed5010004fe0687030006732d03000a2580e6010004283500002b0a067ee7010004252d17267ed5010004fe0688030006732e03000a2580e7010004283600002b250b14fe030c082c2b00076f2f03000a6f3003000a728b390070076f3103000a287900000a0d091916282c01000a261613042b5b062c34067ee8010004252d17267ed5010004fe0689030006732e03000a2580e8010004283900002b283a00002b06283a00002bfe012b0116130511052c180072e13c0070282d00000a1816282c01000a261613042b051713042b0011042a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/run-exit-cil-evidence.json">docs/architecture-recovery/run-exit-cil-evidence.json:2210–2229</a> · original-managed-cil · 原二进制身份：42e2437780ec21c9d1ade2d07ace0a26635961f5c90559934a7fde7e233e0c23 / MVID 77c739a5-b0ec-4834-8a1e-64dd9b618ae5</p><p>SHA256 <code>daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304</code></p><pre>          &quot;token&quot;: &quot;0x060002e8&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x060002e8&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VisionMaster.AppMainWindow.TitleMenueItemData&quot;,
+            &quot;name&quot;: &quot;MutiOrStopRun&quot;,
+            &quot;parameters&quot;: 1,
+            &quot;attributes&quot;: &quot;Private, Static, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;00010102&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 14,
+          &quot;ilSha256&quot;: &quot;6f4df35d3841c93da713f625246bf50e72097945548cbfc33ac192e5945c014b&quot;,
+          &quot;ilBytes&quot;: &quot;00288800000a026f9b03000a002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/run-exit-cil-evidence.json">docs/architecture-recovery/run-exit-cil-evidence.json:2287–2306</a> · original-managed-cil · 原二进制身份：42e2437780ec21c9d1ade2d07ace0a26635961f5c90559934a7fde7e233e0c23 / MVID 77c739a5-b0ec-4834-8a1e-64dd9b618ae5</p><p>SHA256 <code>daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304</code></p><pre>          &quot;token&quot;: &quot;0x060002e9&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x060002e9&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VisionMaster.AppMainWindow.TitleMenueItemData&quot;,
+            &quot;name&quot;: &quot;StopRun&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Public, Static, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;000001&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 9,
+          &quot;ilSha256&quot;: &quot;9ce082e7e268d6eebde2451c0553606d98ab7b5c24f8844f8a95f94d6d11f0cf&quot;,
+          &quot;ilBytes&quot;: &quot;001628e8020006002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre></details><details id="evidence-A03-1"><summary>execution-storage:Q02 · source-confirmed · VM.Core.VmSolution::set_ContinuousRunEnable / .&lt;&gt;c__DisplayClass70_0::&lt;set_ContinuousRunEnable&gt;b__0 / solution continuous branches</summary><p>若GloalScriptContinusRunEnable!=value先设置它。false时还设置IsContinuousSelfExecute=false，并遍历Modules.OfType&lt;VmProcedure&gt;赋ContinuousRunEnable=false；true支路没有对应逐流程true赋值。不把全局连续开始简化成逐流程Start。</p><ul><li>未知/限制：自执行接口setter和全局脚本到流程调度未在此CIL范围全部恢复；非原子批次。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/run-exit-cil-evidence.json">docs/architecture-recovery/run-exit-cil-evidence.json:3853–3872</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304</code></p><pre>          &quot;token&quot;: &quot;0x0600005b&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600005b&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.VmSolution&quot;,
+            &quot;name&quot;: &quot;set_ContinuousRunEnable&quot;,
+            &quot;parameters&quot;: 1,
+            &quot;attributes&quot;: &quot;Public, Virtual, HideBySig, SpecialName&quot;,
+            &quot;signatureBytes&quot;: &quot;20010102&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 128,
+          &quot;ilSha256&quot;: &quot;eaa5768b488331ad29b2a6b512764a12726c3cb171e5f1bf576f932f6a63e4a4&quot;,
+          &quot;ilBytes&quot;: &quot;731e0700060a06037dec0200040002285c000006067bec020004fe0116fe010b072c0f0002067bec020004285d0000060000067bec02000416fe010c082c0f0002067bec0200046f1a00000a0000067bec02000416fe010d092c240002280f060006280d00002b281000002b06fe061f07000673ea01000a6feb01000a00002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;newobj&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/run-exit-cil-evidence.json">docs/architecture-recovery/run-exit-cil-evidence.json:6428–6447</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304</code></p><pre>          &quot;token&quot;: &quot;0x0600071f&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600071f&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;.\u003C\u003Ec__DisplayClass70_0&quot;,
+            &quot;name&quot;: &quot;\u003Cset_ContinuousRunEnable\u003Eb__0&quot;,
+            &quot;parameters&quot;: 1,
+            &quot;attributes&quot;: &quot;Assembly, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;2001011281b0&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 14,
+          &quot;ilSha256&quot;: &quot;9c830432604a48689f5ca716db6bc3f4821b088ec3cb990b431945de368b6b2b&quot;,
+          &quot;ilBytes&quot;: &quot;03027bec0200046f8d020006002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;ldarg.1&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs">analysis/decompiled/VM.Core/VM.Core/VmSolution.cs:355–380</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e</code></p><pre>	public override bool ContinuousRunEnable
+	{
+		get
+		{
+			return GloalScriptContinusRunEnable || InternalContinousRunEnable || _IsContinuousSelfExecute;
+		}
+		set
+		{
+			if (GloalScriptContinusRunEnable != value)
+			{
+				GloalScriptContinusRunEnable = value;
+			}
+			if (!value)
+			{
+				((IVmSolution)this).IsContinuousSelfExecute = value;
+			}
+			if (!value)
+			{
+				Modules.OfType&lt;VmProcedure&gt;().ToList().ForEach((VmProcedure p) =&gt;
+				{
+					p.ContinuousRunEnable = value;
+				});
+			}
+		}
+	}
+</pre></details><details id="evidence-A03-2"><summary>execution-storage:Q03 · source-confirmed · VM.Core.VmSolution::set_GloalScriptContinusRunEnable / .&lt;&gt;c__DisplayClass73_0::&lt;set_GloalScriptContinusRunEnable&gt;b__0 / VM.PlatformSDKCS.GlobalModuleManager::GlobalScriptStartContinueRun / VM.PlatformSDKCS.GlobalModuleManager::GlobalScriptStopRun</summary><p>同值直接返回。true先GlobalScriptStartContinueRun再按流程ID重置/加入dictProcessIDStopStatus；false先GlobalScriptStopRun再清字典。之后才写字段、逐流程IsGlobalRuning=value并通知三个属性。SDK异常发生在字段写入前，不能画成失败也必更新标志。</p><ul><li>未知/限制：所选SDK管理方法非零抛VmException；native状态、执行回调和通知异常恢复未知。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/run-exit-cil-evidence.json">docs/architecture-recovery/run-exit-cil-evidence.json:4435–4454</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304</code></p><pre>          &quot;token&quot;: &quot;0x0600005d&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600005d&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.VmSolution&quot;,
+            &quot;name&quot;: &quot;set_GloalScriptContinusRunEnable&quot;,
+            &quot;parameters&quot;: 1,
+            &quot;attributes&quot;: &quot;Public, Final, Virtual, HideBySig, VtableLayoutMask, SpecialName&quot;,
+            &quot;signatureBytes&quot;: &quot;20010102&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 307,
+          &quot;ilSha256&quot;: &quot;6bb35062c24079d5a20dce894a29f00edaf00f7089cd2086ccb441d3736eb938&quot;,
+          &quot;ilBytes&quot;: &quot;73200700060a06037ded02000400027b0d000004067bed020004fe0116fe010b07390c01000000067bed0200040c08398d00000000284801000a7bec01000a6fed01000a260002280f060006280d00002b6fee01000a0d2b50096fef01000a130400027b0e00000411046f490200066ff001000a130511052c1800027b0e00000411046f49020006166ff101000a00002b1600027b0e00000411046f49020006166ff201000a000000096fa001000a2da8de0b092c07096f0e01000a00dc002b1e00284801000a7bec01000a6ff301000a26027b0e0000046ff401000a000002067bed0200047d0d00000402280f060006280d00002b281000002b06fe062107000673ea01000a6feb01000a0002722508007028f30400060002723908007028f30400060002726108007028f304000600002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;newobj&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/run-exit-cil-evidence.json">docs/architecture-recovery/run-exit-cil-evidence.json:6528–6547</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304</code></p><pre>          &quot;token&quot;: &quot;0x06000721&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x06000721&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;.\u003C\u003Ec__DisplayClass73_0&quot;,
+            &quot;name&quot;: &quot;\u003Cset_GloalScriptContinusRunEnable\u003Eb__0&quot;,
+            &quot;parameters&quot;: 1,
+            &quot;attributes&quot;: &quot;Assembly, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;2001011281b0&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 14,
+          &quot;ilSha256&quot;: &quot;454ad7021947176258d0ddbd6ffd28d5b49cd98d196e6f3c9b8cf3f44e04d8af&quot;,
+          &quot;ilBytes&quot;: &quot;03027bed0200046f73060006002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;ldarg.1&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/run-exit-cil-evidence.json">docs/architecture-recovery/run-exit-cil-evidence.json:6619–6638</a> · original-managed-cil · 原二进制身份：34c0c90b00cb75a701685b96670b6490f61376f62eacc0ab29d240157db401c1 / MVID e7b3a3b0-7083-486a-8ca2-97cecec02ea2</p><p>SHA256 <code>daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304</code></p><pre>          &quot;token&quot;: &quot;0x0600001a&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600001a&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.PlatformSDKCS.GlobalModuleManager&quot;,
+            &quot;name&quot;: &quot;GlobalScriptStartContinueRun&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Public, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;200008&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 36,
+          &quot;ilSha256&quot;: &quot;c42b0f29d2a2fac878d3688cee965e0fdcc96318c23cebd8689c5b7830d6c3c9&quot;,
+          &quot;ilBytes&quot;: &quot;007e9703000428b10300060a0616fe030b072c0a000673a60600060c087a060d2b00092a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/run-exit-cil-evidence.json">docs/architecture-recovery/run-exit-cil-evidence.json:6809–6828</a> · original-managed-cil · 原二进制身份：34c0c90b00cb75a701685b96670b6490f61376f62eacc0ab29d240157db401c1 / MVID e7b3a3b0-7083-486a-8ca2-97cecec02ea2</p><p>SHA256 <code>daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304</code></p><pre>          &quot;token&quot;: &quot;0x0600001b&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600001b&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.PlatformSDKCS.GlobalModuleManager&quot;,
+            &quot;name&quot;: &quot;GlobalScriptStopRun&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Public, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;200008&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 36,
+          &quot;ilSha256&quot;: &quot;e351df32875c08dbb2a93c337c5c9d864dd16ab4abc3fa4f754e3bdd00de04ee&quot;,
+          &quot;ilBytes&quot;: &quot;007e9703000428b20300060a0616fe030b072c0a000673a60600060c087a060d2b00092a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre></details><details id="evidence-A03-3"><summary>execution-storage:Q04 · source-confirmed · VM.Core.VmProcedure::set_ContinuousRunEnable / procedure continuous ordering</summary><p>true调ContinousRunStart(ID)，false调RefreshUIStopExecute(ID)，之后才判断缓存!=value决定SetProperty和父通知。因此重复false也会进入所选停止路径，不是同值即跳过SDK。</p><ul><li>未知/限制：Parent为空、通知异常或前一步停止失败后的剩余流程状态未证回滚。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/run-exit-cil-evidence.json">docs/architecture-recovery/run-exit-cil-evidence.json:5849–5868</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304</code></p><pre>          &quot;token&quot;: &quot;0x06000671&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x06000671&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.VmProcedure&quot;,
+            &quot;name&quot;: &quot;set_ContinuousRunEnable&quot;,
+            &quot;parameters&quot;: 1,
+            &quot;attributes&quot;: &quot;Public, Virtual, HideBySig, SpecialName&quot;,
+            &quot;signatureBytes&quot;: &quot;20010102&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 149,
+          &quot;ilSha256&quot;: &quot;f147bf79f87f21cce050df5af6be96cd5454c70c9e62d5b0874c5799186ca374&quot;,
+          &quot;ilBytes&quot;: &quot;00727b340070038c4f010001027ba20200048c4f010001284202000a283502000a00030a062c1a00284801000a7b8602000a026f490200066f6c05000a00002b1800284801000a7b8602000a026f490200066f6d05000a0000027ba202000403fe0116fe010b072c2b0002027ca2020004037239080070280c00002b26026fe0040006752d00000272390800706ff304000600002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.Core/VM.Core/VmProcedure.cs">analysis/decompiled/VM.Core/VM.Core/VmProcedure.cs:176–200</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>fdde074d17c50c37f8d0bfe097cf20f904cdb4b59d4ac39612fc023c3f0b69da</code></p><pre>	public override bool ContinuousRunEnable
+	{
+		get
+		{
+			return continousRunEnable;
+		}
+		set
+		{
+			LogHelper.Info($&quot;进入ContinuousRunEnable初始阶段--校验值外，当前的value为{value},当前的continousRunEnable值为{continousRunEnable}&quot;);
+			if (value)
+			{
+				ServerSDKManager.serverSDKManager.mProcessManager.ContinousRunStart(ID);
+			}
+			else
+			{
+				ServerSDKManager.serverSDKManager.mProcessManager.RefreshUIStopExecute(ID);
+			}
+			if (continousRunEnable != value)
+			{
+				this.SetProperty(ref continousRunEnable, value, &quot;ContinuousRunEnable&quot;);
+				(Parent as ModelBase).OnPropertyChanged(&quot;ContinuousRunEnable&quot;);
+			}
+		}
+	}
+</pre></details></article><p><a href="architecture-target.html">返回12项决策目录</a></p></main><footer>文档设计交付 ≠ 产品实现或运行验收；原42检查点、49能力口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

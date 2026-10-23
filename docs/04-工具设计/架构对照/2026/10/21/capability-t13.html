@@ -1,0 +1,178 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T13 调试结果回到主图与结果树</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>T13 调试结果回到主图与结果树</h1><article id="compare-T13"><span id="T13"></span><div class="visual-metrics"><div><strong>T13</strong><span>能力条目</span><small>部分实现</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>混合优化</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>工具完成路由</b></li><li><small>02</small><b>DefaultDebugWindow.ToolExecutionCompleted</b></li><li><small>03</small><b>宿主订阅</b></li><li><small>04</small><b>UpdateModuleResults/结果显示</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>窗口向外传播完成结果；宿主为动态输出变更注册并在Closed退订。</p><details><summary>完整缺陷与未闭合调用边</summary><p>Failed/Cancelled→窗口按钮/宿主状态接收；Run/Node/Frame身份→图与树；已关闭会话→迟到事件拒绝</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>VM结果刷新→ModuleResultView/ImageDecorate；历史对象与当前显示不是同一所有权。</p><p>参考原版执行序号查询及模块源切换释放，缓存内部仍未知。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF05-RESULT-LIFECYCLE.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">结果传播已有完成事件，但失败/取消/迟到结果必须有身份和终态消费合同，不能凭退订完成认定安全。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：结果传播已有完成事件，但失败/取消/迟到结果必须有身份和终态消费合同，不能凭退订完成认定安全。 VM参考边界：参考原版执行序号查询及模块源切换释放，缓存内部仍未知。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">按方案/Run/Node/Frame信封验收所有接收方；核现有门槛后补缺者，失败不得沿用旧成功为本轮。 完成/失败/取消都发统一结果信封，窗口和主图按身份接收；失败清本轮成功态并停止连续，关闭后不更新复用窗口。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">关闭工具、删除节点、切方案时迟到结果均被拒；失败不保留旧成功为本轮。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o07.html#O07">O07</a></td></tr></tbody></table></div></section><article id="recommendation-T13"><h2>T13 调试结果回到主图与结果树 · 必须整改</h2><p><b>代码依据 / 局限：</b>结果传播已有完成事件，但失败/取消/迟到结果必须有身份和终态消费合同，不能凭退订完成认定安全。</p><p><b>VM可借鉴与不可推断：</b>参考原版执行序号查询及模块源切换释放，缓存内部仍未知。</p><p><b>具体改法 / 成本：</b>按方案/Run/Node/Frame信封验收所有接收方；核现有门槛后补缺者，失败不得沿用旧成功为本轮。 完成/失败/取消都发统一结果信封，窗口和主图按身份接收；失败清本轮成功态并停止连续，关闭后不更新复用窗口。</p><p><b>验收：</b>关闭工具、删除节点、切方案时迟到结果均被拒；失败不保留旧成功为本轮。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T13">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T13">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S090</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:237</a></p><p><code>OnToolExecutionCompleted</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnToolExecutionCompleted(object sender, ToolExecutionCompletedEventArgs e)
+        {
+            // ★ 向外传播执行结果（CLR 事件供 MainWindowViewModel 订阅）
+            var resultInfo = e.Results?.GetType().Name ?? &quot;null&quot;;
+            var execTimeInfo = e.ExecutionTime &gt; 0 ? $&quot; | 耗时={e.ExecutionTime}ms&quot; : &quot;&quot;;
+            PluginLogger.Info($&quot;[OnToolExecutionCompleted] 路由事件到达 | 结果={resultInfo}{execTimeInfo}&quot;, &quot;DefaultDebugWindow&quot;);
+
+            ToolExecutionCompleted?.Invoke(this, e);
+
+            Dispatcher.Invoke(() =&gt;
+            {
+                _isExecuting = false;
+                SetButtonsEnabled(true);
+                </pre></details><details class="source-card"><summary>S091</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:2695</a></p><p><code>ExecuteOpenDebugWindow</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private async void ExecuteOpenDebugWindow(SunEyeVision.UI.Shared.WorkflowNode? node)
+        {
+            if (node == null) return;
+
+            try
+            {
+                LogNodeStorageIdentity(node, &quot;打开调试窗口&quot;);
+                var mainImageControl = GetMainImageControl?.Invoke();
+                var context = new NodeOpenContext(Application.Current.MainWindow, mainImageControl);
+                // 图像源的配置由 UI 宿主提供；工具插件只负责执行，不依赖 WPF 编辑器。
+                // 使用原始 UI 节点，确保弹窗直接编辑当前方案中的 ImageSourceConfig。
+                var success = true;
+                if (node.IsImageLoadNode)
+                {</pre></details><details class="source-card"><summary>S092</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/NodeResultManager.cs">src/UI/Services/Workflow/NodeResultManager.cs:104</a></p><p><code>RefreshResultDisplay</code></p><p>SHA256 <code>3f0d3bb8be81a0b24d8447cedd90bbfa66f0e47f66676eca78ac7a7a99d83d69</code></p><pre>        public void RefreshResultDisplay(WorkflowNodeBase node, ToolResults result)
+        {
+            // ★ 诊断：记录入参
+            Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+                Plugin.SDK.Logging.LogLevel.Info,
+                $&quot;[诊断:RefreshResultDisplay] node.Name='{node.Name}' | node.ToolType='{node.ToolType}' | node.Id='{node.Id}' | result.Type={result?.GetType().Name ?? &quot;null&quot;} | result.IsSelected={node.IsSelected}&quot;,
+                &quot;NodeResultManager&quot;);
+
+            if (result == null)
+            {
+                ClearResultDisplay();
+                return;
+            }
+</pre></details><details class="source-card"><summary>R058</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:138</a></p><p><code>SubscribeRoutedEvents</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void SubscribeRoutedEvents()
+        {
+            // 订阅工具执行完成事件
+            _control.AddHandler(
+                ToolDebugControlBase.ToolExecutionCompletedEvent,
+                new ToolExecutionCompletedEventHandler(OnToolExecutionCompleted));
+        }
+
+        /// &lt;summary&gt;
+        /// 取消订阅路由事件
+        /// &lt;/summary&gt;
+        private void UnsubscribeRoutedEvents()
+        {
+            _control.RemoveHandler(
+                ToolDebugControlBase.ToolExecutionCompletedEvent,
+                new ToolExecutionCompletedEventHandler(OnToolExecutionCompleted));
+        }
+
+        #endregion
+</pre></details><details class="source-card"><summary>R059</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:237</a></p><p><code>OnToolExecutionCompleted</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnToolExecutionCompleted(object sender, ToolExecutionCompletedEventArgs e)
+        {
+            // ★ 向外传播执行结果（CLR 事件供 MainWindowViewModel 订阅）
+            var resultInfo = e.Results?.GetType().Name ?? &quot;null&quot;;
+            var execTimeInfo = e.ExecutionTime &gt; 0 ? $&quot; | 耗时={e.ExecutionTime}ms&quot; : &quot;&quot;;
+            PluginLogger.Info($&quot;[OnToolExecutionCompleted] 路由事件到达 | 结果={resultInfo}{execTimeInfo}&quot;, &quot;DefaultDebugWindow&quot;);
+
+            ToolExecutionCompleted?.Invoke(this, e);
+
+            Dispatcher.Invoke(() =&gt;
+            {
+                _isExecuting = false;
+                SetButtonsEnabled(true);
+                
+                // 如果是连续运行模式，继续下一次执行
+                if (_isContinuousRunning &amp;&amp; IsLoaded)
+                {
+                    // 延迟500ms后再次执行
+                    Task.Delay(500).ContinueWith(_ =&gt;
+                    {</pre></details><details class="source-card"><summary>R060</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:2695</a></p><p><code>ExecuteOpenDebugWindow</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private async void ExecuteOpenDebugWindow(SunEyeVision.UI.Shared.WorkflowNode? node)
+        {
+            if (node == null) return;
+
+            try
+            {
+                LogNodeStorageIdentity(node, &quot;打开调试窗口&quot;);
+                var mainImageControl = GetMainImageControl?.Invoke();
+                var context = new NodeOpenContext(Application.Current.MainWindow, mainImageControl);
+                // 图像源的配置由 UI 宿主提供；工具插件只负责执行，不依赖 WPF 编辑器。
+                // 使用原始 UI 节点，确保弹窗直接编辑当前方案中的 ImageSourceConfig。
+                var success = true;
+                if (node.IsImageLoadNode)
+                {
+                    context.DebugControl = new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(node, this);
+                }
+                else
+                {
+                    var decisionChain = new NodeOpenDecisionChain();
+                    success = decisionChain.Execute(node.ToWorkflowNode(), context);</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T13&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;调试结果回到主图与结果树&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;工具完成路由&quot;,
+    &quot;DefaultDebugWindow.ToolExecutionCompleted&quot;,
+    &quot;宿主订阅&quot;,
+    &quot;UpdateModuleResults/结果显示&quot;
+  ],
+  &quot;current&quot;: &quot;窗口向外传播完成结果；宿主为动态输出变更注册并在Closed退订。&quot;,
+  &quot;gap&quot;: &quot;Failed/Cancelled→窗口按钮/宿主状态接收；Run/Node/Frame身份→图与树；已关闭会话→迟到事件拒绝&quot;,
+  &quot;vm&quot;: &quot;VM结果刷新→ModuleResultView/ImageDecorate；历史对象与当前显示不是同一所有权。&quot;,
+  &quot;vmDoc&quot;: &quot;MF05-RESULT-LIFECYCLE.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;必须整改&quot;,
+  &quot;reason&quot;: &quot;依据：结果传播已有完成事件，但失败/取消/迟到结果必须有身份和终态消费合同，不能凭退订完成认定安全。 VM参考边界：参考原版执行序号查询及模块源切换释放，缓存内部仍未知。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;按方案/Run/Node/Frame信封验收所有接收方；核现有门槛后补缺者，失败不得沿用旧成功为本轮。 完成/失败/取消都发统一结果信封，窗口和主图按身份接收；失败清本轮成功态并停止连续，关闭后不更新复用窗口。&quot;,
+  &quot;accept&quot;: &quot;关闭工具、删除节点、切方案时迟到结果均被拒；失败不保留旧成功为本轮。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S090&quot;,
+    &quot;S091&quot;,
+    &quot;S092&quot;,
+    &quot;R058&quot;,
+    &quot;R059&quot;,
+    &quot;R060&quot;
+  ],
+  &quot;optimization&quot;: &quot;O07&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;T13&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;完成事件由窗口CLR转发，宿主注册工具输出契约变更并在Closed退订；NodeResultManager分别更新树和图形。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;Failed/Cancelled→窗口按钮/宿主状态接收&quot;,
+      &quot;Run/Node/Frame身份→图与树&quot;,
+      &quot;已关闭会话→迟到事件拒绝&quot;
+    ],
+    &quot;cause&quot;: &quot;多消费者证据缺口+故障验证&quot;,
+    &quot;change&quot;: &quot;完成/失败/取消都发统一结果信封，窗口和主图按身份接收；失败清本轮成功态并停止连续，关闭后不更新复用窗口。&quot;,
+    &quot;acceptance&quot;: &quot;关闭工具、删除节点、切方案时迟到结果均被拒；失败不保留旧成功为本轮。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S090&quot;,
+      &quot;S091&quot;,
+      &quot;S092&quot;,
+      &quot;R058&quot;,
+      &quot;R059&quot;,
+      &quot;R060&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留结果契约，补代次门槛&quot;,
+    &quot;reason&quot;: &quot;统一输出可复用主视图，但无身份门槛会扩大异步风险。&quot;
+  },
+  &quot;defect&quot;: &quot;结果传播已有完成事件，但失败/取消/迟到结果必须有身份和终态消费合同，不能凭退订完成认定安全。&quot;,
+  &quot;vmBorrow&quot;: &quot;参考原版执行序号查询及模块源切换释放，缓存内部仍未知。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;混合优化&quot;,
+  &quot;adoptionBasis&quot;: &quot;参考VM已确认的职责/行为，结合自有数据与服务实现；不复用VM二进制、协议或密钥。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;必须整改&quot;,
+    &quot;defect&quot;: &quot;结果传播已有完成事件，但失败/取消/迟到结果必须有身份和终态消费合同，不能凭退订完成认定安全。&quot;,
+    &quot;borrow&quot;: &quot;参考原版执行序号查询及模块源切换释放，缓存内部仍未知。&quot;,
+    &quot;action&quot;: &quot;按方案/Run/Node/Frame信封验收所有接收方；核现有门槛后补缺者，失败不得沿用旧成功为本轮。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;混合优化&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S090&quot;,
+      &quot;S091&quot;,
+      &quot;S092&quot;,
+      &quot;R058&quot;,
+      &quot;R059&quot;,
+      &quot;R060&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

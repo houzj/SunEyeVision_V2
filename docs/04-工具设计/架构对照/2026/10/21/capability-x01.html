@@ -1,0 +1,214 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>X01 图像缓冲、显示缓存与最后读者</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>X01 图像缓冲、显示缓存与最后读者</h1><article id="compare-X01"><span id="X01"></span><div class="visual-metrics"><div><strong>X01</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>相机/文件输入</b></li><li><small>02</small><b>图像适配器/工具</b></li><li><small>03</small><b>图像输出</b></li><li><small>04</small><b>显示/历史</b></li><li><small>05</small><b>复用或释放</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>当前有原生图像抽象、适配器及复制/位图复用多种路径。</p><details><summary>完整缺陷与未闭合调用边</summary><p>原始帧→算法借用/复制→结果保留配对；历史/多视图→最后读者；缓存复用→旧显示独立性 OnClosed逐个childWindow.Close，之后退订图像事件、发StopWorkflowCommand并Application.Shutdown。相机预览OnClosed为async void且await Host.DisposeAsync，主窗口没有汇总这些异步完成任务。不能从Close返回证明每个预览流已结束；具体异常/时序未运行。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>原版图像缓存与查询/映射/析构要追实际实现，UI Dispose不代证原始帧寿命。</p><p>原版清decorator/显示缓存不证明native缓冲所有权，仍需接口实现。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF05-RESULT-LIFECYCLE.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">可复用WriteableBitmap缓存与帧租约不能证明历史隔离；最后读者全链不足。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：可复用WriteableBitmap缓存与帧租约不能证明历史隔离；最后读者全链不足。 VM参考边界：原版清decorator/显示缓存不证明native缓冲所有权，仍需接口实现。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">逐类型列Allocate/Lease/Clone/Dispose与保留策略；按实际消费者选复制点，不一律Clone或共享。 绘制每类分配/Lease/Clone/Dispose表；明确实时池复用、历史快照和原生句柄；确认实际调用者后再决定何处复制，不能一律Clone。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">算法失败/取消/多视图/旧帧保留/尺寸切换无重复释放或复用污染。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o04.html#O04">O04</a></td></tr></tbody></table></div></section><article id="recommendation-X01"><h2>X01 图像缓冲、显示缓存与最后读者 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>可复用WriteableBitmap缓存与帧租约不能证明历史隔离；最后读者全链不足。</p><p><b>VM可借鉴与不可推断：</b>原版清decorator/显示缓存不证明native缓冲所有权，仍需接口实现。</p><p><b>具体改法 / 成本：</b>逐类型列Allocate/Lease/Clone/Dispose与保留策略；按实际消费者选复制点，不一律Clone或共享。 绘制每类分配/Lease/Clone/Dispose表；明确实时池复用、历史快照和原生句柄；确认实际调用者后再决定何处复制，不能一律Clone。</p><p><b>验收：</b>算法失败/取消/多视图/旧帧保留/尺寸切换无重复释放或复用污染。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-X01">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-X01">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S102</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs">src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5</code></p><pre>using System;
+using System.Threading;
+using System.Threading.Tasks;
+using SunEyeVision.DeviceDriver.Cameras.Contracts;
+using SunEyeVision.Plugin.SDK.Devices.Camera;
+
+namespace SunEyeVision.UI.Services.Workflow;
+
+/// &lt;summary&gt;工作流运行期间唯一的相机帧入口；不持有设备连接，也不向 WPF 发布图像。&lt;/summary&gt;
+internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposable
+{
+    private readonly CameraSession _session;
+    private readonly CameraDeviceRef _cameraRef;
+    private readonly TimeSpan _timeout;</pre></details><details class="source-card"><summary>S103</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Performance/ImageConverterPool.cs">src/UI/Services/Performance/ImageConverterPool.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707</code></p><pre>﻿using System;
+using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using OpenCvSharp;
+
+namespace SunEyeVision.UI.Services.Performance
+{
+    /// &lt;summary&gt;
+    /// 图像转换器池 - 优化OpenCV Mat到WPF BitmapSource的转换
+    /// 使用WriteableBitmap直接内存写入，避免中间转换
+    /// &lt;/summary&gt;</pre></details><details class="source-card"><summary>R071</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs">src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs:187</a></p><p><code>DisposeAsync</code></p><p>SHA256 <code>52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5</code></p><pre>    public async ValueTask DisposeAsync()
+    {
+        CameraFrame? pending;
+        TaskCompletionSource&lt;bool&gt;? waiter;
+        lock (_gate)
+        {
+            if (_disposed) return;
+            _disposed = true;
+            pending = _pending;
+            _pending = null;
+            waiter = _waiter;
+            _waiter = null;
+        }
+        waiter?.TrySetResult(true);
+        _streamCancellation.Cancel();
+        try
+        {
+            if (_streamTask is not null)
+            {
+                try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }</pre></details><details class="source-card"><summary>R072</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Performance/ImageConverterPool.cs">src/UI/Services/Performance/ImageConverterPool.cs:36</a></p><p><code>ConvertToBitmapSource</code></p><p>SHA256 <code>d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707</code></p><pre>        public BitmapSource ConvertToBitmapSource(Mat mat)
+        {
+            if (mat == null || mat.Empty())
+                throw new ArgumentNullException(nameof(mat));
+
+            // 确定像素格式
+            PixelFormat pixelFormat = GetPixelFormat(mat.Type());
+
+            // 生成缓存键
+            string cacheKey = $&quot;{mat.Width}_{mat.Height}_{pixelFormat}&quot;;
+
+            // 尝试从缓存获取WriteableBitmap
+            if (!_bitmapCache.TryGetValue(cacheKey, out var writeableBitmap) ||
+                writeableBitmap.PixelWidth != mat.Width ||
+                writeableBitmap.PixelHeight != mat.Height)
+            {
+                // 创建新的WriteableBitmap
+                writeableBitmap = new WriteableBitmap(mat.Width, mat.Height, 96, 96, pixelFormat, null);
+
+                // 缓存（如果未达上限）</pre></details><details class="source-card"><summary>N006</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowExecutionEngine.cs">src/Workflow/WorkflowExecutionEngine.cs:399</a></p><p><code>foreach (var item in running)</code></p><p>SHA256 <code>4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db</code></p><pre>                foreach (var item in running)
+                    item.Lease.Dispose();
+            }
+
+            var allResults = context.GetAllNodeResults().ToDictionary(pair =&gt; pair.Key, pair =&gt; pair.Value);
+            result.NodeResults = allResults;
+            result.Success = result.Errors.Count == 0 &amp;&amp; allResults.Values.All(node =&gt; node.Success);
+            result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;
+            result.ExecutionTime = DateTime.Now - context.ExecutionStartTime;
+            ExecutionCompleted?.Invoke(this, result);
+            return result;
+        }
+
+        /// &lt;summary&gt;
+        /// 并行执行一组节点（同一组内节点无依赖关系）
+        /// &lt;/summary&gt;
+        /// &lt;remarks&gt;
+        /// 注意：为支持参数绑定解析，组内节点按依赖顺序执行。
+        /// 只有当节点间无数据依赖关系时才真正并行执行。
+        /// &lt;/remarks&gt;
+        private async Task&lt;ExecutionResult&gt; ExecuteNodesInParallel(
+            Workflow workflow,</pre></details><details class="source-card"><summary>N007</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowRunSession.cs">src/Workflow/WorkflowRunSession.cs:146</a></p><p><code>public void Dispose() =&gt; _cancellationSource.Dispose()</code></p><p>SHA256 <code>81a4538d84dd800b91f6380ffbb8bc8fee2b59d0284e5f1c2194a2c97f4587c0</code></p><pre>    public void Dispose() =&gt; _cancellationSource.Dispose();
+}
+</pre></details><details class="source-card"><summary>N008</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/WorkflowExecutionManager.cs">src/UI/Services/Workflow/WorkflowExecutionManager.cs:220</a></p><p><code>ReleaseExecution(workflowId)</code></p><p>SHA256 <code>e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae</code></p><pre>                ReleaseExecution(workflowId);
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// 开始指定工作流的连续执行
+        /// &lt;/summary&gt;
+        public bool StartContinuousRun(WorkflowTabViewModel workflow)
+        {
+            if (workflow == null)
+                throw new ArgumentNullException(nameof(workflow));
+
+            var workflowId = workflow.RootWorkflowId;
+
+            if (!TryAcquireExecution(workflowId))
+            {
+                NotifyExecutionRejected(workflowId);
+                return false;
+            }
+
+            try
+            {</pre></details><details class="source-card"><summary>N041</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindow.xaml.cs">src/UI/Shell/Windows/MainWindow.xaml.cs:346</a></p><p><code>protected override void OnClosed(EventArgs e)</code></p><p>SHA256 <code>e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219</code></p><pre>        protected override void OnClosed(EventArgs e)
+        {
+            // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
+            // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。
+            var childWindows = Application.Current?.Windows
+                .OfType&lt;Window&gt;()
+                .Where(window =&gt; !ReferenceEquals(window, this))
+                .ToArray();
+            if (childWindows != null)
+            {
+                foreach (var childWindow in childWindows)
+                {
+                    try
+                    {
+                        childWindow.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Warning,
+                            $&quot;关闭子窗口失败: {childWindow.GetType().Name}, {ex.Message}&quot;, &quot;MainWindow&quot;);
+                    }
+                }</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;X01&quot;,
+  &quot;group&quot;: &quot;support&quot;,
+  &quot;title&quot;: &quot;图像缓冲、显示缓存与最后读者&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;相机/文件输入&quot;,
+    &quot;图像适配器/工具&quot;,
+    &quot;图像输出&quot;,
+    &quot;显示/历史&quot;,
+    &quot;复用或释放&quot;
+  ],
+  &quot;current&quot;: &quot;当前有原生图像抽象、适配器及复制/位图复用多种路径。&quot;,
+  &quot;gap&quot;: &quot;原始帧→算法借用/复制→结果保留配对；历史/多视图→最后读者；缓存复用→旧显示独立性 OnClosed逐个childWindow.Close，之后退订图像事件、发StopWorkflowCommand并Application.Shutdown。相机预览OnClosed为async void且await Host.DisposeAsync，主窗口没有汇总这些异步完成任务。不能从Close返回证明每个预览流已结束；具体异常/时序未运行。&quot;,
+  &quot;vm&quot;: &quot;原版图像缓存与查询/映射/析构要追实际实现，UI Dispose不代证原始帧寿命。&quot;,
+  &quot;vmDoc&quot;: &quot;MF05-RESULT-LIFECYCLE.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：可复用WriteableBitmap缓存与帧租约不能证明历史隔离；最后读者全链不足。 VM参考边界：原版清decorator/显示缓存不证明native缓冲所有权，仍需接口实现。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;逐类型列Allocate/Lease/Clone/Dispose与保留策略；按实际消费者选复制点，不一律Clone或共享。 绘制每类分配/Lease/Clone/Dispose表；明确实时池复用、历史快照和原生句柄；确认实际调用者后再决定何处复制，不能一律Clone。&quot;,
+  &quot;accept&quot;: &quot;算法失败/取消/多视图/旧帧保留/尺寸切换无重复释放或复用污染。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S102&quot;,
+    &quot;S103&quot;,
+    &quot;R071&quot;,
+    &quot;R072&quot;,
+    &quot;N006&quot;,
+    &quot;N007&quot;,
+    &quot;N008&quot;,
+    &quot;N041&quot;
+  ],
+  &quot;optimization&quot;: &quot;O04&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;X01&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;CameraWorkflowFrameFeed管理流取消/租约/帧；ImageConverterPool按大小格式复用WriteableBitmap并直接返回。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;原始帧→算法借用/复制→结果保留配对&quot;,
+      &quot;历史/多视图→最后读者&quot;,
+      &quot;缓存复用→旧显示独立性&quot;
+    ],
+    &quot;cause&quot;: &quot;类型所有权与最后消费者证据不足&quot;,
+    &quot;change&quot;: &quot;绘制每类分配/Lease/Clone/Dispose表；明确实时池复用、历史快照和原生句柄；确认实际调用者后再决定何处复制，不能一律Clone。&quot;,
+    &quot;acceptance&quot;: &quot;算法失败/取消/多视图/旧帧保留/尺寸切换无重复释放或复用污染。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S102&quot;,
+      &quot;S103&quot;,
+      &quot;R071&quot;,
+      &quot;R072&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留适配器，补逐类型所有权&quot;,
+    &quot;reason&quot;: &quot;复制隔离安全但耗带宽；借用要生产者稳定期，不能单选一条覆盖全场景。&quot;
+  },
+  &quot;defect&quot;: &quot;可复用WriteableBitmap缓存与帧租约不能证明历史隔离；最后读者全链不足。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版清decorator/显示缓存不证明native缓冲所有权，仍需接口实现。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;可复用WriteableBitmap缓存与帧租约不能证明历史隔离；最后读者全链不足。&quot;,
+    &quot;borrow&quot;: &quot;原版清decorator/显示缓存不证明native缓冲所有权，仍需接口实现。&quot;,
+    &quot;action&quot;: &quot;逐类型列Allocate/Lease/Clone/Dispose与保留策略；按实际消费者选复制点，不一律Clone或共享。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S102&quot;,
+      &quot;S103&quot;,
+      &quot;R071&quot;,
+      &quot;R072&quot;,
+      &quot;N006&quot;,
+      &quot;N007&quot;,
+      &quot;N008&quot;,
+      &quot;N041&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

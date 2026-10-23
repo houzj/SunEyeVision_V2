@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "records": 696,
+  "records": 702,
   "pages": 134,
-  "bytes": 414110,
+  "bytes": 417850,
   "topics": [
     "现状分析",
     "目标架构",
@@ -13,7 +13,7 @@
     "关系图解"
   ],
   "source": "Canonical current topic pages; short visible headings/excerpts only. Scripts, styles, navigation, details, tables, history, audits and snapshots excluded.",
-  "canonicalPages": 696,
+  "canonicalPages": 702,
   "legacyFallbacks": [],
   "remoteFetch": false,
   "thirdParty": false

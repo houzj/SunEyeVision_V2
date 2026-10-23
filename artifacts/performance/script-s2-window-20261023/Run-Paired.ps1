@@ -15,6 +15,7 @@ foreach($variant in $variants){
 $application=if($variant -eq 'baseline'){$baselineRoot}else{$candidate}
 $resultFile=Join-Path $runRoot "$variant-$lines-$sampleIndex.json"
 $arguments=@(('"'+$probe+'"'),('"'+$application+'"'),('"'+$resultFile+'"'),$lines,'3')
+$startedUtc=[DateTime]::UtcNow.ToString('o')
 $process=Start-Process -FilePath (Get-Command dotnet).Source -ArgumentList $arguments -WorkingDirectory $runRoot -WindowStyle Hidden -PassThru -RedirectStandardOutput "$resultFile.stdout.log" -RedirectStandardError "$resultFile.stderr.log"
 [ordered]@{pid=$process.Id;variant=$variant;lines=$lines;index=$sampleIndex;result=$resultFile} | ConvertTo-Json | Set-Content (Join-Path $runRoot 'live-process.json') -Encoding utf8
 $finished=$process.WaitForExit(110000)
@@ -23,10 +24,14 @@ $process.Refresh()
 $data=if(Test-Path -LiteralPath $resultFile){Get-Content -LiteralPath $resultFile -Raw | ConvertFrom-Json}else{$null}
 $ok=$process.ExitCode -eq 0 -and $data.success -eq $true -and @($data.samples).Count -eq 3
 $completed++; if(-not $ok){$failures++}
-$commands += [ordered]@{pid=$process.Id;variant=$variant;lines=$lines;index=$sampleIndex;arguments=$arguments;exitCode=$process.ExitCode;success=$ok;result=$resultFile}
+$exitHex='0x'+([BitConverter]::ToUInt32([BitConverter]::GetBytes([int]$process.ExitCode),0)).ToString('X8')
+$commands += [ordered]@{pid=$process.Id;variant=$variant;lines=$lines;index=$sampleIndex;arguments=$arguments;startedUtc=$startedUtc;endedUtc=[DateTime]::UtcNow.ToString('o');exitCode=$process.ExitCode;exitHex=$exitHex;success=$ok;result=$resultFile;stageExists=(Test-Path -LiteralPath "$resultFile.stage.json");stdoutBytes=(Get-Item -LiteralPath "$resultFile.stdout.log").Length;stderrBytes=(Get-Item -LiteralPath "$resultFile.stderr.log").Length;applicationRoot=$application;probeSha256=(Get-FileHash -LiteralPath $probe).Hash}
 $commands | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $runRoot 'commands.json') -Encoding utf8
 [ordered]@{completedProcesses=$completed;plannedProcesses=60;failedProcesses=$failures;completeWindows=($completed-$failures)*3;lastResult=$resultFile;running=$true} | ConvertTo-Json | Set-Content (Join-Path $runRoot 'progress.json') -Encoding utf8
-if(-not $ok){throw "Formal sample failed: $resultFile"}
+if(-not $ok){
+[ordered]@{completedProcesses=$completed;plannedProcesses=60;failedProcesses=$failures;completeWindows=($completed-$failures)*3;lastResult=$resultFile;running=$false;terminal='aborted';exitHex=$exitHex} | ConvertTo-Json | Set-Content (Join-Path $runRoot 'progress.json') -Encoding utf8
+throw "Formal sample failed: $resultFile ($exitHex)"
+}
 }
 }
 }

@@ -1,0 +1,991 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工具处置 · 标定</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>工具处置 · 标定</h1><aside class="scope-notice">以下沿用2026-10-21分析基线与原有状态；未把本次分页或图示当作新增语义证据。最新目标取舍另见 <a href="architecture-target.html">12项目标决策</a>。</aside><div class="visual-metrics"><div><strong>10</strong><span>本分类目录条目</span><small>目录≠算法等价</small></div></div><div class="filter-bar"><label for="search">搜索本页</label><input id="search" data-filter-input placeholder="输入名称、ID或问题"><output data-filter-count></output></div><div class="record-grid"><section class="record-card" id="tool-2-0" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>坐标系</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calibration/CoordinateModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">ROI参考域与标定文件已有，不是独立坐标系工具</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">坐标创建/选择、矩阵输出及单位/原点的独立工具合同未配齐。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；坐标创建/选择、矩阵输出及单位/原点的独立工具合同未配齐。</td></tr></tbody></table></div><a href="../现状分析/data-architecture.html#coordinate-review">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calibration/CoordinateModule&quot;,
+  &quot;label&quot;: &quot;坐标系&quot;,
+  &quot;category&quot;: &quot;标定&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;ROI参考域与标定文件已有，不是独立坐标系工具&quot;,
+  &quot;gap&quot;: &quot;坐标创建/选择、矩阵输出及单位/原点的独立工具合同未配齐。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；坐标创建/选择、矩阵输出及单位/原点的独立工具合同未配齐。&quot;,
+  &quot;url&quot;: &quot;../现状分析/data-architecture.html#coordinate-review&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs&quot;,
+    &quot;line&quot;: 137,
+    &quot;token&quot;: &quot;private Point ToReferencePoint&quot;,
+    &quot;sha256&quot;: &quot;bce5346e3c9c0cf1a895c1b379edd7fad66af329d30f2cbccd7448f185f304b3&quot;
+  },
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-CoordinateModule&quot;,
+    &quot;difference&quot;: &quot;高：坐标载体已有，独立坐标系创建/输出工具未齐&quot;,
+    &quot;route&quot;: &quot;复用矩阵和几何载体，按需新增坐标系工具；参考能力，不照搬VM私有矩阵格式。&quot;,
+    &quot;current&quot;: &quot;自研有AffineMatrix及ROI参考→测试变换，标定文件另记图像列行→机器标记XY；未见独立CoordinateModule工具声明。&quot;,
+    &quot;change&quot;: &quot;拟议坐标系结果带系统ID、父域/子域、单位、方向、版本和源帧；矩阵/原点/轴从同一候选一次发布。明确手绘和订阅的状态，禁止仅以六个double识别类型。&quot;,
+    &quot;unknown&quot;: &quot;原CordinateCreate/InputWay分支、CorCalibMatrix数值顺序、绘制到动态输出的实现仍缺。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;CalibMatrix&quot;,
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;Src Input Point&quot;,
+    &quot;SrcPointX&quot;,
+    &quot;SrcPointY&quot;,
+    &quot;SrcAngle&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;CorCalibMatrix&quot;,
+    &quot;Coordinate Origin&quot;,
+    &quot;CoordinateOriPointX&quot;,
+    &quot;CoordinateOriPointY&quot;,
+    &quot;CoordinateAxisX&quot;,
+    &quot;CoordinateAxisXX&quot;,
+    &quot;CoordinateAxisXY&quot;,
+    &quot;CoordinateAxisY&quot;,
+    &quot;CoordinateAxisYX&quot;,
+    &quot;CoordinateAxisYY&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModule.xml&quot;,
+      &quot;sha256&quot;: &quot;116d4bcb2cdfef0e2e380c527b6666f1f11c7d1b4f6d5640b1c281e2745e9218&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;7994366ec98616f29fdd149c0076389b56a2b549680246b87360a725aeb5d7b7&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;c1760ffeaf852e4b663f93965fa1a167b75f134d5a1dfee960092b98a23e1f5c&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;494d27da414d70868c436cc8936b9f63c05599efb495ab30d5c816544375ba47&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;db489d4738f31a133e8c198ea9b6c7756de5f68c47de1c04b68cb2f39c860b83&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;6303225602808a38aec35bdea5eb470000172743ce2f3a05013e4f17dab47108&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-2-1" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>标定板标定</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calibration/IMVSCalibBoardCalibModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calibration/IMVSCalibBoardCalibModu&quot;,
+  &quot;label&quot;: &quot;标定板标定&quot;,
+  &quot;category&quot;: &quot;标定&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;EstimationError&quot;,
+    &quot;Scale&quot;,
+    &quot;Calibration Point&quot;,
+    &quot;CalibPointX&quot;,
+    &quot;CalibPointY&quot;,
+    &quot;Calibration Origin&quot;,
+    &quot;CalibOriPointX&quot;,
+    &quot;CalibOriPointY&quot;,
+    &quot;PosXVector&quot;,
+    &quot;CalibOriPointXVecX&quot;,
+    &quot;CalibOriPointXVecY&quot;,
+    &quot;PosYVector&quot;,
+    &quot;CalibOriPointYVecX&quot;,
+    &quot;CalibOriPointYVecY&quot;,
+    &quot;ROI&quot;,
+    &quot;DetectRectCenterPoint&quot;,
+    &quot;DetectCenterX&quot;,
+    &quot;DetectCenterY&quot;,
+    &quot;DetectWidth&quot;,
+    &quot;DetectHeight&quot;,
+    &quot;DetectAngle&quot;,
+    &quot;CalibPointNum&quot;,
+    &quot;TranslateX&quot;,
+    &quot;TranslateY&quot;,
+    &quot;Rotate&quot;,
+    &quot;Skew&quot;,
+    &quot;Aspect&quot;,
+    &quot;PixelPrecision&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\IMVSCalibBoardCalibModu.xml&quot;,
+      &quot;sha256&quot;: &quot;19227e4fcdf800ba38447445bf3561be07f40a9afa6610e198f536600dfc19ff&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\IMVSCalibBoardCalibModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;f3686bb776ae7765a33d1a071a42c3360adad5e6f8035db1a8a17d8ca60e3cb8&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\IMVSCalibBoardCalibModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;76c9cd661a359216041b902cce8fae115566726707e749cc42c0bb9722bcbf91&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\IMVSCalibBoardCalibModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;164e27c21db021d7160dce07e1ce8bebe0217daf67a06d05cf2d163ac10a439e&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\IMVSCalibBoardCalibModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;01b6aa734e09bb8284f09cd13cdcabd02115e26b01c0ba218a01dbc960f041d6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;f8ecfc757ca9af9eac94474be24b406d34d427fad42d5d50f7cb273214cf49e3&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-2-2" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>相机映射</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calibration/IMVSCameraMapModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calibration/IMVSCameraMapModu&quot;,
+  &quot;label&quot;: &quot;相机映射&quot;,
+  &quot;category&quot;: &quot;标定&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;TargetPointInput1&quot;,
+    &quot;TargetPointX1&quot;,
+    &quot;TargetPointY1&quot;,
+    &quot;ObjectPointInput1&quot;,
+    &quot;ObjectPointX1&quot;,
+    &quot;ObjectPointY1&quot;,
+    &quot;TargetPointInput2&quot;,
+    &quot;TargetPointX2&quot;,
+    &quot;TargetPointY2&quot;,
+    &quot;ObjectPointInput2&quot;,
+    &quot;ObjectPointX2&quot;,
+    &quot;ObjectPointY2&quot;,
+    &quot;TargetInput3&quot;,
+    &quot;TargetPointX3&quot;,
+    &quot;TargetPointY3&quot;,
+    &quot;ObjectInput3&quot;,
+    &quot;ObjectPointX3&quot;,
+    &quot;ObjectPointY3&quot;,
+    &quot;TargetInput4&quot;,
+    &quot;TargetPointX4&quot;,
+    &quot;TargetPointY4&quot;,
+    &quot;ObjectInput4&quot;,
+    &quot;ObjectPointX4&quot;,
+    &quot;ObjectPointY4&quot;,
+    &quot;TargetInput5&quot;,
+    &quot;TargetPointX5&quot;,
+    &quot;TargetPointY5&quot;,
+    &quot;ObjectInput5&quot;,
+    &quot;ObjectPointX5&quot;,
+    &quot;ObjectPointY5&quot;,
+    &quot;TargetInput6&quot;,
+    &quot;TargetPointX6&quot;,
+    &quot;TargetPointY6&quot;,
+    &quot;ObjectInput6&quot;,
+    &quot;ObjectPointX6&quot;,
+    &quot;ObjectPointY6&quot;,
+    &quot;TargetInput7&quot;,
+    &quot;TargetPointX7&quot;,
+    &quot;TargetPointY7&quot;,
+    &quot;ObjectInput7&quot;,
+    &quot;ObjectPointX7&quot;,
+    &quot;ObjectPointY7&quot;,
+    &quot;TargetInput8&quot;,
+    &quot;TargetPointX8&quot;,
+    &quot;TargetPointY8&quot;,
+    &quot;ObjectInput8&quot;,
+    &quot;ObjectPointX8&quot;,
+    &quot;ObjectPointY8&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ScaleX&quot;,
+    &quot;ScaleY&quot;,
+    &quot;CalibStatus&quot;,
+    &quot;TranslateX&quot;,
+    &quot;TranslateY&quot;,
+    &quot;Rotate&quot;,
+    &quot;Scale&quot;,
+    &quot;Skew&quot;,
+    &quot;Aspect&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\IMVSCameraMapModu.xml&quot;,
+      &quot;sha256&quot;: &quot;8488358d302d4b48c6c08207380db8d0bd2bdc7566ed8f00ece8fdd299b7fd61&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\IMVSCameraMapModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;aa20749ac0f295e37ffbccdcde8a44e4878769147d4ddf2f4559b695446f580f&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\IMVSCameraMapModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;9832e201bc27e31413bd54bd92d55464b35c0657f681f7ca0059a695e0a77dfb&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\IMVSCameraMapModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;5e82de61111682be142ce22247fb96f365f03844e1acd742c80299f29c612e75&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\IMVSCameraMapModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;35338987b8ed83b93cefbda952c218e19b9cc0497ed920ad9d170f36c11c9e97&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;cff353a8376ed3d4c29234429171fcee24203f489c22170e9df0c7cd26bc6cf6&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-2-3" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>畸变标定</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calibration/IMVSImageCalibModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calibration/IMVSImageCalibModu&quot;,
+  &quot;label&quot;: &quot;畸变标定&quot;,
+  &quot;category&quot;: &quot;标定&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;CorrectCenterPoint&quot;,
+    &quot;CorrectCenterPointX&quot;,
+    &quot;CorrectCenterPointY&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;EstimationError&quot;,
+    &quot;CalibPointNum&quot;,
+    &quot;Calibration Point&quot;,
+    &quot;CalibPointX&quot;,
+    &quot;CalibPointY&quot;,
+    &quot;CalibPointStatus&quot;,
+    &quot;EvaluationError&quot;,
+    &quot;CalibPointError&quot;,
+    &quot;ROI&quot;,
+    &quot;DetectRectCenterPoint&quot;,
+    &quot;DetectCenterX&quot;,
+    &quot;DetectCenterY&quot;,
+    &quot;DetectWidth&quot;,
+    &quot;DetectHeight&quot;,
+    &quot;DetectAngle&quot;,
+    &quot;PostCorrectionImage&quot;,
+    &quot;PostCorrectionImageData&quot;,
+    &quot;PostCorrectionImageWidth&quot;,
+    &quot;PostCorrectionImageHeight&quot;,
+    &quot;PostCorrectionImagePixelFormat&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\IMVSImageCalibModu.xml&quot;,
+      &quot;sha256&quot;: &quot;05dc2a50457cbf63ad387092a0dfc77d52e0b892c192b1c7830c624b6bc98eaa&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\IMVSImageCalibModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;3465ac282043ea3baf5abbb56c9c8488b1494a97209613cb8c24c1da0be2764e&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\IMVSImageCalibModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;e7199e70b3d4de810610f95fe70a8ff3462df8dd2310800b003e794c07826e6c&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\IMVSImageCalibModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;31bc5f953a99763fcc8041115fb316533164d4ebdd0ec57798cfc1231d75b9ce&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\IMVSImageCalibModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;b63f5bd17daebfe62d004bc963d58fb74cc86cc8cf113644271f86f27cdff7e7&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;a010f2ff5b5733c10a74ca13d437f37a6d61e274c0e0ac321c3813d63bf050da&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-2-4" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>映射标定</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calibration/IMVSMapCalibModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calibration/IMVSMapCalibModu&quot;,
+  &quot;label&quot;: &quot;映射标定&quot;,
+  &quot;category&quot;: &quot;标定&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;InputImage1&quot;,
+    &quot;InImage1&quot;,
+    &quot;InImage1Width&quot;,
+    &quot;InImage1Height&quot;,
+    &quot;InImage1PixelFormat&quot;,
+    &quot;InputImage2&quot;,
+    &quot;InImage2&quot;,
+    &quot;InImage2Width&quot;,
+    &quot;InImage2Height&quot;,
+    &quot;InImage2PixelFormat&quot;,
+    &quot;InputROI1&quot;,
+    &quot;ROI1CenterPoint&quot;,
+    &quot;Roi1CenterX&quot;,
+    &quot;Roi1CenterY&quot;,
+    &quot;Roi1Width&quot;,
+    &quot;Roi1Height&quot;,
+    &quot;Roi1Angle&quot;,
+    &quot;InputROI2&quot;,
+    &quot;ROI2Center&quot;,
+    &quot;Roi2CenterX&quot;,
+    &quot;Roi2CenterY&quot;,
+    &quot;Roi2Width&quot;,
+    &quot;Roi2Height&quot;,
+    &quot;Roi2Angle&quot;,
+    &quot;RefreshSignal&quot;,
+    &quot;Physical Point&quot;,
+    &quot;PhysicalPointX&quot;,
+    &quot;PhysicalPointY&quot;,
+    &quot;WorldRotateAngle&quot;,
+    &quot;Trigger&quot;,
+    &quot;TeachFlagInput&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;CalibStatus&quot;,
+    &quot;XRatio&quot;,
+    &quot;YRatio&quot;,
+    &quot;MapError&quot;,
+    &quot;Current Corners Point&quot;,
+    &quot;CornersCurPointX&quot;,
+    &quot;CornersCurPointY&quot;,
+    &quot;Object Corners Point&quot;,
+    &quot;CornersObjPointX&quot;,
+    &quot;CornersObjPointY&quot;,
+    &quot;Projection Corners Point&quot;,
+    &quot;CornersProPointX&quot;,
+    &quot;CornersProPointY&quot;,
+    &quot;CurCornersPointNum&quot;,
+    &quot;ObjCornersPointNum&quot;,
+    &quot;ProCornersPointNum&quot;,
+    &quot;ROI&quot;,
+    &quot;DetectRectCenterPoint&quot;,
+    &quot;DetectCenterX&quot;,
+    &quot;DetectCenterY&quot;,
+    &quot;DetectWidth&quot;,
+    &quot;DetectHeight&quot;,
+    &quot;DetectAngle&quot;,
+    &quot;CalibStatus1&quot;,
+    &quot;CalibStatus2&quot;,
+    &quot;PixelScale1&quot;,
+    &quot;PixelScale2&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\IMVSMapCalibModu.xml&quot;,
+      &quot;sha256&quot;: &quot;228bf45a24691c0cd13c2201e516941f20e6b1e5352478ccb60ed01c774b4f5f&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\IMVSMapCalibModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;f4dfc100a8bd320576bf55c631202704d3b72d0dfd4d2adb57ae98e0681d53cc&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\IMVSMapCalibModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;cc91e61790265b3dad51ec37bb87cf65edd6b1fad718630253b390ddc0a46bf2&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\IMVSMapCalibModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;4f07627a6883ea0ac233dc402ace74337e955299ea1463b3753346ef13ba5738&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\IMVSMapCalibModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;d630451cd94d6d6eb4b1a69f5b9204707b18b083799b6218e4493a84700ca0a4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;b646e9df02a3493fb70dc834287035a7cde88b6d49e2f966ed4ed6cb3ae24d4c&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-2-5" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>N图像标定</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calibration/IMVSNImageCalibModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calibration/IMVSNImageCalibModu&quot;,
+  &quot;label&quot;: &quot;N图像标定&quot;,
+  &quot;category&quot;: &quot;标定&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;Image Point&quot;,
+    &quot;PicPointX&quot;,
+    &quot;PicPointY&quot;,
+    &quot;Physical Point&quot;,
+    &quot;PhysicalPointX&quot;,
+    &quot;PhysicalPointY&quot;,
+    &quot;PhyPoint&quot;,
+    &quot;MovePhysicalPointX&quot;,
+    &quot;MovePhysicalPointY&quot;,
+    &quot;RotateAngle&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;CalibStatus&quot;,
+    &quot;CalibErrStatus&quot;,
+    &quot;RotDirectState&quot;,
+    &quot;CornerPairsNum&quot;,
+    &quot;CalibImagePoint&quot;,
+    &quot;OutImagePointX&quot;,
+    &quot;OutImagePointY&quot;,
+    &quot;TransError&quot;,
+    &quot;TransEstMax&quot;,
+    &quot;TransErrMaxPtsNum&quot;,
+    &quot;TransWorldError&quot;,
+    &quot;TransErrWorldMax&quot;,
+    &quot;RotError&quot;,
+    &quot;RotErrMax&quot;,
+    &quot;RotErrMaxPtsNum&quot;,
+    &quot;RotWorldError&quot;,
+    &quot;RotErrWorldMax&quot;,
+    &quot;TransMotionErrPicIndex&quot;,
+    &quot;TransMotionErrAvgTrans&quot;,
+    &quot;TransMotionErrAvgScale&quot;,
+    &quot;TransMotionErrAvgRotate&quot;,
+    &quot;TransMotionErrMaxTrans&quot;,
+    &quot;TransMotionErrMaxScale&quot;,
+    &quot;TransMotionErrMaxRotate&quot;,
+    &quot;RotMotionErrAvg&quot;,
+    &quot;RotMotionErrMax&quot;,
+    &quot;RotMotionErrPicIndex&quot;,
+    &quot;Rotate CenterPoint&quot;,
+    &quot;RotateCenterPointX&quot;,
+    &quot;RotateCenterPointY&quot;,
+    &quot;DirectionXVector Point&quot;,
+    &quot;DirectionXVectorX&quot;,
+    &quot;DirectionXVectorY&quot;,
+    &quot;DirectionYVector Point&quot;,
+    &quot;DirectionYVectorX&quot;,
+    &quot;DirectionYVectorY&quot;,
+    &quot;MoveDirec&quot;,
+    &quot;CurNum&quot;,
+    &quot;TotalNum&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\IMVSNImageCalibModu.xml&quot;,
+      &quot;sha256&quot;: &quot;dac2aa0c023f712dd0e693ce285fa66de1e77dc4dd121060c573706a430e88ff&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\IMVSNImageCalibModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;cf38042199b0d27f2fe922fbf44984e1ea7ac1b3fad0e71a97d11f232d24fa17&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\IMVSNImageCalibModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;a83474fec309e81eaed70366ad813a2d5a06a02a8dcc9f12d398079e16e5c3c3&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\IMVSNImageCalibModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;1bfad9340d64bc7eeb1fef00882ec6e326701a1186603749b09b811f0e1b6354&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\IMVSNImageCalibModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;89a9d3665d9a90cfb751008da7559f1bd179dba84a15f134d5117795a62014e8&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;77f5dfbca4bb2959a59a1d0c4d2e9a0eb90b7bb711ec44c9705e32e53ab1d3ce&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-2-6" data-filter-record><span class="chip">已有候选，非等价验收</span><h3>N点标定</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calibration/IMVSNPointCalibModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已建立候选入口，具体以工具专页源码分析为准。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">差异按现有工具专页逐模式复审</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">按既有推荐整改/混合；不默认保留</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。</td></tr></tbody></table></div><a href="../现状分析/tool-calibration.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calibration/IMVSNPointCalibModu&quot;,
+  &quot;label&quot;: &quot;N点标定&quot;,
+  &quot;category&quot;: &quot;标定&quot;,
+  &quot;kind&quot;: &quot;candidate&quot;,
+  &quot;status&quot;: &quot;已有候选，非等价验收&quot;,
+  &quot;difference&quot;: &quot;差异按现有工具专页逐模式复审&quot;,
+  &quot;adoption&quot;: &quot;按既有推荐整改/混合；不默认保留&quot;,
+  &quot;current&quot;: &quot;已建立候选入口，具体以工具专页源码分析为准。&quot;,
+  &quot;gap&quot;: &quot;候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。&quot;,
+  &quot;change&quot;: &quot;如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。&quot;,
+  &quot;url&quot;: &quot;../现状分析/tool-calibration.html&quot;,
+  &quot;candidates&quot;: [
+    {
+      &quot;id&quot;: &quot;NPointCalibration&quot;,
+      &quot;name&quot;: &quot;N点标定&quot;,
+      &quot;category&quot;: &quot;坐标标定&quot;,
+      &quot;file&quot;: &quot;../现状分析/tool-calibration.html&quot;,
+      &quot;model&quot;: &quot;calibration&quot;,
+      &quot;area&quot;: &quot;calib-input&quot;,
+      &quot;scope&quot;: &quot;已纳入专业入口局部分析；不等全算法闭合&quot;,
+      &quot;source&quot;: {
+        &quot;path&quot;: &quot;tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationTool.cs&quot;,
+        &quot;line&quot;: 15,
+        &quot;token&quot;: &quot;[Tool(\&quot;NPointCalibration\&quot;, \&quot;N点标定\&quot;,\r&quot;,
+        &quot;sha256&quot;: &quot;2d40006ee8d2936f8cefb4c6137976986de9c81cd6cb16aaebccce1265bb78d7&quot;,
+        &quot;snippet&quot;: &quot;[Tool(\&quot;NPointCalibration\&quot;, \&quot;N点标定\&quot;,\r\n    Description = \&quot;采集图像/机构对应点并求解平面标定\&quot;,\r\n    Icon = \&quot;axes\&quot;, Order = 10, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Calibration, Version = \&quot;1.0.0\&quot;, HasDebugWindow = true)]\r\npublic sealed class NPointCalibrationTool : IToolPlugin&lt;NPointCalibrationParameters, NPointCalibrationResults&gt;,\r\n    IAsyncToolPlugin, IToolEditorFactory\r\n{\r\n    public NPointCalibrationResults Run(NPointCalibrationParameters parameters)\r\n        =&gt; Execute(parameters, new ToolExecutionRequest(parameters) { CancellationToken=parameters.Context?.CancellationToken ?? default });\r\n\r\n    public ValueTask&lt;ToolResults&gt; ExecuteAsync(ToolExecutionRequest request)\r\n        =&gt; ValueTask.FromResult&lt;ToolResults&gt;(Execute((NPointCalibrationParameters)request.Parameters, request));\r\n\r\n    private static NPointCalibrationResults Execute(NPointCalibrationParameters parameters, ToolExecutionRequest? request)\r\n    {\r\n        var result = new NPointCalibrationResults\r\n        {\r\n            ToolName = \&quot;N点标定\&quot;, ToolId = \&quot;NPointCalibration\&quot;,\r\n            RequiredTranslationSamples = parameters.TranslationCount,\r&quot;
+      },
+      &quot;sourceAudit&quot;: &quot;未新增本轮逐工具审读&quot;
+    }
+  ],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;Image Point&quot;,
+    &quot;ImagePointX&quot;,
+    &quot;ImagePointY&quot;,
+    &quot;Physical Point&quot;,
+    &quot;PhysicalPointX&quot;,
+    &quot;PhysicalPointY&quot;,
+    &quot;ImageRotateAngle&quot;,
+    &quot;WorldRotateAngle&quot;,
+    &quot;Trigger&quot;,
+    &quot;TeachFlagInput&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;CalibStatus&quot;,
+    &quot;CalibErrStatus&quot;,
+    &quot;CalibCurIndex&quot;,
+    &quot;CalibTotalNum&quot;,
+    &quot;CalibImagePoint&quot;,
+    &quot;OutImagePointX&quot;,
+    &quot;OutImagePointY&quot;,
+    &quot;CalibPhysicalPoint&quot;,
+    &quot;WorldPointX&quot;,
+    &quot;WorldPointY&quot;,
+    &quot;TransError&quot;,
+    &quot;RotError&quot;,
+    &quot;RotAxisPoint&quot;,
+    &quot;RotCenterImageX&quot;,
+    &quot;RotCenterImageY&quot;,
+    &quot;RotPhysicalPoint&quot;,
+    &quot;RotCenterWorldX&quot;,
+    &quot;RotCenterWorldY&quot;,
+    &quot;RotDirectionState&quot;,
+    &quot;TransEstMax&quot;,
+    &quot;TransErrMaxPtsNum&quot;,
+    &quot;TransWorldError&quot;,
+    &quot;TransErrWorldMax&quot;,
+    &quot;RotErrMax&quot;,
+    &quot;RotErrMaxPtsNum&quot;,
+    &quot;RotWorldError&quot;,
+    &quot;RotErrWorldMax&quot;,
+    &quot;Scale&quot;,
+    &quot;DeltaX&quot;,
+    &quot;DeltaY&quot;,
+    &quot;Rotate&quot;,
+    &quot;Tilt&quot;,
+    &quot;DirectionRatio&quot;,
+    &quot;PixelPrecision&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModu.xml&quot;,
+      &quot;sha256&quot;: &quot;246014967abd4311c77a904fbf02636f557bf61c25beca8f051243dc0c07c25f&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;f2c29eddc36d9ec23e5a1c8e107a1a53f2d1a14489b10f9ce0c148cb9e62ced2&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;a3e49f17109e49d6c26775bdb2fe956df0af1db1fbcbf5a111dbc2ba6a749435&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;dc255752d8040d063a4416a93fb3b69ca29c2d1cabe648a3e0fd84ddb9719ec3&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;88de08e7d5881777e9c2096b7ba9d7dab826f62f547da129352991866f2cb0d9&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;7417fa1d475304e53f7622877d22c9cc7eab7e2a82b73e252d2ae492a1f326da&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-2-7" data-filter-record><span class="chip">已有候选，非等价验收</span><h3>标定加载</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calibration/ReadCalibFileModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已建立候选入口，具体以工具专页源码分析为准。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">差异按现有工具专页逐模式复审</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">按既有推荐整改/混合；不默认保留</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。</td></tr></tbody></table></div><a href="../现状分析/tool-calibration.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calibration/ReadCalibFileModu&quot;,
+  &quot;label&quot;: &quot;标定加载&quot;,
+  &quot;category&quot;: &quot;标定&quot;,
+  &quot;kind&quot;: &quot;candidate&quot;,
+  &quot;status&quot;: &quot;已有候选，非等价验收&quot;,
+  &quot;difference&quot;: &quot;差异按现有工具专页逐模式复审&quot;,
+  &quot;adoption&quot;: &quot;按既有推荐整改/混合；不默认保留&quot;,
+  &quot;current&quot;: &quot;已建立候选入口，具体以工具专页源码分析为准。&quot;,
+  &quot;gap&quot;: &quot;候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。&quot;,
+  &quot;change&quot;: &quot;如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。&quot;,
+  &quot;url&quot;: &quot;../现状分析/tool-calibration.html&quot;,
+  &quot;candidates&quot;: [
+    {
+      &quot;id&quot;: &quot;NPointCalibration&quot;,
+      &quot;name&quot;: &quot;N点标定&quot;,
+      &quot;category&quot;: &quot;坐标标定&quot;,
+      &quot;file&quot;: &quot;../现状分析/tool-calibration.html&quot;,
+      &quot;model&quot;: &quot;calibration&quot;,
+      &quot;area&quot;: &quot;calib-input&quot;,
+      &quot;scope&quot;: &quot;已纳入专业入口局部分析；不等全算法闭合&quot;,
+      &quot;source&quot;: {
+        &quot;path&quot;: &quot;tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationTool.cs&quot;,
+        &quot;line&quot;: 15,
+        &quot;token&quot;: &quot;[Tool(\&quot;NPointCalibration\&quot;, \&quot;N点标定\&quot;,\r&quot;,
+        &quot;sha256&quot;: &quot;2d40006ee8d2936f8cefb4c6137976986de9c81cd6cb16aaebccce1265bb78d7&quot;,
+        &quot;snippet&quot;: &quot;[Tool(\&quot;NPointCalibration\&quot;, \&quot;N点标定\&quot;,\r\n    Description = \&quot;采集图像/机构对应点并求解平面标定\&quot;,\r\n    Icon = \&quot;axes\&quot;, Order = 10, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Calibration, Version = \&quot;1.0.0\&quot;, HasDebugWindow = true)]\r\npublic sealed class NPointCalibrationTool : IToolPlugin&lt;NPointCalibrationParameters, NPointCalibrationResults&gt;,\r\n    IAsyncToolPlugin, IToolEditorFactory\r\n{\r\n    public NPointCalibrationResults Run(NPointCalibrationParameters parameters)\r\n        =&gt; Execute(parameters, new ToolExecutionRequest(parameters) { CancellationToken=parameters.Context?.CancellationToken ?? default });\r\n\r\n    public ValueTask&lt;ToolResults&gt; ExecuteAsync(ToolExecutionRequest request)\r\n        =&gt; ValueTask.FromResult&lt;ToolResults&gt;(Execute((NPointCalibrationParameters)request.Parameters, request));\r\n\r\n    private static NPointCalibrationResults Execute(NPointCalibrationParameters parameters, ToolExecutionRequest? request)\r\n    {\r\n        var result = new NPointCalibrationResults\r\n        {\r\n            ToolName = \&quot;N点标定\&quot;, ToolId = \&quot;NPointCalibration\&quot;,\r\n            RequiredTranslationSamples = parameters.TranslationCount,\r&quot;
+      },
+      &quot;sourceAudit&quot;: &quot;未新增本轮逐工具审读&quot;
+    },
+    {
+      &quot;id&quot;: &quot;NPointVerification&quot;,
+      &quot;name&quot;: &quot;N点标定验证&quot;,
+      &quot;category&quot;: &quot;坐标标定&quot;,
+      &quot;file&quot;: &quot;../现状分析/tool-verification.html&quot;,
+      &quot;model&quot;: &quot;verification&quot;,
+      &quot;area&quot;: &quot;verify-input&quot;,
+      &quot;scope&quot;: &quot;已纳入专业入口局部分析；不等全算法闭合&quot;,
+      &quot;source&quot;: {
+        &quot;path&quot;: &quot;tools/SunEyeVision.Tool.NPointCalibration/NPointVerificationTool.cs&quot;,
+        &quot;line&quot;: 11,
+        &quot;token&quot;: &quot;[Tool(\&quot;NPointVerification\&quot;, \&quot;N点标定验证\&quot;, Description = \&quot;独立新采样验证HALCON原生候选并原子发布\&quot;,\r&quot;,
+        &quot;sha256&quot;: &quot;7a2dc7f44283e8d12bb7dc1ecef3e7a15aac242ff0694f8ed9b7aefff30f37c4&quot;,
+        &quot;snippet&quot;: &quot;[Tool(\&quot;NPointVerification\&quot;, \&quot;N点标定验证\&quot;, Description = \&quot;独立新采样验证HALCON原生候选并原子发布\&quot;,\r\n    Icon = \&quot;verify\&quot;, Order = 20, Category = ToolCategories.Calibration, Version = \&quot;2.0.0\&quot;, HasDebugWindow = true)]\r\npublic sealed class NPointVerificationTool : IToolPlugin&lt;NPointVerificationParameters, NPointVerificationResults&gt;, IAsyncToolPlugin, IToolEditorFactory\r\n{\r\n    public FrameworkElement CreateDebugControl(IToolPlugin tool) =&gt; new Views.NPointVerificationDebugControl();\r\n    public NPointVerificationResults Run(NPointVerificationParameters p)\r\n        =&gt; Execute(p, new ToolExecutionRequest(p) { CancellationToken = p.Context?.CancellationToken ?? default });\r\n    public ValueTask&lt;ToolResults&gt; ExecuteAsync(ToolExecutionRequest request)\r\n        =&gt; ValueTask.FromResult&lt;ToolResults&gt;(Execute((NPointVerificationParameters)request.Parameters, request));\r\n    private static NPointVerificationResults Execute(NPointVerificationParameters p, ToolExecutionRequest? request)\r\n    {\r\n        var result = new NPointVerificationResults { ToolId = \&quot;NPointVerification\&quot;, ToolName = \&quot;N点标定验证\&quot;,\r\n            ExpectedRevision = p.SampleRevision, InputFingerprint = p.Fingerprint(), Cancellation = request?.CancellationToken ?? default };\r\n        try\r\n        {\r\n            result.Cancellation.ThrowIfCancellationRequested();\r\n            var (candidate, hash) = NPointCalibrationFile.ReadCandidate(p.CandidateFilePath);\r\n            result.CandidateSha256 = hash;\r&quot;
+      },
+      &quot;sourceAudit&quot;: &quot;未新增本轮逐工具审读&quot;
+    }
+  ],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;RefreshSignal&quot;,
+    &quot;SnapImagePointX1&quot;,
+    &quot;SnapImagePointY1&quot;,
+    &quot;SnapImageR1&quot;,
+    &quot;SnapWorldPointX1&quot;,
+    &quot;SnapWorldPointY1&quot;,
+    &quot;SnapWorldR1&quot;,
+    &quot;TeachWorldPointX1&quot;,
+    &quot;TeachWorldPointY1&quot;,
+    &quot;TeachWorldR1&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;RotDirectionState&quot;,
+    &quot;IsRightCoorA&quot;,
+    &quot;RotCenterImage&quot;,
+    &quot;RotCenterImagePoint&quot;,
+    &quot;RotCenterImagePointX&quot;,
+    &quot;RotCenterImagePointY&quot;,
+    &quot;RotCenterImageR&quot;,
+    &quot;RotCenterWorld&quot;,
+    &quot;RotCenterWorldPoint&quot;,
+    &quot;RotCenterWorldPointX&quot;,
+    &quot;RotCenterWorldPointY&quot;,
+    &quot;RotCenterWorldR&quot;,
+    &quot;SnapImage&quot;,
+    &quot;SnapImagePoint&quot;,
+    &quot;SnapImagePointX&quot;,
+    &quot;SnapImagePointY&quot;,
+    &quot;SnapImageR&quot;,
+    &quot;SnapWorld&quot;,
+    &quot;SnapWorldPoint&quot;,
+    &quot;SnapWorldPointX&quot;,
+    &quot;SnapWorldPointY&quot;,
+    &quot;SnapWorldR&quot;,
+    &quot;TeachWorld&quot;,
+    &quot;TeachWorldPoint&quot;,
+    &quot;TeachWorldPointX&quot;,
+    &quot;TeachWorldPointY&quot;,
+    &quot;TeachWorldR&quot;,
+    &quot;SnapWorldCur&quot;,
+    &quot;SnapWorldCurPoint&quot;,
+    &quot;SnapWorldCurPointX&quot;,
+    &quot;SnapWorldCurPointY&quot;,
+    &quot;SnapWorldCurR&quot;,
+    &quot;SnapWorldObj&quot;,
+    &quot;SnapWorldObjPoint&quot;,
+    &quot;SnapWorldObjPointX&quot;,
+    &quot;SnapWorldObjPointY&quot;,
+    &quot;SnapWorldObjR&quot;,
+    &quot;CalibMatrix&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ReadCalibFileModu.xml&quot;,
+      &quot;sha256&quot;: &quot;d51dd352c7e7ca03781876625e0473aaf2be74fc276761e588b85ac922d4cb14&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ReadCalibFileModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;fd34fe90b74c63e7e2e98220447b9e6fb51e395363b4b8d4bdd218b9d7ed95fb&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ReadCalibFileModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;5e23fde5efd772431940a33ad44f8898b9dc5aef1a84f5fad590dc2688f44863&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ReadCalibFileModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;8e42089bdb51794f99e4dae3ec142e93f4de6f09f1916c32e60a88d64ef35745&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ReadCalibFileModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;2cefa54d36374dd83e15742afd18574c64a04dc0603b2d77177ead9ea5f29df1&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;1581e184aa571c7e3d15c1639742d0ceba7094d5f6c5215765b136fac055bcc2&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-2-8" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>旋转标定</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calibration/RotateCalibModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calibration/RotateCalibModu&quot;,
+  &quot;label&quot;: &quot;旋转标定&quot;,
+  &quot;category&quot;: &quot;标定&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;Image Point&quot;,
+    &quot;ImagePointX&quot;,
+    &quot;ImagePointY&quot;,
+    &quot;WorldRotateAngle&quot;,
+    &quot;RotNum&quot;,
+    &quot;RefreshSignal&quot;,
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;remainCount&quot;,
+    &quot;RotAxisPoint&quot;,
+    &quot;RotCenterImageX&quot;,
+    &quot;RotCenterImageY&quot;,
+    &quot;RotPhysicalPoint&quot;,
+    &quot;RotCenterWorldX&quot;,
+    &quot;RotCenterWorldY&quot;,
+    &quot;RotError&quot;,
+    &quot;RotWorldError&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\RotateCalibModu.xml&quot;,
+      &quot;sha256&quot;: &quot;ebfee94c61ef36eaf7ccacbe75c2ef4ad14c9f5fef8cc50d1b00388bf8d4909d&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\RotateCalibModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;a364af2cf2c8b8ed40e21dc84fcb6bb7c1e88ec25a01ba362cd366f4331a0442&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\RotateCalibModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;a6d2e3c283597ac044ec49d572a50c743f5221e0b858488f2a14d559e432e73e&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\RotateCalibModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;045f39cf57b6ced9d0d05b5086422ba20441c9d979162dbc3fd86efc8e9fe339&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\RotateCalibModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;0d197a40f4f998dca798f987fa1e09bbfc4b296ec83334ea19b7a03ba7e1a652&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;d409c5001fda6d473dae330c3e60d9aff84c7870a2c2e1b2f06a4bb72d3b8e9e&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-2-9" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>平移旋转标定</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calibration/TranslationCalibModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calibration/TranslationCalibModu&quot;,
+  &quot;label&quot;: &quot;平移旋转标定&quot;,
+  &quot;category&quot;: &quot;标定&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;如产品需要该标定类型，应新增专用参数/求解/质量验证/候选发布流程；不能把N点标定推广为畸变或多图标定。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;Image Point&quot;,
+    &quot;ImagePointX&quot;,
+    &quot;ImagePointY&quot;,
+    &quot;Physical Point&quot;,
+    &quot;PhysicalPointX&quot;,
+    &quot;PhysicalPointY&quot;,
+    &quot;ImageRotateAngle&quot;,
+    &quot;WorldRotateAngle&quot;,
+    &quot;Trigger&quot;,
+    &quot;TeachFlag&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;CalibStatus&quot;,
+    &quot;IsRightCoorA&quot;,
+    &quot;CalibCurIndex&quot;,
+    &quot;CalibTotalNum&quot;,
+    &quot;CalibImagePoint&quot;,
+    &quot;OutImagePointX&quot;,
+    &quot;OutImagePointY&quot;,
+    &quot;CalibPhysicalPoint&quot;,
+    &quot;WorldPointX&quot;,
+    &quot;WorldPointY&quot;,
+    &quot;TransError&quot;,
+    &quot;RotError&quot;,
+    &quot;RotAxisPoint&quot;,
+    &quot;RotCenterImageX&quot;,
+    &quot;RotCenterImageY&quot;,
+    &quot;RotPhysicalPoint&quot;,
+    &quot;RotCenterWorldX&quot;,
+    &quot;RotCenterWorldY&quot;,
+    &quot;RotDirectionState&quot;,
+    &quot;TransEstMax&quot;,
+    &quot;TransErrMaxPtsNum&quot;,
+    &quot;TransWorldError&quot;,
+    &quot;TransErrWorldMax&quot;,
+    &quot;RotErrMax&quot;,
+    &quot;RotErrMaxPtsNum&quot;,
+    &quot;RotWorldError&quot;,
+    &quot;RotErrWorldMax&quot;,
+    &quot;Scale&quot;,
+    &quot;DeltaX&quot;,
+    &quot;DeltaY&quot;,
+    &quot;Rotate&quot;,
+    &quot;Tilt&quot;,
+    &quot;DirectionRatio&quot;,
+    &quot;PixelPrecision&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;1be9c3277af6915b6865189cf6ce8628e52d980b1c1b430ad78d7d4ecc36bc2d&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\TranslationCalibModu.xml&quot;,
+      &quot;sha256&quot;: &quot;ebe8dd996875914ed971dc8c8488405fdda94c15c0a30dbf1a4813c999c1a45e&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\TranslationCalibModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;41ed538e604929216390b864f3b7c7134e5a25a3efa3054a5c9f0caa0928f207&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\TranslationCalibModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;3d626213bab65b7192fc27cfe3b0d5a2e13e595b5f349424adc327fe2aead062&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\TranslationCalibModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;8290c4d617f6def49b1b2588ee7a5f2655a9d0a8d750c01fedf527b91182e25b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\TranslationCalibModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;f0944125563d2d01dc13fe2759e5f378f4a5121789653e1c25cb49067c6675fc&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section></div></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

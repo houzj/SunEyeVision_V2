@@ -6,17 +6,17 @@
   "pages": [
     {
       "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
-      "sha256": "8c606929af395f7d30f2bbae98a6cd2b0bfbb933d151abf37d459649e13a0a27"
+      "sha256": "204752a8670b0607fad5b652c8a0b4c7b753e1dd5b2f67b3a0748458d9d55886"
     },
     {
       "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html",
-      "sha256": "2ab3ea5f406fd5e714bc1df72d3dd8cbe87a4ebc200120d5312da3b6c4f0cb07"
+      "sha256": "5f8f4b8adc0d104d01d5826dc6d0ec7ce30728cf91981968f0debd4d22876e32"
     }
   ],
   "evidence": [
     {
       "path": "docs/collaboration/SCRIPT_OPTIMIZATION_DECISION_20261023.json",
-      "sha256": "fe38502fa8fe9da014ba8aa7f88a40555fcd688e9a93f7e961c44f35ac5982bc"
+      "sha256": "1bc5a2bc754dfc6dc68065d8745a9516eb6001b670652a678343fc520cc901f6"
     },
     {
       "path": "docs/collaboration/SCRIPT_ASSEMBLY_SCOPE_20261023.json",

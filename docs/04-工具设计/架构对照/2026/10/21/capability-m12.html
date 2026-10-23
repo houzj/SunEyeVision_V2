@@ -1,0 +1,62 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M12 流程Tab单次运行</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M12 流程Tab单次运行</h1><article id="compare-M12"><span id="M12"></span><div class="visual-metrics"><div><strong>M12</strong><span>能力条目</span><small>静态路径已见</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>VM机制优先</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>TabItem_SingleRun_Click</b></li><li><small>02</small><b>SetSelectedTab(workflow)</b></li><li><small>03</small><b>RunWorkflowCommand.Execute</b></li><li><small>04</small><b>RunSingleAsync</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>Tab按钮先切目标流程再复用宿主命令。</p><details><summary>完整缺陷与未闭合调用边</summary><p>切换Tab带来的选中副作用和在途运行竞争待验；非独立调度器。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>VmProcedureDecorator.RunOnceCommandExe→VmProcedure.Run(null,false)→ProcessManager.SyncExecuteOnce。</p><p>原版RunOnceCommandExe运行所属流程、不改变DisplayModuleSet。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF05-PROCEDURE-RUN-CALLCHAIN.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">Tab执行依赖选中状态切换，目标选择与显示导航耦合，给异步重入增加风险。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：Tab执行依赖选中状态切换，目标选择与显示导航耦合，给异步重入增加风险。 VM参考边界：原版RunOnceCommandExe运行所属流程、不改变DisplayModuleSet。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">重做Tab命令目标传递，直接携带根流程ID，内部画布保持原位；成本是重接命令和状态投影。 命令直接携带目标WorkflowId，由UI选择和业务运行分别决定。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">在另一Tab被选中或切换期间，仍只运行按钮指向流程；结果归属不串。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o02.html#O02">O02</a></td></tr></tbody></table></div></section><article id="recommendation-M12"><h2>M12 流程Tab单次运行 · 借鉴VM重做</h2><p><b>代码依据 / 局限：</b>Tab执行依赖选中状态切换，目标选择与显示导航耦合，给异步重入增加风险。</p><p><b>VM可借鉴与不可推断：</b>原版RunOnceCommandExe运行所属流程、不改变DisplayModuleSet。</p><p><b>具体改法 / 成本：</b>重做Tab命令目标传递，直接携带根流程ID，内部画布保持原位；成本是重接命令和状态投影。 命令直接携带目标WorkflowId，由UI选择和业务运行分别决定。</p><p><b>验收：</b>在另一Tab被选中或切换期间，仍只运行按钮指向流程；结果归属不串。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M12">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M12">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S029</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs">src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs:526</a></p><p><code>TabItem_SingleRun_Click</code></p><p>SHA256 <code>d08aa3e23138d441149ffc3a66701d538ef3cb03ed87088ad3c6184ee6c78b3a</code></p><pre>        private void TabItem_SingleRun_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button &amp;&amp; button.Tag is WorkflowTabViewModel workflow)
+            {
+                // 设置选中的工作流（唯一写入口，避免双向绑定回写重入）
+                _viewModel.SetSelectedTab(workflow);
+                // 触发 RunWorkflowCommand 的 Execute 方法
+                _viewModel.RunWorkflowCommand.Execute(null);
+                _viewModel.StatusText = $&quot;单次运行: {workflow.Name}&quot;;
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// TabItem 连续运行/停止点击事件</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M12&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;流程Tab单次运行&quot;,
+  &quot;state&quot;: &quot;implemented&quot;,
+  &quot;chain&quot;: [
+    &quot;TabItem_SingleRun_Click&quot;,
+    &quot;SetSelectedTab(workflow)&quot;,
+    &quot;RunWorkflowCommand.Execute&quot;,
+    &quot;RunSingleAsync&quot;
+  ],
+  &quot;current&quot;: &quot;Tab按钮先切目标流程再复用宿主命令。&quot;,
+  &quot;gap&quot;: &quot;切换Tab带来的选中副作用和在途运行竞争待验；非独立调度器。&quot;,
+  &quot;vm&quot;: &quot;VmProcedureDecorator.RunOnceCommandExe→VmProcedure.Run(null,false)→ProcessManager.SyncExecuteOnce。&quot;,
+  &quot;vmDoc&quot;: &quot;MF05-PROCEDURE-RUN-CALLCHAIN.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;借鉴VM重做&quot;,
+  &quot;reason&quot;: &quot;依据：Tab执行依赖选中状态切换，目标选择与显示导航耦合，给异步重入增加风险。 VM参考边界：原版RunOnceCommandExe运行所属流程、不改变DisplayModuleSet。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;重做Tab命令目标传递，直接携带根流程ID，内部画布保持原位；成本是重接命令和状态投影。 命令直接携带目标WorkflowId，由UI选择和业务运行分别决定。&quot;,
+  &quot;accept&quot;: &quot;在另一Tab被选中或切换期间，仍只运行按钮指向流程；结果归属不串。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S029&quot;
+  ],
+  &quot;optimization&quot;: &quot;O02&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留统一执行服务，去除范围隐式性&quot;,
+    &quot;reason&quot;: &quot;复用好于两套执行，但不应依赖先切UI选中才决定业务目标。&quot;
+  },
+  &quot;defect&quot;: &quot;Tab执行依赖选中状态切换，目标选择与显示导航耦合，给异步重入增加风险。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版RunOnceCommandExe运行所属流程、不改变DisplayModuleSet。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;VM机制优先&quot;,
+  &quot;adoptionBasis&quot;: &quot;建议采用VM已确认的目标寻址/会话等待职责模型，用自有代码接入；不照搬原厂二进制，不宣称原生中断已等价。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;借鉴VM重做&quot;,
+    &quot;defect&quot;: &quot;Tab执行依赖选中状态切换，目标选择与显示导航耦合，给异步重入增加风险。&quot;,
+    &quot;borrow&quot;: &quot;原版RunOnceCommandExe运行所属流程、不改变DisplayModuleSet。&quot;,
+    &quot;action&quot;: &quot;重做Tab命令目标传递，直接携带根流程ID，内部画布保持原位；成本是重接命令和状态投影。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;VM机制优先&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S029&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

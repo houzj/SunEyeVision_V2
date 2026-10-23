@@ -11,7 +11,632 @@
 .reader-header .reader-location{margin-top:7px;color:#809cb5;font-size:11px;overflow-wrap:anywhere}
 @media(max-width:700px){.document-header.reader-header{padding:9px 10px;position:relative}.reader-header .reader-topline{display:block}.reader-header .reader-primary{margin-top:7px}.reader-header .reader-primary a{padding:6px 8px;font-size:12px}.reader-header .reader-primary .reader-vm{margin-left:0}.reader-header .reader-secondary a{padding:5px 7px}}
 @media print{.document-header.reader-header{display:none!important}}
-</style><header class="document-header reader-header" data-reader-section="architecture"><div class="reader-topline"><a class="reader-brand" href="../index.html">SunEyeVision · 文档首页</a><nav class="reader-primary" aria-label="阅读阶段"><a href="system-architecture.html" aria-current="page">整体架构专题</a><a href="../能力对照/comparison.html" >02 横向对照</a><a href="../优化方案/optimization.html" >03 优化方案</a><a href="../证据审计/evidence.html" >证据与范围</a><a class="reader-vm" href="file:///D:/MyWork/REA逆向测试/docs/framework-architecture.html" target="_blank" rel="noopener">VM恢复模型 ↗</a></nav></div><nav class="reader-secondary" aria-label="自研架构专题"><a href="system-architecture.html" >整体架构与执行链</a><a href="suneye-entry-architecture-comparison.html" >主界面入口</a><a href="tools.html" >工具界面入口</a><a href="data-architecture.html" >数据结构与传递</a><a href="camera-architecture.html" >设备与相机</a><a href="persistence-architecture.html" >方案与持久化</a><a href="platform-architecture.html" aria-current="page">SDK · 公共控件 · 部署</a></nav></header><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">主题、公共控件与插件部署</span><a href="system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><main class="wrap"><aside data-doc-index><a href="../index.html">文档索引</a> · <a href="../目标架构/architecture-target.html">2026-10-22最新目标取舍</a>（拟议、未实施；本页历史分析状态不自动升级）</aside><p><a href="#ui-state-review">13项UI：已实现、缺口与整改入口 ↓</a></p><h1>主题、公共控件与插件：共用什么，隔离什么？</h1><p class="notice">当前部分实现。以下为静态代码复核，不代表设计器、产品运行或发布验收；热卸载没有实现。</p><p><b>先看结论：</b>主题补失败回滚；SDK分离运行合同与UI扩展；插件版本兼容需要准入；当前卸载只是注销；私有native依赖部署需单独规则。以上均有局部依据，不默认保留，也不整包迁移VM。</p><p><a href="#control-consumers">11组公共控件实际使用链 ↓</a></p><nav class="platform-nav"><a href="#theme">切换主题：有合同校验，缺失败原子性</a><a href="#controls">公共控件：运行合同和WPF扩展混在一个包</a><a href="#resolve">插件依赖：有独立目录，但运行时共享优先</a><a href="#unload">卸载：当前清注册表，不是释放程序集</a><a href="#deploy">部署：构建规则已有，干净机器仍待验收</a></nav><article id="theme"><h2>切换主题：有合同校验，缺失败原子性</h2><h3>是什么</h3><p>颜色不是每个窗口各改一遍；宿主提供主题资源，SDK控件按资源键取值。</p><h3>实际链路</h3><p>ThemeManager.ApplyTheme → _currentTheme赋值 → 移除旧字典 → 创建/校验新字典 → 加入 → 标题栏/偏好/事件</p><h3>已实现及具体不足</h3><p>已实现Light/Dark、SdkThemeKeys逐键校验。问题是状态先变、旧字典先删；新字典加载或校验抛错时，没有对应回滚。相同theme再次调用又会提前return。</p><h3>最终取舍</h3><p>必须整改局部切换事务；不因此推翻全部主题体系。</p><h3>具体改法</h3><p>先构造并校验候选字典，再在UI线程替换；成功后提交_currentTheme。失败保留旧字典/状态，标题栏和事件也按成功阶段更新。</p><h3>验收标准（未执行）</h3><p>缺资源、错误URI、偏好保存失败分别验；失败后可重试，所有已开窗口和新开窗口一致。未运行VS设计器或产品。</p><details><summary>源码证据</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/ThemeManager.cs">src/UI/Services/ThemeManager.cs:89</a><pre>        public void ApplyTheme(AppTheme theme)
+</style><header class="document-header reader-header" data-reader-section="architecture"><div class="reader-topline"><a class="reader-brand" href="../index.html">SunEyeVision · 文档首页</a><nav class="reader-primary" aria-label="阅读阶段"><a href="system-architecture.html" aria-current="page">整体架构专题</a><a href="../能力对照/comparison.html" >02 横向对照</a><a href="../优化方案/optimization.html" >03 优化方案</a><a href="../证据审计/evidence.html" >证据与范围</a><a class="reader-vm" href="file:///D:/MyWork/REA逆向测试/docs/framework-architecture.html" target="_blank" rel="noopener">VM恢复模型 ↗</a></nav></div><nav class="reader-secondary" aria-label="自研架构专题"><a href="system-architecture.html" >整体架构与执行链</a><a href="suneye-entry-architecture-comparison.html" >主界面入口</a><a href="tools.html" >工具界面入口</a><a href="data-architecture.html" >数据结构与传递</a><a href="camera-architecture.html" >设备与相机</a><a href="persistence-architecture.html" >方案与持久化</a><a href="platform-architecture.html" aria-current="page">SDK · 公共控件 · 部署</a></nav></header><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">主题、公共控件与插件部署</span><a href="system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><main class="wrap"><!-- image-source-panel-review:start --><section id="image-source-panel-design" class="isp-review"><style>
+.isp-review{--line:#3e6075;--muted:#b1c6d5;padding:24px;margin:20px 0;background:#101f2a;border:1px solid var(--line);border-radius:14px;color:#e5f1f9;scroll-margin-top:150px}.isp-review h2{font-size:27px;margin:8px 0}.isp-review p{line-height:1.7}.isp-review h3{font-size:21px}.isp-review h4{margin:4px 0 12px}.isp-tag{display:inline-block;padding:5px 10px;border:1px solid #b99743;border-radius:20px;color:#ffe5a7;font-size:12px}.isp-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.isp-tabs button{padding:10px 13px;background:#1c3447;color:#cbe6fa;border:1px solid #50718b;border-radius:7px;cursor:pointer}.isp-tabs button[aria-selected=true]{background:#e6a749;color:#151e26;border-color:#ffd17e}.isp-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.isp-lane{border:1px solid #365369;border-radius:10px;padding:16px;min-width:0}.isp-flow{display:flex;gap:7px;align-items:stretch;flex-wrap:wrap;margin:12px 0}.isp-box{background:#1b3548;border:1px solid #4f7692;border-radius:8px;padding:12px;flex:1 1 125px;min-width:0;margin:5px 0}.isp-box b,.isp-box span{display:block;overflow-wrap:anywhere}.isp-box span{font-size:13px;line-height:1.65;color:#bad2e2;margin-top:7px}.isp-arrow{display:flex;align-items:center;color:#f6b95b;font-size:22px}.isp-box.warn{border-color:#9d7d43;background:#302d24}.isp-box.target{border-color:#478d83;background:#173c3b}.isp-review .isp-note{font-size:13px;color:var(--muted)}.isp-review details{border-top:1px solid #37566a;margin-top:14px;padding:10px 0}.isp-review summary{cursor:pointer;color:#8fd3fc;line-height:1.6}.isp-review li{margin:7px 0;line-height:1.65;font-size:14px}.isp-plan-step{display:flex;gap:16px;border-left:2px solid #5987a0;padding:10px 16px;margin-left:18px}.isp-plan-step>strong{background:#e6a749;color:#121c23;border-radius:50%;width:28px;height:28px;display:grid;place-items:center;flex-shrink:0}.isp-plan-step>div{min-width:0}.isp-scene[hidden]{display:none!important}.isp-review pre{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto}.isp-review a{color:#8fd3fc}@media(max-width:850px){.isp-columns{grid-template-columns:1fr}.isp-review{padding:16px}.isp-flow{flex-direction:column}.isp-arrow{justify-content:center;transform:rotate(90deg)}.isp-box{flex:auto}}@media print{.isp-tabs{display:none}.isp-scene[hidden]{display:block!important}.isp-review{color:black;background:white}.isp-box span{color:#263c4b}}
+</style><span class="isp-tag">静态对照 · 拟议优化 · 未批准实施 · 性能未测</span><h2>图像源面板：图属于谁，什么时候显示，实际跑哪张？</h2><p>优先统一来源身份、运行序列和状态同步，再治理加载与内存；保留现有虚拟化与后台缩略图，不先增加预热。</p><p class="isp-note">基线 c58eb088 · 2026-10-23。VM逆向事实、我们的源码事实、条件风险与未测项分别标注。<a href="../index.html">返回唯一首页</a></p><nav class="isp-tabs" aria-label="图像源设计图"><button type="button" data-isp-tab="0" aria-selected="true" aria-controls="isp-0">1. 控件边界</button><button type="button" data-isp-tab="1" aria-selected="false" aria-controls="isp-1">2. 三个身份</button><button type="button" data-isp-tab="2" aria-selected="false" aria-controls="isp-2">3. 可见性规则</button><button type="button" data-isp-tab="3" aria-selected="false" aria-controls="isp-3">4. 加载与执行</button><button type="button" data-isp-tab="4" aria-selected="false" aria-controls="isp-4">5. 预热与成本</button><button type="button" data-isp-tab="5" aria-selected="false" aria-controls="isp-5">6. 缓存与释放</button><button type="button" data-isp-tab="6" aria-selected="false" aria-controls="isp-6">7. 整批优化</button></nav><div id="isp-0" class="isp-scene" ><h3>分析的是底部“图像源”，不是中央大图渲染器</h3><div class="isp-flow"><div class="isp-box "><b>节点的 ImageInputSource</b><span>每个图像源节点拥有自己的列表、勾选、当前位置</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>底部图像源面板</b><span>添加 / 目录 / 勾选 / 手动选图 / 自动切换</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>所选工作流执行</b><span>每个图像加载节点分别取自己的输入快照</span></div></div><div class="isp-columns"><div class="isp-lane"><h4>缩略图路线</h4><div class="isp-flow"><div class="isp-box "><b>图片路径</b><span>只读小图</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>WIC 后台解码</b><span>可见区按需</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>WPF 缩略图</b><span>不承担原图算法执行</span></div></div></div><div class="isp-lane"><h4>真实运行路线</h4><div class="isp-flow"><div class="isp-box "><b>节点路径快照</b><span>不是 ImageInfo.FullImage</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>ImageLoadTool</b><span>HalImage.CreateFromFile</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>工具输出</b><span>转换 / 灰度 / 统计 / 发布</span></div></div></div></div><p class="isp-note">边界：中央显示器、ROI与图形文字渲染需另按自身调用链讨论；本节不把它们的成本算到图像源面板。</p><details><summary>展开 D05 的逐项依据与取舍</summary><p><b>VM：</b>ImageSource原生模块ConvertFileImage调用MVDMediaProcess；PathCache拷贝至配置上限；具体像素内核与完整释放未贯通。</p><p><b>我们：</b>实际执行从每节点快照路径到ImageLoadTool.HalImage.CreateFromFile，不是ImageInfo.FullImage那条遗留WIC显示线。</p><p><b>目标：</b>测真实工具解码/转换/灰度/统计及显示发布；明确预览与运行不同质量/所有权。</p><p><b>来源线：</b>保留工具与平台解耦；不因VM有原生缓存就先增全图缓存或替换解码器。</p></details></div><div id="isp-1" class="isp-scene" hidden><h3>看哪个节点、图属于谁、实际跑谁，必须分清</h3><div class="isp-flow"><div class="isp-box "><b>① 选中节点</b><span>决定查看哪个上游来源；可以是测量等普通工具</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>② 来源节点</b><span>拥有图片列表 / 当前图 / 运行勾选</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>③ 执行工作流</b><span>手动点缩略图请求整条当前工作流，不是只跑选中节点</span></div></div><div class="isp-columns"><div class="isp-lane"><h4>现状的条件风险</h4><div class="isp-box warn"><b>全局推进回调依赖当前可见面板</b><span>运行期间切工作流或选其他节点，可能改变回调所见来源；尚未动态复现。</span></div><div class="isp-box warn"><b>子程序找不到来源时沿用旧绑定</b><span>意图复用父级，但当前没有验证旧源属于本次父级。</span></div></div><div class="isp-lane"><h4>推荐约束</h4><div class="isp-box target"><b>每次运行固定身份</b><span>workflowId + sourceNodeId + runId + 稳定条目ID</span></div><div class="isp-box target"><b>查看可以切，运行不能串</b><span>UI只展示；本轮推进、尾部停止、结果归属使用同一份运行计划。</span></div></div></div><details><summary>展开 D01 的逐项依据与取舍</summary><p><b>VM：</b>从当前显示图像所属模块定位关联源；非图源沿每级首个IMAGE输入追溯，并核同父级/当前模块或FrontModules关系，ImageSourceType=1显示。不是全图BFS。</p><p><b>我们：</b>选中节点或BFS上游图像源；多源借用SelectedDisplaySource分支；相机隐藏；子程序解析不到可沿用旧绑定；上方显示源切换未直接重算底部。</p><p><b>目标：</b>来源解析返回明确的workflowId/sourceNodeId/reason；查看来源与执行输入分离；子程序只允许经验证的父级来源，找不到显示原因；显示源改变统一触发解析。</p><p><b>来源线：</b>借鉴VM显示图像与来源联动、上下文约束；自研明确多输入分支，不照搬仅首IMAGE输入规则。</p></details><details><summary>展开 D03 的逐项依据与取舍</summary><p><b>VM：</b>选图写CurrentImagePath并RunCheck后运行所属流程；AutoPlay会先写前一图以配合原生先推进。</p><p><b>我们：</b>显式点击/键盘触发当前工作流；普通SelectionChanged不运行；自动推进成功后执行，但全局回调依赖当前可见面板。</p><p><b>目标：</b>执行与推进携带工作流、来源和运行代次；采用同一序列计划决定下一张与结束，UI只显示。</p><p><b>来源线：</b>借鉴VM模块拥有原图执行游标；不采用前一图补偿技巧，不退回UI调度。</p></details></div><div id="isp-2" class="isp-scene" hidden><h3>双方“什么时候显示”走的是不同规则</h3><div class="isp-columns"><div class="isp-lane"><h4>我们 · 已核静态链</h4><div class="isp-flow"><div class="isp-box "><b>选中为空</b><span>隐藏并清来源</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>选中 ImageLoad</b><span>直接取自身；空列表仍可显示</span></div></div><div class="isp-flow"><div class="isp-box "><b>普通工具</b><span>沿连线逆向 BFS</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>一个上游源</b><span>显示本地图源；相机隐藏</span></div></div><div class="isp-flow"><div class="isp-box "><b>多个上游源</b><span>用 SelectedDisplaySource 限定分支</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>仍无法解析</b><span>通常隐藏；子程序可沿用旧绑定</span></div></div><div class="isp-box warn"><b>待整改触发点</b><span>顶部显示源切换未直接重新计算底部来源；需统一刷新。</span></div></div><div class="isp-lane"><h4>VM · 已恢复静态链</h4><div class="isp-flow"><div class="isp-box "><b>SelectedItem</b><span>ModuleResultView.ModuleSource</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>SelectedImage.Owner</b><span>先找当前显示图像的所属模块</span></div></div><div class="isp-flow"><div class="isp-box "><b>非图像源</b><span>每级只追首个 IMAGE 输入 RelateIO.Root</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>上下文校验</b><span>同 Parent，且为自身或 FrontModules</span></div></div><div class="isp-flow"><div class="isp-box "><b>ImageSourceType == 1</b><span>才显示本地图像列表</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>非全图 BFS</b><span>多来源全部分支语义尚未恢复</span></div></div><div class="isp-box target"><b>借鉴而不照搬</b><span>借鉴显示图与来源联动、上下文校验；不采用“永远只看第一路”的隐含规则。</span></div></div></div><details><summary>展开 D01 的逐项依据与取舍</summary><p><b>VM：</b>从当前显示图像所属模块定位关联源；非图源沿每级首个IMAGE输入追溯，并核同父级/当前模块或FrontModules关系，ImageSourceType=1显示。不是全图BFS。</p><p><b>我们：</b>选中节点或BFS上游图像源；多源借用SelectedDisplaySource分支；相机隐藏；子程序解析不到可沿用旧绑定；上方显示源切换未直接重算底部。</p><p><b>目标：</b>来源解析返回明确的workflowId/sourceNodeId/reason；查看来源与执行输入分离；子程序只允许经验证的父级来源，找不到显示原因；显示源改变统一触发解析。</p><p><b>来源线：</b>借鉴VM显示图像与来源联动、上下文约束；自研明确多输入分支，不照搬仅首IMAGE输入规则。</p></details></div><div id="isp-3" class="isp-scene" hidden><h3>小图只是浏览；运行真正读取原图</h3><div class="isp-columns"><div class="isp-lane"><h4>我们</h4><div class="isp-flow"><div class="isp-box "><b>添加文件/目录</b><span>UI枚举、排序、去重、追加路径</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>可见容器</b><span>后台 WIC 小图解码</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>显式点击/按键</b><span>同步当前位置 → 请求工作流</span></div></div><div class="isp-flow"><div class="isp-box "><b>节点参数快照</b><span>分别复制每个 ImageLoad 当前路径</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>HalImage 原图</b><span>读取 → 转换/灰度/统计</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>成功后推进</b><span>普通单次/连续推进；手动选图不推进</span></div></div><div class="isp-box warn"><b>一致性缺口</b><span>单独改 IsForRun 未被源订阅；尾部判定比较原始引用与已解析路径，可能与实际可运行子集不同。</span></div></div><div class="isp-lane"><h4>VM</h4><div class="isp-flow"><div class="isp-box "><b>模块参数列表</b><span>ImageNumber / ImagePathN</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>可见区线程</b><span>72×52 缩略图</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>选图写当前路径</b><span>RunCheck → 所属 Procedure.Run</span></div></div><div class="isp-flow"><div class="isp-box "><b>原生 Process</b><span>先推进、再读图、可回绕</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>MVDMediaProcess</b><span>原图解码；独立 PathCache</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>刷新面板</b><span>读取 CurImagePath</span></div></div><div class="isp-box target"><b>不采用补偿技巧</b><span>AutoPlay 先写前一张以适配原生先推进；我们保留“本次明确用哪张图”的语义。</span></div></div></div><details><summary>展开 D02 的逐项依据与取舍</summary><p><b>VM：</b>平台列表读写模块参数，添加删除勾选写回模块。</p><p><b>我们：</b>节点ImageInputSource是事实源，配置保存资源引用；IsForRun的item变化未被事实源订阅，单独勾选保存条件下可能未同步。</p><p><b>目标：</b>列表/勾选由源服务命令提交，一次同步配置和修改状态；运行游标与持久配置分开。</p><p><b>来源线：</b>保留整改当前节点事实源，不新建第二套管理。</p></details><details><summary>展开 D03 的逐项依据与取舍</summary><p><b>VM：</b>选图写CurrentImagePath并RunCheck后运行所属流程；AutoPlay会先写前一图以配合原生先推进。</p><p><b>我们：</b>显式点击/键盘触发当前工作流；普通SelectionChanged不运行；自动推进成功后执行，但全局回调依赖当前可见面板。</p><p><b>目标：</b>执行与推进携带工作流、来源和运行代次；采用同一序列计划决定下一张与结束，UI只显示。</p><p><b>来源线：</b>借鉴VM模块拥有原图执行游标；不采用前一图补偿技巧，不退回UI调度。</p></details><details><summary>展开 D05 的逐项依据与取舍</summary><p><b>VM：</b>ImageSource原生模块ConvertFileImage调用MVDMediaProcess；PathCache拷贝至配置上限；具体像素内核与完整释放未贯通。</p><p><b>我们：</b>实际执行从每节点快照路径到ImageLoadTool.HalImage.CreateFromFile，不是ImageInfo.FullImage那条遗留WIC显示线。</p><p><b>目标：</b>测真实工具解码/转换/灰度/统计及显示发布；明确预览与运行不同质量/所有权。</p><p><b>来源线：</b>保留工具与平台解耦；不因VM有原生缓存就先增全图缓存或替换解码器。</p></details></div><div id="isp-4" class="isp-scene" hidden><h3>有线程池准备；没有证据证明启动时已解码图片</h3><div class="isp-columns"><div class="isp-lane"><h4>我们 · 启动事实</h4><div class="isp-flow"><div class="isp-box "><b>Splash.Show 之前</b><span>设置线程池最少 worker 8 / IO 4</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>4 个空任务</b><span>每个 Sleep(10ms)</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>WaitAll</b><span>启动线程同步等待</span></div></div><div class="isp-box warn"><b>不是已测成绩</b><span>“1783ms → 50ms”只是源码注释预期，不能当本轮性能结果。</span></div></div><div class="isp-lane"><h4>VM · 已证范围</h4><div class="isp-flow"><div class="isp-box "><b>控件 Loaded</b><span>创建缩略图工作线程</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>可见区按需</b><span>加载小图</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>控件 Unloaded</b><span>停线程标志并解绑事件</span></div></div><div class="isp-box warn"><b>仍未知</b><span>尚无完整 App 启动调用链，不能断言 VM 全局有预热或没有预热。</span></div></div></div><div class="isp-columns"><div class="isp-lane"><h4>基础组件的不可忽略成本</h4><ul><li>磁盘/网络文件读取、WIC解码与首次组件加载</li><li>HalImage原图读取、转换与统计</li><li>WPF可见容器创建、布局及跨线程发布</li></ul></div><div class="isp-lane"><h4>我们的集成开销可整改</h4><ul><li>UI线程目录枚举</li><li>每次游标变化重建全列表配置并遍历高亮</li><li>item强引用绕过LRU条数上限</li><li>来源解析、可见面板与运行推进耦合</li><li>切源清全部缩略图与路径键版本不足</li></ul></div></div><div class="isp-flow"><div class="isp-box "><b>固定构建与样本</b><span>冷/再次、磁盘缓存状态一致</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>开 / 关 / 移后 A/B</b><span>拆调度、小图、原图、绑定发布</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>按收益决定</b><span>保留有收益的准备，不先补全量预解码</span></div></div><details><summary>展开 D06 的逐项依据与取舍</summary><p><b>VM：</b>已证控件Loaded创建工作线程并按需加载，尚无完整启动调用证据可证明全局有或无预热。</p><p><b>我们：</b>Splash.Show前设置线程池min8/4，4个Sleep10ms Task并WaitAll；没有图像解码。1783→50是注释预期。</p><p><b>目标：</b>分离启动阻塞成本、线程池调度、WIC冷首用和真实原图工具首用；同条件A/B后才决定保留、移后或取消。</p><p><b>来源线：</b>自研可验证策略；不预设预热无用，也不把UI结构问题用全量预解码遮盖。</p></details></div><div id="isp-5" class="isp-scene" hidden><h3>缓存上限必须算实际驻留，不只看 LRU 字典</h3><div class="isp-columns"><div class="isp-lane"><h4>我们 · 已核</h4><div class="isp-flow"><div class="isp-box "><b>路径键 LRU</b><span>缩略图缓存上限 50</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>ImageInfo.Thumbnail</b><span>条目仍可强持有已浏览小图</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>实际驻留可能超过50</b><span>条数上限 ≠ 全控件内存上限</span></div></div><div class="isp-box warn"><b>版本与异步边界</b><span>路径键不足区分同名覆盖；切源会清全部缩略图，取消后旧任务发布/缓存污染需验。</span></div><div class="isp-box "><b>卸载 / 删除</b><span>卸载取消任务但保留列表；清空只移除引用，不删除磁盘文件。</span></div></div><div class="isp-lane"><h4>VM · 已核与未知</h4><div class="isp-flow"><div class="isp-box "><b>可见项 ImageSource</b><span>低优先级线程加载</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>滚出可视区</b><span>清 ImageSource</span></div><span class="isp-arrow" aria-hidden="true">→</span><div class="isp-box "><b>原图 PathCache</b><span>模块层另管，不等平台小图缓存</span></div></div><div class="isp-box warn"><b>不能下性能结论</b><span>原图跨格式失效、Reset/重新加载完整释放链未贯通；不能据此说 VM 内存一定更低。</span></div><div class="isp-box target"><b>推荐</b><span>保留虚拟化/后台小图；统一字节预算、视口窗口缓存、同键加载合并、文件版本与失效代次。</span></div></div></div><details><summary>展开 D04 的逐项依据与取舍</summary><p><b>VM：</b>横向虚拟化、72×52可见区低优先级线程、滚出清ImageSource；原图PathCache另管。</p><p><b>我们：</b>横向虚拟化、WIC100像素、Task.Run+4..16并发、100ms防抖、50张LRU；item还持有已浏览缩略图。</p><p><b>目标：</b>保留后台按需模型；按字节及可见窗口制定实际驻留预算；同键合并加载、文件版本失效、切源取消旧代次发布。</p><p><b>来源线：</b>借鉴VM移出视口释放的目标，保留可调窗口缓存；不照搬100ms轮询专属线程。</p></details></div><div id="isp-6" class="isp-scene" hidden><h3>一整批完成来源、序列、状态与加载合同；本轮只是建议</h3><div class="isp-plan"><div class="isp-plan-step"><strong>1</strong><div><h4>先把“谁的图、谁在运行”固定</h4><ul><li>统一来源解析结果与可见性理由</li><li>工作流+源节点+运行代次的序列计划</li><li>推进、停止最后一张、快照使用相同稳定条目身份</li></ul><details><summary>验收标准 · 未执行</summary><ul><li>切tab/选其他节点不改变正在执行的来源</li><li>多源/子程序/相机/空选择来源正确或明确拒绝</li><li>失败保留当前图，尾部与勾选序列一致</li></ul></details></div></div><div class="isp-plan-step"><strong>2</strong><div><h4>列表状态可靠提交</h4><ul><li>勾选变化立即同步配置与dirty</li><li>持久列表与运行游标分离</li><li>取消只读假象，显式修改入口；批量增删一次事务</li></ul><details><summary>验收标准 · 未执行</summary><ul><li>只勾选后保存重开一致</li><li>加删清/模式/缺文件/资源引用正确</li><li>运行推进不重复全量复制保存配置</li></ul></details></div></div><div class="isp-plan-step"><strong>3</strong><div><h4>加载和内存一起治理</h4><ul><li>可取消后台枚举+分批追加</li><li>实际驻留字节预算与窗口缓存</li><li>同文件同版本single-flight，外部覆盖刷新</li><li>切源/卸载/清空后旧任务不可重新污染缓存/界面</li></ul><details><summary>验收标准 · 未执行</summary><ul><li>大量路径添加可取消且顺序可重复</li><li>滚动全列表后驻留符合约定预算</li><li>同名文件替换不显示旧图</li><li>快速切源后不出现上一节点缩略图</li></ul></details></div></div><div class="isp-plan-step"><strong>4</strong><div><h4>用实测决定预热</h4><ul><li>同固定构建、样本、磁盘缓存状态比较预热开/关/移后</li><li>拆线程池/WIC首解码/首屏绑定/真实原图工具/发布</li><li>报告首次与再次、分位数、内存，不用注释当成绩</li></ul><details><summary>验收标准 · 未执行</summary><ul><li>启动到可操作+首屏缩略图+首选图到结果完整报告</li><li>WIC缩略图与HalImage原图分别报告</li><li>不设未经用户确认的毫秒承诺</li></ul></details></div></div><div class="isp-plan-step"><strong>5</strong><div><h4>界面一致性与遗留路径收口</h4><ul><li>显示当前来源身份与隐藏理由</li><li>统一图标/主题/焦点与查看/运行提示</li><li>确认无调用后清理遗留FullImage并行模型</li></ul><details><summary>验收标准 · 未执行</summary><ul><li>主题与高DPI人工核验</li><li>无第二份图像列表/事实源</li><li>删除仅移引用、卸载不丢保存列表</li></ul></details></div></div></div><div class="isp-columns"><div class="isp-lane"><h4>保留整改</h4><div class="isp-box target"><b>保留现有基础</b><span>每节点事实源、后台小图、虚拟化、缺文件保留、选中与执行分开、成功后推进。</span></div><div class="isp-box target"><b>借鉴 VM</b><span>显示图与来源联动；模块拥有运行游标；离开视口控制驻留；均保留明确证据。</span></div></div><div class="isp-lane"><h4>独立补齐 / 不采用</h4><div class="isp-box target"><b>自研补齐</b><span>多源显式选择、上下文身份、同一序列计划、版本化缓存、可取消批量添加。</span></div><div class="isp-box warn"><b>明确不采用</b><span>不照搬首 IMAGE 输入、前一图补偿、100ms轮询专属线程；不盲目增加全图缓存或替换解码器。</span></div></div></div><details><summary>展开 D07 的逐项依据与取舍</summary><p><b>VM：</b>运行子集、自动播放、当前路径均在模块参数中关联。</p><p><b>我们：</b>当前高亮、运行勾选、自动切换、运行模式并存；Unicode图标、部分硬编码颜色、错误与来源信息分散。</p><p><b>目标：</b>用节点名/流程名标明当前来源，区分当前查看与运行勾选；空列表、歧义、多源、缺文件给清楚反馈；统一图标/主题/DPI。</p><p><b>来源线：</b>保留紧凑面板，先用HTML确认交互，不新增管理页面。</p></details></div><details><summary>证据账本：来源文件、调用链、条件问题与未知</summary><p>以下内容来自正式分析包；源码行号按固定基线，反编译证据仅代表已恢复的分支。</p><a href="../../../../../../../collaboration/IMAGE_SOURCE_PANEL_REVIEW_20261023.json">正式分析包（JSON）</a><h4>我们：实际调用链</h4><details><summary>Binding and ownership</summary><p>The single bottom panel binds to the selected/upstream local image-source node&#39;s ImageInputSource. ImageCollection is OneWay; index/run mode/auto switch TwoWay. A node owns its own list. Camera sources hide this panel. Ambiguous upstream selection is not arbitrarily guessed.</p><pre>src/UI/Shell/Controls/Shell/ImageResultControl.xaml:227-232
+src/UI/Shared/WorkflowNodeModel.cs:43-69
+src/UI/Shell/Windows/MainWindowViewModel.cs:5350-5386</pre></details><details><summary>Add</summary><p>File or folder picker creates metadata entries and appends once via the active truth source. Case-insensitive path deduplication; folder is nonrecursive and sorted. No full-image decode in AppendFiles. The view&#39;s current index is set to first newly added item.</p><pre>src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:640-739
+src/UI/Shared/ImageInputSource.cs:184-193</pre></details><details><summary>Choose and explicitly execute</summary><p>Left click and explicit keyboard entry request execution. SelectionChanged alone only updates index, preventing restore/right-click from executing. Running request is rejected after index synchronization. PublishRuntimeInput publishes selected tab identity. RunSelectedImageAsync passes advanceLocalImage=false, so a manual click runs the chosen image without post-success advancing.</p><pre>src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:955-1064
+src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:99-118
+src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:161-170
+src/UI/Shell/Windows/MainWindowViewModel.cs:2068
+src/UI/Shell/Windows/MainWindowViewModel.cs:4241-4254</pre></details><details><summary>Real image loading</summary><p>Execution clones runtime parameters and extracts each ImageLoad node&#39;s current FilePath into node parameter overrides, including child workflows. No valid current image explicitly overrides to empty rather than using an old parameter. The ImageLoad plugin resolves path then calls HalImage.CreateFromFile, output conversion, gray image creation and pixel statistics. This is separate from WIC thumbnails.</p><pre>src/UI/Services/Workflow/WorkflowExecutionManager.cs:779-798
+src/UI/Services/Workflow/WorkflowExecutionManager.cs:1229-1297
+tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs:125-205</pre></details><details><summary>Successful auto advance</summary><p>Standard single run and continuous local run advance only after successful execution; failure preserves current selection. View computes next existing runnable file, honors checked subset and wraps at end. A single runnable stays current. Manual thumbnail execution deliberately skips auto advance.</p><pre>src/UI/Services/Workflow/WorkflowExecutionManager.cs:178-210
+src/UI/Services/Workflow/WorkflowExecutionManager.cs:287-310
+src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:176-194
+src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:898-941</pre></details><details><summary>Persistence</summary><p>Most source changes convert to ImageSourceConfig immediately through node callback. Bitmap objects excluded from serialization. Original resource references are retained separately from resolved addresses. Loading retains missing entries with diagnostics and suppresses config rewrite. Local merges preserve camera/source-kind settings.</p><pre>src/UI/Shared/ImageInputSource.cs:141-145
+src/UI/Shared/ImageInputSource.cs:288-348
+src/UI/Shared/WorkflowNodeModel.cs:43-69
+src/UI/Shared/WorkflowNodeModel.cs:197-233
+src/Workflow/ImageSourceConfig.cs:65-73</pre></details><details><summary>Remove, clear and unload</summary><p>Deletion and clear cancel thumbnail work, release item image references, invalidate caches and adjust index; disk files are never removed. View unload cancels pending thumbnails but preserves persisted input list. Shutdown unsubscribes execution event and clears global advancer.</p><pre>src/UI/Shared/ImageInputSource.cs:199-235
+src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:629-636
+src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:768-811</pre></details><h4>双方优缺点：VM也有自己的代价</h4><div class="isp-columns"><div class="isp-lane"><h4>VM优点</h4><ul><li>显示图像Owner与来源关系明确，并检查同Parent和FrontModules</li><li>滚出视口清缩略图item引用，原图运行缓存另管</li><li>模块参数承接列表/运行状态，平台不自行读原图</li></ul></div><div class="isp-lane"><h4>VM局限与不照搬</h4><ul><li>GetRelatedImageSourceModule仅每级首IMAGE输入，不能直接满足任意多输入显式分支</li><li>lst_ScrollChanged仍遍历全部ImageList；并非滚动成本天然常数</li><li>专属线程Sleep100轮询、部分异常catch空，不作为自研推荐模板</li><li>AutoPlay写前一图配合原生先推进，增加理解和边界成本</li></ul></div><div class="isp-lane"><h4>自研已有优点</h4><ul><li>节点列表统一事实源，保留原资源引用，缺文件不静默删除</li><li>真实执行用每节点输入路径快照，手动选图与成功后推进已有区分</li><li>虚拟化/后台解码/Freeze/并发限制/取消发布已存在</li><li>增删清通过事实源，卸载视图不清持久列表</li></ul></div><div class="isp-lane"><h4>推荐取舍</h4><ul><li>借鉴职责与来源约束，不照抄VM参数名、首输入、轮询或前图补偿</li><li>自研统一来源解析、序列计划、配置事务与缓存预算</li><li>先修状态正确性，再按相同样本测组件和集成成本，最后决定预热</li></ul></div></div><h4>先验证的正确性缺口</h4><ul><li>C01：只勾选运行图片后立即保存，配置可能未同步；需验证重开结果。</li><li>C02：运行后推进依赖当前可见面板，切工作流/节点可能推进错来源。</li><li>C06：末张停止与实际运行子集使用不同路径口径，资源引用/缺文件时需验证。</li><li>C08：顶部显示源切换没有直接刷新底部来源；子程序沿用旧源缺上下文校验。</li></ul><h4>条件问题（静态，未动态复现）</h4><pre>{
+  &quot;scope&quot;: &quot;Bottom image-source panel, not main image canvas&quot;,
+  &quot;baseline&quot;: &quot;c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2&quot;,
+  &quot;method&quot;: &quot;Read-only git show/git grep fixed source. No build, runtime test or VM claims.&quot;,
+  &quot;chain&quot;: [
+    {
+      &quot;step&quot;: &quot;Binding and ownership&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Shell/Controls/Shell/ImageResultControl.xaml:227-232&quot;,
+        &quot;src/UI/Shared/WorkflowNodeModel.cs:43-69&quot;,
+        &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:5350-5386&quot;
+      ],
+      &quot;fact&quot;: &quot;The single bottom panel binds to the selected/upstream local image-source node&#39;s ImageInputSource. ImageCollection is OneWay; index/run mode/auto switch TwoWay. A node owns its own list. Camera sources hide this panel. Ambiguous upstream selection is not arbitrarily guessed.&quot;
+    },
+    {
+      &quot;step&quot;: &quot;Add&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:640-739&quot;,
+        &quot;src/UI/Shared/ImageInputSource.cs:184-193&quot;
+      ],
+      &quot;fact&quot;: &quot;File or folder picker creates metadata entries and appends once via the active truth source. Case-insensitive path deduplication; folder is nonrecursive and sorted. No full-image decode in AppendFiles. The view&#39;s current index is set to first newly added item.&quot;
+    },
+    {
+      &quot;step&quot;: &quot;Choose and explicitly execute&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:955-1064&quot;,
+        &quot;src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:99-118&quot;,
+        &quot;src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:161-170&quot;,
+        &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:2068&quot;,
+        &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:4241-4254&quot;
+      ],
+      &quot;fact&quot;: &quot;Left click and explicit keyboard entry request execution. SelectionChanged alone only updates index, preventing restore/right-click from executing. Running request is rejected after index synchronization. PublishRuntimeInput publishes selected tab identity. RunSelectedImageAsync passes advanceLocalImage=false, so a manual click runs the chosen image without post-success advancing.&quot;
+    },
+    {
+      &quot;step&quot;: &quot;Real image loading&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Services/Workflow/WorkflowExecutionManager.cs:779-798&quot;,
+        &quot;src/UI/Services/Workflow/WorkflowExecutionManager.cs:1229-1297&quot;,
+        &quot;tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs:125-205&quot;
+      ],
+      &quot;fact&quot;: &quot;Execution clones runtime parameters and extracts each ImageLoad node&#39;s current FilePath into node parameter overrides, including child workflows. No valid current image explicitly overrides to empty rather than using an old parameter. The ImageLoad plugin resolves path then calls HalImage.CreateFromFile, output conversion, gray image creation and pixel statistics. This is separate from WIC thumbnails.&quot;
+    },
+    {
+      &quot;step&quot;: &quot;Successful auto advance&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Services/Workflow/WorkflowExecutionManager.cs:178-210&quot;,
+        &quot;src/UI/Services/Workflow/WorkflowExecutionManager.cs:287-310&quot;,
+        &quot;src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:176-194&quot;,
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:898-941&quot;
+      ],
+      &quot;fact&quot;: &quot;Standard single run and continuous local run advance only after successful execution; failure preserves current selection. View computes next existing runnable file, honors checked subset and wraps at end. A single runnable stays current. Manual thumbnail execution deliberately skips auto advance.&quot;
+    },
+    {
+      &quot;step&quot;: &quot;Persistence&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Shared/ImageInputSource.cs:141-145&quot;,
+        &quot;src/UI/Shared/ImageInputSource.cs:288-348&quot;,
+        &quot;src/UI/Shared/WorkflowNodeModel.cs:43-69&quot;,
+        &quot;src/UI/Shared/WorkflowNodeModel.cs:197-233&quot;,
+        &quot;src/Workflow/ImageSourceConfig.cs:65-73&quot;
+      ],
+      &quot;fact&quot;: &quot;Most source changes convert to ImageSourceConfig immediately through node callback. Bitmap objects excluded from serialization. Original resource references are retained separately from resolved addresses. Loading retains missing entries with diagnostics and suppresses config rewrite. Local merges preserve camera/source-kind settings.&quot;
+    },
+    {
+      &quot;step&quot;: &quot;Remove, clear and unload&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Shared/ImageInputSource.cs:199-235&quot;,
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:629-636&quot;,
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:768-811&quot;
+      ],
+      &quot;fact&quot;: &quot;Deletion and clear cancel thumbnail work, release item image references, invalidate caches and adjust index; disk files are never removed. View unload cancels pending thumbnails but preserves persisted input list. Shutdown unsubscribes execution event and clears global advancer.&quot;
+    }
+  ],
+  &quot;visibilityDecisionTree&quot;: {
+    &quot;evidence&quot;: [
+      &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:385&quot;,
+      &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:398-416&quot;,
+      &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:5350-5386&quot;,
+      &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:5410-5503&quot;,
+      &quot;src/UI/Shell/Controls/Shell/ImageResultControl.xaml:221-232&quot;
+    ],
+    &quot;decisions&quot;: [
+      {
+        &quot;if&quot;: &quot;Selected node is null&quot;,
+        &quot;then&quot;: &quot;Hide; ActiveInputSource=null; currentDisplayNodeId=null&quot;
+      },
+      {
+        &quot;if&quot;: &quot;Selected node is ImageLoad&quot;,
+        &quot;then&quot;: &quot;Use that node directly as source, regardless of list count&quot;
+      },
+      {
+        &quot;if&quot;: &quot;Selected node is another tool&quot;,
+        &quot;then&quot;: &quot;BFS upstream across selected tab&#39;s graph, collecting all nearest reachable ImageLoad sources, stopping each branch at ImageLoad&quot;
+      },
+      {
+        &quot;if&quot;: &quot;Exactly one reachable source&quot;,
+        &quot;then&quot;: &quot;Use that source&quot;
+      },
+      {
+        &quot;if&quot;: &quot;More than one reachable source&quot;,
+        &quot;then&quot;: &quot;Use node.SelectedDisplaySource when it identifies a reachable ImageLoad; if it identifies a visited intermediate node, recursively resolve only that branch; otherwise unresolved&quot;
+      },
+      {
+        &quot;if&quot;: &quot;Unresolved source AND in subroutine AND a previous active input source/currentDisplayNodeId exists&quot;,
+        &quot;then&quot;: &quot;Retain previous bound local panel without switching source&quot;
+      },
+      {
+        &quot;if&quot;: &quot;Unresolved source in other cases&quot;,
+        &quot;then&quot;: &quot;Hide and clear active source identity&quot;
+      },
+      {
+        &quot;if&quot;: &quot;Resolved source is Camera&quot;,
+        &quot;then&quot;: &quot;Hide local panel; main result canvas independent&quot;
+      },
+      {
+        &quot;if&quot;: &quot;Resolved source is local&quot;,
+        &quot;then&quot;: &quot;Ensure per-node source exists; if source identity/reference changed, PrepareForDisplay clears all item thumbnails then bind ActiveInputSource; show panel even if list is empty&quot;
+      }
+    ],
+    &quot;refreshTriggers&quot;: [
+      &quot;SelectedNode property change after result/overlay refresh&quot;,
+      &quot;ForceSelectNode for same-reference reselect/doubleclick&quot;,
+      &quot;ForceRefreshImagePreview after source-kind change, graph connection creation or related refresh&quot;
+    ],
+    &quot;identityDistinction&quot;: &quot;Selected tool node determines which upstream source is presented. Source node owns list/index. Thumbnail execution runs entire selected workflow, not just the source node or selected tool. Execution separately snapshots every ImageLoad node&#39;s own CurrentImage. Main result-canvas display-source selection is not the same thing as a runnable input selection.&quot;,
+    &quot;conditionalGap&quot;: &quot;Subroutine fallback preserves any prior binding when a source cannot be resolved; it does not check that bound source belongs to the current child workflow&#39;s parent. It is intended parent-source reuse, but cross-context provenance requires validation. A hidden/unresolved panel also means no usable active list for the global advancer even if another workflow has local sources.&quot;
+  },
+  &quot;saveAndRefreshRecheck&quot;: {
+    &quot;save&quot;: &quot;MainWindowViewModel.SaveCurrentDocumentWithPrompt:1546-1547 calls TryCommitSolutionEditors and SaveSolutionData:1624-1776. MainWindowSolutionEditing.cs:21-29 commits variable windows and ToolEditorCommit open editors; no source-list conversion. SaveSolutionData attaches/reuses engine workflow definitions and synchronizes node ParamSettings; no input ToConfig/ForRunPaths rebuild. WorkflowNodeBase.InputSource is JsonIgnore (src/Workflow/WorkflowNode.cs:262), ImageSourceConfig serialized as plain property:276. WorkflowNode.FromBase:197-233 is load-to-UI, not save-to-base. No ToBase production method found. Bottom CheckBox:506-543 has only TwoWay binding and visual triggers, no Checked/Unchecked handler. All production ToConfig references are in ImageInputSource.NotifyConfigChanged. C01 therefore survives normal save path review; no runtime reproduction performed.&quot;,
+    &quot;displaySourceRefresh&quot;: &quot;ImageResultViewModel.SelectedDisplayImageSourceIndex setter calls root OnSelectedImageSourceIndexChanged. MainWindowViewModel:293-300 calls UpdateDisplayImageFromCurrentSource only. That method:3358-3383 assigns engine node.SelectedDisplaySource then SetDisplayImageFromSource; neither calls UpdateImagePreviewVisibility/ForceRefreshImagePreview. On a multi-source node whose bottom panel is hidden or bound to prior branch, changing the upper display dropdown does not directly recompute bottom source; a later reselect/ForceSelectNode can repair it. This is a static missing-refresh path, not observed runtime flicker.&quot;,
+    &quot;stopAtLastExact&quot;: &quot;WorkflowExecutionManager.ShouldStopAfterCurrentLocalImage:1117-1136 iterates root ImageLoad nodes whose config is Local+AutoSwitchEnabled+StopAtLastImage; uses config.FilePaths or config.FilePaths.Where(config.ForRunPaths.Contains), then compares final raw string to RuntimeInputSnapshot.ImagePath ignoring case. InputSource.LoadFromConfig:325-327 resolves raw reference into address while preserving SourceReference; PublishRuntimeInput:4241-4250 publishes ImageInfo.FilePath (address). Config ToConfig:299 retains SourceReference. Panel GetRunnableImages:898-905 filters missing files; stop helper does not. Continuous loop:295 consults stop helper only on success and before AdvanceAsync; true stops instead of advance, false advances/wraps. No proven result for relative resources or absent snapshot; compare semantics differ in source.&quot;
+  },
+  &quot;findings&quot;: [
+    {
+      &quot;id&quot;: &quot;IS-C08&quot;,
+      &quot;level&quot;: &quot;source-confirmed missing-refresh path; runtime consequence conditional&quot;,
+      &quot;title&quot;: &quot;Changing upper display-source choice does not immediately recompute bottom source&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Shell/Controls/Shell/ImageResultViewModel.cs:66-74&quot;,
+        &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:293-300&quot;,
+        &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:3358-3383&quot;,
+        &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:5487-5503&quot;
+      ],
+      &quot;detail&quot;: &quot;Multi-source BFS depends on node.SelectedDisplaySource, but dropdown callback updates result image and serialized source without calling bottom-panel resolution. Until another forced selection/refresh, bottom source can remain hidden or bound to another branch. Engine/UI identity equality also matters because dropdown persists on engine node.&quot;,
+      &quot;recommendation&quot;: &quot;Explicit display-source selection must atomically refresh resolved input-source context, with no execution side effect; test two local branches and local/camera branch choices.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;IS-C01&quot;,
+      &quot;level&quot;: &quot;source-confirmed conditional defect&quot;,
+      &quot;title&quot;: &quot;Checkbox changes do not immediately reach persisted selection&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml:506&quot;,
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:155-165&quot;,
+        &quot;src/UI/Shared/ImageInputSource.cs:141-145&quot;,
+        &quot;src/UI/Shared/ImageInputSource.cs:288-304&quot;
+      ],
+      &quot;detail&quot;: &quot;IsForRun setter only raises its item PropertyChanged; ImageInputSource does not subscribe to item changes. Only ToConfig gathers checked paths. No production ToConfig call exists outside NotifyConfigChanged. Toggling a checkbox then saving without any index/mode/list/auto-switch change can leave ForRunPaths stale. Toggling a different source property first can mask it.&quot;,
+      &quot;recommendation&quot;: &quot;Source owns checked-state mutations or subscribes to item changes, synchronizes config/dirty state once; verify toggle-only save and reopen.&quot;,
+      &quot;runtimeVerified&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;IS-C02&quot;,
+      &quot;level&quot;: &quot;source-confirmed design gap; runtime consequence conditional&quot;,
+      &quot;title&quot;: &quot;Auto advance is tied to whichever panel is active, not the running workflow and source&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Services/RuntimeInputSnapshotService.cs:16-21&quot;,
+        &quot;src/UI/Services/RuntimeInputSnapshotService.cs:52-62&quot;,
+        &quot;src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:82-85&quot;,
+        &quot;src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:176-194&quot;,
+        &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:4241-4254&quot;,
+        &quot;src/UI/Services/Workflow/WorkflowExecutionManager.cs:202-203&quot;
+      ],
+      &quot;detail&quot;: &quot;Only one global advancer callback exists and accepts cancellation alone. It advances current ImagePreviewContent and PublishRuntimeInput uses current SelectedTab. If another workflow continues after UI switches tab/source, its completion can advance a different active list. A workflow with several local sources likewise advances only the displayed one. Actual reproduction depends on supported concurrent/switch interaction and must be tested.&quot;,
+      &quot;recommendation&quot;: &quot;Advance by explicit workflowId + sourceNodeId + run generation using a platform image-sequence service; UI observes source state, never chooses another workflow&#39;s next input.&quot;,
+      &quot;runtimeVerified&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;IS-C03&quot;,
+      &quot;level&quot;: &quot;source-confirmed scalability cost; duration unmeasured&quot;,
+      &quot;title&quot;: &quot;Every index advance rebuilds complete persisted configuration&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Shared/ImageInputSource.cs:49-60&quot;,
+        &quot;src/UI/Shared/ImageInputSource.cs:288-304&quot;,
+        &quot;src/Workflow/ImageSourceConfig.cs:65-73&quot;,
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:883-891&quot;
+      ],
+      &quot;detail&quot;: &quot;CurrentIndex change calls ToConfig which GroupBy-enumerates all entries and creates FilePaths/ForRunPaths; UpdateLocalInput copies lists again. View UpdateImageSelection also visits all items, despite incremental comment. Auto advance repeats this even for view-only selection changes. Read-only does not prevent index change.&quot;,
+      &quot;recommendation&quot;: &quot;Separate saved list/checked configuration from runtime cursor; use item identity and update old/new highlights. Batch mutation transaction and measure large-list UI allocation/latency.&quot;,
+      &quot;runtimeVerified&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;IS-C04&quot;,
+      &quot;level&quot;: &quot;source-confirmed duplicate model; no live bottleneck proven&quot;,
+      &quot;title&quot;: &quot;Old full-image preview lane is not the actual bottom-panel consumer&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Shell/Controls/Shell/ImageResultControl.xaml:227-232&quot;,
+        &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:606-628&quot;,
+        &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:815&quot;,
+        &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:4620-4637&quot;,
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:95-108&quot;
+      ],
+      &quot;detail&quot;: &quot;ImageInfo.FullImage is referenced only by root VM.UpdateCurrentImageDisplay, triggered only by root CurrentImageIndex. Bottom XAML binds source.CurrentIndex/source.Images instead. Root ImageCollection is initialized but no production add/assignment found. Therefore synchronous WIC full-image lazy decode must not be presented as the proven bottleneck on current click-to-execute chain. Static public reflection/dynamic consumers have not been excluded.&quot;,
+      &quot;recommendation&quot;: &quot;Classify as leftover parallel model and verify callers before deleting; measure real ImageLoad/HalImage path separately from thumbnails.&quot;,
+      &quot;runtimeVerified&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;IS-C05&quot;,
+      &quot;level&quot;: &quot;source-confirmed synchronous work; duration unmeasured&quot;,
+      &quot;title&quot;: &quot;Folder enumeration and metadata filtering happen on UI thread&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:663-687&quot;,
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:706-736&quot;
+      ],
+      &quot;detail&quot;: &quot;Directory.GetFiles+sort+File.Exists+dedup+metadata creation all execute in command callback. Thumbnail decode is asynchronous but does not make this path asynchronous. Slow/network/huge directories can pause the UI; no measured budget or reproduced pause claimed.&quot;,
+      &quot;recommendation&quot;: &quot;Asynchronous cancellable enumeration with bounded/batched UI append, explicit sort/order and one config transaction.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;IS-C06&quot;,
+      &quot;level&quot;: &quot;source-confirmed conditional consistency gap&quot;,
+      &quot;title&quot;: &quot;Stop-at-last uses path identities different from live runnable set&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Services/Workflow/WorkflowExecutionManager.cs:1117-1136&quot;,
+        &quot;src/UI/Shared/ImageInputSource.cs:288-304&quot;,
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:898-905&quot;,
+        &quot;src/UI/Shell/Windows/MainWindowViewModel.cs:4241-4250&quot;
+      ],
+      &quot;detail&quot;: &quot;Stop-at-last reads config original references without missing-file filtering and compares final reference to runtime snapshot resolved file path. For relative or resource references, a missing final entry, stale checked config or absent initial runtime snapshot, its notion of last may differ from actual runnable subset. The panel next logic explicitly filters File.Exists and wraps. Runtime proof not taken.&quot;,
+      &quot;recommendation&quot;: &quot;Single sequence plan with stable entry identity and resolved address; stopping and advancing share the same per-run plan instead of comparing serialized and resolved strings.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;IS-C07&quot;,
+      &quot;level&quot;: &quot;source-confirmed shallow read-only boundary&quot;,
+      &quot;title&quot;: &quot;Read-only flag does not enforce input immutability&quot;,
+      &quot;evidence&quot;: [
+        &quot;src/UI/Shared/ImageInputSource.cs:44-60&quot;,
+        &quot;src/UI/Shared/ImageInputSource.cs:119-123&quot;,
+        &quot;src/UI/Shared/ImageInputSource.cs:169-235&quot;,
+        &quot;src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:155-165&quot;
+      ],
+      &quot;detail&quot;: &quot;Mutator methods check IsReadOnly, but Images exposes mutable BatchObservableCollection and item flags remain mutable; no caller setting IsReadOnly=true found. Current execution uses path overrides, so this is a contract weakness rather than proof of in-run file mutation.&quot;,
+      &quot;recommendation&quot;: &quot;Read-only collection facade plus explicit source commands; capture immutable per-run ordered entries while user edits apply to next run.&quot;
+    }
+  ],
+  &quot;retain&quot;: [
+    &quot;Per-node input truth source shared by panel and settings; no second UI list for each consumer&quot;,
+    &quot;Selection and execution separated, explicit left-click/key requests and busy rejection&quot;,
+    &quot;Current selected image is used first; auto advance after success, retry after failure&quot;,
+    &quot;Missing entries preserved and visible; original resource reference separate from resolved address&quot;,
+    &quot;View unload does not clear persisted input; user clear does not delete files&quot;,
+    &quot;Node execution receives file-path overrides without rewriting design Parameters.FilePath&quot;
+  ],
+  &quot;verificationBoundary&quot;: &quot;All conclusions static evidence or explicitly conditional. No runtime durations, no VM comparison assertions, no warmup conclusion (owned by parent), no product edits. UI integration and large-list timing require independent testing under coordinated resource schedule.&quot;
+}</pre><h4>VM 证据包及原文件 SHA</h4><pre>[
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-IMAGE-PANEL/framework/panel-evidence.json&quot;,
+    &quot;sha256&quot;: &quot;f8cb6db97550e225130e1c7594a0ff80c4e14d9dc787f9b773aaf29c8e49eeaf&quot;,
+    &quot;kind&quot;: &quot;evidence package&quot;
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml&quot;,
+    &quot;sha256&quot;: &quot;56ac6bbf9b8839311f4f8eaf0dc4407fc3f9527b39f3ad942080c0bb6c2948ff&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs&quot;,
+    &quot;sha256&quot;: &quot;e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/MainViewControl.xaml&quot;,
+    &quot;sha256&quot;: &quot;6043bcab8597ed0a738e5bb604c25fa647350a15c646239ad0a9b5267285576f&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs&quot;,
+    &quot;sha256&quot;: &quot;ceda24b7fb93bcd9f02b77b23d42a839b1f737bf70cf3abc6b7786d11765740e&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser/Apps.XmlParser.ParamTab.VmModuleExtern.decompiled.cs&quot;,
+    &quot;sha256&quot;: &quot;4d4b726df4eac492c955502cb90118e793679ee74718b900e62625cfe2de2c9c&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/ImageSourceModuleControl/Apps.XmlParser.ParamTab/GeneralParamListVisibleOperation.cs&quot;,
+    &quot;sha256&quot;: &quot;c777c5da0d1880a985aba9a0af5505b70c1381ec1e330f41ab712118e224a355&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/LocalImageListView.xaml&quot;,
+    &quot;sha256&quot;: &quot;d22c8a3f7fce0d94e966a22fce9865c91de629471d4f1ad0f93baa2cf6b19883&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanel.xaml&quot;,
+    &quot;sha256&quot;: &quot;a5ac5a8101e7cccb036a2430e6c1766ec3b4caec18010580db178ec88937c7cf&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs&quot;,
+    &quot;sha256&quot;: &quot;df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs&quot;,
+    &quot;sha256&quot;: &quot;df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs&quot;,
+    &quot;sha256&quot;: &quot;df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-IMAGE-SOURCE-PANEL/evidence.json&quot;,
+    &quot;sha256&quot;: &quot;f2e1e15ad50a57348bed3d5badedd694f8da6d52c4e855572505f76cc9b6c06c&quot;,
+    &quot;kind&quot;: &quot;evidence package&quot;
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs&quot;,
+    &quot;sha256&quot;: &quot;df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/ImageSourceModuleControl/ImageSourceModuleControl/LocalImageListView.xaml.cs&quot;,
+    &quot;sha256&quot;: &quot;12f7b31f928c99e2e7f2812fb377d2d9b626854a463cfca9f0755577ddd61e25&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-0.c&quot;,
+    &quot;sha256&quot;: &quot;600faa687d61b61acbd7207fe2fdef569647d6bf91f5f34afbe5719eccff61ca&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-2.c&quot;,
+    &quot;sha256&quot;: &quot;08d2342587e278886925aaecea6ee5c9a45fc1c9b687a301bb896deef8d41b6c&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-3.c&quot;,
+    &quot;sha256&quot;: &quot;08b8dfcd958b692e5059ec895737202bd5731cd701912cba5f2ef2f8fd0b8f6e&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-4.c&quot;,
+    &quot;sha256&quot;: &quot;e04bbcb91354bd68d0ac8c37ab5ee04f6f47cc3b98e9fc907cfaef5f35f0297f&quot;,
+    &quot;matches&quot;: true
+  },
+  {
+    &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-7.c&quot;,
+    &quot;sha256&quot;: &quot;6fd48677973f78d10b066eab5bbe79486a98a89064698ea74b682177502b1721&quot;,
+    &quot;matches&quot;: true
+  }
+]</pre><h4>VM 已证与未知</h4><pre>[
+  {
+    &quot;schemaVersion&quot;: 1,
+    &quot;scope&quot;: &quot;自研底部图像源面板与原版相近职责链的静态源码对照；本轮未运行原版或自研性能程序，未实施产品变更&quot;,
+    &quot;frameworkHead&quot;: &quot;2db7540b0f803bb6f80fd4557d3098d9529ce559&quot;,
+    &quot;mainHtmlLink&quot;: &quot;D:/MyWork/REA逆向测试/docs/framework-architecture.html#image-pipeline&quot;,
+    &quot;comparability&quot;: {
+      &quot;fact&quot;: &quot;原版 VMControls.WPF 的 ModuleResultView 在结果区下方嵌入 LocalImageListView→ImageListPanel；自研 ImageResultControl 在结果区下方嵌入 ImagePreviewControl。两者都承担本地图像列表、选择及运行关联职责。&quot;,
+      &quot;limits&quot;: &quot;原版 ImageSourceModuleControl 另有工具专属列表；不能把该插件、平台结果列表与自研面板视为完全同一对象。原版关联图像源按所选显示图像所属模块和第一条 IMAGE 输入追溯；自研按工作流连接图做广度遍历并处理多源歧义，二者并非同一规则。&quot;
+    },
+    &quot;originalFacts&quot;: [
+      {
+        &quot;topic&quot;: &quot;placementAndBinding&quot;,
+        &quot;path&quot;: &quot;analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml&quot;,
+        &quot;lines&quot;: &quot;268-269&quot;,
+        &quot;sha256&quot;: &quot;56AC6BBF9B8839311F4F8EAF0DC4407FC3F9527B39F3AD942080C0BB6C2948FF&quot;,
+        &quot;fact&quot;: &quot;结果视图第二行 localImageGrid 嵌入 LocalImageListView，Visibility 绑定 IsShowLocalImageList，Root 绑定 ImageAlgorithmTabRoot。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;selectedModuleLifecycle&quot;,
+        &quot;path&quot;: &quot;analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs&quot;,
+        &quot;lines&quot;: &quot;439-469,815-860,1177-1189&quot;,
+        &quot;sha256&quot;: &quot;E165657162322FD6B1CE15758847BED07F8C1E86A637815DF8E87FE19439BB88&quot;,
+        &quot;fact&quot;: &quot;ModuleSource 改变时释放旧 ModuleDisplayDecorator、创建新 decorator，并把它绑定到结果格与本地图像格；ImageSourceType 显示状态值 1 时设置列表可见。窗口关闭时 ModuleSource=null；Loaded/Unloaded 订阅与退订状态事件。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;selectedNodeToResult&quot;,
+        &quot;path&quot;: &quot;analysis/decompiled/VMControls.WPF/VMControls.WPF/MainViewControl.xaml&quot;,
+        &quot;lines&quot;: &quot;33&quot;,
+        &quot;sha256&quot;: &quot;6043BCAB8597ED0A738E5BB604C25FA647350A15C646239AD0A9B5267285576F&quot;,
+        &quot;fact&quot;: &quot;主视图 ModuleResultView.ModuleSource 单向绑定 MainViewControl.SelectedItem；选择变化进入结果视图的 DoSourceChanged。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;selectedImageToSource&quot;,
+        &quot;path&quot;: &quot;analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs&quot;,
+        &quot;lines&quot;: &quot;318-408,1629-1649&quot;,
+        &quot;sha256&quot;: &quot;CEDA24B7FB93BCD9F02B77B23D42A839B1F737BF70CF3ABC6B7786D11765740E&quot;,
+        &quot;fact&quot;: &quot;SelectedImage 从结果图像列表恢复或按本模块输出、首 IMAGE 输入关联、首图回退选取。取其 DisplayObject.Owner，若不是 IImageSourceNode（或其 DepositModule 不是），调用 GetRelatedImageSourceModule。候选源仅在与当前 VMModule 同 Parent 且为本模块或 FrontModules 成员时，才把源模块 ParamRoot 设为 ImageAlgorithmTabRoot；否则置 null。读取源 UserStringData.ImageSourceType == &#39;1&#39; 时本地图像列表可见。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;firstImageInputTraversal&quot;,
+        &quot;path&quot;: &quot;analysis/decompiled/Apps.XmlParser/Apps.XmlParser.ParamTab.VmModuleExtern.decompiled.cs&quot;,
+        &quot;lines&quot;: &quot;2070-2084&quot;,
+        &quot;sha256&quot;: &quot;4D4B726DF4EAC492C955502CB90118E793679EE74718B900E62625CFE2DE2C9C&quot;,
+        &quot;fact&quot;: &quot;GetRelatedImageSourceModule 只取当前模块第一个 IMAGE 输入的 RelateIO.Root，然后沿每一级第一个 IMAGE 输入继续追，遇 null 或 IVmModuleSet 返回 null；找到 IImageSourceNode 或 ISubjectModel.DepositModule 是 IImageSourceNode 才返回。未遍历所有上游分支。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;visibilityProducer&quot;,
+        &quot;path&quot;: &quot;analysis/decompiled/ImageSourceModuleControl/Apps.XmlParser.ParamTab/GeneralParamListVisibleOperation.cs&quot;,
+        &quot;lines&quot;: &quot;20-26&quot;,
+        &quot;sha256&quot;: &quot;C777C5DA0D1880A985ABA9A0AF5505B70C1381EC1E330F41AB712118E224A355&quot;,
+        &quot;fact&quot;: &quot;图像源参数控件操作调用 PropertyManager.DisplayExecute(&#39;ImageSourceType&#39;, Params[0].ToString())；ModuleResultView 订阅此状态并在值 &#39;1&#39; 时显示本地列表，其他值隐藏。HiddenOperation 中也有同名通知。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;panelBinding&quot;,
+        &quot;path&quot;: &quot;analysis/decompiled/VMControls.WPF/VMControls.WPF/LocalImageListView.xaml&quot;,
+        &quot;lines&quot;: &quot;84&quot;,
+        &quot;sha256&quot;: &quot;D22C8A3F7FCE0D94E966A22FCE9865C91DE629471D4F1AD0F93BAA2CF6B19883&quot;,
+        &quot;fact&quot;: &quot;ImageListPanel 绑定当前模块、当前图像路径、选择模式和列表刷新标志。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;virtualization&quot;,
+        &quot;path&quot;: &quot;analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanel.xaml&quot;,
+        &quot;lines&quot;: &quot;190-194&quot;,
+        &quot;sha256&quot;: &quot;A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF&quot;,
+        &quot;fact&quot;: &quot;横向 ListBox 启用虚拟化、Recycling 与 5 项缓存。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;thumbnail&quot;,
+        &quot;path&quot;: &quot;analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs&quot;,
+        &quot;lines&quot;: &quot;303-372,1245-1306,1403-1437&quot;,
+        &quot;sha256&quot;: &quot;DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79&quot;,
+        &quot;fact&quot;: &quot;控件 Loaded 时创建后台低优先级缩略图线程；队列按可见区索引加载本地文件 72×52；滚出可见区将 ImageEntity.ImageSource 置 null；Unloaded 停线程并退订事件。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;listStateAndRun&quot;,
+        &quot;path&quot;: &quot;analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs&quot;,
+        &quot;lines&quot;: &quot;455-486,495-547,1314-1395&quot;,
+        &quot;sha256&quot;: &quot;DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79&quot;,
+        &quot;fact&quot;: &quot;列表从模块 IUserStringData ImagePath{i} 读路径；当前选择可由模块输出 CurImagePath.Value 回写；用户选项变化写 CurrentImagePath，RunCheck 后异步运行流程；AutoPlay 分支写入当前选项的前一个可运行路径。执行结果回调可刷新当前路径和列表。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;mutation&quot;,
+        &quot;path&quot;: &quot;analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs&quot;,
+        &quot;lines&quot;: &quot;580-608,697-747,1021-1053&quot;,
+        &quot;sha256&quot;: &quot;DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79&quot;,
+        &quot;fact&quot;: &quot;删除写模块 DeleteImage，清空写 ClearImage；添加文件与目录走控件命令和模块参数链，而不是只改 UI 项集合。&quot;
+      }
+    ],
+    &quot;selfdevFacts&quot;: [
+      {
+        &quot;topic&quot;: &quot;startup&quot;,
+        &quot;path&quot;: &quot;D:/MyWork/SunEyeVision_V2/src/UI/App.xaml.cs&quot;,
+        &quot;lines&quot;: &quot;170-180,721-748&quot;,
+        &quot;sha256&quot;: &quot;B573502761AEFC71086F230177B1468DE734DECA39EAA98884933E090E4B1ED8&quot;,
+        &quot;fact&quot;: &quot;OnStartup 在显示 Splash 前调用 PrewarmThreadPool：设置最小 worker/IO 线程数至少 8/4，启动四个短睡眠 Task 并 WaitAll。它预热线程池，不预解码图片；源码中的 1783ms→约 50ms 是注释预期，非本轮实测。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;placementAndVisibility&quot;,
+        &quot;path&quot;: &quot;D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs&quot;,
+        &quot;lines&quot;: &quot;5360-5396,5420-5425&quot;,
+        &quot;sha256&quot;: &quot;87A307EE9C3EFD03D0FB58BFF123B8288D76D8A906B837CC490241D795834DFC&quot;,
+        &quot;fact&quot;: &quot;选中本地图像源节点或能找到上游本地图像源的节点时绑定 ActiveInputSource；相机源隐藏列表；子程序入口可沿用已有本地绑定；切换绑定先 PrepareForDisplay。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;multiSourceTraversal&quot;,
+        &quot;path&quot;: &quot;D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs&quot;,
+        &quot;lines&quot;: &quot;5444-5515&quot;,
+        &quot;sha256&quot;: &quot;87A307EE9C3EFD03D0FB58BFF123B8288D76D8A906B837CC490241D795834DFC&quot;,
+        &quot;fact&quot;: &quot;从选中节点按连接边逆向广度遍历并收集所有可达 ImageLoad 节点；恰一来源直接返回，多来源时按 SelectedDisplaySource 指定源或所选中间分支递归，否则返回 null 隐藏列表。该规则与 VM 第一 IMAGE 输入链不同。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;activeListBinding&quot;,
+        &quot;path&quot;: &quot;D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ImageResultControl.xaml&quot;,
+        &quot;lines&quot;: &quot;227-232&quot;,
+        &quot;sha256&quot;: &quot;7B9F9244AEE3305FEBB4E1B64E18BAF7E6A909072310B34BA44B29A51FE4FBE8&quot;,
+        &quot;fact&quot;: &quot;底部面板绑定 ActiveInputSource.Images/CurrentIndex/RunMode/AutoSwitchEnabled；MainWindowViewModel 另有 ImageCollection 集合，但该 XAML 不绑定它。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;uiAndVirtualization&quot;,
+        &quot;path&quot;: &quot;D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml&quot;,
+        &quot;lines&quot;: &quot;224-226,261-329,337-359&quot;,
+        &quot;sha256&quot;: &quot;CFC93D2E44FC64B7C9A967C91497D7FC4F1BA13789276B1B50E6848D19380BDC&quot;,
+        &quot;fact&quot;: &quot;提供运行全部/运行选择、自动切换、添加文件/文件夹、清空、横向虚拟化缩略图列表与点击处理。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;decodeAndCache&quot;,
+        &quot;path&quot;: &quot;D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs&quot;,
+        &quot;lines&quot;: &quot;95-105,175-224,460-580,747-765,1116-1137&quot;,
+        &quot;sha256&quot;: &quot;EC18A5FE8927FD1B23AD513558CB94DE93A8A038313A1BDFEB8BC2B3E422F25F&quot;,
+        &quot;fact&quot;: &quot;缩略图 Task.Run 后台解码，WIC DecodePixelWidth=100、OnLoad、Freeze；全局并发节流 clamp(CPU-1,4,16)，静态缩略图缓存上限50；全图首次访问时在调用线程用 WIC OnLoad 解码，静态全图缓存上限30。项卸载取消未完成缩略图任务；面板 Unloaded 只取消任务，不清空持久列表。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;interactionAndAdvance&quot;,
+        &quot;path&quot;: &quot;D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs&quot;,
+        &quot;lines&quot;: &quot;897-943,1014-1064&quot;,
+        &quot;sha256&quot;: &quot;EC18A5FE8927FD1B23AD513558CB94DE93A8A038313A1BDFEB8BC2B3E422F25F&quot;,
+        &quot;fact&quot;: &quot;显式左键点击缩略图请求执行；ListBox SelectionChanged 仅更新索引。自动切换按存在文件和运行子集推进，到尾部循环。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;executionConsumer&quot;,
+        &quot;path&quot;: &quot;D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs&quot;,
+        &quot;lines&quot;: &quot;48-74,99-115,160-193&quot;,
+        &quot;sha256&quot;: &quot;2FDF89495C90B5E269CA9E096B186609EB8C83162F9573479AE4D69D117FBFAC&quot;,
+        &quot;fact&quot;: &quot;控件初始化订阅执行请求并注册运行前推进钩子；手动点击把路径/索引发布成运行输入后执行工作流；运行中拒绝重复请求；关闭时退订。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;runtimeParameterSnapshot&quot;,
+        &quot;path&quot;: &quot;D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs&quot;,
+        &quot;lines&quot;: &quot;4251-4261&quot;,
+        &quot;sha256&quot;: &quot;87A307EE9C3EFD03D0FB58BFF123B8288D76D8A906B837CC490241D795834DFC&quot;,
+        &quot;fact&quot;: &quot;PublishRuntimeInput 写 CurrentImagePath/CurrentImageIndex 运行参数并发布以 workflowId 为键的不可变选择快照。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;runtimeImageLoad&quot;,
+        &quot;path&quot;: &quot;D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs&quot;,
+        &quot;lines&quot;: &quot;125-209&quot;,
+        &quot;sha256&quot;: &quot;868DDC7262E49C7AFBC15112BD06F10AB82DAA3537BAE0754A5A06F6A9B53F15&quot;,
+        &quot;fact&quot;: &quot;本地 ImageLoadTool 解析 FilePath 资源地址、验证存在后调用 HalImage.CreateFromFile，并产出 OutputImage/GrayImage；底部面板的 ImageInfo.FullImage 并非该工具执行解码入口。&quot;
+      },
+      {
+        &quot;topic&quot;: &quot;ownershipAndPersistence&quot;,
+        &quot;path&quot;: &quot;D:/MyWork/SunEyeVision_V2/src/UI/Shared/ImageInputSource.cs&quot;,
+        &quot;lines&quot;: &quot;184-246,271-349&quot;,
+        &quot;sha256&quot;: &quot;7C742259CD0744F42C63F0180149C7F185BB61EA96D1FCDCAB72145D84D337D9&quot;,
+        &quot;fact&quot;: &quot;图像列表以 ImageInputSource 为节点状态；增删清引发配置变化；删清取消缩略图、释放 ImageInfo 全图引用并使缓存失效；ToConfig 保存文件资源引用、当前索引、自动切换、运行模式、勾选路径；LoadFromConfig 经资源解析器重建列表并延迟缩略图解码。&quot;
+      }
+    ],
+    &quot;inferences&quot;: [
+      &quot;自研 App 全局预热可能给首次 Task.Run 降低调度延迟，但其效果不能从注释推为实测；与 VM 控件 Loaded 时的专属线程不等价。&quot;,
+      &quot;自研全图解码入口同步调用 WIC OnLoad；若在 UI 线程首次访问高像素图，可能造成界面停顿。需要受控计时与调用栈证实，不能仅凭源码断言卡死原因。&quot;,
+      &quot;VM 的 offscreen ImageSource=null 与自研跨实例 LRU 缓存是不同的保留策略；不能直接推断哪方更快或内存更低。&quot;
+    ],
+    &quot;unknowns&quot;: [
+      &quot;VM Apps.Data.ImageData.GetImageDataFromFile/GetImageDataFrom3DFile 的函数体、底层 decoder 缓存与 native 释放策略未在当前证据中恢复。&quot;,
+      &quot;VM 多来源时 SelectedImage 的具体选项/CheckedImages 恢复与每个流程页面之间的切换全分支仍需继续核；已证实 GetRelatedImageSourceModule 只沿第一 IMAGE 输入而非全图广度搜索。&quot;,
+      &quot;VM AutoPlay 对运行完成、失败、回绕的完整模块内部状态机与自研自动切换等价性未证实。&quot;,
+      &quot;本轮未做冷启动、超大图、海量缩略图或长时间滚动的实测；没有性能快慢结论。&quot;
+    ],
+    &quot;roleHandoff&quot;: &quot;框架线持有原版平台面板与主界面联动取证；插件线只追图像源工具专属源码/算法并提出缺失的公共合同；架构恢复角色在主 HTML 中维护已证实连线，审核角色复核跨层结论；交付协调收证据后决定分发，不自动改动他工作树。&quot;
+  },
+  {
+    &quot;id&quot;: &quot;VM-IMAGE-SOURCE-PANEL-20261023&quot;,
+    &quot;scope&quot;: &quot;static decompiled VM platform panel vs ImageSource plugin consumer&quot;,
+    &quot;sources&quot;: [
+      {
+        &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs&quot;,
+        &quot;sha256&quot;: &quot;DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79&quot;
+      },
+      {
+        &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/decompiled/ImageSourceModuleControl/ImageSourceModuleControl/LocalImageListView.xaml.cs&quot;,
+        &quot;sha256&quot;: &quot;12F7B31F928C99E2E7F2812FB377D2D9B626854A463CFCA9F0755577DDD61E25&quot;
+      },
+      {
+        &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-0.c&quot;,
+        &quot;sha256&quot;: &quot;600FAA687D61B61ACBD7207FE2FDEF569647D6BF91F5F34AFBE5719ECCFF61CA&quot;
+      },
+      {
+        &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-2.c&quot;,
+        &quot;sha256&quot;: &quot;08D2342587E278886925AAECEA6EE5C9A45FC1C9B687A301BB896DEEF8D41B6C&quot;
+      },
+      {
+        &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-3.c&quot;,
+        &quot;sha256&quot;: &quot;08B8DFCD958B692E5059EC895737202BD5731CD701912CBA5F2EF2F8FD0B8F6E&quot;
+      },
+      {
+        &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-4.c&quot;,
+        &quot;sha256&quot;: &quot;E04BBCB91354BD68D0AC8C37AB5EE04F6F47CC3B98E9FC907CFAEF5F35F0297F&quot;
+      },
+      {
+        &quot;path&quot;: &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-7.c&quot;,
+        &quot;sha256&quot;: &quot;6FD48677973F78D10B066EAB5BBE79486A98A89064698EA74B682177502B1721&quot;
+      }
+    ],
+    &quot;confirmed&quot;: [
+      &quot;Platform ImageListPanelBase:439-486 reads ImageNumber/ImagePathN from module Params, maintains ObservableCollection&lt;ImageEntity&gt;; 1000-1015 adds paths without decoding full image.&quot;,
+      &quot;Panel:303-355 thumbnail worker, 1275-1310 only visible indices, 72x52 ImageData.GetImageDataFromFile or raw 3D, caches in ImageEntity.ImageSource; thumbnail is platform panel cache, not ImageSource algorithm preload.&quot;,
+      &quot;Panel:1314-1359 selection writes CurrentImagePath and calls VmProcedure.Run asynchronously; AutoPlay chooses predecessor so execution advances to selected item by downstream algorithm, exact native step not recovered.&quot;,
+      &quot;Panel:1611-1668 selected subset writes SelectExecutePic/CancelExecutePic; 1362-1395 work-end refresh reads module CurImagePath.Value; LocalImageListView:208-269 maps ExecuteType=2 and SelectEnable.&quot;,
+      &quot;Panel:363-375 Unloaded stops thumbnail thread flag and unsubscribes platform events; does not prove ImageSource module buffer release.&quot;
+    ],
+    &quot;unknown&quot;: [
+      &quot;全格式底层像素解码与色彩转换最终内核&quot;,
+      &quot;路径缓存跨格式失效和 Reset/重载的完整释放生命周期&quot;,
+      &quot;宿主 Run All/Run Selected 命令调用者与整流程结束语义&quot;
+    ],
+    &quot;boundary&quot;: &quot;平台 ImageListPanelBase 负责缩略图、选择和 Procedure.Run；原生 ImageSourceModule 已确认读前推进、原图读取入口及 PathCache。72x52 缩略图不等于运行图或预热。未贯通仅限全格式底层内核、全释放链和宿主批量命令。&quot;,
+    &quot;pluginNative&quot;: {
+      &quot;original&quot;: &quot;D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Collection/ImageSourceModule/ImageSourceModule.dll&quot;,
+      &quot;originalSha256&quot;: &quot;91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db&quot;,
+      &quot;evidence&quot;: [
+        &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-0.c SHA600FAA687D61B61ACBD7207FE2FDEF569647D6BF91F5F34AFBE5719ECCFF61CA Process 0x18000d820&quot;,
+        &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-2.c SHA08D2342587E278886925AAECEA6EE5C9A45FC1C9B687A301BB896DEEF8D41B6C GetParam&quot;,
+        &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-3.c SHA08B8DFCD958B692E5059EC895737202BD5731CD701912CBA5F2EF2F8FD0B8F6E SetParam&quot;,
+        &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-4.c SHAE04BBCB91354BD68D0AC8C37AB5EE04F6F47CC3B98E9FC907CFAEF5F35F0297F ConvertFileImage 0x18001c8d0&quot;,
+        &quot;D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-7.c SHA6FD48677973F78D10B066EAB5BBE79486A98A89064698EA74B682177502B1721 StitchImageOutput 0x180020980&quot;
+      ],
+      &quot;confirmed&quot;: [
+        &quot;SetParam CurrentImagePath chooses existing list entry; SelectExecutePic inserts into independent execution subset in main-list order&quot;,
+        &quot;Process advances cursor before read and wraps; failed read consumes position, successful output increments SN&quot;,
+        &quot;ConvertFileImage delegates original full image decode to MVDMediaProcess; 72x52 platform thumbnail is not run frame&quot;,
+        &quot;PathCache stores copy until configured limit and cache hit reuses; no LRU in recovered branch&quot;,
+        &quot;AutoPlay and AutoStop depend on owning procedure run parameters; stop request still publishes current frame&quot;,
+        &quot;folder watcher marks changes for Process to consume; RefreshImage report updates panel&quot;
+      ],
+      &quot;unknown&quot;: [
+        &quot;full decoder final pixel kernels across all formats&quot;,
+        &quot;cache invalidation across every format and Reset/reload lifetime&quot;,
+        &quot;host Run All/Run Selected command caller and whole workflow finish semantics&quot;
+      ]
+    }
+  }
+]</pre></details><p class="isp-note">验证边界：未启动两程序、未运行性能采样、未做浏览器视觉验收；本页文档交付不等产品验收。静态代码链和原始证据SHA核对；未启动两程序、未改产品代码。条件缺陷需独立动态验收，VM未知不计不支持。</p><script>(()=>{const root=document.getElementById('image-source-panel-design');const buttons=root.querySelectorAll('[data-isp-tab]');const scenes=root.querySelectorAll('.isp-scene');buttons.forEach(button=>button.addEventListener('click',()=>{buttons.forEach(x=>x.setAttribute('aria-selected',String(x===button)));scenes.forEach((x,i)=>x.hidden=String(i)!==button.dataset.ispTab);}));})();</script></section><!-- image-source-panel-review:end --><aside data-doc-index><a href="../index.html">文档索引</a> · <a href="../目标架构/architecture-target.html">2026-10-22最新目标取舍</a>（拟议、未实施；本页历史分析状态不自动升级）</aside><p><a href="#ui-state-review">13项UI：已实现、缺口与整改入口 ↓</a></p><h1>主题、公共控件与插件：共用什么，隔离什么？</h1><p class="notice">当前部分实现。以下为静态代码复核，不代表设计器、产品运行或发布验收；热卸载没有实现。</p><p><b>先看结论：</b>主题补失败回滚；SDK分离运行合同与UI扩展；插件版本兼容需要准入；当前卸载只是注销；私有native依赖部署需单独规则。以上均有局部依据，不默认保留，也不整包迁移VM。</p><p><a href="#control-consumers">11组公共控件实际使用链 ↓</a></p><nav class="platform-nav"><a href="#theme">切换主题：有合同校验，缺失败原子性</a><a href="#controls">公共控件：运行合同和WPF扩展混在一个包</a><a href="#resolve">插件依赖：有独立目录，但运行时共享优先</a><a href="#unload">卸载：当前清注册表，不是释放程序集</a><a href="#deploy">部署：构建规则已有，干净机器仍待验收</a></nav><article id="theme"><h2>切换主题：有合同校验，缺失败原子性</h2><h3>是什么</h3><p>颜色不是每个窗口各改一遍；宿主提供主题资源，SDK控件按资源键取值。</p><h3>实际链路</h3><p>ThemeManager.ApplyTheme → _currentTheme赋值 → 移除旧字典 → 创建/校验新字典 → 加入 → 标题栏/偏好/事件</p><h3>已实现及具体不足</h3><p>已实现Light/Dark、SdkThemeKeys逐键校验。问题是状态先变、旧字典先删；新字典加载或校验抛错时，没有对应回滚。相同theme再次调用又会提前return。</p><h3>最终取舍</h3><p>必须整改局部切换事务；不因此推翻全部主题体系。</p><h3>具体改法</h3><p>先构造并校验候选字典，再在UI线程替换；成功后提交_currentTheme。失败保留旧字典/状态，标题栏和事件也按成功阶段更新。</p><h3>验收标准（未执行）</h3><p>缺资源、错误URI、偏好保存失败分别验；失败后可重试，所有已开窗口和新开窗口一致。未运行VS设计器或产品。</p><details><summary>源码证据</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/ThemeManager.cs">src/UI/Services/ThemeManager.cs:89</a><pre>        public void ApplyTheme(AppTheme theme)
         {
             if (theme == _currentTheme)
             {
@@ -38,7 +663,7 @@
             _logger.Log(LogLevel.Info, $"主题切换为: {theme}", "ThemeManager");
             ThemeChanged?.Invoke(theme);
         }
-</pre><small>SHA256 3161aec8d823fabe786a8574a41b8d2af23999edc28b89ad13c26a55b2f510da</small></details></article><article id="controls"><h2>公共控件：运行合同和WPF扩展混在一个包</h2><h3>是什么</h3><p>SDK同时装算法合同、参数结果类型、图像/ROI控件和调试窗口。插件不引用宿主UI，不代表它能脱离WPF运行。</p><h3>实际链路</h3><p>Plugin.SDK net9.0-windows/UseWPF → ITool与参数结果合同 + UI控件 → 工具插件与宿主共用</p><h3>已实现及具体不足</h3><p>csproj实际UseWPF=true且有System.Drawing.Common；包描述“零依赖纯契约”不能作为架构事实。设计时资源字典依据设计环境加载Generic主题，运行时由宿主供给。</p><h3>最终取舍</h3><p>原方案重构＋VM职责参考；保留兼容迁移，不直接复制原厂DLL边界。</p><h3>具体改法</h3><p>先冻结运行合同与UI扩展消费者表，再分Contracts/UI两层；资源URI、类型身份、序列化判别符、插件二进制兼容需要版本策略。设计时兜底继续独立。</p><h3>验收标准（未执行）</h3><p>纯运行消费者不引用WPF；现有插件过渡可读旧方案；亮暗/高DPI/设计器/默认宿主分别验。拆包是提案未实施。</p><details><summary>源码证据</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj">src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj:7</a><pre>    &lt;UseWPF&gt;true&lt;/UseWPF&gt;
+</pre><small>SHA256 3161aec8d823fabe786a8574a41b8d2af23999edc28b89ad13c26a55b2f510da</small></details></article><aside id="central-preview-review-entry" style="padding:16px;margin:16px 0;border:2px solid #80c3d8;background:#152b3c;color:#e4f2ff"><b>中央图像预览 · 独立于底部图像源</b><p>保留WPF图像/结果/交互三层和统一viewport，拟议补场景、编辑会话、稳定选择与Owner；只读分析，未运行验收、未批准实施。</p><a href="../优化方案/optimization-o06.html#central-preview-review">中央预览完整链与八图方案 →</a><br><a href="#image-source-panel-design">底部图像源面板是另一专题 →</a></aside><article id="controls"><h2>公共控件：运行合同和WPF扩展混在一个包</h2><h3>是什么</h3><p>SDK同时装算法合同、参数结果类型、图像/ROI控件和调试窗口。插件不引用宿主UI，不代表它能脱离WPF运行。</p><h3>实际链路</h3><p>Plugin.SDK net9.0-windows/UseWPF → ITool与参数结果合同 + UI控件 → 工具插件与宿主共用</p><h3>已实现及具体不足</h3><p>csproj实际UseWPF=true且有System.Drawing.Common；包描述“零依赖纯契约”不能作为架构事实。设计时资源字典依据设计环境加载Generic主题，运行时由宿主供给。</p><h3>最终取舍</h3><p>原方案重构＋VM职责参考；保留兼容迁移，不直接复制原厂DLL边界。</p><h3>具体改法</h3><p>先冻结运行合同与UI扩展消费者表，再分Contracts/UI两层；资源URI、类型身份、序列化判别符、插件二进制兼容需要版本策略。设计时兜底继续独立。</p><h3>验收标准（未执行）</h3><p>纯运行消费者不引用WPF；现有插件过渡可读旧方案；亮暗/高DPI/设计器/默认宿主分别验。拆包是提案未实施。</p><details><summary>源码证据</summary><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj">src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj:7</a><pre>    &lt;UseWPF&gt;true&lt;/UseWPF&gt;
     &lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;
     &lt;RootNamespace&gt;SunEyeVision.Plugin.SDK&lt;/RootNamespace&gt;
     &lt;AssemblyName&gt;SunEyeVision.Plugin.SDK&lt;/AssemblyName&gt;

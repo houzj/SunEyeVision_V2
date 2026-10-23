@@ -1,0 +1,160 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>X04 方案文件加密、密钥恢复与插件信任</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>X04 方案文件加密、密钥恢复与插件信任</h1><article id="compare-X04"><span id="X04"></span><div class="visual-metrics"><div><strong>X04</strong><span>能力条目</span><small>待核实</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>文件保存/打开与插件装载</b></li><li><small>02</small><b>独立完整性/保密/信任政策（待确定）</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>现有原子保存、哈希用途不能代表方案保密；许可、方案加密、插件信任是三种责任。</p><details><summary>完整缺陷与未闭合调用边</summary><p>方案保密需求→独立版本/密钥恢复政策；插件来源/签名→真实加载前消费者；狗授权→文件密钥/信任的边不能由哈希代替</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>原.sol密码/兼容与逆向自有格式分开；不能复用原厂密钥或狗来解决自研授权。</p><p>原.sol密码/原厂狗不自动成为可采用方案。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/SOLUTION-PERSISTENCE-BOUNDARY.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">当前Repository是JSON明文读写；哈希不等加密，狗授权不等文件保密或插件可信。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：当前Repository是JSON明文读写；哈希不等加密，狗授权不等文件保密或插件可信。 VM参考边界：原.sol密码/原厂狗不自动成为可采用方案。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">先冻结保密、完整性、签名与恢复需求；需保密再新增格式和密钥包装，不能无需求就推荐照搬VM。 先确认产品是否需方案保密及插件信任，分离授权/保密/完整性；需要时新增文件格式与密钥包装/迁移并保留原子写，不能称现有哈希已加密。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">篡改/错凭据/换狗/写入中断/升级回滚/可信脚本边界均有记录。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o11.html#O11">O11</a></td></tr></tbody></table></div></section><article id="recommendation-X04"><h2>X04 方案文件加密、密钥恢复与插件信任 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>当前Repository是JSON明文读写；哈希不等加密，狗授权不等文件保密或插件可信。</p><p><b>VM可借鉴与不可推断：</b>原.sol密码/原厂狗不自动成为可采用方案。</p><p><b>具体改法 / 成本：</b>先冻结保密、完整性、签名与恢复需求；需保密再新增格式和密钥包装，不能无需求就推荐照搬VM。 先确认产品是否需方案保密及插件信任，分离授权/保密/完整性；需要时新增文件格式与密钥包装/迁移并保留原子写，不能称现有哈希已加密。</p><p><b>验收：</b>篡改/错凭据/换狗/写入中断/升级回滚/可信脚本边界均有记录。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-X04">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-X04">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S109</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionRepository.cs">src/Workflow/SolutionRepository.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0</code></p><pre>﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Core.Services.Serialization;
+using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
+using SunEyeVision.Workflow.Persistence;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json.Nodes;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;</pre></details><details class="source-card"><summary>S110</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.Infrastructure/Managers/Plugin/PluginLoader.cs">src/Plugin.Infrastructure/Managers/Plugin/PluginLoader.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>f8d3c7935778fdc8cb95c13f8b7b3c569d12993e0a8fb2332fd3ad4154098ce5</code></p><pre>﻿using System;
+using System.IO;
+using System.Linq;
+using SunEyeVision.Plugin.SDK.Logging;
+
+namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
+
+/// &lt;summary&gt;
+/// 全局插件加载状态管理器
+/// &lt;/summary&gt;
+/// &lt;remarks&gt;
+/// 职责：
+/// - 提供全局的插件加载状态检查
+/// - 确保插件只加载一次（单例模式）</pre></details><details class="source-card"><summary>R075</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionRepository.cs">src/Workflow/SolutionRepository.cs:107</a></p><p><code>Load</code></p><p>SHA256 <code>28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0</code></p><pre>    public Solution? Load(string filePath, string? resourceBaseDirectory = null)
+    {
+        var loadStopwatch = Stopwatch.StartNew();
+        _logger.Log(LogLevel.Info,
+            $&quot;[LoadTrace] Repository.Load entered | path={filePath}, thread={Environment.CurrentManagedThreadId}, pluginLoaded={PluginLoader.IsLoaded}&quot;,
+            &quot;SolutionRepository&quot;);
+
+        if (string.IsNullOrEmpty(filePath))
+        {
+            _logger.Log(LogLevel.Warning, $&quot;[LoadTrace] file path empty | elapsedMs={loadStopwatch.ElapsedMilliseconds}&quot;, &quot;SolutionRepository&quot;);
+            _logger.Log(LogLevel.Warning, &quot;加载解决方案失败：文件路径为空&quot;, &quot;SolutionRepository&quot;);
+            return null;
+        }
+
+        _logger.Log(LogLevel.Info, $&quot;[LoadTrace] File.Exists begin | elapsedMs={loadStopwatch.ElapsedMilliseconds}&quot;, &quot;SolutionRepository&quot;);
+        if (!File.Exists(filePath))
+        {
+            _logger.Log(LogLevel.Warning, $&quot;[LoadTrace] File.Exists=false | elapsedMs={loadStopwatch.ElapsedMilliseconds}&quot;, &quot;SolutionRepository&quot;);
+            _logger.Log(LogLevel.Warning, $&quot;加载解决方案失败：文件不存在: {filePath}&quot;, &quot;SolutionRepository&quot;);
+            return null;</pre></details><details class="source-card"><summary>R076</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionRepository.cs">src/Workflow/SolutionRepository.cs:505</a></p><p><code>Save</code></p><p>SHA256 <code>28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0</code></p><pre>    public bool Save(Solution solution, string filePath, bool overwrite = true)
+    {
+        // ✅ 日志监控：生成唯一调用ID
+        long callId = System.Threading.Interlocked.Increment(ref _saveCallCount);
+
+        if (solution == null)
+        {
+            _logger.Log(LogLevel.Warning, $&quot;[Save #{callId}] 保存解决方案失败：解决方案对象为空\n堆栈: {GetShortStackTrace(3)}&quot;, &quot;SolutionRepository&quot;);
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(filePath))
+        {
+            _logger.Log(LogLevel.Warning, $&quot;[Save #{callId}] 保存解决方案失败：文件路径为空\n堆栈: {GetShortStackTrace(3)}&quot;, &quot;SolutionRepository&quot;);
+            return false;
+        }
+
+        string? temporaryPath = null;
+        try
+        {</pre></details><details class="source-card"><summary>R077</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.Infrastructure/Managers/Plugin/PluginLoader.cs">src/Plugin.Infrastructure/Managers/Plugin/PluginLoader.cs:70</a></p><p><code>EnsureLoaded</code></p><p>SHA256 <code>f8d3c7935778fdc8cb95c13f8b7b3c569d12993e0a8fb2332fd3ad4154098ce5</code></p><pre>    public static bool EnsureLoaded()
+    {
+        // 第一次检查（无锁）
+        if (_isLoaded) return true;
+
+        lock (_lock)
+        {
+            // 第二次检查（有锁）
+            if (_isLoaded) return true;
+
+            return LoadPluginsInternal();
+        }
+    }
+
+    /// &lt;summary&gt;
+    /// 使用默认路径加载插件
+    /// &lt;/summary&gt;
+    /// &lt;returns&gt;是否成功加载&lt;/returns&gt;
+    public static bool LoadPlugins()
+    {</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;X04&quot;,
+  &quot;group&quot;: &quot;support&quot;,
+  &quot;title&quot;: &quot;方案文件加密、密钥恢复与插件信任&quot;,
+  &quot;state&quot;: &quot;unknown&quot;,
+  &quot;chain&quot;: [
+    &quot;文件保存/打开与插件装载&quot;,
+    &quot;独立完整性/保密/信任政策（待确定）&quot;
+  ],
+  &quot;current&quot;: &quot;现有原子保存、哈希用途不能代表方案保密；许可、方案加密、插件信任是三种责任。&quot;,
+  &quot;gap&quot;: &quot;方案保密需求→独立版本/密钥恢复政策；插件来源/签名→真实加载前消费者；狗授权→文件密钥/信任的边不能由哈希代替&quot;,
+  &quot;vm&quot;: &quot;原.sol密码/兼容与逆向自有格式分开；不能复用原厂密钥或狗来解决自研授权。&quot;,
+  &quot;vmDoc&quot;: &quot;SOLUTION-PERSISTENCE-BOUNDARY.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：当前Repository是JSON明文读写；哈希不等加密，狗授权不等文件保密或插件可信。 VM参考边界：原.sol密码/原厂狗不自动成为可采用方案。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;先冻结保密、完整性、签名与恢复需求；需保密再新增格式和密钥包装，不能无需求就推荐照搬VM。 先确认产品是否需方案保密及插件信任，分离授权/保密/完整性；需要时新增文件格式与密钥包装/迁移并保留原子写，不能称现有哈希已加密。&quot;,
+  &quot;accept&quot;: &quot;篡改/错凭据/换狗/写入中断/升级回滚/可信脚本边界均有记录。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S109&quot;,
+    &quot;S110&quot;,
+    &quot;R075&quot;,
+    &quot;R076&quot;,
+    &quot;R077&quot;
+  ],
+  &quot;optimization&quot;: &quot;O11&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;X04&quot;,
+    &quot;before&quot;: &quot;unknown&quot;,
+    &quot;after&quot;: &quot;unknown&quot;,
+    &quot;confirmed&quot;: &quot;SolutionRepository通过File.ReadAllText/JsonSerializer读取，并序列化JSON写临时文件；PluginLoader记录加载状态，不是签名验证器。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;方案保密需求→独立版本/密钥恢复政策&quot;,
+      &quot;插件来源/签名→真实加载前消费者&quot;,
+      &quot;狗授权→文件密钥/信任的边不能由哈希代替&quot;
+    ],
+    &quot;cause&quot;: &quot;范围内明文读写已证，完整安全政策仍待核实&quot;,
+    &quot;change&quot;: &quot;先确认产品是否需方案保密及插件信任，分离授权/保密/完整性；需要时新增文件格式与密钥包装/迁移并保留原子写，不能称现有哈希已加密。&quot;,
+    &quot;acceptance&quot;: &quot;篡改/错凭据/换狗/写入中断/升级回滚/可信脚本边界均有记录。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S109&quot;,
+      &quot;S110&quot;,
+      &quot;R075&quot;,
+      &quot;R076&quot;,
+      &quot;R077&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;分开设计，不让狗存在代替全部安全&quot;,
+    &quot;reason&quot;: &quot;方案被绑死单狗会增加备份恢复成本，插件加载也不是安全沙箱。&quot;
+  },
+  &quot;defect&quot;: &quot;当前Repository是JSON明文读写；哈希不等加密，狗授权不等文件保密或插件可信。&quot;,
+  &quot;vmBorrow&quot;: &quot;原.sol密码/原厂狗不自动成为可采用方案。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;当前Repository是JSON明文读写；哈希不等加密，狗授权不等文件保密或插件可信。&quot;,
+    &quot;borrow&quot;: &quot;原.sol密码/原厂狗不自动成为可采用方案。&quot;,
+    &quot;action&quot;: &quot;先冻结保密、完整性、签名与恢复需求；需保密再新增格式和密钥包装，不能无需求就推荐照搬VM。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S109&quot;,
+      &quot;S110&quot;,
+      &quot;R075&quot;,
+      &quot;R076&quot;,
+      &quot;R077&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

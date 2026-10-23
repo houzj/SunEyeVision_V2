@@ -1,0 +1,157 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M04 工具箱分类、浏览与拖入</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M04 工具箱分类、浏览与拖入</h1><article id="compare-M04"><span id="M04"></span><div class="visual-metrics"><div><strong>M04</strong><span>能力条目</span><small>部分实现</small></div><div><strong>差异小</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>ToolRegistry元数据</b></li><li><small>02</small><b>ToolboxViewModel</b></li><li><small>03</small><b>ToolItem鼠标事件</b></li><li><small>04</small><b>DataObject(ToolItem)</b></li><li><small>05</small><b>Canvas_Drop</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>分类元数据加载及拖放源/接收器已存在。</p><details><summary>完整缺陷与未闭合调用边</summary><p>拖入失败→已建节点/实例/参数撤销；已注册工具→依赖实际就绪的可用状态</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>ToolBoxData.UpdateLoad→ToolItemInfo→CreateModuleByInfo；注册、拖入和模型ready是不同阶段。</p><p>参考ToolItemInfo→CreateModuleByInfo的发现、创建、ready分段。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/LOADER-ROUND2-20261019.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">仅限已见基础入口/交互职责相近，不代表内部算法、稳定性或生命周期等价。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">分类/拖入已见，工具可见不证明依赖就绪；创建失败回滚未完整追。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：分类/拖入已见，工具可见不证明依赖就绪；创建失败回滚未完整追。 VM参考边界：参考ToolItemInfo→CreateModuleByInfo的发现、创建、ready分段。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">对节点/参数/实例逐一登记回滚并做缺依赖验收；搜索另列缺口而非用分类冒充。 Toolbox/DragDropHandler先检查metadata与执行能力，再用创建事务一次登记节点/参数；失败反向注销；搜索缺口单独处理，不能把分类当搜索。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">已发现但无法加载工具明确禁用；取消拖拽/失败创建无残留对象。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o10.html#O10">O10</a></td></tr></tbody></table></div></section><article id="recommendation-M04"><h2>M04 工具箱分类、浏览与拖入 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>分类/拖入已见，工具可见不证明依赖就绪；创建失败回滚未完整追。</p><p><b>VM可借鉴与不可推断：</b>参考ToolItemInfo→CreateModuleByInfo的发现、创建、ready分段。</p><p><b>具体改法 / 成本：</b>对节点/参数/实例逐一登记回滚并做缺依赖验收；搜索另列缺口而非用分类冒充。 Toolbox/DragDropHandler先检查metadata与执行能力，再用创建事务一次登记节点/参数；失败反向注销；搜索缺口单独处理，不能把分类当搜索。</p><p><b>验收：</b>已发现但无法加载工具明确禁用；取消拖拽/失败创建无残留对象。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M04">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M04">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S008</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Toolbox/ToolboxViewModel.cs">src/UI/Shell/Controls/Toolbox/ToolboxViewModel.cs:176</a></p><p><code>ToolRegistry.GetAllCategories</code></p><p>SHA256 <code>cbbbb799962cf8bf737f2f3b4ffa87c4dee61a2301f2bf48aa963b1fa5513f56</code></p><pre>            var categories = ToolRegistry.GetAllCategories();
+            foreach (var category in categories)
+            {
+                var categoryIcon = GetCategoryIcon(category);
+                var categoryDesc = GetCategoryDescription(category);
+                Categories.Add(new ToolCategory(category, categoryIcon, categoryDesc, 0, false));
+            }
+
+            var tools = ToolRegistry.GetAllToolMetadata()
+                .OrderBy(t =&gt; SunEyeVision.Plugin.SDK.Core.ToolCategories.GetDefinition(t.Category).Order)
+                .ThenBy(t =&gt; t.Order).ThenBy(t =&gt; t.Id, System.StringComparer.Ordinal);
+            foreach (var tool in tools)
+            {
+                var toolItem = new ToolItem(</pre></details><details class="source-card"><summary>S009</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Toolbox/ToolboxControl.xaml.cs">src/UI/Shell/Controls/Toolbox/ToolboxControl.xaml.cs:67</a></p><p><code>ToolItem_PreviewMouseLeftButtonDown</code></p><p>SHA256 <code>197cc3e74d727b95f2ad8a1c57186d5b7cbf5328f97da121a29cdebce7762f7f</code></p><pre>        private void ToolItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border border)
+            {
+if (border.Tag is ToolItem tool)
+                {
+// 在拖拽开始前关闭Popup，防止拖拽过程中Popup不消失
+                    if (CompactModePopup.IsOpen)
+                    {
+                        CompactModePopup.IsOpen = false;
+                        _viewModel.SelectedCategory = null;
+                    }
+
+                    var data = new DataObject(&quot;ToolItem&quot;, tool);</pre></details><details class="source-card"><summary>S010</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/DragDropHandler.cs">src/UI/Services/Interaction/DragDropHandler.cs:270</a></p><p><code>Canvas_Drop</code></p><p>SHA256 <code>25bf5554daba42045d5b27b68d3adcfe81b2ac1d1c934d446fa7e70b511c28b4</code></p><pre>        public void Canvas_Drop(object sender, DragEventArgs e)
+        {
+#if DEBUG
+            _lastLogTime = DateTime.Now; // 重置计时器
+            _dropStartTime = DateTime.Now; // 重置累计时间起点
+LogTimestamp(&quot;Drop&quot;, &quot;▶ Canvas_Drop 开始执行&quot;);
+            LogTimestamp(&quot;Drop&quot;, $&quot;  Sender: {sender?.GetType().Name ?? &quot;null&quot;}&quot;);
+#endif
+
+            try
+            {
+                // 隐藏临时节点（即将创建真正的节点）
+                HideTempNode();
+</pre></details><details class="source-card"><summary>R005</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Toolbox/ToolboxControl.xaml.cs">src/UI/Shell/Controls/Toolbox/ToolboxControl.xaml.cs:67</a></p><p><code>ToolItem_PreviewMouseLeftButtonDown</code></p><p>SHA256 <code>197cc3e74d727b95f2ad8a1c57186d5b7cbf5328f97da121a29cdebce7762f7f</code></p><pre>        private void ToolItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border border)
+            {
+if (border.Tag is ToolItem tool)
+                {
+// 在拖拽开始前关闭Popup，防止拖拽过程中Popup不消失
+                    if (CompactModePopup.IsOpen)
+                    {
+                        CompactModePopup.IsOpen = false;
+                        _viewModel.SelectedCategory = null;
+                    }
+
+                    var data = new DataObject(&quot;ToolItem&quot;, tool);
+var result = DragDrop.DoDragDrop(border, data, DragDropEffects.Copy);
+}
+                else
+                {
+}
+            }</pre></details><details class="source-card"><summary>R006</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/DragDropHandler.cs">src/UI/Services/Interaction/DragDropHandler.cs:270</a></p><p><code>Canvas_Drop</code></p><p>SHA256 <code>25bf5554daba42045d5b27b68d3adcfe81b2ac1d1c934d446fa7e70b511c28b4</code></p><pre>        public void Canvas_Drop(object sender, DragEventArgs e)
+        {
+#if DEBUG
+            _lastLogTime = DateTime.Now; // 重置计时器
+            _dropStartTime = DateTime.Now; // 重置累计时间起点
+LogTimestamp(&quot;Drop&quot;, &quot;▶ Canvas_Drop 开始执行&quot;);
+            LogTimestamp(&quot;Drop&quot;, $&quot;  Sender: {sender?.GetType().Name ?? &quot;null&quot;}&quot;);
+#endif
+
+            try
+            {
+                // 隐藏临时节点（即将创建真正的节点）
+                HideTempNode();
+
+                // 检查 sender
+                if (sender is not System.Windows.Controls.Canvas canvas)
+                {
+#if DEBUG
+                    LogTimestamp(&quot;Drop&quot;, &quot;✗ Sender 不是 Canvas 类型&quot;);
+#endif</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M04&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;工具箱分类、浏览与拖入&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;ToolRegistry元数据&quot;,
+    &quot;ToolboxViewModel&quot;,
+    &quot;ToolItem鼠标事件&quot;,
+    &quot;DataObject(ToolItem)&quot;,
+    &quot;Canvas_Drop&quot;
+  ],
+  &quot;current&quot;: &quot;分类元数据加载及拖放源/接收器已存在。&quot;,
+  &quot;gap&quot;: &quot;拖入失败→已建节点/实例/参数撤销；已注册工具→依赖实际就绪的可用状态&quot;,
+  &quot;vm&quot;: &quot;ToolBoxData.UpdateLoad→ToolItemInfo→CreateModuleByInfo；注册、拖入和模型ready是不同阶段。&quot;,
+  &quot;vmDoc&quot;: &quot;LOADER-ROUND2-20261019.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：分类/拖入已见，工具可见不证明依赖就绪；创建失败回滚未完整追。 VM参考边界：参考ToolItemInfo→CreateModuleByInfo的发现、创建、ready分段。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;对节点/参数/实例逐一登记回滚并做缺依赖验收；搜索另列缺口而非用分类冒充。 Toolbox/DragDropHandler先检查metadata与执行能力，再用创建事务一次登记节点/参数；失败反向注销；搜索缺口单独处理，不能把分类当搜索。&quot;,
+  &quot;accept&quot;: &quot;已发现但无法加载工具明确禁用；取消拖拽/失败创建无残留对象。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S008&quot;,
+    &quot;S009&quot;,
+    &quot;S010&quot;,
+    &quot;R005&quot;,
+    &quot;R006&quot;
+  ],
+  &quot;optimization&quot;: &quot;O10&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M04&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;ToolboxViewModel按ToolRegistry分类/元数据构建列表；ToolItem事件创建DataObject并DoDragDrop；Canvas_Drop接收工具。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;拖入失败→已建节点/实例/参数撤销&quot;,
+      &quot;搜索与分类是不同入口，已拆M26&quot;,
+      &quot;已注册工具→依赖实际就绪的可用状态&quot;
+    ],
+    &quot;cause&quot;: &quot;证据缺口，另拆入口遗漏&quot;,
+    &quot;change&quot;: &quot;Toolbox/DragDropHandler先检查metadata与执行能力，再用创建事务一次登记节点/参数；失败反向注销；搜索缺口单独处理，不能把分类当搜索。&quot;,
+    &quot;acceptance&quot;: &quot;已发现但无法加载工具明确禁用；取消拖拽/失败创建无残留对象。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S008&quot;,
+      &quot;S009&quot;,
+      &quot;S010&quot;,
+      &quot;R005&quot;,
+      &quot;R006&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留目录发现，补创建事务&quot;,
+    &quot;reason&quot;: &quot;注册与UI分工可复用；不能从工具箱显示推断插件可执行。&quot;
+  },
+  &quot;defect&quot;: &quot;分类/拖入已见，工具可见不证明依赖就绪；创建失败回滚未完整追。&quot;,
+  &quot;vmBorrow&quot;: &quot;参考ToolItemInfo→CreateModuleByInfo的发现、创建、ready分段。&quot;,
+  &quot;difference&quot;: &quot;差异小&quot;,
+  &quot;differenceBasis&quot;: &quot;仅限已见基础入口/交互职责相近，不代表内部算法、稳定性或生命周期等价。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;分类/拖入已见，工具可见不证明依赖就绪；创建失败回滚未完整追。&quot;,
+    &quot;borrow&quot;: &quot;参考ToolItemInfo→CreateModuleByInfo的发现、创建、ready分段。&quot;,
+    &quot;action&quot;: &quot;对节点/参数/实例逐一登记回滚并做缺依赖验收；搜索另列缺口而非用分类冒充。&quot;,
+    &quot;difference&quot;: &quot;差异小&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S008&quot;,
+      &quot;S009&quot;,
+      &quot;S010&quot;,
+      &quot;R005&quot;,
+      &quot;R006&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

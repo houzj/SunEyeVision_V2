@@ -90,8 +90,14 @@ module.exports=function(){
  if(fs.existsSync('artifacts/ui-prototypes/architecture-health/startup-preparation.json'))require('./build-startup-consumer-merge.cjs')();
  if(fs.existsSync('docs/collaboration/SCRIPT_PERFORMANCE_BATCH_20261023.json'))require('./build-script-performance-document.cjs')();
  if(fs.existsSync('artifacts/performance/script-baseline-20261023/component-baseline.json'))require('./build-script-component-document.cjs')();
+  require('./build-script-final-decision.cjs')();
+  require('./build-script-three-way.cjs')();
+  if(fs.existsSync('docs/collaboration/SCRIPT_S2_DESIGN_20261023.json'))require('./build-script-s2-design.cjs')();
+  if(fs.existsSync('docs/collaboration/SCRIPT_S3_DESIGN_20261023.json'))require('./build-script-s3-design.cjs')();
+  if(fs.existsSync('docs/collaboration/SCRIPT_POST_S3_REVIEW_20261023.json'))require('./build-script-post-s3-panorama.cjs')();
  require('./build-document-search-index.cjs')();
  require('./sync-document-search-home.cjs')();
+  require('./normalize-document-home.cjs')();
  require('./normalize-document-hierarchy.cjs')();
  return {frameworkPages:pages.length,decisions:12,acceptance:24,official:uniqueOfficial.length,anchors:Object.keys(anchors).length};
 };

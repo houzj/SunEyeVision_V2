@@ -1,0 +1,90 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M24 状态栏、运行耗时与执行快照</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M24 状态栏、运行耗时与执行快照</h1><article id="compare-M24"><span id="M24"></span><div class="visual-metrics"><div><strong>M24</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>混合优化</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>StatusBarControl</b></li><li><small>02</small><b>StatusBarViewModel</b></li><li><small>03</small><b>IRootCoordinator/WorkflowExecutionSnapshot</b></li><li><small>04</small><b>ShowExecutionSnapshot</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>MainWindow底部实际绑定StatusBar；100ms计时刷新，显示相机/运行/流程数并打开执行快照。</p><details><summary>完整缺陷与未闭合调用边</summary><p>IsRunning来自根协调器，仍受M15提前置停止影响；Shutdown退订与全退出调用者、切方案后快照代次待核。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>以恢复模型主界面对应状态/专业数据/日志入口核范围；模块历史、专业数据页和应用日志是三种数据，不互相代证。</p><p>原版流程完成回调可作终态来源参考，原版状态栏字段全链尚未核。</p><p>此项当前只完成VM入口对账；原版字段、线程、释放和日志保留机制仍需对应实现体，不能引用重建测试当原版事实。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/framework-architecture.html">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">状态栏IsRunning来自根协调器，会投影M15请求后立即非运行；耗时快照与状态文案需一致。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：状态栏IsRunning来自根协调器，会投影M15请求后立即非运行；耗时快照与状态文案需一致。 VM参考边界：原版流程完成回调可作终态来源参考，原版状态栏字段全链尚未核。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">接统一执行终态，Stopping期间不显示完成；核Shutdown调用及切方案快照失效，不能另写一套计时状态。 把请求停止、排空、终态显示分开；状态栏只投影同一执行状态源，快照以方案/根流程/运行身份隔离。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">慢执行停止期间显示停止中，终态到达才已停止；切流程/切方案不残留旧耗时；关闭计时器和订阅。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">静态源码复核；未运行产品或进行性能测量</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o02.html#O02">O02</a></td></tr></tbody></table></div></section><article id="recommendation-M24"><h2>M24 状态栏、运行耗时与执行快照 · 必须整改</h2><p><b>代码依据 / 局限：</b>状态栏IsRunning来自根协调器，会投影M15请求后立即非运行；耗时快照与状态文案需一致。</p><p><b>VM可借鉴与不可推断：</b>原版流程完成回调可作终态来源参考，原版状态栏字段全链尚未核。</p><p><b>具体改法 / 成本：</b>接统一执行终态，Stopping期间不显示完成；核Shutdown调用及切方案快照失效，不能另写一套计时状态。 把请求停止、排空、终态显示分开；状态栏只投影同一执行状态源，快照以方案/根流程/运行身份隔离。</p><p><b>验收：</b>慢执行停止期间显示停止中，终态到达才已停止；切流程/切方案不残留旧耗时；关闭计时器和订阅。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M24">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M24">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>N025</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/StatusBarViewModel.cs">src/UI/Shell/Controls/Shell/StatusBarViewModel.cs:17</a></p><p><code>public class StatusBarViewModel</code></p><p>SHA256 <code>e5f9d4c62464b9a002481561dfc5f4b6f37e820a423f9b5445f5bc44502ead29</code></p><pre>    public class StatusBarViewModel : ViewModelBase
+    {
+        private readonly IRootCoordinator _coordinator;
+
+        private string _statusText = string.Empty;
+        private string _cameraStatus = string.Empty;
+        private bool _isRunning;
+        private int _workflowCount;
+        private WorkflowExecutionSnapshot? _executionSnapshot;
+        private readonly DispatcherTimer _executionTimer;
+
+        public Action&lt;WorkflowExecutionSnapshot?&gt;? ShowExecutionSnapshotRequested { get; set; }
+        public ICommand ShowExecutionSnapshotCommand { get; }
+
+        public StatusBarViewModel(IRootCoordinator coordinator)
+        {
+            _coordinator = coordinator;
+            _coordinator.PropertyChanged += OnCoordinatorPropertyChanged;
+            ShowExecutionSnapshotCommand = new RelayCommand(() =&gt; ShowExecutionSnapshotRequested?.Invoke(ExecutionSnapshot));
+            _executionTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+            _executionTimer.Tick += (_, _) =&gt; RefreshExecutionElapsed();
+            _executionTimer.Start();</pre></details><details class="source-card"><summary>N026</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:4397</a></p><p><code>private void RefreshStatusBarExecutionSnapshot()</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void RefreshStatusBarExecutionSnapshot()
+        {
+            var tab = WorkflowTabViewModel.SelectedTab;
+            _statusBar.SetExecutionSnapshot(tab == null || string.IsNullOrWhiteSpace(tab.RootWorkflowId)
+                ? null
+                : _executionManager.EnsureExecutionSnapshot(tab.RootWorkflowId, tab.Name, tab.WorkflowNodes));
+        }
+
+        private void ShowExecutionSnapshot(Services.Workflow.WorkflowExecutionSnapshot? snapshot)
+        {
+            // 状态栏可能在标签加载的同一轮尚未完成绑定；打开入口始终以当前标签为准，
+            // 从而保证首次运行前也能看到“尚未运行”的快照窗口。
+            var currentTab = WorkflowTabViewModel.SelectedTab;
+            if (currentTab != null &amp;&amp; !string.IsNullOrWhiteSpace(currentTab.RootWorkflowId))
+            {
+                snapshot = _executionManager.EnsureExecutionSnapshot(
+                    currentTab.RootWorkflowId,
+                    currentTab.Name,
+                    currentTab.WorkflowNodes);
+                _statusBar.SetExecutionSnapshot(snapshot);
+            }
+</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M24&quot;,
+  &quot;title&quot;: &quot;状态栏、运行耗时与执行快照&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;StatusBarControl&quot;,
+    &quot;StatusBarViewModel&quot;,
+    &quot;IRootCoordinator/WorkflowExecutionSnapshot&quot;,
+    &quot;ShowExecutionSnapshot&quot;
+  ],
+  &quot;current&quot;: &quot;MainWindow底部实际绑定StatusBar；100ms计时刷新，显示相机/运行/流程数并打开执行快照。&quot;,
+  &quot;gap&quot;: &quot;IsRunning来自根协调器，仍受M15提前置停止影响；Shutdown退订与全退出调用者、切方案后快照代次待核。&quot;,
+  &quot;change&quot;: &quot;接统一执行终态，Stopping期间不显示完成；核Shutdown调用及切方案快照失效，不能另写一套计时状态。 把请求停止、排空、终态显示分开；状态栏只投影同一执行状态源，快照以方案/根流程/运行身份隔离。&quot;,
+  &quot;accept&quot;: &quot;慢执行停止期间显示停止中，终态到达才已停止；切流程/切方案不残留旧耗时；关闭计时器和订阅。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;N025&quot;,
+    &quot;N026&quot;
+  ],
+  &quot;vm&quot;: &quot;以恢复模型主界面对应状态/专业数据/日志入口核范围；模块历史、专业数据页和应用日志是三种数据，不互相代证。&quot;,
+  &quot;vmDoc&quot;: &quot;framework-architecture.html&quot;,
+  &quot;vmLimit&quot;: &quot;此项当前只完成VM入口对账；原版字段、线程、释放和日志保留机制仍需对应实现体，不能引用重建测试当原版事实。&quot;,
+  &quot;optimization&quot;: &quot;O02&quot;,
+  &quot;validation&quot;: &quot;静态源码复核；未运行产品或进行性能测量&quot;,
+  &quot;previousRecommendation&quot;: {},
+  &quot;choice&quot;: &quot;必须整改&quot;,
+  &quot;defect&quot;: &quot;状态栏IsRunning来自根协调器，会投影M15请求后立即非运行；耗时快照与状态文案需一致。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版流程完成回调可作终态来源参考，原版状态栏字段全链尚未核。&quot;,
+  &quot;reason&quot;: &quot;依据：状态栏IsRunning来自根协调器，会投影M15请求后立即非运行；耗时快照与状态文案需一致。 VM参考边界：原版流程完成回调可作终态来源参考，原版状态栏字段全链尚未核。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;混合优化&quot;,
+  &quot;adoptionBasis&quot;: &quot;参考VM已确认的职责/行为，结合自有数据与服务实现；不复用VM二进制、协议或密钥。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;必须整改&quot;,
+    &quot;defect&quot;: &quot;状态栏IsRunning来自根协调器，会投影M15请求后立即非运行；耗时快照与状态文案需一致。&quot;,
+    &quot;borrow&quot;: &quot;原版流程完成回调可作终态来源参考，原版状态栏字段全链尚未核。&quot;,
+    &quot;action&quot;: &quot;接统一执行终态，Stopping期间不显示完成；核Shutdown调用及切方案快照失效，不能另写一套计时状态。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;混合优化&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;N025&quot;,
+      &quot;N026&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

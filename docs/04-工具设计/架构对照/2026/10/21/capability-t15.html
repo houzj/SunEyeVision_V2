@@ -1,0 +1,259 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T15 脚本：代码、动态输出、程序集与执行</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>T15 脚本：代码、动态输出、程序集与执行</h1><article id="compare-T15"><span id="T15"></span><div class="visual-metrics"><div><strong>T15</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>ScriptDebugControl</b></li><li><small>02</small><b>编辑/引用/输出契约</b></li><li><small>03</small><b>编译执行</b></li><li><small>04</small><b>OutputContractChanged</b></li><li><small>05</small><b>宿主刷新</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>脚本专用UI、引用对话框及宿主动态契约通知入口存在。 本轮确认显示设置Tab仅占位；已有专用ResetCode不能等同标准参数重置。</p><details><summary>完整缺陷与未闭合调用边</summary><p>编译/程序集载入→具体信任/取消/释放；输出修改→旧绑定失效；UI和后台脚本→真实副作用准入 当前同一try依次Init→Process→Release；Init或Process抛错就直接catch，Release跳过。输入反射失败先记errors，后续仍会尝试执行生命周期。 编译键是代码哈希、宿主名称版本指纹和勾选引用名指纹；引用名列表未包含文件内容/路径/版本。相同文件名替换内容时键仍相同，不能保证重新编译或加载。 MaxResident=16，超过上限按LastUsed淘汰并Dispose；GetOrCreate返回裸Sandbox，未记录在用计数，Invalidate/Clear也未等待在途。ConcurrentDictionary的工厂可能被并发调用多次，不能沿注释声称只创建一次。当前未找到外层对Clear/Invalidate的调用，最终进程回收不能代替逐会话合同。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>恢复模型脚本/动态输出与原生框架依赖分开，任意DLL加载不可当安全机制。</p><p>原版脚本模块范围作参考；当前没有充分材料证明其沙箱/安全政策。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/PLUGIN-FRAMEWORK-BOUNDARY.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">脚本引用/编译/输出链存在；AssemblyLoadContext不是安全隔离。 新确认局部缺失：显示设置仅占位；ExecuteTool中Task.Run后GetAwaiter().GetResult同步等待调用方。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：脚本引用/编译/输出链存在；AssemblyLoadContext不是安全隔离。 VM参考边界：原版脚本模块范围作参考；当前没有充分材料证明其沙箱/安全政策。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">明确可信脚本或进程隔离需求，追动态端口失效与程序集卸载；再选实现，不先推荐保留脚本架构。 引用来源和动态字段版本收敛到脚本服务，改输出类型后使旧绑定失效；ALC不当安全沙箱，可信桌面前提或隔离策略先明确。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">改输出名/类型、编译错、引用缺失、停止/关窗与拒绝副作用逐入口验。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o10.html#O10">O10</a></td></tr></tbody></table></div></section><article id="recommendation-T15"><h2>T15 脚本：代码、动态输出、程序集与执行 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>脚本引用/编译/输出链存在；AssemblyLoadContext不是安全隔离。 新确认局部缺失：显示设置仅占位；ExecuteTool中Task.Run后GetAwaiter().GetResult同步等待调用方。</p><p><b>VM可借鉴与不可推断：</b>原版脚本模块范围作参考；当前没有充分材料证明其沙箱/安全政策。</p><p><b>具体改法 / 成本：</b>明确可信脚本或进程隔离需求，追动态端口失效与程序集卸载；再选实现，不先推荐保留脚本架构。 引用来源和动态字段版本收敛到脚本服务，改输出类型后使旧绑定失效；ALC不当安全沙箱，可信桌面前提或隔离策略先明确。</p><p><b>验收：</b>改输出名/类型、编译错、引用缺失、停止/关窗与拒绝副作用逐入口验。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T15">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T15">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S095</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml">tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>6a61d5187bdc563e8a9bf2f60ba7ba351e31c7889cd1b97f61749b910af92fe0</code></p><pre>&lt;controls:ToolDebugControlBase x:Class=&quot;SunEyeVision.Tool.Script.Views.ScriptDebugControl&quot;
+             xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
+             xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot;
+             xmlns:mc=&quot;http://schemas.openxmlformats.org/markup-compatibility/2006&quot;
+             xmlns:d=&quot;http://schemas.microsoft.com/expression/blend/2008&quot;
+             xmlns:avalonedit=&quot;http://icsharpcode.net/sharpdevelop/avalonedit&quot;
+             xmlns:controls=&quot;clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK&quot;
+             xmlns:themes=&quot;clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK&quot;
+             xmlns:models=&quot;clr-namespace:SunEyeVision.Tool.Script.Models&quot;
+             xmlns:views=&quot;clr-namespace:SunEyeVision.Tool.Script.Views&quot;
+             xmlns:cc=&quot;clr-namespace:CommonControl;assembly=CommonControl&quot;
+             mc:Ignorable=&quot;d&quot;
+             d:DesignHeight=&quot;700&quot; d:DesignWidth=&quot;1200&quot;
+             Background=&quot;{DynamicResource ThemePanelBackgroundBrush}&quot;</pre></details><details class="source-card"><summary>S096</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:2766</a></p><p><code>OutputContractChanged</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>                if (node.Parameters is INotifyOutputContractChanged contractNotifier)
+                {
+                    refreshContract = () =&gt;
+                    {
+                        _ = System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =&gt;
+                        {
+                            if (node.Parameters is IOutputContractProvider provider)
+                            {
+                                var contract = provider.GetOutputContract();
+                                if (contract.Count &gt; 0)
+                                    UpdateModuleResults(new ContractToolResults(contract), node.Name, node.ToolType, node.Id);
+                            }
+                        }), System.Windows.Threading.DispatcherPriority.Background);
+                    };</pre></details><details class="source-card"><summary>R063</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs">tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs:564</a></p><p><code>AssemblyRefButton_Click</code></p><p>SHA256 <code>9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd</code></p><pre>        private void AssemblyRefButton_Click(object sender, RoutedEventArgs e)
+        {
+            var refDir = _parameters.AssemblyReferenceFullPath;
+            Directory.CreateDirectory(refDir);
+
+            // 记录勾选前引用列表，用于检测是否变化
+            var oldRefs = _parameters.AssemblyReferences.ToList();
+
+            var dialog = new AssemblyReferenceDialog(refDir, _parameters.AssemblyReferences)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                var refsChanged = !oldRefs.SequenceEqual(
+                    _parameters.AssemblyReferences, StringComparer.OrdinalIgnoreCase);
+
+                // ScriptRefs 目录 DLL 变化 → 失效引用缓存；引用列表变化 → 重建 workspace
+                if (refsChanged)</pre></details><details class="source-card"><summary>R064</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:3528</a></p><p><code>UpdateDataAnalysisControl</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private System.Threading.Tasks.Task UpdateDataAnalysisControl(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)
+        {
+            try
+            {
+                // ★ 清理旧的选中高亮订阅（防止内存泄漏和残留高亮）
+                if (SelectedNodeDataAnalysisControl is IToolControlDataAnalysis oldDaControl)
+                {
+                    oldDaControl.SelectionHighlightChanged -= OnSelectionHighlightChanged;
+                }
+                _nodeResultManager.ClearHighlight();
+
+                // 清空当前控件
+                SelectedNodeDataAnalysisControl = null;
+                HasDataAnalysisControl = false;
+                DataAnalysisControlTitle = &quot;数据分析&quot;;
+
+                if (selectedNode == null)
+                    return System.Threading.Tasks.Task.CompletedTask;
+
+                if (selectedNode.IsImageLoadNode)</pre></details><details class="source-card"><summary>N045</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs">tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs:204</a></p><p><code>scriptInstance.Init();</code></p><p>SHA256 <code>13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b</code></p><pre>                scriptInstance.Init();
+                scriptInstance.Process();
+                scriptInstance.Release();
+            }
+            catch (Exception ex)
+            {
+                // 提取用户脚本栈帧（含行号），精确匹配用户类，便于快速定位；无脚本帧则回退完整堆栈文本。
+                // 只写 errors（→ CompileErrors → UI 红色展示一次）；不写 _logMessages
+                // （用户脚本 LogError 已通过 ScriptContext 回调进日志，避免同一异常重复报告）。
+                var detail = ExtractUserScriptFrame(ex, compileResult.EntryClassName!);
+                errors.Add($&quot;脚本执行异常: {detail}&quot;);
+            }
+            runSw.Stop();
+            _executionTimeMs = runSw.Elapsed.TotalMilliseconds;
+
+            // 7. 反射读取输出字段值
+            var outputType = scriptInstance.GetType();
+            foreach (var field in outputType.GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                // 跳过 Script 基类继承的字段（如果有）
+                if (field.DeclaringType == typeof(ScriptBase)) continue;
+</pre></details><details class="source-card"><summary>N046</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs">tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs:387</a></p><p><code>internal static string ComputeRefListFingerprint</code></p><p>SHA256 <code>14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1</code></p><pre>        internal static string ComputeRefListFingerprint(IReadOnlyList&lt;string&gt;? assemblyNames)
+        {
+            if (assemblyNames == null || assemblyNames.Count == 0)
+                return &quot;none&quot;;
+            var sb = new StringBuilder();
+            foreach (var name in assemblyNames.OrderBy(n =&gt; n, StringComparer.OrdinalIgnoreCase))
+                sb.Append($&quot;{name}|&quot;);
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
+        }
+
+        /// &lt;summary&gt;
+        /// 按缓存键读取已编译结果（不含缓存写入逻辑）。
+        /// 供预编译后的沙箱预热读取实际编译产物，与执行路径共用同一缓存键与编译产物。
+        /// 未命中返回 null（由调用方决定是否回退，不抛异常）。
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;cacheKey&quot;&gt;编译缓存键（由 &lt;see cref=&quot;ComputeCacheKey&quot;/&gt; 生成）&lt;/param&gt;
+        /// &lt;returns&gt;已缓存的编译结果；未命中返回 null&lt;/returns&gt;
+        internal static CompileResult? GetCachedResult(string cacheKey)
+        {
+            return _compileCache.TryGetValue(cacheKey, out var cached) ? cached : null;
+        }
+</pre></details><details class="source-card"><summary>N047</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs">tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs:42</a></p><p><code>public static ScriptSandbox GetOrCreate</code></p><p>SHA256 <code>fc1f22f32b648e8735c2060f5475abadc29c2e6a2d3d729296e404120a5a9289</code></p><pre>        public static ScriptSandbox GetOrCreate(string cacheKey, string? refDir)
+        {
+            var slot = _pool.GetOrAdd(cacheKey, k =&gt; new SandboxSlot(new ScriptSandbox($&quot;ScriptSandboxPool_{k[..8]}&quot;, refDir)));
+            slot.LastUsed = DateTime.UtcNow;
+            EvictIfNeeded();
+            return slot.Sandbox;
+        }
+
+        /// &lt;summary&gt;
+        /// 使指定缓存键的沙箱失效并卸载（代码/引用配置变化需重建时显式调用）。
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;cacheKey&quot;&gt;要失效的缓存键&lt;/param&gt;
+        public static void Invalidate(string cacheKey)
+        {
+            if (_pool.TryRemove(cacheKey, out var slot))
+            {
+                slot.Sandbox.Dispose();
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// 清空全部常驻沙箱（卸载所有 ALC），供应用关闭/方案重载时调用。</pre></details><details class="source-card"><summary>N069</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml">tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml:157</a></p><p><code>显示设置（占位）</code></p><p>SHA256 <code>6a61d5187bdc563e8a9bf2f60ba7ba351e31c7889cd1b97f61749b910af92fe0</code></p><pre>                    &lt;TextBlock Text=&quot;显示设置（占位）&quot; Margin=&quot;12,20&quot;
+                               Foreground=&quot;{DynamicResource ThemeTextSecondaryBrush}&quot;/&gt;
+                &lt;/TabItem&gt;
+            &lt;/TabControl&gt;
+
+            &lt;GridSplitter Grid.Column=&quot;1&quot; Width=&quot;5&quot; Background=&quot;{DynamicResource ThemeBorderBrush}&quot;
+                          HorizontalAlignment=&quot;Stretch&quot; /&gt;
+
+            &lt;!-- ===== 右侧面板：代码编辑器 + 下方日志 ===== --&gt;
+            &lt;Grid Grid.Column=&quot;2&quot; Background=&quot;{DynamicResource ThemePanelBackgroundBrush}&quot;&gt;
+                &lt;Grid.RowDefinitions&gt;
+                    &lt;RowDefinition Height=&quot;Auto&quot; /&gt;
+                    &lt;RowDefinition Height=&quot;*&quot; /&gt;
+                    &lt;RowDefinition Height=&quot;3&quot; /&gt;
+                    &lt;RowDefinition Height=&quot;200&quot; MinHeight=&quot;80&quot; /&gt;
+                &lt;/Grid.RowDefinitions&gt;
+
+                &lt;Border Grid.Row=&quot;0&quot; Background=&quot;{DynamicResource ThemePanelBackgroundBrush}&quot; Padding=&quot;6,4&quot;&gt;
+                    &lt;Grid&gt;
+                        &lt;Grid.ColumnDefinitions&gt;
+                            &lt;ColumnDefinition Width=&quot;*&quot; /&gt;
+                            &lt;ColumnDefinition Width=&quot;Auto&quot; /&gt;</pre></details><details class="source-card"><summary>N070</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs">tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs:300</a></p><p><code>protected override object ExecuteTool</code></p><p>SHA256 <code>9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd</code></p><pre>        protected override object ExecuteTool()
+        {
+            SyncCodeToParameters();
+            // 执行前预编译：保证本次执行及后续工作流执行命中缓存零编译
+            PreCompileLatestCode();
+            _logEntries.Clear();
+            // 清除所有监视数据（输入 + 输出）
+            ClearAllMonitorValues();
+
+            _scriptTool ??= new ScriptTool();
+            var request = CreateLiveExecutionRequest(_parameters, null);
+            var execution = (ScriptParameters)request.Parameters;
+            execution.IsDebugMode = true;
+            var executor = new ToolExecutor(new ParameterResolver(), VisionLogger.Instance);
+            var toolResult = Task.Run(async () =&gt; await executor.ExecuteAsync(_scriptTool, request)).GetAwaiter().GetResult();
+            if (toolResult is not ScriptResults result)
+                throw new InvalidOperationException(toolResult.ErrorMessage ?? &quot;脚本工具未返回有效结果。&quot;);
+
+            if (result == null)
+            {
+                UpdateStatus(&quot;失败&quot;);
+                var errResult = new ScriptResults</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T15&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;脚本：代码、动态输出、程序集与执行&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;ScriptDebugControl&quot;,
+    &quot;编辑/引用/输出契约&quot;,
+    &quot;编译执行&quot;,
+    &quot;OutputContractChanged&quot;,
+    &quot;宿主刷新&quot;
+  ],
+  &quot;current&quot;: &quot;脚本专用UI、引用对话框及宿主动态契约通知入口存在。 本轮确认显示设置Tab仅占位；已有专用ResetCode不能等同标准参数重置。&quot;,
+  &quot;gap&quot;: &quot;编译/程序集载入→具体信任/取消/释放；输出修改→旧绑定失效；UI和后台脚本→真实副作用准入 当前同一try依次Init→Process→Release；Init或Process抛错就直接catch，Release跳过。输入反射失败先记errors，后续仍会尝试执行生命周期。 编译键是代码哈希、宿主名称版本指纹和勾选引用名指纹；引用名列表未包含文件内容/路径/版本。相同文件名替换内容时键仍相同，不能保证重新编译或加载。 MaxResident=16，超过上限按LastUsed淘汰并Dispose；GetOrCreate返回裸Sandbox，未记录在用计数，Invalidate/Clear也未等待在途。ConcurrentDictionary的工厂可能被并发调用多次，不能沿注释声称只创建一次。当前未找到外层对Clear/Invalidate的调用，最终进程回收不能代替逐会话合同。&quot;,
+  &quot;vm&quot;: &quot;恢复模型脚本/动态输出与原生框架依赖分开，任意DLL加载不可当安全机制。&quot;,
+  &quot;vmDoc&quot;: &quot;PLUGIN-FRAMEWORK-BOUNDARY.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：脚本引用/编译/输出链存在；AssemblyLoadContext不是安全隔离。 VM参考边界：原版脚本模块范围作参考；当前没有充分材料证明其沙箱/安全政策。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;明确可信脚本或进程隔离需求，追动态端口失效与程序集卸载；再选实现，不先推荐保留脚本架构。 引用来源和动态字段版本收敛到脚本服务，改输出类型后使旧绑定失效；ALC不当安全沙箱，可信桌面前提或隔离策略先明确。&quot;,
+  &quot;accept&quot;: &quot;改输出名/类型、编译错、引用缺失、停止/关窗与拒绝副作用逐入口验。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S095&quot;,
+    &quot;S096&quot;,
+    &quot;R063&quot;,
+    &quot;R064&quot;,
+    &quot;N045&quot;,
+    &quot;N046&quot;,
+    &quot;N047&quot;,
+    &quot;N069&quot;,
+    &quot;N070&quot;
+  ],
+  &quot;optimization&quot;: &quot;O10&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;T15&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;Script专用UI有程序集引用、日志清理/双击等事件；宿主订阅OutputContractChanged，并异步刷新结果合同。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;编译/程序集载入→具体信任/取消/释放&quot;,
+      &quot;输出修改→旧绑定失效&quot;,
+      &quot;UI和后台脚本→真实副作用准入&quot;
+    ],
+    &quot;cause&quot;: &quot;源码入口有证据，安全/动态端口全链未闭合&quot;,
+    &quot;change&quot;: &quot;引用来源和动态字段版本收敛到脚本服务，改输出类型后使旧绑定失效；ALC不当安全沙箱，可信桌面前提或隔离策略先明确。&quot;,
+    &quot;acceptance&quot;: &quot;改输出名/类型、编译错、引用缺失、停止/关窗与拒绝副作用逐入口验。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S095&quot;,
+      &quot;S096&quot;,
+      &quot;R063&quot;,
+      &quot;R064&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留专业脚本，补信任与合同&quot;,
+    &quot;reason&quot;: &quot;能扩展算法但扩大权限与部署面，需显式可信桌面前提或隔离策略。&quot;
+  },
+  &quot;defect&quot;: &quot;脚本引用/编译/输出链存在；AssemblyLoadContext不是安全隔离。 新确认局部缺失：显示设置仅占位；ExecuteTool中Task.Run后GetAwaiter().GetResult同步等待调用方。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版脚本模块范围作参考；当前没有充分材料证明其沙箱/安全政策。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;脚本引用/编译/输出链存在；AssemblyLoadContext不是安全隔离。&quot;,
+    &quot;borrow&quot;: &quot;原版脚本模块范围作参考；当前没有充分材料证明其沙箱/安全政策。&quot;,
+    &quot;action&quot;: &quot;明确可信脚本或进程隔离需求，追动态端口失效与程序集卸载；再选实现，不先推荐保留脚本架构。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S095&quot;,
+      &quot;S096&quot;,
+      &quot;R063&quot;,
+      &quot;R064&quot;,
+      &quot;N045&quot;,
+      &quot;N046&quot;,
+      &quot;N047&quot;,
+      &quot;N069&quot;,
+      &quot;N070&quot;
+    ]
+  },
+  &quot;knownGaps&quot;: [
+    &quot;显示设置Tab仅TextBlock占位：局部未实现，需新增或隐藏&quot;
+  ]
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

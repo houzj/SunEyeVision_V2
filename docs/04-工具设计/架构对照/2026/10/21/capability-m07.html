@@ -1,0 +1,241 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M07 端口连线、断开与路径显示</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M07 端口连线、断开与路径显示</h1><article id="compare-M07"><span id="M07"></span><div class="visual-metrics"><div><strong>M07</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>WorkflowDefinitionValidator.Validate</b></li><li><small>02</small><b>ToolParameterSnapshot.Create</b></li><li><small>03</small><b>OutputBindingChangeService.GetExecutionInputIssues</b></li><li><small>04</small><b>BindingContractValidator.Validate</b></li><li><small>05</small><b>WorkflowExecutionDependencyGraph.Compile</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>已静态核实执行前循环检查，以及计划编译时绑定作用域、上游关系、类型/字段路径诊断。</p><details><summary>完整缺陷与未闭合调用边</summary><p>待核多入口反馈时机、List&lt;&gt;/未声明对象合同、嵌套参数和旧文件字段迁移；不再把局部UI检查误当全系统能力。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>恢复模型F08连线/避障与F01合同联动，显示连线不等数据订阅成功。</p><p>VM原版粘贴的同父级合法上游规则可作合同对照，不证明端口全覆盖。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF02-CONNECTION-ROUTE-LIFECYCLE.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">执行前已有WorkflowDefinitionValidator循环检查；执行计划另经OutputBindingChangeService核作用域、画布上游和BindingContractValidator类型。拖线局部检查不能代替全链，也不能反推全系统无验证。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：执行前已有WorkflowDefinitionValidator循环检查；执行计划另经OutputBindingChangeService核作用域、画布上游和BindingContractValidator类型。拖线局部检查不能代替全链，也不能反推全系统无验证。 VM参考边界：VM原版粘贴的同父级合法上游规则可作合同对照，不证明端口全覆盖。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">复核拖线/粘贴/加载等入口与现有验证的反馈一致性；对确认缺边复用已有规则，不新增第二套绑定或环路模型。 复用现有校验/变更对账，按缺口补合同与反馈；撤回整体绑定模型重做建议。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">无效连线零执行依赖；改名/动态输出删除后清晰标失效，不留下幽灵订阅。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o03.html#O03">O03</a></td></tr></tbody></table></div></section><article id="recommendation-M07"><h2>M07 端口连线、断开与路径显示 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>执行前已有WorkflowDefinitionValidator循环检查；执行计划另经OutputBindingChangeService核作用域、画布上游和BindingContractValidator类型。拖线局部检查不能代替全链，也不能反推全系统无验证。</p><p><b>VM可借鉴与不可推断：</b>VM原版粘贴的同父级合法上游规则可作合同对照，不证明端口全覆盖。</p><p><b>具体改法 / 成本：</b>复核拖线/粘贴/加载等入口与现有验证的反馈一致性；对确认缺边复用已有规则，不新增第二套绑定或环路模型。 复用现有校验/变更对账，按缺口补合同与反馈；撤回整体绑定模型重做建议。</p><p><b>验收：</b>无效连线零执行依赖；改名/动态输出删除后清晰标失效，不留下幽灵订阅。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M07">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M07">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S016</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/ConnectionDragHandler.cs">src/UI/Services/Interaction/ConnectionDragHandler.cs:248</a></p><p><code>ValidateConnection</code></p><p>SHA256 <code>7fde2c608dba2e63b08d91cfbd9fb393ff512c9a84e99bb68ea4f4d1597125ad</code></p><pre>        private ValidationResult ValidateConnection(
+            WorkflowNode sourceNode,
+            WorkflowNode targetNode)
+        {
+            if (sourceNode == null)
+            {
+                return new ValidationResult(false, &quot;源节点不能为空&quot;);
+            }
+
+            if (targetNode == null)
+            {
+                return new ValidationResult(false, &quot;目标节点不能为空&quot;);
+            }
+</pre></details><details class="source-card"><summary>S017</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/ConnectionDragHandler.cs">src/UI/Services/Interaction/ConnectionDragHandler.cs:294</a></p><p><code>CreateConnection</code></p><p>SHA256 <code>7fde2c608dba2e63b08d91cfbd9fb393ff512c9a84e99bb68ea4f4d1597125ad</code></p><pre>        private WorkflowConnection? CreateConnection(
+            WorkflowNode sourceNode,
+            WorkflowNode targetNode,
+            string? targetPort)
+        {
+            if (_viewModel?.WorkflowTabViewModel.SelectedTab == null)
+            {
+                return null;
+            }
+
+            var connectionId = Guid.NewGuid().ToString();
+            var connection = new WorkflowConnection(
+                connectionId,
+                sourceNode.Id,</pre></details><details class="source-card"><summary>R011</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/ConnectionDragHandler.cs">src/UI/Services/Interaction/ConnectionDragHandler.cs:248</a></p><p><code>ValidateConnection</code></p><p>SHA256 <code>7fde2c608dba2e63b08d91cfbd9fb393ff512c9a84e99bb68ea4f4d1597125ad</code></p><pre>        private ValidationResult ValidateConnection(
+            WorkflowNode sourceNode,
+            WorkflowNode targetNode)
+        {
+            if (sourceNode == null)
+            {
+                return new ValidationResult(false, &quot;源节点不能为空&quot;);
+            }
+
+            if (targetNode == null)
+            {
+                return new ValidationResult(false, &quot;目标节点不能为空&quot;);
+            }
+
+            if (sourceNode.Id == targetNode.Id)
+            {
+                return new ValidationResult(false, &quot;不允许自连接&quot;);
+            }
+
+            if (_viewModel?.WorkflowTabViewModel.SelectedTab == null)</pre></details><details class="source-card"><summary>R012</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/ConnectionDragHandler.cs">src/UI/Services/Interaction/ConnectionDragHandler.cs:294</a></p><p><code>CreateConnection</code></p><p>SHA256 <code>7fde2c608dba2e63b08d91cfbd9fb393ff512c9a84e99bb68ea4f4d1597125ad</code></p><pre>        private WorkflowConnection? CreateConnection(
+            WorkflowNode sourceNode,
+            WorkflowNode targetNode,
+            string? targetPort)
+        {
+            if (_viewModel?.WorkflowTabViewModel.SelectedTab == null)
+            {
+                return null;
+            }
+
+            var connectionId = Guid.NewGuid().ToString();
+            var connection = new WorkflowConnection(
+                connectionId,
+                sourceNode.Id,
+                targetNode.Id);
+
+            connection.SourcePort = _sourcePort ?? &quot;RightPort&quot;;
+            connection.TargetPort = targetPort ?? &quot;LeftPort&quot;;
+
+            var sourcePos = CanvasHelper.GetPortPosition(sourceNode, connection.SourcePort);</pre></details><details class="source-card"><summary>N001</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowExecutionEngine.cs">src/Workflow/WorkflowExecutionEngine.cs:797</a></p><p><code>var inputIssues = OutputBindingChangeService.GetExecutionInputIssues</code></p><p>SHA256 <code>4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db</code></p><pre>            var inputIssues = OutputBindingChangeService.GetExecutionInputIssues(executableWorkflow, sourceWorkflow.Id);
+            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, request?.CommunicationInputs?.GetVariables(), sourceWorkflow.Id, inputIssues);
+            var nodeExecutionProfiles = executableWorkflow.Nodes.ToDictionary(
+                node =&gt; node.Id,
+                node =&gt; inputIssues.ContainsKey(node.Id) ? ToolExecutionProfile.LegacyExclusive
+                    : ResolveExecutionProfile(node, request?.CommunicationInputs),
+                StringComparer.Ordinal);
+            _logger.LogInfo(
+                $&quot;执行计划已编译: 节点={executableWorkflow.Nodes.Count}, 依赖={dependencyGraph.Dependencies.Count}, &quot; +
+                $&quot;可并行声明={nodeExecutionProfiles.Values.Count(profile =&gt; profile.ConcurrencyKind == ToolConcurrencyKind.ParallelSafe)}&quot;);
+            return new WorkflowExecutionPlan(scope, executableWorkflow, dependencyGraph, nodeExecutionProfiles);
+        }
+
+        private static ToolExecutionProfile ResolveExecutionProfile(WorkflowNodeBase node,
+            SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? communicationInputs)
+        {
+            if (node is AlgorithmNode { Tool: IToolExecutionProfileProvider provider })
+                return provider.DescribeExecution(node.Parameters, communicationInputs) ?? ToolExecutionProfile.LegacyExclusive;
+
+            return ToolExecutionProfile.LegacyExclusive;
+        }
+</pre></details><details class="source-card"><summary>N002</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/OutputBindingChangeService.cs">src/Workflow/OutputBindingChangeService.cs:60</a></p><p><code>public static IReadOnlyDictionary&lt;string, IReadOnlyList&lt;ExecutionInputIssue&gt;&gt; GetExecutionInputIssues</code></p><p>SHA256 <code>2f41515cc10922c4d40a8d85f97b81c0c324445f6c81aa3cabcec8c867502f5d</code></p><pre>    public static IReadOnlyDictionary&lt;string, IReadOnlyList&lt;ExecutionInputIssue&gt;&gt; GetExecutionInputIssues(Workflow workflow, string? sourceWorkflowId = null)
+    {
+        var reader = new OutputBindingChangeService();
+        var nodes = workflow.Nodes.ToDictionary(n =&gt; n.Id);
+        var issues = new Dictionary&lt;string, IReadOnlyList&lt;ExecutionInputIssue&gt;&gt;(StringComparer.Ordinal);
+        foreach (var node in workflow.Nodes)
+        {
+            var nodeIssues = new List&lt;ExecutionInputIssue&gt;();
+            var declaredInputs = BindingRelationCatalog.Describe(node);
+            foreach (var input in declaredInputs.Where(i =&gt; i.Active &amp;&amp; !i.InternalProjection))
+            {
+                void Add(string reason) =&gt; nodeIssues.Add(new(input.Key, input.Name, $&quot;{node.Name}.{input.Name} [{input.Key}]：{reason}&quot;));
+                if (node.Parameters.RebindingRequired.TryGetValue(input.Key, out var required)) { Add(&quot;需要重新绑定：&quot; + required); continue; }
+                if (node.Parameters.BindingValidationPending.TryGetValue(input.Key, out var pending)) { Add(&quot;待校验：&quot; + pending); continue; }
+                var expression = input.Read();
+                if (!BindingInputCatalog.TryReference(expression, nodes.Keys, input.ReferenceOnly, out var id, out var path))
+                {
+                    if (input.ReferenceOnly &amp;&amp; !string.IsNullOrWhiteSpace(expression)) Add(&quot;绑定来源格式无效，请重新绑定。&quot;);
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(path)) { Add(&quot;绑定路径不完整，请重新绑定。&quot;); continue; }
+                if (id.StartsWith(&quot;__&quot;, StringComparison.Ordinal))</pre></details><details class="source-card"><summary>N003</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/Execution/Parameters/BindingContractValidator.cs">src/Plugin.SDK/Execution/Parameters/BindingContractValidator.cs:17</a></p><p><code>public static BindingValidation Validate</code></p><p>SHA256 <code>1dc21cee1d0733c476f5de4af77caa184d5a986618746d426621bf7dc5137601</code></p><pre>    public static BindingValidation Validate(IReadOnlyList&lt;OutputVariable&gt;? contract, string path, IReadOnlyList&lt;Type&gt; allowed)
+    {
+        BindingValidation Bad(string message) =&gt; new(BindingCompatibility.Incompatible, message);
+        BindingValidation Pending(string message) =&gt; new(BindingCompatibility.PendingValidation, message);
+        if (contract == null) return Pending(&quot;上游输出契约暂不可用，等待校验&quot;);
+        var parts = path.Split('.');
+        if (parts.Length == 0 || parts.Any(p =&gt; !Regex.IsMatch(p, @&quot;^[A-Za-z_\p{L}][\w]*(?:\[Type=[A-Za-z]+\])?(?:\[(?:[0-9]+)?\])?$&quot;)))
+            return Bad(&quot;绑定元素路径格式无效，请重新绑定&quot;);
+        var parsed = PropertyPathParser.ParsePropertyPath(path);
+        var output = contract.FirstOrDefault(o =&gt; string.Equals(o.Name, parsed[0].propertyName, StringComparison.OrdinalIgnoreCase));
+        if (output == null || output.Kind != OutputVariableKind.Data) return Bad(&quot;上游输出字段已删除或不是数据输出，请重新绑定&quot;);
+        var type = output.DeclaredType ?? SdkTypeVocabulary.ToSystemType(output.VariableType);
+        if (type == null || type == typeof(object)) return Pending(&quot;来源类型未声明完整，等待校验&quot;);
+        if (type.IsGenericType &amp;&amp; type.GetGenericTypeDefinition() == typeof(List&lt;&gt;))
+            return Pending(&quot;集合载体缺少统一元素输出声明，等待校验&quot;);
+        var collection = output.IsCollection ?? type.IsArray;
+        if (type.IsArray) type = type.GetElementType()!;
+        int? count = output.FixedCount ?? (collection ? null : 1);
+        string? filter = null;
+        for (var i = 0; i &lt; parsed.Count; i++)
+        {
+            var segment = parsed[i];</pre></details><details class="source-card"><summary>N004</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowDefinitionService.cs">src/Workflow/WorkflowDefinitionService.cs:180</a></p><p><code>workflow.DetectCycles()</code></p><p>SHA256 <code>388f2fffbbb3fcda37de9f7ec4367aa8267408eb29d54f410401c0337df5e433</code></p><pre>        if (errors.Count == 0 &amp;&amp; workflow.DetectCycles().Count &gt; 0)
+            errors.Add(&quot;工作流连接存在循环依赖。&quot;);
+
+        return errors;
+    }
+}
+</pre></details><details class="source-card"><summary>N005</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/OutputBindingChangeService.cs">src/Workflow/OutputBindingChangeService.cs:168</a></p><p><code>SourceFieldId</code></p><p>SHA256 <code>2f41515cc10922c4d40a8d85f97b81c0c324445f6c81aa3cabcec8c867502f5d</code></p><pre>                var field = producer.SourceFieldId.HasValue ? current[owners[0]]?.FirstOrDefault(o =&gt; o.FieldId == producer.SourceFieldId)
+                    : current[owners[0]]?.FirstOrDefault(o =&gt; o.Name == oldName);
+                var path = field == null ? producer.ResultName : field.Name + producer.ResultName[oldName.Length..];
+                if (field != null &amp;&amp; path != producer.ResultName)
+                {
+                    var originalPath = producer.ResultName; var originalLabel = producer.ResultDisplayName;
+                    plan.Add((() =&gt; { producer.ResultName = path; producer.ResultDisplayName = field.DisplayName; },
+                        () =&gt; { producer.ResultName = originalPath; producer.ResultDisplayName = originalLabel; }));
+                }
+                validation = producer.SourceFieldId.HasValue &amp;&amp; field == null &amp;&amp; current[owners[0]] != null
+                    ? new(BindingCompatibility.Incompatible, &quot;全局变量原输出身份已删除，请重新绑定&quot;)
+                    : BindingContractValidator.Validate(current[owners[0]], path,
+                        SdkTypeVocabulary.ToSystemType(variable.Type) is { } type ? new[] { type } : Array.Empty&lt;Type&gt;());
+            }
+            var priorPending = variable.BindingValidationPending;
+            if (validation.State == BindingCompatibility.PendingValidation)
+            {
+                pendingVariables[variable.Id] = validation.Reason;
+                plan.Add((() =&gt; variable.BindingValidationPending = validation.Reason, () =&gt; variable.BindingValidationPending = priorPending));
+            }
+            else if (validation.State == BindingCompatibility.Compatible)
+                plan.Add((() =&gt; variable.BindingValidationPending = &quot;&quot;, () =&gt; variable.BindingValidationPending = priorPending));</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M07&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;端口连线、断开与路径显示&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;WorkflowDefinitionValidator.Validate&quot;,
+    &quot;ToolParameterSnapshot.Create&quot;,
+    &quot;OutputBindingChangeService.GetExecutionInputIssues&quot;,
+    &quot;BindingContractValidator.Validate&quot;,
+    &quot;WorkflowExecutionDependencyGraph.Compile&quot;
+  ],
+  &quot;current&quot;: &quot;已静态核实执行前循环检查，以及计划编译时绑定作用域、上游关系、类型/字段路径诊断。&quot;,
+  &quot;gap&quot;: &quot;待核多入口反馈时机、List&lt;&gt;/未声明对象合同、嵌套参数和旧文件字段迁移；不再把局部UI检查误当全系统能力。&quot;,
+  &quot;vm&quot;: &quot;恢复模型F08连线/避障与F01合同联动，显示连线不等数据订阅成功。&quot;,
+  &quot;vmDoc&quot;: &quot;MF02-CONNECTION-ROUTE-LIFECYCLE.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：执行前已有WorkflowDefinitionValidator循环检查；执行计划另经OutputBindingChangeService核作用域、画布上游和BindingContractValidator类型。拖线局部检查不能代替全链，也不能反推全系统无验证。 VM参考边界：VM原版粘贴的同父级合法上游规则可作合同对照，不证明端口全覆盖。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;复核拖线/粘贴/加载等入口与现有验证的反馈一致性；对确认缺边复用已有规则，不新增第二套绑定或环路模型。 复用现有校验/变更对账，按缺口补合同与反馈；撤回整体绑定模型重做建议。&quot;,
+  &quot;accept&quot;: &quot;无效连线零执行依赖；改名/动态输出删除后清晰标失效，不留下幽灵订阅。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S016&quot;,
+    &quot;S017&quot;,
+    &quot;R011&quot;,
+    &quot;R012&quot;,
+    &quot;N001&quot;,
+    &quot;N002&quot;,
+    &quot;N003&quot;,
+    &quot;N004&quot;,
+    &quot;N005&quot;
+  ],
+  &quot;optimization&quot;: &quot;O03&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M07&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;ValidateConnection在该方法检查空节点、自连、无Tab、重复和反向连线，返回true后CreateConnection创建显示模型。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;端口数据类型/作用域/循环校验不在该方法内&quot;,
+      &quot;创建回调→执行依赖/订阅提交&quot;,
+      &quot;断开/撤销→解绑的逆向边&quot;
+    ],
+    &quot;cause&quot;: &quot;局部实现范围确认+跨模块证据缺口&quot;,
+    &quot;change&quot;: &quot;追_onConnectionCreated对应应用层校验，不把缺本地校验等同全系统没有；若无统一合同校验则提交前补类型/作用域/循环检查，断开执行逆事务。&quot;,
+    &quot;acceptance&quot;: &quot;无效连线零执行依赖；改名/动态输出删除后清晰标失效，不留下幽灵订阅。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S016&quot;,
+      &quot;S017&quot;,
+      &quot;R011&quot;,
+      &quot;R012&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留连接服务，补合同校验&quot;,
+    &quot;reason&quot;: &quot;可在创建阶段阻止错误输入，但显示/模型/执行三份状态需一致。&quot;
+  },
+  &quot;defect&quot;: &quot;执行前已有WorkflowDefinitionValidator循环检查；执行计划另经OutputBindingChangeService核作用域、画布上游和BindingContractValidator类型。拖线局部检查不能代替全链，也不能反推全系统无验证。&quot;,
+  &quot;vmBorrow&quot;: &quot;VM原版粘贴的同父级合法上游规则可作合同对照，不证明端口全覆盖。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;执行前已有WorkflowDefinitionValidator循环检查；执行计划另经OutputBindingChangeService核作用域、画布上游和BindingContractValidator类型。拖线局部检查不能代替全链，也不能反推全系统无验证。&quot;,
+    &quot;borrow&quot;: &quot;VM原版粘贴的同父级合法上游规则可作合同对照，不证明端口全覆盖。&quot;,
+    &quot;action&quot;: &quot;复核拖线/粘贴/加载等入口与现有验证的反馈一致性；对确认缺边复用已有规则，不新增第二套绑定或环路模型。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S016&quot;,
+      &quot;S017&quot;,
+      &quot;R011&quot;,
+      &quot;R012&quot;,
+      &quot;N001&quot;,
+      &quot;N002&quot;,
+      &quot;N003&quot;,
+      &quot;N004&quot;,
+      &quot;N005&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

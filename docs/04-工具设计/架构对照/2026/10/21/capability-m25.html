@@ -1,0 +1,137 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M25 专业数据分析面板与图像高亮</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M25 专业数据分析面板与图像高亮</h1><article id="compare-M25"><span id="M25"></span><div class="visual-metrics"><div><strong>M25</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>SelectedNode</b></li><li><small>02</small><b>UpdateDataAnalysisControl</b></li><li><small>03</small><b>IToolEditorFactory.CreateDataAnalysisControl</b></li><li><small>04</small><b>OnResultUpdated</b></li><li><small>05</small><b>SelectionHighlightChanged</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>实际为独立于调试窗口的专业控件；无实现时隐藏Tab，切换先退订旧高亮，已有结果立即填充。</p><details><summary>完整缺陷与未闭合调用边</summary><p>创建的临时tool与分析控件释放归属未在该方法闭合；缓存结果是否本轮/当前方案，失败取消后如何清空须追接收方。 普通OnNodeExecutionCompleted只在e.Result.IsSuccess时OnResultUpdated；相机分支提前return，Flush仅刷新选中节点图像/树和调试窗口，未直接调用当前专业分析控件。切节点时读取缓存又不检查Success。当前专业分析可能继续保留旧内容，具体表现待运行验证。 切节点先退订旧控件高亮并清高亮，然后CreateToolInstance/CreateDataAnalysisControl。此方法没有保存tool所有权或对旧tool/控件做Dispose；工厂是否共享、外层是否收尾仍待核，不能据此宣称必然泄漏。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>以恢复模型主界面对应状态/专业数据/日志入口核范围；模块历史、专业数据页和应用日志是三种数据，不互相代证。</p><p>只完成VM专业数据页范围对账，原版具体字段和关闭路径仍缺实现材料。</p><p>此项当前只完成VM入口对账；原版字段、线程、释放和日志保留机制仍需对应实现体，不能引用重建测试当原版事实。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/framework-architecture.html">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">专业分析普通成功才推送，相机合并刷新未直接推送；切节点缓存无成功门禁，与实时入口不一致。工具所有者未闭合，具体旧值呈现待验证。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：专业分析普通成功才推送，相机合并刷新未直接推送；切节点缓存无成功门禁，与实时入口不一致。工具所有者未闭合，具体旧值呈现待验证。 VM参考边界：只完成VM专业数据页范围对账，原版具体字段和关闭路径仍缺实现材料。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">统一所有入口的成功/失败/取消有效性；保留旧成功必须标历史。先核工厂返回共享或独立实例再定Dispose；不因独立控件就评优。 定义分析会话Owner和结果身份，先核工厂是否返回共享/独立实例再配对释放；失败清空并拒旧结果，选中行只发稳定图元键。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">多次切节点/开关方案无订阅增长，旧轮次不填新面板；失败不展示旧成功；高亮与当前底图同帧。 同节点先成功再失败、普通与相机轮换、切方案迟到回调分别验；结果树、图像、分析一致显示本轮状态。 重复切节点、工厂返回null、创建抛错、关闭方案分别核实例/订阅/原生句柄；需明确共享与独立两类。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">静态源码复核；未运行产品或进行性能测量</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o07.html#O07">O07</a></td></tr></tbody></table></div></section><article id="recommendation-M25"><h2>M25 专业数据分析面板与图像高亮 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>专业分析普通成功才推送，相机合并刷新未直接推送；切节点缓存无成功门禁，与实时入口不一致。工具所有者未闭合，具体旧值呈现待验证。</p><p><b>VM可借鉴与不可推断：</b>只完成VM专业数据页范围对账，原版具体字段和关闭路径仍缺实现材料。</p><p><b>具体改法 / 成本：</b>统一所有入口的成功/失败/取消有效性；保留旧成功必须标历史。先核工厂返回共享或独立实例再定Dispose；不因独立控件就评优。 定义分析会话Owner和结果身份，先核工厂是否返回共享/独立实例再配对释放；失败清空并拒旧结果，选中行只发稳定图元键。</p><p><b>验收：</b>多次切节点/开关方案无订阅增长，旧轮次不填新面板；失败不展示旧成功；高亮与当前底图同帧。 同节点先成功再失败、普通与相机轮换、切方案迟到回调分别验；结果树、图像、分析一致显示本轮状态。 重复切节点、工厂返回null、创建抛错、关闭方案分别核实例/订阅/原生句柄；需明确共享与独立两类。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M25">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M25">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>N027</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:3528</a></p><p><code>private System.Threading.Tasks.Task UpdateDataAnalysisControl</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private System.Threading.Tasks.Task UpdateDataAnalysisControl(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)
+        {
+            try
+            {
+                // ★ 清理旧的选中高亮订阅（防止内存泄漏和残留高亮）
+                if (SelectedNodeDataAnalysisControl is IToolControlDataAnalysis oldDaControl)
+                {
+                    oldDaControl.SelectionHighlightChanged -= OnSelectionHighlightChanged;
+                }
+                _nodeResultManager.ClearHighlight();
+
+                // 清空当前控件
+                SelectedNodeDataAnalysisControl = null;
+                HasDataAnalysisControl = false;
+                DataAnalysisControlTitle = &quot;数据分析&quot;;
+
+                if (selectedNode == null)
+                    return System.Threading.Tasks.Task.CompletedTask;
+
+                if (selectedNode.IsImageLoadNode)
+                {
+                    DataAnalysisControlTitle = $&quot;{selectedNode.Name} - 图像源&quot;;</pre></details><details class="source-card"><summary>N028</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindow.xaml">src/UI/Shell/Windows/MainWindow.xaml:150</a></p><p><code>Binding SelectedNodeDataAnalysisControl</code></p><p>SHA256 <code>2b12be1f69bc228ac4a8bdb395b4c69532986e10f499fd74ada1fd109750fbea</code></p><pre>                                    &lt;ContentControl Content=&quot;{Binding SelectedNodeDataAnalysisControl}&quot;
+                                                   HorizontalAlignment=&quot;Stretch&quot;
+                                                   VerticalAlignment=&quot;Stretch&quot;/&gt;
+                                &lt;/Grid&gt;
+                            &lt;/TabItem&gt;
+
+                            &lt;!-- 第二个TabItem: 日志 --&gt;
+                            &lt;TabItem Header=&quot;日志&quot; Padding=&quot;12,6&quot;&gt;
+                                &lt;panels:LogPanelControl x:Name=&quot;LogPanelContent&quot;
+                                                         VerticalAlignment=&quot;Stretch&quot;
+                                                         HorizontalAlignment=&quot;Stretch&quot;/&gt;
+                            &lt;/TabItem&gt;
+                        &lt;/TabControl&gt;
+                    &lt;/Border&gt;
+
+
+                &lt;/Grid&gt;
+            &lt;/Border&gt;
+
+            &lt;!-- ========== 状态栏 (24px) ========== --&gt;
+            &lt;shell:StatusBarControl Grid.ColumnSpan=&quot;4&quot; Grid.Row=&quot;1&quot; DataContext=&quot;{Binding StatusBar}&quot;/&gt;
+        &lt;/Grid&gt;</pre></details><details class="source-card"><summary>N032</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5441</a></p><p><code>private void FlushCameraResultPresentation()</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void FlushCameraResultPresentation()
+        {
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            _cameraPresentationTimer?.Stop();
+            var latest = _pendingCameraPresentations.Values.ToArray();
+            _pendingCameraPresentations.Clear();
+            foreach (var (node, result) in latest)
+            {
+                if (node.IsSelected)
+                    _nodeResultManager.RefreshResultDisplay(node, result);
+            }
+            if (latest.Length &gt; 0)
+                NotifyAllDebugWindowsExternalResult();
+            timer.Stop();
+            if (timer.ElapsedMilliseconds &gt;= 100 &amp;&amp;
+                DateTime.UtcNow - _lastCameraPerfWarningUtc &gt;= TimeSpan.FromSeconds(5))
+            {
+                _lastCameraPerfWarningUtc = DateTime.UtcNow;
+                AddLog($&quot;⚠️ 相机结果界面刷新耗时 {timer.ElapsedMilliseconds} ms&quot;);
+            }
+        }
+</pre></details><details class="source-card"><summary>N033</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:3528</a></p><p><code>private System.Threading.Tasks.Task UpdateDataAnalysisControl</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private System.Threading.Tasks.Task UpdateDataAnalysisControl(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)
+        {
+            try
+            {
+                // ★ 清理旧的选中高亮订阅（防止内存泄漏和残留高亮）
+                if (SelectedNodeDataAnalysisControl is IToolControlDataAnalysis oldDaControl)
+                {
+                    oldDaControl.SelectionHighlightChanged -= OnSelectionHighlightChanged;
+                }
+                _nodeResultManager.ClearHighlight();
+
+                // 清空当前控件
+                SelectedNodeDataAnalysisControl = null;
+                HasDataAnalysisControl = false;
+                DataAnalysisControlTitle = &quot;数据分析&quot;;
+
+                if (selectedNode == null)
+                    return System.Threading.Tasks.Task.CompletedTask;
+
+                if (selectedNode.IsImageLoadNode)
+                {
+                    DataAnalysisControlTitle = $&quot;{selectedNode.Name} - 图像源&quot;;</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M25&quot;,
+  &quot;title&quot;: &quot;专业数据分析面板与图像高亮&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;SelectedNode&quot;,
+    &quot;UpdateDataAnalysisControl&quot;,
+    &quot;IToolEditorFactory.CreateDataAnalysisControl&quot;,
+    &quot;OnResultUpdated&quot;,
+    &quot;SelectionHighlightChanged&quot;
+  ],
+  &quot;current&quot;: &quot;实际为独立于调试窗口的专业控件；无实现时隐藏Tab，切换先退订旧高亮，已有结果立即填充。&quot;,
+  &quot;gap&quot;: &quot;创建的临时tool与分析控件释放归属未在该方法闭合；缓存结果是否本轮/当前方案，失败取消后如何清空须追接收方。 普通OnNodeExecutionCompleted只在e.Result.IsSuccess时OnResultUpdated；相机分支提前return，Flush仅刷新选中节点图像/树和调试窗口，未直接调用当前专业分析控件。切节点时读取缓存又不检查Success。当前专业分析可能继续保留旧内容，具体表现待运行验证。 切节点先退订旧控件高亮并清高亮，然后CreateToolInstance/CreateDataAnalysisControl。此方法没有保存tool所有权或对旧tool/控件做Dispose；工厂是否共享、外层是否收尾仍待核，不能据此宣称必然泄漏。&quot;,
+  &quot;change&quot;: &quot;统一所有入口的成功/失败/取消有效性；保留旧成功必须标历史。先核工厂返回共享或独立实例再定Dispose；不因独立控件就评优。 定义分析会话Owner和结果身份，先核工厂是否返回共享/独立实例再配对释放；失败清空并拒旧结果，选中行只发稳定图元键。&quot;,
+  &quot;accept&quot;: &quot;多次切节点/开关方案无订阅增长，旧轮次不填新面板；失败不展示旧成功；高亮与当前底图同帧。 同节点先成功再失败、普通与相机轮换、切方案迟到回调分别验；结果树、图像、分析一致显示本轮状态。 重复切节点、工厂返回null、创建抛错、关闭方案分别核实例/订阅/原生句柄；需明确共享与独立两类。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;N027&quot;,
+    &quot;N028&quot;,
+    &quot;N032&quot;,
+    &quot;N033&quot;
+  ],
+  &quot;vm&quot;: &quot;以恢复模型主界面对应状态/专业数据/日志入口核范围；模块历史、专业数据页和应用日志是三种数据，不互相代证。&quot;,
+  &quot;vmDoc&quot;: &quot;framework-architecture.html&quot;,
+  &quot;vmLimit&quot;: &quot;此项当前只完成VM入口对账；原版字段、线程、释放和日志保留机制仍需对应实现体，不能引用重建测试当原版事实。&quot;,
+  &quot;optimization&quot;: &quot;O07&quot;,
+  &quot;validation&quot;: &quot;静态源码复核；未运行产品或进行性能测量&quot;,
+  &quot;previousRecommendation&quot;: {},
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;defect&quot;: &quot;专业分析普通成功才推送，相机合并刷新未直接推送；切节点缓存无成功门禁，与实时入口不一致。工具所有者未闭合，具体旧值呈现待验证。&quot;,
+  &quot;vmBorrow&quot;: &quot;只完成VM专业数据页范围对账，原版具体字段和关闭路径仍缺实现材料。&quot;,
+  &quot;reason&quot;: &quot;依据：专业分析普通成功才推送，相机合并刷新未直接推送；切节点缓存无成功门禁，与实时入口不一致。工具所有者未闭合，具体旧值呈现待验证。 VM参考边界：只完成VM专业数据页范围对账，原版具体字段和关闭路径仍缺实现材料。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;专业分析普通成功才推送，相机合并刷新未直接推送；切节点缓存无成功门禁，与实时入口不一致。工具所有者未闭合，具体旧值呈现待验证。&quot;,
+    &quot;borrow&quot;: &quot;只完成VM专业数据页范围对账，原版具体字段和关闭路径仍缺实现材料。&quot;,
+    &quot;action&quot;: &quot;统一所有入口的成功/失败/取消有效性；保留旧成功必须标历史。先核工厂返回共享或独立实例再定Dispose；不因独立控件就评优。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;N027&quot;,
+      &quot;N028&quot;,
+      &quot;N032&quot;,
+      &quot;N033&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

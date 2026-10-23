@@ -1,0 +1,76 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M10 小地图、画布缩放与主窗全屏</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M10 小地图、画布缩放与主窗全屏</h1><article id="compare-M10"><span id="M10"></span><div class="visual-metrics"><div><strong>M10</strong><span>能力条目</span><small>静态路径已见</small></div><div><strong>差异小</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>MiniMap折叠/恢复或全屏事件</b></li><li><small>02</small><b>视口/窗口状态</b></li><li><small>03</small><b>布局更新</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>小地图按钮和主窗全屏事件已实现入口；不同于图像控件全屏。</p><details><summary>完整缺陷与未闭合调用边</summary><p>完整DPI、拖拽命中与布局持久化需单独验。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>恢复模型F09视口/小地图；需区分画布坐标和图像坐标。</p><p>原版路径更新时机可作行为参考，不作为性能优胜证据。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF02-OVERVIEW-VIEWPORT-HANDOFF.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">仅限已见基础入口/交互职责相近，不代表内部算法、稳定性或生命周期等价。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">已有小地图/视口入口，跨DPI和缩放命中无联合结果；不能据组件存在评价优劣。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：已有小地图/视口入口，跨DPI和缩放命中无联合结果；不能据组件存在评价优劣。 VM参考边界：原版路径更新时机可作行为参考，不作为性能优胜证据。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">先统一几何与坐标合同并测布局恢复；暂无整体更换控件依据。 主窗/画布/图像各用独立视口状态，恢复时不串状态。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">缩放前后节点位置不变，折叠/恢复不丢当前视区，跨屏可操作。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o06.html#O06">O06</a></td></tr></tbody></table></div></section><article id="recommendation-M10"><h2>M10 小地图、画布缩放与主窗全屏 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>已有小地图/视口入口，跨DPI和缩放命中无联合结果；不能据组件存在评价优劣。</p><p><b>VM可借鉴与不可推断：</b>原版路径更新时机可作行为参考，不作为性能优胜证据。</p><p><b>具体改法 / 成本：</b>先统一几何与坐标合同并测布局恢复；暂无整体更换控件依据。 主窗/画布/图像各用独立视口状态，恢复时不串状态。</p><p><b>验收：</b>缩放前后节点位置不变，折叠/恢复不丢当前视区，跨屏可操作。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M10">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M10">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S024</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs">src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs:1434</a></p><p><code>MiniMapMinimizeButton_Click</code></p><p>SHA256 <code>d08aa3e23138d441149ffc3a66701d538ef3cb03ed87088ad3c6184ee6c78b3a</code></p><pre>        private void MiniMapMinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;  // 阻断冒泡，避免误触发小地图视口跳转
+            MiniMapBorder.Visibility = Visibility.Collapsed;
+            MiniMapRestoreButton.Visibility = Visibility.Visible;
+            _miniMapThrottleTimer.Stop();
+        }
+
+        /// &lt;summary&gt;
+        /// 还原小地图 → 重新展开并立即重绘一次，显示当前最新流程（不依赖节流延迟）。
+        /// &lt;/summary&gt;
+        private void MiniMapRestoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            MiniMapRestoreButton.Visibility = Visibility.Collapsed;</pre></details><details class="source-card"><summary>S025</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml.cs">src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml.cs:78</a></p><p><code>ToggleFullscreen_Click</code></p><p>SHA256 <code>1d29fb1e4b7dc549e3735858671d70ffe3a5c478c01280375db1d0857684af30</code></p><pre>        private void ToggleFullscreen_Click(object sender, RoutedEventArgs e)
+        {
+            FullscreenRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// &lt;summary&gt;
+        /// 顶栏工作流下拉框选中项变化 — 通过 ViewModel 的唯一写入口 SetSelectedTab 更新，
+        /// 避免 WPF 双向绑定回写 SelectedTab setter 造成重入（单向数据流）。
+        /// 仅当选中项与当前 VM 状态不同才写入，防止初始化绑定触发重复回写。
+        /// &lt;/summary&gt;
+        private void WorkflowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataContext is ShellTopBarViewModel vm
+                &amp;&amp; e.AddedItems.Count &gt; 0</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M10&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;小地图、画布缩放与主窗全屏&quot;,
+  &quot;state&quot;: &quot;implemented&quot;,
+  &quot;chain&quot;: [
+    &quot;MiniMap折叠/恢复或全屏事件&quot;,
+    &quot;视口/窗口状态&quot;,
+    &quot;布局更新&quot;
+  ],
+  &quot;current&quot;: &quot;小地图按钮和主窗全屏事件已实现入口；不同于图像控件全屏。&quot;,
+  &quot;gap&quot;: &quot;完整DPI、拖拽命中与布局持久化需单独验。&quot;,
+  &quot;vm&quot;: &quot;恢复模型F09视口/小地图；需区分画布坐标和图像坐标。&quot;,
+  &quot;vmDoc&quot;: &quot;MF02-OVERVIEW-VIEWPORT-HANDOFF.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：已有小地图/视口入口，跨DPI和缩放命中无联合结果；不能据组件存在评价优劣。 VM参考边界：原版路径更新时机可作行为参考，不作为性能优胜证据。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;先统一几何与坐标合同并测布局恢复；暂无整体更换控件依据。 主窗/画布/图像各用独立视口状态，恢复时不串状态。&quot;,
+  &quot;accept&quot;: &quot;缩放前后节点位置不变，折叠/恢复不丢当前视区，跨屏可操作。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S024&quot;,
+    &quot;S025&quot;
+  ],
+  &quot;optimization&quot;: &quot;O06&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留现有视口组件&quot;,
+    &quot;reason&quot;: &quot;更换视口体系会牵动命中、连线和布局，先约束坐标合同。&quot;
+  },
+  &quot;defect&quot;: &quot;已有小地图/视口入口，跨DPI和缩放命中无联合结果；不能据组件存在评价优劣。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版路径更新时机可作行为参考，不作为性能优胜证据。&quot;,
+  &quot;difference&quot;: &quot;差异小&quot;,
+  &quot;differenceBasis&quot;: &quot;仅限已见基础入口/交互职责相近，不代表内部算法、稳定性或生命周期等价。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;已有小地图/视口入口，跨DPI和缩放命中无联合结果；不能据组件存在评价优劣。&quot;,
+    &quot;borrow&quot;: &quot;原版路径更新时机可作行为参考，不作为性能优胜证据。&quot;,
+    &quot;action&quot;: &quot;先统一几何与坐标合同并测布局恢复；暂无整体更换控件依据。&quot;,
+    &quot;difference&quot;: &quot;差异小&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S024&quot;,
+      &quot;S025&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

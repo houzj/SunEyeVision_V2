@@ -29,6 +29,16 @@ internal static class WindowProbe
             ["ctrlSpaceProtocol"] = "candidate routed command with CtrlSpace InputGesture; baseline absent command uses explicit-query compatibility hook and is marked unsupported",
             ["samples"] = new List<object>() };
         var clock = Stopwatch.StartNew();
+        void Stage(string name, int round = -1)
+        {
+            var stagePath = output + ".stage.json";
+            var temporary = stagePath + ".tmp";
+            File.WriteAllText(temporary, JsonSerializer.Serialize(new { pid = Environment.ProcessId, utc = DateTimeOffset.UtcNow,
+                elapsedMs = clock.Elapsed.TotalMilliseconds, stage = name, round, root, output, lineCount,
+                probeSha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Assembly.GetExecutingAssembly().Location))) }));
+            File.Move(temporary, stagePath, true);
+        }
+        Stage("main-start");
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         AssemblyLoadContext.Default.Resolving += (context, name) =>
         {
@@ -45,7 +55,9 @@ internal static class WindowProbe
             try
             {
                 var toolFile = Path.Combine(root, "plugins", "SunEyeVision.Tool.Script", "SunEyeVision.Tool.Script.dll");
+                Stage("load-tool-before");
                 var tool = AssemblyLoadContext.Default.LoadFromAssemblyPath(toolFile);
+                Stage("load-tool-after");
                 var toolType = tool.GetType("SunEyeVision.Tool.Script.ScriptTool")!;
                 // 复刻插件发现触发的基础预热，立即继续开窗，不人为等待预热完成。
                 Activator.CreateInstance(toolType);
@@ -59,23 +71,33 @@ internal static class WindowProbe
                 {
                     var sample = new Dictionary<string, object?> { ["round"] = round };
                     var before = clock.Elapsed.TotalMilliseconds;
+                    Stage("round-start", round);
                     var previousTick = before; double maxGap = 0;
                     var heartbeat = new DispatcherTimer(DispatcherPriority.Send) { Interval = TimeSpan.FromMilliseconds(10) };
                     heartbeat.Tick += (_, _) => { var now = clock.Elapsed.TotalMilliseconds; maxGap = Math.Max(maxGap, now - previousTick); previousTick = now; };
                     heartbeat.Start();
                     var parameters = Activator.CreateInstance(parameterType)!;
+                    sample["parameterConstructionMs"] = clock.Elapsed.TotalMilliseconds - before;
                     var body = "using System;\nusing SunEyeVision.Plugin.SDK.Scripting;\npublic partial class UserScript : Script\n{\n public override void Init() {}\n public override void Process()\n {\n  string name = \"abc\";\n  var result = name/*caret*/;\n }\n}";
                     var source = string.Concat(Enumerable.Repeat("// padding\n", Math.Max(1, lineCount - body.Split('\n').Length))) + body;
                     var caret = source.IndexOf("/*caret*/", StringComparison.Ordinal); source = source.Replace("/*caret*/", "");
                     Set(parameters, "ScriptCode", source);
                     sample["sourceSha256"] = Hash(source);
                     sample["references"] = ((IEnumerable)Get(parameters, "AssemblyReferences")).Cast<string>().ToArray();
+                    var controlStart = clock.Elapsed.TotalMilliseconds;
+                    Stage("control-construction-before", round);
                     var control = (UserControl)Activator.CreateInstance(controlType)!;
+                    sample["controlConstructionMs"] = clock.Elapsed.TotalMilliseconds - controlStart;
+                    Stage("set-parameters-before", round);
+                    var parametersStart = clock.Elapsed.TotalMilliseconds;
                     Call(control, "SetParameters", parameters);
+                    sample["setParametersMs"] = clock.Elapsed.TotalMilliseconds - parametersStart;
                     var core = control.FindName("EditorCore");
+                    sample["coreConstructionStages"] = core.GetType().GetProperty("ConstructionTiming")?.GetValue(core);
                     var editor = Get(core, "Editor");
                     var textArea = (UIElement)Get(editor, "TextArea");
                     var initialization = clock.Elapsed.TotalMilliseconds;
+                    Stage("initialize-before", round);
                     await (Task)Call(control, "InitializeAsync")!;
                     sample["initializeMs"] = clock.Elapsed.TotalMilliseconds - initialization;
                     var semanticProperty = core.GetType().GetProperty("IsSemanticReady");
@@ -83,11 +105,26 @@ internal static class WindowProbe
                     var semanticTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(10) };
                     semanticTimer.Tick += (_, _) => { if (semanticAt == null && (bool)semanticProperty!.GetValue(core)!) semanticAt = clock.Elapsed.TotalMilliseconds - before; };
                     if (semanticProperty != null) semanticTimer.Start();
+                    Stage("shell-construction-before", round);
+                    var shellStart = clock.Elapsed.TotalMilliseconds;
                     var shell = (Window)Activator.CreateInstance(shellType, control)!;
+                    sample["shellConstructionMs"] = clock.Elapsed.TotalMilliseconds - shellStart;
                     shell.Title = "S2 isolated full script window timing";
                     var rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    double shellShowStarted = 0;
+                    shell.SourceInitialized += (_, _) => sample["shellSourceInitializedMs"] = clock.Elapsed.TotalMilliseconds - shellShowStarted;
+                    shell.Loaded += (_, _) => sample["shellLoadedMs"] = clock.Elapsed.TotalMilliseconds - shellShowStarted;
                     shell.ContentRendered += (_, _) => rendered.TrySetResult();
-                    shell.Show(); await rendered.Task;
+                    Stage("show-before", round);
+                    var showStart = clock.Elapsed.TotalMilliseconds;
+                    shellShowStarted = showStart;
+                    shell.Show();
+                    sample["shellShowMs"] = clock.Elapsed.TotalMilliseconds - showStart;
+                    Stage("rendered-wait-before", round);
+                    var renderedStart = clock.Elapsed.TotalMilliseconds;
+                    await rendered.Task;
+                    sample["contentRenderedWaitMs"] = clock.Elapsed.TotalMilliseconds - renderedStart;
+                    Stage("input-before", round);
                     sample["visibleMs"] = clock.Elapsed.TotalMilliseconds - before;
                     shell.Activate(); textArea.Focus();
                     var editorCaret = Get(textArea, "Caret");
@@ -100,6 +137,7 @@ internal static class WindowProbe
                     sample["inputAckMs"] = clock.Elapsed.TotalMilliseconds - inputStart;
                     Set(editorCaret, "Offset", caret + 1);
                     var dotStart = clock.Elapsed.TotalMilliseconds;
+                    Stage("dot-before", round);
                     SendText(textArea, ".");
                     var popup = await WaitPopup(core);
                     sample["dotPopupMs"] = clock.Elapsed.TotalMilliseconds - dotStart;
@@ -112,6 +150,7 @@ internal static class WindowProbe
                     var stages = new List<object?>();
                     for (var query = 0; query < 5; query++)
                     {
+                        Stage("explicit-" + query + "-before", round);
                         var started = clock.Elapsed.TotalMilliseconds;
                         if (completeCommand != null) completeCommand.Execute(null, textArea);
                         else await (Task)core.GetType().GetMethod("ThrottledRefreshAndShow", PrivateInstance)!.Invoke(core, new object[] { '\0', CancellationToken.None })!;
@@ -131,6 +170,7 @@ internal static class WindowProbe
                     var compileSamples = new List<object>();
                     for (var compileRound = 0; compileRound < 2; compileRound++)
                     {
+                        Stage("compile-" + compileRound + "-before", round);
                         maxGap = 0; previousTick = clock.Elapsed.TotalMilliseconds;
                         var startCompile = clock.Elapsed.TotalMilliseconds;
                         var asyncCompile = controlType.GetMethod("PreCompileAsync");
@@ -153,7 +193,9 @@ internal static class WindowProbe
                     // 编译错误内容也必须保留；关闭本身不应要求Emit成功。
                     Call(core, "LoadCode", source.Replace("var result = name;", "var result = name.;"));
                     var closing = clock.Elapsed.TotalMilliseconds;
+                    Stage("close-before", round);
                     shell.Close();
+                    Stage("close-after", round);
                     await app.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
                     sample["closeMs"] = clock.Elapsed.TotalMilliseconds - closing;
                     sample["inputPreservedOnClose"] = ((string)Get(parameters, "ScriptCode")) == (string)Get(editor, "Text");

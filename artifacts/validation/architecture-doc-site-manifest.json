@@ -409,6 +409,26 @@
       "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/execution-architecture.json",
       "sha256": "17f4367985cafea2b0201f199ffd3a7464342e5601553f32e733786cc4ad8be7",
       "currentSha256": "1a4e65f07bd9f964c8783b5c579e9436334cc88efe1159ab85dc9be84422ab08"
+    },
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae",
+      "currentSha256": "47aae53a35a573b3a8de273b49aa5e87095761924f2cafb5dbb406eeca840b64"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+      "currentSha256": "873d3ed71526530e08da136e73d7f0641f8f5b1546e987d7ee5202adede9ec2f"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunRequest.cs",
+      "sha256": "9f97a64dd147f5fcd5fefebde422ad390df0aa8fec6f722cf8c105d8143b4ec2",
+      "currentSha256": "b8c8641e431ae08b32bc5334c37762b71f3a319ac3e51272993c109a70cce292"
+    },
+    {
+      "path": "src/Plugin.SDK/Core/ToolExecutionRequest.cs",
+      "sha256": "b70506bee54d75a623b5d19cdb953344bb8286ad0a946b460b7295c699c6cdeb",
+      "currentSha256": "9266c6746a2109c9af164c17a838782e1f701a79bae6f9fdfff2edb868cf5890"
     }
   ],
   "baselinePolicy": "Historical handoff facts retained; layout-only generation does not adopt changed external sources",

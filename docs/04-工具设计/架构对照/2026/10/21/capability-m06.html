@@ -1,0 +1,140 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M06 节点选中、拖动与多选</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M06 节点选中、拖动与多选</h1><article id="compare-M06"><span id="M06"></span><div class="visual-metrics"><div><strong>M06</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>画布事件</b></li><li><small>02</small><b>NodeInteraction/NodeDrag处理</b></li><li><small>03</small><b>节点位置/选中状态</b></li><li><small>04</small><b>渲染更新</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>画布与交互服务已存在，专业调试窗口会影响画布可操作状态。</p><details><summary>完整缺陷与未闭合调用边</summary><p>多选→坐标/Undo命令最终消费者；取消拖动→原位置恢复；调试窗口锁定→键盘/鼠标所有入口是否共用门槛</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>恢复模型节点交互F07含选中/移动等入口；不能只对比节点模板。</p><p>VM路由对无关节点移动不重算不是普遍更优，不能为仿制照搬。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF02-CONNECTION-ROUTE-LIFECYCLE.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">目前只有交互服务入口证据，多选/取消/Undo一致性未逐组合核完。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：目前只有交互服务入口证据，多选/取消/Undo一致性未逐组合核完。 VM参考边界：VM路由对无关节点移动不重算不是普遍更优，不能为仿制照搬。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">先补拖动提交与取消消费者及同坐标命中测试，再选命令改造；暂无更换整个交互层依据。 先接上NodeDragEnded实际命令消费者和窗口锁定调用者，按节点ID记录操作；如位置直接散落回写，收敛统一Move事务并测试缩放/多选取消。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">缩放/多选/拖出边界/取消拖动/Undo后位置与选择一致。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o01.html#O01">O01</a></td></tr></tbody></table></div></section><article id="recommendation-M06"><h2>M06 节点选中、拖动与多选 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>目前只有交互服务入口证据，多选/取消/Undo一致性未逐组合核完。</p><p><b>VM可借鉴与不可推断：</b>VM路由对无关节点移动不重算不是普遍更优，不能为仿制照搬。</p><p><b>具体改法 / 成本：</b>先补拖动提交与取消消费者及同坐标命中测试，再选命令改造；暂无更换整个交互层依据。 先接上NodeDragEnded实际命令消费者和窗口锁定调用者，按节点ID记录操作；如位置直接散落回写，收敛统一Move事务并测试缩放/多选取消。</p><p><b>验收：</b>缩放/多选/拖出边界/取消拖动/Undo后位置与选择一致。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M06">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M06">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S014</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/NodeInteractionHandler.cs">src/UI/Services/Interaction/NodeInteractionHandler.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>60eec5ad192c7dee9dd75962686cee6fe576d1d15ca06bd0032287bbe86d6e7c</code></p><pre>using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Shapes;
+using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
+using SunEyeVision.UI.Services.Rendering;
+
+using SunEyeVision.UI.Features.WorkflowUI;
+
+using SunEyeVision.UI.Shell.Windows;
+</pre></details><details class="source-card"><summary>S015</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/NodeDragHandler.cs">src/UI/Services/Interaction/NodeDragHandler.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>2ef37f5ee9c81bbd779531cd888960af2c598f5192c6c8d405ed6fc680cbb7f9</code></p><pre>using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Services.Interaction;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
+
+using SunEyeVision.UI.Features.WorkflowUI;
+</pre></details><details class="source-card"><summary>R009</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/NodeDragHandler.cs">src/UI/Services/Interaction/NodeDragHandler.cs:81</a></p><p><code>StartDrag</code></p><p>SHA256 <code>2ef37f5ee9c81bbd779531cd888960af2c598f5192c6c8d405ed6fc680cbb7f9</code></p><pre>        public void StartDrag(WorkflowNode node, Point startPosition)
+        {
+            if (node == null)
+            {
+                return;
+            }
+
+            _isDragging = true;
+            _draggedNode = node;
+            _initialNodePosition = node.Position;
+            _startDragPosition = startPosition;
+
+            _onNodeSelected?.Invoke(node);
+
+            RecordSelectedNodesPositions();
+
+            OnDragStarted(new NodeDragEventArgs(node, startPosition));
+        }
+
+        /// &lt;summary&gt;</pre></details><details class="source-card"><summary>R010</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/NodeInteractionHandler.cs">src/UI/Services/Interaction/NodeInteractionHandler.cs:59</a></p><p><code>Node_MouseEnter</code></p><p>SHA256 <code>60eec5ad192c7dee9dd75962686cee6fe576d1d15ca06bd0032287bbe86d6e7c</code></p><pre>        public void Node_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is Border border &amp;&amp; border.Tag is WorkflowNode node)
+            {
+                SetPortsVisibility(border, true);
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// 节点鼠标离开事件（隐藏连接点
+        /// &lt;/summary&gt;
+        public void Node_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (sender is Border border &amp;&amp; border.Tag is WorkflowNode node)
+            {
+                SetPortsVisibility(border, false);
+            }
+        }
+
+        /// &lt;summary&gt;</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M06&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;节点选中、拖动与多选&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;画布事件&quot;,
+    &quot;NodeInteraction/NodeDrag处理&quot;,
+    &quot;节点位置/选中状态&quot;,
+    &quot;渲染更新&quot;
+  ],
+  &quot;current&quot;: &quot;画布与交互服务已存在，专业调试窗口会影响画布可操作状态。&quot;,
+  &quot;gap&quot;: &quot;多选→坐标/Undo命令最终消费者；取消拖动→原位置恢复；调试窗口锁定→键盘/鼠标所有入口是否共用门槛&quot;,
+  &quot;vm&quot;: &quot;恢复模型节点交互F07含选中/移动等入口；不能只对比节点模板。&quot;,
+  &quot;vmDoc&quot;: &quot;MF02-CONNECTION-ROUTE-LIFECYCLE.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：目前只有交互服务入口证据，多选/取消/Undo一致性未逐组合核完。 VM参考边界：VM路由对无关节点移动不重算不是普遍更优，不能为仿制照搬。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;先补拖动提交与取消消费者及同坐标命中测试，再选命令改造；暂无更换整个交互层依据。 先接上NodeDragEnded实际命令消费者和窗口锁定调用者，按节点ID记录操作；如位置直接散落回写，收敛统一Move事务并测试缩放/多选取消。&quot;,
+  &quot;accept&quot;: &quot;缩放/多选/拖出边界/取消拖动/Undo后位置与选择一致。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S014&quot;,
+    &quot;S015&quot;,
+    &quot;R009&quot;,
+    &quot;R010&quot;
+  ],
+  &quot;optimization&quot;: &quot;O01&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M06&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;NodeInteractionHandler和NodeDragHandler提供鼠标/拖动服务，存在DragStarted/Dragging/DragEnded事件。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;多选→坐标/Undo命令最终消费者&quot;,
+      &quot;取消拖动→原位置恢复&quot;,
+      &quot;调试窗口锁定→键盘/鼠标所有入口是否共用门槛&quot;
+    ],
+    &quot;cause&quot;: &quot;消费链证据不足，不宣称功能不存在&quot;,
+    &quot;change&quot;: &quot;先接上NodeDragEnded实际命令消费者和窗口锁定调用者，按节点ID记录操作；如位置直接散落回写，收敛统一Move事务并测试缩放/多选取消。&quot;,
+    &quot;acceptance&quot;: &quot;缩放/多选/拖出边界/取消拖动/Undo后位置与选择一致。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S014&quot;,
+      &quot;S015&quot;,
+      &quot;R009&quot;,
+      &quot;R010&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留交互处理，集中编辑命令&quot;,
+    &quot;reason&quot;: &quot;共享状态比每控件私有选择集更利于撤销；集中命令有迁移成本。&quot;
+  },
+  &quot;defect&quot;: &quot;目前只有交互服务入口证据，多选/取消/Undo一致性未逐组合核完。&quot;,
+  &quot;vmBorrow&quot;: &quot;VM路由对无关节点移动不重算不是普遍更优，不能为仿制照搬。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;目前只有交互服务入口证据，多选/取消/Undo一致性未逐组合核完。&quot;,
+    &quot;borrow&quot;: &quot;VM路由对无关节点移动不重算不是普遍更优，不能为仿制照搬。&quot;,
+    &quot;action&quot;: &quot;先补拖动提交与取消消费者及同坐标命中测试，再选命令改造；暂无更换整个交互层依据。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S014&quot;,
+      &quot;S015&quot;,
+      &quot;R009&quot;,
+      &quot;R010&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

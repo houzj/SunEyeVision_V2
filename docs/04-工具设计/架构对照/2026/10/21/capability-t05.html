@@ -1,0 +1,94 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T05 窗口连续调试</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>T05 窗口连续调试</h1><article id="compare-T05"><span id="T05"></span><div class="visual-metrics"><div><strong>T05</strong><span>能力条目</span><small>静态路径已见</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>VM机制优先</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>DefaultDebugWindow.OnContinuousExecuteCommand</b></li><li><small>02</small><b>TriggerExecute</b></li><li><small>03</small><b>工具完成事件</b></li><li><small>04</small><b>OnToolExecutionCompleted</b></li><li><small>05</small><b>Delay(500)</b></li><li><small>06</small><b>再次TriggerExecute</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>实际连续循环在窗口壳，不在ToolDebugControlBase的空连续处理器；已有成功后重触发机制。</p><details><summary>完整缺陷与未闭合调用边</summary><p>失败事件是否恢复窗口_isExecuting、关闭时排队回调和取消在途工作仍须联验。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>工具连续调试与流程连续运行是不同入口/会话，不能拿主流程机制代证。</p><p>原版连续等待模块回调；Stop关闭标志、取消循环并等待循环任务退出。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/DEBUG-SESSION-CONTRACT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">当前成功回调加500ms重触发主要在窗口壳，完整失败/取消/关闭会话边尚未闭合。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：当前成功回调加500ms重触发主要在窗口壳，完整失败/取消/关闭会话边尚未闭合。 VM参考边界：原版连续等待模块回调；Stop关闭标志、取消循环并等待循环任务退出。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">重做可等待的调试会话调度，窗口投影状态；借鉴等待与解绑职责，不照搬300ms也不冒称VM可中断原生算法。 统一Completed/Failed/Cancelled事件消费，循环调度可取消，最后一次执行有可等待结束。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">执行失败/停止/关窗后不再触发下一轮，按钮恢复；成功循环不产生并行重入。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o05.html#O05">O05</a></td></tr></tbody></table></div></section><article id="recommendation-T05"><h2>T05 窗口连续调试 · 借鉴VM重做</h2><p><b>代码依据 / 局限：</b>当前成功回调加500ms重触发主要在窗口壳，完整失败/取消/关闭会话边尚未闭合。</p><p><b>VM可借鉴与不可推断：</b>原版连续等待模块回调；Stop关闭标志、取消循环并等待循环任务退出。</p><p><b>具体改法 / 成本：</b>重做可等待的调试会话调度，窗口投影状态；借鉴等待与解绑职责，不照搬300ms也不冒称VM可中断原生算法。 统一Completed/Failed/Cancelled事件消费，循环调度可取消，最后一次执行有可等待结束。</p><p><b>验收：</b>执行失败/停止/关窗后不再触发下一轮，按钮恢复；成功循环不产生并行重入。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T05">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T05">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S068</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:209</a></p><p><code>OnContinuousExecuteCommand</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnContinuousExecuteCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (_isContinuousRunning)
+            {
+                // 停止连续运行
+                _isContinuousRunning = false;
+                ContinuousRunButton.Content = &quot;连续执行&quot;;
+                RunButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                // 开始连续运行
+                _isContinuousRunning = true;
+                ContinuousRunButton.Content = &quot;停止运行&quot;;</pre></details><details class="source-card"><summary>S069</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:237</a></p><p><code>OnToolExecutionCompleted</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnToolExecutionCompleted(object sender, ToolExecutionCompletedEventArgs e)
+        {
+            // ★ 向外传播执行结果（CLR 事件供 MainWindowViewModel 订阅）
+            var resultInfo = e.Results?.GetType().Name ?? &quot;null&quot;;
+            var execTimeInfo = e.ExecutionTime &gt; 0 ? $&quot; | 耗时={e.ExecutionTime}ms&quot; : &quot;&quot;;
+            PluginLogger.Info($&quot;[OnToolExecutionCompleted] 路由事件到达 | 结果={resultInfo}{execTimeInfo}&quot;, &quot;DefaultDebugWindow&quot;);
+
+            ToolExecutionCompleted?.Invoke(this, e);
+
+            Dispatcher.Invoke(() =&gt;
+            {
+                _isExecuting = false;
+                SetButtonsEnabled(true);
+                </pre></details><details class="source-card"><summary>S070</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:272</a></p><p><code>TriggerExecute</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void TriggerExecute()
+        {
+            if (_isExecuting) return;
+
+            _isExecuting = true;
+            SetButtonsEnabled(false);
+
+            // 显式将 Execute 命令路由到工具控件执行
+            ToolCommands.Execute.Execute(null, _control);
+        }
+
+        #endregion
+
+        #region 数据初始化转发</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T05&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;窗口连续调试&quot;,
+  &quot;state&quot;: &quot;implemented&quot;,
+  &quot;chain&quot;: [
+    &quot;DefaultDebugWindow.OnContinuousExecuteCommand&quot;,
+    &quot;TriggerExecute&quot;,
+    &quot;工具完成事件&quot;,
+    &quot;OnToolExecutionCompleted&quot;,
+    &quot;Delay(500)&quot;,
+    &quot;再次TriggerExecute&quot;
+  ],
+  &quot;current&quot;: &quot;实际连续循环在窗口壳，不在ToolDebugControlBase的空连续处理器；已有成功后重触发机制。&quot;,
+  &quot;gap&quot;: &quot;失败事件是否恢复窗口_isExecuting、关闭时排队回调和取消在途工作仍须联验。&quot;,
+  &quot;vm&quot;: &quot;工具连续调试与流程连续运行是不同入口/会话，不能拿主流程机制代证。&quot;,
+  &quot;vmDoc&quot;: &quot;DEBUG-SESSION-CONTRACT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;借鉴VM重做&quot;,
+  &quot;reason&quot;: &quot;依据：当前成功回调加500ms重触发主要在窗口壳，完整失败/取消/关闭会话边尚未闭合。 VM参考边界：原版连续等待模块回调；Stop关闭标志、取消循环并等待循环任务退出。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;重做可等待的调试会话调度，窗口投影状态；借鉴等待与解绑职责，不照搬300ms也不冒称VM可中断原生算法。 统一Completed/Failed/Cancelled事件消费，循环调度可取消，最后一次执行有可等待结束。&quot;,
+  &quot;accept&quot;: &quot;执行失败/停止/关窗后不再触发下一轮，按钮恢复；成功循环不产生并行重入。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S068&quot;,
+    &quot;S069&quot;,
+    &quot;S070&quot;
+  ],
+  &quot;optimization&quot;: &quot;O05&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留已实现循环，补失败/取消协议&quot;,
+    &quot;reason&quot;: &quot;纠正旧档案仅查基类的误判：此能力不是未开发；要补的是终态恢复与边界。&quot;
+  },
+  &quot;defect&quot;: &quot;当前成功回调加500ms重触发主要在窗口壳，完整失败/取消/关闭会话边尚未闭合。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版连续等待模块回调；Stop关闭标志、取消循环并等待循环任务退出。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;VM机制优先&quot;,
+  &quot;adoptionBasis&quot;: &quot;建议采用VM已确认的目标寻址/会话等待职责模型，用自有代码接入；不照搬原厂二进制，不宣称原生中断已等价。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;借鉴VM重做&quot;,
+    &quot;defect&quot;: &quot;当前成功回调加500ms重触发主要在窗口壳，完整失败/取消/关闭会话边尚未闭合。&quot;,
+    &quot;borrow&quot;: &quot;原版连续等待模块回调；Stop关闭标志、取消循环并等待循环任务退出。&quot;,
+    &quot;action&quot;: &quot;重做可等待的调试会话调度，窗口投影状态；借鉴等待与解绑职责，不照搬300ms也不冒称VM可中断原生算法。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;VM机制优先&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S068&quot;,
+      &quot;S069&quot;,
+      &quot;S070&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

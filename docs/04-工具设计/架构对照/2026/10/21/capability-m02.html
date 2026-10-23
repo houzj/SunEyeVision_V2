@@ -1,0 +1,163 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M02 方案配置：新建、打开、切换</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M02 方案配置：新建、打开、切换</h1><article id="compare-M02"><span id="M02"></span><div class="visual-metrics"><div><strong>M02</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>ShowSolutionConfigurationCommand</b></li><li><small>02</small><b>ExecuteShowSolutionConfiguration</b></li><li><small>03</small><b>配置对话框</b></li><li><small>04</small><b>方案切换服务</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>工具栏/菜单绑定与配置窗口入口存在，切换协调在宿主。</p><details><summary>完整缺陷与未闭合调用边</summary><p>停止完成→允许替换方案的门槛；加载新方案失败→旧模型/设备会话恢复；保存取消→不提交新工作区 OnClosing先取消窗口关闭，异步PrepareSolutionTransitionAsync取得transition租约，StopAndWaitAsync最多30秒后再做保存决策。StopAndWait轮询IsAnyRunning；此前ReadyQueue退出finally未await全部running Task，故登记归零不单独证明所有原生任务排空。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>方案入口与SolutionManager/ProjectManager协作，独立格式与原.sol必须区分。</p><p>参考原版保存决策、ResetResource和方案替换分阶段职责。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/SOLUTION-PERSISTENCE-BOUNDARY.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">已有StopAndWaitAsync切换门槛，不应误称只有窗口或完全没有等待；加载失败回滚的完整链待核。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：已有StopAndWaitAsync切换门槛，不应误称只有窗口或完全没有等待；加载失败回滚的完整链待核。 VM参考边界：参考原版保存决策、ResetResource和方案替换分阶段职责。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">先核PrepareSolutionTransitionAsync所有返回分支及加载提交点；只对确认缺边补事务，成本为旧模型保留和恢复验证。 以PrepareSolutionTransitionAsync和方案配置回调为边界逐步核提交点，失败保留旧方案；若当前接口不能表达回滚，补显式事务状态，不仅更换窗口。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o08.html#O08">O08</a></td></tr></tbody></table></div></section><article id="recommendation-M02"><h2>M02 方案配置：新建、打开、切换 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>已有StopAndWaitAsync切换门槛，不应误称只有窗口或完全没有等待；加载失败回滚的完整链待核。</p><p><b>VM可借鉴与不可推断：</b>参考原版保存决策、ResetResource和方案替换分阶段职责。</p><p><b>具体改法 / 成本：</b>先核PrepareSolutionTransitionAsync所有返回分支及加载提交点；只对确认缺边补事务，成本为旧模型保留和恢复验证。 以PrepareSolutionTransitionAsync和方案配置回调为边界逐步核提交点，失败保留旧方案；若当前接口不能表达回滚，补显式事务状态，不仅更换窗口。</p><p><b>验收：</b>取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M02">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M02">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S003</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5658</a></p><p><code>ExecuteShowSolutionConfiguration</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void ExecuteShowSolutionConfiguration()
+        {
+            if (!CanAcceptExternalActivation) return;
+            try
+            {
+                LogInfo(&quot;打开解决方案配置界面&quot;);
+
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+
+                // [诊断] 记录打开前的状态
+                var currentMetadata = solutionManager.CurrentSolution != null
+                    ? solutionManager.GetMetadata(solutionManager.CurrentSolution.Id)
+                    : null;
+                LogInfo($&quot;[诊断-打开] 当前解决方案ID: {solutionManager.CurrentSolution?.Id ?? &quot;null&quot;}&quot;);</pre></details><details class="source-card"><summary>S004</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindow.xaml.cs">src/UI/Shell/Windows/MainWindow.xaml.cs:258</a></p><p><code>PromptAndMaybeClose</code></p><p>SHA256 <code>e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219</code></p><pre>        private async void PromptAndMaybeClose()
+        {
+            try
+            {
+                  if (await _viewModel.PrepareSolutionTransitionAsync())
+                  {
+                      SaveLayoutConfig();
+                      SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.SaveUserSettings();
+                      _closeApproved = true;
+                      (Application.Current as SunEyeVision.UI.App)?.MarkInstanceClosing();
+                      Close();
+                }
+                else _isClosingPromptInProgress = false;
+            }</pre></details><details class="source-card"><summary>R003</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5658</a></p><p><code>ExecuteShowSolutionConfiguration</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void ExecuteShowSolutionConfiguration()
+        {
+            if (!CanAcceptExternalActivation) return;
+            try
+            {
+                LogInfo(&quot;打开解决方案配置界面&quot;);
+
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+
+                // [诊断] 记录打开前的状态
+                var currentMetadata = solutionManager.CurrentSolution != null
+                    ? solutionManager.GetMetadata(solutionManager.CurrentSolution.Id)
+                    : null;
+                LogInfo($&quot;[诊断-打开] 当前解决方案ID: {solutionManager.CurrentSolution?.Id ?? &quot;null&quot;}&quot;);
+                LogInfo($&quot;[诊断-打开] 当前解决方案名称: {currentMetadata?.Name ?? &quot;null&quot;}&quot;);
+                LogInfo($&quot;[诊断-打开] 默认解决方案ID: {solutionManager.Settings.DefaultSolutionId ?? &quot;null&quot;}&quot;);
+                LogInfo($&quot;[诊断-打开] Settings.CurrentSolutionId: {solutionManager.Settings.CurrentSolutionId ?? &quot;null&quot;}&quot;);
+
+                var configDialog = new SunEyeVision.UI.Features.Dialogs.SolutionConfigurationDialog(solutionManager,
+                    beforeTransition: PrepareSolutionTransitionAsync,</pre></details><details class="source-card"><summary>R004</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5574</a></p><p><code>PrepareSolutionTransitionAsync</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        public async System.Threading.Tasks.Task&lt;bool&gt; PrepareSolutionTransitionAsync()
+        {
+            if (_transitionPreparationInProgress) return false;
+            _transitionPreparationInProgress = true;
+            try
+            {
+                var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+                if (_executionManager.IsAnyRunning() &amp;&amp;
+                    ThemeMessageDialog.Show(&quot;方案正在运行。停止全部执行后继续？&quot;, &quot;切换方案&quot;, MessageBoxButton.OKCancel,
+                        ThemeMessageDialog.MessageIcon.Question) != MessageBoxResult.OK) return false;
+                _solutionTransitionLease ??= _executionManager.BeginSolutionTransition();
+                await _executionManager.StopAndWaitAsync(TimeSpan.FromSeconds(30));
+                if (manager.CurrentSolution == null)
+                {
+                    if (_isWorkflowModified || WorkflowTabViewModel.Tabs.Any(tab =&gt; tab.WorkflowNodes.Count &gt; 0))
+                    {
+                        var answer = ThemeMessageDialog.Show(&quot;工作区尚未保存为方案。是否保存？&quot;, &quot;保存方案&quot;, MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);
+                        if (answer == MessageBoxResult.Cancel || answer == MessageBoxResult.None) { EndSolutionTransition(); return false; }
+                        if (answer == MessageBoxResult.Yes)
+                        {</pre></details><details class="source-card"><summary>N036</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5574</a></p><p><code>public async System.Threading.Tasks.Task&lt;bool&gt; PrepareSolutionTransitionAsync()</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        public async System.Threading.Tasks.Task&lt;bool&gt; PrepareSolutionTransitionAsync()
+        {
+            if (_transitionPreparationInProgress) return false;
+            _transitionPreparationInProgress = true;
+            try
+            {
+                var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+                if (_executionManager.IsAnyRunning() &amp;&amp;
+                    ThemeMessageDialog.Show(&quot;方案正在运行。停止全部执行后继续？&quot;, &quot;切换方案&quot;, MessageBoxButton.OKCancel,
+                        ThemeMessageDialog.MessageIcon.Question) != MessageBoxResult.OK) return false;
+                _solutionTransitionLease ??= _executionManager.BeginSolutionTransition();
+                await _executionManager.StopAndWaitAsync(TimeSpan.FromSeconds(30));
+                if (manager.CurrentSolution == null)
+                {
+                    if (_isWorkflowModified || WorkflowTabViewModel.Tabs.Any(tab =&gt; tab.WorkflowNodes.Count &gt; 0))
+                    {
+                        var answer = ThemeMessageDialog.Show(&quot;工作区尚未保存为方案。是否保存？&quot;, &quot;保存方案&quot;, MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);
+                        if (answer == MessageBoxResult.Cancel || answer == MessageBoxResult.None) { EndSolutionTransition(); return false; }
+                        if (answer == MessageBoxResult.Yes)
+                        {
+                            SaveCurrentSolutionCommand.Execute(null);
+                            if (manager.CurrentSolution == null || manager.HasUnsavedChanges) { EndSolutionTransition(); return false; }</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M02&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;方案配置：新建、打开、切换&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;ShowSolutionConfigurationCommand&quot;,
+    &quot;ExecuteShowSolutionConfiguration&quot;,
+    &quot;配置对话框&quot;,
+    &quot;方案切换服务&quot;
+  ],
+  &quot;current&quot;: &quot;工具栏/菜单绑定与配置窗口入口存在，切换协调在宿主。&quot;,
+  &quot;gap&quot;: &quot;停止完成→允许替换方案的门槛；加载新方案失败→旧模型/设备会话恢复；保存取消→不提交新工作区 OnClosing先取消窗口关闭，异步PrepareSolutionTransitionAsync取得transition租约，StopAndWaitAsync最多30秒后再做保存决策。StopAndWait轮询IsAnyRunning；此前ReadyQueue退出finally未await全部running Task，故登记归零不单独证明所有原生任务排空。&quot;,
+  &quot;vm&quot;: &quot;方案入口与SolutionManager/ProjectManager协作，独立格式与原.sol必须区分。&quot;,
+  &quot;vmDoc&quot;: &quot;SOLUTION-PERSISTENCE-BOUNDARY.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：已有StopAndWaitAsync切换门槛，不应误称只有窗口或完全没有等待；加载失败回滚的完整链待核。 VM参考边界：参考原版保存决策、ResetResource和方案替换分阶段职责。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;先核PrepareSolutionTransitionAsync所有返回分支及加载提交点；只对确认缺边补事务，成本为旧模型保留和恢复验证。 以PrepareSolutionTransitionAsync和方案配置回调为边界逐步核提交点，失败保留旧方案；若当前接口不能表达回滚，补显式事务状态，不仅更换窗口。&quot;,
+  &quot;accept&quot;: &quot;取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S003&quot;,
+    &quot;S004&quot;,
+    &quot;R003&quot;,
+    &quot;R004&quot;,
+    &quot;N036&quot;
+  ],
+  &quot;optimization&quot;: &quot;O08&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M02&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;方案配置入口创建对话框并传入synchronizeCurrent；主窗关闭/切换使用PrepareSolutionTransitionAsync。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;停止完成→允许替换方案的门槛&quot;,
+      &quot;加载新方案失败→旧模型/设备会话恢复&quot;,
+      &quot;保存取消→不提交新工作区&quot;
+    ],
+    &quot;cause&quot;: &quot;证据缺口+事务验证&quot;,
+    &quot;change&quot;: &quot;以PrepareSolutionTransitionAsync和方案配置回调为边界逐步核提交点，失败保留旧方案；若当前接口不能表达回滚，补显式事务状态，不仅更换窗口。&quot;,
+    &quot;acceptance&quot;: &quot;取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S003&quot;,
+      &quot;S004&quot;,
+      &quot;R003&quot;,
+      &quot;R004&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留自有方案服务，补事务&quot;,
+    &quot;reason&quot;: &quot;避免整体替换现有格式，代价是自行维护迁移和恢复。&quot;
+  },
+  &quot;defect&quot;: &quot;已有StopAndWaitAsync切换门槛，不应误称只有窗口或完全没有等待；加载失败回滚的完整链待核。&quot;,
+  &quot;vmBorrow&quot;: &quot;参考原版保存决策、ResetResource和方案替换分阶段职责。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;已有StopAndWaitAsync切换门槛，不应误称只有窗口或完全没有等待；加载失败回滚的完整链待核。&quot;,
+    &quot;borrow&quot;: &quot;参考原版保存决策、ResetResource和方案替换分阶段职责。&quot;,
+    &quot;action&quot;: &quot;先核PrepareSolutionTransitionAsync所有返回分支及加载提交点；只对确认缺边补事务，成本为旧模型保留和恢复验证。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S003&quot;,
+      &quot;S004&quot;,
+      &quot;R003&quot;,
+      &quot;R004&quot;,
+      &quot;N036&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

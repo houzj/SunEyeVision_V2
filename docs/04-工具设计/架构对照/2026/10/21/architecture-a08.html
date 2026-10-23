@@ -1,1 +1,156 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>自研架构文档 · 旧入口</title></head><body data-managed-library-router><p>相关文档已整理到 <a href="自研架构文档维护/目标架构/architecture-a08.html">自研架构文档维护</a>。此页保留旧链接与锚点兼容。</p><script>(()=>{location.replace("自研架构文档维护/目标架构/architecture-a08.html"+location.search+location.hash)})();</script></body></html>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A08 工具实例/缓存/项目关闭</title><link rel="stylesheet" href="architecture-doc-site.css"></head><body><nav aria-label="文档导航"><a href="index.html">文档索引</a><a href="architecture-target.html">最新目标决策</a><a href="framework-overview.html">框架对比</a><a href="framework-sdk-overview.html">SDK设计</a><a href="joint-optimization-plan.html">联合方案</a><a href="architecture-evidence.html">本批证据</a></nav><main><h1>A08 工具实例/缓存/项目关闭</h1><article id="decision-A08"><p class="status">proposed-not-implemented · 全部接口为拟议合同，未编译/运行</p><div class="visual-metrics"><div><strong>A08</strong><span>目标决策</span><small>拟议，未实施</small></div><div><strong>2</strong><span>局部证据条目</span><small>未知单列</small></div><div><strong>2</strong><span>验收用例</span><small>均未运行</small></div></div><figure class="architecture-figure" data-visual="owner"><figcaption><b>Owner：项目关闭与外部使用权</b><span class="chip">拟议设计，未实现/运行验收</span></figcaption><div class="diagram-actions"><button type="button" data-diagram-expand>放大查看图</button><span>实线：所标范围内的关系；虚线：条件/待验证边界。</span></div><div class="svg-scroll"><svg role="img" aria-label="Owner：项目关闭与外部使用权；拟议设计，未实现/运行验收" viewBox="0 0 945 629"><title>Owner：项目关闭与外部使用权</title><desc>拟议设计，未实现/运行验收。图中节点和箭头与下方文字合同共同解释，不能单独作为运行保证。</desc><defs><marker id="arrow-owner" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker></defs><path d="M 470 124 L 470 190" class="graph-edge " marker-end="url(#arrow-owner)"/><text class="edge-label" x="470" y="148">拥有</text><path d="M 350 232 L 260 392" class="graph-edge " marker-end="url(#arrow-owner)"/><text class="edge-label" x="305" y="303">创建并观察</text><path d="M 590 232 L 680 392" class="graph-edge " marker-end="url(#arrow-owner)"/><text class="edge-label" x="635" y="303">保留至最后使用者</text><path d="M 260 392 L 350 562" class="graph-edge " marker-end="url(#arrow-owner)"/><text class="edge-label" x="305" y="468">等待执行结束</text><path d="M 680 392 L 590 562" class="graph-edge " marker-end="url(#arrow-owner)"/><text class="edge-label" x="635" y="468">等待归还</text><g class="graph-node"><rect x="350" y="40" width="240" height="84" rx="13"/><text x="366" y="72">Host</text><text class="node-note" x="366" y="100">能力 / 后端</text></g><g class="graph-node"><rect x="350" y="190" width="240" height="84" rx="13"/><text x="366" y="222">Project</text><text class="node-note" x="366" y="250">工具实例 / 缓存</text></g><g class="graph-node"><rect x="20" y="350" width="240" height="84" rx="13"/><text x="36" y="382">Run / Scope</text><text class="node-note" x="36" y="410">临时资源退役</text></g><g class="graph-node"><rect x="680" y="350" width="240" height="84" rx="13"/><text x="696" y="382">已发布结果Owner</text><text class="node-note" x="696" y="410">ResultLease 独立存活</text></g><g class="graph-node"><rect x="350" y="520" width="240" height="84" rx="13"/><text x="366" y="552">ClosePending</text><text class="node-note" x="366" y="580">外部使用权未归还</text></g></svg></div><p class="diagram-note">拟议设计，未实现/运行验收 · <a href="architecture-target.html">查看依据、合同与未知</a></p></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前边界</h2><p>实例、缓存与项目关闭缺少覆盖所有消费者的统一Owner树；GC不足以处理设备。</p></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM已证 / 未知</h2><p>DP03 IO清理不逐值Dispose；DR02 Release不是已证幂等；DR04/05是独立实现非原版。</p></section></div><section class="visual-card decision-summary"><h2>本项选择与代价</h2><p><strong>自研重做统一Owner；参考VM局部释放反例，不把恢复实现当原版</strong></p><p>Host→Project→Run/Scope→资源有明确Owner；PerExecution/PerProject实例声明；缓存按版本和资源预算退役。</p><div class="tradeoff-grid"><div><h3>收益与成本</h3><p>关闭可等待和故障可定位；需要跟踪所有使用者，不能靠GC处理设备。</p></div><div><h3>为什么不选替代路线</h3><p>依赖各工具自律成本低但关闭无法整体证明；目标登记Owner与异步退役，代价是追踪和诊断。DR04/05独立恢复实现不作为原版保证。</p></div></div></section><h2>拟议接口与数据字段</h2><pre>ToolLifetime { PerExecution, PerProject }
+InitializeAsync(ToolContext); ExecuteAsync(ToolExecutionRequest); ReleaseAsync();
+CloseOutcome CloseAsync(ProjectId project, CloseOptions options);
+CloseOutcome = Closed | ClosePending(Owners) | Quarantined(Owners);</pre><h3>状态与生效时点</h3><p>Host→Project→Run/Scope登记资源；初始化逐项登记已取得资源，失败逆序清理；Close停准入、排空执行、等待外部lease、退役实例缓存。</p><h3>Owner与释放责任</h3><p>Project拥有工具实例及版本化缓存；Run拥有临时资源；外部lease阻止对应Owner最终销毁。关Editor/Viewer只归还自身使用权。</p><h3>失败、取消与幂等</h3><p>主异常保留，清理异常另列表汇总；Release/Close重复调用合用任务。Close等待取消只停止等待，关闭仍继续；超时返回Pending或隔离诊断，不能强销毁。</p><h3>版本与兼容</h3><p>实例声明含ThreadSafety、工具合同版本和缓存Key版本；不能跨不兼容版本复用缓存。</p><h2>验收：尚未执行</h2><section id="A08-T1"><h3>A08-T1 · planned-not-run</h3><p>部分初始化失败只释放已取得资源；异常清理不覆盖主错误</p><p>执行方法与判定：<a href="architecture-acceptance.html#A08-T1">查看用例</a></p></section><section id="A08-T2"><h3>A08-T2 · planned-not-run</h3><p>项目关闭期间存活外部lease得到诊断，不提前销毁；归还后可完成关闭</p><p>执行方法与判定：<a href="architecture-acceptance.html#A08-T2">查看用例</a></p></section><h2>原版证据与局部边界</h2><p>source-confirmed限交接中选定成员；不是整库复核。独立恢复代码 independent-implementation 不作为原版事实。<a href="architecture-evidence.html">本批来源SHA</a></p><details id="evidence-A08-0"><summary>DP03 · source-confirmed · VmIO缓存与Dispose</summary><p>SetNoneValueWithoutRaiseEvent不清_valueList；ClearSubscribe把关联置null后递归。Dispose所选体没有对_value或_valueList各元素调用Dispose，也没有finally保证中途失败后置完成标志；不能把IO移除解释为所有结果/图像内存均释放。</p><ul><li>未知/限制：派生Dispose、事件订阅者和native实际内存释放仍独立；移除IO不证明外部订阅引用已全消失。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:3241–3260</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x0600051f&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600051f&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.VmIO&quot;,
+            &quot;name&quot;: &quot;set_Value&quot;,
+            &quot;parameters&quot;: 1,
+            &quot;attributes&quot;: &quot;Public, Virtual, HideBySig, VtableLayoutMask, SpecialName&quot;,
+            &quot;signatureBytes&quot;: &quot;200101128415&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 72,
+          &quot;ilSha256&quot;: &quot;03c7fd442cd09a93acb897f5bdd32cd25aa790a7b1cff93212ce6864806686ff&quot;,
+          &quot;ilBytes&quot;: &quot;0003027be8010004fe0116fe010a062c360002037de8010004027be90100046ff602000a00027be801000414fe030b072c1400027be9010004027be80100046f9704000a0000002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:4002–4021</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x06000524&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x06000524&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.VmIO&quot;,
+            &quot;name&quot;: &quot;SetNoneValueWithoutRaiseEvent&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Assembly, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;200001&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 24,
+          &quot;ilSha256&quot;: &quot;361e8712c1b44dc1d1c1e18d659f5e09e6ef8ea60eae4ba954a9fb8bf75062cc&quot;,
+          &quot;ilBytes&quot;: &quot;00027be801000414fe030a062c090002147de8010004002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:4133–4152</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x0600052d&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600052d&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.VmIO&quot;,
+            &quot;name&quot;: &quot;ClearSubscribe&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Public, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;200001&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 62,
+          &quot;ilSha256&quot;: &quot;80acfc713912e8a3cb1fc741063b75f7709ac9ed257beee5e6f348aeb84f04f6&quot;,
+          &quot;ilBytes&quot;: &quot;000214280d0500060000027bee0100046f6903000a0a2b10066f6a03000a0b00076f2d0500060000066fa001000a2de8de0b062c07066f0e01000a00dc2a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:4423–4442</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x0600052e&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600052e&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.VmIO&quot;,
+            &quot;name&quot;: &quot;Dispose&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Public, Virtual, HideBySig, VtableLayoutMask&quot;,
+            &quot;signatureBytes&quot;: &quot;200001&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 108,
+          &quot;ilSha256&quot;: &quot;9a1e0976e397975255f92ccf071c07a8cb7bbad9114952db62b376465ed79971&quot;,
+          &quot;ilBytes&quot;: &quot;00027bef01000416fe010a062c5d0000027bee010004283a00002b6f1d03000a0b2b111201281e03000a0c00086f2e05000600001201281f03000a2de6de0f1201fe165900001b6f0e01000a00dc022809050006026f3b04000a260214280d0500060002177def010004002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:9032–9051</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x060002de&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x060002de&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.VmModule&quot;,
+            &quot;name&quot;: &quot;CommonDispose&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Family, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;200001&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 194,
+          &quot;ilSha256&quot;: &quot;4cc7d759978ec192ea0104418d53cd88eee1c69f22bb6532a6d7bd05fc10eb11&quot;,
+          &quot;ilBytes&quot;: &quot;000228790200066fe203000a17590b2b1300022879020006076fe503000a00000717590b0716fe0416fe010c082de2026fe00400067568000002250a14fe030d092c0a0006026f270600060000026f640200066fd701000a175913042b1b00026f6402000611046fd801000a6f2e0500060000110417591304110416fe0416fe01130511052dd7026f620200066fd701000a175913062b1b00026f6202000611066fd801000a6f2e0500060000110617591306110616fe0416fe01130711072dd72a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre></details><details id="evidence-A08-1"><summary>DR02 · source-confirmed · QueryModuleRecentlyResult批次容器</summary><p>SDK查询把每页原始缓冲地址加入ls。容器Release把ls[i]复制为局部IntPtr后按ref交ModuleManager；成功时该callee只将局部ref置零，原ls元素并未因此更新。返回码未由容器检查，也未清列表，故不能声称重复Release安全或所有页已成功释放。实际native只读捕获，未重复释放。</p><ul><li>未知/限制：IMVS_ReleaseDynamicMemory内部、失败后重试/双释放行为和外层是否保证恰一次释放仍需原native/调用链证明。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:19464–19483</a> · original-managed-cil · 原二进制身份：34c0c90b00cb75a701685b96670b6490f61376f62eacc0ab29d240157db401c1 / MVID e7b3a3b0-7083-486a-8ca2-97cecec02ea2</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x0600008a&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600008a&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.PlatformSDKCS.ModuleManager&quot;,
+            &quot;name&quot;: &quot;QueryModuleRecentlyResult&quot;,
+            &quot;parameters&quot;: 2,
+            &quot;attributes&quot;: &quot;Public, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;20021285100909&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 173,
+          &quot;ilSha256&quot;: &quot;f255415d2d7cbeef8d1302c11c7f06009b577ad259256b3f6da16f91953a1272&quot;,
+          &quot;ilBytes&quot;: &quot;00160a735f0700060c007e4600000a0d02030604120328890000060b1201288900000a16fe01130411042c0d00086f5e070006001413052b71087ba8060004096f8a00000a00061201288b00000a7ba4060004580a087ba90600041201288b00000a7ba40600046f8c00000a00087baa0600041201288b00000a7ba50600046f8a00000a0000061201288b00000a7ba6060004fe04130611063a6bffffff08067dab0600040813052b0011052a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:20395–20414</a> · original-managed-cil · 原二进制身份：34c0c90b00cb75a701685b96670b6490f61376f62eacc0ab29d240157db401c1 / MVID e7b3a3b0-7083-486a-8ca2-97cecec02ea2</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x0600075e&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600075e&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;.IMVS_QUERY_MODULE_RES_INFO_LIST_Class&quot;,
+            &quot;name&quot;: &quot;Release&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Public, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;200001&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 61,
+          &quot;ilSha256&quot;: &quot;e94306d268de3cab4d5de43db252ab74a4bd68c8eb99571966f58c83d1329ca9&quot;,
+          &quot;ilBytes&quot;: &quot;00160a2b2500027ba8060004066f6c01000a0b28840500067b0d03000412016f8c00000626000617580a06027ba80600046f6d01000afe040c082dc92a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:20117–20136</a> · original-managed-cil · 原二进制身份：34c0c90b00cb75a701685b96670b6490f61376f62eacc0ab29d240157db401c1 / MVID e7b3a3b0-7083-486a-8ca2-97cecec02ea2</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x0600008c&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600008c&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.PlatformSDKCS.ModuleManager&quot;,
+            &quot;name&quot;: &quot;ReleaseModuleHistoryResult&quot;,
+            &quot;parameters&quot;: 1,
+            &quot;attributes&quot;: &quot;Public, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;2001081018&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 44,
+          &quot;ilSha256&quot;: &quot;ab5b5a109bde43738f0fedf16d1f1f621dc27a2408450fc1ace749895031f5db&quot;,
+          &quot;ilBytes&quot;: &quot;00160a7e970300041f09034d28110300060a0616fe030b072c0500060c2b0b037e4600000adf060c2b00082a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre></details></article><p><a href="architecture-target.html">返回12项决策目录</a></p></main><footer>文档设计交付 ≠ 产品实现或运行验收；原42检查点、49能力口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

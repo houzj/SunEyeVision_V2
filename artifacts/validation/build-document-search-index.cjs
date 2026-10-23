@@ -39,12 +39,20 @@ function recordsFor(flat,relative){
  }
  rows.sort((a,b)=>b.weight-a.weight);
  const forceHeadings=/^(?:tool-script|optimization-o01)\.html$/.test(flat)?[/VM → 我们 → 目标/,/基础预热与窗口打开/,/自动补全的触发与任务/,/编译触发、缓存与失败/,/程序集引用管理/,/引用清单的事实源/,/引用更新与缓存失效/,/最终推荐/,/用户实际VM观察/]:[];
- const required=rows.filter(x=>x.anchor==='script-reference-three-way'||x.anchor==='script-final-decision'||x.anchor==='script-performance-chains'||forceHeadings.some(re=>re.test(x.heading)));
+ const pinnedAnchors=['script-s3-design','script-s2-design','script-followup-panorama'];
+ const pinned=/^(?:tool-script|optimization-o01)\.html$/.test(flat)?pinnedAnchors.map(anchor=>rows.find(x=>x.anchor===anchor)).filter(Boolean):[];
+ for(const row of pinned){const label=row.anchor==='script-s3-design'?'脚本第三批':row.anchor==='script-s2-design'?'脚本第二批':'脚本后续优化';if(!row.heading.includes(label))row.heading=label+' · '+row.heading;}
+ const required=[...pinned,...rows.filter(x=>!pinned.includes(x)&&(x.anchor==='script-reference-three-way'||x.anchor==='script-final-decision'||x.anchor==='script-performance-chains'||forceHeadings.some(re=>re.test(x.heading))))];
  const selected=new Set(required);
  const chosen=[...required,...rows.filter(x=>!selected.has(x)).slice(0,flat==='tool-script.html'?10:8)].slice(0,flat==='tool-script.html'?18:14);
  if(!chosen.length){const excerpt=plain(visible).slice(0,240);if(excerpt.length>24)chosen.push({heading:title,excerpt,anchor:'',weight:1});}
  const pagePath=layout.files[flat]||relative;
- return chosen.map(x=>({title,topic:topicFor(relative),pageTitle:title,path:pagePath,heading:x.heading,excerpt:x.excerpt,href:pagePath+(x.anchor?'#'+encodeURIComponent(x.anchor):''),source:page.source}));
+ const aliases=/^(?:tool-script|optimization-o01)\.html$/.test(flat)?[
+  {heading:'前三批之外',excerpt:'脚本后续优化全景：按S1、S2、S3已覆盖边界，梳理前三批之外的11个静态候选问题。'},
+  {heading:'脚本数据合同',excerpt:'候选A组：全局地址、数组形状、绑定事实源、结果命名空间、执行结果、0与false。静态分析，条件风险与未知项分列。'},
+  {heading:'脚本方案依赖',excerpt:'候选B组：同名DLL替换、方案引用搬家、私有依赖清单；干净目录和离线副本验证仍待实施。'}
+ ].map(x=>({...x,anchor:'script-followup-panorama'})):[];
+ return [...chosen,...aliases].map(x=>({title,topic:topicFor(relative),pageTitle:title,path:pagePath,heading:x.heading,excerpt:x.excerpt,href:pagePath+(x.anchor?'#'+encodeURIComponent(x.anchor):''),source:page.source}));
 }
 module.exports=function(){
  const records=[];

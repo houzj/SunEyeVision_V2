@@ -1,1 +1,191 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>自研架构文档 · 旧入口</title></head><body data-managed-library-router><p>相关文档已整理到 <a href="自研架构文档维护/目标架构/architecture-a02.html">自研架构文档维护</a>。此页保留旧链接与锚点兼容。</p><script>(()=>{location.replace("自研架构文档维护/目标架构/architecture-a02.html"+location.search+location.hash)})();</script></body></html>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A02 执行计划与调度</title><link rel="stylesheet" href="architecture-doc-site.css"></head><body><nav aria-label="文档导航"><a href="index.html">文档索引</a><a href="architecture-target.html">最新目标决策</a><a href="framework-overview.html">框架对比</a><a href="framework-sdk-overview.html">SDK设计</a><a href="joint-optimization-plan.html">联合方案</a><a href="architecture-evidence.html">本批证据</a></nav><main><h1>A02 执行计划与调度</h1><article id="decision-A02"><p class="status">proposed-not-implemented · 全部接口为拟议合同，未编译/运行</p><div class="visual-metrics"><div><strong>A02</strong><span>目标决策</span><small>拟议，未实施</small></div><div><strong>9</strong><span>局部证据条目</span><small>未知单列</small></div><div><strong>2</strong><span>验收用例</span><small>均未运行</small></div></div><figure class="architecture-figure" data-visual="execution"><figcaption><b>执行：入口、计划与派发</b><span class="chip">拟议设计，未实现/运行验收</span></figcaption><div class="diagram-actions"><button type="button" data-diagram-expand>放大查看图</button><span>实线：所标范围内的关系；虚线：条件/待验证边界。</span></div><div class="svg-scroll"><svg role="img" aria-label="执行：入口、计划与派发；拟议设计，未实现/运行验收" viewBox="0 0 915 579"><title>执行：入口、计划与派发</title><desc>拟议设计，未实现/运行验收。图中节点和箭头与下方文字合同共同解释，不能单独作为运行保证。</desc><defs><marker id="arrow-execution" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker></defs><path d="M 260 82 L 230 82" class="graph-edge " marker-end="url(#arrow-execution)"/><text class="edge-label" x="245" y="73">请求</text><path d="M 470 82 L 440 82" class="graph-edge " marker-end="url(#arrow-execution)"/><text class="edge-label" x="455" y="73">接纳</text><path d="M 560 124 L 560 190" class="graph-edge " marker-end="url(#arrow-execution)"/><text class="edge-label" x="560" y="148">就绪</text><path d="M 440 232 L 470 372" class="graph-edge " marker-end="url(#arrow-execution)"/><text class="edge-label" x="455" y="293">资源准入</text><path d="M 680 232 L 650 372" class="graph-edge " marker-end="url(#arrow-execution)"/><text class="edge-label" x="665" y="293">资源准入</text><path d="M 470 372 L 440 512" class="graph-edge " marker-end="url(#arrow-execution)"/><text class="edge-label" x="455" y="433">结果</text><path d="M 650 372 L 680 512" class="graph-edge " marker-end="url(#arrow-execution)"/><text class="edge-label" x="665" y="433">结果</text><g class="graph-node"><rect x="20" y="40" width="240" height="84" rx="13"/><text x="36" y="72">入口</text><text class="node-note" x="36" y="100">UI / SDK / 触发</text></g><g class="graph-node"><rect x="230" y="40" width="240" height="84" rx="13"/><text x="246" y="72">准入与快照</text><text class="node-note" x="246" y="100">能力 · 修订 · 输入</text></g><g class="graph-node"><rect x="440" y="40" width="240" height="84" rx="13"/><text x="456" y="72">ExecutionPlan</text><text class="node-note" x="456" y="100">不可变计划</text></g><g class="graph-node"><rect x="440" y="190" width="240" height="84" rx="13"/><text x="456" y="222">ReadyQueue</text><text class="node-note" x="456" y="250">依赖就绪</text></g><g class="graph-node"><rect x="230" y="330" width="240" height="84" rx="13"/><text x="246" y="362">工具 A</text><text class="node-note" x="246" y="390">独立资源可并发</text></g><g class="graph-node"><rect x="650" y="330" width="240" height="84" rx="13"/><text x="666" y="362">工具 B</text><text class="node-note" x="666" y="390">同设备须仲裁</text></g><g class="graph-node"><rect x="440" y="470" width="240" height="84" rx="13"/><text x="456" y="502">结果 Owner</text><text class="node-note" x="456" y="530">接纳后发布</text></g></svg></div><p class="diagram-note">拟议设计，未实现/运行验收 · <a href="architecture-target.html">查看依据、合同与未知</a></p></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前边界</h2><p>ReadyQueue与局部lease可复用，但某Engine实例的限制不足以证明跨根设备互斥。</p></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM已证 / 未知</h2><p>恢复模型证VmSolution/SDK到原生边界；不证明原生队列/抢占/公平性。</p></section></div><section class="visual-card decision-summary"><h2>本项选择与代价</h2><p><strong>自研重做合同；现有调度实现择优复用</strong></p><p>不可变版本化ExecutionPlan，依赖/分支、实例并发声明、设备资源约束决定派发。</p><div class="tradeoff-grid"><div><h3>收益与成本</h3><p>可分析和复现；编译、失效与资源仲裁复杂，性能须测量不预判优胜。</p></div><div><h3>为什么不选替代路线</h3><p>沿用扫描队列可降低实施成本，但目标必须具有可审计划与跨运行仲裁；暂不选择VM未知native调度器，不声称任何性能优势。</p></div></div></section><h2>拟议接口与数据字段</h2><pre>CompileOutcome Compile(ProjectRevision revision, ToolCatalogVersion catalog);
+ExecutionPlan { PlanId, ProjectRevision, ToolContracts, Nodes, Edges, ResourceClaims }
+AcquireAsync(ResourceKey key, RunScopeAddress scope, CancellationToken ct);</pre><h3>状态与生效时点</h3><p>候选计划经依赖/分支/类型/资源校验后原子发布；接纳绑定不可变PlanId。编辑只产生新修订，旧运行保留原计划。</p><h3>Owner与释放责任</h3><p>Project拥有plan缓存；Host级ResourceArbiter拥有设备占用，lease绑定实际在途任务，禁止按某Engine对象独立仲裁。</p><h3>失败、取消与幂等</h3><p>编译失败不发布候选；队列等待可取消，取得资源后由实际使用者finally退还。重复Compile同输入可复用plan；隔离任务仍占用资源直到可证退役。</p><h3>版本与兼容</h3><p>Plan键含定义修订、工具合同和转换器版本；插件升级使新计划失效，旧运行固定已加载版本或拒绝热换。</p><h2>验收：尚未执行</h2><section id="A02-T1"><h3>A02-T1 · planned-not-run</h3><p>运行时编辑只影响下一修订；旧plan仍执行原定义</p><p>执行方法与判定：<a href="architecture-acceptance.html#A02-T1">查看用例</a></p></section><section id="A02-T2"><h3>A02-T2 · planned-not-run</h3><p>两个请求竞争同设备时不重叠使用；无依赖且资源独立可并发</p><p>执行方法与判定：<a href="architecture-acceptance.html#A02-T2">查看用例</a></p></section><h2>原版证据与局部边界</h2><p>source-confirmed限交接中选定成员；不是整库复核。独立恢复代码 independent-implementation 不作为原版事实。<a href="architecture-evidence.html">本批来源SHA</a></p><details id="evidence-A02-0"><summary>execution-storage:G00 · source-confirmed · MenuItems Lang_SigRun declaration / TitleMenueItemData.CustomItemData / TitleMenueItemData.GetSolution</summary><p>默认原菜单将方法名、独立模板和数据工厂明确关联：methodName=SigRun、customItemTemplateName=SingleRunTemplate、getCustomItemDataContextMethodName=GetSolution。CustomItemData空才反射调用工厂；GetSolution赋VmSolution.Instance并去重订阅RestoreDefaultDisplay，回调清数据缓存。</p><ul><li>未知/限制：该默认菜单声明不代替其它模式及运行时XML类型物化证明。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/menuitems.xml">analysis/decompiled/VisionMaster.Exe.Audit/menuitems.xml:354–365</a> · local-extracted-resource · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>d9e9a1da6aeca60d97129cb71e07e9f074ed049c09f5a88f168608a01f6e7959</code></p><pre>					&lt;name&gt;Lang_SigRun&lt;/name&gt;
+					&lt;methodName&gt;SigRun&lt;/methodName&gt;
+					&lt;toolGroupItemInfo&gt;
+						&lt;groupName&gt;group3&lt;/groupName&gt;
+						&lt;priority&gt;0&lt;/priority&gt;
+					&lt;/toolGroupItemInfo&gt;
+					&lt;customItemTemplateName&gt;SingleRunTemplate&lt;/customItemTemplateName&gt;
+					&lt;getCustomItemDataContextMethodName&gt;GetSolution&lt;/getCustomItemDataContextMethodName&gt;
+					&lt;imageEnablePath&gt;Resources\ToolBar\toolbarStart_normal.png&lt;/imageEnablePath&gt;
+					&lt;imageDisablePath&gt;Resources\ToolBar\toolbarStart_disable.png&lt;/imageDisablePath&gt;
+				&lt;/TitleMenueItemData&gt;
+				&lt;!--连续执行和停止--&gt;</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs:162–181</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187</code></p><pre>	public object CustomItemData
+	{
+		get
+		{
+			if (customItemData == null)
+			{
+				ExcuteMethodByName(getCustomItemDataContextMethodName);
+			}
+			return customItemData;
+		}
+		set
+		{
+			if (customItemData != value)
+			{
+				customItemData = value;
+				OnPropertyChanged(&quot;CustomItemData&quot;);
+			}
+		}
+	}
+</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs:303–315</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187</code></p><pre>	public void GetSolution()
+	{
+		CustomItemData = VmSolution.Instance;
+		VmSolution.RestoreDefaultDisplay -= VmSolution_RestoreDefaultDisplay;
+		VmSolution.RestoreDefaultDisplay += VmSolution_RestoreDefaultDisplay;
+	}
+
+	private void VmSolution_RestoreDefaultDisplay(object sender, EventArgs e)
+	{
+		CustomItemData = null;
+		RunData = null;
+	}
+</pre></details><details id="evidence-A02-1"><summary>execution-storage:G01 · source-confirmed · TitleMenueItemData.CheckRun / SigRun</summary><p>CheckRun 遍历流程装饰器：启用流程非 Ready 或全部禁用时拒绝；通过后调用方案 Run。</p><ul><li>未知/限制：G00/G05/G06已补默认资源、模板和命令消费者；运行时物化/绑定仍未验证。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs:1438–1479</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187</code></p><pre>	private static bool CheckRun()
+	{
+		IEnumerable&lt;VmProcedureDecorator&gt; enumerable = from p in VmSolution.Instance.Modules.OfType&lt;VmProcedure&gt;()
+			select new VmProcedureDecorator
+			{
+				DecorateSource = p
+			};
+		VmProcedureDecorator vmProcedureDecorator;
+		if ((vmProcedureDecorator = enumerable.FirstOrDefault((VmProcedureDecorator p) =&gt; p.WorkState != StatusBarSymbol.Ready &amp;&amp; p.IsEnabled)) != null)
+		{
+			string strMsg = vmProcedureDecorator.VMProcedure.Name + &quot;:&quot; + vmProcedureDecorator.WorkStateInfo;
+			HikMessageBox.Show(strMsg, MessageIcons.Error);
+			return false;
+		}
+		if (enumerable != null &amp;&amp; enumerable.Where((VmProcedureDecorator p) =&gt; !p.IsEnabled).Count() == enumerable.Count())
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang(&quot;流程处于禁用状态&quot;), MessageIcons.Warning);
+			return false;
+		}
+		return true;
+	}
+
+	public static void SigRun()
+	{
+		try
+		{
+			if (CheckRun())
+			{
+				VmSolution.Instance.Run();
+				UILogManager.logCreate(&quot;信息&quot;, AppLocalizationService.GetLang(&quot;Run Once&quot;), false, true);
+			}
+		}
+		catch (Exception ex)
+		{
+			if (ex is VmException ex2)
+			{
+				string strMsg = AppLocalizationService.GetLang(&quot;Lang_GlobalScript&quot;) + &quot;:&quot; + ErrorCodeInfo.GetErrorInfo(ex2.errorCode);
+				HikMessageBox.Show(strMsg, MessageIcons.Error);
+			}
+		}
+	}
+</pre></details><details id="evidence-A02-2"><summary>execution-storage:G02 · source-confirmed · VmSolution.Run</summary><p>IsGlobalRuning 先设 true；调用全局脚本单次入口；正常及 catch 路径设 false，catch 重抛。此处不直接调用 VmProcedure.Run。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs">analysis/decompiled/VM.Core/VM.Core/VmSolution.cs:2236–2257</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e</code></p><pre>	public override void Run()
+	{
+		IsGlobalRuning = true;
+		LogHelper.Info(&quot;全局点击Run设置IsGlobalRuning为true&quot;);
+		try
+		{
+			ServerSDKManager.serverSDKManager.mGlobalModuleManager.GlobalScriptStartRunOnce();
+		}
+		catch (Exception ex)
+		{
+			IsGlobalRuning = false;
+			throw ex;
+		}
+		IsGlobalRuning = false;
+		LogHelper.Info(&quot;全局点击Run设置IsGlobalRuning为false&quot;);
+	}
+
+	/// &lt;summary&gt;
+	/// CH:开启全部模块结果回调 | EN: Enable all module result callback
+	/// &lt;/summary&gt;
+	public void EnableModulesCallback()
+	{</pre></details><details id="evidence-A02-3"><summary>execution-storage:G03 · source-confirmed · GlobalModuleManager.GlobalScriptStartRunOnce</summary><p>传 CVmObjectBase.mhandle；非零返回码构造并抛出 VmException。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/GlobalModuleManager.cs">analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/GlobalModuleManager.cs:208–218</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>ab2b834644df65e6a41bb76efc8bdc241f427c671afbd0f4d5c64237c34a6f13</code></p><pre>	public int GlobalScriptStartRunOnce()
+	{
+		int num = NativeMethods.IMVS_ExecuteOnce4GlobalScript(CVmObjectBase.mhandle);
+		if (num != 0)
+		{
+			VmException ex = new VmException(num);
+			throw ex;
+		}
+		return num;
+	}
+</pre></details><details id="evidence-A02-4"><summary>execution-storage:G07 · source-confirmed · NativeMethods global-script PInvoke declaration / Selected x64 original PE export table</summary><p>托管声明DLL为相对路径iMVS-6000PlatformSDK.dll。选定安装PublicFile/x64原件SHA b62d7e…a54a9a1，PE表确认同名非转发导出、ordinal429、RVA0x00648df0/VA0x180648df0；入口32字节逐次重核。PE表不证明运行进程实际加载此副本或handle ABI。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/NativeMethods.cs">analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/NativeMethods.cs:137–141</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>6a60f612fb385987ff96d6973844a256402f097d1eb371e7ad462c44e57127d0</code></p><pre>	public static extern int IMVS_OpenGlobalScriptInteface(IntPtr handle);
+
+	[DllImport(&quot;.\\iMVS-6000PlatformSDK.dll&quot;)]
+	public static extern int IMVS_ExecuteOnce4GlobalScript(IntPtr handle);
+</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/global-run-export.json">docs/architecture-recovery/global-run-export.json:10–18</a> · read-only-PE-export-table-and-bytes · 原二进制身份：selected installed x64 file SHA-256 and entry bytes revalidated; runtime resolution unknown</p><p>SHA256 <code>dd9cdfb559ab7e99471353d4bfa81490a7f921a2ddb5dfd519f0c0629517eae1</code></p><pre>      &quot;name&quot;: &quot;IMVS_ExecuteOnce4GlobalScript&quot;,
+      &quot;ordinal&quot;: 429,
+      &quot;rva&quot;: &quot;0x00648df0&quot;,
+      &quot;virtualAddress&quot;: &quot;0x180648df0&quot;,
+      &quot;forwarded&quot;: false,
+      &quot;forwarder&quot;: null,
+      &quot;fileOffset&quot;: 6586864,
+      &quot;first32Bytes&quot;: &quot;40534883ec20488bd9e872c3ffff4885c0741c488b10488b02488bc8483bc274&quot;
+    }</pre></details><details id="evidence-A02-5"><summary>EOT00 · unknown · generic tool-window run binding</summary><p>已复用参数窗打开原证据，但本轮未证其Run按钮怎样选定并调用此普通模块Run成员；必须显示这个gap。</p><ul><li>未知/限制：参数窗Show不能替代Run按钮命令/接收者证据。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.cs">analysis/decompiled/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.cs:739–771</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>36be1620196c60a72efb03dab8afb4fa302ba1ba8ec4acf7eb1f5f61883678bd</code></p><pre>			TabWinBase tabWinBase2 = GetExternTabWin(vmModule) ?? new ParamsTabControlBase();
+			tabWinBase2.ROIPartUI = partUI;
+			tabWinBase2.IsEditState = IsParamsEditState;
+			LogHelper.Info(&quot;ParamsConfig value start.&quot;);
+			tabWinBase2.ParamsConfig = vmModule.Params;
+			LogHelper.Info(&quot;ParamsConfig value end.&quot;);
+			if (Application.Current != null)
+			{
+				Window window = Window.GetWindow(this);
+				tabWinBase2.Owner = window ?? Application.Current.MainWindow;
+				tabWinBase2.AlongParent = this;
+			}
+			else if (PresentationSource.FromDependencyObject(this) is HwndSource hwndSource)
+			{
+				WindowInteropHelper windowInteropHelper = new WindowInteropHelper(tabWinBase2)
+				{
+					Owner = hwndSource.Handle
+				};
+			}
+			ElementHost.EnableModelessKeyboardInterop(tabWinBase2);
+			tabWinBase2.Show();
+			SetCurrentValue(IsOpenParamsProperty, true);
+			curTabControlBase = tabWinBase2;
+			WeakEventManager&lt;Window, EventArgs&gt;.AddHandler(curTabControlBase, &quot;Closed&quot;, CurTabControlBase_Closed);
+			if (ROIPartUI is ModuleResultView moduleResultView2)
+			{
+				moduleResultView2.Tag = curTabControlBase;
+				moduleResultView2.SetRoiVisible();
+			}
+			DecoratorSelectedItem = data;
+			LogHelper.Info(&quot;OpenParamsTabControl end.&quot;);
+		}
+		catch (VmException ex)</pre></details><details id="evidence-A02-6"><summary>EOT01 · source-confirmed · VM.Core.VmModule.Run</summary><p>非连续自执行时先设置流程self-run与IsRunning；调用ModuleManager.SelfRun，VmException分支清这些状态再抛。</p><ul><li>未知/限制：Static call-site edge; does not by itself establish a particular live invocation, native parity or the same frame.</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.Core/VM.Core/VmModule.cs">analysis/decompiled/VM.Core/VM.Core/VmModule.cs:3753–3772</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>53e2f0f9032c4631b59cf0eb2a00e06d50469d94706e7e370e9cc7e1059c72ce</code></p><pre>	public virtual void Run()
+	{
+		if (!((IVmSolution)VmSolution.Instance).IsContinuousSelfExecute)
+		{
+			((IVmProcedure)Root)?.SetInnerModuleIsSelfRuning(true);
+			IsRunning = true;
+		}
+		try
+		{
+			ServerSDKManager.serverSDKManager.mModuleManager.SelfRun(moduleInfo.nNodeID);
+		}
+		catch (VmException ex)
+		{
+			((IVmProcedure)Root)?.SetInnerModuleIsSelfRuning(false);
+			IsRunning = false;
+			throw ex;
+		}
+	}
+
+	/// &lt;summary&gt;</pre></details><details id="evidence-A02-7"><summary>EOT02 · source-confirmed · ModuleManager.SelfRun</summary><p>传全局mhandle与nModuleId到SDK包装；这里是SelfRun，不偷换成SyncSelfRun等待策略。</p><ul><li>未知/限制：Static call-site edge; does not by itself establish a particular live invocation, native parity or the same frame.</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/parameter-sdk-bridge.resources/ModuleManager.cs">docs/architecture-recovery/parameter-sdk-bridge.resources/ModuleManager.cs:256–264</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>783a45b1518f713223eca2b5e59291be973552c3e08fef0ea0d4bfccc2fbd922</code></p><pre>	public void SelfRun(uint nModuleId)
+	{
+		int num = ServerSDKAPI.IMVS_SelfExecuteOneModule(CVmObjectBase.mhandle, nModuleId);
+		if (num != 0)
+		{
+			VmException ex = new VmException(num);
+			throw ex;
+		}
+	}</pre></details><details id="evidence-A02-8"><summary>EOT03 · source-confirmed · ServerSDKAPI / NativeMethods</summary><p>直接转同名PInvoke；声明为原SDK DLL入口，不能以托管声明补出内部线程/排队/上游准备行为。</p><ul><li>未知/限制：generic tool-window caller及native SelfExecute body分列待证。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/parameter-sdk-bridge.resources/ServerSDKAPI.cs">docs/architecture-recovery/parameter-sdk-bridge.resources/ServerSDKAPI.cs:229–232</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>f022d4b4e87d4a076dcf42a79b131a0460ddf673d07603b5ba8d6aca35ef4b14</code></p><pre>	public static int IMVS_SelfExecuteOneModule(IntPtr handle, uint nModuleId)
+	{
+		return NativeMethods.IMVS_SelfExecuteOneModule(handle, nModuleId);
+	}</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/parameter-sdk-bridge.resources/NativeMethods.cs">docs/architecture-recovery/parameter-sdk-bridge.resources/NativeMethods.cs:95–95</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>6a60f612fb385987ff96d6973844a256402f097d1eb371e7ad462c44e57127d0</code></p><pre>	public static extern int IMVS_SelfExecuteOneModule(IntPtr handle, uint nModuleId);</pre></details></article><p><a href="architecture-target.html">返回12项决策目录</a></p></main><footer>文档设计交付 ≠ 产品实现或运行验收；原42检查点、49能力口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

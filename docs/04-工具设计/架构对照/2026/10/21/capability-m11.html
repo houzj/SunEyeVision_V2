@@ -1,0 +1,93 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M11 主工具栏/F5单次运行</title><link rel="stylesheet" href="architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}.relationship-guide .evidence-columns>section:nth-child(1){border-top:3px solid #739ad8}.relationship-guide .evidence-columns>section:nth-child(1) h3{color:#c1d5ff}.relationship-guide .evidence-columns>section:nth-child(2){border-top:3px solid #59b89c}.relationship-guide .evidence-columns>section:nth-child(2) h3{color:#b1f0d8}.relationship-guide .evidence-columns>section:nth-child(3){border-top:3px solid #d8a75e}.relationship-guide .evidence-columns>section:nth-child(3) h3{color:#ffe0aa}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><nav aria-label="文档导航"><a href="index.html">界面导航</a><a href="guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="optimization-index.html">优化方案</a><a href="architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="optimization-index.html">具体改法</a> → <a href="architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>M11 主工具栏/F5单次运行</h1><article id="compare-M11"><span id="M11"></span><div class="visual-metrics"><div><strong>M11</strong><span>能力条目</span><small>静态路径已见</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>混合优化</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>RunWorkflowCommand</b></li><li><small>02</small><b>ExecuteRunWorkflow</b></li><li><small>03</small><b>参数/变量准备</b></li><li><small>04</small><b>RunSingleAsync(SelectedTab)</b></li><li><small>05</small><b>结果事件</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>当前工具栏运行选中流程，已有失败日志与finally状态处理。</p><details><summary>完整缺陷与未闭合调用边</summary><p>不等同方案级单次运行；执行器层完整资源终态仍需验证。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>主工具栏SigRun→VmSolution.Run→GlobalScriptStartRunOnce；流程Tab另走VmProcedure.Run→SyncExecuteOnce。</p><p>原版方案入口与VmProcedureDecorator所属流程入口明确分开。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF05-PROCEDURE-RUN-CALLCHAIN.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">当前工具栏/F5运行SelectedTab，和VM方案级工具栏单次不是同一业务范围。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：当前工具栏/F5运行SelectedTab，和VM方案级工具栏单次不是同一业务范围。 VM参考边界：原版方案入口与VmProcedureDecorator所属流程入口明确分开。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">重做运行入口语义及文案：方案单次与当前流程单次分别绑定显式Scope/ID；可以调用现有服务，不能把换文案算调度完成。 分开方案运行与当前流程运行，统一请求携带Scope/RunId和输入快照。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">两流程依赖不按Tab顺序猜测；当前流程运行不执行其他流程。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="optimization-o02.html#O02">O02</a></td></tr></tbody></table></div></section><article id="recommendation-M11"><h2>M11 主工具栏/F5单次运行 · 借鉴VM重做</h2><p><b>代码依据 / 局限：</b>当前工具栏/F5运行SelectedTab，和VM方案级工具栏单次不是同一业务范围。</p><p><b>VM可借鉴与不可推断：</b>原版方案入口与VmProcedureDecorator所属流程入口明确分开。</p><p><b>具体改法 / 成本：</b>重做运行入口语义及文案：方案单次与当前流程单次分别绑定显式Scope/ID；可以调用现有服务，不能把换文案算调度完成。 分开方案运行与当前流程运行，统一请求携带Scope/RunId和输入快照。</p><p><b>验收：</b>两流程依赖不按Tab顺序猜测；当前流程运行不执行其他流程。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M11">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M11">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S026</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml">src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml:252</a></p><p><code>RunWorkflowCommand</code></p><p>SHA256 <code>81a0498d514de68b10fb0bb52028ef98cdc4da9a242aa5d2d68ff792a93435d8</code></p><pre>                    &lt;MenuItem Header=&quot;运行(_R)&quot; Command=&quot;{Binding RunWorkflowCommand}&quot; InputGestureText=&quot;F5&quot;/&gt;
+                    &lt;MenuItem Header=&quot;停止(_S)&quot; Command=&quot;{Binding StopWorkflowCommand}&quot; InputGestureText=&quot;Shift+F5&quot;/&gt;
+                &lt;/MenuItem&gt;
+                &lt;MenuItem Header=&quot;工具(_T)&quot; Style=&quot;{StaticResource TitleBarMenuButton}&quot;&gt;
+                    &lt;MenuItem Header=&quot;全局变量管理(_G)&quot; Command=&quot;{Binding ShowGlobalVariableManagerCommand}&quot;/&gt;
+                    &lt;MenuItem Header=&quot;相机管理(_C)&quot; Command=&quot;{Binding ShowCameraManagerCommand}&quot;/&gt;
+                    &lt;MenuItem Header=&quot;通讯管理(_M)&quot; Command=&quot;{Binding ShowCommunicationManagerCommand}&quot;/&gt;
+                &lt;/MenuItem&gt;
+                &lt;MenuItem Header=&quot;帮助(_H)&quot; Style=&quot;{StaticResource TitleBarMenuButton}&quot;&gt;
+                    &lt;MenuItem Header=&quot;用户手册(_M)&quot; InputGestureText=&quot;F1&quot; Command=&quot;{Binding ShowHelpCommand}&quot;/&gt;
+                    &lt;MenuItem Header=&quot;开发计划(_P)&quot; Click=&quot;OpenPlan_Click&quot; ToolTip=&quot;打开引导抓取开发计划看板&quot;/&gt;
+                    &lt;Separator/&gt;
+                    &lt;MenuItem Header=&quot;快捷键(_K)&quot; Command=&quot;{Binding ShowShortcutsCommand}&quot;/&gt;
+                    &lt;MenuItem Header=&quot;关于(_A)&quot; Command=&quot;{Binding ShowAboutCommand}&quot;/&gt;</pre></details><details class="source-card"><summary>S027</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:2122</a></p><p><code>ExecuteRunWorkflow</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        public System.Threading.Tasks.Task RunSelectedImageAsync() =&gt; ExecuteRunWorkflow(advanceLocalImage: false);
+
+        private async System.Threading.Tasks.Task ExecuteRunWorkflow(bool advanceLocalImage = true)
+        {
+            // 防抖：上一次工作流仍在执行时忽略重复执行请求（执行按钮/预览连点过快）
+            if (_isRunning)
+            {
+                AddLog(&quot;[REJECTED] 工作流正在运行，已拒绝重复执行请求&quot;);
+                return;
+            }
+
+            AddLog(&quot;=== 开始执行工作流 ===&quot;);
+
+            if (WorkflowTabViewModel == null)</pre></details><details class="source-card"><summary>S028</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/WorkflowExecutionManager.cs">src/UI/Services/Workflow/WorkflowExecutionManager.cs:178</a></p><p><code>RunSingleAsync</code></p><p>SHA256 <code>e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae</code></p><pre>        public async Task RunSingleAsync(WorkflowTabViewModel workflow, CancellationToken cancellationToken = default,
+            bool advanceLocalImage = true)
+        {
+            if (workflow == null)
+                throw new ArgumentNullException(nameof(workflow));
+
+            var workflowId = workflow.RootWorkflowId;
+            if (!TryAcquireExecution(workflowId))
+            {
+                NotifyExecutionRejected(workflowId);
+                return;
+            }
+
+            using var runCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M11&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;主工具栏/F5单次运行&quot;,
+  &quot;state&quot;: &quot;implemented&quot;,
+  &quot;chain&quot;: [
+    &quot;RunWorkflowCommand&quot;,
+    &quot;ExecuteRunWorkflow&quot;,
+    &quot;参数/变量准备&quot;,
+    &quot;RunSingleAsync(SelectedTab)&quot;,
+    &quot;结果事件&quot;
+  ],
+  &quot;current&quot;: &quot;当前工具栏运行选中流程，已有失败日志与finally状态处理。&quot;,
+  &quot;gap&quot;: &quot;不等同方案级单次运行；执行器层完整资源终态仍需验证。&quot;,
+  &quot;vm&quot;: &quot;主工具栏SigRun→VmSolution.Run→GlobalScriptStartRunOnce；流程Tab另走VmProcedure.Run→SyncExecuteOnce。&quot;,
+  &quot;vmDoc&quot;: &quot;MF05-PROCEDURE-RUN-CALLCHAIN.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;借鉴VM重做&quot;,
+  &quot;reason&quot;: &quot;依据：当前工具栏/F5运行SelectedTab，和VM方案级工具栏单次不是同一业务范围。 VM参考边界：原版方案入口与VmProcedureDecorator所属流程入口明确分开。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;重做运行入口语义及文案：方案单次与当前流程单次分别绑定显式Scope/ID；可以调用现有服务，不能把换文案算调度完成。 分开方案运行与当前流程运行，统一请求携带Scope/RunId和输入快照。&quot;,
+  &quot;accept&quot;: &quot;两流程依赖不按Tab顺序猜测；当前流程运行不执行其他流程。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S026&quot;,
+    &quot;S027&quot;,
+    &quot;S028&quot;
+  ],
+  &quot;optimization&quot;: &quot;O02&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留自研引擎，明确运行范围&quot;,
+    &quot;reason&quot;: &quot;自研可控制开放设备与契约；方案/流程混同会误导用户且破坏后台触发一致性。&quot;
+  },
+  &quot;defect&quot;: &quot;当前工具栏/F5运行SelectedTab，和VM方案级工具栏单次不是同一业务范围。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版方案入口与VmProcedureDecorator所属流程入口明确分开。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;混合优化&quot;,
+  &quot;adoptionBasis&quot;: &quot;参考VM已确认的职责/行为，结合自有数据与服务实现；不复用VM二进制、协议或密钥。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;借鉴VM重做&quot;,
+    &quot;defect&quot;: &quot;当前工具栏/F5运行SelectedTab，和VM方案级工具栏单次不是同一业务范围。&quot;,
+    &quot;borrow&quot;: &quot;原版方案入口与VmProcedureDecorator所属流程入口明确分开。&quot;,
+    &quot;action&quot;: &quot;重做运行入口语义及文案：方案单次与当前流程单次分别绑定显式Scope/ID；可以调用现有服务，不能把换文案算调度完成。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;混合优化&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S026&quot;,
+      &quot;S027&quot;,
+      &quot;S028&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="architecture-doc-site.js"></script></body></html>

@@ -1,0 +1,76 @@
+{
+  "batchId": "SCRIPT-S1",
+  "baseCommit": "9e0da65d03815ceb9d0cb3392fd3ac5597227119",
+  "receivedWipCommit": "5a700dad",
+  "sourceCommit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+  "branch": "main",
+  "executor": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+  "state": "developer-verified-independent-acceptance-pending",
+  "goal": "仅S1会话/版本/引用内容快照/缓存身份及分段计时，保留基础预热",
+  "allowedDirectories": [
+    "src/CommonControl",
+    "tools/SunEyeVision.Tool.Script",
+    "tests/SunEyeVision.Tool.Script.Tests",
+    "artifacts/validation/script-s1",
+    "docs/collaboration产品交接记录"
+  ],
+  "changedFilesAndReasons": {
+    "src/CommonControl/ScriptAnalysisSession.cs": "编辑器独占会话、文档及环境版本和关闭令牌；不依赖工具程序集",
+    "src/CommonControl/ScriptEditorCore.xaml.cs": "使用内容引用快照；查询/签名/诊断版本门控；诊断只消费不可变Document；卸载重开取消源；环境更新后替换高亮缓存；相同生成文本不更换Solution",
+    "src/CommonControl/SemanticHighlighter.cs": "必要S1缓存失效接线：旧高亮器可释放，异步结果受取消及不可变Solution身份校验；未改全文预热或优先调度",
+    "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs": "引用集合和IO变化通知及观察修订计数；CaptureReferences固定内容身份，修订计数不代替生成合同键",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs": "统一名称/路径解析；显式空与缺失引用报错；保留默认必需引用",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/SharedMetadataReferenceProvider.cs": "宿主元数据进程复用，用户DLL重新读取字节并按SHA共享不可变图像",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptReferenceSnapshot.cs": "路径/程序集身份/内容SHA及同份字节的元数据；规范排序和长度前缀组合身份",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs": "生成段/用户段/引用/选项/编译器共同键；失败不缓存成功，返回缓冲副本，缓存上限32；引用/解析/Emit/命中计时",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs": "S1必需接线：沙箱使用实际编译身份和引用快照；捕获构造加载异常；预热不创建用户实例；加载/构造/Init/Process/Release计时；异常清理语义不在本批改变",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs": "S1必需接线：只加载选中引用的快照字节，拒绝宿主冲突，构造失败卸载刚建ALC；完整租约留S3",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs": "S1必需签名接线：传递引用快照和编译键；未实现并发工厂/在用淘汰/租约整改",
+    "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs": "注入引用快照；同名替换后重核内容，刷新引用后调度诊断",
+    "tests/SunEyeVision.Tool.Script.Tests/ScriptSnapshotIdentityTests.cs": "7项新行为测试：DLL替换/实际快照加载、目录与集合、缓存隔离、WPF会话/生成字段、会话终止、预热无用户构造及计时、冲突引用诊断",
+    "tests/SunEyeVision.Tool.Script.Tests/ScriptSandboxWarmupTests.cs": "旧反射接口更新到新引用快照与编译身份；保留沙箱实际加载断言",
+    "tests/SunEyeVision.Tool.Script.Tests/AvalonEditBridgeTests.cs": "已迁移公共控件的真实类型定位，保留增量文本断言",
+    "tests/SunEyeVision.Tool.Script.Tests/SemanticHighlightContractTests.cs": "源码定位改到已有CommonControl，保留原架构断言",
+    "tests/SunEyeVision.Tool.Script.Tests/ScriptBindingContractB2Tests.cs": "测试前提补真实上游执行连接，保留绑定校验断言；不改产品绑定规则"
+  },
+  "validation": {
+    "scriptTests": "固定源码重建后43通过/0失败/0跳过，artifacts/validation/script-s1/fixed-source-tests.log及tests/s1-fixed-source.trx",
+    "fullRelease": "dotnet build SunEyeVision.slnx -c Release --no-restore；固定源码0错/1272警告，fixed-source-release.log",
+    "uiRelease": "dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore；0错/1077警告，ui-release.log；此时产品源码与固定提交一致",
+    "runtime": "固定副本SunEyeVision.UI.exe --toolbox-probe退出0，22工具；在设备/服务初始化前退出，不代表完整启动/工作流；实际WPF控件运行由43测试中的STA窗口用例覆盖局部",
+    "independentAcceptance": "未运行；独立测试用户直接插件验收优先，本批排队",
+    "visualStudioDesigner": "未执行；不能以构建/属性求值替代VS设计器",
+    "userVisualAcceptance": "未执行",
+    "performance": "未完成同条件改前后性能矩阵；500/150ms仍是未来预算，不是本批成绩"
+  },
+  "acceptanceBoundary": "43测试条数不是SA02/03/04/10/11全部验收；共同能力完整矩阵、dot/CtrlSpace端到端、引用更换全UI路径和成对性能仍需独立验收。SA01/05/06留S2，SA07/08/09留S3，SA12整批门槛未闭环。",
+  "knownRisks": [
+    "现有SandboxPool并发GetOrAdd多工厂、并发LoadAssembly、在用淘汰/租约未整改",
+    "Init或Process异常后Release仍可能跳过，按原语义留S3",
+    "用户DLL每次快照重新读字节有IO成本；128元数据缓存/32编译缓存容量内存未做性能验收",
+    "全文预热与首屏等待仍是S2范围",
+    "通用旧引用委托未提供内容身份时仅标external-provider，脚本工具已接新快照；不扩全局脚本业务"
+  ],
+  "protected": [
+    "文档角色HTML/生成器/源快照",
+    "plans/plan.json",
+    "_capture*",
+    "_probe.txt",
+    "用户数据及设备配置"
+  ],
+  "next": "交固定源码/完整程序副本及SHA给独立测试排队；文档角色同步实际事实；失败修订新身份，实施者修复；主控决定后续范围",
+  "rollback": "按9e0da65d→5a700dad→a254710d的有限产品差异审查回退，不重置整工作区或覆盖他人dirty；未推送",
+  "delivery": {
+    "root": "artifacts/validation/script-s1/delivery-a254710d",
+    "identity": "identity.json",
+    "programFiles": 627,
+    "sourceInputs": 1342,
+    "afterRunDrift": 0,
+    "sourceZip": "source.zip",
+    "identityReceipt": "post-runtime-identity.json",
+    "binaryManifestSha256": "E3364D01FA7DCCAE73120C830361AC8437FD03F2A2B01A171114B1D9E93900CF",
+    "sourceManifestSha256": "4A538585FB4711946D4F609916A95379B51B76DA3C59DDD0AC7B96E305B3C638",
+    "sourceZipSha256": "8DADB66EDD0AFC6AEB4D25C6B37A992D4027DCE9EECE0ABF25543FD199BEFD5C",
+    "sourceManifestMeaning": "source-manifest.json绑定实际构建工作区字节；source.zip为Git归档规范换行字节，逐文件核验用source-archive-manifest.json，不能混用两者"
+  }
+}

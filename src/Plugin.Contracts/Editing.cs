@@ -35,9 +35,9 @@ public sealed class ParameterEditSession
     {
         var type=_ports[id].Type;
         object? value;
-        try { value=type switch {
-            DataType.Text=>text, DataType.Number=>double.Parse(text,CultureInfo.InvariantCulture),
-            DataType.Integer=>long.Parse(text,CultureInfo.InvariantCulture),DataType.Boolean=>bool.Parse(text),
+        try { value=type.Scalar switch {
+            ScalarKind.Text=>text, ScalarKind.Float64=>double.Parse(text,CultureInfo.InvariantCulture),
+            ScalarKind.Int64=>long.Parse(text,CultureInfo.InvariantCulture),ScalarKind.Boolean=>bool.Parse(text),
             _=>throw new FormatException("Use typed editor for this parameter")}; }
         catch(Exception ex) when(ex is FormatException or OverflowException){_invalid[id]=text;return false;}
         return Set(id,new ConstantSetting(value));

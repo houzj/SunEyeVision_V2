@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 namespace SunEyeVision.Plugin.Contracts;
 public enum DataType { Boolean, Integer, Number, Text, NumberArray, Image }
-public sealed record Port(string Id, DataType Type, bool Required=true, bool Nullable=false);
+public sealed record Port(string Id, TypeRef Type, bool Required=true, bool Nullable=false);
 public sealed class ToolSchema
 {
     public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs)
@@ -12,6 +12,8 @@ public sealed class ToolSchema
         foreach(var group in new[]{Inputs,Outputs})
             if(group.Any(p=>string.IsNullOrWhiteSpace(p.Id)) || group.Select(p=>p.Id).Distinct(StringComparer.Ordinal).Count()!=group.Count)
                 throw new ArgumentException("Port identities must be nonempty and unique.");
+        if (Inputs.Concat(Outputs).Any(p => p.Type is null))
+            throw new ArgumentException("Ports require a declared type.");
         // IDs may contain punctuation. Length-prefixed fields avoid delimiter collisions
         // between one compound ID and several different ports.
         using var buffer=new MemoryStream();
@@ -22,7 +24,7 @@ public sealed class ToolSchema
                 writer.Write(group.Count);
                 foreach(var port in group)
                 {
-                    writer.Write(port.Id);writer.Write((int)port.Type);
+                    writer.Write(port.Id);writer.Write(port.Type.Fingerprint);
                     writer.Write(port.Required);writer.Write(port.Nullable);
                 }
             }
@@ -62,16 +64,20 @@ public static class ValueRules
     public static object? Freeze(Port port,object? value)
     {
         if(value is null)return port.Nullable?null:throw new ArgumentException($"Port {port.Id} disallows null");
-        bool valid=port.Type switch {
-            DataType.Boolean=>value is bool, DataType.Integer=>value is long,
-            DataType.Number=>value is double d && double.IsFinite(d),DataType.Text=>value is string,
-            DataType.NumberArray=>value is double[] a && a.All(double.IsFinite),
-            DataType.Image=>value is IReadOnlyImage, _=>false};
+        bool valid = port.Type.Shape switch {
+            ValueShape.Scalar => port.Type.Scalar switch {
+                ScalarKind.Boolean => value is bool, ScalarKind.Int64 => value is long,
+                ScalarKind.Float64 => value is double d && double.IsFinite(d), ScalarKind.Text => value is string,
+                _ => false },
+            ValueShape.Sequence => port.Type.Element == (TypeRef)DataType.Number &&
+                value is double[] a && port.Type.Count.Accepts(a.Length) && a.All(double.IsFinite),
+            ValueShape.Resource => port.Type.Resource == ResourceKind.Image && value is IReadOnlyImage,
+            _ => false };
         if(!valid)throw new ArgumentException($"Invalid value type for {port.Id} ({port.Type})");
         return value is double[] array?array.Clone():value;
     }
 }
-public sealed record OutputReference(string NodeId,string PortId,DataType Type);
+public sealed record OutputReference(string NodeId,string PortId,TypeRef Type);
 public static class BindingValidator
 {
     public static Diagnostic? Validate(OutputReference reference,ToolSchema source)

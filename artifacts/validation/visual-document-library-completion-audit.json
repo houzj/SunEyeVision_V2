@@ -1,0 +1,116 @@
+{
+  "batchId": "DOC-UX-SPLIT-20261022",
+  "goalScope": "Document pagination, interface navigation, relationship visuals, semantic labels, Chinese layout, compatibility and offline verification",
+  "requirements": [
+    {
+      "id": "G01",
+      "title": "中文专用目录及明确管理清单",
+      "evidence": [
+        "document-library-layout.json",
+        "document-library-isolation-validation.json"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "G02",
+      "title": "按界面位置的可点击导航",
+      "evidence": [
+        "index.html",
+        "interface-document-navigation.cjs",
+        "visual-document-library-validation.json"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "G03",
+      "title": "能力、优化和审计拆分且原正文保真",
+      "evidence": [
+        "visual-document-library-baseline.json",
+        "visual-document-library-validation.json"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "G04",
+      "title": "已拆12目标和20框架/SDK页有图与合同",
+      "evidence": [
+        "architecture-doc-site-manifest.json",
+        "doc-visual-components.cjs"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "G05",
+      "title": "执行、状态、数据、依赖、Owner及时序适配表达",
+      "evidence": [
+        "关系图解/guide-execution.html",
+        "关系图解/guide-dataflow.html",
+        "关系图解/guide-dependencies.html",
+        "关系图解/guide-lifecycle.html"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "G06",
+      "title": "关联名称以内容为主，编号为次要检索",
+      "evidence": [
+        "公共资源/architecture-doc-site.js",
+        "index.html",
+        "visual-library-readable-related-links.png"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "G07",
+      "title": "旧路由、旧页面、查询、历史与键盘兼容",
+      "evidence": [
+        "visual-document-library-validation.json",
+        "document-library-compatibility-validation.json"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "G08",
+      "title": "手机、桌面、放大与打印验证",
+      "evidence": [
+        "visual-document-library-validation.json",
+        "visual-library-run-sequence-print.png",
+        "visual-library-home-print.png"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "G09",
+      "title": "证据漂移保留，未升级语义或产品验收",
+      "evidence": [
+        "architecture-doc-site-manifest.json",
+        "DOC_SYNC_STATUS.json"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "G10",
+      "title": "统一生成链、分类导出和维护水位",
+      "evidence": [
+        "build-architecture-doc-site.cjs",
+        "document-library-export-validation.json",
+        "secure-export-validation.json",
+        "DOC_SYNC_STATUS.json"
+      ],
+      "status": "proven"
+    }
+  ],
+  "proven": 10,
+  "remainingCurrentScope": [],
+  "sourceDrift": [
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/execution-architecture.json",
+      "sha256": "17f4367985cafea2b0201f199ffd3a7464342e5601553f32e733786cc4ad8be7",
+      "currentSha256": "1a4e65f07bd9f964c8783b5c579e9436334cc88efe1159ab85dc9be84422ab08"
+    }
+  ],
+  "semanticUpgrades": 0,
+  "productModified": false,
+  "acceptanceExecuted": 0,
+  "reverseHandoff": "Requirements sent; reverse-side implementation is separate and not claimed complete"
+}

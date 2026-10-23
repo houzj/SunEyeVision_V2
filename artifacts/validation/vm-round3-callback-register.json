@@ -1,0 +1,17 @@
+{
+  "sha256": "45c57bc46f72fd1f9e0b3a6f9183ff974d14590cfd05ecf4e9fa97a4ff95ae9b",
+  "exports": [
+    {
+      "name": "VM_M_SetCustomDataCallBack",
+      "rva": "140ea0"
+    },
+    {
+      "name": "VM_M_SetEventCalBack",
+      "rva": "140e80"
+    }
+  ],
+  "va": "180140e80",
+  "rawHex": "488d05a90decff4885c9488915ef021700480f45c1488905bc43160033c0c3cc",
+  "method": "Independent PE exports and raw x64 bytes; not execution evidence",
+  "interpretation": "RCX nonzero selects supplied callback; RDX saved to 2b1180, callback to 2a5258; returns0; external caller still unknown"
+}

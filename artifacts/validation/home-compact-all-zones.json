@@ -1,0 +1,110 @@
+[
+  {
+    "id": "menu",
+    "scroll": false,
+    "bottom": 629,
+    "links": 12
+  },
+  {
+    "id": "run",
+    "scroll": false,
+    "bottom": 624.15625,
+    "links": 12
+  },
+  {
+    "id": "toolbox",
+    "scroll": false,
+    "bottom": 530.515625,
+    "links": 7
+  },
+  {
+    "id": "canvas",
+    "scroll": false,
+    "bottom": 715.4375,
+    "links": 16
+  },
+  {
+    "id": "properties",
+    "scroll": false,
+    "bottom": 645.796875,
+    "links": 12
+  },
+  {
+    "id": "image",
+    "scroll": false,
+    "bottom": 559.359375,
+    "links": 9
+  },
+  {
+    "id": "results",
+    "scroll": false,
+    "bottom": 530.515625,
+    "links": 7
+  },
+  {
+    "id": "status",
+    "scroll": false,
+    "bottom": 616.953125,
+    "links": 11
+  },
+  {
+    "id": "tool-special",
+    "scroll": false,
+    "bottom": 645.796875,
+    "links": 13
+  },
+  {
+    "id": "tool-run",
+    "scroll": false,
+    "bottom": 583.359375,
+    "links": 10
+  },
+  {
+    "id": "tool-input",
+    "scroll": false,
+    "bottom": 583.359375,
+    "links": 11
+  },
+  {
+    "id": "tool-roi",
+    "scroll": false,
+    "bottom": 554.515625,
+    "links": 9
+  },
+  {
+    "id": "tool-result",
+    "scroll": false,
+    "bottom": 513.71875,
+    "links": 6
+  },
+  {
+    "id": "tool-close",
+    "scroll": false,
+    "bottom": 542.5625,
+    "links": 9
+  },
+  {
+    "id": "runtime-plan",
+    "scroll": false,
+    "bottom": 660.453125,
+    "links": 12
+  },
+  {
+    "id": "runtime-data",
+    "scroll": false,
+    "bottom": 640.953125,
+    "links": 12
+  },
+  {
+    "id": "runtime-owner",
+    "scroll": false,
+    "bottom": 600.15625,
+    "links": 9
+  },
+  {
+    "id": "runtime-sdk",
+    "scroll": false,
+    "bottom": 616.953125,
+    "links": 11
+  }
+]

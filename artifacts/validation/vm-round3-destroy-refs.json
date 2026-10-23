@@ -1,0 +1,233 @@
+{
+  "sha256": "45c57bc46f72fd1f9e0b3a6f9183ff974d14590cfd05ecf4e9fa97a4ff95ae9b",
+  "refs": [
+    {
+      "name": "DestroyModule",
+      "literalRVA": "229380",
+      "refRVA": "b5d74",
+      "rootRVA": "b54e0"
+    },
+    {
+      "name": "[%s@%d] Resolve 'DestroyModule' function failed from module %s",
+      "literalRVA": "229410",
+      "refRVA": "b5e21",
+      "rootRVA": "b54e0"
+    },
+    {
+      "name": "CModuleLoader::GetUserModuleImpl",
+      "literalRVA": "229660",
+      "refRVA": "b6bf9",
+      "rootRVA": "b6b70"
+    },
+    {
+      "name": "[%s@%d] m_pUserModuleImpl is null",
+      "literalRVA": "229a28",
+      "refRVA": "b8b2a",
+      "rootRVA": "b8740"
+    },
+    {
+      "name": "DestroyModule",
+      "literalRVA": "229380",
+      "refRVA": "db6e0",
+      "rootRVA": "db470"
+    },
+    {
+      "name": "[%s@%d] Resolve 'DestroyModule' function failed from module %s",
+      "literalRVA": "229410",
+      "refRVA": "db745",
+      "rootRVA": "db470"
+    },
+    {
+      "name": "CImageSharedMemInfo::~CImageSharedMemInfo",
+      "literalRVA": "22e2d0",
+      "refRVA": "f0268",
+      "rootRVA": "f01e0"
+    },
+    {
+      "name": "CImageSharedMemInfo::~CImageSharedMemInfo",
+      "literalRVA": "22e2d0",
+      "refRVA": "f02b3",
+      "rootRVA": "f01e0"
+    },
+    {
+      "name": "CImageSharedMemInfo::~CImageSharedMemInfo",
+      "literalRVA": "22e2d0",
+      "refRVA": "f0320",
+      "rootRVA": "f01e0"
+    },
+    {
+      "name": "CImageSharedMemInfo::~CImageSharedMemInfo",
+      "literalRVA": "22e2d0",
+      "refRVA": "f036b",
+      "rootRVA": "f01e0"
+    },
+    {
+      "name": "CImageSharedMemInfo::~CImageSharedMemInfo",
+      "literalRVA": "22e2d0",
+      "refRVA": "f03ca",
+      "rootRVA": "f01e0"
+    },
+    {
+      "name": "CImageMappingInfo::~CImageMappingInfo",
+      "literalRVA": "22e700",
+      "refRVA": "f44e8",
+      "rootRVA": "f4480"
+    },
+    {
+      "name": "CUserModuleImplData::Clone",
+      "literalRVA": "22f508",
+      "refRVA": "fd689",
+      "rootRVA": "fd550"
+    },
+    {
+      "name": "CUserModuleImplData::Clone",
+      "literalRVA": "22f508",
+      "refRVA": "fd7f6",
+      "rootRVA": "fd550"
+    },
+    {
+      "name": "CUserModuleImplData::Clone",
+      "literalRVA": "22f508",
+      "refRVA": "fd847",
+      "rootRVA": "fd550"
+    },
+    {
+      "name": "CUserModuleImplData::Clone",
+      "literalRVA": "22f508",
+      "refRVA": "fd8c5",
+      "rootRVA": "fd550"
+    },
+    {
+      "name": "CUserModuleImplMgr::GetUserModuleImpl",
+      "literalRVA": "22f528",
+      "refRVA": "fe254",
+      "rootRVA": "fdcf0"
+    },
+    {
+      "name": "[%s@%d] CUserModuleImplData clone fail, wait free module, nRet = %d",
+      "literalRVA": "22f5a0",
+      "refRVA": "fe25b",
+      "rootRVA": "fdcf0"
+    },
+    {
+      "name": "CUserModuleImplMgr::GetUserModuleImpl",
+      "literalRVA": "22f528",
+      "refRVA": "fe482",
+      "rootRVA": "fdcf0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137aec",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137b22",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137bb5",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137c20",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137c60",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137cc6",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137d50",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137db6",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137e1c",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137e82",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137f00",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137f66",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "137fe4",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "13804a",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "13808c",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "1380f2",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "138134",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "VM_M_UnInitialize",
+      "literalRVA": "236110",
+      "refRVA": "1381f7",
+      "rootRVA": "137ad0"
+    },
+    {
+      "name": "CUserModuleImplData::Clone",
+      "literalRVA": "22f508",
+      "refRVA": "1f86db",
+      "rootRVA": "1f86b0"
+    }
+  ]
+}

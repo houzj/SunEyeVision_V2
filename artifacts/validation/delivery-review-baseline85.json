@@ -1,0 +1,478 @@
+{
+  "schemaVersion": 2,
+  "criteria": [
+    "双方现状、文件职责与实际链路（未知显式标注）",
+    "同场景逐项比较",
+    "具体收益、代价和风险",
+    "带适用条件/推翻条件的推荐",
+    "缺证影响、后续有限验证与边界"
+  ],
+  "packages": [
+    {
+      "id": "C01",
+      "analysisAccepted": true,
+      "anchors": [
+        "lifecycle-chain",
+        "vm-architecture"
+      ],
+      "basis": "装配顺序、半启动/切方案场景、分阶段转换、补偿成本和有限验证齐备。",
+      "remaining": "无阻塞文档缺口；VM全启动/退出与回滚只作为未证边界。",
+      "evidenceGap": "VM完整启动事务、半启动回滚和全退出资源配对。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C02",
+      "analysisAccepted": true,
+      "anchors": [
+        "coverage-input",
+        "contract-lifetime"
+      ],
+      "basis": "节点/显示名/GUID、IO改名、运行代次及全对象未知已分开，稳定身份推荐有迁移成本。",
+      "remaining": "无阻塞文档缺口；全对象身份未知限制结论，不阻止有界比较。",
+      "evidenceGap": "复制导入冲突、编辑会话/设备身份及全部迟到回调。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C03",
+      "analysisAccepted": true,
+      "anchors": [
+        "vm-four-line-round4",
+        "vm-four-line-round5",
+        "vm-four-line-round6",
+        "control-chain"
+      ],
+      "basis": "依赖计数、实际消费与双方控制结构取舍有实码/边界、有限场景和条件推荐。",
+      "remaining": "无阻塞文档缺口；不宣称全部分支/循环语义已证。",
+      "evidenceGap": "全部控制类型、循环计数重置、失败传播和实现对象动态类型。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C04",
+      "analysisAccepted": true,
+      "anchors": [
+        "vm-four-line-round5",
+        "vm-four-line-round6",
+        "image-source-chain"
+      ],
+      "basis": "共享/按ID队列、资源租约及最新帧/保序场景的利弊、代价和未知已列。",
+      "remaining": "无阻塞文档缺口；按ID队列不推串行，租约不推无饥饿。",
+      "evidenceGap": "消费者数量、公平性、共享相机冲突、排队取消和慢驱动排空。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C05",
+      "analysisAccepted": true,
+      "anchors": [
+        "binding-chain",
+        "coverage-input"
+      ],
+      "basis": "四类输入、错误/快照/跨流程限制成表，字段身份与迁移代价、缺证影响明确。",
+      "remaining": "无阻塞文档缺口；VM动态脚本未证不等于不支持。",
+      "evidenceGap": "动态脚本完整生产链、序列化往返、删除改名和失败重跑。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C06",
+      "analysisAccepted": true,
+      "anchors": [
+        "image-lifetime-chain",
+        "vm-four-line-round6"
+      ],
+      "basis": "五类图像对象、默认复制/映射/析构和我方结果释放缺口已分开比较。",
+      "remaining": "无阻塞文档缺口；限定默认路径，不建议无条件零拷贝。",
+      "evidenceGap": "原始帧复用/最后读者、扩展算法、竞争/失败替换和全异常释放。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C07",
+      "analysisAccepted": true,
+      "anchors": [
+        "coverage-devices-camera",
+        "communication-chain",
+        "devices"
+      ],
+      "basis": "三类接入、默认装配与扩展目标、恢复边界及业务下沉推荐完整有界。",
+      "remaining": "无阻塞文档缺口；接口可扩展不写成第三方包已支持。",
+      "evidenceGap": "VM逐协议恢复、特殊SDK故障与退役合同。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C08",
+      "analysisAccepted": true,
+      "anchors": [
+        "vm-four-line-round6",
+        "vm-four-line-round4",
+        "plugin-unload"
+      ],
+      "basis": "创建、标准删除、代表析构与库卸载拆开，常驻/热更新选择有成本和限制。",
+      "remaining": "无阻塞文档缺口；厂商内部未知不否决明确边界的分析。",
+      "evidenceGap": "特殊删除状态、驱动回调排空、全部实例释放和插件库所有者。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C09",
+      "analysisAccepted": true,
+      "anchors": [
+        "ui-editor",
+        "contract-lifetime",
+        "coverage-ui-editor"
+      ],
+      "basis": "代表编辑/关窗、共享调试占位、提交取消和外部副作用的限制及有限验证已列。",
+      "remaining": "无阻塞文档缺口；通过范围为代表专业场景，不代表所有编辑入口已统一。",
+      "evidenceGap": "全部编辑器草稿/提交/迟到结果、运行中参数及副作用隔离。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C10",
+      "analysisAccepted": true,
+      "anchors": [
+        "coverage-display-sdk",
+        "ui-image",
+        "ui-results"
+      ],
+      "basis": "双向转换、ROI/选择、历史边界、复制复用成本和未知均成表。",
+      "remaining": "无阻塞文档缺口；历史隔离与全变换保留为条件。",
+      "evidenceGap": "全坐标/DPI/旋转场景、历史独立快照、最终图像读者。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C11",
+      "analysisAccepted": true,
+      "anchors": [
+        "persistence-chain",
+        "vm-persistence",
+        "suneye-persistence"
+      ],
+      "basis": "文件事务、编辑撤销、设备副作用分域；保存中断/复制/缺插件的有限验证和建议明确。",
+      "remaining": "无阻塞文档缺口；不宣称VM格式兼容或原子写入已认证。",
+      "evidenceGap": "VM保存中断恢复、完整版本迁移、复制全部身份与实例恢复。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C12",
+      "analysisAccepted": true,
+      "anchors": [
+        "vm-four-line-round6",
+        "vm-four-line-round5",
+        "lifecycle-chain"
+      ],
+      "basis": "请求、退出、尾汇合、投递和释放分阶段，双方限制对称且有有限验证。",
+      "remaining": "无阻塞文档缺口；未排空不等于分析不能交付。",
+      "evidenceGap": "异常/超时/无回调出口、不可取消调用、外部消费者确认及最后读者。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C13",
+      "analysisAccepted": true,
+      "anchors": [
+        "diagnostics-chain",
+        "ui-logs",
+        "coverage-ui-logs"
+      ],
+      "basis": "活动/候选实现、日志订退/限频、关联ID建议及爆量/解绑验证有界。",
+      "remaining": "无阻塞文档缺口；只交机制比较，不承诺端到端追踪已经实现。",
+      "evidenceGap": "VM追踪/限频、全入口关联、队列积压/保留与故障响应实效。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C14",
+      "analysisAccepted": false,
+      "anchors": [
+        "plan-C14",
+        "plugins",
+        "plugin-unload"
+      ],
+      "basis": "已列加载隔间/目录与常驻升级取舍，但部署材料分散，缺同场景失败对照。",
+      "remaining": "补缺DLL、契约版本冲突、架构不匹配、升级失败四场景；关联具体构建复制规则/输出、诊断入口、推荐与干净环境有限验证。",
+      "evidenceGap": "双方干净环境失败、缺依赖回滚、升级退役及原生库替换。",
+      "criteriaPassed": [
+        true,
+        false,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "C15",
+      "analysisAccepted": false,
+      "anchors": [
+        "access-chain",
+        "script-chain"
+      ],
+      "basis": "可信进程内脚本/ALC非安全边界与取消成本明确，权限操作层的覆盖仍不足。",
+      "remaining": "补UI可见性、服务授权、脚本/DLL信任、真实设备写入、拒绝与审计的双方操作矩阵；每格标事实/未知、责任与条件推荐。",
+      "evidenceGap": "多入口一致授权、拒绝审计、非合作脚本停止与隔离实效。",
+      "criteriaPassed": [
+        true,
+        false,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "C16",
+      "analysisAccepted": false,
+      "anchors": [
+        "plan-C16",
+        "diagnostics-chain"
+      ],
+      "basis": "已有延迟/资源候选指标和不评胜负的边界，尚不是可执行的实验方案。",
+      "remaining": "补等输入/等算法范围、环境、预热、负载档位、时长/次数、指标口径、故障取消注入、判定与停止条件；交计划即可，不要求先跑数据。",
+      "evidenceGap": "对等性能样本、长稳资源曲线、故障取消与恢复实测数据。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "C17",
+      "analysisAccepted": true,
+      "anchors": [
+        "vm-globals",
+        "suneye-globals",
+        "binding-chain",
+        "ui-globals"
+      ],
+      "basis": "修正双方归属/旧状态后，定义、快照、生产消费、失败清旧值、初值保护及浅复制限制齐备。",
+      "remaining": "本轮已修正：我方RunSolutionAsync/ApplyProducedGlobalValues从VM边界移回自研；删除“写回时机未贯通”的过期表述。",
+      "evidenceGap": "VM原生一致性、全冲突/删除改名失败重跑、数组图像共享所有权。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C18",
+      "analysisAccepted": true,
+      "anchors": [
+        "coverage-devices-camera",
+        "vm-camera-management",
+        "suneye-camera-management"
+      ],
+      "basis": "身份、预览、触发、参数、帧序、恢复/切方案八场景与真实装配成本齐备。",
+      "remaining": "无阻塞文档缺口；启动连接不冒充掉线恢复，借用预览不推广全部详情窗口。",
+      "evidenceGap": "真实设备身份/触发、断线/切方案、参数并发及原始帧最后读者。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C19",
+      "analysisAccepted": true,
+      "anchors": [
+        "contract-sdk",
+        "contract-templates",
+        "templates",
+        "coverage-display-sdk"
+      ],
+      "basis": "实际WPF依赖、SDK/控件/三类模板消费者及条件拆包收益成本已说明。",
+      "remaining": "无阻塞文档缺口；代表样例通过不等全部插件一致性闭合。",
+      "evidenceGap": "完整消费者引用、三类代表插件、缺件/主题失败及设计时运行时验证。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "C20",
+      "analysisAccepted": true,
+      "anchors": [
+        "ui-design-comparison",
+        "coverage-ui"
+      ],
+      "basis": "13项双方入口、职责、忙错关状态、具体利弊与限制逐项成表。",
+      "remaining": "无阻塞文档缺口；场景列明确未实测，不表示交互已通过。",
+      "evidenceGap": "13项全状态/跨入口交互、最后读者和设计器/运行时视觉验证。",
+      "criteriaPassed": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "evidenceTasks": [
+    {
+      "id": "RE-W1",
+      "name": "原生工作流调度",
+      "closed": false,
+      "status": "partial",
+      "verified": "前驱计数/混合分派及真实锁外消费；共享与按ID选队列。",
+      "gap": "控制类型/循环/Group、并发数/公平性和资源冲突尚未闭合。",
+      "impact": "不支持调度性能/稳健性胜负；按计划与资源合同作有限建议。",
+      "next": "仅在控制结构或争用结论会改变选型时选有限补证点。",
+      "anchor": "vm-four-line-round5"
+    },
+    {
+      "id": "RE-W2",
+      "name": "停止、等待与异常",
+      "closed": false,
+      "status": "partial",
+      "verified": "88退出、98尾完成、548内部汇合；Proxy到PM完成消息投递边界。",
+      "gap": "异常/超时/无回调、不可取消调用、外部消费者ACK与排空未知。",
+      "impact": "双方均不能把停止返回/Task或Post当作全部资源可销毁。",
+      "next": "先明确所需完成阶段，再选择异常/最终消费者有限验证。",
+      "anchor": "vm-four-line-round6"
+    },
+    {
+      "id": "RE-I1",
+      "name": "原始帧、内容与共享寿命",
+      "closed": false,
+      "status": "partial",
+      "verified": "默认缓存复制/替换、批次加载实际调用、采集帧单轮所有权。",
+      "gap": "原始缓冲复用、最后读者、扩展+128与运行/公开写入准入仍未知。",
+      "impact": "不推无条件借用/零拷贝，也不以引用计数当内容锁。",
+      "next": "仅追影响复制/借用选择的源复用或写入准入。",
+      "anchor": "vm-four-line-round6"
+    },
+    {
+      "id": "RE-I2",
+      "name": "缓存、映射与查询释放",
+      "closed": false,
+      "status": "partial",
+      "verified": "映射Create/Map/memcpy与Unmap/Close、默认缓存delete[]及查询显式释放局部配对。",
+      "gap": "全查询类型/异常出口、并发释放、显示和历史持有未全覆盖。",
+      "impact": "UI清列表、GCHandle释放不等底层像素归还，限定默认路径结论。",
+      "next": "按映射/算法缓存/查询/显示对象分别选失败释放用例。",
+      "anchor": "vm-four-line-round6"
+    },
+    {
+      "id": "RE-P1",
+      "name": "实例最终析构与在途清理",
+      "closed": false,
+      "status": "partial",
+      "verified": "标准删除观察者到条件DestroyModule、代表相机注销/等待/成员基类析构。",
+      "gap": "超时后继续清理安全、两事件生产者、特殊状态/其他插件和库退役未知。",
+      "impact": "代表析构不推广全部实例；超时和SDK回调保障限制安全卸载建议。",
+      "next": "仅按会改变关闭策略的在途/超时条件选代表验证。",
+      "anchor": "vm-four-line-round6"
+    },
+    {
+      "id": "RE-P2",
+      "name": "发现、依赖与库/程序集",
+      "closed": false,
+      "status": "partial",
+      "verified": "相机目录多类型Cs/Control加载；我方常驻ALC/目录与实例分离。",
+      "gap": "非相机发现全覆盖、缺依赖回滚、升级与原生库引用退役不完整。",
+      "impact": "没有卸载证据不等于VM不支持；无热更新需求暂保常驻重启策略。",
+      "next": "优先补C14文档四场景，实际干净环境验证另行安排。",
+      "anchor": "coverage-devices-camera"
+    },
+    {
+      "id": "RE-X1",
+      "name": "版本身份与跨链认证",
+      "closed": false,
+      "status": "partial",
+      "verified": "已有托管材料、部分安装DLL SHA/PE导出/静态地址对应。",
+      "gap": "全部程序集哈希/MVID、PInvoke到具体版本native及运行桥接尚未逐项认证。",
+      "impact": "保留材料来源限制，独立Ghidra产物不冒称原厂源码或REA Evidence。",
+      "next": "仅对影响推荐的代表程序集认证，不以全库恢复作为文档交付前提。",
+      "anchor": "vm-four-line-round5"
+    }
+  ],
+  "analysis": {
+    "accepted": 17,
+    "total": 20,
+    "percent": 85
+  },
+  "evidence": {
+    "closed": 0,
+    "total": 7,
+    "percent": 0
+  },
+  "note": "新旧计量口径转换，非本轮新闭合17包证据；文档交付通过不代表产品/设备/运行验收。"
+}

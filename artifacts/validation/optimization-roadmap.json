@@ -1,0 +1,331 @@
+{
+  "scope": "12优化包实施建议顺序；依赖是提交前置，不阻止独立设计审查；不替代原G0-G5分析门禁",
+  "foundation": {
+    "id": "R0",
+    "title": "先冻结共同合同",
+    "deliverable": "身份（方案/Run/节点/字段/帧）、所有权（借用/共享/独立）、终态（停止中/排空/失败/完成）、兼容版本；映射已有类型，只有缺口才新增。",
+    "gate": "合同需列真实生产者和消费者及失败边；不把拟议ResultEnvelope/LicenseService当现有实现。"
+  },
+  "phases": [
+    {
+      "id": "R1",
+      "title": "先修安全与一致性",
+      "reason": "避免提前释放、失败误报和主题半切换；局部已证缺陷不必等待全部VM逆向。"
+    },
+    {
+      "id": "R2",
+      "title": "再统一业务合同",
+      "reason": "调试、输入/变量、结果投影和显示依赖稳定身份与退役。"
+    },
+    {
+      "id": "R3",
+      "title": "最后补授权与验证",
+      "reason": "厂商/政策及实际测量决定新增授权和性能路线；基准设计可提前，运行需要范围授权。"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "O01",
+      "title": "入口、装配与编辑事务",
+      "phase": "R1",
+      "dependencies": [
+        "O02",
+        "O04"
+      ],
+      "deliverable": "关闭协调器和切换采用事务；统一设置独立立项",
+      "prerequisite": "先完成R0的身份/Owner合同；设置项和生效时点需产品确认",
+      "exit": "重复退出/切方案、取消保存、迟到恢复均有唯一终态；旧方案保留边界可验",
+      "readiness": "关闭链局部可整改；启动整体选型继续暂缓",
+      "route": "暂缓选型＋设置入口新开发",
+      "evidenceCaps": [
+        "M01",
+        "M02",
+        "M05",
+        "M06",
+        "M23"
+      ],
+      "implementationStepIds": [
+        "close-barrier",
+        "delete-undo",
+        "history-failure",
+        "sequence"
+      ],
+      "productStatus": "未实施/未运行验收"
+    },
+    {
+      "id": "O02",
+      "title": "统一运行范围、连续与停止完成",
+      "phase": "R1",
+      "dependencies": [],
+      "deliverable": "执行会话终态Task、停止派发与在途排空、超时隔离",
+      "prerequisite": "R0先冻结Run/节点/子调用身份和终态状态机",
+      "exit": "取消后观察全部在途；非取消错误不遗漏；未排空不得释放根运行占用",
+      "readiness": "已证排空缺口可整改，性能调度替换暂缓",
+      "route": "融合优化",
+      "evidenceCaps": [
+        "M11",
+        "M12",
+        "M15",
+        "M13",
+        "M14"
+      ],
+      "implementationStepIds": [
+        "sub-status",
+        "call-cycle"
+      ],
+      "productStatus": "未实施/未运行验收"
+    },
+    {
+      "id": "O03",
+      "title": "参数、绑定、变量和控制结构合同",
+      "phase": "R2",
+      "dependencies": [
+        "O02"
+      ],
+      "deliverable": "统一输入解析/变量来源、逐类型快照与编辑预检",
+      "prerequisite": "复用已有类型/作用域/循环校验，不整体重造；列单次/方案/调试差异",
+      "exit": "生产者失败不退回设计初值；数组别名及旧字段迁移有明确定义",
+      "readiness": "已证保存/导入缺陷可先做；全快照改造等合同",
+      "route": "原方案核查扩展＋编辑事务整改",
+      "evidenceCaps": [
+        "M07",
+        "M18",
+        "T02",
+        "T03",
+        "T14",
+        "T16"
+      ],
+      "implementationStepIds": [
+        "child-globals"
+      ],
+      "productStatus": "未实施/未运行验收"
+    },
+    {
+      "id": "O04",
+      "title": "生命周期、图像最后读者与退出",
+      "phase": "R1",
+      "dependencies": [
+        "O02"
+      ],
+      "deliverable": "工具/帧/分析/窗口Owner表与可等待退役",
+      "prerequisite": "R0区分借用/独立/共享；不能见Dispose就盲目释放",
+      "exit": "创建失败/切节点/关窗/停止异常均配对退役；native最后读者须证据",
+      "readiness": "先补Owner合同；未知native不能擅自Dispose",
+      "route": "原方案整改＋资源策略暂缓",
+      "evidenceCaps": [
+        "T08",
+        "X01",
+        "M22",
+        "M08"
+      ],
+      "implementationStepIds": [
+        "child-drain"
+      ],
+      "productStatus": "未实施/未运行验收"
+    },
+    {
+      "id": "O05",
+      "title": "标准工具窗口：执行、连续、提交和关闭",
+      "phase": "R2",
+      "dependencies": [
+        "O02",
+        "O04"
+      ],
+      "deliverable": "统一调试会话：单次、连续、停止、关闭",
+      "prerequisite": "逐工具列线程亲和/覆写/事件，配置窗不得误接算法循环",
+      "exit": "连续失败不自动重触发；关窗等循环退出；所有工具入口同合同",
+      "readiness": "采用VM已确认等待职责，以自有接口接入",
+      "route": "VM机制迁移＋自研窗口适配",
+      "evidenceCaps": [
+        "T01",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08"
+      ],
+      "implementationStepIds": [
+        "sub-delay"
+      ],
+      "productStatus": "未实施/未运行验收"
+    },
+    {
+      "id": "O06",
+      "title": "图像、ROI、图形文字及坐标一致性",
+      "phase": "R2",
+      "dependencies": [
+        "O04"
+      ],
+      "deliverable": "同帧显示合同、坐标/DPI缓存失效、工具确定缺陷",
+      "prerequisite": "先修正确性；缓存协调器活动调用未证，后端更换需O12数据",
+      "exit": "ROI Mat行步长、文字/图形变更、跨DPI、历史像素均独立验",
+      "readiness": "确定算法/UI缺陷可分项做；后端迁移暂缓",
+      "route": "原方案整改＋坐标合同融合",
+      "evidenceCaps": [
+        "T12",
+        "T09",
+        "T10",
+        "T11",
+        "M16"
+      ],
+      "implementationStepIds": [
+        "bitmap-copy"
+      ],
+      "productStatus": "未实施/未运行验收"
+    },
+    {
+      "id": "O07",
+      "title": "模块结果树与输出投影",
+      "phase": "R2",
+      "dependencies": [
+        "O03",
+        "O04"
+      ],
+      "deliverable": "结果投影会话、稳定字段身份、分析有效性与大数组分段",
+      "prerequisite": "成功/失败/取消/历史语义先一致，复用实际输出合同",
+      "exit": "普通/相机/调试/切节点均不冒充旧成功；树选中与高亮同帧",
+      "readiness": "融合VM decorator职责与自有输出类型",
+      "route": "融合优化",
+      "evidenceCaps": [
+        "M17",
+        "M25",
+        "T13"
+      ],
+      "implementationStepIds": [
+        "analysis-delivery",
+        "analysis-owner",
+        "sub-identity"
+      ],
+      "productStatus": "未实施/未运行验收"
+    },
+    {
+      "id": "O08",
+      "title": "方案、标定文件与恢复事务",
+      "phase": "R1",
+      "dependencies": [],
+      "deliverable": "候选保存与内存提交边界、资源清单和版本迁移表",
+      "prerequisite": "保存局部失败回滚可先修；标定正式发布另需候选/验证/采用合同",
+      "exit": "文件占用/设置失败/事件失败阶段可区分；重开和相对路径验收",
+      "readiness": "保留已有临时替换机制，整改事务，不迁未知.sol",
+      "route": "原方案扩展＋发布链复审",
+      "evidenceCaps": [
+        "M03",
+        "M02",
+        "T17"
+      ],
+      "implementationStepIds": [
+        "load",
+        "write",
+        "commit",
+        "resources",
+        "recover",
+        "trust"
+      ],
+      "productStatus": "未实施/未运行验收"
+    },
+    {
+      "id": "O09",
+      "title": "相机、通信和后台真实副作用",
+      "phase": "R1",
+      "dependencies": [
+        "O02",
+        "O04"
+      ],
+      "deliverable": "统一采集准入、停止异常排空及服务故障汇总",
+      "prerequisite": "真实设备/协议副作用顺序先明确；厂商支持矩阵与SDK版本待实机",
+      "exit": "预览/后台/流程互斥，停止失败不提前占用可用；各层清理被观察",
+      "readiness": "已证准入/收尾缺陷整改；逐厂商选型暂缓",
+      "route": "暂缓选型＋服务准入整改",
+      "evidenceCaps": [
+        "M19",
+        "M20",
+        "X03"
+      ],
+      "implementationStepIds": [
+        "list",
+        "preview",
+        "parameters",
+        "feed",
+        "capture",
+        "buffer",
+        "stop",
+        "support",
+        "service-finally",
+        "comm-retire",
+        "comm-response"
+      ],
+      "productStatus": "未实施/未运行验收"
+    },
+    {
+      "id": "O10",
+      "title": "插件、SDK、脚本和发布依赖",
+      "phase": "R1",
+      "dependencies": [],
+      "deliverable": "主题候选提交、依赖版本准入、SDK拆分兼容计划和发布清单",
+      "prerequisite": "主题事务可先修；拆包前消费者/资源URI/判别符与兼容版本需冻结",
+      "exit": "设计器/运行/插件旧方案/干净机器依赖闭合；注销不冒称热卸载",
+      "readiness": "局部修正可先做；SDK迁移分阶段，热更另立项",
+      "route": "原方案重构＋VM职责参考",
+      "evidenceCaps": [
+        "X02",
+        "T15",
+        "M04"
+      ],
+      "implementationStepIds": [
+        "theme",
+        "controls",
+        "resolve",
+        "unload",
+        "deploy",
+        "script-release",
+        "script-cache",
+        "script-pool"
+      ],
+      "productStatus": "未实施/未运行验收"
+    },
+    {
+      "id": "O11",
+      "title": "自有狗授权、文件保护与信任政策",
+      "phase": "R3",
+      "dependencies": [
+        "O02",
+        "O04",
+        "O09"
+      ],
+      "deliverable": "自有狗适配、能力快照、所有服务准入和拔狗安全退役",
+      "prerequisite": "型号/SDK/期限/离线宽限/换狗恢复待定；无需VM狗协议",
+      "exit": "后台入口同样受限；在途安全终结；签发私钥不放客户端",
+      "readiness": "新增自有体系，厂商和政策未定不得声称可交付",
+      "route": "全新开发（自有授权）",
+      "evidenceCaps": [
+        "X03",
+        "X04"
+      ],
+      "implementationStepIds": [],
+      "productStatus": "未实施/未运行验收"
+    },
+    {
+      "id": "O12",
+      "title": "专业工具逐项验收与同条件性能",
+      "phase": "R1",
+      "dependencies": [],
+      "deliverable": "先修日志批次丢条及Flush合同；性能基准与收益验证留到R3",
+      "prerequisite": "日志确定缺陷不等性能测量即可整改；性能测试输入/环境/质量门槛和运行范围另行授权",
+      "exit": "同条件原始记录、失败/缺测保留；确认瓶颈再立性能迁移",
+      "readiness": "日志可靠性可先修；性能验证计划先设计、运行在R3；无数据不选性能优胜路线",
+      "route": "可靠性整改＋性能验证（不选后端）",
+      "evidenceCaps": [
+        "T18",
+        "X05",
+        "M26"
+      ],
+      "implementationStepIds": [
+        "log-batch-loss",
+        "log-flush",
+        "log-owner"
+      ],
+      "productStatus": "未实施/未运行验收"
+    }
+  ],
+  "productModified": false
+}

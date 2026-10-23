@@ -1,0 +1,87 @@
+{
+  "batchId": "TOOL-REMOVE-20261022-01",
+  "received": true,
+  "documentAdopted": true,
+  "deliveryEvidenceVerified": true,
+  "evidence": "artifacts/tool-removal/20261022-TD01-TD02/validation.json",
+  "evidenceSha256": "07c1f380a090311b678644094d0c1440bc9a715fa5c2c2bb2cc67e7dfc5a9783",
+  "sourceChecks": [
+    {
+      "path": "SunEyeVision.slnx",
+      "sha256": "85345b08f97ad5f6d6c1eec6758f91ffadada4bd8d2a9caecdc78e5c29b02b87",
+      "observedSha256": "85345b08f97ad5f6d6c1eec6758f91ffadada4bd8d2a9caecdc78e5c29b02b87",
+      "matches": true
+    },
+    {
+      "path": "SunEyeVision.App.slnx",
+      "sha256": "2869f12da39a936a492d9fbd030d5fb274572208e39eeb13f55403a462a599bd",
+      "observedSha256": "2869f12da39a936a492d9fbd030d5fb274572208e39eeb13f55403a462a599bd",
+      "matches": true
+    },
+    {
+      "path": "tests/SunEyeVision.Plugin.SDK.Tests/DesignTimeInitializationContractTests.cs",
+      "sha256": "fb42f1a14132cc43d1681c7f4d7944ee07ad5a54ed9142fa53586b8f7b6c44cb",
+      "observedSha256": "fb42f1a14132cc43d1681c7f4d7944ee07ad5a54ed9142fa53586b8f7b6c44cb",
+      "matches": true
+    },
+    {
+      "path": "tests/SunEyeVision.Tool.NPointCalibration.Tests/NPointCalibrationTests.cs",
+      "sha256": "38f51e3c41b79b06dfd807f2e2c21c9ba17bd712bc88484c89f53c93ad4c9a65",
+      "observedSha256": "38f51e3c41b79b06dfd807f2e2c21c9ba17bd712bc88484c89f53c93ad4c9a65",
+      "matches": true
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/plugins/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.dll",
+      "sha256": "5cc7d2b0efce19d7b4fac1a3bbcfce217998d53a2ad9157922b79bef651a9411",
+      "observedSha256": "5cc7d2b0efce19d7b4fac1a3bbcfce217998d53a2ad9157922b79bef651a9411",
+      "matches": true
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/plugins/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.dll",
+      "sha256": "fe54385aba8cb481845f77b8008b99bc5deff87b1cd452bac7e8b96ecb7e0f6c",
+      "observedSha256": "fe54385aba8cb481845f77b8008b99bc5deff87b1cd452bac7e8b96ecb7e0f6c",
+      "matches": true
+    },
+    {
+      "path": "artifacts/tool-removal/20261022-TD01-TD02/release-toolbox.json",
+      "sha256": "c263dc39fd675533328e23dbc2654c02eed4df8cc0998cd8ac5fb236d5949f58",
+      "observedSha256": "c263dc39fd675533328e23dbc2654c02eed4df8cc0998cd8ac5fb236d5949f58",
+      "matches": true
+    }
+  ],
+  "sourceCount": 22,
+  "runtimeCount": 22,
+  "releaseBuild": {
+    "exitCode": 0,
+    "warnings": 1045,
+    "errors": 0,
+    "log": "artifacts/tool-removal/20261022-TD01-TD02/build-release.log"
+  },
+  "tests": {
+    "designInitialization": {
+      "passed": 12,
+      "failed": 0
+    },
+    "nPointCalibration": {
+      "passed": 33,
+      "failed": 0
+    }
+  },
+  "runtimeProbe": {
+    "path": "artifacts/tool-removal/20261022-TD01-TD02/release-toolbox.json",
+    "sha256": "c263dc39fd675533328e23dbc2654c02eed4df8cc0998cd8ac5fb236d5949f58",
+    "noDevicesStarted": true,
+    "meaning": "Release工具发现探针；设备初始化前退出，非设备或VM业务验收"
+  },
+  "manualAcceptance": "not-performed",
+  "oldSolutionMigration": "not-performed",
+  "documentationRoleExecutedProduct": false,
+  "documentVerified": true,
+  "documentChecks": [
+    "index.html",
+    "tools.html",
+    "tool-standard.html",
+    "tool-verification.html",
+    "tool-detail-ImageThreshold.html"
+  ]
+}

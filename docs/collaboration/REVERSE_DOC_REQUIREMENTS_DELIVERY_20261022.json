@@ -1,0 +1,10 @@
+{
+  "targetThreadId": "01a159e5-6571-7ab2-a12d-6ece9db18e69",
+  "title": "架构逆向与实现对照文档",
+  "requirementsPath": "docs/collaboration/REVERSE_DOC_SPLIT_REQUIREMENTS_20261022.md",
+  "sha256": "6b0b05d467d91d0f9af0e12f8a0de4007cf392d273bb40913acd08ca74b871a4",
+  "authorization": "User explicitly requested sending requirements to that conversation",
+  "delivery": "initial requirements and semantic-link-name supplement acknowledged by send_message_to_thread",
+  "reverseWorktreeWritten": false,
+  "reverseCompletionClaimed": false
+}

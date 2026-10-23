@@ -374,6 +374,17 @@ public partial class App : Application
         catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Warning, "方案已打开，但最近记录未保存：" + ex.Message, "App"); }
     }
 
+    private void RemoveRecentSolution(string path)
+    {
+        var files = StartPreferences.RecentFiles.ToList();
+        var dismissed = StartPreferences.DismissedPaths.ToList();
+        StartPreferences.RecentFiles.RemoveAll(x => string.Equals(x.Path, path, StringComparison.OrdinalIgnoreCase));
+        if (!StartPreferences.DismissedPaths.Contains(path, StringComparer.OrdinalIgnoreCase))
+            StartPreferences.DismissedPaths.Add(path);
+        try { StartPreferences.Save(StartPreferencesFile); }
+        catch { StartPreferences.RecentFiles = files; StartPreferences.DismissedPaths = dismissed; throw; }
+    }
+
     public async Task ShowStartPageAsync(MainWindow mainWindow)
     {
         if (mainWindow.DataContext is not MainWindowViewModel vm) return;
@@ -383,9 +394,10 @@ public partial class App : Application
             // Existing catalog entries are optional suggestions, not prerequisites for file opening.
             var recent = StartPreferences.RecentFiles.Concat(ServiceInitializer.SolutionManager.GetAllMetadata()
                 .Select(x => new RecentSolutionFile { Name = x.Name, Path = x.FilePath, LastOpened = x.LastAccessTime }))
-                .Where(x => !string.IsNullOrWhiteSpace(x.Path)).GroupBy(x => Path.GetFullPath(x.Path), StringComparer.OrdinalIgnoreCase)
-                .Select(x => x.First()).Take(12).ToArray();
-            var page = new StartPageWindow(StartPreferences.HideStartPage, recent, SetStartPageHidden);
+                .Where(x => !string.IsNullOrWhiteSpace(x.Path) && !StartPreferences.DismissedPaths.Contains(x.Path, StringComparer.OrdinalIgnoreCase))
+                .GroupBy(x => Path.GetFullPath(x.Path), StringComparer.OrdinalIgnoreCase)
+                .Select(x => x.First()).OrderByDescending(x => x.LastOpened).ToArray();
+            var page = new StartPageWindow(StartPreferences.HideStartPage, recent, SetStartPageHidden, RemoveRecentSolution);
             if (wasVisible) page.Owner = mainWindow;
             page.ShowDialog();
             switch (page.SelectedAction)
@@ -396,10 +408,6 @@ public partial class App : Application
                 case StartPageAction.NewSolution:
                     if (!await vm.NewEmptySolutionAsync()) continue;
                     break;
-                case StartPageAction.ManageSolutions:
-                    if (!mainWindow.IsVisible) ShowMainWindow(mainWindow, "optional solution browser");
-                    vm.ShowSolutionConfigurationCommand.Execute(null);
-                    return;
                 default: break; // Closing a start page never exits the application or discards an open workspace.
             }
             if (!mainWindow.IsVisible) ShowMainWindow(mainWindow, "start page selection");
@@ -407,12 +415,19 @@ public partial class App : Application
         }
     }
 
+    private Task? _pendingWorkspaceDeviceRestore;
+    internal bool HasPendingWorkspaceDeviceRestore => _pendingWorkspaceDeviceRestore is { IsCompleted: false };
     internal async Task CompleteOpenedWorkspaceAsync()
     {
         if (Application.Current.MainWindow is not MainWindow main) return;
         if (!main.IsVisible) ShowMainWindow(main, "solution committed");
         main.ShowSolutionLoadingOverlay("正在恢复设备", "方案已打开，正在恢复已配置相机连接");
-        try { await RestoreCameraConnectionsAsync(ServiceInitializer.SolutionManager, main.UpdateSolutionLoadingOverlay); }
+        try
+        {
+            var expected = ServiceInitializer.SolutionManager.CurrentSolution;
+            if (expected != null) await ServiceInitializer.CommunicationService.VerifyWorkspaceReadyAsync(expected);
+            await RestoreCameraConnectionsAsync(ServiceInitializer.SolutionManager, main.UpdateSolutionLoadingOverlay, reportFailure: true);
+        }
         finally { main.HideSolutionLoadingOverlay(); }
     }
 
@@ -636,7 +651,7 @@ public partial class App : Application
         }
     }
 
-    private async Task RestoreCameraConnectionsAsync(SolutionManager solutionManager, Action<string, string>? statusReporter = null)
+    private async Task RestoreCameraConnectionsAsync(SolutionManager solutionManager, Action<string, string>? statusReporter = null, bool reportFailure = false)
     {
         try
         {
@@ -644,6 +659,7 @@ public partial class App : Application
             statusReporter?.Invoke("正在恢复相机连接", "正在根据设备列表连接相机，最多等待 10 秒");
             var restoreTask = CameraManagerViewModel
                 .RestoreConnectionsForCurrentSolutionAsync(solutionManager);
+            _pendingWorkspaceDeviceRestore = restoreTask;
             var completed = await Task.WhenAny(restoreTask, Task.Delay(CameraRestoreTimeout));
             if (!ReferenceEquals(completed, restoreTask))
             {
@@ -651,6 +667,7 @@ public partial class App : Application
                     $"timeoutMs={CameraRestoreTimeout.TotalMilliseconds:0}");
                 statusReporter?.Invoke("相机连接等待超时", "部分设备未在 10 秒内完成连接，软件将继续启动");
                 _ = ObserveLateCameraRestoreAsync(restoreTask);
+                if (reportFailure) throw new TimeoutException("相机恢复等待超时，方案已提交，设备状态尚未确认。");
                 return;
             }
 
@@ -667,6 +684,7 @@ public partial class App : Application
                 ex);
             LogStartupStage("Camera connection restore failed", ex.Message);
             statusReporter?.Invoke("相机连接处理失败", $"软件将继续启动：{ex.Message}");
+            if (reportFailure) throw;
         }
     }
 

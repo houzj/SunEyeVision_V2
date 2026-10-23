@@ -1,0 +1,211 @@
+{
+  "source": {
+    "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/ui-entry-navigation.js",
+    "sha256": "a10c81d6328212960c7ef171f4121ef62e89c24ee3a4bcab912010ac35cd027c"
+  },
+  "entries": [
+    {
+      "id": "startup",
+      "label": "启动/恢复",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed",
+        "unknown"
+      ]
+    },
+    {
+      "id": "solution",
+      "label": "方案配置",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "save",
+      "label": "保存",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed",
+        "unknown"
+      ]
+    },
+    {
+      "id": "run",
+      "label": "单次运行",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "continuous",
+      "label": "全部连续",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "stop",
+      "label": "停止",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "variables",
+      "label": "变量",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "camera",
+      "label": "相机",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation",
+        "unknown"
+      ]
+    },
+    {
+      "id": "communication",
+      "label": "通信",
+      "vmFactKinds": [
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "catalog",
+      "label": "分类 / 拖入",
+      "vmFactKinds": [
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "help",
+      "label": "帮助 / 主题",
+      "vmFactKinds": [
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "tabs",
+      "label": "Tab管理",
+      "vmFactKinds": [
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "node",
+      "label": "节点操作",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "links",
+      "label": "连线/路径",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "undo",
+      "label": "删除/撤销",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation",
+        "unknown"
+      ]
+    },
+    {
+      "id": "group",
+      "label": "子程序 / Group",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "tabonce",
+      "label": "Tab单次",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "tabcontinuous",
+      "label": "Tab连续",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "viewport",
+      "label": "视口/小地图",
+      "vmFactKinds": [
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "preview",
+      "label": "图像源 / 预览",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation",
+        "unknown"
+      ]
+    },
+    {
+      "id": "result",
+      "label": "结果树 / 表",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed",
+        "unknown"
+      ]
+    },
+    {
+      "id": "close",
+      "label": "关闭 / 切方案",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation",
+        "unknown"
+      ]
+    },
+    {
+      "id": "status",
+      "label": "状态栏",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "history",
+      "label": "历史 / 帮助",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "data",
+      "label": "数据结构与传递总览",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed",
+        "unknown"
+      ]
+    }
+  ]
+}

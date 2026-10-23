@@ -1,0 +1,272 @@
+[
+  {
+    "side": "a",
+    "hasTwice": false,
+    "compile": null,
+    "success": true,
+    "hasSharedMath": true,
+    "case": "typeof",
+    "sha256": "CC6F3F131E0EAA48286330FF220B5729FAFBC8BCB9021B4F960F9053B1429116",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\typeof-a\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\typeof.cs",
+    "count": 1
+  },
+  {
+    "side": "b",
+    "hasTwice": false,
+    "compile": null,
+    "success": true,
+    "hasSharedMath": false,
+    "case": "typeof",
+    "sha256": "CC6F3F131E0EAA48286330FF220B5729FAFBC8BCB9021B4F960F9053B1429116",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\typeof-b\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\typeof.cs",
+    "count": 0
+  },
+  {
+    "side": "a",
+    "hasTwice": false,
+    "compile": null,
+    "success": true,
+    "hasSharedMath": true,
+    "case": "namespace-new",
+    "sha256": "4C8AD3D04C6C9DFB1FA58FF28D6BD80A4E2DBECBDA9EA6C1940B33BC2CFA8CFE",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\namespace-new-a\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\namespace-new.cs",
+    "count": 1
+  },
+  {
+    "side": "b",
+    "hasTwice": false,
+    "compile": null,
+    "success": true,
+    "hasSharedMath": true,
+    "case": "namespace-new",
+    "sha256": "4C8AD3D04C6C9DFB1FA58FF28D6BD80A4E2DBECBDA9EA6C1940B33BC2CFA8CFE",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\namespace-new-b\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\namespace-new.cs",
+    "count": 1
+  },
+  {
+    "side": "a",
+    "hasTwice": true,
+    "compile": {
+      "ms": 310.9587,
+      "success": true,
+      "languageVersion": "CSharp13",
+      "errors": [],
+      "scope": "standalone Roslyn compiler; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "static-member",
+    "sha256": "2B0EE39D14D1E9C0EA8CB680CD292F5432A6FB39E6147E8FB0E8327CC2281D50",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\static-member-a\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\static-member.cs",
+    "count": 3
+  },
+  {
+    "side": "b",
+    "hasTwice": true,
+    "compile": {
+      "ms": 110.9745,
+      "success": true,
+      "errors": [],
+      "scope": "existing CodeDom compiler component; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "static-member",
+    "sha256": "2B0EE39D14D1E9C0EA8CB680CD292F5432A6FB39E6147E8FB0E8327CC2281D50",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\static-member-b\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\static-member.cs",
+    "count": 3
+  },
+  {
+    "side": "a",
+    "hasTwice": true,
+    "compile": {
+      "ms": 357.2862,
+      "success": true,
+      "languageVersion": "CSharp13",
+      "errors": [],
+      "scope": "standalone Roslyn compiler; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "unqualified-member",
+    "sha256": "74BBC0EACF57305A433D2EEE50EB8F4A7665450EEFD548641B0C064D4092D41A",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\unqualified-member-a\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\unqualified-member.cs",
+    "count": 3
+  },
+  {
+    "side": "b",
+    "hasTwice": true,
+    "compile": {
+      "ms": 99.7479,
+      "success": true,
+      "errors": [],
+      "scope": "existing CodeDom compiler component; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "unqualified-member",
+    "sha256": "74BBC0EACF57305A433D2EEE50EB8F4A7665450EEFD548641B0C064D4092D41A",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\unqualified-member-b\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\unqualified-member.cs",
+    "count": 3
+  },
+  {
+    "side": "a",
+    "hasTwice": false,
+    "compile": {
+      "ms": 397.6707,
+      "success": true,
+      "languageVersion": "CSharp13",
+      "errors": [],
+      "scope": "standalone Roslyn compiler; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "M01",
+    "sha256": "8B569D1641B643AF01FEF4E5F62BBC742C446000B7BAA4FFC8C530C627D05B75",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M01-a\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M01.cs",
+    "count": 17
+  },
+  {
+    "side": "b",
+    "hasTwice": false,
+    "compile": {
+      "ms": 69.01780000000001,
+      "success": false,
+      "errors": [
+        "d:\\temp\\zuokdimd.0.cs(7,56) : error CS1056: 意外的字符“$”"
+      ],
+      "scope": "existing CodeDom compiler component; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "M01",
+    "sha256": "8B569D1641B643AF01FEF4E5F62BBC742C446000B7BAA4FFC8C530C627D05B75",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M01-b\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M01.cs",
+    "count": 16
+  },
+  {
+    "side": "a",
+    "hasTwice": false,
+    "compile": {
+      "ms": 336.7252,
+      "success": true,
+      "languageVersion": "CSharp13",
+      "errors": [],
+      "scope": "standalone Roslyn compiler; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "M02",
+    "sha256": "1DA83153F37CB517FCBFA873D99A4A4A2B26FFC0FE813893202A61E65634A943",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M02-a\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M02.cs",
+    "count": 17
+  },
+  {
+    "side": "b",
+    "hasTwice": false,
+    "compile": {
+      "ms": 97.9213,
+      "success": false,
+      "errors": [
+        "d:\\temp\\gduq32gk.0.cs(7,64) : error CS1026: 应输入 )",
+        "d:\\temp\\gduq32gk.0.cs(7,69) : error CS1002: 应输入 ;",
+        "d:\\temp\\gduq32gk.0.cs(7,69) : error CS1525: 无效的表达式项“)”",
+        "d:\\temp\\gduq32gk.0.cs(7,71) : error CS1002: 应输入 ;"
+      ],
+      "scope": "existing CodeDom compiler component; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "M02",
+    "sha256": "1DA83153F37CB517FCBFA873D99A4A4A2B26FFC0FE813893202A61E65634A943",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M02-b\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M02.cs",
+    "count": 0
+  },
+  {
+    "side": "a",
+    "hasTwice": false,
+    "compile": {
+      "ms": 342.0895,
+      "success": true,
+      "languageVersion": "CSharp13",
+      "errors": [],
+      "scope": "standalone Roslyn compiler; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "M03",
+    "sha256": "9C0F7B2C058EE7D7502479B2113356EB3EC8DD4E19F288206E18371042963F3D",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M03-a\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M03.cs",
+    "count": 17
+  },
+  {
+    "side": "b",
+    "hasTwice": false,
+    "compile": {
+      "ms": 77.50670000000001,
+      "success": false,
+      "errors": [
+        "d:\\temp\\m30a12bp.0.cs(7,27) : error CS1031: 应输入类型"
+      ],
+      "scope": "existing CodeDom compiler component; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "M03",
+    "sha256": "9C0F7B2C058EE7D7502479B2113356EB3EC8DD4E19F288206E18371042963F3D",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M03-b\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M03.cs",
+    "count": 16
+  },
+  {
+    "side": "a",
+    "hasTwice": false,
+    "compile": {
+      "ms": 393.8415,
+      "success": true,
+      "languageVersion": "CSharp13",
+      "errors": [],
+      "scope": "standalone Roslyn compiler; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "M04",
+    "sha256": "7F2561A4F441B441E2E2AC394733C2D445A336DCD00DC856F10ACB4080918320",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M04-a\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M04.cs",
+    "count": 17
+  },
+  {
+    "side": "b",
+    "hasTwice": false,
+    "compile": {
+      "ms": 69.5839,
+      "success": false,
+      "errors": [
+        "d:\\temp\\5qh0rspi.0.cs(7,52) : error CS1525: 无效的表达式项“.”",
+        "d:\\temp\\5qh0rspi.0.cs(7,53) : error CS1003: 语法错误，应输入“:”"
+      ],
+      "scope": "existing CodeDom compiler component; not candidate C combined implementation"
+    },
+    "success": true,
+    "hasSharedMath": false,
+    "case": "M04",
+    "sha256": "7F2561A4F441B441E2E2AC394733C2D445A336DCD00DC856F10ACB4080918320",
+    "raw": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M04-b\\result.json",
+    "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M04.cs",
+    "count": 16
+  }
+]

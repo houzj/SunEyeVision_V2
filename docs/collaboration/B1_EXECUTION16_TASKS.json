@@ -2,8 +2,8 @@
   "task": "B1-EXECUTION-16",
   "date": "2026-10-22",
   "title": "B1 保存与读回可靠",
-  "current": "执行清单已形成：7项合同、具体改造文件及27验收条目。当前等待解除用户“先不改产品代码”的限制；未写产品源码、未构建。",
-  "next": "收到B1产品实施明确授权后，按A严格读取→B最终快照→C资源接入→D Open/Reload→E Release与独立回归执行。",
+  "current": "B1代码已实施，标准全量Release成功，本地30合同测试通过；交付待独立验收。",
+  "next": "独立测试固定623文件副本，按27场景分层验收；反馈按源码/产物身份定向回归。",
   "source": "artifacts/ui-prototypes/save-roundtrip/b1-execution.json",
   "plan": [
     {
@@ -17,7 +17,7 @@
     {
       "step": 2,
       "name": "落实B1合同、文件与验收",
-      "status": "已完成本轮细化",
+      "status": "实施清单与既有文档同步均已核实",
       "owner": "自研主控；两子智能体只读审查",
       "action": "7合同、V1兼容政策、窄SDK资源服务、具体文件组、27验收条目。已交付不推倒重做。",
       "deliverable": "save-roundtrip/index.html#execution"
@@ -25,7 +25,7 @@
     {
       "step": 3,
       "name": "产品实施授权",
-      "status": "等待用户决定",
+      "status": "已获明确授权",
       "owner": "用户；主控遵守当前边界",
       "action": "当前仍先不改产品代码，创建目标不自动批准B1源码改造。",
       "deliverable": "明确B1实施授权"
@@ -33,7 +33,7 @@
     {
       "step": 4,
       "name": "按A—D改造并构建Release",
-      "status": "尚未开始",
+      "status": "已实施并构建，待验",
       "owner": "自研主控唯一产品写者",
       "action": "按清单迁移；受影响插件/SDK/UI全量构建，不保留长期双实现。",
       "deliverable": "源码交接、完整Release身份和迁移说明"
@@ -41,7 +41,7 @@
     {
       "step": 5,
       "name": "独立测试与反馈回归",
-      "status": "待开发交付；已有测试异步继续",
+      "status": "新版待独立回归；旧B0测试在固定副本继续",
       "owner": "独立测试负责人",
       "action": "B0用户直接E2E优先；B1基线纯数据任务已排队。定版副本并行测试，不互相覆盖。",
       "deliverable": "分层通过/失败/阻塞，修复后新身份定向回归"
@@ -49,10 +49,12 @@
     {
       "step": 6,
       "name": "文档同步与闭环报告",
-      "status": "待产品验收",
+      "status": "实施文档同步中，未闭环",
       "owner": "主控汇总；文档维护同步",
       "action": "关键未验证只能标交付待验；收回报告，说明闭环或剩余原因。",
       "deliverable": "最终行为、Release、测试报告与用户结论"
     }
-  ]
+  ],
+  "documentReceipt": "artifacts/ui-prototypes/save-roundtrip/document-receipt.json",
+  "delivery": "artifacts/validation/b1-implementation/delivery.json"
 }

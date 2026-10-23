@@ -1,0 +1,13 @@
+{
+  "sourceLocations": 261,
+  "changed": [],
+  "missing": [],
+  "reference": {
+    "path": "D:/MyWork/REA逆向测试/docs/framework-architecture.html",
+    "sha256": "2f69bb1ba77ec31aa59eb596474627b99706f5955ac1abaddf40267e63be26c4",
+    "policy": "只快速访问参考，原版与重建事实分开"
+  },
+  "referenceExists": true,
+  "referenceCurrentSha": "e9a0d61b9a6139034dcd28ffea908ba21ceefc8bb68921e25bafc71115f60e85",
+  "referenceChanged": true
+}

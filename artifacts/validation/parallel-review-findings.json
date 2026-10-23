@@ -1,0 +1,103 @@
+{
+  "steps": [
+    {
+      "id": "child-globals",
+      "packageId": "O03",
+      "title": "子调用：普通全局字典没有继承",
+      "fact": "委托调用ExecuteWorkflowCore时globalVariables固定null，子Context.GlobalVariables因此为空；__GlobalVars__合成与脚本请求都读取该字段。父输入contextVariables仍正常，不与显式端口传参或变量接收服务混为一谈。",
+      "change": "先定继承本轮值视图或仅允许显式端口。若继承，传当前运行变量提供者；若不继承，编辑时禁止子图直接全局绑定并给可读错误，不静默返回空。数组/图像按所有权合同隔离，不拿设计初值代替。",
+      "accept": "根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。",
+      "caps": [
+        "M18",
+        "M09",
+        "T16"
+      ],
+      "url": "tool-subroutine.html#subroutine-chain-review",
+      "route": "已证自研边界整改；VM整体选型仍待原实现",
+      "vm": "VM原Group变量/递归及通讯退役/响应实现仍未齐；不把独立恢复工程代码当原版事实。",
+      "status": "只读复审已返回并主审；产品未实施/运行未验",
+      "source": {
+        "path": "src/Workflow/WorkflowExecutionEngine.cs",
+        "line": 898,
+        "token": "executor.ExecuteSubWorkflowAsync = (subId, img, ctx) =>",
+        "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+        "snippet": "                    executor.ExecuteSubWorkflowAsync = (subId, img, ctx) =>\r\n                    {\r\n                        var extendedCtx = ctx != null\r\n                            ? new Dictionary<string, object>(ctx)\r\n                            : new Dictionary<string, object>();\r\n                        extendedCtx[SubroutineContextKeys.ParentNodeId] = node.Id;\r\n                        var childScope = session.CreateChildScope(subId, scope.RunId, node.Id);\r\n                        return ExecuteWorkflowCore(\r\n                            session,\r\n                            childScope,\r\n                            subId,\r\n                            img,\r\n                            null,\r\n                            extendedCtx,\r\n                            request,\r\n                            isSubworkflow: true);\r\n                    };\r\n                }\r\n\r\n                target.AddNode(executionNode);\r\n            }\r\n\r\n            // 复制连接关系（节点 ID 不变，直接复制）\r\n            foreach (var conn in source.Connections)\r\n            {\r\n                try\r"
+      }
+    },
+    {
+      "id": "call-cycle",
+      "packageId": "O02",
+      "title": "子调用：跨工作流调用环没有现成门禁",
+      "fact": "当前校验拒自身调用和目标不存在，DetectCycles只查本图Nodes/Connections；CreateChildScope只核父RunId归属。A→B→A两图本身无连线环仍逐图通过；CallStack字段未作为当前执行器门禁，未声称已观察栈溢出。",
+      "change": "根运行准备冻结WorkflowId→SubroutineId调用图，默认拒环并报告路径；若产品需要递归，显式深度/预算与终止合同。运行时利用已有scope祖先兜底，不重造身份。",
+      "accept": "A→A/A→B→A/A→B→C→A、合法复用子图、深层嵌套、载入绕过UI及取消分别验。",
+      "caps": [
+        "M09",
+        "T16"
+      ],
+      "url": "tool-subroutine.html#subroutine-chain-review",
+      "route": "已证自研边界整改；VM整体选型仍待原实现",
+      "vm": "VM原Group变量/递归及通讯退役/响应实现仍未齐；不把独立恢复工程代码当原版事实。",
+      "status": "只读复审已返回并主审；产品未实施/运行未验",
+      "source": {
+        "path": "src/Workflow/WorkflowDefinitionService.cs",
+        "line": 173,
+        "token": "if (string.Equals(node.SubroutineId, workflow.Id, StringComparison.Ordinal))",
+        "sha256": "388f2fffbbb3fcda37de9f7ec4367aa8267408eb29d54f410401c0337df5e433",
+        "snippet": "                if (string.Equals(node.SubroutineId, workflow.Id, StringComparison.Ordinal))\r\n                    errors.Add($\"节点 {node.Name} 不能引用自身工作流。\");\r\n                else if (workflowResolver != null && workflowResolver(node.SubroutineId) == null)\r\n                    errors.Add($\"节点 {node.Name} 引用了不存在的子程序工作流 {node.SubroutineId}。\");\r\n            }\r\n        }\r\n\r\n        if (errors.Count == 0 && workflow.DetectCycles().Count > 0)\r\n            errors.Add(\"工作流连接存在循环依赖。\");\r\n\r\n        return errors;\r\n    }\r\n}\r\n"
+      }
+    },
+    {
+      "id": "comm-retire",
+      "packageId": "O09",
+      "title": "通讯：退役任务结束不等资源释放成功",
+      "fact": "DisposeClosedSessionAsync吞Dispose异常并只记日志；Disconnect随后发布Disconnected，ConnectCore用retirement.IsCompleted允许重连。失败Task同样会IsCompleted，单纯删catch不能修准入；物理冲突尚未故障验证。",
+      "change": "退役返回Released/Failed/Unknown，未知保持隔离与原代次诊断；新连接需要确已释放条件及受控重试。UI状态、自动重连和方案切换共同改接，不能仅改日志。",
+      "accept": "Dispose部分清理后抛错、迟到退役、新旧连接并发及重试分别验，未确认释放不报安全可用。",
+      "caps": [
+        "M20",
+        "X03"
+      ],
+      "url": "comparison.html#compare-M20",
+      "route": "已证自研边界整改；VM整体选型仍待原实现",
+      "vm": "VM原Group变量/递归及通讯退役/响应实现仍未齐；不把独立恢复工程代码当原版事实。",
+      "status": "只读复审已返回并主审；产品未实施/运行未验",
+      "source": {
+        "path": "src/DeviceDriver/Communications/Runtime/CommunicationRuntimeManager.cs",
+        "line": 424,
+        "token": "private static async Task DisposeClosedSessionAsync",
+        "sha256": "dba809fe41d0ce4c84e1dc39680b7f7616b96f34a3aaeb3412fe92252d6aaace",
+        "snippet": "    private static async Task DisposeClosedSessionAsync(ICommunicationAdapter session, string communicationId)\r\n    {\r\n        try { await session.DisposeAsync().ConfigureAwait(false); }\r\n        catch (Exception ex)\r\n        {\r\n            VisionLogger.Instance.Log(LogLevel.Warning,\r\n                $\"释放已断线通讯会话失败：设备={communicationId}, 错误={ex.Message}\",\r\n                \"CommunicationRuntime\", ex, LogTarget.File);\r\n        }\r\n    }\r\n\r\n    private static void ValidateSupportedSettings(Communication communication)\r\n    {\r\n        if (communication.ProtocolKey is not (\"tcp-client\" or \"tcp-server\" or \"udp\" or \"serial\" or \"modbus\" or \"modbus-tcp\" or \"modbus-rtu\" or \"s7\" or \"opcua\" or \"cip\"))\r\n            throw new NotSupportedException($\"{communication.ProtocolDisplayName} 的真实协议驱动尚未接入。\");\r\n        if (communication.ProtocolKey == \"opcua\")\r\n        {\r\n            if (!Uri.TryCreate(communication.EndpointUrl, UriKind.Absolute, out var endpoint) || endpoint.Scheme != \"opc.tcp\")\r\n                throw new ArgumentException(\"OPC UA 服务端点必须是有效的 opc.tcp:// URL。\", nameof(communication));\r\n        }\r\n        else if (communication.ProtocolKey == \"cip\")\r\n        {\r\n            if (string.IsNullOrWhiteSpace(communication.Host)) throw new ArgumentException(\"EtherNet/IP CIP 目标 IP 不能为空。\", nameof(communication));\r\n            ValidatePort(communication.Port, \"EtherNet/IP CIP 目标端口\");\r\n        }\r\n        else if (communication.ProtocolKey == \"tcp-client\")\r"
+      }
+    },
+    {
+      "id": "comm-response",
+      "packageId": "O09",
+      "title": "通讯：状态响应有FIFO积压，不同于忙则拒绝",
+      "fact": "工作流触发忙则跳过；状态响应每设备responseTails串行Task链，每条Track加入_tasks，未见容量/合并/TTL。已有配置version与设备lifetime检查，不能说全无代次；被动接收另有有界缓冲和游标，不是同一队列。",
+      "change": "状态快照可合并最新；逐事件协议使用有界队列、过期/溢出计数和重放政策，先定上位机合同再选。保持现有代次与游标，不盲目合并所有响应。",
+      "accept": "慢发送下高频Run/Stop、相机抖动、配置更新/切方案核顺序、积压、过期和取消排空。",
+      "caps": [
+        "M20",
+        "X03"
+      ],
+      "url": "comparison.html#compare-M20",
+      "route": "已证自研边界整改；VM整体选型仍待原实现",
+      "vm": "VM原Group变量/递归及通讯退役/响应实现仍未齐；不把独立恢复工程代码当原版事实。",
+      "status": "只读复审已返回并主审；产品未实施/运行未验",
+      "source": {
+        "path": "src/UI/Services/Communication/CommunicationAutomationService.cs",
+        "line": 319,
+        "token": "private void QueueResponse",
+        "sha256": "b744370248e1a0510fe963f8cac39f4461982895cc828365eb6c455f109ef2d9",
+        "snippet": "    private void QueueResponse(CommunicationResponseDefinition configured, string content, string? id, double delay = 0)\r\n    {\r\n        if (_disposed || !configured.Enabled) return;\r\n        if (!_devices.TryGetValue(configured.DeviceId, out var device)) { Warn(\"响应绑定设备已失效，未发送。\"); return; }\r\n        var config = Copy(configured);\r\n        var token = _lifetime.Token;\r\n        var version = _version;\r\n        var previous = _responseTails.GetValueOrDefault(device.Id, Task.CompletedTask);\r\n        _responseTails[device.Id] = Track(async () =>\r\n        {\r\n            await previous.ConfigureAwait(false);\r\n            if (!double.IsFinite(delay) || delay < 0 || delay > 86400) throw new FormatException(\"响应延迟应在 0～86400 秒之间。\");\r\n            if (delay > 0) await Task.Delay(TimeSpan.FromSeconds(delay), token).ConfigureAwait(false);\r\n            token.ThrowIfCancellationRequested();\r\n            lock (_gate) if (version != _version) return;\r\n            // Resolve outside the automation gate; the host owns the device policy gate.\r\n            var deviceToken = DeviceLifetimeReader?.Invoke(device.Id) ?? CancellationToken.None;\r\n            using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, deviceToken);\r\n            cancellation.Token.ThrowIfCancellationRequested();\r\n            lock (_gate) if (version != _version) return;\r\n            if (!device.IsEnabled || !_runtime.IsConnected(device.Id)) throw new InvalidOperationException(\"响应设备未连接，未发送。\");\r\n            var sender = new CommunicationSendEventService(_runtime);\r\n            var plan = sender.Prepare(CommunicationResponseFormatter.Create(config, device, content, id), device);\r\n            token.ThrowIfCancellationRequested();\r\n            if (await sender.SendAsync(plan, cancellation.Token).ConfigureAwait(false) == 0) throw new InvalidOperationException(\"响应无接收端。\");\r\n        });\r"
+      }
+    }
+  ],
+  "lines": [
+    "执行数据",
+    "设备资源"
+  ],
+  "scope": "三线只读、根单写；覆盖线单独给文档验收清单",
+  "runtimeExecuted": false
+}

@@ -1,0 +1,203 @@
+{
+  "rows": [
+    {
+      "id": "root",
+      "title": "一次根运行",
+      "owner": "Engine创建WorkflowRunSession；RunId、RootWorkflowId及CTS属于本次根运行。",
+      "borrow": "RootScope和子Scope借用同一取消信号；不同根不共用CTS。",
+      "limit": "Dispose仅释放CTS；Engine清活动登记不代表所有Task已排空。",
+      "change": "沿用现有RunId；必须整改停止排空，然后才退役会话。收益是避免新运行覆盖旧身份；代价是新增故障隔离/等待状态。",
+      "source": {
+        "path": "src/Workflow/WorkflowRunSession.cs",
+        "line": 146,
+        "token": "public void Dispose()",
+        "sha256": "81a4538d84dd800b91f6380ffbb8bc8fee2b59d0284e5f1c2194a2c97f4587c0"
+      }
+    },
+    {
+      "id": "scope",
+      "title": "一次子程序调用",
+      "owner": "Session.CreateChildScope分配RunId、ParentRunId与ConsumerScope。",
+      "borrow": "子Context独立，scope保留在session字典；调用完成清scope.Context。子调用全局变量实际传null的问题另见子程序复审，不能笼统称完整继承。",
+      "limit": "清Context引用不证明其结果图像最后读者已释放；根投影不能只用内部NodeId。",
+      "change": "保留已有scope；显示/日志/缓存使用根+调用scope+节点身份。整改根投影覆盖，最后读者合同待核。",
+      "source": {
+        "path": "src/Workflow/WorkflowRunSession.cs",
+        "line": 64,
+        "token": "public WorkflowRunScope CreateChildScope",
+        "sha256": "81a4538d84dd800b91f6380ffbb8bc8fee2b59d0284e5f1c2194a2c97f4587c0"
+      }
+    },
+    {
+      "id": "snapshot",
+      "title": "配置快照与解析值快照",
+      "owner": "执行图参数按持久化JSON合同复制；RuntimeParameterSnapshot另建字典。",
+      "borrow": "只读字典复制容器，数组/图像/句柄的值仍是引用，不是逐值深拷贝。",
+      "limit": "不能对native句柄一律JSON复制，也不能从ReadOnly推导无并发修改。",
+      "change": "按标量/数组/图像/服务分开冻结、克隆、借用与租约；先保留现有解析器，扩展类型政策，成本是逐类型合同和兼容测试。",
+      "source": {
+        "path": "src/Plugin.SDK/Execution/Parameters/RuntimeParameterSnapshot.cs",
+        "line": 13,
+        "token": "public RuntimeParameterSnapshot",
+        "sha256": "654b4208ae48c97e28dc421aa949daa9f69b7362d13be7b248bdbf52e4bdad54"
+      }
+    },
+    {
+      "id": "tool",
+      "title": "执行工具对象",
+      "owner": "ToolRegistry.CreateToolInstance每次Activator.CreateInstance创建新tool。",
+      "borrow": "WorkflowNodeFactory/AlgorithmNode消费新实例；新对象不等内部静态缓存也独立。",
+      "limit": "各工具持有原生模型、脚本池或其他资源的最终Owner仍需逐类核；不能继续写“是否新建未知”。",
+      "change": "保留新实例工厂；新增明确执行实例退役合同，静态共享缓存另加使用租约。不要据未知提前Dispose所有结果。",
+      "source": {
+        "path": "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.cs",
+        "line": 206,
+        "token": "public static IToolPlugin? CreateToolInstance",
+        "sha256": "813cfa8862ea46a31d49387f5dfb8a691785a95064ceed06cc51349473fcabb8"
+      }
+    },
+    {
+      "id": "analysis",
+      "title": "专业分析工具与控件",
+      "owner": "主窗UpdateDataAnalysisControl新建tool，再由IToolEditorFactory创建控件。",
+      "borrow": "切换时退订高亮、清选择并置空旧控件；工厂是否跨实例复用控件不能由接口名推定。",
+      "limit": "此方法未登记tool的可等待退役；置空不是Dispose。无证据不能断言必然泄漏。",
+      "change": "新增分析会话Owner，区分借用缓存结果和自有临时资源；关闭退订与释放分别验收。参考VM decorator退役思路，但不复制未知native销毁顺序。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 3528,
+        "token": "private System.Threading.Tasks.Task UpdateDataAnalysisControl",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "results",
+      "title": "上下文与工具输出值",
+      "owner": "WorkflowContext按NodeId保存NodeExecutionResult；ToolResults保存字段值。",
+      "borrow": "字典锁保护容器，GetNodeResult返回原引用；GetOutputValues新字典仍引用原值。",
+      "limit": "Set覆盖/ClearNodeResults只移除引用，未逐值Dispose；下游、树、图像、历史的最后读者未统一。",
+      "change": "必须定义结果Owner和借用期；历史保留快照或引用租约，不在Clear时盲目释放共享图像。身份需包含运行/调用scope。",
+      "source": {
+        "path": "src/Workflow/WorkflowContext.cs",
+        "line": 631,
+        "token": "public void ClearNodeResults",
+        "sha256": "1d78dd1155596da902696d7f8ac114b6e67b51d5ae07f940f07409fa8f4896d8"
+      }
+    },
+    {
+      "id": "hal",
+      "title": "HalImage与HImage",
+      "owner": "HalImage持有传入HImage，并在Dispose释放；Clone调用_image.Clone。",
+      "borrow": "Unwrap返回同一HImage，属于借用；调用者不能据返回类型推定取得所有权。",
+      "limit": "HalconHelpers不同转换分支可能借用或分配，所有返回值的统一释放合同仍待补。",
+      "change": "保留适配包装，给转换结果明确owns/borrow信息；约定借用者不Dispose底层，新增分支验证。VM引用计数/最后读者仍缺原native证据。",
+      "source": {
+        "path": "src/SunEyeVision.HalAdapter/HalImage.cs",
+        "line": 21,
+        "token": "public HImage Unwrap()",
+        "sha256": "fb1170a2175d9db651e577d6fbc6cfbf33f30404e9a568aabc100db4954a703b"
+      }
+    },
+    {
+      "id": "cv",
+      "title": "CvImage与Mat",
+      "owner": "new CvImage(Mat,ownsImage=false)默认借用；FromMat和CopyObj用Mat.Clone并owns=true。",
+      "borrow": "ImageItem只在ownsImage时释放Mat，适配器不能凭接口另行重复释放。",
+      "limit": "借用源先释放时包装仍可能被读取；Clone独立底层像素但有内存成本。",
+      "change": "保留显式owns语义，统一对外借用期和所有权转移；排查每个new入口，勿将所有Mat无条件克隆或Dispose。",
+      "source": {
+        "path": "src/SunEyeVision.CvEngine/VisionAdapters/CvImage.cs",
+        "line": 22,
+        "token": "public CvImage(Mat image, bool ownsImage = false)",
+        "sha256": "ca1dc85d3343ba1df3e8db59a648bd34fe230f2e7e91a174c5918bb81c322fc4"
+      }
+    },
+    {
+      "id": "frame",
+      "title": "相机SDK缓冲与CameraFrame",
+      "owner": "MVS取SDK缓冲后Marshal.Copy到byte[]，finally归还SDK缓冲；CameraFrame承载后续图像。",
+      "borrow": "Feed替换待处理帧会Dispose；本轮using、预览finally另释放各自帧。",
+      "limit": "算法输出和显示位图不自动同寿；所有消费者最后读者还未完整闭合，SDK归还不能当显示结束。",
+      "change": "保留当前复制隔离；优化复制次数前先证明帧/输出/显示的借用与保留期。无测量不推荐直接零拷贝。",
+      "source": {
+        "path": "src/DeviceDriver/Cameras/Hikvision/Mvs/MvsCameraAdapter.cs",
+        "line": 157,
+        "token": "Marshal.Copy",
+        "sha256": "bc5b365c37e00866c1973c0f9ced07bf69ff53e1880636ff255d9dae5c489257"
+      }
+    },
+    {
+      "id": "bitmap",
+      "title": "实时显示WriteableBitmap",
+      "owner": "ImageConverterPool按尺寸/格式缓存位图，同键重复写同一对象。",
+      "borrow": "显示VM保存该引用；新一帧写入可能改变其他仍持有该对象的消费者。",
+      "limit": "Clear只清字典；线程亲和和历史保留需另验。已有非连续Mat步长缺口见结果投影复审。",
+      "change": "实时可采用显式独占复用，历史必须独立快照/版本化缓冲；先修步长正确性，再测复制成本，不把可变位图当不可变帧。",
+      "source": {
+        "path": "src/UI/Services/Performance/ImageConverterPool.cs",
+        "line": 17,
+        "token": "private readonly ConcurrentDictionary<string, WriteableBitmap>",
+        "sha256": "d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707"
+      }
+    },
+    {
+      "id": "cache",
+      "title": "PreExecutionCache缓存",
+      "owner": "Add将processedImage/originalImage原引用放入缓存，键为nodeId_imageSourceId。",
+      "borrow": "TryGet返回相同CachedExecutionResult；没有Clone隔离。",
+      "limit": "Remove/Clear移除引用；主活动调用链尚未证明，不能写成当前所有历史必然覆盖。",
+      "change": "先确认活动消费者；若保留则补运行/scope/内容版本及快照政策，若弃用则迁移后退役。禁止仅因类名就判断缓存策略已生效。",
+      "source": {
+        "path": "src/UI/Services/Performance/PreExecutionCache.cs",
+        "line": 80,
+        "token": "public void Add(",
+        "sha256": "9003c1bc64e32c4c7ff19b9188b29ec3a0e5d2256f4d3c61812f44c258fe7ac8"
+      }
+    },
+    {
+      "id": "camera",
+      "title": "相机连接会话",
+      "owner": "CameraSession拥有Adapter；运行时登记连接；用途租约与每帧Owner另层。",
+      "borrow": "Dispose通过Interlocked只发起一次Adapter.DisposeAsync，finally执行onDisposed。",
+      "limit": "Adapter释放抛错仍执行移除回调，不证明物理释放成功；重复Dispose不重试，不能用登记消失代证设备可用。",
+      "change": "新增退役结果/隔离状态，断连失败仍观察最终结局；保留幂等尝试并区分释放成功、失败与超时。",
+      "source": {
+        "path": "src/DeviceDriver/Cameras/Contracts/CameraSession.cs",
+        "line": 28,
+        "token": "public async ValueTask DisposeAsync()",
+        "sha256": "37a6f97a04db7a6744627cad23cf8710f5822ac222427bc47a1d19479b97443a"
+      }
+    },
+    {
+      "id": "communication",
+      "title": "通信会话与退役任务",
+      "owner": "CommunicationRuntime拥有adapter；应用服务、轮询与心跳借用。",
+      "borrow": "RequireReadySession/ExecuteConnectedAsync做会话身份保护；retirement任务记录退役。",
+      "limit": "DisposeClosedSessionAsync捕获释放异常后任务仍可完成；IsCompleted不能代表设备已释放。",
+      "change": "保留代次检查，必须把退役结果显式记录为Released/Failed/TimedOut并隔离；不将异常吞掉后当成功重连。",
+      "source": {
+        "path": "src/DeviceDriver/Communications/Runtime/CommunicationRuntimeManager.cs",
+        "line": 424,
+        "token": "private static async Task DisposeClosedSessionAsync",
+        "sha256": "dba809fe41d0ce4c84e1dc39680b7f7616b96f34a3aaeb3412fe92252d6aaace"
+      }
+    },
+    {
+      "id": "plugin",
+      "title": "插件程序集与进程",
+      "owner": "PluginLoadContext明确isCollectible:false；静态注册和解析器是进程级引用。",
+      "borrow": "清工具目录/集合不能卸载不可回收ALC；工具对象和窗口生命周期更短。",
+      "limit": "不支持从清集合推断原生模块已卸载；native句柄仍要由各实例关闭。",
+      "change": "按当前进程级加载政策标明需重启更新；若确需热卸载，独立设计可回收上下文/依赖隔离/所有引用清除，不能只改一个标志。VM最终模块析构仍保留缺证。",
+      "source": {
+        "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs",
+        "line": 62,
+        "token": "isCollectible: false",
+        "sha256": "73b92f04265fc83a84672db78bc9ef539657e8e0eea7b19639c3c2331fc43748"
+      }
+    }
+  ],
+  "runtimeExecuted": false,
+  "scope": "14类资源的静态Owner登记；具体最后读者、原VM native与运行验证缺口保留，不把表格交付计为证据闭合。",
+  "acceptance": "每类验证创建→交付→最后借用结束→释放一次；覆盖成功、异常、取消、切换、重复关闭。事件携带运行/调用/内容代次；超时隔离且不得误释放新代资源。本轮仅制定验收，未执行这些场景。"
+}

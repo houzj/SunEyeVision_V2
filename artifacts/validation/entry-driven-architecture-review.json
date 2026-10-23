@@ -1,0 +1,368 @@
+{
+  "date": "2026-10-21",
+  "method": "UI-entry-driven, module taxonomy secondary",
+  "mainEntries": 6,
+  "toolEntries": 5,
+  "entries": [
+    {
+      "id": "M01",
+      "group": "主界面",
+      "title": "工具栏/F5：运行",
+      "chain": "ShellTopBarControl.RunWorkflowCommand → ShellTopBarViewModel.Coordinator → MainWindowViewModel.ExecuteRunWorkflow → SetRuntimeParameters/SetGlobalVariables → RunSingleAsync(SelectedTab) → 结果/事件",
+      "vm": "VM主工具栏TitleMenueItemData.SigRun→VmSolution.Run→GlobalScriptStartRunOnce；流程Tab RunOnce→VmProcedure.Run→ProcessManager.SyncExecuteOnce（恢复材料为准）",
+      "status": "已见入口实码 · 运行范围不同",
+      "boundary": "自研当前是选中流程，不是已证方案级单次运行。空流程/无Tab提前返回；catch记录异常，finally清IsRunning。下游资源完成仍独立验收。",
+      "change": "明确方案运行与当前流程运行两个动作/作用域，统一运行请求与状态投影；用多流程依赖场景验收，不能只测单流程按钮。",
+      "evidence": "MF05-PROCEDURE-RUN-CALLCHAIN.md",
+      "refs": "<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml\">ShellTopBarControl.xaml:252 · Command=\"{Binding RunWorkflowCommand}\"</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs\">MainWindowViewModel.cs:2174 · await _executionManager.RunSingleAsync</a>",
+      "c": "C03"
+    },
+    {
+      "id": "M02",
+      "group": "主界面",
+      "title": "停止/Shift+F5",
+      "chain": "ShellTopBarControl.StopWorkflowCommand → ExecuteStopWorkflow → StopContinuousRun(SelectedTab) → IsRunning=false / 日志",
+      "vm": "恢复模型的停止命令→SDK/原生接收→完成通知/排空需依原证据判断",
+      "status": "已见入口实码 · 完成语义待补",
+      "boundary": "本方法调用停止后立即清IsRunning并写已停止，不是在此await排空；不能由该日志证明在途任务和相机帧已释放。",
+      "change": "请求已接受/停止中/执行完成/资源排空分状态；按钮与重新运行只依据合同终态，验证原生慢调用与采集取消。",
+      "evidence": "MF05-CONTINUOUS-RUN-CALLCHAIN.md",
+      "refs": "<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml\">ShellTopBarControl.xaml:253 · Command=\"{Binding StopWorkflowCommand}\"</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs\">MainWindowViewModel.cs:2188 · private void ExecuteStopWorkflow()</a>",
+      "c": "C12"
+    },
+    {
+      "id": "M03",
+      "group": "主界面",
+      "title": "保存当前/Ctrl+S",
+      "chain": "SaveCurrentSolutionCommand → ExecuteSaveCurrentSolution → 无方案时新建对话框 → SaveSolutionData → SolutionManager.SaveSolution → 文件写入",
+      "vm": "ProjectManager→VmSolution.InternalExport→SolutionManager/SDK原.sol；逆向重建.vmx.json单独区分",
+      "status": "已见入口实码 · 保存事务未全验",
+      "boundary": "先同步UI Tabs/节点，SaveSolution失败抛错；自有文件保存不等VM原.sol兼容。新建取消、覆盖冲突和保存失败要分别回到可编辑状态。",
+      "change": "保留自有格式；保存成功后才清脏状态，失败保留旧方案；中断写盘/缺插件恢复/ID重映射按原存储验收。",
+      "evidence": "SOLUTION-PERSISTENCE-BOUNDARY.md",
+      "refs": "<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml\">ShellTopBarControl.xaml:242 · Command=\"{Binding SaveCurrentSolutionCommand}\"</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs\">MainWindowViewModel.cs:1537 · private void ExecuteSaveCurrentSolution()</a>",
+      "c": "C11"
+    },
+    {
+      "id": "M04",
+      "group": "主界面",
+      "title": "相机管理按钮",
+      "chain": "ShowCameraManagerCommand → ExecuteShowCameraManager → 检查CurrentSolution → CameraManagerViewModel → CameraManagerDialog.ShowDialog → 会话/预览操作",
+      "vm": "TitleMenueItemData全局入口→GlobalCameraManager/全局模块→设备调用（恢复材料逐边）",
+      "status": "已见窗口入口 · 设备场景分项验",
+      "boundary": "无当前方案先提示返回；打开管理窗口不代表建立物理连接，更不代表关窗必断运行会话。",
+      "change": "按连接/参数/预览/正式采集动作拆入口，管理器/详情窗/采集者所有权明确；失联和关窗八场景再验。",
+      "evidence": "MF01-GLOBAL-ENTRY-AUDIT.md",
+      "refs": "<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml\">ShellTopBarControl.xaml:257 · Command=\"{Binding ShowCameraManagerCommand}\"</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs\">MainWindowViewModel.cs:5794 · private void ExecuteShowCameraManager()</a>",
+      "c": "C18"
+    },
+    {
+      "id": "M05",
+      "group": "主界面",
+      "title": "双击节点：打开专业工具界面",
+      "chain": "Canvas/NodeInteractionHandler → OpenDebugWindowCommand → ExecuteOpenDebugWindow → NodeOpenContext / NodeOpenDecisionChain → 专用Control或DefaultDebugWindow → 注入/事件订阅",
+      "vm": "ToolBox/节点→ModuleParam/AlgorithmTab或专用Control→参数窗口；与主工具栏执行入口不同",
+      "status": "已见主界面到工具界面桥",
+      "boundary": "图像源走宿主ImageSourceSettingsControl特例；其他节点走决策链。失败返回，无界面不打开；已有窗口提示复用/关闭，新窗口Closed退订动态输出通知。",
+      "change": "保留专业编辑但统一编辑会话、打开决策与关窗退订；图像源即时编辑与工具草稿政策分别定义，迟到回调拒绝。",
+      "evidence": "FRAMEWORK-RECONSTRUCTION.md",
+      "refs": "<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/NodeInteractionHandler.cs\">NodeInteractionHandler.cs:135 · OpenDebugWindowCommand.Execute</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs\">MainWindowViewModel.cs:2695 · private async void ExecuteOpenDebugWindow</a>",
+      "c": "C09"
+    },
+    {
+      "id": "M06",
+      "group": "主界面",
+      "title": "设置菜单",
+      "chain": "ShowSettingsCommand → ExecuteShowSettings → TODO显示设置对话框",
+      "vm": "恢复模型菜单/全局入口需按实际功能查证，不能仅同名对应",
+      "status": "明确未实现：该宿主处理函数为占位",
+      "boundary": "本函数仅TODO，没有设置对话框创建/显示链；不能把已注册Command计作设置功能已开发。这个结论限此入口，不推断所有专用设置窗口不存在。",
+      "change": "若产品需要统一设置，定义持久化范围/应用时机/取消与重启要求，再实现窗口和配置服务；若不需要应禁用入口并说明。",
+      "evidence": "MF01-GLOBAL-ENTRY-AUDIT.md",
+      "refs": "<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs\">MainWindowViewModel.cs:2201 · private void ExecuteShowSettings()</a>",
+      "c": "C20"
+    },
+    {
+      "id": "T01",
+      "group": "工具界面",
+      "title": "执行按钮：以阈值工具为代表",
+      "chain": "ToolCommands.Execute → SetupCommandBindings.OnExecuteCommand → TryCommit → PersistParameterBindings → ExecuteToolAsync → Threshold.ExecuteTool → 数据源检查/GetPropertyValue → ExecuteWithLiveContext → 完成/失败事件",
+      "vm": "AlgorithmTab或专业Control执行→ModuleParam/工具SDK→结果显示；具体原版执行入口仍按工具恢复",
+      "status": "代表工具实现已见 · 不代表所有工具",
+      "boundary": "_asyncCommandRunning拒重入；异常触发ToolExecutionFailed，finally恢复命令。基类ExecuteToolAsync默认是Task.FromResult(ExecuteTool())，不能由async名推断后台线程或可取消。",
+      "change": "冻结编辑提交与运行输入；验证缺图/无Provider/未执行上游/空图/错工具；对耗时工具明确线程与取消合同，完成后同代次更新图像和结果树。",
+      "evidence": "DEBUG-SESSION-CONTRACT.md",
+      "refs": "<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs\">ToolDebugControlBase.cs:309 · protected virtual async void OnExecuteCommand</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs\">ThresholdToolDebugControl.xaml.cs:189 · protected override object ExecuteTool()</a>",
+      "c": "C09"
+    },
+    {
+      "id": "T02",
+      "group": "工具界面",
+      "title": "确认/应用",
+      "chain": "ToolCommands.Confirm → OnConfirmCommand → ValidateParameters → 验证日志/失败MessageBox；窗口提交关闭需另追真实消费者",
+      "vm": "参数页应用/关闭→参数模型提交或即时写入，原版/重建各分边界",
+      "status": "基类入口部分实现 · 不能据注释判提交完成",
+      "boundary": "基类默认ValidateParameters返回true；OnConfirmCommand成功分支未在该方法直接提交或关闭。必须核专用窗口/覆写的真实事件，不把“窗口会监听”注释当调用证据。",
+      "change": "明确Apply/OK/Cancel/关闭每条语义；需要真实提交/脏标记/Undo事件和窗口消费者；取消不得伪承诺回滚真实设备副作用。",
+      "evidence": "DEBUG-SESSION-CONTRACT.md",
+      "refs": "<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs\">ToolDebugControlBase.cs:352 · protected virtual void OnConfirmCommand</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs\">ToolDebugControlBase.cs:1035 · public virtual bool ValidateParameters()</a>",
+      "c": "C09"
+    },
+    {
+      "id": "T03",
+      "group": "工具界面",
+      "title": "连续执行",
+      "chain": "ToolCommands.ContinuousExecute → OnContinuousExecuteCommand → 基类仅日志；具体工具可覆写",
+      "vm": "连续工具调试与方案连续运行不能视为同一调度入口",
+      "status": "基类连续功能未实现 · 覆写需逐工具核实",
+      "boundary": "命令注册不等循环执行；本基类没有启动/停止循环。不能把宿主连续运行实现代入此工具入口。",
+      "change": "统一调试连续会话/停止/在途结果门槛；逐工具列覆写与未覆写，未实现时按钮禁用，不自动补造后台循环。",
+      "evidence": "DEBUG-SESSION-CONTRACT.md",
+      "refs": "<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs\">ToolDebugControlBase.cs:380 · protected virtual void OnContinuousExecuteCommand</a>",
+      "c": "C09"
+    },
+    {
+      "id": "T04",
+      "group": "工具界面",
+      "title": "图像工具栏：缩放/适应/全屏",
+      "chain": "ImageControl.xaml Click → ZoomIn/Out_Click或FitToWindow_Click → Zoom/FitToWindow → 视口变换；ToggleFullscreen_Click→移出原父容器/新窗口→退出恢复",
+      "vm": "ImageViewBox视口/质量/命中处理；以同一用户动作比较变换，而非比较控件类名",
+      "status": "交互入口实码已见 · DPI与恢复待验",
+      "boundary": "全屏保存SourceImage、父容器与DataContext，支持Panel/Decorator分支。缩放改变投影不应改变算法几何；完整恢复、重复开关/异常仍须验。",
+      "change": "同一图像像素点在缩放/平移/DPI/全屏前后命中一致；退出恢复原绑定/层次，不能丢ROI订阅；重绘不重跑算法。",
+      "evidence": "MF02-OVERVIEW-VIEWPORT-HANDOFF.md",
+      "refs": "<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml\">ImageControl.xaml:255 · Click=\"ZoomIn_Click\"</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs\">ImageControl.xaml.cs:872 · private void ToggleFullscreen_Click</a>",
+      "c": "C10"
+    },
+    {
+      "id": "T05",
+      "group": "工具界面",
+      "title": "阈值工具：ROI投影与关闭",
+      "chain": "宿主注入SetMainImageControl → Threshold.SetMainImageControl → regionManager.SetMainImageControl；Window.Closing→OnWindowClosing→Cleanup→ClearMainOverlay",
+      "vm": "ROI专业编辑→父图像/坐标映射→提交/关窗清理，原版具体控件逐项对照",
+      "status": "代表ROI/关窗链实码已见 · 不是最终图像释放证明",
+      "boundary": "清主图叠加不代表取消所有在途任务或释放底图。Loaded添加窗口Closing的重复订阅/解绑及共享图像最终持有者仍需核实。",
+      "change": "同一窗口反复Loaded/关闭无重复订阅和旧叠加；关窗按会话拒迟到结果；图像/叠加/编辑手柄分别记所有者，别借ClearOverlay宣称资源排空。",
+      "evidence": "GROUP-NATIVE-EDITORS.md",
+      "refs": "<a href=\"file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs\">ThresholdToolDebugControl.xaml.cs:75 · public override void SetMainImageControl</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs\">ThresholdToolDebugControl.xaml.cs:155 · private void OnWindowClosing</a>",
+      "c": "C10"
+    }
+  ],
+  "sources": [
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml",
+      "token": "Command=\"{Binding RunWorkflowCommand}\"",
+      "line": 252,
+      "sha256": "81a0498d514de68b10fb0bb52028ef98cdc4da9a242aa5d2d68ff792a93435d8"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "token": "await _executionManager.RunSingleAsync",
+      "line": 2174,
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml",
+      "token": "Command=\"{Binding StopWorkflowCommand}\"",
+      "line": 253,
+      "sha256": "81a0498d514de68b10fb0bb52028ef98cdc4da9a242aa5d2d68ff792a93435d8"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "token": "private void ExecuteStopWorkflow()",
+      "line": 2188,
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml",
+      "token": "Command=\"{Binding SaveCurrentSolutionCommand}\"",
+      "line": 242,
+      "sha256": "81a0498d514de68b10fb0bb52028ef98cdc4da9a242aa5d2d68ff792a93435d8"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "token": "private void ExecuteSaveCurrentSolution()",
+      "line": 1537,
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml",
+      "token": "Command=\"{Binding ShowCameraManagerCommand}\"",
+      "line": 257,
+      "sha256": "81a0498d514de68b10fb0bb52028ef98cdc4da9a242aa5d2d68ff792a93435d8"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "token": "private void ExecuteShowCameraManager()",
+      "line": 5794,
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Services/Interaction/NodeInteractionHandler.cs",
+      "token": "OpenDebugWindowCommand.Execute",
+      "line": 135,
+      "sha256": "60eec5ad192c7dee9dd75962686cee6fe576d1d15ca06bd0032287bbe86d6e7c"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "token": "private async void ExecuteOpenDebugWindow",
+      "line": 2695,
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "token": "private void ExecuteShowSettings()",
+      "line": 2201,
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "token": "protected virtual async void OnExecuteCommand",
+      "line": 309,
+      "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs",
+      "token": "protected override object ExecuteTool()",
+      "line": 189,
+      "sha256": "732736f78c6b7ba9b5d9eb36676e04ef249f2de0b7b0481f80985b0de88e0484"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "token": "protected virtual void OnConfirmCommand",
+      "line": 352,
+      "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "token": "public virtual bool ValidateParameters()",
+      "line": 1035,
+      "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "token": "protected virtual void OnContinuousExecuteCommand",
+      "line": 380,
+      "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml",
+      "token": "Click=\"ZoomIn_Click\"",
+      "line": 255,
+      "sha256": "b792ec4d3cbff641131e8decfd00ceb67794bd7007396f5c850eec4d5b87c786"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+      "token": "private void ToggleFullscreen_Click",
+      "line": 872,
+      "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs",
+      "token": "public override void SetMainImageControl",
+      "line": 75,
+      "sha256": "732736f78c6b7ba9b5d9eb36676e04ef249f2de0b7b0481f80985b0de88e0484"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs",
+      "token": "private void OnWindowClosing",
+      "line": 155,
+      "sha256": "732736f78c6b7ba9b5d9eb36676e04ef249f2de0b7b0481f80985b0de88e0484"
+    }
+  ],
+  "newReverse": false,
+  "productModified": false,
+  "originalCheckpointsUnchanged": true,
+  "scopeLimit": "11 selected entry traces, not all UI actions closed; original100% is old document scope",
+  "remainingEntryGroups": [
+    {
+      "id": "M07",
+      "title": "启动 / 新建 / 打开方案",
+      "scope": "启动恢复、缺插件、加载失败回退与旧方案资源释放",
+      "packages": "C01/C11",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    },
+    {
+      "id": "M08",
+      "title": "工具箱搜索 / 拖入节点",
+      "scope": "发现来源、类型注册、创建参数与节点身份、撤销边界",
+      "packages": "C08/C20",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    },
+    {
+      "id": "M09",
+      "title": "连线 / 删除 / 改名 / 撤销",
+      "scope": "端口命中、绑定合法性、订阅与ID重映射、失败回滚",
+      "packages": "C05/C11/C20",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    },
+    {
+      "id": "M10",
+      "title": "流程Tab / Group进入返回与控制配置",
+      "scope": "流程范围、Group身份、循环/中断/累积和上下文恢复",
+      "packages": "C02/C03",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    },
+    {
+      "id": "M11",
+      "title": "全局变量窗口编辑 / 选择",
+      "scope": "初值/运行值、作用域、取消、重名与失效引用",
+      "packages": "C17",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    },
+    {
+      "id": "M12",
+      "title": "通信窗口读写 / 自动触发",
+      "scope": "UI和后台触发入口、服务授权、真实副作用与重连",
+      "packages": "C07/C15",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    },
+    {
+      "id": "M13",
+      "title": "图像源选择 / 结果树 / 历史",
+      "scope": "字段到帧、迟到结果门槛、旧图持有/释放与输出联动",
+      "packages": "C06/C10",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    },
+    {
+      "id": "M14",
+      "title": "关闭主窗 / 切方案",
+      "scope": "停止、保存决策、排空、相机租约和插件清理顺序",
+      "packages": "C02/C12",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    },
+    {
+      "id": "T06",
+      "title": "工具输入绑定与动态字段",
+      "scope": "选择器→参数写入→类型校验→快照→数组/图像消费者",
+      "packages": "C05/C09",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    },
+    {
+      "id": "T07",
+      "title": "工具ROI绘制 / 移动 / 提交取消",
+      "scope": "手柄事件、坐标映射、草稿/实际参数、撤销与存储",
+      "packages": "C09/C10",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    },
+    {
+      "id": "T08",
+      "title": "工具重置 / 结果样式 / 导出",
+      "scope": "Reset/样式命令到重绘或模型变化，导出合成和资源释放",
+      "packages": "C10/C19",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    },
+    {
+      "id": "T09",
+      "title": "其他专业工具的执行 / 应用 / 关闭",
+      "scope": "至少脚本、标定及设备类，与阈值代表不同的覆写/副作用",
+      "packages": "C09/C19",
+      "status": "not-entry-reviewed-not-assumed-unimplemented"
+    }
+  ],
+  "firstPassCoverage": {
+    "tracedEntries": 11,
+    "pendingGroups": 12,
+    "closureNotClaimed": true
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "views": 9,
+  "comparisonPoints": 13,
+  "sourceIdentities": 39,
+  "ownershipRows": 7,
+  "scenarios": 5,
+  "migrationPhases": 6,
+  "sourceHashes": true,
+  "deepLinks": true,
+  "search": true,
+  "history": true,
+  "keyboard": true,
+  "printRestore": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "productModified": false
+}

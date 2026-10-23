@@ -1,0 +1,668 @@
+{
+  "batchId": "EX-ARCH-20261022-01",
+  "version": 1,
+  "criterion": "以目标架构正确性/二开/诊断为准；迁移小步另列，用户确认前无产品改动",
+  "baseline": {
+    "head": "3a5dc6dd54f372699a450ad7862b52c961cd2797",
+    "kind": "HEAD+含既有dirty的逐文件SHA，仅静态核对未构建验收"
+  },
+  "sources": [
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "role": "宿主编排与触发/连续/通信专路",
+      "token": "new WorkflowExecutionEngine",
+      "line": 700,
+      "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae",
+      "gap": "现状已有UI准入集合；仍持有TabVM、连续循环、相机准备和执行器装配，不能给无UI客户直接用"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "role": "实际ReadyQueue与根入口",
+      "token": "private async Task<ExecutionResult> ExecuteWorkflowWithReadyQueue",
+      "line": 290,
+      "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+      "gap": "ReadyQueue finally仅Dispose残余lease；根入口finally清_activeSession并Dispose，尚无统一在途排空完成对象"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionPlan.cs",
+      "role": "已有计划模型",
+      "token": "public sealed class WorkflowExecutionPlan",
+      "line": 10,
+      "sha256": "79b12092d9ddf69bf2a634050698821a9aea7bf4bfd2f65da6396d915bdf0be3",
+      "gap": "不是没有计划；已含依赖图和并发声明，尚无显式项目/插件/转换器版本键"
+    },
+    {
+      "path": "src/Workflow/WorkflowResourceLeaseManager.cs",
+      "role": "已有局部资源管理器",
+      "token": "public sealed class WorkflowResourceLeaseManager",
+      "line": 12,
+      "sha256": "4d5ecee12b552e028421b2a485c8489daffc80ad416416441049bd0628d60558",
+      "gap": "在每个ReadyQueue new，非Host资源域；不能证明跨根/子Scope共享设备仲裁"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunSession.cs",
+      "role": "已有根/子运行会话",
+      "token": "public sealed class WorkflowRunSession",
+      "line": 16,
+      "sha256": "81a4538d84dd800b91f6380ffbb8bc8fee2b59d0284e5f1c2194a2c97f4587c0",
+      "gap": "RequestStop只Cancel；Dispose只释放CTS；IsActive仅Running/Paused，无Drain/Quarantine和完成handle"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunScope.cs",
+      "role": "已有子作用域身份",
+      "token": "public sealed class WorkflowRunScope",
+      "line": 8,
+      "sha256": "7af02a86b5d6b2e5ce7e8c5d0f6bfbdb4d3b1448ada6ef13831d571f4b5bc789",
+      "gap": "保留child.RunId映射目标ScopeId，不重新发明重复身份"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunRequest.cs",
+      "role": "已有当轮请求",
+      "token": "public sealed class WorkflowRunRequest",
+      "line": 11,
+      "sha256": "9f97a64dd147f5fcd5fefebde422ad390df0aa8fec6f722cf8c105d8143b4ec2",
+      "gap": "复制字典不等于深冻结；需捕获定义和全部可调用子流程同一修订"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionDependencyGraph.cs",
+      "role": "已有图编译与绑定依赖",
+      "token": "class WorkflowExecutionDependencyGraph",
+      "line": 12,
+      "sha256": "d6d47d991cf0b100a98976509c28f1d7b888a55f98ef8882cc9df27058f60f62",
+      "gap": "继续核当前控制分支/数据边/输入校验并复用，不为新名重写拓扑算法"
+    },
+    {
+      "path": "src/Plugin.SDK/Core/ToolExecutionProfile.cs",
+      "role": "并发/资源合同",
+      "token": "public sealed record ToolExecutionProfile",
+      "line": 10,
+      "sha256": "caca7c76b7aaca6e06268df029f9a4841379e3982de10af9eaafa4e8abd7f620",
+      "gap": "MaxInstances有声明，当前src仅该处出现，未在已审调度路径发现执行门"
+    },
+    {
+      "path": "src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs",
+      "role": "相机帧feed与流清理",
+      "token": "public async ValueTask DisposeAsync",
+      "line": 187,
+      "sha256": "52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5",
+      "gap": "设备适配迁下沉；保留帧替换/触发节奏，最终排空纳入controller"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "role": "单次/连续/切方案UI入口",
+      "token": "PrepareSolutionTransitionAsync",
+      "line": 5574,
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+      "gap": "当前BeginSolutionTransition/StopAndWait轮询后继续保存切换；改消费明确TransitionOutcome"
+    },
+    {
+      "path": "src/Workflow/WorkflowEngineFactory.cs",
+      "role": "现有执行器工厂",
+      "token": "class WorkflowEngineFactory",
+      "line": 13,
+      "sha256": "aecdeb13ee6e88b329687bffd476653131e665714a22d22af8eecf97356fe91a",
+      "gap": "调用者均注入同Host registry/arbiter，避免绕过UI后各自仲裁"
+    },
+    {
+      "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+      "role": "工具准备与调用",
+      "token": "class ToolExecutor",
+      "line": 43,
+      "sha256": "0229fd6ea68af49b5aefe58187f0036a5987fc69c15f1486cc73113dce6531e2",
+      "gap": "保留参数准备/工具强类型基础，正式与调试经同内核；迁内部实现时兼容旧入口"
+    },
+    {
+      "path": "src/Plugin.SDK/Core/ToolExecutionRequest.cs",
+      "role": "当前工具请求（已有dirty）",
+      "token": "public sealed class ToolExecutionRequest",
+      "line": 20,
+      "sha256": "b70506bee54d75a623b5d19cdb953344bb8286ad0a946b460b7295c699c6cdeb",
+      "gap": "保留已有CalibrationEvidence dirty；仅计划新增运行地址/只读输入与借用资源合同，不覆盖现有更改"
+    }
+  ],
+  "contracts": [
+    {
+      "id": "C01",
+      "title": "统一运行服务与接纳",
+      "signature": "StartAsync(RunRequest, AdmissionToken) → Rejected | Accepted(RunHandle)",
+      "fields": [
+        "ProjectId",
+        "ExpectedDefinitionRevision",
+        "PlanStamp",
+        "Mode: ProcedureOnce | NodeDebug | Triggered",
+        "TargetFlowId/TargetNodeId",
+        "InputSet",
+        "Overrides",
+        "RequestId"
+      ],
+      "rules": [
+        "ProjectRunService不引用WPF或UI VM；UI先提交编辑生成DefinitionRevision，SDK直接用已提交定义。",
+        "接纳冻结输入/计划并登记权威RunRegistry；提交点前取消可拒绝，提交点后返回handle，不能丢失已启动任务。",
+        "流程/节点调试策略共内核但不混同VM全局脚本/Tab单次；无上游注入的调试请求拒绝，不使用旧缓存。",
+        "首期MaxConcurrentRootRuns=1为显式发布策略，可配置架构不绑UI；相机/通信/SDK/调试均经过同registry。",
+        "Task<TResult>等待token只影响等待；请求取消、等待取消、停止运行分别命名。"
+      ]
+    },
+    {
+      "id": "C02",
+      "title": "计划、调度与资源域",
+      "signature": "Compile(DefinitionSnapshot, ToolCatalogStamp) → PlanStamp; DispatchAsync(plan, run, arbiter)",
+      "fields": [
+        "PlanId",
+        "DefinitionRevision",
+        "ToolContractVersions",
+        "ConverterVersions",
+        "ControlEdges",
+        "DataEdges",
+        "ResourceClaims",
+        "SchedulingPolicy"
+      ],
+      "rules": [
+        "冻结本轮可调用的全部子流程，而非每次进入子程序再读最新定义；未知动态调用在接纳前解析或明确拒绝。",
+        "就绪由数据/控制依赖与剪枝决定；已失败前驱跳过依赖分支；默认FailFast，ContinueIndependent须显式选且记录跳过范围。",
+        "资源仲裁Host唯一，多资源全取或全不取，避免持一个等另一个；队列等待取消可撤销。",
+        "真实工具入口的dispatch gate与Stop线性化；先登记task再启动，排队任务Stop后不得进入工具。",
+        "计算、ExternalDataWait、队列数量分别有界；MaxInstances与资源独占都真正执行，不只留字段。",
+        "子Scope等待子任务不得持有其必需且不可借用的独占资源；可借用需要显式同Owner子租约，否则规划拒绝或在调用前拆分占用。",
+        "不以Task.Run数量或魔数4当性能结论；公平/配额策略可配置，性能只以实测判断。"
+      ]
+    },
+    {
+      "id": "C03",
+      "title": "停止、完成与隔离",
+      "signature": "RequestStop(runId); StopAsync(runId, Deadline) → Drained | Quarantined(PendingOwners); run.Completion; run.ExecutionResourcesRetired",
+      "fields": [
+        "RunPhase: Admitted/Queued/Running/StopRequested/Draining/ExecutionFinished",
+        "Outcome: Succeeded/Failed/Cancelled",
+        "Health: Normal/Quarantined",
+        "InFlightCount",
+        "PendingOwners",
+        "StopCause",
+        "StateSequence"
+      ],
+      "rules": [
+        "Health与执行终态分轴；超时隔离不是ExecutionFinished，不完成正常Completion、不清registry或释放被占资源。",
+        "关闭准入/停新派发→取消→观察全部根/子task/native与内部收尾回调→释放运行临时资源→写唯一ExecutionOutcome；清理失败保留原主异常并附加diagnostics。",
+        "Completion代表已记录所有执行及内部收尾结局；若临时资源退役失败，Outcome带失败和隔离，不伪报Drained；ExecutionResourcesRetired只有确认全部临时占用退出才成功。",
+        "外部UI/客户订阅不计入执行Completion的等待链，其队列/Lease分别排空；需要作为运行收尾的框架回调才计入tracker，避免handler Stop等待自身互锁。",
+        "取消回调不在全局状态锁中调用；重复Stop共享同一收尾task，各等待者deadline互不改变实际退役任务。",
+        "任务异常、handler异常、清理异常都必须被观察；晚到事件带RunId/Generation，退役后不能复活当前UI或项目。"
+      ]
+    },
+    {
+      "id": "C04",
+      "title": "连续与外部输入",
+      "signature": "StartContinuousAsync(ContinuousRequest) → ControllerHandle; controller.StopAsync(deadline)",
+      "fields": [
+        "ControllerId",
+        "IterationRunId",
+        "IterationIndex",
+        "InputProvider",
+        "FailurePolicy",
+        "RetentionPolicy"
+      ],
+      "rules": [
+        "控制器拥有循环、帧feed与轮次；首期每控制器最多一轮在途，后续流水线需要另定容量。",
+        "停止控制器先禁止新轮/新软件触发，再取消并排空全部已登记轮与feed在途；采集失败必须记录，不能删除running后只警告当成功。",
+        "帧租约直到消费者执行确已退出才归还；本轮Completion不能掩盖脱离tracker的任务。",
+        "按策略区分正常达到末图结束、业务失败停止、用户取消；不把StopAtLast一概当Cancelled。"
+      ]
+    },
+    {
+      "id": "C05",
+      "title": "运行结果使用权",
+      "signature": "RunHandle.AcquireResult → ResultLease; RunHandle.DisposeAsync; PublishedResultRetired",
+      "fields": [
+        "RunId",
+        "ScopeId(映射现有child.RunId)",
+        "FrameId",
+        "SchemaVersion",
+        "DefinitionRevision"
+      ],
+      "rules": [
+        "RunHandle固定本轮结果版本，Completion后仍可Acquire；Handle Dispose禁止新Acquire但已取得lease继续有效。",
+        "Completion/ExecutionResourcesRetired不等待未来获取的结果lease；发布结果Owner的最终释放单列PublishedResultRetired，避免循环等待。",
+        "项目关闭若外部lease存活返回ClosePending并定位，不提早释放底层图像。"
+      ]
+    },
+    {
+      "id": "C06",
+      "title": "切方案与宿主准入",
+      "signature": "PrepareTransition(ProjectId, ExpectedGeneration, Deadline) → ReadyToSwap | Deferred(PendingOwners)",
+      "fields": [
+        "ProjectId",
+        "Generation",
+        "AdmissionState",
+        "DrainSummary",
+        "TransitionId"
+      ],
+      "rules": [
+        "切换阻断本项目所有入口，包括调试/通信/SDK；等待registry根/子任务和输入feed达到规定安全点，不轮询UI集合当证明。",
+        "准备成功才能替换定义/设备Owner；超时保留旧项目、旧generation和隔离诊断。",
+        "事件地址同时核Project/Generation/Run；旧代次只可用于指定历史读取，不能写当前投影。",
+        "重复TransitionId返回同一结果；失败恢复准入必须检查旧任务/隔离Owner，不在finally无条件重开。"
+      ]
+    }
+  ],
+  "files": [
+    [
+      "新建",
+      "src/Contracts/Execution/RunContracts.cs",
+      "StartOutcome、RunAddress、ExecutionOutcome、DrainOutcome、StopOptions、PlanStamp；纯DTO不依赖WPF",
+      "C01 C03"
+    ],
+    [
+      "新建",
+      "src/Runtime.Engine/Execution/ProjectRunService.cs",
+      "统一准入、run注册、模式策略、执行/停止/切方案；不接受TabVM",
+      "C01 C03 C06"
+    ],
+    [
+      "新建",
+      "src/Runtime.Engine/Execution/RunRegistry.cs",
+      "权威任务/状态/Generation，持有直到inflight排空；非UI集合",
+      "C03 C06"
+    ],
+    [
+      "新建",
+      "src/Runtime.Engine/Execution/InFlightTracker.cs",
+      "所有根/子Scope任务及内部回调注册、观察异常、最后退出通知",
+      "C03"
+    ],
+    [
+      "新建",
+      "src/Runtime.Engine/Execution/ContinuousRunController.cs",
+      "单独ControllerId；独立IterationRunId；停产新轮并Drain所有在途",
+      "C04"
+    ],
+    [
+      "新建",
+      "src/Runtime.Engine/Execution/HostResourceArbiter.cs",
+      "跨调用/跨Scope资源键仲裁、实例上限、多资源原子取得/取消、隔离保留",
+      "C02 C03"
+    ],
+    [
+      "新建",
+      "src/Runtime.Engine/Execution/ExecutionPlanCompiler.cs",
+      "捕获整套流程定义修订、校验并版本化；调用现有图编译/转换，不重做算法",
+      "C02"
+    ],
+    [
+      "新建",
+      "src/Runtime.SDK/Execution/RunHandle.cs",
+      "客户接纳、等待、Stop与结果获取门面；只依赖Contracts后端",
+      "C01 C03 C05"
+    ],
+    [
+      "整改",
+      "src/Workflow/WorkflowExecutionEngine.cs",
+      "实际ReadyQueue统一用Host arbiter与tracker；移除不可达旧分层代码须基线验后；根/子执行通过内部协议",
+      "C02 C03"
+    ],
+    [
+      "整改",
+      "src/Workflow/WorkflowRunSession.cs、WorkflowRunScope.cs",
+      "保留身份与取消基础；增加冻结版本及可等待任务/诊断；IsActive不得作为唯一退役判据",
+      "C03"
+    ],
+    [
+      "整改",
+      "src/Workflow/WorkflowExecutionPlan.cs、WorkflowRunRequest.cs",
+      "已有计划升级PlanStamp/不可变边界；参数和所有可调用子流程在接纳处冻结",
+      "C01 C02"
+    ],
+    [
+      "替换责任",
+      "src/Workflow/WorkflowResourceLeaseManager.cs",
+      "Host arbiter接管全局占用；若留内部小适配不得再独立new资源域",
+      "C02"
+    ],
+    [
+      "拆分",
+      "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "运行与连续责任移出；保留或更名为UiWorkflowRunAdapter，处理编辑提交/UI投影/命令映射",
+      "C01 C04 C06"
+    ],
+    [
+      "迁移适配",
+      "src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs → src/Runtime.Engine/Inputs/CameraWorkflowFrameFeed.cs",
+      "剥离ServiceInitializer，注入相机服务；实例上限/trigger/帧Owner实际校验后迁",
+      "C04"
+    ],
+    [
+      "整改调用者",
+      "src/UI/Shell/Windows/MainWindowViewModel.cs、src/Workflow/WorkflowEngineFactory.cs",
+      "所有入口走服务；切方案等待明确排空和Owner代次；工厂不再创造独立仲裁域",
+      "C01 C06"
+    ],
+    [
+      "收紧合同",
+      "src/Plugin.SDK/Core/ToolExecutionProfile.cs、ToolExecutionRequest.cs、ToolExecutor.cs",
+      "MaxInstances明确生效；统一调试/通信节点执行；借用输入/取消支持不等强制native中断",
+      "C01 C02 C03"
+    ],
+    [
+      "后续新建测试",
+      "tests/SunEyeVision.Runtime.Engine.Tests/RunAdmissionTests.cs、SchedulerTests.cs、RunDrainTests.cs、ContinuousControllerTests.cs",
+      "新目标测试工程；已有SDK/UI tests迁移或扩充，当前均不写",
+      "全部"
+    ]
+  ],
+  "tests": [
+    {
+      "id": "EX01",
+      "group": "服务",
+      "setup": "相同定义与输入分别经UI/无窗API/通信触发",
+      "expected": "输出schema/Quality/计划修订一致，UI不实例化新执行内核绕过准入",
+      "contractIds": [
+        "C01"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX02",
+      "group": "服务",
+      "setup": "节点调试存在未注入上游绑定",
+      "expected": "明确拒绝或显式注入；不得读取上轮缓存结果",
+      "contractIds": [
+        "C01"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX03",
+      "group": "服务",
+      "setup": "Start同时双提交、接纳提交点前/后取消、相同RequestId重试",
+      "expected": "首期根并发上限1；前取消无task，后取消不丢handle，重复不多执行",
+      "contractIds": [
+        "C01"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX04",
+      "group": "服务",
+      "setup": "运行中改根及子流程定义再进入子流程",
+      "expected": "全部本轮仍使用接纳时PlanStamp，下一轮才使用新修订",
+      "contractIds": [
+        "C02"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX05",
+      "group": "服务",
+      "setup": "已完成run后Acquire，释放handle但保留resultlease",
+      "expected": "先能读取同版本；释放handle后新Acquire拒绝，旧lease可用，最终Owner只释放一次",
+      "contractIds": [
+        "C05"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX06",
+      "group": "服务",
+      "setup": "所有入口活动时准备切方案，注入旧generation迟到回调",
+      "expected": "未排空不得替换；切换后旧回调不写当前显示/全局状态",
+      "contractIds": [
+        "C06"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX07",
+      "group": "调度",
+      "setup": "同一资源键由不同入口/不同Scope争用，另有不同键请求",
+      "expected": "共享键不重叠；独立键在能力允许时可并行，不受Engine实例绕过",
+      "contractIds": [
+        "C02"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX08",
+      "group": "调度",
+      "setup": "同时申请A+B与B+A，取消一个等待者",
+      "expected": "不部分占用互锁；取消后无孤儿租约和遗留排队记录",
+      "contractIds": [
+        "C02"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX09",
+      "group": "调度",
+      "setup": "MaxInstances=1/2与ExternalDataWait压力",
+      "expected": "实际实例上限生效；等待任务/队列有界，计算名额不被无界等待淹没",
+      "contractIds": [
+        "C02"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX10",
+      "group": "调度",
+      "setup": "数据绑定无画线前驱、条件分支、前驱失败",
+      "expected": "只派发所有有效前驱满足且命中的节点；失败依赖跳过，显式策略控制独立支路",
+      "contractIds": [
+        "C02"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX11",
+      "group": "调度",
+      "setup": "父子调用争用同一独占资源",
+      "expected": "明确可借用子租约或规划拒绝，不发生父等待子但持子所需资源死锁",
+      "contractIds": [
+        "C02"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX12",
+      "group": "调度",
+      "setup": "控制派发入队与工具入口之间触发Stop",
+      "expected": "所有已登记task可观察；Stop线性化后尚未进入的节点不调用工具",
+      "contractIds": [
+        "C02",
+        "C03"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX13",
+      "group": "停止",
+      "setup": "可协作工具和子程序执行中取消",
+      "expected": "全部在途达终态后才Completion；状态顺序单调，临时资源实际释放后才Drained",
+      "contractIds": [
+        "C03"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX14",
+      "group": "停止",
+      "setup": "非协作阻塞工具Stop超时后再次Start/切方案",
+      "expected": "返回Quarantined与具体pending；Completion不伪完成，占用不复用，直到真实退出后可重新Drain",
+      "contractIds": [
+        "C03",
+        "C06"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX15",
+      "group": "停止",
+      "setup": "同一Run重复Stop、重复Close、单个等待者取消",
+      "expected": "只一次底层收尾；取消等待不改变其他等待者和已发出停止",
+      "contractIds": [
+        "C03"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX16",
+      "group": "停止",
+      "setup": "工具异常＋清理异常＋订阅handler自调Stop/Drain",
+      "expected": "主错保留并观察所有收尾错；外部handler不阻塞执行Completion，禁止同步自Drain死锁",
+      "contractIds": [
+        "C03"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX17",
+      "group": "停止",
+      "setup": "连续相机运行停止/末图自然结束/feed清理失败",
+      "expected": "不发新轮/新trigger；等帧消费者退出才释放；自然结束与Cancelled分开，feed失败不伪报成功",
+      "contractIds": [
+        "C04"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    },
+    {
+      "id": "EX18",
+      "group": "停止",
+      "setup": "停止暂停态及Start紧接Stop；应用关闭但仍有结果lease",
+      "expected": "暂停可被唤醒排空；无遗失task；临时占用退出与外部结果退役分开，ClosePending列Owner",
+      "contractIds": [
+        "C03",
+        "C05",
+        "C06"
+      ],
+      "status": "planned-not-run",
+      "method": "使用可控TaskCompletionSource/屏障和计数工具构造确定性交错，断言事件序列、工具调用数、在途/资源计数；不以固定sleep通过。原生/相机部分需受控真实运行另记，托管替身不替代设备验收。"
+    }
+  ],
+  "requests": [
+    {
+      "id": "EX-RE-001",
+      "recipient": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+      "title": "原版各运行模式接纳和实际节点派发边界",
+      "priority": "P1-设计补证不阻塞自研合同",
+      "members": [
+        "TitleMenueItemData.SigRun/CheckRun",
+        "VmSolution.Run",
+        "VmProcedure.Run（确认实际符号）",
+        "VmModule.Run",
+        "ModuleManager.SelfRun",
+        "ServerSDKAPI/NativeMethods.SelfRun"
+      ],
+      "known": "全局SigRun到全局脚本、普通模块SelfRun与流程Tab入口分开；未知原生队列和工具窗Run上游。",
+      "question": "按全局/流程/单节点各选一条，交接已恢复完整方法与首个实际接收方/节点派发点；指出返回表示接纳还是执行结束、线程/在途任务Owner，不能以SelfRun名称推断同步等待。",
+      "acceptance": "每条源路径+SHA+具体成员/原生RVA、输入/调用者/消费者、正常失败分支、准确未知；只到首个证据断点，不扩全native调度库。",
+      "related": [
+        "AR-001-F"
+      ],
+      "state": "sent",
+      "nextOwner": "框架层逆向",
+      "deliveryConfirmed": true,
+      "recipientAcknowledged": false
+    },
+    {
+      "id": "EX-RE-002",
+      "recipient": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+      "title": "原版停止完成与调度/回调排空的准确保证",
+      "priority": "P1-复用已有停止证据",
+      "members": [
+        "TitleMenueItemData.StopRun/MutiOrStopRun",
+        "VmSolution.ContinuousRunEnable/GloalScriptContinusRunEnable",
+        "VmProcedure.ContinuousRunEnable",
+        "GlobalModuleManager.GlobalScriptStopRun",
+        "RefreshUIStopExecute",
+        "ContinousRunStart"
+      ],
+      "known": "Q01-Q04已证重复false/流程遍历/SDK调用与字段写入顺序；仍不能证明阻塞native停止和回调Drain。",
+      "question": "只补停止命令接收方、任何wait/完成事件生产处及在途退出/Owner取消顺序；明确是请求停止/SDK同步返回/执行终态/资源退役哪一级，失败超时保留什么。",
+      "acceptance": "已有材料优先；可定位方法或RVA与条件/返回码/事件生产者；不能闭合则给第一缺失函数和影响。AR-001-F迟到Owner准入材料只引用其原编号，不重复要求重跑。",
+      "related": [
+        "AR-001-F"
+      ],
+      "state": "sent",
+      "nextOwner": "框架层逆向",
+      "deliveryConfirmed": true,
+      "recipientAcknowledged": false
+    },
+    {
+      "id": "EX-RE-003",
+      "recipient": "01a1529c-d351-73c2-bc9c-79e92b0e7582",
+      "title": "插件执行返回、停止支持与后台任务/帧使用权边界",
+      "priority": "P1-限图像源和阈值试点",
+      "members": [
+        "图像源原版实际Run/回调与缓冲接收成员（先确认具体符号）",
+        "阈值原版执行与输出载荷成员（先确认具体符号）",
+        "公共工具执行会话/关闭/取消原版与独立恢复实现分列"
+      ],
+      "known": "图像copy/借用/映射已有DI资料；本请求不重开AR-001-P所有权全域审核。",
+      "question": "图像源与阈值各交一条执行入口→任务/native→返回/回调→帧消费者退出；列是否有返回后的后台执行、取消支持/不可中断点、frame/model何时可归还，公共配置自执行与流程执行是否同语义。",
+      "acceptance": "每工具源码位置/成员/资源SHA，返回语义/任务Owner/取消/释放证据和未证分支；AR-001-P相关材料复用原编号引用，不把恢复实现Token当原厂可取消证明；仅两个工具，不扩整目录。",
+      "related": [
+        "AR-001-P"
+      ],
+      "state": "sent",
+      "nextOwner": "推进插件逆向",
+      "deliveryConfirmed": true,
+      "recipientAcknowledged": false
+    }
+  ],
+  "callChain": {
+    "current": "UI命令/TabVM → WorkflowExecutionManager（连续/采集/通信） → 每轮新WorkflowExecutionEngine → BuildExecutionPlan → ExecuteWorkflowWithParallelGroups立即转ReadyQueue → ToolExecutor → node/result事件；通信单模块另直接ToolExecutor",
+    "target": "UI适配/Runtime.SDK/触发适配 → ProjectRunService/RunRegistry → 定义快照/ExecutionPlanCompiler → 内核ReadyQueue + HostResourceArbiter/InFlightTracker → 工具；连续Controller调同服务，不新造调度器",
+    "stop": "关闭准入和派发gate → 取消 → 等根/子/native/内部收尾tracker → 临时资源退役 → 唯一结局；隔离保持task与占用直到真实退出"
+  },
+  "migration": [
+    {
+      "id": "M0",
+      "goal": "用户确认C01-C06及18用例；保全dirty并固定可运行样本",
+      "gate": "未确认不写产品"
+    },
+    {
+      "id": "M1",
+      "goal": "引入内部RunRegistry/InFlightTracker并补停止Drain，保留旧UI表面适配",
+      "gate": "EX12-18明确通过才能停止旧早清理"
+    },
+    {
+      "id": "M2",
+      "goal": "所有入口迁统一服务/Controller与Host arbiter，计划修订一次捕获",
+      "gate": "EX01-04/06-11与现有回归"
+    },
+    {
+      "id": "M3",
+      "goal": "挂SDK门面/结果获取，旧入口转发后逐批退出；程序集分离另阶段",
+      "gate": "EX05与无窗路径、旧插件/方案兼容记录；不靠先搬文件完成设计"
+    }
+  ],
+  "acceptance": {
+    "total": 18,
+    "executed": 0,
+    "definition": "本专题具名18场景，不等工时产品完成率；不替换原架构24或原42"
+  },
+  "productModified": false,
+  "buildRun": false,
+  "status": "pending-human-confirmation",
+  "executionPolicies": {
+    "targetVsInitial": "目标支持按资源/依赖控制的多根运行；首期根并发1只是显式能力/迁移策略，不是最终架构限制或性能结论。",
+    "queuedAdmission": "根执行槽满时按模式进入有界队列或明确Busy；已接受排队也必须可取消/停止。全部连续不能因为每轮Busy而静默丢掉某流程；按有界公平队列组织。",
+    "solutionMode": "方案全部运行/全部连续是组合运行策略，复用SolutionExecutionDependencyGraph所表达的流程依赖；由ProjectRunService内策略组织子运行，不另造执行内核。每组及各轮有身份/快照，不混同VM全局脚本。",
+    "nestedOwnership": "保留当前root RunId、子scope.RunId映射；子调用按同一PlanStamp读取已捕获定义；共享设备需明确Owner借用或编译拒绝，不能盲目允许所有同根重入。",
+    "concurrencyEvidence": "本专题只有静态路径证据；尚未跑并发或非协作取消故障注入。调度公平/吞吐改善须测试，架构目标不等现有性能保证。"
+  }
+}

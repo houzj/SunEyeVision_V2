@@ -1,0 +1,423 @@
+{
+  "id": "SCRIPT-COMPONENT-BASELINE-01",
+  "scope": "原版组件隔离基线，非两软件完整窗口基线",
+  "complete": true,
+  "rows": [
+    {
+      "side": "vm",
+      "nominalLines": 100,
+      "actualLines": 101,
+      "processTrials": 5,
+      "validTrials": 5,
+      "service": {
+        "n": 5,
+        "medianMs": 28.366400000000002,
+        "minMs": 27.1701,
+        "maxMs": 28.710900000000002
+      },
+      "referenceReadyWait": {
+        "n": 5,
+        "medianMs": 506.11010000000005,
+        "minMs": 473.7387,
+        "maxMs": 513.684
+      },
+      "sourcePreparation": {
+        "n": 5,
+        "medianMs": 137.6831,
+        "minMs": 125.78160000000001,
+        "maxMs": 141.6511
+      },
+      "semantic": null,
+      "firstCompletion": {
+        "n": 5,
+        "medianMs": 215.4488,
+        "minMs": 193.1527,
+        "maxMs": 225.49460000000002
+      },
+      "repeatCompletion": {
+        "n": 100,
+        "medianMs": 7.8597,
+        "minMs": 6.1288,
+        "maxMs": 33.8036
+      },
+      "firstCompileAfterEditor": {
+        "n": 5,
+        "medianMs": 91.27590000000001,
+        "minMs": 87.8823,
+        "maxMs": 109.01350000000001
+      },
+      "forcedRepeatCompile": {
+        "n": 10,
+        "medianMs": 96.298,
+        "minMs": 83.8699,
+        "maxMs": 110.3421
+      }
+    },
+    {
+      "side": "self",
+      "nominalLines": 100,
+      "actualLines": 101,
+      "processTrials": 5,
+      "validTrials": 5,
+      "service": {
+        "n": 5,
+        "medianMs": 460.9025,
+        "minMs": 436.2312,
+        "maxMs": 537.3033
+      },
+      "referenceReadyWait": null,
+      "sourcePreparation": {
+        "n": 5,
+        "medianMs": 225.3128,
+        "minMs": 192.4103,
+        "maxMs": 237.9323
+      },
+      "semantic": {
+        "n": 5,
+        "medianMs": 254.4724,
+        "minMs": 235.6539,
+        "maxMs": 264.7357
+      },
+      "firstCompletion": {
+        "n": 5,
+        "medianMs": 545.7041,
+        "minMs": 495.3573,
+        "maxMs": 557.1855
+      },
+      "repeatCompletion": {
+        "n": 100,
+        "medianMs": 5.2223500000000005,
+        "minMs": 4.3126,
+        "maxMs": 14.6057
+      },
+      "firstCompileAfterEditor": {
+        "n": 5,
+        "medianMs": 368.3772,
+        "minMs": 342.9556,
+        "maxMs": 403.0026
+      },
+      "forcedRepeatCompile": {
+        "n": 10,
+        "medianMs": 25.15945,
+        "minMs": 18.6584,
+        "maxMs": 34.8452
+      }
+    },
+    {
+      "side": "vm",
+      "nominalLines": 1000,
+      "actualLines": 1001,
+      "processTrials": 5,
+      "validTrials": 5,
+      "service": {
+        "n": 5,
+        "medianMs": 32.5252,
+        "minMs": 27.329700000000003,
+        "maxMs": 50.404700000000005
+      },
+      "referenceReadyWait": {
+        "n": 5,
+        "medianMs": 512.7635,
+        "minMs": 488.44730000000004,
+        "maxMs": 638.365
+      },
+      "sourcePreparation": {
+        "n": 5,
+        "medianMs": 215.46280000000002,
+        "minMs": 188.0637,
+        "maxMs": 243.6535
+      },
+      "semantic": null,
+      "firstCompletion": {
+        "n": 5,
+        "medianMs": 310.23490000000004,
+        "minMs": 291.9388,
+        "maxMs": 339.9465
+      },
+      "repeatCompletion": {
+        "n": 100,
+        "medianMs": 75.259,
+        "minMs": 63.431000000000004,
+        "maxMs": 117.4946
+      },
+      "firstCompileAfterEditor": {
+        "n": 5,
+        "medianMs": 97.2201,
+        "minMs": 94.3438,
+        "maxMs": 169.2201
+      },
+      "forcedRepeatCompile": {
+        "n": 10,
+        "medianMs": 119.775,
+        "minMs": 96.9353,
+        "maxMs": 163.68710000000002
+      }
+    },
+    {
+      "side": "self",
+      "nominalLines": 1000,
+      "actualLines": 1001,
+      "processTrials": 5,
+      "validTrials": 5,
+      "service": {
+        "n": 5,
+        "medianMs": 463.8955,
+        "minMs": 420.2486,
+        "maxMs": 633.9437
+      },
+      "referenceReadyWait": null,
+      "sourcePreparation": {
+        "n": 5,
+        "medianMs": 226.2081,
+        "minMs": 209.9345,
+        "maxMs": 274.3085
+      },
+      "semantic": {
+        "n": 5,
+        "medianMs": 287.092,
+        "minMs": 268.2875,
+        "maxMs": 327.2508
+      },
+      "firstCompletion": {
+        "n": 5,
+        "medianMs": 570.5409,
+        "minMs": 547.0888,
+        "maxMs": 735.6529
+      },
+      "repeatCompletion": {
+        "n": 100,
+        "medianMs": 24.5901,
+        "minMs": 4.7746,
+        "maxMs": 59.7729
+      },
+      "firstCompileAfterEditor": {
+        "n": 5,
+        "medianMs": 566.1376,
+        "minMs": 530.0003,
+        "maxMs": 757.2275
+      },
+      "forcedRepeatCompile": {
+        "n": 10,
+        "medianMs": 219.52280000000002,
+        "minMs": 178.5567,
+        "maxMs": 242.9141
+      }
+    },
+    {
+      "side": "vm",
+      "nominalLines": 5000,
+      "actualLines": 5001,
+      "processTrials": 5,
+      "validTrials": 5,
+      "service": {
+        "n": 5,
+        "medianMs": 32.1576,
+        "minMs": 27.635900000000003,
+        "maxMs": 41.835
+      },
+      "referenceReadyWait": {
+        "n": 5,
+        "medianMs": 517.7622,
+        "minMs": 480.7988,
+        "maxMs": 794.8579000000001
+      },
+      "sourcePreparation": {
+        "n": 5,
+        "medianMs": 1295.0234,
+        "minMs": 1233.9640000000002,
+        "maxMs": 1743.2656000000002
+      },
+      "semantic": null,
+      "firstCompletion": {
+        "n": 5,
+        "medianMs": 1449.8811,
+        "minMs": 1313.2857000000001,
+        "maxMs": 1515.4248
+      },
+      "repeatCompletion": {
+        "n": 100,
+        "medianMs": 1222.3238500000002,
+        "minMs": 1096.0945000000002,
+        "maxMs": 2177.495
+      },
+      "firstCompileAfterEditor": {
+        "n": 5,
+        "medianMs": 156.92010000000002,
+        "minMs": 141.1568,
+        "maxMs": 238.92260000000002
+      },
+      "forcedRepeatCompile": {
+        "n": 10,
+        "medianMs": 166.33665000000002,
+        "minMs": 141.3495,
+        "maxMs": 200.115
+      }
+    },
+    {
+      "side": "self",
+      "nominalLines": 5000,
+      "actualLines": 5001,
+      "processTrials": 5,
+      "validTrials": 5,
+      "service": {
+        "n": 5,
+        "medianMs": 446.3241,
+        "minMs": 421.8265,
+        "maxMs": 600.7145
+      },
+      "referenceReadyWait": null,
+      "sourcePreparation": {
+        "n": 5,
+        "medianMs": 199.5412,
+        "minMs": 194.3023,
+        "maxMs": 264.5954
+      },
+      "semantic": {
+        "n": 5,
+        "medianMs": 370.0643,
+        "minMs": 321.5402,
+        "maxMs": 426.7086
+      },
+      "firstCompletion": {
+        "n": 5,
+        "medianMs": 691.8943,
+        "minMs": 658.1363,
+        "maxMs": 814.4578
+      },
+      "repeatCompletion": {
+        "n": 100,
+        "medianMs": 15.0915,
+        "minMs": 11.728,
+        "maxMs": 232.0183
+      },
+      "firstCompileAfterEditor": {
+        "n": 5,
+        "medianMs": 1363.4516,
+        "minMs": 1341.5638,
+        "maxMs": 1494.2832
+      },
+      "forcedRepeatCompile": {
+        "n": 10,
+        "medianMs": 940.41165,
+        "minMs": 657.1555,
+        "maxMs": 1133.7061
+      }
+    }
+  ],
+  "evidence": {
+    "inputManifest": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\input-manifest.json",
+    "runSummary": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\run-summary.json",
+    "rawResults": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2",
+    "loadedIdentities": {
+      "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\mscorlib.dll": "3babbebd1d1bee319f6109ea066d1ab5d5fc3c7b493cd1427ccf910bb738902d",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\VmBenchReady.exe": "5eb5ee5017091f1fd3fc8857bbc83f5dd9247d65478e862d68ee6ffe5f14807a",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\PresentationFramework\\v4.0_4.0.0.0__31bf3856ad364e35\\PresentationFramework.dll": "bcd8ef9a5c078021cb70c089ed57aeb2010359c45d372e3125c4ba16902eeda2",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\WindowsBase\\v4.0_4.0.0.0__31bf3856ad364e35\\WindowsBase.dll": "c2d01858d99d5e4a2833b6b1eb5541fee3d15495889b548322788e978ad14ba4",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Core\\v4.0_4.0.0.0__b77a5c561934e089\\System.Core.dll": "7997bdad8f9a7244078cc5fa4e764987bcd34badd6eb4473290be44da08e3e1c",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System\\v4.0_4.0.0.0__b77a5c561934e089\\System.dll": "5a6459e838f4d9b25360b73efc6e2b495a5514c6230b8f790d61b6257828c37b",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_64\\PresentationCore\\v4.0_4.0.0.0__31bf3856ad364e35\\PresentationCore.dll": "3f5ef10cf18f943f663b2dd8deae19e00a142f251d241d33d9d8221e105dd329",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Xaml\\v4.0_4.0.0.0__b77a5c561934e089\\System.Xaml.dll": "e1262af0edbd110816ec73ffc56d69b87069e700e65fdc5f6db44c06b66b2a25",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Web.Extensions\\v4.0_4.0.0.0__31bf3856ad364e35\\System.Web.Extensions.dll": "2577a178e4f5fe6c95ad94c17f90308e9d00fde70d65023fc8fca96a39a0d826",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Configuration\\v4.0_4.0.0.0__b03f5f7f11d50a3a\\System.Configuration.dll": "f72b387d185e3fdf226019cbfafcaf88ead29f5802c572d29394a4c4a637a21d",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Xml\\v4.0_4.0.0.0__b77a5c561934e089\\System.Xml.dll": "b91b07b73269fa9eaa7fd3c14c4053ed8d0d1f1a70d9a0ab32ba55d026358711",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\BenchReference.dll": "356b227825b1e60615809016a31002ec59fa33355179c83597328ff01b6ed153",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\VM.CodeCompletion\\v4.0_1.0.0.0__7ec0213b45fa4354\\VM.CodeCompletion.dll": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.CSharp.dll": "ad514750bd9d1fe737363d2fe22765f58c94991397239f9d69e1c84c67684ecd",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.dll": "d15ed6dddce2250d948bca95794c1877e807b61f62103bf246db50fd09954ed7",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Windows.Forms\\v4.0_4.0.0.0__b77a5c561934e089\\System.Windows.Forms.dll": "f6e797ee0f0bdd153ef32e145450c9acb08f7861fe82cb5e711c2df1cece3769",
+      "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Drawing\\v4.0_4.0.0.0__b03f5f7f11d50a3a\\System.Drawing.dll": "ed92bceb3ebf90eae1af2a84279842562ed589e3616f4d5702361336cdf5ed2e",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.Cecil.dll": "8bdb7d42499f88a4f70f0847dda17115df8c93e0fd747741f99cde9b1b494bc7",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\Mono.Cecil.dll": "0fdf95700289545356c16a9f0e7fb5fd7816dbb33131d9be48b370272a0c1536",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.AvalonEdit.dll": "7d3766163f900ef0181e40f24748f05fafce6593095e4f8e841192d48dc16912",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.CoreLib.dll": "4aee38cb826d3624936cf78265c4bb7e5f84e59b28c47bd898c3b9fb5aea95dd",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\SelfBench.dll": "42b6d24415683d1c9f2a13ababf71f9e10d17e58ac263108251652cc32e60785",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.dll": "dac19c2064a2a263bf9553c0913146593849b74695fd97be801cdc221e11e146",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.dll": "0a7fb1d94e0e7f46798b138caa67e5d5fb8fb98fd31b5294c917def057ab3d80",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Features.dll": "fc743c40512353992ff24c80159b966ee879da4e2538eeeb693e489c7a5ecddb",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.Immutable.dll": "7eecde6b17d2cb85dbc1df9b9e43e2d6efad5b45357e544ea83d6264adc7e9b6",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Workspaces.dll": "32402baa9383afd30e660af0bd3d23bdb7e596207afeac8c6b3ed6f6a5ca6f1d",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.dll": "36fffcc6c1a3d885655829221aabdf5a1e3c502baf9b9edd24ee8b6ab217cd33",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.dll": "cfb5f2785c30485eda803d58fb8330d737cb07d469cd3d7bc1113d58e8d8e4bb",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Metadata.dll": "c9e37fd8fd8640fd0b97699435fdb1ef1a3db0d65f44ecace33c8d9fce44c30d",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Linq.dll": "836af251a62493d2a96b4ce1ddcd5e19e64b34e32c6e3b4a97fb7931e09c995c",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Json.dll": "2c15a5fa6b5f78f5f374a9a67d90a8d0528eb7848a8066b7a20db431ee0a00c0",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Console.dll": "3aef8f4a4a64e338f2cc3df8d2cb9d7b0459809a41e5d92ce9d5133fe34409c8",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.Loader.dll": "1c46ddb6409caeec38737075cebd39902d5bc37c7d8e30fb1a94f739cfca0eb2",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.dll": "3208be3986e660008854fb6079db05adb48ab53cbd623ca83d79813240e05608",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Memory.dll": "b18a7116ccee4cec39fbbce0a438fefdc82a7793c61cbb8fb7c58256656329e4",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Encoding.Extensions.dll": "fc3d55a3ff36aa95eaaad24114802e4d4a0e3b994d4d8b37f12b55b737bff5f3",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Encodings.Web.dll": "0f073568e129aad7e2f0911058b6475dcba96896a41cdc8f7a4be226f85ad6a6",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.Intrinsics.dll": "9b60d00b938f8b30d2b91524f493e1a47da513d938c53b81a92c14e880777947",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Numerics.Vectors.dll": "64708782dd09575dca6d4eb4a241d6a893c73af4bb1175be720b36a19d3976b9",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.Concurrent.dll": "7bd7683a2417d0a0410e7e11267be1268f17e568e6b66addbea48314e3854d20",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.Uri.dll": "f0c15fe054dc49a62f838fd087193a5b66bc946aa3d7d477961184540f38594b",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Emit.Lightweight.dll": "82d10812c295796c86cf1f8ea20298d627ecad5f4505aaf5602a06c3768eff65",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Primitives.dll": "75bd3842e3e21cf2661d2e2c5260db60d371b0fd6077eaac1ed4ebed41d99888",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.InteropServices.dll": "e8aac5a1a77f759a6ac39a75db07f97cb8368265f4351eba310f6534eb711c14",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Workspaces.dll": "c63f6d8fdb79e443c37cce6a2248e04bfe2c82d4bda24b6c01ff1420e6a728b3",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Features.dll": "41d62b24232af6e896b372e6bb4d1ea9066ce40229388fb55b221fdfda124fc5",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.TypedParts.dll": "3100191a1448b9a613e04a63b65899cf74371fc2f5c03315aa40ab53468c7a24",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.Hosting.dll": "8d9a239c7b03ce4a047ed0abd9e835db0feeaaa16c157e7d308603d03efb7ebc",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.Runtime.dll": "324acdfc86c5adaa12e9c4f40deacf1e9f45ac2e84e542a02d130e7380f79d6e",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.AttributedModel.dll": "0f403e98d8bad390b970704a93aa532042409f499032823cac47e3004bad9c8a",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Xml.XDocument.dll": "6ee74e21847e9c75df5d10299c7669a638eac20d6cc27e0b13ed195caa085c7d",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.Xml.Linq.dll": "2827ec685dfca23164324fbcbb061ce93120ddeea03dd2f712157137621c6de9",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.Xml.dll": "9ef5ac0de5cfc9b97dfdf31f9170af77fa2908a6ee4be16ed97e3f3d66b07a59",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Diagnostics.Tracing.dll": "82fbd9b3711921fc7c4e8309702ea2d51f7037d835ee7d3db531b0c55660ccd6",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.IO.MemoryMappedFiles.dll": "2c662071a0a9af86afd2ff387677d192fbf449b65e9057112892fe171a5911ca",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.Channels.dll": "12313ffdc35ecb56bacbce3392395492bd511e4500e82b597d24c524e28a2dbb",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.Serialization.Primitives.dll": "734ee0e950107b32d767ed67f392bf1c41e21b820707cead60db58621c3dec60",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.RegularExpressions.dll": "e7fadc5c0f1c0b7efa6788e5020122714f76766e05f599f73b096afc0db5875a",
+      "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.DiaSymReader.dll": "7f3e7543321ff4c2675b94e56a4a32c935c11c82fcc60d4f6cb611cb0a8daadc",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\netstandard.dll": "4b0e07caa7b4e24b2cfcde3f2aef8fb40a739c1441f7ef7f3631e99f2d0ca7f5",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Linq.Expressions.dll": "c950bc84f01e1163d30129d5279485f0a1b97cc3c314505b17588d0c0abde443",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Emit.ILGeneration.dll": "88f0abeb503e5cfc8ae5ae65be02cd012de43c709161be5deaaf671e5c5c5207",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Security.Cryptography.dll": "f5235acf6db9038d65eebeffe6d322c34b38114cf2c03a3525154b92bf713176",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.ThreadPool.dll": "67b192c6164f68ad992ff945b866aacb854288480fd3af113df65131adbc6d5f",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.Tasks.Parallel.dll": "9a8d20cd5d904b257ef0a20023be7ad04c370251c4406cbeb6fa2b5650318a02",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Diagnostics.Process.dll": "b91dd0a857ec40b79d9b59d783209b5469fc2b83e525b6b730e7e00161ff6e98",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.ComponentModel.Primitives.dll": "69421e02f515d52338c9acf1df4e9c0a81f15911063f390fd207e1fdbec5d1b4",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.NonGeneric.dll": "ff39c54557fc23d30d33482a8b1383b465105624d09458fd05d16db325f8b843",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\Microsoft.Win32.Primitives.dll": "19d9546bc116e3b3a407487bd3ba02477c31d954aed90214a1aba393f1a2ab85",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.IO.Compression.dll": "b87fee0f549cf3435ecd1c598bb59bf581adbc965686b91837c570d25cd66ac9",
+      "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Globalization.dll": "566ecb07dab92f3eb3733e154ee397e28ec5dd42d257dfa0dd4eace1f1ed5d85"
+    }
+  },
+  "measurements": {
+    "originalComponentCases": 30,
+    "validCases": 30,
+    "applicationOpen": {
+      "state": "blocked",
+      "reason": "VM引导窗口捕获两次超时、可访问性无文本；重开后仍失败，未操作未知窗口"
+    },
+    "applicationCompletionPopup": {
+      "state": "not-measured",
+      "reason": "没有原软件触发到弹窗可见的可靠计时"
+    },
+    "applicationCompileResult": {
+      "state": "not-measured",
+      "reason": "没有原软件提交到结果展示的可靠计时"
+    },
+    "componentPreparation": "measured",
+    "componentCompletion": "measured",
+    "compilerEngine": "measured"
+  },
+  "limitations": [
+    "新进程首次不等于操作系统磁盘冷缓存；没有清空系统缓存。每个尺寸每边5个新进程，规模有限，不报告总体P95。",
+    "同进程20次查询用同一文档和光标，代表重复查询，不代表连续编辑、重开窗口或新节点。",
+    "VM采用原件CSharpCompletion，已等待projectContent元数据引用计数达到4；这不是原软件公开就绪协议，也不含窗口。额外ProcessInput单列，不认定实际UI必经。",
+    "自研测量使用Release内同SHA Roslyn程序集的AdhocWorkspace，不是CommonControl完整UI及脚本窗口；未覆盖全文逐行分类和弹窗渲染。",
+    "编译是VM实际技术栈CodeDom与同Release Roslyn直接引擎；不是ScriptCom/SunEyeVision ScriptCompiler完整调用。相同脚本和4个同路径同SHA引用，VM输出文件、Roslyn输出内存；宿主包装/API与应用缓存未比较。",
+    "首次编译测点在编辑语言服务与补全查询后，不是全新进程只编译的绝对冷启动。后两次强制重编，不是软件编译结果缓存命中。",
+    "两边都要求预期Append候选与编译成功；候选总数存在差别，不证明全语言能力等价。",
+    "v1及smoke为测量入口调试，空补全和并发环境样本全部排除正式比较，原始失败仍保留。",
+    "用户观察VM实际界面更快仍作为反馈保留；组件数据不能反推或否定该体验。未改产品、未调系统设置或安装目录。"
+  ],
+  "recommendation": {
+    "confirmed": "基础首次准备与首次有效查询有可测成本；不能用VM构造返回快替代引用就绪时间，也不能简单取消Roslyn基础准备。",
+    "designEvidence": "全文Show前门槛、取消未下传、缓存范围冲突和编译计时缺段沿原静态证据保留；本批未量化它们对UI的实际占比。",
+    "next": "先补软件端到端打开/输入到弹窗/编译结果计时，及当前自研完整控件分类与取消链；之后冻结整批施工范围。组件替换暂不推荐，生命周期语义不自动变更。"
+  },
+  "productModified": false,
+  "implementationApproved": false
+}

@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-21",
+  "oneDocument": true,
+  "domains": 20,
+  "referenceMappings": [
+    [
+      "F-01",
+      "C02/C05/C17/C19"
+    ],
+    [
+      "F-02",
+      "C08/C09"
+    ],
+    [
+      "F-03",
+      "C01/C20"
+    ],
+    [
+      "F-04",
+      "C01/C12/C20"
+    ],
+    [
+      "F-05",
+      "C03/C20"
+    ],
+    [
+      "F-06",
+      "C08/C14"
+    ],
+    [
+      "F-07",
+      "C05/C20"
+    ],
+    [
+      "F-08",
+      "C05/C20"
+    ],
+    [
+      "F-09",
+      "C10/C20"
+    ],
+    [
+      "F-10",
+      "C02/C03"
+    ],
+    [
+      "F-11",
+      "C03/C20"
+    ],
+    [
+      "F-12",
+      "C03/C04"
+    ],
+    [
+      "F-13",
+      "C03/C12"
+    ],
+    [
+      "F-14",
+      "C03/C06"
+    ],
+    [
+      "F-15",
+      "C03/C09"
+    ],
+    [
+      "F-16",
+      "C03/C04/C12"
+    ],
+    [
+      "F-17",
+      "C05/C17"
+    ],
+    [
+      "F-18",
+      "C11"
+    ],
+    [
+      "F-19",
+      "C11/C14"
+    ],
+    [
+      "F-20",
+      "C06/C10"
+    ],
+    [
+      "F-21",
+      "C02/C08/C11/C12"
+    ],
+    [
+      "F-22",
+      "C08/C19"
+    ],
+    [
+      "F-23",
+      "C14/C19"
+    ]
+  ],
+  "productChanges": false,
+  "evidenceUpgrades": 0,
+  "sourceFiles": [
+    "src/UI/SunEyeVision.UI.csproj",
+    "src/Workflow/SunEyeVision.Workflow.csproj",
+    "src/Workflow/WorkflowExecutionEngine.cs",
+    "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+    "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs",
+    "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.cs",
+    "src/Workflow/SolutionRepository.cs",
+    "src/DeviceDriver/Cameras/CameraRuntimeComposition.cs",
+    "src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs",
+    "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml",
+    "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs"
+  ],
+  "statusPolicy": "Partial and unknown are not unimplemented; code presence is not end-to-end completion"
+}

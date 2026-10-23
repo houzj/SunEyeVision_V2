@@ -1,0 +1,30 @@
+[
+  {
+    "name": "FilterNodeManagerForSP::SPDeleteModule",
+    "rootRVA": "5df790"
+  },
+  {
+    "name": "FilterNodeManagerForSP::SPSetBinaryShareMemory",
+    "rootRVA": "5e2130"
+  },
+  {
+    "name": "FilterNodeManagerForSP::SPGetBinaryShareMemoryLen",
+    "rootRVA": "5e2300"
+  },
+  {
+    "name": "FilterNodeManagerForSP::SPGetBinaryShareMemory",
+    "rootRVA": "5e2520"
+  },
+  {
+    "name": "FilterNodeManagerForSP::SPReleaseBinaryShareMemory",
+    "rootRVA": "5e2740"
+  },
+  {
+    "name": "FilterNodeManagerForSP::CloseOneModule",
+    "rootRVA": "5e53f0"
+  },
+  {
+    "name": "FilterNodeManagerForSP::SPReleaseSharedMem",
+    "rootRVA": "5f2430"
+  }
+]

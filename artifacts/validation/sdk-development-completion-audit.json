@@ -1,0 +1,46 @@
+{
+  "requirements": [
+    {
+      "requirement": "对照VM官方开发文档",
+      "verified": true
+    },
+    {
+      "requirement": "运行时SDK、工具SDK、UI控件库拆分",
+      "verified": true
+    },
+    {
+      "requirement": "依赖、内部实现与兼容层",
+      "verified": true
+    },
+    {
+      "requirement": "外部程序加载、运行和停止",
+      "verified": true
+    },
+    {
+      "requirement": "读写配置、临时输入、全局、结果",
+      "verified": true
+    },
+    {
+      "requirement": "资源释放、事件与异常",
+      "verified": true
+    },
+    {
+      "requirement": "具体迁移和验收",
+      "verified": true
+    },
+    {
+      "requirement": "HTML持久化及9子页可达",
+      "verified": true
+    },
+    {
+      "requirement": "未改产品、未执行SDK示例",
+      "verified": true
+    }
+  ],
+  "complete": true,
+  "scope": "SDK设计文档交付，不是SDK实现或运行验收",
+  "frameworkHtmlSha256": "88390bc217177706f23d9b757b17751a501ae2b6975a398aa6a8315eec3eea72",
+  "validation": "sdk-development-validation.json",
+  "sourceCount": 12,
+  "productModified": false
+}

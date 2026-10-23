@@ -1,0 +1,2143 @@
+{
+  "batchId": "TOOL-MAP-20261022-01",
+  "scope": "24 current declared tools only; establish correspondence before any disposition",
+  "ownCount": 24,
+  "distinctVmReferenceCount": 22,
+  "regularCatalogCandidates": 20,
+  "sourceIdentityChecks": {
+    "own": true,
+    "vmResources": 133,
+    "vmResourcesMatch": true
+  },
+  "inputs": [
+    {
+      "path": "artifacts/validation/tool-core-algorithm-review.json",
+      "sha256": "13c219f1aa802028f7d7028d30f22fec1371741917363bea23557cd3060c2f66"
+    },
+    {
+      "path": "artifacts/validation/tool-source-catalog.json",
+      "sha256": "45685ffbf11d22817a5b1af4abe09cb7dda19d21f59170a158a432577d445c35"
+    },
+    {
+      "path": "artifacts/validation/vm-tool-baseline.json",
+      "sha256": "70deeffb6d2d52279305cad2304b5df7042a2dc87d00d8a3a3bbb8fb2c62113d"
+    }
+  ],
+  "rows": [
+    {
+      "ownId": "BlobAnalysis",
+      "ownName": "Blob分析",
+      "ownCategory": "区域分析",
+      "ownSource": {
+        "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs",
+        "line": 44,
+        "token": "[Tool(\r",
+        "sha256": "b5982a5bf988f30e3ee1f28d26b0a647acbcacb21e42d11f4344aa10c16d83d0",
+        "snippet": "[Tool(\r\n        id: \"BlobAnalysis\",\r\n        displayName: \"Blob分析\",\r\n        Description = \"连通域分析与特征提取\",\r\n        Icon = \"blob\", Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Region,\r\n        Version = \"3.1.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class BlobAnalysisTool : IToolPlugin<BlobAnalysisParameters, BlobAnalysisResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n\r\n        public BlobAnalysisTool()\r\n        {\r\n            _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n        }\r\n\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Location/IMVSBlobFindModu",
+      "vmName": "Blob分析",
+      "vmCategory": "定位",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSBlobFindModu",
+        "priority": "6",
+        "displayType": null,
+        "helpUrl": "GUID-F5B9D37D-90C6-45DE-8880-DADBE017C0CC",
+        "toolTip": "IMVSBlobFindModu_Tip"
+      },
+      "limits": "原声明软阈值、孔洞、轴比/偏差/直方图筛选、零Blob政策及更多几何/灰度输出。当前部分统计不等全部可配置筛选。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModu.xml",
+          "recordedSha256": "f1b2f279717dce3ec61c11c41f858bd100359095bcf13672422a3c73efe47f6c",
+          "observedSha256": "f1b2f279717dce3ec61c11c41f858bd100359095bcf13672422a3c73efe47f6c"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithm.xml",
+          "recordedSha256": "d5de2d5888d0767552c3077457eadd796171b4447f1c92f93bc9bb60854a7b2b",
+          "observedSha256": "d5de2d5888d0767552c3077457eadd796171b4447f1c92f93bc9bb60854a7b2b"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+          "recordedSha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec",
+          "observedSha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuCs.xml",
+          "recordedSha256": "c3c46d0dd1cf4765034791783b6085478f26928f2d86bf5c50ab8d5fd3b205f4",
+          "observedSha256": "c3c46d0dd1cf4765034791783b6085478f26928f2d86bf5c50ab8d5fd3b205f4"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuDisplay.xml",
+          "recordedSha256": "b3bc63e6cf7c8ca120baf5b632bbe1359843138cf77cb5a64fc698ef22465112",
+          "observedSha256": "b3bc63e6cf7c8ca120baf5b632bbe1359843138cf77cb5a64fc698ef22465112"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\ToolItemInfo.xml",
+          "recordedSha256": "014ba2ed410f030748f83fed87a0ce7acde5dfa68b9e98cb0bc43aa31b074f95",
+          "observedSha256": "014ba2ed410f030748f83fed87a0ce7acde5dfa68b9e98cb0bc43aa31b074f95"
+        }
+      ]
+    },
+    {
+      "ownId": "CircleCircleMeasure",
+      "ownName": "圆-圆测量",
+      "ownCategory": "几何测量",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.CircleCircleMeasure/CircleCircleMeasureTool.cs",
+        "line": 22,
+        "token": "[Tool(\r",
+        "sha256": "51ddf074da85b3c2d76dab99b672c1bc6878b096cd5972b8f701c8553fc2b217",
+        "snippet": "[Tool(\r\n        id: \"CircleCircleMeasure\",\r\n        displayName: \"圆-圆测量\",\r\n        Description = \"圆-圆测量工具：两卡尺分别沿引导圆测量，输出圆心距、两圆交点与位置关系并判定\",\r\n        Icon = \"circle-circle\", Order = 60,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class CircleCircleMeasureTool : IToolPlugin<CircleCircleMeasureParameters, CircleCircleMeasureResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public CircleCircleMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        public CircleCircleMeasureResults Run(CircleCircleMeasureParameters parameters)\r\n        {\r\n            var result = new CircleCircleMeasureResults\r\n            {\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Measurement/IMVSC2CMeasureModu",
+      "vmName": "圆圆测量",
+      "vmCategory": "测量",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSC2CMeasureModu",
+        "priority": "1",
+        "displayType": null,
+        "helpUrl": "GUID-B405EF10-8757-408F-AF44-EC96C69FC259",
+        "toolTip": "IMVSC2CMeasureModu_Tip"
+      },
+      "limits": "原声明C2CType/角度/距离、两交点、CircleChoose/圆环/CalibMatrix；不能推其Dist就是当前中心距。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModu.xml",
+          "recordedSha256": "e595b30aeb99943b1f07d795944e844f8cbbcc667bd70427fa32c41053759f60",
+          "observedSha256": "e595b30aeb99943b1f07d795944e844f8cbbcc667bd70427fa32c41053759f60"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuAlgorithm.xml",
+          "recordedSha256": "a4a8de1efc68f48903bd544ec93e6b17cff06ed2231d686f0009eb9c32f771ea",
+          "observedSha256": "a4a8de1efc68f48903bd544ec93e6b17cff06ed2231d686f0009eb9c32f771ea"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuAlgorithmTab.xml",
+          "recordedSha256": "2a0bd781508ca53f7bdbbe9b5f13c69964616f3aa0eb9e0c81e093aa17f7a637",
+          "observedSha256": "2a0bd781508ca53f7bdbbe9b5f13c69964616f3aa0eb9e0c81e093aa17f7a637"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuCs.xml",
+          "recordedSha256": "3b4cd853dfd374bcd018ccba501b4061c89d1588fddc6f7a03cba00929c8f5bf",
+          "observedSha256": "3b4cd853dfd374bcd018ccba501b4061c89d1588fddc6f7a03cba00929c8f5bf"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuDisplay.xml",
+          "recordedSha256": "e7a2a419e49ebfe7b083fea46d563c7fc88e0ed73c47b4dedb7cf7d05ca1286e",
+          "observedSha256": "e7a2a419e49ebfe7b083fea46d563c7fc88e0ed73c47b4dedb7cf7d05ca1286e"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\ToolItemInfo.xml",
+          "recordedSha256": "53bfb4f46adb47a9b8cf674a6985f040bab4d3bdf8861fd8087cedd245e1e390",
+          "observedSha256": "53bfb4f46adb47a9b8cf674a6985f040bab4d3bdf8861fd8087cedd245e1e390"
+        }
+      ]
+    },
+    {
+      "ownId": "CircleDetect",
+      "ownName": "圆查找",
+      "ownCategory": "特征定位",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.CircleDetect/CircleDetectTool.cs",
+        "line": 30,
+        "token": "[Tool(\r",
+        "sha256": "f61cde879fba9270850031cf956d719642658be38b8b81e45bf8bfe537ae1b57",
+        "snippet": "[Tool(\r\n        id: \"CircleDetect\",\r\n        displayName: \"圆查找\",\r\n        Description = \"圆/圆弧边缘检测工具（引导式 2D Metrology）\",\r\n        Icon = \"circle\", Order = 30,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Location,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    [JsonDerivedType(typeof(CircleDetectParameters), \"CircleDetect\")]\r\n    public class CircleDetectTool : IToolPlugin<CircleDetectParameters, CircleDetectResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public CircleDetectTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        /// <summary>\r\n        /// 执行工具\r\n        /// </summary>\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Location/IMVSCircleFindModu",
+      "vmName": "圆查找",
+      "vmCategory": "定位",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSCircleFindModu",
+        "priority": "8",
+        "displayType": null,
+        "helpUrl": "GUID-775E02DE-C1C8-4FF3-89D2-ED39C20D5F43",
+        "toolTip": "IMVSCircleFindModu_Tip"
+      },
+      "limits": "原声明FindMode/CoarseDetectFlag/InitType/FitFun/RejectNum及逐点状态/卡尺输出；native拟合及粗定位数值基线缺失。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModu.xml",
+          "recordedSha256": "fbe559fffcd72ad5522e575ace409742e6a61ecfaae94959d9a1fa6af506b63a",
+          "observedSha256": "fbe559fffcd72ad5522e575ace409742e6a61ecfaae94959d9a1fa6af506b63a"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuAlgorithm.xml",
+          "recordedSha256": "04964c4c83e75e90c43677fa87cf0f3b36186c54a1fc1613be7e2ad8b2b7bbc0",
+          "observedSha256": "04964c4c83e75e90c43677fa87cf0f3b36186c54a1fc1613be7e2ad8b2b7bbc0"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuAlgorithmTab.xml",
+          "recordedSha256": "7dc7ff2b9c5a8e35e665f3e566c225dd71f1c52055207dc7a3188f183ce9a5b5",
+          "observedSha256": "7dc7ff2b9c5a8e35e665f3e566c225dd71f1c52055207dc7a3188f183ce9a5b5"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuCs.xml",
+          "recordedSha256": "3fa76e37541ab3a1d75d6550625e0abd9be973a8421220141e4932910d9083c4",
+          "observedSha256": "3fa76e37541ab3a1d75d6550625e0abd9be973a8421220141e4932910d9083c4"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuDisplay.xml",
+          "recordedSha256": "34f0d33493139f28991c04a28c05655939480dfac949bda87cbba653e3eca3cc",
+          "observedSha256": "34f0d33493139f28991c04a28c05655939480dfac949bda87cbba653e3eca3cc"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\ToolItemInfo.xml",
+          "recordedSha256": "0152c1eb851a1f992dcee076eede6d545e9e8045da6a23c68521570c19f50842",
+          "observedSha256": "0152c1eb851a1f992dcee076eede6d545e9e8045da6a23c68521570c19f50842"
+        }
+      ]
+    },
+    {
+      "ownId": "Condition",
+      "ownName": "条件分支",
+      "ownCategory": "流程控制",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.Condition/ConditionTool.cs",
+        "line": 13,
+        "token": "[Tool(\r",
+        "sha256": "68128eea9a8ff645af5e0d63eb1cdb8c80ff45ba1ef1d5332b47ffb26fe387ec",
+        "snippet": "[Tool(\r\n        id: \"Condition\",\r\n        displayName: \"条件分支\",\r\n        Description = \"根据参数值判断条件，选择执行分支\",\r\n        Icon = \"branch\", Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Control,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class ConditionTool : IToolPlugin<ConditionParameters, ConditionResults>, IAsyncToolPlugin, IToolEditorFactory\r\n    {\r\n        public System.Windows.FrameworkElement? CreateDebugControl(IToolPlugin tool)\r\n        {\r\n            return new Views.ConditionDebugControl();\r\n        }\r\n\r\n        public ConditionResults Run(ConditionParameters parameters)\r\n            => ExecuteCore(parameters, parameters.NodeResults, parameters.Context);\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Logic/IfBranchModule",
+      "vmName": "条件分支",
+      "vmCategory": "逻辑工具",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IfBranchModule",
+        "priority": "0",
+        "displayType": "IFBRANCH",
+        "helpUrl": "GUID-5281887C-3F02-41B5-8FBB-3B91AFC7EB6A",
+        "toolTip": "IfBranchModule"
+      },
+      "limits": "原资源声明BranchMatch、CanSubscribe=False等；另一个Logic/IfModule是逻辑检测合同，不能合并为同一迁移对象。原生多命中/无命中实现仍缺。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModule.xml",
+          "recordedSha256": "02e29a8daeb22a67071f5e0e537672f1f3d4565bcdf31dc85f13efb2793ae2a3",
+          "observedSha256": "02e29a8daeb22a67071f5e0e537672f1f3d4565bcdf31dc85f13efb2793ae2a3"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleAlgorithm.xml",
+          "recordedSha256": "39d15cde07aa24c7fd4fe27f6e3e1d5dd842d127e489cfef1a0cc8c9370e067a",
+          "observedSha256": "39d15cde07aa24c7fd4fe27f6e3e1d5dd842d127e489cfef1a0cc8c9370e067a"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleAlgorithmTab.xml",
+          "recordedSha256": "298e34234c6ac2ca3530819bad9451bd2d89baf0f1874e0853f0c61729e20da1",
+          "observedSha256": "298e34234c6ac2ca3530819bad9451bd2d89baf0f1874e0853f0c61729e20da1"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleCs.xml",
+          "recordedSha256": "30f9499dc5730dfdfb2199c1a1a0ea00c0c3e8c379c24e9fc4254488e3d7f061",
+          "observedSha256": "30f9499dc5730dfdfb2199c1a1a0ea00c0c3e8c379c24e9fc4254488e3d7f061"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleDisplay.xml",
+          "recordedSha256": "e73ebb3a1ac33e83a19072575259128d86c162fa64f1b164c3b75b6483b88245",
+          "observedSha256": "e73ebb3a1ac33e83a19072575259128d86c162fa64f1b164c3b75b6483b88245"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\ToolItemInfo.xml",
+          "recordedSha256": "9fcb4a517306d063ab2cecfa605655bb5d94a9688db08f30857a776dd6c0f9de",
+          "observedSha256": "9fcb4a517306d063ab2cecfa605655bb5d94a9688db08f30857a776dd6c0f9de"
+        }
+      ]
+    },
+    {
+      "ownId": "ImageFilter",
+      "ownName": "图像滤波",
+      "ownCategory": "图像预处理",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.ImageFilter/ImageFilterTool.cs",
+        "line": 27,
+        "token": "[Tool(\r",
+        "sha256": "02677227120662e2d5ae2ecd7007e6cb79d274e1d66ceb25a2660a54be8f16b3",
+        "snippet": "[Tool(\r\n        id: \"ImageFilter\",\r\n        displayName: \"图像滤波\",\r\n        Description = \"对图像进行滤波处理，支持均值/高斯/中值/双边/自定义卷积\",\r\n        Icon = \"sliders\", Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class ImageFilterTool : IToolPlugin<ImageFilterParameters, ImageFilterResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n    {\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;\r\n        private readonly ToolAttribute? _attribute;\r\n\r\n        public ImageFilterTool()\r\n        {\r\n            _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n        }\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "ImageProcessing/IMVSImageFilterModu",
+      "vmName": "图像滤波",
+      "vmCategory": "图像处理",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSImageFilterModu",
+        "priority": "1",
+        "displayType": null,
+        "helpUrl": "GUID-D7D5B570-FC6A-4694-B39B-46C5EA4531C9",
+        "toolTip": "IMVSImageFilterModu"
+      },
+      "limits": "原声明InputMask/OutputMask、ROI/Annulus/Fixture等；枚举值和边界公式不能从XML推定数值等价。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModu.xml",
+          "recordedSha256": "4b27be13eaf04a56e92364b3712c1ef63afa441afea28bf276f504c1381733f3",
+          "observedSha256": "4b27be13eaf04a56e92364b3712c1ef63afa441afea28bf276f504c1381733f3"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuAlgorithm.xml",
+          "recordedSha256": "82ab98a80cbc2f0e807ce430174ef634ae5a1088b96a6ef64ef29cbd4b7ca55d",
+          "observedSha256": "82ab98a80cbc2f0e807ce430174ef634ae5a1088b96a6ef64ef29cbd4b7ca55d"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuAlgorithmTab.xml",
+          "recordedSha256": "10f0cc4d88bdb8b487fe9703191f3b0c728abae1f4e63ee77e4fcb73bf8bca41",
+          "observedSha256": "10f0cc4d88bdb8b487fe9703191f3b0c728abae1f4e63ee77e4fcb73bf8bca41"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuCs.xml",
+          "recordedSha256": "616f40d7ccd259bcd23a3199213f27ffc50314de367652239c7089b6c340d3f5",
+          "observedSha256": "616f40d7ccd259bcd23a3199213f27ffc50314de367652239c7089b6c340d3f5"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuDisplay.xml",
+          "recordedSha256": "86ef93ca21cf4af0257d520b5bfb218044035f34f721a5d7e443b831dc5eaf1d",
+          "observedSha256": "86ef93ca21cf4af0257d520b5bfb218044035f34f721a5d7e443b831dc5eaf1d"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\ToolItemInfo.xml",
+          "recordedSha256": "f7bc0b00b91aae955aff77c3773906a5bcac2c0f78ee32ae407847baa1b7a48d",
+          "observedSha256": "f7bc0b00b91aae955aff77c3773906a5bcac2c0f78ee32ae407847baa1b7a48d"
+        }
+      ]
+    },
+    {
+      "ownId": "ImageLoad",
+      "ownName": "图像源",
+      "ownCategory": "图像采集",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs",
+        "line": 19,
+        "token": "[Tool(\"ImageLoad\", \"图像源\",\r",
+        "sha256": "f2eed5be66405ae385ed54c3bb44e0e6e8a0ed21ac35422d5f4fa9b9d79a22ef",
+        "snippet": "[Tool(\"ImageLoad\", \"图像源\",\r\n        Description = \"从本地图像或方案相机获取图像，作为工作流输入\",\r\n        Icon = \"image\", Order = 10, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Acquisition,\r\n        Version = \"2.0.0\", HasDebugWindow = false)]\r\n    public class ImageLoadTool : IToolPlugin<ImageLoadParameters, ImageLoadResults>, IAsyncToolPlugin, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n    {\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.NewFrame;\r\n        public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)\r\n        {\r\n            if (request.Parameters is not ImageLoadParameters parameters)\r\n                throw new ArgumentException(\"图像源参数类型不正确\", nameof(request));\r\n            if (parameters.SourceKind == ImageSourceKind.Local)\r\n                return Run(parameters);\r\n\r\n            var result = new ImageLoadResults\r\n            {\r\n                ToolName = \"ImageLoad\",\r\n                ToolId = \"image_load\",\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Collection/ImageSourceModule",
+      "vmName": "图像源",
+      "vmCategory": "采集",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "ImageSourceModule",
+        "priority": "0",
+        "displayType": "IMAGE",
+        "helpUrl": "GUID-8D7949F0-EB91-4794-BD3C-D4182726D931",
+        "toolTip": "ImageSourceModule"
+      },
+      "limits": "原声明还有播放间隔/初始序号/自动播放/路径缓存/订阅文件夹/触发流程以及丢帧丢包等诊断；当前帧元数据不能代替这些功能。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.xml",
+          "recordedSha256": "0598746f0603bf6de66dfa34e74c69f382e98f58437496ee5e598a3b88f6cd64",
+          "observedSha256": "0598746f0603bf6de66dfa34e74c69f382e98f58437496ee5e598a3b88f6cd64"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleAlgorithm.xml",
+          "recordedSha256": "c9177bf6d0365eab0f12e65fdf3e8be51bf7833f69e3d7ac8eed8bb7961787c8",
+          "observedSha256": "c9177bf6d0365eab0f12e65fdf3e8be51bf7833f69e3d7ac8eed8bb7961787c8"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleAlgorithmTab.xml",
+          "recordedSha256": "001a57675192867594d3bbc7efa94462c19f056583659d759ceb5648e55091e0",
+          "observedSha256": "001a57675192867594d3bbc7efa94462c19f056583659d759ceb5648e55091e0"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleCs.xml",
+          "recordedSha256": "886c21abaa52160653c52b557db9ceafc02233feb83c5c235a1a38396a93af28",
+          "observedSha256": "886c21abaa52160653c52b557db9ceafc02233feb83c5c235a1a38396a93af28"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleDisplay.xml",
+          "recordedSha256": "d2f3129c6d3cf86c5e935277b67004043bb98976b4e845a4492451d78a607ae5",
+          "observedSha256": "d2f3129c6d3cf86c5e935277b67004043bb98976b4e845a4492451d78a607ae5"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ToolItemInfo.xml",
+          "recordedSha256": "0e8ee15a8907363644ce294c686a11b2f9ac183be8dd073f78eb07a4bd8676da",
+          "observedSha256": "0e8ee15a8907363644ce294c686a11b2f9ac183be8dd073f78eb07a4bd8676da"
+        }
+      ]
+    },
+    {
+      "ownId": "ImageThreshold",
+      "ownName": "图像二值化",
+      "ownCategory": "图像预处理",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.ImageThreshold/ImageThresholdTool.cs",
+        "line": 30,
+        "token": "[Tool(\r",
+        "sha256": "f281a3427166acc4bfc2f4d507274d1049d39c869bb0d0d309c73e53778b110f",
+        "snippet": "[Tool(\r\n        id: \"ImageThreshold\",\r\n        displayName: \"图像二值化\",\r\n        Description = \"将灰度图像通过阈值分割转换为二值图像，支持固定阈值/Otsu/Triangle/自适应/范围阈值\",\r\n        Icon = \"binarize\", Order = 30,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class ImageThresholdTool : IToolPlugin<ImageThresholdParameters, ImageThresholdResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n    {\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;\r\n        private readonly ToolAttribute? _attribute;\r\n\r\n        public ImageThresholdTool()\r\n        {\r\n            _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n        }\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "ImageProcessing/IMVSBinaryModu",
+      "vmName": "图像二值化",
+      "vmCategory": "图像处理",
+      "relation": "many-own-to-one-vm",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSBinaryModu",
+        "priority": "0",
+        "displayType": null,
+        "helpUrl": "GUID-DBCA7DED-F21F-44EB-BA0A-1D61CB7CDE45",
+        "toolTip": "IMVSBinaryModu"
+      },
+      "limits": "原声明CompareType/ThresholdOffset/NonROIPrcType、Sauvola系数/窗口以及InputMask/OutputMask。声明不证明原公式和数值边界。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModu.xml",
+          "recordedSha256": "30c47a31236e4ea48f6c30da4fcba33b03e17b5c3cd470c0a89c2247470dbb86",
+          "observedSha256": "30c47a31236e4ea48f6c30da4fcba33b03e17b5c3cd470c0a89c2247470dbb86"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuAlgorithm.xml",
+          "recordedSha256": "eebee2e22c782dc0247dd5f3c62c96f27e542271b681a2d60aacd1400df07900",
+          "observedSha256": "eebee2e22c782dc0247dd5f3c62c96f27e542271b681a2d60aacd1400df07900"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuAlgorithmTab.xml",
+          "recordedSha256": "08ae81e7c8bc57b4e095ae2d0b98f08d8afe8f34ebb065b928dd4336ef87fdd7",
+          "observedSha256": "08ae81e7c8bc57b4e095ae2d0b98f08d8afe8f34ebb065b928dd4336ef87fdd7"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuCs.xml",
+          "recordedSha256": "80df3ce60b1386f705c77425cde34d0e15f4fb216fe749f400e7452de5a50443",
+          "observedSha256": "80df3ce60b1386f705c77425cde34d0e15f4fb216fe749f400e7452de5a50443"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuDisplay.xml",
+          "recordedSha256": "0d0c41cfcf7897b61041aef0b3fe8035a468c19c892054852001e7ee085f1c8b",
+          "observedSha256": "0d0c41cfcf7897b61041aef0b3fe8035a468c19c892054852001e7ee085f1c8b"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\ToolItemInfo.xml",
+          "recordedSha256": "1d5200c180cdcf0e1283e366f52cc78ab61826985406a9391f9f0536129a1834",
+          "observedSha256": "1d5200c180cdcf0e1283e366f52cc78ab61826985406a9391f9f0536129a1834"
+        }
+      ]
+    },
+    {
+      "ownId": "LineCircleMeasure",
+      "ownName": "线-圆测量",
+      "ownCategory": "几何测量",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.LineCircleMeasure/LineCircleMeasureTool.cs",
+        "line": 22,
+        "token": "[Tool(\r",
+        "sha256": "91506b56b38c8c2ead64137bef7283cf4e384ac27e07110a693afe9d8d0e07c0",
+        "snippet": "[Tool(\r\n        id: \"LineCircleMeasure\",\r\n        displayName: \"线-圆测量\",\r\n        Description = \"线-圆测量工具：两卡尺分别沿引导线/引导圆测量，输出圆心到直线距离与交点并判定\",\r\n        Icon = \"line-circle\", Order = 50,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class LineCircleMeasureTool : IToolPlugin<LineCircleMeasureParameters, LineCircleMeasureResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public LineCircleMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        public LineCircleMeasureResults Run(LineCircleMeasureParameters parameters)\r\n        {\r\n            var result = new LineCircleMeasureResults\r\n            {\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Measurement/IMVSL2CMeasureModu",
+      "vmName": "线圆测量",
+      "vmCategory": "测量",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSL2CMeasureModu",
+        "priority": "0",
+        "displayType": null,
+        "helpUrl": "GUID-D1E73475-679F-4019-B38E-35F59B422EA7",
+        "toolTip": "IMVSL2CMeasureModu_Tip"
+      },
+      "limits": "原声明InputLine/InputCircleAnnulus、Foot Point/角度、坐标选择及标定矩阵；公式和返回顺序缺原实现。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModu.xml",
+          "recordedSha256": "46a8ad3a89711c0da6811a2005caab1507d23abccb602375582fa8cebd3c44e7",
+          "observedSha256": "46a8ad3a89711c0da6811a2005caab1507d23abccb602375582fa8cebd3c44e7"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuAlgorithm.xml",
+          "recordedSha256": "01ff03e64d417f5da6595c8d6c7ad83e25b8f6320977a74405ab06947ae17378",
+          "observedSha256": "01ff03e64d417f5da6595c8d6c7ad83e25b8f6320977a74405ab06947ae17378"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuAlgorithmTab.xml",
+          "recordedSha256": "f2805778e979e3a742bc152cee8e9bf91c58816eaa2244c6cc3836dfdc87dcc2",
+          "observedSha256": "f2805778e979e3a742bc152cee8e9bf91c58816eaa2244c6cc3836dfdc87dcc2"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuCs.xml",
+          "recordedSha256": "7862569f0d3b2ecfbc054a3d671d02dc3ac3c8f6b5384cad9c0e567b94e3613d",
+          "observedSha256": "7862569f0d3b2ecfbc054a3d671d02dc3ac3c8f6b5384cad9c0e567b94e3613d"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuDisplay.xml",
+          "recordedSha256": "afcff7aa7b8bd1d90fa375d1d3250b39830667c98e27404670c937ee8ad9448e",
+          "observedSha256": "afcff7aa7b8bd1d90fa375d1d3250b39830667c98e27404670c937ee8ad9448e"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\ToolItemInfo.xml",
+          "recordedSha256": "605915b5f60a4960098e13a08c6c74836fb613e48eeac99e7918f0b1fcc4ab6b",
+          "observedSha256": "605915b5f60a4960098e13a08c6c74836fb613e48eeac99e7918f0b1fcc4ab6b"
+        }
+      ]
+    },
+    {
+      "ownId": "LineDetect",
+      "ownName": "直线查找",
+      "ownCategory": "特征定位",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs",
+        "line": 29,
+        "token": "[Tool(\r",
+        "sha256": "69399ca4e7c2a70ed6fea18b1deadabf2d996ff6e39d7c727294755ecb369b1c",
+        "snippet": "[Tool(\r\n        id: \"LineDetect\",\r\n        displayName: \"直线查找\",\r\n        Description = \"直线边缘检测工具（引导式 2D Metrology）\",\r\n        Icon = \"line\", Order = 20,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Location,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    [JsonDerivedType(typeof(LineDetectParameters), \"LineDetect\")]\r\n    public class LineDetectTool : IToolPlugin<LineDetectParameters, LineDetectResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public LineDetectTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        /// <summary>\r\n        /// 执行工具\r\n        /// </summary>\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Location/IMVSLineFindModu",
+      "vmName": "直线查找",
+      "vmCategory": "定位",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSLineFindModu",
+        "priority": "11",
+        "displayType": null,
+        "helpUrl": "GUID-0D7A8AEC-9900-4AEE-84F6-BEE9AA78B187",
+        "toolTip": "IMVSLineFindModu"
+      },
+      "limits": "原声明更多拟合、初始化、期望角与容差；原生公式、异常和数值基线未恢复。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModu.xml",
+          "recordedSha256": "830f49282c0214ba251e907a55502ce84b695b6986b52a190faae99a904f6393",
+          "observedSha256": "830f49282c0214ba251e907a55502ce84b695b6986b52a190faae99a904f6393"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuAlgorithm.xml",
+          "recordedSha256": "e2a9599a4c2376a16b64c75bd02e151f70d1d47e7916e1765299d9ca187d133c",
+          "observedSha256": "e2a9599a4c2376a16b64c75bd02e151f70d1d47e7916e1765299d9ca187d133c"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuAlgorithmTab.xml",
+          "recordedSha256": "b5944653ef94ad477e6784393365139da7e432a2a9aa1c7d3d9180a4febb7120",
+          "observedSha256": "b5944653ef94ad477e6784393365139da7e432a2a9aa1c7d3d9180a4febb7120"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuCs.xml",
+          "recordedSha256": "60a628fe0cc4e827ccfd636a4cf804e42531e91d9ae574c304ebe41ae29127c0",
+          "observedSha256": "60a628fe0cc4e827ccfd636a4cf804e42531e91d9ae574c304ebe41ae29127c0"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuDisplay.xml",
+          "recordedSha256": "c971ca2387f3acf832b490d9b5a6ac32076fdfaa3541199e01496ad9f9fb9886",
+          "observedSha256": "c971ca2387f3acf832b490d9b5a6ac32076fdfaa3541199e01496ad9f9fb9886"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\ToolItemInfo.xml",
+          "recordedSha256": "e5da88ce34f1f16c495c8009f5c8ea852ac26c32e5a711b4d0346029cbcb871e",
+          "observedSha256": "e5da88ce34f1f16c495c8009f5c8ea852ac26c32e5a711b4d0346029cbcb871e"
+        }
+      ]
+    },
+    {
+      "ownId": "LineLineMeasure",
+      "ownName": "线-线测量",
+      "ownCategory": "几何测量",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.LineLineMeasure/LineLineMeasureTool.cs",
+        "line": 22,
+        "token": "[Tool(\r",
+        "sha256": "0cf48afcf6d254ca2f1fc14faaf17115f369b1e543dcdb36636a470fa909d956",
+        "snippet": "[Tool(\r\n        id: \"LineLineMeasure\",\r\n        displayName: \"线-线测量\",\r\n        Description = \"线-线测量工具：两卡尺沿引导线测量拟合直线，输出夹角与平行间距并判定\",\r\n        Icon = \"line-line\", Order = 40,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class LineLineMeasureTool : IToolPlugin<LineLineMeasureParameters, LineLineMeasureResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public LineLineMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        public LineLineMeasureResults Run(LineLineMeasureParameters parameters)\r\n        {\r\n            var result = new LineLineMeasureResults\r\n            {\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Measurement/IMVSL2LMeasureModu",
+      "vmName": "线线测量",
+      "vmCategory": "测量",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSL2LMeasureModu",
+        "priority": "4",
+        "displayType": null,
+        "helpUrl": "GUID-B65A34E9-AFE3-404F-8CAF-189DD94871B5",
+        "toolTip": "IMVSL2LMeasureModu_Tip"
+      },
+      "limits": "原声明InputLine1/2、SourceSelect、LineChoose、AngleRange和L2LAbsDist；原距离定义未由XML闭合。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModu.xml",
+          "recordedSha256": "f72faaaa2ab9a0c73335b6e1d42310cc6210dc3f313c25365150d0f9226dc0e0",
+          "observedSha256": "f72faaaa2ab9a0c73335b6e1d42310cc6210dc3f313c25365150d0f9226dc0e0"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuAlgorithm.xml",
+          "recordedSha256": "11739a3240b6942ada5a3241a4be3ae7e6516933555bcc32d789832344a3c5d7",
+          "observedSha256": "11739a3240b6942ada5a3241a4be3ae7e6516933555bcc32d789832344a3c5d7"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuAlgorithmTab.xml",
+          "recordedSha256": "9594d5ca9bd29e1ef8440c97278b14e9c641cec4baabd798cbd7c8a4c605dcfd",
+          "observedSha256": "9594d5ca9bd29e1ef8440c97278b14e9c641cec4baabd798cbd7c8a4c605dcfd"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuCs.xml",
+          "recordedSha256": "081ac1a3af79a6b3dc1a6e2affe11aa7418b1158d2de80c7a27042d6c86cbff3",
+          "observedSha256": "081ac1a3af79a6b3dc1a6e2affe11aa7418b1158d2de80c7a27042d6c86cbff3"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuDisplay.xml",
+          "recordedSha256": "8ee8d8fa10ccef38e5cad8a6f8226f1c6429526832a99371dd474bd915e53cfd",
+          "observedSha256": "8ee8d8fa10ccef38e5cad8a6f8226f1c6429526832a99371dd474bd915e53cfd"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\ToolItemInfo.xml",
+          "recordedSha256": "e048ef1bc5270d63574001a4ee494188653d78021e67be41a308971ae04dc363",
+          "observedSha256": "e048ef1bc5270d63574001a4ee494188653d78021e67be41a308971ae04dc363"
+        }
+      ]
+    },
+    {
+      "ownId": "Morphology",
+      "ownName": "形态学处理",
+      "ownCategory": "图像预处理",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.Morphology/MorphologyTool.cs",
+        "line": 29,
+        "token": "[Tool(\r",
+        "sha256": "d05abb83f07475fda981008cac8b55c34ccbffb41ed72e5c2162b623abb4a85e",
+        "snippet": "[Tool(\r\n        id: \"Morphology\",\r\n        displayName: \"形态学处理\",\r\n        Description = \"对二值图像执行形态学操作（腐蚀/膨胀/开闭运算等）\",\r\n        Icon = \"morphology\", Order = 40,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class MorphologyTool : IToolPlugin<MorphologyParameters, MorphologyResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n    {\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;\r\n        private readonly ToolAttribute? _attribute;\r\n\r\n        public MorphologyTool()\r\n        {\r\n            _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n        }\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "ImageProcessing/IMVSImageMorphModu",
+      "vmName": "形态学处理",
+      "vmCategory": "图像处理",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSImageMorphModu",
+        "priority": "2",
+        "displayType": null,
+        "helpUrl": "GUID-40515844-A143-4A39-A671-B12A9FF42A24",
+        "toolTip": "IMVSImageMorphModu_Tip"
+      },
+      "limits": "原声明形态类型/核形/次数/宽高及mask；是否灰度/二值分支、核锚点/边缘迭代的原实现仍缺。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModu.xml",
+          "recordedSha256": "423dbec0fe84f068794cab3a1aae82df7dc13bbd2c8d8a597eefc20ca1bd689c",
+          "observedSha256": "423dbec0fe84f068794cab3a1aae82df7dc13bbd2c8d8a597eefc20ca1bd689c"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuAlgorithm.xml",
+          "recordedSha256": "2363c49a7114ad3f63833cb254aed180c41fd1c0100ecf4004fdf1742041e6fa",
+          "observedSha256": "2363c49a7114ad3f63833cb254aed180c41fd1c0100ecf4004fdf1742041e6fa"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuAlgorithmTab.xml",
+          "recordedSha256": "3114392281f500531dd914ad56400d2e4d9e9d1bce721d30b5d3fe9d621aef07",
+          "observedSha256": "3114392281f500531dd914ad56400d2e4d9e9d1bce721d30b5d3fe9d621aef07"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuCs.xml",
+          "recordedSha256": "1c897e7ad7a554f3ee16de0a55ce18a4b087519d3def2cfb7a90f768aec0e80e",
+          "observedSha256": "1c897e7ad7a554f3ee16de0a55ce18a4b087519d3def2cfb7a90f768aec0e80e"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuDisplay.xml",
+          "recordedSha256": "3a197e18ac0058e1860dc8ff3670f77bdde465088dfe1487a69018d72fe1dff4",
+          "observedSha256": "3a197e18ac0058e1860dc8ff3670f77bdde465088dfe1487a69018d72fe1dff4"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\ToolItemInfo.xml",
+          "recordedSha256": "c4dbeb59b70e3992fa62f10bce604bad63684051ea90c4905c8900cd7af2bdad",
+          "observedSha256": "c4dbeb59b70e3992fa62f10bce604bad63684051ea90c4905c8900cd7af2bdad"
+        }
+      ]
+    },
+    {
+      "ownId": "NPointCalibration",
+      "ownName": "N点标定",
+      "ownCategory": "坐标标定",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationTool.cs",
+        "line": 15,
+        "token": "[Tool(\"NPointCalibration\", \"N点标定\",\r",
+        "sha256": "2d40006ee8d2936f8cefb4c6137976986de9c81cd6cb16aaebccce1265bb78d7",
+        "snippet": "[Tool(\"NPointCalibration\", \"N点标定\",\r\n    Description = \"采集图像/机构对应点并求解平面标定\",\r\n    Icon = \"axes\", Order = 10, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Calibration, Version = \"1.0.0\", HasDebugWindow = true)]\r\npublic sealed class NPointCalibrationTool : IToolPlugin<NPointCalibrationParameters, NPointCalibrationResults>,\r\n    IAsyncToolPlugin, IToolEditorFactory\r\n{\r\n    public NPointCalibrationResults Run(NPointCalibrationParameters parameters)\r\n        => Execute(parameters, new ToolExecutionRequest(parameters) { CancellationToken=parameters.Context?.CancellationToken ?? default });\r\n\r\n    public ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)\r\n        => ValueTask.FromResult<ToolResults>(Execute((NPointCalibrationParameters)request.Parameters, request));\r\n\r\n    private static NPointCalibrationResults Execute(NPointCalibrationParameters parameters, ToolExecutionRequest? request)\r\n    {\r\n        var result = new NPointCalibrationResults\r\n        {\r\n            ToolName = \"N点标定\", ToolId = \"NPointCalibration\",\r\n            RequiredTranslationSamples = parameters.TranslationCount,\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Calibration/IMVSNPointCalibModu",
+      "vmName": "N点标定",
+      "vmCategory": "标定",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSNPointCalibModu",
+        "priority": "0",
+        "displayType": null,
+        "helpUrl": "GUID-E02DEF21-AC77-4183-B15E-021A8CED94E9",
+        "toolTip": "IMVSNPointCalibModu"
+      },
+      "limits": "NPoint原资源有HomoFreedom/WeightFun/DistThreshold等声明；不能由此推其模型、加权/鲁棒、R偏心或9+3采样与当前算法相同。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModu.xml",
+          "recordedSha256": "246014967abd4311c77a904fbf02636f557bf61c25beca8f051243dc0c07c25f",
+          "observedSha256": "246014967abd4311c77a904fbf02636f557bf61c25beca8f051243dc0c07c25f"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuAlgorithm.xml",
+          "recordedSha256": "f2c29eddc36d9ec23e5a1c8e107a1a53f2d1a14489b10f9ce0c148cb9e62ced2",
+          "observedSha256": "f2c29eddc36d9ec23e5a1c8e107a1a53f2d1a14489b10f9ce0c148cb9e62ced2"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuAlgorithmTab.xml",
+          "recordedSha256": "a3e49f17109e49d6c26775bdb2fe956df0af1db1fbcbf5a111dbc2ba6a749435",
+          "observedSha256": "a3e49f17109e49d6c26775bdb2fe956df0af1db1fbcbf5a111dbc2ba6a749435"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuCs.xml",
+          "recordedSha256": "dc255752d8040d063a4416a93fb3b69ca29c2d1cabe648a3e0fd84ddb9719ec3",
+          "observedSha256": "dc255752d8040d063a4416a93fb3b69ca29c2d1cabe648a3e0fd84ddb9719ec3"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuDisplay.xml",
+          "recordedSha256": "88de08e7d5881777e9c2096b7ba9d7dab826f62f547da129352991866f2cb0d9",
+          "observedSha256": "88de08e7d5881777e9c2096b7ba9d7dab826f62f547da129352991866f2cb0d9"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\ToolItemInfo.xml",
+          "recordedSha256": "7417fa1d475304e53f7622877d22c9cc7eab7e2a82b73e252d2ae492a1f326da",
+          "observedSha256": "7417fa1d475304e53f7622877d22c9cc7eab7e2a82b73e252d2ae492a1f326da"
+        }
+      ]
+    },
+    {
+      "ownId": "NPointVerification",
+      "ownName": "N点标定验证",
+      "ownCategory": "坐标标定",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointVerificationTool.cs",
+        "line": 11,
+        "token": "[Tool(\"NPointVerification\", \"N点标定验证\", Description = \"独立新采样验证HALCON原生候选并原子发布\",\r",
+        "sha256": "7a2dc7f44283e8d12bb7dc1ecef3e7a15aac242ff0694f8ed9b7aefff30f37c4",
+        "snippet": "[Tool(\"NPointVerification\", \"N点标定验证\", Description = \"独立新采样验证HALCON原生候选并原子发布\",\r\n    Icon = \"verify\", Order = 20, Category = ToolCategories.Calibration, Version = \"2.0.0\", HasDebugWindow = true)]\r\npublic sealed class NPointVerificationTool : IToolPlugin<NPointVerificationParameters, NPointVerificationResults>, IAsyncToolPlugin, IToolEditorFactory\r\n{\r\n    public FrameworkElement CreateDebugControl(IToolPlugin tool) => new Views.NPointVerificationDebugControl();\r\n    public NPointVerificationResults Run(NPointVerificationParameters p)\r\n        => Execute(p, new ToolExecutionRequest(p) { CancellationToken = p.Context?.CancellationToken ?? default });\r\n    public ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)\r\n        => ValueTask.FromResult<ToolResults>(Execute((NPointVerificationParameters)request.Parameters, request));\r\n    private static NPointVerificationResults Execute(NPointVerificationParameters p, ToolExecutionRequest? request)\r\n    {\r\n        var result = new NPointVerificationResults { ToolId = \"NPointVerification\", ToolName = \"N点标定验证\",\r\n            ExpectedRevision = p.SampleRevision, InputFingerprint = p.Fingerprint(), Cancellation = request?.CancellationToken ?? default };\r\n        try\r\n        {\r\n            result.Cancellation.ThrowIfCancellationRequested();\r\n            var (candidate, hash) = NPointCalibrationFile.ReadCandidate(p.CandidateFilePath);\r\n            result.CandidateSha256 = hash;\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Calibration/IMVSNPointCalibModu",
+      "vmName": "N点标定",
+      "vmCategory": "标定",
+      "relation": "related-capability-no-independent-counterpart-proved",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSNPointCalibModu",
+        "priority": "0",
+        "displayType": null,
+        "helpUrl": "GUID-E02DEF21-AC77-4183-B15E-021A8CED94E9",
+        "toolTip": "IMVSNPointCalibModu"
+      },
+      "limits": "仅关联原NPoint标定声明；尚未确立其独立hold-out验证/候选哈希与发布机制，不能把原资源出现误差字段当完整对应。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModu.xml",
+          "recordedSha256": "246014967abd4311c77a904fbf02636f557bf61c25beca8f051243dc0c07c25f",
+          "observedSha256": "246014967abd4311c77a904fbf02636f557bf61c25beca8f051243dc0c07c25f"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuAlgorithm.xml",
+          "recordedSha256": "f2c29eddc36d9ec23e5a1c8e107a1a53f2d1a14489b10f9ce0c148cb9e62ced2",
+          "observedSha256": "f2c29eddc36d9ec23e5a1c8e107a1a53f2d1a14489b10f9ce0c148cb9e62ced2"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuAlgorithmTab.xml",
+          "recordedSha256": "a3e49f17109e49d6c26775bdb2fe956df0af1db1fbcbf5a111dbc2ba6a749435",
+          "observedSha256": "a3e49f17109e49d6c26775bdb2fe956df0af1db1fbcbf5a111dbc2ba6a749435"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuCs.xml",
+          "recordedSha256": "dc255752d8040d063a4416a93fb3b69ca29c2d1cabe648a3e0fd84ddb9719ec3",
+          "observedSha256": "dc255752d8040d063a4416a93fb3b69ca29c2d1cabe648a3e0fd84ddb9719ec3"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuDisplay.xml",
+          "recordedSha256": "88de08e7d5881777e9c2096b7ba9d7dab826f62f547da129352991866f2cb0d9",
+          "observedSha256": "88de08e7d5881777e9c2096b7ba9d7dab826f62f547da129352991866f2cb0d9"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\ToolItemInfo.xml",
+          "recordedSha256": "7417fa1d475304e53f7622877d22c9cc7eab7e2a82b73e252d2ae492a1f326da",
+          "observedSha256": "7417fa1d475304e53f7622877d22c9cc7eab7e2a82b73e252d2ae492a1f326da"
+        }
+      ]
+    },
+    {
+      "ownId": "PointCircleMeasure",
+      "ownName": "点-圆测量",
+      "ownCategory": "几何测量",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.PointCircleMeasure/PointCircleMeasureTool.cs",
+        "line": 25,
+        "token": "[Tool(\r",
+        "sha256": "1f373a953c01688dc8e1941c13fb4a80ccb88042d8f31a7de9e958888b54db13",
+        "snippet": "[Tool(\r\n        id: \"PointCircleMeasure\",\r\n        displayName: \"点-圆测量\",\r\n        Description = \"点-圆测量工具：点元素仅参数订阅 X/Y（无绘制入口），圆元素引导 + 卡尺测量，输出点到圆心距离、圆周距与圆周最近点\",\r\n        Icon = \"point-circle\", Order = 30,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class PointCircleMeasureTool : IToolPlugin<PointCircleMeasureParameters, PointCircleMeasureResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public PointCircleMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        /// <summary>\r\n        /// 解析点1 坐标：按图形（整体绑上游点图形输出）/ 按参数（X/Y 逐参数）。\r\n        /// 点元素无引导绘制入口，两种方式均由参数订阅承载，不产生 measure 调用。\r\n        /// </summary>\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Measurement/IMVSP2CMeasureModu",
+      "vmName": "点圆测量",
+      "vmCategory": "测量",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSP2CMeasureModu",
+        "priority": "2",
+        "displayType": null,
+        "helpUrl": "GUID-DDF022A5-05E4-417E-92FB-ED344DEA5779",
+        "toolTip": "IMVSP2CMeasureModu_Tip"
+      },
+      "limits": "原声明center/closest/farthest距离、角度、圆环和CalibMatrix；原生圆弧/符号实现未核。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModu.xml",
+          "recordedSha256": "bdbd3100366ef42c210cb391df92eb0afdd4fc8ba229a2ea5e10730444abfe08",
+          "observedSha256": "bdbd3100366ef42c210cb391df92eb0afdd4fc8ba229a2ea5e10730444abfe08"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuAlgorithm.xml",
+          "recordedSha256": "55f86cb620e09a6e515432210a825122b72ef6f7fee5654af4be47e940619f04",
+          "observedSha256": "55f86cb620e09a6e515432210a825122b72ef6f7fee5654af4be47e940619f04"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuAlgorithmTab.xml",
+          "recordedSha256": "242efc4716449e1c845b434026510183c30a9372ba36f9d40b1f4cce175f8b6f",
+          "observedSha256": "242efc4716449e1c845b434026510183c30a9372ba36f9d40b1f4cce175f8b6f"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuCs.xml",
+          "recordedSha256": "fb0a06c99d4964f9ff72ec067cbee2216b0b7176444b5fa19f27f13e5b73d8f9",
+          "observedSha256": "fb0a06c99d4964f9ff72ec067cbee2216b0b7176444b5fa19f27f13e5b73d8f9"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuDisplay.xml",
+          "recordedSha256": "b5034a3979ded01827b64ab7c8a3423a2dc9be49dafec3e01e11d0237a591fd9",
+          "observedSha256": "b5034a3979ded01827b64ab7c8a3423a2dc9be49dafec3e01e11d0237a591fd9"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\ToolItemInfo.xml",
+          "recordedSha256": "181a5e58a1a93650514887d7fc0bfd61f13e1e90cd440d387baa0c945567b7ff",
+          "observedSha256": "181a5e58a1a93650514887d7fc0bfd61f13e1e90cd440d387baa0c945567b7ff"
+        }
+      ]
+    },
+    {
+      "ownId": "PointLineMeasure",
+      "ownName": "点-线测量",
+      "ownCategory": "几何测量",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.PointLineMeasure/PointLineMeasureTool.cs",
+        "line": 25,
+        "token": "[Tool(\r",
+        "sha256": "b3c9b004590dcadb4d1bf9036325bd3161237776a935f5206f51e4d1af30a3bb",
+        "snippet": "[Tool(\r\n        id: \"PointLineMeasure\",\r\n        displayName: \"点-线测量\",\r\n        Description = \"点-线测量工具：点元素仅参数订阅 X/Y（无绘制入口），线元素引导 + 卡尺测量，输出点到线距离与垂足位置\",\r\n        Icon = \"point-line\", Order = 20,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class PointLineMeasureTool : IToolPlugin<PointLineMeasureParameters, PointLineMeasureResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public PointLineMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        /// <summary>\r\n        /// 解析点1 坐标：按图形（整体绑上游点图形输出）/ 按参数（X/Y 逐参数）。\r\n        /// 点元素无引导绘制入口，两种方式均由参数订阅承载，不产生 measure 调用。\r\n        /// </summary>\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Measurement/IMVSP2LMeasureModu",
+      "vmName": "点线测量",
+      "vmCategory": "测量",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSP2LMeasureModu",
+        "priority": "3",
+        "displayType": null,
+        "helpUrl": "GUID-B45E20E4-EB8B-4040-93B4-43F83E12A386",
+        "toolTip": "IMVSP2LMeasureModu_Tip"
+      },
+      "limits": "原声明输入线、垂距/最小最大距/角度及标定矩阵；当前重新检测和仅垂距不能算全合同。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModu.xml",
+          "recordedSha256": "f705b185358713281239c2d8b6ac413c166838775e19088183f8b7e8cd75599f",
+          "observedSha256": "f705b185358713281239c2d8b6ac413c166838775e19088183f8b7e8cd75599f"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuAlgorithm.xml",
+          "recordedSha256": "887e61a84e95a4ab7fb546fc1fa7abadfc3e027e709eb7a7f162873615efbd94",
+          "observedSha256": "887e61a84e95a4ab7fb546fc1fa7abadfc3e027e709eb7a7f162873615efbd94"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuAlgorithmTab.xml",
+          "recordedSha256": "57e3986cf25cfab8a9fcb9920eacbbf05036b86ad6e409de5abf93bffbbbfb4b",
+          "observedSha256": "57e3986cf25cfab8a9fcb9920eacbbf05036b86ad6e409de5abf93bffbbbfb4b"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuCs.xml",
+          "recordedSha256": "f7d16282d9813fda14f8650a017a553ba38a5705e9cf02580c541d388a76d407",
+          "observedSha256": "f7d16282d9813fda14f8650a017a553ba38a5705e9cf02580c541d388a76d407"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuDisplay.xml",
+          "recordedSha256": "b3752c99042387c836cedd20e980741ff09eed0e3d3d600c3515a80bbca6a759",
+          "observedSha256": "b3752c99042387c836cedd20e980741ff09eed0e3d3d600c3515a80bbca6a759"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\ToolItemInfo.xml",
+          "recordedSha256": "afa0112dd19395961bf097e9bb82d5b1c0e65b35e30d5841b686fa8593336cd1",
+          "observedSha256": "afa0112dd19395961bf097e9bb82d5b1c0e65b35e30d5841b686fa8593336cd1"
+        }
+      ]
+    },
+    {
+      "ownId": "PointPointMeasure",
+      "ownName": "点-点测量",
+      "ownCategory": "几何测量",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureTool.cs",
+        "line": 23,
+        "token": "[Tool(\r",
+        "sha256": "38fd864e64121a5f81c4484f4d3b4bf7e3f899250d7fabaf7cdc4a005fda9dfe",
+        "snippet": "[Tool(\r\n        id: \"PointPointMeasure\",\r\n        displayName: \"点-点测量\",\r\n        Description = \"点-点测量工具：两个点元素均仅参数订阅（按图形/按参数），输出两点距离、ΔX、ΔY 与连线角度\",\r\n        Icon = \"point-point\", Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class PointPointMeasureTool : IToolPlugin<PointPointMeasureParameters, PointPointMeasureResults>, IAsyncToolPlugin, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public PointPointMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        /// <summary>\r\n        /// 解析点坐标：按图形（整体绑上游点图形输出）/ 按参数（X/Y 逐参数）。\r\n        /// 点元素无引导绘制入口，两种方式均由参数订阅承载，不产生 measure 调用。\r\n        /// </summary>\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Measurement/IMVSP2PMeasureModu",
+      "vmName": "点点测量",
+      "vmCategory": "测量",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSP2PMeasureModu",
+        "priority": "5",
+        "displayType": null,
+        "helpUrl": "GUID-352A1EEE-F832-4B5E-8129-8E0F914694B3",
+        "toolTip": "IMVSP2PMeasureModu_Tip"
+      },
+      "limits": "原声明Midpoint、CalibMatrix、ChooseCoordinate、OutputAngleRange；不据声明推其角度/符号原公式。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModu.xml",
+          "recordedSha256": "014f7e34a9184d3f6782c1ed2310eff022621a7372a3a51a3f4a7168a89cc3cd",
+          "observedSha256": "014f7e34a9184d3f6782c1ed2310eff022621a7372a3a51a3f4a7168a89cc3cd"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuAlgorithm.xml",
+          "recordedSha256": "020a33bf9d63ea99ce33155fff6542a4f62adf29e14e0f1ca05a6ca3f1eaad89",
+          "observedSha256": "020a33bf9d63ea99ce33155fff6542a4f62adf29e14e0f1ca05a6ca3f1eaad89"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuAlgorithmTab.xml",
+          "recordedSha256": "061456dcf089c1f85f4ea205c3bdad5ee72210dc12840771d4c720e6c6a6fe0d",
+          "observedSha256": "061456dcf089c1f85f4ea205c3bdad5ee72210dc12840771d4c720e6c6a6fe0d"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuCs.xml",
+          "recordedSha256": "ff1a07811111649e0079e34ad48c6b1514dbea2b57422166981bc9c0556bc643",
+          "observedSha256": "ff1a07811111649e0079e34ad48c6b1514dbea2b57422166981bc9c0556bc643"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuDisplay.xml",
+          "recordedSha256": "0d21eb38c2eb7448f05a69b96b192e24475ba6d77d9a2db3931babeeec4f377a",
+          "observedSha256": "0d21eb38c2eb7448f05a69b96b192e24475ba6d77d9a2db3931babeeec4f377a"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\ToolItemInfo.xml",
+          "recordedSha256": "8d74b458744b9d22f87c1bcde80492e77fcc64f6c9f747ffed61439fd551af40",
+          "observedSha256": "8d74b458744b9d22f87c1bcde80492e77fcc64f6c9f747ffed61439fd551af40"
+        }
+      ]
+    },
+    {
+      "ownId": "ProtocolAssemble",
+      "ownName": "协议组装",
+      "ownCategory": "通信工具",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.ProtocolAssemble/ProtocolAssembleTool.cs",
+        "line": 11,
+        "token": "[Tool(\"ProtocolAssemble\", \"协议组装\", Icon = \"assemble\", Order = 30, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Communication, Description = \"按配置顺序和分隔符组装文本，不发送设备\", HasDebugWindow = true)]",
+        "sha256": "8ade152a6b24d24368b6b6f785bbc731d0d930f398e5c67f634ead04de1756f2",
+        "snippet": "[Tool(\"ProtocolAssemble\", \"协议组装\", Icon = \"assemble\", Order = 30, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Communication, Description = \"按配置顺序和分隔符组装文本，不发送设备\", HasDebugWindow = true)]\r\npublic sealed class ProtocolAssembleTool : IToolPlugin<ProtocolAssembleParameters, CommunicationToolResults>, IToolEditorFactory\r\n{\r\n    IReadOnlyList<OutputVariable> IToolPlugin.OutputVariables => new CommunicationToolResults(ProtocolAssembleParameters.OutputFields).GetOutputVariables();\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) => new Views.ProtocolAssembleEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() => new CommunicationDataAnalysisControl();\r\n\r\n    public CommunicationToolResults Run(ProtocolAssembleParameters parameters)\r\n    {\r\n        var result = new CommunicationToolResults(ProtocolAssembleParameters.OutputFields) { ToolId = \"ProtocolAssemble\", ToolName = \"协议组装\" };\r\n        var watch = Stopwatch.StartNew();\r\n        var rows = new List<CommunicationAnalysisRow>();\r\n        try\r\n        {\r\n            var parts = parameters.Parts?.Select(p => (p.PartId, p.InputText)).ToArray()\r\n                ?? throw new FormatException(\"组装列表不存在。\");\r\n            var separator = parameters.Separator ?? throw new FormatException(\"分隔符不能为null。\");\r\n            if (parts.Length == 0) throw new FormatException(\"请至少配置一项组装内容。\");\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Communication/DataAssembleModule",
+      "vmName": "协议组装",
+      "vmCategory": "通信",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "DataAssembleModule",
+        "priority": "15",
+        "displayType": null,
+        "helpUrl": "GUID-66B5B269-CB63-4B17-B2DC-B94698683D0C",
+        "toolTip": "DataAssembleModule"
+      },
+      "limits": "原声明AssembleType、Separator、PyScriptPath与文本/字节输出；声明证明模式入口，不证明脚本执行隔离和错误路径。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModule.xml",
+          "recordedSha256": "ffa54880c17b3001e99c92cf9e766bc2293767b727538cbfa6fb7b8c8c1c96e6",
+          "observedSha256": "ffa54880c17b3001e99c92cf9e766bc2293767b727538cbfa6fb7b8c8c1c96e6"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithm.xml",
+          "recordedSha256": "7ffb1a2c07dea7ac4354fe572438dcc1d3244d30ef63867d2d832760e74841fe",
+          "observedSha256": "7ffb1a2c07dea7ac4354fe572438dcc1d3244d30ef63867d2d832760e74841fe"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithmTab.xml",
+          "recordedSha256": "d755510da015c662dcdd4247325e90a0c9ec21c431c95983afb1ee9bf1763646",
+          "observedSha256": "d755510da015c662dcdd4247325e90a0c9ec21c431c95983afb1ee9bf1763646"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleCs.xml",
+          "recordedSha256": "e43d389185224444deab32d7d2d1b836c36071e61cad8ee762e9e1747995bb83",
+          "observedSha256": "e43d389185224444deab32d7d2d1b836c36071e61cad8ee762e9e1747995bb83"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleDisplay.xml",
+          "recordedSha256": "2c28e74db44a96056ffe7ab9d28cfc212bdc907fbbeda6ca3853991f3d454308",
+          "observedSha256": "2c28e74db44a96056ffe7ab9d28cfc212bdc907fbbeda6ca3853991f3d454308"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\ToolItemInfo.xml",
+          "recordedSha256": "9be6d5250244250e704b80005b5f5219dec8c24973c66de7a79a537506f8dea2",
+          "observedSha256": "9be6d5250244250e704b80005b5f5219dec8c24973c66de7a79a537506f8dea2"
+        }
+      ]
+    },
+    {
+      "ownId": "ProtocolParse",
+      "ownName": "协议解析",
+      "ownCategory": "通信工具",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.ProtocolParse/ProtocolParseTool.cs",
+        "line": 9,
+        "token": "[Tool(\"ProtocolParse\", \"协议解析\", Icon = \"parse\", Order = 20, Category = ToolCategories.Communication,\r",
+        "sha256": "e1bfcf32809766d7f980738c3fe8460898bbd5070fed02fd05ec67a26753f371",
+        "snippet": "[Tool(\"ProtocolParse\", \"协议解析\", Icon = \"parse\", Order = 20, Category = ToolCategories.Communication,\r\n    Description = \"按配置字段解析文本或字节，不读取设备\", HasDebugWindow = true)]\r\npublic sealed class ProtocolParseTool : IToolPlugin<ProtocolParseParameters, CommunicationToolResults>, IToolEditorFactory\r\n{\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) => new Views.ProtocolParseEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() => new CommunicationDataAnalysisControl();\r\n    public CommunicationToolResults Run(ProtocolParseParameters parameters)\r\n    {\r\n        var result = new CommunicationToolResults();\r\n        var rows = new List<CommunicationAnalysisRow>();\r\n        var watch = Stopwatch.StartNew();\r\n        try\r\n        {\r\n            var fields = parameters.Outputs.Select(f => new Field(f.FieldId, f.Name, f.DataType,\r\n                f.Start, f.End, f.Order, f.NumericInterpretation)).ToArray();\r\n            result = new CommunicationToolResults(fields.Select(f => new CommunicationOutputField(f.Id,\r\n                f.Name, ProtocolParseField.Vocabulary(f.Type))));\r\n            if (fields.Length == 0) throw new FormatException(\"请至少配置一个输出字段。\");\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Communication/DataAnalysisModule",
+      "vmName": "协议解析",
+      "vmCategory": "通信",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "DataAnalysisModule",
+        "priority": "14",
+        "displayType": null,
+        "helpUrl": "GUID-731B483B-162F-4647-8543-585D230AD5D3",
+        "toolTip": "DataAnalysisModule"
+      },
+      "limits": "原声明AnalysisType、PyScriptPath、txt/shell/byteOutputParams；原生解析分派、脚本执行及释放缺实现证据。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModule.xml",
+          "recordedSha256": "4783f7d837427da7f89dbe28f245c7563947d02cddb05d3c62db110dfbb5fa49",
+          "observedSha256": "4783f7d837427da7f89dbe28f245c7563947d02cddb05d3c62db110dfbb5fa49"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleAlgorithm.xml",
+          "recordedSha256": "3d993e96e7ee868a8c12f6bedca37e777196a16c8d2cef0714c444183dadfc3c",
+          "observedSha256": "3d993e96e7ee868a8c12f6bedca37e777196a16c8d2cef0714c444183dadfc3c"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleAlgorithmTab.xml",
+          "recordedSha256": "c8c4944b170355e4cff2d6c5cf79cd511295a38eb89335864a01df709f33b3d6",
+          "observedSha256": "c8c4944b170355e4cff2d6c5cf79cd511295a38eb89335864a01df709f33b3d6"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleCs.xml",
+          "recordedSha256": "5457052eaff6838a59a10f9999aeeffc740f4821dcc9de9cce5daefd39aae6f1",
+          "observedSha256": "5457052eaff6838a59a10f9999aeeffc740f4821dcc9de9cce5daefd39aae6f1"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleDisplay.xml",
+          "recordedSha256": "0ce3fed17e9eb3892050191c8204f4ddd7271602248b3a6e2358cb5031d49691",
+          "observedSha256": "0ce3fed17e9eb3892050191c8204f4ddd7271602248b3a6e2358cb5031d49691"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\ToolItemInfo.xml",
+          "recordedSha256": "968296d7b1888979a9e7b47f842635e45184db0f2164e73016fb31cd7933ddf0",
+          "observedSha256": "968296d7b1888979a9e7b47f842635e45184db0f2164e73016fb31cd7933ddf0"
+        }
+      ]
+    },
+    {
+      "ownId": "ReceiveData",
+      "ownName": "接收数据",
+      "ownCategory": "通信工具",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.ReceiveData/ReceiveDataTool.cs",
+        "line": 10,
+        "token": "[Tool(\"ReceiveData\", \"接收数据\", Icon = \"receive\", Order = 10, Category = ToolCategories.Communication,\r",
+        "sha256": "74570aace0e7aa085008dd3bab66eb579ee0012d90808738c27db10415befed4",
+        "snippet": "[Tool(\"ReceiveData\", \"接收数据\", Icon = \"receive\", Order = 10, Category = ToolCategories.Communication,\r\n    Description = \"执行时读取设备当前值或全局变量\", HasDebugWindow = true)]\r\npublic sealed class ReceiveDataTool : IToolPlugin<ReceiveDataParameters, CommunicationToolResults>, IAsyncToolPlugin, IToolEditorFactory, IToolExecutionProfileProvider\r\n{\r\n    public ToolExecutionProfile DescribeExecution(ToolParameters parameters) => ToolExecutionProfile.LegacyExclusive;\r\n    public ToolExecutionProfile DescribeExecution(ToolParameters parameters, ICommunicationReceiveService? communicationInputs)\r\n    {\r\n        // Only the host source catalog can distinguish a passive cache read from a device request.\r\n        if (parameters is ReceiveDataParameters { SourceKind: \"Device\" } p &&\r\n            communicationInputs?.GetSources().Any(s => s.DeviceId == p.DeviceId && s.TargetId == p.TargetId && !s.ActiveRead) == true)\r\n            return new(ToolConcurrencyKind.ExternalDataWait);\r\n        return ToolExecutionProfile.LegacyExclusive;\r\n    }\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) => new Views.ReceiveDataEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() => new CommunicationDataAnalysisControl();\r\n    private static ICommunicationReceiveService? Scoped(ICommunicationReceiveService? service, string? workflowId) =>\r\n        service == null || service is RuntimeVariableReceiveService || string.IsNullOrEmpty(workflowId) ? service :\r\n            new RuntimeVariableReceiveService(service, null, workflowId: workflowId);\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Communication/ReadDatasModule",
+      "vmName": "接收数据",
+      "vmCategory": "通信",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "ReadDatasModule",
+        "priority": "0",
+        "displayType": "COMMUNCATION",
+        "helpUrl": "GUID-EACA6806-F479-4939-A576-11EB3B0DECD4",
+        "toolTip": "ReadDatasModule"
+      },
+      "limits": "原声明QueueItemList、GlobalVarList、CommunicationItemList及PLC/Modbus入口；原生消费/溢出/停止语义仍缺，不能据声明判运行完成。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModule.xml",
+          "recordedSha256": "cf7e7279aeb7e6d9f61fbc67a863ad73bc2545398d20f08c47d4cb25207c23b6",
+          "observedSha256": "cf7e7279aeb7e6d9f61fbc67a863ad73bc2545398d20f08c47d4cb25207c23b6"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleAlgorithm.xml",
+          "recordedSha256": "04419e8d7323b0582d194faa4a2942a109750ab882628460745c8c12bc2977cd",
+          "observedSha256": "04419e8d7323b0582d194faa4a2942a109750ab882628460745c8c12bc2977cd"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleAlgorithmTab.xml",
+          "recordedSha256": "d756b8f018b7d8859f26e3cd8ed359b888cecbe8a293a74edc6866c3ff79b289",
+          "observedSha256": "d756b8f018b7d8859f26e3cd8ed359b888cecbe8a293a74edc6866c3ff79b289"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleCs.xml",
+          "recordedSha256": "7561c2da603965d641e27b23b2e03fc931b3fd964e807c61724ecf31fb665f82",
+          "observedSha256": "7561c2da603965d641e27b23b2e03fc931b3fd964e807c61724ecf31fb665f82"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleDisplay.xml",
+          "recordedSha256": "11958a3d38425cde8f8c68789d87492b3bc2af70fe4b0ea15682e9e98a4dcf82",
+          "observedSha256": "11958a3d38425cde8f8c68789d87492b3bc2af70fe4b0ea15682e9e98a4dcf82"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ToolItemInfo.xml",
+          "recordedSha256": "2b8eeab5bf93b97dba193fc0d8be1118dd4b514c0b5642feafc93b66e73e9446",
+          "observedSha256": "2b8eeab5bf93b97dba193fc0d8be1118dd4b514c0b5642feafc93b66e73e9446"
+        }
+      ]
+    },
+    {
+      "ownId": "Script",
+      "ownName": "Script",
+      "ownCategory": "脚本工具",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.Script/ScriptTool.cs",
+        "line": 18,
+        "token": "[Tool(\r",
+        "sha256": "71c32de73c6d00308a639750dcebefdf1c69a936b72f8d98a6fad1b469d13292",
+        "snippet": "[Tool(\r\n        id: \"Script\",\r\n        displayName: \"Script\",\r\n        Description = \"Execute user-defined C# script with DLL references and Init/Process lifecycle\",\r\n        Icon = \"code\", Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Script,\r\n        Version = \"2.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>, IAsyncToolPlugin, IToolEditorFactory, IPrecompilableTool\r\n    {\r\n        // ★ 应用启动阶段后台预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。\r\n        //   静态构造在 LoadPlugins 实例化工具时触发，fire-and-forget 不阻塞启动；\r\n        //   首次打开脚本工具时补全立即可用（MEF 已预热缓存命中）。\r\n        static ScriptTool()\r\n        {\r\n            // 编辑器内核统一预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。\r\n            ScriptEditorCore.WarmupForStartup();\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Logic/ShellModule",
+      "vmName": "脚本",
+      "vmCategory": "逻辑工具",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "ShellModule",
+        "priority": "9",
+        "displayType": "SHELL",
+        "helpUrl": "GUID-7C5BAFEF-24AB-4ACC-8A9C-64C29BD414FA",
+        "toolTip": "ShellModule_Tip"
+      },
+      "limits": "原Shell资源声明动态输入输出与脚本配置，语言/包装/隔离及错误传播原体未完整对应。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\DLL\\HikAlgorithmTool.xml",
+          "recordedSha256": "42e8e36ead94adefd61951c0e74c4936cf5094e073191ad5641a02fd2b879f2c",
+          "observedSha256": "42e8e36ead94adefd61951c0e74c4936cf5094e073191ad5641a02fd2b879f2c"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModule.xml",
+          "recordedSha256": "3b37b920da3de8fdabb4c62ee0ff8483b511f29da8991913819f6b5e6e462df4",
+          "observedSha256": "3b37b920da3de8fdabb4c62ee0ff8483b511f29da8991913819f6b5e6e462df4"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleAlgorithm.xml",
+          "recordedSha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+          "observedSha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleAlgorithmTab.xml",
+          "recordedSha256": "617cff239cdcc548dfa038b584a7ff530990917cd62f954c88d92f8e3e159e8f",
+          "observedSha256": "617cff239cdcc548dfa038b584a7ff530990917cd62f954c88d92f8e3e159e8f"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleCs.xml",
+          "recordedSha256": "e8962f09161a1f6d38c45fb4384598b01440078b72d2dfa2bfd84114a2b37be1",
+          "observedSha256": "e8962f09161a1f6d38c45fb4384598b01440078b72d2dfa2bfd84114a2b37be1"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleDisplay.xml",
+          "recordedSha256": "584b5981eb3c430384cd9e254fe85aa2efe3d3eb80fc398f5d195799a57d7b64",
+          "observedSha256": "584b5981eb3c430384cd9e254fe85aa2efe3d3eb80fc398f5d195799a57d7b64"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ToolItemInfo.xml",
+          "recordedSha256": "e06b9e160cb0799d3be037462ac287cc5ea4297c945867a2047f45de41102b0f",
+          "observedSha256": "e06b9e160cb0799d3be037462ac287cc5ea4297c945867a2047f45de41102b0f"
+        }
+      ]
+    },
+    {
+      "ownId": "SendData",
+      "ownName": "发送数据",
+      "ownCategory": "通信工具",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.SendData/SendDataTool.cs",
+        "line": 10,
+        "token": "[Tool(\"SendData\", \"发送数据\", Icon = \"send\", Order = 40, Category = ToolCategories.Communication,\r",
+        "sha256": "8c5a9acce0c55faa3486ad180783222aafc1a551526be3c8b50759d2bb04a222",
+        "snippet": "[Tool(\"SendData\", \"发送数据\", Icon = \"send\", Order = 40, Category = ToolCategories.Communication,\r\n    Description = \"将本次工作流数据提交到设备、变量或发送事件\", HasDebugWindow = true)]\r\npublic sealed class SendDataTool : IToolPlugin<SendDataParameters, SendDataResults>, IAsyncToolPlugin, IToolEditorFactory, IToolExecutionProfileProvider\r\n{\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) => new Views.SendDataEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() => new CommunicationDataAnalysisControl();\r\n    public ToolExecutionProfile DescribeExecution(ToolParameters parameters) => ToolExecutionProfile.LegacyExclusive;\r\n    public SendDataResults Run(SendDataParameters p) => SendAsync(p, p.Context?.CommunicationOutputs, p.Context?.NodeId,\r\n        p.NodeResults, p.Context?.GlobalVariables, p.Context?.CancellationToken ?? default).GetAwaiter().GetResult();\r\n    public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request) =>\r\n        await SendAsync((SendDataParameters)request.Parameters, request.Context.CommunicationOutputs ?? request.CommunicationOutputs,\r\n            request.NodeId, request.NodeResults, request.GlobalVariables, request.CancellationToken, request.WorkflowId).ConfigureAwait(false);\r\n\r\n    private static async Task<SendDataResults> SendAsync(SendDataParameters p, ICommunicationSendService? service, string? nodeId,\r\n        IDictionary<string, ToolResults>? results, IDictionary<string, object?>? globals, CancellationToken token, string? workflowId = null)\r\n    {\r\n        var result = new SendDataResults(); var watch = Stopwatch.StartNew(); var analysis = new List<CommunicationAnalysisRow>();\r\n        var submittedValues = new Dictionary<Guid, object?>();\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Communication/SendDatasModule",
+      "vmName": "发送数据",
+      "vmCategory": "通信",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "SendDatasModule",
+        "priority": "1",
+        "displayType": "COMMUNCATION",
+        "helpUrl": "GUID-878938B0-1B91-4290-A81A-A3AD89BD5FBC",
+        "toolTip": "SendDatasModule"
+      },
+      "limits": "原声明事件、设备、DataCenter、IgnoreDuration、IgnoreErroneousDataEnable等；提交顺序/确认/重试的原生实现未知。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModule.xml",
+          "recordedSha256": "955062500d4bbe45e5d2124602412482112087d963fa7a81e0f79852900cdb3b",
+          "observedSha256": "955062500d4bbe45e5d2124602412482112087d963fa7a81e0f79852900cdb3b"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleAlgorithm.xml",
+          "recordedSha256": "da7cb5182d8f320c59f159d0dad421cc8b9c456a2c06650031dbfda68f775b82",
+          "observedSha256": "da7cb5182d8f320c59f159d0dad421cc8b9c456a2c06650031dbfda68f775b82"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleAlgorithmTab.xml",
+          "recordedSha256": "e3191ccc1687e6904096fef59a5c87fb9d8b8c0c7f45f8f89593996acf3864c2",
+          "observedSha256": "e3191ccc1687e6904096fef59a5c87fb9d8b8c0c7f45f8f89593996acf3864c2"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleCs.xml",
+          "recordedSha256": "da1c7213ed034e52a625d30fb6ed8386d24760916e8546b919175b2db92bf9eb",
+          "observedSha256": "da1c7213ed034e52a625d30fb6ed8386d24760916e8546b919175b2db92bf9eb"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleDisplay.xml",
+          "recordedSha256": "f7abad56abfbfdcb11c187b24a61e8f15968496faae80f624f7539cd6faacba9",
+          "observedSha256": "f7abad56abfbfdcb11c187b24a61e8f15968496faae80f624f7539cd6faacba9"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\ToolItemInfo.xml",
+          "recordedSha256": "a04c090a9337e7ccc00b3008aff175d783422a51839be7c2249741a02bc0c448",
+          "observedSha256": "a04c090a9337e7ccc00b3008aff175d783422a51839be7c2249741a02bc0c448"
+        }
+      ]
+    },
+    {
+      "ownId": "ShapeMatch",
+      "ownName": "轮廓匹配",
+      "ownCategory": "特征定位",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/ShapeMatchTool.cs",
+        "line": 29,
+        "token": "[Tool(\r",
+        "sha256": "a4203919dee2b06c11eaeb0eb0ed92e29813f0919059dfe1788aac6de59937aa",
+        "snippet": "[Tool(\r\n    id: \"ShapeMatch\",\r\n    displayName: \"轮廓匹配\",\r\n    Description = \"基于形状的轮廓模板匹配 (Halcon)\",\r\n    Icon = \"match\", Order = 10,\r\n    Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Location,\r\n    Version = \"2.0.0\",\r\n    HasDebugWindow = true\r\n)]\r\npublic class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n{\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;\r\n    private readonly ToolAttribute? _attribute;\r\n\r\n    private const double DEG2RAD = Math.PI / 180.0;\r\n\r\n    // ===== 模板模型句柄缓存 =====\r\n    // ★ 修复：此前每次 Run 都写临时文件 + ReadShapeModel 重建句柄（磁盘 IO + 反序列化开销）。\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Location/IMVSContourMatchModu",
+      "vmName": "轮廓匹配",
+      "vmCategory": "定位",
+      "relation": "same-function-catalog-candidate",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSContourMatchModu",
+        "priority": "0",
+        "displayType": null,
+        "helpUrl": "GUID-3EEB6D91-78DA-40BF-AC7B-537FEBB00FFC",
+        "toolTip": "IMVSContourMatchModu_Tip"
+      },
+      "limits": "原轮廓匹配资源合同含参数/输入输出/专业UI声明；它不证明原版使用HALCON或同一NMS/评分/超时/缓存。恢复项目代码和测试不能代替原算法体或同图基线。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\IMVSContourMatchModu.xml",
+          "recordedSha256": "7fc0e79ee7bc3bbf7b8a26c570e42403181796f33140a63b2e72a544035c05df",
+          "observedSha256": "7fc0e79ee7bc3bbf7b8a26c570e42403181796f33140a63b2e72a544035c05df"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\IMVSContourMatchModuAlgorithm.xml",
+          "recordedSha256": "740c75cb01a3528a190f0c6946483ada974dd0f6a49d163755b429d19f6737f3",
+          "observedSha256": "740c75cb01a3528a190f0c6946483ada974dd0f6a49d163755b429d19f6737f3"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\IMVSContourMatchModuAlgorithmTab.xml",
+          "recordedSha256": "8456331100019e9280c81de9c1f70735b3a5020548929e382a0f146d5741dafd",
+          "observedSha256": "8456331100019e9280c81de9c1f70735b3a5020548929e382a0f146d5741dafd"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\IMVSContourMatchModuCs.xml",
+          "recordedSha256": "88f58a4253b2b11886627c2b29b60c6b63d89583a564500529287eb458998607",
+          "observedSha256": "88f58a4253b2b11886627c2b29b60c6b63d89583a564500529287eb458998607"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\IMVSContourMatchModuDisplay.xml",
+          "recordedSha256": "d96c658745a7a3adc8c9862b55eff08b2d6535b69b949b9c1bff065506ad73a6",
+          "observedSha256": "d96c658745a7a3adc8c9862b55eff08b2d6535b69b949b9c1bff065506ad73a6"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\ToolItemInfo.xml",
+          "recordedSha256": "e6642fb7a0393940fd176e2ef3ba2eb9042bd4dd22711b30a5fb76f8cf466de4",
+          "observedSha256": "e6642fb7a0393940fd176e2ef3ba2eb9042bd4dd22711b30a5fb76f8cf466de4"
+        }
+      ]
+    },
+    {
+      "ownId": "Subroutine",
+      "ownName": "子程序",
+      "ownCategory": "流程控制",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+        "line": 26,
+        "token": "[Tool(\r",
+        "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9",
+        "snippet": "[Tool(\r\n        id: \"Subroutine\",\r\n        displayName: \"子程序\",\r\n        Description = \"执行子工作流（大号工具，内部使用工作流节点组织）\",\r\n        Icon = \"subroutine\", Order = 20,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Control,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class SubroutineTool : IToolPlugin<SubroutineParameters, SubroutineResults>\r\n    {\r\n        /// <summary>\r\n        /// 无限长直线（Line2d）显示时的单侧截取长度（像素）。\r\n        /// 数学直线无端点，可视化时以直线上一点为中心沿方向向量截取一段可见线段。\r\n        /// </summary>\r\n        private const double DisplayLineHalfLength = 100;\r\n\r\n        static SubroutineTool()\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "Logic/IMVSGroup",
+      "vmName": "Group",
+      "vmCategory": "逻辑工具",
+      "relation": "framework-capability-related-not-drop-in",
+      "vmToolItem": {
+        "present": true,
+        "name": "%Group%",
+        "priority": "10",
+        "displayType": "GROUP",
+        "helpUrl": null,
+        "toolTip": "%Group%"
+      },
+      "limits": "关联原Group资源/框架材料；原Group逐轮、累积/中断及字段输出的完整原体未在本批重核，不能当相同实现。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroup.xml",
+          "recordedSha256": "3f0fe8154fd8b0a396b85d3b503fed11bc37f213c53441d613b429388e702adc",
+          "observedSha256": "3f0fe8154fd8b0a396b85d3b503fed11bc37f213c53441d613b429388e702adc"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupAlgorithm.xml",
+          "recordedSha256": "17c5397aad036713205b2af45420bb925e1ac2937a26093672c1653d9989ae48",
+          "observedSha256": "17c5397aad036713205b2af45420bb925e1ac2937a26093672c1653d9989ae48"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupAlgorithmTab.xml",
+          "recordedSha256": "2e15b6a20e2ab2e5ed40a12d943001dbc531cf28adc9763821840505c2679c7b",
+          "observedSha256": "2e15b6a20e2ab2e5ed40a12d943001dbc531cf28adc9763821840505c2679c7b"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupCs.xml",
+          "recordedSha256": "96bb963f60ba5d0142c33ba1a1d8ec147a9f44881110c7c69e3e8ebd867b0875",
+          "observedSha256": "96bb963f60ba5d0142c33ba1a1d8ec147a9f44881110c7c69e3e8ebd867b0875"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupDisplay.xml",
+          "recordedSha256": "aa56da3d573a730981b759113756a1544eaafa8387407da5f415a38053c46fc9",
+          "observedSha256": "aa56da3d573a730981b759113756a1544eaafa8387407da5f415a38053c46fc9"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\ToolItemInfo.xml",
+          "recordedSha256": "aa91bc16aa4e9c534ca97486794b1692e5dd7adfa62558c633ceb770d624471d",
+          "observedSha256": "aa91bc16aa4e9c534ca97486794b1692e5dd7adfa62558c633ceb770d624471d"
+        }
+      ]
+    },
+    {
+      "ownId": "Threshold",
+      "ownName": "图像阈值化",
+      "ownCategory": "图像预处理",
+      "ownSource": {
+        "path": "tools/SunEyeVision.Tool.Threshold/ThresholdTool.cs",
+        "line": 28,
+        "token": "[Tool(\r",
+        "sha256": "ff378720b902c6bf094040a102f1bc11943e0261f5b52d5accc856d3e0b39c8f",
+        "snippet": "[Tool(\r\n        id: \"Threshold\",\r\n        displayName: \"图像阈值化\",\r\n        Description = \"将灰度图像转换为二值图像\",\r\n        Icon = \"threshold\", Order = 20,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing,\r\n        Version = \"3.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class ThresholdTool : IToolPlugin<ThresholdParameters, ThresholdResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n    {\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;\r\n        private readonly ToolAttribute? _attribute;\r\n\r\n        public ThresholdTool()\r\n        {\r\n            _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n        }\r"
+      },
+      "ownSourceCurrent": true,
+      "vmKey": "ImageProcessing/IMVSBinaryModu",
+      "vmName": "图像二值化",
+      "vmCategory": "图像处理",
+      "relation": "many-own-to-one-vm",
+      "vmToolItem": {
+        "present": true,
+        "name": "IMVSBinaryModu",
+        "priority": "0",
+        "displayType": null,
+        "helpUrl": "GUID-DBCA7DED-F21F-44EB-BA0A-1D61CB7CDE45",
+        "toolTip": "IMVSBinaryModu"
+      },
+      "limits": "原Binary资源声明模式/比较/阈值与ROI外处理；逆向侧已有有限Binary对照报告，但对象是其恢复实现与旧样本，不是本HALCON工具的数值等价证明。",
+      "contractEquivalence": "not-established",
+      "numericParity": "not-established",
+      "resourceDeclarations": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModu.xml",
+          "recordedSha256": "30c47a31236e4ea48f6c30da4fcba33b03e17b5c3cd470c0a89c2247470dbb86",
+          "observedSha256": "30c47a31236e4ea48f6c30da4fcba33b03e17b5c3cd470c0a89c2247470dbb86"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuAlgorithm.xml",
+          "recordedSha256": "eebee2e22c782dc0247dd5f3c62c96f27e542271b681a2d60aacd1400df07900",
+          "observedSha256": "eebee2e22c782dc0247dd5f3c62c96f27e542271b681a2d60aacd1400df07900"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuAlgorithmTab.xml",
+          "recordedSha256": "08ae81e7c8bc57b4e095ae2d0b98f08d8afe8f34ebb065b928dd4336ef87fdd7",
+          "observedSha256": "08ae81e7c8bc57b4e095ae2d0b98f08d8afe8f34ebb065b928dd4336ef87fdd7"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuCs.xml",
+          "recordedSha256": "80df3ce60b1386f705c77425cde34d0e15f4fb216fe749f400e7452de5a50443",
+          "observedSha256": "80df3ce60b1386f705c77425cde34d0e15f4fb216fe749f400e7452de5a50443"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuDisplay.xml",
+          "recordedSha256": "0d0c41cfcf7897b61041aef0b3fe8035a468c19c892054852001e7ee085f1c8b",
+          "observedSha256": "0d0c41cfcf7897b61041aef0b3fe8035a468c19c892054852001e7ee085f1c8b"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\ToolItemInfo.xml",
+          "recordedSha256": "1d5200c180cdcf0e1283e366f52cc78ab61826985406a9391f9f0536129a1834",
+          "observedSha256": "1d5200c180cdcf0e1283e366f52cc78ab61826985406a9391f9f0536129a1834"
+        }
+      ]
+    }
+  ],
+  "resourceChecks": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModu.xml",
+      "recorded": "f1b2f279717dce3ec61c11c41f858bd100359095bcf13672422a3c73efe47f6c",
+      "actual": "f1b2f279717dce3ec61c11c41f858bd100359095bcf13672422a3c73efe47f6c"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithm.xml",
+      "recorded": "d5de2d5888d0767552c3077457eadd796171b4447f1c92f93bc9bb60854a7b2b",
+      "actual": "d5de2d5888d0767552c3077457eadd796171b4447f1c92f93bc9bb60854a7b2b"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "recorded": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec",
+      "actual": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuCs.xml",
+      "recorded": "c3c46d0dd1cf4765034791783b6085478f26928f2d86bf5c50ab8d5fd3b205f4",
+      "actual": "c3c46d0dd1cf4765034791783b6085478f26928f2d86bf5c50ab8d5fd3b205f4"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuDisplay.xml",
+      "recorded": "b3bc63e6cf7c8ca120baf5b632bbe1359843138cf77cb5a64fc698ef22465112",
+      "actual": "b3bc63e6cf7c8ca120baf5b632bbe1359843138cf77cb5a64fc698ef22465112"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\ToolItemInfo.xml",
+      "recorded": "014ba2ed410f030748f83fed87a0ce7acde5dfa68b9e98cb0bc43aa31b074f95",
+      "actual": "014ba2ed410f030748f83fed87a0ce7acde5dfa68b9e98cb0bc43aa31b074f95"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModu.xml",
+      "recorded": "e595b30aeb99943b1f07d795944e844f8cbbcc667bd70427fa32c41053759f60",
+      "actual": "e595b30aeb99943b1f07d795944e844f8cbbcc667bd70427fa32c41053759f60"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuAlgorithm.xml",
+      "recorded": "a4a8de1efc68f48903bd544ec93e6b17cff06ed2231d686f0009eb9c32f771ea",
+      "actual": "a4a8de1efc68f48903bd544ec93e6b17cff06ed2231d686f0009eb9c32f771ea"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuAlgorithmTab.xml",
+      "recorded": "2a0bd781508ca53f7bdbbe9b5f13c69964616f3aa0eb9e0c81e093aa17f7a637",
+      "actual": "2a0bd781508ca53f7bdbbe9b5f13c69964616f3aa0eb9e0c81e093aa17f7a637"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuCs.xml",
+      "recorded": "3b4cd853dfd374bcd018ccba501b4061c89d1588fddc6f7a03cba00929c8f5bf",
+      "actual": "3b4cd853dfd374bcd018ccba501b4061c89d1588fddc6f7a03cba00929c8f5bf"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuDisplay.xml",
+      "recorded": "e7a2a419e49ebfe7b083fea46d563c7fc88e0ed73c47b4dedb7cf7d05ca1286e",
+      "actual": "e7a2a419e49ebfe7b083fea46d563c7fc88e0ed73c47b4dedb7cf7d05ca1286e"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\ToolItemInfo.xml",
+      "recorded": "53bfb4f46adb47a9b8cf674a6985f040bab4d3bdf8861fd8087cedd245e1e390",
+      "actual": "53bfb4f46adb47a9b8cf674a6985f040bab4d3bdf8861fd8087cedd245e1e390"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModu.xml",
+      "recorded": "fbe559fffcd72ad5522e575ace409742e6a61ecfaae94959d9a1fa6af506b63a",
+      "actual": "fbe559fffcd72ad5522e575ace409742e6a61ecfaae94959d9a1fa6af506b63a"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuAlgorithm.xml",
+      "recorded": "04964c4c83e75e90c43677fa87cf0f3b36186c54a1fc1613be7e2ad8b2b7bbc0",
+      "actual": "04964c4c83e75e90c43677fa87cf0f3b36186c54a1fc1613be7e2ad8b2b7bbc0"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuAlgorithmTab.xml",
+      "recorded": "7dc7ff2b9c5a8e35e665f3e566c225dd71f1c52055207dc7a3188f183ce9a5b5",
+      "actual": "7dc7ff2b9c5a8e35e665f3e566c225dd71f1c52055207dc7a3188f183ce9a5b5"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuCs.xml",
+      "recorded": "3fa76e37541ab3a1d75d6550625e0abd9be973a8421220141e4932910d9083c4",
+      "actual": "3fa76e37541ab3a1d75d6550625e0abd9be973a8421220141e4932910d9083c4"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuDisplay.xml",
+      "recorded": "34f0d33493139f28991c04a28c05655939480dfac949bda87cbba653e3eca3cc",
+      "actual": "34f0d33493139f28991c04a28c05655939480dfac949bda87cbba653e3eca3cc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\ToolItemInfo.xml",
+      "recorded": "0152c1eb851a1f992dcee076eede6d545e9e8045da6a23c68521570c19f50842",
+      "actual": "0152c1eb851a1f992dcee076eede6d545e9e8045da6a23c68521570c19f50842"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModule.xml",
+      "recorded": "02e29a8daeb22a67071f5e0e537672f1f3d4565bcdf31dc85f13efb2793ae2a3",
+      "actual": "02e29a8daeb22a67071f5e0e537672f1f3d4565bcdf31dc85f13efb2793ae2a3"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleAlgorithm.xml",
+      "recorded": "39d15cde07aa24c7fd4fe27f6e3e1d5dd842d127e489cfef1a0cc8c9370e067a",
+      "actual": "39d15cde07aa24c7fd4fe27f6e3e1d5dd842d127e489cfef1a0cc8c9370e067a"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleAlgorithmTab.xml",
+      "recorded": "298e34234c6ac2ca3530819bad9451bd2d89baf0f1874e0853f0c61729e20da1",
+      "actual": "298e34234c6ac2ca3530819bad9451bd2d89baf0f1874e0853f0c61729e20da1"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleCs.xml",
+      "recorded": "30f9499dc5730dfdfb2199c1a1a0ea00c0c3e8c379c24e9fc4254488e3d7f061",
+      "actual": "30f9499dc5730dfdfb2199c1a1a0ea00c0c3e8c379c24e9fc4254488e3d7f061"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleDisplay.xml",
+      "recorded": "e73ebb3a1ac33e83a19072575259128d86c162fa64f1b164c3b75b6483b88245",
+      "actual": "e73ebb3a1ac33e83a19072575259128d86c162fa64f1b164c3b75b6483b88245"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\ToolItemInfo.xml",
+      "recorded": "9fcb4a517306d063ab2cecfa605655bb5d94a9688db08f30857a776dd6c0f9de",
+      "actual": "9fcb4a517306d063ab2cecfa605655bb5d94a9688db08f30857a776dd6c0f9de"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModu.xml",
+      "recorded": "4b27be13eaf04a56e92364b3712c1ef63afa441afea28bf276f504c1381733f3",
+      "actual": "4b27be13eaf04a56e92364b3712c1ef63afa441afea28bf276f504c1381733f3"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuAlgorithm.xml",
+      "recorded": "82ab98a80cbc2f0e807ce430174ef634ae5a1088b96a6ef64ef29cbd4b7ca55d",
+      "actual": "82ab98a80cbc2f0e807ce430174ef634ae5a1088b96a6ef64ef29cbd4b7ca55d"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuAlgorithmTab.xml",
+      "recorded": "10f0cc4d88bdb8b487fe9703191f3b0c728abae1f4e63ee77e4fcb73bf8bca41",
+      "actual": "10f0cc4d88bdb8b487fe9703191f3b0c728abae1f4e63ee77e4fcb73bf8bca41"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuCs.xml",
+      "recorded": "616f40d7ccd259bcd23a3199213f27ffc50314de367652239c7089b6c340d3f5",
+      "actual": "616f40d7ccd259bcd23a3199213f27ffc50314de367652239c7089b6c340d3f5"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuDisplay.xml",
+      "recorded": "86ef93ca21cf4af0257d520b5bfb218044035f34f721a5d7e443b831dc5eaf1d",
+      "actual": "86ef93ca21cf4af0257d520b5bfb218044035f34f721a5d7e443b831dc5eaf1d"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\ToolItemInfo.xml",
+      "recorded": "f7bc0b00b91aae955aff77c3773906a5bcac2c0f78ee32ae407847baa1b7a48d",
+      "actual": "f7bc0b00b91aae955aff77c3773906a5bcac2c0f78ee32ae407847baa1b7a48d"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.xml",
+      "recorded": "0598746f0603bf6de66dfa34e74c69f382e98f58437496ee5e598a3b88f6cd64",
+      "actual": "0598746f0603bf6de66dfa34e74c69f382e98f58437496ee5e598a3b88f6cd64"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleAlgorithm.xml",
+      "recorded": "c9177bf6d0365eab0f12e65fdf3e8be51bf7833f69e3d7ac8eed8bb7961787c8",
+      "actual": "c9177bf6d0365eab0f12e65fdf3e8be51bf7833f69e3d7ac8eed8bb7961787c8"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleAlgorithmTab.xml",
+      "recorded": "001a57675192867594d3bbc7efa94462c19f056583659d759ceb5648e55091e0",
+      "actual": "001a57675192867594d3bbc7efa94462c19f056583659d759ceb5648e55091e0"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleCs.xml",
+      "recorded": "886c21abaa52160653c52b557db9ceafc02233feb83c5c235a1a38396a93af28",
+      "actual": "886c21abaa52160653c52b557db9ceafc02233feb83c5c235a1a38396a93af28"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleDisplay.xml",
+      "recorded": "d2f3129c6d3cf86c5e935277b67004043bb98976b4e845a4492451d78a607ae5",
+      "actual": "d2f3129c6d3cf86c5e935277b67004043bb98976b4e845a4492451d78a607ae5"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ToolItemInfo.xml",
+      "recorded": "0e8ee15a8907363644ce294c686a11b2f9ac183be8dd073f78eb07a4bd8676da",
+      "actual": "0e8ee15a8907363644ce294c686a11b2f9ac183be8dd073f78eb07a4bd8676da"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModu.xml",
+      "recorded": "30c47a31236e4ea48f6c30da4fcba33b03e17b5c3cd470c0a89c2247470dbb86",
+      "actual": "30c47a31236e4ea48f6c30da4fcba33b03e17b5c3cd470c0a89c2247470dbb86"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuAlgorithm.xml",
+      "recorded": "eebee2e22c782dc0247dd5f3c62c96f27e542271b681a2d60aacd1400df07900",
+      "actual": "eebee2e22c782dc0247dd5f3c62c96f27e542271b681a2d60aacd1400df07900"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuAlgorithmTab.xml",
+      "recorded": "08ae81e7c8bc57b4e095ae2d0b98f08d8afe8f34ebb065b928dd4336ef87fdd7",
+      "actual": "08ae81e7c8bc57b4e095ae2d0b98f08d8afe8f34ebb065b928dd4336ef87fdd7"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuCs.xml",
+      "recorded": "80df3ce60b1386f705c77425cde34d0e15f4fb216fe749f400e7452de5a50443",
+      "actual": "80df3ce60b1386f705c77425cde34d0e15f4fb216fe749f400e7452de5a50443"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuDisplay.xml",
+      "recorded": "0d0c41cfcf7897b61041aef0b3fe8035a468c19c892054852001e7ee085f1c8b",
+      "actual": "0d0c41cfcf7897b61041aef0b3fe8035a468c19c892054852001e7ee085f1c8b"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\ToolItemInfo.xml",
+      "recorded": "1d5200c180cdcf0e1283e366f52cc78ab61826985406a9391f9f0536129a1834",
+      "actual": "1d5200c180cdcf0e1283e366f52cc78ab61826985406a9391f9f0536129a1834"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModu.xml",
+      "recorded": "46a8ad3a89711c0da6811a2005caab1507d23abccb602375582fa8cebd3c44e7",
+      "actual": "46a8ad3a89711c0da6811a2005caab1507d23abccb602375582fa8cebd3c44e7"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuAlgorithm.xml",
+      "recorded": "01ff03e64d417f5da6595c8d6c7ad83e25b8f6320977a74405ab06947ae17378",
+      "actual": "01ff03e64d417f5da6595c8d6c7ad83e25b8f6320977a74405ab06947ae17378"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuAlgorithmTab.xml",
+      "recorded": "f2805778e979e3a742bc152cee8e9bf91c58816eaa2244c6cc3836dfdc87dcc2",
+      "actual": "f2805778e979e3a742bc152cee8e9bf91c58816eaa2244c6cc3836dfdc87dcc2"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuCs.xml",
+      "recorded": "7862569f0d3b2ecfbc054a3d671d02dc3ac3c8f6b5384cad9c0e567b94e3613d",
+      "actual": "7862569f0d3b2ecfbc054a3d671d02dc3ac3c8f6b5384cad9c0e567b94e3613d"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuDisplay.xml",
+      "recorded": "afcff7aa7b8bd1d90fa375d1d3250b39830667c98e27404670c937ee8ad9448e",
+      "actual": "afcff7aa7b8bd1d90fa375d1d3250b39830667c98e27404670c937ee8ad9448e"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\ToolItemInfo.xml",
+      "recorded": "605915b5f60a4960098e13a08c6c74836fb613e48eeac99e7918f0b1fcc4ab6b",
+      "actual": "605915b5f60a4960098e13a08c6c74836fb613e48eeac99e7918f0b1fcc4ab6b"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModu.xml",
+      "recorded": "830f49282c0214ba251e907a55502ce84b695b6986b52a190faae99a904f6393",
+      "actual": "830f49282c0214ba251e907a55502ce84b695b6986b52a190faae99a904f6393"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuAlgorithm.xml",
+      "recorded": "e2a9599a4c2376a16b64c75bd02e151f70d1d47e7916e1765299d9ca187d133c",
+      "actual": "e2a9599a4c2376a16b64c75bd02e151f70d1d47e7916e1765299d9ca187d133c"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuAlgorithmTab.xml",
+      "recorded": "b5944653ef94ad477e6784393365139da7e432a2a9aa1c7d3d9180a4febb7120",
+      "actual": "b5944653ef94ad477e6784393365139da7e432a2a9aa1c7d3d9180a4febb7120"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuCs.xml",
+      "recorded": "60a628fe0cc4e827ccfd636a4cf804e42531e91d9ae574c304ebe41ae29127c0",
+      "actual": "60a628fe0cc4e827ccfd636a4cf804e42531e91d9ae574c304ebe41ae29127c0"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuDisplay.xml",
+      "recorded": "c971ca2387f3acf832b490d9b5a6ac32076fdfaa3541199e01496ad9f9fb9886",
+      "actual": "c971ca2387f3acf832b490d9b5a6ac32076fdfaa3541199e01496ad9f9fb9886"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\ToolItemInfo.xml",
+      "recorded": "e5da88ce34f1f16c495c8009f5c8ea852ac26c32e5a711b4d0346029cbcb871e",
+      "actual": "e5da88ce34f1f16c495c8009f5c8ea852ac26c32e5a711b4d0346029cbcb871e"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModu.xml",
+      "recorded": "f72faaaa2ab9a0c73335b6e1d42310cc6210dc3f313c25365150d0f9226dc0e0",
+      "actual": "f72faaaa2ab9a0c73335b6e1d42310cc6210dc3f313c25365150d0f9226dc0e0"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuAlgorithm.xml",
+      "recorded": "11739a3240b6942ada5a3241a4be3ae7e6516933555bcc32d789832344a3c5d7",
+      "actual": "11739a3240b6942ada5a3241a4be3ae7e6516933555bcc32d789832344a3c5d7"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuAlgorithmTab.xml",
+      "recorded": "9594d5ca9bd29e1ef8440c97278b14e9c641cec4baabd798cbd7c8a4c605dcfd",
+      "actual": "9594d5ca9bd29e1ef8440c97278b14e9c641cec4baabd798cbd7c8a4c605dcfd"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuCs.xml",
+      "recorded": "081ac1a3af79a6b3dc1a6e2affe11aa7418b1158d2de80c7a27042d6c86cbff3",
+      "actual": "081ac1a3af79a6b3dc1a6e2affe11aa7418b1158d2de80c7a27042d6c86cbff3"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuDisplay.xml",
+      "recorded": "8ee8d8fa10ccef38e5cad8a6f8226f1c6429526832a99371dd474bd915e53cfd",
+      "actual": "8ee8d8fa10ccef38e5cad8a6f8226f1c6429526832a99371dd474bd915e53cfd"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\ToolItemInfo.xml",
+      "recorded": "e048ef1bc5270d63574001a4ee494188653d78021e67be41a308971ae04dc363",
+      "actual": "e048ef1bc5270d63574001a4ee494188653d78021e67be41a308971ae04dc363"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModu.xml",
+      "recorded": "423dbec0fe84f068794cab3a1aae82df7dc13bbd2c8d8a597eefc20ca1bd689c",
+      "actual": "423dbec0fe84f068794cab3a1aae82df7dc13bbd2c8d8a597eefc20ca1bd689c"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuAlgorithm.xml",
+      "recorded": "2363c49a7114ad3f63833cb254aed180c41fd1c0100ecf4004fdf1742041e6fa",
+      "actual": "2363c49a7114ad3f63833cb254aed180c41fd1c0100ecf4004fdf1742041e6fa"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuAlgorithmTab.xml",
+      "recorded": "3114392281f500531dd914ad56400d2e4d9e9d1bce721d30b5d3fe9d621aef07",
+      "actual": "3114392281f500531dd914ad56400d2e4d9e9d1bce721d30b5d3fe9d621aef07"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuCs.xml",
+      "recorded": "1c897e7ad7a554f3ee16de0a55ce18a4b087519d3def2cfb7a90f768aec0e80e",
+      "actual": "1c897e7ad7a554f3ee16de0a55ce18a4b087519d3def2cfb7a90f768aec0e80e"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuDisplay.xml",
+      "recorded": "3a197e18ac0058e1860dc8ff3670f77bdde465088dfe1487a69018d72fe1dff4",
+      "actual": "3a197e18ac0058e1860dc8ff3670f77bdde465088dfe1487a69018d72fe1dff4"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\ToolItemInfo.xml",
+      "recorded": "c4dbeb59b70e3992fa62f10bce604bad63684051ea90c4905c8900cd7af2bdad",
+      "actual": "c4dbeb59b70e3992fa62f10bce604bad63684051ea90c4905c8900cd7af2bdad"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModu.xml",
+      "recorded": "246014967abd4311c77a904fbf02636f557bf61c25beca8f051243dc0c07c25f",
+      "actual": "246014967abd4311c77a904fbf02636f557bf61c25beca8f051243dc0c07c25f"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuAlgorithm.xml",
+      "recorded": "f2c29eddc36d9ec23e5a1c8e107a1a53f2d1a14489b10f9ce0c148cb9e62ced2",
+      "actual": "f2c29eddc36d9ec23e5a1c8e107a1a53f2d1a14489b10f9ce0c148cb9e62ced2"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuAlgorithmTab.xml",
+      "recorded": "a3e49f17109e49d6c26775bdb2fe956df0af1db1fbcbf5a111dbc2ba6a749435",
+      "actual": "a3e49f17109e49d6c26775bdb2fe956df0af1db1fbcbf5a111dbc2ba6a749435"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuCs.xml",
+      "recorded": "dc255752d8040d063a4416a93fb3b69ca29c2d1cabe648a3e0fd84ddb9719ec3",
+      "actual": "dc255752d8040d063a4416a93fb3b69ca29c2d1cabe648a3e0fd84ddb9719ec3"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuDisplay.xml",
+      "recorded": "88de08e7d5881777e9c2096b7ba9d7dab826f62f547da129352991866f2cb0d9",
+      "actual": "88de08e7d5881777e9c2096b7ba9d7dab826f62f547da129352991866f2cb0d9"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\ToolItemInfo.xml",
+      "recorded": "7417fa1d475304e53f7622877d22c9cc7eab7e2a82b73e252d2ae492a1f326da",
+      "actual": "7417fa1d475304e53f7622877d22c9cc7eab7e2a82b73e252d2ae492a1f326da"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModu.xml",
+      "recorded": "bdbd3100366ef42c210cb391df92eb0afdd4fc8ba229a2ea5e10730444abfe08",
+      "actual": "bdbd3100366ef42c210cb391df92eb0afdd4fc8ba229a2ea5e10730444abfe08"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuAlgorithm.xml",
+      "recorded": "55f86cb620e09a6e515432210a825122b72ef6f7fee5654af4be47e940619f04",
+      "actual": "55f86cb620e09a6e515432210a825122b72ef6f7fee5654af4be47e940619f04"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuAlgorithmTab.xml",
+      "recorded": "242efc4716449e1c845b434026510183c30a9372ba36f9d40b1f4cce175f8b6f",
+      "actual": "242efc4716449e1c845b434026510183c30a9372ba36f9d40b1f4cce175f8b6f"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuCs.xml",
+      "recorded": "fb0a06c99d4964f9ff72ec067cbee2216b0b7176444b5fa19f27f13e5b73d8f9",
+      "actual": "fb0a06c99d4964f9ff72ec067cbee2216b0b7176444b5fa19f27f13e5b73d8f9"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuDisplay.xml",
+      "recorded": "b5034a3979ded01827b64ab7c8a3423a2dc9be49dafec3e01e11d0237a591fd9",
+      "actual": "b5034a3979ded01827b64ab7c8a3423a2dc9be49dafec3e01e11d0237a591fd9"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\ToolItemInfo.xml",
+      "recorded": "181a5e58a1a93650514887d7fc0bfd61f13e1e90cd440d387baa0c945567b7ff",
+      "actual": "181a5e58a1a93650514887d7fc0bfd61f13e1e90cd440d387baa0c945567b7ff"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModu.xml",
+      "recorded": "f705b185358713281239c2d8b6ac413c166838775e19088183f8b7e8cd75599f",
+      "actual": "f705b185358713281239c2d8b6ac413c166838775e19088183f8b7e8cd75599f"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuAlgorithm.xml",
+      "recorded": "887e61a84e95a4ab7fb546fc1fa7abadfc3e027e709eb7a7f162873615efbd94",
+      "actual": "887e61a84e95a4ab7fb546fc1fa7abadfc3e027e709eb7a7f162873615efbd94"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuAlgorithmTab.xml",
+      "recorded": "57e3986cf25cfab8a9fcb9920eacbbf05036b86ad6e409de5abf93bffbbbfb4b",
+      "actual": "57e3986cf25cfab8a9fcb9920eacbbf05036b86ad6e409de5abf93bffbbbfb4b"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuCs.xml",
+      "recorded": "f7d16282d9813fda14f8650a017a553ba38a5705e9cf02580c541d388a76d407",
+      "actual": "f7d16282d9813fda14f8650a017a553ba38a5705e9cf02580c541d388a76d407"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuDisplay.xml",
+      "recorded": "b3752c99042387c836cedd20e980741ff09eed0e3d3d600c3515a80bbca6a759",
+      "actual": "b3752c99042387c836cedd20e980741ff09eed0e3d3d600c3515a80bbca6a759"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\ToolItemInfo.xml",
+      "recorded": "afa0112dd19395961bf097e9bb82d5b1c0e65b35e30d5841b686fa8593336cd1",
+      "actual": "afa0112dd19395961bf097e9bb82d5b1c0e65b35e30d5841b686fa8593336cd1"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModu.xml",
+      "recorded": "014f7e34a9184d3f6782c1ed2310eff022621a7372a3a51a3f4a7168a89cc3cd",
+      "actual": "014f7e34a9184d3f6782c1ed2310eff022621a7372a3a51a3f4a7168a89cc3cd"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuAlgorithm.xml",
+      "recorded": "020a33bf9d63ea99ce33155fff6542a4f62adf29e14e0f1ca05a6ca3f1eaad89",
+      "actual": "020a33bf9d63ea99ce33155fff6542a4f62adf29e14e0f1ca05a6ca3f1eaad89"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuAlgorithmTab.xml",
+      "recorded": "061456dcf089c1f85f4ea205c3bdad5ee72210dc12840771d4c720e6c6a6fe0d",
+      "actual": "061456dcf089c1f85f4ea205c3bdad5ee72210dc12840771d4c720e6c6a6fe0d"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuCs.xml",
+      "recorded": "ff1a07811111649e0079e34ad48c6b1514dbea2b57422166981bc9c0556bc643",
+      "actual": "ff1a07811111649e0079e34ad48c6b1514dbea2b57422166981bc9c0556bc643"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuDisplay.xml",
+      "recorded": "0d21eb38c2eb7448f05a69b96b192e24475ba6d77d9a2db3931babeeec4f377a",
+      "actual": "0d21eb38c2eb7448f05a69b96b192e24475ba6d77d9a2db3931babeeec4f377a"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\ToolItemInfo.xml",
+      "recorded": "8d74b458744b9d22f87c1bcde80492e77fcc64f6c9f747ffed61439fd551af40",
+      "actual": "8d74b458744b9d22f87c1bcde80492e77fcc64f6c9f747ffed61439fd551af40"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModule.xml",
+      "recorded": "ffa54880c17b3001e99c92cf9e766bc2293767b727538cbfa6fb7b8c8c1c96e6",
+      "actual": "ffa54880c17b3001e99c92cf9e766bc2293767b727538cbfa6fb7b8c8c1c96e6"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithm.xml",
+      "recorded": "7ffb1a2c07dea7ac4354fe572438dcc1d3244d30ef63867d2d832760e74841fe",
+      "actual": "7ffb1a2c07dea7ac4354fe572438dcc1d3244d30ef63867d2d832760e74841fe"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithmTab.xml",
+      "recorded": "d755510da015c662dcdd4247325e90a0c9ec21c431c95983afb1ee9bf1763646",
+      "actual": "d755510da015c662dcdd4247325e90a0c9ec21c431c95983afb1ee9bf1763646"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleCs.xml",
+      "recorded": "e43d389185224444deab32d7d2d1b836c36071e61cad8ee762e9e1747995bb83",
+      "actual": "e43d389185224444deab32d7d2d1b836c36071e61cad8ee762e9e1747995bb83"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleDisplay.xml",
+      "recorded": "2c28e74db44a96056ffe7ab9d28cfc212bdc907fbbeda6ca3853991f3d454308",
+      "actual": "2c28e74db44a96056ffe7ab9d28cfc212bdc907fbbeda6ca3853991f3d454308"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\ToolItemInfo.xml",
+      "recorded": "9be6d5250244250e704b80005b5f5219dec8c24973c66de7a79a537506f8dea2",
+      "actual": "9be6d5250244250e704b80005b5f5219dec8c24973c66de7a79a537506f8dea2"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModule.xml",
+      "recorded": "4783f7d837427da7f89dbe28f245c7563947d02cddb05d3c62db110dfbb5fa49",
+      "actual": "4783f7d837427da7f89dbe28f245c7563947d02cddb05d3c62db110dfbb5fa49"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleAlgorithm.xml",
+      "recorded": "3d993e96e7ee868a8c12f6bedca37e777196a16c8d2cef0714c444183dadfc3c",
+      "actual": "3d993e96e7ee868a8c12f6bedca37e777196a16c8d2cef0714c444183dadfc3c"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleAlgorithmTab.xml",
+      "recorded": "c8c4944b170355e4cff2d6c5cf79cd511295a38eb89335864a01df709f33b3d6",
+      "actual": "c8c4944b170355e4cff2d6c5cf79cd511295a38eb89335864a01df709f33b3d6"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleCs.xml",
+      "recorded": "5457052eaff6838a59a10f9999aeeffc740f4821dcc9de9cce5daefd39aae6f1",
+      "actual": "5457052eaff6838a59a10f9999aeeffc740f4821dcc9de9cce5daefd39aae6f1"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleDisplay.xml",
+      "recorded": "0ce3fed17e9eb3892050191c8204f4ddd7271602248b3a6e2358cb5031d49691",
+      "actual": "0ce3fed17e9eb3892050191c8204f4ddd7271602248b3a6e2358cb5031d49691"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\ToolItemInfo.xml",
+      "recorded": "968296d7b1888979a9e7b47f842635e45184db0f2164e73016fb31cd7933ddf0",
+      "actual": "968296d7b1888979a9e7b47f842635e45184db0f2164e73016fb31cd7933ddf0"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModule.xml",
+      "recorded": "cf7e7279aeb7e6d9f61fbc67a863ad73bc2545398d20f08c47d4cb25207c23b6",
+      "actual": "cf7e7279aeb7e6d9f61fbc67a863ad73bc2545398d20f08c47d4cb25207c23b6"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleAlgorithm.xml",
+      "recorded": "04419e8d7323b0582d194faa4a2942a109750ab882628460745c8c12bc2977cd",
+      "actual": "04419e8d7323b0582d194faa4a2942a109750ab882628460745c8c12bc2977cd"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleAlgorithmTab.xml",
+      "recorded": "d756b8f018b7d8859f26e3cd8ed359b888cecbe8a293a74edc6866c3ff79b289",
+      "actual": "d756b8f018b7d8859f26e3cd8ed359b888cecbe8a293a74edc6866c3ff79b289"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleCs.xml",
+      "recorded": "7561c2da603965d641e27b23b2e03fc931b3fd964e807c61724ecf31fb665f82",
+      "actual": "7561c2da603965d641e27b23b2e03fc931b3fd964e807c61724ecf31fb665f82"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleDisplay.xml",
+      "recorded": "11958a3d38425cde8f8c68789d87492b3bc2af70fe4b0ea15682e9e98a4dcf82",
+      "actual": "11958a3d38425cde8f8c68789d87492b3bc2af70fe4b0ea15682e9e98a4dcf82"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ToolItemInfo.xml",
+      "recorded": "2b8eeab5bf93b97dba193fc0d8be1118dd4b514c0b5642feafc93b66e73e9446",
+      "actual": "2b8eeab5bf93b97dba193fc0d8be1118dd4b514c0b5642feafc93b66e73e9446"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\DLL\\HikAlgorithmTool.xml",
+      "recorded": "42e8e36ead94adefd61951c0e74c4936cf5094e073191ad5641a02fd2b879f2c",
+      "actual": "42e8e36ead94adefd61951c0e74c4936cf5094e073191ad5641a02fd2b879f2c"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModule.xml",
+      "recorded": "3b37b920da3de8fdabb4c62ee0ff8483b511f29da8991913819f6b5e6e462df4",
+      "actual": "3b37b920da3de8fdabb4c62ee0ff8483b511f29da8991913819f6b5e6e462df4"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleAlgorithm.xml",
+      "recorded": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "actual": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleAlgorithmTab.xml",
+      "recorded": "617cff239cdcc548dfa038b584a7ff530990917cd62f954c88d92f8e3e159e8f",
+      "actual": "617cff239cdcc548dfa038b584a7ff530990917cd62f954c88d92f8e3e159e8f"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleCs.xml",
+      "recorded": "e8962f09161a1f6d38c45fb4384598b01440078b72d2dfa2bfd84114a2b37be1",
+      "actual": "e8962f09161a1f6d38c45fb4384598b01440078b72d2dfa2bfd84114a2b37be1"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleDisplay.xml",
+      "recorded": "584b5981eb3c430384cd9e254fe85aa2efe3d3eb80fc398f5d195799a57d7b64",
+      "actual": "584b5981eb3c430384cd9e254fe85aa2efe3d3eb80fc398f5d195799a57d7b64"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ToolItemInfo.xml",
+      "recorded": "e06b9e160cb0799d3be037462ac287cc5ea4297c945867a2047f45de41102b0f",
+      "actual": "e06b9e160cb0799d3be037462ac287cc5ea4297c945867a2047f45de41102b0f"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModule.xml",
+      "recorded": "955062500d4bbe45e5d2124602412482112087d963fa7a81e0f79852900cdb3b",
+      "actual": "955062500d4bbe45e5d2124602412482112087d963fa7a81e0f79852900cdb3b"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleAlgorithm.xml",
+      "recorded": "da7cb5182d8f320c59f159d0dad421cc8b9c456a2c06650031dbfda68f775b82",
+      "actual": "da7cb5182d8f320c59f159d0dad421cc8b9c456a2c06650031dbfda68f775b82"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleAlgorithmTab.xml",
+      "recorded": "e3191ccc1687e6904096fef59a5c87fb9d8b8c0c7f45f8f89593996acf3864c2",
+      "actual": "e3191ccc1687e6904096fef59a5c87fb9d8b8c0c7f45f8f89593996acf3864c2"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleCs.xml",
+      "recorded": "da1c7213ed034e52a625d30fb6ed8386d24760916e8546b919175b2db92bf9eb",
+      "actual": "da1c7213ed034e52a625d30fb6ed8386d24760916e8546b919175b2db92bf9eb"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleDisplay.xml",
+      "recorded": "f7abad56abfbfdcb11c187b24a61e8f15968496faae80f624f7539cd6faacba9",
+      "actual": "f7abad56abfbfdcb11c187b24a61e8f15968496faae80f624f7539cd6faacba9"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\ToolItemInfo.xml",
+      "recorded": "a04c090a9337e7ccc00b3008aff175d783422a51839be7c2249741a02bc0c448",
+      "actual": "a04c090a9337e7ccc00b3008aff175d783422a51839be7c2249741a02bc0c448"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\IMVSContourMatchModu.xml",
+      "recorded": "7fc0e79ee7bc3bbf7b8a26c570e42403181796f33140a63b2e72a544035c05df",
+      "actual": "7fc0e79ee7bc3bbf7b8a26c570e42403181796f33140a63b2e72a544035c05df"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\IMVSContourMatchModuAlgorithm.xml",
+      "recorded": "740c75cb01a3528a190f0c6946483ada974dd0f6a49d163755b429d19f6737f3",
+      "actual": "740c75cb01a3528a190f0c6946483ada974dd0f6a49d163755b429d19f6737f3"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\IMVSContourMatchModuAlgorithmTab.xml",
+      "recorded": "8456331100019e9280c81de9c1f70735b3a5020548929e382a0f146d5741dafd",
+      "actual": "8456331100019e9280c81de9c1f70735b3a5020548929e382a0f146d5741dafd"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\IMVSContourMatchModuCs.xml",
+      "recorded": "88f58a4253b2b11886627c2b29b60c6b63d89583a564500529287eb458998607",
+      "actual": "88f58a4253b2b11886627c2b29b60c6b63d89583a564500529287eb458998607"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\IMVSContourMatchModuDisplay.xml",
+      "recorded": "d96c658745a7a3adc8c9862b55eff08b2d6535b69b949b9c1bff065506ad73a6",
+      "actual": "d96c658745a7a3adc8c9862b55eff08b2d6535b69b949b9c1bff065506ad73a6"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu\\ToolItemInfo.xml",
+      "recorded": "e6642fb7a0393940fd176e2ef3ba2eb9042bd4dd22711b30a5fb76f8cf466de4",
+      "actual": "e6642fb7a0393940fd176e2ef3ba2eb9042bd4dd22711b30a5fb76f8cf466de4"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroup.xml",
+      "recorded": "3f0fe8154fd8b0a396b85d3b503fed11bc37f213c53441d613b429388e702adc",
+      "actual": "3f0fe8154fd8b0a396b85d3b503fed11bc37f213c53441d613b429388e702adc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupAlgorithm.xml",
+      "recorded": "17c5397aad036713205b2af45420bb925e1ac2937a26093672c1653d9989ae48",
+      "actual": "17c5397aad036713205b2af45420bb925e1ac2937a26093672c1653d9989ae48"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupAlgorithmTab.xml",
+      "recorded": "2e15b6a20e2ab2e5ed40a12d943001dbc531cf28adc9763821840505c2679c7b",
+      "actual": "2e15b6a20e2ab2e5ed40a12d943001dbc531cf28adc9763821840505c2679c7b"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupCs.xml",
+      "recorded": "96bb963f60ba5d0142c33ba1a1d8ec147a9f44881110c7c69e3e8ebd867b0875",
+      "actual": "96bb963f60ba5d0142c33ba1a1d8ec147a9f44881110c7c69e3e8ebd867b0875"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupDisplay.xml",
+      "recorded": "aa56da3d573a730981b759113756a1544eaafa8387407da5f415a38053c46fc9",
+      "actual": "aa56da3d573a730981b759113756a1544eaafa8387407da5f415a38053c46fc9"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\ToolItemInfo.xml",
+      "recorded": "aa91bc16aa4e9c534ca97486794b1692e5dd7adfa62558c633ceb770d624471d",
+      "actual": "aa91bc16aa4e9c534ca97486794b1692e5dd7adfa62558c633ceb770d624471d"
+    }
+  ],
+  "productModified": false,
+  "dispositionDecided": false,
+  "policy": "目录对应不是输入输出、调度/ROI/模型寿命或数值等价；多对一和框架相关明确列出；不根据名字合并/删除"
+}

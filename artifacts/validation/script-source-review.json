@@ -1,0 +1,88 @@
+{
+  "vmKey": "Logic/ShellModule",
+  "candidateId": "Script",
+  "candidateBasis": "原始C# Init/Process模板与动态输入输出接口＋自研C#输入/输出和Init/Process执行链，建立能力级候选；非代码/语言版本/缓存/寿命等价。",
+  "excluded": "Logic/PyShellModule是独立Python工具，不因脚本名称并入。",
+  "vmRefs": [
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModuleAlgorithmTab.xml",
+      "token": "class UserScript:ScriptMethods,IProcessMethods",
+      "line": 26,
+      "sha256": "617cff239cdcc548dfa038b584a7ff530990917cd62f954c88d92f8e3e159e8f",
+      "snippet": "class UserScript:ScriptMethods,IProcessMethods\r\n{\r\n    //the count of process\r\n\t//执行次数计数\r\n    int processCount ;  \r\n\r\n    /// <summary>\r\n    /// Initialize the field's value when compiling\r\n\t/// 预编译时变量初始化\r\n    /// </summary>\r\n    public void Init()\r\n    {\r"
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModuleCs.xml",
+      "token": "M:ShellModuleCs.ShellParam.SetInputInt",
+      "line": 57,
+      "sha256": "e8962f09161a1f6d38c45fb4384598b01440078b72d2dfa2bfd84114a2b37be1",
+      "snippet": "        <!-- 对于成员“M:ShellModuleCs.ShellParam.SetInputInt(System.String,System.Int32[])”忽略有格式错误的 XML 注释 -->\r\n        <!-- 对于成员“M:ShellModuleCs.ShellParam.SetInputFloat(System.String,System.Single[])”忽略有格式错误的 XML 注释 -->\r\n        <member name=\"M:ShellModuleCs.ShellParam.SetInputBox(System.String,System.Collections.Generic.List{VM.PlatformSDKCS.RectBox})\">\r\n            <summary>\r\n            设置动态输入矩形框数据\r\n            </summary>\r\n            <param name=\"strParamName\">输入名称</param>\r\n            <param name=\"stRoiBox\">输入数据</param>\r\n            <remarks><b>备注</b></remarks>\r\n            <remarks> 仅当次执行起效 </remarks>\r\n        </member>\r\n        <member name=\"M:ShellModuleCs.ShellParam.SetInputAnnulus(System.String,System.Collections.Generic.List{VM.PlatformSDKCS.Annulus})\">\r"
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModuleCs.xml",
+      "token": "M:ShellModuleCs.ShellResult.GetOutputImage",
+      "line": 214,
+      "sha256": "e8962f09161a1f6d38c45fb4384598b01440078b72d2dfa2bfd84114a2b37be1",
+      "snippet": "        <member name=\"M:ShellModuleCs.ShellResult.GetOutputImage(System.String)\">\r\n            <summary>\r\n            获取图像型结果\r\n            </summary>\r\n            <param name=\"strParam\">结果名称</param>\r\n            <returns>结果数据</returns>\r\n        </member>\r\n        <member name=\"M:ShellModuleCs.ShellResult.GetOutputImageV2(System.String)\">\r\n            <summary>\r\n            获取图像型结果\r\n            </summary>\r\n            <param name=\"strParam\">结果名称</param>\r"
+    }
+  ],
+  "steps": [
+    {
+      "id": "script-release",
+      "title": "异常收尾：Release不在finally",
+      "packageId": "O10",
+      "fact": "当前同一try依次Init→Process→Release；Init或Process抛错就直接catch，Release跳过。输入反射失败先记errors，后续仍会尝试执行生命周期。",
+      "route": "自研确定缺陷整改；VM实现体不足以支持整包迁移",
+      "change": "将Release放在明确的try/finally退役合同中；先定义Init部分成功时能否Release，保留执行异常和清理异常两个原因。必填输入注入失败应停止执行，除非产品合同明确允许。",
+      "accept": "Init抛错/Process抛错/Release再抛错、输入转换失败分别验；脚本外设副作用不能靠catch自动回滚。",
+      "vm": "原始XML可证C#模板及接口声明，不证明原VM编译器、缓存策略或Release异常合同。",
+      "url": "tool-script.html#script-evidence",
+      "status": "设计待实施；未运行任意脚本或厂商程序",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+        "token": "scriptInstance.Init();",
+        "line": 204,
+        "sha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b",
+        "snippet": "                scriptInstance.Init();\r\n                scriptInstance.Process();\r\n                scriptInstance.Release();\r\n            }\r\n            catch (Exception ex)\r\n            {\r\n                // 提取用户脚本栈帧（含行号），精确匹配用户类，便于快速定位；无脚本帧则回退完整堆栈文本。\r\n                // 只写 errors（→ CompileErrors → UI 红色展示一次）；不写 _logMessages\r\n                // （用户脚本 LogError 已通过 ScriptContext 回调进日志，避免同一异常重复报告）。\r\n                var detail = ExtractUserScriptFrame(ex, compileResult.EntryClassName!);\r\n                errors.Add($\"脚本执行异常: {detail}\");\r\n            }\r"
+      }
+    },
+    {
+      "id": "script-cache",
+      "title": "编译缓存：引用名相同不代表内容相同",
+      "packageId": "O10",
+      "fact": "编译键是代码哈希、宿主名称版本指纹和勾选引用名指纹；引用名列表未包含文件内容/路径/版本。相同文件名替换内容时键仍相同，不能保证重新编译或加载。",
+      "route": "自研确定缺陷整改；VM实现体不足以支持整包迁移",
+      "change": "采用规范化实际依赖解析结果和版本/内容身份；编译产物与沙箱使用同一指纹。插件私有依赖需锁定兼容，不能仅看勾选列表。",
+      "accept": "同名DLL替换、同名不同目录、引用版本变化分别验；旧沙箱在途不被立即销毁，新请求采用新代次。",
+      "vm": "原始XML可证C#模板及接口声明，不证明原VM编译器、缓存策略或Release异常合同。",
+      "url": "tool-script.html#script-evidence",
+      "status": "设计待实施；未运行任意脚本或厂商程序",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+        "token": "internal static string ComputeRefListFingerprint",
+        "line": 387,
+        "sha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+        "snippet": "        internal static string ComputeRefListFingerprint(IReadOnlyList<string>? assemblyNames)\r\n        {\r\n            if (assemblyNames == null || assemblyNames.Count == 0)\r\n                return \"none\";\r\n            var sb = new StringBuilder();\r\n            foreach (var name in assemblyNames.OrderBy(n => n, StringComparer.OrdinalIgnoreCase))\r\n                sb.Append($\"{name}|\");\r\n            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];\r\n        }\r\n\r\n        /// <summary>\r\n        /// 按缓存键读取已编译结果（不含缓存写入逻辑）。\r"
+      }
+    },
+    {
+      "id": "script-pool",
+      "title": "常驻池：已有LRU上限，缺显式在用租约",
+      "packageId": "O10",
+      "fact": "MaxResident=16，超过上限按LastUsed淘汰并Dispose；GetOrCreate返回裸Sandbox，未记录在用计数，Invalidate/Clear也未等待在途。ConcurrentDictionary的工厂可能被并发调用多次，不能沿注释声称只创建一次。当前未找到外层对Clear/Invalidate的调用，最终进程回收不能代替逐会话合同。",
+      "route": "自研确定缺陷整改；VM实现体不足以支持整包迁移",
+      "change": "池返回租约，淘汰只标退役，最后租约结束再Unload；用Lazy或明确建造门禁避免丢弃工厂实例。编译缓存与ALC缓存分别限额，ALC不是安全沙箱。",
+      "accept": "同键并发、超过16键且旧脚本仍运行、Clear期间运行、输出引用来自脚本程序集分别验；Unload调用不等GC已回收。",
+      "vm": "原始XML可证C#模板及接口声明，不证明原VM编译器、缓存策略或Release异常合同。",
+      "url": "tool-script.html#script-evidence",
+      "status": "设计待实施；未运行任意脚本或厂商程序",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs",
+        "token": "public static ScriptSandbox GetOrCreate",
+        "line": 42,
+        "sha256": "fc1f22f32b648e8735c2060f5475abadc29c2e6a2d3d729296e404120a5a9289",
+        "snippet": "        public static ScriptSandbox GetOrCreate(string cacheKey, string? refDir)\r\n        {\r\n            var slot = _pool.GetOrAdd(cacheKey, k => new SandboxSlot(new ScriptSandbox($\"ScriptSandboxPool_{k[..8]}\", refDir)));\r\n            slot.LastUsed = DateTime.UtcNow;\r\n            EvictIfNeeded();\r\n            return slot.Sandbox;\r\n        }\r\n\r\n        /// <summary>\r\n        /// 使指定缓存键的沙箱失效并卸载（代码/引用配置变化需重建时显式调用）。\r\n        /// </summary>\r\n        /// <param name=\"cacheKey\">要失效的缓存键</param>\r"
+      }
+    }
+  ]
+}

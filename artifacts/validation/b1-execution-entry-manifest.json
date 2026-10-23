@@ -1,0 +1,91 @@
+{
+  "taskId": "B1-EXECUTION-16",
+  "input": "artifacts/ui-prototypes/save-roundtrip/b1-execution.json",
+  "inputSha256": "7e02f8c56f7cb8b48ae6c4db23ba5fa8b921314a2a7fd5375d6a2c9d53d4a8f4",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html"
+  ],
+  "sourceChecks": [
+    {
+      "file": "src/Workflow/SolutionRepository.cs",
+      "sha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+      "observedSha256": "dd8fc77c2722038cd879bc1f30f497117b674e1925a570e31a49babbed196804",
+      "matches": false
+    },
+    {
+      "file": "src/Workflow/WorkflowJsonConverter.cs",
+      "sha256": "483f8025e78a771edf3579f1dbecac56861c818d093efd1408729ee88ab0e50b",
+      "observedSha256": "b6fc8d5bf71f192ace991306e0076918c1b3c49d61bcf207f65f828f09c5839e",
+      "matches": false
+    },
+    {
+      "file": "src/Workflow/GlobalVariableValueConverter.cs",
+      "sha256": "c8b902fe24b6ac948eb3878271bf88fd1aa78c336d3c54ae617adc243fd57592",
+      "observedSha256": "487716c83bf7a6b95b14db86cd74dcb1893a181eeb48bb50bd421863e99757b3",
+      "matches": false
+    },
+    {
+      "file": "src/Workflow/SolutionSession.cs",
+      "sha256": "61dab9b2104a41489d0381de4338b7c4b8360ace02ce509d118e2069b2472616",
+      "observedSha256": "2ea835aea1859ce0bfb551797d1456eeac49ac58e6a9fec52ab1bc61c4689969",
+      "matches": false
+    },
+    {
+      "file": "src/Workflow/ToolParameterSnapshot.cs",
+      "sha256": "09ecfaeb7bbad5f7cc6a6bd3333a01bf4089fc365092382257f35a475770b696",
+      "observedSha256": "09ecfaeb7bbad5f7cc6a6bd3333a01bf4089fc365092382257f35a475770b696",
+      "matches": true
+    },
+    {
+      "file": "src/Workflow/AlgorithmNode.cs",
+      "sha256": "deb8b8ab4068db0aa4f3188adccc84267b0c54707b3c0ec1ac12fe7c55186177",
+      "observedSha256": "8926f66c8d00ca4c0304e526685e0cd16771e6c395bfb93f60095a50019960a4",
+      "matches": false
+    },
+    {
+      "file": "src/UI/Shared/ImageInputSource.cs",
+      "sha256": "d6d8a1d7d6876e83b0e5d25d41b3a1a8dc2bd107a95dd7cc798e93281b15b1cb",
+      "observedSha256": "9f8890f56ae408ccdeb567a5a7eb21d44099d4806095c54cf821720b1d0a0054",
+      "matches": false
+    },
+    {
+      "file": "src/UI/Shared/WorkflowNodeModel.cs",
+      "sha256": "6c5fc9ad8b111f61e5629bca56a086f697dcbc45fb8b3775c35a38058d94ee8f",
+      "observedSha256": "9e6ec3cb0d590f6549e813c1c085e23d23cd7dd800db9d8c947128d37025bac6",
+      "matches": false
+    },
+    {
+      "file": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "3a4b5a2145b92c333b39797898b4d2dabafc05ff95b35d2e65cfb17626e8b364",
+      "observedSha256": "3600b99a2180b9200a0a8ef7eefac325fb8f50b7121596def4ebd52e486b4829",
+      "matches": false
+    },
+    {
+      "file": "tests/SunEyeVision.UI.Tests/SolutionLoadRegressionTests.cs",
+      "sha256": "8f4e67c50f36f2f9e8ccb4cfac1773ed0cc94b41f34ad8ef59f9ef2c1c3192ad",
+      "observedSha256": "8f4e67c50f36f2f9e8ccb4cfac1773ed0cc94b41f34ad8ef59f9ef2c1c3192ad",
+      "matches": true
+    },
+    {
+      "file": "tests/SunEyeVision.UI.Tests/SolutionTransitionTests.cs",
+      "sha256": "6e7f09b545c64b7c87131593c5c4d0bf856263f188bce96d24da35a2171560bb",
+      "observedSha256": "6e7f09b545c64b7c87131593c5c4d0bf856263f188bce96d24da35a2171560bb",
+      "matches": true
+    }
+  ],
+  "contracts": 7,
+  "fileGroups": 21,
+  "migrationGroups": 5,
+  "acceptanceItems": 27,
+  "acceptanceExecuted": 0,
+  "nonBusinessAcceptance": "T20 async delivery isolation",
+  "sourceLocatorsReported": 26,
+  "issueGroupsReported": 10,
+  "productAuthorized": true,
+  "implementationStatus": "A-E-in-progress-not-accepted",
+  "productModifiedByDocRole": false,
+  "productExecuted": false,
+  "prototypeModified": false,
+  "wholeSiteRegenerated": false
+}

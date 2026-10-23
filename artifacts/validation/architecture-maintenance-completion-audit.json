@@ -1,0 +1,106 @@
+{
+  "batchId": "ARCH-TARGET-20261022-01",
+  "scope": "Current delivered maintenance milestone and event-driven upkeep mechanism; future deliveries remain conditional tasks",
+  "requirements": [
+    {
+      "id": "R01",
+      "requirement": "index导航与独立HTML维护",
+      "evidence": [
+        "index.html",
+        "architecture-doc-site-manifest.json"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "R02",
+      "requirement": "12项双方事实、目标取舍、代价和拟议合同",
+      "evidence": [
+        "architecture-a01.html … architecture-a12.html",
+        "architecture-target-contracts.cjs"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "R03",
+      "requirement": "24项具操作和判定的未运行验收",
+      "evidence": [
+        "architecture-acceptance.html",
+        "architecture-target-test-plans.cjs"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "R04",
+      "requirement": "交接与53来源SHA未漂移",
+      "evidence": [
+        "ARCH_TARGET_VM_REVIEW_20261022.json",
+        "architecture-doc-site-manifest.json"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "R05",
+      "requirement": "生命周期合同无Completion/Acquire循环且可异步排空",
+      "evidence": [
+        "architecture-a01.html",
+        "architecture-a03.html",
+        "architecture-a06.html"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "R06",
+      "requirement": "旧锚点、本地链接、手机与打印验证",
+      "evidence": [
+        "architecture-doc-site-validation.json"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "R07",
+      "requirement": "保留原框架/SDK/迁移回归及产品验收边界",
+      "evidence": [
+        "framework-comparison-validation.json",
+        "sdk-development-validation.json",
+        "sdk-engineering-validation.json"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "R08",
+      "requirement": "可见同步水位与事件驱动维护规则",
+      "evidence": [
+        "DOC_SYNC_STATUS.json",
+        "index.html#maintenance-goals"
+      ],
+      "status": "proven"
+    },
+    {
+      "id": "R09",
+      "requirement": "生成链包含分页及完整导出，不要求全站重生成",
+      "evidence": [
+        "build-new-entry-report.cjs",
+        "build-architecture-doc-site.cjs",
+        "build-secure-export.cjs"
+      ],
+      "status": "proven"
+    }
+  ],
+  "proven": 9,
+  "implementationExecuted": false,
+  "acceptanceExecuted": 0,
+  "checkpointUpgrades": 0,
+  "remainingCurrentMilestoneWork": [],
+  "deferred": [
+    {
+      "item": "old total-entry framework-architecture.html fingerprint drift",
+      "status": "pending-semantic-review",
+      "note": "new execution/data model review does not replace old reference baseline"
+    },
+    {
+      "item": "large legacy main/optimization/audit pages",
+      "status": "future-bounded-split",
+      "note": "current split covers framework/SDK and target decisions only"
+    }
+  ]
+}

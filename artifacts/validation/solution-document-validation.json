@@ -1,0 +1,16 @@
+{
+  "taskId": "SOL-DOC-01",
+  "pages": 5,
+  "widthChecks": 15,
+  "links": 14,
+  "errors": [],
+  "productExecuted": false,
+  "acceptanceExecuted": 0,
+  "sourceChecks": 13,
+  "inputSha256": "f6b05adadadd0229c12f438332dfdf77b351ac119b7e87170d3f3f5c092168c4",
+  "allAcceptancePlannedNotRun": true,
+  "vmSourceChecks": 8,
+  "vmReportShaVerified": true,
+  "domainVmComparisons": 5,
+  "vmUnknownsRetained": true
+}

@@ -1,0 +1,44 @@
+{
+  "input": "docs/collaboration/SCRIPT_OPTIMIZATION_DECISION_20261023.json",
+  "inputSHA": "fe38502fa8fe9da014ba8aa7f88a40555fcd688e9a93f7e961c44f35ac5982bc",
+  "evidence": [
+    {
+      "path": "docs/collaboration/SCRIPT_OPTIMIZATION_DECISION_20261023.json",
+      "sha256": "fe38502fa8fe9da014ba8aa7f88a40555fcd688e9a93f7e961c44f35ac5982bc"
+    },
+    {
+      "path": "artifacts/performance/script-selection-02/targeted-static/summary.json",
+      "sha256": "0ac2baedbf2d0cb946a08fbb8001cc7fcc075678376986f95c975c13a07c685e"
+    },
+    {
+      "path": "artifacts/performance/script-selection-02/reference-cost/summary.json",
+      "sha256": "8c98c2d94fd85f50916c5277fa4483c8cb610f80560fe5da4917712722697390"
+    },
+    {
+      "path": "artifacts/performance/script-selection-02/final-manifest.json",
+      "sha256": "2351eb51066c17ee12b11fbfaa8bd8e4013e8522a10f0d6dbef8e1c95578c51e"
+    },
+    {
+      "path": "artifacts/validation/script-selection-02-result-audit.json",
+      "sha256": "d7e8cea6abe4c923bd0ea0bd2752c74a1d16fbfac2881ca8fca2bd1e1a2af20a"
+    },
+    {
+      "path": "artifacts/validation/script-framework-bridge-receipt.json",
+      "sha256": "683595b7fd8955e3b1458774d9a64302e397b9ce8674650236362947d9c2e2e8"
+    }
+  ],
+  "pages": [
+    {
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+      "sha256": "ec82eef5ce95772e06bfe7f78340d6824526420e0b16d7f3b39eebf703569fe6"
+    },
+    {
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html",
+      "sha256": "49791a2d002606c3eb3f9ec88da1ef1622aaa8ee5339cb44fdde4d0f84bdd1f0"
+    }
+  ],
+  "contracts": 8,
+  "batches": 3,
+  "acceptance": 12,
+  "productModified": false
+}

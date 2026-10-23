@@ -1,0 +1,86 @@
+{
+  "taskId": "START-SIMPLIFY-03",
+  "input": "artifacts/startup-implementation/start-page-simplify-delivery.json",
+  "inputSha256": "fa16c183317593a678714d9e888166d41930fb24819185b35c8c2e341a95ec19",
+  "checks": [
+    {
+      "sha256": "daa1d6e9a42559a8f3496ea1742a0ea5d749dfe19fc7e5c3db6ff7f970c6ca0a",
+      "path": "src/UI/App.xaml.cs",
+      "observedSha256": "daa1d6e9a42559a8f3496ea1742a0ea5d749dfe19fc7e5c3db6ff7f970c6ca0a",
+      "matches": true
+    },
+    {
+      "sha256": "1191c240d2910b2e4a211270f944e047f771a07e4000ce3b14f42aa30c6471dc",
+      "path": "src/UI/Core/IRootCoordinator.cs",
+      "observedSha256": "1191c240d2910b2e4a211270f944e047f771a07e4000ce3b14f42aa30c6471dc",
+      "matches": true
+    },
+    {
+      "sha256": "84ae8b67b206eac1629bdbd8532506129a9a6913b5c48acb360ccf1b6fdbde99",
+      "path": "src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml",
+      "observedSha256": "84ae8b67b206eac1629bdbd8532506129a9a6913b5c48acb360ccf1b6fdbde99",
+      "matches": true
+    },
+    {
+      "sha256": "b4f096210fd45e490f75d9ea4dd1c276c3f12e98018bdd7e579639fa79433cd3",
+      "path": "src/UI/Shell/Controls/Shell/ShellTopBarViewModel.cs",
+      "observedSha256": "b4f096210fd45e490f75d9ea4dd1c276c3f12e98018bdd7e579639fa79433cd3",
+      "matches": true
+    },
+    {
+      "sha256": "c197d5272d3caf00907244147c3ae63860abd45859d2b57924cb208972fb24dc",
+      "path": "src/UI/Shell/Windows/StartPageWindow.xaml",
+      "observedSha256": "c197d5272d3caf00907244147c3ae63860abd45859d2b57924cb208972fb24dc",
+      "matches": true
+    },
+    {
+      "sha256": "ffd30fabfc4dc9fb0b05d19e049ef842e56d084578554164dcb9d1f852e2580f",
+      "path": "src/UI/Shell/Windows/StartPageWindow.xaml.cs",
+      "observedSha256": "ffd30fabfc4dc9fb0b05d19e049ef842e56d084578554164dcb9d1f852e2580f",
+      "matches": true
+    },
+    {
+      "sha256": "7cd013182942cecc1d75c86d3aaa8d8157b0fa56c90a5276093aac40ca3823f9",
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "observedSha256": "7cd013182942cecc1d75c86d3aaa8d8157b0fa56c90a5276093aac40ca3823f9",
+      "matches": true
+    },
+    {
+      "sha256": "088dcb7af8fcfce50f7d5d35f82f46ea882118361bce3a88e08edb4bf38e4e83",
+      "path": "artifacts/ui-prototypes/start-page/index.html",
+      "observedSha256": "088dcb7af8fcfce50f7d5d35f82f46ea882118361bce3a88e08edb4bf38e4e83",
+      "matches": true
+    },
+    {
+      "sha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+      "observedSha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+      "matches": true
+    },
+    {
+      "sha256": "f75559ef993ed212d045713e950ac4a03b7a41e570c0a0f0ce078bf3094c3d78",
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+      "observedSha256": "f75559ef993ed212d045713e950ac4a03b7a41e570c0a0f0ce078bf3094c3d78",
+      "matches": true
+    }
+  ],
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+  ],
+  "build": {
+    "errors": 0,
+    "warnings": 824,
+    "seconds": 25
+  },
+  "testsRunThisBatch": 0,
+  "independentDispatched": false,
+  "productExecuted": false,
+  "manual": "pending-user",
+  "visual": "not-verified",
+  "designer": "not-verified",
+  "productModifiedByDocRole": false,
+  "wholeSiteRegenerated": false
+}

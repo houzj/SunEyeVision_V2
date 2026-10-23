@@ -7,6 +7,7 @@ namespace SunEyeVision.Tool.NPointCalibration;
 
 public sealed class NPointCalibrationResults : ToolResults
 {
+    [JsonIgnore] public SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver? ResourcePaths { get; set; }
     public int TranslationSamples { get; set; }
     public int RotationSamples { get; set; }
     public int RequiredTranslationSamples { get; set; }
@@ -31,10 +32,15 @@ public sealed class NPointCalibrationResults : ToolResults
     public string ImageDomain { get; set; } = "Raw";
     public double ReferenceRAngle { get; set; }
     public int RotationSign { get; set; }
-    public NPointWeightFunction WeightFunction { get; set; }
-    public double WeightCoefficient { get; set; }
-    public double RobustScaleMm { get; set; }
-    public double RobustThresholdMm { get; set; }
+    public string AlgorithmId { get; set; } = SunEyeVision.Plugin.SDK.Models.Calibration.PlanarCalibrationFit.Algorithm;
+    public double RotationSpanDeg { get; set; }
+    public double RepeatErrorMm { get; set; }
+    public bool TrainingPassed { get; set; }
+    public string WorkPlaneId { get; set; } = string.Empty;
+    [JsonIgnore] public string InputFingerprint { get; set; } = string.Empty;
+    [JsonIgnore] public string AcceptedFingerprint { get; set; } = string.Empty;
+    [JsonIgnore] public double[] AuxiliaryMatrix { get; set; } = Array.Empty<double>();
+    [JsonIgnore] public System.Threading.CancellationToken Cancellation { get; set; }
     public List<NPointSampleResidual> Residuals { get; set; } = new();
     public string ProgressText => $"平移 {TranslationSamples}/{RequiredTranslationSamples}，旋转 {RotationSamples}/{RequiredRotationSamples}";
 
@@ -42,8 +48,6 @@ public sealed class NPointCalibrationResults : ToolResults
     // parameters after execution; snapshots and public outputs remain separate.
     [JsonIgnore] public NPointSample? CollectedSample { get; set; }
     [JsonIgnore] public bool NeedsCommit { get; set; }
-    [JsonIgnore] public bool TeachSignalActive { get; set; }
-    [JsonIgnore] public long TeachEventId { get; set; }
     [JsonIgnore] public int ExpectedRevision { get; set; }
 
     public override List<PropertyMapEntry> GetPropertyMap() =>
@@ -63,8 +67,13 @@ public sealed class NPointCalibrationResults : ToolResults
         new("HomMat2D", "像素到 Mark 机台矩阵", "标定"),
         new("AxisToMarkX", "轴心到 Mark 偏心 X", "标定"),
         new("AxisToMarkY", "轴心到 Mark 偏心 Y", "标定"),
+        new("TrainingPassed", "训练质量通过", "标定"),
     ];
 }
 
 public sealed record NPointSampleResidual(int Id, NPointSampleKind Kind,
-    double ErrorX, double ErrorY, double ErrorMm, double Weight);
+    double ErrorX, double ErrorY, double ErrorMm)
+{
+    public int DisplayId => Id + 1;
+    public string KindText => Kind == NPointSampleKind.Translation ? "平移" : "旋转";
+}

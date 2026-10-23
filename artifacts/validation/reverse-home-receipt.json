@@ -1,0 +1,310 @@
+{
+  "target": "D:/MyWork/REA逆向测试/docs/架构逆向与实现对照文档/index.html",
+  "layouts": [
+    {
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "overflow": false
+    }
+  ],
+  "links": [
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/index.html#main-content",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%B8%85%E5%8D%95/%E4%B8%93%E9%A2%98%E7%B4%A2%E5%BC%95.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%B8%85%E5%8D%95/%E9%A6%96%E9%A1%B5%E7%BB%B4%E6%8A%A4.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E4%B8%BB%E9%A2%98/%E5%85%A8%E6%99%AF%E6%9E%B6%E6%9E%84.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%95%B0%E6%8D%AE/index.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E4%B8%BB%E9%A2%98/%E6%89%A7%E8%A1%8C%E4%B8%8E%E7%8A%B6%E6%80%81.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/%E8%8F%9C%E5%8D%95%E4%B8%8E%E5%B7%A5%E5%85%B7%E6%A0%8F.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/run.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/continuous.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/tabcontinuous.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/stop.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/save.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/tabs.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/tabonce.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/catalog.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/camera.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/communication.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/node.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/links.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/group.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/viewport.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/preview.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/result.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/variables.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/status.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/close.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=ImageProcessing",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=Calibration",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=Collection",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=Location",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=Logic",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=Calculation",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=ColorProcessing",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=Communication",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=DefectDetection",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=Global",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=ImageGeneration",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=Measurement",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=Recognition",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%B7%A5%E5%85%B7/index.html?category=SplitCombination",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%95%B0%E6%8D%AE/parameter-pipeline.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%95%B0%E6%8D%AE/image-pipeline.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%95%B0%E6%8D%AE/nonimage-pipeline.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%95%B0%E6%8D%AE/%E5%9B%BE%E5%83%8F%E4%B8%8E%E5%8F%82%E6%95%B0%E6%8C%81%E6%9C%89%E5%85%B3%E7%B3%BB.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%95%B0%E6%8D%AE/Group%E9%80%90%E8%BD%AE%E4%BF%9D%E7%95%99%E4%B8%8E%E9%80%80%E5%BD%B9.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%95%B0%E6%8D%AE/global-variable-analysis.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%95%B0%E6%8D%AE/retirement-operation-map.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/startup.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/solution.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/help.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/undo.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/history.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E5%85%A5%E5%8F%A3/data.html",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%95%B0%E6%8D%AE/group-data-pipeline.html",
+      "exists": true,
+      "anchor": true
+    }
+  ],
+  "mainAnchor": true,
+  "navigation": [
+    {
+      "label": "首页导航",
+      "text": "专题索引\n维护／验收"
+    },
+    {
+      "label": "三核心入口",
+      "text": "整体架构\n分层·局部恢复\n数据与数据流\n类型·传递·持有\n执行链\n入口·状态·回流"
+    }
+  ],
+  "errors": [],
+  "productModified": false,
+  "scope": "主控只读文档验收，非产品或性能测试",
+  "passed": true,
+  "htmlSha256": "d60c741e28b838a0138b8b5a0c66712d945c9b5a6384d31fbbde66381f20c3f9"
+}

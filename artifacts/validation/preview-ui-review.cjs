@@ -1,0 +1,3 @@
+const {chromium}=require('C:/Users/houzhongjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {pathToFileURL}=require('url'),path=require('path');
+(async()=>{const b=await chromium.launch({headless:true,channel:'msedge'});try{const p=await b.newPage({viewport:{width:1600,height:1100}});await p.goto(pathToFileURL(path.resolve('docs/04-工具设计/标定工具/2026/10/19/suneye-vm-design-comparison-plan.html')).href);for(const id of ['ui-editor','suneye-camera-management','vm-globals']){await p.locator('#'+id).scrollIntoViewIfNeeded();await p.locator('#'+id).evaluate(e=>e.scrollIntoView({block:'start'}));await p.screenshot({path:'artifacts/validation/vm-design-plan-'+id+'.png'});} }finally{await b.close();}})();

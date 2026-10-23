@@ -1,0 +1,40 @@
+{
+  "taskId": "START-STATIC-05",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+  ],
+  "observed": [
+    {
+      "path": "src/UI/Shell/Windows/StartPageWindow.xaml",
+      "observedSha256": "d25a408a2cedaaf38038dc6cc8d8f989240f5a0ba6b0ec2110a81c1b87e5cd39",
+      "meaning": "本轮观察SHA；未收到独立预期身份清单，不作交付SHA一致性声明"
+    },
+    {
+      "path": "src/UI/Shell/Windows/StartPageWindow.xaml.cs",
+      "observedSha256": "b836f9a8869256f14db588a9e6b10813c307a038439cd490a42f0c361e851904",
+      "meaning": "本轮观察SHA；未收到独立预期身份清单，不作交付SHA一致性声明"
+    },
+    {
+      "path": "artifacts/ui-prototypes/start-page/index.html",
+      "observedSha256": "20e17cf3c3adc3b0ee39c8c977610f613685ef4accff93e46c6aa5f14bf1b99f",
+      "meaning": "本轮观察SHA；未收到独立预期身份清单，不作交付SHA一致性声明"
+    }
+  ],
+  "log": "artifacts/startup-implementation/static-capability-cards-release.log",
+  "logSha256": "9eac1b510fc5471967d5689bdd2096c5994d7b2cb7f0c3df0340f3a43d6265e5",
+  "build": {
+    "errors": 0,
+    "warnings": 785,
+    "seconds": 26,
+    "meaning": "开发交付，非文档角色重构建"
+  },
+  "productExecuted": false,
+  "testsRun": 0,
+  "independentDispatched": false,
+  "manual": "pending-user",
+  "wholeSiteRegenerated": false,
+  "productModifiedByDocRole": false
+}

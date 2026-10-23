@@ -1,0 +1,26 @@
+{
+  "reviewed": 49,
+  "original": 46,
+  "added": [
+    "M24",
+    "M25",
+    "M26"
+  ],
+  "decisions": {
+    "暂不能判断": 30,
+    "必须整改": 10,
+    "借鉴VM重做": 6,
+    "新增": 3
+  },
+  "sources": 198,
+  "links": 1418,
+  "mapRegions": true,
+  "inlineComparison": true,
+  "historyReload": true,
+  "filters": true,
+  "deepLinks": true,
+  "printStateRestored": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "productRun": false
+}

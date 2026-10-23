@@ -1,0 +1,935 @@
+{
+  "version": "evidence-checkpoints-v1",
+  "definitionSha256": "c917bfe13394bc158109b596490dceac98b988abb7a9ae66dfd14c467577b3d9",
+  "summary": {
+    "total": 42,
+    "verified": 24,
+    "partial": 11,
+    "unverified": 7,
+    "percent": 57.1,
+    "formula": "已核实检查点/42*100（部分不折算）",
+    "categoriesComplete": 0,
+    "categoriesTotal": 7,
+    "baselineOnly": true,
+    "newReverseEngineering": false
+  },
+  "groups": [
+    {
+      "group": "RE-W1",
+      "total": 6,
+      "verified": 4,
+      "partial": 2,
+      "unverified": 0
+    },
+    {
+      "group": "RE-W2",
+      "total": 6,
+      "verified": 4,
+      "partial": 1,
+      "unverified": 1
+    },
+    {
+      "group": "RE-I1",
+      "total": 6,
+      "verified": 3,
+      "partial": 2,
+      "unverified": 1
+    },
+    {
+      "group": "RE-I2",
+      "total": 6,
+      "verified": 3,
+      "partial": 2,
+      "unverified": 1
+    },
+    {
+      "group": "RE-P1",
+      "total": 6,
+      "verified": 4,
+      "partial": 1,
+      "unverified": 1
+    },
+    {
+      "group": "RE-P2",
+      "total": 6,
+      "verified": 3,
+      "partial": 1,
+      "unverified": 2
+    },
+    {
+      "group": "RE-X1",
+      "total": 6,
+      "verified": 3,
+      "partial": 2,
+      "unverified": 1
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "RE-W1-01",
+      "group": "RE-W1",
+      "title": "运行入口到拓扑执行对象",
+      "criterion": "已有普通流程运行路径连接拓扑构造、持有与slot8执行；不包含全部控制结构。",
+      "status": "verified",
+      "reason": "10ae80构造CBaseTopology，dcba0持共享引用；20dd0进入目标等待路径，节点slot8执行另已读。",
+      "remaining": "类型/循环及并发语义不在本项已核实范围。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round2-dispatch-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION"
+        },
+        {
+          "path": "artifacts/validation/vm-round3-core-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION TopologySlot8"
+        },
+        {
+          "path": "artifacts/validation/vm-round3-execute-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION NodeExecute"
+        }
+      ]
+    },
+    {
+      "id": "RE-W1-02",
+      "group": "RE-W1",
+      "title": "邻接、前驱计数与实际就绪分派",
+      "criterion": "ScheduleHelper存在邻接遍历、锁内递减、零就绪及递归/提交分派的实际实现。",
+      "status": "verified",
+      "reason": "ffd00实际消费邻接/状态，后继前驱计数归零后分派；不再按“统一命令发送层”代替调度。",
+      "remaining": "数值类型全部语义及循环重置另列。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-graph-cache-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ScheduleHelper"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-core-trace.txt",
+          "line": 222,
+          "locator": "FUNCTION ReadAdjacent"
+        }
+      ]
+    },
+    {
+      "id": "RE-W1-03",
+      "group": "RE-W1",
+      "title": "共享与按流程ID队列的提交选择",
+      "criterion": "策略字段分支以及按流程ID查队列/入队的实际调用已对应。",
+      "status": "verified",
+      "reason": "15aba0策略120==2走fc9e0按ID队列，其他入共享队列；fc9e0查记录并入队。",
+      "remaining": "按ID队列不推出每流程单消费者。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-core-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION SubmitByProcedure"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 342,
+          "locator": "FUNCTION ProcedureAsync"
+        }
+      ]
+    },
+    {
+      "id": "RE-W1-04",
+      "group": "RE-W1",
+      "title": "任务实际消费与锁外调用",
+      "criterion": "有取出/出队、释放队列锁、调用任务slot10及退出哨兵处理。",
+      "status": "verified",
+      "reason": "fbee0锁内移出任务、锁外调用，ffff退出哨兵及WorkerEntry计数对应。",
+      "remaining": "同步适配器具体类型/全部线程扩缩策略未包含。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ConcurrentWorker"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 1024,
+          "locator": "FUNCTION WorkerEntry"
+        }
+      ]
+    },
+    {
+      "id": "RE-W1-05",
+      "group": "RE-W1",
+      "title": "分支、循环、Group和子流程完整语义",
+      "criterion": "各控制类型的进入/退出、失败和循环计数重置均可对应。",
+      "status": "partial",
+      "reason": "已有类型数值和混合分派及自研控制结构分析，未恢复全部VM控制类型合同。",
+      "remaining": "补各类型正常/失败/取消及计数重置的限定证据。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-graph-cache-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ScheduleHelper"
+        }
+      ]
+    },
+    {
+      "id": "RE-W1-06",
+      "group": "RE-W1",
+      "title": "消费者数量、共享资源准入与公平性",
+      "criterion": "队列消费者数量、跨流程同资源冲突及饥饿/重入策略可认证。",
+      "status": "partial",
+      "reason": "真实队列/策略调整函数已读，但策略参数和消费者数量未完成认证；自研租约不能代证VM。",
+      "remaining": "仍缺同资源/慢任务/取消排队及公平性合同。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 860,
+          "locator": "FUNCTION AdjustPolicy"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 1097,
+          "locator": "FUNCTION SpawnWorkers"
+        }
+      ]
+    },
+    {
+      "id": "RE-W2-01",
+      "group": "RE-W2",
+      "title": "停止请求与等待对象",
+      "criterion": "停止分支设置标志/事件并等待流程88的静态路径可对应。",
+      "status": "verified",
+      "reason": "dd030设置90/80、清7c，等待88；这只证明请求与等待入口。",
+      "remaining": "不等全部任务或回调终止。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-frame-stop-leaf-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION"
+        }
+      ]
+    },
+    {
+      "id": "RE-W2-02",
+      "group": "RE-W2",
+      "title": "当前停止标志的有限等待及超时返回",
+      "criterion": "标志0的3000ms、非零无限等待与WAIT_TIMEOUT对应错误码已读。",
+      "status": "verified",
+      "reason": "等待值3000/ffffffff和0x102→e0000300有实际函数体。",
+      "remaining": "其他等待错误/批量忽略返回及异常退出未被本项保证。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-frame-stop-leaf-trace.txt",
+          "line": 20,
+          "locator": "return 0xe0000300"
+        }
+      ]
+    },
+    {
+      "id": "RE-W2-03",
+      "group": "RE-W2",
+      "title": "循环退出88与尾完成98的顺序及等待者",
+      "criterion": "事件生产先后与已见98等待删除入口可对应。",
+      "status": "verified",
+      "reason": "dd330先Set88，再报告/尾回调，最后Set98；dcae0和108c30消费98。",
+      "remaining": "不是所有删除入口或异常分支均已认证。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round2-events-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ProcedureWorker"
+        },
+        {
+          "path": "artifacts/validation/vm-round3-execute-trace.txt",
+          "line": 1093,
+          "locator": "FUNCTION TailWait"
+        },
+        {
+          "path": "artifacts/validation/vm-round3-execute-trace.txt",
+          "line": 1576,
+          "locator": "FUNCTION WaitOwner"
+        }
+      ]
+    },
+    {
+      "id": "RE-W2-04",
+      "group": "RE-W2",
+      "title": "多流程内部尾完成汇合",
+      "criterion": "尾回调计数归零置548，以及设计数/复位/等待548的路径对应。",
+      "status": "verified",
+      "reason": "6c0f0安装回调；6c640组织计数/等待，76070叶原子减后置事件已有索引。",
+      "remaining": "内部汇合不代表外部消费者ACK。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-lifetime-trace.txt",
+          "line": 102,
+          "locator": "FUNCTION InstallTailA"
+        },
+        {
+          "path": "artifacts/validation/vm-round3-lifetime-trace.txt",
+          "line": 731,
+          "locator": "FUNCTION InstallTailB"
+        },
+        {
+          "path": "artifacts/validation/vm-round3-tail-callback.json",
+          "line": 6,
+          "locator": "76070"
+        }
+      ]
+    },
+    {
+      "id": "RE-W2-05",
+      "group": "RE-W2",
+      "title": "外部完成通知的最终消费者与确认",
+      "criterion": "Frame注册实例、Proxy/PM和最终SDK/UI接收/ACK全部连通。",
+      "status": "partial",
+      "reason": "已追注册槽、Server接收5d51c0、c47→811及6203a0投递边界；实例全传递和最终消费者未齐。",
+      "remaining": "保留最终消费/排队/ACK及旧代次处理缺口。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-proxy-setters-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-receiver-trace.txt",
+          "line": 217,
+          "locator": "FUNCTION ServerReceiver"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-finish-notify-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION"
+        }
+      ]
+    },
+    {
+      "id": "RE-W2-06",
+      "group": "RE-W2",
+      "title": "无回调/异常/不可取消任务的终止保证",
+      "criterion": "无回调及异常时能证明结束/排空或明确失败，且可安全再次运行。",
+      "status": "unverified",
+      "reason": "现有材料未给出覆盖这些异常情形的完整终止保证；普通路径不能替代。",
+      "remaining": "尚无该合同闭合证据或对等运行验证；未知不等于不支持。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round2-events-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ProcedureWorker"
+        }
+      ]
+    },
+    {
+      "id": "RE-I1-01",
+      "group": "RE-I1",
+      "title": "原始相机/算法缓冲的分配与复用边界",
+      "criterion": "源缓冲分配、驱动复用/归还时点及最后读者可配对。",
+      "status": "unverified",
+      "reason": "映射/默认缓存不能当原始帧；已读相机清理体仍未连到源缓冲生产/复用。",
+      "remaining": "源分配→发布→最后读者→归还仍无可认证全链。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-camera-life-trace.txt",
+          "line": 391,
+          "locator": "FUNCTION CameraSlot64"
+        }
+      ]
+    },
+    {
+      "id": "RE-I1-02",
+      "group": "RE-I1",
+      "title": "默认模块缓存装入及深复制",
+      "criterion": "默认b90d0分配表、结构复制和逐块复制可在函数体核对。",
+      "status": "verified",
+      "reason": "空缓存分配及memcpy_s/逐块新分配拷贝已读，默认路径范围明确。",
+      "remaining": "非空重复装入和扩展路径另列，不推统一刷新。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-core-trace.txt",
+          "line": 183,
+          "locator": "FUNCTION CacheProducerA"
+        }
+      ]
+    },
+    {
+      "id": "RE-I1-03",
+      "group": "RE-I1",
+      "title": "默认按键写入的旧块替换",
+      "criterion": "b9390匹配键后释放旧块/清指针长度、重新分配复制的顺序可核对。",
+      "status": "verified",
+      "reason": "已读默认SetBinaryDataToCache，不按分析标签将其叫每帧刷新。",
+      "remaining": "不保证并发读者或所有失败替换安全。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-core-trace.txt",
+          "line": 366,
+          "locator": "FUNCTION CacheProducerB"
+        }
+      ]
+    },
+    {
+      "id": "RE-I1-04",
+      "group": "RE-I1",
+      "title": "批量加载提交到实际加载函数调用",
+      "criterion": "上游提交、worker消费和绑定函数间接调用形成静态链。",
+      "status": "verified",
+      "reason": "47a00/66c60→队列→slot10/75870→78130→78440→绑定4bee0已对应。",
+      "remaining": "批次SetEvent/错误汇总和加载线程数仍未知。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-core-trace.txt",
+          "line": 770,
+          "locator": "FUNCTION LoadTaskCallerA"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-load-task-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION LoadTaskInvoke"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-load-body-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION LoadTaskBody"
+        }
+      ]
+    },
+    {
+      "id": "RE-I1-05",
+      "group": "RE-I1",
+      "title": "缓存内容读写与运行/删除准入",
+      "criterion": "公开写、加载、执行读与删除共享同一可认证串行/借用合同。",
+      "status": "partial",
+      "reason": "多个写入口和锁外任务执行已见，但队列锁/引用计数不等内容锁。",
+      "remaining": "外层串行、重复加载失败恢复和读者保护未认证。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-graph-cache-trace.txt",
+          "line": 3189,
+          "locator": "FUNCTION CacheWriteExport"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ConcurrentWorker"
+        }
+      ]
+    },
+    {
+      "id": "RE-I1-06",
+      "group": "RE-I1",
+      "title": "非空扩展实现的装配与数据所有权",
+      "criterion": "module+128具体实现类型和slot10/18/30数据寿命可对应。",
+      "status": "partial",
+      "reason": "优先扩展分派存在，默认构造清零+128已见；真实非空装配/类型和借用期限缺证。",
+      "remaining": "不能用默认缓存寿命推广扩展实现。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-follow-trace.txt",
+          "line": 73,
+          "locator": "FUNCTION CacheRead"
+        },
+        {
+          "path": "artifacts/validation/vm-round3-follow-trace.txt",
+          "line": 516,
+          "locator": "FUNCTION CacheRefresh"
+        },
+        {
+          "path": "artifacts/validation/vm-round4-owner-trace.txt",
+          "line": 538,
+          "locator": "FUNCTION NodeCtor"
+        }
+      ]
+    },
+    {
+      "id": "RE-I2-01",
+      "group": "RE-I2",
+      "title": "传输映射建立与复制",
+      "criterion": "74b10释放旧映射、Create/Map和源复制的实际实现可核对。",
+      "status": "verified",
+      "reason": "CreateFileMapping/Map及memcpy路径已读；该路径不是零拷贝。",
+      "remaining": "源生产缓冲和其他客户端不在本项范围。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-proxy-buffer-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION WriteBinaryMapping"
+        }
+      ]
+    },
+    {
+      "id": "RE-I2-02",
+      "group": "RE-I2",
+      "title": "传输映射显式释放",
+      "criterion": "已认证释放命令与74e00的Unmap/Close对象字段对应。",
+      "status": "verified",
+      "reason": "0xc12到代理release，view+88/handle+58释放；与映射建立对象布局一致。",
+      "remaining": "不等所有客户端视图已退役或ACK。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-mapping-release-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION MappingRelease"
+        },
+        {
+          "path": "artifacts/validation/vm-round4-proxy-events-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION"
+        }
+      ]
+    },
+    {
+      "id": "RE-I2-03",
+      "group": "RE-I2",
+      "title": "默认缓存析构与查询源布局配对",
+      "criterion": "默认结果读取布局与b96a0逐块delete[]及删表可对应。",
+      "status": "verified",
+      "reason": "module+140中585a0+i118数据项与默认查询源/析构布局一致。",
+      "remaining": "不推广所有查询类型或源相机像素。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round2-finalize-trace.txt",
+          "line": 134,
+          "locator": "FUNCTION CleanupNode"
+        },
+        {
+          "path": "artifacts/validation/vm-round2-resources-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION"
+        }
+      ]
+    },
+    {
+      "id": "RE-I2-04",
+      "group": "RE-I2",
+      "title": "托管查询结果深浅复制及显式释放范围",
+      "criterion": "所有声明支持的结果类型深浅模式及释放责任完整覆盖。",
+      "status": "partial",
+      "reason": "默认深复制/可选共享、SharedMemoryItemVM释放已读；全嵌套结果/历史类型未全审计。",
+      "remaining": "GCHandle释放不是像素归还，按类型补配对。",
+      "references": [
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ModuleResultManager.cs",
+          "line": 14,
+          "locator": "Memory_Deep_Copy"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/SharedMemoryItemVM.cs",
+          "line": 56,
+          "locator": "DisposeRes"
+        }
+      ]
+    },
+    {
+      "id": "RE-I2-05",
+      "group": "RE-I2",
+      "title": "查询/映射全异常和并发释放安全",
+      "criterion": "失败中途、并发查询/释放时的所有权与清理出口有完整证据。",
+      "status": "unverified",
+      "reason": "当前正常映射释放/默认析构配对不足以认证全异常/并发安全。",
+      "remaining": "没有全异常/并发验证记录，不推断已安全或已故障。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-mapping-release-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION MappingRelease"
+        }
+      ]
+    },
+    {
+      "id": "RE-I2-06",
+      "group": "RE-I2",
+      "title": "显示与历史缓存的最后读者",
+      "criterion": "切换、关闭、历史保留和共享可变显示对象有完整独立快照/释放合同。",
+      "status": "partial",
+      "reason": "VM换源dispose和自研复用WriteableBitmap已核对；历史独立性/最后读者仍未齐。",
+      "remaining": "不能把UI清空当像素释放，也不把切图缓存当历史验收。",
+      "references": [
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs",
+          "line": 152,
+          "locator": "ModuleSourceChanged"
+        },
+        {
+          "path": "src/UI/Services/Performance/ImageConverterPool.cs",
+          "line": 13,
+          "locator": "WriteableBitmap"
+        }
+      ]
+    },
+    {
+      "id": "RE-P1-01",
+      "group": "RE-P1",
+      "title": "工厂Create/Destroy指针与实例记录",
+      "criterion": "加载解析、记录字段和实际创建调用在函数实现对应。",
+      "status": "verified",
+      "reason": "b54e0解析Create/Destroy并保存库/实例及函数指针。",
+      "remaining": "保存指针本身不等于已执行销毁，后项单列。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-execute-trace.txt",
+          "line": 2206,
+          "locator": "FUNCTION ResolveModule"
+        }
+      ]
+    },
+    {
+      "id": "RE-P1-02",
+      "group": "RE-P1",
+      "title": "标准删除的加载器观察者连接",
+      "criterion": "实际注册对象、观察者集合、虚表slot与标准删除分派连通。",
+      "status": "verified",
+      "reason": "b5280/112e60注册CModuleLoader，DeleteNode通知同集合slot18= b6fa0。",
+      "remaining": "带管理状态条件，不推广所有特殊删除入口。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-registration-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION RegisterLoaderObserver"
+        },
+        {
+          "path": "artifacts/validation/vm-round4-loader-life-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION"
+        },
+        {
+          "path": "artifacts/validation/vm-round4-delete-observer.json",
+          "line": 10,
+          "locator": "CModuleLoader"
+        }
+      ]
+    },
+    {
+      "id": "RE-P1-03",
+      "group": "RE-P1",
+      "title": "条件满足时实际调用DestroyModule",
+      "criterion": "b6670取记录+18与+8并执行已保存的destroy，而非只释放记录。",
+      "status": "verified",
+      "reason": "状态允许时实际CALL销毁函数，随后释放信息、移除记录/索引。",
+      "remaining": "不保证厂商内部释放或FreeLibrary。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-owner-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ReleaseModuleCandidate"
+        }
+      ]
+    },
+    {
+      "id": "RE-P1-04",
+      "group": "RE-P1",
+      "title": "代表相机的最终析构体",
+      "criterion": "GlobalCameraModule导出销毁到实际虚表析构、成员/基类及删除实例。",
+      "status": "verified",
+      "reason": "1cf50→8cc0→8d90→9b00有函数体及虚表；注销/等待/清理顺序已见。",
+      "remaining": "仅代表模块；非零等待日志后继续不等回调已排空。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-camera-trace.txt",
+          "line": 320,
+          "locator": "FUNCTION DestroyCameraModule"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-camera-life-trace.txt",
+          "line": 361,
+          "locator": "FUNCTION CameraDeletingDestructor"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-camera-dtor-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION CameraDestructor"
+        }
+      ]
+    },
+    {
+      "id": "RE-P1-05",
+      "group": "RE-P1",
+      "title": "相机在途回调与超时后清理安全",
+      "criterion": "两个事件生产者/线程退出及SDK回调保障能认证。",
+      "status": "partial",
+      "reason": "9b00注销回调并等待两个事件各3000ms，未认证信号生产者/在途保障。",
+      "remaining": "Stop/Close/Destroy辅助函数、超时后读者及重入仍未知。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-camera-life-trace.txt",
+          "line": 391,
+          "locator": "FUNCTION CameraSlot64"
+        }
+      ]
+    },
+    {
+      "id": "RE-P1-06",
+      "group": "RE-P1",
+      "title": "特殊/异常删除与其他模块全释放",
+      "criterion": "状态不满足/异常、非代表模块也有完整析构/回收合同。",
+      "status": "unverified",
+      "reason": "标准条件路径和一个代表模块不足以认证特殊分支与全插件覆盖。",
+      "remaining": "尚无该全范围证据，不把记录移除当全部资源回收。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-owner-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ReleaseModuleCandidate"
+        }
+      ]
+    },
+    {
+      "id": "RE-P2-01",
+      "group": "RE-P2",
+      "title": "VM相机模块目录发现与依赖组织",
+      "criterion": "Global XML/Cs/Control/Librarys.Config及多类型模块列表有实际读取/装配实现。",
+      "status": "verified",
+      "reason": "GlobalCameraManager目录装配及多厂商/类型过滤已核对。",
+      "remaining": "不等于所有非相机工具的发现及恢复。",
+      "references": [
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraManager.cs",
+          "line": 469,
+          "locator": "FilterCameraModule"
+        }
+      ]
+    },
+    {
+      "id": "RE-P2-02",
+      "group": "RE-P2",
+      "title": "自研部署/依赖选择和契约拒绝",
+      "criterion": "真实构建输出、加载检查和语义契约不兼容拒绝可核对。",
+      "status": "verified",
+      "reason": "Directory.Build.targets、LoadPlugin、ToolContract实际规则已读；缺件只告警也已明确。",
+      "remaining": "静态配置事实，不是干净环境通过或全版本隔离。",
+      "references": [
+        {
+          "path": "Directory.Build.targets",
+          "line": 33,
+          "locator": "ToolContractVersionAttribute"
+        },
+        {
+          "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs",
+          "line": 146,
+          "locator": "ToolContract.IsCompatible"
+        },
+        {
+          "path": "src/Plugin.SDK/Core/ToolContract.cs",
+          "line": 38,
+          "locator": "public static bool IsCompatible"
+        }
+      ]
+    },
+    {
+      "id": "RE-P2-03",
+      "group": "RE-P2",
+      "title": "自研目录卸载与常驻ALC的实际边界",
+      "criterion": "卸载方法清目录且ALC不可回收/静态注册保留的现状可确认。",
+      "status": "verified",
+      "reason": "UnloadPlugins清列表/catalog，isCollectible:false；不是热卸载实现。",
+      "remaining": "认证的是当前限制，不暗示VM等价行为。",
+      "references": [
+        {
+          "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs",
+          "line": 218,
+          "locator": "public void UnloadPlugins"
+        },
+        {
+          "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs",
+          "line": 62,
+          "locator": "isCollectible: false"
+        }
+      ]
+    },
+    {
+      "id": "RE-P2-04",
+      "group": "RE-P2",
+      "title": "VM非相机发现/依赖故障覆盖",
+      "criterion": "非相机插件发现、缺依赖回滚和注册恢复达到全声明范围。",
+      "status": "partial",
+      "reason": "已有通用工厂及相机装载，未覆盖所有非相机宿主和失败回滚。",
+      "remaining": "C14仅补分析/计划，不提升本项证据。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-execute-trace.txt",
+          "line": 2206,
+          "locator": "FUNCTION ResolveModule"
+        }
+      ]
+    },
+    {
+      "id": "RE-P2-05",
+      "group": "RE-P2",
+      "title": "升级失败与配置回滚实效",
+      "criterion": "干净环境错DLL/版本/架构及新包失败回滚有执行证据。",
+      "status": "unverified",
+      "reason": "只有固定5项待执行验证计划，无实际故障/回滚结果。",
+      "remaining": "计划不能算已核实；不启动运行补证。",
+      "references": [
+        {
+          "path": "artifacts/validation/final-analysis-documents.json",
+          "line": 2,
+          "locator": "C14交付"
+        }
+      ]
+    },
+    {
+      "id": "RE-P2-06",
+      "group": "RE-P2",
+      "title": "全插件原生库/程序集最终退役",
+      "criterion": "模块实例、在途引用、库句柄及包替换的全范围最终释放可认证。",
+      "status": "unverified",
+      "reason": "GenTL条件卸载不是插件FreeLibrary；我方常驻限制不证明VM全库退役。",
+      "remaining": "无全插件退役/热替换闭合证据。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-camera-dtor-trace.txt",
+          "line": 29,
+          "locator": "MV_CC_UnloadGenTLLibrary"
+        }
+      ]
+    },
+    {
+      "id": "RE-X1-01",
+      "group": "RE-X1",
+      "title": "本轮关键原生安装产物的哈希身份",
+      "criterion": "已用SDK/PlatformManager/ModuleProxy/ModuleFrame/代表相机的静态输出携带SHA身份。",
+      "status": "verified",
+      "reason": "五种关键产物已有固定SHA256及来源说明，仅认证这些已用产物。",
+      "remaining": "不推全部托管/原生版本已匹配。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-native-receiver-trace.txt",
+          "line": 2,
+          "locator": "SHA256:"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-receiver-trace.txt",
+          "line": 2,
+          "locator": "SHA256:"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-proxy-setters-trace.txt",
+          "line": 2,
+          "locator": "SHA256:"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-core-trace.txt",
+          "line": 2,
+          "locator": "SHA256:"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-camera-trace.txt",
+          "line": 2,
+          "locator": "SHA256:"
+        }
+      ]
+    },
+    {
+      "id": "RE-X1-02",
+      "group": "RE-X1",
+      "title": "代表native导出和SDK接收绑定的静态对应",
+      "criterion": "PE导出及SlotInit实际GetProcAddress/装载实参相互对应。",
+      "status": "verified",
+      "reason": "SDK导出表/SlotInit和PlatformManager导出已有字节解析与函数实参证据。",
+      "remaining": "静态首选地址不等于运行时地址；不认证全PInvoke。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-native-export-inventory.json",
+          "line": 6,
+          "locator": "preferredImageBase"
+        },
+        {
+          "path": "artifacts/validation/vm-platformmanager-exports.json",
+          "line": 22,
+          "locator": "PF_M_MsgDeal"
+        },
+        {
+          "path": "artifacts/validation/vm-native-receiver-trace.txt",
+          "line": 132,
+          "locator": "GetProcAddress"
+        }
+      ]
+    },
+    {
+      "id": "RE-X1-03",
+      "group": "RE-X1",
+      "title": "代表虚表的RTTI/构造与实际槽位对应",
+      "criterion": "CBaseTopology/CModuleNode代表类型的表项和真实函数入口可交叉核对。",
+      "status": "verified",
+      "reason": "既有RTTI/PE表与构造、函数体对应slot8/slot0；不采相邻表扫描假候选。",
+      "remaining": "代表对应不等全动态类型已恢复。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round2-flow-vtable.json",
+          "line": 5,
+          "locator": "CBaseTopology"
+        },
+        {
+          "path": "artifacts/validation/vm-round2-node-vtables.json",
+          "line": 12,
+          "locator": "b85d0"
+        },
+        {
+          "path": "artifacts/validation/vm-round3-core-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION TopologySlot8"
+        }
+      ]
+    },
+    {
+      "id": "RE-X1-04",
+      "group": "RE-X1",
+      "title": "全部托管材料与安装版本/MVID认证",
+      "criterion": "使用的全部托管反编译文件逐程序集对安装哈希/MVID/版本。",
+      "status": "partial",
+      "reason": "关键native哈希已见，托管材料来源已有说明，但全程序集匹配未逐一认证。",
+      "remaining": "不将已有托管片段冒称本轮重新反编译/全版本认证。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-native-export-inventory.json",
+          "line": 4,
+          "locator": "sha256"
+        }
+      ]
+    },
+    {
+      "id": "RE-X1-05",
+      "group": "RE-X1",
+      "title": "恢复类型/间接调用/错误返回的完整认证",
+      "criterion": "全部关键反编译签名、间接对象身份和异常返回合同经过指令核对。",
+      "status": "partial",
+      "reason": "已有多处EAX/虚表/尾跳核对并撤回错误分析标签；全签名/实例同一性未齐。",
+      "remaining": "超时/有界反汇编和标签不能当完整CFG或原厂源码。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-receiver-trace.txt",
+          "line": 217,
+          "locator": "FUNCTION ServerReceiver"
+        },
+        {
+          "path": "artifacts/validation/vm-round5-load-body-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION LoadTaskBody"
+        }
+      ]
+    },
+    {
+      "id": "RE-X1-06",
+      "group": "RE-X1",
+      "title": "代表端到端运行桥接验证",
+      "criterion": "已认证版本的托管→native→回调/资源端到端有运行证据。",
+      "status": "unverified",
+      "reason": "本系列范围一直为静态分析，未运行VM、设备或原生探针。",
+      "remaining": "不能用静态绑定声称运行行为与全异常验证通过。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-core-trace.txt",
+          "line": 1,
+          "locator": "no target execution"
+        }
+      ]
+    }
+  ],
+  "remainingEvidenceFollowup": {
+    "source": "remaining-evidence-followup.json",
+    "anchor": "remaining-evidence-followup",
+    "reviewed": 18,
+    "statusUpgrades": 0,
+    "verifiedDelta": 0,
+    "definitionUnchanged": true,
+    "newReverseEngineering": false
+  }
+}

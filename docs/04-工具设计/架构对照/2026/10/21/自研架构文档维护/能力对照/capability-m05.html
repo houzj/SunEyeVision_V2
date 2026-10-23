@@ -1,0 +1,156 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M05 新增、选中、重命名与删除流程Tab</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">M05 新增、选中、重命名与删除流程Tab</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>M05 新增、选中、重命名与删除流程Tab</h1><article id="compare-M05"><span id="M05"></span><div class="visual-metrics"><div><strong>M05</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>ShellWorkspace事件</b></li><li><small>02</small><b>WorkflowTabViewModel</b></li><li><small>03</small><b>流程集合/SelectedTab</b></li><li><small>04</small><b>当前画布</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>AddWorkflow、Tab选择、Rename/Delete事件可定位；名字有缓冲提交。</p><details><summary>完整缺陷与未闭合调用边</summary><p>删除流程→所有输入输出/跨流程引用/实例退役；Undo恢复→稳定ID/引擎集合重挂；运行中删除→拒绝或安全完成</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>ProcedureConfigControl→流程decorator→DisplayModuleSet；流程身份与显示名称分开。</p><p>参考流程稳定身份与Group显示目标分离。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/WORKFLOW-TAB-TOOLBOX-GROUP-CLOSURE.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">删除Tab不等于跨流程绑定与运行实例同步退役；完整消费者未齐。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：删除Tab不等于跨流程绑定与运行实例同步退役；完整消费者未齐。 VM参考边界：参考流程稳定身份与Group显示目标分离。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">补删除引用清单和撤销重挂证据，确认缺口后集中编辑事务；成本为命令历史迁移。 把Add/Delete/Rename提交集中到流程服务；逐个列UI、引擎、方案和引用写入点，缺少事务时补齐；保存与运行不得各持不同对象。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">改名不改稳定ID；删除/撤销恢复引用，运行中删除有明确拒绝或安全停止。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o01.html#O01"><b>入口、装配与编辑事务</b><small class="reference-id">优化方案 · O01</small></a></td></tr></tbody></table></div></section><article id="recommendation-M05"><h2>M05 新增、选中、重命名与删除流程Tab · 暂不能判断</h2><p><b>代码依据 / 局限：</b>删除Tab不等于跨流程绑定与运行实例同步退役；完整消费者未齐。</p><p><b>VM可借鉴与不可推断：</b>参考流程稳定身份与Group显示目标分离。</p><p><b>具体改法 / 成本：</b>补删除引用清单和撤销重挂证据，确认缺口后集中编辑事务；成本为命令历史迁移。 把Add/Delete/Rename提交集中到流程服务；逐个列UI、引擎、方案和引用写入点，缺少事务时补齐；保存与运行不得各持不同对象。</p><p><b>验收：</b>改名不改稳定ID；删除/撤销恢复引用，运行中删除有明确拒绝或安全停止。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M05">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M05">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S011</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs">src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs:373</a></p><p><code>AddWorkflow_Click</code></p><p>SHA256 <code>d08aa3e23138d441149ffc3a66701d538ef3cb03ed87088ad3c6184ee6c78b3a</code></p><pre>        private void AddWorkflow_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.WorkflowTabViewModel.AddWorkflow();
+            _viewModel.StatusText = &quot;已添加新工作流&quot;;
+            // 自动滚动到新添加的TabItem，使其居中显示
+            Dispatcher.BeginInvoke(new Action(() =&gt;
+            {
+                ScrollToSelectedTabItem();
+                // 等待 Canvas 加载完成后应用初始缩放
+                Dispatcher.BeginInvoke(new Action(() =&gt;
+                {
+                    var workflow = _viewModel.WorkflowTabViewModel.SelectedTab;
+                    if (workflow != null)
+                    {</pre></details><details class="source-card"><summary>S012</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/WorkflowUI/WorkflowTabViewModel.cs">src/UI/Features/WorkflowUI/WorkflowTabViewModel.cs:238</a></p><p><code>ConfirmRename</code></p><p>SHA256 <code>b0b7ced2ce8d9175d09471cada0e776e10ca1934976bd4e6ac61dece85cb30ae</code></p><pre>        public bool ConfirmRename()
+        {
+            var trimmed = RenameBuffer?.Trim();
+            if (string.IsNullOrEmpty(trimmed))
+            {
+                IsEditingName = false;
+                return false;
+            }
+
+            // 更新当前显示名称
+            _currentWorkflowName = trimmed;
+            if (!IsInSubroutine)
+            {
+                _name = trimmed;</pre></details><details class="source-card"><summary>S013</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs">src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs:612</a></p><p><code>TabItem_ContextMenu_Delete_Click</code></p><p>SHA256 <code>d08aa3e23138d441149ffc3a66701d538ef3cb03ed87088ad3c6184ee6c78b3a</code></p><pre>        private void TabItem_ContextMenu_Delete_Click(object sender, RoutedEventArgs e)
+        {
+            var workflow = GetWorkflowFromContextMenu(sender);
+            if (workflow == null) return;
+            DeleteWorkflowWithConfirm(workflow);
+        }
+
+        #endregion
+
+        #region 子程序导航
+
+        /// &lt;summary&gt;
+        /// [↩] 返回按钮点击 - 返回上层工作流
+        /// &lt;/summary&gt;</pre></details><details class="source-card"><summary>R007</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs">src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs:612</a></p><p><code>TabItem_ContextMenu_Delete_Click</code></p><p>SHA256 <code>d08aa3e23138d441149ffc3a66701d538ef3cb03ed87088ad3c6184ee6c78b3a</code></p><pre>        private void TabItem_ContextMenu_Delete_Click(object sender, RoutedEventArgs e)
+        {
+            var workflow = GetWorkflowFromContextMenu(sender);
+            if (workflow == null) return;
+            DeleteWorkflowWithConfirm(workflow);
+        }
+
+        #endregion
+
+        #region 子程序导航
+
+        /// &lt;summary&gt;
+        /// [↩] 返回按钮点击 - 返回上层工作流
+        /// &lt;/summary&gt;
+        private void NavigateBack_Click(object sender, RoutedEventArgs e)
+        {
+            if (_viewModel?.NavigateBackFromSubroutine() == true)
+            {
+                _viewModel.StatusText = $&quot;已返回: {_viewModel.WorkflowTabViewModel?.SelectedTab?.EffectiveDisplayName}&quot;;
+            }</pre></details><details class="source-card"><summary>R008</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/WorkflowUI/WorkflowTabViewModel.cs">src/UI/Features/WorkflowUI/WorkflowTabViewModel.cs:238</a></p><p><code>ConfirmRename</code></p><p>SHA256 <code>b0b7ced2ce8d9175d09471cada0e776e10ca1934976bd4e6ac61dece85cb30ae</code></p><pre>        public bool ConfirmRename()
+        {
+            var trimmed = RenameBuffer?.Trim();
+            if (string.IsNullOrEmpty(trimmed))
+            {
+                IsEditingName = false;
+                return false;
+            }
+
+            // 更新当前显示名称
+            _currentWorkflowName = trimmed;
+            if (!IsInSubroutine)
+            {
+                _name = trimmed;
+                OnPropertyChanged(nameof(Name));
+            }
+            OnPropertyChanged(nameof(EffectiveDisplayName));
+            IsEditingName = false;
+
+            // 通知外部更新引擎中的 Workflow.Name</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M05&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;新增、选中、重命名与删除流程Tab&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;ShellWorkspace事件&quot;,
+    &quot;WorkflowTabViewModel&quot;,
+    &quot;流程集合/SelectedTab&quot;,
+    &quot;当前画布&quot;
+  ],
+  &quot;current&quot;: &quot;AddWorkflow、Tab选择、Rename/Delete事件可定位；名字有缓冲提交。&quot;,
+  &quot;gap&quot;: &quot;删除流程→所有输入输出/跨流程引用/实例退役；Undo恢复→稳定ID/引擎集合重挂；运行中删除→拒绝或安全完成&quot;,
+  &quot;vm&quot;: &quot;ProcedureConfigControl→流程decorator→DisplayModuleSet；流程身份与显示名称分开。&quot;,
+  &quot;vmDoc&quot;: &quot;WORKFLOW-TAB-TOOLBOX-GROUP-CLOSURE.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：删除Tab不等于跨流程绑定与运行实例同步退役；完整消费者未齐。 VM参考边界：参考流程稳定身份与Group显示目标分离。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;补删除引用清单和撤销重挂证据，确认缺口后集中编辑事务；成本为命令历史迁移。 把Add/Delete/Rename提交集中到流程服务；逐个列UI、引擎、方案和引用写入点，缺少事务时补齐；保存与运行不得各持不同对象。&quot;,
+  &quot;accept&quot;: &quot;改名不改稳定ID；删除/撤销恢复引用，运行中删除有明确拒绝或安全停止。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S011&quot;,
+    &quot;S012&quot;,
+    &quot;S013&quot;,
+    &quot;R007&quot;,
+    &quot;R008&quot;
+  ],
+  &quot;optimization&quot;: &quot;O01&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M05&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;Tab新增调用AddWorkflow；ConfirmRename通过NameCommitted通知外部更新；删除入口定位到Tab集合管理。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;删除流程→所有输入输出/跨流程引用/实例退役&quot;,
+      &quot;Undo恢复→稳定ID/引擎集合重挂&quot;,
+      &quot;运行中删除→拒绝或安全完成&quot;
+    ],
+    &quot;cause&quot;: &quot;证据缺口+运行验证&quot;,
+    &quot;change&quot;: &quot;把Add/Delete/Rename提交集中到流程服务；逐个列UI、引擎、方案和引用写入点，缺少事务时补齐；保存与运行不得各持不同对象。&quot;,
+    &quot;acceptance&quot;: &quot;改名不改稳定ID；删除/撤销恢复引用，运行中删除有明确拒绝或安全停止。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S011&quot;,
+      &quot;S012&quot;,
+      &quot;S013&quot;,
+      &quot;R007&quot;,
+      &quot;R008&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留流程模型，统一身份事务&quot;,
+    &quot;reason&quot;: &quot;UI显示与引擎对象需保持一致，增加统一服务比多处回写更易验证。&quot;
+  },
+  &quot;defect&quot;: &quot;删除Tab不等于跨流程绑定与运行实例同步退役；完整消费者未齐。&quot;,
+  &quot;vmBorrow&quot;: &quot;参考流程稳定身份与Group显示目标分离。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;删除Tab不等于跨流程绑定与运行实例同步退役；完整消费者未齐。&quot;,
+    &quot;borrow&quot;: &quot;参考流程稳定身份与Group显示目标分离。&quot;,
+    &quot;action&quot;: &quot;补删除引用清单和撤销重挂证据，确认缺口后集中编辑事务；成本为命令历史迁移。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S011&quot;,
+      &quot;S012&quot;,
+      &quot;S013&quot;,
+      &quot;R007&quot;,
+      &quot;R008&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

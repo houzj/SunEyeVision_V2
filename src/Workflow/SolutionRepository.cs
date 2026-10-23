@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -75,9 +75,9 @@ public class SolutionRepository
     private static void ValidateSchema(JsonElement root)
     {
         if (!root.TryGetProperty("Id", out var id) || id.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(id.GetString()))
-            throw new InvalidDataException("方案缺少有效身份，不能作为新方案静默载入。");
-        if (root.TryGetProperty("SchemaVersion", out var schema) && schema.GetInt32() != 1)
-            throw new InvalidDataException("当前软件不支持该方案格式版本，请使用兼容的软件打开。");
+            throw new JsonException("方案缺少有效身份。", "$.Id", null, null);
+        if (root.TryGetProperty("SchemaVersion", out var version) && (!version.TryGetInt32(out var number) || number != 1))
+            throw new JsonException("当前软件不支持该方案格式版本。", "$.SchemaVersion", null, null);
     }
 
     private bool EnsurePluginsLoaded()
@@ -105,134 +105,78 @@ public class SolutionRepository
     /// 确保所有工具参数类型都能正确解析。
     /// </remarks>
     public Solution? Load(string filePath, string? resourceBaseDirectory = null)
+        => LoadCandidate(filePath, resourceBaseDirectory).Candidate;
+
+    public SolutionLoadResult LoadCandidate(string filePath, string? resourceBaseDirectory = null)
     {
-        var loadStopwatch = Stopwatch.StartNew();
-        _logger.Log(LogLevel.Info,
-            $"[LoadTrace] Repository.Load entered | path={filePath}, thread={Environment.CurrentManagedThreadId}, pluginLoaded={PluginLoader.IsLoaded}",
-            "SolutionRepository");
-
-        if (string.IsNullOrEmpty(filePath))
-        {
-            _logger.Log(LogLevel.Warning, $"[LoadTrace] file path empty | elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
-            _logger.Log(LogLevel.Warning, "加载解决方案失败：文件路径为空", "SolutionRepository");
-            return null;
-        }
-
-        _logger.Log(LogLevel.Info, $"[LoadTrace] File.Exists begin | elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
-        if (!File.Exists(filePath))
-        {
-            _logger.Log(LogLevel.Warning, $"[LoadTrace] File.Exists=false | elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
-            _logger.Log(LogLevel.Warning, $"加载解决方案失败：文件不存在: {filePath}", "SolutionRepository");
-            return null;
-        }
-        _logger.Log(LogLevel.Info, $"[LoadTrace] File.Exists=true | elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
-
-        // ✅ Fail Fast：确保插件在反序列化前加载
-        _logger.Log(LogLevel.Info, $"[LoadTrace] EnsurePluginsLoaded begin | pluginLoaded={PluginLoader.IsLoaded}, elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
-        if (!EnsurePluginsLoaded())
-        {
-            _logger.Log(LogLevel.Error, $"[LoadTrace] EnsurePluginsLoaded returned false | elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
-            _logger.Log(LogLevel.Error, "加载解决方案失败：插件加载未完成", "SolutionRepository");
-            return null;
-        }
-        _logger.Log(LogLevel.Info, $"[LoadTrace] EnsurePluginsLoaded returned true | pluginLoaded={PluginLoader.IsLoaded}, elapsedMs={loadStopwatch.ElapsedMilliseconds}", "SolutionRepository");
-
+        LastError = null;
+        var diagnostics = new List<PersistenceDiagnostic>();
+        string? sha = null, directory = null;
+        JsonNode? root = null;
         try
         {
-            var stopwatch = Stopwatch.StartNew();
-            var threadId = Environment.CurrentManagedThreadId;
-            var persistedDevices = new List<Device>();
-            _logger.Log(LogLevel.Info, $"开始反序列化解决方案: {filePath}", "SolutionRepository");
-            _logger.Log(LogLevel.Info, $"[LoadTrace] File.ReadAllText begin | thread={threadId}", "SolutionRepository");
-            var json = File.ReadAllText(filePath);
-            _logger.Log(LogLevel.Info, $"[LoadTrace] File.ReadAllText completed | chars={json.Length}, elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
-            _logger.Log(LogLevel.Info, $"[LoadTrace] WorkflowSerializationOptions.Default begin | elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
-            var options = WorkflowSerializationOptions.Default;
-            _logger.Log(LogLevel.Info, $"[LoadTrace] WorkflowSerializationOptions.Default completed | elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
-            _logger.Log(LogLevel.Info, $"[LoadTrace] JsonDocument.Parse begin | elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
-            using (var diagnosticDocument = JsonDocument.Parse(json))
-            {
-                var root = diagnosticDocument.RootElement;
-                ValidateSchema(root);
-                ValidateTools(root);
-                var properties = root.EnumerateObject().Select(property => property.Name).ToArray();
-                _logger.Log(LogLevel.Info,
-                    $"[LoadTrace] JsonDocument.Parse completed | properties={string.Join(',', properties)}, " +
-                    $"workflows={GetArrayLength(root, "Workflows")}, globalVariables={GetArrayLength(root, "GlobalVariables")}, " +
-                    $"devices={GetArrayLength(root, "Devices")}, communications={GetArrayLength(root, "Communications")}, elapsedMs={stopwatch.ElapsedMilliseconds}",
-                    "SolutionRepository");
-
-                ProbeProperty<List<Workflow>>(root, "Workflows", options, stopwatch);
-                ProbeProperty<List<GlobalVariable>>(root, "GlobalVariables", options, stopwatch);
-                persistedDevices = ReadPersistedDevices(root, stopwatch);
-                ProbeProperty<List<Communication>>(root, "Communications", options, stopwatch);
-                ProbeProperty<DatabaseConfiguration>(root, "DatabaseConfiguration", options, stopwatch);
-                ProbeProperty<ExecutionStrategy>(root, "ExecutionStrategy", options, stopwatch);
-                ProbeProperty<List<SolutionVersion>>(root, "VersionHistory", options, stopwatch);
-            }
-            _logger.Log(LogLevel.Info, $"[LoadTrace] JsonSerializer.Deserialize<SolutionWithoutDevices> begin | elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
-            var solutionJson = ResolveResourcePaths(RemoveDevicesProperty(json), resourceBaseDirectory ?? Path.GetDirectoryName(Path.GetFullPath(filePath))!);
-            var solution = JsonSerializer.Deserialize<Solution>(solutionJson, options);
-            _logger.Log(LogLevel.Info, $"[LoadTrace] JsonSerializer.Deserialize<Solution> completed | elapsedMs={stopwatch.ElapsedMilliseconds}, thread={threadId}", "SolutionRepository");
-
-            if (solution != null)
-            {
-                solution.Devices = persistedDevices;
-                solution.FilePath = Path.GetFullPath(filePath);
-                if (string.IsNullOrWhiteSpace(solution.Name)) solution.Name = Path.GetFileNameWithoutExtension(filePath);
-                _logger.Log(LogLevel.Success, $"加载解决方案成功: Id={solution.Id} -> {filePath}, workflows={solution.Workflows.Count}, devices={solution.Devices.Count}, elapsedMs={stopwatch.ElapsedMilliseconds}", "SolutionRepository");
-            }
-            else
-            {
-                _logger.Log(LogLevel.Warning, $"加载解决方案失败：反序列化结果为null: {filePath}", "SolutionRepository");
-            }
-
-            return solution;
+            var path = Path.GetFullPath(filePath);
+            directory = Path.GetFullPath(resourceBaseDirectory ?? Path.GetDirectoryName(path)!);
+            var bytes = File.ReadAllBytes(path);
+            sha = Convert.ToHexString(SHA256.HashData(bytes));
+            var json = new UTF8Encoding(false, true).GetString(bytes).TrimStart('\uFEFF');
+            SolutionCompatibilityAdapter.CheckDuplicateKeys(json);
+            root = JsonNode.Parse(json) ?? throw new JsonException("Empty document.");
+            SolutionCompatibilityAdapter.Prepare(root, diagnostics);
+            new SolutionResourceResolver(directory).Inspect(root, diagnostics);
+            var hasTools = root["Workflows"] is JsonArray flowArray && flowArray.OfType<JsonObject>().Any(w => w["Nodes"] is JsonArray nodes && nodes.Count > 0);
+            if (hasTools && !EnsurePluginsLoaded()) throw new InvalidDataException("插件元数据加载未完成。");
+            using var document = JsonDocument.Parse(root.ToJsonString());
+            ValidateTools(document.RootElement);
+            var devices = ReadPersistedDevices(document.RootElement, Stopwatch.StartNew());
+            var solution = JsonSerializer.Deserialize<Solution>(RemoveDevicesProperty(root.ToJsonString()), new JsonSerializerOptions(WorkflowSerializationOptions.Default) { UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow })
+                ?? throw new JsonException("Null solution.");
+            solution.Devices = devices;
+            solution.FilePath = path;
+            solution.ResourceBaseDirectory = directory;
+            if (string.IsNullOrWhiteSpace(solution.Name)) solution.Name = Path.GetFileNameWithoutExtension(path);
+            return new(solution, sha, directory, diagnostics.AsReadOnly());
         }
         catch (Exception ex)
         {
-            LastError = ex.Message;
-            _logger.Log(LogLevel.Error, $"加载解决方案失败: {filePath}, 错误: {ex.Message}", "SolutionRepository", ex);
-            return null;
+            var jsonError = ex as JsonException;
+            var path = jsonError?.Path ?? "$";
+            if (ex.Data["WorkflowId"] is string workflowId && root?["Workflows"] is JsonArray workflows)
+                for (int i = 0; i < workflows.Count; i++)
+                    if (workflows[i]?["Id"]?.GetValue<string>() == workflowId)
+                    { path = "$.Workflows[" + i + "]" + path.TrimStart('$'); break; }
+            LastError = path + ": " + ex.Message;
+            var code = path.EndsWith(".ToolType", StringComparison.Ordinal) ? "PLUGIN_CONTRACT_REJECTED"
+                : path.StartsWith("$.Devices", StringComparison.Ordinal) ? "DEVICE_STRUCTURE_INVALID"
+                : path.StartsWith("$.GlobalVariables", StringComparison.Ordinal) ? "VARIABLE_VALUE_INVALID"
+                : path.Contains(".Connections", StringComparison.Ordinal) ? "CONNECTION_INVALID"
+                : path == "$.SchemaVersion" ? "SCHEMA_UNSUPPORTED" : "LOAD_REJECTED";
+            diagnostics.Add(new(code, "Read", "Error", path, ex.Message));
+            _logger.Log(LogLevel.Error, "方案候选读取失败：" + LastError, "SolutionRepository", ex);
+            return new(null, sha, directory, diagnostics.AsReadOnly());
         }
     }
 
-    private static void ValidateTools(JsonElement element)
+    private static void ValidateTools(JsonElement root)
     {
-        if (element.ValueKind == JsonValueKind.Object)
+        if (!root.TryGetProperty("Workflows", out var workflows)) return;
+        int w = 0;
+        foreach (var workflow in workflows.EnumerateArray())
         {
-            if (element.TryGetProperty("ToolType", out var tool) && tool.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(tool.GetString()) &&
-                ToolRegistry.GetToolMetadata(tool.GetString()!) == null)
-                throw new InvalidDataException("缺少工具插件：" + tool.GetString() + "。原方案保持不变，请安装兼容插件。");
-            foreach (var property in element.EnumerateObject()) ValidateTools(property.Value);
-        }
-        else if (element.ValueKind == JsonValueKind.Array) foreach (var child in element.EnumerateArray()) ValidateTools(child);
-    }
-    internal static string ResolveResourcePaths(string json, string directory)
-    {
-        var root = JsonNode.Parse(json)!;
-        void Resolve(JsonNode? node)
-        {
-            if (node is JsonObject obj)
+            if (workflow.TryGetProperty("Nodes", out var nodes))
             {
-                foreach (var pair in obj.ToArray())
+                int n = 0;
+                foreach (var node in nodes.EnumerateArray())
                 {
-                    if (pair.Key is "FilePath" or "ModelPath" or "CalibrationFilePath" && pair.Value is JsonValue value && value.TryGetValue<string>(out var path) &&
-                        !string.IsNullOrWhiteSpace(path) && !Path.IsPathRooted(path) && !path.Contains('{'))
-                        obj[pair.Key] = Path.GetFullPath(path, directory);
-                    else if (pair.Key is "FilePaths" or "ForRunPaths" && pair.Value is JsonArray array)
-                        for (var i = 0; i < array.Count; i++)
-                        {
-                            var entry = array[i]?.GetValue<string>();
-                            if (!string.IsNullOrWhiteSpace(entry) && !Path.IsPathRooted(entry)) array[i] = Path.GetFullPath(entry, directory);
-                        }
-                    else Resolve(pair.Value);
+                    var path = "$.Workflows[" + w + "].Nodes[" + n++ + "].ToolType";
+                    if (!node.TryGetProperty("ToolType", out var tool) || tool.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(tool.GetString()))
+                        throw new JsonException("Node ToolType is required.", path, null, null);
+                    if (ToolRegistry.GetToolMetadata(tool.GetString()!) == null)
+                        throw new JsonException("缺少兼容工具插件：" + tool.GetString(), path, null, null);
                 }
             }
-            else if (node is JsonArray list) foreach (var child in list) Resolve(child);
+            w++;
         }
-        Resolve(root);
-        return root.ToJsonString();
     }
 
     private string RemoveDevicesProperty(string json)
@@ -246,40 +190,6 @@ public class SolutionRepository
         }
 
         return JsonSerializer.Serialize(properties);
-    }
-
-    private static int GetArrayLength(JsonElement root, string propertyName)
-        => root.TryGetProperty(propertyName, out var property)
-           && property.ValueKind == JsonValueKind.Array
-            ? property.GetArrayLength()
-            : -1;
-
-    private void ProbeProperty<T>(
-        JsonElement root,
-        string propertyName,
-        JsonSerializerOptions options,
-        Stopwatch stopwatch)
-    {
-        if (!root.TryGetProperty(propertyName, out var property))
-            return;
-
-        _logger.Log(LogLevel.Info,
-            $"[LoadTrace] Property probe begin | property={propertyName}, type={typeof(T).Name}, elapsedMs={stopwatch.ElapsedMilliseconds}",
-            "SolutionRepository");
-        try
-        {
-            var value = JsonSerializer.Deserialize<T>(property.GetRawText(), options);
-            _logger.Log(LogLevel.Info,
-                $"[LoadTrace] Property probe completed | property={propertyName}, null={value is null}, elapsedMs={stopwatch.ElapsedMilliseconds}",
-                "SolutionRepository");
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(LogLevel.Error,
-                $"[LoadTrace] Property probe failed | property={propertyName}, error={ex.Message}, elapsedMs={stopwatch.ElapsedMilliseconds}",
-                "SolutionRepository",
-                ex);
-        }
     }
 
     private List<Device> ReadPersistedDevices(
@@ -307,7 +217,7 @@ public class SolutionRepository
 
             var restored = new Device
             {
-                Id = ReadString(device, "Id", Guid.NewGuid().ToString()),
+                Id = ReadString(device, "Id", string.Empty),
                 Name = ReadString(device, "Name", string.Empty),
                 Type = ReadEnum(device, "Type", DeviceType.Camera),
                 Manufacturer = ReadString(device, "Manufacturer", string.Empty),
@@ -324,6 +234,8 @@ public class SolutionRepository
                 ModifiedTime = ReadDateTime(device, "ModifiedTime", DateTime.Now)
             };
 
+            var known = typeof(Device).GetProperties().Select(p => p.Name).ToHashSet(StringComparer.Ordinal);
+            restored.AdditionalData = device.EnumerateObject().Where(p => !known.Contains(p.Name)).ToDictionary(p => p.Name, p => p.Value.Clone());
             result.Add(restored);
 
             _logger.Log(LogLevel.Info,
@@ -419,8 +331,9 @@ public class SolutionRepository
             JsonValueKind.True or JsonValueKind.False => element.GetBoolean(),
             JsonValueKind.Number when element.TryGetInt64(out var integer) => integer,
             JsonValueKind.Number when element.TryGetDouble(out var number) => number,
-            JsonValueKind.Array or JsonValueKind.Object => element.GetRawText(),
-            _ => string.Empty
+            JsonValueKind.Array or JsonValueKind.Object => element.Clone(),
+            JsonValueKind.Null => null!,
+            _ => throw new JsonException("Unsupported device setting value.")
         };
     }
 
@@ -504,31 +417,42 @@ public class SolutionRepository
     /// <returns>是否成功</returns>
     public bool Save(Solution solution, string filePath, bool overwrite = true)
     {
-        // ✅ 日志监控：生成唯一调用ID
-        long callId = System.Threading.Interlocked.Increment(ref _saveCallCount);
-
-        if (solution == null)
+        if (solution == null) { LastError = "方案为空。"; return false; }
+        try
         {
-            _logger.Log(LogLevel.Warning, $"[Save #{callId}] 保存解决方案失败：解决方案对象为空\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository");
-            return false;
+            var success = SaveSnapshot(solution, SolutionSession.Serialize(solution), filePath, overwrite);
+            // Preserve the repository API's location update, but only after the file exists.
+            if (success) solution.FilePath = Path.GetFullPath(filePath);
+            return success;
         }
+        catch (Exception ex) { LastError = ex.Message; return false; }
+    }
 
+    internal bool SaveSnapshot(Solution solution, string serializedSnapshot, string filePath, bool overwrite = true)
+        => WriteSnapshot(SolutionSnapshot.PrepareJson(serializedSnapshot, filePath, solution.FilePath == null), overwrite).FileWritten;
+
+    public SolutionSaveResult WriteSnapshot(SolutionSnapshot prepared, bool overwrite = true)
+    {
+        LastError = null;
+        var filePath = prepared.TargetPath;
+        long callId = System.Threading.Interlocked.Increment(ref _saveCallCount);
         if (string.IsNullOrEmpty(filePath))
         {
             _logger.Log(LogLevel.Warning, $"[Save #{callId}] 保存解决方案失败：文件路径为空\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository");
-            return false;
+            return new SolutionSaveResult(false, LastError ?? "保存失败：路径为空。");
         }
 
         string? temporaryPath = null;
         try
         {
-            ValidateCommunicationConfigurations(solution);
-            // The device list (subject to IsEnabled) now controls restore. Retire the
-            // obsolete per-device autoConnect switch from newly saved plans.
-            foreach (var communication in solution.Communications)
-                communication.Settings.Remove("autoConnect");
-            solution.FilePath = filePath;
-
+            // Communication validation consumes the same frozen JSON that will be written.
+            var snapshot = JsonNode.Parse(prepared.Json)!;
+            if (snapshot["Communications"] is JsonArray communications)
+            {
+                var frozen = new Solution();
+                frozen.Communications = JsonSerializer.Deserialize<List<Communication>>(communications.ToJsonString(), WorkflowSerializationOptions.Default)!;
+                ValidateCommunicationConfigurations(frozen);
+            }
             // 确保目录存在
             var directory = Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -537,7 +461,7 @@ public class SolutionRepository
                 _logger.Log(LogLevel.Info, $"[Save #{callId}] 创建目录: {directory}", "SolutionRepository");
             }
 
-            var json = JsonSerializer.Serialize(solution, WorkflowSerializationOptions.Default);
+            var json = prepared.Json;
 
             _logger.Log(LogLevel.Info, $"[Save #{callId}] 序列化完成，开始写入文件", "SolutionRepository");
 
@@ -559,14 +483,14 @@ public class SolutionRepository
             temporaryPath = null;
 
             var fileInfo = new FileInfo(filePath);
-            _logger.Log(LogLevel.Success, $"[Save #{callId}] 保存解决方案成功: Id={solution.Id} -> {filePath}, 文件大小: {fileInfo.Length} 字节\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository");
-            return true;
+            _logger.Log(LogLevel.Success, $"[Save #{callId}] 保存解决方案成功: -> {filePath}, 文件大小: {fileInfo.Length} 字节\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository");
+            return new SolutionSaveResult(true) { WrittenSnapshot = prepared };
         }
         catch (Exception ex)
         {
             LastError = ex.Message;
             _logger.Log(LogLevel.Error, $"[Save #{callId}] 保存解决方案失败: {filePath}, 错误: {ex.Message}\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository", ex);
-            return false;
+            return new SolutionSaveResult(false, LastError ?? "保存失败：路径为空。");
         }
         finally
         {

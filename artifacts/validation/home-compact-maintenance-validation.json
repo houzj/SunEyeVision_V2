@@ -1,0 +1,58 @@
+{
+  "errors": [],
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "mapTop": 196.5,
+      "mapBottom": 793.5,
+      "detailBottom": 715.4375,
+      "detailScroll": false,
+      "overflow": false,
+      "maintenanceOnHome": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "mapTop": 196.5,
+      "mapBottom": 756.5,
+      "detailBottom": 715.4375,
+      "detailScroll": false,
+      "overflow": false,
+      "maintenanceOnHome": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "mapTop": 196.5,
+      "mapBottom": 793.5,
+      "detailBottom": 715.4375,
+      "detailScroll": false,
+      "overflow": false,
+      "maintenanceOnHome": false
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "mapTop": 212.25,
+      "mapBottom": 797.25,
+      "detailBottom": 1325.84375,
+      "detailScroll": false,
+      "overflow": false,
+      "maintenanceOnHome": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mapTop": 268.75,
+      "mapBottom": 822.25,
+      "detailBottom": 1556.515625,
+      "detailScroll": false,
+      "overflow": false,
+      "maintenanceOnHome": false
+    }
+  ],
+  "productExecuted": false,
+  "legacyHashRedirect": true,
+  "maintenanceLinksChecked": 77
+}

@@ -1,0 +1,210 @@
+{
+  "status": "设计提案，产品未实施；厂商SDK和产品政策待定",
+  "states": [
+    {
+      "id": "Checking",
+      "title": "检查中",
+      "meaning": "正在核对自有狗与许可材料；拒绝新的受限操作，配置查看可按产品政策开放。"
+    },
+    {
+      "id": "Licensed",
+      "title": "已授权",
+      "meaning": "当前功能、期限、设备证明及许可版本都符合准入合同。每次新操作仍检查快照代次。"
+    },
+    {
+      "id": "Limited",
+      "title": "部分功能可用",
+      "meaning": "狗和许可有效，但不含所请求功能；拒绝对应操作，不把整个产品伪报故障。"
+    },
+    {
+      "id": "Unavailable",
+      "title": "设备或SDK不可用",
+      "meaning": "无狗、驱动缺失、通信超时分别给错误；不能根据设备序列号存在就认定授权。"
+    },
+    {
+      "id": "Invalid",
+      "title": "许可不匹配或签名无效",
+      "meaning": "拒绝受限操作，保留恢复入口；不自动改写许可或回退到未签名配置。"
+    },
+    {
+      "id": "Expired",
+      "title": "许可已到期",
+      "meaning": "拒绝新受限操作；已在途动作按明确的运行/设备完成协议收尾。"
+    },
+    {
+      "id": "Draining",
+      "title": "停止接收新操作，等待收尾",
+      "meaning": "授权变化后先关准入，观察在途任务与设备确认；完成前不释放在用句柄或宣告退出。"
+    },
+    {
+      "id": "RecoveryRequired",
+      "title": "需要恢复",
+      "meaning": "时钟异常、许可版本回退或不可判断的设备状态需要重新核验；没有可信时钟时不承诺防回拨。"
+    }
+  ],
+  "contracts": [
+    {
+      "title": "狗适配器（拟建）",
+      "name": "IDongleProvider",
+      "meaning": "探测、可信设备证明、厂商SDK错误转换、取消/超时。序列号只用于关联；能否挑战响应、可信计时必须由所选厂商能力证明。"
+    },
+    {
+      "title": "许可服务（拟建）",
+      "name": "ILicenseService",
+      "meaning": "验证许可来源、设备关联、功能和期限，发布不可变LicenseSnapshot与代次；SDK句柄留在适配层，快照不持原生句柄。"
+    },
+    {
+      "title": "能力准入（拟建）",
+      "name": "ICapabilityGate",
+      "meaning": "按功能、操作、作用域和当前代次授予短寿命操作资格。计划准备和产生外部副作用前分别检查；不能把旧快照永远当通行证。"
+    },
+    {
+      "title": "操作会话（拟建）",
+      "name": "LicensedOperationLease",
+      "meaning": "关联本次运行/设备动作及授权代次，记录结果和收尾。Dispose本身不是取消或排空；不把它实现成强杀线程。"
+    }
+  ],
+  "cases": [
+    {
+      "trigger": "启动无狗",
+      "state": "Unavailable",
+      "expected": "显示具体原因，拒绝受限运行；允许查看配置/历史与否由产品功能政策决定。不得偷偷进入全功能模式。"
+    },
+    {
+      "trigger": "有狗但许可不属于它",
+      "state": "Invalid",
+      "expected": "关联校验失败，拒绝受限操作；不能只比较可伪造的显示序列号。"
+    },
+    {
+      "trigger": "许可有效但缺某功能",
+      "state": "Limited",
+      "expected": "只拒绝该功能；错误包含功能ID和恢复方式，不泄漏秘密。"
+    },
+    {
+      "trigger": "准备好发送计划后拔狗",
+      "state": "Draining",
+      "expected": "提交前复核授权代次，拒绝尚未提交的计划；已发出的设备动作不能声称回滚。"
+    },
+    {
+      "trigger": "同步算法执行中到期",
+      "state": "Draining",
+      "expected": "停止新受限派发；观察当前算法结束/合作取消。复用真正的任务排空，不释放仍被使用的图像。"
+    },
+    {
+      "trigger": "设备写入进行中拔狗",
+      "state": "Draining",
+      "expected": "按驱动协议完成或安全停止并取得结果；不能把取消令牌当撤销外设写入。"
+    },
+    {
+      "trigger": "狗SDK探测超时",
+      "state": "Unavailable",
+      "expected": "检查任务超时不等底层调用已返回；适配器仍负责句柄寿命，禁止立刻销毁在用对象。"
+    },
+    {
+      "trigger": "本机时钟回拨",
+      "state": "RecoveryRequired",
+      "expected": "优先使用厂商可信时钟/计数能力；若没有，只能声明检测或需要恢复的有限保证，不能声称纯离线强防回拨。"
+    },
+    {
+      "trigger": "许可文件损坏或签名未知",
+      "state": "Invalid",
+      "expected": "保留原文件和诊断，拒绝受限运行；签发/恢复走独立可信流程。"
+    },
+    {
+      "trigger": "换狗或换机恢复",
+      "state": "Checking",
+      "expected": "由签发系统执行迁移政策，重新验证并增加快照代次；客户端不持签发私钥。"
+    }
+  ],
+  "decisions": [
+    {
+      "title": "路线",
+      "text": "新增自有许可系统；不移植VM狗协议、密钥或原厂二进制。"
+    },
+    {
+      "title": "为什么",
+      "text": "当前产品约束已明确。许可需要覆盖工作流、工具调试、通信与脚本等真实服务入口，单个启动窗口检查不够。"
+    },
+    {
+      "title": "不采用的方案",
+      "text": "仅隐藏按钮无法限制后台入口；只检查序列号不能证明设备可信；把授权逻辑散进每个工具会造成状态不一致。"
+    },
+    {
+      "title": "复用边界",
+      "text": "复用当前运行会话、服务准入和诊断职责；必须先补停止排空缺口。WPF界面只投影状态，不成为许可真实性来源。"
+    },
+    {
+      "title": "代价",
+      "text": "增加厂商SDK部署、签发/换狗恢复、代次检查、故障映射及在途操作收尾。首次迁移需逐入口登记，不能只改登录或菜单。"
+    },
+    {
+      "title": "VM证据边界",
+      "text": "VM恢复模型可用于查漏应受限入口；本页不对其授权算法或安全性排名，不使用未知原生实现作为自有协议。"
+    }
+  ],
+  "policies": [
+    {
+      "title": "狗型号/SDK",
+      "text": "TBD：厂商及支持的证明、时钟、并发、部署能力。"
+    },
+    {
+      "title": "功能/席位/期限",
+      "text": "TBD：确定功能ID、是否区分开发与运行许可；不从VM名称照搬。"
+    },
+    {
+      "title": "离线/拔狗宽限",
+      "text": "TBD：禁止隐含默认宽限；未定之前不承诺可发行。"
+    },
+    {
+      "title": "在途动作政策",
+      "text": "TBD：按算法/采集/读写/脚本分别规定完成、合作取消和设备确认。"
+    },
+    {
+      "title": "换狗/丢失/恢复",
+      "text": "TBD：签发系统审批与撤销/迁移策略；纯离线撤销能力有限。"
+    },
+    {
+      "title": "时钟与防回退",
+      "text": "TBD：取决可信计时/计数与可信许可版本来源；不能只凭本机文件保证。"
+    }
+  ],
+  "refs": [
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "line": 178,
+      "token": "public async Task RunSingleAsync",
+      "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae"
+    },
+    {
+      "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+      "line": 121,
+      "token": "public async",
+      "sha256": "0229fd6ea68af49b5aefe58187f0036a5987fc69c15f1486cc73113dce6531e2"
+    },
+    {
+      "path": "src/UI/Services/Communication/WorkflowCommunicationSendService.cs",
+      "line": 84,
+      "token": "public async Task<PreparedCommunicationSend> PrepareAsync",
+      "sha256": "476d47688dbc043c788b54bf6ec264cd44c7e0ac2ab6a90669f43e6658a64dd2"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "line": 399,
+      "token": "foreach (var item in running)",
+      "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db"
+    }
+  ],
+  "scope": "许可与方案保密/插件信任分开；不是恶意插件进程隔离或原厂授权复刻",
+  "fields": [
+    "LicenseId",
+    "SchemaVersion",
+    "IssuerKeyId",
+    "DeviceBinding",
+    "FeatureIds",
+    "NotBefore/ExpiresAt",
+    "PolicyVersion",
+    "SnapshotEpoch",
+    "ValidationReason"
+  ],
+  "productExecuted": false
+}

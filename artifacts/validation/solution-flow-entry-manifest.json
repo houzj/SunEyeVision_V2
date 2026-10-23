@@ -1,0 +1,26 @@
+{
+  "taskId": "SOLUTION-FLOW-08",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html"
+  ],
+  "target": "artifacts/ui-prototypes/solution-lifecycle/index.html",
+  "observed": [
+    {
+      "path": "artifacts/ui-prototypes/solution-lifecycle/index.html",
+      "observedSha256": "ae4738e5c21ac58caf9e0752af5579e41d2c445103cfdbe511ff3739dfcc621d"
+    },
+    {
+      "path": "artifacts/ui-prototypes/solution-lifecycle/evidence.json",
+      "observedSha256": "544e88c13a43b1928ef0c670185cc71a849b728147ddc84ee639c1bdca1d6955"
+    },
+    {
+      "path": "artifacts/ui-prototypes/solution-lifecycle/validation.json",
+      "observedSha256": "28e552085d4213a213cc98785732fa34c78e573e2a8405f775d5532f7e2bad1e"
+    }
+  ],
+  "meaning": "discussion-only; in-memory demo; not product implementation or acceptance",
+  "prototypeModifiedByDocRole": false,
+  "productModified": false,
+  "wholeSiteRegenerated": false
+}

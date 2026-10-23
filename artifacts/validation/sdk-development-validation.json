@@ -1,0 +1,19 @@
+{
+  "sdkSubtopics": 12,
+  "packageRoles": 6,
+  "publicOperations": 13,
+  "sourceIdentities": 12,
+  "officialTopics": 7,
+  "ownershipRows": 7,
+  "failureCases": 9,
+  "acceptanceCriteria": 10,
+  "sourceHashes": true,
+  "codeIsDesignOnly": true,
+  "deepLinks": true,
+  "history": true,
+  "keyboard": true,
+  "printRestore": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "productModified": false
+}

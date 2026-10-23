@@ -1,0 +1,22 @@
+{
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\global-variables.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html"
+  ],
+  "statusChecks": true,
+  "linksChecked": 3,
+  "errors": [],
+  "productExecuted": false,
+  "componentCounts": {
+    "passed": 25,
+    "failed": 0
+  },
+  "e2eCounts": {
+    "blocked": 9,
+    "failed": 0,
+    "passed": 0
+  },
+  "previous12Upgraded": false,
+  "finalB1Acceptance": false
+}

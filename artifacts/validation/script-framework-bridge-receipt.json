@@ -1,0 +1,127 @@
+{
+  "input": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-SCRIPT-CHAIN\\framework\\bridge-evidence.json",
+  "sha256": "EA17B4EF15E9E3C788F585D19C7386F9806E188765949A6D777A7A84206F142D",
+  "errors": 0,
+  "checks": [
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModuleAlgorithmTab.xml",
+      "matches": true,
+      "id": "shellXml"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\renderer-gap-projects\\ShellModuleControl\\Apps.XmlParser.ParamTab\\ButtonSelecter_Shell.cs",
+      "matches": true,
+      "id": "button"
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModuleControl.dll",
+      "matches": true,
+      "id": "buttonAssembly"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-SCRIPT-CHAIN\\framework\\raw\\ShellModuleControl.ButtonSelecter_Shell.il",
+      "matches": true,
+      "id": "buttonIL"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\BottomCommand.cs",
+      "matches": true,
+      "id": "bottom"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\Command.cs",
+      "matches": true,
+      "id": "command"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\Setter.cs",
+      "matches": true,
+      "id": "setter"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\OperationManager.cs",
+      "matches": true,
+      "id": "operationManager"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\ExcuteMethodOperation.cs",
+      "matches": true,
+      "id": "reflectOperation"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
+      "matches": true,
+      "id": "template"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\VmModule.cs",
+      "matches": true,
+      "id": "vmModule"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\ModuleParam.cs",
+      "matches": true,
+      "id": "moduleParam"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\ModuleManager.cs",
+      "matches": true,
+      "id": "sdkModuleManager"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\ServerSDKAPI.cs",
+      "matches": true,
+      "id": "sdkApi"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\NativeMethods.cs",
+      "matches": true,
+      "id": "nativeMethods"
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/PublicFile/x64/iMVS-6000PlatformSDK.dll",
+      "matches": true,
+      "id": "platformNative"
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModule.dll",
+      "matches": true,
+      "id": "shellNative"
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/VisionMaster.exe.config",
+      "matches": true,
+      "id": "config"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VisionMaster.Exe.Audit\\VisionMaster\\SystemConfigManager.cs",
+      "matches": true,
+      "id": "configManager"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VisionMaster.Exe.Audit\\VisionMaster\\MainWindowData.cs",
+      "matches": true,
+      "id": "mainData"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\CVmObjectBase.cs",
+      "matches": true,
+      "id": "sdkObject"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\SolutionManager.cs",
+      "matches": true,
+      "id": "sdkSolutionManager"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\TempVmSolution.cs",
+      "matches": true,
+      "id": "tempSolution"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\VmSolution.cs",
+      "matches": true,
+      "id": "vmSolution"
+    }
+  ]
+}

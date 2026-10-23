@@ -1,0 +1,1 @@
+using System; using BenchCommon; public class Probe { public void Run() { object x = new BenchCommon.SharedMath(); } }

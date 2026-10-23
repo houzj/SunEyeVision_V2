@@ -1,0 +1,38 @@
+{
+  "readOnlyProject": "D:/MyWork/REA逆向测试/docs/架构逆向与实现对照文档/",
+  "errors": [],
+  "viewports": [
+    {
+      "width": 1366,
+      "height": 768,
+      "top": 109.296875,
+      "bottom": 587.171875,
+      "overflow": false,
+      "deliveryBlockOnHome": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "top": 109.296875,
+      "bottom": 587.171875,
+      "overflow": false,
+      "deliveryBlockOnHome": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "top": 109.296875,
+      "bottom": 587.171875,
+      "overflow": false,
+      "deliveryBlockOnHome": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "top": 131.84375,
+      "bottom": 1264.640625,
+      "overflow": false,
+      "deliveryBlockOnHome": false
+    }
+  ]
+}

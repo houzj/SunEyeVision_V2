@@ -1,0 +1,210 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M01 启动、方案恢复与主窗装配</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">M01 启动、方案恢复与主窗装配</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>M01 启动、方案恢复与主窗装配</h1><article id="compare-M01"><span id="M01"></span><div class="visual-metrics"><div><strong>M01</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>App.OnStartup</b></li><li><small>02</small><b>插件LoadPlugins</b></li><li><small>03</small><b>ServiceInitializer</b></li><li><small>04</small><b>HandleStartupDecisionAsync</b></li><li><small>05</small><b>MainWindow</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>启动注册与方案决策已有代码；相机恢复有独立超时入口。</p><details><summary>完整缺陷与未闭合调用边</summary><p>恢复成功或超时→已创建会话退役的完整边；插件部分加载失败→退出/重试对象清理；启动取消→不暴露半就绪主窗 OnClosing先取消窗口关闭，异步PrepareSolutionTransitionAsync取得transition租约，StopAndWaitAsync最多30秒后再做保存决策。StopAndWait轮询IsAnyRunning；此前ReadyQueue退出finally未await全部running Task，故登记归零不单独证明所有原生任务排空。 OnClosed逐个childWindow.Close，之后退订图像事件、发StopWorkflowCommand并Application.Shutdown。相机预览OnClosed为async void且await Host.DisposeAsync，主窗口没有汇总这些异步完成任务。不能从Close返回证明每个预览流已结束；具体异常/时序未运行。 该方法先await _communicationService.DisposeAsync后才释放_communicationRuntime；前者抛错则后者本次不会执行。App.OnExit分别catch通讯与相机，故相机仍可继续释放，不能误说所有服务都被跳过。OnExit同步GetResult也不等完整异步退出协调器。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>Program/MainWindowData与全局入口装配；原版依赖平台服务。</p><p>全局入口就绪检查可参考，不能据此证明VM所有失败回滚完备。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF01-GLOBAL-ENTRY-AUDIT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">启动恢复超时后继续启动且观察迟到任务；尚未闭合迟到恢复与切方案的身份隔离。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：启动恢复超时后继续启动且观察迟到任务；尚未闭合迟到恢复与切方案的身份隔离。 VM参考边界：全局入口就绪检查可参考，不能据此证明VM所有失败回滚完备。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">先追ObserveLateCameraRestoreAsync及会话Owner；如缺代次拒收，再加启动/方案代次，代价是恢复状态和回滚测试。 先补启动资源所有者和就绪/失败/取消状态表，定位恢复超时后消费者；只有确认无逆序清理时才新增回滚，按故障注入验无半就绪方案。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">插件缺失/相机恢复超时/方案损坏均可返回可诊断状态；退出无遗留会话。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。 注入上层Dispose失败、底层失败及相机失败分别验后续清理仍被观察；错误汇总不丢失首因，重试不重用已半释放实例。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o01.html#O01"><b>入口、装配与编辑事务</b><small class="reference-id">优化方案 · O01</small></a></td></tr></tbody></table></div></section><article id="recommendation-M01"><h2>M01 启动、方案恢复与主窗装配 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>启动恢复超时后继续启动且观察迟到任务；尚未闭合迟到恢复与切方案的身份隔离。</p><p><b>VM可借鉴与不可推断：</b>全局入口就绪检查可参考，不能据此证明VM所有失败回滚完备。</p><p><b>具体改法 / 成本：</b>先追ObserveLateCameraRestoreAsync及会话Owner；如缺代次拒收，再加启动/方案代次，代价是恢复状态和回滚测试。 先补启动资源所有者和就绪/失败/取消状态表，定位恢复超时后消费者；只有确认无逆序清理时才新增回滚，按故障注入验无半就绪方案。</p><p><b>验收：</b>插件缺失/相机恢复超时/方案损坏均可返回可诊断状态；退出无遗留会话。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。 注入上层Dispose失败、底层失败及相机失败分别验后续清理仍被观察；错误汇总不丢失首因，重试不重用已半释放实例。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M01">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M01">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S001</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/App.xaml.cs">src/UI/App.xaml.cs:80</a></p><p><code>OnStartup</code></p><p>SHA256 <code>4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc</code></p><pre>    protected override async void OnStartup(StartupEventArgs e)
+    {
+        // First-run directory dialogs may temporarily be the only window; do not exit when they close.
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        try
+        {
+            _runningApplicationRegistration = ApplicationLifetimeGate.TryRegister();
+            if (_runningApplicationRegistration == null)
+                throw new InvalidOperationException(&quot;SunEyeVision 正在卸载或维护，请等待操作结束后再启动。&quot;);
+        }
+        catch (Exception ex)
+        {
+            _startupRejected = true;
+            if (e.Args.Length == 0 || e.Args[0] != &quot;--release-probe&quot;)</pre></details><details class="source-card"><summary>S002</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/App.xaml.cs">src/UI/App.xaml.cs:306</a></p><p><code>HandleStartupDecisionAsync</code></p><p>SHA256 <code>4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc</code></p><pre>    private async Task HandleStartupDecisionAsync()
+    {
+        LogStartupStage(&quot;HandleStartupDecision.Enter&quot;);
+        var solutionManager = ServiceInitializer.SolutionManager;
+        var startupDecisionService = new StartupDecisionService(solutionManager);
+        var decision = startupDecisionService.GetStartupDecision();
+        LogStartupStage(&quot;Startup decision resolved&quot;, $&quot;decision={decision}&quot;);
+
+        var mainWindow = new MainWindow();
+        AttachMainWindowDiagnostics(mainWindow);
+        LogStartupStage(&quot;MainWindow constructed&quot;, $&quot;visibility={mainWindow.Visibility}, state={mainWindow.WindowState}&quot;);
+        // ★ 显式注册为主窗口：SplashScreen 先创建会抢占 Application.Current.MainWindow，
+        //   不显式赋值则调试窗口 Owner 指向已关闭的 SplashScreen（无效），无法显示在主窗口上方。
+        Application.Current.MainWindow = mainWindow;</pre></details><details class="source-card"><summary>R001</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/App.xaml.cs">src/UI/App.xaml.cs:80</a></p><p><code>OnStartup</code></p><p>SHA256 <code>4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc</code></p><pre>    protected override async void OnStartup(StartupEventArgs e)
+    {
+        // First-run directory dialogs may temporarily be the only window; do not exit when they close.
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        try
+        {
+            _runningApplicationRegistration = ApplicationLifetimeGate.TryRegister();
+            if (_runningApplicationRegistration == null)
+                throw new InvalidOperationException(&quot;SunEyeVision 正在卸载或维护，请等待操作结束后再启动。&quot;);
+        }
+        catch (Exception ex)
+        {
+            _startupRejected = true;
+            if (e.Args.Length == 0 || e.Args[0] != &quot;--release-probe&quot;)
+                MessageBox.Show($&quot;无法启动 SunEyeVision：{ex.Message}&quot;, &quot;SunEyeVision&quot;, MessageBoxButton.OK, MessageBoxImage.Information);
+            Shutdown(1);
+            return;
+        }
+        // Release probe runs before device/service initialization, so it cannot connect hardware.
+        if (e.Args.Length == 2 &amp;&amp; (e.Args[0] == &quot;--release-probe&quot; || e.Args[0] == &quot;--toolbox-probe&quot;))</pre></details><details class="source-card"><summary>R002</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/App.xaml.cs">src/UI/App.xaml.cs:734</a></p><p><code>RestoreCameraConnectionsAsync</code></p><p>SHA256 <code>4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc</code></p><pre>    private async Task RestoreCameraConnectionsAsync(SolutionManager solutionManager, Action&lt;string, string&gt;? statusReporter = null)
+    {
+        try
+        {
+            LogStartupStage(&quot;Camera connection restore begin&quot;);
+            statusReporter?.Invoke(&quot;正在恢复相机连接&quot;, &quot;正在根据设备列表连接相机，最多等待 10 秒&quot;);
+            var restoreTask = CameraManagerViewModel
+                .RestoreConnectionsForCurrentSolutionAsync(solutionManager);
+            var completed = await Task.WhenAny(restoreTask, Task.Delay(CameraRestoreTimeout));
+            if (!ReferenceEquals(completed, restoreTask))
+            {
+                LogStartupStage(&quot;Camera connection restore timeout&quot;,
+                    $&quot;timeoutMs={CameraRestoreTimeout.TotalMilliseconds:0}&quot;);
+                statusReporter?.Invoke(&quot;相机连接等待超时&quot;, &quot;部分设备未在 10 秒内完成连接，软件将继续启动&quot;);
+                _ = ObserveLateCameraRestoreAsync(restoreTask);
+                return;
+            }
+
+            await restoreTask;
+            LogStartupStage(&quot;Camera connection restore completed&quot;);</pre></details><details class="source-card"><summary>N035</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5574</a></p><p><code>public async System.Threading.Tasks.Task&lt;bool&gt; PrepareSolutionTransitionAsync()</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        public async System.Threading.Tasks.Task&lt;bool&gt; PrepareSolutionTransitionAsync()
+        {
+            if (_transitionPreparationInProgress) return false;
+            _transitionPreparationInProgress = true;
+            try
+            {
+                var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+                if (_executionManager.IsAnyRunning() &amp;&amp;
+                    ThemeMessageDialog.Show(&quot;方案正在运行。停止全部执行后继续？&quot;, &quot;切换方案&quot;, MessageBoxButton.OKCancel,
+                        ThemeMessageDialog.MessageIcon.Question) != MessageBoxResult.OK) return false;
+                _solutionTransitionLease ??= _executionManager.BeginSolutionTransition();
+                await _executionManager.StopAndWaitAsync(TimeSpan.FromSeconds(30));
+                if (manager.CurrentSolution == null)
+                {
+                    if (_isWorkflowModified || WorkflowTabViewModel.Tabs.Any(tab =&gt; tab.WorkflowNodes.Count &gt; 0))
+                    {
+                        var answer = ThemeMessageDialog.Show(&quot;工作区尚未保存为方案。是否保存？&quot;, &quot;保存方案&quot;, MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);
+                        if (answer == MessageBoxResult.Cancel || answer == MessageBoxResult.None) { EndSolutionTransition(); return false; }
+                        if (answer == MessageBoxResult.Yes)
+                        {
+                            SaveCurrentSolutionCommand.Execute(null);
+                            if (manager.CurrentSolution == null || manager.HasUnsavedChanges) { EndSolutionTransition(); return false; }</pre></details><details class="source-card"><summary>N038</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindow.xaml.cs">src/UI/Shell/Windows/MainWindow.xaml.cs:346</a></p><p><code>protected override void OnClosed(EventArgs e)</code></p><p>SHA256 <code>e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219</code></p><pre>        protected override void OnClosed(EventArgs e)
+        {
+            // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
+            // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。
+            var childWindows = Application.Current?.Windows
+                .OfType&lt;Window&gt;()
+                .Where(window =&gt; !ReferenceEquals(window, this))
+                .ToArray();
+            if (childWindows != null)
+            {
+                foreach (var childWindow in childWindows)
+                {
+                    try
+                    {
+                        childWindow.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Warning,
+                            $&quot;关闭子窗口失败: {childWindow.GetType().Name}, {ex.Message}&quot;, &quot;MainWindow&quot;);
+                    }
+                }</pre></details><details class="source-card"><summary>N042</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs">src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs:145</a></p><p><code>public static async ValueTask DisposeCommunicationRuntimeAsync()</code></p><p>SHA256 <code>95a1a9a2532653831cf510332a33a21279ee2725bc17a5b2945295ab4e603927</code></p><pre>        public static async ValueTask DisposeCommunicationRuntimeAsync()
+        {
+            if (_communicationService is not null)
+            {
+                await _communicationService.DisposeAsync().ConfigureAwait(false);
+                _communicationService = null;
+            }
+            if (_communicationRuntime is null) return;
+            await _communicationRuntime.DisposeAsync().ConfigureAwait(false);
+            _communicationRuntime = null;
+        }
+
+        public static async ValueTask DisposeCameraRuntimeAsync()
+        {
+            if (_cameraRuntime is null)
+                return;
+            await _cameraRuntime.DisposeAsync().ConfigureAwait(false);
+            _cameraRuntime = null;
+        }
+
+        /// &lt;summary&gt;
+        /// 初始化所有服务。</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M01&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;启动、方案恢复与主窗装配&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;App.OnStartup&quot;,
+    &quot;插件LoadPlugins&quot;,
+    &quot;ServiceInitializer&quot;,
+    &quot;HandleStartupDecisionAsync&quot;,
+    &quot;MainWindow&quot;
+  ],
+  &quot;current&quot;: &quot;启动注册与方案决策已有代码；相机恢复有独立超时入口。&quot;,
+  &quot;gap&quot;: &quot;恢复成功或超时→已创建会话退役的完整边；插件部分加载失败→退出/重试对象清理；启动取消→不暴露半就绪主窗 OnClosing先取消窗口关闭，异步PrepareSolutionTransitionAsync取得transition租约，StopAndWaitAsync最多30秒后再做保存决策。StopAndWait轮询IsAnyRunning；此前ReadyQueue退出finally未await全部running Task，故登记归零不单独证明所有原生任务排空。 OnClosed逐个childWindow.Close，之后退订图像事件、发StopWorkflowCommand并Application.Shutdown。相机预览OnClosed为async void且await Host.DisposeAsync，主窗口没有汇总这些异步完成任务。不能从Close返回证明每个预览流已结束；具体异常/时序未运行。 该方法先await _communicationService.DisposeAsync后才释放_communicationRuntime；前者抛错则后者本次不会执行。App.OnExit分别catch通讯与相机，故相机仍可继续释放，不能误说所有服务都被跳过。OnExit同步GetResult也不等完整异步退出协调器。&quot;,
+  &quot;vm&quot;: &quot;Program/MainWindowData与全局入口装配；原版依赖平台服务。&quot;,
+  &quot;vmDoc&quot;: &quot;MF01-GLOBAL-ENTRY-AUDIT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：启动恢复超时后继续启动且观察迟到任务；尚未闭合迟到恢复与切方案的身份隔离。 VM参考边界：全局入口就绪检查可参考，不能据此证明VM所有失败回滚完备。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;先追ObserveLateCameraRestoreAsync及会话Owner；如缺代次拒收，再加启动/方案代次，代价是恢复状态和回滚测试。 先补启动资源所有者和就绪/失败/取消状态表，定位恢复超时后消费者；只有确认无逆序清理时才新增回滚，按故障注入验无半就绪方案。&quot;,
+  &quot;accept&quot;: &quot;插件缺失/相机恢复超时/方案损坏均可返回可诊断状态；退出无遗留会话。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。 注入上层Dispose失败、底层失败及相机失败分别验后续清理仍被观察；错误汇总不丢失首因，重试不重用已半释放实例。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S001&quot;,
+    &quot;S002&quot;,
+    &quot;R001&quot;,
+    &quot;R002&quot;,
+    &quot;N035&quot;,
+    &quot;N038&quot;,
+    &quot;N042&quot;
+  ],
+  &quot;optimization&quot;: &quot;O01&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M01&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;OnStartup加载插件并初始化服务；HandleStartupDecisionAsync根据方案决策显示主窗；相机恢复另有超时分支。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;恢复成功或超时→已创建会话退役的完整边&quot;,
+      &quot;插件部分加载失败→退出/重试对象清理&quot;,
+      &quot;启动取消→不暴露半就绪主窗&quot;
+    ],
+    &quot;cause&quot;: &quot;证据缺口+运行验证&quot;,
+    &quot;change&quot;: &quot;先补启动资源所有者和就绪/失败/取消状态表，定位恢复超时后消费者；只有确认无逆序清理时才新增回滚，按故障注入验无半就绪方案。&quot;,
+    &quot;acceptance&quot;: &quot;插件缺失/相机恢复超时/方案损坏均可返回可诊断状态；退出无遗留会话。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S001&quot;,
+      &quot;S002&quot;,
+      &quot;R001&quot;,
+      &quot;R002&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留自研装配&quot;,
+    &quot;reason&quot;: &quot;现有服务可复用；实际依赖中UI、Workflow、SDK仍有WPF消费者，不能画成已纯分层。&quot;
+  },
+  &quot;defect&quot;: &quot;启动恢复超时后继续启动且观察迟到任务；尚未闭合迟到恢复与切方案的身份隔离。&quot;,
+  &quot;vmBorrow&quot;: &quot;全局入口就绪检查可参考，不能据此证明VM所有失败回滚完备。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;启动恢复超时后继续启动且观察迟到任务；尚未闭合迟到恢复与切方案的身份隔离。&quot;,
+    &quot;borrow&quot;: &quot;全局入口就绪检查可参考，不能据此证明VM所有失败回滚完备。&quot;,
+    &quot;action&quot;: &quot;先追ObserveLateCameraRestoreAsync及会话Owner；如缺代次拒收，再加启动/方案代次，代价是恢复状态和回滚测试。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S001&quot;,
+      &quot;S002&quot;,
+      &quot;R001&quot;,
+      &quot;R002&quot;,
+      &quot;N035&quot;,
+      &quot;N038&quot;,
+      &quot;N042&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

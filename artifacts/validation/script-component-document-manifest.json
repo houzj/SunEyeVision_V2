@@ -1,0 +1,1118 @@
+{
+  "id": "SCRIPT-COMPONENT-BASELINE-01",
+  "input": "artifacts/performance/script-baseline-20261023/component-baseline.json",
+  "inputSha256": "d3cb9a24a031f05a1fb05236c38b37f15c7c260fcff4c34486b36b9d9b5a31d9",
+  "manual": "artifacts/performance/script-baseline-20261023/manual-vm-observation.json",
+  "manualSha256": "2db29e61bb6ebf3dc4240cd988d4cfd4558d05c3f266ebb4e138e6b025392c90",
+  "screenshotCheck": {
+    "path": "D:\\Temp\\codex-clipboard-0e8fde9b-9d71-4678-b020-583607f5551e.png",
+    "sha256": "aa47e653c63e52c34c692f11d5a2d5c0291c74ade225732796d75636aaa18f07",
+    "matches": true
+  },
+  "inputManifestSha256": "fc40d18064eee43c13f6281b8c39173e03f1fbb7d0547a5ca7cbdfca98e89909",
+  "runSummarySha256": "3d3fdbdc8e0c571c4861cab7b09fba5601718e92f6ed5b22ed0910a4d73a6477",
+  "checks": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.AvalonEdit.dll",
+      "sha256": "7d3766163f900ef0181e40f24748f05fafce6593095e4f8e841192d48dc16912",
+      "actualSha256": "7d3766163f900ef0181e40f24748f05fafce6593095e4f8e841192d48dc16912",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.Cecil.dll",
+      "sha256": "8bdb7d42499f88a4f70f0847dda17115df8c93e0fd747741f99cde9b1b494bc7",
+      "actualSha256": "8bdb7d42499f88a4f70f0847dda17115df8c93e0fd747741f99cde9b1b494bc7",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.CSharp.dll",
+      "sha256": "ad514750bd9d1fe737363d2fe22765f58c94991397239f9d69e1c84c67684ecd",
+      "actualSha256": "ad514750bd9d1fe737363d2fe22765f58c94991397239f9d69e1c84c67684ecd",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.dll",
+      "sha256": "d15ed6dddce2250d948bca95794c1877e807b61f62103bf246db50fd09954ed7",
+      "actualSha256": "d15ed6dddce2250d948bca95794c1877e807b61f62103bf246db50fd09954ed7",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.IKVM.dll",
+      "sha256": "9591ffda9106e27ae9a399a60f2c2c984a8defef597a4a3e237071e06fc18690",
+      "actualSha256": "9591ffda9106e27ae9a399a60f2c2c984a8defef597a4a3e237071e06fc18690",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.Xml.dll",
+      "sha256": "ffd7b0665b7d2783647315d5b51abb29c8c8edfdb356683c0347d6c153c32593",
+      "actualSha256": "ffd7b0665b7d2783647315d5b51abb29c8c8edfdb356683c0347d6c153c32593",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.WpfDesign.Designer.dll",
+      "sha256": "074724f334c0530723c9e943f660468427570ef863df11a013e1cc2f510c1716",
+      "actualSha256": "074724f334c0530723c9e943f660468427570ef863df11a013e1cc2f510c1716",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.WpfDesign.dll",
+      "sha256": "fd30fd92035669bf15a005cc9b126e75dbb66c330c2d56e470a9fceffd92a565",
+      "actualSha256": "fd30fd92035669bf15a005cc9b126e75dbb66c330c2d56e470a9fceffd92a565",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.WpfDesign.XamlDom.dll",
+      "sha256": "f5e813752ce3e5f9f53a5205b2ebd821b9fb6b9b65268cc8b8037911ade04ed5",
+      "actualSha256": "f5e813752ce3e5f9f53a5205b2ebd821b9fb6b9b65268cc8b8037911ade04ed5",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\IKVM.Reflection.dll",
+      "sha256": "b6d04fc60f4e1d2a226f2587cc913668b3b9c2bb7386bc9e151eb8f03eee2860",
+      "actualSha256": "b6d04fc60f4e1d2a226f2587cc913668b3b9c2bb7386bc9e151eb8f03eee2860",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\Mono.Cecil.dll",
+      "sha256": "0fdf95700289545356c16a9f0e7fb5fd7816dbb33131d9be48b370272a0c1536",
+      "actualSha256": "0fdf95700289545356c16a9f0e7fb5fd7816dbb33131d9be48b370272a0c1536",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\VM.CodeCompletion.dll",
+      "sha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+      "actualSha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Humanizer.dll",
+      "sha256": "d6853075547d7e303efd60354d911a2ff18edba582cda2fa59d91a2e5dcf9e98",
+      "actualSha256": "d6853075547d7e303efd60354d911a2ff18edba582cda2fa59d91a2e5dcf9e98",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.AnalyzerUtilities.dll",
+      "sha256": "27300b349ae0c552ccb9bea18baf55b1fc99a517b0d4e15e557af4d3a4bff119",
+      "actualSha256": "27300b349ae0c552ccb9bea18baf55b1fc99a517b0d4e15e557af4d3a4bff119",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.CSharp.dll",
+      "sha256": "cfb5f2785c30485eda803d58fb8330d737cb07d469cd3d7bc1113d58e8d8e4bb",
+      "actualSha256": "cfb5f2785c30485eda803d58fb8330d737cb07d469cd3d7bc1113d58e8d8e4bb",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.CSharp.Features.dll",
+      "sha256": "41d62b24232af6e896b372e6bb4d1ea9066ce40229388fb55b221fdfda124fc5",
+      "actualSha256": "41d62b24232af6e896b372e6bb4d1ea9066ce40229388fb55b221fdfda124fc5",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+      "sha256": "c63f6d8fdb79e443c37cce6a2248e04bfe2c82d4bda24b6c01ff1420e6a728b3",
+      "actualSha256": "c63f6d8fdb79e443c37cce6a2248e04bfe2c82d4bda24b6c01ff1420e6a728b3",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.dll",
+      "sha256": "0a7fb1d94e0e7f46798b138caa67e5d5fb8fb98fd31b5294c917def057ab3d80",
+      "actualSha256": "0a7fb1d94e0e7f46798b138caa67e5d5fb8fb98fd31b5294c917def057ab3d80",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.Elfie.dll",
+      "sha256": "8ec0e18ac570157b3863f70035b644925d89996ad901f31ef918d2b0f7428941",
+      "actualSha256": "8ec0e18ac570157b3863f70035b644925d89996ad901f31ef918d2b0f7428941",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.Features.dll",
+      "sha256": "fc743c40512353992ff24c80159b966ee879da4e2538eeeb693e489c7a5ecddb",
+      "actualSha256": "fc743c40512353992ff24c80159b966ee879da4e2538eeeb693e489c7a5ecddb",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.Scripting.dll",
+      "sha256": "7c3973a0997a1901c4f5978ef901e3ae96ddb780dead70a42f65f2e3f6f23e8f",
+      "actualSha256": "7c3973a0997a1901c4f5978ef901e3ae96ddb780dead70a42f65f2e3f6f23e8f",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.Workspaces.dll",
+      "sha256": "32402baa9383afd30e660af0bd3d23bdb7e596207afeac8c6b3ed6f6a5ca6f1d",
+      "actualSha256": "32402baa9383afd30e660af0bd3d23bdb7e596207afeac8c6b3ed6f6a5ca6f1d",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.DiaSymReader.dll",
+      "sha256": "7f3e7543321ff4c2675b94e56a4a32c935c11c82fcc60d4f6cb611cb0a8daadc",
+      "actualSha256": "7f3e7543321ff4c2675b94e56a4a32c935c11c82fcc60d4f6cb611cb0a8daadc",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\System.Composition.AttributedModel.dll",
+      "sha256": "0f403e98d8bad390b970704a93aa532042409f499032823cac47e3004bad9c8a",
+      "actualSha256": "0f403e98d8bad390b970704a93aa532042409f499032823cac47e3004bad9c8a",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\System.Composition.Convention.dll",
+      "sha256": "88e716224482a702e3d44f02e6311b9d91fce9af506abf0482e8c5f82379034f",
+      "actualSha256": "88e716224482a702e3d44f02e6311b9d91fce9af506abf0482e8c5f82379034f",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\System.Composition.Hosting.dll",
+      "sha256": "8d9a239c7b03ce4a047ed0abd9e835db0feeaaa16c157e7d308603d03efb7ebc",
+      "actualSha256": "8d9a239c7b03ce4a047ed0abd9e835db0feeaaa16c157e7d308603d03efb7ebc",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\System.Composition.Runtime.dll",
+      "sha256": "324acdfc86c5adaa12e9c4f40deacf1e9f45ac2e84e542a02d130e7380f79d6e",
+      "actualSha256": "324acdfc86c5adaa12e9c4f40deacf1e9f45ac2e84e542a02d130e7380f79d6e",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\System.Composition.TypedParts.dll",
+      "sha256": "3100191a1448b9a613e04a63b65899cf74371fc2f5c03315aa40ab53468c7a24",
+      "actualSha256": "3100191a1448b9a613e04a63b65899cf74371fc2f5c03315aa40ab53468c7a24",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\BenchReference.dll",
+      "sha256": "356b227825b1e60615809016a31002ec59fa33355179c83597328ff01b6ed153",
+      "actualSha256": "356b227825b1e60615809016a31002ec59fa33355179c83597328ff01b6ed153",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\VmBenchReady.exe",
+      "sha256": "5eb5ee5017091f1fd3fc8857bbc83f5dd9247d65478e862d68ee6ffe5f14807a",
+      "actualSha256": "5eb5ee5017091f1fd3fc8857bbc83f5dd9247d65478e862d68ee6ffe5f14807a",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\SelfBench.dll",
+      "sha256": "42b6d24415683d1c9f2a13ababf71f9e10d17e58ac263108251652cc32e60785",
+      "actualSha256": "42b6d24415683d1c9f2a13ababf71f9e10d17e58ac263108251652cc32e60785",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\script-100.cs",
+      "sha256": "7d4cf9cbb265ddcd7bf8b7fb45ef4646f6974b259582ad89810537f6644672c5",
+      "actualSha256": "7d4cf9cbb265ddcd7bf8b7fb45ef4646f6974b259582ad89810537f6644672c5",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\script-1000.cs",
+      "sha256": "db0665fd2ba69b68eb6381108dfbd5d1cbfd081f2c0c21162475059f3d9d0a99",
+      "actualSha256": "db0665fd2ba69b68eb6381108dfbd5d1cbfd081f2c0c21162475059f3d9d0a99",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\script-5000.cs",
+      "sha256": "b312cae1d5e972475fd25fa150a43e0edec1a1b6512ba78f238a8f21829a298c",
+      "actualSha256": "b312cae1d5e972475fd25fa150a43e0edec1a1b6512ba78f238a8f21829a298c",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\VmBenchReady.cs",
+      "sha256": "0970afef5064799ccaa1c62c17f7be2e908cfba16ba1a255cd2226131d3408ed",
+      "actualSha256": "0970afef5064799ccaa1c62c17f7be2e908cfba16ba1a255cd2226131d3408ed",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\Program.cs",
+      "sha256": "bb9bbd0cc65ee7b55bf6b1ef45b25d2702760ec9bac8dad8af3a1ab24ddbd5cc",
+      "actualSha256": "bb9bbd0cc65ee7b55bf6b1ef45b25d2702760ec9bac8dad8af3a1ab24ddbd5cc",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\mscorlib.dll",
+      "sha256": "3babbebd1d1bee319f6109ea066d1ab5d5fc3c7b493cd1427ccf910bb738902d",
+      "actualSha256": "3babbebd1d1bee319f6109ea066d1ab5d5fc3c7b493cd1427ccf910bb738902d",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System\\v4.0_4.0.0.0__b77a5c561934e089\\System.dll",
+      "sha256": "5a6459e838f4d9b25360b73efc6e2b495a5514c6230b8f790d61b6257828c37b",
+      "actualSha256": "5a6459e838f4d9b25360b73efc6e2b495a5514c6230b8f790d61b6257828c37b",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Core\\v4.0_4.0.0.0__b77a5c561934e089\\System.Core.dll",
+      "sha256": "7997bdad8f9a7244078cc5fa4e764987bcd34badd6eb4473290be44da08e3e1c",
+      "actualSha256": "7997bdad8f9a7244078cc5fa4e764987bcd34badd6eb4473290be44da08e3e1c",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\BenchReference.dll",
+      "sha256": "356b227825b1e60615809016a31002ec59fa33355179c83597328ff01b6ed153",
+      "actualSha256": "356b227825b1e60615809016a31002ec59fa33355179c83597328ff01b6ed153",
+      "matches": true
+    }
+  ],
+  "loadedChecks": [
+    {
+      "path": "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\mscorlib.dll",
+      "sha256": "3babbebd1d1bee319f6109ea066d1ab5d5fc3c7b493cd1427ccf910bb738902d",
+      "actualSha256": "3babbebd1d1bee319f6109ea066d1ab5d5fc3c7b493cd1427ccf910bb738902d",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\VmBenchReady.exe",
+      "sha256": "5eb5ee5017091f1fd3fc8857bbc83f5dd9247d65478e862d68ee6ffe5f14807a",
+      "actualSha256": "5eb5ee5017091f1fd3fc8857bbc83f5dd9247d65478e862d68ee6ffe5f14807a",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\PresentationFramework\\v4.0_4.0.0.0__31bf3856ad364e35\\PresentationFramework.dll",
+      "sha256": "bcd8ef9a5c078021cb70c089ed57aeb2010359c45d372e3125c4ba16902eeda2",
+      "actualSha256": "bcd8ef9a5c078021cb70c089ed57aeb2010359c45d372e3125c4ba16902eeda2",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\WindowsBase\\v4.0_4.0.0.0__31bf3856ad364e35\\WindowsBase.dll",
+      "sha256": "c2d01858d99d5e4a2833b6b1eb5541fee3d15495889b548322788e978ad14ba4",
+      "actualSha256": "c2d01858d99d5e4a2833b6b1eb5541fee3d15495889b548322788e978ad14ba4",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Core\\v4.0_4.0.0.0__b77a5c561934e089\\System.Core.dll",
+      "sha256": "7997bdad8f9a7244078cc5fa4e764987bcd34badd6eb4473290be44da08e3e1c",
+      "actualSha256": "7997bdad8f9a7244078cc5fa4e764987bcd34badd6eb4473290be44da08e3e1c",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System\\v4.0_4.0.0.0__b77a5c561934e089\\System.dll",
+      "sha256": "5a6459e838f4d9b25360b73efc6e2b495a5514c6230b8f790d61b6257828c37b",
+      "actualSha256": "5a6459e838f4d9b25360b73efc6e2b495a5514c6230b8f790d61b6257828c37b",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_64\\PresentationCore\\v4.0_4.0.0.0__31bf3856ad364e35\\PresentationCore.dll",
+      "sha256": "3f5ef10cf18f943f663b2dd8deae19e00a142f251d241d33d9d8221e105dd329",
+      "actualSha256": "3f5ef10cf18f943f663b2dd8deae19e00a142f251d241d33d9d8221e105dd329",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Xaml\\v4.0_4.0.0.0__b77a5c561934e089\\System.Xaml.dll",
+      "sha256": "e1262af0edbd110816ec73ffc56d69b87069e700e65fdc5f6db44c06b66b2a25",
+      "actualSha256": "e1262af0edbd110816ec73ffc56d69b87069e700e65fdc5f6db44c06b66b2a25",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Web.Extensions\\v4.0_4.0.0.0__31bf3856ad364e35\\System.Web.Extensions.dll",
+      "sha256": "2577a178e4f5fe6c95ad94c17f90308e9d00fde70d65023fc8fca96a39a0d826",
+      "actualSha256": "2577a178e4f5fe6c95ad94c17f90308e9d00fde70d65023fc8fca96a39a0d826",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Configuration\\v4.0_4.0.0.0__b03f5f7f11d50a3a\\System.Configuration.dll",
+      "sha256": "f72b387d185e3fdf226019cbfafcaf88ead29f5802c572d29394a4c4a637a21d",
+      "actualSha256": "f72b387d185e3fdf226019cbfafcaf88ead29f5802c572d29394a4c4a637a21d",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Xml\\v4.0_4.0.0.0__b77a5c561934e089\\System.Xml.dll",
+      "sha256": "b91b07b73269fa9eaa7fd3c14c4053ed8d0d1f1a70d9a0ab32ba55d026358711",
+      "actualSha256": "b91b07b73269fa9eaa7fd3c14c4053ed8d0d1f1a70d9a0ab32ba55d026358711",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\BenchReference.dll",
+      "sha256": "356b227825b1e60615809016a31002ec59fa33355179c83597328ff01b6ed153",
+      "actualSha256": "356b227825b1e60615809016a31002ec59fa33355179c83597328ff01b6ed153",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\VM.CodeCompletion\\v4.0_1.0.0.0__7ec0213b45fa4354\\VM.CodeCompletion.dll",
+      "sha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+      "actualSha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.CSharp.dll",
+      "sha256": "ad514750bd9d1fe737363d2fe22765f58c94991397239f9d69e1c84c67684ecd",
+      "actualSha256": "ad514750bd9d1fe737363d2fe22765f58c94991397239f9d69e1c84c67684ecd",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.dll",
+      "sha256": "d15ed6dddce2250d948bca95794c1877e807b61f62103bf246db50fd09954ed7",
+      "actualSha256": "d15ed6dddce2250d948bca95794c1877e807b61f62103bf246db50fd09954ed7",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Windows.Forms\\v4.0_4.0.0.0__b77a5c561934e089\\System.Windows.Forms.dll",
+      "sha256": "f6e797ee0f0bdd153ef32e145450c9acb08f7861fe82cb5e711c2df1cece3769",
+      "actualSha256": "f6e797ee0f0bdd153ef32e145450c9acb08f7861fe82cb5e711c2df1cece3769",
+      "matches": true
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Drawing\\v4.0_4.0.0.0__b03f5f7f11d50a3a\\System.Drawing.dll",
+      "sha256": "ed92bceb3ebf90eae1af2a84279842562ed589e3616f4d5702361336cdf5ed2e",
+      "actualSha256": "ed92bceb3ebf90eae1af2a84279842562ed589e3616f4d5702361336cdf5ed2e",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.Cecil.dll",
+      "sha256": "8bdb7d42499f88a4f70f0847dda17115df8c93e0fd747741f99cde9b1b494bc7",
+      "actualSha256": "8bdb7d42499f88a4f70f0847dda17115df8c93e0fd747741f99cde9b1b494bc7",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\Mono.Cecil.dll",
+      "sha256": "0fdf95700289545356c16a9f0e7fb5fd7816dbb33131d9be48b370272a0c1536",
+      "actualSha256": "0fdf95700289545356c16a9f0e7fb5fd7816dbb33131d9be48b370272a0c1536",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.AvalonEdit.dll",
+      "sha256": "7d3766163f900ef0181e40f24748f05fafce6593095e4f8e841192d48dc16912",
+      "actualSha256": "7d3766163f900ef0181e40f24748f05fafce6593095e4f8e841192d48dc16912",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.CoreLib.dll",
+      "sha256": "4aee38cb826d3624936cf78265c4bb7e5f84e59b28c47bd898c3b9fb5aea95dd",
+      "actualSha256": "4aee38cb826d3624936cf78265c4bb7e5f84e59b28c47bd898c3b9fb5aea95dd",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\SelfBench.dll",
+      "sha256": "42b6d24415683d1c9f2a13ababf71f9e10d17e58ac263108251652cc32e60785",
+      "actualSha256": "42b6d24415683d1c9f2a13ababf71f9e10d17e58ac263108251652cc32e60785",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.dll",
+      "sha256": "dac19c2064a2a263bf9553c0913146593849b74695fd97be801cdc221e11e146",
+      "actualSha256": "dac19c2064a2a263bf9553c0913146593849b74695fd97be801cdc221e11e146",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.dll",
+      "sha256": "0a7fb1d94e0e7f46798b138caa67e5d5fb8fb98fd31b5294c917def057ab3d80",
+      "actualSha256": "0a7fb1d94e0e7f46798b138caa67e5d5fb8fb98fd31b5294c917def057ab3d80",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Features.dll",
+      "sha256": "fc743c40512353992ff24c80159b966ee879da4e2538eeeb693e489c7a5ecddb",
+      "actualSha256": "fc743c40512353992ff24c80159b966ee879da4e2538eeeb693e489c7a5ecddb",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.Immutable.dll",
+      "sha256": "7eecde6b17d2cb85dbc1df9b9e43e2d6efad5b45357e544ea83d6264adc7e9b6",
+      "actualSha256": "7eecde6b17d2cb85dbc1df9b9e43e2d6efad5b45357e544ea83d6264adc7e9b6",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Workspaces.dll",
+      "sha256": "32402baa9383afd30e660af0bd3d23bdb7e596207afeac8c6b3ed6f6a5ca6f1d",
+      "actualSha256": "32402baa9383afd30e660af0bd3d23bdb7e596207afeac8c6b3ed6f6a5ca6f1d",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.dll",
+      "sha256": "36fffcc6c1a3d885655829221aabdf5a1e3c502baf9b9edd24ee8b6ab217cd33",
+      "actualSha256": "36fffcc6c1a3d885655829221aabdf5a1e3c502baf9b9edd24ee8b6ab217cd33",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.dll",
+      "sha256": "cfb5f2785c30485eda803d58fb8330d737cb07d469cd3d7bc1113d58e8d8e4bb",
+      "actualSha256": "cfb5f2785c30485eda803d58fb8330d737cb07d469cd3d7bc1113d58e8d8e4bb",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Metadata.dll",
+      "sha256": "c9e37fd8fd8640fd0b97699435fdb1ef1a3db0d65f44ecace33c8d9fce44c30d",
+      "actualSha256": "c9e37fd8fd8640fd0b97699435fdb1ef1a3db0d65f44ecace33c8d9fce44c30d",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Linq.dll",
+      "sha256": "836af251a62493d2a96b4ce1ddcd5e19e64b34e32c6e3b4a97fb7931e09c995c",
+      "actualSha256": "836af251a62493d2a96b4ce1ddcd5e19e64b34e32c6e3b4a97fb7931e09c995c",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Json.dll",
+      "sha256": "2c15a5fa6b5f78f5f374a9a67d90a8d0528eb7848a8066b7a20db431ee0a00c0",
+      "actualSha256": "2c15a5fa6b5f78f5f374a9a67d90a8d0528eb7848a8066b7a20db431ee0a00c0",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Console.dll",
+      "sha256": "3aef8f4a4a64e338f2cc3df8d2cb9d7b0459809a41e5d92ce9d5133fe34409c8",
+      "actualSha256": "3aef8f4a4a64e338f2cc3df8d2cb9d7b0459809a41e5d92ce9d5133fe34409c8",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.Loader.dll",
+      "sha256": "1c46ddb6409caeec38737075cebd39902d5bc37c7d8e30fb1a94f739cfca0eb2",
+      "actualSha256": "1c46ddb6409caeec38737075cebd39902d5bc37c7d8e30fb1a94f739cfca0eb2",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.dll",
+      "sha256": "3208be3986e660008854fb6079db05adb48ab53cbd623ca83d79813240e05608",
+      "actualSha256": "3208be3986e660008854fb6079db05adb48ab53cbd623ca83d79813240e05608",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Memory.dll",
+      "sha256": "b18a7116ccee4cec39fbbce0a438fefdc82a7793c61cbb8fb7c58256656329e4",
+      "actualSha256": "b18a7116ccee4cec39fbbce0a438fefdc82a7793c61cbb8fb7c58256656329e4",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Encoding.Extensions.dll",
+      "sha256": "fc3d55a3ff36aa95eaaad24114802e4d4a0e3b994d4d8b37f12b55b737bff5f3",
+      "actualSha256": "fc3d55a3ff36aa95eaaad24114802e4d4a0e3b994d4d8b37f12b55b737bff5f3",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Encodings.Web.dll",
+      "sha256": "0f073568e129aad7e2f0911058b6475dcba96896a41cdc8f7a4be226f85ad6a6",
+      "actualSha256": "0f073568e129aad7e2f0911058b6475dcba96896a41cdc8f7a4be226f85ad6a6",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.Intrinsics.dll",
+      "sha256": "9b60d00b938f8b30d2b91524f493e1a47da513d938c53b81a92c14e880777947",
+      "actualSha256": "9b60d00b938f8b30d2b91524f493e1a47da513d938c53b81a92c14e880777947",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Numerics.Vectors.dll",
+      "sha256": "64708782dd09575dca6d4eb4a241d6a893c73af4bb1175be720b36a19d3976b9",
+      "actualSha256": "64708782dd09575dca6d4eb4a241d6a893c73af4bb1175be720b36a19d3976b9",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.Concurrent.dll",
+      "sha256": "7bd7683a2417d0a0410e7e11267be1268f17e568e6b66addbea48314e3854d20",
+      "actualSha256": "7bd7683a2417d0a0410e7e11267be1268f17e568e6b66addbea48314e3854d20",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.Uri.dll",
+      "sha256": "f0c15fe054dc49a62f838fd087193a5b66bc946aa3d7d477961184540f38594b",
+      "actualSha256": "f0c15fe054dc49a62f838fd087193a5b66bc946aa3d7d477961184540f38594b",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Emit.Lightweight.dll",
+      "sha256": "82d10812c295796c86cf1f8ea20298d627ecad5f4505aaf5602a06c3768eff65",
+      "actualSha256": "82d10812c295796c86cf1f8ea20298d627ecad5f4505aaf5602a06c3768eff65",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Primitives.dll",
+      "sha256": "75bd3842e3e21cf2661d2e2c5260db60d371b0fd6077eaac1ed4ebed41d99888",
+      "actualSha256": "75bd3842e3e21cf2661d2e2c5260db60d371b0fd6077eaac1ed4ebed41d99888",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.InteropServices.dll",
+      "sha256": "e8aac5a1a77f759a6ac39a75db07f97cb8368265f4351eba310f6534eb711c14",
+      "actualSha256": "e8aac5a1a77f759a6ac39a75db07f97cb8368265f4351eba310f6534eb711c14",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+      "sha256": "c63f6d8fdb79e443c37cce6a2248e04bfe2c82d4bda24b6c01ff1420e6a728b3",
+      "actualSha256": "c63f6d8fdb79e443c37cce6a2248e04bfe2c82d4bda24b6c01ff1420e6a728b3",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Features.dll",
+      "sha256": "41d62b24232af6e896b372e6bb4d1ea9066ce40229388fb55b221fdfda124fc5",
+      "actualSha256": "41d62b24232af6e896b372e6bb4d1ea9066ce40229388fb55b221fdfda124fc5",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.TypedParts.dll",
+      "sha256": "3100191a1448b9a613e04a63b65899cf74371fc2f5c03315aa40ab53468c7a24",
+      "actualSha256": "3100191a1448b9a613e04a63b65899cf74371fc2f5c03315aa40ab53468c7a24",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.Hosting.dll",
+      "sha256": "8d9a239c7b03ce4a047ed0abd9e835db0feeaaa16c157e7d308603d03efb7ebc",
+      "actualSha256": "8d9a239c7b03ce4a047ed0abd9e835db0feeaaa16c157e7d308603d03efb7ebc",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.Runtime.dll",
+      "sha256": "324acdfc86c5adaa12e9c4f40deacf1e9f45ac2e84e542a02d130e7380f79d6e",
+      "actualSha256": "324acdfc86c5adaa12e9c4f40deacf1e9f45ac2e84e542a02d130e7380f79d6e",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.AttributedModel.dll",
+      "sha256": "0f403e98d8bad390b970704a93aa532042409f499032823cac47e3004bad9c8a",
+      "actualSha256": "0f403e98d8bad390b970704a93aa532042409f499032823cac47e3004bad9c8a",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Xml.XDocument.dll",
+      "sha256": "6ee74e21847e9c75df5d10299c7669a638eac20d6cc27e0b13ed195caa085c7d",
+      "actualSha256": "6ee74e21847e9c75df5d10299c7669a638eac20d6cc27e0b13ed195caa085c7d",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.Xml.Linq.dll",
+      "sha256": "2827ec685dfca23164324fbcbb061ce93120ddeea03dd2f712157137621c6de9",
+      "actualSha256": "2827ec685dfca23164324fbcbb061ce93120ddeea03dd2f712157137621c6de9",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.Xml.dll",
+      "sha256": "9ef5ac0de5cfc9b97dfdf31f9170af77fa2908a6ee4be16ed97e3f3d66b07a59",
+      "actualSha256": "9ef5ac0de5cfc9b97dfdf31f9170af77fa2908a6ee4be16ed97e3f3d66b07a59",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Diagnostics.Tracing.dll",
+      "sha256": "82fbd9b3711921fc7c4e8309702ea2d51f7037d835ee7d3db531b0c55660ccd6",
+      "actualSha256": "82fbd9b3711921fc7c4e8309702ea2d51f7037d835ee7d3db531b0c55660ccd6",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.IO.MemoryMappedFiles.dll",
+      "sha256": "2c662071a0a9af86afd2ff387677d192fbf449b65e9057112892fe171a5911ca",
+      "actualSha256": "2c662071a0a9af86afd2ff387677d192fbf449b65e9057112892fe171a5911ca",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.Channels.dll",
+      "sha256": "12313ffdc35ecb56bacbce3392395492bd511e4500e82b597d24c524e28a2dbb",
+      "actualSha256": "12313ffdc35ecb56bacbce3392395492bd511e4500e82b597d24c524e28a2dbb",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.Serialization.Primitives.dll",
+      "sha256": "734ee0e950107b32d767ed67f392bf1c41e21b820707cead60db58621c3dec60",
+      "actualSha256": "734ee0e950107b32d767ed67f392bf1c41e21b820707cead60db58621c3dec60",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.RegularExpressions.dll",
+      "sha256": "e7fadc5c0f1c0b7efa6788e5020122714f76766e05f599f73b096afc0db5875a",
+      "actualSha256": "e7fadc5c0f1c0b7efa6788e5020122714f76766e05f599f73b096afc0db5875a",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.DiaSymReader.dll",
+      "sha256": "7f3e7543321ff4c2675b94e56a4a32c935c11c82fcc60d4f6cb611cb0a8daadc",
+      "actualSha256": "7f3e7543321ff4c2675b94e56a4a32c935c11c82fcc60d4f6cb611cb0a8daadc",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\netstandard.dll",
+      "sha256": "4b0e07caa7b4e24b2cfcde3f2aef8fb40a739c1441f7ef7f3631e99f2d0ca7f5",
+      "actualSha256": "4b0e07caa7b4e24b2cfcde3f2aef8fb40a739c1441f7ef7f3631e99f2d0ca7f5",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Linq.Expressions.dll",
+      "sha256": "c950bc84f01e1163d30129d5279485f0a1b97cc3c314505b17588d0c0abde443",
+      "actualSha256": "c950bc84f01e1163d30129d5279485f0a1b97cc3c314505b17588d0c0abde443",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Emit.ILGeneration.dll",
+      "sha256": "88f0abeb503e5cfc8ae5ae65be02cd012de43c709161be5deaaf671e5c5c5207",
+      "actualSha256": "88f0abeb503e5cfc8ae5ae65be02cd012de43c709161be5deaaf671e5c5c5207",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Security.Cryptography.dll",
+      "sha256": "f5235acf6db9038d65eebeffe6d322c34b38114cf2c03a3525154b92bf713176",
+      "actualSha256": "f5235acf6db9038d65eebeffe6d322c34b38114cf2c03a3525154b92bf713176",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.ThreadPool.dll",
+      "sha256": "67b192c6164f68ad992ff945b866aacb854288480fd3af113df65131adbc6d5f",
+      "actualSha256": "67b192c6164f68ad992ff945b866aacb854288480fd3af113df65131adbc6d5f",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.Tasks.Parallel.dll",
+      "sha256": "9a8d20cd5d904b257ef0a20023be7ad04c370251c4406cbeb6fa2b5650318a02",
+      "actualSha256": "9a8d20cd5d904b257ef0a20023be7ad04c370251c4406cbeb6fa2b5650318a02",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Diagnostics.Process.dll",
+      "sha256": "b91dd0a857ec40b79d9b59d783209b5469fc2b83e525b6b730e7e00161ff6e98",
+      "actualSha256": "b91dd0a857ec40b79d9b59d783209b5469fc2b83e525b6b730e7e00161ff6e98",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.ComponentModel.Primitives.dll",
+      "sha256": "69421e02f515d52338c9acf1df4e9c0a81f15911063f390fd207e1fdbec5d1b4",
+      "actualSha256": "69421e02f515d52338c9acf1df4e9c0a81f15911063f390fd207e1fdbec5d1b4",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.NonGeneric.dll",
+      "sha256": "ff39c54557fc23d30d33482a8b1383b465105624d09458fd05d16db325f8b843",
+      "actualSha256": "ff39c54557fc23d30d33482a8b1383b465105624d09458fd05d16db325f8b843",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\Microsoft.Win32.Primitives.dll",
+      "sha256": "19d9546bc116e3b3a407487bd3ba02477c31d954aed90214a1aba393f1a2ab85",
+      "actualSha256": "19d9546bc116e3b3a407487bd3ba02477c31d954aed90214a1aba393f1a2ab85",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.IO.Compression.dll",
+      "sha256": "b87fee0f549cf3435ecd1c598bb59bf581adbc965686b91837c570d25cd66ac9",
+      "actualSha256": "b87fee0f549cf3435ecd1c598bb59bf581adbc965686b91837c570d25cd66ac9",
+      "matches": true
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Globalization.dll",
+      "sha256": "566ecb07dab92f3eb3733e154ee397e28ec5dd42d257dfa0dd4eace1f1ed5d85",
+      "actualSha256": "566ecb07dab92f3eb3733e154ee397e28ec5dd42d257dfa0dd4eace1f1ed5d85",
+      "matches": true
+    }
+  ],
+  "validations": [
+    {
+      "side": "vm",
+      "lines": 100,
+      "trial": 0,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-100-00\\result.json",
+      "sha256": "9bf1ab546bbb6ec7ed9273284f35dd9ca8898cd63c1493dbbe607bee3d6c25de",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 100,
+      "trial": 0,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-100-00\\result.json",
+      "sha256": "bc047e2c6afa63cdc39b1aa6a5dee2e97ee0f0346663edfe2fada7e93bb1aad3",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 100,
+      "trial": 1,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-100-01\\result.json",
+      "sha256": "71d5020652f581eb84c995f3845df32e89412e4ff22616495170fc6678a2f6df",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 100,
+      "trial": 1,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-100-01\\result.json",
+      "sha256": "5ad80c6a7e898b5920a96b3a28e6b33eba1c062acd946b31b864242c93958c4d",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 100,
+      "trial": 2,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-100-02\\result.json",
+      "sha256": "9d988fbea5ba4d1194aa88099abe0178f4e8c43f93505ac702aa02365f60cd78",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 100,
+      "trial": 2,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-100-02\\result.json",
+      "sha256": "39d0e2683ae21bd48ada69c0d55d8ca333ddef0dcfbcd9f31d788e31abb0561f",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 100,
+      "trial": 3,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-100-03\\result.json",
+      "sha256": "ec00c335de8de3b328124a56b35b3b0afbb1e43efc27d19628049f700b4e5e6a",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 100,
+      "trial": 3,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-100-03\\result.json",
+      "sha256": "91bd695263937489af1fbf7da28b5cb85ca10bbef0601b057ce94b6ca80c8dd8",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 100,
+      "trial": 4,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-100-04\\result.json",
+      "sha256": "ec74b25a20fb7ccf6f45d1d461c746448824e9a8178184ae64d6cd999ee5d8ea",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 100,
+      "trial": 4,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-100-04\\result.json",
+      "sha256": "2560a59fab6b5f5058bc3ba9af88ee9252d118dfa3f40ddfa7e500d4c13cfcd7",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 1000,
+      "trial": 0,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-1000-00\\result.json",
+      "sha256": "41c0d9698b7c31ebbef1861eef4207d4466a504c0f7c1dbaa4b7ffa035efc334",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 1000,
+      "trial": 0,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-1000-00\\result.json",
+      "sha256": "8aa20b5074fb4a9e1560da4335d9e81af688951b60e8ef09a731b2ec2eb41214",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 1000,
+      "trial": 1,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-1000-01\\result.json",
+      "sha256": "d8180cddf84725196b06a5dffd707b4ca690af098ea16fdcca20b7534dce1387",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 1000,
+      "trial": 1,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-1000-01\\result.json",
+      "sha256": "f19e55b2eeff4c67b491cf13f09e2e53078fa941009b0bd33b1451fab75ea797",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 1000,
+      "trial": 2,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-1000-02\\result.json",
+      "sha256": "e6c4d14efe99d9dd02c5e7f6c75e8a29aeb3db2c33461e58139829273b6bc176",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 1000,
+      "trial": 2,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-1000-02\\result.json",
+      "sha256": "583be11405aa64db77c594d70a860bf8aa097f72a93c77fdb87764e948713843",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 1000,
+      "trial": 3,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-1000-03\\result.json",
+      "sha256": "d671cc085ba3e98df5da84536318557780c530f048290b10bb2d1d16812a6ab1",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 1000,
+      "trial": 3,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-1000-03\\result.json",
+      "sha256": "36125e6809a773402407354162b7c73dcc70455608daa13d4e69933b1595c684",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 1000,
+      "trial": 4,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-1000-04\\result.json",
+      "sha256": "af78c2d365146724cc681feb4068b53aca66632bdd8afb9817edab936aacf74e",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 1000,
+      "trial": 4,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-1000-04\\result.json",
+      "sha256": "0598c4e2828a95291771628fce24f2f209c6dabc7d6426768b360ae0d75ffa19",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 5000,
+      "trial": 0,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-5000-00\\result.json",
+      "sha256": "70a08b9d7dd7f606b4b10747e1f674b42d5970eb84c6205e00ad927207a8ac0b",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 5000,
+      "trial": 0,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-5000-00\\result.json",
+      "sha256": "073c9149bf06bcbf69a0abdad1e88763d44754af33aa4260b82c8828a016cde3",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 5000,
+      "trial": 1,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-5000-01\\result.json",
+      "sha256": "b60b2118702c0bb66471cfb9d70e35d1850101a2d13af7cfd709df6be7cc23fb",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 5000,
+      "trial": 1,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-5000-01\\result.json",
+      "sha256": "5099eb6bb430aefe5dea405c50a410acf2d9f1c52e5b7367d10131cab0995a25",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 5000,
+      "trial": 2,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-5000-02\\result.json",
+      "sha256": "38112a952ca75c0d033b08f873aafbefcf3fcaae0097591701290048109f0457",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 5000,
+      "trial": 2,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-5000-02\\result.json",
+      "sha256": "e24b8cd45f71bbc1b7fc23c0029a48ae2cd0676cc5382b28d65ad9ca8291bbd5",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 5000,
+      "trial": 3,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-5000-03\\result.json",
+      "sha256": "895d6f3e40e4fb6a9786286f076673ac7ef0ed5a159f928d1dc433a0c02f891a",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 5000,
+      "trial": 3,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-5000-03\\result.json",
+      "sha256": "1db60e201a2c648aa6e0e0fd4be52085baeff9857cad51b98624949ee991f9ae",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "vm",
+      "lines": 5000,
+      "trial": 4,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-5000-04\\result.json",
+      "sha256": "5932f5e38911df0079a538a552e1e036f0cff7bfd39eca90f598bdc9400af0ff",
+      "valid": true,
+      "referencesMatch": true
+    },
+    {
+      "side": "self",
+      "lines": 5000,
+      "trial": 4,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-5000-04\\result.json",
+      "sha256": "b3caa79c1d243f58aa2085f7da0ce6c35cbe138d9f5759c56b13a05710328df2",
+      "valid": true,
+      "referencesMatch": true
+    }
+  ],
+  "medianChecks": [
+    {
+      "side": "vm",
+      "lines": 101,
+      "metric": "firstCompletion",
+      "matches": true
+    },
+    {
+      "side": "vm",
+      "lines": 101,
+      "metric": "repeatCompletion",
+      "matches": true
+    },
+    {
+      "side": "vm",
+      "lines": 101,
+      "metric": "firstCompileAfterEditor",
+      "matches": true
+    },
+    {
+      "side": "vm",
+      "lines": 101,
+      "metric": "forcedRepeatCompile",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 101,
+      "metric": "firstCompletion",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 101,
+      "metric": "repeatCompletion",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 101,
+      "metric": "firstCompileAfterEditor",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 101,
+      "metric": "forcedRepeatCompile",
+      "matches": true
+    },
+    {
+      "side": "vm",
+      "lines": 1001,
+      "metric": "firstCompletion",
+      "matches": true
+    },
+    {
+      "side": "vm",
+      "lines": 1001,
+      "metric": "repeatCompletion",
+      "matches": true
+    },
+    {
+      "side": "vm",
+      "lines": 1001,
+      "metric": "firstCompileAfterEditor",
+      "matches": true
+    },
+    {
+      "side": "vm",
+      "lines": 1001,
+      "metric": "forcedRepeatCompile",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 1001,
+      "metric": "firstCompletion",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 1001,
+      "metric": "repeatCompletion",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 1001,
+      "metric": "firstCompileAfterEditor",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 1001,
+      "metric": "forcedRepeatCompile",
+      "matches": true
+    },
+    {
+      "side": "vm",
+      "lines": 5001,
+      "metric": "firstCompletion",
+      "matches": true
+    },
+    {
+      "side": "vm",
+      "lines": 5001,
+      "metric": "repeatCompletion",
+      "matches": true
+    },
+    {
+      "side": "vm",
+      "lines": 5001,
+      "metric": "firstCompileAfterEditor",
+      "matches": true
+    },
+    {
+      "side": "vm",
+      "lines": 5001,
+      "metric": "forcedRepeatCompile",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 5001,
+      "metric": "firstCompletion",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 5001,
+      "metric": "repeatCompletion",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 5001,
+      "metric": "firstCompileAfterEditor",
+      "matches": true
+    },
+    {
+      "side": "self",
+      "lines": 5001,
+      "metric": "forcedRepeatCompile",
+      "matches": true
+    }
+  ],
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+  ],
+  "componentCases": 30,
+  "componentValid": 30,
+  "applicationUiMeasured": false,
+  "implementationApproved": false,
+  "productModified": false,
+  "navigationModified": false
+}

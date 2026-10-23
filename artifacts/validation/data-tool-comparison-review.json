@@ -1,0 +1,584 @@
+{
+  "rows": [
+    {
+      "key": "Global/DataQueueModule",
+      "title": "DataQueueModule",
+      "priority": "P1，跨流程解耦需求确认后",
+      "vm": "原参数声明MaxRowNum=256、ImageCacheNum=10、AsynchronousTrigger=False；界面分队列设置和触发流程，Clear声明支持通信触发。",
+      "ours": "自研被动通信缓冲已有256消息/4MiB/4096消费者上限，按消费身份游标提交；ReceiveData的队列分支明确抛“尚未实现”。",
+      "difference": "高：通用队列工具未实现；已有局部缓冲不等通用队列",
+      "route": "条件新增，复用已证的代次/取消/提交原则，不直接把通信缓冲改名。",
+      "tradeoff": "通信缓冲优点是溢出可见、取消前不推进游标；局限是特定来源/值类型与内存消费，不覆盖图像队列、触发流程或持久化。VM声明展示这些配置入口，但原溢出/确认/图像引用寿命未知，不能认原版实现更差。",
+      "change": "拟议QueueId+Generation+Sequence+SchemaVersion，元素带Run/Scope/Frame与Owner租约；定单消费者还是多播、容量按条/字节/图像、满队列阻塞/拒绝/丢弃、清空和取消语义。确认后新增服务与工具入口，图像最后读者结束才释放。",
+      "accept": "满容量、消费者迟到、取消在commit前后、清空代次、双根消费、图像最后读者逐项；不能把同为256当等价。",
+      "unknown": "原队列push/pop/ack/clear实现、触发派发、缓冲拥有与退役实现仍缺。",
+      "anchor": "data-tool-DataQueueModule",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Models/Communication/CommunicationReceiveConsumption.cs",
+          "line": 43,
+          "token": "public async Task ConsumeAsync",
+          "sha256": "a3759096562d6027c5894beab0b67d24eb3a480d743325ab42a8c0810483f1be"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModule.xml",
+          "sha256": "e347f27b20088e1d3936d1e2983b522e911c4632229e7b35a59291749c2191d0"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModuleAlgorithm.xml",
+          "sha256": "a900a63d8118918587c937acb045df3c8750f19d6157a751b54b0fe460c98d17"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModuleAlgorithmTab.xml",
+          "sha256": "5d56fd74912873a4b934148bcc5b5dd8e3dd16db222772e3101f30e82a593474"
+        }
+      ]
+    },
+    {
+      "key": "Logic/DataSetModule",
+      "title": "数据集合",
+      "priority": "P1，动态集合基础",
+      "vm": "输入声明有隐藏ClearSignal；工具界面DataSetFields列名称/类型/数据源，属于动态字段配置，静态IO不齐不等没有输入。",
+      "ours": "ToolResults.GetOutputValues返回新字典但值引用共享；现有绑定/结果树支持字段，不是跨轮集合工具。",
+      "difference": "高：缺独立集合/清空与跨轮寿命合同",
+      "route": "建议新增类型化集合能力，复用现有FieldId/输出契约；不复制VM私有二进制。",
+      "tradeoff": "现有字段体系可复用且改名有稳定ID；但普通字典缺行关系、schema版本、跨轮Owner与clear事务。VM动态UI说明字段配置能力，具体追加/覆盖/清空时点仍缺原实现。",
+      "change": "拟议固定schema的行或列集合（先选择一种），FieldId稳定；一批写入原子化，ClearSignal的电平/边沿、空值和失败批次政策显式。图像/对象列用快照或租约，不能只复制字典。",
+      "accept": "字段改名/删列/类型变更、clear与写入竞争、失败无半行、两列长度不齐和子Scope隔离。",
+      "unknown": "原动态字段materialize、行/列追加与ClearSignal消费代码未齐。",
+      "anchor": "data-tool-DataSetModule",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Execution/Results/ToolResults.cs",
+          "line": 541,
+          "token": "public Dictionary<string, object?> GetOutputValues()",
+          "sha256": "3d4f0df03e792ea063ff024f32cd00782d81d8e773190642cd3efcf2ccf1c3ef"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModule.xml",
+          "sha256": "12e817bbba4e2ff7c714351a7527acff34bf8682789b218e8a6a721cd7f9442b"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModuleAlgorithm.xml",
+          "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModuleAlgorithmTab.xml",
+          "sha256": "06aea7108901a0bab9455401e9a58ba276a4d0840c44852be012bb799b160214"
+        }
+      ]
+    },
+    {
+      "key": "Logic/DataFilterModule",
+      "title": "数据筛选",
+      "priority": "P1，依赖集合合同",
+      "vm": "原工具用DataFilterParam/DataFilterConfig自定义控件，输出声明DataNum；筛选条件并未全部体现在静态参数列表。",
+      "ours": "当前24工具无独立筛选工具；C#脚本可以作为经开发的临时实现途径，不计现成筛选能力。",
+      "difference": "高：独立筛选与结果索引合同缺失",
+      "route": "按业务新增纯数据筛选工具，借鉴配置式条件；算法规则须自有合同。",
+      "tradeoff": "脚本灵活但用户需自行写类型/空值/索引与错误处理；专用工具易审查但要维护条件编辑器。原控件名不证明AND/OR、NaN、数组长度等具体规则。",
+      "change": "输入类型化集合+条件树，输出保留索引/掩码与同一行投影；先定逻辑组合、字符串比较、NaN/null、无匹配与坐标字段同步，禁止各列各筛各的。",
+      "accept": "空集/全命中/零命中、混合类型、null/NaN、稳定行索引、数组长度失配及取消不发布半结果。",
+      "unknown": "原条件树解析、比较器、输出行/索引及动态字段实现缺证。",
+      "anchor": "data-tool-DataFilterModule",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.Script/ScriptTool.cs",
+          "line": 60,
+          "token": "private static ScriptResults ExecuteCore",
+          "sha256": "71c32de73c6d00308a639750dcebefdf1c69a936b72f8d98a6fad1b469d13292"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModule.xml",
+          "sha256": "055071a1d942fcc3ec2e33331c20a7fe298e863c39c5a8dfe5e40d5f8c035792"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModuleAlgorithm.xml",
+          "sha256": "985704a0c914bb1f2fbce86448d97983602e75779c7548b8356d57ecdadd9d13"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModuleAlgorithmTab.xml",
+          "sha256": "3f0e016d7d4b8b3f4779d30a00ddd422d6aa49621786c6f8a5f566bf9e2032f5"
+        }
+      ]
+    },
+    {
+      "key": "Logic/DataSortModule",
+      "title": "数据排序",
+      "priority": "P1，依赖集合合同",
+      "vm": "原工具DataSortParam与DataSortConfig两区声明存在；静态IO只列状态/时间，不证明没有动态结果。",
+      "ours": "当前无独立排序工具声明；结果表显示顺序或脚本内部OrderBy不等业务排序输出工具。",
+      "difference": "高：缺可绑定的排序结果与置换",
+      "route": "按需新增排序算子，复用类型化集合与稳定字段ID。",
+      "tradeoff": "专用排序可统一索引和类型合同；成本是定义多键、比较器和大数据取消。VM原比较器/稳定性未知，不能直接宣称其规则适合自研。",
+      "change": "输入集合+排序键/方向，输出同一置换应用于全部列及原索引；明确稳定排序、文化区、大小写、NaN/null和相同键次序。排序不修改输入快照。",
+      "accept": "重复键/逆序/空集、三列行关联、无效键、取消前后输入不变；大数组另做基准。",
+      "unknown": "原排序键schema、稳定性与比较实现仍缺。",
+      "anchor": "data-tool-DataSortModule",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Execution/Results/ToolResults.cs",
+          "line": 541,
+          "token": "public Dictionary<string, object?> GetOutputValues()",
+          "sha256": "3d4f0df03e792ea063ff024f32cd00782d81d8e773190642cd3efcf2ccf1c3ef"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModule.xml",
+          "sha256": "ae894507e55b49e118a8944254d7680f919f25b71e6dec2109054a2b841c8ff1"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModuleAlgorithm.xml",
+          "sha256": "985704a0c914bb1f2fbce86448d97983602e75779c7548b8356d57ecdadd9d13"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModuleAlgorithmTab.xml",
+          "sha256": "50395af7a22cf8224c38e4abd76fb88135c0b2458aa207713a873f5e6c634bdf"
+        }
+      ]
+    },
+    {
+      "key": "Logic/DataRecordModule",
+      "title": "数据记录",
+      "priority": "P2，先确认记录介质",
+      "vm": "原ClearSignal与DataRecordFields动态编辑器存在；字段列由资源声明，未证明所有记录都落磁盘。",
+      "ours": "日志/长期Workflow快照已有，但日志消息不是类型化业务数据记录，当前无独立DataRecord工具。",
+      "difference": "高：业务记录工具缺失，持久化政策未定",
+      "route": "按需新增；内存历史与文件记录应分合同，不拿日志系统代替。",
+      "tradeoff": "借用日志方便排障但不保证业务记录schema、事务/查询和保留；专用记录有可追溯性，成本是存储/容量/恢复与敏感数据政策。",
+      "change": "先定内存或文件、逐轮追加/覆盖、Run/Scope时间与schema版本、容量/轮转/原子提交；若落盘，明确flush/耐久性，ClearSignal不能偷偷删历史文件。",
+      "accept": "取消/磁盘满/跨版本/重复提交、清空范围、脱敏与恢复；未确定介质前不承诺可靠落盘。",
+      "unknown": "原记录存储后端、clear行为、失败/缓冲/落盘确认缺证。",
+      "anchor": "data-tool-DataRecordModule",
+      "sources": [
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionSnapshot.cs",
+          "line": 25,
+          "token": "public string WorkflowId { get; }",
+          "sha256": "b106da3ab92f24d3e9d2f01d4b23d1f5a076c51585b2025423ac2bac38e21728"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModule.xml",
+          "sha256": "48d4906680d1550b5259c0a6eae46fa858527005615c0f50e6cc38c5c4a066ef"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleAlgorithm.xml",
+          "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleAlgorithmTab.xml",
+          "sha256": "036107cb151075f510a46804893d43fb6d8220bf130a70286856f60ec85be7c0"
+        }
+      ]
+    },
+    {
+      "key": "Logic/FormatModule",
+      "title": "格式化",
+      "priority": "P1，通信/报表易复用",
+      "vm": "原界面有StringInput、FormatMerge，输出format_out为string数组；具体格式语法仍需原实现。",
+      "ours": "通信接收分析用InvariantCulture转换单值为显示字符串，协议组装有自己的编码/字段合同；均不等通用格式化工具。",
+      "difference": "中到高：局部字符串转换已有，独立格式合同缺失",
+      "route": "建议新增轻量格式化工具，复用类型/错误反馈；不复用原VM未核语法。",
+      "tradeoff": "固定文化区便于协议一致；显示字符串转换缺数组配对、格式校验/合并与长度控制。专用格式化新增语法和兼容成本，应限制能力避免引入任意执行。",
+      "change": "输入字段ID/标量或数组+自有受限模板，输出string[]；明确广播/zip/长度失配、空值/精度/转义/区域性/合并分隔符。编码只在协议输出层做一次，限总输出长度。",
+      "accept": "小数点文化区、Unicode/转义、空数组、数组不齐、非法格式与超长拒绝，字段错误可定位。",
+      "unknown": "原模板解析、合并/数组广播、异常/长度限制实现缺证。",
+      "anchor": "data-tool-FormatModule",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.ReceiveData/ReceiveDataTool.cs",
+          "line": 85,
+          "token": "System.Globalization.CultureInfo.InvariantCulture",
+          "sha256": "74570aace0e7aa085008dd3bab66eb579ee0012d90808738c27db10415befed4"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModule.xml",
+          "sha256": "1ed23d3becac694e7924f54016d05004dedc1d0915ec6ccd5cc0538e7196fcc4"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModuleAlgorithm.xml",
+          "sha256": "53caad6d43561f0dd7847769c3511708b138ba82565619693f4587e1c089dccf"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModuleAlgorithmTab.xml",
+          "sha256": "4075d3199f94abb6a5e952829233f848b4ae82eff9771a3d7da0316eeebc868a"
+        }
+      ]
+    },
+    {
+      "key": "Logic/GraphicsSetModule",
+      "title": "图形收集",
+      "priority": "P2，按图形业务需求",
+      "vm": "原资源含CorrectEnable、InputWay、中心点X/Y、DicingWidth/Height及专用显示编辑器，不能只据名称当普通List<Graphics>。",
+      "ours": "DisplayCollector按Style引用收集图形/文字用于显示，确有图元批量接口，但不是该独立图形业务工具。",
+      "difference": "高：已有显示收集器，缺原工具业务合同",
+      "route": "复用图形载体与绘制层，按已确认需求新增业务工具；禁止直接把DisplayCollector当迁移完成。",
+      "tradeoff": "现有收集器降低重复绘制代码，但持有可变Style/Geometry引用且面向展示；原模块含中心/修正参数，算法含义未核全。复用要先明确图形坐标/帧/版本与Owner。",
+      "change": "输入类型化图形+参考域/修正来源，输出明确图形结果集合；筛选/变换/切片等业务分别定义，不猜Dicing字段算法。显示样式与结果几何分开，Finalize不等不可变深拷贝。",
+      "accept": "图形/文字混合、参考域变化、切帧、输入style变更、历史保留及重复清空不误释放借用像素。",
+      "unknown": "原InputWay/CorrectEnable/Dicing语义、图形结果结构与最终释放缺证。",
+      "anchor": "data-tool-GraphicsSetModule",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Models/Visualization/DisplayCollector.cs",
+          "line": 289,
+          "token": "private void AppendGeometry",
+          "sha256": "b550c3bededcaae633e2cfe711d5be157d8bac85779491910ece25b7c8ad844d"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModule.xml",
+          "sha256": "b67671669f5bfafbaa3b8f79dadb282e09004c469e22e1d99c6b24079721c6cf"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModuleAlgorithm.xml",
+          "sha256": "a0b78f802cb0140bac05bf4cd44e353233f1864b1cfa69715809a1e4d381f72d"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModuleAlgorithmTab.xml",
+          "sha256": "788a286b7a78d2e1b6ccc4ce987d1fcb4b737a4a65ef264ee86a8de771a62364"
+        }
+      ]
+    },
+    {
+      "key": "Logic/PointSetMODU_STD",
+      "title": "点集",
+      "priority": "P1，几何公共数据",
+      "vm": "原声明PointX1/Y1必需、2到16可选；输出PointX/PointY数组，LoopEnabled默认False；这是资源范围而非全运行模式证明。",
+      "ours": "SDK有readonly Point2d值类型与可变Point2D编辑类型；NPoint等专业工具有采样点，但无通用点集工具声明。",
+      "difference": "中到高：数据载体可复用，点集工具未有",
+      "route": "建议新增点集工具，复用算法值类型；编辑模型在提交时转换。",
+      "tradeoff": "值类型便于快照，但Point2d不自带坐标系/单位；可变编辑点有通知，不能直接当线程安全算法输入。原X/Y平行数组有互相失配风险，应在边界配对校验。",
+      "change": "自有结果采用点值数组加坐标系/单位/源索引；原兼容层如需平行X/Y数组应强制等长。明确启用项、空集、非有限值、循环追加上限与清空。",
+      "accept": "未启用项、X/Y长度失配、NaN/Infinity、编辑后提交隔离、顺序和坐标域不丢；不把16当自研必须上限。",
+      "unknown": "原循环累积、可选输入缺失/跳过、数组内存与清空实现缺证。",
+      "anchor": "data-tool-PointSetMODU_STD",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Models/Geometry/Point2d.cs",
+          "line": 12,
+          "token": "public readonly struct Point2d",
+          "sha256": "35eb9855f204bbe5e1133ca2707a94ca466362b2efe1f39c5a8796c294421fb9"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STD.xml",
+          "sha256": "86ca96fa92e62e5763f140b0ae3342eb21ca72a9bd4f4b9f811a06955160e2e4"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STDAlgorithm.xml",
+          "sha256": "b6d2a77a2ecc29c274bc20c83d5d492a6bccc938f26982977e47e3a0b42fad75"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STDAlgorithmTab.xml",
+          "sha256": "40e69142a920ea7f691e1186bb0e85d2e5133f73f30cfee4390ff191e20c0ffa"
+        }
+      ]
+    },
+    {
+      "key": "Calculation/CalculatorModule",
+      "title": "变量计算",
+      "priority": "P1，先定轻量计算范围",
+      "vm": "原CalculatorPro、重置值命令与动态%var0% float输出、ResultShow字符串声明存在；完整表达式语法未恢复。",
+      "ours": "ParameterResolver实际只派发Constant/Binding；BindingType另有NodeOutput枚举但此Resolve路径未接。C#脚本有Init/Process，是另一种执行合同。",
+      "difference": "高：参数绑定不等变量计算工具",
+      "route": "按业务新增受限计算器；复用数据源和稳定输出字段，不把C#脚本或绑定器直接称等价。",
+      "tradeoff": "脚本表达力强但编译/缓存/副作用/信任成本高；轻量计算器易约束和诊断但须维护语法/数值/兼容合同。无测量不称更快；不能假定VM语法可直接采用。",
+      "change": "明确运算符/函数/类型提升/精度、除零/溢出/NaN、数组广播、变量作用域/重置；解析与运行分开，禁止反射/文件/设备副作用；稳定FieldId进入结果树。",
+      "accept": "语法错误定位、缺变量、整数溢出/除零、数组长度失配、重命名/取消/无效生产者及重置作用域。",
+      "unknown": "原语法树/数值域/数组规则、重置和动态输出同步实现仍缺。",
+      "anchor": "data-tool-CalculatorModule",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Execution/Parameters/ParameterResolver.cs",
+          "line": 62,
+          "token": "return binding.BindingType switch",
+          "sha256": "7ca4f480e58b2a502d3df455c797f6a0a3cbfc15d4a31ec753e4258322b488c4"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModule.xml",
+          "sha256": "c1c5ddc7db3f55d844851919de2fe3b0fcc1b256268ab89efce2bfeef3f16399"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleAlgorithm.xml",
+          "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleAlgorithmTab.xml",
+          "sha256": "bb60499a373bbcc422df837f59fae8a2765ecad74866373c57e924033ab5a31b"
+        }
+      ]
+    },
+    {
+      "key": "Calibration/CoordinateModule",
+      "title": "坐标系",
+      "priority": "P1，确有坐标系生产需求时",
+      "vm": "原声明支持绘制/订阅及按点/坐标/矩阵输入；输出CorCalibMatrix、原点及两根坐标轴分量。不是只显示一组XY。",
+      "ours": "自研有AffineMatrix及ROI参考→测试变换，标定文件另记图像列行→机器标记XY；未见独立CoordinateModule工具声明。",
+      "difference": "高：坐标载体已有，独立坐标系创建/输出工具未齐",
+      "route": "复用矩阵和几何载体，按需新增坐标系工具；参考能力，不照搬VM私有矩阵格式。",
+      "tradeoff": "现有变换有明确WPF坐标约定和适配函数；但裸矩阵没有独立CoordinateSystemId/单位与来源域，易把显示修正、标定和世界坐标混用。VM接口丰富，原轴生成、坐标选择及发布时点缺实现，不能据名称认已迁移。",
+      "change": "拟议坐标系结果带系统ID、父域/子域、单位、方向、版本和源帧；矩阵/原点/轴从同一候选一次发布。明确手绘和订阅的状态，禁止仅以六个double识别类型。",
+      "accept": "轴正交/退化、非有限值、父子域不匹配、切帧、重新选坐标系与历史引用；原点和轴同版本更新。",
+      "unknown": "原CordinateCreate/InputWay分支、CorCalibMatrix数值顺序、绘制到动态输出的实现仍缺。",
+      "anchor": "data-tool-CoordinateModule",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Execution/Results/AffineMatrix.cs",
+          "line": 80,
+          "token": "public double[] ToArray()",
+          "sha256": "b23d7ba0b8eb4119d171d872ba7af44cf984016db4f1720b365f6ed4ab88c939"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModule.xml",
+          "sha256": "116d4bcb2cdfef0e2e380c527b6666f1f11c7d1b4f6d5640b1c281e2745e9218"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModuleAlgorithm.xml",
+          "sha256": "7994366ec98616f29fdd149c0076389b56a2b549680246b87360a725aeb5d7b7"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModuleAlgorithmTab.xml",
+          "sha256": "c1760ffeaf852e4b663f93965fa1a167b75f134d5a1dfee960092b98a23e1f5c"
+        }
+      ]
+    },
+    {
+      "key": "Location/IMVSFixtureModu",
+      "title": "位置修正",
+      "priority": "P1，先完善现有位置修正再定独立工具",
+      "vm": "原模块保存Init/Run点、角度、ScaleX/Y，界面有FixtureInit基准登记命令；不是单纯消费一个矩阵。",
+      "ours": "PositionCorrectionResolution已有来源成功检查、矩阵复制快照、数组取[0]、有限/可逆校验、条件保形限制和已知帧配对；Resolver按形状处理。",
+      "difference": "中到高：消费链已有门禁，独立基准/当前姿态生产合同未齐",
+      "route": "保留已证消费和验证，必要时新增显式基准/运行姿态生产工具，不从零重做ROI修正。",
+      "tradeoff": "已有门禁可阻断错误矩阵和已知错帧，优于仅传裸引用的本地旧思路；代价是兼容来源缺帧身份仍允许未验证，完整同帧不能宣称已闭合。原VM基准登记和全形状策略未恢复，不能比较谁更成熟。",
+      "change": "先补基准采纳事务、结果稳定ID和FrameId来源；多目标明确最佳[0]或子Scope逐实例，不隐式展开。保留requireConformal对测量引导的限制；圆/圆环与有向几何分开，UI与运行使用同一语义。",
+      "accept": "来源失败/空匹配、不可逆/NaN、镜像/非等比、已知错帧、无帧兼容、切基准与双目标；分别验预览和执行。",
+      "unknown": "原FixtureInit提交/取消、ScaleX/Y及多目标选择、native基准生命周期仍缺。",
+      "anchor": "data-tool-IMVSFixtureModu",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Execution/Helpers/PositionCorrectionResolution.cs",
+          "line": 38,
+          "token": "public static PositionCorrectionResolution Capture",
+          "sha256": "8f709df59cb2594acb6cd8a7d0827398e1f7182e5126adfc296c572bf0982313"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFixtureModu\\IMVSFixtureModu.xml",
+          "sha256": "577a67c5bc661a4c314c6eb1879caed1c82789f91d33d04b256b1fbceb585ac6"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFixtureModu\\IMVSFixtureModuAlgorithm.xml",
+          "sha256": "604234628908f3303686538d5d50915a01e06c496ca194f546bdacd0ae470b38"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFixtureModu\\IMVSFixtureModuAlgorithmTab.xml",
+          "sha256": "d02fce808ef14b2ba8e94908bf12d9f864fa4c9873f01929744bb5ace925e172"
+        }
+      ]
+    },
+    {
+      "key": "Calculation/CoordinateTransform",
+      "title": "坐标转换",
+      "priority": "P2，切片/局部图像转换需求确认后",
+      "vm": "原输入DicingPointX/Y、DicingImageWidth/Height和SrcPointX/Y，输出目标XY数组；界面声明中心/切片尺寸与CorrectEnable。这是切片上下文，不宜当普通六参数仿射工具。",
+      "ours": "自研已有AffineMatrix.TransformPoint和NPoint仿射辅助，但未见切片域到原图点转换的独立工具合同。",
+      "difference": "高：只共享底层数学基础，业务语义尚未对应",
+      "route": "按需新增切片坐标工具；复用已验证数学函数，不能把现有NPoint.Transform称同类工具实现。",
+      "tradeoff": "数学复用减少重复；局部/原图原点、裁剪/拼接、中心含义、边界和数组配对若没合同，数值可算但位置仍错。VM声明能确定上下文字段，不能据字段名猜公式。",
+      "change": "拟议显式LocalImageDomainId→ParentImageDomainId映射，记录裁剪原点/尺寸/缩放和版本；先恢复原公式或采用自有明确约定。点数组整批变换，禁止各列独立截断或丢索引。",
+      "accept": "已知裁剪矩形内/外点、边缘像素中心、缩放后局部图、负原点、多切片来源、数组不齐；相同控制点正反回算。",
+      "unknown": "原Dicing中心/宽高坐标约定、CorrectEnable公式、循环数组广播与裁剪边界仍缺。",
+      "anchor": "data-tool-CoordinateTransform",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Execution/Results/AffineMatrix.cs",
+          "line": 88,
+          "token": "public (double X, double Y) TransformPoint",
+          "sha256": "b23d7ba0b8eb4119d171d872ba7af44cf984016db4f1720b365f6ed4ab88c939"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransform.xml",
+          "sha256": "146414f684197693ea8290e75a37450b26fec068981f65c76bb272b26edfba5a"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransformAlgorithm.xml",
+          "sha256": "c1afe6c1965b7e5a34b56bac8674640ea00024280710d6ddabbb4449a7834c67"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransformAlgorithmTab.xml",
+          "sha256": "5ad5382fbcb2efaa5eac3cd284e95d7961d6cdab7f2e66e6560f52e78b0b41f3"
+        }
+      ]
+    },
+    {
+      "key": "Calculation/IMVSCalibTransformModu",
+      "title": "标定转换",
+      "priority": "P1，生产坐标输出需求",
+      "vm": "原声明图像点/角、RefreshSignal、CalibMatrix或文件输入，输出WorldPointX/Y/A数组、PixelScale和变换分解量。明显多于一次点仿射调用。",
+      "ours": "NPoint已输出当前机器标记XY与HomMat2D、设备/尺寸/域；HalconPlanarCalibration.Transform只处理六参数矩阵和点。",
+      "difference": "高：点变换可复用，独立文件/刷新/批量姿态合同未齐",
+      "route": "借鉴独立坐标转换职责，用自有标定文件和发布状态接入；不声称原VM标定文件兼容。",
+      "tradeoff": "自有候选/正式与设备域元数据可审查；但角度/尺度/剪切分解不能由XY输出推得，刷新时替换正在读的矩阵有一致性成本。原CalibMatrix字段声明不证明其C#/native包装布局。",
+      "change": "使用正式标定快照、文件hash/版本及设备/图像域；RefreshSignal先加载验证候选再原子替换。点/角数组、方向和量纲分别定义；NPoint机器坐标矩阵与fixture WPF矩阵不得按长度互换。",
+      "accept": "坏文件/错设备域/未发布、刷新失败保旧、点角数组失配、坐标方向反用、取消不发布半批；世界角语义先定再验。",
+      "unknown": "原文件加载/RefreshSignal时点、角度与分解公式、动态数组和native布局缺证。",
+      "anchor": "data-tool-IMVSCalibTransformModu",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationResults.cs",
+          "line": 25,
+          "token": "public double[] HomMat2D",
+          "sha256": "44f4c3809620f168542227349ec655ca59d1b8b8effe86f333a77c2e228ab792"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModu.xml",
+          "sha256": "754a99668d773812511f5a821e78c19891f38b8958b4665078d82ae2c9ec6c64"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModuAlgorithm.xml",
+          "sha256": "a1555a0e2b2e2e543cec81f15532e817a9e125bbf456127aa77f6ac5d4690963"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModuAlgorithmTab.xml",
+          "sha256": "1c7b04b5d24a3f09df87ee8b94a2b15d8b6ba89f3cb4e608181a29c58e401b58"
+        }
+      ]
+    },
+    {
+      "key": "Calculation/IMVSScaleTransformModu",
+      "title": "单位转换",
+      "priority": "P1，毫米距离输出需求确认后",
+      "vm": "原输入ImageDist、PixelEquivalentCorrectInfo、RefreshSignal和标定文件；输出PhyDist/PixDist、PixelScale及变换分解量。不是任意单位字符串换算。",
+      "ours": "自研标定文件声明mm与方向，AffineMatrix有ScaleFactor/IsConformal，但没有由此证明完整距离换算工具。",
+      "difference": "高：单位元数据与局部尺度计算不等距离换算产品能力",
+      "route": "按需新增测量量纲适配，复用正式标定快照；先定义支持的变换域。",
+      "tradeoff": "等比缩放时标量尺度易用；非等比/剪切下距离依方向变化，单一PixelScale不能代表任意距离。现有保形检查可复用，具体像素等效信息的原公式仍缺。",
+      "change": "先支持已声明保形/固定尺度合同；需要一般仿射时输入两端点或方向向量，以变换后距离计算，不能盲乘一个ScaleFactor。文件/refresh走同一版本事务，保留像素与物理值双输出。",
+      "accept": "零距/负值政策、非等比/镜像拒绝或显式支持、斜向线段、错单位、刷新代次与历史复算。",
+      "unknown": "原PixelEquivalentCorrectInfo结构、尺度/分解公式与非保形支持范围未齐。",
+      "anchor": "data-tool-IMVSScaleTransformModu",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Execution/Results/AffineMatrix.cs",
+          "line": 123,
+          "token": "public bool IsConformal",
+          "sha256": "b23d7ba0b8eb4119d171d872ba7af44cf984016db4f1720b365f6ed4ab88c939"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModu.xml",
+          "sha256": "6a40a53325d644a4a0a123a6c2230367a2897e391199bea22d64e8dc26703082"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModuAlgorithm.xml",
+          "sha256": "53836702215c393a45b2d42394dfc97a901cbe23bffa87e101bc51ef641dfd8a"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModuAlgorithmTab.xml",
+          "sha256": "e29aa3f7e61ef655878094223365483f754a4dd430f88c4cf27a4fbd0ad387da"
+        }
+      ]
+    },
+    {
+      "key": "Calculation/IMVSRotateCalculateModu",
+      "title": "旋转计算",
+      "priority": "P2，通用旋转算子需求确认后",
+      "vm": "原输入点或线、旋转中心和角，输出点数组/线端点并保留部分输入值；InputType为独立模式。",
+      "ours": "自研AffineMatrix已有点变换、方向角计算与WPF/哈康适配，但未见独立旋转工具的参数/结果/中心合同。",
+      "difference": "中到高：变换数学可用，业务工具未齐",
+      "route": "复用明确坐标约定与适配，条件新增独立旋转工具，不把ROI随动当旋转算子。",
+      "tradeoff": "统一约定可避免符号补丁；但WPF向下Y、机器坐标、角度度/弧度和中心移动不可混用。ToArray与ToHalconArray排列不同，裸六数不得直接传另一个API。无运行数据不判速度。",
+      "change": "明确坐标域、角单位、正方向、旋转中心；模式用语义枚举，点/线输出保留索引和单位。仿射以T(center)·R·T(-center)的自有约定定义并独立核方向，调用既有适配不自行乱序。",
+      "accept": "非原点中心、±90/180度、整周、零长度线、数组/单点一致、不同后端适配及输入不变；正反回算之外需已知控制点。",
+      "unknown": "原InputType编号、角单位/正方向、数组广播、输入输出坐标回填与native实现未齐。",
+      "anchor": "data-tool-IMVSRotateCalculateModu",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Execution/Results/AffineMatrix.cs",
+          "line": 152,
+          "token": "public double[] ToHalconArray()",
+          "sha256": "b23d7ba0b8eb4119d171d872ba7af44cf984016db4f1720b365f6ed4ab88c939"
+        }
+      ],
+      "vmSources": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModu.xml",
+          "sha256": "75036f759810163bb6f1818afc45ac6749d8d475005ac47a276b7ece68ac6cb6"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModuAlgorithm.xml",
+          "sha256": "69632ad7893a631badcb82c633e12cecd0be42f1dfd5ef4ddbbca19f1604ec95"
+        },
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModuAlgorithmTab.xml",
+          "sha256": "8be4b4dffeadf411a088c09f5e7c3d395dbe6b76ac99a301169e56e4c18399f5"
+        }
+      ]
+    }
+  ],
+  "supplemental": [
+    {
+      "path": "src/Plugin.SDK/Execution/Helpers/PositionCorrectionResolution.cs",
+      "line": 38,
+      "token": "public static PositionCorrectionResolution Capture",
+      "sha256": "8f709df59cb2594acb6cd8a7d0827398e1f7182e5126adfc296c572bf0982313"
+    },
+    {
+      "path": "src/Plugin.SDK/Execution/Helpers/PositionCorrectionResolver.cs",
+      "line": 31,
+      "token": "public static AffineMatrix? ResolveFirstMatrix",
+      "sha256": "3487d64e0d1ddd601d24eebd5684a34d57739b49ac14776320182c3993b67d81"
+    },
+    {
+      "path": "src/Plugin.SDK/Execution/Parameters/ToolExecutionPreparation.cs",
+      "line": 50,
+      "token": "public static bool RequiresConformalCorrection",
+      "sha256": "302591b7865abd944f4794ad87ed7ba5f2cde0e106ae1dc03d70f3add927e014"
+    },
+    {
+      "path": "src/Plugin.SDK/Execution/Parameters/Point2D.cs",
+      "line": 14,
+      "token": "public class Point2D",
+      "sha256": "824f689fa38c03fd73a6f0edd8ca65f7fe07b3d97a60015d11a47739c7312e1f"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.ReceiveData/ReceiveDataTool.cs",
+      "line": 78,
+      "token": "队列接收尚未实现",
+      "sha256": "74570aace0e7aa085008dd3bab66eb579ee0012d90808738c27db10415befed4"
+    },
+    {
+      "path": "src/Plugin.SDK/Execution/Parameters/BindingType.cs",
+      "line": 52,
+      "token": "NodeOutput = 2",
+      "sha256": "83538b3fd2358decd80700ced6139c487247b2f410a122525d54beaaa9ee38f5"
+    }
+  ],
+  "runtimeExecuted": false,
+  "policy": "15项数据/坐标合同级具体差异与自有设计提案；VM XML不是native算法实现，当前库/脚本可开发不等独立工具已交付。未新增候选，未提高原42语义闭合数。"
+}

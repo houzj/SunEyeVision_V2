@@ -1,0 +1,20 @@
+{
+  "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+  "mode": "cold",
+  "round0": {
+    "initializationMs": 877.3718,
+    "constructToContentRenderedMs": 1839.0378,
+    "firstRequestedQueryMs": 434.575,
+    "hasAppend": true,
+    "queryExcludesPopup": true
+  },
+  "round1": {
+    "initializationMs": 18.674,
+    "constructToContentRenderedMs": 290.7344,
+    "firstRequestedQueryMs": 109.5731,
+    "hasAppend": true,
+    "queryExcludesPopup": true
+  },
+  "success": true,
+  "totalMs": 2910.8986
+}

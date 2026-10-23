@@ -1,0 +1,1883 @@
+{
+  "batchId": "DOC-UX-SPLIT-20261022",
+  "pages": [
+    {
+      "file": "capability-m01.html",
+      "title": "M01 启动、方案恢复与主窗装配",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m02.html",
+      "title": "M02 方案配置：新建、打开、切换",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m03.html",
+      "title": "M03 保存当前方案 / Ctrl+S",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m04.html",
+      "title": "M04 工具箱分类、浏览与拖入",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m05.html",
+      "title": "M05 新增、选中、重命名与删除流程Tab",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m06.html",
+      "title": "M06 节点选中、拖动与多选",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m07.html",
+      "title": "M07 端口连线、断开与路径显示",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m08.html",
+      "title": "M08 删除节点、撤销与重做",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m09.html",
+      "title": "M09 子程序/Group进入、返回及配置",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m10.html",
+      "title": "M10 小地图、画布缩放与主窗全屏",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m11.html",
+      "title": "M11 主工具栏/F5单次运行",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m12.html",
+      "title": "M12 流程Tab单次运行",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m13.html",
+      "title": "M13 全部流程连续运行/停止",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m14.html",
+      "title": "M14 流程Tab连续运行/停止",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m15.html",
+      "title": "M15 停止/Shift+F5",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m16.html",
+      "title": "M16 显示图像源选择、预览与历史",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m17.html",
+      "title": "M17 模块结果树/表及绑定到全局变量",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m18.html",
+      "title": "M18 全局变量管理与选择",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m19.html",
+      "title": "M19 相机管理：连接、参数、预览与正式采集",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m20.html",
+      "title": "M20 通信管理：连接、读写、事件与后台触发",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m21.html",
+      "title": "M21 主题、主窗控制、帮助与诊断入口",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m22.html",
+      "title": "M22 关闭主窗/切方案时保存与资源退役",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m23.html",
+      "title": "M23 系统设置命令占位（非已确认可见菜单）",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t01.html",
+      "title": "T01 打开工具界面与上下文注入",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t02.html",
+      "title": "T02 输入图像/标量/数组绑定选择",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t03.html",
+      "title": "T03 参数编辑与提交输入控件",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t04.html",
+      "title": "T04 窗口执行按钮：单次调试",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t05.html",
+      "title": "T05 窗口连续调试",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t06.html",
+      "title": "T06 窗口连续调试：停止",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t07.html",
+      "title": "T07 确定/应用：提交、验证、关闭",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t08.html",
+      "title": "T08 关闭/X：编辑收尾与事件解绑",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t09.html",
+      "title": "T09 ROI绘制、选择、移动与屏蔽",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t10.html",
+      "title": "T10 位置修正/Fixture预览",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t11.html",
+      "title": "T11 图像缩放、适应、平移、全屏",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t12.html",
+      "title": "T12 图形与文字样式、叠加渲染",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t13.html",
+      "title": "T13 调试结果回到主图与结果树",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t14.html",
+      "title": "T14 重置参数与数据源恢复",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t15.html",
+      "title": "T15 脚本：代码、动态输出、程序集与执行",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t16.html",
+      "title": "T16 子程序：输入、输出与显示配置",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t17.html",
+      "title": "T17 标定：采样、求解、候选文件与验证",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-t18.html",
+      "title": "T18 模板/匹配编辑与其他专业工具",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-x01.html",
+      "title": "X01 图像缓冲、显示缓存与最后读者",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-x02.html",
+      "title": "X02 SDK、插件部署与公共编辑控件",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-x03.html",
+      "title": "X03 自有加密狗与功能授权",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-x04.html",
+      "title": "X04 方案文件加密、密钥恢复与插件信任",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-x05.html",
+      "title": "X05 性能、长稳、日志与故障验证",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m24.html",
+      "title": "M24 状态栏、运行耗时与执行快照",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m25.html",
+      "title": "M25 专业数据分析面板与图像高亮",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-m26.html",
+      "title": "M26 日志面板、筛选、搜索与诊断级别",
+      "kind": "capability"
+    },
+    {
+      "file": "capability-index.html",
+      "title": "从功能找双方能力对照",
+      "kind": "catalog"
+    },
+    {
+      "file": "optimization-o01.html",
+      "title": "O01 入口、装配与编辑事务",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-o02.html",
+      "title": "O02 统一运行范围、连续与停止完成",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-o03.html",
+      "title": "O03 参数、绑定、变量和控制结构合同",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-o04.html",
+      "title": "O04 生命周期、图像最后读者与退出",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-o05.html",
+      "title": "O05 标准工具窗口：执行、连续、提交和关闭",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-o06.html",
+      "title": "O06 图像、ROI、图形文字及坐标一致性",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-o07.html",
+      "title": "O07 模块结果树与输出投影",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-o08.html",
+      "title": "O08 方案、标定文件与恢复事务",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-o09.html",
+      "title": "O09 相机、通信和后台真实副作用",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-o10.html",
+      "title": "O10 插件、SDK、脚本和发布依赖",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-o11.html",
+      "title": "O11 自有狗授权、文件保护与信任政策",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-o12.html",
+      "title": "O12 专业工具逐项验收与同条件性能",
+      "kind": "optimization"
+    },
+    {
+      "file": "optimization-index.html",
+      "title": "优化方案：从问题到实施门槛",
+      "kind": "catalog"
+    },
+    {
+      "file": "optimization-diagnostics.html",
+      "title": "诊断、性能基准与交付记录",
+      "kind": "optimization"
+    },
+    {
+      "file": "audit-c01.html",
+      "title": "C01 启动装配与依赖方向",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c02.html",
+      "title": "C02 身份、作用域与所有权",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c03.html",
+      "title": "C03 工作流调度与控制结构",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c04.html",
+      "title": "C04 并发、排队与资源竞争",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c05.html",
+      "title": "C05 参数、IO与绑定契约",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c06.html",
+      "title": "C06 图像、原生句柄与缓存寿命",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c07.html",
+      "title": "C07 设备接入、通信与恢复",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c08.html",
+      "title": "C08 工具插件发现与生命周期",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c09.html",
+      "title": "C09 编辑、调试与正式运行隔离",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c10.html",
+      "title": "C10 显示、ROI、叠加与坐标分域",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c11.html",
+      "title": "C11 方案保存、迁移、复制与撤销",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c12.html",
+      "title": "C12 错误、停止、超时与恢复",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c13.html",
+      "title": "C13 事件、日志与可观测性",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c14.html",
+      "title": "C14 构建部署、版本与SDK兼容",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c15.html",
+      "title": "C15 权限、脚本与外部副作用",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c16.html",
+      "title": "C16 性能、长稳与可测试性",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c17.html",
+      "title": "C17 全局变量与作用域",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c18.html",
+      "title": "C18 相机管理与采集策略",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c19.html",
+      "title": "C19 SDK、公共控件与模板",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-c20.html",
+      "title": "C20 UI各部分的设计对比",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-ui.html",
+      "title": "13项UI入口与场景验收",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-evidence-1.html",
+      "title": "原42证据 · RE-W1",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-evidence-2.html",
+      "title": "原42证据 · RE-W2",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-evidence-3.html",
+      "title": "原42证据 · RE-I1",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-evidence-4.html",
+      "title": "原42证据 · RE-I2",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-evidence-5.html",
+      "title": "原42证据 · RE-P1",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-evidence-6.html",
+      "title": "原42证据 · RE-P2",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-evidence-7.html",
+      "title": "原42证据 · RE-X1",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-1.html",
+      "title": "工具处置 · 图像处理",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-2.html",
+      "title": "工具处置 · 标定",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-3.html",
+      "title": "工具处置 · 采集",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-4.html",
+      "title": "工具处置 · 定位",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-5.html",
+      "title": "工具处置 · 逻辑工具",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-6.html",
+      "title": "工具处置 · 运算",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-7.html",
+      "title": "工具处置 · 颜色处理",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-8.html",
+      "title": "工具处置 · 通信",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-9.html",
+      "title": "工具处置 · 缺陷检测",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-10.html",
+      "title": "工具处置 · 全局与框架载体",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-11.html",
+      "title": "工具处置 · 图形生成",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-12.html",
+      "title": "工具处置 · 测量",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-13.html",
+      "title": "工具处置 · 识别",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-tools-14.html",
+      "title": "工具处置 · 拆分组合",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-menus-1.html",
+      "title": "菜单处置 · MenuItems.xml",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-menus-2.html",
+      "title": "菜单处置 · MenuItemsLinux.xml",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-menus-3.html",
+      "title": "菜单处置 · NeutralMenuItems.xml",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-menus-4.html",
+      "title": "菜单处置 · NeutralMenuItemsLinux.xml",
+      "kind": "audit"
+    },
+    {
+      "file": "audit-overview.html",
+      "title": "证据与审计：不要混淆四种完成",
+      "kind": "catalog"
+    },
+    {
+      "file": "guide-execution.html",
+      "title": "执行架构 · 关系图解",
+      "kind": "guide"
+    },
+    {
+      "file": "guide-dataflow.html",
+      "title": "数据流与结果发布 · 关系图解",
+      "kind": "guide"
+    },
+    {
+      "file": "guide-dependencies.html",
+      "title": "工程与SDK依赖 · 关系图解",
+      "kind": "guide"
+    },
+    {
+      "file": "guide-lifecycle.html",
+      "title": "资源Owner与生命周期 · 关系图解",
+      "kind": "guide"
+    },
+    {
+      "file": "index.html",
+      "title": "从界面与关系寻找架构文档",
+      "kind": "index"
+    }
+  ],
+  "legacyMaps": {
+    "comparison.html": {
+      "compare-M01": {
+        "file": "capability-m01.html",
+        "hash": "compare-M01"
+      },
+      "M01": {
+        "file": "capability-m01.html",
+        "hash": "M01"
+      },
+      "compare-M02": {
+        "file": "capability-m02.html",
+        "hash": "compare-M02"
+      },
+      "M02": {
+        "file": "capability-m02.html",
+        "hash": "M02"
+      },
+      "compare-M03": {
+        "file": "capability-m03.html",
+        "hash": "compare-M03"
+      },
+      "M03": {
+        "file": "capability-m03.html",
+        "hash": "M03"
+      },
+      "compare-M04": {
+        "file": "capability-m04.html",
+        "hash": "compare-M04"
+      },
+      "M04": {
+        "file": "capability-m04.html",
+        "hash": "M04"
+      },
+      "compare-M05": {
+        "file": "capability-m05.html",
+        "hash": "compare-M05"
+      },
+      "M05": {
+        "file": "capability-m05.html",
+        "hash": "M05"
+      },
+      "compare-M06": {
+        "file": "capability-m06.html",
+        "hash": "compare-M06"
+      },
+      "M06": {
+        "file": "capability-m06.html",
+        "hash": "M06"
+      },
+      "compare-M07": {
+        "file": "capability-m07.html",
+        "hash": "compare-M07"
+      },
+      "M07": {
+        "file": "capability-m07.html",
+        "hash": "M07"
+      },
+      "compare-M08": {
+        "file": "capability-m08.html",
+        "hash": "compare-M08"
+      },
+      "M08": {
+        "file": "capability-m08.html",
+        "hash": "M08"
+      },
+      "compare-M09": {
+        "file": "capability-m09.html",
+        "hash": "compare-M09"
+      },
+      "M09": {
+        "file": "capability-m09.html",
+        "hash": "M09"
+      },
+      "compare-M10": {
+        "file": "capability-m10.html",
+        "hash": "compare-M10"
+      },
+      "M10": {
+        "file": "capability-m10.html",
+        "hash": "M10"
+      },
+      "compare-M11": {
+        "file": "capability-m11.html",
+        "hash": "compare-M11"
+      },
+      "M11": {
+        "file": "capability-m11.html",
+        "hash": "M11"
+      },
+      "compare-M12": {
+        "file": "capability-m12.html",
+        "hash": "compare-M12"
+      },
+      "M12": {
+        "file": "capability-m12.html",
+        "hash": "M12"
+      },
+      "compare-M13": {
+        "file": "capability-m13.html",
+        "hash": "compare-M13"
+      },
+      "M13": {
+        "file": "capability-m13.html",
+        "hash": "M13"
+      },
+      "compare-M14": {
+        "file": "capability-m14.html",
+        "hash": "compare-M14"
+      },
+      "M14": {
+        "file": "capability-m14.html",
+        "hash": "M14"
+      },
+      "compare-M15": {
+        "file": "capability-m15.html",
+        "hash": "compare-M15"
+      },
+      "M15": {
+        "file": "capability-m15.html",
+        "hash": "M15"
+      },
+      "compare-M16": {
+        "file": "capability-m16.html",
+        "hash": "compare-M16"
+      },
+      "M16": {
+        "file": "capability-m16.html",
+        "hash": "M16"
+      },
+      "compare-M17": {
+        "file": "capability-m17.html",
+        "hash": "compare-M17"
+      },
+      "M17": {
+        "file": "capability-m17.html",
+        "hash": "M17"
+      },
+      "compare-M18": {
+        "file": "capability-m18.html",
+        "hash": "compare-M18"
+      },
+      "M18": {
+        "file": "capability-m18.html",
+        "hash": "M18"
+      },
+      "compare-M19": {
+        "file": "capability-m19.html",
+        "hash": "compare-M19"
+      },
+      "M19": {
+        "file": "capability-m19.html",
+        "hash": "M19"
+      },
+      "compare-M20": {
+        "file": "capability-m20.html",
+        "hash": "compare-M20"
+      },
+      "M20": {
+        "file": "capability-m20.html",
+        "hash": "M20"
+      },
+      "compare-M21": {
+        "file": "capability-m21.html",
+        "hash": "compare-M21"
+      },
+      "M21": {
+        "file": "capability-m21.html",
+        "hash": "M21"
+      },
+      "compare-M22": {
+        "file": "capability-m22.html",
+        "hash": "compare-M22"
+      },
+      "M22": {
+        "file": "capability-m22.html",
+        "hash": "M22"
+      },
+      "compare-M23": {
+        "file": "capability-m23.html",
+        "hash": "compare-M23"
+      },
+      "M23": {
+        "file": "capability-m23.html",
+        "hash": "M23"
+      },
+      "compare-T01": {
+        "file": "capability-t01.html",
+        "hash": "compare-T01"
+      },
+      "T01": {
+        "file": "capability-t01.html",
+        "hash": "T01"
+      },
+      "compare-T02": {
+        "file": "capability-t02.html",
+        "hash": "compare-T02"
+      },
+      "T02": {
+        "file": "capability-t02.html",
+        "hash": "T02"
+      },
+      "compare-T03": {
+        "file": "capability-t03.html",
+        "hash": "compare-T03"
+      },
+      "T03": {
+        "file": "capability-t03.html",
+        "hash": "T03"
+      },
+      "compare-T04": {
+        "file": "capability-t04.html",
+        "hash": "compare-T04"
+      },
+      "T04": {
+        "file": "capability-t04.html",
+        "hash": "T04"
+      },
+      "compare-T05": {
+        "file": "capability-t05.html",
+        "hash": "compare-T05"
+      },
+      "T05": {
+        "file": "capability-t05.html",
+        "hash": "T05"
+      },
+      "compare-T06": {
+        "file": "capability-t06.html",
+        "hash": "compare-T06"
+      },
+      "T06": {
+        "file": "capability-t06.html",
+        "hash": "T06"
+      },
+      "compare-T07": {
+        "file": "capability-t07.html",
+        "hash": "compare-T07"
+      },
+      "T07": {
+        "file": "capability-t07.html",
+        "hash": "T07"
+      },
+      "compare-T08": {
+        "file": "capability-t08.html",
+        "hash": "compare-T08"
+      },
+      "T08": {
+        "file": "capability-t08.html",
+        "hash": "T08"
+      },
+      "compare-T09": {
+        "file": "capability-t09.html",
+        "hash": "compare-T09"
+      },
+      "T09": {
+        "file": "capability-t09.html",
+        "hash": "T09"
+      },
+      "compare-T10": {
+        "file": "capability-t10.html",
+        "hash": "compare-T10"
+      },
+      "T10": {
+        "file": "capability-t10.html",
+        "hash": "T10"
+      },
+      "compare-T11": {
+        "file": "capability-t11.html",
+        "hash": "compare-T11"
+      },
+      "T11": {
+        "file": "capability-t11.html",
+        "hash": "T11"
+      },
+      "compare-T12": {
+        "file": "capability-t12.html",
+        "hash": "compare-T12"
+      },
+      "T12": {
+        "file": "capability-t12.html",
+        "hash": "T12"
+      },
+      "compare-T13": {
+        "file": "capability-t13.html",
+        "hash": "compare-T13"
+      },
+      "T13": {
+        "file": "capability-t13.html",
+        "hash": "T13"
+      },
+      "compare-T14": {
+        "file": "capability-t14.html",
+        "hash": "compare-T14"
+      },
+      "T14": {
+        "file": "capability-t14.html",
+        "hash": "T14"
+      },
+      "compare-T15": {
+        "file": "capability-t15.html",
+        "hash": "compare-T15"
+      },
+      "T15": {
+        "file": "capability-t15.html",
+        "hash": "T15"
+      },
+      "compare-T16": {
+        "file": "capability-t16.html",
+        "hash": "compare-T16"
+      },
+      "T16": {
+        "file": "capability-t16.html",
+        "hash": "T16"
+      },
+      "compare-T17": {
+        "file": "capability-t17.html",
+        "hash": "compare-T17"
+      },
+      "T17": {
+        "file": "capability-t17.html",
+        "hash": "T17"
+      },
+      "compare-T18": {
+        "file": "capability-t18.html",
+        "hash": "compare-T18"
+      },
+      "T18": {
+        "file": "capability-t18.html",
+        "hash": "T18"
+      },
+      "compare-X01": {
+        "file": "capability-x01.html",
+        "hash": "compare-X01"
+      },
+      "X01": {
+        "file": "capability-x01.html",
+        "hash": "X01"
+      },
+      "compare-X02": {
+        "file": "capability-x02.html",
+        "hash": "compare-X02"
+      },
+      "X02": {
+        "file": "capability-x02.html",
+        "hash": "X02"
+      },
+      "compare-X03": {
+        "file": "capability-x03.html",
+        "hash": "compare-X03"
+      },
+      "X03": {
+        "file": "capability-x03.html",
+        "hash": "X03"
+      },
+      "compare-X04": {
+        "file": "capability-x04.html",
+        "hash": "compare-X04"
+      },
+      "X04": {
+        "file": "capability-x04.html",
+        "hash": "X04"
+      },
+      "compare-X05": {
+        "file": "capability-x05.html",
+        "hash": "compare-X05"
+      },
+      "X05": {
+        "file": "capability-x05.html",
+        "hash": "X05"
+      },
+      "compare-M24": {
+        "file": "capability-m24.html",
+        "hash": "compare-M24"
+      },
+      "M24": {
+        "file": "capability-m24.html",
+        "hash": "M24"
+      },
+      "compare-M25": {
+        "file": "capability-m25.html",
+        "hash": "compare-M25"
+      },
+      "M25": {
+        "file": "capability-m25.html",
+        "hash": "M25"
+      },
+      "compare-M26": {
+        "file": "capability-m26.html",
+        "hash": "compare-M26"
+      },
+      "M26": {
+        "file": "capability-m26.html",
+        "hash": "M26"
+      },
+      "search": {
+        "file": "capability-index.html",
+        "hash": "group-main"
+      },
+      "difference": {
+        "file": "capability-index.html",
+        "hash": "group-main"
+      },
+      "adoption": {
+        "file": "capability-index.html",
+        "hash": "group-main"
+      },
+      "state": {
+        "file": "capability-index.html",
+        "hash": "group-main"
+      },
+      "clear-filters": {
+        "file": "capability-index.html",
+        "hash": "group-main"
+      },
+      "prev": {
+        "file": "capability-index.html",
+        "hash": "group-main"
+      },
+      "page-count": {
+        "file": "capability-index.html",
+        "hash": "group-main"
+      },
+      "next": {
+        "file": "capability-index.html",
+        "hash": "group-main"
+      },
+      "empty-results": {
+        "file": "capability-index.html",
+        "hash": "group-main"
+      },
+      "print-page": {
+        "file": "capability-index.html",
+        "hash": "group-main"
+      }
+    },
+    "optimization.html": {
+      "O01": {
+        "file": "optimization-o01.html",
+        "hash": "O01"
+      },
+      "forward-O01-close-barrier": {
+        "file": "optimization-o01.html",
+        "hash": "forward-O01-close-barrier"
+      },
+      "forward-O01-delete-undo": {
+        "file": "optimization-o01.html",
+        "hash": "forward-O01-delete-undo"
+      },
+      "forward-O01-sequence": {
+        "file": "optimization-o01.html",
+        "hash": "forward-O01-sequence"
+      },
+      "forward-O01-history-failure": {
+        "file": "optimization-o01.html",
+        "hash": "forward-O01-history-failure"
+      },
+      "O02": {
+        "file": "optimization-o02.html",
+        "hash": "O02"
+      },
+      "forward-O02-call-cycle": {
+        "file": "optimization-o02.html",
+        "hash": "forward-O02-call-cycle"
+      },
+      "forward-O02-sub-status": {
+        "file": "optimization-o02.html",
+        "hash": "forward-O02-sub-status"
+      },
+      "O03": {
+        "file": "optimization-o03.html",
+        "hash": "O03"
+      },
+      "forward-O03-child-globals": {
+        "file": "optimization-o03.html",
+        "hash": "forward-O03-child-globals"
+      },
+      "O04": {
+        "file": "optimization-o04.html",
+        "hash": "O04"
+      },
+      "forward-O04-child-drain": {
+        "file": "optimization-o04.html",
+        "hash": "forward-O04-child-drain"
+      },
+      "O05": {
+        "file": "optimization-o05.html",
+        "hash": "O05"
+      },
+      "forward-O05-sub-delay": {
+        "file": "optimization-o05.html",
+        "hash": "forward-O05-sub-delay"
+      },
+      "O06": {
+        "file": "optimization-o06.html",
+        "hash": "O06"
+      },
+      "forward-O06-bitmap-copy": {
+        "file": "optimization-o06.html",
+        "hash": "forward-O06-bitmap-copy"
+      },
+      "O07": {
+        "file": "optimization-o07.html",
+        "hash": "O07"
+      },
+      "forward-O07-analysis-delivery": {
+        "file": "optimization-o07.html",
+        "hash": "forward-O07-analysis-delivery"
+      },
+      "forward-O07-analysis-owner": {
+        "file": "optimization-o07.html",
+        "hash": "forward-O07-analysis-owner"
+      },
+      "forward-O07-sub-identity": {
+        "file": "optimization-o07.html",
+        "hash": "forward-O07-sub-identity"
+      },
+      "O08": {
+        "file": "optimization-o08.html",
+        "hash": "O08"
+      },
+      "forward-O08-load": {
+        "file": "optimization-o08.html",
+        "hash": "forward-O08-load"
+      },
+      "forward-O08-commit": {
+        "file": "optimization-o08.html",
+        "hash": "forward-O08-commit"
+      },
+      "forward-O08-resources": {
+        "file": "optimization-o08.html",
+        "hash": "forward-O08-resources"
+      },
+      "forward-O08-recover": {
+        "file": "optimization-o08.html",
+        "hash": "forward-O08-recover"
+      },
+      "forward-O08-trust": {
+        "file": "optimization-o08.html",
+        "hash": "forward-O08-trust"
+      },
+      "forward-O08-write": {
+        "file": "optimization-o08.html",
+        "hash": "forward-O08-write"
+      },
+      "O09": {
+        "file": "optimization-o09.html",
+        "hash": "O09"
+      },
+      "forward-O09-list": {
+        "file": "optimization-o09.html",
+        "hash": "forward-O09-list"
+      },
+      "forward-O09-preview": {
+        "file": "optimization-o09.html",
+        "hash": "forward-O09-preview"
+      },
+      "forward-O09-parameters": {
+        "file": "optimization-o09.html",
+        "hash": "forward-O09-parameters"
+      },
+      "forward-O09-feed": {
+        "file": "optimization-o09.html",
+        "hash": "forward-O09-feed"
+      },
+      "forward-O09-capture": {
+        "file": "optimization-o09.html",
+        "hash": "forward-O09-capture"
+      },
+      "forward-O09-buffer": {
+        "file": "optimization-o09.html",
+        "hash": "forward-O09-buffer"
+      },
+      "forward-O09-support": {
+        "file": "optimization-o09.html",
+        "hash": "forward-O09-support"
+      },
+      "forward-O09-comm-retire": {
+        "file": "optimization-o09.html",
+        "hash": "forward-O09-comm-retire"
+      },
+      "forward-O09-comm-response": {
+        "file": "optimization-o09.html",
+        "hash": "forward-O09-comm-response"
+      },
+      "forward-O09-stop": {
+        "file": "optimization-o09.html",
+        "hash": "forward-O09-stop"
+      },
+      "forward-O09-service-finally": {
+        "file": "optimization-o09.html",
+        "hash": "forward-O09-service-finally"
+      },
+      "O10": {
+        "file": "optimization-o10.html",
+        "hash": "O10"
+      },
+      "forward-O10-deploy": {
+        "file": "optimization-o10.html",
+        "hash": "forward-O10-deploy"
+      },
+      "forward-O10-resolve": {
+        "file": "optimization-o10.html",
+        "hash": "forward-O10-resolve"
+      },
+      "forward-O10-unload": {
+        "file": "optimization-o10.html",
+        "hash": "forward-O10-unload"
+      },
+      "forward-O10-controls": {
+        "file": "optimization-o10.html",
+        "hash": "forward-O10-controls"
+      },
+      "forward-O10-script-pool": {
+        "file": "optimization-o10.html",
+        "hash": "forward-O10-script-pool"
+      },
+      "forward-O10-script-cache": {
+        "file": "optimization-o10.html",
+        "hash": "forward-O10-script-cache"
+      },
+      "forward-O10-theme": {
+        "file": "optimization-o10.html",
+        "hash": "forward-O10-theme"
+      },
+      "forward-O10-script-release": {
+        "file": "optimization-o10.html",
+        "hash": "forward-O10-script-release"
+      },
+      "O11": {
+        "file": "optimization-o11.html",
+        "hash": "O11"
+      },
+      "O12": {
+        "file": "optimization-o12.html",
+        "hash": "O12"
+      },
+      "forward-O12-log-flush": {
+        "file": "optimization-o12.html",
+        "hash": "forward-O12-log-flush"
+      },
+      "forward-O12-log-owner": {
+        "file": "optimization-o12.html",
+        "hash": "forward-O12-log-owner"
+      },
+      "forward-O12-log-batch-loss": {
+        "file": "optimization-o12.html",
+        "hash": "forward-O12-log-batch-loss"
+      },
+      "diagnostic-benchmark": {
+        "file": "optimization-diagnostics.html",
+        "hash": "diagnostic-benchmark"
+      },
+      "forward-first-pass": {
+        "file": "optimization-index.html",
+        "hash": "forward-first-pass"
+      },
+      "implementation-roadmap": {
+        "file": "optimization-index.html",
+        "hash": "implementation-roadmap"
+      },
+      "forward-package": {
+        "file": "optimization-index.html",
+        "hash": "implementation-roadmap"
+      },
+      "prev": {
+        "file": "optimization-index.html",
+        "hash": "implementation-roadmap"
+      },
+      "page-count": {
+        "file": "optimization-index.html",
+        "hash": "implementation-roadmap"
+      },
+      "next": {
+        "file": "optimization-index.html",
+        "hash": "implementation-roadmap"
+      },
+      "print-page": {
+        "file": "optimization-index.html",
+        "hash": "implementation-roadmap"
+      }
+    },
+    "completion-audit.html": {
+      "C01": {
+        "file": "audit-c01.html",
+        "hash": "C01"
+      },
+      "C02": {
+        "file": "audit-c02.html",
+        "hash": "C02"
+      },
+      "C03": {
+        "file": "audit-c03.html",
+        "hash": "C03"
+      },
+      "C04": {
+        "file": "audit-c04.html",
+        "hash": "C04"
+      },
+      "C05": {
+        "file": "audit-c05.html",
+        "hash": "C05"
+      },
+      "C06": {
+        "file": "audit-c06.html",
+        "hash": "C06"
+      },
+      "C07": {
+        "file": "audit-c07.html",
+        "hash": "C07"
+      },
+      "C08": {
+        "file": "audit-c08.html",
+        "hash": "C08"
+      },
+      "C09": {
+        "file": "audit-c09.html",
+        "hash": "C09"
+      },
+      "C10": {
+        "file": "audit-c10.html",
+        "hash": "C10"
+      },
+      "C11": {
+        "file": "audit-c11.html",
+        "hash": "C11"
+      },
+      "C12": {
+        "file": "audit-c12.html",
+        "hash": "C12"
+      },
+      "C13": {
+        "file": "audit-c13.html",
+        "hash": "C13"
+      },
+      "C14": {
+        "file": "audit-c14.html",
+        "hash": "C14"
+      },
+      "C15": {
+        "file": "audit-c15.html",
+        "hash": "C15"
+      },
+      "C16": {
+        "file": "audit-c16.html",
+        "hash": "C16"
+      },
+      "C17": {
+        "file": "audit-c17.html",
+        "hash": "C17"
+      },
+      "C18": {
+        "file": "audit-c18.html",
+        "hash": "C18"
+      },
+      "C19": {
+        "file": "audit-c19.html",
+        "hash": "C19"
+      },
+      "C20": {
+        "file": "audit-c20.html",
+        "hash": "C20"
+      },
+      "ui-shell": {
+        "file": "audit-ui.html",
+        "hash": "ui-shell"
+      },
+      "ui-commands": {
+        "file": "audit-ui.html",
+        "hash": "ui-commands"
+      },
+      "ui-canvas": {
+        "file": "audit-ui.html",
+        "hash": "ui-canvas"
+      },
+      "ui-toolbox": {
+        "file": "audit-ui.html",
+        "hash": "ui-toolbox"
+      },
+      "ui-editor": {
+        "file": "audit-ui.html",
+        "hash": "ui-editor"
+      },
+      "ui-image": {
+        "file": "audit-ui.html",
+        "hash": "ui-image"
+      },
+      "ui-results": {
+        "file": "audit-ui.html",
+        "hash": "ui-results"
+      },
+      "ui-globals": {
+        "file": "audit-ui.html",
+        "hash": "ui-globals"
+      },
+      "ui-camera": {
+        "file": "audit-ui.html",
+        "hash": "ui-camera"
+      },
+      "ui-communication": {
+        "file": "audit-ui.html",
+        "hash": "ui-communication"
+      },
+      "ui-solution": {
+        "file": "audit-ui.html",
+        "hash": "ui-solution"
+      },
+      "ui-logs": {
+        "file": "audit-ui.html",
+        "hash": "ui-logs"
+      },
+      "ui-theme": {
+        "file": "audit-ui.html",
+        "hash": "ui-theme"
+      },
+      "RE-W1-01": {
+        "file": "audit-evidence-1.html",
+        "hash": "RE-W1-01"
+      },
+      "RE-W1-02": {
+        "file": "audit-evidence-1.html",
+        "hash": "RE-W1-02"
+      },
+      "RE-W1-03": {
+        "file": "audit-evidence-1.html",
+        "hash": "RE-W1-03"
+      },
+      "RE-W1-04": {
+        "file": "audit-evidence-1.html",
+        "hash": "RE-W1-04"
+      },
+      "RE-W1-05": {
+        "file": "audit-evidence-1.html",
+        "hash": "RE-W1-05"
+      },
+      "RE-W1-06": {
+        "file": "audit-evidence-1.html",
+        "hash": "RE-W1-06"
+      },
+      "RE-W2-01": {
+        "file": "audit-evidence-2.html",
+        "hash": "RE-W2-01"
+      },
+      "RE-W2-02": {
+        "file": "audit-evidence-2.html",
+        "hash": "RE-W2-02"
+      },
+      "RE-W2-03": {
+        "file": "audit-evidence-2.html",
+        "hash": "RE-W2-03"
+      },
+      "RE-W2-04": {
+        "file": "audit-evidence-2.html",
+        "hash": "RE-W2-04"
+      },
+      "RE-W2-05": {
+        "file": "audit-evidence-2.html",
+        "hash": "RE-W2-05"
+      },
+      "RE-W2-06": {
+        "file": "audit-evidence-2.html",
+        "hash": "RE-W2-06"
+      },
+      "RE-I1-01": {
+        "file": "audit-evidence-3.html",
+        "hash": "RE-I1-01"
+      },
+      "RE-I1-02": {
+        "file": "audit-evidence-3.html",
+        "hash": "RE-I1-02"
+      },
+      "RE-I1-03": {
+        "file": "audit-evidence-3.html",
+        "hash": "RE-I1-03"
+      },
+      "RE-I1-04": {
+        "file": "audit-evidence-3.html",
+        "hash": "RE-I1-04"
+      },
+      "RE-I1-05": {
+        "file": "audit-evidence-3.html",
+        "hash": "RE-I1-05"
+      },
+      "RE-I1-06": {
+        "file": "audit-evidence-3.html",
+        "hash": "RE-I1-06"
+      },
+      "RE-I2-01": {
+        "file": "audit-evidence-4.html",
+        "hash": "RE-I2-01"
+      },
+      "RE-I2-02": {
+        "file": "audit-evidence-4.html",
+        "hash": "RE-I2-02"
+      },
+      "RE-I2-03": {
+        "file": "audit-evidence-4.html",
+        "hash": "RE-I2-03"
+      },
+      "RE-I2-04": {
+        "file": "audit-evidence-4.html",
+        "hash": "RE-I2-04"
+      },
+      "RE-I2-05": {
+        "file": "audit-evidence-4.html",
+        "hash": "RE-I2-05"
+      },
+      "RE-I2-06": {
+        "file": "audit-evidence-4.html",
+        "hash": "RE-I2-06"
+      },
+      "RE-P1-01": {
+        "file": "audit-evidence-5.html",
+        "hash": "RE-P1-01"
+      },
+      "RE-P1-02": {
+        "file": "audit-evidence-5.html",
+        "hash": "RE-P1-02"
+      },
+      "RE-P1-03": {
+        "file": "audit-evidence-5.html",
+        "hash": "RE-P1-03"
+      },
+      "RE-P1-04": {
+        "file": "audit-evidence-5.html",
+        "hash": "RE-P1-04"
+      },
+      "RE-P1-05": {
+        "file": "audit-evidence-5.html",
+        "hash": "RE-P1-05"
+      },
+      "RE-P1-06": {
+        "file": "audit-evidence-5.html",
+        "hash": "RE-P1-06"
+      },
+      "RE-P2-01": {
+        "file": "audit-evidence-6.html",
+        "hash": "RE-P2-01"
+      },
+      "RE-P2-02": {
+        "file": "audit-evidence-6.html",
+        "hash": "RE-P2-02"
+      },
+      "RE-P2-03": {
+        "file": "audit-evidence-6.html",
+        "hash": "RE-P2-03"
+      },
+      "RE-P2-04": {
+        "file": "audit-evidence-6.html",
+        "hash": "RE-P2-04"
+      },
+      "RE-P2-05": {
+        "file": "audit-evidence-6.html",
+        "hash": "RE-P2-05"
+      },
+      "RE-P2-06": {
+        "file": "audit-evidence-6.html",
+        "hash": "RE-P2-06"
+      },
+      "RE-X1-01": {
+        "file": "audit-evidence-7.html",
+        "hash": "RE-X1-01"
+      },
+      "RE-X1-02": {
+        "file": "audit-evidence-7.html",
+        "hash": "RE-X1-02"
+      },
+      "RE-X1-03": {
+        "file": "audit-evidence-7.html",
+        "hash": "RE-X1-03"
+      },
+      "RE-X1-04": {
+        "file": "audit-evidence-7.html",
+        "hash": "RE-X1-04"
+      },
+      "RE-X1-05": {
+        "file": "audit-evidence-7.html",
+        "hash": "RE-X1-05"
+      },
+      "RE-X1-06": {
+        "file": "audit-evidence-7.html",
+        "hash": "RE-X1-06"
+      },
+      "finite-deliverables": {
+        "file": "audit-overview.html",
+        "hash": "finite-deliverables"
+      },
+      "vm-coverage": {
+        "file": "audit-overview.html",
+        "hash": "vm-coverage"
+      },
+      "tool-dispositions": {
+        "file": "audit-overview.html",
+        "hash": "tool-dispositions"
+      },
+      "menu-adoption": {
+        "file": "audit-overview.html",
+        "hash": "menu-adoption"
+      },
+      "audit-prev": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "audit-count": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "audit-next": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "audit-list": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "scope-category": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "scope-state": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "scope-search": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "scope-prev": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "scope-count": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "scope-next": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "scope-dispositions-list": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "menu-resource": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "menu-decision": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "menu-search": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "menu-prev": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "menu-count": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "menu-next": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      },
+      "menu-adoption-list": {
+        "file": "audit-overview.html",
+        "hash": "audit-packages"
+      }
+    },
+    "recommendation-audit.html": {
+      "M01": {
+        "file": "capability-m01.html",
+        "hash": "recommendation-M01"
+      },
+      "M02": {
+        "file": "capability-m02.html",
+        "hash": "recommendation-M02"
+      },
+      "M03": {
+        "file": "capability-m03.html",
+        "hash": "recommendation-M03"
+      },
+      "M04": {
+        "file": "capability-m04.html",
+        "hash": "recommendation-M04"
+      },
+      "M05": {
+        "file": "capability-m05.html",
+        "hash": "recommendation-M05"
+      },
+      "M06": {
+        "file": "capability-m06.html",
+        "hash": "recommendation-M06"
+      },
+      "M07": {
+        "file": "capability-m07.html",
+        "hash": "recommendation-M07"
+      },
+      "M08": {
+        "file": "capability-m08.html",
+        "hash": "recommendation-M08"
+      },
+      "M09": {
+        "file": "capability-m09.html",
+        "hash": "recommendation-M09"
+      },
+      "M10": {
+        "file": "capability-m10.html",
+        "hash": "recommendation-M10"
+      },
+      "M11": {
+        "file": "capability-m11.html",
+        "hash": "recommendation-M11"
+      },
+      "M12": {
+        "file": "capability-m12.html",
+        "hash": "recommendation-M12"
+      },
+      "M13": {
+        "file": "capability-m13.html",
+        "hash": "recommendation-M13"
+      },
+      "M14": {
+        "file": "capability-m14.html",
+        "hash": "recommendation-M14"
+      },
+      "M15": {
+        "file": "capability-m15.html",
+        "hash": "recommendation-M15"
+      },
+      "M16": {
+        "file": "capability-m16.html",
+        "hash": "recommendation-M16"
+      },
+      "M17": {
+        "file": "capability-m17.html",
+        "hash": "recommendation-M17"
+      },
+      "M18": {
+        "file": "capability-m18.html",
+        "hash": "recommendation-M18"
+      },
+      "M19": {
+        "file": "capability-m19.html",
+        "hash": "recommendation-M19"
+      },
+      "M20": {
+        "file": "capability-m20.html",
+        "hash": "recommendation-M20"
+      },
+      "M21": {
+        "file": "capability-m21.html",
+        "hash": "recommendation-M21"
+      },
+      "M22": {
+        "file": "capability-m22.html",
+        "hash": "recommendation-M22"
+      },
+      "M23": {
+        "file": "capability-m23.html",
+        "hash": "recommendation-M23"
+      },
+      "T01": {
+        "file": "capability-t01.html",
+        "hash": "recommendation-T01"
+      },
+      "T02": {
+        "file": "capability-t02.html",
+        "hash": "recommendation-T02"
+      },
+      "T03": {
+        "file": "capability-t03.html",
+        "hash": "recommendation-T03"
+      },
+      "T04": {
+        "file": "capability-t04.html",
+        "hash": "recommendation-T04"
+      },
+      "T05": {
+        "file": "capability-t05.html",
+        "hash": "recommendation-T05"
+      },
+      "T06": {
+        "file": "capability-t06.html",
+        "hash": "recommendation-T06"
+      },
+      "T07": {
+        "file": "capability-t07.html",
+        "hash": "recommendation-T07"
+      },
+      "T08": {
+        "file": "capability-t08.html",
+        "hash": "recommendation-T08"
+      },
+      "T09": {
+        "file": "capability-t09.html",
+        "hash": "recommendation-T09"
+      },
+      "T10": {
+        "file": "capability-t10.html",
+        "hash": "recommendation-T10"
+      },
+      "T11": {
+        "file": "capability-t11.html",
+        "hash": "recommendation-T11"
+      },
+      "T12": {
+        "file": "capability-t12.html",
+        "hash": "recommendation-T12"
+      },
+      "T13": {
+        "file": "capability-t13.html",
+        "hash": "recommendation-T13"
+      },
+      "T14": {
+        "file": "capability-t14.html",
+        "hash": "recommendation-T14"
+      },
+      "T15": {
+        "file": "capability-t15.html",
+        "hash": "recommendation-T15"
+      },
+      "T16": {
+        "file": "capability-t16.html",
+        "hash": "recommendation-T16"
+      },
+      "T17": {
+        "file": "capability-t17.html",
+        "hash": "recommendation-T17"
+      },
+      "T18": {
+        "file": "capability-t18.html",
+        "hash": "recommendation-T18"
+      },
+      "X01": {
+        "file": "capability-x01.html",
+        "hash": "recommendation-X01"
+      },
+      "X02": {
+        "file": "capability-x02.html",
+        "hash": "recommendation-X02"
+      },
+      "X03": {
+        "file": "capability-x03.html",
+        "hash": "recommendation-X03"
+      },
+      "X04": {
+        "file": "capability-x04.html",
+        "hash": "recommendation-X04"
+      },
+      "X05": {
+        "file": "capability-x05.html",
+        "hash": "recommendation-X05"
+      },
+      "M24": {
+        "file": "capability-m24.html",
+        "hash": "recommendation-M24"
+      },
+      "M25": {
+        "file": "capability-m25.html",
+        "hash": "recommendation-M25"
+      },
+      "M26": {
+        "file": "capability-m26.html",
+        "hash": "recommendation-M26"
+      },
+      "decision-review": {
+        "file": "capability-index.html",
+        "hash": "group-main"
+      }
+    }
+  },
+  "archiveFiles": [
+    "comparison-archive.html",
+    "optimization-archive.html",
+    "completion-audit-archive.html",
+    "recommendation-audit-archive.html"
+  ],
+  "counts": {
+    "capabilities": 49,
+    "optimizationPackages": 12,
+    "forwardSteps": 41,
+    "auditPackages": 20,
+    "ui": 13,
+    "checkpoints": 42,
+    "toolRows": 162,
+    "menuRows": 218
+  },
+  "baselineSources": {
+    "comparison": "4af658e49c90591e15b06c75f1d46f3b240baa041ea249acf165cfbe5d600314",
+    "optimization": "cb5d62a13c168c487fd25c352e56a4a5b5248fcb000ee19e4962be98fd2614c8",
+    "completion-audit": "8ad02fd2e05b149b570ceec736246224a4103ec19d1c4609ea0e7cdc28b9f4ee",
+    "recommendation-audit": "b61a8b119063126aba473f8b8d17ab089cfdb488fda0f899a98a42113c236359"
+  },
+  "productModified": false,
+  "checkpointUpgrades": 0
+}

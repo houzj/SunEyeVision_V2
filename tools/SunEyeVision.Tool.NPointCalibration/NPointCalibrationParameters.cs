@@ -8,6 +8,7 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.SDK.Models.Calibration;
 
 namespace SunEyeVision.Tool.NPointCalibration;
 
@@ -15,12 +16,12 @@ public enum NPointAcquisitionMode { Trigger, Manual }
 public enum NPointInputMode { Point, Coordinates }
 public enum NPointCameraMode { FixedAbove, FixedBelow, Moving }
 public enum NPointTransformModel { Similarity, Affine, Projective }
-public enum NPointWeightFunction { LeastSquares, Huber, Tukey }
 public enum NPointSampleKind { Translation, Rotation }
 
 public sealed class NPointSample
 {
     public int Id { get; set; }
+    [JsonIgnore] public int DisplayId => Id+1;
     public NPointSampleKind Kind { get; set; }
     [JsonIgnore]
     public string KindText => Kind == NPointSampleKind.Translation ? "平移" : "旋转";
@@ -36,9 +37,13 @@ public sealed class NPointSample
     public DateTimeOffset? FrameCapturedAt { get; set; }
     public DateTimeOffset? AxisReadAt { get; set; }
     public string Source { get; set; } = "Manual";
+    public string SessionId { get; set; } = string.Empty;
+    public long StepId { get; set; }
+    public string CameraId { get; set; } = string.Empty;
+    public string WorkPlaneId { get; set; } = string.Empty;
     public DateTimeOffset CapturedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    [JsonIgnore] public string StatusText => Source == "Placeholder" ? "待采集" : Enabled ? "有效" : "停用";
+    [JsonIgnore] public string StatusText => Source == "Placeholder" ? "待采集" : !Enabled ? "停用" : Source.StartsWith("Manual") ? "手动" : "触发";
     [JsonIgnore] public string ImageXDisplay => Display(ImageX);
     [JsonIgnore] public string ImageYDisplay => Display(ImageY);
     [JsonIgnore] public string AxisXDisplay => Display(AxisX);
@@ -50,8 +55,10 @@ public sealed class NPointSample
 }
 
 [JsonDerivedType(typeof(NPointCalibrationParameters), "NPointCalibration")]
-public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommitter
+public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommitter, IJsonOnDeserializing
 {
+    public int SamplesContractVersion { get; set; } = 3;
+    void IJsonOnDeserializing.OnDeserializing() => SamplesContractVersion = 0;
     private readonly object _sync = new();
     private NPointAcquisitionMode _acquisitionMode = NPointAcquisitionMode.Trigger;
     public NPointAcquisitionMode AcquisitionMode
@@ -76,12 +83,11 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
     public int ImageWidth { get; set; }
     public int ImageHeight { get; set; }
     public string ImageDomain { get; set; } = "Raw";
-    /// <summary>Bind to the image source FrameTimestampText (ISO 8601).</summary>
-    public string FrameTimestampText { get; set; } = string.Empty;
-    public string FrameIdText { get; set; } = string.Empty;
-    /// <summary>UTC Unix milliseconds of the same machine XYR readback.</summary>
-    public long AxisReadUnixMs { get; set; }
     public int MaxPairingDelayMs { get; set; } = 100;
+    public string WorkPlaneId { get; set; } = string.Empty;
+    public int ReferenceSampleId { get; set; } = 4;
+    [JsonIgnore] public int ReferencePointNumber { get => ReferenceSampleId+1; set => ReferenceSampleId=value-1; }
+    public double RepeatToleranceMm { get; set; } = 0.01;
     public double ReferenceRAngle { get; set; }
     public int RotationSign { get; set; } = 1;
     public double TranslationAngleToleranceDeg { get; set; } = 0.1;
@@ -98,10 +104,6 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
     }
     public string ExternalInputText { get; set; } = string.Empty;
     public string TeachTriggerText { get; set; } = "TEACH";
-    /// <summary>Optional monotonically increasing event ID. Zero uses rising-edge detection.</summary>
-    public long TeachEventId { get; set; }
-    public long LastTeachEventId { get; set; }
-    public bool LastTeachSignal { get; set; }
     private int _translationCount = 9;
     public int TranslationCount
     {
@@ -123,20 +125,6 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
     public bool UpdateFileAfterSolve { get; set; }
     public NPointCameraMode CameraMode { get; set; } = NPointCameraMode.FixedAbove;
     public NPointTransformModel TransformModel { get; set; } = NPointTransformModel.Affine;
-    private NPointWeightFunction _weightFunction = NPointWeightFunction.LeastSquares;
-    public NPointWeightFunction WeightFunction
-    {
-        get => _weightFunction;
-        set
-        {
-            if (SetProperty(ref _weightFunction, value))
-                OnPropertyChanged(nameof(IsRobustWeight));
-        }
-    }
-    [JsonIgnore] public bool IsRobustWeight => WeightFunction != NPointWeightFunction.LeastSquares;
-    /// <summary>Dimensionless multiplier of the estimated physical residual scale.</summary>
-    public double WeightCoefficient { get; set; } = 20;
-    public double RobustScaleFloorMm { get; set; } = 0.001;
     /// <summary>Site-specific maximum training-point residual; required before writing a candidate.</summary>
     public double MaximumTrainingErrorMm { get; set; }
 
@@ -144,6 +132,15 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
     public List<NPointSample> ArchivedSamples { get; set; } = new();
     public int SampleRevision { get; set; }
     public int LastWrittenRevision { get; set; } = -1;
+    public string LastWrittenFingerprint { get; set; } = string.Empty;
+    [JsonIgnore] public NPointCalibrationResults? RuntimeResult { get; private set; }
+    public string Fingerprint() => CalibrationRuntime.Hash(new { TranslationCount, RotationCount, ReferenceRAngle,
+        RotationSign, TranslationAngleToleranceDeg, RotationAxisToleranceMm, MinimumRotationSpanDeg,
+        ReferenceSampleId, RepeatToleranceMm, MaximumTrainingErrorMm, MaxPairingDelayMs, SourceDeviceId, ImageWidth, ImageHeight,
+        ImageDomain, WorkPlaneId, CameraMode, TransformModel, CalibrationFilePath, UpdateFileAfterSolve, SampleRevision, SamplesContractVersion, Samples });
+    public PlanarCalibrationSettings NativeSettings() => new(TranslationCount, RotationCount, ReferenceRAngle,
+        RotationSign, TranslationAngleToleranceDeg, RotationAxisToleranceMm, MinimumRotationSpanDeg,
+        ReferenceSampleId, RepeatToleranceMm);
 
     public override void CopyFrom(ToolParameters other)
     {
@@ -171,7 +168,8 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
 
         lock (_sync)
         {
-            if (calibration.NeedsCommit && SampleRevision != calibration.ExpectedRevision)
+            if (!calibration.IsSuccess || calibration.Cancellation.IsCancellationRequested) { error = "失败或已取消结果不可提交。"; return false; }
+            if (SampleRevision != calibration.ExpectedRevision || Fingerprint() != calibration.InputFingerprint)
             {
                 error = "标定点集在本轮运行中被修改；已拒绝过期采样，请重试。";
                 return false;
@@ -192,23 +190,26 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
                     return false;
                 }
                 Samples.Add(calibration.CollectedSample.Copy());
+                SourceDeviceId = calibration.SourceDeviceId; ImageWidth = calibration.ImageWidth;
+                ImageHeight = calibration.ImageHeight; ImageDomain = calibration.ImageDomain;
+                WorkPlaneId = calibration.WorkPlaneId;
             }
             if (calibration.NeedsCommit)
             {
-                LastTeachSignal = calibration.TeachSignalActive;
-                if (calibration.CollectedSample != null && calibration.TeachEventId > 0)
-                    LastTeachEventId = calibration.TeachEventId;
                 SampleRevision++;
                 if (calibration.CollectedSample != null)
                     OnPropertyChanged(nameof(Samples));
             }
+            calibration.AcceptedFingerprint = Fingerprint();
+            RuntimeResult = calibration;
             if (calibration.CalibrationReady && UpdateFileAfterSolve
-                && LastWrittenRevision != SampleRevision)
+                && LastWrittenFingerprint != calibration.AcceptedFingerprint)
             {
                 try
                 {
-                    WriteCandidateFile(CalibrationFilePath, calibration, Samples, MaximumTrainingErrorMm);
+                    WriteCandidateFile(ResolveActivityPath(CalibrationFilePath, calibration.ResourcePaths), calibration, Samples, MaximumTrainingErrorMm,ArchivedSamples);
                     LastWrittenRevision = SampleRevision;
+                    LastWrittenFingerprint = calibration.AcceptedFingerprint;
                 }
                 catch (Exception ex)
                 {
@@ -220,6 +221,10 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
         return true;
     }
 
+    public static string ResolveActivityPath(string reference, SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver? resolver)
+        => resolver?.Resolve(nameof(CalibrationFilePath), reference, SunEyeVision.Plugin.SDK.Execution.Parameters.ResourcePurpose.FileWrite).Address
+            ?? (Path.IsPathRooted(reference) ? Path.GetFullPath(reference) : throw new InvalidOperationException("相对标定路径需要方案资源上下文。"));
+
     public static string CandidatePath(string activityPath)
     {
         string fullPath = Path.GetFullPath(activityPath);
@@ -228,10 +233,10 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
     }
 
     public static void WriteCandidateFile(string activityPath, NPointCalibrationResults result,
-        IEnumerable<NPointSample> samples, double maximumTrainingErrorMm)
+        IEnumerable<NPointSample> samples, double maximumTrainingErrorMm, IEnumerable<NPointSample>? archived=null)
     {
-        if (!result.CalibrationReady || result.HomMat2D.Length != 6)
-            throw new InvalidOperationException("联合标定尚未完成，不能生成候选文件。");
+        if (!result.CalibrationReady || !result.TrainingPassed || result.HomMat2D.Length != 6)
+            throw new InvalidOperationException("原生标定训练未合格，不能生成候选文件。");
         if (!double.IsFinite(maximumTrainingErrorMm) || maximumTrainingErrorMm <= 0
             || !double.IsFinite(result.MaxError) || result.MaxError > maximumTrainingErrorMm)
             throw new InvalidOperationException("未设置有效训练点误差门槛，或训练点最大残差超限，不能生成候选文件。");
@@ -242,7 +247,8 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
         {
             var document = new
             {
-                SchemaVersion = 2,
+                SchemaVersion = PlanarCalibrationFit.FileVersion,
+                AlgorithmId = PlanarCalibrationFit.Algorithm,
                 Direction = "ImageColumnRowToMachineMarkXY",
                 PhysicalUnit = "mm",
                 AxisCoordinates = "R-axis center encoder XY",
@@ -253,19 +259,20 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
                 result.RotationSign,
                 result.AxisToMarkX,
                 result.AxisToMarkY,
-                result.WeightFunction,
-                result.WeightCoefficient,
                 result.SourceDeviceId,
                 result.ImageWidth,
                 result.ImageHeight,
                 result.ImageDomain,
-                result.RobustScaleMm,
-                result.RobustThresholdMm,
+                result.WorkPlaneId,
+                result.RepeatErrorMm,
+                result.RotationSpanDeg,
+                MaximumTrainingErrorMm = maximumTrainingErrorMm,
                 result.MeanError,
                 result.MaxError,
                 result.RmsError,
                 result.Residuals,
-                Samples = samples.Select(s => s.Copy()).ToArray(),
+                Samples = samples.Where(s=>s.Enabled && s.Source!="Placeholder").Select(s => s.Copy()).ToArray(),
+                DisabledSamples = (archived??samples.Where(s=>!s.Enabled)).Select(s=>s.Copy()).ToArray(),
             };
             File.WriteAllText(tempPath, JsonSerializer.Serialize(document,
                 new JsonSerializerOptions { WriteIndented = true }));
@@ -288,15 +295,11 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
             ArchivedSamples.AddRange(edited.Where(s => !s.Enabled
                 && !ArchivedSamples.Any(old => SamePoint(old, s))).Select(s => s.Copy()));
             Samples = replacement;
+            SamplesContractVersion = 3;
+            RuntimeResult = null;
             OnPropertyChanged(nameof(Samples));
-            if (Samples.Count == 0)
-            {
-                LastTeachSignal = TeachSignal || (TeachEnabled
-                    && !string.IsNullOrWhiteSpace(TeachTriggerText)
-                    && string.Equals(ExternalInputText, TeachTriggerText, StringComparison.Ordinal));
-                LastTeachEventId = TeachEventId;
-            }
             SampleRevision++;
+            LastWrittenFingerprint = string.Empty;
         }
     }
 

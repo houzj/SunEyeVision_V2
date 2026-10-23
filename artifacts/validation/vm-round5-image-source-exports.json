@@ -1,0 +1,18 @@
+{
+  "file": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Collection/ImageSourceModule/ImageSourceModule.dll",
+  "sha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db",
+  "base": "180000000",
+  "method": "Representative installed artifact, not observed runtime selection",
+  "exports": [
+    {
+      "name": "CreateModule",
+      "rva": "23770",
+      "root": "23770"
+    },
+    {
+      "name": "DestroyModule",
+      "rva": "238f0",
+      "root": null
+    }
+  ]
+}

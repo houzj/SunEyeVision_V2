@@ -1,0 +1,12 @@
+{
+  "defaultRedacted": true,
+  "passwordNotEmbedded": true,
+  "plaintextNotInCipherHtml": true,
+  "wrongPasswordRejected": true,
+  "tamperRejected": true,
+  "correctPasswordUnlocksZip": true,
+  "summaryNoSourcePathsOrCode": true,
+  "originalsNotModified": true,
+  "userPasswordNotSet": true,
+  "pageErrors": []
+}

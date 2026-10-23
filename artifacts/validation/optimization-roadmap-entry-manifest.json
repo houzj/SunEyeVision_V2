@@ -1,0 +1,15 @@
+{
+  "taskId": "OPTIMIZATION-ROADMAP-13",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html"
+  ],
+  "target": "artifacts/ui-prototypes/optimization-roadmap/index.html",
+  "authority": "docs/collaboration/OPTIMIZATION_BACKLOG.json",
+  "sourceObservedSha256": "24191813fd5528bd25bd0d764797c4107b570779fb2abd0b51f2f1a422f669e9",
+  "targetObservedSha256": "32bdf7f22a5d7402b9f4e0f0bda5330388556e8b3f8657ebdac83b3a5bc01a0f",
+  "newPriorityListCreated": false,
+  "prototypeModified": false,
+  "productModified": false,
+  "productExecuted": false,
+  "wholeSiteRegenerated": false
+}

@@ -1,0 +1,18 @@
+{
+  "file": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Global/GlobalCameraModule/GlobalCameraModule.dll",
+  "sha256": "f61fb1063325793343139c8699aa9eba3db931a33de3869fd856700ca05cecce",
+  "base": "180000000",
+  "method": "Representative installed artifact, not observed runtime selection",
+  "exports": [
+    {
+      "name": "CreateModule",
+      "rva": "1cbe0",
+      "root": "1cbe0"
+    },
+    {
+      "name": "DestroyModule",
+      "rva": "1cf50",
+      "root": "1cf50"
+    }
+  ]
+}

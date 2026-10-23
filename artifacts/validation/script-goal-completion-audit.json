@@ -1,0 +1,70 @@
+{
+  "complete": true,
+  "items": [
+    {
+      "state": "verified-with-explicit-boundaries",
+      "limit": "实际加载版及SDK间接目标未贯通，不依赖它们作跨应用速度结论或复制实现",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/evidence.json",
+        "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/decision-gates.json",
+        "artifacts/validation/script-framework-bridge-receipt.json"
+      ],
+      "requirement": "VM关键链与决策缺口"
+    },
+    {
+      "state": "verified-component-scope",
+      "limit": "部分上下文恢复是成组变化，不声称单变量根因",
+      "evidence": [
+        "artifacts/independent-testing/SCRIPT-ENGINE-COMPARISON-01/comparison-summary.json",
+        "artifacts/performance/script-selection-02/targeted-static/summary.json"
+      ],
+      "requirement": "共同能力与定向/CodeDOM修订"
+    },
+    {
+      "state": "verified-controlled-Roslyn-scope",
+      "limit": "默认按源码还原非live TPA，3进程每组，无B默认重量排名；不能证明实际UI归因",
+      "evidence": [
+        "artifacts/performance/script-selection-02/reference-cost/summary.json",
+        "artifacts/performance/script-selection-02/reference-cost/receipt.json"
+      ],
+      "requirement": "最小默认业务引用成本"
+    },
+    {
+      "state": "frozen-design",
+      "limit": "性能收益及产品验收尚未实施，不属于本次不改代码目标",
+      "evidence": [
+        "docs/collaboration/SCRIPT_OPTIMIZATION_DECISION_20261023.json"
+      ],
+      "requirement": "三路径明确推荐与排除依据"
+    },
+    {
+      "state": "verified-final-main-document-design-delivered",
+      "limit": "设计完成；产品尚未实施，验收用例是未来门槛并非本轮通过成绩",
+      "evidence": [
+        "artifacts/validation/script-final-decision-manifest.json",
+        "artifacts/validation/script-final-decision-validation.json",
+        "docs/collaboration/SCRIPT_OPTIMIZATION_DECISION_20261023.json"
+      ],
+      "requirement": "主文档图示/文件依赖验收冻结"
+    }
+  ],
+  "goal": "确定脚本工具整批优化方案",
+  "secondRoundAudit": "artifacts/validation/script-selection-02-result-audit.json",
+  "sourceDriftCheck": "artifacts/validation/script-final-source-drift-check.json",
+  "documentWriterObserved": "active:01a160f7-9c99-72c1-b8bf-d689bf19f1ad; other direct-user navigation task; final merge or write handoff requested",
+  "finalPageChecks": [
+    {
+      "hasAllTests": true,
+      "hasAllExistingFiles": true,
+      "hashMatch": true,
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html"
+    },
+    {
+      "hasAllTests": true,
+      "hasAllExistingFiles": true,
+      "hashMatch": true,
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+    }
+  ],
+  "finalInputIdentityPass": true
+}

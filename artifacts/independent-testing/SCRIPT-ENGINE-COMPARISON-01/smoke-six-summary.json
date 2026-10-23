@@ -1,0 +1,10 @@
+{
+  "run": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\smoke-six-20261022-174006",
+  "jobs": 24,
+  "statuses": [
+    {
+      "Name": "passed",
+      "Count": 24
+    }
+  ]
+}

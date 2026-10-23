@@ -94,7 +94,7 @@
                       Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
                       BorderThickness="0" FontSize="12">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="序号" Binding="{Binding Id}" IsReadOnly="True" Width="50"/>
+                    <DataGridTextColumn Header="序号" Binding="{Binding DisplayId}" IsReadOnly="True" Width="50"/>
                     <DataGridTextColumn Header="类别" Binding="{Binding KindText}" IsReadOnly="True" Width="72"/>
                     <DataGridTemplateColumn Header="有效" Width="60">
                         <DataGridTemplateColumn.CellTemplate>
@@ -109,15 +109,15 @@
                         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource PointCellText}" Text="{Binding ImageYDisplay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><controls:NumericUpDown Style="{StaticResource PointCellNumber}" Value="{Binding ImageY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="物理 X" Width="*">
+                    <DataGridTemplateColumn Header="轴心 X (mm)" Width="*">
                         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource PointCellText}" Text="{Binding AxisXDisplay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><controls:NumericUpDown Style="{StaticResource PointCellNumber}" Value="{Binding AxisX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="物理 Y" Width="*">
+                    <DataGridTemplateColumn Header="轴心 Y (mm)" Width="*">
                         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource PointCellText}" Text="{Binding AxisYDisplay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><controls:NumericUpDown Style="{StaticResource PointCellNumber}" Value="{Binding AxisY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="物理角度 (°)" Width="*">
+                    <DataGridTemplateColumn Header="编码器 R (°)" Width="*">
                         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource PointCellText}" Text="{Binding AxisAngleDisplay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><controls:NumericUpDown Style="{StaticResource PointCellNumber}" Value="{Binding AxisAngle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>

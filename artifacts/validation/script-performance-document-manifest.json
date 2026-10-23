@@ -1,0 +1,76 @@
+{
+  "id": "SCRIPT-PERF-01",
+  "input": "docs/collaboration/SCRIPT_PERFORMANCE_BATCH_20261023.json",
+  "inputSha256": "ed21bf68c251745b413e09e163cf24397c5efd0e10091c070a640cc3ca231be3",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+  ],
+  "checks": [
+    {
+      "id": "SP1",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\SemanticHighlighter.cs",
+      "sha256": "5656340e229c9061e431aa8a690d186599f1fcc6f516dded3b0b3cf164ac288a",
+      "observedSha256": "5656340e229c9061e431aa8a690d186599f1fcc6f516dded3b0b3cf164ac288a",
+      "matches": true
+    },
+    {
+      "id": "SP2",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\ScriptEditorCore.xaml.cs",
+      "sha256": "bb2f9c7618bd6f66f79785299518102a7ce1d5311143e0181478aeec2b5be88a",
+      "observedSha256": "bb2f9c7618bd6f66f79785299518102a7ce1d5311143e0181478aeec2b5be88a",
+      "matches": true
+    },
+    {
+      "id": "SP3",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptCompiler.cs",
+      "sha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+      "observedSha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+      "matches": true
+    },
+    {
+      "id": "SP4",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptLifecycleManager.cs",
+      "sha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b",
+      "observedSha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b",
+      "matches": true
+    },
+    {
+      "id": "SP5",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+      "sha256": "9dcd71bba72e25af94a858f52d18b0ca573709313f1cb491bc271fb275582048",
+      "observedSha256": "9dcd71bba72e25af94a858f52d18b0ca573709313f1cb491bc271fb275582048",
+      "matches": true
+    },
+    {
+      "id": "SP6",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\Views\\ScriptDebugControl.xaml.cs",
+      "sha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+      "observedSha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+      "matches": true
+    },
+    {
+      "id": "HLOG1",
+      "path": "D:\\SunEyeVisionData\\Logs\\2026\\10\\22\\SunEyeVision_110711.txt",
+      "sha256": "0abfc0493fbc94fe46d2d0cd438ecf5a118bcdd04b0e6215652174d8d35335c1",
+      "observedSha256": "0abfc0493fbc94fe46d2d0cd438ecf5a118bcdd04b0e6215652174d8d35335c1",
+      "matches": true
+    },
+    {
+      "id": "VM-completion",
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.CodeCompletion.dll",
+      "sha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+      "observedSha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+      "matches": true
+    }
+  ],
+  "chains": 3,
+  "issues": 6,
+  "steps": 4,
+  "acceptancePlanned": 7,
+  "acceptanceExecuted": 0,
+  "productModified": false,
+  "performanceBenchmarkExecuted": false,
+  "implementationAuthorized": false,
+  "targetsConfirmed": false
+}

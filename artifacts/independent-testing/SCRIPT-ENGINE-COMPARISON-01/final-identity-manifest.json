@@ -1,0 +1,218 @@
+[
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C01.cs",
+    "sha256": "79C9026C3DC3143846EFFA87971456AA1244D2245D5294517908619D17EAFEDF"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C02.cs",
+    "sha256": "CEA27CC38EF3592A19B4463F892A5A9F6DC22B341BAF88A6BDFDFB8625224CE6"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C03.cs",
+    "sha256": "347A1451E85FC18D2D4138CEE2B9AA6B387571384A904946D64EB4C5579F663D"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C04.cs",
+    "sha256": "D177EE2CD2D61D7574AC07486D925FD7A1F9099D6EED847491D254A855EF8566"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C05.cs",
+    "sha256": "3159BEAFD69D33A16464577F3DDBF339C9F44DE4E2169B762BCCC0C2C10C969D"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C06.cs",
+    "sha256": "9D643B59A5BC407FE6064FF709A43B0D90056EDC3BA2BE8F12F72E0E6EE63E70"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C07.cs",
+    "sha256": "F27F3A009ED1BE5C13B8E9EAC9351CF00E81D60FB58A32392B9C821C0D475B40"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C08.cs",
+    "sha256": "9CD5AD5954CAF2AA8BD34EEAB326502CDB20E0D0BB6C8A34EFCBEFEE0174CEDA"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C09.cs",
+    "sha256": "F9F297CB93111DA12A4D5D39D8BBA18766C346B92F4444602664305A98F59A38"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C10.cs",
+    "sha256": "BEDB78BDE9F3AC94784E2B5F6F94B6E9CAE353E792EBDFDF19599384FF98BEA2"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C11.cs",
+    "sha256": "D83107DDF7DBC7E7A5D04A642F0BBDB89FB4A1732D28894A8E66299192BBDEF1"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C12.cs",
+    "sha256": "ADF62CD28B1983B9E925A2C520FB279619DDDC58C61FF2279717A07C33D139A2"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M01.cs",
+    "sha256": "8B569D1641B643AF01FEF4E5F62BBC742C446000B7BAA4FFC8C530C627D05B75"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M02.cs",
+    "sha256": "1DA83153F37CB517FCBFA873D99A4A4A2B26FFC0FE813893202A61E65634A943"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M03.cs",
+    "sha256": "9C0F7B2C058EE7D7502479B2113356EB3EC8DD4E19F288206E18371042963F3D"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M04.cs",
+    "sha256": "7F2561A4F441B441E2E2AC394733C2D445A336DCD00DC856F10ACB4080918320"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\P01.cs",
+    "sha256": "347A1451E85FC18D2D4138CEE2B9AA6B387571384A904946D64EB4C5579F663D"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\P02.cs",
+    "sha256": "79C9026C3DC3143846EFFA87971456AA1244D2245D5294517908619D17EAFEDF"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\build.log",
+    "sha256": "D6BD9E2FE44C50E14F089830C9C5A76D3D79F854CBFF419C0010D745ABD22E54"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\Directory.Build.props",
+    "sha256": "5C10E0DCA89D53FA828E2B8AD817F7DDECCB7775BEF36C1E75DBA0D87A103EE6"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\Directory.Build.targets",
+    "sha256": "5C10E0DCA89D53FA828E2B8AD817F7DDECCB7775BEF36C1E75DBA0D87A103EE6"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\NuGet.Config",
+    "sha256": "8260CB79B6D127B545404D0D869579189163FC112C383CDCEF951E3786AB9D9F"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\Program.cs",
+    "sha256": "6E2A3EBD4B8847EA5D32ECAA7CD83CA8F728BE7BE3F7FD135984C8ACEF7B958E"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\restore.log",
+    "sha256": "49BC47F962B4C4DA802D5972E665114CD870DE8A1E727EBCD2ECBEEC6B57507A"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\WorkerA.csproj",
+    "sha256": "871DEF664F6D9DFF34A8211AFF4D27E25DBE2B611DB31E694793595E659F629F"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Humanizer.dll",
+    "sha256": "D6853075547D7E303EFD60354D911A2FF18EDBA582CDA2FA59D91A2E5DCF9E98"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.AnalyzerUtilities.dll",
+    "sha256": "27300B349AE0C552CCB9BEA18BAF55B1FC99A517B0D4E15E557AF4D3A4BFF119"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.dll",
+    "sha256": "CFB5F2785C30485EDA803D58FB8330D737CB07D469CD3D7BC1113D58E8D8E4BB"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Features.dll",
+    "sha256": "41D62B24232AF6E896B372E6BB4D1EA9066CE40229388FB55B221FDFDA124FC5"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+    "sha256": "C63F6D8FDB79E443C37CCE6A2248E04BFE2C82D4BDA24B6C01FF1420E6A728B3"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.dll",
+    "sha256": "0A7FB1D94E0E7F46798B138CAA67E5D5FB8FB98FD31B5294C917DEF057AB3D80"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Elfie.dll",
+    "sha256": "8EC0E18AC570157B3863F70035B644925D89996AD901F31EF918D2B0F7428941"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Features.dll",
+    "sha256": "FC743C40512353992FF24C80159B966EE879DA4E2538EEEB693E489C7A5ECDDB"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Scripting.dll",
+    "sha256": "7C3973A0997A1901C4F5978EF901E3AE96DDB780DEAD70A42F65F2E3F6F23E8F"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Workspaces.dll",
+    "sha256": "32402BAA9383AFD30E660AF0BD3D23BDB7E596207AFEAC8C6B3ED6F6A5CA6F1D"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.DiaSymReader.dll",
+    "sha256": "7F3E7543321FF4C2675B94E56A4A32C935C11C82FCC60D4F6CB611CB0A8DAADC"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.AttributedModel.dll",
+    "sha256": "0F403E98D8BAD390B970704A93AA532042409F499032823CAC47E3004BAD9C8A"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.Convention.dll",
+    "sha256": "88E716224482A702E3D44F02E6311B9D91FCE9AF506ABF0482E8C5F82379034F"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.Hosting.dll",
+    "sha256": "8D9A239C7B03CE4A047ED0ABD9E835DB0FEEAAA16C157E7D308603D03EFB7EBC"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.Runtime.dll",
+    "sha256": "324ACDFC86C5ADAA12E9C4F40DEACF1E9F45AC2E84E542A02D130E7380F79D6E"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.TypedParts.dll",
+    "sha256": "3100191A1448B9A613E04A63B65899CF74371FC2F5C03315AA40AB53468C7A24"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.deps.json",
+    "sha256": "A39429F86013BED0FE0546537D0CAEA98799B9D348DFDA5D9A1EB3795A3B7B72"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.dll",
+    "sha256": "0C58264E26A139E03513039D8FFD86D0A197C4D250D0DC468911A966E44DFAFE"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.exe",
+    "sha256": "D17E2A82336A39218EAD0212FABA0DF26CA50CE668E28ECE8DFEC2D1BB3EEC48"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.pdb",
+    "sha256": "92ECB727127FE4A1B460823DCFF36B3E01BCFC813FDF1B7D6E7C5AB596AA9BC4"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.runtimeconfig.json",
+    "sha256": "76750114A1F13B59C0093139553B030BF703EAD8F3D869DD150D2EE2DAB842EB"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\build-explicit-refs.log",
+    "sha256": "9A6B47141F654F6E8152C3A20B09D1976E0568971C9AE1E49403651681E47EE5"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\build.log",
+    "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\Program.cs",
+    "sha256": "56DB6B86412F05D9CACE05EFEC7DE275479EEA86A7FD556241A13569C36FF534"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\ProgramCompilerExplicitRefs.cs",
+    "sha256": "0B66FEFEBC06455ADF89372FD71517C910FEEA2999E28C96D3C4950C1ACAB2F3"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\WorkerB.exe",
+    "sha256": "16ECB16D5789A1E8B9B2DED503A793366EF2D84FCC9EB1FEDEEF770514177A74"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\WorkerBExplicitRefs.exe",
+    "sha256": "C46BC3CE82085219AB8F59901D50508DBCD6B57E17BC0702F5DF7DF0B0919C82"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\matrix.json",
+    "sha256": "E94E3AA0BE91D75AC74063F51C83ED9C524DBB44ED42E2D8775B66E1FDBF01A1"
+  },
+  {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\comparison-summary.json",
+    "sha256": "2C189D5614A1263CC6247E2EC266456AE079B244641FAA6303CC8FDA398280D6"
+  }
+]

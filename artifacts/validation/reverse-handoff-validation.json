@@ -1,0 +1,15 @@
+{
+  "staticTasks": 12,
+  "runtimeCandidates": 3,
+  "unresolvedCheckpointsCovered": 18,
+  "dependencyGraphAcyclic": true,
+  "definitionHashUnchanged": true,
+  "manifestSha256": "136af835502ed5c7dbfd514a0243b703cdc8b5ec7fc8f66224cb09cd39648633",
+  "deepLinks": true,
+  "printRestore": true,
+  "mobileOverflow": false,
+  "analysisPercent": 100,
+  "evidencePercent": 57.1,
+  "newReverseEngineeringExecuted": false,
+  "pageErrors": []
+}

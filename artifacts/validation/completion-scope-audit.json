@@ -1,0 +1,2185 @@
+{
+  "documentAcceptance": {
+    "scope": "当前新版20工作包正文交付验收；不包含产品实施、VM162逐工具算法等价或运行验证",
+    "rubric": [
+      "入口/架构与源码定位可追溯",
+      "实际数据/状态/失败边与证据局限分开",
+      "已实现/未开发/待核明确",
+      "具体取舍/缺点/代价/改法与验收可评审",
+      "剩余原native/运行/产品政策列出而不伪报闭合"
+    ],
+    "rows": [
+      {
+        "id": "C01",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "system-architecture.html#startup",
+        "reason": "已有实际启动/工程依赖与shutdown收尾分段；迟到恢复/半启动回滚保留具体待证。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C02",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "data-architecture.html#resource-ownership",
+        "reason": "14类Owner登记覆盖根/子调用/工具实例/结果与显示身份，创建、借用、退役和具体未知分开。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C03",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "tool-subroutine.html#subroutine-chain-review",
+        "reason": "已解释活动ReadyQueue/Condition/子图循环与输入输出；取消/作用域缺陷和原Group内部待证分列。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C04",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "camera-architecture.html#device-admission",
+        "reason": "2行调度预算/租约范围加8行设备矩阵已回填，外部等待、跨根范围、取消退役及未执行验收分开。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C05",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "data-architecture.html#D02",
+        "reason": "已有绑定定义/值解析/快照/现有校验及工具实例；List与动态迁移待证不冒充完成。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C06",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "data-architecture.html#resource-ownership",
+        "reason": "HalImage/CvImage/相机SDK缓冲/Frame/显示池/缓存逐类有复制借用和最后读者边界，原native与运行验证未冒充闭合。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C07",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "camera-architecture.html#device-admission",
+        "reason": "8类设备逐项列驱动/工作流接线/实机状态、门禁、取消释放、改法和验收；S7/CIP未接通用目录不冒充未写驱动。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C08",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "data-architecture.html#resource-ownership",
+        "reason": "工厂每次新建tool已核，分析控件Owner与不可回收ALC进程寿命分列，静态缓存/原生模块最终释放保留缺证。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C09",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "tools.html#editing-policy",
+        "reason": "24工具已逐项给共享/草稿、确定/X、执行副作用与关闭Owner，模板/标定子窗口分开；最后读者保留待证。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C10",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "data-architecture.html#coordinate-review",
+        "reason": "8坐标链已逐项给调用、单位/参考域、ROI新建与修改取消、图层/DPI/全屏及具体改法，原native和运行未验分开。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C11",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "persistence-architecture.html#editing-transactions",
+        "reason": "已有文件保存恢复及复制/删除/Undo六动作身份和失败矩阵，正常链/确定缺陷/目标政策分开。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C12",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "system-architecture.html#shutdown",
+        "reason": "停止请求、登记归零、在途排空、关闭设备和超时隔离已分段；原VM停止缺证保留。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C13",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "optimization.html#diagnostic-benchmark",
+        "reason": "5项诊断链有字段生产/丢失/落盘/事件身份实码，三根成功失败取消与迟到样例为待执行规程；复用现有字段的整改已写。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C14",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "platform-architecture.html#deploy",
+        "reason": "实际依赖选择/目录/部署规则及版本与私有native缺口、未执行干净部署门槛已写。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C15",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "license-design.html",
+        "reason": "自有授权四职责/八状态/十场景和厂商政策TBD已写，不采用VM狗。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C16",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "optimization.html#diagnostic-benchmark",
+        "reason": "8有限场景具层级/负载/预热/重复样本/前置/正确性与统计停止规则，输入规范及空manifest/CSV可交执行；全部not_run，缺材料不虚填性能。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C17",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "global-variables.html",
+        "reason": "变量定义到文件七段，生产消费/入口差异/数组/改名与子调用问题有具体待证和改法。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C18",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "camera-architecture.html",
+        "reason": "连接/用途/帧/显示Owner及八段触发/参数/停止/厂商边界已写，实机原native继续待验。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C19",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "platform-architecture.html#control-consumers",
+        "reason": "11组实际消费者→控件→数据命令→主题与加载/关闭边界已回填；VS设计时、DPI及运行未执行，逐项缺点改法有来源。",
+        "remainingProduct": null
+      },
+      {
+        "id": "C20",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "platform-architecture.html#ui-state-review",
+        "reason": "13UI逐项当前/缺口/失败取消关闭/改法/来源及DPI设计时未验标记已回填，链接对应专业链，不代产品验收。",
+        "remainingProduct": null
+      }
+    ],
+    "products": [
+      {
+        "id": "R1",
+        "title": "身份与资源Owner登记表",
+        "packages": [],
+        "definition": "逐类列创建者、身份键、借用/复制、最后读者、失败/退役；未知释放边明确来源与断点。",
+        "status": "已交付正文，保留具体待证"
+      },
+      {
+        "id": "R2",
+        "title": "准入背压与实际设备提供器矩阵",
+        "packages": [],
+        "definition": "计算槽/外部等待/跨根设备与8类实际驱动入口、并发、取消恢复、宿主接线/实机状态分列。",
+        "status": "已交付正文，保留具体待证"
+      },
+      {
+        "id": "R3",
+        "title": "24工具编辑提交政策（本轮已回填）",
+        "packages": [],
+        "definition": "逐工具live/草稿、确定/取消/X、外设副作用与迟到结果/关闭Owner；C11六动作已单独回填。",
+        "status": "已交付正文，保留具体待证"
+      },
+      {
+        "id": "R4",
+        "title": "13UI状态与坐标链矩阵",
+        "packages": [],
+        "definition": "现有/未开发/待核、失败取消/关闭/DPI设计时逐项；像素/ROI/世界/视口及提交取消实码链。",
+        "status": "已交付正文，保留具体待证"
+      },
+      {
+        "id": "R5",
+        "title": "公共控件与模板实际消费者",
+        "packages": [],
+        "definition": "11类公共控件的实际消费者→数据命令→主题资源→Loaded/Unloaded/退役及设计时待验。",
+        "status": "已交付正文，保留具体待证"
+      },
+      {
+        "id": "R6",
+        "title": "失败诊断样例与可执行基准计划",
+        "packages": [],
+        "definition": "Run/Node/线程字段生产者与一次失败取消示例；负载/环境/预热/重复/样本量/指标/结果文件和未运行状态。",
+        "status": "已交付正文，保留具体待证"
+      }
+    ],
+    "summary": {
+      "accepted": 20,
+      "total": 20,
+      "percent": 100
+    },
+    "legacyHistoricalDelivery": 100,
+    "evidenceChanged": false,
+    "productExecuted": false
+  },
+  "scope": "原20包/13UI/42点固定范围回查；映射和定位不等完整语义核实",
+  "legacyAnalysisDelivery": {
+    "accepted": 20,
+    "total": 20,
+    "percent": 100,
+    "meaning": "原文档有限分析交付，不扩张成当前全部实现完成"
+  },
+  "evidenceSummary": {
+    "total": 42,
+    "verified": 24,
+    "partial": 11,
+    "unverified": 7,
+    "percent": 57.1,
+    "formula": "已核实检查点/42*100（部分不折算）",
+    "categoriesComplete": 0,
+    "categoriesTotal": 7,
+    "baselineOnly": true,
+    "newReverseEngineering": false
+  },
+  "packages": [
+    {
+      "id": "C01",
+      "title": "启动装配与依赖方向",
+      "priority": "P1",
+      "question": "服务由谁构造、何时就绪，UI/运行/插件之间谁依赖谁？",
+      "requiredChain": "进程入口→配置/注册→服务与插件目录→主窗/方案恢复→退出",
+      "criterion": "双方启动/退出时序、项目依赖图与关键文件职责对应，识别反向依赖及失败回滚。",
+      "capabilities": [
+        "M01",
+        "M02",
+        "X02"
+      ],
+      "url": "system-architecture.html#startup",
+      "current": "启动实际装配、10工程/20引用已见；同名旧PluginManager与活动管理器已分开。",
+      "gap": "半启动失败、迟到相机恢复、全退出补偿未完整对账。",
+      "next": "追App启动各catch/ObserveLateCameraRestoreAsync与PrepareSolutionTransitionAsync；按对象记半初始化回滚。",
+      "decisions": [
+        "O01",
+        "O10"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C01",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "system-architecture.html#startup",
+        "reason": "已有实际启动/工程依赖与shutdown收尾分段；迟到恢复/半启动回滚保留具体待证。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C02",
+      "title": "身份、作用域与所有权",
+      "priority": "P0",
+      "question": "方案、流程、节点、设备、编辑会话、运行代次分别如何标识和结束？",
+      "requiredChain": "创建→身份注册→请求/回调携带身份→切换/关闭→迟到回调处理",
+      "criterion": "列对象所有者和作用域，覆盖切方案、删除重建及迟到回调；未恢复的对象边明确标注。",
+      "capabilities": [
+        "M02",
+        "M05",
+        "M08",
+        "M22",
+        "X01"
+      ],
+      "url": "system-architecture.html#run",
+      "current": "RunSession/RootScope、节点ID和本轮上下文已有说明。",
+      "gap": "设备/编辑器/分析实例、复制导入身份和迟到回调的所有者总表仍不完整。",
+      "next": "给方案/根运行/子调用/设备/编辑器/历史分别列Owner、身份键和退役门槛；核删除重建。",
+      "decisions": [
+        "O01",
+        "O04",
+        "O07"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C02",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "data-architecture.html#resource-ownership",
+        "reason": "14类Owner登记覆盖根/子调用/工具实例/结果与显示身份，创建、借用、退役和具体未知分开。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C03",
+      "title": "工作流调度与控制结构",
+      "priority": "P0",
+      "question": "依赖排序、就绪队列、分支、循环、Group、子流程和跨流程如何实际执行？",
+      "requiredChain": "运行命令→计划/图→就绪节点→工具执行→结果提交→下一节点/终态",
+      "criterion": "每类控制结构有双方真实调用链或明确断点，说明失败传播、顺序和重入；关联RE-W1。",
+      "capabilities": [
+        "M09",
+        "M11",
+        "M12",
+        "M13",
+        "M14",
+        "T16"
+      ],
+      "url": "system-architecture.html#run",
+      "current": "活动就绪队列、绑定前驱、剪枝和子调用有局部实码；旧层循环不可达已纠正。",
+      "gap": "全部循环/Group进入退出、计数重置与失败传播未双方逐类型闭合。",
+      "next": "复用RE-W1-05；按控制结构逐项列入口/状态/退出，不把普通节点证据代替Group。",
+      "decisions": [
+        "O02",
+        "O05"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C03",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "tool-subroutine.html#subroutine-chain-review",
+        "reason": "已解释活动ReadyQueue/Condition/子图循环与输入输出；取消/作用域缺陷和原Group内部待证分列。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C04",
+      "title": "并发、排队与资源竞争",
+      "priority": "P0",
+      "question": "同工具、同相机、多流程、多消费者是否允许并发，忙时排队还是拒绝？",
+      "requiredChain": "触发→准入/租约/锁→排队→执行→取消/释放→下一请求",
+      "criterion": "比较准入与背压合同，覆盖重入、饥饿、慢工具、取消排队和设备共享；无测量不判吞吐胜负。",
+      "capabilities": [
+        "M13",
+        "M14",
+        "M19",
+        "M20",
+        "X01"
+      ],
+      "url": "system-architecture.html#run",
+      "current": "计算槽/外部等待、单次运行内租约及通信消费者有说明。",
+      "gap": "跨根运行共享相机/设备、排队公平性/饥饿和取消在途尚缺完整合同。",
+      "next": "租约管理器每次运行新建；追宿主全局准入和设备服务，不以类名宣称全局互斥。",
+      "decisions": [
+        "O02",
+        "O04",
+        "O09"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C04",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "camera-architecture.html#device-admission",
+        "reason": "2行调度预算/租约范围加8行设备矩阵已回填，外部等待、跨根范围、取消退役及未执行验收分开。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C05",
+      "title": "参数、IO与绑定契约",
+      "priority": "P0",
+      "question": "字段身份、类型、动态端口、数组及跨流程绑定如何变成运行输入？",
+      "requiredChain": "元数据→参数编辑→绑定解析/校验→运行快照→工具输入→输出生产",
+      "criterion": "用标量、数组、图像、动态脚本端口各举链路，核对缺值/失效绑定/循环诊断与序列化。",
+      "capabilities": [
+        "M07",
+        "M18",
+        "T02",
+        "T03",
+        "T15",
+        "T16"
+      ],
+      "url": "data-architecture.html#D02",
+      "current": "类型/作用域/上游和循环验证已重读；撤回绑定整体重造建议。",
+      "gap": "List<>/未声明对象、动态字段/旧文件迁移、嵌套协议输入仍需逐类核。",
+      "next": "从BindingContractValidator.PendingValidation、字段ID对账和嵌套解析消费者补，不重复造模型。",
+      "decisions": [
+        "O03"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C05",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "data-architecture.html#D02",
+        "reason": "已有绑定定义/值解析/快照/现有校验及工具实例；List与动态迁移待证不冒充完成。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C06",
+      "title": "图像、原生句柄与缓存寿命",
+      "priority": "P0",
+      "question": "原始帧、算法图像、传输映射、查询结果、显示缓存是否属于同一种内存？",
+      "requiredChain": "采集/分配→借用/复制→工具输出→共享/显示→替换→释放/复用",
+      "criterion": "逐类所有权表，指明分配/释放配对、保留期限及异常出口；关联RE-I1/I2，不能以Dispose代替完整链。",
+      "capabilities": [
+        "M16",
+        "M19",
+        "T08",
+        "T11",
+        "T12",
+        "X01"
+      ],
+      "url": "data-architecture.html#D08",
+      "current": "图像源借用/自有帧、输出别名、各工具临时清理和显示池分层已见。",
+      "gap": "输入跨后端裸HImage所有权、结果替换/历史/多个读者的最终释放未闭合。",
+      "next": "给每类图像列分配→借用/克隆→消费者→最后读者→释放，复用RE-I1/I2。",
+      "decisions": [
+        "O04",
+        "O06"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C06",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "data-architecture.html#resource-ownership",
+        "reason": "HalImage/CvImage/相机SDK缓冲/Frame/显示池/缓存逐类有复制借用和最后读者边界，原native与运行验证未冒充闭合。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C07",
+      "title": "设备接入、通信与恢复",
+      "priority": "P1",
+      "question": "标准协议、厂商SDK、特殊设备怎样接入，谁负责连接、重连和业务触发？",
+      "requiredChain": "配置→提供器发现→连接/会话→读写/订阅→触发运行→断线/重连→退出",
+      "criterion": "至少对相机、标准通信、特殊SDK三类说明边界；区分产品扩展目标与已支持设备事实。",
+      "capabilities": [
+        "M19",
+        "M20",
+        "X03"
+      ],
+      "url": "tool-detail-ReceiveData.html",
+      "current": "读/写/解析/组装已分开，主动/被动消费、发送副作用有局部审计。",
+      "gap": "厂商适配、协议类型矩阵、重连及特殊SDK故障还未完整横向比较。",
+      "next": "按Raw/Modbus/OPCUA及厂商逐提供器核连接/读写/重连/取消，非运行验证保留待验。",
+      "decisions": [
+        "O09"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C07",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "camera-architecture.html#device-admission",
+        "reason": "8类设备逐项列驱动/工作流接线/实机状态、门禁、取消释放、改法和验收；S7/CIP未接通用目录不冒充未写驱动。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C08",
+      "title": "工具插件发现与生命周期",
+      "priority": "P0",
+      "question": "包、程序集、类型、工具实例、编辑器与原生模块分别如何创建和结束？",
+      "requiredChain": "扫描→依赖装载→注册→实例化→执行/编辑→删除→析构→注销/卸载",
+      "criterion": "拆开删除/Dispose/驱动析构/程序集卸载，补在途任务与回调排空；关联RE-P1/P2。",
+      "capabilities": [
+        "M04",
+        "M08",
+        "T08",
+        "X02"
+      ],
+      "url": "system-architecture.html#plugins",
+      "current": "发现/注册/工厂与窗口收尾已分开，不把Dispose当全部模块销毁。",
+      "gap": "调试/分析临时tool共享身份、特殊删除/创建失败和所有native最终析构仍缺。",
+      "next": "实例表逐项配Create/最后消费者/Destroy；接RE-P1/P2，不直接建议热卸载。",
+      "decisions": [
+        "O04",
+        "O10"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C08",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "data-architecture.html#resource-ownership",
+        "reason": "工厂每次新建tool已核，分析控件Owner与不可回收ALC进程寿命分列，静态缓存/原生模块最终释放保留缺证。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C09",
+      "title": "编辑、调试与正式运行隔离",
+      "priority": "P1",
+      "question": "编辑草稿何时生效，调试是否修改正式参数/设备，关窗后谁持有状态？",
+      "requiredChain": "打开编辑器→草稿→调试请求→结果回写→应用/取消→关窗",
+      "criterion": "逐入口记录提交/取消/关窗/切方案，覆盖迟到调试结果、运行中编辑和外部副作用。",
+      "capabilities": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08"
+      ],
+      "url": "tools.html",
+      "current": "6原专业入口+18实际源码布局导航；标准执行/连续/提交与专业差异已列。",
+      "gap": "24工具局部覆盖不代表每字段草稿隔离、关闭回滚及所有迟到结果拒收都已审完。",
+      "next": "逐工具列live编辑/草稿/提交策略，明确设备不可回滚；反复关闭/重入场景另验。",
+      "decisions": [
+        "O03",
+        "O05"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C09",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "tools.html#editing-policy",
+        "reason": "24工具已逐项给共享/草稿、确定/X、执行副作用与关闭Owner，模板/标定子窗口分开；最后读者保留待证。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C10",
+      "title": "显示、ROI、叠加与坐标分域",
+      "priority": "P1",
+      "question": "显示引用、算法依赖、ROI编辑和Fixture/标定坐标如何区分？",
+      "requiredChain": "图像选择→坐标变换→ROI草稿/提交→工具输入→结果叠加→清屏",
+      "criterion": "分别画图像/像素/世界坐标链，覆盖缩放、切图、坐标失效、显示自身结果和取消ROI编辑。",
+      "capabilities": [
+        "M16",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T18"
+      ],
+      "url": "optimization.html#O06",
+      "current": "ROI/底图/图形文字及点线二次修正、圆圆排序等有具体整改依据。",
+      "gap": "已补形状匹配主调试/执行/缓存与具体整改；全DPI/缓存版本、native模型最终销毁仍未闭合。",
+      "next": "补ShapeMatchTool.Run、主DebugControl/模板采用/缓存释放与VM原合同；保持其模板页独立。",
+      "decisions": [
+        "O06",
+        "O12"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C10",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "data-architecture.html#coordinate-review",
+        "reason": "8坐标链已逐项给调用、单位/参考域、ROI新建与修改取消、图层/DPI/全屏及具体改法，原native和运行未验分开。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C11",
+      "title": "方案保存、迁移、复制与撤销",
+      "priority": "P1",
+      "question": "方案保存哪些运行/设计状态，复制时哪些身份必须重映射？",
+      "requiredChain": "保存快照→序列化→版本迁移→缺插件恢复→实例重建→复制/撤销",
+      "criterion": "核对文件样本与读写代码对应，覆盖缺插件、改名、复制绑定重映射、保存中断和撤销事务。",
+      "capabilities": [
+        "M02",
+        "M03",
+        "M05",
+        "M08",
+        "T14",
+        "T17"
+      ],
+      "url": "data-architecture.html#D10",
+      "current": "Repository、编辑命令、标定候选/验证/发布职责已分开。",
+      "gap": "文件版本迁移、缺插件占位、保存中断/备份恢复、复制Undo的全消费者仍缺。",
+      "next": "逐Load/Save/Replace与导入ID映射核事务边界，真实文件损坏/断电类实验只列计划。",
+      "decisions": [
+        "O01",
+        "O08"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C11",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "persistence-architecture.html#editing-transactions",
+        "reason": "已有文件保存恢复及复制/删除/Undo六动作身份和失败矩阵，正常链/确定缺陷/目标政策分开。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C12",
+      "title": "错误、停止、超时与恢复",
+      "priority": "P0",
+      "question": "请求接受、停止请求、停止完成、回调排空和资源可释放怎样判定？",
+      "requiredChain": "取消/超时→停止下传→在途执行处理→终态生产→等待解除→资源回收→再运行",
+      "criterion": "分单流程/全部停止、正常/超时/无回调/异常，列返回码与通知顺序；关联RE-W2，保留未知事件生产者。",
+      "capabilities": [
+        "M02",
+        "M15",
+        "M22",
+        "T06",
+        "T08"
+      ],
+      "url": "system-architecture.html#stop",
+      "current": "新确认ReadyQueue取消退出未await所有running Task；宿主active集合不能代替排空。",
+      "gap": "全部不可取消节点、超时保留与设备回调排空仍需运行验收；VM最终完成消费者缺证。",
+      "next": "先整改停派发/取消/等待全部在途/再释放和超时占用策略，配RE-W2；不强杀原生线程。",
+      "decisions": [
+        "O02",
+        "O04",
+        "O05"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C12",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "system-architecture.html#shutdown",
+        "reason": "停止请求、登记归零、在途排空、关闭设备和超时隔离已分段；原VM停止缺证保留。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C13",
+      "title": "事件、日志与可观测性",
+      "priority": "P1",
+      "question": "能否把一次触发关联到流程、节点、设备、图像代次和最终失败？",
+      "requiredChain": "入口关联ID→事件/状态→日志/诊断投影→查询/导出→清理",
+      "criterion": "列关联字段、采集点、限频与保留策略，用一次失败/取消示例重建链；不以存在Log调用算完成。",
+      "capabilities": [
+        "M24",
+        "M25",
+        "M26",
+        "X05"
+      ],
+      "url": "comparison.html#compare-M26",
+      "current": "状态、专业分析和日志三条数据分流，已有引用与容量/节流限制。",
+      "gap": "VM应用日志管线、上游背压/落盘/退出排空及跨Run诊断身份未完整比较。",
+      "next": "分写入/队列/批量UI/持久文件，给丢弃/保留和故障定位策略；不以注释称性能流畅。",
+      "decisions": [
+        "O07",
+        "O12"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C13",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "optimization.html#diagnostic-benchmark",
+        "reason": "5项诊断链有字段生产/丢失/落盘/事件身份实码，三根成功失败取消与迟到样例为待执行规程；复用现有字段的整改已写。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C14",
+      "title": "构建部署、版本与SDK兼容",
+      "priority": "P1",
+      "question": "插件和本机依赖由谁部署，架构/版本不匹配与升级失败如何处理？",
+      "requiredChain": "项目引用→构建复制→包目录→干净环境加载→版本检查→升级/回滚",
+      "criterion": "记录实际构建规则和输出目录，区分缺DLL/版本冲突/架构错误；提出后续干净机器验证，未执行不登记通过。",
+      "capabilities": [
+        "M04",
+        "X02",
+        "X03"
+      ],
+      "url": "platform-architecture.html#deploy",
+      "current": "依赖共享优先、不可回收ALC与仅清集合注销已核；部署runtimes宽泛排除需区分插件私有native，不当发布已验。",
+      "gap": "各工具最终依赖布局、ABI/版本政策、升级失败回滚和干净部署未完整验。",
+      "next": "按Directory.Build/各csproj部署目标与运行发现逐包对账；运行/设计器验收另列。",
+      "decisions": [
+        "O10"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C14",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "platform-architecture.html#deploy",
+        "reason": "实际依赖选择/目录/部署规则及版本与私有native缺口、未执行干净部署门槛已写。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C15",
+      "title": "权限、脚本与外部副作用",
+      "priority": "P1",
+      "question": "操作权限、脚本信任、设备写入和调试副作用由哪层约束？",
+      "requiredChain": "身份/权限→命令校验→脚本/设备动作→审计→异常/终止",
+      "criterion": "区分UI可见性与服务授权、ALC与安全隔离；核对脚本缓存/引用/停止，不承诺未经验证的沙箱。",
+      "capabilities": [
+        "M20",
+        "T15",
+        "X03",
+        "X04"
+      ],
+      "url": "license-design.html",
+      "current": "已补自有狗四职责、8状态/10场景及入口改接提案；产品尚未实施，许可/文件保密/脚本信任分开。",
+      "gap": "狗厂商/SDK、离线宽限和签发恢复未定；原版授权不是可复用协议。",
+      "next": "补许可状态机/能力准入/在途到期政策和密钥恢复的设计决策，未定参数保留TBD。",
+      "decisions": [
+        "O10",
+        "O11"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C15",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "license-design.html",
+        "reason": "自有授权四职责/八状态/十场景和厂商政策TBD已写，不采用VM狗。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C16",
+      "title": "性能、长稳与可测试性",
+      "priority": "P2",
+      "question": "哪些负载和指标足以支持更快、更稳或更省内存的结论？",
+      "requiredChain": "可复现输入→同等处理范围→采样延迟/吞吐→原生内存/句柄→故障恢复",
+      "criterion": "形成对等负载/指标/环境/样本量计划；没有对等数据时仅比较机制，不给性能优胜结论。",
+      "capabilities": [
+        "T18",
+        "X05"
+      ],
+      "url": "optimization.html#O12",
+      "current": "缺双方同条件数据时暂不选性能后端，优化包已写收益验证门槛。",
+      "gap": "正确性样本、内存/尾延迟/长稳和故障注入未运行。",
+      "next": "固定输入、版本、质量阈值、时长与环境后另行授权运行；无结果不排名。",
+      "decisions": [
+        "O12"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C16",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "optimization.html#diagnostic-benchmark",
+        "reason": "8有限场景具层级/负载/预热/重复样本/前置/正确性与统计停止规则，输入规范及空manifest/CSV可交执行；全部not_run，缺材料不虚填性能。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C17",
+      "title": "全局变量与作用域",
+      "priority": "P0",
+      "question": "方案/流程/局部变量何时取快照，生产值如何提交，数组与图像是否共享？",
+      "requiredChain": "变量定义→选择/绑定→生产消费依赖→执行快照→提交/失败→保存初值",
+      "criterion": "独立比较定义、初值/运行值、生产冲突、跨流程顺序、数组/图像与删除改名；不混同参数字段。",
+      "capabilities": [
+        "M18",
+        "T02",
+        "T16"
+      ],
+      "url": "global-variables.html",
+      "current": "已补7段独立链与VM原托管对照；设计初值/运行值、数组/复杂类型和保存导入具体缺陷已明确。",
+      "gap": "普通ParamSettings与活跃控件改名有实码；离屏嵌套输入、旧文件外层迁移和所有跨作用域仍待核。",
+      "next": "补变量配置→字段身份→生产者→快照→消费→运行值显示的独立卡；逐值类型给别名策略。",
+      "decisions": [
+        "O03"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C17",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "global-variables.html",
+        "reason": "变量定义到文件七段，生产消费/入口差异/数组/改名与子调用问题有具体待证和改法。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C18",
+      "title": "相机管理与采集策略",
+      "priority": "P0",
+      "question": "相机目录、连接会话、预览、软件/硬件触发和正式采集如何协调？",
+      "requiredChain": "枚举→身份匹配→连接/参数→预览/采集租约→触发/帧→关闭/重连",
+      "criterion": "单列相机身份、触发/曝光写入、预览所有者、帧顺序、断线与切方案，不只引用设备通用接口。",
+      "capabilities": [
+        "M19",
+        "M16",
+        "X01"
+      ],
+      "url": "camera-architecture.html",
+      "current": "已补8段相机链；公开单帧缺共用用途准入及停止异常提前释放已定位，整改合同已给出。",
+      "gap": "预览/正式采集所有权、厂商触发/重连、丢帧和跨流程冲突仍缺完整双边证据。",
+      "next": "按已补相机链整改准入/异常排空，再验厂商/触发/多相机矩阵；显示历史最后读者仍独立待证。",
+      "decisions": [
+        "O04",
+        "O09"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C18",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "camera-architecture.html",
+        "reason": "连接/用途/帧/显示Owner及八段触发/参数/停止/厂商边界已写，实机原native继续待验。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C19",
+      "title": "SDK、公共控件与模板",
+      "priority": "P1",
+      "question": "执行契约、WPF支持、专业控件和宿主服务是否应放在同一层？",
+      "requiredChain": "插件引用→元数据/执行接口→编辑器工厂→主题/公共控件→发布依赖",
+      "criterion": "逐项核对依赖消费者，覆盖画布节点/参数编辑/结果显示三类模板；以简单工具、图像工具、脚本/标定代表验证。",
+      "capabilities": [
+        "T01",
+        "T09",
+        "T10",
+        "T12",
+        "T15",
+        "X02"
+      ],
+      "url": "system-architecture.html#tool",
+      "current": "SDK和Workflow含WPF真实依赖、共用执行器与专业控件边界已见。",
+      "gap": "全部公共控件/模板依赖、设计时/运行时资源及插件纯运行合同迁移未完整对账。",
+      "next": "按控件/合同消费者拆运行与UI提案；不按程序集命名复刻VM，不声称物理拆包已实施。",
+      "decisions": [
+        "O06",
+        "O10"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C19",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "platform-architecture.html#control-consumers",
+        "reason": "11组实际消费者→控件→数据命令→主题与加载/关闭边界已回填；VS设计时、DPI及运行未执行，逐项缺点改法有来源。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    },
+    {
+      "id": "C20",
+      "title": "UI各部分的设计对比",
+      "priority": "P1",
+      "question": "各界面承担哪些交互，哪些业务应由运行/设备/方案服务承担？",
+      "requiredChain": "用户动作→命令/VM→服务→状态/结果→UI投影→关闭/切换",
+      "criterion": "完成下方13个独立UI子项及状态矩阵；静态与实际交互证据分开，HTML预览不当作WPF验收。",
+      "capabilities": [
+        "M01",
+        "M04",
+        "M05",
+        "M16",
+        "M17",
+        "M18",
+        "M19",
+        "M20",
+        "M24",
+        "M25",
+        "M26",
+        "T01",
+        "T12"
+      ],
+      "url": "suneye-entry-architecture-comparison.html",
+      "current": "主地图、结果/日志/状态入口和专业工具布局可导航。",
+      "gap": "13UI子项的所有状态矩阵/错误/焦点/DPI/退出仍需逐项复审，不能用热点测试替代。",
+      "next": "下方13项逐条映射；未开发、待核和未运行分开，原VM能力未匹配也不能直接判自研缺失。",
+      "decisions": [
+        "O01",
+        "O02",
+        "O03",
+        "O06",
+        "O07",
+        "O09",
+        "O10"
+      ],
+      "legacyAccepted": true,
+      "documentation": {
+        "id": "C20",
+        "accepted": true,
+        "status": "正文可评审（具体待证保留）",
+        "url": "platform-architecture.html#ui-state-review",
+        "reason": "13UI逐项当前/缺口/失败取消关闭/改法/来源及DPI设计时未验标记已回填，链接对应专业链，不代产品验收。",
+        "remainingProduct": null
+      },
+      "status": "正文可评审（具体待证保留）"
+    }
+  ],
+  "ui": [
+    {
+      "id": "ui-shell",
+      "title": "启动/欢迎/主窗口",
+      "requiredChain": "启动→恢复/新建→工作区→退出",
+      "scenes": "恢复失败、无方案、切方案与窗口退出",
+      "capabilities": [
+        "M01",
+        "M02",
+        "M22"
+      ],
+      "url": "system-architecture.html#startup",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-commands",
+      "title": "菜单/顶栏/运行命令",
+      "requiredChain": "点击/快捷键→命令准入→运行服务→状态反馈",
+      "scenes": "双击运行、忙时禁用、停止中、操作失败",
+      "capabilities": [
+        "M11",
+        "M12",
+        "M13",
+        "M14",
+        "M15"
+      ],
+      "url": "system-architecture.html#run",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-canvas",
+      "title": "流程画布/节点/连线",
+      "requiredChain": "拖放/连接→模型变更→绑定校验→撤销→运行高亮",
+      "scenes": "非法连接、复制重映射、循环/分支、运行中编辑",
+      "capabilities": [
+        "M05",
+        "M06",
+        "M07",
+        "M08",
+        "M09",
+        "M10"
+      ],
+      "url": "comparison.html#compare-M07",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-toolbox",
+      "title": "工具箱/搜索/拖放",
+      "requiredChain": "目录加载→筛选→拖入→创建实例→画布",
+      "scenes": "缺插件、重复注册、类型不兼容、搜索定位",
+      "capabilities": [
+        "M04"
+      ],
+      "url": "tools.html",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-editor",
+      "title": "参数/调试/关窗",
+      "requiredChain": "草稿→调试快照→应用/取消→关闭",
+      "scenes": "未保存、迟到结果、设备副作用、反复开关",
+      "capabilities": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08"
+      ],
+      "url": "tools.html",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-image",
+      "title": "图像/ROI/坐标",
+      "requiredChain": "帧选择→显示变换→ROI编辑→提交→释放",
+      "scenes": "切图、缩放、坐标失效、取消与持有引用",
+      "capabilities": [
+        "M16",
+        "T09",
+        "T10",
+        "T11",
+        "T12"
+      ],
+      "url": "data-architecture.html#D08",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-results",
+      "title": "结果/叠加/状态",
+      "requiredChain": "运行结果→缓存→树/表/叠加→历史切换",
+      "scenes": "本轮/历史标记、失败部分结果、取消与旧结果",
+      "capabilities": [
+        "M17",
+        "M24",
+        "M25",
+        "T13"
+      ],
+      "url": "comparison.html#compare-M17",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-globals",
+      "title": "全局变量管理/选择",
+      "requiredChain": "变量编辑→生产消费绑定→快照→运行值投影",
+      "scenes": "初值/运行值、同名作用域、数组、删除/改名",
+      "capabilities": [
+        "M18",
+        "T02",
+        "T16"
+      ],
+      "url": "data-architecture.html#D02",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-camera",
+      "title": "相机管理/预览",
+      "requiredChain": "选择→连接/配置→预览租约→正式采集→关闭",
+      "scenes": "驱动忙、断线、触发冲突、预览帧归属",
+      "capabilities": [
+        "M19"
+      ],
+      "url": "tool-detail-ImageLoad.html",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-communication",
+      "title": "通信配置/读写/事件",
+      "requiredChain": "配置→会话→读写/事件→工作流触发→反馈",
+      "scenes": "重连、重复事件、写入失败、权限及调试副作用",
+      "capabilities": [
+        "M20"
+      ],
+      "url": "tool-detail-SendData.html",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-solution",
+      "title": "方案管理/保存/恢复",
+      "requiredChain": "新建/打开→校验→切换→保存→恢复",
+      "scenes": "缺插件、格式迁移、保存失败、未提交草稿",
+      "capabilities": [
+        "M02",
+        "M03",
+        "M05",
+        "M08"
+      ],
+      "url": "data-architecture.html#D10",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-logs",
+      "title": "日志/诊断/提示",
+      "requiredChain": "底层事件→关联身份→聚合/限频→定位/导出",
+      "scenes": "高频错误、取消、异步线程、记录保留",
+      "capabilities": [
+        "M26"
+      ],
+      "url": "comparison.html#compare-M26",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    },
+    {
+      "id": "ui-theme",
+      "title": "主题/公共控件/弹窗",
+      "requiredChain": "资源合并→控件模板→Popup/弹窗→设计时回退",
+      "scenes": "深浅、焦点/键盘、禁用/错误、DPI与VS设计器",
+      "capabilities": [
+        "M21",
+        "X02"
+      ],
+      "url": "comparison.html#compare-M21",
+      "status": "静态入口已映射；场景/运行/设计器验收未执行"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "RE-W1-01",
+      "group": "RE-W1",
+      "title": "运行入口到拓扑执行对象",
+      "criterion": "已有普通流程运行路径连接拓扑构造、持有与slot8执行；不包含全部控制结构。",
+      "status": "verified",
+      "reason": "10ae80构造CBaseTopology，dcba0持共享引用；20dd0进入目标等待路径，节点slot8执行另已读。",
+      "remaining": "类型/循环及并发语义不在本项已核实范围。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round2-dispatch-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION",
+          "sha256": "c51983166d56069da79b28b9a79c2c9219910e72bd964826466e2158f87fc759",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round3-core-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION TopologySlot8",
+          "sha256": "0e9a4ee510e81b3e2b36ff3509d5cc4181168595819bbb6c86670112de853e78",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round3-execute-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION NodeExecute",
+          "sha256": "4c3dd08bce3597312a90e76d83167d6f245bc6876f61edffdc7aa6b4f6d7a6b8",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-W1-02",
+      "group": "RE-W1",
+      "title": "邻接、前驱计数与实际就绪分派",
+      "criterion": "ScheduleHelper存在邻接遍历、锁内递减、零就绪及递归/提交分派的实际实现。",
+      "status": "verified",
+      "reason": "ffd00实际消费邻接/状态，后继前驱计数归零后分派；不再按“统一命令发送层”代替调度。",
+      "remaining": "数值类型全部语义及循环重置另列。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-graph-cache-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ScheduleHelper",
+          "sha256": "f0540a2ac9f8c0ccc7bb7be73b20f39b8e209aa9f44179efe505d68604b4cd32",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-core-trace.txt",
+          "line": 222,
+          "locator": "FUNCTION ReadAdjacent",
+          "sha256": "240f536b1dbd6ba7913c9bbaf4079b212d3c401deba308c13448dd7322ff42a0",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-W1-03",
+      "group": "RE-W1",
+      "title": "共享与按流程ID队列的提交选择",
+      "criterion": "策略字段分支以及按流程ID查队列/入队的实际调用已对应。",
+      "status": "verified",
+      "reason": "15aba0策略120==2走fc9e0按ID队列，其他入共享队列；fc9e0查记录并入队。",
+      "remaining": "按ID队列不推出每流程单消费者。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-core-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION SubmitByProcedure",
+          "sha256": "240f536b1dbd6ba7913c9bbaf4079b212d3c401deba308c13448dd7322ff42a0",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 342,
+          "locator": "FUNCTION ProcedureAsync",
+          "sha256": "50e3fbd291b78507591de566e555b391a2dfd45b1b7ab1bce9b5dbe3fcc536cd",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-W1-04",
+      "group": "RE-W1",
+      "title": "任务实际消费与锁外调用",
+      "criterion": "有取出/出队、释放队列锁、调用任务slot10及退出哨兵处理。",
+      "status": "verified",
+      "reason": "fbee0锁内移出任务、锁外调用，ffff退出哨兵及WorkerEntry计数对应。",
+      "remaining": "同步适配器具体类型/全部线程扩缩策略未包含。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ConcurrentWorker",
+          "sha256": "50e3fbd291b78507591de566e555b391a2dfd45b1b7ab1bce9b5dbe3fcc536cd",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 1024,
+          "locator": "FUNCTION WorkerEntry",
+          "sha256": "50e3fbd291b78507591de566e555b391a2dfd45b1b7ab1bce9b5dbe3fcc536cd",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-W1-05",
+      "group": "RE-W1",
+      "title": "分支、循环、Group和子流程完整语义",
+      "criterion": "各控制类型的进入/退出、失败和循环计数重置均可对应。",
+      "status": "partial",
+      "reason": "已有类型数值和混合分派及自研控制结构分析，未恢复全部VM控制类型合同。",
+      "remaining": "补各类型正常/失败/取消及计数重置的限定证据。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-graph-cache-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ScheduleHelper",
+          "sha256": "f0540a2ac9f8c0ccc7bb7be73b20f39b8e209aa9f44179efe505d68604b4cd32",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-W1-06",
+      "group": "RE-W1",
+      "title": "消费者数量、共享资源准入与公平性",
+      "criterion": "队列消费者数量、跨流程同资源冲突及饥饿/重入策略可认证。",
+      "status": "partial",
+      "reason": "真实队列/策略调整函数已读，但策略参数和消费者数量未完成认证；自研租约不能代证VM。",
+      "remaining": "仍缺同资源/慢任务/取消排队及公平性合同。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 860,
+          "locator": "FUNCTION AdjustPolicy",
+          "sha256": "50e3fbd291b78507591de566e555b391a2dfd45b1b7ab1bce9b5dbe3fcc536cd",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 1097,
+          "locator": "FUNCTION SpawnWorkers",
+          "sha256": "50e3fbd291b78507591de566e555b391a2dfd45b1b7ab1bce9b5dbe3fcc536cd",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-W2-01",
+      "group": "RE-W2",
+      "title": "停止请求与等待对象",
+      "criterion": "停止分支设置标志/事件并等待流程88的静态路径可对应。",
+      "status": "verified",
+      "reason": "dd030设置90/80、清7c，等待88；这只证明请求与等待入口。",
+      "remaining": "不等全部任务或回调终止。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-frame-stop-leaf-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION",
+          "sha256": "220bf788fd5f5813c37c6b788c65d4792f35173607988d84a8c17ef3db29722b",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-W2-02",
+      "group": "RE-W2",
+      "title": "当前停止标志的有限等待及超时返回",
+      "criterion": "标志0的3000ms、非零无限等待与WAIT_TIMEOUT对应错误码已读。",
+      "status": "verified",
+      "reason": "等待值3000/ffffffff和0x102→e0000300有实际函数体。",
+      "remaining": "其他等待错误/批量忽略返回及异常退出未被本项保证。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-frame-stop-leaf-trace.txt",
+          "line": 20,
+          "locator": "return 0xe0000300",
+          "sha256": "220bf788fd5f5813c37c6b788c65d4792f35173607988d84a8c17ef3db29722b",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-W2-03",
+      "group": "RE-W2",
+      "title": "循环退出88与尾完成98的顺序及等待者",
+      "criterion": "事件生产先后与已见98等待删除入口可对应。",
+      "status": "verified",
+      "reason": "dd330先Set88，再报告/尾回调，最后Set98；dcae0和108c30消费98。",
+      "remaining": "不是所有删除入口或异常分支均已认证。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round2-events-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ProcedureWorker",
+          "sha256": "3d20ab53784c0280bd834a74a41a10935e0060baf7fc11bf6faf4685c89c2858",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round3-execute-trace.txt",
+          "line": 1093,
+          "locator": "FUNCTION TailWait",
+          "sha256": "4c3dd08bce3597312a90e76d83167d6f245bc6876f61edffdc7aa6b4f6d7a6b8",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round3-execute-trace.txt",
+          "line": 1576,
+          "locator": "FUNCTION WaitOwner",
+          "sha256": "4c3dd08bce3597312a90e76d83167d6f245bc6876f61edffdc7aa6b4f6d7a6b8",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-W2-04",
+      "group": "RE-W2",
+      "title": "多流程内部尾完成汇合",
+      "criterion": "尾回调计数归零置548，以及设计数/复位/等待548的路径对应。",
+      "status": "verified",
+      "reason": "6c0f0安装回调；6c640组织计数/等待，76070叶原子减后置事件已有索引。",
+      "remaining": "内部汇合不代表外部消费者ACK。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-lifetime-trace.txt",
+          "line": 102,
+          "locator": "FUNCTION InstallTailA",
+          "sha256": "c558a64758abd8d850b830f94d72509acff5bce88d118828fdbc10189d0e84ae",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round3-lifetime-trace.txt",
+          "line": 731,
+          "locator": "FUNCTION InstallTailB",
+          "sha256": "c558a64758abd8d850b830f94d72509acff5bce88d118828fdbc10189d0e84ae",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round3-tail-callback.json",
+          "line": 6,
+          "locator": "76070",
+          "sha256": "74fb547c96ae5e0711750f6fc08c9ee4c5b3a1276d0136ea58610446be0ad137",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-W2-05",
+      "group": "RE-W2",
+      "title": "外部完成通知的最终消费者与确认",
+      "criterion": "Frame注册实例、Proxy/PM和最终SDK/UI接收/ACK全部连通。",
+      "status": "partial",
+      "reason": "已追注册槽、Server接收5d51c0、c47→811及6203a0投递边界；实例全传递和最终消费者未齐。",
+      "remaining": "保留最终消费/排队/ACK及旧代次处理缺口。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-proxy-setters-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION",
+          "sha256": "075b41159ce60b3f82d86e96d5fffd3103078597bb4742a87e0c4b3dd7a584de",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-receiver-trace.txt",
+          "line": 217,
+          "locator": "FUNCTION ServerReceiver",
+          "sha256": "548ca9c4d7a8289343f7d3c6bcdff9f5ff7886e87f04cc73f120826adc459838",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-finish-notify-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION",
+          "sha256": "17957d1bf36ef928f4b769c6e2d32c1ca245127a9e06c799fd3186fdfb484c15",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-W2-06",
+      "group": "RE-W2",
+      "title": "无回调/异常/不可取消任务的终止保证",
+      "criterion": "无回调及异常时能证明结束/排空或明确失败，且可安全再次运行。",
+      "status": "unverified",
+      "reason": "现有材料未给出覆盖这些异常情形的完整终止保证；普通路径不能替代。",
+      "remaining": "尚无该合同闭合证据或对等运行验证；未知不等于不支持。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round2-events-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ProcedureWorker",
+          "sha256": "3d20ab53784c0280bd834a74a41a10935e0060baf7fc11bf6faf4685c89c2858",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I1-01",
+      "group": "RE-I1",
+      "title": "原始相机/算法缓冲的分配与复用边界",
+      "criterion": "源缓冲分配、驱动复用/归还时点及最后读者可配对。",
+      "status": "unverified",
+      "reason": "映射/默认缓存不能当原始帧；已读相机清理体仍未连到源缓冲生产/复用。",
+      "remaining": "源分配→发布→最后读者→归还仍无可认证全链。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-camera-life-trace.txt",
+          "line": 391,
+          "locator": "FUNCTION CameraSlot64",
+          "sha256": "f061ce291adaa59796622c4838ae6ca03b47a0ef68cb59ce25bdab248d08c4cc",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I1-02",
+      "group": "RE-I1",
+      "title": "默认模块缓存装入及深复制",
+      "criterion": "默认b90d0分配表、结构复制和逐块复制可在函数体核对。",
+      "status": "verified",
+      "reason": "空缓存分配及memcpy_s/逐块新分配拷贝已读，默认路径范围明确。",
+      "remaining": "非空重复装入和扩展路径另列，不推统一刷新。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-core-trace.txt",
+          "line": 183,
+          "locator": "FUNCTION CacheProducerA",
+          "sha256": "0e9a4ee510e81b3e2b36ff3509d5cc4181168595819bbb6c86670112de853e78",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I1-03",
+      "group": "RE-I1",
+      "title": "默认按键写入的旧块替换",
+      "criterion": "b9390匹配键后释放旧块/清指针长度、重新分配复制的顺序可核对。",
+      "status": "verified",
+      "reason": "已读默认SetBinaryDataToCache，不按分析标签将其叫每帧刷新。",
+      "remaining": "不保证并发读者或所有失败替换安全。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-core-trace.txt",
+          "line": 366,
+          "locator": "FUNCTION CacheProducerB",
+          "sha256": "0e9a4ee510e81b3e2b36ff3509d5cc4181168595819bbb6c86670112de853e78",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I1-04",
+      "group": "RE-I1",
+      "title": "批量加载提交到实际加载函数调用",
+      "criterion": "上游提交、worker消费和绑定函数间接调用形成静态链。",
+      "status": "verified",
+      "reason": "47a00/66c60→队列→slot10/75870→78130→78440→绑定4bee0已对应。",
+      "remaining": "批次SetEvent/错误汇总和加载线程数仍未知。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-core-trace.txt",
+          "line": 770,
+          "locator": "FUNCTION LoadTaskCallerA",
+          "sha256": "240f536b1dbd6ba7913c9bbaf4079b212d3c401deba308c13448dd7322ff42a0",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-load-task-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION LoadTaskInvoke",
+          "sha256": "97d098d506ec57b72775e58a1f8ebbefbf723c23c9407c651e68477c72fe5114",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-load-body-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION LoadTaskBody",
+          "sha256": "c395cc5a234d92295db52d5fb1faa66e9f4605f299f22988c61a82eb5915cf67",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I1-05",
+      "group": "RE-I1",
+      "title": "缓存内容读写与运行/删除准入",
+      "criterion": "公开写、加载、执行读与删除共享同一可认证串行/借用合同。",
+      "status": "partial",
+      "reason": "多个写入口和锁外任务执行已见，但队列锁/引用计数不等内容锁。",
+      "remaining": "外层串行、重复加载失败恢复和读者保护未认证。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-graph-cache-trace.txt",
+          "line": 3189,
+          "locator": "FUNCTION CacheWriteExport",
+          "sha256": "f0540a2ac9f8c0ccc7bb7be73b20f39b8e209aa9f44179efe505d68604b4cd32",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-workers-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ConcurrentWorker",
+          "sha256": "50e3fbd291b78507591de566e555b391a2dfd45b1b7ab1bce9b5dbe3fcc536cd",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I1-06",
+      "group": "RE-I1",
+      "title": "非空扩展实现的装配与数据所有权",
+      "criterion": "module+128具体实现类型和slot10/18/30数据寿命可对应。",
+      "status": "partial",
+      "reason": "优先扩展分派存在，默认构造清零+128已见；真实非空装配/类型和借用期限缺证。",
+      "remaining": "不能用默认缓存寿命推广扩展实现。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-follow-trace.txt",
+          "line": 73,
+          "locator": "FUNCTION CacheRead",
+          "sha256": "f968e24ef2f221a9a152bcde09e731555d64553b3330f115a51fe169a13c55ff",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round3-follow-trace.txt",
+          "line": 516,
+          "locator": "FUNCTION CacheRefresh",
+          "sha256": "f968e24ef2f221a9a152bcde09e731555d64553b3330f115a51fe169a13c55ff",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round4-owner-trace.txt",
+          "line": 538,
+          "locator": "FUNCTION NodeCtor",
+          "sha256": "4bdda892cdd1f6e955420da89cddabeedbf0a562528f971520e99f330d36051d",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I2-01",
+      "group": "RE-I2",
+      "title": "传输映射建立与复制",
+      "criterion": "74b10释放旧映射、Create/Map和源复制的实际实现可核对。",
+      "status": "verified",
+      "reason": "CreateFileMapping/Map及memcpy路径已读；该路径不是零拷贝。",
+      "remaining": "源生产缓冲和其他客户端不在本项范围。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-proxy-buffer-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION WriteBinaryMapping",
+          "sha256": "9872d1a0b4722f0ccd97489494ac549e4f35a9d74442f29beb65af2cfde7e6c2",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I2-02",
+      "group": "RE-I2",
+      "title": "传输映射显式释放",
+      "criterion": "已认证释放命令与74e00的Unmap/Close对象字段对应。",
+      "status": "verified",
+      "reason": "0xc12到代理release，view+88/handle+58释放；与映射建立对象布局一致。",
+      "remaining": "不等所有客户端视图已退役或ACK。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-mapping-release-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION MappingRelease",
+          "sha256": "0e454f19b65158cbfc01e618c975ed5de59965fa541e2faea93bf4791d5dae05",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round4-proxy-events-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION",
+          "sha256": "b19c9d25bd9655f04d630c65dc5c0065a5385444da1b1f0c80dc11fbfa300b67",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I2-03",
+      "group": "RE-I2",
+      "title": "默认缓存析构与查询源布局配对",
+      "criterion": "默认结果读取布局与b96a0逐块delete[]及删表可对应。",
+      "status": "verified",
+      "reason": "module+140中585a0+i118数据项与默认查询源/析构布局一致。",
+      "remaining": "不推广所有查询类型或源相机像素。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round2-finalize-trace.txt",
+          "line": 134,
+          "locator": "FUNCTION CleanupNode",
+          "sha256": "0beccd73dc5ea05788c4e62c31bed9cf1d061a4472348b7f0cf651d55c8259fc",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round2-resources-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION",
+          "sha256": "dfc4dc686ef6a4b03b185f7a61a49c93b5265cef0e4cb851b32f3e4447421111",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I2-04",
+      "group": "RE-I2",
+      "title": "托管查询结果深浅复制及显式释放范围",
+      "criterion": "所有声明支持的结果类型深浅模式及释放责任完整覆盖。",
+      "status": "partial",
+      "reason": "默认深复制/可选共享、SharedMemoryItemVM释放已读；全嵌套结果/历史类型未全审计。",
+      "remaining": "GCHandle释放不是像素归还，按类型补配对。",
+      "references": [
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ModuleResultManager.cs",
+          "line": 14,
+          "locator": "Memory_Deep_Copy",
+          "sha256": "fd3960ee308fb739729af43589035d628544bb5b26941be5eb6f3250a41739e7",
+          "locationChecked": true
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/SharedMemoryItemVM.cs",
+          "line": 56,
+          "locator": "DisposeRes",
+          "sha256": "ea2bb967a3d40fedf02ae55b714dd12b55b34e933a8454dd3b92206533a1d901",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I2-05",
+      "group": "RE-I2",
+      "title": "查询/映射全异常和并发释放安全",
+      "criterion": "失败中途、并发查询/释放时的所有权与清理出口有完整证据。",
+      "status": "unverified",
+      "reason": "当前正常映射释放/默认析构配对不足以认证全异常/并发安全。",
+      "remaining": "没有全异常/并发验证记录，不推断已安全或已故障。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-mapping-release-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION MappingRelease",
+          "sha256": "0e454f19b65158cbfc01e618c975ed5de59965fa541e2faea93bf4791d5dae05",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-I2-06",
+      "group": "RE-I2",
+      "title": "显示与历史缓存的最后读者",
+      "criterion": "切换、关闭、历史保留和共享可变显示对象有完整独立快照/释放合同。",
+      "status": "partial",
+      "reason": "VM换源dispose和自研复用WriteableBitmap已核对；历史独立性/最后读者仍未齐。",
+      "remaining": "不能把UI清空当像素释放，也不把切图缓存当历史验收。",
+      "references": [
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs",
+          "line": 152,
+          "locator": "ModuleSourceChanged",
+          "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88",
+          "locationChecked": true
+        },
+        {
+          "path": "src/UI/Services/Performance/ImageConverterPool.cs",
+          "line": 13,
+          "locator": "WriteableBitmap",
+          "sha256": "d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P1-01",
+      "group": "RE-P1",
+      "title": "工厂Create/Destroy指针与实例记录",
+      "criterion": "加载解析、记录字段和实际创建调用在函数实现对应。",
+      "status": "verified",
+      "reason": "b54e0解析Create/Destroy并保存库/实例及函数指针。",
+      "remaining": "保存指针本身不等于已执行销毁，后项单列。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-execute-trace.txt",
+          "line": 2206,
+          "locator": "FUNCTION ResolveModule",
+          "sha256": "4c3dd08bce3597312a90e76d83167d6f245bc6876f61edffdc7aa6b4f6d7a6b8",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P1-02",
+      "group": "RE-P1",
+      "title": "标准删除的加载器观察者连接",
+      "criterion": "实际注册对象、观察者集合、虚表slot与标准删除分派连通。",
+      "status": "verified",
+      "reason": "b5280/112e60注册CModuleLoader，DeleteNode通知同集合slot18= b6fa0。",
+      "remaining": "带管理状态条件，不推广所有特殊删除入口。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-registration-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION RegisterLoaderObserver",
+          "sha256": "49c3d502bd0ee452e6d15df39319fdbe77d2abe272f41cafe3c92c18acf599be",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round4-loader-life-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION",
+          "sha256": "9a6b4fec2ddd459ff3c01af4077682998c20a876a4885497cee4af30e5992380",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round4-delete-observer.json",
+          "line": 10,
+          "locator": "CModuleLoader",
+          "sha256": "069a4607fdc49edef19d7f74ca0b13136a546df8e37bd265a066d6a79cbfd4b3",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P1-03",
+      "group": "RE-P1",
+      "title": "条件满足时实际调用DestroyModule",
+      "criterion": "b6670取记录+18与+8并执行已保存的destroy，而非只释放记录。",
+      "status": "verified",
+      "reason": "状态允许时实际CALL销毁函数，随后释放信息、移除记录/索引。",
+      "remaining": "不保证厂商内部释放或FreeLibrary。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-owner-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ReleaseModuleCandidate",
+          "sha256": "4bdda892cdd1f6e955420da89cddabeedbf0a562528f971520e99f330d36051d",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P1-04",
+      "group": "RE-P1",
+      "title": "代表相机的最终析构体",
+      "criterion": "GlobalCameraModule导出销毁到实际虚表析构、成员/基类及删除实例。",
+      "status": "verified",
+      "reason": "1cf50→8cc0→8d90→9b00有函数体及虚表；注销/等待/清理顺序已见。",
+      "remaining": "仅代表模块；非零等待日志后继续不等回调已排空。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-camera-trace.txt",
+          "line": 320,
+          "locator": "FUNCTION DestroyCameraModule",
+          "sha256": "522f9f043d35a183e81096883f52e2cfc943b8d49194a3bdd605558f1879f99d",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-camera-life-trace.txt",
+          "line": 361,
+          "locator": "FUNCTION CameraDeletingDestructor",
+          "sha256": "f061ce291adaa59796622c4838ae6ca03b47a0ef68cb59ce25bdab248d08c4cc",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-camera-dtor-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION CameraDestructor",
+          "sha256": "b7831bf526ce4d2df95d3ac894df8e05a8446ad8141960748692cf20d7891e52",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P1-05",
+      "group": "RE-P1",
+      "title": "相机在途回调与超时后清理安全",
+      "criterion": "两个事件生产者/线程退出及SDK回调保障能认证。",
+      "status": "partial",
+      "reason": "9b00注销回调并等待两个事件各3000ms，未认证信号生产者/在途保障。",
+      "remaining": "Stop/Close/Destroy辅助函数、超时后读者及重入仍未知。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-camera-life-trace.txt",
+          "line": 391,
+          "locator": "FUNCTION CameraSlot64",
+          "sha256": "f061ce291adaa59796622c4838ae6ca03b47a0ef68cb59ce25bdab248d08c4cc",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P1-06",
+      "group": "RE-P1",
+      "title": "特殊/异常删除与其他模块全释放",
+      "criterion": "状态不满足/异常、非代表模块也有完整析构/回收合同。",
+      "status": "unverified",
+      "reason": "标准条件路径和一个代表模块不足以认证特殊分支与全插件覆盖。",
+      "remaining": "尚无该全范围证据，不把记录移除当全部资源回收。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round4-owner-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION ReleaseModuleCandidate",
+          "sha256": "4bdda892cdd1f6e955420da89cddabeedbf0a562528f971520e99f330d36051d",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P2-01",
+      "group": "RE-P2",
+      "title": "VM相机模块目录发现与依赖组织",
+      "criterion": "Global XML/Cs/Control/Librarys.Config及多类型模块列表有实际读取/装配实现。",
+      "status": "verified",
+      "reason": "GlobalCameraManager目录装配及多厂商/类型过滤已核对。",
+      "remaining": "不等于所有非相机工具的发现及恢复。",
+      "references": [
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraManager.cs",
+          "line": 469,
+          "locator": "FilterCameraModule",
+          "sha256": "4d0db8fb2b9879ab545176a7a3037457c04d1d6afe8f7e314631840c9ea70338",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P2-02",
+      "group": "RE-P2",
+      "title": "自研部署/依赖选择和契约拒绝",
+      "criterion": "真实构建输出、加载检查和语义契约不兼容拒绝可核对。",
+      "status": "verified",
+      "reason": "Directory.Build.targets、LoadPlugin、ToolContract实际规则已读；缺件只告警也已明确。",
+      "remaining": "静态配置事实，不是干净环境通过或全版本隔离。",
+      "references": [
+        {
+          "path": "Directory.Build.targets",
+          "line": 33,
+          "locator": "ToolContractVersionAttribute",
+          "sha256": "8b65f6a49d645a5b507c7cfd79f388f2b965e215dca46617ce7512b87b5c806e",
+          "locationChecked": true
+        },
+        {
+          "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs",
+          "line": 146,
+          "locator": "ToolContract.IsCompatible",
+          "sha256": "6fe4240a2154817a8e3270d7949643e33a381661a4355277ca475182995eea5a",
+          "locationChecked": true
+        },
+        {
+          "path": "src/Plugin.SDK/Core/ToolContract.cs",
+          "line": 38,
+          "locator": "public static bool IsCompatible",
+          "sha256": "5cdab6348b24d0aff50a44a6f09b928f10a9804fc18e48fab4ed07192388c461",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P2-03",
+      "group": "RE-P2",
+      "title": "自研目录卸载与常驻ALC的实际边界",
+      "criterion": "卸载方法清目录且ALC不可回收/静态注册保留的现状可确认。",
+      "status": "verified",
+      "reason": "UnloadPlugins清列表/catalog，isCollectible:false；不是热卸载实现。",
+      "remaining": "认证的是当前限制，不暗示VM等价行为。",
+      "references": [
+        {
+          "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs",
+          "line": 218,
+          "locator": "public void UnloadPlugins",
+          "sha256": "6fe4240a2154817a8e3270d7949643e33a381661a4355277ca475182995eea5a",
+          "locationChecked": true
+        },
+        {
+          "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs",
+          "line": 62,
+          "locator": "isCollectible: false",
+          "sha256": "73b92f04265fc83a84672db78bc9ef539657e8e0eea7b19639c3c2331fc43748",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P2-04",
+      "group": "RE-P2",
+      "title": "VM非相机发现/依赖故障覆盖",
+      "criterion": "非相机插件发现、缺依赖回滚和注册恢复达到全声明范围。",
+      "status": "partial",
+      "reason": "已有通用工厂及相机装载，未覆盖所有非相机宿主和失败回滚。",
+      "remaining": "C14仅补分析/计划，不提升本项证据。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round3-execute-trace.txt",
+          "line": 2206,
+          "locator": "FUNCTION ResolveModule",
+          "sha256": "4c3dd08bce3597312a90e76d83167d6f245bc6876f61edffdc7aa6b4f6d7a6b8",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P2-05",
+      "group": "RE-P2",
+      "title": "升级失败与配置回滚实效",
+      "criterion": "干净环境错DLL/版本/架构及新包失败回滚有执行证据。",
+      "status": "unverified",
+      "reason": "只有固定5项待执行验证计划，无实际故障/回滚结果。",
+      "remaining": "计划不能算已核实；不启动运行补证。",
+      "references": [
+        {
+          "path": "artifacts/validation/final-analysis-documents.json",
+          "line": 2,
+          "locator": "C14交付",
+          "sha256": "b421d0fa0d01be21666544213be85a5ac407f99ec4a9db83f13089a58888ad87",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-P2-06",
+      "group": "RE-P2",
+      "title": "全插件原生库/程序集最终退役",
+      "criterion": "模块实例、在途引用、库句柄及包替换的全范围最终释放可认证。",
+      "status": "unverified",
+      "reason": "GenTL条件卸载不是插件FreeLibrary；我方常驻限制不证明VM全库退役。",
+      "remaining": "无全插件退役/热替换闭合证据。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-camera-dtor-trace.txt",
+          "line": 29,
+          "locator": "MV_CC_UnloadGenTLLibrary",
+          "sha256": "b7831bf526ce4d2df95d3ac894df8e05a8446ad8141960748692cf20d7891e52",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-X1-01",
+      "group": "RE-X1",
+      "title": "本轮关键原生安装产物的哈希身份",
+      "criterion": "已用SDK/PlatformManager/ModuleProxy/ModuleFrame/代表相机的静态输出携带SHA身份。",
+      "status": "verified",
+      "reason": "五种关键产物已有固定SHA256及来源说明，仅认证这些已用产物。",
+      "remaining": "不推全部托管/原生版本已匹配。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-native-receiver-trace.txt",
+          "line": 2,
+          "locator": "SHA256:",
+          "sha256": "cc97fb35ed283b6fbf5dff45560f2fac655e22fedeae7353bcb491c8cd921a07",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-receiver-trace.txt",
+          "line": 2,
+          "locator": "SHA256:",
+          "sha256": "548ca9c4d7a8289343f7d3c6bcdff9f5ff7886e87f04cc73f120826adc459838",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-proxy-setters-trace.txt",
+          "line": 2,
+          "locator": "SHA256:",
+          "sha256": "075b41159ce60b3f82d86e96d5fffd3103078597bb4742a87e0c4b3dd7a584de",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-core-trace.txt",
+          "line": 2,
+          "locator": "SHA256:",
+          "sha256": "240f536b1dbd6ba7913c9bbaf4079b212d3c401deba308c13448dd7322ff42a0",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-camera-trace.txt",
+          "line": 2,
+          "locator": "SHA256:",
+          "sha256": "522f9f043d35a183e81096883f52e2cfc943b8d49194a3bdd605558f1879f99d",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-X1-02",
+      "group": "RE-X1",
+      "title": "代表native导出和SDK接收绑定的静态对应",
+      "criterion": "PE导出及SlotInit实际GetProcAddress/装载实参相互对应。",
+      "status": "verified",
+      "reason": "SDK导出表/SlotInit和PlatformManager导出已有字节解析与函数实参证据。",
+      "remaining": "静态首选地址不等于运行时地址；不认证全PInvoke。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-native-export-inventory.json",
+          "line": 6,
+          "locator": "preferredImageBase",
+          "sha256": "f60655a3ff43d45b235c7bff93a558148a3618bd382f140325684bd9f8decaeb",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-platformmanager-exports.json",
+          "line": 22,
+          "locator": "PF_M_MsgDeal",
+          "sha256": "1d7c6f05ef1bc854e52bf9580b00365eb468964ed563c3c198b2d8acce396a43",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-native-receiver-trace.txt",
+          "line": 132,
+          "locator": "GetProcAddress",
+          "sha256": "cc97fb35ed283b6fbf5dff45560f2fac655e22fedeae7353bcb491c8cd921a07",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-X1-03",
+      "group": "RE-X1",
+      "title": "代表虚表的RTTI/构造与实际槽位对应",
+      "criterion": "CBaseTopology/CModuleNode代表类型的表项和真实函数入口可交叉核对。",
+      "status": "verified",
+      "reason": "既有RTTI/PE表与构造、函数体对应slot8/slot0；不采相邻表扫描假候选。",
+      "remaining": "代表对应不等全动态类型已恢复。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round2-flow-vtable.json",
+          "line": 5,
+          "locator": "CBaseTopology",
+          "sha256": "951145d939291424c94bade9edea4a220f1e805cf5b5e5b35d2446415885e799",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round2-node-vtables.json",
+          "line": 12,
+          "locator": "b85d0",
+          "sha256": "4919559c767c509c126ea5f643f95ddc348bd1d753c49f8116e9e454f6e552f2",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round3-core-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION TopologySlot8",
+          "sha256": "0e9a4ee510e81b3e2b36ff3509d5cc4181168595819bbb6c86670112de853e78",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-X1-04",
+      "group": "RE-X1",
+      "title": "全部托管材料与安装版本/MVID认证",
+      "criterion": "使用的全部托管反编译文件逐程序集对安装哈希/MVID/版本。",
+      "status": "partial",
+      "reason": "关键native哈希已见，托管材料来源已有说明，但全程序集匹配未逐一认证。",
+      "remaining": "不将已有托管片段冒称本轮重新反编译/全版本认证。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-native-export-inventory.json",
+          "line": 4,
+          "locator": "sha256",
+          "sha256": "f60655a3ff43d45b235c7bff93a558148a3618bd382f140325684bd9f8decaeb",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-X1-05",
+      "group": "RE-X1",
+      "title": "恢复类型/间接调用/错误返回的完整认证",
+      "criterion": "全部关键反编译签名、间接对象身份和异常返回合同经过指令核对。",
+      "status": "partial",
+      "reason": "已有多处EAX/虚表/尾跳核对并撤回错误分析标签；全签名/实例同一性未齐。",
+      "remaining": "超时/有界反汇编和标签不能当完整CFG或原厂源码。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-receiver-trace.txt",
+          "line": 217,
+          "locator": "FUNCTION ServerReceiver",
+          "sha256": "548ca9c4d7a8289343f7d3c6bcdff9f5ff7886e87f04cc73f120826adc459838",
+          "locationChecked": true
+        },
+        {
+          "path": "artifacts/validation/vm-round5-load-body-trace.txt",
+          "line": 5,
+          "locator": "FUNCTION LoadTaskBody",
+          "sha256": "c395cc5a234d92295db52d5fb1faa66e9f4605f299f22988c61a82eb5915cf67",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    },
+    {
+      "id": "RE-X1-06",
+      "group": "RE-X1",
+      "title": "代表端到端运行桥接验证",
+      "criterion": "已认证版本的托管→native→回调/资源端到端有运行证据。",
+      "status": "unverified",
+      "reason": "本系列范围一直为静态分析，未运行VM、设备或原生探针。",
+      "remaining": "不能用静态绑定声称运行行为与全异常验证通过。",
+      "references": [
+        {
+          "path": "artifacts/validation/vm-round5-core-trace.txt",
+          "line": 1,
+          "locator": "no target execution",
+          "sha256": "240f536b1dbd6ba7913c9bbaf4079b212d3c401deba308c13448dd7322ff42a0",
+          "locationChecked": true
+        }
+      ],
+      "currentDecision": "沿用原有有限结论；本轮只检查引用位置，不升级native语义或运行保证"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "G-ShapeMatch",
+      "title": "形状匹配主链已补；模型退役仍待证",
+      "location": "tools/SunEyeVision.Tool.ShapeMatch/ShapeMatchTool.cs",
+      "url": "tool-detail-ShapeMatch.html",
+      "reason": "新增主四Tab/匹配/缓存分析；已确认载入TODO、删除未驱逐与BestMatch选择语义问题。native最终销毁和VM原算法不在已证范围。",
+      "next": "按本页具体整改及缓存最后使用者/VM原实现断点补证，模板子入口继续独立。"
+    },
+    {
+      "id": "G-Globals",
+      "title": "全局变量独立链已补；迁移/隔离待验",
+      "location": "src/Plugin.SDK/Models/Communication/RuntimeVariableReceiveService.cs",
+      "url": "global-variables.html",
+      "reason": "新增管理器到文件7段链；保存误报/导入冲突需整改，数组别名、旧文件迁移和离屏绑定影响仍待核。",
+      "next": "先修已证保存/导入缺陷，再按类型与旧文件场景验证；不从零重造变量模型。"
+    },
+    {
+      "id": "G-License",
+      "title": "自有狗具体方案已补，厂商/政策待定",
+      "location": "artifacts/validation/license-design.json",
+      "url": "license-design.html",
+      "reason": "四个拟议接口职责、8状态及10验收场景已补；厂商SDK、宽限和在途政策仍未定，产品未实施。",
+      "next": "取得厂商证明/可信计时能力与产品政策后，按入口改接及故障场景验证；不复用VM狗。"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "artifacts/validation/comparison-work-packages.json",
+      "sha256": "7ffd67b99784fd9910ff1ebff6dfc89c8103ea32e5dabe347a9159c90efeca7d"
+    },
+    {
+      "path": "artifacts/validation/evidence-checkpoint-definitions-v1.json",
+      "sha256": "c917bfe13394bc158109b596490dceac98b988abb7a9ae66dfd14c467577b3d9"
+    }
+  ],
+  "locationReferences": 79,
+  "newSemanticUpgrades": 0,
+  "productExecuted": false
+}

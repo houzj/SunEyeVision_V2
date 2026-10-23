@@ -1,0 +1,31 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>C01 启动装配与依赖方向</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">C01 启动装配与依赖方向</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="../能力对照/capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="../能力对照/capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>C01 启动装配与依赖方向</h1><aside class="scope-notice">以下沿用2026-10-21分析基线与原有状态；未把本次分页或图示当作新增语义证据。最新目标取舍另见 <a href="../目标架构/architecture-target.html">12项目标决策</a>。</aside><figure class="flow-figure" data-visual="flow"><figcaption><b>该工作包需要追踪的关系</b><span class="chip">审计要求；不是完整实现保证</span></figcaption><ol class="flow-path"><li><small>01</small><b>进程入口</b></li><li><small>02</small><b>配置/注册</b></li><li><small>03</small><b>服务与插件目录</b></li><li><small>04</small><b>主窗/方案恢复</b></li><li><small>05</small><b>退出</b></li></ol></figure><section id="C01"><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>目前已见</h2><p>启动实际装配、10工程/20引用已见；同名旧PluginManager与活动管理器已分开。</p><p>正文可评审（具体待证保留）</p></section><section class="reference"><div class="eyebrow">GAP · 未闭合与后续</div><h2>具体缺口与下一步</h2><p>半启动失败、迟到相机恢复、全退出补偿未完整对账。</p><p>追App启动各catch/ObserveLateCameraRestoreAsync与PrepareSolutionTransitionAsync；按对象记半初始化回滚。</p></section></div><section class="visual-card "><h2>判定范围与追踪入口</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">要回答的问题</th><td data-label="要回答的问题">服务由谁构造、何时就绪，UI/运行/插件之间谁依赖谁？</td></tr><tr><th class="row-label" scope="row">判定标准</th><td data-label="判定标准">双方启动/退出时序、项目依赖图与关键文件职责对应，识别反向依赖及失败回滚。</td></tr><tr><th class="row-label" scope="row">正文交付</th><td data-label="正文交付">正文可评审（具体待证保留）：已有实际启动/工程依赖与shutdown收尾分段；迟到恢复/半启动回滚保留具体待证。</td></tr><tr><th class="row-label" scope="row">产品/运行验收</th><td data-label="产品/运行验收">未由本次文档任务执行</td></tr><tr><th class="row-label" scope="row">对应能力</th><td data-label="对应能力"><a href="../能力对照/capability-m01.html#compare-M01"><b>启动、方案恢复与主窗装配</b><small class="reference-id">能力对照 · M01</small></a> · <a href="../能力对照/capability-m02.html#compare-M02"><b>方案配置：新建、打开、切换</b><small class="reference-id">能力对照 · M02</small></a> · <a href="../能力对照/capability-x02.html#compare-X02"><b>SDK、插件部署与公共编辑控件</b><small class="reference-id">能力对照 · X02</small></a></td></tr><tr><th class="row-label" scope="row">优化方案</th><td data-label="优化方案"><a href="../优化方案/optimization-o01.html#O01"><b>入口、装配与编辑事务</b><small class="reference-id">优化方案 · O01</small></a> · <a href="../优化方案/optimization-o10.html#O10"><b>插件、SDK、脚本和发布依赖</b><small class="reference-id">优化方案 · O10</small></a></td></tr><tr><th class="row-label" scope="row">完整专题</th><td data-label="完整专题"><a href="../现状分析/system-architecture.html#startup">实际链与证据</a></td></tr></tbody></table></div></section><details><summary>完整审计条目</summary><pre>{
+  &quot;id&quot;: &quot;C01&quot;,
+  &quot;title&quot;: &quot;启动装配与依赖方向&quot;,
+  &quot;priority&quot;: &quot;P1&quot;,
+  &quot;question&quot;: &quot;服务由谁构造、何时就绪，UI/运行/插件之间谁依赖谁？&quot;,
+  &quot;requiredChain&quot;: &quot;进程入口→配置/注册→服务与插件目录→主窗/方案恢复→退出&quot;,
+  &quot;criterion&quot;: &quot;双方启动/退出时序、项目依赖图与关键文件职责对应，识别反向依赖及失败回滚。&quot;,
+  &quot;capabilities&quot;: [
+    &quot;M01&quot;,
+    &quot;M02&quot;,
+    &quot;X02&quot;
+  ],
+  &quot;url&quot;: &quot;../现状分析/system-architecture.html#startup&quot;,
+  &quot;current&quot;: &quot;启动实际装配、10工程/20引用已见；同名旧PluginManager与活动管理器已分开。&quot;,
+  &quot;gap&quot;: &quot;半启动失败、迟到相机恢复、全退出补偿未完整对账。&quot;,
+  &quot;next&quot;: &quot;追App启动各catch/ObserveLateCameraRestoreAsync与PrepareSolutionTransitionAsync；按对象记半初始化回滚。&quot;,
+  &quot;decisions&quot;: [
+    &quot;O01&quot;,
+    &quot;O10&quot;
+  ],
+  &quot;legacyAccepted&quot;: true,
+  &quot;documentation&quot;: {
+    &quot;id&quot;: &quot;C01&quot;,
+    &quot;accepted&quot;: true,
+    &quot;status&quot;: &quot;正文可评审（具体待证保留）&quot;,
+    &quot;url&quot;: &quot;../现状分析/system-architecture.html#startup&quot;,
+    &quot;reason&quot;: &quot;已有实际启动/工程依赖与shutdown收尾分段；迟到恢复/半启动回滚保留具体待证。&quot;,
+    &quot;remainingProduct&quot;: null
+  },
+  &quot;status&quot;: &quot;正文可评审（具体待证保留）&quot;
+}</pre></details></section></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

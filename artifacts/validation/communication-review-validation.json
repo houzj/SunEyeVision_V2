@@ -1,0 +1,14 @@
+{
+  "newToolSourceReviews": 5,
+  "sourceLocations": 31,
+  "originalVmDeclarationContracts": 5,
+  "withdrawnBroadRewriteDecisions": [
+    "M07",
+    "T02"
+  ],
+  "unintegratedAuditMaterials": 0,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "productExecuted": false,
+  "vmAlgorithmEquivalenceVerified": false
+}

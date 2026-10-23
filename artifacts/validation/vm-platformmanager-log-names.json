@@ -1,0 +1,158 @@
+[
+  {
+    "rva": "7d0e98",
+    "text": "CFileSolutionHandler::ProcessExecuteAfterLoadSolu"
+  },
+  {
+    "rva": "7d5b18",
+    "text": "FilterNodeManagerForSP::SelfExecuteOneModule"
+  },
+  {
+    "rva": "7d83d8",
+    "text": "FilterNodeManagerForSP::SPExecuteOnce"
+  },
+  {
+    "rva": "7d84a0",
+    "text": "FilterNodeManagerForSP::SPExecuteOnceEx"
+  },
+  {
+    "rva": "7d8508",
+    "text": "FilterNodeManagerForSP::SPContinueExecuteStart"
+  },
+  {
+    "rva": "7d85f0",
+    "text": "FilterNodeManagerForSP::SPContinueExecuteStop"
+  },
+  {
+    "rva": "7dd4f8",
+    "text": "CGlobalSriptMng::ExcuteStop"
+  },
+  {
+    "rva": "7ddeb8",
+    "text": "CiMVSWorkJob::ClientMsgDeal"
+  },
+  {
+    "rva": "7de4a8",
+    "text": "CiMVSWorkJob::NotifyClientExecuteStatus"
+  },
+  {
+    "rva": "7de510",
+    "text": "CiMVSWorkJob::StopRun"
+  },
+  {
+    "rva": "7de528",
+    "text": "CiMVSWorkJob::AllProcessExecuteOnce"
+  },
+  {
+    "rva": "7de588",
+    "text": "CiMVSWorkJob::NotifyClientProcedureStopExecute"
+  },
+  {
+    "rva": "7de788",
+    "text": "CiMVSWorkJob::ControlExecuteOnce"
+  },
+  {
+    "rva": "7de858",
+    "text": "CiMVSWorkJob::ControlExecuteOnceByProcId"
+  },
+  {
+    "rva": "7de968",
+    "text": "CiMVSWorkJob::ControlExecuteOnceByProcIdWithCount"
+  },
+  {
+    "rva": "7dea10",
+    "text": "CiMVSWorkJob::ControlContineExecuteStart"
+  },
+  {
+    "rva": "7dea48",
+    "text": "CiMVSWorkJob::ControlContineExecuteStartByProcId"
+  },
+  {
+    "rva": "7dec60",
+    "text": "CiMVSWorkJob::ControlStopExecute"
+  },
+  {
+    "rva": "7dee88",
+    "text": "CiMVSWorkJob::ControlStopExecuteByProcId"
+  },
+  {
+    "rva": "7deef0",
+    "text": "CiMVSWorkJob::ControlSetContineExecuteTimeGap"
+  },
+  {
+    "rva": "7df008",
+    "text": "CiMVSWorkJob::ControlSetContineExecuteTimeGapByProcId"
+  },
+  {
+    "rva": "7df288",
+    "text": "CiMVSWorkJob::ControlGetContineExecuteTimeGapByProcId"
+  },
+  {
+    "rva": "7df3f0",
+    "text": "CiMVSWorkJob::SelfExecuteCommandDealer"
+  },
+  {
+    "rva": "7e79a8",
+    "text": "CModuleJson::BuildExecuteOnce"
+  },
+  {
+    "rva": "7e79f0",
+    "text": "CModuleJson::BuildExecuteOnceEx"
+  },
+  {
+    "rva": "7e7a80",
+    "text": "CModuleJson::BuildContinueExecuteStop"
+  },
+  {
+    "rva": "7e7ab8",
+    "text": "CModuleJson::BuildSelfExecuteOneModule"
+  },
+  {
+    "rva": "7e7ae0",
+    "text": "CModuleJson::ParseExecuteOnceExInfo"
+  },
+  {
+    "rva": "7e7b38",
+    "text": "CModuleJson::BuildContinueExecuteStart"
+  },
+  {
+    "rva": "7eafd0",
+    "text": "CPluginMgr::StopComponent"
+  },
+  {
+    "rva": "7eb500",
+    "text": "CProcedureMngForSp::ExecuteOnceEx"
+  },
+  {
+    "rva": "7eb5a0",
+    "text": "CProcedureMngForSp::ExecuteOnce"
+  },
+  {
+    "rva": "7eb618",
+    "text": "CProcedureMngForSp::ContinueExecuteStop"
+  },
+  {
+    "rva": "7eb678",
+    "text": "CProcedureMngForSp::ContinueExecuteStart"
+  },
+  {
+    "rva": "7eb6d8",
+    "text": "CProcedureMngForSp::SetStopWhenNgState"
+  },
+  {
+    "rva": "7eb700",
+    "text": "CProcedureMngForSp::SetContinueExecuteTimeGap"
+  },
+  {
+    "rva": "7eb888",
+    "text": "CProcedureMngForSp::GetContinueExecuteState"
+  },
+  {
+    "rva": "7ebd20",
+    "text": "CProcessCtrlModuForSp::ExecuteOnce"
+  },
+  {
+    "rva": "7ebd78",
+    "text": "CProcessCtrlModuForSp::ContinueExecuteStart"
+  }
+]

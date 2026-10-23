@@ -1,0 +1,264 @@
+{
+  "rows": [
+    {
+      "id": "canvas",
+      "title": "流程画布与模板",
+      "chain": "ShellWorkspace Tab内容 → CanvasTemplateSelector → WorkflowCanvasControl → 节点/连线交互",
+      "fact": "选择器当前统一返回WorkflowCanvasTemplate；不能据多模板类名宣称已有多套画布后端。模型编辑、调度执行仍分层。",
+      "lifecycle": "主窗注册Loaded后装配画布；撤销/复制/下钻历史问题见编辑事务，不让控件承担调度。",
+      "change": "当前实现整改：补编辑事务、入口状态和画布会话解绑；更换画布库需独立收益证据，不据VM外观迁移。",
+      "sources": [
+        {
+          "path": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml",
+          "line": 406,
+          "token": "<canvas:WorkflowCanvasControl",
+          "sha256": "dbc319489f4d2c46ed49ee2edee8802660944d47bd6034676f63332137c13ee8"
+        },
+        {
+          "path": "src/UI/Features/WorkflowUI/Canvas/CanvasTemplateSelector.cs",
+          "line": 23,
+          "token": "return WorkflowCanvasTemplate;",
+          "sha256": "d0f227b223aa974047f792d6d8b5c19c946e9dfccb62d4cbef2873a4d03d7f8b"
+        }
+      ]
+    },
+    {
+      "id": "window",
+      "title": "工具窗口壳",
+      "chain": "宿主工厂打开DefaultDebugWindow → 注入工具控件 → 确定/执行/关闭",
+      "fact": "确定走TryCommit；X走ToolEditorClose；不是所有工具都采用整窗草稿或取消回滚。",
+      "lifecycle": "Closed退订/请求停连续不等所有执行排空；具体24工具提交政策已独立列出。",
+      "change": "必须整改关闭Owner与终态转发；保留已有提交校验，不能建议重复新建另一套确定/X机制。",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+          "line": 190,
+          "token": "ToolEditorCommit.TryCommit",
+          "sha256": "d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1"
+        },
+        {
+          "path": "src/Plugin.SDK/UI/Controls/ToolEditorClose.cs",
+          "line": 9,
+          "token": "TryClose",
+          "sha256": "dfe3e0c35236031c5bd38b96bd36defa08eedb95b7b4507246fa576afdfd7792"
+        }
+      ]
+    },
+    {
+      "id": "debug",
+      "title": "调试控件基类",
+      "chain": "ImageFilterToolDebugControl继承ToolDebugControlBase → 参数/数据源/执行合同",
+      "fact": "基类复用参数准备、绑定诊断与提交；各工具算法由自己的tool执行，不是公共控件内置全部算法。",
+      "lifecycle": "Loaded/Unloaded订阅ConfigSetting.InstanceLoaded；窗口Closed另显式解绑，不能只依赖可视树移除。",
+      "change": "在现有基类补异步执行会话/取消与迟到结果规则；避免让SDK工具控件引用UI宿主程序集。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+          "line": 1,
+          "token": "<controls:ToolDebugControlBase",
+          "sha256": "5cc91660ae8658caa8d08414ee34da0c8a6557e4d6d84aa70db4171ee7ce84b8"
+        },
+        {
+          "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+          "line": 513,
+          "token": "private void OnToolDebugControlUnloaded",
+          "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0"
+        }
+      ]
+    },
+    {
+      "id": "config",
+      "title": "常量/绑定参数编辑",
+      "chain": "滤波工具ConfigSetting → Generic模板 → NumericUpDown或ParamBinding → 参数定义",
+      "fact": "ConfigSetting继承ParamBindingBase；Value类型与BindingType正交，标签布局由工具页面提供。",
+      "lifecycle": "ConfigSetting Loaded注册、Unloaded移除；基类监听实例事件。容器换页不等参数提交或草稿丢弃。",
+      "change": "扩展现有类型合同和错误定位；UI范围限制不能替代执行快照的必填/类型/算法校验。具体参数别名与取消政策沿工具审计整改。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+          "line": 100,
+          "token": "<controls:ConfigSetting",
+          "sha256": "5cc91660ae8658caa8d08414ee34da0c8a6557e4d6d84aa70db4171ee7ce84b8"
+        },
+        {
+          "path": "src/Plugin.SDK/Themes/Generic.xaml",
+          "line": 272,
+          "token": "<controls:NumericUpDown x:Name=\"PART_NumericEditor\"",
+          "sha256": "aa78850e463fcb00440380c3d5b5792734372419c76b6667735b53bd515a6f19"
+        }
+      ]
+    },
+    {
+      "id": "source",
+      "title": "图像源选择与普通绑定",
+      "chain": "滤波工具ImageSourceSelector选输入图像；ParamBinding另选参数值来源",
+      "fact": "同一AvailableDataSources目录并不表示图像资源Owner相同。输入图像选择、数值绑定、位置修正应分开合同。",
+      "lifecycle": "源变更后预览/旧结果的代次及最后读者需结合图像会话核实；不能从下拉框切换推断已释放。",
+      "change": "保持概念分开，补稳定字段/运行scope与失效提示；不为统一界面把图像借用改成随意深拷贝。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+          "line": 42,
+          "token": "<controls:ImageSourceSelector",
+          "sha256": "5cc91660ae8658caa8d08414ee34da0c8a6557e4d6d84aa70db4171ee7ce84b8"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+          "line": 66,
+          "token": "<controls:ParamBinding",
+          "sha256": "5cc91660ae8658caa8d08414ee34da0c8a6557e4d6d84aa70db4171ee7ce84b8"
+        }
+      ]
+    },
+    {
+      "id": "numeric",
+      "title": "数值/区间/枚举控件",
+      "chain": "Generic模板 → NumericUpDown / RangeInputControl / ParamComboBox → 常量参数值",
+      "fact": "区间内部组合两个数值控件；枚举值与算法模式应按语义映射，不能按VM整数编号迁移。",
+      "lifecycle": "键盘输入、失焦、边界、只读和待提交文本要分别验；模板有控件不证明所有提交边已正确。",
+      "change": "复用控件并整改统一提交/验证提示；配置边界与算法有效域双层验证，保留专业工具额外约束。",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Themes/Generic.xaml",
+          "line": 851,
+          "token": "<Style TargetType=\"{x:Type controls:RangeInputControl}\">",
+          "sha256": "aa78850e463fcb00440380c3d5b5792734372419c76b6667735b53bd515a6f19"
+        },
+        {
+          "path": "src/Plugin.SDK/Themes/Generic.xaml",
+          "line": 120,
+          "token": "<Style TargetType=\"{x:Type controls:ParamComboBox}\">",
+          "sha256": "aa78850e463fcb00440380c3d5b5792734372419c76b6667735b53bd515a6f19"
+        }
+      ]
+    },
+    {
+      "id": "image",
+      "title": "主图像显示公共控件",
+      "chain": "主窗ImageResultControl → ImageControl → 底图、结果、ROI层与视口",
+      "fact": "主窗和工具共用显示类型不等共享同一帧或同一Owner；图像像素/视口/DPI/世界坐标须分开。",
+      "lifecycle": "同尺寸位图复用、历史最后读者及结果图元同帧提交仍缺合同；Fullscreen父容器迁移需恢复验证。",
+      "change": "必须先补Frame/内容版本、借用期和坐标合同；渲染后端暂不能据VM成熟度直接选型，正确性后才做基准。",
+      "sources": [
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml",
+          "line": 100,
+          "token": "<sdk:ImageControl",
+          "sha256": "7b9f9244aee3305febb4e1b64e18baf7e6a909072310b34ba44b29a51fe4fbe8"
+        },
+        {
+          "path": "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+          "line": 533,
+          "token": "ScreenToImage",
+          "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68"
+        }
+      ]
+    },
+    {
+      "id": "roi",
+      "title": "ROI编辑与图形渲染",
+      "chain": "Threshold页面 → RoiEditorManagerControl → 编辑器/图元层 → 工具ROI参数",
+      "fact": "参数ROI、执行结果图形、选择高亮和手柄不是同一集合；显示位置修正也不等毫米标定。",
+      "lifecycle": "已有ROI拖动直接改几何；Escape退出交互不保证几何恢复；新ROI FinishInteraction才加入。解绑/清overlay不证明底层图像释放。",
+      "change": "明确编辑事务/取消语义再整改；保留专业ROI类型，不用一个阈值布局代表全部。坐标边界与DPI等待专项矩阵。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml",
+          "line": 50,
+          "token": "<region:RoiEditorManagerControl",
+          "sha256": "d38a2802788cd9661dfc53c1169cdc0bf9031ca8825a72f601ce8d0b7c8ba931"
+        },
+        {
+          "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs",
+          "line": 221,
+          "token": "ClearMainOverlay",
+          "sha256": "c0c109f27baac6e46df283000defa7870139dcbd1a5b89d1c69bb9d53469bccd"
+        }
+      ]
+    },
+    {
+      "id": "presentation",
+      "title": "判定、图形与文字显示编辑",
+      "chain": "Blob页面Judgment/Graphics/Text编辑器 → ResultPresentation → NodeResultManager.ApplyLiveStyles",
+      "fact": "配置显示样式可以应用到已有结果，不等重新计算算法；专业判定定义与结果值分开。",
+      "lifecycle": "已有样式实时应用；缓存图元/文字DPI失效、同帧身份和旧失败结果处理仍需核，不能以清样式代证释放。",
+      "change": "保留配置与算法结果分层，补内容版本/失效策略；文字大小是否随Zoom明确为产品合同，不盲目搬VM常量。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+          "line": 360,
+          "token": "<presentation:JudgmentEditorControl",
+          "sha256": "d17f35a0f530686d85d12e0779271dd7999b1a6b893136c3159dc87091324b50"
+        },
+        {
+          "path": "src/UI/Services/Workflow/NodeResultManager.cs",
+          "line": 143,
+          "token": "presentation.ApplyLiveStyles",
+          "sha256": "3f0d3bb8be81a0b24d8447cedd90bbfa66f0e47f66676eca78ac7a7a99d83d69"
+        }
+      ]
+    },
+    {
+      "id": "analysis",
+      "title": "专业结果控件与高亮合同",
+      "chain": "主窗 → 新tool → IToolEditorFactory.CreateDataAnalysisControl → IToolControlDataAnalysis.OnResultUpdated",
+      "fact": "Blob等专业页不是通用字段树替代品；通信可共享解析/组装分析组件。工厂返回对象是否共享仍需按实现判断。",
+      "lifecycle": "切换已退订SelectionHighlightChanged并清高亮，但新tool Owner/全部结果终态转发不完整；不能说完全没有清理。",
+      "change": "新增分析会话所有权、结果有效性和调用scope；保留专业分析而非全部改成DataGrid，借鉴VM decorator退役边界。",
+      "sources": [
+        {
+          "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+          "line": 3569,
+          "token": "CreateDataAnalysisControl()",
+          "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+          "line": 3535,
+          "token": "oldDaControl.SelectionHighlightChanged -=",
+          "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+        }
+      ]
+    },
+    {
+      "id": "script",
+      "title": "脚本变量页与代码编辑内核",
+      "chain": "ScriptDebugControl → Input/Output ScriptVariableTab + CommonControl.ScriptEditorCore",
+      "fact": "输入输出字段编辑与代码语义工作区分工；源码高亮/补全/诊断不是工作流执行调度。",
+      "lifecycle": "编辑器订阅/工作区最终退役需按各控件核；脚本编译缓存/引用键/执行Release问题见脚本专项，不能用关Tab代证释放。",
+      "change": "复用公共编辑内核，整改脚本编译与运行Owner；动态端口稳定ID、重命名迁移及取消政策补合同。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml",
+          "line": 151,
+          "token": "<views:ScriptVariableTab",
+          "sha256": "6a61d5187bdc563e8a9bf2f60ba7ba351e31c7889cd1b97f61749b910af92fe0"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml",
+          "line": 188,
+          "token": "<cc:ScriptEditorCore",
+          "sha256": "6a61d5187bdc563e8a9bf2f60ba7ba351e31c7889cd1b97f61749b910af92fe0"
+        }
+      ]
+    }
+  ],
+  "themeSources": [
+    {
+      "path": "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+      "line": 27,
+      "token": "<themes:DesignTimeThemeResourceDictionary",
+      "sha256": "5cc91660ae8658caa8d08414ee34da0c8a6557e4d6d84aa70db4171ee7ce84b8"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "line": 506,
+      "token": "ConfigSetting.InstanceLoaded -=",
+      "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0"
+    }
+  ],
+  "runtimeExecuted": false,
+  "designTimeExecuted": false,
+  "vmLimit": "VM恢复模型作为同场景参考；没有逐控件底层实现、主题失败事务和全部退役路径，就不据外观或类名判断优劣。VM原UI公共组件不直接迁入自有SDK。",
+  "acceptance": "每组按真实消费者验证：主题切换/模板重新应用、无数据与错误绑定、编辑提交/X、Loaded→Unloaded→重新Loaded、执行中关闭和迟到结果。100/150/200%DPI及Visual Studio设计时与运行时分开验；本轮只静态审查，均未执行产品验收。"
+}

@@ -1,0 +1,948 @@
+{
+  "catalog": [
+    {
+      "id": "BlobAnalysis",
+      "name": "Blob分析",
+      "category": "区域分析",
+      "file": "tool-detail-BlobAnalysis.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs",
+        "originalPath": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs",
+        "historical": false,
+        "line": 44,
+        "token": "[Tool(\r",
+        "sha256": "b5982a5bf988f30e3ee1f28d26b0a647acbcacb21e42d11f4344aa10c16d83d0",
+        "snippet": "[Tool(\r\n        id: \"BlobAnalysis\",\r\n        displayName: \"Blob分析\",\r\n        Description = \"连通域分析与特征提取\",\r\n        Icon = \"blob\", Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Region,\r\n        Version = \"3.1.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class BlobAnalysisTool : IToolPlugin<BlobAnalysisParameters, BlobAnalysisResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n\r\n        public BlobAnalysisTool()\r\n        {\r\n            _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n        }\r\n\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "CircleCircleMeasure",
+      "name": "圆-圆测量",
+      "category": "几何测量",
+      "file": "tool-detail-CircleCircleMeasure.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.CircleCircleMeasure/CircleCircleMeasureTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.CircleCircleMeasure/CircleCircleMeasureTool.cs",
+        "historical": false,
+        "line": 22,
+        "token": "[Tool(\r",
+        "sha256": "51ddf074da85b3c2d76dab99b672c1bc6878b096cd5972b8f701c8553fc2b217",
+        "snippet": "[Tool(\r\n        id: \"CircleCircleMeasure\",\r\n        displayName: \"圆-圆测量\",\r\n        Description = \"圆-圆测量工具：两卡尺分别沿引导圆测量，输出圆心距、两圆交点与位置关系并判定\",\r\n        Icon = \"circle-circle\", Order = 60,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class CircleCircleMeasureTool : IToolPlugin<CircleCircleMeasureParameters, CircleCircleMeasureResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public CircleCircleMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        public CircleCircleMeasureResults Run(CircleCircleMeasureParameters parameters)\r\n        {\r\n            var result = new CircleCircleMeasureResults\r\n            {\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "CircleDetect",
+      "name": "圆查找",
+      "category": "特征定位",
+      "file": "tool-detail-CircleDetect.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.CircleDetect/CircleDetectTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.CircleDetect/CircleDetectTool.cs",
+        "historical": false,
+        "line": 30,
+        "token": "[Tool(\r",
+        "sha256": "f61cde879fba9270850031cf956d719642658be38b8b81e45bf8bfe537ae1b57",
+        "snippet": "[Tool(\r\n        id: \"CircleDetect\",\r\n        displayName: \"圆查找\",\r\n        Description = \"圆/圆弧边缘检测工具（引导式 2D Metrology）\",\r\n        Icon = \"circle\", Order = 30,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Location,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    [JsonDerivedType(typeof(CircleDetectParameters), \"CircleDetect\")]\r\n    public class CircleDetectTool : IToolPlugin<CircleDetectParameters, CircleDetectResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public CircleDetectTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        /// <summary>\r\n        /// 执行工具\r\n        /// </summary>\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "Condition",
+      "name": "条件分支",
+      "category": "流程控制",
+      "file": "tool-detail-Condition.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Condition/ConditionTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.Condition/ConditionTool.cs",
+        "historical": false,
+        "line": 13,
+        "token": "[Tool(\r",
+        "sha256": "68128eea9a8ff645af5e0d63eb1cdb8c80ff45ba1ef1d5332b47ffb26fe387ec",
+        "snippet": "[Tool(\r\n        id: \"Condition\",\r\n        displayName: \"条件分支\",\r\n        Description = \"根据参数值判断条件，选择执行分支\",\r\n        Icon = \"branch\", Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Control,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class ConditionTool : IToolPlugin<ConditionParameters, ConditionResults>, IAsyncToolPlugin, IToolEditorFactory\r\n    {\r\n        public System.Windows.FrameworkElement? CreateDebugControl(IToolPlugin tool)\r\n        {\r\n            return new Views.ConditionDebugControl();\r\n        }\r\n\r\n        public ConditionResults Run(ConditionParameters parameters)\r\n            => ExecuteCore(parameters, parameters.NodeResults, parameters.Context);\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "ImageFilter",
+      "name": "图像滤波",
+      "category": "图像预处理",
+      "file": "tool-detail-ImageFilter.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ImageFilter/ImageFilterTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.ImageFilter/ImageFilterTool.cs",
+        "historical": false,
+        "line": 27,
+        "token": "[Tool(\r",
+        "sha256": "02677227120662e2d5ae2ecd7007e6cb79d274e1d66ceb25a2660a54be8f16b3",
+        "snippet": "[Tool(\r\n        id: \"ImageFilter\",\r\n        displayName: \"图像滤波\",\r\n        Description = \"对图像进行滤波处理，支持均值/高斯/中值/双边/自定义卷积\",\r\n        Icon = \"sliders\", Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class ImageFilterTool : IToolPlugin<ImageFilterParameters, ImageFilterResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n    {\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;\r\n        private readonly ToolAttribute? _attribute;\r\n\r\n        public ImageFilterTool()\r\n        {\r\n            _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n        }\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "ImageLoad",
+      "name": "图像源",
+      "category": "图像采集",
+      "file": "tool-detail-ImageLoad.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs",
+        "historical": false,
+        "line": 19,
+        "token": "[Tool(\"ImageLoad\", \"图像源\",\r",
+        "sha256": "f2eed5be66405ae385ed54c3bb44e0e6e8a0ed21ac35422d5f4fa9b9d79a22ef",
+        "snippet": "[Tool(\"ImageLoad\", \"图像源\",\r\n        Description = \"从本地图像或方案相机获取图像，作为工作流输入\",\r\n        Icon = \"image\", Order = 10, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Acquisition,\r\n        Version = \"2.0.0\", HasDebugWindow = false)]\r\n    public class ImageLoadTool : IToolPlugin<ImageLoadParameters, ImageLoadResults>, IAsyncToolPlugin, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n    {\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.NewFrame;\r\n        public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)\r\n        {\r\n            if (request.Parameters is not ImageLoadParameters parameters)\r\n                throw new ArgumentException(\"图像源参数类型不正确\", nameof(request));\r\n            if (parameters.SourceKind == ImageSourceKind.Local)\r\n                return Run(parameters);\r\n\r\n            var result = new ImageLoadResults\r\n            {\r\n                ToolName = \"ImageLoad\",\r\n                ToolId = \"image_load\",\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "ImageThreshold",
+      "name": "图像二值化",
+      "category": "图像预处理",
+      "file": "tool-detail-ImageThreshold.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ImageThreshold/ImageThresholdTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.ImageThreshold/ImageThresholdTool.cs",
+        "historical": false,
+        "line": 30,
+        "token": "[Tool(\r",
+        "sha256": "f281a3427166acc4bfc2f4d507274d1049d39c869bb0d0d309c73e53778b110f",
+        "snippet": "[Tool(\r\n        id: \"ImageThreshold\",\r\n        displayName: \"图像二值化\",\r\n        Description = \"将灰度图像通过阈值分割转换为二值图像，支持固定阈值/Otsu/Triangle/自适应/范围阈值\",\r\n        Icon = \"binarize\", Order = 30,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class ImageThresholdTool : IToolPlugin<ImageThresholdParameters, ImageThresholdResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n    {\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;\r\n        private readonly ToolAttribute? _attribute;\r\n\r\n        public ImageThresholdTool()\r\n        {\r\n            _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n        }\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "LineCircleMeasure",
+      "name": "线-圆测量",
+      "category": "几何测量",
+      "file": "tool-detail-LineCircleMeasure.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.LineCircleMeasure/LineCircleMeasureTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.LineCircleMeasure/LineCircleMeasureTool.cs",
+        "historical": false,
+        "line": 22,
+        "token": "[Tool(\r",
+        "sha256": "91506b56b38c8c2ead64137bef7283cf4e384ac27e07110a693afe9d8d0e07c0",
+        "snippet": "[Tool(\r\n        id: \"LineCircleMeasure\",\r\n        displayName: \"线-圆测量\",\r\n        Description = \"线-圆测量工具：两卡尺分别沿引导线/引导圆测量，输出圆心到直线距离与交点并判定\",\r\n        Icon = \"line-circle\", Order = 50,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class LineCircleMeasureTool : IToolPlugin<LineCircleMeasureParameters, LineCircleMeasureResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public LineCircleMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        public LineCircleMeasureResults Run(LineCircleMeasureParameters parameters)\r\n        {\r\n            var result = new LineCircleMeasureResults\r\n            {\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "LineDetect",
+      "name": "直线查找",
+      "category": "特征定位",
+      "file": "tool-detail-LineDetect.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs",
+        "historical": false,
+        "line": 29,
+        "token": "[Tool(\r",
+        "sha256": "69399ca4e7c2a70ed6fea18b1deadabf2d996ff6e39d7c727294755ecb369b1c",
+        "snippet": "[Tool(\r\n        id: \"LineDetect\",\r\n        displayName: \"直线查找\",\r\n        Description = \"直线边缘检测工具（引导式 2D Metrology）\",\r\n        Icon = \"line\", Order = 20,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Location,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    [JsonDerivedType(typeof(LineDetectParameters), \"LineDetect\")]\r\n    public class LineDetectTool : IToolPlugin<LineDetectParameters, LineDetectResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public LineDetectTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        /// <summary>\r\n        /// 执行工具\r\n        /// </summary>\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "LineLineMeasure",
+      "name": "线-线测量",
+      "category": "几何测量",
+      "file": "tool-detail-LineLineMeasure.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.LineLineMeasure/LineLineMeasureTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.LineLineMeasure/LineLineMeasureTool.cs",
+        "historical": false,
+        "line": 22,
+        "token": "[Tool(\r",
+        "sha256": "0cf48afcf6d254ca2f1fc14faaf17115f369b1e543dcdb36636a470fa909d956",
+        "snippet": "[Tool(\r\n        id: \"LineLineMeasure\",\r\n        displayName: \"线-线测量\",\r\n        Description = \"线-线测量工具：两卡尺沿引导线测量拟合直线，输出夹角与平行间距并判定\",\r\n        Icon = \"line-line\", Order = 40,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class LineLineMeasureTool : IToolPlugin<LineLineMeasureParameters, LineLineMeasureResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public LineLineMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        public LineLineMeasureResults Run(LineLineMeasureParameters parameters)\r\n        {\r\n            var result = new LineLineMeasureResults\r\n            {\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "Morphology",
+      "name": "形态学处理",
+      "category": "图像预处理",
+      "file": "tool-detail-Morphology.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Morphology/MorphologyTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.Morphology/MorphologyTool.cs",
+        "historical": false,
+        "line": 29,
+        "token": "[Tool(\r",
+        "sha256": "d05abb83f07475fda981008cac8b55c34ccbffb41ed72e5c2162b623abb4a85e",
+        "snippet": "[Tool(\r\n        id: \"Morphology\",\r\n        displayName: \"形态学处理\",\r\n        Description = \"对二值图像执行形态学操作（腐蚀/膨胀/开闭运算等）\",\r\n        Icon = \"morphology\", Order = 40,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Preprocessing,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class MorphologyTool : IToolPlugin<MorphologyParameters, MorphologyResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n    {\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;\r\n        private readonly ToolAttribute? _attribute;\r\n\r\n        public MorphologyTool()\r\n        {\r\n            _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n        }\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "NPointCalibration",
+      "name": "N点标定",
+      "category": "坐标标定",
+      "file": "tool-calibration.html",
+      "model": "calibration",
+      "area": "calib-input",
+      "scope": "已纳入专业入口局部分析；不等全算法闭合",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationTool.cs",
+        "historical": false,
+        "line": 15,
+        "token": "[Tool(\"NPointCalibration\", \"N点标定\",\r",
+        "sha256": "2d40006ee8d2936f8cefb4c6137976986de9c81cd6cb16aaebccce1265bb78d7",
+        "snippet": "[Tool(\"NPointCalibration\", \"N点标定\",\r\n    Description = \"采集图像/机构对应点并求解平面标定\",\r\n    Icon = \"axes\", Order = 10, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Calibration, Version = \"1.0.0\", HasDebugWindow = true)]\r\npublic sealed class NPointCalibrationTool : IToolPlugin<NPointCalibrationParameters, NPointCalibrationResults>,\r\n    IAsyncToolPlugin, IToolEditorFactory\r\n{\r\n    public NPointCalibrationResults Run(NPointCalibrationParameters parameters)\r\n        => Execute(parameters, new ToolExecutionRequest(parameters) { CancellationToken=parameters.Context?.CancellationToken ?? default });\r\n\r\n    public ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)\r\n        => ValueTask.FromResult<ToolResults>(Execute((NPointCalibrationParameters)request.Parameters, request));\r\n\r\n    private static NPointCalibrationResults Execute(NPointCalibrationParameters parameters, ToolExecutionRequest? request)\r\n    {\r\n        var result = new NPointCalibrationResults\r\n        {\r\n            ToolName = \"N点标定\", ToolId = \"NPointCalibration\",\r\n            RequiredTranslationSamples = parameters.TranslationCount,\r"
+      },
+      "sourceAudit": "未新增本轮逐工具审读"
+    },
+    {
+      "id": "PointCircleMeasure",
+      "name": "点-圆测量",
+      "category": "几何测量",
+      "file": "tool-detail-PointCircleMeasure.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.PointCircleMeasure/PointCircleMeasureTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.PointCircleMeasure/PointCircleMeasureTool.cs",
+        "historical": false,
+        "line": 25,
+        "token": "[Tool(\r",
+        "sha256": "1f373a953c01688dc8e1941c13fb4a80ccb88042d8f31a7de9e958888b54db13",
+        "snippet": "[Tool(\r\n        id: \"PointCircleMeasure\",\r\n        displayName: \"点-圆测量\",\r\n        Description = \"点-圆测量工具：点元素仅参数订阅 X/Y（无绘制入口），圆元素引导 + 卡尺测量，输出点到圆心距离、圆周距与圆周最近点\",\r\n        Icon = \"point-circle\", Order = 30,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class PointCircleMeasureTool : IToolPlugin<PointCircleMeasureParameters, PointCircleMeasureResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public PointCircleMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        /// <summary>\r\n        /// 解析点1 坐标：按图形（整体绑上游点图形输出）/ 按参数（X/Y 逐参数）。\r\n        /// 点元素无引导绘制入口，两种方式均由参数订阅承载，不产生 measure 调用。\r\n        /// </summary>\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "PointLineMeasure",
+      "name": "点-线测量",
+      "category": "几何测量",
+      "file": "tool-detail-PointLineMeasure.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.PointLineMeasure/PointLineMeasureTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.PointLineMeasure/PointLineMeasureTool.cs",
+        "historical": false,
+        "line": 25,
+        "token": "[Tool(\r",
+        "sha256": "b3c9b004590dcadb4d1bf9036325bd3161237776a935f5206f51e4d1af30a3bb",
+        "snippet": "[Tool(\r\n        id: \"PointLineMeasure\",\r\n        displayName: \"点-线测量\",\r\n        Description = \"点-线测量工具：点元素仅参数订阅 X/Y（无绘制入口），线元素引导 + 卡尺测量，输出点到线距离与垂足位置\",\r\n        Icon = \"point-line\", Order = 20,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class PointLineMeasureTool : IToolPlugin<PointLineMeasureParameters, PointLineMeasureResults>, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public PointLineMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        /// <summary>\r\n        /// 解析点1 坐标：按图形（整体绑上游点图形输出）/ 按参数（X/Y 逐参数）。\r\n        /// 点元素无引导绘制入口，两种方式均由参数订阅承载，不产生 measure 调用。\r\n        /// </summary>\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "PointPointMeasure",
+      "name": "点-点测量",
+      "category": "几何测量",
+      "file": "tool-detail-PointPointMeasure.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureTool.cs",
+        "historical": false,
+        "line": 23,
+        "token": "[Tool(\r",
+        "sha256": "38fd864e64121a5f81c4484f4d3b4bf7e3f899250d7fabaf7cdc4a005fda9dfe",
+        "snippet": "[Tool(\r\n        id: \"PointPointMeasure\",\r\n        displayName: \"点-点测量\",\r\n        Description = \"点-点测量工具：两个点元素均仅参数订阅（按图形/按参数），输出两点距离、ΔX、ΔY 与连线角度\",\r\n        Icon = \"point-point\", Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Measurement,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class PointPointMeasureTool : IToolPlugin<PointPointMeasureParameters, PointPointMeasureResults>, IAsyncToolPlugin, IToolEditorFactory\r\n    {\r\n        private readonly ToolAttribute? _attribute;\r\n        public PointPointMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n\r\n        /// <summary>\r\n        /// 解析点坐标：按图形（整体绑上游点图形输出）/ 按参数（X/Y 逐参数）。\r\n        /// 点元素无引导绘制入口，两种方式均由参数订阅承载，不产生 measure 调用。\r\n        /// </summary>\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "ProtocolAssemble",
+      "name": "协议组装",
+      "category": "通信工具",
+      "file": "tool-detail-ProtocolAssemble.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ProtocolAssemble/ProtocolAssembleTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.ProtocolAssemble/ProtocolAssembleTool.cs",
+        "historical": false,
+        "line": 11,
+        "token": "[Tool(\"ProtocolAssemble\", \"协议组装\", Icon = \"assemble\", Order = 30, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Communication, Description = \"按配置顺序和分隔符组装文本，不发送设备\", HasDebugWindow = true)]",
+        "sha256": "8ade152a6b24d24368b6b6f785bbc731d0d930f398e5c67f634ead04de1756f2",
+        "snippet": "[Tool(\"ProtocolAssemble\", \"协议组装\", Icon = \"assemble\", Order = 30, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Communication, Description = \"按配置顺序和分隔符组装文本，不发送设备\", HasDebugWindow = true)]\r\npublic sealed class ProtocolAssembleTool : IToolPlugin<ProtocolAssembleParameters, CommunicationToolResults>, IToolEditorFactory\r\n{\r\n    IReadOnlyList<OutputVariable> IToolPlugin.OutputVariables => new CommunicationToolResults(ProtocolAssembleParameters.OutputFields).GetOutputVariables();\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) => new Views.ProtocolAssembleEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() => new CommunicationDataAnalysisControl();\r\n\r\n    public CommunicationToolResults Run(ProtocolAssembleParameters parameters)\r\n    {\r\n        var result = new CommunicationToolResults(ProtocolAssembleParameters.OutputFields) { ToolId = \"ProtocolAssemble\", ToolName = \"协议组装\" };\r\n        var watch = Stopwatch.StartNew();\r\n        var rows = new List<CommunicationAnalysisRow>();\r\n        try\r\n        {\r\n            var parts = parameters.Parts?.Select(p => (p.PartId, p.InputText)).ToArray()\r\n                ?? throw new FormatException(\"组装列表不存在。\");\r\n            var separator = parameters.Separator ?? throw new FormatException(\"分隔符不能为null。\");\r\n            if (parts.Length == 0) throw new FormatException(\"请至少配置一项组装内容。\");\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "ProtocolParse",
+      "name": "协议解析",
+      "category": "通信工具",
+      "file": "tool-detail-ProtocolParse.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ProtocolParse/ProtocolParseTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.ProtocolParse/ProtocolParseTool.cs",
+        "historical": false,
+        "line": 9,
+        "token": "[Tool(\"ProtocolParse\", \"协议解析\", Icon = \"parse\", Order = 20, Category = ToolCategories.Communication,\r",
+        "sha256": "e1bfcf32809766d7f980738c3fe8460898bbd5070fed02fd05ec67a26753f371",
+        "snippet": "[Tool(\"ProtocolParse\", \"协议解析\", Icon = \"parse\", Order = 20, Category = ToolCategories.Communication,\r\n    Description = \"按配置字段解析文本或字节，不读取设备\", HasDebugWindow = true)]\r\npublic sealed class ProtocolParseTool : IToolPlugin<ProtocolParseParameters, CommunicationToolResults>, IToolEditorFactory\r\n{\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) => new Views.ProtocolParseEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() => new CommunicationDataAnalysisControl();\r\n    public CommunicationToolResults Run(ProtocolParseParameters parameters)\r\n    {\r\n        var result = new CommunicationToolResults();\r\n        var rows = new List<CommunicationAnalysisRow>();\r\n        var watch = Stopwatch.StartNew();\r\n        try\r\n        {\r\n            var fields = parameters.Outputs.Select(f => new Field(f.FieldId, f.Name, f.DataType,\r\n                f.Start, f.End, f.Order, f.NumericInterpretation)).ToArray();\r\n            result = new CommunicationToolResults(fields.Select(f => new CommunicationOutputField(f.Id,\r\n                f.Name, ProtocolParseField.Vocabulary(f.Type))));\r\n            if (fields.Length == 0) throw new FormatException(\"请至少配置一个输出字段。\");\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "ReceiveData",
+      "name": "接收数据",
+      "category": "通信工具",
+      "file": "tool-detail-ReceiveData.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ReceiveData/ReceiveDataTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.ReceiveData/ReceiveDataTool.cs",
+        "historical": false,
+        "line": 10,
+        "token": "[Tool(\"ReceiveData\", \"接收数据\", Icon = \"receive\", Order = 10, Category = ToolCategories.Communication,\r",
+        "sha256": "74570aace0e7aa085008dd3bab66eb579ee0012d90808738c27db10415befed4",
+        "snippet": "[Tool(\"ReceiveData\", \"接收数据\", Icon = \"receive\", Order = 10, Category = ToolCategories.Communication,\r\n    Description = \"执行时读取设备当前值或全局变量\", HasDebugWindow = true)]\r\npublic sealed class ReceiveDataTool : IToolPlugin<ReceiveDataParameters, CommunicationToolResults>, IAsyncToolPlugin, IToolEditorFactory, IToolExecutionProfileProvider\r\n{\r\n    public ToolExecutionProfile DescribeExecution(ToolParameters parameters) => ToolExecutionProfile.LegacyExclusive;\r\n    public ToolExecutionProfile DescribeExecution(ToolParameters parameters, ICommunicationReceiveService? communicationInputs)\r\n    {\r\n        // Only the host source catalog can distinguish a passive cache read from a device request.\r\n        if (parameters is ReceiveDataParameters { SourceKind: \"Device\" } p &&\r\n            communicationInputs?.GetSources().Any(s => s.DeviceId == p.DeviceId && s.TargetId == p.TargetId && !s.ActiveRead) == true)\r\n            return new(ToolConcurrencyKind.ExternalDataWait);\r\n        return ToolExecutionProfile.LegacyExclusive;\r\n    }\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) => new Views.ReceiveDataEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() => new CommunicationDataAnalysisControl();\r\n    private static ICommunicationReceiveService? Scoped(ICommunicationReceiveService? service, string? workflowId) =>\r\n        service == null || service is RuntimeVariableReceiveService || string.IsNullOrEmpty(workflowId) ? service :\r\n            new RuntimeVariableReceiveService(service, null, workflowId: workflowId);\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "Script",
+      "name": "Script",
+      "category": "脚本工具",
+      "file": "tool-script.html",
+      "model": "script",
+      "area": "script-input",
+      "scope": "已纳入专业入口局部分析；不等全算法闭合",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Script/ScriptTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.Script/ScriptTool.cs",
+        "historical": false,
+        "line": 18,
+        "token": "[Tool(\r",
+        "sha256": "71c32de73c6d00308a639750dcebefdf1c69a936b72f8d98a6fad1b469d13292",
+        "snippet": "[Tool(\r\n        id: \"Script\",\r\n        displayName: \"Script\",\r\n        Description = \"Execute user-defined C# script with DLL references and Init/Process lifecycle\",\r\n        Icon = \"code\", Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Script,\r\n        Version = \"2.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>, IAsyncToolPlugin, IToolEditorFactory, IPrecompilableTool\r\n    {\r\n        // ★ 应用启动阶段后台预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。\r\n        //   静态构造在 LoadPlugins 实例化工具时触发，fire-and-forget 不阻塞启动；\r\n        //   首次打开脚本工具时补全立即可用（MEF 已预热缓存命中）。\r\n        static ScriptTool()\r\n        {\r\n            // 编辑器内核统一预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。\r\n            ScriptEditorCore.WarmupForStartup();\r"
+      },
+      "sourceAudit": "未新增本轮逐工具审读"
+    },
+    {
+      "id": "SendData",
+      "name": "发送数据",
+      "category": "通信工具",
+      "file": "tool-detail-SendData.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.SendData/SendDataTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.SendData/SendDataTool.cs",
+        "historical": false,
+        "line": 10,
+        "token": "[Tool(\"SendData\", \"发送数据\", Icon = \"send\", Order = 40, Category = ToolCategories.Communication,\r",
+        "sha256": "8c5a9acce0c55faa3486ad180783222aafc1a551526be3c8b50759d2bb04a222",
+        "snippet": "[Tool(\"SendData\", \"发送数据\", Icon = \"send\", Order = 40, Category = ToolCategories.Communication,\r\n    Description = \"将本次工作流数据提交到设备、变量或发送事件\", HasDebugWindow = true)]\r\npublic sealed class SendDataTool : IToolPlugin<SendDataParameters, SendDataResults>, IAsyncToolPlugin, IToolEditorFactory, IToolExecutionProfileProvider\r\n{\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) => new Views.SendDataEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() => new CommunicationDataAnalysisControl();\r\n    public ToolExecutionProfile DescribeExecution(ToolParameters parameters) => ToolExecutionProfile.LegacyExclusive;\r\n    public SendDataResults Run(SendDataParameters p) => SendAsync(p, p.Context?.CommunicationOutputs, p.Context?.NodeId,\r\n        p.NodeResults, p.Context?.GlobalVariables, p.Context?.CancellationToken ?? default).GetAwaiter().GetResult();\r\n    public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request) =>\r\n        await SendAsync((SendDataParameters)request.Parameters, request.Context.CommunicationOutputs ?? request.CommunicationOutputs,\r\n            request.NodeId, request.NodeResults, request.GlobalVariables, request.CancellationToken, request.WorkflowId).ConfigureAwait(false);\r\n\r\n    private static async Task<SendDataResults> SendAsync(SendDataParameters p, ICommunicationSendService? service, string? nodeId,\r\n        IDictionary<string, ToolResults>? results, IDictionary<string, object?>? globals, CancellationToken token, string? workflowId = null)\r\n    {\r\n        var result = new SendDataResults(); var watch = Stopwatch.StartNew(); var analysis = new List<CommunicationAnalysisRow>();\r\n        var submittedValues = new Dictionary<Guid, object?>();\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "ShapeMatch",
+      "name": "轮廓匹配",
+      "category": "特征定位",
+      "file": "tool-detail-ShapeMatch.html",
+      "model": "pending",
+      "area": null,
+      "scope": "已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/ShapeMatchTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.ShapeMatch/ShapeMatchTool.cs",
+        "historical": false,
+        "line": 29,
+        "token": "[Tool(\r",
+        "sha256": "a4203919dee2b06c11eaeb0eb0ed92e29813f0919059dfe1788aac6de59937aa",
+        "snippet": "[Tool(\r\n    id: \"ShapeMatch\",\r\n    displayName: \"轮廓匹配\",\r\n    Description = \"基于形状的轮廓模板匹配 (Halcon)\",\r\n    Icon = \"match\", Order = 10,\r\n    Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Location,\r\n    Version = \"2.0.0\",\r\n    HasDebugWindow = true\r\n)]\r\npublic class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n{\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;\r\n    private readonly ToolAttribute? _attribute;\r\n\r\n    private const double DEG2RAD = Math.PI / 180.0;\r\n\r\n    // ===== 模板模型句柄缓存 =====\r\n    // ★ 修复：此前每次 Run 都写临时文件 + ReadShapeModel 重建句柄（磁盘 IO + 反序列化开销）。\r"
+      },
+      "sourceAudit": "五段实现与失败取消路径已局部静态审读"
+    },
+    {
+      "id": "Subroutine",
+      "name": "子程序",
+      "category": "流程控制",
+      "file": "tool-subroutine.html",
+      "model": "subroutine",
+      "area": "sub-input",
+      "scope": "已纳入专业入口局部分析；不等全算法闭合",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+        "originalPath": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+        "historical": false,
+        "line": 26,
+        "token": "[Tool(\r",
+        "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9",
+        "snippet": "[Tool(\r\n        id: \"Subroutine\",\r\n        displayName: \"子程序\",\r\n        Description = \"执行子工作流（大号工具，内部使用工作流节点组织）\",\r\n        Icon = \"subroutine\", Order = 20,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Control,\r\n        Version = \"1.0.0\",\r\n        HasDebugWindow = true\r\n    )]\r\n    public class SubroutineTool : IToolPlugin<SubroutineParameters, SubroutineResults>\r\n    {\r\n        /// <summary>\r\n        /// 无限长直线（Line2d）显示时的单侧截取长度（像素）。\r\n        /// 数学直线无端点，可视化时以直线上一点为中心沿方向向量截取一段可见线段。\r\n        /// </summary>\r\n        private const double DisplayLineHalfLength = 100;\r\n\r\n        static SubroutineTool()\r"
+      },
+      "sourceAudit": "未新增本轮逐工具审读"
+    }
+  ],
+  "profiles": {
+    "script": [
+      {
+        "name": "参数",
+        "current": "ScriptParameters.Inputs/Outputs、ScriptCode与编译引用分别持有声明、代码和依赖。",
+        "gap": "已确认显示设置Tab占位；动态绑定/字段版本闭环待核。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+          "originalPath": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+          "historical": false,
+          "line": 267,
+          "token": "private void InitializeTabs",
+          "sha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+          "snippet": "        private void InitializeTabs()\r\n        {\r\n            InputTabControl.Initialize(_parameters.Inputs, true);\r\n            OutputTabControl.Initialize(_parameters.Outputs, false);\r\n        }\r\n\r\n\r\n\r\n\r\n        /// <summary>\r\n        /// 退出编辑模式并重建 workspace（当用户确认时调用）\r\n        /// </summary>\r\n        public void ExitEditMode()\r\n        {\r\n            InputTabControl.ShowMonitorMode();\r\n            OutputTabControl.ShowMonitorMode();\r\n            // 退出编辑模式后按最新参数（含生成的字段声明）重建 workspace\r\n            EditorCore.RebuildWorkspace();\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "算法",
+        "current": "ExecuteTool → ToolExecutor → ScriptTool.ExecuteAsync/ExecuteCore → ScriptLifecycleManager.Execute。",
+        "gap": "执行入口有Task.Run后同步GetResult；取消/线程与任意脚本副作用不可由async名推安全。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Script/ScriptTool.cs",
+          "originalPath": "tools/SunEyeVision.Tool.Script/ScriptTool.cs",
+          "historical": false,
+          "line": 60,
+          "token": "private static ScriptResults ExecuteCore",
+          "sha256": "71c32de73c6d00308a639750dcebefdf1c69a936b72f8d98a6fad1b469d13292",
+          "snippet": "        private static ScriptResults ExecuteCore(\r\n            ScriptParameters parameters,\r\n            IDictionary<string, object?>? globalVariables,\r\n            IDictionary<string, ToolResults>? nodeResults,\r\n            ToolExecutionContext? context)\r\n        {\r\n            var result = new ScriptResults\r\n            {\r\n                ToolName = \"Script\",\r\n                ToolId = \"Script\",\r\n                Timestamp = DateTime.Now,\r\n                ScriptCode = parameters.ScriptCode\r\n            };\r\n\r\n            try\r\n            {\r\n                if (string.IsNullOrWhiteSpace(parameters.ScriptCode))\r\n                {\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "图像与结果传递",
+        "current": "请求传GlobalVariables/NodeResults/Context；ScriptResults.OutputValues/日志/耗时回填监视控件，图像值可能是变量引用。",
+        "gap": "图像值复制/借用与迟到结果清空尚未逐类型核；不是每脚本自动有独立图像。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+          "originalPath": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+          "historical": false,
+          "line": 300,
+          "token": "protected override object ExecuteTool",
+          "sha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+          "snippet": "        protected override object ExecuteTool()\r\n        {\r\n            SyncCodeToParameters();\r\n            // 执行前预编译：保证本次执行及后续工作流执行命中缓存零编译\r\n            PreCompileLatestCode();\r\n            _logEntries.Clear();\r\n            // 清除所有监视数据（输入 + 输出）\r\n            ClearAllMonitorValues();\r\n\r\n            _scriptTool ??= new ScriptTool();\r\n            var request = CreateLiveExecutionRequest(_parameters, null);\r\n            var execution = (ScriptParameters)request.Parameters;\r\n            execution.IsDebugMode = true;\r\n            var executor = new ToolExecutor(new ParameterResolver(), VisionLogger.Instance);\r\n            var toolResult = Task.Run(async () => await executor.ExecuteAsync(_scriptTool, request)).GetAwaiter().GetResult();\r\n            if (toolResult is not ScriptResults result)\r\n                throw new InvalidOperationException(toolResult.ErrorMessage ?? \"脚本工具未返回有效结果。\");\r\n\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "缓存",
+        "current": "ScriptCompiler使用进程级ConcurrentDictionary缓存，ComputeCacheKey后命中返回编译结果；Lifecycle调用ScriptSandboxPool。",
+        "gap": "常驻沙箱有16项LRU；编译键的引用指纹仅名称，DLL同名替换不失效；池无在用租约，淘汰可能碰到在途。不能假称每次卸载。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+          "originalPath": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+          "historical": false,
+          "line": 105,
+          "token": "private static readonly ConcurrentDictionary",
+          "sha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+          "snippet": "        private static readonly ConcurrentDictionary<string, CompileResult> _compileCache = new();\r\n\r\n        // =====================================================\r\n        // 缓存区：进程生命周期内不变的对象\r\n        // =====================================================\r\n\r\n        /// <summary>\r\n        /// 语法解析选项（LanguageVersion.Latest 不变）\r\n        /// </summary>\r\n        private static readonly CSharpParseOptions _parseOptions =\r\n            new CSharpParseOptions(LanguageVersion.Latest);\r\n\r\n        /// <summary>\r\n        /// 编译选项（OutputKind/OptimizationLevel 不变）\r\n        /// </summary>\r\n        private static readonly CSharpCompilationOptions _compilationOptions =\r\n            new CSharpCompilationOptions(\r\n                OutputKind.DynamicallyLinkedLibrary,\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "释放",
+        "current": "ScriptTool以using持有ScriptLifecycleManager，但该Dispose方法当前仅将_disposed=true。",
+        "gap": "局部Dispose不证明pool/native/程序集最终释放；必须追ScriptSandboxPool和实际图像Owner。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+          "originalPath": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+          "historical": false,
+          "line": 380,
+          "token": "public void Dispose",
+          "sha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b",
+          "snippet": "        public void Dispose()\r\n        {\r\n            _disposed = true;\r\n        }\r\n    }\r\n}\r\n"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      }
+    ],
+    "calibration": [
+      {
+        "name": "参数",
+        "current": "采样模式、点/坐标绑定、Samples、样本版本/指纹、文件路径分开。",
+        "gap": "模式与环境约束必须服务层复核，不能只靠控件范围。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationParameters.cs",
+          "originalPath": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationParameters.cs",
+          "historical": false,
+          "line": 58,
+          "token": "public class NPointCalibrationParameters",
+          "sha256": "85dd4b6dd012801578dbdae7de544694dbf77a2b86dd435da450955025224bfd",
+          "snippet": "public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommitter, IJsonOnDeserializing\n{\n    public int SamplesContractVersion { get; set; } = 3;\n    void IJsonOnDeserializing.OnDeserializing() => SamplesContractVersion = 0;\n    private readonly object _sync = new();\n    private NPointAcquisitionMode _acquisitionMode = NPointAcquisitionMode.Trigger;\n    public NPointAcquisitionMode AcquisitionMode\n    {\n        get => _acquisitionMode;\n        set => SetProperty(ref _acquisitionMode, value);\n    }\n    private NPointInputMode _inputMode = NPointInputMode.Point;\n    public NPointInputMode InputMode\n    {\n        get => _inputMode;\n        set => SetProperty(ref _inputMode, value);\n    }\n    public Point2d[] ImagePoint { get; set; } = Array.Empty<Point2d>();"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "算法",
+        "current": "NPointCalibrationTool.Execute检查9+3、固定上相机位、Affine，再调用HalconPlanarCalibration.Fit/Transform。",
+        "gap": "算法明确不支持其他相机模式和变换模型；没有同条件VM精度/性能数据，不判优胜。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationTool.cs",
+          "originalPath": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationTool.cs",
+          "historical": false,
+          "line": 27,
+          "token": "private static NPointCalibrationResults Execute",
+          "sha256": "2d40006ee8d2936f8cefb4c6137976986de9c81cd6cb16aaebccce1265bb78d7",
+          "snippet": "    private static NPointCalibrationResults Execute(NPointCalibrationParameters parameters, ToolExecutionRequest? request)\r\n    {\r\n        var result = new NPointCalibrationResults\r\n        {\r\n            ToolName = \"N点标定\", ToolId = \"NPointCalibration\",\r\n            RequiredTranslationSamples = parameters.TranslationCount,\r\n            RequiredRotationSamples = parameters.RotationCount,\r\n            ExpectedRevision = parameters.SampleRevision,\r\n            InputFingerprint = parameters.Fingerprint(),\r\n            Cancellation = request?.CancellationToken ?? default,\r\n        };\r\n        try\r\n        {\r\n            request?.CancellationToken.ThrowIfCancellationRequested();\r\n            if (parameters.Samples.Count > 0 && parameters.SamplesContractVersion != 3)\r\n                throw new InvalidOperationException(\"旧点表不做兼容，请清空后重新采集或按新契约重新录入。\");\r\n            if (parameters.TranslationCount < 9 || parameters.RotationCount < 3 || parameters.TranslationCount>100 || parameters.RotationCount>100)\r\n                throw new InvalidOperationException(\"原生9+3标定至少需要9个平移点和3个旋转点。\");\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "图像与结果传递",
+        "current": "触发采样通过CalibrationRuntime.RequireEvidence关联帧/运动/XYR；结果可携CollectedSample/NeedsCommit。",
+        "gap": "采样是图像特征点与运动证据配对，不等此工具自己产生像素；上游链仍需核。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationTool.cs",
+          "originalPath": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationTool.cs",
+          "historical": false,
+          "line": 60,
+          "token": "CalibrationRuntime.RequireEvidence",
+          "sha256": "2d40006ee8d2936f8cefb4c6137976986de9c81cd6cb16aaebccce1265bb78d7",
+          "snippet": "                var evidence = CalibrationRuntime.RequireEvidence(request, parameters.MaxPairingDelayMs);\r\n                if (parameters.Samples.Any(s => s.Source == \"WorkflowFrame+Encoder\" &&\r\n                    (s.CameraId != evidence.CameraId || s.WorkPlaneId != evidence.WorkPlaneId || s.SessionId != evidence.SessionId ||\r\n                        parameters.ImageWidth!=evidence.ImageWidth || parameters.ImageHeight!=evidence.ImageHeight || parameters.ImageDomain!=evidence.ImageDomain)))\r\n                    throw new InvalidOperationException(\"采样会话、相机或工作平面已变化，请开始新的标定点集。\");\r\n                var sample = Capture(parameters, evidence.FrameId, evidence.FrameAt, evidence.AxisReadAt);\r\n                CalibrationRuntime.Attach(sample, evidence);\r\n                if (parameters.Samples.Any(s => s.SessionId == evidence.SessionId &&\r\n                    (s.StepId == evidence.StepId || s.FrameId == evidence.FrameId && s.CameraId == evidence.CameraId)))\r\n                    throw new InvalidOperationException(\"同一采样会话重复运动步或图像帧，拒绝重复采点。\");\r\n                result.CollectedSample = sample;\r\n                result.NeedsCommit = true;\r\n                result.SourceDeviceId = evidence.CameraId; result.ImageWidth = evidence.ImageWidth;\r\n                result.ImageHeight = evidence.ImageHeight; result.ImageDomain = evidence.ImageDomain;\r\n                result.WorkPlaneId = evidence.WorkPlaneId;\r\n                samples.Add(sample);\r\n            }\r\n\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "缓存",
+        "current": "Parameters.RuntimeResult保存运行结果，TryCommit检查/应用采样与结果，候选另写文件。",
+        "gap": "RuntimeResult不等编译缓存或正式发布；指纹失效到全部读者需核。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationParameters.cs",
+          "originalPath": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationParameters.cs",
+          "historical": false,
+          "line": 163,
+          "token": "public bool TryCommit",
+          "sha256": "85dd4b6dd012801578dbdae7de544694dbf77a2b86dd435da450955025224bfd",
+          "snippet": "    public bool TryCommit(ToolResults result, out string? error)\n    {\n        error = null;\n        if (result is not NPointCalibrationResults calibration)\n            return true;\n\n        lock (_sync)\n        {\n            if (!calibration.IsSuccess || calibration.Cancellation.IsCancellationRequested) { error = \"失败或已取消结果不可提交。\"; return false; }\n            if (SampleRevision != calibration.ExpectedRevision || Fingerprint() != calibration.InputFingerprint)\n            {\n                error = \"标定点集在本轮运行中被修改；已拒绝过期采样，请重试。\";\n                return false;\n            }\n\n            if (calibration.CalibrationReady && UpdateFileAfterSolve\n                && string.IsNullOrWhiteSpace(CalibrationFilePath))\n            {"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "释放",
+        "current": "此层显示采样/结果对象；HALCON对象在HalAdapter及上游图像Owner，参数窗还持刷新计时器。",
+        "gap": "不能从标定窗Close推Halcon/native已释放；适配器临时对象及500ms Timer退订路径需分别核。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml.cs",
+          "originalPath": "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml.cs",
+          "historical": false,
+          "line": 15,
+          "token": "private readonly DispatcherTimer",
+          "sha256": "f0ad12374107c4458a9c220f84327289a262890ad3c4fdc115ed688271eaf2a8",
+          "snippet": "    private readonly DispatcherTimer _refresh = new() { Interval = TimeSpan.FromMilliseconds(500) };\n    private string _seenFingerprint = \"\";\n    private string _lastError = \"\";\n    public NPointCalibrationResults? LatestResult { get; private set; }\n    public string StageText => Parameters.Samples.Count(s => s.Kind == NPointSampleKind.Translation) < Parameters.TranslationCount ? \"平移采样\" : \"旋转采样 / 待求解\";\n    public string CandidatePathText {get {try{return string.IsNullOrWhiteSpace(Parameters.CalibrationFilePath)?\"未设置\":NPointCalibrationParameters.CandidatePath(Parameters.CalibrationFilePath);}catch(Exception){return \"路径无效\";}}}\n    public string MatrixText => LatestResult?.HomMat2D.Length == 6 ? string.Join(\"  \", LatestResult.HomMat2D.Select(v => v.ToString(\"G12\"))) : \"尚未求解\";\n    public string SourceInfoText => Parameters.Samples.LastOrDefault(s => s.FrameId.HasValue) is { } s\n        ? $\"相机：{s.CameraId}；工作平面：{s.WorkPlaneId}\\n会话：{s.SessionId}；运动步：{s.StepId}；帧：{s.FrameId}\"\n        : \"当前为手动点表或未提供采样上下文。触发采样需上游提供到位/新帧/XYR证据，不能手填元数据。\";\n    public bool IsCurrentResult => LatestResult != null && LatestResult.AcceptedFingerprint == Parameters.Fingerprint();\n    public static readonly DependencyProperty ParametersProperty = DependencyProperty.Register(\n        nameof(Parameters), typeof(NPointCalibrationParameters), typeof(NPointCalibrationDebugControl),\n        new PropertyMetadata(null, OnParametersChanged));\n\n    private static void OnParametersChanged(DependencyObject owner, DependencyPropertyChangedEventArgs args)\n    {\n        var control = (NPointCalibrationDebugControl)owner;"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      }
+    ],
+    "verification": [
+      {
+        "name": "参数",
+        "current": "候选/正式路径、独立验证样本、误差与覆盖门槛、PublishOnPass分开。",
+        "gap": "自动发布开关不能绕服务端准入；训练样本复用拒绝需对应输入证据。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointVerificationTool.cs",
+          "line": 79,
+          "token": "public class NPointVerificationParameters",
+          "sha256": "7a2dc7f44283e8d12bb7dc1ecef3e7a15aac242ff0694f8ed9b7aefff30f37c4",
+          "snippet": "public class NPointVerificationParameters : ToolParameters, IWorkflowResultCommitter\r\n{\r\n    private readonly object _sync=new();\r\n    public string CandidateFilePath { get; set; }=\"\";\r\n    public string ActiveFilePath { get; set; }=\"\";\r\n    public string CandidateSha256 { get; set; }=\"\";\r\n    public string LastPublishedCandidateSha256 { get; set; }=\"\";\r\n    public double MaximumValidationErrorMm { get; set; }\r\n    public bool CaptureSample { get; set; }\r\n    private NPointInputMode _inputMode=NPointInputMode.Coordinates;\r\n    public NPointInputMode InputMode { get=>_inputMode; set=>SetProperty(ref _inputMode,value); }\r\n    public Point2d[] ImagePoint { get; set; }=Array.Empty<Point2d>();\r\n    public Point2d[] AxisPoint { get; set; }=Array.Empty<Point2d>();\r\n    public NPointSampleKind SampleKind { get; set; }\r\n    public double ImageX { get; set; }\r\n    public double ImageY { get; set; }\r\n    public double AxisX { get; set; }\r\n    public double AxisY { get; set; }\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "已删除工具的历史快照；非当前工具",
+        "historical": true
+      },
+      {
+        "name": "算法",
+        "current": "验证读取候选，对独立平移/旋转样本调用candidate.Validate并汇总MaximumErrorMm。",
+        "gap": "没有VM对应验证实现/同条件测试，不宣称更可靠。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointVerificationTool.cs",
+          "line": 20,
+          "token": "private static NPointVerificationResults Execute",
+          "sha256": "7a2dc7f44283e8d12bb7dc1ecef3e7a15aac242ff0694f8ed9b7aefff30f37c4",
+          "snippet": "    private static NPointVerificationResults Execute(NPointVerificationParameters p, ToolExecutionRequest? request)\r\n    {\r\n        var result = new NPointVerificationResults { ToolId = \"NPointVerification\", ToolName = \"N点标定验证\",\r\n            ExpectedRevision = p.SampleRevision, InputFingerprint = p.Fingerprint(), Cancellation = request?.CancellationToken ?? default };\r\n        try\r\n        {\r\n            result.Cancellation.ThrowIfCancellationRequested();\r\n            var (candidate, hash) = NPointCalibrationFile.ReadCandidate(p.CandidateFilePath);\r\n            result.CandidateSha256 = hash;\r\n            if (p.ValidationSamples.Count > 0 && p.CandidateSha256 != hash)\r\n                throw new InvalidOperationException(\"候选已变化，请清空旧验证点重新采样。\");\r\n            var samples = p.ValidationSamples.Select(s => s.Copy()).ToList();\r\n            if (p.CaptureSample)\r\n            {\r\n                var evidence = CalibrationRuntime.RequireEvidence(request, p.MaxPairingDelayMs);\r\n                if (candidate.SourceDeviceId != evidence.CameraId || candidate.ImageWidth != evidence.ImageWidth ||\r\n                    candidate.ImageHeight != evidence.ImageHeight || candidate.ImageDomain != evidence.ImageDomain ||\r\n                    candidate.WorkPlaneId != evidence.WorkPlaneId)\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "已删除工具的历史快照；非当前工具",
+        "historical": true
+      },
+      {
+        "name": "图像与结果传递",
+        "current": "结果包含CandidateSha256、AcceptedFingerprint、Residuals/ValidationPassed及待提交标记。",
+        "gap": "本轮UI与流程结果提交必须同一候选；并行候选替换窗口需核。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointVerificationTool.cs",
+          "line": 119,
+          "token": "public bool TryCommit",
+          "sha256": "7a2dc7f44283e8d12bb7dc1ecef3e7a15aac242ff0694f8ed9b7aefff30f37c4",
+          "snippet": "    public bool TryCommit(ToolResults output,out string? error)\r\n    {\r\n        error=null;\r\n        if(output is not NPointVerificationResults r) return true;\r\n        lock(_sync)\r\n        {\r\n            if(!r.IsSuccess || r.Cancellation.IsCancellationRequested || SampleRevision!=r.ExpectedRevision || Fingerprint()!=r.InputFingerprint)\r\n            {error=\"验证结果失败、取消或已过期，拒绝提交。\";return false;}\r\n            try\r\n            {\r\n                var (_,hash)=NPointCalibrationFile.ReadCandidate(CandidateFilePath);\r\n                if(hash!=r.CandidateSha256) throw new InvalidOperationException(\"候选已变化，旧验证结论失效。\");\r\n                var samples=r.CollectedSample==null ? ValidationSamples.ToArray() : ValidationSamples.Append(r.CollectedSample).ToArray();\r\n                if(r.PublishAfterCommit)\r\n                {\r\n                    bool already=false;\r\n                    if(LastPublishedCandidateSha256==hash && File.Exists(ActiveFilePath))\r\n                    {\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "已删除工具的历史快照；非当前工具",
+        "historical": true
+      },
+      {
+        "name": "缓存",
+        "current": "RuntimeResult记录当前验证；Refresh按指纹/候选哈希决定发布按钮有效性。",
+        "gap": "已发布历史不等当前环境仍匹配；重启/外部修改后的采用链待核。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointVerificationDebugControl.xaml.cs",
+          "line": 34,
+          "token": "private void Refresh",
+          "sha256": "1d344e7cc7574d3547f2ba817dbad6565cb5200fe87b96dd5fe60536cf60fb43",
+          "snippet": "    private void Refresh()\n    {\n        _seen=Parameters.Fingerprint();\n        if(Parameters.RuntimeResult!=null)_result=Parameters.RuntimeResult;\n        bool current=_result!=null && _result.AcceptedFingerprint==_seen;\n        if(current)\n        {\n            try {current=NPointCalibrationFile.ReadCandidate(Parameters.CandidateFilePath).Sha256==_result!.CandidateSha256;}\n            catch(Exception){current=false;}\n        }\n        PublishButton.IsEnabled=current && _result!.ValidationPassed && !_result.Published;\n        if(_result!=null && !current)ResultText=\"验证结果已过期，请重新执行验证。\";\n        if(_result?.ValidationPassed==true && current)\n            ResultText=$\"独立验证通过；最大误差 {_result.MaximumErrorMm:F6} mm；候选摘要 {_result.CandidateSha256}\";\n        if(!string.IsNullOrEmpty(_lastError)){ResultText=_lastError;PublishButton.IsEnabled=false;}\n        PublishedText=_result?.Published==true?\"已发布（仅表示该次发布；改参后须重新验证）\":\"未发布\";\n        ResidualGrid.ItemsSource=_result?.Residuals;\n        OnPropertyChanged(nameof(ResultText));OnPropertyChanged(nameof(PublishedText));"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "已删除工具的历史快照；非当前工具",
+        "historical": true
+      },
+      {
+        "name": "释放 / 发布",
+        "current": "Publish_Click → PublishVerified；发布与图像/native释放是不同链。",
+        "gap": "需要独立核原子替换、备份/恢复及正式文件ReadVerified消费者；不能把按钮完成等同生产采用完成。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointVerificationTool.cs",
+          "line": 151,
+          "token": "public void PublishVerified",
+          "sha256": "7a2dc7f44283e8d12bb7dc1ecef3e7a15aac242ff0694f8ed9b7aefff30f37c4",
+          "snippet": "    public void PublishVerified(NPointVerificationResults r)\r\n    {\r\n        lock(_sync)\r\n        {\r\n            if(!r.IsSuccess || !r.ValidationPassed || r.AcceptedFingerprint!=Fingerprint())\r\n                throw new InvalidOperationException(\"当前验证未通过或已经过期，请重新执行验证。\");\r\n            NPointCalibrationFile.Publish(CandidateFilePath,ActiveFilePath,r.CandidateSha256,ValidationSamples,MaximumValidationErrorMm,MaxPairingDelayMs);\r\n            LastPublishedCandidateSha256=r.CandidateSha256;r.Published=true;\r\n        }\r\n    }\r\n}\r\n\r\npublic sealed class NPointVerificationResults : ToolResults\r\n{\r\n    public bool ValidationPassed {get;set;}\r\n    public bool Published {get;set;}\r\n    public string Message {get;set;}=\"\";\r\n    public string CandidateSha256 {get;set;}=\"\";\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "已删除工具的历史快照；非当前工具",
+        "historical": true
+      }
+    ],
+    "subroutine": [
+      {
+        "name": "参数",
+        "current": "Inputs/Outputs/DisplayConfigs/LoopConfig直接共享原参数集合；编辑即时改变模型。",
+        "gap": "配置确定/关闭不意味着回滚；跨层字段变更和Undo需事务。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Subroutine/ViewModels/SubroutineParameterDialogViewModel.cs",
+          "originalPath": "tools/SunEyeVision.Tool.Subroutine/ViewModels/SubroutineParameterDialogViewModel.cs",
+          "historical": false,
+          "line": 31,
+          "token": "public ObservableCollection<SubroutineInputConfig> Inputs",
+          "sha256": "6377ffc87d505ff93ddde99de7fd224afdccae7f52c8faee31e45e517217c16e",
+          "snippet": "        public ObservableCollection<SubroutineInputConfig> Inputs => _parameters.Inputs;\r\n        public ObservableCollection<SubroutineOutputConfig> Outputs => _parameters.Outputs;\r\n        public ObservableCollection<SubroutineDisplayItem> DisplayItems => _parameters.DisplayConfigs;\r\n        public SubroutineLoopConfig LoopConfig => _parameters.LoopConfig;\r\n\r\n        public ObservableCollection<AvailableDataSource> AvailableSources { get; } = new();\r\n\r\n        /// <summary>子程序内部所有节点的数据源（输出设置/显示设置的订阅源）</summary>\r\n        public ObservableCollection<AvailableDataSource> SubroutineInternalSources { get; } = new();\r\n\r\n        public string SelectedInputTypeName\r\n        {\r\n            get => _selectedInputTypeName;\r\n            set => SetProperty(ref _selectedInputTypeName, value);\r\n        }\r\n\r\n        public string SelectedOutputTypeName\r\n        {\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "算法 / 调度",
+        "current": "SubroutineTool.Run解析输入；依赖ExecuteSubWorkflowAsync注入，单次/循环分别执行并累积选中项。",
+        "gap": "它是控制与子图调用，不是一个图像算子；VM原生Group循环/中断边界尚不能认定等价。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+          "originalPath": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+          "historical": false,
+          "line": 50,
+          "token": "public SubroutineResults Run",
+          "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9",
+          "snippet": "        public SubroutineResults Run(SubroutineParameters parameters)\r\n        {\r\n            var sw = Stopwatch.StartNew();\r\n            var result = new SubroutineResults\r\n            {\r\n                ToolName = \"子程序\",\r\n                ToolId = \"Subroutine\",\r\n                Timestamp = DateTime.Now\r\n            };\r\n\r\n            // 单一 ParameterResolver 实例，消除 4 处重复 new\r\n            var resolver = new ParameterResolver(parameters.Context?.Logger);\r\n            var nodeResults = parameters.NodeResults;\r\n\r\n            try\r\n            {\r\n                // ===== 前置验证 =====\r\n                if (string.IsNullOrEmpty(parameters.SubroutineId))\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "图像与结果传递",
+        "current": "inputImage/contextVariables进入子调用；输出字典、DisplayCollector和IsAccumulated决定累积。",
+        "gap": "数组拍平、跨轮图像/图元保留及最后读者要逐类型核。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+          "originalPath": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+          "historical": false,
+          "line": 236,
+          "token": "private static ExecutionResult ExecuteSubWorkflowOnce",
+          "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9",
+          "snippet": "        private static ExecutionResult ExecuteSubWorkflowOnce(SubroutineParameters parameters, IVisionImage? inputImage,\r\n            Dictionary<string, object> contextVariables)\r\n        {\r\n            if (parameters.ExecuteSubWorkflowAsync == null)\r\n                throw new InvalidOperationException(\"子工作流执行委托未注入\");\r\n\r\n            return Task.Run(async () =>\r\n                await parameters.ExecuteSubWorkflowAsync(parameters.SubroutineId, inputImage, contextVariables))\r\n                .GetAwaiter().GetResult();\r\n        }\r\n\r\n        /// <summary>\r\n        /// 解析输入参数 — 从父工作流的 NodeResults 中根据 Inputs[].Source 取值\r\n        /// </summary>\r\n        private static Dictionary<string, object> ResolveInputs(SubroutineParameters parameters, ParameterResolver resolver)\r\n        {\r\n            var values = new Dictionary<string, object>();\r\n            var errors = new List<string>();\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "缓存 / 累积",
+        "current": "loopAccumulatedOutputs与loopAccumulatedDisplay是本次循环的结果累积，不是持久缓存。",
+        "gap": "大数组/图元增长、取消后结果有效性和上下文旧值隔离待验。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+          "originalPath": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+          "historical": false,
+          "line": 92,
+          "token": "loopAccumulatedOutputs",
+          "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9",
+          "snippet": "                Dictionary<string, object> loopAccumulatedOutputs = null;\r\n                DisplayCollector loopAccumulatedDisplay = null;\r\n                if (parameters.IsLoopEnabled)\r\n                {\r\n                    (execResult, loopAccumulatedOutputs, loopAccumulatedDisplay) =\r\n                        ExecuteWithLoop(parameters, inputImage, contextVariables, resolver, nodeResults);\r\n                }\r\n                else\r\n                {\r\n                    execResult = ExecuteSubWorkflowOnce(parameters, inputImage, contextVariables);\r\n                }\r\n\r\n                // ===== 收集结果 =====\r\n                var subWorkflowNodeResults = new Dictionary<string, ToolResults>();\r\n                if (execResult.NodeResults != null)\r\n                {\r\n                    foreach (var kvp in execResult.NodeResults)\r\n                    {\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "释放",
+        "current": "配置VM.Dispose退订输出集合事件；子调用上下文/图像属于运行层另外的Owner。",
+        "gap": "关闭配置不等停止子流程或释放子图结果；执行层退役路径需追。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Subroutine/ViewModels/SubroutineParameterDialogViewModel.cs",
+          "originalPath": "tools/SunEyeVision.Tool.Subroutine/ViewModels/SubroutineParameterDialogViewModel.cs",
+          "historical": false,
+          "line": 122,
+          "token": "public void Dispose",
+          "sha256": "6377ffc87d505ff93ddde99de7fd224afdccae7f52c8faee31e45e517217c16e",
+          "snippet": "        public void Dispose()\r\n        {\r\n            if (_isDisposed) return;\r\n            _isDisposed = true;\r\n            _parameters.Outputs.CollectionChanged -= OnOutputsCollectionChanged;\r\n            foreach (var output in _parameters.Outputs)\r\n                output.PropertyChanged -= OnOutputPropertyChanged;\r\n        }\r\n\r\n        /// <summary>\r\n        /// 子程序至少保留一个输入/输出：集合为空时自动补齐默认项（幂等，重复打开不重复添加）。\r\n        /// </summary>\r\n        private void EnsureMinimumInputsOutputs()\r\n        {\r\n            if (Inputs.Count == 0)\r\n            {\r\n                Inputs.Add(new SubroutineInputConfig\r\n                {\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      }
+    ],
+    "template": [
+      {
+        "name": "参数",
+        "current": "独立模板ROI/提取参数/模板模型，区别形状匹配主工具的运行参数。",
+        "gap": "此页仅覆盖模板编辑子入口，不能当整个匹配工具已完整分析。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+          "originalPath": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+          "historical": false,
+          "line": 67,
+          "token": "public void LoadImageBeforeShow",
+          "sha256": "37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95",
+          "snippet": "    public void LoadImageBeforeShow()\r\n    {\r\n        try\r\n        {\r\n            bool isEditing = _isEditingExisting;\r\n\r\n            // 编辑模式：从注册图像解码\r\n            if (isEditing && _resultTemplate?.SourceImageBytes is { Length: > 0 })\r\n            {\r\n                try\r\n                {\r\n                    int w = _resultTemplate!.SourceImageWidth;\r\n                    int h = _resultTemplate!.SourceImageHeight;\r\n                    if (w <= 0 || h <= 0)\r\n                        throw new InvalidOperationException(\"注册图像尺寸无效\");\r\n\r\n                    int stride = w;\r\n                    var bitmap = BitmapSource.Create(w, h, 96, 96, PixelFormats.Gray8, null,\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "算法",
+        "current": "OnExtractClick进入专用模板提取路径；OnOkClick检查模型/图像/ROI后返回。",
+        "gap": "主工具实际匹配已在独立主调试页补核；模板训练/返回采用和native最后读者仍待进一步证据。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+          "originalPath": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+          "historical": false,
+          "line": 288,
+          "token": "private void OnExtractClick",
+          "sha256": "37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95",
+          "snippet": "    private void OnExtractClick(object sender, RoutedEventArgs e)\r\n    {\r\n        _hadManualExtraction = true;\r\n        ExecuteContourExtraction();\r\n        if (_resultTemplate?.ContourChains != null && _resultTemplate.ContourChains.Count > 0)\r\n        {\r\n            PopulatePyramidLevelComboBox();\r\n        }\r\n    }\r\n\r\n    private void OnClearClick(object sender, RoutedEventArgs e)\r\n    {\r\n        if (_resultTemplate != null)\r\n        {\r\n            _resultTemplate.ModelData = null;\r\n            _resultTemplate.ContourChains = null;\r\n            _resultTemplate.LevelContours = null;\r\n            _resultTemplate.ExtractionStatus = TemplateExtractionStatus.NotExtracted;\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "图像与结果传递",
+        "current": "注册图像字节或当前HImage进入本地dialogImageControl；返回TemplateModel供外层采用。",
+        "gap": "新建/编辑的共享或复制边及外层写回未全部闭合。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+          "originalPath": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+          "historical": false,
+          "line": 1055,
+          "token": "public TemplateModel? GetResultTemplate",
+          "sha256": "37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95",
+          "snippet": "    public TemplateModel? GetResultTemplate() => _resultTemplate;\r\n\r\n    #endregion\r\n\r\n    #region 清理资源\r\n\r\n    protected override void OnClosed(EventArgs e)\r\n    {\r\n        base.OnClosed(e);\r\n        dialogRegionManager?.ClearMainOverlay();\r\n        ClearContourOverlay();\r\n        if (_ownsHImage)\r\n        {\r\n            _currentHImage?.Dispose();\r\n            _currentHImage = null;\r\n        }\r\n    }\r\n\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "缓存",
+        "current": "ModelData/轮廓/注册图像字节与显示叠加分开，OnClearClick清字段/叠加。",
+        "gap": "置空不代表native模型Owner已结束，需追模板缓存/主工具引用。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+          "originalPath": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+          "historical": false,
+          "line": 298,
+          "token": "private void OnClearClick",
+          "sha256": "37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95",
+          "snippet": "    private void OnClearClick(object sender, RoutedEventArgs e)\r\n    {\r\n        if (_resultTemplate != null)\r\n        {\r\n            _resultTemplate.ModelData = null;\r\n            _resultTemplate.ContourChains = null;\r\n            _resultTemplate.LevelContours = null;\r\n            _resultTemplate.ExtractionStatus = TemplateExtractionStatus.NotExtracted;\r\n            _resultTemplate.SourceImageBytes = null;\r\n            _resultTemplate.SourceImageWidth = 0;\r\n            _resultTemplate.SourceImageHeight = 0;\r\n        }\r\n\r\n        cmbPyramidLevel.Items.Clear();\r\n        cmbPyramidLevel.IsEnabled = false;\r\n        ClearContourOverlay();\r\n        UpdateResultDisplay(TemplateExtractionStatus.NotExtracted, 0, 0, 0, 0, 0);\r\n\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      },
+      {
+        "name": "释放",
+        "current": "OnClosed依_ownsHImage等条件释放本地对象。",
+        "gap": "局部所有权清理不证明返回模板/主工具最后读者已释放。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+          "originalPath": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+          "historical": false,
+          "line": 1061,
+          "token": "protected override void OnClosed",
+          "sha256": "37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95",
+          "snippet": "    protected override void OnClosed(EventArgs e)\r\n    {\r\n        base.OnClosed(e);\r\n        dialogRegionManager?.ClearMainOverlay();\r\n        ClearContourOverlay();\r\n        if (_ownsHImage)\r\n        {\r\n            _currentHImage?.Dispose();\r\n            _currentHImage = null;\r\n        }\r\n    }\r\n\r\n    #endregion\r\n\r\n    #region 金字塔层级预览\r\n\r\n    private void OnPyramidLevelSelected(object sender, SelectionChangedEventArgs e)\r\n    {\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "局部源码已见 · 闭环待核"
+      }
+    ],
+    "standard": [
+      {
+        "name": "参数",
+        "current": "阈值Parameters/ParamSetting/ROI集合，ResultPresentation是显示规则。",
+        "gap": "控件提交与业务参数快照分开，重置标准命令仍未实现。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs",
+          "line": 189,
+          "token": "protected override object ExecuteTool",
+          "sha256": "732736f78c6b7ba9b5d9eb36676e04ef249f2de0b7b0481f80985b0de88e0484",
+          "snippet": "        protected override object ExecuteTool()\r\n        {\r\n            var imageSource = Parameters?.ImageSource;\r\n            if (imageSource == null)\r\n            {\r\n                throw new InvalidOperationException(\"请选择输入图像源\");\r\n            }\r\n\r\n            if (_dataProvider == null)\r\n            {\r\n                throw new InvalidOperationException(\"数据提供者未初始化\");\r\n            }\r\n\r\n            if (!_dataProvider.HasNodeExecuted(imageSource.SourceNodeId))\r\n            {\r\n                throw new InvalidOperationException(\r\n                    $\"当前工具缺少输入图像：图像源 '{imageSource.SourceNodeId}.{imageSource.PropertyName}' 没有值\");\r\n            }\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "已删除工具的历史快照；非当前工具",
+        "historical": true
+      },
+      {
+        "name": "算法",
+        "current": "ThresholdTool按图像/区域执行阈值算子并形成统计/判定；当前是HALCON实现。",
+        "gap": "具体灰度/区域/统计分支和VM同算子等价仍需逐分支/同输入核。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Threshold/ThresholdTool.cs",
+          "line": 37,
+          "token": "public class ThresholdTool",
+          "sha256": "ff378720b902c6bf094040a102f1bc11943e0261f5b52d5accc856d3e0b39c8f",
+          "snippet": "    public class ThresholdTool : IToolPlugin<ThresholdParameters, ThresholdResults>, IToolEditorFactory, SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider\r\n    {\r\n        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider.ImageFramePolicy => SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates;\r\n        private readonly ToolAttribute? _attribute;\r\n\r\n        public ThresholdTool()\r\n        {\r\n            _attribute = GetType().GetCustomAttribute<ToolAttribute>();\r\n        }\r\n\r\n        /// <summary>\r\n        /// 执行工具（同步）\r\n        /// </summary>\r\n        public ThresholdResults Run(ThresholdParameters parameters)\r\n        {\r\n            var hImage = parameters.GetHalconImage();\r\n            var result = new ThresholdResults\r\n            {\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "已删除工具的历史快照；非当前工具",
+        "historical": true
+      },
+      {
+        "name": "图像与结果传递",
+        "current": "参数窗使用宿主注入主图；ExecuteWithLiveContext把结果回主窗和工具控件。",
+        "gap": "Mat/HImage/Bitmap以及历史的共享/最后读者不能混同。",
+        "source": {
+          "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs",
+          "line": 223,
+          "token": "ExecuteWithLiveContext",
+          "sha256": "732736f78c6b7ba9b5d9eb36676e04ef249f2de0b7b0481f80985b0de88e0484",
+          "snippet": "            return ExecuteWithLiveContext(thresholdTool, Parameters!, imageVision);\r\n        }\r\n\r\n        protected override bool CanExecuteTool()\r\n        {\r\n            return Parameters?.ImageSource != null && _dataProvider != null;\r\n        }\r\n\r\n        public override void OnExternalResultArrived()\r\n        {\r\n            if (Parameters != null && regionManager != null)\r\n                ApplyPositionCorrectionPreview(Parameters, regionManager.SetPositionCorrectionMatrix, regionManager);\r\n        }\r\n\r\n        #endregion\r\n\r\n        #region IToolControlInitializer 实现\r\n\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "已删除工具的历史快照；非当前工具",
+        "historical": true
+      },
+      {
+        "name": "缓存",
+        "current": "结果绘制层与ImageConverterPool是宿主缓存，不是阈值算法本身的已验性能优势。",
+        "gap": "复用WriteableBitmap对历史保持独立像素的影响需追实际调用者。",
+        "source": {
+          "path": "src/UI/Services/Performance/ImageConverterPool.cs",
+          "line": 36,
+          "token": "public BitmapSource ConvertToBitmapSource",
+          "sha256": "d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707",
+          "snippet": "        public BitmapSource ConvertToBitmapSource(Mat mat)\r\n        {\r\n            if (mat == null || mat.Empty())\r\n                throw new ArgumentNullException(nameof(mat));\r\n\r\n            // 确定像素格式\r\n            PixelFormat pixelFormat = GetPixelFormat(mat.Type());\r\n\r\n            // 生成缓存键\r\n            string cacheKey = $\"{mat.Width}_{mat.Height}_{pixelFormat}\";\r\n\r\n            // 尝试从缓存获取WriteableBitmap\r\n            if (!_bitmapCache.TryGetValue(cacheKey, out var writeableBitmap) ||\r\n                writeableBitmap.PixelWidth != mat.Width ||\r\n                writeableBitmap.PixelHeight != mat.Height)\r\n            {\r\n                // 创建新的WriteableBitmap\r\n                writeableBitmap = new WriteableBitmap(mat.Width, mat.Height, 96, 96, pixelFormat, null);\r"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "已删除工具的历史快照；非当前工具",
+        "historical": true
+      },
+      {
+        "name": "释放",
+        "current": "工具窗清ROI和退订是UI收尾；像素/native最终释放另属工具/帧Owner。",
+        "gap": "在途执行/取消/关窗的完整排空和结果最后读者仍待证。",
+        "source": {
+          "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+          "line": 587,
+          "token": "private void OnWindowClosed",
+          "sha256": "d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1",
+          "snippet": "        private void OnWindowClosed(object? sender, EventArgs e)\r\n        {\r\n            // 停止连续运行\r\n            _isContinuousRunning = false;\r\n            \r\n            // 清理路由事件订阅\r\n            UnsubscribeRoutedEvents();\r\n        }\r\n\r\n        #endregion\r\n    }\r\n}\r\n"
+        },
+        "vm": "原版相同工具/字段的精确算法、缓存及释放实现仍需对应恢复材料；不把框架或重建测试当插件内部证据。",
+        "change": "先补此段实际生产者、消费者与正常/异常/取消/关闭路径，再决定复用或重做；与上方区域改法和验收一并核对。",
+        "status": "已删除工具的历史快照；非当前工具",
+        "historical": true
+      }
+    ]
+  },
+  "categories": {
+    "Acquisition": "图像采集",
+    "Preprocessing": "图像预处理",
+    "Location": "特征定位",
+    "Region": "区域分析",
+    "Measurement": "几何测量",
+    "Calibration": "坐标标定",
+    "Communication": "通信工具",
+    "Control": "流程控制",
+    "Script": "脚本工具"
+  },
+  "scope": "扫描tools源码[Tool]声明，不证明运行时发现/发布/全部实现；未深入项明确待核"
+}

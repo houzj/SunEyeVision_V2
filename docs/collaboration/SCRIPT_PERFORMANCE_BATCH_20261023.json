@@ -1,0 +1,385 @@
+{
+  "id": "SCRIPT-PERF-01",
+  "date": "2026-10-23",
+  "scope": "只分析与主文档，未改代码、未运行基准；整批候选未批准施工",
+  "previousEvidence": "docs/collaboration/STARTUP_CONSUMER_REVIEW_20261022.json",
+  "evidence": [
+    {
+      "id": "SP1",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\SemanticHighlighter.cs",
+      "sha256": "5656340e229c9061e431aa8a690d186599f1fcc6f516dded3b0b3cf164ac288a",
+      "excerpts": [
+        {
+          "start": 31,
+          "end": 37,
+          "text": "31: internal sealed class RoslynSemanticHighlighter : IHighlighter\n32: {\n33:     private const int CacheSize = 512;\n34:     private const int WarmupLineCount = 50;\n35: \n36:     private readonly AvalonTextDocument _document;\n37:     private readonly Func<Document?> _getUserDocument;"
+        },
+        {
+          "start": 65,
+          "end": 90,
+          "text": "65: \n66:     /// <summary>\n67:     /// 触发语义模型预热：文档就绪后，后台对前 N 行预分类写 _cachedLines，并触发一次完整\n68:     /// SemanticModel 构建。行进入可视区时 HighlightLine 命中缓存直接复用，避免\"打开窗口后\n69:     /// 逐行白→青渐变\"。可重入：已预热/正在进行时调用直接返回。\n70:     /// </summary>\n71:     public void TriggerWarmup()\n72:     {\n73:         var cts = _cts;\n74:         if (cts == null) return;\n75:         if (Interlocked.Exchange(ref _warmupRequested, 1) != 0) return; // 幂等：进程内只预热一次\n76:         // 全文预热：覆盖所有行，最大化/滚动时无未缓存白行（避免\"变白再着色\"闪烁）\n77:         var fullLineCount = _document.LineCount;\n78:         _ = Task.Run(() => WarmupAsync(maxLines: fullLineCount, cts.Token), cts.Token);\n79:     }\n80: \n81:     private int _warmupRequested;\n82: \n83:     // 预热完成信号：供\"打开前预热\"等待（窗口显示前完成语义着色，消除白色过渡）\n84:     private readonly TaskCompletionSource _warmupTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);\n85: \n86:     /// <summary>\n87:     /// 语义预热完成的异步信号。WarmupAsync 完成（前 N 行已分类写缓存）后置位。\n88:     /// 供 ScriptEditorCore.InitializeAndWaitAsync 在窗口显示前等待，实现\"打开即着色\"。\n89:     /// </summary>\n90:     public Task WarmupCompletion => _warmupTcs.Task;"
+        },
+        {
+          "start": 193,
+          "end": 255,
+          "text": "193:     private async Task WarmupAsync(int maxLines, CancellationToken cancellationToken)\n194:     {\n195:         try\n196:         {\n197:             var document = _getUserDocument();\n198:             if (document == null) return;\n199: \n200:             // 先触发一次完整 SemanticModel 构建（首次几百 ms），确保后续逐行分类拿到语义结果\n201:             // （否则前几行可能因模型未就绪只回语法分类）。语义分类用 document.GetSemanticModelAsync。\n202:             try\n203:             {\n204:                 await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);\n205:             }\n206:             catch { /* 构建失败则预热退化为普通分类，不阻塞 */ }\n207:             if (cancellationToken.IsCancellationRequested) return;\n208: \n209:             var lineCount = Math.Min(maxLines, _document.LineCount);\n210:             for (int lineNumber = 1; lineNumber <= lineCount; lineNumber++)\n211:             {\n212:                 if (cancellationToken.IsCancellationRequested) return;\n213:                 var documentLine = _document.GetLineByNumber(lineNumber);\n214:                 if (documentLine.TotalLength == 0) continue;\n215: \n216:                 IEnumerable<ClassifiedSpan> spans;\n217:                 try\n218:                 {\n219:                     spans = await GetClassifiedSpansAsync(document, documentLine).ConfigureAwait(false);\n220:                 }\n221:                 catch { continue; }\n222: \n223:                 var highlightedLine = new HighlightedLine(_document, documentLine);\n224:                 foreach (var classifiedSpan in spans)\n225:                 {\n226:                     if (IsOutsideLine(classifiedSpan, documentLine)) continue;\n227:                     highlightedLine.Sections.Add(new HighlightedSection\n228:                     {\n229:                         Color = _highlightColors.GetBrush(classifiedSpan.ClassificationType),\n230:                         Offset = classifiedSpan.TextSpan.Start,\n231:                         Length = classifiedSpan.TextSpan.Length,\n232:                     });\n233:                 }\n234: \n235:                 // 写 _cachedLines（行进入可视区时 HighlightLine 命中直接复用）\n236:                 if (_document.Version != null)\n237:                 {\n238:                     _cachedLines.Add(new CachedLine(highlightedLine, _document.Version));\n239:                     if (_cachedLines.Count > CacheSize)\n240:                         _cachedLines.RemoveRange(0, CacheSize / 2);\n241:                 }\n242:             }\n243: \n244:             // 预热完成触发重绘（AvalonEdit 对受影响行重画，命中缓存显示分类色）\n245:             HighlightingStateChanged?.Invoke(1, lineCount);\n246:             _warmupTcs.TrySetResult();\n247:         }\n248:         catch { /* 预热失败不阻塞主流程 */ }\n249:         finally\n250:         {\n251:             // 无论是否成功，都置位预热完成信号（避免等待方永久挂起）\n252:             _warmupTcs.TrySetResult();\n253:         }\n254:     }\n255: "
+        },
+        {
+          "start": 348,
+          "end": 358,
+          "text": "348:     private async Task<IEnumerable<ClassifiedSpan>> GetClassifiedSpansAsync(Document document, IDocumentLine documentLine)\n349:     {\n350:         var text = await document.GetTextAsync().ConfigureAwait(false);\n351:         if (text.Length >= documentLine.Offset + documentLine.TotalLength)\n352:         {\n353:             return await Classifier.GetClassifiedSpansAsync(document,\n354:                 new TextSpan(documentLine.Offset, documentLine.TotalLength), CancellationToken.None)\n355:                 .ConfigureAwait(false);\n356:         }\n357:         return Array.Empty<ClassifiedSpan>();\n358:     }"
+        }
+      ]
+    },
+    {
+      "id": "SP2",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\ScriptEditorCore.xaml.cs",
+      "sha256": "bb2f9c7618bd6f66f79785299518102a7ce1d5311143e0181478aeec2b5be88a",
+      "excerpts": [
+        {
+          "start": 175,
+          "end": 225,
+          "text": "175:     /// <summary>\n176:     /// 应用启动后台预热补全引擎（MEF + Workspace）。对齐新版 RoslynPad 的 Task.Run 启动初始化。\n177:     /// 幂等：双重检查锁保证进程内只预热一次；完成后置 _completionReady 并通知等待中的调用方。\n178:     /// </summary>\n179:     internal static void WarmupForStartup()\n180:     {\n181:         lock (_warmupLock)\n182:         {\n183:             if (_warmupStarted) return;\n184:             _warmupStarted = true;\n185:         }\n186: \n187:         _ = Task.Run(async () =>\n188:         {\n189:             var sw = System.Diagnostics.Stopwatch.StartNew();\n190:             PluginLogger.Info(\"[补全] 启动后台预热 Roslyn 开始...\", nameof(ScriptEditorCore));\n191:             await WarmupRoslynAsync();\n192:             await WarmupWorkspaceAsync();\n193:             sw.Stop();\n194:             _completionReady = true;\n195:             PluginLogger.Info($\"[补全] 启动后台预热完成: {sw.ElapsedMilliseconds}ms\", nameof(ScriptEditorCore));\n196: \n197:             var cb = Interlocked.Exchange(ref _onCompletionReady, null);\n198:             cb?.Invoke();\n199:         });\n200:     }\n201: \n202:     private static Task WarmupRoslynAsync()\n203:     {\n204:         return Task.Run(() =>\n205:         {\n206:             var sw = System.Diagnostics.Stopwatch.StartNew();\n207:             PluginLogger.Info(\"[补全] 后台预热 Roslyn 开始...\", nameof(ScriptEditorCore));\n208:             GetSharedMefHost();\n209:             sw.Stop();\n210:             PluginLogger.Info($\"[补全] 后台预热 Roslyn 完成: {sw.ElapsedMilliseconds}ms\", nameof(ScriptEditorCore));\n211:         });\n212:     }\n213: \n214:     private static Task WarmupWorkspaceAsync()\n215:     {\n216:         return Task.Run(() =>\n217:         {\n218:             var sw = System.Diagnostics.Stopwatch.StartNew();\n219:             PluginLogger.Info(\"[补全] 后台预热 Workspace 开始...\", nameof(ScriptEditorCore));\n220:             var host = GetSharedMefHost();\n221:             var ws = new ScriptWorkspace(host);\n222:             ws.TryApplyChanges(ws.CurrentSolution.AddProject(\n223:                 ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), \"ScriptCompletion\", \"ScriptCompletion\", LanguageNames.CSharp)));\n224:             Interlocked.Exchange(ref _preWarmedWorkspace, ws);\n225:             sw.Stop();"
+        },
+        {
+          "start": 324,
+          "end": 360,
+          "text": "324:     public void InitializeWorkspace()\n325:     {\n326:         var perfSw = System.Diagnostics.Stopwatch.StartNew();\n327:         RebuildWorkspace();\n328:         PluginLogger.Info($\"[Perf] RebuildWorkspace: {perfSw.ElapsedMilliseconds}ms\", typeName);\n329:         SetSuppressDiagnostic(false);\n330:         EnsureSemanticHighlighterMounted();\n331:         ScheduleDiagnosticAsync();\n332:         RedrawVisibleLines();\n333:         _ = WarmupCompletionAsync();\n334:     }\n335: \n336:     /// <summary>\n337:     /// 打开前预热：重建 workspace + 完成语义着色，供窗口显示前调用（对齐\"打开即着色，无白色过渡\"）。\n338:     /// 在 InitializeAsync（窗口 Show 前被 await）中调用，同步完成 RebuildWorkspace + 挂载高亮，\n339:     /// 再等待语义模型构建 + 可视区前 N 行分类完成。\n340:     /// </summary>\n341:     public async Task InitializeAndWaitAsync()\n342:     {\n343:         InitializeWorkspace();\n344:         await WaitForInitialHighlightAsync();\n345:     }\n346: \n347:     /// <summary>\n348:     /// 等待语义高亮预热完成：确保 highlighter 已创建（触发一次布局），再等其 WarmupCompletion。\n349:     /// </summary>\n350:     private async Task WaitForInitialHighlightAsync()\n351:     {\n352:         if (_semanticColorizer == null) return;\n353: \n354:         // 确保 highlighter 已创建（AvalonEdit 布局时才 CreateHighlighter + TriggerWarmup）\n355:         if (CodeEditor.TextArea.TextView.VisualLinesValid)\n356:             _ = CodeEditor.TextArea.TextView.VisualLines;\n357: \n358:         await _semanticColorizer.WarmupCompletion;\n359:     }\n360: "
+        },
+        {
+          "start": 692,
+          "end": 747,
+          "text": "692:         {\n693:             _throttleCts?.Cancel();\n694:             _throttleCts?.Dispose();\n695:             _throttleCts = new CancellationTokenSource();\n696:             var sigToken = _throttleCts.Token;\n697:             await ShowSignatureHelpAsync(CodeEditor.TextArea.Caret.Offset, e.Text[0], sigToken);\n698:             return;\n699:         }\n700: \n701:         if (!isTriggerChar)\n702:         {\n703:             return;\n704:         }\n705: \n706:         // 新查询取消旧查询（对齐 RoslynPad：TextEntered 直接查询，无节流滞后感）\n707:         _throttleCts?.Cancel();\n708:         _throttleCts?.Dispose();\n709:         _throttleCts = new CancellationTokenSource();\n710:         var token = _throttleCts.Token;\n711: \n712:         try\n713:         {\n714:             bool isDot = e.Text == \".\";\n715: \n716:             if (isDot)\n717:             {\n718:                 await ThrottledRefreshAndShow('.', token);\n719:                 return;\n720:             }\n721: \n722:             // 字母数字：窗口已开 → 沉默，AvalonEdit CompletionList 自动过滤（内置质量评分）\n723:             // 无窗口 → 首次 Roslyn 查询\n724:             bool windowActive = _completionWindow != null && _currentItems.Length > 0;\n725:             if (!windowActive)\n726:             {\n727:                 await ThrottledRefreshAndShow(e.Text[0], token);\n728:             }\n729:         }\n730:         catch (TaskCanceledException)\n731:         {\n732:             // 节流取消，忽略\n733:         }\n734:     }\n735: \n736:     /// <summary>\n737:     /// 文本输入中处理补全窗口的插入确认。\n738:     /// '.' 特殊处理：前缀完全匹配 → 关闭窗口让 '.' 通过触发成员补全；\n739:     /// 部分匹配 → RequestInsertion 补全文本 + 手动插入 '.' + 触发成员补全。\n740:     /// 其他非字母数字 → RequestInsertion（提交选中项，字符通过）。\n741:     /// </summary>\n742:     private void TextArea_TextEntering(object? sender, TextCompositionEventArgs e)\n743:     {\n744:         if (e.Text.Length > 0 && _completionWindow != null)\n745:         {\n746:             if (!char.IsLetterOrDigit(e.Text[0]) && e.Text[0] != '_')\n747:             {"
+        },
+        {
+          "start": 780,
+          "end": 854,
+          "text": "780:     /// <summary>在 '.' 手动插入后，直接触发成员补全查询。</summary>\n781:     private async Task TriggerMemberCompletionAfterDot()\n782:     {\n783:         // '.' 是独立触发动作（非连续打字路径），无竞态需取消，用 CancellationToken.None 免分配 CTS\n784:         await ThrottledRefreshAndShow('.', CancellationToken.None);\n785:     }\n786: \n787:     /// <summary>单次 Roslyn 解析 + 弹窗/更新窗口（仅从 ThrottledRefreshAndShow 调用）。</summary>\n788:     private async Task ThrottledRefreshAndShow(char triggerChar, CancellationToken token)\n789:     {\n790:         var items = await FetchFreshCompletions(triggerChar, token);\n791:         if (token.IsCancellationRequested)\n792:         {\n793:             return;\n794:         }\n795:         if (items.IsDefault || items.Length == 0)\n796:         {\n797:             return;\n798:         }\n799: \n800:         // ★ 唯一数据源写入点：只有这里会修改 _currentItems ★\n801:         _currentItems = items.ToArray();\n802: \n803:         ShowCompletionWindow(items);\n804:     }\n805: \n806:     /// <summary>用 Roslyn 结果渲染/更新补全窗口（单次渲染，不重复创建）。</summary>\n807:     private void ShowCompletionWindow(ImmutableArray<CompletionItem> items)\n808:     {\n809:         var caretOffset = CodeEditor.TextArea.Caret.Offset;\n810:         var prefix = GetPrefixFromCaret();\n811: \n812:         if (_completionWindow != null)\n813:         {\n814:             // 已有窗口 → 更新数据源（Roslyn 刷新场景）\n815:             PopulateData(_completionWindow.CompletionList.CompletionData, items);\n816:             return;\n817:         }\n818: \n819:         var startOffset = caretOffset - prefix.Length;\n820:         var endOffset = FindEndOfWord(caretOffset);\n821: \n822:         // 创建新窗口，IsFiltering=true 为默认值，AvalonEdit 自动做智能过滤\n823:         var window = new CompletionWindow(CodeEditor.TextArea)\n824:         {\n825:             StartOffset = startOffset,\n826:             EndOffset = endOffset,\n827:             Background = ThemeResource.GetBrush(\"ThemePanelBackgroundBrush\"),\n828:             Foreground = ThemeResource.GetBrush(\"ThemeTextPrimaryBrush\"),\n829:         };\n830:         // 列表项背景/选中高亮也跟主题（ListBox 模板内资源）\n831:         window.CompletionList.Background = ThemeResource.GetBrush(\"ThemePanelBackgroundBrush\");\n832:         window.CompletionList.Foreground = ThemeResource.GetBrush(\"ThemeTextPrimaryBrush\");\n833:         window.CompletionList.ListBox.Background = ThemeResource.GetBrush(\"ThemePanelBackgroundBrush\");\n834:         window.CompletionList.ListBox.Foreground = ThemeResource.GetBrush(\"ThemeTextPrimaryBrush\");\n835:         PopulateData(window.CompletionList.CompletionData, items);\n836: \n837:         window.Closed += (_, _) =>\n838:         {\n839:             _completionWindow = null;\n840:             _currentItems = [];    // 窗口关闭 → 数据作废，下次重新解析\n841:         };\n842: \n843:         window.Show();\n844: \n845:         _completionWindow = window;\n846:     }\n847: \n848:     /// <summary>将 Roslyn CompletionItem[] 直接注入 CompletionList（AvalonEdit 接管客户端过滤）。</summary>\n849:     private void PopulateData(IList<ICompletionData> data, ImmutableArray<CompletionItem> items)\n850:     {\n851:         var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);\n852:         data.Clear();\n853:         foreach (var item in items)\n854:             data.Add(new RoslynCompletionData(item, doc, _completionIconProvider));"
+        },
+        {
+          "start": 886,
+          "end": 969,
+          "text": "886:             return default;\n887:         }\n888: \n889:         var code = CodeEditor.Text;\n890:         var caretOffset = CodeEditor.TextArea.Caret.Offset;\n891: \n892:         if (string.IsNullOrEmpty(code))\n893:         {\n894:             PluginLogger.Warning(\"[补全] FetchFreshCompletions 跳过: 代码为空\", typeName);\n895:             return default;\n896:         }\n897:         if (caretOffset <= 0)\n898:         {\n899:             PluginLogger.Warning($\"[补全] FetchFreshCompletions 跳过: caretOffset={caretOffset}\", typeName);\n900:             return default;\n901:         }\n902: \n903:         try\n904:         {\n905:             var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);\n906:             if (doc == null)\n907:             {\n908:                 PluginLogger.Warning($\"[补全] workspace 中找不到 user document: {_userDocumentId}\", typeName);\n909:                 return default;\n910:             }\n911: \n912:             var completionService = CompletionService.GetService(doc);\n913:             if (completionService == null)\n914:             {\n915:                 PluginLogger.Warning($\"[补全] CompletionService 不可用, caretOffset={caretOffset}\", typeName);\n916:                 return default;\n917:             }\n918: \n919:             var trigger = triggerChar != '\\0'\n920:                 ? CompletionTrigger.CreateInsertionTrigger(triggerChar)\n921:                 : CompletionTrigger.Default;\n922: \n923:             var results = await completionService.GetCompletionsAsync(doc, caretOffset, trigger);\n924: \n925:             if (token.IsCancellationRequested)\n926:             {\n927:                 return default;\n928:             }\n929:             if (results == null)\n930:             {\n931:                 PluginLogger.Warning(\"[补全] GetCompletionsAsync 返回 null\", typeName);\n932:                 return default;\n933:             }\n934: \n935:             return results.ItemsList.ToImmutableArray();\n936:         }\n937:         catch (OperationCanceledException)\n938:         {\n939:             PluginLogger.Info(\"[补全] 查询被取消（新输入接管）\", typeName);\n940:             return default;\n941:         }\n942:         catch (Exception ex)\n943:         {\n944:             PluginLogger.Warning($\"[补全] FetchCompletions 异常: {ex.GetType().Name}: {ex.Message}\\n{ex.StackTrace}\", typeName);\n945:             return default;\n946:         }\n947:     }\n948: \n949:     /// <summary>补全预热：后台对 user 文档跑一次 GetCompletionsAsync，让 CompletionService 缓存命中。</summary>\n950:     public async Task WarmupCompletionAsync()\n951:     {\n952:         try\n953:         {\n954:             if (_workspace == null || _userDocumentId == null) return;\n955:             var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);\n956:             if (doc == null) return;\n957: \n958:             var caretOffset = CodeEditor.Text.Length;\n959:             var completionService = CompletionService.GetService(doc);\n960:             if (completionService == null) return;\n961: \n962:             var trigger = CompletionTrigger.CreateInsertionTrigger('a');\n963:             await completionService.GetCompletionsAsync(doc, caretOffset, trigger)\n964:                 .ConfigureAwait(false);\n965:         }\n966:         catch { /* 预热失败不阻塞主流程 */ }\n967:     }\n968: \n969:     // ======================================================="
+        },
+        {
+          "start": 1092,
+          "end": 1212,
+          "text": "1092:     public void RebuildWorkspace(bool refreshReferences = false)\n1093:     {\n1094:         if (_getReferences == null)\n1095:             throw new InvalidOperationException(\"未注入引用来源：请先调用 SetReferenceProvider（rule-008 报错优先）。\");\n1096:         if (_getGeneratedCode == null || _getUserCode == null)\n1097:             throw new InvalidOperationException(\"未注入代码来源：请先调用 SetCodeSource（rule-008 报错优先）。\");\n1098: \n1099:         // 实例级复用：workspace 已建且非强制刷新引用 → 只更新 generated 文档文本（user 文档由增量容器自动同步）\n1100:         if (_workspaceInitialized && !refreshReferences)\n1101:         {\n1102:             var genCode = _getGeneratedCode();\n1103:             _workspace!.SetCurrentSolution(_workspace.CurrentSolution\n1104:                 .WithDocumentText(_documentId!, SourceText.From(genCode)));\n1105:             return;\n1106:         }\n1107: \n1108:         var generatedCode = _getGeneratedCode();\n1109:         var userCode = _getUserCode();\n1110:         var totalSw = System.Diagnostics.Stopwatch.StartNew();\n1111: \n1112:         PluginLogger.Info($\"[补全] RebuildWorkspace 开始: generatedCodeLen={generatedCode.Length}, userCodeLen={userCode.Length}\", typeName);\n1113: \n1114:         _workspace?.Dispose();\n1115: \n1116:         // 加载 MefHostServices 确保所有 CompletionProvider 可用（缓存机制，首次慢后续快）\n1117:         var sw = System.Diagnostics.Stopwatch.StartNew();\n1118:         var host = GetSharedMefHost();\n1119:         PluginLogger.Info($\"[补全] MefHostServices 创建完成: {sw.ElapsedMilliseconds}ms\", typeName);\n1120: \n1121:         Project project;\n1122:         if (_preWarmedWorkspace != null)\n1123:         {\n1124:             _workspace = _preWarmedWorkspace;\n1125:             _preWarmedWorkspace = null;\n1126:             PluginLogger.Info(\"[补全] 复用预热 Workspace\", typeName);\n1127:         }\n1128:         else\n1129:         {\n1130:             _workspace = new ScriptWorkspace(host);\n1131:             PluginLogger.Info(\"[补全] ScriptWorkspace 实例已创建\", typeName);\n1132:         }\n1133: \n1134:         sw.Restart();\n1135:         var existingProject = _workspace.CurrentSolution.Projects.FirstOrDefault();\n1136:         if (existingProject != null)\n1137:         {\n1138:             project = existingProject.WithCompilationOptions(\n1139:                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)\n1140:                     .WithAllowUnsafe(true));\n1141:             PluginLogger.Info($\"[补全] 复用预热项目: {sw.ElapsedMilliseconds}ms\", typeName);\n1142:         }\n1143:         else\n1144:         {\n1145:             var projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), \"ScriptCompletion\", \"ScriptCompletion\", LanguageNames.CSharp);\n1146:             var newSolution = _workspace.CurrentSolution.AddProject(projectInfo);\n1147:             project = newSolution.GetProject(projectInfo.Id)!.WithCompilationOptions(\n1148:                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)\n1149:                     .WithAllowUnsafe(true));\n1150:             PluginLogger.Info($\"[补全] 项目创建完成: {sw.ElapsedMilliseconds}ms\", typeName);\n1151:         }\n1152: \n1153:         // 扫描引用：引用来源由调用方（工具层）注入，合并 host 引用 + ScriptRefs 目录引用\n1154:         sw.Restart();\n1155:         var refs = _getReferences().ToList();\n1156:         var seenRefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);\n1157:         var refCount = 0;\n1158:         foreach (var mdRef in refs)\n1159:         {\n1160:             if (mdRef is PortableExecutableReference per && per.FilePath != null)\n1161:             {\n1162:                 string key;\n1163:                 try { key = System.IO.Path.GetFullPath(per.FilePath); }\n1164:                 catch { key = per.FilePath; }\n1165:                 if (!seenRefs.Add(key)) continue;\n1166:             }\n1167:             project = project.AddMetadataReference(mdRef);\n1168:             refCount++;\n1169:         }\n1170:         PluginLogger.Info($\"[补全] 已添加 {refCount} 个 MetadataReference: {sw.ElapsedMilliseconds}ms\", typeName);\n1171: \n1172:         sw.Restart();\n1173:         // 用 SetCurrentSolution 直接替换（对齐 RoslynPad SetSubmissionDocument），\n1174:         // 接受 AddProject + AddMetadataReference 全部变化，避免 TryApplyChanges 钩子链异常。\n1175:         _workspace.SetCurrentSolution(project.Solution);\n1176:         PluginLogger.Info($\"[补全] SetCurrentSolution(项目+引用): {sw.ElapsedMilliseconds}ms\", typeName);\n1177: \n1178:         sw.Restart();\n1179: \n1180:         // 添加两个文档：字段声明 partial class + 用户完整 partial class。\n1181:         var genDocId = DocumentId.CreateNewId(project.Id);\n1182:         var userDocId = DocumentId.CreateNewId(project.Id);\n1183: \n1184:         var solution = project.Solution\n1185:             .AddDocument(DocumentInfo.Create(genDocId, \"ScriptGenerated.cs\", folders: null,\n1186:                 sourceCodeKind: SourceCodeKind.Regular))\n1187:             .AddDocument(DocumentInfo.Create(userDocId, \"ScriptUser.cs\", folders: null,\n1188:                 sourceCodeKind: SourceCodeKind.Regular));\n1189: \n1190:         // 先以当前 generatedCode 文本同步 generated 文档（后续由诊断用 WithDocumentText 更新）\n1191:         solution = solution.WithDocumentText(genDocId, SourceText.From(generatedCode));\n1192: \n1193:         // 用 SetCurrentSolution 直接替换（对齐 RoslynPad SetSubmissionDocument）：\n1194:         // TryApplyChanges 对 AddDocument 走 OnDocumentAdded 钩子链，在 Workspace 基类下会抛异常。\n1195:         _workspace.SetCurrentSolution(solution);\n1196:         _documentId = genDocId;\n1197: \n1198:         // 用户文档绑定 SourceTextContainer 增量通道：容器每次编辑事件携带局部 TextChangeRange，\n1199:         // 经 ScriptWorkspace.OpenDocument 注册，Roslyn 只重解析受影响区域（对齐 RoslynPad workspace.OpenDocument 模式）。\n1200:         _userTextContainer?.Dispose();\n1201:         _userTextContainer = new AvalonEditTextContainer(CodeEditor.Document);\n1202:         _workspace.OpenDocument(userDocId, _userTextContainer);\n1203:         _userDocumentId = userDocId;\n1204: \n1205:         PluginLogger.Info($\"[补全] 文档添加完成: genDocId={_documentId}, userDocId={_userDocumentId}: {sw.ElapsedMilliseconds}ms\", typeName);\n1206: \n1207:         _workspaceInitialized = true;\n1208: \n1209:         var refsCount = _workspace.CurrentSolution.Projects.First().MetadataReferences.Count;\n1210:         PluginLogger.Info($\"[补全] Workspace 重建完成: {refsCount} 个引用, 总耗时={totalSw.ElapsedMilliseconds}ms\", typeName);\n1211:     }\n1212: "
+        }
+      ]
+    },
+    {
+      "id": "SP3",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptCompiler.cs",
+      "sha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+      "excerpts": [
+        {
+          "start": 137,
+          "end": 175,
+          "text": "137:             string assemblyName,\n138:             string? assemblyRefDir = null,\n139:             IReadOnlyList<string>? assemblyNames = null)\n140:         {\n141:             var totalSw = Stopwatch.StartNew();\n142:             var result = new CompileResult();\n143:             result.UsingLineOffset = 0;\n144: \n145:             if (codeParts == null || codeParts.Count == 0 || codeParts.All(string.IsNullOrWhiteSpace))\n146:             {\n147:                 result.Diagnostics.Add(\"脚本代码为空\");\n148:                 return result;\n149:             }\n150: \n151:             // 合并所有代码段用于缓存哈希 + 类名提取\n152:             var combinedCode = string.Join(\"\\n\", codeParts);\n153: \n154:             // 0a. 检查编译缓存（相同代码 + 宿主程序集指纹 + 引用列表指纹）\n155:             // 缓存键包含宿主已加载程序集版本指纹（升级自动重编译）与引用列表指纹\n156:             // （勾选/取消程序集后缓存键变化，自动重新编译，杜绝错误命中）。\n157:             var cacheKey = ComputeCacheKey(combinedCode, assemblyNames);\n158:             if (_compileCache.TryGetValue(cacheKey, out var cached))\n159:             {\n160:                 PluginLogger.Info(\n161:                     $\"[ScriptCompiler] 编译缓存命中: hash={cacheKey[..8]}..., 代码长度={combinedCode.Length}\",\n162:                     nameof(ScriptCompiler));\n163:                 return new CompileResult\n164:                 {\n165:                     Success = cached.Success,\n166:                     AssemblyBytes = cached.AssemblyBytes,\n167:                     SymbolBytes = cached.SymbolBytes,\n168:                     Diagnostics = cached.Diagnostics,\n169:                     EntryClassName = cached.EntryClassName,\n170:                     UsingLineOffset = cached.UsingLineOffset,\n171:                 };\n172:             }\n173: \n174:             // 2. 构建多个语法树（每个代码段独立语法树）\n175:             var parseSw = Stopwatch.StartNew();"
+        },
+        {
+          "start": 175,
+          "end": 263,
+          "text": "175:             var parseSw = Stopwatch.StartNew();\n176:             var syntaxTrees = new SyntaxTree[codeParts.Count];\n177:             for (int i = 0; i < codeParts.Count; i++)\n178:             {\n179:                 syntaxTrees[i] = SyntaxFactory.ParseSyntaxTree(\n180:                     SourceText.From(codeParts[i]), _parseOptions);\n181:             }\n182:             parseSw.Stop();\n183: \n184:             // 3. 获取元数据引用：按每节点引用列表（唯一真相源）组装。\n185:             //    assemblyNames 提供时，遍历列表经 ResolveAssemblyPath 逐个解析（BCL/宿主锚定/ScriptRefs），\n186:             //    找不到抛异常（rule-015）。不提供则回退到 GetHostReferences + ScriptRefs 目录全部 DLL。\n187:             var refSw = Stopwatch.StartNew();\n188:             var metadataReferences = new List<MetadataReference>();\n189:             var addedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);\n190:             int hostRefCount = 0, scriptRefCount = 0;\n191: \n192:             if (assemblyNames != null && assemblyNames.Count > 0)\n193:             {\n194:                 // 按节点引用列表组装：每个名称经 ResolveAssemblyPath 解析，找不到直接抛错\n195:                 foreach (var name in assemblyNames)\n196:                 {\n197:                     if (string.IsNullOrWhiteSpace(name)) continue;\n198:                     var mdRef = MetadataReferenceProvider.ResolveAssemblyPath(name.Trim(), assemblyRefDir);\n199:                     if (TryAddMetadataRef(metadataReferences, addedPaths, mdRef)) hostRefCount++;\n200:                 }\n201:             }\n202:             else\n203:             {\n204:                 foreach (var mdRef in MetadataReferenceProvider.GetHostReferences())\n205:                 {\n206:                     if (TryAddMetadataRef(metadataReferences, addedPaths, mdRef)) hostRefCount++;\n207:                 }\n208:                 // 3b. ScriptRefs 目录（仅用户自定义第三方 DLL），通过共享缓存加载\n209:                 if (!string.IsNullOrEmpty(assemblyRefDir))\n210:                 {\n211:                     var sharedRefs = SharedMetadataReferenceProvider.GetScriptRefs(assemblyRefDir);\n212:                     scriptRefCount = sharedRefs.Count;\n213:                     foreach (var mdRef in sharedRefs)\n214:                     {\n215:                         TryAddMetadataRef(metadataReferences, addedPaths, mdRef);\n216:                     }\n217:                 }\n218:             }\n219:             refSw.Stop();\n220: \n221:             // 4. 创建编译（传入多个语法树）\n222:             var createSw = Stopwatch.StartNew();\n223:             var compilation = CSharpCompilation.Create(\n224:                 assemblyName,\n225:                 syntaxTrees,\n226:                 metadataReferences,\n227:                 _compilationOptions);\n228:             createSw.Stop();\n229: \n230:             // 5. 编译并输出\n231:             var emitSw = Stopwatch.StartNew();\n232:             using var assemblyStream = new MemoryStream();\n233:             using var symbolStream = new MemoryStream();\n234: \n235:             var emitResult = compilation.Emit(assemblyStream, symbolStream,\n236:                 options: new EmitOptions(\n237:                     debugInformationFormat: DebugInformationFormat.PortablePdb));\n238:             emitSw.Stop();\n239: \n240:             totalSw.Stop();\n241: \n242:             PluginLogger.Info($\"[ScriptCompiler] 编译性能: 语法树={codeParts.Count}({parseSw.ElapsedMilliseconds}ms), \" +\n243:                 $\"引用={refSw.ElapsedMilliseconds}ms(宿主={hostRefCount},ScriptRefs={scriptRefCount}), \" +\n244:                 $\"创建编译={createSw.ElapsedMilliseconds}ms, Emit={emitSw.ElapsedMilliseconds}ms, \" +\n245:                 $\"总={totalSw.ElapsedMilliseconds}ms, 成功={emitResult.Success}, \" +\n246:                 $\"代码长度={combinedCode.Length}\",\n247:                 nameof(ScriptCompiler));\n248: \n249:             if (emitResult.Success)\n250:             {\n251:                 result.Success = true;\n252:                 result.AssemblyBytes = assemblyStream.ToArray();\n253:                 result.SymbolBytes = symbolStream.ToArray();\n254:                 result.EntryClassName = ExtractClassName(combinedCode);\n255: \n256:                 // 编译成功，加入缓存\n257:                 _compileCache[cacheKey] = result;\n258:             }\n259:             else\n260:             {\n261:                 foreach (var diagnostic in emitResult.Diagnostics)\n262:                 {\n263:                     if (diagnostic.Severity == DiagnosticSeverity.Error)"
+        },
+        {
+          "start": 350,
+          "end": 394,
+          "text": "350:         internal static string ComputeCacheKey(string combinedCode, IReadOnlyList<string>? assemblyNames)\n351:         {\n352:             var codeHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(combinedCode)));\n353:             var refListFingerprint = ComputeRefListFingerprint(assemblyNames);\n354:             return $\"{codeHash}|{ComputeHostFingerprint()}|{refListFingerprint}\";\n355:         }\n356: \n357:         /// BCL 程序集版本在进程生命周期内不变，不计入指纹以保证缓存命中率。\n358:         /// </summary>\n359:         internal static string ComputeHostFingerprint()\n360:         {\n361:             var nativeHostNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)\n362:             {\n363:                 \"halcondotnetxl\",\n364:                 \"OpenCvSharp\",\n365:                 \"System.Windows.Forms\",\n366:             };\n367: \n368:             var sb = new StringBuilder();\n369:             foreach (var asm in AssemblyLoadContext.Default.Assemblies\n370:                 .Where(a => !a.IsDynamic && a.GetName().Name != null)\n371:                 .Where(a =>\n372:                     a.GetName().Name!.StartsWith(\"SunEyeVision.\", StringComparison.OrdinalIgnoreCase)\n373:                     || nativeHostNames.Contains(a.GetName().Name!))\n374:                 .OrderBy(a => a.GetName().Name))\n375:             {\n376:                 var name = asm.GetName();\n377:                 sb.Append($\"{name.Name}:{name.Version}|\");\n378:             }\n379: \n380:             return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];\n381:         }\n382: \n383:         /// <summary>\n384:         /// 计算引用列表指纹（用于编译缓存键）。引用列表变化（勾选/取消程序集）→ 指纹变化 → 缓存自动失效。\n385:         /// 空/未提供列表返回固定占位符（保持与旧缓存兼容路径一致）。\n386:         /// </summary>\n387:         internal static string ComputeRefListFingerprint(IReadOnlyList<string>? assemblyNames)\n388:         {\n389:             if (assemblyNames == null || assemblyNames.Count == 0)\n390:                 return \"none\";\n391:             var sb = new StringBuilder();\n392:             foreach (var name in assemblyNames.OrderBy(n => n, StringComparer.OrdinalIgnoreCase))\n393:                 sb.Append($\"{name}|\");\n394:             return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];"
+        }
+      ]
+    },
+    {
+      "id": "SP4",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptLifecycleManager.cs",
+      "sha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b",
+      "excerpts": [
+        {
+          "start": 91,
+          "end": 145,
+          "text": "91: \n92:             var assemblyName = $\"ScriptAssembly_{_runCounter}_{Guid.NewGuid():N}\";\n93: \n94:             // 1. 编译（双语法树：系统生成的字段声明 + 用户完整 partial class）\n95:             var compileSw = Stopwatch.StartNew();\n96:             var compileResult = _compiler.Compile(\n97:                 [generatedCode, userCode], assemblyName, assemblyRefDir, assemblyNames);\n98:             compileSw.Stop();\n99:             _compileTimeMs = compileSw.ElapsedMilliseconds;\n100: \n101:             if (!compileResult.Success)\n102:             {\n103:                 errors.AddRange(compileResult.Diagnostics);\n104:                 return errors;\n105:             }\n106: \n107:             if (compileResult.EntryClassName == null)\n108:             {\n109:                 errors.Add(\"未找到继承 Script 的类。请确保脚本中有一个类继承 Script。\");\n110:                 return errors;\n111:             }\n112: \n113:             // 2. 在沙箱中加载并执行（从常驻池获取，复用 ALC + 程序集 + JIT 缓存）。\n114:             //    沙箱按编译缓存键分组：相同代码+引用复用，代码变化自动建新沙箱（旧沙箱由池 LRU 淘汰）。\n115:             var combinedCode = string.Join(\"\\n\", new[] { generatedCode, userCode });\n116:             var sandbox = ScriptSandboxPool.GetOrCreate(ScriptCompiler.ComputeCacheKey(combinedCode, assemblyNames), assemblyRefDir);\n117:             Exception? loadError = null;\n118: \n119:             try\n120:             {\n121:                 sandbox.LoadAssembly(compileResult.AssemblyBytes!, compileResult.SymbolBytes);\n122:             }\n123:             catch (Exception ex)\n124:             {\n125:                 loadError = ex;\n126:             }\n127: \n128:             if (loadError != null)\n129:             {\n130:                 errors.Add($\"加载脚本程序集失败: {loadError.Message}\");\n131:                 return errors;\n132:             }\n133: \n134:             // 3. 创建实例（类不存在或类型不匹配时 CreateScriptInstance 直接抛异常，错误信息已含诊断上下文）\n135:             ScriptBase scriptInstance;\n136:             try\n137:             {\n138:                 scriptInstance = sandbox.CreateScriptInstance(compileResult.EntryClassName);\n139:             }\n140:             catch (Exception ex)\n141:             {\n142:                 errors.Add($\"创建脚本实例失败: {ex.Message}\");\n143:                 return errors;\n144:             }\n145: "
+        },
+        {
+          "start": 197,
+          "end": 220,
+          "text": "197:                 }\n198:             }\n199: \n200:             // 6. 执行生命周期（Init → Process）\n201:             var runSw = Stopwatch.StartNew();\n202:             try\n203:             {\n204:                 scriptInstance.Init();\n205:                 scriptInstance.Process();\n206:                 scriptInstance.Release();\n207:             }\n208:             catch (Exception ex)\n209:             {\n210:                 // 提取用户脚本栈帧（含行号），精确匹配用户类，便于快速定位；无脚本帧则回退完整堆栈文本。\n211:                 // 只写 errors（→ CompileErrors → UI 红色展示一次）；不写 _logMessages\n212:                 // （用户脚本 LogError 已通过 ScriptContext 回调进日志，避免同一异常重复报告）。\n213:                 var detail = ExtractUserScriptFrame(ex, compileResult.EntryClassName!);\n214:                 errors.Add($\"脚本执行异常: {detail}\");\n215:             }\n216:             runSw.Stop();\n217:             _executionTimeMs = runSw.Elapsed.TotalMilliseconds;\n218: \n219:             // 7. 反射读取输出字段值\n220:             var outputType = scriptInstance.GetType();"
+        },
+        {
+          "start": 277,
+          "end": 322,
+          "text": "277:         public void WarmupSandbox(\n278:             string generatedCode,\n279:             string userCode,\n280:             string? assemblyRefDir,\n281:             IReadOnlyList<string>? assemblyNames = null)\n282:         {\n283:             try\n284:             {\n285:                 if (string.IsNullOrWhiteSpace(generatedCode) && string.IsNullOrWhiteSpace(userCode))\n286:                 {\n287:                     return;\n288:                 }\n289: \n290:                 var combinedCode = string.Join(\"\\n\", new[] { generatedCode, userCode });\n291:                 var cacheKey = ScriptCompiler.ComputeCacheKey(combinedCode, assemblyNames);\n292:                 var compileResult = ScriptCompiler.GetCachedResult(cacheKey);\n293:                 if (compileResult?.Success != true || compileResult.AssemblyBytes == null\n294:                     || compileResult.EntryClassName == null)\n295:                 {\n296:                     // 编译结果未入缓存（含编译失败场景），无可预热的实际产物，静默跳过\n297:                     return;\n298:                 }\n299: \n300:                 // 1. 常驻沙箱按实际缓存键就位（后续执行 GetOrCreate 命中，跳过创建）\n301:                 var sandbox = ScriptSandboxPool.GetOrCreate(cacheKey, assemblyRefDir);\n302: \n303:                 // 2. 加载实际程序集（后续执行 LoadAssembly 命中，跳过加载）\n304:                 sandbox.LoadAssembly(compileResult.AssemblyBytes, compileResult.SymbolBytes);\n305: \n306:                 // 3. 实例化触发构造函数 JIT + PrepareMethod 预编译方法体（不执行，无副作用）\n307:                 var instance = sandbox.CreateScriptInstance(compileResult.EntryClassName);\n308:                 foreach (var methodName in new[] { \"Init\", \"Process\", \"Release\" })\n309:                 {\n310:                     var method = instance.GetType().GetMethod(\n311:                         methodName, BindingFlags.Public | BindingFlags.Instance);\n312:                     if (method != null)\n313:                     {\n314:                         RuntimeHelpers.PrepareMethod(method.MethodHandle);\n315:                     }\n316:                 }\n317:             }\n318:             catch (Exception ex)\n319:             {\n320:                 PluginLogger.Warning($\"[Sandbox预热] 失败: {ex.Message}\", nameof(ScriptLifecycleManager));\n321:             }\n322:         }"
+        }
+      ]
+    },
+    {
+      "id": "SP5",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+      "sha256": "9dcd71bba72e25af94a858f52d18b0ca573709313f1cb491bc271fb275582048",
+      "excerpts": [
+        {
+          "start": 2030,
+          "end": 2064,
+          "text": "2030: \n2031:             var sw = System.Diagnostics.Stopwatch.StartNew();\n2032: \n2033:             _logger?.LogInfo($\"[预编译] 开始预编译, 节点数={precompilableNodes.Count}\", nameof(MainWindowViewModel));\n2034: \n2035:             // 后台 Task 并行预编译：\n2036:             // - 并行任务在线程池执行（无 UI 同步上下文），避免在 UI 线程直接调 Parallel.ForEach 的调度死锁\n2037:             // - 多脚本并行，启动时间不随脚本数成倍增加\n2038:             // - UI 线程同步等待完成（主窗口 Show 前预编译结束，确保所见即所得：打开工作区后脚本已编译）\n2039:             var parallelOptions = new ParallelOptions\n2040:             {\n2041:                 MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2)\n2042:             };\n2043: \n2044:             var snapshot = precompilableNodes.ToList();\n2045:             System.Threading.Tasks.Task.Run(() =>\n2046:             {\n2047:                 Parallel.ForEach(snapshot, parallelOptions, x =>\n2048:                 {\n2049:                     try\n2050:                     {\n2051:                         var tool = (IPrecompilableTool)x.Tool!;\n2052:                         var errors = tool.PreCompile(x.Node.Parameters!);\n2053:                         _logger?.LogInfo(\n2054:                             $\"[预编译] 节点=[{x.Node.Name}] 预编译完成, 诊断数={errors.Count}\" + (errors.Count > 0 ? $\", 诊断=[{string.Join(\"; \", errors.Take(2))}]\" : \"\"),\n2055:                             nameof(MainWindowViewModel));\n2056:                     }\n2057:                     catch (Exception ex)\n2058:                     {\n2059:                         _logger?.LogError($\"[预编译] 节点=[{x.Node.Name}] 预编译异常: {ex.Message}\", nameof(MainWindowViewModel));\n2060:                     }\n2061:                 });\n2062:             }).GetAwaiter().GetResult();\n2063: \n2064:             sw.Stop();"
+        },
+        {
+          "start": 3849,
+          "end": 3888,
+          "text": "3849: \n3850:                 // ④ 设置主窗口 ImageControl（可选）\n3851:                 // 注意：已移到 debugWindow.Show() 之后调用，确保 OverlayCanvas 已准备就绪\n3852: \n3853:                 // ⑤ 异步初始化\n3854:                 stepSw.Restart();\n3855:                 await initializer.InitializeAsync();\n3856:                 stepSw.Stop();\n3857:                 _logger?.LogInfo($\"[Perf] InitializeAsync: {stepSw.ElapsedMilliseconds}ms\", \"MainWindowViewModel\");\n3858:                 AddLog($\"✅ 调试控件初始化完成\");\n3859: \n3860:                 // 窗口路径的额外处理\n3861:                 if (target is System.Windows.Window debugWindow)\n3862:                 {\n3863:                     // 缓存数据提供者（已在 _workflowDsqsCache 中按 WorkflowId 缓存）\n3864: \n3865:                     // 订阅执行完成事件\n3866:                     SubscribeToolExecutionCompleted(debugWindow, node, dataProvider!);\n3867: \n3868:                     // 🔍 日志监控：准备调用 SetMainImageControl\n3869:                     AddLog($\"🔍 [监控] 准备显示窗口并设置 ImageControl\");\n3870: \n3871:                     // 显示窗口（确保数据初始化完成后再显示，这样 Loaded 事件触发时所有数据已就绪）\n3872:                     stepSw.Restart();\n3873:                     debugWindow.Show();\n3874:                     stepSw.Stop();\n3875:                     _logger?.LogInfo($\"[Perf] debugWindow.Show(): {stepSw.ElapsedMilliseconds}ms\", \"MainWindowViewModel\");\n3876:                     AddLog($\"✅ 调试窗口已显示\");\n3877: \n3878:                     // 缓存调试窗口（用于工作流执行完成后通知刷新）\n3879:                     _nodeDebugWindows[node.Id] = debugWindow;\n3880: \n3881:                     // 🔍 日志监控：窗口已显示，准备获取 ImageControl\n3882:                     AddLog($\"🔍 [监控] 窗口已调用 Show()，开始获取 ImageControl\");\n3883: \n3884:                     // ④ 设置主窗口 ImageControl（窗口显示后再设置，确保 OverlayCanvas 已准备就绪）\n3885:                     var mainImageControl = GetMainImageControl?.Invoke();\n3886:                     AddLog($\"🔍 [监控] 获取到 ImageControl: {mainImageControl?.GetType().Name ?? \"null\"}\");\n3887: \n3888:                     // 🔍 日志监控：准备调用 SetMainImageControl"
+        }
+      ]
+    },
+    {
+      "id": "SP6",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\Views\\ScriptDebugControl.xaml.cs",
+      "sha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+      "excerpts": [
+        {
+          "start": 167,
+          "end": 175,
+          "text": "167:         /// 异步初始化（窗口 Show 前由宿主 await）：重建 workspace + 完成语义预热，\n168:         /// 实现\"打开即着色、无白色过渡\"。覆盖基类空实现。\n169:         /// </summary>\n170:         public override async Task InitializeAsync()\n171:         {\n172:             await EditorCore.InitializeAndWaitAsync();\n173: \n174:             // ★ 打开调试窗口即预填充输入监视：若上游已有值（工作流执行过/失败保留），\n175:             //   无需点击执行即可看到输入值。防御：无上游/无 DataProvider/解析异常 → 静默跳过。"
+        },
+        {
+          "start": 335,
+          "end": 347,
+          "text": "335:             foreach (var log in result.LogMessages)\n336:                 _logEntries.Add(new LogEntry { Text = log, IsError = false });\n337: \n338:             // ★ 数据驱动：设置输出数据源，过滤掉未赋值的默认值\n339:             OutputTabControl.ValueSource = FilterDefaultValues(result.OutputValues);\n340: \n341:             // ★ 数据驱动：设置输入数据源\n342:             InputTabControl.ValueSource = execution.ResolvedInputValues;\n343: \n344:             CompileTimeLabel.Content = $\"编译: {result.CompileTimeMs}ms\";\n345:             ExecTimeLabel.Content = $\"执行: {result.ExecutionTimeMs}ms\";\n346:             UpdateStatus(result.IsSuccess ? \"成功\" : \"失败\");\n347: "
+        }
+      ]
+    },
+    {
+      "id": "HLOG1",
+      "path": "D:\\SunEyeVisionData\\Logs\\2026\\10\\22\\SunEyeVision_110711.txt",
+      "sha256": "0abfc0493fbc94fe46d2d0cd438ecf5a118bcdd04b0e6215652174d8d35335c1",
+      "selected": [
+        {
+          "line": 45,
+          "text": "[2026-10-22 11:07:12.046] [INFO] [ScriptEditorCore] [补全] MefHostServices 首次初始化: 4850ms"
+        },
+        {
+          "line": 62,
+          "text": "[2026-10-22 11:07:13.198] [INFO] [ScriptCompiler] [ScriptCompiler] 编译性能: 语法树=2(531ms), 引用=1685ms(宿主=33,ScriptRefs=0), 创建编译=32ms, Emit=2477ms, 总=4729ms, 成功=True, 代码长度=170"
+        },
+        {
+          "line": 2044,
+          "text": "[2026-10-22 11:07:22.033] [INFO] [ScriptCompiler] [ScriptCompiler] 编译性能: 语法树=2(38ms), 引用=36ms(宿主=33,ScriptRefs=0), 创建编译=0ms, Emit=701ms, 总=778ms, 成功=True, 代码长度=845"
+        }
+      ],
+      "limitation": "历史自然运行日志，无源码/产物身份与同机负载控制，不能当当前基线或VM比较；模板170字符不是用户实际脚本。"
+    }
+  ],
+  "chains": [
+    {
+      "name": "打开",
+      "stages": [
+        "点击→创建窗口/控件",
+        "SetParameters/引用和生成代码注入",
+        "InitializeAsync→RebuildWorkspace（共享MEF、领取空Workspace或新建、真实引用/文档）",
+        "触发SemanticModel及全文逐行分类",
+        "await WarmupCompletion",
+        "窗口Show/首帧/可输入"
+      ],
+      "facts": "SP1:75—78传全文行数，不是注释的前50行；SP5先await初始化。后台执行仍增加显示前关键路径。 缓存仅512行、超限删除最早256行；长文档预填尾部会淘汰最早首屏行，准备与消费范围不匹配。",
+      "unknown": "没有当前固定版本点击到首帧及各段关联计时，不能给百分比瓶颈排名"
+    },
+    {
+      "name": "首次补全",
+      "stages": [
+        "按键→触发/取消旧请求",
+        "当前Document+光标快照",
+        "CompletionService.GetCompletionsAsync",
+        "结果转数组",
+        "UI逐项创建RoslynCompletionData",
+        "弹窗Show/可选中"
+      ],
+      "facts": "SP2:923没有给Roslyn传token，返回后才查取消；启动预热只有空项目，WarmupCompletionAsync在当前脚本末尾触发a且失败静默，不等于任意成员位置补全已准备。",
+      "unknown": "首次provider激活、语义、候选构建与弹窗渲染各自多少未测；不能把全部耗时归到AvalonEdit"
+    },
+    {
+      "name": "编译与可执行",
+      "stages": [
+        "参数提交/冻结代码及真实引用身份",
+        "缓存键查询",
+        "语法树Parse",
+        "元数据引用解析",
+        "CSharpCompilation.Create",
+        "Emit/诊断/写缓存",
+        "ALC加载",
+        "构造脚本实例/输入上下文",
+        "Init→Process→Release"
+      ],
+      "facts": "SP3现有parse/ref/create/emit计时；Emit含其触发的延迟语义/引用绑定等，不能称纯IL写入。SP4 CompileTimeMs只围Compile，加载与构造在外；run时间把Init/Process/Release合在一起。缓存命中不代表无需创建实例。",
+      "unknown": "界面编译值不等用户点击至执行就绪；现有日志缺统一请求ID/版本/缓存状态。"
+    }
+  ],
+  "confirmed": [
+    {
+      "id": "F1",
+      "title": "打开等全文着色",
+      "kind": "代码确定等待路径，耗时影响未量化",
+      "basis": "SP1/SP2/SP5",
+      "fix": "首屏只需正确文本/基本可读；可见区域语义优先，全文低优先按需；不以全文分类作为Show门槛。"
+    },
+    {
+      "id": "F2",
+      "title": "取消没有进入底层计算",
+      "kind": "代码确定",
+      "basis": "SP1/SP2",
+      "fix": "补全及分类向Roslyn传token，并按文档版本/请求代次拒绝旧结果；正在等待用户输入的补全优先于诊断/后台预热。取消是合作式，不承诺立即中断。"
+    },
+    {
+      "id": "F3",
+      "title": "准备状态不代表真实文档可用",
+      "kind": "代码确定",
+      "basis": "SP2",
+      "fix": "基础服务、引用集合、文档语义、补全分别标状态；同资源准备共用Task，失败可观察可重试；保留增量容器和实例Workspace复用。"
+    },
+    {
+      "id": "F4",
+      "title": "编译计时口径不完整",
+      "kind": "代码确定",
+      "basis": "SP3/SP4/SP6",
+      "fix": "区分纯编译、缓存命中、加载实例准备、用户Init、Process；端到端计时，重叠阶段不相加。"
+    },
+    {
+      "id": "F5",
+      "title": "缓存正确性与实例语义约束",
+      "kind": "静态条件风险，未复现",
+      "basis": "SP3/SP4及前包VS4—VS7",
+      "fix": "编译键含真实依赖身份/选项，容量/失效明确；只合并同版本编译，不盲目复用可变用户实例。VM复用实例而我们每次Init/Release是行为差异，改动需单独确认。"
+    },
+    {
+      "id": "F6",
+      "title": "全文准备可能把首屏缓存自己挤掉",
+      "kind": "确定缓存规则导致的条件性重复计算；待长脚本运行验证",
+      "basis": "SP1:34 CacheSize=512、:75—78全文、:238—240超限删除前256项",
+      "fix": "大于512行时，全文逐行预填会删除早期缓存，首屏可能再次缺失；按可见窗口优先、有界邻域预取，缓存键含版本，避免为了全文准备反复淘汰当前可见行。"
+    }
+  ],
+  "vmComparison": [
+    "补全：原版ShellCodeEditor构造CSharpCompletion，SetListAssembly也重建并异步加部分引用，引用NRefactory类型；未恢复语言服务内部耗时，不能说全局只初始化一次。",
+    "编译：原版CodeDom CSharpCodeProvider编译，LoadShell入队、RunCode按需锁内编译、程序集缓存后实例Init；它不是Roslyn同等功能/选项基准。",
+    "运行实例：VM复用实例Process，重新编译/Dispose退役；我们当前每次创建并Init/Process/Release。不能把生命周期差异当纯编译速度或直接改语义。",
+    "用户观察VM更快成立为体验反馈；严格同条件基准未做。不同基础组件的能力、C#版本、语义/诊断/引用支持要用功能语料验证，未证不凭技术名称断言优劣。"
+  ],
+  "batch": [
+    {
+      "order": 0,
+      "name": "冻结测量和能力基线",
+      "files": [
+        "隔离验证工具/样本与基准报告；不修改产品的本轮仅交设计"
+      ],
+      "work": "同脚本同引用/API与编译选项可比子集，区分启动后立即打开/空闲后打开/同节点重开/另一节点；各段关联请求ID与版本。先量化后给性能迁移决策。"
+    },
+    {
+      "order": 1,
+      "name": "编辑响应整批整改",
+      "files": [
+        "src/CommonControl/ScriptEditorCore.xaml.cs",
+        "src/CommonControl/SemanticHighlighter.cs",
+        "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+        "src/UI/Shell/Windows/MainWindowViewModel.cs"
+      ],
+      "work": "解除Show前全文门槛；统一准备Task/状态；可见范围语义；补全与分类取消/版本隔离；后台诊断/预热低优先；保留正确补全与主题显示。"
+    },
+    {
+      "order": 2,
+      "name": "编译与执行准备整批整改",
+      "files": [
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs"
+      ],
+      "work": "同键编译共享进行中的任务（独立调用取消不误取消其他消费者）；真实依赖指纹与有界缓存；编译/加载/Init阶段状态与计时；不静默执行构造做预热；不改用户Init/Release语义。"
+    },
+    {
+      "order": 3,
+      "name": "回归与选型门槛",
+      "files": [
+        "独立测试报告、Release身份、主文档"
+      ],
+      "work": "前后固定副本比性能与功能；若组件原生能力/成本仍达不到经确认目标，再做隔离替代组件原型，不先重写全部编辑器。"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "S01",
+      "test": "100/1000/5000行×基础引用/代表用户DLL；固定脚本SHA、引用身份、构建身份；每格20次，新进程与进程内分组，OS磁盘冷缓存另记未知。",
+      "passRule": "原始记录含中位数/P95/失败超时/内存和线程，不删慢样本；VM与自研只比共同支持的功能。"
+    },
+    {
+      "id": "S02",
+      "test": "点击到首帧/可输入；长脚本打开与取消关闭。",
+      "passRule": "不等待全文语义分类；无界面同步等全脚本编译；关闭无迟到发布。"
+    },
+    {
+      "id": "S03",
+      "test": "连续输入/快速切换文档；首次和热补全、签名帮助、输入期间诊断。",
+      "passRule": "只发布当前文档版本；取消传入底层；后台任务不阻塞输入；不减少正确成员作为提速。"
+    },
+    {
+      "id": "S04",
+      "test": "相同内容20次编译、并发同键、修改代码、改引用目录/同名DLL原位覆盖。",
+      "passRule": "同版本最多一个进行中的编译；其他消费者取消不误杀；不同真实依赖不命中旧程序集。"
+    },
+    {
+      "id": "S05",
+      "test": "构造/Init计数与副作用、失败后再次运行、运行中关闭。",
+      "passRule": "纯基础预热不执行用户代码；保持当前已确认生命周期；失败可诊断且资源Owner退役。"
+    },
+    {
+      "id": "S06",
+      "test": "补全成员/重载/泛型/扩展方法/错误代码诊断/用户DLL/字段生成与实际编译一致。",
+      "passRule": "按共同功能语料核正确性；Roslyn额外能力单列，不把能力降级隐藏为性能优化。"
+    },
+    {
+      "id": "S07",
+      "test": "前后端到端响应对比",
+      "passRule": "候选体验目标待用户确认：代表样本热打开P95≤500ms、热补全P95≤150ms、准备完成后的首次补全P95≤500ms、UI无>100ms长阻塞；冷进程基础准备独立计时，不以“loading立即出现”冒充功能完成；不承诺未测冷编译绝对秒数。"
+    }
+  ],
+  "limitations": [
+    "本轮未启动VM/自研进行受控性能测试，未修改产品。",
+    "历史日志只证明真实成本存在，不是当前版本冻结基线；不同阶段可能并行，不能将MEF和模板编译相加为启动总耗时。",
+    "没有足够数据认定哪个阶段占比最大，或证明必须替换Roslyn/AvalonEdit；全文门槛与取消缺口为代码已证优先整改点。",
+    "VM语言服务内部实现与精确首次/热性能仍缺；按需向逆向角色索取原件边界，不要求完整重建。"
+  ],
+  "vmCompletionSupplement": {
+    "source": "插件逆向角色有限REA静态成员取证，主控核原件SHA；非性能运行",
+    "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.CodeCompletion.dll",
+    "sha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+    "mvid": "66d08dad-391d-4c01-8125-1e88bbc693fa",
+    "members": [
+      {
+        "token": "0x0600001e",
+        "member": "CSharpCompletion.AddAssembly",
+        "calls": [
+          "LoadAssemblyFile",
+          "AddAssemblyReferences"
+        ],
+        "state": "projectContent"
+      },
+      {
+        "token": "0x0600001f",
+        "member": "CSharpCompletion.ProcessInput",
+        "calls": [
+          "Parse",
+          "Freeze",
+          "ToTypeSystem",
+          "AddOrUpdateFiles"
+        ],
+        "unknown": "外部触发时机待接通，不能说每次补全重解析"
+      },
+      {
+        "token": "0x06000010",
+        "member": "CodeTextEditor.ShowCompletion",
+        "calls": [
+          "CSharpCompletion.GetCompletions(0x06000021→0x06000022)",
+          "GetCompletionData"
+        ]
+      }
+    ],
+    "capability": "原件元数据引用NRefactory/CSharp/Cecil/AvalonEdit，查询经过其类型系统/补全能力",
+    "limitation": "存在GlobalScript另一个同名DLL（SHA8670e49e96f93d5d510722a399c183fc5f673c9456b10b133b578dd6e74c9534）；未取得进程实际加载路径。具体Shell宿主命中哪个变体、首次/后续调用时序、缓存命中率/耗时未知。"
+  }
+}

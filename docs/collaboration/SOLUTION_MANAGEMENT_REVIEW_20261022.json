@@ -1,0 +1,436 @@
+{
+  "batchId": "SOL-01",
+  "date": "2026-10-22",
+  "baseline": {
+    "head": "3a5dc6dd54f372699a450ad7862b52c961cd2797",
+    "kind": "selected-source-dirty-SHA; no runtime"
+  },
+  "sources": [
+    {
+      "path": "src/Workflow/Solution.cs",
+      "sha256": "fbde35ebd0669619af5998ee637c8a1f479e1aa5f0709d7ec157b63846ad42af"
+    },
+    {
+      "path": "src/Workflow/SolutionManager.cs",
+      "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da"
+    },
+    {
+      "path": "src/Workflow/SolutionRepository.cs",
+      "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0"
+    },
+    {
+      "path": "src/Workflow/SolutionSettings.cs",
+      "sha256": "740f607b9bd1edea7472b41f5118ffba9f48c06a064b02914165ff05e2b6e70a"
+    },
+    {
+      "path": "src/Workflow/SolutionRegistry.cs",
+      "sha256": "905b30226c31e057d98c067c051ff81df127ac2ddd30ab1ae21e07c1c14ef780"
+    },
+    {
+      "path": "src/Workflow/SolutionCache.cs",
+      "sha256": "5575fff8995cea06a888645a53c8a3f9ab9202ec7202a03792934b3a14f91aa6"
+    },
+    {
+      "path": "src/Workflow/Persistence/AtomicJsonFile.cs",
+      "sha256": "a565fb4f6c844c266565dd8c11e0591df9c9d63664a2b5f55bb06486a0a50739"
+    },
+    {
+      "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+      "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+    },
+    {
+      "path": "src/UI/App.xaml.cs",
+      "sha256": "4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc"
+    },
+    {
+      "path": "src/UI/Services/Communication/CommunicationApplicationService.cs",
+      "sha256": "8b5a4f0d26cb9a14fc42de8785e48a7cb288edb2ad31c568cca4d6a06fc006b6"
+    },
+    {
+      "path": "src/UI/Features/Camera/CameraManagerViewModel.cs",
+      "sha256": "76ef4636e4276be0229021a9ebaaa9b77f4b9a168c3eac054568303d7f8c2f7b"
+    },
+    {
+      "path": "src/UI/Features/Camera/CameraDetailViewModel.cs",
+      "sha256": "1294ac7588efda05f58f106bf41342349381d09d7e5611791b8e356ee927b5c9"
+    }
+  ],
+  "domains": [
+    {
+      "id": "SM01",
+      "name": "方案文件与保存",
+      "oursChain": "SolutionRepository.Load→EnsurePluginsLoaded→ValidateSchema/ValidateTools→ResolveResourcePaths→Deserialize→FilePath；Save→校验通讯→改内存FilePath/清autoConnect→临时文件→previous备份→File.Replace",
+      "evidence": [
+        "src/Workflow/SolutionRepository.cs:108",
+        "src/Workflow/SolutionRepository.cs:200",
+        "src/Workflow/SolutionRepository.cs:505",
+        "src/Workflow/Solution.cs:45",
+        "src/Workflow/SolutionManager.cs:836"
+      ],
+      "implemented": [
+        "文件内持久化Id/Name/Description/SchemaVersion和工作流/设备/通讯定义，FilePath不序列化",
+        "已有缺工具/格式拒绝、临时文件替换、上一保存恢复",
+        "复制/另存创建新GUID，解析相对资源为原文件目录绝对路径；不自动复制图片/模型"
+      ],
+      "gaps": [
+        "保存失败可能已改内存FilePath/Settings，磁盘原文件保护不等内存事务",
+        "资源依赖是引用不是完整可携带包，不能把复制.solution解释为全部资源复制",
+        "预校验和实际打开会重复读取文件，两个读取间存在变化窗口"
+      ],
+      "choice": "保留自有格式与原子写入；整改保存输入快照、结构化结果及资源依赖清单，不迁VM.sol二进制",
+      "cost": "需定义版本迁移、外部资源缺失和SaveAs身份语义；工作区与序列化模型拆分需要适配插件参数",
+      "change": "SolutionRepository拆ReadCandidate/WriteSnapshot，返回诊断和资源依赖；写成功后才提交文件路径/保存指纹。现有别存新Id明确称独立副本，移动保存位置保留Id另列命令；不默认复制外部资源。",
+      "vm": {
+        "chain": "ProjectManager.SaveSolution→VmSolution.Export；另存分支独立处理及最近记录更新；Load→CheckSol/Import/SyncLoadSolution",
+        "difference": "VM使用SDK/原生容器；自研直接JSON定义+插件参数多态。文件格式不同不证明业务设计高下，也不支持二进制兼容。",
+        "prosCons": "VM SDK形成统一入口，但原生写入事务在本批不可见；自研可读/可审且已有原子替换，但保存前内存突变和资源依赖边界需整改。",
+        "takeaway": "借鉴明确文件API和异步结果，不迁VM文件格式；补自研保存快照与资源清单。"
+      }
+    },
+    {
+      "id": "SM02",
+      "name": "登记目录与最近记录",
+      "oursChain": "SolutionManager构造→LoadSettings→RefreshMetadata遍历KnownSolutions→Registry/Cache；AddExistingFile→LoadMetadata→身份冲突选择→Register/Replace→SaveUserSettings；LoadSolutionOnly(path)无需先登记",
+      "evidence": [
+        "src/Workflow/SolutionManager.cs:166",
+        "src/Workflow/SolutionManager.cs:345",
+        "src/Workflow/SolutionManager.cs:964",
+        "src/Workflow/SolutionManager.cs:1135",
+        "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs:151"
+      ],
+      "implemented": [
+        "已知记录、默认/最近选择、保留失效文件记录、同Id异路径显式冲突规则",
+        "文件直接加载已有，不是先登记才可解析",
+        "RefreshMetadata实际遍历已知记录，不是注释所称每次全盘扫描"
+      ],
+      "gaps": [
+        "OpenExternal先预加载，再登记/写用户设置，再二次加载和SetCurrent；打开失败可能已有记录变化",
+        "构造时每个已知记录读元数据，列表维护与工作区准备有启动耦合",
+        "目录冲突有保护价值，不能直接把它删掉当优化"
+      ],
+      "choice": "保留管理体验和身份冲突保护；目录记录与工作区打开解耦",
+      "cost": "需定义文件成功打开但最近记录写入失败的部分成功提示；区分Catalog记录身份和文档Id",
+      "change": "新SolutionCatalogService负责已知/最近/默认；WorkspaceOpen按路径读候选不依赖Catalog；成功提交会话后更新最近记录，记录写失败仅警告/重试，不把工作区错误回滚。用户明确添加/移除记录仍单独操作。",
+      "vm": {
+        "chain": "GetRecentlySolutions→ApplicationName.cfg/ArrayOfSolutionItemInfo；OpenRecentSolution→LoadSolution(path)；直路径不要求先有最近项",
+        "difference": "自研KnownSolutions按文档Id/路径管理并有显式冲突与默认设置，VM已证最近项主要路径/时间；未知其他目录不可称VM没有。",
+        "prosCons": "自研便于资产查找但更耦合打开与持久化；VM已证链轻量但不能从最近列表推断完整资产管理能力。",
+        "takeaway": "借鉴最近记录独立于活动实例；保留自研目录作为可选管理能力，不能拿VM最近项直接替换全部目录。"
+      }
+    },
+    {
+      "id": "SM03",
+      "name": "工作区会话与状态",
+      "oursChain": "MainWindowVM构造引擎和执行管理器→SetCurrentSolution赋CurrentSolution/FilePath/CaptureSavedState→SolutionOpened→CurrentSolutionChanged→LoadSolutionToWorkflowTabs→SetNodes同对象/注册WorkflowEngine",
+      "evidence": [
+        "src/Workflow/SolutionManager.cs:1416",
+        "src/UI/Shell/Windows/MainWindowViewModel.cs:826",
+        "src/UI/Shell/Windows/MainWindowViewModel.cs:1659",
+        "src/UI/Shell/Windows/MainWindowViewModel.cs:1859"
+      ],
+      "implemented": [
+        "有CurrentSolution、脏指纹、切换lease和停止/保存提示",
+        "UI节点和定义直接共享，同一对象减少同步拷贝"
+      ],
+      "gaps": [
+        "未见单一WorkspaceSession完成handle；定义/编辑投影/执行服务生命周期分散",
+        "业务初始化依赖同步事件顺序，UI与通信对已变CurrentSolution观察可能不一致",
+        "共享可变节点与运行快照不是同一问题，本批不下钻全部执行快照"
+      ],
+      "choice": "自研重做会话Owner；借鉴VM文件与运行实例分层思想须以补证界定，非直接移植",
+      "cost": "新增明确SessionId/Generation、状态及服务依赖；调整UI构造和订阅",
+      "change": "新增WorkspaceSession持文档、Revision/Dirty、能力状态、运行及设备恢复Owner；目录不持会话。WorkspaceCoordinator唯一当前会话变更入口，UI订阅已提交会话投影，Startup委托它打开。",
+      "vm": {
+        "chain": "ProjectManager.LoadSolution→异步Task→VmSolution.Load；VmSolution.Instance活动SDK实例；新建CreatNewInstance先原生CloseSolution再替换Instance",
+        "difference": "VM原生执行/模块属于SDK活动实例，自研CurrentSolution与UI同对象+引擎注册分散；VM并非已证独立候选实例事务。",
+        "prosCons": "VM有显式SDK会话/回调，便于二开统一入口；原生内部Owner未知。自研可编辑定义直接但会话完成/清理合同不集中。",
+        "takeaway": "借鉴定义/最近/活动实例分层与操作完成事件；自研重做WorkspaceSession，不直接移植全局SDK单例。"
+      }
+    },
+    {
+      "id": "SM04",
+      "name": "切换失败与事务边界",
+      "oursChain": "OpenExternal先LoadSolutionOnly→PrepareSolutionTransition(lease/StopAndWait/Save提示)→AddExistingFile→LoadSolutionOnly再次→SetCurrentSolution；配置Launch先加载候选后BeforeTransition；SetCurrent无回滚块",
+      "evidence": [
+        "src/UI/Shell/Windows/MainWindowViewModel.cs:5574",
+        "src/UI/Shell/Windows/MainWindowViewModel.cs:5624",
+        "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs:206",
+        "src/Workflow/SolutionManager.cs:1433",
+        "src/Workflow/SolutionManager.cs:854"
+      ],
+      "implemented": [
+        "输入坏文件先验证，不立即丢旧工作区；保存/取消与切换互斥lease已有",
+        "另存失败有新文件/记录清理，重命名有部分回滚"
+      ],
+      "gaps": [
+        "SetCurrent先赋当前/指纹后发事件，订阅者抛错会部分提交，catch提示当前工作区不变未必成立",
+        "另存先写记录后SetCurrent，catch删新文件/记录但不显式恢复CurrentSolution，不能泛称完整事务",
+        "停止旧运行不是可回滚操作，不能承诺失败后恢复原运行现场"
+      ],
+      "choice": "必须整改为显式候选/排空/提交/退役协议；不宣称VM原生事务更优",
+      "cost": "需要提交点、不可逆阶段和失败后状态表，不承诺设备连接及原运行自动恢复",
+      "change": "ReadValidateCandidate(一次)→用户保存确认→冻结准入/排空旧Owner→准备新会话→交换当前指针/代次→通知UI→退役旧资源。提交前失败旧文档保留且运行可能已停止；提交后UI/设备失败标新会话Degraded而非假装旧方案没变。无在途Owner前不复用独占设备。",
+      "vm": {
+        "chain": "LoadSolution前置格式/密码/版本/保存提示→关闭通信→加载任务；普通失败回调Instance=new VmSolution，Import结束普通错误清路径/密码",
+        "difference": "VM实际失败后不保证保留旧托管实例；自研先改Current后发同步事件也不是完整事务。二者失败阶段均需分别判断。",
+        "prosCons": "VM区分回调完成但bool可能是取消/已发起，不能当成功；自研预检/lease/保存门已有，提交后回滚保证不足。",
+        "takeaway": "不照搬失败替换实例；目标明确提交前保旧文档、提交后Degraded，停止旧运行不可逆不冒称原样恢复。"
+      }
+    },
+    {
+      "id": "SM05",
+      "name": "设备配置与运行寿命",
+      "oursChain": "SetCurrent→SolutionOpened→Communication.BeginSolutionSwitch→取消旧token/串行等待前切换和重连→停止心跳/排空自动化和轮询→Dispose旧Runtime→检查token→连接；相机runtime应用共享，Restore产品调用仅App两个启动分支，切换入口未见对应接线",
+      "evidence": [
+        "src/Workflow/Solution.cs:83",
+        "src/UI/Services/Communication/CommunicationApplicationService.cs:356",
+        "src/UI/App.xaml.cs:734",
+        "src/UI/Features/Camera/CameraManagerViewModel.cs:354",
+        "src/UI/Features/Camera/CameraManagerViewModel.cs:781",
+        "src/UI/Services/Communication/CommunicationApplicationService.cs:411",
+        "src/UI/Features/Camera/CameraManagerViewModel.cs:399",
+        "src/UI/Features/Camera/CameraManagerViewModel.cs:509",
+        "src/UI/Features/Camera/CameraDetailViewModel.cs:701"
+      ],
+      "implemented": [
+        "通信有取消/token当前对象校验/串行切换任务及ReadyAsync，不能说全无生命周期",
+        "相机共享runtime由ServiceInitializer持有，不由临时管理器Dispose关闭"
+      ],
+      "gaps": [
+        "已审相机切换/关闭入口未见统一清理/恢复接线，不能用注释声称已接入",
+        "A恢复异步发现后identityChanged→PersistCameraList重新读CurrentSolution，存在A迟到写B相机配置的静态窗口，未复现",
+        "临时管理器Dispose为空操作不等下层完全无释放，详情VM另有释放session路径；共享Owner与借用须明确",
+        "多相机循环复用DetailVM，ConnectAsync发现非空_session直接返回而未核相机身份，第二台可能被挡，留后续相机用例非本批重做"
+      ],
+      "choice": "统一会话设备Owner合同，保留驱动和已有通信防迟到机制",
+      "cost": "设备独占情况下切换需要中断并排空，无法保证无感回滚；需要替身测试",
+      "change": "IWorkspaceDeviceLifecycle带Session/Generation、Prepare/Retire/Completion；方案仅存配置；进程级连接池可复用但必须有租约与代次准入，是否共享连接按驱动能力定，不强制每切换重建全部设备。 新CameraApplicationService负责恢复，显式expectedSolution/Generation/token；PersistCameraList显式目标并拒绝旧代次，不从迟到回调取全局CurrentSolution。",
+      "vm": {
+        "chain": "LoadBegin/ResetResource→关闭全局通信、关闭部分窗口、GlobalCameraManager.CloseCamera仅清UI列表；退出ApplicationOperation.Dispose→屏蔽回调→VmSolution.Dispose",
+        "difference": "VM物理连接最终释放未证；自研通信真实有排空/代次保护，相机切换接线不足。不能从CloseCamera名称断言断开设备。",
+        "prosCons": "VM托管层有集中重置入口，但原生Owner仍缺；自研通信机制可复用，UI相机恢复跨会话写回风险需优先整改。",
+        "takeaway": "自研统一设备会话合同并保留通信实现；不把VM UI清理直接当底层连接方案迁移。"
+      }
+    }
+  ],
+  "tests": [
+    {
+      "id": "SC01",
+      "scenario": "未登记的合法文件直接打开",
+      "assertion": "候选加载不修改Catalog；成功提交后才记录最近，文件不变",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SC02",
+      "scenario": "同Id异路径/同路径Id改变",
+      "assertion": "保留显式冲突策略，不静默覆盖；取消不改当前或登记",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SC03",
+      "scenario": "缺插件/坏格式/缺外部资源",
+      "assertion": "复用ValidateTools/Schema；完整诊断，旧文档和原文件不变；缺资源按能力降级或拒绝有明确定义",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SC04",
+      "scenario": "保存写失败/设置记录写失败",
+      "assertion": "失败不改当前FilePath/保存指纹；方案保存成功而最近记录失败应返回部分成功，不错误宣称文件未保存",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SC05",
+      "scenario": "复制/另存/移动位置",
+      "assertion": "新副本新Id、源文件不变；移动身份规则明确；资源引用/打包行为不误导",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SC06",
+      "scenario": "候选验证后文件被修改",
+      "assertion": "使用同候选内容/哈希校验，无二次加载另一内容的静默切换",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SC07",
+      "scenario": "保存提示取消/停止失败",
+      "assertion": "不提交候选，lease释放，旧文档保留；已停止运行不承诺复活",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SC08",
+      "scenario": "提交前后注入UI/通信订阅失败",
+      "assertion": "提交前旧文档保留，提交后新会话明确Degraded/可恢复；不提示工作区完全未变",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SC09",
+      "scenario": "相机/通信恢复迟到及独占设备",
+      "assertion": "旧代次不能写新会话，先退役排空或保持冲突禁用；任务最终Owner清晰",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SC10",
+      "scenario": "关闭/快速连续切方案",
+      "assertion": "文件、目录、UI、运行及设备状态一致；关闭返回/完成分别记录；清理幂等",
+      "status": "planned-not-run"
+    }
+  ],
+  "files": [
+    {
+      "path": "src/Workflow/SolutionRepository.cs",
+      "change": "候选读/快照写与资源诊断，保留已有ValidateTools/原子保存"
+    },
+    {
+      "path": "src/Workflow/SolutionManager.cs",
+      "change": "兼容门面收敛，去掉隐式跨域提交和事件驱动业务副作用"
+    },
+    {
+      "path": "src/Workflow/SolutionSettings.cs",
+      "change": "目录/最近记录持久化，独立报告失败"
+    },
+    {
+      "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+      "change": "目录操作和Open意图区分，保留冲突交互"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "change": "所有打开/另存/关闭走Coordinator，UI投影提交会话"
+    },
+    {
+      "path": "src/UI/App.xaml.cs",
+      "change": "自动/命令行/选择方案统一调用"
+    },
+    {
+      "path": "src/Workflow/Workspace/WorkspaceCoordinator.cs",
+      "change": "拟新增，迁SDK应用层时保持无WPF合同"
+    },
+    {
+      "path": "src/Workflow/Workspace/WorkspaceSession.cs",
+      "change": "拟新增会话Owner与状态，放业务应用责任边界；现Workflow仍UseWPF，不能仅迁文件声称全依赖无UI；后续拆应用工程另批"
+    },
+    {
+      "path": "src/Workflow/SolutionCatalogService.cs",
+      "change": "拟新增登记/最近目录职责"
+    },
+    {
+      "path": "src/Workflow/SolutionCandidate.cs",
+      "change": "拟新增一次读取的定义/来源哈希/依赖诊断"
+    },
+    {
+      "path": "src/UI/Services/Communication/CommunicationApplicationService.cs",
+      "change": "适配已有token/Ready/Dispose为会话合同"
+    },
+    {
+      "path": "src/UI/Features/Camera/CameraManagerViewModel.cs",
+      "change": "恢复入口解耦UI，待子线核具体Owner路径"
+    },
+    {
+      "path": "src/UI/Services/Camera/CameraApplicationService.cs",
+      "change": "拟新增相机恢复应用服务，先移出管理器视图；目标无控件责任，驱动/连接不随视图Dispose"
+    }
+  ],
+  "corrections": [
+    "LoadSolutionOnly支持未登记路径；不能说必须先登记",
+    "SolutionRepository.ValidateTools已拒缺工具，不能说能力门完全缺失",
+    "RefreshMetadata只遍历KnownSolutions，不按注释猜全盘扫描",
+    "只静态证据，未复现失败污染或资源泄漏"
+  ],
+  "vm": {
+    "batchId": "SOL-RE-01",
+    "status": "received-eight-source-hashes-checked-selected-callback-and-catalog-bodies-reviewed",
+    "report": {
+      "path": "D:/MyWork/REA逆向测试/analysis/sol-re-01/SOL-RE-01.md",
+      "sha256": "3af1f2cd492b88e895d989eb016facfe1ce1597ba08ebe3711cc88c275df8e50"
+    },
+    "sources": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+        "sha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+        "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs",
+        "sha256": "b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/MainWindowData.cs",
+        "sha256": "aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraManager.cs",
+        "sha256": "4d0db8fb2b9879ab545176a7a3037457c04d1d6afe8f7e314631840c9ea70338"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunicationMgr.cs",
+        "sha256": "6d78791a80348c5cbf803587f6f04041bba999e41c2d1590d5704c5e92ee86c3"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/ApplicationOperation.cs",
+        "sha256": "b6633fabfdf9aea95469a40a85b988ff69add07183c2d8a7f241ef764dea9926"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/SolutionItemInfo.cs",
+        "sha256": "35c37e2dce6b6f6aef2ead51c3da56552a5877c23a6cfeba62c9ea7ab2b58a87"
+      }
+    ],
+    "limits": [
+      "容器字节格式/原生保存原子性未证",
+      "CloseSolution/SyncLoadSolution/DestoryHandle以下原生及物理设备释放未知",
+      "CloseComm有效体/transport释放未闭合",
+      "报告末段vmx.json指恢复项目，当前自研是.solution JSON；不能照抄为自研格式"
+    ]
+  },
+  "status": "source-comparison-delivered-awaiting-document",
+  "productModified": false,
+  "deviceReview": {
+    "status": "read-only-subagent-completed-parent-reviewed-selected-communication-and-camera-bodies",
+    "runtimeExecuted": false,
+    "scope": "已有通信防护/相机入口差距，不声明全驱动生命周期闭合"
+  },
+  "targetFlow": [
+    "文件/命令行/目录选择统一产生OpenRequest",
+    "Repository读取一次Candidate：来源内容哈希、Schema/工具存在性/依赖验证，不登记不连接设备",
+    "用户处理旧文档保存意图；冻结运行准入并排空（失败保旧文档，不承诺恢复运行）",
+    "准备新Session及UI投影；明确提交点后交换当前Session/Generation",
+    "通信/相机按新会话身份激活，旧Owner退役，不可共享设备先排空；设备失败标Degraded",
+    "成功后更新目录最近记录；记录写失败作为附属警告，不伪装文件/会话失败",
+    "关闭：拒绝新准入→保存决策→排空运行与设备→退役资源→清当前会话；超时Owner保留并显式未完成"
+  ],
+  "tradeoffs": [
+    {
+      "choice": "目录管理保留但不做打开前置",
+      "benefit": "保留搜索/默认与身份冲突体验，支持外部文件/API",
+      "cost": "需区分会话成功与目录持久化失败"
+    },
+    {
+      "choice": "文件定义与WorkspaceSession分离",
+      "benefit": "打开/关闭/二开生命周期可观察",
+      "cost": "UI共享对象及静态入口适配，不借此全SDK搬迁"
+    },
+    {
+      "choice": "不承诺跨设备事务回滚",
+      "benefit": "真实表述停旧后失败状态，避免恢复引用冒充连接恢复",
+      "cost": "部分失败需用户重试，独占设备有中断窗口"
+    },
+    {
+      "choice": "保留JSON+原子替换，补快照保存/依赖清单",
+      "benefit": "可审与兼容已有方案，不直接换VM.sol",
+      "cost": "资源打包/版本转换另列需求，不能冒称现已可携带全部模型"
+    }
+  ],
+  "analysisScope": {
+    "domains": 5,
+    "oursSources": 13,
+    "vmSources": 8,
+    "plannedTests": 10,
+    "runtimePassed": 0,
+    "runtimeExecuted": 0
+  }
+}

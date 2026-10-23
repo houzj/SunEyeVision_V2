@@ -34,7 +34,6 @@
     <Project Path="tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj" />
     <Project Path="tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj" />
     <Project Path="tools/SunEyeVision.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj" />
-    <Project Path="tools/SunEyeVision.Tool.Threshold/SunEyeVision.Tool.Threshold.csproj" />
     <Project Path="tools/SunEyeVision.Tool.ImageLoad/SunEyeVision.Tool.ImageLoad.csproj" />
     <Project Path="tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj" />
     <Project Path="tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj" />
@@ -94,9 +93,6 @@
   </Folder>
   <Folder Name="/Tests/SunEyeVision.Tool.Subroutine.Tests/">
     <Project Path="tests/SunEyeVision.Tool.Subroutine.Tests/SunEyeVision.Tool.Subroutine.Tests.csproj" />
-  </Folder>
-  <Folder Name="/Tests/SunEyeVision.Tool.Threshold.Tests/">
-    <Project Path="tests/SunEyeVision.Tool.Threshold.Tests/SunEyeVision.Tool.Threshold.Tests.csproj" />
   </Folder>
   <Folder Name="/Tests/SunEyeVision.Tool.LineLineMeasure.Tests/">
     <Project Path="tests/SunEyeVision.Tool.LineLineMeasure.Tests/SunEyeVision.Tool.LineLineMeasure.Tests.csproj" />

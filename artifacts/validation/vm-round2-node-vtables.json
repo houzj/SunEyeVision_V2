@@ -1,0 +1,83 @@
+{
+  "sha256": "45c57bc46f72fd1f9e0b3a6f9183ff974d14590cfd05ecf4e9fa97a4ff95ae9b",
+  "method": "Static PE RTTI; not runtime object proof",
+  "vtables": [
+    {
+      "name": ".?AVCModuleNode@@",
+      "objectOffset": 0,
+      "vtableRVA": "229e50",
+      "entries": [
+        {
+          "slot": 0,
+          "rva": "b85d0"
+        },
+        {
+          "slot": 8,
+          "rva": "b8740"
+        }
+      ]
+    },
+    {
+      "name": ".?AV?$_Ref_count@VCModuleNode@@@std@@",
+      "objectOffset": 0,
+      "vtableRVA": "22ded8",
+      "entries": [
+        {
+          "slot": 0,
+          "rva": "210b0"
+        },
+        {
+          "slot": 8,
+          "rva": "210d0"
+        },
+        {
+          "slot": 16,
+          "rva": "210f0"
+        },
+        {
+          "slot": 24,
+          "rva": "1c30"
+        },
+        {
+          "slot": 32,
+          "rva": "24f158"
+        },
+        {
+          "slot": 40,
+          "rva": "16e0"
+        },
+        {
+          "slot": 48,
+          "rva": "eb150"
+        }
+      ]
+    },
+    {
+      "name": ".?AVCAbstractModuleNode@@",
+      "objectOffset": 0,
+      "vtableRVA": "21d350",
+      "entries": [
+        {
+          "slot": 0,
+          "rva": "1de40"
+        },
+        {
+          "slot": 8,
+          "rva": "1e894e"
+        },
+        {
+          "slot": 16,
+          "rva": "24b678"
+        },
+        {
+          "slot": 24,
+          "rva": "1fa80"
+        },
+        {
+          "slot": 32,
+          "rva": "1e894e"
+        }
+      ]
+    }
+  ]
+}

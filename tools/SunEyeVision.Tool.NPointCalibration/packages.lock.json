@@ -35,6 +35,12 @@
         "resolved": "10.0.3",
         "contentHash": "l8QNBPp92bVzl9Kw8nNtm1uYRNNhUrdulZjM4a8YK/QGNa8z9utKsC0bDoPB+Vq8LOlbD3fIyGlabtz80jT7cw=="
       },
+      "suneyevision.haladapter": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.plugin.sdk": {
         "type": "Project",
         "dependencies": {

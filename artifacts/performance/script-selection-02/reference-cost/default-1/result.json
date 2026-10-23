@@ -1,0 +1,377 @@
+{
+  "side": "A-Roslyn",
+  "scope": "component-only, no application UI",
+  "sourceSha256": "C8EBBEC6242647D28ACBBCF49644546B0FF6186E6F3A0C72668A677401BDFD41",
+  "references": [
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.CoreLib.dll",
+      "sha256": "4AEE38CB826D3624936CF78265C4BB7E5F84E59B28C47BD898C3B9FB5AEA95DD"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.dll",
+      "sha256": "DAC19C2064A2A263BF9553C0913146593849B74695FD97BE801CDC221E11E146"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\netstandard.dll",
+      "sha256": "4B0E07CAA7B4E24B2CFCDE3F2AEF8FB40A739C1441F7EF7F3631E99F2D0CA7F5"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\mscorlib.dll",
+      "sha256": "E452E191A394A4057678B97759DC4EA9E7B1F0B5588705896C6795BC522FC19D"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.dll",
+      "sha256": "36FFFCC6C1A3D885655829221AABDF5A1E3C502BAF9B9EDD24EE8B6AB217CD33"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.Concurrent.dll",
+      "sha256": "7BD7683A2417D0A0410E7E11267BE1268F17E568E6B66ADDBEA48314E3854D20"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.Immutable.dll",
+      "sha256": "7EECDE6B17D2CB85DBC1DF9B9E43E2D6EFAD5B45357E544EA83D6264ADC7E9B6"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Linq.dll",
+      "sha256": "836AF251A62493D2A96B4CE1DDCD5E19E64B34E32C6E3B4A97FB7931E09C995C"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Linq.Expressions.dll",
+      "sha256": "C950BC84F01E1163D30129D5279485F0A1B97CC3C314505B17588D0C0ABDE443"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.IO.dll",
+      "sha256": "6613C041CBDDD5FE4397BA61E2EA70AE53D02C81DB7D8F0BDDF6B70312BA433B"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.IO.FileSystem.dll",
+      "sha256": "277F44F10C621085A670B0D23EA38EB34112DC38C51A28EE46C908E5DFEAE74E"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.IO.Compression.dll",
+      "sha256": "B87FEE0F549CF3435ECD1C598BB59BF581ADBC965686B91837C570D25CD66AC9"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Encoding.dll",
+      "sha256": "445F8950E8C6DB34E087921F49FCD66450BD3FF245637DA8864597ED1CF62E3F"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.RegularExpressions.dll",
+      "sha256": "E7FADC5C0F1C0B7EFA6788E5020122714F76766E05F599F73B096AFC0DB5875A"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Json.dll",
+      "sha256": "2C15A5FA6B5F78F5F374A9A67D90A8D0528EB7848A8066B7A20DB431EE0A00C0"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.dll",
+      "sha256": "3208BE3986E660008854FB6079DB05ADB48AB53CBD623CA83D79813240E05608"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.Tasks.dll",
+      "sha256": "DFD0352242487089F34279048DAFEFA74CE065D02ED829B22F13F26475ECBF2A"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.Thread.dll",
+      "sha256": "C18C5F2F3A2FAB59222FFDC74A2749599C182518728529F4F2CD9CF835AF8867"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.dll",
+      "sha256": "D30250C58E70AD55F4CA5C43F5E3CF513EB9F43D4F08EBAA72ACB06FC4E35606"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.Loader.dll",
+      "sha256": "1C46DDB6409CAEEC38737075CEBD39902D5BC37C7D8E30FB1A94F739CFCA0EB2"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Diagnostics.Process.dll",
+      "sha256": "B91DD0A857EC40B79D9B59D783209B5469FC2B83E525B6B730E7E00161FF6E98"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Globalization.dll",
+      "sha256": "566ECB07DAB92F3EB3733E154EE397E28EC5DD42D257DFA0DD4EACE1F1ED5D85"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.ComponentModel.dll",
+      "sha256": "336554828C6C9437237C389212D9D56A78873E30A621C68095D43EE069873FB0"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.ObjectModel.dll",
+      "sha256": "01858BD6ECF4708535D2FA50835A64FBDE159694F482742285397C1376B6627A"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Numerics.dll",
+      "sha256": "2D94F744C92232A7BBE9468C4C8C0820C26824BAACE8721BD2C99F308CBF7461"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.InteropServices.dll",
+      "sha256": "E8AAC5A1A77F759A6AC39A75DB07F97CB8368265F4351EBA310F6534EB711C14"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Net.Http.dll",
+      "sha256": "1B135A13485948AF7EED77546666C4DAA41B07CDCE9A02E98D41F264687D3363"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Net.Primitives.dll",
+      "sha256": "153A6AEA91FDF31542874B7B7897096DAD1826360256B8C8B3B689DD87DAEA67"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Xml.ReaderWriter.dll",
+      "sha256": "C95432C5E6726BDF417CD060A888E42BC153882A6B1E7E5A4C56E6AE804F0707"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Xml.XDocument.dll",
+      "sha256": "6EE74E21847E9C75DF5D10299C7669A638EAC20D6CC27E0B13ED195CAA085C7D"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Data.Common.dll",
+      "sha256": "1103E20504E938EAF6FC5879307C1612616BAC24D86FCDE7CCC37E882836D938"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\frozen\\SunEyeVision.Plugin.SDK.dll",
+      "sha256": "BEBDFEE09299A7F76F3EFB5EAB0BC8F3906D1E07CB39BC837F5767D42E2837D3"
+    }
+  ],
+  "caretUtf16": 122,
+  "charBefore": ".",
+  "charAt": "A",
+  "runtime": ".NET 9.0.20",
+  "serviceMs": 696.4045,
+  "documentMs": 318.0527,
+  "semanticMs": 406.953,
+  "triggerMode": "invoke",
+  "triggerKind": "Other",
+  "triggerCharacter": "\u0000",
+  "readyToQueryMs": 1548.8588,
+  "firstCandidatesFromPrepareStartMs": 2681.3542,
+  "queries": [
+    {
+      "iteration": 0,
+      "ms": 1131.1588,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    },
+    {
+      "iteration": 1,
+      "ms": 9.1612,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    },
+    {
+      "iteration": 2,
+      "ms": 7.6174,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    },
+    {
+      "iteration": 3,
+      "ms": 8.2479,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    },
+    {
+      "iteration": 4,
+      "ms": 7.4253,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    },
+    {
+      "iteration": 5,
+      "ms": 15.6506,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    }
+  ],
+  "syntaxBoundaryCompile": {
+    "ms": 401.1183,
+    "success": true,
+    "languageVersion": "CSharp13",
+    "errors": [],
+    "scope": "standalone Roslyn compiler; not candidate C combined implementation"
+  },
+  "success": true,
+  "loaded": [
+    {
+      "name": "Microsoft.CodeAnalysis.Features",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Features.dll",
+      "sha256": "FC743C40512353992FF24C80159B966EE879DA4E2538EEEB693E489C7A5ECDDB"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.dll",
+      "sha256": "0A7FB1D94E0E7F46798B138CAA67E5D5FB8FB98FD31B5294C917DEF057AB3D80"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.Workspaces",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Workspaces.dll",
+      "sha256": "32402BAA9383AFD30E660AF0BD3D23BDB7E596207AFEAC8C6B3ED6F6A5CA6F1D"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.CSharp",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.dll",
+      "sha256": "CFB5F2785C30485EDA803D58FB8330D737CB07D469CD3D7BC1113D58E8D8E4BB"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.CSharp.Workspaces",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+      "sha256": "C63F6D8FDB79E443C37CCE6A2248E04BFE2C82D4BDA24B6C01FF1420E6A728B3"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.CSharp.Features",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Features.dll",
+      "sha256": "41D62B24232AF6E896B372E6BB4D1EA9066CE40229388FB55B221FDFDA124FC5"
+    },
+    {
+      "name": "System.Composition.TypedParts",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\System.Composition.TypedParts.dll",
+      "sha256": "3100191A1448B9A613E04A63B65899CF74371FC2F5C03315AA40AB53468C7A24"
+    },
+    {
+      "name": "System.Composition.Hosting",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\System.Composition.Hosting.dll",
+      "sha256": "8D9A239C7B03CE4A047ED0ABD9E835DB0FEEAAA16C157E7D308603D03EFB7EBC"
+    },
+    {
+      "name": "System.Composition.Runtime",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\System.Composition.Runtime.dll",
+      "sha256": "324ACDFC86C5ADAA12E9C4F40DEACF1E9F45AC2E84E542A02D130E7380F79D6E"
+    },
+    {
+      "name": "System.Composition.AttributedModel",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\System.Composition.AttributedModel.dll",
+      "sha256": "0F403E98D8BAD390B970704A93AA532042409F499032823CAC47E3004BAD9C8A"
+    }
+  ]
+}

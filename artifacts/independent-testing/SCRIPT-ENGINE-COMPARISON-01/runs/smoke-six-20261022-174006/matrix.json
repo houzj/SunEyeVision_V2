@@ -1,0 +1,271 @@
+{
+  "scope": "Same source/caret/four exact copied references, expected names asserted; modern boundary separate",
+  "trials": 2,
+  "repeatedQueries": 5,
+  "cases": [
+    {
+      "id": "C01",
+      "category": "local variable names",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C01.cs",
+      "sourceSha256": "79C9026C3DC3143846EFFA87971456AA1244D2245D5294517908619D17EAFEDF",
+      "caretUtf16": 207,
+      "previousCharacter": "c",
+      "automaticDotApplicable": false,
+      "expected": [
+        "localValue",
+        "localText"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "C02",
+      "category": "local receiver type",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C02.cs",
+      "sourceSha256": "CEA27CC38EF3592A19B4463F892A5A9F6DC22B341BAF88A6BDFDFB8625224CE6",
+      "caretUtf16": 195,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Substring",
+        "Length",
+        "StartsWith"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "C03",
+      "category": "instance members",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C03.cs",
+      "sourceSha256": "347A1451E85FC18D2D4138CEE2B9AA6B387571384A904946D64EB4C5579F663D",
+      "caretUtf16": 211,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Append",
+        "Length",
+        "Clear"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "C04",
+      "category": "static members",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C04.cs",
+      "sourceSha256": "D177EE2CD2D61D7574AC07486D925FD7A1F9099D6EED847491D254A855EF8566",
+      "caretUtf16": 180,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Abs",
+        "Sin",
+        "Max"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "C05",
+      "category": "cross DLL type",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C05.cs",
+      "sourceSha256": "3159BEAFD69D33A16464577F3DDBF339C9F44DE4E2169B762BCCC0C2C10C969D",
+      "caretUtf16": 192,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "SharedMath"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "C06",
+      "category": "cross DLL static member",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C06.cs",
+      "sourceSha256": "9D643B59A5BC407FE6064FF709A43B0D90056EDC3BA2BE8F12F72E0E6EE63E70",
+      "caretUtf16": 195,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Twice"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "C07",
+      "category": "generic List members",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C07.cs",
+      "sourceSha256": "F27F3A009ED1BE5C13B8E9EAC9351CF00E81D60FB58A32392B9C821C0D475B40",
+      "caretUtf16": 207,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Add",
+        "Count",
+        "Remove"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "C08",
+      "category": "generic Dictionary members",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C08.cs",
+      "sourceSha256": "9CD5AD5954CAF2AA8BD34EEAB326502CDB20E0D0BB6C8A34EFCBEFEE0174CEDA",
+      "caretUtf16": 225,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "TryGetValue",
+        "Keys",
+        "Values"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "C09",
+      "category": "extension methods",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C09.cs",
+      "sourceSha256": "F9F297CB93111DA12A4D5D39D8BBA18766C346B92F4444602664305A98F59A38",
+      "caretUtf16": 202,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Where",
+        "Select",
+        "Any"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "C10",
+      "category": "nearby broken code",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C10.cs",
+      "sourceSha256": "BEDB78BDE9F3AC94784E2B5F6F94B6E9CAE353E792EBDFDF19599384FF98BEA2",
+      "caretUtf16": 226,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Append",
+        "Length"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "C11",
+      "category": "unfinished EOF",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C11.cs",
+      "sourceSha256": "D83107DDF7DBC7E7A5D04A642F0BBDB89FB4A1732D28894A8E66299192BBDEF1",
+      "caretUtf16": 211,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Append",
+        "Length"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "C12",
+      "category": "unknown receiver negative",
+      "group": "common",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C12.cs",
+      "sourceSha256": "ADF62CD28B1983B9E925A2C520FB279619DDDC58C61FF2279717A07C33D139A2",
+      "caretUtf16": 176,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [],
+      "absent": [
+        "Append",
+        "Twice"
+      ],
+      "syntaxBoundaryCompile": false
+    },
+    {
+      "id": "M01",
+      "category": "modern interpolation boundary",
+      "group": "modern-boundary",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M01.cs",
+      "sourceSha256": "8B569D1641B643AF01FEF4E5F62BBC742C446000B7BAA4FFC8C530C627D05B75",
+      "caretUtf16": 236,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Append",
+        "Length"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": true
+    },
+    {
+      "id": "M02",
+      "category": "modern pattern variable boundary",
+      "group": "modern-boundary",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M02.cs",
+      "sourceSha256": "1DA83153F37CB517FCBFA873D99A4A4A2B26FFC0FE813893202A61E65634A943",
+      "caretUtf16": 238,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Append",
+        "Length"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": true
+    },
+    {
+      "id": "M03",
+      "category": "modern target typed new boundary",
+      "group": "modern-boundary",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M03.cs",
+      "sourceSha256": "9C0F7B2C058EE7D7502479B2113356EB3EC8DD4E19F288206E18371042963F3D",
+      "caretUtf16": 197,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Append",
+        "Length"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": true
+    },
+    {
+      "id": "M04",
+      "category": "modern null conditional boundary",
+      "group": "modern-boundary",
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M04.cs",
+      "sourceSha256": "7F2561A4F441B441E2E2AC394733C2D445A336DCD00DC856F10ACB4080918320",
+      "caretUtf16": 212,
+      "previousCharacter": ".",
+      "automaticDotApplicable": true,
+      "expected": [
+        "Append",
+        "Length"
+      ],
+      "absent": [],
+      "syntaxBoundaryCompile": true
+    }
+  ],
+  "automaticMode": "VM false; Roslyn insertion(dot), position after actual dot; C01 name invocation has no dot and is N/A in automatic mode",
+  "invokeMode": "VM true; Roslyn CompletionTrigger.Default Kind Invoke",
+  "C": "No combined semantic/compiler implementation provided, no C performance results fabricated",
+  "note": "fresh process first query is not proven disk-cold; repeats same document; no UI popup/typing/render benchmark"
+}

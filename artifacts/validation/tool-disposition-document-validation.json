@@ -1,0 +1,16 @@
+{
+  "batchId": "TOOL-DISPOSITION-20261022-01",
+  "correction": "TD02-complete-tool-choice",
+  "checks": [
+    "index.html",
+    "tools.html",
+    "tool-standard.html",
+    "tool-detail-ImageThreshold.html"
+  ],
+  "currentSourceDeclarations": 24,
+  "targetToolCount": 22,
+  "retain": "ImageThreshold",
+  "remove": "Threshold",
+  "productModified": false,
+  "implementationExecuted": false
+}

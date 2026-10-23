@@ -1,0 +1,25 @@
+{
+  "taskId": "START-IMPLEMENT-01",
+  "pages": 4,
+  "widthChecks": 12,
+  "links": 7,
+  "errors": [],
+  "independent": {
+    "planned": 18,
+    "status": "blocked-final-for-this-round",
+    "fail": 0,
+    "pass": 0,
+    "blocked": 18,
+    "partialRuntimeCases": [
+      "SI01",
+      "SI02",
+      "SI03"
+    ],
+    "resultPath": "artifacts/independent-testing/START-IMPLEMENT-01/final-results.json",
+    "resultSha256": "3cdaa1e1f12dfb88edf672169ffd05985c0e72702cc83ed0d0fa95b7e62fdf79",
+    "reportPath": "artifacts/independent-testing/START-IMPLEMENT-01/REPORT.md",
+    "reportSha256": "410a521c4b8620ba9284be287cfe2066ab2859806830b259cbbecf1cc78c6939"
+  },
+  "productExecuted": false,
+  "SAorSCUpgraded": false
+}

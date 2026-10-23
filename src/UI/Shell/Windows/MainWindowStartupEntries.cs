@@ -10,6 +10,8 @@ using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
+    private Services.Solutions.SolutionApplicationService? _solutionApplication;
+    private Services.Solutions.SolutionApplicationService SolutionApplication => _solutionApplication ??= new(ServiceInitializer.SolutionManager);
     private ICommand? _newSolutionEntryCommand, _openSolutionEntryCommand, _startPageEntryCommand;
     public ICommand NewSolutionCommand => _newSolutionEntryCommand ??= new RelayCommand(async () => await NewEmptySolutionAsync());
     public ICommand OpenSolutionCommand => _openSolutionEntryCommand ??= new RelayCommand(async () =>
@@ -18,6 +20,12 @@ public partial class MainWindowViewModel
         var dialog = new OpenFileDialog { Filter = "方案文件 (*.solution)|*.solution", CheckFileExists = true, Title = "打开方案" };
         if (dialog.ShowDialog(Application.Current?.MainWindow) == true) await OpenExternalSolutionAsync(dialog.FileName);
     });
+    private ICommand? _reloadSolutionCommand;
+    public ICommand ReloadSolutionCommand => _reloadSolutionCommand ??= new RelayCommand(async () =>
+    {
+        if (CanAcceptExternalActivation && DocumentManager.CurrentFilePath is { Length: > 0 } path)
+            await OpenExternalSolutionAsync(path, reload: true);
+    }, () => CanAcceptExternalActivation && !string.IsNullOrEmpty(DocumentManager.CurrentFilePath));
     public ICommand ShowStartPageCommand => _startPageEntryCommand ??= new RelayCommand(async () =>
     {
         if (!CanAcceptExternalActivation) return;
@@ -34,8 +42,7 @@ public partial class MainWindowViewModel
         try
         {
             if (!await PrepareSolutionTransitionAsync()) return false;
-            ServiceInitializer.SolutionManager.CloseSolution(saveChanges: false);
-            _isWorkflowModified = false;
+            SolutionApplication.CreateNew();
             Title = "太阳眼视觉 - 未命名方案";
             LogInfo("已创建空白工作区，首次保存时选择方案位置。");
             return true;

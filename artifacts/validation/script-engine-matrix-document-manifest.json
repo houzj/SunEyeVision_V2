@@ -1,0 +1,1389 @@
+{
+  "input": "artifacts/independent-testing/SCRIPT-ENGINE-COMPARISON-01/comparison-summary.json",
+  "inputSha256": "2c189d5614a1263cc6247e2ec266456ae079b244641faa6303cc8fda398280d6",
+  "summary": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\summary.json",
+  "summarySha256": "1eff00cfc3bf962d32ec0b5b4071d895b75b6c5544cba19c0d8d8d2a44d7e7f9",
+  "matrix": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\matrix.json",
+  "matrixSha256": "e94e3aa0be91d75ac74063f51c83ed9c524dbb44ed42e2d8775b66e1fdbf01a1",
+  "identityChecks": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C01.cs",
+      "sha256": "79C9026C3DC3143846EFFA87971456AA1244D2245D5294517908619D17EAFEDF",
+      "actualSha256": "79c9026c3dc3143846effa87971456aa1244d2245d5294517908619d17eafedf",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C02.cs",
+      "sha256": "CEA27CC38EF3592A19B4463F892A5A9F6DC22B341BAF88A6BDFDFB8625224CE6",
+      "actualSha256": "cea27cc38ef3592a19b4463f892a5a9f6dc22b341baf88a6bdfdfb8625224ce6",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C03.cs",
+      "sha256": "347A1451E85FC18D2D4138CEE2B9AA6B387571384A904946D64EB4C5579F663D",
+      "actualSha256": "347a1451e85fc18d2d4138cee2b9aa6b387571384a904946d64eb4c5579f663d",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C04.cs",
+      "sha256": "D177EE2CD2D61D7574AC07486D925FD7A1F9099D6EED847491D254A855EF8566",
+      "actualSha256": "d177ee2cd2d61d7574ac07486d925fd7a1f9099d6eed847491d254a855ef8566",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C05.cs",
+      "sha256": "3159BEAFD69D33A16464577F3DDBF339C9F44DE4E2169B762BCCC0C2C10C969D",
+      "actualSha256": "3159beafd69d33a16464577f3ddbf339c9f44de4e2169b762bccc0c2c10c969d",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C06.cs",
+      "sha256": "9D643B59A5BC407FE6064FF709A43B0D90056EDC3BA2BE8F12F72E0E6EE63E70",
+      "actualSha256": "9d643b59a5bc407fe6064ff709a43b0d90056edc3ba2be8f12f72e0e6ee63e70",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C07.cs",
+      "sha256": "F27F3A009ED1BE5C13B8E9EAC9351CF00E81D60FB58A32392B9C821C0D475B40",
+      "actualSha256": "f27f3a009ed1be5c13b8e9eac9351cf00e81d60fb58a32392b9c821c0d475b40",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C08.cs",
+      "sha256": "9CD5AD5954CAF2AA8BD34EEAB326502CDB20E0D0BB6C8A34EFCBEFEE0174CEDA",
+      "actualSha256": "9cd5ad5954caf2aa8bd34eeab326502cdb20e0d0bb6c8a34efcbefee0174ceda",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C09.cs",
+      "sha256": "F9F297CB93111DA12A4D5D39D8BBA18766C346B92F4444602664305A98F59A38",
+      "actualSha256": "f9f297cb93111da12a4d5d39d8bba18766c346b92f4444602664305a98f59a38",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C10.cs",
+      "sha256": "BEDB78BDE9F3AC94784E2B5F6F94B6E9CAE353E792EBDFDF19599384FF98BEA2",
+      "actualSha256": "bedb78bde9f3ac94784e2b5f6f94b6e9cae353e792ebdfdf19599384ff98bea2",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C11.cs",
+      "sha256": "D83107DDF7DBC7E7A5D04A642F0BBDB89FB4A1732D28894A8E66299192BBDEF1",
+      "actualSha256": "d83107ddf7dbc7e7a5d04a642f0bbdb89fb4a1732d28894a8e66299192bbdef1",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C12.cs",
+      "sha256": "ADF62CD28B1983B9E925A2C520FB279619DDDC58C61FF2279717A07C33D139A2",
+      "actualSha256": "adf62cd28b1983b9e925a2c520fb279619dddc58c61ff2279717a07c33d139a2",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M01.cs",
+      "sha256": "8B569D1641B643AF01FEF4E5F62BBC742C446000B7BAA4FFC8C530C627D05B75",
+      "actualSha256": "8b569d1641b643af01fef4e5f62bbc742c446000b7baa4ffc8c530c627d05b75",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M02.cs",
+      "sha256": "1DA83153F37CB517FCBFA873D99A4A4A2B26FFC0FE813893202A61E65634A943",
+      "actualSha256": "1da83153f37cb517fcbfa873d99a4a4a2b26ffc0fe813893202a61e65634a943",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M03.cs",
+      "sha256": "9C0F7B2C058EE7D7502479B2113356EB3EC8DD4E19F288206E18371042963F3D",
+      "actualSha256": "9c0f7b2c058ee7d7502479b2113356eb3ec8dd4e19f288206e18371042963f3d",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M04.cs",
+      "sha256": "7F2561A4F441B441E2E2AC394733C2D445A336DCD00DC856F10ACB4080918320",
+      "actualSha256": "7f2561a4f441b441e2e2ac394733c2d445a336dcd00dc856f10acb4080918320",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\P01.cs",
+      "sha256": "347A1451E85FC18D2D4138CEE2B9AA6B387571384A904946D64EB4C5579F663D",
+      "actualSha256": "347a1451e85fc18d2d4138cee2b9aa6b387571384a904946d64eb4c5579f663d",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\P02.cs",
+      "sha256": "79C9026C3DC3143846EFFA87971456AA1244D2245D5294517908619D17EAFEDF",
+      "actualSha256": "79c9026c3dc3143846effa87971456aa1244d2245d5294517908619d17eafedf",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\build.log",
+      "sha256": "D6BD9E2FE44C50E14F089830C9C5A76D3D79F854CBFF419C0010D745ABD22E54",
+      "actualSha256": "d6bd9e2fe44c50e14f089830c9c5a76d3d79f854cbff419c0010d745abd22e54",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\Directory.Build.props",
+      "sha256": "5C10E0DCA89D53FA828E2B8AD817F7DDECCB7775BEF36C1E75DBA0D87A103EE6",
+      "actualSha256": "5c10e0dca89d53fa828e2b8ad817f7ddeccb7775bef36c1e75dba0d87a103ee6",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\Directory.Build.targets",
+      "sha256": "5C10E0DCA89D53FA828E2B8AD817F7DDECCB7775BEF36C1E75DBA0D87A103EE6",
+      "actualSha256": "5c10e0dca89d53fa828e2b8ad817f7ddeccb7775bef36c1e75dba0d87a103ee6",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\NuGet.Config",
+      "sha256": "8260CB79B6D127B545404D0D869579189163FC112C383CDCEF951E3786AB9D9F",
+      "actualSha256": "8260cb79b6d127b545404d0d869579189163fc112c383cdcef951e3786ab9d9f",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\Program.cs",
+      "sha256": "6E2A3EBD4B8847EA5D32ECAA7CD83CA8F728BE7BE3F7FD135984C8ACEF7B958E",
+      "actualSha256": "6e2a3ebd4b8847ea5d32ecaa7cd83ca8f728be7be3f7fd135984c8acef7b958e",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\restore.log",
+      "sha256": "49BC47F962B4C4DA802D5972E665114CD870DE8A1E727EBCD2ECBEEC6B57507A",
+      "actualSha256": "49bc47f962b4c4da802d5972e665114cd870de8a1e727ebcd2ecbeec6b57507a",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\WorkerA.csproj",
+      "sha256": "871DEF664F6D9DFF34A8211AFF4D27E25DBE2B611DB31E694793595E659F629F",
+      "actualSha256": "871def664f6d9dff34a8211aff4d27e25dbe2b611db31e694793595e659f629f",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Humanizer.dll",
+      "sha256": "D6853075547D7E303EFD60354D911A2FF18EDBA582CDA2FA59D91A2E5DCF9E98",
+      "actualSha256": "d6853075547d7e303efd60354d911a2ff18edba582cda2fa59d91a2e5dcf9e98",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.AnalyzerUtilities.dll",
+      "sha256": "27300B349AE0C552CCB9BEA18BAF55B1FC99A517B0D4E15E557AF4D3A4BFF119",
+      "actualSha256": "27300b349ae0c552ccb9bea18baf55b1fc99a517b0d4e15e557af4d3a4bff119",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.dll",
+      "sha256": "CFB5F2785C30485EDA803D58FB8330D737CB07D469CD3D7BC1113D58E8D8E4BB",
+      "actualSha256": "cfb5f2785c30485eda803d58fb8330d737cb07d469cd3d7bc1113d58e8d8e4bb",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Features.dll",
+      "sha256": "41D62B24232AF6E896B372E6BB4D1EA9066CE40229388FB55B221FDFDA124FC5",
+      "actualSha256": "41d62b24232af6e896b372e6bb4d1ea9066ce40229388fb55b221fdfda124fc5",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+      "sha256": "C63F6D8FDB79E443C37CCE6A2248E04BFE2C82D4BDA24B6C01FF1420E6A728B3",
+      "actualSha256": "c63f6d8fdb79e443c37cce6a2248e04bfe2c82d4bda24b6c01ff1420e6a728b3",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.dll",
+      "sha256": "0A7FB1D94E0E7F46798B138CAA67E5D5FB8FB98FD31B5294C917DEF057AB3D80",
+      "actualSha256": "0a7fb1d94e0e7f46798b138caa67e5d5fb8fb98fd31b5294c917def057ab3d80",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Elfie.dll",
+      "sha256": "8EC0E18AC570157B3863F70035B644925D89996AD901F31EF918D2B0F7428941",
+      "actualSha256": "8ec0e18ac570157b3863f70035b644925d89996ad901f31ef918d2b0f7428941",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Features.dll",
+      "sha256": "FC743C40512353992FF24C80159B966EE879DA4E2538EEEB693E489C7A5ECDDB",
+      "actualSha256": "fc743c40512353992ff24c80159b966ee879da4e2538eeeb693e489c7a5ecddb",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Scripting.dll",
+      "sha256": "7C3973A0997A1901C4F5978EF901E3AE96DDB780DEAD70A42F65F2E3F6F23E8F",
+      "actualSha256": "7c3973a0997a1901c4f5978ef901e3ae96ddb780dead70a42f65f2e3f6f23e8f",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Workspaces.dll",
+      "sha256": "32402BAA9383AFD30E660AF0BD3D23BDB7E596207AFEAC8C6B3ED6F6A5CA6F1D",
+      "actualSha256": "32402baa9383afd30e660af0bd3d23bdb7e596207afeac8c6b3ed6f6a5ca6f1d",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.DiaSymReader.dll",
+      "sha256": "7F3E7543321FF4C2675B94E56A4A32C935C11C82FCC60D4F6CB611CB0A8DAADC",
+      "actualSha256": "7f3e7543321ff4c2675b94e56a4a32c935c11c82fcc60d4f6cb611cb0a8daadc",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.AttributedModel.dll",
+      "sha256": "0F403E98D8BAD390B970704A93AA532042409F499032823CAC47E3004BAD9C8A",
+      "actualSha256": "0f403e98d8bad390b970704a93aa532042409f499032823cac47e3004bad9c8a",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.Convention.dll",
+      "sha256": "88E716224482A702E3D44F02E6311B9D91FCE9AF506ABF0482E8C5F82379034F",
+      "actualSha256": "88e716224482a702e3d44f02e6311b9d91fce9af506abf0482e8c5f82379034f",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.Hosting.dll",
+      "sha256": "8D9A239C7B03CE4A047ED0ABD9E835DB0FEEAAA16C157E7D308603D03EFB7EBC",
+      "actualSha256": "8d9a239c7b03ce4a047ed0abd9e835db0feeaaa16c157e7d308603d03efb7ebc",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.Runtime.dll",
+      "sha256": "324ACDFC86C5ADAA12E9C4F40DEACF1E9F45AC2E84E542A02D130E7380F79D6E",
+      "actualSha256": "324acdfc86c5adaa12e9c4f40deacf1e9f45ac2e84e542a02d130e7380f79d6e",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.TypedParts.dll",
+      "sha256": "3100191A1448B9A613E04A63B65899CF74371FC2F5C03315AA40AB53468C7A24",
+      "actualSha256": "3100191a1448b9a613e04a63b65899cf74371fc2f5c03315aa40ab53468c7a24",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.deps.json",
+      "sha256": "A39429F86013BED0FE0546537D0CAEA98799B9D348DFDA5D9A1EB3795A3B7B72",
+      "actualSha256": "a39429f86013bed0fe0546537d0caea98799b9d348dfda5d9a1eb3795a3b7b72",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.dll",
+      "sha256": "0C58264E26A139E03513039D8FFD86D0A197C4D250D0DC468911A966E44DFAFE",
+      "actualSha256": "0c58264e26a139e03513039d8ffd86d0a197c4d250d0dc468911a966e44dfafe",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.exe",
+      "sha256": "D17E2A82336A39218EAD0212FABA0DF26CA50CE668E28ECE8DFEC2D1BB3EEC48",
+      "actualSha256": "d17e2a82336a39218ead0212faba0df26ca50ce668e28ece8dfec2d1bb3eec48",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.pdb",
+      "sha256": "92ECB727127FE4A1B460823DCFF36B3E01BCFC813FDF1B7D6E7C5AB596AA9BC4",
+      "actualSha256": "92ecb727127fe4a1b460823dcff36b3e01bcfc813fdf1b7d6e7c5ab596aa9bc4",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.runtimeconfig.json",
+      "sha256": "76750114A1F13B59C0093139553B030BF703EAD8F3D869DD150D2EE2DAB842EB",
+      "actualSha256": "76750114a1f13b59c0093139553b030bf703ead8f3d869dd150d2ee2dab842eb",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\build-explicit-refs.log",
+      "sha256": "9A6B47141F654F6E8152C3A20B09D1976E0568971C9AE1E49403651681E47EE5",
+      "actualSha256": "9a6b47141f654f6e8152c3a20b09d1976e0568971c9ae1e49403651681e47ee5",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\build.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "actualSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\Program.cs",
+      "sha256": "56DB6B86412F05D9CACE05EFEC7DE275479EEA86A7FD556241A13569C36FF534",
+      "actualSha256": "56db6b86412f05d9cace05efec7de275479eea86a7fd556241a13569c36ff534",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\ProgramCompilerExplicitRefs.cs",
+      "sha256": "0B66FEFEBC06455ADF89372FD71517C910FEEA2999E28C96D3C4950C1ACAB2F3",
+      "actualSha256": "0b66fefebc06455adf89372fd71517c910feea2999e28c96d3c4950c1acab2f3",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\WorkerB.exe",
+      "sha256": "16ECB16D5789A1E8B9B2DED503A793366EF2D84FCC9EB1FEDEEF770514177A74",
+      "actualSha256": "16ecb16d5789a1e8b9b2ded503a793366ef2d84fcc9eb1fedeef770514177a74",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\WorkerBExplicitRefs.exe",
+      "sha256": "C46BC3CE82085219AB8F59901D50508DBCD6B57E17BC0702F5DF7DF0B0919C82",
+      "actualSha256": "c46bc3ce82085219ab8f59901d50508dbcd6b57e17bc0702f5df7df0b0919c82",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\matrix.json",
+      "sha256": "E94E3AA0BE91D75AC74063F51C83ED9C524DBB44ED42E2D8775B66E1FDBF01A1",
+      "actualSha256": "e94e3aa0be91d75ac74063f51c83ed9c524dbb44ed42e2d8775b66e1fdbf01a1",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\comparison-summary.json",
+      "sha256": "2C189D5614A1263CC6247E2EC266456AE079B244641FAA6303CC8FDA398280D6",
+      "actualSha256": "2c189d5614a1263cc6247e2ec266456ae079b244641faa6303cc8fda398280d6",
+      "matches": true
+    }
+  ],
+  "snapshotChecks": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\ICSharpCode.AvalonEdit.dll",
+      "sha256": "7D3766163F900EF0181E40F24748F05FAFCE6593095E4F8E841192D48DC16912",
+      "actualSha256": "7d3766163f900ef0181e40f24748f05fafce6593095e4f8e841192d48dc16912",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\ICSharpCode.NRefactory.Cecil.dll",
+      "sha256": "8BDB7D42499F88A4F70F0847DDA17115DF8C93E0FD747741F99CDE9B1B494BC7",
+      "actualSha256": "8bdb7d42499f88a4f70f0847dda17115df8c93e0fd747741f99cde9b1b494bc7",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\ICSharpCode.NRefactory.CSharp.dll",
+      "sha256": "AD514750BD9D1FE737363D2FE22765F58C94991397239F9D69E1C84C67684ECD",
+      "actualSha256": "ad514750bd9d1fe737363d2fe22765f58c94991397239f9d69e1c84c67684ecd",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\ICSharpCode.NRefactory.dll",
+      "sha256": "D15ED6DDDCE2250D948BCA95794C1877E807B61F62103BF246DB50FD09954ED7",
+      "actualSha256": "d15ed6dddce2250d948bca95794c1877e807b61f62103bf246db50fd09954ed7",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\ICSharpCode.NRefactory.IKVM.dll",
+      "sha256": "9591FFDA9106E27AE9A399A60F2C2C984A8DEFEF597A4A3E237071E06FC18690",
+      "actualSha256": "9591ffda9106e27ae9a399a60f2c2c984a8defef597a4a3e237071e06fc18690",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\ICSharpCode.NRefactory.Xml.dll",
+      "sha256": "FFD7B0665B7D2783647315D5B51ABB29C8C8EDFDB356683C0347D6C153C32593",
+      "actualSha256": "ffd7b0665b7d2783647315d5b51abb29c8c8edfdb356683c0347d6c153c32593",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\ICSharpCode.WpfDesign.Designer.dll",
+      "sha256": "074724F334C0530723C9E943F660468427570EF863DF11A013E1CC2F510C1716",
+      "actualSha256": "074724f334c0530723c9e943f660468427570ef863df11a013e1cc2f510c1716",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\ICSharpCode.WpfDesign.dll",
+      "sha256": "FD30FD92035669BF15A005CC9B126E75DBB66C330C2D56E470A9FCEFFD92A565",
+      "actualSha256": "fd30fd92035669bf15a005cc9b126e75dbb66c330c2d56e470a9fceffd92a565",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\ICSharpCode.WpfDesign.XamlDom.dll",
+      "sha256": "F5E813752CE3E5F9F53A5205B2EBD821B9FB6B9B65268CC8B8037911ADE04ED5",
+      "actualSha256": "f5e813752ce3e5f9f53a5205b2ebd821b9fb6b9b65268cc8b8037911ade04ed5",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\IKVM.Reflection.dll",
+      "sha256": "B6D04FC60F4E1D2A226F2587CC913668B3B9C2BB7386BC9E151EB8F03EEE2860",
+      "actualSha256": "b6d04fc60f4e1d2a226f2587cc913668b3b9c2bb7386bc9e151eb8f03eee2860",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\Mono.Cecil.dll",
+      "sha256": "0FDF95700289545356C16A9F0E7FB5FD7816DBB33131D9BE48B370272A0C1536",
+      "actualSha256": "0fdf95700289545356c16a9f0e7fb5fd7816dbb33131d9be48b370272a0c1536",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\vm-binaries\\VM.CodeCompletion.dll",
+      "sha256": "A1539ED1CB6B2D367E8CF875595EF48799869651BF0CACEBD0AAF2688AD8AE76",
+      "actualSha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\Humanizer.dll",
+      "sha256": "D6853075547D7E303EFD60354D911A2FF18EDBA582CDA2FA59D91A2E5DCF9E98",
+      "actualSha256": "d6853075547d7e303efd60354d911a2ff18edba582cda2fa59d91a2e5dcf9e98",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\Microsoft.CodeAnalysis.AnalyzerUtilities.dll",
+      "sha256": "27300B349AE0C552CCB9BEA18BAF55B1FC99A517B0D4E15E557AF4D3A4BFF119",
+      "actualSha256": "27300b349ae0c552ccb9bea18baf55b1fc99a517b0d4e15e557af4d3a4bff119",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\Microsoft.CodeAnalysis.CSharp.dll",
+      "sha256": "CFB5F2785C30485EDA803D58FB8330D737CB07D469CD3D7BC1113D58E8D8E4BB",
+      "actualSha256": "cfb5f2785c30485eda803d58fb8330d737cb07d469cd3d7bc1113d58e8d8e4bb",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\Microsoft.CodeAnalysis.CSharp.Features.dll",
+      "sha256": "41D62B24232AF6E896B372E6BB4D1EA9066CE40229388FB55B221FDFDA124FC5",
+      "actualSha256": "41d62b24232af6e896b372e6bb4d1ea9066ce40229388fb55b221fdfda124fc5",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+      "sha256": "C63F6D8FDB79E443C37CCE6A2248E04BFE2C82D4BDA24B6C01FF1420E6A728B3",
+      "actualSha256": "c63f6d8fdb79e443c37cce6a2248e04bfe2c82d4bda24b6c01ff1420e6a728b3",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\Microsoft.CodeAnalysis.dll",
+      "sha256": "0A7FB1D94E0E7F46798B138CAA67E5D5FB8FB98FD31B5294C917DEF057AB3D80",
+      "actualSha256": "0a7fb1d94e0e7f46798b138caa67e5d5fb8fb98fd31b5294c917def057ab3d80",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\Microsoft.CodeAnalysis.Elfie.dll",
+      "sha256": "8EC0E18AC570157B3863F70035B644925D89996AD901F31EF918D2B0F7428941",
+      "actualSha256": "8ec0e18ac570157b3863f70035b644925d89996ad901f31ef918d2b0f7428941",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\Microsoft.CodeAnalysis.Features.dll",
+      "sha256": "FC743C40512353992FF24C80159B966EE879DA4E2538EEEB693E489C7A5ECDDB",
+      "actualSha256": "fc743c40512353992ff24c80159b966ee879da4e2538eeeb693e489c7a5ecddb",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\Microsoft.CodeAnalysis.Scripting.dll",
+      "sha256": "7C3973A0997A1901C4F5978EF901E3AE96DDB780DEAD70A42F65F2E3F6F23E8F",
+      "actualSha256": "7c3973a0997a1901c4f5978ef901e3ae96ddb780dead70a42f65f2e3f6f23e8f",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\Microsoft.CodeAnalysis.Workspaces.dll",
+      "sha256": "32402BAA9383AFD30E660AF0BD3D23BDB7E596207AFEAC8C6B3ED6F6A5CA6F1D",
+      "actualSha256": "32402baa9383afd30e660af0bd3d23bdb7e596207afeac8c6b3ed6f6a5ca6f1d",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\Microsoft.DiaSymReader.dll",
+      "sha256": "7F3E7543321FF4C2675B94E56A4A32C935C11C82FCC60D4F6CB611CB0A8DAADC",
+      "actualSha256": "7f3e7543321ff4c2675b94e56a4a32c935c11c82fcc60d4f6cb611cb0a8daadc",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\System.Composition.AttributedModel.dll",
+      "sha256": "0F403E98D8BAD390B970704A93AA532042409F499032823CAC47E3004BAD9C8A",
+      "actualSha256": "0f403e98d8bad390b970704a93aa532042409f499032823cac47e3004bad9c8a",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\System.Composition.Convention.dll",
+      "sha256": "88E716224482A702E3D44F02E6311B9D91FCE9AF506ABF0482E8C5F82379034F",
+      "actualSha256": "88e716224482a702e3d44f02e6311b9d91fce9af506abf0482e8c5f82379034f",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\System.Composition.Hosting.dll",
+      "sha256": "8D9A239C7B03CE4A047ED0ABD9E835DB0FEEAAA16C157E7D308603D03EFB7EBC",
+      "actualSha256": "8d9a239c7b03ce4a047ed0abd9e835db0feeaaa16c157e7d308603d03efb7ebc",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\System.Composition.Runtime.dll",
+      "sha256": "324ACDFC86C5ADAA12E9C4F40DEACF1E9F45AC2E84E542A02D130E7380F79D6E",
+      "actualSha256": "324acdfc86c5adaa12e9c4f40deacf1e9f45ac2e84e542a02d130e7380f79d6e",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\self-binaries\\System.Composition.TypedParts.dll",
+      "sha256": "3100191A1448B9A613E04A63B65899CF74371FC2F5C03315AA40AB53468C7A24",
+      "actualSha256": "3100191a1448b9a613e04a63b65899cf74371fc2f5c03315aa40ab53468c7a24",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\references\\mscorlib.dll",
+      "sha256": "3BABBEBD1D1BEE319F6109EA066D1AB5D5FC3C7B493CD1427CCF910BB738902D",
+      "actualSha256": "3babbebd1d1bee319f6109ea066d1ab5d5fc3c7b493cd1427ccf910bb738902d",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\references\\System.dll",
+      "sha256": "5A6459E838F4D9B25360B73EFC6E2B495A5514C6230B8F790D61B6257828C37B",
+      "actualSha256": "5a6459e838f4d9b25360b73efc6e2b495a5514c6230b8f790d61b6257828c37b",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\references\\System.Core.dll",
+      "sha256": "7997BDAD8F9A7244078CC5FA4E764987BCD34BADD6EB4473290BE44DA08E3E1C",
+      "actualSha256": "7997bdad8f9a7244078cc5fa4e764987bcd34badd6eb4473290be44da08e3e1c",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\references\\BenchReference.dll",
+      "sha256": "356B227825B1E60615809016A31002EC59FA33355179C83597328FF01B6ED153",
+      "actualSha256": "356b227825b1e60615809016a31002ec59fa33355179c83597328ff01b6ed153",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\baseline\\VmBenchReady.cs",
+      "sha256": "0970AFEF5064799CCAA1C62C17F7BE2E908CFBA16BA1A255CD2226131D3408ED",
+      "actualSha256": "0970afef5064799ccaa1c62c17f7be2e908cfba16ba1a255cd2226131d3408ed",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\baseline\\SelfBench\\Program.cs",
+      "sha256": "BB9BBD0CC65EE7B55BF6B1EF45B25D2702760EC9BAC8DAD8AF3A1AB24DDBD5CC",
+      "actualSha256": "bb9bbd0cc65ee7b55bf6b1ef45b25d2702760ec9bac8dad8af3a1ab24ddbd5cc",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\baseline\\SelfBench\\SelfBench.csproj",
+      "sha256": "26E51B3FAE932AB059DF914F6A577855F3A9AF6491350267A132410F9CCBE9D6",
+      "actualSha256": "26e51b3fae932ab059df914f6a577855f3a9af6491350267a132410f9ccbe9d6",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\baseline\\Reference.cs",
+      "sha256": "3AC8C763C078DFD14401CE1E6AB206FBD63C4EAF2A31C529F71FE2CFE1B1C7E1",
+      "actualSha256": "3ac8c763c078dfd14401ce1e6ab206fbd63c4eaf2a31c529f71fe2cfe1b1c7e1",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\baseline\\component-baseline.json",
+      "sha256": "D3CB9A24A031F05A1FB05236C38B37F15C7C260FCFF4C34486B36B9D9B5A31D9",
+      "actualSha256": "d3cb9a24a031f05a1fb05236c38b37f15c7c260fcff4c34486b36b9d9b5a31d9",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\baseline\\runs\\component-v2\\input-manifest.json",
+      "sha256": "FC40D18064EEE43C13F6281B8C39173E03F1FBB7D0547A5CA7CBDFCA98E89909",
+      "actualSha256": "fc40d18064eee43c13f6281b8c39173e03f1fbb7d0547a5ca7cbdfca98e89909",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444\\baseline\\runs\\component-v2\\run-summary.json",
+      "sha256": "3D3FDBDC8E0C571C4861CAB7B09FBA5601718E92F6ED5B22ED0910A4D73A6477",
+      "actualSha256": "3d3fdbdc8e0c571c4861cab7b09fba5601718e92f6ed5b22ed0910a4d73a6477",
+      "matches": true
+    }
+  ],
+  "rawChecks": [
+    {
+      "case": "C01",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C01-invoke-a-0\\result.json",
+      "sha256": "7a565bb13a36b7fc6a09a6d11c7c98fd0695fd26e58c42e50b45b5dad327e7df",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C01",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C01-invoke-b-0\\result.json",
+      "sha256": "5dc3d69661fae5752a2ea9d092ae9f3357eb2efd608eec60498886a34e1c6cd3",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C02",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C02-auto-a-0\\result.json",
+      "sha256": "ebfdbccae2fe7dc678af976c93e4ddeb69907872253a62624aade2088eeba5c7",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C02",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C02-auto-b-0\\result.json",
+      "sha256": "6d4e3a2321174348a704e7444ba686863a76f397e8a813a51e98ebe336a48a4f",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C02",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C02-invoke-a-0\\result.json",
+      "sha256": "caf5c7d6b9df2b802ebdd6368957c768032003bce4c3cd53820065b6ee0772e8",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C02",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C02-invoke-b-0\\result.json",
+      "sha256": "8aab3660a7f79e0dd9549767166e474354c52abde7eb761e80d5add52e9902c1",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C03",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C03-auto-a-0\\result.json",
+      "sha256": "a0ad4614a68585916111e51da6009f35d0fff6b1fbd9f23b2420e6b0a75c2373",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C03",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C03-auto-b-0\\result.json",
+      "sha256": "d87f4194f4607d932fbf182176d847ab1e6e11ef28a09390e78e736f5bb21625",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C03",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C03-invoke-a-0\\result.json",
+      "sha256": "96b1205f48698709cc03129458d9fe872b0700ed902d8add2a1c8ae5dc25accd",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C03",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C03-invoke-b-0\\result.json",
+      "sha256": "5a162d9ead5b39a839908ab45202f451a474339b93bd08abd28444cb1c962a43",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C04",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C04-auto-a-0\\result.json",
+      "sha256": "dd83142c65dcaaffc41ee366cee4a6ad3122485389173816569a36b87241cab3",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C04",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C04-auto-b-0\\result.json",
+      "sha256": "11f36d3f0180e53cb3d9ba6a6bc05b30bb37a5df0b65b57f0ec1666827331fb9",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C04",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C04-invoke-a-0\\result.json",
+      "sha256": "b85ef9a7deb89631cd351dfe47836aec9ce7ae4729c393f9999a35e3ad2ef776",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C04",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C04-invoke-b-0\\result.json",
+      "sha256": "0e935a2ff6d33610a63e37e0d2c84e4e0749057e49c73bee877859444c1a74f1",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C05",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C05-auto-a-0\\result.json",
+      "sha256": "0acfbe1baeade2b694e951862ca9c26d7e2157c406a10d821654347af1c99a8f",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C05",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C05-auto-b-0\\result.json",
+      "sha256": "b1d44d20fc1c4f0e8074ff5b6ab01395943ba74b6b29b9864426c21121693adf",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C05",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C05-invoke-a-0\\result.json",
+      "sha256": "bd54e28fd9c786966fcb68c5364e313167517bab8804a94393333cb849f38980",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C05",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C05-invoke-b-0\\result.json",
+      "sha256": "89cbc80f72795273c58a65830bd425ef9137c3d6e0b743561fe254a67f7af51c",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C06",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C06-auto-a-0\\result.json",
+      "sha256": "cbf4ebeae4efe297ebbc16012a6be82d98d3744f12496637f447bbe972adc172",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C06",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C06-auto-b-0\\result.json",
+      "sha256": "cf90ec58fdc68aab088f36a1117c05eaac9a589b1a29bdc61f8d26321e40930c",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C06",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C06-invoke-a-0\\result.json",
+      "sha256": "a5df8c1cdeaa8d8463c27828d56eabb472339c850217ce549a6c6cdc3efe0cd7",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C06",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C06-invoke-b-0\\result.json",
+      "sha256": "9bc8c478e447ae272e4b385e03192921a322821acf62ec7750cb1a904ec7e9a7",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C07",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C07-auto-a-0\\result.json",
+      "sha256": "91a451c9e850ca66d9195574a66bfc20844c4623bba1deb4bde784c7da41cd39",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C07",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C07-auto-b-0\\result.json",
+      "sha256": "8c88111eb99ca0ae063fd30de180b31a96263771ce858db55e25bf8e5399550a",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C07",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C07-invoke-a-0\\result.json",
+      "sha256": "081e046a4a637f4caddb10a1511815ab792a4f8fdf08c4e766b32a7d63dbbdce",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C07",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C07-invoke-b-0\\result.json",
+      "sha256": "86ca9df3f706a351d3d1127384d4f4a18260a88ab8951cee8da51544f4b70c37",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C08",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C08-auto-a-0\\result.json",
+      "sha256": "d783fc44a92b1429357430fc4fa85b4e79f773dd87b203c9772ca0c62b53143f",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C08",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C08-auto-b-0\\result.json",
+      "sha256": "93c9d2b1e022a51b46741cdb0923f89bf21ae62fc42646d48e5b342234e00406",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C08",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C08-invoke-a-0\\result.json",
+      "sha256": "4482da8bc97616f8b65f67c193651d279373612960a029d3df025f42d0de568f",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C08",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C08-invoke-b-0\\result.json",
+      "sha256": "a4b41a12354e8544522e79fd7f8bc2aa27c1a25ba8c879cc63f92b8dab26f482",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C09",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C09-auto-a-0\\result.json",
+      "sha256": "c908a2499b1563223567f7d60baab324d4a6e041c62902e256e52cbeed64b71d",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C09",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C09-auto-b-0\\result.json",
+      "sha256": "3805bad430671030392b9569f9a090c1f7bd3e5365513bb6c6383868fa477df3",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C09",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C09-invoke-a-0\\result.json",
+      "sha256": "abeef69a4fe06874a29866e471eeea007ceba3eaf3a45538b314d6ef77ca1025",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C09",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C09-invoke-b-0\\result.json",
+      "sha256": "01eb73787bae6aa69934741db119f90c05c6dc0c32453b0f41cf7608a0e121b9",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C10",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C10-auto-a-0\\result.json",
+      "sha256": "3ed5086fac0120f3cdae4f46223a976a0a84872b6a6c45c75b2f74a34d806700",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C10",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C10-auto-b-0\\result.json",
+      "sha256": "a8f9379f06f346793d42b23d556b27f99fe65fe0d2514b58d433a3b18911bf33",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C10",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C10-invoke-a-0\\result.json",
+      "sha256": "400d8aad65c558d758d4a03a5963a35cf2b993791941969ab289e8d54046ac11",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C10",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C10-invoke-b-0\\result.json",
+      "sha256": "67000518d43ed50b2cdad52aaa2862f56d97b9d05639b3cba1991864392280b8",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C11",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C11-auto-a-0\\result.json",
+      "sha256": "a2ea1cf67e4850bc5a71164b452c13714d86ffb241d4173f96ab235129c4be17",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C11",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C11-auto-b-0\\result.json",
+      "sha256": "a4c88751216f37b5e9de8bb992c97e5522430230cd21f6a8b24ae9241626bcb9",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C11",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C11-invoke-a-0\\result.json",
+      "sha256": "a578b76f317ecfbca1e312238c71faf2a8d79743014246b5ad5e4d8d11aada27",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C11",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C11-invoke-b-0\\result.json",
+      "sha256": "12ed250f928066ac7f9b62dac4c93bd92c529e8808ec4226c23d577437d26453",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C12",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C12-auto-a-0\\result.json",
+      "sha256": "e8d6a0bc4f9baf61e3c1a4b999c86fa78b199a0fd789cbca33f427aa702a18d0",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C12",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C12-auto-b-0\\result.json",
+      "sha256": "e58f3fbcdc781190116fee872d6f63cdc8748935e84d52c358814cc065d876f4",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C12",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C12-invoke-a-0\\result.json",
+      "sha256": "281e7c70e27c8a3e28112e42cb2d1c43711a46c31a627b65c62dd5a0d0995303",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "C12",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C12-invoke-b-0\\result.json",
+      "sha256": "b75b4a23e6b6794a99bfc1c852836e074b98e3329417ee5e6011c3beb82dcbf9",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M01",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M01-auto-a-0\\result.json",
+      "sha256": "236ca1885d350b6cc1dbaa1ebf3cd81f8738bbbd37ea4dc224a771366dd77824",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M01",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M01-auto-b-0\\result.json",
+      "sha256": "1f0e8d512697c57a15efdf885578a2afb9d4cf144bb1f5f5f2a32e51d285dc14",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M01",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M01-invoke-a-0\\result.json",
+      "sha256": "9ac00b052c7575d1a13e027d21750352384b6aa034a36f5de2950fa2e76bce05",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M01",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M01-invoke-b-0\\result.json",
+      "sha256": "2a0504853a46e1f2e8d4328c56fd690f621aa81bb2e5c0b4512e279aee613f8c",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M02",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M02-auto-a-0\\result.json",
+      "sha256": "ddaf14e4a2fce6d74e1ba739d2358681bc2f3a0aa075cb902a634bb003aff753",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M02",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M02-auto-b-0\\result.json",
+      "sha256": "0c9676db87855c1c670df834345113b8e5e4ed865d0c993ab8916c29fff4f2bc",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M02",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M02-invoke-a-0\\result.json",
+      "sha256": "eedbcbcfe557490f38f384dda44624edf539d446cd64560c85a76da75c015b58",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M02",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M02-invoke-b-0\\result.json",
+      "sha256": "367fccb5f8668d507d30c2f8e9e3511a50e33a63feaa2f5595065a7113b5c3e2",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M03",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M03-auto-a-0\\result.json",
+      "sha256": "dcddaeec6008be9cbebec98ea6e5a87f5f02b7cd7f8c2e5e86d827d7999e0c4d",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M03",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M03-auto-b-0\\result.json",
+      "sha256": "f34f0265de0891561139d73f3a31c2390f952f4918ba23c8a1d63197d4b92260",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M03",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M03-invoke-a-0\\result.json",
+      "sha256": "e12fc458fdbed75f78529d745fa8a6919adc5dfdd2977fcd894561efa91930f6",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M03",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M03-invoke-b-0\\result.json",
+      "sha256": "5ff8cb0fe11d2a43f1379be2aefc07333c8652aca6291dc6247657f4e2392695",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M04",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M04-auto-a-0\\result.json",
+      "sha256": "aa5cbba62917a8fa2148252eab1b0ce6962b0294288526bc63e8687c00002d51",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M04",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M04-auto-b-0\\result.json",
+      "sha256": "6471c589e1016d215ed69387458c47bb1bc637b1ae8ca56e7bafc90b62b2e746",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M04",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M04-invoke-a-0\\result.json",
+      "sha256": "8de5a93723364c1110008247d8692e2f3ea014bcaf98900ca44ab67a1d7d5f9f",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "M04",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M04-invoke-b-0\\result.json",
+      "sha256": "cfd94ba2c6d3bf6d77e0848c1d98d65db1788908f40e5b9692263ae9f326e090",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "P01",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P01-auto-a-0\\result.json",
+      "sha256": "7be742815047a06f65a5cd4759d3c731871b083c0d361e7c84186a404cc04269",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "P01",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P01-auto-b-0\\result.json",
+      "sha256": "41f3db1f7c6b4d4a6f5d8243e4e31e8bf2d9d7a7225b3deb4a65d8d51e45156c",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "P01",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P01-invoke-a-0\\result.json",
+      "sha256": "ea5492e54b11237c1ed57fefb5a94c85fa865fe2de830b318be58c5ed01f44dd",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "P01",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P01-invoke-b-0\\result.json",
+      "sha256": "81b0b0629ea275fd83fafbb9f1c1e4cecdd8fc462978ba535dcf7e7a100ddfc4",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "P02",
+      "side": "a",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P02-auto-a-0\\result.json",
+      "sha256": "af3a873bbeb3cd343e355279d869d514eeda9a0f43f0db823b7b23a8340d19de",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "P02",
+      "side": "b",
+      "mode": "auto",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P02-auto-b-0\\result.json",
+      "sha256": "322ad6a431c2b54742085771f61f5a0fdbe3aeab4a9bbb26442cdf48093a86b5",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "P02",
+      "side": "a",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P02-invoke-a-0\\result.json",
+      "sha256": "2bc8b819c991612e8f0d7ebe3acf2ffc80c1db990e8b2684b7b4f458c80adb28",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    },
+    {
+      "case": "P02",
+      "side": "b",
+      "mode": "invoke",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P02-invoke-b-0\\result.json",
+      "sha256": "066c655f0279709bebfbd09ca846da3172f2ea13969aa2fff4f25d2e0086d07d",
+      "sourceMatches": true,
+      "referencesMatch": true,
+      "firstMatches": true,
+      "repeatCount": true
+    }
+  ],
+  "counts": {
+    "passed": 62,
+    "candidate-expectation-not-met": 4,
+    "protocol-observed-no-candidates": 2,
+    "protocol-suppressed": 2
+  },
+  "jobs": 70,
+  "processTrialsPerCell": 1,
+  "repeats": 5,
+  "common": {
+    "a": {
+      "expectedMet": 23,
+      "total": 23
+    },
+    "b": {
+      "expectedMet": 21,
+      "total": 23
+    }
+  },
+  "modern": {
+    "a": {
+      "expectedMet": 8,
+      "total": 8
+    },
+    "b": {
+      "expectedMet": 6,
+      "total": 8
+    }
+  },
+  "triggerProtocolSeparated": 8,
+  "finalState": "completed-existing-matrix-with-unresolved-targeted-checks",
+  "limitations": [
+    "B is isolated actual myLibs wrapper, not entire VM application",
+    "C hybrid combination not implemented/not tested",
+    "Exactly four fixed references; not real application default reference weight",
+    "One fresh process per cell and five same-document repetitions; no OS cold-start guarantee",
+    "C05 typeof external type missing on B in both modes; cross-DLL member C06 passed; targeted controls not run",
+    "M02 pattern-variable completion missing B in both modes; modern boundary separate",
+    "Original B syntax compile results invalid where duplicate mscorlib CS1703; corrected worker built but not yet run; no compiler boundary conclusion from invalid rows",
+    "Automatic partial-letter suppression is trigger policy, excluded from common capability score"
+  ],
+  "compilerBoundaryValidated": false,
+  "componentSingleRound": true,
+  "appUiValidated": false,
+  "CImplemented": false,
+  "productModified": false,
+  "navigationModified": false
+}

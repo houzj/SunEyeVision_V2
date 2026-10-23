@@ -75,6 +75,7 @@ namespace SunEyeVision.UI.Core
         ICommand SaveCurrentSolutionCommand { get; }
         ICommand NewSolutionCommand { get; }
         ICommand OpenSolutionCommand { get; }
+        ICommand ReloadSolutionCommand { get; }
         ICommand ShowStartPageCommand { get; }
 
         /// <summary>
@@ -87,10 +88,6 @@ namespace SunEyeVision.UI.Core
         /// </summary>
         ICommand TogglePathPointsCommand { get; }
 
-        /// <summary>
-        /// 显示解决方案配置命令
-        /// </summary>
-        ICommand ShowSolutionConfigurationCommand { get; }
 
         /// <summary>
         /// 显示全局变量管理命令

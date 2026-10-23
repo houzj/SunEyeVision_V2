@@ -1,0 +1,220 @@
+[
+  {
+    "name": "VM_M_DeleteModuleNode",
+    "reference": "21b53",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_GetBinayData",
+    "reference": "21e55",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_RunProcedureOnce",
+    "reference": "21fb3",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_StopRunProcedure",
+    "reference": "2203f",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_RunProcedureOnceEx",
+    "reference": "22157",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_ReleaseAlgMemory",
+    "reference": "2335d",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_ReleaseMemoryInPool",
+    "reference": "233e7",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_ReleaseSolSharedMemory",
+    "reference": "2342c",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_ReleaseSolSharedMemorySp",
+    "reference": "23471",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_ReleaseGroupDataSharedMemory",
+    "reference": "234b6",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_ReleaseGroupDataSharedMemorySp",
+    "reference": "234fb",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_ReleaseProcedureDataSharedMemory",
+    "reference": "23540",
+    "root": "21590"
+  },
+  {
+    "name": "VM_M_ReleaseProcedureDataSharedMemorySp",
+    "reference": "23585",
+    "root": "21590"
+  },
+  {
+    "name": "[%s@%d] ParseServerProtocol VM_M_DeleteModuleNode fail. nRet = [%x]",
+    "reference": "4bbd1",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3006,
+      "target": "4ba8a"
+    }
+  },
+  {
+    "name": "[%s@%d] ParseServerProtocol VM_M_RunProcedureOnce fail. nRet = [%x]",
+    "reference": "4cf68",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3015,
+      "target": "4cde3"
+    }
+  },
+  {
+    "name": "[%s@%d] ParseServerProtocol VM_M_StopRunProcedure fail, nRet = [%x].",
+    "reference": "4d418",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3017,
+      "target": "4d2d1"
+    }
+  },
+  {
+    "name": "[%s@%d] ParseServerProtocol VM_M_ReleaseSolSharedMemory fail. nRet = [%x]",
+    "reference": "52ce8",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3066,
+      "target": "52b6a"
+    }
+  },
+  {
+    "name": "[%s@%d] ParseServerProtocol VM_M_GetBinayData fail. nRet = [%x]",
+    "reference": "55fe5",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3088,
+      "target": "55dfe"
+    }
+  },
+  {
+    "name": "[%s@%d] ParseServerProtocol VM_M_GetBinayData fail. nRet = [%x]",
+    "reference": "563c7",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3089,
+      "target": "5609f"
+    }
+  },
+  {
+    "name": "[%s@%d] ParseServerProtocol WriteBinaryData2FileMapping fail. nRet = [%x]",
+    "reference": "5660c",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3089,
+      "target": "5609f"
+    }
+  },
+  {
+    "name": "[%s@%d] ParseServerProtocol WriteBinaryData2FileMapping fail. nRet = [%x]",
+    "reference": "56672",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3089,
+      "target": "5609f"
+    }
+  },
+  {
+    "name": "[%s@%d] ParseServerProtocol VM_M_RunProcedureOnceEx fail. nRet = [%x]",
+    "reference": "56c51",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3092,
+      "target": "569b7"
+    }
+  },
+  {
+    "name": "[%s@%d] ParseServerProtocol VM_M_ReleaseProcedureDataSharedMemory fail. nRet = [%x]",
+    "reference": "5837e",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3098,
+      "target": "581d2"
+    }
+  },
+  {
+    "name": "[%s@%d] ParseSdkProtocol VM_M_RunProcedureOnce fail. nRet = [%x]",
+    "reference": "614fd",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3010,
+      "target": "6139a"
+    }
+  },
+  {
+    "name": "[%s@%d] ParseSdkProtocol VM_M_RunProcedureOnce fail. nRet = [%x]",
+    "reference": "615c1",
+    "root": "4a610",
+    "nearestCase": {
+      "command": 3010,
+      "target": "6139a"
+    }
+  },
+  {
+    "name": "CParseProtocol::WriteBinaryData2FileMapping",
+    "reference": "74c1a",
+    "root": "74b10",
+    "nearestCase": {
+      "command": 3010,
+      "target": "6139a"
+    }
+  },
+  {
+    "name": "CParseProtocol::WriteBinaryData2FileMapping",
+    "reference": "74c8a",
+    "root": "74b10",
+    "nearestCase": {
+      "command": 3010,
+      "target": "6139a"
+    }
+  },
+  {
+    "name": "CParseProtocol::WriteBinaryData2FileMapping",
+    "reference": "74d1e",
+    "root": "74b10",
+    "nearestCase": {
+      "command": 3010,
+      "target": "6139a"
+    }
+  },
+  {
+    "name": "CParseProtocol::WriteBinaryData2FileMapping",
+    "reference": "74d9d",
+    "root": "74b10",
+    "nearestCase": {
+      "command": 3010,
+      "target": "6139a"
+    }
+  },
+  {
+    "name": "CParseProtocol::WriteBinaryData2FileMapping",
+    "reference": "123e95",
+    "root": "123e60",
+    "nearestCase": {
+      "command": 3010,
+      "target": "6139a"
+    }
+  }
+]

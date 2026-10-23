@@ -1,0 +1,94 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T01 打开工具界面与上下文注入</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">T01 打开工具界面与上下文注入</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>T01 打开工具界面与上下文注入</h1><article id="compare-T01"><span id="T01"></span><div class="visual-metrics"><div><strong>T01</strong><span>能力条目</span><small>静态路径已见</small></div><div><strong>差异小</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>节点双击</b></li><li><small>02</small><b>ExecuteOpenDebugWindow</b></li><li><small>03</small><b>NodeOpenDecisionChain</b></li><li><small>04</small><b>ToolRegistry.CreateToolInstance/CreateDebugControl</b></li><li><small>05</small><b>DefaultDebugWindow</b></li><li><small>06</small><b>注入/InitializeAsync</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>图像源走宿主特例；SubroutineId走导航；普通工具由注册类型创建专用控件。</p><details><summary>完整缺陷与未闭合调用边</summary><p>完整专用工具失败/窗口替换/迟到通知仍需逐工具验收。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>节点→ModuleParam/AlgorithmTab/专用Control→工具窗口；不能用主工具栏执行代入调试入口。</p><p>原版专业参数树/专用Control统一接入提供对账范围。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/DEBUG-SESSION-CONTRACT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">仅限已见基础入口/交互职责相近，不代表内部算法、稳定性或生命周期等价。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">统一窗口与上下文创建已见，但专业控件初始化失败和替换退订未全核。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：统一窗口与上下文创建已见，但专业控件初始化失败和替换退订未全核。 VM参考边界：原版专业参数树/专用Control统一接入提供对账范围。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">先逐工厂配对创建/初始化/释放与会话身份，暂无统一壳整体优于或劣于VM的证据。 固定节点→参数→数据Provider→主图像→异步初始化顺序，窗口实例和会话身份分开。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">无元数据/无控件/类型不符/重复打开可诊断，初始化失败无悬挂订阅。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o05.html#O05"><b>标准工具窗口：执行、连续、提交和关闭</b><small class="reference-id">优化方案 · O05</small></a></td></tr></tbody></table></div></section><article id="recommendation-T01"><h2>T01 打开工具界面与上下文注入 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>统一窗口与上下文创建已见，但专业控件初始化失败和替换退订未全核。</p><p><b>VM可借鉴与不可推断：</b>原版专业参数树/专用Control统一接入提供对账范围。</p><p><b>具体改法 / 成本：</b>先逐工厂配对创建/初始化/释放与会话身份，暂无统一壳整体优于或劣于VM的证据。 固定节点→参数→数据Provider→主图像→异步初始化顺序，窗口实例和会话身份分开。</p><p><b>验收：</b>无元数据/无控件/类型不符/重复打开可诊断，初始化失败无悬挂订阅。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T01">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T01">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S056</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:2695</a></p><p><code>ExecuteOpenDebugWindow</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private async void ExecuteOpenDebugWindow(SunEyeVision.UI.Shared.WorkflowNode? node)
+        {
+            if (node == null) return;
+
+            try
+            {
+                LogNodeStorageIdentity(node, &quot;打开调试窗口&quot;);
+                var mainImageControl = GetMainImageControl?.Invoke();
+                var context = new NodeOpenContext(Application.Current.MainWindow, mainImageControl);
+                // 图像源的配置由 UI 宿主提供；工具插件只负责执行，不依赖 WPF 编辑器。
+                // 使用原始 UI 节点，确保弹窗直接编辑当前方案中的 ImageSourceConfig。
+                var success = true;
+                if (node.IsImageLoadNode)
+                {</pre></details><details class="source-card"><summary>S057</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/Nodes/NodeOpenDecisionChain.cs">src/Workflow/Nodes/NodeOpenDecisionChain.cs:26</a></p><p><code>Execute</code></p><p>SHA256 <code>e7f88ab626d530a8b700fa85ea2a8bd62ba27f87dcb5bceb1bc256e382ca736d</code></p><pre>        public bool Execute(WorkflowNodeBase node, NodeOpenContext context)
+        {
+            try
+            {
+                // Step 1: 设置上下文
+                context.Node = node;
+
+                // Step 2: 判断是否为子程序节点（通过 SubroutineId 区分）
+                if (!string.IsNullOrEmpty(node.SubroutineId))
+                {
+                    OnControlFlowNodeOpen?.Invoke(node);
+                    return true;
+                }
+</pre></details><details class="source-card"><summary>S058</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:356</a></p><p><code>SetDataProvider</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        public void SetDataProvider(object dataProvider)
+        {
+            if (_toolControl is IToolControlInitializer initializer)
+            {
+                initializer.SetDataProvider(dataProvider);
+                PluginLogger.Success(
+                    $&quot;已将数据提供者初始化到调试控件: {_control.GetType().Name}&quot;,
+                    &quot;DefaultDebugWindow&quot;);
+            }
+            else if (_toolControl != null)
+            {
+                // 兼容旧控件
+                _toolControl.SetDataProvider(dataProvider);
+                PluginLogger.Success(</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T01&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;打开工具界面与上下文注入&quot;,
+  &quot;state&quot;: &quot;implemented&quot;,
+  &quot;chain&quot;: [
+    &quot;节点双击&quot;,
+    &quot;ExecuteOpenDebugWindow&quot;,
+    &quot;NodeOpenDecisionChain&quot;,
+    &quot;ToolRegistry.CreateToolInstance/CreateDebugControl&quot;,
+    &quot;DefaultDebugWindow&quot;,
+    &quot;注入/InitializeAsync&quot;
+  ],
+  &quot;current&quot;: &quot;图像源走宿主特例；SubroutineId走导航；普通工具由注册类型创建专用控件。&quot;,
+  &quot;gap&quot;: &quot;完整专用工具失败/窗口替换/迟到通知仍需逐工具验收。&quot;,
+  &quot;vm&quot;: &quot;节点→ModuleParam/AlgorithmTab/专用Control→工具窗口；不能用主工具栏执行代入调试入口。&quot;,
+  &quot;vmDoc&quot;: &quot;DEBUG-SESSION-CONTRACT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：统一窗口与上下文创建已见，但专业控件初始化失败和替换退订未全核。 VM参考边界：原版专业参数树/专用Control统一接入提供对账范围。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;先逐工厂配对创建/初始化/释放与会话身份，暂无统一壳整体优于或劣于VM的证据。 固定节点→参数→数据Provider→主图像→异步初始化顺序，窗口实例和会话身份分开。&quot;,
+  &quot;accept&quot;: &quot;无元数据/无控件/类型不符/重复打开可诊断，初始化失败无悬挂订阅。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S056&quot;,
+    &quot;S057&quot;,
+    &quot;S058&quot;
+  ],
+  &quot;optimization&quot;: &quot;O05&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留专业控件和统一窗口契约&quot;,
+    &quot;reason&quot;: &quot;专业UI有领域价值，统一上下文能减少每工具重复连接宿主。&quot;
+  },
+  &quot;defect&quot;: &quot;统一窗口与上下文创建已见，但专业控件初始化失败和替换退订未全核。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版专业参数树/专用Control统一接入提供对账范围。&quot;,
+  &quot;difference&quot;: &quot;差异小&quot;,
+  &quot;differenceBasis&quot;: &quot;仅限已见基础入口/交互职责相近，不代表内部算法、稳定性或生命周期等价。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;统一窗口与上下文创建已见，但专业控件初始化失败和替换退订未全核。&quot;,
+    &quot;borrow&quot;: &quot;原版专业参数树/专用Control统一接入提供对账范围。&quot;,
+    &quot;action&quot;: &quot;先逐工厂配对创建/初始化/释放与会话身份，暂无统一壳整体优于或劣于VM的证据。&quot;,
+    &quot;difference&quot;: &quot;差异小&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S056&quot;,
+      &quot;S057&quot;,
+      &quot;S058&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

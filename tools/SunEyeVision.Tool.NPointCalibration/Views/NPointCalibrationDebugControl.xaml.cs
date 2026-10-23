@@ -6,11 +6,24 @@ using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls;
+using System.Windows.Threading;
 
 namespace SunEyeVision.Tool.NPointCalibration.Views;
 
 public partial class NPointCalibrationDebugControl : ToolDebugControlBase
 {
+    private readonly DispatcherTimer _refresh = new() { Interval = TimeSpan.FromMilliseconds(500) };
+    private string ActivityPath => NPointCalibrationParameters.ResolveActivityPath(Parameters.CalibrationFilePath, (DataProvider as DataSourceQueryService)?.ResourcePaths);
+    private string _seenFingerprint = "";
+    private string _lastError = "";
+    public NPointCalibrationResults? LatestResult { get; private set; }
+    public string StageText => Parameters.Samples.Count(s => s.Kind == NPointSampleKind.Translation) < Parameters.TranslationCount ? "平移采样" : "旋转采样 / 待求解";
+    public string CandidatePathText {get {try{return string.IsNullOrWhiteSpace(Parameters.CalibrationFilePath)?"未设置":NPointCalibrationParameters.CandidatePath(ActivityPath);}catch(Exception){return "路径无效";}}}
+    public string MatrixText => LatestResult?.HomMat2D.Length == 6 ? string.Join("  ", LatestResult.HomMat2D.Select(v => v.ToString("G12"))) : "尚未求解";
+    public string SourceInfoText => Parameters.Samples.LastOrDefault(s => s.FrameId.HasValue) is { } s
+        ? $"相机：{s.CameraId}；工作平面：{s.WorkPlaneId}\n会话：{s.SessionId}；运动步：{s.StepId}；帧：{s.FrameId}"
+        : "当前为手动点表或未提供采样上下文。触发采样需上游提供到位/新帧/XYR证据，不能手填元数据。";
+    public bool IsCurrentResult => LatestResult != null && LatestResult.AcceptedFingerprint == Parameters.Fingerprint();
     public static readonly DependencyProperty ParametersProperty = DependencyProperty.Register(
         nameof(Parameters), typeof(NPointCalibrationParameters), typeof(NPointCalibrationDebugControl),
         new PropertyMetadata(null, OnParametersChanged));
@@ -65,6 +78,15 @@ public partial class NPointCalibrationDebugControl : ToolDebugControlBase
     {
         var p = Parameters;
         if (p == null) return;
+        if (p.RuntimeResult != null) LatestResult = p.RuntimeResult;
+        OnPropertyChanged(nameof(LatestResult)); OnPropertyChanged(nameof(StageText)); OnPropertyChanged(nameof(MatrixText)); OnPropertyChanged(nameof(SourceInfoText));
+        try { OnPropertyChanged(nameof(CandidatePathText)); } catch (Exception) { }
+        if (LatestResult != null && !IsCurrentResult) ResultText = "结果已过期；请重新执行标定。";
+        else if (LatestResult != null)
+            ResultText = !LatestResult.IsSuccess ? LatestResult.ErrorMessage ?? "标定执行失败"
+                : LatestResult.TrainingPassed ? "HALCON原生标定训练合格；候选须经独立验证才能发布。"
+                : "采样未满，尚未求解。";
+        if(!string.IsNullOrEmpty(_lastError))ResultText=_lastError;
         ProgressText = $"平移 {p.Samples.Count(s => s.Kind == NPointSampleKind.Translation)}/{p.TranslationCount}，" +
             $"旋转 {p.Samples.Count(s => s.Kind == NPointSampleKind.Rotation)}/{p.RotationCount}";
         if (string.IsNullOrWhiteSpace(p.CalibrationFilePath))
@@ -74,9 +96,9 @@ public partial class NPointCalibrationDebugControl : ToolDebugControlBase
         }
         try
         {
-            string candidatePath = NPointCalibrationParameters.CandidatePath(p.CalibrationFilePath);
+            string candidatePath = NPointCalibrationParameters.CandidatePath(ActivityPath);
             bool candidateExists = File.Exists(candidatePath);
-            bool activeExists = File.Exists(Path.GetFullPath(p.CalibrationFilePath));
+            bool activeExists = File.Exists(ActivityPath);
             if (!candidateExists && !activeExists)
             {
                 CandidateStatusText = "未生成";
@@ -93,13 +115,13 @@ public partial class NPointCalibrationDebugControl : ToolDebugControlBase
             {
                 try
                 {
-                    var active = NPointCalibrationFile.ReadVerified(p.CalibrationFilePath,
+                    var active = NPointCalibrationFile.ReadVerified(ActivityPath,
                         p.SourceDeviceId, p.ImageWidth, p.ImageHeight, p.ImageDomain);
                     published = !candidateExists || active.CandidateSha256 == candidateDigest;
                 }
                 catch (Exception) { /* An unrelated or invalid activity file is not this candidate's release. */ }
             }
-            CandidateStatusText = candidateExists && p.LastWrittenRevision != p.SampleRevision
+            CandidateStatusText = candidateExists && p.LastWrittenFingerprint != p.Fingerprint()
                 ? "候选存在；点表已修改，请重新生成"
                 : published ? "已发布"
                 : candidateExists ? "候选待独立验证" : "活动文件无效或环境不匹配";
@@ -111,6 +133,8 @@ public partial class NPointCalibrationDebugControl : ToolDebugControlBase
     {
         InitializeComponent();
         Parameters = new NPointCalibrationParameters();
+        _refresh.Tick += (_, _) => { var key = Parameters.Fingerprint(); if (key != _seenFingerprint || Parameters.RuntimeResult != LatestResult) { _seenFingerprint = key; RefreshOverview(); } };
+        Loaded += (_, _) => _refresh.Start(); Unloaded += (_, _) => _refresh.Stop();
     }
 
     public override void SetParameters(ToolParameters parameters)
@@ -126,21 +150,10 @@ public partial class NPointCalibrationDebugControl : ToolDebugControlBase
         var result = ExecuteWithLiveContext(new NPointCalibrationTool(), Parameters);
         if (result.IsSuccess && !Parameters.TryCommit(result, out var error))
             result.SetError(error ?? "标定点保存失败");
+        LatestResult = result as NPointCalibrationResults;
         ResultText = !result.IsSuccess ? result.ErrorMessage ?? "标定执行失败"
-            : result is NPointCalibrationResults calibration
-                ? $"{calibration.ProgressText}\n" +
-                  (calibration.CalibrationReady
-                      ? $"联合求解完成：RMS {calibration.RmsError:F4} mm，最大误差 {calibration.MaxError:F4} mm\n" +
-                        $"轴心→Mark 偏心：({calibration.AxisToMarkX:F4}, {calibration.AxisToMarkY:F4}) mm\n" +
-                        $"权重：{calibration.WeightFunction}；阈值 {calibration.RobustThresholdMm:F4} mm\n" +
-                        "状态：已求解，待独立验证\n" +
-                        string.Join("\n", calibration.Residuals.Select(r =>
-                            $"点 {r.Id} {r.Kind}：{r.ErrorMm:F4} mm，权重 {r.Weight:F3}")) +
-                        (calibration.HasConvertedPoint
-                            ? $"\n本轮 Mark 机台坐标：({calibration.MarkMachineX:F4}, {calibration.MarkMachineY:F4}) mm"
-                            : string.Empty)
-                      : "采样未满，尚未产生联合标定结果。")
-                : result.ErrorMessage ?? "标定执行失败";
+            : LatestResult?.CalibrationReady == true ? "HALCON原生标定训练合格；候选须经独立验证才能发布。" : "采样未满，尚未求解。";
+        _lastError = result.IsSuccess ? "" : ResultText;
         RefreshOverview();
         return result;
     }
@@ -149,9 +162,11 @@ public partial class NPointCalibrationDebugControl : ToolDebugControlBase
 
     private void EditSamples_Click(object sender, RoutedEventArgs e)
     {
+        var expected = Parameters.Fingerprint();
         var dialog = new NPointSampleEditor(Parameters) { Owner = Window.GetWindow(this) };
         if (dialog.ShowDialog() == true)
         {
+            if(expected!=Parameters.Fingerprint()){CalibrationDialogs.Error(this,"点表已变化","编辑期间参数或采样已更新，请重新打开点表。");return;}
             Parameters.ReplaceSamples(dialog.Samples);
             ResultText = $"已编辑 {Parameters.Samples.Count} 个标定点；请重新求解。";
             RefreshOverview();
@@ -161,35 +176,33 @@ public partial class NPointCalibrationDebugControl : ToolDebugControlBase
     private void RecordCurrent_Click(object sender, RoutedEventArgs e)
     {
         if (Parameters.AcquisitionMode != NPointAcquisitionMode.Trigger) return;
-        // The explicit click is one new acquisition event. Existing frame/XYR pairing checks still apply.
-        long previousEventId = Parameters.TeachEventId;
+        // Do not manufacture an event/frame/position timestamp in the editor.
         bool previousSignal = Parameters.TeachSignal;
         try
         {
-            Parameters.TeachEventId = Math.Max(previousEventId, Parameters.LastTeachEventId) + 1;
             Parameters.TeachSignal = true;
             ExecuteTool();
         }
         finally
         {
             Parameters.TeachSignal = previousSignal;
-            Parameters.TeachEventId = previousEventId;
         }
     }
 
     private void ClearSamples_Click(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show("确定清空当前 N点标定的全部采样数据？", "清空标定点",
-                MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+        if (!CalibrationDialogs.Confirm(this,"清空标定点","确定清空当前标定点？求解结果将失效；已发布正式文件不会删除。"))
             return;
         Parameters.ReplaceSamples(Array.Empty<NPointSample>());
+        LatestResult = null;
+        _lastError = "";
         ResultText = "标定点已清空。";
         RefreshOverview();
     }
 
     private void ChooseFile_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new SaveFileDialog { Filter = "标定文件 (*.json)|*.json", FileName = "NPointCalibration.json" };
+        var dialog = new SaveFileDialog { Title="选择正式文件目标路径（仅选择，不写入）", Filter = "标定文件 (*.json)|*.json", FileName = "NPointCalibration.json", OverwritePrompt=false };
         if (dialog.ShowDialog(Window.GetWindow(this)) == true)
             Parameters.CalibrationFilePath = dialog.FileName;
     }
@@ -198,29 +211,36 @@ public partial class NPointCalibrationDebugControl : ToolDebugControlBase
     {
         try
         {
-            // Candidate generation must never consume a held trigger or create an extra sample.
-            var snapshot = new NPointCalibrationParameters();
-            snapshot.CopyFrom(Parameters);
-            snapshot.AcquisitionMode = NPointAcquisitionMode.Manual;
-            var result = ExecuteWithLiveContext(new NPointCalibrationTool(), snapshot);
-            if (result is not NPointCalibrationResults calibration || !calibration.CalibrationReady)
-                throw new InvalidOperationException(result is NPointCalibrationResults pending
-                    ? pending.ErrorMessage ?? "标定点不足，尚未完成求解。" : result.ErrorMessage ?? "标定未完成求解。");
+            var calibration = LatestResult;
+            if (calibration == null || !calibration.IsSuccess || !calibration.TrainingPassed || !IsCurrentResult)
+                throw new InvalidOperationException("请先设置目标路径并重新执行标定；不使用过期或未合格结果。");
             if (string.IsNullOrWhiteSpace(Parameters.CalibrationFilePath))
             {
-                ChooseFile_Click(sender, e);
-                if (string.IsNullOrWhiteSpace(Parameters.CalibrationFilePath)) return;
+                throw new InvalidOperationException("未设置正式目标路径，请设置后重新执行标定。");
             }
-            NPointCalibrationParameters.WriteCandidateFile(Parameters.CalibrationFilePath,
-                calibration, Parameters.Samples, Parameters.MaximumTrainingErrorMm);
+            NPointCalibrationParameters.WriteCandidateFile(ActivityPath,
+                calibration, Parameters.Samples, Parameters.MaximumTrainingErrorMm,Parameters.ArchivedSamples);
             Parameters.LastWrittenRevision = Parameters.SampleRevision;
-            ResultText = $"已生成待验证候选文件：{NPointCalibrationParameters.CandidatePath(Parameters.CalibrationFilePath)}";
+            Parameters.LastWrittenFingerprint = Parameters.Fingerprint();
+            ResultText = $"已生成待验证候选文件：{NPointCalibrationParameters.CandidatePath(ActivityPath)}";
             RefreshOverview();
         }
         catch (Exception ex)
         {
             ResultText = ex.Message;
-            MessageBox.Show(ex.Message, "生成候选文件失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+            CalibrationDialogs.Error(this,"生成候选文件失败",ex.Message);
         }
     }
+    private void Solve_Click(object sender,RoutedEventArgs e)
+    {
+        var mode=Parameters.AcquisitionMode;
+        try { Parameters.AcquisitionMode=NPointAcquisitionMode.Manual; ExecuteTool(); }
+        finally { Parameters.AcquisitionMode=mode; }
+    }
+    private void ShowResiduals_Click(object sender,RoutedEventArgs e)
+    {
+        if(LatestResult==null) { CalibrationDialogs.Error(this,"逐点误差","尚无标定结果。");return; }
+        CalibrationDialogs.Residuals(this,LatestResult,IsCurrentResult,Parameters.MaximumTrainingErrorMm);
+    }
+    public override void OnExternalResultArrived() { base.OnExternalResultArrived(); RefreshOverview(); }
 }

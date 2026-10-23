@@ -1,0 +1,25 @@
+{
+  "records": 696,
+  "pages": 134,
+  "indexBytes": 414110,
+  "queries": [
+    "引用管理",
+    "最终推荐",
+    "首次补全",
+    "脚本 编译",
+    "无结果"
+  ],
+  "keyboard": true,
+  "clear": true,
+  "widths": [
+    390,
+    768,
+    1366
+  ],
+  "horizontalOverflow": false,
+  "remoteRequests": [],
+  "pageErrors": [],
+  "canonicalSourceOnly": true,
+  "offline": true,
+  "thirdParty": false
+}

@@ -1,0 +1,63 @@
+{
+  "file": "D:/Program Files/VisionMaster4.4.0/Applications/ModuleProxy/x64/ModuleFrame.dll",
+  "sha256": "45c57bc46f72fd1f9e0b3a6f9183ff974d14590cfd05ecf4e9fa97a4ff95ae9b",
+  "base": "180000000",
+  "exports": [
+    {
+      "name": "VM_M_BatchReleaseProcedureDataSharedMemory",
+      "rva": "1465c0"
+    },
+    {
+      "name": "VM_M_DeleteModuleNode",
+      "rva": "139d60"
+    },
+    {
+      "name": "VM_M_GetBinayData",
+      "rva": "13ac00"
+    },
+    {
+      "name": "VM_M_ReleaseAlgMemory",
+      "rva": "1333a0"
+    },
+    {
+      "name": "VM_M_ReleaseGroupDataSharedMemory",
+      "rva": "133790"
+    },
+    {
+      "name": "VM_M_ReleaseGroupDataSharedMemorySp",
+      "rva": "1338a0"
+    },
+    {
+      "name": "VM_M_ReleaseMemoryInPool",
+      "rva": "1359f0"
+    },
+    {
+      "name": "VM_M_ReleaseProcedureDataSharedMemory",
+      "rva": "133a20"
+    },
+    {
+      "name": "VM_M_ReleaseProcedureDataSharedMemorySp",
+      "rva": "133b30"
+    },
+    {
+      "name": "VM_M_ReleaseSolSharedMemory",
+      "rva": "133500"
+    },
+    {
+      "name": "VM_M_ReleaseSolSharedMemorySp",
+      "rva": "133610"
+    },
+    {
+      "name": "VM_M_RunProcedureOnce",
+      "rva": "13bda0"
+    },
+    {
+      "name": "VM_M_StopRunProcedure",
+      "rva": "13c250"
+    },
+    {
+      "name": "VM_M_TryRunProcedureOnce",
+      "rva": "131c70"
+    }
+  ]
+}

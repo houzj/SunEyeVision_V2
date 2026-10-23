@@ -1,0 +1,19 @@
+{
+  "taskId": "VM-PERSIST-14",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html"
+  ],
+  "input": "artifacts/ui-prototypes/save-roundtrip/vm-comparison.json",
+  "inputSha256": "29f58ca3bde1ec1999ecaca6402203e27238aec97c2ab7e0f11d8c6ac0b3ba4e",
+  "topics": 3,
+  "dimensions": 10,
+  "sourceChecks": {
+    "framework": 9,
+    "resource": 16,
+    "archives": 2
+  },
+  "productModified": false,
+  "productExecuted": false,
+  "wholeSiteRegenerated": false,
+  "prototypeModified": false
+}

@@ -1,0 +1,231 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T16 子程序：输入、输出与显示配置</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">T16 子程序：输入、输出与显示配置</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>T16 子程序：输入、输出与显示配置</h1><article id="compare-T16"><span id="T16"></span><div class="visual-metrics"><div><strong>T16</strong><span>能力条目</span><small>部分实现</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>混合优化</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>SubroutineDebugControl</b></li><li><small>02</small><b>AddInput/AddOutput/AddDisplayItem</b></li><li><small>03</small><b>参数/合同</b></li><li><small>04</small><b>内部图消费</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>专用配置UI中的增删输入输出/显示命令可定位。</p><details><summary>完整缺陷与未闭合调用边</summary><p>配置命令→持久化合同/内部图消费者；跨层绑定→复制/撤销 Run最终仅在!Success且Errors非空时SetError，其余SetSuccess；ExecutionResult.CreateCancelled只填Status/IsStopped/CompletionMessage而不加Errors。若前面输出解析完成，无错误文本的取消会进入成功分支。循环合并初值new ExecutionResult的Success默认false，也不该靠Errors补救聚合状态。 子调用使用Task.Run(async delegate).GetAwaiter().GetResult；循环间隔Task.Delay未传取消令牌。根session取消会进入子图，但间隔本身不可被该令牌唤醒；不能从Task.Run推立即停止。 CreateChildScope有独立RunId及ConsumerScope，子结果却为下钻显示按原kvp.Key（NodeId）写RootContext。两个父调用同一子图内部ID相同，根投影可覆盖，循环也仅保留最后一轮；这证明缓存键丢调用身份，不证明子图算法上下文本身共用。 委托调用ExecuteWorkflowCore时globalVariables固定null，子Context.GlobalVariables因此为空；__GlobalVars__合成与脚本请求都读取该字段。父输入contextVariables仍正常，不与显式端口传参或变量接收服务混为一谈。 当前校验拒自身调用和目标不存在，DetectCycles只查本图Nodes/Connections；CreateChildScope只核父RunId归属。A→B→A两图本身无连线环仍逐图通过；CallStack字段未作为当前执行器门禁，未声称已观察栈溢出。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>恢复模型F10–F15逐项区分身份/导航/控制与结果。</p><p>参考原版DisplayModuleSet配置目标、稳定模块身份及合法父级输入。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/WORKFLOW-TAB-TOOLBOX-GROUP-CLOSURE.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">当前输入/输出/显示编辑页未证明Group控制语义、嵌套作用域和专用运行页等价。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：当前输入/输出/显示编辑页未证明Group控制语义、嵌套作用域和专用运行页等价。 VM参考边界：参考原版DisplayModuleSet配置目标、稳定模块身份及合法父级输入。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">重做子程序合同编辑与运行消费者闭环，按稳定端口ID迁移/撤销；专参数运行页单独列，非把整个Group原生算法照搬。 逐端口ID/类型/作用域建立编辑事务，核命令消费者再改模型；配置图和普通算法调试分开，Group专参数运行页面另行对账。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">嵌套调用、动态端口删除、跨层变量和取消无泄漏/悬挂绑定。 构造Cancelled无Errors且有可解析输出、Failed空Errors、正常多轮和零轮分别验；父节点不得把取消记成功。 长间隔中取消、子图执行中取消、连续调试关闭、子图异常均等待正确终态；取消不会再启动下一轮。 同子图双调用并发/顺序、嵌套同名节点、多轮下钻分别验，不互相替换所选调用结果；方案切换拒迟到回填。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。 A→A/A→B→A/A→B→C→A、合法复用子图、深层嵌套、载入绕过UI及取消分别验。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o03.html#O03"><b>参数、绑定、变量和控制结构合同</b><small class="reference-id">优化方案 · O03</small></a></td></tr></tbody></table></div></section><article id="recommendation-T16"><h2>T16 子程序：输入、输出与显示配置 · 借鉴VM重做</h2><p><b>代码依据 / 局限：</b>当前输入/输出/显示编辑页未证明Group控制语义、嵌套作用域和专用运行页等价。</p><p><b>VM可借鉴与不可推断：</b>参考原版DisplayModuleSet配置目标、稳定模块身份及合法父级输入。</p><p><b>具体改法 / 成本：</b>重做子程序合同编辑与运行消费者闭环，按稳定端口ID迁移/撤销；专参数运行页单独列，非把整个Group原生算法照搬。 逐端口ID/类型/作用域建立编辑事务，核命令消费者再改模型；配置图和普通算法调试分开，Group专参数运行页面另行对账。</p><p><b>验收：</b>嵌套调用、动态端口删除、跨层变量和取消无泄漏/悬挂绑定。 构造Cancelled无Errors且有可解析输出、Failed空Errors、正常多轮和零轮分别验；父节点不得把取消记成功。 长间隔中取消、子图执行中取消、连续调试关闭、子图异常均等待正确终态；取消不会再启动下一轮。 同子图双调用并发/顺序、嵌套同名节点、多轮下钻分别验，不互相替换所选调用结果；方案切换拒迟到回填。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。 A→A/A→B→A/A→B→C→A、合法复用子图、深层嵌套、载入绕过UI及取消分别验。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T16">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T16">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S097</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml">tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>84f9c59779e157079f207c6792c1f5e8f3b66ffd2a7a09ebcbc04144af7f965c</code></p><pre>&lt;!-- 子程序调试控件 — 提取自 SubroutineParameterDialog 的 TabControl，由 DefaultDebugWindow 包裹 --&gt;
+&lt;UserControl x:Class=&quot;SunEyeVision.Tool.Subroutine.Views.SubroutineDebugControl&quot;
+        xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
+        xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot;
+        xmlns:controls=&quot;clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK&quot;
+        xmlns:converters=&quot;clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK&quot;
+        xmlns:local=&quot;clr-namespace:SunEyeVision.Tool.Subroutine.Views&quot;
+        Background=&quot;{DynamicResource ThemePanelBackgroundBrush}&quot;&gt;
+
+    &lt;UserControl.Resources&gt;
+        &lt;ResourceDictionary&gt;
+            &lt;!-- Tab按钮样式 --&gt;
+            &lt;Style x:Key=&quot;TabHeaderButton&quot; TargetType=&quot;Button&quot;&gt;
+                &lt;Setter Property=&quot;Width&quot; Value=&quot;28&quot;/&gt;</pre></details><details class="source-card"><summary>R065</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml.cs">tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml.cs:20</a></p><p><code>SubroutineDebugControl</code></p><p>SHA256 <code>5f356512fe720973711120886de7ae5c4ae1b2da63100fc1b2f01f6eb8a0a7fe</code></p><pre>        public SubroutineDebugControl(
+            string subroutineId,
+            string subroutineName,
+            string nodeId,
+            IDataSourceQueryService? dataSourceQueryService,
+            List&lt;AvailableDataSource&gt;? subroutineInternalSources,
+            SubroutineParameters parameters,
+            Action&lt;SubroutineOutputChange&gt;? onOutputsChanged = null)
+        {
+            InitializeComponent();
+
+            ViewModel = new SubroutineParameterDialogViewModel(
+                subroutineId, subroutineName, nodeId, dataSourceQueryService, subroutineInternalSources, parameters, onOutputsChanged);
+            DataContext = ViewModel;
+
+            // 窗口关闭必然触发控件 Unloaded → 清理 ViewModel 的事件订阅，杜绝幽灵订阅累积
+            Unloaded += (s, e) =&gt; ViewModel.Dispose();
+        }
+    }
+}</pre></details><details class="source-card"><summary>R066</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:80</a></p><p><code>DefaultDebugWindow</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        public DefaultDebugWindow(UserControl control)
+        {
+            InitializeComponent();
+            
+            _control = control;
+            _toolControl = control as ToolDebugControlBase;
+
+            // 设置内容
+            ContentHost.Content = _control;
+
+            // 自适应尺寸：使用工具控件指定的首选尺寸
+            if (_toolControl != null)
+            {
+                Width = _toolControl.PreferredDebugWindowSize.Width;
+                Height = _toolControl.PreferredDebugWindowSize.Height;
+                MaximizeButton.Visibility = _toolControl.ShowMaximizeButton
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            }
+            else</pre></details><details class="source-card"><summary>N051</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs">tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs:150</a></p><p><code>if (!execResult.Success &amp;&amp; execResult.Errors != null &amp;&amp; execResult.Errors.Any())</code></p><p>SHA256 <code>d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9</code></p><pre>                if (!execResult.Success &amp;&amp; execResult.Errors != null &amp;&amp; execResult.Errors.Any())
+                {
+                    var errorMsg = string.Join(&quot;; &quot;, execResult.Errors);
+                    parameters.LogError($&quot;子程序执行失败: {errorMsg}&quot;);
+                    result.SetError(errorMsg);
+                }
+                else
+                {
+                    sw.Stop();
+                    result.SetSuccess(sw.Elapsed.TotalMilliseconds);
+                    parameters.LogSuccess($&quot;子程序执行完成: {result.ExecutedNodeCount} 个节点, 耗时 {result.SubWorkflowExecutionTimeMs}ms&quot;);
+                }
+            }
+            catch (Exception ex)
+            {
+                sw.Stop();
+                parameters.LogError($&quot;子程序异常: {ex.Message}&quot;, ex);
+                result.SetError($&quot;子程序执行异常: {ex.Message}&quot;, ex);
+            }
+
+            return result;
+        }</pre></details><details class="source-card"><summary>N052</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs">tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs:398</a></p><p><code>Task.Delay(config.LoopInterval).GetAwaiter().GetResult();</code></p><p>SHA256 <code>d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9</code></p><pre>                    Task.Delay(config.LoopInterval).GetAwaiter().GetResult();
+            }
+
+            return (result, accumulatedOutputs, accumulatedDisplay);
+        }
+
+        /// &lt;summary&gt;
+        /// 构建累积显示图形：仅处理勾选 IsAccumulated 的显示项，每轮把该轮图形追加到累积 collector。
+        /// 按轮次对显示项样式做 HSL 色相渐变（第 0 轮 → 第 N 轮），使多轮叠加的图形能按轨迹区分（对齐 Halcon 多色叠加）。
+        /// &lt;/summary&gt;
+        private static void BuildAccumulatedDisplay(
+            SubroutineParameters parameters,
+            Dictionary&lt;string, ToolResults&gt; iterToolResults,
+            ParameterResolver resolver,
+            DisplayCollector accumulatedDisplay,
+            int iterationIndex,
+            int totalRounds)
+        {
+            if (parameters.DisplayConfigs.Count == 0 || iterToolResults.Count == 0)
+                return;
+
+            foreach (var displayItem in parameters.DisplayConfigs)</pre></details><details class="source-card"><summary>N053</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowExecutionEngine.cs">src/Workflow/WorkflowExecutionEngine.cs:713</a></p><p><code>session.RootContext.SetNodeResult(kvp.Key, kvp.Value);</code></p><p>SHA256 <code>4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db</code></p><pre>                            session.RootContext.SetNodeResult(kvp.Key, kvp.Value);
+                        }
+                    }
+
+                    return subResult;
+                }
+                catch (OperationCanceledException)
+                {
+                    scope.State = WorkflowExecutionState.Stopped;
+                    throw;
+                }
+                catch
+                {
+                    scope.State = WorkflowExecutionState.Error;
+                    throw;
+                }
+                finally
+                {
+                    scope.Context = null;
+                }
+            }
+</pre></details><details class="source-card"><summary>N059</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowExecutionEngine.cs">src/Workflow/WorkflowExecutionEngine.cs:898</a></p><p><code>executor.ExecuteSubWorkflowAsync = (subId, img, ctx) =&gt;</code></p><p>SHA256 <code>4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db</code></p><pre>                    executor.ExecuteSubWorkflowAsync = (subId, img, ctx) =&gt;
+                    {
+                        var extendedCtx = ctx != null
+                            ? new Dictionary&lt;string, object&gt;(ctx)
+                            : new Dictionary&lt;string, object&gt;();
+                        extendedCtx[SubroutineContextKeys.ParentNodeId] = node.Id;
+                        var childScope = session.CreateChildScope(subId, scope.RunId, node.Id);
+                        return ExecuteWorkflowCore(
+                            session,
+                            childScope,
+                            subId,
+                            img,
+                            null,
+                            extendedCtx,
+                            request,
+                            isSubworkflow: true);
+                    };
+                }
+
+                target.AddNode(executionNode);
+            }
+</pre></details><details class="source-card"><summary>N061</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowDefinitionService.cs">src/Workflow/WorkflowDefinitionService.cs:173</a></p><p><code>if (string.Equals(node.SubroutineId, workflow.Id, StringComparison.Ordinal))</code></p><p>SHA256 <code>388f2fffbbb3fcda37de9f7ec4367aa8267408eb29d54f410401c0337df5e433</code></p><pre>                if (string.Equals(node.SubroutineId, workflow.Id, StringComparison.Ordinal))
+                    errors.Add($&quot;节点 {node.Name} 不能引用自身工作流。&quot;);
+                else if (workflowResolver != null &amp;&amp; workflowResolver(node.SubroutineId) == null)
+                    errors.Add($&quot;节点 {node.Name} 引用了不存在的子程序工作流 {node.SubroutineId}。&quot;);
+            }
+        }
+
+        if (errors.Count == 0 &amp;&amp; workflow.DetectCycles().Count &gt; 0)
+            errors.Add(&quot;工作流连接存在循环依赖。&quot;);
+
+        return errors;
+    }
+}
+</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T16&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;子程序：输入、输出与显示配置&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;SubroutineDebugControl&quot;,
+    &quot;AddInput/AddOutput/AddDisplayItem&quot;,
+    &quot;参数/合同&quot;,
+    &quot;内部图消费&quot;
+  ],
+  &quot;current&quot;: &quot;专用配置UI中的增删输入输出/显示命令可定位。&quot;,
+  &quot;gap&quot;: &quot;配置命令→持久化合同/内部图消费者；跨层绑定→复制/撤销 Run最终仅在!Success且Errors非空时SetError，其余SetSuccess；ExecutionResult.CreateCancelled只填Status/IsStopped/CompletionMessage而不加Errors。若前面输出解析完成，无错误文本的取消会进入成功分支。循环合并初值new ExecutionResult的Success默认false，也不该靠Errors补救聚合状态。 子调用使用Task.Run(async delegate).GetAwaiter().GetResult；循环间隔Task.Delay未传取消令牌。根session取消会进入子图，但间隔本身不可被该令牌唤醒；不能从Task.Run推立即停止。 CreateChildScope有独立RunId及ConsumerScope，子结果却为下钻显示按原kvp.Key（NodeId）写RootContext。两个父调用同一子图内部ID相同，根投影可覆盖，循环也仅保留最后一轮；这证明缓存键丢调用身份，不证明子图算法上下文本身共用。 委托调用ExecuteWorkflowCore时globalVariables固定null，子Context.GlobalVariables因此为空；__GlobalVars__合成与脚本请求都读取该字段。父输入contextVariables仍正常，不与显式端口传参或变量接收服务混为一谈。 当前校验拒自身调用和目标不存在，DetectCycles只查本图Nodes/Connections；CreateChildScope只核父RunId归属。A→B→A两图本身无连线环仍逐图通过；CallStack字段未作为当前执行器门禁，未声称已观察栈溢出。&quot;,
+  &quot;vm&quot;: &quot;恢复模型F10–F15逐项区分身份/导航/控制与结果。&quot;,
+  &quot;vmDoc&quot;: &quot;WORKFLOW-TAB-TOOLBOX-GROUP-CLOSURE.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;借鉴VM重做&quot;,
+  &quot;reason&quot;: &quot;依据：当前输入/输出/显示编辑页未证明Group控制语义、嵌套作用域和专用运行页等价。 VM参考边界：参考原版DisplayModuleSet配置目标、稳定模块身份及合法父级输入。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;重做子程序合同编辑与运行消费者闭环，按稳定端口ID迁移/撤销；专参数运行页单独列，非把整个Group原生算法照搬。 逐端口ID/类型/作用域建立编辑事务，核命令消费者再改模型；配置图和普通算法调试分开，Group专参数运行页面另行对账。&quot;,
+  &quot;accept&quot;: &quot;嵌套调用、动态端口删除、跨层变量和取消无泄漏/悬挂绑定。 构造Cancelled无Errors且有可解析输出、Failed空Errors、正常多轮和零轮分别验；父节点不得把取消记成功。 长间隔中取消、子图执行中取消、连续调试关闭、子图异常均等待正确终态；取消不会再启动下一轮。 同子图双调用并发/顺序、嵌套同名节点、多轮下钻分别验，不互相替换所选调用结果；方案切换拒迟到回填。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。 A→A/A→B→A/A→B→C→A、合法复用子图、深层嵌套、载入绕过UI及取消分别验。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S097&quot;,
+    &quot;R065&quot;,
+    &quot;R066&quot;,
+    &quot;N051&quot;,
+    &quot;N052&quot;,
+    &quot;N053&quot;,
+    &quot;N059&quot;,
+    &quot;N061&quot;
+  ],
+  &quot;optimization&quot;: &quot;O03&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;T16&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;SubroutineDebugControl XAML声明AddInput/AddOutput/AddDisplayItem和删除动作，窗口非单工具时标准执行按钮可隐藏。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;配置命令→持久化合同/内部图消费者&quot;,
+      &quot;跨层绑定→复制/撤销&quot;,
+      &quot;专参数运行页选择器未被这组配置UI覆盖，已拆T29&quot;
+    ],
+    &quot;cause&quot;: &quot;声明到实际消费者未全追&quot;,
+    &quot;change&quot;: &quot;逐端口ID/类型/作用域建立编辑事务，核命令消费者再改模型；配置图和普通算法调试分开，Group专参数运行页面另行对账。&quot;,
+    &quot;acceptance&quot;: &quot;嵌套调用、动态端口删除、跨层变量和取消无泄漏/悬挂绑定。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S097&quot;,
+      &quot;R065&quot;,
+      &quot;R066&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留子程序设计，逐控制能力补齐&quot;,
+    &quot;reason&quot;: &quot;专用配置更适合复杂合同，代价是编辑/执行/保存跨模块一致性。&quot;
+  },
+  &quot;defect&quot;: &quot;当前输入/输出/显示编辑页未证明Group控制语义、嵌套作用域和专用运行页等价。&quot;,
+  &quot;vmBorrow&quot;: &quot;参考原版DisplayModuleSet配置目标、稳定模块身份及合法父级输入。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;混合优化&quot;,
+  &quot;adoptionBasis&quot;: &quot;参考VM已确认的职责/行为，结合自有数据与服务实现；不复用VM二进制、协议或密钥。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;借鉴VM重做&quot;,
+    &quot;defect&quot;: &quot;当前输入/输出/显示编辑页未证明Group控制语义、嵌套作用域和专用运行页等价。&quot;,
+    &quot;borrow&quot;: &quot;参考原版DisplayModuleSet配置目标、稳定模块身份及合法父级输入。&quot;,
+    &quot;action&quot;: &quot;重做子程序合同编辑与运行消费者闭环，按稳定端口ID迁移/撤销；专参数运行页单独列，非把整个Group原生算法照搬。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;混合优化&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S097&quot;,
+      &quot;R065&quot;,
+      &quot;R066&quot;,
+      &quot;N051&quot;,
+      &quot;N052&quot;,
+      &quot;N053&quot;,
+      &quot;N059&quot;,
+      &quot;N061&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

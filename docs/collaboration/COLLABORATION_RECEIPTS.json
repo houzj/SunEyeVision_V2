@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "receipts": [
+    {
+      "id": "PROTOCOL-CLOSURE-20261022-SELF",
+      "sourceThreadId": "01a160ff-e34e-7670-90a4-55194265f8a3",
+      "recipientThreadId": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+      "state": "acknowledged",
+      "source": "D:/MyWork/REA逆向测试/analysis/framework-independent-review/collaboration-closure.json",
+      "pathSha256": "8edbc574e63206b76b6be12951c0c6b4d8a52f67bad0300374b37c07c52c697f",
+      "scope": "本角色跨项目交接闭环规则，已接收采用；不是产品实施任务",
+      "adoptedRules": [
+        "唯一交接编号",
+        "版本SHA及证据/合同/兼容影响",
+        "接收、不适用、延期必须有理由",
+        "送达/源端自审/采用/验证/独立关闭分态",
+        "各受影响消费者分别验收",
+        "未满足退回原编号，保留下一责任人"
+      ],
+      "verificationRequests": [
+        {
+          "id": "AR-001-F",
+          "roleHere": "仅知悉",
+          "confirmedDefect": false,
+          "nextOwner": "框架层逆向"
+        },
+        {
+          "id": "AR-001-P",
+          "roleHere": "仅知悉",
+          "confirmedDefect": false,
+          "nextOwner": "推进插件逆向"
+        }
+      ],
+      "productChanged": false,
+      "nextOwner": "自研主程序：后续本角色实质交接按此记录；独立审核角色读取接收状态",
+      "limitations": "未重新复核上述两项技术问题，不代替接收角色确认，不跨聊回发，不改审核目录。"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "EX-RE-001",
+      "recipient": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+      "title": "原版各运行模式接纳和实际节点派发边界",
+      "priority": "P1-设计补证不阻塞自研合同",
+      "members": [
+        "TitleMenueItemData.SigRun/CheckRun",
+        "VmSolution.Run",
+        "VmProcedure.Run（确认实际符号）",
+        "VmModule.Run",
+        "ModuleManager.SelfRun",
+        "ServerSDKAPI/NativeMethods.SelfRun"
+      ],
+      "known": "全局SigRun到全局脚本、普通模块SelfRun与流程Tab入口分开；未知原生队列和工具窗Run上游。",
+      "question": "按全局/流程/单节点各选一条，交接已恢复完整方法与首个实际接收方/节点派发点；指出返回表示接纳还是执行结束、线程/在途任务Owner，不能以SelfRun名称推断同步等待。",
+      "acceptance": "每条源路径+SHA+具体成员/原生RVA、输入/调用者/消费者、正常失败分支、准确未知；只到首个证据断点，不扩全native调度库。",
+      "related": [
+        "AR-001-F"
+      ],
+      "state": "sent",
+      "nextOwner": "框架层逆向",
+      "deliveryConfirmed": true,
+      "recipientAcknowledged": false,
+      "producer": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+      "payload": "docs/collaboration/EXECUTION_ARCH_DESIGN_20261022.json",
+      "payloadSha256": "c570760b019923a0b9c1a8ae9cd8304852fda1055e8832bdf6b337170ec6993c",
+      "scope": "只读证据请求，无自研产品改动",
+      "sourceSelfReview": false,
+      "productAdopted": false,
+      "productVerified": false,
+      "independentlyClosed": false
+    },
+    {
+      "id": "EX-RE-002",
+      "recipient": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+      "title": "原版停止完成与调度/回调排空的准确保证",
+      "priority": "P1-复用已有停止证据",
+      "members": [
+        "TitleMenueItemData.StopRun/MutiOrStopRun",
+        "VmSolution.ContinuousRunEnable/GloalScriptContinusRunEnable",
+        "VmProcedure.ContinuousRunEnable",
+        "GlobalModuleManager.GlobalScriptStopRun",
+        "RefreshUIStopExecute",
+        "ContinousRunStart"
+      ],
+      "known": "Q01-Q04已证重复false/流程遍历/SDK调用与字段写入顺序；仍不能证明阻塞native停止和回调Drain。",
+      "question": "只补停止命令接收方、任何wait/完成事件生产处及在途退出/Owner取消顺序；明确是请求停止/SDK同步返回/执行终态/资源退役哪一级，失败超时保留什么。",
+      "acceptance": "已有材料优先；可定位方法或RVA与条件/返回码/事件生产者；不能闭合则给第一缺失函数和影响。AR-001-F迟到Owner准入材料只引用其原编号，不重复要求重跑。",
+      "related": [
+        "AR-001-F"
+      ],
+      "state": "sent",
+      "nextOwner": "框架层逆向",
+      "deliveryConfirmed": true,
+      "recipientAcknowledged": false,
+      "producer": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+      "payload": "docs/collaboration/EXECUTION_ARCH_DESIGN_20261022.json",
+      "payloadSha256": "c570760b019923a0b9c1a8ae9cd8304852fda1055e8832bdf6b337170ec6993c",
+      "scope": "只读证据请求，无自研产品改动",
+      "sourceSelfReview": false,
+      "productAdopted": false,
+      "productVerified": false,
+      "independentlyClosed": false
+    },
+    {
+      "id": "EX-RE-003",
+      "recipient": "01a1529c-d351-73c2-bc9c-79e92b0e7582",
+      "title": "插件执行返回、停止支持与后台任务/帧使用权边界",
+      "priority": "P1-限图像源和阈值试点",
+      "members": [
+        "图像源原版实际Run/回调与缓冲接收成员（先确认具体符号）",
+        "阈值原版执行与输出载荷成员（先确认具体符号）",
+        "公共工具执行会话/关闭/取消原版与独立恢复实现分列"
+      ],
+      "known": "图像copy/借用/映射已有DI资料；本请求不重开AR-001-P所有权全域审核。",
+      "question": "图像源与阈值各交一条执行入口→任务/native→返回/回调→帧消费者退出；列是否有返回后的后台执行、取消支持/不可中断点、frame/model何时可归还，公共配置自执行与流程执行是否同语义。",
+      "acceptance": "每工具源码位置/成员/资源SHA，返回语义/任务Owner/取消/释放证据和未证分支；AR-001-P相关材料复用原编号引用，不把恢复实现Token当原厂可取消证明；仅两个工具，不扩整目录。",
+      "related": [
+        "AR-001-P"
+      ],
+      "state": "sent",
+      "nextOwner": "推进插件逆向",
+      "deliveryConfirmed": true,
+      "recipientAcknowledged": false,
+      "producer": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+      "payload": "docs/collaboration/EXECUTION_ARCH_DESIGN_20261022.json",
+      "payloadSha256": "c570760b019923a0b9c1a8ae9cd8304852fda1055e8832bdf6b337170ec6993c",
+      "scope": "只读证据请求，无自研产品改动",
+      "sourceSelfReview": false,
+      "productAdopted": false,
+      "productVerified": false,
+      "independentlyClosed": false
+    },
+    {
+      "id": "TOOL-REMOVE-20261022-01",
+      "related": [
+        "TD01",
+        "TD02"
+      ],
+      "producerThreadId": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+      "recipientThreadId": "01a160f7-9c99-72c1-b8bf-d689bf19f1ad",
+      "state": "sent",
+      "payload": "artifacts/tool-removal/20261022-TD01-TD02/validation.json",
+      "payloadSha256": "07c1f380a090311b678644094d0c1440bc9a715fa5c2c2bb2cc67e7dfc5a9783",
+      "productAdopted": true,
+      "sourceSelfReview": true,
+      "productVerified": true,
+      "independentlyClosed": false,
+      "documentAcknowledged": false,
+      "nextOwner": "文档角色：接收并同步当前22工具、历史快照及验证状态；独立复核未请求/未完成",
+      "limits": "用户VS手验未做；旧方案未自动迁移；不增加原42证据计数"
+    }
+  ]
+}

@@ -1,0 +1,497 @@
+{
+  "home": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html",
+  "rows": [
+    {
+      "width": 390,
+      "q": "脚本",
+      "count": 12,
+      "targets": [
+        {
+          "text": "T15 脚本：代码、动态输出、程序集与执行 · 暂不能判断",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E8%83%BD%E5%8A%9B%E5%AF%B9%E7%85%A7/capability-t15.html#recommendation-T15",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "脚本性能：阶段性双方链，看等待、准备与复用",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-performance-chains",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "插件、SDK、脚本和发布依赖",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o10.html#O10",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "脚本专业工具",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tools.html",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "相关只读分析：启动预热的实际消费者",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-overview.html#startup-preparation-reference",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "建议先做的贯穿样例",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/framework-implementation.html#implementation",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "D3 绑定与跨节点数据流",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/framework-data.html#point-D3",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "15项数据与坐标工具：已有载体不等独立业务能力",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/data-architecture.html#data-tools-comparison",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "VM原始资源能证明什么？",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-detail-ProtocolParse.html",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "VM原始资源能证明什么？",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-detail-ProtocolAssemble.html",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "VM已证 / 未知",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%9B%AE%E6%A0%87%E6%9E%B6%E6%9E%84/architecture-a01.html#decision-A01",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "默认能力范围",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o01.html#script-design-three-way",
+          "exists": true,
+          "anchor": true
+        }
+      ],
+      "overflow": false,
+      "status": "找到 12 个专题"
+    },
+    {
+      "width": 390,
+      "q": "引用管理",
+      "count": 2,
+      "targets": [
+        {
+          "text": "程序集引用管理：五项核心设计差异",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-reference-three-way",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "程序集引用管理：五项核心设计差异",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o01.html#script-reference-three-way",
+          "exists": true,
+          "anchor": true
+        }
+      ],
+      "overflow": false,
+      "status": "找到 2 个专题"
+    },
+    {
+      "width": 390,
+      "q": "首次补全",
+      "count": 1,
+      "targets": [
+        {
+          "text": "证据到哪一层？",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-performance-chains",
+          "exists": true,
+          "anchor": true
+        }
+      ],
+      "overflow": false,
+      "status": "找到 1 个专题"
+    },
+    {
+      "width": 390,
+      "q": "脚本 编译",
+      "count": 4,
+      "targets": [
+        {
+          "text": "T15 脚本：代码、动态输出、程序集与执行 · 暂不能判断",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E8%83%BD%E5%8A%9B%E5%AF%B9%E7%85%A7/capability-t15.html#recommendation-T15",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "运行字段的计时边界：不等后台编译总成本",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-performance-chains",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "相关只读分析：启动预热的实际消费者",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-overview.html#startup-preparation-reference",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "默认能力范围",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o01.html#script-design-three-way",
+          "exists": true,
+          "anchor": true
+        }
+      ],
+      "overflow": false,
+      "status": "找到 4 个专题"
+    },
+    {
+      "width": 390,
+      "q": "SDK",
+      "count": 12,
+      "targets": [
+        {
+          "text": "二开具体设计：三类SDK，统一公共数据与寿命合同",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-overview.html#sdk-overview",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "工具插件SDK：保留强类型基础，收紧运行与UI边界",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-tools.html#sdk-tools",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "旧SDK逐文件、逐类型候选落点",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-file-map.html#sdk-file-map",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "官方SDK依据",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%9B%AE%E6%A0%87%E6%9E%B6%E6%9E%84/architecture-a09.html#decision-A09",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "官方SDK依据",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%9B%AE%E6%A0%87%E6%9E%B6%E6%9E%84/architecture-a10.html#decision-A10",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "插件、SDK、脚本和发布依赖",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o10.html#O10",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "X02 SDK、插件部署与公共编辑控件 · 必须整改",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E8%83%BD%E5%8A%9B%E5%AF%B9%E7%85%A7/capability-x02.html#recommendation-X02",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "项目关闭时序（目标合同，尚未实施）",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-resources.html#sdk-resources",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "拟议目标边界",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E5%85%B3%E7%B3%BB%E5%9B%BE%E8%A7%A3/guide-dependencies.html",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "SDK发行物",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-migration.html#sdk-migration",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "插件基础第一批已交付：生产SDK未切换，独立验收待报告",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-ui.html#plugin-foundation-entry",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "A01-T1 UI与SDK对相同输入产生同字段/质量结果",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%9B%AE%E6%A0%87%E6%9E%B6%E6%9E%84/architecture-acceptance.html#A01-T1",
+          "exists": true,
+          "anchor": true
+        }
+      ],
+      "overflow": false,
+      "status": "找到 12 个专题"
+    },
+    {
+      "width": 390,
+      "q": "不存在的测试词987654",
+      "count": 0,
+      "targets": [],
+      "overflow": false,
+      "status": "没有找到匹配内容。试试更短的词，或用空格分开关键词。"
+    },
+    {
+      "width": 390,
+      "cleared": true,
+      "resultsCleared": true,
+      "keyboard": true
+    },
+    {
+      "width": 1440,
+      "q": "脚本",
+      "count": 12,
+      "targets": [
+        {
+          "text": "T15 脚本：代码、动态输出、程序集与执行 · 暂不能判断",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E8%83%BD%E5%8A%9B%E5%AF%B9%E7%85%A7/capability-t15.html#recommendation-T15",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "脚本性能：阶段性双方链，看等待、准备与复用",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-performance-chains",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "插件、SDK、脚本和发布依赖",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o10.html#O10",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "脚本专业工具",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tools.html",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "相关只读分析：启动预热的实际消费者",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-overview.html#startup-preparation-reference",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "建议先做的贯穿样例",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/framework-implementation.html#implementation",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "D3 绑定与跨节点数据流",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/framework-data.html#point-D3",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "15项数据与坐标工具：已有载体不等独立业务能力",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/data-architecture.html#data-tools-comparison",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "VM原始资源能证明什么？",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-detail-ProtocolParse.html",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "VM原始资源能证明什么？",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-detail-ProtocolAssemble.html",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "VM已证 / 未知",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%9B%AE%E6%A0%87%E6%9E%B6%E6%9E%84/architecture-a01.html#decision-A01",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "默认能力范围",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o01.html#script-design-three-way",
+          "exists": true,
+          "anchor": true
+        }
+      ],
+      "overflow": false,
+      "status": "找到 12 个专题"
+    },
+    {
+      "width": 1440,
+      "q": "引用管理",
+      "count": 2,
+      "targets": [
+        {
+          "text": "程序集引用管理：五项核心设计差异",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-reference-three-way",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "程序集引用管理：五项核心设计差异",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o01.html#script-reference-three-way",
+          "exists": true,
+          "anchor": true
+        }
+      ],
+      "overflow": false,
+      "status": "找到 2 个专题"
+    },
+    {
+      "width": 1440,
+      "q": "首次补全",
+      "count": 1,
+      "targets": [
+        {
+          "text": "证据到哪一层？",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-performance-chains",
+          "exists": true,
+          "anchor": true
+        }
+      ],
+      "overflow": false,
+      "status": "找到 1 个专题"
+    },
+    {
+      "width": 1440,
+      "q": "脚本 编译",
+      "count": 4,
+      "targets": [
+        {
+          "text": "T15 脚本：代码、动态输出、程序集与执行 · 暂不能判断",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E8%83%BD%E5%8A%9B%E5%AF%B9%E7%85%A7/capability-t15.html#recommendation-T15",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "运行字段的计时边界：不等后台编译总成本",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-performance-chains",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "相关只读分析：启动预热的实际消费者",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-overview.html#startup-preparation-reference",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "默认能力范围",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o01.html#script-design-three-way",
+          "exists": true,
+          "anchor": true
+        }
+      ],
+      "overflow": false,
+      "status": "找到 4 个专题"
+    },
+    {
+      "width": 1440,
+      "q": "SDK",
+      "count": 12,
+      "targets": [
+        {
+          "text": "二开具体设计：三类SDK，统一公共数据与寿命合同",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-overview.html#sdk-overview",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "工具插件SDK：保留强类型基础，收紧运行与UI边界",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-tools.html#sdk-tools",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "旧SDK逐文件、逐类型候选落点",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-file-map.html#sdk-file-map",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "官方SDK依据",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%9B%AE%E6%A0%87%E6%9E%B6%E6%9E%84/architecture-a09.html#decision-A09",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "官方SDK依据",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%9B%AE%E6%A0%87%E6%9E%B6%E6%9E%84/architecture-a10.html#decision-A10",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "插件、SDK、脚本和发布依赖",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o10.html#O10",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "X02 SDK、插件部署与公共编辑控件 · 必须整改",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E8%83%BD%E5%8A%9B%E5%AF%B9%E7%85%A7/capability-x02.html#recommendation-X02",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "项目关闭时序（目标合同，尚未实施）",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-resources.html#sdk-resources",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "拟议目标边界",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E5%85%B3%E7%B3%BB%E5%9B%BE%E8%A7%A3/guide-dependencies.html",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "SDK发行物",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-migration.html#sdk-migration",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "插件基础第一批已交付：生产SDK未切换，独立验收待报告",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/SDK%E8%AE%BE%E8%AE%A1/framework-sdk-ui.html#plugin-foundation-entry",
+          "exists": true,
+          "anchor": true
+        },
+        {
+          "text": "A01-T1 UI与SDK对相同输入产生同字段/质量结果",
+          "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%9B%AE%E6%A0%87%E6%9E%B6%E6%9E%84/architecture-acceptance.html#A01-T1",
+          "exists": true,
+          "anchor": true
+        }
+      ],
+      "overflow": false,
+      "status": "找到 12 个专题"
+    },
+    {
+      "width": 1440,
+      "q": "不存在的测试词987654",
+      "count": 0,
+      "targets": [],
+      "overflow": false,
+      "status": "没有找到匹配内容。试试更短的词，或用空格分开关键词。"
+    },
+    {
+      "width": 1440,
+      "cleared": true,
+      "resultsCleared": true,
+      "keyboard": true
+    }
+  ],
+  "pageErrors": [],
+  "errors": 0
+}

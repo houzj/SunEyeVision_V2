@@ -1,0 +1,114 @@
+{
+  "file": "D:/Program Files/VisionMaster4.4.0/Applications/ModuleProxy/x64/GateWayProxy.dll",
+  "sha256": "aca6c382578382b3630ed68da1709ed7f34a60dc31a1b7c841d939c0b406c27f",
+  "exports": [
+    {
+      "name": "GP_CloseSolution",
+      "rva": "1e10"
+    },
+    {
+      "name": "GP_CloseSolutionNoReport",
+      "rva": "1e70"
+    },
+    {
+      "name": "GP_DeInit",
+      "rva": "1f20"
+    },
+    {
+      "name": "GP_GetAllModules",
+      "rva": "1ce0"
+    },
+    {
+      "name": "GP_GetEventID",
+      "rva": "1e30"
+    },
+    {
+      "name": "GP_GetEventParam",
+      "rva": "1e20"
+    },
+    {
+      "name": "GP_GetModuleAllAddressInfo",
+      "rva": "1cf0"
+    },
+    {
+      "name": "GP_GetModuleParam",
+      "rva": "1e80"
+    },
+    {
+      "name": "GP_GetRecvEventOutputExternalRule",
+      "rva": "1d00"
+    },
+    {
+      "name": "GP_GetSendEventInputRule",
+      "rva": "1d10"
+    },
+    {
+      "name": "GP_Init",
+      "rva": "1ea0"
+    },
+    {
+      "name": "GP_LoadSolutionFromCache",
+      "rva": "1e60"
+    },
+    {
+      "name": "GP_LoadSolutionFromFile",
+      "rva": "1e00"
+    },
+    {
+      "name": "GP_ReadData",
+      "rva": "1d80"
+    },
+    {
+      "name": "GP_SaveFinish",
+      "rva": "1e50"
+    },
+    {
+      "name": "GP_SaveSolutionToCache",
+      "rva": "1e40"
+    },
+    {
+      "name": "GP_SaveSolutionToFile",
+      "rva": "1df0"
+    },
+    {
+      "name": "GP_SetEventCalBack",
+      "rva": "1db0"
+    },
+    {
+      "name": "GP_SetModuleParam",
+      "rva": "1e90"
+    },
+    {
+      "name": "GP_SetRecvEventCalBack",
+      "rva": "1dd0"
+    },
+    {
+      "name": "GP_SetResultCallback",
+      "rva": "1d90"
+    },
+    {
+      "name": "GP_WriteBlendData",
+      "rva": "1d30"
+    },
+    {
+      "name": "GP_WriteBytes",
+      "rva": "1d70"
+    },
+    {
+      "name": "GP_WriteFloat",
+      "rva": "1d60"
+    },
+    {
+      "name": "GP_WriteInt",
+      "rva": "1d50"
+    },
+    {
+      "name": "GP_WriteSendEvent",
+      "rva": "1d20"
+    },
+    {
+      "name": "GP_WriteString",
+      "rva": "1d40"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "readableStages": 6,
+  "technicalAppendixCollapsed": true,
+  "scenarioBeforeTypes": true,
+  "decisionPackages": 12,
+  "explicitRouteBasisAlternativesGateCost": true,
+  "optimizationPageSize": 2,
+  "historyAndDeepLinks": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "productRun": false
+}

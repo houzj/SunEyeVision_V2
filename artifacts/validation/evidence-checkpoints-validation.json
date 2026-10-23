@@ -1,0 +1,17 @@
+{
+  "version": "evidence-checkpoints-v1",
+  "total": 42,
+  "verified": 24,
+  "partial": 11,
+  "unverified": 7,
+  "percent": 57.1,
+  "analysisPercent": 100,
+  "definitionHashMatches": true,
+  "allReferencesLocated": true,
+  "categoryLimitsSeparate": true,
+  "printRestore": true,
+  "deepLinks": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "newReverseEngineering": false
+}

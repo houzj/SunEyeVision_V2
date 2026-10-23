@@ -1,0 +1,13 @@
+{
+  "groups": 4,
+  "matrixRows": 40,
+  "uiRows": 13,
+  "groupDeepLinks": true,
+  "collapsedParentReveal": true,
+  "printRestore": true,
+  "mobileOverflow": false,
+  "totalCompletionPercent": 85,
+  "evidenceClosurePercent": 0,
+  "legacyRound7CoveragePercent": 65,
+  "pageErrors": []
+}

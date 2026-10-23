@@ -1,0 +1,14 @@
+const {chromium}=require('C:/Users/houzhongjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const fs=require('fs'),path=require('path'),url=require('url'),assert=require('assert/strict');
+(async()=>{const b=await chromium.launch({headless:true,channel:'msedge'});try{
+const page=await b.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),errors=[];page.on('pageerror',x=>errors.push(x.message));
+await page.goto(url.pathToFileURL(path.resolve('docs/04-工具设计/标定工具/2026/10/19/suneye-vm-design-comparison-plan.html')).href+'#vm-four-line-round7');
+for(const id of ['coverage-input','coverage-display-sdk','coverage-devices-camera','coverage-ui-editor']){await page.evaluate(id=>location.hash=id,id);await page.waitForFunction(id=>document.getElementById(id).getBoundingClientRect().height>0,id);assert.ok(await page.locator('#'+id).isVisible());}
+assert.equal(await page.locator('#coverage-ui').getAttribute('open'),'');
+await page.screenshot({path:'artifacts/validation/research-reader-round7-ui.png'});
+const before=await page.locator('.coverage-group').evaluateAll(es=>es.map(e=>e.open));await page.evaluate(()=>window.dispatchEvent(new Event('beforeprint')));assert.equal(await page.locator('.coverage-group[open]').count(),4);await page.evaluate(()=>window.dispatchEvent(new Event('afterprint')));assert.deepEqual(await page.locator('.coverage-group').evaluateAll(es=>es.map(e=>e.open)),before);
+await page.setViewportSize({width:390,height:844});for(const id of ['coverage-input','coverage-display-sdk','coverage-devices-camera','coverage-ui-editor','analysis-delivery-review','comparison-progress']){await page.evaluate(id=>location.hash=id,id);await page.waitForFunction(id=>document.getElementById(id).getBoundingClientRect().height>0,id);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),id);}
+await page.screenshot({path:'artifacts/validation/research-reader-round7-progress-mobile.png'});
+const j=JSON.parse(fs.readFileSync('artifacts/validation/comparison-work-packages.json','utf8'));assert.equal(j.progressPolicy.totalCompletionPercent,j.progressPolicy.packageAccepted/20*100);assert.equal(j.progressPolicy.packagePartial+j.progressPolicy.packagePending+j.progressPolicy.packageAccepted,20);assert.equal(j.round7.ui.length,13);assert.deepEqual(errors,[]);
+const r={groups:4,matrixRows:40,uiRows:13,groupDeepLinks:true,collapsedParentReveal:true,printRestore:true,mobileOverflow:false,totalCompletionPercent:j.progressPolicy.analysisCompletionPercent,evidenceClosurePercent:j.progressPolicy.evidenceClosurePercent,legacyRound7CoveragePercent:65,pageErrors:errors};fs.writeFileSync('artifacts/validation/round7-coverage-validation.json',JSON.stringify(r,null,2)+'\n');console.log(JSON.stringify(r));
+}finally{await b.close();}})();

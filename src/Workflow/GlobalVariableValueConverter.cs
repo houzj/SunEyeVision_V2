@@ -39,38 +39,16 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
         using var document = JsonDocument.ParseValue(ref reader);
         var root = document.RootElement;
 
-        if (!root.TryGetProperty("Type", out var typeElement))
-        {
-            VisionLogger.Instance.Log(VisionLogLevel.Warning,
-                "全局变量值缺少Type字段，返回null",
-                "GlobalVariableValueConverter");
-            return null;
-        }
+        if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("Type", out var typeElement) || typeElement.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(typeElement.GetString()))
+            throw new JsonException("Variable wrapper requires a non-empty Type.");
+        if (root.EnumerateObject().Any(p => p.Name is not ("Type" or "Value"))) throw new JsonException("Unknown variable value wrapper field.");
+        var typeName = typeElement.GetString()!;
+        if (!root.TryGetProperty("Value", out var valueElement)) throw new JsonException("Variable wrapper requires Value.");
+        if (SdkTypeVocabulary.ToSystemType(typeName) == null) throw new JsonException("Unknown variable type: " + typeName);
+        if (valueElement.ValueKind == JsonValueKind.Null) return null;
+        try { return ParseValue(typeName, valueElement, options); }
+        catch (Exception ex) when (ex is not JsonException) { throw new JsonException("Invalid variable value for " + typeName, ex); }
 
-        var typeName = typeElement.GetString() ?? "";
-        if (!root.TryGetProperty("Value", out var valueElement))
-        {
-            VisionLogger.Instance.Log(VisionLogLevel.Warning,
-                $"全局变量值缺少Value字段，类型={typeName}",
-                "GlobalVariableValueConverter");
-            return null;
-        }
-
-        try
-        {
-            var result = ParseValue(typeName, valueElement, options);
-            VisionLogger.Instance.Log(VisionLogLevel.Info,
-                $"反序列化全局变量值成功: Type={typeName}, Value={result}",
-                "GlobalVariableValueConverter");
-            return result;
-        }
-        catch (Exception ex)
-        {
-            VisionLogger.Instance.Log(VisionLogLevel.Error,
-                $"反序列化全局变量值失败: Type={typeName}, 错误={ex.Message}",
-                "GlobalVariableValueConverter", ex);
-            return null;
-        }
     }
 
     #endregion
@@ -79,21 +57,13 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
 
     public override void Write(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
     {
+        if (value == null) { writer.WriteNullValue(); return; }
         writer.WriteStartObject();
-
-        if (value == null)
-        {
-            writer.WriteString("Type", "String");
-            writer.WriteNull("Value");
-        }
-        else
-        {
-            var (typeName, serializedValue) = SerializeValue(value, options);
-            writer.WriteString("Type", typeName);
-            writer.WritePropertyName("Value");
-            JsonSerializer.Serialize(writer, serializedValue, options);
-        }
-
+        var (typeName, serializedValue) = SerializeValue(value, options);
+        writer.WriteString("Type", typeName);
+        writer.WritePropertyName("Value");
+        if (serializedValue == null) writer.WriteNullValue();
+        else JsonSerializer.Serialize(writer, serializedValue, serializedValue.GetType(), options);
         writer.WriteEndObject();
     }
 
@@ -170,7 +140,7 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
 
     private (string TypeName, object? SerializedValue) SerializeValue(object value, JsonSerializerOptions options)
     {
-        var typeName = SdkTypeVocabulary.ToTypeVocabulary(value.GetType());
+        var typeName = value is Mat ? "Image" : SdkTypeVocabulary.ToTypeVocabulary(value.GetType());
         if (typeName == null)
             throw new NotSupportedException(
                 $"类型 '{value.GetType().FullName}' 未在 SdkTypeVocabulary 中注册");
@@ -230,40 +200,22 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
 
     #region Image (Mat) 序列化
 
-    private static Mat? ParseImage(JsonElement element)
+    private static Mat ParseImage(JsonElement element)
     {
-        if (element.ValueKind != JsonValueKind.String) return null;
-        try
-        {
-            var base64 = element.GetString();
-            if (string.IsNullOrEmpty(base64)) return null;
-            var bytes = Convert.FromBase64String(base64);
-            return Mat.FromImageData(bytes, ImreadModes.Color);
-        }
-        catch (Exception ex)
-        {
-            VisionLogger.Instance.Log(VisionLogLevel.Error,
-                $"解析图像数据失败: {ex.Message}",
-                "GlobalVariableValueConverter", ex);
-            return null;
-        }
+        if (element.ValueKind != JsonValueKind.String || string.IsNullOrEmpty(element.GetString())) throw new JsonException("Image requires nonempty Base64 PNG data.");
+        var bytes = Convert.FromBase64String(element.GetString()!);
+        var mat = Mat.FromImageData(bytes, ImreadModes.Unchanged);
+        if (mat.Empty()) { mat.Dispose(); throw new JsonException("Image decode returned empty pixels."); }
+        return mat;
     }
-
-    private static string? SerializeImage(Mat mat)
+    private static string SerializeImage(Mat mat)
     {
-        if (mat == null || mat.Empty()) return null;
-        try
-        {
-            var bytes = mat.ToBytes(".png");
-            return Convert.ToBase64String(bytes);
-        }
-        catch (Exception ex)
-        {
-            VisionLogger.Instance.Log(VisionLogLevel.Error,
-                $"序列化图像数据失败: {ex.Message}",
-                "GlobalVariableValueConverter", ex);
-            return null;
-        }
+        if (mat.Empty()) throw new JsonException("Cannot persist an empty image.");
+        if (mat.Depth() is not (0 or 2) || mat.Channels() is not (1 or 3 or 4))
+            throw new JsonException("V1 PNG persistence supports unsigned 8/16-bit, 1/3/4-channel images only; refusing lossy conversion.");
+        var bytes = mat.ToBytes(".png");
+        if (bytes.Length == 0) throw new JsonException("Image encoder returned no data.");
+        return Convert.ToBase64String(bytes);
     }
 
     #endregion

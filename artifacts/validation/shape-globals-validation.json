@@ -1,0 +1,16 @@
+{
+  "shapeMainTabs": 4,
+  "templateManagementRegions": 6,
+  "templateLoadUnimplementedExplicit": true,
+  "shapeCacheAndPrimaryResultLimitExplicit": true,
+  "globalVariableStages": 7,
+  "globalSnapshotEntryDifferenceExplicit": true,
+  "globalSaveImportRectification": true,
+  "sourceReferences": 46,
+  "historyDeepLinks": true,
+  "globalPrintSevenStagesRestore": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "productExecuted": false,
+  "vmNativeEquivalenceVerified": false
+}

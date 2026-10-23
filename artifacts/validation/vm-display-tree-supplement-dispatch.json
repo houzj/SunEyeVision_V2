@@ -1,0 +1,12 @@
+{
+  "sentAt": "2026-10-20T00:23:46.787Z",
+  "targetTitle": "框架层逆向",
+  "targetThreadId": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+  "status": "sent",
+  "acknowledged": false,
+  "materialDelivered": false,
+  "checkpointUpgrades": 0,
+  "manifestSha256": "c1ae6919a37db36546f241c2c7ac47a340efaac57bd9fe8a70b5b11085d63676",
+  "taskCount": 9,
+  "userAuthorization": "本轮用户明确要求通知框架层逆向补充材料"
+}

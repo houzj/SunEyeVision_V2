@@ -1,0 +1,445 @@
+{
+  "batchId": "START-01",
+  "date": "2026-10-22",
+  "scope": "点击EXE到主工作区可安全操作；只静态审查和设计/文档",
+  "baseline": {
+    "head": "3a5dc6dd54f372699a450ad7862b52c961cd2797",
+    "kind": "existing dirty snapshot; hashes authoritative for selected files"
+  },
+  "sources": [
+    {
+      "path": "src/UI/App.xaml",
+      "role": "WPF资源先于OnStartup载入；无StartupUri",
+      "sha256": "a3c1d883331b7b9b0fc075013ce3ebf6d68753656de8322dd64128a8f900ec27"
+    },
+    {
+      "path": "src/UI/App.xaml.cs",
+      "role": "OnStartup/启动分支/退出",
+      "sha256": "4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc"
+    },
+    {
+      "path": "src/UI/SunEyeVision.UI.csproj",
+      "role": "WPF生成入口WinExe",
+      "sha256": "8185eddfb71e32dac327de4cd8e7cc8eaf462bdf5c92f74442889436d5ceae72"
+    },
+    {
+      "path": "src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs",
+      "role": "ServiceInitializer装配与清理",
+      "sha256": "95a1a9a2532653831cf510332a33a21279ee2725bc17a5b2945295ab4e603927"
+    },
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs",
+      "role": "发现/部署检查/逐插件注册",
+      "sha256": "6fe4240a2154817a8e3270d7949643e33a381661a4355277ca475182995eea5a"
+    },
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoader.cs",
+      "role": "全局已加载布尔状态",
+      "sha256": "f8d3c7935778fdc8cb95c13f8b7b3c569d12993e0a8fb2332fd3ad4154098ce5"
+    },
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs",
+      "role": "非collectible、共享身份及WPF解析桥",
+      "sha256": "73b92f04265fc83a84672db78bc9ef539657e8e0eea7b19639c3c2331fc43748"
+    },
+    {
+      "path": "src/Workflow/StartupDecisionService.cs",
+      "role": "Choose/Last/Default决策",
+      "sha256": "391191c168128fc45fff71bc3981b07e47f92db57f4013a121872f6182e994c6"
+    },
+    {
+      "path": "src/Workflow/SolutionManager.cs",
+      "role": "构造/SetCurrentSolution",
+      "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da"
+    },
+    {
+      "path": "src/Workflow/SolutionRepository.cs",
+      "role": "反序列化前插件门槛",
+      "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+      "role": "构造/Loaded/显示层挂接",
+      "sha256": "e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "role": "运行服务及子VM构造",
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+    },
+    {
+      "path": "src/UI/Services/SingleInstanceCoordinator.cs",
+      "role": "单实例/IPC/closing保护",
+      "sha256": "62f2901b2957c092a4f2bb819b0c5ae399e3d7cef60f7edacf1f2873f568c1b4"
+    },
+    {
+      "path": "src/UI/Features/Camera/CameraManagerViewModel.cs",
+      "role": "恢复连接临时VM/finally Dispose",
+      "sha256": "76ef4636e4276be0229021a9ebaaa9b77f4b9a168c3eac054568303d7f8c2f7b"
+    },
+    {
+      "path": "src/UI/Services/Communication/CommunicationApplicationService.cs",
+      "role": "方案事件与异步ReadyAsync",
+      "sha256": "8b5a4f0d26cb9a14fc42de8785e48a7cb288edb2ad31c568cca4d6a06fc006b6"
+    },
+    {
+      "path": "src/Plugin.SDK/Logging/VisionLogger.cs",
+      "role": "早期队列和writers",
+      "sha256": "a0b443f78f0d5ea95e585ed9386661e21cc99df89fe9ae7be52a01a96aef33ff"
+    },
+    {
+      "path": "src/Workflow/ApplicationDataLocationService.cs",
+      "role": "数据目录定位入口",
+      "sha256": "3620f3f8dd5822081b3d6d25d06bc24de58c98b5c941aafbcfc8a57d8984cf1c"
+    }
+  ],
+  "currentChain": [
+    "WPF生成Main→App.InitializeComponent(合并资源)→Run→OnStartup",
+    "ApplicationLifetimeGate→probe分支或SingleInstanceCoordinator→参数路径",
+    "线程池预热→Splash.Show→异常处理注册→Release文件关联",
+    "PluginManager.LoadPlugins→PluginLoader.MarkAsLoaded→数据目录定位/选择",
+    "ServiceInitializer.InitializeServices→显示/图像工厂/类型转换注册→InitializeSolutionManager→主题/事件/监控",
+    "StartupDecisionService→先构造MainWindow/VM→读取请求方案或启动策略",
+    "自动:LoadSolutionOnly→SetCurrentSolution(通信切换异步)→相机恢复等待→Show",
+    "选择:配置窗口→SetCurrentSolution→Show+overlay→相机恢复等待→hide overlay",
+    "MainWindow.Loaded附着渲染层→决策返回→startupActivationReady；没有统一WorkspaceReady结果"
+  ],
+  "findings": [
+    {
+      "id": "ST01",
+      "priority": "P0",
+      "status": "源码确认的结构缺口，未故障注入",
+      "evidence": [
+        "src/UI/App.xaml.cs:80",
+        "src/UI/App.xaml.cs:185",
+        "src/UI/App.xaml.cs:686",
+        "src/UI/App.xaml.cs:913"
+      ],
+      "problem": "async void启动在插件/服务装配段无统一try/finally；Dispatcher异常统一Handled=true，不能保证失败后进入终态；_servicesReady为false时OnExit跳过服务清理。",
+      "impact": "部分初始化失败可能保留半装配状态；并非已复现进程挂死。",
+      "decision": "自研重做启动协调及资源Owner，保留已有单实例保护",
+      "change": "OnStartup只await协调器并处理结果；AppStartupCoordinator.RunAsync按完成步骤登记异步清理；Fatal/Cancelled不进入Ready，反序逆序清理且幂等。进程级单实例锁直到清理完成/进程退出再释放。"
+    },
+    {
+      "id": "ST02",
+      "priority": "P0",
+      "status": "源码确认",
+      "evidence": [
+        "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs:57",
+        "src/Plugin.Infrastructure/Managers/Plugin/PluginLoader.cs:48",
+        "src/Workflow/SolutionRepository.cs:83"
+      ],
+      "problem": "LoadPlugins返回void，缺目录/空目录只记录日志，App仍MarkAsLoaded；bool表示尝试完成，不代表方案所需能力齐全。已有逐插件契约拒绝、依赖错误和单插件隔离不能遗漏。",
+      "impact": "无法从统一结果判定可运行、降级可编辑或必须阻断；具体旧方案失败表现未运行。",
+      "decision": "整改现有加载器，不换程序集隔离策略",
+      "change": "PluginCatalogLoadResult给出扫描/注册/拒绝及原因，保留once生命周期；参数类型Catalog先冻结再反序列化，方案缺工具显式诊断、阻止运行，不静默替换。未加载工具编辑器可按需创建，但参数类型元数据不能随意延后。"
+    },
+    {
+      "id": "ST03",
+      "priority": "P0",
+      "status": "源码确认",
+      "evidence": [
+        "src/UI/App.xaml.cs:375",
+        "src/UI/App.xaml.cs:464",
+        "src/UI/App.xaml.cs:573",
+        "src/UI/App.xaml.cs:299",
+        "src/UI/Services/Communication/CommunicationApplicationService.cs:142"
+      ],
+      "problem": "自动方案先等相机再Show，配置路径先Show再等相机；Show即进度100，而_startupActivationReady在决策返回后设置。通信另有ReadyAsync，App未统一聚合。",
+      "impact": "界面显示、工作区可操作、设备就绪、外部请求准入是不同时间点，却缺一个统一状态结果。",
+      "decision": "自研统一Readiness，借鉴VM事实须等待START-RE-01",
+      "change": "ProcessStarting→ChoosingWorkspace→OpeningWorkspace→WorkspaceReady/Degraded；ShellVisible与WorkspaceReady分开，设备状态独立。两条方案路径汇合到同一OpenWorkspaceAsync，所有运行/外部打开入口按状态门禁，外部激活保留过期及closing检查。"
+    },
+    {
+      "id": "ST04",
+      "priority": "P0",
+      "status": "局部源码确认，迟到写入风险待验证",
+      "evidence": [
+        "src/UI/App.xaml.cs:734",
+        "src/UI/App.xaml.cs:769",
+        "src/UI/Features/Camera/CameraManagerViewModel.cs:354",
+        "src/UI/Features/Camera/CameraManagerViewModel.cs:781"
+      ],
+      "problem": "WhenAny超时只结束等待；ObserveLateCameraRestoreAsync继续观察任务，不向底层传cancel。临时CameraManagerViewModel虽在finally调用DisposeAsync，其实现仅CompletedTask；方案级运行时由ServiceInitializer持有，不能把此调用当连接/后台任务已释放。",
+      "impact": "需证明关闭/换方案时迟到任务不会影响新工作区，当前局部链不足以宣称已发生污染。",
+      "decision": "整改恢复任务的身份、取消及跟踪，不在本批重做相机",
+      "change": "以WorkspaceGeneration关联恢复handle，UI等待预算与任务终止分开；可取消则取消并排空，不能取消则保留Owner/跟踪直至终结，禁止向新代次提交。离线/失败进入Degraded并说明受限能力。"
+    },
+    {
+      "id": "ST05",
+      "priority": "P1",
+      "status": "源码确认，耗时待测",
+      "evidence": [
+        "src/UI/App.xaml.cs:158",
+        "src/UI/App.xaml.cs:200",
+        "src/UI/App.xaml.cs:802",
+        "src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs:242"
+      ],
+      "problem": "启动在UI线程同步WaitAll预热、插件扫描、日志递归枚举保留清理和方案元数据扫描；Splash.Show后未证明已渲染就执行同步工作。",
+      "impact": "有UI阻塞风险，无本轮冷启动数据，不能用注释中的耗时作为实测。",
+      "decision": "按依赖整改并测量，不盲目Task.Run全部初始化",
+      "change": "去掉未经测量支持的强制线程池调参与空任务等待；先渲染启动反馈，纯IO/检查可后台，WPF/BAML/资源和UI绑定仍在Dispatcher；日志保留清理延迟且有界。"
+    },
+    {
+      "id": "ST06",
+      "priority": "P1",
+      "status": "源码确认",
+      "evidence": [
+        "src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs:69",
+        "src/UI/Shell/Windows/MainWindowViewModel.cs:826",
+        "src/UI/Shell/Windows/MainWindow.xaml.cs:154"
+      ],
+      "problem": "进程级服务装配藏在Canvas适配配置文件中；静态属性隐式创建运行时，MainWindowVM构造器new引擎/管理器及订阅，构造与业务初始化耦合。",
+      "impact": "难独立测启动、注入故障和复用无UI入口。",
+      "decision": "自研分离装配职责，保留已有业务服务",
+      "change": "Composition/ApplicationCompositionRoot显式装配并返回OwnedApplicationServices；ServiceInitializer先作为兼容门面，不先搬全部SDK；Shell构造轻量化，绑定外部注入服务，Loaded仅视图挂接并报告就绪。"
+    },
+    {
+      "id": "ST07",
+      "priority": "P1",
+      "status": "源码确认的诊断窗口",
+      "evidence": [
+        "src/Plugin.SDK/Logging/VisionLogger.cs:151",
+        "src/Plugin.SDK/Logging/VisionLogger.cs:346",
+        "src/UI/App.xaml.cs:243"
+      ],
+      "problem": "插件扫描先于文件writer注册；日志后台队列可能在writer为空时分发，现有链未提供启动日志必达保证。",
+      "impact": "不能断言所有早期日志必丢，但失败时有证据缺失窗口。",
+      "decision": "整改早期日志与诊断",
+      "change": "获得数据目录前用受限临时bootstrap日志，选目录后切正式日志并迁移/保留关联；每阶段结果/耗时/异常有StartupId，失败导出有限报告。"
+    },
+    {
+      "id": "ST08",
+      "priority": "P1",
+      "status": "源码确认",
+      "evidence": [
+        "src/UI/Shell/Windows/MainWindow.xaml.cs:417",
+        "src/UI/Shell/Windows/MainWindow.xaml.cs:463"
+      ],
+      "problem": "Loaded通过反射读NodeResultManager私字段并挂渲染层；失败提示笼统称加载插件，构造器另有Dispatcher延后日志页选择。",
+      "impact": "局部视图失败难定位，Show不能证明必要视图初始化完成。",
+      "decision": "整改显示就绪合同，不重做图像渲染内核",
+      "change": "用显式AttachViewServices/IShellReady通知替代反射；分必要工作区挂接和可降级日志/显示面板，各阶段错误命名准确。"
+    }
+  ],
+  "targetFlow": [
+    "WPF必要资源与BootstrapDiagnostics→维护/单实例门禁",
+    "可显示启动反馈→数据目录验证/选择",
+    "显式应用服务装配→插件Catalog加载结果→必需参数类型就绪",
+    "选择/定位方案→校验及统一OpenWorkspace→ShellVisible",
+    "必要视图附着+方案绑定完成→WorkspaceReady；设备按单独状态报告Ready/Connecting/Degraded",
+    "后台任务保留启动/工作区身份及Owner；取消/失败反序清理→Cancelled/Fatal；迟到提交按代次拒绝"
+  ],
+  "targetFiles": [
+    {
+      "path": "src/UI/App.xaml.cs",
+      "action": "改造",
+      "responsibility": "只保留WPF入口、协调器调用、终态展示和退出衔接"
+    },
+    {
+      "path": "src/UI/Services/Startup/AppStartupCoordinator.cs",
+      "action": "新增",
+      "responsibility": "显式步骤依赖、取消、回滚及结果"
+    },
+    {
+      "path": "src/UI/Services/Startup/StartupContracts.cs",
+      "action": "新增",
+      "responsibility": "StartupContext/StageResult/StartupOutcome/WorkspaceReadiness与阶段耗时；拟议名"
+    },
+    {
+      "path": "src/UI/Services/Startup/StartupResourceScope.cs",
+      "action": "新增",
+      "responsibility": "登记已创建资源、后台任务与反序清理；允许未取消任务保留Owner"
+    },
+    {
+      "path": "src/UI/Composition/ApplicationCompositionRoot.cs",
+      "action": "新增",
+      "responsibility": "显式装配现有服务，非全SDK搬迁"
+    },
+    {
+      "path": "src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs",
+      "action": "改造",
+      "responsibility": "仅保留显示适配器，ServiceInitializer兼容转发逐步移出"
+    },
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs",
+      "action": "改造",
+      "responsibility": "返回结构化加载结果"
+    },
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoader.cs",
+      "action": "改造",
+      "responsibility": "缓存同一加载结果与Catalog就绪状态，兼容旧API须评估"
+    },
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginCatalogLoadResult.cs",
+      "action": "新增",
+      "responsibility": "成功/拒绝/缺件等诊断；非声明支持热卸载"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "action": "改造",
+      "responsibility": "依赖显式注入/命令readiness，不动执行调度内核"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+      "action": "改造",
+      "responsibility": "视图附着就绪通知及两启动路径一致遮罩"
+    },
+    {
+      "path": "src/UI/Services/Startup/WorkspaceOpenCoordinator.cs",
+      "action": "新增",
+      "responsibility": "统一自动/选择方案打开；身份与设备恢复跟踪"
+    },
+    {
+      "path": "src/UI/Features/Camera/CameraManagerViewModel.cs",
+      "action": "评估改造",
+      "responsibility": "仅启动恢复入口迁至可跟踪服务，保留管理界面"
+    },
+    {
+      "path": "src/UI/Services/Communication/CommunicationApplicationService.cs",
+      "action": "接入",
+      "responsibility": "复用ReadyAsync和现有任务/取消，按能力聚合，不声称不存在"
+    },
+    {
+      "path": "src/Workflow/StartupDecisionService.cs",
+      "action": "调整边界",
+      "responsibility": "保留纯决策，是否迁应用层在实施中明确，不承载WPF"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/Startup/",
+      "action": "拟新增待核测试工程归属",
+      "responsibility": "故障注入协调器测试；实施时复核项目与STA规范，不宣称工程已存在"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "SA01",
+      "scenario": "正常启动/自动与选择方案",
+      "assertion": "两路径同一WorkspaceReady合同；ShellVisible不等全部设备就绪；每次只有一个服务Owner",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SA02",
+      "scenario": "首次数据目录取消或不可写",
+      "assertion": "明确取消/重选，无半建主窗口进入Ready；原配置不被覆盖",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SA03",
+      "scenario": "缺插件/坏插件/契约不兼容",
+      "assertion": "其他工具仍可登记；逐项诊断；所选方案缺必需工具不能运行，允许降级编辑须显式标明",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SA04",
+      "scenario": "每个必需阶段故障注入",
+      "assertion": "只清理实际已创建资源且逆序一次；Fatal不得继续；日志可定位StartupId及阶段",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SA05",
+      "scenario": "设备恢复超时/失败",
+      "assertion": "工作区可按明确策略降级；等待超时不当任务结束；跟踪仍在途Owner",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SA06",
+      "scenario": "恢复中关闭/换方案",
+      "assertion": "撤销发布准入，迟到任务不改新代次；不能取消的任务Owner保留到真实终结",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SA07",
+      "scenario": "第二实例/启动中打开方案",
+      "assertion": "复用现有IPC过期及closing规则；未Ready时按明确拒绝，不误执行方案",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SA08",
+      "scenario": "Splash/UI响应",
+      "assertion": "分别记录进程入口、Splash首帧、Shell首帧、WorkspaceReady及设备结局；不以硬编码百分比当真实完成度；固定机器/样本冷暖各5次提供原始值后定预算",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SA09",
+      "scenario": "视图必要挂接失败",
+      "assertion": "可观察准确阶段，不误报插件错误；运行命令按就绪能力禁用",
+      "status": "planned-not-run"
+    },
+    {
+      "id": "SA10",
+      "scenario": "早期日志与退出",
+      "assertion": "插件扫描前的故障有bootstrap日志；退出清理不UI同步阻塞等待依赖Dispatcher的任务，回滚幂等",
+      "status": "planned-not-run"
+    }
+  ],
+  "limits": [
+    "本轮没有启动产品或设备、没有构建/故障注入/冷暖性能测试",
+    "未遍历全部服务内部及相机/通信原生驱动，不能据此证明迟到污染或死锁已发生",
+    "非collectible插件装载上下文保持进程生命周期；本批不承诺进程内热卸载/重试重载",
+    "VM原版启动等待START-RE-01独立材料，未知不影响自研安全合同设计",
+    "原执行DEV-READY-01本批延期，不计废弃或已完成",
+    "WPF生成Main顺序依据UseWPF和App.xaml标准生成机制，未读取本轮匹配的App.g.cs/未作入口IL取证，不能声称EXE已运行核验。"
+  ],
+  "handoff": {
+    "framework": "START-RE-01 received/limited reviewed; no further reverse dispatched",
+    "documentation": "START-DOC-01 preparing, source packet ready",
+    "plugin": "not dispatched: current gaps are host startup not plugin algorithm",
+    "otherRoles": "waiting"
+  },
+  "progress": {
+    "analysisDeliverables": "自研链路/问题/目标/文件/验收材料已形成，尚需文档及补证复核",
+    "runtimeTestsPassed": 0,
+    "runtimeTestsPlanned": 10,
+    "productChanges": 0
+  },
+  "vmReview": {
+    "batchId": "START-RE-01",
+    "status": "received-source-hashes-checked-selected-App-body-reviewed",
+    "sources": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/start-re-01/START-RE-01.md",
+        "sha256": "58a1723c67f3f22d27a8f1de3bea1e4286c3d951f1ea0310bb856a6da1b92d9a"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs",
+        "sha256": "e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/App.cs",
+        "sha256": "babebf8e2bef407d7d06105aa4540bb844e32644a25d9a8c8c7faebfe57cf3f7"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/MainWindowData.cs",
+        "sha256": "aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.Data/VMControls.Data/ToolBoxData.cs",
+        "sha256": "c1b11d2c3bebce66a11769eb0e209455cb1e5d0c4efa7c4a6dad5992eb9cf45b"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ToolBox.xaml.cs",
+        "sha256": "67bc6a6d04c88f15aad0633961960a6ca8747f4672fc33f2b1b1e7ae6f6c7215"
+      }
+    ],
+    "facts": [
+      "OnStartup主线程BeforeStartMian与后台BeforeStartPart在WaitOne汇合，之后AppAfterStart/显示",
+      "PreLoad主窗前读取菜单和工具分类；普通工具子项展开按需读取，不等DLL激活",
+      "Show后仍有最近方案/撤销等步骤，窗口出现不等初始化完成",
+      "DoneException通常Dispose(false)/Exit，PreLoad异常直接Exit，不能当完整回滚范本"
+    ],
+    "unknowns": [
+      "两个Main的真实PE入口资格未核",
+      "单插件DLL激活失败隔离未证",
+      "启动主动取消及等待超时未证",
+      "反编译体与安装二进制逐方法身份未重新核"
+    ],
+    "decisions": [
+      "借鉴阶段依赖和元数据/编辑器分离；不照搬Highest STA/WaitOne同步阻塞",
+      "自研保留契约和单插件隔离，补结构化Catalog结果；不声称VM DLL隔离更差",
+      "自研重做统一就绪/取消回滚，VM局部退出链不作为优越性证明",
+      "自有许可属于后续需求，不迁VM加密狗或授权服务器步骤"
+    ]
+  }
+}

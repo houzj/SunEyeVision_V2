@@ -1,0 +1,70 @@
+{
+  "decision": "docs/collaboration/SCRIPT_OPTIMIZATION_DECISION_20261023.json",
+  "fileChecks": [
+    {
+      "exists": true,
+      "path": "src/CommonControl/ScriptEditorCore.xaml.cs",
+      "sha256": "BB2F9C7618BD6F66F79785299518102A7CE1D5311143E0181478AEEC2B5BE88A"
+    },
+    {
+      "exists": true,
+      "path": "src/CommonControl/SemanticHighlighter.cs",
+      "sha256": "5656340E229C9061E431AA8A690D186599F1FCC6F516DDED3B0B3CF164AC288A"
+    },
+    {
+      "exists": true,
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "9DCD71BBA72E25AF94A858F52D18B0CA573709313F1CB491BC271FB275582048"
+    },
+    {
+      "exists": true,
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs",
+      "sha256": "5FA6517C6AC46B671514BBCEB8533707AD1DF3C9BC3EC27C2C1E7B4F6BA3A443"
+    },
+    {
+      "exists": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+      "sha256": "7D0BBDE0BD123DBD5E63D910A94E02968E2FEA0A9FD1675E2E2C7E125B2E6475"
+    },
+    {
+      "exists": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+      "sha256": "14A9AE73A34C65D65AC466CA5956FC66D53D4D79B45309217C62D871338B2BF1"
+    },
+    {
+      "exists": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+      "sha256": "13A19F3FBD96AD924EBB5793117B517F15CA418F081387730AF4AF1D58031E0B"
+    },
+    {
+      "exists": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+      "sha256": "A2E92E7EEE4B2B9687B536B4E87CD2BA158AAB95560B093FCCD1BE8615DCC463"
+    },
+    {
+      "exists": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs",
+      "sha256": "FC1F22F32B648E8735C2060F5475ABADC29C2E6A2D3D729296E404120A5A9289"
+    },
+    {
+      "exists": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/SharedMetadataReferenceProvider.cs",
+      "sha256": "CCCD79604D26AE31F6F6C8D187C023E781ABC865151F4F3B987ABE1A211E0461"
+    },
+    {
+      "exists": true,
+      "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+      "sha256": "9C2FBB9EF9FAC7277C8D21189C8BB7B9C90274554BAD412DDF69B13FF81BDFCD"
+    }
+  ],
+  "newFiles": [
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptReferenceSnapshot.cs",
+    "src/CommonControl/ScriptAnalysisSession.cs",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompilationCoordinator.cs",
+    null
+  ],
+  "acceptance": 12,
+  "contracts": 8,
+  "designOnly": true,
+  "sha256": "FE38502FA8FE9DA014BA8AA7F88A40555FCD688E9A93F7E961C44F35AC5982BC"
+}

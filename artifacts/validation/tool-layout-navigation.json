@@ -1,0 +1,494 @@
+{
+  "scope": "标准窗壳＋阈值代表参数页/宿主共享预览；独立模板编辑器；非全部专业工具像素还原",
+  "areas": [
+    {
+      "key": "title",
+      "cap": "T01",
+      "label": "窗口标题 / 上下文",
+      "layout": "标准窗标题栏在内容区上方，控件由ContentHost承载；非图像容器。",
+      "chain": "节点双击 → NodeOpenDecisionChain → CreateDebugControl → DefaultDebugWindow → InitializeAsync",
+      "data": "节点/方案身份、参数对象、数据Provider与主图引用是不同注入项，窗口创建不代表每项已就绪。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+        "line": 81,
+        "token": "x:Name=\"TitleBar\"",
+        "sha256": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "input",
+      "cap": "T02",
+      "label": "输入图像 / 数据源",
+      "layout": "阈值代表页：基本参数Tab顶部ImageSourceSelector。",
+      "chain": "ImageSourceSelector.SelectedDataSource ↔ Parameters.ImageSource → 绑定持久化 / 运行解析",
+      "data": "AvailableDataSources是候选描述；ImageSource是绑定来源，不是图像像素。解析后的值与设计期ParamSetting分开。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml",
+        "line": 41,
+        "token": "x:Name=\"imageSourceSelector\"",
+        "sha256": "d38a2802788cd9661dfc53c1169cdc0bf9031ca8825a72f601ce8d0b7c8ba931"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "roi-config",
+      "cap": "T09",
+      "label": "区域设置 · 检测 / 屏蔽",
+      "layout": "基本参数Tab中RoiEditorManagerControl位于输入图像下方；实际绘制在宿主主图上。",
+      "chain": "InspectionRoisSource / MaskRoisSource ↔ Parameters.Rois → ROI管理器 → 主图交互层",
+      "data": "InspectionRois和MaskRois是不同集合；几何坐标、编辑选择态与算法有效域不可混为一个结果数组。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml",
+        "line": 50,
+        "token": "x:Name=\"regionManager\"",
+        "sha256": "d38a2802788cd9661dfc53c1169cdc0bf9031ca8825a72f601ce8d0b7c8ba931"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "parameters",
+      "cap": "T03",
+      "label": "运行参数 · 阈值 / 最大值",
+      "layout": "阈值代表页第二Tab：ConfigSetting与Parameters双向绑定。",
+      "chain": "ConfigSetting.Value / ParameterName → 参数写入 → ToolEditorCommit.TryCommit → 运行参数快照",
+      "data": "控件待提交编辑、已live写入参数、运行解析快照三者不同；取消编辑不等回滚业务模型。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml",
+        "line": 64,
+        "token": "x:Name=\"thresholdParam\"",
+        "sha256": "d38a2802788cd9661dfc53c1169cdc0bf9031ca8825a72f601ce8d0b7c8ba931"
+      },
+      "model": "standard",
+      "tab": "run"
+    },
+    {
+      "key": "presentation",
+      "cap": "T12",
+      "label": "结果显示 · 判定 / 样式",
+      "layout": "第三Tab是ResultPresentation.Judgments编辑，不是本轮数值结果表。",
+      "chain": "JudgmentEditorControl.ItemsSource ↔ ResultPresentation.Judgments → 显示规则消费者 → 图形文字",
+      "data": "这里编辑展示配置；算法ToolResults、本轮图元和FormattedText缓存是另外三层。配置到最终渲染的全部消费者仍待核。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml",
+        "line": 151,
+        "token": "presentation:JudgmentEditorControl",
+        "sha256": "d38a2802788cd9661dfc53c1169cdc0bf9031ca8825a72f601ce8d0b7c8ba931"
+      },
+      "model": "standard",
+      "tab": "result"
+    },
+    {
+      "key": "image",
+      "cap": "T11",
+      "label": "宿主主图 · 缩放 / 适应 / 全屏",
+      "layout": "标准参数窗没有内嵌图像区。此处明确画主界面共享图像区，与参数窗用边框分开。",
+      "chain": "MainWindowViewModel.GetMainImageControl → initializer.SetMainImageControl → 工具 / ROI使用主图",
+      "data": "共享ImageControl是宿主对象引用，不是独立图像副本；底图、叠加与历史的帧代次/所有权须独立核。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 3944,
+        "token": "initializer.SetMainImageControl(mainImageControl)",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "roi-draw",
+      "cap": "T09",
+      "label": "图上ROI · 绘制 / 命中",
+      "layout": "宿主图上的交互层与参数页ROI集合关联；轮廓示意是文档热点，不是实际检测结果。",
+      "chain": "主图鼠标交互 → RoiEditorManager → 检测 / 屏蔽模型 → 工具输入",
+      "data": "像素坐标、视口变换和算法/世界坐标不能混用；每种形状的提交、撤销、取消仍需逐项验证。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml",
+        "line": 51,
+        "token": "InspectionRoisSource=",
+        "sha256": "d38a2802788cd9661dfc53c1169cdc0bf9031ca8825a72f601ce8d0b7c8ba931"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "overlay",
+      "cap": "T12",
+      "label": "图形 / 文字叠加",
+      "layout": "图形和文字位于主图结果层，不是参数窗口原生内容。",
+      "chain": "结果显示项 → ResultRenderLayer.OnRender → RenderTextsGrouped / DrawingContext",
+      "data": "底图像素、图形几何、文字样式与缓存身份不同；同帧提交和DPI失效应有显式合同。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+        "line": 390,
+        "token": "protected override void OnRender",
+        "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "results",
+      "cap": "T13",
+      "label": "结果回传 / 主窗结果树",
+      "layout": "标准窗外部的结果树 / 专业分析区域，与参数页结果显示配置区分。",
+      "chain": "ToolExecutionCompleted → 宿主订阅 → NodeResultManager / 专业分析 → 结果树 / 高亮",
+      "data": "ToolResults与字段投影、专业分析行不是同一所有者；失败/取消清空和迟到结果的Run/Node身份需验证。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindow.xaml",
+        "line": 150,
+        "token": "Binding SelectedNodeDataAnalysisControl",
+        "sha256": "2b12be1f69bc228ac4a8bdb395b4c69532986e10f499fd74ada1fd109750fbea"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "continuous",
+      "cap": "T05",
+      "label": "连续执行",
+      "layout": "标准窗底栏从左到右：连续执行、执行、确定。",
+      "chain": "ContinuousRunButton → OnContinuousExecuteCommand → TriggerExecute → 成功回调 → Delay(500) → 下一轮",
+      "data": "循环标志、窗口_isExecuting与算法在途任务不同；成功后重触发不证明失败/取消终态已闭合。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+        "line": 177,
+        "token": "x:Name=\"ContinuousRunButton\"",
+        "sha256": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "stop",
+      "cap": "T06",
+      "label": "停止运行",
+      "layout": "这是连续执行同一按钮的停止状态，不是额外底栏按钮。实际此状态隐藏单次执行按钮，文档模式切换只展示状态。",
+      "chain": "同一按钮 → OnContinuousExecuteCommand停止分支 → 清连续标志 / 恢复单次按钮 → 当前任务终态待核",
+      "data": "禁止下一轮与取消当前任务是两个操作；Drained是建议的完成合同，不是假称已有字段。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+        "line": 209,
+        "token": "private void OnContinuousExecuteCommand",
+        "sha256": "d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "execute",
+      "cap": "T04",
+      "label": "执行",
+      "layout": "标准窗底栏中间执行按钮。",
+      "chain": "RunButton → ToolCommands.Execute → 窗口转发 → ToolDebugControlBase.OnExecuteCommand → ExecuteToolAsync",
+      "data": "设计参数在运行前提交/解析；Task.FromResult默认实现不转后台，线程与取消必须核具体工具覆写。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+        "line": 186,
+        "token": "x:Name=\"RunButton\"",
+        "sha256": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "confirm",
+      "cap": "T07",
+      "label": "确定",
+      "layout": "标准窗底栏最右确定按钮，成功时验证后关闭。",
+      "chain": "ConfirmButton → OnConfirmCommand → TryCommit → ValidateParameters → Close",
+      "data": "控件编辑提交、业务模型提交、绑定持久化与关窗不是同一个原子事务；各工具校验深度不同。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+        "line": 195,
+        "token": "x:Name=\"ConfirmButton\"",
+        "sha256": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "close",
+      "cap": "T08",
+      "label": "关闭 ×",
+      "layout": "标准窗标题栏右侧关闭按钮；关闭前触发编辑处理，Closed另做退订。",
+      "chain": "OnCloseButtonClick → Close → OnWindowClosing / ToolEditorClose → Closed",
+      "data": "窗口退订、ROI清理、帧最后读者和算法终态是不同生命周期；不能用清显示代证任务排空。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+        "line": 143,
+        "token": "Click=\"OnCloseButtonClick\"",
+        "sha256": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356"
+      },
+      "model": "standard",
+      "tab": "basic"
+    },
+    {
+      "key": "template-image",
+      "cap": "T18",
+      "label": "模板图像 / 轮廓",
+      "layout": "独立模板编辑器实际左图65*、右参数35*，不是DefaultDebugWindow通用布局。",
+      "chain": "LoadImageBeforeShow → dialogImageControl → 轮廓 / 图像交互",
+      "data": "注册图像字节、HImage/Mat、轮廓集合和模板模型句柄分层；_owns字段不能单独证明最终析构已闭合。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+        "line": 46,
+        "token": "x:Name=\"dialogImageControl\"",
+        "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+      },
+      "model": "template",
+      "tab": "basic"
+    },
+    {
+      "key": "template-roi",
+      "cap": "T18",
+      "label": "模板ROI / 参数",
+      "layout": "模板编辑器右侧滚动参数区首先放置独立dialogRegionManager。",
+      "chain": "dialogRegionManager → 模板ROI / 提取参数 → OnExtractClick",
+      "data": "模板ROI属于此对话框，不能默认和阈值主图ROI共享；退出时所有权需要追实际消费者。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+        "line": 60,
+        "token": "x:Name=\"dialogRegionManager\"",
+        "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+      },
+      "model": "template",
+      "tab": "basic"
+    },
+    {
+      "key": "template-result",
+      "cap": "T18",
+      "label": "提取状态 / 层级 / 统计",
+      "layout": "模板编辑器右侧结果信息区：状态、层级、对比度等字段。",
+      "chain": "OnExtractClick → 模板数据 / 轮廓 → UpdateResultDisplay → 右侧结果TextBlock",
+      "data": "结果字段是模板提取信息，不是整流程ToolResults树；各字段的刷新/失败清空仍需专项核。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+        "line": 147,
+        "token": "x:Name=\"txtResultStatus\"",
+        "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+      },
+      "model": "template",
+      "tab": "basic"
+    },
+    {
+      "key": "template-extract",
+      "cap": "T18",
+      "label": "提取模板",
+      "layout": "独立对话框上方操作栏。",
+      "chain": "btnExtractContour.Click → OnExtractClick → 模板提取 → 图与状态更新",
+      "data": "原生模型创建、替换及失败旧模型处理未全部闭合，不把按钮存在当算法已验收。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+        "line": 30,
+        "token": "x:Name=\"btnExtractContour\"",
+        "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+      },
+      "model": "template",
+      "tab": "basic"
+    },
+    {
+      "key": "template-clear",
+      "cap": "T18",
+      "label": "清除模板",
+      "layout": "独立对话框上方提取按钮旁。",
+      "chain": "btnClearContour → OnClearClick → 清ModelData / ContourChains / SourceImageBytes → 清叠加",
+      "data": "已见清字段和叠加；是否另有native句柄Owner需要继续追，不能仅凭置null宣称释放。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+        "line": 33,
+        "token": "x:Name=\"btnClearContour\"",
+        "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+      },
+      "model": "template",
+      "tab": "basic"
+    },
+    {
+      "key": "template-ok",
+      "cap": "T18",
+      "label": "确定模板",
+      "layout": "独立对话框底部确定，不套用标准窗OnConfirmCommand。",
+      "chain": "btnOk.Click → OnOkClick → 名称写入 / ROI逐个Clone → 检查ModelData及图像 → DialogResult=true / Close",
+      "data": "ROI复制到结果模板后才完成后续检查；验证失败前有模型写入。它是否影响外部原模型需追创建/写回调用者，不宣称失败零写入。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+        "line": 254,
+        "token": "x:Name=\"btnOk\"",
+        "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+      },
+      "model": "template",
+      "tab": "basic",
+      "behaviorSource": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+        "line": 988,
+        "token": "private void OnOkClick",
+        "sha256": "37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95"
+      }
+    },
+    {
+      "key": "template-cancel",
+      "cap": "T18",
+      "label": "取消模板",
+      "layout": "独立对话框底部取消，不冒称有标准窗连续执行栏。",
+      "chain": "btnCancel.Click → OnCancelClick → _resultTemplate=null / DialogResult=false → Close",
+      "data": "本方法只清返回引用并退出；已有模板编辑共用原Template，提取可能已改ModelData/Contours，不保证取消回滚。此前模型修改是否影响外部对象及最终资源释放仍需追，不能继承标准窗取消语义。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+        "line": 255,
+        "token": "x:Name=\"btnCancel\"",
+        "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+      },
+      "model": "template",
+      "tab": "basic",
+      "behaviorSource": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+        "line": 1048,
+        "token": "private void OnCancelClick",
+        "sha256": "37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95"
+      }
+    }
+  ],
+  "refs": [
+    {
+      "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+      "line": 81,
+      "token": "x:Name=\"TitleBar\"",
+      "sha256": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml",
+      "line": 41,
+      "token": "x:Name=\"imageSourceSelector\"",
+      "sha256": "d38a2802788cd9661dfc53c1169cdc0bf9031ca8825a72f601ce8d0b7c8ba931"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml",
+      "line": 50,
+      "token": "x:Name=\"regionManager\"",
+      "sha256": "d38a2802788cd9661dfc53c1169cdc0bf9031ca8825a72f601ce8d0b7c8ba931"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml",
+      "line": 64,
+      "token": "x:Name=\"thresholdParam\"",
+      "sha256": "d38a2802788cd9661dfc53c1169cdc0bf9031ca8825a72f601ce8d0b7c8ba931"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml",
+      "line": 151,
+      "token": "presentation:JudgmentEditorControl",
+      "sha256": "d38a2802788cd9661dfc53c1169cdc0bf9031ca8825a72f601ce8d0b7c8ba931"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "line": 3944,
+      "token": "initializer.SetMainImageControl(mainImageControl)",
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml",
+      "line": 51,
+      "token": "InspectionRoisSource=",
+      "sha256": "d38a2802788cd9661dfc53c1169cdc0bf9031ca8825a72f601ce8d0b7c8ba931"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+      "line": 390,
+      "token": "protected override void OnRender",
+      "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindow.xaml",
+      "line": 150,
+      "token": "Binding SelectedNodeDataAnalysisControl",
+      "sha256": "2b12be1f69bc228ac4a8bdb395b4c69532986e10f499fd74ada1fd109750fbea"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+      "line": 177,
+      "token": "x:Name=\"ContinuousRunButton\"",
+      "sha256": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+      "line": 209,
+      "token": "private void OnContinuousExecuteCommand",
+      "sha256": "d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+      "line": 186,
+      "token": "x:Name=\"RunButton\"",
+      "sha256": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+      "line": 195,
+      "token": "x:Name=\"ConfirmButton\"",
+      "sha256": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+      "line": 143,
+      "token": "Click=\"OnCloseButtonClick\"",
+      "sha256": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+      "line": 46,
+      "token": "x:Name=\"dialogImageControl\"",
+      "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+      "line": 60,
+      "token": "x:Name=\"dialogRegionManager\"",
+      "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+      "line": 147,
+      "token": "x:Name=\"txtResultStatus\"",
+      "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+      "line": 30,
+      "token": "x:Name=\"btnExtractContour\"",
+      "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+      "line": 33,
+      "token": "x:Name=\"btnClearContour\"",
+      "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+      "line": 254,
+      "token": "x:Name=\"btnOk\"",
+      "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+      "line": 255,
+      "token": "x:Name=\"btnCancel\"",
+      "sha256": "3e1286412295222419c5a06d327e40e8a6d80336d5323d57274739a1e435a566"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+      "line": 988,
+      "token": "private void OnOkClick",
+      "sha256": "37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+      "line": 1048,
+      "token": "private void OnCancelClick",
+      "sha256": "37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95"
+    }
+  ],
+  "productRun": false
+}

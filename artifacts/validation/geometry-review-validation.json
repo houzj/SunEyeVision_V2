@@ -1,0 +1,17 @@
+{
+  "newGeometryToolSourceReviews": 7,
+  "sourceLocations": 47,
+  "originalVmDeclarationContracts": 7,
+  "localToolAnalysisCoverage": {
+    "reviewed": 24,
+    "total": 24,
+    "percent": 100,
+    "meaning": "局部源码/入口分析覆盖；不是所有分支、算法或寿命闭合"
+  },
+  "circleSortProjectionCounterexample": true,
+  "unintegratedAuditMaterials": 0,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "productExecuted": false,
+  "vmAlgorithmEquivalenceVerified": false
+}

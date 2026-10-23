@@ -1,0 +1,87 @@
+{
+  "taskId": "SOLUTION-IMPLEMENT-09",
+  "input": "artifacts/startup-implementation/solution-session-delivery.json",
+  "inputSha256": "71aeda6ecd63453c4da7d1b66de84739d9f6dee8ee1b21194581ae8f5f32ac21",
+  "checks": [
+    {
+      "path": "src/Workflow/SolutionSession.cs",
+      "sha256": "61dab9b2104a41489d0381de4338b7c4b8360ace02ce509d118e2069b2472616",
+      "observedSha256": "61dab9b2104a41489d0381de4338b7c4b8360ace02ce509d118e2069b2472616",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/SolutionManager.cs",
+      "sha256": "25857cc27a673fc6856e57c0588594b238f16afdd6608ca93e0b6ba60293e703",
+      "observedSha256": "25857cc27a673fc6856e57c0588594b238f16afdd6608ca93e0b6ba60293e703",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/SolutionRepository.cs",
+      "sha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+      "observedSha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Services/Solutions/SolutionApplicationService.cs",
+      "sha256": "662f2248cb1399bcdecfb51da90ca293f356732b8d351ed6da2760a7fd0ce0cc",
+      "observedSha256": "662f2248cb1399bcdecfb51da90ca293f356732b8d351ed6da2760a7fd0ce0cc",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "d0968de0df0105caf473986a4dcf1c4728da739baa87c664d053ec38cbfc83de",
+      "observedSha256": "d0968de0df0105caf473986a4dcf1c4728da739baa87c664d053ec38cbfc83de",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowStartupEntries.cs",
+      "sha256": "b566775d24e99970e0973602b626dd16ee2890b8bfeefa5e9cc52e43f6eacc70",
+      "observedSha256": "b566775d24e99970e0973602b626dd16ee2890b8bfeefa5e9cc52e43f6eacc70",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+      "sha256": "7fc7f936d2857dfc6ca909e957af5fdc603a594e99045ca49ec1d00a4da06f2f",
+      "observedSha256": "7fc7f936d2857dfc6ca909e957af5fdc603a594e99045ca49ec1d00a4da06f2f",
+      "matches": true
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+      "sha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+      "observedSha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+      "matches": true
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+      "sha256": "154009e9f8a852281aa4b0da83f14dc15016f2fb12a273b0c3e410f512ebca3c",
+      "observedSha256": "154009e9f8a852281aa4b0da83f14dc15016f2fb12a273b0c3e410f512ebca3c",
+      "matches": true
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Workflow.dll",
+      "sha256": "7a61a039cb191c0299e92cc8409da0d0624c4d4c8f9119c854ba29ebd219698d",
+      "observedSha256": "7a61a039cb191c0299e92cc8409da0d0624c4d4c8f9119c854ba29ebd219698d",
+      "matches": true
+    }
+  ],
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html"
+  ],
+  "deleted": [
+    "src/UI/Shell/Windows/NewSolutionDialog.xaml",
+    "src/UI/Shell/Windows/NewSolutionDialog.xaml.cs"
+  ],
+  "build": {
+    "uiLog": "artifacts/startup-implementation/solution-session-ui-release.log",
+    "log": "artifacts/startup-implementation/solution-session-final-release.log",
+    "full": "0 errors, 880 warnings"
+  },
+  "productExecuted": false,
+  "testsRun": 0,
+  "independentDispatched": false,
+  "manual": "pending-user",
+  "designer": "not-run",
+  "wholeSiteRegenerated": false,
+  "productModifiedByDocRole": false
+}

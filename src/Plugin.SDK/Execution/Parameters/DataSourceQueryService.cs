@@ -23,6 +23,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// </remarks>
     public class DataSourceQueryService : IDataSourceQueryService
     {
+        public IResourcePathResolver? ResourcePaths { get; set; }
+
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationReceiveService { get; set; }
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationSendService { get; set; }
         public Action<string>? CommitOutputConfiguration { get; set; }

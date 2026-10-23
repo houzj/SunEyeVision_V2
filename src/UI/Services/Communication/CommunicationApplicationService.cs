@@ -144,6 +144,17 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         lock (_gate) return _switchTask;
     }
 
+    public async Task VerifyWorkspaceReadyAsync(Solution expected)
+    {
+        await ReadyAsync().WaitAsync(TimeSpan.FromSeconds(30));
+        lock (_gate)
+        {
+            if (!ReferenceEquals(expected, _activeSolution)) throw new InvalidOperationException("通讯初始化所属方案已变化。");
+            if (!_connectionsReady || !_connectionErrors.IsEmpty)
+                throw new InvalidOperationException("方案已提交，部分通讯初始化未完成：" + string.Join("；", _connectionErrors.Values));
+        }
+    }
+
     public void RefreshAutomationConfiguration(Solution solution)
     {
         lock (_gate)

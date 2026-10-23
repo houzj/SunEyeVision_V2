@@ -1,0 +1,340 @@
+{
+  "coordinates": [
+    {
+      "id": "pixel",
+      "title": "像素 → 视口 → 鼠标反算",
+      "chain": "SourceImage.PixelWidth/Height设图层尺寸 → ScaleTransform(Zoom) → Translate(offset)；ScreenToImage=(point-offset)/Zoom，ImageToScreen反向。",
+      "limit": "Screen是WPF控件坐标，不是物理屏幕像素；源DPI、像素中心与DIP合同尚未统一说明。",
+      "change": "保留现有变换，补统一坐标命名/单位/原点合同；用已知点在不同Zoom与DPI正反投影，不能用截图视觉相近代证。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+        "line": 533,
+        "token": "public Point ScreenToImage",
+        "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68"
+      }
+    },
+    {
+      "id": "fixture",
+      "title": "参考ROI → 位置修正 → 编辑逆变换",
+      "chain": "工具外部结果 → Manager位置修正 → shape-specific正向显示；鼠标编辑ToReferencePoint逆算参考几何。",
+      "limit": "位置修正fixture不是毫米标定。当前Capture已检查有限/可逆、按需保形及已知帧配对，矩阵数组明确取[0]；兼容来源缺帧时仍未验证，不能宣称所有来源同帧闭合。",
+      "change": "保留已证门禁与正逆路径，补兼容来源FrameId/内容版本；多目标用显式子Scope，不误报已有矩阵校验未开发。不同几何/预览/执行分别验。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+        "line": 137,
+        "token": "private Point ToReferencePoint",
+        "sha256": "bce5346e3c9c0cf1a895c1b379edd7fad66af329d30f2cbccd7448f185f304b3"
+      }
+    },
+    {
+      "id": "world",
+      "title": "图像列行 → 机器标记XY（毫米）",
+      "chain": "NPoint文件声明方向、单位、设备、尺寸/域 → 六参数有限仿射矩阵 → Halcon AffineTransPoint2d。",
+      "limit": "这是标定合同，不代表所有测量工具自动消费该矩阵；像素值不能仅改标签称毫米。",
+      "change": "明确下游显式接入与有效域/设备匹配，保留候选验证发布；单位转换只做一次。验已知标记点/错设备/错域/失效文件。",
+      "source": {
+        "path": "src/SunEyeVision.HalAdapter/HalconPlanarCalibration.cs",
+        "line": 14,
+        "token": "public static (double X, double Y) Transform",
+        "sha256": "d298f31c378509e6d2fea88d5ac259e9c980be56ed5b12f9b5f1e7d872cbb472"
+      }
+    },
+    {
+      "id": "newroi",
+      "title": "新ROI：预览 → 完成交互 → 参数集合",
+      "chain": "绘制临时几何 → FinishInteraction尺寸校验 → Rois.Add。",
+      "limit": "完成绘制不等工具窗口确定；未完成新ROI的Escape清预览与已有ROI编辑取消不同。",
+      "change": "明确绘制完成、窗口提交两阶段；无效几何不得加入。验绘到一半取消、完成后X、不同形状退订。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+        "line": 1175,
+        "token": "public void FinishInteraction()",
+        "sha256": "bce5346e3c9c0cf1a895c1b379edd7fad66af329d30f2cbccd7448f185f304b3"
+      }
+    },
+    {
+      "id": "editroi",
+      "title": "已有ROI：拖动直接改几何",
+      "chain": "MouseMove的编辑/移动写LocalGeometry；HandleEscape在拖动分支只清标志并显示“已取消编辑”。",
+      "limit": "当前此分支没有恢复拖动前几何，不能把提示当撤销；也不能推断所有取消行为都失效。",
+      "change": "必须确定Escape是结束还是回滚；若回滚则保存一次交互快照，并与Undo/窗口pending提交分开。验拖动中Escape前后坐标。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+        "line": 704,
+        "token": "public void HandleEscape()",
+        "sha256": "bce5346e3c9c0cf1a895c1b379edd7fad66af329d30f2cbccd7448f185f304b3"
+      }
+    },
+    {
+      "id": "close",
+      "title": "确定、X、Unloaded不是同一种取消",
+      "chain": "DefaultDebugWindow确定TryCommit；X通过ToolEditorClose；ROI Unloaded/Manager清overlay负责解绑和可视层清理。",
+      "limit": "丢弃待提交文本、丢弃新ROI预览、回滚已写参数、等待算法结束是四件事。清overlay不证明原生图像释放。",
+      "change": "按24工具编辑政策落实不同事务；关闭Owner等待在途，不能统一承诺X全部回滚。验无效pending明确选择与迟到绘制拒绝。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Controls/ToolEditorClose.cs",
+        "line": 9,
+        "token": "TryClose",
+        "sha256": "dfe3e0c35236031c5bd38b96bd36defa08eedb95b7b4507246fa576afdfd7792"
+      }
+    },
+    {
+      "id": "layers",
+      "title": "结果图形、文字、参数ROI、手柄分层",
+      "chain": "NodeResultManager结果Display/RegionItems → ResultRenderLayer与InteractionOverlay；图层IsHitTestVisible=false，输入集中处理。",
+      "limit": "分层已有，但底图/图元/文字的同帧身份和历史保留最后读者未统一闭合。",
+      "change": "沿用层次，补Frame/Run/Scope/内容版本一次提交；失败/切图不拼旧图元，不把所有ROI当结果对象。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml",
+        "line": 311,
+        "token": "<local:ResultRenderLayer",
+        "sha256": "b792ec4d3cbff641131e8decfd00ceb67794bd7007396f5c850eec4d5b87c786"
+      }
+    },
+    {
+      "id": "dpi",
+      "title": "DPI、文字缓存与全屏",
+      "chain": "FormattedText用GetDpi(this).PixelsPerDip；缓存键为内容/颜色/字号/粗体；全屏移父容器后恢复。",
+      "limit": "键中没有DPI，跨DPI失效路径未闭合；已有取DPI不能说完全未支持DPI。Zoom文字策略与屏幕恒定字号需分开。",
+      "change": "先核DPI事件和缓存清理，必要时加DPI/字体版本失效；100/150/200%、Zoom0.1/1/10及全屏返回分别验，不先重写后端。",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+        "line": 59,
+        "token": "private readonly Dictionary<(string Content",
+        "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+      }
+    }
+  ],
+  "ui": [
+    {
+      "id": "shell",
+      "title": "主窗与装配",
+      "current": "启动、工作区与异步关闭已有。",
+      "gap": "半启动/恢复迟到回调、窗口会话统一Owner待补。",
+      "change": "沿现有协调器整改排空后再断设备；超时隔离，不用活动集合归零代证。",
+      "url": "system-architecture.html#shutdown",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+        "line": 238,
+        "token": "OnClosing",
+        "sha256": "e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219"
+      },
+      "failureClose": "已有异步关闭；取消保存应保留工作区，停止超时不得先断仍在用的设备。半启动回滚仍待核。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "commands",
+      "title": "菜单、工具栏与快捷键",
+      "current": "单次/Tab/全部连续/停止分别有入口，目标导航也列未开发。",
+      "gap": "Pause、Settings有TODO；恢复、安全暂停边界与busy一致性未完整。",
+      "change": "按运行身份统一按钮/快捷键/通信触发准入；暂停只承诺明确边界。",
+      "url": "suneye-entry-architecture-comparison.html?target=pause",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 940,
+        "token": "ExecutePause",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "failureClose": "快速重入/停止/恢复由同一运行状态裁决；当前Pause入口TODO，不承诺原生算法可任意暂停。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "canvas",
+      "title": "流程画布与编辑",
+      "current": "拖入、连线、删除与Undo已有。",
+      "gap": "节点Copy/Paste未接主画布；删除外部副作用不随Undo恢复、下钻历史重置。",
+      "change": "必须整改完整图事务与引用映射；失败不丢历史，撤销恢复绑定/子图政策。",
+      "url": "persistence-architecture.html#editing-transactions",
+      "source": {
+        "path": "src/UI/Features/WorkflowUI/Canvas/CanvasTemplateSelector.cs",
+        "line": 23,
+        "token": "return WorkflowCanvasTemplate;",
+        "sha256": "d0f227b223aa974047f792d6d8b5c19c946e9dfccb62d4cbef2873a4d03d7f8b"
+      },
+      "failureClose": "删除后Undo必须恢复被清绑定和级联子图；命令异常不能先丢历史。下钻前后历史作用域显式。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "toolbox",
+      "title": "工具箱与拖入",
+      "current": "分类、排序、搜索、拖入与工厂已有。",
+      "gap": "VM162中139无逐工具候选≠全部未开发；创建失败回滚和实例Owner需对应场景。",
+      "change": "以完整能力清单补缺，逐模式语义配对；先创建候选验证后一次入图。",
+      "url": "tools.html",
+      "source": {
+        "path": "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.cs",
+        "line": 206,
+        "token": "public static IToolPlugin? CreateToolInstance",
+        "sha256": "813cfa8862ea46a31d49387f5dfb8a691785a95064ceed06cc51349473fcabb8"
+      },
+      "failureClose": "缺插件/参数创建失败不得留下半节点；临时实例失败路径需Owner释放，不据工厂新建代证。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "editor",
+      "title": "工具参数与执行窗口",
+      "current": "24工具提交政策、图像源与专业布局有实际路径。",
+      "gap": "并非整窗草稿；脚本部分显示占位、模板载入分支及最后读者待核。",
+      "change": "按工具逐项整改，异步终态/取消/迟到结果与专业子窗口事务分开。",
+      "url": "tools.html#editing-policy",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+        "line": 190,
+        "token": "ToolEditorCommit.TryCommit",
+        "sha256": "d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1"
+      },
+      "failureClose": "确定和X走既有提交策略；关闭连续仅请求停下一轮不等本轮排空，迟到结果必须被会话代次拦截。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "image",
+      "title": "主图像、ROI、图形与文字",
+      "current": "视口变换、绘制/编辑与结果层已有。",
+      "gap": "像素/视口/修正/毫米四域；旧ROI Escape无恢复；DPI缓存与历史Owner待证。",
+      "change": "按本页8条坐标链先修合同与确定缺陷，再比较渲染性能。",
+      "url": "data-architecture.html#coordinate-review",
+      "source": {
+        "path": "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+        "line": 533,
+        "token": "public Point ScreenToImage",
+        "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68"
+      },
+      "failureClose": "未完成新ROI可取消预览；已有ROI拖动Escape需选定结束/回滚合同；切图/全屏回退不能拼旧帧结果。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "results",
+      "title": "结果树与数据分析",
+      "current": "输出元数据、结果树、专业分析、高亮已有。",
+      "gap": "动态字段/数组/调用scope身份未齐；失败/相机/缓存结果通知策略有差异。",
+      "change": "统一结果有效性与稳定键，分页大数组；分析会话Owner与迟到结果隔离。",
+      "url": "optimization.html#O07",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 3569,
+        "token": "CreateDataAnalysisControl()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "failureClose": "成功→失败/取消需标无效或历史；专业分析切换已退订高亮，仍需分析tool退役与相机结果通知统一。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "variables",
+      "title": "全局变量",
+      "current": "定义、文件与执行值解析有七段说明。",
+      "gap": "运行监视提案未开发；保存false忽略、导入重复、子调用传null等已证。",
+      "change": "修保存/导入/继承合同；数组快照和改名消费者逐项验，不把定义编辑当实时监控。",
+      "url": "global-variables.html",
+      "source": {
+        "path": "src/Plugin.SDK/Execution/Parameters/RuntimeParameterSnapshot.cs",
+        "line": 13,
+        "token": "public RuntimeParameterSnapshot",
+        "sha256": "654b4208ae48c97e28dc421aa949daa9f69b7362d13be7b248bdbf52e4bdad54"
+      },
+      "failureClose": "保存失败不报成功；导入重复不半提交；子调用global null需按明确继承规则整改。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "camera",
+      "title": "设备与相机",
+      "current": "MVS默认装配、管理、预览、Feed及参数已有。",
+      "gap": "跨入口用途不一致、停止异常释放；多相机同步和其他厂商未验。",
+      "change": "统一用途租约与可等待退役，补型号/SDK支持矩阵；不能用模拟源码声称默认已启用。",
+      "url": "camera-architecture.html#device-admission",
+      "source": {
+        "path": "src/DeviceDriver/Cameras/Contracts/CameraSession.cs",
+        "line": 28,
+        "token": "public async ValueTask DisposeAsync()",
+        "sha256": "37a6f97a04db7a6744627cad23cf8710f5822ac222427bc47a1d19479b97443a"
+      },
+      "failureClose": "停止失败不提前释放用途；释放异常后登记移除不能作为物理已关闭；本轮无实机验证。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "comm",
+      "title": "通信管理",
+      "current": "Raw/Modbus/OPCUA通用目录及10协议key工厂注册已有。",
+      "gap": "S7/CIP驱动不等工作流目录；全局队列候选未确认；退役异常任务完成不等释放。",
+      "change": "按协议能力矩阵接类型化入口；背压/结果不明/会话代次与退役故障分开。",
+      "url": "camera-architecture.html#device-admission",
+      "source": {
+        "path": "src/UI/Services/Communication/WorkflowCommunicationSendService.cs",
+        "line": 21,
+        "token": "public IReadOnlyList<CommunicationSendTarget> GetTargets()",
+        "sha256": "476d47688dbc043c788b54bf6ec264cd44c7e0ac2ab6a90669f43e6658a64dd2"
+      },
+      "failureClose": "写入超时可能结果不明，不自动重试；退役释放异常须隔离，不以Task完成代表可复用。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "solution",
+      "title": "方案与恢复",
+      "current": "版本、插件验证、临时写入及恢复已有。",
+      "gap": "缺插件当前拒绝策略，非自动等于必须做占位；保存前修改内存状态的失败回滚有缺口。",
+      "change": "补原子文件之外的内存事务；缺插件只读/拒绝政策明确，再决定新增能力。",
+      "url": "persistence-architecture.html",
+      "source": {
+        "path": "src/Workflow/SolutionRepository.cs",
+        "line": 43,
+        "token": "public class SolutionRepository",
+        "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0"
+      },
+      "failureClose": "磁盘写失败要保留原内存路径/脏状态；用户取消关闭不销毁工作区；缺插件政策明确拒绝或只读。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "logs",
+      "title": "状态栏、日志与诊断",
+      "current": "日志Tab/过滤、显示5000与上游50000限制已有。",
+      "gap": "第201条批处理丢失、Flush非屏障、Run/Scope贯穿及聚合队列边界待补。",
+      "change": "先修正确性/丢失计数与排空屏障，再做吞吐基准；状态栏需呈现真实执行阶段。",
+      "url": "optimization.html#O12",
+      "source": {
+        "path": "src/UI/Shell/Windows/LogPanelViewModel.cs",
+        "line": 29,
+        "token": "public class LogPanelViewModel",
+        "sha256": "b4f9e4f367faa4974b503f444a46456964164bf7fcb79f2494bda06c39559da6"
+      },
+      "failureClose": "修201条批次边界；Flush应等序号落盘确认，关闭时先拒新/排空/退订，文件失败不递归记同一日志。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    },
+    {
+      "id": "theme",
+      "title": "主题、帮助与公共资源",
+      "current": "Generic模板、设计时资源、主题、帮助/关于入口已有。",
+      "gap": "设置TODO、快捷键帮助深链、局部资源遮蔽/主题失败回滚待补；VS和跨DPI未运行。",
+      "change": "复用现有控件并修主题事务；设计器、运行时、语言与权限政策分开验。",
+      "url": "platform-architecture.html#control-consumers",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+        "line": 27,
+        "token": "<themes:DesignTimeThemeResourceDictionary",
+        "sha256": "5cc91660ae8658caa8d08414ee34da0c8a6557e4d6d84aa70db4171ee7ce84b8"
+      },
+      "failureClose": "主题失败恢复旧字典和状态；重复Loaded/Unloaded无静态事件残留；设置TODO不显示为已生效。 验收未执行。",
+      "dpiDesignTime": "100/150/200%DPI及Visual Studio设计时/运行时未验；不从XAML存在推通过。"
+    }
+  ],
+  "supplemental": [
+    {
+      "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationFile.cs",
+      "line": 21,
+      "token": "public string Direction",
+      "sha256": "dd2b909c025734390e1e6703421b0676bba2f52e418190422ad6319c803cdbe3"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+      "line": 955,
+      "token": "private void ExitFullscreen()",
+      "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+      "line": 1175,
+      "token": "public void FinishInteraction()",
+      "sha256": "bce5346e3c9c0cf1a895c1b379edd7fad66af329d30f2cbccd7448f185f304b3"
+    }
+  ],
+  "runtimeExecuted": false,
+  "vmLimit": "VM恢复模型提供主界面/工具入口和局部托管调用；原生渲染缓存、文字DPI策略、ROI全部事务及native最后读者未齐。恢复项目独立绘制实现不等原VM性能或生命周期证据。"
+}

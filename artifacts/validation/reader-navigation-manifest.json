@@ -1,0 +1,466 @@
+{
+  "rows": [
+    {
+      "file": "suneye-entry-architecture-comparison.html",
+      "section": "architecture",
+      "topic": "main",
+      "pageTitle": "主界面架构 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-standard.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "标准调试窗 / 阈值参数 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-template.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "独立模板编辑器 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-script.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "脚本专业工具 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-calibration.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "N点标定训练 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-verification.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "独立标定验证与发布 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-subroutine.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "子程序 / Group参数配置 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tools.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "专业工具 · 按实际窗口进入 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "comparison.html",
+      "section": "comparison",
+      "topic": "capabilities",
+      "pageTitle": "横向对照 · 先看差异与建议路线 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 2,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "optimization.html",
+      "section": "optimization",
+      "topic": "roadmap",
+      "pageTitle": "优化方案 · 路线、依据与实施门槛 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 2,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "evidence.html",
+      "section": "evidence",
+      "topic": "sources",
+      "pageTitle": "证据、范围与交付状态 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 3,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "system-architecture.html",
+      "section": "architecture",
+      "topic": "overview",
+      "pageTitle": "整体架构与真实执行链 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "completion-audit.html",
+      "section": "evidence",
+      "topic": "audit",
+      "pageTitle": "完整范围审计 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 3,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "license-design.html",
+      "section": "optimization",
+      "topic": "license",
+      "pageTitle": "自有加密狗与许可设计 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 2,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "global-variables.html",
+      "section": "architecture",
+      "topic": "data",
+      "pageTitle": "全局变量：初值、运行值与传递 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "camera-architecture.html",
+      "section": "architecture",
+      "topic": "camera",
+      "pageTitle": "相机：连接、预览、取帧与释放",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "persistence-architecture.html",
+      "section": "architecture",
+      "topic": "persistence",
+      "pageTitle": "方案如何保存、打开与恢复",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "platform-architecture.html",
+      "section": "architecture",
+      "topic": "platform",
+      "pageTitle": "主题、公共控件与插件部署",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-BlobAnalysis.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "Blob分析 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-CircleCircleMeasure.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "圆-圆测量 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-CircleDetect.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "圆查找 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-Condition.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "条件分支 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-ImageFilter.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "图像滤波 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-ImageLoad.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "图像源 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-ImageThreshold.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "图像二值化 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-LineCircleMeasure.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "线-圆测量 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-LineDetect.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "直线查找 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-LineLineMeasure.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "线-线测量 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-Morphology.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "形态学处理 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-PointCircleMeasure.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "点-圆测量 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-PointLineMeasure.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "点-线测量 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-PointPointMeasure.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "点-点测量 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-ProtocolAssemble.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "协议组装 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-ProtocolParse.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "协议解析 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-ReceiveData.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "接收数据 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-SendData.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "发送数据 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "tool-detail-ShapeMatch.html",
+      "section": "architecture",
+      "topic": "tools",
+      "pageTitle": "轮廓匹配 · 实际数据链与对照 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "data-architecture.html",
+      "section": "architecture",
+      "topic": "data",
+      "pageTitle": "数据怎样流动 · SunEyeVision",
+      "primaryLinks": 4,
+      "secondaryLinks": 7,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "recommendation-audit.html",
+      "section": "evidence",
+      "topic": "recommendation",
+      "pageTitle": "全部能力推荐复审",
+      "primaryLinks": 4,
+      "secondaryLinks": 3,
+      "developmentReadingGuide": true
+    },
+    {
+      "file": "framework-design-comparison.html",
+      "section": "comparison",
+      "topic": "framework",
+      "pageTitle": "框架层设计对比 · 执行、数据、发布与生命周期",
+      "primaryLinks": 4,
+      "secondaryLinks": 2,
+      "developmentReadingGuide": true
+    }
+  ],
+  "primary": [
+    [
+      "architecture",
+      "01 自研架构",
+      "system-architecture.html"
+    ],
+    [
+      "comparison",
+      "02 横向对照",
+      "comparison.html"
+    ],
+    [
+      "optimization",
+      "03 优化方案",
+      "optimization.html"
+    ],
+    [
+      "evidence",
+      "证据与范围",
+      "evidence.html"
+    ]
+  ],
+  "architecture": [
+    [
+      "overview",
+      "总览与执行链",
+      "system-architecture.html"
+    ],
+    [
+      "main",
+      "主界面入口",
+      "suneye-entry-architecture-comparison.html"
+    ],
+    [
+      "tools",
+      "工具界面入口",
+      "tools.html"
+    ],
+    [
+      "data",
+      "数据结构与传递",
+      "data-architecture.html"
+    ],
+    [
+      "camera",
+      "设备与相机",
+      "camera-architecture.html"
+    ],
+    [
+      "persistence",
+      "方案与持久化",
+      "persistence-architecture.html"
+    ],
+    [
+      "platform",
+      "SDK · 公共控件 · 部署",
+      "platform-architecture.html"
+    ]
+  ],
+  "evidence": [
+    [
+      "sources",
+      "证据索引",
+      "evidence.html"
+    ],
+    [
+      "audit",
+      "完整范围审计",
+      "completion-audit.html"
+    ],
+    [
+      "recommendation",
+      "推荐复审记录",
+      "recommendation-audit.html"
+    ]
+  ],
+  "optimization": [
+    [
+      "roadmap",
+      "路线与具体整改",
+      "optimization.html"
+    ],
+    [
+      "license",
+      "自有授权设计（提案）",
+      "license-design.html"
+    ]
+  ],
+  "comparison": [
+    [
+      "capabilities",
+      "能力逐项对照",
+      "comparison.html"
+    ],
+    [
+      "framework",
+      "框架设计对比",
+      "framework-design-comparison.html"
+    ]
+  ],
+  "policy": "一级按阅读顺序，二级为阶段内专题；具体功能地图在正文，不混入文档导航。VM为独立参考外链。",
+  "productModified": false
+}

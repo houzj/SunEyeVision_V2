@@ -1,0 +1,756 @@
+{
+  "points": [
+    {
+      "id": "S1",
+      "domain": "sdk",
+      "title": "工具扩展与应用二开不是同一种能力",
+      "severity": "高",
+      "route": "借鉴VM重做应用SDK边界",
+      "ours": "已有IToolPlugin、IAsyncToolPlugin和独立IToolEditorFactory接口，可开发工具；公开WorkflowExecutionEngine也有执行方法，但构造需WorkflowEngine/IPluginManager等内部装配，SDK与Workflow包均UseWPF。不能说自研完全不能二开，也不能把插件接口当完整应用SDK。",
+      "vm": "VmSolution暴露Instance、索引器、Load/Save/Run/SyncRun等公共入口，模块IO和回调为集成提供统一表面；这里证明公共API形状及部分实现，不代表其无UI依赖、跨平台或每种嵌入场景已验。",
+      "tradeoff": "自研工具扩展门槛相对低，宿主装配和数据读取知识仍可能外泄给应用集成者；VM公共入口减少集成者拼内部对象的成本，但单例/全局状态有多实例隔离和许可部署约束。",
+      "target": "保留工具开发合同，另建面向应用集成的RuntimeHost/ProjectSession门面，提供Open、参数设置、输入绑定、RunAsync、StopAsync、结果读取/订阅、CloseAsync。公共数据/生命周期合同必须能脱离主窗使用；WPF控件作为可选扩展。",
+      "rejected": "主要目标若包含客户二开，此项从后期便利性提升为F0-F3设计约束；不是把C#类改成public就完成SDK，也不要求照抄VM全局单例或同时支持全部语言。",
+      "refs": [
+        "tool-contract",
+        "async-contract",
+        "editor-contract",
+        "engine",
+        "sdk",
+        "workflow-package",
+        "vm-sdk",
+        "vm-values",
+        "doc-overview",
+        "doc-packages",
+        "doc-flow",
+        "doc-events",
+        "doc-wpf",
+        "doc-render"
+      ]
+    },
+    {
+      "id": "E1",
+      "domain": "execution",
+      "title": "调度与派发",
+      "severity": "高",
+      "route": "保留整改",
+      "ours": "自研ReadyQueue扫描前驱，按并发profile与局部资源lease派发Task；未声明profile用LegacyExclusive，并发上限计算后不超过4。",
+      "vm": "VM已证模块结果由平台回传，再进入托管模块/IO层；原生队列、线程池、抢占和全局资源仲裁未闭合，不能据回调代码还原调度器。",
+      "tradeoff": "自研规则可直接审查和定制，代价是自己保障公平性、跨根仲裁和停止收尾；VM桥接层职责集中，但原生内部诊断和变更成本高。未测吞吐/延迟，不判性能优胜。",
+      "target": "复用当前依赖图、profile和派发器；先补全根/子运行的资源域与可等待终态，再按实际瓶颈定调度优化。不以反编译信息不足为理由替换后端。",
+      "rejected": "不整体迁移VM调度器：其内部调度和停止保证未恢复，迁移收益无测量；也不认当前队列已经完整。",
+      "refs": [
+        "engine",
+        "session",
+        "vm-values"
+      ]
+    },
+    {
+      "id": "E2",
+      "domain": "execution",
+      "title": "停止、取消与完成",
+      "severity": "高",
+      "route": "必须整改",
+      "ours": "队列finally对仍在running中的任务只释放lease，未在此await所有任务；发出取消或登记退出不单独证明原生调用/回调结束。",
+      "vm": "导出注册接收端验证记录后转helper；此代码不证明注销、停止完成或在飞回调排空。VM停止终态仍待原实现证据。",
+      "tradeoff": "CancellationToken是请求，Task终态和资源排空是保证；现有结构能接入，但提前归还lease有重入冲突风险。不能把VM界面停止成功当内部排空证明。",
+      "target": "一个RunHandle提供Completion与StopAsync；停派发→取消→观察所有在途及回调→资源退役→终态。超时进入隔离并保留占用，不能成功释放。",
+      "rejected": "此整改来自自研可证路径，不需等待VM；强杀native或仅延时不是排空协议。",
+      "refs": [
+        "engine",
+        "feed",
+        "vm-register"
+      ]
+    },
+    {
+      "id": "E3",
+      "domain": "execution",
+      "title": "根运行、子调用与循环身份",
+      "severity": "高",
+      "route": "保留整改",
+      "ours": "已有Session.RunId、子Scope.RunId、ParentRunId和ConsumerScope；子结果向RootContext按裸节点ID回填，身份在展示层可能拍平。",
+      "vm": "结果带nModuleID/nExecuteCount，循环按条件合并或重置；不能据此宣称其拥有与自研等价的Scope调用栈模型。",
+      "tradeoff": "已有Scope值得复用；裸NodeId便捷但不足区分两个调用者/多轮结果。VM执行计数利于区分批次，仍需明确计数作用域、回绕及历史策略。",
+      "target": "把Run/调用Scope/节点/迭代/帧身份贯穿存储、绑定和投影。目标ScopeId映射现有WorkflowRunScope.RunId，不再新增一份不一致身份。",
+      "rejected": "不抄nExecuteCount当全局唯一ID；不推倒已有Scope，只修丢身份的边界。",
+      "refs": [
+        "session",
+        "scope",
+        "engine",
+        "context",
+        "vm-values"
+      ]
+    },
+    {
+      "id": "D1",
+      "domain": "data",
+      "title": "定义数据与运行快照",
+      "severity": "高",
+      "route": "保留整改",
+      "ours": "执行前校验定义并生成执行用流程；GlobalVariables用新Dictionary包装但值仍可能可变；子调用路径全局参数传null。",
+      "vm": "本批恢复证明运行IO持有状态，不证明完整配置快照、编辑并发隔离和全局变量继承规则。",
+      "tradeoff": "自研有快照入口便于隔离编辑，浅复制不能保护图像/数组等值；VM集中对象不自动等不可变快照，不能推断更安全。",
+      "target": "冻结定义版本与参数来源；逐类型Clone/Retain/借用策略，普通全局快照显式继承到子Scope，局部覆盖及写回政策独立。",
+      "rejected": "复用已有准备路径，禁止把new Dictionary当深快照；不凭VM界面反推配置线程安全。",
+      "refs": [
+        "engine",
+        "context",
+        "resolver"
+      ]
+    },
+    {
+      "id": "D2",
+      "domain": "data",
+      "title": "工具结果与通用字段模型",
+      "severity": "高",
+      "route": "借鉴VM重做公共层",
+      "ours": "ToolResults有强类型派生，GetOutputValues生成字典；Context、变量和参数解析另有容器，公共字段访问缺少统一的身份/版本/有效性合同。",
+      "vm": "模块结果按ID定位模块；SetValue以字段名哈希定位叶VmIO，更新执行计数、值、列表与事件门。此片段是字段层，不证明原生算法数据布局。",
+      "tradeoff": "强类型工具利于编写和静态检查；字典适配轻但迁移/动态字段成本分散。VM统一IO便于公共工具消费，却增加动态类型、字段映射和事件状态复杂度。",
+      "target": "保留强类型结果，在框架新增统一FieldDescriptor与只读ValueRecord适配层：稳定FieldId、schema版本、值类型/形状/坐标域、质量状态、来源与所有权。",
+      "rejected": "重做的是公共数据访问机制，不是所有工具类；不持久化GetHashCode，不直接使用VM二进制或私有数据格式。",
+      "refs": [
+        "result",
+        "context",
+        "resolver",
+        "vm-values"
+      ]
+    },
+    {
+      "id": "D3",
+      "domain": "data",
+      "title": "绑定与跨节点数据流",
+      "severity": "高",
+      "route": "混合优化",
+      "ours": "ParameterResolver实际只分派Constant/Binding，动态读取结果并做转换；NodeOutput枚举存在不等此分派支持，C#脚本不等参数表达式引擎。",
+      "vm": "VmIO由公共层接收字段值；此处尚不能证明完整订阅图、类型转换、失败来源与循环反馈实现。",
+      "tradeoff": "自研反射/属性路径接入方便，易受重命名、数组形状和默认值政策影响；VM公共载体可统一读取，订阅政策仍需证据。",
+      "target": "绑定定义使用生产者Scope相对地址+NodeId+FieldId；编译预检类型/数组/环/坐标域，运行通过统一读取门返回值或明确失败，不偷偷回到设计初值。",
+      "rejected": "复用当前类型/路径适配，逐步迁稳定字段ID；暂不按未知VM订阅细节重写全部解析器。",
+      "refs": [
+        "resolver",
+        "result",
+        "context",
+        "vm-values"
+      ]
+    },
+    {
+      "id": "P1",
+      "domain": "publication",
+      "title": "批次整理与结果发布",
+      "severity": "高",
+      "route": "借鉴VM重做公共层",
+      "ours": "完成任务后依次SetNodeResult、NodeExecutionFinished、节点状态事件；结果和状态不是一个原子批次，UI回调抛错可能影响执行层分支。",
+      "vm": "SetValue按ExecuteCount/自执行/循环条件重置或合并；循环结束恢复通知并Enqueue回调。数据整理与后续事件分发有层次。",
+      "tradeoff": "VM的公共机制便于多消费者共享一致批次，但可变IO、默认化及事件门同样需严谨维护。自研直接通知简单，入口变多后易半更新与事件影响调度。",
+      "target": "ResultPublisher先完成本轮Outcome与字段批次提交，再发轻量通知。消费者读同一版本；事件处理异常隔离，不能改变已经提交的执行事实。",
+      "rejected": "借鉴职责分层；不照抄缺项默认化作为失败结果，也不承诺全进程数据库式原子性。",
+      "refs": [
+        "engine",
+        "ui",
+        "vm-values",
+        "vm-queue"
+      ]
+    },
+    {
+      "id": "P2",
+      "domain": "publication",
+      "title": "显示投影、历史与背压",
+      "severity": "高",
+      "route": "混合优化",
+      "ours": "相机待显示结果按节点合并后定时刷新选中显示并通知调试窗；普通、调试、分析另有分支；同尺寸位图池返回可变共享对象。",
+      "vm": "后台接收/发送数组交换后分发；队列开关与溢出有代码，非每次原生结果立即完成显示。没有据此证明无损/无限容量。",
+      "tradeoff": "最新值合并保护UI响应但会跳帧；历史和逐帧业务不能用同一政策。VM分发层便于统一通知，但不自动解决显示线程、背压及像素寿命。",
+      "target": "UI只消费投影，不调度工作流。实时显示latest-only、业务记录有界不可默丢、历史独立快照分通道；Run/Scope/Frame门禁拒收迟到结果，Dispatcher统一采用。",
+      "rejected": "保留相机合并机制并明确损失政策；不拿显示通知丢帧当算法少执行，也不默认换渲染后端。",
+      "refs": [
+        "ui",
+        "bitmap",
+        "vm-queue"
+      ]
+    },
+    {
+      "id": "L1",
+      "domain": "lifetime",
+      "title": "图像生产与传递所有权",
+      "severity": "高",
+      "route": "保留整改",
+      "ours": "ImageLoad接收外部frame时借用，自己Capture时持有；像素复制后创建结果图像。CameraWorkflowFrameFeed旧pending被替换会Dispose。",
+      "vm": "VmIO清_value/_valueList只证明撤掉这一层引用，未证明ImageData像素或共享映射释放；原注册函数不证明最后读者。",
+      "tradeoff": "自研复制边界容易理解且隔离厂商缓冲，成本为内存带宽与分配；没有测量不宜改零拷贝。VM可能跨native载体，当前不能承诺其无拷贝或更省内存。",
+      "target": "每种图像载体登记唯一Owner；跨线程/历史使用显式Retain/Clone，ValueRecord仅持句柄与帧身份。消费者先取得使用lease再读，最后lease退役后释放底层。",
+      "rejected": "保留已证复制安全边界；共享图像协议需按实际消费者补齐，不把到处Dispose当优化。",
+      "refs": [
+        "image",
+        "feed",
+        "bitmap",
+        "vm-values"
+      ]
+    },
+    {
+      "id": "L2",
+      "domain": "lifetime",
+      "title": "工具、分析控件与插件退役",
+      "severity": "高",
+      "route": "必须整改",
+      "ours": "分析入口CreateToolInstance后创建控件，旧高亮有退订但工具实例Owner未形成等待会话；SDK运行类型与WPF控件同包。",
+      "vm": "模块/IO/回调对象有平台组织，但本批代码没有闭合实例最终析构、原生最后读者与热卸载。",
+      "tradeoff": "自研工厂灵活，生命周期职责分散；拆包能改善边界但有资源URI/类型身份兼容成本。VM集中组织不等每个资源都能从已知片段证明释放。",
+      "target": "工具运行实例、编辑会话、分析会话、插件注册分Owner；每会话有CloseAsync结局和事件退订表。执行合同/WPF扩展分阶段拆包；热更新另立项。",
+      "rejected": "不是复制VM析构顺序；需要自研清晰Owner表及测试，未知native不盲释放。",
+      "refs": [
+        "ui",
+        "sdk",
+        "session",
+        "vm-register"
+      ]
+    },
+    {
+      "id": "X1",
+      "domain": "execution",
+      "title": "跨根资源仲裁和外部副作用",
+      "severity": "高",
+      "route": "必须整改",
+      "ours": "ReadyQueue的资源lease管理器在每次调用内new，不能独自保证两个根运行/两个子队列共享设备互斥；已有相机用途lease是另一层准入。",
+      "vm": "本批资料尚不足证明原平台全局设备资源锁、优先级及事务回滚。",
+      "tradeoff": "局部lease简洁但易与设备层不同步；全局协调增加等待、死锁和故障隔离设计成本。外部设备写入失败也不等可回滚。",
+      "target": "定义资源键、访问模式、作用域和获取次序；应用级协调共享设备，运行内协调计算资源。等待可取消；已执行的触发/发送按副作用记录，不自动重放。",
+      "rejected": "保留已有设备门禁并合一准入语义，不一把全局锁串行所有算法，也不猜VM全局锁实现。",
+      "refs": [
+        "engine",
+        "feed"
+      ]
+    },
+    {
+      "id": "X2",
+      "domain": "data",
+      "title": "兼容、持久化和可诊断性",
+      "severity": "中到高",
+      "route": "混合优化",
+      "ours": "当前节点/结果类型、绑定路径与SDK资源已有存量；直接替换全部类型会影响插件、方案、UI树和标定。",
+      "vm": "VM原版实现、恢复模型与重建工程不等价；不能把重建文件结构当原厂部署架构。",
+      "tradeoff": "增量适配降低一次迁移风险，但双读协议过久会增加复杂度；整体重写表面统一，代价与回归面更大。",
+      "target": "先加新合同适配器与双读、单写迁移；按版本登记schema/FieldId映射，日志贯穿Run/Scope/Node/Frame和Owner。测量后再收敛旧路径。",
+      "rejected": "不采用“既然不同就全迁VM”；以已证问题和兼容矩阵决定替换边界。",
+      "refs": [
+        "sdk",
+        "resolver",
+        "context"
+      ]
+    }
+  ],
+  "contracts": [
+    [
+      "身份",
+      "ExecutionAddress（拟议）",
+      "RootRunId + ScopeId + NodeId + Iteration + FrameId + DefinitionVersion；ScopeId映射现有子Scope.RunId，保持现有序列号与GUID分工。",
+      "引擎生产，绑定/结果存储/投影消费；帧可无值，需显式NotApplicable而非伪造。"
+    ],
+    [
+      "字段",
+      "FieldDescriptor（拟议公共层）",
+      "稳定FieldId、schema版本、ValueKind、数组形状、单位/坐标域、可空性；从ToolResults元数据生成适配，不照抄VM名哈希。",
+      "插件声明，加载准入和绑定编译校验；重命名不改变身份，删除字段显式迁移。"
+    ],
+    [
+      "值与有效性",
+      "ValueRecord（拟议）",
+      "地址+FieldId+Quality+Value/ResourceRef+版本；Quality区分Valid/Missing/Failed/Cancelled/Stale，不用null包办所有含义。",
+      "发布层一次采用；结果树可显示缺失，执行读取按明确策略拒绝无效值。"
+    ],
+    [
+      "执行结局",
+      "RunHandle / NodeOutcome（拟议扩展）",
+      "Completion、RequestedStop、实际终态、错误/诊断、已提交批次；取消请求不是完成，发布失败不抹掉已执行副作用。",
+      "执行会话持有，宿主等待；订阅者异常不反转已经确认的结局。"
+    ],
+    [
+      "资源",
+      "ResourceLease（拟议统一合同）",
+      "OwnerId、资源键/代际、Borrow/Retain/Clone、活动读者、退役结局；句柄引用和值快照分开。",
+      "资源Owner负责最终释放，使用者归还lease；超时隔离而非宣布释放成功。"
+    ],
+    [
+      "通知",
+      "ResultBatch / ResultChanged（拟议）",
+      "批次ID+地址+schema版本+变更字段；通知是索引，消费者读取已提交版本，不广播所有大数组像素。",
+      "Publisher提交，显示/记录/通信分队列消费；容量、丢弃/拒绝、过期及错误可见。"
+    ]
+  ],
+  "ownership": [
+    [
+      "定义与配置",
+      "编辑模型Owner",
+      "执行开始生成按类型隔离快照",
+      "运行结束释放本轮保留；编辑不改运行快照"
+    ],
+    [
+      "相机SDK缓冲",
+      "适配器",
+      "在SDK允许期内复制或受证保留，不能外传裸指针当独立图像",
+      "归还厂商缓冲与结果图像Owner分开"
+    ],
+    [
+      "结果图像",
+      "本轮结果资源Owner",
+      "下游/显示/历史先取得lease或独立Clone",
+      "所有使用者结束且退役后才释放"
+    ],
+    [
+      "显示位图",
+      "UI投影会话",
+      "实时表面仅Dispatcher可变更新；历史用独立冻结/复制政策",
+      "换源先断订阅再退役，旧帧迟到拒收"
+    ],
+    [
+      "工具实例",
+      "工具运行会话",
+      "执行和清理共享唯一结局，失败也观察释放",
+      "排空执行→处理输出所有权→Release/Dispose，保留主异常"
+    ],
+    [
+      "分析控件",
+      "分析会话Owner",
+      "结果借用与工具实例分别登记；选中高亮可退订",
+      "停接结果→等在途→退订→控件/工具按合同清理"
+    ],
+    [
+      "共享设备",
+      "应用设备运行时",
+      "连接Owner与采集/发送用途lease分离",
+      "停止用途且确认无在途；故障资源隔离，管理窗关闭不等断连"
+    ]
+  ],
+  "scenarios": [
+    [
+      "正常单次",
+      "冻结定义/参数/全局→预检与资源准入→执行→构造Outcome→提交字段批次→通知投影→使用者退役",
+      "同一批次树/图像/通信身份一致；返回成功不早于执行结局，显示可以异步。"
+    ],
+    [
+      "生产者失败",
+      "生产者失败→消费者按依赖跳过或明确容错→发布失败/缺失状态→撤销当前有效投影",
+      "不回退旧成功或设计初值；日志保留失败节点及来源。"
+    ],
+    [
+      "停止与超时",
+      "StopRequested→停止新派发→取消在途→等待工具/回调→排空或隔离→最终释放",
+      "超时未排空不得释放共享设备；父Completion覆盖子Scope与收尾。"
+    ],
+    [
+      "两次调用同一子程序",
+      "同一根Run创建两个Scope→分别读取同版全局快照→按Scope存结果→显示选定调用",
+      "同NodeId不同调用不覆盖；循环迭代和历史有独立身份。"
+    ],
+    [
+      "相机快、算法/显示慢",
+      "采集准入→明确最新值或有界逐帧策略→执行批次→UI合并→历史按需Retain",
+      "接收/替换/交付可解释，UI跳帧不改变算法执行计数；资源不被显示池误复用。"
+    ]
+  ],
+  "migration": [
+    [
+      "F0",
+      "冻结事实与合同",
+      "保留整改",
+      "标现有类型/调用者/所有者；统一身份与质量状态表，列每种资源借用/保留/复制政策。",
+      "先覆盖根运行、两子调用和相机；不以编出新接口当实现完成。",
+      "无先决，但需产品确认失败/容错与逐帧政策"
+    ],
+    [
+      "F1",
+      "修执行终态与共享资源",
+      "必须整改",
+      "扩展Session/Scope与执行器收尾：跟踪所有Task及回调，应用级设备仲裁，超时隔离。",
+      "取消不响应工具、并行子任务异常、停止异常下lease不早释，非取消异常不漏。",
+      "F0；先有正确退役再做共享结果生命周期"
+    ],
+    [
+      "F2",
+      "字段与值访问适配层",
+      "借鉴VM重做公共层",
+      "ToolResults→FieldDescriptor/ValueRecord适配；绑定经统一门读取；根/子全局快照同版。",
+      "动态字段迁移、数组形状错、缺变量、无效生产者、两Scope同NodeId均可定位。",
+      "F0，资源载体需要F1语义；先适配2种工具再扩"
+    ],
+    [
+      "F3",
+      "批次发布与投影分离",
+      "借鉴VM＋自研融合",
+      "集中Outcome提交/字段重置/循环采用；所有显示和通信读版本化批次，按通道背压。",
+      "普通/调试/相机/失败/切节点同合同；订阅者抛错不破坏执行结局，历史不串帧。",
+      "F1/F2；保留旧入口适配，逐个切换"
+    ],
+    [
+      "F4",
+      "分层、兼容与退役收口",
+      "保留整改＋按需拆分",
+      "执行公共合同脱离WPF扩展；插件/方案版本映射；控件、分析及工具会话统一关闭。",
+      "旧插件与方案、资源URI、设计器、干净机部署、资源曲线/长稳分别验收。",
+      "F1-F3；按仓库规则实施时另做全量Release与运行，本轮不执行"
+    ],
+    [
+      "F5",
+      "测量后决定性能路线",
+      "暂缓选型",
+      "统计端到端延迟、分配、峰值内存、队列、丢弃/退役时长，再评估零拷贝和调度后端。",
+      "输入/硬件/质量门槛一致，保留失败与缺测；无性能数据不宣称优于VM。",
+      "正确性门禁通过，原厂性能对照需合法可用环境与另行授权"
+    ]
+  ],
+  "sources": [
+    {
+      "id": "engine",
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "token": "private async Task<ExecutionResult> ExecuteWorkflowWithReadyQueue",
+      "line": 290,
+      "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "context",
+      "path": "src/Workflow/WorkflowContext.cs",
+      "token": "public void SetNodeResult",
+      "line": 585,
+      "sha256": "1d78dd1155596da902696d7f8ac114b6e67b51d5ae07f940f07409fa8f4896d8",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "session",
+      "path": "src/Workflow/WorkflowRunSession.cs",
+      "token": "public sealed class WorkflowRunSession",
+      "line": 16,
+      "sha256": "81a4538d84dd800b91f6380ffbb8bc8fee2b59d0284e5f1c2194a2c97f4587c0",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "scope",
+      "path": "src/Workflow/WorkflowRunScope.cs",
+      "token": "public sealed class WorkflowRunScope",
+      "line": 8,
+      "sha256": "7af02a86b5d6b2e5ce7e8c5d0f6bfbdb4d3b1448ada6ef13831d571f4b5bc789",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "resolver",
+      "path": "src/Plugin.SDK/Execution/Parameters/ParameterResolver.cs",
+      "token": "return binding.BindingType switch",
+      "line": 62,
+      "sha256": "7ca4f480e58b2a502d3df455c797f6a0a3cbfc15d4a31ec753e4258322b488c4",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "result",
+      "path": "src/Plugin.SDK/Execution/Results/ToolResults.cs",
+      "token": "public Dictionary<string, object?> GetOutputValues()",
+      "line": 541,
+      "sha256": "3d4f0df03e792ea063ff024f32cd00782d81d8e773190642cd3efcf2ccf1c3ef",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "sdk",
+      "path": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+      "token": "<UseWPF>true</UseWPF>",
+      "line": 7,
+      "sha256": "b95650866ebe40e8666a6062458571ca218ed626411d0c3a8bfb4f4facd1f9cf",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "workflow-package",
+      "path": "src/Workflow/SunEyeVision.Workflow.csproj",
+      "token": "<UseWPF>true</UseWPF>",
+      "line": 13,
+      "sha256": "e791ce019b1eb76f5e06cb202c94488049c93c4fca4c3edc9f510e437c0cecaf",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "tool-contract",
+      "path": "src/Plugin.SDK/Core/IToolPlugin.cs",
+      "token": "public interface IToolPlugin",
+      "line": 74,
+      "sha256": "03df7cc8b68f544af4474994a2cedda6ce139f92f666b87de73b3e921df8b23c",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "async-contract",
+      "path": "src/Plugin.SDK/Core/IAsyncToolPlugin.cs",
+      "token": "public interface IAsyncToolPlugin",
+      "line": 10,
+      "sha256": "84b6f94915c5692ca2e6a682cf1f116bda1a5813b40c029579ee038ae6d53082",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "editor-contract",
+      "path": "src/Plugin.SDK/Core/IToolEditorFactory.cs",
+      "token": "public interface IToolEditorFactory",
+      "line": 6,
+      "sha256": "18a3efeee54c9b25addf41a1c38546d8c43995d33ea5c479941de67e6b121529",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "vm-sdk",
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/result-payload-bridge.resources/VM.Core.VmSolution.decompiled.cs",
+      "token": "public static void Load(string path",
+      "line": 2190,
+      "sha256": "1ae938d6a9faab3fb8bd6e0b1447a241b075a10ed36236dec2013a20ad02d8eb",
+      "kind": "已有反编译产物，未在本轮重核原二进制"
+    },
+    {
+      "id": "feed",
+      "path": "src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs",
+      "token": "public async ValueTask DisposeAsync()",
+      "line": 187,
+      "sha256": "52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "image",
+      "path": "tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs",
+      "token": "var ownsFrame = request.CameraFrame == null",
+      "line": 56,
+      "sha256": "f2eed5be66405ae385ed54c3bb44e0e6e8a0ed21ac35422d5f4fa9b9d79a22ef",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "bitmap",
+      "path": "src/UI/Services/Performance/ImageConverterPool.cs",
+      "token": "public BitmapSource ConvertToBitmapSource",
+      "line": 36,
+      "sha256": "d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "ui",
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "token": "private void FlushCameraResultPresentation()",
+      "line": 5441,
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "vm-values",
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/result-payload-bridge.resources/VM.Core.VmSolution.decompiled.cs",
+      "token": "private static void SetValue(",
+      "line": 4239,
+      "sha256": "1ae938d6a9faab3fb8bd6e0b1447a241b075a10ed36236dec2013a20ad02d8eb",
+      "kind": "已有反编译产物，未在本轮重核原二进制"
+    },
+    {
+      "id": "vm-queue",
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/result-payload-bridge.resources/VM.Core.VmSolution.decompiled.cs",
+      "token": "private static void CreateCallBackQueue()",
+      "line": 4345,
+      "sha256": "1ae938d6a9faab3fb8bd6e0b1447a241b075a10ed36236dec2013a20ad02d8eb",
+      "kind": "已有反编译产物，未在本轮重核原二进制"
+    },
+    {
+      "id": "vm-register",
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/sdk-image-publication.resources/180645630.c",
+      "token": "int IMVS_RegisterOutputPlatformInfoCallBack",
+      "line": 4,
+      "sha256": "007da503550fdc12ff5b7918b5b1ced99042289346db3e5ebfbe3efd493a26b8",
+      "kind": "已有反编译产物，未在本轮重核原二进制"
+    },
+    {
+      "id": "doc-overview",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/index.html",
+      "token": "SDK",
+      "line": 44,
+      "sha256": "09e6342187834fc5c1351cd7ce11f5eda234cfcd20c61a0a2114af2e1e72582a",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "doc-cpp",
+      "path": "artifacts/validation/vm-official-sdk-442/cpp/index.html",
+      "token": "SDK",
+      "line": 44,
+      "sha256": "0afd7971881f5b24de746b227e9553ca6afbef9967b1cb28509f985f03946147",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "doc-packages",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE5_x8A_xA8_xE6_x80_x81_xE5_xBA_x93_xE4_xBB_x8B_xE7_xBB_x8D_xE5_x8F_x8A_xE6_xB7_xBB_xE5_x8A_xA0_xE8_xAF_xB4_xE6_x98_x8E.html",
+      "token": "VM.Core.dll",
+      "line": 43,
+      "sha256": "0183032fddefa4450d66b6ba39bbe4573bab077c7817934a20cf118d9366b761",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "doc-flow",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/class_procedure_1_1_vm_procedure.html",
+      "token": "bIsWait",
+      "line": 74,
+      "sha256": "a4b488ce29515cd3bc42f35f4fbb36b86d3f7971ccb9c55f778ff112c5cc6366",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "doc-events",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE4_xBA_x8B_xE4_xBB_xB6_xE7_xB1_xBB_xE5_x9E_x8B.html",
+      "token": "OnModuleResultCallbackEvent",
+      "line": 66,
+      "sha256": "60626e0de2ba129d7403cf23b5248223088e9e3d5af15f6fc3d300007bda9218",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "doc-wpf",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_w_p_f_xE6_xA1_x86_xE6_x9E_xB6.html",
+      "token": ".NET",
+      "line": 71,
+      "sha256": "5c590017bb9f16063623cfd092cfcfaaff5ab9940b0225813fad52e2ab4c5447",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "doc-render",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/class_vm_render_control.html",
+      "token": "SetRenderInterval",
+      "line": 89,
+      "sha256": "4401d0b9320b23cc5b512d6fd41f27ef49023b347cd2b6e47d79178393fa6774",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "doc-input",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE9_x80_x9A_xE8_xBF_x87_xE6_x8E_xA5_xE5_x8F_xA3_xE8_xAE_xBE_xE7_xBD_xAE_xE5_x9B_xBE_xE5_x83_x8F5204ab1f40f549f822edefb7af534bf4.html",
+      "token": "SetImageData",
+      "line": 72,
+      "sha256": "f61a0fb876aa7b9fbd5bfeda9163a29fab293cdc458e8174e7268a6f355c1318",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "sdk-doc-solution",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE6_x96_xB9_xE6_xA1_x88_xE7_x9B_xB8_xE5_x85_xB3_xE6_x93_x8D_xE4_xBD_x9C.html",
+      "token": "VmSolution.Load",
+      "line": 43,
+      "sha256": "e9f99176d6e664e68ffaa60449faf6f109a59aeae8edf6f29902bd0fbcb98ef3",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "sdk-doc-module",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE6_xA8_xA1_xE5_x9D_x97_xE7_x9B_xB8_xE5_x85_xB3_xE6_x93_x8D_xE4_xBD_x9C.html",
+      "token": "SetImageData",
+      "line": 43,
+      "sha256": "04283f47787e8476baaaf829e9d1be0f352ef746013abd13702561b10bb89f23",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "sdk-doc-procedure",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE6_xB5_x81_xE7_xA8_x8B_xE7_x9B_xB8_xE5_x85_xB3_xE6_x93_x8D_xE4_xBD_x9C.html",
+      "token": "SetInputImage_V2",
+      "line": 43,
+      "sha256": "3a8933e366d8d413b98cb31d43c7e14a1eb063094b11633a4b042a31ae6fd024",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "sdk-doc-globals",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE5_x85_xA8_xE5_xB1_x80_xE6_xA8_xA1_xE5_x9D_x97_xE7_x9B_xB8_xE5_x85_xB3_xE6_x93_x8D_xE4_xBD_x9C.html",
+      "token": "GlobalVariableModuleTool",
+      "line": 41,
+      "sha256": "8bd836ea2b7b47c3ca6b22b0702be060b2c35104cd1860ad27b01c4b1d6eefc3",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "sdk-doc-events",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE4_xBA_x8B_xE4_xBB_xB6_xE8_xAE_xBE_xE7_xBD_xAE_xE6_x96_xB9_xE6_xB3_x95.html",
+      "token": "OnWorkStatusEvent",
+      "line": 40,
+      "sha256": "776094cbc60de28fd10fded0c1b7d0f9e23ddeeaa44aaa4f594f7c1ffcc3940f",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "sdk-doc-output",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE9_x80_x9A_xE8_xBF_x87_xE6_xB5_x81_xE7_xA8_x8B_xE8_xBE_x93_xE5_x87_xBA_xE6_x88_x96_xE8_x80_x85f73babc98d494d79cf1981c0a0321c6d.html",
+      "token": "GetOutputInt",
+      "line": 52,
+      "sha256": "a888e5e0273fea4f963f6058662cd1fd1ed16bca14e793c9610a8476a685a3f3",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "sdk-doc-view",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE9_x80_x9A_xE8_xBF_x87_xE7_xBB_x91_xE5_xAE_x9A_xE6_xB5_x81_xE7_xA8_x8B_xE6_x88_x96_xE6_xA8_xA1a402d64484deba2f1921afb46f0d4f2e.html",
+      "token": "ModuleSource",
+      "line": 52,
+      "sha256": "79e9dc3e2db881d7302cee62781471375c2e93eaa02d1550e3985d4ec5116b29",
+      "kind": "官方V4.4.2开发指南（静态解包；版本对应待核）"
+    },
+    {
+      "id": "sdk-request",
+      "path": "src/Plugin.SDK/Core/ToolExecutionRequest.cs",
+      "token": "public sealed class ToolExecutionRequest",
+      "line": 20,
+      "sha256": "b70506bee54d75a623b5d19cdb953344bb8286ad0a946b460b7295c699c6cdeb",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "sdk-reader",
+      "path": "src/Plugin.SDK/Core/IToolInputReader.cs",
+      "token": "public interface IToolInputReader",
+      "line": 10,
+      "sha256": "31eb442c06f474f9887a94962b21ef54facc301867e05533e06b11967829917c",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "sdk-image-contract",
+      "path": "src/Plugin.SDK/Vision/Contracts/IVisionImage.cs",
+      "token": "public interface IVisionImage",
+      "line": 9,
+      "sha256": "4249b178fe01e6f9f5efece5d8e63ccd35b2b845149c62638973143fe6796089",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "sdk-parameters",
+      "path": "src/Plugin.SDK/Execution/Parameters/ToolParameters.cs",
+      "token": "public abstract class ToolParameters",
+      "line": 54,
+      "sha256": "03c0f3d9eda1a49d00a9ce23d71ba859fe06a29c51b2735973d53c16a3f5706d",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "sdk-binding",
+      "path": "src/Plugin.SDK/Execution/Parameters/ParamSetting.cs",
+      "token": "public class ParamSetting",
+      "line": 32,
+      "sha256": "5108d6b5f47de0defabba5d6c7bcd514750f3bdbbeafc88f0fb939e199b92fef",
+      "kind": "自研当前源码"
+    }
+  ],
+  "views": [
+    {
+      "id": "overview",
+      "title": "结论与范围"
+    },
+    {
+      "id": "execution",
+      "title": "执行架构"
+    },
+    {
+      "id": "data",
+      "title": "数据与数据流"
+    },
+    {
+      "id": "publication",
+      "title": "结果发布"
+    },
+    {
+      "id": "lifetime",
+      "title": "资源生命周期"
+    },
+    {
+      "id": "sdk",
+      "title": "二次开发边界"
+    },
+    {
+      "id": "target",
+      "title": "目标架构"
+    },
+    {
+      "id": "implementation",
+      "title": "具体改法与验收"
+    },
+    {
+      "id": "evidence",
+      "title": "证据与待核实"
+    }
+  ],
+  "productModified": false,
+  "vmExecuted": false,
+  "checkpointUpgrades": 0
+}

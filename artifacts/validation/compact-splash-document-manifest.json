@@ -1,0 +1,101 @@
+{
+  "taskId": "SPLASH-COMPACT-06",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html"
+  ],
+  "brand": {
+    "taskId": "SPLASH-BRAND-07",
+    "input": "artifacts/startup-implementation/unified-splash-delivery.json",
+    "inputSha256": "7f5193effa489005465a251955816c2af5accd970bf6aa61c6cc320d9fa4b286",
+    "checks": [
+      {
+        "sha256": "da7002b4e8a792cf3167a8f2f711e996c30e5e82a59014961cc502b9de817468",
+        "path": "src/UI/Resources/Branding/StartupBranding.xaml",
+        "observedSha256": "da7002b4e8a792cf3167a8f2f711e996c30e5e82a59014961cc502b9de817468",
+        "matches": true
+      },
+      {
+        "sha256": "3536fb3273c8c02071d3e53f9d6ada8b737d89147c8fcb4007f8d683c088f7f1",
+        "path": "src/UI/Shell/Windows/SplashScreen.xaml",
+        "observedSha256": "3536fb3273c8c02071d3e53f9d6ada8b737d89147c8fcb4007f8d683c088f7f1",
+        "matches": true
+      },
+      {
+        "sha256": "39430742b88236baa2fce6c69911e12f8694dc408644f0ff98df04ddaeea233d",
+        "path": "src/UI/Shell/Windows/StartPageWindow.xaml",
+        "observedSha256": "39430742b88236baa2fce6c69911e12f8694dc408644f0ff98df04ddaeea233d",
+        "matches": true
+      },
+      {
+        "sha256": "c6b52fa114f902eac724b1ccb68eab9967333dd131575fa0172ffb42759ff486",
+        "path": "artifacts/ui-prototypes/start-page/index.html",
+        "observedSha256": "c6b52fa114f902eac724b1ccb68eab9967333dd131575fa0172ffb42759ff486",
+        "matches": true
+      },
+      {
+        "sha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+        "observedSha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+        "matches": true
+      },
+      {
+        "sha256": "53f9837ef4babc6957524edff7cb603d10ef51a32991da4dcae0d6031e8e77e7",
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+        "observedSha256": "53f9837ef4babc6957524edff7cb603d10ef51a32991da4dcae0d6031e8e77e7",
+        "matches": true
+      }
+    ],
+    "build": {
+      "errors": 0,
+      "warnings": 785,
+      "seconds": 22
+    },
+    "log": "artifacts/startup-implementation/unified-splash-release.log",
+    "productExecuted": false,
+    "testsRun": 0,
+    "manual": "pending-user"
+  },
+  "observed": [
+    {
+      "path": "src/UI/Shell/Windows/SplashScreen.xaml",
+      "observedSha256": "3536fb3273c8c02071d3e53f9d6ada8b737d89147c8fcb4007f8d683c088f7f1",
+      "meaning": "当前观察SHA，非独立交付预期SHA核对"
+    },
+    {
+      "path": "src/UI/Shell/Windows/StartPageWindow.xaml",
+      "observedSha256": "39430742b88236baa2fce6c69911e12f8694dc408644f0ff98df04ddaeea233d",
+      "meaning": "当前观察SHA，非独立交付预期SHA核对"
+    },
+    {
+      "path": "artifacts/ui-prototypes/start-page/index.html",
+      "observedSha256": "c6b52fa114f902eac724b1ccb68eab9967333dd131575fa0172ffb42759ff486",
+      "meaning": "当前观察SHA，非独立交付预期SHA核对"
+    },
+    {
+      "path": "artifacts/startup-implementation/compact-splash-release.log",
+      "observedSha256": "6b54d17d5e641e1c78294cf2c13f7ee1366745295d8cad78d0a30018c011a5fe",
+      "meaning": "当前观察SHA，非独立交付预期SHA核对"
+    }
+  ],
+  "finalLog": "artifacts/startup-implementation/compact-splash-release.log",
+  "retractedLog": "compact-start-page-release.log not adopted",
+  "splash": {
+    "width": 480,
+    "height": 360,
+    "horizontalMargin": 32
+  },
+  "startPage": {
+    "width": 960,
+    "height": 720
+  },
+  "build": {
+    "errors": 0,
+    "warnings": 785,
+    "seconds": 19
+  },
+  "productExecuted": false,
+  "testsRun": 0,
+  "manual": "pending-user",
+  "wholeSiteRegenerated": false,
+  "productModifiedByDocRole": false
+}

@@ -1,0 +1,203 @@
+{
+  "taskId": "SOL-DOC-01",
+  "input": "docs/collaboration/SOLUTION_MANAGEMENT_REVIEW_20261022.json",
+  "inputSha256": "f6b05adadadd0229c12f438332dfdf77b351ac119b7e87170d3f3f5c092168c4",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m02.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m03.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m22.html"
+  ],
+  "sourceChecks": [
+    {
+      "path": "src/Workflow/Solution.cs",
+      "sha256": "fbde35ebd0669619af5998ee637c8a1f479e1aa5f0709d7ec157b63846ad42af",
+      "observedSha256": "fbde35ebd0669619af5998ee637c8a1f479e1aa5f0709d7ec157b63846ad42af",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/SolutionManager.cs",
+      "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da",
+      "observedSha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/SolutionRepository.cs",
+      "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+      "observedSha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/SolutionSettings.cs",
+      "sha256": "740f607b9bd1edea7472b41f5118ffba9f48c06a064b02914165ff05e2b6e70a",
+      "observedSha256": "740f607b9bd1edea7472b41f5118ffba9f48c06a064b02914165ff05e2b6e70a",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/SolutionRegistry.cs",
+      "sha256": "905b30226c31e057d98c067c051ff81df127ac2ddd30ab1ae21e07c1c14ef780",
+      "observedSha256": "905b30226c31e057d98c067c051ff81df127ac2ddd30ab1ae21e07c1c14ef780",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/SolutionCache.cs",
+      "sha256": "5575fff8995cea06a888645a53c8a3f9ab9202ec7202a03792934b3a14f91aa6",
+      "observedSha256": "5575fff8995cea06a888645a53c8a3f9ab9202ec7202a03792934b3a14f91aa6",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/Persistence/AtomicJsonFile.cs",
+      "sha256": "a565fb4f6c844c266565dd8c11e0591df9c9d63664a2b5f55bb06486a0a50739",
+      "observedSha256": "a565fb4f6c844c266565dd8c11e0591df9c9d63664a2b5f55bb06486a0a50739",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+      "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6",
+      "observedSha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+      "observedSha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+      "matches": true
+    },
+    {
+      "path": "src/UI/App.xaml.cs",
+      "sha256": "4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc",
+      "observedSha256": "4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Services/Communication/CommunicationApplicationService.cs",
+      "sha256": "8b5a4f0d26cb9a14fc42de8785e48a7cb288edb2ad31c568cca4d6a06fc006b6",
+      "observedSha256": "8b5a4f0d26cb9a14fc42de8785e48a7cb288edb2ad31c568cca4d6a06fc006b6",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Features/Camera/CameraManagerViewModel.cs",
+      "sha256": "76ef4636e4276be0229021a9ebaaa9b77f4b9a168c3eac054568303d7f8c2f7b",
+      "observedSha256": "76ef4636e4276be0229021a9ebaaa9b77f4b9a168c3eac054568303d7f8c2f7b",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Features/Camera/CameraDetailViewModel.cs",
+      "sha256": "1294ac7588efda05f58f106bf41342349381d09d7e5611791b8e356ee927b5c9",
+      "observedSha256": "1294ac7588efda05f58f106bf41342349381d09d7e5611791b8e356ee927b5c9",
+      "matches": true
+    }
+  ],
+  "sourceDrift": [],
+  "domains": 5,
+  "targetFileResponsibilities": 13,
+  "acceptancePlanned": 10,
+  "acceptanceExecuted": 0,
+  "vmEvidence": {
+    "batchId": "SOL-RE-01",
+    "status": "received-eight-source-hashes-checked-selected-callback-and-catalog-bodies-reviewed",
+    "report": {
+      "path": "D:/MyWork/REA逆向测试/analysis/sol-re-01/SOL-RE-01.md",
+      "sha256": "3af1f2cd492b88e895d989eb016facfe1ce1597ba08ebe3711cc88c275df8e50"
+    },
+    "sources": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+        "sha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+        "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs",
+        "sha256": "b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/MainWindowData.cs",
+        "sha256": "aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraManager.cs",
+        "sha256": "4d0db8fb2b9879ab545176a7a3037457c04d1d6afe8f7e314631840c9ea70338"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunicationMgr.cs",
+        "sha256": "6d78791a80348c5cbf803587f6f04041bba999e41c2d1590d5704c5e92ee86c3"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/ApplicationOperation.cs",
+        "sha256": "b6633fabfdf9aea95469a40a85b988ff69add07183c2d8a7f241ef764dea9926"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/SolutionItemInfo.cs",
+        "sha256": "35c37e2dce6b6f6aef2ead51c3da56552a5877c23a6cfeba62c9ea7ab2b58a87"
+      }
+    ],
+    "limits": [
+      "容器字节格式/原生保存原子性未证",
+      "CloseSolution/SyncLoadSolution/DestoryHandle以下原生及物理设备释放未知",
+      "CloseComm有效体/transport释放未闭合",
+      "报告末段vmx.json指恢复项目，当前自研是.solution JSON；不能照抄为自研格式"
+    ]
+  },
+  "vmSourceChecks": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/sol-re-01/SOL-RE-01.md",
+      "sha256": "3af1f2cd492b88e895d989eb016facfe1ce1597ba08ebe3711cc88c275df8e50",
+      "observedSha256": "3af1f2cd492b88e895d989eb016facfe1ce1597ba08ebe3711cc88c275df8e50",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+      "sha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+      "observedSha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+      "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+      "observedSha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs",
+      "sha256": "b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187",
+      "observedSha256": "b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/MainWindowData.cs",
+      "sha256": "aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5",
+      "observedSha256": "aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraManager.cs",
+      "sha256": "4d0db8fb2b9879ab545176a7a3037457c04d1d6afe8f7e314631840c9ea70338",
+      "observedSha256": "4d0db8fb2b9879ab545176a7a3037457c04d1d6afe8f7e314631840c9ea70338",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunicationMgr.cs",
+      "sha256": "6d78791a80348c5cbf803587f6f04041bba999e41c2d1590d5704c5e92ee86c3",
+      "observedSha256": "6d78791a80348c5cbf803587f6f04041bba999e41c2d1590d5704c5e92ee86c3",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/ApplicationOperation.cs",
+      "sha256": "b6633fabfdf9aea95469a40a85b988ff69add07183c2d8a7f241ef764dea9926",
+      "observedSha256": "b6633fabfdf9aea95469a40a85b988ff69add07183c2d8a7f241ef764dea9926",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/SolutionItemInfo.cs",
+      "sha256": "35c37e2dce6b6f6aef2ead51c3da56552a5877c23a6cfeba62c9ea7ab2b58a87",
+      "observedSha256": "35c37e2dce6b6f6aef2ead51c3da56552a5877c23a6cfeba62c9ea7ab2b58a87",
+      "matches": true
+    }
+  ],
+  "productModified": false,
+  "wholeSiteRegenerated": false
+}

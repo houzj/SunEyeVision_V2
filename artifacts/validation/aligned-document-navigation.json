@@ -1,0 +1,245 @@
+{
+  "date": "2026-10-21",
+  "reference": "D:/MyWork/REA逆向测试/docs/framework-architecture.html",
+  "sharedDomains": 23,
+  "ownTopics": 4,
+  "domains": [
+    {
+      "id": "F-01",
+      "name": "公共数据契约",
+      "evidence": "FRAMEWORK-CONTRACTS.md",
+      "kind": "sdk",
+      "c": "C05",
+      "scenario": 4
+    },
+    {
+      "id": "F-02",
+      "name": "插件宿主与调试会话",
+      "evidence": "DEBUG-SESSION-CONTRACT.md",
+      "kind": "plugin",
+      "c": "C09",
+      "scenario": 3
+    },
+    {
+      "id": "F-03",
+      "name": "WPF 主窗口",
+      "evidence": "MF01-WORKAREA-LOCK-PROMPT.md",
+      "kind": "ui",
+      "c": "C20",
+      "scenario": 5
+    },
+    {
+      "id": "F-04",
+      "name": "菜单、工具栏与全局入口",
+      "evidence": "MF01-GLOBAL-ENTRY-AUDIT.md",
+      "kind": "ui",
+      "c": "C01",
+      "scenario": 5
+    },
+    {
+      "id": "F-05",
+      "name": "工作流 Tab 与配置",
+      "evidence": "WORKFLOW-TAB-TOOLBOX-GROUP-CLOSURE.md",
+      "kind": "workflow",
+      "c": "C03",
+      "scenario": 1
+    },
+    {
+      "id": "F-06",
+      "name": "工具箱、发现与装载",
+      "evidence": "LOADER-ROUND2-20261019.md",
+      "kind": "plugin",
+      "c": "C08",
+      "scenario": 3
+    },
+    {
+      "id": "F-07",
+      "name": "节点交互",
+      "evidence": "MF02-CONNECTION-ROUTE-LIFECYCLE.md",
+      "kind": "ui",
+      "c": "C20",
+      "scenario": 5
+    },
+    {
+      "id": "F-08",
+      "name": "连线与避障",
+      "evidence": "MF02-CONNECTION-ROUTE-LIFECYCLE.md",
+      "kind": "ui",
+      "c": "C20",
+      "scenario": 5
+    },
+    {
+      "id": "F-09",
+      "name": "视口与小地图",
+      "evidence": "MF02-OVERVIEW-VIEWPORT-HANDOFF.md",
+      "kind": "controls",
+      "c": "C10",
+      "scenario": 6
+    },
+    {
+      "id": "F-10",
+      "name": "Group 身份与所有权",
+      "evidence": "GROUP-RELATION-IDENTITY.md",
+      "kind": "workflow",
+      "c": "C02",
+      "scenario": 1
+    },
+    {
+      "id": "F-11",
+      "name": "Group 导航返回",
+      "evidence": "WORKFLOW-TAB-TOOLBOX-GROUP-CLOSURE.md",
+      "kind": "workflow",
+      "c": "C03",
+      "scenario": 1
+    },
+    {
+      "id": "F-12",
+      "name": "Group 循环",
+      "evidence": "GROUP-LOOP-BOUNDARIES.md",
+      "kind": "workflow",
+      "c": "C03",
+      "scenario": 1
+    },
+    {
+      "id": "F-13",
+      "name": "Group 中断",
+      "evidence": "GROUP-LOOP-BOUNDARIES.md",
+      "kind": "workflow",
+      "c": "C12",
+      "scenario": 1
+    },
+    {
+      "id": "F-14",
+      "name": "Group 累积与结果",
+      "evidence": "FRAMEWORK-CONTRACTS.md",
+      "kind": "workflow",
+      "c": "C06",
+      "scenario": 1
+    },
+    {
+      "id": "F-15",
+      "name": "Group 配置器",
+      "evidence": "GROUP-NATIVE-EDITORS.md",
+      "kind": "workflow",
+      "c": "C09",
+      "scenario": 1
+    },
+    {
+      "id": "F-16",
+      "name": "执行调度",
+      "evidence": "MF05-PROCEDURE-RUN-CALLCHAIN.md",
+      "kind": "workflow",
+      "c": "C03",
+      "scenario": 1
+    },
+    {
+      "id": "F-17",
+      "name": "流程 IO 与变量",
+      "evidence": "GROUP-LOCAL-VARIABLE-BINDING.md",
+      "kind": "globals",
+      "c": "C17",
+      "scenario": 8
+    },
+    {
+      "id": "F-18",
+      "name": "独立方案存储",
+      "evidence": "SOLUTION-PERSISTENCE-BOUNDARY.md",
+      "kind": "persistence",
+      "c": "C11",
+      "scenario": 7
+    },
+    {
+      "id": "F-19",
+      "name": "原生 .sol 兼容",
+      "evidence": "SOL-ROUND2-20261019.md",
+      "kind": "persistence",
+      "c": "C14",
+      "scenario": 7
+    },
+    {
+      "id": "F-20",
+      "name": "图像结果与 ROI",
+      "evidence": "GROUP-NATIVE-EDITORS.md",
+      "kind": "controls",
+      "c": "C10",
+      "scenario": 6
+    },
+    {
+      "id": "F-21",
+      "name": "撤销与生命周期",
+      "evidence": "UNDO-ROUND2-20261019.md",
+      "kind": "plugin",
+      "c": "C12",
+      "scenario": 3
+    },
+    {
+      "id": "F-22",
+      "name": "真实工具集成",
+      "evidence": "PLUGIN-FRAMEWORK-BOUNDARY.md",
+      "kind": "plugin",
+      "c": "C08",
+      "scenario": 3
+    },
+    {
+      "id": "F-23",
+      "name": "SDK / ABI / 部署",
+      "evidence": "MF05-PROCESS-LIFETIME-AUDIT.md",
+      "kind": "sdk",
+      "c": "C19",
+      "scenario": 4
+    },
+    {
+      "id": "S-01",
+      "name": "相机与设备管理",
+      "evidence": "MF01-GLOBAL-ENTRY-AUDIT.md",
+      "kind": "camera-management",
+      "c": "C18",
+      "scenario": 9
+    },
+    {
+      "id": "S-02",
+      "name": "图形与文字渲染",
+      "evidence": "framework-architecture.html",
+      "kind": "controls",
+      "c": "C10",
+      "scenario": 6,
+      "detail": "main-image-rendering"
+    },
+    {
+      "id": "S-03",
+      "name": "模块结果树",
+      "evidence": "framework-architecture.html",
+      "kind": "controls",
+      "c": "C10",
+      "scenario": 6,
+      "detail": "module-result-tree-design"
+    },
+    {
+      "id": "S-04",
+      "name": "自有加密狗与授权",
+      "evidence": "framework-architecture.html",
+      "kind": "persistence",
+      "c": "C15",
+      "scenario": 7,
+      "detail": "own-dongle-design"
+    }
+  ],
+  "externalDocumentModified": false,
+  "crossDocumentAutoSync": false,
+  "review": {
+    "date": "2026-10-21",
+    "queryState": [
+      "domain",
+      "perspective"
+    ],
+    "sharedAnchorPerspectivePreserved": true,
+    "statusSummaryAdded": true,
+    "unknownNotUnimplemented": true
+  },
+  "finalPolicy": {
+    "vm": "external quick link only; local old snapshots archival",
+    "ours": "interactive model with embedded reference comparison",
+    "comparison": "reference F scope plus S topics; grouped mapping not independent acceptance",
+    "themeState": "domain and perspective URL parameters"
+  }
+}

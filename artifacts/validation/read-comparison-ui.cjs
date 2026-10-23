@@ -1,0 +1,1 @@
+const fs=require('fs'),s=fs.readFileSync('docs/04-工具设计/标定工具/2026/10/19/suneye-vm-design-comparison-plan.html','utf8');console.log([...s.matchAll(/<article class="ui-review" id="([^"]+)"><h3>(.*?)<\/h3>/g)].map(x=>[x[1],x[2]]));console.log(s.slice(s.indexOf('const readerModes='),s.indexOf('const readerModes=')+1800));

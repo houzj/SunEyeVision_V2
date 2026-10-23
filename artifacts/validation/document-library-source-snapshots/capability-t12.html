@@ -1,0 +1,178 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T12 图形与文字样式、叠加渲染</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">T12 图形与文字样式、叠加渲染</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>T12 图形与文字样式、叠加渲染</h1><article id="compare-T12"><span id="T12"></span><div class="visual-metrics"><div><strong>T12</strong><span>能力条目</span><small>部分实现</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>自研整改</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>结果DisplayCollector/区域/高亮</b></li><li><small>02</small><b>ResultRenderLayer.OnRender</b></li><li><small>03</small><b>RenderGraphics/RenderTextsGrouped</b></li><li><small>04</small><b>DrawingContext</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>批量轮廓、瓦片/视口、FormattedText/DrawingGroup缓存已实现；区域→输出→高亮分层。</p><details><summary>完整缺陷与未闭合调用边</summary><p>DPI/文化/字体变化→布局缓存失效；数组原位修改→PropertyChanged/重建；FrameId→底图/图形/文字共同提交</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>VM ShapeItemsPage→DrawingVisual/TextShape有批量与低质量路径，不能只按重控件/轻控件排名。</p><p>VM分组DrawingVisual/TextShape只证明另一渲染机制，不证明性能更好。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF05-RESULT-LIFECYCLE.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">文字fingerprint依赖对象/数组身份与长度，不能自行保证内容原位修改或DPI变动的缓存有效性。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：文字fingerprint依赖对象/数组身份与长度，不能自行保证内容原位修改或DPI变动的缓存有效性。 VM参考边界：VM分组DrawingVisual/TextShape只证明另一渲染机制，不证明性能更好。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">必须明确缓存失效合同：不可变内容版本或逐项更新通知，键含必要DPI/字体参数；先核消费者，不能把条件性风险写成已复现故障。 增加明确内容版本/DPI等失效规则，先追事件是否保证不可变；保留批量轮廓和缓存，定义实际文字幂律/屏幕尺寸，性能另测不盲重写。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">PASS/FAIL改色不重跑，长文字/多语言/同锚点/大量图形/DPI与历史独立性均验。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o06.html#O06"><b>图像、ROI、图形文字及坐标一致性</b><small class="reference-id">优化方案 · O06</small></a></td></tr></tbody></table></div></section><article id="recommendation-T12"><h2>T12 图形与文字样式、叠加渲染 · 必须整改</h2><p><b>代码依据 / 局限：</b>文字fingerprint依赖对象/数组身份与长度，不能自行保证内容原位修改或DPI变动的缓存有效性。</p><p><b>VM可借鉴与不可推断：</b>VM分组DrawingVisual/TextShape只证明另一渲染机制，不证明性能更好。</p><p><b>具体改法 / 成本：</b>必须明确缓存失效合同：不可变内容版本或逐项更新通知，键含必要DPI/字体参数；先核消费者，不能把条件性风险写成已复现故障。 增加明确内容版本/DPI等失效规则，先追事件是否保证不可变；保留批量轮廓和缓存，定义实际文字幂律/屏幕尺寸，性能另测不盲重写。</p><p><b>验收：</b>PASS/FAIL改色不重跑，长文字/多语言/同锚点/大量图形/DPI与历史独立性均验。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T12">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T12">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S087</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs">src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs:390</a></p><p><code>OnRender</code></p><p>SHA256 <code>bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350</code></p><pre>        protected override void OnRender(DrawingContext dc)
+        {
+            base.OnRender(dc);
+
+            // 诊断口径：
+            //   total    = 上一帧【真实 OnRender 耗时】（_renderSw 在进入绘制前重启、绘制结束处读取）
+            //   interval = 相邻两帧 OnRender 开始点的间隔（含帧间空档）
+            //   idle     = interval - total ⇒ 帧间空档（不等于绘制耗时）
+            //   contour / text = 【本帧】归属耗时（每帧入口清零，分支内累加）
+            var intervalMs = _intervalSw.Elapsed.TotalMilliseconds;
+            _intervalSw.Restart();
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $&quot;[RenderDiag] OnRender prev: total={_lastFrameMs:F1}ms, contour={_contourMs:F1}ms, text={_textMs:F1}ms, other={Math.Max(0, _lastFrameMs - _contourMs - _textMs):F1}ms, interval={intervalMs:F1}ms, idle={Math.Max(0, intervalMs - _lastFrameMs):F1}ms, invalidate={_invalidateCount}, cacheHits={_cacheHits}, cacheMisses={_cacheMisses}, fallbackContours={_fallbackContours}, fallbackVertices={_fallbackVertices}, textCount={_textCount}, textCache={_formattedTextCache.Count}, contourVerticesUpperBound={_vertexCount}, scale={_viewportScale:F3}&quot;,
+                &quot;ResultRenderLayer&quot;);</pre></details><details class="source-card"><summary>S088</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs">src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs:1019</a></p><p><code>RenderTextsGrouped</code></p><p>SHA256 <code>bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350</code></p><pre>        private void RenderTextsGrouped(
+            DrawingContext dc,
+            List&lt;TextDisplayItem&gt; items,
+            ref TextDrawingCacheEntry? textDrawingCache)
+        {
+            var textSw = Stopwatch.StartNew();
+            var fingerprint = ComputeTextFingerprint(items);
+            if (textDrawingCache != null &amp;&amp; textDrawingCache.Fingerprint == fingerprint)
+            {
+                ApplyTextTransforms(textDrawingCache);
+                dc.DrawDrawing(textDrawingCache.Drawing);
+                _textMs = textSw.Elapsed.TotalMilliseconds;
+                _textCount = textDrawingCache.TextCount;
+                return;</pre></details><details class="source-card"><summary>S089</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs">src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs:1302</a></p><p><code>CreateFormattedText</code></p><p>SHA256 <code>bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350</code></p><pre>        private FormattedText CreateFormattedText(string text, Color color, double fontSize, bool isBold)
+        {
+            var typeface = new Typeface(new FontFamily(&quot;Segoe UI&quot;),
+                FontStyles.Normal, isBold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal);
+            // 使用自身实例的 DPI，而非依赖 Application.Current.MainWindow。
+            // 依赖 MainWindow 在脚本工具/独立上下文渲染时可能为 null，导致 VisualTreeHelper.GetDpi(null) 抛 NullReferenceException。
+            // GetDpi(this) 即使本元素尚未连接可视树也不会抛异常，返回默认 96 DPI。
+            var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+            return new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight, typeface, fontSize, new SolidColorBrush(color), pixelsPerDip);
+        }
+
+        private static StreamGeometry CreateArcGeometry(ArcGeometry arc)
+        {</pre></details><details class="source-card"><summary>R055</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs">src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs:1198</a></p><p><code>ComputeTextFingerprint</code></p><p>SHA256 <code>bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350</code></p><pre>        private static int ComputeTextFingerprint(IReadOnlyList&lt;TextDisplayItem&gt; items)
+        {
+            unchecked
+            {
+                var hash = 17;
+                foreach (var item in items)
+                {
+                    hash = hash * 31 + RuntimeHelpers.GetHashCode(item);
+                    hash = hash * 31 + RuntimeHelpers.GetHashCode(item.Texts);
+                    hash = hash * 31 + item.Texts.Length;
+                }
+                return hash;
+            }
+        }
+
+        #endregion
+
+        #region 辅助方法
+
+        private static void DrawPolygon(DrawingContext dc, Point[] points, Brush? fill, Pen stroke)</pre></details><details class="source-card"><summary>R056</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs">src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs:1302</a></p><p><code>CreateFormattedText</code></p><p>SHA256 <code>bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350</code></p><pre>        private FormattedText CreateFormattedText(string text, Color color, double fontSize, bool isBold)
+        {
+            var typeface = new Typeface(new FontFamily(&quot;Segoe UI&quot;),
+                FontStyles.Normal, isBold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal);
+            // 使用自身实例的 DPI，而非依赖 Application.Current.MainWindow。
+            // 依赖 MainWindow 在脚本工具/独立上下文渲染时可能为 null，导致 VisualTreeHelper.GetDpi(null) 抛 NullReferenceException。
+            // GetDpi(this) 即使本元素尚未连接可视树也不会抛异常，返回默认 96 DPI。
+            var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+            return new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight, typeface, fontSize, new SolidColorBrush(color), pixelsPerDip);
+        }
+
+        private static StreamGeometry CreateArcGeometry(ArcGeometry arc)
+        {
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
+            {
+                var startRad = arc.StartAngle * Math.PI / 180;
+                var endRad = arc.EndAngle * Math.PI / 180;
+                ctx.BeginFigure(new Point(</pre></details><details class="source-card"><summary>R057</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs">src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs:336</a></p><p><code>OnItemPropertyChanged</code></p><p>SHA256 <code>bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350</code></p><pre>        private void OnItemPropertyChanged(object? sender, EventArgs e)
+        {
+            InvalidateTextDrawingCaches();
+            InvalidateVisual();
+        }
+
+        private void InvalidateTextDrawingCaches()
+        {
+            _regionTextDrawingCache = null;
+            _collectorTextDrawingCache = null;
+            _highlightTextDrawingCache = null;
+        }
+
+        #endregion
+
+        #region 幂律线宽支持
+
+        private double _viewportScale = 1.0;
+
+        public double ViewportScale</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T12&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;图形与文字样式、叠加渲染&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;结果DisplayCollector/区域/高亮&quot;,
+    &quot;ResultRenderLayer.OnRender&quot;,
+    &quot;RenderGraphics/RenderTextsGrouped&quot;,
+    &quot;DrawingContext&quot;
+  ],
+  &quot;current&quot;: &quot;批量轮廓、瓦片/视口、FormattedText/DrawingGroup缓存已实现；区域→输出→高亮分层。&quot;,
+  &quot;gap&quot;: &quot;DPI/文化/字体变化→布局缓存失效；数组原位修改→PropertyChanged/重建；FrameId→底图/图形/文字共同提交&quot;,
+  &quot;vm&quot;: &quot;VM ShapeItemsPage→DrawingVisual/TextShape有批量与低质量路径，不能只按重控件/轻控件排名。&quot;,
+  &quot;vmDoc&quot;: &quot;MF05-RESULT-LIFECYCLE.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;必须整改&quot;,
+  &quot;reason&quot;: &quot;依据：文字fingerprint依赖对象/数组身份与长度，不能自行保证内容原位修改或DPI变动的缓存有效性。 VM参考边界：VM分组DrawingVisual/TextShape只证明另一渲染机制，不证明性能更好。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;必须明确缓存失效合同：不可变内容版本或逐项更新通知，键含必要DPI/字体参数；先核消费者，不能把条件性风险写成已复现故障。 增加明确内容版本/DPI等失效规则，先追事件是否保证不可变；保留批量轮廓和缓存，定义实际文字幂律/屏幕尺寸，性能另测不盲重写。&quot;,
+  &quot;accept&quot;: &quot;PASS/FAIL改色不重跑，长文字/多语言/同锚点/大量图形/DPI与历史独立性均验。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S087&quot;,
+    &quot;S088&quot;,
+    &quot;S089&quot;,
+    &quot;R055&quot;,
+    &quot;R056&quot;,
+    &quot;R057&quot;
+  ],
+  &quot;optimization&quot;: &quot;O06&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;T12&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;结果层分区域/输出/高亮，文字用FormattedText/DrawingGroup缓存；文本fingerprint依item/数组身份和长度。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;DPI/文化/字体变化→布局缓存失效&quot;,
+      &quot;数组原位修改→PropertyChanged/重建&quot;,
+      &quot;FrameId→底图/图形/文字共同提交&quot;
+    ],
+    &quot;cause&quot;: &quot;局部缓存键证据+完整失效路径缺口&quot;,
+    &quot;change&quot;: &quot;增加明确内容版本/DPI等失效规则，先追事件是否保证不可变；保留批量轮廓和缓存，定义实际文字幂律/屏幕尺寸，性能另测不盲重写。&quot;,
+    &quot;acceptance&quot;: &quot;PASS/FAIL改色不重跑，长文字/多语言/同锚点/大量图形/DPI与历史独立性均验。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S087&quot;,
+      &quot;S088&quot;,
+      &quot;S089&quot;,
+      &quot;R055&quot;,
+      &quot;R056&quot;,
+      &quot;R057&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留批量渲染，先一致性后性能&quot;,
+    &quot;reason&quot;: &quot;已有优化应复用，但缓存增加版本/内存治理成本；无对等测试不称更快。&quot;
+  },
+  &quot;defect&quot;: &quot;文字fingerprint依赖对象/数组身份与长度，不能自行保证内容原位修改或DPI变动的缓存有效性。&quot;,
+  &quot;vmBorrow&quot;: &quot;VM分组DrawingVisual/TextShape只证明另一渲染机制，不证明性能更好。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;自研整改&quot;,
+  &quot;adoptionBasis&quot;: &quot;针对本项目已见合同/实现修正，尚无采用VM具体实现的充分依据。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;必须整改&quot;,
+    &quot;defect&quot;: &quot;文字fingerprint依赖对象/数组身份与长度，不能自行保证内容原位修改或DPI变动的缓存有效性。&quot;,
+    &quot;borrow&quot;: &quot;VM分组DrawingVisual/TextShape只证明另一渲染机制，不证明性能更好。&quot;,
+    &quot;action&quot;: &quot;必须明确缓存失效合同：不可变内容版本或逐项更新通知，键含必要DPI/字体参数；先核消费者，不能把条件性风险写成已复现故障。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;自研整改&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S087&quot;,
+      &quot;S088&quot;,
+      &quot;S089&quot;,
+      &quot;R055&quot;,
+      &quot;R056&quot;,
+      &quot;R057&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

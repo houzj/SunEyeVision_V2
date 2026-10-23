@@ -1,0 +1,470 @@
+{
+  "stages": [
+    {
+      "id": "edit",
+      "title": "管理器：改的是设计初值",
+      "what": "每个变量有Id、Name、Group、Type、Value和生产/消费绑定。分组主要组织显示，运行字典使用变量名，不能把分组当成独立名称空间。",
+      "chain": "主窗口ShowGlobalVariableManager → ViewModel/真实方案变量 → 名称/类型/Value编辑 → 保存方案",
+      "fact": "管理器“当前值”列绑定GlobalVariable.Value；文本编辑失焦按Type写单元素long[]/double[]/bool[]/string[]。这列不能自动解释为本轮生产者输出。",
+      "vm": "原GlobalVariableItem有名称校验、类型解析和显示/绑定字段；对话框通过VariableManager管理分组及导入导出。native实际写入/事务仍缺证据。",
+      "change": "将Value列明确标“设计初值”，本轮运行值另投影并带Run/来源/有效性；复用现有变量Id，勿从零再造。",
+      "accept": "改初值不被误报为运行输出；同名规则跨新增/改名/导入一致；复杂值只读/编辑范围明确。",
+      "refs": [
+        [
+          "src/Workflow/GlobalVariable.cs",
+          "public string Id"
+        ],
+        [
+          "src/Workflow/GlobalVariable.cs",
+          "public object? Value"
+        ],
+        [
+          "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml",
+          "Header=\"当前值\""
+        ],
+        [
+          "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml.cs",
+          "public static object? ParseText"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "src/Workflow/GlobalVariable.cs",
+          "line": 114,
+          "token": "public string Id",
+          "sha256": "57178a1086bd8a066af3c53d59230f8ef8413673db55d1a1249b802fabb3748b",
+          "snippet": "    public string Id { get; set; } = Guid.NewGuid().ToString();\r\n\r\n    /// <summary>\r\n    /// 变量名称\r\n    /// </summary>\r\n    public string Name\r\n    {\r\n        get => _name;\r\n        set => SetProperty(ref _name, value, \"变量名称\");\r\n    }\r\n\r\n    /// <summary>\r\n    /// 变量所属分组\r\n    /// </summary>\r\n    /// <remarks>\r\n    /// 支持多工位/多相机场景的分组管理。\r\n    /// 例如：\"工位1参数\"、\"工位2参数\"、\"相机1设置\"、\"相机2设置\"\r\n    /// </remarks>\r\n    public string Group\r\n    {\r\n        get => _group;\r\n        set => SetProperty(ref _group, value, \"所属分组\");\r"
+        },
+        {
+          "path": "src/Workflow/GlobalVariable.cs",
+          "line": 155,
+          "token": "public object? Value",
+          "sha256": "57178a1086bd8a066af3c53d59230f8ef8413673db55d1a1249b802fabb3748b",
+          "snippet": "    public object? Value\r\n    {\r\n        get { lock (ValueGate) return _value; }\r\n        set\r\n        {\r\n            lock (ValueGate) { if (Equals(_value, value)) return; _value = value; }\r\n            OnPropertyChanged(nameof(Value));\r\n        }\r\n    }\r\n\r\n    /// <summary>\r\n    /// 变量类型（词汇表由 SdkTypeVocabulary 定义）\r\n    /// </summary>\r\n    public string Type\r\n    {\r\n        get => _type;\r\n        set => SetProperty(ref _type, value, \"变量类型\");\r\n    }\r\n\r\n    /// <summary>\r\n    /// 变量描述/注释\r\n    /// </summary>\r"
+        },
+        {
+          "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml",
+          "line": 493,
+          "token": "Header=\"当前值\"",
+          "sha256": "84bfff3a6ec1f62ac6206d80a725d78b0933d5035581b373f17270f85715a827",
+          "snippet": "                <DataGridTemplateColumn Header=\"当前值\" Width=\"120\">\n                    <DataGridTemplateColumn.CellTemplate>\r\n                        <DataTemplate>\r\n                            <TextBox Text=\"{Binding Value, Converter={StaticResource ValueTextConverter}, Mode=OneWay}\"\r\n                                     IsReadOnly=\"{Binding IsComplexValue}\"\r\n                                     VerticalContentAlignment=\"Center\"\r\n                                     BorderBrush=\"{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}\"\r\n                                     BorderThickness=\"1\" Padding=\"4,2\"\r\n                                     LostFocus=\"VariableValueTextBox_LostFocus\"\r\n                                     ToolTip=\"{Binding Value, Converter={StaticResource ValueTextConverter}}\"/>\r\n                        </DataTemplate>\r\n                    </DataGridTemplateColumn.CellTemplate>\r\n                </DataGridTemplateColumn>\n\n                <!-- 输入来源只读：唯一绑定入口位于“模块结果”中的链接按钮。 -->\n                <DataGridTemplateColumn Header=\"输入来源\" Width=\"170\" IsReadOnly=\"True\">\n                    <DataGridTemplateColumn.CellTemplate>\n                        <DataTemplate>\n                            <TextBlock Text=\"{Binding InputSourceDisplayText}\" FontSize=\"12\" Padding=\"8,0\"\n                                       VerticalAlignment=\"Center\"\n                                       HorizontalAlignment=\"Stretch\"\n                                       Foreground=\"{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}\""
+        },
+        {
+          "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml.cs",
+          "line": 341,
+          "token": "public static object? ParseText",
+          "sha256": "7424f0dc0e50d23eebaaddcbb6860bfa601368a050a5bcc259c91ed10450b832",
+          "snippet": "        public static object? ParseText(string? text, string typeName)\r\n        {\r\n            switch (typeName)\r\n            {\r\n                case \"Integer\":\r\n                    if (long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var l))\r\n                        return new[] { l };\r\n                    break;\r\n                case \"Double\":\r\n                    if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var d))\r\n                        return new[] { d };\r\n                    break;\r\n                case \"Boolean\":\r\n                    if (bool.TryParse(text, out var b))\r\n                        return new[] { b };\r\n                    break;\r\n                case \"String\":\r\n                    return new[] { text ?? string.Empty };\r\n            }\r\n            return null;\r\n        }\r\n    }\r"
+        }
+      ]
+    },
+    {
+      "id": "binding",
+      "title": "绑定：谁生产，谁消费",
+      "what": "ProducerBinding记录一个流程/节点/结果字段；ConsumerBinding稳定键含流程、节点和InputKey/参数名。变量Id、显示名和结果字段Id是不同身份。",
+      "chain": "输入来源/目标输出设置 → ProducerBinding/ConsumerBindings → ParamSettings/字段对账 → 方案依赖图",
+      "fact": "普通ParamSettings改名有传播，App还通知活跃ConfigSetting；方案图同时识别__GlobalVars__名称表达式与__VariableId__引用。不能因此宣称所有离屏专用协议行/脚本表达式都已迁移。",
+      "vm": "VM原对话框存在绑定模块结果/目标的独立模型；不能只从UI字段名判定全部原生作用域规则。",
+      "change": "优先复核已有Id路径的消费者，分普通参数/嵌套行/脚本/子程序核改名删除；批量变更先预检后原子采用，失败保留可读失效原因。",
+      "accept": "跨流程同节点ID仍定位正确；改名/删字段/删变量不静默改成旧初值；未实例化控件的引用也能诊断。",
+      "refs": [
+        [
+          "src/Workflow/GlobalVariable.cs",
+          "public class ProducerBinding"
+        ],
+        [
+          "src/Workflow/GlobalVariable.cs",
+          "public string BindingKey"
+        ],
+        [
+          "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+          "private void UpdateGlobalVariableNameReferences"
+        ],
+        [
+          "src/UI/App.xaml.cs",
+          "private static void OnGlobalVariableRenamed"
+        ],
+        [
+          "src/Workflow/SolutionExecutionDependencyGraph.cs",
+          "id == \"__VariableId__\""
+        ]
+      ],
+      "sources": [
+        {
+          "path": "src/Workflow/GlobalVariable.cs",
+          "line": 46,
+          "token": "public class ProducerBinding",
+          "sha256": "57178a1086bd8a066af3c53d59230f8ef8413673db55d1a1249b802fabb3748b",
+          "snippet": "public class ProducerBinding\r\n{\r\n    public Guid? SourceFieldId { get; set; }\r\n    /// <summary>生产者所属工作流 ID。</summary>\r\n    public string WorkflowId { get; set; } = string.Empty;\r\n\r\n    /// <summary>生产者所属工作流名称，仅用于显示与旧方案可读性。</summary>\r\n    public string WorkflowName { get; set; } = string.Empty;\r\n\r\n    /// <summary>生产者节点 ID。</summary>\r\n    public string NodeId { get; set; } = string.Empty;\r\n\r\n    /// <summary>生产者节点名称。</summary>\r\n    public string NodeName { get; set; } = string.Empty;\r\n\r\n    /// <summary>节点结果中的字段名。</summary>\r\n    public string ResultName { get; set; } = string.Empty;\r\n\r\n    /// <summary>结果字段显示名。</summary>\r\n    public string ResultDisplayName { get; set; } = string.Empty;\r\n\r\n    [JsonIgnore]\r"
+        },
+        {
+          "path": "src/Workflow/GlobalVariable.cs",
+          "line": 35,
+          "token": "public string BindingKey",
+          "sha256": "57178a1086bd8a066af3c53d59230f8ef8413673db55d1a1249b802fabb3748b",
+          "snippet": "    public string BindingKey => $\"{WorkflowId}|{NodeId}|{InputKey ?? ParameterName}\";\r\n\r\n    /// <summary>显示路径：\"工作流名.节点名.参数显示名\"</summary>\r\n    [JsonIgnore]\r\n    public string DisplayPath => $\"{WorkflowName}.{NodeName}.{ParameterDisplayName}\";\r\n}\r\n\r\n/// <summary>\r\n/// 全局变量的唯一生产者：某工作流节点的一个结果字段。\r\n/// 一个变量只允许一个生产者，避免并发写入时出现“最后写入者获胜”的不确定结果。\r\n/// </summary>\r\npublic class ProducerBinding\r\n{\r\n    public Guid? SourceFieldId { get; set; }\r\n    /// <summary>生产者所属工作流 ID。</summary>\r\n    public string WorkflowId { get; set; } = string.Empty;\r\n\r\n    /// <summary>生产者所属工作流名称，仅用于显示与旧方案可读性。</summary>\r\n    public string WorkflowName { get; set; } = string.Empty;\r\n\r\n    /// <summary>生产者节点 ID。</summary>\r\n    public string NodeId { get; set; } = string.Empty;\r"
+        },
+        {
+          "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+          "line": 565,
+          "token": "private void UpdateGlobalVariableNameReferences",
+          "sha256": "caa27c1ec5849965167567d18220617fb0b2ed85ebe96cb1368e681d155bda94",
+          "snippet": "        private void UpdateGlobalVariableNameReferences(GlobalVariable variable, string oldName, string newName)\r\n        {\r\n            var solution = _solutionManager.CurrentSolution;\r\n            if (solution == null) return;\r\n\r\n            LogInfo($\"全局变量重命名传播: '{oldName}' → '{newName}'\");\r\n\r\n            // 1. 更新所有节点 ParamSettings 中的绑定定义\r\n            foreach (var workflow in solution.Workflows)\r\n            {\r\n                foreach (var node in workflow.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())\r\n                {\r\n                    if (node?.Parameters == null) continue;\r\n\r\n                    foreach (var setting in node.ParamSettings?.Settings ?? Enumerable.Empty<ParamSetting>())\r\n                    {\r\n                        if (setting.BindingType == BindingType.Binding\r\n                            && setting.SourceNodeId == \"__GlobalVars__\"\r\n                            && setting.SourceProperty == oldName)\r\n                        {\r\n                            setting.SourceProperty = newName;\r\n                            setting.SourceDisplayName = newName;\r"
+        },
+        {
+          "path": "src/UI/App.xaml.cs",
+          "line": 1054,
+          "token": "private static void OnGlobalVariableRenamed",
+          "sha256": "4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc",
+          "snippet": "    private static void OnGlobalVariableRenamed(UIEvents.GlobalVariableRenamedEvent evt)\r\n    {\r\n        VisionLogger.Instance.Log(LogLevel.Info,\r\n            $\"[监控] 全局变量重命名事件进入 | old='{evt.OldName}' → new='{evt.NewName}' | source={evt.Source}\",\r\n            \"App-Monitor\");\r\n        try\r\n        {\r\n            ConfigSetting.NotifyAllGlobalVariableRenamed(evt.OldName, evt.NewName);\r\n\r\n            VisionLogger.Instance.Log(LogLevel.Success,\r\n                $\"[监控] 全局变量重命名 ConfigSetting 通知完成 | old='{evt.OldName}' → new='{evt.NewName}'\",\r\n                \"App-Monitor\");\r\n        }\r\n        catch (Exception ex)\r\n        {\r\n            VisionLogger.Instance.Log(LogLevel.Error,\r\n                $\"[监控] 全局变量重命名更新异常 | {ex.Message}\",\r\n                \"App-Monitor\", ex);\r\n        }\r\n    }\r\n\r\n    /// <summary>\r"
+        },
+        {
+          "path": "src/Workflow/SolutionExecutionDependencyGraph.cs",
+          "line": 135,
+          "token": "id == \"__VariableId__\"",
+          "sha256": "1868385cc3e8c6b27806b3dd7051ab1d07f3483593f27feb430da121e209e99f",
+          "snippet": "                            (id == \"__VariableId__\" && path == variable.Id || id == \"__GlobalVars__\" && SunEyeVision.Plugin.SDK.Execution.Parameters.PropertyPathParser.ExtractPropertyName(path) == variable.Name))\r\n                            AddDependency(producer, GetScopedNodeId(workflow.Id, node.Id), SolutionDependencyKind.GlobalVariable, variable.Name, input.Key);\r\n        }\r\n\r\n        var graph = new SolutionExecutionDependencyGraph(predecessors, dependencies);\r\n        graph.GetTopologicalLayers(nodeLookup.Keys);\r\n        return graph;\r\n\r\n        string? ResolveNode(string workflowId, string nodeId, string role)\r\n        {\r\n            if (string.IsNullOrWhiteSpace(nodeId))\r\n                return null;\r\n\r\n            if (!string.IsNullOrWhiteSpace(workflowId))\r\n            {\r\n                var scoped = GetScopedNodeId(workflowId, nodeId);\r\n                if (!nodeLookup.ContainsKey(scoped))\r\n                    return null;\r\n                return scoped;\r\n            }\r\n\r\n            // 兼容旧方案：旧 ConsumerBinding 未保存工作流 ID。节点 ID 全局唯一时可安全迁移；\r"
+        }
+      ]
+    },
+    {
+      "id": "snapshot",
+      "title": "开始运行：本轮到底拿到什么",
+      "what": "方案运行先把无生产者且没有失效标记的设计值放进runtimeGlobals；有生产者的变量不以初值冒充本轮结果。",
+      "chain": "RunSolutionAsync → 依赖图/顺序 → 设计值ToDictionary → 各流程执行 → 本轮上下文",
+      "fact": "RunSolution排除生产者初值，但选中流程单次/连续入口直接把全部设计Value组成字典，调试查询也复制设计值。节点__GlobalVars__合成结果来自上下文快照；与接收工具的生产者结果读取不是同一路径。入口策略不同已见，具体错误表现仍需同流程/跨流程场景验证。另ToDictionary/Clone只拷容器或引用，ValueGate不保护数组原地修改。",
+      "vm": "原DynamicOutput按nValueNum复制公开int/float/string输出数组。它只证明查询出口复制，不证明VM所有运行值天然深不可变。",
+      "change": "先统一普通全局绑定/接收变量及单次/方案/调试入口的值来源，生产者值必须来自当前Run成功结果；不拿设计Value兜底。再逐类型规定复制：普通数组可边界复制，图像/原生对象显式借用或租约，BinaryPayload复用已有封装。",
+      "accept": "运行中改初值及原地改数组均有确定隔离政策；不能把只读字典当完整深快照；图像复制点与最后读者配套。",
+      "refs": [
+        [
+          "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+          "var runtimeGlobals = solution.GlobalVariables.Where"
+        ],
+        [
+          "src/Workflow/GlobalVariable.cs",
+          "public static object ValueGate"
+        ],
+        [
+          "src/Workflow/WorkflowExecutionEngine.cs",
+          "new Dictionary<string, object?>(globalVariables)"
+        ],
+        [
+          "src/UI/Shell/Windows/MainWindowViewModel.cs",
+          ".ToDictionary(gv => gv.Name, gv => gv.Value)"
+        ],
+        [
+          "src/Workflow/WorkflowExecutionEngine.cs",
+          "toolResultsDict[\"__GlobalVars__\"] = globalVarResults"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+          "line": 447,
+          "token": "var runtimeGlobals = solution.GlobalVariables.Where",
+          "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae",
+          "snippet": "            var runtimeGlobals = solution.GlobalVariables.Where(variable => variable.ProducerBinding == null && string.IsNullOrEmpty(variable.RebindingReason) && string.IsNullOrEmpty(variable.BindingValidationPending))\r\n                .ToDictionary(variable => variable.Name, variable => variable.Value, StringComparer.Ordinal);\r\n            var workflowPredecessors = BuildWorkflowPredecessors(plan, tabsById.Keys);\r\n            var completed = new HashSet<string>(StringComparer.Ordinal);\r\n            var failed = new HashSet<string>(StringComparer.Ordinal);\r\n            var pending = new HashSet<string>(tabsById.Keys, StringComparer.Ordinal);\r\n\r\n            while (pending.Count > 0)\r\n            {\r\n                cancellationToken.ThrowIfCancellationRequested();\r\n                var ready = pending\r\n                    .Where(id => workflowPredecessors[id].All(predecessor =>\r\n                        completed.Contains(predecessor) || failed.Contains(predecessor)))\r\n                    .OrderBy(id => tabs.FindIndex(tab => tab.RootWorkflowId == id))\r\n                    .ToList();\r\n                if (ready.Count == 0)\r\n                    throw new InvalidOperationException(\"存在未完成的跨流程依赖，无法继续解决方案运行。\");\r\n\r\n                // WorkflowExecutionEngine 当前根会话互斥；此处按已推导的顺序提交。\r\n                var workflowId = ready[0];\r\n                var tab = tabsById[workflowId];\r\n                // A failed workflow may still have successful producers. Let the next workflow\r"
+        },
+        {
+          "path": "src/Workflow/GlobalVariable.cs",
+          "line": 102,
+          "token": "public static object ValueGate",
+          "sha256": "57178a1086bd8a066af3c53d59230f8ef8413673db55d1a1249b802fabb3748b",
+          "snippet": "    public static object ValueGate { get; } = new();\r\n    private string _name = \"\";\r\n    private string _group = \"默认分组\";\r\n    private int _index = 0;\r\n    private object? _value = null;\r\n    private string _type = \"String\";\r\n    private string _description = \"\";\r\n    private bool _isInitialized = false;\r\n\r\n    /// <summary>\r\n    /// 变量ID\r\n    /// </summary>\r\n    public string Id { get; set; } = Guid.NewGuid().ToString();\r\n\r\n    /// <summary>\r\n    /// 变量名称\r\n    /// </summary>\r\n    public string Name\r\n    {\r\n        get => _name;\r\n        set => SetProperty(ref _name, value, \"变量名称\");\r\n    }\r"
+        },
+        {
+          "path": "src/Workflow/WorkflowExecutionEngine.cs",
+          "line": 649,
+          "token": "new Dictionary<string, object?>(globalVariables)",
+          "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+          "snippet": "                    : new Dictionary<string, object?>(globalVariables);\r\n                ApplyRuntimeParameters(subContext, request?.RuntimeParameters);\r\n\r\n                // 合并子程序输入端口值到子上下文（同时注入为合成节点结果供绑定解析）\r\n                if (contextVariables != null && contextVariables.Count > 0)\r\n                {\r\n                    // 提取 __SubroutineParentNodeId__ 并移出，不进入合成结果\r\n                    string? parentNodeId = null;\r\n                    if (contextVariables.TryGetValue(SubroutineContextKeys.ParentNodeId, out var pnId) && pnId is string pnIdStr)\r\n                    {\r\n                        parentNodeId = pnIdStr;\r\n                    }\r\n\r\n                    var syntheticResults = new GenericToolResults { Status = ExecutionStatus.Success };\r\n                    foreach (var kvp in contextVariables)\r\n                    {\r\n                        // 排除 __SubroutineParentNodeId__ 元数据键\r\n                        if (string.Equals(kvp.Key, SubroutineContextKeys.ParentNodeId, StringComparison.Ordinal)) continue;\r\n\r\n                        subContext.SetVariable(kvp.Key, kvp.Value);\r\n                        syntheticResults.AddResultItem(kvp.Key, kvp.Value);\r\n                    }\r"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+          "line": 2171,
+          "token": ".ToDictionary(gv => gv.Name, gv => gv.Value)",
+          "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+          "snippet": "                    .ToDictionary(gv => gv.Name, gv => gv.Value);\r\n                _executionManager.SetGlobalVariables(globalVars);\r\n\r\n                await _executionManager.RunSingleAsync(WorkflowTabViewModel.SelectedTab, advanceLocalImage: advanceLocalImage);\r\n                // 成功/失败由执行管理器事件报告；等待相机帧失败不能误报成功。\r\n            }\r\n            catch (Exception ex)\r\n            {\r\n                AddLog($\"❌ 执行失败: {ex.Message}\");\r\n                AddLog($\"❌ 异常: {ex.StackTrace}\");\r\n            }\r\n            finally\r\n            {\r\n                IsRunning = false;\r\n            }\r\n        }\r\n\r\n        private void ExecuteStopWorkflow()\r\n        {\r\n            if (WorkflowTabViewModel.SelectedTab == null)\r\n            {\r\n                AddLog(\"⚠️ 没有选中的工作流标签页\");\r"
+        },
+        {
+          "path": "src/Workflow/WorkflowExecutionEngine.cs",
+          "line": 1123,
+          "token": "toolResultsDict[\"__GlobalVars__\"] = globalVarResults",
+          "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+          "snippet": "                toolResultsDict[\"__GlobalVars__\"] = globalVarResults;\r\n            }\r\n\r\n            // 调用异步节点入口；旧同步工具由 ToolExecutor 兼容，新工具可真正异步执行。\r\n            var algorithmResult = await node.ExecuteAsync(\r\n                toolResultsDict,\r\n                context.GlobalVariables,\r\n                context.CancellationToken);\r\n\r\n            if (algorithmResult.Status == ExecutionStatus.Cancelled)\r\n            {\r\n                throw new OperationCanceledException(\r\n                    algorithmResult.ErrorMessage ?? \"执行被取消\",\r\n                    context.CancellationToken);\r\n            }\r\n\r\n            if (algorithmResult.Success && algorithmResult.ToolResults != null)\r\n            {\r\n                result.Success = true;\r\n                result.Status = ExecutionStatus.Success;\r\n                result.Result = algorithmResult.ToolResults;\r\n            }\r"
+        }
+      ]
+    },
+    {
+      "id": "producer",
+      "title": "生产者完成：更新运行值，不污染文件",
+      "what": "方案级调度推导生产者到消费者的跨流程依赖。成功生产者值发布到本轮runtimeGlobals，未成功的变量先移除。",
+      "chain": "执行流程 → ApplyProducedGlobalValues → 按ProducerBinding读取成功节点结果 → runtimeGlobals → 下一个消费者流程",
+      "fact": "ApplyProducedGlobalValues先Remove变量名，再检查失效标记/节点成功/工具成功，成功才写本轮字典；不写Solution.GlobalVariables.Value。失败流程中独立成功生产者仍可被取出。这是方案流程边界发布，不能据此保证同流程普通全局绑定已读取生产者新值。",
+      "vm": "VM模块结果绑定存在；原生生产/消费调度和失败值清除不由GlobalVariableItem展示字段直接闭合。",
+      "change": "保留初值/运行值分域，补运行值身份和诊断投影；逐直接单流程、方案RunAll、通信触发、调试入口核快照来源差异。",
+      "accept": "生产者失败/未执行时消费者不回退设计初值或上轮成功；跨流程顺序按实际依赖；本轮发布不改变保存文件的初值。",
+      "refs": [
+        [
+          "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+          "private void ApplyProducedGlobalValues"
+        ],
+        [
+          "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+          "runtimeGlobals.Remove(variable.Name)"
+        ],
+        [
+          "src/Workflow/SolutionExecutionDependencyGraph.cs",
+          "public static SolutionExecutionDependencyGraph Compile"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+          "line": 1060,
+          "token": "private void ApplyProducedGlobalValues",
+          "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae",
+          "snippet": "        private void ApplyProducedGlobalValues(\r\n            Solution solution,\r\n            string workflowId,\r\n            ExecutionResult executionResult,\r\n            IDictionary<string, object?> runtimeGlobals)\r\n        {\r\n            foreach (var variable in solution.GlobalVariables.Where(variable =>\r\n                         string.Equals(variable.ProducerBinding?.WorkflowId, workflowId, StringComparison.Ordinal)))\r\n            {\r\n                var producer = variable.ProducerBinding!;\r\n                runtimeGlobals.Remove(variable.Name);\r\n                if (!string.IsNullOrEmpty(variable.RebindingReason) || !string.IsNullOrEmpty(variable.BindingValidationPending)) continue;\r\n                if (!executionResult.NodeResults.TryGetValue(producer.NodeId, out var nodeResult) ||\r\n                    !nodeResult.Success || nodeResult.Result?.IsSuccess != true)\r\n                {\r\n                    continue;\r\n                }\r\n\r\n                try\r\n                {\r\n                    runtimeGlobals[variable.Name] = OutputVariableResolver.Resolve(\r\n                        nodeResult.Result, producer.ResultName, producer.NodeId);\r"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+          "line": 1070,
+          "token": "runtimeGlobals.Remove(variable.Name)",
+          "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae",
+          "snippet": "                runtimeGlobals.Remove(variable.Name);\r\n                if (!string.IsNullOrEmpty(variable.RebindingReason) || !string.IsNullOrEmpty(variable.BindingValidationPending)) continue;\r\n                if (!executionResult.NodeResults.TryGetValue(producer.NodeId, out var nodeResult) ||\r\n                    !nodeResult.Success || nodeResult.Result?.IsSuccess != true)\r\n                {\r\n                    continue;\r\n                }\r\n\r\n                try\r\n                {\r\n                    runtimeGlobals[variable.Name] = OutputVariableResolver.Resolve(\r\n                        nodeResult.Result, producer.ResultName, producer.NodeId);\r\n                }\r\n                catch (Exception ex)\r\n                {\r\n                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this,\r\n                        new WorkflowExecutionProgressEventArgs(workflowId, $\"变量 {variable.Name} 本轮不可用：{ex.Message}\")));\r\n                }\r\n            }\r\n        }\r\n\r\n        /// <summary>\r"
+        },
+        {
+          "path": "src/Workflow/SolutionExecutionDependencyGraph.cs",
+          "line": 66,
+          "token": "public static SolutionExecutionDependencyGraph Compile",
+          "sha256": "1868385cc3e8c6b27806b3dd7051ab1d07f3483593f27feb430da121e209e99f",
+          "snippet": "    public static SolutionExecutionDependencyGraph Compile(Solution solution, bool checkReadiness = true)\r\n    {\r\n        if (solution == null)\r\n            throw new ArgumentNullException(nameof(solution));\r\n\r\n        var workflows = solution.Workflows ?? new List<Workflow>();\r\n        var nodeLookup = new Dictionary<string, WorkflowNodeBase>(StringComparer.Ordinal);\r\n        var workflowByNodeId = new Dictionary<string, List<Workflow>>(StringComparer.Ordinal);\r\n        var predecessors = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);\r\n        var dependencies = new List<SolutionExecutionDependency>();\r\n\r\n        foreach (var workflow in workflows)\r\n        {\r\n            foreach (var node in workflow.Nodes)\r\n            {\r\n                if (string.IsNullOrWhiteSpace(node.Id))\r\n                    throw new InvalidOperationException($\"工作流 {workflow.Name} 存在空节点 ID。 \");\r\n\r\n                var scopedId = GetScopedNodeId(workflow.Id, node.Id);\r\n                if (!nodeLookup.TryAdd(scopedId, node))\r\n                    throw new InvalidOperationException($\"解决方案中存在重复的作用域节点 ID：{scopedId}。\");\r\n                predecessors.Add(scopedId, new HashSet<string>(StringComparer.Ordinal));\r"
+        }
+      ]
+    },
+    {
+      "id": "consume",
+      "title": "消费者读取：数组和单值不能混用",
+      "what": "通用参数、接收变量和协议输入不是一个相同的消费者。接收目录当前只公开String/Integer/Double/Boolean/Binary；不能把词汇表所有类型都算通信已支持。",
+      "chain": "RuntimeVariableReceiveService → 本轮成功节点或运行字典 → Normalize/类型检查；协议另经ProtocolBindingInput.RequireScalar",
+      "fact": "有生产者时检查成功和当前流程；普通变量由宿主ReadCurrentVariables读设计值。协议只接受标量或长度1数组，多元素数组明确拒绝自动展开。",
+      "vm": "DynamicOutput的int[]/float[]查询为32位元素；VM变量UI也有double解析分支，不能将整个变量系统概括为只支持float32。当前long[]/double[]不自动与其ABI等价。",
+      "change": "为每类消费接口列允许类型、数组基数和作用域，错误指到变量/字段；不要因同名Integer就不检查溢出或因源是数组就自动取首项。",
+      "accept": "空/单/多元素数组、类型变化、失败源、跨流程生产者及缺值各有稳定错误；通信不支持的图像/矩阵入口明确限制。",
+      "refs": [
+        [
+          "src/Plugin.SDK/Models/Communication/RuntimeVariableReceiveService.cs",
+          "public IReadOnlyDictionary<string, ReceiveVariableValue> ReadVariables"
+        ],
+        [
+          "src/UI/Services/Communication/CommunicationApplicationService.cs",
+          "private IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource> GetCurrentVariables"
+        ],
+        [
+          "src/Plugin.SDK/Models/Communication/ProtocolBindingInput.cs",
+          "private static object RequireScalar"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/Models/Communication/RuntimeVariableReceiveService.cs",
+          "line": 20,
+          "token": "public IReadOnlyDictionary<string, ReceiveVariableValue> ReadVariables",
+          "sha256": "d3aa479ce9949ad1c875974ee9c70ebfc462e46cefc14d635a7ceed2f307a13f",
+          "snippet": "    public IReadOnlyDictionary<string, ReceiveVariableValue> ReadVariables(IReadOnlyList<string> ids)\r\n    {\r\n        var catalog = GetVariables().ToDictionary(v => v.Id);\r\n        var current = new Dictionary<string, ReceiveVariableValue>();\r\n        var ordinary = ids.Distinct().Where(id => !catalog.TryGetValue(id, out var v) || !v.HasProducer).ToArray();\r\n        if (ordinary.Length > 0)\r\n            foreach (var pair in inner.ReadVariables(ordinary)) current.Add(pair.Key, pair.Value);\r\n        lock ((object?)runtimeValues ?? current)\r\n            foreach (var id in ids.Distinct().Where(id => catalog.TryGetValue(id, out var v) && v.HasProducer))\r\n            {\r\n                var variable = catalog[id];\r\n                object? value;\r\n                if (nodeResults != null && (string.IsNullOrEmpty(variable.ProducerWorkflowId) || variable.ProducerWorkflowId == WorkflowId)\r\n                    && nodeResults.TryGetValue(variable.ProducerNodeId, out var produced))\r\n                {\r\n                    if (!produced.IsSuccess) throw new InvalidOperationException(\"变量生产者执行失败。\");\r\n                    value = SunEyeVision.Plugin.SDK.Execution.Parameters.OutputVariableResolver.Resolve(produced, variable.ProducerField);\r\n                }\r\n                else if (runtimeValues != null)\r\n                {\r\n                    if (!runtimeValues.TryGetValue(variable.Name, out value)) throw new InvalidOperationException(\"本次运行没有所选变量的生产者结果。\");\r\n                }\r"
+        },
+        {
+          "path": "src/UI/Services/Communication/CommunicationApplicationService.cs",
+          "line": 249,
+          "token": "private IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource> GetCurrentVariables",
+          "sha256": "8b5a4f0d26cb9a14fc42de8785e48a7cb288edb2ad31c568cca4d6a06fc006b6",
+          "snippet": "    private IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource> GetCurrentVariables()\r\n    {\r\n        lock (_gate) lock (GlobalVariable.ValueGate)\r\n            return (_activeSolution?.GlobalVariables ?? new()).Where(v => v.Type is \"String\" or \"Integer\" or \"Double\" or \"Boolean\" or \"Binary\")\r\n                .Select(v => new SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource(v.Id, v.Name, v.Group, v.Type,\r\n                    v.ProducerBinding != null || !string.IsNullOrEmpty(v.RebindingReason) || !string.IsNullOrEmpty(v.BindingValidationPending), v.ProducerBinding?.NodeId ?? \"\", v.ProducerBinding?.ResultName ?? \"\", v.ProducerBinding?.WorkflowId ?? \"\")).ToArray();\r\n    }\r\n    private IReadOnlyDictionary<string, SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableValue> ReadCurrentVariables(IReadOnlyList<string> ids)\r\n    {\r\n        lock (_gate) lock (GlobalVariable.ValueGate)\r\n        {\r\n            if (_disposed || _activeSolution == null) throw new InvalidOperationException(\"当前方案不可用。\");\r\n            var result = new Dictionary<string, SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableValue>();\r\n            foreach (var id in ids.Distinct())\r\n            {\r\n                var v = _activeSolution.GlobalVariables.FirstOrDefault(v => v.Id == id) ?? throw new InvalidOperationException(\"所选变量已删除。\");\r\n                if (!string.IsNullOrEmpty(v.RebindingReason)) throw new InvalidOperationException(v.RebindingReason);\r\n                if (!string.IsNullOrEmpty(v.BindingValidationPending)) throw new InvalidOperationException(v.BindingValidationPending);\r\n                if (v.ProducerBinding != null) throw new InvalidOperationException(\"所选变量有生产者，请在生产者成功后的方案运行中读取，不使用设计初值。\");\r\n                var value = SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService.Normalize(v.Value ?? throw new InvalidOperationException(\"变量为空。\"));\r\n                if (SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService.ValueType(value) != v.Type) throw new InvalidOperationException(\"变量声明与实际类型不匹配。\");\r\n                result[id] = new(new(v.Id, v.Name, v.Group, v.Type), value);\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Models/Communication/ProtocolBindingInput.cs",
+          "line": 34,
+          "token": "private static object RequireScalar",
+          "sha256": "f12d964a68743714880ed7a05d72a168ab37ed071f93775224f2714fc5e1d297",
+          "snippet": "    private static object RequireScalar(object? value)\r\n    {\r\n        if (value is Array array)\r\n        {\r\n            if (array.Length != 1) throw new FormatException(\"当前协议工具只接受单项输入，不自动展开列表。\");\r\n            value = array.GetValue(0);\r\n        }\r\n        return value ?? throw new FormatException(\"绑定输入缺少有效值。\");\r\n    }\r\n}\r\n"
+        }
+      ]
+    },
+    {
+      "id": "persistence",
+      "title": "保存 / 导入：当前有具体缺陷",
+      "what": "变量保存最终调用方案服务；导入不是简单把旧Id换成新Id就足够，名称和生产消费引用也有合同。",
+      "chain": "管理器Save → SolutionManager.SaveSolution → Repository；Import → JSON反序列化 → 新Id → 直接追加集合",
+      "fact": "管理器Save忽略SaveSolution布尔返回，随后写成功日志；Import循环直接追加，未调用已有IsNameDuplicate检查。原有RunSolution按Name.ToDictionary，导入精确重名会导致构造失败。",
+      "vm": "原对话框ImportGlobalVar/ExportGlobalVar调用VariableManager并检查返回状态；原生.gvar完整格式、导入冲突/回滚内部语义仍未知。",
+      "change": "必须检查保存结果后再报告成功；导入先形成候选，校验名称/类型/身份/引用与重复策略，全批通过才采用。失败不留半批变量。保持原文件并设计可读诊断。",
+      "accept": "保存服务返回false不报成功；同批/与现有变量重名不部分追加；原生产消费引用在跨方案导入时有明确重映射或断开策略。",
+      "refs": [
+        [
+          "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+          "_solutionManager.SaveSolution(currentSolution.FilePath)"
+        ],
+        [
+          "src/Workflow/SolutionManager.cs",
+          "bool success = _repository.Save"
+        ],
+        [
+          "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+          "variable.Id = Guid.NewGuid().ToString()"
+        ],
+        [
+          "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+          "GlobalVariable.IsNameDuplicate"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+          "line": 732,
+          "token": "_solutionManager.SaveSolution(currentSolution.FilePath)",
+          "sha256": "caa27c1ec5849965167567d18220617fb0b2ed85ebe96cb1368e681d155bda94",
+          "snippet": "                    _solutionManager.SaveSolution(currentSolution.FilePath);\r\n                    LogSuccess(\"全局变量保存成功\");\r\n                }\r\n                catch (Exception ex)\r\n                {\r\n                    LogError($\"保存全局变量失败: {ex.Message}\");\r\n                }\r\n            }\r\n            else\r\n            {\r\n                LogWarning(\"解决方案未保存，无法保存全局变量\");\r\n            }\r\n        }\r\n\r\n        /// <summary>\r\n        /// 是否可以保存\r\n        /// </summary>\r\n        private bool CanSave()\r\n        {\r\n            return _solutionManager.CurrentSolution?.FilePath != null;\r\n        }\r\n\r"
+        },
+        {
+          "path": "src/Workflow/SolutionManager.cs",
+          "line": 223,
+          "token": "bool success = _repository.Save",
+          "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da",
+          "snippet": "        bool success = _repository.Save(solution, filePath, overwrite: false);\r\n        if (!success)\r\n        {\r\n            throw new InvalidOperationException($\"保存解决方案文件失败: {filePath}\");\r\n        }\r\n\r\n        // 创建元数据（基于保存的文件）\r\n        var newMetadata = metadata.Clone();\r\n        newMetadata.Id = solution.Id;\r\n        newMetadata.FilePath = filePath;\r\n        newMetadata.DirectoryPath = Path.GetDirectoryName(filePath) ?? \"\";\r\n        newMetadata.CreatedTime = DateTime.Now;\r\n        newMetadata.ModifiedTime = DateTime.Now;\r\n        newMetadata.UpdateStatistics(solution);\r\n\r\n        // 注册元数据\r\n        _registry.Register(newMetadata);\r\n        _cache.Set(newMetadata.Id, newMetadata);\r\n\r\n        // 添加到已知解决方案\r\n        _settings.AddKnownSolution(newMetadata);\r\n        // ❌ 不自动设置 CurrentSolutionId，需要用户明确启动才设置\r"
+        },
+        {
+          "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+          "line": 636,
+          "token": "variable.Id = Guid.NewGuid().ToString()",
+          "sha256": "caa27c1ec5849965167567d18220617fb0b2ed85ebe96cb1368e681d155bda94",
+          "snippet": "                    variable.Id = Guid.NewGuid().ToString();\r\n                    _solutionManager.CurrentSolution?.GlobalVariables.Add(variable);\r\n\r\n                    // 查找或创建分组\r\n                    var group = Groups.FirstOrDefault(g => g.Name == variable.Group);\r\n                    if (group == null)\r\n                    {\r\n                        group = new VariableGroupViewModel(variable.Group);\r\n                        Groups.Add(group);\r\n                    }\r\n\r\n                    // 重新分配序号（全局空洞填充）\r\n                    variable.Index = GetNextAvailableIndex();\r\n                    group.AddVariable(variable);\r\n                }\r\n\r\n                UpdateFilteredVariables();\r\n                LogSuccess($\"导入全局变量成功，共 {variables.Count} 个变量\");\r\n            }\r\n            catch (Exception ex)\r\n            {\r\n                LogError($\"导入全局变量失败: {ex.Message}\");\r"
+        },
+        {
+          "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+          "line": 543,
+          "token": "GlobalVariable.IsNameDuplicate",
+          "sha256": "caa27c1ec5849965167567d18220617fb0b2ed85ebe96cb1368e681d155bda94",
+          "snippet": "            if (GlobalVariable.IsNameDuplicate(allVariables, newName, variable.Id))\r\n            {\r\n                ThemeMessageDialog.Show($\"变量名称 '{newName}' 已存在，请使用其他名称\",\r\n                    \"提示\", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);\r\n                return false;\r\n            }\r\n\r\n            // 名称已变更 → 执行重命名并传播\r\n            if (!string.Equals(oldName, newName, StringComparison.Ordinal))\r\n            {\r\n                variable.Name = newName;\r\n\r\n                // ★ 传播到所有引用处（节点 ParamSettings + 模块结果行）\r\n                UpdateGlobalVariableNameReferences(variable, oldName, newName);\r\n            }\r\n\r\n            return true;\r\n        }\r\n\r\n        /// <summary>\r\n        /// 全局变量重命名后，更新所有引用处的显示名称\r\n        /// </summary>\r"
+        }
+      ]
+    },
+    {
+      "id": "types",
+      "title": "文件类型与复制：实际有边界",
+      "what": "基础类型读写合同是T[]，变换、图像、RoI另走分支，不能从词汇表存在推全部序列化对称。",
+      "chain": "GlobalVariableValueConverter.Read/Write → SdkTypeVocabulary → 类型分支；GlobalVariable.Clone → Value引用原样复制",
+      "fact": "ParseAdaptive拒绝历史标量JSON；外层版本迁移是否覆盖仍待核。SerializeValue图像分支实际是Mat，不能据IVisionImage类型声明推HalImage全支持。Clone生成新变量Id，但Value保持同一引用。",
+      "vm": "VM公开查询的tuple数组与自有JSON格式是两层；没有原.gvar内部结构，不能宣称文件兼容迁移完成。",
+      "change": "明确版本化迁移与各图像后端文件合同；按变量值类型列复制策略。保留原文件，先转换候选再提交，不要求用户打开失败的旧方案后自行重新保存。",
+      "accept": "新/旧标量文件、数组、Mat/其他图像后端、Transform/RoI、未知类型分别验；克隆后修改数组不意外影响源方案。",
+      "refs": [
+        [
+          "src/Workflow/GlobalVariableValueConverter.cs",
+          "private static object? ParseAdaptive"
+        ],
+        [
+          "src/Workflow/GlobalVariableValueConverter.cs",
+          "private (string TypeName, object? SerializedValue) SerializeValue"
+        ],
+        [
+          "src/Workflow/GlobalVariable.cs",
+          "Value = Value,"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "src/Workflow/GlobalVariableValueConverter.cs",
+          "line": 148,
+          "token": "private static object? ParseAdaptive",
+          "sha256": "c8b902fe24b6ac948eb3878271bf88fd1aa78c336d3c54ae617adc243fd57592",
+          "snippet": "    private static object? ParseAdaptive<T>(JsonElement element, Func<JsonElement, T> selector)\r\n    {\r\n        if (element.ValueKind == JsonValueKind.Array)\r\n            return element.EnumerateArray().Select(selector).ToArray();\r\n\r\n        throw new NotSupportedException(\r\n            $\"全局变量值必须是数组形态 (T[])，但收到标量值。请重新保存该变量以升级为 T[] 存储（对齐 tuple 语义）。\");\r\n    }\r\n\r\n    /// <summary>\r\n    /// 解析 RoI（图形定义）值：数组 → RoiShape[]，单值 → 长度 1 数组（tuple 语义）。\r\n    /// 几何多态由 <see cref=\"GeometryJsonConverter\"/> 在 RoiShape.Geometry 属性上处理。\r\n    /// </summary>\r\n    private static RoiShape[]? ParseRoiShape(JsonElement element, JsonSerializerOptions options)\r\n    {\r\n        if (element.ValueKind == JsonValueKind.Null)\r\n            return null;\r\n        if (element.ValueKind == JsonValueKind.Array)\r\n            return JsonSerializer.Deserialize<RoiShape[]>(element.GetRawText(), options);\r\n        var single = JsonSerializer.Deserialize<RoiShape>(element.GetRawText(), options);\r\n        return single == null ? null : new[] { single };\r\n    }\r"
+        },
+        {
+          "path": "src/Workflow/GlobalVariableValueConverter.cs",
+          "line": 171,
+          "token": "private (string TypeName, object? SerializedValue) SerializeValue",
+          "sha256": "c8b902fe24b6ac948eb3878271bf88fd1aa78c336d3c54ae617adc243fd57592",
+          "snippet": "    private (string TypeName, object? SerializedValue) SerializeValue(object value, JsonSerializerOptions options)\r\n    {\r\n        var typeName = SdkTypeVocabulary.ToTypeVocabulary(value.GetType());\r\n        if (typeName == null)\r\n            throw new NotSupportedException(\r\n                $\"类型 '{value.GetType().FullName}' 未在 SdkTypeVocabulary 中注册\");\r\n\r\n        return value switch\r\n        {\r\n            // 强制 T[]（方案步骤7）：标量统一包成长度 1 的数组（填 3.14 → 落盘为 [3.14]），\r\n            // 与词汇表 tuple 语义一致；历史标量 JSON 重开由 ParseAdaptive 抛异常（需重新保存）。\r\n            // 整型：int/long 统一序列化为 \"Integer\"（int 提升为 long，避免像素/面积溢出）\r\n            int intValue    => (typeName, new[] { (long)intValue }),\r\n            long longValue  => (typeName, new[] { longValue }),\r\n            int[] intArr    => (typeName, intArr.Select(Convert.ToInt64).ToArray()),\r\n            long[] longArr  => (typeName, longArr),\r\n            // 双精度：float/double 统一序列化为 \"Double\"\r\n            float fltValue  => (typeName, new[] { (double)fltValue }),\r\n            double dblValue => (typeName, new[] { dblValue }),\r\n            float[] fltArr  => (typeName, fltArr.Select(Convert.ToDouble).ToArray()),\r\n            double[] dblArr => (typeName, dblArr),\r\n            string strValue => (typeName, new[] { strValue }),\r"
+        },
+        {
+          "path": "src/Workflow/GlobalVariable.cs",
+          "line": 309,
+          "token": "Value = Value,",
+          "sha256": "57178a1086bd8a066af3c53d59230f8ef8413673db55d1a1249b802fabb3748b",
+          "snippet": "            Value = Value,  // 注意：值类型会被复制，引用类型只复制引用\r\n            Type = Type,\r\n            Description = Description,\r\n            ConsumerBindings = ConsumerBindings.Select(c => new ConsumerBinding\r\n            {\r\n                WorkflowId = c.WorkflowId,\r\n                NodeId = c.NodeId,\r\n                NodeName = c.NodeName,\r\n                WorkflowName = c.WorkflowName,\r\n                ParameterName = c.ParameterName,\r\n                InputKey = c.InputKey,\r\n                ParameterDisplayName = c.ParameterDisplayName\r\n            }).ToList(),\r\n            ProducerBinding = ProducerBinding == null ? null : new ProducerBinding\r\n            {\r\n                WorkflowId = ProducerBinding.WorkflowId,\r\n                WorkflowName = ProducerBinding.WorkflowName,\r\n                NodeId = ProducerBinding.NodeId,\r\n                NodeName = ProducerBinding.NodeName,\r\n                ResultName = ProducerBinding.ResultName,\r\n                SourceFieldId = ProducerBinding.SourceFieldId,\r\n                ResultDisplayName = ProducerBinding.ResultDisplayName\r"
+        }
+      ]
+    }
+  ],
+  "vmSources": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/DynamicOutput.cs",
+      "line": 35,
+      "token": "public IntDataArray GetOutputInt",
+      "sha256": "f995e91e30ae21c1b17e9746d5657c4ab6fc9a868f315d4dfb9031b264ddf92d",
+      "snippet": "\tpublic IntDataArray GetOutputInt(string strParam)\r\n\t{\r\n\t\tif (string.IsNullOrEmpty(strParam))\r\n\t\t{\r\n\t\t\tVmException ex = new VmException(-536870911);\r\n\t\t\tthrow ex;\r\n\t\t}\r\n\t\tif (!moduTool.GetOutputIOByName(\"%\" + strParam + \"%\", out var _))\r\n\t\t{\r\n\t\t\tLogHelper.Error(\"Cannot Find IO Name \" + strParam.ToString());\r\n\t\t\tthrow new VmException(-536870881, \"Cannot Find IO \" + strParam.ToString() + \" From Name\");\r\n\t\t}\r\n\t\tIntDataArray result = default;\r\n\t\tImvsSdkDefine.IMVS_MODULE_RESULT_INFO_LIST_EX? iMVS_MODULE_RESULT_INFO_LIST_EX = ServerSDKManager.serverSDKManager.mModuleManager.QueryModuleOneResult(m_nModuleId);\r\n\t\tif (!iMVS_MODULE_RESULT_INFO_LIST_EX.HasValue)\r\n\t\t{\r\n\t\t\treturn result;\r\n\t\t}\r\n\t\tImvsSdkDefine.IMVS_MODULE_RESULT_INFO_LIST_EX_Data iMVS_MODULE_RESULT_INFO_LIST_EX_Data = ServerSDKManager.serverSDKManager.mModuleManager.PreProData(iMVS_MODULE_RESULT_INFO_LIST_EX.Value);\r\n\t\tfor (int i = 0; i < iMVS_MODULE_RESULT_INFO_LIST_EX_Data.nResultNum; i++)\r\n\t\t{\r\n\t\t\tif (iMVS_MODULE_RESULT_INFO_LIST_EX_Data.pInfo[i].nParamType != 1)\r"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/DynamicOutput.cs",
+      "line": 80,
+      "token": "public FloatDataArray GetOutputFloat",
+      "sha256": "f995e91e30ae21c1b17e9746d5657c4ab6fc9a868f315d4dfb9031b264ddf92d",
+      "snippet": "\tpublic FloatDataArray GetOutputFloat(string strParam)\r\n\t{\r\n\t\tif (string.IsNullOrEmpty(strParam))\r\n\t\t{\r\n\t\t\tVmException ex = new VmException(-536870911);\r\n\t\t\tthrow ex;\r\n\t\t}\r\n\t\tif (!moduTool.GetOutputIOByName(\"%\" + strParam + \"%\", out var _))\r\n\t\t{\r\n\t\t\tLogHelper.Error(\"Cannot Find IO Name \" + strParam.ToString());\r\n\t\t\tthrow new VmException(-536870881, \"Cannot Find IO \" + strParam.ToString() + \" From Name\");\r\n\t\t}\r\n\t\tFloatDataArray result = default;\r\n\t\tImvsSdkDefine.IMVS_MODULE_RESULT_INFO_LIST_EX? iMVS_MODULE_RESULT_INFO_LIST_EX = ServerSDKManager.serverSDKManager.mModuleManager.QueryModuleOneResult(m_nModuleId);\r\n\t\tif (!iMVS_MODULE_RESULT_INFO_LIST_EX.HasValue)\r\n\t\t{\r\n\t\t\treturn result;\r\n\t\t}\r\n\t\tImvsSdkDefine.IMVS_MODULE_RESULT_INFO_LIST_EX_Data iMVS_MODULE_RESULT_INFO_LIST_EX_Data = ServerSDKManager.serverSDKManager.mModuleManager.PreProData(iMVS_MODULE_RESULT_INFO_LIST_EX.Value);\r\n\t\tfor (int i = 0; i < iMVS_MODULE_RESULT_INFO_LIST_EX_Data.nResultNum; i++)\r\n\t\t{\r\n\t\t\tif (iMVS_MODULE_RESULT_INFO_LIST_EX_Data.pInfo[i].nParamType != 2)\r"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableItem.cs",
+      "line": 339,
+      "token": "public string Value",
+      "sha256": "c6ba492affb79907236df1f6c826de8dc4ecd34d30c656d29e6eb98cf8d7e753",
+      "snippet": "\tpublic string Value\r\n\t{\r\n\t\tget\r\n\t\t{\r\n\t\t\treturn _value;\r\n\t\t}\r\n\t\tset\r\n\t\t{\r\n\t\t\tif (_value == value)\r\n\t\t\t{\r\n\t\t\t\treturn;\r\n\t\t\t}\r\n\t\t\tstring value2 = value;\r\n\t\t\tswitch (Type)\r\n\t\t\t{\r\n\t\t\tcase \"int\":\r\n\t\t\t{\r\n\t\t\t\tif (!int.TryParse(value, out var result3))\r\n\t\t\t\t{\r\n\t\t\t\t\treturn;\r\n\t\t\t\t}\r\n\t\t\t\tvalue2 = result3.ToString(\"D\");\r"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.cs",
+      "line": 1614,
+      "token": "private async void ImportGlobalVar",
+      "sha256": "1c094b64a96a507586386affe364c9589a7feb889b25a0e2818a7b49dafb0296",
+      "snippet": "\tprivate async void ImportGlobalVar(string filePath)\r\n\t{\r\n\t\tint nRet = 0;\r\n\t\tTask importTask = Task.Factory.StartNew(() =>\r\n\t\t{\r\n\t\t\ttry\r\n\t\t\t{\r\n\t\t\t\tDictionary<string, VarRunParamInfo[]> varRunParamDict = new Dictionary<string, VarRunParamInfo[]>();\r\n\t\t\t\tDispatcher?.Invoke(() =>\r\n\t\t\t\t{\r\n\t\t\t\t\tforeach (GlobalVariableItem item in Items)\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\tvarRunParamDict.Add(item.Name, GlobalVarExtern.GetLinkModuleInfoByRunParams(item.SelectedRunParams));\r\n\t\t\t\t\t}\r\n\t\t\t\t});\r\n\t\t\t\tvarManager.ImportVar(filePath, isFromUI: true, varRunParamDict, () =>\r\n\t\t\t\t{\r\n\t\t\t\t\tDispatcher?.Invoke(() =>\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\tif (DecorateSource is VmModule vmModule)\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\tfor (int num = vmModule.Outputs.Count - 1; num >= 0; num--)\r"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.cs",
+      "line": 1720,
+      "token": "varManager.ExportVar(filePath)",
+      "sha256": "1c094b64a96a507586386affe364c9589a7feb889b25a0e2818a7b49dafb0296",
+      "snippet": "\t\t\t\tvarManager.ExportVar(filePath);\r\n\t\t\t}\r\n\t\t\tcatch (Exception ex)\r\n\t\t\t{\r\n\t\t\t\tDispatcher.Invoke(() =>\r\n\t\t\t\t{\r\n\t\t\t\t\tHikMessageBox.Show(AppLocalizationService.GetLang(\"Lang_ExportFailed\"), MessageIcons.Error);\r\n\t\t\t\t});\r\n\t\t\t\tLogHelper.objLog.Error(\"导出全局变量失败:\" + ex.ToString());\r\n\t\t\t\treturn;\r\n\t\t\t}\r\n\t\t\tif (downLoadPath != \"\")\r\n\t\t\t{\r\n\t\t\t\tif (!ServerSDKAPI.FtpDownloadFile(CVmObjectBase.mhandle, downLoadPath, filePath, bCover: true) || !File.Exists(downLoadPath))\r\n\t\t\t\t{\r\n\t\t\t\t\tLogHelper.objLog.Error(\"Down load file error, local file path = \" + downLoadPath + \", remote file path = \" + filePath + \".\");\r\n\t\t\t\t\tHikMessageBox.Show(AppLocalizationService.GetLang(\"导出失败\"), MessageIcons.Error);\r\n\t\t\t\t\treturn;\r\n\t\t\t\t}\r\n\t\t\t\tServerSDKAPI.FtpRemoveFile(CVmObjectBase.mhandle, filePath);\r\n\t\t\t}\r\n\t\t\tstring msg = ((nRet == 0) ? \"Lang_ExportSuccess\" : \"导出失败\");\r"
+    }
+  ],
+  "uiSources": [
+    {
+      "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml",
+      "line": 267,
+      "token": "x:Name=\"SearchTextBox\"",
+      "sha256": "84bfff3a6ec1f62ac6206d80a725d78b0933d5035581b373f17270f85715a827",
+      "snippet": "                    <TextBox x:Name=\"SearchTextBox\"\r\n                             Text=\"{Binding SearchText, UpdateSourceTrigger=PropertyChanged}\"\r\n                             VerticalAlignment=\"Center\" Padding=\"8,5\"\r\n                             Background=\"{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}\" BorderBrush=\"{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}\" BorderThickness=\"1\"/>\r\n\r\n                    <!-- 水印：空 + 未聚焦 显示；聚焦或有内容 隐藏 -->\r\n                    <TextBlock IsHitTestVisible=\"False\"\r\n                               VerticalAlignment=\"Center\" Padding=\"8,5\"\r\n                               Foreground=\"{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}\" FontSize=\"12\"\r\n                               TextTrimming=\"CharacterEllipsis\"\r\n                               Text=\"🔍 请输入变量名称\">\r\n                        <TextBlock.Style>\r\n                            <Style TargetType=\"TextBlock\">\r\n                                <Setter Property=\"Visibility\" Value=\"Collapsed\"/>\r\n                                <Style.Triggers>\r\n                                    <MultiDataTrigger>\r\n                                        <MultiDataTrigger.Conditions>\r\n                                            <Condition Binding=\"{Binding Text, ElementName=SearchTextBox}\" Value=\"\"/>\r\n                                            <Condition Binding=\"{Binding IsKeyboardFocused, ElementName=SearchTextBox}\" Value=\"False\"/>\r\n                                        </MultiDataTrigger.Conditions>\r\n                                        <Setter Property=\"Visibility\" Value=\"Visible\"/>\r\n                                    </MultiDataTrigger>\r"
+    },
+    {
+      "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml",
+      "line": 312,
+      "token": "x:Name=\"GroupItemsControl\"",
+      "sha256": "84bfff3a6ec1f62ac6206d80a725d78b0933d5035581b373f17270f85715a827",
+      "snippet": "                        <ItemsControl x:Name=\"GroupItemsControl\" ItemsSource=\"{Binding Groups}\" VerticalAlignment=\"Bottom\">\r\n                            <ItemsControl.ItemsPanel>\r\n                                <ItemsPanelTemplate>\r\n                                    <StackPanel Orientation=\"Horizontal\"/>\r\n                                </ItemsPanelTemplate>\r\n                            </ItemsControl.ItemsPanel>\r\n                            <ItemsControl.ItemTemplate>\r\n                                <DataTemplate>\r\n                                    <Grid>\r\n                                        <!-- 正常模式：RadioButton Tab -->\r\n                                        <RadioButton Content=\"{Binding DisplayName}\"\r\n                                                    IsChecked=\"{Binding IsSelected, Mode=TwoWay}\"\r\n                                                    Style=\"{StaticResource GroupTabStyle}\"\r\n                                                    GroupName=\"VariableGroups\"\r\n                                                    Checked=\"GroupRadioButton_Checked\"\r\n                                                    Visibility=\"{Binding IsEditing, \r\n                                                        Converter={StaticResource InverseBoolToVisibilityConverter}}\"/>\r\n\r\n                                        <!-- 编辑模式：内联 TextBox -->\r\n                                        <TextBox Text=\"{Binding EditingText, UpdateSourceTrigger=PropertyChanged}\"\r\n                                                 Visibility=\"{Binding IsEditing, \r\n                                                     Converter={StaticResource BoolToVisibilityConverter}}\"\r"
+    },
+    {
+      "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml",
+      "line": 493,
+      "token": "Header=\"当前值\"",
+      "sha256": "84bfff3a6ec1f62ac6206d80a725d78b0933d5035581b373f17270f85715a827",
+      "snippet": "                <DataGridTemplateColumn Header=\"当前值\" Width=\"120\">\n                    <DataGridTemplateColumn.CellTemplate>\r\n                        <DataTemplate>\r\n                            <TextBox Text=\"{Binding Value, Converter={StaticResource ValueTextConverter}, Mode=OneWay}\"\r\n                                     IsReadOnly=\"{Binding IsComplexValue}\"\r\n                                     VerticalContentAlignment=\"Center\"\r\n                                     BorderBrush=\"{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}\"\r\n                                     BorderThickness=\"1\" Padding=\"4,2\"\r\n                                     LostFocus=\"VariableValueTextBox_LostFocus\"\r\n                                     ToolTip=\"{Binding Value, Converter={StaticResource ValueTextConverter}}\"/>\r\n                        </DataTemplate>\r\n                    </DataGridTemplateColumn.CellTemplate>\r\n                </DataGridTemplateColumn>\n\n                <!-- 输入来源只读：唯一绑定入口位于“模块结果”中的链接按钮。 -->\n                <DataGridTemplateColumn Header=\"输入来源\" Width=\"170\" IsReadOnly=\"True\">\n                    <DataGridTemplateColumn.CellTemplate>\n                        <DataTemplate>\n                            <TextBlock Text=\"{Binding InputSourceDisplayText}\" FontSize=\"12\" Padding=\"8,0\"\n                                       VerticalAlignment=\"Center\"\n                                       HorizontalAlignment=\"Stretch\"\n                                       Foreground=\"{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}\""
+    },
+    {
+      "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+      "line": 712,
+      "token": "private void Save()",
+      "sha256": "caa27c1ec5849965167567d18220617fb0b2ed85ebe96cb1368e681d155bda94",
+      "snippet": "        private void Save()\r\n        {\r\n            var currentSolution = _solutionManager.CurrentSolution;\r\n            if (currentSolution?.FilePath != null)\r\n            {\r\n                try\r\n                {\r\n                    // 更新所有变量的Index属性（紧凑重排）\r\n                    foreach (var group in Groups)\r\n                    {\r\n                        int index = 1;\r\n                        foreach (var variable in group.Variables.OrderBy(v => v.Index))\r\n                        {\r\n                            variable.Index = index++;\r\n                        }\r\n                    }\r\n\r\n                    // 清空全局空洞池（保存即 compact）\r\n                    _releasedIndices.Clear();\r\n\r\n                    _solutionManager.SaveSolution(currentSolution.FilePath);\r\n                    LogSuccess(\"全局变量保存成功\");\r"
+    }
+  ],
+  "status": "局部静态实现链已读；运行/全类型/全作用域未验证",
+  "route": "自研明确缺陷整改＋已有模型扩展；VM合同参考，整体迁移暂缓",
+  "reason": "已有生产者/消费者与依赖图，不应从零重造；保存误报和导入缺少预检有直接源码依据。完整值隔离和VM原生机制仍需证据。",
+  "runtimeExecuted": false
+}

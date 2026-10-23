@@ -1,0 +1,61 @@
+{
+  "unknown": [
+    "实际VM进程加载的同名补全DLL版本",
+    "应用窗口及补全弹窗端到端耗时",
+    "真实用户操作的缓存命中与引用就绪状态",
+    "各阶段对肉眼体验的耗时占比"
+  ],
+  "baseline": "artifacts/performance/script-baseline-20261023/component-baseline.json",
+  "recommendation": [
+    "先可见可编辑，首屏优先语义着色",
+    "按文档版本和引用身份共享分析，取消过期查询",
+    "版本化后台编译去重，保证执行用正确产物并明确失败",
+    "分段计时及冷进程/再次使用矩阵验收，保留Roslyn/AvalonEdit"
+  ],
+  "facts": [
+    "VM编辑器构造同步基础引用，部分额外引用异步加入；同实例_isInit不证明跨窗口复用",
+    "VM提交代码后台编译；运行dirty同步补编译；内存与加载方案磁盘产物可复用",
+    "自研窗口Show前等待InitializeAsync与语义着色；全文预填512行缓存存在首屏淘汰条件风险",
+    "自研已有MEF共享、元数据及编译缓存、增量文档，不是从零准备全部资源"
+  ],
+  "scope": "只读源码证据补充；非应用端到端性能闭环",
+  "evidence": [
+    {
+      "sha256": "EF3DC431D3F5D83C885C524BDB5704D6094561691A6F62514945E6E5D9F8EB6B",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ShellModuleControl\\ShellModuleControl\\ShellCodeEditor.cs"
+    },
+    {
+      "sha256": "A034C4A370F4183203808C43B0DD03C3382EAF81DEA17D7F067B44616E986025",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ShellModuleControl\\ShellModuleControl\\ShellRun.xaml.cs"
+    },
+    {
+      "sha256": "AA704102F2841DB0B61231172283A6B0604FE360ACE215F4067B7A7FBE4733F3",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptComponent\\ScriptComponent\\ScriptCom.cs"
+    },
+    {
+      "sha256": "E96F2A7FF5E13783B3E862725BF4A00366AD967BC3B9C13766B330A9C572B2B8",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\BaseScriptSupport.cs"
+    },
+    {
+      "sha256": "7E3725FB2E6A4D0A589EA85E7356FF1162F3A8916A4D3F05FEB96DC0E0CD3A4F",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\AssemblyManager.cs"
+    },
+    {
+      "sha256": "BB2F9C7618BD6F66F79785299518102A7CE1D5311143E0181478AEEC2B5BE88A",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\ScriptEditorCore.xaml.cs"
+    },
+    {
+      "sha256": "5656340E229C9061E431AA8A690D186599F1FCC6F516DDED3B0B3CF164AC288A",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\SemanticHighlighter.cs"
+    },
+    {
+      "sha256": "9DCD71BBA72E25AF94A858F52D18B0CA573709313F1CB491BC271FB275582048",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowViewModel.cs"
+    },
+    {
+      "sha256": "14A9AE73A34C65D65AC466CA5956FC66D53D4D79B45309217C62D871338B2BF1",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptCompiler.cs"
+    }
+  ],
+  "id": "SCRIPT-VM-DIFFERENCE-20261023"
+}

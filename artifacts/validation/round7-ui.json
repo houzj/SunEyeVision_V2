@@ -1,0 +1,106 @@
+[
+  {
+    "id": "ui-shell",
+    "ours": "启动先加载插件再准备参数类型/服务/方案，App.OnStartup承担装配。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/App.xaml.cs\">App.xaml.cs:192</a>",
+    "vm": "VM欢迎入口和MainViewControl承接Solution已见；完整启动失败回退尚未贯通。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMasterMain/VisionMasterMain/WelcomeDialog.xaml.cs\">VM静态入口1</a> · <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF/MainViewControl.xaml.cs\">VM静态入口2</a>",
+    "states": "忙：插件/方案加载门槛；错误：缺件、恢复失败；关闭：运行中退出顺序均需交互证据。",
+    "verdict": "条件通过：入口/职责可比较，失败恢复与退出整体验收待补。",
+    "recommendation": "保留装配根，区分启动准备、方案就绪与可运行；成本是多阶段状态与重试回滚。"
+  },
+  {
+    "id": "ui-commands",
+    "ours": "ShellTopBar命令转发IRootCoordinator，最终运行准入在执行服务，不由按钮单独保证。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarViewModel.cs\">ShellTopBarViewModel.cs:95</a>",
+    "vm": "已有Execute_Procedure与运行数据入口；每个命令CanExecute未完整恢复。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/ProcedureRunData.cs\">VM静态入口1</a> · <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/Execute_Procedure.cs\">VM静态入口2</a>",
+    "states": "忙：重复点击/停止中；错误：请求拒绝原因；关闭：迟到Post不等消费确认。",
+    "verdict": "条件通过：命令转发已证，全部菜单/快捷键一致性待补。",
+    "recommendation": "命令入口统一提交与错误反馈，最终互斥由运行层保证；多入口需维护同一状态来源。"
+  },
+  {
+    "id": "ui-canvas",
+    "ours": "CommandManager.Execute/Undo维护撤销栈，画布模型与绑定身份需同步。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/WorkflowUI/Commands/CommandManager.cs\">CommandManager.cs:41</a>",
+    "vm": "ProcedureConfigControl有配置/搜索/跳转命令，全编辑事务未闭合。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.cs\">VM静态入口1</a>",
+    "states": "忙：运行中编辑；错误：非法边/失效绑定；关闭/撤销：节点、连线、绑定需同时恢复。",
+    "verdict": "条件通过：有命令机制，复制重映射及原子撤销场景待验。",
+    "recommendation": "保留稳定ID与编辑事务；代价是选择、连线、绑定、运行副本四方同步。"
+  },
+  {
+    "id": "ui-toolbox",
+    "ours": "ToolboxViewModel从ToolRegistry读取类别/元数据，插件已由App加载。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Toolbox/ToolboxViewModel.cs\">ToolboxViewModel.cs:163</a>",
+    "vm": "ToolBox.ItemsSource绑定GlobleToolSource（ToolBox:97），是目录投影。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF/ToolBox.xaml.cs\">VM静态入口1</a> · <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.Data/VMControls.Data/ToolBoxData.cs\">VM静态入口2</a>",
+    "states": "忙：加载/重载；错误：缺依赖/重复；关闭：Popup焦点/键盘与缓存失效待验。",
+    "verdict": "条件通过：目录来源已证，拖放失败及重载/焦点未完整验收。",
+    "recommendation": "目录保持单一事实源，展示缓存单独失效；减少重复但增加版本/缓存协调。"
+  },
+  {
+    "id": "ui-editor",
+    "ours": "SharedDebugControl.OnStartDebug/OnStopDebug/OnStep/OnReset当前仅注释占位，不能凭类名认证完整调试链；各专业宿主需独立核对。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/WorkflowUI/Diagnostics/SharedDebugControl.xaml.cs\">SharedDebugControl.xaml.cs:16</a>",
+    "vm": "ParamsConfigWithResultViewControl特定关闭分支停止IsContinuousSelfExecute并Dispose AlgorithmTabRoot（178-182）。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF/ParamsConfigWithResultViewControl.xaml.cs\">VM静态入口1</a> · <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.cs\">VM静态入口2</a>",
+    "states": "忙：调试时关窗；错误：迟到/失败结果；关闭：提交、取消、停止范围不能合并。",
+    "verdict": "待补：共享控件不是已贯通的执行证据；领域编辑器另列准入/提交合同。",
+    "recommendation": "按实际专业入口统一会话语义；不能因为共享基类存在就判已解决草稿与副作用隔离。"
+  },
+  {
+    "id": "ui-image",
+    "ours": "图像控件双向坐标与ROI viewport跟随已有实码，本轮B矩阵给定位。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs\">ImageControl.xaml.cs:533</a>",
+    "vm": "ROI基类按ControlToImageRadio双向转换；不能据缩放公式推全部DPI/旋转/帧切换正确。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageView.xaml.cs\">VM静态入口1</a> · <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.cs\">VM静态入口2</a>",
+    "states": "忙：预览/生产竞争；错误：坐标失效；关闭：ROI事件解绑及图像引用需分开。",
+    "verdict": "条件通过：基本变换已证，全变换/历史/最后读者待验。",
+    "recommendation": "图像坐标保存几何，视口仅投影；统一变换降低重复，专业旋转/校准需独立合同。"
+  },
+  {
+    "id": "ui-results",
+    "ours": "ImageResultViewModel为INodeResultSink，NodeResultManager投影结果；预览复用与历史复制需区分。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ImageResultViewModel.cs\">ImageResultViewModel.cs:16</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/NodeResultManager.cs\">NodeResultManager.cs:252</a>",
+    "vm": "ModuleResultView换源先Dispose旧decorator、再换DataContext；UI清空不等原始缓冲释放。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs\">VM静态入口1</a>",
+    "states": "忙：换节点/连续结果；错误：失败不保留成功态；关闭：旧代次、历史引用需验证。",
+    "verdict": "条件通过：投影/换源已证，完整结果寿命和历史隔离待补。",
+    "recommendation": "结果携带代次并区分当前/历史；隔离旧结果有复制/缓存管理成本。"
+  },
+  {
+    "id": "ui-globals",
+    "ours": "管理器直接修改方案变量；Save写文件，Close只记日志，不回滚内存。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs\">GlobalVariableManagerViewModel.cs:712</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs\">GlobalVariableManagerViewModel.cs:757</a>",
+    "vm": "GlobalVariableDialog管理平台变量，OnClosing与输出对象Dispose存在；定义初值/运行值需独立对比。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.cs\">VM静态入口1</a> · <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVariableSelectDlg.xaml.cs\">VM静态入口2</a>",
+    "states": "忙：生产消费并发；错误：类型/删除改名失效；关闭：不能标成取消回滚。",
+    "verdict": "条件通过：保存/关闭语义已证；跨流程/数组及全部编辑状态待验。",
+    "recommendation": "UI分清方案初值和运行值，引用校验与变更同步；若新增草稿会增加提交/冲突成本。"
+  },
+  {
+    "id": "ui-camera",
+    "ours": "管理窗口不释放方案运行时，会话由CameraRuntimeManager拥有；预览/正式采集见C矩阵。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/Camera/CameraManagerViewModel.cs\">CameraManagerViewModel.cs:781</a>",
+    "vm": "全局相机模块/参数树与代表原生析构已见，窗口和驱动排空不可合并。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraDlg.xaml.cs\">VM静态入口1</a> · <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraManager.cs\">VM静态入口2</a>",
+    "states": "忙：驱动占用/预览争用；错误：断线/触发冲突；关闭：预览租约与应用会话分开。",
+    "verdict": "条件通过：代表窗口/会话边界，恢复和工件帧对应待完整验收。",
+    "recommendation": "共享连接避免关窗停产，代价是预览/触发/曝光配置仲裁。"
+  },
+  {
+    "id": "ui-communication",
+    "ours": "设备管理、会话、轮询、发送测试与事件分层；窗口入口不代表协议全链已经验收。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/CommunicationManager/CommunicationManagerDialog.xaml.cs\">CommunicationManagerDialog.xaml.cs:1</a>",
+    "vm": "GlobalCommunication可调用GetComm/GetCommAddress，管理器有读取/关闭/清UI边界。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunication.xaml.cs\">VM静态入口1</a> · <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunicationMgr.cs\">VM静态入口2</a>",
+    "states": "忙：连接/轮询/手动写；错误：部分写入/超时；关闭：实际代码是否停止或释放分别核对，不能预设均保持连接。",
+    "verdict": "条件通过：入口组织可评审；协议失败恢复、切方案旧事件及写入副作用待验。",
+    "recommendation": "编辑、连接、轮询、真实测试发送分开反馈；状态同步更多，但避免连接灯冒充成功。"
+  },
+  {
+    "id": "ui-solution",
+    "ours": "主窗切方案先StopAndWait，再处理保存决定与LoadSolutionOnly；仓库承担持久化。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs\">MainWindowViewModel.cs:5585</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionManager.cs\">SolutionManager.cs:345</a>",
+    "vm": "方案管理/加载入口已见，保存事务/加载失败回滚未完整恢复。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMasterMain/VisionMasterMain/SolutionManagerDialog.xaml.cs\">VM静态入口1</a> · <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/Load_Solution.cs\">VM静态入口2</a>",
+    "states": "忙：切换阻止运行；错误：保存/加载失败；关闭：旧运行不得写新方案，草稿另立约。",
+    "verdict": "条件通过：我方切换门槛与文件仓库已见，双边事务恢复待补。",
+    "recommendation": "服务协调停止—保存—释放—加载；跨层回滚更复杂，但避免窗口随意替换资源。"
+  },
+  {
+    "id": "ui-logs",
+    "ours": "OnLogsAdded节流，Dispose解绑订阅但保留全局writer；不据节流代码宣称性能已过。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/LogPanelViewModel.cs\">LogPanelViewModel.cs:399</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/LogPanelViewModel.cs\">LogPanelViewModel.cs:679</a>",
+    "vm": "已见LogView文件，关联ID、限频与保留策略未系统恢复。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF/LogView.xaml.cs\">VM静态入口1</a>",
+    "states": "忙：高频事件；错误：保留原始异常/定位；关闭：订阅解绑与writer所有者分离。",
+    "verdict": "待补：VM日志机制证据不足；自研消费线程和高负载效果未验。",
+    "recommendation": "保留批量/有界投影与可定位身份；采样/节流须说明丢弃范围，错误原始记录不能盲目合并。"
+  },
+  {
+    "id": "ui-theme",
+    "ours": "ApplyTheme切字典/标题栏/SDK状态，持久化失败记录后广播；字典移除再添加。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/ThemeManager.cs\">ThemeManager.cs:89</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/ThemeManager.cs\">ThemeManager.cs:142</a>",
+    "vm": "ColorThemesResourceDictionary选资源XAML，公共窗口样式可复用；逐控件状态未验。 <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/Apps.ColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs\">VM静态入口1</a> · <a href=\"file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.Controls/styles/basewindowstyle.xaml\">VM静态入口2</a>",
+    "states": "忙/错误/禁用/焦点、Popup、DPI和VS设计器均须WPF验证，HTML外观不替代。",
+    "verdict": "条件通过：主题资源责任可比较；运行/设计时全状态待验。",
+    "recommendation": "稳定资源键与设计时回退，宿主控制覆盖顺序；拆包会增加资源定位和兼容成本。"
+  }
+]

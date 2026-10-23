@@ -1,0 +1,95 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><script src="../公共资源/文档路径.js"></script><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A04 定义/参数/快照</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">A04 定义/参数/快照</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">文档索引</a><a href="architecture-target.html">最新目标决策</a><a href="../框架设计/framework-overview.html">框架对比</a><a href="../SDK设计/framework-sdk-overview.html">SDK设计</a><a href="../维护记录/joint-optimization-plan.html">联合方案</a><a href="../证据审计/architecture-evidence.html">本批证据</a></nav><main><h1>A04 定义/参数/快照</h1><article id="decision-A04"><p class="status">proposed-not-implemented · 全部接口为拟议合同，未编译/运行</p><div class="visual-metrics"><div><strong>A04</strong><span>目标决策</span><small>拟议，未实施</small></div><div><strong>1</strong><span>局部证据条目</span><small>未知单列</small></div><div><strong>2</strong><span>验收用例</span><small>均未运行</small></div></div><figure class="architecture-figure" data-visual="data"><figcaption><b>数据流：设计、快照与结果分离</b><span class="chip">拟议设计，未实现/运行验收</span></figcaption><div class="diagram-actions"><button type="button" data-diagram-expand>放大查看图</button><span>实线：所标范围内的关系；虚线：条件/待验证边界。</span></div><div class="svg-scroll"><svg role="img" aria-label="数据流：设计、快照与结果分离；拟议设计，未实现/运行验收" viewBox="0 0 945 529"><title>数据流：设计、快照与结果分离</title><desc>拟议设计，未实现/运行验收。图中节点和箭头与下方文字合同共同解释，不能单独作为运行保证。</desc><defs><marker id="arrow-data" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker></defs><path d="M 260 82 L 350 82" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="305" y="73">冻结</text><path d="M 590 82 L 680 82" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="635" y="73">绑定</text><path d="M 800 124 L 800 230" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="800" y="168">产生</text><path d="M 680 272 L 590 272" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="635" y="263">发布前持有</text><path d="M 350 272 L 260 272" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="305" y="263">发地址</text><path d="M 140 314 L 140 420" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="140" y="358">保留使用权</text><path d="M 260 272 L 350 462" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="305" y="358">获取结果</text><g class="graph-node"><rect x="20" y="40" width="240" height="84" rx="13"/><text x="36" y="72">设计定义</text><text class="node-note" x="36" y="100">已提交 Revision</text></g><g class="graph-node"><rect x="350" y="40" width="240" height="84" rx="13"/><text x="366" y="72">RunSnapshot</text><text class="node-note" x="366" y="100">全局 · 参数 · 临时覆盖</text></g><g class="graph-node"><rect x="680" y="40" width="240" height="84" rx="13"/><text x="696" y="72">工具输入</text><text class="node-note" x="696" y="100">FieldId / 类型 / 坐标域</text></g><g class="graph-node"><rect x="680" y="230" width="240" height="84" rx="13"/><text x="696" y="262">ResultSnapshot</text><text class="node-note" x="696" y="290">不可变 · Run/Scope/Frame</text></g><g class="graph-node"><rect x="350" y="230" width="240" height="84" rx="13"/><text x="366" y="262">ResultStore</text><text class="node-note" x="366" y="290">先接纳Owner</text></g><g class="graph-node"><rect x="20" y="230" width="240" height="84" rx="13"/><text x="36" y="262">通知</text><text class="node-note" x="36" y="290">仅地址 / 质量 / 版本</text></g><g class="graph-node"><rect x="20" y="420" width="240" height="84" rx="13"/><text x="36" y="452">业务可靠通道</text><text class="node-note" x="36" y="480">ACK / 明确失败</text></g><g class="graph-node"><rect x="350" y="420" width="240" height="84" rx="13"/><text x="366" y="452">UI LatestOnly</text><text class="node-note" x="366" y="480">可合并旧项</text></g></svg></div><p class="diagram-note">拟议设计，未实现/运行验收 · <a href="architecture-target.html">查看依据、合同与未知</a></p></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前边界</h2><p>字典复制与只读包装不冻结数组/图像等引用对象；子运行全局继承需显式约定。</p></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM已证 / 未知</h2><p>原版ModuleParam setter先记历史再SDK写，成功后通知；不能据此称事务回滚。</p></section></div><section class="visual-card decision-summary"><h2>本项选择与代价</h2><p><strong>自研重做事务边界；不复制VM即时参数写语义</strong></p><p>DesignDefinition经EditTransaction提交；RunRequest捕获定义/全局/覆盖版本；对象值按schema冻结。</p><div class="tradeoff-grid"><div><h3>收益与成本</h3><p>可重现与隔离；可变复杂对象需类型冻结策略而不是浅复制。</p></div><div><h3>为什么不选替代路线</h3><p>VM即时写入有直观交互优势但未证明事务回滚；目标选择候选事务和运行隔离，代价是冻结策略和冲突处理。</p></div></div></section><h2>拟议接口与数据字段</h2><pre>EditTransaction BeginEdit(ProjectRevision expected);
+CommitOutcome Commit(EditTransaction edit, ProjectRevision expected);
+RunSnapshot { DefinitionRevision, GlobalsRevision, Parameters, Overrides, FreezePolicyVersions }
+IFreezePolicy.Freeze(value) =&gt; FrozenValue | RetainedValue | Rejected;</pre><h3>状态与生效时点</h3><p>Commit在同一提交点校验全部候选并比较expectedRevision；失败不采用任一字段。Start接纳捕获快照，覆盖仅当轮生效；子Scope默认继承同快照，显式局部覆盖不回写。</p><h3>Owner与释放责任</h3><p>Project拥有已提交定义；事务拥有草稿；Run拥有冻结值或取得的使用权，结束按策略退还。</p><h3>失败、取消与幂等</h3><p>冲突返回RevisionConflict，校验失败带字段地址；提交前取消放弃候选，提交后返回已提交修订。TransactionId重复提交返回原结局，不能重复副作用。</p><h3>版本与兼容</h3><p>冻结策略、schema和序列化版本进快照；不支持冻结的自定义类型在接纳前拒绝，不默做浅复制。</p><h2>验收：尚未执行</h2><section id="A04-T1"><h3>A04-T1 · planned-not-run</h3><p>运行中修改草稿不改变当轮参数</p><p>执行方法与判定：<a href="architecture-acceptance.html#A04-T1">查看用例</a></p></section><section id="A04-T2"><h3>A04-T2 · planned-not-run</h3><p>一次候选中任一字段失败时全部不采用，保存不含临时输入</p><p>执行方法与判定：<a href="architecture-acceptance.html#A04-T2">查看用例</a></p></section><h2>原版证据与局部边界</h2><p>source-confirmed限交接中选定成员；不是整库复核。独立恢复代码 independent-implementation 不作为原版事实。<a href="../证据审计/architecture-evidence.html">本批来源SHA</a></p><details id="evidence-A04-0"><summary>DP01 · source-confirmed · ModuleParam[string key]</summary><p>Parent.IsOnDispose时不读写；全局模块setter直接SDK写后return。普通模块先RecordParamUnRedo再SetValueBySDK，最后OnModuleParamChanged。Group且key以%开头走动态API；其余走普通参数API并要求bThrowException:true。SDK写失败时通知尚未发生，但历史捕获可能已发生。</p><ul><li>未知/限制：编辑器所有具体模板到此setter的绑定不在本体证明内；native参数拷贝/保留和写入完成时机仍须另证。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:212–231</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x060005bc&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x060005bc&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.ModuleParam&quot;,
+            &quot;name&quot;: &quot;get_Item&quot;,
+            &quot;parameters&quot;: 1,
+            &quot;attributes&quot;: &quot;Public, Virtual, HideBySig, VtableLayoutMask, SpecialName&quot;,
+            &quot;signatureBytes&quot;: &quot;20010e0e&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 176,
+          &quot;ilSha256&quot;: &quot;5f409fcfcb4a70a5471ced471d2dd089c3ec33c115f5a881cab01bc8bcb0de11&quot;,
+          &quot;ilBytes&quot;: &quot;0072350200700a027b0e0200047bf200000416fe010b07398c00000000027b0e02000475680000022c0d0372190100706fc303000a2b01160c082c4a0003178d3501000125161f2c9d6ff501000a0d284801000a7b4901000a027b0e0200046f4902000609169a12001709285100002b17300772350200702b0309179a6fd404000a00002b2100284801000a7b4901000a027b0e0200046f49020006031200176fd504000a0000000613042b0011042a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:892–911</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x060005bd&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x060005bd&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.ModuleParam&quot;,
+            &quot;name&quot;: &quot;set_Item&quot;,
+            &quot;parameters&quot;: 2,
+            &quot;attributes&quot;: &quot;Public, Virtual, HideBySig, VtableLayoutMask, SpecialName&quot;,
+            &quot;signatureBytes&quot;: &quot;2002010e0e&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 82,
+          &quot;ilSha256&quot;: &quot;4467babd5d4c7fe25cbe88762bca3c11ca8e922d5695bc8bdcf1b7f147925164&quot;,
+          &quot;ilBytes&quot;: &quot;00027b0e0200047bf200000416fe010a062c3e00027b0e0200046f670200060b072c0d0002030428bf05000600002b2000020328be0500060002030428bf05000600027b0e020004036f120300060000002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:1271–1290</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x060005bf&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x060005bf&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.ModuleParam&quot;,
+            &quot;name&quot;: &quot;SetValueBySDK&quot;,
+            &quot;parameters&quot;: 2,
+            &quot;attributes&quot;: &quot;Private, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;2002010e0e&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 138,
+          &quot;ilSha256&quot;: &quot;2f6ceb06e15bc06c3f2363b091f7ee9af1b640546bc6d4b7faf5fc249b43373c&quot;,
+          &quot;ilBytes&quot;: &quot;00027b0e02000475680000022c0d0372190100706fc303000a2b01160a062c490003178d3501000125161f2c9d6ff501000a0b284801000a7b4901000a027b0e0200046f4902000607169a041707285100002b17300772350200702b0307179a6fd604000a00002b2000284801000a7b4901000a027b0e0200046f490200060304176fd704000a00002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.Core/VM.Core/ModuleParam.cs">analysis/decompiled/VM.Core/VM.Core/ModuleParam.cs:20–54</a> · local-decompiled-source · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>af392bf2d3af006c6a16021a271d67dd8ef2017b268580841874ab6fede1da48</code></p><pre>	public virtual string this[string key]
+	{
+		get
+		{
+			string strValue = &quot;&quot;;
+			if (!Parent.IsOnDispose)
+			{
+				if (Parent is VmModuleSet &amp;&amp; key.StartsWith(&quot;%&quot;))
+				{
+					string[] array = key.Split(',');
+					ServerSDKManager.serverSDKManager.mModuleManager.GetDynamicRunParamValue(Parent.ID, array[0], ref strValue, bThrowException: true, (array.Count() &gt; 1) ? array[1] : &quot;&quot;);
+				}
+				else
+				{
+					ServerSDKManager.serverSDKManager.mModuleManager.GetParamValue(Parent.ID, key, ref strValue, bThrowException: true);
+				}
+			}
+			return strValue;
+		}
+		set
+		{
+			if (!Parent.IsOnDispose)
+			{
+				if (Parent.IsGlobalModu)
+				{
+					SetValueBySDK(key, value);
+					return;
+				}
+				RecordParamUnRedo(key);
+				SetValueBySDK(key, value);
+				Parent.OnModuleParamChanged(key);
+			}
+		}
+	}
+</pre></details></article><p><a href="architecture-target.html">返回12项决策目录</a></p></main><footer>文档设计交付 ≠ 产品实现或运行验收；原42检查点、49能力口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

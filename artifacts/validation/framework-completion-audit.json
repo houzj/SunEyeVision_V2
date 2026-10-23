@@ -1,0 +1,61 @@
+{
+  "requirements": [
+    {
+      "requirement": "独立框架HTML",
+      "verified": true
+    },
+    {
+      "requirement": "执行架构",
+      "verified": true
+    },
+    {
+      "requirement": "数据结构与数据流",
+      "verified": true
+    },
+    {
+      "requirement": "结果发布",
+      "verified": true
+    },
+    {
+      "requirement": "资源生命周期",
+      "verified": true
+    },
+    {
+      "requirement": "具体优缺点与取舍理由",
+      "verified": true
+    },
+    {
+      "requirement": "保留整改与借鉴VM重做",
+      "verified": true
+    },
+    {
+      "requirement": "目标架构与应用SDK门面",
+      "verified": true
+    },
+    {
+      "requirement": "改法及验收顺序",
+      "verified": true
+    },
+    {
+      "requirement": "二开与官方开发文档",
+      "verified": true
+    },
+    {
+      "requirement": "未知与未实施边界",
+      "verified": true
+    },
+    {
+      "requirement": "导航搜索历史打印窄屏",
+      "verified": true
+    },
+    {
+      "requirement": "不改产品代码",
+      "verified": true
+    }
+  ],
+  "sourceIdentities": 27,
+  "comparisons": 13,
+  "validationArtifact": "framework-comparison-validation.json",
+  "scope": "框架设计对比文档交付；不宣称产品整改、原VM全部逆向及运行验收完成",
+  "complete": true
+}

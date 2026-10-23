@@ -1,0 +1,36 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>C09 编辑、调试与正式运行隔离</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">C09 编辑、调试与正式运行隔离</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="../能力对照/capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="../能力对照/capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>C09 编辑、调试与正式运行隔离</h1><aside class="scope-notice">以下沿用2026-10-21分析基线与原有状态；未把本次分页或图示当作新增语义证据。最新目标取舍另见 <a href="../目标架构/architecture-target.html">12项目标决策</a>。</aside><figure class="flow-figure" data-visual="flow"><figcaption><b>该工作包需要追踪的关系</b><span class="chip">审计要求；不是完整实现保证</span></figcaption><ol class="flow-path"><li><small>01</small><b>打开编辑器</b></li><li><small>02</small><b>草稿</b></li><li><small>03</small><b>调试请求</b></li><li><small>04</small><b>结果回写</b></li><li><small>05</small><b>应用/取消</b></li><li><small>06</small><b>关窗</b></li></ol></figure><section id="C09"><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>目前已见</h2><p>6原专业入口+18实际源码布局导航；标准执行/连续/提交与专业差异已列。</p><p>正文可评审（具体待证保留）</p></section><section class="reference"><div class="eyebrow">GAP · 未闭合与后续</div><h2>具体缺口与下一步</h2><p>24工具局部覆盖不代表每字段草稿隔离、关闭回滚及所有迟到结果拒收都已审完。</p><p>逐工具列live编辑/草稿/提交策略，明确设备不可回滚；反复关闭/重入场景另验。</p></section></div><section class="visual-card "><h2>判定范围与追踪入口</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">要回答的问题</th><td data-label="要回答的问题">编辑草稿何时生效，调试是否修改正式参数/设备，关窗后谁持有状态？</td></tr><tr><th class="row-label" scope="row">判定标准</th><td data-label="判定标准">逐入口记录提交/取消/关窗/切方案，覆盖迟到调试结果、运行中编辑和外部副作用。</td></tr><tr><th class="row-label" scope="row">正文交付</th><td data-label="正文交付">正文可评审（具体待证保留）：24工具已逐项给共享/草稿、确定/X、执行副作用与关闭Owner，模板/标定子窗口分开；最后读者保留待证。</td></tr><tr><th class="row-label" scope="row">产品/运行验收</th><td data-label="产品/运行验收">未由本次文档任务执行</td></tr><tr><th class="row-label" scope="row">对应能力</th><td data-label="对应能力"><a href="../能力对照/capability-t01.html#compare-T01"><b>打开工具界面与上下文注入</b><small class="reference-id">能力对照 · T01</small></a> · <a href="../能力对照/capability-t02.html#compare-T02"><b>输入图像/标量/数组绑定选择</b><small class="reference-id">能力对照 · T02</small></a> · <a href="../能力对照/capability-t03.html#compare-T03"><b>参数编辑与提交输入控件</b><small class="reference-id">能力对照 · T03</small></a> · <a href="../能力对照/capability-t04.html#compare-T04"><b>窗口执行按钮：单次调试</b><small class="reference-id">能力对照 · T04</small></a> · <a href="../能力对照/capability-t05.html#compare-T05"><b>窗口连续调试</b><small class="reference-id">能力对照 · T05</small></a> · <a href="../能力对照/capability-t06.html#compare-T06"><b>窗口连续调试：停止</b><small class="reference-id">能力对照 · T06</small></a> · <a href="../能力对照/capability-t07.html#compare-T07"><b>确定/应用：提交、验证、关闭</b><small class="reference-id">能力对照 · T07</small></a> · <a href="../能力对照/capability-t08.html#compare-T08"><b>关闭/X：编辑收尾与事件解绑</b><small class="reference-id">能力对照 · T08</small></a></td></tr><tr><th class="row-label" scope="row">优化方案</th><td data-label="优化方案"><a href="../优化方案/optimization-o03.html#O03"><b>参数、绑定、变量和控制结构合同</b><small class="reference-id">优化方案 · O03</small></a> · <a href="../优化方案/optimization-o05.html#O05"><b>标准工具窗口：执行、连续、提交和关闭</b><small class="reference-id">优化方案 · O05</small></a></td></tr><tr><th class="row-label" scope="row">完整专题</th><td data-label="完整专题"><a href="../现状分析/tools.html">实际链与证据</a></td></tr></tbody></table></div></section><details><summary>完整审计条目</summary><pre>{
+  &quot;id&quot;: &quot;C09&quot;,
+  &quot;title&quot;: &quot;编辑、调试与正式运行隔离&quot;,
+  &quot;priority&quot;: &quot;P1&quot;,
+  &quot;question&quot;: &quot;编辑草稿何时生效，调试是否修改正式参数/设备，关窗后谁持有状态？&quot;,
+  &quot;requiredChain&quot;: &quot;打开编辑器→草稿→调试请求→结果回写→应用/取消→关窗&quot;,
+  &quot;criterion&quot;: &quot;逐入口记录提交/取消/关窗/切方案，覆盖迟到调试结果、运行中编辑和外部副作用。&quot;,
+  &quot;capabilities&quot;: [
+    &quot;T01&quot;,
+    &quot;T02&quot;,
+    &quot;T03&quot;,
+    &quot;T04&quot;,
+    &quot;T05&quot;,
+    &quot;T06&quot;,
+    &quot;T07&quot;,
+    &quot;T08&quot;
+  ],
+  &quot;url&quot;: &quot;../现状分析/tools.html&quot;,
+  &quot;current&quot;: &quot;6原专业入口+18实际源码布局导航；标准执行/连续/提交与专业差异已列。&quot;,
+  &quot;gap&quot;: &quot;24工具局部覆盖不代表每字段草稿隔离、关闭回滚及所有迟到结果拒收都已审完。&quot;,
+  &quot;next&quot;: &quot;逐工具列live编辑/草稿/提交策略，明确设备不可回滚；反复关闭/重入场景另验。&quot;,
+  &quot;decisions&quot;: [
+    &quot;O03&quot;,
+    &quot;O05&quot;
+  ],
+  &quot;legacyAccepted&quot;: true,
+  &quot;documentation&quot;: {
+    &quot;id&quot;: &quot;C09&quot;,
+    &quot;accepted&quot;: true,
+    &quot;status&quot;: &quot;正文可评审（具体待证保留）&quot;,
+    &quot;url&quot;: &quot;../现状分析/tools.html#editing-policy&quot;,
+    &quot;reason&quot;: &quot;24工具已逐项给共享/草稿、确定/X、执行副作用与关闭Owner，模板/标定子窗口分开；最后读者保留待证。&quot;,
+    &quot;remainingProduct&quot;: null
+  },
+  &quot;status&quot;: &quot;正文可评审（具体待证保留）&quot;
+}</pre></details></section></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

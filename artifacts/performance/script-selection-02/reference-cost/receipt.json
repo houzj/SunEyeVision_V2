@@ -1,0 +1,67 @@
+{
+  "limits": [
+    "3 processes each; no disk cache flushing; order partly reversed; not population p95",
+    "metadata byte size is file size not resident memory",
+    "same basic sample; minimum profile not full SDK capability substitute",
+    "nonnmonotonic costs do not prove default references cause observed app stall"
+  ],
+  "identities": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\frozen\\halcondotnetxl.dll",
+      "sha256": "A1C8C3EF74F37F751E5CFB08A513B68F36A75511D7B4F9FD4E5A532E45652C57"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\frozen\\OpenCvSharp.dll",
+      "sha256": "90796CE6B45A19755104EC8C3933AB3B62B84E4FCB50B0A1CE8132F755A8D852"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\frozen\\OpenCvSharp.Extensions.dll",
+      "sha256": "A39CFA936C4E4BF0AA452460C76B15EEE0CDAE5E5A8AD70A3A1A49A055B4A300"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\frozen\\SunEyeVision.Plugin.SDK.dll",
+      "sha256": "BEBDFEE09299A7F76F3EFB5EAB0BC8F3906D1E07CB39BC837F5767D42E2837D3"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\frozen\\SunEyeVision.Tool.Kernels.dll",
+      "sha256": "27AA830907BF4AD922C74926BF5E81BC9F7350756FA498517FFCE1831A4C39E0"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\Probe.cs",
+      "sha256": "C8EBBEC6242647D28ACBBCF49644546B0FF6186E6F3A0C72668A677401BDFD41"
+    }
+  ],
+  "scope": "isolated Roslyn reference-range test; not full UI; default reconstructed from source names and installed runtime, not captured live TPA",
+  "groups": [
+    {
+      "allValid": true,
+      "repeatMedian": 5.3579,
+      "compileMedian": 357.9408,
+      "firstMedian": 850.3163,
+      "profile": "business",
+      "references": 36,
+      "processes": 3,
+      "readyMedian": 1573.4858
+    },
+    {
+      "allValid": true,
+      "repeatMedian": 8.0536,
+      "compileMedian": 401.1183,
+      "firstMedian": 1131.1588,
+      "profile": "default",
+      "references": 32,
+      "processes": 3,
+      "readyMedian": 1548.8588
+    },
+    {
+      "allValid": true,
+      "repeatMedian": 6.9409,
+      "compileMedian": 388.9593,
+      "firstMedian": 998.0144,
+      "profile": "minimal",
+      "references": 5,
+      "processes": 3,
+      "readyMedian": 1958.6654
+    }
+  ]
+}

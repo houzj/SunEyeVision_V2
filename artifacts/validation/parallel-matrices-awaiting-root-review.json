@@ -1,0 +1,109 @@
+{
+  "status": "子审已返回，根尚未逐项主审回填，不计文档验收通过",
+  "ownerRows": [
+    "根RunSession/RunId与取消CTS",
+    "子Scope/ConsumerScope与子Context",
+    "配置JSON快照/解析值字典浅复制",
+    "ToolRegistry新建tool对象（不是对象共享未知）",
+    "专业分析新tool与控件Owner",
+    "ToolResults/Context缓存引用非Dispose",
+    "HalImage/HImage拥有与Unwrap借用",
+    "CvImage默认借用/CopyObj.Clone owns=true",
+    "MVS SDK缓冲→byte[]→CameraFrame",
+    "实时WriteableBitmap同尺寸复用",
+    "PreExecutionCache保存引用/活动调用待核",
+    "CameraSession拥有Adapter、用途租约另层",
+    "通讯adapter/retirement失败隔离",
+    "不可回收插件ALC/静态注册"
+  ],
+  "deviceRows": [
+    "Raw TCP Client/Server UDP Serial发送门禁各异",
+    "Modbus单master gate，取消断I/O仍等operation完成",
+    "S7驱动已实现，通用收发目录未接入",
+    "CIP显式请求实现，通用收发目录未接入",
+    "OPCUA读写/浏览/订阅/轮询，ActiveRead不同于被动游标",
+    "MVS预览用途租约/连接与帧分层",
+    "工作流Feed单槽最新帧，连续非软件无总超时",
+    "公开Capture有单帧gate无用途lease"
+  ],
+  "coordinateRows": [
+    "像素层尺寸→Scale/Translate→ScreenToImage反算；WPF DIP不可当物理屏幕像素",
+    "参考ROI位置修正正显示/逆编辑，不等毫米标定",
+    "ImageColumnRowToMachineMarkXY/mm文件合同，下游并非自动采用",
+    "创建ROI预览直到FinishInteraction才Rois.Add",
+    "已有ROI编辑直接改Geometry，Escape只退出不恢复",
+    "确定/X pending提交/Unloaded解绑与参数回滚不同",
+    "结果图元/参数ROI/手柄独立，不能清层当释放",
+    "DPI初次FormattedText已取，缓存失效链未齐/全屏恢复另验"
+  ],
+  "diagnosticRows": [
+    "LogEntry有TraceId/Properties，但VisionLogger.Log传null，FileWriter未结构输出；Source为名称非稳定ID",
+    "ToolExecutionContext有Node/Workflow和可选Trace，主创建未贯穿Run/Scope；ToolResults无统一code",
+    "Session/Scope有RunId，长期Snapshot与NodeExecutionResultEventArgs无Run/Scope",
+    "设备域CommunicationError/CameraAdapterException已有code，通用转换需保留设备/代次/阶段",
+    "拟议Success→Failed→Cancelled三次root事件链与迟到旧事件，不是假当前日志已运行"
+  ],
+  "benchmark": {
+    "levels": [
+      "L0离线合同",
+      "L1实际产品入口",
+      "L2实机"
+    ],
+    "scenes": [
+      [
+        "B01",
+        "固定本地图像/阈值/滤波形态Blob",
+        "20正确性、50预热、1000×3；p99扩展10000"
+      ],
+      [
+        "B02",
+        "串行/分支/两根/同子图双调用及停止",
+        "20预热、1000×3；准备/执行/间隔取消各30"
+      ],
+      [
+        "B03",
+        "调试窗/C#纯计算冷编译热执行",
+        "冷30新进程、热50预热1000×3、窗口100×3"
+      ],
+      [
+        "B04",
+        "100/1000/10000图元、100/1000文字、DPI/Zoom/全屏",
+        "10秒预热、60秒×3；UI应用不冒充呈现"
+      ],
+      [
+        "B05",
+        "固定MVS型号SDK/预览Feed公开单帧分触发模式",
+        "100帧预热、3000×3；停止断连各30，缺硬件not_run"
+      ],
+      [
+        "B06",
+        "Raw/Modbus/OPCUA逐协议及自动响应",
+        "50预热、1000×3；重连取消部分写各30，仅批准测试端点"
+      ],
+      [
+        "B07",
+        "199/200/201/401日志批次+建议500/5000/20000每秒256字节",
+        "批次各30；10秒预热60秒×3；文件确认不等10msFlush"
+      ],
+      [
+        "B08",
+        "开方案→运行→切节点→开关工具→切方案→停止",
+        "100循环冒烟、30分钟初观、2小时×3；不代8/24小时"
+      ]
+    ],
+    "inputs": [
+      "常量127",
+      "(x+y)%256梯度",
+      "黑白半图",
+      "8像素棋盘",
+      "种子20261021噪声公式待冻结",
+      "已知几何图/ROI/Mask"
+    ],
+    "manifest": "版本/提交dirty/原VM二进制SHA、OS/CPU/RAM/GPU/DPI/电源、SDK驱动、设备网络、方案参数输入SHA、冷热、测点时钟、样本时长和停止上限",
+    "sampleFields": "run_id,manifest_sha256,implementation,scene_id,variant_id,layer,repeat_id,sample_seq,warmup,solution_id,root_run_id,scope_id,node_id,iteration,input_sha256,parameter_sha256,frame_id,trigger_id,event_id,measure_kind,start_ticks,end_ticks,timer_frequency,elapsed_ms,status,error_code,correctness_status,expected_digest,actual_digest,queued_count,received_frames,replaced_frames,delivered_frames,logs_enqueued,logs_dropped,log_seq,notes",
+    "resourceFields": "run_id,scene_id,variant_id,repeat_id,elapsed_ms,private_bytes,working_set_bytes,gc_heap_bytes,gc_gen0,gc_gen1,gc_gen2,process_cpu_ms,thread_count,handle_count,logger_queue_count,ui_pending_logs,cache_item_count,inflight_count,ui_heartbeat_delay_ms,resource_status",
+    "rules": "正确性先过；不同比例/模式/冷热/层级不混池；单调时钟；nearest-rank；失败超时率同时报；<1000样本p99探索；VM缺材料incomparable/not_run_material_missing；ReplacedFrames不是传感器丢帧；输入包尚未生成，所有实验未运行"
+  },
+  "uiAndControls": "覆盖线已返回13UI各项implemented/notDeveloped/pending/failureCancel/close/dpiDesignTime与11类控件实际消费者，需按原行及真实源码主审；不可统一状态",
+  "runtimeExecuted": false
+}

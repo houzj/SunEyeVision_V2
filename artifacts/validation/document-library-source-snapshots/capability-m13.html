@@ -1,0 +1,161 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M13 全部流程连续运行/停止</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">M13 全部流程连续运行/停止</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>M13 全部流程连续运行/停止</h1><article id="compare-M13"><span id="M13"></span><div class="visual-metrics"><div><strong>M13</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>ToggleContinuousAllCommand</b></li><li><small>02</small><b>ExecuteToggleContinuousAll</b></li><li><small>03</small><b>StartAllWorkflows/StopAllWorkflows</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>全流程连续开关与状态入口存在；另有ExecuteRunAllWorkflows调用RunSolutionAsync。</p><details><summary>完整缺陷与未闭合调用边</summary><p>全局连续与方案单次不是同一入口；Tab层另有RunAllWorkflowsAsync只做Delay模拟，不得误认为真实引擎；全局停止→每Tab最终排空</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>主工具栏全局连续与流程连续有不同上下文，恢复模型分入口追踪。</p><p>参考方案、流程连续分入口；原生内部调度和停止完成尚有未知。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF05-CONTINUOUS-RUN-CALLCHAIN.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">全局连续和Tab连续共用设备/状态的仲裁全链未闭合，不能直接推荐引擎。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：全局连续和Tab连续共用设备/状态的仲裁全链未闭合，不能直接推荐引擎。 VM参考边界：参考方案、流程连续分入口；原生内部调度和停止完成尚有未知。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">先核全局启动/停止真实消费者和失败政策，再定统一执行会话；不凭托管函数名推原生等价。 把真实RunSolutionAsync链和逐Tab连续链分别关联UI，避免新代码接入模拟方法；方案单次按钮可访问性已拆M27，状态按统一作用域投影。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">全局/单Tab连续组合下无重入；停止后全部目标流程按协议终态。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o02.html#O02"><b>统一运行范围、连续与停止完成</b><small class="reference-id">优化方案 · O02</small></a></td></tr></tbody></table></div></section><article id="recommendation-M13"><h2>M13 全部流程连续运行/停止 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>全局连续和Tab连续共用设备/状态的仲裁全链未闭合，不能直接推荐引擎。</p><p><b>VM可借鉴与不可推断：</b>参考方案、流程连续分入口；原生内部调度和停止完成尚有未知。</p><p><b>具体改法 / 成本：</b>先核全局启动/停止真实消费者和失败政策，再定统一执行会话；不凭托管函数名推原生等价。 把真实RunSolutionAsync链和逐Tab连续链分别关联UI，避免新代码接入模拟方法；方案单次按钮可访问性已拆M27，状态按统一作用域投影。</p><p><b>验收：</b>全局/单Tab连续组合下无重入；停止后全部目标流程按协议终态。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M13">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M13">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S030</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:4280</a></p><p><code>ExecuteToggleContinuousAll</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void ExecuteToggleContinuousAll()
+        {
+            if (IsAllWorkflowsRunning)
+            {
+                AddLog(&quot;⏹️ 停止所有工作流&quot;);
+                WorkflowTabViewModel.StopAllWorkflows();
+            }
+            else
+            {
+                AddLog(&quot;▶️ 开始所有工作流&quot;);
+                WorkflowTabViewModel.StartAllWorkflows();
+            }
+        }
+</pre></details><details class="source-card"><summary>S031</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:4221</a></p><p><code>ExecuteRunAllWorkflows</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private async System.Threading.Tasks.Task ExecuteRunAllWorkflows()
+        {
+            AddLog(&quot;🚀 开始执行所有工作流...&quot;);
+            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+            var solution = solutionManager.CurrentSolution;
+            if (solution == null)
+            {
+                AddLog(&quot;❌ 当前没有已加载的解决方案，无法执行全部流程。&quot;);
+                return;
+            }
+
+            try
+            {
+                _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());</pre></details><details class="source-card"><summary>R018</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs">src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs:354</a></p><p><code>StartAllWorkflows</code></p><p>SHA256 <code>553a73a4b3c39a5d77eb94dc5ed2176db2ad41bb3a32b00ed2027638dabdb1d5</code></p><pre>        public void StartAllWorkflows()
+        {
+            foreach (var workflow in Tabs)
+            {
+                StartContinuous(workflow);
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// 停止所有工作流
+        /// &lt;/summary&gt;
+        public void StopAllWorkflows()
+        {
+            foreach (var workflow in Tabs)
+            {
+                StopWorkflow(workflow);
+            }
+        }
+
+        /// &lt;summary&gt;</pre></details><details class="source-card"><summary>R019</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs">src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs:325</a></p><p><code>RunAllWorkflowsAsync</code></p><p>SHA256 <code>553a73a4b3c39a5d77eb94dc5ed2176db2ad41bb3a32b00ed2027638dabdb1d5</code></p><pre>        public async Task RunAllWorkflowsAsync()
+        {
+            var runningWorkflows = new List&lt;WorkflowTabViewModel&gt;();
+            
+            foreach (var workflow in Tabs)
+            {
+                if (!workflow.IsRunning)
+                {
+                    workflow.IsRunning = true;
+                    runningWorkflows.Add(workflow);
+                }
+            }
+
+            WorkflowStatusChanged?.Invoke(this, EventArgs.Empty);
+
+            // 模拟执行所有工作流
+            await Task.Delay(500);
+
+            foreach (var workflow in runningWorkflows)
+            {</pre></details><details class="source-card"><summary>R020</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:4221</a></p><p><code>ExecuteRunAllWorkflows</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private async System.Threading.Tasks.Task ExecuteRunAllWorkflows()
+        {
+            AddLog(&quot;🚀 开始执行所有工作流...&quot;);
+            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+            var solution = solutionManager.CurrentSolution;
+            if (solution == null)
+            {
+                AddLog(&quot;❌ 当前没有已加载的解决方案，无法执行全部流程。&quot;);
+                return;
+            }
+
+            try
+            {
+                _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
+                await _executionManager.RunSolutionAsync(WorkflowTabViewModel.Tabs, solution);
+                AddLog(&quot;✅ 全部流程执行完成&quot;);
+            }
+            catch (Exception ex)
+            {
+                AddLog($&quot;❌ 全部流程执行失败: {ex.Message}&quot;);</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M13&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;全部流程连续运行/停止&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;ToggleContinuousAllCommand&quot;,
+    &quot;ExecuteToggleContinuousAll&quot;,
+    &quot;StartAllWorkflows/StopAllWorkflows&quot;
+  ],
+  &quot;current&quot;: &quot;全流程连续开关与状态入口存在；另有ExecuteRunAllWorkflows调用RunSolutionAsync。&quot;,
+  &quot;gap&quot;: &quot;全局连续与方案单次不是同一入口；Tab层另有RunAllWorkflowsAsync只做Delay模拟，不得误认为真实引擎；全局停止→每Tab最终排空&quot;,
+  &quot;vm&quot;: &quot;主工具栏全局连续与流程连续有不同上下文，恢复模型分入口追踪。&quot;,
+  &quot;vmDoc&quot;: &quot;MF05-CONTINUOUS-RUN-CALLCHAIN.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：全局连续和Tab连续共用设备/状态的仲裁全链未闭合，不能直接推荐引擎。 VM参考边界：参考方案、流程连续分入口；原生内部调度和停止完成尚有未知。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;先核全局启动/停止真实消费者和失败政策，再定统一执行会话；不凭托管函数名推原生等价。 把真实RunSolutionAsync链和逐Tab连续链分别关联UI，避免新代码接入模拟方法；方案单次按钮可访问性已拆M27，状态按统一作用域投影。&quot;,
+  &quot;accept&quot;: &quot;全局/单Tab连续组合下无重入；停止后全部目标流程按协议终态。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S030&quot;,
+    &quot;S031&quot;,
+    &quot;R018&quot;,
+    &quot;R019&quot;,
+    &quot;R020&quot;
+  ],
+  &quot;optimization&quot;: &quot;O02&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M13&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;全局连续开关逐Tab StartAllWorkflows/StopAllWorkflows；另一路ExecuteRunAllWorkflows实际await RunSolutionAsync。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;全局连续与方案单次不是同一入口&quot;,
+      &quot;Tab层另有RunAllWorkflowsAsync只做Delay模拟，不得误认为真实引擎&quot;,
+      &quot;全局停止→每Tab最终排空&quot;
+    ],
+    &quot;cause&quot;: &quot;实际入口区分+状态验证&quot;,
+    &quot;change&quot;: &quot;把真实RunSolutionAsync链和逐Tab连续链分别关联UI，避免新代码接入模拟方法；方案单次按钮可访问性已拆M27，状态按统一作用域投影。&quot;,
+    &quot;acceptance&quot;: &quot;全局/单Tab连续组合下无重入；停止后全部目标流程按协议终态。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S030&quot;,
+      &quot;S031&quot;,
+      &quot;R018&quot;,
+      &quot;R019&quot;,
+      &quot;R020&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;统一范围状态，保留现有服务&quot;,
+    &quot;reason&quot;: &quot;已有全流程能力不应因工具栏单次只选中流程就被误记未开发。&quot;
+  },
+  &quot;defect&quot;: &quot;全局连续和Tab连续共用设备/状态的仲裁全链未闭合，不能直接推荐引擎。&quot;,
+  &quot;vmBorrow&quot;: &quot;参考方案、流程连续分入口；原生内部调度和停止完成尚有未知。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;全局连续和Tab连续共用设备/状态的仲裁全链未闭合，不能直接推荐引擎。&quot;,
+    &quot;borrow&quot;: &quot;参考方案、流程连续分入口；原生内部调度和停止完成尚有未知。&quot;,
+    &quot;action&quot;: &quot;先核全局启动/停止真实消费者和失败政策，再定统一执行会话；不凭托管函数名推原生等价。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S030&quot;,
+      &quot;S031&quot;,
+      &quot;R018&quot;,
+      &quot;R019&quot;,
+      &quot;R020&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

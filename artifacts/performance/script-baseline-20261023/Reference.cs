@@ -1,0 +1,1 @@
+namespace BenchCommon { public static class SharedMath { public static int Twice(int value) { return value * 2; } } }

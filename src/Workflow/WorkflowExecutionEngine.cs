@@ -881,6 +881,7 @@ namespace SunEyeVision.Workflow
                     foreach (var value in overrides)
                         executionNode.ParamSettings.SetSetting(ParamSetting.CreateConstant(value.Key, value.Value));
                 executionNode.CameraCaptureService = request?.CameraCaptureService;
+                executionNode.ResourcePaths = request?.ResourcePaths;
                 executionNode.CommunicationOutputs = request?.CommunicationOutputs;
                 executionNode.ExecutionWorkflowId = source.Id;
                 executionNode.CommunicationInputs = request?.CommunicationInputs == null ? null :

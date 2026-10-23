@@ -1,0 +1,67 @@
+{
+  "taskId": "START-UI-FIX-02",
+  "input": "artifacts/startup-implementation/start-page-ui-fix-delivery.json",
+  "inputSha256": "10e72b55769e9a547e5d3aa0e83ceddbccf818c14f72a5bd78d1b1050301f1a2",
+  "checks": [
+    {
+      "sha256": "891969257dd963a764d8f1f4411f4d5f76edda1142ad254e4a76713e184d4881",
+      "path": "src/UI/App.xaml.cs",
+      "observedSha256": "891969257dd963a764d8f1f4411f4d5f76edda1142ad254e4a76713e184d4881",
+      "matches": true
+    },
+    {
+      "sha256": "18813d473bcdc5534573be9f6c5060430285ec2ceb14c448449e61fbf38f4da1",
+      "path": "src/UI/Services/Startup/StartPageSettings.cs",
+      "observedSha256": "18813d473bcdc5534573be9f6c5060430285ec2ceb14c448449e61fbf38f4da1",
+      "matches": true
+    },
+    {
+      "sha256": "b81b7828c0d2988dfe6f768c77bbfae402e74c8c784bc291cd87ab2de9cdf4fe",
+      "path": "src/UI/Shell/Windows/StartPageWindow.xaml",
+      "observedSha256": "b81b7828c0d2988dfe6f768c77bbfae402e74c8c784bc291cd87ab2de9cdf4fe",
+      "matches": true
+    },
+    {
+      "sha256": "e9e8f338d7f8cac5ad021fc7a48c6592e5861a9d5407cfc6949902ad302cfcfc",
+      "path": "src/UI/Shell/Windows/StartPageWindow.xaml.cs",
+      "observedSha256": "e9e8f338d7f8cac5ad021fc7a48c6592e5861a9d5407cfc6949902ad302cfcfc",
+      "matches": true
+    },
+    {
+      "sha256": "c9164a3564a013ccee79df0c0b6d1e5912d983513e513416dbe9498cef0766b1",
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "observedSha256": "c9164a3564a013ccee79df0c0b6d1e5912d983513e513416dbe9498cef0766b1",
+      "matches": true
+    },
+    {
+      "sha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+      "observedSha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+      "matches": true
+    },
+    {
+      "sha256": "51cffed88e937eec76907debac54e528612a242984bdc80fe6de9ce2f1397b43",
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+      "observedSha256": "51cffed88e937eec76907debac54e528612a242984bdc80fe6de9ce2f1397b43",
+      "matches": true
+    }
+  ],
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+  ],
+  "build": {
+    "errors": 0,
+    "warnings": 1124,
+    "source": "development-delivery"
+  },
+  "testsRunThisBatch": 0,
+  "independentDispatched": false,
+  "manual": "pending-user",
+  "visual": "not-verified",
+  "designer": "not-verified",
+  "productModifiedByDocRole": false,
+  "wholeSiteRegenerated": false
+}

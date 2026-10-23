@@ -1,0 +1,19 @@
+{
+  "reference": "D:/MyWork/REA逆向测试/docs/framework-architecture.html",
+  "analysisBaselineSha": "5066d46b62d8c6555c8158b998fba9e37fdd87ed353b4d639d63ca5f7f79930d",
+  "observedSha": "0dbefe7eaf7445998086c87a928968b41ba9cded70d485df08afc6ba56594fc6",
+  "materials": [
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/result-payload-bridge.resources/VM.Core.VmSolution.decompiled.cs",
+      "exists": true,
+      "sha256": "1ae938d6a9faab3fb8bd6e0b1447a241b075a10ed36236dec2013a20ad02d8eb"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/sdk-image-publication.resources/180645630.c",
+      "exists": true,
+      "sha256": "007da503550fdc12ff5b7918b5b1ced99042289346db3e5ebfbe3efd493a26b8"
+    }
+  ],
+  "status": "文件变更及材料存在已确认；是否语义新增、函数上下游与检查点支持范围尚未全部复核",
+  "checkpointUpgrade": false
+}

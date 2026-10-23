@@ -1,0 +1,140 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>X05 性能、长稳、日志与故障验证</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">X05 性能、长稳、日志与故障验证</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>X05 性能、长稳、日志与故障验证</h1><article id="compare-X05"><span id="X05"></span><div class="visual-metrics"><div><strong>X05</strong><span>能力条目</span><small>待核实</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>用户动作/输入</b></li><li><small>02</small><b>执行及呈现</b></li><li><small>03</small><b>资源/延迟/正确性记录</b></li><li><small>04</small><b>故障/取消恢复</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>有日志和渲染诊断代码；旧报告有性能实验计划。</p><details><summary>完整缺陷与未闭合调用边</summary><p>固定数据/算法/质量→两边正确性门槛；测量→同环境尾延迟/资源序列；故障/长稳→原始结果及复现记录</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>恢复模型的机制解释、重建项目自审和原版运行性能不是同一证据。</p><p>VM商业成熟不能代替本次同场景测量；重建项目测试也不是原版测试。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF05-PROCESS-LIFETIME-AUDIT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">无双方同条件正确性/尾延迟/长稳结果；观测日志及容量结构不证明稳定更快。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：无双方同条件正确性/尾延迟/长稳结果；观测日志及容量结构不证明稳定更快。 VM参考边界：VM商业成熟不能代替本次同场景测量；重建项目测试也不是原版测试。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">冻结数据/环境/质量门槛和基准，另行授权运行；缺测不排名，此轮只记录计划。 保留诊断和既有实验计划，冻结数据/时长/档位后另行授权运行；无法观测的项标缺测，禁止从结构/日志推性能优胜。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">正确性先通过；取消/过载/断连/长稳资源曲线与尾延迟均可追溯。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o12.html#O12"><b>专业工具逐项验收与同条件性能</b><small class="reference-id">优化方案 · O12</small></a></td></tr></tbody></table></div></section><article id="recommendation-X05"><h2>X05 性能、长稳、日志与故障验证 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>无双方同条件正确性/尾延迟/长稳结果；观测日志及容量结构不证明稳定更快。</p><p><b>VM可借鉴与不可推断：</b>VM商业成熟不能代替本次同场景测量；重建项目测试也不是原版测试。</p><p><b>具体改法 / 成本：</b>冻结数据/环境/质量门槛和基准，另行授权运行；缺测不排名，此轮只记录计划。 保留诊断和既有实验计划，冻结数据/时长/档位后另行授权运行；无法观测的项标缺测，禁止从结构/日志推性能优胜。</p><p><b>验收：</b>正确性先通过；取消/过载/断连/长稳资源曲线与尾延迟均可追溯。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-X05">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-X05">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S111</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs">src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs:390</a></p><p><code>OnRender</code></p><p>SHA256 <code>bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350</code></p><pre>        protected override void OnRender(DrawingContext dc)
+        {
+            base.OnRender(dc);
+
+            // 诊断口径：
+            //   total    = 上一帧【真实 OnRender 耗时】（_renderSw 在进入绘制前重启、绘制结束处读取）
+            //   interval = 相邻两帧 OnRender 开始点的间隔（含帧间空档）
+            //   idle     = interval - total ⇒ 帧间空档（不等于绘制耗时）
+            //   contour / text = 【本帧】归属耗时（每帧入口清零，分支内累加）
+            var intervalMs = _intervalSw.Elapsed.TotalMilliseconds;
+            _intervalSw.Restart();
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $&quot;[RenderDiag] OnRender prev: total={_lastFrameMs:F1}ms, contour={_contourMs:F1}ms, text={_textMs:F1}ms, other={Math.Max(0, _lastFrameMs - _contourMs - _textMs):F1}ms, interval={intervalMs:F1}ms, idle={Math.Max(0, intervalMs - _lastFrameMs):F1}ms, invalidate={_invalidateCount}, cacheHits={_cacheHits}, cacheMisses={_cacheMisses}, fallbackContours={_fallbackContours}, fallbackVertices={_fallbackVertices}, textCount={_textCount}, textCache={_formattedTextCache.Count}, contourVerticesUpperBound={_vertexCount}, scale={_viewportScale:F3}&quot;,
+                &quot;ResultRenderLayer&quot;);</pre></details><details class="source-card"><summary>S112</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Logging/CircularBufferLogCollection.cs">src/UI/Services/Logging/CircularBufferLogCollection.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>0f7f9ea575e419b0759ba48ca8079d3862761877b29015e6209271c1d8eb77d0</code></p><pre>﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Threading;
+using System.Windows;
+using System.Windows.Threading;
+using SunEyeVision.Plugin.SDK.Logging;
+
+namespace SunEyeVision.UI.Services.Logging
+{
+    /// &lt;summary&gt;
+    /// 高性能循环缓冲区日志集合 - O(1) 添加和移除操作</pre></details><details class="source-card"><summary>R078</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs">src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs:390</a></p><p><code>OnRender</code></p><p>SHA256 <code>bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350</code></p><pre>        protected override void OnRender(DrawingContext dc)
+        {
+            base.OnRender(dc);
+
+            // 诊断口径：
+            //   total    = 上一帧【真实 OnRender 耗时】（_renderSw 在进入绘制前重启、绘制结束处读取）
+            //   interval = 相邻两帧 OnRender 开始点的间隔（含帧间空档）
+            //   idle     = interval - total ⇒ 帧间空档（不等于绘制耗时）
+            //   contour / text = 【本帧】归属耗时（每帧入口清零，分支内累加）
+            var intervalMs = _intervalSw.Elapsed.TotalMilliseconds;
+            _intervalSw.Restart();
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $&quot;[RenderDiag] OnRender prev: total={_lastFrameMs:F1}ms, contour={_contourMs:F1}ms, text={_textMs:F1}ms, other={Math.Max(0, _lastFrameMs - _contourMs - _textMs):F1}ms, interval={intervalMs:F1}ms, idle={Math.Max(0, intervalMs - _lastFrameMs):F1}ms, invalidate={_invalidateCount}, cacheHits={_cacheHits}, cacheMisses={_cacheMisses}, fallbackContours={_fallbackContours}, fallbackVertices={_fallbackVertices}, textCount={_textCount}, textCache={_formattedTextCache.Count}, contourVerticesUpperBound={_vertexCount}, scale={_viewportScale:F3}&quot;,
+                &quot;ResultRenderLayer&quot;);
+            _renderSw.Restart();
+            _intervalSw.Restart();
+            _invalidateCount = 0;
+            _cacheHits = 0;
+            _cacheMisses = 0;
+            _fallbackContours = 0;</pre></details><details class="source-card"><summary>R079</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Logging/CircularBufferLogCollection.cs">src/UI/Services/Logging/CircularBufferLogCollection.cs:140</a></p><p><code>Add</code></p><p>SHA256 <code>0f7f9ea575e419b0759ba48ca8079d3862761877b29015e6209271c1d8eb77d0</code></p><pre>        public void Add(LogEntry item)
+        {
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+
+            // 总入队计数始终递增
+            _totalEnqueued++;
+
+            if (_count &lt; _capacity)
+            {
+                // 缓冲区未满，直接添加
+                _buffer[_tail] = item;
+                _tail = (_tail + 1) % _capacity;
+                _count++;
+            }
+            else
+            {
+                // 缓冲区已满，覆盖最旧的
+                var oldItem = _buffer[_head];
+                DecrementStatistics(oldItem);</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;X05&quot;,
+  &quot;group&quot;: &quot;support&quot;,
+  &quot;title&quot;: &quot;性能、长稳、日志与故障验证&quot;,
+  &quot;state&quot;: &quot;unknown&quot;,
+  &quot;chain&quot;: [
+    &quot;用户动作/输入&quot;,
+    &quot;执行及呈现&quot;,
+    &quot;资源/延迟/正确性记录&quot;,
+    &quot;故障/取消恢复&quot;
+  ],
+  &quot;current&quot;: &quot;有日志和渲染诊断代码；旧报告有性能实验计划。&quot;,
+  &quot;gap&quot;: &quot;固定数据/算法/质量→两边正确性门槛；测量→同环境尾延迟/资源序列；故障/长稳→原始结果及复现记录&quot;,
+  &quot;vm&quot;: &quot;恢复模型的机制解释、重建项目自审和原版运行性能不是同一证据。&quot;,
+  &quot;vmDoc&quot;: &quot;MF05-PROCESS-LIFETIME-AUDIT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：无双方同条件正确性/尾延迟/长稳结果；观测日志及容量结构不证明稳定更快。 VM参考边界：VM商业成熟不能代替本次同场景测量；重建项目测试也不是原版测试。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;冻结数据/环境/质量门槛和基准，另行授权运行；缺测不排名，此轮只记录计划。 保留诊断和既有实验计划，冻结数据/时长/档位后另行授权运行；无法观测的项标缺测，禁止从结构/日志推性能优胜。&quot;,
+  &quot;accept&quot;: &quot;正确性先通过；取消/过载/断连/长稳资源曲线与尾延迟均可追溯。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S111&quot;,
+    &quot;S112&quot;,
+    &quot;R078&quot;,
+    &quot;R079&quot;
+  ],
+  &quot;optimization&quot;: &quot;O12&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;X05&quot;,
+    &quot;before&quot;: &quot;unknown&quot;,
+    &quot;after&quot;: &quot;unknown&quot;,
+    &quot;confirmed&quot;: &quot;ResultRenderLayer有Stopwatch诊断，CircularBufferLogCollection有容量/移除机制；这些是观测代码不是双方对等运行结果。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;固定数据/算法/质量→两边正确性门槛&quot;,
+      &quot;测量→同环境尾延迟/资源序列&quot;,
+      &quot;故障/长稳→原始结果及复现记录&quot;
+    ],
+    &quot;cause&quot;: &quot;未实施或未提供结果的验证缺口，不是算法未开发&quot;,
+    &quot;change&quot;: &quot;保留诊断和既有实验计划，冻结数据/时长/档位后另行授权运行；无法观测的项标缺测，禁止从结构/日志推性能优胜。&quot;,
+    &quot;acceptance&quot;: &quot;正确性先通过；取消/过载/断连/长稳资源曲线与尾延迟均可追溯。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S111&quot;,
+      &quot;S112&quot;,
+      &quot;R078&quot;,
+      &quot;R079&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;先同条件验证再择性能路线&quot;,
+    &quot;reason&quot;: &quot;避免仅按托管/原生、控件数量或缓存名字判断。&quot;
+  },
+  &quot;defect&quot;: &quot;无双方同条件正确性/尾延迟/长稳结果；观测日志及容量结构不证明稳定更快。&quot;,
+  &quot;vmBorrow&quot;: &quot;VM商业成熟不能代替本次同场景测量；重建项目测试也不是原版测试。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;无双方同条件正确性/尾延迟/长稳结果；观测日志及容量结构不证明稳定更快。&quot;,
+    &quot;borrow&quot;: &quot;VM商业成熟不能代替本次同场景测量；重建项目测试也不是原版测试。&quot;,
+    &quot;action&quot;: &quot;冻结数据/环境/质量门槛和基准，另行授权运行；缺测不排名，此轮只记录计划。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S111&quot;,
+      &quot;S112&quot;,
+      &quot;R078&quot;,
+      &quot;R079&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

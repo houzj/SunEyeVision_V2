@@ -1,0 +1,183 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M26 日志面板、筛选、搜索与诊断级别</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">M26 日志面板、筛选、搜索与诊断级别</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>M26 日志面板、筛选、搜索与诊断级别</h1><article id="compare-M26"><span id="M26"></span><div class="visual-metrics"><div><strong>M26</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>自研整改</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>VisionLogger</b></li><li><small>02</small><b>UILogWriter</b></li><li><small>03</small><b>CircularBufferLogCollection</b></li><li><small>04</small><b>LogEntriesView</b></li><li><small>05</small><b>LogPanelControl</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>日志Tab实际存在；视图模型支持级别、搜索、自动滚动和清理/复制入口，容量集合与批写是独立层。</p><details><summary>完整缺陷与未闭合调用边</summary><p>注释流畅不等压测；50ms节流和有界显示不证明上游队列有界；跨线程积压、持久日志、隐私和停机排空待核。 FlushLogs条件按左到右执行：批次已有200条且队列仍有数据时，TryDequeue先取出下一条，随后batch.Count&lt;200为false，刚取出的条目未加入batch。此控制流可静态确认；不是吞吐性能推测。 FlushAsync只是Release信号后Task.Delay(10)。后台可能正被UILogWriter的Dispatcher.Invoke阻塞；DispatchToWriters串行调用写入器，持有读锁。FileLogWriter写失败catch吞错，调用方没有逐写入器确认，不能称Flush完成即已可靠落盘。 显示集合上限5000；VisionLogger另有50000检查/淘汰及TotalDropped，但检查与入队并非单一有界通道。UI聚合_pendingLogs没有显式容量。UILogWriter.Dispose退订并Clear，但Write/WriteBatch未检查_isDisposed；App当前退出链未找到VisionLogger.Flush/Dispose显式调用，Owner仍未闭合。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>以恢复模型主界面对应状态/专业数据/日志入口核范围；模块历史、专业数据页和应用日志是三种数据，不互相代证。</p><p>原版应用日志、模块历史和结果表不同，VM日志数据管线待补。</p><p>此项当前只完成VM入口对账；原版字段、线程、释放和日志保留机制仍需对应实现体，不能引用重建测试当原版事实。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/framework-architecture.html">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">日志聚合器先TryDequeue再查批次容量，超过200条时额外取出一条却不交付；Flush仅固定等10ms。显示5000条上限不代表聚合队列有界。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：日志聚合器先TryDequeue再查批次容量，超过200条时额外取出一条却不交付；Flush仅固定等10ms。显示5000条上限不代表聚合队列有界。 VM参考边界：原版应用日志、模块历史和结果表不同，VM日志数据管线待补。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">先修出队条件顺序；Flush使用序号屏障和写入确认，UI/文件通道分开背压；退出排空与Dispose后写入策略明确。性能收益另测，不把可靠性问题推迟到压测。 冻结日志范围与丢弃/背压策略；Run/Node身份关联故障，UI筛选不改变持久记录；逐订阅核Dispose，压测另行执行。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">日志洪峰时UI可操作且积压有界，丢弃计数可见；搜索/清空/复制一致，关窗不再接收。 队列恰好199/200/201/401条时核每个日志Id恰一次交付；筛选和容量淘汰另计，不让批处理无声丢条。 UI阻塞、文件锁/磁盘错误、慢写入器时Flush返回确定成功/超时/失败；不以睡眠时长当确认。异常退出/掉电耐久另验。 日志洪峰上游/聚合/显示三层分别测边界；退出中写入、Dispose重复、文件失败仍可诊断；不得在UI线程同步等仍需Dispatcher的日志任务。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">静态源码复核；未运行产品或进行性能测量</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o12.html#O12"><b>专业工具逐项验收与同条件性能</b><small class="reference-id">优化方案 · O12</small></a></td></tr></tbody></table></div></section><article id="recommendation-M26"><h2>M26 日志面板、筛选、搜索与诊断级别 · 必须整改</h2><p><b>代码依据 / 局限：</b>日志聚合器先TryDequeue再查批次容量，超过200条时额外取出一条却不交付；Flush仅固定等10ms。显示5000条上限不代表聚合队列有界。</p><p><b>VM可借鉴与不可推断：</b>原版应用日志、模块历史和结果表不同，VM日志数据管线待补。</p><p><b>具体改法 / 成本：</b>先修出队条件顺序；Flush使用序号屏障和写入确认，UI/文件通道分开背压；退出排空与Dispose后写入策略明确。性能收益另测，不把可靠性问题推迟到压测。 冻结日志范围与丢弃/背压策略；Run/Node身份关联故障，UI筛选不改变持久记录；逐订阅核Dispose，压测另行执行。</p><p><b>验收：</b>日志洪峰时UI可操作且积压有界，丢弃计数可见；搜索/清空/复制一致，关窗不再接收。 队列恰好199/200/201/401条时核每个日志Id恰一次交付；筛选和容量淘汰另计，不让批处理无声丢条。 UI阻塞、文件锁/磁盘错误、慢写入器时Flush返回确定成功/超时/失败；不以睡眠时长当确认。异常退出/掉电耐久另验。 日志洪峰上游/聚合/显示三层分别测边界；退出中写入、Dispose重复、文件失败仍可诊断；不得在UI线程同步等仍需Dispatcher的日志任务。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M26">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M26">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>N029</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/LogPanelViewModel.cs">src/UI/Shell/Windows/LogPanelViewModel.cs:29</a></p><p><code>public class LogPanelViewModel</code></p><p>SHA256 <code>b4f9e4f367faa4974b503f444a46456964164bf7fcb79f2494bda06c39559da6</code></p><pre>    public class LogPanelViewModel : ViewModelBase, IDisposable
+    {
+        #region 私有字段
+
+        private readonly UILogWriter _uiLogWriter;
+        private readonly VisionLogger _logger;
+        private bool _autoScroll = true;
+        private bool _isDiagnosticMode = false;
+        private string _activeFilter = &quot;All&quot;; // 当前选中的日志级别过滤模式：All/Info/Success/Warning/Error
+        private string _searchText = string.Empty;
+        private bool _isDisposed = false;
+        private bool _isCopying = false; // 防止重复复制
+        private DateTime _lastUpdateTime = DateTime.MinValue;
+        private readonly TimeSpan _throttleInterval = TimeSpan.FromMilliseconds(50); // 50ms节流间隔
+
+        #endregion
+
+        #region 属性
+
+        /// &lt;summary&gt;
+        /// 日志条目集合（高性能循环缓冲区）
+        /// &lt;/summary&gt;</pre></details><details class="source-card"><summary>N030</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Logging/UILogWriter.cs">src/UI/Services/Logging/UILogWriter.cs:21</a></p><p><code>class UILogWriter</code></p><p>SHA256 <code>51f43722331f14fc7025b1956572f4dfea8ed1a8e34b75f0a79fa798c2a7624c</code></p><pre>    public class UILogWriter : ILogWriter
+    {
+        #region 常量
+
+        /// &lt;summary&gt;
+        /// 最大显示日志条数
+        /// &lt;/summary&gt;
+        private const int MaxDisplayLogs = 5000;
+
+        #endregion
+
+        #region 私有字段
+
+        private readonly CircularBufferLogCollection _logEntries;
+        private readonly Dispatcher _dispatcher;
+        private readonly LogEventAggregator _eventAggregator;
+        private bool _isDisposed;
+
+        #endregion
+
+        #region 属性
+</pre></details><details class="source-card"><summary>N031</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindow.xaml">src/UI/Shell/Windows/MainWindow.xaml:157</a></p><p><code>Header=&quot;日志&quot;</code></p><p>SHA256 <code>2b12be1f69bc228ac4a8bdb395b4c69532986e10f499fd74ada1fd109750fbea</code></p><pre>                            &lt;TabItem Header=&quot;日志&quot; Padding=&quot;12,6&quot;&gt;
+                                &lt;panels:LogPanelControl x:Name=&quot;LogPanelContent&quot;
+                                                         VerticalAlignment=&quot;Stretch&quot;
+                                                         HorizontalAlignment=&quot;Stretch&quot;/&gt;
+                            &lt;/TabItem&gt;
+                        &lt;/TabControl&gt;
+                    &lt;/Border&gt;
+
+
+                &lt;/Grid&gt;
+            &lt;/Border&gt;
+
+            &lt;!-- ========== 状态栏 (24px) ========== --&gt;
+            &lt;shell:StatusBarControl Grid.ColumnSpan=&quot;4&quot; Grid.Row=&quot;1&quot; DataContext=&quot;{Binding StatusBar}&quot;/&gt;
+        &lt;/Grid&gt;
+    &lt;/DockPanel&gt;
+
+        &lt;!-- 方案加载遮罩：主界面先显示，方案和相机异步恢复期间阻止操作并提供明确进度。 --&gt;
+        &lt;Grid x:Name=&quot;SolutionLoadingOverlay&quot;
+              Panel.ZIndex=&quot;1000&quot;
+              Visibility=&quot;Collapsed&quot;
+              Background=&quot;#CC15171A&quot;</pre></details><details class="source-card"><summary>N054</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Logging/LogEventAggregator.cs">src/UI/Services/Logging/LogEventAggregator.cs:234</a></p><p><code>while (_pendingLogs.TryDequeue(out var entry) &amp;&amp; batch.Count &lt; MaxBatchSize)</code></p><p>SHA256 <code>30d8e076152a4a133d41f1de46891731e8ce6926170ac88c82fbea66392df45f</code></p><pre>                while (_pendingLogs.TryDequeue(out var entry) &amp;&amp; batch.Count &lt; MaxBatchSize)
+                {
+                    batch.Add(entry);
+                }
+
+                // 如果还有日志，继续调度
+                if (!_pendingLogs.IsEmpty)
+                {
+                    ScheduleUpdate();
+                }
+            }
+
+            // 触发聚合事件（在UI线程上）
+            if (batch.Count &gt; 0)
+            {
+                _dispatcher.BeginInvoke(new Action(() =&gt;
+                {
+                    LogsAggregated?.Invoke(this, new LogBatchEventArgs(batch));
+                }), DispatcherPriority.ContextIdle);
+            }
+        }
+</pre></details><details class="source-card"><summary>N055</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/Logging/VisionLogger.cs">src/Plugin.SDK/Logging/VisionLogger.cs:421</a></p><p><code>public async Task FlushAsync()</code></p><p>SHA256 <code>a0b443f78f0d5ea95e585ed9386661e21cc99df89fe9ae7be52a01a96aef33ff</code></p><pre>        public async Task FlushAsync()
+        {
+            _flushSignal.Release();
+            await Task.Delay(10); // 给处理任务一点时间
+        }
+
+        /// &lt;summary&gt;
+        /// 获取统计信息
+        /// &lt;/summary&gt;
+        public (long Total, long Dropped, int QueueSize, int Writers) GetStatistics()
+        {
+            return (TotalEnqueued, TotalDropped, QueueSize, WriterCount);
+        }
+
+        /// &lt;summary&gt;
+        /// 获取写入器列表
+        /// &lt;/summary&gt;
+        public IReadOnlyList&lt;string&gt; GetWriterNames()
+        {
+            _writersLock.EnterReadLock();
+            try
+            {</pre></details><details class="source-card"><summary>N056</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Logging/UILogWriter.cs">src/UI/Services/Logging/UILogWriter.cs:144</a></p><p><code>public void Dispose()</code></p><p>SHA256 <code>51f43722331f14fc7025b1956572f4dfea8ed1a8e34b75f0a79fa798c2a7624c</code></p><pre>        public void Dispose()
+        {
+            if (_isDisposed)
+                return;
+
+            _isDisposed = true;
+
+            // 取消订阅聚合器事件
+            _eventAggregator.LogsAggregated -= OnLogsAggregated;
+
+            // 清空聚合器
+            _eventAggregator.Clear();
+
+            // 取消订阅集合变更事件
+            _logEntries.CollectionChanged -= OnLogEntriesCollectionChanged;
+
+            // 清空日志
+            Clear();
+        }
+
+        #endregion
+</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M26&quot;,
+  &quot;title&quot;: &quot;日志面板、筛选、搜索与诊断级别&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;VisionLogger&quot;,
+    &quot;UILogWriter&quot;,
+    &quot;CircularBufferLogCollection&quot;,
+    &quot;LogEntriesView&quot;,
+    &quot;LogPanelControl&quot;
+  ],
+  &quot;current&quot;: &quot;日志Tab实际存在；视图模型支持级别、搜索、自动滚动和清理/复制入口，容量集合与批写是独立层。&quot;,
+  &quot;gap&quot;: &quot;注释流畅不等压测；50ms节流和有界显示不证明上游队列有界；跨线程积压、持久日志、隐私和停机排空待核。 FlushLogs条件按左到右执行：批次已有200条且队列仍有数据时，TryDequeue先取出下一条，随后batch.Count&lt;200为false，刚取出的条目未加入batch。此控制流可静态确认；不是吞吐性能推测。 FlushAsync只是Release信号后Task.Delay(10)。后台可能正被UILogWriter的Dispatcher.Invoke阻塞；DispatchToWriters串行调用写入器，持有读锁。FileLogWriter写失败catch吞错，调用方没有逐写入器确认，不能称Flush完成即已可靠落盘。 显示集合上限5000；VisionLogger另有50000检查/淘汰及TotalDropped，但检查与入队并非单一有界通道。UI聚合_pendingLogs没有显式容量。UILogWriter.Dispose退订并Clear，但Write/WriteBatch未检查_isDisposed；App当前退出链未找到VisionLogger.Flush/Dispose显式调用，Owner仍未闭合。&quot;,
+  &quot;change&quot;: &quot;先修出队条件顺序；Flush使用序号屏障和写入确认，UI/文件通道分开背压；退出排空与Dispose后写入策略明确。性能收益另测，不把可靠性问题推迟到压测。 冻结日志范围与丢弃/背压策略；Run/Node身份关联故障，UI筛选不改变持久记录；逐订阅核Dispose，压测另行执行。&quot;,
+  &quot;accept&quot;: &quot;日志洪峰时UI可操作且积压有界，丢弃计数可见；搜索/清空/复制一致，关窗不再接收。 队列恰好199/200/201/401条时核每个日志Id恰一次交付；筛选和容量淘汰另计，不让批处理无声丢条。 UI阻塞、文件锁/磁盘错误、慢写入器时Flush返回确定成功/超时/失败；不以睡眠时长当确认。异常退出/掉电耐久另验。 日志洪峰上游/聚合/显示三层分别测边界；退出中写入、Dispose重复、文件失败仍可诊断；不得在UI线程同步等仍需Dispatcher的日志任务。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;N029&quot;,
+    &quot;N030&quot;,
+    &quot;N031&quot;,
+    &quot;N054&quot;,
+    &quot;N055&quot;,
+    &quot;N056&quot;
+  ],
+  &quot;vm&quot;: &quot;以恢复模型主界面对应状态/专业数据/日志入口核范围；模块历史、专业数据页和应用日志是三种数据，不互相代证。&quot;,
+  &quot;vmDoc&quot;: &quot;framework-architecture.html&quot;,
+  &quot;vmLimit&quot;: &quot;此项当前只完成VM入口对账；原版字段、线程、释放和日志保留机制仍需对应实现体，不能引用重建测试当原版事实。&quot;,
+  &quot;optimization&quot;: &quot;O12&quot;,
+  &quot;validation&quot;: &quot;静态源码复核；未运行产品或进行性能测量&quot;,
+  &quot;previousRecommendation&quot;: {},
+  &quot;choice&quot;: &quot;必须整改&quot;,
+  &quot;defect&quot;: &quot;日志聚合器先TryDequeue再查批次容量，超过200条时额外取出一条却不交付；Flush仅固定等10ms。显示5000条上限不代表聚合队列有界。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版应用日志、模块历史和结果表不同，VM日志数据管线待补。&quot;,
+  &quot;reason&quot;: &quot;依据：日志聚合器先TryDequeue再查批次容量，超过200条时额外取出一条却不交付；Flush仅固定等10ms。显示5000条上限不代表聚合队列有界。 VM参考边界：原版应用日志、模块历史和结果表不同，VM日志数据管线待补。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;自研整改&quot;,
+  &quot;adoptionBasis&quot;: &quot;针对本项目已见合同/实现修正，尚无采用VM具体实现的充分依据。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;必须整改&quot;,
+    &quot;defect&quot;: &quot;日志聚合器先TryDequeue再查批次容量，超过200条时额外取出一条却不交付；Flush仅固定等10ms。显示5000条上限不代表聚合队列有界。&quot;,
+    &quot;borrow&quot;: &quot;原版应用日志、模块历史和结果表不同，VM日志数据管线待补。&quot;,
+    &quot;action&quot;: &quot;先修出队条件顺序；Flush使用序号屏障和写入确认，UI/文件通道分开背压；退出排空与Dispose后写入策略明确。性能收益另测，不把可靠性问题推迟到压测。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;自研整改&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;N029&quot;,
+      &quot;N030&quot;,
+      &quot;N031&quot;,
+      &quot;N054&quot;,
+      &quot;N055&quot;,
+      &quot;N056&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

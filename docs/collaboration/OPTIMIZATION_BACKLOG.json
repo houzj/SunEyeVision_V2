@@ -3,7 +3,7 @@
   "updated": "2026-10-22",
   "title": "自研软件优化唯一问题池与批次路线",
   "authority": "排序和派工以本清单为准；历史专题保留证据，不再维护第二套当前优先级",
-  "scope": "已确认总路线持续目标active；B1合同和文件已细化，当前先不改产品代码限制保留",
+  "scope": "B1产品实施已获用户明确授权；B2—B6未自动授权",
   "principles": [
     "业务链驱动、架构配套",
     "目标合同完整，按依赖迁移",
@@ -41,21 +41,21 @@
       "focus": "已交付实现的验收状态与缺口，不重复大改启动页",
       "scope": "启动、内存方案、参数提交、变量保存",
       "acceptance": "明确通过/失败/受阻；关键验收缺口有结论",
-      "note": "当前报告12顶层受阻，2个UI子场景通过，5个数据层检查通过；不是整批通过。",
+      "note": "既有组件25通过；旧E2E9阻塞记录保留，用户续派自动验收真实进行中，未收新最终报告。",
       "owner": "自研主控",
       "productImplementationAuthorized": false
     },
     {
       "id": "B1",
       "title": "保存与读回可靠",
-      "status": "方案待确认",
+      "status": "交付待验",
       "dependencies": [],
-      "focus": "下一批设计收敛；尚未批准产品实施",
+      "focus": "按已定A—E合同实施并验证",
       "scope": "异常读取、资源引用、图像保真、Reload、最终快照、语义比对",
       "acceptance": "不静默丢值；失败保留当前内容；代表样本往返一致",
       "note": "10组自研问题，26自研定位；VM3主题10维证据对照；执行清单已落实合同、文件组与27验收项，尚未改产品。",
       "owner": "自研主控",
-      "productImplementationAuthorized": false
+      "productImplementationAuthorized": true
     },
     {
       "id": "B2",
@@ -186,7 +186,7 @@
       "dependencies": [],
       "strategy": "重做或合并",
       "acceptance": "T06/T07：坏边不空集合成功，原件不覆盖",
-      "status": "方案待确认",
+      "status": "已实现待验",
       "confidence": "代码路径确认；未运行复现",
       "owner": "自研主控",
       "testOwner": "独立测试负责人",
@@ -201,7 +201,8 @@
       "vmComparison": {
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "vm/VM-READ-01"
-      }
+      },
+      "implementationEvidence": "artifacts/validation/b1-implementation/delivery.json"
     },
     {
       "id": "O-102",
@@ -220,7 +221,7 @@
       "dependencies": [],
       "strategy": "重做或合并",
       "acceptance": "T04/T05：类型数组保持，损坏值拒绝",
-      "status": "方案待确认",
+      "status": "已实现待验",
       "confidence": "代码路径确认；未运行复现",
       "owner": "自研主控",
       "testOwner": "独立测试负责人",
@@ -235,7 +236,8 @@
       "vmComparison": {
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "vm/VM-READ-01"
-      }
+      },
+      "implementationEvidence": "artifacts/validation/b1-implementation/delivery.json"
     },
     {
       "id": "O-103",
@@ -257,7 +259,7 @@
       ],
       "strategy": "新增闭环能力",
       "acceptance": "T15/T16：明确重读，失败保留可操作工作区",
-      "status": "方案待确认",
+      "status": "已实现待验",
       "confidence": "代码路径确认；未运行复现",
       "owner": "自研主控",
       "testOwner": "独立测试负责人",
@@ -272,7 +274,8 @@
       "vmComparison": {
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "vm/VM-OPEN-02"
-      }
+      },
+      "implementationEvidence": "artifacts/validation/b1-implementation/delivery.json"
     },
     {
       "id": "O-104",
@@ -303,7 +306,7 @@
       "dependencies": [],
       "strategy": "重做或合并",
       "acceptance": "T10—T12：移动与缺失资源可解释，表达式一致",
-      "status": "方案待确认",
+      "status": "已实现待验",
       "confidence": "代码路径确认；未运行复现",
       "owner": "自研主控",
       "testOwner": "独立测试负责人",
@@ -318,7 +321,8 @@
       "vmComparison": {
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "vm/VM-RESOURCE-03"
-      }
+      },
+      "implementationEvidence": "artifacts/validation/b1-implementation/delivery.json"
     },
     {
       "id": "O-105",
@@ -337,7 +341,7 @@
       "dependencies": [],
       "strategy": "保留整改",
       "acceptance": "T13/T14：尺寸通道位深像素一致或明确失败",
-      "status": "方案待确认",
+      "status": "已实现待验",
       "confidence": "代码路径确认；未运行复现",
       "owner": "自研主控",
       "testOwner": "独立测试负责人",
@@ -352,7 +356,8 @@
       "vmComparison": {
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "vm/VM-READ-01"
-      }
+      },
+      "implementationEvidence": "artifacts/validation/b1-implementation/delivery.json"
     },
     {
       "id": "O-106",
@@ -379,7 +384,7 @@
       "dependencies": [],
       "strategy": "保留整改",
       "acceptance": "T17/T18：失败不提交；规范化后基线一致",
-      "status": "方案待确认",
+      "status": "已实现待验",
       "confidence": "代码路径确认；未运行复现",
       "owner": "自研主控",
       "testOwner": "独立测试负责人",
@@ -394,7 +399,8 @@
       "vmComparison": {
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "vm/VM-READ-01"
-      }
+      },
+      "implementationEvidence": "artifacts/validation/b1-implementation/delivery.json"
     },
     {
       "id": "O-107",
@@ -429,7 +435,7 @@
       "dependencies": [],
       "strategy": "重做或合并",
       "acceptance": "T08/T09：缺插件/未知类型/版本拒绝或保留不静默丢字段",
-      "status": "方案待确认",
+      "status": "已实现待验",
       "confidence": "代码路径确认；未运行复现",
       "owner": "自研主控",
       "testOwner": "独立测试负责人",
@@ -444,7 +450,8 @@
       "vmComparison": {
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "vm/VM-READ-01"
-      }
+      },
+      "implementationEvidence": "artifacts/validation/b1-implementation/delivery.json"
     },
     {
       "id": "O-108",
@@ -481,7 +488,7 @@
       ],
       "strategy": "新增闭环能力",
       "acceptance": "T01—T03/T19：真实配置差异可定位，忽略仅明示字段",
-      "status": "方案待确认",
+      "status": "部分验证，待独立验收",
       "confidence": "代码路径确认；未运行复现",
       "owner": "自研主控",
       "testOwner": "独立测试负责人",
@@ -496,7 +503,8 @@
       "vmComparison": {
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "vm/VM-READ-01"
-      }
+      },
+      "implementationEvidence": "artifacts/validation/b1-implementation/delivery.json"
     },
     {
       "id": "O-201",
@@ -663,7 +671,7 @@
       "dependencies": [],
       "strategy": "待补证",
       "acceptance": "旧工具样本明确诊断；未证等价不自动换ToolType",
-      "status": "待核对",
+      "status": "已实现待验",
       "confidence": "历史材料线索；当前影响待重核",
       "owner": "自研主控",
       "testOwner": "独立测试负责人",
@@ -678,7 +686,8 @@
       "vmComparison": {
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "vm/VM-READ-01"
-      }
+      },
+      "implementationEvidence": "artifacts/validation/b1-implementation/delivery.json"
     },
     {
       "id": "O-109",
@@ -699,7 +708,7 @@
       ],
       "strategy": "保留整改",
       "acceptance": "T21：嵌套Settings/null/ID纯配置往返",
-      "status": "方案待确认",
+      "status": "已实现待验",
       "confidence": "代码条件性路径确认；未运行复现",
       "owner": "自研主控",
       "testOwner": "独立测试负责人",
@@ -712,7 +721,8 @@
       "vmComparison": {
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "execution"
-      }
+      },
+      "implementationEvidence": "artifacts/validation/b1-implementation/delivery.json"
     },
     {
       "id": "O-110",
@@ -733,7 +743,7 @@
       ],
       "strategy": "保留整改",
       "acceptance": "T23/T26：缺源占位和运行地址与存储引用分离",
-      "status": "方案待确认",
+      "status": "已实现待验",
       "confidence": "代码条件性路径确认；未运行复现",
       "owner": "自研主控",
       "testOwner": "独立测试负责人",
@@ -746,16 +756,17 @@
       "vmComparison": {
         "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
         "anchor": "execution"
-      }
+      },
+      "implementationEvidence": "artifacts/validation/b1-implementation/delivery.json"
     }
   ],
   "queues": {
     "development": [
-      "B1执行清单已形成，产品实施需解除当前先不改代码限制"
+      "B1源码交付待独立验收，按同身份反馈回归；B2后续按授权推进"
     ],
     "testing": [
-      "用户直接要求的EDIT-SAVE-11系统对话框E2E在独立副本继续（会话当前waitingOnApproval）；旧报告只代表上一轮",
-      "B1-BASELINE-15纯数据任务已排队，尚未接收运行；不得替换测试者直接用户任务"
+      "EDIT-SAVE-11用户直接续派E2E真实会话active，旧固定副本继续；不从旧报告宣称测试结束",
+      "B1新版623文件身份交接后独立回归，B1-BASELINE-15基线排队保留，不覆盖共享产物"
     ],
     "documentation": [
       "同步当前事实与本看板入口",
@@ -799,7 +810,82 @@
     "reason": "Computer-use frame/coordinate input unavailable; user requested ending slow per-click assistance",
     "manualDesigner": "not-run",
     "fullUserAcceptance": "not-run",
-    "productBuildExecuted": false
+    "productBuildExecuted": false,
+    "latestE2E": {
+      "pid": 23792,
+      "cleanup": "own-test-pid-terminated",
+      "stillRunning": false,
+      "finishedUtc": "2026-10-22T11:08:18.3657342Z",
+      "scenarios": [
+        {
+          "id": "E01",
+          "reason": "No observable save dialog after shortcut; capture/accessibility failure",
+          "status": "blocked",
+          "name": "主窗口Ctrl+S首次保存框"
+        },
+        {
+          "id": "E02",
+          "reason": "Actual dialog and cancel not observable",
+          "status": "blocked",
+          "name": "首次保存取消保留pending/Path/dirty"
+        },
+        {
+          "id": "E03",
+          "reason": "System dialog cannot be targeted",
+          "status": "blocked",
+          "name": "首次系统对话选址并成功写盘"
+        },
+        {
+          "id": "E04",
+          "reason": "Coordinate geometry unavailable; recovery accessibility null",
+          "status": "blocked",
+          "name": "菜单保存入口整链"
+        },
+        {
+          "id": "E05",
+          "reason": "Blocked upstream; no reliable window input",
+          "status": "blocked",
+          "name": "变量窗口统一首次保存"
+        },
+        {
+          "id": "E06",
+          "reason": "Blocked upstream; component evidence retained separately",
+          "status": "blocked",
+          "name": "变量合法名称值实际保存"
+        },
+        {
+          "id": "E07",
+          "reason": "Current E2E blocked; historical two assisted subcases do not replace batch",
+          "status": "blocked",
+          "name": "非法名称/数值两入口整链"
+        },
+        {
+          "id": "E08",
+          "reason": "No first successful E2E saved target; did not inject lock",
+          "status": "blocked",
+          "name": "既有文件锁定写失败与同会话重试"
+        },
+        {
+          "id": "E09",
+          "reason": "No successful E2E base save",
+          "status": "blocked",
+          "name": "已有方案重复保存兼容"
+        }
+      ],
+      "counts": {
+        "blocked": 9,
+        "failed": 0,
+        "passed": 0
+      },
+      "componentCounts": {
+        "passed": 25,
+        "failed": 0
+      },
+      "normalUiStartup": true,
+      "normalUiWorkflowExecuted": false,
+      "systemDialogObserved": false,
+      "approval": "first approval timed out; user authorized one retry; authored launcher launched child, launcher itself has no window"
+    }
   },
   "sources": [
     {
@@ -812,7 +898,7 @@
     },
     {
       "file": "artifacts/ui-prototypes/save-roundtrip/index.html",
-      "sha256": "e45913c9f841dc2030faa9fadd1bef5f73a5d43a5f59f3dcb2a97b78977b5e1f"
+      "sha256": "738e73bf51d05f39066e840fe821a54aeb377443bc60ac37296a302088478249"
     },
     {
       "file": "artifacts/ui-prototypes/edit-consistency/index.html",
@@ -824,7 +910,7 @@
     },
     {
       "file": "docs/collaboration/CURRENT_TASK.md",
-      "sha256": "8c464f73498e5a4e7aad5358d3450aabefd8d4d2f738bba413953ae4b2483e29"
+      "sha256": "2339ee764fc27f45fd75bcb18a754340350a642fb4c0f60f848f5385b143e2cf"
     },
     {
       "file": "docs/collaboration/TOOL_VM_CORRESPONDENCE_20261022.json",
@@ -852,7 +938,7 @@
     },
     {
       "file": "artifacts/ui-prototypes/save-roundtrip/b1-execution.json",
-      "sha256": "7e02f8c56f7cb8b48ae6c4db23ba5fa8b921314a2a7fd5375d6a2c9d53d4a8f4"
+      "sha256": "4eeee761d670cf719f634a86646b1af47a28ba2ccc6b7998d37c45604bf5b91e"
     }
   ],
   "baseline": "f22a5f7490554103fc90014ba848fb87e8fbe665",
@@ -901,5 +987,100 @@
     "constraint": "启动/起始页/内存新建/首次保存不因B1整体重做"
   },
   "activeTaskPlan": "docs/collaboration/B1_EXECUTION16_TASKS.json",
-  "activeTask": "B1-EXECUTION-16"
+  "activeTask": "B1-EXECUTION-16",
+  "documentReceipt": {
+    "task": "B1-EXECUTION-16",
+    "documentDelivery": "received-and-independently-checked",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html"
+    ],
+    "input": "artifacts/ui-prototypes/save-roundtrip/b1-execution.json",
+    "inputSha256": "7e02f8c56f7cb8b48ae6c4db23ba5fa8b921314a2a7fd5375d6a2c9d53d4a8f4",
+    "checkedSources": 11,
+    "errors": [],
+    "productAuthorized": false,
+    "productModified": false,
+    "productTestsExecuted": false,
+    "blockedNext": "Explicit B1 product implementation authorization absent; independent tester is active waitingOnApproval on direct user E2E task. B1 pure data task remains queued."
+  },
+  "implementationDelivery": "artifacts/validation/b1-implementation/delivery.json",
+  "architectureReview": {
+    "date": "2026-10-22",
+    "status": "静态体检完成；整改顺序为建议，未授权产品实施",
+    "page": "artifacts/ui-prototypes/architecture-health/index.html",
+    "data": "artifacts/ui-prototypes/architecture-health/audit.json",
+    "evidence": "artifacts/ui-prototypes/architecture-health/evidence.json",
+    "findingIds": [
+      "H01",
+      "H02",
+      "H03",
+      "H04",
+      "H05",
+      "H06",
+      "H07",
+      "H08",
+      "H09",
+      "H10",
+      "H11",
+      "H12",
+      "H13",
+      "H14",
+      "H15",
+      "H16",
+      "H17",
+      "H18",
+      "H19",
+      "H20",
+      "H21",
+      "H22"
+    ],
+    "priorityAuthority": "保留既定B0—B6；H系列为本清单登记的待收敛审查项，非另一执行队列",
+    "sourceFilesCompared": 1122,
+    "sourceDrift": [],
+    "comparison": {
+      "page": "artifacts/ui-prototypes/architecture-health/vm-comparison.html",
+      "data": "artifacts/ui-prototypes/architecture-health/comparison-data.json",
+      "themes": 12,
+      "scope": "先确认框架分工与执行流目标合同；本轮只文档，不把体检逐条当修补队列",
+      "evidence": "18个定位文件，VM原版/恢复报告/自研/官方示例区分；无新产品或VM运行",
+      "unresolved": "VM完整原生插件ABI、普通分支汇合调度、设备停止与算法质量未证"
+    },
+    "targetDecision": {
+      "page": "artifacts/ui-prototypes/architecture-health/target-framework.html",
+      "data": "artifacts/ui-prototypes/architecture-health/target-framework.json",
+      "status": "8项框架决策待确认，未授权实施",
+      "scope": "平台统一控制流；保留算法与现有合理合同；界面/调试/SDK共入口",
+      "compatibility": "用户明确未发布：无旧方案迁移，无旧插件二进制兼容；统一轮前规则，现有工具源码升级重编",
+      "visual": "三栏图、分支汇合步进、循环前后对照、停止步进、角色点选；演示非实际运行"
+    },
+    "pluginFoundation": {
+      "page": "artifacts/ui-prototypes/architecture-health/plugin-foundation.html",
+      "data": "artifacts/ui-prototypes/architecture-health/plugin-foundation.json",
+      "status": "修订2已修复独立3缺陷并本地27通过，待独立定向回归",
+      "policy": "开发期破坏性接口升级，同版本重编，旧产物拒绝，无旧方案迁移或兼容层",
+      "batch": "先独立接口与四类样本验证，随后统一切换产品源码；不长期双注册，不提前声称产品已切换",
+      "delivery": "artifacts/validation/plugin-foundation-01/delivery.json",
+      "handoffCommit": "d3a7dff427a2ace7fe3f96109974b0c811da4ea2",
+      "independentDefects": {
+        "PF-01": "开发修复待独立复验",
+        "PF-02": "开发修复待独立复验",
+        "PF-03": "开发修复待独立复验"
+      }
+    },
+    "startupConsumers": {
+      "page": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/能力对照/capability-m01.html#startup-consumers",
+      "status": "图像箱与脚本消费者静态对照已核20证据，主文档角色归并中；未改产品/未性能AB",
+      "conclusion": "保留Roslyn可复用基础预热及可见缩略图；整改Show前语义等待、工作区全脚本同步编译、原图UI解码；用户实例准备不混为无副作用预热。VM使用不同补全/编译栈，不能声称VM没有冷启动成本。",
+      "decisionPage": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o01.html#startup-preparation-decisions",
+      "evidence": "docs/collaboration/STARTUP_CONSUMER_REVIEW_20261022.json",
+      "scriptPerformanceBatch": {
+        "id": "SCRIPT-PERF-01",
+        "packet": "docs/collaboration/SCRIPT_PERFORMANCE_BATCH_20261023.json",
+        "status": "三条耗时链与6问题已静态分析，7验收方向；主文档归并中、未授权施工",
+        "basis": "基础能力+集成设计+产品等待策略；历史日志有实际成本但无当前冻结性能基线",
+        "scope": "只脚本打开/首次补全/编译准备，图像箱沿前专题，不新增产品改动"
+      }
+    }
+  }
 }

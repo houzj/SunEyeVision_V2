@@ -1,0 +1,461 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工具处置 · 通信</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">工具处置 · 通信</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="../能力对照/capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="../能力对照/capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>工具处置 · 通信</h1><aside class="scope-notice">以下沿用2026-10-21分析基线与原有状态；未把本次分页或图示当作新增语义证据。最新目标取舍另见 <a href="../目标架构/architecture-target.html">12项目标决策</a>。</aside><div class="visual-metrics"><div><strong>5</strong><span>本分类目录条目</span><small>目录≠算法等价</small></div></div><div class="filter-bar"><label for="search">搜索本页</label><input id="search" data-filter-input placeholder="输入名称、ID或问题"><output data-filter-count></output></div><div class="record-grid"><section class="record-card" id="tool-8-0" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>相机IO通信</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Communication/CameraIOModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">相机IO需设备能力、触发/输入输出语义和安全测试端点；普通发送字节不能代证。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Communication/CameraIOModule&quot;,
+  &quot;label&quot;: &quot;相机IO通信&quot;,
+  &quot;category&quot;: &quot;通信&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;相机IO需设备能力、触发/输入输出语义和安全测试端点；普通发送字节不能代证。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;io1&quot;,
+    &quot;io2&quot;,
+    &quot;io0&quot;,
+    &quot;io3&quot;,
+    &quot;io4&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;StrResult&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\CameraIOModule.xml&quot;,
+      &quot;sha256&quot;: &quot;79ca9770178e74d32ff40370619c5404ce0456c284b6d4c7763aca69f84f9253&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\CameraIOModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;c85bebb817bcd1ad3e3b0838ec946b188b8734ee49623b61e43bf25db640d65e&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\CameraIOModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;da49390872463d5384952a857e3ea9f6906181a9ccdfefd112d587e665336340&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\CameraIOModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;92548b1ffa2eb1f3cc756de3e88c2e123f8c19a52f20c005a07d31d4873a0381&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\CameraIOModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;4abd93995f958af53edaf7af6e1118cf9635c9890f766d6273064f499fd7ffff&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;181fbae6363d3aeaea4bd35cc62e084b768e6afba0d2e1990fd033dfdd2be7db&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-8-1" data-filter-record><span class="chip">已有候选，非等价验收</span><h3>协议解析</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Communication/DataAnalysisModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已建立候选入口，具体以工具专页源码分析为准。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">差异按现有工具专页逐模式复审</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">按既有推荐整改/混合；不默认保留</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">相机IO需设备能力、触发/输入输出语义和安全测试端点；普通发送字节不能代证。</td></tr></tbody></table></div><a href="../现状分析/tool-detail-ProtocolParse.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Communication/DataAnalysisModule&quot;,
+  &quot;label&quot;: &quot;协议解析&quot;,
+  &quot;category&quot;: &quot;通信&quot;,
+  &quot;kind&quot;: &quot;candidate&quot;,
+  &quot;status&quot;: &quot;已有候选，非等价验收&quot;,
+  &quot;difference&quot;: &quot;差异按现有工具专页逐模式复审&quot;,
+  &quot;adoption&quot;: &quot;按既有推荐整改/混合；不默认保留&quot;,
+  &quot;current&quot;: &quot;已建立候选入口，具体以工具专页源码分析为准。&quot;,
+  &quot;gap&quot;: &quot;候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。&quot;,
+  &quot;change&quot;: &quot;相机IO需设备能力、触发/输入输出语义和安全测试端点；普通发送字节不能代证。&quot;,
+  &quot;url&quot;: &quot;../现状分析/tool-detail-ProtocolParse.html&quot;,
+  &quot;candidates&quot;: [
+    {
+      &quot;id&quot;: &quot;ProtocolParse&quot;,
+      &quot;name&quot;: &quot;协议解析&quot;,
+      &quot;category&quot;: &quot;通信工具&quot;,
+      &quot;file&quot;: &quot;../现状分析/tool-detail-ProtocolParse.html&quot;,
+      &quot;model&quot;: &quot;pending&quot;,
+      &quot;area&quot;: null,
+      &quot;scope&quot;: &quot;已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明&quot;,
+      &quot;source&quot;: {
+        &quot;path&quot;: &quot;tools/SunEyeVision.Tool.ProtocolParse/ProtocolParseTool.cs&quot;,
+        &quot;line&quot;: 9,
+        &quot;token&quot;: &quot;[Tool(\&quot;ProtocolParse\&quot;, \&quot;协议解析\&quot;, Icon = \&quot;parse\&quot;, Order = 20, Category = ToolCategories.Communication,\r&quot;,
+        &quot;sha256&quot;: &quot;e1bfcf32809766d7f980738c3fe8460898bbd5070fed02fd05ec67a26753f371&quot;,
+        &quot;snippet&quot;: &quot;[Tool(\&quot;ProtocolParse\&quot;, \&quot;协议解析\&quot;, Icon = \&quot;parse\&quot;, Order = 20, Category = ToolCategories.Communication,\r\n    Description = \&quot;按配置字段解析文本或字节，不读取设备\&quot;, HasDebugWindow = true)]\r\npublic sealed class ProtocolParseTool : IToolPlugin&lt;ProtocolParseParameters, CommunicationToolResults&gt;, IToolEditorFactory\r\n{\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) =&gt; new Views.ProtocolParseEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() =&gt; new CommunicationDataAnalysisControl();\r\n    public CommunicationToolResults Run(ProtocolParseParameters parameters)\r\n    {\r\n        var result = new CommunicationToolResults();\r\n        var rows = new List&lt;CommunicationAnalysisRow&gt;();\r\n        var watch = Stopwatch.StartNew();\r\n        try\r\n        {\r\n            var fields = parameters.Outputs.Select(f =&gt; new Field(f.FieldId, f.Name, f.DataType,\r\n                f.Start, f.End, f.Order, f.NumericInterpretation)).ToArray();\r\n            result = new CommunicationToolResults(fields.Select(f =&gt; new CommunicationOutputField(f.Id,\r\n                f.Name, ProtocolParseField.Vocabulary(f.Type))));\r\n            if (fields.Length == 0) throw new FormatException(\&quot;请至少配置一个输出字段。\&quot;);\r&quot;
+      },
+      &quot;sourceAudit&quot;: &quot;五段实现与失败取消路径已局部静态审读&quot;
+    }
+  ],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;Analysis&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModule.xml&quot;,
+      &quot;sha256&quot;: &quot;4783f7d837427da7f89dbe28f245c7563947d02cddb05d3c62db110dfbb5fa49&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;3d993e96e7ee868a8c12f6bedca37e777196a16c8d2cef0714c444183dadfc3c&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;c8c4944b170355e4cff2d6c5cf79cd511295a38eb89335864a01df709f33b3d6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;5457052eaff6838a59a10f9999aeeffc740f4821dcc9de9cce5daefd39aae6f1&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;0ce3fed17e9eb3892050191c8204f4ddd7271602248b3a6e2358cb5031d49691&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;968296d7b1888979a9e7b47f842635e45184db0f2164e73016fb31cd7933ddf0&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-8-2" data-filter-record><span class="chip">已有候选，非等价验收</span><h3>协议组装</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Communication/DataAssembleModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已建立候选入口，具体以工具专页源码分析为准。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">差异按现有工具专页逐模式复审</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">按既有推荐整改/混合；不默认保留</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">相机IO需设备能力、触发/输入输出语义和安全测试端点；普通发送字节不能代证。</td></tr></tbody></table></div><a href="../现状分析/tool-detail-ProtocolAssemble.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Communication/DataAssembleModule&quot;,
+  &quot;label&quot;: &quot;协议组装&quot;,
+  &quot;category&quot;: &quot;通信&quot;,
+  &quot;kind&quot;: &quot;candidate&quot;,
+  &quot;status&quot;: &quot;已有候选，非等价验收&quot;,
+  &quot;difference&quot;: &quot;差异按现有工具专页逐模式复审&quot;,
+  &quot;adoption&quot;: &quot;按既有推荐整改/混合；不默认保留&quot;,
+  &quot;current&quot;: &quot;已建立候选入口，具体以工具专页源码分析为准。&quot;,
+  &quot;gap&quot;: &quot;候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。&quot;,
+  &quot;change&quot;: &quot;相机IO需设备能力、触发/输入输出语义和安全测试端点；普通发送字节不能代证。&quot;,
+  &quot;url&quot;: &quot;../现状分析/tool-detail-ProtocolAssemble.html&quot;,
+  &quot;candidates&quot;: [
+    {
+      &quot;id&quot;: &quot;ProtocolAssemble&quot;,
+      &quot;name&quot;: &quot;协议组装&quot;,
+      &quot;category&quot;: &quot;通信工具&quot;,
+      &quot;file&quot;: &quot;../现状分析/tool-detail-ProtocolAssemble.html&quot;,
+      &quot;model&quot;: &quot;pending&quot;,
+      &quot;area&quot;: null,
+      &quot;scope&quot;: &quot;已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明&quot;,
+      &quot;source&quot;: {
+        &quot;path&quot;: &quot;tools/SunEyeVision.Tool.ProtocolAssemble/ProtocolAssembleTool.cs&quot;,
+        &quot;line&quot;: 11,
+        &quot;token&quot;: &quot;[Tool(\&quot;ProtocolAssemble\&quot;, \&quot;协议组装\&quot;, Icon = \&quot;assemble\&quot;, Order = 30, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Communication, Description = \&quot;按配置顺序和分隔符组装文本，不发送设备\&quot;, HasDebugWindow = true)]&quot;,
+        &quot;sha256&quot;: &quot;8ade152a6b24d24368b6b6f785bbc731d0d930f398e5c67f634ead04de1756f2&quot;,
+        &quot;snippet&quot;: &quot;[Tool(\&quot;ProtocolAssemble\&quot;, \&quot;协议组装\&quot;, Icon = \&quot;assemble\&quot;, Order = 30, Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Communication, Description = \&quot;按配置顺序和分隔符组装文本，不发送设备\&quot;, HasDebugWindow = true)]\r\npublic sealed class ProtocolAssembleTool : IToolPlugin&lt;ProtocolAssembleParameters, CommunicationToolResults&gt;, IToolEditorFactory\r\n{\r\n    IReadOnlyList&lt;OutputVariable&gt; IToolPlugin.OutputVariables =&gt; new CommunicationToolResults(ProtocolAssembleParameters.OutputFields).GetOutputVariables();\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) =&gt; new Views.ProtocolAssembleEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() =&gt; new CommunicationDataAnalysisControl();\r\n\r\n    public CommunicationToolResults Run(ProtocolAssembleParameters parameters)\r\n    {\r\n        var result = new CommunicationToolResults(ProtocolAssembleParameters.OutputFields) { ToolId = \&quot;ProtocolAssemble\&quot;, ToolName = \&quot;协议组装\&quot; };\r\n        var watch = Stopwatch.StartNew();\r\n        var rows = new List&lt;CommunicationAnalysisRow&gt;();\r\n        try\r\n        {\r\n            var parts = parameters.Parts?.Select(p =&gt; (p.PartId, p.InputText)).ToArray()\r\n                ?? throw new FormatException(\&quot;组装列表不存在。\&quot;);\r\n            var separator = parameters.Separator ?? throw new FormatException(\&quot;分隔符不能为null。\&quot;);\r\n            if (parts.Length == 0) throw new FormatException(\&quot;请至少配置一项组装内容。\&quot;);\r&quot;
+      },
+      &quot;sourceAudit&quot;: &quot;五段实现与失败取消路径已局部静态审读&quot;
+    }
+  ],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;AssembleResult&quot;,
+    &quot;AssembleResultHex&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModule.xml&quot;,
+      &quot;sha256&quot;: &quot;ffa54880c17b3001e99c92cf9e766bc2293767b727538cbfa6fb7b8c8c1c96e6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;7ffb1a2c07dea7ac4354fe572438dcc1d3244d30ef63867d2d832760e74841fe&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;d755510da015c662dcdd4247325e90a0c9ec21c431c95983afb1ee9bf1763646&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;e43d389185224444deab32d7d2d1b836c36071e61cad8ee762e9e1747995bb83&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;2c28e74db44a96056ffe7ab9d28cfc212bdc907fbbeda6ca3853991f3d454308&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;9be6d5250244250e704b80005b5f5219dec8c24973c66de7a79a537506f8dea2&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-8-3" data-filter-record><span class="chip">已有候选，非等价验收</span><h3>接收数据</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Communication/ReadDatasModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已建立候选入口，具体以工具专页源码分析为准。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">差异按现有工具专页逐模式复审</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">按既有推荐整改/混合；不默认保留</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">相机IO需设备能力、触发/输入输出语义和安全测试端点；普通发送字节不能代证。</td></tr></tbody></table></div><a href="../现状分析/tool-detail-ReceiveData.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Communication/ReadDatasModule&quot;,
+  &quot;label&quot;: &quot;接收数据&quot;,
+  &quot;category&quot;: &quot;通信&quot;,
+  &quot;kind&quot;: &quot;candidate&quot;,
+  &quot;status&quot;: &quot;已有候选，非等价验收&quot;,
+  &quot;difference&quot;: &quot;差异按现有工具专页逐模式复审&quot;,
+  &quot;adoption&quot;: &quot;按既有推荐整改/混合；不默认保留&quot;,
+  &quot;current&quot;: &quot;已建立候选入口，具体以工具专页源码分析为准。&quot;,
+  &quot;gap&quot;: &quot;候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。&quot;,
+  &quot;change&quot;: &quot;相机IO需设备能力、触发/输入输出语义和安全测试端点；普通发送字节不能代证。&quot;,
+  &quot;url&quot;: &quot;../现状分析/tool-detail-ReceiveData.html&quot;,
+  &quot;candidates&quot;: [
+    {
+      &quot;id&quot;: &quot;ReceiveData&quot;,
+      &quot;name&quot;: &quot;接收数据&quot;,
+      &quot;category&quot;: &quot;通信工具&quot;,
+      &quot;file&quot;: &quot;../现状分析/tool-detail-ReceiveData.html&quot;,
+      &quot;model&quot;: &quot;pending&quot;,
+      &quot;area&quot;: null,
+      &quot;scope&quot;: &quot;已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明&quot;,
+      &quot;source&quot;: {
+        &quot;path&quot;: &quot;tools/SunEyeVision.Tool.ReceiveData/ReceiveDataTool.cs&quot;,
+        &quot;line&quot;: 10,
+        &quot;token&quot;: &quot;[Tool(\&quot;ReceiveData\&quot;, \&quot;接收数据\&quot;, Icon = \&quot;receive\&quot;, Order = 10, Category = ToolCategories.Communication,\r&quot;,
+        &quot;sha256&quot;: &quot;74570aace0e7aa085008dd3bab66eb579ee0012d90808738c27db10415befed4&quot;,
+        &quot;snippet&quot;: &quot;[Tool(\&quot;ReceiveData\&quot;, \&quot;接收数据\&quot;, Icon = \&quot;receive\&quot;, Order = 10, Category = ToolCategories.Communication,\r\n    Description = \&quot;执行时读取设备当前值或全局变量\&quot;, HasDebugWindow = true)]\r\npublic sealed class ReceiveDataTool : IToolPlugin&lt;ReceiveDataParameters, CommunicationToolResults&gt;, IAsyncToolPlugin, IToolEditorFactory, IToolExecutionProfileProvider\r\n{\r\n    public ToolExecutionProfile DescribeExecution(ToolParameters parameters) =&gt; ToolExecutionProfile.LegacyExclusive;\r\n    public ToolExecutionProfile DescribeExecution(ToolParameters parameters, ICommunicationReceiveService? communicationInputs)\r\n    {\r\n        // Only the host source catalog can distinguish a passive cache read from a device request.\r\n        if (parameters is ReceiveDataParameters { SourceKind: \&quot;Device\&quot; } p &amp;&amp;\r\n            communicationInputs?.GetSources().Any(s =&gt; s.DeviceId == p.DeviceId &amp;&amp; s.TargetId == p.TargetId &amp;&amp; !s.ActiveRead) == true)\r\n            return new(ToolConcurrencyKind.ExternalDataWait);\r\n        return ToolExecutionProfile.LegacyExclusive;\r\n    }\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) =&gt; new Views.ReceiveDataEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() =&gt; new CommunicationDataAnalysisControl();\r\n    private static ICommunicationReceiveService? Scoped(ICommunicationReceiveService? service, string? workflowId) =&gt;\r\n        service == null || service is RuntimeVariableReceiveService || string.IsNullOrEmpty(workflowId) ? service :\r\n            new RuntimeVariableReceiveService(service, null, workflowId: workflowId);\r&quot;
+      },
+      &quot;sourceAudit&quot;: &quot;五段实现与失败取消路径已局部静态审读&quot;
+    }
+  ],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;ResultHex&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModule.xml&quot;,
+      &quot;sha256&quot;: &quot;cf7e7279aeb7e6d9f61fbc67a863ad73bc2545398d20f08c47d4cb25207c23b6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;04419e8d7323b0582d194faa4a2942a109750ab882628460745c8c12bc2977cd&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;d756b8f018b7d8859f26e3cd8ed359b888cecbe8a293a74edc6866c3ff79b289&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;7561c2da603965d641e27b23b2e03fc931b3fd964e807c61724ecf31fb665f82&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;11958a3d38425cde8f8c68789d87492b3bc2af70fe4b0ea15682e9e98a4dcf82&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;2b8eeab5bf93b97dba193fc0d8be1118dd4b514c0b5642feafc93b66e73e9446&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-8-4" data-filter-record><span class="chip">已有候选，非等价验收</span><h3>发送数据</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Communication/SendDatasModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已建立候选入口，具体以工具专页源码分析为准。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">差异按现有工具专页逐模式复审</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">按既有推荐整改/混合；不默认保留</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">相机IO需设备能力、触发/输入输出语义和安全测试端点；普通发送字节不能代证。</td></tr></tbody></table></div><a href="../现状分析/tool-detail-SendData.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Communication/SendDatasModule&quot;,
+  &quot;label&quot;: &quot;发送数据&quot;,
+  &quot;category&quot;: &quot;通信&quot;,
+  &quot;kind&quot;: &quot;candidate&quot;,
+  &quot;status&quot;: &quot;已有候选，非等价验收&quot;,
+  &quot;difference&quot;: &quot;差异按现有工具专页逐模式复审&quot;,
+  &quot;adoption&quot;: &quot;按既有推荐整改/混合；不默认保留&quot;,
+  &quot;current&quot;: &quot;已建立候选入口，具体以工具专页源码分析为准。&quot;,
+  &quot;gap&quot;: &quot;候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。&quot;,
+  &quot;change&quot;: &quot;相机IO需设备能力、触发/输入输出语义和安全测试端点；普通发送字节不能代证。&quot;,
+  &quot;url&quot;: &quot;../现状分析/tool-detail-SendData.html&quot;,
+  &quot;candidates&quot;: [
+    {
+      &quot;id&quot;: &quot;SendData&quot;,
+      &quot;name&quot;: &quot;发送数据&quot;,
+      &quot;category&quot;: &quot;通信工具&quot;,
+      &quot;file&quot;: &quot;../现状分析/tool-detail-SendData.html&quot;,
+      &quot;model&quot;: &quot;pending&quot;,
+      &quot;area&quot;: null,
+      &quot;scope&quot;: &quot;已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明&quot;,
+      &quot;source&quot;: {
+        &quot;path&quot;: &quot;tools/SunEyeVision.Tool.SendData/SendDataTool.cs&quot;,
+        &quot;line&quot;: 10,
+        &quot;token&quot;: &quot;[Tool(\&quot;SendData\&quot;, \&quot;发送数据\&quot;, Icon = \&quot;send\&quot;, Order = 40, Category = ToolCategories.Communication,\r&quot;,
+        &quot;sha256&quot;: &quot;8c5a9acce0c55faa3486ad180783222aafc1a551526be3c8b50759d2bb04a222&quot;,
+        &quot;snippet&quot;: &quot;[Tool(\&quot;SendData\&quot;, \&quot;发送数据\&quot;, Icon = \&quot;send\&quot;, Order = 40, Category = ToolCategories.Communication,\r\n    Description = \&quot;将本次工作流数据提交到设备、变量或发送事件\&quot;, HasDebugWindow = true)]\r\npublic sealed class SendDataTool : IToolPlugin&lt;SendDataParameters, SendDataResults&gt;, IAsyncToolPlugin, IToolEditorFactory, IToolExecutionProfileProvider\r\n{\r\n    public System.Windows.FrameworkElement CreateDebugControl(IToolPlugin tool) =&gt; new Views.SendDataEditor();\r\n    public System.Windows.FrameworkElement CreateDataAnalysisControl() =&gt; new CommunicationDataAnalysisControl();\r\n    public ToolExecutionProfile DescribeExecution(ToolParameters parameters) =&gt; ToolExecutionProfile.LegacyExclusive;\r\n    public SendDataResults Run(SendDataParameters p) =&gt; SendAsync(p, p.Context?.CommunicationOutputs, p.Context?.NodeId,\r\n        p.NodeResults, p.Context?.GlobalVariables, p.Context?.CancellationToken ?? default).GetAwaiter().GetResult();\r\n    public async ValueTask&lt;ToolResults&gt; ExecuteAsync(ToolExecutionRequest request) =&gt;\r\n        await SendAsync((SendDataParameters)request.Parameters, request.Context.CommunicationOutputs ?? request.CommunicationOutputs,\r\n            request.NodeId, request.NodeResults, request.GlobalVariables, request.CancellationToken, request.WorkflowId).ConfigureAwait(false);\r\n\r\n    private static async Task&lt;SendDataResults&gt; SendAsync(SendDataParameters p, ICommunicationSendService? service, string? nodeId,\r\n        IDictionary&lt;string, ToolResults&gt;? results, IDictionary&lt;string, object?&gt;? globals, CancellationToken token, string? workflowId = null)\r\n    {\r\n        var result = new SendDataResults(); var watch = Stopwatch.StartNew(); var analysis = new List&lt;CommunicationAnalysisRow&gt;();\r\n        var submittedValues = new Dictionary&lt;Guid, object?&gt;();\r&quot;
+      },
+      &quot;sourceAudit&quot;: &quot;五段实现与失败取消路径已局部静态审读&quot;
+    }
+  ],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;SendData1&quot;,
+    &quot;SendData2&quot;,
+    &quot;SendData3&quot;,
+    &quot;SendData4&quot;,
+    &quot;SendData5&quot;,
+    &quot;SendData6&quot;,
+    &quot;SendData7&quot;,
+    &quot;SendData8&quot;,
+    &quot;SendData9&quot;,
+    &quot;SendData10&quot;,
+    &quot;SendData11&quot;,
+    &quot;SendData12&quot;,
+    &quot;SendData13&quot;,
+    &quot;SendData14&quot;,
+    &quot;SendData15&quot;,
+    &quot;SendData16&quot;,
+    &quot;SendData17&quot;,
+    &quot;SendData18&quot;,
+    &quot;SendData19&quot;,
+    &quot;SendData20&quot;,
+    &quot;SendData21&quot;,
+    &quot;SendData22&quot;,
+    &quot;SendData23&quot;,
+    &quot;SendData24&quot;,
+    &quot;SendData25&quot;,
+    &quot;SendData26&quot;,
+    &quot;SendData27&quot;,
+    &quot;SendData28&quot;,
+    &quot;SendData29&quot;,
+    &quot;SendData30&quot;,
+    &quot;SendData31&quot;,
+    &quot;SendData32&quot;,
+    &quot;InputImage1&quot;,
+    &quot;InImage1&quot;,
+    &quot;InImageWidth1&quot;,
+    &quot;InImageHeight1&quot;,
+    &quot;InImagePixelFormat1&quot;,
+    &quot;InputImage2&quot;,
+    &quot;InImage2&quot;,
+    &quot;InImageWidth2&quot;,
+    &quot;InImageHeight2&quot;,
+    &quot;InImagePixelFormat2&quot;,
+    &quot;InputImage3&quot;,
+    &quot;InImage3&quot;,
+    &quot;InImageWidth3&quot;,
+    &quot;InImageHeight3&quot;,
+    &quot;InImagePixelFormat3&quot;,
+    &quot;InputImage4&quot;,
+    &quot;InImage4&quot;,
+    &quot;InImageWidth4&quot;,
+    &quot;InImageHeight4&quot;,
+    &quot;InImagePixelFormat4&quot;,
+    &quot;InputImage5&quot;,
+    &quot;InImage5&quot;,
+    &quot;InImageWidth5&quot;,
+    &quot;InImageHeight5&quot;,
+    &quot;InImagePixelFormat5&quot;,
+    &quot;InputImage6&quot;,
+    &quot;InImage6&quot;,
+    &quot;InImageWidth6&quot;,
+    &quot;InImageHeight6&quot;,
+    &quot;InImagePixelFormat6&quot;,
+    &quot;InputImage7&quot;,
+    &quot;InImage7&quot;,
+    &quot;InImageWidth7&quot;,
+    &quot;InImageHeight7&quot;,
+    &quot;InImagePixelFormat7&quot;,
+    &quot;InputImage8&quot;,
+    &quot;InImage8&quot;,
+    &quot;InImageWidth8&quot;,
+    &quot;InImageHeight8&quot;,
+    &quot;InImagePixelFormat8&quot;,
+    &quot;InputImage9&quot;,
+    &quot;InImage9&quot;,
+    &quot;InImageWidth9&quot;,
+    &quot;InImageHeight9&quot;,
+    &quot;InImagePixelFormat9&quot;,
+    &quot;InputImage10&quot;,
+    &quot;InImage10&quot;,
+    &quot;InImageWidth10&quot;,
+    &quot;InImageHeight10&quot;,
+    &quot;InImagePixelFormat10&quot;,
+    &quot;InputImage11&quot;,
+    &quot;InImage11&quot;,
+    &quot;InImageWidth11&quot;,
+    &quot;InImageHeight11&quot;,
+    &quot;InImagePixelFormat11&quot;,
+    &quot;InputImage12&quot;,
+    &quot;InImage12&quot;,
+    &quot;InImageWidth12&quot;,
+    &quot;InImageHeight12&quot;,
+    &quot;InImagePixelFormat12&quot;,
+    &quot;InputImage13&quot;,
+    &quot;InImage13&quot;,
+    &quot;InImageWidth13&quot;,
+    &quot;InImageHeight13&quot;,
+    &quot;InImagePixelFormat13&quot;,
+    &quot;InputImage14&quot;,
+    &quot;InImage14&quot;,
+    &quot;InImageWidth14&quot;,
+    &quot;InImageHeight14&quot;,
+    &quot;InImagePixelFormat14&quot;,
+    &quot;InputImage15&quot;,
+    &quot;InImage15&quot;,
+    &quot;InImageWidth15&quot;,
+    &quot;InImageHeight15&quot;,
+    &quot;InImagePixelFormat15&quot;,
+    &quot;InputImage16&quot;,
+    &quot;InImage16&quot;,
+    &quot;InImageWidth16&quot;,
+    &quot;InImageHeight16&quot;,
+    &quot;InImagePixelFormat16&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;SendData&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModule.xml&quot;,
+      &quot;sha256&quot;: &quot;955062500d4bbe45e5d2124602412482112087d963fa7a81e0f79852900cdb3b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;da7cb5182d8f320c59f159d0dad421cc8b9c456a2c06650031dbfda68f775b82&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;e3191ccc1687e6904096fef59a5c87fb9d8b8c0c7f45f8f89593996acf3864c2&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;da1c7213ed034e52a625d30fb6ed8386d24760916e8546b919175b2db92bf9eb&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;f7abad56abfbfdcb11c187b24a61e8f15968496faae80f624f7539cd6faacba9&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;a04c090a9337e7ccc00b3008aff175d783422a51839be7c2249741a02bc0c448&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section></div></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

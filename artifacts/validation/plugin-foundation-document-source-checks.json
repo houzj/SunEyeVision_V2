@@ -1,0 +1,422 @@
+{
+  "taskId": "PLUGIN-FOUNDATION-01",
+  "revision": 2,
+  "deliverySha256": "8d75150c1c80465d74218051e8a581689c81f0e84c984b1e0017a58b7fde84ee",
+  "groups": {
+    "source": [
+      {
+        "path": "Directory.Build.props",
+        "expected": "92c5c3ec19b824cf83e22726aaaa0e0695f03cffc30d5fc810118a9190734977",
+        "observed": "92c5c3ec19b824cf83e22726aaaa0e0695f03cffc30d5fc810118a9190734977",
+        "matches": true
+      },
+      {
+        "path": "Directory.Build.targets",
+        "expected": "8b65f6a49d645a5b507c7cfd79f388f2b965e215dca46617ce7512b87b5c806e",
+        "observed": "8b65f6a49d645a5b507c7cfd79f388f2b965e215dca46617ce7512b87b5c806e",
+        "matches": true
+      },
+      {
+        "path": "libs/halcon/net/halcondotnetxl.dll",
+        "expected": "a1c8c3ef74f37f751e5cfb08a513b68f36a75511d7b4f9fd4e5a532e45652c57",
+        "observed": "a1c8c3ef74f37f751e5cfb08a513b68f36a75511d7b4f9fd4e5a532e45652c57",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/CheckExternalPackage.py",
+        "expected": "e4dd871d69af9828aaae388d9ed4018a9cc0fa1b8a587620bbe1cafccd085fd2",
+        "observed": "e4dd871d69af9828aaae388d9ed4018a9cc0fa1b8a587620bbe1cafccd085fd2",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Directory.Build.props",
+        "expected": "6a7659cf7b253814825b5b8c9cf56eb6531dfa997bac1ec1cbbae0f84dad4088",
+        "observed": "6a7659cf7b253814825b5b8c9cf56eb6531dfa997bac1ec1cbbae0f84dad4088",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Directory.Build.targets",
+        "expected": "400b35829b2a391f4048da02e1108b98db09431b2947e806a184743bd1b33c3a",
+        "observed": "400b35829b2a391f4048da02e1108b98db09431b2947e806a184743bd1b33c3a",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/HalconSample/SunEyeVision.Plugin.Foundation.HalconSample.csproj",
+        "expected": "ed6ad27eaff71395f5fd3222c8c66fa30f12ed650f057d318525adedcc1f813c",
+        "observed": "ed6ad27eaff71395f5fd3222c8c66fa30f12ed650f057d318525adedcc1f813c",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/HalconSample/ThresholdDefinition.cs",
+        "expected": "45f97d944de2c4785f71810cd7d54597af7cf6d6cf9ea40ea15156e12454532b",
+        "observed": "45f97d944de2c4785f71810cd7d54597af7cf6d6cf9ea40ea15156e12454532b",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/HalconSample/packages.lock.json",
+        "expected": "d85457196cd25624166867a74d7f9a15c8f50c27513feca576a756660970d61f",
+        "observed": "d85457196cd25624166867a74d7f9a15c8f50c27513feca576a756660970d61f",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Host/ImageOwnership.cs",
+        "expected": "f95301dc1e221410452dc69da1c0ce917501be5754af671ac7182ea3bc8e377f",
+        "observed": "f95301dc1e221410452dc69da1c0ce917501be5754af671ac7182ea3bc8e377f",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Host/InvocationHost.cs",
+        "expected": "69d5ee2fca03732c4de6f0cf3616a89e5a93c719b0dab99cc47f516431ed490b",
+        "observed": "69d5ee2fca03732c4de6f0cf3616a89e5a93c719b0dab99cc47f516431ed490b",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Host/SunEyeVision.Plugin.Foundation.Host.csproj",
+        "expected": "3ed01bbebeb6215a4acad68ed64570a9a4b7173444632dca411ddc888399b039",
+        "observed": "3ed01bbebeb6215a4acad68ed64570a9a4b7173444632dca411ddc888399b039",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Host/packages.lock.json",
+        "expected": "d85457196cd25624166867a74d7f9a15c8f50c27513feca576a756660970d61f",
+        "observed": "d85457196cd25624166867a74d7f9a15c8f50c27513feca576a756660970d61f",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/PluginFoundation.slnx",
+        "expected": "50d34a078b64dbea7dcc789d2396d48e9ee78bf5b5130d817bc678ee8d2672e5",
+        "observed": "50d34a078b64dbea7dcc789d2396d48e9ee78bf5b5130d817bc678ee8d2672e5",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/README.md",
+        "expected": "9286fe11f225d870bbb63c4b517f34f13f4b1912e2bf7ff8063d875d19dcd285",
+        "observed": "9286fe11f225d870bbb63c4b517f34f13f4b1912e2bf7ff8063d875d19dcd285",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Samples/SampleTools.cs",
+        "expected": "150dcd5f6fb4efa661fb9405e0641bc8030e179940ea71a79ff771cb76c8eaab",
+        "observed": "150dcd5f6fb4efa661fb9405e0641bc8030e179940ea71a79ff771cb76c8eaab",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Samples/SunEyeVision.Plugin.Foundation.Samples.csproj",
+        "expected": "e9b6dc09337b78bd02b2c97198113c0bca629db362e8d1cc10457bfba764a439",
+        "observed": "e9b6dc09337b78bd02b2c97198113c0bca629db362e8d1cc10457bfba764a439",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Samples/packages.lock.json",
+        "expected": "df4a91bc8b09854f4343683530ea73c598408d8387622fd43205fce08015bff1",
+        "observed": "df4a91bc8b09854f4343683530ea73c598408d8387622fd43205fce08015bff1",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Verification/Program.cs",
+        "expected": "be1987a7587f24a0cacaa1bcf25d4645efe3ba807e5a7a4a264a05c628674837",
+        "observed": "be1987a7587f24a0cacaa1bcf25d4645efe3ba807e5a7a4a264a05c628674837",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Verification/SunEyeVision.Plugin.Foundation.Verification.csproj",
+        "expected": "38e4b9a540f119ee2d4e88419ce52fa4199f57b68764062c03aa4cf5e74ce448",
+        "observed": "38e4b9a540f119ee2d4e88419ce52fa4199f57b68764062c03aa4cf5e74ce448",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Verification/packages.lock.json",
+        "expected": "1a32f49d7379000a989e272085d0e791b8d3f2d1dc29afaa3b00c5c4883f1315",
+        "observed": "1a32f49d7379000a989e272085d0e791b8d3f2d1dc29afaa3b00c5c4883f1315",
+        "matches": true
+      },
+      {
+        "path": "samples/PluginFoundation/Verify.ps1",
+        "expected": "7619ff5d1b50bc60beec801ef74f9988c327f7bb06bd31344aca921ca9589fab",
+        "observed": "7619ff5d1b50bc60beec801ef74f9988c327f7bb06bd31344aca921ca9589fab",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Contracts/Directory.Build.props",
+        "expected": "6a7659cf7b253814825b5b8c9cf56eb6531dfa997bac1ec1cbbae0f84dad4088",
+        "observed": "6a7659cf7b253814825b5b8c9cf56eb6531dfa997bac1ec1cbbae0f84dad4088",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Contracts/Directory.Build.targets",
+        "expected": "400b35829b2a391f4048da02e1108b98db09431b2947e806a184743bd1b33c3a",
+        "observed": "400b35829b2a391f4048da02e1108b98db09431b2947e806a184743bd1b33c3a",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Contracts/Editing.cs",
+        "expected": "11cd5065a2df2ac6f94b2bb98576d17302fe6b8a0b4e01716ac93450d487c36b",
+        "observed": "11cd5065a2df2ac6f94b2bb98576d17302fe6b8a0b4e01716ac93450d487c36b",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Contracts/README.md",
+        "expected": "206c55028792bd9662eae82ef6c94fff4a9fd215b22eccb595a625506376f5b7",
+        "observed": "206c55028792bd9662eae82ef6c94fff4a9fd215b22eccb595a625506376f5b7",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Contracts/Resources.cs",
+        "expected": "50acf309c6a1c5c34896d8bdb85e002415f7952ca3f5925b5e7215845281ad59",
+        "observed": "50acf309c6a1c5c34896d8bdb85e002415f7952ca3f5925b5e7215845281ad59",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj",
+        "expected": "537cdaec77cc15028f591916c9edafc7ca53d00c7e284350b33d55613fbf1f66",
+        "observed": "537cdaec77cc15028f591916c9edafc7ca53d00c7e284350b33d55613fbf1f66",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Contracts/ToolContracts.cs",
+        "expected": "44c68eac2b293a1ac98481730d83c4c5a5a50e2b52bcf99cb514cafaa224247b",
+        "observed": "44c68eac2b293a1ac98481730d83c4c5a5a50e2b52bcf99cb514cafaa224247b",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Contracts/Values.cs",
+        "expected": "489bf240dc3ec434882921657349847c4fc61fd5aaf720dc2ccc008c28876510",
+        "observed": "489bf240dc3ec434882921657349847c4fc61fd5aaf720dc2ccc008c28876510",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Contracts/packages.lock.json",
+        "expected": "b73d37dd40999e09a085827ee564935343d493bd1930d446e6a1a5f55ab4b505",
+        "observed": "b73d37dd40999e09a085827ee564935343d493bd1930d446e6a1a5f55ab4b505",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.SDK/Execution/Helpers/PointMeasurementGeometry.cs",
+        "expected": "2ac0f068248054937fc8ad2b66d6aab7a0cc62abde654e599d221a29bcdad021",
+        "observed": "2ac0f068248054937fc8ad2b66d6aab7a0cc62abde654e599d221a29bcdad021",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+        "expected": "3015bf533a4891425ee92f288a50fa37192af2aa0b09d61eb6ec6492c71ec256",
+        "observed": "3015bf533a4891425ee92f288a50fa37192af2aa0b09d61eb6ec6492c71ec256",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.SDK/packages.lock.json",
+        "expected": "97deb8cad83c42176fcb0ef8c6c05838a51d8d43c00afb9466bb451089c0dea8",
+        "observed": "97deb8cad83c42176fcb0ef8c6c05838a51d8d43c00afb9466bb451089c0dea8",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Wpf/Directory.Build.props",
+        "expected": "6a7659cf7b253814825b5b8c9cf56eb6531dfa997bac1ec1cbbae0f84dad4088",
+        "observed": "6a7659cf7b253814825b5b8c9cf56eb6531dfa997bac1ec1cbbae0f84dad4088",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Wpf/Directory.Build.targets",
+        "expected": "400b35829b2a391f4048da02e1108b98db09431b2947e806a184743bd1b33c3a",
+        "observed": "400b35829b2a391f4048da02e1108b98db09431b2947e806a184743bd1b33c3a",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Wpf/ParameterEditorControl.cs",
+        "expected": "5ef26e756ed818bf48bb4fcc0f6e5751777e3e96815b79e449c4243b05f1ddab",
+        "observed": "5ef26e756ed818bf48bb4fcc0f6e5751777e3e96815b79e449c4243b05f1ddab",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj",
+        "expected": "3ccab4274f8f217158f196672e7f01040ccfb67fe554361ca2d02a37bbfc0773",
+        "observed": "3ccab4274f8f217158f196672e7f01040ccfb67fe554361ca2d02a37bbfc0773",
+        "matches": true
+      },
+      {
+        "path": "src/Plugin.Wpf/packages.lock.json",
+        "expected": "620c2bcc157b55e206bf8f306d92adb2d0d45f7d02027a086e20596d8fb7db42",
+        "observed": "620c2bcc157b55e206bf8f306d92adb2d0d45f7d02027a086e20596d8fb7db42",
+        "matches": true
+      },
+      {
+        "path": "src/SunEyeVision.HalAdapter/HalconLinearFilters.cs",
+        "expected": "fdd07350f3fd0cd69415c7418f750ebe87106adaa522416a52674b730eb7e846",
+        "observed": "fdd07350f3fd0cd69415c7418f750ebe87106adaa522416a52674b730eb7e846",
+        "matches": true
+      },
+      {
+        "path": "src/SunEyeVision.HalAdapter/HalconThresholdOperations.cs",
+        "expected": "ac728c6711ef17af4c43db7cd4a0cc6fe2f46891d8b17f4798c74ed431a49b5c",
+        "observed": "ac728c6711ef17af4c43db7cd4a0cc6fe2f46891d8b17f4798c74ed431a49b5c",
+        "matches": true
+      },
+      {
+        "path": "src/Tool.Kernels/Directory.Build.props",
+        "expected": "6a7659cf7b253814825b5b8c9cf56eb6531dfa997bac1ec1cbbae0f84dad4088",
+        "observed": "6a7659cf7b253814825b5b8c9cf56eb6531dfa997bac1ec1cbbae0f84dad4088",
+        "matches": true
+      },
+      {
+        "path": "src/Tool.Kernels/Directory.Build.targets",
+        "expected": "400b35829b2a391f4048da02e1108b98db09431b2947e806a184743bd1b33c3a",
+        "observed": "400b35829b2a391f4048da02e1108b98db09431b2947e806a184743bd1b33c3a",
+        "matches": true
+      },
+      {
+        "path": "src/Tool.Kernels/PointPairMath.cs",
+        "expected": "43b1449d30f9bb4a50d548f174a06c111ce42dd278eaf4bcf95eadaf9f292f0c",
+        "observed": "43b1449d30f9bb4a50d548f174a06c111ce42dd278eaf4bcf95eadaf9f292f0c",
+        "matches": true
+      },
+      {
+        "path": "src/Tool.Kernels/SunEyeVision.Tool.Kernels.csproj",
+        "expected": "174fb2bf403c288476511398a2af8700e945dd327a1b998e54023f70815c9fc1",
+        "observed": "174fb2bf403c288476511398a2af8700e945dd327a1b998e54023f70815c9fc1",
+        "matches": true
+      },
+      {
+        "path": "src/Tool.Kernels/packages.lock.json",
+        "expected": "b73d37dd40999e09a085827ee564935343d493bd1930d446e6a1a5f55ab4b505",
+        "observed": "b73d37dd40999e09a085827ee564935343d493bd1930d446e6a1a5f55ab4b505",
+        "matches": true
+      },
+      {
+        "path": "version.json",
+        "expected": "28327d1d1239f9681fe8f6f1c45451d0c91081fa4fddf62367d6f75d72d6d2ec",
+        "observed": "28327d1d1239f9681fe8f6f1c45451d0c91081fa4fddf62367d6f75d72d6d2ec",
+        "matches": true
+      }
+    ],
+    "binary": [
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\halcondotnetxl.dll",
+        "expected": "a1c8c3ef74f37f751e5cfb08a513b68f36a75511d7b4f9fd4e5a532e45652c57",
+        "observed": "a1c8c3ef74f37f751e5cfb08a513b68f36a75511d7b4f9fd4e5a532e45652c57",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\halcondotnetxl.xml",
+        "expected": "6914b32ed3328c0ac6d561422abb952005c9d5c5042a7566f968ff4e9c265eb0",
+        "observed": "6914b32ed3328c0ac6d561422abb952005c9d5c5042a7566f968ff4e9c265eb0",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\SunEyeVision.Plugin.Contracts.dll",
+        "expected": "346bd9f2ffd12fc14ae188c488cc1ec67d1595d3db1db12a8f4b34e6ea133e37",
+        "observed": "346bd9f2ffd12fc14ae188c488cc1ec67d1595d3db1db12a8f4b34e6ea133e37",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\SunEyeVision.Plugin.Contracts.xml",
+        "expected": "bd38734fd9bf57bc09643ea75a93748da0f630ed3bc8adabebf3cb1c36434334",
+        "observed": "bd38734fd9bf57bc09643ea75a93748da0f630ed3bc8adabebf3cb1c36434334",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\SunEyeVision.Plugin.Foundation.HalconSample.dll",
+        "expected": "b996990986aee4886959ba2be3699ad626f0c20bdab2c2fde1337ca04c3cb6fe",
+        "observed": "b996990986aee4886959ba2be3699ad626f0c20bdab2c2fde1337ca04c3cb6fe",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\SunEyeVision.Plugin.Foundation.Host.dll",
+        "expected": "6be0b3a2e58328b91dc27c21f85f80cb2320ce66d7920c7ffad4f7e3cff3e420",
+        "observed": "6be0b3a2e58328b91dc27c21f85f80cb2320ce66d7920c7ffad4f7e3cff3e420",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\SunEyeVision.Plugin.Foundation.Samples.dll",
+        "expected": "3804099b85884b25b2c850145d2b4407eb0d0a2fe6c6a00f7c4ab799ea523394",
+        "observed": "3804099b85884b25b2c850145d2b4407eb0d0a2fe6c6a00f7c4ab799ea523394",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\SunEyeVision.Plugin.Foundation.Verification.deps.json",
+        "expected": "c033ae4597437bd7d7b0a91b7cdb486fdbd85bb1f18411604ff8c2b231151e3b",
+        "observed": "c033ae4597437bd7d7b0a91b7cdb486fdbd85bb1f18411604ff8c2b231151e3b",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\SunEyeVision.Plugin.Foundation.Verification.dll",
+        "expected": "476bd485974202c70afcbf0b27c49dc4a39607a8628a24ccbb8330cf9332e121",
+        "observed": "476bd485974202c70afcbf0b27c49dc4a39607a8628a24ccbb8330cf9332e121",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\SunEyeVision.Plugin.Foundation.Verification.exe",
+        "expected": "428dd85735155bf2c7c0eed4dd5f71f3a1c25cc6cb42d866e3386c189204f1da",
+        "observed": "428dd85735155bf2c7c0eed4dd5f71f3a1c25cc6cb42d866e3386c189204f1da",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\SunEyeVision.Plugin.Foundation.Verification.runtimeconfig.json",
+        "expected": "05917b409d59af31bc8d3021bc06302a0c21c7d05b449603d6cc9f0301a2b66c",
+        "observed": "05917b409d59af31bc8d3021bc06302a0c21c7d05b449603d6cc9f0301a2b66c",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\SunEyeVision.Plugin.Wpf.dll",
+        "expected": "d671f77e2d7eb54b480df733d422c5eee1ad6ee6daa400f37817c183eb6f54c0",
+        "observed": "d671f77e2d7eb54b480df733d422c5eee1ad6ee6daa400f37817c183eb6f54c0",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\plugin-foundation-01\\bin\\SunEyeVision.Plugin.Foundation.Verification\\Release\\SunEyeVision.Tool.Kernels.dll",
+        "expected": "fbe9e00674f4f91f6ba2737de5863f9a3137821face71eb294730266f4f865e6",
+        "observed": "fbe9e00674f4f91f6ba2737de5863f9a3137821face71eb294730266f4f865e6",
+        "matches": true
+      }
+    ],
+    "delivery": [
+      {
+        "path": "artifacts/validation/plugin-foundation-01/source-manifest.json",
+        "expected": "c9705e6bc0460809a6d80860bb386ce3c8997052ce87480817cd6882c3bac2ff",
+        "observed": "c9705e6bc0460809a6d80860bb386ce3c8997052ce87480817cd6882c3bac2ff",
+        "matches": true
+      },
+      {
+        "path": "artifacts/validation/plugin-foundation-01/binary-manifest.json",
+        "expected": "235402b4999bda859d5136357914e2f548c03bc11ccbf3cb75201cd85b6e50b5",
+        "observed": "235402b4999bda859d5136357914e2f548c03bc11ccbf3cb75201cd85b6e50b5",
+        "matches": true
+      },
+      {
+        "path": "artifacts/validation/plugin-foundation-01/foundation-source.zip",
+        "expected": "e63d606051d164a478a1baaf566a11620b80fc37b4cab9bd9e93684a52dee5f2",
+        "observed": "e63d606051d164a478a1baaf566a11620b80fc37b4cab9bd9e93684a52dee5f2",
+        "matches": true
+      },
+      {
+        "path": "artifacts/validation/plugin-foundation-01/foundation-verification.zip",
+        "expected": "640812082860cac6f6f2b0cbb0c8685602f4dd0774cae68b2c99c1c9b5f8eb6d",
+        "observed": "640812082860cac6f6f2b0cbb0c8685602f4dd0774cae68b2c99c1c9b5f8eb6d",
+        "matches": true
+      },
+      {
+        "path": "artifacts/validation/plugin-foundation-01/local-report.json",
+        "expected": "ba353b5498fab73a9b3bcbb87996623c50b3a3c0e6b8f8e84fb9e7490361c175",
+        "observed": "ba353b5498fab73a9b3bcbb87996623c50b3a3c0e6b8f8e84fb9e7490361c175",
+        "matches": true
+      },
+      {
+        "path": "artifacts/validation/plugin-foundation-01/external-consumer.json",
+        "expected": "5fef1f47e896c97cc63a72debbd59d288a047cae85f3a92192802720644a146f",
+        "observed": "5fef1f47e896c97cc63a72debbd59d288a047cae85f3a92192802720644a146f",
+        "matches": true
+      },
+      {
+        "path": "artifacts/validation/plugin-foundation-01/release-probe-result.json",
+        "expected": "52d697d5f78a331a825f99af19ac57cad4ec592153ea49d9c24b4fa6bb424601",
+        "observed": "52d697d5f78a331a825f99af19ac57cad4ec592153ea49d9c24b4fa6bb424601",
+        "matches": true
+      },
+      {
+        "path": "artifacts/validation/plugin-foundation-01/sdk/SunEyeVision.Plugin.Contracts.3.0.0-foundation.2.nupkg",
+        "expected": "97982e35cc71656a1e043f164a492be887c5e34c560d298a7e26ebc9c116c5b2",
+        "observed": "97982e35cc71656a1e043f164a492be887c5e34c560d298a7e26ebc9c116c5b2",
+        "matches": true
+      }
+    ]
+  },
+  "productExecuted": false
+}

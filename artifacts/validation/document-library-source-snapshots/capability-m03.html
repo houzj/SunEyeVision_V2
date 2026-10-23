@@ -1,0 +1,165 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M03 保存当前方案 / Ctrl+S</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">M03 保存当前方案 / Ctrl+S</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>M03 保存当前方案 / Ctrl+S</h1><article id="compare-M03"><span id="M03"></span><div class="visual-metrics"><div><strong>M03</strong><span>能力条目</span><small>静态路径已见</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>自研整改</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>菜单/按钮</b></li><li><small>02</small><b>SaveCurrentSolutionCommand</b></li><li><small>03</small><b>ExecuteSaveCurrentSolution</b></li><li><small>04</small><b>SaveSolutionData</b></li><li><small>05</small><b>SaveSolution</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>把配置序列化到目标旁的临时文件，已有目标先存上一版本，再替换目标。；用户看到“已保存”应能区分方案文件已写入与目录索引/设置同步情况。；恢复目录用原方案完整路径的哈希定位previous.solution；它保留上一次覆盖前的文件。</p><details><summary>完整缺陷与未闭合调用边</summary><p>文件不直接截断旧目标，这是已有保护。但solution.FilePath和communication.Settings.Remove在写入之前发生；后续失败没有对应恢复内存的finally。不能把磁盘替换保护说成整个保存事务已原子。；Manager会检查Repository的false；主窗入口也检查SaveSolution失败。事件订阅者和后续设置写入属于额外失败边界，不能因此断言整个保存没有错误传播。；这是已有上一版本恢复，不等每次编辑自动备份。恢复加载可传原资源目录，避免把恢复目录当资源基目录；临时目录清理与路径改名策略还需发布验收。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>VmSolution.InternalExport→SolutionManager/SDK保存回调；原.sol原生写入边界独立。</p><p>参考VmSolution导出并发标记和保存完成回调；普通模式错误传播仍有限制。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/SOLUTION-PERSISTENCE-BOUNDARY.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">已有版本/缺插件校验、临时替换和上一版本恢复；但文件提交前修改FilePath和通信设置且失败无内存回滚。必须局部整改；格式整体优劣仍暂缓。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：已有版本/缺插件校验、临时替换和上一版本恢复；但文件提交前修改FilePath和通信设置且失败无内存回滚。必须局部整改；格式整体优劣仍暂缓。 VM参考边界：参考VmSolution导出并发标记和保存完成回调；普通模式错误传播仍有限制。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">以候选副本规范化并写入，成功后提交内存路径/设置；区分文件、索引、通知失败，保留已有临时替换。版本迁移和格式更换另评。 成功后才清脏状态；版本、备份、缺插件占位和ID重映射分别实现验证。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">拒绝覆盖、文件占用、无权限、序列化失败分别核原字节与内存状态；断电耐久性未验证，不用原子替换名词代证。；注入保存后事件异常、设置失败时提示实际阶段；重启后文件可找到；未保存状态只按明确提交合同清除。；原文件损坏、恢复文件损坏、资源相对路径、临时目录被清理、另存/重命名分别核；不把一次恢复方法存在当故障验收。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o08.html#O08"><b>方案、标定文件与恢复事务</b><small class="reference-id">优化方案 · O08</small></a></td></tr></tbody></table></div></section><article id="recommendation-M03"><h2>M03 保存当前方案 / Ctrl+S · 必须整改</h2><p><b>代码依据 / 局限：</b>已有版本/缺插件校验、临时替换和上一版本恢复；但文件提交前修改FilePath和通信设置且失败无内存回滚。必须局部整改；格式整体优劣仍暂缓。</p><p><b>VM可借鉴与不可推断：</b>参考VmSolution导出并发标记和保存完成回调；普通模式错误传播仍有限制。</p><p><b>具体改法 / 成本：</b>以候选副本规范化并写入，成功后提交内存路径/设置；区分文件、索引、通知失败，保留已有临时替换。版本迁移和格式更换另评。 成功后才清脏状态；版本、备份、缺插件占位和ID重映射分别实现验证。</p><p><b>验收：</b>拒绝覆盖、文件占用、无权限、序列化失败分别核原字节与内存状态；断电耐久性未验证，不用原子替换名词代证。；注入保存后事件异常、设置失败时提示实际阶段；重启后文件可找到；未保存状态只按明确提交合同清除。；原文件损坏、恢复文件损坏、资源相对路径、临时目录被清理、另存/重命名分别核；不把一次恢复方法存在当故障验收。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M03">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M03">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S005</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml">src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml:242</a></p><p><code>SaveCurrentSolutionCommand</code></p><p>SHA256 <code>81a0498d514de68b10fb0bb52028ef98cdc4da9a242aa5d2d68ff792a93435d8</code></p><pre>                    &lt;MenuItem Header=&quot;保存当前(_S)&quot; Command=&quot;{Binding SaveCurrentSolutionCommand}&quot; InputGestureText=&quot;Ctrl+S&quot;/&gt;
+                    &lt;Separator/&gt;
+                    &lt;MenuItem Header=&quot;退出(_X)&quot; Click=&quot;ExitMenu_Click&quot; InputGestureText=&quot;Alt+F4&quot;/&gt;
+                &lt;/MenuItem&gt;
+                &lt;MenuItem Header=&quot;视图(_V)&quot; Style=&quot;{StaticResource TitleBarMenuButton}&quot;&gt;
+                    &lt;MenuItem Header=&quot;显示路径拐点(_P)&quot; InputGestureText=&quot;Ctrl+P&quot; Command=&quot;{Binding TogglePathPointsCommand}&quot;/&gt;
+                    &lt;Separator/&gt;
+                    &lt;MenuItem Header=&quot;全屏(_F)&quot; InputGestureText=&quot;F11&quot; Click=&quot;ToggleFullscreen_Click&quot;/&gt;
+                &lt;/MenuItem&gt;
+                &lt;MenuItem Header=&quot;运行(_R)&quot; Style=&quot;{StaticResource TitleBarMenuButton}&quot;&gt;
+                    &lt;MenuItem Header=&quot;运行(_R)&quot; Command=&quot;{Binding RunWorkflowCommand}&quot; InputGestureText=&quot;F5&quot;/&gt;
+                    &lt;MenuItem Header=&quot;停止(_S)&quot; Command=&quot;{Binding StopWorkflowCommand}&quot; InputGestureText=&quot;Shift+F5&quot;/&gt;
+                &lt;/MenuItem&gt;
+                &lt;MenuItem Header=&quot;工具(_T)&quot; Style=&quot;{StaticResource TitleBarMenuButton}&quot;&gt;</pre></details><details class="source-card"><summary>S006</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:1537</a></p><p><code>ExecuteSaveCurrentSolution</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void ExecuteSaveCurrentSolution()
+        {
+            try
+            {
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+
+                // 1. 如果没有当前解决方案，弹出新建对话框
+                SolutionMetadata? metadata = null;
+                if (solutionManager.CurrentSolution == null)
+                {
+                    LogInfo(&quot;没有当前解决方案，弹出新建对话框&quot;);
+
+                    // ✅ 统一使用解决方案管理器的默认目录
+                    var defaultPath = solutionManager.SolutionsDirectory;</pre></details><details class="source-card"><summary>S007</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionRepository.cs">src/Workflow/SolutionRepository.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0</code></p><pre>﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Core.Services.Serialization;
+using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
+using SunEyeVision.Workflow.Persistence;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json.Nodes;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;</pre></details><details class="source-card"><summary>N014</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionRepository.cs">src/Workflow/SolutionRepository.cs:529</a></p><p><code>communication.Settings.Remove(&quot;autoConnect&quot;)</code></p><p>SHA256 <code>28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0</code></p><pre>                communication.Settings.Remove(&quot;autoConnect&quot;);
+            solution.FilePath = filePath;
+
+            // 确保目录存在
+            var directory = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directory) &amp;&amp; !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+                _logger.Log(LogLevel.Info, $&quot;[Save #{callId}] 创建目录: {directory}&quot;, &quot;SolutionRepository&quot;);
+            }
+
+            var json = JsonSerializer.Serialize(solution, WorkflowSerializationOptions.Default);
+
+            _logger.Log(LogLevel.Info, $&quot;[Save #{callId}] 序列化完成，开始写入文件&quot;, &quot;SolutionRepository&quot;);
+
+            // Write beside the target so replacement stays on the same volume. Keep the previous
+            // solution as a recoverable .bak; a failed serialization/write never truncates it.
+            using (JsonDocument.Parse(json)) { }
+            var destination = Path.GetFullPath(filePath);
+            temporaryPath = Path.Combine(Path.GetDirectoryName(destination)!,
+                $&quot;.{Path.GetFileName(destination)}.{Guid.NewGuid():N}.tmp&quot;);
+            File.WriteAllText(temporaryPath, json);</pre></details><details class="source-card"><summary>N015</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionManager.cs">src/Workflow/SolutionManager.cs:499</a></p><p><code>bool success = _repository.Save(CurrentSolution, savePath)</code></p><p>SHA256 <code>22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da</code></p><pre>        bool success = _repository.Save(CurrentSolution, savePath);
+        if (!success)
+        {
+            return false;
+        }
+
+        CurrentFilePath = savePath;
+
+        // ✅ 更新元数据
+        if (metadata == null)
+        {
+            // 如果元数据不存在（不应该发生），从文件加载或创建一个基本的元数据
+            metadata = _repository.LoadMetadata(savePath);
+            if (metadata == null)
+            {
+                metadata = new SolutionMetadata
+                {
+                    Id = CurrentSolution.Id,
+                    Name = Path.GetFileNameWithoutExtension(savePath),
+                    Description = &quot;&quot;,
+                    Version = CurrentSolution.Version,
+                    FilePath = savePath,</pre></details><details class="source-card"><summary>N016</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionManager.cs">src/Workflow/SolutionManager.cs:900</a></p><p><code>public Solution RestorePreviousSave</code></p><p>SHA256 <code>22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da</code></p><pre>    public Solution RestorePreviousSave(string solutionId)
+    {
+        var metadata = GetMetadata(solutionId) ?? throw new InvalidOperationException(&quot;方案记录不存在。&quot;);
+        var recovery = _repository.GetRecoveryPath(metadata.FilePath);
+        var restored = _repository.Load(recovery, Path.GetDirectoryName(Path.GetFullPath(metadata.FilePath))!)
+            ?? throw new InvalidDataException(&quot;上一保存版本无法恢复：&quot; + LastError);
+        if (restored.Id != metadata.Id) throw new InvalidDataException(&quot;恢复文件身份不匹配，不会覆盖。&quot;);
+        AtomicJsonFile.Write(metadata.FilePath, File.ReadAllText(recovery));
+        restored.FilePath = metadata.FilePath;
+        return restored;
+    }
+
+    public void UpdateMetadata(SolutionMetadata metadata)
+    {
+        ArgumentNullException.ThrowIfNull(metadata);
+        AtomicJsonFile.ValidateSolutionName(metadata.Name);
+        if (!File.Exists(metadata.FilePath)) throw new FileNotFoundException(&quot;方案文件失效，请先重新定位。&quot;, metadata.FilePath);
+        var previous = GetMetadata(metadata.Id)?.Clone();
+        var original = File.ReadAllText(metadata.FilePath);
+        var document = JsonNode.Parse(original)!.AsObject();
+        document[&quot;Name&quot;] = metadata.Name; document[&quot;Description&quot;] = metadata.Description;
+        var updated = document.ToJsonString(new JsonSerializerOptions { WriteIndented = true });</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M03&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;保存当前方案 / Ctrl+S&quot;,
+  &quot;state&quot;: &quot;implemented&quot;,
+  &quot;chain&quot;: [
+    &quot;菜单/按钮&quot;,
+    &quot;SaveCurrentSolutionCommand&quot;,
+    &quot;ExecuteSaveCurrentSolution&quot;,
+    &quot;SaveSolutionData&quot;,
+    &quot;SaveSolution&quot;
+  ],
+  &quot;current&quot;: &quot;把配置序列化到目标旁的临时文件，已有目标先存上一版本，再替换目标。；用户看到“已保存”应能区分方案文件已写入与目录索引/设置同步情况。；恢复目录用原方案完整路径的哈希定位previous.solution；它保留上一次覆盖前的文件。&quot;,
+  &quot;gap&quot;: &quot;文件不直接截断旧目标，这是已有保护。但solution.FilePath和communication.Settings.Remove在写入之前发生；后续失败没有对应恢复内存的finally。不能把磁盘替换保护说成整个保存事务已原子。；Manager会检查Repository的false；主窗入口也检查SaveSolution失败。事件订阅者和后续设置写入属于额外失败边界，不能因此断言整个保存没有错误传播。；这是已有上一版本恢复，不等每次编辑自动备份。恢复加载可传原资源目录，避免把恢复目录当资源基目录；临时目录清理与路径改名策略还需发布验收。&quot;,
+  &quot;vm&quot;: &quot;VmSolution.InternalExport→SolutionManager/SDK保存回调；原.sol原生写入边界独立。&quot;,
+  &quot;vmDoc&quot;: &quot;SOLUTION-PERSISTENCE-BOUNDARY.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;必须整改&quot;,
+  &quot;reason&quot;: &quot;依据：已有版本/缺插件校验、临时替换和上一版本恢复；但文件提交前修改FilePath和通信设置且失败无内存回滚。必须局部整改；格式整体优劣仍暂缓。 VM参考边界：参考VmSolution导出并发标记和保存完成回调；普通模式错误传播仍有限制。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;以候选副本规范化并写入，成功后提交内存路径/设置；区分文件、索引、通知失败，保留已有临时替换。版本迁移和格式更换另评。 成功后才清脏状态；版本、备份、缺插件占位和ID重映射分别实现验证。&quot;,
+  &quot;accept&quot;: &quot;拒绝覆盖、文件占用、无权限、序列化失败分别核原字节与内存状态；断电耐久性未验证，不用原子替换名词代证。；注入保存后事件异常、设置失败时提示实际阶段；重启后文件可找到；未保存状态只按明确提交合同清除。；原文件损坏、恢复文件损坏、资源相对路径、临时目录被清理、另存/重命名分别核；不把一次恢复方法存在当故障验收。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S005&quot;,
+    &quot;S006&quot;,
+    &quot;S007&quot;,
+    &quot;N014&quot;,
+    &quot;N015&quot;,
+    &quot;N016&quot;
+  ],
+  &quot;optimization&quot;: &quot;O08&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;confirmed&quot;: &quot;把配置序列化到目标旁的临时文件，已有目标先存上一版本，再替换目标。；用户看到“已保存”应能区分方案文件已写入与目录索引/设置同步情况。；恢复目录用原方案完整路径的哈希定位previous.solution；它保留上一次覆盖前的文件。&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留自有格式与原子写入&quot;,
+    &quot;reason&quot;: &quot;已有保存机制可审计，照搬逆向重建.vmx.json不会带来原.sol兼容。&quot;
+  },
+  &quot;defect&quot;: &quot;已有版本/缺插件校验、临时替换和上一版本恢复；但文件提交前修改FilePath和通信设置且失败无内存回滚。必须局部整改；格式整体优劣仍暂缓。&quot;,
+  &quot;vmBorrow&quot;: &quot;参考VmSolution导出并发标记和保存完成回调；普通模式错误传播仍有限制。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;自研整改&quot;,
+  &quot;adoptionBasis&quot;: &quot;针对本项目已见合同/实现修正，尚无采用VM具体实现的充分依据。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;必须整改&quot;,
+    &quot;defect&quot;: &quot;已有版本/缺插件校验、临时替换和上一版本恢复；但文件提交前修改FilePath和通信设置且失败无内存回滚。必须局部整改；格式整体优劣仍暂缓。&quot;,
+    &quot;borrow&quot;: &quot;参考VmSolution导出并发标记和保存完成回调；普通模式错误传播仍有限制。&quot;,
+    &quot;action&quot;: &quot;以候选副本规范化并写入，成功后提交内存路径/设置；区分文件、索引、通知失败，保留已有临时替换。版本迁移和格式更换另评。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;自研整改&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S005&quot;,
+      &quot;S006&quot;,
+      &quot;S007&quot;,
+      &quot;N014&quot;,
+      &quot;N015&quot;,
+      &quot;N016&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

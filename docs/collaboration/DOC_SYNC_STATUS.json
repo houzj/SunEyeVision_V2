@@ -1,0 +1,2814 @@
+{
+  "schemaVersion": 1,
+  "ownerThreadId": "01a160f7-9c99-72c1-b8bf-d689bf19f1ad",
+  "date": "2026-10-22",
+  "objective": "以明确交付驱动文档增量维护，让现状、证据、目标、合同和验收始终可追溯；文档进度与产品进度分别记录。",
+  "batchId": "DOC-UX-SPLIT-20261022",
+  "currentMilestoneStatus": "本批文档分页、界面导航、关系图与中文目录交付；产品实施和24用例运行均未执行",
+  "stableBaseCommit": "3a5dc6dd54f372699a450ad7862b52c961cd2797",
+  "baselineKind": "HEAD plus explicitly identified dirty file snapshots; not a stable accepted product release",
+  "handoff": {
+    "path": "docs/collaboration/ARCH_TARGET_VM_REVIEW_20261022.json",
+    "sha256": "8c8c8bda74eb032aa47b65b11eeecedf0a63c5c2ae711460757654f355d1f993",
+    "received": true,
+    "selectedSourcesVerified": true,
+    "wholeRepositoryVerified": false
+  },
+  "milestones": [
+    {
+      "id": "V01",
+      "title": "按界面位置寻找文档",
+      "status": "完成",
+      "evidence": "主界面/工具界面/运行结果，18个热点与语义关联入口"
+    },
+    {
+      "id": "V02",
+      "title": "能力对照、优化与审计拆分",
+      "status": "完成",
+      "evidence": "49能力/12优化包/41固定整改/20工作包/13UI/42证据；162工具与218菜单出现项保持"
+    },
+    {
+      "id": "V03",
+      "title": "已拆页面与抽象关系图形化",
+      "status": "完成",
+      "evidence": "12目标决策、20框架/SDK页，执行/状态/时序/数据/依赖/Owner图与并列矩阵"
+    },
+    {
+      "id": "V04",
+      "title": "中文目录隔离与旧入口兼容",
+      "status": "完成",
+      "evidence": "自研架构文档维护/；明确文件清单；390旧路由、查询参数与浏览历史"
+    },
+    {
+      "id": "V05",
+      "title": "手机/桌面/打印/离线验证",
+      "status": "完成",
+      "evidence": "151页、453宽度检查、零脚本错误/远程请求；关联链接以内容命名"
+    },
+    {
+      "id": "V06",
+      "title": "需求交接与证据水位",
+      "status": "完成",
+      "evidence": "拆分要求已发送“架构逆向与实现对照文档”；来源漂移保留待核，不升级语义"
+    }
+  ],
+  "sourceSnapshots": [
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/execution-architecture.json",
+      "sha256": "17f4367985cafea2b0201f199ffd3a7464342e5601553f32e733786cc4ad8be7",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/data-architecture.json",
+      "sha256": "d585ee2c74aa27ce96be3d570c666aef3ff95ac20c8144dc2f5414cb4da9c06b",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/menuitems.xml",
+      "sha256": "d9e9a1da6aeca60d97129cb71e07e9f074ed049c09f5a88f168608a01f6e7959",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs",
+      "sha256": "b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+      "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/GlobalModuleManager.cs",
+      "sha256": "ab2b834644df65e6a41bb76efc8bdc241f427c671afbd0f4d5c64237c34a6f13",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/NativeMethods.cs",
+      "sha256": "6a60f612fb385987ff96d6973844a256402f097d1eb371e7ad462c44e57127d0",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/global-run-export.json",
+      "sha256": "dd9cdfb559ab7e99471353d4bfa81490a7f921a2ddb5dfd519f0c0629517eae1",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.cs",
+      "sha256": "36be1620196c60a72efb03dab8afb4fa302ba1ba8ec4acf7eb1f5f61883678bd",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmModule.cs",
+      "sha256": "53e2f0f9032c4631b59cf0eb2a00e06d50469d94706e7e370e9cc7e1059c72ce",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/parameter-sdk-bridge.resources/ModuleManager.cs",
+      "sha256": "783a45b1518f713223eca2b5e59291be973552c3e08fef0ea0d4bfccc2fbd922",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/parameter-sdk-bridge.resources/ServerSDKAPI.cs",
+      "sha256": "f022d4b4e87d4a076dcf42a79b131a0460ddf673d07603b5ba8d6aca35ef4b14",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/parameter-sdk-bridge.resources/NativeMethods.cs",
+      "sha256": "6a60f612fb385987ff96d6973844a256402f097d1eb371e7ad462c44e57127d0",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/run-exit-cil-evidence.json",
+      "sha256": "daa072c5c62d7e2e804653fb5e5c810e9354177868fe2a55d368251964af4304",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmProcedure.cs",
+      "sha256": "fdde074d17c50c37f8d0bfe097cf20f904cdb4b59d4ac39612fc023c3f0b69da",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/data-lifecycle-cil.json",
+      "sha256": "b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/ModuleParam.cs",
+      "sha256": "af392bf2d3af006c6a16021a271d67dd8ef2017b268580841874ab6fede1da48",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs",
+      "sha256": "ceda24b7fb93bcd9f02b77b23d42a839b1f737bf70cf3abc6b7786d11765740e",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs",
+      "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/render-store-cil-evidence.json",
+      "sha256": "ddb2eb62624a452fdaec6d3374fe50098ba940935328dad860cda40d7ceb57bd",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/RenderDataCenter.cs",
+      "sha256": "0fbd40abe970a3fe262fdeb6d03e70ab467115ccb89b1918bc931f0f54b07b64",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/SolutionManager.cs",
+      "sha256": "46b1d8249e3a30fe3bf7a0ed8e92207835f1a8e272833d5462041bc1756f220a",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/App.cs",
+      "sha256": "babebf8e2bef407d7d06105aa4540bb844e32644a25d9a8c8c7faebfe57cf3f7",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs",
+      "sha256": "e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs",
+      "sha256": "1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/ApplicationOperation.cs",
+      "sha256": "b6633fabfdf9aea95469a40a85b988ff69add07183c2d8a7f241ef764dea9926",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/MainWindowData.cs",
+      "sha256": "aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/startup-order-cil-evidence.json",
+      "sha256": "4f49f8123edff0d22c80319de3dca2046276978d18ed5795811899e35d13781c",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMasterMain/VisionMasterMain/MainWindow.xaml",
+      "sha256": "6176a9c0c68a8d44e5fd2885ca6683c4a02a1cd22ff97bb0b5d52104a84c7915",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMasterMain/VisionMasterMain/MainWindow.xaml.cs",
+      "sha256": "19da4fa478dc4600f611feb4e5c757c77a0311d93cdd12e13b9d659fa5d54a37",
+      "snapshotKind": "external-file-sha; external Git cleanliness not asserted"
+    },
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae",
+      "isDirty": false,
+      "snapshotKind": "selected-own-source-file-sha"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+      "isDirty": false,
+      "snapshotKind": "selected-own-source-file-sha"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunRequest.cs",
+      "sha256": "9f97a64dd147f5fcd5fefebde422ad390df0aa8fec6f722cf8c105d8143b4ec2",
+      "isDirty": false,
+      "snapshotKind": "selected-own-source-file-sha"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunSession.cs",
+      "sha256": "81a4538d84dd800b91f6380ffbb8bc8fee2b59d0284e5f1c2194a2c97f4587c0",
+      "isDirty": false,
+      "snapshotKind": "selected-own-source-file-sha"
+    },
+    {
+      "path": "src/Plugin.SDK/Core/ToolExecutionRequest.cs",
+      "sha256": "b70506bee54d75a623b5d19cdb953344bb8286ad0a946b460b7295c699c6cdeb",
+      "isDirty": true,
+      "snapshotKind": "explicit-dirty-file-sha"
+    },
+    {
+      "path": "src/Plugin.SDK/Core/IToolEditorFactory.cs",
+      "sha256": "18a3efeee54c9b25addf41a1c38546d8c43995d33ea5c479941de67e6b121529",
+      "isDirty": false,
+      "snapshotKind": "selected-own-source-file-sha"
+    },
+    {
+      "path": "src/Plugin.SDK/Execution/Parameters/RuntimeParameterSnapshot.cs",
+      "sha256": "654b4208ae48c97e28dc421aa949daa9f69b7362d13be7b248bdbf52e4bdad54",
+      "isDirty": false,
+      "snapshotKind": "selected-own-source-file-sha"
+    },
+    {
+      "path": "src/Plugin.SDK/Vision/Contracts/IVisionImage.cs",
+      "sha256": "4249b178fe01e6f9f5efece5d8e63ccd35b2b845149c62638973143fe6796089",
+      "isDirty": false,
+      "snapshotKind": "selected-own-source-file-sha"
+    }
+  ],
+  "synchronization": {
+    "received": "ARCH-TARGET-20261022-01",
+    "verified": "selected boundaries only",
+    "documented": "DOC-UX-SPLIT-20261022: 49 capabilities, 12 optimization packages / 41 steps, 20 audit packages / 13 UI / original42, graphical relationships, semantic index labels",
+    "productImplementation": "not performed by documentation task",
+    "runtimeValidation": "not run",
+    "humanAcceptance": "not performed"
+  },
+  "deferred": [
+    {
+      "item": "old total-entry framework-architecture.html fingerprint drift",
+      "status": "pending-semantic-review",
+      "note": "new execution/data model review does not replace old reference baseline"
+    },
+    {
+      "item": "source drift observed during layout-only maintenance",
+      "status": "pending-semantic-review",
+      "note": "Historical handoff facts retained; no new semantic adoption"
+    }
+  ],
+  "validation": {
+    "path": "artifacts/validation/architecture-doc-site-validation.json",
+    "productAcceptanceExecuted": 0,
+    "checkpointUpgrades": 0,
+    "documentTestReports": [
+      "architecture-doc-site-validation.json",
+      "framework-comparison-validation.json",
+      "sdk-development-validation.json",
+      "sdk-engineering-validation.json",
+      "secure-export-validation.json"
+    ],
+    "reportSha256": {
+      "architecture-doc-site-validation.json": "b81b3e5a4574247266d834da4237bbe0c5d073b7367438c3f12fe84743cfcc47",
+      "framework-comparison-validation.json": "2d8c84ad0c934f039c8add3881ebff7da1ebaf4ae903016c7cbc27b300a638a3",
+      "sdk-development-validation.json": "4c893e133d7ce181ae1d96d9a140adbefe805f37d369aa015ed46d115bdd89f4",
+      "sdk-engineering-validation.json": "b9075d8de1a13f2b61878323ad09e361046675bff18d5ba98998ea7dd8e4f56c",
+      "secure-export-validation.json": "543af97ff762e0a2d2d2c04f874a44f8060f4728d942941c2f938333dae5b2ce"
+    },
+    "currentBatchReport": "artifacts/validation/visual-document-library-validation.json",
+    "currentBatchMetrics": {
+      "pages": 151,
+      "interfaceHotspots": 18,
+      "legacyRoutes": 390,
+      "staticLinks": 3191,
+      "widthChecks": 453,
+      "pageErrors": 0,
+      "remoteRequests": 0,
+      "acceptanceExecuted": 0
+    },
+    "completionAudit": "artifacts/validation/visual-document-library-completion-audit.json",
+    "compatibilityReport": "artifacts/validation/document-library-compatibility-validation.json",
+    "directoryIsolationReport": "artifacts/validation/document-library-isolation-validation.json",
+    "finalPrintContrastVerified": true
+  },
+  "policy": {
+    "allowed": [
+      "architecture documentation directory",
+      "corresponding artifact generators and offline checks",
+      "document-only collaboration records"
+    ],
+    "forbidden": [
+      "src",
+      "tools",
+      "product tests",
+      "project/release rules",
+      "other reverse workspaces",
+      "shared CURRENT_TASK"
+    ],
+    "trigger": "explicit product delivery or evidence update",
+    "backgroundPolling": false
+  },
+  "previousMilestone": {
+    "batchId": "ARCH-TARGET-20261022-01",
+    "status": "本批文档交付；产品未实施，24用例未运行",
+    "milestones": [
+      {
+        "id": "D01",
+        "title": "建立index和分页导航",
+        "status": "完成",
+        "evidence": "index入口与20个框架/SDK独立专题"
+      },
+      {
+        "id": "D02",
+        "title": "12项VM对照与目标取舍",
+        "status": "完成",
+        "evidence": "A01–A12，原版事实、独立实现与未知分别标记"
+      },
+      {
+        "id": "D03",
+        "title": "合同与24项验收计划",
+        "status": "完成",
+        "evidence": "接口、字段、状态、Owner、失败、取消、幂等与版本；24项均未运行"
+      },
+      {
+        "id": "D04",
+        "title": "证据与代码同步水位",
+        "status": "完成",
+        "evidence": "2份模型、28份原证据、8份自研源码、15份官方页面SHA核对"
+      },
+      {
+        "id": "D05",
+        "title": "兼容、手机与打印离线验证",
+        "status": "完成",
+        "evidence": "74个旧锚点、798条链接；三档宽度与打印恢复、框架/SDK回归通过"
+      },
+      {
+        "id": "D06",
+        "title": "后续事件驱动维护规则",
+        "status": "完成",
+        "evidence": "仅接收明确交付；无后台轮询；文档唯一维护者"
+      }
+    ]
+  },
+  "documentRoot": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/",
+  "entry": "index.html",
+  "reverseDocumentationHandoff": {
+    "threadId": "01a159e5-6571-7ab2-a12d-6ece9db18e69",
+    "title": "架构逆向与实现对照文档",
+    "requirements": "docs/collaboration/REVERSE_DOC_SPLIT_REQUIREMENTS_20261022.md",
+    "status": "sent; not claimed completed"
+  },
+  "sourceDrift": [
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/execution-architecture.json",
+      "sha256": "17f4367985cafea2b0201f199ffd3a7464342e5601553f32e733786cc4ad8be7",
+      "currentSha256": "1a4e65f07bd9f964c8783b5c579e9436334cc88efe1159ab85dc9be84422ab08"
+    }
+  ],
+  "toolAlgorithmBatch": {
+    "id": "DOC-ALG-20261022-01",
+    "status": "document-adopted-and-offline-validated",
+    "rules": "docs/collaboration/DOC_MAINTENANCE_RULES.md",
+    "review": "artifacts/validation/tool-core-algorithm-review.json",
+    "tools": 24,
+    "selfSourceStatic": 24,
+    "originalBodyClosed": 0,
+    "numericParityRun": 0,
+    "performanceRun": 0,
+    "productModified": false,
+    "validation": "artifacts/validation/tool-core-algorithm-validation.json",
+    "validationSummary": {
+      "pages": 26,
+      "widthChecks": 78,
+      "localLinks": 50,
+      "errors": 0,
+      "historicalSourceMissing": 4,
+      "currentSourceCount": 22,
+      "policy": "Historical algorithm facts not refreshed or promoted after deletion"
+    }
+  },
+  "incomingExecutionArchitecture": {
+    "id": "EX-ARCH-20261022-01",
+    "received": true,
+    "status": "deferred",
+    "reason": "当前优先完成用户明确要求的24工具算法文档批次；执行专题随后按既有页面增量同步，不扩本批范围。",
+    "nextOwner": "自研架构文档维护",
+    "source": "docs/collaboration/EXECUTION_ARCH_DESIGN_20261022.json",
+    "productStatus": "pending-human-confirmation"
+  },
+  "closureProtocol": {
+    "received": true,
+    "applicable": true,
+    "source": "D:/MyWork/REA逆向测试/analysis/framework-independent-review/collaboration-closure.json",
+    "AR001F": "核实请求，非确认缺陷；框架角色负责",
+    "AR001P": "核实请求，非确认缺陷；插件角色负责",
+    "automaticReplySent": false
+  },
+  "toolCorrespondenceHandoff": {
+    "id": "TOOL-MAP-20261022-01",
+    "received": true,
+    "status": "document-adopted-and-offline-validated",
+    "source": "docs/collaboration/TOOL_VM_CORRESPONDENCE_20261022.json",
+    "sha256": "79668849f00c687355a70b2372b8f2fa5f1ffb6949d1d7beff334f46fb03b1ec",
+    "ownCount": 24,
+    "distinctVmReferenceCount": 22,
+    "regularCatalogCandidates": 20,
+    "policy": "先逐项核对应关系与链路边界，再讨论处置。既有页面改法均为待讨论候选，不代表已确认合并、拆分、重写或删除。",
+    "specialCases": [
+      "Threshold与ImageThreshold两对一Binary",
+      "NPointVerification仅相关NPoint能力，非已证独立VM工具",
+      "Subroutine仅Group框架相关，非直接可替换"
+    ],
+    "corrections": [
+      "Condition对应IfBranchModule",
+      "Script对应ShellModule，未证Python等价"
+    ],
+    "nextOwner": "自研架构文档维护",
+    "documentAdopted": true,
+    "productModified": false
+  },
+  "toolDispositionHandoff": {
+    "id": "TOOL-DISPOSITION-20261022-01",
+    "received": true,
+    "source": "docs/collaboration/TOOL_DISPOSITION_DECISIONS_20261022.json",
+    "sha256": "fd52c672e5aeafae5bbb617423875aab5a962a78920fac76a71fbc3c9d351f8a",
+    "status": "document-adopted-and-offline-validated",
+    "currentSourceDeclarations": 24,
+    "targetCount": 22,
+    "productStatus": "source-removed-release-build-and-toolbox-probe-verified",
+    "validation": "artifacts/validation/tool-disposition-document-validation.json",
+    "nextOwner": "自研主程序：实施范围及依赖核对",
+    "TD02": {
+      "retainToolId": "ImageThreshold",
+      "removeToolId": "Threshold",
+      "removeScope": "完整独立工具/项目/参数结果/编辑器/发布引用",
+      "productStatus": "source-removed-release-build-and-toolbox-probe-verified",
+      "historyPagesPreserved": true
+    }
+  },
+  "toolRemovalReceipt": {
+    "id": "TOOL-DISPOSITION-20261022-01",
+    "received": true,
+    "status": "source-removal-observed-document-adopted",
+    "sourceEvidence": "artifacts/tool-removal/20261022-TD01-TD02/manifest.json",
+    "currentSourceCount": 22,
+    "removedIds": [
+      "Threshold",
+      "NPointVerification"
+    ],
+    "retainedIds": [
+      "ImageThreshold",
+      "NPointCalibration"
+    ],
+    "catalogGenerator": "artifacts/validation/build-tool-catalog.cjs",
+    "historicalBatch": "DOC-ALG-20261022-01 has 24 historical rows, not current count",
+    "build": "release-build-passed-0-errors-1045-warnings",
+    "runtime": "release-toolbox-discovery-22-passed-not-device-business",
+    "productModifiedByDocumentationRole": false,
+    "nextOwner": "自研主程序补构建与运行材料",
+    "validation": "artifacts/validation/tool-removal-document-validation.json",
+    "finalDeliveryId": "TOOL-REMOVE-20261022-01"
+  },
+  "toolRemovalFinalDelivery": {
+    "batchId": "TOOL-REMOVE-20261022-01",
+    "received": true,
+    "documentAdopted": true,
+    "deliveryEvidenceVerified": true,
+    "evidence": "artifacts/tool-removal/20261022-TD01-TD02/validation.json",
+    "evidenceSha256": "07c1f380a090311b678644094d0c1440bc9a715fa5c2c2bb2cc67e7dfc5a9783",
+    "sourceChecks": "见artifacts/validation/tool-removal-delivery-receipt.json",
+    "sourceCount": 22,
+    "runtimeCount": 22,
+    "releaseBuild": {
+      "exitCode": 0,
+      "warnings": 1045,
+      "errors": 0,
+      "log": "artifacts/tool-removal/20261022-TD01-TD02/build-release.log"
+    },
+    "tests": {
+      "designInitialization": {
+        "passed": 12,
+        "failed": 0
+      },
+      "nPointCalibration": {
+        "passed": 33,
+        "failed": 0
+      }
+    },
+    "runtimeProbe": {
+      "path": "artifacts/tool-removal/20261022-TD01-TD02/release-toolbox.json",
+      "sha256": "c263dc39fd675533328e23dbc2654c02eed4df8cc0998cd8ac5fb236d5949f58",
+      "noDevicesStarted": true,
+      "meaning": "Release工具发现探针；设备初始化前退出，非设备或VM业务验收"
+    },
+    "manualAcceptance": "not-performed",
+    "oldSolutionMigration": "not-performed",
+    "documentationRoleExecutedProduct": false,
+    "documentVerified": true,
+    "documentChecks": [
+      "index.html",
+      "tools.html",
+      "tool-standard.html",
+      "tool-verification.html",
+      "tool-detail-ImageThreshold.html"
+    ]
+  },
+  "jointProtocolReceipt": {
+    "id": "COLLAB-PROTOCOL-20261022-V1",
+    "received": true,
+    "adopted": true,
+    "source": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
+    "sha256": "7baf20e56e77bc1126f42433b0fb9266535a8853b92fb4921ebb5e732f93675f",
+    "role": "自研架构文档维护",
+    "allowedWriteScope": [
+      "自研架构HTML",
+      "对应文档生成/验证脚本",
+      "DOC_SYNC_STATUS及本角色交接记录"
+    ],
+    "forbiddenWriteScope": [
+      "src/tools及产品测试",
+      "CURRENT_TASK及主控协议",
+      "其他项目工作树"
+    ],
+    "formalGoal": null,
+    "activeWriteOrBuild": false,
+    "safeHandoffReached": true,
+    "state": "waiting-for-controller-dispatch",
+    "completed": [
+      "文档分页与可视化批次",
+      "24工具历史算法分析与维护规则",
+      "TOOL-MAP/TD01/TD02文档同步",
+      "TOOL-REMOVE-20261022-01交付SHA核对和文档采用"
+    ],
+    "pending": [
+      {
+        "id": "EX-ARCH-20261022-01",
+        "status": "received-deferred-not-document-adopted",
+        "nextOwner": "自研主控决定后续派工"
+      },
+      {
+        "scope": "原版算法体、同输入数值与性能证据缺口",
+        "status": "未闭合；不自行续批"
+      }
+    ],
+    "conflicts": [],
+    "writerBoundary": "主控唯一产品写者；本角色唯一架构文档/对应生成器写者；不共写CURRENT_TASK或协议。已有dirty和产物全部保留。",
+    "messagesSent": false,
+    "automaticContinuation": false
+  },
+  "startupTask": {
+    "id": "START-DOC-01",
+    "received": true,
+    "status": "finite-document-delivery-complete-awaiting-controller-acceptance",
+    "scope": "从点击EXE到主窗口可安全操作的启动专题及必要入口；不做全站重构",
+    "expectedInput": "docs/collaboration/STARTUP_REVIEW_20261022.json",
+    "inputPresent": true,
+    "existingLocations": {
+      "capability": "能力对照/capability-m01.html#compare-M01",
+      "optimization": "优化方案/optimization-o01.html#O01",
+      "sourceView": "现状分析/suneye-entry-architecture-comparison.html?entry=M01",
+      "navigation": "index.html 菜单与方案热点包含M01"
+    },
+    "generationChain": [
+      "build-new-entry-report.cjs M01/O01基础材料",
+      "build-architecture-doc-site.cjs → build-visual-document-library.cjs → document-library-layout.pack()",
+      "interface-document-navigation.cjs 主界面入口导航"
+    ],
+    "plannedUpdate": "优先在既有M01页增量表达当前代码链、目标、拟改文件、未运行验收及VM缺口；必要入口回链。现有内容属旧批次，收到新材料后按SHA与证据范围更新。",
+    "frameworkEvidence": "START-RE-01 received; 6 source SHA checked; selected App body reviewed by controller; original runtime not tested",
+    "productModified": false,
+    "htmlModifiedThisTask": true,
+    "wholeSiteRegenerated": false,
+    "nextOwner": "自研主控读取并验收本批；未证项保留，不自动取证或扩大范围",
+    "automaticMessages": false,
+    "inputBatch": "START-01",
+    "inputSha256": "116159eec60fd2fc58b73dfb0249a42a6c298505a674c61b3714c8fc3daafb61",
+    "sourceChecks": 17,
+    "sourceDrift": 0,
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+    ],
+    "findings": 8,
+    "targetFileResponsibilities": 16,
+    "acceptancePlanned": 10,
+    "acceptanceExecuted": 0,
+    "validation": "artifacts/validation/startup-document-validation.json",
+    "manifest": "artifacts/validation/startup-document-manifest.json",
+    "documentAdopted": true,
+    "documentVerified": true,
+    "corrections": [
+      "相机DisposeAsync为CompletedTask，finally调用不证明清理",
+      "WPF生成Main为UseWPF/App.xaml推导，未核生成入口体"
+    ],
+    "vmMaterialChecks": 6,
+    "vmSourceDrift": 0
+  },
+  "subagentProtocolReceipt": {
+    "id": "COLLAB-SUBAGENT-20261022",
+    "received": true,
+    "adopted": true,
+    "section": "JOINT_COLLABORATION_PROTOCOL.md §10",
+    "conflicts": [],
+    "scope": "仅已派任务；按复杂度选用，父角色核原证据并统一交付；文件/输出独占，同目录单产品写者",
+    "newTaskStarted": false,
+    "subagentsStarted": 0,
+    "state": "waiting-for-controller-dispatch"
+  },
+  "solutionTask": {
+    "id": "SOL-DOC-01",
+    "received": true,
+    "status": "finite-document-delivery-complete-awaiting-controller-acceptance",
+    "expectedInput": "docs/collaboration/SOLUTION_MANAGEMENT_REVIEW_20261022.json",
+    "inputPresent": true,
+    "scope": "方案管理五链、保存恢复及必要回链；先不改产品、不重构全站",
+    "existingLocations": [
+      "现状分析/persistence-architecture.html",
+      "能力对照/capability-m02.html",
+      "能力对照/capability-m03.html",
+      "能力对照/capability-m22.html",
+      "目标架构/architecture-a11.html",
+      "index.html 菜单与方案热点"
+    ],
+    "knownCorrections": [
+      "SolutionRepository.Load已有ValidateTools拒绝缺工具",
+      "LoadSolutionOnly已有路径直接加载",
+      "START-01能力门须区分已有存在性校验与拟议结构化结果/全入口准入"
+    ],
+    "frameworkEvidence": "SOL-RE-01报告及8源SHA一致；主控复读所选回调和最近项体；原生未知保留",
+    "nextOwner": "自研主控读取并验收；本角色等待后续有限派工，不续开逆向",
+    "htmlModifiedThisTask": true,
+    "productModified": false,
+    "wholeSiteRegenerated": false,
+    "newGoalCreated": false,
+    "draftInputSha256": "107dd7d795cca2f51c680f7be8c6ce63318e37edb929599305b422fc155238f0",
+    "sourceChecks": 13,
+    "sourceDrift": 0,
+    "domainsPrepared": 5,
+    "proposedFilesDraft": 13,
+    "acceptancePlanned": 10,
+    "acceptanceExecuted": 0,
+    "designBoundary": "拟议src/Workflow/Workspace不证明现Workflow已无WPF",
+    "awaiting": [],
+    "inputSha256": "f6b05adadadd0229c12f438332dfdf77b351ac119b7e87170d3f3f5c092168c4",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m02.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m03.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m22.html"
+    ],
+    "manifest": "artifacts/validation/solution-document-manifest.json",
+    "validation": "artifacts/validation/solution-document-validation.json",
+    "documentAdopted": true,
+    "documentVerified": true,
+    "startupCorrectionsApplied": [
+      "已有ValidateTools拒缺工具",
+      "已有LoadSolutionOnly未登记路径加载",
+      "RefreshMetadata只遍历KnownSolutions"
+    ],
+    "deviceBoundary": "保留通信已有token/串行取消排空/ReadyAsync；相机迟到写CurrentSolution为静态风险，未复现",
+    "vmSourceChecks": 8,
+    "vmReportShaVerified": true,
+    "vmSourceDrift": 0,
+    "domainVmComparisons": 5
+  },
+  "startImplementationTask": {
+    "id": "START-IMPLEMENT-01",
+    "received": true,
+    "status": "implementation-and-independent-blocked-result-document-adopted-validated",
+    "scope": [
+      "现有闪屏至起始页",
+      "文件直接打开绕过登记",
+      "隐藏偏好",
+      "管理可选",
+      "菜单热键及单实例文件入口"
+    ],
+    "preservedContracts": [
+      "已有格式/缺工具校验",
+      "停止/保存门"
+    ],
+    "excluded": [
+      "全会话重做",
+      "设备生命周期重做",
+      "SDK重构"
+    ],
+    "plannedDocumentLocations": [
+      "能力对照/capability-m01.html#startup-review",
+      "现状分析/persistence-architecture.html#solution-management-review",
+      "index.html 必要入口"
+    ],
+    "awaiting": [],
+    "acceptancePolicy": "实施、开发自测、独立验收、人工未验分别记录；SA/SC全域不自动升级，旧分析保留基线和漂移提示",
+    "productWriter": "自研主程序01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+    "documentationWriter": "自研架构文档维护01a160f7-9c99-72c1-b8bf-d689bf19f1ad",
+    "htmlModifiedThisTask": true,
+    "productModifiedByDocRole": false,
+    "wholeSiteRegenerated": false,
+    "nextOwner": "主控决定后续基础设施恢复或人工验收；本角色本批到安全交接点，不自动续跑",
+    "input": "artifacts/startup-implementation/START-IMPLEMENT-01/manifest.json",
+    "inputSha256": "fcdd20a73c629f3956d9bb6bc3dbe2a63bc5f284b0f6efd04c3e1ea7627d40a5",
+    "codeCommit": "a09ab60535cf11b7c1a3497186dffbf53f2e5288",
+    "identityChecks": {
+      "changedSources": 15,
+      "effectiveInputs": 1329,
+      "listedOwnOutputs": 82,
+      "drift": 0
+    },
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+    ],
+    "manifest": "artifacts/validation/startup-implementation-document-manifest.json",
+    "validation": "artifacts/validation/startup-implementation-document-validation.json",
+    "developerSelfTests": "80/80（单独计，不替代独立）",
+    "independentTests": {
+      "planned": 18,
+      "status": "blocked-final-for-this-round",
+      "fail": 0,
+      "pass": 0,
+      "blocked": 18,
+      "partialRuntimeCases": [
+        "SI01",
+        "SI02",
+        "SI03"
+      ],
+      "resultPath": "artifacts/independent-testing/START-IMPLEMENT-01/final-results.json",
+      "resultSha256": "3cdaa1e1f12dfb88edf672169ffd05985c0e72702cc83ed0d0fa95b7e62fdf79",
+      "reportPath": "artifacts/independent-testing/START-IMPLEMENT-01/REPORT.md",
+      "reportSha256": "410a521c4b8620ba9284be287cfe2066ab2859806830b259cbbecf1cc78c6939"
+    },
+    "manualDesigner": "not-run",
+    "manualUser": "not-run",
+    "SAorSCUpgraded": false,
+    "partialIndependentEvidence": [
+      "SI01默认起始页控件树可读",
+      "SI02本次指定文件打开、最近1/登记0",
+      "SI03预置隐藏偏好被读取"
+    ],
+    "independentBlocker": "FrameArrived/window capture timeout；coordinate input geometry unavailable；完整UI交互未验证，非产品失败结论",
+    "independentManifestUnchanged": true,
+    "independentOwnedPidsCleaned": true
+  },
+  "startUiFixTask": {
+    "id": "START-UI-FIX-02",
+    "status": "historical-superseded-by-START-SIMPLIFY-03",
+    "input": "artifacts/startup-implementation/start-page-ui-fix-delivery.json",
+    "inputSha256": "10e72b55769e9a547e5d3aa0e83ceddbccf818c14f72a5bd78d1b1050301f1a2",
+    "identityChecks": 7,
+    "sourceChecks": 5,
+    "outputs": 2,
+    "drift": 0,
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+    ],
+    "build": {
+      "errors": 0,
+      "warnings": 1124,
+      "source": "development-delivery"
+    },
+    "independentDispatched": false,
+    "testsRunThisBatch": 0,
+    "visual": "pending-user",
+    "designer": "not-run",
+    "manualUser": "pending",
+    "previousBatchResults": "START-IMPLEMENT-01历史：80/80开发测试，0通过/0失败/18 blocked；不代表新产物",
+    "productModifiedByDocRole": false,
+    "wholeSiteRegenerated": false,
+    "nextOwner": "用户人工验收，主控收集结果后按需派发"
+  },
+  "startSimplifyTask": {
+    "id": "START-SIMPLIFY-03",
+    "status": "historical-superseded-by-START-CLEANUP-04",
+    "input": "artifacts/startup-implementation/start-page-simplify-delivery.json",
+    "inputSha256": "fa16c183317593a678714d9e888166d41930fb24819185b35c8c2e341a95ec19",
+    "identityChecks": 10,
+    "sourceChecks": 7,
+    "prototype": 1,
+    "outputs": 2,
+    "drift": 0,
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+    ],
+    "build": {
+      "errors": 0,
+      "warnings": 824,
+      "seconds": 25
+    },
+    "removed": "浏览管理面板/搜索筛选详情/事件/浏览参数/ShowSolutionConfigurationCommand及入口",
+    "retained": "仅起始页新建/打开/最近；旧数据及未调用类型仅兼容存储",
+    "testsRunThisBatch": 0,
+    "independentDispatched": false,
+    "productExecuted": false,
+    "manualUser": "pending",
+    "designer": "not-run",
+    "visual": "pending-user",
+    "productModifiedByDocRole": false,
+    "wholeSiteRegenerated": false,
+    "nextOwner": "用户人工验收，主控按反馈有限派工"
+  },
+  "startCleanupTask": {
+    "id": "START-CLEANUP-04",
+    "status": "document-adopted-static-content-checked-awaiting-user",
+    "input": "artifacts/startup-implementation/legacy-manager-cleanup-plan.json",
+    "inputSha256": "e89e188874b5770336a5ce394d680ae6e73148523c4d0c3993ded5bdec4bd0ba",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+    ],
+    "deletedProductFiles": 12,
+    "deletedDedicatedTest": 1,
+    "preservedMatching": 10,
+    "preservedIntentionalChange": 1,
+    "outputsMatching": 3,
+    "followupSourceSha": "当次观察，仅意图变更无交付后预期SHA，不冒称交付身份完全匹配",
+    "build": {
+      "errors": 0,
+      "warnings": 785,
+      "seconds": 21
+    },
+    "productExecuted": false,
+    "testsRunThisBatch": 0,
+    "independentDispatched": false,
+    "manualUser": "pending",
+    "designer": "not-run",
+    "wholeSiteRegenerated": false,
+    "productModifiedByDocRole": false,
+    "nextOwner": "用户人工验收，主控按反馈派工"
+  },
+  "startStaticTask": {
+    "taskId": "START-STATIC-05",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+    ],
+    "observed": [
+      {
+        "path": "src/UI/Shell/Windows/StartPageWindow.xaml",
+        "observedSha256": "d25a408a2cedaaf38038dc6cc8d8f989240f5a0ba6b0ec2110a81c1b87e5cd39",
+        "meaning": "本轮观察SHA；未收到独立预期身份清单，不作交付SHA一致性声明"
+      },
+      {
+        "path": "src/UI/Shell/Windows/StartPageWindow.xaml.cs",
+        "observedSha256": "b836f9a8869256f14db588a9e6b10813c307a038439cd490a42f0c361e851904",
+        "meaning": "本轮观察SHA；未收到独立预期身份清单，不作交付SHA一致性声明"
+      },
+      {
+        "path": "artifacts/ui-prototypes/start-page/index.html",
+        "observedSha256": "20e17cf3c3adc3b0ee39c8c977610f613685ef4accff93e46c6aa5f14bf1b99f",
+        "meaning": "本轮观察SHA；未收到独立预期身份清单，不作交付SHA一致性声明"
+      }
+    ],
+    "log": "artifacts/startup-implementation/static-capability-cards-release.log",
+    "logSha256": "9eac1b510fc5471967d5689bdd2096c5994d7b2cb7f0c3df0340f3a43d6265e5",
+    "build": {
+      "errors": 0,
+      "warnings": 785,
+      "seconds": 26,
+      "meaning": "开发交付，非文档角色重构建"
+    },
+    "productExecuted": false,
+    "testsRun": 0,
+    "independentDispatched": false,
+    "manual": "pending-user",
+    "wholeSiteRegenerated": false,
+    "productModifiedByDocRole": false,
+    "status": "document-adopted-static-content-checked-awaiting-user",
+    "capabilities": "四卡仅展示；非点击/弹窗/跳转入口",
+    "actualActions": "新建/打开/最近保留",
+    "designer": "not-run",
+    "visual": "pending-user",
+    "nextOwner": "用户人工验收，主控按反馈派工"
+  },
+  "compactSplashTask": {
+    "taskId": "SPLASH-COMPACT-06",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html"
+    ],
+    "observed": [
+      {
+        "path": "src/UI/Shell/Windows/SplashScreen.xaml",
+        "observedSha256": "75a7df4f8d8ef367cedd98b86e7c5691f879c9e9406f6a5d59244e6f499ef07d",
+        "meaning": "当前观察SHA，非独立交付预期SHA核对"
+      },
+      {
+        "path": "src/UI/Shell/Windows/StartPageWindow.xaml",
+        "observedSha256": "d25a408a2cedaaf38038dc6cc8d8f989240f5a0ba6b0ec2110a81c1b87e5cd39",
+        "meaning": "当前观察SHA，非独立交付预期SHA核对"
+      },
+      {
+        "path": "artifacts/ui-prototypes/start-page/index.html",
+        "observedSha256": "67d7b2d4a2eb75e383f9c8f2ac6695a14c8ba4b130ce429866ff94f5853cc9fd",
+        "meaning": "当前观察SHA，非独立交付预期SHA核对"
+      },
+      {
+        "path": "artifacts/startup-implementation/compact-splash-release.log",
+        "observedSha256": "6b54d17d5e641e1c78294cf2c13f7ee1366745295d8cad78d0a30018c011a5fe",
+        "meaning": "当前观察SHA，非独立交付预期SHA核对"
+      }
+    ],
+    "finalLog": "artifacts/startup-implementation/compact-splash-release.log",
+    "retractedLog": "compact-start-page-release.log not adopted",
+    "splash": {
+      "width": 480,
+      "height": 360,
+      "horizontalMargin": 32
+    },
+    "startPage": {
+      "width": 960,
+      "height": 720
+    },
+    "build": {
+      "errors": 0,
+      "warnings": 785,
+      "seconds": 19
+    },
+    "productExecuted": false,
+    "testsRun": 0,
+    "manual": "pending-user",
+    "wholeSiteRegenerated": false,
+    "productModifiedByDocRole": false,
+    "status": "document-adopted-static-content-checked-awaiting-user",
+    "nextOwner": "用户人工验收闪屏尺寸；主控按反馈派工"
+  },
+  "splashBrandTask": {
+    "taskId": "SPLASH-BRAND-07",
+    "input": "artifacts/startup-implementation/unified-splash-delivery.json",
+    "inputSha256": "7f5193effa489005465a251955816c2af5accd970bf6aa61c6cc320d9fa4b286",
+    "checks": [
+      {
+        "sha256": "da7002b4e8a792cf3167a8f2f711e996c30e5e82a59014961cc502b9de817468",
+        "path": "src/UI/Resources/Branding/StartupBranding.xaml",
+        "observedSha256": "da7002b4e8a792cf3167a8f2f711e996c30e5e82a59014961cc502b9de817468",
+        "matches": true
+      },
+      {
+        "sha256": "3536fb3273c8c02071d3e53f9d6ada8b737d89147c8fcb4007f8d683c088f7f1",
+        "path": "src/UI/Shell/Windows/SplashScreen.xaml",
+        "observedSha256": "3536fb3273c8c02071d3e53f9d6ada8b737d89147c8fcb4007f8d683c088f7f1",
+        "matches": true
+      },
+      {
+        "sha256": "39430742b88236baa2fce6c69911e12f8694dc408644f0ff98df04ddaeea233d",
+        "path": "src/UI/Shell/Windows/StartPageWindow.xaml",
+        "observedSha256": "39430742b88236baa2fce6c69911e12f8694dc408644f0ff98df04ddaeea233d",
+        "matches": true
+      },
+      {
+        "sha256": "c6b52fa114f902eac724b1ccb68eab9967333dd131575fa0172ffb42759ff486",
+        "path": "artifacts/ui-prototypes/start-page/index.html",
+        "observedSha256": "c6b52fa114f902eac724b1ccb68eab9967333dd131575fa0172ffb42759ff486",
+        "matches": true
+      },
+      {
+        "sha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+        "observedSha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+        "matches": true
+      },
+      {
+        "sha256": "53f9837ef4babc6957524edff7cb603d10ef51a32991da4dcae0d6031e8e77e7",
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+        "observedSha256": "53f9837ef4babc6957524edff7cb603d10ef51a32991da4dcae0d6031e8e77e7",
+        "matches": true
+      }
+    ],
+    "build": {
+      "errors": 0,
+      "warnings": 785,
+      "seconds": 22
+    },
+    "log": "artifacts/startup-implementation/unified-splash-release.log",
+    "productExecuted": false,
+    "testsRun": 0,
+    "manual": "pending-user",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html"
+    ],
+    "status": "document-adopted-static-content-checked-awaiting-user",
+    "visual": "pending-user",
+    "designer": "not-run",
+    "wholeSiteRegenerated": false,
+    "productModifiedByDocRole": false,
+    "nextOwner": "用户人工验收；主控按反馈派工"
+  },
+  "solutionFlowEntryTask": {
+    "taskId": "SOLUTION-FLOW-08",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html"
+    ],
+    "target": "artifacts/ui-prototypes/solution-lifecycle/index.html",
+    "observed": [
+      {
+        "path": "artifacts/ui-prototypes/solution-lifecycle/index.html",
+        "observedSha256": "ae4738e5c21ac58caf9e0752af5579e41d2c445103cfdbe511ff3739dfcc621d"
+      },
+      {
+        "path": "artifacts/ui-prototypes/solution-lifecycle/evidence.json",
+        "observedSha256": "544e88c13a43b1928ef0c670185cc71a849b728147ddc84ee639c1bdca1d6955"
+      },
+      {
+        "path": "artifacts/ui-prototypes/solution-lifecycle/validation.json",
+        "observedSha256": "28e552085d4213a213cc98785732fa34c78e573e2a8405f775d5532f7e2bad1e"
+      }
+    ],
+    "meaning": "discussion-only; in-memory demo; not product implementation or acceptance",
+    "prototypeModifiedByDocRole": false,
+    "productModified": false,
+    "wholeSiteRegenerated": false,
+    "status": "historical-discussion-entry-with-partial-implementation-watermark",
+    "productImplemented": false,
+    "productAcceptanceExecuted": 0,
+    "nextOwner": "主控与用户讨论取舍，不自行实施或扩展"
+  },
+  "solutionImplementationTask": {
+    "taskId": "SOLUTION-IMPLEMENT-09",
+    "input": "artifacts/startup-implementation/solution-session-delivery.json",
+    "inputSha256": "71aeda6ecd63453c4da7d1b66de84739d9f6dee8ee1b21194581ae8f5f32ac21",
+    "checks": [
+      {
+        "path": "src/Workflow/SolutionSession.cs",
+        "sha256": "61dab9b2104a41489d0381de4338b7c4b8360ace02ce509d118e2069b2472616",
+        "observedSha256": "61dab9b2104a41489d0381de4338b7c4b8360ace02ce509d118e2069b2472616",
+        "matches": true
+      },
+      {
+        "path": "src/Workflow/SolutionManager.cs",
+        "sha256": "25857cc27a673fc6856e57c0588594b238f16afdd6608ca93e0b6ba60293e703",
+        "observedSha256": "25857cc27a673fc6856e57c0588594b238f16afdd6608ca93e0b6ba60293e703",
+        "matches": true
+      },
+      {
+        "path": "src/Workflow/SolutionRepository.cs",
+        "sha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+        "observedSha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+        "matches": true
+      },
+      {
+        "path": "src/UI/Services/Solutions/SolutionApplicationService.cs",
+        "sha256": "662f2248cb1399bcdecfb51da90ca293f356732b8d351ed6da2760a7fd0ce0cc",
+        "observedSha256": "662f2248cb1399bcdecfb51da90ca293f356732b8d351ed6da2760a7fd0ce0cc",
+        "matches": true
+      },
+      {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "sha256": "d0968de0df0105caf473986a4dcf1c4728da739baa87c664d053ec38cbfc83de",
+        "observedSha256": "d0968de0df0105caf473986a4dcf1c4728da739baa87c664d053ec38cbfc83de",
+        "matches": true
+      },
+      {
+        "path": "src/UI/Shell/Windows/MainWindowStartupEntries.cs",
+        "sha256": "b566775d24e99970e0973602b626dd16ee2890b8bfeefa5e9cc52e43f6eacc70",
+        "observedSha256": "b566775d24e99970e0973602b626dd16ee2890b8bfeefa5e9cc52e43f6eacc70",
+        "matches": true
+      },
+      {
+        "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+        "sha256": "7fc7f936d2857dfc6ca909e957af5fdc603a594e99045ca49ec1d00a4da06f2f",
+        "observedSha256": "7fc7f936d2857dfc6ca909e957af5fdc603a594e99045ca49ec1d00a4da06f2f",
+        "matches": true
+      },
+      {
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+        "sha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+        "observedSha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+        "matches": true
+      },
+      {
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+        "sha256": "154009e9f8a852281aa4b0da83f14dc15016f2fb12a273b0c3e410f512ebca3c",
+        "observedSha256": "154009e9f8a852281aa4b0da83f14dc15016f2fb12a273b0c3e410f512ebca3c",
+        "matches": true
+      },
+      {
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Workflow.dll",
+        "sha256": "7a61a039cb191c0299e92cc8409da0d0624c4d4c8f9119c854ba29ebd219698d",
+        "observedSha256": "7a61a039cb191c0299e92cc8409da0d0624c4d4c8f9119c854ba29ebd219698d",
+        "matches": true
+      }
+    ],
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html"
+    ],
+    "deleted": [
+      "src/UI/Shell/Windows/NewSolutionDialog.xaml",
+      "src/UI/Shell/Windows/NewSolutionDialog.xaml.cs"
+    ],
+    "build": {
+      "uiLog": "artifacts/startup-implementation/solution-session-ui-release.log",
+      "log": "artifacts/startup-implementation/solution-session-final-release.log",
+      "full": "0 errors, 880 warnings"
+    },
+    "productExecuted": false,
+    "testsRun": 0,
+    "independentDispatched": false,
+    "manual": "pending-user",
+    "designer": "not-run",
+    "wholeSiteRegenerated": false,
+    "productModifiedByDocRole": false,
+    "status": "document-adopted-static-content-checked-awaiting-user",
+    "sourceIdentityChecks": 7,
+    "outputIdentityChecks": 3,
+    "sourceDrift": 0,
+    "deletedFilesAbsent": 2,
+    "allGoalComplete": false,
+    "SCorSAUpgraded": false,
+    "prototypeModifiedByDocRole": false,
+    "nextOwner": "用户人工验收；主控按反馈派工"
+  },
+  "editConsistencyEntryTask": {
+    "taskId": "EDIT-CONSISTENCY-10",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\global-variables.html"
+    ],
+    "target": "artifacts/ui-prototypes/edit-consistency/index.html",
+    "observed": [
+      {
+        "path": "artifacts/ui-prototypes/edit-consistency/index.html",
+        "observedSha256": "bf6dbe56371986eb1b92b7f4d692ce995f5edf64fe5b298f67899a0c3d2d085d"
+      },
+      {
+        "path": "artifacts/ui-prototypes/edit-consistency/evidence.json",
+        "observedSha256": "20058a7c66d6a7175388a2f4a624d10c84e891f1ae734586dba3d2e11cedf5ed"
+      },
+      {
+        "path": "artifacts/ui-prototypes/edit-consistency/validation.json",
+        "observedSha256": "139ddd94473473f5a5a1ccf1a9a09f42c919c72809a0b01ce7d39e3859f44107"
+      }
+    ],
+    "sourceLocatorsReported": 22,
+    "sourceFilesReported": 15,
+    "findingsReported": 8,
+    "acceptancePlanned": 16,
+    "acceptanceExecuted": 0,
+    "prototypeModifiedByDocRole": false,
+    "productModified": false,
+    "productExecuted": false,
+    "wholeSiteRegenerated": false,
+    "status": "discussion-entry-adopted-static-link-checked",
+    "productImplemented": false,
+    "nextOwner": "用户与主控讨论取舍，不自行实施或扩展"
+  },
+  "editorSaveTask": {
+    "taskId": "EDIT-SAVE-11",
+    "input": "artifacts/startup-implementation/unified-editor-save-delivery.json",
+    "inputSha256": "050d62cbfc3662d91bbf3a2df7c08c85d298dc27199c2de20de02b637c232a99",
+    "checks": [
+      {
+        "path": "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs",
+        "exists": true,
+        "sha256": "5aa98899bf518def6f3c9a8d8dd944956600a841285d2fdc13b73f791ca5fd63",
+        "observedSha256": "5aa98899bf518def6f3c9a8d8dd944956600a841285d2fdc13b73f791ca5fd63",
+        "matches": true
+      },
+      {
+        "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+        "exists": true,
+        "sha256": "3bc5df003cc31a1669c06bec5631089540af3037b0ecf0cf7de0cac3b9566a02",
+        "observedSha256": "3bc5df003cc31a1669c06bec5631089540af3037b0ecf0cf7de0cac3b9566a02",
+        "matches": true
+      },
+      {
+        "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml",
+        "exists": true,
+        "sha256": "9b1f5b5c8dbb712f89f1910c1b1371e2a8279aa231e4d25993d20824f0dc7f2a",
+        "observedSha256": "9b1f5b5c8dbb712f89f1910c1b1371e2a8279aa231e4d25993d20824f0dc7f2a",
+        "matches": true
+      },
+      {
+        "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml.cs",
+        "exists": true,
+        "sha256": "ddc58a88ac0a91a6355b46ca08356864ece1f516f65aac500ba2770ee69d19cd",
+        "observedSha256": "ddc58a88ac0a91a6355b46ca08356864ece1f516f65aac500ba2770ee69d19cd",
+        "matches": true
+      },
+      {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "exists": true,
+        "sha256": "3a4b5a2145b92c333b39797898b4d2dabafc05ff95b35d2e65cfb17626e8b364",
+        "observedSha256": "3a4b5a2145b92c333b39797898b4d2dabafc05ff95b35d2e65cfb17626e8b364",
+        "matches": true
+      },
+      {
+        "path": "src/UI/Shell/Windows/MainWindowSolutionEditing.cs",
+        "exists": true,
+        "sha256": "d2b7ebb89565ac010fc55e7b560180692d7c47c06a43442340f8a7330f2004ef",
+        "observedSha256": "d2b7ebb89565ac010fc55e7b560180692d7c47c06a43442340f8a7330f2004ef",
+        "matches": true
+      },
+      {
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+        "exists": true,
+        "sha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+        "observedSha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+        "matches": true
+      },
+      {
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+        "exists": true,
+        "sha256": "ac3a2200b231ef5b63c4017d27afb63b00113383753ffcd5aca7add0573b79c9",
+        "observedSha256": "ac3a2200b231ef5b63c4017d27afb63b00113383753ffcd5aca7add0573b79c9",
+        "matches": true
+      },
+      {
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.SDK.dll",
+        "exists": true,
+        "sha256": "1fb0a6c574fe27533130918eaf068cc13934c9c66e00fe474d6bc88455bddf4f",
+        "observedSha256": "1fb0a6c574fe27533130918eaf068cc13934c9c66e00fe474d6bc88455bddf4f",
+        "matches": true
+      }
+    ],
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\global-variables.html"
+    ],
+    "build": {
+      "full": "0 errors / 779 warnings",
+      "ui": "0 errors / 1063 warnings",
+      "logs": [
+        "unified-editor-save-final-release.log",
+        "unified-editor-save-ui-release.log"
+      ]
+    },
+    "productExecuted": false,
+    "designer": "not-run",
+    "independent": {
+      "status": "round-ended-not-closed",
+      "topLevel": {
+        "pass": 0,
+        "total": 12,
+        "blocked": 12,
+        "fail": 0
+      },
+      "observedUiSubscenarios": {
+        "pass": 2,
+        "mode": "user-assisted",
+        "cases": [
+          "ES07 duplicate-name variable Save",
+          "ES08 Integer invalid variable Save"
+        ],
+        "fail": 0
+      },
+      "coreDataChecks": {
+        "fail": 0,
+        "pass": 5
+      },
+      "source": "artifacts/independent-testing/EDIT-SAVE-11/final-results.json",
+      "sourceSha256": "0ce7ee27f146821ecb96a7498592896d2bbc5b6111801d110a3e54fb79f4be94",
+      "reportSha256": "0724b9f23b446af771d5bc33dc8a12b6247c791cb87e0e096b141ec43af2de50"
+    },
+    "crossEditorRollback": false,
+    "readbackImplemented": false,
+    "fullUndoImplemented": false,
+    "productModifiedByDocRole": false,
+    "wholeSiteRegenerated": false,
+    "status": "latest-component-and-E2E-blocked-results-documented-B1-active",
+    "sourceChecks": 6,
+    "outputChecks": 3,
+    "drift": 0,
+    "existingAnalysisIssuesClosed": false,
+    "acceptancePassed": 0,
+    "nextOwner": "主控B1最终交付及对应测试身份，不续作旧测试",
+    "sourceReport": "artifacts/independent-testing/EDIT-SAVE-11/REPORT.md",
+    "latestE2E": {
+      "source": "artifacts/independent-testing/EDIT-SAVE-11/e2e/results.json",
+      "sourceSha256": "2b715d59503875e231a74f049f6753e4415efd18d996767a3bb261515d7f8856",
+      "componentCounts": {
+        "passed": 25,
+        "failed": 0
+      },
+      "e2eCounts": {
+        "blocked": 9,
+        "failed": 0,
+        "passed": 0
+      },
+      "report": "artifacts/independent-testing/EDIT-SAVE-11/e2e/REPORT.md",
+      "blocker": "artifacts/independent-testing/EDIT-SAVE-11/e2e/BLOCKER.md"
+    },
+    "currentSourceDrift": [
+      {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "exists": true,
+        "sha256": "3a4b5a2145b92c333b39797898b4d2dabafc05ff95b35d2e65cfb17626e8b364",
+        "observedSha256": "3600b99a2180b9200a0a8ef7eefac325fb8f50b7121596def4ebd52e486b4829",
+        "matches": false
+      },
+      {
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+        "exists": true,
+        "sha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+        "observedSha256": "e1e8fbaf09a7a8a1c8c0555870b8b789ca13fb1194b684d68726538d584b3454",
+        "matches": false
+      },
+      {
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+        "exists": true,
+        "sha256": "ac3a2200b231ef5b63c4017d27afb63b00113383753ffcd5aca7add0573b79c9",
+        "observedSha256": "648d0bed60384b44d8f60c17d3a89929ea2f965a6e618299d72d93d6f765650f",
+        "matches": false
+      },
+      {
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.SDK.dll",
+        "exists": true,
+        "sha256": "1fb0a6c574fe27533130918eaf068cc13934c9c66e00fe474d6bc88455bddf4f",
+        "observedSha256": "5b4c3f04190896392d21706e0a260610208648ed6564464bc252a915b4642eb7",
+        "matches": false
+      }
+    ],
+    "sourceIdentityPolicy": "旧冻结交付及独立副本按旧报告；当前B1变更不冒充旧产物一致"
+  },
+  "saveRoundtripEntryTask": {
+    "taskId": "SAVE-ROUNDTRIP-12",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html"
+    ],
+    "target": "artifacts/ui-prototypes/save-roundtrip/index.html",
+    "observed": [
+      {
+        "path": "artifacts/ui-prototypes/save-roundtrip/index.html",
+        "observedSha256": "592900d4532aeae58f2489eea0ad0325505a233f778feefd96858c9552f09b57"
+      },
+      {
+        "path": "artifacts/ui-prototypes/save-roundtrip/evidence.json",
+        "observedSha256": "4c711c609cd3f6dd2f60ca105c1d23355937bdd3f263134ea4f4903c75574c2f"
+      },
+      {
+        "path": "artifacts/ui-prototypes/save-roundtrip/validation.json",
+        "observedSha256": "e7d316969739499b0d611b139af70b34379e08a320e8434ba81f7db2642c77b0"
+      }
+    ],
+    "status": "discussion-entry-adopted-static-link-checked-pending-confirmation",
+    "evidenceLocatorsReported": 21,
+    "issueGroupsReported": 8,
+    "acceptancePlanned": 20,
+    "acceptanceExecuted": 0,
+    "previousAcceptanceReplaced": false,
+    "prototypeModified": false,
+    "productModified": false,
+    "productExecuted": false,
+    "wholeSiteRegenerated": false,
+    "nextOwner": "用户与主控讨论，不自行实施",
+    "vmSupplement": "VM-PERSIST-14本轮局部已核并链接#vm，不再三单待派/八组全未参考VM"
+  },
+  "asyncTestingProtocolReceipt": {
+    "received": true,
+    "adopted": true,
+    "section": "2026-10-22补充：按批异步开发与独立测试",
+    "source": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
+    "sha256": "ba96afcbe25fab35967436823fa5b8654022bba9f1506f5aa43b9e9ebd76b967",
+    "conflicts": [],
+    "documentationRoleStatementUpdated": true,
+    "testsDispatchedByDocRole": false,
+    "newSubagentsStarted": 0
+  },
+  "optimizationRoadmapEntryTask": {
+    "taskId": "OPTIMIZATION-ROADMAP-13",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html"
+    ],
+    "target": "artifacts/ui-prototypes/optimization-roadmap/index.html",
+    "authority": "docs/collaboration/OPTIMIZATION_BACKLOG.json",
+    "sourceObservedSha256": "72f634b898860f4e75e1bfbc90fab27b77f77e7fc0cd06723d13a35dea973366",
+    "targetObservedSha256": "540b63f595254420b79cac33a8809cada911452ca77bf440401fca22c47ea96d",
+    "newPriorityListCreated": false,
+    "prototypeModified": false,
+    "productModified": false,
+    "productExecuted": false,
+    "wholeSiteRegenerated": false,
+    "status": "entry-adopted-static-links-checked",
+    "globalProductDenominator": false,
+    "readbackProposals": "VM局部证据与自研推断分别标注，三主题十维已落页，其余未知保留",
+    "vmRequests": "三单本轮局部已核；原生坏条目/统一路径基准/跨机仍未知",
+    "nextOwner": "主控维护唯一问题池并派工"
+  },
+  "vmPersist14Task": {
+    "taskId": "VM-PERSIST-14",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html"
+    ],
+    "input": "artifacts/ui-prototypes/save-roundtrip/vm-comparison.json",
+    "inputSha256": "29f58ca3bde1ec1999ecaca6402203e27238aec97c2ab7e0f11d8c6ac0b3ba4e",
+    "topics": 3,
+    "dimensions": 10,
+    "sourceChecks": {
+      "framework": 9,
+      "resource": 16,
+      "archives": 2
+    },
+    "productModified": false,
+    "productExecuted": false,
+    "wholeSiteRegenerated": false,
+    "prototypeModified": false,
+    "status": "document-adopted-offline-validated-finite-delivery-complete",
+    "handoff": "docs/collaboration/HANDOFF_VM_PERSIST14_20261022.md",
+    "snapshotCommit": "b28236fee5d0a3a5d748bba698c8db32a91a56fe",
+    "validation": "artifacts/validation/vm-persist14-document-validation.json",
+    "sourceCheckReport": "artifacts/validation/vm-persist14-document-source-checks.json",
+    "frameworkClaims": 11,
+    "resourceClaims": 7,
+    "sourceShaDrift": 0,
+    "archiveScope": "文件SHA复核；成员记录沿主控核验，本角色未重复解包",
+    "ownEvidenceLocators": 21,
+    "vmRequests": "三单本轮局部已核；原生坏条目/统一路径基准/跨机仍未知",
+    "designReuse": "保留ShapeMatch ModelData及已交付优化；不强制B1新增恢复副本系统",
+    "upstreamContinuousGoal": "主控已建立active持续目标；不等B1产品代码授权或文档角色无限续作",
+    "regressionPolicy": "已验优化仅受影响回归；缺验仅补验；新证据/合同/依赖变化才重开",
+    "productImplementedThisBatch": false,
+    "productAcceptanceExecuted": 0,
+    "nextOwner": "主控读取交付并处理B1后续及用户闭环，本角色不自行续开逆向"
+  },
+  "b1ExecutionEntryTask": {
+    "taskId": "B1-EXECUTION-16",
+    "input": "artifacts/ui-prototypes/save-roundtrip/b1-execution.json",
+    "inputSha256": "7e02f8c56f7cb8b48ae6c4db23ba5fa8b921314a2a7fd5375d6a2c9d53d4a8f4",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html"
+    ],
+    "sourceChecks": [
+      {
+        "file": "src/Workflow/SolutionRepository.cs",
+        "sha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+        "observedSha256": "c96efb767b59f4d78204b618d3723f39170f3b25f9f9f954d0d7d955cd073097",
+        "matches": true
+      },
+      {
+        "file": "src/Workflow/WorkflowJsonConverter.cs",
+        "sha256": "483f8025e78a771edf3579f1dbecac56861c818d093efd1408729ee88ab0e50b",
+        "observedSha256": "483f8025e78a771edf3579f1dbecac56861c818d093efd1408729ee88ab0e50b",
+        "matches": true
+      },
+      {
+        "file": "src/Workflow/GlobalVariableValueConverter.cs",
+        "sha256": "c8b902fe24b6ac948eb3878271bf88fd1aa78c336d3c54ae617adc243fd57592",
+        "observedSha256": "c8b902fe24b6ac948eb3878271bf88fd1aa78c336d3c54ae617adc243fd57592",
+        "matches": true
+      },
+      {
+        "file": "src/Workflow/SolutionSession.cs",
+        "sha256": "61dab9b2104a41489d0381de4338b7c4b8360ace02ce509d118e2069b2472616",
+        "observedSha256": "61dab9b2104a41489d0381de4338b7c4b8360ace02ce509d118e2069b2472616",
+        "matches": true
+      },
+      {
+        "file": "src/Workflow/ToolParameterSnapshot.cs",
+        "sha256": "09ecfaeb7bbad5f7cc6a6bd3333a01bf4089fc365092382257f35a475770b696",
+        "observedSha256": "09ecfaeb7bbad5f7cc6a6bd3333a01bf4089fc365092382257f35a475770b696",
+        "matches": true
+      },
+      {
+        "file": "src/Workflow/AlgorithmNode.cs",
+        "sha256": "deb8b8ab4068db0aa4f3188adccc84267b0c54707b3c0ec1ac12fe7c55186177",
+        "observedSha256": "deb8b8ab4068db0aa4f3188adccc84267b0c54707b3c0ec1ac12fe7c55186177",
+        "matches": true
+      },
+      {
+        "file": "src/UI/Shared/ImageInputSource.cs",
+        "sha256": "d6d8a1d7d6876e83b0e5d25d41b3a1a8dc2bd107a95dd7cc798e93281b15b1cb",
+        "observedSha256": "d6d8a1d7d6876e83b0e5d25d41b3a1a8dc2bd107a95dd7cc798e93281b15b1cb",
+        "matches": true
+      },
+      {
+        "file": "src/UI/Shared/WorkflowNodeModel.cs",
+        "sha256": "6c5fc9ad8b111f61e5629bca56a086f697dcbc45fb8b3775c35a38058d94ee8f",
+        "observedSha256": "6c5fc9ad8b111f61e5629bca56a086f697dcbc45fb8b3775c35a38058d94ee8f",
+        "matches": true
+      },
+      {
+        "file": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "sha256": "3a4b5a2145b92c333b39797898b4d2dabafc05ff95b35d2e65cfb17626e8b364",
+        "observedSha256": "3a4b5a2145b92c333b39797898b4d2dabafc05ff95b35d2e65cfb17626e8b364",
+        "matches": true
+      },
+      {
+        "file": "tests/SunEyeVision.UI.Tests/SolutionLoadRegressionTests.cs",
+        "sha256": "8f4e67c50f36f2f9e8ccb4cfac1773ed0cc94b41f34ad8ef59f9ef2c1c3192ad",
+        "observedSha256": "8f4e67c50f36f2f9e8ccb4cfac1773ed0cc94b41f34ad8ef59f9ef2c1c3192ad",
+        "matches": true
+      },
+      {
+        "file": "tests/SunEyeVision.UI.Tests/SolutionTransitionTests.cs",
+        "sha256": "6e7f09b545c64b7c87131593c5c4d0bf856263f188bce96d24da35a2171560bb",
+        "observedSha256": "6e7f09b545c64b7c87131593c5c4d0bf856263f188bce96d24da35a2171560bb",
+        "matches": true
+      }
+    ],
+    "contracts": 7,
+    "fileGroups": 21,
+    "migrationGroups": 5,
+    "acceptanceItems": 27,
+    "acceptanceExecuted": 0,
+    "nonBusinessAcceptance": "T20 async delivery isolation",
+    "sourceLocatorsReported": 26,
+    "issueGroupsReported": 10,
+    "productAuthorized": true,
+    "productModified": false,
+    "productExecuted": false,
+    "prototypeModified": false,
+    "wholeSiteRegenerated": false,
+    "status": "authorized-A-E-implementation-in-progress-not-accepted",
+    "handoff": "docs/collaboration/HANDOFF_B1_EXECUTION16_20261022.md",
+    "snapshot": "504191d0",
+    "currentTester": "最新E2E已交付，0通过/0失败/9环境阻塞；组件25通过/0失败分层",
+    "baseline15": "此前排队；没有新批接收/执行证据，不提升",
+    "nextOwner": "主控最终Release与测试身份交付后再更新结论",
+    "implementationStatus": "A→B→C→D→E实施中，未最终交付/验收",
+    "sourceChecksPolicy": "清单输入为实施前快照；不替代在制代码/最终构建身份",
+    "productModifiedByDocRole": false
+  },
+  "pluginFoundationTask": {
+    "id": "PLUGIN-FOUNDATION-01",
+    "received": true,
+    "status": "revision2-developer-fixed-independent-targeted-recheck-pending",
+    "productAuthorized": true,
+    "scope": "接口基础及四类代表样本；非全量工具切换",
+    "excluded": [
+      "旧方案迁移",
+      "旧插件二进制兼容",
+      "生产旧SDK切换",
+      "第二产品入口"
+    ],
+    "existingDocumentLocations": [
+      "SDK设计/framework-sdk-overview.html",
+      "SDK设计/framework-sdk-tools.html",
+      "SDK设计/framework-sdk-ui.html",
+      "SDK设计/framework-sdk-packages.html",
+      "index.html 必要入口"
+    ],
+    "awaiting": [
+      "最终源码身份",
+      "最终产物身份",
+      "实际验证及未验状态"
+    ],
+    "productWriter": "自研主控唯一产品写者",
+    "forbiddenWrite": [
+      "artifacts/ui-prototypes/architecture-health/**",
+      "CURRENT_TASK",
+      "OPTIMIZATION_BACKLOG",
+      "产品文件"
+    ],
+    "htmlModifiedThisTask": true,
+    "productModifiedByDocRole": false,
+    "wholeSiteRegenerated": false,
+    "verified": false,
+    "closed": false,
+    "nextOwner": "独立定向复验报告及主控闭环，文档不提前关闭",
+    "taskId": "PLUGIN-FOUNDATION-01",
+    "input": "artifacts/validation/plugin-foundation-01/delivery.json",
+    "inputSha256": "8d75150c1c80465d74218051e8a581689c81f0e84c984b1e0017a58b7fde84ee",
+    "handoffCommit": "d3a7dff427a2ace7fe3f96109974b0c811da4ea2",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-overview.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-tools.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-ui.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html"
+    ],
+    "sourceChecks": 47,
+    "binaryChecks": 13,
+    "deliveryChecks": 8,
+    "sourceDrift": 0,
+    "localTests": {
+      "passed": 27,
+      "failed": 0,
+      "blocked": 0
+    },
+    "externalConsumer": {
+      "directory": "D:\\Temp\\SunEye-Foundation-External-23_m38d0",
+      "repositoryProjectReferences": false,
+      "packageOnly": true,
+      "exitCodes": [
+        0,
+        0
+      ]
+    },
+    "fullRelease": {
+      "exitCode": 0,
+      "errors": 0,
+      "warnings": 1085,
+      "log": "full-release-build.log",
+      "builtBeforeHandoffCommit": true
+    },
+    "releaseProbe": {
+      "pid": 63480,
+      "exited": true,
+      "exitCode": 0,
+      "outputExists": true,
+      "scope": "Release metadata probe only, before device and session initialization"
+    },
+    "independent": "3-original-defects-developer-fixed-r2-independent-recheck-pending",
+    "designer": "not-exercised",
+    "productionSDKSwitched": false,
+    "productAccepted": false,
+    "wholeGoalComplete": false,
+    "productExecutedByDocRole": false,
+    "manifest": "artifacts/validation/plugin-foundation-document-manifest.json",
+    "validation": "artifacts/validation/plugin-foundation-document-validation.json",
+    "documentVerified": true,
+    "revision": 2,
+    "independentDefects": [
+      {
+        "id": "PF-01",
+        "state": "开发已修复待独立复验"
+      },
+      {
+        "id": "PF-02",
+        "state": "开发已修复待独立复验"
+      },
+      {
+        "id": "PF-03",
+        "state": "开发已修复待独立复验"
+      }
+    ],
+    "originalRevision": "7cb44ead / 本地25项是revision1历史，不等总体通过"
+  },
+  "homeNavigationFix": {
+    "request": "用户指出界面导航被更新记录挤到底部",
+    "status": "compact-home-and-maintenance-separation-verified",
+    "implementation": "首页紧凑标题、界面地图和右侧相关文档优先；维护目标/完整目录/交付记录移至维护记录/文档维护.html，首页只留链接",
+    "validation": "artifacts/validation/home-compact-maintenance-validation.json",
+    "viewports": [
+      1440,
+      768,
+      390
+    ],
+    "interfaceTop": [
+      196.5,
+      196.5,
+      196.5
+    ],
+    "subsequentIncrementalGenerationVerified": true,
+    "productModified": false,
+    "maintenancePage": "维护记录/文档维护.html",
+    "allZonesValidation": "artifacts/validation/home-compact-all-zones.json",
+    "desktopViewports": [
+      [
+        1366,
+        768
+      ],
+      [
+        1440,
+        900
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "mobileWidths": [
+      768,
+      390
+    ],
+    "desktopDefaultNoInnerScroll": true,
+    "all18ZonesAt1366NoInnerScroll": true,
+    "maintenanceLinksChecked": 77,
+    "legacyHashesRedirected": true,
+    "relatedExternalTask": {
+      "id": "HOME-NAV-COMPACT-01",
+      "requestedProject": "D:/MyWork/REA逆向测试/docs/架构逆向与实现对照文档",
+      "firstRecipient": "01a159e5-6571-7ab2-a12d-6ece9db18e69",
+      "actualWriter": "01a16169-2c2b-7001-8dda-7bc623dd98bf",
+      "status": "实际写者已改首页及生成器；本角色只读验证桌面/移动无溢出，待其生成链最终交接",
+      "readOnlyValidation": "artifacts/validation/rea-home-compact-readonly-validation.json"
+    }
+  },
+  "startupConsumerMerge": {
+    "taskId": "STARTUP-CONSUMER-20261022",
+    "input": "docs/collaboration/STARTUP_CONSUMER_REVIEW_20261022.json",
+    "inputSha256": "8bdff1d0bb24abe421cee9c258f286bde3c6591bb4d9a3422c6f05ee68b37ab0",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+    ],
+    "sourceChecks": [
+      {
+        "id": "I1",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Panels\\ImagePreviewControl.xaml.cs",
+        "sha256": "ec18a5fe8927fd1b23ad513558cb94de93a8a038313a1bdfeb8bc2b3e422f25f",
+        "excerpts": [
+          {
+            "start": 95,
+            "end": 105,
+            "text": "95:         public BitmapSource? FullImage\n96:         {\n97:             get\n98:             {\n99:                 if (!File.Exists(FilePath)) { _fullImage = null; _isFullImageLoaded = false; return null; }\n100:                 if (!_isFullImageLoaded && _fullImage == null && !string.IsNullOrEmpty(FilePath))\n101:                 {\n102:                     _fullImage = ImagePreviewControl.LoadImageOptimized(FilePath);\n103:                     _isFullImageLoaded = true;\n104:                 }\n105:                 return _fullImage;"
+          },
+          {
+            "start": 175,
+            "end": 215,
+            "text": "175:         public void EnsureThumbnail()\n176:         {\n177:             if (Thumbnail != null) return;\n178:             if (_thumbnailState == ThumbnailState.Loading) return;   // 进行中不重复触发（防抖动）\n179: \n180:             // Pending / Failed → 触发解码；取消上一次仍在进行的解码（如有残留）\n181:             _thumbnailCts?.Cancel();\n182:             _thumbnailCts?.Dispose();\n183:             _thumbnailCts = new System.Threading.CancellationTokenSource();\n184:             var token = _thumbnailCts.Token;\n185: \n186:             ThumbnailState = ThumbnailState.Loading;\n187: \n188:             var path = FilePath;\n189:             var dispatcher = System.Windows.Application.Current?.Dispatcher;\n190:             if (dispatcher == null) return;\n191: \n192:             System.Threading.Tasks.Task.Run(() =>\n193:             {\n194:                 if (token.IsCancellationRequested) return;\n195:                 var thumbnail = ImagePreviewControl.LoadThumbnail(path, token);\n196:                 if (token.IsCancellationRequested) return;\n197:                 dispatcher.InvokeAsync(() =>\n198:                 {\n199:                     // 若已滚动离开（被取消），丢弃结果\n200:                     if (token.IsCancellationRequested) return;\n201:                     if (thumbnail != null)\n202:                     {\n203:                         Thumbnail = thumbnail;\n204:                         ThumbnailState = ThumbnailState.Loaded;\n205:                     }\n206:                     else\n207:                     {\n208:                         // 解码失败：标记 Failed 显示占位。滚动离开再回来时 OnItemLoaded 会重新触发解码（rule-015 失败可见+可重试）\n209:                         ThumbnailState = ThumbnailState.Failed;\n210:                     }\n211:                 });\n212:             });\n213:         }\n214: \n215:         /// <summary>"
+          },
+          {
+            "start": 460,
+            "end": 575,
+            "text": "460:         // 全分辨率图像缓存（LRU，上限 30）——保留，供 ImageInfo.FullImage 懒加载\n461:         private static readonly ImageCache s_fullImageCache = new ImageCache(maxCacheSize: 30);\n462: \n463:         // 缩略图缓存（LRU，上限 50）——跨实例共享，滚动复用不重复解码\n464:         private static readonly ImageCache s_thumbnailCache = new ImageCache(maxCacheSize: 50);\n465:         private static readonly object s_thumbnailLock = new object();\n466: \n467:         /// <summary>\n468:         /// 全局缩略图并发上限：clamp(CPU-1, 4, 16)。\n469:         /// 对齐 ImageGlass Photo.cs:66-67，避免海量缩略图无限并发挤爆线程池（rule-008 治本）。\n470:         /// </summary>\n471:         private static readonly int s_thumbnailConcurrency =\n472:             Math.Clamp(Environment.ProcessorCount - 1, 4, 16);\n473:         private static readonly SemaphoreSlim s_thumbnailThrottle =\n474:             new(s_thumbnailConcurrency, s_thumbnailConcurrency);\n475: \n476:         /// <summary>\n477:         /// 缩略图加载：后台线程 WIC 解码 + DecodePixelWidth 缩小 + Freeze。\n478:         /// 对齐成熟方案（ImageGlass/微软官方）：\n479:         /// - 并发节流：全局信号量 clamp(CPU-1,4,16)，避免线程池饱和也不串行（对齐 ImageGlass Photo.cs:66-67）\n480:         /// - 锁只保护缓存字典（微秒级短临界区），解码在锁外并行（已治本）\n481:         /// - 解码失败直接返回 null + WARN 日志（rule-015 失败可见），不做无效降级——\n482:         ///   实测 System.Drawing 兜底转 PNG 后仍走 BitmapImage(WIC)，救不回 WIC 解不了的格式\n483:         ///   （对齐 ImageGlass 的容错仅靠其真正多引擎，本项目 Win11 标准格式 WIC 全覆盖，无需兜底）\n484:         /// </summary>\n485:         internal static BitmapImage? LoadThumbnail(string filePath, System.Threading.CancellationToken token = default)\n486:         {\n487:             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))\n488:                 return null;\n489: \n490:             // 快路径：锁内只查缓存（微秒级），命中直接返回\n491:             lock (s_thumbnailLock)\n492:             {\n493:                 var cached = s_thumbnailCache.Get(filePath);\n494:                 if (cached != null) return cached as BitmapImage;\n495:             }\n496: \n497:             // 节流进入：最多 clamp(CPU-1,4,16) 个并发解码，避免线程池饱和\n498:             BitmapImage? bitmap = null;\n499:             try\n500:             {\n501:                 s_thumbnailThrottle.Wait(token);\n502:             }\n503:             catch (System.OperationCanceledException)\n504:             {\n505:                 // 滚动离开被取消：不降级、不报错，直接丢弃（对齐 ImageGlass 不可见即取消）\n506:                 return null;\n507:             }\n508:             try\n509:             {\n510:                 // 慢路径：锁外并行解码（I/O + CPU，互不阻塞）\n511:                 try\n512:                 {\n513:                     bitmap = DecodeThumbnailCore(filePath);   // WIC\n514:                 }\n515:                 catch (Exception ex)   // WIC 解不了（NotSupportedException / COM 异常等）\n516:                 {\n517:                     // rule-015：失败可见，禁止静默吞异常；不做无效降级\n518:                     VisionLogger.Instance.Log(LogLevel.Warning,\n519:                         $\"缩略图解码失败 | {filePath} | {ex.GetType().Name}: {ex.Message}\",\n520:                         \"ImagePreviewControl\");\n521:                 }\n522:             }\n523:             finally\n524:             {\n525:                 s_thumbnailThrottle.Release();\n526:             }\n527: \n528:             if (bitmap == null) return null;\n529: \n530:             // 写缓存：锁内极短\n531:             lock (s_thumbnailLock)\n532:             {\n533:                 s_thumbnailCache.Set(filePath, bitmap);\n534:             }\n535:             return bitmap;\n536:         }\n537: \n538:         /// <summary>\n539:         /// WIC 缩略图解码核心（无锁，可在后台线程并行执行）\n540:         /// </summary>\n541:         private static BitmapImage DecodeThumbnailCore(string filePath)\n542:         {\n543:             var bitmap = new BitmapImage();\n544:             bitmap.BeginInit();\n545:             bitmap.UriSource = new Uri(filePath, UriKind.RelativeOrAbsolute);\n546:             bitmap.DecodePixelWidth = 100;                // 解码时直接缩小，省内存\n547:             bitmap.CacheOption = BitmapCacheOption.OnLoad; // 立即解码\n548:             bitmap.EndInit();\n549:             bitmap.Freeze();                              // 冻结后可跨线程\n550:             return bitmap;\n551:         }\n552: \n553:         /// <summary>\n554:         /// 全分辨率图像加载（简化版）：ImageInfo.FullImage 懒加载入口。\n555:         /// 用 UriSource + OnLoad 内建解码，替代原自研解码器/CleanupScheduler 链路。\n556:         /// </summary>\n557:         public static BitmapImage? LoadImageOptimized(string filePath)\n558:         {\n559:             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))\n560:                 return null;\n561: \n562:             // 全图懒加载在主 UI 线程触发，无并发竞争；查缓存命中直接返回，未命中解码后写入\n563:             var cached = s_fullImageCache.Get(filePath);\n564:             if (cached != null) return cached as BitmapImage;\n565: \n566:             try\n567:             {\n568:                 var bitmap = new BitmapImage();\n569:                 bitmap.BeginInit();\n570:                 bitmap.UriSource = new Uri(filePath, UriKind.RelativeOrAbsolute);\n571:                 bitmap.CacheOption = BitmapCacheOption.OnLoad;\n572:                 bitmap.EndInit();\n573:                 bitmap.Freeze();\n574:                 s_fullImageCache.Set(filePath, bitmap);\n575:                 return bitmap;"
+          },
+          {
+            "start": 747,
+            "end": 770,
+            "text": "747:         private void OnItemLoaded(object sender, RoutedEventArgs e)\n748:         {\n749:             if (sender is FrameworkElement element && element.DataContext is ImageInfo info)\n750:             {\n751:                 info.EnsureThumbnail();\n752:             }\n753:         }\n754: \n755:         /// <summary>\n756:         /// 虚拟化容器滚出可视区域（被回收）时取消进行中的缩略图解码。\n757:         /// 对齐 ImageGlass GalleryControl：不可见即取消，省 CPU 给当前视口。\n758:         /// 滚动回来时 OnItemLoaded 会用新 token 重新触发解码，旧任务的结果被丢弃。\n759:         /// </summary>\n760:         private void OnItemUnloaded(object sender, RoutedEventArgs e)\n761:         {\n762:             if (sender is FrameworkElement element && element.DataContext is ImageInfo info)\n763:             {\n764:                 info.CancelThumbnail();\n765:             }\n766:         }\n767: \n768:         private void ExecuteDeleteSingleImage(ImageInfo? imageInfo)\n769:         {\n770:             if (imageInfo == null) return;"
+          }
+        ],
+        "observedSha256": "ec18a5fe8927fd1b23ad513558cb94de93a8a038313a1bdfeb8bc2b3e422f25f",
+        "matches": true
+      },
+      {
+        "id": "I2",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Panels\\ImagePreviewControl.xaml",
+        "sha256": "cfc93d2e44fc64b7c9a967c91497d7fc4f1ba13789276b1b50e6848d19380bdc",
+        "excerpts": [
+          {
+            "start": 340,
+            "end": 355,
+            "text": "340:                      Background=\"Transparent\"\n341:                      BorderThickness=\"0\"\n342:                      HorizontalAlignment=\"Stretch\"\n343:                      HorizontalContentAlignment=\"Stretch\"\n344:                      ScrollViewer.HorizontalScrollBarVisibility=\"Auto\"\n345:                      ScrollViewer.VerticalScrollBarVisibility=\"Disabled\"\n346:                      ScrollViewer.CanContentScroll=\"True\"\n347:                      VirtualizingPanel.IsVirtualizing=\"True\"\n348:                      VirtualizingPanel.VirtualizationMode=\"Recycling\"\n349:                      VirtualizingPanel.IsVirtualizingWhenGrouping=\"True\"\n350:                      ScrollViewer.ScrollChanged=\"OnScrollChanged\"\n351:                     SelectionChanged=\"OnThumbnailListBoxSelectionChanged\">\n352:                 <ListBox.ItemsPanel>\n353:                     <ItemsPanelTemplate>\n354:                         <VirtualizingStackPanel Orientation=\"Horizontal\"/>\n355:                     </ItemsPanelTemplate>"
+          }
+        ],
+        "observedSha256": "cfc93d2e44fc64b7c9a967c91497d7fc4f1ba13789276b1b50e6848d19380bdc",
+        "matches": true
+      },
+      {
+        "id": "I3",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+        "sha256": "9dcd71bba72e25af94a858f52d18b0ca573709313f1cb491bc271fb275582048",
+        "excerpts": [
+          {
+            "start": 615,
+            "end": 632,
+            "text": "615:         }\n616: \n617:         /// <summary>\n618:         /// 当前显示图像索引\n619:         /// </summary>\n620:         public int CurrentImageIndex\n621:         {\n622:             get => _currentImageIndex;\n623:             set\n624:             {\n625:                 if (SetProperty(ref _currentImageIndex, value))\n626:                 {\n627:                     UpdateCurrentImageDisplay();\n628:                 }\n629:             }\n630:         }\n631: \n632:         /// <summary>"
+          },
+          {
+            "start": 4620,
+            "end": 4638,
+            "text": "4620:         private void UpdateCurrentImageDisplay()\n4621:         {\n4622:             if (CurrentImageIndex < 0 || CurrentImageIndex >= ImageCollection.Count)\n4623:             {\n4624:                 DisplayImage = null;\n4625:                 return;\n4626:             }\n4627: \n4628:             var imageInfo = ImageCollection[CurrentImageIndex];\n4629:             var fullImage = imageInfo.FullImage;\n4630: \n4631:             if (fullImage != null)\n4632:             {\n4633:                 DisplayImage = fullImage;\n4634:                 AddLog($\"📷 显示图像: {imageInfo.Name}\");\n4635:             }\n4636:         }\n4637: \n4638:         #endregion"
+          },
+          {
+            "start": 1995,
+            "end": 2065,
+            "text": "1995:         /// <param name=\"solution\">已加载的解决方案（含主工作流与子程序工作流）</param>\n1996:         private void PreCompileScriptNodes(Solution solution)\n1997:         {\n1998:             if (solution?.Workflows == null)\n1999:             {\n2000:                 return;\n2001:             }\n2002: \n2003:             var allNodes = solution.Workflows.SelectMany(w => w.Nodes).ToList();\n2004:             _logger?.LogInfo($\"[预编译] 遍历到节点总数={allNodes.Count}, Workflows={solution.Workflows.Count}\", nameof(MainWindowViewModel));\n2005:             foreach (var n in allNodes)\n2006:             {\n2007:                 var tool = ToolRegistry.CreateToolInstance(n.ToolType);\n2008:                 _logger?.LogInfo(\n2009:                     $\"[预编译] 节点=[{n.Name}] ToolType=[{n.ToolType}] ParamsType=[{n.Parameters?.GetType().Name ?? \"null\"}] Tool=[{tool?.GetType().Name ?? \"null\"}] IsPrecompilable=[{tool is IPrecompilableTool}]\",\n2010:                     nameof(MainWindowViewModel));\n2011:             }\n2012: \n2013:             var precompilableNodes = allNodes\n2014:                 .Where(n => n.Parameters != null)\n2015:                 .Select(n => new\n2016:                 {\n2017:                     Node = n,\n2018:                     Tool = ToolRegistry.CreateToolInstance(n.ToolType)\n2019:                 })\n2020:                 .Where(x => x.Tool is IPrecompilableTool && x.Node.Parameters != null)\n2021:                 .ToList();\n2022: \n2023:             _logger?.LogInfo($\"[预编译] 可预编译节点数={precompilableNodes.Count}\", nameof(MainWindowViewModel));\n2024: \n2025:             if (precompilableNodes.Count == 0)\n2026:             {\n2027:                 _logger?.LogInfo(\"[预编译] 无可预编译节点，跳过\", nameof(MainWindowViewModel));\n2028:                 return;\n2029:             }\n2030: \n2031:             var sw = System.Diagnostics.Stopwatch.StartNew();\n2032: \n2033:             _logger?.LogInfo($\"[预编译] 开始预编译, 节点数={precompilableNodes.Count}\", nameof(MainWindowViewModel));\n2034: \n2035:             // 后台 Task 并行预编译：\n2036:             // - 并行任务在线程池执行（无 UI 同步上下文），避免在 UI 线程直接调 Parallel.ForEach 的调度死锁\n2037:             // - 多脚本并行，启动时间不随脚本数成倍增加\n2038:             // - UI 线程同步等待完成（主窗口 Show 前预编译结束，确保所见即所得：打开工作区后脚本已编译）\n2039:             var parallelOptions = new ParallelOptions\n2040:             {\n2041:                 MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2)\n2042:             };\n2043: \n2044:             var snapshot = precompilableNodes.ToList();\n2045:             System.Threading.Tasks.Task.Run(() =>\n2046:             {\n2047:                 Parallel.ForEach(snapshot, parallelOptions, x =>\n2048:                 {\n2049:                     try\n2050:                     {\n2051:                         var tool = (IPrecompilableTool)x.Tool!;\n2052:                         var errors = tool.PreCompile(x.Node.Parameters!);\n2053:                         _logger?.LogInfo(\n2054:                             $\"[预编译] 节点=[{x.Node.Name}] 预编译完成, 诊断数={errors.Count}\" + (errors.Count > 0 ? $\", 诊断=[{string.Join(\"; \", errors.Take(2))}]\" : \"\"),\n2055:                             nameof(MainWindowViewModel));\n2056:                     }\n2057:                     catch (Exception ex)\n2058:                     {\n2059:                         _logger?.LogError($\"[预编译] 节点=[{x.Node.Name}] 预编译异常: {ex.Message}\", nameof(MainWindowViewModel));\n2060:                     }\n2061:                 });\n2062:             }).GetAwaiter().GetResult();\n2063: \n2064:             sw.Stop();\n2065:             LogSuccess($\"预编译完成: {precompilableNodes.Count} 个节点, 耗时 {sw.ElapsedMilliseconds}ms\");"
+          }
+        ],
+        "observedSha256": "9dcd71bba72e25af94a858f52d18b0ca573709313f1cb491bc271fb275582048",
+        "matches": true
+      },
+      {
+        "id": "P1",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Infrastructure\\Managers\\Tool\\ToolRegistry.cs",
+        "sha256": "813cfa8862ea46a31d49387f5dfb8a691785a95064ceed06cc51349473fcabb8",
+        "excerpts": [
+          {
+            "start": 55,
+            "end": 100,
+            "text": "55:         public static void RegisterTool(Type toolType)\n56:         {\n57:             if (toolType == null)\n58:                 throw new ArgumentNullException(nameof(toolType));\n59: \n60:             var attr = toolType.GetCustomAttribute<ToolAttribute>();\n61:             if (attr == null)\n62:                 throw new ArgumentException($\"类型 {toolType.Name} 缺少 [Tool] 特性\");\n63: \n64:             lock (_lock)\n65:             {\n66:                 _toolTypes[attr.Id] = toolType;\n67:                 \n68:                 // 提取参数类型信息（用于诊断）\n69:                 Type? paramsType = null;\n70:                 foreach (var iface in toolType.GetInterfaces())\n71:                 {\n72:                     if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IToolPlugin<,>))\n73:                     {\n74:                         var genericArgs = iface.GetGenericArguments();\n75:                         if (genericArgs.Length >= 2)\n76:                         {\n77:                             paramsType = genericArgs[0];\n78:                             break;\n79:                         }\n80:                     }\n81:                 }\n82:                 \n83:                 // 主动注册参数类型到多态序列化配置\n84:                 if (paramsType != null && typeof(ToolParameters).IsAssignableFrom(paramsType))\n85:                 {\n86:                     RegisterParameterTypeToRegistry(paramsType);\n87:                 }\n88:                 \n89:                 // ✅ 基于输出变量契约（IToolPlugin.OutputVariables）提取并缓存属性元数据\n90:                 var pluginInstance = CreateToolInstance(attr.Id);\n91:                 if (pluginInstance != null)\n92:                     ExtractPropertyMetadata(attr.Id, pluginInstance);\n93:                 \n94:                 VisionLogger.Instance.Log(LogLevel.Success,\n95:                     $\"工具注册成功: {attr.DisplayName} (Id={attr.Id}, ParamsType={paramsType?.Name ?? \"未指定\"})\",\n96:                     \"ToolRegistry\");\n97:             }\n98:         }\n99: \n100:         /// <summary>"
+          },
+          {
+            "start": 206,
+            "end": 220,
+            "text": "206:         public static IToolPlugin? CreateToolInstance(string toolId)\n207:         {\n208:             lock (_lock)\n209:             {\n210:                 if (_toolTypes.TryGetValue(toolId, out var type))\n211:                 {\n212:                     return Activator.CreateInstance(type) as IToolPlugin;\n213:                 }\n214:                 return null;\n215:             }\n216:         }\n217: \n218:         /// <summary>\n219:         /// 创建参数实例\n220:         /// </summary>"
+          }
+        ],
+        "observedSha256": "813cfa8862ea46a31d49387f5dfb8a691785a95064ceed06cc51349473fcabb8",
+        "matches": true
+      },
+      {
+        "id": "P2",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptTool.cs",
+        "sha256": "71c32de73c6d00308a639750dcebefdf1c69a936b72f8d98a6fad1b469d13292",
+        "excerpts": [
+          {
+            "start": 27,
+            "end": 46,
+            "text": "27:     public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>, IAsyncToolPlugin, IToolEditorFactory, IPrecompilableTool\n28:     {\n29:         // ★ 应用启动阶段后台预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。\n30:         //   静态构造在 LoadPlugins 实例化工具时触发，fire-and-forget 不阻塞启动；\n31:         //   首次打开脚本工具时补全立即可用（MEF 已预热缓存命中）。\n32:         static ScriptTool()\n33:         {\n34:             // 编辑器内核统一预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。\n35:             ScriptEditorCore.WarmupForStartup();\n36: \n37:             // 预热 Roslyn Emit 引擎（代码无关）：启动时后台编译一次最小模板，\n38:             // 让 Emit 初始化（~947ms）提前完成，用户首次执行脚本 Emit 降到 ~29ms。\n39:             // fire-and-forget 不阻塞启动；失败仅告警（ScriptCompiler.Warmup 内部处理）。\n40:             ScriptCompiler.Warmup();\n41:         }\n42: \n43:         public ScriptResults Run(ScriptParameters parameters)\n44:             => ExecuteCore(\n45:                 parameters,\n46:                 parameters.Context?.GlobalVariables,"
+          }
+        ],
+        "observedSha256": "71c32de73c6d00308a639750dcebefdf1c69a936b72f8d98a6fad1b469d13292",
+        "matches": true
+      },
+      {
+        "id": "V1",
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanelBase.cs",
+        "sha256": "df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79",
+        "excerpts": [
+          {
+            "start": 303,
+            "end": 375,
+            "text": "303: \tprivate void ImageListPanel_Loaded(object sender, RoutedEventArgs e)\n304: \t{\n305: \t\trefreshImageThreadAlive = true;\n306: \t\tLogHelper.Info(\"设置refreshImageThreadAlive = true\");\n307: \t\tif (refreshImageThread == null || !refreshImageThread.IsAlive)\n308: \t\t{\n309: \t\t\tLogHelper.Info(\"ImageListPanelBase控件创建缩略图刷新线程\");\n310: \t\t\trefreshImageThread = new Thread(() =>\n311: \t\t\t{\n312: \t\t\t\ttry\n313: \t\t\t\t{\n314: \t\t\t\t\twhile (refreshImageThreadAlive)\n315: \t\t\t\t\t{\n316: \t\t\t\t\t\tif (dataNumForReceiveStore > 0)\n317: \t\t\t\t\t\t{\n318: \t\t\t\t\t\t\tLogHelper.Info($\"mutexrefreshImageThread:dataNumForReceiveStore={dataNumForReceiveStore}\");\n319: \t\t\t\t\t\t\tint[] array = forSendStore;\n320: \t\t\t\t\t\t\tlock (mutexrefreshImageThread)\n321: \t\t\t\t\t\t\t{\n322: \t\t\t\t\t\t\t\tforSendStore = forReceiveStore;\n323: \t\t\t\t\t\t\t\tdataNumForSendStore = dataNumForReceiveStore;\n324: \t\t\t\t\t\t\t\tdataNumForReceiveStore = 0;\n325: \t\t\t\t\t\t\t\tforReceiveStore = array;\n326: \t\t\t\t\t\t\t}\n327: \t\t\t\t\t\t\tfor (int i = 0; i < dataNumForSendStore; i++)\n328: \t\t\t\t\t\t\t{\n329: \t\t\t\t\t\t\t\tint index = forSendStore[i];\n330: \t\t\t\t\t\t\t\tLoadThumbnailImage(index);\n331: \t\t\t\t\t\t\t\tforSendStore[i] = -1;\n332: \t\t\t\t\t\t\t}\n333: \t\t\t\t\t\t\tdataNumForSendStore = 0;\n334: \t\t\t\t\t\t}\n335: \t\t\t\t\t\tif (needSelectImagePath != null)\n336: \t\t\t\t\t\t{\n337: \t\t\t\t\t\t\tDispatcher.Invoke(() =>\n338: \t\t\t\t\t\t\t{\n339: \t\t\t\t\t\t\t\tGetModuleSel(needSelectImagePath);\n340: \t\t\t\t\t\t\t});\n341: \t\t\t\t\t\t}\n342: \t\t\t\t\t\tThread.Sleep(100);\n343: \t\t\t\t\t}\n344: \t\t\t\t\tLogHelper.Info(\"ImageListPanelBase控件停止刷新缩略图\");\n345: \t\t\t\t}\n346: \t\t\t\tcatch (ThreadAbortException)\n347: \t\t\t\t{\n348: \t\t\t\t\tLogHelper.Info(\"ImageListPanelBase控件停止数据读取\");\n349: \t\t\t\t}\n350: \t\t\t})\n351: \t\t\t{\n352: \t\t\t\tIsBackground = true,\n353: \t\t\t\tPriority = ThreadPriority.BelowNormal\n354: \t\t\t};\n355: \t\t\trefreshImageThread.Start();\n356: \t\t}\n357: \t\tPropertyManager.Register(\"ExcuteType\");\n358: \t\tPropertyManager.UpdateDisplayStatus -= OnUpdateExcuteType;\n359: \t\tPropertyManager.UpdateDisplayStatus += OnUpdateExcuteType;\n360: \t\tVmSolution.OnReportModuleData += VmSolution_OnReportModuleData;\n361: \t}\n362: \n363: \tprivate void ImageListPanel_Unloaded(object sender, RoutedEventArgs e)\n364: \t{\n365: \t\tif (refreshImageThread != null)\n366: \t\t{\n367: \t\t\trefreshImageThreadAlive = false;\n368: \t\t\tLogHelper.Info(\"设置refreshImageThreadAlive = false\");\n369: \t\t}\n370: \t\tPropertyManager.UpdateDisplayStatus -= OnUpdateExcuteType;\n371: \t\tPropertyManager.UnRegister(\"ExcuteType\");\n372: \t\tVmSolution.OnReportModuleData -= VmSolution_OnReportModuleData;\n373: \t}\n374: \n375: \t/// <summary>"
+          },
+          {
+            "start": 1275,
+            "end": 1310,
+            "text": "1275: \tprivate void LoadThumbnailImage(int index)\n1276: \t{\n1277: \t\ttry\n1278: \t\t{\n1279: \t\t\tLogHelper.Info($\"LoadThumbnailImage:{index}\");\n1280: \t\t\tint num = curScrollOffset;\n1281: \t\t\tint num2 = num + (int)Math.Ceiling(curActualWidth / 76.0);\n1282: \t\t\tLogHelper.Info($\"index={index},startIndex={num},endIndex={num2},ImageList.Count={ImageList.Count}\");\n1283: \t\t\tif (index < num || index >= num2 || index >= ImageList.Count)\n1284: \t\t\t{\n1285: \t\t\t\treturn;\n1286: \t\t\t}\n1287: \t\t\tImageEntity imageEntity = ImageList[index];\n1288: \t\t\tif (imageEntity == null || imageEntity.ImageSource != null)\n1289: \t\t\t{\n1290: \t\t\t\treturn;\n1291: \t\t\t}\n1292: \t\t\tImageData imageData = null;\n1293: \t\t\tif (Islocal)\n1294: \t\t\t{\n1295: \t\t\t\timageData = ((!(Path.GetExtension(imageEntity.ImagePath)?.ToLower() == \".raw\")) ? ImageData.GetImageDataFromFile(imageEntity.ImagePath, 72, 52) : ImageData.GetImageDataFrom3DFile(imageEntity.ImagePath, 72, 52));\n1296: \t\t\t\tif (imageData != null)\n1297: \t\t\t\t{\n1298: \t\t\t\t\tLogHelper.Info(\"GetImageDataFromFile successfully\");\n1299: \t\t\t\t\timageEntity.ImageSource = imageData;\n1300: \t\t\t\t}\n1301: \t\t\t}\n1302: \t\t}\n1303: \t\tcatch (Exception ex)\n1304: \t\t{\n1305: \t\t\tLogHelper.Error(ex.Message);\n1306: \t\t}\n1307: \t}\n1308: \n1309: \t/// <summary>\n1310: \t/// 图像列表选项改变响应"
+          },
+          {
+            "start": 1312,
+            "end": 1360,
+            "text": "1312: \t/// <param name=\"sender\"></param>\n1313: \t/// <param name=\"e\"></param>\n1314: \tprotected void lst_SelectionChanged(object sender, SelectionChangedEventArgs e)\n1315: \t{\n1316: \t\tCurImageIndexT = CurSelectedIndex + 1;\n1317: \t\tif (0 > CurImageIndex || !needSelectionTrigger || GetVMModule() == null)\n1318: \t\t{\n1319: \t\t\treturn;\n1320: \t\t}\n1321: \t\tbool flag = GetRoot()?.FindBaseNodeByName(\"AutoPlay\") is Apps.XmlParser.ParamTab.Boolean boolean && boolean.CurValueA;\n1322: \t\tif (!(GetRoot()?.FindBaseNodeByName(\"CurrentImagePath\") is ButtonSelecter_ImageList buttonSelecter_ImageList))\n1323: \t\t{\n1324: \t\t\treturn;\n1325: \t\t}\n1326: \t\ttry\n1327: \t\t{\n1328: \t\t\tif (buttonSelecter_ImageList.SelectEnable && !ImageList[CurImageIndex].IsCheck)\n1329: \t\t\t{\n1330: \t\t\t\tGetModuleSel();\n1331: \t\t\t}\n1332: \t\t\tList<ImageEntity> list = (buttonSelecter_ImageList.SelectEnable ? ImageList.Where((ImageEntity p) => p.IsCheck).ToList() : ImageList.ToList());\n1333: \t\t\tint num = list.IndexOf(ImageList[CurImageIndex]);\n1334: \t\t\tint index = ((num == 0) ? (list.Count - 1) : (num - 1));\n1335: \t\t\tstring value = (flag ? list[index].ImagePath : list[num].ImagePath);\n1336: \t\t\t((IUserStringData)GetVMModule().Params)[\"CurrentImagePath\"] = value;\n1337: \t\t\tVmProcedure vmProcedure = (GetVMModule() as VmModule).Root;\n1338: \t\t\tif (vmProcedure != null && !vmProcedure.IsVirtual)\n1339: \t\t\t{\n1340: \t\t\t\tstring workStateInfo = \"\";\n1341: \t\t\t\tif (!vmProcedure.RunCheck(ref workStateInfo))\n1342: \t\t\t\t{\n1343: \t\t\t\t\tstring strMsg = vmProcedure.Name + \":\" + workStateInfo;\n1344: \t\t\t\t\tHikMessageBox.Show(strMsg, MessageIcons.Error);\n1345: \t\t\t\t}\n1346: \t\t\t\telse\n1347: \t\t\t\t{\n1348: \t\t\t\t\tvmProcedure.Run(null, bIsWait: false);\n1349: \t\t\t\t}\n1350: \t\t\t}\n1351: \t\t}\n1352: \t\tcatch (VmException ex)\n1353: \t\t{\n1354: \t\t\tstring errorInfo = ErrorCodeInfo.GetErrorInfo(ex.errorCode);\n1355: \t\t\tHikMessageBox.Show(errorInfo, MessageIcons.Error);\n1356: \t\t}\n1357: \t\tcatch (Exception)\n1358: \t\t{\n1359: \t\t}\n1360: \t}"
+          }
+        ],
+        "observedSha256": "df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79",
+        "matches": true
+      },
+      {
+        "id": "V2",
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.Data\\VMControls.Data\\ToolBoxData.cs",
+        "sha256": "c1b11d2c3bebce66a11769eb0e209455cb1e5d0c4efa7c4a6dad5992eb9cf45b",
+        "excerpts": [
+          {
+            "start": 77,
+            "end": 128,
+            "text": "77: \tpublic void UpdateLoad(object GroupObject)\n78: \t{\n79: \t\tif (GroupObject == null)\n80: \t\t{\n81: \t\t\treturn;\n82: \t\t}\n83: \t\tToolBoxItemData toolBoxItemData = (GroupObject as CollectionViewGroup).Name as ToolBoxItemData;\n84: \t\tif (toolBoxItemData.Name == \"Lang_Tools\" || toolBoxItemData.IsInit)\n85: \t\t{\n86: \t\t\treturn;\n87: \t\t}\n88: \t\ttoolBoxItemData.IsInit = true;\n89: \t\tDirectoryInfo directoryInfo = new DirectoryInfo(toolBoxItemData.DirPath);\n90: \t\tDirectoryInfo[] directories = directoryInfo.GetDirectories();\n91: \t\tItemData itemData = (toolBoxItemData.Items as List<ItemData>).FirstOrDefault();\n92: \t\tif (itemData == null)\n93: \t\t{\n94: \t\t\treturn;\n95: \t\t}\n96: \t\ttoolBoxItemData.Items.Clear();\n97: \t\tDirectoryInfo[] array = directories;\n98: \t\tforeach (DirectoryInfo directoryInfo2 in array)\n99: \t\t{\n100: \t\t\tFileInfo fileInfo = directoryInfo2.GetFiles().SingleOrDefault((FileInfo p) => p.Name == \"ToolItemInfo.xml\");\n101: \t\t\tif (fileInfo != null)\n102: \t\t\t{\n103: \t\t\t\tToolBoxItemData toolBoxItemData2 = new ToolBoxItemData();\n104: \t\t\t\ttoolBoxItemData2.Info = directoryInfo2.Name;\n105: \t\t\t\ttoolBoxItemData2.DirPath = directoryInfo2.FullName;\n106: \t\t\t\ttoolBoxItemData2.loadXml(fileInfo.FullName);\n107: \t\t\t\ttoolBoxItemData.items.Add(toolBoxItemData2);\n108: \t\t\t\ttoolBoxItemData2.SetParentNode(toolBoxItemData);\n109: \t\t\t}\n110: \t\t}\n111: \t\ttoolBoxItemData.items.Sort(SortItemDateCompare);\n112: \t\tint num = (toolSource as ObservableCollection<ToolBoxItemData>).IndexOf(itemData as ToolBoxItemData);\n113: \t\tforeach (ItemData item in toolBoxItemData.items)\n114: \t\t{\n115: \t\t\t(toolSource as ObservableCollection<ToolBoxItemData>).Insert(num, item as ToolBoxItemData);\n116: \t\t\tnum++;\n117: \t\t}\n118: \t\t(toolSource as ObservableCollection<ToolBoxItemData>).Remove(itemData as ToolBoxItemData);\n119: \t\tOnPropertyChanged(\"ToolSource\");\n120: \t}\n121: \n122: \tprivate void Refresh()\n123: \t{\n124: \t\tLogHelper.Info(\"ToolBoxData.Refresh\");\n125: \t\ttoolSource = null;\n126: \t\ttoolBoxSource = null;\n127: \t\tOnPropertyChanged(\"ToolSource\");\n128: \t}"
+          },
+          {
+            "start": 266,
+            "end": 325,
+            "text": "266: \tpublic static void LoadData()\n267: \t{\n268: \t\tLogHelper.Info(\"ToolBoxData.LoadData(start)\");\n269: \t\tToolBoxItemData toolBoxItemData = new ToolBoxItemData();\n270: \t\tstring modulesDir = AppData.ModulesDir;\n271: \t\tDirectoryInfo directoryInfo = new DirectoryInfo(modulesDir);\n272: \t\tDirectoryInfo[] directories = directoryInfo.GetDirectories();\n273: \t\tDirectoryInfo[] array = directories;\n274: \t\tforeach (DirectoryInfo directoryInfo2 in array)\n275: \t\t{\n276: \t\t\tFileInfo fileInfo = directoryInfo2.GetFiles().SingleOrDefault((FileInfo p) => p.Name == \"ToolGroup.xml\");\n277: \t\t\tbool flag = directoryInfo2.Name == \"Global\";\n278: \t\t\tbool flag2 = directoryInfo2.Name == \"UserTools\" || directoryInfo2.Name == \"GroupTools\";\n279: \t\t\tif (!((fileInfo != null) | flag))\n280: \t\t\t{\n281: \t\t\t\tcontinue;\n282: \t\t\t}\n283: \t\t\tToolBoxItemData toolBoxItemData2 = new ToolBoxItemData();\n284: \t\t\tif (!flag)\n285: \t\t\t{\n286: \t\t\t\ttoolBoxItemData2.DirPath = directoryInfo2.FullName;\n287: \t\t\t\ttoolBoxItemData2.loadXml(fileInfo.FullName);\n288: \t\t\t}\n289: \t\t\telse\n290: \t\t\t{\n291: \t\t\t\ttoolBoxItemData2.Name = \"Lang_Tools\";\n292: \t\t\t}\n293: \t\t\ttoolBoxItemData.items.Add(toolBoxItemData2);\n294: \t\t\ttoolBoxItemData2.SetParentNode(toolBoxItemData);\n295: \t\t\tif (!flag && !flag2)\n296: \t\t\t{\n297: \t\t\t\tToolBoxItemData toolBoxItemData3 = new ToolBoxItemData();\n298: \t\t\t\ttoolBoxItemData3.info = \"defaultProxyModule\";\n299: \t\t\t\ttoolBoxItemData2.items.Add(toolBoxItemData3);\n300: \t\t\t\ttoolBoxItemData3.SetParentNode(toolBoxItemData2);\n301: \t\t\t\tcontinue;\n302: \t\t\t}\n303: \t\t\tDirectoryInfo[] directories2 = directoryInfo2.GetDirectories();\n304: \t\t\tDirectoryInfo[] array2 = directories2;\n305: \t\t\tforeach (DirectoryInfo directoryInfo3 in array2)\n306: \t\t\t{\n307: \t\t\t\tFileInfo fileInfo2 = directoryInfo3.GetFiles().SingleOrDefault((FileInfo p) => p.Name == \"ToolItemInfo.xml\");\n308: \t\t\t\tif (fileInfo2 != null)\n309: \t\t\t\t{\n310: \t\t\t\t\tToolBoxItemData toolBoxItemData4 = new ToolBoxItemData();\n311: \t\t\t\t\ttoolBoxItemData4.Info = directoryInfo3.Name;\n312: \t\t\t\t\ttoolBoxItemData4.DirPath = directoryInfo3.FullName;\n313: \t\t\t\t\ttoolBoxItemData4.loadXml(fileInfo2.FullName);\n314: \t\t\t\t\ttoolBoxItemData2.items.Add(toolBoxItemData4);\n315: \t\t\t\t\ttoolBoxItemData4.SetParentNode(toolBoxItemData2);\n316: \t\t\t\t\tif (!flag)\n317: \t\t\t\t\t{\n318: \t\t\t\t\t\tbreak;\n319: \t\t\t\t\t}\n320: \t\t\t\t}\n321: \t\t\t}\n322: \t\t}\n323: \t\ttoolBoxSource = toolBoxItemData;\n324: \t\tLogHelper.Info(\"ToolBoxData.LoadData(end)\");\n325: \t}"
+          }
+        ],
+        "observedSha256": "c1b11d2c3bebce66a11769eb0e209455cb1e5d0c4efa7c4a6dad5992eb9cf45b",
+        "matches": true
+      },
+      {
+        "id": "V3",
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.DataForUI\\DisplayImageListDecorator.cs",
+        "sha256": "b1a5e6f41b69f8e755a5353faf79cccc789236fd1db7191a0cc22a7c9d6077a9",
+        "excerpts": [
+          {
+            "start": 78,
+            "end": 110,
+            "text": "78: \tpublic ImageViewItem SelectedImage\n79: \t{\n80: \t\tget\n81: \t\t{\n82: \t\t\treturn selectedImage;\n83: \t\t}\n84: \t\tset\n85: \t\t{\n86: \t\t\tif (selectedImage == value)\n87: \t\t\t{\n88: \t\t\t\treturn;\n89: \t\t\t}\n90: \t\t\tstring oldName = selectedImage?.DisplayName;\n91: \t\t\tif (selectedImage != null && selectedImage.IsCallBackEnable && selectedImage.DisplayObject is Apps.XmlParser.Object obj)\n92: \t\t\t{\n93: \t\t\t\tobj.RemoveOutputFilter();\n94: \t\t\t\tif (obj != selectedInputImage?.DisplayObject)\n95: \t\t\t\t{\n96: \t\t\t\t\tWeakEventManager<Apps.XmlParser.Object, EventArgs>.RemoveHandler(obj, \"ValueChanged\", ParentUI.P_ValueChanged);\n97: \t\t\t\t}\n98: \t\t\t\tselectedImage.IsCallBackEnable = false;\n99: \t\t\t}\n100: \t\t\tselectedImage = value;\n101: \t\t\tif (selectedImage != null && !selectedImage.IsCallBackEnable && selectedImage.DisplayObject is Apps.XmlParser.Object obj2)\n102: \t\t\t{\n103: \t\t\t\tobj2.SetOutputFilter();\n104: \t\t\t\tWeakEventManager<Apps.XmlParser.Object, EventArgs>.RemoveHandler(obj2, \"ValueChanged\", ParentUI.P_ValueChanged);\n105: \t\t\t\tWeakEventManager<Apps.XmlParser.Object, EventArgs>.AddHandler(obj2, \"ValueChanged\", ParentUI.P_ValueChanged);\n106: \t\t\t\tselectedImage.IsCallBackEnable = true;\n107: \t\t\t}\n108: \t\t\tstring newName = selectedImage?.DisplayName;\n109: \t\t\tOnPropertyChanged(\"SelectedImage\");\n110: \t\t\tParentUI.MyOnSelectedImageChanged(new NameChangedEventArgs"
+          }
+        ],
+        "observedSha256": "b1a5e6f41b69f8e755a5353faf79cccc789236fd1db7191a0cc22a7c9d6077a9",
+        "matches": true
+      },
+      {
+        "id": "V4",
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.Data\\VMControls.Data\\ToolBoxItemData.cs",
+        "sha256": "378a1319599c725eafb5eeae0d105aedb58c8ce0b77f131bc9b480d15abbc409",
+        "excerpts": [
+          {
+            "start": 279,
+            "end": 314,
+            "text": "279: \tpublic object AddNewItem(object param)\n280: \t{\n281: \t\tif (!string.IsNullOrEmpty(customInstanceFullName))\n282: \t\t{\n283: \t\t\treturn ActivatorWrap.CreateInstance(customInstanceFullName, new object[2] { param, Name });\n284: \t\t}\n285: \t\tAssembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, $\"{Info}Cs\"));\n286: \t\tAssembly assembly2 = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, $\"{Info}Control\"));\n287: \t\tif (assembly == null)\n288: \t\t{\n289: \t\t\tActivatorWrap.LoadAssembly($\"{DirPath}\\\\{Info}Cs.dll\");\n290: \t\t\tassembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, $\"{Info}Cs\"));\n291: \t\t}\n292: \t\tif (assembly2 == null)\n293: \t\t{\n294: \t\t\tstring text = $\"{DirPath}\\\\Librarys.Config\";\n295: \t\t\tif (File.Exists(text))\n296: \t\t\t{\n297: \t\t\t\tstring[] libs = GetLibs(text);\n298: \t\t\t\tlibs.ToList().ForEach((string p) =>\n299: \t\t\t\t{\n300: \t\t\t\t\tstring text2 = $\"{DirPath}\\\\{p}\";\n301: \t\t\t\t\tif (File.Exists(text2))\n302: \t\t\t\t\t{\n303: \t\t\t\t\t\tActivatorWrap.LoadAssembly(text2);\n304: \t\t\t\t\t}\n305: \t\t\t\t});\n306: \t\t\t}\n307: \t\t\tif (File.Exists($\"{DirPath}\\\\{Info}Control.dll\"))\n308: \t\t\t{\n309: \t\t\t\tActivatorWrap.LoadAssembly($\"{DirPath}\\\\{Info}Control.dll\");\n310: \t\t\t}\n311: \t\t}\n312: \t\tType type = assembly.GetTypes().FirstOrDefault((Type p) => typeof(IVmModule).IsAssignableFrom(p));\n313: \t\treturn ActivatorWrap.CreateInstance(type, new object[1] { param });\n314: \t}"
+          }
+        ],
+        "observedSha256": "378a1319599c725eafb5eeae0d105aedb58c8ce0b77f131bc9b480d15abbc409",
+        "matches": true
+      },
+      {
+        "id": "S1",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\ScriptEditorCore.xaml.cs",
+        "sha256": "bb2f9c7618bd6f66f79785299518102a7ce1d5311143e0181478aeec2b5be88a",
+        "excerpts": [
+          {
+            "start": 141,
+            "end": 225,
+            "text": "141:     private static readonly object _signatureHelpLock = new();\n142: \n143:     // 进程生命周期内共享的 MefHostServices（首次初始化慢，后续缓存命中快）\n144:     private static MefHostServices? _sharedMefHost;\n145:     private static object _mefLock = new();\n146: \n147:     // 预热 ScriptWorkspace 缓存\n148:     private static ScriptWorkspace? _preWarmedWorkspace;\n149: \n150:     // 补全引擎就绪标志（MEF + Workspace 预热完成后置 true）\n151:     private static volatile bool _completionReady;\n152: \n153:     // 补全就绪回调（预热完成时通知等待中的调用方重建 workspace）\n154:     private static Action? _onCompletionReady;\n155: \n156:     private static bool _warmupStarted;\n157:     private static readonly object _warmupLock = new();\n158: \n159:     /// <summary>\n160:     /// 线程安全地获取共享 MefHostServices（LazyInitializer 消除预热与主线程的竞态）。\n161:     /// </summary>\n162:     private static MefHostServices GetSharedMefHost()\n163:     {\n164:         return LazyInitializer.EnsureInitialized(ref _sharedMefHost, ref _mefLock, () =>\n165:         {\n166:             var sw = System.Diagnostics.Stopwatch.StartNew();\n167:             var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);\n168:             sw.Stop();\n169:             PluginLogger.Info($\"[补全] MefHostServices 首次初始化: {sw.ElapsedMilliseconds}ms\",\n170:                 nameof(ScriptEditorCore));\n171:             return host;\n172:         });\n173:     }\n174: \n175:     /// <summary>\n176:     /// 应用启动后台预热补全引擎（MEF + Workspace）。对齐新版 RoslynPad 的 Task.Run 启动初始化。\n177:     /// 幂等：双重检查锁保证进程内只预热一次；完成后置 _completionReady 并通知等待中的调用方。\n178:     /// </summary>\n179:     internal static void WarmupForStartup()\n180:     {\n181:         lock (_warmupLock)\n182:         {\n183:             if (_warmupStarted) return;\n184:             _warmupStarted = true;\n185:         }\n186: \n187:         _ = Task.Run(async () =>\n188:         {\n189:             var sw = System.Diagnostics.Stopwatch.StartNew();\n190:             PluginLogger.Info(\"[补全] 启动后台预热 Roslyn 开始...\", nameof(ScriptEditorCore));\n191:             await WarmupRoslynAsync();\n192:             await WarmupWorkspaceAsync();\n193:             sw.Stop();\n194:             _completionReady = true;\n195:             PluginLogger.Info($\"[补全] 启动后台预热完成: {sw.ElapsedMilliseconds}ms\", nameof(ScriptEditorCore));\n196: \n197:             var cb = Interlocked.Exchange(ref _onCompletionReady, null);\n198:             cb?.Invoke();\n199:         });\n200:     }\n201: \n202:     private static Task WarmupRoslynAsync()\n203:     {\n204:         return Task.Run(() =>\n205:         {\n206:             var sw = System.Diagnostics.Stopwatch.StartNew();\n207:             PluginLogger.Info(\"[补全] 后台预热 Roslyn 开始...\", nameof(ScriptEditorCore));\n208:             GetSharedMefHost();\n209:             sw.Stop();\n210:             PluginLogger.Info($\"[补全] 后台预热 Roslyn 完成: {sw.ElapsedMilliseconds}ms\", nameof(ScriptEditorCore));\n211:         });\n212:     }\n213: \n214:     private static Task WarmupWorkspaceAsync()\n215:     {\n216:         return Task.Run(() =>\n217:         {\n218:             var sw = System.Diagnostics.Stopwatch.StartNew();\n219:             PluginLogger.Info(\"[补全] 后台预热 Workspace 开始...\", nameof(ScriptEditorCore));\n220:             var host = GetSharedMefHost();\n221:             var ws = new ScriptWorkspace(host);\n222:             ws.TryApplyChanges(ws.CurrentSolution.AddProject(\n223:                 ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), \"ScriptCompletion\", \"ScriptCompletion\", LanguageNames.CSharp)));\n224:             Interlocked.Exchange(ref _preWarmedWorkspace, ws);\n225:             sw.Stop();"
+          },
+          {
+            "start": 324,
+            "end": 360,
+            "text": "324:     public void InitializeWorkspace()\n325:     {\n326:         var perfSw = System.Diagnostics.Stopwatch.StartNew();\n327:         RebuildWorkspace();\n328:         PluginLogger.Info($\"[Perf] RebuildWorkspace: {perfSw.ElapsedMilliseconds}ms\", typeName);\n329:         SetSuppressDiagnostic(false);\n330:         EnsureSemanticHighlighterMounted();\n331:         ScheduleDiagnosticAsync();\n332:         RedrawVisibleLines();\n333:         _ = WarmupCompletionAsync();\n334:     }\n335: \n336:     /// <summary>\n337:     /// 打开前预热：重建 workspace + 完成语义着色，供窗口显示前调用（对齐\"打开即着色，无白色过渡\"）。\n338:     /// 在 InitializeAsync（窗口 Show 前被 await）中调用，同步完成 RebuildWorkspace + 挂载高亮，\n339:     /// 再等待语义模型构建 + 可视区前 N 行分类完成。\n340:     /// </summary>\n341:     public async Task InitializeAndWaitAsync()\n342:     {\n343:         InitializeWorkspace();\n344:         await WaitForInitialHighlightAsync();\n345:     }\n346: \n347:     /// <summary>\n348:     /// 等待语义高亮预热完成：确保 highlighter 已创建（触发一次布局），再等其 WarmupCompletion。\n349:     /// </summary>\n350:     private async Task WaitForInitialHighlightAsync()\n351:     {\n352:         if (_semanticColorizer == null) return;\n353: \n354:         // 确保 highlighter 已创建（AvalonEdit 布局时才 CreateHighlighter + TriggerWarmup）\n355:         if (CodeEditor.TextArea.TextView.VisualLinesValid)\n356:             _ = CodeEditor.TextArea.TextView.VisualLines;\n357: \n358:         await _semanticColorizer.WarmupCompletion;\n359:     }\n360: "
+          },
+          {
+            "start": 950,
+            "end": 970,
+            "text": "950:     public async Task WarmupCompletionAsync()\n951:     {\n952:         try\n953:         {\n954:             if (_workspace == null || _userDocumentId == null) return;\n955:             var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);\n956:             if (doc == null) return;\n957: \n958:             var caretOffset = CodeEditor.Text.Length;\n959:             var completionService = CompletionService.GetService(doc);\n960:             if (completionService == null) return;\n961: \n962:             var trigger = CompletionTrigger.CreateInsertionTrigger('a');\n963:             await completionService.GetCompletionsAsync(doc, caretOffset, trigger)\n964:                 .ConfigureAwait(false);\n965:         }\n966:         catch { /* 预热失败不阻塞主流程 */ }\n967:     }\n968: \n969:     // =======================================================\n970:     // Phase 0: 签名帮助（语法树定位 InvocationExpression → OverloadInsightWindow 参数提示）"
+          },
+          {
+            "start": 1092,
+            "end": 1230,
+            "text": "1092:     public void RebuildWorkspace(bool refreshReferences = false)\n1093:     {\n1094:         if (_getReferences == null)\n1095:             throw new InvalidOperationException(\"未注入引用来源：请先调用 SetReferenceProvider（rule-008 报错优先）。\");\n1096:         if (_getGeneratedCode == null || _getUserCode == null)\n1097:             throw new InvalidOperationException(\"未注入代码来源：请先调用 SetCodeSource（rule-008 报错优先）。\");\n1098: \n1099:         // 实例级复用：workspace 已建且非强制刷新引用 → 只更新 generated 文档文本（user 文档由增量容器自动同步）\n1100:         if (_workspaceInitialized && !refreshReferences)\n1101:         {\n1102:             var genCode = _getGeneratedCode();\n1103:             _workspace!.SetCurrentSolution(_workspace.CurrentSolution\n1104:                 .WithDocumentText(_documentId!, SourceText.From(genCode)));\n1105:             return;\n1106:         }\n1107: \n1108:         var generatedCode = _getGeneratedCode();\n1109:         var userCode = _getUserCode();\n1110:         var totalSw = System.Diagnostics.Stopwatch.StartNew();\n1111: \n1112:         PluginLogger.Info($\"[补全] RebuildWorkspace 开始: generatedCodeLen={generatedCode.Length}, userCodeLen={userCode.Length}\", typeName);\n1113: \n1114:         _workspace?.Dispose();\n1115: \n1116:         // 加载 MefHostServices 确保所有 CompletionProvider 可用（缓存机制，首次慢后续快）\n1117:         var sw = System.Diagnostics.Stopwatch.StartNew();\n1118:         var host = GetSharedMefHost();\n1119:         PluginLogger.Info($\"[补全] MefHostServices 创建完成: {sw.ElapsedMilliseconds}ms\", typeName);\n1120: \n1121:         Project project;\n1122:         if (_preWarmedWorkspace != null)\n1123:         {\n1124:             _workspace = _preWarmedWorkspace;\n1125:             _preWarmedWorkspace = null;\n1126:             PluginLogger.Info(\"[补全] 复用预热 Workspace\", typeName);\n1127:         }\n1128:         else\n1129:         {\n1130:             _workspace = new ScriptWorkspace(host);\n1131:             PluginLogger.Info(\"[补全] ScriptWorkspace 实例已创建\", typeName);\n1132:         }\n1133: \n1134:         sw.Restart();\n1135:         var existingProject = _workspace.CurrentSolution.Projects.FirstOrDefault();\n1136:         if (existingProject != null)\n1137:         {\n1138:             project = existingProject.WithCompilationOptions(\n1139:                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)\n1140:                     .WithAllowUnsafe(true));\n1141:             PluginLogger.Info($\"[补全] 复用预热项目: {sw.ElapsedMilliseconds}ms\", typeName);\n1142:         }\n1143:         else\n1144:         {\n1145:             var projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), \"ScriptCompletion\", \"ScriptCompletion\", LanguageNames.CSharp);\n1146:             var newSolution = _workspace.CurrentSolution.AddProject(projectInfo);\n1147:             project = newSolution.GetProject(projectInfo.Id)!.WithCompilationOptions(\n1148:                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)\n1149:                     .WithAllowUnsafe(true));\n1150:             PluginLogger.Info($\"[补全] 项目创建完成: {sw.ElapsedMilliseconds}ms\", typeName);\n1151:         }\n1152: \n1153:         // 扫描引用：引用来源由调用方（工具层）注入，合并 host 引用 + ScriptRefs 目录引用\n1154:         sw.Restart();\n1155:         var refs = _getReferences().ToList();\n1156:         var seenRefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);\n1157:         var refCount = 0;\n1158:         foreach (var mdRef in refs)\n1159:         {\n1160:             if (mdRef is PortableExecutableReference per && per.FilePath != null)\n1161:             {\n1162:                 string key;\n1163:                 try { key = System.IO.Path.GetFullPath(per.FilePath); }\n1164:                 catch { key = per.FilePath; }\n1165:                 if (!seenRefs.Add(key)) continue;\n1166:             }\n1167:             project = project.AddMetadataReference(mdRef);\n1168:             refCount++;\n1169:         }\n1170:         PluginLogger.Info($\"[补全] 已添加 {refCount} 个 MetadataReference: {sw.ElapsedMilliseconds}ms\", typeName);\n1171: \n1172:         sw.Restart();\n1173:         // 用 SetCurrentSolution 直接替换（对齐 RoslynPad SetSubmissionDocument），\n1174:         // 接受 AddProject + AddMetadataReference 全部变化，避免 TryApplyChanges 钩子链异常。\n1175:         _workspace.SetCurrentSolution(project.Solution);\n1176:         PluginLogger.Info($\"[补全] SetCurrentSolution(项目+引用): {sw.ElapsedMilliseconds}ms\", typeName);\n1177: \n1178:         sw.Restart();\n1179: \n1180:         // 添加两个文档：字段声明 partial class + 用户完整 partial class。\n1181:         var genDocId = DocumentId.CreateNewId(project.Id);\n1182:         var userDocId = DocumentId.CreateNewId(project.Id);\n1183: \n1184:         var solution = project.Solution\n1185:             .AddDocument(DocumentInfo.Create(genDocId, \"ScriptGenerated.cs\", folders: null,\n1186:                 sourceCodeKind: SourceCodeKind.Regular))\n1187:             .AddDocument(DocumentInfo.Create(userDocId, \"ScriptUser.cs\", folders: null,\n1188:                 sourceCodeKind: SourceCodeKind.Regular));\n1189: \n1190:         // 先以当前 generatedCode 文本同步 generated 文档（后续由诊断用 WithDocumentText 更新）\n1191:         solution = solution.WithDocumentText(genDocId, SourceText.From(generatedCode));\n1192: \n1193:         // 用 SetCurrentSolution 直接替换（对齐 RoslynPad SetSubmissionDocument）：\n1194:         // TryApplyChanges 对 AddDocument 走 OnDocumentAdded 钩子链，在 Workspace 基类下会抛异常。\n1195:         _workspace.SetCurrentSolution(solution);\n1196:         _documentId = genDocId;\n1197: \n1198:         // 用户文档绑定 SourceTextContainer 增量通道：容器每次编辑事件携带局部 TextChangeRange，\n1199:         // 经 ScriptWorkspace.OpenDocument 注册，Roslyn 只重解析受影响区域（对齐 RoslynPad workspace.OpenDocument 模式）。\n1200:         _userTextContainer?.Dispose();\n1201:         _userTextContainer = new AvalonEditTextContainer(CodeEditor.Document);\n1202:         _workspace.OpenDocument(userDocId, _userTextContainer);\n1203:         _userDocumentId = userDocId;\n1204: \n1205:         PluginLogger.Info($\"[补全] 文档添加完成: genDocId={_documentId}, userDocId={_userDocumentId}: {sw.ElapsedMilliseconds}ms\", typeName);\n1206: \n1207:         _workspaceInitialized = true;\n1208: \n1209:         var refsCount = _workspace.CurrentSolution.Projects.First().MetadataReferences.Count;\n1210:         PluginLogger.Info($\"[补全] Workspace 重建完成: {refsCount} 个引用, 总耗时={totalSw.ElapsedMilliseconds}ms\", typeName);\n1211:     }\n1212: \n1213:     /// <summary>获取用户文档（补全/诊断/高亮消费）。</summary>\n1214:     public Document? GetUserDocument()\n1215:         => _getDocument?.Invoke() ?? _workspace?.CurrentSolution.GetDocument(_userDocumentId);\n1216: \n1217:     // =======================================================\n1218:     // 支持类型：CompletionData 包装 / OverloadProvider 适配\n1219:     // =======================================================\n1220: \n1221:     /// <summary>\n1222:     /// 将 Roslyn CompletionItem 包装为 AvalonEdit ICompletionData。\n1223:     /// 使用 CompletionService.GetChangeAsync 获取精确的 TextChange 插入（含后缀补全如 ()）。\n1224:     /// 图标通过委托注入（工具层走 GlyphMapping + Glyphs 资源），未注入时返回 null。\n1225:     /// </summary>\n1226:     private sealed class RoslynCompletionData(CompletionItem item, Document? document, Func<CompletionItem, ImageSource?>? iconProvider) : ICompletionData\n1227:     {\n1228:         private ImageSource? _image;\n1229:         private object? _description;\n1230:         private bool _loadingDescription;"
+          }
+        ],
+        "observedSha256": "bb2f9c7618bd6f66f79785299518102a7ce1d5311143e0181478aeec2b5be88a",
+        "matches": true
+      },
+      {
+        "id": "S2",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptCompiler.cs",
+        "sha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+        "excerpts": [
+          {
+            "start": 26,
+            "end": 88,
+            "text": "26:         private static readonly object _warmupLock = new();\n27: \n28:         /// <summary>\n29:         /// 启动预热 Roslyn Emit 引擎（代码无关）。\n30:         /// 原理：Emit 耗时大头是编译器引擎首次初始化（IL 生成器/元数据写入器冷启动，实测 ~947ms），\n31:         /// 与编译什么代码无关。启动时后台编译一次最小模板，引擎热起来后，用户编译任意脚本\n32:         /// Emit 都从 ~947ms 降到 ~29ms（代码改动不影响，热的是引擎不是结果）。\n33:         /// 幂等：进程内只预热一次；失败仅告警不阻塞（fire-and-forget）。\n34:         /// </summary>\n35:         public static void Warmup()\n36:         {\n37:             lock (_warmupLock)\n38:             {\n39:                 if (_warmupStarted) return;\n40:                 _warmupStarted = true;\n41:             }\n42: \n43:             _ = Task.Run(() =>\n44:             {\n45:                 var sw = Stopwatch.StartNew();\n46:                 try\n47:                 {\n48:                     // 最小模板：继承 Script 基类，仅触发完整编译管线（含 Emit 引擎初始化）\n49:                     const string warmupCode = @\"\n50: using SunEyeVision.Plugin.SDK.Scripting;\n51: public partial class WarmupScript : Script\n52: {\n53:     public override void Init() { }\n54:     public override void Process() { }\n55: }\";\n56:                     var result = new ScriptCompiler().Compile(\n57:                         [\"\", warmupCode],\n58:                         \"ScriptWarmup\",\n59:                         null,\n60:                         MetadataReferenceProvider.RequiredAssemblyNames);\n61:                     sw.Stop();\n62:                     if (result.Success)\n63:                     {\n64:                         PluginLogger.Info(\n65:                             $\"[ScriptCompiler] 启动预热 Emit 引擎完成: {sw.ElapsedMilliseconds}ms\",\n66:                             nameof(ScriptCompiler));\n67:                     }\n68:                     else\n69:                     {\n70:                         PluginLogger.Warning(\n71:                             $\"[ScriptCompiler] 启动预热 Emit 引擎编译失败: {string.Join(\";\", result.Diagnostics)}\",\n72:                             nameof(ScriptCompiler));\n73:                     }\n74:                 }\n75:                 catch (Exception ex)\n76:                 {\n77:                     sw.Stop();\n78:                     PluginLogger.Warning(\n79:                         $\"[ScriptCompiler] 启动预热 Emit 引擎异常: {ex.Message}\",\n80:                         nameof(ScriptCompiler));\n81:                 }\n82:             });\n83:         }\n84: \n85:         /// <summary>\n86:         /// 编译结果\n87:         /// </summary>\n88:         public sealed class CompileResult"
+          },
+          {
+            "start": 150,
+            "end": 162,
+            "text": "150: \n151:             // 合并所有代码段用于缓存哈希 + 类名提取\n152:             var combinedCode = string.Join(\"\\n\", codeParts);\n153: \n154:             // 0a. 检查编译缓存（相同代码 + 宿主程序集指纹 + 引用列表指纹）\n155:             // 缓存键包含宿主已加载程序集版本指纹（升级自动重编译）与引用列表指纹\n156:             // （勾选/取消程序集后缓存键变化，自动重新编译，杜绝错误命中）。\n157:             var cacheKey = ComputeCacheKey(combinedCode, assemblyNames);\n158:             if (_compileCache.TryGetValue(cacheKey, out var cached))\n159:             {\n160:                 PluginLogger.Info(\n161:                     $\"[ScriptCompiler] 编译缓存命中: hash={cacheKey[..8]}..., 代码长度={combinedCode.Length}\",\n162:                     nameof(ScriptCompiler));"
+          },
+          {
+            "start": 350,
+            "end": 395,
+            "text": "350:         internal static string ComputeCacheKey(string combinedCode, IReadOnlyList<string>? assemblyNames)\n351:         {\n352:             var codeHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(combinedCode)));\n353:             var refListFingerprint = ComputeRefListFingerprint(assemblyNames);\n354:             return $\"{codeHash}|{ComputeHostFingerprint()}|{refListFingerprint}\";\n355:         }\n356: \n357:         /// BCL 程序集版本在进程生命周期内不变，不计入指纹以保证缓存命中率。\n358:         /// </summary>\n359:         internal static string ComputeHostFingerprint()\n360:         {\n361:             var nativeHostNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)\n362:             {\n363:                 \"halcondotnetxl\",\n364:                 \"OpenCvSharp\",\n365:                 \"System.Windows.Forms\",\n366:             };\n367: \n368:             var sb = new StringBuilder();\n369:             foreach (var asm in AssemblyLoadContext.Default.Assemblies\n370:                 .Where(a => !a.IsDynamic && a.GetName().Name != null)\n371:                 .Where(a =>\n372:                     a.GetName().Name!.StartsWith(\"SunEyeVision.\", StringComparison.OrdinalIgnoreCase)\n373:                     || nativeHostNames.Contains(a.GetName().Name!))\n374:                 .OrderBy(a => a.GetName().Name))\n375:             {\n376:                 var name = asm.GetName();\n377:                 sb.Append($\"{name.Name}:{name.Version}|\");\n378:             }\n379: \n380:             return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];\n381:         }\n382: \n383:         /// <summary>\n384:         /// 计算引用列表指纹（用于编译缓存键）。引用列表变化（勾选/取消程序集）→ 指纹变化 → 缓存自动失效。\n385:         /// 空/未提供列表返回固定占位符（保持与旧缓存兼容路径一致）。\n386:         /// </summary>\n387:         internal static string ComputeRefListFingerprint(IReadOnlyList<string>? assemblyNames)\n388:         {\n389:             if (assemblyNames == null || assemblyNames.Count == 0)\n390:                 return \"none\";\n391:             var sb = new StringBuilder();\n392:             foreach (var name in assemblyNames.OrderBy(n => n, StringComparer.OrdinalIgnoreCase))\n393:                 sb.Append($\"{name}|\");\n394:             return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];\n395:         }"
+          }
+        ],
+        "observedSha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+        "matches": true
+      },
+      {
+        "id": "S3",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptLifecycleManager.cs",
+        "sha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b",
+        "excerpts": [
+          {
+            "start": 277,
+            "end": 323,
+            "text": "277:         public void WarmupSandbox(\n278:             string generatedCode,\n279:             string userCode,\n280:             string? assemblyRefDir,\n281:             IReadOnlyList<string>? assemblyNames = null)\n282:         {\n283:             try\n284:             {\n285:                 if (string.IsNullOrWhiteSpace(generatedCode) && string.IsNullOrWhiteSpace(userCode))\n286:                 {\n287:                     return;\n288:                 }\n289: \n290:                 var combinedCode = string.Join(\"\\n\", new[] { generatedCode, userCode });\n291:                 var cacheKey = ScriptCompiler.ComputeCacheKey(combinedCode, assemblyNames);\n292:                 var compileResult = ScriptCompiler.GetCachedResult(cacheKey);\n293:                 if (compileResult?.Success != true || compileResult.AssemblyBytes == null\n294:                     || compileResult.EntryClassName == null)\n295:                 {\n296:                     // 编译结果未入缓存（含编译失败场景），无可预热的实际产物，静默跳过\n297:                     return;\n298:                 }\n299: \n300:                 // 1. 常驻沙箱按实际缓存键就位（后续执行 GetOrCreate 命中，跳过创建）\n301:                 var sandbox = ScriptSandboxPool.GetOrCreate(cacheKey, assemblyRefDir);\n302: \n303:                 // 2. 加载实际程序集（后续执行 LoadAssembly 命中，跳过加载）\n304:                 sandbox.LoadAssembly(compileResult.AssemblyBytes, compileResult.SymbolBytes);\n305: \n306:                 // 3. 实例化触发构造函数 JIT + PrepareMethod 预编译方法体（不执行，无副作用）\n307:                 var instance = sandbox.CreateScriptInstance(compileResult.EntryClassName);\n308:                 foreach (var methodName in new[] { \"Init\", \"Process\", \"Release\" })\n309:                 {\n310:                     var method = instance.GetType().GetMethod(\n311:                         methodName, BindingFlags.Public | BindingFlags.Instance);\n312:                     if (method != null)\n313:                     {\n314:                         RuntimeHelpers.PrepareMethod(method.MethodHandle);\n315:                     }\n316:                 }\n317:             }\n318:             catch (Exception ex)\n319:             {\n320:                 PluginLogger.Warning($\"[Sandbox预热] 失败: {ex.Message}\", nameof(ScriptLifecycleManager));\n321:             }\n322:         }\n323: "
+          }
+        ],
+        "observedSha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b",
+        "matches": true
+      },
+      {
+        "id": "S4",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\Views\\ScriptDebugControl.xaml.cs",
+        "sha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+        "excerpts": [
+          {
+            "start": 167,
+            "end": 175,
+            "text": "167:         /// 异步初始化（窗口 Show 前由宿主 await）：重建 workspace + 完成语义预热，\n168:         /// 实现\"打开即着色、无白色过渡\"。覆盖基类空实现。\n169:         /// </summary>\n170:         public override async Task InitializeAsync()\n171:         {\n172:             await EditorCore.InitializeAndWaitAsync();\n173: \n174:             // ★ 打开调试窗口即预填充输入监视：若上游已有值（工作流执行过/失败保留），\n175:             //   无需点击执行即可看到输入值。防御：无上游/无 DataProvider/解析异常 → 静默跳过。"
+          }
+        ],
+        "observedSha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+        "matches": true
+      },
+      {
+        "id": "VS1",
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ShellModuleControl\\ShellModuleControl\\ShellCodeEditor.cs",
+        "sha256": "ef3dc431d3f5d83c885c524bdb5704d6094561691a6f62514945e6e5d9f8eb6b",
+        "excerpts": [
+          {
+            "start": 15,
+            "end": 26,
+            "text": "15: using GlobalScriptUI;\n16: using ICSharpCode.AvalonEdit;\n17: using ICSharpCode.AvalonEdit.CodeCompletion;\n18: using ICSharpCode.AvalonEdit.Document;\n19: using ICSharpCode.AvalonEdit.Editing;\n20: using ICSharpCode.AvalonEdit.Indentation;\n21: using ICSharpCode.AvalonEdit.Indentation.CSharp;\n22: using ICSharpCode.NRefactory;\n23: using ICSharpCode.NRefactory.Editor;\n24: using ICSharpCode.NRefactory.TypeSystem;\n25: using VM.CodeCompletion;\n26: using VM.CodeCompletion.DataItems;"
+          },
+          {
+            "start": 153,
+            "end": 163,
+            "text": "153: \tpublic ShellCodeEditor()\n154: \t{\n155: \t\t//IL_0178: Unknown result type (might be due to invalid IL or missing references)\n156: \t\t//IL_0182: Expected Obj, but got Unknown\n157: \t\tBeginAddVariable += ShellCodeEditor_BeginAddVariable;\n158: \t\t((TextEditor)this).TextArea.Caret.PositionChanged += Caret_PositionChanged;\n159: \t\tCompletion = new CSharpCompletion(GetAssemblies());\n160: \t\tHikContextMenu contextMenu = new HikContextMenu\n161: \t\t{\n162: \t\t\tStaysOpen = true,\n163: \t\t\tItems = "
+          },
+          {
+            "start": 270,
+            "end": 330,
+            "text": "270: \tpublic string SetListAssembly(List<ShellRefrences> assembilesName)\n271: \t{\n272: \t\t//IL_009d: Unknown result type (might be due to invalid IL or missing references)\n273: \t\t//IL_00a3: Invalid comparison between Unknown and I4\n274: \t\tstring text = string.Empty;\n275: \t\tif (assembilesName == null || assembilesName.Count < 1)\n276: \t\t{\n277: \t\t\treturn text;\n278: \t\t}\n279: \t\tif (objListAssembly == null)\n280: \t\t{\n281: \t\t\tobjListAssembly = new List<Assembly>();\n282: \t\t}\n283: \t\tobjListAssembly.Clear();\n284: \t\tobjListAssmblyName.Clear();\n285: \t\tList<string> list = new List<string>();\n286: \t\tfor (int i = 0; i < assembilesName.Count; i++)\n287: \t\t{\n288: \t\t\tif (string.IsNullOrEmpty(assembilesName[i].Name))\n289: \t\t\t{\n290: \t\t\t\tcontinue;\n291: \t\t\t}\n292: \t\t\tbool flag = false;\n293: \t\t\tstring text2 = assembilesName[i].FullName();\n294: \t\t\tif ((int)assembilesName[i].refrencesType == 4)\n295: \t\t\t{\n296: \t\t\t\tif (File.Exists(text2))\n297: \t\t\t\t{\n298: \t\t\t\t\tlist.Add(text2);\n299: \t\t\t\t}\n300: \t\t\t\telse\n301: \t\t\t\t{\n302: \t\t\t\t\ttext = text + assembilesName[i].Name + \"\\r\\n\";\n303: \t\t\t\t}\n304: \t\t\t}\n305: \t\t\telse\n306: \t\t\t{\n307: \t\t\t\tflag = true;\n308: \t\t\t}\n309: \t\t\tif (flag)\n310: \t\t\t{\n311: \t\t\t\tAssembly item = Assembly.LoadFrom(text2);\n312: \t\t\t\tobjListAssembly.Add(item);\n313: \t\t\t}\n314: \t\t\tobjListAssmblyName.Add(assembilesName[i].Name);\n315: \t\t}\n316: \t\tCompletion = new CSharpCompletion(objListAssembly);\n317: \t\tAddAssemblyTask(list);\n318: \t\treturn text;\n319: \t}\n320: \n321: \tprivate void AddAssemblyTask(List<string> assemblyName)\n322: \t{\n323: \t\tAsyncTask asyncTask = () =>\n324: \t\t{\n325: \t\t\tParallel.For(0, assemblyName.Count, (int i) =>\n326: \t\t\t{\n327: \t\t\t\tCompletion.AddAssembly(assemblyName[i]);\n328: \t\t\t});\n329: \t\t};\n330: \t\tasyncTask.BeginInvoke(null, null);"
+          }
+        ],
+        "observedSha256": "ef3dc431d3f5d83c885c524bdb5704d6094561691a6f62514945e6e5d9f8eb6b",
+        "matches": true
+      },
+      {
+        "id": "VS2",
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ShellModuleControl\\ShellModuleControl\\ShellRun.xaml.cs",
+        "sha256": "a034c4a370f4183203808c43b0dd03c3382eaf81dea17d7f067b44616e986025",
+        "excerpts": [
+          {
+            "start": 413,
+            "end": 445,
+            "text": "413: \tprivate void OnLoad(object sender, RoutedEventArgs e)\n414: \t{\n415: \t\tRenderManager.Instance.SetRenderControl(this);\n416: \t\tif (_isInit)\n417: \t\t{\n418: \t\t\treturn;\n419: \t\t}\n420: \t\t_isInit = true;\n421: \t\tInitPassward();\n422: \t\tInitTextEdit();\n423: \t\t((TextEditor)textEditorControl).Text = TargetValue;\n424: \t\ttextEditorControl.nTextLen = ((TextEditor)textEditorControl).Text.Length;\n425: \t\ttextEditorControl.FileName = CodeFileName;\n426: \t\t((TextEditor)textEditorControl).Document.FileName = CodeFileName;\n427: \t\tAddVariableCompleted(1);\n428: \t\tAddVariableCompleted(2);\n429: \t\tif (!string.IsNullOrEmpty(Refrences))\n430: \t\t{\n431: \t\t\ttry\n432: \t\t\t{\n433: \t\t\t\tList<ShellRefrences> list = JsonConvert.DeserializeObject<List<ShellRefrences>>(Refrences);\n434: \t\t\t\ttextEditorControl.UpdateAssembile(list.ToArray());\n435: \t\t\t}\n436: \t\t\tcatch (Exception)\n437: \t\t\t{\n438: \t\t\t}\n439: \t\t}\n440: \t\tLogHelper.Info(\"参数配置弹窗打开，注册获取回调结果事件！\");\n441: \t\tServerSDKManager.serverSDKManager.mModuleManager.OnModuleResultCallBack += OnModuleResultCallBack;\n442: \t\tServerSDKManager.serverSDKManager.mSolutionManager.OnReportDataToVM += ServerManager_OnReportDataToVM;\n443: \t\tnModuleID = (int)((DataContext as ButtonSelecter_Shell).GetVmModule()?.ID).Value;\n444: \t\tGetLatestResult();\n445: \t\tSetInputModuleResult(isEnable: true);"
+          }
+        ],
+        "observedSha256": "a034c4a370f4183203808c43b0dd03c3382eaf81dea17d7f067b44616e986025",
+        "matches": true
+      },
+      {
+        "id": "VS3",
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptComponent\\ScriptComponent\\ScriptCom.cs",
+        "sha256": "aa704102f2841db0b61231172283a6b0604fe360ace215f4067b7a7fbe4733f3",
+        "excerpts": [
+          {
+            "start": 317,
+            "end": 350,
+            "text": "317: \t\t\tcase \"LoadShell\":\n318: \t\t\t\tstrShellContent = CheckShell(paramValue);\n319: \t\t\t\tCompileWait.Reset();\n320: \t\t\t\tThreadPool.QueueUserWorkItem((object p) =>\n321: \t\t\t\t{\n322: \t\t\t\t\tMutexCompileCode(isFromLoad: true);\n323: \t\t\t\t\tCompileWait.Set();\n324: \t\t\t\t});\n325: \t\t\t\tbreak;\n326: \t\t\tcase \"AssemblyGuid\":\n327: \t\t\t\tobjScriptSupport.AssemblyGuid = paramValue;\n328: \t\t\t\tbreak;\n329: \t\t\tcase \"ExtraInfo\":\n330: \t\t\t{\n331: \t\t\t\tstring[] array5 = paramValue.Split(',');\n332: \t\t\t\tif (array5 != null && array5.Length == 2)\n333: \t\t\t\t{\n334: \t\t\t\t\tstring strInfo = array5[0];\n335: \t\t\t\t\tstring strInfo2 = array5[1];\n336: \t\t\t\t\tobjInputIoInfo = GetIOInfos(strInfo);\n337: \t\t\t\t\tobjOuputIoInfo = GetIOInfos(strInfo2);\n338: \t\t\t\t\tSetPropertyToScriptSol();\n339: \t\t\t\t}\n340: \t\t\t\tbreak;\n341: \t\t\t}\n342: \t\t\tcase \"Refrences\":\n343: \t\t\t\tif (string.IsNullOrEmpty(paramValue))\n344: \t\t\t\t{\n345: \t\t\t\t\tresult = -536870911;\n346: \t\t\t\t\treturn result;\n347: \t\t\t\t}\n348: \t\t\t\tGetSetRefrencesToScript(paramValue);\n349: \t\t\t\tbreak;\n350: \t\t\tcase \"Exportsln\":"
+          },
+          {
+            "start": 676,
+            "end": 745,
+            "text": "676: \tprivate int RunCode(long input, long output)\n677: \t{\n678: \t\ttry\n679: \t\t{\n680: \t\t\tif (isNeedCompile)\n681: \t\t\t{\n682: \t\t\t\tDebugger.Log(0, null, \"ScriptCom:开始编译\");\n683: \t\t\t\tMutexCompileCode();\n684: \t\t\t}\n685: \t\t\tif (bStartCheck)\n686: \t\t\t{\n687: \t\t\t\tbool updateCode = false;\n688: \t\t\t\tif (!objScriptSupport.LoadExternAssembly(ref updateCode, m_nModuleID, () =>\n689: \t\t\t\t{\n690: \t\t\t\t\tobjScriptSupport.SetImageIoName(objImageDict);\n691: \t\t\t\t\tobjScriptSupport.SetRoiBoxIoName(objRoiBoxDict);\n692: \t\t\t\t\tobjScriptSupport.SetAnnulusIoName(objAnnulusDict);\n693: \t\t\t\t\tobjScriptSupport.SetPolygonIoName(objPolygonDict);\n694: \t\t\t\t\tobjScriptSupport.SetPointIoName(objPointDict);\n695: \t\t\t\t\tobjScriptSupport.SetLineIoName(objLineDict);\n696: \t\t\t\t\tobjScriptSupport.SetFixtureIoName(objFixtureDict);\n697: \t\t\t\t\tobjScriptSupport.SetCircleIoName(objCircleDict);\n698: \t\t\t\t\tobjScriptSupport.SetRectIoName(objRectDict);\n699: \t\t\t\t\tobjScriptSupport.SetEllipseIoName(objEllipseDict);\n700: \t\t\t\t}))\n701: \t\t\t\t{\n702: \t\t\t\t\tLogHelper.Error(\"LoadExternAssembly error\", m_nModuleID);\n703: \t\t\t\t\treturn -536870911;\n704: \t\t\t\t}\n705: \t\t\t}\n706: \t\t\tbool flag = objScriptSupport.CodeRun(input, output, m_nModuleID);\n707: \t\t\tif (!flag)\n708: \t\t\t{\n709: \t\t\t\tLogHelper.Error(\"Code run error\", m_nModuleID);\n710: \t\t\t}\n711: \t\t\treturn (!flag) ? (-536870911) : 0;\n712: \t\t}\n713: \t\tcatch (Exception ex)\n714: \t\t{\n715: \t\t\tLogHelper.Error(\"RunCode is error \" + ex.ToString(), m_nModuleID);\n716: \t\t\treturn -536870911;\n717: \t\t}\n718: \t}\n719: \n720: \tprivate void MutexCompileCode(bool isFromLoad = false)\n721: \t{\n722: \t\tlock (objLock)\n723: \t\t{\n724: \t\t\tif (isNeedCompile)\n725: \t\t\t{\n726: \t\t\t\tif (CompileCode(isFromLoad))\n727: \t\t\t\t{\n728: \t\t\t\t\tobjScriptSupport.SetImageIoName(objImageDict);\n729: \t\t\t\t\tobjScriptSupport.SetRoiBoxIoName(objRoiBoxDict);\n730: \t\t\t\t\tobjScriptSupport.SetAnnulusIoName(objAnnulusDict);\n731: \t\t\t\t\tobjScriptSupport.SetPolygonIoName(objPolygonDict);\n732: \t\t\t\t\tobjScriptSupport.SetPointIoName(objPointDict);\n733: \t\t\t\t\tobjScriptSupport.SetLineIoName(objLineDict);\n734: \t\t\t\t\tobjScriptSupport.SetFixtureIoName(objFixtureDict);\n735: \t\t\t\t\tobjScriptSupport.SetCircleIoName(objCircleDict);\n736: \t\t\t\t\tobjScriptSupport.SetRectIoName(objRectDict);\n737: \t\t\t\t\tobjScriptSupport.SetEllipseIoName(objEllipseDict);\n738: \t\t\t\t}\n739: \t\t\t\tisNeedCompile = false;\n740: \t\t\t}\n741: \t\t\telse\n742: \t\t\t{\n743: \t\t\t\tDebugger.Log(0, null, \"ShellTEST.isNeedCompile is false.id:\" + m_nModuleID);\n744: \t\t\t}\n745: \t\t}"
+          }
+        ],
+        "observedSha256": "aa704102f2841db0b61231172283a6b0604fe360ace215f4067b7a7fbe4733f3",
+        "matches": true
+      },
+      {
+        "id": "VS4",
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\BaseScriptSupport.cs",
+        "sha256": "e96f2a7ff5e13783b3e862725bf4a00366ad967bc3b9c13766b330a9c572b2b8",
+        "excerpts": [
+          {
+            "start": 40,
+            "end": 46,
+            "text": "40: \tprivate readonly string _registrykeyPathName = \"SOFTWARE\\\\WOW6432Node\\\\Microsoft\\\\.NETFramework\\\\v4.0.30319\\\\AssemblyFoldersEx\\\\VisionMaster\";\n41: \n42: \tprivate string vmAssemblyPath = \"\";\n43: \n44: \tprivate CSharpCodeProvider objCSharpCodePrivoder = new CSharpCodeProvider();\n45: \n46: \tpublic string AssemblyGuid { get; set; }"
+          },
+          {
+            "start": 86,
+            "end": 117,
+            "text": "86: \tpublic bool Compile(string source, string property, ArrayList references, out ArrayList myResut, bool compileDebug, int nModuleid, bool isFromLoad = false)\n87: \t{\n88: \t\tcurrentAssemblyName = $\"UserScript_{nModuleid}.dll\";\n89: \t\tcurrentAssemblyPdbName = $\"UserScript_{nModuleid}.pdb\";\n90: \t\tmyResut = new ArrayList();\n91: \t\tif (references == null)\n92: \t\t{\n93: \t\t\tmyResut.Add(new HikCompileMessage(\"Program compilation parameters are abnormal.\", 0, 0, warning: false));\n94: \t\t\treturn false;\n95: \t\t}\n96: \t\ttry\n97: \t\t{\n98: \t\t\tobjectDispose();\n99: \t\t\tcompilerResults = null;\n100: \t\t\tbool flag = true;\n101: \t\t\tif (isFromLoad)\n102: \t\t\t{\n103: \t\t\t\tstring text = ShellModulePath + currentAssemblyName;\n104: \t\t\t\tif (File.Exists(text))\n105: \t\t\t\t{\n106: \t\t\t\t\tFileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(text);\n107: \t\t\t\t\tif (versionInfo.ProductName == AssemblyGuid)\n108: \t\t\t\t\t{\n109: \t\t\t\t\t\tflag = false;\n110: \t\t\t\t\t}\n111: \t\t\t\t}\n112: \t\t\t}\n113: \t\t\tstring sourceCode = source + property + nModuleid;\n114: \t\t\tAssembly exitAssembly = AssemblyManager.GetExitAssembly(sourceCode);\n115: \t\t\tif (exitAssembly == null && flag)\n116: \t\t\t{\n117: \t\t\t\tif (File.Exists(ShellModulePath + currentAssemblyName))"
+          },
+          {
+            "start": 150,
+            "end": 164,
+            "text": "150: \t\t\t\tif (!string.IsNullOrEmpty(VmAssemblyPath))\n151: \t\t\t\t{\n152: \t\t\t\t\tstring compilerOptions2 = compilerParameters.CompilerOptions;\n153: \t\t\t\t\tcompilerParameters.CompilerOptions = compilerOptions2 + \" \\\"\" + text3 + VmAssemblyPath + \"\\\"\";\n154: \t\t\t\t}\n155: \t\t\t\tcompilerParameters.CompilerOptions += \" /unsafe\";\n156: \t\t\t\tLogHelper.Info(\"CompilerOptions: \" + compilerParameters.CompilerOptions, nModuleid);\n157: \t\t\t\tstring text5 = Guid.NewGuid().ToString(\"D\");\n158: \t\t\t\ttry\n159: \t\t\t\t{\n160: \t\t\t\t\tAssemblyMsg = AssemblyMsg.Replace(\"guid\", text5);\n161: \t\t\t\t\tcompilerResults = objCSharpCodePrivoder.CompileAssemblyFromSource(compilerParameters, source, property, AssemblyMsg);\n162: \t\t\t\t\tif (File.Exists(ShellModulePath + currentAssemblyName))\n163: \t\t\t\t\t{\n164: \t\t\t\t\t\tFileInfo fileInfo = new FileInfo(ShellModulePath + currentAssemblyName);"
+          },
+          {
+            "start": 197,
+            "end": 220,
+            "text": "197: \t\t\tif (!StartAppdomain(currentAssemblyName, nModuleid, exitAssembly))\n198: \t\t\t{\n199: \t\t\t\treturn false;\n200: \t\t\t}\n201: \t\t\tcodeVer = CheckCodeVersion(source);\n202: \t\t\tbool bold = codeVer > 131328;\n203: \t\t\tif (objRemoteLoader == null)\n204: \t\t\t{\n205: \t\t\t\tLogHelper.Error(\"objRemoteLoader is null\");\n206: \t\t\t\treturn false;\n207: \t\t\t}\n208: \t\t\tbold = objRemoteLoader.CheckClass(bold, out myResut);\n209: \t\t\tif (bold)\n210: \t\t\t{\n211: \t\t\t\tif (exitAssembly == null && flag)\n212: \t\t\t\t{\n213: \t\t\t\t\tAssemblyManager.AddAssembly(sourceCode, objRemoteLoader.GetAssembly());\n214: \t\t\t\t}\n215: \t\t\t\telse\n216: \t\t\t\t{\n217: \t\t\t\t\tlastDateTime = DateTime.Now;\n218: \t\t\t\t}\n219: \t\t\t}\n220: \t\t\treturn bold;"
+          }
+        ],
+        "observedSha256": "e96f2a7ff5e13783b3e862725bf4a00366ad967bc3b9c13766b330a9c572b2b8",
+        "matches": true
+      },
+      {
+        "id": "VS5",
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\AssemblyManager.cs",
+        "sha256": "7e3725fb2e6a4d0a589ea85e7356ff1162f3a8916a4d3f05feb96dc0e0cd3a4f",
+        "excerpts": [
+          {
+            "start": 6,
+            "end": 38,
+            "text": "6: public class AssemblyManager\n7: {\n8: \tprivate const int MaxCacheNum = 500;\n9: \n10: \tprivate static ConcurrentDictionary<int, Assembly> dictCompileAssembly = new ConcurrentDictionary<int, Assembly>();\n11: \n12: \tpublic static Assembly GetExitAssembly(string sourceCode)\n13: \t{\n14: \t\tint hashCode = sourceCode.GetHashCode();\n15: \t\tif (dictCompileAssembly.ContainsKey(hashCode))\n16: \t\t{\n17: \t\t\treturn dictCompileAssembly[hashCode];\n18: \t\t}\n19: \t\treturn null;\n20: \t}\n21: \n22: \tpublic static void AddAssembly(string sourceCode, Assembly assembly)\n23: \t{\n24: \t\tif (!(assembly == null) && dictCompileAssembly.Count < 500)\n25: \t\t{\n26: \t\t\tint hashCode = sourceCode.GetHashCode();\n27: \t\t\tif (!dictCompileAssembly.ContainsKey(hashCode))\n28: \t\t\t{\n29: \t\t\t\tdictCompileAssembly.TryAdd(hashCode, assembly);\n30: \t\t\t}\n31: \t\t}\n32: \t}\n33: \n34: \tpublic static void ClearAeembly()\n35: \t{\n36: \t\tdictCompileAssembly.Clear();\n37: \t}\n38: }"
+          }
+        ],
+        "observedSha256": "7e3725fb2e6a4d0a589ea85e7356ff1162f3a8916a4d3f05feb96dc0e0cd3a4f",
+        "matches": true
+      },
+      {
+        "id": "VS6",
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\ComScriptSupport.cs",
+        "sha256": "ba2362c1fdeaa516346c2f429b9262a729e1a7394d535482e9e88f37b5d1fb33",
+        "excerpts": [
+          {
+            "start": 92,
+            "end": 118,
+            "text": "92: \tpublic override bool StartAppdomain(string outputAssembly, int nModuleid, Assembly scriptAssembly)\n93: \t{\n94: \t\ttry\n95: \t\t{\n96: \t\t\tobjRemoteLoader = new RemoteLoaderFactory();\n97: \t\t\tif (objRemoteLoader != null)\n98: \t\t\t{\n99: \t\t\t\tbool flag = objRemoteLoader.CreateInstanceFromByte(ShellModulePath + outputAssembly, \"UserScript\", null, scriptAssembly);\n100: \t\t\t\tif (flag)\n101: \t\t\t\t{\n102: \t\t\t\t\tComAlgorithm comAlgorithm = new ComAlgorithm();\n103: \t\t\t\t\tcomAlgorithm.m_nModuleID = nModuleid;\n104: \t\t\t\t\tComAlgorithm comAlgorithm2 = comAlgorithm;\n105: \t\t\t\t\tcomAlgorithm2.SetMemoryCfgObj(objMemoryCfg);\n106: \t\t\t\t\tobjRemoteLoader.SetAlgorithm(comAlgorithm2);\n107: \t\t\t\t}\n108: \t\t\t\treturn flag;\n109: \t\t\t}\n110: \t\t\tLogHelper.Error(\"StartAppdomain error: create objRemoteLoader failed\", nModuleid);\n111: \t\t\treturn false;\n112: \t\t}\n113: \t\tcatch (Exception ex)\n114: \t\t{\n115: \t\t\tLogHelper.Error(\"start appdomain is error.\" + ex.ToString());\n116: \t\t\treturn false;\n117: \t\t}\n118: \t}"
+          }
+        ],
+        "observedSha256": "ba2362c1fdeaa516346c2f429b9262a729e1a7394d535482e9e88f37b5d1fb33",
+        "matches": true
+      },
+      {
+        "id": "VS7",
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\RemoteLoaderFactory.cs",
+        "sha256": "40a169046843a5bf2b9a944127d1f7603887e10d8d1c828d7e1ab965bbe79e4a",
+        "excerpts": [
+          {
+            "start": 209,
+            "end": 259,
+            "text": "209: \tpublic bool CheckClass(bool bold, out ArrayList myResut)\n210: \t{\n211: \t\tmyResut = new ArrayList();\n212: \t\ttry\n213: \t\t{\n214: \t\t\tif (objectClass == null)\n215: \t\t\t{\n216: \t\t\t\tmyResut.Add(new HikCompileMessage(\"LanguageCompileCreateObjectError UserScript\", 0, 0, warning: false));\n217: \t\t\t\tobjAssembly = null;\n218: \t\t\t\tobjectClass = null;\n219: \t\t\t\treturn false;\n220: \t\t\t}\n221: \t\t\tif (null == objectClass.GetType().GetMethod(\"Init\"))\n222: \t\t\t{\n223: \t\t\t\tmyResut.Add(new HikCompileMessage(\"LanguageCompileMissFunctionError Init()\", 0, 0, warning: false));\n224: \t\t\t\tobjAssembly = null;\n225: \t\t\t\tobjectClass = null;\n226: \t\t\t\treturn false;\n227: \t\t\t}\n228: \t\t\tif (null == objectClass.GetType().GetMethod(\"Process\"))\n229: \t\t\t{\n230: \t\t\t\tmyResut.Add(new HikCompileMessage(\"LanguageCompileMissFunctionError Process()\", 0, 0, warning: false));\n231: \t\t\t\tobjAssembly = null;\n232: \t\t\t\tobjectClass = null;\n233: \t\t\t\treturn false;\n234: \t\t\t}\n235: \t\t\tif (!bold)\n236: \t\t\t{\n237: \t\t\t\tobjiProcessClass = (IProcessMethods)objectClass;\n238: \t\t\t}\n239: \t\t\telse\n240: \t\t\t{\n241: \t\t\t\tobjiProcessClass = null;\n242: \t\t\t}\n243: \t\t\tif (objiProcessClass != null)\n244: \t\t\t{\n245: \t\t\t\tobjiProcessClass.Init();\n246: \t\t\t}\n247: \t\t\telse\n248: \t\t\t{\n249: \t\t\t\tobjectClass.GetType().InvokeMember(\"Init\", BindingFlags.InvokeMethod, null, objectClass, null);\n250: \t\t\t}\n251: \t\t}\n252: \t\tcatch (Exception ex)\n253: \t\t{\n254: \t\t\tmyResut.Add(new HikCompileMessage(\"LanguageCompileExecuteError Init()，\" + ex.Message, 0, 0, warning: false));\n255: \t\t\tobjAssembly = null;\n256: \t\t\tobjectClass = null;\n257: \t\t\treturn false;\n258: \t\t}\n259: \t\treturn true;"
+          },
+          {
+            "start": 300,
+            "end": 344,
+            "text": "300: \tpublic bool ExecuteProcessMethod(long input = 0L, long output = 0L, int moduleid = 0)\n301: \t{\n302: \t\tif (objectClass == null)\n303: \t\t{\n304: \t\t\tLogHelper.Error(\"ExecuteProcessMethod error: objectClass is null\", moduleid);\n305: \t\t\treturn false;\n306: \t\t}\n307: \t\ttry\n308: \t\t{\n309: \t\t\t(objectClass as ISetData).SetHandle(input, output);\n310: \t\t\t(objectClass as ISetData).Clear();\n311: \t\t\tif (objiProcessClass != null)\n312: \t\t\t{\n313: \t\t\t\tobjiProcessClass.Process();\n314: \t\t\t}\n315: \t\t\telse\n316: \t\t\t{\n317: \t\t\t\tobjectClass.GetType().InvokeMember(\"Process\", BindingFlags.InvokeMethod, null, objectClass, null);\n318: \t\t\t}\n319: \t\t}\n320: \t\tcatch (Exception ex)\n321: \t\t{\n322: \t\t\tDebugger.Log(0, null, \"ScriptCom:ExecuteProcessMethod \" + ex.ToString());\n323: \t\t\tLogHelper.Error(\"ScriptCom:ExecuteProcessMethod \" + ex.ToString(), moduleid);\n324: \t\t\treturn false;\n325: \t\t}\n326: \t\treturn true;\n327: \t}\n328: \n329: \tprivate void ExecuteDispose()\n330: \t{\n331: \t\tif (objectClass == null)\n332: \t\t{\n333: \t\t\treturn;\n334: \t\t}\n335: \t\ttry\n336: \t\t{\n337: \t\t\tobjectClass.GetType().InvokeMember(\"Dispose\", BindingFlags.InvokeMethod, null, objectClass, null);\n338: \t\t}\n339: \t\tcatch (Exception ex)\n340: \t\t{\n341: \t\t\tDebugger.Log(0, null, \"ScriptCom:ExecuteDispose exception\" + ex.ToString());\n342: \t\t\tLogHelper.Error(\"ScriptCom:ExecuteDispose exception \" + ex.ToString());\n343: \t\t}\n344: \t}"
+          }
+        ],
+        "observedSha256": "40a169046843a5bf2b9a944127d1f7603887e10d8d1c828d7e1ab965bbe79e4a",
+        "matches": true
+      }
+    ],
+    "designApproved": false,
+    "startupModified": false,
+    "performanceABExecuted": false,
+    "vmImageToolEvidenceComplete": false,
+    "prototypeModified": false,
+    "productModified": false,
+    "wholeSiteRegenerated": false,
+    "status": "imagebox-and-script-evidence-merged-main-doc-offline-validated",
+    "validation": "artifacts/validation/startup-consumer-merge-validation.json",
+    "evidenceLocators": 20,
+    "sourceDrift": 0,
+    "canonicalEntrance": "自研架构文档维护/index.html",
+    "facts": "能力对照/capability-m01.html#startup-consumers",
+    "decisions": "优化方案/optimization-o01.html#startup-preparation-decisions",
+    "sdk": "SDK设计/framework-sdk-overview.html#plugin-foundation-01",
+    "deduplication": "工作稿不再作为主文档直接事实入口；M01事实/脚本专项事实/O01取舍/SDK合同单向回链，不复制一套方案",
+    "unsynced": "VM脚本补全/编译/实例/缓存消费者待主控进一步补证；通用按需加载不能替代脚本结论",
+    "nextOwner": "主控读取核对后通知用户；后续实施须明确授权，不承诺提速",
+    "findings": 5,
+    "acceptanceDirections": 6,
+    "acceptanceExecuted": 0,
+    "scriptRecommendationFinalized": "静态建议已收录；非代码实施授权",
+    "scriptEvidencePending": false,
+    "vmNativeEvidenceComplete": false,
+    "scope": "图像箱+脚本工具预热；通用目录仅背景，不替代VM脚本具体证据",
+    "imageConclusions": 5,
+    "scriptConclusions": 5,
+    "staticRecommendationPublished": true,
+    "designApprovedForImplementation": false,
+    "scriptFacts": "现状分析/tool-script.html#script-preparation-consumers",
+    "scriptConclusionsPublished": 5,
+    "remainingUnknowns": [
+      "VM语言服务内部与首次成本",
+      "native装载等待边与完整缓存释放",
+      "同条件性能A/B"
+    ],
+    "userPerformanceObservation": {
+      "fact": "用户感知VM脚本打开/补全/编译明显更快",
+      "measurement": "尚未同条件量化；非同机AB已证",
+      "interpretation": "不同技术栈不免责；目标追上可感知响应",
+      "implementation": "先分阶段诊断，不直接宣布替换Roslyn/AvalonEdit",
+      "anchor": "能力对照/capability-m01.html#user-performance-observation"
+    }
+  },
+  "startupPreparationDedup": {
+    "taskId": "STARTUP-PREPARATION-DEDUP-FINAL",
+    "status": "navigation-shell-and-history-archive-validated",
+    "source": "artifacts/ui-prototypes/architecture-health/startup-preparation.html",
+    "archive": "artifacts/ui-prototypes/architecture-health/历史归档/startup-preparation-20261022.html",
+    "canonicalHome": "../../../docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html",
+    "routes": [
+      {
+        "label": "主文档首页",
+        "href": "../../../docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html"
+      },
+      {
+        "label": "M01 · 启动与图像箱消费者",
+        "href": "../../../docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/能力对照/capability-m01.html#startup-consumers"
+      },
+      {
+        "label": "脚本工具 · 补全／编译／实例／缓存",
+        "href": "../../../docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-script.html#script-preparation-consumers"
+      },
+      {
+        "label": "O01 · 取舍与验收方向",
+        "href": "../../../docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o01.html#startup-preparation-decisions"
+      }
+    ],
+    "validation": "artifacts/validation/startup-preparation-dedup-validation.json",
+    "widthChecks": 12,
+    "linksChecked": 14,
+    "errors": 0,
+    "rootPrototypeGeneratorsModified": false,
+    "productModified": false,
+    "wholeSiteRegenerated": false
+  },
+  "scriptPerformanceBatch": {
+    "id": "SCRIPT-PERF-01",
+    "input": "docs/collaboration/SCRIPT_PERFORMANCE_BATCH_20261023.json",
+    "inputSha256": "ed21bf68c251745b413e09e163cf24397c5efd0e10091c070a640cc3ca231be3",
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+    ],
+    "checks": [
+      {
+        "id": "SP1",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\SemanticHighlighter.cs",
+        "sha256": "5656340e229c9061e431aa8a690d186599f1fcc6f516dded3b0b3cf164ac288a",
+        "observedSha256": "5656340e229c9061e431aa8a690d186599f1fcc6f516dded3b0b3cf164ac288a",
+        "matches": true
+      },
+      {
+        "id": "SP2",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\ScriptEditorCore.xaml.cs",
+        "sha256": "bb2f9c7618bd6f66f79785299518102a7ce1d5311143e0181478aeec2b5be88a",
+        "observedSha256": "bb2f9c7618bd6f66f79785299518102a7ce1d5311143e0181478aeec2b5be88a",
+        "matches": true
+      },
+      {
+        "id": "SP3",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptCompiler.cs",
+        "sha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+        "observedSha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+        "matches": true
+      },
+      {
+        "id": "SP4",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptLifecycleManager.cs",
+        "sha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b",
+        "observedSha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b",
+        "matches": true
+      },
+      {
+        "id": "SP5",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+        "sha256": "9dcd71bba72e25af94a858f52d18b0ca573709313f1cb491bc271fb275582048",
+        "observedSha256": "9dcd71bba72e25af94a858f52d18b0ca573709313f1cb491bc271fb275582048",
+        "matches": true
+      },
+      {
+        "id": "SP6",
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\Views\\ScriptDebugControl.xaml.cs",
+        "sha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+        "observedSha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+        "matches": true
+      },
+      {
+        "id": "HLOG1",
+        "path": "D:\\SunEyeVisionData\\Logs\\2026\\10\\22\\SunEyeVision_110711.txt",
+        "sha256": "0abfc0493fbc94fe46d2d0cd438ecf5a118bcdd04b0e6215652174d8d35335c1",
+        "observedSha256": "0abfc0493fbc94fe46d2d0cd438ecf5a118bcdd04b0e6215652174d8d35335c1",
+        "matches": true
+      },
+      {
+        "id": "VM-completion",
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.CodeCompletion.dll",
+        "sha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+        "observedSha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+        "matches": true
+      }
+    ],
+    "chains": 3,
+    "issues": 6,
+    "steps": 4,
+    "acceptancePlanned": 7,
+    "acceptanceExecuted": 0,
+    "productModified": false,
+    "performanceBenchmarkExecuted": false,
+    "implementationAuthorized": false,
+    "targetsConfirmed": false,
+    "validation": {
+      "path": "artifacts/validation/script-performance-document-validation.json",
+      "viewports": 6,
+      "links": 8,
+      "errors": 0
+    },
+    "anchors": [
+      "现状分析/tool-script.html#script-performance-chains",
+      "优化方案/optimization-o01.html#script-performance-batch"
+    ],
+    "parallelPrototypeCreated": false
+  },
+  "documentHierarchy": {
+    "id": "DOC-SINGLE-ENTRY-01",
+    "entry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html",
+    "systemTopic": "现状分析/system-architecture.html#system-topic-scope",
+    "sharedStatusLocation": "维护记录/文档维护.html#shared-reading-status",
+    "pages": 198,
+    "viewports": 15,
+    "links": 20,
+    "errors": 0,
+    "legacyRedirect": true,
+    "productModified": false,
+    "scope": "原授权：首页唯一入口、整体架构专题归属、面包屑与重复公共规则/历史统计集中；自研追加主题条及三核心卡片已按用户最终范围撤回",
+    "selfAdditionalThemeNavigation": false,
+    "selfAdditionalCoreCards": false
+  },
+  "reverseHomeNavigation": {
+    "scope": "指定逆向首页导航；外部树由原文档角色唯一写，本角色只读验证",
+    "homepage": "D:/MyWork/REA逆向测试/docs/架构逆向与实现对照文档/index.html",
+    "observedSha256": "d60c741e28b838a0138b8b5a0c66712d945c9b5a6384d31fbbde66381f20c3f9",
+    "status": "指定首页最终版本已核；外部原角色额外修复全景页空图，本次只读复查，不升级外部大目标",
+    "coreTargets": [
+      {
+        "title": "整体架构\n分层·局部恢复",
+        "target": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E4%B8%BB%E9%A2%98/%E5%85%A8%E6%99%AF%E6%9E%B6%E6%9E%84.html#originalChain"
+      },
+      {
+        "title": "数据与数据流\n类型·传递·持有",
+        "target": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%95%B0%E6%8D%AE/index.html"
+      },
+      {
+        "title": "执行链\n入口·状态·回流",
+        "target": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E4%B8%BB%E9%A2%98/%E6%89%A7%E8%A1%8C%E4%B8%8E%E7%8A%B6%E6%80%81.html"
+      }
+    ],
+    "navigationRationale": [
+      {
+        "name": "整体架构",
+        "why": "直接阅读原版与当前责任层和架构主链，局部恢复边界明确",
+        "target": "主题/全景架构.html#originalChain"
+      },
+      {
+        "name": "数据与数据流",
+        "why": "按类型、传递、持有和最后读者寻找数据材料",
+        "target": "数据/index.html"
+      },
+      {
+        "name": "执行链",
+        "why": "追启动、运行、结果回流和停止状态",
+        "target": "主题/执行与状态.html"
+      },
+      {
+        "name": "专题索引",
+        "why": "完整目录作为辅助入口",
+        "target": "清单/专题索引.html"
+      },
+      {
+        "name": "维护／验收",
+        "why": "维护目标、交付和验收不挤占正文首屏",
+        "target": "清单/首页维护.html"
+      }
+    ],
+    "validation": {
+      "path": "artifacts/validation/rea-home-navigation-final-readonly-validation.json",
+      "viewports": 5,
+      "scenes": 15,
+      "links": 5,
+      "errors": 0,
+      "mainAnchor": true,
+      "desktop1366MainBottom": 651.46875,
+      "overview": "artifacts/validation/rea-overview-final-readonly-validation.json"
+    },
+    "selfAdditionalNavigationRolledBack": true,
+    "productModified": false,
+    "overallReverseGoalUpgraded": false
+  },
+  "reverseDataExecutionTopics": {
+    "scope": "用户直接要求的逆向数据/执行两专题；原角色写外部树，本角色只读HTML复查",
+    "status": "专题关系图前置与重复导航收束完成，最终视觉/链接复查通过",
+    "files": [
+      {
+        "path": "D:/MyWork/REA逆向测试/docs/架构逆向与实现对照文档/数据/index.html",
+        "sha256": "8d89afa7f9ea311315b266e3b991ca405cf7d5db16564b1c874bb6e2c120bc2b",
+        "oldAnchorCount": 63,
+        "missingOldAnchors": []
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/docs/架构逆向与实现对照文档/主题/执行与状态.html",
+        "sha256": "d6c52c7486baeb0d22ec74bab6b3a55cf24ce6e0f42aa37d116c252471810d97",
+        "oldAnchorCount": 89,
+        "missingOldAnchors": []
+      }
+    ],
+    "viewports": 8,
+    "links": 290,
+    "errors": 0,
+    "existingUniqueAnchorsRetained": 152,
+    "executionRelations": 55,
+    "executionGroups": 6,
+    "conditionPlaceholderCorrections": 23,
+    "evidenceLinksRepaired": 13,
+    "classification": "原版源码事实、当前独立实现、未知/待分析分列；行序不证明连续调用；分支未提取时明确留白",
+    "validation": "artifacts/validation/reverse-data-execution-topic-validation.json",
+    "productModified": false,
+    "performanceBaselineClaimed": false,
+    "externalOverallGoalUpgraded": false
+  },
+  "scriptComponentBaseline": {
+    "id": "SCRIPT-COMPONENT-BASELINE-01",
+    "status": "现有脚本专题与O01已同步组件实测、人工观察及截图口径纠正；应用端到端仍缺测",
+    "input": "artifacts/performance/script-baseline-20261023/component-baseline.json",
+    "inputSha256": "d3cb9a24a031f05a1fb05236c38b37f15c7c260fcff4c34486b36b9d9b5a31d9",
+    "manual": "artifacts/performance/script-baseline-20261023/manual-vm-observation.json",
+    "manualSha256": "2db29e61bb6ebf3dc4240cd988d4cfd4558d05c3f266ebb4e138e6b025392c90",
+    "screenshotCheck": {
+      "path": "D:\\Temp\\codex-clipboard-0e8fde9b-9d71-4678-b020-583607f5551e.png",
+      "sha256": "aa47e653c63e52c34c692f11d5a2d5c0291c74ade225732796d75636aaa18f07",
+      "matches": true
+    },
+    "inputChecks": 40,
+    "loadedChecks": 72,
+    "rawCases": 30,
+    "validCases": 30,
+    "recomputedMedians": 24,
+    "pages": [
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+      "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+    ],
+    "anchors": [
+      "现状分析/tool-script.html#script-component-baseline",
+      "优化方案/optimization-o01.html#script-component-boundary"
+    ],
+    "validation": {
+      "path": "artifacts/validation/script-component-document-validation.json",
+      "layouts": 6,
+      "links": 4,
+      "errors": 0
+    },
+    "applicationUiMeasured": false,
+    "precompileUnder10msVerified": false,
+    "moduleRuntimeNotCompilation": true,
+    "performanceBatchAccepted": false,
+    "implementationApproved": false,
+    "productModified": false,
+    "navigationModified": false
+  },
+  "scriptPerformanceVisuals": {
+    "status": "阶段性图示交付完成；完整实现链与应用分段运行验证待补证",
+    "manifest": "artifacts/validation/script-performance-visual-manifest.json",
+    "receipt": "docs/collaboration/SCRIPT_VM_DIFFERENCE_20261023.json",
+    "receiptSha256": "6eb96418e18f7de24512fbf1a3ce251601aaba9ecfae1d5b14e014b46854245e",
+    "verifiedSourceFiles": 9,
+    "nativeExcerptSha256": "82bd9a14f719d630c568cf772489629fe501dd99f8a2000184a03cee8cfafc00",
+    "comparisonFigures": 3,
+    "roleMapping": true,
+    "capabilityRows": 5,
+    "attributionRows": 6,
+    "roadmapSteps": 4,
+    "componentChartsPreserved": true,
+    "anchors": [
+      "现状分析/tool-script.html#script-performance-chains",
+      "现状分析/tool-script.html#script-component-roles",
+      "现状分析/tool-script.html#script-completion-capabilities",
+      "优化方案/optimization-o01.html#script-performance-batch"
+    ],
+    "validation": {
+      "path": "artifacts/validation/script-performance-visual-validation.json",
+      "layouts": 6,
+      "localLinks": 8,
+      "officialSourceLinks": 2,
+      "errors": 0
+    },
+    "boundaries": [
+      "局部事实已核不等完整链贯通",
+      "组件隔离运行不等应用端到端运行",
+      "真实进程DLL版本/真实缓存和引用就绪待证",
+      "能力矩阵未完成，不由上游README断言VM定制语法边界",
+      "速度占比和收益未证；候选目标未确认"
+    ],
+    "remainingMaterials": [
+      "窗口至释放/失败并发的完整覆盖断点",
+      "真实VM进程加载版本及缓存/引用就绪",
+      "C05 typeof定向控制与修订CodeDOM编译探针运行",
+      "A优化后/B自研适配/C实际组合及应用端到端测量"
+    ],
+    "productModified": false,
+    "navigationModified": false,
+    "implementationApproved": false,
+    "fullChainConfirmed": false
+  },
+  "homeScriptDirectEntry": {
+    "label": "脚本工具：打开、补全与编译",
+    "homepage": "D:\\MyWork\\SunEyeVision_V2\\docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+    "target": "现状分析/tool-script.html#script-final-decision",
+    "generator": "artifacts/validation/normalize-document-home.cjs",
+    "validation": "artifacts/validation/home-script-entry-validation.json",
+    "layouts": 4,
+    "errors": 0,
+    "productModified": false,
+    "directoryLabel": "脚本工具",
+    "directoryTarget": "现状分析/tool-script.html#script-performance-chains",
+    "algorithmTargetRetained": "现状分析/tool-script.html#core-algorithm-review",
+    "directoryGenerator": "artifacts/validation/interface-document-navigation.cjs",
+    "rosterGenerator": "artifacts/validation/build-tool-core-algorithm-review.cjs",
+    "finalDecisionEntry": true
+  },
+  "scriptFullChainMerge": {
+    "status": "本轮材料已归并；10段局部跨层覆盖不等完整链贯通；三路径能力成绩待独立测试",
+    "manifest": "artifacts/validation/script-full-chain-document-manifest.json",
+    "input": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/evidence.json",
+    "inputSha256": "5990908b257424ed5bd5bb87de9bab18301832c89bf6843aa3e485cdaf7d662c",
+    "artifactIdentityChecks": 10,
+    "bridge": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-SCRIPT-CHAIN/framework/bridge-evidence.json",
+    "bridgeSha256": "ea17b4ef15e9e3c788f585d19c7386f9806e188765949a6d777a7a84206f142d",
+    "bridgeIdentityChecks": 24,
+    "additionalSelfSources": [
+      {
+        "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+        "sha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd"
+      },
+      {
+        "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+        "sha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b"
+      }
+    ],
+    "coverageSegments": 10,
+    "bridgeChains": 4,
+    "fullChainProven": false,
+    "actualApplicationRuntimeValidated": false,
+    "selectionInput": "docs/collaboration/SCRIPT_ENGINE_SELECTION_20261023.json",
+    "selectionSha256": "57ba6ce4435c4793a198df2ab45674c92e3cbce4fa83fae35e18f56d13668d1d",
+    "selectionDecision": "A优化现有Roslyn／B较轻语义引擎／C补全与编译分别选型，未预定胜者；前序固定保留建议已覆盖",
+    "capabilityResultsPending": false,
+    "pathsBorCImplemented": false,
+    "plannedTestCases": 12,
+    "testCasesExecuted": 0,
+    "anchors": [
+      "现状分析/tool-script.html#script-full-chain-coverage",
+      "现状分析/tool-script.html#script-framework-bridge",
+      "现状分析/tool-script.html#script-three-path-decision",
+      "优化方案/optimization-o01.html#script-full-chain-plan"
+    ],
+    "validation": {
+      "coverage": "artifacts/validation/script-full-chain-document-validation.json",
+      "visuals": "artifacts/validation/script-performance-visual-validation.json",
+      "layouts": 6,
+      "localLinks": 21,
+      "externalOfficialLinks": 2,
+      "errors": 0
+    },
+    "navigationModified": false,
+    "productModified": false
+  },
+  "scriptAssemblyScope": {
+    "id": "SCRIPT-ASSEMBLY-SCOPE-20261023",
+    "input": "docs/collaboration/SCRIPT_ASSEMBLY_SCOPE_20261023.json",
+    "inputSha256": "dbbc6121891dfb13b12ebd1e4cbbed12f00afc10e59fadd7579a78a5bf3127c1",
+    "checks": [
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\MetadataReferenceProvider.cs",
+        "sha256": "7D0BBDE0BD123DBD5E63D910A94E02968E2FEA0A9FD1675E2E2C7E125B2E6475",
+        "actualSha256": "7d0bbde0bd123dbd5e63d910a94e02968e2fea0a9fd1675e2e2c7e125b2e6475",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\SharedMetadataReferenceProvider.cs",
+        "sha256": "CCCD79604D26AE31F6F6C8D187C023E781ABC865151F4F3B987ABE1A211E0461",
+        "actualSha256": "cccd79604d26ae31f6f6c8d187c023e781abc865151f4f3b987abe1a211e0461",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptCompiler.cs",
+        "sha256": "14A9AE73A34C65D65AC466CA5956FC66D53D4D79B45309217C62D871338B2BF1",
+        "actualSha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+        "matches": true
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\Views\\ScriptDebugControl.xaml.cs",
+        "sha256": "9C2FBB9EF9FAC7277C8D21189C8BB7B9C90274554BAD412DDF69B13FF81BDFCD",
+        "actualSha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+        "matches": true
+      }
+    ],
+    "layers": 4,
+    "comparisonProfiles": 3,
+    "weightMeasured": false,
+    "productModified": false,
+    "navigationModified": false,
+    "anchors": [
+      "现状分析/tool-script.html#script-assembly-scope",
+      "优化方案/optimization-o01.html#script-reference-comparison"
+    ],
+    "status": "双方四层引用管理正式更新；原厂默认5项源码确认；重量与净成本未测",
+    "validation": "artifacts/validation/script-assembly-scope-document-validation.json",
+    "layouts": 6,
+    "errors": 0,
+    "vmInput": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/evidence.json",
+    "vmInputSha256": "24f41820024e9afc4bc5a0f3a5a470fe9c47e2c3a6a596e1b785c5d5ff0a13f8",
+    "selfSourceChecks": 4,
+    "vmArtifactChecks": 10,
+    "vmIlChecks": 7,
+    "sdkProjectSha256": "3015bf533a4891425ee92f288a50fa37192af2aa0b09d61eb6ec6492c71ec256",
+    "vmDefaultFive": [
+      "mscorlib.dll",
+      "System.dll",
+      "System.Core.dll",
+      "System.Windows.Forms.dll",
+      "Script.Methods.dll"
+    ]
+  },
+  "scriptEngineCommonMatrix": {
+    "status": "最终组件单轮矩阵归并；仍有定向控制未运行，不等应用验收",
+    "manifest": "artifacts/validation/script-engine-matrix-document-manifest.json",
+    "input": "artifacts/independent-testing/SCRIPT-ENGINE-COMPARISON-01/comparison-summary.json",
+    "inputSha256": "2c189d5614a1263cc6247e2ec266456ae079b244641faa6303cc8fda398280d6",
+    "summary": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\summary.json",
+    "summarySha256": "1eff00cfc3bf962d32ec0b5b4071d895b75b6c5544cba19c0d8d8d2a44d7e7f9",
+    "identityChecks": 54,
+    "snapshotChecks": 39,
+    "rawResultsChecked": 70,
+    "jobs": 70,
+    "trialsPerCell": 1,
+    "repeatsPerCell": 5,
+    "counts": {
+      "passed": 62,
+      "candidate-expectation-not-met": 4,
+      "protocol-observed-no-candidates": 2,
+      "protocol-suppressed": 2
+    },
+    "common": {
+      "a": {
+        "expectedMet": 23,
+        "total": 23
+      },
+      "b": {
+        "expectedMet": 21,
+        "total": 23
+      }
+    },
+    "modern": {
+      "a": {
+        "expectedMet": 8,
+        "total": 8
+      },
+      "b": {
+        "expectedMet": 6,
+        "total": 8
+      }
+    },
+    "protocolGroupSeparated": 8,
+    "compilerProbeCS1703Invalid": true,
+    "compilerBoundaryValidated": false,
+    "CImplemented": false,
+    "productModified": false,
+    "navigationModified": false,
+    "assemblyScopeRetained": true,
+    "conditionalRecommendation": "先统一可替换分析接口/引用快照/可观测；共同必需能力和端到端收益过门后选A/B/C，不预定A，不宣布B无损替换",
+    "validation": {
+      "matrix": "artifacts/validation/script-engine-matrix-document-validation.json",
+      "layoutGroups": 6,
+      "errors": 0,
+      "links": 30,
+      "localLinks": 28
+    },
+    "pages": [
+      "现状分析/tool-script.html",
+      "优化方案/optimization-o01.html"
+    ],
+    "sections": [
+      "script-engine-capability-results",
+      "script-engine-conditional-recommendation"
+    ]
+  },
+  "scriptOptimizationGoal": {
+    "objective": "确定脚本工具整批优化方案",
+    "updatedAt": "2026-10-23",
+    "productModified": false,
+    "status": "设计方案已冻结；产品实施与验收未执行",
+    "recommendation": "A：保留Roslyn语义与编译，按会话/引用快照/版本任务重构集成",
+    "decisionInput": "docs/collaboration/SCRIPT_OPTIMIZATION_DECISION_20261023.json",
+    "batches": [
+      "S1",
+      "S2",
+      "S3"
+    ],
+    "acceptanceCases": [
+      "SA01",
+      "SA02",
+      "SA03",
+      "SA04",
+      "SA05",
+      "SA06",
+      "SA07",
+      "SA08",
+      "SA09",
+      "SA10",
+      "SA11",
+      "SA12"
+    ],
+    "milestones": [
+      {
+        "name": "证据缺口核清",
+        "state": "完成（本次选型范围）",
+        "note": "实际加载程序集副本、SDK未闭合桥接和端到端等待保留未知，不阻止设计决策"
+      },
+      {
+        "name": "能力与引用范围复核",
+        "state": "完成（受控样本）",
+        "note": "共同能力/现代语法有定向复核；5/32/36项引用各3新进程且耗时非单调；不等完整UI默认集或B默认成本"
+      },
+      {
+        "name": "三路径裁决",
+        "state": "完成：推荐A",
+        "note": "B/C本批排除理由及替代引擎重开条件已冻结"
+      },
+      {
+        "name": "文件、批次与验收冻结",
+        "state": "完成：设计冻结",
+        "note": "S1-S3范围和依赖、SA01-SA12断言已冻结；产品仍未实施/验收"
+      }
+    ],
+    "reopenCondition": "A实施后合法能力通过但性能仍失败时，以同样例、引用和语义合同比较替代引擎",
+    "pages": [
+      "现状分析/tool-script.html#script-three-path-decision",
+      "优化方案/optimization-o01.html#script-performance-batch"
+    ],
+    "homepage": "维护记录/文档维护.html#script-tool-goal",
+    "validation": {
+      "viewports": [
+        "1366x768",
+        "390x844"
+      ],
+      "horizontalOverflow": false,
+      "homepageGoalLinkClicked": true,
+      "maintenanceAnchorOpened": true,
+      "headingMatched": true,
+      "snapshotUpdated": true
+    }
+  },
+  "suneyeRelationshipGuides": {
+    "scope": "自研架构文档维护下的数据流与执行关系专题；只更新文档生成器、页面和离线校验",
+    "status": "完成；当前图置前，单一返回导航，原版/自研/未知分栏",
+    "pages": [
+      {
+        "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/关系图解/guide-dataflow.html",
+        "sha256": "1bff407b9c2be942925f5f873d4c5f87a6e345c504ca18486a153665769100eb"
+      },
+      {
+        "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/关系图解/guide-execution.html",
+        "sha256": "5aa5b14abcb0dac6df9f9032f8bb779c9e71c9078eefca2a060020741842eee8"
+      }
+    ],
+    "generator": "artifacts/validation/build-visual-document-library.cjs",
+    "visualComponent": "artifacts/validation/doc-visual-components.cjs",
+    "hierarchyRule": "artifacts/validation/normalize-document-hierarchy.cjs",
+    "validation": "artifacts/validation/relationship-guide-focus-validation.json",
+    "screenshots": [
+      "artifacts/validation/guide-dataflow-review.png",
+      "artifacts/validation/guide-execution-review.png"
+    ],
+    "viewports": [
+      390,
+      768,
+      1366
+    ],
+    "singleNav": true,
+    "currentGraphFirst": true,
+    "evidenceClasses": [
+      "原版已证事实",
+      "自研当前实现",
+      "仍未知 / 未验证"
+    ],
+    "snapshotSynchronized": true,
+    "productModified": false
+  },
+  "homeDocumentSearch": {
+    "scope": "自研架构文档维护首页离线搜索；首页及搜索资源/生成源专属写入，不改脚本专题正文",
+    "status": "完成；当前主文档标题与关键段落搜索，可直达专题锚点",
+    "index": {
+      "manifest": "artifacts/validation/document-search-index-manifest.json",
+      "records": 696,
+      "pages": 134,
+      "bytes": 414110,
+      "canonicalPages": 696,
+      "legacyFallbacks": 0,
+      "remoteFetch": false,
+      "thirdParty": false
+    },
+    "files": [
+      {
+        "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html",
+        "sha256": "35a69622efc27e95da0d720645f97ae1100c209084d84fb547a6c2930d2f75dc"
+      },
+      {
+        "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search-index.js",
+        "sha256": "b4066b735c1cc744fd5f70c0290507730fedae5cec28bbcabc3c495a436da5d2"
+      },
+      {
+        "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search.js",
+        "sha256": "af32425daf1e59d3b4eaef1a66cffea351f4b67a552ab826a41991eed3fe79d6"
+      },
+      {
+        "path": "artifacts/validation/build-document-search-index.cjs",
+        "sha256": "abd1268a80e6a9c518adb204f9503130718a2c8d10f0199232b881ed06045b39"
+      },
+      {
+        "path": "artifacts/validation/document-search-runtime.js",
+        "sha256": "af32425daf1e59d3b4eaef1a66cffea351f4b67a552ab826a41991eed3fe79d6"
+      },
+      {
+        "path": "artifacts/validation/document-search-home-section.cjs",
+        "sha256": "72b75f0a1ecca24ea44c1854df3fc5bb4c030e6366138edee1a0c986ffcf8254"
+      },
+      {
+        "path": "artifacts/validation/sync-document-search-home.cjs",
+        "sha256": "bf9aba199dcf866073a7749e073cfa6038021086f5c6679f0449feba22b8022a"
+      },
+      {
+        "path": "artifacts/validation/check-document-search.cjs",
+        "sha256": "9e0a022aeba7cb019fc1aeca1fd2b5ac12d839dfbcf9b6d8cdec48bb4758c2ba"
+      }
+    ],
+    "generationChain": [
+      "artifacts/validation/interface-document-navigation.cjs",
+      "artifacts/validation/build-visual-document-library.cjs",
+      "artifacts/validation/document-library-layout.cjs",
+      "artifacts/validation/build-architecture-doc-site.cjs"
+    ],
+    "validation": "artifacts/validation/document-search-validation.json",
+    "additionalValidation": "artifacts/validation/home-search-root-validation.json",
+    "queries": [
+      "引用管理 → #script-reference-three-way",
+      "最终推荐 → #script-final-decision",
+      "首次补全",
+      "脚本 编译",
+      "无结果提示"
+    ],
+    "keyboard": [
+      "Ctrl+K聚焦",
+      "Enter搜索",
+      "ArrowDown进入结果",
+      "清空"
+    ],
+    "viewports": [
+      390,
+      768,
+      1366
+    ],
+    "errors": 0,
+    "productModified": false
+  }
+}

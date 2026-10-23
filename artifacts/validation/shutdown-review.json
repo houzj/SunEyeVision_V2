@@ -1,0 +1,79 @@
+{
+  "steps": [
+    {
+      "id": "close-barrier",
+      "packageId": "O01",
+      "title": "退出门槛：已有停止保存，但须等真实在途结局",
+      "fact": "OnClosing先取消窗口关闭，异步PrepareSolutionTransitionAsync取得transition租约，StopAndWaitAsync最多30秒后再做保存决策。StopAndWait轮询IsAnyRunning；此前ReadyQueue退出finally未await全部running Task，故登记归零不单独证明所有原生任务排空。",
+      "route": "融合优化：复用已有关闭准入与保存决策，补真实执行会话排空。",
+      "change": "执行器统一提供可等待终态Task，停止等待覆盖全部在途及回调；超时保持窗口/方案和设备隔离，不强杀native。不再另造第二套关闭bool作为任务完成依据。",
+      "accept": "取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+      "caps": [
+        "M01",
+        "M02",
+        "M15"
+      ],
+      "url": "system-architecture.html#stop",
+      "status": "设计待实施；未执行退出/故障验证",
+      "vm": "原VM窗口/模块停止与回调有局部静态材料；全应用退出及所有厂商析构未闭合，不直接复用其实现。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 5574,
+        "token": "public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+        "snippet": "        public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync()\r\n        {\r\n            if (_transitionPreparationInProgress) return false;\r\n            _transitionPreparationInProgress = true;\r\n            try\r\n            {\r\n                var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;\r\n                if (_executionManager.IsAnyRunning() &&\r\n                    ThemeMessageDialog.Show(\"方案正在运行。停止全部执行后继续？\", \"切换方案\", MessageBoxButton.OKCancel,\r\n                        ThemeMessageDialog.MessageIcon.Question) != MessageBoxResult.OK) return false;\r\n                _solutionTransitionLease ??= _executionManager.BeginSolutionTransition();\r\n                await _executionManager.StopAndWaitAsync(TimeSpan.FromSeconds(30));\r\n                if (manager.CurrentSolution == null)\r\n                {\r\n                    if (_isWorkflowModified || WorkflowTabViewModel.Tabs.Any(tab => tab.WorkflowNodes.Count > 0))\r\n                    {\r\n                        var answer = ThemeMessageDialog.Show(\"工作区尚未保存为方案。是否保存？\", \"保存方案\", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);\r\n                        if (answer == MessageBoxResult.Cancel || answer == MessageBoxResult.None) { EndSolutionTransition(); return false; }\r\n                        if (answer == MessageBoxResult.Yes)\r\n                        {\r\n                            SaveCurrentSolutionCommand.Execute(null);\r\n                            if (manager.CurrentSolution == null || manager.HasUnsavedChanges) { EndSolutionTransition(); return false; }\r\n                        }\r\n                    }\r\n                    return true;\r\n                }\r\n                SaveSolutionData(manager);\r\n                if (!manager.HasUnsavedChanges) return true;\r\n                var result = ThemeMessageDialog.Show(\"当前方案有未保存修改。是否保存？\", \"保存方案\", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);\r\n                if (result == MessageBoxResult.Cancel || result == MessageBoxResult.None) { EndSolutionTransition(); return false; }\r"
+      }
+    },
+    {
+      "id": "child-drain",
+      "packageId": "O04",
+      "title": "子窗口收尾：Close不是可等待的Dispose完成",
+      "fact": "OnClosed逐个childWindow.Close，之后退订图像事件、发StopWorkflowCommand并Application.Shutdown。相机预览OnClosed为async void且await Host.DisposeAsync，主窗口没有汇总这些异步完成任务。不能从Close返回证明每个预览流已结束；具体异常/时序未运行。",
+      "route": "原方案收尾合同整改；所有者分层，不把关闭窗口当资源释放。",
+      "change": "关闭前由应用关闭协调器收集工具/相机/分析会话CloseAsync任务：停派发→取消→等待→退订→释放→关闭窗口→退出。窗口事件只触发，不作为唯一任务持有者。",
+      "accept": "预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。",
+      "caps": [
+        "M01",
+        "M19",
+        "T08",
+        "X01"
+      ],
+      "url": "system-architecture.html#stop",
+      "status": "设计待实施；未执行退出/故障验证",
+      "vm": "原VM窗口/模块停止与回调有局部静态材料；全应用退出及所有厂商析构未闭合，不直接复用其实现。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+        "line": 346,
+        "token": "protected override void OnClosed(EventArgs e)",
+        "sha256": "e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219",
+        "snippet": "        protected override void OnClosed(EventArgs e)\n        {\n            // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有\n            // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。\n            var childWindows = Application.Current?.Windows\n                .OfType<Window>()\n                .Where(window => !ReferenceEquals(window, this))\n                .ToArray();\n            if (childWindows != null)\n            {\n                foreach (var childWindow in childWindows)\n                {\n                    try\n                    {\n                        childWindow.Close();\n                    }\n                    catch (Exception ex)\n                    {\n                        VisionLogger.Instance.Log(LogLevel.Warning,\n                            $\"关闭子窗口失败: {childWindow.GetType().Name}, {ex.Message}\", \"MainWindow\");\n                    }\n                }\n            }\n\n            // 取消订阅图像预览事件（经图像结果区退订），防止内存泄漏\n            ImageResultHost.Shutdown();\n            _viewModel?.StopWorkflowCommand.Execute(null);\n            base.OnClosed(e);\n\n            // 防止存在无 Owner 的窗口或其他 WPF Dispatcher 对象使进程继续驻留。"
+      }
+    },
+    {
+      "id": "service-finally",
+      "packageId": "O09",
+      "title": "全局服务释放：通讯服务异常会跳过下层运行时",
+      "fact": "该方法先await _communicationService.DisposeAsync后才释放_communicationRuntime；前者抛错则后者本次不会执行。App.OnExit分别catch通讯与相机，故相机仍可继续释放，不能误说所有服务都被跳过。OnExit同步GetResult也不等完整异步退出协调器。",
+      "route": "局部整改：独立尝试各层释放并汇总故障，避免单一失败阻断。",
+      "change": "明确上层退役与底层断开依赖；try/finally或逐阶段故障收集保证尝试下层清理，未排空时隔离而非盲断。字段何时置null按是否实际退役决定，保留可诊断状态。",
+      "accept": "注入上层Dispose失败、底层失败及相机失败分别验后续清理仍被观察；错误汇总不丢失首因，重试不重用已半释放实例。",
+      "caps": [
+        "M01",
+        "M20",
+        "X03"
+      ],
+      "url": "system-architecture.html#stop",
+      "status": "设计待实施；未执行退出/故障验证",
+      "vm": "原VM窗口/模块停止与回调有局部静态材料；全应用退出及所有厂商析构未闭合，不直接复用其实现。",
+      "source": {
+        "path": "src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs",
+        "line": 145,
+        "token": "public static async ValueTask DisposeCommunicationRuntimeAsync()",
+        "sha256": "95a1a9a2532653831cf510332a33a21279ee2725bc17a5b2945295ab4e603927",
+        "snippet": "        public static async ValueTask DisposeCommunicationRuntimeAsync()\r\n        {\r\n            if (_communicationService is not null)\r\n            {\r\n                await _communicationService.DisposeAsync().ConfigureAwait(false);\r\n                _communicationService = null;\r\n            }\r\n            if (_communicationRuntime is null) return;\r\n            await _communicationRuntime.DisposeAsync().ConfigureAwait(false);\r\n            _communicationRuntime = null;\r\n        }\r\n\r\n        public static async ValueTask DisposeCameraRuntimeAsync()\r\n        {\r\n            if (_cameraRuntime is null)\r\n                return;\r\n            await _cameraRuntime.DisposeAsync().ConfigureAwait(false);\r\n            _cameraRuntime = null;\r\n        }\r\n\r\n        /// <summary>\r\n        /// 初始化所有服务。\r\n        /// </summary>\r\n        public static void InitializeServices()\r\n        {\r\n            // 初始化显示适配器配置。\r\n            NodeDisplayAdapterConfig.Initialize();\r\n\r\n            // 初始化插件日志器 - 让工具项目可以访问全局日志器\r\n            InitializePluginLogger();\r"
+      }
+    }
+  ],
+  "runtimeExecuted": false,
+  "limit": "登记状态、窗口关闭、异步清理和物理资源结束是不同阶段"
+}

@@ -1,0 +1,12 @@
+{
+  "taskId": "START-DOC-01",
+  "pages": 3,
+  "widthChecks": 9,
+  "links": 9,
+  "errors": [],
+  "productExecuted": false,
+  "acceptanceExecuted": 0,
+  "sourceChecks": 17,
+  "inputSha256": "116159eec60fd2fc58b73dfb0249a42a6c298505a674c61b3714c8fc3daafb61",
+  "allAcceptancePlannedNotRun": true
+}

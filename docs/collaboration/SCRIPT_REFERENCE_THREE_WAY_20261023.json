@@ -1,0 +1,11 @@
+{
+ "scope":"引用管理三方设计对照；只更新主文档，不改产品",
+ "rows":[
+  {"topic":"默认能力范围","vm":"源码默认五项：mscorlib/System/System.Core/Windows.Forms/Script.Methods；用户可增引用","current":"RequiredAssemblyNames取当前存在的BCL白名单+脚本SDK，当前还原32项；许多设为必需","target":"拆分编译基础必需、脚本公共API、按需业务API、用户增量；逐项验证依赖闭包，不靠删DLL追求数字少","classification":"借鉴分层；自研验证规则","basis":"VM ShellRun542-583、ShellCodeEditor333-361、ScriptCom768-823；自研MetadataReferenceProvider192-224","tradeoff":"较窄默认暴露面易解释；但.NET9有类型转发/程序集拆分，五项不能机械照搬"},
+  {"topic":"引用清单的事实源","vm":"UI JSON及类型编码通过ScriptRefrence提交，编辑器/编译器各自映射","current":"ScriptParameters.AssemblyReferences是节点清单，BuildReferences与编译都按清单解析；空清单编译另有fallback","target":"保留节点声明清单，解析后生成同一个不可变ReferenceSnapshot，所有消费者使用同一版本；错误明确，不静默扩大引用","classification":"保留整改；自研统一","basis":"ButtonSelecter_Shell232-267；自研ScriptDebugControl124-135、ScriptCompiler185-218","tradeoff":"避免两套事实源；增加快照/验证职责，但可追溯错误"},
+  {"topic":"路径与依赖解析","vm":"类型0简单名称，3模块根目录，4模块DLL目录；运行AssemblyResolve另查已加载FullName与模块目录","current":"ResolveAssemblyPath依次解析BCL/宿主锚点/用户目录；运行沙箱有独立解析","target":"解析到确定路径及实际程序集身份/内容SHA；补全、编译、运行统一准入和冲突规则，部署由构建规则保证","classification":"借鉴职责分层；自研身份合同","basis":"ScriptCom768-823；ComScriptSupport49-89；自研MetadataReferenceProvider258-283、ScriptSandbox","tradeoff":"不能仅用文件名判同一版本；路径优先级易造成同名不同内容的错误复用"},
+  {"topic":"元数据准备","vm":"修改引用会重建补全服务；部分引用后台Cecil加载，部分Assembly.LoadFrom同步","current":"编辑器逐项Resolve创建MetadataReference，再加入Workspace；有共享基础缓存，但按节点路径不等对象共享","target":"缓存不可变元数据对象与可取消共享准备任务；文档会话保留独立状态；前台查询优先，显示引用准备状态","classification":"借鉴异步准备；整改复用与Owner","basis":"ShellCodeEditor270-330；自研BuildReferences、RebuildWorkspace、ResolveAssemblyPath","tradeoff":"不能以后台启动当准备完成；并行失控会争抢CPU，需合并与调度"},
+  {"topic":"引用更新与缓存失效","vm":"所见Refrences分支不直接dirty，编译缓存source+property+moduleId不含引用","current":"代码/宿主版本/引用名称指纹用于编译及池键，引用目录和用户DLL实际字节未完整覆盖","target":"引用增删、同名替换、生成IO合同或选项变化均生成新键；旧代次语义/编译结果不得准入执行","classification":"不采用原版弱失效；自研重做","basis":"ScriptCom335-345；BaseScriptSupport112-114；自研ScriptCompiler.ComputeCacheKey与ScriptSandboxPool","tradeoff":"内容指纹有I/O成本，可按确定文件版本缓存；不能长期牺牲正确性换命中率"}
+ ],
+ "limits":["默认五项不是进程所有程序集；元数据文件大小不是内存或所有类型都已解析","引用成本9进程测试只覆盖基础样本，不证明默认范围一定过重或毫无影响","部署SDK含WPF职责已由工程证实，但这不等所有依赖都会进入脚本分析；API拆分应另核实际签名","VM实际加载补全副本及SDK间接目标仍保留未知，不拼成已运行链"]
+}

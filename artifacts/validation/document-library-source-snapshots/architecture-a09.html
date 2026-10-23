@@ -1,0 +1,130 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><script src="../公共资源/文档路径.js"></script><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A09 应用SDK</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">A09 应用SDK</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">文档索引</a><a href="architecture-target.html">最新目标决策</a><a href="../框架设计/framework-overview.html">框架对比</a><a href="../SDK设计/framework-sdk-overview.html">SDK设计</a><a href="../维护记录/joint-optimization-plan.html">联合方案</a><a href="../证据审计/architecture-evidence.html">本批证据</a></nav><main><h1>A09 应用SDK</h1><article id="decision-A09"><p class="status">proposed-not-implemented · 全部接口为拟议合同，未编译/运行</p><div class="visual-metrics"><div><strong>A09</strong><span>目标决策</span><small>拟议，未实施</small></div><div><strong>5</strong><span>局部证据条目</span><small>未知单列</small></div><div><strong>2</strong><span>验收用例</span><small>均未运行</small></div></div><figure class="architecture-figure" data-visual="sdk"><figcaption><b>应用SDK：客户不装配主窗与内部引擎</b><span class="chip">拟议设计，未实现/运行验收</span></figcaption><div class="diagram-actions"><button type="button" data-diagram-expand>放大查看图</button><span>实线：所标范围内的关系；虚线：条件/待验证边界。</span></div><div class="svg-scroll"><svg role="img" aria-label="应用SDK：客户不装配主窗与内部引擎；拟议设计，未实现/运行验收" viewBox="0 0 945 339"><title>应用SDK：客户不装配主窗与内部引擎</title><desc>拟议设计，未实现/运行验收。图中节点和箭头与下方文字合同共同解释，不能单独作为运行保证。</desc><defs><marker id="arrow-sdk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker></defs><path d="M 260 82 L 350 82" class="graph-edge " marker-end="url(#arrow-sdk)"/><text class="edge-label" x="305" y="73">调用</text><path d="M 590 82 L 680 82" class="graph-edge " marker-end="url(#arrow-sdk)"/><text class="edge-label" x="635" y="73">静态引用</text><path d="M 470 230 L 470 124" class="graph-edge uncertain" marker-end="url(#arrow-sdk)"/><text class="edge-label" x="470" y="168">注入</text><path d="M 590 272 L 680 272" class="graph-edge " marker-end="url(#arrow-sdk)"/><text class="edge-label" x="635" y="263">内部执行</text><path d="M 260 272 L 350 82" class="graph-edge " marker-end="url(#arrow-sdk)"/><text class="edge-label" x="305" y="168">借用Session</text><g class="graph-node"><rect x="20" y="40" width="240" height="84" rx="13"/><text x="36" y="72">客户程序</text><text class="node-note" x="36" y="100">无自研主窗</text></g><g class="graph-node"><rect x="350" y="40" width="240" height="84" rx="13"/><text x="366" y="72">Runtime.SDK</text><text class="node-note" x="366" y="100">Host / Project / Flow / Run</text></g><g class="graph-node"><rect x="680" y="40" width="240" height="84" rx="13"/><text x="696" y="72">Contracts</text><text class="node-note" x="696" y="100">公共数据与后端合同</text></g><g class="graph-node"><rect x="350" y="230" width="240" height="84" rx="13"/><text x="366" y="262">Backend Factory</text><text class="node-note" x="366" y="290">内部实现注入</text></g><g class="graph-node"><rect x="680" y="230" width="240" height="84" rx="13"/><text x="696" y="262">Workflow / Tool</text><text class="node-note" x="696" y="290">同一输入准备与运行</text></g><g class="graph-node"><rect x="20" y="230" width="240" height="84" rx="13"/><text x="36" y="262">Controls.Wpf</text><text class="node-note" x="36" y="290">可选Viewer / Editor</text></g></svg></div><p class="diagram-note">拟议设计，未实现/运行验收 · <a href="architecture-target.html">查看依据、合同与未知</a></p></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前边界</h2><p>public执行器仍需内部装配，Workflow与SDK带WPF；不是可交付应用集成门面。</p></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM已证 / 未知</h2><p>官方开发指南有纯API与控件依赖拆分、流程公开输出建议；VmSolution单例不证明多项目隔离。</p></section></div><section class="visual-card decision-summary"><h2>本项选择与代价</h2><p><strong>借鉴VM公开方案/流程API；自研新建应用边界</strong></p><p>Runtime.SDK公开Host/Project/Flow/Run，不暴露UI或内部Engine；后端接口经Contracts注入。</p><div class="tradeoff-grid"><div><h3>收益与成本</h3><p>客户不拼内部对象；要承担公共API版本和错误语义维护。</p></div><div><h3>为什么不选替代路线</h3><p>直接公开Engine省包装但绑定内部装配；选择应用门面，承担公共API兼容、部署和错误语义维护。官方V4.4.2指南不直接承诺net9兼容。</p></div></div></section><h2>拟议接口与数据字段</h2><pre>RuntimeHost Create(HostOptions options, IRuntimeBackendFactory backend);
+Capabilities { Platforms, MaxProjects, MaxConcurrentRuns, DeviceAutoConnect, ContractVersions }
+OpenOutcome OpenProjectAsync(ProjectSource source, OpenOptions options);
+ProjectSession { Flows, BeginEdit, StartAsync, AcquireResult, CloseAsync }</pre><h3>状态与生效时点</h3><p>Open构造隔离候选，校验插件/资源/版本后才发布Ready；默认不自动连设备。能力不足在接纳前拒绝，首期平台与多项目限制须如实返回。</p><h3>Owner与释放责任</h3><p>Host拥有后端与Project，Project拥有运行；客户拥有Session使用权并显式关闭；Controls只借用Session。</p><h3>失败、取消与幂等</h3><p>加载失败清候选、旧项目仍可用。重复Open按OperationId去重，路径相同不默认共用可变项目；重复Close按A08。许可和设备错误具有不同错误码。</p><h3>版本与兼容</h3><p>Runtime.SDK只依赖Contracts，通过工厂注入后端避免循环；API协商主版本，禁止暴露Engine实现类型和WPF类型。</p><h2>验收：尚未执行</h2><section id="A09-T1"><h3>A09-T1 · planned-not-run</h3><p>无主窗客户可加载/输入/运行/结果/停止/关闭</p><p>执行方法与判定：<a href="architecture-acceptance.html#A09-T1">查看用例</a></p></section><section id="A09-T2"><h3>A09-T2 · planned-not-run</h3><p>第二项目超能力返回明确错误；加载失败不留下半就绪项目</p><p>执行方法与判定：<a href="architecture-acceptance.html#A09-T2">查看用例</a></p></section><h2>原版证据与局部边界</h2><p>source-confirmed限交接中选定成员；不是整库复核。独立恢复代码 independent-implementation 不作为原版事实。<a href="../证据审计/architecture-evidence.html">本批来源SHA</a></p><details id="evidence-A09-0"><summary>execution-storage:G00 · source-confirmed · MenuItems Lang_SigRun declaration / TitleMenueItemData.CustomItemData / TitleMenueItemData.GetSolution</summary><p>默认原菜单将方法名、独立模板和数据工厂明确关联：methodName=SigRun、customItemTemplateName=SingleRunTemplate、getCustomItemDataContextMethodName=GetSolution。CustomItemData空才反射调用工厂；GetSolution赋VmSolution.Instance并去重订阅RestoreDefaultDisplay，回调清数据缓存。</p><ul><li>未知/限制：该默认菜单声明不代替其它模式及运行时XML类型物化证明。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/menuitems.xml">analysis/decompiled/VisionMaster.Exe.Audit/menuitems.xml:354–365</a> · local-extracted-resource · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>d9e9a1da6aeca60d97129cb71e07e9f074ed049c09f5a88f168608a01f6e7959</code></p><pre>					&lt;name&gt;Lang_SigRun&lt;/name&gt;
+					&lt;methodName&gt;SigRun&lt;/methodName&gt;
+					&lt;toolGroupItemInfo&gt;
+						&lt;groupName&gt;group3&lt;/groupName&gt;
+						&lt;priority&gt;0&lt;/priority&gt;
+					&lt;/toolGroupItemInfo&gt;
+					&lt;customItemTemplateName&gt;SingleRunTemplate&lt;/customItemTemplateName&gt;
+					&lt;getCustomItemDataContextMethodName&gt;GetSolution&lt;/getCustomItemDataContextMethodName&gt;
+					&lt;imageEnablePath&gt;Resources\ToolBar\toolbarStart_normal.png&lt;/imageEnablePath&gt;
+					&lt;imageDisablePath&gt;Resources\ToolBar\toolbarStart_disable.png&lt;/imageDisablePath&gt;
+				&lt;/TitleMenueItemData&gt;
+				&lt;!--连续执行和停止--&gt;</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs:162–181</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187</code></p><pre>	public object CustomItemData
+	{
+		get
+		{
+			if (customItemData == null)
+			{
+				ExcuteMethodByName(getCustomItemDataContextMethodName);
+			}
+			return customItemData;
+		}
+		set
+		{
+			if (customItemData != value)
+			{
+				customItemData = value;
+				OnPropertyChanged(&quot;CustomItemData&quot;);
+			}
+		}
+	}
+</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs:303–315</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187</code></p><pre>	public void GetSolution()
+	{
+		CustomItemData = VmSolution.Instance;
+		VmSolution.RestoreDefaultDisplay -= VmSolution_RestoreDefaultDisplay;
+		VmSolution.RestoreDefaultDisplay += VmSolution_RestoreDefaultDisplay;
+	}
+
+	private void VmSolution_RestoreDefaultDisplay(object sender, EventArgs e)
+	{
+		CustomItemData = null;
+		RunData = null;
+	}
+</pre></details><details id="evidence-A09-1"><summary>execution-storage:G01 · source-confirmed · TitleMenueItemData.CheckRun / SigRun</summary><p>CheckRun 遍历流程装饰器：启用流程非 Ready 或全部禁用时拒绝；通过后调用方案 Run。</p><ul><li>未知/限制：G00/G05/G06已补默认资源、模板和命令消费者；运行时物化/绑定仍未验证。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs:1438–1479</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>b1c349c4808c0ce49c45e6fcca2972d370ed5a8f3e96ac51a157a680b42c9187</code></p><pre>	private static bool CheckRun()
+	{
+		IEnumerable&lt;VmProcedureDecorator&gt; enumerable = from p in VmSolution.Instance.Modules.OfType&lt;VmProcedure&gt;()
+			select new VmProcedureDecorator
+			{
+				DecorateSource = p
+			};
+		VmProcedureDecorator vmProcedureDecorator;
+		if ((vmProcedureDecorator = enumerable.FirstOrDefault((VmProcedureDecorator p) =&gt; p.WorkState != StatusBarSymbol.Ready &amp;&amp; p.IsEnabled)) != null)
+		{
+			string strMsg = vmProcedureDecorator.VMProcedure.Name + &quot;:&quot; + vmProcedureDecorator.WorkStateInfo;
+			HikMessageBox.Show(strMsg, MessageIcons.Error);
+			return false;
+		}
+		if (enumerable != null &amp;&amp; enumerable.Where((VmProcedureDecorator p) =&gt; !p.IsEnabled).Count() == enumerable.Count())
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang(&quot;流程处于禁用状态&quot;), MessageIcons.Warning);
+			return false;
+		}
+		return true;
+	}
+
+	public static void SigRun()
+	{
+		try
+		{
+			if (CheckRun())
+			{
+				VmSolution.Instance.Run();
+				UILogManager.logCreate(&quot;信息&quot;, AppLocalizationService.GetLang(&quot;Run Once&quot;), false, true);
+			}
+		}
+		catch (Exception ex)
+		{
+			if (ex is VmException ex2)
+			{
+				string strMsg = AppLocalizationService.GetLang(&quot;Lang_GlobalScript&quot;) + &quot;:&quot; + ErrorCodeInfo.GetErrorInfo(ex2.errorCode);
+				HikMessageBox.Show(strMsg, MessageIcons.Error);
+			}
+		}
+	}
+</pre></details><details id="evidence-A09-2"><summary>execution-storage:G02 · source-confirmed · VmSolution.Run</summary><p>IsGlobalRuning 先设 true；调用全局脚本单次入口；正常及 catch 路径设 false，catch 重抛。此处不直接调用 VmProcedure.Run。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs">analysis/decompiled/VM.Core/VM.Core/VmSolution.cs:2236–2257</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e</code></p><pre>	public override void Run()
+	{
+		IsGlobalRuning = true;
+		LogHelper.Info(&quot;全局点击Run设置IsGlobalRuning为true&quot;);
+		try
+		{
+			ServerSDKManager.serverSDKManager.mGlobalModuleManager.GlobalScriptStartRunOnce();
+		}
+		catch (Exception ex)
+		{
+			IsGlobalRuning = false;
+			throw ex;
+		}
+		IsGlobalRuning = false;
+		LogHelper.Info(&quot;全局点击Run设置IsGlobalRuning为false&quot;);
+	}
+
+	/// &lt;summary&gt;
+	/// CH:开启全部模块结果回调 | EN: Enable all module result callback
+	/// &lt;/summary&gt;
+	public void EnableModulesCallback()
+	{</pre></details><details id="evidence-A09-3"><summary>execution-storage:G03 · source-confirmed · GlobalModuleManager.GlobalScriptStartRunOnce</summary><p>传 CVmObjectBase.mhandle；非零返回码构造并抛出 VmException。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/GlobalModuleManager.cs">analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/GlobalModuleManager.cs:208–218</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>ab2b834644df65e6a41bb76efc8bdc241f427c671afbd0f4d5c64237c34a6f13</code></p><pre>	public int GlobalScriptStartRunOnce()
+	{
+		int num = NativeMethods.IMVS_ExecuteOnce4GlobalScript(CVmObjectBase.mhandle);
+		if (num != 0)
+		{
+			VmException ex = new VmException(num);
+			throw ex;
+		}
+		return num;
+	}
+</pre></details><details id="evidence-A09-4"><summary>execution-storage:G07 · source-confirmed · NativeMethods global-script PInvoke declaration / Selected x64 original PE export table</summary><p>托管声明DLL为相对路径iMVS-6000PlatformSDK.dll。选定安装PublicFile/x64原件SHA b62d7e…a54a9a1，PE表确认同名非转发导出、ordinal429、RVA0x00648df0/VA0x180648df0；入口32字节逐次重核。PE表不证明运行进程实际加载此副本或handle ABI。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/NativeMethods.cs">analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/NativeMethods.cs:137–141</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>6a60f612fb385987ff96d6973844a256402f097d1eb371e7ad462c44e57127d0</code></p><pre>	public static extern int IMVS_OpenGlobalScriptInteface(IntPtr handle);
+
+	[DllImport(&quot;.\\iMVS-6000PlatformSDK.dll&quot;)]
+	public static extern int IMVS_ExecuteOnce4GlobalScript(IntPtr handle);
+</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/global-run-export.json">docs/architecture-recovery/global-run-export.json:10–18</a> · read-only-PE-export-table-and-bytes · 原二进制身份：selected installed x64 file SHA-256 and entry bytes revalidated; runtime resolution unknown</p><p>SHA256 <code>dd9cdfb559ab7e99471353d4bfa81490a7f921a2ddb5dfd519f0c0629517eae1</code></p><pre>      &quot;name&quot;: &quot;IMVS_ExecuteOnce4GlobalScript&quot;,
+      &quot;ordinal&quot;: 429,
+      &quot;rva&quot;: &quot;0x00648df0&quot;,
+      &quot;virtualAddress&quot;: &quot;0x180648df0&quot;,
+      &quot;forwarded&quot;: false,
+      &quot;forwarder&quot;: null,
+      &quot;fileOffset&quot;: 6586864,
+      &quot;first32Bytes&quot;: &quot;40534883ec20488bd9e872c3ffff4885c0741c488b10488b02488bc8483bc274&quot;
+    }</pre></details><h2>官方SDK依据</h2><p>复用15个官方页面来源；指南V4.4.2、安装目录4.4.0与反编译样本版本分列；旧控件文档.NET Framework及.NET Core限制不直接转化为自研net9承诺。</p><p><a href="../证据审计/architecture-evidence.html#official-0">doc-overview</a></p><p><a href="../证据审计/architecture-evidence.html#official-1">doc-cpp</a></p><p><a href="../证据审计/architecture-evidence.html#official-2">doc-packages</a></p><p><a href="../证据审计/architecture-evidence.html#official-3">doc-flow</a></p><p><a href="../证据审计/architecture-evidence.html#official-4">doc-events</a></p><p><a href="../证据审计/architecture-evidence.html#official-5">doc-wpf</a></p><p><a href="../证据审计/architecture-evidence.html#official-6">doc-render</a></p><p><a href="../证据审计/architecture-evidence.html#official-7">doc-input</a></p><p><a href="../证据审计/architecture-evidence.html#official-8">sdk-doc-solution</a></p><p><a href="../证据审计/architecture-evidence.html#official-9">sdk-doc-module</a></p><p><a href="../证据审计/architecture-evidence.html#official-10">sdk-doc-procedure</a></p><p><a href="../证据审计/architecture-evidence.html#official-11">sdk-doc-globals</a></p><p><a href="../证据审计/architecture-evidence.html#official-12">sdk-doc-events</a></p><p><a href="../证据审计/architecture-evidence.html#official-13">sdk-doc-output</a></p><p><a href="../证据审计/architecture-evidence.html#official-14">sdk-doc-view</a></p></article><p><a href="architecture-target.html">返回12项决策目录</a></p></main><footer>文档设计交付 ≠ 产品实现或运行验收；原42检查点、49能力口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

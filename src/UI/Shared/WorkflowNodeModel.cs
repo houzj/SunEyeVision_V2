@@ -205,6 +205,7 @@ namespace SunEyeVision.UI.Shared
                 baseNode.DispName ?? baseNode.Name,
                 baseNode.ToolType)
             {
+                AdditionalData = baseNode.AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
                 GlobalIndex = baseNode.GlobalIndex,
                 LocalIndex = baseNode.LocalIndex,
                 PositionX = baseNode.PositionX,

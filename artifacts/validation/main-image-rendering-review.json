@@ -1,0 +1,162 @@
+{
+  "date": "2026-10-20",
+  "baseline": "3a5dc6dd54f372699a450ad7862b52c961cd2797",
+  "dimensions": 10,
+  "documentComplete": true,
+  "originalEvidence": {
+    "verified": 24,
+    "total": 42,
+    "partial": 11,
+    "unverified": 7,
+    "percent": 57.1,
+    "delta": 0
+  },
+  "runtimeExecuted": false,
+  "reverseTasks": [
+    "R01",
+    "R02",
+    "R03",
+    "R04",
+    "R05"
+  ],
+  "sources": [
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ImageResultControl.xaml",
+      "line": 101,
+      "token": "SourceImage=",
+      "sha256": "7b9f9244aee3305febb4e1b64e18baf7e6a909072310b34ba44b29a51fe4fbe8"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/NodeResultManager.cs",
+      "line": 104,
+      "token": "public void RefreshResultDisplay",
+      "sha256": "3f0d3bb8be81a0b24d8447cedd90bbfa66f0e47f66676eca78ac7a7a99d83d69"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml",
+      "line": 284,
+      "token": "ChessboardLayer",
+      "sha256": "b792ec4d3cbff641131e8decfd00ceb67794bd7007396f5c850eec4d5b87c786"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+      "line": 745,
+      "token": "private static void OnSourceImageChanged",
+      "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+      "line": 794,
+      "token": "private void UpdateImageTransform",
+      "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+      "line": 390,
+      "token": "protected override void OnRender",
+      "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+      "line": 160,
+      "token": "private void RequestBatchGeometryRefresh",
+      "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+      "line": 1019,
+      "token": "private void RenderTextsGrouped",
+      "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+      "line": 1302,
+      "token": "private FormattedText CreateFormattedText",
+      "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+      "line": 1198,
+      "token": "private static int ComputeTextFingerprint",
+      "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ViewportScaling.cs",
+      "line": 22,
+      "token": "public const double DecorPower",
+      "sha256": "3c7b2787b3232fc86314c767045fe8ac678239679967fee71dc793624db34497"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+      "line": 139,
+      "token": "public void Clear()",
+      "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml",
+      "line": 115,
+      "token": "imagecontrol:ImageViewBox",
+      "sha256": "56ac6bbf9b8839311f4f8eaf0dc4407fc3f9527b39f3ad942080c0bb6c2948ff"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs",
+      "line": 1772,
+      "token": "displayobj.IsLowQuality",
+      "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls/ImageViewBox.xaml",
+      "line": 35,
+      "token": "Name=\"sImage\"",
+      "sha256": "1a376cf7ed4516a4e3e15402fa2a99eac6820d9905081339ee763e0e5920e68c"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
+      "line": 1603,
+      "token": "GlobalRenderVariable.IsHighQualityImage",
+      "sha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView.Shape/DrawShapeHelper.cs",
+      "line": 33,
+      "token": "public static void DrawShapes",
+      "sha256": "4f769a1d959e137cb5743fd1e793b2d28d936a20dbe073c744bc1d1a88ca2635"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItemsPage.cs",
+      "line": 109,
+      "token": "private void OnItemsSourceChanged",
+      "sha256": "757a42264784eea6f326878aa594fcfc11b17a34724c2f7c1fb64ec8d2106398"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView.Shape/LineShape.cs",
+      "line": 56,
+      "token": "public static void AddLineGeometry",
+      "sha256": "f4c6b13656547d94870de1cb64058fad50cc75f19b11a36fe8d934ddb30d0fdf"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView.Shape/TextShape.cs",
+      "line": 15,
+      "token": "public static int AddMultiText",
+      "sha256": "54ba19a70c8731fe25ebbd4a77ac81b3fc8a02385b00f4e846da68c0e493d0c2"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView.Shape/DrawShapeHelper.cs",
+      "line": 169,
+      "token": "public static FormattedText MeasureText",
+      "sha256": "4f769a1d959e137cb5743fd1e793b2d28d936a20dbe073c744bc1d1a88ca2635"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView.Shape/ShapeCanvas.cs",
+      "line": 53,
+      "token": "private void ShapeCanvas_MouseMove",
+      "sha256": "36cb3f6645280281eb0448f24e20159cce41d5895113bd894726f6499ae3fd30"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItemsPage.cs",
+      "line": 425,
+      "token": "private void ClearShapes",
+      "sha256": "757a42264784eea6f326878aa594fcfc11b17a34724c2f7c1fb64ec8d2106398"
+    }
+  ]
+}

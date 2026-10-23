@@ -137,8 +137,10 @@ namespace SunEyeVision.UI.Shared
         /// <summary>
         /// 触发配置同步：把当前状态转成可序列化配置并通知父节点。
         /// </summary>
+        private bool _loadingConfiguration;
         private void NotifyConfigChanged()
         {
+            if (_loadingConfiguration) return;
             ConfigChanged?.Invoke(ToConfig());
         }
 
@@ -280,18 +282,25 @@ namespace SunEyeVision.UI.Shared
         /// 转为可序列化配置（保存方案时调用）
         /// </summary>
         /// <remarks>
-        /// 只导出路径与状态，不导出图片；对齐参考项目 VisionMaster 只存路径的持久化模式。
+        /// 保留本软件原始资源引用与选择状态；不把运行解析地址写入方案。
         /// </remarks>
+        private List<string> _runReferences = new();
         public ImageSourceConfig ToConfig()
         {
+            foreach (var group in _images.GroupBy(img => img.SourceReference ?? img.FilePath))
+            {
+                var selected = group.Any(img => img.IsForRun);
+                if (!selected) _runReferences.RemoveAll(p => p == group.Key);
+                else if (!_runReferences.Contains(group.Key)) _runReferences.Add(group.Key);
+            }
             return new ImageSourceConfig
             {
                 NodeId = NodeId,
-                FilePaths = GetFilePaths().ToList(),
+                FilePaths = _images.Select(img => img.SourceReference ?? img.FilePath).ToList(),
                 CurrentIndex = CurrentIndex,
                 AutoSwitchEnabled = AutoSwitchEnabled,
                 RunMode = (int)RunMode,
-                ForRunPaths = _images.Where(img => img.IsForRun).Select(img => img.FilePath).ToList()
+                ForRunPaths = new List<string>(_runReferences)
             };
         }
 
@@ -301,22 +310,22 @@ namespace SunEyeVision.UI.Shared
         /// <remarks>
         /// 依据 FilePaths 重建 ImageInfo（保留勾选路径），并恢复当前索引/运行模式/自动切换状态。
         /// </remarks>
-        public void LoadFromConfig(ImageSourceConfig config)
+        public void LoadFromConfig(ImageSourceConfig config, SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver? resourcePaths = null)
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
 
-            var selectedPath = config.CurrentIndex >= 0 && config.CurrentIndex < config.FilePaths.Count
-                ? config.FilePaths[config.CurrentIndex] : null;
-            var infos = config.FilePaths
-                .Where(p => !string.IsNullOrEmpty(p) && System.IO.File.Exists(p))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(p => new ImageInfo
-                {
-                    FilePath = p,
-                    Name = System.IO.Path.GetFileName(p),
-                    IsForRun = config.ForRunPaths?.Contains(p) == true
-                })
-                .ToList();
+            _runReferences = new List<string>(config.ForRunPaths ?? new List<string>());
+            _loadingConfiguration = true;
+            try
+            {
+            var resolver = resourcePaths ?? SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution);
+            var infos = config.FilePaths.Select(p =>
+            {
+                string address; string? resourceError = null;
+                try { address = resolver.Resolve("ImageSourceConfig.FilePaths", p, SunEyeVision.Plugin.SDK.Execution.Parameters.ResourcePurpose.FileRead).Address; }
+                catch (Exception ex) { address = string.Empty; resourceError = ex.Message; } // Never fall back to process CWD.
+                return new ImageInfo { SourceReference = p, ResourceError = resourceError, FilePath = address, Name = System.IO.Path.GetFileName(p), IsForRun = config.ForRunPaths?.Contains(p) == true };
+            }).ToList();
 
             foreach (var oldImage in _images) { oldImage.CancelThumbnail(); oldImage.ReleaseFullImage(); }
             _images.Clear();
@@ -325,8 +334,7 @@ namespace SunEyeVision.UI.Shared
                 _images.AddRange(infos);
             }
 
-            CurrentIndex = selectedPath == null ? -1 : infos.FindIndex(image =>
-                string.Equals(image.FilePath, selectedPath, StringComparison.OrdinalIgnoreCase));
+            CurrentIndex = config.CurrentIndex;
             AutoSwitchEnabled = config.AutoSwitchEnabled;
             RunMode = config.RunMode == 1 ? ImageRunMode.运行选择 : ImageRunMode.运行全部;
 
@@ -336,7 +344,9 @@ namespace SunEyeVision.UI.Shared
             OnPropertyChanged(nameof(Count));
             OnPropertyChanged(nameof(HasImages));
             OnPropertyChanged(nameof(GetSelectedImages));
-            NotifyConfigChanged();
+            // Loading is not an edit; never rewrite the persisted list.
+            }
+            finally { _loadingConfiguration = false; }
         }
 
         public void RemoveMissingImages()

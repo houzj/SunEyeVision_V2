@@ -1,0 +1,23 @@
+{
+  "workPackages": 20,
+  "uiSubitems": 13,
+  "fixedCheckpoints": 42,
+  "evidenceLocations": 79,
+  "preservedStatuses": {
+    "verified": 24,
+    "partial": 11,
+    "unverified": 7
+  },
+  "semanticUpgrades": 0,
+  "identifiedBodyGaps": [
+    "G-ShapeMatch",
+    "G-Globals",
+    "G-License"
+  ],
+  "pageSize": 6,
+  "deepLinksHistory": true,
+  "printRestore": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "productExecuted": false
+}

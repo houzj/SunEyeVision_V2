@@ -23,6 +23,8 @@ namespace SunEyeVision.Workflow
         public IToolPlugin? Tool { get; set; }
 
         /// <summary>运行请求提供的共享采集服务，不属于节点持久化状态。</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public IResourcePathResolver? ResourcePaths { get; set; }
         public ICameraCaptureService? CameraCaptureService { get; set; }
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; set; }
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationOutputs { get; set; }
@@ -104,6 +106,7 @@ namespace SunEyeVision.Workflow
                             WorkflowId = ExecutionWorkflowId,
                             CancellationToken = cancellationToken,
                             CameraCaptureService = CameraCaptureService,
+                            ResourcePaths = ResourcePaths,
                             CommunicationInputs = CommunicationInputs,
                             CommunicationOutputs = CommunicationOutputs,
                             CameraFrame = CameraFrame,

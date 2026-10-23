@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-23",
+  "source": "用户人工操作反馈",
+  "software": "VM（用户当前主界面）",
+  "observations": {
+    "open": "没有明显间隔",
+    "firstCompletion": "很快，肉眼看不到等待",
+    "precompile": "先前用户报告<10ms；截图后计时口径已纠正，实际编译耗时未测"
+  },
+  "limitations": [
+    "尚未明确10ms是界面显示数值还是人工端到端判断",
+    "尚未绑定固定脚本/引用SHA、进程首次或重复、代码是否改变、缓存状态",
+    "不能直接等同编译器冷启动或完整构建时间"
+  ],
+  "nextCheck": "若继续人工端到端测量，应记录点击预编译到编译完成的独立时间，或用带输入/事件时刻的录像；模块结果耗时不纳入编译基线。",
+  "productModified": false,
+  "screenshotEvidence": {
+    "path": "D:\\Temp\\codex-clipboard-0e8fde9b-9d71-4678-b020-583607f5551e.png",
+    "sha256": "aa47e653c63e52c34c692f11d5a2d5c0291c74ade225732796d75636aaa18f07",
+    "observed": [
+      "脚本Init中processCount = 10",
+      "编译区Compile complete -- 0 Errors, 0 Warnings，时间戳2026-10-23 00:50:26:684",
+      "右侧模块结果耗时(ms)=2.9377，模块状态1",
+      "历史结果时间2026-10-23 00:52:26:617"
+    ],
+    "interpretation": "2.9377ms是模块结果中的运行耗时，不是可证的编译耗时；完成时间戳不是耗时。截图确认编译成功，但不足以证明预编译<10ms。"
+  }
+}

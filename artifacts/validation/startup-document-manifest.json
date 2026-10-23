@@ -1,0 +1,172 @@
+{
+  "taskId": "START-DOC-01",
+  "inputBatch": "START-01",
+  "input": "docs/collaboration/STARTUP_REVIEW_20261022.json",
+  "inputSha256": "116159eec60fd2fc58b73dfb0249a42a6c298505a674c61b3714c8fc3daafb61",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+  ],
+  "sourceChecks": [
+    {
+      "path": "src/UI/App.xaml",
+      "role": "WPF资源先于OnStartup载入；无StartupUri",
+      "sha256": "a3c1d883331b7b9b0fc075013ce3ebf6d68753656de8322dd64128a8f900ec27",
+      "observedSha256": "a3c1d883331b7b9b0fc075013ce3ebf6d68753656de8322dd64128a8f900ec27",
+      "matches": true
+    },
+    {
+      "path": "src/UI/App.xaml.cs",
+      "role": "OnStartup/启动分支/退出",
+      "sha256": "4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc",
+      "observedSha256": "4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc",
+      "matches": true
+    },
+    {
+      "path": "src/UI/SunEyeVision.UI.csproj",
+      "role": "WPF生成入口WinExe",
+      "sha256": "8185eddfb71e32dac327de4cd8e7cc8eaf462bdf5c92f74442889436d5ceae72",
+      "observedSha256": "8185eddfb71e32dac327de4cd8e7cc8eaf462bdf5c92f74442889436d5ceae72",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs",
+      "role": "ServiceInitializer装配与清理",
+      "sha256": "95a1a9a2532653831cf510332a33a21279ee2725bc17a5b2945295ab4e603927",
+      "observedSha256": "95a1a9a2532653831cf510332a33a21279ee2725bc17a5b2945295ab4e603927",
+      "matches": true
+    },
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs",
+      "role": "发现/部署检查/逐插件注册",
+      "sha256": "6fe4240a2154817a8e3270d7949643e33a381661a4355277ca475182995eea5a",
+      "observedSha256": "6fe4240a2154817a8e3270d7949643e33a381661a4355277ca475182995eea5a",
+      "matches": true
+    },
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoader.cs",
+      "role": "全局已加载布尔状态",
+      "sha256": "f8d3c7935778fdc8cb95c13f8b7b3c569d12993e0a8fb2332fd3ad4154098ce5",
+      "observedSha256": "f8d3c7935778fdc8cb95c13f8b7b3c569d12993e0a8fb2332fd3ad4154098ce5",
+      "matches": true
+    },
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs",
+      "role": "非collectible、共享身份及WPF解析桥",
+      "sha256": "73b92f04265fc83a84672db78bc9ef539657e8e0eea7b19639c3c2331fc43748",
+      "observedSha256": "73b92f04265fc83a84672db78bc9ef539657e8e0eea7b19639c3c2331fc43748",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/StartupDecisionService.cs",
+      "role": "Choose/Last/Default决策",
+      "sha256": "391191c168128fc45fff71bc3981b07e47f92db57f4013a121872f6182e994c6",
+      "observedSha256": "391191c168128fc45fff71bc3981b07e47f92db57f4013a121872f6182e994c6",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/SolutionManager.cs",
+      "role": "构造/SetCurrentSolution",
+      "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da",
+      "observedSha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/SolutionRepository.cs",
+      "role": "反序列化前插件门槛",
+      "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+      "observedSha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+      "role": "构造/Loaded/显示层挂接",
+      "sha256": "e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219",
+      "observedSha256": "e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "role": "运行服务及子VM构造",
+      "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+      "observedSha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Services/SingleInstanceCoordinator.cs",
+      "role": "单实例/IPC/closing保护",
+      "sha256": "62f2901b2957c092a4f2bb819b0c5ae399e3d7cef60f7edacf1f2873f568c1b4",
+      "observedSha256": "62f2901b2957c092a4f2bb819b0c5ae399e3d7cef60f7edacf1f2873f568c1b4",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Features/Camera/CameraManagerViewModel.cs",
+      "role": "恢复连接临时VM/finally Dispose",
+      "sha256": "76ef4636e4276be0229021a9ebaaa9b77f4b9a168c3eac054568303d7f8c2f7b",
+      "observedSha256": "76ef4636e4276be0229021a9ebaaa9b77f4b9a168c3eac054568303d7f8c2f7b",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Services/Communication/CommunicationApplicationService.cs",
+      "role": "方案事件与异步ReadyAsync",
+      "sha256": "8b5a4f0d26cb9a14fc42de8785e48a7cb288edb2ad31c568cca4d6a06fc006b6",
+      "observedSha256": "8b5a4f0d26cb9a14fc42de8785e48a7cb288edb2ad31c568cca4d6a06fc006b6",
+      "matches": true
+    },
+    {
+      "path": "src/Plugin.SDK/Logging/VisionLogger.cs",
+      "role": "早期队列和writers",
+      "sha256": "a0b443f78f0d5ea95e585ed9386661e21cc99df89fe9ae7be52a01a96aef33ff",
+      "observedSha256": "a0b443f78f0d5ea95e585ed9386661e21cc99df89fe9ae7be52a01a96aef33ff",
+      "matches": true
+    },
+    {
+      "path": "src/Workflow/ApplicationDataLocationService.cs",
+      "role": "数据目录定位入口",
+      "sha256": "3620f3f8dd5822081b3d6d25d06bc24de58c98b5c941aafbcfc8a57d8984cf1c",
+      "observedSha256": "3620f3f8dd5822081b3d6d25d06bc24de58c98b5c941aafbcfc8a57d8984cf1c",
+      "matches": true
+    }
+  ],
+  "sourceDrift": [],
+  "findings": 8,
+  "targetFileResponsibilities": 16,
+  "acceptancePlanned": 10,
+  "acceptanceExecuted": 0,
+  "vmEvidence": "START-RE-01 received; 6 SHA verified; bounded static evidence",
+  "vmSourceChecks": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/start-re-01/START-RE-01.md",
+      "sha256": "58a1723c67f3f22d27a8f1de3bea1e4286c3d951f1ea0310bb856a6da1b92d9a",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs",
+      "sha256": "e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/App.cs",
+      "sha256": "babebf8e2bef407d7d06105aa4540bb844e32644a25d9a8c8c7faebfe57cf3f7",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/MainWindowData.cs",
+      "sha256": "aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.Data/VMControls.Data/ToolBoxData.cs",
+      "sha256": "c1b11d2c3bebce66a11769eb0e209455cb1e5d0c4efa7c4a6dad5992eb9cf45b",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ToolBox.xaml.cs",
+      "sha256": "67bc6a6d04c88f15aad0633961960a6ca8747f4672fc33f2b1b1e7ae6f6c7215",
+      "matches": true
+    }
+  ],
+  "productModified": false,
+  "wholeSiteRegenerated": false
+}

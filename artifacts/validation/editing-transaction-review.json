@@ -1,0 +1,96 @@
+{
+  "items": [
+    {
+      "id": "copy-solution",
+      "title": "方案副本 / 另存",
+      "state": "部分实现",
+      "current": "新Solution.Id；内部流程/节点/字段ID保持，整体容器内引用无需局部重写。先解析原资源基目录，不复制外部资源文件。",
+      "failure": "已有目标拒绝、新文件/元数据/设置失败补偿；原方案未保存编辑可来自当前内存指纹，不应说必先保存原文件。",
+      "change": "保留容器复制策略；与局部粘贴ID映射分开；资源可携带包另设计。",
+      "accept": "未保存编辑副本、目标存在、设置失败、相对资源和离线迁移核原文件/内存保持。",
+      "source": {
+        "path": "src/Workflow/SolutionManager.cs",
+        "line": 833,
+        "token": "private SolutionMetadata? CopyOrSaveAsSolution",
+        "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da"
+      }
+    },
+    {
+      "id": "clipboard",
+      "title": "主画布复制 / 粘贴",
+      "state": "目标入口未开发",
+      "current": "所查主画布快捷键没有Copy/Paste接入；工具箱Copy是创建新节点。方案副本、日志复制不是节点子图复制。",
+      "failure": "没有已证旧→新节点/字段/连线映射消费者，不能按有DragDropEffects.Copy就算支持。",
+      "change": "新增选中子图候选快照、ID映射、内绑定重写、外引用政策，一次提交且可撤销。",
+      "accept": "A/B同时复制后新B指新A；仅复制B、跨流程、动态字段、缺插件失败分别验。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+        "line": 212,
+        "token": "InputBindings.Add(new KeyBinding(_viewModel.NewWorkflowCommand",
+        "sha256": "e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219"
+      }
+    },
+    {
+      "id": "delete-undo",
+      "title": "删除 → Undo",
+      "state": "部分实现 / 必须整改",
+      "current": "命令保留节点/连线同对象及原索引；Undo按节点再连线恢复，身份不变。主窗随后才清绑定和删子流程，这些不在命令变更集。",
+      "failure": "ReconcileAll重新验证当前结构，不能恢复已清空表达式、全局生产消费关系或已删子图；删除共享子图调用需先核其他引用。",
+      "change": "节点/连线/绑定/变量关系/子流程Owner放同一可逆变更集；先核共享引用再级联删除。",
+      "accept": "删生产者后Undo恢复绑定；删子程序后Undo目标图仍在；删共享调用之一不破坏另一个。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 2633,
+        "token": "new AppCommands.BatchDeleteNodesAndConnectionsCommand",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "history-failure",
+      "title": "命令失败 / Undo失败",
+      "state": "正常链已实现，失败原子性待整改",
+      "current": "Execute先改模型后入栈；Undo/Redo先Pop再执行，成功才Push另一栈。集合事件或命令中途异常可能留下部分模型且栈项已丢。",
+      "failure": "外层弹窗和绑定对账自己的补偿不等外层画布事务回滚，未做故障注入。",
+      "change": "先预检候选变更集、失败逆序补偿；Undo/Redo先Peek，变更成功再移动栈项，失败保留可诊断可重试状态。",
+      "accept": "命令/集合通知/对账抛错时模型与两栈一致；不能只断言有错误提示。",
+      "source": {
+        "path": "src/UI/Features/WorkflowUI/Commands/CommandManager.cs",
+        "line": 49,
+        "token": "public void Undo()",
+        "sha256": "b5d0ee0329743785153205a30778f3e621cf082a45ccc82cfa1f3da1f1821ba1"
+      }
+    },
+    {
+      "id": "sequence",
+      "title": "删除 → Undo → 新增序号",
+      "state": "部分实现 / 必须整改",
+      "current": "Remove释放LocalIndex/GlobalIndex到空洞；Undo插回原对象没有重新占用，新增可能再次领取同一显示序号。NodeId仍不同，不直接推绑定错指。",
+      "failure": "显示序号与稳定身份是两层；空洞回收和撤销历史寿命未统一。",
+      "change": "序号租约与命令历史配对，或Undo原子重新预留/冲突时重编号；不要为解决显示序号改写GUID。",
+      "accept": "删A→Undo→新增B局部/全局序号唯一；Redo、多Tab、子图分别验。",
+      "source": {
+        "path": "src/UI/Features/WorkflowUI/WorkflowTabViewModel.cs",
+        "line": 334,
+        "token": "private void OnWorkflowNodesChanged",
+        "sha256": "b0b7ced2ce8d9175d09471cada0e776e10ca1934976bd4e6ac61dece85cb30ae"
+      }
+    },
+    {
+      "id": "history-scope",
+      "title": "下钻 / 返回后的撤销历史",
+      "state": "当前行为已见，目标政策待确认",
+      "current": "SetNodes与SetConnections重建CommandManager；导航保存工作流ID栈，不是历史栈，稳定节点ID保留不代表Undo历史保留。",
+      "failure": "不能说全应用有一套完整撤销历史；跨层保留属于产品政策，当前切画布重建不能冒充ID映射。",
+      "change": "按SolutionId/WorkflowId保存独立历史或明确提示历史范围；加载/删除/替换时退役旧历史。",
+      "accept": "根层移动→下钻编辑→返回后的Undo政策固定；切方案绝不执行旧方案命令。",
+      "source": {
+        "path": "src/UI/Features/WorkflowUI/WorkflowTabViewModel.cs",
+        "line": 422,
+        "token": "public void SetNodes",
+        "sha256": "b0b7ced2ce8d9175d09471cada0e776e10ca1934976bd4e6ac61dece85cb30ae"
+      }
+    }
+  ],
+  "scope": "C11六动作静态事务矩阵；不等产品故障验收",
+  "runtimeExecuted": false
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "rva": "ac5830",
+    "text": "%d-%u-%u"
+  },
+  {
+    "rva": "ac5430",
+    "text": "%d-%s-%d"
+  },
+  {
+    "rva": "ac543c",
+    "text": "none"
+  },
+  {
+    "rva": "ac5258",
+    "text": "OK"
+  },
+  {
+    "rva": "ac5208",
+    "text": "%[^*]*%d"
+  },
+  {
+    "rva": "ad47c8",
+    "text": "CServerManager::SendCommand"
+  },
+  {
+    "rva": "ac83a0",
+    "text": "CServerManager::SM_StopExecute_V30"
+  },
+  {
+    "rva": "ac8250",
+    "text": "CServerManager::SM_ExecuteOnce_V30"
+  },
+  {
+    "rva": "ac5330",
+    "text": "CServerManager::SM_CloseOneModule"
+  }
+]

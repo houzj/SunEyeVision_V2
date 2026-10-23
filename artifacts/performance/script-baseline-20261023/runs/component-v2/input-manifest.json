@@ -1,0 +1,200 @@
+{
+  "scope": "isolated original components, NOT full application UI; v2 waits for VM reference readiness; 5 fresh processes per case",
+  "environment": {
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+    "processor": "AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD"
+  },
+  "files": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.AvalonEdit.dll",
+      "sha256": "7d3766163f900ef0181e40f24748f05fafce6593095e4f8e841192d48dc16912"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.Cecil.dll",
+      "sha256": "8bdb7d42499f88a4f70f0847dda17115df8c93e0fd747741f99cde9b1b494bc7"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.CSharp.dll",
+      "sha256": "ad514750bd9d1fe737363d2fe22765f58c94991397239f9d69e1c84c67684ecd"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.dll",
+      "sha256": "d15ed6dddce2250d948bca95794c1877e807b61f62103bf246db50fd09954ed7"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.IKVM.dll",
+      "sha256": "9591ffda9106e27ae9a399a60f2c2c984a8defef597a4a3e237071e06fc18690"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.NRefactory.Xml.dll",
+      "sha256": "ffd7b0665b7d2783647315d5b51abb29c8c8edfdb356683c0347d6c153c32593"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.WpfDesign.Designer.dll",
+      "sha256": "074724f334c0530723c9e943f660468427570ef863df11a013e1cc2f510c1716"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.WpfDesign.dll",
+      "sha256": "fd30fd92035669bf15a005cc9b126e75dbb66c330c2d56e470a9fceffd92a565"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\ICSharpCode.WpfDesign.XamlDom.dll",
+      "sha256": "f5e813752ce3e5f9f53a5205b2ebd821b9fb6b9b65268cc8b8037911ade04ed5"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\IKVM.Reflection.dll",
+      "sha256": "b6d04fc60f4e1d2a226f2587cc913668b3b9c2bb7386bc9e151eb8f03eee2860"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\Mono.Cecil.dll",
+      "sha256": "0fdf95700289545356c16a9f0e7fb5fd7816dbb33131d9be48b370272a0c1536"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\vm-binaries\\VM.CodeCompletion.dll",
+      "sha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Humanizer.dll",
+      "sha256": "d6853075547d7e303efd60354d911a2ff18edba582cda2fa59d91a2e5dcf9e98"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.AnalyzerUtilities.dll",
+      "sha256": "27300b349ae0c552ccb9bea18baf55b1fc99a517b0d4e15e557af4d3a4bff119"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.CSharp.dll",
+      "sha256": "cfb5f2785c30485eda803d58fb8330d737cb07d469cd3d7bc1113d58e8d8e4bb"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.CSharp.Features.dll",
+      "sha256": "41d62b24232af6e896b372e6bb4d1ea9066ce40229388fb55b221fdfda124fc5"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+      "sha256": "c63f6d8fdb79e443c37cce6a2248e04bfe2c82d4bda24b6c01ff1420e6a728b3"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.dll",
+      "sha256": "0a7fb1d94e0e7f46798b138caa67e5d5fb8fb98fd31b5294c917def057ab3d80"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.Elfie.dll",
+      "sha256": "8ec0e18ac570157b3863f70035b644925d89996ad901f31ef918d2b0f7428941"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.Features.dll",
+      "sha256": "fc743c40512353992ff24c80159b966ee879da4e2538eeeb693e489c7a5ecddb"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.Scripting.dll",
+      "sha256": "7c3973a0997a1901c4f5978ef901e3ae96ddb780dead70a42f65f2e3f6f23e8f"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.CodeAnalysis.Workspaces.dll",
+      "sha256": "32402baa9383afd30e660af0bd3d23bdb7e596207afeac8c6b3ed6f6a5ca6f1d"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.DiaSymReader.dll",
+      "sha256": "7f3e7543321ff4c2675b94e56a4a32c935c11c82fcc60d4f6cb611cb0a8daadc"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\System.Composition.AttributedModel.dll",
+      "sha256": "0f403e98d8bad390b970704a93aa532042409f499032823cac47e3004bad9c8a"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\System.Composition.Convention.dll",
+      "sha256": "88e716224482a702e3d44f02e6311b9d91fce9af506abf0482e8c5f82379034f"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\System.Composition.Hosting.dll",
+      "sha256": "8d9a239c7b03ce4a047ed0abd9e835db0feeaaa16c157e7d308603d03efb7ebc"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\System.Composition.Runtime.dll",
+      "sha256": "324acdfc86c5adaa12e9c4f40deacf1e9f45ac2e84e542a02d130e7380f79d6e"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\System.Composition.TypedParts.dll",
+      "sha256": "3100191a1448b9a613e04a63b65899cf74371fc2f5c03315aa40ab53468c7a24"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\BenchReference.dll",
+      "sha256": "356b227825b1e60615809016a31002ec59fa33355179c83597328ff01b6ed153"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\VmBenchReady.exe",
+      "sha256": "5eb5ee5017091f1fd3fc8857bbc83f5dd9247d65478e862d68ee6ffe5f14807a"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\SelfBench.dll",
+      "sha256": "42b6d24415683d1c9f2a13ababf71f9e10d17e58ac263108251652cc32e60785"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\script-100.cs",
+      "sha256": "7d4cf9cbb265ddcd7bf8b7fb45ef4646f6974b259582ad89810537f6644672c5"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\script-1000.cs",
+      "sha256": "db0665fd2ba69b68eb6381108dfbd5d1cbfd081f2c0c21162475059f3d9d0a99"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\script-5000.cs",
+      "sha256": "b312cae1d5e972475fd25fa150a43e0edec1a1b6512ba78f238a8f21829a298c"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\VmBenchReady.cs",
+      "sha256": "0970afef5064799ccaa1c62c17f7be2e908cfba16ba1a255cd2226131d3408ed"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\Program.cs",
+      "sha256": "bb9bbd0cc65ee7b55bf6b1ef45b25d2702760ec9bac8dad8af3a1ab24ddbd5cc"
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\mscorlib.dll",
+      "sha256": "3babbebd1d1bee319f6109ea066d1ab5d5fc3c7b493cd1427ccf910bb738902d"
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System\\v4.0_4.0.0.0__b77a5c561934e089\\System.dll",
+      "sha256": "5a6459e838f4d9b25360b73efc6e2b495a5514c6230b8f790d61b6257828c37b"
+    },
+    {
+      "path": "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Core\\v4.0_4.0.0.0__b77a5c561934e089\\System.Core.dll",
+      "sha256": "7997bdad8f9a7244078cc5fa4e764987bcd34badd6eb4473290be44da08e3e1c"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\BenchReference.dll",
+      "sha256": "356b227825b1e60615809016a31002ec59fa33355179c83597328ff01b6ed153"
+    }
+  ],
+  "references": [
+    "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\mscorlib.dll",
+    "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System\\v4.0_4.0.0.0__b77a5c561934e089\\System.dll",
+    "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Core\\v4.0_4.0.0.0__b77a5c561934e089\\System.Core.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\BenchReference.dll"
+  ],
+  "sourceCases": [
+    {
+      "linesLabel": 100,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\script-100.cs",
+      "sha256": "7d4cf9cbb265ddcd7bf8b7fb45ef4646f6974b259582ad89810537f6644672c5"
+    },
+    {
+      "linesLabel": 1000,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\script-1000.cs",
+      "sha256": "db0665fd2ba69b68eb6381108dfbd5d1cbfd081f2c0c21162475059f3d9d0a99"
+    },
+    {
+      "linesLabel": 5000,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\script-5000.cs",
+      "sha256": "b312cae1d5e972475fd25fa150a43e0edec1a1b6512ba78f238a8f21829a298c"
+    }
+  ],
+  "definitions": {
+    "processFirst": "new benchmark process, OS filesystem cache uncontrolled; NOT proven disk-cold",
+    "completion": "same source and caret, explicit Ctrl+Space query; first + 20 repeated same-document queries",
+    "compile": "first and two forced recompiles after language preparation; no application result cache, VM CodeDom file output vs Roslyn memory output",
+    "open": "application UI not measured; service/document preparation is NOT window opening",
+    "capability": "Append candidate required, member counts may differ; not full language capability equivalence"
+  }
+}

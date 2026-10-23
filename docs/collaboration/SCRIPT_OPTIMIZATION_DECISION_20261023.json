@@ -1,0 +1,154 @@
+{
+  "id": "SCRIPT-OPTIMIZATION-DECISION-01",
+  "status": "design-frozen-not-implemented",
+  "recommendation": "A：保留Roslyn语义与编译，按会话/引用快照/版本任务重构集成",
+  "reason": "先比较后选择：共同能力、现代语法、外部类型上下文与长文重复查询，不能用部分首次查询优势替代完整能力。A当前首次成本真实存在，整改收益须以后产品验收证明。",
+  "alternatives": [
+    {
+      "id": "B",
+      "decision": "本批不换为已测VM/NRefactory包装与CodeDOM栈",
+      "advantage": "部分小脚本首次查询及组件编译更快",
+      "cost": "所测共同外部类型上下文缺候选；现代模式变量缺；当前Framework CodeDOM现代4语法失败、旧语法正控制成功。适配补洞、语言降级与维护成本没有证明优于A",
+      "limit": "不是所有轻量引擎的全局结论；未测试的新引擎另需同矩阵决策"
+    },
+    {
+      "id": "C",
+      "decision": "本批不采用NRefactory语义+Roslyn编译混合",
+      "advantage": "理论上可分别利用组件优势",
+      "cost": "保留语义理解与编译语法差异、双引用/诊断/版本适配及维护成本；无完整组合性能证据",
+      "limit": "未构建组合，不把独立组件耗时相加当总成绩"
+    }
+  ],
+  "contracts": {
+    "session": "每编辑会话一个Owner和文档版本；共享不可变MEF/元数据，不共享可变编辑状态。关闭取消会话任务，迟到结果不得访问已关闭视图。",
+    "visible": "正确文本及基础语法显示后即可编辑；首屏语义优先，其余后台，不以全文分类完成作为Show前置。引用未就绪有明确状态，不能显示过时语义。",
+    "reference": "补全/诊断/编译使用同一不可变引用快照：规范路径、程序集身份、内容SHA及输入输出/生成代码合同版本。用户引用增删及同名替换生成新代次，缓存显式失效；不盲减默认必需引用。",
+    "query": "补全高于后台诊断/预热；传递取消令牌，返回结果还需匹配会话、文档版本、引用代次和查询代次，合作取消不等立即停止；缓存只覆盖其版本和位置语义。",
+    "compile": "状态为未准备/排队/编译中/成功/失败/取消/释放。源码+生成字段/IO合同+引用内容+编译选项+编译器身份共同键；同键共享一次编译任务。执行只能取当前快照成功产物，失败不误用旧DLL，不静默报成功。",
+    "execution": "执行前固定输入参数与产物版本；ALC/程序集可复用但保持现有逐次用户实例语义。Init/Process异常或取消也须finally清理；Release失败单独报告，不发布本轮成功。预热不实例化用户脚本。",
+    "ownership": "应用拥有只读共享基础服务；编辑会话拥有Workspace/任务；运行拥有用户实例和输入输出上下文；沙箱池拥有可卸载加载上下文，所有关闭/替换有确定释放策略。",
+    "timing": "记录准备、引用、首屏、首补全、排队、真实编译、缓存命中、加载/构造、Init/Process/Release；缓存命中不能当真实编译时间，取消与空候选不能当提速。"
+  },
+  "batches": [
+    {
+      "id": "S1",
+      "depends": [],
+      "scope": "建立会话/版本/引用快照及分段计时，消除源码与引用缓存身份缺口",
+      "files": [
+        "src/CommonControl/ScriptEditorCore.xaml.cs",
+        "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/SharedMetadataReferenceProvider.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs"
+      ],
+      "newFiles": [
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptReferenceSnapshot.cs",
+        "src/CommonControl/ScriptAnalysisSession.cs"
+      ]
+    },
+    {
+      "id": "S2",
+      "depends": [
+        "S1"
+      ],
+      "scope": "窗口先可编辑/首屏分类、统一查询优先与取消、编译任务合并",
+      "files": [
+        "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "src/CommonControl/ScriptEditorCore.xaml.cs",
+        "src/CommonControl/SemanticHighlighter.cs",
+        "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs"
+      ],
+      "newFiles": [
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompilationCoordinator.cs"
+      ]
+    },
+    {
+      "id": "S3",
+      "depends": [
+        "S1",
+        "S2"
+      ],
+      "scope": "版本执行门、异常释放与迟到结果保护、独立固定包验收",
+      "files": [
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs",
+        "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs"
+      ]
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "SA01",
+      "assert": "新进程与再次打开均先显示正确代码且可输入；不等待全文分类，超512行滚动/首屏无重复预填淘汰",
+      "measure": "同机固定Release与数据，至少10新进程/20再次打开；记录可见/可输入/语义就绪，设计目标可输入p95<=500ms，未达必须报告不能标性能通过"
+    },
+    {
+      "id": "SA02",
+      "assert": "共同矩阵所有既有Roslyn正确候选不退化，自动dot与CtrlSpace分别验证；无候选协议单列"
+    },
+    {
+      "id": "SA03",
+      "assert": "快速编辑/换光标/换引用后旧查询结果不展示，取消令牌到达引擎，诊断预热不饿死当前补全"
+    },
+    {
+      "id": "SA04",
+      "assert": "同名不同内容DLL替换和引用增删使语义/编译/加载代次同时失效，旧程序集产物不能运行"
+    },
+    {
+      "id": "SA05",
+      "assert": "同键并发预编译与执行只编译一次；新版本独立，失败/取消不标成功且不跑旧代码"
+    },
+    {
+      "id": "SA06",
+      "assert": "点击执行与预编译/确认不阻塞UI调度；任务状态可观察，错误定位与当前源码一致"
+    },
+    {
+      "id": "SA07",
+      "assert": "构造/Init/Process抛错及取消均调用应有清理，Release再抛错单独报告；本轮无成功结果发布"
+    },
+    {
+      "id": "SA08",
+      "assert": "关闭/切换/关窗后无迟到UI写入；100轮打开执行关闭后会话任务和用户实例活跃计数为0；同代码只复用一项，变更代码超过容量后池保持既有上限16，运行租约结束后淘汰项WeakReference可在受控GC探针中回收；不得用进程内存一张截图替代释放验证"
+    },
+    {
+      "id": "SA09",
+      "assert": "保留逐次实例Init/Process/Release行为与现有全局变量传入语义，不借性能改变脚本字段持久性"
+    },
+    {
+      "id": "SA10",
+      "assert": "最小/默认/业务引用三组重新跑准备/首查询/5次重复与编译；合法候选与编译先通过，成对样本改前后比较；默认热补全p95<=150ms为实施验收目标，组件测试不能代替UI"
+    },
+    {
+      "id": "SA11",
+      "assert": "缓存命中/真实Emit/加载/构造与运行分别计时，输入SHA/引用SHA/构建身份完整；不将模块运行ms标为编译耗时"
+    },
+    {
+      "id": "SA12",
+      "assert": "全量Release构建及无设备隔离独立验收；VS设计时和用户视觉结果单列，失败修订新身份定向回归"
+    }
+  ],
+  "excluded": [
+    "全工具改造",
+    "旧方案迁移/旧插件兼容",
+    "完整复刻VM",
+    "替换算法/设备协议",
+    "承诺未测的性能倍数"
+  ],
+  "remainingVMUnknowns": [
+    {
+      "topic": "实际运行进程补全DLL副本",
+      "disposition": "保留未知，组件成绩绑定已测myLibs SHA；不阻止A选型，因为不依赖VM全应用速度归因"
+    },
+    {
+      "topic": "SDK间接分发到ShellModule及宿主DestroyModule全部调用",
+      "disposition": "原版全域恢复未完成；不复制未知机制。自研版本执行门和明确Owner独立满足合同，故不阻止本设计决策"
+    },
+    {
+      "topic": "VM引用更新/后台编译竞态的运行频率",
+      "disposition": "静态风险非复现；推荐按自研正确性合同重做，频率不决定选型"
+    }
+  ],
+  "reopenEngineDecision": "如果A完成上述集成改造后，合法能力通过但目标性能仍失败，按同样例同引用另测具体替代引擎；必须证明语言/引用/诊断一致和端到端净收益，不能只以首查询成绩替换。"
+}

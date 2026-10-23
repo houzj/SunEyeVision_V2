@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "records": 696,
+  "pages": 134,
+  "bytes": 414110,
+  "topics": [
+    "现状分析",
+    "目标架构",
+    "框架设计",
+    "SDK设计",
+    "能力对照",
+    "优化方案",
+    "关系图解"
+  ],
+  "source": "Canonical current topic pages; short visible headings/excerpts only. Scripts, styles, navigation, details, tables, history, audits and snapshots excluded.",
+  "canonicalPages": 696,
+  "legacyFallbacks": [],
+  "remoteFetch": false,
+  "thirdParty": false
+}

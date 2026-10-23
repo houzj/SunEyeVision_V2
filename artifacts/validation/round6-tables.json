@@ -1,0 +1,84 @@
+{
+  "resources": {
+    "heads": [
+      "对象类别",
+      "VM分配、最后读者与释放",
+      "SunEye分配、最后读者与释放",
+      "具体成本 / 当前判定"
+    ],
+    "rows": [
+      [
+        "原始帧",
+        "相机/算法提供者未统一恢复。434d0查询分派不是原始帧所有权证明；不能以映射分配代替源帧分配。<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round2-resources-trace.txt\">vm-round2-resources:1</a>",
+        "CameraFrame拥有IVisionImage；feed latest槽替换释放旧帧，取出转移，单轮using释放；驱动构帧/归还仍未全适配器核对。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/Devices/Camera/CameraFrame.cs\">CameraFrame.cs:15</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs\">CameraWorkflowFrameFeed.cs:127</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/WorkflowExecutionManager.cs\">WorkflowExecutionManager.cs:283</a>",
+        "保留单拥有者/单轮释放可审查；latest会丢帧，不能等同逐帧完整处理。双方源复用/最后读者仍未整体验收。"
+      ],
+      [
+        "算法缓存",
+        "默认b90d0/b9390分配复制，b9580复制查询，b96a0逐块delete[]再删表。扩展module+128及读写并发/最后读者未知。<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round3-core-trace.txt\">vm-round3-core:1</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round2-finalize-trace.txt\">vm-round2-finalize:1</a>",
+        "ImageLoad取frame.Image.GetPixelData→HalImage.CreateFromBytes并存OutputImage，形成结果复制。ToolResults基类未实现IDisposable，未认证统一结果替换/最后释放。<a href=\"file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs\">ImageLoadTool.cs:73</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/SunEyeVision.HalAdapter/HalImage.cs\">HalImage.cs:175</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/Execution/Results/ToolResults.cs\">ToolResults.cs:276</a>",
+        "复制隔离采集帧寿命但增加带宽/转换。自研结果最终所有权是明确缺口，不能宣称全面优于VM。"
+      ],
+      [
+        "传输映射",
+        "74b10先释放旧映射再Create/Map/memcpy；3090→74e00 Unmap/Close。其他客户端视图可能独立保活，全客户端确认未知。<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-proxy-buffer-trace.txt\">vm-proxy-buffer:49</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-mapping-release-trace.txt\">vm-mapping-release:50</a>",
+        "已读进程内采集链无同构跨进程映射；使用IVisionImage和字节复制。不能虚构共享映射管理器。<a href=\"file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs\">ImageLoadTool.cs:73</a>",
+        "VM该路径不是零拷贝，其价值在交换边界；未来引入映射需独立拥有者/lease/协议，当前不比较性能。"
+      ],
+      [
+        "查询结果",
+        "托管结果默认深复制，另有借用/共享模式；映射包装有显式DisposeRes，固定GCHandle释放不是像素归还；所有嵌套/异常释放未齐。<a href=\"#vm-image-release-evidence\">已有托管证据与源码入口</a>",
+        "NodeResultManager取结果图像；GetDisplayImages返回图像引用字典，不是统一Clone；CachedExecutionResult持BitmapSource引用无IDisposable。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/NodeResultManager.cs\">NodeResultManager.cs:236</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/Execution/Results/ToolResults.cs\">ToolResults.cs:390</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Performance/CachedExecutionResult.cs\">CachedExecutionResult.cs:25</a>",
+        "借用可省复制但增加读者协调；有Clone能力不能证明所有查询都克隆。双方查询对象与底层像素分开验收。"
+      ],
+      [
+        "显示图像",
+        "显示解绑/共享句柄仅局部证据，全部显示器、历史窗口、decorator最后读者未覆盖。控件关闭不等于算法缓冲释放。<a href=\"#ui-image\">现有显示比较</a>",
+        "路径一按尺寸/格式复用WriteableBitmap并直接返回；路径二转换桥byte[]/BitmapSource.Create。多视图历史、UI线程/最终引用未齐。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/NodeResultManager.cs\">NodeResultManager.cs:252</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Performance/ImageConverterPool.cs\">ImageConverterPool.cs:45</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/SunEyeVision.CvAdapter/CvVisionImageAdapter.cs\">CvVisionImageAdapter.cs:85</a>",
+        "预览可复用/丢旧帧，历史需独立快照。复用减少分配但有共享可变风险，独立快照增加内存/复制。"
+      ]
+    ],
+    "note": "<p><strong>验收：</strong>C06可按默认路径、五类对象及复制成本进入条件性评审，不能登记整包通过；C10仍需坐标/ROI、多视图和历史隔离。推荐先定义结果转移/借用/复制与最后读者，再决定统一可释放容器或图像lease，不能直接对所有字典引用Dispose。</p>"
+  },
+  "plugins": {
+    "heads": [
+      "阶段",
+      "VM真实合同",
+      "SunEye真实合同",
+      "取舍与验收边界"
+    ],
+    "rows": [
+      [
+        "发现、装载和创建",
+        "b54e0解析CreateModule/DestroyModule并存库、实例和函数；代表相机Create构造实际主虚表对象。<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round3-execute-trace.txt\">vm-round3-execute:2206</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round5-camera-trace.txt\">vm-round5-camera:5</a>",
+        "PluginManager通过noncollectible加载上下文扫描/注册；ToolRegistry锁内Activator创建；Engine执行快照经工厂创建并持有工具。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs\">PluginManager.cs:134</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.cs\">ToolRegistry.cs:206</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowExecutionEngine.cs\">WorkflowExecutionEngine.cs:863</a>",
+        "VM显式工厂配对便于审查，自研元数据/类型注册便于扩展；两者仍需实例销毁与失败回滚合同。"
+      ],
+      [
+        "标准节点删除",
+        "DeleteNode→已注册观察者slot18→b6fa0→b6670，在状态允许时调用记录DestroyModule。<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round4-registration-trace.txt\">vm-round4-registration:1</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round4-owner-trace.txt\">vm-round4-owner:169</a>",
+        "Workflow.RemoveNode移连接/节点并发事件；该入口未Dispose；IToolPlugin未定义释放契约，不能据此推断所有实例泄漏。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Workflow/Workflow.cs\">Workflow.cs:456</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/Core/IToolPlugin.cs\">IToolPlugin.cs:74</a>",
+        "VM标准删除已连销毁边界，自研目录删除与执行实例释放须分开追。不能把移除节点等同驱动已关闭。"
+      ],
+      [
+        "代表模块最终析构",
+        "相机Destroy1cf50→slot0/8cc0→8d90→9b00注销回调、等事件、清理成员/基类并删除对象；等待非零记录后继续。<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round5-camera-trace.txt\">vm-round5-camera:320</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round5-camera-dtor-trace.txt\">vm-round5-camera-dtor:20</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round5-camera-life-trace.txt\">vm-round5-camera-life:479</a>",
+        "工具执行实例、运行结果、相机会话并非同一对象；已证帧using释放，不证明所有工具实例/图像结果的最终清理。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowExecutionEngine.cs\">WorkflowExecutionEngine.cs:863</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/Devices/Camera/CameraFrame.cs\">CameraFrame.cs:36</a>",
+        "VM有分层清理，自研需补实例/结果释放边界。停止超时后销毁、不可取消任务、在途回调都未完整验收，不宣称某方安全胜出。"
+      ],
+      [
+        "相机会话与窗口所有权",
+        "上述代表相机清理体只认证该模块，驱动两个事件生产者及最后帧读者仍未知。<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round5-camera-life-trace.txt\">vm-round5-camera-life:530</a>",
+        "CameraRuntimeManager同相机gate内移会话/断连，finally DisposeAsync；CameraSession幂等释放Adapter并在finally通知拥有者；管理窗口关闭不释放方案运行时。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Cameras/Contracts/CameraRuntimeManager.cs\">CameraRuntimeManager.cs:209</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Cameras/Contracts/CameraSession.cs\">CameraSession.cs:28</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/Camera/CameraManagerViewModel.cs\">CameraManagerViewModel.cs:781</a>",
+        "应用级会话可避免关窗口误停生产；共享连接需要协调预览/执行/参数写入，驱动内部排空不能由DisposeAsync名称推断。"
+      ],
+      [
+        "库与程序集退出",
+        "条件MV_CC_UnloadGenTLLibrary不是插件FreeLibrary；平台插件库所有者、特殊销毁入口与全部类型未知。<a href=\"file:///D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-round5-camera-dtor-trace.txt\">vm-round5-camera-dtor:22</a>",
+        "UnloadPlugins清列表/catalog，ClearAll清类型/元数据；PluginLoadContext isCollectible:false且静态RegisteredContexts保留。日志“卸载”不代表程序集释放。<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs\">PluginManager.cs:218</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.cs\">ToolRegistry.cs:388</a>；<a href=\"file:///D:/MyWork/SunEyeVision_V2/src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs\">PluginLoadContext.cs:62</a>",
+        "noncollectible减少装载/类型协调，但升级依赖进程重启或另定隔离方案。可回收ALC也不解决驱动回调/原生资源，当前不要求全系统热卸载。"
+      ]
+    ],
+    "note": "<p><strong>验收与推荐：</strong>C08保持链路部分。标准VM删除边界与代表析构可评审；全实例销毁/驱动排空/库释放仍欠证。推荐先统一“实例、结果、会话、包目录、程序集”各自所有者和退出合同，再按产品升级需要决定可回收装载或进程隔离；不要把重构为可回收ALC当成资源释放修复。C14部署及C18相机完整采集策略另行验收。</p>"
+  }
+}

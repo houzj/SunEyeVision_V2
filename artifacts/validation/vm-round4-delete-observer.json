@@ -1,0 +1,21 @@
+{
+  "sha256": "45c57bc46f72fd1f9e0b3a6f9183ff974d14590cfd05ecf4e9fa97a4ff95ae9b",
+  "method": "Static direct-call and RTTI/vtable byte scan; candidate references need caller context",
+  "vtables": [
+    {
+      "reference": "2298d0",
+      "slot": 24,
+      "vtable": "2298b8",
+      "objectOffset": 0,
+      "type": ".?AVCModuleLoader@@"
+    },
+    {
+      "reference": "2298d0",
+      "slot": 64,
+      "vtable": "229890",
+      "objectOffset": 0,
+      "type": ".?AV?$_Ref_count@U_USER_MODULE_INFO@@@std@@"
+    }
+  ],
+  "directCalls": []
+}

@@ -1,0 +1,4396 @@
+{
+  "reviewed": 5,
+  "policy": "读取实现体并保留来源哈希；源码审读不是运行验收，VM声明不是原生实现。",
+  "tools": [
+    {
+      "id": "Condition",
+      "route": "混合整改",
+      "difference": "规则语义及输入门禁待对齐",
+      "layout": "规则表：输入绑定 → 数值范围/期望文本 → OK/NG → 目标节点；不是图像/ROI工具。",
+      "chain": "ConditionDebugControl.ExecuteTool → ConditionTool.ExecuteCore → ConditionInputResolver → TryMatchRule → NextNodeIds → 执行器控制信号剪枝",
+      "parameters": "每条规则有类型、输入、范围或期望文本、判定方向及目标节点。目标候选来自下游节点。",
+      "algorithm": "遍历所有规则，可同时命中多个目标；没有命中时无默认else。数值为闭区间，字符串为区分大小写等值；期望文本为空时非null即通过。",
+      "transfer": "节点结果解析为规则输入，输出是目标节点ID集合与命中规则名，不是图像。",
+      "cache": "本次执行新建结果并收集目标；此函数没有跨轮结果缓存。",
+      "release": "本工具不建立原生图像/连接；规则循环未见取消检查。外层异常/取消完成与旧结果清理仍需联查。",
+      "defect": "绑定数字字符串先命中IConvertible.ToDouble(null)，采用当前文化；常量解析采用InvariantCulture，解释规则不一致。局部绑定解析未检查源结果成功状态，端到端是否由引擎屏蔽仍待核。",
+      "vmKey": "Logic/IfBranchModule",
+      "vm": "原资源声明BranchMatch、CanSubscribe=False等；另一个Logic/IfModule是逻辑检测合同，不能合并为同一迁移对象。原生多命中/无命中实现仍缺。",
+      "change": "统一失败源门禁、有限数和文化转换；显式展示多命中/无命中规则。保留控制信号接口只基于其职责，不能据此判整体优于VM。",
+      "accept": "常量/绑定在不同Culture下同义；失败源、空/多元素数组、NaN/Infinity有明确诊断；多命中/无命中及取消边界可验。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.Condition/ConditionTool.cs",
+          "line": 41,
+          "token": "private static ConditionResults ExecuteCore",
+          "sha256": "68128eea9a8ff645af5e0d63eb1cdb8c80ff45ba1ef1d5332b47ffb26fe387ec",
+          "snippet": "        private static ConditionResults ExecuteCore(\r\n            ConditionParameters parameters,\r\n            IDictionary<string, ToolResults>? nodeResults,\r\n            ToolExecutionContext? context)\r\n        {\r\n            var sw = Stopwatch.StartNew();\r\n            var result = new ConditionResults\r\n            {\r\n                ToolName = \"条件分支\",\r\n                ToolId = \"Condition\",\r\n                Timestamp = DateTime.Now\r\n            };\r\n\r\n            if (parameters.Rules == null || parameters.Rules.Count == 0)\r\n            {\r\n                LogInfo(context, \"条件分支未配置任何规则，流程终止（不执行任何分支）\");\r\n                result.IsMatched = false;\r\n                sw.Stop();\r"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.Condition/ConditionTool.cs",
+          "line": 125,
+          "token": "convertible.ToDouble(null)",
+          "sha256": "68128eea9a8ff645af5e0d63eb1cdb8c80ff45ba1ef1d5332b47ffb26fe387ec",
+          "snippet": "                        numValue = convertible.ToDouble(null);\r\n                    }\r\n                    else if (inputValue is string strVal)\r\n                    {\r\n                        if (!double.TryParse(strVal, System.Globalization.NumberStyles.Float,\r\n                            System.Globalization.CultureInfo.InvariantCulture, out numValue))\r\n                        {\r\n                            throw new InvalidOperationException(\r\n                                $\"规则 '{rule.Name}' 输入值 \\\"{strVal}\\\" 无法转换为数值（RuleType={rule.RuleType}）。\");\r\n                        }\r\n                    }\r\n                    else\r\n                    {\r\n                        throw new InvalidOperationException(\r\n                            $\"规则 '{rule.Name}' 输入值类型 {inputValue.GetType().Name} 不支持数值比较。支持: 数值、数字字符串。\");\r\n                    }\r\n\r\n                    bool inRange = numValue >= rule.MinValue && numValue <= rule.MaxValue;\r"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.Condition/Models/ConditionInputResolver.cs",
+          "line": 42,
+          "token": "ResolveBinding",
+          "sha256": "92021d13c69774f19db4441d655eef628c723688b703d0ebcae9f0606c99aded",
+          "snippet": "                return ResolveBinding(nodeId, propertyPath, ruleName, nodeResults);\r\n            }\r\n\r\n            return ResolveConstant(inputText, ruleType, ruleName);\r\n        }\r\n\r\n        /// <summary>\r\n        /// 尝试按绑定表达式切分：① 含 '.' ② 节点ID段是合法 GUID。\r\n        /// 任一不满足 → 非绑定表达式（常量）。\r\n        /// </summary>\r\n        private static bool TrySplitBinding(string inputText, out string nodeId, out string propertyPath)\r\n        {\r\n            nodeId = string.Empty;\r\n            propertyPath = string.Empty;\r\n\r\n            if (string.IsNullOrEmpty(inputText))\r\n                return false;\r\n\r"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.Condition/Views/ConditionDebugControl.xaml",
+          "line": 94,
+          "token": "Rules",
+          "sha256": "16a6a605bc5113f1e81e60dafc942f27349e7c92cd772db47925ad2a4c778753",
+          "snippet": "        <DataGrid ItemsSource=\"{Binding Parameters.Rules, RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}}\"\r\n                  MaxHeight=\"450\">\r\n            <DataGrid.Columns>\r\n                <!-- 名称（只读，圆角标签样式，文字用主题主色） -->\r\n                <DataGridTemplateColumn Header=\"名称\" Width=\"60\">\r\n                    <DataGridTemplateColumn.CellTemplate>\r\n                        <DataTemplate>\r\n                            <Border Background=\"{DynamicResource ThemeTableRowHoverBackgroundBrush}\" CornerRadius=\"3\" Padding=\"8,3\"\r\n                                    HorizontalAlignment=\"Left\" VerticalAlignment=\"Center\">\r\n                                <TextBlock Text=\"{Binding Name}\" FontWeight=\"SemiBold\"\r\n                                           Foreground=\"{DynamicResource ThemeTextPrimaryBrush}\" FontSize=\"11\"/>\r\n                            </Border>\r\n                        </DataTemplate>\r\n                    </DataGridTemplateColumn.CellTemplate>\r\n                </DataGridTemplateColumn>\r\n                <!-- 条件：ParamBinding（绑定/常量，SyncEditingToSource=True 契约 C2） -->\r\n                <DataGridTemplateColumn Header=\"条件\" Width=\"150\">\r\n                    <DataGridTemplateColumn.CellTemplate>\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Models/Communication/BinaryPayload.cs",
+          "line": 9,
+          "token": "public sealed",
+          "sha256": "11a4cce015ae707e8978874de605e54c3ed7d1bfe0d10427869ffec3689cce8b",
+          "snippet": "public sealed class BinaryPayload\r\n{\r\n    private readonly byte[] _bytes;\r\n\r\n    public BinaryPayload(byte[] bytes)\r\n    {\r\n        ArgumentNullException.ThrowIfNull(bytes);\r\n        _bytes = (byte[])bytes.Clone();\r\n    }\r\n\r\n    public int Length => _bytes.Length;\r\n\r\n    /// <summary>Returns an owned copy so consumers cannot mutate another node's snapshot.</summary>\r\n    public byte[] ToArray() => (byte[])_bytes.Clone();\r\n\r\n    public string ToBase64() => Convert.ToBase64String(_bytes);\r\n\r\n    public override string ToString() => Convert.ToHexString(_bytes);\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Execution/Results/CommunicationToolResults.cs",
+          "line": 39,
+          "token": "PublishOutputs",
+          "sha256": "d5305a5d4e7b5f58e191c1be4a0e81f629ce68b77f81b16ab179b4327b977919",
+          "snippet": "    public void PublishOutputs(IReadOnlyDictionary<Guid, object?> values)\r\n    {\r\n        _values = new();\r\n        ArgumentNullException.ThrowIfNull(values);\r\n        if (values.Count != _fields.Length)\r\n            throw new ArgumentException(\"输出必须恰好覆盖配置字段。\", nameof(values));\r\n        var prepared = new Dictionary<Guid, object?>();\r\n        foreach (var field in _fields)\r\n        {\r\n            if (!values.TryGetValue(field.FieldId, out var value) || value == null)\r\n                throw new ArgumentException($\"输出字段 {field.Name} 缺少有效值。\", nameof(values));\r\n            var type = SdkTypeVocabulary.ToSystemType(field.VariableType)!;\r\n            if (!type.IsInstanceOfType(value) &&\r\n                !(value is Array array && array.GetType().GetElementType() == type))\r\n                throw new ArgumentException($\"输出字段 {field.Name} 需要 {field.VariableType}，实际 {value.GetType().Name}。\", nameof(values));\r\n            if (value is double scalar && !double.IsFinite(scalar) ||\r\n                value is double[] numbers && numbers.Any(n => !double.IsFinite(n)))\r\n                throw new ArgumentException($\"输出字段 {field.Name} 包含非有限数值。\", nameof(values));\r"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.Condition/Models/ConditionInputResolver.cs",
+          "line": 103,
+          "token": "private static object? ResolveConstant",
+          "sha256": "92021d13c69774f19db4441d655eef628c723688b703d0ebcae9f0606c99aded",
+          "snippet": "        private static object? ResolveConstant(string inputText, string ruleType, string ruleName)\r\n        {\r\n            switch (ruleType)\r\n            {\r\n                case \"Int\":\r\n                    if (int.TryParse(inputText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))\r\n                        return intValue;\r\n                    throw new InvalidOperationException(\r\n                        $\"规则 '{ruleName}' 的常量条件 \\\"{inputText}\\\" 无法解析为 Int 类型。请输入整数（如 1、-5）。\");\r\n\r\n                case \"Double\":\r\n                    if (double.TryParse(inputText, NumberStyles.Float, CultureInfo.InvariantCulture, out var doubleValue))\r\n                        return doubleValue;\r\n                    throw new InvalidOperationException(\r\n                        $\"规则 '{ruleName}' 的常量条件 \\\"{inputText}\\\" 无法解析为 Double 类型。请输入数字（如 3.5、-1.2）。\");\r\n\r\n                case \"String\":\r\n                    if (string.IsNullOrEmpty(inputText))\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Execution/Parameters/OutputVariableResolver.cs",
+          "line": 15,
+          "token": "public static",
+          "sha256": "a667e3fb7562e0aacb2a99b6f23505f577bf98072476fcaa3ba1861cfc7a9c1b",
+          "snippet": "    public static class OutputVariableResolver\r\n    {\r\n        /// <summary>\r\n        /// 从节点结果集中解析绑定值\r\n        /// </summary>\r\n        /// <param name=\"nodeResults\">全量节点结果字典</param>\r\n        /// <param name=\"nodeId\">源节点 ID</param>\r\n        /// <param name=\"propertyPath\">属性路径，如 \"ResultImage\" / \"CircleFound.Radius\" / \"Results[0].X\"</param>\r\n        /// <returns>解析到的值，未命中抛异常</returns>\r\n        public static object? Resolve(\r\n            IDictionary<string, ToolResults> nodeResults,\r\n            string nodeId,\r\n            string propertyPath)\r\n        {\r\n            if (!nodeResults.TryGetValue(nodeId, out var result) || result is null)\r\n                throw new InvalidOperationException(\r\n                    $\"绑定源节点 '{nodeId}' 不在执行结果中。可用节点: [{string.Join(\", \", nodeResults.Keys)}]\");\r\n\r"
+        }
+      ],
+      "status": "自研局部实现已静态核对；VM仅原始资源合同对照；运行/完整寿命未验收",
+      "vmEvidence": {
+        "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/tool-plugin-map.json",
+        "sha256": "a18c37faeec3fe5ae8dbfb26066298d0d085a17841dfafcabc54df9d1a9d918c",
+        "key": "Logic/IfBranchModule",
+        "declarations": {
+          "algorithmParameters": [],
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ModuRunTime",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ModuStatus",
+                "ValueType": "int",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "BranchMatch",
+                "StructName": "BranchMatch",
+                "ValueType": "string",
+                "IsForce": "true",
+                "Visible": "True",
+                "CanSubscribe": "False"
+              },
+              "text": "",
+              "children": []
+            }
+          ],
+          "uiTabs": [
+            {
+              "Name": "Tab_Basic Params"
+            }
+          ],
+          "uiControls": [
+            {
+              "type": "HeadBar",
+              "name": "ListHead"
+            },
+            {
+              "type": "ButtonSelecter_IfBranch",
+              "name": "RangeConFFields"
+            }
+          ],
+          "sharedUiGroups": [
+            "BottomCommandGroup"
+          ],
+          "declaredLibraries": null
+        },
+        "policy": "仅提取原资源声明；不使用currentImplementation推定VM原算法"
+      }
+    },
+    {
+      "id": "ProtocolAssemble",
+      "route": "原文本模式整改＋按需新增",
+      "difference": "VM声明脚本模式；当前仅文本拼接",
+      "layout": "组装行列表、输入绑定、分隔符、增删/上下移动；结果由通信分析面板显示。",
+      "chain": "ProtocolAssembleEditor.ExecuteTool → ProtocolAssembleTool.Run → 冻结PartId/InputText行 → ProtocolBindingInput → Format → Join → UTF8 → PublishOutputs",
+      "parameters": "每行有稳定PartId和输入表达式；分隔符与行顺序决定输出。空/重复身份拒绝。",
+      "algorithm": "string/int/long/有限float/double转文本后拼接，再严格UTF8编码；不是任意对象序列化或直接向设备发送。",
+      "transfer": "同时输出稳定字段的文本和BinaryPayload；分析行用于查看过程，不是可绑定输出。",
+      "cache": "每次新建行数组、文本和字节载荷，无跨轮算法缓存。BinaryPayload构造与ToArray分别复制字节。",
+      "release": "纯托管字符串/字节；每行和发布前检查取消，失败/取消清空业务输出，不建立图像或设备句柄。",
+      "defect": "当前没有字节字段布局、校验和、脚本模式；未见本函数载荷大小准入。不能标完整覆盖VM组装。",
+      "vmKey": "Communication/DataAssembleModule",
+      "vm": "原声明AssembleType、Separator、PyScriptPath与文本/字节输出；声明证明模式入口，不证明脚本执行隔离和错误路径。",
+      "change": "先定义最大载荷和拒绝策略；文本/字节布局/脚本分成显式模式。脚本待需求与原实现材料后设计自有隔离，不能直接复用未知代码。",
+      "accept": "Unicode和非法代理字符、空项/分隔符、重排行、取消、失败源和载荷上限；文本与UTF8字节一一对应。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.ProtocolAssemble/ProtocolAssembleTool.cs",
+          "line": 18,
+          "token": "public CommunicationToolResults Run",
+          "sha256": "8ade152a6b24d24368b6b6f785bbc731d0d930f398e5c67f634ead04de1756f2",
+          "snippet": "    public CommunicationToolResults Run(ProtocolAssembleParameters parameters)\r\n    {\r\n        var result = new CommunicationToolResults(ProtocolAssembleParameters.OutputFields) { ToolId = \"ProtocolAssemble\", ToolName = \"协议组装\" };\r\n        var watch = Stopwatch.StartNew();\r\n        var rows = new List<CommunicationAnalysisRow>();\r\n        try\r\n        {\r\n            var parts = parameters.Parts?.Select(p => (p.PartId, p.InputText)).ToArray()\r\n                ?? throw new FormatException(\"组装列表不存在。\");\r\n            var separator = parameters.Separator ?? throw new FormatException(\"分隔符不能为null。\");\r\n            if (parts.Length == 0) throw new FormatException(\"请至少配置一项组装内容。\");\r\n            if (parts.Any(p => p.PartId == Guid.Empty) || parts.Select(p => p.PartId).Distinct().Count() != parts.Length)\r\n                throw new FormatException(\"组装项身份无效或重复。\");\r\n            var textParts = new List<string>();\r\n            foreach (var part in parts)\r\n            {\r\n                parameters.Context?.CancellationToken.ThrowIfCancellationRequested();\r\n                var value = ProtocolBindingInput.Resolve(part.InputText, parameters.NodeResults, parameters.Context?.GlobalVariables);\r"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.ProtocolAssemble/ProtocolAssembleTool.cs",
+          "line": 64,
+          "token": "private static string Format",
+          "sha256": "8ade152a6b24d24368b6b6f785bbc731d0d930f398e5c67f634ead04de1756f2",
+          "snippet": "    private static string Format(object value) => value switch\r\n    {\r\n        string text => text,\r\n        long number => number.ToString(CultureInfo.InvariantCulture),\r\n        int number => number.ToString(CultureInfo.InvariantCulture),\r\n        double number when double.IsFinite(number) => number.ToString(\"R\", CultureInfo.InvariantCulture),\r\n        float number when float.IsFinite(number) => number.ToString(\"R\", CultureInfo.InvariantCulture),\r\n        _ => throw new FormatException($\"不支持自动文本组装类型：{value.GetType().Name}。\")\r\n    };\r\n}\r\n"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.ProtocolAssemble/Views/ProtocolAssembleEditor.xaml",
+          "line": 29,
+          "token": "PartsGrid",
+          "sha256": "f67b423a392cba4b409049a71a749b146140496ef3c48c091ae78c65bb2d7081",
+          "snippet": "    <DataGrid x:Name=\"PartsGrid\" ItemsSource=\"{Binding Parts}\" AutoGenerateColumns=\"False\" MaxHeight=\"{Binding ActualHeight, ElementName=PartsListViewport, Converter={StaticResource ListViewport}}\" MinHeight=\"0\">\r\n     <DataGrid.Columns>\r\n      <DataGridTemplateColumn Header=\"序号\" Width=\"46\"><DataGridTemplateColumn.CellTemplate><DataTemplate>\r\n       <TextBlock Style=\"{StaticResource ProtocolFieldText}\" Text=\"{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=(comm:ProtocolRowPosition.Index), Converter={StaticResource CommunicationOrdinal}}\"/>\r\n      </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>\r\n      <DataGridTemplateColumn Header=\"内容\" Width=\"*\" MinWidth=\"180\"><DataGridTemplateColumn.CellTemplate><DataTemplate>\r\n       <controls:ParamBinding Style=\"{StaticResource ProtocolBindingInputStyle}\" AllowedDataTypes=\"{x:Static comm:CommunicationBindingTypes.Assemble}\" BindingSource=\"{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}\" SyncEditingToSource=\"True\"\r\n        AvailableDataSources=\"{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=AvailableDataSources}\"/>\r\n      </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>\r\n      <DataGridTemplateColumn Header=\"操作\" Width=\"108\"><DataGridTemplateColumn.CellTemplate><DataTemplate>\r\n       <StackPanel Orientation=\"Horizontal\" HorizontalAlignment=\"Center\">\r\n        <Button Content=\"↑\" Style=\"{StaticResource ProtocolRowAction}\" Click=\"MoveUp_Click\" ToolTip=\"上移\" AutomationProperties.Name=\"上移组装项\">\r\n         <Button.IsEnabled><MultiBinding Converter=\"{StaticResource CanMove}\" ConverterParameter=\"-1\"><Binding RelativeSource=\"{RelativeSource AncestorType=DataGridRow}\" Path=\"(comm:ProtocolRowPosition.Index)\"/><Binding RelativeSource=\"{RelativeSource AncestorType=controls:ToolDebugControlBase}\" Path=\"DataContext.Parts.Count\"/></MultiBinding></Button.IsEnabled>\r\n        </Button>\r\n        <Button Content=\"↓\" Style=\"{StaticResource ProtocolRowAction}\" Click=\"MoveDown_Click\" ToolTip=\"下移\" AutomationProperties.Name=\"下移组装项\">\r\n         <Button.IsEnabled><MultiBinding Converter=\"{StaticResource CanMove}\" ConverterParameter=\"1\"><Binding RelativeSource=\"{RelativeSource AncestorType=DataGridRow}\" Path=\"(comm:ProtocolRowPosition.Index)\"/><Binding RelativeSource=\"{RelativeSource AncestorType=controls:ToolDebugControlBase}\" Path=\"DataContext.Parts.Count\"/></MultiBinding></Button.IsEnabled>\r\n        </Button>\r\n        <Button Content=\"×\" Style=\"{StaticResource ProtocolDeleteAction}\" Click=\"DeletePart_Click\" ToolTip=\"删除\" AutomationProperties.Name=\"删除组装项\"/>\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Models/Communication/BinaryPayload.cs",
+          "line": 9,
+          "token": "public sealed",
+          "sha256": "11a4cce015ae707e8978874de605e54c3ed7d1bfe0d10427869ffec3689cce8b",
+          "snippet": "public sealed class BinaryPayload\r\n{\r\n    private readonly byte[] _bytes;\r\n\r\n    public BinaryPayload(byte[] bytes)\r\n    {\r\n        ArgumentNullException.ThrowIfNull(bytes);\r\n        _bytes = (byte[])bytes.Clone();\r\n    }\r\n\r\n    public int Length => _bytes.Length;\r\n\r\n    /// <summary>Returns an owned copy so consumers cannot mutate another node's snapshot.</summary>\r\n    public byte[] ToArray() => (byte[])_bytes.Clone();\r\n\r\n    public string ToBase64() => Convert.ToBase64String(_bytes);\r\n\r\n    public override string ToString() => Convert.ToHexString(_bytes);\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Execution/Results/CommunicationToolResults.cs",
+          "line": 39,
+          "token": "PublishOutputs",
+          "sha256": "d5305a5d4e7b5f58e191c1be4a0e81f629ce68b77f81b16ab179b4327b977919",
+          "snippet": "    public void PublishOutputs(IReadOnlyDictionary<Guid, object?> values)\r\n    {\r\n        _values = new();\r\n        ArgumentNullException.ThrowIfNull(values);\r\n        if (values.Count != _fields.Length)\r\n            throw new ArgumentException(\"输出必须恰好覆盖配置字段。\", nameof(values));\r\n        var prepared = new Dictionary<Guid, object?>();\r\n        foreach (var field in _fields)\r\n        {\r\n            if (!values.TryGetValue(field.FieldId, out var value) || value == null)\r\n                throw new ArgumentException($\"输出字段 {field.Name} 缺少有效值。\", nameof(values));\r\n            var type = SdkTypeVocabulary.ToSystemType(field.VariableType)!;\r\n            if (!type.IsInstanceOfType(value) &&\r\n                !(value is Array array && array.GetType().GetElementType() == type))\r\n                throw new ArgumentException($\"输出字段 {field.Name} 需要 {field.VariableType}，实际 {value.GetType().Name}。\", nameof(values));\r\n            if (value is double scalar && !double.IsFinite(scalar) ||\r\n                value is double[] numbers && numbers.Any(n => !double.IsFinite(n)))\r\n                throw new ArgumentException($\"输出字段 {field.Name} 包含非有限数值。\", nameof(values));\r"
+        }
+      ],
+      "status": "自研局部实现已静态核对；VM仅原始资源合同对照；运行/完整寿命未验收",
+      "vmEvidence": {
+        "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/tool-plugin-map.json",
+        "sha256": "a18c37faeec3fe5ae8dbfb26066298d0d085a17841dfafcabc54df9d1a9d918c",
+        "key": "Communication/DataAssembleModule",
+        "declarations": {
+          "algorithmParameters": [
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "AssembleType",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Separator",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": ",",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "SubscribeField",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            }
+          ],
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ModuRunTime",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ModuStatus",
+                "ValueType": "int",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "AssembleResult",
+                "ValueType": "string",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "AssembleResultHex",
+                "ValueType": "byte",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ],
+          "uiTabs": [
+            {
+              "Name": "Tab_Basic Params"
+            }
+          ],
+          "uiControls": [
+            {
+              "type": "RadioSelecterEx2",
+              "name": "AssembleType"
+            },
+            {
+              "type": "ComboxEditDataAssembly",
+              "name": "Separator"
+            },
+            {
+              "type": "OpenFileForDataShellDialog",
+              "name": "PyScriptPath"
+            },
+            {
+              "type": "HeadBar",
+              "name": "FiledHead"
+            },
+            {
+              "type": "ProtocolInputParam",
+              "name": "InputParams"
+            }
+          ],
+          "sharedUiGroups": [],
+          "declaredLibraries": null
+        },
+        "policy": "仅提取原资源声明；不使用currentImplementation推定VM原算法"
+      }
+    },
+    {
+      "id": "ProtocolParse",
+      "route": "混合优化",
+      "difference": "缺脚本模式；字节/字段合同不同",
+      "layout": "文本/字节模式 → 输入/编码/分隔符 → 输出字段表 → 所选字段字节范围/字节序/解释；不是ROI界面。",
+      "chain": "ProtocolParseEditor.ExecuteTool → ProtocolParseTool.Run → 冻结字段 → ProtocolBindingInput → Split或ProtocolValueCodec → PublishOutputs",
+      "parameters": "稳定字段GUID、名称、类型、起止字节、字节序和数值解释。行顺序在文本模式中决定片段映射，不只是显示排序。",
+      "algorithm": "文本保留空片段，不足报错、多出只作分析；字节模式显式HEX/文本，起止含两端，经Codec解码后int转long、float转double。",
+      "transfer": "先收集所有字段，再完整发布；输出字段与分析行分离。来源失败被ProtocolBindingInput拒绝。",
+      "cache": "字段本轮冻结为数组；字节转换及切片有复制；无图像/原生缓存。",
+      "release": "每字段和发布前检查取消；失败/取消ClearOutputs。无设备所有权，纯托管字节不需要native Dispose。",
+      "defect": "没有原声明的脚本解析模式。重排字段会改变文本映射，必须提示；截断多字节字符、符号和字节序需可视说明。",
+      "vmKey": "Communication/DataAnalysisModule",
+      "vm": "原声明AnalysisType、PyScriptPath、txt/shell/byteOutputParams；原生解析分派、脚本执行及释放缺实现证据。",
+      "change": "增加字节范围预览和字段变更影响提示；按需求补类型/脚本，不用VM字段名称冒充兼容。现有严格类型仍需逐边界验收。",
+      "accept": "不足/多余/空片段、多字节UTF8截断、1–4字节整数符号、四字节序、NaN、字段重排/删除后的绑定诊断。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.ProtocolParse/ProtocolParseTool.cs",
+          "line": 15,
+          "token": "public CommunicationToolResults Run",
+          "sha256": "e1bfcf32809766d7f980738c3fe8460898bbd5070fed02fd05ec67a26753f371",
+          "snippet": "    public CommunicationToolResults Run(ProtocolParseParameters parameters)\r\n    {\r\n        var result = new CommunicationToolResults();\r\n        var rows = new List<CommunicationAnalysisRow>();\r\n        var watch = Stopwatch.StartNew();\r\n        try\r\n        {\r\n            var fields = parameters.Outputs.Select(f => new Field(f.FieldId, f.Name, f.DataType,\r\n                f.Start, f.End, f.Order, f.NumericInterpretation)).ToArray();\r\n            result = new CommunicationToolResults(fields.Select(f => new CommunicationOutputField(f.Id,\r\n                f.Name, ProtocolParseField.Vocabulary(f.Type))));\r\n            if (fields.Length == 0) throw new FormatException(\"请至少配置一个输出字段。\");\r\n            var mode = parameters.Mode; var format = parameters.InputFormat; var ascii = parameters.AsciiData;\r\n            var separator = parameters.Separator; var encoding = parameters.StringEncoding;\r\n            var source = ProtocolBindingInput.Resolve(parameters.InputText, parameters.NodeResults, parameters.Context?.GlobalVariables);\r\n            var values = new Dictionary<Guid, object?>();\r\n            if (mode == \"Text\")\r\n            {\r"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.ProtocolParse/Views/ProtocolParseEditor.xaml",
+          "line": 80,
+          "token": "OutputsGrid",
+          "sha256": "79b0a0ce12e16cd3372624734111e729b557c0a77a33fa7e85fa6debfa3404a5",
+          "snippet": "  <DataGrid x:Name=\"OutputsGrid\" ItemsSource=\"{Binding Outputs}\" AutoGenerateColumns=\"False\" SelectionChanged=\"GridSelectionChanged\"\r\n   MaxHeight=\"{Binding ActualHeight, ElementName=OutputsListViewport, Converter={StaticResource ListViewport}}\">\r\n   <DataGrid.Columns>\r\n    <DataGridTemplateColumn Header=\"序号\" Width=\"38\" MinWidth=\"38\"><DataGridTemplateColumn.CellTemplate><DataTemplate>\r\n     <TextBlock Style=\"{StaticResource ProtocolFieldText}\" Text=\"{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=(comm:ProtocolRowPosition.Index), Converter={StaticResource CommunicationOrdinal}}\"/>\r\n    </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>\r\n    <DataGridTextColumn Header=\"名称\" Binding=\"{Binding Name, UpdateSourceTrigger=PropertyChanged}\" Width=\"*\" MinWidth=\"80\" ElementStyle=\"{StaticResource ProtocolFieldText}\" EditingElementStyle=\"{StaticResource ProtocolFieldEdit}\"/>\r\n    <DataGridComboBoxColumn x:Name=\"TypeColumn\" Header=\"类型\" SelectedItemBinding=\"{Binding DataType, UpdateSourceTrigger=PropertyChanged}\" Width=\"86\" MinWidth=\"86\" ElementStyle=\"{StaticResource ProtocolComboBox}\" EditingElementStyle=\"{StaticResource ProtocolComboBox}\"/>\r\n    <DataGridTextColumn x:Name=\"StartColumn\" Header=\"起始\" Binding=\"{Binding Start}\" Width=\"44\" MinWidth=\"44\" ElementStyle=\"{StaticResource ProtocolFieldText}\" EditingElementStyle=\"{StaticResource ProtocolFieldEdit}\"/>\r\n    <DataGridTextColumn x:Name=\"EndColumn\" Header=\"结束\" Binding=\"{Binding End}\" Width=\"44\" MinWidth=\"44\" ElementStyle=\"{StaticResource ProtocolFieldText}\" EditingElementStyle=\"{StaticResource ProtocolFieldEdit}\"/>\r\n    <DataGridComboBoxColumn x:Name=\"OrderColumn\" Header=\"顺序\" SelectedItemBinding=\"{Binding Order}\" Width=\"86\" MinWidth=\"86\" ElementStyle=\"{StaticResource OrderSelector}\" EditingElementStyle=\"{StaticResource OrderSelector}\"/>\r\n    <DataGridTemplateColumn Header=\"操作\" Width=\"102\" MinWidth=\"102\"><DataGridTemplateColumn.CellTemplate><DataTemplate>\r\n     <StackPanel Orientation=\"Horizontal\" HorizontalAlignment=\"Center\">\r\n      <Button Content=\"↑\" Style=\"{StaticResource ProtocolRowAction}\" Click=\"MoveUp_Click\" ToolTip=\"上移\" AutomationProperties.Name=\"上移字段\">\r\n       <Button.IsEnabled><MultiBinding Converter=\"{StaticResource CanMove}\" ConverterParameter=\"-1\">\r\n        <Binding RelativeSource=\"{RelativeSource AncestorType=DataGridRow}\" Path=\"(comm:ProtocolRowPosition.Index)\"/>\r\n        <Binding RelativeSource=\"{RelativeSource AncestorType=DataGrid}\" Path=\"DataContext.Outputs.Count\"/>\r\n       </MultiBinding></Button.IsEnabled>\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Models/Communication/BinaryPayload.cs",
+          "line": 9,
+          "token": "public sealed",
+          "sha256": "11a4cce015ae707e8978874de605e54c3ed7d1bfe0d10427869ffec3689cce8b",
+          "snippet": "public sealed class BinaryPayload\r\n{\r\n    private readonly byte[] _bytes;\r\n\r\n    public BinaryPayload(byte[] bytes)\r\n    {\r\n        ArgumentNullException.ThrowIfNull(bytes);\r\n        _bytes = (byte[])bytes.Clone();\r\n    }\r\n\r\n    public int Length => _bytes.Length;\r\n\r\n    /// <summary>Returns an owned copy so consumers cannot mutate another node's snapshot.</summary>\r\n    public byte[] ToArray() => (byte[])_bytes.Clone();\r\n\r\n    public string ToBase64() => Convert.ToBase64String(_bytes);\r\n\r\n    public override string ToString() => Convert.ToHexString(_bytes);\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Execution/Results/CommunicationToolResults.cs",
+          "line": 39,
+          "token": "PublishOutputs",
+          "sha256": "d5305a5d4e7b5f58e191c1be4a0e81f629ce68b77f81b16ab179b4327b977919",
+          "snippet": "    public void PublishOutputs(IReadOnlyDictionary<Guid, object?> values)\r\n    {\r\n        _values = new();\r\n        ArgumentNullException.ThrowIfNull(values);\r\n        if (values.Count != _fields.Length)\r\n            throw new ArgumentException(\"输出必须恰好覆盖配置字段。\", nameof(values));\r\n        var prepared = new Dictionary<Guid, object?>();\r\n        foreach (var field in _fields)\r\n        {\r\n            if (!values.TryGetValue(field.FieldId, out var value) || value == null)\r\n                throw new ArgumentException($\"输出字段 {field.Name} 缺少有效值。\", nameof(values));\r\n            var type = SdkTypeVocabulary.ToSystemType(field.VariableType)!;\r\n            if (!type.IsInstanceOfType(value) &&\r\n                !(value is Array array && array.GetType().GetElementType() == type))\r\n                throw new ArgumentException($\"输出字段 {field.Name} 需要 {field.VariableType}，实际 {value.GetType().Name}。\", nameof(values));\r\n            if (value is double scalar && !double.IsFinite(scalar) ||\r\n                value is double[] numbers && numbers.Any(n => !double.IsFinite(n)))\r\n                throw new ArgumentException($\"输出字段 {field.Name} 包含非有限数值。\", nameof(values));\r"
+        }
+      ],
+      "status": "自研局部实现已静态核对；VM仅原始资源合同对照；运行/完整寿命未验收",
+      "vmEvidence": {
+        "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/tool-plugin-map.json",
+        "sha256": "a18c37faeec3fe5ae8dbfb26066298d0d085a17841dfafcabc54df9d1a9d918c",
+        "key": "Communication/DataAnalysisModule",
+        "declarations": {
+          "algorithmParameters": [
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "AnalysisType",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Separator",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": ",",
+                  "children": []
+                }
+              ]
+            }
+          ],
+          "inputs": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "Analysis",
+                "ValueType": "string",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            }
+          ],
+          "outputs": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ModuRunTime",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ModuStatus",
+                "ValueType": "int",
+                "IsForce": "true",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ],
+          "uiTabs": [
+            {
+              "Name": "Tab_Basic Params"
+            }
+          ],
+          "uiControls": [
+            {
+              "type": "RadioSelecterAnaly",
+              "name": "AnalysisType"
+            },
+            {
+              "type": "ButtonSelecterAnaly",
+              "name": "AnalyticText"
+            },
+            {
+              "type": "ComboxEditDataAnalysis",
+              "name": "Separator"
+            },
+            {
+              "type": "OpenFileForDataShellDialogAnaly",
+              "name": "PyScriptPath"
+            },
+            {
+              "type": "BooleanInt",
+              "name": "AsciiToHex"
+            },
+            {
+              "type": "ProtocolOutputParam",
+              "name": "txtOutputParams"
+            },
+            {
+              "type": "ProtocolOutputParam_Shell",
+              "name": "shellOutputParams"
+            },
+            {
+              "type": "ProtocolOutputParam_Byte",
+              "name": "byteOutputParams"
+            }
+          ],
+          "sharedUiGroups": [],
+          "declaredLibraries": null
+        },
+        "policy": "仅提取原资源声明；不使用currentImplementation推定VM原算法"
+      }
+    },
+    {
+      "id": "ReceiveData",
+      "route": "混合整改＋队列待新增",
+      "difference": "队列接收明确未实现；编辑动作产生设备读取",
+      "layout": "来源 → 设备 → 目标点或变量行 → 执行；通信分析展示来源/当前值/时间，不是图像区域。",
+      "chain": "ReceiveDataEditor.ExecuteToolAsync → ToolExecutor → ReceiveDataTool.ReadAsync → Active ReadAsync / Passive ConsumeAsync / ReadVariables → 类型检查 → PublishOutputs",
+      "parameters": "设备/目标或变量行和稳定输出字段；只有宿主确认被动源时采用ExternalDataWait，其他路径仍LegacyExclusive。",
+      "algorithm": "主动读等待设备；被动读按消费者游标取报文并在回调成功后提交；变量读本轮运行值。其他SourceKind明确抛队列未实现。",
+      "transfer": "输出标准化为声明类型，类型变化拒绝；被动报文含Sequence/Generation，不能写成所有节点共享最新一条。",
+      "cache": "宿主被动缓存有256报文/4MiB/4096消费者边界；消费游标和连接代次在宿主服务，不由工具创建独立连接。",
+      "release": "执行读取传取消令牌并在失败/取消清业务值；工具不Dispose共享连接。编辑选点另行ReadAsync未传取消令牌，关闭窗口不能由此取消。",
+      "defect": "TargetChanged选择Native类型目标便主动读取设备；编辑操作与执行副作用混合。队列收取未实现；缓存溢出和重载策略需用户可见。",
+      "vmKey": "Communication/ReadDatasModule",
+      "vm": "原声明QueueItemList、GlobalVarList、CommunicationItemList及PLC/Modbus入口；原生消费/溢出/停止语义仍缺，不能据声明判运行完成。",
+      "change": "类型选择优先用元数据；确需探测时提供明确可取消动作，关闭/换目标取消。禁用队列入口或独立新增；定义消费者重置与溢出恢复。",
+      "accept": "双消费者独立消费、取消不推进、断线/配置更换拒旧代次、溢出可诊断、关窗取消探测、变量失败不回退旧初值。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.ReceiveData/ReceiveDataTool.cs",
+          "line": 33,
+          "token": "private static async Task<CommunicationToolResults> ReadAsync",
+          "sha256": "74570aace0e7aa085008dd3bab66eb579ee0012d90808738c27db10415befed4",
+          "snippet": "    private static async Task<CommunicationToolResults> ReadAsync(ReceiveDataParameters p, ICommunicationReceiveService? service, CancellationToken token,\r\n        IDictionary<string, ToolResults>? nodeResults, string consumerId)\r\n    {\r\n        var result = new CommunicationToolResults(); var watch = Stopwatch.StartNew(); var analysis = new List<CommunicationAnalysisRow>();\r\n        try\r\n        {\r\n            var fields = p.Definitions(); result = new(fields);\r\n            token.ThrowIfCancellationRequested();\r\n            if (service == null) throw new InvalidOperationException(\"宿主未提供当前值读取服务。\");\r\n            var values = new Dictionary<Guid, object?>();\r\n            var committed = false;\r\n            if (p.SourceKind == \"Device\")\r\n            {\r\n                var source = service.GetSources().FirstOrDefault(s => s.DeviceId == p.DeviceId && s.TargetId == p.TargetId);\r\n                var sourceName = !string.IsNullOrWhiteSpace(source?.DeviceName)\r\n                    ? source.DeviceName + (string.IsNullOrWhiteSpace(source.TargetName) ? \"\" : \" / \" + source.TargetName)\r\n                    : !string.IsNullOrWhiteSpace(source?.DisplayName) ? source.DisplayName\r\n                    : string.IsNullOrWhiteSpace(p.TargetId) ? \"通信设备\" : \"通信设备 / 数据点\";\r"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.ReceiveData/ReceiveDataTool.cs",
+          "line": 78,
+          "token": "队列接收尚未实现",
+          "sha256": "74570aace0e7aa085008dd3bab66eb579ee0012d90808738c27db10415befed4",
+          "snippet": "            else throw new NotSupportedException(\"队列接收尚未实现。\");\r\n            if (!committed) { token.ThrowIfCancellationRequested(); result.PublishOutputs(values); result.SetSuccess(watch.Elapsed.TotalMilliseconds); }\r\n            void Add(CommunicationOutputField field, object value, string sourceName, string time)\r\n            {\r\n                value = CommunicationReceiveService.Normalize(value);\r\n                if (CommunicationReceiveService.ValueType(value) != field.VariableType) throw new InvalidOperationException(\"来源类型已变化，请重新确认绑定。\");\r\n                var displayValue = value is BinaryPayload binary ? \"HEX \" + binary.ToString()\r\n                    : Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? \"\";\r\n                values.Add(field.FieldId, value);\r\n                analysis.Add(new(field.FieldId, field.Name, sourceName, field.VariableType, $\"当前值：{displayValue}；{time}\", true));\r\n            }\r\n        }\r\n        catch (OperationCanceledException) { result.ClearOutputs(); result.Status = ExecutionStatus.Cancelled; result.ErrorMessage = \"接收已取消。\"; }\r\n        catch (Exception e) { result.ClearOutputs(); result.SetError(e.Message); analysis.Add(new(null, \"接收失败\", \"\", \"\", e.Message, false)); }\r\n        result.ToolId = \"ReceiveData\"; result.ToolName = \"接收数据\"; result.ExecutionTimeMs = watch.Elapsed.TotalMilliseconds; result.SetAnalysis(analysis); return result;\r\n    }\r\n}\r\n"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.ReceiveData/Views/ReceiveDataEditor.xaml.cs",
+          "line": 57,
+          "token": "private async void TargetChanged",
+          "sha256": "e88fd7266ae45ee30e36f8a026dbc3b421e17d280528f1d54050ee32591687bb",
+          "snippet": "    private async void TargetChanged(object sender, SelectionChangedEventArgs e)\r\n    {\r\n        if (_refreshing || Targets.SelectedItem is not CommunicationReceiveSource source) return;\r\n        _parameters.TargetId = source.TargetId;\r\n        if (source.DataType != \"Native\") { _parameters.OutputType = source.DataType; return; }\r\n        try\r\n        {\r\n            var sample = await (Service ?? throw new InvalidOperationException(\"读取服务未接通。\" )).ReadAsync(source.DeviceId, source.TargetId);\r\n            if (_parameters.SourceKind == \"Device\" && _parameters.DeviceId == source.DeviceId && _parameters.TargetId == source.TargetId)\r\n                _parameters.OutputType = CommunicationReceiveService.ValueType(sample.Value);\r\n            Targets.ToolTip = source.DisplayName;\r\n        }\r\n        catch (Exception error) { Targets.ToolTip = error.Message; PluginLogger.Warning(error.Message, \"接收数据\"); }\r\n    }\r\n    private void SelectVariable_Click(object sender, RoutedEventArgs e)\r\n    {\r\n        if ((sender as FrameworkElement)?.DataContext is not ReceiveVariableMapping row) return;\r\n        var variable = (DataProvider as DataSourceQueryService)?.SelectReceiveVariable?.Invoke();\r"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.ReceiveData/Views/ReceiveDataEditor.xaml",
+          "line": 17,
+          "token": "SourceKind",
+          "sha256": "ce7bc74cc0a60be2c58e682e45c22035dcba91d912580fd85b8e2cb8d5bb379d",
+          "snippet": "     SelectedValue=\"{Binding SourceKind, Mode=TwoWay}\" SelectionChanged=\"SourceKindChanged\">\r\n     <ComboBoxItem Content=\"通信设备\" Tag=\"Device\"/><ComboBoxItem Content=\"变量管理\" Tag=\"Variable\"/>\r\n    </ComboBox>\r\n   </Grid>\r\n   <Grid x:Name=\"DeviceRow\" Margin=\"0,0,0,12\"><Grid.ColumnDefinitions><ColumnDefinition Width=\"90\"/><ColumnDefinition Width=\"*\"/></Grid.ColumnDefinitions>\r\n    <TextBlock Text=\"通信设备\" VerticalAlignment=\"Center\"/>\r\n    <ComboBox Grid.Column=\"1\" x:Name=\"Devices\" Style=\"{StaticResource ProtocolComboBox}\" DisplayMemberPath=\"Name\" SelectionChanged=\"DeviceChanged\" DropDownOpened=\"RefreshDevices\"/>\r\n   </Grid>\r\n   <Border Height=\"1\" Background=\"{DynamicResource ThemeBorderBrush}\" Margin=\"0,8,0,16\"/>\r\n   <TextBlock Text=\"输入数据\" FontSize=\"16\" FontWeight=\"Bold\" Margin=\"0,0,0,10\"/>\r\n  </StackPanel>\r\n  <Grid Grid.Row=\"1\">\r\n   <StackPanel x:Name=\"DeviceOutput\">\r\n    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width=\"100\"/><ColumnDefinition Width=\"*\"/></Grid.ColumnDefinitions>\r\n     <TextBlock Text=\"名称\" Margin=\"0,0,0,6\"/>\r\n     <TextBlock Grid.Column=\"1\" x:Name=\"TargetLabel\" Text=\"数据\" Margin=\"8,0,0,6\"/>\r\n    </Grid>\r\n    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width=\"100\"/><ColumnDefinition Width=\"*\"/></Grid.ColumnDefinitions>\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Models/Communication/BinaryPayload.cs",
+          "line": 9,
+          "token": "public sealed",
+          "sha256": "11a4cce015ae707e8978874de605e54c3ed7d1bfe0d10427869ffec3689cce8b",
+          "snippet": "public sealed class BinaryPayload\r\n{\r\n    private readonly byte[] _bytes;\r\n\r\n    public BinaryPayload(byte[] bytes)\r\n    {\r\n        ArgumentNullException.ThrowIfNull(bytes);\r\n        _bytes = (byte[])bytes.Clone();\r\n    }\r\n\r\n    public int Length => _bytes.Length;\r\n\r\n    /// <summary>Returns an owned copy so consumers cannot mutate another node's snapshot.</summary>\r\n    public byte[] ToArray() => (byte[])_bytes.Clone();\r\n\r\n    public string ToBase64() => Convert.ToBase64String(_bytes);\r\n\r\n    public override string ToString() => Convert.ToHexString(_bytes);\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Execution/Results/CommunicationToolResults.cs",
+          "line": 39,
+          "token": "PublishOutputs",
+          "sha256": "d5305a5d4e7b5f58e191c1be4a0e81f629ce68b77f81b16ab179b4327b977919",
+          "snippet": "    public void PublishOutputs(IReadOnlyDictionary<Guid, object?> values)\r\n    {\r\n        _values = new();\r\n        ArgumentNullException.ThrowIfNull(values);\r\n        if (values.Count != _fields.Length)\r\n            throw new ArgumentException(\"输出必须恰好覆盖配置字段。\", nameof(values));\r\n        var prepared = new Dictionary<Guid, object?>();\r\n        foreach (var field in _fields)\r\n        {\r\n            if (!values.TryGetValue(field.FieldId, out var value) || value == null)\r\n                throw new ArgumentException($\"输出字段 {field.Name} 缺少有效值。\", nameof(values));\r\n            var type = SdkTypeVocabulary.ToSystemType(field.VariableType)!;\r\n            if (!type.IsInstanceOfType(value) &&\r\n                !(value is Array array && array.GetType().GetElementType() == type))\r\n                throw new ArgumentException($\"输出字段 {field.Name} 需要 {field.VariableType}，实际 {value.GetType().Name}。\", nameof(values));\r\n            if (value is double scalar && !double.IsFinite(scalar) ||\r\n                value is double[] numbers && numbers.Any(n => !double.IsFinite(n)))\r\n                throw new ArgumentException($\"输出字段 {field.Name} 包含非有限数值。\", nameof(values));\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Models/Communication/CommunicationReceiveConsumption.cs",
+          "line": 11,
+          "token": "public const int MaximumBufferedMessages",
+          "sha256": "a3759096562d6027c5894beab0b67d24eb3a480d743325ab42a8c0810483f1be",
+          "snippet": "    public const int MaximumBufferedMessages = 256;\r\n    public const int MaximumBufferedBytes = 4 * 1024 * 1024;\r\n    public const int MaximumConsumers = 4096;\r\n    private sealed class MessageBuffer\r\n    {\r\n        public long Sequence, DroppedThrough, Bytes;\r\n        public readonly Queue<(CommunicationReceiveSample Sample, int Size)> Items = new();\r\n    }\r\n    private sealed class Consumer { public long Sequence; public bool Busy; }\r\n    private readonly Dictionary<(string, string), MessageBuffer> _buffers = new();\r\n    private readonly Dictionary<(string Device, string Target, string Consumer), Consumer> _consumers = new();\r\n    private void ResetConsumers(string device)\r\n    {\r\n        foreach (var key in _buffers.Keys.Where(k => k.Item1 == device).ToArray()) _buffers.Remove(key);\r\n        foreach (var key in _consumers.Keys.Where(k => k.Device == device).ToArray()) _consumers.Remove(key);\r\n    }\r\n    private CommunicationReceiveSample BufferSample(CommunicationReceiveSample sample)\r\n    {\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Models/Communication/CommunicationReceiveConsumption.cs",
+          "line": 84,
+          "token": "token.ThrowIfCancellationRequested(); commit(next)",
+          "sha256": "a3759096562d6027c5894beab0b67d24eb3a480d743325ab42a8c0810483f1be",
+          "snippet": "                            token.ThrowIfCancellationRequested(); commit(next); consumer.Sequence = next.Sequence; return;\r\n                        }\r\n                    }\r\n                    changed = Changed(key);\r\n                }\r\n                await changed.WaitAsync(token).ConfigureAwait(false);\r\n            }\r\n        }\r\n        finally { lock (_gate) consumer.Busy = false; }\r\n    }\r\n}\r\n"
+        }
+      ],
+      "status": "自研局部实现已静态核对；VM仅原始资源合同对照；运行/完整寿命未验收",
+      "vmEvidence": {
+        "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/tool-plugin-map.json",
+        "sha256": "a18c37faeec3fe5ae8dbfb26066298d0d085a17841dfafcabc54df9d1a9d918c",
+        "key": "Communication/ReadDatasModule",
+        "declarations": {
+          "algorithmParameters": [
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "OutputType",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "DataCenter",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "RowNum",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "1",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "CommunicationModuleID",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "HexReceive",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "False",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVarId",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "LocalVarId",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            }
+          ],
+          "inputs": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "outputs": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ModuRunTime",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ModuStatus",
+                "ValueType": "int",
+                "IsForce": "true",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ResultHex",
+                "ValueType": "byte",
+                "IsForce": "true",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ],
+          "uiTabs": [
+            {
+              "Name": "Tab_Basic Params"
+            }
+          ],
+          "uiControls": [
+            {
+              "type": "RadioSelecterEx3",
+              "name": "OutputType"
+            },
+            {
+              "type": "EnumerationDataCenter",
+              "name": "DataCenter"
+            },
+            {
+              "type": "Integer",
+              "name": "RowNum"
+            },
+            {
+              "type": "EnumerationCommunication",
+              "name": "CommunicationModuleID"
+            },
+            {
+              "type": "HeadBar",
+              "name": "QueueHead"
+            },
+            {
+              "type": "QueueItemOut",
+              "name": "QueueItemList"
+            },
+            {
+              "type": "GlobalVarItemOut",
+              "name": "GlobalVarList"
+            },
+            {
+              "type": "CommunicationItemReceive",
+              "name": "CommunicationItemList"
+            },
+            {
+              "type": "ModbusItemReceive",
+              "name": "ModbusReveive"
+            },
+            {
+              "type": "PLCItemReceive",
+              "name": "PLCReveive"
+            }
+          ],
+          "sharedUiGroups": [],
+          "declaredLibraries": null
+        },
+        "policy": "仅提取原资源声明；不使用currentImplementation推定VM原算法"
+      }
+    },
+    {
+      "id": "SendData",
+      "route": "混合优化",
+      "difference": "队列未实现；发送非可回滚事务",
+      "layout": "目的地 → 设备/事件/变量 → 发送行与输入绑定 → 协议选项 → 执行；专业结果展示已提交/失败/跳过。",
+      "chain": "SendDataEditor.ExecuteToolAsync → 参数复制 → SendDataTool.SendAsync → PrepareAsync全部计划 → 逐计划SubmitAsync → 宿主会话复核 → Transport",
+      "parameters": "行身份、目标、输入和声明类型；Raw/事件分组，变量/普通设备按行计划；IgnoreErrors影响预检/提交失败政策。",
+      "algorithm": "先准备后提交；不可撤回已提交单元，不自动重试。代码atomic只控制错误跳过策略，不提供设备事务或回滚。",
+      "transfer": "保留Submitted/Failed/Skipped和已提交载荷作诊断；失败/取消清业务输出，但不抹掉已产生副作用的事实。变量发布运行输出而非覆盖设计初值。",
+      "cache": "PreparedCommunicationSend单次提交，不是可复用重试缓存；共享连接由宿主保管。",
+      "release": "提交链接设备寿命令牌；工具不销毁共享连接。取消停止剩余计划，不保证撤销正在外设执行的动作。",
+      "defect": "队列目的地未实现；部分成功必须明确显示。编辑模式切换会重建行，删除后配置失败的本地回滚仍待核。Modbus类型支持范围有限，不能宣称所有类型。",
+      "vmKey": "Communication/SendDatasModule",
+      "vm": "原声明事件、设备、DataCenter、IgnoreDuration、IgnoreErroneousDataEnable等；提交顺序/确认/重试的原生实现未知。",
+      "change": "保留Prepare/Submit职责边界并补部分成功说明；队列/类型按需求补齐，编辑映射走可恢复事务。重试需设备确认或幂等合同，不直接失败重发。",
+      "accept": "IgnoreErrors=false时任一预检失败零外发；第2提交失败仍报告第1已提交；取消不续发；旧方案/连接计划拒绝；二次提交拒绝；不支持类型明确报错。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.SendData/SendDataTool.cs",
+          "line": 23,
+          "token": "private static async Task<SendDataResults> SendAsync",
+          "sha256": "8c5a9acce0c55faa3486ad180783222aafc1a551526be3c8b50759d2bb04a222",
+          "snippet": "    private static async Task<SendDataResults> SendAsync(SendDataParameters p, ICommunicationSendService? service, string? nodeId,\r\n        IDictionary<string, ToolResults>? results, IDictionary<string, object?>? globals, CancellationToken token, string? workflowId = null)\r\n    {\r\n        var result = new SendDataResults(); var watch = Stopwatch.StartNew(); var analysis = new List<CommunicationAnalysisRow>();\r\n        var submittedValues = new Dictionary<Guid, object?>();\r\n        try\r\n        {\r\n            result = new(p.VariableFields());\r\n            if (service == null) throw new InvalidOperationException(\"宿主未提供发送服务。\");\r\n            if (p.Rows.Count == 0 || p.Rows.Any(r => r.FieldId == Guid.Empty) || p.Rows.Select(r => r.FieldId).Distinct().Count() != p.Rows.Count)\r\n                throw new FormatException(\"发送列表为空或字段身份重复。\");\r\n            var targetCatalog = service.GetTargets();\r\n            var raw = p.DestinationKind == \"Device\" && targetCatalog.Any(t => t.Kind == \"Device\" && t.DeviceId == p.DeviceId && t.Protocol == \"Raw\");\r\n            var atomic = raw || p.DestinationKind is \"Event\" or \"Variable\";\r\n            if (p.DestinationKind == \"Variable\" && p.Rows.Select(r => r.TargetId).Distinct().Count() != p.Rows.Count)\r\n                throw new FormatException(\"同一变量不能重复提交。\");\r\n            var groups = raw || p.DestinationKind == \"Event\" ? new[] { p.Rows.ToArray() } : p.Rows.Select(r => new[] { r }).ToArray();\r\n            var prepared = new List<(SendDataRow[] Rows, PreparedCommunicationSend Plan)>();\r"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.SendData/SendDataTool.cs",
+          "line": 70,
+          "token": "await plan.SubmitAsync",
+          "sha256": "8c5a9acce0c55faa3486ad180783222aafc1a551526be3c8b50759d2bb04a222",
+          "snippet": "                    var count = await plan.SubmitAsync(token).ConfigureAwait(false);\r\n                    if (count <= 0) throw new InvalidOperationException(\"没有实际提交目标。\");\r\n                    result.Submitted++;\r\n                    result.SentData.Add(plan.Name + \": \" + (plan.Value is BinaryPayload sentBinary\r\n                        ? sentBinary.ToString() : Convert.ToString(plan.Value, System.Globalization.CultureInfo.InvariantCulture) ?? \"\"));\r\n                    if (plan.Value is BinaryPayload binary) result.Payloads.Add(binary);\r\n                    if (p.DestinationKind == \"Variable\") submittedValues.Add(rows[0].FieldId, plan.Value);\r\n                    analysis.Add(new(rows[0].FieldId, rows[0].Name, plan.Name, \"提交完成\", plan.Value is BinaryPayload b ? b.ToString() : Convert.ToString(plan.Value, System.Globalization.CultureInfo.InvariantCulture) ?? \"\", true));\r\n                }\r\n                catch (OperationCanceledException) { throw; }\r\n                catch (Exception e)\r\n                {\r\n                    result.Failed++; analysis.Add(new(rows[0].FieldId, rows[0].Name, plan.Name, \"提交失败，可能已产生副作用；不自动重试\", e.Message, false));\r\n                    if (!p.IgnoreErrors || atomic) throw;\r\n                }\r\n            }\r\n            if (result.Submitted == 0) throw new InvalidOperationException(\"所有发送单元均未成功。\");\r\n            if (p.DestinationKind == \"Variable\") result.PublishOutputs(submittedValues);\r"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.SendData/Views/SendDataEditor.xaml",
+          "line": 17,
+          "token": "DestinationKind",
+          "sha256": "1717f103660aadbb805e727db166e27db708fbc38bad736719dc5cbceb178c08",
+          "snippet": "     SelectedValue=\"{Binding DestinationKind, Mode=TwoWay}\" SelectionChanged=\"ModeChanged\">\r\n     <ComboBoxItem Content=\"通信设备\" Tag=\"Device\"/><ComboBoxItem Content=\"变量管理\" Tag=\"Variable\"/><ComboBoxItem Content=\"发送事件\" Tag=\"Event\"/>\r\n    </ComboBox>\r\n   </Grid>\r\n   <Grid x:Name=\"DevicePanel\" Margin=\"0,0,0,12\"><Grid.ColumnDefinitions><ColumnDefinition Width=\"90\"/><ColumnDefinition Width=\"*\"/></Grid.ColumnDefinitions>\r\n    <TextBlock Text=\"通信设备\" VerticalAlignment=\"Center\"/>\r\n    <ComboBox Grid.Column=\"1\" x:Name=\"Devices\" Style=\"{StaticResource ProtocolComboBox}\" DisplayMemberPath=\"Name\" SelectedValuePath=\"Id\" SelectionChanged=\"DeviceChanged\" DropDownOpened=\"RefreshChoices\"/>\r\n   </Grid>\r\n   <Grid x:Name=\"EventPanel\" Margin=\"0,0,0,12\"><Grid.ColumnDefinitions><ColumnDefinition Width=\"90\"/><ColumnDefinition Width=\"*\"/></Grid.ColumnDefinitions>\r\n    <TextBlock Text=\"发送事件\" VerticalAlignment=\"Center\"/>\r\n    <ComboBox Grid.Column=\"1\" x:Name=\"Events\" Style=\"{StaticResource ProtocolComboBox}\" DisplayMemberPath=\"Name\" SelectedValuePath=\"Id\" SelectionChanged=\"EventChanged\" DropDownOpened=\"RefreshChoices\"\r\n     ToolTip=\"{Binding RelativeSource={RelativeSource Self}, Path=SelectedItem.Name}\"/>\r\n   </Grid>\r\n   <StackPanel x:Name=\"RawOptions\">\r\n    <CheckBox Content=\"HEX发送\" IsChecked=\"{Binding Hex}\" Margin=\"90,0,0,10\" ToolTip=\"HEX文本转换为字节；绑定完整字节报文时不再编码。\"/>\r\n    <Grid Margin=\"0,0,0,10\"><Grid.ColumnDefinitions><ColumnDefinition Width=\"90\"/><ColumnDefinition Width=\"*\"/></Grid.ColumnDefinitions>\r\n     <TextBlock Text=\"分隔符\" VerticalAlignment=\"Center\"/><TextBox Grid.Column=\"1\" Width=\"150\" HorizontalAlignment=\"Left\" Height=\"30\" VerticalContentAlignment=\"Center\" Text=\"{Binding Separator, UpdateSourceTrigger=PropertyChanged}\"/>\r\n    </Grid>\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Models/Communication/BinaryPayload.cs",
+          "line": 9,
+          "token": "public sealed",
+          "sha256": "11a4cce015ae707e8978874de605e54c3ed7d1bfe0d10427869ffec3689cce8b",
+          "snippet": "public sealed class BinaryPayload\r\n{\r\n    private readonly byte[] _bytes;\r\n\r\n    public BinaryPayload(byte[] bytes)\r\n    {\r\n        ArgumentNullException.ThrowIfNull(bytes);\r\n        _bytes = (byte[])bytes.Clone();\r\n    }\r\n\r\n    public int Length => _bytes.Length;\r\n\r\n    /// <summary>Returns an owned copy so consumers cannot mutate another node's snapshot.</summary>\r\n    public byte[] ToArray() => (byte[])_bytes.Clone();\r\n\r\n    public string ToBase64() => Convert.ToBase64String(_bytes);\r\n\r\n    public override string ToString() => Convert.ToHexString(_bytes);\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Execution/Results/CommunicationToolResults.cs",
+          "line": 39,
+          "token": "PublishOutputs",
+          "sha256": "d5305a5d4e7b5f58e191c1be4a0e81f629ce68b77f81b16ab179b4327b977919",
+          "snippet": "    public void PublishOutputs(IReadOnlyDictionary<Guid, object?> values)\r\n    {\r\n        _values = new();\r\n        ArgumentNullException.ThrowIfNull(values);\r\n        if (values.Count != _fields.Length)\r\n            throw new ArgumentException(\"输出必须恰好覆盖配置字段。\", nameof(values));\r\n        var prepared = new Dictionary<Guid, object?>();\r\n        foreach (var field in _fields)\r\n        {\r\n            if (!values.TryGetValue(field.FieldId, out var value) || value == null)\r\n                throw new ArgumentException($\"输出字段 {field.Name} 缺少有效值。\", nameof(values));\r\n            var type = SdkTypeVocabulary.ToSystemType(field.VariableType)!;\r\n            if (!type.IsInstanceOfType(value) &&\r\n                !(value is Array array && array.GetType().GetElementType() == type))\r\n                throw new ArgumentException($\"输出字段 {field.Name} 需要 {field.VariableType}，实际 {value.GetType().Name}。\", nameof(values));\r\n            if (value is double scalar && !double.IsFinite(scalar) ||\r\n                value is double[] numbers && numbers.Any(n => !double.IsFinite(n)))\r\n                throw new ArgumentException($\"输出字段 {field.Name} 包含非有限数值。\", nameof(values));\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Models/Communication/CommunicationSendService.cs",
+          "line": 67,
+          "token": "class PreparedCommunicationSend",
+          "sha256": "08c1020ba16bd14568373a5ecc0cc6505a74bbb86a6bb31e226deeb6648618a3",
+          "snippet": "public sealed class PreparedCommunicationSend(string name, object value, Func<CancellationToken, Task<int>> submit)\r\n{\r\n    private int _submitted;\r\n    public string Name { get; } = name;\r\n    public object Value { get; } = value;\r\n    public Task<int> SubmitAsync(CancellationToken token = default)\r\n    {\r\n        token.ThrowIfCancellationRequested();\r\n        if (Interlocked.Exchange(ref _submitted, 1) != 0) throw new InvalidOperationException(\"发送计划不能重复提交。\");\r\n        return submit(token);\r\n    }\r\n}\r\n\r\npublic interface ICommunicationSendService\r\n{\r\n    IReadOnlyList<CommunicationSendTarget> GetTargets();\r\n    Task<PreparedCommunicationSend> PrepareAsync(CommunicationSendRequest request, CancellationToken token = default);\r\n    // Explicit design-time binding command; never called by execution or result display.\r"
+        }
+      ],
+      "status": "自研局部实现已静态核对；VM仅原始资源合同对照；运行/完整寿命未验收",
+      "vmEvidence": {
+        "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/tool-plugin-map.json",
+        "sha256": "a18c37faeec3fe5ae8dbfb26066298d0d085a17841dfafcabc54df9d1a9d918c",
+        "key": "Communication/SendDatasModule",
+        "declarations": {
+          "algorithmParameters": [
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "OutputType",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "DataCenter",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "CommunicationModuleID",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "FunctionCode",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "4",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "HexSend",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "False",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "HexToHexSend",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "False",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "EndEnable",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "SplitEnable",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "EndInfo",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "SplitInfo",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": ",",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "VisionDeviceType",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "2",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "SendEventId",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "-1",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "SendEventRule",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "IODeviceID",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "IOSendData8",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "SendData1#SendData2#SendData3#SendData4#SendData5#SendData6#SendData7#SendData8",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem1",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData1#1#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem2",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData2#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem3",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData3#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem4",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData4#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem5",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData5#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem6",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData6#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem7",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData7#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem8",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData8#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem9",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData9#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem10",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData10#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem11",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData11#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem12",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData12#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem13",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData13#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem14",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData14#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem15",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData15#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "PLCItem16",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "PLCItem1#SendData16#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem1",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem1#SendData1#1#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem2",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem2#SendData2#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem3",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem3#SendData3#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem4",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem4#SendData4#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem5",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem5#SendData5#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem6",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem6#SendData6#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem7",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem7#SendData7#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem8",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem8#SendData8#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem9",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem9#SendData9#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem10",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem10#SendData10#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem11",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem11#SendData11#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem12",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem12#SendData12#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem13",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem13#SendData13#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem14",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem14#SendData14#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem15",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem15#SendData15#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "ModbusItem16",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "ModbusItem16#SendData16#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem1",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem1#SendData1#1",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem2",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem2#SendData2#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem3",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem3#SendData3#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem4",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem4#SendData4#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem5",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem5#SendData5#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem6",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem6#SendData6#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem7",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem7#SendData7#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem8",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem8#SendData8#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem9",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem9#SendData9#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem10",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem10#SendData10#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem11",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem11#SendData11#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem12",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem12#SendData12#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem13",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem13#SendData13#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem14",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem14#SendData14#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem15",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem15#SendData15#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "BasicItem16",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "BasicItem16#SendData16#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data1",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data1#SendData1#1#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data2",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data2#SendData2#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data3",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data3#SendData3#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data4",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data4#SendData4#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data5",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data5#SendData5#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data6",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data6#SendData6#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data7",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data7#SendData7#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data8",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data8#SendData8#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data9",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data9#SendData9#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data10",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data10#SendData10#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data11",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data11#SendData11#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data12",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data12#SendData12#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data13",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data13#SendData13#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data14",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data14#SendData14#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data15",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data15#SendData15#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "Data16",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "Data16#SendData16#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar1",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar1#SendData1#1#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar2",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar2#SendData2#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar3",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar3#SendData3#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar4",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar4#SendData4#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar5",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar5#SendData5#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar6",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar6#SendData6#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar7",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar7#SendData7#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar8",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar8#SendData8#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar9",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar9#SendData9#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar10",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar10#SendData10#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar11",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar11#SendData11#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar12",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar12#SendData12#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar13",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar13#SendData13#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar14",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar14#SendData14#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar15",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar15#SendData15#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "GlobalVar16",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "GlobalVar16#SendData16#0#0",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "IgnoreErroneousDataEnable",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "False",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ParamItem",
+              "attributes": {},
+              "text": "",
+              "children": [
+                {
+                  "type": "Name",
+                  "attributes": {},
+                  "text": "IgnoreDuration",
+                  "children": []
+                },
+                {
+                  "type": "DefaultValue",
+                  "attributes": {},
+                  "text": "False",
+                  "children": []
+                }
+              ]
+            }
+          ],
+          "inputs": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData1",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false",
+                "AllowAutoSubscribe": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData2",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData3",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData4",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData5",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData6",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData7",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData8",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData9",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData10",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData11",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData12",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData13",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData14",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData15",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData16",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData17",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData18",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData19",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData20",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData21",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData22",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData23",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData24",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData25",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData26",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData27",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData28",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData29",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData30",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData31",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData32",
+                "ValueType": "string",
+                "IsForce": "false",
+                "Visible": "false",
+                "CustomVisible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage1",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage1",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth1",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight1",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat1",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage2",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage2",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth2",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight2",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat2",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage3",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage3",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth3",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight3",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat3",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage4",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage4",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth4",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight4",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat4",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage5",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage5",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth5",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight5",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat5",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage6",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage6",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth6",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight6",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat6",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage7",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage7",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth7",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight7",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat7",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage8",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage8",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth8",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight8",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat8",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage9",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage9",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth9",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight9",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat9",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage10",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage10",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth10",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight10",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat10",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage11",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage11",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth11",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight11",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat11",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage12",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage12",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth12",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight12",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat12",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage13",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage13",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth13",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight13",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat13",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage14",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage14",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth14",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight14",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat14",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage15",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage15",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth15",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight15",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat15",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InputImage16",
+                "Style": "IMAGE"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage16",
+                        "ValueType": "image",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageWidth16",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImageHeight16",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImagePixelFormat16",
+                        "ValueType": "int",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "outputs": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ModuRunTime",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "SendData",
+                "ValueType": "string",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ModuStatus",
+                "ValueType": "int",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            }
+          ],
+          "uiTabs": [
+            {
+              "Name": "Tab_Basic Params"
+            },
+            {
+              "Name": "ResultShow"
+            }
+          ],
+          "uiControls": [
+            {
+              "type": "RadioSelecterEx3",
+              "name": "OutputType"
+            },
+            {
+              "type": "EnumerationDataCenter",
+              "name": "DataCenter"
+            },
+            {
+              "type": "EnumerationCommunication",
+              "name": "CommunicationModuleID"
+            },
+            {
+              "type": "Enumeration",
+              "name": "FunctionCode"
+            },
+            {
+              "type": "EnumerationLightForSendData",
+              "name": "IODeviceID"
+            },
+            {
+              "type": "Enumeration",
+              "name": "VisionDeviceType"
+            },
+            {
+              "type": "EnumerationSendEvent",
+              "name": "SendEventId"
+            },
+            {
+              "type": "Boolean",
+              "name": "IgnoreDuration"
+            },
+            {
+              "type": "Boolean",
+              "name": "IgnoreErroneousDataEnable"
+            },
+            {
+              "type": "BooleanTip",
+              "name": "HexSend"
+            },
+            {
+              "type": "ButtonSelecter",
+              "name": "InputString_Comm"
+            },
+            {
+              "type": "Boolean",
+              "name": "EndEnable"
+            },
+            {
+              "type": "Enumeration",
+              "name": "EndInfo"
+            },
+            {
+              "type": "Boolean",
+              "name": "SplitEnable"
+            },
+            {
+              "type": "ComboxEditSendData",
+              "name": "SplitInfo"
+            },
+            {
+              "type": "IOSendData20",
+              "name": "IOSendData20"
+            },
+            {
+              "type": "IOSendData16",
+              "name": "IOSendData16"
+            },
+            {
+              "type": "IOSendData8",
+              "name": "IOSendData8"
+            },
+            {
+              "type": "IOSendData7",
+              "name": "IOSendData7"
+            },
+            {
+              "type": "IOSendData4",
+              "name": "IOSendData4"
+            },
+            {
+              "type": "GateWaySendEventItem",
+              "name": "SendEventItem"
+            },
+            {
+              "type": "ModbusItemsSend",
+              "name": "ModbusSend"
+            },
+            {
+              "type": "BasicItemsSend",
+              "name": "BasicSend"
+            },
+            {
+              "type": "HeadBar",
+              "name": "QueueHead"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data1"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data2"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data3"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data4"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data5"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data6"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data7"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data8"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data9"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data10"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data11"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data12"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data13"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data14"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data15"
+            },
+            {
+              "type": "QueueItemIn",
+              "name": "Data16"
+            },
+            {
+              "type": "AddButton_QueueItem",
+              "name": "AddButton"
+            },
+            {
+              "type": "HeadBar",
+              "name": "GlobalVarHead"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar1"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar2"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar3"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar4"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar5"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar6"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar7"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar8"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar9"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar10"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar11"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar12"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar13"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar14"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar15"
+            },
+            {
+              "type": "GlobalVarItemIn",
+              "name": "GlobalVar16"
+            },
+            {
+              "type": "AddButton_GlobalVar",
+              "name": "btnAddGlobalVar"
+            }
+          ],
+          "sharedUiGroups": [
+            "TextDisplayGroup"
+          ],
+          "declaredLibraries": null
+        },
+        "policy": "仅提取原资源声明；不使用currentImplementation推定VM原算法"
+      }
+    }
+  ]
+}

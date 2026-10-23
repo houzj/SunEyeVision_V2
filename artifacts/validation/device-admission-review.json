@@ -1,0 +1,197 @@
+{
+  "rows": [
+    {
+      "id": "compute",
+      "title": "计算节点与外部等待",
+      "state": "已有调度，跨根资源政策仍缺",
+      "chain": "依赖全部Completed → profile → 计算槽/排他检查 → TryAcquire → Task.Run",
+      "gate": "每次执行新建leases；计算槽max(1,min(4,CPU-1))。ExternalDataWait不占计算槽，不能等同全局等待数量有界。",
+      "retire": "finally释放租约未先等待全部在途任务，已列停止整改；本表不重复算新缺陷。",
+      "change": "自研整改：保留依赖调度，按根/全应用分开计算预算、外部等待预算和设备预算；设备互斥不能仅靠每根的租约表。",
+      "accept": "双根共享设备、外部等待洪峰、排他节点与取消分别验证；未排空不能重用设备。",
+      "source": {
+        "path": "src/Workflow/WorkflowExecutionEngine.cs",
+        "line": 301,
+        "token": "var leases = new WorkflowResourceLeaseManager();",
+        "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db"
+      }
+    },
+    {
+      "id": "leases",
+      "title": "资源声明与租约范围",
+      "state": "已有单次运行门禁",
+      "chain": "profile.ResourceKeys → TryAcquire全部键 → ResourceLease.Dispose",
+      "gate": "WorkflowExclusive用workflow键；ResourceExclusive无键回退node键。有同名资源键也只在同一个manager里互斥。",
+      "retire": "Interlocked.Exchange保证同一lease重复Dispose不重复释放；不证明最后使用者结束。",
+      "change": "自研整改：设备Owner提供全应用租约；声明缺失应诊断，避免node回退被误认设备排他。",
+      "accept": "同根同键串行、不同根同设备串行；独立资源可并行，迟到完成不可释放新代次资源。",
+      "source": {
+        "path": "src/Workflow/WorkflowResourceLeaseManager.cs",
+        "line": 17,
+        "token": "public bool TryAcquire",
+        "sha256": "4d5ecee12b552e028421b2a485c8489daffc80ad416416441049bd0628d60558"
+      }
+    },
+    {
+      "id": "raw",
+      "title": "TCP客户端/服务端、UDP、串口",
+      "state": "驱动与通用收发入口已接线，实机未验",
+      "chain": "工作流Send/事件 → Runtime → Raw适配器",
+      "gate": "TCP client sendGate、server sendLock、serial writeGate；UDP按数据报，不能用一条“串行发送”概括所有协议。",
+      "retire": "客户端写入开始后取消会关闭流以免半帧污染后续请求；其他协议的取消不等撤回对端副作用。",
+      "change": "混合优化：保留协议差异与会话代次保护，统一忙/排队/拒绝政策和错误呈现，不复制未经核实的VM传输代码。",
+      "accept": "各协议分别验同时发送、半写、取消、重连；写入结果不明不可自动重发。",
+      "source": {
+        "path": "src/DeviceDriver/Communications/Raw/TcpClient/TcpClientAdapter.cs",
+        "line": 71,
+        "token": "_sendGate.WaitAsync",
+        "sha256": "d32711fa363c2ab2a7b22f4128ab96d1c5a9d33f9b0443bb62a00e674521076b"
+      }
+    },
+    {
+      "id": "modbus",
+      "title": "Modbus TCP/RTU",
+      "state": "驱动、点位收发/轮询已接线，实机未验",
+      "chain": "工作流点位 → Runtime → ExecuteAsync → NModbus",
+      "gate": "同master operationGate。库无取消令牌，取消关闭TCP/串口，但仍await底层operation后才释放gate。",
+      "retire": "写入是否生效需设备确认；Dispose也等待gate，不能把取消返回前强制重用连接。",
+      "change": "采用当前取消隔离思路并完善应用收尾；代价是坏I/O可能拖长退役，需故障隔离与观察，非宣称可瞬时停止。",
+      "accept": "超时写入标结果不明；旧连接排空后才重连；TCP和RTU分别验证。",
+      "source": {
+        "path": "src/DeviceDriver/Communications/Modbus/ModbusAdapter.cs",
+        "line": 160,
+        "token": "private async Task<T> ExecuteAsync",
+        "sha256": "5ae2e96b9c9223965d0138aea742fb9149bb5737d95ecb704fbc5e3a4d5e9d2a"
+      }
+    },
+    {
+      "id": "s7",
+      "title": "S7类型化读写",
+      "state": "驱动已实现；通用工作流收发目录未接线",
+      "chain": "Runtime typed read/write → S7Session → PLC",
+      "gate": "operationGate串行；已发送请求取消会Close，防旧响应进入下一请求。",
+      "retire": "Dispose等待gate。GetTargets/ConfigureReceiveSources仅Raw/Modbus/OPCUA分支；不据此宣称整个软件不能调用S7。",
+      "change": "新增工作流类型化点位适配与参数合同；复用现有驱动，先确认目标产品是否需要S7工具入口。",
+      "accept": "数据区/DB/字节序/长度与类型显式；取消后重连无旧响应；收发目录和保存恢复贯通。",
+      "source": {
+        "path": "src/DeviceDriver/Communications/S7/S7Adapter.cs",
+        "line": 71,
+        "token": "public async Task<byte[]> ReadBytesAsync",
+        "sha256": "b5a50d1f13a1cc4b0e85e9bcad12d73c7ace67a2540aed20e8c6a6e6f9d4b7dd"
+      }
+    },
+    {
+      "id": "cip",
+      "title": "CIP显式消息",
+      "state": "驱动已有；通用工作流目录未接线",
+      "chain": "Runtime → service/class/instance/attribute → SendRRData",
+      "gate": "requestGate串行，TCP sessionHandle归会话；这是显式请求，不是隐式实时I/O。",
+      "retire": "异常关闭client并清sessionHandle；Dispose退役另验。不得把CIP目录当已完成周期实时控制。",
+      "change": "扩展类型化工作流适配，或明确暂不支持；实时I/O若有需求独立设计，不能直接套字节发送。",
+      "accept": "服务码响应匹配、错误码、取消后重新注册和点位合同；实机时序另验。",
+      "source": {
+        "path": "src/DeviceDriver/Communications/Cip/CipAdapter.cs",
+        "line": 52,
+        "token": "await _requestGate.WaitAsync",
+        "sha256": "511f83a86ad3c6c1178f67a387c6cfadbab44194f1aaeb95fd74a21e68313597"
+      }
+    },
+    {
+      "id": "opcua",
+      "title": "OPCUA读写/浏览/订阅",
+      "state": "驱动与点位入口已有，实机未验",
+      "chain": "工作流点位 → Runtime → OPCUA Session；订阅/轮询另链",
+      "gate": "serviceGate串行；工作流ActiveRead与Raw被动消息游标不同，不能混作同一种接收消费。",
+      "retire": "Dispose清监视/订阅/KeepAlive/Session；运行时仍需拒旧会话通知。证书/服务器差异未实测。",
+      "change": "保留类型化数据与订阅分层；补状态、质量/时间戳及断线重订阅验收，最终支持合同待产品确认。",
+      "accept": "读写类型、重订阅、迟到通知、证书错误和关闭逐项验，不把连接成功代证数据可靠。",
+      "source": {
+        "path": "src/DeviceDriver/Communications/OpcUa/OpcUaAdapter.cs",
+        "line": 397,
+        "token": "public async ValueTask DisposeAsync",
+        "sha256": "40f02776ed8eab5c4fdaa5ad1f9bbdb4308c2bbf69b22508a483cce0aeed3863"
+      }
+    },
+    {
+      "id": "preview",
+      "title": "MVS预览",
+      "state": "默认MVS路径已有；实机未验",
+      "chain": "PreviewHost → AcquireCaptureLease → StartStream → 转位图 → frame.Dispose",
+      "gate": "应用拥有连接，预览拥有用途，消费者拥有一帧；三者不能合并。",
+      "retire": "停止抛错后的用途提前释放风险见本页停止链；窗口关闭返回不等异步退役完成。",
+      "change": "自研整改：统一可等待停止/隔离与用途协调；不因VM原生细节未知迁移。",
+      "accept": "预览与工作流冲突、停止异常、关闭迟到帧不得错报设备空闲。",
+      "source": {
+        "path": "src/UI/Features/Camera/CameraPreviewHost.xaml.cs",
+        "line": 264,
+        "token": "AcquireCaptureLease",
+        "sha256": "b5550e2fdd84feb517fb63383a3b34857bf530f4c646b9aa5aedb24cd16f4c6e"
+      }
+    },
+    {
+      "id": "feed",
+      "title": "工作流图像源Feed",
+      "state": "单相机租约/最新帧已有；多相机同步待证",
+      "chain": "StartAsync → NextFrameAsync → 本轮执行 → using frame",
+      "gate": "单槽最新帧，替换旧待处理帧会释放；软件触发逐轮请求。连续非软件等待只依赖调用取消，不是整轮总超时。",
+      "retire": "多相机走回退，未证明同步屏障；最新帧丢弃策略不适合所有必处理触发业务。",
+      "change": "混合优化：保留最新帧模式并明确统计；按业务新增逐触发必处理和超时政策，先做Owner合同再改缓存。",
+      "accept": "接收/替换/交付数可核；无触发取消、多相机、慢算法和停止异常分别验。",
+      "source": {
+        "path": "src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs",
+        "line": 115,
+        "token": "if (continuous &&",
+        "sha256": "52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5"
+      }
+    },
+    {
+      "id": "capture",
+      "title": "公开单帧Capture",
+      "state": "服务已有；用途门禁不一致",
+      "chain": "ICameraCaptureService → Runtime.CaptureAsync → adapter",
+      "gate": "captureGate只串行单帧调用；复用现有或临时会话，没有AcquireCaptureLease。",
+      "retire": "临时会话await using不代表所有连接并发已安全；SDK取消能力也有限。",
+      "change": "必须整改：所有采集入口统一用途准入；工作流内部重入需显式令牌，避免双重租约死锁。",
+      "accept": "预览中单帧、流程中单帧、临时连接失败与取消后无误占用/误触发。",
+      "source": {
+        "path": "src/DeviceDriver/Cameras/Contracts/CameraRuntimeManager.cs",
+        "line": 162,
+        "token": "public async Task<CameraFrame> CaptureAsync",
+        "sha256": "07407900baca2a4702e7af87fa86e1a0a3cbd0b4047c6f9770e58f233b56f6ed"
+      }
+    }
+  ],
+  "supportingSources": [
+    {
+      "path": "src/UI/Services/Communication/WorkflowCommunicationSendService.cs",
+      "sha256": "476d47688dbc043c788b54bf6ec264cd44c7e0ac2ab6a90669f43e6658a64dd2"
+    },
+    {
+      "path": "src/UI/Services/Communication/CommunicationApplicationService.cs",
+      "sha256": "8b5a4f0d26cb9a14fc42de8785e48a7cb288edb2ad31c568cca4d6a06fc006b6"
+    },
+    {
+      "path": "src/DeviceDriver/Communications/CommunicationProtocolFactories.cs",
+      "sha256": "a67dccdf44674410fe514747f12d1e9e09bc8af19fcc609816d7e6584e3e5043"
+    },
+    {
+      "path": "src/DeviceDriver/Communications/Runtime/CommunicationRuntimeManager.Operations.cs",
+      "sha256": "9a72d485c5d918201cf8f45aad88f338097e36f189a09ff823152c590480a6bc"
+    },
+    {
+      "path": "src/DeviceDriver/Communications/Raw/TcpServer/TcpServerAdapter.cs",
+      "sha256": "45b8755446f4e68ee1124f1c9a1c8593c5d0f7a7a48306de33f10b2ee8f8d981"
+    },
+    {
+      "path": "src/DeviceDriver/Communications/Raw/Udp/UdpAdapter.cs",
+      "sha256": "ace4a5d00679ec10e29ff2f870edc2ce0a8e4f74406413053230dd65083363ac"
+    },
+    {
+      "path": "src/DeviceDriver/Communications/Raw/Serial/SerialAdapter.cs",
+      "sha256": "42578aaaa5c6617e6436d7cd386283f3cef52b948807d47bc4c8adb178210853"
+    }
+  ],
+  "runtimeExecuted": false,
+  "vmLimit": "原版VM各协议跨根预算、取消I/O、等待完成及厂商最终释放缺直接实现；恢复模型的入口/声明不能补齐此语义，未知不当作VM不支持。",
+  "scope": "10行准入分析：2行调度+8行设备。文档交付与产品、实机和原生证据分别验收。"
+}

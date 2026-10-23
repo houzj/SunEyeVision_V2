@@ -1,0 +1,353 @@
+{
+  "id": "VM-SCRIPT-CHAIN-20261023",
+  "input": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/evidence.json",
+  "inputSha256": "24f41820024e9afc4bc5a0f3a5a470fe9c47e2c3a6a596e1b785c5d5ff0a13f8",
+  "checks": [
+    {
+      "id": "native",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModule.dll",
+      "sha256": "F8095B1CB42778A1C2259B1728D936C27D1BBC647888EABC3A3B884D8D87FD68",
+      "actualSha256": "f8095b1cb42778a1c2259b1728d936c27d1bbc647888eabc3a3b884d8d87fd68",
+      "matches": true
+    },
+    {
+      "id": "config",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellConfig.ini",
+      "sha256": "4266364739E36667E41BFAEE5FF2F6E5F754CA88E0B8F9847598428E2DC3C37A",
+      "actualSha256": "4266364739e36667e41bfaee5ff2f6e5f754ca88e0b8f9847598428e2dc3c37a",
+      "matches": true
+    },
+    {
+      "id": "ui",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModuleControl.dll",
+      "sha256": "6FFABF07C52E8EF0519FCCC9F88F2B05D49AE34051ECDFD350EB5AA8702D192E",
+      "actualSha256": "6ffabf07c52e8ef0519fccc9f88f2b05d49ae34051ecdfd350eb5aa8702d192e",
+      "matches": true
+    },
+    {
+      "id": "tab",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModuleAlgorithmTab.xml",
+      "sha256": "617CFF239CDCC548DFA038B584A7FF530990917CD62F954C88D92F8E3E159E8F",
+      "actualSha256": "617cff239cdcc548dfa038b584a7ff530990917cd62f954c88d92f8e3e159e8f",
+      "matches": true
+    },
+    {
+      "id": "com",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ScriptComponent.dll",
+      "sha256": "0D15B2C71D2ABC43DCA2C96BB2BEB3D7ED7847F3EBBC1B075D9124FB13F9DB28",
+      "actualSha256": "0d15b2c71d2abc43dca2c96bb2beb3d7ed7847f3ebbc1b075d9124fb13f9db28",
+      "matches": true
+    },
+    {
+      "id": "support",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/Script.Support.dll",
+      "sha256": "2D3295C2B3A1C0FCC0645F06C95FFA826F029292D077521798341126810C98BB",
+      "actualSha256": "2d3295c2b3a1c0fcc0645f06c95ffa826f029292d077521798341126810c98bb",
+      "matches": true
+    },
+    {
+      "id": "completionMyLibs",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VM.CodeCompletion.dll",
+      "sha256": "A1539ED1CB6B2D367E8CF875595EF48799869651BF0CACEBD0AAF2688AD8AE76",
+      "actualSha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+      "matches": true
+    },
+    {
+      "id": "completionGlobalScript",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/GlobalScript/VM.CodeCompletion.dll",
+      "sha256": "8670E49E96F93D5D510722A399C183FC5F673C9456B10B133B578DD6E74C9534",
+      "actualSha256": "8670e49e96f93d5d510722a399c183fc5f673c9456b10b133b578dd6e74c9534",
+      "matches": true
+    },
+    {
+      "id": "visionMasterConfig",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/VisionMaster.exe.config",
+      "sha256": "9C5DBC6B41D66EC4E902400299808F5A68356FE35438FBC621444B053F4FEA9D",
+      "actualSha256": "9c5dbc6b41d66ec4e902400299808f5a68356fe35438fbc621444b053f4fea9d",
+      "matches": true
+    },
+    {
+      "id": "globalScriptConfig",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/GlobalScript/GlobalScript.exe.config",
+      "sha256": "3C2589E12B6B47F77155810EB98F567135088815A005EC8FE311C663B82DDD66",
+      "actualSha256": "3c2589e12b6b47f77155810eb98f567135088815a005ec8fe311c663b82ddd66",
+      "matches": true
+    }
+  ],
+  "selfEvidence": [
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+      "sha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd"
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+      "sha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b"
+    }
+  ],
+  "bridgeInput": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-SCRIPT-CHAIN/framework/bridge-evidence.json",
+  "bridgeSha256": "ea17b4ef15e9e3c788f585d19c7386f9806e188765949a6d777a7a84206f142d",
+  "bridgeChecks": [
+    {
+      "id": "shellXml",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModuleAlgorithmTab.xml",
+      "sha256": "617CFF239CDCC548DFA038B584A7FF530990917CD62F954C88D92F8E3E159E8F",
+      "kind": "installed-resource",
+      "actualSha256": "617cff239cdcc548dfa038b584a7ff530990917cd62f954c88d92f8e3e159e8f",
+      "matches": true
+    },
+    {
+      "id": "button",
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/renderer-gap-projects/ShellModuleControl/Apps.XmlParser.ParamTab/ButtonSelecter_Shell.cs",
+      "sha256": "27DAE52E711A78033A46D224140494B0ED4A676ADDB6A75FE5920A1975B6E1ED",
+      "kind": "decompiled-managed",
+      "actualSha256": "27dae52e711a78033a46d224140494b0ed4a676addb6a75fe5920a1975b6e1ed",
+      "matches": true
+    },
+    {
+      "id": "buttonAssembly",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModuleControl.dll",
+      "sha256": "6FFABF07C52E8EF0519FCCC9F88F2B05D49AE34051ECDFD350EB5AA8702D192E",
+      "kind": "installed-managed",
+      "actualSha256": "6ffabf07c52e8ef0519fccc9f88f2b05d49ae34051ecdfd350eb5aa8702d192e",
+      "matches": true
+    },
+    {
+      "id": "buttonIL",
+      "path": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-SCRIPT-CHAIN/framework/raw/ShellModuleControl.ButtonSelecter_Shell.il",
+      "sha256": "D736F21C15C79AB36000A6B69BCAA525C764B7F81DEAAF9A54022CE57231F7C6",
+      "kind": "managed-il-cross-check",
+      "actualSha256": "d736f21c15c79ab36000a6b69bcaa525c764b7f81deaaf9a54022ce57231f7c6",
+      "matches": true
+    },
+    {
+      "id": "bottom",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/BottomCommand.cs",
+      "sha256": "444810ECB1F15627CE14083D53FACC6640947D8AF41A91E613AF557DC012088E",
+      "kind": "decompiled-managed",
+      "actualSha256": "444810ecb1f15627ce14083d53facc6640947d8af41a91e613af557dc012088e",
+      "matches": true
+    },
+    {
+      "id": "command",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/Command.cs",
+      "sha256": "5AC4BA32662FB93D555A08C8AB491617547E5F93D4B5D82562C531C920B4E209",
+      "kind": "decompiled-managed",
+      "actualSha256": "5ac4ba32662fb93d555a08c8ab491617547e5f93d4b5d82562c531c920b4e209",
+      "matches": true
+    },
+    {
+      "id": "setter",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/Setter.cs",
+      "sha256": "F48ADC3B464E037ED813BF76BB1966F54423118B341B54F93482FACE16678D32",
+      "kind": "decompiled-managed",
+      "actualSha256": "f48adc3b464e037ed813bf76bb1966f54423118b341b54f93482face16678d32",
+      "matches": true
+    },
+    {
+      "id": "operationManager",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/OperationManager.cs",
+      "sha256": "BD69E7D163C45830A72E8886E3B202AA2B516D55D2182F4D6862F5F8D1FD48BA",
+      "kind": "decompiled-managed",
+      "actualSha256": "bd69e7d163c45830a72e8886e3b202aa2b516d55d2182f4d6862f5f8d1fd48ba",
+      "matches": true
+    },
+    {
+      "id": "reflectOperation",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/ExcuteMethodOperation.cs",
+      "sha256": "8EF16A3357606931924989C7B9CDE82841651904B2ED65EFE72F64D7E314F98E",
+      "kind": "decompiled-managed",
+      "actualSha256": "8ef16a3357606931924989c7b9cde82841651904b2ed65efe72f64d7e314f98e",
+      "matches": true
+    },
+    {
+      "id": "template",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml",
+      "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63",
+      "kind": "decompiled-resource",
+      "actualSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
+      "matches": true
+    },
+    {
+      "id": "vmModule",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmModule.cs",
+      "sha256": "53E2F0F9032C4631B59CF0EB2A00E06D50469D94706E7E370E9CC7E1059C72CE",
+      "kind": "decompiled-managed",
+      "actualSha256": "53e2f0f9032c4631b59cf0eb2a00e06d50469d94706e7e370e9cc7e1059c72ce",
+      "matches": true
+    },
+    {
+      "id": "moduleParam",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/ModuleParam.cs",
+      "sha256": "AF392BF2D3AF006C6A16021A271D67DD8EF2017B268580841874AB6FEDE1DA48",
+      "kind": "decompiled-managed",
+      "actualSha256": "af392bf2d3af006c6a16021a271d67dd8ef2017b268580841874ab6fede1da48",
+      "matches": true
+    },
+    {
+      "id": "sdkModuleManager",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ModuleManager.cs",
+      "sha256": "783A45B1518F713223ECA2B5E59291BE973552C3E08FEF0EA0D4BFCCC2FBD922",
+      "kind": "decompiled-managed",
+      "actualSha256": "783a45b1518f713223eca2b5e59291be973552c3e08fef0ea0d4bfccc2fbd922",
+      "matches": true
+    },
+    {
+      "id": "sdkApi",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ServerSDKAPI.cs",
+      "sha256": "F022D4B4E87D4A076DCF42A79B131A0460DDF673D07603B5BA8D6ACA35EF4B14",
+      "kind": "decompiled-managed",
+      "actualSha256": "f022d4b4e87d4a076dcf42a79b131a0460ddf673d07603b5ba8d6aca35ef4b14",
+      "matches": true
+    },
+    {
+      "id": "nativeMethods",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/NativeMethods.cs",
+      "sha256": "6A60F612FB385987FF96D6973844A256402F097D1EB371E7AD462C44E57127D0",
+      "kind": "decompiled-managed",
+      "actualSha256": "6a60f612fb385987ff96d6973844a256402f097d1eb371e7ad462c44e57127d0",
+      "matches": true
+    },
+    {
+      "id": "platformNative",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/PublicFile/x64/iMVS-6000PlatformSDK.dll",
+      "sha256": "B62D7E15588CCDA6671228AEBC11FEC3E27ACA878F0E03067E44B17D5A54A9A1",
+      "kind": "installed-native",
+      "actualSha256": "b62d7e15588ccda6671228aebc11fec3e27aca878f0e03067e44b17d5a54a9a1",
+      "matches": true
+    },
+    {
+      "id": "shellNative",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModule.dll",
+      "sha256": "F8095B1CB42778A1C2259B1728D936C27D1BBC647888EABC3A3B884D8D87FD68",
+      "kind": "installed-native",
+      "actualSha256": "f8095b1cb42778a1c2259b1728d936c27d1bbc647888eabc3a3b884d8d87fd68",
+      "matches": true
+    },
+    {
+      "id": "config",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/VisionMaster.exe.config",
+      "sha256": "9C5DBC6B41D66EC4E902400299808F5A68356FE35438FBC621444B053F4FEA9D",
+      "kind": "installed-resource",
+      "actualSha256": "9c5dbc6b41d66ec4e902400299808f5a68356fe35438fbc621444b053f4fea9d",
+      "matches": true
+    },
+    {
+      "id": "configManager",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/SystemConfigManager.cs",
+      "sha256": "2B57B97FD9EE163278670BE9A05D1A8309DC6E59BBEAE40E6F4B19EBD6A56B51",
+      "kind": "decompiled-managed",
+      "actualSha256": "2b57b97fd9ee163278670be9a05d1a8309dc6e59bbeae40e6f4b19ebd6a56b51",
+      "matches": true
+    },
+    {
+      "id": "mainData",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/MainWindowData.cs",
+      "sha256": "AA7A20533B81452CD58FBD22E121273B3A109CE21B0841FC0D9E4D081939F1E5",
+      "kind": "decompiled-managed",
+      "actualSha256": "aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5",
+      "matches": true
+    },
+    {
+      "id": "sdkObject",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/CVmObjectBase.cs",
+      "sha256": "59E713604FA8AF86FEA0C4711CF16E8BE6C1B3E6BCB7670CC39475437F60A8DB",
+      "kind": "decompiled-managed",
+      "actualSha256": "59e713604fa8af86fea0c4711cf16e8be6c1b3e6bcb7670cc39475437f60a8db",
+      "matches": true
+    },
+    {
+      "id": "sdkSolutionManager",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/SolutionManager.cs",
+      "sha256": "46B1D8249E3A30FE3BF7A0ED8E92207835F1A8E272833D5462041BC1756F220A",
+      "kind": "decompiled-managed",
+      "actualSha256": "46b1d8249e3a30fe3bf7a0ed8e92207835f1a8e272833d5462041bc1756f220a",
+      "matches": true
+    },
+    {
+      "id": "tempSolution",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/TempVmSolution.cs",
+      "sha256": "2683DD70DC4AA88FA2D263E9117BDC00B1153DEEDA52E03417DFA7EE42859721",
+      "kind": "decompiled-managed",
+      "actualSha256": "2683dd70dc4aa88fa2d263e9117bdc00b1153deeda52e03417dfa7ee42859721",
+      "matches": true
+    },
+    {
+      "id": "vmSolution",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+      "sha256": "C141E2C53913B233B768782D6757FAE5997ECAF638B35DB2DDF98F5EF951A13E",
+      "kind": "decompiled-managed",
+      "actualSha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+      "matches": true
+    }
+  ],
+  "coverage": [
+    {
+      "id": "E01",
+      "title": "配置／原生入口",
+      "state": "confirmed-static",
+      "unknown": "actual host CreateModule caller and process-loaded file identity"
+    },
+    {
+      "id": "E02",
+      "title": "窗口／复用／关闭",
+      "state": "partial",
+      "unknown": "whether host reuses same ShellRun instance across close/reopen; general template construction caller; close does not prove script runtime Dispose"
+    },
+    {
+      "id": "E03",
+      "title": "引用与语言服务",
+      "state": "partial",
+      "unknown": "which completion DLL actual Shell process loads; live VisionMaster PID 53372 is visible but module list access returned zero entries; precise reference readiness at first query"
+    },
+    {
+      "id": "E04",
+      "title": "自动输入／Ctrl+Space",
+      "state": "confirmed-installed-bodies-runtime-identity-open",
+      "unknown": "different ShowCompletion/GetCompletions bodies between two DLL copies; actual process-loaded copy and NRefactory engine candidate dedup; live module inventory access denied"
+    },
+    {
+      "id": "E05",
+      "title": "代码IO与引用提交",
+      "state": "partial-cross-boundary",
+      "unknown": "SDK IUserBytesData/VmModule.Params exact intermediate implementation and value marshalling; host bottom-button generic ExcuteMethodOperation caller"
+    },
+    {
+      "id": "E06",
+      "title": "编译触发／并发／缓存",
+      "state": "confirmed-static-with-race-unknown",
+      "unknown": "SetShellContent Task.Run scheduling race versus immediate Process; references-only change and external-file refresh compile semantics across SDK; cache hit rates"
+    },
+    {
+      "id": "E07",
+      "title": "装载与Init",
+      "state": "confirmed-static",
+      "unknown": "actual elapsed times and lifetime across host-level solution changes"
+    },
+    {
+      "id": "E08",
+      "title": "执行／IO／结果发布",
+      "state": "partial-cross-boundary",
+      "unknown": "all 18 dynamic IO ABI branches, native output clearing/old result behavior, UI callback frame identity"
+    },
+    {
+      "id": "E09",
+      "title": "改码／重编／失败",
+      "state": "partial",
+      "unknown": "old native output buffer and result snapshot after failed compile; references-only change does not directly set dirty in visible ScriptCom branch"
+    },
+    {
+      "id": "E10",
+      "title": "关闭／切方案／释放",
+      "state": "partial",
+      "unknown": "host solution-switch caller to native DestroyModule; task cancellation and late compile worker after Dispose; exact AppDomain release on all failures"
+    }
+  ],
+  "coverageSegments": 10,
+  "fullChainProven": false,
+  "applicationRuntimeReplayed": false,
+  "candidateSteps": 4,
+  "plannedTests": 12,
+  "executedTests": 0,
+  "productModified": false,
+  "navigationModified": false
+}

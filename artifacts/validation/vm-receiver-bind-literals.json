@@ -1,0 +1,62 @@
+[
+  {
+    "rva": "ac41c8",
+    "ascii": "PF_M_MsgDeal",
+    "wide": "䙐䵟䵟杳敄污"
+  },
+  {
+    "rva": "ac4020",
+    "ascii": "PF_M_Init",
+    "wide": "䙐䵟䥟楮t"
+  },
+  {
+    "rva": "ac4130",
+    "ascii": "PF_M_Deinit",
+    "wide": "䙐䵟䑟楥楮t"
+  },
+  {
+    "rva": "ac4118",
+    "ascii": "PF_M_SetMsgCallback",
+    "wide": "䙐䵟卟瑥獍䍧污扬捡k"
+  },
+  {
+    "rva": "ac40f8",
+    "ascii": "PF_M_SetRunResultCallback",
+    "wide": "䙐䵟卟瑥畒剮獥汵䍴污扬捡k"
+  },
+  {
+    "rva": "ac41d8",
+    "ascii": "PF_M_SetReportModuleDataCallback",
+    "wide": "䙐䵟卟瑥敒潰瑲潍畤敬慄慴慃汬慢正"
+  },
+  {
+    "rva": "ac41b0",
+    "ascii": "PF_M_GetBinaryData",
+    "wide": "䙐䵟䝟瑥楂慮祲慄慴"
+  },
+  {
+    "rva": "ac4198",
+    "ascii": "PF_M_SetBinaryData",
+    "wide": "䙐䵟卟瑥楂慮祲慄慴"
+  },
+  {
+    "rva": "ac4250",
+    "ascii": "PF_M_SetGlobalscriptCallback",
+    "wide": "䙐䵟卟瑥汇扯污捳楲瑰慃汬慢正"
+  },
+  {
+    "rva": "ab4c10",
+    "ascii": "i",
+    "wide": "iMVS-6000PlatformSDK"
+  },
+  {
+    "rva": "ac0aa8",
+    "ascii": "\\",
+    "wide": "\\..\\..\\Server\\"
+  },
+  {
+    "rva": "ac40d0",
+    "ascii": "P",
+    "wide": "PlatformManager.dll"
+  }
+]

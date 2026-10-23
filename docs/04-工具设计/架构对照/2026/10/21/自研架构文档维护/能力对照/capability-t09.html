@@ -1,0 +1,156 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T09 ROI绘制、选择、移动与屏蔽</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">T09 ROI绘制、选择、移动与屏蔽</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>T09 ROI绘制、选择、移动与屏蔽</h1><article id="compare-T09"><span id="T09"></span><div class="visual-metrics"><div><strong>T09</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>专业工具regionManager</b></li><li><small>02</small><b>RoiEditorManagerControl</b></li><li><small>03</small><b>WpfShapeRenderer/交互层</b></li><li><small>04</small><b>参数区域</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>SDK公共ROI管理器与阈值主图注入已有实现。</p><details><summary>完整缺陷与未闭合调用边</summary><p>绘制手柄事件→Roi模型/参数提交；全部图元→唯一坐标变换；保存/撤销/关闭→解绑/回滚</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>ROIControlBase/专业编辑页→坐标映射/命令，结果图形与可编辑ROI不同。</p><p>原版专业ROI输入、显示图元与结果层应分开；Group专参数UI不可由通用ROI代表。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/GROUP-NATIVE-EDITORS.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">ROI控件存在，但全部图元模型提交、撤销与序列化未逐形状闭合。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：ROI控件存在，但全部图元模型提交、撤销与序列化未逐形状闭合。 VM参考边界：原版专业ROI输入、显示图元与结果层应分开；Group专参数UI不可由通用ROI代表。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">按形状列交互事件→模型→持久化→算法消费者；证据齐后决定共用还是专业实现。 按矩形/旋转框/圆弧/多边形等列事件和模型写入点；共享图像坐标合同，先区分结果只读层与交互层，屏蔽/有效域独立验收。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">缩放/DPI/旋转/换图/取消/Undo后ROI值一致；无数据时不误编辑旧帧。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o06.html#O06"><b>图像、ROI、图形文字及坐标一致性</b><small class="reference-id">优化方案 · O06</small></a></td></tr></tbody></table></div></section><article id="recommendation-T09"><h2>T09 ROI绘制、选择、移动与屏蔽 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>ROI控件存在，但全部图元模型提交、撤销与序列化未逐形状闭合。</p><p><b>VM可借鉴与不可推断：</b>原版专业ROI输入、显示图元与结果层应分开；Group专参数UI不可由通用ROI代表。</p><p><b>具体改法 / 成本：</b>按形状列交互事件→模型→持久化→算法消费者；证据齐后决定共用还是专业实现。 按矩形/旋转框/圆弧/多边形等列事件和模型写入点；共享图像坐标合同，先区分结果只读层与交互层，屏蔽/有效域独立验收。</p><p><b>验收：</b>缩放/DPI/旋转/换图/取消/Undo后ROI值一致；无数据时不误编辑旧帧。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T09">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T09">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S079</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs">src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>c0c109f27baac6e46df283000defa7870139dcbd1a5b89d1c69bb9d53469bccd</code></p><pre>﻿using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering;</pre></details><details class="source-card"><summary>S080</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/Roi/Rendering/WpfShapeRenderer.cs">src/Plugin.SDK/UI/Controls/Roi/Rendering/WpfShapeRenderer.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>e897c31114bf5253f1f2bd4a8d4da35226da94fff029e771db2a2c96bc84b09a</code></p><pre>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
+
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
+{
+    /// &lt;summary&gt;
+    /// ROI 区域渲染器（轻量版）：</pre></details><details class="source-card"><summary>S081</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs">tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs:75</a></p><p><code>SetMainImageControl</code></p><p>SHA256 <code>732736f78c6b7ba9b5d9eb36676e04ef249f2de0b7b0481f80985b0de88e0484</code></p><pre>        public override void SetMainImageControl(ImageControl? imageControl)
+        {
+            _mainImageControl = imageControl;
+
+            if (regionManager != null &amp;&amp; imageControl != null)
+            {
+                regionManager.SetMainImageControl(imageControl);
+                PluginLogger.Info(&quot;已为区域管理器设置主窗口ImageControl&quot;, &quot;ThresholdTool&quot;);
+            }
+        }
+
+        #endregion
+
+        #region 构造函数</pre></details><details class="source-card"><summary>R051</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs">src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs:96</a></p><p><code>OnInspectionSourceChanged</code></p><p>SHA256 <code>c0c109f27baac6e46df283000defa7870139dcbd1a5b89d1c69bb9d53469bccd</code></p><pre>        private static void OnInspectionSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is RoiEditorManagerControl control &amp;&amp; e.NewValue is ObservableCollection&lt;Roi&gt; source)
+            {
+                control.inspectionsEditor?.SetRoisSource(source);
+                PluginLogger.Info(&quot;[RoiEditorManager] Inspection roi collection injected | Count=&quot; + source.Count, &quot;RoiEditorManager&quot;);
+            }
+        }
+
+        private static void OnMaskSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is RoiEditorManagerControl control &amp;&amp; e.NewValue is ObservableCollection&lt;Roi&gt; source)
+            {
+                control.masksEditor?.SetRoisSource(source);
+                PluginLogger.Info(&quot;[RoiEditorManager] Mask roi collection injected | Count=&quot; + source.Count, &quot;RoiEditorManager&quot;);
+            }
+        }
+
+        private static void OnAvailableDataSourcesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {</pre></details><details class="source-card"><summary>R052</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/Roi/Rendering/WpfShapeRenderer.cs">src/Plugin.SDK/UI/Controls/Roi/Rendering/WpfShapeRenderer.cs:94</a></p><p><code>Clear</code></p><p>SHA256 <code>e897c31114bf5253f1f2bd4a8d4da35226da94fff029e771db2a2c96bc84b09a</code></p><pre>        public void Clear()
+        {
+            _host.Clear();
+            _regions.Clear();
+            _forceAllRedraw = false;
+
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                $&quot;[WpfShapeRenderer.Clear] 清空渲染器 | InstanceId={_rendererInstanceId} | RegionVisuals={_regions.Count}&quot;,
+                &quot;WpfShapeRenderer&quot;);
+        }
+
+        public void SetViewportTransform(double scale, Point offset)
+        {
+            bool scaleChanged = Math.Abs(_viewportScale - scale) &gt; 0.001;
+            _viewportScale = scale;
+            _viewportOffset = offset;
+            if (scaleChanged)
+            {
+                // 缩放变化影响线宽/字号反除 → 全量重画一次（低频）
+                _forceAllRedraw = true;</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T09&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;ROI绘制、选择、移动与屏蔽&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;专业工具regionManager&quot;,
+    &quot;RoiEditorManagerControl&quot;,
+    &quot;WpfShapeRenderer/交互层&quot;,
+    &quot;参数区域&quot;
+  ],
+  &quot;current&quot;: &quot;SDK公共ROI管理器与阈值主图注入已有实现。&quot;,
+  &quot;gap&quot;: &quot;绘制手柄事件→Roi模型/参数提交；全部图元→唯一坐标变换；保存/撤销/关闭→解绑/回滚&quot;,
+  &quot;vm&quot;: &quot;ROIControlBase/专业编辑页→坐标映射/命令，结果图形与可编辑ROI不同。&quot;,
+  &quot;vmDoc&quot;: &quot;GROUP-NATIVE-EDITORS.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：ROI控件存在，但全部图元模型提交、撤销与序列化未逐形状闭合。 VM参考边界：原版专业ROI输入、显示图元与结果层应分开；Group专参数UI不可由通用ROI代表。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;按形状列交互事件→模型→持久化→算法消费者；证据齐后决定共用还是专业实现。 按矩形/旋转框/圆弧/多边形等列事件和模型写入点；共享图像坐标合同，先区分结果只读层与交互层，屏蔽/有效域独立验收。&quot;,
+  &quot;accept&quot;: &quot;缩放/DPI/旋转/换图/取消/Undo后ROI值一致；无数据时不误编辑旧帧。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S079&quot;,
+    &quot;S080&quot;,
+    &quot;S081&quot;,
+    &quot;R051&quot;,
+    &quot;R052&quot;
+  ],
+  &quot;optimization&quot;: &quot;O06&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;T09&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;RoiEditorManagerControl有检测/屏蔽源变化与主图注入；WpfShapeRenderer管理可见区域及Clear。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;绘制手柄事件→Roi模型/参数提交&quot;,
+      &quot;全部图元→唯一坐标变换&quot;,
+      &quot;保存/撤销/关闭→解绑/回滚&quot;
+    ],
+    &quot;cause&quot;: &quot;专业图元与消费者未逐个核完&quot;,
+    &quot;change&quot;: &quot;按矩形/旋转框/圆弧/多边形等列事件和模型写入点；共享图像坐标合同，先区分结果只读层与交互层，屏蔽/有效域独立验收。&quot;,
+    &quot;acceptance&quot;: &quot;缩放/DPI/旋转/换图/取消/Undo后ROI值一致；无数据时不误编辑旧帧。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S079&quot;,
+      &quot;S080&quot;,
+      &quot;S081&quot;,
+      &quot;R051&quot;,
+      &quot;R052&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留专业ROI，统一坐标&quot;,
+    &quot;reason&quot;: &quot;统一渲染减少重复，专业操作仍需扩展；不能用结果绘图代替编辑。&quot;
+  },
+  &quot;defect&quot;: &quot;ROI控件存在，但全部图元模型提交、撤销与序列化未逐形状闭合。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版专业ROI输入、显示图元与结果层应分开；Group专参数UI不可由通用ROI代表。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;ROI控件存在，但全部图元模型提交、撤销与序列化未逐形状闭合。&quot;,
+    &quot;borrow&quot;: &quot;原版专业ROI输入、显示图元与结果层应分开；Group专参数UI不可由通用ROI代表。&quot;,
+    &quot;action&quot;: &quot;按形状列交互事件→模型→持久化→算法消费者；证据齐后决定共用还是专业实现。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S079&quot;,
+      &quot;S080&quot;,
+      &quot;S081&quot;,
+      &quot;R051&quot;,
+      &quot;R052&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

@@ -1,0 +1,46 @@
+{
+  "batchId": "DOC-UX-SPLIT-20261022",
+  "pages": 151,
+  "managedFiles": 202,
+  "interfaceScenes": 3,
+  "interfaceHotspots": 18,
+  "capabilities": 49,
+  "optimizationPackages": 12,
+  "forwardSteps": 41,
+  "auditPackages": 20,
+  "uiItems": 13,
+  "originalCheckpoints": 42,
+  "evidenceStates": {
+    "verified": 24,
+    "partial": 11,
+    "unverified": 7
+  },
+  "toolRows": 162,
+  "menuRows": 218,
+  "staticLinks": 3191,
+  "localAnchors": 898,
+  "legacyRoutes": 390,
+  "queryEntry": true,
+  "history": true,
+  "keyboard": true,
+  "diagramExpand": true,
+  "printRestore": true,
+  "overflowChecks": 453,
+  "widths": [
+    390,
+    768,
+    1440
+  ],
+  "pageErrors": [],
+  "remoteRequests": [],
+  "sourceDrift": [
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/execution-architecture.json",
+      "sha256": "17f4367985cafea2b0201f199ffd3a7464342e5601553f32e733786cc4ad8be7",
+      "currentSha256": "1a4e65f07bd9f964c8783b5c579e9436334cc88efe1159ab85dc9be84422ab08"
+    }
+  ],
+  "semanticUpgrades": 0,
+  "productModified": false,
+  "acceptanceExecuted": 0
+}

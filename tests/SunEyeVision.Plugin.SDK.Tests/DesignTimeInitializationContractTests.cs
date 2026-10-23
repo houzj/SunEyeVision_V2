@@ -74,7 +74,6 @@ public class DesignTimeInitializationContractTests
             (Project: "SunEyeVision.Tool.LineDetect", Type: "LineDetect"),
             (Project: "SunEyeVision.Tool.CircleDetect", Type: "CircleDetect"),
             (Project: "SunEyeVision.Tool.ShapeMatch", Type: "ShapeMatch"),
-            (Project: "SunEyeVision.Tool.Threshold", Type: "Threshold"),
             (Project: "SunEyeVision.Tool.ImageThreshold", Type: "ImageThreshold"),
             (Project: "SunEyeVision.Tool.ImageFilter", Type: "ImageFilter"),
             (Project: "SunEyeVision.Tool.Morphology", Type: "Morphology")

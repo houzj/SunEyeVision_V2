@@ -1,0 +1,39 @@
+{
+  "unknown": [
+    "真实节点默认有效引用数量/类型与元数据总量",
+    "扩大引用范围对首补全/编译的净成本",
+    "外部DLL更新后的全链缓存失效与运行加载身份"
+  ],
+  "evidence": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\MetadataReferenceProvider.cs",
+      "sha256": "7D0BBDE0BD123DBD5E63D910A94E02968E2FEA0A9FD1675E2E2C7E125B2E6475"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\SharedMetadataReferenceProvider.cs",
+      "sha256": "CCCD79604D26AE31F6F6C8D187C023E781ABC865151F4F3B987ABE1A211E0461"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptCompiler.cs",
+      "sha256": "14A9AE73A34C65D65AC466CA5956FC66D53D4D79B45309217C62D871338B2BF1"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\Views\\ScriptDebugControl.xaml.cs",
+      "sha256": "9C2FBB9EF9FAC7277C8D21189C8BB7B9C90274554BAD412DDF69B13FF81BDFCD"
+    }
+  ],
+  "scope": "静态代码确认，引用重量贡献未测",
+  "recommendation": [
+    "比较最小必需/默认/业务引用配置的同语料成本与能力，不能盲删引用",
+    "引用身份快照统一补全/编译/加载，并可失效",
+    "区分脚本SDK必要API与非必要宿主API，先测暴露面/依赖再决定拆分"
+  ],
+  "confirmed": [
+    "编辑器BuildReferences按节点AssemblyReferences逐项ResolveAssemblyPath，不扫描全进程",
+    "编译assemblyNames非空走同名列表并按path去重；空列表回退HostRefs及ScriptRefs目录",
+    "RequiredAssemblyNames把白名单中存在BCL和SDK当必需列表，不能仅凭注释约23计数",
+    "ResolveAssemblyPath会CreateFromFile；路径缓存不等元数据对象/语义编译共享",
+    "进程载入/元数据引用/编译引用分层，不以.NETFramework5个和.NET9数量直接推断成本"
+  ],
+  "id": "SCRIPT-ASSEMBLY-SCOPE-20261023"
+}

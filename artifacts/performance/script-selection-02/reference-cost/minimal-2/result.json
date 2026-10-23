@@ -1,0 +1,269 @@
+{
+  "side": "A-Roslyn",
+  "scope": "component-only, no application UI",
+  "sourceSha256": "C8EBBEC6242647D28ACBBCF49644546B0FF6186E6F3A0C72668A677401BDFD41",
+  "references": [
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.CoreLib.dll",
+      "sha256": "4AEE38CB826D3624936CF78265C4BB7E5F84E59B28C47BD898C3B9FB5AEA95DD"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.dll",
+      "sha256": "DAC19C2064A2A263BF9553C0913146593849B74695FD97BE801CDC221E11E146"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\mscorlib.dll",
+      "sha256": "E452E191A394A4057678B97759DC4EA9E7B1F0B5588705896C6795BC522FC19D"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.dll",
+      "sha256": "36FFFCC6C1A3D885655829221AABDF5A1E3C502BAF9B9EDD24EE8B6AB217CD33"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Encoding.dll",
+      "sha256": "445F8950E8C6DB34E087921F49FCD66450BD3FF245637DA8864597ED1CF62E3F"
+    }
+  ],
+  "caretUtf16": 122,
+  "charBefore": ".",
+  "charAt": "A",
+  "runtime": ".NET 9.0.20",
+  "serviceMs": 780.6221,
+  "documentMs": 349.249,
+  "semanticMs": 399.3548,
+  "triggerMode": "invoke",
+  "triggerKind": "Other",
+  "triggerCharacter": "\u0000",
+  "readyToQueryMs": 1622.2012,
+  "firstCandidatesFromPrepareStartMs": 2595.5558,
+  "queries": [
+    {
+      "iteration": 0,
+      "ms": 971.8358,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    },
+    {
+      "iteration": 1,
+      "ms": 7.1415,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    },
+    {
+      "iteration": 2,
+      "ms": 6.8167,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    },
+    {
+      "iteration": 3,
+      "ms": 7.0645,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    },
+    {
+      "iteration": 4,
+      "ms": 7.4182,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    },
+    {
+      "iteration": 5,
+      "ms": 7.6833,
+      "count": 21,
+      "names": [
+        "Append",
+        "AppendFormat",
+        "AppendFormat",
+        "AppendJoin",
+        "AppendJoin",
+        "AppendLine",
+        "Capacity",
+        "Clear",
+        "CopyTo",
+        "EnsureCapacity",
+        "Equals",
+        "GetChunks",
+        "GetHashCode",
+        "GetType",
+        "Insert",
+        "Length",
+        "MaxCapacity",
+        "Remove",
+        "Replace",
+        "this",
+        "ToString"
+      ]
+    }
+  ],
+  "syntaxBoundaryCompile": {
+    "ms": 388.9593,
+    "success": true,
+    "languageVersion": "CSharp13",
+    "errors": [],
+    "scope": "standalone Roslyn compiler; not candidate C combined implementation"
+  },
+  "success": true,
+  "loaded": [
+    {
+      "name": "Microsoft.CodeAnalysis.Features",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Features.dll",
+      "sha256": "FC743C40512353992FF24C80159B966EE879DA4E2538EEEB693E489C7A5ECDDB"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.dll",
+      "sha256": "0A7FB1D94E0E7F46798B138CAA67E5D5FB8FB98FD31B5294C917DEF057AB3D80"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.Workspaces",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Workspaces.dll",
+      "sha256": "32402BAA9383AFD30E660AF0BD3D23BDB7E596207AFEAC8C6B3ED6F6A5CA6F1D"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.CSharp",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.dll",
+      "sha256": "CFB5F2785C30485EDA803D58FB8330D737CB07D469CD3D7BC1113D58E8D8E4BB"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.CSharp.Workspaces",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+      "sha256": "C63F6D8FDB79E443C37CCE6A2248E04BFE2C82D4BDA24B6C01FF1420E6A728B3"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.CSharp.Features",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Features.dll",
+      "sha256": "41D62B24232AF6E896B372E6BB4D1EA9066CE40229388FB55B221FDFDA124FC5"
+    },
+    {
+      "name": "System.Composition.TypedParts",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\System.Composition.TypedParts.dll",
+      "sha256": "3100191A1448B9A613E04A63B65899CF74371FC2F5C03315AA40AB53468C7A24"
+    },
+    {
+      "name": "System.Composition.Hosting",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\System.Composition.Hosting.dll",
+      "sha256": "8D9A239C7B03CE4A047ED0ABD9E835DB0FEEAAA16C157E7D308603D03EFB7EBC"
+    },
+    {
+      "name": "System.Composition.Runtime",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\System.Composition.Runtime.dll",
+      "sha256": "324ACDFC86C5ADAA12E9C4F40DEACF1E9F45AC2E84E542A02D130E7380F79D6E"
+    },
+    {
+      "name": "System.Composition.AttributedModel",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\System.Composition.AttributedModel.dll",
+      "sha256": "0F403E98D8BAD390B970704A93AA532042409F499032823CAC47E3004BAD9C8A"
+    }
+  ]
+}

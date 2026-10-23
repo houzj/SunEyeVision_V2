@@ -1,0 +1,78 @@
+{
+  "source": "Independent Node.js PE byte parser; not REA Evidence",
+  "target": "D:/Program Files/VisionMaster4.4.0/Applications/PublicFile/x64/iMVS-6000PlatformSDK.dll",
+  "sha256": "b62d7e15588ccda6671228aebc11fec3e27aca878f0e03067e44b17d5a54a9a1",
+  "machine": "8664",
+  "preferredImageBase": "0x180000000",
+  "exports": [
+    {
+      "name": "IMVS_AddOneModule",
+      "rva": "0x645840",
+      "preferredVA": "0x180645840",
+      "fileOffset": 6573120,
+      "forwarder": null,
+      "first32Bytes": "48895c240848896c2410488974241848897c242041564883ec30498be84c8bf2"
+    },
+    {
+      "name": "IMVS_CloseOneModule",
+      "rva": "0x645950",
+      "preferredVA": "0x180645950",
+      "fileOffset": 6573392,
+      "forwarder": null,
+      "first32Bytes": "48895c240848896c24104889742418574883ec308bea488bf9e802f8ffff488b"
+    },
+    {
+      "name": "IMVS_ContinousRunStart_V30",
+      "rva": "0x647820",
+      "preferredVA": "0x180647820",
+      "fileOffset": 6581280,
+      "forwarder": null,
+      "first32Bytes": "48895c240848896c24104889742418574883ec308bea488bf9e832d9ffff488b"
+    },
+    {
+      "name": "IMVS_ExecuteOnce_V30",
+      "rva": "0x647750",
+      "preferredVA": "0x180647750",
+      "fileOffset": 6581072,
+      "forwarder": null,
+      "first32Bytes": "48895c24084889742410574883ec20498bf88bf2488bd9e804daffff4885c074"
+    },
+    {
+      "name": "IMVS_QueryModuleHistoryResult",
+      "rva": "0x64c650",
+      "preferredVA": "0x18064c650",
+      "fileOffset": 6601296,
+      "forwarder": null,
+      "first32Bytes": "48895c240848896c24104889742418574883ec50418bf9418bf08bea488bd9e8"
+    },
+    {
+      "name": "IMVS_ReleaseDynamicMemory",
+      "rva": "0x650730",
+      "preferredVA": "0x180650730",
+      "fileOffset": 6617904,
+      "forwarder": null,
+      "first32Bytes": "48895c24084889742410574883ec20498bf88bf2488bd9e8244affff4885c074"
+    },
+    {
+      "name": "IMVS_SelfExecuteOneModule",
+      "rva": "0x645a50",
+      "preferredVA": "0x180645a50",
+      "fileOffset": 6573648,
+      "forwarder": null,
+      "first32Bytes": "48895c2408574883ec208bfa488bd9e80cf7ffff4885c0741c488b10488b0248"
+    },
+    {
+      "name": "IMVS_StopExecute_V30",
+      "rva": "0x647920",
+      "preferredVA": "0x180647920",
+      "fileOffset": 6581536,
+      "forwarder": null,
+      "first32Bytes": "48895c240848896c2410488974241848897c242041564883ec30418be8448bf2"
+    }
+  ],
+  "limitations": [
+    "Exports and original file bytes only; no function-body or runtime interpretation.",
+    "Preferred virtual addresses are not live loaded addresses.",
+    "Export presence does not prove behavior, ABI safety, cancellation, or resource release."
+  ]
+}

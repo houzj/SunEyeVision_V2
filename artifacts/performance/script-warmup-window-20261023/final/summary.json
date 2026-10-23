@@ -1,0 +1,259 @@
+{
+  "rows": [
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "cold",
+      "round0": {
+        "initializationMs": 877.3718,
+        "constructToContentRenderedMs": 1839.0378,
+        "firstRequestedQueryMs": 434.575,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 18.674,
+        "constructToContentRenderedMs": 290.7344,
+        "firstRequestedQueryMs": 109.5731,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2910.8986
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "cold",
+      "round0": {
+        "initializationMs": 823.1099,
+        "constructToContentRenderedMs": 1556.0654,
+        "firstRequestedQueryMs": 365.7879,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 10.0484,
+        "constructToContentRenderedMs": 182.8541,
+        "firstRequestedQueryMs": 65.9478,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2387.9506
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "cold",
+      "round0": {
+        "initializationMs": 823.4425,
+        "constructToContentRenderedMs": 1520.2448,
+        "firstRequestedQueryMs": 388.0432,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 12.0772,
+        "constructToContentRenderedMs": 196.5641,
+        "firstRequestedQueryMs": 68.8123,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2373.376
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "startup-disabled-probe",
+      "isolationNote": "Probe-only static guard suppresses background startup preparation; on-demand initialization still runs; product unchanged",
+      "round0": {
+        "initializationMs": 1012.0779,
+        "constructToContentRenderedMs": 2038.4373,
+        "firstRequestedQueryMs": 383.9752,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 13.8703,
+        "constructToContentRenderedMs": 262.0549,
+        "firstRequestedQueryMs": 86.4529,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2981.6583
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "startup-disabled-probe",
+      "isolationNote": "Probe-only static guard suppresses background startup preparation; on-demand initialization still runs; product unchanged",
+      "round0": {
+        "initializationMs": 932.0144,
+        "constructToContentRenderedMs": 1920.1453,
+        "firstRequestedQueryMs": 368.1043,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 14.188,
+        "constructToContentRenderedMs": 228.1609,
+        "firstRequestedQueryMs": 83.9236,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2811.8888
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "startup-disabled-probe",
+      "isolationNote": "Probe-only static guard suppresses background startup preparation; on-demand initialization still runs; product unchanged",
+      "round0": {
+        "initializationMs": 880.7014,
+        "constructToContentRenderedMs": 1618.835,
+        "firstRequestedQueryMs": 347.7042,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 14.6389,
+        "constructToContentRenderedMs": 214.9728,
+        "firstRequestedQueryMs": 76.4341,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2484.8863
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "prewarmed",
+      "startupPreparationMs": 773.8037,
+      "round0": {
+        "initializationMs": 363.233,
+        "constructToContentRenderedMs": 1460.0811,
+        "firstRequestedQueryMs": 393.5987,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 20.88,
+        "constructToContentRenderedMs": 230.2617,
+        "firstRequestedQueryMs": 98.2325,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 3151.227
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "prewarmed",
+      "startupPreparationMs": 717.0231,
+      "round0": {
+        "initializationMs": 269.0807,
+        "constructToContentRenderedMs": 1182.2776,
+        "firstRequestedQueryMs": 371.4649,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 11.7874,
+        "constructToContentRenderedMs": 184.73,
+        "firstRequestedQueryMs": 73.6409,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2742.239
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "prewarmed",
+      "startupPreparationMs": 605.3975,
+      "round0": {
+        "initializationMs": 271.4362,
+        "constructToContentRenderedMs": 966.1393,
+        "firstRequestedQueryMs": 362.7474,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 12.9711,
+        "constructToContentRenderedMs": 196.6818,
+        "firstRequestedQueryMs": 70.662,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2386.8087
+    }
+  ],
+  "productModified": false,
+  "groups": [
+    {
+      "n": 3,
+      "startupMedian": null,
+      "reopenQueryMedian": 68.8123,
+      "firstQueryMedian": 388.0432,
+      "firstOpenMedian": 1556.0654,
+      "mode": "cold",
+      "reopenMedian": 196.5641,
+      "firstOpenRange": [
+        1520.2448,
+        1839.0378
+      ],
+      "allValid": true
+    },
+    {
+      "n": 3,
+      "startupMedian": 717.0231,
+      "reopenQueryMedian": 73.6409,
+      "firstQueryMedian": 371.4649,
+      "firstOpenMedian": 1182.2776,
+      "mode": "prewarmed",
+      "reopenMedian": 196.6818,
+      "firstOpenRange": [
+        966.1393,
+        1460.0811
+      ],
+      "allValid": true
+    },
+    {
+      "n": 3,
+      "startupMedian": null,
+      "reopenQueryMedian": 83.9236,
+      "firstQueryMedian": 368.1043,
+      "firstOpenMedian": 1920.1453,
+      "mode": "startup-disabled-probe",
+      "reopenMedian": 228.1609,
+      "firstOpenRange": [
+        1618.835,
+        2038.4373
+      ],
+      "allValid": true
+    }
+  ],
+  "scope": "真实Release编辑器控件隔离WPF窗口，不等完整调试窗口；候选返回不含补全弹窗；3进程每组，未清磁盘缓存；warmup ready等待不计入点击后打开但单列",
+  "releaseMatches": [
+    {
+      "name": "CommonControl.dll",
+      "matches": true
+    },
+    {
+      "name": "SunEyeVision.Plugin.SDK.dll",
+      "matches": true
+    },
+    {
+      "name": "ICSharpCode.AvalonEdit.dll",
+      "matches": true
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.dll",
+      "matches": true
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.CSharp.dll",
+      "matches": true
+    }
+  ],
+  "probeSourceSHA": "11C1D584AC628D5FB3CE8AD102CCA762F787CF96C720CC287F3C36726DA7EB9C"
+}

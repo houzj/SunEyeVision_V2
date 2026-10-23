@@ -1,0 +1,1 @@
+const fs=require('fs'),p='docs/collaboration/CURRENT_TASK.md';let s=fs.readFileSync(p,'utf8');s=s.replace('## 2026-10-19 P0实际接收方、流程停止虚表与第二转发层\n\n','## 2026-10-19 P0实际接收方、流程停止虚表与第二转发层\n\n- 最终验收：30节/8视图、491有效链接、最新P0主题聚焦及截图目视通过；旧锚点、历史、搜索、打印恢复、主题与390px无整页溢出通过，无页面错误或网络请求。\n');fs.writeFileSync(p,s);

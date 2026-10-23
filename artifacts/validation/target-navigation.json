@@ -1,0 +1,3288 @@
+{
+  "scope": "最终目标导航草案；当前状态逐项标注，不是产品截图或已批准功能规格",
+  "groups": [
+    {
+      "label": "方案",
+      "items": [
+        {
+          "id": "new",
+          "label": "新建方案",
+          "group": "方案",
+          "cap": "M02",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "方案管理器“新建方案”已接NewSolutionCommand；顶栏当前只有“方案配置”，目标直接新建快捷项尚未接入。",
+          "gap": "管理器以!IsBusy准入；跨方案保存/停止门禁仍走现有transition链。",
+          "change": "复用管理器操作服务增加快捷入口，保持选中记录与已加载方案分开。",
+          "accept": "取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": true,
+          "commandChain": "NewSolutionCommand → New → 方案管理器模型/落盘；不得用旧NewWorkflowCommand代替方案新建。",
+          "commandGuard": "管理器以!IsBusy准入；跨方案保存/停止门禁仍走现有transition链。",
+          "commandSource": {
+            "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+            "line": 87,
+            "token": "NewSolutionCommand =",
+            "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "编辑器的基本方案入口，需自有模型和创建失败回滚。 方案身份、资源及配置边界必需；可整合方案面板，不一定独立对话框。",
+          "vmEntries": [
+            {
+              "id": "0.0",
+              "label": "新建方案",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "1.2",
+              "label": "方案设置",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "open",
+          "label": "打开方案",
+          "group": "方案",
+          "cap": "M02",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "管理器“添加已有”与“打开选中方案”是两步，不能把添加记录直接等同已切换方案。",
+          "gap": "Launch检查选中项、缺失文件和busy；当前目标顶栏打开快捷项未接线。",
+          "change": "快捷打开应完成预检和Launch事务，失败保留旧工作区，不能只调用AddExisting。",
+          "accept": "取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": true,
+          "commandChain": "OpenSolutionCommand → AddExisting；LaunchCommand → Launch → 保存/运行过渡检查后打开。",
+          "commandGuard": "Launch检查选中项、缺失文件和busy；当前目标顶栏打开快捷项未接线。",
+          "commandSource": {
+            "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+            "line": 96,
+            "token": "LaunchCommand =",
+            "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "必须能打开自有方案；不承诺原.sol兼容。",
+          "vmEntries": [
+            {
+              "id": "0.1",
+              "label": "打开方案",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "recent",
+          "label": "最近方案（示例待确认）",
+          "group": "方案",
+          "cap": "M02",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+          "fact": "管理器已有RecentSolutions，按LastAccessTime排序取10项，并有选择最近项入口；示例库未由此证明。",
+          "gap": "最近记录存在不等于能成功打开；缺失路径、原工作区保存/停止仍要走打开链。",
+          "change": "把最近方案状态改为部分实现；示例作为按需能力单独确认，不笼统写两者都未实现。",
+          "accept": "取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "方案元数据 → RecentSolutions → SelectRecent → Launch。",
+          "commandGuard": "最近记录存在不等于能成功打开；缺失路径、原工作区保存/停止仍要走打开链。",
+          "commandSource": {
+            "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+            "line": 316,
+            "token": "RecentSolutions.Clear();",
+            "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "降低重复选文件成本，需处理路径失效；不需要复制VM最近记录格式。 有培训/交付示例时提供，首版不必内置整套案例。 仅有最近方案/示例/引导内容时增加欢迎页，不做无实际内容的首页。",
+          "vmEntries": [
+            {
+              "id": "0.2",
+              "label": "最近打开方案",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "0.3",
+              "label": "打开示例",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "4.6",
+              "label": "打开欢迎页",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "flowio",
+          "label": "流程导入 / 导出",
+          "group": "方案",
+          "cap": "M02",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "旧工作流JSON打开/另存方法存在；未据此确认完整方案内流程导入/导出菜单链。",
+          "gap": "当前顶栏未绑定旧命令；ID/绑定/插件/外部资源与方案模型合并事务仍待齐。",
+          "change": "新增正式流程交换合同和候选预检/一次提交，先明确自有格式，失败不留下半图。",
+          "accept": "取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "ExecuteOpenWorkflow/ExecuteSaveAsWorkflow → 旧流程JSON与Tab，非原VM ImportProcess兼容。",
+          "commandGuard": "当前顶栏未绑定旧命令；ID/绑定/插件/外部资源与方案模型合并事务仍待齐。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 1368,
+            "token": "private void ExecuteOpenWorkflow()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "有跨方案复用价值；先完成ID重映射、插件版本及外部引用检查。",
+          "vmEntries": [
+            {
+              "id": "0.7",
+              "label": "导入流程",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "save",
+          "label": "保存",
+          "group": "方案",
+          "cap": "M03",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "顶栏保存实际绑定SaveCurrentSolutionCommand。",
+          "gap": "保存错误反馈已有；Repository先修改内存路径等失败回滚缺口见持久化页。",
+          "change": "保留命令接线，整改内存+文件提交与脏状态，不重新造另一种保存格式。",
+          "accept": "拒绝覆盖、文件占用、无权限、序列化失败分别核原字节与内存状态；断电耐久性未验证，不用原子替换名词代证。；注入保存后事件异常、设置失败时提示实际阶段；重启后文件可找到；未保存状态只按明确提交合同清除。；原文件损坏、恢复文件损坏、资源相对路径、临时目录被清理、另存/重命名分别核；不把一次恢复方法存在当故障验收。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": true,
+          "commandChain": "SaveCurrentSolutionCommand → ExecuteSaveCurrentSolution；不是旧SaveWorkflowCommand。",
+          "commandGuard": "保存错误反馈已有；Repository先修改内存路径等失败回滚缺口见持久化页。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 932,
+            "token": "SaveCurrentSolutionCommand =",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "用户编辑必须可靠保存，磁盘和内存状态均要事务一致。",
+          "vmEntries": [
+            {
+              "id": "0.4",
+              "label": "保存方案",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "saveas",
+          "label": "另存方案 / 方案副本",
+          "group": "方案",
+          "cap": "M02",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "管理器上下文菜单已有SaveSolutionAsCommand和CopySolutionCommand；自有方案副本与旧工作流另存为不是同合同。",
+          "gap": "另存当前方案有CanSelect与IsSelectedCurrent条件；资源打包/内部身份和失败回滚见事务页。",
+          "change": "目标菜单复用真实方案命令，明确副本/另存/导出区别。",
+          "accept": "取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "SaveSolutionAsCommand → RunAsync(SaveAs)；副本复制走CopySolutionCommand。",
+          "commandGuard": "另存当前方案有CanSelect与IsSelectedCurrent条件；资源打包/内部身份和失败回滚见事务页。",
+          "commandSource": {
+            "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+            "line": 89,
+            "token": "SaveSolutionAsCommand =",
+            "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "支持方案变体与复制；资源和ID政策需按自有格式定义。",
+          "vmEntries": [
+            {
+              "id": "0.5",
+              "label": "方案另存为",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "resources",
+          "label": "资源打包 / 迁移检查",
+          "group": "方案",
+          "cap": "M03",
+          "state": "planned",
+          "statusLabel": "目标新增入口",
+          "basis": "最终导航设计提案：补独立可发现入口；不宣称后台功能全不存在。",
+          "fact": "方案复制会解析资源路径，不是把图像/模型/依赖一起打包。",
+          "gap": "路径可解析不等资源可迁移或文件已复制；目标打包入口仍是提案。",
+          "change": "新增资源清单、相对路径、哈希/缺失诊断和目标目录冲突政策；不要把已有复制方法改名当完成。",
+          "accept": "拒绝覆盖、文件占用、无权限、序列化失败分别核原字节与内存状态；断电耐久性未验证，不用原子替换名词代证。；注入保存后事件异常、设置失败时提示实际阶段；重启后文件可找到；未保存状态只按明确提交合同清除。；原文件损坏、恢复文件损坏、资源相对路径、临时目录被清理、另存/重命名分别核；不把一次恢复方法存在当故障验收。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "CopyOrSaveAsSolution → ResolveResourcePaths → 新方案文件。",
+          "commandGuard": "路径可解析不等资源可迁移或文件已复制；目标打包入口仍是提案。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/Workflow/SolutionManager.cs",
+            "line": 833,
+            "token": "private SolutionMetadata? CopyOrSaveAsSolution",
+            "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+          "vmEntries": []
+        },
+        {
+          "id": "close",
+          "label": "关闭方案 / 退出",
+          "group": "方案",
+          "cap": "M22",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "主窗有异步关闭及方案切换保存决策，不是简单Window.Close。",
+          "gap": "请求停止/活动登记为空不等全部原生在途结束；子窗口异步关闭需集中观察。",
+          "change": "依现有关闭专项补等待结局/超时隔离及逐层清理，不在UI同步等需要UI的任务。",
+          "accept": "重复关闭、防重入、保存失败、原生慢调用、相机回调均不提前销毁资源。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "OnClosing → 过渡门禁/保存决策 → 停止等待 → 设备与应用退役。",
+          "commandGuard": "请求停止/活动登记为空不等全部原生在途结束；子窗口异步关闭需集中观察。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+            "line": 238,
+            "token": "OnClosing",
+            "sha256": "e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "必须统一保存决策、停止排空与设备退役。",
+          "vmEntries": [
+            {
+              "id": "0.8",
+              "label": "退出",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "编辑",
+      "items": [
+        {
+          "id": "undo",
+          "label": "撤销",
+          "group": "编辑",
+          "cap": "M08",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "ExecuteUndo与CurrentCommandManager.CanUndo已有；在本次顶栏XAML中未找到UndoCommand按钮。",
+          "gap": "CanUndo已有；异常恢复、删除副作用和历史作用域仍有确定缺口。",
+          "change": "目标菜单/快捷项复用当前命令，先修图事务，不把新增按钮当撤销完整。",
+          "accept": "删除-撤销-重做后图与引用一致；运行对象不重复实例化或泄漏。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": true,
+          "commandChain": "UndoCommand → ExecuteUndo → CommandManager.Undo。",
+          "commandGuard": "CanUndo已有；异常恢复、删除副作用和历史作用域仍有确定缺口。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 1309,
+            "token": "private void ExecuteUndo()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "编辑必须可恢复，但现有删除副作用/历史失败需先整改。 建议历史列表展示和定位；不是普通Undo按钮已经覆盖，需明确历史作用域。",
+          "vmEntries": [
+            {
+              "id": "5.0",
+              "label": "Lang_Undo",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "5.0.0",
+              "label": "Lang_Records",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "redo",
+          "label": "重做",
+          "group": "编辑",
+          "cap": "M08",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "ExecuteRedo与CurrentCommandManager.CanRedo已有；当前顶栏未接RedoCommand。",
+          "gap": "CanRedo已有；与Undo共享事务一致性问题，需禁止失败后静默丢历史。",
+          "change": "借鉴VM5.1能力而不迁移二进制；补当前入口并验同一模型身份与绑定。",
+          "accept": "删除-撤销-重做后图与引用一致；运行对象不重复实例化或泄漏。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": true,
+          "commandChain": "RedoCommand → ExecuteRedo → CommandManager.Redo。",
+          "commandGuard": "CanRedo已有；与Undo共享事务一致性问题，需禁止失败后静默丢历史。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 1331,
+            "token": "private void ExecuteRedo()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "与Undo同一事务模型；不能仅重新创建UI节点。",
+          "vmEntries": [
+            {
+              "id": "5.1",
+              "label": "Lang_Redo",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "copy",
+          "label": "复制 / 剪切节点",
+          "group": "编辑",
+          "cap": "M08",
+          "state": "unimplemented",
+          "statusLabel": "未开发",
+          "basis": "源码TODO或已有明确未实施设计；不冒充现有可用按钮。",
+          "fact": "主窗输入绑定和已审画布命令未接完整选中子图Copy/Cut；拖入新工具不是节点复制。",
+          "gap": "此结论限已审入口，不以同名文本复制或方案副本代证节点复制。",
+          "change": "新增内部/外部引用重映射和资源共享政策，再接快捷键与Undo。",
+          "accept": "复制A和B后新B指向新A；跨流程、脚本动态字段、失败无残留。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "目标编辑命令 → 拟议子图候选/ID映射 → 事务提交（未实施）。",
+          "commandGuard": "此结论限已审入口，不以同名文本复制或方案副本代证节点复制。",
+          "commandEvidenceKind": "design-proposal",
+          "commandSource": {
+            "path": "artifacts/validation/build-editing-transactions.cjs",
+            "line": 2,
+            "token": "Copy",
+            "sha256": "05da69c1d41668271b1d34c4c25f3d9d687d2ca919113a8485fe2bd2f7eb96e3"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+          "vmEntries": []
+        },
+        {
+          "id": "paste",
+          "label": "粘贴选中子图",
+          "group": "编辑",
+          "cap": "M08",
+          "state": "unimplemented",
+          "statusLabel": "未开发",
+          "basis": "源码TODO或已有明确未实施设计；不冒充现有可用按钮。",
+          "fact": "未定位已接入主画布的完整节点粘贴事务。",
+          "gap": "旧工作流JSON打开与拖入新工具不是剪贴板子图粘贴。",
+          "change": "缺插件/外部绑定失效先诊断，成功后一次写入并可撤销。",
+          "accept": "局部粘贴、缺插件、外部引用失效、撤销重做分别验。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "目标Paste → 拟议候选节点/连线/字段预检 → 一次入图（未实施）。",
+          "commandGuard": "旧工作流JSON打开与拖入新工具不是剪贴板子图粘贴。",
+          "commandEvidenceKind": "design-proposal",
+          "commandSource": {
+            "path": "artifacts/validation/build-editing-transactions.cjs",
+            "line": 3,
+            "token": "Paste",
+            "sha256": "05da69c1d41668271b1d34c4c25f3d9d687d2ca919113a8485fe2bd2f7eb96e3"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+          "vmEntries": []
+        },
+        {
+          "id": "lock",
+          "label": "区域锁定 / 解锁",
+          "group": "编辑",
+          "cap": "M06",
+          "state": "pending",
+          "statusLabel": "待产品确认",
+          "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+          "fact": "VM有区域锁/解锁入口；自研当前导航只是建议能力，尚未定位等价锁定服务。",
+          "gap": "锁哪些区域、谁可解锁、与运行只读关系尚待产品确认。",
+          "change": "建议防误改而不假装权限安全；需求确定后统一菜单/快捷键/画布写入准入。",
+          "accept": "缩放/多选/拖出边界/取消拖动/Undo后位置与选择一致。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "拟议编辑状态 → 被锁区域拒写；运行与权限是另两层。",
+          "commandGuard": "锁哪些区域、谁可解锁、与运行只读关系尚待产品确认。",
+          "commandEvidenceKind": "design-proposal",
+          "commandSource": {
+            "path": "artifacts/validation/build-menu-adoption.cjs",
+            "line": 9,
+            "token": "Lang_Locking",
+            "sha256": "48c69f1b33c2457f19e3b5464aa598dd9083064269e4131a7ced552546600c05"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "生产调试防误改有价值；先定义锁哪些区域与解锁权限，不伪装安全授权。 必须与锁定配套，不能产生不可恢复的只读状态。",
+          "vmEntries": [
+            {
+              "id": "5.2",
+              "label": "锁屏",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "5.2.0",
+              "label": "Lang_Locking",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "5.2.1",
+              "label": "Lang_Unlock",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "delete",
+          "label": "删除节点 / 连线",
+          "group": "编辑",
+          "cap": "M08",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "DeleteSelectedNodesCommand已有，删除前确认并执行批量节点/连线命令。",
+          "gap": "命令外副作用不能由当前Undo完全恢复；显示序号释放/恢复也有差异。",
+          "change": "必须把所有副作用纳入可回滚图事务，失败不丢历史。",
+          "accept": "删除-撤销-重做后图与引用一致；运行对象不重复实例化或泄漏。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "ExecuteDeleteSelectedNodes → BatchDeleteNodesAndConnectionsCommand → 另行CleanupBindings/级联子图。",
+          "commandGuard": "命令外副作用不能由当前Undo完全恢复；显示序号释放/恢复也有差异。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 2589,
+            "token": "private void ExecuteDeleteSelectedNodes()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+          "vmEntries": []
+        },
+        {
+          "id": "select",
+          "label": "全选 / 多选",
+          "group": "编辑",
+          "cap": "M06",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "框选/多选处理器已有；不能从TextBox.SelectAll推画布全选已接通。",
+          "gap": "全选键与目标选择命令需另核，文本编辑焦点不可误删/误全选画布。",
+          "change": "复用选择服务并明确焦点/多选/锁定/运行只读政策，菜单全选单独接线验收。",
+          "accept": "缩放/多选/拖出边界/取消拖动/Undo后位置与选择一致。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "Canvas鼠标 → WorkflowSelectionHandler → 选择集合。",
+          "commandGuard": "全选键与目标选择命令需另核，文本编辑焦点不可误删/误全选画布。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Services/Interaction/SelectionHandler.cs",
+            "line": 20,
+            "token": "public class WorkflowSelectionHandler",
+            "sha256": "03490c50b8c51720ce5983de8f041e858047f348b3cacbf59a2d76476df73124"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+          "vmEntries": []
+        }
+      ]
+    },
+    {
+      "label": "视图",
+      "items": [
+        {
+          "id": "panels",
+          "label": "工具箱 / 图像 / 结果 / 日志 / 状态栏",
+          "group": "视图",
+          "cap": "M16",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "主工作区已有画布/图像/结果/日志及状态栏组件，不等每种面板都已有统一显示菜单。",
+          "gap": "布局折叠与结果/日志服务退订不同，隐藏面板不能释放仍被运行借用的数据。",
+          "change": "补统一可发现显示项和恢复默认，保留各区域独立Owner。",
+          "accept": "快速切源/失败/取消时不叠旧图形；保留历史不被下一帧改写。 使用非连续ROI Mat、同尺寸不同像素两次转换、不同深度及历史保留做独立验收；调用入口未证时不报线上故障。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "ShellWorkspace布局与模板 → 各区域控件；LayoutConfig保存左右折叠。",
+          "commandGuard": "布局折叠与结果/日志服务退订不同，隐藏面板不能释放仍被运行借用的数据。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml",
+            "line": 390,
+            "token": "CanvasTemplateSelector",
+            "sha256": "dbc319489f4d2c46ed49ee2edee8802660944d47bd6034676f63332137c13ee8"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "可靠日志和状态是现场诊断基础；必须修丢失/落盘确认，不仅加窗口。",
+          "vmEntries": [
+            {
+              "id": "3.0",
+              "label": "日志",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "layout",
+          "label": "布局保存 / 恢复默认",
+          "group": "视图",
+          "cap": "M10",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "布局宽度/折叠的Save/Load和Reset模型已有，主窗有保存/恢复调用。",
+          "gap": "有Reset方法不等“恢复默认”菜单已绑定；Save异常返回false，调用端反馈需核。",
+          "change": "复用已有偏好持久化，新增恢复默认入口并验证最小尺寸、越界修正与保存失败反馈。",
+          "accept": "缩放前后节点位置不变，折叠/恢复不丢当前视区，跨屏可操作。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "MainWindow SaveLayoutConfig/RestoreLayoutConfig → LayoutConfig → 用户WindowLayout偏好。",
+          "commandGuard": "有Reset方法不等“恢复默认”菜单已绑定；Save异常返回false，调用端反馈需核。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Shared/LayoutConfig.cs",
+            "line": 147,
+            "token": "public void Reset()",
+            "sha256": "c5e70433aa5f516f9e253dea2556c05ffa23c8c32818f1af4536b2e02d15217b"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+          "vmEntries": []
+        },
+        {
+          "id": "fullscreen",
+          "label": "缩放 / 适应 / 全屏",
+          "group": "视图",
+          "cap": "M10",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "主窗口全屏菜单、图像控件全屏和画布缩放是三套入口，不可混为一种完成状态。",
+          "gap": "MainVM有旧图像全屏TODO不代表实际ImageControl全屏没实现；Fit TODO也需按调用点核。",
+          "change": "统一入口命名和目标；分别验主窗/画布/图像恢复、焦点和DPI，不盲目删除已有实际全屏。",
+          "accept": "缩放前后节点位置不变，折叠/恢复不丢当前视区，跨屏可操作。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "顶栏FullscreenRequested → 主窗；ImageControl Enter/ExitFullscreen独立移父容器；画布Fit另链。",
+          "commandGuard": "MainVM有旧图像全屏TODO不代表实际ImageControl全屏没实现；Fit TODO也需按调用点核。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+            "line": 884,
+            "token": "private void EnterFullscreen()",
+            "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+          "vmEntries": []
+        },
+        {
+          "id": "history",
+          "label": "历史结果与本轮切换",
+          "group": "视图",
+          "cap": "M16",
+          "state": "pending",
+          "statusLabel": "待核实：历史切换",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "已见当前DisplayImageSources与长期Workflow快照；未定位完整多轮历史结果浏览/切回本轮链。",
+          "gap": "图像源列表、当前结果缓存不等历史快照；保留期限/最后读者/代次仍需设计。",
+          "change": "先定历史范围、容量及只读快照，独立实现切回本轮；不把现有选源控件标历史完成。",
+          "accept": "快速切源/失败/取消时不叠旧图形；保留历史不被下一帧改写。 使用非连续ROI Mat、同尺寸不同像素两次转换、不同深度及历史保留做独立验收；调用入口未证时不报线上故障。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "本轮NodeResultManager → ImageResultViewModel；长期快照按Workflow覆盖，非完整历史库。",
+          "commandGuard": "图像源列表、当前结果缓存不等历史快照；保留期限/最后读者/代次仍需设计。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Shell/Controls/Shell/ImageResultViewModel.cs",
+            "line": 29,
+            "token": "private ObservableCollection<AvailableDataSource>",
+            "sha256": "ebcfe615760a3bd85ff8e08d47d4907ee91ddb43163e07fa5a1af2d19fee432a"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+          "vmEntries": []
+        },
+        {
+          "id": "diagnosis",
+          "label": "数据分析 / 执行快照",
+          "group": "视图",
+          "cap": "M25",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "专业数据分析与执行快照窗口都有实际入口。",
+          "gap": "两者不是同一个通用数据表；Run/Scope信封、缓存结果有效性和分析会话Owner仍有缺口。",
+          "change": "保留专业分工，统一稳定运行身份和失败/取消呈现，别用新窗口掩盖字段缺失。",
+          "accept": "多次切节点/开关方案无订阅增长，旧轮次不填新面板；失败不展示旧成功；高亮与当前底图同帧。 同节点先成功再失败、普通与相机轮换、切方案迟到回调分别验；结果树、图像、分析一致显示本轮状态。 重复切节点、工厂返回null、创建抛错、关闭方案分别核实例/订阅/原生句柄；需明确共享与独立两类。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "UpdateDataAnalysisControl → 专业控件；状态栏ShowExecutionSnapshot → 长期执行快照。",
+          "commandGuard": "两者不是同一个通用数据表；Run/Scope信封、缓存结果有效性和分析会话Owner仍有缺口。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 4405,
+            "token": "private void ShowExecutionSnapshot(",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+          "vmEntries": []
+        },
+        {
+          "id": "roi",
+          "label": "ROI / 位置修正 / 图形文字",
+          "group": "视图",
+          "cap": "T09",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "ImageControl与ROI Manager、位置修正、结果图元层已有实际调用。",
+          "gap": "位置修正非毫米标定；已有ROI拖动Escape不恢复几何，DPI缓存/同帧仍待齐。",
+          "change": "依8坐标链整改交互事务、内容版本与最后读者，再做绘制性能选型。",
+          "accept": "缩放/DPI/旋转/换图/取消/Undo后ROI值一致；无数据时不误编辑旧帧。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "鼠标DIP → ScreenToImage → ROI参考域编辑；结果Display → RenderLayer。",
+          "commandGuard": "位置修正非毫米标定；已有ROI拖动Escape不恢复几何，DPI缓存/同帧仍待齐。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+            "line": 704,
+            "token": "public void HandleEscape()",
+            "sha256": "bce5346e3c9c0cf1a895c1b379edd7fad66af329d30f2cbccd7448f185f304b3"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+          "vmEntries": []
+        },
+        {
+          "id": "paths",
+          "label": "显示路径拐点",
+          "group": "视图",
+          "cap": "M07",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "顶栏菜单已绑定TogglePathPointsCommand。",
+          "gap": "显示拐点不等修改依赖路径或运行分支；隐藏不能改变图模型。",
+          "change": "保留视图操作，补偏好/焦点与切Tab一致性验证。",
+          "accept": "无效连线零执行依赖；改名/动态输出删除后清晰标失效，不留下幽灵订阅。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "ExecuteTogglePathPoints → 当前工作区路径拐点显示状态。",
+          "commandGuard": "显示拐点不等修改依赖路径或运行分支；隐藏不能改变图模型。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 4201,
+            "token": "private void ExecuteTogglePathPoints()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+          "vmEntries": []
+        }
+      ]
+    },
+    {
+      "label": "运行",
+      "items": [
+        {
+          "id": "run",
+          "label": "当前流程单次",
+          "group": "运行",
+          "cap": "M11",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "顶栏和菜单绑定RunWorkflowCommand，运行选中流程，不是全部流程单次。",
+          "gap": "命令CanExecute为!IsRunning；引擎/方案就绪和多入口重入还需统一。",
+          "change": "保留实际入口，统一显式目标、运行身份和失败反馈。",
+          "accept": "两流程依赖不按Tab顺序猜测；当前流程运行不执行其他流程。",
+          "decision": "借鉴VM重做",
+          "adoption": "混合优化",
+          "toolbar": true,
+          "commandChain": "RunWorkflowCommand → ExecuteRunWorkflow → 执行管理器。",
+          "commandGuard": "命令CanExecute为!IsRunning；引擎/方案就绪和多入口重入还需统一。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 934,
+            "token": "RunWorkflowCommand =",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "基础执行入口；目标流程和运行身份必须显式。",
+          "vmEntries": [
+            {
+              "id": "5.6",
+              "label": "单次执行",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "runall",
+          "label": "全部流程单次",
+          "group": "运行",
+          "cap": "M11",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "RunAllWorkflowsCommand与ExecuteRunAllWorkflows后端确实存在；当前顶栏未找到绑定该命令的按钮。",
+          "gap": "CanExecute为!IsAllWorkflowsRunning；执行后无条件成功日志的语义需结合返回状态复审，不据日志认全部成功。",
+          "change": "补目标菜单/工具栏接线并消费完整终态，不能拿当前单次按钮冒充全部单次。",
+          "accept": "两流程依赖不按Tab顺序猜测；当前流程运行不执行其他流程。",
+          "decision": "借鉴VM重做",
+          "adoption": "混合优化",
+          "toolbar": true,
+          "commandChain": "ExecuteRunAllWorkflows → SetRuntimeParameters → RunSolutionAsync(Tabs,solution)。",
+          "commandGuard": "CanExecute为!IsAllWorkflowsRunning；执行后无条件成功日志的语义需结合返回状态复审，不据日志认全部成功。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 4221,
+            "token": "private async System.Threading.Tasks.Task ExecuteRunAllWorkflows()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+          "vmEntries": []
+        },
+        {
+          "id": "continuous",
+          "label": "全部流程连续",
+          "group": "运行",
+          "cap": "M13",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "顶栏ToggleButton已绑定ToggleContinuousAllCommand。",
+          "gap": "当前命令CanExecute恒true；流程集合的重入和停止排空仍须后端裁决。",
+          "change": "保留已有切换入口，统一按钮显示与真实会话状态，停止完成不得仅看登记归零。",
+          "accept": "全局/单Tab连续组合下无重入；停止后全部目标流程按协议终态。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": true,
+          "commandChain": "ExecuteToggleContinuousAll → 当前IsAllWorkflowsRunning决定StartAllWorkflows或StopAllWorkflows。",
+          "commandGuard": "当前命令CanExecute恒true；流程集合的重入和停止排空仍须后端裁决。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 4280,
+            "token": "private void ExecuteToggleContinuousAll()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "连续执行已有产品路径，需完整失败/取消/排空政策。",
+          "vmEntries": [
+            {
+              "id": "5.7.0",
+              "label": "连续执行",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "tabrun",
+          "label": "Tab单次",
+          "group": "运行",
+          "cap": "M12",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "Tab控制器有RunSingle入口，与顶栏当前流程入口分别接线。",
+          "gap": "选中UI状态与实际目标身份不可隐式混用，子图Tab与根流程目标需明确。",
+          "change": "复用现有执行服务，携带显式RootWorkflowId/Scope，不靠先切Tab选择运行目标。",
+          "accept": "在另一Tab被选中或切换期间，仍只运行按钮指向流程；结果归属不串。",
+          "decision": "借鉴VM重做",
+          "adoption": "VM机制优先",
+          "toolbar": false,
+          "commandChain": "WorkflowTabControlViewModel.RunSingle → 选定Tab回调执行。",
+          "commandGuard": "选中UI状态与实际目标身份不可隐式混用，子图Tab与根流程目标需明确。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs",
+            "line": 252,
+            "token": "public void RunSingle(",
+            "sha256": "553a73a4b3c39a5d77eb94dc5ed2176db2ad41bb3a32b00ed2027638dabdb1d5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+          "vmEntries": []
+        },
+        {
+          "id": "tabcontinuous",
+          "label": "Tab连续",
+          "group": "运行",
+          "cap": "M14",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "Tab控制器已有StartContinuous/StopContinuous/ToggleContinuous。",
+          "gap": "回调返回true不代表停止已排空；Tab IsRunning/实际会话终态仍需统一。",
+          "change": "与全部连续共用运行合同，按钮只在完整终态恢复，取消本轮与不再开新轮分开。",
+          "accept": "双流程争用单相机、慢工具、取消队列、重启均可追踪。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "Tab目标 → StartContinuousExecution/StopContinuousExecution委托。",
+          "commandGuard": "回调返回true不代表停止已排空；Tab IsRunning/实际会话终态仍需统一。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs",
+            "line": 270,
+            "token": "public void StartContinuous(",
+            "sha256": "553a73a4b3c39a5d77eb94dc5ed2176db2ad41bb3a32b00ed2027638dabdb1d5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+          "vmEntries": []
+        },
+        {
+          "id": "runpolicy",
+          "label": "运行策略设置",
+          "group": "运行",
+          "cap": "M23",
+          "state": "pending",
+          "statusLabel": "待产品确认",
+          "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+          "fact": "引擎已有固定计算槽和profile门禁；未找到完整的运行策略设置页面。",
+          "gap": "不能把代码常量或VM设置界面存在当自研设置完成；外部等待/跨根预算是不同维度。",
+          "change": "先定义可配置项、作用范围和安全上下限，再接设置入口及运行开始快照。",
+          "accept": "重启生效/即时生效/取消/保存失败行为明确，没有无效菜单。",
+          "decision": "新增",
+          "adoption": "新增",
+          "toolbar": false,
+          "commandChain": "当前代码固定预算 → profile/资源lease；目标设置模型尚待明确。",
+          "commandGuard": "不能把代码常量或VM设置界面存在当自研设置完成；外部等待/跨根预算是不同维度。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/Workflow/WorkflowExecutionEngine.cs",
+            "line": 303,
+            "token": "var maxConcurrency =",
+            "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前多流程/连续运行需明确目标、并发、失败和停止政策；先合同后设置界面。",
+          "vmEntries": [
+            {
+              "id": "1.3",
+              "label": "运行策略",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "pause",
+          "label": "暂停 / 恢复",
+          "group": "运行",
+          "cap": "M15",
+          "state": "unimplemented",
+          "statusLabel": "未开发",
+          "basis": "源码TODO或已有明确未实施设计；不冒充现有可用按钮。",
+          "fact": "PauseCommand有注册，但ExecutePause方法体只有TODO；当前顶栏未接暂停按钮。",
+          "gap": "没有证据可把RunSession暂停能力直接等同菜单暂停功能完成。",
+          "change": "先确认暂停派发的产品语义，再接Session及按钮；不承诺暂停任意原生算法。",
+          "accept": "运行/暂停中/恢复/停止互斥；不宣称任意native可暂停。",
+          "decision": "必须整改",
+          "adoption": "混合优化",
+          "toolbar": true,
+          "commandChain": "PauseCommand → ExecutePause（占位）。",
+          "commandGuard": "没有证据可把RunSession暂停能力直接等同菜单暂停功能完成。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 1304,
+            "token": "private void ExecutePause()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "conditional",
+          "menuFitLabel": "按需/待产品确认",
+          "menuReason": "需要明确业务、硬件或安全策略后才纳入最终发布范围；现有目标导航先保留分析入口，不能视作已批准新增。",
+          "vmEntries": []
+        },
+        {
+          "id": "stop",
+          "label": "停止 / 等待完成",
+          "group": "运行",
+          "cap": "M15",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "顶栏菜单已有StopWorkflowCommand；当前工具栏没有单独停止按钮，连续按钮另负责全部连续切换。",
+          "gap": "Stop命令CanExecute为IsRunning；所有运行范围和在途任务排空仍需统一。",
+          "change": "新增目标停止快捷项时显式当前/全部目标，并观察请求、终态、排空三个阶段。",
+          "accept": "取消时有图像/回调/慢原生任务，UI不先显示已排空，资源最终只释放一次。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+          "decision": "必须整改",
+          "adoption": "混合优化",
+          "toolbar": true,
+          "commandChain": "StopWorkflowCommand → ExecuteStopWorkflow；连续停止走StopAllWorkflows，两个入口不可混写。",
+          "commandGuard": "Stop命令CanExecute为IsRunning；所有运行范围和在途任务排空仍需统一。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 935,
+            "token": "StopWorkflowCommand =",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "必须观察在途完成；不能只发取消就显示已停止。",
+          "vmEntries": [
+            {
+              "id": "5.7.1",
+              "label": "停止执行",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "工具与设备",
+      "items": [
+        {
+          "id": "variables",
+          "label": "全局变量",
+          "group": "工具与设备",
+          "cap": "M18",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "顶栏菜单和工具栏均已接ShowGlobalVariableManagerCommand。",
+          "gap": "定义编辑与运行快照/监视是不同能力；子调用继承、保存错误等仍需整改。",
+          "change": "复用入口，按全局变量专项改保存/继承/数组政策，不把已有管理器整体重建。",
+          "accept": "同名/改类型/删除/生产者失败，不改变已冻结的运行输入。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": true,
+          "commandChain": "主窗 → 全局变量管理窗口 → 当前方案变量/保存链。",
+          "commandGuard": "定义编辑与运行快照/监视是不同能力；子调用继承、保存错误等仍需整改。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 968,
+            "token": "ShowGlobalVariableManagerCommand =",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前绑定/通信/执行已用到，需定义编辑和运行值边界。",
+          "vmEntries": [
+            {
+              "id": "5.3",
+              "label": "全局变量",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "camera",
+          "label": "相机管理",
+          "group": "工具与设备",
+          "cap": "M19",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "顶栏菜单和工具栏已接ShowCameraManagerCommand。",
+          "gap": "窗口入口已有；型号支持、用途冲突、停止失败隔离及实机验证不由按钮存在证明。",
+          "change": "按相机矩阵整改，目标导航无需再造平行相机管理器。",
+          "accept": "预览期间单帧、流程期间单帧、临时连接失败与取消分别验；失败无残留连接和错误软件触发。；当前Mono8/BGR8范围外明确报不支持；慢显示、历史保留、算法异常都不得读已归还缓冲。；停止抛错、回调迟到、窗口关闭、重复Dispose分别验；未排空不得宣布设备可重新占用。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": true,
+          "commandChain": "主窗 → 相机管理器 → 预览/参数 → CameraSession。",
+          "commandGuard": "窗口入口已有；型号支持、用途冲突、停止失败隔离及实机验证不由按钮存在证明。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 969,
+            "token": "ShowCameraManagerCommand =",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "已有相机功能必须说明触发、最新帧/必处理、超时与占用；可以放相机或方案页。 现有采集功能需要配置、预览、用途协调和可等待退役。",
+          "vmEntries": [
+            {
+              "id": "1.4",
+              "label": "采集策略",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "3.3",
+              "label": "相机设置",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "communication",
+          "label": "通信管理",
+          "group": "工具与设备",
+          "cap": "M20",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "顶栏菜单和工具栏已接ShowCommunicationManagerCommand。",
+          "gap": "协议驱动、工作流目录接线、设备实测分别验；不能用有管理器代证S7/CIP工作流已通。",
+          "change": "保留入口，补类型化目录与可观察退役/背压政策。",
+          "accept": "断连/超时/不可写/过期授权零副作用；后台触发与按钮同一运行合同。 注入上层Dispose失败、底层失败及相机失败分别验后续清理仍被观察；错误汇总不丢失首因，重试不重用已半释放实例。 Dispose部分清理后抛错、迟到退役、新旧连接并发及重试分别验，未确认释放不报安全可用。 慢发送下高频Run/Stop、相机抖动、配置更新/切方案核顺序、积压、过期和取消排空。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": true,
+          "commandChain": "主窗 → 通信管理器/应用服务 → Runtime/协议会话。",
+          "commandGuard": "协议驱动、工作流目录接线、设备实测分别验；不能用有管理器代证S7/CIP工作流已通。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 970,
+            "token": "ShowCommunicationManagerCommand =",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "现有通信工具依赖设备配置和会话；必须有可发现入口。",
+          "vmEntries": [
+            {
+              "id": "3.1",
+              "label": "通信管理",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "subroutine",
+          "label": "子程序 / Group",
+          "group": "工具与设备",
+          "cap": "M09",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "Subroutine工具与子Scope运行已有，不等原VM Group所有模式已覆盖。",
+          "gap": "状态合并/间隔取消/显示投影、子调用globals null及跨图环已有缺口。",
+          "change": "按子程序专项整改；参考Group职责但不据名称整包迁移原实现。",
+          "accept": "嵌套返回、复制、跨层引用、取消和部分失败逐类通过，不能只看能进入。 构造Cancelled无Errors且有可解析输出、Failed空Errors、正常多轮和零轮分别验；父节点不得把取消记成功。 长间隔中取消、子图执行中取消、连续调试关闭、子图异常均等待正确终态；取消不会再启动下一轮。 同子图双调用并发/顺序、嵌套同名节点、多轮下钻分别验，不互相替换所选调用结果；方案切换拒迟到回填。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。 A→A/A→B→A/A→B→C→A、合法复用子图、深层嵌套、载入绕过UI及取消分别验。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "SubroutineTool → 子执行委托 → 独立Scope/Context → 父节点结果。",
+          "commandGuard": "状态合并/间隔取消/显示投影、子调用globals null及跨图环已有缺口。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+            "line": 35,
+            "token": "class SubroutineTool",
+            "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+          "vmEntries": []
+        },
+        {
+          "id": "calibration",
+          "label": "标定训练 / 验证 / 发布",
+          "group": "工具与设备",
+          "cap": "T17",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "NPoint训练、候选文件与Verification验证/发布已有专用工具。",
+          "gap": "不是全部VM标定类型；Verification运行在PublishOnPass时有副作用，不能说仅手动发布。",
+          "change": "保留候选/正式分离，补发布确认、设备/图像域和质量门槛；其他标定类型按需求另立项。",
+          "accept": "异常点、重复点、空数据、求解失败/取消不覆盖正式标定；残差/输出可复核。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "训练工具 → 候选文件 → 验证工具 → 发布正式标定。",
+          "commandGuard": "不是全部VM标定类型；Verification运行在PublishOnPass时有副作用，不能说仅手动发布。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationFile.cs",
+            "line": 44,
+            "token": "public static (NPointCalibrationFile File",
+            "sha256": "dd2b909c025734390e1e6703421b0676bba2f52e418190422ad6319c803cdbe3"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "标定步骤有先后与质量门槛，建议自有向导串联现有训练/验证/发布。 依自有标定板类型和物理尺寸需求决定；打印精度与单位需验证。",
+          "vmEntries": [
+            {
+              "id": "2.0",
+              "label": "一键标定引导",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "2.3",
+              "label": "Calibration Board Generate Tool",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "plugins",
+          "label": "插件管理 / 兼容性诊断",
+          "group": "工具与设备",
+          "cap": "M04",
+          "state": "planned",
+          "statusLabel": "目标新增入口",
+          "basis": "最终导航设计提案：补独立可发现入口；不宣称后台功能全不存在。",
+          "fact": "目录扫描/加载和依赖选择已有；独立插件管理/完整兼容诊断入口仍是目标新增。",
+          "gap": "不可回收ALC不能热卸载；加载成功不等版本/API兼容或干净机器发布通过。",
+          "change": "新增可读兼容诊断与真实依赖清单；当前升级要求重启，不伪装清注册表为卸载完成。",
+          "accept": "已发现但无法加载工具明确禁用；取消拖拽/失败创建无残留对象。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "PluginManager → PluginLoadContext → 共享合同/宿主/插件依赖选择。",
+          "commandGuard": "不可回收ALC不能热卸载；加载成功不等版本/API兼容或干净机器发布通过。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs",
+            "line": 128,
+            "token": "protected override Assembly? Load",
+            "sha256": "73b92f04265fc83a84672db78bc9ef539657e8e0eea7b19639c3c2331fc43748"
+          },
+          "menuDecision": "conditional",
+          "menuFitLabel": "按需/待产品确认",
+          "menuReason": "需要明确业务、硬件或安全策略后才纳入最终发布范围；现有目标导航先保留分析入口，不能视作已批准新增。",
+          "vmEntries": []
+        },
+        {
+          "id": "catalog",
+          "label": "专业工具分类 / 搜索 / 拖入",
+          "group": "工具与设备",
+          "cap": "M04",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "工具箱分类/搜索与拖入创建已有，24个自研工具有实际声明。",
+          "gap": "VM162范围审计不是162自研已开发；创建失败/缺依赖不能残留半节点。",
+          "change": "复用真实目录入口；逐工具补合同而非只新增名称，未纳入范围的工具标明取舍。",
+          "accept": "已发现但无法加载工具明确禁用；取消拖拽/失败创建无残留对象。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "ToolboxViewModel分类与搜索 → ToolRegistry元数据 → 拖入/创建节点。",
+          "commandGuard": "VM162范围审计不是162自研已开发；创建失败/缺依赖不能残留半节点。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Shell/Controls/Toolbox/ToolboxViewModel.cs",
+            "line": 89,
+            "token": "public string SelectedCategory",
+            "sha256": "cbbbb799962cf8bf737f2f3b4ffa87c4dee61a2301f2bf48aa963b1fa5513f56"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+          "vmEntries": []
+        },
+        {
+          "id": "queue",
+          "label": "全局数据队列",
+          "group": "工具与设备",
+          "cap": "M18",
+          "state": "pending",
+          "statusLabel": "待产品确认",
+          "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+          "fact": "全局数据队列仍是待确认能力，当前通信被动游标/Feed单槽不能代该工具。",
+          "gap": "需求未明确；不能从局部Queue类推完整跨流程队列已实现。",
+          "change": "确认单消费/多播、阻塞/丢弃、持久化与图像Owner后再决定新增，不默认搬VM队列。",
+          "accept": "同名/改类型/删除/生产者失败，不改变已冻结的运行输入。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "拟议全局队列服务 → 类型化生产者/消费者与容量/退役（未形成完整入口）。",
+          "commandGuard": "需求未明确；不能从局部Queue类推完整跨流程队列已实现。",
+          "commandEvidenceKind": "design-proposal",
+          "commandSource": {
+            "path": "artifacts/validation/build-menu-adoption.cjs",
+            "line": 17,
+            "token": "queue lights language",
+            "sha256": "48c69f1b33c2457f19e3b5464aa598dd9083064269e4131a7ced552546600c05"
+          },
+          "menuDecision": "conditional",
+          "menuFitLabel": "按需/待产品确认",
+          "menuReason": "需要明确业务、硬件或安全策略后才纳入最终发布范围；现有目标导航先保留分析入口，不能视作已批准新增。",
+          "vmEntries": []
+        },
+        {
+          "id": "lights",
+          "label": "光源 / 外部控制器",
+          "group": "工具与设备",
+          "cap": "M20",
+          "state": "pending",
+          "statusLabel": "待产品确认",
+          "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+          "fact": "当前菜单仅保留光源/控制器建议，未定位自有完整设备管理/协议/工作流链。",
+          "gap": "有普通通信驱动不等光源工具完整；品牌/型号与电气行为须确认。",
+          "change": "按实际硬件选择适配器与发布依赖，无设备需求可不采用此菜单。",
+          "accept": "断连/超时/不可写/过期授权零副作用；后台触发与按钮同一运行合同。 注入上层Dispose失败、底层失败及相机失败分别验后续清理仍被观察；错误汇总不丢失首因，重试不重用已半释放实例。 Dispose部分清理后抛错、迟到退役、新旧连接并发及重试分别验，未确认释放不报安全可用。 慢发送下高频Run/Stop、相机抖动、配置更新/切方案核顺序、积压、过期和取消排空。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "拟议控制器描述 → 驱动 → 通道/触发/状态读回（需求待定）。",
+          "commandGuard": "有普通通信驱动不等光源工具完整；品牌/型号与电气行为须确认。",
+          "commandEvidenceKind": "design-proposal",
+          "commandSource": {
+            "path": "artifacts/validation/build-menu-adoption.cjs",
+            "line": 7,
+            "token": "Lang_ControllerSet",
+            "sha256": "48c69f1b33c2457f19e3b5464aa598dd9083064269e4131a7ced552546600c05"
+          },
+          "menuDecision": "conditional",
+          "menuFitLabel": "按需/待产品确认",
+          "menuReason": "产品确定支持光源/控制器和协议后才纳入；驱动、占用和发布依赖需成套。",
+          "vmEntries": [
+            {
+              "id": "3.2",
+              "label": "控制器管理",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "系统与帮助",
+      "items": [
+        {
+          "id": "settings",
+          "label": "系统设置",
+          "group": "系统与帮助",
+          "cap": "M23",
+          "state": "unimplemented",
+          "statusLabel": "未开发",
+          "basis": "源码TODO或已有明确未实施设计；不冒充现有可用按钮。",
+          "fact": "ShowSettingsCommand已注册，但ExecuteShowSettings只有TODO；方案管理器自己的数据目录设置不是全局系统设置完成。",
+          "gap": "当前无完整系统设置提交/取消/持久化执行合同。",
+          "change": "明确必要设置列表，复用已有配置服务；配置作用域、失败回滚和重启要求齐后再接目标按钮。",
+          "accept": "取消不提交；应用失败保留旧设置；重新打开读到实际生效值。",
+          "decision": "新增",
+          "adoption": "新增",
+          "toolbar": true,
+          "commandChain": "ShowSettingsCommand → ExecuteShowSettings（占位）。",
+          "commandGuard": "当前无完整系统设置提交/取消/持久化执行合同。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 2201,
+            "token": "private void ExecuteShowSettings()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "已有配置项需可发现、校验和保存；先做明确自有设置范围，不复制VM全部选项。 只有明确多配置整合需求才独立提供，避免与软件/方案/运行/采集设置重复。",
+          "vmEntries": [
+            {
+              "id": "1.1",
+              "label": "软件设置",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "5.8",
+              "label": "综合配置",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "license",
+          "label": "自有加密狗 / 授权状态",
+          "group": "系统与帮助",
+          "cap": "X04",
+          "state": "unimplemented",
+          "statusLabel": "未开发",
+          "basis": "源码TODO或已有明确未实施设计；不冒充现有可用按钮。",
+          "fact": "自有加密狗是用户明确方向；license-design仍是设计提案，不能标产品已授权。",
+          "gap": "厂商、签发、宽限和在途任务政策未定；不使用VM狗/协议/密钥。",
+          "change": "按自有授权四职责八状态落地，先定政策/供应商再开发，不仅加按钮。",
+          "accept": "拔狗、到期、换狗及在途任务按自有授权设计验收。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "拟议厂商适配 → 授权能力服务 → 业务准入 → 状态/离线恢复。",
+          "commandGuard": "厂商、签发、宽限和在途任务政策未定；不使用VM狗/协议/密钥。",
+          "commandEvidenceKind": "design-proposal",
+          "commandSource": {
+            "path": "artifacts/validation/build-license-design.cjs",
+            "line": 2,
+            "token": "module.exports",
+            "sha256": "5e57f3787071372cfbfaa72a32fe22966cf66f30c576aca515ea2f0eb0215320"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "用户明确要求使用自有加密狗；授权设计必须自有实现，VM狗/协议/密钥不采用，厂商与政策仍待定。",
+          "vmEntries": []
+        },
+        {
+          "id": "theme",
+          "label": "主题 / 显示设置",
+          "group": "系统与帮助",
+          "cap": "M21",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "顶栏主题切换与ThemeManager.ApplyTheme已有。",
+          "gap": "当前旧字典移除/状态先改，加载失败回滚存在不足；显示设置全域不由切主题代证。",
+          "change": "保留资源键/现有控件，先候选加载校验再原子替换；设计时和跨DPI另验。",
+          "accept": "缺资源、错误URI、偏好保存失败分别验；失败后可重试，所有已开窗口和新开窗口一致。未运行VS设计器或产品。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "ToggleTheme → ApplyTheme → 合并资源与状态更新。",
+          "commandGuard": "当前旧字典移除/状态先改，加载失败回滚存在不足；显示设置全域不由切主题代证。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Services/ThemeManager.cs",
+            "line": 89,
+            "token": "public void ApplyTheme(",
+            "sha256": "3161aec8d823fabe786a8574a41b8d2af23999edc28b89ad13c26a55b2f510da"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+          "vmEntries": []
+        },
+        {
+          "id": "help",
+          "label": "使用帮助",
+          "group": "系统与帮助",
+          "cap": "M21",
+          "state": "implemented",
+          "statusLabel": "已实现（入口）",
+          "basis": "已定位当前入口实现；不代表整个能力、异常路径或运行验收均通过。",
+          "fact": "主窗ShowHelpCommand打开自有HelpWindow，属于实际入口。",
+          "gap": "帮助窗口存在不等所有内容与当前版本/快捷键同步；离线/在线支持另定。",
+          "change": "保持自有帮助；链接实际功能和版本，不沿用VM社区或文档资源。",
+          "accept": "缺资源、错误URI、偏好保存失败分别验；失败后可重试，所有已开窗口和新开窗口一致。未运行VS设计器或产品。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "ExecuteShowHelp → HelpWindow.ShowDialog。",
+          "commandGuard": "帮助窗口存在不等所有内容与当前版本/快捷键同步；离线/在线支持另定。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 2212,
+            "token": "private void ExecuteShowHelp()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "提供与当前版本一致的离线帮助，工业现场离线使用有价值。 联网允许且能维护版本化网站时提供；离线场景可不出现。",
+          "vmEntries": [
+            {
+              "id": "4.1",
+              "label": "帮助文档",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "4.2",
+              "label": "帮助文档（在线）",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "shortcuts",
+          "label": "快捷键说明",
+          "group": "系统与帮助",
+          "cap": "M21",
+          "state": "partial",
+          "statusLabel": "部分实现",
+          "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+          "fact": "ExecuteShowShortcuts确实打开HelpWindow，但跳转快捷键页仍是TODO。",
+          "gap": "不能标完全没有帮助，也不能标已完成快捷键直达。",
+          "change": "增加帮助页路由参数并核真实快捷键注册，避免只修改说明。",
+          "accept": "缺资源、错误URI、偏好保存失败分别验；失败后可重试，所有已开窗口和新开窗口一致。未运行VS设计器或产品。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "ShowShortcutsCommand → HelpWindow.ShowDialog，未传目标页。",
+          "commandGuard": "不能标完全没有帮助，也不能标已完成快捷键直达。",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 2218,
+            "token": "private void ExecuteShowShortcuts()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+          "vmEntries": []
+        },
+        {
+          "id": "about",
+          "label": "关于",
+          "group": "系统与帮助",
+          "cap": "M21",
+          "state": "implemented",
+          "statusLabel": "已实现（入口）",
+          "basis": "已定位当前入口实现；不代表整个能力、异常路径或运行验收均通过。",
+          "fact": "主窗ShowAboutCommand打开自有AboutWindow。",
+          "gap": "版本窗口不等SDK/驱动/插件完整诊断清单已具备。",
+          "change": "保留已实现入口，补准确版本与依赖身份，避免把开发版本当发布验收。",
+          "accept": "缺资源、错误URI、偏好保存失败分别验；失败后可重试，所有已开窗口和新开窗口一致。未运行VS设计器或产品。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "ExecuteShowAbout → Owner绑定 → ShowDialog。",
+          "commandGuard": "版本窗口不等SDK/驱动/插件完整诊断清单已具备。",
+          "commandEvidenceKind": "static-source",
+          "commandSource": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 2206,
+            "token": "private void ExecuteShowAbout()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+          },
+          "menuDecision": "must",
+          "menuFitLabel": "必须具备",
+          "menuReason": "版本、依赖和构建身份是支持与兼容判断基础。",
+          "vmEntries": [
+            {
+              "id": "4.3",
+              "label": "版本信息",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "language",
+          "label": "语言 / 单位 / 默认值",
+          "group": "系统与帮助",
+          "cap": "M23",
+          "state": "pending",
+          "statusLabel": "待产品确认",
+          "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+          "fact": "语言/单位/默认值是复合提案，不由主题资源或标定mm字段证明完整设置。",
+          "gap": "多语言客户需求未确认；单位不能只换标签，默认值需持久化/版本化。",
+          "change": "先按自有产品范围拆分设置，中文首版可固定；不要直接迁移VM语言菜单/资源。",
+          "accept": "重启生效/即时生效/取消/保存失败行为明确，没有无效菜单。",
+          "decision": "新增",
+          "adoption": "新增",
+          "toolbar": false,
+          "commandChain": "拟议语言资源刷新；量纲合同；默认配置快照，各为不同责任。",
+          "commandGuard": "多语言客户需求未确认；单位不能只换标签，默认值需持久化/版本化。",
+          "commandEvidenceKind": "design-proposal",
+          "commandSource": {
+            "path": "artifacts/validation/build-menu-adoption.cjs",
+            "line": 8,
+            "token": "'%English%'",
+            "sha256": "48c69f1b33c2457f19e3b5464aa598dd9083064269e4131a7ced552546600c05"
+          },
+          "menuDecision": "conditional",
+          "menuFitLabel": "按需/待产品确认",
+          "menuReason": "首版中文可固定；多语言需求确认后采用统一资源与切换政策。 客户交付需要英文时新增，不等复制VM语言资源或术语。",
+          "vmEntries": [
+            {
+              "id": "4.0.0",
+              "label": "%中文%",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "4.0.1",
+              "label": "%English%",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "permissions",
+          "label": "用户权限",
+          "group": "系统与帮助",
+          "cap": "X04",
+          "state": "pending",
+          "statusLabel": "待产品确认",
+          "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+          "fact": "用户权限仍待目标产品确认；现有编辑只读/菜单禁用不等身份权限服务。",
+          "gap": "本轮未定位完整用户权限服务，不据此断言所有局部授权能力均无。",
+          "change": "多人/操作员场景再增加；服务层执行授权，菜单只呈现结果，与加密狗商业授权分开。",
+          "accept": "篡改/错凭据/换狗/写入中断/升级回滚/可信脚本边界均有记录。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "拟议身份 → 角色/能力 → 业务服务准入 → 审计。",
+          "commandGuard": "本轮未定位完整用户权限服务，不据此断言所有局部授权能力均无。",
+          "commandEvidenceKind": "design-proposal",
+          "commandSource": {
+            "path": "artifacts/validation/build-menu-adoption.cjs",
+            "line": 5,
+            "token": "'权限设置'",
+            "sha256": "48c69f1b33c2457f19e3b5464aa598dd9083064269e4131a7ced552546600c05"
+          },
+          "menuDecision": "conditional",
+          "menuFitLabel": "按需/待产品确认",
+          "menuReason": "多人交付/操作员隔离时需要；单人研发版可延后。权限必须服务端/业务层检查，非只隐藏菜单。",
+          "vmEntries": [
+            {
+              "id": "1.0",
+              "label": "权限设置",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        },
+        {
+          "id": "encrypt",
+          "label": "方案保密 / 插件信任",
+          "group": "系统与帮助",
+          "cap": "X04",
+          "state": "pending",
+          "statusLabel": "待产品确认",
+          "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+          "fact": "HTML内部加密导出已有静态文档工具，不代表产品方案加密或插件信任已实现。",
+          "gap": "离线HTML浏览时内容终会解密；产品侧密钥治理、签名/兼容政策仍待定。",
+          "change": "按具体威胁与分发需要决定；敏感材料减少分发，产品格式/授权/插件信任分别设计。",
+          "accept": "篡改/错凭据/换狗/写入中断/升级回滚/可信脚本边界均有记录。",
+          "decision": "暂不能判断",
+          "adoption": "暂缓决策",
+          "toolbar": false,
+          "commandChain": "文档分发解密与产品方案密钥/插件签名是不同链。",
+          "commandGuard": "离线HTML浏览时内容终会解密；产品侧密钥治理、签名/兼容政策仍待定。",
+          "commandEvidenceKind": "design-proposal",
+          "commandSource": {
+            "path": "artifacts/validation/build-secure-export.cjs",
+            "line": 2,
+            "token": "module.exports",
+            "sha256": "c768f88d0f0955a66ca830b9a0988112f754210d40fc51b958325d235d9f2334"
+          },
+          "menuDecision": "conditional",
+          "menuFitLabel": "按需/待产品确认",
+          "menuReason": "需要明确业务、硬件或安全策略后才纳入最终发布范围；现有目标导航先保留分析入口，不能视作已批准新增。",
+          "vmEntries": []
+        },
+        {
+          "id": "support",
+          "label": "故障包 / 维护诊断",
+          "group": "系统与帮助",
+          "cap": "M26",
+          "state": "pending",
+          "statusLabel": "待产品确认",
+          "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+          "fact": "诊断字段整改、故障包和环境检查已列方案，未定位可交付的一键维护工具链。",
+          "gap": "计划/CSV模板不是运行诊断结果，不沿用或启动VM原厂支持exe。",
+          "change": "先修可追溯字段与Flush可靠性，再产自有故障包；设备/凭据/用户数据脱敏政策明确。",
+          "accept": "日志洪峰时UI可操作且积压有界，丢弃计数可见；搜索/清空/复制一致，关窗不再接收。 队列恰好199/200/201/401条时核每个日志Id恰一次交付；筛选和容量淘汰另计，不让批处理无声丢条。 UI阻塞、文件锁/磁盘错误、慢写入器时Flush返回确定成功/超时/失败；不以睡眠时长当确认。异常退出/掉电耐久另验。 日志洪峰上游/聚合/显示三层分别测边界；退出中写入、Dispose重复、文件失败仍可诊断；不得在UI线程同步等仍需Dispatcher的日志任务。",
+          "decision": "必须整改",
+          "adoption": "自研整改",
+          "toolbar": false,
+          "commandChain": "拟议manifest/版本依赖/脱敏日志 → 故障包；测量仍not_run。",
+          "commandGuard": "计划/CSV模板不是运行诊断结果，不沿用或启动VM原厂支持exe。",
+          "commandEvidenceKind": "design-proposal",
+          "commandSource": {
+            "path": "artifacts/validation/build-diagnostic-benchmark.cjs",
+            "line": 2,
+            "token": "module.exports",
+            "sha256": "48259ea5a5d76c0bde4afa9d3e7e7ee065cf8d2ffab10d5b95cf78d3793ff966"
+          },
+          "menuDecision": "recommend",
+          "menuFitLabel": "建议借鉴",
+          "menuReason": "有利现场部署，检查自有SDK/驱动/插件依赖与版本；不启动VM检测工具。 建议自有故障包和可控诊断，需脱敏与授权；不迁入厂商机器人/后台上传。 可替换为自有支持/组件诊断，不能沿用原厂支持信息。 建议自有脱敏故障包，可放诊断页而非启动外部工具。",
+          "vmEntries": [
+            {
+              "id": "2.2",
+              "label": "运行环境检测工具",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "2.4",
+              "label": "运行异常采集机器人工具",
+              "resource": "MenuItems.xml"
+            },
+            {
+              "id": "4.4",
+              "label": "更多支持",
+              "resource": "MenuItems.xml"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "new",
+      "label": "新建方案",
+      "group": "方案",
+      "cap": "M02",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "方案管理器“新建方案”已接NewSolutionCommand；顶栏当前只有“方案配置”，目标直接新建快捷项尚未接入。",
+      "gap": "管理器以!IsBusy准入；跨方案保存/停止门禁仍走现有transition链。",
+      "change": "复用管理器操作服务增加快捷入口，保持选中记录与已加载方案分开。",
+      "accept": "取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": true,
+      "commandChain": "NewSolutionCommand → New → 方案管理器模型/落盘；不得用旧NewWorkflowCommand代替方案新建。",
+      "commandGuard": "管理器以!IsBusy准入；跨方案保存/停止门禁仍走现有transition链。",
+      "commandSource": {
+        "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+        "line": 87,
+        "token": "NewSolutionCommand =",
+        "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "编辑器的基本方案入口，需自有模型和创建失败回滚。 方案身份、资源及配置边界必需；可整合方案面板，不一定独立对话框。",
+      "vmEntries": [
+        {
+          "id": "0.0",
+          "label": "新建方案",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "1.2",
+          "label": "方案设置",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "open",
+      "label": "打开方案",
+      "group": "方案",
+      "cap": "M02",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "管理器“添加已有”与“打开选中方案”是两步，不能把添加记录直接等同已切换方案。",
+      "gap": "Launch检查选中项、缺失文件和busy；当前目标顶栏打开快捷项未接线。",
+      "change": "快捷打开应完成预检和Launch事务，失败保留旧工作区，不能只调用AddExisting。",
+      "accept": "取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": true,
+      "commandChain": "OpenSolutionCommand → AddExisting；LaunchCommand → Launch → 保存/运行过渡检查后打开。",
+      "commandGuard": "Launch检查选中项、缺失文件和busy；当前目标顶栏打开快捷项未接线。",
+      "commandSource": {
+        "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+        "line": 96,
+        "token": "LaunchCommand =",
+        "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "必须能打开自有方案；不承诺原.sol兼容。",
+      "vmEntries": [
+        {
+          "id": "0.1",
+          "label": "打开方案",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "recent",
+      "label": "最近方案（示例待确认）",
+      "group": "方案",
+      "cap": "M02",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+      "fact": "管理器已有RecentSolutions，按LastAccessTime排序取10项，并有选择最近项入口；示例库未由此证明。",
+      "gap": "最近记录存在不等于能成功打开；缺失路径、原工作区保存/停止仍要走打开链。",
+      "change": "把最近方案状态改为部分实现；示例作为按需能力单独确认，不笼统写两者都未实现。",
+      "accept": "取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "方案元数据 → RecentSolutions → SelectRecent → Launch。",
+      "commandGuard": "最近记录存在不等于能成功打开；缺失路径、原工作区保存/停止仍要走打开链。",
+      "commandSource": {
+        "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+        "line": 316,
+        "token": "RecentSolutions.Clear();",
+        "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "降低重复选文件成本，需处理路径失效；不需要复制VM最近记录格式。 有培训/交付示例时提供，首版不必内置整套案例。 仅有最近方案/示例/引导内容时增加欢迎页，不做无实际内容的首页。",
+      "vmEntries": [
+        {
+          "id": "0.2",
+          "label": "最近打开方案",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "0.3",
+          "label": "打开示例",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "4.6",
+          "label": "打开欢迎页",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "flowio",
+      "label": "流程导入 / 导出",
+      "group": "方案",
+      "cap": "M02",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "旧工作流JSON打开/另存方法存在；未据此确认完整方案内流程导入/导出菜单链。",
+      "gap": "当前顶栏未绑定旧命令；ID/绑定/插件/外部资源与方案模型合并事务仍待齐。",
+      "change": "新增正式流程交换合同和候选预检/一次提交，先明确自有格式，失败不留下半图。",
+      "accept": "取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "ExecuteOpenWorkflow/ExecuteSaveAsWorkflow → 旧流程JSON与Tab，非原VM ImportProcess兼容。",
+      "commandGuard": "当前顶栏未绑定旧命令；ID/绑定/插件/外部资源与方案模型合并事务仍待齐。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 1368,
+        "token": "private void ExecuteOpenWorkflow()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "有跨方案复用价值；先完成ID重映射、插件版本及外部引用检查。",
+      "vmEntries": [
+        {
+          "id": "0.7",
+          "label": "导入流程",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "save",
+      "label": "保存",
+      "group": "方案",
+      "cap": "M03",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "顶栏保存实际绑定SaveCurrentSolutionCommand。",
+      "gap": "保存错误反馈已有；Repository先修改内存路径等失败回滚缺口见持久化页。",
+      "change": "保留命令接线，整改内存+文件提交与脏状态，不重新造另一种保存格式。",
+      "accept": "拒绝覆盖、文件占用、无权限、序列化失败分别核原字节与内存状态；断电耐久性未验证，不用原子替换名词代证。；注入保存后事件异常、设置失败时提示实际阶段；重启后文件可找到；未保存状态只按明确提交合同清除。；原文件损坏、恢复文件损坏、资源相对路径、临时目录被清理、另存/重命名分别核；不把一次恢复方法存在当故障验收。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": true,
+      "commandChain": "SaveCurrentSolutionCommand → ExecuteSaveCurrentSolution；不是旧SaveWorkflowCommand。",
+      "commandGuard": "保存错误反馈已有；Repository先修改内存路径等失败回滚缺口见持久化页。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 932,
+        "token": "SaveCurrentSolutionCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "用户编辑必须可靠保存，磁盘和内存状态均要事务一致。",
+      "vmEntries": [
+        {
+          "id": "0.4",
+          "label": "保存方案",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "saveas",
+      "label": "另存方案 / 方案副本",
+      "group": "方案",
+      "cap": "M02",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "管理器上下文菜单已有SaveSolutionAsCommand和CopySolutionCommand；自有方案副本与旧工作流另存为不是同合同。",
+      "gap": "另存当前方案有CanSelect与IsSelectedCurrent条件；资源打包/内部身份和失败回滚见事务页。",
+      "change": "目标菜单复用真实方案命令，明确副本/另存/导出区别。",
+      "accept": "取消保留旧方案；加载失败不丢工作区；旧运行不能写新方案。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "SaveSolutionAsCommand → RunAsync(SaveAs)；副本复制走CopySolutionCommand。",
+      "commandGuard": "另存当前方案有CanSelect与IsSelectedCurrent条件；资源打包/内部身份和失败回滚见事务页。",
+      "commandSource": {
+        "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+        "line": 89,
+        "token": "SaveSolutionAsCommand =",
+        "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "支持方案变体与复制；资源和ID政策需按自有格式定义。",
+      "vmEntries": [
+        {
+          "id": "0.5",
+          "label": "方案另存为",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "resources",
+      "label": "资源打包 / 迁移检查",
+      "group": "方案",
+      "cap": "M03",
+      "state": "planned",
+      "statusLabel": "目标新增入口",
+      "basis": "最终导航设计提案：补独立可发现入口；不宣称后台功能全不存在。",
+      "fact": "方案复制会解析资源路径，不是把图像/模型/依赖一起打包。",
+      "gap": "路径可解析不等资源可迁移或文件已复制；目标打包入口仍是提案。",
+      "change": "新增资源清单、相对路径、哈希/缺失诊断和目标目录冲突政策；不要把已有复制方法改名当完成。",
+      "accept": "拒绝覆盖、文件占用、无权限、序列化失败分别核原字节与内存状态；断电耐久性未验证，不用原子替换名词代证。；注入保存后事件异常、设置失败时提示实际阶段；重启后文件可找到；未保存状态只按明确提交合同清除。；原文件损坏、恢复文件损坏、资源相对路径、临时目录被清理、另存/重命名分别核；不把一次恢复方法存在当故障验收。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "CopyOrSaveAsSolution → ResolveResourcePaths → 新方案文件。",
+      "commandGuard": "路径可解析不等资源可迁移或文件已复制；目标打包入口仍是提案。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/Workflow/SolutionManager.cs",
+        "line": 833,
+        "token": "private SolutionMetadata? CopyOrSaveAsSolution",
+        "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+      "vmEntries": []
+    },
+    {
+      "id": "close",
+      "label": "关闭方案 / 退出",
+      "group": "方案",
+      "cap": "M22",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "主窗有异步关闭及方案切换保存决策，不是简单Window.Close。",
+      "gap": "请求停止/活动登记为空不等全部原生在途结束；子窗口异步关闭需集中观察。",
+      "change": "依现有关闭专项补等待结局/超时隔离及逐层清理，不在UI同步等需要UI的任务。",
+      "accept": "重复关闭、防重入、保存失败、原生慢调用、相机回调均不提前销毁资源。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "OnClosing → 过渡门禁/保存决策 → 停止等待 → 设备与应用退役。",
+      "commandGuard": "请求停止/活动登记为空不等全部原生在途结束；子窗口异步关闭需集中观察。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+        "line": 238,
+        "token": "OnClosing",
+        "sha256": "e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "必须统一保存决策、停止排空与设备退役。",
+      "vmEntries": [
+        {
+          "id": "0.8",
+          "label": "退出",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "undo",
+      "label": "撤销",
+      "group": "编辑",
+      "cap": "M08",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "ExecuteUndo与CurrentCommandManager.CanUndo已有；在本次顶栏XAML中未找到UndoCommand按钮。",
+      "gap": "CanUndo已有；异常恢复、删除副作用和历史作用域仍有确定缺口。",
+      "change": "目标菜单/快捷项复用当前命令，先修图事务，不把新增按钮当撤销完整。",
+      "accept": "删除-撤销-重做后图与引用一致；运行对象不重复实例化或泄漏。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": true,
+      "commandChain": "UndoCommand → ExecuteUndo → CommandManager.Undo。",
+      "commandGuard": "CanUndo已有；异常恢复、删除副作用和历史作用域仍有确定缺口。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 1309,
+        "token": "private void ExecuteUndo()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "编辑必须可恢复，但现有删除副作用/历史失败需先整改。 建议历史列表展示和定位；不是普通Undo按钮已经覆盖，需明确历史作用域。",
+      "vmEntries": [
+        {
+          "id": "5.0",
+          "label": "Lang_Undo",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "5.0.0",
+          "label": "Lang_Records",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "redo",
+      "label": "重做",
+      "group": "编辑",
+      "cap": "M08",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "ExecuteRedo与CurrentCommandManager.CanRedo已有；当前顶栏未接RedoCommand。",
+      "gap": "CanRedo已有；与Undo共享事务一致性问题，需禁止失败后静默丢历史。",
+      "change": "借鉴VM5.1能力而不迁移二进制；补当前入口并验同一模型身份与绑定。",
+      "accept": "删除-撤销-重做后图与引用一致；运行对象不重复实例化或泄漏。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": true,
+      "commandChain": "RedoCommand → ExecuteRedo → CommandManager.Redo。",
+      "commandGuard": "CanRedo已有；与Undo共享事务一致性问题，需禁止失败后静默丢历史。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 1331,
+        "token": "private void ExecuteRedo()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "与Undo同一事务模型；不能仅重新创建UI节点。",
+      "vmEntries": [
+        {
+          "id": "5.1",
+          "label": "Lang_Redo",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "copy",
+      "label": "复制 / 剪切节点",
+      "group": "编辑",
+      "cap": "M08",
+      "state": "unimplemented",
+      "statusLabel": "未开发",
+      "basis": "源码TODO或已有明确未实施设计；不冒充现有可用按钮。",
+      "fact": "主窗输入绑定和已审画布命令未接完整选中子图Copy/Cut；拖入新工具不是节点复制。",
+      "gap": "此结论限已审入口，不以同名文本复制或方案副本代证节点复制。",
+      "change": "新增内部/外部引用重映射和资源共享政策，再接快捷键与Undo。",
+      "accept": "复制A和B后新B指向新A；跨流程、脚本动态字段、失败无残留。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "目标编辑命令 → 拟议子图候选/ID映射 → 事务提交（未实施）。",
+      "commandGuard": "此结论限已审入口，不以同名文本复制或方案副本代证节点复制。",
+      "commandEvidenceKind": "design-proposal",
+      "commandSource": {
+        "path": "artifacts/validation/build-editing-transactions.cjs",
+        "line": 2,
+        "token": "Copy",
+        "sha256": "05da69c1d41668271b1d34c4c25f3d9d687d2ca919113a8485fe2bd2f7eb96e3"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+      "vmEntries": []
+    },
+    {
+      "id": "paste",
+      "label": "粘贴选中子图",
+      "group": "编辑",
+      "cap": "M08",
+      "state": "unimplemented",
+      "statusLabel": "未开发",
+      "basis": "源码TODO或已有明确未实施设计；不冒充现有可用按钮。",
+      "fact": "未定位已接入主画布的完整节点粘贴事务。",
+      "gap": "旧工作流JSON打开与拖入新工具不是剪贴板子图粘贴。",
+      "change": "缺插件/外部绑定失效先诊断，成功后一次写入并可撤销。",
+      "accept": "局部粘贴、缺插件、外部引用失效、撤销重做分别验。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "目标Paste → 拟议候选节点/连线/字段预检 → 一次入图（未实施）。",
+      "commandGuard": "旧工作流JSON打开与拖入新工具不是剪贴板子图粘贴。",
+      "commandEvidenceKind": "design-proposal",
+      "commandSource": {
+        "path": "artifacts/validation/build-editing-transactions.cjs",
+        "line": 3,
+        "token": "Paste",
+        "sha256": "05da69c1d41668271b1d34c4c25f3d9d687d2ca919113a8485fe2bd2f7eb96e3"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+      "vmEntries": []
+    },
+    {
+      "id": "lock",
+      "label": "区域锁定 / 解锁",
+      "group": "编辑",
+      "cap": "M06",
+      "state": "pending",
+      "statusLabel": "待产品确认",
+      "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+      "fact": "VM有区域锁/解锁入口；自研当前导航只是建议能力，尚未定位等价锁定服务。",
+      "gap": "锁哪些区域、谁可解锁、与运行只读关系尚待产品确认。",
+      "change": "建议防误改而不假装权限安全；需求确定后统一菜单/快捷键/画布写入准入。",
+      "accept": "缩放/多选/拖出边界/取消拖动/Undo后位置与选择一致。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "拟议编辑状态 → 被锁区域拒写；运行与权限是另两层。",
+      "commandGuard": "锁哪些区域、谁可解锁、与运行只读关系尚待产品确认。",
+      "commandEvidenceKind": "design-proposal",
+      "commandSource": {
+        "path": "artifacts/validation/build-menu-adoption.cjs",
+        "line": 9,
+        "token": "Lang_Locking",
+        "sha256": "48c69f1b33c2457f19e3b5464aa598dd9083064269e4131a7ced552546600c05"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "生产调试防误改有价值；先定义锁哪些区域与解锁权限，不伪装安全授权。 必须与锁定配套，不能产生不可恢复的只读状态。",
+      "vmEntries": [
+        {
+          "id": "5.2",
+          "label": "锁屏",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "5.2.0",
+          "label": "Lang_Locking",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "5.2.1",
+          "label": "Lang_Unlock",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "delete",
+      "label": "删除节点 / 连线",
+      "group": "编辑",
+      "cap": "M08",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "DeleteSelectedNodesCommand已有，删除前确认并执行批量节点/连线命令。",
+      "gap": "命令外副作用不能由当前Undo完全恢复；显示序号释放/恢复也有差异。",
+      "change": "必须把所有副作用纳入可回滚图事务，失败不丢历史。",
+      "accept": "删除-撤销-重做后图与引用一致；运行对象不重复实例化或泄漏。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "ExecuteDeleteSelectedNodes → BatchDeleteNodesAndConnectionsCommand → 另行CleanupBindings/级联子图。",
+      "commandGuard": "命令外副作用不能由当前Undo完全恢复；显示序号释放/恢复也有差异。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 2589,
+        "token": "private void ExecuteDeleteSelectedNodes()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+      "vmEntries": []
+    },
+    {
+      "id": "select",
+      "label": "全选 / 多选",
+      "group": "编辑",
+      "cap": "M06",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "框选/多选处理器已有；不能从TextBox.SelectAll推画布全选已接通。",
+      "gap": "全选键与目标选择命令需另核，文本编辑焦点不可误删/误全选画布。",
+      "change": "复用选择服务并明确焦点/多选/锁定/运行只读政策，菜单全选单独接线验收。",
+      "accept": "缩放/多选/拖出边界/取消拖动/Undo后位置与选择一致。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "Canvas鼠标 → WorkflowSelectionHandler → 选择集合。",
+      "commandGuard": "全选键与目标选择命令需另核，文本编辑焦点不可误删/误全选画布。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Services/Interaction/SelectionHandler.cs",
+        "line": 20,
+        "token": "public class WorkflowSelectionHandler",
+        "sha256": "03490c50b8c51720ce5983de8f041e858047f348b3cacbf59a2d76476df73124"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+      "vmEntries": []
+    },
+    {
+      "id": "panels",
+      "label": "工具箱 / 图像 / 结果 / 日志 / 状态栏",
+      "group": "视图",
+      "cap": "M16",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "主工作区已有画布/图像/结果/日志及状态栏组件，不等每种面板都已有统一显示菜单。",
+      "gap": "布局折叠与结果/日志服务退订不同，隐藏面板不能释放仍被运行借用的数据。",
+      "change": "补统一可发现显示项和恢复默认，保留各区域独立Owner。",
+      "accept": "快速切源/失败/取消时不叠旧图形；保留历史不被下一帧改写。 使用非连续ROI Mat、同尺寸不同像素两次转换、不同深度及历史保留做独立验收；调用入口未证时不报线上故障。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "ShellWorkspace布局与模板 → 各区域控件；LayoutConfig保存左右折叠。",
+      "commandGuard": "布局折叠与结果/日志服务退订不同，隐藏面板不能释放仍被运行借用的数据。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml",
+        "line": 390,
+        "token": "CanvasTemplateSelector",
+        "sha256": "dbc319489f4d2c46ed49ee2edee8802660944d47bd6034676f63332137c13ee8"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "可靠日志和状态是现场诊断基础；必须修丢失/落盘确认，不仅加窗口。",
+      "vmEntries": [
+        {
+          "id": "3.0",
+          "label": "日志",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "layout",
+      "label": "布局保存 / 恢复默认",
+      "group": "视图",
+      "cap": "M10",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "布局宽度/折叠的Save/Load和Reset模型已有，主窗有保存/恢复调用。",
+      "gap": "有Reset方法不等“恢复默认”菜单已绑定；Save异常返回false，调用端反馈需核。",
+      "change": "复用已有偏好持久化，新增恢复默认入口并验证最小尺寸、越界修正与保存失败反馈。",
+      "accept": "缩放前后节点位置不变，折叠/恢复不丢当前视区，跨屏可操作。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "MainWindow SaveLayoutConfig/RestoreLayoutConfig → LayoutConfig → 用户WindowLayout偏好。",
+      "commandGuard": "有Reset方法不等“恢复默认”菜单已绑定；Save异常返回false，调用端反馈需核。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Shared/LayoutConfig.cs",
+        "line": 147,
+        "token": "public void Reset()",
+        "sha256": "c5e70433aa5f516f9e253dea2556c05ffa23c8c32818f1af4536b2e02d15217b"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+      "vmEntries": []
+    },
+    {
+      "id": "fullscreen",
+      "label": "缩放 / 适应 / 全屏",
+      "group": "视图",
+      "cap": "M10",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "主窗口全屏菜单、图像控件全屏和画布缩放是三套入口，不可混为一种完成状态。",
+      "gap": "MainVM有旧图像全屏TODO不代表实际ImageControl全屏没实现；Fit TODO也需按调用点核。",
+      "change": "统一入口命名和目标；分别验主窗/画布/图像恢复、焦点和DPI，不盲目删除已有实际全屏。",
+      "accept": "缩放前后节点位置不变，折叠/恢复不丢当前视区，跨屏可操作。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "顶栏FullscreenRequested → 主窗；ImageControl Enter/ExitFullscreen独立移父容器；画布Fit另链。",
+      "commandGuard": "MainVM有旧图像全屏TODO不代表实际ImageControl全屏没实现；Fit TODO也需按调用点核。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+        "line": 884,
+        "token": "private void EnterFullscreen()",
+        "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+      "vmEntries": []
+    },
+    {
+      "id": "history",
+      "label": "历史结果与本轮切换",
+      "group": "视图",
+      "cap": "M16",
+      "state": "pending",
+      "statusLabel": "待核实：历史切换",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "已见当前DisplayImageSources与长期Workflow快照；未定位完整多轮历史结果浏览/切回本轮链。",
+      "gap": "图像源列表、当前结果缓存不等历史快照；保留期限/最后读者/代次仍需设计。",
+      "change": "先定历史范围、容量及只读快照，独立实现切回本轮；不把现有选源控件标历史完成。",
+      "accept": "快速切源/失败/取消时不叠旧图形；保留历史不被下一帧改写。 使用非连续ROI Mat、同尺寸不同像素两次转换、不同深度及历史保留做独立验收；调用入口未证时不报线上故障。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "本轮NodeResultManager → ImageResultViewModel；长期快照按Workflow覆盖，非完整历史库。",
+      "commandGuard": "图像源列表、当前结果缓存不等历史快照；保留期限/最后读者/代次仍需设计。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Shell/Controls/Shell/ImageResultViewModel.cs",
+        "line": 29,
+        "token": "private ObservableCollection<AvailableDataSource>",
+        "sha256": "ebcfe615760a3bd85ff8e08d47d4907ee91ddb43163e07fa5a1af2d19fee432a"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+      "vmEntries": []
+    },
+    {
+      "id": "diagnosis",
+      "label": "数据分析 / 执行快照",
+      "group": "视图",
+      "cap": "M25",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "专业数据分析与执行快照窗口都有实际入口。",
+      "gap": "两者不是同一个通用数据表；Run/Scope信封、缓存结果有效性和分析会话Owner仍有缺口。",
+      "change": "保留专业分工，统一稳定运行身份和失败/取消呈现，别用新窗口掩盖字段缺失。",
+      "accept": "多次切节点/开关方案无订阅增长，旧轮次不填新面板；失败不展示旧成功；高亮与当前底图同帧。 同节点先成功再失败、普通与相机轮换、切方案迟到回调分别验；结果树、图像、分析一致显示本轮状态。 重复切节点、工厂返回null、创建抛错、关闭方案分别核实例/订阅/原生句柄；需明确共享与独立两类。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "UpdateDataAnalysisControl → 专业控件；状态栏ShowExecutionSnapshot → 长期执行快照。",
+      "commandGuard": "两者不是同一个通用数据表；Run/Scope信封、缓存结果有效性和分析会话Owner仍有缺口。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 4405,
+        "token": "private void ShowExecutionSnapshot(",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+      "vmEntries": []
+    },
+    {
+      "id": "roi",
+      "label": "ROI / 位置修正 / 图形文字",
+      "group": "视图",
+      "cap": "T09",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "ImageControl与ROI Manager、位置修正、结果图元层已有实际调用。",
+      "gap": "位置修正非毫米标定；已有ROI拖动Escape不恢复几何，DPI缓存/同帧仍待齐。",
+      "change": "依8坐标链整改交互事务、内容版本与最后读者，再做绘制性能选型。",
+      "accept": "缩放/DPI/旋转/换图/取消/Undo后ROI值一致；无数据时不误编辑旧帧。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "鼠标DIP → ScreenToImage → ROI参考域编辑；结果Display → RenderLayer。",
+      "commandGuard": "位置修正非毫米标定；已有ROI拖动Escape不恢复几何，DPI缓存/同帧仍待齐。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+        "line": 704,
+        "token": "public void HandleEscape()",
+        "sha256": "bce5346e3c9c0cf1a895c1b379edd7fad66af329d30f2cbccd7448f185f304b3"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+      "vmEntries": []
+    },
+    {
+      "id": "paths",
+      "label": "显示路径拐点",
+      "group": "视图",
+      "cap": "M07",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "顶栏菜单已绑定TogglePathPointsCommand。",
+      "gap": "显示拐点不等修改依赖路径或运行分支；隐藏不能改变图模型。",
+      "change": "保留视图操作，补偏好/焦点与切Tab一致性验证。",
+      "accept": "无效连线零执行依赖；改名/动态输出删除后清晰标失效，不留下幽灵订阅。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "ExecuteTogglePathPoints → 当前工作区路径拐点显示状态。",
+      "commandGuard": "显示拐点不等修改依赖路径或运行分支；隐藏不能改变图模型。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 4201,
+        "token": "private void ExecuteTogglePathPoints()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+      "vmEntries": []
+    },
+    {
+      "id": "run",
+      "label": "当前流程单次",
+      "group": "运行",
+      "cap": "M11",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "顶栏和菜单绑定RunWorkflowCommand，运行选中流程，不是全部流程单次。",
+      "gap": "命令CanExecute为!IsRunning；引擎/方案就绪和多入口重入还需统一。",
+      "change": "保留实际入口，统一显式目标、运行身份和失败反馈。",
+      "accept": "两流程依赖不按Tab顺序猜测；当前流程运行不执行其他流程。",
+      "decision": "借鉴VM重做",
+      "adoption": "混合优化",
+      "toolbar": true,
+      "commandChain": "RunWorkflowCommand → ExecuteRunWorkflow → 执行管理器。",
+      "commandGuard": "命令CanExecute为!IsRunning；引擎/方案就绪和多入口重入还需统一。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 934,
+        "token": "RunWorkflowCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "基础执行入口；目标流程和运行身份必须显式。",
+      "vmEntries": [
+        {
+          "id": "5.6",
+          "label": "单次执行",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "runall",
+      "label": "全部流程单次",
+      "group": "运行",
+      "cap": "M11",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "RunAllWorkflowsCommand与ExecuteRunAllWorkflows后端确实存在；当前顶栏未找到绑定该命令的按钮。",
+      "gap": "CanExecute为!IsAllWorkflowsRunning；执行后无条件成功日志的语义需结合返回状态复审，不据日志认全部成功。",
+      "change": "补目标菜单/工具栏接线并消费完整终态，不能拿当前单次按钮冒充全部单次。",
+      "accept": "两流程依赖不按Tab顺序猜测；当前流程运行不执行其他流程。",
+      "decision": "借鉴VM重做",
+      "adoption": "混合优化",
+      "toolbar": true,
+      "commandChain": "ExecuteRunAllWorkflows → SetRuntimeParameters → RunSolutionAsync(Tabs,solution)。",
+      "commandGuard": "CanExecute为!IsAllWorkflowsRunning；执行后无条件成功日志的语义需结合返回状态复审，不据日志认全部成功。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 4221,
+        "token": "private async System.Threading.Tasks.Task ExecuteRunAllWorkflows()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+      "vmEntries": []
+    },
+    {
+      "id": "continuous",
+      "label": "全部流程连续",
+      "group": "运行",
+      "cap": "M13",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "顶栏ToggleButton已绑定ToggleContinuousAllCommand。",
+      "gap": "当前命令CanExecute恒true；流程集合的重入和停止排空仍须后端裁决。",
+      "change": "保留已有切换入口，统一按钮显示与真实会话状态，停止完成不得仅看登记归零。",
+      "accept": "全局/单Tab连续组合下无重入；停止后全部目标流程按协议终态。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": true,
+      "commandChain": "ExecuteToggleContinuousAll → 当前IsAllWorkflowsRunning决定StartAllWorkflows或StopAllWorkflows。",
+      "commandGuard": "当前命令CanExecute恒true；流程集合的重入和停止排空仍须后端裁决。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 4280,
+        "token": "private void ExecuteToggleContinuousAll()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "连续执行已有产品路径，需完整失败/取消/排空政策。",
+      "vmEntries": [
+        {
+          "id": "5.7.0",
+          "label": "连续执行",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "tabrun",
+      "label": "Tab单次",
+      "group": "运行",
+      "cap": "M12",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "Tab控制器有RunSingle入口，与顶栏当前流程入口分别接线。",
+      "gap": "选中UI状态与实际目标身份不可隐式混用，子图Tab与根流程目标需明确。",
+      "change": "复用现有执行服务，携带显式RootWorkflowId/Scope，不靠先切Tab选择运行目标。",
+      "accept": "在另一Tab被选中或切换期间，仍只运行按钮指向流程；结果归属不串。",
+      "decision": "借鉴VM重做",
+      "adoption": "VM机制优先",
+      "toolbar": false,
+      "commandChain": "WorkflowTabControlViewModel.RunSingle → 选定Tab回调执行。",
+      "commandGuard": "选中UI状态与实际目标身份不可隐式混用，子图Tab与根流程目标需明确。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs",
+        "line": 252,
+        "token": "public void RunSingle(",
+        "sha256": "553a73a4b3c39a5d77eb94dc5ed2176db2ad41bb3a32b00ed2027638dabdb1d5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+      "vmEntries": []
+    },
+    {
+      "id": "tabcontinuous",
+      "label": "Tab连续",
+      "group": "运行",
+      "cap": "M14",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "Tab控制器已有StartContinuous/StopContinuous/ToggleContinuous。",
+      "gap": "回调返回true不代表停止已排空；Tab IsRunning/实际会话终态仍需统一。",
+      "change": "与全部连续共用运行合同，按钮只在完整终态恢复，取消本轮与不再开新轮分开。",
+      "accept": "双流程争用单相机、慢工具、取消队列、重启均可追踪。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "Tab目标 → StartContinuousExecution/StopContinuousExecution委托。",
+      "commandGuard": "回调返回true不代表停止已排空；Tab IsRunning/实际会话终态仍需统一。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs",
+        "line": 270,
+        "token": "public void StartContinuous(",
+        "sha256": "553a73a4b3c39a5d77eb94dc5ed2176db2ad41bb3a32b00ed2027638dabdb1d5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+      "vmEntries": []
+    },
+    {
+      "id": "runpolicy",
+      "label": "运行策略设置",
+      "group": "运行",
+      "cap": "M23",
+      "state": "pending",
+      "statusLabel": "待产品确认",
+      "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+      "fact": "引擎已有固定计算槽和profile门禁；未找到完整的运行策略设置页面。",
+      "gap": "不能把代码常量或VM设置界面存在当自研设置完成；外部等待/跨根预算是不同维度。",
+      "change": "先定义可配置项、作用范围和安全上下限，再接设置入口及运行开始快照。",
+      "accept": "重启生效/即时生效/取消/保存失败行为明确，没有无效菜单。",
+      "decision": "新增",
+      "adoption": "新增",
+      "toolbar": false,
+      "commandChain": "当前代码固定预算 → profile/资源lease；目标设置模型尚待明确。",
+      "commandGuard": "不能把代码常量或VM设置界面存在当自研设置完成；外部等待/跨根预算是不同维度。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/Workflow/WorkflowExecutionEngine.cs",
+        "line": 303,
+        "token": "var maxConcurrency =",
+        "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前多流程/连续运行需明确目标、并发、失败和停止政策；先合同后设置界面。",
+      "vmEntries": [
+        {
+          "id": "1.3",
+          "label": "运行策略",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "pause",
+      "label": "暂停 / 恢复",
+      "group": "运行",
+      "cap": "M15",
+      "state": "unimplemented",
+      "statusLabel": "未开发",
+      "basis": "源码TODO或已有明确未实施设计；不冒充现有可用按钮。",
+      "fact": "PauseCommand有注册，但ExecutePause方法体只有TODO；当前顶栏未接暂停按钮。",
+      "gap": "没有证据可把RunSession暂停能力直接等同菜单暂停功能完成。",
+      "change": "先确认暂停派发的产品语义，再接Session及按钮；不承诺暂停任意原生算法。",
+      "accept": "运行/暂停中/恢复/停止互斥；不宣称任意native可暂停。",
+      "decision": "必须整改",
+      "adoption": "混合优化",
+      "toolbar": true,
+      "commandChain": "PauseCommand → ExecutePause（占位）。",
+      "commandGuard": "没有证据可把RunSession暂停能力直接等同菜单暂停功能完成。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 1304,
+        "token": "private void ExecutePause()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "conditional",
+      "menuFitLabel": "按需/待产品确认",
+      "menuReason": "需要明确业务、硬件或安全策略后才纳入最终发布范围；现有目标导航先保留分析入口，不能视作已批准新增。",
+      "vmEntries": []
+    },
+    {
+      "id": "stop",
+      "label": "停止 / 等待完成",
+      "group": "运行",
+      "cap": "M15",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "顶栏菜单已有StopWorkflowCommand；当前工具栏没有单独停止按钮，连续按钮另负责全部连续切换。",
+      "gap": "Stop命令CanExecute为IsRunning；所有运行范围和在途任务排空仍需统一。",
+      "change": "新增目标停止快捷项时显式当前/全部目标，并观察请求、终态、排空三个阶段。",
+      "accept": "取消时有图像/回调/慢原生任务，UI不先显示已排空，资源最终只释放一次。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。",
+      "decision": "必须整改",
+      "adoption": "混合优化",
+      "toolbar": true,
+      "commandChain": "StopWorkflowCommand → ExecuteStopWorkflow；连续停止走StopAllWorkflows，两个入口不可混写。",
+      "commandGuard": "Stop命令CanExecute为IsRunning；所有运行范围和在途任务排空仍需统一。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 935,
+        "token": "StopWorkflowCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "必须观察在途完成；不能只发取消就显示已停止。",
+      "vmEntries": [
+        {
+          "id": "5.7.1",
+          "label": "停止执行",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "variables",
+      "label": "全局变量",
+      "group": "工具与设备",
+      "cap": "M18",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "顶栏菜单和工具栏均已接ShowGlobalVariableManagerCommand。",
+      "gap": "定义编辑与运行快照/监视是不同能力；子调用继承、保存错误等仍需整改。",
+      "change": "复用入口，按全局变量专项改保存/继承/数组政策，不把已有管理器整体重建。",
+      "accept": "同名/改类型/删除/生产者失败，不改变已冻结的运行输入。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": true,
+      "commandChain": "主窗 → 全局变量管理窗口 → 当前方案变量/保存链。",
+      "commandGuard": "定义编辑与运行快照/监视是不同能力；子调用继承、保存错误等仍需整改。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 968,
+        "token": "ShowGlobalVariableManagerCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前绑定/通信/执行已用到，需定义编辑和运行值边界。",
+      "vmEntries": [
+        {
+          "id": "5.3",
+          "label": "全局变量",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "camera",
+      "label": "相机管理",
+      "group": "工具与设备",
+      "cap": "M19",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "顶栏菜单和工具栏已接ShowCameraManagerCommand。",
+      "gap": "窗口入口已有；型号支持、用途冲突、停止失败隔离及实机验证不由按钮存在证明。",
+      "change": "按相机矩阵整改，目标导航无需再造平行相机管理器。",
+      "accept": "预览期间单帧、流程期间单帧、临时连接失败与取消分别验；失败无残留连接和错误软件触发。；当前Mono8/BGR8范围外明确报不支持；慢显示、历史保留、算法异常都不得读已归还缓冲。；停止抛错、回调迟到、窗口关闭、重复Dispose分别验；未排空不得宣布设备可重新占用。 预览采集中退出、工具停止异常、子窗取消关闭、迟到帧回调分别验；关闭阶段故障可定位到具体Owner，未结局资源保留隔离。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": true,
+      "commandChain": "主窗 → 相机管理器 → 预览/参数 → CameraSession。",
+      "commandGuard": "窗口入口已有；型号支持、用途冲突、停止失败隔离及实机验证不由按钮存在证明。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 969,
+        "token": "ShowCameraManagerCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "已有相机功能必须说明触发、最新帧/必处理、超时与占用；可以放相机或方案页。 现有采集功能需要配置、预览、用途协调和可等待退役。",
+      "vmEntries": [
+        {
+          "id": "1.4",
+          "label": "采集策略",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "3.3",
+          "label": "相机设置",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "communication",
+      "label": "通信管理",
+      "group": "工具与设备",
+      "cap": "M20",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "顶栏菜单和工具栏已接ShowCommunicationManagerCommand。",
+      "gap": "协议驱动、工作流目录接线、设备实测分别验；不能用有管理器代证S7/CIP工作流已通。",
+      "change": "保留入口，补类型化目录与可观察退役/背压政策。",
+      "accept": "断连/超时/不可写/过期授权零副作用；后台触发与按钮同一运行合同。 注入上层Dispose失败、底层失败及相机失败分别验后续清理仍被观察；错误汇总不丢失首因，重试不重用已半释放实例。 Dispose部分清理后抛错、迟到退役、新旧连接并发及重试分别验，未确认释放不报安全可用。 慢发送下高频Run/Stop、相机抖动、配置更新/切方案核顺序、积压、过期和取消排空。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": true,
+      "commandChain": "主窗 → 通信管理器/应用服务 → Runtime/协议会话。",
+      "commandGuard": "协议驱动、工作流目录接线、设备实测分别验；不能用有管理器代证S7/CIP工作流已通。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 970,
+        "token": "ShowCommunicationManagerCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "现有通信工具依赖设备配置和会话；必须有可发现入口。",
+      "vmEntries": [
+        {
+          "id": "3.1",
+          "label": "通信管理",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "subroutine",
+      "label": "子程序 / Group",
+      "group": "工具与设备",
+      "cap": "M09",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "Subroutine工具与子Scope运行已有，不等原VM Group所有模式已覆盖。",
+      "gap": "状态合并/间隔取消/显示投影、子调用globals null及跨图环已有缺口。",
+      "change": "按子程序专项整改；参考Group职责但不据名称整包迁移原实现。",
+      "accept": "嵌套返回、复制、跨层引用、取消和部分失败逐类通过，不能只看能进入。 构造Cancelled无Errors且有可解析输出、Failed空Errors、正常多轮和零轮分别验；父节点不得把取消记成功。 长间隔中取消、子图执行中取消、连续调试关闭、子图异常均等待正确终态；取消不会再启动下一轮。 同子图双调用并发/顺序、嵌套同名节点、多轮下钻分别验，不互相替换所选调用结果；方案切换拒迟到回填。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。 A→A/A→B→A/A→B→C→A、合法复用子图、深层嵌套、载入绕过UI及取消分别验。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "SubroutineTool → 子执行委托 → 独立Scope/Context → 父节点结果。",
+      "commandGuard": "状态合并/间隔取消/显示投影、子调用globals null及跨图环已有缺口。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+        "line": 35,
+        "token": "class SubroutineTool",
+        "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+      "vmEntries": []
+    },
+    {
+      "id": "calibration",
+      "label": "标定训练 / 验证 / 发布",
+      "group": "工具与设备",
+      "cap": "T17",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "NPoint训练、候选文件与Verification验证/发布已有专用工具。",
+      "gap": "不是全部VM标定类型；Verification运行在PublishOnPass时有副作用，不能说仅手动发布。",
+      "change": "保留候选/正式分离，补发布确认、设备/图像域和质量门槛；其他标定类型按需求另立项。",
+      "accept": "异常点、重复点、空数据、求解失败/取消不覆盖正式标定；残差/输出可复核。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "训练工具 → 候选文件 → 验证工具 → 发布正式标定。",
+      "commandGuard": "不是全部VM标定类型；Verification运行在PublishOnPass时有副作用，不能说仅手动发布。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationFile.cs",
+        "line": 44,
+        "token": "public static (NPointCalibrationFile File",
+        "sha256": "dd2b909c025734390e1e6703421b0676bba2f52e418190422ad6319c803cdbe3"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "标定步骤有先后与质量门槛，建议自有向导串联现有训练/验证/发布。 依自有标定板类型和物理尺寸需求决定；打印精度与单位需验证。",
+      "vmEntries": [
+        {
+          "id": "2.0",
+          "label": "一键标定引导",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "2.3",
+          "label": "Calibration Board Generate Tool",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "plugins",
+      "label": "插件管理 / 兼容性诊断",
+      "group": "工具与设备",
+      "cap": "M04",
+      "state": "planned",
+      "statusLabel": "目标新增入口",
+      "basis": "最终导航设计提案：补独立可发现入口；不宣称后台功能全不存在。",
+      "fact": "目录扫描/加载和依赖选择已有；独立插件管理/完整兼容诊断入口仍是目标新增。",
+      "gap": "不可回收ALC不能热卸载；加载成功不等版本/API兼容或干净机器发布通过。",
+      "change": "新增可读兼容诊断与真实依赖清单；当前升级要求重启，不伪装清注册表为卸载完成。",
+      "accept": "已发现但无法加载工具明确禁用；取消拖拽/失败创建无残留对象。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "PluginManager → PluginLoadContext → 共享合同/宿主/插件依赖选择。",
+      "commandGuard": "不可回收ALC不能热卸载；加载成功不等版本/API兼容或干净机器发布通过。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs",
+        "line": 128,
+        "token": "protected override Assembly? Load",
+        "sha256": "73b92f04265fc83a84672db78bc9ef539657e8e0eea7b19639c3c2331fc43748"
+      },
+      "menuDecision": "conditional",
+      "menuFitLabel": "按需/待产品确认",
+      "menuReason": "需要明确业务、硬件或安全策略后才纳入最终发布范围；现有目标导航先保留分析入口，不能视作已批准新增。",
+      "vmEntries": []
+    },
+    {
+      "id": "catalog",
+      "label": "专业工具分类 / 搜索 / 拖入",
+      "group": "工具与设备",
+      "cap": "M04",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "工具箱分类/搜索与拖入创建已有，24个自研工具有实际声明。",
+      "gap": "VM162范围审计不是162自研已开发；创建失败/缺依赖不能残留半节点。",
+      "change": "复用真实目录入口；逐工具补合同而非只新增名称，未纳入范围的工具标明取舍。",
+      "accept": "已发现但无法加载工具明确禁用；取消拖拽/失败创建无残留对象。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "ToolboxViewModel分类与搜索 → ToolRegistry元数据 → 拖入/创建节点。",
+      "commandGuard": "VM162范围审计不是162自研已开发；创建失败/缺依赖不能残留半节点。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Shell/Controls/Toolbox/ToolboxViewModel.cs",
+        "line": 89,
+        "token": "public string SelectedCategory",
+        "sha256": "cbbbb799962cf8bf737f2f3b4ffa87c4dee61a2301f2bf48aa963b1fa5513f56"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "当前方案编辑、执行、输入输出或诊断链实际依赖，应具备可靠入口；具体实现按已有差异整改，不表示采用VM代码或照搬菜单位置。",
+      "vmEntries": []
+    },
+    {
+      "id": "queue",
+      "label": "全局数据队列",
+      "group": "工具与设备",
+      "cap": "M18",
+      "state": "pending",
+      "statusLabel": "待产品确认",
+      "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+      "fact": "全局数据队列仍是待确认能力，当前通信被动游标/Feed单槽不能代该工具。",
+      "gap": "需求未明确；不能从局部Queue类推完整跨流程队列已实现。",
+      "change": "确认单消费/多播、阻塞/丢弃、持久化与图像Owner后再决定新增，不默认搬VM队列。",
+      "accept": "同名/改类型/删除/生产者失败，不改变已冻结的运行输入。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "拟议全局队列服务 → 类型化生产者/消费者与容量/退役（未形成完整入口）。",
+      "commandGuard": "需求未明确；不能从局部Queue类推完整跨流程队列已实现。",
+      "commandEvidenceKind": "design-proposal",
+      "commandSource": {
+        "path": "artifacts/validation/build-menu-adoption.cjs",
+        "line": 17,
+        "token": "queue lights language",
+        "sha256": "48c69f1b33c2457f19e3b5464aa598dd9083064269e4131a7ced552546600c05"
+      },
+      "menuDecision": "conditional",
+      "menuFitLabel": "按需/待产品确认",
+      "menuReason": "需要明确业务、硬件或安全策略后才纳入最终发布范围；现有目标导航先保留分析入口，不能视作已批准新增。",
+      "vmEntries": []
+    },
+    {
+      "id": "lights",
+      "label": "光源 / 外部控制器",
+      "group": "工具与设备",
+      "cap": "M20",
+      "state": "pending",
+      "statusLabel": "待产品确认",
+      "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+      "fact": "当前菜单仅保留光源/控制器建议，未定位自有完整设备管理/协议/工作流链。",
+      "gap": "有普通通信驱动不等光源工具完整；品牌/型号与电气行为须确认。",
+      "change": "按实际硬件选择适配器与发布依赖，无设备需求可不采用此菜单。",
+      "accept": "断连/超时/不可写/过期授权零副作用；后台触发与按钮同一运行合同。 注入上层Dispose失败、底层失败及相机失败分别验后续清理仍被观察；错误汇总不丢失首因，重试不重用已半释放实例。 Dispose部分清理后抛错、迟到退役、新旧连接并发及重试分别验，未确认释放不报安全可用。 慢发送下高频Run/Stop、相机抖动、配置更新/切方案核顺序、积压、过期和取消排空。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "拟议控制器描述 → 驱动 → 通道/触发/状态读回（需求待定）。",
+      "commandGuard": "有普通通信驱动不等光源工具完整；品牌/型号与电气行为须确认。",
+      "commandEvidenceKind": "design-proposal",
+      "commandSource": {
+        "path": "artifacts/validation/build-menu-adoption.cjs",
+        "line": 7,
+        "token": "Lang_ControllerSet",
+        "sha256": "48c69f1b33c2457f19e3b5464aa598dd9083064269e4131a7ced552546600c05"
+      },
+      "menuDecision": "conditional",
+      "menuFitLabel": "按需/待产品确认",
+      "menuReason": "产品确定支持光源/控制器和协议后才纳入；驱动、占用和发布依赖需成套。",
+      "vmEntries": [
+        {
+          "id": "3.2",
+          "label": "控制器管理",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "label": "系统设置",
+      "group": "系统与帮助",
+      "cap": "M23",
+      "state": "unimplemented",
+      "statusLabel": "未开发",
+      "basis": "源码TODO或已有明确未实施设计；不冒充现有可用按钮。",
+      "fact": "ShowSettingsCommand已注册，但ExecuteShowSettings只有TODO；方案管理器自己的数据目录设置不是全局系统设置完成。",
+      "gap": "当前无完整系统设置提交/取消/持久化执行合同。",
+      "change": "明确必要设置列表，复用已有配置服务；配置作用域、失败回滚和重启要求齐后再接目标按钮。",
+      "accept": "取消不提交；应用失败保留旧设置；重新打开读到实际生效值。",
+      "decision": "新增",
+      "adoption": "新增",
+      "toolbar": true,
+      "commandChain": "ShowSettingsCommand → ExecuteShowSettings（占位）。",
+      "commandGuard": "当前无完整系统设置提交/取消/持久化执行合同。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 2201,
+        "token": "private void ExecuteShowSettings()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "已有配置项需可发现、校验和保存；先做明确自有设置范围，不复制VM全部选项。 只有明确多配置整合需求才独立提供，避免与软件/方案/运行/采集设置重复。",
+      "vmEntries": [
+        {
+          "id": "1.1",
+          "label": "软件设置",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "5.8",
+          "label": "综合配置",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "license",
+      "label": "自有加密狗 / 授权状态",
+      "group": "系统与帮助",
+      "cap": "X04",
+      "state": "unimplemented",
+      "statusLabel": "未开发",
+      "basis": "源码TODO或已有明确未实施设计；不冒充现有可用按钮。",
+      "fact": "自有加密狗是用户明确方向；license-design仍是设计提案，不能标产品已授权。",
+      "gap": "厂商、签发、宽限和在途任务政策未定；不使用VM狗/协议/密钥。",
+      "change": "按自有授权四职责八状态落地，先定政策/供应商再开发，不仅加按钮。",
+      "accept": "拔狗、到期、换狗及在途任务按自有授权设计验收。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "拟议厂商适配 → 授权能力服务 → 业务准入 → 状态/离线恢复。",
+      "commandGuard": "厂商、签发、宽限和在途任务政策未定；不使用VM狗/协议/密钥。",
+      "commandEvidenceKind": "design-proposal",
+      "commandSource": {
+        "path": "artifacts/validation/build-license-design.cjs",
+        "line": 2,
+        "token": "module.exports",
+        "sha256": "5e57f3787071372cfbfaa72a32fe22966cf66f30c576aca515ea2f0eb0215320"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "用户明确要求使用自有加密狗；授权设计必须自有实现，VM狗/协议/密钥不采用，厂商与政策仍待定。",
+      "vmEntries": []
+    },
+    {
+      "id": "theme",
+      "label": "主题 / 显示设置",
+      "group": "系统与帮助",
+      "cap": "M21",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "顶栏主题切换与ThemeManager.ApplyTheme已有。",
+      "gap": "当前旧字典移除/状态先改，加载失败回滚存在不足；显示设置全域不由切主题代证。",
+      "change": "保留资源键/现有控件，先候选加载校验再原子替换；设计时和跨DPI另验。",
+      "accept": "缺资源、错误URI、偏好保存失败分别验；失败后可重试，所有已开窗口和新开窗口一致。未运行VS设计器或产品。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "ToggleTheme → ApplyTheme → 合并资源与状态更新。",
+      "commandGuard": "当前旧字典移除/状态先改，加载失败回滚存在不足；显示设置全域不由切主题代证。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Services/ThemeManager.cs",
+        "line": 89,
+        "token": "public void ApplyTheme(",
+        "sha256": "3161aec8d823fabe786a8574a41b8d2af23999edc28b89ad13c26a55b2f510da"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+      "vmEntries": []
+    },
+    {
+      "id": "help",
+      "label": "使用帮助",
+      "group": "系统与帮助",
+      "cap": "M21",
+      "state": "implemented",
+      "statusLabel": "已实现（入口）",
+      "basis": "已定位当前入口实现；不代表整个能力、异常路径或运行验收均通过。",
+      "fact": "主窗ShowHelpCommand打开自有HelpWindow，属于实际入口。",
+      "gap": "帮助窗口存在不等所有内容与当前版本/快捷键同步；离线/在线支持另定。",
+      "change": "保持自有帮助；链接实际功能和版本，不沿用VM社区或文档资源。",
+      "accept": "缺资源、错误URI、偏好保存失败分别验；失败后可重试，所有已开窗口和新开窗口一致。未运行VS设计器或产品。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "ExecuteShowHelp → HelpWindow.ShowDialog。",
+      "commandGuard": "帮助窗口存在不等所有内容与当前版本/快捷键同步；离线/在线支持另定。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 2212,
+        "token": "private void ExecuteShowHelp()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "提供与当前版本一致的离线帮助，工业现场离线使用有价值。 联网允许且能维护版本化网站时提供；离线场景可不出现。",
+      "vmEntries": [
+        {
+          "id": "4.1",
+          "label": "帮助文档",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "4.2",
+          "label": "帮助文档（在线）",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "shortcuts",
+      "label": "快捷键说明",
+      "group": "系统与帮助",
+      "cap": "M21",
+      "state": "partial",
+      "statusLabel": "部分实现",
+      "basis": "现有能力已见，但完整状态/异常/入口一致性仍部分实现。",
+      "fact": "ExecuteShowShortcuts确实打开HelpWindow，但跳转快捷键页仍是TODO。",
+      "gap": "不能标完全没有帮助，也不能标已完成快捷键直达。",
+      "change": "增加帮助页路由参数并核真实快捷键注册，避免只修改说明。",
+      "accept": "缺资源、错误URI、偏好保存失败分别验；失败后可重试，所有已开窗口和新开窗口一致。未运行VS设计器或产品。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "ShowShortcutsCommand → HelpWindow.ShowDialog，未传目标页。",
+      "commandGuard": "不能标完全没有帮助，也不能标已完成快捷键直达。",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 2218,
+        "token": "private void ExecuteShowShortcuts()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "有助于复用、避免误操作或现场维护；建议借鉴能力，按自研职责整合入口，不要求每项都单独占工具栏。",
+      "vmEntries": []
+    },
+    {
+      "id": "about",
+      "label": "关于",
+      "group": "系统与帮助",
+      "cap": "M21",
+      "state": "implemented",
+      "statusLabel": "已实现（入口）",
+      "basis": "已定位当前入口实现；不代表整个能力、异常路径或运行验收均通过。",
+      "fact": "主窗ShowAboutCommand打开自有AboutWindow。",
+      "gap": "版本窗口不等SDK/驱动/插件完整诊断清单已具备。",
+      "change": "保留已实现入口，补准确版本与依赖身份，避免把开发版本当发布验收。",
+      "accept": "缺资源、错误URI、偏好保存失败分别验；失败后可重试，所有已开窗口和新开窗口一致。未运行VS设计器或产品。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "ExecuteShowAbout → Owner绑定 → ShowDialog。",
+      "commandGuard": "版本窗口不等SDK/驱动/插件完整诊断清单已具备。",
+      "commandEvidenceKind": "static-source",
+      "commandSource": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 2206,
+        "token": "private void ExecuteShowAbout()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "menuDecision": "must",
+      "menuFitLabel": "必须具备",
+      "menuReason": "版本、依赖和构建身份是支持与兼容判断基础。",
+      "vmEntries": [
+        {
+          "id": "4.3",
+          "label": "版本信息",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "language",
+      "label": "语言 / 单位 / 默认值",
+      "group": "系统与帮助",
+      "cap": "M23",
+      "state": "pending",
+      "statusLabel": "待产品确认",
+      "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+      "fact": "语言/单位/默认值是复合提案，不由主题资源或标定mm字段证明完整设置。",
+      "gap": "多语言客户需求未确认；单位不能只换标签，默认值需持久化/版本化。",
+      "change": "先按自有产品范围拆分设置，中文首版可固定；不要直接迁移VM语言菜单/资源。",
+      "accept": "重启生效/即时生效/取消/保存失败行为明确，没有无效菜单。",
+      "decision": "新增",
+      "adoption": "新增",
+      "toolbar": false,
+      "commandChain": "拟议语言资源刷新；量纲合同；默认配置快照，各为不同责任。",
+      "commandGuard": "多语言客户需求未确认；单位不能只换标签，默认值需持久化/版本化。",
+      "commandEvidenceKind": "design-proposal",
+      "commandSource": {
+        "path": "artifacts/validation/build-menu-adoption.cjs",
+        "line": 8,
+        "token": "'%English%'",
+        "sha256": "48c69f1b33c2457f19e3b5464aa598dd9083064269e4131a7ced552546600c05"
+      },
+      "menuDecision": "conditional",
+      "menuFitLabel": "按需/待产品确认",
+      "menuReason": "首版中文可固定；多语言需求确认后采用统一资源与切换政策。 客户交付需要英文时新增，不等复制VM语言资源或术语。",
+      "vmEntries": [
+        {
+          "id": "4.0.0",
+          "label": "%中文%",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "4.0.1",
+          "label": "%English%",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "permissions",
+      "label": "用户权限",
+      "group": "系统与帮助",
+      "cap": "X04",
+      "state": "pending",
+      "statusLabel": "待产品确认",
+      "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+      "fact": "用户权限仍待目标产品确认；现有编辑只读/菜单禁用不等身份权限服务。",
+      "gap": "本轮未定位完整用户权限服务，不据此断言所有局部授权能力均无。",
+      "change": "多人/操作员场景再增加；服务层执行授权，菜单只呈现结果，与加密狗商业授权分开。",
+      "accept": "篡改/错凭据/换狗/写入中断/升级回滚/可信脚本边界均有记录。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "拟议身份 → 角色/能力 → 业务服务准入 → 审计。",
+      "commandGuard": "本轮未定位完整用户权限服务，不据此断言所有局部授权能力均无。",
+      "commandEvidenceKind": "design-proposal",
+      "commandSource": {
+        "path": "artifacts/validation/build-menu-adoption.cjs",
+        "line": 5,
+        "token": "'权限设置'",
+        "sha256": "48c69f1b33c2457f19e3b5464aa598dd9083064269e4131a7ced552546600c05"
+      },
+      "menuDecision": "conditional",
+      "menuFitLabel": "按需/待产品确认",
+      "menuReason": "多人交付/操作员隔离时需要；单人研发版可延后。权限必须服务端/业务层检查，非只隐藏菜单。",
+      "vmEntries": [
+        {
+          "id": "1.0",
+          "label": "权限设置",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    },
+    {
+      "id": "encrypt",
+      "label": "方案保密 / 插件信任",
+      "group": "系统与帮助",
+      "cap": "X04",
+      "state": "pending",
+      "statusLabel": "待产品确认",
+      "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+      "fact": "HTML内部加密导出已有静态文档工具，不代表产品方案加密或插件信任已实现。",
+      "gap": "离线HTML浏览时内容终会解密；产品侧密钥治理、签名/兼容政策仍待定。",
+      "change": "按具体威胁与分发需要决定；敏感材料减少分发，产品格式/授权/插件信任分别设计。",
+      "accept": "篡改/错凭据/换狗/写入中断/升级回滚/可信脚本边界均有记录。",
+      "decision": "暂不能判断",
+      "adoption": "暂缓决策",
+      "toolbar": false,
+      "commandChain": "文档分发解密与产品方案密钥/插件签名是不同链。",
+      "commandGuard": "离线HTML浏览时内容终会解密；产品侧密钥治理、签名/兼容政策仍待定。",
+      "commandEvidenceKind": "design-proposal",
+      "commandSource": {
+        "path": "artifacts/validation/build-secure-export.cjs",
+        "line": 2,
+        "token": "module.exports",
+        "sha256": "c768f88d0f0955a66ca830b9a0988112f754210d40fc51b958325d235d9f2334"
+      },
+      "menuDecision": "conditional",
+      "menuFitLabel": "按需/待产品确认",
+      "menuReason": "需要明确业务、硬件或安全策略后才纳入最终发布范围；现有目标导航先保留分析入口，不能视作已批准新增。",
+      "vmEntries": []
+    },
+    {
+      "id": "support",
+      "label": "故障包 / 维护诊断",
+      "group": "系统与帮助",
+      "cap": "M26",
+      "state": "pending",
+      "statusLabel": "待产品确认",
+      "basis": "最终导航候选：需要确认产品范围；不据此判断已有或缺失后台实现。",
+      "fact": "诊断字段整改、故障包和环境检查已列方案，未定位可交付的一键维护工具链。",
+      "gap": "计划/CSV模板不是运行诊断结果，不沿用或启动VM原厂支持exe。",
+      "change": "先修可追溯字段与Flush可靠性，再产自有故障包；设备/凭据/用户数据脱敏政策明确。",
+      "accept": "日志洪峰时UI可操作且积压有界，丢弃计数可见；搜索/清空/复制一致，关窗不再接收。 队列恰好199/200/201/401条时核每个日志Id恰一次交付；筛选和容量淘汰另计，不让批处理无声丢条。 UI阻塞、文件锁/磁盘错误、慢写入器时Flush返回确定成功/超时/失败；不以睡眠时长当确认。异常退出/掉电耐久另验。 日志洪峰上游/聚合/显示三层分别测边界；退出中写入、Dispose重复、文件失败仍可诊断；不得在UI线程同步等仍需Dispatcher的日志任务。",
+      "decision": "必须整改",
+      "adoption": "自研整改",
+      "toolbar": false,
+      "commandChain": "拟议manifest/版本依赖/脱敏日志 → 故障包；测量仍not_run。",
+      "commandGuard": "计划/CSV模板不是运行诊断结果，不沿用或启动VM原厂支持exe。",
+      "commandEvidenceKind": "design-proposal",
+      "commandSource": {
+        "path": "artifacts/validation/build-diagnostic-benchmark.cjs",
+        "line": 2,
+        "token": "module.exports",
+        "sha256": "48259ea5a5d76c0bde4afa9d3e7e7ee065cf8d2ffab10d5b95cf78d3793ff966"
+      },
+      "menuDecision": "recommend",
+      "menuFitLabel": "建议借鉴",
+      "menuReason": "有利现场部署，检查自有SDK/驱动/插件依赖与版本；不启动VM检测工具。 建议自有故障包和可控诊断，需脱敏与授权；不迁入厂商机器人/后台上传。 可替换为自有支持/组件诊断，不能沿用原厂支持信息。 建议自有脱敏故障包，可放诊断页而非启动外部工具。",
+      "vmEntries": [
+        {
+          "id": "2.2",
+          "label": "运行环境检测工具",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "2.4",
+          "label": "运行异常采集机器人工具",
+          "resource": "MenuItems.xml"
+        },
+        {
+          "id": "4.4",
+          "label": "更多支持",
+          "resource": "MenuItems.xml"
+        }
+      ]
+    }
+  ],
+  "implementationUnchanged": true
+}

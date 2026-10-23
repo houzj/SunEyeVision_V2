@@ -1,0 +1,1 @@
+using System; using BenchCommon; public class Probe { public void Run() { int x = SharedMath.Twice(2); } }

@@ -1,0 +1,63 @@
+{
+  "steps": [
+    {
+      "id": "analysis-delivery",
+      "packageId": "O07",
+      "title": "专业分析：普通、调试和相机入口政策不一致",
+      "fact": "普通OnNodeExecutionCompleted只在e.Result.IsSuccess时OnResultUpdated；相机分支提前return，Flush仅刷新选中节点图像/树和调试窗口，未直接调用当前专业分析控件。切节点时读取缓存又不检查Success。当前专业分析可能继续保留旧内容，具体表现待运行验证。",
+      "route": "统一结果投影会话：成功/失败/取消均发布状态，所有运行入口同合同；保留上次成功时必须显式标历史，不冒充本轮。",
+      "change": "让相机合并刷新也提交专业分析的当前状态；普通失败更新有效性/错误而非静默略过。切节点缓存填充复用同一门禁，带方案/运行/节点身份。",
+      "accept": "同节点先成功再失败、普通与相机轮换、切方案迟到回调分别验；结果树、图像、分析一致显示本轮状态。",
+      "vm": "VM模块源变化重建decorator、按执行序号读取可参考；原专业分析各工具失败呈现尚缺直接证据。",
+      "url": "comparison.html#compare-M25",
+      "status": "设计待实施；静态局部链，未运行验证",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 5441,
+        "token": "private void FlushCameraResultPresentation()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+        "snippet": "        private void FlushCameraResultPresentation()\r\n        {\r\n            var timer = System.Diagnostics.Stopwatch.StartNew();\r\n            _cameraPresentationTimer?.Stop();\r\n            var latest = _pendingCameraPresentations.Values.ToArray();\r\n            _pendingCameraPresentations.Clear();\r\n            foreach (var (node, result) in latest)\r\n            {\r\n                if (node.IsSelected)\r\n                    _nodeResultManager.RefreshResultDisplay(node, result);\r\n            }\r\n            if (latest.Length > 0)\r\n                NotifyAllDebugWindowsExternalResult();\r\n            timer.Stop();\r\n            if (timer.ElapsedMilliseconds >= 100 &&\r\n                DateTime.UtcNow - _lastCameraPerfWarningUtc >= TimeSpan.FromSeconds(5))\r\n            {\r\n                _lastCameraPerfWarningUtc = DateTime.UtcNow;\r\n                AddLog($\"⚠️ 相机结果界面刷新耗时 {timer.ElapsedMilliseconds} ms\");\r\n            }\r\n        }\r\n\r\n        private void HideLocalImagePreview()\r\n        {\r\n            ShowImagePreview = false;\r\n            ActiveInputSource = null;\r\n            _currentDisplayNodeId = null;\r\n        }\r\n\r\n        /// <summary>\r"
+      }
+    },
+    {
+      "id": "analysis-owner",
+      "packageId": "O07",
+      "title": "专业分析实例：退订高亮已做，工具所有者仍未闭合",
+      "fact": "切节点先退订旧控件高亮并清高亮，然后CreateToolInstance/CreateDataAnalysisControl。此方法没有保存tool所有权或对旧tool/控件做Dispose；工厂是否共享、外层是否收尾仍待核，不能据此宣称必然泄漏。",
+      "route": "先补Owner合同，再决定释放；不对可能共享实例盲目Dispose。",
+      "change": "工厂返回分析会话或显式所有权标记；宿主按切节点/关方案退订并退役独立实例，借用实例只解绑；创建失败也退役已建独立tool。",
+      "accept": "重复切节点、工厂返回null、创建抛错、关闭方案分别核实例/订阅/原生句柄；需明确共享与独立两类。",
+      "vm": "原VM decorator Dispose是局部可见证据，不等工具native最终析构已全部恢复。",
+      "url": "comparison.html#compare-M25",
+      "status": "设计待实施；静态局部链，未运行验证",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 3528,
+        "token": "private System.Threading.Tasks.Task UpdateDataAnalysisControl",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+        "snippet": "        private System.Threading.Tasks.Task UpdateDataAnalysisControl(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)\r\n        {\r\n            try\r\n            {\r\n                // ★ 清理旧的选中高亮订阅（防止内存泄漏和残留高亮）\r\n                if (SelectedNodeDataAnalysisControl is IToolControlDataAnalysis oldDaControl)\r\n                {\r\n                    oldDaControl.SelectionHighlightChanged -= OnSelectionHighlightChanged;\r\n                }\r\n                _nodeResultManager.ClearHighlight();\r\n\r\n                // 清空当前控件\r\n                SelectedNodeDataAnalysisControl = null;\r\n                HasDataAnalysisControl = false;\r\n                DataAnalysisControlTitle = \"数据分析\";\r\n\r\n                if (selectedNode == null)\r\n                    return System.Threading.Tasks.Task.CompletedTask;\r\n\r\n                if (selectedNode.IsImageLoadNode)\r\n                {\r\n                    DataAnalysisControlTitle = $\"{selectedNode.Name} - 图像源\";\r\n                    SelectedNodeDataAnalysisControl = new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(selectedNode, this);\r\n                    HasDataAnalysisControl = true;\r\n                    return System.Threading.Tasks.Task.CompletedTask;\r\n                }\r\n\r\n                // 获取工具注册信息\r\n                var toolType = selectedNode.ToolType;\r\n                if (string.IsNullOrEmpty(toolType))\r"
+      }
+    },
+    {
+      "id": "bitmap-copy",
+      "packageId": "O06",
+      "title": "位图池：返回共用对象，且源行偏移未读取Mat.Step",
+      "fact": "按宽高/格式缓存并返回同一WriteableBitmap；Gray/BGR/BGRA源行偏移用width乘通道，没有使用Mat.Step。对有行间隔的子矩阵不满足通用转换合同。WorkflowExecutionOrchestrator还顺序转换输出/输入并保留引用，但当前只找到创建，未证活动调用，不能称主运行已发生覆盖。",
+      "route": "整改转换器输入/返回合同；不据缓存名称宣称性能优化成立。",
+      "change": "逐行按Step读取并明确支持深度；显示实时复用和历史保留分开API，保留者Clone或持租约。先核活动调用者再连接缓存重构，未用旧链应隔离或退役。",
+      "accept": "使用非连续ROI Mat、同尺寸不同像素两次转换、不同深度及历史保留做独立验收；调用入口未证时不报线上故障。",
+      "vm": "VM native缓冲/位图池完整实现仍缺，无法以VM成熟度推同样复制策略。",
+      "url": "comparison.html#compare-M16",
+      "status": "设计待实施；静态局部链，未运行验证",
+      "source": {
+        "path": "src/UI/Services/Performance/ImageConverterPool.cs",
+        "line": 36,
+        "token": "public BitmapSource ConvertToBitmapSource",
+        "sha256": "d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707",
+        "snippet": "        public BitmapSource ConvertToBitmapSource(Mat mat)\r\n        {\r\n            if (mat == null || mat.Empty())\r\n                throw new ArgumentNullException(nameof(mat));\r\n\r\n            // 确定像素格式\r\n            PixelFormat pixelFormat = GetPixelFormat(mat.Type());\r\n\r\n            // 生成缓存键\r\n            string cacheKey = $\"{mat.Width}_{mat.Height}_{pixelFormat}\";\r\n\r\n            // 尝试从缓存获取WriteableBitmap\r\n            if (!_bitmapCache.TryGetValue(cacheKey, out var writeableBitmap) ||\r\n                writeableBitmap.PixelWidth != mat.Width ||\r\n                writeableBitmap.PixelHeight != mat.Height)\r\n            {\r\n                // 创建新的WriteableBitmap\r\n                writeableBitmap = new WriteableBitmap(mat.Width, mat.Height, 96, 96, pixelFormat, null);\r\n\r\n                // 缓存（如果未达上限）\r\n                if (_bitmapCache.Count < _maxCacheSize)\r\n                {\r\n                    _bitmapCache.TryAdd(cacheKey, writeableBitmap);\r\n                }\r\n            }\r\n\r\n            // 锁定并写入数据\r\n            writeableBitmap.Lock();\r\n\r\n            try\r"
+      }
+    }
+  ],
+  "policy": "活动结果入口与未证活动的缓存协调器分开；静态风险不是运行故障",
+  "runtimeExecuted": false
+}

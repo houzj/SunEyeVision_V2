@@ -7,7 +7,7 @@ namespace SunEyeVision.Workflow
     /// 图像输入源持久化配置 - 随解决方案文件保存/恢复图像源状态
     /// </summary>
     /// <remarks>
-    /// 只存路径与状态（不存图片本身），对齐参考项目 VisionMaster 的 SrcFilePaths 持久化模式。
+    /// 本地列表保存原始文件引用与状态；不代表所有VM资源都采用外部路径。
     /// 放在 Workflow 层而非 UI 层，避免跨层引用 UI 的 ImageInputSource/ImageRunMode。
     /// 保存方案时由 UI 层把 ImageInputSource 转成此配置写入节点；
     /// 打开方案时由 UI 层据此重建 ImageInputSource。

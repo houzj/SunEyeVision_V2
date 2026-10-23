@@ -1,0 +1,195 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><script src="../公共资源/文档路径.js"></script><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A11 持久化与兼容</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">A11 持久化与兼容</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">文档索引</a><a href="architecture-target.html">最新目标决策</a><a href="../框架设计/framework-overview.html">框架对比</a><a href="../SDK设计/framework-sdk-overview.html">SDK设计</a><a href="../维护记录/joint-optimization-plan.html">联合方案</a><a href="../证据审计/architecture-evidence.html">本批证据</a></nav><main><h1>A11 持久化与兼容</h1><article id="decision-A11"><p class="status">proposed-not-implemented · 全部接口为拟议合同，未编译/运行</p><div class="visual-metrics"><div><strong>A11</strong><span>目标决策</span><small>拟议，未实施</small></div><div><strong>6</strong><span>局部证据条目</span><small>未知单列</small></div><div><strong>2</strong><span>验收用例</span><small>均未运行</small></div></div><figure class="architecture-figure" data-visual="save"><figcaption><b>保存：候选与提交点</b><span class="chip">拟议设计，未实现/运行验收</span></figcaption><div class="diagram-actions"><button type="button" data-diagram-expand>放大查看图</button><span>实线：所标范围内的关系；虚线：条件/待验证边界。</span></div><div class="svg-scroll"><svg role="img" aria-label="保存：候选与提交点；拟议设计，未实现/运行验收" viewBox="0 0 945 529"><title>保存：候选与提交点</title><desc>拟议设计，未实现/运行验收。图中节点和箭头与下方文字合同共同解释，不能单独作为运行保证。</desc><defs><marker id="arrow-save" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker></defs><path d="M 260 82 L 350 82" class="graph-edge " marker-end="url(#arrow-save)"/><text class="edge-label" x="305" y="73">快照</text><path d="M 590 82 L 680 82" class="graph-edge " marker-end="url(#arrow-save)"/><text class="edge-label" x="635" y="73">写临时文件</text><path d="M 800 124 L 800 230" class="graph-edge " marker-end="url(#arrow-save)"/><text class="edge-label" x="800" y="168">通过</text><path d="M 680 82 L 590 272" class="graph-edge " marker-end="url(#arrow-save)"/><text class="edge-label" x="635" y="168">失败</text><path d="M 800 314 L 800 420" class="graph-edge " marker-end="url(#arrow-save)"/><text class="edge-label" x="800" y="358">替换成功</text><g class="graph-node"><rect x="20" y="40" width="240" height="84" rx="13"/><text x="36" y="72">已提交设计</text><text class="node-note" x="36" y="100">expectedRevision</text></g><g class="graph-node"><rect x="350" y="40" width="240" height="84" rx="13"/><text x="366" y="72">候选文件</text><text class="node-note" x="366" y="100">不含临时结果/句柄</text></g><g class="graph-node"><rect x="680" y="40" width="240" height="84" rx="13"/><text x="696" y="72">校验</text><text class="node-note" x="696" y="100">schema · 插件 · 资源</text></g><g class="graph-node"><rect x="680" y="230" width="240" height="84" rx="13"/><text x="696" y="262">原子替换</text><text class="node-note" x="696" y="290">同卷文件阶段</text></g><g class="graph-node"><rect x="350" y="230" width="240" height="84" rx="13"/><text x="366" y="262">失败保原</text><text class="node-note" x="366" y="290">不发布半候选</text></g><g class="graph-node"><rect x="680" y="420" width="240" height="84" rx="13"/><text x="696" y="452">内存提交</text><text class="node-note" x="696" y="480">更新路径/修订状态</text></g></svg></div><p class="diagram-note">拟议设计，未实现/运行验收 · <a href="architecture-target.html">查看依据、合同与未知</a></p></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前边界</h2><p>旧$type、插件类型身份和资源URI需要样本验证；不能只搬文件或改TargetFramework。</p></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM已证 / 未知</h2><p>原版InternalExport→SyncSaveSolution及关闭询问分别有条件；不能认为每次关闭必保存或文件事务等于native回滚。</p></section></div><section class="visual-card decision-summary"><h2>本项选择与代价</h2><p><strong>借鉴VM保存/关闭分阶段；自研重做版本迁移</strong></p><p>只保存已提交设计定义；schema版本与资源清单；旧格式双读、新路径另存、ABI与资源URI分验。</p><div class="tradeoff-grid"><div><h3>收益与成本</h3><p>故障可恢复；迁移器、样本库和双轨发行有维护成本。</p></div><div><h3>为什么不选替代路线</h3><p>直接覆盖旧格式简单但不可恢复；候选校验和双轨迁移增加样本/迁移器维护，目标优先保证失败保原。</p></div></div></section><h2>拟议接口与数据字段</h2><pre>SaveOutcome SaveAsync(ProjectId project, ProjectRevision expected, SaveTarget target);
+MigrationOutcome PreviewMigration(DocumentVersion source, TargetVersion target);
+Document { SchemaVersion, CommittedDefinition, ToolVersions, ResourceManifest };</pre><h3>状态与生效时点</h3><p>Save捕获已提交修订，只写设计数据；临时输入、结果和native句柄排除。写临时文件→校验→同卷原子替换；运行时编辑冲突按expectedRevision拒绝。</p><h3>Owner与释放责任</h3><p>Persistence服务拥有候选文件及备份，Project拥有已提交定义；迁移输出新路径，原文件保留。</p><h3>失败、取消与幂等</h3><p>未知$type/缺插件在发布候选前拒绝并定位。替换前取消删除临时文件，替换后返回成功不可假称回滚；SaveOperationId去重。原子文件阶段不保证native状态回滚。</p><h3>版本与兼容</h3><p>格式版本、工具合同、转换器和资源清单分列；双读旧格式/另存新格式，ABI、BAML、pack URI分别验收。</p><h2>验收：尚未执行</h2><section id="A11-T1"><h3>A11-T1 · planned-not-run</h3><p>未知$type/缺插件拒绝并定位，不默转Generic</p><p>执行方法与判定：<a href="architecture-acceptance.html#A11-T1">查看用例</a></p></section><section id="A11-T2"><h3>A11-T2 · planned-not-run</h3><p>迁移失败原文件字节不变；临时结果和native句柄不持久化</p><p>执行方法与判定：<a href="architecture-acceptance.html#A11-T2">查看用例</a></p></section><h2>原版证据与局部边界</h2><p>source-confirmed限交接中选定成员；不是整库复核。独立恢复代码 independent-implementation 不作为原版事实。<a href="../证据审计/architecture-evidence.html">本批来源SHA</a></p><details id="evidence-A11-0"><summary>execution-storage:S01 · source-confirmed · VmSolution.InternalExport</summary><p>Init 触发静态订阅；_isSaving 已置位则拒绝；取消路径清旗标。传路径、密码、零附加数据；同步调用返回后写 SolutionPassword / SolutionPath。异常清旗标、清路径再抛。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs">analysis/decompiled/VM.Core/VM.Core/VmSolution.cs:1551–1598</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e</code></p><pre>	private static bool InternalExport(string path = null, string password = null, bool bDisplayProgress = true, bool isExportAs = false, string initDir = null)
+	{
+		try
+		{
+			TempVmSolution.Init();
+			if (Instance._isSaving)
+			{
+				return false;
+			}
+			Instance._isSaving = true;
+			LogHelper.Debug($&quot;InternalExport_isSaving_{Instance._isSaving}&quot;);
+			string text = &quot;&quot;;
+			Instance.isDisplayProgress = bDisplayProgress;
+			if (password == null)
+			{
+				if (Instance.SolutionPassword != null)
+				{
+					text = Instance.SolutionPassword;
+				}
+			}
+			else
+			{
+				text = password;
+			}
+			if (path == null)
+			{
+				path = ((isExportAs || Instance.ModuleFilePath == null) ? ServerSDKManager.serverSDKManager.mCollectionManager.OpenExportDialog(&quot;Lang_SolutionFile&quot;, $&quot;|*.{AppFileExtension.Solution}&quot;, initDir) : Instance.ModuleFilePath);
+			}
+			if (string.IsNullOrEmpty(path))
+			{
+				Instance._isSaving = false;
+				return false;
+			}
+			ServerSDKManager.serverSDKManager.mSolutionManager.SyncSaveSolution(path, text, IntPtr.Zero, 0u);
+			Instance.SolutionPassword = text;
+			Instance.SolutionPath = path;
+			return true;
+		}
+		catch (Exception ex)
+		{
+			Instance._isSaving = false;
+			LogHelper.Debug($&quot;InternalExport0_isSaving_{Instance._isSaving}&quot;);
+			Instance.SolutionPath = string.Empty;
+			throw ex;
+		}
+	}
+
+	private string BaseSave()</pre></details><details id="evidence-A11-1"><summary>execution-storage:S03 · source-confirmed · SolutionManager.SyncSaveSolution</summary><p>先清错误码和完成旗标；native 非零立即抛错；ParamSeted=false 后 Wait。等待后只有 SDK 模式显式检查 nSolutionSaveErrorCode。</p><ul><li>未知/限制：普通模式非零结束状态不能据此推断与 SDK 模式有相同异常反馈。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/SolutionManager.cs">analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/SolutionManager.cs:305–326</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>46b1d8249e3a30fe3bf7a0ed8e92207835f1a8e272833d5462041bc1756f220a</code></p><pre>	public void SyncSaveSolution(string strPath, string strPassword, IntPtr pData, uint nDataLen)
+	{
+		int num = -536870657;
+		nSolutionSaveErrorCode = 0;
+		mWaitSaveSolutionFlag = false;
+		num = ServerSDKAPI.IMVS_SaveSolution(CVmObjectBase.mhandle, strPath, strPassword, pData, nDataLen);
+		if (num != 0)
+		{
+			VmException ex = new VmException(num);
+			throw ex;
+		}
+		ServerSDKManager.serverSDKManager.mModuleManager.ParamSeted = false;
+		SyncWaitor.Wait(ref mWaitSaveSolutionFlag);
+		if (CVmObjectBase.GetIsSDKMode() &amp;&amp; nSolutionSaveErrorCode != 0)
+		{
+			VmException ex2 = new VmException(nSolutionSaveErrorCode);
+			throw ex2;
+		}
+	}
+
+	public ImvsSdkDefine.IMVS_PROCESS_INFO_LIST? GetAllProcessList()
+	{</pre></details><details id="evidence-A11-2"><summary>shell-lifecycle:L11 · source-confirmed · App.MainWindow_Closing</summary><p>将 Program.IsCancelClose 的结果写 e.Cancel；不取消才调可空 IApplicationOperation.Dispose，随后 Environment.Exit(0)。Dispose 抛出时不会自动执行后续 Exit；该方法没有 finally。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/App.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/App.cs:385–399</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>babebf8e2bef407d7d06105aa4540bb844e32644a25d9a8c8c7faebfe57cf3f7</code></p><pre>	private static void MainWindow_Closing(object sender, CancelEventArgs e)
+	{
+		LogHelper.Info(&quot;Main Window close.&quot;);
+		e.Cancel = Program.IsCancelClose();
+		if (!e.Cancel)
+		{
+			UILogManager.logCreate(&quot;信息&quot;, &quot;Lang_CloseApp&quot;, true, true);
+			LogHelper.Info(&quot;Window close process start.&quot;);
+			Ioc.Get&lt;IApplicationOperation&gt;()?.Dispose();
+			LogHelper.Info(&quot;Window close process end.&quot;);
+			Environment.Exit(0);
+		}
+	}
+
+	private VmException GetVmException(Exception exception)</pre></details><details id="evidence-A11-3"><summary>shell-lifecycle:L15 · source-confirmed · Program.IsCancelClose background and third-party branches / Program.SaveSolTip / Program.IsThirdSoftwareRun</summary><p>仅 IsRunBackground==0 才把 SaveSolTip=true 作为取消；第三方仍运行且不后台则提示并取消，后台则提示后放行。IsNotifyRunBackground==0 的可见方法体为空，不能虚造对话框。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs:324–342</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6</code></p><pre>		if (ConfigurationHelper.GetConfig(&quot;IsNotifyRunBackground&quot;) == &quot;0&quot;)
+		{
+		}
+		if (ConfigurationHelper.GetConfig(&quot;IsRunBackground&quot;) == &quot;0&quot; &amp;&amp; SaveSolTip())
+		{
+			return true;
+		}
+		if (IsThirdSoftwareRun())
+		{
+			if (ConfigurationHelper.GetConfig(&quot;IsRunBackground&quot;) == &quot;0&quot;)
+			{
+				HikMessageBox.Show(&quot;Lang_DevlopmentAndRunBackground&quot;, MessageIcons.None, isTranslate: true);
+				return true;
+			}
+			HikMessageBox.Show(&quot;Lang_DevelopmentReloadSolution&quot;, MessageIcons.None, isTranslate: true);
+		}
+		return false;
+	}
+</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs:367–372</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6</code></p><pre>	private static bool SaveSolTip()
+	{
+		bool flag = false;
+		return ProjectManager.GetInstance().SolutionSaveCheck();
+	}
+</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs:645–656</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6</code></p><pre>	public static bool IsThirdSoftwareRun()
+	{
+		try
+		{
+			return ServerSDKManager.serverSDKManager.mSolutionManager.bIsThirdSoftwareRun();
+		}
+		catch
+		{
+			return false;
+		}
+	}
+</pre></details><details id="evidence-A11-4"><summary>shell-lifecycle:L16 · source-confirmed · ProjectManager.SolutionSaveCheck / ProjectManager.NeedShowSaveNotice</summary><p>仅 Modules.Count&gt;0 且 NeedShowSaveNotice 时询问；Yes 调 SaveSolution，异常返回 true 阻止关闭；No 保持 false；其它结果 true。该函数没有读取 SaveSolution 的返回值，不将调用未抛错解释为 native 保存已成功。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs:807–840</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370</code></p><pre>	public bool SolutionSaveCheck(bool bDisplayProgress = false)
+	{
+		bool result = false;
+		if (VmSolution.Instance.Modules.Count &gt; 0 &amp;&amp; NeedShowSaveNotice)
+		{
+			switch (HikMessageBox.Show(AppLocalizationService.GetLang(&quot;Lang_SolSave&quot;), AppLocalizationService.GetLang(&quot;Lang_SolCurSave&quot;), MessageButtons.YesOrNoOrCancel, MessageIcons.Question))
+			{
+			case DialogResult.Yes:
+				try
+				{
+					SaveSolution(null, bDisplayProgress);
+				}
+				catch (VmException vmException)
+				{
+					ShowMessage.ShowVmExceptionMessage(vmException);
+					result = true;
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show(ex.Message);
+					result = true;
+				}
+				break;
+			default:
+				result = true;
+				break;
+			case DialogResult.No:
+				break;
+			}
+		}
+		return result;
+	}
+
+	private void LoadSolutionFailed(string solname, string erro, string details)</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs:58–67</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>1ae41a0841dd65f5dfa7461078c370822e61826877c42e299939af1fd47f9370</code></p><pre>	public bool NeedShowSaveNotice
+	{
+		get
+		{
+			bool result = false;
+			try
+			{
+				result = VmSolution.Instance.IsSolModifyInfo();
+			}
+			catch (VmException ex)</pre></details><details id="evidence-A11-5"><summary>shell-lifecycle:L17 · source-confirmed · ApplicationOperation.Dispose setup / MainWindowData.DoClose</summary><p>先解绑 MainData 所列事件、Dispose 看门狗，再 ShieldModuleCbResult；读取 IsRunBackground，非后台显示关闭遮罩，然后 RunSyncWithEvent 内调用 VmSolution.Dispose(isRunBackground)。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/ApplicationOperation.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/ApplicationOperation.cs:37–60</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>b6633fabfdf9aea95469a40a85b988ff69add07183c2d8a7f241ef764dea9926</code></p><pre>	public void Dispose()
+	{
+		Program.MainData.DoClose();
+		WatchDogService.Instance.Dispose();
+		ServerSDKManager.serverSDKManager.mSolutionManager.ShieldModuleCbResult();
+		bool isDispose = false;
+		string config = ConfigurationHelper.GetConfig(&quot;IsRunBackground&quot;);
+		bool isRunBackground = config == &quot;1&quot;;
+		if (!isRunBackground)
+		{
+			Program.MainData.IsShowProgressMask = true;
+			Program.MainData.MaskMessage = &quot;正在关闭方案&quot;;
+		}
+		RunSyncWithEvent(() =&gt;
+		{
+			LogHelper.Info(&quot;SDK destroy handle start.&quot;);
+			VmSolution.Instance.Dispose(isRunBackground);
+			isDispose = true;
+			LogHelper.Info(&quot;SDK destroy handle end.&quot;);
+		});
+		LogHelper.Info(&quot;ComPatibleTool destroy start&quot;);
+		Process[] processesByName = Process.GetProcessesByName(&quot;CompatibleTool&quot;);
+		Process[] array = processesByName;
+		foreach (Process process in array)</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/MainWindowData.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/MainWindowData.cs:701–712</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>aa7a20533b81452cd58fbd22e121273b3a109ce21b0841fc0d9e4d081939f1e5</code></p><pre>	public void DoClose()
+	{
+		VmSolution.RestoreDefaultDisplay -= VmSolution_RestoreDisplay;
+		VmSolution.OnSolutionLoadEndCallBack -= VmSolution_LoadEnd;
+		VmSolution.OnSolutionLoadBeginCallBack -= VmSolution_LoadBegin;
+		VmSolution.OnGlobalScriptReportCallBack -= VmSolution_OnGlobalScriptReportCallBack;
+		VmSolution.OnProxyCrashNoticeCallBack -= VmSolution_OnProxyCrashNotice;
+		VmSolution.OnReportModuleData -= VmSolution_OnReportModuleData;
+		VmSolution.OnServerStatusCallBack -= VmSolution_OnServerStatusCallBack;
+		VmSolution.OnProcessImportEndCallBack -= VmSolution_OnProcessImportEndCallBack;
+	}
+</pre></details></article><p><a href="architecture-target.html">返回12项决策目录</a></p></main><footer>文档设计交付 ≠ 产品实现或运行验收；原42检查点、49能力口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

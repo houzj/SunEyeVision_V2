@@ -186,8 +186,14 @@
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.Extensions": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
           "System.Text.Json": "[10.0.3, )"
+        }
+      },
+      "suneyevision.haladapter": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.infrastructure": {
@@ -196,8 +202,8 @@
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.Extensions": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.Core": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )"
+          "SunEyeVision.Core": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.sdk": {
@@ -209,7 +215,8 @@
       "suneyevision.tool.npointcalibration": {
         "type": "Project",
         "dependencies": {
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )",
+          "SunEyeVision.HalAdapter": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
           "System.Text.Json": "[10.0.3, )"
         }
       },
@@ -218,9 +225,9 @@
         "dependencies": {
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.Core": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )"
+          "SunEyeVision.Core": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
         }
       }
     },

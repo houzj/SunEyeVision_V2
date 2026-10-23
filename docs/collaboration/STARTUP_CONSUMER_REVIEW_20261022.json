@@ -1,0 +1,453 @@
+{
+  "id": "STARTUP-CONSUMER-20261022",
+  "status": "静态分析，未修改产品、未运行性能AB；交文档角色统一发布",
+  "evidence": [
+    {
+      "id": "I1",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Panels\\ImagePreviewControl.xaml.cs",
+      "sha256": "ec18a5fe8927fd1b23ad513558cb94de93a8a038313a1bdfeb8bc2b3e422f25f",
+      "excerpts": [
+        {
+          "start": 95,
+          "end": 105,
+          "text": "95:         public BitmapSource? FullImage\n96:         {\n97:             get\n98:             {\n99:                 if (!File.Exists(FilePath)) { _fullImage = null; _isFullImageLoaded = false; return null; }\n100:                 if (!_isFullImageLoaded && _fullImage == null && !string.IsNullOrEmpty(FilePath))\n101:                 {\n102:                     _fullImage = ImagePreviewControl.LoadImageOptimized(FilePath);\n103:                     _isFullImageLoaded = true;\n104:                 }\n105:                 return _fullImage;"
+        },
+        {
+          "start": 175,
+          "end": 215,
+          "text": "175:         public void EnsureThumbnail()\n176:         {\n177:             if (Thumbnail != null) return;\n178:             if (_thumbnailState == ThumbnailState.Loading) return;   // 进行中不重复触发（防抖动）\n179: \n180:             // Pending / Failed → 触发解码；取消上一次仍在进行的解码（如有残留）\n181:             _thumbnailCts?.Cancel();\n182:             _thumbnailCts?.Dispose();\n183:             _thumbnailCts = new System.Threading.CancellationTokenSource();\n184:             var token = _thumbnailCts.Token;\n185: \n186:             ThumbnailState = ThumbnailState.Loading;\n187: \n188:             var path = FilePath;\n189:             var dispatcher = System.Windows.Application.Current?.Dispatcher;\n190:             if (dispatcher == null) return;\n191: \n192:             System.Threading.Tasks.Task.Run(() =>\n193:             {\n194:                 if (token.IsCancellationRequested) return;\n195:                 var thumbnail = ImagePreviewControl.LoadThumbnail(path, token);\n196:                 if (token.IsCancellationRequested) return;\n197:                 dispatcher.InvokeAsync(() =>\n198:                 {\n199:                     // 若已滚动离开（被取消），丢弃结果\n200:                     if (token.IsCancellationRequested) return;\n201:                     if (thumbnail != null)\n202:                     {\n203:                         Thumbnail = thumbnail;\n204:                         ThumbnailState = ThumbnailState.Loaded;\n205:                     }\n206:                     else\n207:                     {\n208:                         // 解码失败：标记 Failed 显示占位。滚动离开再回来时 OnItemLoaded 会重新触发解码（rule-015 失败可见+可重试）\n209:                         ThumbnailState = ThumbnailState.Failed;\n210:                     }\n211:                 });\n212:             });\n213:         }\n214: \n215:         /// <summary>"
+        },
+        {
+          "start": 460,
+          "end": 575,
+          "text": "460:         // 全分辨率图像缓存（LRU，上限 30）——保留，供 ImageInfo.FullImage 懒加载\n461:         private static readonly ImageCache s_fullImageCache = new ImageCache(maxCacheSize: 30);\n462: \n463:         // 缩略图缓存（LRU，上限 50）——跨实例共享，滚动复用不重复解码\n464:         private static readonly ImageCache s_thumbnailCache = new ImageCache(maxCacheSize: 50);\n465:         private static readonly object s_thumbnailLock = new object();\n466: \n467:         /// <summary>\n468:         /// 全局缩略图并发上限：clamp(CPU-1, 4, 16)。\n469:         /// 对齐 ImageGlass Photo.cs:66-67，避免海量缩略图无限并发挤爆线程池（rule-008 治本）。\n470:         /// </summary>\n471:         private static readonly int s_thumbnailConcurrency =\n472:             Math.Clamp(Environment.ProcessorCount - 1, 4, 16);\n473:         private static readonly SemaphoreSlim s_thumbnailThrottle =\n474:             new(s_thumbnailConcurrency, s_thumbnailConcurrency);\n475: \n476:         /// <summary>\n477:         /// 缩略图加载：后台线程 WIC 解码 + DecodePixelWidth 缩小 + Freeze。\n478:         /// 对齐成熟方案（ImageGlass/微软官方）：\n479:         /// - 并发节流：全局信号量 clamp(CPU-1,4,16)，避免线程池饱和也不串行（对齐 ImageGlass Photo.cs:66-67）\n480:         /// - 锁只保护缓存字典（微秒级短临界区），解码在锁外并行（已治本）\n481:         /// - 解码失败直接返回 null + WARN 日志（rule-015 失败可见），不做无效降级——\n482:         ///   实测 System.Drawing 兜底转 PNG 后仍走 BitmapImage(WIC)，救不回 WIC 解不了的格式\n483:         ///   （对齐 ImageGlass 的容错仅靠其真正多引擎，本项目 Win11 标准格式 WIC 全覆盖，无需兜底）\n484:         /// </summary>\n485:         internal static BitmapImage? LoadThumbnail(string filePath, System.Threading.CancellationToken token = default)\n486:         {\n487:             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))\n488:                 return null;\n489: \n490:             // 快路径：锁内只查缓存（微秒级），命中直接返回\n491:             lock (s_thumbnailLock)\n492:             {\n493:                 var cached = s_thumbnailCache.Get(filePath);\n494:                 if (cached != null) return cached as BitmapImage;\n495:             }\n496: \n497:             // 节流进入：最多 clamp(CPU-1,4,16) 个并发解码，避免线程池饱和\n498:             BitmapImage? bitmap = null;\n499:             try\n500:             {\n501:                 s_thumbnailThrottle.Wait(token);\n502:             }\n503:             catch (System.OperationCanceledException)\n504:             {\n505:                 // 滚动离开被取消：不降级、不报错，直接丢弃（对齐 ImageGlass 不可见即取消）\n506:                 return null;\n507:             }\n508:             try\n509:             {\n510:                 // 慢路径：锁外并行解码（I/O + CPU，互不阻塞）\n511:                 try\n512:                 {\n513:                     bitmap = DecodeThumbnailCore(filePath);   // WIC\n514:                 }\n515:                 catch (Exception ex)   // WIC 解不了（NotSupportedException / COM 异常等）\n516:                 {\n517:                     // rule-015：失败可见，禁止静默吞异常；不做无效降级\n518:                     VisionLogger.Instance.Log(LogLevel.Warning,\n519:                         $\"缩略图解码失败 | {filePath} | {ex.GetType().Name}: {ex.Message}\",\n520:                         \"ImagePreviewControl\");\n521:                 }\n522:             }\n523:             finally\n524:             {\n525:                 s_thumbnailThrottle.Release();\n526:             }\n527: \n528:             if (bitmap == null) return null;\n529: \n530:             // 写缓存：锁内极短\n531:             lock (s_thumbnailLock)\n532:             {\n533:                 s_thumbnailCache.Set(filePath, bitmap);\n534:             }\n535:             return bitmap;\n536:         }\n537: \n538:         /// <summary>\n539:         /// WIC 缩略图解码核心（无锁，可在后台线程并行执行）\n540:         /// </summary>\n541:         private static BitmapImage DecodeThumbnailCore(string filePath)\n542:         {\n543:             var bitmap = new BitmapImage();\n544:             bitmap.BeginInit();\n545:             bitmap.UriSource = new Uri(filePath, UriKind.RelativeOrAbsolute);\n546:             bitmap.DecodePixelWidth = 100;                // 解码时直接缩小，省内存\n547:             bitmap.CacheOption = BitmapCacheOption.OnLoad; // 立即解码\n548:             bitmap.EndInit();\n549:             bitmap.Freeze();                              // 冻结后可跨线程\n550:             return bitmap;\n551:         }\n552: \n553:         /// <summary>\n554:         /// 全分辨率图像加载（简化版）：ImageInfo.FullImage 懒加载入口。\n555:         /// 用 UriSource + OnLoad 内建解码，替代原自研解码器/CleanupScheduler 链路。\n556:         /// </summary>\n557:         public static BitmapImage? LoadImageOptimized(string filePath)\n558:         {\n559:             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))\n560:                 return null;\n561: \n562:             // 全图懒加载在主 UI 线程触发，无并发竞争；查缓存命中直接返回，未命中解码后写入\n563:             var cached = s_fullImageCache.Get(filePath);\n564:             if (cached != null) return cached as BitmapImage;\n565: \n566:             try\n567:             {\n568:                 var bitmap = new BitmapImage();\n569:                 bitmap.BeginInit();\n570:                 bitmap.UriSource = new Uri(filePath, UriKind.RelativeOrAbsolute);\n571:                 bitmap.CacheOption = BitmapCacheOption.OnLoad;\n572:                 bitmap.EndInit();\n573:                 bitmap.Freeze();\n574:                 s_fullImageCache.Set(filePath, bitmap);\n575:                 return bitmap;"
+        },
+        {
+          "start": 747,
+          "end": 770,
+          "text": "747:         private void OnItemLoaded(object sender, RoutedEventArgs e)\n748:         {\n749:             if (sender is FrameworkElement element && element.DataContext is ImageInfo info)\n750:             {\n751:                 info.EnsureThumbnail();\n752:             }\n753:         }\n754: \n755:         /// <summary>\n756:         /// 虚拟化容器滚出可视区域（被回收）时取消进行中的缩略图解码。\n757:         /// 对齐 ImageGlass GalleryControl：不可见即取消，省 CPU 给当前视口。\n758:         /// 滚动回来时 OnItemLoaded 会用新 token 重新触发解码，旧任务的结果被丢弃。\n759:         /// </summary>\n760:         private void OnItemUnloaded(object sender, RoutedEventArgs e)\n761:         {\n762:             if (sender is FrameworkElement element && element.DataContext is ImageInfo info)\n763:             {\n764:                 info.CancelThumbnail();\n765:             }\n766:         }\n767: \n768:         private void ExecuteDeleteSingleImage(ImageInfo? imageInfo)\n769:         {\n770:             if (imageInfo == null) return;"
+        }
+      ]
+    },
+    {
+      "id": "I2",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Panels\\ImagePreviewControl.xaml",
+      "sha256": "cfc93d2e44fc64b7c9a967c91497d7fc4f1ba13789276b1b50e6848d19380bdc",
+      "excerpts": [
+        {
+          "start": 340,
+          "end": 355,
+          "text": "340:                      Background=\"Transparent\"\n341:                      BorderThickness=\"0\"\n342:                      HorizontalAlignment=\"Stretch\"\n343:                      HorizontalContentAlignment=\"Stretch\"\n344:                      ScrollViewer.HorizontalScrollBarVisibility=\"Auto\"\n345:                      ScrollViewer.VerticalScrollBarVisibility=\"Disabled\"\n346:                      ScrollViewer.CanContentScroll=\"True\"\n347:                      VirtualizingPanel.IsVirtualizing=\"True\"\n348:                      VirtualizingPanel.VirtualizationMode=\"Recycling\"\n349:                      VirtualizingPanel.IsVirtualizingWhenGrouping=\"True\"\n350:                      ScrollViewer.ScrollChanged=\"OnScrollChanged\"\n351:                     SelectionChanged=\"OnThumbnailListBoxSelectionChanged\">\n352:                 <ListBox.ItemsPanel>\n353:                     <ItemsPanelTemplate>\n354:                         <VirtualizingStackPanel Orientation=\"Horizontal\"/>\n355:                     </ItemsPanelTemplate>"
+        }
+      ]
+    },
+    {
+      "id": "I3",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+      "sha256": "9dcd71bba72e25af94a858f52d18b0ca573709313f1cb491bc271fb275582048",
+      "excerpts": [
+        {
+          "start": 615,
+          "end": 632,
+          "text": "615:         }\n616: \n617:         /// <summary>\n618:         /// 当前显示图像索引\n619:         /// </summary>\n620:         public int CurrentImageIndex\n621:         {\n622:             get => _currentImageIndex;\n623:             set\n624:             {\n625:                 if (SetProperty(ref _currentImageIndex, value))\n626:                 {\n627:                     UpdateCurrentImageDisplay();\n628:                 }\n629:             }\n630:         }\n631: \n632:         /// <summary>"
+        },
+        {
+          "start": 4620,
+          "end": 4638,
+          "text": "4620:         private void UpdateCurrentImageDisplay()\n4621:         {\n4622:             if (CurrentImageIndex < 0 || CurrentImageIndex >= ImageCollection.Count)\n4623:             {\n4624:                 DisplayImage = null;\n4625:                 return;\n4626:             }\n4627: \n4628:             var imageInfo = ImageCollection[CurrentImageIndex];\n4629:             var fullImage = imageInfo.FullImage;\n4630: \n4631:             if (fullImage != null)\n4632:             {\n4633:                 DisplayImage = fullImage;\n4634:                 AddLog($\"📷 显示图像: {imageInfo.Name}\");\n4635:             }\n4636:         }\n4637: \n4638:         #endregion"
+        },
+        {
+          "start": 1995,
+          "end": 2065,
+          "text": "1995:         /// <param name=\"solution\">已加载的解决方案（含主工作流与子程序工作流）</param>\n1996:         private void PreCompileScriptNodes(Solution solution)\n1997:         {\n1998:             if (solution?.Workflows == null)\n1999:             {\n2000:                 return;\n2001:             }\n2002: \n2003:             var allNodes = solution.Workflows.SelectMany(w => w.Nodes).ToList();\n2004:             _logger?.LogInfo($\"[预编译] 遍历到节点总数={allNodes.Count}, Workflows={solution.Workflows.Count}\", nameof(MainWindowViewModel));\n2005:             foreach (var n in allNodes)\n2006:             {\n2007:                 var tool = ToolRegistry.CreateToolInstance(n.ToolType);\n2008:                 _logger?.LogInfo(\n2009:                     $\"[预编译] 节点=[{n.Name}] ToolType=[{n.ToolType}] ParamsType=[{n.Parameters?.GetType().Name ?? \"null\"}] Tool=[{tool?.GetType().Name ?? \"null\"}] IsPrecompilable=[{tool is IPrecompilableTool}]\",\n2010:                     nameof(MainWindowViewModel));\n2011:             }\n2012: \n2013:             var precompilableNodes = allNodes\n2014:                 .Where(n => n.Parameters != null)\n2015:                 .Select(n => new\n2016:                 {\n2017:                     Node = n,\n2018:                     Tool = ToolRegistry.CreateToolInstance(n.ToolType)\n2019:                 })\n2020:                 .Where(x => x.Tool is IPrecompilableTool && x.Node.Parameters != null)\n2021:                 .ToList();\n2022: \n2023:             _logger?.LogInfo($\"[预编译] 可预编译节点数={precompilableNodes.Count}\", nameof(MainWindowViewModel));\n2024: \n2025:             if (precompilableNodes.Count == 0)\n2026:             {\n2027:                 _logger?.LogInfo(\"[预编译] 无可预编译节点，跳过\", nameof(MainWindowViewModel));\n2028:                 return;\n2029:             }\n2030: \n2031:             var sw = System.Diagnostics.Stopwatch.StartNew();\n2032: \n2033:             _logger?.LogInfo($\"[预编译] 开始预编译, 节点数={precompilableNodes.Count}\", nameof(MainWindowViewModel));\n2034: \n2035:             // 后台 Task 并行预编译：\n2036:             // - 并行任务在线程池执行（无 UI 同步上下文），避免在 UI 线程直接调 Parallel.ForEach 的调度死锁\n2037:             // - 多脚本并行，启动时间不随脚本数成倍增加\n2038:             // - UI 线程同步等待完成（主窗口 Show 前预编译结束，确保所见即所得：打开工作区后脚本已编译）\n2039:             var parallelOptions = new ParallelOptions\n2040:             {\n2041:                 MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2)\n2042:             };\n2043: \n2044:             var snapshot = precompilableNodes.ToList();\n2045:             System.Threading.Tasks.Task.Run(() =>\n2046:             {\n2047:                 Parallel.ForEach(snapshot, parallelOptions, x =>\n2048:                 {\n2049:                     try\n2050:                     {\n2051:                         var tool = (IPrecompilableTool)x.Tool!;\n2052:                         var errors = tool.PreCompile(x.Node.Parameters!);\n2053:                         _logger?.LogInfo(\n2054:                             $\"[预编译] 节点=[{x.Node.Name}] 预编译完成, 诊断数={errors.Count}\" + (errors.Count > 0 ? $\", 诊断=[{string.Join(\"; \", errors.Take(2))}]\" : \"\"),\n2055:                             nameof(MainWindowViewModel));\n2056:                     }\n2057:                     catch (Exception ex)\n2058:                     {\n2059:                         _logger?.LogError($\"[预编译] 节点=[{x.Node.Name}] 预编译异常: {ex.Message}\", nameof(MainWindowViewModel));\n2060:                     }\n2061:                 });\n2062:             }).GetAwaiter().GetResult();\n2063: \n2064:             sw.Stop();\n2065:             LogSuccess($\"预编译完成: {precompilableNodes.Count} 个节点, 耗时 {sw.ElapsedMilliseconds}ms\");"
+        }
+      ]
+    },
+    {
+      "id": "P1",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Infrastructure\\Managers\\Tool\\ToolRegistry.cs",
+      "sha256": "813cfa8862ea46a31d49387f5dfb8a691785a95064ceed06cc51349473fcabb8",
+      "excerpts": [
+        {
+          "start": 55,
+          "end": 100,
+          "text": "55:         public static void RegisterTool(Type toolType)\n56:         {\n57:             if (toolType == null)\n58:                 throw new ArgumentNullException(nameof(toolType));\n59: \n60:             var attr = toolType.GetCustomAttribute<ToolAttribute>();\n61:             if (attr == null)\n62:                 throw new ArgumentException($\"类型 {toolType.Name} 缺少 [Tool] 特性\");\n63: \n64:             lock (_lock)\n65:             {\n66:                 _toolTypes[attr.Id] = toolType;\n67:                 \n68:                 // 提取参数类型信息（用于诊断）\n69:                 Type? paramsType = null;\n70:                 foreach (var iface in toolType.GetInterfaces())\n71:                 {\n72:                     if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IToolPlugin<,>))\n73:                     {\n74:                         var genericArgs = iface.GetGenericArguments();\n75:                         if (genericArgs.Length >= 2)\n76:                         {\n77:                             paramsType = genericArgs[0];\n78:                             break;\n79:                         }\n80:                     }\n81:                 }\n82:                 \n83:                 // 主动注册参数类型到多态序列化配置\n84:                 if (paramsType != null && typeof(ToolParameters).IsAssignableFrom(paramsType))\n85:                 {\n86:                     RegisterParameterTypeToRegistry(paramsType);\n87:                 }\n88:                 \n89:                 // ✅ 基于输出变量契约（IToolPlugin.OutputVariables）提取并缓存属性元数据\n90:                 var pluginInstance = CreateToolInstance(attr.Id);\n91:                 if (pluginInstance != null)\n92:                     ExtractPropertyMetadata(attr.Id, pluginInstance);\n93:                 \n94:                 VisionLogger.Instance.Log(LogLevel.Success,\n95:                     $\"工具注册成功: {attr.DisplayName} (Id={attr.Id}, ParamsType={paramsType?.Name ?? \"未指定\"})\",\n96:                     \"ToolRegistry\");\n97:             }\n98:         }\n99: \n100:         /// <summary>"
+        },
+        {
+          "start": 206,
+          "end": 220,
+          "text": "206:         public static IToolPlugin? CreateToolInstance(string toolId)\n207:         {\n208:             lock (_lock)\n209:             {\n210:                 if (_toolTypes.TryGetValue(toolId, out var type))\n211:                 {\n212:                     return Activator.CreateInstance(type) as IToolPlugin;\n213:                 }\n214:                 return null;\n215:             }\n216:         }\n217: \n218:         /// <summary>\n219:         /// 创建参数实例\n220:         /// </summary>"
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptTool.cs",
+      "sha256": "71c32de73c6d00308a639750dcebefdf1c69a936b72f8d98a6fad1b469d13292",
+      "excerpts": [
+        {
+          "start": 27,
+          "end": 46,
+          "text": "27:     public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>, IAsyncToolPlugin, IToolEditorFactory, IPrecompilableTool\n28:     {\n29:         // ★ 应用启动阶段后台预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。\n30:         //   静态构造在 LoadPlugins 实例化工具时触发，fire-and-forget 不阻塞启动；\n31:         //   首次打开脚本工具时补全立即可用（MEF 已预热缓存命中）。\n32:         static ScriptTool()\n33:         {\n34:             // 编辑器内核统一预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。\n35:             ScriptEditorCore.WarmupForStartup();\n36: \n37:             // 预热 Roslyn Emit 引擎（代码无关）：启动时后台编译一次最小模板，\n38:             // 让 Emit 初始化（~947ms）提前完成，用户首次执行脚本 Emit 降到 ~29ms。\n39:             // fire-and-forget 不阻塞启动；失败仅告警（ScriptCompiler.Warmup 内部处理）。\n40:             ScriptCompiler.Warmup();\n41:         }\n42: \n43:         public ScriptResults Run(ScriptParameters parameters)\n44:             => ExecuteCore(\n45:                 parameters,\n46:                 parameters.Context?.GlobalVariables,"
+        }
+      ]
+    },
+    {
+      "id": "V1",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanelBase.cs",
+      "sha256": "df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79",
+      "excerpts": [
+        {
+          "start": 303,
+          "end": 375,
+          "text": "303: \tprivate void ImageListPanel_Loaded(object sender, RoutedEventArgs e)\n304: \t{\n305: \t\trefreshImageThreadAlive = true;\n306: \t\tLogHelper.Info(\"设置refreshImageThreadAlive = true\");\n307: \t\tif (refreshImageThread == null || !refreshImageThread.IsAlive)\n308: \t\t{\n309: \t\t\tLogHelper.Info(\"ImageListPanelBase控件创建缩略图刷新线程\");\n310: \t\t\trefreshImageThread = new Thread(() =>\n311: \t\t\t{\n312: \t\t\t\ttry\n313: \t\t\t\t{\n314: \t\t\t\t\twhile (refreshImageThreadAlive)\n315: \t\t\t\t\t{\n316: \t\t\t\t\t\tif (dataNumForReceiveStore > 0)\n317: \t\t\t\t\t\t{\n318: \t\t\t\t\t\t\tLogHelper.Info($\"mutexrefreshImageThread:dataNumForReceiveStore={dataNumForReceiveStore}\");\n319: \t\t\t\t\t\t\tint[] array = forSendStore;\n320: \t\t\t\t\t\t\tlock (mutexrefreshImageThread)\n321: \t\t\t\t\t\t\t{\n322: \t\t\t\t\t\t\t\tforSendStore = forReceiveStore;\n323: \t\t\t\t\t\t\t\tdataNumForSendStore = dataNumForReceiveStore;\n324: \t\t\t\t\t\t\t\tdataNumForReceiveStore = 0;\n325: \t\t\t\t\t\t\t\tforReceiveStore = array;\n326: \t\t\t\t\t\t\t}\n327: \t\t\t\t\t\t\tfor (int i = 0; i < dataNumForSendStore; i++)\n328: \t\t\t\t\t\t\t{\n329: \t\t\t\t\t\t\t\tint index = forSendStore[i];\n330: \t\t\t\t\t\t\t\tLoadThumbnailImage(index);\n331: \t\t\t\t\t\t\t\tforSendStore[i] = -1;\n332: \t\t\t\t\t\t\t}\n333: \t\t\t\t\t\t\tdataNumForSendStore = 0;\n334: \t\t\t\t\t\t}\n335: \t\t\t\t\t\tif (needSelectImagePath != null)\n336: \t\t\t\t\t\t{\n337: \t\t\t\t\t\t\tDispatcher.Invoke(() =>\n338: \t\t\t\t\t\t\t{\n339: \t\t\t\t\t\t\t\tGetModuleSel(needSelectImagePath);\n340: \t\t\t\t\t\t\t});\n341: \t\t\t\t\t\t}\n342: \t\t\t\t\t\tThread.Sleep(100);\n343: \t\t\t\t\t}\n344: \t\t\t\t\tLogHelper.Info(\"ImageListPanelBase控件停止刷新缩略图\");\n345: \t\t\t\t}\n346: \t\t\t\tcatch (ThreadAbortException)\n347: \t\t\t\t{\n348: \t\t\t\t\tLogHelper.Info(\"ImageListPanelBase控件停止数据读取\");\n349: \t\t\t\t}\n350: \t\t\t})\n351: \t\t\t{\n352: \t\t\t\tIsBackground = true,\n353: \t\t\t\tPriority = ThreadPriority.BelowNormal\n354: \t\t\t};\n355: \t\t\trefreshImageThread.Start();\n356: \t\t}\n357: \t\tPropertyManager.Register(\"ExcuteType\");\n358: \t\tPropertyManager.UpdateDisplayStatus -= OnUpdateExcuteType;\n359: \t\tPropertyManager.UpdateDisplayStatus += OnUpdateExcuteType;\n360: \t\tVmSolution.OnReportModuleData += VmSolution_OnReportModuleData;\n361: \t}\n362: \n363: \tprivate void ImageListPanel_Unloaded(object sender, RoutedEventArgs e)\n364: \t{\n365: \t\tif (refreshImageThread != null)\n366: \t\t{\n367: \t\t\trefreshImageThreadAlive = false;\n368: \t\t\tLogHelper.Info(\"设置refreshImageThreadAlive = false\");\n369: \t\t}\n370: \t\tPropertyManager.UpdateDisplayStatus -= OnUpdateExcuteType;\n371: \t\tPropertyManager.UnRegister(\"ExcuteType\");\n372: \t\tVmSolution.OnReportModuleData -= VmSolution_OnReportModuleData;\n373: \t}\n374: \n375: \t/// <summary>"
+        },
+        {
+          "start": 1275,
+          "end": 1310,
+          "text": "1275: \tprivate void LoadThumbnailImage(int index)\n1276: \t{\n1277: \t\ttry\n1278: \t\t{\n1279: \t\t\tLogHelper.Info($\"LoadThumbnailImage:{index}\");\n1280: \t\t\tint num = curScrollOffset;\n1281: \t\t\tint num2 = num + (int)Math.Ceiling(curActualWidth / 76.0);\n1282: \t\t\tLogHelper.Info($\"index={index},startIndex={num},endIndex={num2},ImageList.Count={ImageList.Count}\");\n1283: \t\t\tif (index < num || index >= num2 || index >= ImageList.Count)\n1284: \t\t\t{\n1285: \t\t\t\treturn;\n1286: \t\t\t}\n1287: \t\t\tImageEntity imageEntity = ImageList[index];\n1288: \t\t\tif (imageEntity == null || imageEntity.ImageSource != null)\n1289: \t\t\t{\n1290: \t\t\t\treturn;\n1291: \t\t\t}\n1292: \t\t\tImageData imageData = null;\n1293: \t\t\tif (Islocal)\n1294: \t\t\t{\n1295: \t\t\t\timageData = ((!(Path.GetExtension(imageEntity.ImagePath)?.ToLower() == \".raw\")) ? ImageData.GetImageDataFromFile(imageEntity.ImagePath, 72, 52) : ImageData.GetImageDataFrom3DFile(imageEntity.ImagePath, 72, 52));\n1296: \t\t\t\tif (imageData != null)\n1297: \t\t\t\t{\n1298: \t\t\t\t\tLogHelper.Info(\"GetImageDataFromFile successfully\");\n1299: \t\t\t\t\timageEntity.ImageSource = imageData;\n1300: \t\t\t\t}\n1301: \t\t\t}\n1302: \t\t}\n1303: \t\tcatch (Exception ex)\n1304: \t\t{\n1305: \t\t\tLogHelper.Error(ex.Message);\n1306: \t\t}\n1307: \t}\n1308: \n1309: \t/// <summary>\n1310: \t/// 图像列表选项改变响应"
+        },
+        {
+          "start": 1312,
+          "end": 1360,
+          "text": "1312: \t/// <param name=\"sender\"></param>\n1313: \t/// <param name=\"e\"></param>\n1314: \tprotected void lst_SelectionChanged(object sender, SelectionChangedEventArgs e)\n1315: \t{\n1316: \t\tCurImageIndexT = CurSelectedIndex + 1;\n1317: \t\tif (0 > CurImageIndex || !needSelectionTrigger || GetVMModule() == null)\n1318: \t\t{\n1319: \t\t\treturn;\n1320: \t\t}\n1321: \t\tbool flag = GetRoot()?.FindBaseNodeByName(\"AutoPlay\") is Apps.XmlParser.ParamTab.Boolean boolean && boolean.CurValueA;\n1322: \t\tif (!(GetRoot()?.FindBaseNodeByName(\"CurrentImagePath\") is ButtonSelecter_ImageList buttonSelecter_ImageList))\n1323: \t\t{\n1324: \t\t\treturn;\n1325: \t\t}\n1326: \t\ttry\n1327: \t\t{\n1328: \t\t\tif (buttonSelecter_ImageList.SelectEnable && !ImageList[CurImageIndex].IsCheck)\n1329: \t\t\t{\n1330: \t\t\t\tGetModuleSel();\n1331: \t\t\t}\n1332: \t\t\tList<ImageEntity> list = (buttonSelecter_ImageList.SelectEnable ? ImageList.Where((ImageEntity p) => p.IsCheck).ToList() : ImageList.ToList());\n1333: \t\t\tint num = list.IndexOf(ImageList[CurImageIndex]);\n1334: \t\t\tint index = ((num == 0) ? (list.Count - 1) : (num - 1));\n1335: \t\t\tstring value = (flag ? list[index].ImagePath : list[num].ImagePath);\n1336: \t\t\t((IUserStringData)GetVMModule().Params)[\"CurrentImagePath\"] = value;\n1337: \t\t\tVmProcedure vmProcedure = (GetVMModule() as VmModule).Root;\n1338: \t\t\tif (vmProcedure != null && !vmProcedure.IsVirtual)\n1339: \t\t\t{\n1340: \t\t\t\tstring workStateInfo = \"\";\n1341: \t\t\t\tif (!vmProcedure.RunCheck(ref workStateInfo))\n1342: \t\t\t\t{\n1343: \t\t\t\t\tstring strMsg = vmProcedure.Name + \":\" + workStateInfo;\n1344: \t\t\t\t\tHikMessageBox.Show(strMsg, MessageIcons.Error);\n1345: \t\t\t\t}\n1346: \t\t\t\telse\n1347: \t\t\t\t{\n1348: \t\t\t\t\tvmProcedure.Run(null, bIsWait: false);\n1349: \t\t\t\t}\n1350: \t\t\t}\n1351: \t\t}\n1352: \t\tcatch (VmException ex)\n1353: \t\t{\n1354: \t\t\tstring errorInfo = ErrorCodeInfo.GetErrorInfo(ex.errorCode);\n1355: \t\t\tHikMessageBox.Show(errorInfo, MessageIcons.Error);\n1356: \t\t}\n1357: \t\tcatch (Exception)\n1358: \t\t{\n1359: \t\t}\n1360: \t}"
+        }
+      ]
+    },
+    {
+      "id": "V2",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.Data\\VMControls.Data\\ToolBoxData.cs",
+      "sha256": "c1b11d2c3bebce66a11769eb0e209455cb1e5d0c4efa7c4a6dad5992eb9cf45b",
+      "excerpts": [
+        {
+          "start": 77,
+          "end": 128,
+          "text": "77: \tpublic void UpdateLoad(object GroupObject)\n78: \t{\n79: \t\tif (GroupObject == null)\n80: \t\t{\n81: \t\t\treturn;\n82: \t\t}\n83: \t\tToolBoxItemData toolBoxItemData = (GroupObject as CollectionViewGroup).Name as ToolBoxItemData;\n84: \t\tif (toolBoxItemData.Name == \"Lang_Tools\" || toolBoxItemData.IsInit)\n85: \t\t{\n86: \t\t\treturn;\n87: \t\t}\n88: \t\ttoolBoxItemData.IsInit = true;\n89: \t\tDirectoryInfo directoryInfo = new DirectoryInfo(toolBoxItemData.DirPath);\n90: \t\tDirectoryInfo[] directories = directoryInfo.GetDirectories();\n91: \t\tItemData itemData = (toolBoxItemData.Items as List<ItemData>).FirstOrDefault();\n92: \t\tif (itemData == null)\n93: \t\t{\n94: \t\t\treturn;\n95: \t\t}\n96: \t\ttoolBoxItemData.Items.Clear();\n97: \t\tDirectoryInfo[] array = directories;\n98: \t\tforeach (DirectoryInfo directoryInfo2 in array)\n99: \t\t{\n100: \t\t\tFileInfo fileInfo = directoryInfo2.GetFiles().SingleOrDefault((FileInfo p) => p.Name == \"ToolItemInfo.xml\");\n101: \t\t\tif (fileInfo != null)\n102: \t\t\t{\n103: \t\t\t\tToolBoxItemData toolBoxItemData2 = new ToolBoxItemData();\n104: \t\t\t\ttoolBoxItemData2.Info = directoryInfo2.Name;\n105: \t\t\t\ttoolBoxItemData2.DirPath = directoryInfo2.FullName;\n106: \t\t\t\ttoolBoxItemData2.loadXml(fileInfo.FullName);\n107: \t\t\t\ttoolBoxItemData.items.Add(toolBoxItemData2);\n108: \t\t\t\ttoolBoxItemData2.SetParentNode(toolBoxItemData);\n109: \t\t\t}\n110: \t\t}\n111: \t\ttoolBoxItemData.items.Sort(SortItemDateCompare);\n112: \t\tint num = (toolSource as ObservableCollection<ToolBoxItemData>).IndexOf(itemData as ToolBoxItemData);\n113: \t\tforeach (ItemData item in toolBoxItemData.items)\n114: \t\t{\n115: \t\t\t(toolSource as ObservableCollection<ToolBoxItemData>).Insert(num, item as ToolBoxItemData);\n116: \t\t\tnum++;\n117: \t\t}\n118: \t\t(toolSource as ObservableCollection<ToolBoxItemData>).Remove(itemData as ToolBoxItemData);\n119: \t\tOnPropertyChanged(\"ToolSource\");\n120: \t}\n121: \n122: \tprivate void Refresh()\n123: \t{\n124: \t\tLogHelper.Info(\"ToolBoxData.Refresh\");\n125: \t\ttoolSource = null;\n126: \t\ttoolBoxSource = null;\n127: \t\tOnPropertyChanged(\"ToolSource\");\n128: \t}"
+        },
+        {
+          "start": 266,
+          "end": 325,
+          "text": "266: \tpublic static void LoadData()\n267: \t{\n268: \t\tLogHelper.Info(\"ToolBoxData.LoadData(start)\");\n269: \t\tToolBoxItemData toolBoxItemData = new ToolBoxItemData();\n270: \t\tstring modulesDir = AppData.ModulesDir;\n271: \t\tDirectoryInfo directoryInfo = new DirectoryInfo(modulesDir);\n272: \t\tDirectoryInfo[] directories = directoryInfo.GetDirectories();\n273: \t\tDirectoryInfo[] array = directories;\n274: \t\tforeach (DirectoryInfo directoryInfo2 in array)\n275: \t\t{\n276: \t\t\tFileInfo fileInfo = directoryInfo2.GetFiles().SingleOrDefault((FileInfo p) => p.Name == \"ToolGroup.xml\");\n277: \t\t\tbool flag = directoryInfo2.Name == \"Global\";\n278: \t\t\tbool flag2 = directoryInfo2.Name == \"UserTools\" || directoryInfo2.Name == \"GroupTools\";\n279: \t\t\tif (!((fileInfo != null) | flag))\n280: \t\t\t{\n281: \t\t\t\tcontinue;\n282: \t\t\t}\n283: \t\t\tToolBoxItemData toolBoxItemData2 = new ToolBoxItemData();\n284: \t\t\tif (!flag)\n285: \t\t\t{\n286: \t\t\t\ttoolBoxItemData2.DirPath = directoryInfo2.FullName;\n287: \t\t\t\ttoolBoxItemData2.loadXml(fileInfo.FullName);\n288: \t\t\t}\n289: \t\t\telse\n290: \t\t\t{\n291: \t\t\t\ttoolBoxItemData2.Name = \"Lang_Tools\";\n292: \t\t\t}\n293: \t\t\ttoolBoxItemData.items.Add(toolBoxItemData2);\n294: \t\t\ttoolBoxItemData2.SetParentNode(toolBoxItemData);\n295: \t\t\tif (!flag && !flag2)\n296: \t\t\t{\n297: \t\t\t\tToolBoxItemData toolBoxItemData3 = new ToolBoxItemData();\n298: \t\t\t\ttoolBoxItemData3.info = \"defaultProxyModule\";\n299: \t\t\t\ttoolBoxItemData2.items.Add(toolBoxItemData3);\n300: \t\t\t\ttoolBoxItemData3.SetParentNode(toolBoxItemData2);\n301: \t\t\t\tcontinue;\n302: \t\t\t}\n303: \t\t\tDirectoryInfo[] directories2 = directoryInfo2.GetDirectories();\n304: \t\t\tDirectoryInfo[] array2 = directories2;\n305: \t\t\tforeach (DirectoryInfo directoryInfo3 in array2)\n306: \t\t\t{\n307: \t\t\t\tFileInfo fileInfo2 = directoryInfo3.GetFiles().SingleOrDefault((FileInfo p) => p.Name == \"ToolItemInfo.xml\");\n308: \t\t\t\tif (fileInfo2 != null)\n309: \t\t\t\t{\n310: \t\t\t\t\tToolBoxItemData toolBoxItemData4 = new ToolBoxItemData();\n311: \t\t\t\t\ttoolBoxItemData4.Info = directoryInfo3.Name;\n312: \t\t\t\t\ttoolBoxItemData4.DirPath = directoryInfo3.FullName;\n313: \t\t\t\t\ttoolBoxItemData4.loadXml(fileInfo2.FullName);\n314: \t\t\t\t\ttoolBoxItemData2.items.Add(toolBoxItemData4);\n315: \t\t\t\t\ttoolBoxItemData4.SetParentNode(toolBoxItemData2);\n316: \t\t\t\t\tif (!flag)\n317: \t\t\t\t\t{\n318: \t\t\t\t\t\tbreak;\n319: \t\t\t\t\t}\n320: \t\t\t\t}\n321: \t\t\t}\n322: \t\t}\n323: \t\ttoolBoxSource = toolBoxItemData;\n324: \t\tLogHelper.Info(\"ToolBoxData.LoadData(end)\");\n325: \t}"
+        }
+      ]
+    },
+    {
+      "id": "V3",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.DataForUI\\DisplayImageListDecorator.cs",
+      "sha256": "b1a5e6f41b69f8e755a5353faf79cccc789236fd1db7191a0cc22a7c9d6077a9",
+      "excerpts": [
+        {
+          "start": 78,
+          "end": 110,
+          "text": "78: \tpublic ImageViewItem SelectedImage\n79: \t{\n80: \t\tget\n81: \t\t{\n82: \t\t\treturn selectedImage;\n83: \t\t}\n84: \t\tset\n85: \t\t{\n86: \t\t\tif (selectedImage == value)\n87: \t\t\t{\n88: \t\t\t\treturn;\n89: \t\t\t}\n90: \t\t\tstring oldName = selectedImage?.DisplayName;\n91: \t\t\tif (selectedImage != null && selectedImage.IsCallBackEnable && selectedImage.DisplayObject is Apps.XmlParser.Object obj)\n92: \t\t\t{\n93: \t\t\t\tobj.RemoveOutputFilter();\n94: \t\t\t\tif (obj != selectedInputImage?.DisplayObject)\n95: \t\t\t\t{\n96: \t\t\t\t\tWeakEventManager<Apps.XmlParser.Object, EventArgs>.RemoveHandler(obj, \"ValueChanged\", ParentUI.P_ValueChanged);\n97: \t\t\t\t}\n98: \t\t\t\tselectedImage.IsCallBackEnable = false;\n99: \t\t\t}\n100: \t\t\tselectedImage = value;\n101: \t\t\tif (selectedImage != null && !selectedImage.IsCallBackEnable && selectedImage.DisplayObject is Apps.XmlParser.Object obj2)\n102: \t\t\t{\n103: \t\t\t\tobj2.SetOutputFilter();\n104: \t\t\t\tWeakEventManager<Apps.XmlParser.Object, EventArgs>.RemoveHandler(obj2, \"ValueChanged\", ParentUI.P_ValueChanged);\n105: \t\t\t\tWeakEventManager<Apps.XmlParser.Object, EventArgs>.AddHandler(obj2, \"ValueChanged\", ParentUI.P_ValueChanged);\n106: \t\t\t\tselectedImage.IsCallBackEnable = true;\n107: \t\t\t}\n108: \t\t\tstring newName = selectedImage?.DisplayName;\n109: \t\t\tOnPropertyChanged(\"SelectedImage\");\n110: \t\t\tParentUI.MyOnSelectedImageChanged(new NameChangedEventArgs"
+        }
+      ]
+    },
+    {
+      "id": "V4",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.Data\\VMControls.Data\\ToolBoxItemData.cs",
+      "sha256": "378a1319599c725eafb5eeae0d105aedb58c8ce0b77f131bc9b480d15abbc409",
+      "excerpts": [
+        {
+          "start": 279,
+          "end": 314,
+          "text": "279: \tpublic object AddNewItem(object param)\n280: \t{\n281: \t\tif (!string.IsNullOrEmpty(customInstanceFullName))\n282: \t\t{\n283: \t\t\treturn ActivatorWrap.CreateInstance(customInstanceFullName, new object[2] { param, Name });\n284: \t\t}\n285: \t\tAssembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, $\"{Info}Cs\"));\n286: \t\tAssembly assembly2 = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, $\"{Info}Control\"));\n287: \t\tif (assembly == null)\n288: \t\t{\n289: \t\t\tActivatorWrap.LoadAssembly($\"{DirPath}\\\\{Info}Cs.dll\");\n290: \t\t\tassembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, $\"{Info}Cs\"));\n291: \t\t}\n292: \t\tif (assembly2 == null)\n293: \t\t{\n294: \t\t\tstring text = $\"{DirPath}\\\\Librarys.Config\";\n295: \t\t\tif (File.Exists(text))\n296: \t\t\t{\n297: \t\t\t\tstring[] libs = GetLibs(text);\n298: \t\t\t\tlibs.ToList().ForEach((string p) =>\n299: \t\t\t\t{\n300: \t\t\t\t\tstring text2 = $\"{DirPath}\\\\{p}\";\n301: \t\t\t\t\tif (File.Exists(text2))\n302: \t\t\t\t\t{\n303: \t\t\t\t\t\tActivatorWrap.LoadAssembly(text2);\n304: \t\t\t\t\t}\n305: \t\t\t\t});\n306: \t\t\t}\n307: \t\t\tif (File.Exists($\"{DirPath}\\\\{Info}Control.dll\"))\n308: \t\t\t{\n309: \t\t\t\tActivatorWrap.LoadAssembly($\"{DirPath}\\\\{Info}Control.dll\");\n310: \t\t\t}\n311: \t\t}\n312: \t\tType type = assembly.GetTypes().FirstOrDefault((Type p) => typeof(IVmModule).IsAssignableFrom(p));\n313: \t\treturn ActivatorWrap.CreateInstance(type, new object[1] { param });\n314: \t}"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\ScriptEditorCore.xaml.cs",
+      "sha256": "bb2f9c7618bd6f66f79785299518102a7ce1d5311143e0181478aeec2b5be88a",
+      "excerpts": [
+        {
+          "start": 141,
+          "end": 225,
+          "text": "141:     private static readonly object _signatureHelpLock = new();\n142: \n143:     // 进程生命周期内共享的 MefHostServices（首次初始化慢，后续缓存命中快）\n144:     private static MefHostServices? _sharedMefHost;\n145:     private static object _mefLock = new();\n146: \n147:     // 预热 ScriptWorkspace 缓存\n148:     private static ScriptWorkspace? _preWarmedWorkspace;\n149: \n150:     // 补全引擎就绪标志（MEF + Workspace 预热完成后置 true）\n151:     private static volatile bool _completionReady;\n152: \n153:     // 补全就绪回调（预热完成时通知等待中的调用方重建 workspace）\n154:     private static Action? _onCompletionReady;\n155: \n156:     private static bool _warmupStarted;\n157:     private static readonly object _warmupLock = new();\n158: \n159:     /// <summary>\n160:     /// 线程安全地获取共享 MefHostServices（LazyInitializer 消除预热与主线程的竞态）。\n161:     /// </summary>\n162:     private static MefHostServices GetSharedMefHost()\n163:     {\n164:         return LazyInitializer.EnsureInitialized(ref _sharedMefHost, ref _mefLock, () =>\n165:         {\n166:             var sw = System.Diagnostics.Stopwatch.StartNew();\n167:             var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);\n168:             sw.Stop();\n169:             PluginLogger.Info($\"[补全] MefHostServices 首次初始化: {sw.ElapsedMilliseconds}ms\",\n170:                 nameof(ScriptEditorCore));\n171:             return host;\n172:         });\n173:     }\n174: \n175:     /// <summary>\n176:     /// 应用启动后台预热补全引擎（MEF + Workspace）。对齐新版 RoslynPad 的 Task.Run 启动初始化。\n177:     /// 幂等：双重检查锁保证进程内只预热一次；完成后置 _completionReady 并通知等待中的调用方。\n178:     /// </summary>\n179:     internal static void WarmupForStartup()\n180:     {\n181:         lock (_warmupLock)\n182:         {\n183:             if (_warmupStarted) return;\n184:             _warmupStarted = true;\n185:         }\n186: \n187:         _ = Task.Run(async () =>\n188:         {\n189:             var sw = System.Diagnostics.Stopwatch.StartNew();\n190:             PluginLogger.Info(\"[补全] 启动后台预热 Roslyn 开始...\", nameof(ScriptEditorCore));\n191:             await WarmupRoslynAsync();\n192:             await WarmupWorkspaceAsync();\n193:             sw.Stop();\n194:             _completionReady = true;\n195:             PluginLogger.Info($\"[补全] 启动后台预热完成: {sw.ElapsedMilliseconds}ms\", nameof(ScriptEditorCore));\n196: \n197:             var cb = Interlocked.Exchange(ref _onCompletionReady, null);\n198:             cb?.Invoke();\n199:         });\n200:     }\n201: \n202:     private static Task WarmupRoslynAsync()\n203:     {\n204:         return Task.Run(() =>\n205:         {\n206:             var sw = System.Diagnostics.Stopwatch.StartNew();\n207:             PluginLogger.Info(\"[补全] 后台预热 Roslyn 开始...\", nameof(ScriptEditorCore));\n208:             GetSharedMefHost();\n209:             sw.Stop();\n210:             PluginLogger.Info($\"[补全] 后台预热 Roslyn 完成: {sw.ElapsedMilliseconds}ms\", nameof(ScriptEditorCore));\n211:         });\n212:     }\n213: \n214:     private static Task WarmupWorkspaceAsync()\n215:     {\n216:         return Task.Run(() =>\n217:         {\n218:             var sw = System.Diagnostics.Stopwatch.StartNew();\n219:             PluginLogger.Info(\"[补全] 后台预热 Workspace 开始...\", nameof(ScriptEditorCore));\n220:             var host = GetSharedMefHost();\n221:             var ws = new ScriptWorkspace(host);\n222:             ws.TryApplyChanges(ws.CurrentSolution.AddProject(\n223:                 ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), \"ScriptCompletion\", \"ScriptCompletion\", LanguageNames.CSharp)));\n224:             Interlocked.Exchange(ref _preWarmedWorkspace, ws);\n225:             sw.Stop();"
+        },
+        {
+          "start": 324,
+          "end": 360,
+          "text": "324:     public void InitializeWorkspace()\n325:     {\n326:         var perfSw = System.Diagnostics.Stopwatch.StartNew();\n327:         RebuildWorkspace();\n328:         PluginLogger.Info($\"[Perf] RebuildWorkspace: {perfSw.ElapsedMilliseconds}ms\", typeName);\n329:         SetSuppressDiagnostic(false);\n330:         EnsureSemanticHighlighterMounted();\n331:         ScheduleDiagnosticAsync();\n332:         RedrawVisibleLines();\n333:         _ = WarmupCompletionAsync();\n334:     }\n335: \n336:     /// <summary>\n337:     /// 打开前预热：重建 workspace + 完成语义着色，供窗口显示前调用（对齐\"打开即着色，无白色过渡\"）。\n338:     /// 在 InitializeAsync（窗口 Show 前被 await）中调用，同步完成 RebuildWorkspace + 挂载高亮，\n339:     /// 再等待语义模型构建 + 可视区前 N 行分类完成。\n340:     /// </summary>\n341:     public async Task InitializeAndWaitAsync()\n342:     {\n343:         InitializeWorkspace();\n344:         await WaitForInitialHighlightAsync();\n345:     }\n346: \n347:     /// <summary>\n348:     /// 等待语义高亮预热完成：确保 highlighter 已创建（触发一次布局），再等其 WarmupCompletion。\n349:     /// </summary>\n350:     private async Task WaitForInitialHighlightAsync()\n351:     {\n352:         if (_semanticColorizer == null) return;\n353: \n354:         // 确保 highlighter 已创建（AvalonEdit 布局时才 CreateHighlighter + TriggerWarmup）\n355:         if (CodeEditor.TextArea.TextView.VisualLinesValid)\n356:             _ = CodeEditor.TextArea.TextView.VisualLines;\n357: \n358:         await _semanticColorizer.WarmupCompletion;\n359:     }\n360: "
+        },
+        {
+          "start": 950,
+          "end": 970,
+          "text": "950:     public async Task WarmupCompletionAsync()\n951:     {\n952:         try\n953:         {\n954:             if (_workspace == null || _userDocumentId == null) return;\n955:             var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);\n956:             if (doc == null) return;\n957: \n958:             var caretOffset = CodeEditor.Text.Length;\n959:             var completionService = CompletionService.GetService(doc);\n960:             if (completionService == null) return;\n961: \n962:             var trigger = CompletionTrigger.CreateInsertionTrigger('a');\n963:             await completionService.GetCompletionsAsync(doc, caretOffset, trigger)\n964:                 .ConfigureAwait(false);\n965:         }\n966:         catch { /* 预热失败不阻塞主流程 */ }\n967:     }\n968: \n969:     // =======================================================\n970:     // Phase 0: 签名帮助（语法树定位 InvocationExpression → OverloadInsightWindow 参数提示）"
+        },
+        {
+          "start": 1092,
+          "end": 1230,
+          "text": "1092:     public void RebuildWorkspace(bool refreshReferences = false)\n1093:     {\n1094:         if (_getReferences == null)\n1095:             throw new InvalidOperationException(\"未注入引用来源：请先调用 SetReferenceProvider（rule-008 报错优先）。\");\n1096:         if (_getGeneratedCode == null || _getUserCode == null)\n1097:             throw new InvalidOperationException(\"未注入代码来源：请先调用 SetCodeSource（rule-008 报错优先）。\");\n1098: \n1099:         // 实例级复用：workspace 已建且非强制刷新引用 → 只更新 generated 文档文本（user 文档由增量容器自动同步）\n1100:         if (_workspaceInitialized && !refreshReferences)\n1101:         {\n1102:             var genCode = _getGeneratedCode();\n1103:             _workspace!.SetCurrentSolution(_workspace.CurrentSolution\n1104:                 .WithDocumentText(_documentId!, SourceText.From(genCode)));\n1105:             return;\n1106:         }\n1107: \n1108:         var generatedCode = _getGeneratedCode();\n1109:         var userCode = _getUserCode();\n1110:         var totalSw = System.Diagnostics.Stopwatch.StartNew();\n1111: \n1112:         PluginLogger.Info($\"[补全] RebuildWorkspace 开始: generatedCodeLen={generatedCode.Length}, userCodeLen={userCode.Length}\", typeName);\n1113: \n1114:         _workspace?.Dispose();\n1115: \n1116:         // 加载 MefHostServices 确保所有 CompletionProvider 可用（缓存机制，首次慢后续快）\n1117:         var sw = System.Diagnostics.Stopwatch.StartNew();\n1118:         var host = GetSharedMefHost();\n1119:         PluginLogger.Info($\"[补全] MefHostServices 创建完成: {sw.ElapsedMilliseconds}ms\", typeName);\n1120: \n1121:         Project project;\n1122:         if (_preWarmedWorkspace != null)\n1123:         {\n1124:             _workspace = _preWarmedWorkspace;\n1125:             _preWarmedWorkspace = null;\n1126:             PluginLogger.Info(\"[补全] 复用预热 Workspace\", typeName);\n1127:         }\n1128:         else\n1129:         {\n1130:             _workspace = new ScriptWorkspace(host);\n1131:             PluginLogger.Info(\"[补全] ScriptWorkspace 实例已创建\", typeName);\n1132:         }\n1133: \n1134:         sw.Restart();\n1135:         var existingProject = _workspace.CurrentSolution.Projects.FirstOrDefault();\n1136:         if (existingProject != null)\n1137:         {\n1138:             project = existingProject.WithCompilationOptions(\n1139:                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)\n1140:                     .WithAllowUnsafe(true));\n1141:             PluginLogger.Info($\"[补全] 复用预热项目: {sw.ElapsedMilliseconds}ms\", typeName);\n1142:         }\n1143:         else\n1144:         {\n1145:             var projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), \"ScriptCompletion\", \"ScriptCompletion\", LanguageNames.CSharp);\n1146:             var newSolution = _workspace.CurrentSolution.AddProject(projectInfo);\n1147:             project = newSolution.GetProject(projectInfo.Id)!.WithCompilationOptions(\n1148:                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)\n1149:                     .WithAllowUnsafe(true));\n1150:             PluginLogger.Info($\"[补全] 项目创建完成: {sw.ElapsedMilliseconds}ms\", typeName);\n1151:         }\n1152: \n1153:         // 扫描引用：引用来源由调用方（工具层）注入，合并 host 引用 + ScriptRefs 目录引用\n1154:         sw.Restart();\n1155:         var refs = _getReferences().ToList();\n1156:         var seenRefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);\n1157:         var refCount = 0;\n1158:         foreach (var mdRef in refs)\n1159:         {\n1160:             if (mdRef is PortableExecutableReference per && per.FilePath != null)\n1161:             {\n1162:                 string key;\n1163:                 try { key = System.IO.Path.GetFullPath(per.FilePath); }\n1164:                 catch { key = per.FilePath; }\n1165:                 if (!seenRefs.Add(key)) continue;\n1166:             }\n1167:             project = project.AddMetadataReference(mdRef);\n1168:             refCount++;\n1169:         }\n1170:         PluginLogger.Info($\"[补全] 已添加 {refCount} 个 MetadataReference: {sw.ElapsedMilliseconds}ms\", typeName);\n1171: \n1172:         sw.Restart();\n1173:         // 用 SetCurrentSolution 直接替换（对齐 RoslynPad SetSubmissionDocument），\n1174:         // 接受 AddProject + AddMetadataReference 全部变化，避免 TryApplyChanges 钩子链异常。\n1175:         _workspace.SetCurrentSolution(project.Solution);\n1176:         PluginLogger.Info($\"[补全] SetCurrentSolution(项目+引用): {sw.ElapsedMilliseconds}ms\", typeName);\n1177: \n1178:         sw.Restart();\n1179: \n1180:         // 添加两个文档：字段声明 partial class + 用户完整 partial class。\n1181:         var genDocId = DocumentId.CreateNewId(project.Id);\n1182:         var userDocId = DocumentId.CreateNewId(project.Id);\n1183: \n1184:         var solution = project.Solution\n1185:             .AddDocument(DocumentInfo.Create(genDocId, \"ScriptGenerated.cs\", folders: null,\n1186:                 sourceCodeKind: SourceCodeKind.Regular))\n1187:             .AddDocument(DocumentInfo.Create(userDocId, \"ScriptUser.cs\", folders: null,\n1188:                 sourceCodeKind: SourceCodeKind.Regular));\n1189: \n1190:         // 先以当前 generatedCode 文本同步 generated 文档（后续由诊断用 WithDocumentText 更新）\n1191:         solution = solution.WithDocumentText(genDocId, SourceText.From(generatedCode));\n1192: \n1193:         // 用 SetCurrentSolution 直接替换（对齐 RoslynPad SetSubmissionDocument）：\n1194:         // TryApplyChanges 对 AddDocument 走 OnDocumentAdded 钩子链，在 Workspace 基类下会抛异常。\n1195:         _workspace.SetCurrentSolution(solution);\n1196:         _documentId = genDocId;\n1197: \n1198:         // 用户文档绑定 SourceTextContainer 增量通道：容器每次编辑事件携带局部 TextChangeRange，\n1199:         // 经 ScriptWorkspace.OpenDocument 注册，Roslyn 只重解析受影响区域（对齐 RoslynPad workspace.OpenDocument 模式）。\n1200:         _userTextContainer?.Dispose();\n1201:         _userTextContainer = new AvalonEditTextContainer(CodeEditor.Document);\n1202:         _workspace.OpenDocument(userDocId, _userTextContainer);\n1203:         _userDocumentId = userDocId;\n1204: \n1205:         PluginLogger.Info($\"[补全] 文档添加完成: genDocId={_documentId}, userDocId={_userDocumentId}: {sw.ElapsedMilliseconds}ms\", typeName);\n1206: \n1207:         _workspaceInitialized = true;\n1208: \n1209:         var refsCount = _workspace.CurrentSolution.Projects.First().MetadataReferences.Count;\n1210:         PluginLogger.Info($\"[补全] Workspace 重建完成: {refsCount} 个引用, 总耗时={totalSw.ElapsedMilliseconds}ms\", typeName);\n1211:     }\n1212: \n1213:     /// <summary>获取用户文档（补全/诊断/高亮消费）。</summary>\n1214:     public Document? GetUserDocument()\n1215:         => _getDocument?.Invoke() ?? _workspace?.CurrentSolution.GetDocument(_userDocumentId);\n1216: \n1217:     // =======================================================\n1218:     // 支持类型：CompletionData 包装 / OverloadProvider 适配\n1219:     // =======================================================\n1220: \n1221:     /// <summary>\n1222:     /// 将 Roslyn CompletionItem 包装为 AvalonEdit ICompletionData。\n1223:     /// 使用 CompletionService.GetChangeAsync 获取精确的 TextChange 插入（含后缀补全如 ()）。\n1224:     /// 图标通过委托注入（工具层走 GlyphMapping + Glyphs 资源），未注入时返回 null。\n1225:     /// </summary>\n1226:     private sealed class RoslynCompletionData(CompletionItem item, Document? document, Func<CompletionItem, ImageSource?>? iconProvider) : ICompletionData\n1227:     {\n1228:         private ImageSource? _image;\n1229:         private object? _description;\n1230:         private bool _loadingDescription;"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptCompiler.cs",
+      "sha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+      "excerpts": [
+        {
+          "start": 26,
+          "end": 88,
+          "text": "26:         private static readonly object _warmupLock = new();\n27: \n28:         /// <summary>\n29:         /// 启动预热 Roslyn Emit 引擎（代码无关）。\n30:         /// 原理：Emit 耗时大头是编译器引擎首次初始化（IL 生成器/元数据写入器冷启动，实测 ~947ms），\n31:         /// 与编译什么代码无关。启动时后台编译一次最小模板，引擎热起来后，用户编译任意脚本\n32:         /// Emit 都从 ~947ms 降到 ~29ms（代码改动不影响，热的是引擎不是结果）。\n33:         /// 幂等：进程内只预热一次；失败仅告警不阻塞（fire-and-forget）。\n34:         /// </summary>\n35:         public static void Warmup()\n36:         {\n37:             lock (_warmupLock)\n38:             {\n39:                 if (_warmupStarted) return;\n40:                 _warmupStarted = true;\n41:             }\n42: \n43:             _ = Task.Run(() =>\n44:             {\n45:                 var sw = Stopwatch.StartNew();\n46:                 try\n47:                 {\n48:                     // 最小模板：继承 Script 基类，仅触发完整编译管线（含 Emit 引擎初始化）\n49:                     const string warmupCode = @\"\n50: using SunEyeVision.Plugin.SDK.Scripting;\n51: public partial class WarmupScript : Script\n52: {\n53:     public override void Init() { }\n54:     public override void Process() { }\n55: }\";\n56:                     var result = new ScriptCompiler().Compile(\n57:                         [\"\", warmupCode],\n58:                         \"ScriptWarmup\",\n59:                         null,\n60:                         MetadataReferenceProvider.RequiredAssemblyNames);\n61:                     sw.Stop();\n62:                     if (result.Success)\n63:                     {\n64:                         PluginLogger.Info(\n65:                             $\"[ScriptCompiler] 启动预热 Emit 引擎完成: {sw.ElapsedMilliseconds}ms\",\n66:                             nameof(ScriptCompiler));\n67:                     }\n68:                     else\n69:                     {\n70:                         PluginLogger.Warning(\n71:                             $\"[ScriptCompiler] 启动预热 Emit 引擎编译失败: {string.Join(\";\", result.Diagnostics)}\",\n72:                             nameof(ScriptCompiler));\n73:                     }\n74:                 }\n75:                 catch (Exception ex)\n76:                 {\n77:                     sw.Stop();\n78:                     PluginLogger.Warning(\n79:                         $\"[ScriptCompiler] 启动预热 Emit 引擎异常: {ex.Message}\",\n80:                         nameof(ScriptCompiler));\n81:                 }\n82:             });\n83:         }\n84: \n85:         /// <summary>\n86:         /// 编译结果\n87:         /// </summary>\n88:         public sealed class CompileResult"
+        },
+        {
+          "start": 150,
+          "end": 162,
+          "text": "150: \n151:             // 合并所有代码段用于缓存哈希 + 类名提取\n152:             var combinedCode = string.Join(\"\\n\", codeParts);\n153: \n154:             // 0a. 检查编译缓存（相同代码 + 宿主程序集指纹 + 引用列表指纹）\n155:             // 缓存键包含宿主已加载程序集版本指纹（升级自动重编译）与引用列表指纹\n156:             // （勾选/取消程序集后缓存键变化，自动重新编译，杜绝错误命中）。\n157:             var cacheKey = ComputeCacheKey(combinedCode, assemblyNames);\n158:             if (_compileCache.TryGetValue(cacheKey, out var cached))\n159:             {\n160:                 PluginLogger.Info(\n161:                     $\"[ScriptCompiler] 编译缓存命中: hash={cacheKey[..8]}..., 代码长度={combinedCode.Length}\",\n162:                     nameof(ScriptCompiler));"
+        },
+        {
+          "start": 350,
+          "end": 395,
+          "text": "350:         internal static string ComputeCacheKey(string combinedCode, IReadOnlyList<string>? assemblyNames)\n351:         {\n352:             var codeHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(combinedCode)));\n353:             var refListFingerprint = ComputeRefListFingerprint(assemblyNames);\n354:             return $\"{codeHash}|{ComputeHostFingerprint()}|{refListFingerprint}\";\n355:         }\n356: \n357:         /// BCL 程序集版本在进程生命周期内不变，不计入指纹以保证缓存命中率。\n358:         /// </summary>\n359:         internal static string ComputeHostFingerprint()\n360:         {\n361:             var nativeHostNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)\n362:             {\n363:                 \"halcondotnetxl\",\n364:                 \"OpenCvSharp\",\n365:                 \"System.Windows.Forms\",\n366:             };\n367: \n368:             var sb = new StringBuilder();\n369:             foreach (var asm in AssemblyLoadContext.Default.Assemblies\n370:                 .Where(a => !a.IsDynamic && a.GetName().Name != null)\n371:                 .Where(a =>\n372:                     a.GetName().Name!.StartsWith(\"SunEyeVision.\", StringComparison.OrdinalIgnoreCase)\n373:                     || nativeHostNames.Contains(a.GetName().Name!))\n374:                 .OrderBy(a => a.GetName().Name))\n375:             {\n376:                 var name = asm.GetName();\n377:                 sb.Append($\"{name.Name}:{name.Version}|\");\n378:             }\n379: \n380:             return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];\n381:         }\n382: \n383:         /// <summary>\n384:         /// 计算引用列表指纹（用于编译缓存键）。引用列表变化（勾选/取消程序集）→ 指纹变化 → 缓存自动失效。\n385:         /// 空/未提供列表返回固定占位符（保持与旧缓存兼容路径一致）。\n386:         /// </summary>\n387:         internal static string ComputeRefListFingerprint(IReadOnlyList<string>? assemblyNames)\n388:         {\n389:             if (assemblyNames == null || assemblyNames.Count == 0)\n390:                 return \"none\";\n391:             var sb = new StringBuilder();\n392:             foreach (var name in assemblyNames.OrderBy(n => n, StringComparer.OrdinalIgnoreCase))\n393:                 sb.Append($\"{name}|\");\n394:             return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];\n395:         }"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptLifecycleManager.cs",
+      "sha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b",
+      "excerpts": [
+        {
+          "start": 277,
+          "end": 323,
+          "text": "277:         public void WarmupSandbox(\n278:             string generatedCode,\n279:             string userCode,\n280:             string? assemblyRefDir,\n281:             IReadOnlyList<string>? assemblyNames = null)\n282:         {\n283:             try\n284:             {\n285:                 if (string.IsNullOrWhiteSpace(generatedCode) && string.IsNullOrWhiteSpace(userCode))\n286:                 {\n287:                     return;\n288:                 }\n289: \n290:                 var combinedCode = string.Join(\"\\n\", new[] { generatedCode, userCode });\n291:                 var cacheKey = ScriptCompiler.ComputeCacheKey(combinedCode, assemblyNames);\n292:                 var compileResult = ScriptCompiler.GetCachedResult(cacheKey);\n293:                 if (compileResult?.Success != true || compileResult.AssemblyBytes == null\n294:                     || compileResult.EntryClassName == null)\n295:                 {\n296:                     // 编译结果未入缓存（含编译失败场景），无可预热的实际产物，静默跳过\n297:                     return;\n298:                 }\n299: \n300:                 // 1. 常驻沙箱按实际缓存键就位（后续执行 GetOrCreate 命中，跳过创建）\n301:                 var sandbox = ScriptSandboxPool.GetOrCreate(cacheKey, assemblyRefDir);\n302: \n303:                 // 2. 加载实际程序集（后续执行 LoadAssembly 命中，跳过加载）\n304:                 sandbox.LoadAssembly(compileResult.AssemblyBytes, compileResult.SymbolBytes);\n305: \n306:                 // 3. 实例化触发构造函数 JIT + PrepareMethod 预编译方法体（不执行，无副作用）\n307:                 var instance = sandbox.CreateScriptInstance(compileResult.EntryClassName);\n308:                 foreach (var methodName in new[] { \"Init\", \"Process\", \"Release\" })\n309:                 {\n310:                     var method = instance.GetType().GetMethod(\n311:                         methodName, BindingFlags.Public | BindingFlags.Instance);\n312:                     if (method != null)\n313:                     {\n314:                         RuntimeHelpers.PrepareMethod(method.MethodHandle);\n315:                     }\n316:                 }\n317:             }\n318:             catch (Exception ex)\n319:             {\n320:                 PluginLogger.Warning($\"[Sandbox预热] 失败: {ex.Message}\", nameof(ScriptLifecycleManager));\n321:             }\n322:         }\n323: "
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\Views\\ScriptDebugControl.xaml.cs",
+      "sha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+      "excerpts": [
+        {
+          "start": 167,
+          "end": 175,
+          "text": "167:         /// 异步初始化（窗口 Show 前由宿主 await）：重建 workspace + 完成语义预热，\n168:         /// 实现\"打开即着色、无白色过渡\"。覆盖基类空实现。\n169:         /// </summary>\n170:         public override async Task InitializeAsync()\n171:         {\n172:             await EditorCore.InitializeAndWaitAsync();\n173: \n174:             // ★ 打开调试窗口即预填充输入监视：若上游已有值（工作流执行过/失败保留），\n175:             //   无需点击执行即可看到输入值。防御：无上游/无 DataProvider/解析异常 → 静默跳过。"
+        }
+      ]
+    },
+    {
+      "id": "VS1",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ShellModuleControl\\ShellModuleControl\\ShellCodeEditor.cs",
+      "sha256": "ef3dc431d3f5d83c885c524bdb5704d6094561691a6f62514945e6e5d9f8eb6b",
+      "excerpts": [
+        {
+          "start": 15,
+          "end": 26,
+          "text": "15: using GlobalScriptUI;\n16: using ICSharpCode.AvalonEdit;\n17: using ICSharpCode.AvalonEdit.CodeCompletion;\n18: using ICSharpCode.AvalonEdit.Document;\n19: using ICSharpCode.AvalonEdit.Editing;\n20: using ICSharpCode.AvalonEdit.Indentation;\n21: using ICSharpCode.AvalonEdit.Indentation.CSharp;\n22: using ICSharpCode.NRefactory;\n23: using ICSharpCode.NRefactory.Editor;\n24: using ICSharpCode.NRefactory.TypeSystem;\n25: using VM.CodeCompletion;\n26: using VM.CodeCompletion.DataItems;"
+        },
+        {
+          "start": 153,
+          "end": 163,
+          "text": "153: \tpublic ShellCodeEditor()\n154: \t{\n155: \t\t//IL_0178: Unknown result type (might be due to invalid IL or missing references)\n156: \t\t//IL_0182: Expected Obj, but got Unknown\n157: \t\tBeginAddVariable += ShellCodeEditor_BeginAddVariable;\n158: \t\t((TextEditor)this).TextArea.Caret.PositionChanged += Caret_PositionChanged;\n159: \t\tCompletion = new CSharpCompletion(GetAssemblies());\n160: \t\tHikContextMenu contextMenu = new HikContextMenu\n161: \t\t{\n162: \t\t\tStaysOpen = true,\n163: \t\t\tItems = "
+        },
+        {
+          "start": 270,
+          "end": 330,
+          "text": "270: \tpublic string SetListAssembly(List<ShellRefrences> assembilesName)\n271: \t{\n272: \t\t//IL_009d: Unknown result type (might be due to invalid IL or missing references)\n273: \t\t//IL_00a3: Invalid comparison between Unknown and I4\n274: \t\tstring text = string.Empty;\n275: \t\tif (assembilesName == null || assembilesName.Count < 1)\n276: \t\t{\n277: \t\t\treturn text;\n278: \t\t}\n279: \t\tif (objListAssembly == null)\n280: \t\t{\n281: \t\t\tobjListAssembly = new List<Assembly>();\n282: \t\t}\n283: \t\tobjListAssembly.Clear();\n284: \t\tobjListAssmblyName.Clear();\n285: \t\tList<string> list = new List<string>();\n286: \t\tfor (int i = 0; i < assembilesName.Count; i++)\n287: \t\t{\n288: \t\t\tif (string.IsNullOrEmpty(assembilesName[i].Name))\n289: \t\t\t{\n290: \t\t\t\tcontinue;\n291: \t\t\t}\n292: \t\t\tbool flag = false;\n293: \t\t\tstring text2 = assembilesName[i].FullName();\n294: \t\t\tif ((int)assembilesName[i].refrencesType == 4)\n295: \t\t\t{\n296: \t\t\t\tif (File.Exists(text2))\n297: \t\t\t\t{\n298: \t\t\t\t\tlist.Add(text2);\n299: \t\t\t\t}\n300: \t\t\t\telse\n301: \t\t\t\t{\n302: \t\t\t\t\ttext = text + assembilesName[i].Name + \"\\r\\n\";\n303: \t\t\t\t}\n304: \t\t\t}\n305: \t\t\telse\n306: \t\t\t{\n307: \t\t\t\tflag = true;\n308: \t\t\t}\n309: \t\t\tif (flag)\n310: \t\t\t{\n311: \t\t\t\tAssembly item = Assembly.LoadFrom(text2);\n312: \t\t\t\tobjListAssembly.Add(item);\n313: \t\t\t}\n314: \t\t\tobjListAssmblyName.Add(assembilesName[i].Name);\n315: \t\t}\n316: \t\tCompletion = new CSharpCompletion(objListAssembly);\n317: \t\tAddAssemblyTask(list);\n318: \t\treturn text;\n319: \t}\n320: \n321: \tprivate void AddAssemblyTask(List<string> assemblyName)\n322: \t{\n323: \t\tAsyncTask asyncTask = () =>\n324: \t\t{\n325: \t\t\tParallel.For(0, assemblyName.Count, (int i) =>\n326: \t\t\t{\n327: \t\t\t\tCompletion.AddAssembly(assemblyName[i]);\n328: \t\t\t});\n329: \t\t};\n330: \t\tasyncTask.BeginInvoke(null, null);"
+        }
+      ]
+    },
+    {
+      "id": "VS2",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ShellModuleControl\\ShellModuleControl\\ShellRun.xaml.cs",
+      "sha256": "a034c4a370f4183203808c43b0dd03c3382eaf81dea17d7f067b44616e986025",
+      "excerpts": [
+        {
+          "start": 413,
+          "end": 445,
+          "text": "413: \tprivate void OnLoad(object sender, RoutedEventArgs e)\n414: \t{\n415: \t\tRenderManager.Instance.SetRenderControl(this);\n416: \t\tif (_isInit)\n417: \t\t{\n418: \t\t\treturn;\n419: \t\t}\n420: \t\t_isInit = true;\n421: \t\tInitPassward();\n422: \t\tInitTextEdit();\n423: \t\t((TextEditor)textEditorControl).Text = TargetValue;\n424: \t\ttextEditorControl.nTextLen = ((TextEditor)textEditorControl).Text.Length;\n425: \t\ttextEditorControl.FileName = CodeFileName;\n426: \t\t((TextEditor)textEditorControl).Document.FileName = CodeFileName;\n427: \t\tAddVariableCompleted(1);\n428: \t\tAddVariableCompleted(2);\n429: \t\tif (!string.IsNullOrEmpty(Refrences))\n430: \t\t{\n431: \t\t\ttry\n432: \t\t\t{\n433: \t\t\t\tList<ShellRefrences> list = JsonConvert.DeserializeObject<List<ShellRefrences>>(Refrences);\n434: \t\t\t\ttextEditorControl.UpdateAssembile(list.ToArray());\n435: \t\t\t}\n436: \t\t\tcatch (Exception)\n437: \t\t\t{\n438: \t\t\t}\n439: \t\t}\n440: \t\tLogHelper.Info(\"参数配置弹窗打开，注册获取回调结果事件！\");\n441: \t\tServerSDKManager.serverSDKManager.mModuleManager.OnModuleResultCallBack += OnModuleResultCallBack;\n442: \t\tServerSDKManager.serverSDKManager.mSolutionManager.OnReportDataToVM += ServerManager_OnReportDataToVM;\n443: \t\tnModuleID = (int)((DataContext as ButtonSelecter_Shell).GetVmModule()?.ID).Value;\n444: \t\tGetLatestResult();\n445: \t\tSetInputModuleResult(isEnable: true);"
+        }
+      ]
+    },
+    {
+      "id": "VS3",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptComponent\\ScriptComponent\\ScriptCom.cs",
+      "sha256": "aa704102f2841db0b61231172283a6b0604fe360ace215f4067b7a7fbe4733f3",
+      "excerpts": [
+        {
+          "start": 317,
+          "end": 350,
+          "text": "317: \t\t\tcase \"LoadShell\":\n318: \t\t\t\tstrShellContent = CheckShell(paramValue);\n319: \t\t\t\tCompileWait.Reset();\n320: \t\t\t\tThreadPool.QueueUserWorkItem((object p) =>\n321: \t\t\t\t{\n322: \t\t\t\t\tMutexCompileCode(isFromLoad: true);\n323: \t\t\t\t\tCompileWait.Set();\n324: \t\t\t\t});\n325: \t\t\t\tbreak;\n326: \t\t\tcase \"AssemblyGuid\":\n327: \t\t\t\tobjScriptSupport.AssemblyGuid = paramValue;\n328: \t\t\t\tbreak;\n329: \t\t\tcase \"ExtraInfo\":\n330: \t\t\t{\n331: \t\t\t\tstring[] array5 = paramValue.Split(',');\n332: \t\t\t\tif (array5 != null && array5.Length == 2)\n333: \t\t\t\t{\n334: \t\t\t\t\tstring strInfo = array5[0];\n335: \t\t\t\t\tstring strInfo2 = array5[1];\n336: \t\t\t\t\tobjInputIoInfo = GetIOInfos(strInfo);\n337: \t\t\t\t\tobjOuputIoInfo = GetIOInfos(strInfo2);\n338: \t\t\t\t\tSetPropertyToScriptSol();\n339: \t\t\t\t}\n340: \t\t\t\tbreak;\n341: \t\t\t}\n342: \t\t\tcase \"Refrences\":\n343: \t\t\t\tif (string.IsNullOrEmpty(paramValue))\n344: \t\t\t\t{\n345: \t\t\t\t\tresult = -536870911;\n346: \t\t\t\t\treturn result;\n347: \t\t\t\t}\n348: \t\t\t\tGetSetRefrencesToScript(paramValue);\n349: \t\t\t\tbreak;\n350: \t\t\tcase \"Exportsln\":"
+        },
+        {
+          "start": 676,
+          "end": 745,
+          "text": "676: \tprivate int RunCode(long input, long output)\n677: \t{\n678: \t\ttry\n679: \t\t{\n680: \t\t\tif (isNeedCompile)\n681: \t\t\t{\n682: \t\t\t\tDebugger.Log(0, null, \"ScriptCom:开始编译\");\n683: \t\t\t\tMutexCompileCode();\n684: \t\t\t}\n685: \t\t\tif (bStartCheck)\n686: \t\t\t{\n687: \t\t\t\tbool updateCode = false;\n688: \t\t\t\tif (!objScriptSupport.LoadExternAssembly(ref updateCode, m_nModuleID, () =>\n689: \t\t\t\t{\n690: \t\t\t\t\tobjScriptSupport.SetImageIoName(objImageDict);\n691: \t\t\t\t\tobjScriptSupport.SetRoiBoxIoName(objRoiBoxDict);\n692: \t\t\t\t\tobjScriptSupport.SetAnnulusIoName(objAnnulusDict);\n693: \t\t\t\t\tobjScriptSupport.SetPolygonIoName(objPolygonDict);\n694: \t\t\t\t\tobjScriptSupport.SetPointIoName(objPointDict);\n695: \t\t\t\t\tobjScriptSupport.SetLineIoName(objLineDict);\n696: \t\t\t\t\tobjScriptSupport.SetFixtureIoName(objFixtureDict);\n697: \t\t\t\t\tobjScriptSupport.SetCircleIoName(objCircleDict);\n698: \t\t\t\t\tobjScriptSupport.SetRectIoName(objRectDict);\n699: \t\t\t\t\tobjScriptSupport.SetEllipseIoName(objEllipseDict);\n700: \t\t\t\t}))\n701: \t\t\t\t{\n702: \t\t\t\t\tLogHelper.Error(\"LoadExternAssembly error\", m_nModuleID);\n703: \t\t\t\t\treturn -536870911;\n704: \t\t\t\t}\n705: \t\t\t}\n706: \t\t\tbool flag = objScriptSupport.CodeRun(input, output, m_nModuleID);\n707: \t\t\tif (!flag)\n708: \t\t\t{\n709: \t\t\t\tLogHelper.Error(\"Code run error\", m_nModuleID);\n710: \t\t\t}\n711: \t\t\treturn (!flag) ? (-536870911) : 0;\n712: \t\t}\n713: \t\tcatch (Exception ex)\n714: \t\t{\n715: \t\t\tLogHelper.Error(\"RunCode is error \" + ex.ToString(), m_nModuleID);\n716: \t\t\treturn -536870911;\n717: \t\t}\n718: \t}\n719: \n720: \tprivate void MutexCompileCode(bool isFromLoad = false)\n721: \t{\n722: \t\tlock (objLock)\n723: \t\t{\n724: \t\t\tif (isNeedCompile)\n725: \t\t\t{\n726: \t\t\t\tif (CompileCode(isFromLoad))\n727: \t\t\t\t{\n728: \t\t\t\t\tobjScriptSupport.SetImageIoName(objImageDict);\n729: \t\t\t\t\tobjScriptSupport.SetRoiBoxIoName(objRoiBoxDict);\n730: \t\t\t\t\tobjScriptSupport.SetAnnulusIoName(objAnnulusDict);\n731: \t\t\t\t\tobjScriptSupport.SetPolygonIoName(objPolygonDict);\n732: \t\t\t\t\tobjScriptSupport.SetPointIoName(objPointDict);\n733: \t\t\t\t\tobjScriptSupport.SetLineIoName(objLineDict);\n734: \t\t\t\t\tobjScriptSupport.SetFixtureIoName(objFixtureDict);\n735: \t\t\t\t\tobjScriptSupport.SetCircleIoName(objCircleDict);\n736: \t\t\t\t\tobjScriptSupport.SetRectIoName(objRectDict);\n737: \t\t\t\t\tobjScriptSupport.SetEllipseIoName(objEllipseDict);\n738: \t\t\t\t}\n739: \t\t\t\tisNeedCompile = false;\n740: \t\t\t}\n741: \t\t\telse\n742: \t\t\t{\n743: \t\t\t\tDebugger.Log(0, null, \"ShellTEST.isNeedCompile is false.id:\" + m_nModuleID);\n744: \t\t\t}\n745: \t\t}"
+        }
+      ]
+    },
+    {
+      "id": "VS4",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\BaseScriptSupport.cs",
+      "sha256": "e96f2a7ff5e13783b3e862725bf4a00366ad967bc3b9c13766b330a9c572b2b8",
+      "excerpts": [
+        {
+          "start": 40,
+          "end": 46,
+          "text": "40: \tprivate readonly string _registrykeyPathName = \"SOFTWARE\\\\WOW6432Node\\\\Microsoft\\\\.NETFramework\\\\v4.0.30319\\\\AssemblyFoldersEx\\\\VisionMaster\";\n41: \n42: \tprivate string vmAssemblyPath = \"\";\n43: \n44: \tprivate CSharpCodeProvider objCSharpCodePrivoder = new CSharpCodeProvider();\n45: \n46: \tpublic string AssemblyGuid { get; set; }"
+        },
+        {
+          "start": 86,
+          "end": 117,
+          "text": "86: \tpublic bool Compile(string source, string property, ArrayList references, out ArrayList myResut, bool compileDebug, int nModuleid, bool isFromLoad = false)\n87: \t{\n88: \t\tcurrentAssemblyName = $\"UserScript_{nModuleid}.dll\";\n89: \t\tcurrentAssemblyPdbName = $\"UserScript_{nModuleid}.pdb\";\n90: \t\tmyResut = new ArrayList();\n91: \t\tif (references == null)\n92: \t\t{\n93: \t\t\tmyResut.Add(new HikCompileMessage(\"Program compilation parameters are abnormal.\", 0, 0, warning: false));\n94: \t\t\treturn false;\n95: \t\t}\n96: \t\ttry\n97: \t\t{\n98: \t\t\tobjectDispose();\n99: \t\t\tcompilerResults = null;\n100: \t\t\tbool flag = true;\n101: \t\t\tif (isFromLoad)\n102: \t\t\t{\n103: \t\t\t\tstring text = ShellModulePath + currentAssemblyName;\n104: \t\t\t\tif (File.Exists(text))\n105: \t\t\t\t{\n106: \t\t\t\t\tFileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(text);\n107: \t\t\t\t\tif (versionInfo.ProductName == AssemblyGuid)\n108: \t\t\t\t\t{\n109: \t\t\t\t\t\tflag = false;\n110: \t\t\t\t\t}\n111: \t\t\t\t}\n112: \t\t\t}\n113: \t\t\tstring sourceCode = source + property + nModuleid;\n114: \t\t\tAssembly exitAssembly = AssemblyManager.GetExitAssembly(sourceCode);\n115: \t\t\tif (exitAssembly == null && flag)\n116: \t\t\t{\n117: \t\t\t\tif (File.Exists(ShellModulePath + currentAssemblyName))"
+        },
+        {
+          "start": 150,
+          "end": 164,
+          "text": "150: \t\t\t\tif (!string.IsNullOrEmpty(VmAssemblyPath))\n151: \t\t\t\t{\n152: \t\t\t\t\tstring compilerOptions2 = compilerParameters.CompilerOptions;\n153: \t\t\t\t\tcompilerParameters.CompilerOptions = compilerOptions2 + \" \\\"\" + text3 + VmAssemblyPath + \"\\\"\";\n154: \t\t\t\t}\n155: \t\t\t\tcompilerParameters.CompilerOptions += \" /unsafe\";\n156: \t\t\t\tLogHelper.Info(\"CompilerOptions: \" + compilerParameters.CompilerOptions, nModuleid);\n157: \t\t\t\tstring text5 = Guid.NewGuid().ToString(\"D\");\n158: \t\t\t\ttry\n159: \t\t\t\t{\n160: \t\t\t\t\tAssemblyMsg = AssemblyMsg.Replace(\"guid\", text5);\n161: \t\t\t\t\tcompilerResults = objCSharpCodePrivoder.CompileAssemblyFromSource(compilerParameters, source, property, AssemblyMsg);\n162: \t\t\t\t\tif (File.Exists(ShellModulePath + currentAssemblyName))\n163: \t\t\t\t\t{\n164: \t\t\t\t\t\tFileInfo fileInfo = new FileInfo(ShellModulePath + currentAssemblyName);"
+        },
+        {
+          "start": 197,
+          "end": 220,
+          "text": "197: \t\t\tif (!StartAppdomain(currentAssemblyName, nModuleid, exitAssembly))\n198: \t\t\t{\n199: \t\t\t\treturn false;\n200: \t\t\t}\n201: \t\t\tcodeVer = CheckCodeVersion(source);\n202: \t\t\tbool bold = codeVer > 131328;\n203: \t\t\tif (objRemoteLoader == null)\n204: \t\t\t{\n205: \t\t\t\tLogHelper.Error(\"objRemoteLoader is null\");\n206: \t\t\t\treturn false;\n207: \t\t\t}\n208: \t\t\tbold = objRemoteLoader.CheckClass(bold, out myResut);\n209: \t\t\tif (bold)\n210: \t\t\t{\n211: \t\t\t\tif (exitAssembly == null && flag)\n212: \t\t\t\t{\n213: \t\t\t\t\tAssemblyManager.AddAssembly(sourceCode, objRemoteLoader.GetAssembly());\n214: \t\t\t\t}\n215: \t\t\t\telse\n216: \t\t\t\t{\n217: \t\t\t\t\tlastDateTime = DateTime.Now;\n218: \t\t\t\t}\n219: \t\t\t}\n220: \t\t\treturn bold;"
+        }
+      ]
+    },
+    {
+      "id": "VS5",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\AssemblyManager.cs",
+      "sha256": "7e3725fb2e6a4d0a589ea85e7356ff1162f3a8916a4d3f05feb96dc0e0cd3a4f",
+      "excerpts": [
+        {
+          "start": 6,
+          "end": 38,
+          "text": "6: public class AssemblyManager\n7: {\n8: \tprivate const int MaxCacheNum = 500;\n9: \n10: \tprivate static ConcurrentDictionary<int, Assembly> dictCompileAssembly = new ConcurrentDictionary<int, Assembly>();\n11: \n12: \tpublic static Assembly GetExitAssembly(string sourceCode)\n13: \t{\n14: \t\tint hashCode = sourceCode.GetHashCode();\n15: \t\tif (dictCompileAssembly.ContainsKey(hashCode))\n16: \t\t{\n17: \t\t\treturn dictCompileAssembly[hashCode];\n18: \t\t}\n19: \t\treturn null;\n20: \t}\n21: \n22: \tpublic static void AddAssembly(string sourceCode, Assembly assembly)\n23: \t{\n24: \t\tif (!(assembly == null) && dictCompileAssembly.Count < 500)\n25: \t\t{\n26: \t\t\tint hashCode = sourceCode.GetHashCode();\n27: \t\t\tif (!dictCompileAssembly.ContainsKey(hashCode))\n28: \t\t\t{\n29: \t\t\t\tdictCompileAssembly.TryAdd(hashCode, assembly);\n30: \t\t\t}\n31: \t\t}\n32: \t}\n33: \n34: \tpublic static void ClearAeembly()\n35: \t{\n36: \t\tdictCompileAssembly.Clear();\n37: \t}\n38: }"
+        }
+      ]
+    },
+    {
+      "id": "VS6",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\ComScriptSupport.cs",
+      "sha256": "ba2362c1fdeaa516346c2f429b9262a729e1a7394d535482e9e88f37b5d1fb33",
+      "excerpts": [
+        {
+          "start": 92,
+          "end": 118,
+          "text": "92: \tpublic override bool StartAppdomain(string outputAssembly, int nModuleid, Assembly scriptAssembly)\n93: \t{\n94: \t\ttry\n95: \t\t{\n96: \t\t\tobjRemoteLoader = new RemoteLoaderFactory();\n97: \t\t\tif (objRemoteLoader != null)\n98: \t\t\t{\n99: \t\t\t\tbool flag = objRemoteLoader.CreateInstanceFromByte(ShellModulePath + outputAssembly, \"UserScript\", null, scriptAssembly);\n100: \t\t\t\tif (flag)\n101: \t\t\t\t{\n102: \t\t\t\t\tComAlgorithm comAlgorithm = new ComAlgorithm();\n103: \t\t\t\t\tcomAlgorithm.m_nModuleID = nModuleid;\n104: \t\t\t\t\tComAlgorithm comAlgorithm2 = comAlgorithm;\n105: \t\t\t\t\tcomAlgorithm2.SetMemoryCfgObj(objMemoryCfg);\n106: \t\t\t\t\tobjRemoteLoader.SetAlgorithm(comAlgorithm2);\n107: \t\t\t\t}\n108: \t\t\t\treturn flag;\n109: \t\t\t}\n110: \t\t\tLogHelper.Error(\"StartAppdomain error: create objRemoteLoader failed\", nModuleid);\n111: \t\t\treturn false;\n112: \t\t}\n113: \t\tcatch (Exception ex)\n114: \t\t{\n115: \t\t\tLogHelper.Error(\"start appdomain is error.\" + ex.ToString());\n116: \t\t\treturn false;\n117: \t\t}\n118: \t}"
+        }
+      ]
+    },
+    {
+      "id": "VS7",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\RemoteLoaderFactory.cs",
+      "sha256": "40a169046843a5bf2b9a944127d1f7603887e10d8d1c828d7e1ab965bbe79e4a",
+      "excerpts": [
+        {
+          "start": 209,
+          "end": 259,
+          "text": "209: \tpublic bool CheckClass(bool bold, out ArrayList myResut)\n210: \t{\n211: \t\tmyResut = new ArrayList();\n212: \t\ttry\n213: \t\t{\n214: \t\t\tif (objectClass == null)\n215: \t\t\t{\n216: \t\t\t\tmyResut.Add(new HikCompileMessage(\"LanguageCompileCreateObjectError UserScript\", 0, 0, warning: false));\n217: \t\t\t\tobjAssembly = null;\n218: \t\t\t\tobjectClass = null;\n219: \t\t\t\treturn false;\n220: \t\t\t}\n221: \t\t\tif (null == objectClass.GetType().GetMethod(\"Init\"))\n222: \t\t\t{\n223: \t\t\t\tmyResut.Add(new HikCompileMessage(\"LanguageCompileMissFunctionError Init()\", 0, 0, warning: false));\n224: \t\t\t\tobjAssembly = null;\n225: \t\t\t\tobjectClass = null;\n226: \t\t\t\treturn false;\n227: \t\t\t}\n228: \t\t\tif (null == objectClass.GetType().GetMethod(\"Process\"))\n229: \t\t\t{\n230: \t\t\t\tmyResut.Add(new HikCompileMessage(\"LanguageCompileMissFunctionError Process()\", 0, 0, warning: false));\n231: \t\t\t\tobjAssembly = null;\n232: \t\t\t\tobjectClass = null;\n233: \t\t\t\treturn false;\n234: \t\t\t}\n235: \t\t\tif (!bold)\n236: \t\t\t{\n237: \t\t\t\tobjiProcessClass = (IProcessMethods)objectClass;\n238: \t\t\t}\n239: \t\t\telse\n240: \t\t\t{\n241: \t\t\t\tobjiProcessClass = null;\n242: \t\t\t}\n243: \t\t\tif (objiProcessClass != null)\n244: \t\t\t{\n245: \t\t\t\tobjiProcessClass.Init();\n246: \t\t\t}\n247: \t\t\telse\n248: \t\t\t{\n249: \t\t\t\tobjectClass.GetType().InvokeMember(\"Init\", BindingFlags.InvokeMethod, null, objectClass, null);\n250: \t\t\t}\n251: \t\t}\n252: \t\tcatch (Exception ex)\n253: \t\t{\n254: \t\t\tmyResut.Add(new HikCompileMessage(\"LanguageCompileExecuteError Init()，\" + ex.Message, 0, 0, warning: false));\n255: \t\t\tobjAssembly = null;\n256: \t\t\tobjectClass = null;\n257: \t\t\treturn false;\n258: \t\t}\n259: \t\treturn true;"
+        },
+        {
+          "start": 300,
+          "end": 344,
+          "text": "300: \tpublic bool ExecuteProcessMethod(long input = 0L, long output = 0L, int moduleid = 0)\n301: \t{\n302: \t\tif (objectClass == null)\n303: \t\t{\n304: \t\t\tLogHelper.Error(\"ExecuteProcessMethod error: objectClass is null\", moduleid);\n305: \t\t\treturn false;\n306: \t\t}\n307: \t\ttry\n308: \t\t{\n309: \t\t\t(objectClass as ISetData).SetHandle(input, output);\n310: \t\t\t(objectClass as ISetData).Clear();\n311: \t\t\tif (objiProcessClass != null)\n312: \t\t\t{\n313: \t\t\t\tobjiProcessClass.Process();\n314: \t\t\t}\n315: \t\t\telse\n316: \t\t\t{\n317: \t\t\t\tobjectClass.GetType().InvokeMember(\"Process\", BindingFlags.InvokeMethod, null, objectClass, null);\n318: \t\t\t}\n319: \t\t}\n320: \t\tcatch (Exception ex)\n321: \t\t{\n322: \t\t\tDebugger.Log(0, null, \"ScriptCom:ExecuteProcessMethod \" + ex.ToString());\n323: \t\t\tLogHelper.Error(\"ScriptCom:ExecuteProcessMethod \" + ex.ToString(), moduleid);\n324: \t\t\treturn false;\n325: \t\t}\n326: \t\treturn true;\n327: \t}\n328: \n329: \tprivate void ExecuteDispose()\n330: \t{\n331: \t\tif (objectClass == null)\n332: \t\t{\n333: \t\t\treturn;\n334: \t\t}\n335: \t\ttry\n336: \t\t{\n337: \t\t\tobjectClass.GetType().InvokeMember(\"Dispose\", BindingFlags.InvokeMethod, null, objectClass, null);\n338: \t\t}\n339: \t\tcatch (Exception ex)\n340: \t\t{\n341: \t\t\tDebugger.Log(0, null, \"ScriptCom:ExecuteDispose exception\" + ex.ToString());\n342: \t\t\tLogHelper.Error(\"ScriptCom:ExecuteDispose exception \" + ex.ToString());\n343: \t\t}\n344: \t}"
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "C1",
+      "title": "图像箱缩略图保留整改，不重做预热",
+      "ours": "可见项触发、后台WIC缩小到100宽、Freeze、取消迟到发布、节流4—16、缓存50；原图另缓存30。",
+      "vm": "控件Loaded创建低优先后台线程，100ms轮询；LoadThumbnailImage再次检查可见范围，仅本地图且尚无ImageSource时调用72×52图像接口。Unloaded置退出标志并退订；未见此处Join。",
+      "basis": "I1/I2/V1",
+      "decision": "借鉴可见范围消费；保留自研现有异步与取消，不照搬VM轮询线程。",
+      "cost": "补测可见项切换、并发队列/内存；不是再建一套图片加载器。"
+    },
+    {
+      "id": "C2",
+      "title": "重点改原图消费者，不能用启动预热掩盖",
+      "ours": "CurrentImageIndex setter→UpdateCurrentImageDisplay→FullImage getter→LoadImageOptimized；缓存未命中同步BitmapImage.EndInit解码，失败null且显示更新仅在成功分支。",
+      "vm": "本地列表选择先写模块CurrentImagePath，再RunCheck及VmProcedure.Run(bIsWait:false)；结果图选择另由DisplayImageListDecorator控制回调。不能等同单纯文件预览，也不证明原生解码异步。",
+      "basis": "I1/I3/V1/V3",
+      "decision": "自研：明确区分纯预览与运行输入。原图预览异步加载、显示loading/失败、选择代次拒绝迟到；失败不残留旧图冒充当前。运行仍消费已提交源快照，浏览不默认运行整流程。",
+      "cost": "取消通常只能阻止发布，WIC正在解码未必可中断；需要限并发和解码后丢弃。"
+    },
+    {
+      "id": "C3",
+      "title": "缓存按预算和文件版本，不只按张数",
+      "ours": "静态原图30张、缩略图50张，以路径作键；有显式Invalidate，但同路径外部覆盖不保证每条路径均触发失效。",
+      "vm": "已证ImageEntity.ImageSource复用；全局内存预算、文件覆盖失效、原生内存释放策略不足。",
+      "basis": "I1/V1",
+      "decision": "自研设计推导：原图按估算字节预算、路径+文件版本键；同请求合并；视图退出丢结果、缓存与正在显示图像各有清楚所有者。",
+      "cost": "需统计真实像素占用及借用引用，缓存淘汰不能当作已释放全部内存；收益未测。"
+    },
+    {
+      "id": "C4",
+      "title": "工具目录不应该顺带启动编辑器和算法",
+      "ours": "RegisterTool为输出声明CreateToolInstance；ScriptTool静态构造触发补全和编译预热。打开方案又为筛选预编译创建工具并同步等待编译任务。",
+      "vm": "LoadData先读ToolGroup.xml，普通组加defaultProxyModule占位；UpdateLoad按组IsInit补读ToolItemInfo.xml。此托管目录路径没有算法实例构造，但不证明整个启动无算法/原生预热。 另AddNewItem检查已加载的Cs/Control程序集，缺失时加载Cs.dll、Librarys.Config依赖和Control.dll，再创建IVmModule；说明新增实例入口承担实际装载，不是所有资源都由工具目录准备。仍不能证明所有别的入口相同。",
+      "basis": "P1/P2/I3/V2 /V4",
+      "decision": "借鉴VM目录/消费分离，自研实现：目录只读定义；参数编辑才申请编辑资源；运行会话才准备模型/编译产物；动态脚本端口由声明分析提供，目录不执行脚本。",
+      "cost": "要调整生产注册元数据接口及编辑服务所有者；已有新接口样本不等生产链已完成。"
+    },
+    {
+      "id": "C5",
+      "title": "预热保留为可测的可选策略",
+      "ours": "不能凭首次慢的旧注释确定是线程池、WIC、磁盘或Roslyn。",
+      "vm": "没有同机冷/热启动、首次编辑/执行耗时与内存数据；不能判VM更快。",
+      "basis": "I1/P2/V1/V2",
+      "decision": "先修消费者阻塞和职责耦合，再分别测关闭/按需/空闲准备；只为高概率使用且可共享的无副作用资源提前准备。",
+      "cost": "空闲后台任务同样争CPU/磁盘，不能只看启动耗时。"
+    }
+  ],
+  "acceptance": [
+    "无脚本空方案：仅浏览工具分类不创建执行会话、不触发脚本编辑资源；加载失败可诊断。",
+    "大量图片滚动：只对当前可见范围发起需求，排队有上限，离开不发布迟到缩略图。",
+    "大图A→B快速切换：A晚完成不能覆盖B；UI交互可响应；失败显示当前文件错误而非旧图。",
+    "同路径覆盖/删图/关闭视图：缓存不返回旧版本，迟到结果拒收，活跃任务与引用可观察。",
+    "编辑与运行：编辑器准备可取消、可复用；模型只由运行会话拥有，关闭/停止排空后释放。",
+    "固定Release和数据：分别记录冷/热首屏、首缩略图、首原图、首次脚本编辑/运行、峰值内存CPU；数值门槛待基线测量后确认，不虚构提速。"
+  ],
+  "scopeClarification": "图像箱+脚本工具；通用插件目录仅为Script静态构造触发背景。VM脚本专项已回收并核对7原版反编译文件，未运行性能AB。",
+  "scriptConclusions": [
+    {
+      "id": "R1",
+      "title": "双方技术不同，不能把首次慢都归为我们的架构错",
+      "ours": "Roslyn共享MEF/Workspace/CompletionService，执行用CSharpCompilation。",
+      "vm": "ShellCodeEditor引用NRefactory并创建VM.CodeCompletion.CSharpCompletion；BaseScriptSupport明确CSharpCodeProvider.CompileAssemblyFromSource。",
+      "basis": "S1/S2/VS1/VS4",
+      "recommendation": "保留Roslyn，不为追随VM退回旧编译栈。借鉴编辑与执行分别消费的职责；具体语言服务内部实现/首次速度仍未知。"
+    },
+    {
+      "id": "R2",
+      "title": "基础预热确实被用到，但不等于语义和补全全部就绪",
+      "ours": "GetSharedMefHost进程复用；_preWarmedWorkspace被首个RebuildWorkspace领取；预热只加空项目，真实refs/两个代码文档与首补全在打开后建立。_completionReady只见赋值、_onCompletionReady只见声明与Exchange，未见消费订阅。",
+      "vm": "编辑器构造创建补全对象，OnLoad以_isInit防重复注入代码/变量/引用；部分引用AddAssemblyTask。不证明VM使用全局Roslyn预热。",
+      "basis": "S1/VS1/VS2",
+      "recommendation": "保留可复用基础预热，改成一个可等待可诊断的准备Task；明确基础/当前文档语义/补全三层状态。缓存基础服务和引用元数据，当前文档增量维护；不共享可变文档。",
+      "cost": "需处理打开与预热并发、失败重试及窗口关闭；不能仅删Task或强等全部预热。"
+    },
+    {
+      "id": "R3",
+      "title": "部分等待是我们主动放在窗口显示之前",
+      "ours": "ScriptDebugControl.InitializeAsync等待InitializeAndWaitAsync；RebuildWorkspace同步建实际引用/文档，之后等待初始语义着色。方案装配又同步GetResult等所有预编译。",
+      "vm": "SetParam LoadShell入线程池；RunCode需要时经锁编译；配置页编译另有轮询。native装载等待边未证。",
+      "basis": "S4/S1/I3/VS3",
+      "recommendation": "工作区可用、脚本窗口可见、语义/补全就绪、执行就绪分别管理；窗口先有可用内容与准备提示，后台准备真实文档；执行前必须等正确版本编译就绪。保留可选提前编译，不让所有编辑场景等全部脚本。",
+      "cost": "首次增强功能仍有真实成本，应允许看到准备状态且避免UI同步等待；预热策略需测首次功能延迟。"
+    },
+    {
+      "id": "R4",
+      "title": "编译引擎预热与用户实例准备必须分开",
+      "ours": "ScriptCompiler.Warmup编译固定最小模板、同一Compile管线，可能受益于JIT与共享引用；不生成任意用户脚本的最终语义/结果。WarmupSandbox却调用CreateScriptInstance，会进入用户构造。",
+      "vm": "Compile命中程序集缓存仍创建loader和实例并CheckClass调用Init；Process复用该实例。VM同样有实例副作用，不能称纯编译。",
+      "basis": "S2/S3/VS4/VS6/VS7",
+      "recommendation": "固定模板的基础Emit预热可保留候选，测量后决定时机；用户构造/Init必须属于有Owner的执行会话或明确授权的准备，不静默放进“无副作用预热”。"
+    },
+    {
+      "id": "R5",
+      "title": "两边缓存都值得审查，不照搬VM",
+      "ours": "CompileCache静态字典无此处容量上限；键含代码/宿主版本/引用名称，但不含assemblyRefDir及用户引用实际文件内容。同名不同目录/文件替换有错命中条件性风险。",
+      "vm": "AssemblyManager最多500，超限不再加入；以(source+property+moduleid).GetHashCode作键；未比较完整键，存在碰撞风险，已查范围未见清理调用。",
+      "basis": "S2/VS4/VS5",
+      "recommendation": "自研缓存按代码+真实依赖身份+编译选项，容量/Owner/失效明确；编辑引用与执行引用同源，避免同名DLL不一致。VM缓存边界有参考价值，键与清理不能照搬。",
+      "cost": "需复现同名不同目录、原位替换、多次开关窗口和脚本变更；静态风险不当已复现缺陷。"
+    }
+  ],
+  "finalRecommendation": "不是取消Roslyn预热：保留可复用基础准备，整改消费者的同步等待、重复或失效准备与实例副作用；图像箱保留可见缩略图机制，优先改原图同步UI消费。所有性能效果待同条件测量。"
+}

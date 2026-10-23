@@ -154,23 +154,25 @@ namespace SunEyeVision.Tool.ImageLoad
                     return result;
                 }
 
-                if (!File.Exists(parameters.FilePath))
+                var resourcePath = parameters.Context?.ResourcePaths?.Resolve(nameof(parameters.FilePath), parameters.FilePath, ResourcePurpose.FileRead).Address
+                    ?? (Path.IsPathRooted(parameters.FilePath) ? Path.GetFullPath(parameters.FilePath) : throw new InvalidOperationException("相对图像路径需要方案资源上下文。"));
+                if (!File.Exists(resourcePath))
                 {
-                    result.SetError($"文件不存在: {parameters.FilePath}");
+                    result.SetError($"文件不存在: {resourcePath}");
                     return result;
                 }
 
-                var fileInfo = new FileInfo(parameters.FilePath);
-                result.FilePath = parameters.FilePath;
+                var fileInfo = new FileInfo(resourcePath);
+                result.FilePath = resourcePath;
                 result.FileSize = fileInfo.Length;
                 result.FileFormat = fileInfo.Extension.ToUpperInvariant();
 
                 // 经 HalAdapter 统一加载图像（SDK 门面不携带引擎实现，对称架构）
-                var source = HalImage.CreateFromFile(parameters.FilePath);
+                var source = HalImage.CreateFromFile(resourcePath);
                 result.OutputImage = ConvertOutput(source, parameters.OutputFormat);
                 if (result.OutputImage == null || result.OutputImage.IsEmpty)
                 {
-                    result.SetError($"无法加载图像: {parameters.FilePath}");
+                    result.SetError($"无法加载图像: {resourcePath}");
                     return result;
                 }
 

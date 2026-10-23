@@ -19,6 +19,8 @@ namespace SunEyeVision.Plugin.SDK.Core
     /// </remarks>
     public sealed class ToolExecutionRequest
     {
+        public IResourcePathResolver? ResourcePaths { get; init; }
+
         public ToolExecutionRequest(ToolParameters parameters)
         {
             Parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
@@ -52,6 +54,8 @@ namespace SunEyeVision.Plugin.SDK.Core
 
         /// <summary>宿主在启动本轮前绑定的相机帧；所有权仍属于本轮运行请求。</summary>
         public CameraFrame? CameraFrame { get; init; }
+        /// <summary>Optional trusted evidence from the upstream acquisition/position coordinator.</summary>
+        public SunEyeVision.Plugin.SDK.Models.Calibration.CalibrationAcquisitionEvidence? CalibrationEvidence { get; init; }
 
         /// <summary>
         /// 本次运行的服务上下文。由 <see cref="ToolExecutor"/> 在执行前建立，

@@ -1,0 +1,989 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工具处置 · 运算</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">工具处置 · 运算</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="../能力对照/capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="../能力对照/capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>工具处置 · 运算</h1><aside class="scope-notice">以下沿用2026-10-21分析基线与原有状态；未把本次分页或图示当作新增语义证据。最新目标取舍另见 <a href="../目标架构/architecture-target.html">12项目标决策</a>。</aside><div class="visual-metrics"><div><strong>11</strong><span>本分类目录条目</span><small>目录≠算法等价</small></div></div><div class="filter-bar"><label for="search">搜索本页</label><input id="search" data-filter-input placeholder="输入名称、ID或问题"><output data-filter-count></output></div><div class="record-grid"><section class="record-card" id="tool-6-0" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>变量计算</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calculation/CalculatorModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calculation/CalculatorModule&quot;,
+  &quot;label&quot;: &quot;变量计算&quot;,
+  &quot;category&quot;: &quot;运算&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-CalculatorModule&quot;,
+    &quot;difference&quot;: &quot;高：参数绑定不等变量计算工具&quot;,
+    &quot;route&quot;: &quot;按业务新增受限计算器；复用数据源和稳定输出字段，不把C#脚本或绑定器直接称等价。&quot;,
+    &quot;current&quot;: &quot;ParameterResolver实际只派发Constant/Binding；BindingType另有NodeOutput枚举但此Resolve路径未接。C#脚本有Init/Process，是另一种执行合同。&quot;,
+    &quot;change&quot;: &quot;明确运算符/函数/类型提升/精度、除零/溢出/NaN、数组广播、变量作用域/重置；解析与运行分开，禁止反射/文件/设备副作用；稳定FieldId进入结果树。&quot;,
+    &quot;unknown&quot;: &quot;原语法树/数值域/数组规则、重置和动态输出同步实现仍缺。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ResultShow&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;%var0%&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModule.xml&quot;,
+      &quot;sha256&quot;: &quot;c1c5ddc7db3f55d844851919de2fe3b0fcc1b256268ab89efce2bfeef3f16399&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;bb60499a373bbcc422df837f59fae8a2765ecad74866373c57e924033ab5a31b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;2174230d20a400cce913d9994c745c2c9d8c1eb3bfe45f9ad1dbe1bb155d2d5d&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;e5312bdc1c4d6ee41f54f52372b00c0303a4181f74c4a565cb835422e18ed0cb&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;961baa665c8fe1f0dd07450cc8ba09c79deba0c3d307e7f8c9146e8b6c72ba7f&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-6-1" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>坐标转换</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calculation/CoordinateTransform</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仅有点仿射基础；原声明是切片/中心信息转换，不能视同完整同类工具</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">原Dicing中心/尺寸与局部图像域公式未核；不能把NPoint仿射函数当切片坐标业务实现。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；原Dicing中心/尺寸与局部图像域公式未核；不能把NPoint仿射函数当切片坐标业务实现。</td></tr></tbody></table></div><a href="../现状分析/data-architecture.html#coordinate-review">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calculation/CoordinateTransform&quot;,
+  &quot;label&quot;: &quot;坐标转换&quot;,
+  &quot;category&quot;: &quot;运算&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;仅有点仿射基础；原声明是切片/中心信息转换，不能视同完整同类工具&quot;,
+  &quot;gap&quot;: &quot;原Dicing中心/尺寸与局部图像域公式未核；不能把NPoint仿射函数当切片坐标业务实现。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；原Dicing中心/尺寸与局部图像域公式未核；不能把NPoint仿射函数当切片坐标业务实现。&quot;,
+  &quot;url&quot;: &quot;../现状分析/data-architecture.html#coordinate-review&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/SunEyeVision.HalAdapter/HalconPlanarCalibration.cs&quot;,
+    &quot;line&quot;: 14,
+    &quot;token&quot;: &quot;public static (double X, double Y) Transform&quot;,
+    &quot;sha256&quot;: &quot;d298f31c378509e6d2fea88d5ac259e9c980be56ed5b12f9b5f1e7d872cbb472&quot;
+  },
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-CoordinateTransform&quot;,
+    &quot;difference&quot;: &quot;高：只共享底层数学基础，业务语义尚未对应&quot;,
+    &quot;route&quot;: &quot;按需新增切片坐标工具；复用已验证数学函数，不能把现有NPoint.Transform称同类工具实现。&quot;,
+    &quot;current&quot;: &quot;自研已有AffineMatrix.TransformPoint和NPoint仿射辅助，但未见切片域到原图点转换的独立工具合同。&quot;,
+    &quot;change&quot;: &quot;拟议显式LocalImageDomainId→ParentImageDomainId映射，记录裁剪原点/尺寸/缩放和版本；先恢复原公式或采用自有明确约定。点数组整批变换，禁止各列独立截断或丢索引。&quot;,
+    &quot;unknown&quot;: &quot;原Dicing中心/宽高坐标约定、CorrectEnable公式、循环数组广播与裁剪边界仍缺。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;Dicing Point&quot;,
+    &quot;DicingPointX&quot;,
+    &quot;DicingPointY&quot;,
+    &quot;DicingImageWidth&quot;,
+    &quot;DicingImageHeight&quot;,
+    &quot;Src Input Point&quot;,
+    &quot;SrcPointX&quot;,
+    &quot;SrcPointY&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;Dst Output Point&quot;,
+    &quot;DstPointX&quot;,
+    &quot;DstPointY&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransform.xml&quot;,
+      &quot;sha256&quot;: &quot;146414f684197693ea8290e75a37450b26fec068981f65c76bb272b26edfba5a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransformAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;c1afe6c1965b7e5a34b56bac8674640ea00024280710d6ddabbb4449a7834c67&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransformAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;5ad5382fbcb2efaa5eac3cd284e95d7961d6cdab7f2e66e6560f52e78b0b41f3&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransformCs.xml&quot;,
+      &quot;sha256&quot;: &quot;c6bd018a1e4d715062d3346fab07c75ac6f168d406103f0b1a4bff5dbbccb3c3&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransformDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;d32cc3742ebe7bada19934666b68e13222326b3a72bbe1ff3f7b0f62687fbaf4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;a5ae3c07f9738d324d10ae1c5b2a85f743b004ed78aeb94d5baec96bdade1e22&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-6-2" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>标定转换</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calculation/IMVSCalibTransformModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">标定适配已有点变换函数</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">辅助函数不能代证原VM标定转换各模式、设备/文件约束和输出结构。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；辅助函数不能代证原VM标定转换各模式、设备/文件约束和输出结构。</td></tr></tbody></table></div><a href="../现状分析/tool-calibration.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calculation/IMVSCalibTransformModu&quot;,
+  &quot;label&quot;: &quot;标定转换&quot;,
+  &quot;category&quot;: &quot;运算&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;标定适配已有点变换函数&quot;,
+  &quot;gap&quot;: &quot;辅助函数不能代证原VM标定转换各模式、设备/文件约束和输出结构。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；辅助函数不能代证原VM标定转换各模式、设备/文件约束和输出结构。&quot;,
+  &quot;url&quot;: &quot;../现状分析/tool-calibration.html&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/SunEyeVision.HalAdapter/HalconPlanarCalibration.cs&quot;,
+    &quot;line&quot;: 14,
+    &quot;token&quot;: &quot;public static (double X, double Y) Transform&quot;,
+    &quot;sha256&quot;: &quot;d298f31c378509e6d2fea88d5ac259e9c980be56ed5b12f9b5f1e7d872cbb472&quot;
+  },
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-IMVSCalibTransformModu&quot;,
+    &quot;difference&quot;: &quot;高：点变换可复用，独立文件/刷新/批量姿态合同未齐&quot;,
+    &quot;route&quot;: &quot;借鉴独立坐标转换职责，用自有标定文件和发布状态接入；不声称原VM标定文件兼容。&quot;,
+    &quot;current&quot;: &quot;NPoint已输出当前机器标记XY与HomMat2D、设备/尺寸/域；HalconPlanarCalibration.Transform只处理六参数矩阵和点。&quot;,
+    &quot;change&quot;: &quot;使用正式标定快照、文件hash/版本及设备/图像域；RefreshSignal先加载验证候选再原子替换。点/角数组、方向和量纲分别定义；NPoint机器坐标矩阵与fixture WPF矩阵不得按长度互换。&quot;,
+    &quot;unknown&quot;: &quot;原文件加载/RefreshSignal时点、角度与分解公式、动态数组和native布局缺证。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;Input Point&quot;,
+    &quot;ImagePointX&quot;,
+    &quot;ImagePointY&quot;,
+    &quot;ImagePointA&quot;,
+    &quot;RefreshSignal&quot;,
+    &quot;CalibMatrix&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;TransPoint&quot;,
+    &quot;WorldPointX&quot;,
+    &quot;WorldPointY&quot;,
+    &quot;WorldPointA&quot;,
+    &quot;PixelScale&quot;,
+    &quot;TranslateX&quot;,
+    &quot;TranslateY&quot;,
+    &quot;Rotate&quot;,
+    &quot;Scale&quot;,
+    &quot;Skew&quot;,
+    &quot;Aspect&quot;,
+    &quot;CoordinatePoint&quot;,
+    &quot;CoordinatePointX&quot;,
+    &quot;CoordinatePointY&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModu.xml&quot;,
+      &quot;sha256&quot;: &quot;754a99668d773812511f5a821e78c19891f38b8958b4665078d82ae2c9ec6c64&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;a1555a0e2b2e2e543cec81f15532e817a9e125bbf456127aa77f6ac5d4690963&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;1c7b04b5d24a3f09df87ee8b94a2b15d8b6ba89f3cb4e608181a29c58e401b58&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;e97dcef107f1f5857745fa135875bb18c4ab0bb0d9bd83c0a054fe2781ae1584&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;3d9e142086b7d5c8d370dc279afe53b982ecd7a036ccc69d2e3d1a0f37c7449e&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;46da5d8cc211bfd5c08f7d8e525a626e731b8cd68fa07832a03fcd6799c2486a&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-6-3" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>线对位</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calculation/IMVSLineAlignModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calculation/IMVSLineAlignModu&quot;,
+  &quot;label&quot;: &quot;线对位&quot;,
+  &quot;category&quot;: &quot;运算&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;TargetLineInput1&quot;,
+    &quot;TargetLineStartPoint1&quot;,
+    &quot;TargetLineStartPointX1&quot;,
+    &quot;TargetLineStartPointY1&quot;,
+    &quot;TargetLineEndPoint1&quot;,
+    &quot;TargetLineEndPointX1&quot;,
+    &quot;TargetLineEndPointY1&quot;,
+    &quot;TargetLineAngle1&quot;,
+    &quot;ObjectLineInput1&quot;,
+    &quot;ObjectLineStartPoint1&quot;,
+    &quot;ObjectLineStartPointX1&quot;,
+    &quot;ObjectLineStartPointY1&quot;,
+    &quot;ObjectLineEndPoint1&quot;,
+    &quot;ObjectLineEndPointX1&quot;,
+    &quot;ObjectLineEndPointY1&quot;,
+    &quot;ObjectLineAngle1&quot;,
+    &quot;TargetLineInput2&quot;,
+    &quot;TargetLineStartPoint2&quot;,
+    &quot;TargetLineStartPointX2&quot;,
+    &quot;TargetLineStartPointY2&quot;,
+    &quot;TargetLineEndPoint2&quot;,
+    &quot;TargetLineEndPointX2&quot;,
+    &quot;TargetLineEndPointY2&quot;,
+    &quot;TargetLineAngle2&quot;,
+    &quot;ObjeectLineInput2&quot;,
+    &quot;ObjectLineStartPoint2&quot;,
+    &quot;ObjectLineStartPointX2&quot;,
+    &quot;ObjectLineStartPointY2&quot;,
+    &quot;ObjectLineEndPoint2&quot;,
+    &quot;ObjectLineEndPointX2&quot;,
+    &quot;ObjectLineEndPointY2&quot;,
+    &quot;ObjectLineAngle2&quot;,
+    &quot;TargetLineInput3&quot;,
+    &quot;TargetLineStartPoint3&quot;,
+    &quot;TargetLineStartPointX3&quot;,
+    &quot;TargetLineStartPointY3&quot;,
+    &quot;TargetLineEndPoint3&quot;,
+    &quot;TargetLineEndPointX3&quot;,
+    &quot;TargetLineEndPointY3&quot;,
+    &quot;TargetLineAngle3&quot;,
+    &quot;ObjectLineInput3&quot;,
+    &quot;ObjectLineStartPoint3&quot;,
+    &quot;ObjectLineStartPointX3&quot;,
+    &quot;ObjectLineStartPointY3&quot;,
+    &quot;ObjectLineEndPoint3&quot;,
+    &quot;ObjectLineEndPointX3&quot;,
+    &quot;ObjectLineEndPointY3&quot;,
+    &quot;ObjectLineAngle3&quot;,
+    &quot;TargetLineInput4&quot;,
+    &quot;TargetLineStartPoint4&quot;,
+    &quot;TargetLineStartPointX4&quot;,
+    &quot;TargetLineStartPointY4&quot;,
+    &quot;TargetLineEndPoint4&quot;,
+    &quot;TargetLineEndPointX4&quot;,
+    &quot;TargetLineEndPointY4&quot;,
+    &quot;TargetLineAngle4&quot;,
+    &quot;ObjectLineInput4&quot;,
+    &quot;ObjectLineStartPoint4&quot;,
+    &quot;ObjectLineStartPointX4&quot;,
+    &quot;ObjectLineStartPointY4&quot;,
+    &quot;ObjectLineEndPoint4&quot;,
+    &quot;ObjectLineEndPointX4&quot;,
+    &quot;ObjectLineEndPointY4&quot;,
+    &quot;ObjectLineAngle4&quot;,
+    &quot;TargetLineInput5&quot;,
+    &quot;TargetLineStartPoint5&quot;,
+    &quot;TargetLineStartPointX5&quot;,
+    &quot;TargetLineStartPointY5&quot;,
+    &quot;TargetLineEndPoint5&quot;,
+    &quot;TargetLineEndPointX5&quot;,
+    &quot;TargetLineEndPointY5&quot;,
+    &quot;TargetLineAngle5&quot;,
+    &quot;ObjectLineInput5&quot;,
+    &quot;ObjectLineStartPoint5&quot;,
+    &quot;ObjectLineStartPointX5&quot;,
+    &quot;ObjectLineStartPointY5&quot;,
+    &quot;ObjectLineEndPoint5&quot;,
+    &quot;ObjectLineEndPointX5&quot;,
+    &quot;ObjectLineEndPointY5&quot;,
+    &quot;ObjectLineAngle5&quot;,
+    &quot;TargetLineInput6&quot;,
+    &quot;TargetLineStartPoint6&quot;,
+    &quot;TargetLineStartPointX6&quot;,
+    &quot;TargetLineStartPointY6&quot;,
+    &quot;TargetLineEndPoint6&quot;,
+    &quot;TargetLineEndPointX6&quot;,
+    &quot;TargetLineEndPointY6&quot;,
+    &quot;TargetLineAngle6&quot;,
+    &quot;ObjectLineInput6&quot;,
+    &quot;ObjectLineStartPoint6&quot;,
+    &quot;ObjectLineStartPointX6&quot;,
+    &quot;ObjectLineStartPointY6&quot;,
+    &quot;ObjectLineEndPoint6&quot;,
+    &quot;ObjectLineEndPointX6&quot;,
+    &quot;ObjectLineEndPointY6&quot;,
+    &quot;ObjectLineAngle6&quot;,
+    &quot;TargetLineInput7&quot;,
+    &quot;TargetLineStartPoint7&quot;,
+    &quot;TargetLineStartPointX7&quot;,
+    &quot;TargetLineStartPointY7&quot;,
+    &quot;TargetLineEndPoint7&quot;,
+    &quot;TargetLineEndPointX7&quot;,
+    &quot;TargetLineEndPointY7&quot;,
+    &quot;TargetLineAngle7&quot;,
+    &quot;ObjectLineInput7&quot;,
+    &quot;ObjectLineStartPoint7&quot;,
+    &quot;ObjectLineStartPointX7&quot;,
+    &quot;ObjectLineStartPointY7&quot;,
+    &quot;ObjectLineEndPoint7&quot;,
+    &quot;ObjectLineEndPointX7&quot;,
+    &quot;ObjectLineEndPointY7&quot;,
+    &quot;ObjectLineAngle7&quot;,
+    &quot;TargetLineInput8&quot;,
+    &quot;TargetLineStartPoint8&quot;,
+    &quot;TargetLineStartPointX8&quot;,
+    &quot;TargetLineStartPointY8&quot;,
+    &quot;TargetLineEndPoint8&quot;,
+    &quot;TargetLineEndPointX8&quot;,
+    &quot;TargetLineEndPointY8&quot;,
+    &quot;TargetLineAngle8&quot;,
+    &quot;ObjectLineInput8&quot;,
+    &quot;ObjectLineStartPoint8&quot;,
+    &quot;ObjectLineStartPointX8&quot;,
+    &quot;ObjectLineStartPointY8&quot;,
+    &quot;ObjectLineEndPoint8&quot;,
+    &quot;ObjectLineEndPointX8&quot;,
+    &quot;ObjectLineEndPointY8&quot;,
+    &quot;ObjectLineAngle8&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;DeltaX&quot;,
+    &quot;DeltaY&quot;,
+    &quot;DeltaTheta&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\IMVSLineAlignModu.xml&quot;,
+      &quot;sha256&quot;: &quot;55675b745834aaead3b2826e0500644a5dcdef09b94b3c52cba4e9df06c7091a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\IMVSLineAlignModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;87155a5be4e6f0e647c8300d0a455773887d31dae9d0b9694ef8823c1eceaf56&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\IMVSLineAlignModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;cd03f094e97f621b18cc73ebac0c5e97e7dee81514804f8652bc13670e27be2e&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\IMVSLineAlignModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;f812a99bf9c0261f0812582402d4674ea2e0b75f9d1bcd97fc086e73e41a2bda&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\IMVSLineAlignModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;09cd144565d1807598d37b10adac66f7bc086ada4c40104c329d9529c38b749a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;6efdf273be7103ae9081d46878b5f57c2641f5712e7acb011f0ea1645b3672f5&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-6-4" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>点集对位</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calculation/IMVSMultiPointAlignModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calculation/IMVSMultiPointAlignModu&quot;,
+  &quot;label&quot;: &quot;点集对位&quot;,
+  &quot;category&quot;: &quot;运算&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;TargetPointInput1&quot;,
+    &quot;TargetPointX1&quot;,
+    &quot;TargetPointY1&quot;,
+    &quot;ObjectPointInput1&quot;,
+    &quot;ObjectPointX1&quot;,
+    &quot;ObjectPointY1&quot;,
+    &quot;TargetPointInput2&quot;,
+    &quot;TargetPointX2&quot;,
+    &quot;TargetPointY2&quot;,
+    &quot;ObjectPointInput2&quot;,
+    &quot;ObjectPointX2&quot;,
+    &quot;ObjectPointY2&quot;,
+    &quot;TargetInput3&quot;,
+    &quot;TargetPointX3&quot;,
+    &quot;TargetPointY3&quot;,
+    &quot;ObjectInput3&quot;,
+    &quot;ObjectPointX3&quot;,
+    &quot;ObjectPointY3&quot;,
+    &quot;TargetInput4&quot;,
+    &quot;TargetPointX4&quot;,
+    &quot;TargetPointY4&quot;,
+    &quot;ObjectInput4&quot;,
+    &quot;ObjectPointX4&quot;,
+    &quot;ObjectPointY4&quot;,
+    &quot;TargetInput5&quot;,
+    &quot;TargetPointX5&quot;,
+    &quot;TargetPointY5&quot;,
+    &quot;ObjectInput5&quot;,
+    &quot;ObjectPointX5&quot;,
+    &quot;ObjectPointY5&quot;,
+    &quot;TargetInput6&quot;,
+    &quot;TargetPointX6&quot;,
+    &quot;TargetPointY6&quot;,
+    &quot;ObjectInput6&quot;,
+    &quot;ObjectPointX6&quot;,
+    &quot;ObjectPointY6&quot;,
+    &quot;TargetInput7&quot;,
+    &quot;TargetPointX7&quot;,
+    &quot;TargetPointY7&quot;,
+    &quot;ObjectInput7&quot;,
+    &quot;ObjectPointX7&quot;,
+    &quot;ObjectPointY7&quot;,
+    &quot;TargetInput8&quot;,
+    &quot;TargetPointX8&quot;,
+    &quot;TargetPointY8&quot;,
+    &quot;ObjectInput8&quot;,
+    &quot;ObjectPointX8&quot;,
+    &quot;ObjectPointY8&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;DeltaX&quot;,
+    &quot;DeltaY&quot;,
+    &quot;DeltaTheta&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\IMVSMultiPointAlignModu.xml&quot;,
+      &quot;sha256&quot;: &quot;68c538c34eeb479693c0bab88a41073f5fc111228233b6e9bbd5be76499e133d&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\IMVSMultiPointAlignModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;b3df4492c98493a196c18e4ed2c2153003e0b774c44c6fd6a8d227b042916e74&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\IMVSMultiPointAlignModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;0789c12a91fbdd3303ed1666360a7a915a0130e4e28690b66e003f72d91b45ee&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\IMVSMultiPointAlignModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;d0a7f50d818780c61300c8436fa4a6f3d18036fc59224a135fa032a6cae3c6cf&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\IMVSMultiPointAlignModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;09cd144565d1807598d37b10adac66f7bc086ada4c40104c329d9529c38b749a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;25f95b3eb719505f2332eab643a374ff73d7c640923e8103d27138dbdd2e9378&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-6-5" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>旋转计算</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calculation/IMVSRotateCalculateModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calculation/IMVSRotateCalculateModu&quot;,
+  &quot;label&quot;: &quot;旋转计算&quot;,
+  &quot;category&quot;: &quot;运算&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-IMVSRotateCalculateModu&quot;,
+    &quot;difference&quot;: &quot;中到高：变换数学可用，业务工具未齐&quot;,
+    &quot;route&quot;: &quot;复用明确坐标约定与适配，条件新增独立旋转工具，不把ROI随动当旋转算子。&quot;,
+    &quot;current&quot;: &quot;自研AffineMatrix已有点变换、方向角计算与WPF/哈康适配，但未见独立旋转工具的参数/结果/中心合同。&quot;,
+    &quot;change&quot;: &quot;明确坐标域、角单位、正方向、旋转中心；模式用语义枚举，点/线输出保留索引和单位。仿射以T(center)·R·T(-center)的自有约定定义并独立核方向，调用既有适配不自行乱序。&quot;,
+    &quot;unknown&quot;: &quot;原InputType编号、角单位/正方向、数组广播、输入输出坐标回填与native实现未齐。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;Input Point&quot;,
+    &quot;PointX&quot;,
+    &quot;PointY&quot;,
+    &quot;Input Line&quot;,
+    &quot;LineStartPoint&quot;,
+    &quot;LinePointStartX&quot;,
+    &quot;LinePointStartY&quot;,
+    &quot;LineEndPoint&quot;,
+    &quot;LinePointEndX&quot;,
+    &quot;LinePointEndY&quot;,
+    &quot;RotateCenter&quot;,
+    &quot;RotatePointX&quot;,
+    &quot;RotatePointY&quot;,
+    &quot;Angle&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;InputOut Point&quot;,
+    &quot;InOutPointX&quot;,
+    &quot;InOutPointY&quot;,
+    &quot;InputOut Line&quot;,
+    &quot;InOutLineStartPoint&quot;,
+    &quot;InOutLinePointStartX&quot;,
+    &quot;InOutLinePointStartY&quot;,
+    &quot;InOutLineEndPoint&quot;,
+    &quot;InOutLinePointEndX&quot;,
+    &quot;InOutLinePointEndY&quot;,
+    &quot;InOutRotateCenter&quot;,
+    &quot;InOutRotatePointX&quot;,
+    &quot;InOutRotatePointY&quot;,
+    &quot;OutPoint&quot;,
+    &quot;OutPointX&quot;,
+    &quot;OutPointY&quot;,
+    &quot;OutLine&quot;,
+    &quot;OutLineStartPoint&quot;,
+    &quot;OutLineStartPointX&quot;,
+    &quot;OutLineStartPointY&quot;,
+    &quot;OutLineEndPoint&quot;,
+    &quot;OutLineEndPointX&quot;,
+    &quot;OutLineEndPointY&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModu.xml&quot;,
+      &quot;sha256&quot;: &quot;75036f759810163bb6f1818afc45ac6749d8d475005ac47a276b7ece68ac6cb6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;69632ad7893a631badcb82c633e12cecd0be42f1dfd5ef4ddbbca19f1604ec95&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;8be4b4dffeadf411a088c09f5e7c3d395dbe6b76ac99a301169e56e4c18399f5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;7bb190fc37aaabb906f1c858721e1aba8e6e99b59d6a396acf5245fa044d535c&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;1635ca8ba57a5b6a0b27055b580bb94d48238708fdeea5dab5eeee0b070e0c01&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;ddd8273b4f6cc2be4f072cf777cc7a263d5e528cca04c44ddf97f4ea055edb31&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-6-6" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>单位转换</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calculation/IMVSScaleTransformModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">标定文件声明毫米单位</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">声明单位不等通用单位转换工具；量纲、比例来源和数组合同需设计。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；声明单位不等通用单位转换工具；量纲、比例来源和数组合同需设计。</td></tr></tbody></table></div><a href="../现状分析/data-architecture.html#coordinate-review">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calculation/IMVSScaleTransformModu&quot;,
+  &quot;label&quot;: &quot;单位转换&quot;,
+  &quot;category&quot;: &quot;运算&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;标定文件声明毫米单位&quot;,
+  &quot;gap&quot;: &quot;声明单位不等通用单位转换工具；量纲、比例来源和数组合同需设计。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；声明单位不等通用单位转换工具；量纲、比例来源和数组合同需设计。&quot;,
+  &quot;url&quot;: &quot;../现状分析/data-architecture.html#coordinate-review&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationFile.cs&quot;,
+    &quot;line&quot;: 22,
+    &quot;token&quot;: &quot;public string PhysicalUnit&quot;,
+    &quot;sha256&quot;: &quot;dd2b909c025734390e1e6703421b0676bba2f52e418190422ad6319c803cdbe3&quot;
+  },
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-IMVSScaleTransformModu&quot;,
+    &quot;difference&quot;: &quot;高：单位元数据与局部尺度计算不等距离换算产品能力&quot;,
+    &quot;route&quot;: &quot;按需新增测量量纲适配，复用正式标定快照；先定义支持的变换域。&quot;,
+    &quot;current&quot;: &quot;自研标定文件声明mm与方向，AffineMatrix有ScaleFactor/IsConformal，但没有由此证明完整距离换算工具。&quot;,
+    &quot;change&quot;: &quot;先支持已声明保形/固定尺度合同；需要一般仿射时输入两端点或方向向量，以变换后距离计算，不能盲乘一个ScaleFactor。文件/refresh走同一版本事务，保留像素与物理值双输出。&quot;,
+    &quot;unknown&quot;: &quot;原PixelEquivalentCorrectInfo结构、尺度/分解公式与非保形支持范围未齐。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;ImageDist&quot;,
+    &quot;RefreshSignal&quot;,
+    &quot;PixelEquivalentCorrectInfo&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;PixelScale&quot;,
+    &quot;PhyDist&quot;,
+    &quot;PixDist&quot;,
+    &quot;TranslateX&quot;,
+    &quot;TranslateY&quot;,
+    &quot;Rotate&quot;,
+    &quot;Scale&quot;,
+    &quot;Skew&quot;,
+    &quot;Aspect&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModu.xml&quot;,
+      &quot;sha256&quot;: &quot;6a40a53325d644a4a0a123a6c2230367a2897e391199bea22d64e8dc26703082&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;53836702215c393a45b2d42394dfc97a901cbe23bffa87e101bc51ef641dfd8a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;e29aa3f7e61ef655878094223365483f754a4dd430f88c4cf27a4fbd0ad387da&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;e6df23ba545ba32eb11e5191a144cd9aed17dbb97ff580a5d18e596362a1940c&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;5b3811cb8fdf5b8e525b515593d1219180d1aae7cdd23e9837792597e8dcf018&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;abc6a98d4d611e6517c1a039aa5450b703670f89e900100c0e7034d7126f30fd&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-6-7" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>单点对位</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calculation/IMVSSinglePointAlignModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calculation/IMVSSinglePointAlignModu&quot;,
+  &quot;label&quot;: &quot;单点对位&quot;,
+  &quot;category&quot;: &quot;运算&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;TargetPointInput&quot;,
+    &quot;TargetPointX&quot;,
+    &quot;TargetPointY&quot;,
+    &quot;TargetAngle&quot;,
+    &quot;ObjectPointInput&quot;,
+    &quot;ObjectPointX&quot;,
+    &quot;ObjectPointY&quot;,
+    &quot;ObjectAngle&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;DeltaX&quot;,
+    &quot;DeltaY&quot;,
+    &quot;DeltaTheta&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\IMVSSinglePointAlignModu.xml&quot;,
+      &quot;sha256&quot;: &quot;e690562fcd1fdd38ea3fa6149cb2a921a1da865435917096f21d81d589a735b5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\IMVSSinglePointAlignModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;be2ed298999a90635ad4ae1ed4216729b08a2dd4c6f366fb11f5b2cbc4fbbcc5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\IMVSSinglePointAlignModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;c2220cfdb5580f66704861c458ede0441ea44eec33c7034405180810894d4b8c&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\IMVSSinglePointAlignModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;381c5074d765533b80dc18ac94421ee89a739854fc5a96b086f74aa5d3704319&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\IMVSSinglePointAlignModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;09cd144565d1807598d37b10adac66f7bc086ada4c40104c329d9529c38b749a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;e115f8a8a6c846dc010ffcaf33e540dd83463b5277978da80a741a93fa18e44e&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-6-8" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>单点抓取</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calculation/SinglePointGrabModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calculation/SinglePointGrabModu&quot;,
+  &quot;label&quot;: &quot;单点抓取&quot;,
+  &quot;category&quot;: &quot;运算&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ImagePoint&quot;,
+    &quot;ImagePointX&quot;,
+    &quot;ImagePointY&quot;,
+    &quot;ImagePointA&quot;,
+    &quot;TeachPoint&quot;,
+    &quot;TeachPointX&quot;,
+    &quot;TeachPointY&quot;,
+    &quot;TeachPointA&quot;,
+    &quot;TeachSnapPoint&quot;,
+    &quot;TeachSnapPointX&quot;,
+    &quot;TeachSnapPointY&quot;,
+    &quot;TeachSnapPointA&quot;,
+    &quot;CalibMatrix&quot;,
+    &quot;RefreshSignal&quot;,
+    &quot;SnapPointDeltaAngle&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;InitPoint&quot;,
+    &quot;InitPointX&quot;,
+    &quot;InitPointY&quot;,
+    &quot;InitPointAngle&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;OffsetX&quot;,
+    &quot;OffsetY&quot;,
+    &quot;OffsetR&quot;,
+    &quot;AbssetX&quot;,
+    &quot;AbssetY&quot;,
+    &quot;AbssetR&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\SinglePointGrabModu.xml&quot;,
+      &quot;sha256&quot;: &quot;4e35042aeaf574dc0f3cf491ad66f77749bff1877a435a68685776022776024b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\SinglePointGrabModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;9f9881edd1473b0289e6bc841b6137d864e912d2cd74f022e6714ab5ff5f32c5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\SinglePointGrabModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;1dae15e7c38d493c1b4b699bea4412ff2b570700aefd9789d83372e2e924331a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\SinglePointGrabModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;ba1bd06e09f1dfdc5fc42b7d32226264e6e438ca803e5684e4f8dbc82e9f611a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\SinglePointGrabModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;bde6b5f5d1b2d7a189b24eed98ff86d5f804ed820bb9248b0cbef48268cacace&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;28a84f738e4bd4388ccc529fae1744885e7d77c1308c9a467b4996dd38458f95&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-6-9" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>单点映射对位</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calculation/SinglePointMapAlignModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calculation/SinglePointMapAlignModu&quot;,
+  &quot;label&quot;: &quot;单点映射对位&quot;,
+  &quot;category&quot;: &quot;运算&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ObjImagePoint&quot;,
+    &quot;ObjImagePointX&quot;,
+    &quot;ObjImagePointY&quot;,
+    &quot;ObjImagePointA&quot;,
+    &quot;TarImagePoint&quot;,
+    &quot;TarImagePointX&quot;,
+    &quot;TarImagePointY&quot;,
+    &quot;TarImageLineS&quot;,
+    &quot;TarImageLineSX&quot;,
+    &quot;TarImageLineSY&quot;,
+    &quot;TarImageLineE&quot;,
+    &quot;TarImageLineEX&quot;,
+    &quot;TarImageLineEY&quot;,
+    &quot;TeachPoint&quot;,
+    &quot;TeachPointX&quot;,
+    &quot;TeachPointY&quot;,
+    &quot;TeachPointA&quot;,
+    &quot;NPointCalibMatrix&quot;,
+    &quot;MapCalibMatrix&quot;,
+    &quot;RefreshSignal&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;OffsetX&quot;,
+    &quot;OffsetY&quot;,
+    &quot;OffsetR&quot;,
+    &quot;AbssetX&quot;,
+    &quot;AbssetY&quot;,
+    &quot;AbssetR&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\SinglePointMapAlignModu.xml&quot;,
+      &quot;sha256&quot;: &quot;752187ef1f81d3f4603f5343413207365c0a0d9bd55c53e29ce972a72bf93579&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\SinglePointMapAlignModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;4ac3f7a42264b8abb37d77421789300799329a7f6824a25864a84b079d3e4613&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\SinglePointMapAlignModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;bdd93655ff7781a8a5e557100a816d8ca1cf038fa69f2b6309e31e11a3468992&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\SinglePointMapAlignModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;516672770cf6b2a65359e2e0c6c9f3f2a4afd28c9cd56bec0f868674db76095a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\SinglePointMapAlignModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;2b5bd3022a99e3dd9c1783aa27fa086a888742149d4691da2ea18e232e1c1d6d&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;8e4e2523e0f1db913ecb3e8fa28d002f79bcc85d16d521c0f57525dbef0c18fb&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-6-10" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>单点纠偏</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Calculation/SinglePointRectifyModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Calculation/SinglePointRectifyModu&quot;,
+  &quot;label&quot;: &quot;单点纠偏&quot;,
+  &quot;category&quot;: &quot;运算&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;优先明确点/线/矩阵/姿态的类型、坐标和单位合同，再新增独立算子；辅助数学函数不自动算业务工具。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ImagePoint&quot;,
+    &quot;ImagePointX&quot;,
+    &quot;ImagePointY&quot;,
+    &quot;ImagePointA&quot;,
+    &quot;TeachPoint&quot;,
+    &quot;TeachPointX&quot;,
+    &quot;TeachPointY&quot;,
+    &quot;TeachPointA&quot;,
+    &quot;TeachSnapPoint&quot;,
+    &quot;TeachSnapPointX&quot;,
+    &quot;TeachSnapPointY&quot;,
+    &quot;TeachSnapPointA&quot;,
+    &quot;CalibMatrix&quot;,
+    &quot;RefreshSignal&quot;,
+    &quot;SnapPointDeltaAngle&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;InitPoint&quot;,
+    &quot;InitPointX&quot;,
+    &quot;InitPointY&quot;,
+    &quot;InitPointAngle&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;OffsetX&quot;,
+    &quot;OffsetY&quot;,
+    &quot;OffsetR&quot;,
+    &quot;AbssetX&quot;,
+    &quot;AbssetY&quot;,
+    &quot;AbssetR&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\SinglePointRectifyModu.xml&quot;,
+      &quot;sha256&quot;: &quot;13c56f29948c42675255cbe05c8e76d53f462aea4f663d383c001d67af937874&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\SinglePointRectifyModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;9f9881edd1473b0289e6bc841b6137d864e912d2cd74f022e6714ab5ff5f32c5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\SinglePointRectifyModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;9790fe15151dcde3231c04917fa4b0880fb2bb7ccac539bec5695e00881d03de&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\SinglePointRectifyModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;13be366a0c1345e3ba9cf60d1ea3e1bbb6a84268cec6a9424b251c253426aefc&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\SinglePointRectifyModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;2b5bd3022a99e3dd9c1783aa27fa086a888742149d4691da2ea18e232e1c1d6d&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;9373560b4fac163f8a3195d64351694046cd4df47be99e528635dfef32ea465f&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section></div></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

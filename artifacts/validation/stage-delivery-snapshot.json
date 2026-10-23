@@ -1,0 +1,31 @@
+{
+  "forwardReview": {
+    "reviewed": 41,
+    "total": 41
+  },
+  "capabilityStates": {
+    "implemented": 10,
+    "partial": 33,
+    "unimplemented": 3,
+    "unknown": 3
+  },
+  "nativeEvidence": {
+    "total": 42,
+    "verified": 24,
+    "partial": 11,
+    "unverified": 7,
+    "percent": 57.1,
+    "formula": "已核实检查点/42*100（部分不折算）",
+    "categoriesComplete": 0,
+    "categoriesTotal": 7,
+    "baselineOnly": true,
+    "newReverseEngineering": false
+  },
+  "scope": "本阶段分析交付与产品状态、原VM证据分开；不计算综合百分比",
+  "nextTriggers": [
+    "自研源码发生变化：重新核对受影响事实和方案",
+    "逆向项目交付函数及上下游：先复核再更新采用结论",
+    "确定实施某功能：补接口/所有者/失败边与验收，另获实施授权"
+  ],
+  "productModified": false
+}

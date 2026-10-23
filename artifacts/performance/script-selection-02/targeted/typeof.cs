@@ -1,0 +1,1 @@
+using System; using BenchCommon; public class Probe { public void Run() { Type x = typeof(BenchCommon.SharedMath); } }

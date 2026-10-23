@@ -1,0 +1,252 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><script src="../公共资源/文档路径.js"></script><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A06 结果发布和订阅</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">A06 结果发布和订阅</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">文档索引</a><a href="architecture-target.html">最新目标决策</a><a href="../框架设计/framework-overview.html">框架对比</a><a href="../SDK设计/framework-sdk-overview.html">SDK设计</a><a href="../维护记录/joint-optimization-plan.html">联合方案</a><a href="../证据审计/architecture-evidence.html">本批证据</a></nav><main><h1>A06 结果发布和订阅</h1><article id="decision-A06"><p class="status">proposed-not-implemented · 全部接口为拟议合同，未编译/运行</p><div class="visual-metrics"><div><strong>A06</strong><span>目标决策</span><small>拟议，未实施</small></div><div><strong>7</strong><span>局部证据条目</span><small>未知单列</small></div><div><strong>2</strong><span>验收用例</span><small>均未运行</small></div></div><figure class="architecture-figure" data-visual="data"><figcaption><b>数据流：设计、快照与结果分离</b><span class="chip">拟议设计，未实现/运行验收</span></figcaption><div class="diagram-actions"><button type="button" data-diagram-expand>放大查看图</button><span>实线：所标范围内的关系；虚线：条件/待验证边界。</span></div><div class="svg-scroll"><svg role="img" aria-label="数据流：设计、快照与结果分离；拟议设计，未实现/运行验收" viewBox="0 0 945 529"><title>数据流：设计、快照与结果分离</title><desc>拟议设计，未实现/运行验收。图中节点和箭头与下方文字合同共同解释，不能单独作为运行保证。</desc><defs><marker id="arrow-data" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker></defs><path d="M 260 82 L 350 82" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="305" y="73">冻结</text><path d="M 590 82 L 680 82" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="635" y="73">绑定</text><path d="M 800 124 L 800 230" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="800" y="168">产生</text><path d="M 680 272 L 590 272" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="635" y="263">发布前持有</text><path d="M 350 272 L 260 272" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="305" y="263">发地址</text><path d="M 140 314 L 140 420" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="140" y="358">保留使用权</text><path d="M 260 272 L 350 462" class="graph-edge " marker-end="url(#arrow-data)"/><text class="edge-label" x="305" y="358">获取结果</text><g class="graph-node"><rect x="20" y="40" width="240" height="84" rx="13"/><text x="36" y="72">设计定义</text><text class="node-note" x="36" y="100">已提交 Revision</text></g><g class="graph-node"><rect x="350" y="40" width="240" height="84" rx="13"/><text x="366" y="72">RunSnapshot</text><text class="node-note" x="366" y="100">全局 · 参数 · 临时覆盖</text></g><g class="graph-node"><rect x="680" y="40" width="240" height="84" rx="13"/><text x="696" y="72">工具输入</text><text class="node-note" x="696" y="100">FieldId / 类型 / 坐标域</text></g><g class="graph-node"><rect x="680" y="230" width="240" height="84" rx="13"/><text x="696" y="262">ResultSnapshot</text><text class="node-note" x="696" y="290">不可变 · Run/Scope/Frame</text></g><g class="graph-node"><rect x="350" y="230" width="240" height="84" rx="13"/><text x="366" y="262">ResultStore</text><text class="node-note" x="366" y="290">先接纳Owner</text></g><g class="graph-node"><rect x="20" y="230" width="240" height="84" rx="13"/><text x="36" y="262">通知</text><text class="node-note" x="36" y="290">仅地址 / 质量 / 版本</text></g><g class="graph-node"><rect x="20" y="420" width="240" height="84" rx="13"/><text x="36" y="452">业务可靠通道</text><text class="node-note" x="36" y="480">ACK / 明确失败</text></g><g class="graph-node"><rect x="350" y="420" width="240" height="84" rx="13"/><text x="366" y="452">UI LatestOnly</text><text class="node-note" x="366" y="480">可合并旧项</text></g></svg></div><p class="diagram-note">拟议设计，未实现/运行验收 · <a href="architecture-target.html">查看依据、合同与未知</a></p></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前边界</h2><p>结果字典、UI发布与身份投影分散，多消费者需要明确容量和过期语义。</p></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM已证 / 未知</h2><p>原版模块异步结果与流程结果有不同准入；DR01查询Release finally、DR03渲染三仓轮换是局部已证，非统一原生Owner。</p></section></div><section class="visual-card decision-summary"><h2>本项选择与代价</h2><p><strong>借鉴VM结果/显示分层与轮次门；自研重做有界结果协议</strong></p><p>ResultSnapshot不可变；以Project/Run/Scope/Frame/Schema寻址；先接纳Owner再发布；可靠业务与UI LatestOnly分流。</p><div class="tradeoff-grid"><div><h3>收益与成本</h3><p>多消费者解耦和防旧轮；队列容量、保留窗口、错误与背压需定义。</p></div><div><h3>为什么不选替代路线</h3><p>统一无界事件简单却可能泄漏；业务可靠/UI最新分流增加背压和确认复杂度，换取可诊断的资源与交付保证。</p></div></div></section><h2>拟议接口与数据字段</h2><pre>ResultAddress { ProjectId, RunId, ScopeId, NodeId, Iteration, FrameId, SchemaVersion }
+ResultNotification { Address, Quality, Sequence, ProducedAt }
+AcquireOutcome AcquireResult(ResultAddress address);
+Subscribe(DeliveryPolicy { Reliable | LatestOnly, Capacity, Retention });
+Subscription { Dispose(), DrainAsync(), DisposeAsync(), Ack(ResultAddress), Fail(ResultAddress, Reason) }</pre><h3>状态与生效时点</h3><p>Owner先接纳不可变ResultSnapshot再发布地址；同Run/Scope的sequence单调，UI拒绝旧轮覆盖。可靠通道入队时为消费者固定结果使用权，确认或显式失败后退还。</p><h3>Owner与释放责任</h3><p>ResultStore拥有保留窗口和lease；订阅拥有队列及已固定使用权，UI仅持最近投影；DR三仓是VM局部机制，不能等同该目标。</p><h3>失败、取消与幂等</h3><p>Acquire可返回ResultExpired。Reliable满队列背压或拒绝并记录失败，不静默丢失；LatestOnly可合并并释放被替代项。订阅同步Dispose幂等，仅禁止新投递/启动handler并发起退订；DrainAsync或DisposeAsync等待已启动handler及队列处理结局。handler禁止同步等待自身Drain，检测后返回SelfDrainNotAllowed；ACK/显式失败归还队列所持结果权。</p><h3>版本与兼容</h3><p>事件携带协议版本、schema及身份；新增字段可忽略，质量枚举未知按Unknown处理；保留窗口和丢弃计数可查询。</p><h2>验收：尚未执行</h2><section id="A06-T1"><h3>A06-T1 · planned-not-run</h3><p>延迟旧轮通知不覆盖当前显示</p><p>执行方法与判定：<a href="architecture-acceptance.html#A06-T1">查看用例</a></p></section><section id="A06-T2"><h3>A06-T2 · planned-not-run</h3><p>慢UI不阻塞执行；业务队列满有背压或拒绝/失败记录</p><p>执行方法与判定：<a href="architecture-acceptance.html#A06-T2">查看用例</a></p></section><h2>原版证据与局部边界</h2><p>source-confirmed限交接中选定成员；不是整库复核。独立恢复代码 independent-implementation 不作为原版事实。<a href="../证据审计/architecture-evidence.html">本批来源SHA</a></p><details id="evidence-A06-0"><summary>results-roi:V03 · source-confirmed · ModuleDisplayDecorator.Init callback registration</summary><p>Init末段对具体VMModule的AsyncModuleResultCallBackArrived先Remove再Add ParentUI.OnModuleCallBackArrived。与V01的全局报告不是同一事件；完整生产者/队列仍单列未知。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs">analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs:1196–1204</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>ceda24b7fb93bcd9f02b77b23d42a839b1f737bf70cf3abc6b7786d11765740e</code></p><pre>		ResultData.Add(vmModule);
+		if (VMModule != null)
+		{
+			WeakEventManager&lt;IVmModule, EventArgs&gt;.RemoveHandler(VMModule, &quot;AsyncModuleResultCallBackArrived&quot;, ParentUI.OnModuleCallBackArrived);
+			WeakEventManager&lt;IVmModule, EventArgs&gt;.AddHandler(VMModule, &quot;AsyncModuleResultCallBackArrived&quot;, ParentUI.OnModuleCallBackArrived);
+		}
+		if (ModuleParams != null)
+		{
+			WeakEventManager&lt;ParamRoot, EventArgs&gt;.RemoveHandler(ModuleParams, &quot;ParamRootReloadEnd&quot;, OnParamRootReloadEnd);</pre></details><details id="evidence-A06-1"><summary>results-roi:V04 · source-confirmed · ModuleResultView self result admission</summary><p>关闭或非ValueEventArgs先返回；由结果bIsSelfExecute==1识别self-run。有m_CurrentInfo且self时，busy/isRendering返回，否则BeforeExchange(executeCount)；随后BeginInvoke。不能从排队推出所有回调都已渲染。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs">analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs:524–554</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88</code></p><pre>	public void OnModuleCallBackArrived(object sender, EventArgs e)
+	{
+		if (isclose)
+		{
+			return;
+		}
+		ValueEventArgs valueEvent;
+		if ((valueEvent = e as ValueEventArgs) == null)
+		{
+			return;
+		}
+		bool isSelfExecute = valueEvent.Value is ImvsSdkDefine.IMVS_MODULE_RESULT_INFO_LIST_EX_Data iMVS_MODULE_RESULT_INFO_LIST_EX_Data &amp;&amp; iMVS_MODULE_RESULT_INFO_LIST_EX_Data.bIsSelfExecute == 1;
+		if ((m_CurrentInfo != null) &amp; isSelfExecute)
+		{
+			if (m_CurrentInfo.RenderDataCenter.IsBusy || isRendering)
+			{
+				return;
+			}
+			m_CurrentInfo.RenderDataCenter.BeforeExchange(valueEvent.ExecuteCount);
+		}
+		Dispatcher.BeginInvoke((BeginInvokeDelegate)(() =&gt;
+		{
+			try
+			{
+				if (!isclose)
+				{
+					if ((m_CurrentInfo != null) &amp; isSelfExecute)
+					{
+						m_CurrentInfo.RenderDataCenter.Exchange(OwnerProcessID, valueEvent.ExecuteCount);
+						bool flag = false;
+						if (m_CurrentInfo.RenderDataCenter.TryGetImage(&quot;SelectedImage&quot;, out var image) &amp;&amp; image != m_CurrentInfo.ImageDataSource)</pre></details><details id="evidence-A06-2"><summary>results-roi:V05 · source-confirmed · ModuleResultView callback record and ROI refresh</summary><p>UI闭包末段RefreshDataRecord；选择单/双图的ROI视图，仅ROIVisible且未IsDragROI时ModuleSource.UpdateROI；catch写自执行渲染异常日志，DispatcherPriority.Background。这里不替代中间图像/叠加分支。</p><ul><li>未知/限制：中间自执行分支与managed仓库分别见V14/V17–V22；多层叠加、图像内存及完整呈现生命周期仍未闭合。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs">analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs:601–617</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88</code></p><pre>					RefreshDataRecord(valueEvent.Value);
+					ImageViewBox imageViewBox = (IsShowDoubleImage ? imageViewIn : imageView);
+					if (imageViewBox.ROIVisible &amp;&amp; !imageViewBox.IsDragROI)
+					{
+						ModuleSource.UpdateROI();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error(&quot;自执行渲染异常：&quot; + ex.Message + ex.StackTrace);
+			}
+		}), DispatcherPriority.Background);
+	}
+
+	private void Dispatcher_ShutdownStarted(object sender, EventArgs e)
+	{</pre></details><details id="evidence-A06-3"><summary>results-roi:V23 · source-confirmed · VMControls.WPF.ModuleResultView::OnPreduceResultCallBackArrived / Procedure status admission and deferred signal</summary><p>非ValueEventArgs返回；try内非IMVS_MODULE_WORK_STAUS返回。状态0时(仓忙或isRendering)且次数不同FixedExcuteCount才将needRenderSignal替换为e2并返回；否则次数不一致只日志后写ExecuteCount，调用UpdateRender。状态1写状态载荷nExecuteCount；其它状态所选体不处理。catch仅Debug日志，不能据其文字推断实际复位任何ready字段。</p><ul><li>未知/限制：needRenderSignal消费者已另见V27；流程生命周期、全部状态值与实际交错仍未闭合。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/render-store-cil-evidence.json">docs/architecture-recovery/render-store-cil-evidence.json:6913–6932</a> · original-managed-cil · 原二进制身份：99ffa401c8784472913ad43813d68a8a5577890c00e149506e3e5664fa61c97d / MVID d144317f-3992-4275-9b0f-13fb6163e07d</p><p>SHA256 <code>ddb2eb62624a452fdaec6d3374fe50098ba940935328dad860cda40d7ceb57bd</code></p><pre>          &quot;token&quot;: &quot;0x060001b5&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x060001b5&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VMControls.WPF.ModuleResultView&quot;,
+            &quot;name&quot;: &quot;OnPreduceResultCallBackArrived&quot;,
+            &quot;parameters&quot;: 2,
+            &quot;attributes&quot;: &quot;Public, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;2002011c12811d&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 301,
+          &quot;ilSha256&quot;: &quot;edec92f8d66a510f1ceb7282df477229603e009d29dd6930f085b39e2a4965bf&quot;,
+          &quot;ilBytes&quot;: &quot;00047562000001250a14fe030b0739190100000000067b3001000a25130475630000012c0b1104a5630000010c172b01160d0939e000000000087b3101000a16fe011305110539ae000000000228a00100066f220900066fa70800062d08027bc70000042b0117130611062c3000067b2d02000a0228a00100066f220900066fa5080006fe0116fe01130711072c0d0002067dc2000004dd9000000000067b2d02000a0228aa010006fe0116fe01130811082c350072be1a0070067b2d02000a8c1d0200010228aa0100068c1d020001282f02000a28a400000a0002067b2d02000a28ab010006000002067b2d02000a28b601000600002b1e087b3101000a17fe01130911092c0f0002087b3201000a28ab01000600000000de10260072281b0070283002000a0000de00002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs">analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs:640–675</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88</code></p><pre>	public void OnPreduceResultCallBackArrived(object sender, EventArgs e)
+	{
+		if (!(e is ValueEventArgs e2))
+		{
+			return;
+		}
+		try
+		{
+			if (!(e2.Value is ImvsSdkDefine.IMVS_MODULE_WORK_STAUS iMVS_MODULE_WORK_STAUS))
+			{
+				return;
+			}
+			if (iMVS_MODULE_WORK_STAUS.nWorkStatus == 0)
+			{
+				if ((m_CurrentInfo.RenderDataCenter.IsBusy || isRendering) &amp;&amp; e2.ExecuteCount != m_CurrentInfo.RenderDataCenter.FixedExcuteCount)
+				{
+					needRenderSignal = e2;
+					return;
+				}
+				if (e2.ExecuteCount != ExecuteCount)
+				{
+					LogHelper.Error($&quot;不应该进这个分支.args.ExecuteCount = {e2.ExecuteCount}, ExecuteCount = {ExecuteCount}&quot;);
+					ExecuteCount = e2.ExecuteCount;
+				}
+				UpdateRender(e2.ExecuteCount);
+			}
+			else if (iMVS_MODULE_WORK_STAUS.nWorkStatus == 1)
+			{
+				ExecuteCount = iMVS_MODULE_WORK_STAUS.nExecuteCount;
+			}
+		}
+		catch (Exception)
+		{
+			LogHelper.Debug(&quot;Set isReadyToRender True in Exception.&quot;);
+		}
+	}</pre></details><details id="evidence-A06-4"><summary>DR01 · source-confirmed · VmIO读取落后 → VmModule.RefreshResult</summary><p>RefreshResult在Root为空、正在报告运行、禁用或执行计数一致时返回；否则查询最近结果，按IsClearLastExecuteResult选择计数并预处理后调用VmSolution结果回调入口。正常尾更新模块及Inputs/Outputs的ExecuteCount。catch仅处理VmException，finally释放查询容器；不能把单个finally理解为所有嵌套图像payload均已独立。</p><ul><li>未知/限制：核心回调完整字段写入顺序、native查询数据与chunk借用内存的交叉所有权仍需继续；正常尾计数更新不等于异常路径也更新。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:6601–6620</a> · original-managed-cil · 原二进制身份：936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d / MVID 290025bc-e040-4cd5-94dd-cd49b9af9c99</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x060002db&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x060002db&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.Core.VmModule&quot;,
+            &quot;name&quot;: &quot;RefreshResult&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Assembly, Virtual, HideBySig, VtableLayoutMask, CheckAccessOnOverride&quot;,
+            &quot;signatureBytes&quot;: &quot;200001&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 656,
+          &quot;ilSha256&quot;: &quot;c7928bfcbbb8b4eb66785bd5e36c5d57fdece33b31ab23c5dec57cf097d30e1d&quot;,
+          &quot;ilBytes&quot;: &quot;0002284802000614fe010b072c0600387b020000026f810200062c0d0228480200067b0a0100042d44026f850200062d3c026f6e020006022848020006252d0d261204fe157000001b11042b0a6f6e02000673d603000a0d120328da03000a2e03162b07120328db03000a2b01170c082c06003817020000140a00284801000a7b4901000a026f490200060228480200066f6e0200066fdc03000a0a0614fe01130711072c0600dde3010000066fdd03000a13050228480200066f6e020006130628a90000066f3900000a2d0b067bde03000a16fe022b0116130811082c11001105168f380000017bdf03000a1306001106026f6e020006fe0116fe011309110939160100000016130a067bde03000a1759130b2b6e001105110b8f380000017bdf03000a1106fe01130c110c2c4e001105110b8f380000017be003000a173307110b16fe032b0116130e110e2c03002b2c284801000a7b4901000a1105110ba338000001166f4d01000a130d120d16288101000600110a1758130a0000110b1759130b110b16fe0416fe01130f110f2d84110a17fe02131011102c7e00026f620200067b040200046f1c03000a283a00002b13110011116f1d03000a13122b3f1212281e03000a13130011137beb01000416fe01131411142c24001113177deb01000411136f3105000616fe02131511152c0a0011136f20050006000000001212281f03000a2db8de0f1212fe165900001b6f0e01000a00dc0000020228480200066f6e0200066f6f02000600026f640200060228480200066f6e0200066f7205000600026f620200060228480200066f6e0200066f720500060000de1813160011166fb401000a28b601000a284601000a0000de00de16000614fe03131711172c0900066fe103000a000000dc2a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre></details><details id="evidence-A06-5"><summary>DR02 · source-confirmed · QueryModuleRecentlyResult批次容器</summary><p>SDK查询把每页原始缓冲地址加入ls。容器Release把ls[i]复制为局部IntPtr后按ref交ModuleManager；成功时该callee只将局部ref置零，原ls元素并未因此更新。返回码未由容器检查，也未清列表，故不能声称重复Release安全或所有页已成功释放。实际native只读捕获，未重复释放。</p><ul><li>未知/限制：IMVS_ReleaseDynamicMemory内部、失败后重试/双释放行为和外层是否保证恰一次释放仍需原native/调用链证明。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:19464–19483</a> · original-managed-cil · 原二进制身份：34c0c90b00cb75a701685b96670b6490f61376f62eacc0ab29d240157db401c1 / MVID e7b3a3b0-7083-486a-8ca2-97cecec02ea2</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x0600008a&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600008a&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.PlatformSDKCS.ModuleManager&quot;,
+            &quot;name&quot;: &quot;QueryModuleRecentlyResult&quot;,
+            &quot;parameters&quot;: 2,
+            &quot;attributes&quot;: &quot;Public, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;20021285100909&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 173,
+          &quot;ilSha256&quot;: &quot;f255415d2d7cbeef8d1302c11c7f06009b577ad259256b3f6da16f91953a1272&quot;,
+          &quot;ilBytes&quot;: &quot;00160a735f0700060c007e4600000a0d02030604120328890000060b1201288900000a16fe01130411042c0d00086f5e070006001413052b71087ba8060004096f8a00000a00061201288b00000a7ba4060004580a087ba90600041201288b00000a7ba40600046f8c00000a00087baa0600041201288b00000a7ba50600046f8a00000a0000061201288b00000a7ba6060004fe04130611063a6bffffff08067dab0600040813052b0011052a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:20395–20414</a> · original-managed-cil · 原二进制身份：34c0c90b00cb75a701685b96670b6490f61376f62eacc0ab29d240157db401c1 / MVID e7b3a3b0-7083-486a-8ca2-97cecec02ea2</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x0600075e&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600075e&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;.IMVS_QUERY_MODULE_RES_INFO_LIST_Class&quot;,
+            &quot;name&quot;: &quot;Release&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Public, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;200001&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 61,
+          &quot;ilSha256&quot;: &quot;e94306d268de3cab4d5de43db252ab74a4bd68c8eb99571966f58c83d1329ca9&quot;,
+          &quot;ilBytes&quot;: &quot;00160a2b2500027ba8060004066f6c01000a0b28840500067b0d03000412016f8c00000626000617580a06027ba80600046f6d01000afe040c082dc92a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/data-lifecycle-cil.json">docs/architecture-recovery/data-lifecycle-cil.json:20117–20136</a> · original-managed-cil · 原二进制身份：34c0c90b00cb75a701685b96670b6490f61376f62eacc0ab29d240157db401c1 / MVID e7b3a3b0-7083-486a-8ca2-97cecec02ea2</p><p>SHA256 <code>b8fe9b3787451ebb018a383fc5e822a32349289d6246513ada89f3de2176f679</code></p><pre>          &quot;token&quot;: &quot;0x0600008c&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x0600008c&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VM.PlatformSDKCS.ModuleManager&quot;,
+            &quot;name&quot;: &quot;ReleaseModuleHistoryResult&quot;,
+            &quot;parameters&quot;: 1,
+            &quot;attributes&quot;: &quot;Public, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;2001081018&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 44,
+          &quot;ilSha256&quot;: &quot;ab5b5a109bde43738f0fedf16d1f1f621dc27a2408450fc1ace749895031f5db&quot;,
+          &quot;ilBytes&quot;: &quot;00160a7e970300041f09034d28110300060a0616fe030b072c0500060c2b0b037e4600000adf060c2b00082a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre></details><details id="evidence-A06-6"><summary>DR03 · source-confirmed · RenderDataCenter按ExecuteCount收图像/形状</summary><p>三仓交换移动Dictionary引用，不复制每张图像。ClearDisplayStore只清显示仓；DeInit清全部仓与选图字段。所选Clear/DeInit体没有遍历调用像素释放；因而清缓存引用、停止收到新值和底层映射释放是不同阶段。</p><ul><li>未知/限制：Object的发送完成信号消费者、显示线程借用期和图像MemoryAddress真实释放仍未全闭合。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/RenderDataCenter.cs">analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/RenderDataCenter.cs:140–165</a> · local-decompiled-source · 原二进制身份：99ffa401c8784472913ad43813d68a8a5577890c00e149506e3e5664fa61c97d / MVID d144317f-3992-4275-9b0f-13fb6163e07d</p><p>SHA256 <code>0fbd40abe970a3fe262fdeb6d03e70ab467115ccb89b1918bc931f0f54b07b64</code></p><pre>	private void ExchangeBuffer(bool isSpare = false)
+	{
+		if (isSpare)
+		{
+			Dictionary&lt;string, ImageData&gt; dictionary = displayImageStore;
+			Dictionary&lt;object, object&gt; dictionary2 = displayShapeStore;
+			displayImageStore = spareImageStore;
+			displayShapeStore = spareShapeStore;
+			spareImageStore = dictionary;
+			spareShapeStore = dictionary2;
+		}
+		else
+		{
+			Dictionary&lt;string, ImageData&gt; dictionary3 = displayImageStore;
+			Dictionary&lt;object, object&gt; dictionary4 = displayShapeStore;
+			displayImageStore = bufferImageStore;
+			displayShapeStore = bufferShapeStore;
+			bufferImageStore = dictionary3;
+			bufferShapeStore = dictionary4;
+		}
+	}
+
+	/// &lt;summary&gt;
+	/// 将数据存入正确的缓存区
+	/// &lt;/summary&gt;
+	/// &lt;param name=&quot;sender&quot;&gt;&lt;/param&gt;</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/RenderDataCenter.cs">analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/RenderDataCenter.cs:270–289</a> · local-decompiled-source · 原二进制身份：99ffa401c8784472913ad43813d68a8a5577890c00e149506e3e5664fa61c97d / MVID d144317f-3992-4275-9b0f-13fb6163e07d</p><p>SHA256 <code>0fbd40abe970a3fe262fdeb6d03e70ab467115ccb89b1918bc931f0f54b07b64</code></p><pre>	public void DeInit()
+	{
+		isInit = false;
+		displayImageStore.Clear();
+		displayShapeStore.Clear();
+		bufferImageStore.Clear();
+		bufferShapeStore.Clear();
+		spareImageStore.Clear();
+		spareShapeStore.Clear();
+		FixedExcuteCount = 0u;
+		NeedFixed = false;
+		NeedFixedSpare = false;
+		BufferExecuteCount = 0u;
+		SpareExecuteCount = 0u;
+		CheckImagesName = null;
+		SelectedImage = null;
+		SelectedInputImage = null;
+	}
+}
+</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/render-store-cil-evidence.json">docs/architecture-recovery/render-store-cil-evidence.json:5104–5123</a> · original-managed-cil · 原二进制身份：99ffa401c8784472913ad43813d68a8a5577890c00e149506e3e5664fa61c97d / MVID d144317f-3992-4275-9b0f-13fb6163e07d</p><p>SHA256 <code>ddb2eb62624a452fdaec6d3374fe50098ba940935328dad860cda40d7ceb57bd</code></p><pre>          &quot;token&quot;: &quot;0x060008b2&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x060008b2&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VMControls.WPF.DataForUI.RenderDataCenter&quot;,
+            &quot;name&quot;: &quot;DeInit&quot;,
+            &quot;parameters&quot;: 0,
+            &quot;attributes&quot;: &quot;Public, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;200001&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 143,
+          &quot;ilSha256&quot;: &quot;65df923e5217d5a3ecbf8dae58b95310846cdb902f5670102e99b00f95d88ab7&quot;,
+          &quot;ilBytes&quot;: &quot;0002167d9a040004027b9b0400046f6607000a00027b9c0400046f4e02000a00027b9d0400046f6607000a00027b9e0400046f4e02000a00027b9f0400046f6607000a00027ba00400046f4e02000a00021628a60800060002167da204000402167da3040004021628a208000600021628a408000600021428a0080006000214289c080006000214289e080006002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre></details></article><p><a href="architecture-target.html">返回12项决策目录</a></p></main><footer>文档设计交付 ≠ 产品实现或运行验收；原42检查点、49能力口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

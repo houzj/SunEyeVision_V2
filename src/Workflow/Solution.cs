@@ -58,6 +58,8 @@ public class Solution : ObservableObject
     [JsonIgnore]
     public string? FilePath { get; set; }
 
+    [JsonIgnore] public string? ResourceBaseDirectory { get; set; }
+
     /// <summary>
     /// 工作流列表
     /// </summary>
@@ -119,53 +121,11 @@ public class Solution : ObservableObject
     /// </summary>
     public void Save(string filePath)
     {
-        if (string.IsNullOrEmpty(filePath))
-            throw new ArgumentException("文件路径不能为空");
-
-        var directory = Path.GetDirectoryName(filePath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-        {
-            VisionLogger.Instance.Log(LogLevel.Info, $"创建目录: {directory}", "Solution");
-            Directory.CreateDirectory(directory);
-        }
-
-        VisionLogger.Instance.Log(LogLevel.Info, $"开始序列化解决方案: Id={Id}", "Solution");
-        var json = JsonSerializer.Serialize(this, WorkflowSerializationOptions.Default);
-        VisionLogger.Instance.Log(LogLevel.Info, $"序列化完成, JSON长度: {json.Length} 字符", "Solution");
-
-        SunEyeVision.Workflow.Persistence.AtomicJsonFile.Write(filePath, json);
-        FilePath = filePath;
-
-        var fileInfo = new FileInfo(filePath);
-        VisionLogger.Instance.Log(LogLevel.Success, $"保存解决方案: Id={Id} -> {filePath}, 文件大小: {fileInfo.Length} 字节", "Solution");
+        var repository = new SolutionRepository();
+        if (!repository.Save(this, filePath)) throw new IOException(repository.LastError ?? "方案保存失败。");
     }
 
-    /// <summary>
-    /// 从文件加载
-    /// </summary>
-    public static Solution? Load(string filePath)
-    {
-        if (!File.Exists(filePath))
-            return null;
-
-        try
-        {
-            var json = File.ReadAllText(filePath);
-            var solution = JsonSerializer.Deserialize<Solution>(json, WorkflowSerializationOptions.Default);
-            if (solution != null)
-            {
-                solution.FilePath = filePath;
-                VisionLogger.Instance.Log(LogLevel.Info, $"加载解决方案: Id={solution.Id} -> {filePath}", "Solution");
-            }
-
-            return solution;
-        }
-        catch (Exception ex)
-        {
-            VisionLogger.Instance.Log(LogLevel.Error, $"加载解决方案失败: {filePath}, 错误: {ex.Message}", "Solution", ex);
-            return null;
-        }
-    }
+    public static Solution? Load(string filePath) => new SolutionRepository().Load(filePath);
 
     /// <summary>
     /// 创建新解决方案

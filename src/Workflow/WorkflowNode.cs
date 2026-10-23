@@ -1,3 +1,4 @@
+using System.Linq;
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -34,6 +35,9 @@ namespace SunEyeVision.Workflow
     /// </remarks>
     public class WorkflowNodeBase : ObservableObject
     {
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
+
         #region 核心字段（9个）
 
         /// <summary>
@@ -755,6 +759,7 @@ namespace SunEyeVision.Workflow
             )
             {
                 IsEnabled = IsEnabled,
+            AdditionalData = AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
                 Parameters = Parameters,
                 ParamSettings = ParamSettings?.Clone(),
                 PositionX = PositionX,

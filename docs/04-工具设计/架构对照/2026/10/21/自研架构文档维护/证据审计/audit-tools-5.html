@@ -1,0 +1,1360 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工具处置 · 逻辑工具</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">工具处置 · 逻辑工具</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="../能力对照/capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="../能力对照/capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>工具处置 · 逻辑工具</h1><aside class="scope-notice">以下沿用2026-10-21分析基线与原有状态；未把本次分页或图示当作新增语义证据。最新目标取舍另见 <a href="../目标架构/architecture-target.html">12项目标决策</a>。</aside><div class="visual-metrics"><div><strong>20</strong><span>本分类目录条目</span><small>目录≠算法等价</small></div></div><div class="filter-bar"><label for="search">搜索本页</label><input id="search" data-filter-input placeholder="输入名称、ID或问题"><output data-filter-count></output></div><div class="record-grid"><section class="record-card" id="tool-5-0" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>分支模块</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/BranchModule_STD</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/BranchModule_STD&quot;,
+  &quot;label&quot;: &quot;分支模块&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;inputint&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;outputint&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;BranchMatch&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\BranchModule_STD.xml&quot;,
+      &quot;sha256&quot;: &quot;db4179ded7075902bfedfb1e2bc385801c0d7202f986e784ef438629a5fab068&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\BranchModule_STDAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;428d9e140d51100e4a7c7d785f01f7e1d954b424f6ed631721e40d1b25ab9e91&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\BranchModule_STDAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;1c990c3c7751e60bfb290375bf7b25057063af11a24f18a6fa85d9c7b259f517&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\BranchModule_STDCs.xml&quot;,
+      &quot;sha256&quot;: &quot;8d26a02a0535bd79b63fcd22c32006c7c8b50c53dc4f0cb318287d9ecb011fe3&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\BranchModule_STDDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;964a421a48b315ade80be6bff084d9c3252fead6ea9238f6ebbbfe54b3bc732c&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;aa914ba80064936b1da3f90a266a3e32ec2d1694369ff393063e1948f282d280&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-1" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>分支字符</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/BranchStringCpmL</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/BranchStringCpmL&quot;,
+  &quot;label&quot;: &quot;分支字符&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;StringA&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;BranchMatch&quot;,
+    &quot;StringMatch&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\BranchStringCpmL.xml&quot;,
+      &quot;sha256&quot;: &quot;ddeaa24b66ead5f9fa4684df27e5c89f1f04d4b3a9b3c0050857c2b61ec92624&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\BranchStringCpmLAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;1af9755e8b51ba290d44f715d24402ee7b193c1914416b7e15875dcbbd53eca9&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\BranchStringCpmLAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;692fcc08022cac759f4f6130b4409eabb3659a9341c58a6d9b5cd0ee129e8224&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\BranchStringCpmLCs.xml&quot;,
+      &quot;sha256&quot;: &quot;e18a89033c994b2bbdd52229b3047fd9bf5baf79570210beb41ea3076388ff3b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\BranchStringCpmLDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;c9f451053521b2640ca220f1d74af2bd996b1c675a97b1dad145109db6c7876c&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;3650cccf4a710f796b66921ecec3d3e6fd6265228b5e4da03dd01d7b0d6cd394&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-2" data-filter-record><span class="chip">已有候选，非等价验收</span><h3>Group</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/IMVSGroup</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已建立候选入口，具体以工具专页源码分析为准。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">差异按现有工具专页逐模式复审</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">按既有推荐整改/混合；不默认保留</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="../现状分析/tool-subroutine.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/IMVSGroup&quot;,
+  &quot;label&quot;: &quot;Group&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;candidate&quot;,
+  &quot;status&quot;: &quot;已有候选，非等价验收&quot;,
+  &quot;difference&quot;: &quot;差异按现有工具专页逐模式复审&quot;,
+  &quot;adoption&quot;: &quot;按既有推荐整改/混合；不默认保留&quot;,
+  &quot;current&quot;: &quot;已建立候选入口，具体以工具专页源码分析为准。&quot;,
+  &quot;gap&quot;: &quot;候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: &quot;../现状分析/tool-subroutine.html&quot;,
+  &quot;candidates&quot;: [
+    {
+      &quot;id&quot;: &quot;Subroutine&quot;,
+      &quot;name&quot;: &quot;子程序&quot;,
+      &quot;category&quot;: &quot;流程控制&quot;,
+      &quot;file&quot;: &quot;../现状分析/tool-subroutine.html&quot;,
+      &quot;model&quot;: &quot;subroutine&quot;,
+      &quot;area&quot;: &quot;sub-input&quot;,
+      &quot;scope&quot;: &quot;已纳入专业入口局部分析；不等全算法闭合&quot;,
+      &quot;source&quot;: {
+        &quot;path&quot;: &quot;tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs&quot;,
+        &quot;line&quot;: 26,
+        &quot;token&quot;: &quot;[Tool(\r&quot;,
+        &quot;sha256&quot;: &quot;d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9&quot;,
+        &quot;snippet&quot;: &quot;[Tool(\r\n        id: \&quot;Subroutine\&quot;,\r\n        displayName: \&quot;子程序\&quot;,\r\n        Description = \&quot;执行子工作流（大号工具，内部使用工作流节点组织）\&quot;,\r\n        Icon = \&quot;subroutine\&quot;, Order = 20,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Control,\r\n        Version = \&quot;1.0.0\&quot;,\r\n        HasDebugWindow = true\r\n    )]\r\n    public class SubroutineTool : IToolPlugin&lt;SubroutineParameters, SubroutineResults&gt;\r\n    {\r\n        /// &lt;summary&gt;\r\n        /// 无限长直线（Line2d）显示时的单侧截取长度（像素）。\r\n        /// 数学直线无端点，可视化时以直线上一点为中心沿方向向量截取一段可见线段。\r\n        /// &lt;/summary&gt;\r\n        private const double DisplayLineHalfLength = 100;\r\n\r\n        static SubroutineTool()\r&quot;
+      },
+      &quot;sourceAudit&quot;: &quot;未新增本轮逐工具审读&quot;
+    }
+  ],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;StartIndex&quot;,
+    &quot;EndIndex&quot;,
+    &quot;CmpSrcInt&quot;,
+    &quot;CmpSrcFloat&quot;,
+    &quot;CmpSrcStr&quot;,
+    &quot;CmpDstInt&quot;,
+    &quot;CmpDstFloat&quot;,
+    &quot;CmpDstStr&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;LoopIndex&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroup.xml&quot;,
+      &quot;sha256&quot;: &quot;3f0fe8154fd8b0a396b85d3b503fed11bc37f213c53441d613b429388e702adc&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;17c5397aad036713205b2af45420bb925e1ac2937a26093672c1653d9989ae48&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;2e15b6a20e2ab2e5ed40a12d943001dbc531cf28adc9763821840505c2679c7b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupCs.xml&quot;,
+      &quot;sha256&quot;: &quot;96bb963f60ba5d0142c33ba1a1d8ec147a9f44881110c7c69e3e8ebd867b0875&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;aa56da3d573a730981b759113756a1544eaafa8387407da5f415a38053c46fc9&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;aa91bc16aa4e9c534ca97486794b1692e5dd7adfa62558c633ceb770d624471d&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-3" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>逻辑</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/AndModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/AndModule&quot;,
+  &quot;label&quot;: &quot;逻辑&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;IAndResult&quot;,
+    &quot;StrAndResult&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\AndModule.xml&quot;,
+      &quot;sha256&quot;: &quot;cb1ea1e4e761f2f8b23f73eacc12e4bd551928fd7953a4d9e1acd2b018b490f0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\AndModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;6312436f20346f200a6689e1b29b0fa23b3337292293bcc0b181bcbfeeb0f284&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\AndModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;198dcb319f6926d6165556de9c3ed424cb7223bfc4c6572e0b049d2f069d6767&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\AndModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;958543ac3efe80b0f22463572ac283f57312902d262c486bbb50383074c6a6dc&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\AndModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;95aba79b5d2afc8a1233c32dee15524a78cb2f7959eccccc653559b3d86844b0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;aa2769894285815b38935a43e7366bb24d8b6b744c5ead302293826540ff39d4&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-4" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>数据分类</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/DataClassificationModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/DataClassificationModule&quot;,
+  &quot;label&quot;: &quot;数据分类&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\DataClassificationModule.xml&quot;,
+      &quot;sha256&quot;: &quot;8a0d6b7e3b7548fb30df7439f34b966585f6685445df56eb96ba29c8c007cf06&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\DataClassificationModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;985704a0c914bb1f2fbce86448d97983602e75779c7548b8356d57ecdadd9d13&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\DataClassificationModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;cdbca5cce0faf14580468e7a9782a6b56e58517561660f941073174d4986a924&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\DataClassificationModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;d20afb9ecde3700d00ad528e2bae976afd4faff9c65361cf4aa82e50a2e4affd&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\DataClassificationModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;9d9ff06bcda7abe62d23e81531f26d6d8cb670dcbee98eb6d3bd47ef847dda2d&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;6e06178e6b0266dbcbbee231dfb256de7718efa48861cb1bbb415664240f15d3&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-5" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>数据筛选</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/DataFilterModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/DataFilterModule&quot;,
+  &quot;label&quot;: &quot;数据筛选&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-DataFilterModule&quot;,
+    &quot;difference&quot;: &quot;高：独立筛选与结果索引合同缺失&quot;,
+    &quot;route&quot;: &quot;按业务新增纯数据筛选工具，借鉴配置式条件；算法规则须自有合同。&quot;,
+    &quot;current&quot;: &quot;当前24工具无独立筛选工具；C#脚本可以作为经开发的临时实现途径，不计现成筛选能力。&quot;,
+    &quot;change&quot;: &quot;输入类型化集合+条件树，输出保留索引/掩码与同一行投影；先定逻辑组合、字符串比较、NaN/null、无匹配与坐标字段同步，禁止各列各筛各的。&quot;,
+    &quot;unknown&quot;: &quot;原条件树解析、比较器、输出行/索引及动态字段实现缺证。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;DataNum&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModule.xml&quot;,
+      &quot;sha256&quot;: &quot;055071a1d942fcc3ec2e33331c20a7fe298e863c39c5a8dfe5e40d5f8c035792&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;985704a0c914bb1f2fbce86448d97983602e75779c7548b8356d57ecdadd9d13&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;3f0e016d7d4b8b3f4779d30a00ddd422d6aa49621786c6f8a5f566bf9e2032f5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;fdd4e91d8be143c06f6fd41633600c2614cace57e093986fe5c841b9b6fc0edc&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;51e03f15ab29c2eafa41b00511f352fc3e477e0e3d8d5dd452375542bcf16d78&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;448e423d24e32cc13acdb7e8d67630b8f50c046685cb6561eb35c0f7b02f09ec&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-6" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>数据记录</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/DataRecordModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/DataRecordModule&quot;,
+  &quot;label&quot;: &quot;数据记录&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-DataRecordModule&quot;,
+    &quot;difference&quot;: &quot;高：业务记录工具缺失，持久化政策未定&quot;,
+    &quot;route&quot;: &quot;按需新增；内存历史与文件记录应分合同，不拿日志系统代替。&quot;,
+    &quot;current&quot;: &quot;日志/长期Workflow快照已有，但日志消息不是类型化业务数据记录，当前无独立DataRecord工具。&quot;,
+    &quot;change&quot;: &quot;先定内存或文件、逐轮追加/覆盖、Run/Scope时间与schema版本、容量/轮转/原子提交；若落盘，明确flush/耐久性，ClearSignal不能偷偷删历史文件。&quot;,
+    &quot;unknown&quot;: &quot;原记录存储后端、clear行为、失败/缓冲/落盘确认缺证。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;ClearSignal&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModule.xml&quot;,
+      &quot;sha256&quot;: &quot;48d4906680d1550b5259c0a6eae46fa858527005615c0f50e6cc38c5c4a066ef&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;036107cb151075f510a46804893d43fb6d8220bf130a70286856f60ec85be7c0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleControl.xml&quot;,
+      &quot;sha256&quot;: &quot;2fe8da7bd08f021c8faaea0f31eae1742f3fa1f3732a626026bbe56bc1c34419&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;c0f0ca266f47585dcd885e3093c7a91c7abac385e5de4694718664ab7a2cc461&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;acc19397811644f701445996b3607a3aca6a310e6e201f5d829a2a993e46450b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;56abce3680028a6c9f8723b939560149d47a1d4aa785a83359636f8f6fd44bcd&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-7" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>数据集合</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/DataSetModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/DataSetModule&quot;,
+  &quot;label&quot;: &quot;数据集合&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-DataSetModule&quot;,
+    &quot;difference&quot;: &quot;高：缺独立集合/清空与跨轮寿命合同&quot;,
+    &quot;route&quot;: &quot;建议新增类型化集合能力，复用现有FieldId/输出契约；不复制VM私有二进制。&quot;,
+    &quot;current&quot;: &quot;ToolResults.GetOutputValues返回新字典但值引用共享；现有绑定/结果树支持字段，不是跨轮集合工具。&quot;,
+    &quot;change&quot;: &quot;拟议固定schema的行或列集合（先选择一种），FieldId稳定；一批写入原子化，ClearSignal的电平/边沿、空值和失败批次政策显式。图像/对象列用快照或租约，不能只复制字典。&quot;,
+    &quot;unknown&quot;: &quot;原动态字段materialize、行/列追加与ClearSignal消费代码未齐。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;ClearSignal&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModule.xml&quot;,
+      &quot;sha256&quot;: &quot;12e817bbba4e2ff7c714351a7527acff34bf8682789b218e8a6a721cd7f9442b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;06aea7108901a0bab9455401e9a58ba276a4d0840c44852be012bb799b160214&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;226eb15c622e7525b6c550d2e2b671045ed41a9cbf123edf007811793196ddc5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;acc19397811644f701445996b3607a3aca6a310e6e201f5d829a2a993e46450b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;20fa8b7857278ce3e1e5194f370eff4f05b95ed77df63bb6461a7f99fd807fba&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-8" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>数据排序</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/DataSortModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/DataSortModule&quot;,
+  &quot;label&quot;: &quot;数据排序&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-DataSortModule&quot;,
+    &quot;difference&quot;: &quot;高：缺可绑定的排序结果与置换&quot;,
+    &quot;route&quot;: &quot;按需新增排序算子，复用类型化集合与稳定字段ID。&quot;,
+    &quot;current&quot;: &quot;当前无独立排序工具声明；结果表显示顺序或脚本内部OrderBy不等业务排序输出工具。&quot;,
+    &quot;change&quot;: &quot;输入集合+排序键/方向，输出同一置换应用于全部列及原索引；明确稳定排序、文化区、大小写、NaN/null和相同键次序。排序不修改输入快照。&quot;,
+    &quot;unknown&quot;: &quot;原排序键schema、稳定性与比较实现仍缺。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModule.xml&quot;,
+      &quot;sha256&quot;: &quot;ae894507e55b49e118a8944254d7680f919f25b71e6dec2109054a2b841c8ff1&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;985704a0c914bb1f2fbce86448d97983602e75779c7548b8356d57ecdadd9d13&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;50395af7a22cf8224c38e4abd76fb88135c0b2458aa207713a873f5e6c634bdf&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;9938370ee72a6da9104982dc4a1423d6e58f5d7f3f2da8a07f5c01ed19f2ef3d&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;ac948cd07a9ef710f201a67ae381a126ba5fa7281543142626c47bd2872b0966&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;8143799926bd2fe276a9e328dd1e7087566d8bcd8ff9b7964593262cfb2ac66d&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-9" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>格式化</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/FormatModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/FormatModule&quot;,
+  &quot;label&quot;: &quot;格式化&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-FormatModule&quot;,
+    &quot;difference&quot;: &quot;中到高：局部字符串转换已有，独立格式合同缺失&quot;,
+    &quot;route&quot;: &quot;建议新增轻量格式化工具，复用类型/错误反馈；不复用原VM未核语法。&quot;,
+    &quot;current&quot;: &quot;通信接收分析用InvariantCulture转换单值为显示字符串，协议组装有自己的编码/字段合同；均不等通用格式化工具。&quot;,
+    &quot;change&quot;: &quot;输入字段ID/标量或数组+自有受限模板，输出string[]；明确广播/zip/长度失配、空值/精度/转义/区域性/合并分隔符。编码只在协议输出层做一次，限总输出长度。&quot;,
+    &quot;unknown&quot;: &quot;原模板解析、合并/数组广播、异常/长度限制实现缺证。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;format_out&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModule.xml&quot;,
+      &quot;sha256&quot;: &quot;1ed23d3becac694e7924f54016d05004dedc1d0915ec6ccd5cc0538e7196fcc4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;53caad6d43561f0dd7847769c3511708b138ba82565619693f4587e1c089dccf&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;4075d3199f94abb6a5e952829233f848b4ae82eff9771a3d7da0316eeebc868a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;f4c3583962b72cbe1b3c2f8d69e4e9a6861f17d4d62f888fc86aecd4597e7ed5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;aca1df260ce0662594470b36458b3c089e60eabfc50adca5be046a787c0bfec9&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;b9e67c315ed9fca3a1bc50c9f8c2d285cbb781a4283aceb88f41df88617ce68c&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-10" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>图形收集</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/GraphicsSetModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/GraphicsSetModule&quot;,
+  &quot;label&quot;: &quot;图形收集&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-GraphicsSetModule&quot;,
+    &quot;difference&quot;: &quot;高：已有显示收集器，缺原工具业务合同&quot;,
+    &quot;route&quot;: &quot;复用图形载体与绘制层，按已确认需求新增业务工具；禁止直接把DisplayCollector当迁移完成。&quot;,
+    &quot;current&quot;: &quot;DisplayCollector按Style引用收集图形/文字用于显示，确有图元批量接口，但不是该独立图形业务工具。&quot;,
+    &quot;change&quot;: &quot;输入类型化图形+参考域/修正来源，输出明确图形结果集合；筛选/变换/切片等业务分别定义，不猜Dicing字段算法。显示样式与结果几何分开，Finalize不等不可变深拷贝。&quot;,
+    &quot;unknown&quot;: &quot;原InputWay/CorrectEnable/Dicing语义、图形结果结构与最终释放缺证。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModule.xml&quot;,
+      &quot;sha256&quot;: &quot;b67671669f5bfafbaa3b8f79dadb282e09004c469e22e1d99c6b24079721c6cf&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;a0b78f802cb0140bac05bf4cd44e353233f1864b1cfa69715809a1e4d381f72d&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;788a286b7a78d2e1b6ccc4ce987d1fcb4b737a4a65ef264ee86a8de771a62364&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;2de8b9d890fb650e5d355b77085374f46454b67473e73807b51b92707764c707&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;cb320232b19c7aa84e8cc411728b9d058a865f939a463c734863740aa68eb2bc&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\IoCombination.xml&quot;,
+      &quot;sha256&quot;: &quot;9cda261e4b72a3eced575d8d2783857ded559548c2712862ba566a1e7e13c2a4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\Relate.xml&quot;,
+      &quot;sha256&quot;: &quot;18ee7ef9dd5dac87c07af189b5b25e169ff3e4f299b385dae7285952012f840c&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;9e187b41c658250886b43df414b980ab63d4ee8052c7cbfaa32c36b8cc6706fb&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-11" data-filter-record><span class="chip">已有候选，非等价验收</span><h3>条件分支</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/IfBranchModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已建立候选入口，具体以工具专页源码分析为准。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">差异按现有工具专页逐模式复审</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">按既有推荐整改/混合；不默认保留</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="../现状分析/tool-detail-Condition.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/IfBranchModule&quot;,
+  &quot;label&quot;: &quot;条件分支&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;candidate&quot;,
+  &quot;status&quot;: &quot;已有候选，非等价验收&quot;,
+  &quot;difference&quot;: &quot;差异按现有工具专页逐模式复审&quot;,
+  &quot;adoption&quot;: &quot;按既有推荐整改/混合；不默认保留&quot;,
+  &quot;current&quot;: &quot;已建立候选入口，具体以工具专页源码分析为准。&quot;,
+  &quot;gap&quot;: &quot;候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: &quot;../现状分析/tool-detail-Condition.html&quot;,
+  &quot;candidates&quot;: [
+    {
+      &quot;id&quot;: &quot;Condition&quot;,
+      &quot;name&quot;: &quot;条件分支&quot;,
+      &quot;category&quot;: &quot;流程控制&quot;,
+      &quot;file&quot;: &quot;../现状分析/tool-detail-Condition.html&quot;,
+      &quot;model&quot;: &quot;pending&quot;,
+      &quot;area&quot;: null,
+      &quot;scope&quot;: &quot;已补本工具参数/处理/传递/缓存/收尾的局部源码及VM原声明对照；无运行验收/算法等价证明&quot;,
+      &quot;source&quot;: {
+        &quot;path&quot;: &quot;tools/SunEyeVision.Tool.Condition/ConditionTool.cs&quot;,
+        &quot;line&quot;: 13,
+        &quot;token&quot;: &quot;[Tool(\r&quot;,
+        &quot;sha256&quot;: &quot;68128eea9a8ff645af5e0d63eb1cdb8c80ff45ba1ef1d5332b47ffb26fe387ec&quot;,
+        &quot;snippet&quot;: &quot;[Tool(\r\n        id: \&quot;Condition\&quot;,\r\n        displayName: \&quot;条件分支\&quot;,\r\n        Description = \&quot;根据参数值判断条件，选择执行分支\&quot;,\r\n        Icon = \&quot;branch\&quot;, Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Control,\r\n        Version = \&quot;1.0.0\&quot;,\r\n        HasDebugWindow = true\r\n    )]\r\n    public class ConditionTool : IToolPlugin&lt;ConditionParameters, ConditionResults&gt;, IAsyncToolPlugin, IToolEditorFactory\r\n    {\r\n        public System.Windows.FrameworkElement? CreateDebugControl(IToolPlugin tool)\r\n        {\r\n            return new Views.ConditionDebugControl();\r\n        }\r\n\r\n        public ConditionResults Run(ConditionParameters parameters)\r\n            =&gt; ExecuteCore(parameters, parameters.NodeResults, parameters.Context);\r&quot;
+      },
+      &quot;sourceAudit&quot;: &quot;五段实现与失败取消路径已局部静态审读&quot;
+    }
+  ],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;BranchMatch&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModule.xml&quot;,
+      &quot;sha256&quot;: &quot;02e29a8daeb22a67071f5e0e537672f1f3d4565bcdf31dc85f13efb2793ae2a3&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;39d15cde07aa24c7fd4fe27f6e3e1d5dd842d127e489cfef1a0cc8c9370e067a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;298e34234c6ac2ca3530819bad9451bd2d89baf0f1874e0853f0c61729e20da1&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;30f9499dc5730dfdfb2199c1a1a0ea00c0c3e8c379c24e9fc4254488e3d7f061&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;e73ebb3a1ac33e83a19072575259128d86c162fa64f1b164c3b75b6483b88245&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;9fcb4a517306d063ab2cecfa605655bb5d94a9688db08f30857a776dd6c0f9de&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-12" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>条件检测</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/IfModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/IfModule&quot;,
+  &quot;label&quot;: &quot;条件检测&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;StrResult&quot;,
+    &quot;NIfResult&quot;,
+    &quot;IfItemResult&quot;,
+    &quot;IfItemStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfBranchModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;30f9499dc5730dfdfb2199c1a1a0ea00c0c3e8c379c24e9fc4254488e3d7f061&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfModule.xml&quot;,
+      &quot;sha256&quot;: &quot;21bc3eb04e1291141addc6605921d8a122f7fb049c387c3da6ed2b2f4b3b26ec&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;9bfd984b137294d79e241afee32761f66dfd39b319b9242535fdcd96de054fc1&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;9972c9e2cefa70cf51bc7c8237b57e93b363aa1bbce931d134e72c70dc36f1e9&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;2ffe91433be41093b057c007de5276b1c5b9d6e24914049cc37ed50e7e843aba&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;1e6ba4c7e8aa56dc4d8410c2eebea182cd72157d34f50da9dbee7c6a598c09e0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;f6dbf1bbdc43696f42ff8c899f1316d365a3230cd91c231c5168c39271f90caf&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-13" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>点集</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/PointSetMODU_STD</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/PointSetMODU_STD&quot;,
+  &quot;label&quot;: &quot;点集&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-PointSetMODU_STD&quot;,
+    &quot;difference&quot;: &quot;中到高：数据载体可复用，点集工具未有&quot;,
+    &quot;route&quot;: &quot;建议新增点集工具，复用算法值类型；编辑模型在提交时转换。&quot;,
+    &quot;current&quot;: &quot;SDK有readonly Point2d值类型与可变Point2D编辑类型；NPoint等专业工具有采样点，但无通用点集工具声明。&quot;,
+    &quot;change&quot;: &quot;自有结果采用点值数组加坐标系/单位/源索引；原兼容层如需平行X/Y数组应强制等长。明确启用项、空集、非有限值、循环追加上限与清空。&quot;,
+    &quot;unknown&quot;: &quot;原循环累积、可选输入缺失/跳过、数组内存与清空实现缺证。&quot;
+  },
+  &quot;declaredFields&quot;: [
+    &quot;Point1&quot;,
+    &quot;PointX1&quot;,
+    &quot;PointY1&quot;,
+    &quot;Point2&quot;,
+    &quot;PointX2&quot;,
+    &quot;PointY2&quot;,
+    &quot;Point3&quot;,
+    &quot;PointX3&quot;,
+    &quot;PointY3&quot;,
+    &quot;Point4&quot;,
+    &quot;PointX4&quot;,
+    &quot;PointY4&quot;,
+    &quot;Point5&quot;,
+    &quot;PointX5&quot;,
+    &quot;PointY5&quot;,
+    &quot;Point6&quot;,
+    &quot;PointX6&quot;,
+    &quot;PointY6&quot;,
+    &quot;Point7&quot;,
+    &quot;PointX7&quot;,
+    &quot;PointY7&quot;,
+    &quot;Point8&quot;,
+    &quot;PointX8&quot;,
+    &quot;PointY8&quot;,
+    &quot;Point9&quot;,
+    &quot;PointX9&quot;,
+    &quot;PointY9&quot;,
+    &quot;Point10&quot;,
+    &quot;PointX10&quot;,
+    &quot;PointY10&quot;,
+    &quot;Point11&quot;,
+    &quot;PointX11&quot;,
+    &quot;PointY11&quot;,
+    &quot;Point12&quot;,
+    &quot;PointX12&quot;,
+    &quot;PointY12&quot;,
+    &quot;Point13&quot;,
+    &quot;PointX13&quot;,
+    &quot;PointY13&quot;,
+    &quot;Point14&quot;,
+    &quot;PointX14&quot;,
+    &quot;PointY14&quot;,
+    &quot;Point15&quot;,
+    &quot;PointX15&quot;,
+    &quot;PointY15&quot;,
+    &quot;Point16&quot;,
+    &quot;PointX16&quot;,
+    &quot;PointY16&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;Points Assemble&quot;,
+    &quot;PointX&quot;,
+    &quot;PointY&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STD.xml&quot;,
+      &quot;sha256&quot;: &quot;86ca96fa92e62e5763f140b0ae3342eb21ca72a9bd4f4b9f811a06955160e2e4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STDAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;b6d2a77a2ecc29c274bc20c83d5d492a6bccc938f26982977e47e3a0b42fad75&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STDAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;40e69142a920ea7f691e1186bb0e85d2e5133f73f30cfee4390ff191e20c0ffa&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STDCs.xml&quot;,
+      &quot;sha256&quot;: &quot;a9e10b82e3208a89dab3f1bfd01cf1f7d263fefd8a3dd8cecbb0bf8e419f81f0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STDDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;37e587bc65d8d168be7a31ab8e1379ebdeff2df7b734f9a165cb02587fbae8ee&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;7ba5153d6ebb0512a4361137705756ced9aeed7cbad1ef432dd72c6ef3e21f7c&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-14" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>Python脚本</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/PyShellModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/PyShellModule&quot;,
+  &quot;label&quot;: &quot;Python脚本&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\PyShellModule.xml&quot;,
+      &quot;sha256&quot;: &quot;fc5ac8ed8d9345d424be95bdb05fb2f010c4205882757b406ec61e1289353fdf&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\PyShellModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\PyShellModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;c4dc338156b7ce9a4bae45a72a88ceabd0d3b8c474a1d8ea273691603a8dd1d0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\PyShellModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;d35bf70195211de654f1336fe064d70d2632b1019be3d10944ddb17dc1ad77f4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\PyShellModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;584b5981eb3c430384cd9e254fe85aa2efe3d3eb80fc398f5d195799a57d7b64&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;2aacc746d42178306ef09263d4ddcb10ab07f18ce4c30829daf27d7fd1f79bc5&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-15" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>文本保存</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/SaveTextModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/SaveTextModule&quot;,
+  &quot;label&quot;: &quot;文本保存&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;SendData1&quot;,
+    &quot;SendData2&quot;,
+    &quot;SendData3&quot;,
+    &quot;SendData4&quot;,
+    &quot;SendData5&quot;,
+    &quot;SendData6&quot;,
+    &quot;SendData7&quot;,
+    &quot;SendData8&quot;,
+    &quot;SendData9&quot;,
+    &quot;SendData10&quot;,
+    &quot;SendData11&quot;,
+    &quot;SendData12&quot;,
+    &quot;SendData13&quot;,
+    &quot;SendData14&quot;,
+    &quot;SendData15&quot;,
+    &quot;SendData16&quot;,
+    &quot;SendData17&quot;,
+    &quot;SendData18&quot;,
+    &quot;SendData19&quot;,
+    &quot;SendData20&quot;,
+    &quot;SendData21&quot;,
+    &quot;SendData22&quot;,
+    &quot;SendData23&quot;,
+    &quot;SendData24&quot;,
+    &quot;SendData25&quot;,
+    &quot;SendData26&quot;,
+    &quot;SendData27&quot;,
+    &quot;SendData28&quot;,
+    &quot;SendData29&quot;,
+    &quot;SendData30&quot;,
+    &quot;SendData31&quot;,
+    &quot;SendData32&quot;,
+    &quot;SendData33&quot;,
+    &quot;SendData34&quot;,
+    &quot;SendData35&quot;,
+    &quot;SendData36&quot;,
+    &quot;SendData37&quot;,
+    &quot;SendData38&quot;,
+    &quot;SendData39&quot;,
+    &quot;SendData40&quot;,
+    &quot;SendData41&quot;,
+    &quot;SendData42&quot;,
+    &quot;SendData43&quot;,
+    &quot;SendData44&quot;,
+    &quot;SendData45&quot;,
+    &quot;SendData46&quot;,
+    &quot;SendData47&quot;,
+    &quot;SendData48&quot;,
+    &quot;SendData49&quot;,
+    &quot;SendData50&quot;,
+    &quot;SendData51&quot;,
+    &quot;SendData52&quot;,
+    &quot;SendData53&quot;,
+    &quot;SendData54&quot;,
+    &quot;SendData55&quot;,
+    &quot;SendData56&quot;,
+    &quot;SendData57&quot;,
+    &quot;SendData58&quot;,
+    &quot;SendData59&quot;,
+    &quot;SendData60&quot;,
+    &quot;SendData61&quot;,
+    &quot;SendData62&quot;,
+    &quot;SendData63&quot;,
+    &quot;SendData64&quot;,
+    &quot;SendData65&quot;,
+    &quot;SendData66&quot;,
+    &quot;SendData67&quot;,
+    &quot;SendData68&quot;,
+    &quot;SendData69&quot;,
+    &quot;SendData70&quot;,
+    &quot;SendData71&quot;,
+    &quot;SendData72&quot;,
+    &quot;SendData73&quot;,
+    &quot;SendData74&quot;,
+    &quot;SendData75&quot;,
+    &quot;SendData76&quot;,
+    &quot;SendData77&quot;,
+    &quot;SendData78&quot;,
+    &quot;SendData79&quot;,
+    &quot;SendData80&quot;,
+    &quot;SendData81&quot;,
+    &quot;SendData82&quot;,
+    &quot;SendData83&quot;,
+    &quot;SendData84&quot;,
+    &quot;SendData85&quot;,
+    &quot;SendData86&quot;,
+    &quot;SendData87&quot;,
+    &quot;SendData88&quot;,
+    &quot;SendData89&quot;,
+    &quot;SendData90&quot;,
+    &quot;SendData91&quot;,
+    &quot;SendData92&quot;,
+    &quot;SendData93&quot;,
+    &quot;SendData94&quot;,
+    &quot;SendData95&quot;,
+    &quot;SendData96&quot;,
+    &quot;SendData97&quot;,
+    &quot;SendData98&quot;,
+    &quot;SendData99&quot;,
+    &quot;SendData100&quot;,
+    &quot;StringA&quot;,
+    &quot;FileName&quot;,
+    &quot;SaveTriggerName&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;SavePath&quot;,
+    &quot;OutputFileName&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\SaveTextModule.xml&quot;,
+      &quot;sha256&quot;: &quot;d6e6bff663b5b3a6f2f354c8074146ea05409bad3d847d32bebb7368385d13de&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\SaveTextModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;e4f28fa0613a040cd1c8a5127493958e40e6c2502d9e7724d9b514bb55412e13&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\SaveTextModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;93391a3b26e9b4b97f67376645fe37e07e1fb5c9cd3af3a54860327ed182f2a1&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\SaveTextModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;6d5436e1050539c78f131f1a0bac462a57f688eec5c224cb8e8823e07c0be500&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\SaveTextModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;2a3caf158fdfa3fcf7c2ff413904904b1a497ea98f15997dc986b7809bedc3bc&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;71a62a92d234e2983ea1570e67788f3e99e0c79914b09164e38b841ab83873b1&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-16" data-filter-record><span class="chip">已有候选，非等价验收</span><h3>脚本</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/ShellModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已建立候选入口，具体以工具专页源码分析为准。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">差异按现有工具专页逐模式复审</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">按既有推荐整改/混合；不默认保留</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="../现状分析/tool-script.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/ShellModule&quot;,
+  &quot;label&quot;: &quot;脚本&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;candidate&quot;,
+  &quot;status&quot;: &quot;已有候选，非等价验收&quot;,
+  &quot;difference&quot;: &quot;差异按现有工具专页逐模式复审&quot;,
+  &quot;adoption&quot;: &quot;按既有推荐整改/混合；不默认保留&quot;,
+  &quot;current&quot;: &quot;已建立候选入口，具体以工具专页源码分析为准。&quot;,
+  &quot;gap&quot;: &quot;候选名称和声明不证明原算法、参数模式、缓存/释放等价，缺口仍在专页。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: &quot;../现状分析/tool-script.html&quot;,
+  &quot;candidates&quot;: [
+    {
+      &quot;id&quot;: &quot;Script&quot;,
+      &quot;name&quot;: &quot;Script&quot;,
+      &quot;category&quot;: &quot;脚本工具&quot;,
+      &quot;file&quot;: &quot;../现状分析/tool-script.html&quot;,
+      &quot;model&quot;: &quot;script&quot;,
+      &quot;area&quot;: &quot;script-input&quot;,
+      &quot;scope&quot;: &quot;已纳入专业入口局部分析；不等全算法闭合&quot;,
+      &quot;source&quot;: {
+        &quot;path&quot;: &quot;tools/SunEyeVision.Tool.Script/ScriptTool.cs&quot;,
+        &quot;line&quot;: 18,
+        &quot;token&quot;: &quot;[Tool(\r&quot;,
+        &quot;sha256&quot;: &quot;71c32de73c6d00308a639750dcebefdf1c69a936b72f8d98a6fad1b469d13292&quot;,
+        &quot;snippet&quot;: &quot;[Tool(\r\n        id: \&quot;Script\&quot;,\r\n        displayName: \&quot;Script\&quot;,\r\n        Description = \&quot;Execute user-defined C# script with DLL references and Init/Process lifecycle\&quot;,\r\n        Icon = \&quot;code\&quot;, Order = 10,\r\n        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Script,\r\n        Version = \&quot;2.0.0\&quot;,\r\n        HasDebugWindow = true\r\n    )]\r\n    public class ScriptTool : IToolPlugin&lt;ScriptParameters, ScriptResults&gt;, IAsyncToolPlugin, IToolEditorFactory, IPrecompilableTool\r\n    {\r\n        // ★ 应用启动阶段后台预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。\r\n        //   静态构造在 LoadPlugins 实例化工具时触发，fire-and-forget 不阻塞启动；\r\n        //   首次打开脚本工具时补全立即可用（MEF 已预热缓存命中）。\r\n        static ScriptTool()\r\n        {\r\n            // 编辑器内核统一预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。\r\n            ScriptEditorCore.WarmupForStartup();\r&quot;
+      },
+      &quot;sourceAudit&quot;: &quot;未新增本轮逐工具审读&quot;
+    }
+  ],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ResultShow&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\DLL\\HikAlgorithmTool.xml&quot;,
+      &quot;sha256&quot;: &quot;42e8e36ead94adefd61951c0e74c4936cf5094e073191ad5641a02fd2b879f2c&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModule.xml&quot;,
+      &quot;sha256&quot;: &quot;3b37b920da3de8fdabb4c62ee0ff8483b511f29da8991913819f6b5e6e462df4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;617cff239cdcc548dfa038b584a7ff530990917cd62f954c88d92f8e3e159e8f&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;e8962f09161a1f6d38c45fb4384598b01440078b72d2dfa2bfd84114a2b37be1&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;584b5981eb3c430384cd9e254fe85aa2efe3d3eb80fc398f5d195799a57d7b64&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;e06b9e160cb0799d3be037462ac287cc5ea4297c945867a2047f45de41102b0f&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-17" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>字符比较</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/StringCompareModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/StringCompareModule&quot;,
+  &quot;label&quot;: &quot;字符比较&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;StringA&quot;,
+    &quot;ModuRunTime&quot;,
+    &quot;StringMatch&quot;,
+    &quot;Index&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\StringCompareModule.xml&quot;,
+      &quot;sha256&quot;: &quot;ff6f9a97daab3d5e3ccb21d17efabc1ee21e2b6a770ddc0fca2dce98987ef7e0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\StringCompareModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;d6ce2836aed526bb55d1089dfb1f74795768ace44fc24f2d70237c91179f4faf&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\StringCompareModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;df48decd2c1ab1b85abfdea286fbb466476f2101ee97a3aca6bfcb388233f08d&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\StringCompareModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;3a70d86df43b1dad692cc2d4fbd9b6f65c2e0983e9d36d6def3e85da93c0dae9&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\StringCompareModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;a1a23bc458e4df81912d95bffb337aaccd3c94310bf69556dd534a676bb463f5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;0d4b667ba3067f55d1f2df338f664957e79c475c83fccd8ca1660029ddf760af&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-18" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>耗时统计</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/TimeStatisticModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">工具与引擎已有执行耗时测量</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">已有耗时元数据不等可配置区间统计工具；时钟、跨节点区间与结果字段待对应。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；已有耗时元数据不等可配置区间统计工具；时钟、跨节点区间与结果字段待对应。</td></tr></tbody></table></div><a href="../优化方案/optimization.html#diagnostic-benchmark">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/TimeStatisticModule&quot;,
+  &quot;label&quot;: &quot;耗时统计&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;工具与引擎已有执行耗时测量&quot;,
+  &quot;gap&quot;: &quot;已有耗时元数据不等可配置区间统计工具；时钟、跨节点区间与结果字段待对应。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；已有耗时元数据不等可配置区间统计工具；时钟、跨节点区间与结果字段待对应。&quot;,
+  &quot;url&quot;: &quot;../优化方案/optimization.html#diagnostic-benchmark&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/Plugin.SDK/Core/ToolExecutor.cs&quot;,
+    &quot;line&quot;: 154,
+    &quot;token&quot;: &quot;result.ExecutionTimeMs&quot;,
+    &quot;sha256&quot;: &quot;0229fd6ea68af49b5aefe58187f0036a5987fc69c15f1486cc73113dce6531e2&quot;
+  },
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\TimeStatisticModule.xml&quot;,
+      &quot;sha256&quot;: &quot;185500f6c15055dd1b03b59460791b4a93354757d8adb7151d099d3c195c0f78&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\TimeStatisticModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;6e7d872d5f7c0de80fd8b17cf54c1fe672275b5c83af3e2c5520ebcef11efc57&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\TimeStatisticModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;fb03fd50bff6a7c1dd01106fd3ab283b7a9bb04cd1938090717f1999dfb62300&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\TimeStatisticModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;9480649e261d2871792b8e2e3457ea19d349087d129fdfb34762cc8e2f46bca8&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\TimeStatisticModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;5bf333e22c5e2b5c2ee6112fb33adadfad642803a95a0e4c82306db0bfa14340&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;70a1b9c6367bf18b3de22757b60d5f80ebc3843f04415189be2780f39013b7b0&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-5-19" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>触发模块</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Logic/TriggerModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Logic/TriggerModule&quot;,
+  &quot;label&quot;: &quot;触发模块&quot;,
+  &quot;category&quot;: &quot;逻辑工具&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先定义动态字段/数组/排序稳定性/分支及副作用合同；表达式可组合也不等独立可配置工具已交付。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;,
+    &quot;ModuStatus&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;261fd79dc15c2b0e3da7c042ff552b241c7f50627f53df66478d13daab1cd8e1&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\TriggerModule.xml&quot;,
+      &quot;sha256&quot;: &quot;2bda0484a3f7abf08f1192547d3244d6671dff3d991c791bb64b3dc537eb518f&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\TriggerModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;f2d64816abbb63423967963739e7e3dcedfbddf92bfc01fa4ce4e3f2d22d746b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\TriggerModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;51d47e8bba220619e3138e29161df43f209d59773acffac41b9f29b8bd2747ff&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\TriggerModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;2bef8bb4a66515fed24c61852f168f76c2c20f804bbd3b71a9cee3e7daa5c661&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\TriggerModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;0ce3fed17e9eb3892050191c8204f4ddd7271602248b3a6e2358cb5031d49691&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section></div></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

@@ -1,0 +1,12 @@
+{
+  "targetProjects": 9,
+  "mappedSourceFiles": 320,
+  "keyRewriteGroups": 8,
+  "actualChains": 4,
+  "migrationStages": 6,
+  "sourceHashes": true,
+  "targetDagAcyclic": true,
+  "allSdkSourceFilesCovered": true,
+  "abiCompatibilityTested": false,
+  "productModified": false
+}

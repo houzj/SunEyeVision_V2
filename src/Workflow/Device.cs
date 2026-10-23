@@ -1,3 +1,4 @@
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Models;
@@ -79,6 +80,9 @@ public enum DeviceStatus
 /// </remarks>
 public class Device : ObservableObject
 {
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
+
     private string _name = "";
     private string _manufacturer = "";
     private string _model = "";
@@ -229,6 +233,7 @@ public class Device : ObservableObject
         return new Device
         {
             Id = Guid.NewGuid().ToString(),
+            AdditionalData = AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
             Name = Name,
             Type = Type,
             Manufacturer = Manufacturer,

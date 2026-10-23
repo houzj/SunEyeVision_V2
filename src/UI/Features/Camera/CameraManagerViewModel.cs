@@ -436,6 +436,8 @@ namespace SunEyeVision.UI.Features.Camera
 
         private async Task RestoreAutoConnectionsAsync()
         {
+            var owner = _solutionManager.CurrentSolution;
+            void CheckOwner() { if (!ReferenceEquals(owner, _solutionManager.CurrentSolution)) throw new OperationCanceledException("相机恢复所属方案已切换。"); }
             if (Cameras.Count == 0)
             {
                 VisionLogger.Instance.Log(LogLevel.Info, "当前方案没有相机，跳过相机发现和自动连接", "CameraManagerViewModel");
@@ -463,6 +465,7 @@ namespace SunEyeVision.UI.Features.Camera
                     : await _runtime.Discovery.DiscoverAsync(transports).ConfigureAwait(true);
                 // DiscoveryCoordinator 只负责聚合发现结果，不会修改运行时注册表；
                 // 重启后的自动连接必须显式注册本次发现到的设备描述。
+                CheckOwner();
                 _runtime.Runtime.RegisterDevices(discovered);
                 VisionLogger.Instance.Log(
                     LogLevel.Info,
@@ -506,6 +509,7 @@ namespace SunEyeVision.UI.Features.Camera
                     camera.State = CameraState.Offline;
             }
 
+            CheckOwner();
             if (identityChanged)
                 PersistCameraList();
 
@@ -518,7 +522,9 @@ namespace SunEyeVision.UI.Features.Camera
                         $"启动自动连接开始: name={camera.Name}, deviceId={camera.DeviceId}, " +
                         $"discovered={discovered.Any(item => string.Equals(item.DeviceId, camera.DeviceId, StringComparison.OrdinalIgnoreCase))}",
                         "CameraManagerViewModel");
+                    CheckOwner();
                     await SetCameraConnectionAsync(camera, shouldConnect: true).ConfigureAwait(true);
+                    CheckOwner();
                     VisionLogger.Instance.Log(
                         camera.IsConnected ? LogLevel.Success : LogLevel.Error,
                         $"启动自动连接结束: name={camera.Name}, deviceId={camera.DeviceId}, state={camera.State}, status={camera.StatusText}",
@@ -534,6 +540,9 @@ namespace SunEyeVision.UI.Features.Camera
                         ex);
                 }
             }
+            CheckOwner();
+            if (Cameras.Any(c => c.IsEnabled && c.AutoConnect && !c.IsConnected))
+                throw new InvalidOperationException("部分配置相机未能恢复连接；方案数据已载入。");
         }
 
         private static CameraDescriptor? FindMatchingDescriptor(

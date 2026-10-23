@@ -1,0 +1,53 @@
+{
+  "summarySHA": "357C1878C68724916A83870D5782DDA292F4F76911A81726D0D161E619DC7D53",
+  "identities": [
+    {
+      "sha256": "8B569D1641B643AF01FEF4E5F62BBC742C446000B7BAA4FFC8C530C627D05B75",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M01.cs"
+    },
+    {
+      "sha256": "1DA83153F37CB517FCBFA873D99A4A4A2B26FFC0FE813893202A61E65634A943",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M02.cs"
+    },
+    {
+      "sha256": "9C0F7B2C058EE7D7502479B2113356EB3EC8DD4E19F288206E18371042963F3D",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M03.cs"
+    },
+    {
+      "sha256": "7F2561A4F441B441E2E2AC394733C2D445A336DCD00DC856F10ACB4080918320",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M04.cs"
+    },
+    {
+      "sha256": "26276D653AEDE8E50975E63E4DEFD3EAF24D2ABC06D889FC504DD0431E00CA41",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted\\namespace-new.cs"
+    },
+    {
+      "sha256": "070E0A42F760E0F0A74AB41EF701F46BB28C1D98C0F564C9486BA2BEB10D9021",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted\\static-member.cs"
+    },
+    {
+      "sha256": "3D6DBC0CA745F10A63FB15F38D7F8B5D40AB25D71F6A02BB289DC7A51D9C9F88",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted\\typeof.cs"
+    },
+    {
+      "sha256": "4F8C975899C002BEF953C1B219D7E6B35A3D7C69E86042E6599ADE41676A8739",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted\\unqualified-member.cs"
+    },
+    {
+      "sha256": "C46BC3CE82085219AB8F59901D50508DBCD6B57E17BC0702F5DF7DF0B0919C82",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\WorkerBExplicitRefs.exe"
+    },
+    {
+      "sha256": "0C58264E26A139E03513039D8FFD86D0A197C4D250D0DC468911A966E44DFAFE",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.dll"
+    },
+    {
+      "sha256": "77432C09DB6B39212EDA06C2E7DB6E1DE4B051B01D068F1D016FE237FF7CE8BD",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\run-targeted.ps1"
+    }
+  ],
+  "productModified": false,
+  "summary": "artifacts/performance/script-selection-02/targeted/summary.json",
+  "finding": "旧语法正控制两边通过；四现代样本Roslyn成功、Framework CodeDOM语法错误；外部成员新控制B候选为空，与旧C06通过存在上下文差异，需继续定位，不能定性全引擎不支持",
+  "scope": "定向复核16进程，组件隔离，非完整VM"
+}

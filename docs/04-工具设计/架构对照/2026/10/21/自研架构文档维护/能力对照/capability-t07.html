@@ -1,0 +1,93 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T07 确定/应用：提交、验证、关闭</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">T07 确定/应用：提交、验证、关闭</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>T07 确定/应用：提交、验证、关闭</h1><article id="compare-T07"><span id="T07"></span><div class="visual-metrics"><div><strong>T07</strong><span>能力条目</span><small>静态路径已见</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>暂缓决策</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>窗口OnConfirmCommand</b></li><li><small>02</small><b>ToolEditorCommit.TryCommit</b></li><li><small>03</small><b>ValidateParameters</b></li><li><small>04</small><b>Close</b></li><li><small>05</small><b>Closing持久化绑定</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>窗口壳明确验证成功后关闭；不能从基类OnConfirmCommand没有Close就判整个能力未实现。</p><details><summary>完整缺陷与未闭合调用边</summary><p>基类ValidateParameters默认true，具体字段校验/草稿提交深度仍依具体工具。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>专业参数页应用与窗口关闭的提交政策，需按原版具体入口核实。</p><p>原版专业参数页提交策略需逐页恢复，不能据统一按钮宣称完整。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/DEBUG-SESSION-CONTRACT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">实际有提交/校验/Close闭环；默认ValidateParameters=true不证明每工具校验完备。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：实际有提交/校验/Close闭环；默认ValidateParameters=true不证明每工具校验完备。 VM参考边界：原版专业参数页提交策略需逐页恢复，不能据统一按钮宣称完整。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">列各工具校验与模型写入点，确认缺校验时补；不因默认true判所有工具都无校验。 明确业务提交、编辑提交和绑定持久化的区别；验证失败零业务副作用。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">未失焦值提交，失败不关窗；确认后模型/绑定一致，Undo按真实策略验。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o05.html#O05"><b>标准工具窗口：执行、连续、提交和关闭</b><small class="reference-id">优化方案 · O05</small></a></td></tr></tbody></table></div></section><article id="recommendation-T07"><h2>T07 确定/应用：提交、验证、关闭 · 暂不能判断</h2><p><b>代码依据 / 局限：</b>实际有提交/校验/Close闭环；默认ValidateParameters=true不证明每工具校验完备。</p><p><b>VM可借鉴与不可推断：</b>原版专业参数页提交策略需逐页恢复，不能据统一按钮宣称完整。</p><p><b>具体改法 / 成本：</b>列各工具校验与模型写入点，确认缺校验时补；不因默认true判所有工具都无校验。 明确业务提交、编辑提交和绑定持久化的区别；验证失败零业务副作用。</p><p><b>验收：</b>未失焦值提交，失败不关窗；确认后模型/绑定一致，Undo按真实策略验。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T07">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T07">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S073</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:188</a></p><p><code>OnConfirmCommand</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (!ToolEditorCommit.TryCommit(_control, out var error))
+            { PluginLogger.Warning(error, &quot;DefaultDebugWindow&quot;); MessageBox.Show(error, &quot;配置未提交&quot;, MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            // 执行参数验证
+            if (ValidateParameters())
+            {
+                PluginLogger.Success(&quot;参数验证通过，关闭窗口&quot;, &quot;DefaultDebugWindow&quot;);
+                Close();
+            }
+            else
+            {
+                PluginLogger.Warning(&quot;参数验证失败&quot;, &quot;DefaultDebugWindow&quot;);
+                MessageBox.Show(&quot;参数验证失败，请检查输入参数。&quot;, &quot;验证失败&quot;, </pre></details><details class="source-card"><summary>S074</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:491</a></p><p><code>ValidateParameters</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private bool ValidateParameters()
+        {
+            if (_toolControl != null)
+            {
+                return _toolControl.ValidateParameters();
+            }
+
+            // 默认返回true
+            return true;
+        }
+
+        #endregion
+
+        #region 窗口事件处理</pre></details><details class="source-card"><summary>S075</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs">src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs:1035</a></p><p><code>ValidateParameters</code></p><p>SHA256 <code>1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0</code></p><pre>        public virtual bool ValidateParameters()
+        {
+            // 子类重写以实现具体验证逻辑
+            return true;
+        }
+
+        #endregion
+
+        #region 抽象方法
+
+        /// &lt;summary&gt;
+        /// 执行工具逻辑 - 子类必须实现
+        /// &lt;/summary&gt;
+        /// &lt;returns&gt;执行结果&lt;/returns&gt;</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T07&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;确定/应用：提交、验证、关闭&quot;,
+  &quot;state&quot;: &quot;implemented&quot;,
+  &quot;chain&quot;: [
+    &quot;窗口OnConfirmCommand&quot;,
+    &quot;ToolEditorCommit.TryCommit&quot;,
+    &quot;ValidateParameters&quot;,
+    &quot;Close&quot;,
+    &quot;Closing持久化绑定&quot;
+  ],
+  &quot;current&quot;: &quot;窗口壳明确验证成功后关闭；不能从基类OnConfirmCommand没有Close就判整个能力未实现。&quot;,
+  &quot;gap&quot;: &quot;基类ValidateParameters默认true，具体字段校验/草稿提交深度仍依具体工具。&quot;,
+  &quot;vm&quot;: &quot;专业参数页应用与窗口关闭的提交政策，需按原版具体入口核实。&quot;,
+  &quot;vmDoc&quot;: &quot;DEBUG-SESSION-CONTRACT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;暂不能判断&quot;,
+  &quot;reason&quot;: &quot;依据：实际有提交/校验/Close闭环；默认ValidateParameters=true不证明每工具校验完备。 VM参考边界：原版专业参数页提交策略需逐页恢复，不能据统一按钮宣称完整。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;列各工具校验与模型写入点，确认缺校验时补；不因默认true判所有工具都无校验。 明确业务提交、编辑提交和绑定持久化的区别；验证失败零业务副作用。&quot;,
+  &quot;accept&quot;: &quot;未失焦值提交，失败不关窗；确认后模型/绑定一致，Undo按真实策略验。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S073&quot;,
+    &quot;S074&quot;,
+    &quot;S075&quot;
+  ],
+  &quot;optimization&quot;: &quot;O05&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留窗口闭环，补专业校验&quot;,
+    &quot;reason&quot;: &quot;统一壳已提供实际闭环，逐工具校验比重造确定按钮更重要。&quot;
+  },
+  &quot;defect&quot;: &quot;实际有提交/校验/Close闭环；默认ValidateParameters=true不证明每工具校验完备。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版专业参数页提交策略需逐页恢复，不能据统一按钮宣称完整。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;暂缓决策&quot;,
+  &quot;adoptionBasis&quot;: &quot;等待证据/需求后评审，没有已经选定的最终实现。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;暂不能判断&quot;,
+    &quot;defect&quot;: &quot;实际有提交/校验/Close闭环；默认ValidateParameters=true不证明每工具校验完备。&quot;,
+    &quot;borrow&quot;: &quot;原版专业参数页提交策略需逐页恢复，不能据统一按钮宣称完整。&quot;,
+    &quot;action&quot;: &quot;列各工具校验与模型写入点，确认缺校验时补；不因默认true判所有工具都无校验。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;暂缓决策&quot;,
+    &quot;confidence&quot;: &quot;选型暂缓；已见局部代码不等全部闭合&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S073&quot;,
+      &quot;S074&quot;,
+      &quot;S075&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

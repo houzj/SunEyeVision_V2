@@ -26,6 +26,9 @@ namespace SunEyeVision.Workflow
 /// </remarks>
 public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfoProvider
 {
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
+
     private string _name = "新建工作流";
 
     /// <summary>
@@ -94,6 +97,7 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
         var cloned = new Workflow
         {
             Id = Guid.NewGuid().ToString(),
+            AdditionalData = AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
             Name = $"{Name} (副本)"
         };
 

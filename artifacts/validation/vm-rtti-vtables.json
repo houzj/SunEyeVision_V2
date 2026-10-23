@@ -1,0 +1,227 @@
+{
+  "method": "Independent PE RTTI byte analysis; not runtime object proof",
+  "sha256": "06d86f51bebfeba357d1b79297e20a3b0a70580a40af7b77c8abdd6c38ca0624",
+  "vtables": [
+    {
+      "name": "CProcedureMngForSp",
+      "typeRVA": "85c8e8",
+      "colRVA": "800f30",
+      "objectOffset": 0,
+      "vtableRVA": "7ebac0",
+      "entries": [
+        {
+          "slot": 0,
+          "va": "0x1806a3120",
+          "rva": "6a3120"
+        },
+        {
+          "slot": 8,
+          "va": "0x1806b4f60",
+          "rva": "6b4f60"
+        },
+        {
+          "slot": 16,
+          "va": "0x1806b58e0",
+          "rva": "6b58e0"
+        },
+        {
+          "slot": 24,
+          "va": "0x1806b5b20",
+          "rva": "6b5b20"
+        },
+        {
+          "slot": 32,
+          "va": "0x1806b6c10",
+          "rva": "6b6c10"
+        },
+        {
+          "slot": 40,
+          "va": "0x1806b6810",
+          "rva": "6b6810"
+        },
+        {
+          "slot": 48,
+          "va": "0x1806b68a0",
+          "rva": "6b68a0"
+        },
+        {
+          "slot": 56,
+          "va": "0x180656100",
+          "rva": "656100"
+        },
+        {
+          "slot": 64,
+          "va": "0x180651240",
+          "rva": "651240"
+        },
+        {
+          "slot": 72,
+          "va": "0x1806a3560",
+          "rva": "6a3560"
+        }
+      ]
+    },
+    {
+      "name": "CProcedureMngForSp",
+      "typeRVA": "85c8e8",
+      "colRVA": "801000",
+      "objectOffset": 536,
+      "vtableRVA": "7ebc48",
+      "entries": [
+        {
+          "slot": 0,
+          "va": "0x1806a3b00",
+          "rva": "6a3b00"
+        },
+        {
+          "slot": 8,
+          "va": "0x1806a3fc0",
+          "rva": "6a3fc0"
+        },
+        {
+          "slot": 16,
+          "va": "0x1806a4120",
+          "rva": "6a4120"
+        },
+        {
+          "slot": 24,
+          "va": "0x1806a43d0",
+          "rva": "6a43d0"
+        },
+        {
+          "slot": 32,
+          "va": "0x1806a4560",
+          "rva": "6a4560"
+        },
+        {
+          "slot": 40,
+          "va": "0x1806a4680",
+          "rva": "6a4680"
+        },
+        {
+          "slot": 48,
+          "va": "0x1806a3e00",
+          "rva": "6a3e00"
+        },
+        {
+          "slot": 56,
+          "va": "0x1806a4690",
+          "rva": "6a4690"
+        },
+        {
+          "slot": 64,
+          "va": "0x1806a3680",
+          "rva": "6a3680"
+        },
+        {
+          "slot": 72,
+          "va": "0x1806a37f0",
+          "rva": "6a37f0"
+        }
+      ]
+    },
+    {
+      "name": "CProcessCtrlModuForSp",
+      "typeRVA": "85c8b8",
+      "colRVA": "801060",
+      "objectOffset": 0,
+      "vtableRVA": "7ebca0",
+      "entries": [
+        {
+          "slot": 0,
+          "va": "0x1806a6340",
+          "rva": "6a6340"
+        },
+        {
+          "slot": 8,
+          "va": "0x1806a6390",
+          "rva": "6a6390"
+        },
+        {
+          "slot": 16,
+          "va": "0x180571580",
+          "rva": "571580"
+        },
+        {
+          "slot": 24,
+          "va": "0x1806453a0",
+          "rva": "6453a0"
+        },
+        {
+          "slot": 32,
+          "va": "0x180571040",
+          "rva": "571040"
+        },
+        {
+          "slot": 40,
+          "va": "0x180571580",
+          "rva": "571580"
+        },
+        {
+          "slot": 48,
+          "va": "0x180571580",
+          "rva": "571580"
+        },
+        {
+          "slot": 56,
+          "va": "0x180571580",
+          "rva": "571580"
+        },
+        {
+          "slot": 64,
+          "va": "0x180571580",
+          "rva": "571580"
+        },
+        {
+          "slot": 72,
+          "va": "0x1806a63e0",
+          "rva": "6a63e0"
+        }
+      ]
+    },
+    {
+      "name": "FilterNodeManagerForSP",
+      "typeRVA": "85b4e8",
+      "colRVA": "7fe5b8",
+      "objectOffset": 0,
+      "vtableRVA": "7d44d8",
+      "entries": [
+        {
+          "slot": 0,
+          "va": "0x1805d30d0",
+          "rva": "5d30d0"
+        },
+        {
+          "slot": 8,
+          "va": "0x1805eb2b0",
+          "rva": "5eb2b0"
+        },
+        {
+          "slot": 16,
+          "va": "0x1807fe590",
+          "rva": "7fe590"
+        },
+        {
+          "slot": 24,
+          "va": "0x1805a9f70",
+          "rva": "5a9f70"
+        },
+        {
+          "slot": 32,
+          "va": "0x1805a9f90",
+          "rva": "5a9f90"
+        },
+        {
+          "slot": 40,
+          "va": "0x1805a6dd0",
+          "rva": "5a6dd0"
+        },
+        {
+          "slot": 48,
+          "va": "0x180571580",
+          "rva": "571580"
+        }
+      ]
+    }
+  ]
+}

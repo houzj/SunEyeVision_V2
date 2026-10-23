@@ -1,0 +1,258 @@
+[
+  {
+    "rva": "229380",
+    "text": "DestroyModule"
+  },
+  {
+    "rva": "229410",
+    "text": "[%s@%d] Resolve 'DestroyModule' function failed from module %s"
+  },
+  {
+    "rva": "22e2d0",
+    "text": "CImageSharedMemInfo::~CImageSharedMemInfo"
+  },
+  {
+    "rva": "22e700",
+    "text": "CImageMappingInfo::~CImageMappingInfo"
+  },
+  {
+    "rva": "2a7448",
+    "text": ".?AVProcedureConfig@framework@@"
+  },
+  {
+    "rva": "2a74e0",
+    "text": ".?AVModuleConfig@framework@@"
+  },
+  {
+    "rva": "2a7578",
+    "text": ".?AVModuleResultPB@vm@@"
+  },
+  {
+    "rva": "2a75a0",
+    "text": ".?AVModuleInfo@vm@@"
+  },
+  {
+    "rva": "2a75c8",
+    "text": ".?AVModuleResult@vm@@"
+  },
+  {
+    "rva": "2a75f0",
+    "text": ".?AVProcedureInfo@vm@@"
+  },
+  {
+    "rva": "2a7640",
+    "text": ".?AVModuleResultPack@vm@@"
+  },
+  {
+    "rva": "2a7710",
+    "text": ".?AVModuleCustomData@vm@@"
+  },
+  {
+    "rva": "2a7740",
+    "text": ".?AVModuleRstTime@vm@@"
+  },
+  {
+    "rva": "2a7790",
+    "text": ".?AVCAbstractUserModule@@"
+  },
+  {
+    "rva": "2a79f0",
+    "text": ".?AVCAbstractModuleNode@@"
+  },
+  {
+    "rva": "2a7a48",
+    "text": ".?AV?$_Ref_count@VCVirtualTargetNode@@@std@@"
+  },
+  {
+    "rva": "2a7a88",
+    "text": ".?AV?$_Ref_count@VCVirtualSourceNode@@@std@@"
+  },
+  {
+    "rva": "2a84e8",
+    "text": ".?AVCModuleNode@@"
+  },
+  {
+    "rva": "2a8510",
+    "text": ".?AVCBranchEndNode@@"
+  },
+  {
+    "rva": "2ac708",
+    "text": ".?AV?$_Ref_count@VCModuleRstCache@@@std@@"
+  },
+  {
+    "rva": "2ac838",
+    "text": ".?AV?$_Ref_count_obj@VModuleResult@vm@@@std@@"
+  },
+  {
+    "rva": "2ac980",
+    "text": ".?AVCGroupNode@@"
+  },
+  {
+    "rva": "2ac9e0",
+    "text": ".?AVCLoopNode@@"
+  },
+  {
+    "rva": "2aca60",
+    "text": ".?AVCModuleRstCache@@"
+  },
+  {
+    "rva": "2aca88",
+    "text": ".?AVCModuleInputCache@@"
+  },
+  {
+    "rva": "2acb90",
+    "text": ".?AVCModuleLoader@@"
+  },
+  {
+    "rva": "2acc00",
+    "text": ".?AVCVirtualTargetNode@@"
+  },
+  {
+    "rva": "2acc30",
+    "text": ".?AVCVirtualSourceNode@@"
+  },
+  {
+    "rva": "2acc60",
+    "text": ".?AVCModuleParamBindingMgr@@"
+  },
+  {
+    "rva": "2acc90",
+    "text": ".?AV?$_Ref_count@VCSingleModuleRunInfo@@@std@@"
+  },
+  {
+    "rva": "2accd0",
+    "text": ".?AV?$_Ref_count@VCSingleModuleRst@@@std@@"
+  },
+  {
+    "rva": "2acd10",
+    "text": ".?AV?$_Ref_count@VCModuleRstDispatcher@@@std@@"
+  },
+  {
+    "rva": "2acd90",
+    "text": ".?AV?$_Ref_count_obj@VCModuleStatus@@@std@@"
+  },
+  {
+    "rva": "2acdd0",
+    "text": ".?AVCModuleStatusRecord@@"
+  },
+  {
+    "rva": "2acea0",
+    "text": ".?AV?$_Func_impl@U?$_Callable_obj@V?$_Bind@$00HU?$_Pmf_wrap@P8CProcedure@@EAAHXZHV1@$$$V@std@@QEAVCProcedure@@@std@@$0A@@std@@V?$allocator@V?$_Func_class@H$$$V@std@@@2@H$$$V@std@@"
+  },
+  {
+    "rva": "2acfa8",
+    "text": ".?AVCProcedure@@"
+  },
+  {
+    "rva": "2ad010",
+    "text": ".?AV?$_Bind@$00HU?$_Pmf_wrap@P8CProcedure@@EAAHXZHV1@$$$V@std@@QEAVCProcedure@@@std@@"
+  },
+  {
+    "rva": "2ad080",
+    "text": ".?AV?$_Func_impl@U?$_Callable_obj@V?$_Bind@$00HU?$_Pmf_wrap@P8CProcedureCommHandler@@EAAHH@ZHV1@H@std@@QEAVCProcedureCommHandler@@AEAH@std@@$0A@@std@@V?$allocator@V?$_Func_class@H$$$V@std@@@2@H$$$V@std@@"
+  },
+  {
+    "rva": "2ad160",
+    "text": ".?AV?$_Bind@$00HU?$_Pmf_wrap@P8CProcedureCommHandler@@EAAHH@ZHV1@H@std@@QEAVCProcedureCommHandler@@AEAH@std@@"
+  },
+  {
+    "rva": "2ad1e0",
+    "text": ".?AVCProcedureLinkage@@"
+  },
+  {
+    "rva": "2ad240",
+    "text": ".?AV?$_Ref_count@VCProcedure@@@std@@"
+  },
+  {
+    "rva": "2ad278",
+    "text": ".?AV?$_Ref_count@VCGroupNode@@@std@@"
+  },
+  {
+    "rva": "2ad2b0",
+    "text": ".?AV?$_Ref_count@VCModuleNode@@@std@@"
+  },
+  {
+    "rva": "2ad538",
+    "text": ".?AV?$_Ref_count@VCModuleByteArrayRst@@@std@@"
+  },
+  {
+    "rva": "2ad578",
+    "text": ".?AV?$_Ref_count@VCModuleDoubleRst@@@std@@"
+  },
+  {
+    "rva": "2ad5b8",
+    "text": ".?AV?$_Ref_count@VCModuleFloatRst@@@std@@"
+  },
+  {
+    "rva": "2ad5f8",
+    "text": ".?AV?$_Ref_count@VCModuleIntRst@@@std@@"
+  },
+  {
+    "rva": "2ad630",
+    "text": ".?AV?$_Ref_count@VCModuleStrRst@@@std@@"
+  },
+  {
+    "rva": "2ad6f0",
+    "text": ".?AVCModuleByteArrayRst@@"
+  },
+  {
+    "rva": "2ad720",
+    "text": ".?AVCModuleStrRst@@"
+  },
+  {
+    "rva": "2ad748",
+    "text": ".?AVCModuleDoubleRst@@"
+  },
+  {
+    "rva": "2ad770",
+    "text": ".?AVCModuleFloatRst@@"
+  },
+  {
+    "rva": "2ad798",
+    "text": ".?AVCModuleIntRst@@"
+  },
+  {
+    "rva": "2ad800",
+    "text": ".?AVCModuleFieldRst@@"
+  },
+  {
+    "rva": "2ad830",
+    "text": ".?AV?$_Bind@$00PEAVFieldResult@vm@@U?$_Pmf_wrap@P8CSingleModuleRst@@EAAPEAVFieldResult@vm@@XZPEAV23@V1@$$$V@std@@QEAVCSingleModuleRst@@@std@@"
+  },
+  {
+    "rva": "2ad8d0",
+    "text": ".?AV?$_Ref_count@VCModuleSubMapping@@@std@@"
+  },
+  {
+    "rva": "2aded0",
+    "text": ".?AV?$_Ref_count@VCUserModuleImplWrapper@@@std@@"
+  },
+  {
+    "rva": "2adf18",
+    "text": ".?AV?$_Ref_count@VCUserModuleImplData@@@std@@"
+  },
+  {
+    "rva": "2ae3f0",
+    "text": ".?AV?$_Bind@$00HU?$_Pmf_wrap@P8CWorkFlow@@EAAHV?$shared_ptr@VCAbstractModuleNode@@@std@@V?$function@$$A6AHXZ@3@@ZHV1@V23@V43@@std@@QEAVCWorkFlow@@AEAV?$shared_ptr@VCModuleNode@@@2@AEAV?$function@$$A6AHXZ@2@@std@@"
+  },
+  {
+    "rva": "2ae4e0",
+    "text": ".?AV?$_Bind@$00HU?$_Pmf_wrap@P8CWorkFlow@@EAAHV?$shared_ptr@VCAbstractModuleNode@@@std@@W4eRunFlag@@@ZHV1@V23@W44@@std@@QEAVCWorkFlow@@AEAV?$shared_ptr@VCAbstractModuleNode@@@2@AEAW4eRunFlag@@@std@@"
+  },
+  {
+    "rva": "2ae7b8",
+    "text": ".?AVXMLNode@tinyxml2@@"
+  },
+  {
+    "rva": "2aeaf0",
+    "text": ".?AV?$_Ref_count@VCBranchEndNode@@@std@@"
+  },
+  {
+    "rva": "2aec98",
+    "text": ".?AV?$_Ref_count@VCLoopNode@@@std@@"
+  },
+  {
+    "rva": "2aed10",
+    "text": ".?AV?$_Ref_count_obj@V?$list@U?$pair@W4eModulesRelationType@@H@std@@V?$allocator@U?$pair@W4eModulesRelationType@@H@std@@@2@@std@@@std@@"
+  }
+]

@@ -1,0 +1,264 @@
+{
+  "version": "evidence-checkpoints-v1",
+  "scope": "已有7类RE任务拆成42个固定决策检查点；不是VM全部代码覆盖率。6项/组覆盖既有入口、实现、边界和缺口，不按函数数计分。",
+  "rules": {
+    "verified": "在条目声明的限定范围有直接实现/指令/源码或身份材料，定位和结论可对应。只计静态事实，不自动推运行保证。",
+    "partial": "有该问题的相关直接材料，但条目验收范围仍有断点/对象/异常边界缺失。",
+    "unverified": "尚无足以确认该声明的直接实现链或运行结果；仅有邻近入口/计划不算已核实。",
+    "progress": "verified/42*100；partial不折算、不移出分母。未来增删/改范围需新版本及可比性说明。"
+  },
+  "checkpoints": [
+    {
+      "id": "RE-W1-01",
+      "group": "RE-W1",
+      "title": "运行入口到拓扑执行对象",
+      "criterion": "已有普通流程运行路径连接拓扑构造、持有与slot8执行；不包含全部控制结构。"
+    },
+    {
+      "id": "RE-W1-02",
+      "group": "RE-W1",
+      "title": "邻接、前驱计数与实际就绪分派",
+      "criterion": "ScheduleHelper存在邻接遍历、锁内递减、零就绪及递归/提交分派的实际实现。"
+    },
+    {
+      "id": "RE-W1-03",
+      "group": "RE-W1",
+      "title": "共享与按流程ID队列的提交选择",
+      "criterion": "策略字段分支以及按流程ID查队列/入队的实际调用已对应。"
+    },
+    {
+      "id": "RE-W1-04",
+      "group": "RE-W1",
+      "title": "任务实际消费与锁外调用",
+      "criterion": "有取出/出队、释放队列锁、调用任务slot10及退出哨兵处理。"
+    },
+    {
+      "id": "RE-W1-05",
+      "group": "RE-W1",
+      "title": "分支、循环、Group和子流程完整语义",
+      "criterion": "各控制类型的进入/退出、失败和循环计数重置均可对应。"
+    },
+    {
+      "id": "RE-W1-06",
+      "group": "RE-W1",
+      "title": "消费者数量、共享资源准入与公平性",
+      "criterion": "队列消费者数量、跨流程同资源冲突及饥饿/重入策略可认证。"
+    },
+    {
+      "id": "RE-W2-01",
+      "group": "RE-W2",
+      "title": "停止请求与等待对象",
+      "criterion": "停止分支设置标志/事件并等待流程88的静态路径可对应。"
+    },
+    {
+      "id": "RE-W2-02",
+      "group": "RE-W2",
+      "title": "当前停止标志的有限等待及超时返回",
+      "criterion": "标志0的3000ms、非零无限等待与WAIT_TIMEOUT对应错误码已读。"
+    },
+    {
+      "id": "RE-W2-03",
+      "group": "RE-W2",
+      "title": "循环退出88与尾完成98的顺序及等待者",
+      "criterion": "事件生产先后与已见98等待删除入口可对应。"
+    },
+    {
+      "id": "RE-W2-04",
+      "group": "RE-W2",
+      "title": "多流程内部尾完成汇合",
+      "criterion": "尾回调计数归零置548，以及设计数/复位/等待548的路径对应。"
+    },
+    {
+      "id": "RE-W2-05",
+      "group": "RE-W2",
+      "title": "外部完成通知的最终消费者与确认",
+      "criterion": "Frame注册实例、Proxy/PM和最终SDK/UI接收/ACK全部连通。"
+    },
+    {
+      "id": "RE-W2-06",
+      "group": "RE-W2",
+      "title": "无回调/异常/不可取消任务的终止保证",
+      "criterion": "无回调及异常时能证明结束/排空或明确失败，且可安全再次运行。"
+    },
+    {
+      "id": "RE-I1-01",
+      "group": "RE-I1",
+      "title": "原始相机/算法缓冲的分配与复用边界",
+      "criterion": "源缓冲分配、驱动复用/归还时点及最后读者可配对。"
+    },
+    {
+      "id": "RE-I1-02",
+      "group": "RE-I1",
+      "title": "默认模块缓存装入及深复制",
+      "criterion": "默认b90d0分配表、结构复制和逐块复制可在函数体核对。"
+    },
+    {
+      "id": "RE-I1-03",
+      "group": "RE-I1",
+      "title": "默认按键写入的旧块替换",
+      "criterion": "b9390匹配键后释放旧块/清指针长度、重新分配复制的顺序可核对。"
+    },
+    {
+      "id": "RE-I1-04",
+      "group": "RE-I1",
+      "title": "批量加载提交到实际加载函数调用",
+      "criterion": "上游提交、worker消费和绑定函数间接调用形成静态链。"
+    },
+    {
+      "id": "RE-I1-05",
+      "group": "RE-I1",
+      "title": "缓存内容读写与运行/删除准入",
+      "criterion": "公开写、加载、执行读与删除共享同一可认证串行/借用合同。"
+    },
+    {
+      "id": "RE-I1-06",
+      "group": "RE-I1",
+      "title": "非空扩展实现的装配与数据所有权",
+      "criterion": "module+128具体实现类型和slot10/18/30数据寿命可对应。"
+    },
+    {
+      "id": "RE-I2-01",
+      "group": "RE-I2",
+      "title": "传输映射建立与复制",
+      "criterion": "74b10释放旧映射、Create/Map和源复制的实际实现可核对。"
+    },
+    {
+      "id": "RE-I2-02",
+      "group": "RE-I2",
+      "title": "传输映射显式释放",
+      "criterion": "已认证释放命令与74e00的Unmap/Close对象字段对应。"
+    },
+    {
+      "id": "RE-I2-03",
+      "group": "RE-I2",
+      "title": "默认缓存析构与查询源布局配对",
+      "criterion": "默认结果读取布局与b96a0逐块delete[]及删表可对应。"
+    },
+    {
+      "id": "RE-I2-04",
+      "group": "RE-I2",
+      "title": "托管查询结果深浅复制及显式释放范围",
+      "criterion": "所有声明支持的结果类型深浅模式及释放责任完整覆盖。"
+    },
+    {
+      "id": "RE-I2-05",
+      "group": "RE-I2",
+      "title": "查询/映射全异常和并发释放安全",
+      "criterion": "失败中途、并发查询/释放时的所有权与清理出口有完整证据。"
+    },
+    {
+      "id": "RE-I2-06",
+      "group": "RE-I2",
+      "title": "显示与历史缓存的最后读者",
+      "criterion": "切换、关闭、历史保留和共享可变显示对象有完整独立快照/释放合同。"
+    },
+    {
+      "id": "RE-P1-01",
+      "group": "RE-P1",
+      "title": "工厂Create/Destroy指针与实例记录",
+      "criterion": "加载解析、记录字段和实际创建调用在函数实现对应。"
+    },
+    {
+      "id": "RE-P1-02",
+      "group": "RE-P1",
+      "title": "标准删除的加载器观察者连接",
+      "criterion": "实际注册对象、观察者集合、虚表slot与标准删除分派连通。"
+    },
+    {
+      "id": "RE-P1-03",
+      "group": "RE-P1",
+      "title": "条件满足时实际调用DestroyModule",
+      "criterion": "b6670取记录+18与+8并执行已保存的destroy，而非只释放记录。"
+    },
+    {
+      "id": "RE-P1-04",
+      "group": "RE-P1",
+      "title": "代表相机的最终析构体",
+      "criterion": "GlobalCameraModule导出销毁到实际虚表析构、成员/基类及删除实例。"
+    },
+    {
+      "id": "RE-P1-05",
+      "group": "RE-P1",
+      "title": "相机在途回调与超时后清理安全",
+      "criterion": "两个事件生产者/线程退出及SDK回调保障能认证。"
+    },
+    {
+      "id": "RE-P1-06",
+      "group": "RE-P1",
+      "title": "特殊/异常删除与其他模块全释放",
+      "criterion": "状态不满足/异常、非代表模块也有完整析构/回收合同。"
+    },
+    {
+      "id": "RE-P2-01",
+      "group": "RE-P2",
+      "title": "VM相机模块目录发现与依赖组织",
+      "criterion": "Global XML/Cs/Control/Librarys.Config及多类型模块列表有实际读取/装配实现。"
+    },
+    {
+      "id": "RE-P2-02",
+      "group": "RE-P2",
+      "title": "自研部署/依赖选择和契约拒绝",
+      "criterion": "真实构建输出、加载检查和语义契约不兼容拒绝可核对。"
+    },
+    {
+      "id": "RE-P2-03",
+      "group": "RE-P2",
+      "title": "自研目录卸载与常驻ALC的实际边界",
+      "criterion": "卸载方法清目录且ALC不可回收/静态注册保留的现状可确认。"
+    },
+    {
+      "id": "RE-P2-04",
+      "group": "RE-P2",
+      "title": "VM非相机发现/依赖故障覆盖",
+      "criterion": "非相机插件发现、缺依赖回滚和注册恢复达到全声明范围。"
+    },
+    {
+      "id": "RE-P2-05",
+      "group": "RE-P2",
+      "title": "升级失败与配置回滚实效",
+      "criterion": "干净环境错DLL/版本/架构及新包失败回滚有执行证据。"
+    },
+    {
+      "id": "RE-P2-06",
+      "group": "RE-P2",
+      "title": "全插件原生库/程序集最终退役",
+      "criterion": "模块实例、在途引用、库句柄及包替换的全范围最终释放可认证。"
+    },
+    {
+      "id": "RE-X1-01",
+      "group": "RE-X1",
+      "title": "本轮关键原生安装产物的哈希身份",
+      "criterion": "已用SDK/PlatformManager/ModuleProxy/ModuleFrame/代表相机的静态输出携带SHA身份。"
+    },
+    {
+      "id": "RE-X1-02",
+      "group": "RE-X1",
+      "title": "代表native导出和SDK接收绑定的静态对应",
+      "criterion": "PE导出及SlotInit实际GetProcAddress/装载实参相互对应。"
+    },
+    {
+      "id": "RE-X1-03",
+      "group": "RE-X1",
+      "title": "代表虚表的RTTI/构造与实际槽位对应",
+      "criterion": "CBaseTopology/CModuleNode代表类型的表项和真实函数入口可交叉核对。"
+    },
+    {
+      "id": "RE-X1-04",
+      "group": "RE-X1",
+      "title": "全部托管材料与安装版本/MVID认证",
+      "criterion": "使用的全部托管反编译文件逐程序集对安装哈希/MVID/版本。"
+    },
+    {
+      "id": "RE-X1-05",
+      "group": "RE-X1",
+      "title": "恢复类型/间接调用/错误返回的完整认证",
+      "criterion": "全部关键反编译签名、间接对象身份和异常返回合同经过指令核对。"
+    },
+    {
+      "id": "RE-X1-06",
+      "group": "RE-X1",
+      "title": "代表端到端运行桥接验证",
+      "criterion": "已认证版本的托管→native→回调/资源端到端有运行证据。"
+    }
+  ]
+}

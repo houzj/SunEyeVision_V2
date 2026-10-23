@@ -1,0 +1,134 @@
+{
+  "label": "first-protocol-smoke",
+  "run": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\first-protocol-smoke-20261022-173940",
+  "sourceMatrix": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\matrix.json",
+  "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444",
+  "trials": 1,
+  "repeatedQueries": 1,
+  "rows": [
+    {
+      "number": 1,
+      "case": "C03",
+      "category": "instance members",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 653.8898,
+      "repeatQueryMs": [
+        8.6771
+      ],
+      "rawCounts": [
+        17,
+        17
+      ],
+      "pid": 87596,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 4065.5671,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\first-protocol-smoke-20261022-173940\\C03-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 2,
+      "case": "C03",
+      "category": "instance members",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 268.2283,
+      "repeatQueryMs": [
+        20.3761
+      ],
+      "rawCounts": [
+        16,
+        16
+      ],
+      "pid": 14812,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1785.6727,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\first-protocol-smoke-20261022-173940\\C03-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 3,
+      "case": "C03",
+      "category": "instance members",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 579.8178,
+      "repeatQueryMs": [
+        6.2485
+      ],
+      "rawCounts": [
+        17,
+        17
+      ],
+      "pid": 85168,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1959.1928,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\first-protocol-smoke-20261022-173940\\C03-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 4,
+      "case": "C03",
+      "category": "instance members",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 244.0269,
+      "repeatQueryMs": [
+        19.3074
+      ],
+      "rawCounts": [
+        16,
+        16
+      ],
+      "pid": 39544,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1286.3952,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\first-protocol-smoke-20261022-173940\\C03-invoke-b-0\\result.json",
+      "detail": ""
+    }
+  ],
+  "counts": [
+    {
+      "Name": "",
+      "Count": 4
+    }
+  ],
+  "noVmUI": true,
+  "noProductModification": true
+}

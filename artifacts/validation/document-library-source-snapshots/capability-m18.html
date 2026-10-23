@@ -1,0 +1,278 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M18 全局变量管理与选择</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">M18 全局变量管理与选择</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>M18 全局变量管理与选择</h1><article id="compare-M18"><span id="M18"></span><div class="visual-metrics"><div><strong>M18</strong><span>能力条目</span><small>部分实现</small></div><div><strong>待核实</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>自研整改</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>ShowGlobalVariableManagerCommand</b></li><li><small>02</small><b>当前方案检查</b></li><li><small>03</small><b>GlobalVariableManagerViewModel/Dialog</b></li><li><small>04</small><b>变量模型</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>已补管理器/绑定/本轮快照/生产/消费/显示/文件7段实际链。基础类型序列化为数组，复杂类型另分支；保存与导入有确定整改项。</p><details><summary>完整缺陷与未闭合调用边</summary><p>改名/删除→全部绑定消费者；数组/跨流程/多生产者写回；关闭窗口→是否回滚已写方案对象 委托调用ExecuteWorkflowCore时globalVariables固定null，子Context.GlobalVariables因此为空；__GlobalVars__合成与脚本请求都读取该字段。父输入contextVariables仍正常，不与显式端口传参或变量接收服务混为一谈。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>全局变量管理器→平台变量接口与绑定维护；原版一致性/失败提交仍需证据。</p><p>VM原变量UI/VariableManager有分组、类型与导入导出状态处理；原native事务和最终值所有权仍未知，不能据此整体迁移。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF01-GLOBAL-ENTRY-AUDIT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">VM或自研对应实现/运行证据未齐，暂不分大小。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">变量管理器Save忽略SaveSolution布尔返回却报成功；Import直接追加并更换Id，未调用改名已有的重名校验。Value列是设计值，本轮生产值另存；容器复制和Clone不深拷Value。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：变量管理器Save忽略SaveSolution布尔返回却报成功；Import直接追加并更换Id，未调用改名已有的重名校验。Value列是设计值，本轮生产值另存；容器复制和Clone不深拷Value。 VM参考边界：VM原变量UI/VariableManager有分组、类型与导入导出状态处理；原native事务和最终值所有权仍未知，不能据此整体迁移。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">先修保存结果反馈和导入全批预检/冲突/引用映射；明确设计初值与本轮值投影，按值类型补复制/借用合同，复用已有生产者/消费者图，不重造所有变量模型。 先标清初值编辑/本轮投影与提交时机，追变量引用索引和失败生产者规则；只有草稿入口才承诺取消回滚，不向现有直接编辑虚加承诺。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">同名/改类型/删除/生产者失败，不改变已冻结的运行输入。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o03.html#O03"><b>参数、绑定、变量和控制结构合同</b><small class="reference-id">优化方案 · O03</small></a></td></tr></tbody></table></div></section><article id="recommendation-M18"><h2>M18 全局变量管理与选择 · 必须整改</h2><p><b>代码依据 / 局限：</b>变量管理器Save忽略SaveSolution布尔返回却报成功；Import直接追加并更换Id，未调用改名已有的重名校验。Value列是设计值，本轮生产值另存；容器复制和Clone不深拷Value。</p><p><b>VM可借鉴与不可推断：</b>VM原变量UI/VariableManager有分组、类型与导入导出状态处理；原native事务和最终值所有权仍未知，不能据此整体迁移。</p><p><b>具体改法 / 成本：</b>先修保存结果反馈和导入全批预检/冲突/引用映射；明确设计初值与本轮值投影，按值类型补复制/借用合同，复用已有生产者/消费者图，不重造所有变量模型。 先标清初值编辑/本轮投影与提交时机，追变量引用索引和失败生产者规则；只有草稿入口才承诺取消回滚，不向现有直接编辑虚加承诺。</p><p><b>验收：</b>同名/改类型/删除/生产者失败，不改变已冻结的运行输入。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M18">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M18">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S041</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5727</a></p><p><code>ExecuteShowGlobalVariableManager</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void ExecuteShowGlobalVariableManager()
+        {
+            try
+            {
+                LogInfo(&quot;打开全局变量管理器&quot;);
+
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+                var currentSolution = solutionManager.CurrentSolution;
+
+                if (currentSolution == null)
+                {
+                    ThemeMessageDialog.Show(&quot;请先打开一个解决方案&quot;, &quot;提示&quot;,
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
+                    return;</pre></details><details class="source-card"><summary>S042</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs">src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>caa27c1ec5849965167567d18220617fb0b2ed85ebe96cb1368e681d155bda94</code></p><pre>﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Windows;
+using System.Windows.Input;
+using Microsoft.Win32;
+using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.UI.Features.ParameterSetting;
+using SunEyeVision.UI.Features.Dialogs;</pre></details><details class="source-card"><summary>R031</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5727</a></p><p><code>ExecuteShowGlobalVariableManager</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void ExecuteShowGlobalVariableManager()
+        {
+            try
+            {
+                LogInfo(&quot;打开全局变量管理器&quot;);
+
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+                var currentSolution = solutionManager.CurrentSolution;
+
+                if (currentSolution == null)
+                {
+                    ThemeMessageDialog.Show(&quot;请先打开一个解决方案&quot;, &quot;提示&quot;,
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
+                    return;
+                }
+
+                var viewModel = new SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerViewModel(solutionManager);
+                var dialog = new SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerDialog(viewModel);
+
+                dialog.ShowDialog();</pre></details><details class="source-card"><summary>R032</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/WorkflowExecutionManager.cs">src/UI/Services/Workflow/WorkflowExecutionManager.cs:421</a></p><p><code>RunSolutionAsync</code></p><p>SHA256 <code>e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae</code></p><pre>        public async Task RunSolutionAsync(
+            IEnumerable&lt;WorkflowTabViewModel&gt; workflows,
+            Solution solution,
+            CancellationToken cancellationToken = default)
+        {
+            if (workflows == null)
+                throw new ArgumentNullException(nameof(workflows));
+            if (solution == null)
+                throw new ArgumentNullException(nameof(solution));
+
+            using var solutionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            lock (_lock)
+            {
+                if (_transitionBlocked || _solutionRunCts != null ||
+                    (_communicationOperation &amp;&amp; !_communicationOwner.Value))
+                    throw new InvalidOperationException(&quot;已有方案执行、通讯操作或切换操作。&quot;);
+                _solutionRunCts = solutionCancellation;
+            }
+            try
+            {</pre></details><details class="source-card"><summary>N009</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs">src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs:732</a></p><p><code>_solutionManager.SaveSolution(currentSolution.FilePath)</code></p><p>SHA256 <code>caa27c1ec5849965167567d18220617fb0b2ed85ebe96cb1368e681d155bda94</code></p><pre>                    _solutionManager.SaveSolution(currentSolution.FilePath);
+                    LogSuccess(&quot;全局变量保存成功&quot;);
+                }
+                catch (Exception ex)
+                {
+                    LogError($&quot;保存全局变量失败: {ex.Message}&quot;);
+                }
+            }
+            else
+            {
+                LogWarning(&quot;解决方案未保存，无法保存全局变量&quot;);
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// 是否可以保存
+        /// &lt;/summary&gt;
+        private bool CanSave()
+        {
+            return _solutionManager.CurrentSolution?.FilePath != null;
+        }
+</pre></details><details class="source-card"><summary>N010</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionManager.cs">src/Workflow/SolutionManager.cs:223</a></p><p><code>bool success = _repository.Save</code></p><p>SHA256 <code>22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da</code></p><pre>        bool success = _repository.Save(solution, filePath, overwrite: false);
+        if (!success)
+        {
+            throw new InvalidOperationException($&quot;保存解决方案文件失败: {filePath}&quot;);
+        }
+
+        // 创建元数据（基于保存的文件）
+        var newMetadata = metadata.Clone();
+        newMetadata.Id = solution.Id;
+        newMetadata.FilePath = filePath;
+        newMetadata.DirectoryPath = Path.GetDirectoryName(filePath) ?? &quot;&quot;;
+        newMetadata.CreatedTime = DateTime.Now;
+        newMetadata.ModifiedTime = DateTime.Now;
+        newMetadata.UpdateStatistics(solution);
+
+        // 注册元数据
+        _registry.Register(newMetadata);
+        _cache.Set(newMetadata.Id, newMetadata);
+
+        // 添加到已知解决方案
+        _settings.AddKnownSolution(newMetadata);
+        // ❌ 不自动设置 CurrentSolutionId，需要用户明确启动才设置</pre></details><details class="source-card"><summary>N011</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs">src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs:636</a></p><p><code>variable.Id = Guid.NewGuid().ToString()</code></p><p>SHA256 <code>caa27c1ec5849965167567d18220617fb0b2ed85ebe96cb1368e681d155bda94</code></p><pre>                    variable.Id = Guid.NewGuid().ToString();
+                    _solutionManager.CurrentSolution?.GlobalVariables.Add(variable);
+
+                    // 查找或创建分组
+                    var group = Groups.FirstOrDefault(g =&gt; g.Name == variable.Group);
+                    if (group == null)
+                    {
+                        group = new VariableGroupViewModel(variable.Group);
+                        Groups.Add(group);
+                    }
+
+                    // 重新分配序号（全局空洞填充）
+                    variable.Index = GetNextAvailableIndex();
+                    group.AddVariable(variable);
+                }
+
+                UpdateFilteredVariables();
+                LogSuccess($&quot;导入全局变量成功，共 {variables.Count} 个变量&quot;);
+            }
+            catch (Exception ex)
+            {
+                LogError($&quot;导入全局变量失败: {ex.Message}&quot;);</pre></details><details class="source-card"><summary>N012</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/WorkflowExecutionManager.cs">src/UI/Services/Workflow/WorkflowExecutionManager.cs:1060</a></p><p><code>private void ApplyProducedGlobalValues</code></p><p>SHA256 <code>e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae</code></p><pre>        private void ApplyProducedGlobalValues(
+            Solution solution,
+            string workflowId,
+            ExecutionResult executionResult,
+            IDictionary&lt;string, object?&gt; runtimeGlobals)
+        {
+            foreach (var variable in solution.GlobalVariables.Where(variable =&gt;
+                         string.Equals(variable.ProducerBinding?.WorkflowId, workflowId, StringComparison.Ordinal)))
+            {
+                var producer = variable.ProducerBinding!;
+                runtimeGlobals.Remove(variable.Name);
+                if (!string.IsNullOrEmpty(variable.RebindingReason) || !string.IsNullOrEmpty(variable.BindingValidationPending)) continue;
+                if (!executionResult.NodeResults.TryGetValue(producer.NodeId, out var nodeResult) ||
+                    !nodeResult.Success || nodeResult.Result?.IsSuccess != true)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    runtimeGlobals[variable.Name] = OutputVariableResolver.Resolve(
+                        nodeResult.Result, producer.ResultName, producer.NodeId);</pre></details><details class="source-card"><summary>N013</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/GlobalVariable.cs">src/Workflow/GlobalVariable.cs:309</a></p><p><code>Value = Value,</code></p><p>SHA256 <code>57178a1086bd8a066af3c53d59230f8ef8413673db55d1a1249b802fabb3748b</code></p><pre>            Value = Value,  // 注意：值类型会被复制，引用类型只复制引用
+            Type = Type,
+            Description = Description,
+            ConsumerBindings = ConsumerBindings.Select(c =&gt; new ConsumerBinding
+            {
+                WorkflowId = c.WorkflowId,
+                NodeId = c.NodeId,
+                NodeName = c.NodeName,
+                WorkflowName = c.WorkflowName,
+                ParameterName = c.ParameterName,
+                InputKey = c.InputKey,
+                ParameterDisplayName = c.ParameterDisplayName
+            }).ToList(),
+            ProducerBinding = ProducerBinding == null ? null : new ProducerBinding
+            {
+                WorkflowId = ProducerBinding.WorkflowId,
+                WorkflowName = ProducerBinding.WorkflowName,
+                NodeId = ProducerBinding.NodeId,
+                NodeName = ProducerBinding.NodeName,
+                ResultName = ProducerBinding.ResultName,
+                SourceFieldId = ProducerBinding.SourceFieldId,
+                ResultDisplayName = ProducerBinding.ResultDisplayName</pre></details><details class="source-card"><summary>N057</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowExecutionEngine.cs">src/Workflow/WorkflowExecutionEngine.cs:898</a></p><p><code>executor.ExecuteSubWorkflowAsync = (subId, img, ctx) =&gt;</code></p><p>SHA256 <code>4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db</code></p><pre>                    executor.ExecuteSubWorkflowAsync = (subId, img, ctx) =&gt;
+                    {
+                        var extendedCtx = ctx != null
+                            ? new Dictionary&lt;string, object&gt;(ctx)
+                            : new Dictionary&lt;string, object&gt;();
+                        extendedCtx[SubroutineContextKeys.ParentNodeId] = node.Id;
+                        var childScope = session.CreateChildScope(subId, scope.RunId, node.Id);
+                        return ExecuteWorkflowCore(
+                            session,
+                            childScope,
+                            subId,
+                            img,
+                            null,
+                            extendedCtx,
+                            request,
+                            isSubworkflow: true);
+                    };
+                }
+
+                target.AddNode(executionNode);
+            }
+</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M18&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;全局变量管理与选择&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;ShowGlobalVariableManagerCommand&quot;,
+    &quot;当前方案检查&quot;,
+    &quot;GlobalVariableManagerViewModel/Dialog&quot;,
+    &quot;变量模型&quot;
+  ],
+  &quot;current&quot;: &quot;已补管理器/绑定/本轮快照/生产/消费/显示/文件7段实际链。基础类型序列化为数组，复杂类型另分支；保存与导入有确定整改项。&quot;,
+  &quot;gap&quot;: &quot;改名/删除→全部绑定消费者；数组/跨流程/多生产者写回；关闭窗口→是否回滚已写方案对象 委托调用ExecuteWorkflowCore时globalVariables固定null，子Context.GlobalVariables因此为空；__GlobalVars__合成与脚本请求都读取该字段。父输入contextVariables仍正常，不与显式端口传参或变量接收服务混为一谈。&quot;,
+  &quot;vm&quot;: &quot;全局变量管理器→平台变量接口与绑定维护；原版一致性/失败提交仍需证据。&quot;,
+  &quot;vmDoc&quot;: &quot;MF01-GLOBAL-ENTRY-AUDIT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;必须整改&quot;,
+  &quot;reason&quot;: &quot;依据：变量管理器Save忽略SaveSolution布尔返回却报成功；Import直接追加并更换Id，未调用改名已有的重名校验。Value列是设计值，本轮生产值另存；容器复制和Clone不深拷Value。 VM参考边界：VM原变量UI/VariableManager有分组、类型与导入导出状态处理；原native事务和最终值所有权仍未知，不能据此整体迁移。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;先修保存结果反馈和导入全批预检/冲突/引用映射；明确设计初值与本轮值投影，按值类型补复制/借用合同，复用已有生产者/消费者图，不重造所有变量模型。 先标清初值编辑/本轮投影与提交时机，追变量引用索引和失败生产者规则；只有草稿入口才承诺取消回滚，不向现有直接编辑虚加承诺。&quot;,
+  &quot;accept&quot;: &quot;同名/改类型/删除/生产者失败，不改变已冻结的运行输入。 根/一层/两层子图普通全局与脚本读取、生产者失败、同名局部输入及运行中改初值分别核值身份。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S041&quot;,
+    &quot;S042&quot;,
+    &quot;R031&quot;,
+    &quot;R032&quot;,
+    &quot;N009&quot;,
+    &quot;N010&quot;,
+    &quot;N011&quot;,
+    &quot;N012&quot;,
+    &quot;N013&quot;,
+    &quot;N057&quot;
+  ],
+  &quot;optimization&quot;: &quot;O03&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M18&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;已补管理器/绑定/本轮快照/生产/消费/显示/文件7段实际链。基础类型序列化为数组，复杂类型另分支；保存与导入有确定整改项。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;改名/删除→全部绑定消费者&quot;,
+      &quot;数组/跨流程/多生产者写回&quot;,
+      &quot;关闭窗口→是否回滚已写方案对象&quot;
+    ],
+    &quot;cause&quot;: &quot;证据缺口+状态验证&quot;,
+    &quot;change&quot;: &quot;先标清初值编辑/本轮投影与提交时机，追变量引用索引和失败生产者规则；只有草稿入口才承诺取消回滚，不向现有直接编辑虚加承诺。&quot;,
+    &quot;acceptance&quot;: &quot;同名/改类型/删除/生产者失败，不改变已冻结的运行输入。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S041&quot;,
+      &quot;S042&quot;,
+      &quot;R031&quot;,
+      &quot;R032&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留初值/运行值分域&quot;,
+    &quot;reason&quot;: &quot;快照利于复现；仍要承担类型迁移、冲突和失效诊断。&quot;
+  },
+  &quot;defect&quot;: &quot;变量管理器Save忽略SaveSolution布尔返回却报成功；Import直接追加并更换Id，未调用改名已有的重名校验。Value列是设计值，本轮生产值另存；容器复制和Clone不深拷Value。&quot;,
+  &quot;vmBorrow&quot;: &quot;VM原变量UI/VariableManager有分组、类型与导入导出状态处理；原native事务和最终值所有权仍未知，不能据此整体迁移。&quot;,
+  &quot;difference&quot;: &quot;待核实&quot;,
+  &quot;differenceBasis&quot;: &quot;VM或自研对应实现/运行证据未齐，暂不分大小。&quot;,
+  &quot;adoption&quot;: &quot;自研整改&quot;,
+  &quot;adoptionBasis&quot;: &quot;针对本项目已见合同/实现修正，尚无采用VM具体实现的充分依据。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;必须整改&quot;,
+    &quot;defect&quot;: &quot;变量管理器Save忽略SaveSolution布尔返回却报成功；Import直接追加并更换Id，未调用改名已有的重名校验。Value列是设计值，本轮生产值另存；容器复制和Clone不深拷Value。&quot;,
+    &quot;borrow&quot;: &quot;VM原变量UI/VariableManager有分组、类型与导入导出状态处理；原native事务和最终值所有权仍未知，不能据此整体迁移。&quot;,
+    &quot;action&quot;: &quot;先修保存结果反馈和导入全批预检/冲突/引用映射；明确设计初值与本轮值投影，按值类型补复制/借用合同，复用已有生产者/消费者图，不重造所有变量模型。&quot;,
+    &quot;difference&quot;: &quot;待核实&quot;,
+    &quot;adoption&quot;: &quot;自研整改&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S041&quot;,
+      &quot;S042&quot;,
+      &quot;R031&quot;,
+      &quot;R032&quot;,
+      &quot;N009&quot;,
+      &quot;N010&quot;,
+      &quot;N011&quot;,
+      &quot;N012&quot;,
+      &quot;N013&quot;,
+      &quot;N057&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

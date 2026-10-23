@@ -1,0 +1,139 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T14 重置参数与数据源恢复</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">T14 重置参数与数据源恢复</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>T14 重置参数与数据源恢复</h1><article id="compare-T14"><span id="T14"></span><div class="visual-metrics"><div><strong>T14</strong><span>能力条目</span><small>未实现</small></div><div><strong>缺失</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>新增</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>ToolCommands.ResetParameters</b></li><li><small>02</small><b>OnResetParametersCommand</b></li><li><small>03</small><b>ResetParameters</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>标准重置命令已注册，但基类仅日志，本轮tools扫描未见ResetParameters覆写；不否定脚本专属ResetCode等其他操作。</p><details><summary>完整缺陷与未闭合调用边</summary><p>默认参数快照→实际参数替换未见；绑定/ROI/样式重置消费者未见；Undo/取消语义未定义</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>原版参数默认值、重置和动态字段定义以配置消费实码为准。</p><p>原版重置的逐工具默认值尚需材料，不能凭命令名克隆。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/DEBUG-SESSION-CONTRACT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">限定本项列明入口/合同尚未实现，不推全产品不存在。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">基类ResetParameters只写日志；本轮tools扫描未见对应覆写，标准重置语义未实现。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：基类ResetParameters只写日志；本轮tools扫描未见对应覆写，标准重置语义未实现。 VM参考边界：原版重置的逐工具默认值尚需材料，不能凭命令名克隆。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">新增默认参数、绑定/ROI是否重置与Undo策略；未实现前不记录成功或暴露可用按钮。 将标准重置明确标未开发而不是泛称部分；实现默认参数/绑定/显示重置策略并按工具可覆写，未实现时隐藏/禁用，不能只记录成功日志。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">重置后首次运行与新建节点等价；取消/撤销与动态字段引用一致。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o03.html#O03"><b>参数、绑定、变量和控制结构合同</b><small class="reference-id">优化方案 · O03</small></a></td></tr></tbody></table></div></section><article id="recommendation-T14"><h2>T14 重置参数与数据源恢复 · 新增</h2><p><b>代码依据 / 局限：</b>基类ResetParameters只写日志；本轮tools扫描未见对应覆写，标准重置语义未实现。</p><p><b>VM可借鉴与不可推断：</b>原版重置的逐工具默认值尚需材料，不能凭命令名克隆。</p><p><b>具体改法 / 成本：</b>新增默认参数、绑定/ROI是否重置与Undo策略；未实现前不记录成功或暴露可用按钮。 将标准重置明确标未开发而不是泛称部分；实现默认参数/绑定/显示重置策略并按工具可覆写，未实现时隐藏/禁用，不能只记录成功日志。</p><p><b>验收：</b>重置后首次运行与新建节点等价；取消/撤销与动态字段引用一致。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T14">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T14">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S093</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs">src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs:389</a></p><p><code>OnResetParametersCommand</code></p><p>SHA256 <code>1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0</code></p><pre>        protected virtual void OnResetParametersCommand(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
+        {
+            PluginLogger.Info(&quot;重置参数命令触发&quot;, GetType().Name);
+            ResetParameters();
+        }
+
+        #endregion
+
+        #region 数据注入方法
+
+        /// &lt;summary&gt;
+        /// 外部结果到达通知（基类默认空实现）
+        /// &lt;/summary&gt;
+        /// &lt;remarks&gt;</pre></details><details class="source-card"><summary>S094</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs">src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs:389</a></p><p><code>ResetParameters</code></p><p>SHA256 <code>1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0</code></p><pre>        protected virtual void OnResetParametersCommand(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
+        {
+            PluginLogger.Info(&quot;重置参数命令触发&quot;, GetType().Name);
+            ResetParameters();
+        }
+
+        #endregion
+
+        #region 数据注入方法
+
+        /// &lt;summary&gt;
+        /// 外部结果到达通知（基类默认空实现）
+        /// &lt;/summary&gt;
+        /// &lt;remarks&gt;</pre></details><details class="source-card"><summary>R061</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs">src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs:389</a></p><p><code>OnResetParametersCommand</code></p><p>SHA256 <code>1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0</code></p><pre>        protected virtual void OnResetParametersCommand(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
+        {
+            PluginLogger.Info(&quot;重置参数命令触发&quot;, GetType().Name);
+            ResetParameters();
+        }
+
+        #endregion
+
+        #region 数据注入方法
+
+        /// &lt;summary&gt;
+        /// 外部结果到达通知（基类默认空实现）
+        /// &lt;/summary&gt;
+        /// &lt;remarks&gt;
+        /// 工作流引擎执行完成后调用，子类可重写以刷新依赖运行时的 UI 状态（如位置修正矩阵）。
+        /// &lt;/remarks&gt;
+        public virtual void OnExternalResultArrived()
+        {
+            // 基类默认空实现
+        }</pre></details><details class="source-card"><summary>R062</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs">src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs:1064</a></p><p><code>ResetParameters</code></p><p>SHA256 <code>1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0</code></p><pre>        protected virtual void ResetParameters()
+        {
+            // 子类重写以实现重置逻辑
+            PluginLogger.Info(&quot;参数已重置&quot;, GetType().Name);
+        }
+
+        #endregion
+
+        #region 事件触发
+
+        /// &lt;summary&gt;
+        /// 触发工具执行完成事件
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;results&quot;&gt;执行结果&lt;/param&gt;
+        /// &lt;param name=&quot;executionTime&quot;&gt;执行耗时（毫秒，可选）&lt;/param&gt;
+        protected void RaiseToolExecutionCompleted(object results, long executionTime = 0)
+        {
+            var args = executionTime &gt; 0
+                ? new ToolExecutionCompletedEventArgs(results, executionTime, ToolExecutionCompletedEvent, this)
+                : new ToolExecutionCompletedEventArgs(results, ToolExecutionCompletedEvent, this);</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T14&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;重置参数与数据源恢复&quot;,
+  &quot;state&quot;: &quot;unimplemented&quot;,
+  &quot;chain&quot;: [
+    &quot;ToolCommands.ResetParameters&quot;,
+    &quot;OnResetParametersCommand&quot;,
+    &quot;ResetParameters&quot;
+  ],
+  &quot;current&quot;: &quot;标准重置命令已注册，但基类仅日志，本轮tools扫描未见ResetParameters覆写；不否定脚本专属ResetCode等其他操作。&quot;,
+  &quot;gap&quot;: &quot;默认参数快照→实际参数替换未见；绑定/ROI/样式重置消费者未见；Undo/取消语义未定义&quot;,
+  &quot;vm&quot;: &quot;原版参数默认值、重置和动态字段定义以配置消费实码为准。&quot;,
+  &quot;vmDoc&quot;: &quot;DEBUG-SESSION-CONTRACT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;新增&quot;,
+  &quot;reason&quot;: &quot;依据：基类ResetParameters只写日志；本轮tools扫描未见对应覆写，标准重置语义未实现。 VM参考边界：原版重置的逐工具默认值尚需材料，不能凭命令名克隆。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;新增默认参数、绑定/ROI是否重置与Undo策略；未实现前不记录成功或暴露可用按钮。 将标准重置明确标未开发而不是泛称部分；实现默认参数/绑定/显示重置策略并按工具可覆写，未实现时隐藏/禁用，不能只记录成功日志。&quot;,
+  &quot;accept&quot;: &quot;重置后首次运行与新建节点等价；取消/撤销与动态字段引用一致。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S093&quot;,
+    &quot;S094&quot;,
+    &quot;R061&quot;,
+    &quot;R062&quot;
+  ],
+  &quot;optimization&quot;: &quot;O03&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;T14&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;unimplemented&quot;,
+    &quot;confirmed&quot;: &quot;OnResetParametersCommand调用ResetParameters；基类ResetParameters只写参数已重置日志。本轮tools内未找到override void ResetParameters。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;默认参数快照→实际参数替换未见&quot;,
+      &quot;绑定/ROI/样式重置消费者未见&quot;,
+      &quot;Undo/取消语义未定义&quot;
+    ],
+    &quot;cause&quot;: &quot;确认的实现缺口，限定标准重置命令&quot;,
+    &quot;change&quot;: &quot;将标准重置明确标未开发而不是泛称部分；实现默认参数/绑定/显示重置策略并按工具可覆写，未实现时隐藏/禁用，不能只记录成功日志。&quot;,
+    &quot;acceptance&quot;: &quot;重置后首次运行与新建节点等价；取消/撤销与动态字段引用一致。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S093&quot;,
+      &quot;S094&quot;,
+      &quot;R061&quot;,
+      &quot;R062&quot;
+    ],
+    &quot;decision&quot;: &quot;依据真实空实现重分类，不是因缺运行验证判未开发&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;保留公共命令，逐工具契约化&quot;,
+    &quot;reason&quot;: &quot;可以统一入口，但没有共同重置快照就易残留旧绑定。&quot;
+  },
+  &quot;defect&quot;: &quot;基类ResetParameters只写日志；本轮tools扫描未见对应覆写，标准重置语义未实现。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版重置的逐工具默认值尚需材料，不能凭命令名克隆。&quot;,
+  &quot;difference&quot;: &quot;缺失&quot;,
+  &quot;differenceBasis&quot;: &quot;限定本项列明入口/合同尚未实现，不推全产品不存在。&quot;,
+  &quot;adoption&quot;: &quot;新增&quot;,
+  &quot;adoptionBasis&quot;: &quot;当前缺口按本产品需求开发；狗授权使用自有厂商方案。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;新增&quot;,
+    &quot;defect&quot;: &quot;基类ResetParameters只写日志；本轮tools扫描未见对应覆写，标准重置语义未实现。&quot;,
+    &quot;borrow&quot;: &quot;原版重置的逐工具默认值尚需材料，不能凭命令名克隆。&quot;,
+    &quot;action&quot;: &quot;新增默认参数、绑定/ROI是否重置与Undo策略；未实现前不记录成功或暴露可用按钮。&quot;,
+    &quot;difference&quot;: &quot;缺失&quot;,
+    &quot;adoption&quot;: &quot;新增&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S093&quot;,
+      &quot;S094&quot;,
+      &quot;R061&quot;,
+      &quot;R062&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

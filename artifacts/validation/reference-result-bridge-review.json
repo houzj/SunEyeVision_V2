@@ -1,0 +1,32 @@
+{
+  "sources": [
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/result-payload-bridge.resources/VM.Core.VmSolution.decompiled.cs",
+      "token": "private static void SetValue(",
+      "line": 4239,
+      "sha256": "1ae938d6a9faab3fb8bd6e0b1447a241b075a10ed36236dec2013a20ad02d8eb"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/result-payload-bridge.resources/VM.Core.VmSolution.decompiled.cs",
+      "token": "private static void CreateCallBackQueue()",
+      "line": 4345,
+      "sha256": "1ae938d6a9faab3fb8bd6e0b1447a241b075a10ed36236dec2013a20ad02d8eb"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/sdk-image-publication.resources/180645630.c",
+      "token": "int IMVS_RegisterOutputPlatformInfoCallBack",
+      "line": 4,
+      "sha256": "007da503550fdc12ff5b7918b5b1ced99042289346db3e5ebfbe3efd493a26b8"
+    }
+  ],
+  "reviewedScope": "仅所列函数与显示的分支；不代表整个文件、原始二进制身份或上下游全部复核",
+  "facts": [
+    "SetValue按ExecuteCount、自执行、NeedMergeValueInLoop及VmProcedure条件重置字段持有；同批合并可抑制事件，缺失字段可SetValueFromDefault，循环结束分支恢复通知并入回调队列。",
+    "CreateCallBackQueue通过接收/发送数组交换后逐个Dequeue回调；这是后续通知调度，不能将每次原生结果等同立即完成显示。",
+    "IMVS_RegisterOutputPlatformInfoCallBack在导出RVA0x645630验证注册记录并转FUN_1806632a0；未读取此后续函数，不能在本轮宣称其字段写入、注销或排空语义已核实。"
+  ],
+  "recommendation": "O07借鉴批次整理/事件分发分层，使用自有Run/Scope/Node/Frame身份、明确结果状态与失效通知；不复制VM参数名GetHashCode作为持久字段ID，不把缺失字段默认化静默用于自研失败结果。",
+  "remaining": "图像值到像素Owner及最后读者、停止/注销在飞回调排空、native接收方后续实现及异常退出仍待证；原42检查点不升级。",
+  "checkpointUpgrade": false,
+  "productModified": false
+}

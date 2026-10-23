@@ -1,0 +1,224 @@
+{
+  "scope": "当前新版20工作包正文交付验收；不包含产品实施、VM162逐工具算法等价或运行验证",
+  "rubric": [
+    "入口/架构与源码定位可追溯",
+    "实际数据/状态/失败边与证据局限分开",
+    "已实现/未开发/待核明确",
+    "具体取舍/缺点/代价/改法与验收可评审",
+    "剩余原native/运行/产品政策列出而不伪报闭合"
+  ],
+  "rows": [
+    {
+      "id": "C01",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "system-architecture.html#startup",
+      "reason": "已有实际启动/工程依赖与shutdown收尾分段；迟到恢复/半启动回滚保留具体待证。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C02",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "data-architecture.html#resource-ownership",
+      "reason": "14类Owner登记覆盖根/子调用/工具实例/结果与显示身份，创建、借用、退役和具体未知分开。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C03",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "tool-subroutine.html#subroutine-chain-review",
+      "reason": "已解释活动ReadyQueue/Condition/子图循环与输入输出；取消/作用域缺陷和原Group内部待证分列。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C04",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "camera-architecture.html#device-admission",
+      "reason": "2行调度预算/租约范围加8行设备矩阵已回填，外部等待、跨根范围、取消退役及未执行验收分开。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C05",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "data-architecture.html#D02",
+      "reason": "已有绑定定义/值解析/快照/现有校验及工具实例；List与动态迁移待证不冒充完成。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C06",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "data-architecture.html#resource-ownership",
+      "reason": "HalImage/CvImage/相机SDK缓冲/Frame/显示池/缓存逐类有复制借用和最后读者边界，原native与运行验证未冒充闭合。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C07",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "camera-architecture.html#device-admission",
+      "reason": "8类设备逐项列驱动/工作流接线/实机状态、门禁、取消释放、改法和验收；S7/CIP未接通用目录不冒充未写驱动。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C08",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "data-architecture.html#resource-ownership",
+      "reason": "工厂每次新建tool已核，分析控件Owner与不可回收ALC进程寿命分列，静态缓存/原生模块最终释放保留缺证。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C09",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "tools.html#editing-policy",
+      "reason": "24工具已逐项给共享/草稿、确定/X、执行副作用与关闭Owner，模板/标定子窗口分开；最后读者保留待证。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C10",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "data-architecture.html#coordinate-review",
+      "reason": "8坐标链已逐项给调用、单位/参考域、ROI新建与修改取消、图层/DPI/全屏及具体改法，原native和运行未验分开。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C11",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "persistence-architecture.html#editing-transactions",
+      "reason": "已有文件保存恢复及复制/删除/Undo六动作身份和失败矩阵，正常链/确定缺陷/目标政策分开。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C12",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "system-architecture.html#shutdown",
+      "reason": "停止请求、登记归零、在途排空、关闭设备和超时隔离已分段；原VM停止缺证保留。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C13",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "optimization.html#diagnostic-benchmark",
+      "reason": "5项诊断链有字段生产/丢失/落盘/事件身份实码，三根成功失败取消与迟到样例为待执行规程；复用现有字段的整改已写。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C14",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "platform-architecture.html#deploy",
+      "reason": "实际依赖选择/目录/部署规则及版本与私有native缺口、未执行干净部署门槛已写。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C15",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "license-design.html",
+      "reason": "自有授权四职责/八状态/十场景和厂商政策TBD已写，不采用VM狗。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C16",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "optimization.html#diagnostic-benchmark",
+      "reason": "8有限场景具层级/负载/预热/重复样本/前置/正确性与统计停止规则，输入规范及空manifest/CSV可交执行；全部not_run，缺材料不虚填性能。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C17",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "global-variables.html",
+      "reason": "变量定义到文件七段，生产消费/入口差异/数组/改名与子调用问题有具体待证和改法。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C18",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "camera-architecture.html",
+      "reason": "连接/用途/帧/显示Owner及八段触发/参数/停止/厂商边界已写，实机原native继续待验。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C19",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "platform-architecture.html#control-consumers",
+      "reason": "11组实际消费者→控件→数据命令→主题与加载/关闭边界已回填；VS设计时、DPI及运行未执行，逐项缺点改法有来源。",
+      "remainingProduct": null
+    },
+    {
+      "id": "C20",
+      "accepted": true,
+      "status": "正文可评审（具体待证保留）",
+      "url": "platform-architecture.html#ui-state-review",
+      "reason": "13UI逐项当前/缺口/失败取消关闭/改法/来源及DPI设计时未验标记已回填，链接对应专业链，不代产品验收。",
+      "remainingProduct": null
+    }
+  ],
+  "products": [
+    {
+      "id": "R1",
+      "title": "身份与资源Owner登记表",
+      "packages": [],
+      "definition": "逐类列创建者、身份键、借用/复制、最后读者、失败/退役；未知释放边明确来源与断点。",
+      "status": "已交付正文，保留具体待证"
+    },
+    {
+      "id": "R2",
+      "title": "准入背压与实际设备提供器矩阵",
+      "packages": [],
+      "definition": "计算槽/外部等待/跨根设备与8类实际驱动入口、并发、取消恢复、宿主接线/实机状态分列。",
+      "status": "已交付正文，保留具体待证"
+    },
+    {
+      "id": "R3",
+      "title": "24工具编辑提交政策（本轮已回填）",
+      "packages": [],
+      "definition": "逐工具live/草稿、确定/取消/X、外设副作用与迟到结果/关闭Owner；C11六动作已单独回填。",
+      "status": "已交付正文，保留具体待证"
+    },
+    {
+      "id": "R4",
+      "title": "13UI状态与坐标链矩阵",
+      "packages": [],
+      "definition": "现有/未开发/待核、失败取消/关闭/DPI设计时逐项；像素/ROI/世界/视口及提交取消实码链。",
+      "status": "已交付正文，保留具体待证"
+    },
+    {
+      "id": "R5",
+      "title": "公共控件与模板实际消费者",
+      "packages": [],
+      "definition": "11类公共控件的实际消费者→数据命令→主题资源→Loaded/Unloaded/退役及设计时待验。",
+      "status": "已交付正文，保留具体待证"
+    },
+    {
+      "id": "R6",
+      "title": "失败诊断样例与可执行基准计划",
+      "packages": [],
+      "definition": "Run/Node/线程字段生产者与一次失败取消示例；负载/环境/预热/重复/样本量/指标/结果文件和未运行状态。",
+      "status": "已交付正文，保留具体待证"
+    }
+  ],
+  "summary": {
+    "accepted": 20,
+    "total": 20,
+    "percent": 100
+  },
+  "legacyHistoricalDelivery": 100,
+  "evidenceChanged": false,
+  "productExecuted": false
+}

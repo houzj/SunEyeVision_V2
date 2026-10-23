@@ -1,0 +1,523 @@
+{
+  "sources": [
+    {
+      "id": "sdk-doc-solution",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE6_x96_xB9_xE6_xA1_x88_xE7_x9B_xB8_xE5_x85_xB3_xE6_x93_x8D_xE4_xBD_x9C.html",
+      "token": "VmSolution.Load",
+      "line": 43,
+      "sha256": "e9f99176d6e664e68ffaa60449faf6f109a59aeae8edf6f29902bd0fbcb98ef3",
+      "kind": "官方V4.4.2开发指南（静态解包）"
+    },
+    {
+      "id": "sdk-doc-module",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE6_xA8_xA1_xE5_x9D_x97_xE7_x9B_xB8_xE5_x85_xB3_xE6_x93_x8D_xE4_xBD_x9C.html",
+      "token": "SetImageData",
+      "line": 43,
+      "sha256": "04283f47787e8476baaaf829e9d1be0f352ef746013abd13702561b10bb89f23",
+      "kind": "官方V4.4.2开发指南（静态解包）"
+    },
+    {
+      "id": "sdk-doc-procedure",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE6_xB5_x81_xE7_xA8_x8B_xE7_x9B_xB8_xE5_x85_xB3_xE6_x93_x8D_xE4_xBD_x9C.html",
+      "token": "SetInputImage_V2",
+      "line": 43,
+      "sha256": "3a8933e366d8d413b98cb31d43c7e14a1eb063094b11633a4b042a31ae6fd024",
+      "kind": "官方V4.4.2开发指南（静态解包）"
+    },
+    {
+      "id": "sdk-doc-globals",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE5_x85_xA8_xE5_xB1_x80_xE6_xA8_xA1_xE5_x9D_x97_xE7_x9B_xB8_xE5_x85_xB3_xE6_x93_x8D_xE4_xBD_x9C.html",
+      "token": "GlobalVariableModuleTool",
+      "line": 41,
+      "sha256": "8bd836ea2b7b47c3ca6b22b0702be060b2c35104cd1860ad27b01c4b1d6eefc3",
+      "kind": "官方V4.4.2开发指南（静态解包）"
+    },
+    {
+      "id": "sdk-doc-events",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE4_xBA_x8B_xE4_xBB_xB6_xE8_xAE_xBE_xE7_xBD_xAE_xE6_x96_xB9_xE6_xB3_x95.html",
+      "token": "OnWorkStatusEvent",
+      "line": 40,
+      "sha256": "776094cbc60de28fd10fded0c1b7d0f9e23ddeeaa44aaa4f594f7c1ffcc3940f",
+      "kind": "官方V4.4.2开发指南（静态解包）"
+    },
+    {
+      "id": "sdk-doc-output",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE9_x80_x9A_xE8_xBF_x87_xE6_xB5_x81_xE7_xA8_x8B_xE8_xBE_x93_xE5_x87_xBA_xE6_x88_x96_xE8_x80_x85f73babc98d494d79cf1981c0a0321c6d.html",
+      "token": "GetOutputInt",
+      "line": 52,
+      "sha256": "a888e5e0273fea4f963f6058662cd1fd1ed16bca14e793c9610a8476a685a3f3",
+      "kind": "官方V4.4.2开发指南（静态解包）"
+    },
+    {
+      "id": "sdk-doc-view",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE9_x80_x9A_xE8_xBF_x87_xE7_xBB_x91_xE5_xAE_x9A_xE6_xB5_x81_xE7_xA8_x8B_xE6_x88_x96_xE6_xA8_xA1a402d64484deba2f1921afb46f0d4f2e.html",
+      "token": "ModuleSource",
+      "line": 52,
+      "sha256": "79e9dc3e2db881d7302cee62781471375c2e93eaa02d1550e3985d4ec5116b29",
+      "kind": "官方V4.4.2开发指南（静态解包）"
+    },
+    {
+      "id": "sdk-request",
+      "path": "src/Plugin.SDK/Core/ToolExecutionRequest.cs",
+      "token": "public sealed class ToolExecutionRequest",
+      "line": 20,
+      "sha256": "b70506bee54d75a623b5d19cdb953344bb8286ad0a946b460b7295c699c6cdeb",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "sdk-reader",
+      "path": "src/Plugin.SDK/Core/IToolInputReader.cs",
+      "token": "public interface IToolInputReader",
+      "line": 10,
+      "sha256": "31eb442c06f474f9887a94962b21ef54facc301867e05533e06b11967829917c",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "sdk-image-contract",
+      "path": "src/Plugin.SDK/Vision/Contracts/IVisionImage.cs",
+      "token": "public interface IVisionImage",
+      "line": 9,
+      "sha256": "4249b178fe01e6f9f5efece5d8e63ccd35b2b845149c62638973143fe6796089",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "sdk-parameters",
+      "path": "src/Plugin.SDK/Execution/Parameters/ToolParameters.cs",
+      "token": "public abstract class ToolParameters",
+      "line": 54,
+      "sha256": "03c0f3d9eda1a49d00a9ce23d71ba859fe06a29c51b2735973d53c16a3f5706d",
+      "kind": "自研当前源码"
+    },
+    {
+      "id": "sdk-binding",
+      "path": "src/Plugin.SDK/Execution/Parameters/ParamSetting.cs",
+      "token": "public class ParamSetting",
+      "line": 32,
+      "sha256": "5108d6b5f47de0defabba5d6c7bcd514750f3bdbbeafc88f0fb939e199b92fef",
+      "kind": "自研当前源码"
+    }
+  ],
+  "officialTopics": [
+    {
+      "id": "sdk-doc-solution",
+      "token": "VmSolution.Load",
+      "title": "方案相关操作",
+      "fact": "官方示例加载/枚举/执行/保存/关闭，并要求退出前释放；结果回调需按读取需要启用。"
+    },
+    {
+      "id": "sdk-doc-module",
+      "token": "SetImageData",
+      "title": "模块相关操作",
+      "fact": "参数与临时输入分开；图像/输入/ROI说明当次有效；每次运行后重新取得结果对象。"
+    },
+    {
+      "id": "sdk-doc-procedure",
+      "token": "SetInputImage_V2",
+      "title": "流程相关操作",
+      "fact": "流程输入/结果、连续运行、流程导入导出及释放；导入/保存标注非线程安全。"
+    },
+    {
+      "id": "sdk-doc-globals",
+      "token": "GlobalVariableModuleTool",
+      "title": "全局模块相关操作",
+      "fact": "全局变量、通信、相机、光源和队列有独立对象入口；不将其协议或授权迁入自研。"
+    },
+    {
+      "id": "sdk-doc-events",
+      "token": "OnWorkStatusEvent",
+      "title": "事件设置方法",
+      "fact": "方案/流程/模块分级订阅；流程ID与工作状态用于区分事件，示例末尾释放方案。"
+    },
+    {
+      "id": "sdk-doc-output",
+      "token": "GetOutputInt",
+      "title": "通过流程输出或模块输出取数据",
+      "fact": "官方推荐流程输出以降低应用对具体模块的耦合；标量、数组、字符串、图像分别读取。"
+    },
+    {
+      "id": "sdk-doc-view",
+      "token": "ModuleSource",
+      "title": "通过绑定流程或模块取渲染结果",
+      "fact": "官方推荐控件绑定流程显示多个模块的配置渲染；单控件同一时刻绑定一个流程。"
+    }
+  ],
+  "packages": [
+    [
+      "共享合同（基础包，不是第4条产品线）",
+      "SunEyeVision.Contracts（拟议）",
+      "稳定ID、Field/Flow schema、像素格式/几何、结果质量、资源句柄与错误DTO；仅系统基础类型。",
+      "无WPF/宿主/算法引擎引用；建议net9.0，旧.NET Framework兼容不自动承诺。",
+      "当前SDK公共类型逐个审依赖；不能按文件夹整搬。System.Windows.Point/Rect等出现在公共签名时转自有值类型或边界适配。"
+    ],
+    [
+      "运行时SDK（客户应用）",
+      "SunEyeVision.Runtime.SDK（拟议）",
+      "RuntimeHost/ProjectSession/FlowHandle、加载保存、数据schema、运行/停止、结果句柄与订阅。",
+      "只依赖Contracts；公开表面不暴露MainWindow、WorkflowEngine或ToolResults派生类。首期net9.0-windows x64，UseWPF=false。",
+      "门面新增；适配现有SolutionRepository/Manager、WorkflowExecutionEngine与设备服务，不复制执行器。"
+    ],
+    [
+      "工具插件SDK（算法作者）",
+      "SunEyeVision.Tool.SDK（拟议）",
+      "IToolPlugin/IAsyncToolPlugin、参数/结果声明、只读运行输入、执行profile与能力服务接口。",
+      "依赖Contracts；不得反依赖Runtime.SDK、UI宿主或WPF控件库。纯合同可net9.0，算法插件平台能力另声明。",
+      "保留已有强类型工具与ToolExecutionRequest/Inputs；把ToolExecutor装配、解析及缓存实现放内部运行时。测试入口通过独立开发测试宿主复用同一执行管线；测试宿主可引用Runtime.SDK，不是Tool.SDK运行时依赖。"
+    ],
+    [
+      "UI控件库（嵌入界面）",
+      "SunEyeVision.Controls.Wpf（拟议，可分Viewer/Editors组件）",
+      "结果树/图像Viewer/ROI、可选参数和流程编辑器；只通过公共会话及只读投影工作。",
+      "net9.0-windows + WPF；Viewer依赖Contracts结果源，编辑器可依赖Runtime.SDK/Tool.SDK。WPF编辑器工厂归可选UI扩展。",
+      "现有IToolEditorFactory独立于IToolPlugin接口的思路保留，但从运行合同程序集分离；控件不得拥有全局设备连接。"
+    ],
+    [
+      "运行实现（内部发布依赖）",
+      "Runtime.Engine / Plugin.Infrastructure / DeviceDriver（职责名，非已建工程）",
+      "装配旧执行层、插件发现、参数解析、资源协调、设备/许可服务；由运行SDK发行包带入。",
+      "依赖Contracts和Tool.SDK；通过注入实现SDK内部provider接口，避免SDK门面与Engine双向ProjectReference。",
+      "同进程先复用；native依赖按RID/版本清单发布，公共类型由宿主唯一加载。"
+    ],
+    [
+      "迁移兼容层（过渡）",
+      "现有SunEyeVision.Plugin.SDK（保留兼容，非新的纯合同）",
+      "旧类型/资源URI/插件ABI的兼容与适配；旧UI资源单独标记。",
+      "旧插件按原依赖运行；新纯API样例不得靠装入旧WPF兼容层偷偷满足依赖。",
+      "TypeForward仅用于全名和结构兼容的类型；改签名/改命名空间须显式适配及序列化迁移，不能万能转发。"
+    ]
+  ],
+  "operations": [
+    [
+      "建立宿主",
+      "RuntimeHost.Create(options) → Capabilities",
+      "配置插件目录、日志、native搜索和自有许可provider；Create只校验配置/建立对象图，耗时初始化在Open等异步阶段完成。不弹自研窗口、不默认抢占设备。",
+      "Runtime.SDK提供，内部composition实现；一进程首期一个运行宿主。",
+      "VM官方API/控件依赖分开；自研engine构造目前需内部对象。",
+      "doc-packages engine sdk"
+    ],
+    [
+      "加载方案",
+      "host.OpenProjectAsync(path, options, ct)",
+      "绝对路径/版本/插件/权限/资源先检查候选；失败不发布半就绪项目，候选资源退役。加载期间多数操作拒绝ProjectNotReady。Open选项默认RestoreDevices=None，客户显式启用设备恢复才连接。",
+      "ProjectSession唯一Owner；首期MaxProjects=1显式能力，不把静态注册表包装成已支持多项目。",
+      "VM Load、加载事件与方案操作；内部实现不能只从API文档推断。",
+      "sdk-doc-solution doc-events"
+    ],
+    [
+      "定位流程与schema",
+      "project.Flows.Resolve(idOrName); flow.GetSchema()",
+      "名称只用于初次解析；后续用稳定FlowId/FieldId及schema版本；缺少/重名/失配返回诊断。",
+      "外部应用面向流程的公开输入输出，模块路径只保留专家接口。",
+      "VM推荐流程输出降低模块耦合。",
+      "sdk-doc-output sdk-binding"
+    ],
+    [
+      "修改持久参数",
+      "BeginEditAsync(expectedRevision) → CommitAsync",
+      "按项目修订号提交候选，校验全部绑定/类型/设备前置；默认运行中拒绝结构性编辑，成功只改设计态，保存另行调用。",
+      "Runtime.SDK负责事务；不会让客户直接修改活跃ToolParameters对象。",
+      "VM ModuParams有配置和临时输入；自研需明确分合同。",
+      "sdk-doc-module sdk-parameters"
+    ],
+    [
+      "更新全局变量",
+      "project.Globals.UpdateAsync(expectedRevision, values)",
+      "更新全局设计值/修订，下一根运行冻结；当前Run及子Scope继续读旧快照。即时控制指令另走设备API，不伪装成变量。",
+      "所有值校验类型与可变资源；不得提供未定义写回的共享可变字典。",
+      "VM有全局模块入口；原SDK未据此证明自研所需快照语义。",
+      "sdk-doc-globals sdk-reader"
+    ],
+    [
+      "准备当次输入",
+      "flow.CreateRequest() → Inputs / ParameterOverrides",
+      "只对本次Run有效，输入/ROI/覆盖参数不写入方案；数组/图像按明确copy/retain政策冻结，缺少必填输入拒绝。",
+      "输入Owner在接纳前归调用者；Start接纳成功后运行持有必要lease。",
+      "VM示例明确临时输入当次有效。",
+      "sdk-doc-procedure sdk-doc-module sdk-request"
+    ],
+    [
+      "开始执行",
+      "flow.StartAsync(request, admissionToken) → RunHandle",
+      "返回仅证明接纳，不证明执行结束；schema/定义/全局修订及身份冻结，忙则Busy，未获资源前可取消接纳。",
+      "admissionToken只控制接纳；Run返回后取消运行用StopAsync，不把取消一次等待当停机。",
+      "VM Run有bIsWait/执行计数；自研对外优先异步显式handle。",
+      "doc-flow session"
+    ],
+    [
+      "等待运行",
+      "run.Completion → RunOutcome",
+      "包含约定的执行、在途观察和本轮收尾；Completed/Failed/Cancelled/Quarantined分开。等待者取消只结束等待。",
+      "run.Completion.WaitAsync(waitToken)不自动停止硬件；业务取消后仍须StopAsync并观察结局。",
+      "VM事件与等待参数不能代替自研终态保证。",
+      "doc-flow doc-events engine"
+    ],
+    [
+      "读取结果",
+      "run.AcquireResultAsync() → ResultLease",
+      "按Run/Scope/Frame和schema取得本轮只读快照；Read<T>/TryRead检查Quality及形状，失败不能回退旧成功。",
+      "结果lease独立于显示；不让客户读取CurrentContext最后值猜轮次。",
+      "VM每轮重新取得ModuResult，推荐流程输出。",
+      "sdk-doc-output sdk-doc-procedure result"
+    ],
+    [
+      "订阅结果",
+      "project.SubscribeResults(filter, handler, options) → Subscription",
+      "通知只带结果地址/版本/状态，不自动转移像素Owner；按Run/Flow/Scope过滤，业务记录与UIlatest-only分通道。",
+      "回调不在执行/全局锁内运行；异常记录并隔离。Subscribe状态不决定运行是否保存结果。",
+      "VM文档警示回调中耗时渲染阻塞下次运行；自研应隔离该负担。",
+      "doc-events sdk-doc-events vm-queue"
+    ],
+    [
+      "停止单次/连续",
+      "run.StopAsync(deadline)；controller.StopAsync(deadline)",
+      "请求停止新派发，取消并等待在途；连续控制器停止覆盖其所有iteration。超时返回隔离而非成功完成。",
+      "不支持取消的native调用不得强制释放正在使用的资源；状态保留故障及恢复条件。",
+      "VMContinuousRunEnable=false是官方调用方式，内部排空仍需逆向证据。",
+      "sdk-doc-solution sdk-doc-procedure engine feed"
+    ],
+    [
+      "保存方案",
+      "project.SaveAsync(expectedRevision, path?, ct)",
+      "只保存已提交设计态，临时输入、当前结果、设备句柄不入文件。文件成功而索引失败分阶段反馈；另存资源复制政策明确。",
+      "仅Ready/允许保存状态；未决编辑或过期revision拒绝，native副作用不当文件事务一部分。",
+      "VM Save/SaveAs与配置操作分开。",
+      "sdk-doc-solution"
+    ],
+    [
+      "关闭项目/宿主",
+      "project.CloseAsync(deadline) → CloseOutcome；DisposeAsync",
+      "停准入→停连续/单次→等在途和回调→退订→等外部结果lease→释放项目实例；最后host释放应用设备/许可。",
+      "重复调用共享同一退役任务；未排空保留隔离，Close/Dispose失败可观察，不悄悄回到Idle。",
+      "VM例程CloseSolution/Dispose及退出前释放，避免析构函数调用。",
+      "sdk-doc-solution doc-wpf feed"
+    ]
+  ],
+  "dataRules": [
+    [
+      "公开流程输入/输出",
+      "FieldId + 名称别名 + ValueKind/Shape/Unit/CoordinateDomain + Required + schemaRevision",
+      "默认客户只依赖流程公开schema，内部算法替换时保持schema即可；诊断/专家模块入口明确不稳定性。",
+      "借鉴VM流程输出推荐，保留自研ParamSetting已有SourceFieldId，不能称完全无字段ID。"
+    ],
+    [
+      "持久参数",
+      "项目编辑事务提交并可保存；直接关系到方案修订",
+      "编辑草稿不能被运行读取；执行参数覆盖只改当次请求，不修改持久化ToolParameters。",
+      "保留ToolParameters及clone/metadata基础，切分UI通知与运行值。"
+    ],
+    [
+      "当次输入",
+      "每次Run单独请求，连续每轮由InputProvider提供或明确重复固定快照",
+      "缺输入拒绝；不能沿用上一轮临时输入；坐标/图像格式与字节长度、stride、深度和色序校验。",
+      "借鉴VM临时输入约定；自研给copy/retain明确选择，不暴露无寿命裸指针。"
+    ],
+    [
+      "全局变量",
+      "全局修订+根运行快照；子调用继承同一版本",
+      "写入影响下一根Run，局部遮蔽明示；设备立即控制不走Globals.Update，结果回写须独立事务。",
+      "自研新增保证，VM全局入口存在不等其快照政策相同。"
+    ],
+    [
+      "结果",
+      "ResultAddress含Run/Scope/Node/Iteration/Frame/schema；Quality区分Valid/Missing/Failed/Cancelled/Stale",
+      "Read<T>不默认强制转换，数组不能自动截断/广播；TryRead返回结构化原因。结果只读，无WriteOutput绕过算法。",
+      "VM typed读取可借鉴；不复制名哈希作为持久ID或缺失数据默认化。"
+    ],
+    [
+      "资源",
+      "图像/模型等返回显式lease，不把只读接口当不可变像素",
+      "AcquireImage在父结果有效时获得独立子lease；子lease可按合同比父结果活得更久，但必须释放后项目才能完全关闭。",
+      "现有IVisionImage只有Clone/Dispose，尚不等retain/refcount实现；原合同需适配。"
+    ]
+  ],
+  "life": [
+    [
+      "RuntimeHost",
+      "客户应用",
+      "创建composition与许可/设备服务",
+      "所有ProjectSession/在途/外部资源退役后DisposeAsync；不强停别的宿主（首期不支持多宿主）。"
+    ],
+    [
+      "ProjectSession",
+      "打开项目的客户或应用服务",
+      "持方案、插件实例及资源索引",
+      "关闭只退役自己，不因控件关窗关闭共享项目；失败隔离并报告剩余Owner。"
+    ],
+    [
+      "输入ImageLease",
+      "创建输入的调用者；接纳后Run另持使用lease",
+      "默认CopyFromPixels给自有缓冲；Retain只接受可证支持的载体",
+      "调用者可在Start成功后释放自己持有，Run仍持有效使用权；拒绝接纳则无转移。"
+    ],
+    [
+      "RunHandle",
+      "发起Run的代码",
+      "持本轮请求和在途观察",
+      "DisposeAsync等同按政策停止/等待并释放handle；超时抛或返回失败，不能伪装资源已归还。"
+    ],
+    [
+      "ResultLease / ImageLease",
+      "每个获取者",
+      "外部读取不得无lease抓裸像素跨线程",
+      "先释放子图像再父结果；支持独立retain时按各自使用权释放；Close发现未归还须定位。"
+    ],
+    [
+      "Subscription",
+      "订阅方",
+      "拥有handler及过滤/队列配额",
+      "Dispose停止新投递；DrainAsync等待已投递handler；不在自身回调内同步Drain自身，避免死锁。"
+    ],
+    [
+      "Viewer / EditorSession",
+      "嵌入控件的客户UI",
+      "控件只拥有自己的订阅/显示lease/编辑草稿",
+      "DetachAsync等显示在途退出后归还；清屏不等销毁项目或输入图像，Dispose在正确Dispatcher。"
+    ]
+  ],
+  "failures": [
+    [
+      "加载中取消或缺插件",
+      "候选退役，当前项目不替换，返回缺少工具/版本/资源清单；不发布Ready。"
+    ],
+    [
+      "schema或定义修订过期",
+      "拒绝接纳或提交；客户重新GetSchema，不按旧名称猜绑定。"
+    ],
+    [
+      "同项目并发Start",
+      "首期MaxConcurrentRoots=1，明确Busy；能力接口保留未来扩展，不冒称已支持多租户。"
+    ],
+    [
+      "等待者取消",
+      "只取消WaitAsync等待；调用者若要停运行必须StopAsync并观察Completion。"
+    ],
+    [
+      "工具失败或结果缺失",
+      "Outcome失败+字段Quality，输出不冒充上次成功；读失败结构化返回。"
+    ],
+    [
+      "结果handler慢/抛错",
+      "不影响调度终态；队列超容量按通道拒绝/丢弃并记录计数，ACK和业务记录不可无声合并。"
+    ],
+    [
+      "停止超时/外部lease未还",
+      "Quarantined/ClosePending，保留资源占用及Owner诊断；不能继续重连或卸载native。"
+    ],
+    [
+      "许可失效/拔自有狗",
+      "各入口统一准入，自有策略决定拒绝新Run并安全退役；狗型号/宽限未定，不能承诺发行。"
+    ],
+    [
+      "主异常与收尾异常并发",
+      "保留主异常，单独聚合清理错误；示例中的await using不代表Dispose失败可以覆盖原错误而丢失诊断。"
+    ]
+  ],
+  "migration": [
+    [
+      "S0（F0）",
+      "冻结公共表面与依赖账本",
+      "把ToolParameters/ToolResults/ParamSetting/Image合同的跨包类型、JSON判别符、URI、插件ABI逐个登记；冻结Flow/Field稳定身份。",
+      "架构评审；不只是画3个新csproj。"
+    ],
+    [
+      "S1（F0/F1）",
+      "新增门面和独立调用样例",
+      "Open→GetSchema→Run→读结果→Stop→Close全部经同一现有执行器适配，默认单Host/项目/根Run能力明确。",
+      "Console不创建MainWindow/ServiceInitializer；旧引擎过渡实现可能仍需WindowsDesktop，这步不能冒称最终无WPF部署。native/许可/设备依赖显式。"
+    ],
+    [
+      "S2（F2）",
+      "提取Contracts与工具合同",
+      "先迁纯值/接口，再拆WPF签名、资源及EditorFactory；兼容旧包，原全名类型可转发，其余适配。",
+      "新工具仅依赖Tool.SDK+Contracts可构建与调用；旧插件/方案不失配。"
+    ],
+    [
+      "S3（F1-F3）",
+      "接入快照、结果lease与订阅",
+      "补输入冻结、Quality、批次、外部lease、订阅排空；从图像源/阈值/子程序2调用做贯穿样例。",
+      "失败/取消/迟到/未还lease不误完成；UI和SDK看到同版结果。"
+    ],
+    [
+      "S4（F4）",
+      "分发可选Viewer/Editor与开发工具",
+      "Viewer先面向流程结果；Editor草稿事务。工具调试/预编译/测试走同一执行管线，不另造Run。",
+      "独立WPF壳可嵌入，关控件不关客户项目；设计时和运行时分别验。"
+    ],
+    [
+      "S5（F4/F5）",
+      "发布与兼容验证",
+      "发行清单含managed/native/RID、SDK与工具合同版本、自有许可服务、资源模板、文档/样例。",
+      "干净机、旧方案/插件、非UI运行、慢消费者/长时循环、正常异常退出；本轮不构建运行。"
+    ]
+  ],
+  "acceptance": [
+    [
+      "A1",
+      "包引用方向",
+      "新Runtime.SDK不引WPF/宿主；Tool.SDK不反依赖Runtime或UI；UI可选；公开合同无System.Windows类型；最终纯API运行实现和新插件的传递依赖也不得隐含WPF。"
+    ],
+    [
+      "A2",
+      "纯API应用",
+      "新Console样例不创建主窗，完成项目加载、schema查询和一次运行；最终纯API发布须核传递依赖无WPF/Editor，兼容旧引擎期间仍需WindowsDesktop时单列状态。缺native/许可错误可诊断。"
+    ],
+    [
+      "A3",
+      "数据与修改",
+      "持久参数提交/保存与当次输入分开；Globals更新不改变当前Run；旧schema明确失败。"
+    ],
+    [
+      "A4",
+      "流程输出稳定",
+      "替换内部工具但保持公开Flow schema，客户程序不改模块路径；改字段则走版本迁移。"
+    ],
+    [
+      "A5",
+      "取消及终态",
+      "接纳取消/等待取消/请求停止各自可测，停止包含子Scope和在途；超时保留隔离。"
+    ],
+    [
+      "A6",
+      "输入及结果寿命",
+      "调用者释放输入后运行仍正确；多消费者各持lease；未还lease关闭有诊断，最后使用后恰好释放。"
+    ],
+    [
+      "A7",
+      "事件与UI",
+      "慢/异常handler不破坏调度；订阅取消排空可等待；两个Viewer、切流程、关控件不释放客户项目。"
+    ],
+    [
+      "A8",
+      "工具插件",
+      "同步旧工具经适配、新异步工具用只读Inputs；调试与外部运行参数/结果同语义，部分Init失败有清理合同。"
+    ],
+    [
+      "A9",
+      "兼容与发布",
+      "旧插件/JSON/资源URI不静默坏；同名不同版本拒载；共享与私有native正确部署。"
+    ],
+    [
+      "A10",
+      "可重复退出",
+      "加载失败、运行异常、handler失败、Stop超时和重复Close/Dispose均有唯一可观察结局。"
+    ]
+  ],
+  "code": "// 设计示例：以下RuntimeHost等API均未实现，非可直接编译的产品代码。\nawait using var host = RuntimeHost.Create(new HostOptions {\n    PluginDirectories = new[] { pluginRoot }, LicenseProvider = ownLicenseProvider\n}); // 不启动自研主窗；不默认连接全部设备\nawait using var project = await host.OpenProjectAsync(solutionPath, openOptions, ct);\nvar flow = project.Flows.Resolve(flowId); // 名称可先解析一次，保存稳定ID\nvar schema = flow.GetSchema();\nusing var subscription = project.SubscribeResults(\n    new ResultFilter(flow.Id), n => uiQueue.Post(n.Address), LatestOnly);\nusing var input = host.Images.CopyFromPixels(bytes, width, height, stride, pixelFormat);\nvar request = flow.CreateRequest(schema.Revision)\n    .WithInput(inputFieldId, input)\n    .WithParameterOverride(thresholdFieldId, 128); // 只对当次Run有效，不写方案\nawait using var run = await flow.StartAsync(request, admissionToken);\n// Start返回仅代表接纳；admissionToken不再用作运行停止信号。\nvar outcome = await run.Completion; // 等约定终态，不只等“命令已发送”\nif (outcome.State != Completed) { ShowFailure(outcome); return; }\nusing var result = await run.AcquireResultAsync();\ndouble score = result.Read<double>(scoreOutputId); // 检查Quality/type/schema\nusing var image = result.AcquireImage(imageOutputId); // 显式图像使用权\nvar pixelsForLater = image.CopyPixels(); // 需要脱离lease长期保存时复制\n// 反向释放 image/result/run/input/subscription/project/host。\n// 生产应用另用关闭协调器保留主异常并聚合收尾异常，参见故障与寿命合同。",
+  "editCode": "// 拟议：持久修改；同“当次参数覆盖”分开。\nawait using var edit = await project.BeginEditAsync(expectedRevision, ct);\nedit.SetParameter(nodeId, parameterFieldId, newValue);\nvar commit = await edit.CommitAsync(ct); // 校验并采用候选，默认运行中拒绝结构修改\nawait project.SaveAsync(commit.Revision, destinationPath, ct);\n// 拟议：取消等待不自动停运行。\ntry { await run.Completion.WaitAsync(waitToken); }\ncatch (OperationCanceledException) {\n    var stop = await run.StopAsync(stopDeadline); // 独立控制操作\n    if (!stop.Drained) ShowQuarantine(stop); // 不继续释放被native使用的资源\n}",
+  "productModified": false,
+  "implementationStatus": "全部新增包、门面、示例及合同为待实施设计；现有能力按来源列出",
+  "checkpointUpgrades": 0,
+  "panelIds": [
+    "sdk-overview",
+    "sdk-packages",
+    "sdk-external",
+    "sdk-data",
+    "sdk-events",
+    "sdk-resources",
+    "sdk-tools",
+    "sdk-ui",
+    "sdk-migration",
+    "sdk-engineering",
+    "sdk-file-map",
+    "sdk-compatibility"
+  ]
+}

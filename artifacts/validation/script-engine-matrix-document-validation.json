@@ -1,0 +1,77 @@
+{
+  "rows": [
+    {
+      "flat": "tool-script.html",
+      "width": 390,
+      "visible": true,
+      "overflow": false,
+      "passes": 62,
+      "missing": 4,
+      "protocolAndNA": 6,
+      "syntaxProbeLimitation": true,
+      "CNotImplemented": true,
+      "referenceGraphRetained": true
+    },
+    {
+      "flat": "tool-script.html",
+      "width": 768,
+      "visible": true,
+      "overflow": false,
+      "passes": 62,
+      "missing": 4,
+      "protocolAndNA": 6,
+      "syntaxProbeLimitation": true,
+      "CNotImplemented": true,
+      "referenceGraphRetained": true
+    },
+    {
+      "flat": "tool-script.html",
+      "width": 1440,
+      "visible": true,
+      "overflow": false,
+      "passes": 62,
+      "missing": 4,
+      "protocolAndNA": 6,
+      "syntaxProbeLimitation": true,
+      "CNotImplemented": true,
+      "referenceGraphRetained": true
+    },
+    {
+      "flat": "optimization-o01.html",
+      "width": 390,
+      "visible": true,
+      "overflow": false,
+      "passes": 0,
+      "missing": 0,
+      "protocolAndNA": 0,
+      "syntaxProbeLimitation": true,
+      "CNotImplemented": true,
+      "referenceGraphRetained": true
+    },
+    {
+      "flat": "optimization-o01.html",
+      "width": 768,
+      "visible": true,
+      "overflow": false,
+      "passes": 0,
+      "missing": 0,
+      "protocolAndNA": 0,
+      "syntaxProbeLimitation": true,
+      "CNotImplemented": true,
+      "referenceGraphRetained": true
+    },
+    {
+      "flat": "optimization-o01.html",
+      "width": 1440,
+      "visible": true,
+      "overflow": false,
+      "passes": 0,
+      "missing": 0,
+      "protocolAndNA": 0,
+      "syntaxProbeLimitation": true,
+      "CNotImplemented": true,
+      "referenceGraphRetained": true
+    }
+  ],
+  "errors": 0
+}

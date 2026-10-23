@@ -1,0 +1,102 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><script src="../公共资源/文档路径.js"></script><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A12 许可和宿主隔离</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">A12 许可和宿主隔离</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">文档索引</a><a href="architecture-target.html">最新目标决策</a><a href="../框架设计/framework-overview.html">框架对比</a><a href="../SDK设计/framework-sdk-overview.html">SDK设计</a><a href="../维护记录/joint-optimization-plan.html">联合方案</a><a href="../证据审计/architecture-evidence.html">本批证据</a></nav><main><h1>A12 许可和宿主隔离</h1><article id="decision-A12"><p class="status">proposed-not-implemented · 全部接口为拟议合同，未编译/运行</p><div class="visual-metrics"><div><strong>A12</strong><span>目标决策</span><small>拟议，未实施</small></div><div><strong>4</strong><span>局部证据条目</span><small>未知单列</small></div><div><strong>2</strong><span>验收用例</span><small>均未运行</small></div></div><figure class="architecture-figure" data-visual="license"><figcaption><b>能力准入：许可变化与在途运行分离</b><span class="chip">拟议设计，未实现/运行验收</span></figcaption><div class="diagram-actions"><button type="button" data-diagram-expand>放大查看图</button><span>实线：所标范围内的关系；虚线：条件/待验证边界。</span></div><div class="svg-scroll"><svg role="img" aria-label="能力准入：许可变化与在途运行分离；拟议设计，未实现/运行验收" viewBox="0 0 945 339"><title>能力准入：许可变化与在途运行分离</title><desc>拟议设计，未实现/运行验收。图中节点和箭头与下方文字合同共同解释，不能单独作为运行保证。</desc><defs><marker id="arrow-license" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker></defs><path d="M 260 82 L 350 82" class="graph-edge " marker-end="url(#arrow-license)"/><text class="edge-label" x="305" y="73">Evaluate</text><path d="M 590 82 L 680 82" class="graph-edge " marker-end="url(#arrow-license)"/><text class="edge-label" x="635" y="73">Allowed</text><path d="M 260 272 L 350 272" class="graph-edge " marker-end="url(#arrow-license)"/><text class="edge-label" x="305" y="263">更新能力</text><path d="M 260 272 L 680 272" class="graph-edge uncertain" marker-end="url(#arrow-license)"/><text class="edge-label" x="470" y="263">只关闭新准入</text><g class="graph-node"><rect x="20" y="40" width="240" height="84" rx="13"/><text x="36" y="72">ILicenseProvider</text><text class="node-note" x="36" y="100">能力 / 原因 / PolicyVersion</text></g><g class="graph-node"><rect x="350" y="40" width="240" height="84" rx="13"/><text x="366" y="72">Host能力门</text><text class="node-note" x="366" y="100">新任务准入检查</text></g><g class="graph-node"><rect x="680" y="40" width="240" height="84" rx="13"/><text x="696" y="72">新运行</text><text class="node-note" x="696" y="100">允许后接纳</text></g><g class="graph-node"><rect x="20" y="230" width="240" height="84" rx="13"/><text x="36" y="262">许可失效事件</text><text class="node-note" x="36" y="290">Sequence去重</text></g><g class="graph-node"><rect x="350" y="230" width="240" height="84" rx="13"/><text x="366" y="262">拒绝新准入</text><text class="node-note" x="366" y="290">不取得新资源</text></g><g class="graph-node"><rect x="680" y="230" width="240" height="84" rx="13"/><text x="696" y="262">既有在途任务</text><text class="node-note" x="696" y="290">安全收尾，不强制释放</text></g></svg></div><p class="diagram-note">拟议设计，未实现/运行验收 · <a href="architecture-target.html">查看依据、合同与未知</a></p></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前边界</h2><p>自有授权策略、狗SDK和能力撤销尚无该批运行验收，不得因VM启动门就认定自研已具备。</p></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM已证 / 未知</h2><p>原启动有授权/显示门，但许可协议与自有产品授权政策不能由恢复实现直接替代。</p></section></div><section class="visual-card decision-summary"><h2>本项选择与代价</h2><p><strong>自研独立设计；不迁移VM狗体系</strong></p><p>自有LicenseProvider在宿主能力门控制；许可、设备连接和文件加密职责分开；首期同进程，进程隔离为可选后续能力。</p><div class="tradeoff-grid"><div><h3>收益与成本</h3><p>适配自身商业部署；需自有狗SDK和签发/失效政策，不能假称已具备。</p></div><div><h3>为什么不选替代路线</h3><p>复用VM授权体系不适合自有部署；独立设计有签发、失效和商业策略成本，但职责和产品控制更明确。</p></div></div></section><h2>拟议接口与数据字段</h2><pre>ILicenseProvider.Evaluate(CapabilityRequest request) =&gt; CapabilityDecision;
+CapabilityDecision { Allowed, ReasonCode, PolicyVersion, ExpiresAt }
+LicenseChanged { Sequence, CapabilitySet, PolicyVersion };</pre><h3>状态与生效时点</h3><p>Host在新运行/设备操作准入检查能力；运行中失效关闭新准入，已有任务安全收尾。许可、设备连接、文件加密各自有合同。</p><h3>Owner与释放责任</h3><p>Host拥有许可provider及订阅；Run保持已接纳资源Owner，许可变化不拥有native释放权。首期同进程，进程隔离仅后续设计。</p><h3>失败、取消与幂等</h3><p>无许可/过期/后端不可用分别诊断，默认拒绝新能力；检查无副作用可重试，重复事件按sequence去重。不在native执行中强制Dispose。</p><h3>版本与兼容</h3><p>PolicyVersion与SDK版本独立；离线宽限/撤销规则由产品明确后再实现，不从VM许可协议推断。</p><h2>验收：尚未执行</h2><section id="A12-T1"><h3>A12-T1 · planned-not-run</h3><p>无许可运行新任务被拒且原因明确</p><p>执行方法与判定：<a href="architecture-acceptance.html#A12-T1">查看用例</a></p></section><section id="A12-T2"><h3>A12-T2 · planned-not-run</h3><p>运行中许可变化不破坏在途清理；许可不等同方案加密</p><p>执行方法与判定：<a href="architecture-acceptance.html#A12-T2">查看用例</a></p></section><h2>原版证据与局部边界</h2><p>source-confirmed限交接中选定成员；不是整库复核。独立恢复代码 independent-implementation 不作为原版事实。<a href="../证据审计/architecture-evidence.html">本批来源SHA</a></p><details id="evidence-A12-0"><summary>shell-lifecycle:L01 · source-confirmed · Program.Main</summary><p>先将工作目录切到程序基目录；IsMultiApp 为 1 直接 StartApp，否则在 SingleInstanceManager 的 using 生命周期内 StartApp。不把多实例配置等同后台运行配置。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs:61–77</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6</code></p><pre>	private static void Main(string[] args)
+	{
+		Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+		string config = ConfigurationHelper.GetConfig(&quot;IsMultiApp&quot;);
+		if (config == &quot;1&quot;)
+		{
+			StartApp(args);
+			return;
+		}
+		using (SingleInstanceManager.Initialize(GetSingleInstanceManagerSetup()))
+		{
+			StartApp(args);
+		}
+	}
+
+	private static void StartApp(string[] args)
+	{</pre></details><details id="evidence-A12-1"><summary>shell-lifecycle:L03 · source-confirmed · App.OnStartup worker setup / App.OnStartup startup barrier / VisionMaster.App::OnStartup</summary><p>后台高优先级 STA 线程执行 BeforeStartPart，catch 保存异常，finally 发 mWaitEventBefore；启动线程等待该事件，再处理子线程异常。不能把后台线程启动当初始化已完成。</p><ul><li>未知/限制：OnStartup和后台worker的选定CIL顺序已核L24/L25；实际线程、共享状态与原生初始化成功仍未知。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/App.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/App.cs:121–145</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>babebf8e2bef407d7d06105aa4540bb844e32644a25d9a8c8c7faebfe57cf3f7</code></p><pre>		Thread thread2 = new Thread(() =&gt;
+		{
+			try
+			{
+				LogHelper.Info(&quot;BeforeStartPart-----begin&quot;);
+				Program.BeforeStartPart();
+				LogHelper.Info(&quot;BeforeStartPart-----end&quot;);
+			}
+			catch (Exception subThreadException)
+			{
+				_subThreadException = subThreadException;
+			}
+			finally
+			{
+				mWaitEventBefore.Set();
+			}
+		})
+		{
+			IsBackground = true,
+			Priority = ThreadPriority.Highest
+		};
+		thread2.SetApartmentState(ApartmentState.STA);
+		thread2.Start();
+		try
+		{</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/App.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/App.cs:157–168</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>babebf8e2bef407d7d06105aa4540bb844e32644a25d9a8c8c7faebfe57cf3f7</code></p><pre>		mWaitEventBefore.WaitOne();
+		LogHelper.Info(&quot;初始化完成---线程前---waitone后&quot;);
+		if (_subThreadException != null)
+		{
+			DoneException(_subThreadException);
+		}
+		mWaitEvent.Set();
+		LogHelper.Info(&quot;thread----start后---AppAfterStart前&quot;);
+		Program.AppAfterStart();
+		LogHelper.Info(&quot;thread----start后---AppAfterStart后&quot;);
+		AccessUser loginUser = CodeManager.GetInstance().GetLoginUser();
+		LogHelper.Info(&quot;GetLoginUser后&quot;);</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/architecture-recovery/startup-order-cil-evidence.json">docs/architecture-recovery/startup-order-cil-evidence.json:1509–1528</a> · original-managed-cil · 原二进制身份：42e2437780ec21c9d1ade2d07ace0a26635961f5c90559934a7fde7e233e0c23 / MVID 77c739a5-b0ec-4834-8a1e-64dd9b618ae5</p><p>SHA256 <code>4f49f8123edff0d22c80319de3dca2046276978d18ed5795811899e35d13781c</code></p><pre>          &quot;token&quot;: &quot;0x06000011&quot;,
+          &quot;symbol&quot;: {
+            &quot;token&quot;: &quot;0x06000011&quot;,
+            &quot;kind&quot;: &quot;method-def&quot;,
+            &quot;type&quot;: &quot;VisionMaster.App&quot;,
+            &quot;name&quot;: &quot;OnStartup&quot;,
+            &quot;parameters&quot;: 1,
+            &quot;attributes&quot;: &quot;Family, Virtual, HideBySig&quot;,
+            &quot;signatureBytes&quot;: &quot;200101128085&quot;
+          },
+          &quot;status&quot;: &quot;decoded&quot;,
+          &quot;issue&quot;: null,
+          &quot;ilSize&quot;: 916,
+          &quot;ilSha256&quot;: &quot;da4f058445b98c5b2f4edc697daca095b3706cef352d3b514d64afc414ca7d07&quot;,
+          &quot;ilBytes&quot;: &quot;0072b3010070284400000a284500000a0a06130a110a2c4673f9020006130b110b027d1001000400110b147d0f010004110bfe06fa020006734e00000a734f00000a25176f5000000a00130c110c166f5100000a00110c6f5200000a0000140b02fe0623000006734e00000a734f00000a25176f5000000a00251a6f5300000a000c08166f5100000a00086f5200000a000072c9010070283700000a00280f0100060072e7010070283700000a00735400000a0b7213020070283700000a00723b020070283700000a0000de0f130d0002110d28140000060000de00027b090000046f5500000a267247020070283700000a00027b0a00000414fe03130e110e2c0f0002027b0a00000428140000060000027b080000046f5600000a267275020070283700000a0028130100060072b9020070283700000a00282200000a6f5700000a0d72fd020070283700000a000919fe0116fe01130f110f2c45007219030070284400000a284500000a13101110131111112c0a00281200000600002b1e007235030070283700000a002817000006007269030070283700000a0000002b0800281200000600007299030070283700000a007e7a00000414fe03131211122c56007e7a00000417285b01000616fe01131311132c3a0072d1030070282d00000a72f1030070282d00000a17191617285800000a17fe01131411142c12007e7a0000046f83010006285c01000600000014807a000004007e12010004252d17267e11010004fe06fd020006734e00000a258012010004734f00000a13041104166f5100000a001104176f5000000a0011046f5200000a00283f00000a6f5900000a7219040070284400000a283600000a130572470400701105283600000a283700000a001105285a00000a130611066f5b00000a7e13010004252d17267e11010004fe06fe020006735c00000a258013010004280100002b1307d0ea000001285e00000a1107171414285f00000a00282a01000600726f040070284400000a284500000a13087291040070284400000a284500000a130911082c17286000000a6f6100000a6f6200000a18fe0116fe012b0116131511152c1300286000000a6f6100000a186f6300000a00001109131611162c5e00286000000a6f6100000a2300000000000000006f6400000a00286000000a6f6100000a2300000000000000006f6500000a00286000000a6f6100000a286600000a6f6700000a00286000000a6f6100000a286800000a6f6900000a00002a&quot;,
+          &quot;instructions&quot;: [
+            {
+              &quot;offset&quot;: 0,
+              &quot;label&quot;: &quot;IL_0000&quot;,
+              &quot;opcode&quot;: &quot;nop&quot;,</pre></details><details id="evidence-A12-2"><summary>shell-lifecycle:L05 · source-confirmed · Program.BeforeStartMian / Program.InitMainWindow</summary><p>主启动路径构造 MainWindowData，再 PreLoad 菜单/工具箱，随后 InitServer(GetToolFunctionSources) 并注入日志桥。与 L03 的后台初始化并行，不能任意串成同一线程。</p><ul></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs:136–140</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6</code></p><pre>	public static void BeforeStartMian()
+	{
+		InitMainWindow();
+		LogHelper.Info(&quot;InitMainWindow--end&quot;);
+	}</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs:159–167</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>e9f3671cbf1b65559f855974b2f6c9e45dea434cfa3f89e3b29c2f9824b0ced6</code></p><pre>	public static void InitMainWindow()
+	{
+		MainData = new MainWindowData();
+		MainData.PreLoad();
+		LogHelper.Info(&quot;InitServer&quot;);
+		ServerManager.Instance.InitServer(TitleMenueItemData.GetToolFunctionSources);
+		NameValueItem.logManager = (ILogManager)LogUIBridge.GetInstance();
+	}
+</pre></details><details id="evidence-A12-3"><summary>shell-lifecycle:L08 · source-confirmed · App.ShowMainWindow / MainWindow XAML lifecycle handlers / MainWindow.BaseWindow_Closing</summary><p>新建主窗口并设置 Program.MainData 为 DataContext，绑定遮罩属性、注册 App.MainWindow_Closing，Show 后配置缩放并恢复窗口状态。XAML 的 BaseWindow_Closing 是另一成员，其空体不能证明 App 退出链为空。</p><ul><li>未知/限制：MainWindow 构造的反编译 IL 警告及具体窗口状态恢复另需核查。</li></ul><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/App.cs">analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/App.cs:354–368</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>babebf8e2bef407d7d06105aa4540bb844e32644a25d9a8c8c7faebfe57cf3f7</code></p><pre>	internal static void ShowMainWindow()
+	{
+		//IL_0006: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0010: Expected Obj, but got Unknown
+		Application.Current.MainWindow = (Window)new MainWindow();
+		Application.Current.MainWindow.DataContext = Program.MainData;
+		Application.Current.MainWindow.SetBinding(MainWindow.IsShowProgressMaskProperty, &quot;IsShowProgressMask&quot;);
+		Application.Current.MainWindow.SetBinding(MainWindow.MaskMessageProperty, &quot;MaskMessage&quot;);
+		Application.Current.MainWindow.Closing += MainWindow_Closing;
+		Application.Current.MainWindow.Show();
+		Program.ConfigZoomIndex();
+		Program.MainData.RecoverMainWindowState(Application.Current.MainWindow);
+	}
+
+	internal static void RemoveMainWindowClosingHandle()</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMasterMain/VisionMasterMain/MainWindow.xaml">analysis/decompiled/VisionMasterMain/VisionMasterMain/MainWindow.xaml:2–2</a> · local-extracted-resource · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>6176a9c0c68a8d44e5fd2885ca6683c4a02a1cd22ff97bb0b5d52104a84c7915</code></p><pre>&lt;VMControl:BaseWindow x:Class=&quot;VisionMasterMain.MainWindow&quot; xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot; xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot; xmlns:d=&quot;http://schemas.microsoft.com/expression/blend/2008&quot; xmlns:mc=&quot;http://schemas.openxmlformats.org/markup-compatibility/2006&quot; xmlns:local=&quot;clr-namespace:VisionMasterMain&quot; xmlns:localApp=&quot;clr-namespace:VisionMasterMain.AppMainWindow&quot; xmlns:VMControl=&quot;clr-namespace:VM.Controls;assembly=VM.Controls&quot; xmlns:Lang=&quot;clr-namespace:Apps.Localization;assembly=Apps.Localization&quot; xmlns:VMWpf=&quot;clr-namespace:VMControls.WPF.Release;assembly=VMControls.WPF.Release&quot; xmlns:i=&quot;clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity&quot; xmlns:UIHelper=&quot;clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper&quot; xmlns:PCUICommon=&quot;clr-namespace:HikPcUI.Commom;assembly=VM.PcUI&quot; xmlns:Color=&quot;clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun&quot; xmlns:user=&quot;clr-namespace:VM.User;assembly=VM.User&quot; WindowStyle=&quot;SingleBorderWindow&quot; Title=&quot;VisionMaster&quot; Height=&quot;768&quot; Width=&quot;1366&quot; MinWidth=&quot;800&quot; MinHeight=&quot;600&quot; ResizeMode=&quot;CanResize&quot; FontSize=&quot;13&quot; FontFamily=&quot;Microsoft YaHei&quot; ShowInTaskbar=&quot;True&quot; SizeAble=&quot;True&quot; CloseButtonVisibility=&quot;Collapsed&quot; MinButtonVisibility=&quot;Collapsed&quot; MaxButtonVisibility=&quot;Collapsed&quot; BorderThickness=&quot;0&quot; Closed=&quot;Window_Closed&quot; PreviewKeyDown=&quot;BaseWindow_PreviewKeyDown&quot; Closing=&quot;BaseWindow_Closing&quot;&gt;</pre><p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/decompiled/VisionMasterMain/VisionMasterMain/MainWindow.xaml.cs">analysis/decompiled/VisionMasterMain/VisionMasterMain/MainWindow.xaml.cs:116–119</a> · local-decompiled-source · 原二进制身份：not revalidated in this slice</p><p>SHA256 <code>19da4fa478dc4600f611feb4e5c757c77a0311d93cdd12e13b9d659fa5d54a37</code></p><pre>	private void BaseWindow_Closing(object sender, CancelEventArgs e)
+	{
+	}
+</pre></details></article><p><a href="architecture-target.html">返回12项决策目录</a></p></main><footer>文档设计交付 ≠ 产品实现或运行验收；原42检查点、49能力口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

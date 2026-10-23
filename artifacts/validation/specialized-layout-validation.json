@@ -1,0 +1,14 @@
+{
+  "specializedLayouts": 19,
+  "verifiedClickableRegions": 253,
+  "actualTabSequences": true,
+  "conditionalModes": true,
+  "imageSourceHostOnlyConfirm": true,
+  "noInventedCommunicationImagePanel": true,
+  "sourceAndBehaviorHashes": true,
+  "refreshHistory": true,
+  "printRestore": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "productExecuted": false
+}

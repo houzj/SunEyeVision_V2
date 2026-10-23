@@ -1,0 +1,18 @@
+{
+  "analysisAccepted": 20,
+  "total": 20,
+  "analysisPercent": 100,
+  "analysisDeltaPercentagePoints": 0,
+  "evidenceVerified": 24,
+  "evidenceTotal": 42,
+  "evidencePercent": 57.1,
+  "categoriesComplete": 0,
+  "categoriesTotal": 7,
+  "deploymentFailureScenarios": 4,
+  "permissionRows": 6,
+  "performanceCombinations": 12,
+  "deepLinks": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "runtimeExperimentsExecuted": false
+}

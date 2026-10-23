@@ -1,0 +1,505 @@
+{
+  "common": {
+    "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+    "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+    "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+    "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+    "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+    "refs": [
+      {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 3886,
+        "token": "initializer.SetParameters(node.Parameters)",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      {
+        "path": "src/Plugin.SDK/UI/Controls/ToolEditorClose.cs",
+        "line": 9,
+        "token": "public static bool TryClose",
+        "sha256": "dfe3e0c35236031c5bd38b96bd36defa08eedb95b7b4507246fa576afdfd7792"
+      },
+      {
+        "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+        "line": 570,
+        "token": "private void OnWindowClosing",
+        "sha256": "d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1"
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "BlobAnalysis",
+      "name": "Blob分析",
+      "file": "tool-detail-BlobAnalysis.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml.cs",
+        "line": 122,
+        "token": "SetParameters",
+        "sha256": "c4a491032094d4ac6738d0e9dd139a893e5ebb488bda69fde1ef824c8550781a"
+      }
+    },
+    {
+      "id": "CircleCircleMeasure",
+      "name": "圆-圆测量",
+      "file": "tool-detail-CircleCircleMeasure.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml.cs",
+        "line": 257,
+        "token": "SetParameters",
+        "sha256": "f54f96298ac6d847a9de6367b2da93e70f10f235d2bda8db2d9c9e84c3e56f7f"
+      }
+    },
+    {
+      "id": "CircleDetect",
+      "name": "圆查找",
+      "file": "tool-detail-CircleDetect.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml.cs",
+        "line": 305,
+        "token": "SetParameters",
+        "sha256": "8cd4a06e2bf74380f299a154c97675f00c53fbc144dc15c4f6d12489d4379590"
+      }
+    },
+    {
+      "id": "Condition",
+      "name": "条件分支",
+      "file": "tool-detail-Condition.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Condition/Views/ConditionDebugControl.xaml.cs",
+        "line": 58,
+        "token": "SetParameters",
+        "sha256": "ff7916280848827d089ab377d49d0f74ba631fdda928585fa5578266f06dc869"
+      }
+    },
+    {
+      "id": "ImageFilter",
+      "name": "图像滤波",
+      "file": "tool-detail-ImageFilter.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml.cs",
+        "line": 121,
+        "token": "SetParameters",
+        "sha256": "3dbac6d6a46d3f4c12bcd7a22bd3615c88f45de6bb28ed457b9b155f888f891a"
+      }
+    },
+    {
+      "id": "ImageLoad",
+      "name": "图像源",
+      "file": "tool-detail-ImageLoad.html",
+      "editing": "宿主ImageSourceSettingsControl直接修改node.ImageSourceConfig；非插件草稿。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "关配置不回滚已写配置，也不等关全局相机或预览。",
+      "execution": "非执行配置壳，仅确定，隐藏运行/连续；可以打开相机预览，不等执行ImageLoad算法。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "src/UI/Features/WorkflowUI/ImageSourceSettingsControl.cs",
+        "line": 27,
+        "token": "public ImageSourceSettingsControl",
+        "sha256": "6c3aec7b403a78a11046702ca4755644a79da4599b41f41b728d121e43f6ce58"
+      }
+    },
+    {
+      "id": "ImageThreshold",
+      "name": "图像二值化",
+      "file": "tool-detail-ImageThreshold.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdToolDebugControl.xaml.cs",
+        "line": 121,
+        "token": "SetParameters",
+        "sha256": "024eecc821d1bfe5d45bdaec1aea1ab57fc3e49b2d04b07c58de8562bdf1fd1c"
+      }
+    },
+    {
+      "id": "LineCircleMeasure",
+      "name": "线-圆测量",
+      "file": "tool-detail-LineCircleMeasure.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml.cs",
+        "line": 220,
+        "token": "SetParameters",
+        "sha256": "6129d73d7925a43bc074adaa9804c29368cdfe9bf78a11ba8f59344ff59c99f8"
+      }
+    },
+    {
+      "id": "LineDetect",
+      "name": "直线查找",
+      "file": "tool-detail-LineDetect.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml.cs",
+        "line": 290,
+        "token": "SetParameters",
+        "sha256": "33bda9ab29cedaae90ab3eb9a789ee06804b5e8f5817dda0fedda6cf93ff3f0b"
+      }
+    },
+    {
+      "id": "LineLineMeasure",
+      "name": "线-线测量",
+      "file": "tool-detail-LineLineMeasure.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml.cs",
+        "line": 219,
+        "token": "SetParameters",
+        "sha256": "b6807362e23a712ebf1153142536837e0076f08482c7402c46527a8a78148dd9"
+      }
+    },
+    {
+      "id": "Morphology",
+      "name": "形态学处理",
+      "file": "tool-detail-Morphology.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Morphology/Views/MorphologyToolDebugControl.xaml.cs",
+        "line": 121,
+        "token": "SetParameters",
+        "sha256": "cf230575a00c3843b302adc84d784772fd8aa931eba44fa3619c7431efc31a8e"
+      }
+    },
+    {
+      "id": "NPointCalibration",
+      "name": "N点标定",
+      "file": "tool-calibration.html",
+      "editing": "主训练窗live；点表子窗是真Copy草稿，确认后父fingerprint校验再ReplaceSamples，取消不采用点表。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "Unloaded停500ms Timer；候选文件和设备采样不是配置关闭能撤销。",
+      "execution": "记录/清样本改变状态；保存候选会写文件，不因主窗X回滚。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml.cs",
+        "line": 139,
+        "token": "SetParameters",
+        "sha256": "f0ad12374107c4458a9c220f84327289a262890ad3c4fdc115ed688271eaf2a8"
+      }
+    },
+    {
+      "id": "NPointVerification",
+      "name": "N点标定验证",
+      "file": "tool-verification.html",
+      "editing": "主验证参数live，候选/正式路径与样本直接修改。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "Unloaded停Timer，fingerprint和候选SHA门禁已有；已发布文件不因关窗撤销。",
+      "execution": "Run后TryCommit在PublishOnPass启用时可能直接发布正式文件，另有显式发布按钮；不能说只有按钮能发布。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointVerificationDebugControl.xaml.cs",
+        "line": 32,
+        "token": "SetParameters",
+        "sha256": "1d344e7cc7574d3547f2ba817dbad6565cb5200fe87b96dd5fe60536cf60fb43"
+      },
+      "extraSources": [
+        {
+          "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointVerificationTool.cs",
+          "line": 132,
+          "token": "if(r.PublishAfterCommit)",
+          "sha256": "7a2dc7f44283e8d12bb7dc1ecef3e7a15aac242ff0694f8ed9b7aefff30f37c4"
+        }
+      ]
+    },
+    {
+      "id": "PointCircleMeasure",
+      "name": "点-圆测量",
+      "file": "tool-detail-PointCircleMeasure.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml.cs",
+        "line": 154,
+        "token": "SetParameters",
+        "sha256": "31414571e2324779b11043607ba48a27278d7cc7a5c198f622631e210ba78c24"
+      }
+    },
+    {
+      "id": "PointLineMeasure",
+      "name": "点-线测量",
+      "file": "tool-detail-PointLineMeasure.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml.cs",
+        "line": 153,
+        "token": "SetParameters",
+        "sha256": "6ec00c9356ba9ae030d83e705be86d8fac3c76c7d75de2fea74b5b9186ca7ebb"
+      }
+    },
+    {
+      "id": "PointPointMeasure",
+      "name": "点-点测量",
+      "file": "tool-detail-PointPointMeasure.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml.cs",
+        "line": 44,
+        "token": "SetParameters",
+        "sha256": "76ec7ef5fa3b7c2c006ade029930914d51939717b02c6fcc6ba632df3b55c81b"
+      }
+    },
+    {
+      "id": "ProtocolAssemble",
+      "name": "协议组装",
+      "file": "tool-detail-ProtocolAssemble.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "组装负载，不是发设备；Parts集合增删移动直接改原模型。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ProtocolAssemble/Views/ProtocolAssembleEditor.xaml.cs",
+        "line": 13,
+        "token": "SetParameters",
+        "sha256": "6fefc1a653a5fafb8238760cf64822bd4c7f6f96dfcee41c09b367032f9c5357"
+      }
+    },
+    {
+      "id": "ProtocolParse",
+      "name": "协议解析",
+      "file": "tool-detail-ProtocolParse.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "解析负载并产动态字段，不是外设读取本身；改输出行会改合同。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ProtocolParse/Views/ProtocolParseEditor.xaml.cs",
+        "line": 22,
+        "token": "SetParameters",
+        "sha256": "99b63ba86de831ab8dc25259f615faa8378a8a83590a5e051afee26df53c6c41"
+      }
+    },
+    {
+      "id": "ReceiveData",
+      "name": "接收数据",
+      "file": "tool-detail-ReceiveData.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "异步请求未见窗口取消源/关闭代次，壳关窗不等读取任务完成。",
+      "execution": "真实异步外部读取；TargetChanged选Native目标即可ReadAsync，未点Run也会发生。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ReceiveData/Views/ReceiveDataEditor.xaml.cs",
+        "line": 18,
+        "token": "SetParameters",
+        "sha256": "e88fd7266ae45ee30e36f8a026dbc3b421e17d280528f1d54050ee32591687bb"
+      }
+    },
+    {
+      "id": "Script",
+      "name": "Script",
+      "file": "tool-script.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "Unloaded还会补写代码和预编译；不是取消恢复旧代码，也不能停止任意脚本。",
+      "execution": "同步包装Task.Run后GetResult仍阻塞调用；任意C#可写文件/设备/变量，编译和常驻池另有状态。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+        "line": 137,
+        "token": "SetParameters",
+        "sha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd"
+      }
+    },
+    {
+      "id": "SendData",
+      "name": "发送数据",
+      "file": "tool-detail-SendData.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "窗口关闭不等待已提交外部副作用；需会话/代次与可等待终态。",
+      "execution": "真实异步设备写/变量发布；请求副本不等编辑草稿。Prepare后Submit可部分成功，不能靠取消配置回滚已发内容。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.SendData/Views/SendDataEditor.xaml.cs",
+        "line": 23,
+        "token": "SetParameters",
+        "sha256": "cda3ffa826aa8da7c4a676eb506e35f483fe124255729eeaaebb312c16da277b"
+      }
+    },
+    {
+      "id": "ShapeMatch",
+      "name": "轮廓匹配",
+      "file": "tool-detail-ShapeMatch.html",
+      "editing": "主调试参数live。已有模板子编辑直接持原Template对象，ROI虽克隆，提取写ModelData/Contours；子窗取消仅将局部_resultTemplate置null，不能回滚原对象。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "匹配与模板提取分开；载入模板TODO不是已实现。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "模板子编辑用独立候选及资源Owner，确认校验后一次采用；取消/提取失败不改原模板。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml.cs",
+        "line": 117,
+        "token": "SetParameters",
+        "sha256": "9bf4f9f00ffb1af7312e97c974209e80fd30d779fcc78312d66225396483eded"
+      },
+      "extraSources": [
+        {
+          "path": "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+          "line": 258,
+          "token": "_resultTemplate = template;",
+          "sha256": "37094486747cb4b61f76c221994aaffcba6855e25d4e2c92ecb688987a7bad95"
+        }
+      ]
+    },
+    {
+      "id": "Subroutine",
+      "name": "子程序",
+      "file": "tool-subroutine.html",
+      "editing": "专用VM直接暴露原Inputs/Outputs/DisplayConfigs/LoopConfig集合。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "Unloaded Dispose退订输出集合事件，不等停止子图或释放子结果。",
+      "execution": "非执行配置壳，不在此执行子图；输出编辑会立即触发绑定对账。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml.cs",
+        "line": 20,
+        "token": "public SubroutineDebugControl",
+        "sha256": "5f356512fe720973711120886de7ae5c4ae1b2da63100fc1b2f01f6eb8a0a7fe"
+      }
+    },
+    {
+      "id": "Threshold",
+      "name": "图像阈值化",
+      "file": "tool-standard.html",
+      "editing": "主窗把node.Parameters原对象交给控件，控件持typed引用；不是整窗草稿。部分控件仍有pending值，不等每按一键都写回。",
+      "confirm": "确定先TryCommit控件编辑，再校验参数；标准壳没有统一取消全部已生效修改。",
+      "close": "X先TryClose：有效pending提交，无效可明确放弃尚未提交值；已经live写入参数的修改保留。",
+      "execution": "默认ExecuteToolAsync是Task.FromResult(ExecuteTool())，不自动后台运行；同步native计算不保证UI能及时关闭。",
+      "owner": "壳Closed停连续标志并退订事件，不等可等待执行会话或全部图像/native最后读者。",
+      "change": "先明确实时保存政策；若需整窗取消再引入逐工具草稿，不对全部native对象盲目深拷贝。外设/文件动作单独显示并确认。",
+      "accept": "确定/X/无效pending/切Tab/执行中关闭/重开分别验；外部已写副作用不可被参数取消误报回滚。",
+      "state": "静态编辑政策已定位；产品关闭/重入/native寿命未验",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Threshold/Views/ThresholdToolDebugControl.xaml.cs",
+        "line": 116,
+        "token": "SetParameters",
+        "sha256": "732736f78c6b7ba9b5d9eb36676e04ef249f2de0b7b0481f80985b0de88e0484"
+      }
+    }
+  ],
+  "scope": "C09全24工具编辑提交政策；不是24工具完整生命周期验收",
+  "runtimeExecuted": false
+}

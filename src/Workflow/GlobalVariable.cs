@@ -99,6 +99,9 @@ public class ProducerBinding
 /// </remarks>
 public class GlobalVariable : ObservableObject
 {
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
+
     public static object ValueGate { get; } = new();
     private string _name = "";
     private string _group = "默认分组";
@@ -303,6 +306,7 @@ public class GlobalVariable : ObservableObject
         return new GlobalVariable
         {
             Id = Guid.NewGuid().ToString(),
+            AdditionalData = AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
             Name = Name,
             Group = Group,
             Index = Index,

@@ -1,0 +1,113 @@
+{
+  "scope": "当前已有实现分析与优化资料阶段交付；未开发/待核实明确保留。不是VM全部逆向或产品实现验收。",
+  "requirements": [
+    {
+      "requirement": "自研架构按主界面及工具入口展开",
+      "evidence": [
+        "suneye-entry-architecture-comparison.html",
+        "tools.html",
+        "system-architecture.html"
+      ],
+      "result": "阶段交付，源码静态分析"
+    },
+    {
+      "requirement": "数据结构、调用链、缓存、释放和具体工具定位",
+      "evidence": [
+        "data-architecture.html",
+        "camera-architecture.html",
+        "工具实际布局54热点及253专业热点"
+      ],
+      "result": "现有材料范围内交付；未知保持标记"
+    },
+    {
+      "requirement": "横向对照、差异等级及采用判断",
+      "evidence": [
+        "comparison.html",
+        "optimization-decisions.json"
+      ],
+      "result": "49项，17整改/5参考重做/3新增/24暂不能判断"
+    },
+    {
+      "requirement": "已有实现正向整改具体方案",
+      "evidence": [
+        "forward-first-pass.json",
+        "check-forward-first-pass.cjs"
+      ],
+      "result": "原41精确ID全部复核，源码SHA、改法、验收、直接入口"
+    },
+    {
+      "requirement": "专业工具不能只用阈值模板代表全部",
+      "evidence": [
+        "check-entry-pages.cjs"
+      ],
+      "result": "6专业入口布局，19具体布局，未集成审计0；运行等价未声称"
+    },
+    {
+      "requirement": "13UI与图像图形文字坐标分析",
+      "evidence": [
+        "check-ui-coordinate-review.cjs"
+      ],
+      "result": "13组UI、8坐标项来源复核通过，运行未验收"
+    },
+    {
+      "requirement": "VM恢复模型作参照，未知不判不支持",
+      "evidence": [
+        "vm-tool-baseline.json",
+        "data-tool-comparison-review.json"
+      ],
+      "result": "162目录，23候选，15未配对工具具体合同；其余保留缺口，不称全部算法已对等"
+    },
+    {
+      "requirement": "未开发及待核实显式可查",
+      "evidence": [
+        "stage-delivery-snapshot.json"
+      ],
+      "result": "49能力10已实现/33部分/3未开发/3待核实；原42关键证据24/11/7"
+    },
+    {
+      "requirement": "自有加密狗及授权边界",
+      "evidence": [
+        "license-design.html"
+      ],
+      "result": "设计提案，未实施；不迁VM狗协议，型号政策TBD"
+    },
+    {
+      "requirement": "导航、搜索、深链、历史、打印、窄屏",
+      "evidence": [
+        "check-entry-pages.cjs",
+        "check-reader-navigation.cjs",
+        "check-forward-first-pass.cjs"
+      ],
+      "result": "已有检查通过；调整后桌面主入口/优化与390截图目视通过"
+    },
+    {
+      "requirement": "范围仅文档及静态资料",
+      "evidence": [
+        "docs/collaboration/CURRENT_TASK.md"
+      ],
+      "result": "本轮未改产品、未构建或运行产品VM设备"
+    }
+  ],
+  "screenshots": [
+    "final-main-desktop.png",
+    "final-optimization-desktop.png",
+    "final-main-mobile.png"
+  ],
+  "futureWork": [
+    "自研改动后重核受影响事实和SHA",
+    "逆向交付材料后按固定检查点复核，不能交付即核实",
+    "实际开发按方案补接口合同并获得实施授权，执行运行验收"
+  ],
+  "wholePersistentGoalComplete": true,
+  "completionBasis": {
+    "userClarifications": [
+      "文档两个主要目的：分析已有实现，为后续开发提供资料及快速证据/逆向入口",
+      "逆向过程中逐步迭代，不需要本次写成最终状态",
+      "先对已有实现正向分析和优化，再由逆向驱动正向开发"
+    ],
+    "interpretation": "本次目标为可交付的迭代版架构分析、对照与优化文档，非要求全部VM恢复或修改产品。未实现/待核实被明确记录属于交付要求，不伪装成已核实。",
+    "evidence": "11项交付要求已逐项列证；当前49能力/41精确整改/261源定位检查通过；39导航、37主体+2附加页全页交互及2515链接最后检查通过；新增VM局部复核保持原42分母与未闭合标记。",
+    "futureWorkPolicy": "后续新材料和具体实施需求属于用户明确允许的后续迭代，不在本次自动扩展范围。"
+  },
+  "completionScope": "按用户后续明确的本次迭代文档交付范围结项；不声明原VM逆向或产品开发完成"
+}

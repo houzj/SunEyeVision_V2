@@ -1,0 +1,181 @@
+{
+  "batchId": "DOC-ALG-20261022-01",
+  "pages": [
+    {
+      "id": "BlobAnalysis",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-BlobAnalysis.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 7
+    },
+    {
+      "id": "CircleCircleMeasure",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-CircleCircleMeasure.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 8
+    },
+    {
+      "id": "CircleDetect",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-CircleDetect.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 8
+    },
+    {
+      "id": "Condition",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-Condition.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 8
+    },
+    {
+      "id": "ImageFilter",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ImageFilter.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 8
+    },
+    {
+      "id": "ImageLoad",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ImageLoad.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 10
+    },
+    {
+      "id": "ImageThreshold",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ImageThreshold.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 8
+    },
+    {
+      "id": "LineCircleMeasure",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-LineCircleMeasure.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 8
+    },
+    {
+      "id": "LineDetect",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-LineDetect.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 8
+    },
+    {
+      "id": "LineLineMeasure",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-LineLineMeasure.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 7
+    },
+    {
+      "id": "Morphology",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-Morphology.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 7
+    },
+    {
+      "id": "NPointCalibration",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-calibration.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 6
+    },
+    {
+      "id": "NPointVerification",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-verification.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 5
+    },
+    {
+      "id": "PointCircleMeasure",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-PointCircleMeasure.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 8
+    },
+    {
+      "id": "PointLineMeasure",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-PointLineMeasure.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 7
+    },
+    {
+      "id": "PointPointMeasure",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-PointPointMeasure.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 5
+    },
+    {
+      "id": "ProtocolAssemble",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ProtocolAssemble.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 7
+    },
+    {
+      "id": "ProtocolParse",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ProtocolParse.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 6
+    },
+    {
+      "id": "ReceiveData",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ReceiveData.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 7
+    },
+    {
+      "id": "Script",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 7
+    },
+    {
+      "id": "SendData",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-SendData.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 6
+    },
+    {
+      "id": "ShapeMatch",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ShapeMatch.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 7
+    },
+    {
+      "id": "Subroutine",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-subroutine.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 6
+    },
+    {
+      "id": "Threshold",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-standard.html",
+      "anchor": "core-algorithm-review",
+      "sourceFiles": 6
+    },
+    {
+      "id": "tools.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tools.html",
+      "anchor": "tool-algorithm-maintenance"
+    },
+    {
+      "id": "index.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+      "anchor": "tool-algorithm-maintenance"
+    }
+  ],
+  "newHtmlPages": 0,
+  "originalAlgorithmBodyClosed": 0,
+  "numericTestsRun": 0,
+  "productModified": false,
+  "drift": [
+    {
+      "tool": "NPointVerification",
+      "path": "tools/SunEyeVision.Tool.NPointCalibration/NPointVerificationTool.cs"
+    },
+    {
+      "tool": "Threshold",
+      "path": "tools/SunEyeVision.Tool.Threshold/ThresholdTool.cs"
+    },
+    {
+      "tool": "Threshold",
+      "path": "tools/SunEyeVision.Tool.Threshold/ThresholdParameters.cs"
+    },
+    {
+      "tool": "Threshold",
+      "path": "tools/SunEyeVision.Tool.Threshold/ThresholdResults.cs"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "proposedContracts": 4,
+  "proposedStates": 8,
+  "scenarios": 10,
+  "explicitTbdPolicies": 6,
+  "existingEntryReferences": 4,
+  "designOnly": true,
+  "productImplemented": false,
+  "vendorSdkSelected": false,
+  "mobileOverflow": false,
+  "pageErrors": []
+}

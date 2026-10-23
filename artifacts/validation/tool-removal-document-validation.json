@@ -1,0 +1,43 @@
+{
+  "batchId": "TOOL-DISPOSITION-20261022-01",
+  "currentCatalogCount": 22,
+  "removedIdsAbsent": true,
+  "retainedIdsPresent": true,
+  "historicalProfiles": [
+    {
+      "id": "standard",
+      "onlyHistorical": true
+    },
+    {
+      "id": "verification",
+      "onlyHistorical": true
+    }
+  ],
+  "pages": [
+    {
+      "file": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html",
+      "preserved": true
+    },
+    {
+      "file": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tools.html",
+      "preserved": true
+    },
+    {
+      "file": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-standard.html",
+      "preserved": true
+    },
+    {
+      "file": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-verification.html",
+      "preserved": true
+    },
+    {
+      "file": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-detail-ImageThreshold.html",
+      "preserved": true
+    }
+  ],
+  "layoutValidation": "artifacts/validation/tool-core-algorithm-validation.json",
+  "historicalMissingSources": 4,
+  "build": "pending-final-development-evidence",
+  "runtime": "pending-final-development-evidence",
+  "productModifiedByDocRole": false
+}

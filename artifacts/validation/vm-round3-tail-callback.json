@@ -1,0 +1,9 @@
+{
+  "sha256": "45c57bc46f72fd1f9e0b3a6f9183ff974d14590cfd05ecf4e9fa97a4ff95ae9b",
+  "method": "Independent PE vtable and bounded x64 byte inspection, not runtime proof",
+  "vtableRVA": "21ea40",
+  "slot": "10",
+  "callbackRVA": "76070",
+  "bytes": "4883ec28488b5108f0ff8a40050000751b488b4108488b8848050000ff1596df180085c07506ff15acdf180033c04883c428c3cccccccccccccccccccccccccc",
+  "observation": "captures manager at callback+8; atomic decrement manager+540; zero branch signals manager+548; producer/consumer context cross-checked in vm-round3-lifetime-trace.txt"
+}

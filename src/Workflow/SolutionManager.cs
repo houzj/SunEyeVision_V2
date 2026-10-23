@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -49,13 +49,15 @@ public class SolutionManager
     private SolutionSettings _settings;
 
     private string _dataRoot;
-    private string? _savedFingerprint;
+    public SolutionSession? Session { get; private set; }
+    private string? _saveError;
+    public string? LastSaveWarning { get; private set; }
     public string DataRoot => _dataRoot;
     public string ConfigurationPath => _configFilePath;
-    public string? LastError => _repository.LastError;
-    public bool HasUnsavedChanges => CurrentSolution != null && Fingerprint(CurrentSolution) != _savedFingerprint;
-    private static string Fingerprint(Solution solution) => JsonSerializer.Serialize(solution, WorkflowSerializationOptions.Default);
-    private void CaptureSavedState() => _savedFingerprint = CurrentSolution == null ? null : Fingerprint(CurrentSolution);
+    public string? LastError => _saveError ?? _repository.LastError;
+    public bool HasUnsavedChanges => Session?.IsDirty == true;
+    private static string Fingerprint(Solution solution) => SolutionSession.Serialize(solution);
+    private void CaptureSavedState() => Session?.CaptureBaseline();
 
     private bool _isSettingsDirty = false;  // 脏标记：设置是否需要保存
     private long _solutionAddedEventCount = 0;  // SolutionAdded事件计数（用于日志监控）
@@ -63,12 +65,20 @@ public class SolutionManager
     /// <summary>
     /// 当前解决方案
     /// </summary>
-    public Solution? CurrentSolution { get; private set; }
+    public Solution? CurrentSolution
+    {
+        get => Session?.Document;
+        private set => Session = value == null ? null : new SolutionSession(value);
+    }
 
     /// <summary>
     /// 当前文件路径
     /// </summary>
-    public string? CurrentFilePath { get; private set; }
+    public string? CurrentFilePath
+    {
+        get => Session?.FilePath;
+        private set { if (Session != null) Session.Document.FilePath = value; }
+    }
 
     /// <summary>
     /// 解决方案目录
@@ -344,6 +354,7 @@ public class SolutionManager
     /// <returns>解决方案对象，失败返回 null</returns>
     public Solution? LoadSolutionOnly(string filePath)
     {
+        _saveError = null;
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         _logger.Log(LogLevel.Info,
             $"[LoadSolutionOnly] 开始加载解决方案: FilePath={filePath}, thread={Environment.CurrentManagedThreadId}", "SolutionManager");
@@ -474,88 +485,58 @@ public class SolutionManager
     /// </summary>
     /// <param name="filePath">文件路径（可选，默认使用当前路径）</param>
     /// <returns>是否成功</returns>
-    public bool SaveSolution(string? filePath = null)
+    public bool SaveSolution(string? filePath = null) => SaveCurrentDocument(filePath).FileWritten;
+
+    public SolutionSaveResult SaveCurrentDocument(string? filePath = null, bool overwrite = true)
     {
-        if (CurrentSolution == null)
+        _saveError = null; LastSaveWarning = null;
+        var session = Session;
+        if (session == null) return SaveFailure("没有当前内存方案。");
+        var savePath = filePath ?? session.FilePath;
+        if (string.IsNullOrWhiteSpace(savePath)) return SaveFailure("尚未选择方案保存位置。");
+        string written;
+        SolutionSnapshot snapshot;
+        try
         {
-            _logger.Log(LogLevel.Warning, "保存解决方案失败：没有当前解决方案", "SolutionManager");
-            return false;
+            savePath = Path.GetFullPath(savePath);
+            SolutionSaving?.Invoke(this, session.Document);
+            if (!ReferenceEquals(Session, session)) return SaveFailure("保存准备期间方案已切换，请重试。");
+            snapshot = SolutionSnapshot.Prepare(session.Document, savePath);
+            written = snapshot.Json;
+            if (!_repository.WriteSnapshot(snapshot, overwrite).FileWritten)
+                return SaveFailure(_repository.LastError ?? "方案文件写入失败。");
         }
-
-        var savePath = filePath ?? CurrentFilePath;
-        if (string.IsNullOrEmpty(savePath))
+        catch (Exception ex) { return SaveFailure(ex.Message); }
+        if (session.IsUntitled && (string.IsNullOrWhiteSpace(session.Document.Name) || session.Document.Name == "未命名方案"))
+            session.Document.Name = Path.GetFileNameWithoutExtension(savePath);
+        session.CommitSave(savePath, written);
+        var warnings = new List<string>();
+        try
         {
-            _logger.Log(LogLevel.Warning, "保存解决方案失败：未指定保存路径", "SolutionManager");
-            return false;
+            var document = session.Document;
+            var metadata = new SolutionMetadata { Id = document.Id, Name = document.Name, Description = document.Description, Version = document.Version,
+                FilePath = savePath, DirectoryPath = Path.GetDirectoryName(savePath) ?? "", CreatedTime = File.GetCreationTime(savePath), ModifiedTime = DateTime.Now };
+            metadata.UpdateStatistics(document);
+            _registry.Register(metadata); _cache.Set(metadata.Id, metadata); _settings.AddKnownSolution(metadata);
+            _settings.CurrentSolutionId = document.Id; MarkSettingsDirty();
+            try { SolutionUpdated?.Invoke(this, new SolutionMetadataEventArgs { Metadata = metadata, SolutionId = metadata.Id }); }
+            catch (Exception ex) { warnings.Add("方案记录通知失败：" + ex.Message); }
         }
-
-        // ✅ 获取元数据（名称和描述由 SolutionMetadata 统一管理）
-        var metadata = _settings.KnownSolutions.Values
-            .FirstOrDefault(m => m.Id == CurrentSolution.Id);
-
-        if (metadata != null) { metadata.Name = CurrentSolution.Name; metadata.Description = CurrentSolution.Description; }
-        // 保存文件
-        SolutionSaving?.Invoke(this, CurrentSolution);
-        bool success = _repository.Save(CurrentSolution, savePath);
-        if (!success)
-        {
-            return false;
-        }
-
-        CurrentFilePath = savePath;
-
-        // ✅ 更新元数据
-        if (metadata == null)
-        {
-            // 如果元数据不存在（不应该发生），从文件加载或创建一个基本的元数据
-            metadata = _repository.LoadMetadata(savePath);
-            if (metadata == null)
-            {
-                metadata = new SolutionMetadata
-                {
-                    Id = CurrentSolution.Id,
-                    Name = Path.GetFileNameWithoutExtension(savePath),
-                    Description = "",
-                    Version = CurrentSolution.Version,
-                    FilePath = savePath,
-                    DirectoryPath = Path.GetDirectoryName(savePath) ?? "",
-                    CreatedTime = File.GetCreationTime(savePath),
-                    ModifiedTime = DateTime.Now
-                };
-            }
-        }
-        else
-        {
-            // 更新现有元数据
-            metadata.FilePath = savePath;
-            metadata.DirectoryPath = Path.GetDirectoryName(savePath) ?? "";
-            metadata.ModifiedTime = DateTime.Now;
-        }
-
-        // 更新统计数据
-        metadata.UpdateStatistics(CurrentSolution);
-
-        // 注册元数据
-        _registry.Register(metadata);
-        _cache.Set(metadata.Id, metadata);
-        _settings.AddKnownSolution(metadata);
-
-        MarkSettingsDirty();
-
-        CaptureSavedState();
-        // 触发事件
-        SolutionSaved?.Invoke(this, CurrentSolution);
-
-        // ✅ 使用细粒度事件
-        var updatedArgs = new SolutionMetadataEventArgs
-        {
-            Metadata = metadata,
-            SolutionId = metadata.Id
-        };
-        SolutionUpdated?.Invoke(this, updatedArgs);
-
-        _logger.Log(LogLevel.Success, $"保存解决方案成功: Id={CurrentSolution.Id} -> {savePath}", "SolutionManager");
-        return true;
+        catch (Exception ex) { warnings.Add("兼容目录更新失败：" + ex.Message); }
+        try { SolutionSaved?.Invoke(this, session.Document); }
+        catch (Exception ex) { warnings.Add("保存通知失败：" + ex.Message); }
+        LastSaveWarning = warnings.Count == 0 ? null : string.Join("；", warnings);
+        return new SolutionSaveResult(true, Warning: LastSaveWarning) { WrittenSnapshot = snapshot };
+    }
+    private SolutionSaveResult SaveFailure(string error) { _saveError = error; return new(false, error); }
+    public Solution CreateUntitledSolution()
+    {
+        var previousRecentId = _settings.CurrentSolutionId;
+        var document = Solution.Create(); document.Name = "未命名方案";
+        document.Workflows.Add(new Workflow(Guid.NewGuid().ToString(), "工作流1"));
+        try { SetCurrentSolution(document, registerInCatalog: false); CaptureSavedState(); }
+        finally { _settings.CurrentSolutionId = previousRecentId; }
+        return document;
     }
 
     public SolutionMetadata? SaveAsSolution(string filePath, string? newName = null, string? newDescription = null)
@@ -585,11 +566,11 @@ public class SolutionManager
     /// </summary>
     public void CloseSolution(bool saveChanges = true)
     {
-        if (saveChanges && CurrentSolution != null && !string.IsNullOrEmpty(CurrentFilePath) && !SaveSolution())
+        if (saveChanges && HasUnsavedChanges && (string.IsNullOrEmpty(CurrentFilePath) || !SaveSolution()))
             throw new IOException("保存失败，方案保持打开：" + LastError);
         CurrentSolution = null;
         CurrentFilePath = null;
-        _savedFingerprint = null;
+        Session = null;
         _settings.CurrentSolutionId = "";
         MarkSettingsDirty();
         SolutionClosed?.Invoke(this, EventArgs.Empty);
@@ -838,7 +819,7 @@ public class SolutionManager
         if (File.Exists(targetFilePath)) throw new IOException("目标方案已存在，不会覆盖：" + targetFilePath);
         var current = CurrentSolution != null && CurrentFilePath != null && AtomicJsonFile.SamePath(CurrentFilePath, sourcePath);
         var json = current ? Fingerprint(CurrentSolution!) : File.ReadAllText(sourcePath);
-        json = SolutionRepository.ResolveResourcePaths(json, Path.GetDirectoryName(Path.GetFullPath(sourcePath))!);
+        json = SolutionResourceResolver.RebaseCopy(json, Path.GetDirectoryName(Path.GetFullPath(sourcePath))!, Path.GetDirectoryName(Path.GetFullPath(targetFilePath))!);
         var document = JsonNode.Parse(json)?.AsObject() ?? throw new InvalidDataException("源方案格式错误。");
         var id = Guid.NewGuid().ToString();
         document["Id"] = id;

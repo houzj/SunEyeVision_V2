@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 1,
+  "scope": "可交执行方的规程；本轮只文档，不创建/运行产品探针、设备测试或算法基准",
+  "runtimeExecuted": false,
+  "diagnostics": [
+    {
+      "id": "fields",
+      "title": "日志类型有字段，不等实际日志有值",
+      "current": "LogEntry已有Id、Timestamp、Source、TraceId、Exception、Properties；VisionLogger.Log创建时TraceId/Properties传null。",
+      "gap": "FileLogWriter.FormatEntry输出时间、级别、来源、消息和可选堆栈，没有结构化输出TraceId/Properties。",
+      "change": "复用已有扩展字段并贯穿调用；文件使用可解析结构，保留版本。Source名称只用于阅读，另存稳定ID。不要重建第二套Logger。",
+      "source": {
+        "path": "src/Plugin.SDK/Logging/VisionLogger.cs",
+        "line": 203,
+        "token": "var entry = LogEntry.Create(",
+        "sha256": "a0b443f78f0d5ea95e585ed9386661e21cc99df89fe9ae7be52a01a96aef33ff"
+      }
+    },
+    {
+      "id": "tool",
+      "title": "执行上下文与终态",
+      "current": "ToolExecutor创建上下文传NodeId并设WorkflowId；执行异常映射Failed/Cancelled及堆栈已有。",
+      "gap": "主创建路径未贯穿根Run/子Scope/代次；ToolResults没有统一的Run/Scope/错误码信封。不能误说所有错误处理都没有。",
+      "change": "沿现有终态结果增加来源信封；区分算法失败、设备错误、取消、退役失败，原始错误码与人读消息并存。",
+      "source": {
+        "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+        "line": 181,
+        "token": "private ToolExecutionContext CreateExecutionContext",
+        "sha256": "0229fd6ea68af49b5aefe58187f0036a5987fc69c15f1486cc73113dce6531e2"
+      }
+    },
+    {
+      "id": "events",
+      "title": "会话有运行身份，长期UI快照仍按Workflow",
+      "current": "WorkflowRunSession/子Scope已有独立RunId；NodeExecutionResultEventArgs带Node、Result、Timestamp、camera标记和排队延迟。",
+      "gap": "长期WorkflowExecutionSnapshot只有Workflow身份；事件未直接携带RootRun/Scope，旧运行迟到结果难由事件本身判代次。",
+      "change": "在生产端携带根/调用/节点/迭代/内容版本，UI按当前会话接纳；历史只读保留且明确标历史，不能只改日志文本。",
+      "source": {
+        "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+        "line": 1530,
+        "token": "public class NodeExecutionResultEventArgs",
+        "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae"
+      }
+    },
+    {
+      "id": "device",
+      "title": "设备错误码已有，需保留贯穿",
+      "current": "CommunicationErrorCode与CameraAdapterException.ErrorCode实际存在。",
+      "gap": "通用异常转消息可能丢代码；设备ID、连接代次、操作阶段未自动进入每条日志。不能从code枚举推断全链可追溯。",
+      "change": "保留设备域code，附设备/代次/操作/写入结果是否已知；故障包脱敏，不记录凭据与原始授权密钥。",
+      "source": {
+        "path": "src/Plugin.SDK/Devices/Communication/CommunicationError.cs",
+        "line": 3,
+        "token": "public enum CommunicationErrorCode",
+        "sha256": "3dfd80ef32a07f202c13230c4f2ed84794fb0c177dcbf93a8d042701668ac5b4"
+      }
+    },
+    {
+      "id": "case",
+      "title": "成功→失败→取消→旧结果迟到：验收样例",
+      "current": "拟议运行同一Workflow/Node三次，根运行R1成功、R2抛异常、R3外部等待时取消；R3期间收到R2旧完成。",
+      "gap": "这是待执行规程，不是已取得日志。当前事件缺字段时先判合同不满足，不能凭时间戳相近猜身份。",
+      "change": "每根恰一终态；R2迟到不得改变R3状态；取消与失败各有根因码；UI与落盘按同一Run/Scope可查。记录请求停止、算法终态、排空完成三个时刻。",
+      "source": {
+        "path": "src/UI/Services/Workflow/WorkflowExecutionSnapshot.cs",
+        "line": 25,
+        "token": "public string WorkflowId { get; }",
+        "sha256": "b106da3ab92f24d3e9d2f01d4b23d1f5a076c51585b2025423ac2bac38e21728"
+      }
+    }
+  ],
+  "supplemental": [
+    {
+      "path": "src/Plugin.SDK/Logging/LogEntry.cs",
+      "line": 43,
+      "token": "public string? TraceId",
+      "sha256": "eef6f0f66b79f33e69868ce72704f28da1d7a7f89237e7437309bfe0f413e844"
+    },
+    {
+      "path": "src/Plugin.SDK/Logging/FileLogWriter.cs",
+      "line": 210,
+      "token": "private string FormatEntry",
+      "sha256": "2000dd88f4ed20fb661af9b25a032af4edb45cccd9d33041782ba5a25f5f0c49"
+    },
+    {
+      "path": "src/DeviceDriver/Cameras/Contracts/CameraAdapterException.cs",
+      "line": 11,
+      "token": "public CameraErrorCode ErrorCode",
+      "sha256": "21c183441259ee48fc3cf8238e5f96d5f9a2296c0f805f4401741b6b069c58b1"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunSession.cs",
+      "line": 39,
+      "token": "public Guid RunId",
+      "sha256": "81a4538d84dd800b91f6380ffbb8bc8fee2b59d0284e5f1c2194a2c97f4587c0"
+    },
+    {
+      "path": "src/Plugin.SDK/Execution/Parameters/ExecutionContext.cs",
+      "line": 102,
+      "token": "public string? TraceId",
+      "sha256": "c6d3124e820446f60520c16f1ded2772eb644579eb95115e913abffb399c060e"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "B01",
+      "title": "本地图像与基础算法",
+      "layer": "L0合同与L1真实工具分报",
+      "load": "ImageLoad→Threshold；Filter/Morph/Blob各模式单独变体，1024/2048灰度、全图/ROI/mask",
+      "sampling": "20正确性；50预热；1000有效样本×3重复。稳定p99扩展10000。",
+      "accept": "独立像素/几何基线；分别计算法返回、UI应用与端到端，禁止模式不同混池。",
+      "prerequisite": "输入文件/像素SHA、全部参数、算法语义、ROI与颜色/边界合同",
+      "status": "not_run"
+    },
+    {
+      "id": "B02",
+      "title": "调度、子调用与停止",
+      "layer": "L1真实工作流",
+      "load": "串行、分支、双根共享资源、同子图两调用分别测；准备/执行/轮间取消",
+      "sampling": "20预热；每变体1000×3；每个取消阶段30次。",
+      "accept": "每调用唯一身份/一终态，结果与资源互斥正确；stop请求→算法终态→全部排空分开计。",
+      "prerequisite": "固定图拓扑/参数/输入；不得用空Task图代证实际工作流",
+      "status": "not_run"
+    },
+    {
+      "id": "B03",
+      "title": "调试窗口与脚本冷热",
+      "layer": "L1真实调试和脚本入口",
+      "load": "标准窗口、C#纯计算脚本；不执行外部副作用脚本",
+      "sampling": "冷编译30次新进程；热50预热1000×3；窗口开关100轮×3。",
+      "accept": "编译、执行、UI与关闭分别计；100%正确输出，编译引用版本冻结。",
+      "prerequisite": "相同源文本/引用SHA与缓存状态；冷/热不能混报",
+      "status": "not_run"
+    },
+    {
+      "id": "B04",
+      "title": "图形文字与交互",
+      "layer": "L1真实显示控件",
+      "load": "图元100/1000/10000；文字100/1000；Zoom0.1/1/10、DPI100/150/200%、全屏分变体",
+      "sampling": "10秒预热；60秒×3；记录实际帧和UI心跳。",
+      "accept": "已知点/文字策略/同帧图元正确；只有UI应用测点时不得称屏幕呈现延迟。",
+      "prerequisite": "固定图片/几何文字/字体/显卡DPI；无呈现探针则present字段not_measured",
+      "status": "not_run"
+    },
+    {
+      "id": "B05",
+      "title": "相机采集与用途冲突",
+      "layer": "L2实机",
+      "load": "固定MVS型号/固件/SDK/像素格式；预览/Feed/公开单帧，软件与外触发分开",
+      "sampling": "100帧预热；3000有效帧×3；停止/断连各30。",
+      "accept": "接收/替换/交付计数分开；ReplacedFrames不是传感器丢帧；取消后不误报设备空闲。",
+      "prerequisite": "无批准设备则not_run_hardware_missing；触发源频率和曝光网络冻结",
+      "status": "not_run"
+    },
+    {
+      "id": "B06",
+      "title": "通信与自动响应",
+      "layer": "L0回环、L1真实入口、L2设备分报",
+      "load": "Raw各传输、Modbus TCP/RTU、OPCUA逐协议；自动响应独立；S7/CIP先接线验收再测",
+      "sampling": "50预热1000×3；重连/取消/部分写各30。",
+      "accept": "端点确认/语义响应而非仅本机Write返回；结果不明不自动重试，旧代次不污染新请求。",
+      "prerequisite": "仅批准测试端点；固定服务器/负载/网络，L0不替代PLC实机",
+      "status": "not_run"
+    },
+    {
+      "id": "B07",
+      "title": "日志可靠性与吞吐",
+      "layer": "L0边界与L1真实日志分报",
+      "load": "精确199/200/201/401条批次；建议500/5000/20000条每秒、256字节消息",
+      "sampling": "批次各30；负载10秒预热60秒×3。",
+      "accept": "用序号对齐入队/UI/文件/丢弃计数；Flush10ms不是落盘确认；正确性失败先修再比较速度。",
+      "prerequisite": "固定writer目标/磁盘/同步屏障；速率为建议负载，非已有SLA",
+      "status": "not_run"
+    },
+    {
+      "id": "B08",
+      "title": "生命周期与长期资源",
+      "layer": "L1产品，涉及设备另列L2",
+      "load": "开方案→运行→切节点→开关工具→切方案→停止；固定动作和等待条件",
+      "sampling": "100循环冒烟；30分钟初观；2小时×3。",
+      "accept": "比较稳定窗口资源趋势/在途归零/迟到事件；不以GC降一次或2小时代证8/24小时生产稳定。",
+      "prerequisite": "操作序列、Owner、采样周期和资源上限先定；无运行授权保持not_run",
+      "status": "not_run"
+    }
+  ],
+  "inputPolicy": {
+    "status": "specification_only_not_generated",
+    "dimensions": [
+      1024,
+      2048
+    ],
+    "format": "PGM P5，8bit灰度；文件字节SHA与解码像素SHA分别记录",
+    "patterns": [
+      "constant:每像素127",
+      "gradient:(x+y)%256",
+      "half:x<width/2为0，否则255",
+      "checker:((floor(x/8)+floor(y/8))%2)*255",
+      "noise:uint32 state初值20261021，每像素state=(1664525*state+1013904223) mod 2^32，输出state>>>24；行优先",
+      "geometry:矩形/圆/多边形的明确坐标、ROI与mask另存版本化JSON"
+    ],
+    "correctness": "先20组正确性；逐算法语义映射参数而非枚举整数。结果校验应有独立已知几何/参考实现或人工确认基线；不能仅用双方相同就认正确。浮点容差、边界、插值、mask和颜色格式在运行前冻结。"
+  },
+  "levels": [
+    "L0离线合同",
+    "L1实际产品入口",
+    "L2真实设备"
+  ],
+  "statistics": [
+    "使用单调时钟并记录frequency；端到端/算法返回/UI应用/屏幕呈现/排空分别测。",
+    "nearest-rank：升序第ceil(p*n)项；每变体、重复、层级、冷热分别汇总。预热保留但不计正式统计。",
+    "同时报成功/失败/超时/取消率；失败样本不伪装零延迟。小于1000有效样本的p99只作探索。",
+    "VM缺原版可运行材料记not_run_material_missing/incomparable；恢复项目独立实现不可代原VM跑分。",
+    "无已签目标SLA，不预设自研胜出；达到正确性后，用同条件数据决定后端/复制/缓存优化。"
+  ],
+  "stopRules": [
+    "出现错误结果/错误身份、未授权副作用、设备未隔离、测量丢失，停止该变体并保留现场。",
+    "资源上限、最大等待和安全端点须执行前确认；未填为not_ready，不默认无限等或自设生产阈值。"
+  ],
+  "manifestRequired": [
+    "SunEye提交与dirty差异SHA",
+    "原版VM版本与二进制SHA",
+    "OS/CPU/RAM/GPU/DPI/电源策略",
+    "SDK/驱动/固件/设备网络",
+    "方案/算法语义/参数/输入文件与像素SHA",
+    "冷/热缓存状态与进程重启办法",
+    "测点/时钟/样本/预热/重复/超时资源上限",
+    "操作者、时间、执行授权与脱敏策略"
+  ],
+  "sampleFields": "run_id,manifest_sha256,implementation,scene_id,variant_id,layer,repeat_id,sample_seq,warmup,solution_id,root_run_id,scope_id,node_id,iteration,input_sha256,parameter_sha256,frame_id,trigger_id,event_id,measure_kind,start_ticks,end_ticks,timer_frequency,elapsed_ms,status,error_code,correctness_status,expected_digest,actual_digest,queued_count,received_frames,replaced_frames,delivered_frames,logs_enqueued,logs_dropped,log_seq,notes",
+  "resourceFields": "run_id,scene_id,variant_id,repeat_id,elapsed_ms,private_bytes,working_set_bytes,gc_heap_bytes,gc_gen0,gc_gen1,gc_gen2,process_cpu_ms,thread_count,handle_count,logger_queue_count,ui_pending_logs,cache_item_count,inflight_count,ui_heartbeat_delay_ms,resource_status"
+}

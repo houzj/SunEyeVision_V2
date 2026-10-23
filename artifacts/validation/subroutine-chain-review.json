@@ -1,0 +1,63 @@
+{
+  "steps": [
+    {
+      "id": "sub-status",
+      "packageId": "O02",
+      "title": "子程序终态：不能以有无错误文本决定成功",
+      "fact": "Run最终仅在!Success且Errors非空时SetError，其余SetSuccess；ExecutionResult.CreateCancelled只填Status/IsStopped/CompletionMessage而不加Errors。若前面输出解析完成，无错误文本的取消会进入成功分支。循环合并初值new ExecutionResult的Success默认false，也不该靠Errors补救聚合状态。",
+      "route": "自研终态合同整改，借鉴VM停止完成职责而非拷贝未知Group内部算法。",
+      "change": "先按Status/IsStopped/Success映射取消、失败、成功和未执行；取消不依赖错误文本。循环聚合从明确成功单位元开始，零次循环政策另定；取消前部分结果须标有效范围。",
+      "accept": "构造Cancelled无Errors且有可解析输出、Failed空Errors、正常多轮和零轮分别验；父节点不得把取消记成功。",
+      "url": "tool-subroutine.html#subroutine-chain-review",
+      "status": "设计待实施；未运行子图或故障注入",
+      "vm": "VM Group导入回调与父ID有原材料；原Group执行循环、停止及结果缓存完整实现仍缺，不把REA重建Executor当原VM。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+        "line": 150,
+        "token": "if (!execResult.Success && execResult.Errors != null && execResult.Errors.Any())",
+        "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9",
+        "snippet": "\r\n                result.ExecutedNodeCount = execResult.NodeResults?.Count ?? 0;\r\n                result.SubWorkflowExecutionTimeMs = (long)execResult.ExecutionTime.TotalMilliseconds;\r\n\r\n                if (!execResult.Success && execResult.Errors != null && execResult.Errors.Any())\r\n                {\r\n                    var errorMsg = string.Join(\"; \", execResult.Errors);\r\n                    parameters.LogError($\"子程序执行失败: {errorMsg}\");\r\n                    result.SetError(errorMsg);\r\n                }\r\n                else\r\n                {\r\n                    sw.Stop();\r\n                    result.SetSuccess(sw.Elapsed.TotalMilliseconds);\r\n                    parameters.LogSuccess($\"子程序执行完成: {result.ExecutedNodeCount} 个节点, 耗时 {result.SubWorkflowExecutionTimeMs}ms\");\r\n                }\r\n            }\r\n            catch (Exception ex)\r\n            {\r\n                sw.Stop();\r\n                parameters.LogError($\"子程序异常: {ex.Message}\", ex);\r\n                result.SetError($\"子程序执行异常: {ex.Message}\", ex);\r\n            }\r\n\r\n            return result;\r\n        }\r"
+      }
+    },
+    {
+      "id": "sub-delay",
+      "packageId": "O05",
+      "title": "子程序等待：同步包装和间隔取消分开",
+      "fact": "子调用使用Task.Run(async delegate).GetAwaiter().GetResult；循环间隔Task.Delay未传取消令牌。根session取消会进入子图，但间隔本身不可被该令牌唤醒；不能从Task.Run推立即停止。",
+      "route": "原方案控制层整改；不强制中断任意原生算法。",
+      "change": "以异步子调用合同贯穿控制工具和执行器，循环前后检查会话取消、Delay传同一令牌；如果保持同步插件接口，明确阻塞边界和停止延迟，不额外堆Task.Run。",
+      "accept": "长间隔中取消、子图执行中取消、连续调试关闭、子图异常均等待正确终态；取消不会再启动下一轮。",
+      "url": "tool-subroutine.html#subroutine-chain-review",
+      "status": "设计待实施；未运行子图或故障注入",
+      "vm": "VM Group导入回调与父ID有原材料；原Group执行循环、停止及结果缓存完整实现仍缺，不把REA重建Executor当原VM。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+        "line": 398,
+        "token": "Task.Delay(config.LoopInterval).GetAwaiter().GetResult();",
+        "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9",
+        "snippet": "                }\r\n\r\n                // ===== 循环间隔 =====\r\n                if (config.LoopInterval > 0)\r\n                    Task.Delay(config.LoopInterval).GetAwaiter().GetResult();\r\n            }\r\n\r\n            return (result, accumulatedOutputs, accumulatedDisplay);\r\n        }\r\n\r\n        /// <summary>\r\n        /// 构建累积显示图形：仅处理勾选 IsAccumulated 的显示项，每轮把该轮图形追加到累积 collector。\r\n        /// 按轮次对显示项样式做 HSL 色相渐变（第 0 轮 → 第 N 轮），使多轮叠加的图形能按轨迹区分（对齐 Halcon 多色叠加）。\r\n        /// </summary>\r\n        private static void BuildAccumulatedDisplay(\r\n            SubroutineParameters parameters,\r\n            Dictionary<string, ToolResults> iterToolResults,\r\n            ParameterResolver resolver,\r\n            DisplayCollector accumulatedDisplay,\r\n            int iterationIndex,\r\n            int totalRounds)\r\n        {\r\n            if (parameters.DisplayConfigs.Count == 0 || iterToolResults.Count == 0)\r\n                return;\r\n\r\n            foreach (var displayItem in parameters.DisplayConfigs)\r"
+      }
+    },
+    {
+      "id": "sub-identity",
+      "packageId": "O07",
+      "title": "子程序结果回填：Scope已存在，展示缓存仍拍平",
+      "fact": "CreateChildScope有独立RunId及ConsumerScope，子结果却为下钻显示按原kvp.Key（NodeId）写RootContext。两个父调用同一子图内部ID相同，根投影可覆盖，循环也仅保留最后一轮；这证明缓存键丢调用身份，不证明子图算法上下文本身共用。",
+      "route": "融合优化：复用现有Scope身份，整改根显示投影，不再新造整套运行ID。",
+      "change": "根结果投影以根Run/childScope/节点/迭代寻址；下钻UI选择明确调用实例，变量绑定仍按执行Scope解析。长期历史与实时最新分开保留政策。",
+      "accept": "同子图双调用并发/顺序、嵌套同名节点、多轮下钻分别验，不互相替换所选调用结果；方案切换拒迟到回填。",
+      "url": "tool-subroutine.html#subroutine-chain-review",
+      "status": "设计待实施；未运行子图或故障注入",
+      "vm": "VM Group导入回调与父ID有原材料；原Group执行循环、停止及结果缓存完整实现仍缺，不把REA重建Executor当原VM。",
+      "source": {
+        "path": "src/Workflow/WorkflowExecutionEngine.cs",
+        "line": 713,
+        "token": "session.RootContext.SetNodeResult(kvp.Key, kvp.Value);",
+        "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+        "snippet": "                    if (session.RootContext != null)\r\n                    {\r\n                        foreach (var kvp in subResult.NodeResults)\r\n                        {\r\n                            session.RootContext.SetNodeResult(kvp.Key, kvp.Value);\r\n                        }\r\n                    }\r\n\r\n                    return subResult;\r\n                }\r\n                catch (OperationCanceledException)\r\n                {\r\n                    scope.State = WorkflowExecutionState.Stopped;\r\n                    throw;\r\n                }\r\n                catch\r\n                {\r\n                    scope.State = WorkflowExecutionState.Error;\r\n                    throw;\r\n                }\r\n                finally\r\n                {\r\n                    scope.Context = null;\r\n                }\r\n            }\r\n\r"
+      }
+    }
+  ],
+  "positive": "已有独立childScope、父节点输入合成结果和根session取消复用；不能误写成没有作用域或没有取消。",
+  "limits": "跨层递归限制、全局变量继承、累积图像最后Owner仍需单独核实。"
+}

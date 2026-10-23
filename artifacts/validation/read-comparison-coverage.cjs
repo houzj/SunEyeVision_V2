@@ -1,0 +1,1 @@
+const fs=require('fs'),s=fs.readFileSync('docs/04-工具设计/标定工具/2026/10/19/suneye-vm-design-comparison-plan.html','utf8');const m=s.match(/<table[^>]*id="coverage-matrix"[\s\S]*?<\/table>/)?.[0]||s.slice(s.indexOf('id="coverage-matrix"')-200,s.indexOf('id="coverage-matrix"')+15000);console.log(m.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').slice(0,14500));

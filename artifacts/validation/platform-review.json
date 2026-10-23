@@ -1,0 +1,115 @@
+{
+  "stages": [
+    {
+      "id": "theme",
+      "title": "切换主题：有合同校验，缺失败原子性",
+      "what": "颜色不是每个窗口各改一遍；宿主提供主题资源，SDK控件按资源键取值。",
+      "chain": "ThemeManager.ApplyTheme → _currentTheme赋值 → 移除旧字典 → 创建/校验新字典 → 加入 → 标题栏/偏好/事件",
+      "fact": "已实现Light/Dark、SdkThemeKeys逐键校验。问题是状态先变、旧字典先删；新字典加载或校验抛错时，没有对应回滚。相同theme再次调用又会提前return。",
+      "route": "必须整改局部切换事务；不因此推翻全部主题体系。",
+      "change": "先构造并校验候选字典，再在UI线程替换；成功后提交_currentTheme。失败保留旧字典/状态，标题栏和事件也按成功阶段更新。",
+      "accept": "缺资源、错误URI、偏好保存失败分别验；失败后可重试，所有已开窗口和新开窗口一致。未运行VS设计器或产品。",
+      "source": {
+        "path": "src/UI/Services/ThemeManager.cs",
+        "line": 89,
+        "token": "public void ApplyTheme",
+        "sha256": "3161aec8d823fabe786a8574a41b8d2af23999edc28b89ad13c26a55b2f510da",
+        "snippet": "        public void ApplyTheme(AppTheme theme)\r\n        {\r\n            if (theme == _currentTheme)\r\n            {\r\n                return;\r\n            }\r\n\r\n            _currentTheme = theme;\r\n            ApplyThemeDictionary(theme);\r\n            // 刷新所有已打开弹窗的系统标题栏（切主题瞬间即时跟随）\r\n            WindowTitleBarThemer.UpdateTheme(theme == AppTheme.Dark);\r\n            // 同步 SDK 全局标题栏状态（tools 窗口标题栏跟随主体主题）\r\n            SdkWindowTheme.SetDark(theme == AppTheme.Dark);\r\n\r\n            // 持久化用户选择\r\n            try\r\n            {\r\n                _settings.SetPreference(PreferenceKey, theme.ToString());\r\n            }\r\n            catch (Exception ex)\r\n            {\r\n                _logger.Log(LogLevel.Error, $\"主题偏好持久化失败: {ex.Message}\", \"ThemeManager\", ex);\r\n            }\r\n\r\n            _logger.Log(LogLevel.Info, $\"主题切换为: {theme}\", \"ThemeManager\");\r\n            ThemeChanged?.Invoke(theme);\r\n        }\r\n\r"
+      }
+    },
+    {
+      "id": "controls",
+      "title": "公共控件：运行合同和WPF扩展混在一个包",
+      "what": "SDK同时装算法合同、参数结果类型、图像/ROI控件和调试窗口。插件不引用宿主UI，不代表它能脱离WPF运行。",
+      "chain": "Plugin.SDK net9.0-windows/UseWPF → ITool与参数结果合同 + UI控件 → 工具插件与宿主共用",
+      "fact": "csproj实际UseWPF=true且有System.Drawing.Common；包描述“零依赖纯契约”不能作为架构事实。设计时资源字典依据设计环境加载Generic主题，运行时由宿主供给。",
+      "route": "原方案重构＋VM职责参考；保留兼容迁移，不直接复制原厂DLL边界。",
+      "change": "先冻结运行合同与UI扩展消费者表，再分Contracts/UI两层；资源URI、类型身份、序列化判别符、插件二进制兼容需要版本策略。设计时兜底继续独立。",
+      "accept": "纯运行消费者不引用WPF；现有插件过渡可读旧方案；亮暗/高DPI/设计器/默认宿主分别验。拆包是提案未实施。",
+      "source": {
+        "path": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+        "line": 7,
+        "token": "<UseWPF>true</UseWPF>",
+        "sha256": "b95650866ebe40e8666a6062458571ca218ed626411d0c3a8bfb4f4facd1f9cf",
+        "snippet": "    <UseWPF>true</UseWPF>\r\n    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>\r\n    <RootNamespace>SunEyeVision.Plugin.SDK</RootNamespace>\r\n    <AssemblyName>SunEyeVision.Plugin.SDK</AssemblyName>\r\n    <GenerateDocumentationFile>true</GenerateDocumentationFile>\r\n    <DocumentationFile>bin\\$(Configuration)\\$(TargetFramework)\\SunEyeVision.Plugin.SDK.xml</DocumentationFile>\r\n    <NoWarn>$(NoWarn);1591</NoWarn>\r\n\r\n    <!-- NuGet包配置 -->\r\n    <PackageId>SunEyeVision.Plugin.SDK</PackageId>\r\n    <!-- SDK 随产品交付时使用产品版本；开发包版本由 Directory.Build.props 从 version.json 注入。 -->\n    <Authors>SunEyeVision Team</Authors>\r\n    <Company>SunEyeVision</Company>\r\n    <Product>SunEyeVision Plugin SDK</Product>\r\n    <Description>SunEyeVision 插件开发SDK - 零依赖的纯契约层，现代化架构，包含ITool、IToolPlugin等核心接口，以及调试窗口基类和控件库</Description>\r\n    <Copyright>Copyright (c) 2026 SunEyeVision</Copyright>\r\n    <PackageTags>vision;plugin;sdk;machine-vision;image-processing;wpf</PackageTags>\r\n    <PackageReadmeFile>README.md</PackageReadmeFile>\r\n    <PackageLicenseExpression>MIT</PackageLicenseExpression>\r\n    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>\r\n\r\n    <!-- 包输出配置 -->\r\n    <PackageOutputPath>$(SolutionDir)nupkg\\</PackageOutputPath>\r\n    <IncludeSymbols>true</IncludeSymbols>\r\n    <SymbolPackageFormat>snupkg</SymbolPackageFormat>\r\n\r\n    <!-- 源码链接支持 -->\r\n    <PublishRepositoryUrl>true</PublishRepositoryUrl>\r"
+      }
+    },
+    {
+      "id": "resolve",
+      "title": "插件依赖：有独立目录，但运行时共享优先",
+      "what": "工具带自己的依赖清单；宿主已有同名程序集时优先共用，因此不是每个插件都用自己的版本。",
+      "chain": "PluginManager → PluginLoadContext → 宿主合同/已加载同名/宿主目录同名 → 插件deps.json/目录",
+      "fact": "共享可避免跨边界类型身份分裂；但按simpleName和宿主文件存在回落，不等完整版本/公钥/API兼容验证。插件主程序集单独认本目录。",
+      "route": "局部兼容准入整改；第三方版本隔离优劣暂缓。",
+      "change": "声明必须共享的边界合同和版本范围；加载前检查插件依赖/宿主版本并报差异。仅不跨边界的私有依赖可隔离，不承诺ALC安全沙箱。",
+      "accept": "同名不同版本、缺依赖、BAML控件解析、序列化类型身份分别验；失败给出真实选择路径与版本。",
+      "source": {
+        "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs",
+        "line": 128,
+        "token": "protected override Assembly? Load",
+        "sha256": "73b92f04265fc83a84672db78bc9ef539657e8e0eea7b19639c3c2331fc43748",
+        "snippet": "        protected override Assembly? Load(AssemblyName assemblyName)\r\n        {\r\n            var simpleName = assemblyName.Name;\r\n            if (string.IsNullOrEmpty(simpleName))\r\n                return null;\r\n\r\n            // ① 插件主程序集：只认本插件目录内那一份 —— **绝不回落宿主**，\r\n            //    避免 dev/Debug 根的历史残留同名 dll 被误用（方案 §十 清理清单第 5 条）。\r\n            if (string.Equals(simpleName, _mainAssemblySimpleName, StringComparison.Ordinal))\r\n            {\r\n                var selfPath = Path.Combine(_pluginDirectory, _mainAssemblySimpleName + \".dll\");\r\n                return File.Exists(selfPath) ? LoadFromAssemblyPath(selfPath) : null;\r\n            }\r\n\r\n            // ② 契约与框架模块（SunEyeVision.*）→ 交回宿主，类型身份唯一\r\n            if (PluginAssemblyPolicy.IsHostProvided(simpleName))\r\n                return null;\r\n\r\n            // ③ 宿主**已加载**的同名程序集 → 共用（跨边界类型必须同源）\r\n            if (IsLoadedInHost(simpleName))\r\n                return null;\r\n\r\n            // ④ 宿主**运行目录可解析**的同名程序集 → 共用。\r\n            //    这是\"共享优先\"的兜底事实判定：与构建期行为天然一致（构建期剔除的正是宿主已有的那批），\r\n            //    故加载期**不需要**再维护第二份平台清单（消除构建期/加载期清单分叉的可能）。\r\n            if (IsResolvableFromHostDirectory(simpleName))\r\n                return null;\r\n\r"
+      }
+    },
+    {
+      "id": "unload",
+      "title": "卸载：当前清注册表，不是释放程序集",
+      "what": "工具实例、后台任务、事件订阅、原生句柄和程序集是不同层；清掉工具列表不会自动销毁它们。",
+      "chain": "PluginManager.UnloadPlugins → _plugins.Clear / _toolCatalog.Clear；PluginLoadContext isCollectible:false",
+      "fact": "不可回收ALC是明确源码事实；UnloadPlugins没有调用逐实例Dispose或在途等待。不能据此断言一定泄漏，但不得把日志“卸载完成”解释为热更新/资源已全释放。",
+      "route": "明确当前仅进程生命周期加载；热卸载作为新增专项，不能包装为已实现。",
+      "change": "若产品不需热更，改文档/状态为注销并要求重启；仍需逐工具实例退役。若需热更，先建停派发/排空/退订/Dispose合同，再评可回收ALC和WPF/native限制。",
+      "accept": "注销后不再创建新实例；在途任务结局被观察；热卸载未开发，不能用GC调用当验收。",
+      "source": {
+        "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs",
+        "line": 218,
+        "token": "public void UnloadPlugins",
+        "sha256": "6fe4240a2154817a8e3270d7949643e33a381661a4355277ca475182995eea5a",
+        "snippet": "        public void UnloadPlugins()\r\n        {\r\n            _logger.LogInfo(\"开始卸载插件...\");\r\n            _plugins.Clear();\r\n            _toolCatalog.Clear();\n            _logger.LogInfo(\"插件卸载完成\");\r\n        }\r\n\r\n        /// <summary>\r\n        /// 获取所有插件\r\n        /// </summary>\r\n        /// <typeparam name=\"T\">插件类型</typeparam>\r\n        /// <returns>插件列表</returns>\r\n        public List<T> GetPlugins<T>() where T : class\r\n        {\r\n            var pluginType = typeof(T);\r\n            if (_plugins.TryGetValue(pluginType, out var pluginList))\r\n            {\r\n                return pluginList.OfType<T>().ToList();\r\n            }\r\n            return new List<T>();\r\n        }\r\n\r\n        /// <summary>\r\n        /// 注册插件\r\n        /// </summary>\r\n        /// <param name=\"plugin\">插件实例</param>\r\n        public void RegisterPlugin(object plugin)\r"
+      }
+    },
+    {
+      "id": "deploy",
+      "title": "部署：构建规则已有，干净机器仍待验收",
+      "what": "工具私有库随插件，大件平台由宿主供给；文件复制规则和运行依赖闭合是两件事。",
+      "chain": "Directory.Build.targets → 插件OutDir/PackagingRoot → 保留deps → 剔除HALCON/OpenCV → 宿主部署native",
+      "fact": "真实规则保留工具自身依赖，集中大件；宿主缺HALCON会构建报错。SuppressNativeRuntimesForToolPlugins按Link包含runtimes宽泛移除，未按私有原生依赖区分；不能保证新增插件私有native完整交付。",
+      "route": "构建规则局部整改＋干净环境发布矩阵；不照搬未知VM发布包。",
+      "change": "将宿主供给清单与允许插件私有native清单显式化，逐RID验证复制结果；依赖选择与加载策略生成可追溯清单。发布版本/SDK/驱动分开锁定。",
+      "accept": "仅文档本轮不构建。后续按项目规则全量Release和运行，干净机器缺库/不同版本/插件私有native都需验收，不能拿源码规则代测试。",
+      "source": {
+        "path": "Directory.Build.targets",
+        "line": 118,
+        "token": "Name=\"SuppressNativeRuntimesForToolPlugins\"",
+        "sha256": "8b65f6a49d645a5b507c7cfd79f388f2b965e215dca46617ce7512b87b5c806e",
+        "snippet": "  <Target Name=\"SuppressNativeRuntimesForToolPlugins\" BeforeTargets=\"PrepareForBuild\" Condition=\"'$(IsToolPlugin)'=='true'\">\r\n    <ItemGroup>\r\n      <_RuntimeTrash Include=\"@(None)\" Condition=\"'%(None.Link)' != '' And $([System.String]::new('%(None.Link)').Contains('runtimes'))\" />\r\n      <_RuntimeTrash Include=\"@(Content)\" Condition=\"'%(Content.Link)' != '' And $([System.String]::new('%(Content.Link)').Contains('runtimes'))\" />\r\n      <None Remove=\"@(_RuntimeTrash)\" />\r\n      <Content Remove=\"@(_RuntimeTrash)\" />\r\n    </ItemGroup>\r\n  </Target>\r\n\r\n  <!-- Step 4: 【已反转】保留工具自身的 .deps.json\r\n       旧实现删除它,理由是\"工具的外部 NuGet 依赖由主程序 AppDomain 在 dev/Debug 根统一提供,\r\n       工具 dll 不应独立解析 deps.json,保留会导致 AssemblyLoadContext 版本冲突\"。\r\n       该结论只成立于\"宿主统一加载\"模型;方案《工具插件自包含与独立开发方案》§六 已改为\r\n       \"每插件隔间 + 自带行李\",结论随之反转:\r\n         · PluginLoadContext 用 AssemblyDependencyResolver 解析**工具自带依赖**,\r\n           其解析依据正是 .deps.json ⇒ 删掉它,\"自带行李\"即失效(工具自己的第三方库找不到);\r\n         · 依赖清单本身是行李的一部分(R1 自包含),缺它则工具无法独立交付;\r\n         · 版本冲突已由\"隔间 + 契约/大件回落宿主\"在**加载期**解决,不再需要在构建期删清单。\r\n       体积: 每个 deps.json 仅几 KB,可忽略。 -->\r\n\r\n  <!-- Step 5: 删除 NuGet 多语言资源子目录\r\n       AvalonEdit / Roslyn / OpenCvSharp4 / ICSharpCode.Decompiler 等 NuGet 包内嵌 13 种语言的 .NET 资源卫星程序集,\r\n       通过 ReferenceCopyLocalPaths 通道复制到 <OutDir>\\<lang>\\*.resources.dll。\r\n       工具插件场景下不需要国际化支持(UI 由主程序承载),\r\n       直接删除所有语言子目录,只保留主程序需要的 en/ (由主程序自行管理)。 -->\r\n  <Target Name=\"RemoveToolLanguageResources\" AfterTargets=\"Build\" Condition=\"'$(IsToolPlugin)'=='true'\">\r\n    <ItemGroup>\r\n      <_ToolLangDirs Include=\"$(OutDir)cs\" />\r"
+      }
+    }
+  ],
+  "extra": [
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs",
+      "token": "isCollectible: false",
+      "line": 62,
+      "sha256": "73b92f04265fc83a84672db78bc9ef539657e8e0eea7b19639c3c2331fc43748"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Themes/DesignTimeThemeResourceDictionary.cs",
+      "token": "public DesignTimeThemeResourceDictionary()",
+      "line": 14,
+      "sha256": "549469e3531f2f53bb6310a7cd72759ea7461e94f7886b18bdeea312a619a281"
+    },
+    {
+      "path": "src/UI/Services/ThemeManager.cs",
+      "token": "private void ApplyThemeDictionary",
+      "line": 142,
+      "sha256": "3161aec8d823fabe786a8574a41b8d2af23999edc28b89ad13c26a55b2f510da"
+    }
+  ],
+  "vm": {
+    "path": "D:/MyWork/REA逆向测试/docs/LOADER-ROUND2-20261019.md",
+    "sha256": "145d7ea93b63dc598f9ba1da2b415345088fbaf331eb3a2dc55e6917dfd5a617",
+    "limit": "VM原工具目录懒加载、IsInit提前置位、异常留下部分组和Group回调时序有原反编译依据；不是SunEye ALC版本/主题替换的等价实现。原厂完整发布及主题失败恢复仍待证，不能据样式截图评架构优劣。"
+  },
+  "runtimeExecuted": false
+}

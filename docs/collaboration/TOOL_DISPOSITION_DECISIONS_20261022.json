@@ -1,0 +1,119 @@
+{
+  "batchId": "TOOL-DISPOSITION-20261022-01",
+  "stage": "implemented-release-verified",
+  "userInstruction": [
+    "N 点标定验证删除",
+    "图像二值化/图像阈值化只能留一个"
+  ],
+  "decisions": [
+    {
+      "id": "TD01",
+      "toolIds": [
+        "NPointVerification"
+      ],
+      "decision": "删除独立工具",
+      "scope": "目标工具清单/工具箱/新增流程入口不再保留N点标定验证；不是本轮移除普通N点标定功能",
+      "status": "source-removed-release-verified"
+    },
+    {
+      "id": "TD02",
+      "toolIds": [
+        "ImageThreshold",
+        "Threshold"
+      ],
+      "decision": "仅保留ImageThreshold工具，删除Threshold工具",
+      "canonicalDisplayName": "图像二值化",
+      "vmReference": "ImageProcessing/IMVSBinaryModu",
+      "scope": "只保留一个可选工具入口；现有两套算法/参数/结果先对照，不以少改代码决定保留哪个实现，不暗保留第二独立工具",
+      "implementationIdentity": "ImageThreshold工具保留；Threshold独立工程/参数结果/编辑器和专属测试工程已删除，解决方案与设计时检查列表已清引用。",
+      "status": "source-removed-release-verified",
+      "retainToolId": "ImageThreshold",
+      "removeToolId": "Threshold",
+      "retainProject": "tools/SunEyeVision.Tool.ImageThreshold",
+      "removeProject": "tools/SunEyeVision.Tool.Threshold",
+      "reason": "已读Method分派：ImageThreshold具备基础阈值模式和自适应，并有Otsu/Triangle/InRange；Threshold当前主要基础模式加UseAdaptive。作为唯一工具的扩展基础优先ImageThreshold；这不证明算法等价VM或所有输出完整覆盖，仍需独立验收。"
+    }
+  ],
+  "counts": {
+    "currentSourceDeclarations": 22,
+    "targetToolCountAfterTheseTwoDecisions": 22,
+    "productRemovalExecuted": true
+  },
+  "policy": "用户已明确授权删除两个工具；已执行源码/工程引用/旧产物清理并通过Release工具箱验证；普通N点标定及ImageThreshold保留。",
+  "nextOwner": "文档角色同步当前22工具事实；用户使用/VS人工验收单列",
+  "validation": {
+    "batchId": "TOOL-REMOVE-20261022-01",
+    "removedIds": [
+      "Threshold",
+      "NPointVerification"
+    ],
+    "retainedIds": [
+      "ImageThreshold",
+      "NPointCalibration"
+    ],
+    "sourceToolCount": 22,
+    "runtimeToolCount": 22,
+    "releaseBuild": {
+      "exitCode": 0,
+      "warnings": 1045,
+      "errors": 0,
+      "log": "artifacts/tool-removal/20261022-TD01-TD02/build-release.log"
+    },
+    "tests": {
+      "designInitialization": {
+        "passed": 12,
+        "failed": 0
+      },
+      "nPointCalibration": {
+        "passed": 33,
+        "failed": 0
+      }
+    },
+    "runtimeProbe": {
+      "path": "artifacts/tool-removal/20261022-TD01-TD02/release-toolbox.json",
+      "sha256": "c263dc39fd675533328e23dbc2654c02eed4df8cc0998cd8ac5fb236d5949f58",
+      "noDevicesStarted": true
+    },
+    "manualVisualStudioAcceptance": "not-performed",
+    "retainedSha256": {
+      "imageThreshold": "f281a3427166acc4bfc2f4d507274d1049d39c869bb0d0d309c73e53778b110f",
+      "npoint": "2d40006ee8d2936f8cefb4c6137976986de9c81cd6cb16aaebccce1265bb78d7"
+    },
+    "sourceBackup": "artifacts/tool-removal/20261022-TD01-TD02",
+    "debugNPointRefresh": {
+      "exitCode": 0,
+      "warnings": 232,
+      "errors": 0,
+      "log": "artifacts/tool-removal/20261022-TD01-TD02/build-debug-npoint.log"
+    },
+    "commitCreated": false,
+    "modifiedFiles": [
+      {
+        "path": "SunEyeVision.slnx",
+        "sha256": "85345b08f97ad5f6d6c1eec6758f91ffadada4bd8d2a9caecdc78e5c29b02b87"
+      },
+      {
+        "path": "SunEyeVision.App.slnx",
+        "sha256": "2869f12da39a936a492d9fbd030d5fb274572208e39eeb13f55403a462a599bd"
+      },
+      {
+        "path": "tests/SunEyeVision.Plugin.SDK.Tests/DesignTimeInitializationContractTests.cs",
+        "sha256": "fb42f1a14132cc43d1681c7f4d7944ee07ad5a54ed9142fa53586b8f7b6c44cb"
+      },
+      {
+        "path": "tests/SunEyeVision.Tool.NPointCalibration.Tests/NPointCalibrationTests.cs",
+        "sha256": "38f51e3c41b79b06dfd807f2e2c21c9ba17bd712bc88484c89f53c93ad4c9a65"
+      }
+    ],
+    "remainingPluginBinaries": [
+      {
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/plugins/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.dll",
+        "sha256": "5cc7d2b0efce19d7b4fac1a3bbcfce217998d53a2ad9157922b79bef651a9411"
+      },
+      {
+        "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/plugins/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.dll",
+        "sha256": "fe54385aba8cb481845f77b8008b99bc5deff87b1cd452bac7e8b96ecb7e0f6c"
+      }
+    ]
+  }
+}

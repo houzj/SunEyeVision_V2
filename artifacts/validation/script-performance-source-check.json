@@ -1,0 +1,34 @@
+{
+  "checks": [
+    {
+      "id": "SP1",
+      "matches": true
+    },
+    {
+      "id": "SP2",
+      "matches": true
+    },
+    {
+      "id": "SP3",
+      "matches": true
+    },
+    {
+      "id": "SP4",
+      "matches": true
+    },
+    {
+      "id": "SP5",
+      "matches": true
+    },
+    {
+      "id": "SP6",
+      "matches": true
+    },
+    {
+      "id": "HLOG1",
+      "matches": true
+    }
+  ],
+  "productModified": false,
+  "benchmarkExecuted": false
+}

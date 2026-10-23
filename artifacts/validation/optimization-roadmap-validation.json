@@ -1,0 +1,11 @@
+{
+  "packages": 12,
+  "phases": 3,
+  "foundationContract": true,
+  "dependencyGraphAcyclic": true,
+  "deliveryGatePerPackage": true,
+  "deepLinkToDecision": true,
+  "printRestore": true,
+  "mobileOverflow": false,
+  "productExecuted": false
+}

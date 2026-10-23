@@ -1,0 +1,741 @@
+{
+  "rows": [
+    {
+      "id": "O01",
+      "stepId": "close-barrier",
+      "title": "切方案与退出等待真实运行终态",
+      "route": "原方案停止屏障整改",
+      "change": "保留现有过渡租约和保存询问，StopAndWait改等待执行会话终态及全部在途/回调；超时不释放设备、不采用新方案，保持故障隔离。复用同一关闭协调，不新增另一组bool当排空证明。",
+      "accept": "取消退出、停止超时、拒绝取消工具、保存失败和重复关闭；未排空不切方案，既有活动对象仍可诊断。",
+      "why": "已有PrepareSolutionTransitionAsync调用30秒StopAndWait；等待登记归零与真实任务排空是不同层，需自研执行终态支撑，不必等VM停止机制。",
+      "fact": "OnClosing先取消窗口关闭，异步PrepareSolutionTransitionAsync取得transition租约，StopAndWaitAsync最多30秒后再做保存决策。StopAndWait轮询IsAnyRunning；此前ReadyQueue退出finally未await全部running Task，故登记归零不单独证明所有原生任务排空。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 5574,
+        "token": "public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+        "snippet": "        public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync()\r\n        {\r\n            if (_transitionPreparationInProgress) return false;\r\n            _transitionPreparationInProgress = true;\r\n            try\r\n            {\r\n                var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;\r\n                if (_executionManager.IsAnyRunning() &&\r\n                    ThemeMessageDialog.Show(\"方案正在运行。停止全部执行后继续？\", \"切换方案\", MessageBoxButton.OKCancel,\r\n                        ThemeMessageDialog.MessageIcon.Question) != MessageBoxResult.OK) return false;\r\n                _solutionTransitionLease ??= _executionManager.BeginSolutionTransition();\r\n                await _executionManager.StopAndWaitAsync(TimeSpan.FromSeconds(30));\r\n                if (manager.CurrentSolution == null)\r\n                {\r\n                    if (_isWorkflowModified || WorkflowTabViewModel.Tabs.Any(tab => tab.WorkflowNodes.Count > 0))\r\n                    {\r\n                        var answer = ThemeMessageDialog.Show(\"工作区尚未保存为方案。是否保存？\", \"保存方案\", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);\r\n                        if (answer == MessageBoxResult.Cancel || answer == MessageBoxResult.None) { EndSolutionTransition(); return false; }\r\n                        if (answer == MessageBoxResult.Yes)\r\n                        {\r\n                            SaveCurrentSolutionCommand.Execute(null);\r\n                            if (manager.CurrentSolution == null || manager.HasUnsavedChanges) { EndSolutionTransition(); return false; }\r\n                        }\r\n                    }\r\n                    return true;\r\n                }\r\n                SaveSolutionData(manager);\r\n                if (!manager.HasUnsavedChanges) return true;\r\n                var result = ThemeMessageDialog.Show(\"当前方案有未保存修改。是否保存？\", \"保存方案\", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);\r\n                if (result == MessageBoxResult.Cancel || result == MessageBoxResult.None) { EndSolutionTransition(); return false; }\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O01",
+      "stepId": "delete-undo",
+      "title": "删除副作用并入同一可逆变更集",
+      "route": "原方案编辑事务整改",
+      "change": "节点、连线、绑定、变量关系、子流程和显示序号变更统一登记；级联删子图前检查共享引用。Undo恢复原表达式和目标图，而非仅重建节点后重新验证现状。",
+      "accept": "删除生产者后Undo绑定恢复；两个调用者共享子图仅删一个不破坏另一个；中途失败回滚；Redo与保存重开一致。",
+      "why": "批量命令后主窗另行清理绑定和删除子流程，不在同一命令事务；ReconcileAll不能恢复已删数据。节点连线已有原索引恢复应复用。",
+      "fact": "命令保留节点/连线同对象及原索引；Undo按节点再连线恢复，身份不变。主窗随后才清绑定和删子流程，这些不在命令变更集。 ReconcileAll重新验证当前结构，不能恢复已清空表达式、全局生产消费关系或已删子图；删除共享子图调用需先核其他引用。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 2633,
+        "token": "new AppCommands.BatchDeleteNodesAndConnectionsCommand",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O01",
+      "stepId": "sequence",
+      "title": "撤销历史与显示序号回收统一",
+      "route": "原方案序号租约整改",
+      "change": "稳定NodeId保持不变；序号要么保留到历史退役，要么Undo原子重新占用并处理冲突。局部序号和全局序号使用同一事务边界，不为修重复显示编号重写GUID或绑定。",
+      "accept": "删除A→Undo→新增B、删除后新增再Undo、多Tab/子流程及Redo；显示编号唯一，稳定ID和绑定不变。",
+      "why": "OnWorkflowNodesChanged在Remove释放序号，仅这段不处理Add重新占用；风险是显示序号重复，不能直接推断NodeId绑定错指。",
+      "fact": "Remove释放LocalIndex/GlobalIndex到空洞；Undo插回原对象没有重新占用，新增可能再次领取同一显示序号。NodeId仍不同，不直接推绑定错指。 显示序号与稳定身份是两层；空洞回收和撤销历史寿命未统一。",
+      "source": {
+        "path": "src/UI/Features/WorkflowUI/WorkflowTabViewModel.cs",
+        "line": 334,
+        "token": "private void OnWorkflowNodesChanged",
+        "sha256": "b0b7ced2ce8d9175d09471cada0e776e10ca1934976bd4e6ac61dece85cb30ae"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O04",
+      "stepId": "child-drain",
+      "title": "关闭子窗收集异步退役任务",
+      "route": "原方案应用关闭协调整改",
+      "change": "在OnClosing阶段收集预览、工具、分析会话的CloseAsync结局，停准入→取消→等待→退订/释放→关窗→Shutdown。OnClosed只做已确认可同步收尾，不能把async void窗口事件当任务所有者。",
+      "accept": "预览采集中退出、子窗拒绝关闭、退役异常与迟到帧；每个Owner有终态，未排空资源不被Shutdown成功日志掩盖。",
+      "why": "当前OnClosed逐窗Close后继续Shutdown，Close返回不保证窗口内部异步Dispose完成；不能仅据此断言每次退出必泄漏。",
+      "fact": "OnClosed逐个childWindow.Close，之后退订图像事件、发StopWorkflowCommand并Application.Shutdown。相机预览OnClosed为async void且await Host.DisposeAsync，主窗口没有汇总这些异步完成任务。不能从Close返回证明每个预览流已结束；具体异常/时序未运行。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+        "line": 346,
+        "token": "protected override void OnClosed(EventArgs e)",
+        "sha256": "e50ae10f8551e9ba794da0d36fbb856494c8cc1f0e19671919fd3c35c966f219",
+        "snippet": "        protected override void OnClosed(EventArgs e)\n        {\n            // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有\n            // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。\n            var childWindows = Application.Current?.Windows\n                .OfType<Window>()\n                .Where(window => !ReferenceEquals(window, this))\n                .ToArray();\n            if (childWindows != null)\n            {\n                foreach (var childWindow in childWindows)\n                {\n                    try\n                    {\n                        childWindow.Close();\n                    }\n                    catch (Exception ex)\n                    {\n                        VisionLogger.Instance.Log(LogLevel.Warning,\n                            $\"关闭子窗口失败: {childWindow.GetType().Name}, {ex.Message}\", \"MainWindow\");\n                    }\n                }\n            }\n\n            // 取消订阅图像预览事件（经图像结果区退订），防止内存泄漏\n            ImageResultHost.Shutdown();\n            _viewModel?.StopWorkflowCommand.Execute(null);\n            base.OnClosed(e);\n\n            // 防止存在无 Owner 的窗口或其他 WPF Dispatcher 对象使进程继续驻留。"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O09",
+      "stepId": "list",
+      "title": "设备配置身份与连接会话分开",
+      "route": "保留已有身份持久化＋连接事务整改",
+      "change": "保留DeviceId/序列号等配置持久化，连接状态不作为重开后已连接事实；同设备Open从检查到Connect/发布会话串行化，失败候选退役。管理窗口只是编辑者，不默认拥有运行连接。",
+      "accept": "同设备并发Open、设备缺失、身份重复、配置保存失败；关管理窗口不关闭工作流会话，重复候选不遗留连接。",
+      "why": "PersistCameraList保存身份/配置并置Disconnected，已有合理边界；并发连接安全需检查运行时Open事务，不把窗口关闭当断开设备。",
+      "fact": "设备名称、序列号、IP和自动连接设置，是方案配置；连接本身由应用运行时持有。关掉管理窗口不等于断开相机。",
+      "source": {
+        "path": "src/UI/Features/Camera/CameraManagerViewModel.cs",
+        "line": 397,
+        "token": "public void PersistCameraList",
+        "sha256": "76ef4636e4276be0229021a9ebaaa9b77f4b9a168c3eac054568303d7f8c2f7b",
+        "snippet": "        public void PersistCameraList()\r\n        {\r\n            var solution = _solutionManager.CurrentSolution;\r\n            if (solution == null)\r\n            {\r\n                StatusMessage = \"当前没有打开的方案，设备配置暂不能保存\";\r\n                return;\r\n            }\r\n\r\n            solution.Devices.RemoveAll(device => device.Type == DeviceType.Camera);\r\n            foreach (var camera in Cameras)\r\n            {\r\n                var device = new Device(camera.Name, DeviceType.Camera)\r\n                {\r\n                    Manufacturer = camera.Manufacturer,\r\n                    Model = camera.Model,\r\n                    SerialNumber = camera.SerialNumber,\r\n                    IpAddress = camera.IpAddress,\r\n                    IsEnabled = camera.IsEnabled,\r\n                    Description = camera.Description,\r\n                    Status = DeviceStatus.Disconnected,\r\n                    ModifiedTime = DateTime.Now\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O09",
+      "stepId": "preview",
+      "title": "预览停止失败保持占用或隔离",
+      "route": "原方案预览退役整改",
+      "change": "保留预览用途lease与连接Owner分离；停止时持有_streamTask并观察其结局，停止异常不直接把IsAcquiring置false且归还lease。预览位图保留末帧与CameraFrame释放是不同合同，重复停止共享退役任务。",
+      "accept": "StopStream异常、流仍回调、单次帧后自动停止、重复停止/关窗与连接保持；未知在途不能新准入，不把末帧可见当采集仍占用。",
+      "why": "StopAcquisitionAsync的finally清_streamTask和lease并置false，即使Stop失败也执行；这是本地预览收尾边界，厂商停流保证仍需材料。",
+      "fact": "连续采集、单次采集和触发一次是三种操作。预览取得用途租约；显示完一帧后释放该CameraFrame。",
+      "source": {
+        "path": "src/UI/Features/Camera/CameraPreviewHost.xaml.cs",
+        "line": 177,
+        "token": "public async Task StopAcquisitionAsync",
+        "sha256": "b5550e2fdd84feb517fb63383a3b34857bf530f4c646b9aa5aedb24cd16f4c6e",
+        "snippet": "    public async Task StopAcquisitionAsync()\n    {\n        if (!IsAcquiring || _session is null)\n            return;\n\n        Interlocked.Exchange(ref _singleShotRequested, 0);\n        Interlocked.Exchange(ref _stopRequested, 1);\n        try\n        {\n            await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(true);\n            CaptureStatus = \"采集已停止；图像控件保留最后一帧\";\n        }\n        finally\n        {\n            _streamTask = null;\n            Interlocked.Exchange(ref _stopRequested, 0);\n            _captureLease?.Dispose();\n            _captureLease = null;\n            IsAcquiring = false;\n            Interlocked.Exchange(ref _singleFrameStopScheduled, 0);\n            RaiseCaptureStateChanged();\n        }"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O09",
+      "stepId": "parameters",
+      "title": "参数写入的请求值、实际值与失败项分开",
+      "route": "复用已有能力与读回＋部分失败反馈整改",
+      "change": "保留能力树/IsWritable/RequiresStopped及读回机制，逐项记录请求、实际、写入失败和读回失败；需停采的修改通过统一采集协调。SDK可能部分成功，不自动宣称全回滚；自动合并编辑的取消只取消过期请求，不能抹掉已生效设备值。",
+      "accept": "只读/不可用、自动曝光覆盖手动值、多参数中途失败、重载schema、编辑后切相机及停止失败；界面以有效读回为依据，缺读回显示未知而非请求已生效。",
+      "why": "现有动态descriptor与ReadParametersAsync应复用；不能因为面板有保存入口就认设备参数事务原子，也不能说完全没有只读禁用与读回。",
+      "fact": "右侧参数面板由设备能力和分类树生成；部分参数要求先停采。显示值应以设备读回为准。",
+      "source": {
+        "path": "src/UI/Features/Camera/CameraDetailViewModel.cs",
+        "line": 653,
+        "token": "RequiresStopped",
+        "sha256": "1294ac7588efda05f58f106bf41342349381d09d7e5611791b8e356ee927b5c9",
+        "snippet": "                $\"[CameraParameterTrace] UI参数变更，已排队自动写入 camera={SelectedCamera?.DeviceId} node={item.Name} value={FormatDiagnosticValue(item.Value)} requiresStopped={item.RequiresStopped} affectsSchema={item.AffectsSchema}\",\n                \"CameraParameterTrace\", target: LogTarget.All);\n\n            _autoApplyCts?.Cancel();\n            _autoApplyCts?.Dispose();\n            _autoApplyCts = new CancellationTokenSource();\n            _ = ApplyParameterAfterEditAsync(_autoApplyCts.Token);\n        }\n\n        private async Task ApplyParameterAfterEditAsync(CancellationToken cancellationToken)\n        {\n            try\n            {\n                // NumericUpDown / text editing often emits several intermediate values; merge them into one SDK write.\n                await Task.Delay(350, cancellationToken).ConfigureAwait(true);\n                await SaveParamsAsync().ConfigureAwait(true);\n            }\n            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)\n            {\n            }\n        }\n"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O09",
+      "stepId": "feed",
+      "title": "最新帧模式和逐触发处理明确区分",
+      "route": "保留已有单槽策略＋模式合同补齐",
+      "change": "实时预览/部分连续分析明确采用最新帧，统计接收/替换/交付；若业务要求逐触发必处理，新增有界缓冲和溢出拒绝政策，不能改无界队列。连续硬触发无整轮超时需显示等待状态及可取消政策，多相机同步另立合同。",
+      "accept": "慢算法、无触发、取消、软件触发每轮一次、多相机及容量满；帧计数可解释，不声称单槽无损，也不将SDK单次超时当整轮结束。",
+      "why": "Feed替换旧pending并释放、软件每轮触发、连续非软件分支仅等待取消，已有策略并非错误本身；应按业务选取，不机械照搬未知VM缓存。",
+      "fact": "正常单相机流程取得工作流用途租约。来不及处理时旧待处理帧被替换并释放；软件触发按轮请求。",
+      "source": {
+        "path": "src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs",
+        "line": 115,
+        "token": "if (continuous &&",
+        "sha256": "52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5",
+        "snippet": "        if (continuous && _mode != CameraTriggerMode.Software)\n            return await WaitForFrameAsync(cancellationToken).ConfigureAwait(false);\n\n        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);\n        timeout.CancelAfter(_timeout);\n        try { return await WaitForFrameAsync(timeout.Token).ConfigureAwait(false); }\n        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)\n        {\n            throw new TimeoutException($\"等待相机 {_cameraRef.Value} 新帧超时（{_timeout.TotalMilliseconds:F0} ms）\");\n        }\n    }\n\n    private async Task<CameraFrame> WaitForFrameAsync(CancellationToken cancellationToken)\n    {\n        while (true)\n        {\n            Task waitTask;\n            lock (_gate)\n            {\n                ObjectDisposedException.ThrowIf(_disposed, this);\n                if (_pending is { } frame)\n                {"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O10",
+      "stepId": "deploy",
+      "title": "显式部署共享库与插件私有native",
+      "route": "保留构建规则＋部署清单整改",
+      "change": "保留插件.deps.json和宿主大件集中供给，按共享清单/RID/版本明确私有native允许项，替换仅凭Link含runtimes的宽泛移除。生成构建输出与加载解析清单，新增工具依赖必须有发布所有者。",
+      "accept": "后续按项目规则全量Release并运行，另验干净机器、缺共享库、私有native、错误RID和版本冲突；本轮不构建，源码规则不作发布验收。",
+      "why": "SuppressNativeRuntimesForToolPlugins按路径子串去项，不能保证所有未来私有native正确部署。已有规则不是完全无部署，也不是干净机器已通过。",
+      "fact": "真实规则保留工具自身依赖，集中大件；宿主缺HALCON会构建报错。SuppressNativeRuntimesForToolPlugins按Link包含runtimes宽泛移除，未按私有原生依赖区分；不能保证新增插件私有native完整交付。",
+      "source": {
+        "path": "Directory.Build.targets",
+        "line": 118,
+        "token": "Name=\"SuppressNativeRuntimesForToolPlugins\"",
+        "sha256": "8b65f6a49d645a5b507c7cfd79f388f2b965e215dca46617ce7512b87b5c806e",
+        "snippet": "  <Target Name=\"SuppressNativeRuntimesForToolPlugins\" BeforeTargets=\"PrepareForBuild\" Condition=\"'$(IsToolPlugin)'=='true'\">\r\n    <ItemGroup>\r\n      <_RuntimeTrash Include=\"@(None)\" Condition=\"'%(None.Link)' != '' And $([System.String]::new('%(None.Link)').Contains('runtimes'))\" />\r\n      <_RuntimeTrash Include=\"@(Content)\" Condition=\"'%(Content.Link)' != '' And $([System.String]::new('%(Content.Link)').Contains('runtimes'))\" />\r\n      <None Remove=\"@(_RuntimeTrash)\" />\r\n      <Content Remove=\"@(_RuntimeTrash)\" />\r\n    </ItemGroup>\r\n  </Target>\r\n\r\n  <!-- Step 4: 【已反转】保留工具自身的 .deps.json\r\n       旧实现删除它,理由是\"工具的外部 NuGet 依赖由主程序 AppDomain 在 dev/Debug 根统一提供,\r\n       工具 dll 不应独立解析 deps.json,保留会导致 AssemblyLoadContext 版本冲突\"。\r\n       该结论只成立于\"宿主统一加载\"模型;方案《工具插件自包含与独立开发方案》§六 已改为\r\n       \"每插件隔间 + 自带行李\",结论随之反转:\r\n         · PluginLoadContext 用 AssemblyDependencyResolver 解析**工具自带依赖**,\r\n           其解析依据正是 .deps.json ⇒ 删掉它,\"自带行李\"即失效(工具自己的第三方库找不到);\r\n         · 依赖清单本身是行李的一部分(R1 自包含),缺它则工具无法独立交付;\r\n         · 版本冲突已由\"隔间 + 契约/大件回落宿主\"在**加载期**解决,不再需要在构建期删清单。\r\n       体积: 每个 deps.json 仅几 KB,可忽略。 -->\r\n\r\n  <!-- Step 5: 删除 NuGet 多语言资源子目录\r\n       AvalonEdit / Roslyn / OpenCvSharp4 / ICSharpCode.Decompiler 等 NuGet 包内嵌 13 种语言的 .NET 资源卫星程序集,\r\n       通过 ReferenceCopyLocalPaths 通道复制到 <OutDir>\\<lang>\\*.resources.dll。\r\n       工具插件场景下不需要国际化支持(UI 由主程序承载),\r\n       直接删除所有语言子目录,只保留主程序需要的 en/ (由主程序自行管理)。 -->\r\n  <Target Name=\"RemoveToolLanguageResources\" AfterTargets=\"Build\" Condition=\"'$(IsToolPlugin)'=='true'\">\r\n    <ItemGroup>\r\n      <_ToolLangDirs Include=\"$(OutDir)cs\" />\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O07",
+      "stepId": "analysis-delivery",
+      "title": "普通、相机和调试结果统一采用政策",
+      "route": "原方案结果分发整改",
+      "change": "建立结果发布与显示投影两层，按Run/Scope/Node/Frame身份和成功/失败/取消状态投递；保留相机最新值合并，但专业分析、图像、树与调试窗口消费同一采用政策。失败不能沿用未标历史的旧成功，慢分析过期结果拒收。",
+      "accept": "普通执行、相机连续、调试、切节点与迟到异步分析；每入口同一结果身份，失败清空或显式历史，合并丢帧不冒称无损逐帧分析。",
+      "why": "相机Flush主要刷新选中显示与通知调试窗，分析更新另有路径；需要统一消费合同而非删掉合并节流。不能仅凭一个函数断言整个相机分析绝对不会更新。",
+      "fact": "普通OnNodeExecutionCompleted只在e.Result.IsSuccess时OnResultUpdated；相机分支提前return，Flush仅刷新选中节点图像/树和调试窗口，未直接调用当前专业分析控件。切节点时读取缓存又不检查Success。当前专业分析可能继续保留旧内容，具体表现待运行验证。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 5441,
+        "token": "private void FlushCameraResultPresentation()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+        "snippet": "        private void FlushCameraResultPresentation()\r\n        {\r\n            var timer = System.Diagnostics.Stopwatch.StartNew();\r\n            _cameraPresentationTimer?.Stop();\r\n            var latest = _pendingCameraPresentations.Values.ToArray();\r\n            _pendingCameraPresentations.Clear();\r\n            foreach (var (node, result) in latest)\r\n            {\r\n                if (node.IsSelected)\r\n                    _nodeResultManager.RefreshResultDisplay(node, result);\r\n            }\r\n            if (latest.Length > 0)\r\n                NotifyAllDebugWindowsExternalResult();\r\n            timer.Stop();\r\n            if (timer.ElapsedMilliseconds >= 100 &&\r\n                DateTime.UtcNow - _lastCameraPerfWarningUtc >= TimeSpan.FromSeconds(5))\r\n            {\r\n                _lastCameraPerfWarningUtc = DateTime.UtcNow;\r\n                AddLog($\"⚠️ 相机结果界面刷新耗时 {timer.ElapsedMilliseconds} ms\");\r\n            }\r\n        }\r\n\r\n        private void HideLocalImagePreview()\r\n        {\r\n            ShowImagePreview = false;\r\n            ActiveInputSource = null;\r\n            _currentDisplayNodeId = null;\r\n        }\r\n\r\n        /// <summary>\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O07",
+      "stepId": "analysis-owner",
+      "title": "分析工具和控件需要显式会话所有者",
+      "route": "原方案所有权整改",
+      "change": "把CreateToolInstance和CreateDataAnalysisControl形成宿主拥有的分析会话，规定工具/控件/事件/结果借用的Owner；切节点、无分析控件、构造失败、关闭时均退役，先等在途分析再按类型合同释放。保留已有高亮退订，不把任何控件都强制当IDisposable。",
+      "accept": "快速切节点、工厂返回null、构造抛错、结果回调迟到、窗口关闭及重复退役；工具资源可观察地配对创建/退出，高亮不串帧，外部借用结果不被误释放。",
+      "why": "当前明确退订旧高亮并清空引用，同时新建tool局部变量；工具生命周期没有在此方法形成可等待Owner。不能因为有退订就认所有资源闭合，也不在未知native上盲目Dispose。",
+      "fact": "切节点先退订旧控件高亮并清高亮，然后CreateToolInstance/CreateDataAnalysisControl。此方法没有保存tool所有权或对旧tool/控件做Dispose；工厂是否共享、外层是否收尾仍待核，不能据此宣称必然泄漏。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 3528,
+        "token": "private System.Threading.Tasks.Task UpdateDataAnalysisControl",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+        "snippet": "        private System.Threading.Tasks.Task UpdateDataAnalysisControl(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)\r\n        {\r\n            try\r\n            {\r\n                // ★ 清理旧的选中高亮订阅（防止内存泄漏和残留高亮）\r\n                if (SelectedNodeDataAnalysisControl is IToolControlDataAnalysis oldDaControl)\r\n                {\r\n                    oldDaControl.SelectionHighlightChanged -= OnSelectionHighlightChanged;\r\n                }\r\n                _nodeResultManager.ClearHighlight();\r\n\r\n                // 清空当前控件\r\n                SelectedNodeDataAnalysisControl = null;\r\n                HasDataAnalysisControl = false;\r\n                DataAnalysisControlTitle = \"数据分析\";\r\n\r\n                if (selectedNode == null)\r\n                    return System.Threading.Tasks.Task.CompletedTask;\r\n\r\n                if (selectedNode.IsImageLoadNode)\r\n                {\r\n                    DataAnalysisControlTitle = $\"{selectedNode.Name} - 图像源\";\r\n                    SelectedNodeDataAnalysisControl = new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(selectedNode, this);\r\n                    HasDataAnalysisControl = true;\r\n                    return System.Threading.Tasks.Task.CompletedTask;\r\n                }\r\n\r\n                // 获取工具注册信息\r\n                var toolType = selectedNode.ToolType;\r\n                if (string.IsNullOrEmpty(toolType))\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O08",
+      "stepId": "load",
+      "title": "保留加载校验，补候选采用和迁移边界",
+      "route": "保留已有校验＋入口事务整改",
+      "change": "复用Id/SchemaVersion、工具类型和定义检查；在独立候选完成反序列化、引用及资源诊断，候选成功后通过关闭/切换协调器采用。缺版本的兼容规则与迁移输出显式列出，不自动把未知版本当最新；失败保留当前方案和设备占用。",
+      "accept": "无身份、不支持版本、缺插件/工具、损坏参数、资源缺失及用户取消切换；候选失败不替换活动方案，合法旧格式迁移后可重开。",
+      "why": "ValidateSchema已有身份和版本门禁，不能说完全没有格式验证；完整采用事务涉及宿主关闭/设备与UI，不是一个Repository.Load返回对象就全部完成。",
+      "fact": "已有Id校验；SchemaVersion出现且不为1则拒绝；缺失版本被允许，并不等于已经有所有旧版本迁移。ValidateTools递归检查ToolType，缺插件拒绝，而不是静默丢节点。",
+      "source": {
+        "path": "src/Workflow/SolutionRepository.cs",
+        "line": 75,
+        "token": "private static void ValidateSchema",
+        "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+        "snippet": "    private static void ValidateSchema(JsonElement root)\n    {\n        if (!root.TryGetProperty(\"Id\", out var id) || id.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(id.GetString()))\n            throw new InvalidDataException(\"方案缺少有效身份，不能作为新方案静默载入。\");\n        if (root.TryGetProperty(\"SchemaVersion\", out var schema) && schema.GetInt32() != 1)\n            throw new InvalidDataException(\"当前软件不支持该方案格式版本，请使用兼容的软件打开。\");\n    }\n\n    private bool EnsurePluginsLoaded()\n    {\n        // 检查全局状态\n        if (PluginLoader.IsLoaded)\n        {\r\n            _logger.Log(LogLevel.Info, \"插件已加载（全局状态），跳过重复检查\", \"SolutionRepository\");\r\n            return true;\r\n        }\r\n\r\n        // 如果未加载，触发全局加载\r\n        _logger.Log(LogLevel.Info, \"插件未加载，触发全局加载\", \"SolutionRepository\");\r\n        return PluginLoader.EnsureLoaded();\r\n    }\r\n\r\n\r\n    /// <summary>\r\n    /// 加载完整的解决方案对象\r\n    /// </summary>\r\n    /// <param name=\"filePath\">解决方案文件路径</param>\r\n    /// <returns>解决方案对象，失败返回 null</returns>\r\n    /// <remarks>\r\n    /// Fail Fast 原则：在反序列化前确保插件已加载。\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O08",
+      "stepId": "commit",
+      "title": "文件保存与索引、事件提交分别报告",
+      "route": "原方案提交状态整改",
+      "change": "复用文件临时替换；记录文件已保存、索引待同步、偏好待保存及通知失败等阶段。非关键通知异常不反向谎报文件没写入；索引可重建/重试，脏状态按文件提交版本更新，避免重复保存覆盖恢复版本。",
+      "accept": "文件成功后registry/settings/event各阶段抛错，重试和重启；文件可读、已保存版本明确，索引可修复，不因通知失败丢失已持久化事实。",
+      "why": "Save成功后还有CurrentFilePath、注册/缓存/设置、CaptureSavedState与事件调用；这些不是同一原子操作。无需等待VM.sol机制即可定义自有结局。",
+      "fact": "Manager会检查Repository的false；主窗入口也检查SaveSolution失败。事件订阅者和后续设置写入属于额外失败边界，不能因此断言整个保存没有错误传播。",
+      "source": {
+        "path": "src/Workflow/SolutionManager.cs",
+        "line": 499,
+        "token": "bool success = _repository.Save(CurrentSolution, savePath)",
+        "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da",
+        "snippet": "        bool success = _repository.Save(CurrentSolution, savePath);\r\n        if (!success)\r\n        {\r\n            return false;\r\n        }\r\n\r\n        CurrentFilePath = savePath;\r\n\r\n        // ✅ 更新元数据\r\n        if (metadata == null)\r\n        {\r\n            // 如果元数据不存在（不应该发生），从文件加载或创建一个基本的元数据\r\n            metadata = _repository.LoadMetadata(savePath);\r\n            if (metadata == null)\r\n            {\r\n                metadata = new SolutionMetadata\r\n                {\r\n                    Id = CurrentSolution.Id,\r\n                    Name = Path.GetFileNameWithoutExtension(savePath),\r\n                    Description = \"\",\r\n                    Version = CurrentSolution.Version,\r\n                    FilePath = savePath,\r\n                    DirectoryPath = Path.GetDirectoryName(savePath) ?? \"\",\r\n                    CreatedTime = File.GetCreationTime(savePath),\r\n                    ModifiedTime = DateTime.Now\r\n                };\r\n            }\r\n        }\r\n        else\r\n        {\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O08",
+      "stepId": "resources",
+      "title": "相对路径解析不等于可移植资源包",
+      "route": "原方案资源清单拓展",
+      "change": "保留现有路径解析，改由各工具声明资源依赖而非仅识别几个属性名；保存/另存按清单复制或引用资源，生成版本/校验与相对路径，先暂存资源再采用。外部资源、占位路径和缺失资源的政策分别定义，不悄悄复制全部磁盘内容。",
+      "accept": "另存新目录、跨机器、模型/标定文件、数组路径、重名资源、缺文件、复制失败与取消；原方案不被修改，打包引用完整且错误定位到工具字段。",
+      "why": "ResolveResourcePaths能把指定字段转绝对路径，但不复制文件、枚举所有插件资源或证明另存可移植。VM包格式未知不妨碍自有资源清单设计。",
+      "fact": "当前按属性名FilePath/ModelPath/CalibrationFilePath和FilePaths/ForRunPaths处理；它不是每插件资源合同。存在花括号的单值路径跳过，数组路径分支政策也不同，是否为表达式需逐合同核。",
+      "source": {
+        "path": "src/Workflow/SolutionRepository.cs",
+        "line": 211,
+        "token": "internal static string ResolveResourcePaths",
+        "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+        "snippet": "    internal static string ResolveResourcePaths(string json, string directory)\n    {\n        var root = JsonNode.Parse(json)!;\n        void Resolve(JsonNode? node)\n        {\n            if (node is JsonObject obj)\n            {\n                foreach (var pair in obj.ToArray())\n                {\n                    if (pair.Key is \"FilePath\" or \"ModelPath\" or \"CalibrationFilePath\" && pair.Value is JsonValue value && value.TryGetValue<string>(out var path) &&\n                        !string.IsNullOrWhiteSpace(path) && !Path.IsPathRooted(path) && !path.Contains('{'))\n                        obj[pair.Key] = Path.GetFullPath(path, directory);\n                    else if (pair.Key is \"FilePaths\" or \"ForRunPaths\" && pair.Value is JsonArray array)\n                        for (var i = 0; i < array.Count; i++)\n                        {\n                            var entry = array[i]?.GetValue<string>();\n                            if (!string.IsNullOrWhiteSpace(entry) && !Path.IsPathRooted(entry)) array[i] = Path.GetFullPath(entry, directory);\n                        }\n                    else Resolve(pair.Value);\n                }\n            }\n            else if (node is JsonArray list) foreach (var child in list) Resolve(child);\n        }\n        Resolve(root);\n        return root.ToJsonString();\n    }\n\n    private string RemoveDevicesProperty(string json)\n    {\r\n        using var document = JsonDocument.Parse(json);\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O08",
+      "stepId": "recover",
+      "title": "上一保存版本与自动编辑恢复分开标注",
+      "route": "保留已实现恢复＋按需新增编辑恢复",
+      "change": "保留GetRecoveryPath、身份校验与原子写回；恢复当前方案前停止/排空并候选预览，明确文件恢复与内存采用。若需要崩溃后恢复未保存编辑，另做有界检查点/日志与schema迁移，不能把.bak包装成已有自动保存。",
+      "accept": "备份损坏、身份不符、原路径改变、当前方案在运行、恢复后取消采用及重复恢复；保留可回退文件，UI明确恢复的是哪次保存。",
+      "why": "RestorePreviousSave加载备份并核对Id再写回主文件；已有可靠步骤应保留，但不覆盖连续编辑备份能力，也不证明调用方已实现完整采用协调。",
+      "fact": "这是已有上一版本恢复，不等每次编辑自动备份。恢复加载可传原资源目录，避免把恢复目录当资源基目录；临时目录清理与路径改名策略还需发布验收。",
+      "source": {
+        "path": "src/Workflow/SolutionManager.cs",
+        "line": 900,
+        "token": "public Solution RestorePreviousSave",
+        "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da",
+        "snippet": "    public Solution RestorePreviousSave(string solutionId)\r\n    {\r\n        var metadata = GetMetadata(solutionId) ?? throw new InvalidOperationException(\"方案记录不存在。\");\r\n        var recovery = _repository.GetRecoveryPath(metadata.FilePath);\r\n        var restored = _repository.Load(recovery, Path.GetDirectoryName(Path.GetFullPath(metadata.FilePath))!)\r\n            ?? throw new InvalidDataException(\"上一保存版本无法恢复：\" + LastError);\r\n        if (restored.Id != metadata.Id) throw new InvalidDataException(\"恢复文件身份不匹配，不会覆盖。\");\r\n        AtomicJsonFile.Write(metadata.FilePath, File.ReadAllText(recovery));\r\n        restored.FilePath = metadata.FilePath;\r\n        return restored;\r\n    }\r\n\r\n    public void UpdateMetadata(SolutionMetadata metadata)\r\n    {\r\n        ArgumentNullException.ThrowIfNull(metadata);\r\n        AtomicJsonFile.ValidateSolutionName(metadata.Name);\r\n        if (!File.Exists(metadata.FilePath)) throw new FileNotFoundException(\"方案文件失效，请先重新定位。\", metadata.FilePath);\r\n        var previous = GetMetadata(metadata.Id)?.Clone();\r\n        var original = File.ReadAllText(metadata.FilePath);\r\n        var document = JsonNode.Parse(original)!.AsObject();\r\n        document[\"Name\"] = metadata.Name; document[\"Description\"] = metadata.Description;\r\n        var updated = document.ToJsonString(new JsonSerializerOptions { WriteIndented = true });\r\n        AtomicJsonFile.Write(_repository.GetRecoveryPath(metadata.FilePath), original);\r\n        AtomicJsonFile.Write(metadata.FilePath, updated);\r\n        try\r\n        {\r\n            _registry.Register(metadata); _cache.Set(metadata.Id, metadata); _settings.AddKnownSolution(metadata);\r\n            ForceSaveSettings();\r\n        }\r\n        catch\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O08",
+      "stepId": "trust",
+      "title": "格式、可信执行、保密与授权分开设计",
+      "route": "原方案输入门禁补齐；自有保护另立项",
+      "change": "复用ValidateTools等格式门禁，按来源定义脚本执行/插件加载信任和数据限额；签名用于验证来源和完整性，保密用独立加密方案，自有狗只提供自有授权能力。密钥不写进静态HTML或客户端源码，文档加密不等产品安全架构。",
+      "accept": "未知工具/恶意过大输入/脚本来源未信任、签名错误、密文损坏、无授权及恢复；每种失败明确职责，格式校验不冒称防篡改，许可证不冒称方案保密。",
+      "why": "工具类型校验不等文件可信或加密，已有格式检查无需推倒。用户确定使用自有狗，型号政策与密钥管理另需决策，不能采用VM狗协议。",
+      "fact": "VM原托管Export/Import到原生SyncSaveSolution/SyncLoadSolution，路径、密码及完成回调有证据；.sol样本外层已恢复但内部密码/旧版/完整往返未知。REA独立.vmx.json及其测试不是原版机制，也不是SunEye已实现。",
+      "source": {
+        "path": "src/Workflow/SolutionRepository.cs",
+        "line": 200,
+        "token": "private static void ValidateTools",
+        "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+        "snippet": "    private static void ValidateTools(JsonElement element)\n    {\n        if (element.ValueKind == JsonValueKind.Object)\n        {\n            if (element.TryGetProperty(\"ToolType\", out var tool) && tool.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(tool.GetString()) &&\n                ToolRegistry.GetToolMetadata(tool.GetString()!) == null)\n                throw new InvalidDataException(\"缺少工具插件：\" + tool.GetString() + \"。原方案保持不变，请安装兼容插件。\");\n            foreach (var property in element.EnumerateObject()) ValidateTools(property.Value);\n        }\n        else if (element.ValueKind == JsonValueKind.Array) foreach (var child in element.EnumerateArray()) ValidateTools(child);\n    }\n    internal static string ResolveResourcePaths(string json, string directory)\n    {\n        var root = JsonNode.Parse(json)!;\n        void Resolve(JsonNode? node)\n        {\n            if (node is JsonObject obj)\n            {\n                foreach (var pair in obj.ToArray())\n                {\n                    if (pair.Key is \"FilePath\" or \"ModelPath\" or \"CalibrationFilePath\" && pair.Value is JsonValue value && value.TryGetValue<string>(out var path) &&\n                        !string.IsNullOrWhiteSpace(path) && !Path.IsPathRooted(path) && !path.Contains('{'))\n                        obj[pair.Key] = Path.GetFullPath(path, directory);\n                    else if (pair.Key is \"FilePaths\" or \"ForRunPaths\" && pair.Value is JsonArray array)\n                        for (var i = 0; i < array.Count; i++)\n                        {\n                            var entry = array[i]?.GetValue<string>();\n                            if (!string.IsNullOrWhiteSpace(entry) && !Path.IsPathRooted(entry)) array[i] = Path.GetFullPath(entry, directory);\n                        }\n                    else Resolve(pair.Value);"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O10",
+      "stepId": "resolve",
+      "title": "共享优先的插件依赖增加版本准入",
+      "route": "保留类型身份策略＋兼容门禁",
+      "change": "保留宿主合同唯一身份和插件主程序集本地优先；在加载前建立合同/共享库版本及架构兼容清单，对不兼容依赖明确拒载或要求升级。私有库能否隔离按跨边界类型判断，不一律改成本地优先。托管与native依赖分清单并记录实际解析位置。",
+      "accept": "宿主已加载同名不同版本、插件私有库缺失、跨边界类型冲突、native架构错误；拒载诊断定位依赖和来源，兼容插件保持可加载。",
+      "why": "Load实际按宿主已加载/可解析同名库优先共享；有独立目录不等版本隔离，改策略会影响类型身份。无需等待VM加载器即可明确自有准入合同。",
+      "fact": "共享可避免跨边界类型身份分裂；但按simpleName和宿主文件存在回落，不等完整版本/公钥/API兼容验证。插件主程序集单独认本目录。",
+      "source": {
+        "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs",
+        "line": 128,
+        "token": "protected override Assembly? Load",
+        "sha256": "73b92f04265fc83a84672db78bc9ef539657e8e0eea7b19639c3c2331fc43748",
+        "snippet": "        protected override Assembly? Load(AssemblyName assemblyName)\r\n        {\r\n            var simpleName = assemblyName.Name;\r\n            if (string.IsNullOrEmpty(simpleName))\r\n                return null;\r\n\r\n            // ① 插件主程序集：只认本插件目录内那一份 —— **绝不回落宿主**，\r\n            //    避免 dev/Debug 根的历史残留同名 dll 被误用（方案 §十 清理清单第 5 条）。\r\n            if (string.Equals(simpleName, _mainAssemblySimpleName, StringComparison.Ordinal))\r\n            {\r\n                var selfPath = Path.Combine(_pluginDirectory, _mainAssemblySimpleName + \".dll\");\r\n                return File.Exists(selfPath) ? LoadFromAssemblyPath(selfPath) : null;\r\n            }\r\n\r\n            // ② 契约与框架模块（SunEyeVision.*）→ 交回宿主，类型身份唯一\r\n            if (PluginAssemblyPolicy.IsHostProvided(simpleName))\r\n                return null;\r\n\r\n            // ③ 宿主**已加载**的同名程序集 → 共用（跨边界类型必须同源）\r\n            if (IsLoadedInHost(simpleName))\r\n                return null;\r\n\r\n            // ④ 宿主**运行目录可解析**的同名程序集 → 共用。\r\n            //    这是\"共享优先\"的兜底事实判定：与构建期行为天然一致（构建期剔除的正是宿主已有的那批），\r\n            //    故加载期**不需要**再维护第二份平台清单（消除构建期/加载期清单分叉的可能）。\r\n            if (IsResolvableFromHostDirectory(simpleName))\r\n                return null;\r\n\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O10",
+      "stepId": "unload",
+      "title": "清注册表不冒称热卸载",
+      "route": "先校正能力合同；热更新按需新增",
+      "change": "当前操作明确为注销发现结果，保留进程重启作为可靠更新边界；若产品确需热卸载，另定义停止准入、排空、实例/控件/事件/缓存退役及collectible上下文，最后验证弱引用，不直接把Clear换Unload当完成。",
+      "accept": "注销后不得新建实例；已有运行、窗口、静态缓存及事件仍持引用时不能报程序集已释放；热更新独立验收文件替换、重载版本及回滚。",
+      "why": "UnloadPlugins只有_plugins和_toolCatalog.Clear；无法证明工具实例、程序集和native资源释放。静态事实足以修正文案与范围，不应默认承诺热更。",
+      "fact": "不可回收ALC是明确源码事实；UnloadPlugins没有调用逐实例Dispose或在途等待。不能据此断言一定泄漏，但不得把日志“卸载完成”解释为热更新/资源已全释放。",
+      "source": {
+        "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs",
+        "line": 218,
+        "token": "public void UnloadPlugins",
+        "sha256": "6fe4240a2154817a8e3270d7949643e33a381661a4355277ca475182995eea5a",
+        "snippet": "        public void UnloadPlugins()\r\n        {\r\n            _logger.LogInfo(\"开始卸载插件...\");\r\n            _plugins.Clear();\r\n            _toolCatalog.Clear();\n            _logger.LogInfo(\"插件卸载完成\");\r\n        }\r\n\r\n        /// <summary>\r\n        /// 获取所有插件\r\n        /// </summary>\r\n        /// <typeparam name=\"T\">插件类型</typeparam>\r\n        /// <returns>插件列表</returns>\r\n        public List<T> GetPlugins<T>() where T : class\r\n        {\r\n            var pluginType = typeof(T);\r\n            if (_plugins.TryGetValue(pluginType, out var pluginList))\r\n            {\r\n                return pluginList.OfType<T>().ToList();\r\n            }\r\n            return new List<T>();\r\n        }\r\n\r\n        /// <summary>\r\n        /// 注册插件\r\n        /// </summary>\r\n        /// <param name=\"plugin\">插件实例</param>\r\n        public void RegisterPlugin(object plugin)\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O10",
+      "stepId": "controls",
+      "title": "运行合同和WPF控件拆分需兼容迁移",
+      "route": "原方案分层整改，分阶段实施",
+      "change": "先列SDK公共类型生产者/消费者、资源URI和序列化类型名；把不依赖WPF的运行接口/结果载体与WPF窗口控件扩展分包，必要时保留转发/兼容层。先迁移合同与适配边界，不整体重写23插件；现有包不称跨平台纯合同。",
+      "accept": "无UI执行消费者不引WPF；旧插件和方案可迁移，资源字典与设计器可用，类型身份不分裂；包引用、加载准入及干净发布一起验证。",
+      "why": "csproj明确net9.0-windows和UseWPF=true，并包含窗口基类与控件；零算法引擎引用不等无UI依赖。是否跨平台是产品选择，但UI与执行合同耦合已可正向分析。",
+      "fact": "csproj实际UseWPF=true且有System.Drawing.Common；包描述“零依赖纯契约”不能作为架构事实。设计时资源字典依据设计环境加载Generic主题，运行时由宿主供给。",
+      "source": {
+        "path": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+        "line": 7,
+        "token": "<UseWPF>true</UseWPF>",
+        "sha256": "b95650866ebe40e8666a6062458571ca218ed626411d0c3a8bfb4f4facd1f9cf",
+        "snippet": "    <UseWPF>true</UseWPF>\r\n    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>\r\n    <RootNamespace>SunEyeVision.Plugin.SDK</RootNamespace>\r\n    <AssemblyName>SunEyeVision.Plugin.SDK</AssemblyName>\r\n    <GenerateDocumentationFile>true</GenerateDocumentationFile>\r\n    <DocumentationFile>bin\\$(Configuration)\\$(TargetFramework)\\SunEyeVision.Plugin.SDK.xml</DocumentationFile>\r\n    <NoWarn>$(NoWarn);1591</NoWarn>\r\n\r\n    <!-- NuGet包配置 -->\r\n    <PackageId>SunEyeVision.Plugin.SDK</PackageId>\r\n    <!-- SDK 随产品交付时使用产品版本；开发包版本由 Directory.Build.props 从 version.json 注入。 -->\n    <Authors>SunEyeVision Team</Authors>\r\n    <Company>SunEyeVision</Company>\r\n    <Product>SunEyeVision Plugin SDK</Product>\r\n    <Description>SunEyeVision 插件开发SDK - 零依赖的纯契约层，现代化架构，包含ITool、IToolPlugin等核心接口，以及调试窗口基类和控件库</Description>\r\n    <Copyright>Copyright (c) 2026 SunEyeVision</Copyright>\r\n    <PackageTags>vision;plugin;sdk;machine-vision;image-processing;wpf</PackageTags>\r\n    <PackageReadmeFile>README.md</PackageReadmeFile>\r\n    <PackageLicenseExpression>MIT</PackageLicenseExpression>\r\n    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>\r\n\r\n    <!-- 包输出配置 -->\r\n    <PackageOutputPath>$(SolutionDir)nupkg\\</PackageOutputPath>\r\n    <IncludeSymbols>true</IncludeSymbols>\r\n    <SymbolPackageFormat>snupkg</SymbolPackageFormat>\r\n\r\n    <!-- 源码链接支持 -->\r\n    <PublishRepositoryUrl>true</PublishRepositoryUrl>\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O10",
+      "stepId": "script-pool",
+      "title": "脚本池淘汰先退役、后等使用者释放",
+      "route": "原方案租约整改",
+      "change": "复用现有LRU上限，GetOrCreate改为获取使用租约；淘汰/Invalidate/Clear只移出新准入并标退役，最后租约退出再释放沙箱。并发GetOrAdd工厂多建候选须释放未采用对象；退役错误可观察，容量占用包含尚在使用的退役实例。",
+      "accept": "长脚本运行时触发LRU/Invalidate/Clear，同key并发创建，释放失败与关闭；在用实例不被提前Dispose，未采用候选无泄漏，容量超限有背压政策。",
+      "why": "现有GetOrCreate返回裸Sandbox，淘汰直接Dispose，没有显式活跃使用计数；已有LRU不能等同在用生命周期安全。实际运行是否击中需另验，不宣称已复现。",
+      "fact": "MaxResident=16，超过上限按LastUsed淘汰并Dispose；GetOrCreate返回裸Sandbox，未记录在用计数，Invalidate/Clear也未等待在途。ConcurrentDictionary的工厂可能被并发调用多次，不能沿注释声称只创建一次。当前未找到外层对Clear/Invalidate的调用，最终进程回收不能代替逐会话合同。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs",
+        "token": "public static ScriptSandbox GetOrCreate",
+        "line": 42,
+        "sha256": "fc1f22f32b648e8735c2060f5475abadc29c2e6a2d3d729296e404120a5a9289",
+        "snippet": "        public static ScriptSandbox GetOrCreate(string cacheKey, string? refDir)\r\n        {\r\n            var slot = _pool.GetOrAdd(cacheKey, k => new SandboxSlot(new ScriptSandbox($\"ScriptSandboxPool_{k[..8]}\", refDir)));\r\n            slot.LastUsed = DateTime.UtcNow;\r\n            EvictIfNeeded();\r\n            return slot.Sandbox;\r\n        }\r\n\r\n        /// <summary>\r\n        /// 使指定缓存键的沙箱失效并卸载（代码/引用配置变化需重建时显式调用）。\r\n        /// </summary>\r\n        /// <param name=\"cacheKey\">要失效的缓存键</param>\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O12",
+      "stepId": "log-flush",
+      "title": "Flush返回已处理屏障，而非固定延迟",
+      "route": "原方案可靠性整改",
+      "change": "为入队序号建立高水位屏障，Flush捕获调用时目标并等待队列处理与指定writer确认；明确只完成应用缓冲还是要求文件Flush/耐久性，写入失败、丢弃及取消分别返回。禁止UI同步等待造成Dispatcher互锁。",
+      "accept": "慢writer超过10ms、持续新日志、writer异常、队列丢弃、取消与Dispose竞争；返回只涵盖约定水位，不把空等时长或UI已显示当文件已落盘。",
+      "why": "当前FlushAsync释放信号后Delay(10)，没有处理或writer确认。可直接设计自有可靠Flush，不需要VM日志native证据；物理耐久性须另定义和验证。",
+      "fact": "FlushAsync只是Release信号后Task.Delay(10)。后台可能正被UILogWriter的Dispatcher.Invoke阻塞；DispatchToWriters串行调用写入器，持有读锁。FileLogWriter写失败catch吞错，调用方没有逐写入器确认，不能称Flush完成即已可靠落盘。",
+      "source": {
+        "path": "src/Plugin.SDK/Logging/VisionLogger.cs",
+        "line": 421,
+        "token": "public async Task FlushAsync()",
+        "sha256": "a0b443f78f0d5ea95e585ed9386661e21cc99df89fe9ae7be52a01a96aef33ff",
+        "snippet": "        public async Task FlushAsync()\r\n        {\r\n            _flushSignal.Release();\r\n            await Task.Delay(10); // 给处理任务一点时间\r\n        }\r\n\r\n        /// <summary>\r\n        /// 获取统计信息\r\n        /// </summary>\r\n        public (long Total, long Dropped, int QueueSize, int Writers) GetStatistics()\r\n        {\r\n            return (TotalEnqueued, TotalDropped, QueueSize, WriterCount);\r\n        }\r\n\r\n        /// <summary>\r\n        /// 获取写入器列表\r\n        /// </summary>\r\n        public IReadOnlyList<string> GetWriterNames()\r\n        {\r\n            _writersLock.EnterReadLock();\r\n            try\r\n            {\r\n                return _writers.Select(w => w.Name).ToList();\r\n            }\r\n            finally\r\n            {\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O12",
+      "stepId": "log-owner",
+      "title": "日志显示清空与持久化排空分开",
+      "route": "原方案退出与背压合同整改",
+      "change": "区分UI聚合器、显示集合和文件writer所有者；显示Clear允许丢弃仅限显示政策，关闭流程先停止新准入并等待需要保存的writer水位，再退订与清UI。逐层列容量和溢出计数，不以显示5000条推断后台队列有界。",
+      "accept": "高峰积压下关闭、UI Clear后文件仍完整、慢writer、重复Dispose、Dispatcher退出及writer失败；丢弃原因可见，持久化失败不冒称全部保存。",
+      "why": "UILogWriter.Dispose退订并Clear聚合器和集合，不能作为文件日志排空证明；UI显示与持久化是不同合同，应保留可清屏功能而非强行把每条UI历史永久保留。",
+      "fact": "显示集合上限5000；VisionLogger另有50000检查/淘汰及TotalDropped，但检查与入队并非单一有界通道。UI聚合_pendingLogs没有显式容量。UILogWriter.Dispose退订并Clear，但Write/WriteBatch未检查_isDisposed；App当前退出链未找到VisionLogger.Flush/Dispose显式调用，Owner仍未闭合。",
+      "source": {
+        "path": "src/UI/Services/Logging/UILogWriter.cs",
+        "line": 144,
+        "token": "public void Dispose()",
+        "sha256": "51f43722331f14fc7025b1956572f4dfea8ed1a8e34b75f0a79fa798c2a7624c",
+        "snippet": "        public void Dispose()\r\n        {\r\n            if (_isDisposed)\r\n                return;\r\n\r\n            _isDisposed = true;\r\n\r\n            // 取消订阅聚合器事件\r\n            _eventAggregator.LogsAggregated -= OnLogsAggregated;\r\n\r\n            // 清空聚合器\r\n            _eventAggregator.Clear();\r\n\r\n            // 取消订阅集合变更事件\r\n            _logEntries.CollectionChanged -= OnLogEntriesCollectionChanged;\r\n\r\n            // 清空日志\r\n            Clear();\r\n        }\r\n\r\n        #endregion\r\n\r\n        #region 公共方法\r\n\r\n        /// <summary>\r\n        /// 清空日志\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O09",
+      "stepId": "capture",
+      "title": "公开单帧采集纳入统一用途准入",
+      "route": "原方案门禁整改",
+      "change": "保留按相机串行的_captureGates和已有连接借用规则，统一预览/流程/公开单帧的用途lease准入。租约与连接所有者分离，取消等待不取消别人采集，避免已持有lease的内部路径重复获取形成死锁。",
+      "accept": "预览中公开Capture、流程中Capture、同设备两次单帧、不同设备并行、等待时取消及临时连接失败；无并发用途冲突，不关闭设备列表拥有的连接。",
+      "why": "当前CaptureAsync有信号量并借用existing会话，但该路径未取得与预览/流程相同的用途准入；不是完全没有锁，也不必等待VM相机管理实现。",
+      "fact": "CaptureAsync串行化单帧请求，复用已连接会话或临时打开；它没有调用AcquireCaptureLease。SDK读锁不等于业务用途互斥。",
+      "source": {
+        "path": "src/DeviceDriver/Cameras/Contracts/CameraRuntimeManager.cs",
+        "line": 162,
+        "token": "public async Task<CameraFrame> CaptureAsync",
+        "sha256": "07407900baca2a4702e7af87fa86e1a0a3cbd0b4047c6f9770e58f233b56f6ed",
+        "snippet": "    public async Task<CameraFrame> CaptureAsync(\n        CameraCaptureRequest request,\n        CancellationToken cancellationToken)\n    {\n        ArgumentNullException.ThrowIfNull(request);\n        var gate = _captureGates.GetOrAdd(request.CameraRef.Value, _ => new SemaphoreSlim(1, 1));\n        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);\n        try\n        {\n            // 已由设备列表连接的会话归应用所有；本次取帧绝不能关闭它。\n            if (_sessions.TryGetValue(request.CameraRef.Value, out var existing))\n                return await CaptureConfiguredFrameAsync(existing, request, cancellationToken).ConfigureAwait(false);\n\n            await using var temporary = await OpenAsync(\n                request.CameraRef,\n                CameraAccessMode.Exclusive,\n                new CameraConnectionOptions { Timeout = request.Timeout },\n                cancellationToken).ConfigureAwait(false);\n            return await CaptureConfiguredFrameAsync(temporary, request, cancellationToken).ConfigureAwait(false);\n        }\n        finally\n        {"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O09",
+      "stepId": "buffer",
+      "title": "保留已证复制边界，新增格式必须真转换",
+      "route": "保留已实现机制＋受控拓展",
+      "change": "保持SDK缓冲在try/finally内复制到自有bytes后再归还的边界，不为追求零拷贝直接外传厂商指针。当前只放行Mono8/BGR8 Packed；新增Bayer、RGB、高位深或padding需逐格式转换和明确行步长/长度，源格式与输出格式分开记录。",
+      "accept": "正常复制、空指针、长度溢出、不支持格式、复制异常及下游保留帧；SDK缓冲归还一次，输出像素不随SDK复用改变。实机长时取流和格式支持另行验收。",
+      "why": "源码Marshal.Copy后构造自有MvsVisionImage并finally归还缓冲，已有所有权隔离不能误判缺失。这里无需借鉴未知VM零拷贝机制；运行与厂商归还失败语义仍未验证。",
+      "fact": "MVS取得厂商缓冲后复制到byte[]，finally归还SDK缓冲。后续CameraFrame拥有图像；显示位图与算法输出仍是别的寿命。",
+      "source": {
+        "path": "src/DeviceDriver/Cameras/Hikvision/Mvs/MvsCameraAdapter.cs",
+        "line": 157,
+        "token": "Marshal.Copy",
+        "sha256": "bc5b365c37e00866c1973c0f9ced07bf69ff53e1880636ff255d9dae5c489257",
+        "snippet": "                Marshal.Copy(frame.pBufAddr, bytes, 0, length);\n                // 长度不能区分 Mono8 与 Bayer8，也不能区分 RGB 与 BGR。\n                // 首版只放行已明确映射的原生格式，其余格式需单独做真实转换。\n                var pixelCount = checked((long)info.nWidth * info.nHeight);\n                var pixelType = info.enPixelType.ToString();\n                int channels;\n                if (pixelType.EndsWith(\"Mono8\", StringComparison.OrdinalIgnoreCase) && length == pixelCount)\n                    channels = 1;\n                else if (pixelType.EndsWith(\"BGR8_Packed\", StringComparison.OrdinalIgnoreCase) && length == pixelCount * 3)\n                    channels = 3;\n                else\n                    throw new CameraAdapterException(CameraErrorCode.ParameterUnsupported,\n                        $\"暂不支持相机像素格式 {pixelType}（{length} 字节）；请在相机设置中选择 Mono8 或 BGR8 Packed。\");\n                var frameIndex = Interlocked.Increment(ref _streamFrameCount);\n                var previousTimeouts = Interlocked.Exchange(ref _consecutiveNoDataCount, 0);\n                if (previousTimeouts > 0)\n                    LogCamera(LogLevel.Info, $\"取帧恢复 frame={info.nFrameNum} consecutiveNoDataBeforeRecovery={previousTimeouts}\");\n                if (frameIndex == 1 || frameIndex % 120 == 0)\n                    LogCamera(LogLevel.Info,\n                        $\"取帧成功 frame={info.nFrameNum} streamFrameIndex={frameIndex} size={info.nWidth}x{info.nHeight} pixelType={info.enPixelType} bytes={length} channels={channels} sampleMean8={CalculateSampleMean(bytes):F2} sdkWaitMs={captureTimer.Elapsed.TotalMilliseconds:F1}\");\n                var image = new MvsVisionImage((int)info.nWidth, (int)info.nHeight, channels, bytes);\n                return new CameraFrame(Descriptor.CameraRef, info.nFrameNum, DateTimeOffset.UtcNow, image,"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O09",
+      "stepId": "support",
+      "title": "相机支持清单按实际装配与验收分层",
+      "route": "原方案部署合同补齐",
+      "change": "默认装配清单以MvsCameraAdapterFactory及发现provider为事实，分别列源码存在、默认接入、发布依赖闭合、实机通过四个状态。其他厂商按需求逐一适配，不因有目录或VM支持就宣称自研已支持。",
+      "accept": "干净机器SDK/native依赖、枚举/连接/断线/重连、软件与硬触发、像素格式、停止和释放逐型号记录；未知型号保持未验收，不能用MVS一台验收覆盖所有厂商。",
+      "why": "CameraRuntimeComposition默认只装配MVS工厂和发现器，可直接确定默认支持入口；型号与SDK实机支持不能靠静态文档证明。",
+      "fact": "默认装配仅注册MVS发现和工厂；SDK引用有安装路径条件。存在模拟驱动源码不代表默认产品已启用。",
+      "source": {
+        "path": "src/DeviceDriver/Cameras/CameraRuntimeComposition.cs",
+        "line": 18,
+        "token": "new MvsCameraAdapterFactory",
+        "sha256": "f9a42a43596a624c9cdb56c15ebbc57ed7109a7f36b4d110401fdc8f49a4020c",
+        "snippet": "            new MvsCameraAdapterFactory(MvsDiscovery)\n        });\n        Discovery = new CameraDiscoveryCoordinator(new ICameraDiscoveryProvider[]\n        {\n            MvsDiscovery\n        });\n    }\r\n\r\n    public CameraRuntimeManager Runtime { get; }\n    public CameraDiscoveryCoordinator Discovery { get; }\n    public MvsCameraDiscoveryProvider MvsDiscovery { get; }\n\r\n    public async ValueTask DisposeAsync() => await Runtime.DisposeAsync().ConfigureAwait(false);\r\n}\r\n"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O09",
+      "stepId": "comm-retire",
+      "title": "通信退役Task完成不等于底层释放成功",
+      "route": "原方案状态与诊断整改",
+      "change": "退役返回结构化结局或抛可观察错误，不用吞掉Close/Dispose异常后发布Disconnected当成功。按设备代际保留失败与隔离状态，明确允许重连的条件；重复断开等待同一退役，旧结局不能覆盖新会话状态。",
+      "accept": "Close失败、Dispose失败、两者失败、重复Disconnect、新会话并发连接及迟到关闭通知；失败被记录，资源未知状态不得标可安全复用，成功无重复释放。",
+      "why": "应复用已有_retirements及代际/状态检查，重点是退役内部错误可见性；不是重新发明通信运行时，也无需VM析构材料才修误报。",
+      "fact": "DisposeClosedSessionAsync吞Dispose异常并只记日志；Disconnect随后发布Disconnected，ConnectCore用retirement.IsCompleted允许重连。失败Task同样会IsCompleted，单纯删catch不能修准入；物理冲突尚未故障验证。",
+      "source": {
+        "path": "src/DeviceDriver/Communications/Runtime/CommunicationRuntimeManager.cs",
+        "line": 424,
+        "token": "private static async Task DisposeClosedSessionAsync",
+        "sha256": "dba809fe41d0ce4c84e1dc39680b7f7616b96f34a3aaeb3412fe92252d6aaace",
+        "snippet": "    private static async Task DisposeClosedSessionAsync(ICommunicationAdapter session, string communicationId)\r\n    {\r\n        try { await session.DisposeAsync().ConfigureAwait(false); }\r\n        catch (Exception ex)\r\n        {\r\n            VisionLogger.Instance.Log(LogLevel.Warning,\r\n                $\"释放已断线通讯会话失败：设备={communicationId}, 错误={ex.Message}\",\r\n                \"CommunicationRuntime\", ex, LogTarget.File);\r\n        }\r\n    }\r\n\r\n    private static void ValidateSupportedSettings(Communication communication)\r\n    {\r\n        if (communication.ProtocolKey is not (\"tcp-client\" or \"tcp-server\" or \"udp\" or \"serial\" or \"modbus\" or \"modbus-tcp\" or \"modbus-rtu\" or \"s7\" or \"opcua\" or \"cip\"))\r\n            throw new NotSupportedException($\"{communication.ProtocolDisplayName} 的真实协议驱动尚未接入。\");\r\n        if (communication.ProtocolKey == \"opcua\")\r\n        {\r\n            if (!Uri.TryCreate(communication.EndpointUrl, UriKind.Absolute, out var endpoint) || endpoint.Scheme != \"opc.tcp\")\r\n                throw new ArgumentException(\"OPC UA 服务端点必须是有效的 opc.tcp:// URL。\", nameof(communication));\r\n        }\r\n        else if (communication.ProtocolKey == \"cip\")\r\n        {\r\n            if (string.IsNullOrWhiteSpace(communication.Host)) throw new ArgumentException(\"EtherNet/IP CIP 目标 IP 不能为空。\", nameof(communication));\r\n            ValidatePort(communication.Port, \"EtherNet/IP CIP 目标端口\");\r\n        }\r\n        else if (communication.ProtocolKey == \"tcp-client\")\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O09",
+      "stepId": "comm-response",
+      "title": "自动响应FIFO需要容量与过期策略",
+      "route": "原方案背压整改，策略需产品确认",
+      "change": "保留每设备串行顺序与配置version/生命周期检查，将无界任务尾链改为有界队列或明确拒绝准入；计数/字节/最长等待、过期、取消与关闭排空分别定义。状态快照可合并与业务ACK不可丢弃分通道，不一律丢旧或无限重试。",
+      "accept": "慢发送下突发事件、长延迟响应、配置刷新、设备断开与重连、关闭、容量满及过期；队列资源有界，丢弃或拒绝有诊断，旧代际不向新会话发送。",
+      "why": "QueueResponse把任务接到previous尾部，已有版本和取消检查；缺的是积压容量与有效期合同。工作流忙则拒绝机制不等于这个响应通道已有背压。",
+      "fact": "工作流触发忙则跳过；状态响应每设备responseTails串行Task链，每条Track加入_tasks，未见容量/合并/TTL。已有配置version与设备lifetime检查，不能说全无代次；被动接收另有有界缓冲和游标，不是同一队列。",
+      "source": {
+        "path": "src/UI/Services/Communication/CommunicationAutomationService.cs",
+        "line": 319,
+        "token": "private void QueueResponse",
+        "sha256": "b744370248e1a0510fe963f8cac39f4461982895cc828365eb6c455f109ef2d9",
+        "snippet": "    private void QueueResponse(CommunicationResponseDefinition configured, string content, string? id, double delay = 0)\r\n    {\r\n        if (_disposed || !configured.Enabled) return;\r\n        if (!_devices.TryGetValue(configured.DeviceId, out var device)) { Warn(\"响应绑定设备已失效，未发送。\"); return; }\r\n        var config = Copy(configured);\r\n        var token = _lifetime.Token;\r\n        var version = _version;\r\n        var previous = _responseTails.GetValueOrDefault(device.Id, Task.CompletedTask);\r\n        _responseTails[device.Id] = Track(async () =>\r\n        {\r\n            await previous.ConfigureAwait(false);\r\n            if (!double.IsFinite(delay) || delay < 0 || delay > 86400) throw new FormatException(\"响应延迟应在 0～86400 秒之间。\");\r\n            if (delay > 0) await Task.Delay(TimeSpan.FromSeconds(delay), token).ConfigureAwait(false);\r\n            token.ThrowIfCancellationRequested();\r\n            lock (_gate) if (version != _version) return;\r\n            // Resolve outside the automation gate; the host owns the device policy gate.\r\n            var deviceToken = DeviceLifetimeReader?.Invoke(device.Id) ?? CancellationToken.None;\r\n            using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, deviceToken);\r\n            cancellation.Token.ThrowIfCancellationRequested();\r\n            lock (_gate) if (version != _version) return;\r\n            if (!device.IsEnabled || !_runtime.IsConnected(device.Id)) throw new InvalidOperationException(\"响应设备未连接，未发送。\");\r\n            var sender = new CommunicationSendEventService(_runtime);\r\n            var plan = sender.Prepare(CommunicationResponseFormatter.Create(config, device, content, id), device);\r\n            token.ThrowIfCancellationRequested();\r\n            if (await sender.SendAsync(plan, cancellation.Token).ConfigureAwait(false) == 0) throw new InvalidOperationException(\"响应无接收端。\");\r\n        });\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O01",
+      "stepId": "history-failure",
+      "title": "撤销失败不能静默丢失历史",
+      "route": "原方案事务整改",
+      "change": "命令先检查前置条件；Undo/Redo成功后再迁移历史栈。对可能部分修改的复合命令定义补偿或进入显式故障状态，不能只把已弹出的命令塞回栈就宣称模型回滚。状态事件区分命令失败和通知失败。",
+      "accept": "Undo/Redo在第一步与中途抛错、执行新命令清Redo、通知订阅者异常；历史与模型一致或显式标故障，不能继续展示可安全撤销的假状态。",
+      "why": "当前Pop后调用再Push，异常导致栈迁移中断；这是自研命令事务问题，与VM是否使用同类命令框架无关。",
+      "fact": "Execute先改模型后入栈；Undo/Redo先Pop再执行，成功才Push另一栈。集合事件或命令中途异常可能留下部分模型且栈项已丢。 外层弹窗和绑定对账自己的补偿不等外层画布事务回滚，未做故障注入。",
+      "source": {
+        "path": "src/UI/Features/WorkflowUI/Commands/CommandManager.cs",
+        "line": 49,
+        "token": "public void Undo()",
+        "sha256": "b5d0ee0329743785153205a30778f3e621cf082a45ccc82cfa1f3da1f1821ba1"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O02",
+      "stepId": "call-cycle",
+      "title": "子程序引用环与画布连线环分别校验",
+      "route": "原方案合同拓展",
+      "change": "在方案快照建立工作流调用图，对跨流程引用做DFS颜色/路径检测，给出A→B→A诊断；运行时保留调用栈与深度门禁，避免编辑验证被旧文件或动态入口绕过。递归若将来有业务需求须单独定义，不隐式允许。",
+      "accept": "直接自身、两层互调、三层环、菱形无环、缺引用、运行中方案修改隔离；画布无环仍可能有调用环，两个校验分别验。",
+      "why": "定义验证现有自身引用与不存在引用检查，DetectCycles处理工作流连接；这段代码不提供跨工作流环证明。需要自有调用安全合同，不等VM调度源码。",
+      "fact": "当前校验拒自身调用和目标不存在，DetectCycles只查本图Nodes/Connections；CreateChildScope只核父RunId归属。A→B→A两图本身无连线环仍逐图通过；CallStack字段未作为当前执行器门禁，未声称已观察栈溢出。",
+      "source": {
+        "path": "src/Workflow/WorkflowDefinitionService.cs",
+        "line": 173,
+        "token": "if (string.Equals(node.SubroutineId, workflow.Id, StringComparison.Ordinal))",
+        "sha256": "388f2fffbbb3fcda37de9f7ec4367aa8267408eb29d54f410401c0337df5e433",
+        "snippet": "                if (string.Equals(node.SubroutineId, workflow.Id, StringComparison.Ordinal))\r\n                    errors.Add($\"节点 {node.Name} 不能引用自身工作流。\");\r\n                else if (workflowResolver != null && workflowResolver(node.SubroutineId) == null)\r\n                    errors.Add($\"节点 {node.Name} 引用了不存在的子程序工作流 {node.SubroutineId}。\");\r\n            }\r\n        }\r\n\r\n        if (errors.Count == 0 && workflow.DetectCycles().Count > 0)\r\n            errors.Add(\"工作流连接存在循环依赖。\");\r\n\r\n        return errors;\r\n    }\r\n}\r\n"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O03",
+      "stepId": "child-globals",
+      "title": "子调用明确继承哪一份全局快照",
+      "route": "原方案数据合同整改",
+      "change": "核对ExecuteWorkflowCore全局参数与子调用传null路径，显式传递根执行只读快照；普通全局、局部参数、扩展上下文分类型，不把父节点ID字典当全局快照。定义子调用写回政策和图像/数组所有权，不用浅拷贝冒充隔离。",
+      "accept": "父子读取同版本、执行中UI改变量、可变数组/图像、同名局部遮蔽、并行子调用与取消；禁止因缺值静默用设计默认值。",
+      "why": "子调用闭包传extendedCtx但全局参数为null，需确认并显式约定继承；现有Scope可复用，不能说完全没有上下文模型。",
+      "fact": "委托调用ExecuteWorkflowCore时globalVariables固定null，子Context.GlobalVariables因此为空；__GlobalVars__合成与脚本请求都读取该字段。父输入contextVariables仍正常，不与显式端口传参或变量接收服务混为一谈。",
+      "source": {
+        "path": "src/Workflow/WorkflowExecutionEngine.cs",
+        "line": 898,
+        "token": "executor.ExecuteSubWorkflowAsync = (subId, img, ctx) =>",
+        "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+        "snippet": "                    executor.ExecuteSubWorkflowAsync = (subId, img, ctx) =>\r\n                    {\r\n                        var extendedCtx = ctx != null\r\n                            ? new Dictionary<string, object>(ctx)\r\n                            : new Dictionary<string, object>();\r\n                        extendedCtx[SubroutineContextKeys.ParentNodeId] = node.Id;\r\n                        var childScope = session.CreateChildScope(subId, scope.RunId, node.Id);\r\n                        return ExecuteWorkflowCore(\r\n                            session,\r\n                            childScope,\r\n                            subId,\r\n                            img,\r\n                            null,\r\n                            extendedCtx,\r\n                            request,\r\n                            isSubworkflow: true);\r\n                    };\r\n                }\r\n\r\n                target.AddNode(executionNode);\r\n            }\r\n\r\n            // 复制连接关系（节点 ID 不变，直接复制）\r\n            foreach (var conn in source.Connections)\r\n            {\r\n                try\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O07",
+      "stepId": "sub-identity",
+      "title": "同一子程序多次调用的结果不得按裸节点ID混淆",
+      "route": "原方案结果合同整改",
+      "change": "保留现有子Scope，以RunId/ScopeId/NodeId及必要迭代身份定位结果；根展示采用显式当前Scope投影，不把全部子节点写入裸NodeId字典当唯一真相。绑定、树、图像和历史一起迁移，保留兼容读取边界。",
+      "accept": "同一子程序被两个父节点调用、循环多轮、重复NodeId、切Scope、失败取消与旧结果选中；树与图像高亮必须来自相同结果身份。",
+      "why": "已有CreateChildScope，但子结果回填RootContext.SetNodeResult以kvp.Key拍平；补显示投影而非否认现有Scope，具体冲突条件应以调用场景验收。",
+      "fact": "CreateChildScope有独立RunId及ConsumerScope，子结果却为下钻显示按原kvp.Key（NodeId）写RootContext。两个父调用同一子图内部ID相同，根投影可覆盖，循环也仅保留最后一轮；这证明缓存键丢调用身份，不证明子图算法上下文本身共用。",
+      "source": {
+        "path": "src/Workflow/WorkflowExecutionEngine.cs",
+        "line": 713,
+        "token": "session.RootContext.SetNodeResult(kvp.Key, kvp.Value);",
+        "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+        "snippet": "                    if (session.RootContext != null)\r\n                    {\r\n                        foreach (var kvp in subResult.NodeResults)\r\n                        {\r\n                            session.RootContext.SetNodeResult(kvp.Key, kvp.Value);\r\n                        }\r\n                    }\r\n\r\n                    return subResult;\r\n                }\r\n                catch (OperationCanceledException)\r\n                {\r\n                    scope.State = WorkflowExecutionState.Stopped;\r\n                    throw;\r\n                }\r\n                catch\r\n                {\r\n                    scope.State = WorkflowExecutionState.Error;\r\n                    throw;\r\n                }\r\n                finally\r\n                {\r\n                    scope.Context = null;\r\n                }\r\n            }\r\n\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O05",
+      "stepId": "sub-delay",
+      "title": "子程序循环间隔可取消且不阻塞等待",
+      "route": "原方案异步整改",
+      "change": "沿执行接口传递取消令牌，改为异步可取消间隔并传播到子调用；不能只把Delay加token后在同步UI路径继续阻塞。明确取消时是否保留已完成轮结果、停止发布和清理累积显示的时点。",
+      "accept": "长间隔中取消、间隔为0、子调用中取消、取消与正常结束竞争；无下一轮副作用，终态和已有输出采用政策一致。",
+      "why": "当前Task.Delay无token并GetResult，间隔等待本身不能及时取消；不以此推断所有工作流停止行为，也不承诺硬实时响应。",
+      "fact": "子调用使用Task.Run(async delegate).GetAwaiter().GetResult；循环间隔Task.Delay未传取消令牌。根session取消会进入子图，但间隔本身不可被该令牌唤醒；不能从Task.Run推立即停止。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+        "line": 398,
+        "token": "Task.Delay(config.LoopInterval).GetAwaiter().GetResult();",
+        "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9",
+        "snippet": "                }\r\n\r\n                // ===== 循环间隔 =====\r\n                if (config.LoopInterval > 0)\r\n                    Task.Delay(config.LoopInterval).GetAwaiter().GetResult();\r\n            }\r\n\r\n            return (result, accumulatedOutputs, accumulatedDisplay);\r\n        }\r\n\r\n        /// <summary>\r\n        /// 构建累积显示图形：仅处理勾选 IsAccumulated 的显示项，每轮把该轮图形追加到累积 collector。\r\n        /// 按轮次对显示项样式做 HSL 色相渐变（第 0 轮 → 第 N 轮），使多轮叠加的图形能按轨迹区分（对齐 Halcon 多色叠加）。\r\n        /// </summary>\r\n        private static void BuildAccumulatedDisplay(\r\n            SubroutineParameters parameters,\r\n            Dictionary<string, ToolResults> iterToolResults,\r\n            ParameterResolver resolver,\r\n            DisplayCollector accumulatedDisplay,\r\n            int iterationIndex,\r\n            int totalRounds)\r\n        {\r\n            if (parameters.DisplayConfigs.Count == 0 || iterToolResults.Count == 0)\r\n                return;\r\n\r\n            foreach (var displayItem in parameters.DisplayConfigs)\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O10",
+      "stepId": "script-cache",
+      "title": "脚本引用指纹要反映实际编译依赖",
+      "route": "原方案缓存整改",
+      "change": "复用现有代码与宿主指纹，在解析后的引用上登记稳定标识、MVID或内容哈希及编译选项/SDK合同版本；名称列表排序仍保留，但不能作为内容唯一身份。固定每次编译的引用快照，避免计算key后文件替换。",
+      "accept": "引用同名同版本内容变化、路径变化但内容一致、引用顺序、缺依赖、宿主合同变化和并发替换；命中产物与实际引用一致，哈希成本另测不预称更快。",
+      "why": "当前引用列表仅拼名称，宿主指纹仅名称版本；不能据此证明同名依赖内容变化会使缓存失效。需正向完善缓存身份，不等待VM脚本实现。",
+      "fact": "编译键是代码哈希、宿主名称版本指纹和勾选引用名指纹；引用名列表未包含文件内容/路径/版本。相同文件名替换内容时键仍相同，不能保证重新编译或加载。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+        "token": "internal static string ComputeRefListFingerprint",
+        "line": 387,
+        "sha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+        "snippet": "        internal static string ComputeRefListFingerprint(IReadOnlyList<string>? assemblyNames)\r\n        {\r\n            if (assemblyNames == null || assemblyNames.Count == 0)\r\n                return \"none\";\r\n            var sb = new StringBuilder();\r\n            foreach (var name in assemblyNames.OrderBy(n => n, StringComparer.OrdinalIgnoreCase))\r\n                sb.Append($\"{name}|\");\r\n            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];\r\n        }\r\n\r\n        /// <summary>\r\n        /// 按缓存键读取已编译结果（不含缓存写入逻辑）。\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O09",
+      "stepId": "stop",
+      "title": "相机停止失败不能提前释放采集占用",
+      "route": "原方案收尾整改",
+      "change": "分开观察StopStreamAsync与_streamTask的结局，即使停止命令异常也继续等待或进入隔离状态；只有确认生产者不再回调才归还采集lease，超时不是成功排空。聚合主错误与收尾错误，重复Dispose调用应共享可等待的退役结局。",
+      "accept": "停止命令抛非取消异常且流仍在运行、流自身异常、正常停止、超时、并发二次Dispose；未排空不得允许新用途抢占，迟到帧有明确拒收与释放路径。",
+      "why": "源码中停止异常会跳过await流任务，却进入finally释放lease；这是自有时序缺陷。厂商停止能否强制中断另需设备材料，不猜测其保证。",
+      "fact": "Feed正常先停流再等流任务；但非取消异常会跳过后续await，finally仍释放用途租约。预览也有停止失败后的释放路径。",
+      "source": {
+        "path": "src/UI/Services/Workflow/CameraWorkflowFrameFeed.cs",
+        "line": 206,
+        "token": "try { await _session.Adapter.StopStreamAsync",
+        "sha256": "52ce344fdc3726ba15eb56e9ee5ebfdc4d0e07323ef30a1c8a206ff3fa5d3de5",
+        "snippet": "                try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }\n                catch (OperationCanceledException) { }\n                try { await _streamTask.ConfigureAwait(false); }\n                catch (OperationCanceledException) { }\n            }\n        }\n        finally\n        {\n            pending?.Dispose();\n            _streamCancellation.Dispose();\n            _captureLease.Dispose();\n        }\n    }\n}\n"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O09",
+      "stepId": "service-finally",
+      "title": "通信服务失败不应跳过下层退役",
+      "route": "原方案收尾整改",
+      "change": "冻结服务与运行时引用并禁止新准入；分别尝试服务和运行时退役，记录每层结局并聚合错误。是否可继续释放下层须由上层在途使用合同决定，不能只加finally就销毁仍在使用的运行时；未排空先隔离。",
+      "accept": "服务退役失败、运行时失败、两者失败、重复关闭和迟到请求；所有层结局可观察，未知在途不伪报已安全关闭，也不吞首个异常。",
+      "why": "DisposeCommunicationRuntimeAsync顺序await且失败跳过后续代码。自研需要收尾协调和错误可见性，不依赖VM模块最终析构。",
+      "fact": "该方法先await _communicationService.DisposeAsync后才释放_communicationRuntime；前者抛错则后者本次不会执行。App.OnExit分别catch通讯与相机，故相机仍可继续释放，不能误说所有服务都被跳过。OnExit同步GetResult也不等完整异步退出协调器。",
+      "source": {
+        "path": "src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs",
+        "line": 145,
+        "token": "public static async ValueTask DisposeCommunicationRuntimeAsync()",
+        "sha256": "95a1a9a2532653831cf510332a33a21279ee2725bc17a5b2945295ab4e603927",
+        "snippet": "        public static async ValueTask DisposeCommunicationRuntimeAsync()\r\n        {\r\n            if (_communicationService is not null)\r\n            {\r\n                await _communicationService.DisposeAsync().ConfigureAwait(false);\r\n                _communicationService = null;\r\n            }\r\n            if (_communicationRuntime is null) return;\r\n            await _communicationRuntime.DisposeAsync().ConfigureAwait(false);\r\n            _communicationRuntime = null;\r\n        }\r\n\r\n        public static async ValueTask DisposeCameraRuntimeAsync()\r\n        {\r\n            if (_cameraRuntime is null)\r\n                return;\r\n            await _cameraRuntime.DisposeAsync().ConfigureAwait(false);\r\n            _cameraRuntime = null;\r\n        }\r\n\r\n        /// <summary>\r\n        /// 初始化所有服务。\r\n        /// </summary>\r\n        public static void InitializeServices()\r\n        {\r\n            // 初始化显示适配器配置。\r\n            NodeDisplayAdapterConfig.Initialize();\r\n\r\n            // 初始化插件日志器 - 让工具项目可以访问全局日志器\r\n            InitializePluginLogger();\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O10",
+      "stepId": "theme",
+      "title": "主题切换失败保留原有效主题",
+      "route": "原方案事务整改",
+      "change": "先构造候选字典并完成现有SDK键校验，再交换资源；资源交换成功后采用_currentTheme。区分应用失败、偏好保存失败和订阅通知失败；资源不可用时不发布成功主题，保留原字典和可重试状态。",
+      "accept": "候选URI加载失败、缺SDK键、Resources为空、偏好写失败、ThemeChanged订阅者抛错；失败保留旧主题，资源/状态/通知一致，设计时与运行时另行授权验收。",
+      "why": "当前先改_currentTheme，且先移旧字典再创建新字典；错误可产生半切换。已有校验值得复用，不能据此称事务已完整。",
+      "fact": "已实现Light/Dark、SdkThemeKeys逐键校验。问题是状态先变、旧字典先删；新字典加载或校验抛错时，没有对应回滚。相同theme再次调用又会提前return。",
+      "source": {
+        "path": "src/UI/Services/ThemeManager.cs",
+        "line": 89,
+        "token": "public void ApplyTheme",
+        "sha256": "3161aec8d823fabe786a8574a41b8d2af23999edc28b89ad13c26a55b2f510da",
+        "snippet": "        public void ApplyTheme(AppTheme theme)\r\n        {\r\n            if (theme == _currentTheme)\r\n            {\r\n                return;\r\n            }\r\n\r\n            _currentTheme = theme;\r\n            ApplyThemeDictionary(theme);\r\n            // 刷新所有已打开弹窗的系统标题栏（切主题瞬间即时跟随）\r\n            WindowTitleBarThemer.UpdateTheme(theme == AppTheme.Dark);\r\n            // 同步 SDK 全局标题栏状态（tools 窗口标题栏跟随主体主题）\r\n            SdkWindowTheme.SetDark(theme == AppTheme.Dark);\r\n\r\n            // 持久化用户选择\r\n            try\r\n            {\r\n                _settings.SetPreference(PreferenceKey, theme.ToString());\r\n            }\r\n            catch (Exception ex)\r\n            {\r\n                _logger.Log(LogLevel.Error, $\"主题偏好持久化失败: {ex.Message}\", \"ThemeManager\", ex);\r\n            }\r\n\r\n            _logger.Log(LogLevel.Info, $\"主题切换为: {theme}\", \"ThemeManager\");\r\n            ThemeChanged?.Invoke(theme);\r\n        }\r\n\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O06",
+      "stepId": "bitmap-copy",
+      "title": "图像复制明确源行步长和显示对象所有权",
+      "route": "原方案正确性整改；后端选型暂缓",
+      "change": "每行按Mat.Step定位源地址，以目标BackBufferStride定位目的地址；通道与深度分别验证。明确实时可变表面与历史独立快照两种返回合同，使用者在同一Dispatcher访问可变位图；池中对象不能默认是独立结果。先核实际调用点再改缓存策略。",
+      "accept": "带padding或子ROI的非连续Mat与紧密Mat结果一致；连续转换同尺寸不同帧时验证历史是否独立，跨线程调用被调度或拒绝，灰度/BGR/BGRA及不支持深度分别验。",
+      "why": "转换器按尺寸格式复用同一WriteableBitmap，逐行源偏移未读取Mat.Step；可确定函数合同风险，但尚不能据此宣称所有主界面路径都受影响或必须更换渲染后端。",
+      "fact": "按宽高/格式缓存并返回同一WriteableBitmap；Gray/BGR/BGRA源行偏移用width乘通道，没有使用Mat.Step。对有行间隔的子矩阵不满足通用转换合同。WorkflowExecutionOrchestrator还顺序转换输出/输入并保留引用，但当前只找到创建，未证活动调用，不能称主运行已发生覆盖。",
+      "source": {
+        "path": "src/UI/Services/Performance/ImageConverterPool.cs",
+        "line": 36,
+        "token": "public BitmapSource ConvertToBitmapSource",
+        "sha256": "d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707",
+        "snippet": "        public BitmapSource ConvertToBitmapSource(Mat mat)\r\n        {\r\n            if (mat == null || mat.Empty())\r\n                throw new ArgumentNullException(nameof(mat));\r\n\r\n            // 确定像素格式\r\n            PixelFormat pixelFormat = GetPixelFormat(mat.Type());\r\n\r\n            // 生成缓存键\r\n            string cacheKey = $\"{mat.Width}_{mat.Height}_{pixelFormat}\";\r\n\r\n            // 尝试从缓存获取WriteableBitmap\r\n            if (!_bitmapCache.TryGetValue(cacheKey, out var writeableBitmap) ||\r\n                writeableBitmap.PixelWidth != mat.Width ||\r\n                writeableBitmap.PixelHeight != mat.Height)\r\n            {\r\n                // 创建新的WriteableBitmap\r\n                writeableBitmap = new WriteableBitmap(mat.Width, mat.Height, 96, 96, pixelFormat, null);\r\n\r\n                // 缓存（如果未达上限）\r\n                if (_bitmapCache.Count < _maxCacheSize)\r\n                {\r\n                    _bitmapCache.TryAdd(cacheKey, writeableBitmap);\r\n                }\r\n            }\r\n\r\n            // 锁定并写入数据\r\n            writeableBitmap.Lock();\r\n\r\n            try\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O12",
+      "stepId": "log-batch-loss",
+      "title": "先修日志批次丢条",
+      "route": "原方案局部整改",
+      "change": "先判断批次容量，再尝试出队；保留未取出的条目供下一批处理，不改变正常消息顺序。",
+      "accept": "以唯一序号提交200、201、401条，跨批收集应无遗漏、无重复；另测清空和退出政策。",
+      "why": "这是布尔条件求值顺序造成的确定缺陷，不依赖VM日志实现。",
+      "fact": "FlushLogs条件按左到右执行：批次已有200条且队列仍有数据时，TryDequeue先取出下一条，随后batch.Count<200为false，刚取出的条目未加入batch。此控制流可静态确认；不是吞吐性能推测。",
+      "source": {
+        "path": "src/UI/Services/Logging/LogEventAggregator.cs",
+        "line": 234,
+        "token": "while (_pendingLogs.TryDequeue(out var entry) && batch.Count < MaxBatchSize)",
+        "sha256": "30d8e076152a4a133d41f1de46891731e8ce6926170ac88c82fbea66392df45f",
+        "snippet": "                while (_pendingLogs.TryDequeue(out var entry) && batch.Count < MaxBatchSize)\r\n                {\r\n                    batch.Add(entry);\r\n                }\r\n\r\n                // 如果还有日志，继续调度\r\n                if (!_pendingLogs.IsEmpty)\r\n                {\r\n                    ScheduleUpdate();\r\n                }\r\n            }\r\n\r\n            // 触发聚合事件（在UI线程上）\r\n            if (batch.Count > 0)\r\n            {\r\n                _dispatcher.BeginInvoke(new Action(() =>\r\n                {\r\n                    LogsAggregated?.Invoke(this, new LogBatchEventArgs(batch));\r\n                }), DispatcherPriority.ContextIdle);\r\n            }\r\n        }\r\n\r\n        #endregion\r\n    }\r\n}\r\n"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O02",
+      "stepId": "sub-status",
+      "title": "修正子程序失败误报成功",
+      "route": "原方案局部整改",
+      "change": "以Success或明确终态决定成功，不用Errors非空作为失败前提；失败无文本补默认诊断，取消独立传播，禁止发布成功结果。",
+      "accept": "覆盖失败且Errors为空/null、有错误文本、成功、取消；父节点终态与子调用一致。",
+      "why": "自研返回结果自身已有Success，VM调度器材料不是修复误报的前提。",
+      "fact": "Run最终仅在!Success且Errors非空时SetError，其余SetSuccess；ExecutionResult.CreateCancelled只填Status/IsStopped/CompletionMessage而不加Errors。若前面输出解析完成，无错误文本的取消会进入成功分支。循环合并初值new ExecutionResult的Success默认false，也不该靠Errors补救聚合状态。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs",
+        "line": 150,
+        "token": "if (!execResult.Success && execResult.Errors != null && execResult.Errors.Any())",
+        "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9",
+        "snippet": "\r\n                result.ExecutedNodeCount = execResult.NodeResults?.Count ?? 0;\r\n                result.SubWorkflowExecutionTimeMs = (long)execResult.ExecutionTime.TotalMilliseconds;\r\n\r\n                if (!execResult.Success && execResult.Errors != null && execResult.Errors.Any())\r\n                {\r\n                    var errorMsg = string.Join(\"; \", execResult.Errors);\r\n                    parameters.LogError($\"子程序执行失败: {errorMsg}\");\r\n                    result.SetError(errorMsg);\r\n                }\r\n                else\r\n                {\r\n                    sw.Stop();\r\n                    result.SetSuccess(sw.Elapsed.TotalMilliseconds);\r\n                    parameters.LogSuccess($\"子程序执行完成: {result.ExecutedNodeCount} 个节点, 耗时 {result.SubWorkflowExecutionTimeMs}ms\");\r\n                }\r\n            }\r\n            catch (Exception ex)\r\n            {\r\n                sw.Stop();\r\n                parameters.LogError($\"子程序异常: {ex.Message}\", ex);\r\n                result.SetError($\"子程序执行异常: {ex.Message}\", ex);\r\n            }\r\n\r\n            return result;\r\n        }\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O10",
+      "stepId": "script-release",
+      "title": "补脚本异常后的清理合同",
+      "route": "原方案局部整改＋生命周期合同",
+      "change": "先定义Init部分成功时的清理义务，再把应执行的Release放到受保护收尾；保留主异常并单独报告清理异常，不在未知所有权上重复释放。",
+      "accept": "Init抛错、Process抛错、Release抛错、正常运行及重复调用；按合同核对清理次数和异常优先级，失败输出不当成功采用。",
+      "why": "当前顺序调用遇异常会跳过Release，已有源码足够证明；清理义务需自有接口明确，不等待VM析构恢复。",
+      "fact": "当前同一try依次Init→Process→Release；Init或Process抛错就直接catch，Release跳过。输入反射失败先记errors，后续仍会尝试执行生命周期。",
+      "source": {
+        "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+        "token": "scriptInstance.Init();",
+        "line": 204,
+        "sha256": "13a19f3fbd96ad924ebb5793117b517f15ca418f081387730af4af1d58031e0b",
+        "snippet": "                scriptInstance.Init();\r\n                scriptInstance.Process();\r\n                scriptInstance.Release();\r\n            }\r\n            catch (Exception ex)\r\n            {\r\n                // 提取用户脚本栈帧（含行号），精确匹配用户类，便于快速定位；无脚本帧则回退完整堆栈文本。\r\n                // 只写 errors（→ CompileErrors → UI 红色展示一次）；不写 _logMessages\r\n                // （用户脚本 LogError 已通过 ScriptContext 回调进日志，避免同一异常重复报告）。\r\n                var detail = ExtractUserScriptFrame(ex, compileResult.EntryClassName!);\r\n                errors.Add($\"脚本执行异常: {detail}\");\r\n            }\r"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    },
+    {
+      "id": "O08",
+      "stepId": "write",
+      "title": "保存前变更活动方案的问题",
+      "route": "原方案事务整改",
+      "change": "在独立候选中做旧设置迁移及目标路径转换；候选序列化、临时文件替换成功后再按明确提交边界采用，文件成功但索引失败应单列状态。",
+      "accept": "对序列化、目录创建、文件写入和替换注入失败；失败时活动对象路径/设置不被预先修改，原文件可读；成功后索引与事件失败不误称文件未保存。",
+      "why": "当前已有临时替换机制；需改的是候选与活动对象提交边界，不必恢复VM私有方案格式。",
+      "fact": "文件不直接截断旧目标，这是已有保护。但solution.FilePath和communication.Settings.Remove在写入之前发生；后续失败没有对应恢复内存的finally。不能把磁盘替换保护说成整个保存事务已原子。",
+      "source": {
+        "path": "src/Workflow/SolutionRepository.cs",
+        "line": 529,
+        "token": "communication.Settings.Remove(\"autoConnect\")",
+        "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+        "snippet": "                communication.Settings.Remove(\"autoConnect\");\r\n            solution.FilePath = filePath;\r\n\r\n            // 确保目录存在\r\n            var directory = Path.GetDirectoryName(filePath);\r\n            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))\r\n            {\r\n                Directory.CreateDirectory(directory);\r\n                _logger.Log(LogLevel.Info, $\"[Save #{callId}] 创建目录: {directory}\", \"SolutionRepository\");\r\n            }\r\n\r\n            var json = JsonSerializer.Serialize(solution, WorkflowSerializationOptions.Default);\r\n\r\n            _logger.Log(LogLevel.Info, $\"[Save #{callId}] 序列化完成，开始写入文件\", \"SolutionRepository\");\r\n\r\n            // Write beside the target so replacement stays on the same volume. Keep the previous\r\n            // solution as a recoverable .bak; a failed serialization/write never truncates it.\r\n            using (JsonDocument.Parse(json)) { }\r\n            var destination = Path.GetFullPath(filePath);\r\n            temporaryPath = Path.Combine(Path.GetDirectoryName(destination)!,\n                $\".{Path.GetFileName(destination)}.{Guid.NewGuid():N}.tmp\");\n            File.WriteAllText(temporaryPath, json);\n            if (File.Exists(destination))\n            {\n                if (!overwrite) throw new IOException(\"目标方案已存在，不会覆盖：\" + destination);\n                AtomicJsonFile.Write(GetRecoveryPath(destination), File.ReadAllText(destination));\n                File.Replace(temporaryPath, destination, null, ignoreMetadataErrors: true);\n            }\n            else\n                File.Move(temporaryPath, destination);"
+      },
+      "status": "正向静态复核；方案未实施，验收未执行"
+    }
+  ],
+  "scope": "已有41整改项中的41项正向复核，非新增项，不代表所有能力本轮复审完成",
+  "productModified": false
+}

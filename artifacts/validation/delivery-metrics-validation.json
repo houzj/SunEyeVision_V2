@@ -1,0 +1,14 @@
+{
+  "reviewed": 20,
+  "analysisAccepted": 20,
+  "analysisCompletionPercent": 100,
+  "pending": [],
+  "evidenceVerified": 24,
+  "evidenceTotal": 42,
+  "evidenceVerificationPercent": 57.1,
+  "categoriesComplete": 0,
+  "categoriesTotal": 7,
+  "C17AttributionFixed": true,
+  "analysisDeltaPercentagePoints": 0,
+  "newEvidenceBaseline": true
+}

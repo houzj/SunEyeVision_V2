@@ -1,0 +1,1 @@
+using System; using System.Text; public static class Probe { public static void Run(){ var text=new StringBuilder(); text.Append("x"); } }

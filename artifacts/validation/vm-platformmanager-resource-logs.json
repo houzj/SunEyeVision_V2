@@ -1,0 +1,110 @@
+[
+  {
+    "rva": "7c9ac8",
+    "text": "CZlibOperator::CompressShareMemoryAndFile"
+  },
+  {
+    "rva": "7cd458",
+    "text": "CFileGroupBase::ReleaseSharedMemory"
+  },
+  {
+    "rva": "7cf4c8",
+    "text": "CFileProcuderHandler::ReleaseSharedMemory"
+  },
+  {
+    "rva": "7d1118",
+    "text": "CFileSolutionHandler::ReleaseSaveSolSharedMemory"
+  },
+  {
+    "rva": "7d7980",
+    "text": "FilterNodeManagerForSP::SPDeleteModule"
+  },
+  {
+    "rva": "7d80f8",
+    "text": "FilterNodeManagerForSP::SPGetBinaryShareMemoryLen"
+  },
+  {
+    "rva": "7d8160",
+    "text": "FilterNodeManagerForSP::SPSetBinaryShareMemory"
+  },
+  {
+    "rva": "7d81f0",
+    "text": "FilterNodeManagerForSP::SPGetBinaryShareMemory"
+  },
+  {
+    "rva": "7d82b8",
+    "text": "FilterNodeManagerForSP::SPReleaseBinaryShareMemory"
+  },
+  {
+    "rva": "7d8e08",
+    "text": "FilterNodeManagerForSP::CloseOneModule"
+  },
+  {
+    "rva": "7da208",
+    "text": "FilterNodeManagerForSP::ReleaseSaveSolSharedMemory"
+  },
+  {
+    "rva": "7da8e8",
+    "text": "FilterNodeManagerForSP::SPReleaseExportGroupSharedMem"
+  },
+  {
+    "rva": "7db258",
+    "text": "FilterNodeManagerForSP::ReleaseExportProceSharedMem"
+  },
+  {
+    "rva": "7db5d8",
+    "text": "FilterNodeManagerForSP::SPReleaseSharedMem"
+  },
+  {
+    "rva": "7e1930",
+    "text": "CiMVSWorkJob::ControlReleaseSaveSolSharedMem"
+  },
+  {
+    "rva": "7e1b78",
+    "text": "CiMVSWorkJob::ControlReleaseExportGroSharedMem"
+  },
+  {
+    "rva": "7e22f0",
+    "text": "CiMVSWorkJob::ControlReleaseExportProceSharedMem"
+  },
+  {
+    "rva": "7e76a8",
+    "text": "CModuleJson::BuildDeleteModule"
+  },
+  {
+    "rva": "7e8860",
+    "text": "CModuleJson::BuildReleaseSaveSolSharedMemory"
+  },
+  {
+    "rva": "7e8b28",
+    "text": "CModuleJson::BuildReleaseExportGroupSharedMem"
+  },
+  {
+    "rva": "7e8de0",
+    "text": "CModuleJson::BuildGetBinaryShareMemory"
+  },
+  {
+    "rva": "7e8e70",
+    "text": "CModuleJson::BuildGetBinaryShareMemoryLen"
+  },
+  {
+    "rva": "7e8ea0",
+    "text": "CModuleJson::ParseGetBinaryShareMemoryLen"
+  },
+  {
+    "rva": "7e8f50",
+    "text": "CModuleJson::ParseGetBinaryShareMemory"
+  },
+  {
+    "rva": "7e8f98",
+    "text": "CModuleJson::BuildReleaseBinaryShareMemory"
+  },
+  {
+    "rva": "7e9230",
+    "text": "CModuleJson::BuildReleaseExportProceSharedMem"
+  },
+  {
+    "rva": "7e9498",
+    "text": "CModuleJson::BuildReleaseSharedMem"
+  }
+]

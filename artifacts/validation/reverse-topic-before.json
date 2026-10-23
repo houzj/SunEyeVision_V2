@@ -1,0 +1,96 @@
+[
+  {
+    "id": "data",
+    "headers": [
+      {
+        "tag": "HEADER",
+        "text": "首页／界面入口\n主界面\n工具窗口\n数据与 Owner\n执行与结果\n范围／兼容\n\n架构逆向与实现对照文档 / 数据类型与数据流：从输入到最后读者\n\n数据类型与数据流：从输入到最后读者\n\n原版事实、当前独立实现、拟议设计与未知分别保留。导航示意属于文档组织，不代表原程序的控件树或完整运行验证。",
+        "top": 0,
+        "bottom": 231.78125
+      },
+      {
+        "tag": "NAV",
+        "text": "首页／界面入口\n主界面\n工具窗口\n数据与 Owner\n执行与结果\n范围／兼容",
+        "top": 22,
+        "bottom": 49.1875
+      },
+      {
+        "tag": "NAV",
+        "text": "首页／界面入口\n主界面\n工具窗口\n数据与 Owner\n执行与结果\n范围／兼容",
+        "top": 6759.28125,
+        "bottom": 6783.078125
+      }
+    ],
+    "figures": [
+      {
+        "tag": "FIGURE",
+        "cls": "relation-part",
+        "top": 763.40625,
+        "text": "已证的数据传递、缓存与释放关系 · 第 1／4 块（原关系 1–5）蓝：原版源码；绿：独立实现；虚线：未知。各行不自动构成连续调用。ModuleParam[string key] → ModuleManager.SetParamValue "
+      },
+      {
+        "tag": "svg",
+        "cls": "relation-svg",
+        "top": 840,
+        "text": "ModuleParam[string key] → ModuleManager.SetParamValue / SetDynamicRunParamValue；Parent.IsOnDispose时不读写；全局模块setter直接SDK写后"
+      },
+      {
+        "tag": "FIGURE",
+        "cls": "relation-part",
+        "top": 1882.875,
+        "text": "已证的数据传递、缓存与释放关系 · 第 2／4 块（原关系 6–10）蓝：原版源码；绿：独立实现；虚线：未知。各行不自动构成连续调用。SharedMemObj / SharedMemoryItemVM.GetDataPtr → 先关闭旧映射"
+      },
+      {
+        "tag": "svg",
+        "cls": "relation-svg",
+        "top": 1959.46875,
+        "text": "SharedMemObj / SharedMemoryItemVM.GetDataPtr → 先关闭旧映射，再取新地址；SetDataPtrBySharedMem先释放旧pin，再GetDataPtr并取DataLen；共享对象为空则清指针"
+      },
+      {
+        "tag": "FIGURE",
+        "cls": "relation-part",
+        "top": 3002.34375,
+        "text": "已证的数据传递、缓存与释放关系 · 第 3／4 块（原关系 11–15）蓝：原版源码；绿：独立实现；虚线：未知。各行不自动构成连续调用。VmIO读取落后 → VmModule.RefreshResult → 最近结果查询 → 转换 → 核心"
+      },
+      {
+        "tag": "svg",
+        "cls": "relation-svg",
+        "top": 3078.9375,
+        "text": "VmIO读取落后 → VmModule.RefreshResult → 最近结果查询 → 转换 → 核心回调消费者；RefreshResult在Root为空、正在报告运行、禁用或执行计数一致时返回；否则查询最近结果，按IsClearLast"
+      }
+    ],
+    "h2": [
+      {
+        "text": "已证的数据传递、缓存与释放关系",
+        "top": 612.8125
+      }
+    ],
+    "overflow": false
+  },
+  {
+    "id": "execution",
+    "headers": [
+      {
+        "tag": "HEADER",
+        "text": "首页／界面入口\n主界面\n工具窗口\n数据与 Owner\n执行与结果\n范围／兼容\n\n架构逆向与实现对照文档 / 执行、状态与后台回流\n\n执行、状态与后台回流\n\n原版事实、当前独立实现、拟议设计与未知分别保留。导航示意属于文档组织，不代表原程序的控件树或完整运行验证。",
+        "top": 0,
+        "bottom": 231.78125
+      },
+      {
+        "tag": "NAV",
+        "text": "首页／界面入口\n主界面\n工具窗口\n数据与 Owner\n执行与结果\n范围／兼容",
+        "top": 22,
+        "bottom": 49.1875
+      },
+      {
+        "tag": "NAV",
+        "text": "首页／界面入口\n主界面\n工具窗口\n数据与 Owner\n执行与结果\n范围／兼容",
+        "top": 1556.28125,
+        "bottom": 1580.078125
+      }
+    ],
+    "figures": [],
+    "h2": [],
+    "overflow": false
+  }
+]

@@ -949,7 +949,12 @@ SplitterPosition = position;
             // The default Tab is created silently before subscriptions; bind its editable definition now.
             if (solutionManager.CurrentSolution == null) SolutionApplication.CreateNew();
             else OnSelectedTabChanged(this, EventArgs.Empty);
-            solutionManager.SolutionSaved += (_, _) => UpdateCurrentSolutionInfo();
+            solutionManager.SolutionSaved += (_, document) =>
+            {
+                foreach (var cached in _workflowDsqsCache.Values)
+                    cached.ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(document);
+                UpdateCurrentSolutionInfo();
+            };
         }
 
         /// <summary>
@@ -1581,6 +1586,11 @@ SplitterPosition = position;
         private void OnCurrentSolutionChanged(object? sender, SolutionMetadataEventArgs e)
         {
             _logger?.LogInfo($"[StartupTrace] MainWindowViewModel.OnCurrentSolutionChanged begin | solutionId={e.SolutionId}", "MainWindowViewModel");
+            foreach (var window in _nodeDebugWindows.Values.Concat(_openDebugWindow == null ? Array.Empty<Window>() : new[] { _openDebugWindow }).Distinct().ToArray())
+                window.Close();
+            _nodeDebugWindows.Clear(); _openDebugWindow = null; _workflowDsqsCache.Clear();
+            _cameraPresentationTimer?.Stop(); _pendingCameraPresentations.Clear();
+            _workflowContextService.Clear(); _executionOrchestrator?.ClearCache(); _nodeResultManager.ClearResultDisplay();
             UpdateCurrentSolutionInfo();
 
             // 加载解决方案到工作流标签页
@@ -1791,6 +1801,12 @@ SplitterPosition = position;
             // 订阅重命名事件（更新引擎中的 Workflow.Name）
             tabViewModel.NameCommitted += OnTabNameCommitted;
 
+            // Candidate reading is pure; UI node materialization happens only after commit.
+            for (var i = 0; i < workflow.Nodes.Count; i++)
+            {
+                workflow.Nodes[i] = WorkflowNode.FromBase(workflow.Nodes[i]);
+                workflow.Nodes[i].OnDeserialized();
+            }
             // Phase 2：通过 SetNodes 直接绑定外部集合中的相同节点实例
             // 节点在 WorkflowJsonConverter.Read 中已被 WorkflowNodeFactory 转换为 WorkflowNode
             // 因此 FromBase 为恒等转换（同一对象），不再创建副本
@@ -1803,6 +1819,7 @@ SplitterPosition = position;
             catch (Exception ex)
             {
                 LogError($"节点绑定失败: {ex.Message}");
+                throw;
             }
 
             LogInfo($"节点加载完成，数量: {tabViewModel.WorkflowNodes.Count}/{workflow.Nodes.Count}");
@@ -1892,6 +1909,12 @@ SplitterPosition = position;
 
                 foreach (var workflow in solution.Workflows)
                 {
+                    for (var nodeIndex = 0; nodeIndex < workflow.Nodes.Count; nodeIndex++)
+                    {
+                        workflow.Nodes[nodeIndex] = WorkflowNode.FromBase(workflow.Nodes[nodeIndex]);
+                        workflow.Nodes[nodeIndex].OnDeserialized();
+                    }
+
                     _logger?.LogInfo($"[StartupTrace] LoadSolution workflow begin | name={workflow.Name}, subroutine={workflow.IsSubroutine}", "MainWindowViewModel");
                     LogInfo($"\n--- 加载工作流: {workflow.Name} (ID: {workflow.Id}) ---");
                     LogInfo($"节点数量: {workflow.Nodes.Count}");
@@ -3701,7 +3724,8 @@ SplitterPosition = position;
                 nodeInfoProvider = workflow;
             }
 
-            var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider);
+            var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider)
+            { ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(DocumentManager.CurrentSolution) };
             queryService.CreateParameterSnapshot = SunEyeVision.Workflow.ToolParameterSnapshot.Create;
             queryService.CommunicationReceiveService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
             queryService.CommunicationSendService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends;
@@ -5492,9 +5516,10 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// </summary>
         private IDisposable? _solutionTransitionLease;
         private bool _transitionPreparationInProgress;
-        internal bool CanAcceptExternalActivation => _solutionTransitionLease == null && !_transitionPreparationInProgress;
+        internal bool CanAcceptExternalActivation => _solutionTransitionLease == null && !_transitionPreparationInProgress
+            && (Application.Current is not App app || !app.HasPendingWorkspaceDeviceRestore);
         public void EndSolutionTransition() { _solutionTransitionLease?.Dispose(); _solutionTransitionLease = null; }
-        public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync()
+        public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync(bool reload = false)
         {
             if (_transitionPreparationInProgress) return false;
             _transitionPreparationInProgress = true;
@@ -5507,6 +5532,12 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 _solutionTransitionLease ??= _executionManager.BeginSolutionTransition();
                 await _executionManager.StopAndWaitAsync(TimeSpan.FromSeconds(30));
                 if (manager.CurrentSolution == null) return true;
+                if (reload)
+                {
+                    var discard = ThemeMessageDialog.Show("从磁盘重新加载会放弃当前未保存的编辑，不会自动保存。是否继续？", "重新加载方案", MessageBoxButton.OKCancel, ThemeMessageDialog.MessageIcon.Question);
+                    if (discard != MessageBoxResult.OK) { EndSolutionTransition(); return false; }
+                    return true;
+                }
                 if (!TryCommitSolutionEditors(out var editError)) throw new InvalidOperationException(editError);
                 SaveSolutionData(manager);
                 if (!manager.HasUnsavedChanges) return true;
@@ -5526,36 +5557,45 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         }
 
         /// <summary>External file activation reuses existing stop/save and identity-conflict rules.</summary>
-        internal async Task<bool> OpenExternalSolutionAsync(string path)
+        internal Services.Solutions.WorkspaceOpenResult? LastWorkspaceOpenResult { get; private set; }
+        // Compatibility bool means a workspace was accepted; LastWorkspaceOpenResult retains full success/degraded status.
+        internal async Task<bool> OpenExternalSolutionAsync(string path, bool reload = false)
         {
-            var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-            if (!string.IsNullOrEmpty(manager.CurrentFilePath) &&
-                string.Equals(Path.GetFullPath(manager.CurrentFilePath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase)) return true;
-            if (!CanAcceptExternalActivation) return false;
-            var previous = manager.CurrentSolution;
-            try
+            var manager = DocumentManager;
+            LastWorkspaceOpenResult = null;
+            if (!reload && !string.IsNullOrEmpty(manager.CurrentFilePath) &&
+                string.Equals(Path.GetFullPath(manager.CurrentFilePath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase))
             {
-                Services.Startup.StartupLaunchContext.Current.ValidatePath(path);
-                var candidate = manager.LoadSolutionOnly(path)
-                    ?? throw new IOException(manager.LastError ?? "方案无法读取。");
-                Services.Startup.StartupLaunchContext.Current.ValidateCandidate(candidate);
-                if (!await PrepareSolutionTransitionAsync()) return false;
-                // Reuse the same validated candidate. Catalog and identity-conflict UI are optional browser concerns.
-                manager.SetCurrentSolution(candidate, registerInCatalog: false);
-                UpdateCurrentSolutionInfo();
-                (Application.Current as App)?.RecordRecentSolution(candidate);
-                if (Application.Current is App app) await app.CompleteOpenedWorkspaceAsync();
-                LogSuccess($"已打开方案: {candidate.Name}");
+                LastWorkspaceOpenResult = new(Services.Solutions.WorkspaceOpenStatus.ActivatedExisting, false);
                 return true;
             }
-            catch (Exception ex)
+            if (!CanAcceptExternalActivation) return false;
+            try
             {
-                LogError($"方案打开失败: {ex.Message}", null, ex);
-                var prefix = ReferenceEquals(previous, manager.CurrentSolution)
-                    ? "方案未打开，原工作区仍保留（运行可能已停止）："
-                    : "方案已切换，但工作区初始化未完成，请检查日志并重新打开：";
-                ThemeMessageDialog.Show(prefix + ex.Message, "打开方案", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-                return false;
+                var result = await new Services.Solutions.WorkspaceOpenCoordinator().OpenAsync(manager,
+                    () =>
+                    {
+                        Services.Startup.StartupLaunchContext.Current.ValidatePath(path);
+                        var candidate = manager.LoadSolutionOnly(path) ?? throw new IOException(manager.LastError ?? "方案无法读取。");
+                        Services.Startup.StartupLaunchContext.Current.ValidateCandidate(candidate);
+                        return candidate;
+                    },
+                    () => PrepareSolutionTransitionAsync(reload),
+                    async candidate =>
+                    {
+                        UpdateCurrentSolutionInfo();
+                        (Application.Current as App)?.RecordRecentSolution(candidate);
+                        if (Application.Current is App app) await app.CompleteOpenedWorkspaceAsync();
+                    });
+                LastWorkspaceOpenResult = result;
+                if (result.IsSuccessful) { LogSuccess(reload ? "已从磁盘重新加载方案。" : "已打开方案。"); return true; }
+                if (result.Error != null)
+                {
+                    var prefix = result.Committed ? "新方案已载入，但工作区初始化未完成：" : "方案未打开，原工作区保留（运行可能已停止）：";
+                    LogError(prefix + result.Error);
+                    ThemeMessageDialog.Show(prefix + result.Error, "打开方案", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+                }
+                return result.Committed; // A degraded committed document must remain accessible, not reopen the start page.
             }
             finally { EndSolutionTransition(); }
         }

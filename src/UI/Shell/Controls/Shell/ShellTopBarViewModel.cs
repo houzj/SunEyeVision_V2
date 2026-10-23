@@ -91,10 +91,9 @@ namespace SunEyeVision.UI.Shell.Controls
             CurrentSolutionName = _coordinator.CurrentSolutionName;
         }
 
-        /// <summary>显示解决方案配置命令</summary>
-        public ICommand ShowSolutionConfigurationCommand => _coordinator.ShowSolutionConfigurationCommand;
         public ICommand NewSolutionCommand => _coordinator.NewSolutionCommand;
         public ICommand OpenSolutionCommand => _coordinator.OpenSolutionCommand;
+        public ICommand ReloadSolutionCommand => _coordinator.ReloadSolutionCommand;
         public ICommand ShowStartPageCommand => _coordinator.ShowStartPageCommand;
 
         /// <summary>保存当前解决方案命令</summary>

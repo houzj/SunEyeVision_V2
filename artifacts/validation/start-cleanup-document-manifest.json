@@ -1,0 +1,208 @@
+{
+  "taskId": "START-CLEANUP-04",
+  "input": "artifacts/startup-implementation/legacy-manager-cleanup-plan.json",
+  "inputSha256": "e89e188874b5770336a5ce394d680ae6e73148523c4d0c3993ded5bdec4bd0ba",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html"
+  ],
+  "deletions": [
+    {
+      "path": "src/UI/Features/Dialogs/SolutionConfigurationDialog.xaml",
+      "sha256": "84d61ac32e2fe3ed7031bc869657f7fc63d0d227e627119a8b706745458c6284",
+      "absent": true
+    },
+    {
+      "path": "src/UI/Features/Dialogs/SolutionConfigurationDialog.xaml.cs",
+      "sha256": "da87c53553a15fd06acbc6f3cf5d08bb9a9693d5c2aa66f9e80ccd6f21b3cc63",
+      "absent": true
+    },
+    {
+      "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+      "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6",
+      "absent": true
+    },
+    {
+      "path": "src/UI/Features/Dialogs/SolutionCardPanel.cs",
+      "sha256": "f20eac89e729c698b2793407ea56e726b864a4e7efa54964c1fd87d9aaf9a547",
+      "absent": true
+    },
+    {
+      "path": "src/UI/Features/Dialogs/SolutionIdentityVisibilityConverter.cs",
+      "sha256": "536435cb27c87339da93126e1464884c9827582694b88bed217226b49208245a",
+      "absent": true
+    },
+    {
+      "path": "src/UI/Features/Dialogs/SolutionInformationDialog.xaml",
+      "sha256": "ee7ade2f572634a7b4d975f86ee67569618d153c9e5cce4571df21abd3378d60",
+      "absent": true
+    },
+    {
+      "path": "src/UI/Features/Dialogs/SolutionInformationDialog.xaml.cs",
+      "sha256": "96b695726b9f815631e5587756d5a0b8f6c6c043971bd87737cf68170b6296eb",
+      "absent": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/EditSolutionDialog.xaml",
+      "sha256": "9205aa50f12ca8192710f6fb6fe9e48d42268ec2e06cd594dd4f15a1a9c641c9",
+      "absent": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/EditSolutionDialog.xaml.cs",
+      "sha256": "3dbc888cbebf1a61c3b7f9833b062c8c80691e1c38b748cd03e77676578c8358",
+      "absent": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/DeleteSolutionDialog.xaml",
+      "sha256": "f680e3c5a57c6ffd5b0b6cf82b2ba95005ac52aade8e8f695804173542dd244d",
+      "absent": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/DeleteSolutionDialog.xaml.cs",
+      "sha256": "ee8bfcdb976ee575fa8c0d6807ca7fdd2840069ed4c08975a3abacbe96123115",
+      "absent": true
+    },
+    {
+      "path": "src/Workflow/StartupDecisionService.cs",
+      "sha256": "391191c168128fc45fff71bc3981b07e47f92db57f4013a121872f6182e994c6",
+      "absent": true
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/SolutionManagerCardTests.cs",
+      "sha256": "7f30a5cc9cdd58c4052df82c47cc43449ac7413c0d8ee5ad5fff4434ed30f5b6",
+      "absent": true
+    }
+  ],
+  "preserved": [
+    {
+      "path": "src/Workflow/Solution.cs",
+      "sha256": "fbde35ebd0669619af5998ee637c8a1f479e1aa5f0709d7ec157b63846ad42af",
+      "observedSha256": "fbde35ebd0669619af5998ee637c8a1f479e1aa5f0709d7ec157b63846ad42af",
+      "matches": true,
+      "intentionalChange": false
+    },
+    {
+      "path": "src/Workflow/SolutionManager.cs",
+      "sha256": "e97ce13806b2f852b28fb6df8fc268c65c3ba780f752b22141eb3ac9288f58e0",
+      "observedSha256": "e97ce13806b2f852b28fb6df8fc268c65c3ba780f752b22141eb3ac9288f58e0",
+      "matches": true,
+      "intentionalChange": false
+    },
+    {
+      "path": "src/Workflow/SolutionRepository.cs",
+      "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+      "observedSha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+      "matches": true,
+      "intentionalChange": false
+    },
+    {
+      "path": "src/Workflow/Persistence/AtomicJsonFile.cs",
+      "sha256": "a565fb4f6c844c266565dd8c11e0591df9c9d63664a2b5f55bb06486a0a50739",
+      "observedSha256": "a565fb4f6c844c266565dd8c11e0591df9c9d63664a2b5f55bb06486a0a50739",
+      "matches": true,
+      "intentionalChange": false
+    },
+    {
+      "path": "src/UI/App.xaml.cs",
+      "sha256": "daa1d6e9a42559a8f3496ea1742a0ea5d749dfe19fc7e5c3db6ff7f970c6ca0a",
+      "observedSha256": "daa1d6e9a42559a8f3496ea1742a0ea5d749dfe19fc7e5c3db6ff7f970c6ca0a",
+      "matches": true,
+      "intentionalChange": false
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "7cd013182942cecc1d75c86d3aaa8d8157b0fa56c90a5276093aac40ca3823f9",
+      "observedSha256": "137e08bdcbf56695537d5f08713d23ca509b8854e0327d5a6a5579d3aee8a7d2",
+      "matches": false,
+      "intentionalChange": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+      "sha256": "1cf4e85911d0db99d08a574eef91b3602aa3235b1c51ec05a8e8bed442b34998",
+      "observedSha256": "1cf4e85911d0db99d08a574eef91b3602aa3235b1c51ec05a8e8bed442b34998",
+      "matches": true,
+      "intentionalChange": false
+    },
+    {
+      "path": "src/UI/Shell/Windows/NewSolutionDialog.xaml",
+      "sha256": "bab9615cc9ff6be2d5a0867d1380892f7f0a98392d35cdddd958427b67c84c0c",
+      "observedSha256": "bab9615cc9ff6be2d5a0867d1380892f7f0a98392d35cdddd958427b67c84c0c",
+      "matches": true,
+      "intentionalChange": false
+    },
+    {
+      "path": "src/UI/Shell/Windows/NewSolutionDialog.xaml.cs",
+      "sha256": "ba3623207ae3d21790e07bca57f10db0b3d497b5101ae19398a030e8b960b0f3",
+      "observedSha256": "ba3623207ae3d21790e07bca57f10db0b3d497b5101ae19398a030e8b960b0f3",
+      "matches": true,
+      "intentionalChange": false
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowStartupEntries.cs",
+      "sha256": "abfd030b33ecb6232468c11bfd7e37fb1302f4204d55a66bb3a575af017801dc",
+      "observedSha256": "abfd030b33ecb6232468c11bfd7e37fb1302f4204d55a66bb3a575af017801dc",
+      "matches": true,
+      "intentionalChange": false
+    },
+    {
+      "path": "src/UI/Services/Startup/StartPageSettings.cs",
+      "sha256": "18813d473bcdc5534573be9f6c5060430285ec2ceb14c448449e61fbf38f4da1",
+      "observedSha256": "18813d473bcdc5534573be9f6c5060430285ec2ceb14c448449e61fbf38f4da1",
+      "matches": true,
+      "intentionalChange": false
+    }
+  ],
+  "followups": [
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "reason": "User raised blank-workspace editability: initialize default workflow binding at construction and after silent reset; save/open method bodies unchanged.",
+      "observedSha256": "137e08bdcbf56695537d5f08713d23ca509b8854e0327d5a6a5579d3aee8a7d2",
+      "identityMeaning": "当前源码观察SHA；交付对该项只声明意图，未提供变更后源码预期SHA"
+    },
+    {
+      "path": "src/UI/Shell/Windows/StartPageWindow.xaml",
+      "reason": "User requested narrower start page: 1060 to 960, height unchanged.",
+      "observedSha256": "402411c910e845c446bcd9a3c727e2af258c8d8d800fe526b6d71ee4b182389c",
+      "identityMeaning": "当前源码观察SHA；交付对该项只声明意图，未提供变更后源码预期SHA"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ImagePreviewInteractionTests.cs",
+      "reason": "Retain image execution test by replacing shared retired CardFixture with minimal non-UI temporary manager fixture.",
+      "observedSha256": "d0acd7f8c32f062b449e8b9c3866fbeec3cd983d4278bd460695a500eaad3613",
+      "identityMeaning": "当前源码观察SHA；交付对该项只声明意图，未提供变更后源码预期SHA"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+      "sha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+      "matches": true
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+      "sha256": "f7b732291e97d7d0ebcffb56d4ddb58b701bea0a0db0d3e9da634fa46ada964e",
+      "matches": true
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Workflow.dll",
+      "sha256": "f124a44c68a13602879a642de845ca7cc787fcaab5070928c30fe8663cc5d356",
+      "matches": true
+    }
+  ],
+  "build": {
+    "build": "dotnet build SunEyeVision.slnx -c Release --no-restore",
+    "exitCode": 0,
+    "errors": 0,
+    "warnings": 785,
+    "log": "artifacts/startup-implementation/legacy-manager-cleanup-release.log",
+    "runtime": "not-run; user manual acceptance pending",
+    "designer": "not-run",
+    "tests": "not run or delegated; test project compilation included in full build"
+  },
+  "productExecuted": false,
+  "testsRunThisBatch": 0,
+  "wholeSiteRegenerated": false,
+  "productModifiedByDocRole": false
+}

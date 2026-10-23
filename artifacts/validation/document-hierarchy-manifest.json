@@ -1,0 +1,1197 @@
+{
+  "id": "DOC-SINGLE-ENTRY-01",
+  "rows": [
+    {
+      "flat": "suneye-entry-architecture-comparison.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\suneye-entry-architecture-comparison.html",
+      "home": "../index.html",
+      "title": "主界面架构"
+    },
+    {
+      "flat": "tool-standard.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-standard.html",
+      "home": "../index.html",
+      "title": "标准调试窗 / 阈值参数"
+    },
+    {
+      "flat": "tool-template.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-template.html",
+      "home": "../index.html",
+      "title": "独立模板编辑器"
+    },
+    {
+      "flat": "tool-script.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+      "home": "../index.html",
+      "title": "脚本专业工具"
+    },
+    {
+      "flat": "tool-calibration.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-calibration.html",
+      "home": "../index.html",
+      "title": "N点标定训练"
+    },
+    {
+      "flat": "tool-verification.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-verification.html",
+      "home": "../index.html",
+      "title": "独立标定验证与发布"
+    },
+    {
+      "flat": "tool-subroutine.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-subroutine.html",
+      "home": "../index.html",
+      "title": "子程序 / Group参数配置"
+    },
+    {
+      "flat": "tools.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tools.html",
+      "home": "../index.html",
+      "title": "专业工具 · 按实际窗口进入"
+    },
+    {
+      "flat": "comparison.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\comparison.html",
+      "home": "../index.html",
+      "title": "comparison旧入口"
+    },
+    {
+      "flat": "optimization.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization.html",
+      "home": "../index.html",
+      "title": "optimization旧入口"
+    },
+    {
+      "flat": "evidence.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\evidence.html",
+      "home": "../index.html",
+      "title": "证据、范围与交付状态"
+    },
+    {
+      "flat": "system-architecture.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\system-architecture.html",
+      "home": "../index.html",
+      "title": "整体架构与真实执行链"
+    },
+    {
+      "flat": "completion-audit.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\completion-audit.html",
+      "home": "../index.html",
+      "title": "completion-audit旧入口"
+    },
+    {
+      "flat": "license-design.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\license-design.html",
+      "home": "../index.html",
+      "title": "自有加密狗与许可设计"
+    },
+    {
+      "flat": "global-variables.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\global-variables.html",
+      "home": "../index.html",
+      "title": "全局变量：初值、运行值与传递"
+    },
+    {
+      "flat": "camera-architecture.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\camera-architecture.html",
+      "home": "../index.html",
+      "title": "相机：连接、预览、取帧与释放"
+    },
+    {
+      "flat": "persistence-architecture.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+      "home": "../index.html",
+      "title": "方案如何保存、打开与恢复"
+    },
+    {
+      "flat": "platform-architecture.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\platform-architecture.html",
+      "home": "../index.html",
+      "title": "主题、公共控件与插件部署"
+    },
+    {
+      "flat": "tool-detail-BlobAnalysis.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-BlobAnalysis.html",
+      "home": "../index.html",
+      "title": "Blob分析 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-CircleCircleMeasure.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-CircleCircleMeasure.html",
+      "home": "../index.html",
+      "title": "圆-圆测量 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-CircleDetect.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-CircleDetect.html",
+      "home": "../index.html",
+      "title": "圆查找 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-Condition.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-Condition.html",
+      "home": "../index.html",
+      "title": "条件分支 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-ImageFilter.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ImageFilter.html",
+      "home": "../index.html",
+      "title": "图像滤波 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-ImageLoad.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ImageLoad.html",
+      "home": "../index.html",
+      "title": "图像源 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-ImageThreshold.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ImageThreshold.html",
+      "home": "../index.html",
+      "title": "图像二值化 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-LineCircleMeasure.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-LineCircleMeasure.html",
+      "home": "../index.html",
+      "title": "线-圆测量 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-LineDetect.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-LineDetect.html",
+      "home": "../index.html",
+      "title": "直线查找 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-LineLineMeasure.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-LineLineMeasure.html",
+      "home": "../index.html",
+      "title": "线-线测量 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-Morphology.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-Morphology.html",
+      "home": "../index.html",
+      "title": "形态学处理 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-PointCircleMeasure.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-PointCircleMeasure.html",
+      "home": "../index.html",
+      "title": "点-圆测量 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-PointLineMeasure.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-PointLineMeasure.html",
+      "home": "../index.html",
+      "title": "点-线测量 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-PointPointMeasure.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-PointPointMeasure.html",
+      "home": "../index.html",
+      "title": "点-点测量 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-ProtocolAssemble.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ProtocolAssemble.html",
+      "home": "../index.html",
+      "title": "协议组装 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-ProtocolParse.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ProtocolParse.html",
+      "home": "../index.html",
+      "title": "协议解析 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-ReceiveData.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ReceiveData.html",
+      "home": "../index.html",
+      "title": "接收数据 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-SendData.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-SendData.html",
+      "home": "../index.html",
+      "title": "发送数据 · 实际数据链与对照"
+    },
+    {
+      "flat": "tool-detail-ShapeMatch.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-detail-ShapeMatch.html",
+      "home": "../index.html",
+      "title": "轮廓匹配 · 实际数据链与对照"
+    },
+    {
+      "flat": "data-architecture.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\data-architecture.html",
+      "home": "../index.html",
+      "title": "数据怎样流动"
+    },
+    {
+      "flat": "recommendation-audit.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\recommendation-audit.html",
+      "home": "../index.html",
+      "title": "recommendation-audit旧入口"
+    },
+    {
+      "flat": "framework-design-comparison.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\框架设计\\framework-design-comparison.html",
+      "home": "../index.html",
+      "title": "框架文档兼容入口"
+    },
+    {
+      "flat": "joint-optimization-plan.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\维护记录\\joint-optimization-plan.html",
+      "home": "../index.html",
+      "title": "三项目联合优化与逆向方案"
+    },
+    {
+      "flat": "document-maintenance.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\维护记录\\文档维护.html",
+      "home": "../index.html",
+      "title": "文档维护与专题目录"
+    },
+    {
+      "flat": "internal-secure-export.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\内部工具\\internal-secure-export.html",
+      "home": "../index.html",
+      "title": "内部加密导出工具 · 不可分发本页"
+    },
+    {
+      "flat": "architecture-target.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-target.html",
+      "home": "../index.html",
+      "title": "目标架构：与VM逐项取舍"
+    },
+    {
+      "flat": "architecture-evidence.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\architecture-evidence.html",
+      "home": "../index.html",
+      "title": "本批证据与同步边界"
+    },
+    {
+      "flat": "architecture-acceptance.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-acceptance.html",
+      "home": "../index.html",
+      "title": "24项实现验收计划（未运行）"
+    },
+    {
+      "flat": "framework-overview.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\框架设计\\framework-overview.html",
+      "home": "../index.html",
+      "title": "结论与范围"
+    },
+    {
+      "flat": "framework-execution.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\框架设计\\framework-execution.html",
+      "home": "../index.html",
+      "title": "执行架构"
+    },
+    {
+      "flat": "framework-data.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\框架设计\\framework-data.html",
+      "home": "../index.html",
+      "title": "数据与数据流"
+    },
+    {
+      "flat": "framework-publication.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\框架设计\\framework-publication.html",
+      "home": "../index.html",
+      "title": "结果发布"
+    },
+    {
+      "flat": "framework-lifetime.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\框架设计\\framework-lifetime.html",
+      "home": "../index.html",
+      "title": "资源生命周期"
+    },
+    {
+      "flat": "framework-sdk-overview.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-overview.html",
+      "home": "../index.html",
+      "title": "二开具体设计：三类SDK，统一公共数据与寿命合同"
+    },
+    {
+      "flat": "framework-sdk-packages.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-packages.html",
+      "home": "../index.html",
+      "title": "拆包：先按消费边界，再迁具体类型"
+    },
+    {
+      "flat": "framework-sdk-external.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-external.html",
+      "home": "../index.html",
+      "title": "从加载到退出：每个API必须说明返回意味着什么"
+    },
+    {
+      "flat": "framework-sdk-data.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-data.html",
+      "home": "../index.html",
+      "title": "读写数据：配置、输入、全局和结果分四种合同"
+    },
+    {
+      "flat": "framework-sdk-events.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-events.html",
+      "home": "../index.html",
+      "title": "事件、并发与失败：不把内部回调责任推给客户"
+    },
+    {
+      "flat": "framework-sdk-resources.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-resources.html",
+      "home": "../index.html",
+      "title": "资源释放：拥有者与使用者都写进SDK合同"
+    },
+    {
+      "flat": "framework-sdk-tools.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-tools.html",
+      "home": "../index.html",
+      "title": "工具插件SDK：保留强类型基础，收紧运行与UI边界"
+    },
+    {
+      "flat": "framework-sdk-ui.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-ui.html",
+      "home": "../index.html",
+      "title": "UI控件库：可组合，不接管客户程序"
+    },
+    {
+      "flat": "framework-sdk-migration.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-migration.html",
+      "home": "../index.html",
+      "title": "迁移和发布：每一步都有可验证出口"
+    },
+    {
+      "flat": "framework-sdk-engineering.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-engineering.html",
+      "home": "../index.html",
+      "title": "工程落位：新公共边界，复用执行实现"
+    },
+    {
+      "flat": "framework-sdk-file-map.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-file-map.html",
+      "home": "../index.html",
+      "title": "旧SDK逐文件、逐类型候选落点"
+    },
+    {
+      "flat": "framework-sdk-compatibility.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-compatibility.html",
+      "home": "../index.html",
+      "title": "先双轨兼容，再切默认；每阶段可回滚"
+    },
+    {
+      "flat": "framework-target.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\框架设计\\framework-target.html",
+      "home": "../index.html",
+      "title": "目标架构"
+    },
+    {
+      "flat": "framework-implementation.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\框架设计\\framework-implementation.html",
+      "home": "../index.html",
+      "title": "具体改法与验收"
+    },
+    {
+      "flat": "framework-evidence.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\框架设计\\framework-evidence.html",
+      "home": "../index.html",
+      "title": "证据与待核实"
+    },
+    {
+      "flat": "architecture-a01.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a01.html",
+      "home": "../index.html",
+      "title": "A01 统一运行入口"
+    },
+    {
+      "flat": "architecture-a02.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a02.html",
+      "home": "../index.html",
+      "title": "A02 执行计划与调度"
+    },
+    {
+      "flat": "architecture-a03.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a03.html",
+      "home": "../index.html",
+      "title": "A03 停止和完成"
+    },
+    {
+      "flat": "architecture-a04.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a04.html",
+      "home": "../index.html",
+      "title": "A04 定义/参数/快照"
+    },
+    {
+      "flat": "architecture-a05.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a05.html",
+      "home": "../index.html",
+      "title": "A05 绑定与外部数据schema"
+    },
+    {
+      "flat": "architecture-a06.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a06.html",
+      "home": "../index.html",
+      "title": "A06 结果发布和订阅"
+    },
+    {
+      "flat": "architecture-a07.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a07.html",
+      "home": "../index.html",
+      "title": "A07 图像缓冲与共享内存"
+    },
+    {
+      "flat": "architecture-a08.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a08.html",
+      "home": "../index.html",
+      "title": "A08 工具实例/缓存/项目关闭"
+    },
+    {
+      "flat": "architecture-a09.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a09.html",
+      "home": "../index.html",
+      "title": "A09 应用SDK"
+    },
+    {
+      "flat": "architecture-a10.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a10.html",
+      "home": "../index.html",
+      "title": "A10 工具SDK和可选控件"
+    },
+    {
+      "flat": "architecture-a11.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a11.html",
+      "home": "../index.html",
+      "title": "A11 持久化与兼容"
+    },
+    {
+      "flat": "architecture-a12.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\目标架构\\architecture-a12.html",
+      "home": "../index.html",
+      "title": "A12 许可和宿主隔离"
+    },
+    {
+      "flat": "capability-m01.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m01.html",
+      "home": "../index.html",
+      "title": "M01 启动、方案恢复与主窗装配"
+    },
+    {
+      "flat": "capability-m02.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m02.html",
+      "home": "../index.html",
+      "title": "M02 方案配置：新建、打开、切换"
+    },
+    {
+      "flat": "capability-m03.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m03.html",
+      "home": "../index.html",
+      "title": "M03 保存当前方案 / Ctrl+S"
+    },
+    {
+      "flat": "capability-m04.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m04.html",
+      "home": "../index.html",
+      "title": "M04 工具箱分类、浏览与拖入"
+    },
+    {
+      "flat": "capability-m05.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m05.html",
+      "home": "../index.html",
+      "title": "M05 新增、选中、重命名与删除流程Tab"
+    },
+    {
+      "flat": "capability-m06.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m06.html",
+      "home": "../index.html",
+      "title": "M06 节点选中、拖动与多选"
+    },
+    {
+      "flat": "capability-m07.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m07.html",
+      "home": "../index.html",
+      "title": "M07 端口连线、断开与路径显示"
+    },
+    {
+      "flat": "capability-m08.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m08.html",
+      "home": "../index.html",
+      "title": "M08 删除节点、撤销与重做"
+    },
+    {
+      "flat": "capability-m09.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m09.html",
+      "home": "../index.html",
+      "title": "M09 子程序/Group进入、返回及配置"
+    },
+    {
+      "flat": "capability-m10.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m10.html",
+      "home": "../index.html",
+      "title": "M10 小地图、画布缩放与主窗全屏"
+    },
+    {
+      "flat": "capability-m11.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m11.html",
+      "home": "../index.html",
+      "title": "M11 主工具栏/F5单次运行"
+    },
+    {
+      "flat": "capability-m12.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m12.html",
+      "home": "../index.html",
+      "title": "M12 流程Tab单次运行"
+    },
+    {
+      "flat": "capability-m13.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m13.html",
+      "home": "../index.html",
+      "title": "M13 全部流程连续运行/停止"
+    },
+    {
+      "flat": "capability-m14.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m14.html",
+      "home": "../index.html",
+      "title": "M14 流程Tab连续运行/停止"
+    },
+    {
+      "flat": "capability-m15.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m15.html",
+      "home": "../index.html",
+      "title": "M15 停止/Shift+F5"
+    },
+    {
+      "flat": "capability-m16.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m16.html",
+      "home": "../index.html",
+      "title": "M16 显示图像源选择、预览与历史"
+    },
+    {
+      "flat": "capability-m17.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m17.html",
+      "home": "../index.html",
+      "title": "M17 模块结果树/表及绑定到全局变量"
+    },
+    {
+      "flat": "capability-m18.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m18.html",
+      "home": "../index.html",
+      "title": "M18 全局变量管理与选择"
+    },
+    {
+      "flat": "capability-m19.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m19.html",
+      "home": "../index.html",
+      "title": "M19 相机管理：连接、参数、预览与正式采集"
+    },
+    {
+      "flat": "capability-m20.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m20.html",
+      "home": "../index.html",
+      "title": "M20 通信管理：连接、读写、事件与后台触发"
+    },
+    {
+      "flat": "capability-m21.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m21.html",
+      "home": "../index.html",
+      "title": "M21 主题、主窗控制、帮助与诊断入口"
+    },
+    {
+      "flat": "capability-m22.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m22.html",
+      "home": "../index.html",
+      "title": "M22 关闭主窗/切方案时保存与资源退役"
+    },
+    {
+      "flat": "capability-m23.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m23.html",
+      "home": "../index.html",
+      "title": "M23 系统设置命令占位（非已确认可见菜单）"
+    },
+    {
+      "flat": "capability-t01.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t01.html",
+      "home": "../index.html",
+      "title": "T01 打开工具界面与上下文注入"
+    },
+    {
+      "flat": "capability-t02.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t02.html",
+      "home": "../index.html",
+      "title": "T02 输入图像/标量/数组绑定选择"
+    },
+    {
+      "flat": "capability-t03.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t03.html",
+      "home": "../index.html",
+      "title": "T03 参数编辑与提交输入控件"
+    },
+    {
+      "flat": "capability-t04.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t04.html",
+      "home": "../index.html",
+      "title": "T04 窗口执行按钮：单次调试"
+    },
+    {
+      "flat": "capability-t05.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t05.html",
+      "home": "../index.html",
+      "title": "T05 窗口连续调试"
+    },
+    {
+      "flat": "capability-t06.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t06.html",
+      "home": "../index.html",
+      "title": "T06 窗口连续调试：停止"
+    },
+    {
+      "flat": "capability-t07.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t07.html",
+      "home": "../index.html",
+      "title": "T07 确定/应用：提交、验证、关闭"
+    },
+    {
+      "flat": "capability-t08.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t08.html",
+      "home": "../index.html",
+      "title": "T08 关闭/X：编辑收尾与事件解绑"
+    },
+    {
+      "flat": "capability-t09.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t09.html",
+      "home": "../index.html",
+      "title": "T09 ROI绘制、选择、移动与屏蔽"
+    },
+    {
+      "flat": "capability-t10.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t10.html",
+      "home": "../index.html",
+      "title": "T10 位置修正/Fixture预览"
+    },
+    {
+      "flat": "capability-t11.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t11.html",
+      "home": "../index.html",
+      "title": "T11 图像缩放、适应、平移、全屏"
+    },
+    {
+      "flat": "capability-t12.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t12.html",
+      "home": "../index.html",
+      "title": "T12 图形与文字样式、叠加渲染"
+    },
+    {
+      "flat": "capability-t13.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t13.html",
+      "home": "../index.html",
+      "title": "T13 调试结果回到主图与结果树"
+    },
+    {
+      "flat": "capability-t14.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t14.html",
+      "home": "../index.html",
+      "title": "T14 重置参数与数据源恢复"
+    },
+    {
+      "flat": "capability-t15.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t15.html",
+      "home": "../index.html",
+      "title": "T15 脚本：代码、动态输出、程序集与执行"
+    },
+    {
+      "flat": "capability-t16.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t16.html",
+      "home": "../index.html",
+      "title": "T16 子程序：输入、输出与显示配置"
+    },
+    {
+      "flat": "capability-t17.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t17.html",
+      "home": "../index.html",
+      "title": "T17 标定：采样、求解、候选文件与验证"
+    },
+    {
+      "flat": "capability-t18.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-t18.html",
+      "home": "../index.html",
+      "title": "T18 模板/匹配编辑与其他专业工具"
+    },
+    {
+      "flat": "capability-x01.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-x01.html",
+      "home": "../index.html",
+      "title": "X01 图像缓冲、显示缓存与最后读者"
+    },
+    {
+      "flat": "capability-x02.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-x02.html",
+      "home": "../index.html",
+      "title": "X02 SDK、插件部署与公共编辑控件"
+    },
+    {
+      "flat": "capability-x03.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-x03.html",
+      "home": "../index.html",
+      "title": "X03 自有加密狗与功能授权"
+    },
+    {
+      "flat": "capability-x04.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-x04.html",
+      "home": "../index.html",
+      "title": "X04 方案文件加密、密钥恢复与插件信任"
+    },
+    {
+      "flat": "capability-x05.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-x05.html",
+      "home": "../index.html",
+      "title": "X05 性能、长稳、日志与故障验证"
+    },
+    {
+      "flat": "capability-m24.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m24.html",
+      "home": "../index.html",
+      "title": "M24 状态栏、运行耗时与执行快照"
+    },
+    {
+      "flat": "capability-m25.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m25.html",
+      "home": "../index.html",
+      "title": "M25 专业数据分析面板与图像高亮"
+    },
+    {
+      "flat": "capability-m26.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-m26.html",
+      "home": "../index.html",
+      "title": "M26 日志面板、筛选、搜索与诊断级别"
+    },
+    {
+      "flat": "capability-index.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\能力对照\\capability-index.html",
+      "home": "../index.html",
+      "title": "从功能找双方能力对照"
+    },
+    {
+      "flat": "optimization-o01.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html",
+      "home": "../index.html",
+      "title": "O01 入口、装配与编辑事务"
+    },
+    {
+      "flat": "optimization-o02.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o02.html",
+      "home": "../index.html",
+      "title": "O02 统一运行范围、连续与停止完成"
+    },
+    {
+      "flat": "optimization-o03.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o03.html",
+      "home": "../index.html",
+      "title": "O03 参数、绑定、变量和控制结构合同"
+    },
+    {
+      "flat": "optimization-o04.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o04.html",
+      "home": "../index.html",
+      "title": "O04 生命周期、图像最后读者与退出"
+    },
+    {
+      "flat": "optimization-o05.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o05.html",
+      "home": "../index.html",
+      "title": "O05 标准工具窗口：执行、连续、提交和关闭"
+    },
+    {
+      "flat": "optimization-o06.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o06.html",
+      "home": "../index.html",
+      "title": "O06 图像、ROI、图形文字及坐标一致性"
+    },
+    {
+      "flat": "optimization-o07.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o07.html",
+      "home": "../index.html",
+      "title": "O07 模块结果树与输出投影"
+    },
+    {
+      "flat": "optimization-o08.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o08.html",
+      "home": "../index.html",
+      "title": "O08 方案、标定文件与恢复事务"
+    },
+    {
+      "flat": "optimization-o09.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o09.html",
+      "home": "../index.html",
+      "title": "O09 相机、通信和后台真实副作用"
+    },
+    {
+      "flat": "optimization-o10.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o10.html",
+      "home": "../index.html",
+      "title": "O10 插件、SDK、脚本和发布依赖"
+    },
+    {
+      "flat": "optimization-o11.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o11.html",
+      "home": "../index.html",
+      "title": "O11 自有狗授权、文件保护与信任政策"
+    },
+    {
+      "flat": "optimization-o12.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o12.html",
+      "home": "../index.html",
+      "title": "O12 专业工具逐项验收与同条件性能"
+    },
+    {
+      "flat": "optimization-index.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-index.html",
+      "home": "../index.html",
+      "title": "优化方案：从问题到实施门槛"
+    },
+    {
+      "flat": "optimization-diagnostics.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-diagnostics.html",
+      "home": "../index.html",
+      "title": "诊断、性能基准与交付记录"
+    },
+    {
+      "flat": "audit-c01.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c01.html",
+      "home": "../index.html",
+      "title": "C01 启动装配与依赖方向"
+    },
+    {
+      "flat": "audit-c02.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c02.html",
+      "home": "../index.html",
+      "title": "C02 身份、作用域与所有权"
+    },
+    {
+      "flat": "audit-c03.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c03.html",
+      "home": "../index.html",
+      "title": "C03 工作流调度与控制结构"
+    },
+    {
+      "flat": "audit-c04.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c04.html",
+      "home": "../index.html",
+      "title": "C04 并发、排队与资源竞争"
+    },
+    {
+      "flat": "audit-c05.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c05.html",
+      "home": "../index.html",
+      "title": "C05 参数、IO与绑定契约"
+    },
+    {
+      "flat": "audit-c06.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c06.html",
+      "home": "../index.html",
+      "title": "C06 图像、原生句柄与缓存寿命"
+    },
+    {
+      "flat": "audit-c07.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c07.html",
+      "home": "../index.html",
+      "title": "C07 设备接入、通信与恢复"
+    },
+    {
+      "flat": "audit-c08.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c08.html",
+      "home": "../index.html",
+      "title": "C08 工具插件发现与生命周期"
+    },
+    {
+      "flat": "audit-c09.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c09.html",
+      "home": "../index.html",
+      "title": "C09 编辑、调试与正式运行隔离"
+    },
+    {
+      "flat": "audit-c10.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c10.html",
+      "home": "../index.html",
+      "title": "C10 显示、ROI、叠加与坐标分域"
+    },
+    {
+      "flat": "audit-c11.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c11.html",
+      "home": "../index.html",
+      "title": "C11 方案保存、迁移、复制与撤销"
+    },
+    {
+      "flat": "audit-c12.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c12.html",
+      "home": "../index.html",
+      "title": "C12 错误、停止、超时与恢复"
+    },
+    {
+      "flat": "audit-c13.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c13.html",
+      "home": "../index.html",
+      "title": "C13 事件、日志与可观测性"
+    },
+    {
+      "flat": "audit-c14.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c14.html",
+      "home": "../index.html",
+      "title": "C14 构建部署、版本与SDK兼容"
+    },
+    {
+      "flat": "audit-c15.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c15.html",
+      "home": "../index.html",
+      "title": "C15 权限、脚本与外部副作用"
+    },
+    {
+      "flat": "audit-c16.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c16.html",
+      "home": "../index.html",
+      "title": "C16 性能、长稳与可测试性"
+    },
+    {
+      "flat": "audit-c17.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c17.html",
+      "home": "../index.html",
+      "title": "C17 全局变量与作用域"
+    },
+    {
+      "flat": "audit-c18.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c18.html",
+      "home": "../index.html",
+      "title": "C18 相机管理与采集策略"
+    },
+    {
+      "flat": "audit-c19.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c19.html",
+      "home": "../index.html",
+      "title": "C19 SDK、公共控件与模板"
+    },
+    {
+      "flat": "audit-c20.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-c20.html",
+      "home": "../index.html",
+      "title": "C20 UI各部分的设计对比"
+    },
+    {
+      "flat": "audit-ui.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-ui.html",
+      "home": "../index.html",
+      "title": "13项UI入口与场景验收"
+    },
+    {
+      "flat": "audit-evidence-1.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-evidence-1.html",
+      "home": "../index.html",
+      "title": "原42证据 · RE-W1"
+    },
+    {
+      "flat": "audit-evidence-2.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-evidence-2.html",
+      "home": "../index.html",
+      "title": "原42证据 · RE-W2"
+    },
+    {
+      "flat": "audit-evidence-3.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-evidence-3.html",
+      "home": "../index.html",
+      "title": "原42证据 · RE-I1"
+    },
+    {
+      "flat": "audit-evidence-4.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-evidence-4.html",
+      "home": "../index.html",
+      "title": "原42证据 · RE-I2"
+    },
+    {
+      "flat": "audit-evidence-5.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-evidence-5.html",
+      "home": "../index.html",
+      "title": "原42证据 · RE-P1"
+    },
+    {
+      "flat": "audit-evidence-6.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-evidence-6.html",
+      "home": "../index.html",
+      "title": "原42证据 · RE-P2"
+    },
+    {
+      "flat": "audit-evidence-7.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-evidence-7.html",
+      "home": "../index.html",
+      "title": "原42证据 · RE-X1"
+    },
+    {
+      "flat": "audit-tools-1.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-1.html",
+      "home": "../index.html",
+      "title": "工具处置 · 图像处理"
+    },
+    {
+      "flat": "audit-tools-2.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-2.html",
+      "home": "../index.html",
+      "title": "工具处置 · 标定"
+    },
+    {
+      "flat": "audit-tools-3.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-3.html",
+      "home": "../index.html",
+      "title": "工具处置 · 采集"
+    },
+    {
+      "flat": "audit-tools-4.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-4.html",
+      "home": "../index.html",
+      "title": "工具处置 · 定位"
+    },
+    {
+      "flat": "audit-tools-5.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-5.html",
+      "home": "../index.html",
+      "title": "工具处置 · 逻辑工具"
+    },
+    {
+      "flat": "audit-tools-6.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-6.html",
+      "home": "../index.html",
+      "title": "工具处置 · 运算"
+    },
+    {
+      "flat": "audit-tools-7.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-7.html",
+      "home": "../index.html",
+      "title": "工具处置 · 颜色处理"
+    },
+    {
+      "flat": "audit-tools-8.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-8.html",
+      "home": "../index.html",
+      "title": "工具处置 · 通信"
+    },
+    {
+      "flat": "audit-tools-9.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-9.html",
+      "home": "../index.html",
+      "title": "工具处置 · 缺陷检测"
+    },
+    {
+      "flat": "audit-tools-10.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-10.html",
+      "home": "../index.html",
+      "title": "工具处置 · 全局与框架载体"
+    },
+    {
+      "flat": "audit-tools-11.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-11.html",
+      "home": "../index.html",
+      "title": "工具处置 · 图形生成"
+    },
+    {
+      "flat": "audit-tools-12.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-12.html",
+      "home": "../index.html",
+      "title": "工具处置 · 测量"
+    },
+    {
+      "flat": "audit-tools-13.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-13.html",
+      "home": "../index.html",
+      "title": "工具处置 · 识别"
+    },
+    {
+      "flat": "audit-tools-14.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-tools-14.html",
+      "home": "../index.html",
+      "title": "工具处置 · 拆分组合"
+    },
+    {
+      "flat": "audit-menus-1.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-menus-1.html",
+      "home": "../index.html",
+      "title": "菜单处置 · MenuItems.xml"
+    },
+    {
+      "flat": "audit-menus-2.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-menus-2.html",
+      "home": "../index.html",
+      "title": "菜单处置 · MenuItemsLinux.xml"
+    },
+    {
+      "flat": "audit-menus-3.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-menus-3.html",
+      "home": "../index.html",
+      "title": "菜单处置 · NeutralMenuItems.xml"
+    },
+    {
+      "flat": "audit-menus-4.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-menus-4.html",
+      "home": "../index.html",
+      "title": "菜单处置 · NeutralMenuItemsLinux.xml"
+    },
+    {
+      "flat": "audit-overview.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\证据审计\\audit-overview.html",
+      "home": "../index.html",
+      "title": "证据与审计：不要混淆四种完成"
+    },
+    {
+      "flat": "guide-execution.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\关系图解\\guide-execution.html",
+      "home": "../index.html",
+      "title": "执行架构 · 关系图解"
+    },
+    {
+      "flat": "guide-dataflow.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\关系图解\\guide-dataflow.html",
+      "home": "../index.html",
+      "title": "数据流与结果发布 · 关系图解"
+    },
+    {
+      "flat": "guide-dependencies.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\关系图解\\guide-dependencies.html",
+      "home": "../index.html",
+      "title": "工程与SDK依赖 · 关系图解"
+    },
+    {
+      "flat": "guide-lifecycle.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\关系图解\\guide-lifecycle.html",
+      "home": "../index.html",
+      "title": "资源Owner与生命周期 · 关系图解"
+    },
+    {
+      "flat": "comparison-archive.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\历史归档\\comparison-archive.html",
+      "home": "../index.html",
+      "title": "横向对照 · 先看差异与建议路线"
+    },
+    {
+      "flat": "optimization-archive.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\历史归档\\optimization-archive.html",
+      "home": "../index.html",
+      "title": "优化方案 · 路线、依据与实施门槛"
+    },
+    {
+      "flat": "completion-audit-archive.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\历史归档\\completion-audit-archive.html",
+      "home": "../index.html",
+      "title": "完整范围审计"
+    },
+    {
+      "flat": "recommendation-audit-archive.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\历史归档\\recommendation-audit-archive.html",
+      "home": "../index.html",
+      "title": "全部能力推荐复审"
+    },
+    {
+      "flat": "framework-print.html",
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\历史归档\\framework-print.html",
+      "home": "../index.html",
+      "title": "框架层设计对比 · 执行、数据、发布与生命周期"
+    }
+  ],
+  "uniqueEntry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html",
+  "systemTopic": "现状分析/system-architecture.html#system-topic-scope",
+  "sharedStatusLocation": "维护记录/文档维护.html#shared-reading-status",
+  "productModified": false
+}

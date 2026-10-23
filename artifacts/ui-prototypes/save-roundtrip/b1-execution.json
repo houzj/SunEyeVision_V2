@@ -1,7 +1,7 @@
 {
   "task": "B1-EXECUTION-16",
   "date": "2026-10-22",
-  "status": "已定路线的实施细化；未改产品，实施未授权",
+  "status": "已实施构建，交付待独立验收",
   "reuse": "保留启动/起始页/内存新建/首次保存与统一编辑提交；不因B1整体重做。",
   "api": [
     [
@@ -390,7 +390,7 @@
       "dotnet test tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj -c Release --no-build --filter FullyQualifiedName~SolutionPersistenceContractTests",
       "dotnet test tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj -c Release --no-build --filter FullyQualifiedName~SolutionReloadContractTests"
     ],
-    "note": "命令仅实施后执行；当前未创建测试文件，不宣称可运行或通过。",
+    "note": "已创建两组合同测试；本地测试记录见artifacts/validation/b1-implementation。27项场景仍需逐项分层验收，不能把测试条数等同场景覆盖。",
     "testReview": "既有SolutionTransitionTests的IL命令token检查只证明旧调用形态，重构后须换为行为断言；桌面固定文件/Debug插件及相机身份测试不进入无设备定向批。不得为变绿而删除保存保护断言。"
   },
   "outOfScope": [
@@ -402,7 +402,9 @@
     "重训模型或算法优化"
   ],
   "openEvidence": [
-    "B1-BASELINE-15纯数据基线排在测试者直接用户E2E任务之后，未执行；不互等。",
-    "VM原生坏条目策略/统一路径基准/跨机仍未知，不妨碍以自研明确合同实现。"
-  ]
+    "VM原生异常细分/统一路径基准/跨机资源语义仍未知，保留局部证据边界。",
+    "B1新实现等待定版Release独立验收；旧B0测试正在独立副本继续，不覆盖共享构建。"
+  ],
+  "implementationReport": "artifacts/validation/b1-implementation/delivery.json",
+  "implementationSummary": "当前交付：标准全量Release构建成功，本地30/30合同测试通过，工具箱元数据探针退出0。不是27场景全通过。VS设计时、完整UI/子程序/ROI绑定/实际模型整链及设备迟到替身尚未验证。源码证据区保留实施前基线；最终程序在标准Release目录。"
 }

@@ -1,0 +1,11 @@
+{
+  "scope": "isolated Roslyn binaries from self Release; not application editor UI",
+  "references": [
+    "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\mscorlib.dll",
+    "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System\\v4.0_4.0.0.0__b77a5c561934e089\\System.dll",
+    "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Core\\v4.0_4.0.0.0__b77a5c561934e089\\System.Core.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\BenchReference.dll"
+  ],
+  "success": false,
+  "error": "System.Reflection.ReflectionTypeLoadException: Unable to load one or more of the requested types.\r\nCould not load file or assembly \u0027Microsoft.DiaSymReader, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35\u0027. \u7CFB\u7EDF\u627E\u4E0D\u5230\u6307\u5B9A\u7684\u6587\u4EF6\u3002\r\n   at System.Reflection.RuntimeModule.GetDefinedTypes()\r\n   at System.Composition.Hosting.ContainerConfiguration.\u003C\u003Ec.\u003CWithAssemblies\u003Eb__16_0(Assembly a)\r\n   at System.Linq.Enumerable.SelectManySingleSelectorIterator\u00602.MoveNext()\r\n   at System.Composition.TypedParts.TypedPartExportDescriptorProvider..ctor(IEnumerable\u00601 types, AttributedModelProvider attributeContext)\r\n   at System.Composition.Hosting.ContainerConfiguration.CreateContainer()\r\n   at Microsoft.CodeAnalysis.Host.Mef.MefHostServices.Create(IEnumerable\u00601 assemblies)\r\n   at Program.\u003CMain\u003E$(String[] args) in D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\Program.cs:line 16\r\nSystem.IO.FileNotFoundException: Could not load file or assembly \u0027Microsoft.DiaSymReader, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35\u0027. \u7CFB\u7EDF\u627E\u4E0D\u5230\u6307\u5B9A\u7684\u6587\u4EF6\u3002\r\nFile name: \u0027Microsoft.DiaSymReader, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35\u0027"
+}

@@ -1,0 +1,28 @@
+{
+  "errors": [],
+  "widths": [
+    {
+      "width": 1440,
+      "interfaceY": 384.34375,
+      "overflow": false,
+      "updatesOpen": false,
+      "groups": 5
+    },
+    {
+      "width": 768,
+      "interfaceY": 391.75,
+      "overflow": false,
+      "updatesOpen": false,
+      "groups": 5
+    },
+    {
+      "width": 390,
+      "interfaceY": 498.5,
+      "overflow": false,
+      "updatesOpen": false,
+      "groups": 5
+    }
+  ],
+  "productExecuted": false,
+  "updateGroupCount": 11
+}

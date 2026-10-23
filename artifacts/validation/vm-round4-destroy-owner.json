@@ -1,0 +1,15 @@
+{
+  "sha256": "45c57bc46f72fd1f9e0b3a6f9183ff974d14590cfd05ecf4e9fa97a4ff95ae9b",
+  "method": "Static direct-call and RTTI/vtable byte scan; candidate references need caller context",
+  "vtables": [],
+  "directCalls": [
+    {
+      "ref": "b6ec7",
+      "root": "b6df0"
+    },
+    {
+      "ref": "b6fec",
+      "root": "b6fa0"
+    }
+  ]
+}

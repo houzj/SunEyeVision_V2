@@ -1,0 +1,21 @@
+{
+  "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+  "mode": "startup-disabled-probe",
+  "isolationNote": "Probe-only static guard suppresses background startup preparation; on-demand initialization still runs; product unchanged",
+  "round0": {
+    "initializationMs": 932.0144,
+    "constructToContentRenderedMs": 1920.1453,
+    "firstRequestedQueryMs": 368.1043,
+    "hasAppend": true,
+    "queryExcludesPopup": true
+  },
+  "round1": {
+    "initializationMs": 14.188,
+    "constructToContentRenderedMs": 228.1609,
+    "firstRequestedQueryMs": 83.9236,
+    "hasAppend": true,
+    "queryExcludesPopup": true
+  },
+  "success": true,
+  "totalMs": 2811.8888
+}

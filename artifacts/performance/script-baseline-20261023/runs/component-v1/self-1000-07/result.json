@@ -1,0 +1,225 @@
+{
+  "scope": "isolated Roslyn binaries from self Release; not application editor UI",
+  "references": [
+    "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\mscorlib.dll",
+    "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System\\v4.0_4.0.0.0__b77a5c561934e089\\System.dll",
+    "C:\\Windows\\Microsoft.Net\\assembly\\GAC_MSIL\\System.Core\\v4.0_4.0.0.0__b77a5c561934e089\\System.Core.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\BenchReference.dll"
+  ],
+  "serviceMs": 425.5506,
+  "documentMs": 219.8562,
+  "semanticMs": 251.5452,
+  "queryMode": "explicit completion (Ctrl\u002BSpace), same source and caret",
+  "completion": [
+    {
+      "iteration": 0,
+      "ms": 524.7953,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 1,
+      "ms": 25.4126,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 2,
+      "ms": 24.4187,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 3,
+      "ms": 24.725,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 4,
+      "ms": 24.8288,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 5,
+      "ms": 24.5686,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 6,
+      "ms": 25.07,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 7,
+      "ms": 24.1714,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 8,
+      "ms": 24.4629,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 9,
+      "ms": 32.0006,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 10,
+      "ms": 25.2616,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 11,
+      "ms": 6.2803,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 12,
+      "ms": 5.206,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 13,
+      "ms": 5.9776,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 14,
+      "ms": 7.1069,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 15,
+      "ms": 5.3591,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 16,
+      "ms": 5.3693,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 17,
+      "ms": 5.3649,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 18,
+      "ms": 5.4334,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 19,
+      "ms": 6.5922,
+      "count": 17,
+      "hasAppend": true
+    },
+    {
+      "iteration": 20,
+      "ms": 5.7729,
+      "count": 17,
+      "hasAppend": true
+    }
+  ],
+  "compiler": [
+    {
+      "iteration": 0,
+      "ms": 617.6103,
+      "parseMs": 14.7187,
+      "createMs": 0.3921,
+      "emitMs": 602.4902,
+      "success": true,
+      "errors": []
+    },
+    {
+      "iteration": 1,
+      "ms": 234.5331,
+      "parseMs": 13.8823,
+      "createMs": 0.1039,
+      "emitMs": 220.5407,
+      "success": true,
+      "errors": []
+    },
+    {
+      "iteration": 2,
+      "ms": 249.7364,
+      "parseMs": 19.6907,
+      "createMs": 0.0648,
+      "emitMs": 229.9755,
+      "success": true,
+      "errors": []
+    }
+  ],
+  "loaded": [
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.CoreLib.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\SelfBench.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Features.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.Immutable.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Workspaces.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Metadata.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Linq.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Json.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Console.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.Loader.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Memory.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Encoding.Extensions.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.Encodings.Web.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.Intrinsics.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Numerics.Vectors.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.Concurrent.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.Uri.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Emit.Lightweight.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Primitives.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.InteropServices.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Features.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.TypedParts.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.Hosting.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.Runtime.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\SelfBench\\bin\\Release\\net9.0\\System.Composition.AttributedModel.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Xml.XDocument.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.Xml.Linq.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Private.Xml.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Diagnostics.Tracing.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.IO.MemoryMappedFiles.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.Channels.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Runtime.Serialization.Primitives.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Text.RegularExpressions.dll",
+    "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\self-binaries\\Microsoft.DiaSymReader.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\netstandard.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Linq.Expressions.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Reflection.Emit.ILGeneration.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Security.Cryptography.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.ThreadPool.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Threading.Tasks.Parallel.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Diagnostics.Process.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.ComponentModel.Primitives.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Collections.NonGeneric.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\Microsoft.Win32.Primitives.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.IO.Compression.dll",
+    "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.20\\System.Globalization.dll"
+  ],
+  "success": true
+}

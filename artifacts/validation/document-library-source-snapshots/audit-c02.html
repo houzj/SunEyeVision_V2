@@ -1,0 +1,34 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>C02 身份、作用域与所有权</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">C02 身份、作用域与所有权</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="../能力对照/capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="../能力对照/capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>C02 身份、作用域与所有权</h1><aside class="scope-notice">以下沿用2026-10-21分析基线与原有状态；未把本次分页或图示当作新增语义证据。最新目标取舍另见 <a href="../目标架构/architecture-target.html">12项目标决策</a>。</aside><figure class="flow-figure" data-visual="flow"><figcaption><b>该工作包需要追踪的关系</b><span class="chip">审计要求；不是完整实现保证</span></figcaption><ol class="flow-path"><li><small>01</small><b>创建</b></li><li><small>02</small><b>身份注册</b></li><li><small>03</small><b>请求/回调携带身份</b></li><li><small>04</small><b>切换/关闭</b></li><li><small>05</small><b>迟到回调处理</b></li></ol></figure><section id="C02"><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>目前已见</h2><p>RunSession/RootScope、节点ID和本轮上下文已有说明。</p><p>正文可评审（具体待证保留）</p></section><section class="reference"><div class="eyebrow">GAP · 未闭合与后续</div><h2>具体缺口与下一步</h2><p>设备/编辑器/分析实例、复制导入身份和迟到回调的所有者总表仍不完整。</p><p>给方案/根运行/子调用/设备/编辑器/历史分别列Owner、身份键和退役门槛；核删除重建。</p></section></div><section class="visual-card "><h2>判定范围与追踪入口</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">要回答的问题</th><td data-label="要回答的问题">方案、流程、节点、设备、编辑会话、运行代次分别如何标识和结束？</td></tr><tr><th class="row-label" scope="row">判定标准</th><td data-label="判定标准">列对象所有者和作用域，覆盖切方案、删除重建及迟到回调；未恢复的对象边明确标注。</td></tr><tr><th class="row-label" scope="row">正文交付</th><td data-label="正文交付">正文可评审（具体待证保留）：14类Owner登记覆盖根/子调用/工具实例/结果与显示身份，创建、借用、退役和具体未知分开。</td></tr><tr><th class="row-label" scope="row">产品/运行验收</th><td data-label="产品/运行验收">未由本次文档任务执行</td></tr><tr><th class="row-label" scope="row">对应能力</th><td data-label="对应能力"><a href="../能力对照/capability-m02.html#compare-M02"><b>方案配置：新建、打开、切换</b><small class="reference-id">能力对照 · M02</small></a> · <a href="../能力对照/capability-m05.html#compare-M05"><b>新增、选中、重命名与删除流程Tab</b><small class="reference-id">能力对照 · M05</small></a> · <a href="../能力对照/capability-m08.html#compare-M08"><b>删除节点、撤销与重做</b><small class="reference-id">能力对照 · M08</small></a> · <a href="../能力对照/capability-m22.html#compare-M22"><b>关闭主窗/切方案时保存与资源退役</b><small class="reference-id">能力对照 · M22</small></a> · <a href="../能力对照/capability-x01.html#compare-X01"><b>图像缓冲、显示缓存与最后读者</b><small class="reference-id">能力对照 · X01</small></a></td></tr><tr><th class="row-label" scope="row">优化方案</th><td data-label="优化方案"><a href="../优化方案/optimization-o01.html#O01"><b>入口、装配与编辑事务</b><small class="reference-id">优化方案 · O01</small></a> · <a href="../优化方案/optimization-o04.html#O04"><b>生命周期、图像最后读者与退出</b><small class="reference-id">优化方案 · O04</small></a> · <a href="../优化方案/optimization-o07.html#O07"><b>模块结果树与输出投影</b><small class="reference-id">优化方案 · O07</small></a></td></tr><tr><th class="row-label" scope="row">完整专题</th><td data-label="完整专题"><a href="../现状分析/system-architecture.html#run">实际链与证据</a></td></tr></tbody></table></div></section><details><summary>完整审计条目</summary><pre>{
+  &quot;id&quot;: &quot;C02&quot;,
+  &quot;title&quot;: &quot;身份、作用域与所有权&quot;,
+  &quot;priority&quot;: &quot;P0&quot;,
+  &quot;question&quot;: &quot;方案、流程、节点、设备、编辑会话、运行代次分别如何标识和结束？&quot;,
+  &quot;requiredChain&quot;: &quot;创建→身份注册→请求/回调携带身份→切换/关闭→迟到回调处理&quot;,
+  &quot;criterion&quot;: &quot;列对象所有者和作用域，覆盖切方案、删除重建及迟到回调；未恢复的对象边明确标注。&quot;,
+  &quot;capabilities&quot;: [
+    &quot;M02&quot;,
+    &quot;M05&quot;,
+    &quot;M08&quot;,
+    &quot;M22&quot;,
+    &quot;X01&quot;
+  ],
+  &quot;url&quot;: &quot;../现状分析/system-architecture.html#run&quot;,
+  &quot;current&quot;: &quot;RunSession/RootScope、节点ID和本轮上下文已有说明。&quot;,
+  &quot;gap&quot;: &quot;设备/编辑器/分析实例、复制导入身份和迟到回调的所有者总表仍不完整。&quot;,
+  &quot;next&quot;: &quot;给方案/根运行/子调用/设备/编辑器/历史分别列Owner、身份键和退役门槛；核删除重建。&quot;,
+  &quot;decisions&quot;: [
+    &quot;O01&quot;,
+    &quot;O04&quot;,
+    &quot;O07&quot;
+  ],
+  &quot;legacyAccepted&quot;: true,
+  &quot;documentation&quot;: {
+    &quot;id&quot;: &quot;C02&quot;,
+    &quot;accepted&quot;: true,
+    &quot;status&quot;: &quot;正文可评审（具体待证保留）&quot;,
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#resource-ownership&quot;,
+    &quot;reason&quot;: &quot;14类Owner登记覆盖根/子调用/工具实例/结果与显示身份，创建、借用、退役和具体未知分开。&quot;,
+    &quot;remainingProduct&quot;: null
+  },
+  &quot;status&quot;: &quot;正文可评审（具体待证保留）&quot;
+}</pre></details></section></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

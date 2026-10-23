@@ -1,0 +1,57 @@
+{
+  "sha256": "76f09a40184b2b5f99b7173edde23a716d339e3c64955696d6927495efdf68a9",
+  "strings": [
+    {
+      "rva": "146910",
+      "text": "VM_M_DeleteModuleNode"
+    },
+    {
+      "rva": "146ad8",
+      "text": "VM_M_StopRunProcedure"
+    },
+    {
+      "rva": "14b8b0",
+      "text": "ProxyPath = [%s], nRet = [%d]"
+    },
+    {
+      "rva": "14f440",
+      "text": "[%s@%d] ParseServerProtocol VM_M_DeleteModuleNode fail. nRet = [%x]"
+    },
+    {
+      "rva": "14f8b0",
+      "text": "[%s@%d] ParseServerProtocol VM_M_StopRunProcedure fail, nRet = [%x]."
+    }
+  ],
+  "refs": [
+    {
+      "name": "VM_M_DeleteModuleNode",
+      "literalRVA": "146910",
+      "referenceVA": "180021b53",
+      "rootRVA": "21590"
+    },
+    {
+      "name": "VM_M_StopRunProcedure",
+      "literalRVA": "146ad8",
+      "referenceVA": "18002203f",
+      "rootRVA": "21590"
+    },
+    {
+      "name": "ProxyPath = [%s], nRet = [%d]",
+      "literalRVA": "14b8b0",
+      "referenceVA": "18003c705",
+      "rootRVA": "3c600"
+    },
+    {
+      "name": "[%s@%d] ParseServerProtocol VM_M_DeleteModuleNode fail. nRet = [%x]",
+      "literalRVA": "14f440",
+      "referenceVA": "18004bbd1",
+      "rootRVA": "4a610"
+    },
+    {
+      "name": "[%s@%d] ParseServerProtocol VM_M_StopRunProcedure fail, nRet = [%x].",
+      "literalRVA": "14f8b0",
+      "referenceVA": "18004d418",
+      "rootRVA": "4a610"
+    }
+  ]
+}

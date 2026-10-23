@@ -45,6 +45,8 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
     /// </summary>
     public class ImageInfo : INotifyPropertyChanged
     {
+        public string? SourceReference { get; set; }
+        public string? ResourceError { get; set; }
         private int _displayIndex;
         private bool _isSelected;
         private bool _isForRun = false;
@@ -117,7 +119,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         /// 是否已加载全分辨率图像
         /// </summary>
         public bool IsMissing => !File.Exists(FilePath);
-        public string FileStatus => IsMissing ? "图像文件不存在" : FilePath;
+        public string FileStatus => ResourceError ?? (IsMissing ? "图像文件不存在：" + (SourceReference ?? FilePath) : FilePath);
 
         public bool IsFullImageLoaded => _isFullImageLoaded && _fullImage != null;
 

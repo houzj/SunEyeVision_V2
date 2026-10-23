@@ -1,0 +1,278 @@
+{
+  "rows": [
+    {
+      "side": "vm",
+      "lines": 100,
+      "trial": 0,
+      "exit": 0,
+      "wallSeconds": 1.469829797744751,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-100-00\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 100,
+      "trial": 0,
+      "exit": 0,
+      "wallSeconds": 2.401834487915039,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-100-00\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 100,
+      "trial": 1,
+      "exit": 0,
+      "wallSeconds": 2.2081570625305176,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-100-01\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 100,
+      "trial": 1,
+      "exit": 0,
+      "wallSeconds": 1.5226490497589111,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-100-01\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 100,
+      "trial": 2,
+      "exit": 0,
+      "wallSeconds": 1.5741856098175049,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-100-02\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 100,
+      "trial": 2,
+      "exit": 0,
+      "wallSeconds": 2.3711354732513428,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-100-02\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 100,
+      "trial": 3,
+      "exit": 0,
+      "wallSeconds": 2.366290807723999,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-100-03\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 100,
+      "trial": 3,
+      "exit": 0,
+      "wallSeconds": 1.640228509902954,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-100-03\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 100,
+      "trial": 4,
+      "exit": 0,
+      "wallSeconds": 1.6401076316833496,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-100-04\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 100,
+      "trial": 4,
+      "exit": 0,
+      "wallSeconds": 2.4133546352386475,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-100-04\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 1000,
+      "trial": 0,
+      "exit": 0,
+      "wallSeconds": 3.3279736042022705,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-1000-00\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 1000,
+      "trial": 0,
+      "exit": 0,
+      "wallSeconds": 3.294909954071045,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-1000-00\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 1000,
+      "trial": 1,
+      "exit": 0,
+      "wallSeconds": 3.1423513889312744,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-1000-01\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 1000,
+      "trial": 1,
+      "exit": 0,
+      "wallSeconds": 3.1925628185272217,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-1000-01\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 1000,
+      "trial": 2,
+      "exit": 0,
+      "wallSeconds": 3.047919750213623,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-1000-02\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 1000,
+      "trial": 2,
+      "exit": 0,
+      "wallSeconds": 3.570772647857666,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-1000-02\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 1000,
+      "trial": 3,
+      "exit": 0,
+      "wallSeconds": 3.2004787921905518,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-1000-03\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 1000,
+      "trial": 3,
+      "exit": 0,
+      "wallSeconds": 3.2568702697753906,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-1000-03\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 1000,
+      "trial": 4,
+      "exit": 0,
+      "wallSeconds": 3.438424587249756,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-1000-04\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 1000,
+      "trial": 4,
+      "exit": 0,
+      "wallSeconds": 4.074518918991089,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-1000-04\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 5000,
+      "trial": 0,
+      "exit": 0,
+      "wallSeconds": 29.268835306167603,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-5000-00\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 5000,
+      "trial": 0,
+      "exit": 0,
+      "wallSeconds": 5.638839483261108,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-5000-00\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 5000,
+      "trial": 1,
+      "exit": 0,
+      "wallSeconds": 5.534775972366333,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-5000-01\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 5000,
+      "trial": 1,
+      "exit": 0,
+      "wallSeconds": 27.45465612411499,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-5000-01\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 5000,
+      "trial": 2,
+      "exit": 0,
+      "wallSeconds": 32.36067199707031,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-5000-02\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 5000,
+      "trial": 2,
+      "exit": 0,
+      "wallSeconds": 6.971150636672974,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-5000-02\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 5000,
+      "trial": 3,
+      "exit": 0,
+      "wallSeconds": 5.704328298568726,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-5000-03\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 5000,
+      "trial": 3,
+      "exit": 0,
+      "wallSeconds": 30.3597629070282,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-5000-03\\result.json",
+      "valid": true
+    },
+    {
+      "side": "vm",
+      "lines": 5000,
+      "trial": 4,
+      "exit": 0,
+      "wallSeconds": 32.77510619163513,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\vm-5000-04\\result.json",
+      "valid": true
+    },
+    {
+      "side": "self",
+      "lines": 5000,
+      "trial": 4,
+      "exit": 0,
+      "wallSeconds": 8.582883358001709,
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-baseline-20261023\\runs\\component-v2\\self-5000-04\\result.json",
+      "valid": true
+    }
+  ],
+  "valid": 30,
+  "total": 30,
+  "manifestDrift": [],
+  "applicationUiMeasured": false
+}

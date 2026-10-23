@@ -1,0 +1,33 @@
+{
+  "rows": [
+    {
+      "width": 390,
+      "entryCount": 1,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "entryCount": 1,
+      "overflow": false
+    },
+    {
+      "width": 1366,
+      "entryCount": 1,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "entryCount": 1,
+      "overflow": false
+    }
+  ],
+  "homeLinkWorks": true,
+  "directoryOpen": true,
+  "directoryLabel": "脚本工具\n打开、补全与编译",
+  "directoryLinkWorks": true,
+  "algorithmLinkWorks": true,
+  "bareScriptRosterLabel": false,
+  "errors": 0,
+  "target": "现状分析/tool-script.html#script-final-decision",
+  "directDecisionAnchor": true
+}

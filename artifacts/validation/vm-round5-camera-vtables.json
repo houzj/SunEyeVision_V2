@@ -1,0 +1,96 @@
+{
+  "sha256": "f61fb1063325793343139c8699aa9eba3db931a33de3869fd856700ca05cecce",
+  "method": "Static PE RTTI, not runtime object observation",
+  "vtables": [
+    {
+      "name": ".?AVCCameraModule@@",
+      "offset": 0,
+      "vtable": "30c88",
+      "entries": [
+        {
+          "slot": 0,
+          "rva": "8cc0"
+        },
+        {
+          "slot": 8,
+          "rva": "44b0"
+        },
+        {
+          "slot": 16,
+          "rva": "a620"
+        },
+        {
+          "slot": 24,
+          "rva": "ca50"
+        },
+        {
+          "slot": 32,
+          "rva": "18e00"
+        },
+        {
+          "slot": 40,
+          "rva": "19a90"
+        },
+        {
+          "slot": 48,
+          "rva": "18f70"
+        },
+        {
+          "slot": 56,
+          "rva": "9230"
+        },
+        {
+          "slot": 64,
+          "rva": "9b00"
+        }
+      ]
+    },
+    {
+      "name": ".?AV?$_LaunchPad@V?$_Bind@$00KQ6AKPEAX@ZPEAVCCameraModule@@@std@@@std@@",
+      "offset": 0,
+      "vtable": "30c78",
+      "entries": [
+        {
+          "slot": 0,
+          "rva": "219f0"
+        },
+        {
+          "slot": 8,
+          "rva": "364e0"
+        },
+        {
+          "slot": 16,
+          "rva": "8cc0"
+        },
+        {
+          "slot": 24,
+          "rva": "44b0"
+        },
+        {
+          "slot": 32,
+          "rva": "a620"
+        },
+        {
+          "slot": 40,
+          "rva": "ca50"
+        },
+        {
+          "slot": 48,
+          "rva": "18e00"
+        },
+        {
+          "slot": 56,
+          "rva": "19a90"
+        },
+        {
+          "slot": 64,
+          "rva": "18f70"
+        },
+        {
+          "slot": 72,
+          "rva": "9230"
+        }
+      ]
+    }
+  ]
+}

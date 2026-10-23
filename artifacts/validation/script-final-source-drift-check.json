@@ -1,0 +1,50 @@
+{
+  "count": 11,
+  "checks": [
+    {
+      "matches": true,
+      "path": "src/CommonControl/ScriptEditorCore.xaml.cs"
+    },
+    {
+      "matches": true,
+      "path": "src/CommonControl/SemanticHighlighter.cs"
+    },
+    {
+      "matches": true,
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs"
+    },
+    {
+      "matches": true,
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs"
+    },
+    {
+      "matches": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs"
+    },
+    {
+      "matches": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs"
+    },
+    {
+      "matches": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs"
+    },
+    {
+      "matches": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs"
+    },
+    {
+      "matches": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs"
+    },
+    {
+      "matches": true,
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/SharedMetadataReferenceProvider.cs"
+    },
+    {
+      "matches": true,
+      "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs"
+    }
+  ],
+  "errors": 0
+}

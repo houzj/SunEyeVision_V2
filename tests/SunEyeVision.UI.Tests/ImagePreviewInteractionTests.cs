@@ -149,7 +149,7 @@ public sealed partial class SolutionManagerUiTests
     {
         Sta(() =>
         {
-            using var fixture = new CardFixture();
+            using var fixture = new PreviewSolutionFixture();
             var serviceField = typeof(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer)
                 .GetField("_solutionManager", BindingFlags.NonPublic | BindingFlags.Static)!;
             var previous = serviceField.GetValue(null);
@@ -186,5 +186,19 @@ public sealed partial class SolutionManagerUiTests
                 if (ReferenceEquals(serviceField.GetValue(null), fixture.Manager)) serviceField.SetValue(null, previous);
             }
         });
+    }
+    // This execution test needs a temporary manager, not the retired manager window/card fixture.
+    private sealed class PreviewSolutionFixture : IDisposable
+    {
+        private readonly string _root = Path.Combine(Path.GetTempPath(), "SunEyeVision-PreviewPolicy", Guid.NewGuid().ToString("N"));
+        public SolutionManager Manager { get; }
+        public PreviewSolutionFixture()
+        {
+            Directory.CreateDirectory(_root);
+            SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginLoader.MarkAsLoaded();
+            Manager = new SolutionManager(new ApplicationDataLocationService(Path.Combine(_root, "locator.json"))
+                .Prepare(Path.Combine(_root, "data")));
+        }
+        public void Dispose() => Directory.Delete(_root, true);
     }
 }

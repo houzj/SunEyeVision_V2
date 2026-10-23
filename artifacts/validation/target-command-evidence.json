@@ -1,0 +1,231 @@
+{
+  "rows": [
+    {
+      "id": "new",
+      "fact": "方案管理器“新建方案”已接NewSolutionCommand；顶栏当前只有“方案配置”，目标直接新建快捷项尚未接入。",
+      "chain": "NewSolutionCommand → New → 方案管理器模型/落盘；不得用旧NewWorkflowCommand代替方案新建。",
+      "guard": "管理器以!IsBusy准入；跨方案保存/停止门禁仍走现有transition链。",
+      "change": "复用管理器操作服务增加快捷入口，保持选中记录与已加载方案分开。",
+      "source": {
+        "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+        "line": 87,
+        "token": "NewSolutionCommand =",
+        "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+      }
+    },
+    {
+      "id": "open",
+      "fact": "管理器“添加已有”与“打开选中方案”是两步，不能把添加记录直接等同已切换方案。",
+      "chain": "OpenSolutionCommand → AddExisting；LaunchCommand → Launch → 保存/运行过渡检查后打开。",
+      "guard": "Launch检查选中项、缺失文件和busy；当前目标顶栏打开快捷项未接线。",
+      "change": "快捷打开应完成预检和Launch事务，失败保留旧工作区，不能只调用AddExisting。",
+      "source": {
+        "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+        "line": 96,
+        "token": "LaunchCommand =",
+        "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+      }
+    },
+    {
+      "id": "save",
+      "fact": "顶栏保存实际绑定SaveCurrentSolutionCommand。",
+      "chain": "SaveCurrentSolutionCommand → ExecuteSaveCurrentSolution；不是旧SaveWorkflowCommand。",
+      "guard": "保存错误反馈已有；Repository先修改内存路径等失败回滚缺口见持久化页。",
+      "change": "保留命令接线，整改内存+文件提交与脏状态，不重新造另一种保存格式。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 932,
+        "token": "SaveCurrentSolutionCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "undo",
+      "fact": "ExecuteUndo与CurrentCommandManager.CanUndo已有；在本次顶栏XAML中未找到UndoCommand按钮。",
+      "chain": "UndoCommand → ExecuteUndo → CommandManager.Undo。",
+      "guard": "CanUndo已有；异常恢复、删除副作用和历史作用域仍有确定缺口。",
+      "change": "目标菜单/快捷项复用当前命令，先修图事务，不把新增按钮当撤销完整。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 1309,
+        "token": "private void ExecuteUndo()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "redo",
+      "fact": "ExecuteRedo与CurrentCommandManager.CanRedo已有；当前顶栏未接RedoCommand。",
+      "chain": "RedoCommand → ExecuteRedo → CommandManager.Redo。",
+      "guard": "CanRedo已有；与Undo共享事务一致性问题，需禁止失败后静默丢历史。",
+      "change": "借鉴VM5.1能力而不迁移二进制；补当前入口并验同一模型身份与绑定。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 1331,
+        "token": "private void ExecuteRedo()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "run",
+      "fact": "顶栏和菜单绑定RunWorkflowCommand，运行选中流程，不是全部流程单次。",
+      "chain": "RunWorkflowCommand → ExecuteRunWorkflow → 执行管理器。",
+      "guard": "命令CanExecute为!IsRunning；引擎/方案就绪和多入口重入还需统一。",
+      "change": "保留实际入口，统一显式目标、运行身份和失败反馈。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 934,
+        "token": "RunWorkflowCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "runall",
+      "fact": "RunAllWorkflowsCommand与ExecuteRunAllWorkflows后端确实存在；当前顶栏未找到绑定该命令的按钮。",
+      "chain": "ExecuteRunAllWorkflows → SetRuntimeParameters → RunSolutionAsync(Tabs,solution)。",
+      "guard": "CanExecute为!IsAllWorkflowsRunning；执行后无条件成功日志的语义需结合返回状态复审，不据日志认全部成功。",
+      "change": "补目标菜单/工具栏接线并消费完整终态，不能拿当前单次按钮冒充全部单次。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 4221,
+        "token": "private async System.Threading.Tasks.Task ExecuteRunAllWorkflows()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "continuous",
+      "fact": "顶栏ToggleButton已绑定ToggleContinuousAllCommand。",
+      "chain": "ExecuteToggleContinuousAll → 当前IsAllWorkflowsRunning决定StartAllWorkflows或StopAllWorkflows。",
+      "guard": "当前命令CanExecute恒true；流程集合的重入和停止排空仍须后端裁决。",
+      "change": "保留已有切换入口，统一按钮显示与真实会话状态，停止完成不得仅看登记归零。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 4280,
+        "token": "private void ExecuteToggleContinuousAll()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "pause",
+      "fact": "PauseCommand有注册，但ExecutePause方法体只有TODO；当前顶栏未接暂停按钮。",
+      "chain": "PauseCommand → ExecutePause（占位）。",
+      "guard": "没有证据可把RunSession暂停能力直接等同菜单暂停功能完成。",
+      "change": "先确认暂停派发的产品语义，再接Session及按钮；不承诺暂停任意原生算法。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 1304,
+        "token": "private void ExecutePause()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "stop",
+      "fact": "顶栏菜单已有StopWorkflowCommand；当前工具栏没有单独停止按钮，连续按钮另负责全部连续切换。",
+      "chain": "StopWorkflowCommand → ExecuteStopWorkflow；连续停止走StopAllWorkflows，两个入口不可混写。",
+      "guard": "Stop命令CanExecute为IsRunning；所有运行范围和在途任务排空仍需统一。",
+      "change": "新增目标停止快捷项时显式当前/全部目标，并观察请求、终态、排空三个阶段。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 935,
+        "token": "StopWorkflowCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "variables",
+      "fact": "顶栏菜单和工具栏均已接ShowGlobalVariableManagerCommand。",
+      "chain": "主窗 → 全局变量管理窗口 → 当前方案变量/保存链。",
+      "guard": "定义编辑与运行快照/监视是不同能力；子调用继承、保存错误等仍需整改。",
+      "change": "复用入口，按全局变量专项改保存/继承/数组政策，不把已有管理器整体重建。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 968,
+        "token": "ShowGlobalVariableManagerCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "camera",
+      "fact": "顶栏菜单和工具栏已接ShowCameraManagerCommand。",
+      "chain": "主窗 → 相机管理器 → 预览/参数 → CameraSession。",
+      "guard": "窗口入口已有；型号支持、用途冲突、停止失败隔离及实机验证不由按钮存在证明。",
+      "change": "按相机矩阵整改，目标导航无需再造平行相机管理器。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 969,
+        "token": "ShowCameraManagerCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "communication",
+      "fact": "顶栏菜单和工具栏已接ShowCommunicationManagerCommand。",
+      "chain": "主窗 → 通信管理器/应用服务 → Runtime/协议会话。",
+      "guard": "协议驱动、工作流目录接线、设备实测分别验；不能用有管理器代证S7/CIP工作流已通。",
+      "change": "保留入口，补类型化目录与可观察退役/背压政策。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 970,
+        "token": "ShowCommunicationManagerCommand =",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "settings",
+      "fact": "ShowSettingsCommand已注册，但ExecuteShowSettings只有TODO；方案管理器自己的数据目录设置不是全局系统设置完成。",
+      "chain": "ShowSettingsCommand → ExecuteShowSettings（占位）。",
+      "guard": "当前无完整系统设置提交/取消/持久化执行合同。",
+      "change": "明确必要设置列表，复用已有配置服务；配置作用域、失败回滚和重启要求齐后再接目标按钮。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 2201,
+        "token": "private void ExecuteShowSettings()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    },
+    {
+      "id": "recent",
+      "fact": "管理器已有RecentSolutions，按LastAccessTime排序取10项，并有选择最近项入口；示例库未由此证明。",
+      "chain": "方案元数据 → RecentSolutions → SelectRecent → Launch。",
+      "guard": "最近记录存在不等于能成功打开；缺失路径、原工作区保存/停止仍要走打开链。",
+      "change": "把最近方案状态改为部分实现；示例作为按需能力单独确认，不笼统写两者都未实现。",
+      "source": {
+        "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+        "line": 316,
+        "token": "RecentSolutions.Clear();",
+        "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+      }
+    },
+    {
+      "id": "saveas",
+      "fact": "管理器上下文菜单已有SaveSolutionAsCommand和CopySolutionCommand；自有方案副本与旧工作流另存为不是同合同。",
+      "chain": "SaveSolutionAsCommand → RunAsync(SaveAs)；副本复制走CopySolutionCommand。",
+      "guard": "另存当前方案有CanSelect与IsSelectedCurrent条件；资源打包/内部身份和失败回滚见事务页。",
+      "change": "目标菜单复用真实方案命令，明确副本/另存/导出区别。",
+      "source": {
+        "path": "src/UI/Features/Dialogs/SolutionConfigurationDialogViewModel.cs",
+        "line": 89,
+        "token": "SaveSolutionAsCommand =",
+        "sha256": "c6c404b00b5edfba25dcc64c8478e9cea78ccaaaf57382e3fe1685a1bfb6e9e6"
+      }
+    },
+    {
+      "id": "shortcuts",
+      "fact": "ExecuteShowShortcuts确实打开HelpWindow，但跳转快捷键页仍是TODO。",
+      "chain": "ShowShortcutsCommand → HelpWindow.ShowDialog，未传目标页。",
+      "guard": "不能标完全没有帮助，也不能标已完成快捷键直达。",
+      "change": "增加帮助页路由参数并核真实快捷键注册，避免只修改说明。",
+      "source": {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "line": 2218,
+        "token": "private void ExecuteShowShortcuts()",
+        "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5"
+      }
+    }
+  ],
+  "topbar": {
+    "path": "src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml",
+    "sha256": "81a0498d514de68b10fb0bb52028ef98cdc4da9a242aa5d2d68ff792a93435d8"
+  },
+  "scope": "14目标工具栏项+最近/另存/快捷键共17项的具体入口复核，不以能力大类状态替代具体命令。未找到顶栏绑定不等其他入口完全不存在。",
+  "runtimeExecuted": false
+}

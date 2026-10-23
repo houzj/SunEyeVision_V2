@@ -1,0 +1,213 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M15 停止/Shift+F5</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">M15 停止/Shift+F5</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>M15 停止/Shift+F5</h1><article id="compare-M15"><span id="M15"></span><div class="visual-metrics"><div><strong>M15</strong><span>能力条目</span><small>部分实现</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>混合优化</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>StopWorkflowCommand</b></li><li><small>02</small><b>ExecuteStopWorkflow</b></li><li><small>03</small><b>StopContinuousRun(SelectedTab)</b></li><li><small>04</small><b>IsRunning=false/日志</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>方法已发停止请求，但在此立即写已停止，无await排空。</p><details><summary>完整缺陷与未闭合调用边</summary><p>Cancel返回→实际任务Completed/Cancelled；任务终态→回调/帧排空；排空后→UI允许重跑/释放 OnClosing先取消窗口关闭，异步PrepareSolutionTransitionAsync取得transition租约，StopAndWaitAsync最多30秒后再做保存决策。StopAndWait轮询IsAnyRunning；此前ReadyQueue退出finally未await全部running Task，故登记归零不单独证明所有原生任务排空。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>停止命令→原生接收→完成事件与排空分阶段，未恢复边不推断。</p><p>VM流程有工作状态回调/等待标志；并未证明全部原生任务可中断。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF05-CONTINUOUS-RUN-CALLCHAIN.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">ExecuteStopWorkflow请求StopContinuousRun后立即置非运行并记录已停止，UI把请求误报为完成。另确认ReadyQueue取消退出只释放剩余租约、未等待全部running Task，外层返回与节点排空可能分离。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：ExecuteStopWorkflow请求StopContinuousRun后立即置非运行并记录已停止，UI把请求误报为完成。另确认ReadyQueue取消退出只释放剩余租约、未等待全部running Task，外层返回与节点排空可能分离。 VM参考边界：VM流程有工作状态回调/等待标志；并未证明全部原生任务可中断。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">停止先进入Stopping，真实完成/超时后投影终态；引擎需持有并等待所有在途节点再释放资源；StopAndWaitAsync仅看宿主active不能补偿提前返回。不强杀线程；代价是会话任务集合、终态和超时保留策略联动。 将请求返回与最终状态分开：停止按钮先显示Stopping，完成事件或可等待StopAsync/DrainAsync才恢复运行/释放；不能仅延长固定等待。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">取消时有图像/回调/慢原生任务，UI不先显示已排空，资源最终只释放一次。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o02.html#O02"><b>统一运行范围、连续与停止完成</b><small class="reference-id">优化方案 · O02</small></a></td></tr></tbody></table></div></section><article id="recommendation-M15"><h2>M15 停止/Shift+F5 · 必须整改</h2><p><b>代码依据 / 局限：</b>ExecuteStopWorkflow请求StopContinuousRun后立即置非运行并记录已停止，UI把请求误报为完成。另确认ReadyQueue取消退出只释放剩余租约、未等待全部running Task，外层返回与节点排空可能分离。</p><p><b>VM可借鉴与不可推断：</b>VM流程有工作状态回调/等待标志；并未证明全部原生任务可中断。</p><p><b>具体改法 / 成本：</b>停止先进入Stopping，真实完成/超时后投影终态；引擎需持有并等待所有在途节点再释放资源；StopAndWaitAsync仅看宿主active不能补偿提前返回。不强杀线程；代价是会话任务集合、终态和超时保留策略联动。 将请求返回与最终状态分开：停止按钮先显示Stopping，完成事件或可等待StopAsync/DrainAsync才恢复运行/释放；不能仅延长固定等待。</p><p><b>验收：</b>取消时有图像/回调/慢原生任务，UI不先显示已排空，资源最终只释放一次。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M15">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M15">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S034</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:2188</a></p><p><code>ExecuteStopWorkflow</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void ExecuteStopWorkflow()
+        {
+            if (WorkflowTabViewModel.SelectedTab == null)
+            {
+                AddLog(&quot;⚠️ 没有选中的工作流标签页&quot;);
+                return;
+            }
+
+            _executionManager.StopContinuousRun(WorkflowTabViewModel.SelectedTab);
+            IsRunning = false;
+            AddLog(&quot;⏹️ 工作流已停止&quot;);
+        }
+
+        private void ExecuteShowSettings()</pre></details><details class="source-card"><summary>S035</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/WorkflowExecutionManager.cs">src/UI/Services/Workflow/WorkflowExecutionManager.cs:386</a></p><p><code>StopContinuousRun</code></p><p>SHA256 <code>e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae</code></p><pre>        public bool StopContinuousRun(WorkflowTabViewModel workflow)
+        {
+            if (workflow == null)
+                throw new ArgumentNullException(nameof(workflow));
+
+            var workflowId = workflow.RootWorkflowId;
+
+            lock (_lock)
+            {
+                if (_cancellationTokens.TryGetValue(workflowId, out var cts))
+                {
+                    cts.Cancel();
+                    return true;
+                }</pre></details><details class="source-card"><summary>R024</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:2188</a></p><p><code>ExecuteStopWorkflow</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void ExecuteStopWorkflow()
+        {
+            if (WorkflowTabViewModel.SelectedTab == null)
+            {
+                AddLog(&quot;⚠️ 没有选中的工作流标签页&quot;);
+                return;
+            }
+
+            _executionManager.StopContinuousRun(WorkflowTabViewModel.SelectedTab);
+            IsRunning = false;
+            AddLog(&quot;⏹️ 工作流已停止&quot;);
+        }
+
+        private void ExecuteShowSettings()
+        {
+            // TODO: 显示设置对话框
+        }
+
+        private void ExecuteShowAbout()
+        {</pre></details><details class="source-card"><summary>R025</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/WorkflowExecutionManager.cs">src/UI/Services/Workflow/WorkflowExecutionManager.cs:386</a></p><p><code>StopContinuousRun</code></p><p>SHA256 <code>e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae</code></p><pre>        public bool StopContinuousRun(WorkflowTabViewModel workflow)
+        {
+            if (workflow == null)
+                throw new ArgumentNullException(nameof(workflow));
+
+            var workflowId = workflow.RootWorkflowId;
+
+            lock (_lock)
+            {
+                if (_cancellationTokens.TryGetValue(workflowId, out var cts))
+                {
+                    cts.Cancel();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// &lt;summary&gt;</pre></details><details class="source-card"><summary>N006</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowExecutionEngine.cs">src/Workflow/WorkflowExecutionEngine.cs:399</a></p><p><code>foreach (var item in running)</code></p><p>SHA256 <code>4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db</code></p><pre>                foreach (var item in running)
+                    item.Lease.Dispose();
+            }
+
+            var allResults = context.GetAllNodeResults().ToDictionary(pair =&gt; pair.Key, pair =&gt; pair.Value);
+            result.NodeResults = allResults;
+            result.Success = result.Errors.Count == 0 &amp;&amp; allResults.Values.All(node =&gt; node.Success);
+            result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;
+            result.ExecutionTime = DateTime.Now - context.ExecutionStartTime;
+            ExecutionCompleted?.Invoke(this, result);
+            return result;
+        }
+
+        /// &lt;summary&gt;
+        /// 并行执行一组节点（同一组内节点无依赖关系）
+        /// &lt;/summary&gt;
+        /// &lt;remarks&gt;
+        /// 注意：为支持参数绑定解析，组内节点按依赖顺序执行。
+        /// 只有当节点间无数据依赖关系时才真正并行执行。
+        /// &lt;/remarks&gt;
+        private async Task&lt;ExecutionResult&gt; ExecuteNodesInParallel(
+            Workflow workflow,</pre></details><details class="source-card"><summary>N007</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Workflow/WorkflowRunSession.cs">src/Workflow/WorkflowRunSession.cs:146</a></p><p><code>public void Dispose() =&gt; _cancellationSource.Dispose()</code></p><p>SHA256 <code>81a4538d84dd800b91f6380ffbb8bc8fee2b59d0284e5f1c2194a2c97f4587c0</code></p><pre>    public void Dispose() =&gt; _cancellationSource.Dispose();
+}
+</pre></details><details class="source-card"><summary>N008</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Workflow/WorkflowExecutionManager.cs">src/UI/Services/Workflow/WorkflowExecutionManager.cs:220</a></p><p><code>ReleaseExecution(workflowId)</code></p><p>SHA256 <code>e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae</code></p><pre>                ReleaseExecution(workflowId);
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// 开始指定工作流的连续执行
+        /// &lt;/summary&gt;
+        public bool StartContinuousRun(WorkflowTabViewModel workflow)
+        {
+            if (workflow == null)
+                throw new ArgumentNullException(nameof(workflow));
+
+            var workflowId = workflow.RootWorkflowId;
+
+            if (!TryAcquireExecution(workflowId))
+            {
+                NotifyExecutionRejected(workflowId);
+                return false;
+            }
+
+            try
+            {</pre></details><details class="source-card"><summary>N037</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:5574</a></p><p><code>public async System.Threading.Tasks.Task&lt;bool&gt; PrepareSolutionTransitionAsync()</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        public async System.Threading.Tasks.Task&lt;bool&gt; PrepareSolutionTransitionAsync()
+        {
+            if (_transitionPreparationInProgress) return false;
+            _transitionPreparationInProgress = true;
+            try
+            {
+                var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+                if (_executionManager.IsAnyRunning() &amp;&amp;
+                    ThemeMessageDialog.Show(&quot;方案正在运行。停止全部执行后继续？&quot;, &quot;切换方案&quot;, MessageBoxButton.OKCancel,
+                        ThemeMessageDialog.MessageIcon.Question) != MessageBoxResult.OK) return false;
+                _solutionTransitionLease ??= _executionManager.BeginSolutionTransition();
+                await _executionManager.StopAndWaitAsync(TimeSpan.FromSeconds(30));
+                if (manager.CurrentSolution == null)
+                {
+                    if (_isWorkflowModified || WorkflowTabViewModel.Tabs.Any(tab =&gt; tab.WorkflowNodes.Count &gt; 0))
+                    {
+                        var answer = ThemeMessageDialog.Show(&quot;工作区尚未保存为方案。是否保存？&quot;, &quot;保存方案&quot;, MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);
+                        if (answer == MessageBoxResult.Cancel || answer == MessageBoxResult.None) { EndSolutionTransition(); return false; }
+                        if (answer == MessageBoxResult.Yes)
+                        {
+                            SaveCurrentSolutionCommand.Execute(null);
+                            if (manager.CurrentSolution == null || manager.HasUnsavedChanges) { EndSolutionTransition(); return false; }</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M15&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;停止/Shift+F5&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;StopWorkflowCommand&quot;,
+    &quot;ExecuteStopWorkflow&quot;,
+    &quot;StopContinuousRun(SelectedTab)&quot;,
+    &quot;IsRunning=false/日志&quot;
+  ],
+  &quot;current&quot;: &quot;方法已发停止请求，但在此立即写已停止，无await排空。&quot;,
+  &quot;gap&quot;: &quot;Cancel返回→实际任务Completed/Cancelled；任务终态→回调/帧排空；排空后→UI允许重跑/释放 OnClosing先取消窗口关闭，异步PrepareSolutionTransitionAsync取得transition租约，StopAndWaitAsync最多30秒后再做保存决策。StopAndWait轮询IsAnyRunning；此前ReadyQueue退出finally未await全部running Task，故登记归零不单独证明所有原生任务排空。&quot;,
+  &quot;vm&quot;: &quot;停止命令→原生接收→完成事件与排空分阶段，未恢复边不推断。&quot;,
+  &quot;vmDoc&quot;: &quot;MF05-CONTINUOUS-RUN-CALLCHAIN.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;必须整改&quot;,
+  &quot;reason&quot;: &quot;依据：ExecuteStopWorkflow请求StopContinuousRun后立即置非运行并记录已停止，UI把请求误报为完成。另确认ReadyQueue取消退出只释放剩余租约、未等待全部running Task，外层返回与节点排空可能分离。 VM参考边界：VM流程有工作状态回调/等待标志；并未证明全部原生任务可中断。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;停止先进入Stopping，真实完成/超时后投影终态；引擎需持有并等待所有在途节点再释放资源；StopAndWaitAsync仅看宿主active不能补偿提前返回。不强杀线程；代价是会话任务集合、终态和超时保留策略联动。 将请求返回与最终状态分开：停止按钮先显示Stopping，完成事件或可等待StopAsync/DrainAsync才恢复运行/释放；不能仅延长固定等待。&quot;,
+  &quot;accept&quot;: &quot;取消时有图像/回调/慢原生任务，UI不先显示已排空，资源最终只释放一次。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S034&quot;,
+    &quot;S035&quot;,
+    &quot;R024&quot;,
+    &quot;R025&quot;,
+    &quot;N006&quot;,
+    &quot;N007&quot;,
+    &quot;N008&quot;,
+    &quot;N037&quot;
+  ],
+  &quot;optimization&quot;: &quot;O02&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;M15&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;ExecuteStopWorkflow调用StopContinuousRun后立即IsRunning=false并记录已停止；StopContinuousRun只是Cancel并返回请求是否接受。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;Cancel返回→实际任务Completed/Cancelled&quot;,
+      &quot;任务终态→回调/帧排空&quot;,
+      &quot;排空后→UI允许重跑/释放&quot;
+    ],
+    &quot;cause&quot;: &quot;局部已确认实现缺口&quot;,
+    &quot;change&quot;: &quot;将请求返回与最终状态分开：停止按钮先显示Stopping，完成事件或可等待StopAsync/DrainAsync才恢复运行/释放；不能仅延长固定等待。&quot;,
+    &quot;acceptance&quot;: &quot;取消时有图像/回调/慢原生任务，UI不先显示已排空，资源最终只释放一次。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S034&quot;,
+      &quot;S035&quot;,
+      &quot;R024&quot;,
+      &quot;R025&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;重构停止完成投影&quot;,
+    &quot;reason&quot;: &quot;保留合作取消，补可等待完成；强杀原生线程不是默认安全选项。&quot;
+  },
+  &quot;defect&quot;: &quot;ExecuteStopWorkflow请求StopContinuousRun后立即置非运行并记录已停止，UI把请求误报为完成。另确认ReadyQueue取消退出只释放剩余租约、未等待全部running Task，外层返回与节点排空可能分离。&quot;,
+  &quot;vmBorrow&quot;: &quot;VM流程有工作状态回调/等待标志；并未证明全部原生任务可中断。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;混合优化&quot;,
+  &quot;adoptionBasis&quot;: &quot;参考VM已确认的职责/行为，结合自有数据与服务实现；不复用VM二进制、协议或密钥。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;必须整改&quot;,
+    &quot;defect&quot;: &quot;ExecuteStopWorkflow请求StopContinuousRun后立即置非运行并记录已停止，UI把请求误报为完成。另确认ReadyQueue取消退出只释放剩余租约、未等待全部running Task，外层返回与节点排空可能分离。&quot;,
+    &quot;borrow&quot;: &quot;VM流程有工作状态回调/等待标志；并未证明全部原生任务可中断。&quot;,
+    &quot;action&quot;: &quot;停止先进入Stopping，真实完成/超时后投影终态；引擎需持有并等待所有在途节点再释放资源；StopAndWaitAsync仅看宿主active不能补偿提前返回。不强杀线程；代价是会话任务集合、终态和超时保留策略联动。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;混合优化&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S034&quot;,
+      &quot;S035&quot;,
+      &quot;R024&quot;,
+      &quot;R025&quot;,
+      &quot;N006&quot;,
+      &quot;N007&quot;,
+      &quot;N008&quot;,
+      &quot;N037&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

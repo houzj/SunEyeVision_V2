@@ -1,0 +1,21 @@
+{
+  "taskId": "START-IMPLEMENT-01",
+  "manifest": "artifacts/startup-implementation/START-IMPLEMENT-01/manifest.json",
+  "manifestSha256": "fcdd20a73c629f3956d9bb6bc3dbe2a63bc5f284b0f6efd04c3e1ea7627d40a5",
+  "codeCommit": "a09ab60535cf11b7c1a3497186dffbf53f2e5288",
+  "checks": {
+    "changedSources": {
+      "count": 15,
+      "drift": []
+    },
+    "sourceInputs": {
+      "count": 1329,
+      "drift": []
+    },
+    "outputs": {
+      "count": 82,
+      "drift": []
+    }
+  },
+  "scope": "交付所列文件身份核对，不证明全树/第三方身份或独立验收通过"
+}

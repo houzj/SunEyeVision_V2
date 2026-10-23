@@ -1,0 +1,176 @@
+{
+  "id": "SCRIPT-ASSEMBLY-SCOPE-20261023",
+  "input": "docs/collaboration/SCRIPT_ASSEMBLY_SCOPE_20261023.json",
+  "inputSha256": "dbbc6121891dfb13b12ebd1e4cbbed12f00afc10e59fadd7579a78a5bf3127c1",
+  "checks": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\MetadataReferenceProvider.cs",
+      "sha256": "7D0BBDE0BD123DBD5E63D910A94E02968E2FEA0A9FD1675E2E2C7E125B2E6475",
+      "actualSha256": "7d0bbde0bd123dbd5e63d910a94e02968e2fea0a9fd1675e2e2c7e125b2e6475",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\SharedMetadataReferenceProvider.cs",
+      "sha256": "CCCD79604D26AE31F6F6C8D187C023E781ABC865151F4F3B987ABE1A211E0461",
+      "actualSha256": "cccd79604d26ae31f6f6c8d187c023e781abc865151f4f3b987abe1a211e0461",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptCompiler.cs",
+      "sha256": "14A9AE73A34C65D65AC466CA5956FC66D53D4D79B45309217C62D871338B2BF1",
+      "actualSha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\Views\\ScriptDebugControl.xaml.cs",
+      "sha256": "9C2FBB9EF9FAC7277C8D21189C8BB7B9C90274554BAD412DDF69B13FF81BDFCD",
+      "actualSha256": "9c2fbb9ef9fac7277c8d21189c8bb7b9c90274554bad412ddf69b13ff81bdfcd",
+      "matches": true
+    }
+  ],
+  "vmInput": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/evidence.json",
+  "vmInputSha256": "24f41820024e9afc4bc5a0f3a5a470fe9c47e2c3a6a596e1b785c5d5ff0a13f8",
+  "vmArtifactChecks": [
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModule.dll",
+      "sha256": "F8095B1CB42778A1C2259B1728D936C27D1BBC647888EABC3A3B884D8D87FD68",
+      "id": "native",
+      "actualSha256": "f8095b1cb42778a1c2259b1728d936c27d1bbc647888eabc3a3b884d8d87fd68",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellConfig.ini",
+      "sha256": "4266364739E36667E41BFAEE5FF2F6E5F754CA88E0B8F9847598428E2DC3C37A",
+      "values": {
+        "RunType": 1,
+        "PropertyMode": 1
+      },
+      "id": "config",
+      "actualSha256": "4266364739e36667e41bfaee5ff2f6e5f754ca88e0b8f9847598428e2dc3c37a",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModuleControl.dll",
+      "sha256": "6FFABF07C52E8EF0519FCCC9F88F2B05D49AE34051ECDFD350EB5AA8702D192E",
+      "id": "ui",
+      "actualSha256": "6ffabf07c52e8ef0519fccc9f88f2b05d49ae34051ecdfd350eb5aa8702d192e",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModuleAlgorithmTab.xml",
+      "sha256": "617CFF239CDCC548DFA038B584A7FF530990917CD62F954C88D92F8E3E159E8F",
+      "id": "tab",
+      "actualSha256": "617cff239cdcc548dfa038b584a7ff530990917cd62f954c88d92f8e3e159e8f",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ScriptComponent.dll",
+      "sha256": "0D15B2C71D2ABC43DCA2C96BB2BEB3D7ED7847F3EBBC1B075D9124FB13F9DB28",
+      "id": "com",
+      "actualSha256": "0d15b2c71d2abc43dca2c96bb2beb3d7ed7847f3ebbc1b075d9124fb13f9db28",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/Script.Support.dll",
+      "sha256": "2D3295C2B3A1C0FCC0645F06C95FFA826F029292D077521798341126810C98BB",
+      "id": "support",
+      "actualSha256": "2d3295c2b3a1c0fcc0645f06c95ffa826f029292d077521798341126810c98bb",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VM.CodeCompletion.dll",
+      "sha256": "A1539ED1CB6B2D367E8CF875595EF48799869651BF0CACEBD0AAF2688AD8AE76",
+      "mvid": "66d08dad-391d-4c01-8125-1e88bbc693fa",
+      "id": "completionMyLibs",
+      "actualSha256": "a1539ed1cb6b2d367e8cf875595ef48799869651bf0cacebd0aaf2688ad8ae76",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/GlobalScript/VM.CodeCompletion.dll",
+      "sha256": "8670E49E96F93D5D510722A399C183FC5F673C9456B10B133B578DD6E74C9534",
+      "mvid": "6bd0d578-3e0e-4c2c-8c84-c4f19d0b8bbf",
+      "id": "completionGlobalScript",
+      "actualSha256": "8670e49e96f93d5d510722a399c183fc5f673c9456b10b133b578dd6e74c9534",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/VisionMaster.exe.config",
+      "sha256": "9C5DBC6B41D66EC4E902400299808F5A68356FE35438FBC621444B053F4FEA9D",
+      "id": "visionMasterConfig",
+      "actualSha256": "9c5dbc6b41d66ec4e902400299808f5a68356fe35438fbc621444b053f4fea9d",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/GlobalScript/GlobalScript.exe.config",
+      "sha256": "3C2589E12B6B47F77155810EB98F567135088815A005EC8FE311C663B82DDD66",
+      "id": "globalScriptConfig",
+      "actualSha256": "3c2589e12b6b47f77155810eb98f567135088815a005ec8fe311c663b82ddd66",
+      "matches": true
+    }
+  ],
+  "ilChecks": [
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/myLibs-ShowCompletion.il",
+      "sha256": "7C409CA09675DEF2B315233F3196F13B217288410C38B7EC7C9DC162EB3AB440",
+      "id": "myLibsShow",
+      "actualSha256": "7c409ca09675def2b315233f3196f13b217288410c38b7ec7c9dc162eb3ab440",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/myLibs-GetCompletions.il",
+      "sha256": "42342AF62A952CDE64788B398CE925FB397D637D582A3EDC1695571CE27A1103",
+      "id": "myLibsGet",
+      "actualSha256": "42342af62a952cde64788b398ce925fb397d637d582a3edc1695571ce27a1103",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/GlobalScript-ShowCompletion.il",
+      "sha256": "88EF3CCB5BD286AECD86A4E84E0CBD6A93F0DE10A58EF0B7C0A858E68F093B7A",
+      "id": "globalScriptShow",
+      "actualSha256": "88ef3ccb5bd286aecd86a4e84e0cbd6a93f0de10a58ef0b7c0a858e68f093b7a",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/GlobalScript-GetCompletions.il",
+      "sha256": "7BCB0A7DEF9F88FCAC1E9C659850BA7DE034BC7FA036C0DAB6073A5484879566",
+      "id": "globalScriptGet",
+      "actualSha256": "7bcb0a7def9f88fcac1e9c659850ba7de034bc7fa036c0dab6073a5484879566",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/myLibs-CSharpCompletion-ctor.il",
+      "sha256": "3D637F6A3947BE45DE71DD6B92E64FE75F4B28BD6F297D6457808AAA6C75C09F",
+      "id": "myLibsCompletionCtor",
+      "actualSha256": "3d637f6a3947be45de71dd6b92e64fe75f4b28bd6f297d6457808aaa6c75c09f",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/myLibs-CSharpCompletion-AddAssembly.il",
+      "sha256": "4074A82F7956112499AB973E947A40FAE2252970F6E68D51FB736DDE27398EA1",
+      "id": "myLibsCompletionAddAssembly",
+      "actualSha256": "4074a82f7956112499ab973e947a40fae2252970f6e68d51fb736dde27398ea1",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/myLibs-VM.CodeCompletion.all.il",
+      "sha256": "E6D7504F3723EE1086DE8A4906BB9DEC7A262540B8115E151F2BF1DD1783C892",
+      "id": "myLibsFullIl",
+      "actualSha256": "e6d7504f3723ee1086de8a4906bb9dec7a262540b8115e151f2bf1dd1783c892",
+      "matches": true
+    }
+  ],
+  "sdkProject": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+  "sdkProjectSha256": "3015bf533a4891425ee92f288a50fa37192af2aa0b09d61eb6ec6492c71ec256",
+  "vmDefaultFive": [
+    "mscorlib.dll",
+    "System.dll",
+    "System.Core.dll",
+    "System.Windows.Forms.dll",
+    "Script.Methods.dll"
+  ],
+  "layers": 4,
+  "comparisonProfiles": 3,
+  "weightMeasured": false,
+  "productModified": false,
+  "navigationModified": false
+}

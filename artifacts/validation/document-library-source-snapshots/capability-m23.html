@@ -1,0 +1,76 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M23 系统设置命令占位（非已确认可见菜单）</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">M23 系统设置命令占位（非已确认可见菜单）</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>M23 系统设置命令占位（非已确认可见菜单）</h1><article id="compare-M23"><span id="M23"></span><div class="visual-metrics"><div><strong>M23</strong><span>能力条目</span><small>未实现</small></div><div><strong>缺失</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>新增</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>ShowSettingsCommand</b></li><li><small>02</small><b>ExecuteShowSettings</b></li><li><small>03</small><b>TODO</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>处理函数只有TODO；当前ShellTopBar未发现绑定该命令的设置菜单。</p><details><summary>完整缺陷与未闭合调用边</summary><p>仅判定该统一设置入口未实现，不否定方案配置/相机设置等专用窗口。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>恢复模型设置项需要以实际菜单和行为逐项对照，不能按名字补造入口。</p><p>按原版真实设置能力挑产品需要项，不仿造空入口。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF01-GLOBAL-ENTRY-AUDIT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">限定本项列明入口/合同尚未实现，不推全产品不存在。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">ExecuteShowSettings是占位；不能因为存在Command就计统一设置功能。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：ExecuteShowSettings是占位；不能因为存在Command就计统一设置功能。 VM参考边界：按原版真实设置能力挑产品需要项，不仿造空入口。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">新增设置模型、持久化与生效规则后接窗口；需求未定时禁用/隐藏，已有相机专用设置不重造。 若需要则设计统一设置服务/持久化/生效规则，再做窗口；无能力时禁用或不展示。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">重启生效/即时生效/取消/保存失败行为明确，没有无效菜单。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o01.html#O01"><b>入口、装配与编辑事务</b><small class="reference-id">优化方案 · O01</small></a></td></tr></tbody></table></div></section><article id="recommendation-M23"><h2>M23 系统设置命令占位（非已确认可见菜单） · 新增</h2><p><b>代码依据 / 局限：</b>ExecuteShowSettings是占位；不能因为存在Command就计统一设置功能。</p><p><b>VM可借鉴与不可推断：</b>按原版真实设置能力挑产品需要项，不仿造空入口。</p><p><b>具体改法 / 成本：</b>新增设置模型、持久化与生效规则后接窗口；需求未定时禁用/隐藏，已有相机专用设置不重造。 若需要则设计统一设置服务/持久化/生效规则，再做窗口；无能力时禁用或不展示。</p><p><b>验收：</b>重启生效/即时生效/取消/保存失败行为明确，没有无效菜单。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-M23">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-M23">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S054</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:2201</a></p><p><code>ExecuteShowSettings</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        private void ExecuteShowSettings()
+        {
+            // TODO: 显示设置对话框
+        }
+
+        private void ExecuteShowAbout()
+        {
+            var aboutWindow = new AboutWindow { Owner = Application.Current?.MainWindow };
+            aboutWindow.ShowDialog();
+        }
+
+        private void ExecuteShowHelp()
+        {
+            var helpWindow = new HelpWindow();</pre></details><details class="source-card"><summary>S055</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml">src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>81a0498d514de68b10fb0bb52028ef98cdc4da9a242aa5d2d68ff792a93435d8</code></p><pre>&lt;UserControl x:Class=&quot;SunEyeVision.UI.Shell.Controls.Shell.ShellTopBarControl&quot;
+             xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
+             xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot;
+             xmlns:d=&quot;http://schemas.microsoft.com/expression/blend/2008&quot;
+             xmlns:mc=&quot;http://schemas.openxmlformats.org/markup-compatibility/2006&quot;
+             xmlns:convertersUI=&quot;clr-namespace:SunEyeVision.UI.Converters.UI&quot;
+             xmlns:base=&quot;clr-namespace:SunEyeVision.UI.Themes.Base&quot;
+             mc:Ignorable=&quot;d&quot;
+             d:DesignHeight=&quot;64&quot; d:DesignWidth=&quot;1600&quot;&gt;
+
+    &lt;UserControl.Resources&gt;
+        &lt;convertersUI:BoolToVisibilityConverter x:Key=&quot;BoolToVisibilityConverter&quot;/&gt;
+
+        &lt;!-- VS 同款即时提示样式（ScreenTip）：仅窗口控制按钮（最小化/最大化/关闭）使用。</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;M23&quot;,
+  &quot;group&quot;: &quot;main&quot;,
+  &quot;title&quot;: &quot;系统设置命令占位（非已确认可见菜单）&quot;,
+  &quot;state&quot;: &quot;unimplemented&quot;,
+  &quot;chain&quot;: [
+    &quot;ShowSettingsCommand&quot;,
+    &quot;ExecuteShowSettings&quot;,
+    &quot;TODO&quot;
+  ],
+  &quot;current&quot;: &quot;处理函数只有TODO；当前ShellTopBar未发现绑定该命令的设置菜单。&quot;,
+  &quot;gap&quot;: &quot;仅判定该统一设置入口未实现，不否定方案配置/相机设置等专用窗口。&quot;,
+  &quot;vm&quot;: &quot;恢复模型设置项需要以实际菜单和行为逐项对照，不能按名字补造入口。&quot;,
+  &quot;vmDoc&quot;: &quot;MF01-GLOBAL-ENTRY-AUDIT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;新增&quot;,
+  &quot;reason&quot;: &quot;依据：ExecuteShowSettings是占位；不能因为存在Command就计统一设置功能。 VM参考边界：按原版真实设置能力挑产品需要项，不仿造空入口。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;新增设置模型、持久化与生效规则后接窗口；需求未定时禁用/隐藏，已有相机专用设置不重造。 若需要则设计统一设置服务/持久化/生效规则，再做窗口；无能力时禁用或不展示。&quot;,
+  &quot;accept&quot;: &quot;重启生效/即时生效/取消/保存失败行为明确，没有无效菜单。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S054&quot;,
+    &quot;S055&quot;
+  ],
+  &quot;optimization&quot;: &quot;O01&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;按产品需要新增或不暴露&quot;,
+    &quot;reason&quot;: &quot;不应因Command注册存在就标支持，也不应为了仿制添加空窗口。&quot;
+  },
+  &quot;defect&quot;: &quot;ExecuteShowSettings是占位；不能因为存在Command就计统一设置功能。&quot;,
+  &quot;vmBorrow&quot;: &quot;按原版真实设置能力挑产品需要项，不仿造空入口。&quot;,
+  &quot;difference&quot;: &quot;缺失&quot;,
+  &quot;differenceBasis&quot;: &quot;限定本项列明入口/合同尚未实现，不推全产品不存在。&quot;,
+  &quot;adoption&quot;: &quot;新增&quot;,
+  &quot;adoptionBasis&quot;: &quot;当前缺口按本产品需求开发；狗授权使用自有厂商方案。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;新增&quot;,
+    &quot;defect&quot;: &quot;ExecuteShowSettings是占位；不能因为存在Command就计统一设置功能。&quot;,
+    &quot;borrow&quot;: &quot;按原版真实设置能力挑产品需要项，不仿造空入口。&quot;,
+    &quot;action&quot;: &quot;新增设置模型、持久化与生效规则后接窗口；需求未定时禁用/隐藏，已有相机专用设置不重造。&quot;,
+    &quot;difference&quot;: &quot;缺失&quot;,
+    &quot;adoption&quot;: &quot;新增&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S054&quot;,
+      &quot;S055&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

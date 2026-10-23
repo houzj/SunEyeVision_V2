@@ -1,0 +1,224 @@
+{
+  "inputSHA": "1AD1CF417A165ACAC38DB1D175D58FCDFC191CB3A692CC3E98A8B315357FD5D0",
+  "input": "artifacts/independent-testing/SCRIPT-ENGINE-COMPARISON-01/final-identity-manifest.json",
+  "errors": 0,
+  "checks": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C01.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C02.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C03.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C04.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C05.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C06.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C07.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C08.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C09.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C10.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C11.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\C12.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M01.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M02.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M03.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\M04.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\P01.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\corpus\\P02.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\build.log",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\Directory.Build.props",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\Directory.Build.targets",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\NuGet.Config",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\Program.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\restore.log",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\WorkerA.csproj",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Humanizer.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.AnalyzerUtilities.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Features.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Elfie.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Features.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Scripting.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.CodeAnalysis.Workspaces.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\Microsoft.DiaSymReader.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.AttributedModel.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.Convention.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.Hosting.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.Runtime.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\System.Composition.TypedParts.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.deps.json",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.dll",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.exe",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.pdb",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-a\\bin\\Release\\net9.0\\WorkerA.runtimeconfig.json",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\build-explicit-refs.log",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\build.log",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\Program.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\ProgramCompilerExplicitRefs.cs",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\WorkerB.exe",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\worker-b\\WorkerBExplicitRefs.exe",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\matrix.json",
+      "matches": true
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\comparison-summary.json",
+      "matches": true
+    }
+  ],
+  "count": 54
+}

@@ -1,0 +1,99 @@
+{
+  "chms": [
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Development/V4.x/Documentations/CH/VisionMaster算法开发平台SDK开发指南V4.4.2（.NET）.chm",
+      "sha256": "02e94ae0225df805a0d142aac889533f68d28b9048d835bee6d4c28822db1f47"
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Development/V4.x/Documentations/CH/VisionMaster算法开发平台SDK开发指南V4.4.2（C++）.chm",
+      "sha256": "617b6f2d9c2e660735dd1d452ccef64edc876c0562764d5f89a1be992e4ab1a9"
+    }
+  ],
+  "docs": [
+    {
+      "id": "doc-overview",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/index.html",
+      "token": "SDK",
+      "title": "官方SDK定位",
+      "fact": "方案/流程/模块按对象级封装，数据交互与运行控制、可组合配置/渲染控件为对外能力。",
+      "sha256": "09e6342187834fc5c1351cd7ce11f5eda234cfcd20c61a0a2114af2e1e72582a",
+      "encoding": "gb18030",
+      "line": 44
+    },
+    {
+      "id": "doc-cpp",
+      "path": "artifacts/validation/vm-official-sdk-442/cpp/index.html",
+      "token": "SDK",
+      "title": "C++与C#二开",
+      "fact": "官方列C++和C#接口及示例，C++有VC/Qt示例；不能由示例存在推断所有UI无关或跨平台。",
+      "sha256": "0afd7971881f5b24de746b227e9553ca6afbef9967b1cb28509f985f03946147",
+      "encoding": "gb18030",
+      "line": 44
+    },
+    {
+      "id": "doc-packages",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE5_x8A_xA8_xE6_x80_x81_xE5_xBA_x93_xE4_xBB_x8B_xE7_xBB_x8D_xE5_x8F_x8A_xE6_xB7_xBB_xE5_x8A_xA0_xE8_xAF_xB4_xE6_x98_x8E.html",
+      "token": "VM.Core.dll",
+      "title": "API与控件依赖分开",
+      "fact": "官方明确纯接口无控件方式引用VM.Core.dll和VM.PlatformSDKCS.dll；WPF/WinForm另加接口/渲染/对应控件库，具体模块再加模块DLL。",
+      "sha256": "0183032fddefa4450d66b6ba39bbe4573bab077c7817934a20cf118d9366b761",
+      "encoding": "gb18030",
+      "line": 43
+    },
+    {
+      "id": "doc-flow",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/class_procedure_1_1_vm_procedure.html",
+      "token": "bIsWait",
+      "title": "流程级运行合同",
+      "fact": "Run有等待结束、响应UI及执行计数等重载；流程对象暴露参数/结果与类型化输出读取，说明外部调用合同是独立设计面。",
+      "sha256": "a4b488ce29515cd3bc42f35f4fbb36b86d3f7971ccb9c55f778ff112c5cc6366",
+      "encoding": "gb18030",
+      "line": 74
+    },
+    {
+      "id": "doc-events",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE4_xBA_x8B_xE4_xBB_xB6_xE7_xB1_xBB_xE5_x9E_x8B.html",
+      "token": "OnModuleResultCallbackEvent",
+      "title": "事件与消费者负担",
+      "fact": "官方列加载、工作状态、运行结果、通信、相机及服务事件；结果/结束回调可读数据，但不应同步渲染等耗时操作阻塞后续运行。事件名不证明所有原生在飞任务排空。",
+      "sha256": "60626e0de2ba129d7403cf23b5248223088e9e3d5af15f6fc3d300007bda9218",
+      "encoding": "gb18030",
+      "line": 66
+    },
+    {
+      "id": "doc-wpf",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_w_p_f_xE6_xA1_x86_xE6_x9E_xB6.html",
+      "token": ".NET",
+      "title": "WPF嵌入及平台限制",
+      "fact": "该V4.4.2文档要求.NET Framework 4.6.1及以上，不支持.NET Core；退出前调用资源释放，避免在析构函数调用。不可直接将其WPF二进制迁入自研net9.0-windows。",
+      "sha256": "5c590017bb9f16063623cfd092cfcfaaff5ab9940b0225813fad52e2ab4c5447",
+      "encoding": "gb18030",
+      "line": 71
+    },
+    {
+      "id": "doc-render",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/class_vm_render_control.html",
+      "token": "SetRenderInterval",
+      "title": "可嵌入渲染组件",
+      "fact": "公开模块/图像源绑定、立即绘制/保留图形、原图/渲染图保存、渲染间隔和Dispose；这是控件API设计证据，不是像素最终释放与性能证据。",
+      "sha256": "4401d0b9320b23cc5b512d6fd41f27ef49023b347cd2b6e47d79178393fa6774",
+      "encoding": "gb18030",
+      "line": 89
+    },
+    {
+      "id": "doc-input",
+      "path": "artifacts/validation/vm-official-sdk-442/dotnet/_xE9_x80_x9A_xE8_xBF_x87_xE6_x8E_xA5_xE5_x8F_xA3_xE8_xAE_xBE_xE7_xBD_xAE_xE5_x9B_xBE_xE5_x83_x8F5204ab1f40f549f822edefb7af534bf4.html",
+      "token": "SetImageData",
+      "title": "外部图像输入",
+      "fact": "官方说明SDK图像源经SetImagePath/SetImageData输入，Mono8/彩色及灰度输出使能分别有规则；外部输入需要明确格式和输出字段，不能仅传object。",
+      "sha256": "f61a0fb876aa7b9fbd5bfeda9163a29fab293cdc458e8174e7268a6f355c1318",
+      "encoding": "gb18030",
+      "line": 72
+    }
+  ],
+  "version": "V4.4.2（标题版本）",
+  "extraction": "Windows hh.exe -decompile静态解包，未执行文档脚本、VM或SDK示例；UTF-8读取乱码后按GB18030解码核对",
+  "versionLimit": "安装目录名4.4.0、文档标题4.4.2和反编译样本版本不自动视为一致；公开API说明与内部实现证据分开",
+  "checkpointUpgrade": false,
+  "productModified": false
+}

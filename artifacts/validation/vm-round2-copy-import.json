@@ -1,0 +1,22 @@
+{
+  "sha256": "45c57bc46f72fd1f9e0b3a6f9183ff974d14590cfd05ecf4e9fa97a4ff95ae9b",
+  "thunkRVA": "1e918e",
+  "bytes": "ff25bcb60100",
+  "imports": [
+    {
+      "dll": "MSVCR120.dll",
+      "name": "??_V@YAXPEAX@Z",
+      "iatRVA": "204570"
+    },
+    {
+      "dll": "MSVCR120.dll",
+      "name": "??3@YAXPEAX@Z",
+      "iatRVA": "204580"
+    },
+    {
+      "dll": "MSVCR120.dll",
+      "name": "memcpy",
+      "iatRVA": "204850"
+    }
+  ]
+}

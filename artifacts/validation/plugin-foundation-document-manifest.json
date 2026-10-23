@@ -1,0 +1,53 @@
+{
+  "taskId": "PLUGIN-FOUNDATION-01",
+  "input": "artifacts/validation/plugin-foundation-01/delivery.json",
+  "inputSha256": "8d75150c1c80465d74218051e8a581689c81f0e84c984b1e0017a58b7fde84ee",
+  "handoffCommit": "d3a7dff427a2ace7fe3f96109974b0c811da4ea2",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-overview.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-tools.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\SDK设计\\framework-sdk-ui.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html"
+  ],
+  "sourceChecks": 47,
+  "binaryChecks": 13,
+  "deliveryChecks": 8,
+  "revision": 2,
+  "sourceDrift": 0,
+  "localTests": {
+    "passed": 27,
+    "failed": 0,
+    "blocked": 0
+  },
+  "externalConsumer": {
+    "directory": "D:\\Temp\\SunEye-Foundation-External-23_m38d0",
+    "repositoryProjectReferences": false,
+    "packageOnly": true,
+    "exitCodes": [
+      0,
+      0
+    ]
+  },
+  "fullRelease": {
+    "exitCode": 0,
+    "errors": 0,
+    "warnings": 1085,
+    "log": "full-release-build.log",
+    "builtBeforeHandoffCommit": true
+  },
+  "releaseProbe": {
+    "pid": 63480,
+    "exited": true,
+    "exitCode": 0,
+    "outputExists": true,
+    "scope": "Release metadata probe only, before device and session initialization"
+  },
+  "independent": "3-original-defects-developer-fixed-r2-independent-recheck-pending",
+  "designer": "not-exercised",
+  "productionSDKSwitched": false,
+  "productAccepted": false,
+  "wholeGoalComplete": false,
+  "productModifiedByDocRole": false,
+  "productExecutedByDocRole": false,
+  "wholeSiteRegenerated": false
+}

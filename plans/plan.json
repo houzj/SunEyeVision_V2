@@ -204,6 +204,18 @@
                                     {
                                         "date":  "2026-10-12",
                                         "note":  "[0ef3738c91096a7e0d6ebbb12e58b66127affcf1] feat(tool): 新增协议解析与组装工具并适配工具箱分类"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[0ef3738c91096a7e0d6ebbb12e58b66127affcf1] feat(tool): 新增协议解析与组装工具并适配工具箱分类"
+                                    },
+                                    {
+                                        "date":  "2026-10-22",
+                                        "note":  "[7cb44ead8cbb29b72eeb90383dc16d6cf47066e6] 临时交接：插件接口基础3.0与四类隔离验证样本"
+                                    },
+                                    {
+                                        "date":  "2026-10-22",
+                                        "note":  "[d3a7dff427a2ace7fe3f96109974b0c811da4ea2] 修复插件基础独立验收：结构指纹、取消归因与编辑初值"
                                     }
                                 ]
                     },
@@ -457,6 +469,14 @@
                                     {
                                         "date":  "2026-10-15",
                                         "note":  "[34e7be848c0c55667afa26b36777bab0aa9e9e54] feat(core): 宿主接入调试结果快照与预览帧来源"
+                                    },
+                                    {
+                                        "date":  "2026-10-15",
+                                        "note":  "[34e7be848c0c55667afa26b36777bab0aa9e9e54] feat(core): 宿主接入调试结果快照与预览帧来源"
+                                    },
+                                    {
+                                        "date":  "2026-10-22",
+                                        "note":  "[a09ab60535cf11b7c1a3497186dffbf53f2e5288] WIP startup: start page and direct solution file entry for independent acceptance"
                                     }
                                 ]
                     },
@@ -777,6 +797,14 @@
                                     {
                                         "date":  "2026-10-09",
                                         "note":  "[2c17ef773a3d6bed9f67028760b42632eca80555] docs: 归档解决方案管理器最终优化方案并同步协作记录与文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[71537a72e9f0e6818826855bb88fbd672bfaab1d] feat(tool): 新增接收数据工具并注册到解决方案"
+                                    },
+                                    {
+                                        "date":  "2026-10-13",
+                                        "note":  "[83af5bc8f0f8f4db38e40ff3a1beda3be4eedbfd] feat(tool): 新增发送数据工具并注册到解决方案"
                                     },
                                     {
                                         "date":  "2026-10-12",
@@ -1336,6 +1364,14 @@
                                     {
                                         "date":  "2026-10-15",
                                         "note":  "[a444b21325eeb6b121cfe6bd059383b65eb172eb] docs(core): 新增 ROI 坐标归属与位置修正方案并记录全工具执行一致性交接"
+                                    },
+                                    {
+                                        "date":  "2026-10-15",
+                                        "note":  "[0c5c2768c5cf2053250e881422c04f1c6860fd18] feat(sdk): 位置修正解析与调试结果快照统一"
+                                    },
+                                    {
+                                        "date":  "2026-10-15",
+                                        "note":  "[a444b21325eeb6b121cfe6bd059383b65eb172eb] docs(core): 新增 ROI 坐标归属与位置修正方案并记录全工具执行一致性交接"
                                     }
                                 ]
                     },
@@ -1747,6 +1783,14 @@
                                     {
                                         "date":  "2026-10-16",
                                         "note":  "[3ae3509983537b8e0b72d4e7383ee17ce5be57e5] feat(sdk): 绑定问题标注与点测量几何统一"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[e7b13ac3e1caf07ef350462d88fc15e3c947c7b4] feat(sdk): 新增通信接收服务与运行时变量接收契约"
+                                    },
+                                    {
+                                        "date":  "2026-10-16",
+                                        "note":  "[3ae3509983537b8e0b72d4e7383ee17ce5be57e5] feat(sdk): 绑定问题标注与点测量几何统一"
                                     }
                                 ]
                     },
@@ -1827,6 +1871,10 @@
                                     {
                                         "date":  "2026-09-09",
                                         "note":  "[842658c5c1a49f6e27418c283d4b756038683c2b] feat(roi): 区域统一运行时出口 + 订阅优先过滤 + 纯订阅自动建 Roi"
+                                    },
+                                    {
+                                        "date":  "2026-10-13",
+                                        "note":  "[d307f7004859c6578e6e86325a1d521bac9247e2] feat(sdk): 新增通信发送服务与工具编辑器提交契约"
                                     },
                                     {
                                         "date":  "2026-10-13",
@@ -2141,6 +2189,22 @@
                                     {
                                         "date":  "2026-10-14",
                                         "note":  "[e1288332e53db70518b3c96a489121b0a6d1c0f2] feat(workflow): 绑定关系编译与上游输出变更处理"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[54ae3998e279a67fb3e326bd5e7b56ab4eb02e9e] feat(core): 通信接收接入工作流执行与全局变量取值"
+                                    },
+                                    {
+                                        "date":  "2026-10-13",
+                                        "note":  "[a832835f0eb881ae664493ed49b837e9ff5a5171] docs(core): 新增工具参数提交与全局变量执行方案并记录交接"
+                                    },
+                                    {
+                                        "date":  "2026-10-14",
+                                        "note":  "[e1288332e53db70518b3c96a489121b0a6d1c0f2] feat(workflow): 绑定关系编译与上游输出变更处理"
+                                    },
+                                    {
+                                        "date":  "2026-10-22",
+                                        "note":  "[f22a5f7490554103fc90014ba848fb87e8fbe665] wip: unify pending editor commit and global variable save for acceptance"
                                     }
                                 ]
                     },
@@ -2299,7 +2363,7 @@
                         "type":  "module",
                         "layer":  "source",
                         "stage":  "P2",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2026-09-28",
                         "end":  "2026-10-16",
                         "goal":  "标定重投影误差 \u003c 0.1 px，畸变校正可用",
@@ -2314,7 +2378,7 @@
                                           "name":  "相机内参标定算子封装（CvEngine: CameraCalibration）",
                                           "phase":  "算法实现",
                                           "hours":  16,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W40"
                                       },
                                       {
@@ -2346,7 +2410,10 @@
 
                                  ],
                         "log":  [
-
+                                    {
+                                        "date":  "2026-10-16",
+                                        "note":  "[3a5dc6dd54f372699a450ad7862b52c961cd2797] docs(sync): unify main and comm baseline for calibration toolchain work"
+                                    }
                                 ]
                     },
                     {
@@ -2670,6 +2737,30 @@
                                     {
                                         "date":  "2026-10-10",
                                         "note":  "[a0f92a8732f31a2ffe20e10fcc6feb7c792a093f] docs(sync): unify main and communications baseline after heartbeat optimization"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[7ce7a945fc9bf285bf07cf159a5b51c9bf0d0912] feat(core): 通信工具链接入工具箱并优化通讯接收与解析"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[14a836dea0ae935b299bf5f2597e09f75ed3e198] docs(core): 同步通信接收实施记录与交接单"
+                                    },
+                                    {
+                                        "date":  "2026-10-13",
+                                        "note":  "[bf1774cbab826bd99fdd1760dcf2602f1836a34a] feat(core): 通信发送接入工作流并统一通信结果与编辑器提交"
+                                    },
+                                    {
+                                        "date":  "2026-10-16",
+                                        "note":  "[c40a9d0a787598957c5182ed98f06706fdd862f8] fix(comm): 收敛通讯设备重连与连接生命周期"
+                                    },
+                                    {
+                                        "date":  "2026-10-16",
+                                        "note":  "[9bd9e476d0f509e32329a24d33834345e6c38cac] feat(core): 通讯窗口生命周期与连接意图展示"
+                                    },
+                                    {
+                                        "date":  "2026-10-16",
+                                        "note":  "[3c4dd1234f8a96eee8834c6f4243684bf268dced] docs(core): 记录通讯重连与全算法工具标准化分析"
                                     },
                                     {
                                         "date":  "2026-10-12",
@@ -3089,6 +3180,22 @@
                                     {
                                         "date":  "2026-10-16",
                                         "note":  "[68cee26e6c754bd354113b05a88c83fdc9e39a06] fix(build): align test lock files with current project references"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[a3a0815719072933bb6d85a82d6ee453e5e9fdcc] feat(sdk): 通信工具链 SDK 契约、控件与工具箱分类"
+                                    },
+                                    {
+                                        "date":  "2026-10-14",
+                                        "note":  "[3b2671d3f7f10ad1f0c16469ea49821640fa8328] feat(sdk): 绑定输入契约与工具编辑器提交关闭生命周期"
+                                    },
+                                    {
+                                        "date":  "2026-10-14",
+                                        "note":  "[c89255f25f3031e39737a62bcd1b52a2756fc32d] feat(core): 通信接收逐次消费与发送接入宿主"
+                                    },
+                                    {
+                                        "date":  "2026-10-16",
+                                        "note":  "[68cee26e6c754bd354113b05a88c83fdc9e39a06] fix(build): align test lock files with current project references"
                                     }
                                 ]
                     },
@@ -3435,6 +3542,14 @@
                                     {
                                         "date":  "2026-10-15",
                                         "note":  "[e2c8d53f0b87184a75f258f92b2cc08d64a7597f] feat(tool): 测量工具接入位置修正与统一结果几何"
+                                    },
+                                    {
+                                        "date":  "2026-10-15",
+                                        "note":  "[e2c8d53f0b87184a75f258f92b2cc08d64a7597f] feat(tool): 测量工具接入位置修正与统一结果几何"
+                                    },
+                                    {
+                                        "date":  "2026-10-16",
+                                        "note":  "[a0113885a085cae3595f2cd6a12090cd42505366] feat(tool): 各工具接入原生算子与自定义卷积核"
                                     },
                                     {
                                         "date":  "2026-10-15",
@@ -3866,6 +3981,10 @@
                                     {
                                         "date":  "2026-09-07",
                                         "note":  "[8075050] docs: 几何测量工具集设计方案落盘 v1.0 与 v2.0 收敛版（六工具共用）"
+                                    },
+                                    {
+                                        "date":  "2026-10-14",
+                                        "note":  "[35368a70f46672aa1af294ca29c4a342610f8aa6] feat(tool): 各工具适配绑定契约与编辑器生命周期"
                                     },
                                     {
                                         "date":  "2026-10-14",
@@ -4634,7 +4753,7 @@
                                           "name":  "OPC UA 订阅（数据变更通知）",
                                           "phase":  "算法实现",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2027-W01"
                                       },
                                       {
@@ -4689,6 +4808,10 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "按真实路线调整：OPC UA 优先开发，TCP/Modbus/串口后置"
+                                    },
+                                    {
+                                        "date":  "2026-10-12",
+                                        "note":  "[625df27df87d8f7c8170ecf56134696589aaff6a] docs(core): 新增通信工具链方案与交接单并记录协作任务"
                                     },
                                     {
                                         "date":  "2026-10-12",
@@ -4882,6 +5005,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[0f1587d9624242573e63ab8d58a78fcf90a27052] fix(ui): 图像滤波/二值化/形态学控件补齐位置修正矩阵同步（对齐 Blob）"
+                                    },
+                                    {
+                                        "date":  "2026-10-16",
+                                        "note":  "[d61cbbab9e8e9fdba88e7db5e036eef850a29a60] feat(hal): 接入 Halcon 原生滤波、阈值与度量结果"
                                     },
                                     {
                                         "date":  "2026-10-16",
@@ -5206,111 +5333,75 @@
                    ],
     "tempTasks":  [
                       {
-                          "id":  "TMP-319a866",
-                          "message":  "docs: 更新开发汇报与协作记录并同步文档索引",
-                          "date":  "2026-10-10",
-                          "commit":  "319a866d35f888e4f2326e1c41308ce1b3cbc22d",
+                          "id":  "TMP-b28236f",
+                          "message":  "docs: record optimization roadmap and evidence-backed VM persistence comparison",
+                          "date":  "2026-10-22",
+                          "commit":  "b28236fee5d0a3a5d748bba698c8db32a91a56fe",
                           "files":  [
-                                        "docs/00-索引/文档索引.md",
-                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/existing-delete-reference.png",
-                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/trigger-delete-current.png",
-                                        "docs/01-方案设计/2026/10/通讯事件条件与动作条件及参数绑定优化基线-20261010.md",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/bak/视觉软件SunEyeVision-软件开发汇报-精简版.bak-20261001-144849.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/pid",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/state.json",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/DESIGN.md",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/assets/main_ui.jpg",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/02_output.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/03_plan.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2 -S.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报.html",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报（精简版）.html",
+                                        "artifacts/ui-prototypes/optimization-roadmap/README.md",
+                                        "artifacts/ui-prototypes/optimization-roadmap/build-manifest.json",
+                                        "artifacts/ui-prototypes/optimization-roadmap/build.cjs",
+                                        "artifacts/ui-prototypes/optimization-roadmap/check.cjs",
+                                        "artifacts/ui-prototypes/optimization-roadmap/index.html",
+                                        "artifacts/ui-prototypes/optimization-roadmap/overview-desktop.png",
+                                        "artifacts/ui-prototypes/optimization-roadmap/overview-mobile.png",
+                                        "artifacts/ui-prototypes/optimization-roadmap/validation.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/build-vm-comparison.cjs",
+                                        "artifacts/ui-prototypes/save-roundtrip/build.cjs",
+                                        "artifacts/ui-prototypes/save-roundtrip/check.cjs",
+                                        "artifacts/ui-prototypes/save-roundtrip/evidence.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/index.html",
+                                        "artifacts/ui-prototypes/save-roundtrip/overview-desktop.png",
+                                        "artifacts/ui-prototypes/save-roundtrip/overview-mobile.png",
+                                        "artifacts/ui-prototypes/save-roundtrip/validation.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-comparison-desktop.png",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-comparison.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-evidence/archive-verification.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-evidence/framework-evidence.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-evidence/framework-normalized.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-evidence/framework-report.md",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-evidence/framework-verification.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-evidence/resource-evidence.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-evidence/resource-normalized.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-evidence/resource-report.md",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-evidence/resource-verification.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-view.cjs",
                                         "docs/collaboration/CURRENT_TASK.md",
-                                        "docs/collaboration/HANDOFF_ACTION_EQUALITY_20261010.md",
-                                        "docs/collaboration/HANDOFF_COMMUNICATION_FINAL_REFINEMENT_20261010.md",
-                                        "docs/collaboration/HANDOFF_COMMUNICATION_TRIGGER_OPTIMIZATION_20261010.md",
-                                        "docs/collaboration/HANDOFF_GLOBAL_DATA_HEARTBEAT_20261010.md",
-                                        "docs/collaboration/HANDOFF_HEARTBEAT_FEEDBACK_20261010.md",
-                                        "docs/collaboration/HANDOFF_PACKAGE_ICONS_20261009.md",
-                                        "docs/collaboration/HANDOFF_RELEASE_STARTUP_20261009.md",
-                                        "docs/collaboration/HANDOFF_TRIGGER_AUTO_CONDITION_20261010.md",
-                                        "docs/collaboration/HANDOFF_TRIGGER_COMPACT_UI_20261010.md",
-                                        "docs/collaboration/HANDOFF_TRIGGER_PARAMETER_SIMPLIFICATION_20261010.md"
+                                        "docs/collaboration/DEVELOPMENT_PRIORITY_BATCH01_20261022.md",
+                                        "docs/collaboration/HANDOFF_VM_PERSIST14_20261022.md",
+                                        "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
+                                        "docs/collaboration/OPTIMIZATION_BACKLOG.json",
+                                        "docs/collaboration/VM_PERSIST14_TASKS.json"
                                     ],
                           "status":  "in_progress"
                       },
                       {
-                          "id":  "TMP-319a866",
-                          "message":  "docs: 更新开发汇报与协作记录并同步文档索引",
-                          "date":  "2026-10-10",
-                          "commit":  "319a866d35f888e4f2326e1c41308ce1b3cbc22d",
+                          "id":  "TMP-504191d",
+                          "message":  "docs: make B1 persistence contracts and acceptance executable",
+                          "date":  "2026-10-22",
+                          "commit":  "504191d0dbcf2f022fbc9ce196dc646b9f69e39b",
                           "files":  [
-                                        "docs/00-索引/文档索引.md",
-                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/existing-delete-reference.png",
-                                        "docs/01-方案设计/2026/10/assets/communication-trigger-20261010/trigger-delete-current.png",
-                                        "docs/01-方案设计/2026/10/通讯事件条件与动作条件及参数绑定优化基线-20261010.md",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/bak/视觉软件SunEyeVision-软件开发汇报-精简版.bak-20261001-144849.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/pid",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/.slidep/state.json",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/DESIGN.md",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/assets/main_ui.jpg",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/02_output.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/slides/03_plan.slide",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2 -S.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报-精简版/视觉软件SunEyeVision-软件开发汇报-V2.pptx",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报.html",
-                                        "docs/02-实施总结/2026/10/01/视觉软件SunEyeVision-软件开发汇报（精简版）.html",
+                                        "artifacts/ui-prototypes/optimization-roadmap/build-manifest.json",
+                                        "artifacts/ui-prototypes/optimization-roadmap/build.cjs",
+                                        "artifacts/ui-prototypes/optimization-roadmap/check.cjs",
+                                        "artifacts/ui-prototypes/optimization-roadmap/index.html",
+                                        "artifacts/ui-prototypes/optimization-roadmap/overview-desktop.png",
+                                        "artifacts/ui-prototypes/optimization-roadmap/overview-mobile.png",
+                                        "artifacts/ui-prototypes/save-roundtrip/b1-execution.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/build.cjs",
+                                        "artifacts/ui-prototypes/save-roundtrip/check.cjs",
+                                        "artifacts/ui-prototypes/save-roundtrip/evidence.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/execution-view.cjs",
+                                        "artifacts/ui-prototypes/save-roundtrip/index.html",
+                                        "artifacts/ui-prototypes/save-roundtrip/overview-desktop.png",
+                                        "artifacts/ui-prototypes/save-roundtrip/overview-mobile.png",
+                                        "artifacts/ui-prototypes/save-roundtrip/validation.json",
+                                        "artifacts/ui-prototypes/save-roundtrip/vm-comparison-desktop.png",
+                                        "docs/collaboration/B1_EXECUTION16_TASKS.json",
                                         "docs/collaboration/CURRENT_TASK.md",
-                                        "docs/collaboration/HANDOFF_ACTION_EQUALITY_20261010.md",
-                                        "docs/collaboration/HANDOFF_COMMUNICATION_FINAL_REFINEMENT_20261010.md",
-                                        "docs/collaboration/HANDOFF_COMMUNICATION_TRIGGER_OPTIMIZATION_20261010.md",
-                                        "docs/collaboration/HANDOFF_GLOBAL_DATA_HEARTBEAT_20261010.md",
-                                        "docs/collaboration/HANDOFF_HEARTBEAT_FEEDBACK_20261010.md",
-                                        "docs/collaboration/HANDOFF_PACKAGE_ICONS_20261009.md",
-                                        "docs/collaboration/HANDOFF_RELEASE_STARTUP_20261009.md",
-                                        "docs/collaboration/HANDOFF_TRIGGER_AUTO_CONDITION_20261010.md",
-                                        "docs/collaboration/HANDOFF_TRIGGER_COMPACT_UI_20261010.md",
-                                        "docs/collaboration/HANDOFF_TRIGGER_PARAMETER_SIMPLIFICATION_20261010.md"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-ce71b60",
-                          "message":  "docs(core): 新增输出变更自动解绑与被动报文消费方案并记录交接",
-                          "date":  "2026-10-14",
-                          "commit":  "ce71b606f83331f6d508147ec060cd3ce46bf6d1",
-                          "files":  [
-                                        "docs/01-方案设计/2026/09/通讯接收来源与目标绑定最终方案-20260930.md",
-                                        "docs/01-方案设计/2026/10/上游输出变更与下游自动解绑优化方案-20261013.md",
-                                        "docs/01-方案设计/2026/10/接收数据工具方案与沟通基线-20261010.md",
-                                        "docs/01-方案设计/2026/10/被动报文逐次消费优化方案-20261014.md",
-                                        "docs/01-方案设计/2026/10/通信工具链实施计划-20261010.md",
-                                        "docs/collaboration/CURRENT_TASK.md",
-                                        "docs/collaboration/HANDOFF_BINDING_ADAPTATION_B1_20261013.md",
-                                        "docs/collaboration/HANDOFF_BINDING_ADAPTATION_B2_20261013.md",
-                                        "docs/collaboration/HANDOFF_BINDING_ADAPTATION_B3_CORE_20261014.md",
-                                        "docs/collaboration/HANDOFF_BINDING_ADAPTATION_B3_HOST_20261014.md",
-                                        "docs/collaboration/HANDOFF_BINDING_ADAPTATION_FINAL_DESIGN_20261013.md",
-                                        "docs/collaboration/HANDOFF_BINDING_UI_REGRESSION_20261014.md",
-                                        "docs/collaboration/HANDOFF_CONSTANT_CONFIRM_20261014.md",
-                                        "docs/collaboration/HANDOFF_EXECUTION_TOOL_IDENTITY_20261014.md",
-                                        "docs/collaboration/HANDOFF_IMAGE_SELECTOR_REFRESH_20261014.md",
-                                        "docs/collaboration/HANDOFF_MODE_SUBROUTINE_BINDING_20261014.md",
-                                        "docs/collaboration/HANDOFF_OUTPUT_BINDING_CHANGE_DESIGN_20261013.md",
-                                        "docs/collaboration/HANDOFF_OUTPUT_BINDING_CHANGE_IMPLEMENTATION_20261013.md",
-                                        "docs/collaboration/HANDOFF_OUTPUT_SOURCE_VOCABULARY_20261014.md",
-                                        "docs/collaboration/HANDOFF_POSITION_MATRIX_ARRAY_20261014.md",
-                                        "docs/collaboration/HANDOFF_RECEIVE_CONSUMPTION_20261014.md",
-                                        "docs/collaboration/HANDOFF_RECEIVE_CONSUMPTION_DESIGN_20261014.md",
-                                        "docs/collaboration/HANDOFF_RECEIVE_DECOUPLING_20261014.md",
-                                        "docs/collaboration/HANDOFF_RECEIVE_SCHEDULING_20261014.md",
-                                        "docs/collaboration/HANDOFF_RECEIVE_WAIT_20261014.md",
-                                        "docs/collaboration/HANDOFF_RUN_PRESENTATION_20261014.md",
-                                        "docs/collaboration/HANDOFF_SCRIPT_INPUT_VOCABULARY_20261014.md",
-                                        "docs/collaboration/HANDOFF_SCRIPT_ROW_PROJECTION_20261014.md",
-                                        "docs/collaboration/HANDOFF_SUBROUTINE_INPUT_BINDING_20261014.md",
-                                        "plans/plan.json"
+                                        "docs/collaboration/HANDOFF_B1_EXECUTION16_20261022.md",
+                                        "docs/collaboration/OPTIMIZATION_BACKLOG.json",
+                                        "docs/collaboration/VM_PERSIST14_TASKS.json"
                                     ],
                           "status":  "in_progress"
                       }

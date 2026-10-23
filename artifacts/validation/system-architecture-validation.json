@@ -1,0 +1,13 @@
+{
+  "srcProjects": 10,
+  "directReferences": 20,
+  "entryChains": 6,
+  "sourceLocations": 21,
+  "dependencyGraphClickable": true,
+  "deepLinks": true,
+  "printRestore": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "newStopDrainGap": "静态路径确认；没有运行故障实验",
+  "productExecuted": false
+}

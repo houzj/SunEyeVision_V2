@@ -1,0 +1,1353 @@
+{
+  "nodes": [
+    {
+      "id": "CommonControl",
+      "file": "src/CommonControl/CommonControl.csproj",
+      "kind": "core",
+      "label": "CommonControl",
+      "tools": [],
+      "role": "共享控件与脚本编辑基础设施，不能当纯运行内核。",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "19ed672bf59b91656a30e50a9c44d5f6758e8c88e6d73b1880a32b0b0db5bfa8",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        }
+      ],
+      "packages": [
+        "AvalonEdit",
+        "Microsoft.CodeAnalysis.CSharp",
+        "Microsoft.CodeAnalysis.Features",
+        "Microsoft.CodeAnalysis.CSharp.Features",
+        "IgnoresAccessChecksToGenerator"
+      ],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.Core",
+      "file": "src/Core/SunEyeVision.Core.csproj",
+      "kind": "core",
+      "label": "Core",
+      "tools": [],
+      "role": "基础模型/服务；其中旧IPlugin管理器不等启动实际工具管理器。",
+      "useWpf": false,
+      "target": "net9.0-windows",
+      "sha256": "14147431114caeb84fc0619b19d93b4752ad42d091c9d3529ba7c9af6aa8c324",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        }
+      ],
+      "packages": [
+        "Microsoft.Extensions.DependencyInjection.Abstractions",
+        "OpenCvSharp4",
+        "OpenCvSharp4.Extensions",
+        "OpenCvSharp4.runtime.win",
+        "System.Text.Json"
+      ],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.DeviceDriver",
+      "file": "src/DeviceDriver/SunEyeVision.DeviceDriver.csproj",
+      "kind": "core",
+      "label": "DeviceDriver",
+      "tools": [],
+      "role": "设备驱动接口与厂商适配，连接/采集寿命还需逐厂商核实。",
+      "useWpf": false,
+      "target": "net9.0-windows",
+      "sha256": "6a0e7abd744bde060b9863850fb7fc573aa09bdeb91871d30ed060944064bf2e",
+      "references": [
+        {
+          "file": "src/Core/SunEyeVision.Core.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.Infrastructure\\SunEyeVision.Plugin.Infrastructure.csproj\" />"
+        }
+      ],
+      "packages": [
+        "OpenCvSharp4",
+        "OpenCvSharp4.Extensions",
+        "OpenCvSharp4.runtime.win",
+        "NModbus",
+        "OPCFoundation.NetStandard.Opc.Ua.Client",
+        "S7netplus",
+        "System.IO.Ports"
+      ],
+      "assemblyReferences": [
+        "MvCameraControl.Net"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Plugin.Infrastructure",
+      "file": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+      "kind": "core",
+      "label": "Plugin.Infrastructure",
+      "tools": [],
+      "role": "工具发现、注册、实例工厂和元数据管理。",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "22f63f8700c2cea9ed9fd66c012a1b80cf68fbe961026066eec44e70a2bb5069",
+      "references": [
+        {
+          "file": "src/Core/SunEyeVision.Core.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        }
+      ],
+      "packages": [
+        "OpenCvSharp4",
+        "OpenCvSharp4.Extensions",
+        "OpenCvSharp4.runtime.win"
+      ],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.Plugin.SDK",
+      "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+      "kind": "core",
+      "label": "Plugin.SDK",
+      "tools": [],
+      "role": "工具运行/数据合同，同时包含WPF调试扩展；当前不是无UI的纯契约包。",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "b95650866ebe40e8666a6062458571ca218ed626411d0c3a8bfb4f4facd1f9cf",
+      "references": [],
+      "packages": [
+        "Microsoft.SourceLink.GitHub",
+        "System.Drawing.Common"
+      ],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.CvAdapter",
+      "file": "src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj",
+      "kind": "core",
+      "label": "CvAdapter",
+      "tools": [],
+      "role": "OpenCV适配与SDK图像/词表桥。",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "45eda188954af49db2c7702c90b16a0461d4a61e4cd372f0a2fee3710bfff655",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        },
+        {
+          "file": "src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj",
+          "declaration": "<ProjectReference Include=\"..\\SunEyeVision.CvEngine\\SunEyeVision.CvEngine.csproj\" />"
+        }
+      ],
+      "packages": [
+        "OpenCvSharp4",
+        "OpenCvSharp4.runtime.win"
+      ],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.CvEngine",
+      "file": "src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj",
+      "kind": "core",
+      "label": "CvEngine",
+      "tools": [],
+      "role": "OpenCV后端能力；实际依赖见工程声明。",
+      "useWpf": false,
+      "target": "net9.0-windows",
+      "sha256": "a7f3170c0595bebb60e22850549b4babc1b8955056c8e0195a07024df47ba9bd",
+      "references": [],
+      "packages": [
+        "OpenCvSharp4",
+        "OpenCvSharp4.runtime.win"
+      ],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.HalAdapter",
+      "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+      "kind": "core",
+      "label": "HalAdapter",
+      "tools": [],
+      "role": "HALCON图像/算法适配与拟合助手。",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "027bdd2f2bac5e925c67fdcfb9281411f5296f5baaaa41303c643f565feff17c",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.UI",
+      "file": "src/UI/SunEyeVision.UI.csproj",
+      "kind": "core",
+      "label": "UI",
+      "tools": [],
+      "role": "主窗口/工具窗、服务装配、显示与设备运行入口。",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "8185eddfb71e32dac327de4cd8e7cc8eaf462bdf5c92f74442889436d5ceae72",
+      "references": [
+        {
+          "file": "src/Core/SunEyeVision.Core.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+        },
+        {
+          "file": "src/Workflow/SunEyeVision.Workflow.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Workflow\\SunEyeVision.Workflow.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.Infrastructure\\SunEyeVision.Plugin.Infrastructure.csproj\" />"
+        },
+        {
+          "file": "src/DeviceDriver/SunEyeVision.DeviceDriver.csproj",
+          "declaration": "<ProjectReference Include=\"..\\DeviceDriver\\SunEyeVision.DeviceDriver.csproj\" />"
+        },
+        {
+          "file": "src/CommonControl/CommonControl.csproj",
+          "declaration": "<ProjectReference Include=\"..\\CommonControl\\CommonControl.csproj\" />"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\" />"
+        },
+        {
+          "file": "src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\SunEyeVision.CvAdapter\\SunEyeVision.CvAdapter.csproj\" />"
+        }
+      ],
+      "packages": [
+        "AIStudio.Wpf.DiagramDesigner",
+        "AvalonEdit",
+        "Microsoft.CodeAnalysis.CSharp",
+        "Microsoft.CodeAnalysis.Features",
+        "Microsoft.CodeAnalysis.CSharp.Features",
+        "OpenCvSharp4",
+        "OpenCvSharp4.Extensions",
+        "OpenCvSharp4.runtime.win",
+        "RoyT.AStar",
+        "SharpDX",
+        "SharpDX.Direct2D1",
+        "SharpDX.Direct3D11",
+        "SharpDX.DXGI",
+        "Vortice.Direct2D1",
+        "Vortice.Direct3D11",
+        "Vortice.DXGI",
+        "Msagl",
+        "Msagl.Drawing",
+        "Msagl.WpfGraphControl"
+      ],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.Workflow",
+      "file": "src/Workflow/SunEyeVision.Workflow.csproj",
+      "kind": "core",
+      "label": "Workflow",
+      "tools": [],
+      "role": "定义、执行计划、会话/作用域、依赖就绪与节点执行。",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "e791ce019b1eb76f5e06cb202c94488049c93c4fca4c3edc9f510e437c0cecaf",
+      "references": [
+        {
+          "file": "src/Core/SunEyeVision.Core.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.Infrastructure\\SunEyeVision.Plugin.Infrastructure.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        }
+      ],
+      "packages": [
+        "OpenCvSharp4",
+        "OpenCvSharp4.runtime.win"
+      ],
+      "assemblyReferences": []
+    },
+    {
+      "id": "FixEncoding",
+      "file": "tools/FixEncoding/FixEncoding.csproj",
+      "kind": "auxiliary",
+      "label": "FixEncoding",
+      "tools": [],
+      "role": "辅助工程；不当作产品业务模块或工具能力计数。",
+      "useWpf": false,
+      "target": "net8.0",
+      "sha256": "214c2e293f8349e71e237f536365de64b3167a4ae632301ddfc10d244e80c05b",
+      "references": [],
+      "packages": [],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.Tool.BlobAnalysis",
+      "file": "tools/SunEyeVision.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj",
+      "kind": "tool",
+      "label": "BlobAnalysis",
+      "tools": [
+        {
+          "id": "BlobAnalysis",
+          "name": "Blob分析",
+          "file": "tool-detail-BlobAnalysis.html",
+          "category": "区域分析"
+        }
+      ],
+      "role": "工具插件：Blob分析",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "21574236cfba8b7ff9e14cf28a0202e477218fe38dcc0d95bf0c4e4a421fdd06",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.CircleCircleMeasure",
+      "file": "tools/SunEyeVision.Tool.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj",
+      "kind": "tool",
+      "label": "CircleCircleMeasure",
+      "tools": [
+        {
+          "id": "CircleCircleMeasure",
+          "name": "圆-圆测量",
+          "file": "tool-detail-CircleCircleMeasure.html",
+          "category": "几何测量"
+        }
+      ],
+      "role": "工具插件：圆-圆测量",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "d4601729c862a30e010e0828782d27bf48a5489ddac3744c7f7ec7f5dba9e11a",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.CircleDetect",
+      "file": "tools/SunEyeVision.Tool.CircleDetect/SunEyeVision.Tool.CircleDetect.csproj",
+      "kind": "tool",
+      "label": "CircleDetect",
+      "tools": [
+        {
+          "id": "CircleDetect",
+          "name": "圆查找",
+          "file": "tool-detail-CircleDetect.html",
+          "category": "特征定位"
+        }
+      ],
+      "role": "工具插件：圆查找",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "60d1c5a875d3acd5f84cf510d297a5cd9e971aa57a6fcb8561740f52e1ed3fb8",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.Condition",
+      "file": "tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj",
+      "kind": "tool",
+      "label": "Condition",
+      "tools": [
+        {
+          "id": "Condition",
+          "name": "条件分支",
+          "file": "tool-detail-Condition.html",
+          "category": "流程控制"
+        }
+      ],
+      "role": "工具插件：条件分支",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "6b46dc71b2df348680ad34ad88a26db2061d69d1868c155bd074d431b63476cc",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.Tool.ImageFilter",
+      "file": "tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj",
+      "kind": "tool",
+      "label": "ImageFilter",
+      "tools": [
+        {
+          "id": "ImageFilter",
+          "name": "图像滤波",
+          "file": "tool-detail-ImageFilter.html",
+          "category": "图像预处理"
+        }
+      ],
+      "role": "工具插件：图像滤波",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "cb0b361e1a800ac462839abc5705b5127b694e93660e321ff08068d244da7ead",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.ImageLoad",
+      "file": "tools/SunEyeVision.Tool.ImageLoad/SunEyeVision.Tool.ImageLoad.csproj",
+      "kind": "tool",
+      "label": "ImageLoad",
+      "tools": [
+        {
+          "id": "ImageLoad",
+          "name": "图像源",
+          "file": "tool-detail-ImageLoad.html",
+          "category": "图像采集"
+        }
+      ],
+      "role": "工具插件：图像源",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "161069e5fb161265b99a559aa9a87a11af791855d966ae217a289fe536d7ee46",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.ImageThreshold",
+      "file": "tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj",
+      "kind": "tool",
+      "label": "ImageThreshold",
+      "tools": [
+        {
+          "id": "ImageThreshold",
+          "name": "图像二值化",
+          "file": "tool-detail-ImageThreshold.html",
+          "category": "图像预处理"
+        }
+      ],
+      "role": "工具插件：图像二值化",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "352db08a90afcf132fae8deb02f5e86bcd3cfbd1c568bb6683856024bec5e9f1",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.LineCircleMeasure",
+      "file": "tools/SunEyeVision.Tool.LineCircleMeasure/SunEyeVision.Tool.LineCircleMeasure.csproj",
+      "kind": "tool",
+      "label": "LineCircleMeasure",
+      "tools": [
+        {
+          "id": "LineCircleMeasure",
+          "name": "线-圆测量",
+          "file": "tool-detail-LineCircleMeasure.html",
+          "category": "几何测量"
+        }
+      ],
+      "role": "工具插件：线-圆测量",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "311ef087b72401e6ca3c69e0efe2f5beff223254720263e8805bcc54035262f0",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.LineDetect",
+      "file": "tools/SunEyeVision.Tool.LineDetect/SunEyeVision.Tool.LineDetect.csproj",
+      "kind": "tool",
+      "label": "LineDetect",
+      "tools": [
+        {
+          "id": "LineDetect",
+          "name": "直线查找",
+          "file": "tool-detail-LineDetect.html",
+          "category": "特征定位"
+        }
+      ],
+      "role": "工具插件：直线查找",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "72ac7fa48866a8daeb1aa33cfe256b45c24666768f09a2b8b361d3e163b497f8",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.LineLineMeasure",
+      "file": "tools/SunEyeVision.Tool.LineLineMeasure/SunEyeVision.Tool.LineLineMeasure.csproj",
+      "kind": "tool",
+      "label": "LineLineMeasure",
+      "tools": [
+        {
+          "id": "LineLineMeasure",
+          "name": "线-线测量",
+          "file": "tool-detail-LineLineMeasure.html",
+          "category": "几何测量"
+        }
+      ],
+      "role": "工具插件：线-线测量",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "660030ac1d31ddfe479e8687996ca0ac8dc8f53aa3c82f19c8e91454bceddf5d",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.Morphology",
+      "file": "tools/SunEyeVision.Tool.Morphology/SunEyeVision.Tool.Morphology.csproj",
+      "kind": "tool",
+      "label": "Morphology",
+      "tools": [
+        {
+          "id": "Morphology",
+          "name": "形态学处理",
+          "file": "tool-detail-Morphology.html",
+          "category": "图像预处理"
+        }
+      ],
+      "role": "工具插件：形态学处理",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "d24d6e93bfe686d754629ecb0c9ab190a951e881599df015b81ae0e0e722069c",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.NPointCalibration",
+      "file": "tools/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.csproj",
+      "kind": "tool",
+      "label": "NPointCalibration",
+      "tools": [
+        {
+          "id": "NPointCalibration",
+          "name": "N点标定",
+          "file": "tool-calibration.html",
+          "category": "坐标标定"
+        },
+        {
+          "id": "NPointVerification",
+          "name": "N点标定验证",
+          "file": "tool-verification.html",
+          "category": "坐标标定"
+        }
+      ],
+      "role": "工具插件：N点标定 / N点标定验证",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "5fea9822cb9cdb9338cf4cd413c8bc31453b7ddd6dafc37174d8c049b156f38b",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj\" Private=\"false\" />"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"../../src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj\" Private=\"false\" />"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.PointCircleMeasure",
+      "file": "tools/SunEyeVision.Tool.PointCircleMeasure/SunEyeVision.Tool.PointCircleMeasure.csproj",
+      "kind": "tool",
+      "label": "PointCircleMeasure",
+      "tools": [
+        {
+          "id": "PointCircleMeasure",
+          "name": "点-圆测量",
+          "file": "tool-detail-PointCircleMeasure.html",
+          "category": "几何测量"
+        }
+      ],
+      "role": "工具插件：点-圆测量",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "1d62dc162a9b354d54dacfbc4ed43a78b32b7d2f51a624528a45ac1049e7e56c",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.PointLineMeasure",
+      "file": "tools/SunEyeVision.Tool.PointLineMeasure/SunEyeVision.Tool.PointLineMeasure.csproj",
+      "kind": "tool",
+      "label": "PointLineMeasure",
+      "tools": [
+        {
+          "id": "PointLineMeasure",
+          "name": "点-线测量",
+          "file": "tool-detail-PointLineMeasure.html",
+          "category": "几何测量"
+        }
+      ],
+      "role": "工具插件：点-线测量",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "a1a9a22bba122ee71a76335e6318d115666e8e18755bba431d63e1a2255fa9cd",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\" />"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.PointPointMeasure",
+      "file": "tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj",
+      "kind": "tool",
+      "label": "PointPointMeasure",
+      "tools": [
+        {
+          "id": "PointPointMeasure",
+          "name": "点-点测量",
+          "file": "tool-detail-PointPointMeasure.html",
+          "category": "几何测量"
+        }
+      ],
+      "role": "工具插件：点-点测量",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "487429e152faca021cf00dff97d25efd57f85d52081ddea7a9544f24e0922643",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.Tool.ProtocolAssemble",
+      "file": "tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj",
+      "kind": "tool",
+      "label": "ProtocolAssemble",
+      "tools": [
+        {
+          "id": "ProtocolAssemble",
+          "name": "协议组装",
+          "file": "tool-detail-ProtocolAssemble.html",
+          "category": "通信工具"
+        }
+      ],
+      "role": "工具插件：协议组装",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "2962e41cba632bb9ef18a0a1ade3fdbc37b4bcef85154db18c2fd749c4ada386",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.Tool.ProtocolParse",
+      "file": "tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj",
+      "kind": "tool",
+      "label": "ProtocolParse",
+      "tools": [
+        {
+          "id": "ProtocolParse",
+          "name": "协议解析",
+          "file": "tool-detail-ProtocolParse.html",
+          "category": "通信工具"
+        }
+      ],
+      "role": "工具插件：协议解析",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "d250b5b6ee490edab2e2b3e0af7e8eaff5889a8ba461533fd08808d45b38f2b7",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.Tool.ReceiveData",
+      "file": "tools/SunEyeVision.Tool.ReceiveData/SunEyeVision.Tool.ReceiveData.csproj",
+      "kind": "tool",
+      "label": "ReceiveData",
+      "tools": [
+        {
+          "id": "ReceiveData",
+          "name": "接收数据",
+          "file": "tool-detail-ReceiveData.html",
+          "category": "通信工具"
+        }
+      ],
+      "role": "工具插件：接收数据",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "7f27d494a82c3e2ee3b8207d5ae64004918f65710250778544d20ea0205a0f34",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.Tool.Script",
+      "file": "tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj",
+      "kind": "tool",
+      "label": "Script",
+      "tools": [
+        {
+          "id": "Script",
+          "name": "Script",
+          "file": "tool-script.html",
+          "category": "脚本工具"
+        }
+      ],
+      "role": "工具插件：Script",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "21806c447b904717b207d308294e6a3cb5e3f468b7f20368a82189785a302172",
+      "references": [
+        {
+          "file": "src/CommonControl/CommonControl.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\CommonControl\\CommonControl.csproj\">"
+        },
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.CvAdapter\\SunEyeVision.CvAdapter.csproj\">"
+        }
+      ],
+      "packages": [
+        "AvalonEdit",
+        "Microsoft.CodeAnalysis.CSharp",
+        "Microsoft.CodeAnalysis.Features",
+        "Microsoft.CodeAnalysis.CSharp.Features",
+        "OpenCvSharp4",
+        "IgnoresAccessChecksToGenerator"
+      ],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.SendData",
+      "file": "tools/SunEyeVision.Tool.SendData/SunEyeVision.Tool.SendData.csproj",
+      "kind": "tool",
+      "label": "SendData",
+      "tools": [
+        {
+          "id": "SendData",
+          "name": "发送数据",
+          "file": "tool-detail-SendData.html",
+          "category": "通信工具"
+        }
+      ],
+      "role": "工具插件：发送数据",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "261352fefb4cd8a136644062f428083a88d6a11e5bfab45723c80c1a4a033858",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.Tool.ShapeMatch",
+      "file": "tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch.csproj",
+      "kind": "tool",
+      "label": "ShapeMatch",
+      "tools": [
+        {
+          "id": "ShapeMatch",
+          "name": "轮廓匹配",
+          "file": "tool-detail-ShapeMatch.html",
+          "category": "特征定位"
+        }
+      ],
+      "role": "工具插件：轮廓匹配",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "0a553fc4f4d10c075c8684a204ecae36366e0d95d49c506a8073ec2510295927",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    },
+    {
+      "id": "SunEyeVision.Tool.Subroutine",
+      "file": "tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj",
+      "kind": "tool",
+      "label": "Subroutine",
+      "tools": [
+        {
+          "id": "Subroutine",
+          "name": "子程序",
+          "file": "tool-subroutine.html",
+          "category": "流程控制"
+        }
+      ],
+      "role": "工具插件：子程序",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "547b19dfcdd8f9bfac33377eeb25a1f9115e69d80540386f2ea240d2c9e6ddf9",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": []
+    },
+    {
+      "id": "SunEyeVision.Tool.Threshold",
+      "file": "tools/SunEyeVision.Tool.Threshold/SunEyeVision.Tool.Threshold.csproj",
+      "kind": "tool",
+      "label": "Threshold",
+      "tools": [
+        {
+          "id": "Threshold",
+          "name": "图像阈值化",
+          "file": "tool-standard.html",
+          "category": "图像预处理"
+        }
+      ],
+      "role": "工具插件：图像阈值化",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "sha256": "4bf877633ca90817e214df88900b669a40639de54c9afd3c5618763027eba3cb",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+        }
+      ],
+      "packages": [],
+      "assemblyReferences": [
+        "halcondotnetxl"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "CommonControl",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.Core",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.DeviceDriver",
+      "to": "SunEyeVision.Core",
+      "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.DeviceDriver",
+      "to": "SunEyeVision.Plugin.Infrastructure",
+      "declaration": "<ProjectReference Include=\"..\\Plugin.Infrastructure\\SunEyeVision.Plugin.Infrastructure.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Infrastructure",
+      "to": "SunEyeVision.Core",
+      "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Infrastructure",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.CvAdapter",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.CvAdapter",
+      "to": "SunEyeVision.CvEngine",
+      "declaration": "<ProjectReference Include=\"..\\SunEyeVision.CvEngine\\SunEyeVision.CvEngine.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.HalAdapter",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.UI",
+      "to": "SunEyeVision.Core",
+      "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.UI",
+      "to": "SunEyeVision.Workflow",
+      "declaration": "<ProjectReference Include=\"..\\Workflow\\SunEyeVision.Workflow.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.UI",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.UI",
+      "to": "SunEyeVision.Plugin.Infrastructure",
+      "declaration": "<ProjectReference Include=\"..\\Plugin.Infrastructure\\SunEyeVision.Plugin.Infrastructure.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.UI",
+      "to": "SunEyeVision.DeviceDriver",
+      "declaration": "<ProjectReference Include=\"..\\DeviceDriver\\SunEyeVision.DeviceDriver.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.UI",
+      "to": "CommonControl",
+      "declaration": "<ProjectReference Include=\"..\\CommonControl\\CommonControl.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.UI",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.UI",
+      "to": "SunEyeVision.CvAdapter",
+      "declaration": "<ProjectReference Include=\"..\\SunEyeVision.CvAdapter\\SunEyeVision.CvAdapter.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.Workflow",
+      "to": "SunEyeVision.Core",
+      "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.Workflow",
+      "to": "SunEyeVision.Plugin.Infrastructure",
+      "declaration": "<ProjectReference Include=\"..\\Plugin.Infrastructure\\SunEyeVision.Plugin.Infrastructure.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.Workflow",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.Tool.BlobAnalysis",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.BlobAnalysis",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.CircleCircleMeasure",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.CircleCircleMeasure",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.CircleDetect",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.CircleDetect",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.Condition",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.ImageFilter",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.ImageFilter",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.ImageLoad",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.ImageLoad",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.ImageThreshold",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.ImageThreshold",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.LineCircleMeasure",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.LineCircleMeasure",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.LineDetect",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.LineDetect",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.LineLineMeasure",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.LineLineMeasure",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.Morphology",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.Morphology",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.NPointCalibration",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj\" Private=\"false\" />"
+    },
+    {
+      "from": "SunEyeVision.Tool.NPointCalibration",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"../../src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj\" Private=\"false\" />"
+    },
+    {
+      "from": "SunEyeVision.Tool.PointCircleMeasure",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.PointCircleMeasure",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.PointLineMeasure",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.Tool.PointLineMeasure",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\" />"
+    },
+    {
+      "from": "SunEyeVision.Tool.PointPointMeasure",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.ProtocolAssemble",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.ProtocolParse",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.ReceiveData",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.Script",
+      "to": "CommonControl",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\CommonControl\\CommonControl.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.Script",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.Script",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.Script",
+      "to": "SunEyeVision.CvAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.CvAdapter\\SunEyeVision.CvAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.SendData",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.ShapeMatch",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.ShapeMatch",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.Subroutine",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.Threshold",
+      "to": "SunEyeVision.Plugin.SDK",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\">"
+    },
+    {
+      "from": "SunEyeVision.Tool.Threshold",
+      "to": "SunEyeVision.HalAdapter",
+      "declaration": "<ProjectReference Include=\"..\\..\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\">"
+    }
+  ],
+  "counts": {
+    "core": 10,
+    "toolProjects": 23,
+    "auxiliary": 1,
+    "total": 34,
+    "toolDeclarations": 24,
+    "projectReferenceEdges": 61
+  },
+  "excludedTemporaryProjects": [
+    "tools/SunEyeVision.Tool.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure_oxsx0veq_wpftmp.csproj",
+    "tools/SunEyeVision.Tool.CircleDetect/SunEyeVision.Tool.CircleDetect_lbv1bjtf_wpftmp.csproj",
+    "tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold_tgfmxgp1_wpftmp.csproj",
+    "tools/SunEyeVision.Tool.LineCircleMeasure/SunEyeVision.Tool.LineCircleMeasure_wkfwfrgl_wpftmp.csproj",
+    "tools/SunEyeVision.Tool.LineDetect/SunEyeVision.Tool.LineDetect_srcnqs32_wpftmp.csproj",
+    "tools/SunEyeVision.Tool.PointCircleMeasure/SunEyeVision.Tool.PointCircleMeasure_iybhih0i_wpftmp.csproj",
+    "tools/SunEyeVision.Tool.PointLineMeasure/SunEyeVision.Tool.PointLineMeasure_0vgbb1pi_wpftmp.csproj",
+    "tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch_wjhpmxzs_wpftmp.csproj",
+    "tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine_2kdbqcgm_wpftmp.csproj",
+    "tools/SunEyeVision.Tool.Threshold/SunEyeVision.Tool.Threshold_5tzndtk0_wpftmp.csproj",
+    "tools/SunEyeVision.Tool.Threshold/SunEyeVision.Tool.Threshold_mwxjhc5j_wpftmp.csproj"
+  ],
+  "scope": "src与tools现有工程文件的静态直接声明；排除bin/obj和WPF临时工程。未执行MSBuild条件求值、构建或运行。",
+  "meaning": "工程依赖、运行调用、数据传递和资源所有权是四种图；本图只画第一种，不能把线多当优秀。",
+  "evidenceLimit": "参考页“当前工程”依赖图描述恢复项目，不直接等于VM原版内部模块图；原产品能力和恢复项目实现分开比较。",
+  "runtimeExecuted": false
+}

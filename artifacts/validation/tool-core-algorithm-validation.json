@@ -1,0 +1,20 @@
+{
+  "batchId": "DOC-ALG-20261022-01",
+  "pages": 26,
+  "widthChecks": 78,
+  "errors": [],
+  "sourceDrift": [
+    "tools/SunEyeVision.Tool.NPointCalibration/NPointVerificationTool.cs",
+    "tools/SunEyeVision.Tool.Threshold/ThresholdTool.cs",
+    "tools/SunEyeVision.Tool.Threshold/ThresholdParameters.cs",
+    "tools/SunEyeVision.Tool.Threshold/ThresholdResults.cs"
+  ],
+  "localLinksChecked": 50,
+  "productExecuted": false,
+  "numericParityRun": 0,
+  "sourceDriftPolicy": "historical batch retained; missing or changed source requires new analysis, not silent acceptance",
+  "currentSourceCount": 22,
+  "uniqueOwnSources": 121,
+  "originalResourceReferenceChecks": 145,
+  "uniqueOriginalResources": 133
+}

@@ -1,0 +1,1266 @@
+[
+  {
+    "rva": "137630",
+    "text": "Options could not be fully parsed using the proto descriptors compiled into this binary. Missing required fields: "
+  },
+  {
+    "rva": "143288",
+    "text": "\\QUSEREX.DLL"
+  },
+  {
+    "rva": "145c70",
+    "text": "[%s@%d] SharedMemory2Data fail, OpenFileMapping error[%d]"
+  },
+  {
+    "rva": "145cb0",
+    "text": "[%s@%d] SharedMemory2Data fail, MapViewOfFile error[%d]"
+  },
+  {
+    "rva": "145ce8",
+    "text": "[%s@%d] SharedMemory2Data catch exception."
+  },
+  {
+    "rva": "145ff0",
+    "text": "[%s@%d] Proxy: Callback module result new BinaryData fail."
+  },
+  {
+    "rva": "146030",
+    "text": "CCommonFunction::SharedMemory2Data"
+  },
+  {
+    "rva": "146380",
+    "text": "ModuleProxy.dll"
+  },
+  {
+    "rva": "1465e0",
+    "text": "\\GateWayFrame.dll"
+  },
+  {
+    "rva": "146658",
+    "text": "\\GateWayProxy.dll"
+  },
+  {
+    "rva": "146690",
+    "text": "\\ModuleProxy\\x64\\ModuleFrame.dll"
+  },
+  {
+    "rva": "146740",
+    "text": "VM_M_Initialize"
+  },
+  {
+    "rva": "146750",
+    "text": "VM_M_CreateProcedure"
+  },
+  {
+    "rva": "146768",
+    "text": "VM_M_UnInitialize"
+  },
+  {
+    "rva": "146780",
+    "text": "VM_M_DeleteProcedure"
+  },
+  {
+    "rva": "146798",
+    "text": "VM_M_UpdateProcedure"
+  },
+  {
+    "rva": "1467b0",
+    "text": "VM_M_ExportProcedureData"
+  },
+  {
+    "rva": "1467d0",
+    "text": "VM_M_GetProcedureStatus"
+  },
+  {
+    "rva": "1467e8",
+    "text": "VM_M_CancelExportProcedureData"
+  },
+  {
+    "rva": "146808",
+    "text": "VM_M_ImportProcedureData"
+  },
+  {
+    "rva": "146828",
+    "text": "VM_M_AddModuleNode"
+  },
+  {
+    "rva": "146840",
+    "text": "VM_M_CancelImportProcedureData"
+  },
+  {
+    "rva": "146860",
+    "text": "VM_M_AddModuleNodeSync"
+  },
+  {
+    "rva": "146878",
+    "text": "VM_M_AddModuleNodeEx"
+  },
+  {
+    "rva": "146890",
+    "text": "VM_M_BatchAddModuleNodeEx"
+  },
+  {
+    "rva": "1468b0",
+    "text": "VM_M_BatchAddModuleNode"
+  },
+  {
+    "rva": "1468c8",
+    "text": "VM_M_UpdateModuleNodeEx"
+  },
+  {
+    "rva": "1468e0",
+    "text": "VM_M_UpdateModuleNode"
+  },
+  {
+    "rva": "1468f8",
+    "text": "VM_M_SetModuleNodeState"
+  },
+  {
+    "rva": "146910",
+    "text": "VM_M_DeleteModuleNode"
+  },
+  {
+    "rva": "146928",
+    "text": "VM_M_CopyModuleNodeParam"
+  },
+  {
+    "rva": "146948",
+    "text": "VM_M_GetModuleNodeState"
+  },
+  {
+    "rva": "146960",
+    "text": "VM_M_GetModuleNodeInfo"
+  },
+  {
+    "rva": "146978",
+    "text": "VM_M_CopyModuleNodeAlgParam"
+  },
+  {
+    "rva": "146998",
+    "text": "VM_M_SetModuleParam"
+  },
+  {
+    "rva": "1469b0",
+    "text": "VM_M_GetModuleNodeInfoEx"
+  },
+  {
+    "rva": "1469d0",
+    "text": "VM_M_GetModuleAllParam"
+  },
+  {
+    "rva": "1469e8",
+    "text": "VM_M_GetModuleParam"
+  },
+  {
+    "rva": "146a00",
+    "text": "VM_M_GetBinayData"
+  },
+  {
+    "rva": "146a18",
+    "text": "VM_M_SetBinayData"
+  },
+  {
+    "rva": "146a30",
+    "text": "VM_M_DisConnectModule"
+  },
+  {
+    "rva": "146a48",
+    "text": "VM_M_ConnectModule"
+  },
+  {
+    "rva": "146a60",
+    "text": "VM_M_UnSubScribe"
+  },
+  {
+    "rva": "146a78",
+    "text": "VM_M_SubScribe"
+  },
+  {
+    "rva": "146a88",
+    "text": "VM_M_RunProcedureContinuously"
+  },
+  {
+    "rva": "146aa8",
+    "text": "VM_M_RunProcedureOnce"
+  },
+  {
+    "rva": "146ac0",
+    "text": "VM_M_RunModuleSelf"
+  },
+  {
+    "rva": "146ad8",
+    "text": "VM_M_StopRunProcedure"
+  },
+  {
+    "rva": "146af0",
+    "text": "VM_M_GetProcedureRunningParam"
+  },
+  {
+    "rva": "146b10",
+    "text": "VM_M_SetProcedureRunningParam"
+  },
+  {
+    "rva": "146b30",
+    "text": "VM_M_SaveSolutionToFile"
+  },
+  {
+    "rva": "146b48",
+    "text": "VM_M_RunProcedureOnceEx"
+  },
+  {
+    "rva": "146b60",
+    "text": "VM_M_CancelLoadSolution"
+  },
+  {
+    "rva": "146b78",
+    "text": "VM_M_LoadSolutionFromFile"
+  },
+  {
+    "rva": "146b98",
+    "text": "VM_M_CloseSolution"
+  },
+  {
+    "rva": "146bb0",
+    "text": "VM_M_CancelSaveSolution"
+  },
+  {
+    "rva": "146bc8",
+    "text": "VM_M_SetLoadSolutionState"
+  },
+  {
+    "rva": "146be8",
+    "text": "VM_M_AsyncCloseSolution"
+  },
+  {
+    "rva": "146c00",
+    "text": "VM_M_UpdateLoop"
+  },
+  {
+    "rva": "146c10",
+    "text": "VM_M_AddLoop"
+  },
+  {
+    "rva": "146c20",
+    "text": "VM_M_BatchAddLoop"
+  },
+  {
+    "rva": "146c38",
+    "text": "VM_M_DeleteLoop"
+  },
+  {
+    "rva": "146c48",
+    "text": "VM_M_AddGroup"
+  },
+  {
+    "rva": "146c58",
+    "text": "VM_M_AddLoopEx"
+  },
+  {
+    "rva": "146c68",
+    "text": "VM_M_AddGroupSync"
+  },
+  {
+    "rva": "146c80",
+    "text": "VM_M_AddGroupEx"
+  },
+  {
+    "rva": "146c90",
+    "text": "VM_M_MoveOutFromGroup"
+  },
+  {
+    "rva": "146ca8",
+    "text": "VM_M_MoveIntoGroup"
+  },
+  {
+    "rva": "146cc0",
+    "text": "VM_M_ExportGroupData"
+  },
+  {
+    "rva": "146cd8",
+    "text": "VM_M_DeleteGroup"
+  },
+  {
+    "rva": "146cf0",
+    "text": "VM_M_CancelExportGroupData"
+  },
+  {
+    "rva": "146d10",
+    "text": "VM_M_ImportGroupData"
+  },
+  {
+    "rva": "146d28",
+    "text": "VM_M_BatchAddGroup"
+  },
+  {
+    "rva": "146d40",
+    "text": "VM_M_CancelImportGroupData"
+  },
+  {
+    "rva": "146d60",
+    "text": "VM_M_BatchMoveIntoGroup"
+  },
+  {
+    "rva": "146d78",
+    "text": "VM_M_BatchAddGroupEx"
+  },
+  {
+    "rva": "146d90",
+    "text": "VM_M_SetGroupIO"
+  },
+  {
+    "rva": "146da0",
+    "text": "VM_M_BatchMoveOutFromGroup"
+  },
+  {
+    "rva": "146dc0",
+    "text": "VM_M_SetCustomOutput"
+  },
+  {
+    "rva": "146dd8",
+    "text": "VM_M_SetResultCallback"
+  },
+  {
+    "rva": "146df0",
+    "text": "VM_M_DelCustomOutput"
+  },
+  {
+    "rva": "146e08",
+    "text": "VM_M_GetCustomOutput"
+  },
+  {
+    "rva": "146e20",
+    "text": "VM_M_SetEventCalBack"
+  },
+  {
+    "rva": "146e38",
+    "text": "VM_M_ClearCustomOutput"
+  },
+  {
+    "rva": "146e50",
+    "text": "VM_M_QueryModuleConfigParam"
+  },
+  {
+    "rva": "146e70",
+    "text": "VM_M_SetCustomDataCallBack"
+  },
+  {
+    "rva": "146e90",
+    "text": "VM_M_SetLogLevel"
+  },
+  {
+    "rva": "146ea8",
+    "text": "VM_M_QueryModuleConfigParamEx"
+  },
+  {
+    "rva": "146ec8",
+    "text": "VM_M_SetProcedureRunningPolicy"
+  },
+  {
+    "rva": "146ee8",
+    "text": "VM_M_SetRunningControlParam"
+  },
+  {
+    "rva": "146f08",
+    "text": "VM_M_GetProcessorInfo"
+  },
+  {
+    "rva": "146f20",
+    "text": "VM_M_GetProcedureRunningPolicy"
+  },
+  {
+    "rva": "146f40",
+    "text": "VM_M_UnBindGlobalVar"
+  },
+  {
+    "rva": "146f58",
+    "text": "VM_M_BindGlobalVar"
+  },
+  {
+    "rva": "146f70",
+    "text": "VM_M_EnableSharedMemGlobalPrefix"
+  },
+  {
+    "rva": "146f98",
+    "text": "VM_M_GetGlobalVarBindingList"
+  },
+  {
+    "rva": "146fb8",
+    "text": "VM_M_SetInputString"
+  },
+  {
+    "rva": "146fd0",
+    "text": "VM_M_SetProcedureIO"
+  },
+  {
+    "rva": "146fe8",
+    "text": "VM_M_SetInputFloat"
+  },
+  {
+    "rva": "147000",
+    "text": "VM_M_SetInputInt"
+  },
+  {
+    "rva": "147018",
+    "text": "VM_M_SetInputImage"
+  },
+  {
+    "rva": "147030",
+    "text": "VM_M_SetInputDouble"
+  },
+  {
+    "rva": "147048",
+    "text": "VM_M_SetInputBytes"
+  },
+  {
+    "rva": "147060",
+    "text": "VM_M_SetInputPointset"
+  },
+  {
+    "rva": "147078",
+    "text": "VM_M_GetInputState"
+  },
+  {
+    "rva": "147090",
+    "text": "VM_M_ClearInputValue"
+  },
+  {
+    "rva": "1470a8",
+    "text": "VM_M_SelectAllModuleResult"
+  },
+  {
+    "rva": "1470c8",
+    "text": "VM_M_SelectModuleResult"
+  },
+  {
+    "rva": "1470e0",
+    "text": "VM_M_QueryModuleHistoryResult"
+  },
+  {
+    "rva": "147100",
+    "text": "VM_M_SelectNoneModuleResult"
+  },
+  {
+    "rva": "147120",
+    "text": "VM_M_ClearModuleHistoryResult"
+  },
+  {
+    "rva": "147140",
+    "text": "VM_M_QueryModuleHistoryResultEx"
+  },
+  {
+    "rva": "147160",
+    "text": "VM_M_GetCurrentConfigByFile"
+  },
+  {
+    "rva": "147180",
+    "text": "VM_M_GetDefaultConfigByFile"
+  },
+  {
+    "rva": "1471a0",
+    "text": "VM_M_AllocateAlgMemory64"
+  },
+  {
+    "rva": "1471c0",
+    "text": "VM_M_AllocateAlgMemory"
+  },
+  {
+    "rva": "1471d8",
+    "text": "VM_M_AllocateMemoryInPool"
+  },
+  {
+    "rva": "1471f8",
+    "text": "VM_M_ReleaseAlgMemory"
+  },
+  {
+    "rva": "147210",
+    "text": "VM_M_ReleaseSolSharedMemory"
+  },
+  {
+    "rva": "147230",
+    "text": "VM_M_ReleaseMemoryInPool"
+  },
+  {
+    "rva": "147250",
+    "text": "VM_M_ReleaseGroupDataSharedMemory"
+  },
+  {
+    "rva": "147278",
+    "text": "VM_M_ReleaseSolSharedMemorySp"
+  },
+  {
+    "rva": "147298",
+    "text": "VM_M_ReleaseProcedureDataSharedMemory"
+  },
+  {
+    "rva": "1472c0",
+    "text": "VM_M_ReleaseGroupDataSharedMemorySp"
+  },
+  {
+    "rva": "1472e8",
+    "text": "VM_M_ResetModuleNodeAlgParam"
+  },
+  {
+    "rva": "147308",
+    "text": "VM_M_ReleaseProcedureDataSharedMemorySp"
+  },
+  {
+    "rva": "147330",
+    "text": "VM_M_IsUploadRstEnabled"
+  },
+  {
+    "rva": "147348",
+    "text": "VM_M_NotifyEvent"
+  },
+  {
+    "rva": "147360",
+    "text": "VM_M_GetModuleMapping"
+  },
+  {
+    "rva": "147378",
+    "text": "VM_M_RunModuleById"
+  },
+  {
+    "rva": "147390",
+    "text": "VM_M_ImportModuleDataFromSharedMem"
+  },
+  {
+    "rva": "1473b8",
+    "text": "VM_M_ExportModuleDataToSharedMem"
+  },
+  {
+    "rva": "1473e0",
+    "text": "VM_M_RequestChangeSol"
+  },
+  {
+    "rva": "1473f8",
+    "text": "VM_M_RelaseSharedMemory"
+  },
+  {
+    "rva": "147410",
+    "text": "VM_M_NotifyDecGlobalCameraNum"
+  },
+  {
+    "rva": "147430",
+    "text": "VM_M_NotifyIncGlobalCameraNum"
+  },
+  {
+    "rva": "147450",
+    "text": "VM_M_SetCheckRunningStatus"
+  },
+  {
+    "rva": "147470",
+    "text": "VM_M_GetGlobalCameraList"
+  },
+  {
+    "rva": "147490",
+    "text": "VM_M_SetModuleParamBinding"
+  },
+  {
+    "rva": "1474b0",
+    "text": "VM_M_GetCurrentConfigOfSolution"
+  },
+  {
+    "rva": "1474d0",
+    "text": "VM_M_GetModuleParamBindingList"
+  },
+  {
+    "rva": "1474f0",
+    "text": "VM_M_DelModuleParamBinding"
+  },
+  {
+    "rva": "147510",
+    "text": "VM_M_BatchImportProcedureData"
+  },
+  {
+    "rva": "147530",
+    "text": "VM_M_BatchExportProcedureData"
+  },
+  {
+    "rva": "147550",
+    "text": "VM_M_BatchCancelImportProcedureData"
+  },
+  {
+    "rva": "147578",
+    "text": "VM_M_BatchCancelExportProcedureData"
+  },
+  {
+    "rva": "1475a0",
+    "text": "VM_M_ConnectProcedure"
+  },
+  {
+    "rva": "1475b8",
+    "text": "VM_M_BatchReleaseProcedureDataSharedMemory"
+  },
+  {
+    "rva": "1475e8",
+    "text": "VM_M_EnableReentrant"
+  },
+  {
+    "rva": "147600",
+    "text": "VM_M_DisConnectProcedure"
+  },
+  {
+    "rva": "147620",
+    "text": "VM_M_SetReentrantMaxTimes"
+  },
+  {
+    "rva": "147640",
+    "text": "VM_M_SetUnsupportReentrantModules"
+  },
+  {
+    "rva": "147668",
+    "text": "VM_M_QueryModuleRunningState"
+  },
+  {
+    "rva": "147688",
+    "text": "VM_M_SetBufferNodeNum"
+  },
+  {
+    "rva": "1476a0",
+    "text": "VM_M_SetImageBufferNodeNum"
+  },
+  {
+    "rva": "1476c0",
+    "text": "VM_M_KeepLastResultUnchange"
+  },
+  {
+    "rva": "1476e0",
+    "text": "VM_M_BatchRunModuleSelf"
+  },
+  {
+    "rva": "1476f8",
+    "text": "VM_M_ForceDeepCopyImage"
+  },
+  {
+    "rva": "147710",
+    "text": "VM_M_SetGlobalProcedureDelayTime"
+  },
+  {
+    "rva": "147738",
+    "text": "VM_M_SetExcludeModuleName"
+  },
+  {
+    "rva": "147758",
+    "text": "VM_M_RelateModules"
+  },
+  {
+    "rva": "147770",
+    "text": "VM_M_GetStaticIOShallowData"
+  },
+  {
+    "rva": "147790",
+    "text": "VM_M_SetReportStateOfBindingVar"
+  },
+  {
+    "rva": "1477b0",
+    "text": "VM_M_GetSolutionDescData"
+  },
+  {
+    "rva": "1477d0",
+    "text": "VM_M_GetGroupIOReportMode"
+  },
+  {
+    "rva": "1477f0",
+    "text": "VM_M_GetInnerErrorModuleList"
+  },
+  {
+    "rva": "147810",
+    "text": "VM_M_GetModuleIOBeSubjectByModulesRunParam"
+  },
+  {
+    "rva": "147840",
+    "text": "VM_M_SetGroupIOReportMode"
+  },
+  {
+    "rva": "147860",
+    "text": "VM_M_DelModuleIOBeSubectByRunParamRelation"
+  },
+  {
+    "rva": "147890",
+    "text": "\\HSlog.dll"
+  },
+  {
+    "rva": "147a10",
+    "text": "\\milmp.dll"
+  },
+  {
+    "rva": "147a20",
+    "text": "\\milcacheinfo.dll"
+  },
+  {
+    "rva": "147a58",
+    "text": "\\mil.dll"
+  },
+  {
+    "rva": "147b58",
+    "text": "MVDGlobalInitCpp.dll"
+  },
+  {
+    "rva": "148018",
+    "text": "python37.dll"
+  },
+  {
+    "rva": "148028",
+    "text": "%s\\python37.dll"
+  },
+  {
+    "rva": "148088",
+    "text": "PythonInst.dll"
+  },
+  {
+    "rva": "148098",
+    "text": "%s\\..\\..\\PublicFile\\x64\\PythonInst.dll"
+  },
+  {
+    "rva": "148190",
+    "text": "\\SaveImageTool.dll"
+  },
+  {
+    "rva": "149de0",
+    "text": "[%s@%d] ModuleFrame: VM_M_Initialize start."
+  },
+  {
+    "rva": "149e50",
+    "text": "[%s@%d] VM_M_EnableSharedMemGlobalPrefix false"
+  },
+  {
+    "rva": "149e80",
+    "text": "[%s@%d] VM_M_EnableSharedMemGlobalPrefix true"
+  },
+  {
+    "rva": "149eb0",
+    "text": "[%s@%d] VM_M_Initialize fail. nRet = [%x]"
+  },
+  {
+    "rva": "149ee0",
+    "text": "[%s@%d] ModuleFrame: VM_M_Initialize end."
+  },
+  {
+    "rva": "149f10",
+    "text": "[%s@%d] VM_M_SetBufferNodeNum fail. Buffer Node Num[%d],nRet = [%x]"
+  },
+  {
+    "rva": "149f60",
+    "text": "[%s@%d] VM_M_SetUnsupportReentrantModules fail. ModuNames[%s],nRet = [%x]"
+  },
+  {
+    "rva": "149fb0",
+    "text": "[%s@%d] VM_M_EnableSharedMemGlobalPrefix fail. nRet = [%x]"
+  },
+  {
+    "rva": "149ff0",
+    "text": "[%s@%d] VM_M_EnableReentrant fail. ReentrantOption[%d],nRet = [%x]"
+  },
+  {
+    "rva": "14a038",
+    "text": "[%s@%d] VM_M_SetResultCallback fail. nRet = [%x]"
+  },
+  {
+    "rva": "14a070",
+    "text": "[%s@%d] VM_M_SetEventCalBack fail. nRet = [%x]"
+  },
+  {
+    "rva": "14a0a0",
+    "text": "[%s@%d] VM_M_SetReentrantMaxTimes fail. Reentrant Max Times[%d],nRet = [%x]"
+  },
+  {
+    "rva": "14a0f0",
+    "text": "[%s@%d] VM_M_ForceDeepCopyImage fail. Is ForceDeepCopy[%d]"
+  },
+  {
+    "rva": "14a620",
+    "text": "[%s@%d] ParseSharedMemoryPb fail. DataLen = [%d]"
+  },
+  {
+    "rva": "14cc30",
+    "text": "[%s@%d] [Deinit] VM_M_UnInitialize."
+  },
+  {
+    "rva": "14e60a",
+    "text": "      \"sharedMemory\":\"\","
+  },
+  {
+    "rva": "14f170",
+    "text": "[%s@%d] ParseServerProtocol VM_M_CreateProcedure fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f220",
+    "text": "[%s@%d] ParseServerProtocol VM_M_DeleteProcedure fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f290",
+    "text": "[%s@%d] ParseServerProtocol VM_M_UpdateProcedure fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f2f0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_AddModuleNodeEx fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f3f0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_UpdateModuleNodeEx fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f440",
+    "text": "[%s@%d] ParseServerProtocol VM_M_DeleteModuleNode fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f4e0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_SetModuleParam fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f670",
+    "text": "[%s@%d] ParseServerProtocol VM_M_DisConnectModule fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f710",
+    "text": "[%s@%d] ParseServerProtocol VM_M_ConnectModule fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f7b0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_RunProcedureOnce fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f808",
+    "text": "[%s@%d] ParseServerProtocol VM_M_UnSubScribe fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f860",
+    "text": "[%s@%d] ParseServerProtocol VM_M_RunProcedureContinuously fail. nRet = [%x]"
+  },
+  {
+    "rva": "14f8b0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_StopRunProcedure fail, nRet = [%x]."
+  },
+  {
+    "rva": "14f8f8",
+    "text": "[%s@%d] VM_M_RunProcedureContinuously start."
+  },
+  {
+    "rva": "14f928",
+    "text": "[%s@%d] VM_M_RunProcedureContinuously end."
+  },
+  {
+    "rva": "14f9a0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_RunModuleSelf fail. nRet = [%x]"
+  },
+  {
+    "rva": "14fc70",
+    "text": "solutionSharedMemoryName"
+  },
+  {
+    "rva": "14fc90",
+    "text": "[%s@%d] [Save Solution]ParseServerProtocol VM_M_SaveSolutionToFile fail. nRet = [%x]"
+  },
+  {
+    "rva": "14fce8",
+    "text": "[%s@%d] [Save Solution] VM_M_SaveSolutionToFile end."
+  },
+  {
+    "rva": "14fd60",
+    "text": "[%s@%d] [Save Solution] VM_M_SaveSolutionToFile start."
+  },
+  {
+    "rva": "150168",
+    "text": "[%s@%d] [Load Solution] VM_M_LoadSolutionFromFile start."
+  },
+  {
+    "rva": "1502b0",
+    "text": "[%s@%d] [Load Solution] ParseServerProtocol VM_M_LoadSolutionFromFile fail. nRet = [%x]"
+  },
+  {
+    "rva": "150308",
+    "text": "[%s@%d] [Load Solution] VM_M_LoadSolutionFromFile end."
+  },
+  {
+    "rva": "150388",
+    "text": "[%s@%d] ParseServerProtocol VM_M_UpdateLoop fail. nRet = [%x]"
+  },
+  {
+    "rva": "1503d0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_AddLoop fail. nRet = [%x]"
+  },
+  {
+    "rva": "150428",
+    "text": "[%s@%d] ParseServerProtocol VM_M_DeleteLoop fail. nRet = [%x]"
+  },
+  {
+    "rva": "150470",
+    "text": "[%s@%d] ParseServerProtocol pExtraData fail. pExtraData = NULL In MP_SET_BINARY_DATA Case"
+  },
+  {
+    "rva": "1504d0",
+    "text": "[%s@%d] ParseServerProtocol pExtraData fail. pExtraData = NULL In MP_GET_BINARY_DATA Case"
+  },
+  {
+    "rva": "150530",
+    "text": "[%s@%d] ParseServerProtocol VM_M_GetData fail. nRet = [%x]"
+  },
+  {
+    "rva": "150630",
+    "text": "[%s@%d] ParseServerProtocol AssembGetBinaryDataProtocol fail. nRet = [%x]"
+  },
+  {
+    "rva": "150680",
+    "text": "[%s@%d] ParseServerProtocol VM_M_QueryModuleConfigParamEx fail. nRet = [%x]"
+  },
+  {
+    "rva": "1506e0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_SetProcedureRunningParam fail. nRet = [%x]"
+  },
+  {
+    "rva": "150750",
+    "text": "[%s@%d] ParseServerProtocol VM_M_CancelSaveSolution fail. nRet = [%x]"
+  },
+  {
+    "rva": "1507a0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_AsyncCloseSolution fail. nRet = [%x]"
+  },
+  {
+    "rva": "150840",
+    "text": "[%s@%d] ParseServerProtocol VM_M_CancelLoadSolution fail. nRet = [%x]"
+  },
+  {
+    "rva": "150890",
+    "text": "[%s@%d] ParseServerProtocol VM_M_GetModuleNodeState fail. nRet = [%x]"
+  },
+  {
+    "rva": "150980",
+    "text": "[%s@%d] ParseServerProtocol VM_M_SetModuleNodeState fail. nRet = [%x]"
+  },
+  {
+    "rva": "1509d0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_SetCustomOutput fail. nRet = [%x]"
+  },
+  {
+    "rva": "150a20",
+    "text": "[%s@%d] ParseServerProtocol VM_M_GetCustomOutput fail. nRet = [%x]"
+  },
+  {
+    "rva": "150a70",
+    "text": "[%s@%d] ParseServerProtocol VM_M_CopyModuleNodeParam fail. nRet = [%x]"
+  },
+  {
+    "rva": "150b50",
+    "text": "[%s@%d] ParseServerProtocol VM_M_ClearCustomOutput fail. nRet = [%x]"
+  },
+  {
+    "rva": "150bd0",
+    "text": "[%s@%d] VM_M_BatchAddLoop fail. nRet = [%x]"
+  },
+  {
+    "rva": "150d38",
+    "text": "[%s@%d] VM_M_BatchAddModuleNodeEx fail. nRet = [%x]"
+  },
+  {
+    "rva": "150da8",
+    "text": "[%s@%d] VM_M_SetCustomOutput fail. nRet = [%x]"
+  },
+  {
+    "rva": "150dd8",
+    "text": "[%s@%d] VM_M_ConnectModule fail. nRet = [%x]"
+  },
+  {
+    "rva": "150e40",
+    "text": "[%s@%d] ParseServerProtocol VM_M_SetRunningControlParam. nRet = [%x]"
+  },
+  {
+    "rva": "150ee0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_GetProcedureRunningPolicy fail. nRet = [%x]"
+  },
+  {
+    "rva": "150f68",
+    "text": "[%s@%d] VM_M_SetProcedureRunningPolicy fail. nRet = [%x]"
+  },
+  {
+    "rva": "151020",
+    "text": "[%s@%d] ParseServerProtocol VM_M_GetProcessorInfo fail. nRet = [%x]"
+  },
+  {
+    "rva": "151070",
+    "text": "[%s@%d] ParseServerProtocol VM_M_ReleaseSolSharedMemory fail. nRet = [%x]"
+  },
+  {
+    "rva": "1510e0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_SetLoadSolutionState. nRet = [%x]"
+  },
+  {
+    "rva": "151210",
+    "text": "[%s@%d] VmFramework: VM_M_BatchMoveIntoGroup fail. nRet = [%x]. nModuleID = [%u]"
+  },
+  {
+    "rva": "151268",
+    "text": "groupSharedMemoryName"
+  },
+  {
+    "rva": "151320",
+    "text": "[%s@%d] ModuleFrame: ReleaseGroupDataSharedMemory fail. nRet = [%x]"
+  },
+  {
+    "rva": "151600",
+    "text": "[%s@%d] ParseServerProtocol VM_M_DeleteGroup fail. nRet = [%x]"
+  },
+  {
+    "rva": "1516c0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_AddGroupEx fail. nRet = [%x]"
+  },
+  {
+    "rva": "151920",
+    "text": "[%s@%d] ParseServerProtocol VM_M_GetGlobalVarBindingList fail. nRet = [%x]"
+  },
+  {
+    "rva": "151a50",
+    "text": "[%s@%d] ParseServerProtocol VM_M_GetBinayData fail. nRet = [%x]"
+  },
+  {
+    "rva": "151a90",
+    "text": "[%s@%d] CmdPairThreadProcess pBinaryData is NULL."
+  },
+  {
+    "rva": "151ad0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_SetBinayData fail. nRet = [%x]"
+  },
+  {
+    "rva": "151b70",
+    "text": "[%s@%d] SDK: Write binary data fail once."
+  },
+  {
+    "rva": "151ba0",
+    "text": "[%s@%d] ParseServerProtocol NULL == pBinaryData."
+  },
+  {
+    "rva": "151c40",
+    "text": "[%s@%d] ParseServerProtocol WriteBinaryData2FileMapping fail. nRet = [%x]"
+  },
+  {
+    "rva": "151c90",
+    "text": "[%s@%d] ParseServerProtocol AssembGetBinaryShareMemoryDataProtocol fail. nRet = [%x]"
+  },
+  {
+    "rva": "151cf0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_GetProcedureStatus fail. nRet = [%x]"
+  },
+  {
+    "rva": "151d90",
+    "text": "[%s@%d] ParseServerProtocol VM_M_RunProcedureOnceEx fail. nRet = [%x]"
+  },
+  {
+    "rva": "151ea0",
+    "text": "procedureSharedMemoryName"
+  },
+  {
+    "rva": "151ec0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_ImportProcedureData fail. nRet = [%x]"
+  },
+  {
+    "rva": "152120",
+    "text": "[%s@%d] ParseServerProtocol VM_M_ReleaseProcedureDataSharedMemory fail. nRet = [%x]"
+  },
+  {
+    "rva": "152190",
+    "text": "[%s@%d] ParseServerProtocol VM_M_CancelExportProcedureData fail. nRet = [%x]"
+  },
+  {
+    "rva": "1521e0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_CancelImportProcedureData fail. nRet = [%x]"
+  },
+  {
+    "rva": "152230",
+    "text": "[%s@%d] ParseServerProtocol VM_M_SelectModuleResult fail. nRet = [%x]"
+  },
+  {
+    "rva": "1523e0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_AddGroupSync fail. nRet = [%x]"
+  },
+  {
+    "rva": "152420",
+    "text": "[%s@%d] ParseServerProtocol VM_M_AddModuleNodeSync fail. nRet = [%x]"
+  },
+  {
+    "rva": "1524b0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_MoveIntoGroup fail. nRet = [%x]"
+  },
+  {
+    "rva": "152578",
+    "text": "[%s@%d] Create pstSendAndRecvBinaryInfo fail"
+  },
+  {
+    "rva": "1525a8",
+    "text": "sharedMemoryName"
+  },
+  {
+    "rva": "152620",
+    "text": "moduleDataSharedMemoryName"
+  },
+  {
+    "rva": "152680",
+    "text": "[%s@%d] ParseServerProtocol VM_M_SelectNoneModuleResult fail. nRet = [%x]"
+  },
+  {
+    "rva": "152830",
+    "text": "[%s@%d] ParseServerProtocol VM_M_GetGlobalCameraList fail. nRet = [%x]"
+  },
+  {
+    "rva": "1528b0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_GetInputState fail. nRet = [%x]"
+  },
+  {
+    "rva": "1529e0",
+    "text": "[%s@%d] VM_M_GetCurrentConfigOfSolution Continue. nRet=[%x]"
+  },
+  {
+    "rva": "152ab0",
+    "text": "[%s@%d] VM_M_GetCurrentConfigOfSolution end. nRet=[%x],nDataBuffLen =%d,nRealDataLen =%d"
+  },
+  {
+    "rva": "152b10",
+    "text": "[%s@%d] ParseServerProtocol VM_M_BatchExportProcedureData fail. nRet = [%x]"
+  },
+  {
+    "rva": "152ba0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_GetCurrentConfigOfSolution fail. nRet = [%x]"
+  },
+  {
+    "rva": "152c40",
+    "text": "[%s@%d] ParseServerProtocol VM_M_BatchReleaseProcedureDataSharedMemory fail. nRet = [%x]"
+  },
+  {
+    "rva": "152cf0",
+    "text": "[%s@%d] ParseServerProtocol VM_M_BatchCancelExportProcedureData fail. nRet = [%x]"
+  },
+  {
+    "rva": "152d50",
+    "text": "[%s@%d] ParseServerProtocol VM_M_BatchCancelImportProcedureData fail. nRet = [%x]"
+  },
+  {
+    "rva": "152e40",
+    "text": "[%s@%d] ParseServerProtocol VM_M_SetModuleParamBinding fail. nRet = [%x]"
+  },
+  {
+    "rva": "153030",
+    "text": "[%s@%d] ParseServerProtocol VM_M_DelModuleParamBinding fail. nRet = [%x]"
+  },
+  {
+    "rva": "153370",
+    "text": "[%s@%d] ParseServerProtocol VM_M_KeepLastResultUnchange fail. nRet = [%x]"
+  },
+  {
+    "rva": "153428",
+    "text": "[%s@%d] Proxy: VM_M_SetImageBufferNodeNum Fail.return[%x]"
+  },
+  {
+    "rva": "153d40",
+    "text": "[%s@%d] ParseSdkProtocol VM_M_RunProcedureOnce fail. nRet = [%x]"
+  },
+  {
+    "rva": "153d88",
+    "text": "[%s@%d] ParseSdkProtocol VM_M_SetModuleParam fail. nRet = [%x]"
+  },
+  {
+    "rva": "1541e8",
+    "text": "[%s@%d] AssembGetBinaryDataProtocol (NULL == pstRepProtocol)."
+  },
+  {
+    "rva": "154228",
+    "text": "[%s@%d] AssembGetBinaryDataProtocol parse error."
+  },
+  {
+    "rva": "154270",
+    "text": "CParseProtocol::AssembGetBinaryDataProtocol"
+  },
+  {
+    "rva": "1542a0",
+    "text": "[%s@%d] AssembGetBinaryDataProtocol HasMember(\"head\") error."
+  },
+  {
+    "rva": "156a50",
+    "text": "sharedMemory"
+  },
+  {
+    "rva": "156ac0",
+    "text": "[%s@%d] AssembGetBinaryDataLenProtocol (NULL == pstRepProtocol)."
+  },
+  {
+    "rva": "156b08",
+    "text": "[%s@%d] AssembGetBinaryDataLenProtocol parse error."
+  },
+  {
+    "rva": "156b40",
+    "text": "[%s@%d] Proxy: AssembSaveSolorGroupProtocol does not have SharedMemory."
+  },
+  {
+    "rva": "156b88",
+    "text": "CParseProtocol::AssembGetBinaryDataLenProtocol"
+  },
+  {
+    "rva": "156c40",
+    "text": "[%s@%d] AssembGetBinaryDataLenProtocol HasMember(\"head\") error."
+  },
+  {
+    "rva": "156c80",
+    "text": "CParseProtocol::WriteBinaryData2FileMapping"
+  },
+  {
+    "rva": "156cb0",
+    "text": "CParseProtocol::AssembGetBinaryShareMemoryDataProtocol"
+  },
+  {
+    "rva": "156cf0",
+    "text": "[%s@%d] AssembGetBinaryShareMemoryDataProtocol (NULL == pstRepProtocol)."
+  },
+  {
+    "rva": "1570e0",
+    "text": "[%s@%d] Proxy: AssembExportProcedureProtocol does not have SharedMemory."
+  },
+  {
+    "rva": "1577a0",
+    "text": "CParseProtocol::ParseSharedMemoryPb"
+  },
+  {
+    "rva": "1577c8",
+    "text": "[%s@%d] ParseSharedMemoryPb pRstData[%p],nRstDataLen[%d]"
+  },
+  {
+    "rva": "1578e0",
+    "text": "[%s@%d] ParseSharedMemoryPb catch exception, nRet[%d]"
+  },
+  {
+    "rva": "157988",
+    "text": "[%s@%d] Proxy: pstSendAndRecvBinaryInfo is NULL."
+  },
+  {
+    "rva": "157bf0",
+    "text": "sharedmem"
+  },
+  {
+    "rva": "18edba",
+    "text": "ModuleProxy.dll"
+  },
+  {
+    "rva": "18ee03",
+    "text": "VM_PROXY_SetSDKCallBack"
+  },
+  {
+    "rva": "18ee1b",
+    "text": "VM_PROXY_SetServerCallBack"
+  },
+  {
+    "rva": "18fe06",
+    "text": "KERNEL32.dll"
+  },
+  {
+    "rva": "191486",
+    "text": "MSVCP120.dll"
+  },
+  {
+    "rva": "191ae8",
+    "text": "MSVCR120.dll"
+  },
+  {
+    "rva": "191c6c",
+    "text": "WS2_32.dll"
+  },
+  {
+    "rva": "196d70",
+    "text": ".?AV?$_Ref_count_obj@UMP_SENDANDRECV_BINARY_DATA_INFO__@@@std@@"
+  }
+]

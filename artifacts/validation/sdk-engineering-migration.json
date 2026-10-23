@@ -1,0 +1,4495 @@
+{
+  "projects": [
+    [
+      "Contracts",
+      "src/Contracts/SunEyeVision.Contracts.csproj",
+      "新建 / net9.0",
+      "公共值、schema、资源与后端最小接口",
+      []
+    ],
+    [
+      "Tool.SDK",
+      "src/Tool.SDK/SunEyeVision.Tool.SDK.csproj",
+      "新建 / net9.0",
+      "工具接口、声明与作者数据模型",
+      [
+        "Contracts"
+      ]
+    ],
+    [
+      "Runtime.SDK",
+      "src/Runtime.SDK/SunEyeVision.Runtime.SDK.csproj",
+      "新建 / net9.0-windows x64；UseWPF=false",
+      "客户门面；不静态引用执行实现",
+      [
+        "Contracts"
+      ]
+    ],
+    [
+      "Controls.Wpf",
+      "src/Controls.Wpf/SunEyeVision.Controls.Wpf.csproj",
+      "新建 / WPF",
+      "可选Viewer/Editor；后续可再拆包",
+      [
+        "Contracts",
+        "Tool.SDK",
+        "Runtime.SDK"
+      ]
+    ],
+    [
+      "Runtime.Engine",
+      "src/Runtime.Engine/SunEyeVision.Runtime.Engine.csproj",
+      "新建 / 内部装配",
+      "实现后端Factory、调度适配与Owner",
+      [
+        "Contracts",
+        "Tool.SDK",
+        "Workflow",
+        "Plugin.Infrastructure",
+        "DeviceDriver"
+      ]
+    ],
+    [
+      "Workflow",
+      "src/Workflow/SunEyeVision.Workflow.csproj",
+      "复用整改；最终去WPF",
+      "保留执行内核，不替换为SDK门面",
+      [
+        "Contracts",
+        "Tool.SDK"
+      ]
+    ],
+    [
+      "Plugin.Infrastructure",
+      "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+      "复用整改",
+      "插件发现/注册/解析；不公开给客户",
+      [
+        "Contracts",
+        "Tool.SDK"
+      ]
+    ],
+    [
+      "DeviceDriver",
+      "src/DeviceDriver/SunEyeVision.DeviceDriver.csproj",
+      "复用；UI传递依赖另审",
+      "相机/通信实现",
+      [
+        "Contracts"
+      ]
+    ],
+    [
+      "Plugin.SDK",
+      "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+      "保留旧WPF兼容发行",
+      "旧ABI、BAML、资源URI；不供新纯API链引用",
+      []
+    ]
+  ],
+  "inventory": [
+    {
+      "source": "src/Plugin.SDK/AssemblyInfo.cs",
+      "types": [],
+      "target": "src/Plugin.SDK/AssemblyInfo.cs",
+      "project": "Plugin.SDK",
+      "action": "兼容原位保留",
+      "reason": "旧ThemeInfo不得删除；新Controls.Wpf新增自己的ThemeInfo。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": true,
+      "sha256": "91ab9d25e9fe37614ffc6cbd59441b3becf59290daac86acf483518857d4c0fb"
+    },
+    {
+      "source": "src/Plugin.SDK/Commands/RelayCommand.cs",
+      "types": [
+        "RelayCommand"
+      ],
+      "target": "src/Controls.Wpf/Commands/RelayCommand.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "557f63307176515b9d7ee0c0f24d8d6512491cc0b07d33bbe736bf39a55e327f"
+    },
+    {
+      "source": "src/Plugin.SDK/Commands/ToolCommands.cs",
+      "types": [
+        "ToolCommands"
+      ],
+      "target": "src/Controls.Wpf/Commands/ToolCommands.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "272b6e0228195c7e8b6755def8b42ca094ec59732a485af913e81368f926f019"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/DebugWindowStyle.cs",
+      "types": [
+        "DebugWindowStyle"
+      ],
+      "target": "src/Controls.Wpf/Editors/DebugWindowStyle.cs",
+      "project": "Controls.Wpf",
+      "action": "迁移并保留旧资源入口",
+      "reason": "仅编辑器使用，不进入算法运行接口。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "a8fa077289dc72cd6473a06e64b7eea8325f8b8eb66cddc02057e47ea32cda7b"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/IAsyncToolPlugin.cs",
+      "types": [
+        "IAsyncToolPlugin"
+      ],
+      "target": "src/Tool.SDK/Core/IAsyncToolPlugin.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "84b6f94915c5692ca2e6a682cf1f116bda1a5813b40c029579ee038ae6d53082"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/IControlFlowResult.cs",
+      "types": [
+        "IControlFlowResult"
+      ],
+      "target": "src/Tool.SDK/Core/IControlFlowResult.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "76dd1a28ccf4f6a4eb865d2df00c0f3670c89cd45f8f9c626ee34161cefb65cb"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/IPrecompilableTool.cs",
+      "types": [
+        "IPrecompilableTool"
+      ],
+      "target": "src/Tool.SDK/Core/IPrecompilableTool.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "872022d0c7cd018c065a6f1f02fde8201421e1e713f4100f2aa37204431cfad6"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/IToolEditorFactory.cs",
+      "types": [
+        "IToolEditorFactory"
+      ],
+      "target": "src/Controls.Wpf/Editors/IToolEditorFactory.cs",
+      "project": "Controls.Wpf",
+      "action": "新旧并存适配",
+      "reason": "Window/FrameworkElement签名仅留WPF编辑器；旧工厂ABI不直接改。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": true,
+      "sha256": "18a3efeee54c9b25addf41a1c38546d8c43995d33ea5c479941de67e6b121529"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/IToolInputReader.cs",
+      "types": [
+        "IToolInputReader",
+        "ToolInputReader"
+      ],
+      "target": "src/Tool.SDK/Core/IToolInputReader.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "31eb442c06f474f9887a94962b21ef54facc301867e05533e06b11967829917c"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/IToolPlugin.cs",
+      "types": [
+        "ToolExecuteOptions",
+        "ThresholdTool",
+        "IToolPlugin"
+      ],
+      "target": "src/Tool.SDK/Core/IToolPlugin.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "03df7cc8b68f544af4474994a2cedda6ce139f92f666b87de73b3e921df8b23c"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/IWorkflowResultCommitter.cs",
+      "types": [
+        "IWorkflowResultCommitter"
+      ],
+      "target": "src/Tool.SDK/Core/IWorkflowResultCommitter.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "8faa0877bfd893fe9cd8740c6f4ff6414bdac4cc89e1e7ac403c1a38f48279b4"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/RunResult.cs",
+      "types": [
+        "RunResult"
+      ],
+      "target": "src/Tool.SDK/Core/RunResult.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "a8c460fe0256a5366200d333c70c75a3a5bdf2266f42e45a23af74e699bb8a42"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/ToolAttribute.cs",
+      "types": [
+        "ThresholdTool",
+        "ToolAttribute"
+      ],
+      "target": "src/Tool.SDK/Core/ToolAttribute.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "a7d7fa25b82844bfbc19a680a7de4f1d89b5e5ef30cff09908f13fe6b0ea0e34"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/ToolCategories.cs",
+      "types": [
+        "ToolCategories",
+        "ToolCategoryDefinition"
+      ],
+      "target": "src/Tool.SDK/Core/ToolCategories.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "5f7f9bb3b6ce29cbc357437f1362323d907590d8a23d33d1aca286e40e1f01f0"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/ToolContract.cs",
+      "types": [
+        "ToolContract"
+      ],
+      "target": "src/Tool.SDK/Core/ToolContract.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "5cdab6348b24d0aff50a44a6f09b928f10a9804fc18e48fab4ed07192388c461"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/ToolContractVersionAttribute.cs",
+      "types": [
+        "ToolContractVersionAttribute"
+      ],
+      "target": "src/Tool.SDK/Core/ToolContractVersionAttribute.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "fdf433535effd7f964ff580888931b3ca681dc3085de081d694bcd025c3006c1"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/ToolExecutionProfile.cs",
+      "types": [
+        "ToolExecutionProfile",
+        "ToolConcurrencyKind",
+        "IToolExecutionProfileProvider"
+      ],
+      "target": "src/Tool.SDK/Core/ToolExecutionProfile.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "caca7c76b7aaca6e06268df029f9a4841379e3982de10af9eaafa4e8abd7f620"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/ToolExecutionRequest.cs",
+      "types": [
+        "ToolExecutionRequest"
+      ],
+      "target": "src/Tool.SDK/Core/ToolExecutionRequest.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "b70506bee54d75a623b5d19cdb953344bb8286ad0a946b460b7295c699c6cdeb"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/ToolExecutor.cs",
+      "types": [
+        "ToolExecutor"
+      ],
+      "target": "src/Runtime.Engine/Execution/ToolExecutor.cs",
+      "project": "Runtime.Engine",
+      "action": "拆分整改",
+      "reason": "把参数准备/同步异步执行编排留内部，公共接口只返回运行合同；旧入口由兼容适配委托，不能让工具反调宿主。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "0229fd6ea68af49b5aefe58187f0036a5987fc69c15f1486cc73113dce6531e2"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/ToolHelpers.cs",
+      "types": [
+        "ToolHelpers"
+      ],
+      "target": "src/Runtime.Engine/Execution/ToolHelpers.cs",
+      "project": "Runtime.Engine",
+      "action": "成员级拆分",
+      "reason": "纯作者助手另移Tool.SDK；执行、服务定位部分不进公共合同。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "29766565a1ab65ae9ab1ccee37464c4959b543d5086774f28ab33a1c6b3d2a62"
+    },
+    {
+      "source": "src/Plugin.SDK/Core/ToolRunner.cs",
+      "types": [
+        "ToolRunner"
+      ],
+      "target": "src/Runtime.Engine/Execution/ToolRunner.cs",
+      "project": "Runtime.Engine",
+      "action": "拆分整改",
+      "reason": "统一开发测试宿主与正式执行入口；旧静态调用保留适配，不能复制一套取消语义。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "42fb409d8bdd5ada09d65eb17b656760695ca0990da9392e5f5c7fe8e2036a38"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Camera/CameraCapabilities.cs",
+      "types": [
+        "CameraCapabilities"
+      ],
+      "target": "src/Contracts/Devices/Camera/CameraCapabilities.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "9648a37f2dbdfd2c1b797c1966c594138120b32a757ab44200198b097ae57a93"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Camera/CameraCaptureRequest.cs",
+      "types": [
+        "CameraTriggerMode",
+        "CameraCaptureRequest"
+      ],
+      "target": "src/Contracts/Devices/Camera/CameraCaptureRequest.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "78442e852248e41d8bf1c83f434eecc6e3b6157104bfaff5bc10cccfd33e1562"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Camera/CameraDescriptor.cs",
+      "types": [
+        "CameraTransportKind",
+        "CameraProtocolKind",
+        "CameraDescriptor"
+      ],
+      "target": "src/Contracts/Devices/Camera/CameraDescriptor.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "092aa36f219217789e16aab8944504318dfa57cf8f59e53a23242fcb6f977d05"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Camera/CameraDeviceRef.cs",
+      "types": [
+        "CameraDeviceRef"
+      ],
+      "target": "src/Contracts/Devices/Camera/CameraDeviceRef.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "b88e82776cf7aadf432f8c14487a07d035cd656bdd6525de9b4df24c1ce07c7e"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Camera/CameraDiagnosticScope.cs",
+      "types": [
+        "CameraDiagnosticScope"
+      ],
+      "target": "src/Contracts/Devices/Camera/CameraDiagnosticScope.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "492aec8d41c0e0fb877a6408ceda51c4ca584a514740c5eec7e4d4ff8e872143"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Camera/CameraErrorCode.cs",
+      "types": [
+        "CameraErrorCode"
+      ],
+      "target": "src/Contracts/Devices/Camera/CameraErrorCode.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "0ebcc43b23e895313c37cf78e12596b9274e2026f13b9d9ee9958d5e28a00401"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Camera/CameraFrame.cs",
+      "types": [
+        "CameraFrame"
+      ],
+      "target": "src/Contracts/Devices/Camera/CameraFrame.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "620a157e7dcd10b999563455e217374d7df6ec16566f395c8eb8761f408942c2"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Camera/CameraParameterSnapshot.cs",
+      "types": [
+        "CameraParameterSnapshot"
+      ],
+      "target": "src/Contracts/Devices/Camera/CameraParameterSnapshot.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "17bfb950744bdc60a3e25af716783a3cc89606245885df98c7712f9d2ea144ba"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Camera/CameraState.cs",
+      "types": [
+        "CameraState"
+      ],
+      "target": "src/Contracts/Devices/Camera/CameraState.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "5fa68eeb75b5b27f53e8f11f54c481aa79ed01fbd494ae2f88d379c3e12aff52"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Camera/ICameraCaptureService.cs",
+      "types": [
+        "ICameraCaptureService"
+      ],
+      "target": "src/Contracts/Devices/Camera/ICameraCaptureService.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "00da47921066015245c715140ad53d0cb6de477bed9a5ef5d53f2a170d902d19"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Camera/IExecutionServices.cs",
+      "types": [
+        "IExecutionServices"
+      ],
+      "target": "src/Contracts/Devices/Camera/IExecutionServices.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "21afc5ac9af8ececacd0bee68fd39be151ab2f43a6bbe4bf05763c8176ce43c1"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Communication/CommunicationCapabilities.cs",
+      "types": [
+        "CommunicationCapabilities"
+      ],
+      "target": "src/Contracts/Devices/Communication/CommunicationCapabilities.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "76263ac814721cccffc2f0ae6cd575ca4f1d5956fc3ac62afec1188b5fc158a9"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Communication/CommunicationDataEvent.cs",
+      "types": [
+        "CommunicationDataDirection",
+        "CommunicationDataEvent"
+      ],
+      "target": "src/Contracts/Devices/Communication/CommunicationDataEvent.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "a29ea9e244f04d8049c34328090981afa4251f26b421dc0e12c713bbbc9fbf8c"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Communication/CommunicationDeviceRef.cs",
+      "types": [
+        "CommunicationDeviceRef"
+      ],
+      "target": "src/Contracts/Devices/Communication/CommunicationDeviceRef.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "0dec8deb5652df6bf57244d326ec726fe818c7cbee2aeacb38df3432a78036bf"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Communication/CommunicationError.cs",
+      "types": [
+        "CommunicationErrorCode",
+        "CommunicationError"
+      ],
+      "target": "src/Contracts/Devices/Communication/CommunicationError.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "3dfd80ef32a07f202c13230c4f2ed84794fb0c177dcbf93a8d042701668ac5b4"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Communication/CommunicationState.cs",
+      "types": [
+        "CommunicationState"
+      ],
+      "target": "src/Contracts/Devices/Communication/CommunicationState.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "7c1845daf9b37a6fe9d7990c9391afe34702faef35079954622ed2b8aedb9f49"
+    },
+    {
+      "source": "src/Plugin.SDK/Devices/Communication/ICommunicationStatusService.cs",
+      "types": [
+        "CommunicationStatusSnapshot",
+        "ICommunicationStatusService"
+      ],
+      "target": "src/Contracts/Devices/Communication/ICommunicationStatusService.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "e02b0ae8d7e8889ee5aa2b556c8fdd64ee3483c00e5429d37ae51f850458103d"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Helpers/FittedLineDisplay.cs",
+      "types": [
+        "FittedLineDisplay"
+      ],
+      "target": "src/Tool.SDK/Execution/Helpers/FittedLineDisplay.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "50b2b703b16df99aedcdcef48d628fbab47df5e0273ca48ba8322636578ede60"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Helpers/ImageFrameProvenance.cs",
+      "types": [
+        "ImageFramePolicy",
+        "IImageFramePolicyProvider",
+        "ImageFrameProvenance",
+        "Frame",
+        "Input"
+      ],
+      "target": "src/Tool.SDK/Execution/Helpers/ImageFrameProvenance.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "0c18d6ba5b751b80d7cc5a9655be4959994ee4bbdb05664ed54d08c425b12c37"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Helpers/PointMeasurementGeometry.cs",
+      "types": [
+        "PointMeasurementGeometry"
+      ],
+      "target": "src/Tool.SDK/Execution/Helpers/PointMeasurementGeometry.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "e7c121f083218767d4022a61f3772628fb5dce7ca6d52cf00c954d3aa9a2791b"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Helpers/PositionCorrectionResolution.cs",
+      "types": [
+        "PositionCorrectionState",
+        "PositionCorrectionResolution"
+      ],
+      "target": "src/Tool.SDK/Execution/Helpers/PositionCorrectionResolution.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "8f709df59cb2594acb6cd8a7d0827398e1f7182e5126adfc296c572bf0982313"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Helpers/PositionCorrectionResolver.cs",
+      "types": [
+        "PositionCorrectionResolver"
+      ],
+      "target": "src/Tool.SDK/Execution/Helpers/PositionCorrectionResolver.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "3487d64e0d1ddd601d24eebd5684a34d57739b49ac14776320182c3993b67d81"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Helpers/RoiGeometryTransformer.cs",
+      "types": [
+        "RoiGeometryTransformer"
+      ],
+      "target": "src/Tool.SDK/Execution/Helpers/RoiGeometryTransformer.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "a7a2f67868735977764e9268d23f2950d6835501c9c0517c4d8275b7d509cbde"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ArrayTreeFormatter.cs",
+      "types": [
+        "ArrayTreeFormatter"
+      ],
+      "target": "src/Controls.Wpf/Execution/Parameters/ArrayTreeFormatter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "c3ef8ff04c2175e2c1fe651c053b42a8eee296febb61b6e26f6b1076c712d45b"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/AvailableDataSource.cs",
+      "types": [
+        "SourceTypeContract",
+        "AvailableDataSource",
+        "AvailableDataSourceConverter",
+        "DataSourceGroup"
+      ],
+      "target": "src/Controls.Wpf/Execution/Parameters/AvailableDataSource.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "0ff4bea28005dd7ef853b92c53dad22b01812ea7280c6934d6504ca78c4ce7c6"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/BindingContractValidator.cs",
+      "types": [
+        "BindingCompatibility",
+        "BindingValidation",
+        "BindingContractValidator"
+      ],
+      "target": "src/Runtime.Engine/Execution/Parameters/BindingContractValidator.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "1dc21cee1d0733c476f5de4af77caa184d5a986618746d426621bf7dc5137601"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/BindingInputCatalog.cs",
+      "types": [
+        "BindingInputCatalog"
+      ],
+      "target": "src/Runtime.Engine/Execution/Parameters/BindingInputCatalog.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "c1d1abfce7afbba33004b0a9fb491dd846b54b6d47a1cc4415cea4efe28e5708"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/BindingType.cs",
+      "types": [
+        "BindingType"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/BindingType.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "83538b3fd2358decd80700ced6139c487247b2f410a122525d54beaaa9ee38f5"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/CaliperSizingState.cs",
+      "types": [
+        "CaliperSizingState"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/CaliperSizingState.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "83d5e36cdd93732e0c4dad00ed9d9f08e609b83c8cac270bff2d6d876ee0b020"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/DataSourceQueryService.cs",
+      "types": [
+        "DataSourceQueryService",
+        "IWorkflowConnectionProvider",
+        "INodeInfoProvider"
+      ],
+      "target": "src/Runtime.Engine/Execution/Parameters/DataSourceQueryService.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "39fa8e66e2f7845a26adde3699d27364b41be4d97fd7ab14f38a6caa60166133"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ExecutionContext.cs",
+      "types": [
+        "MyTool",
+        "ExecutionContext"
+      ],
+      "target": "src/Runtime.Engine/Parameters/ExecutionContext.cs",
+      "project": "Runtime.Engine",
+      "action": "拆分重写边界",
+      "reason": "内部可变上下文不作为应用SDK；对外只读InputReader和冻结快照。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "c6d3124e820446f60520c16f1ded2772eb644579eb95115e913abffb399c060e"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/GeometryExtractor.cs",
+      "types": [
+        "GeometryExtractor"
+      ],
+      "target": "src/Runtime.Engine/Execution/Parameters/GeometryExtractor.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "ac851a786ec2c225c226c94fdc045f65c5a2e083fdf7300091952031b0f3834c"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/GeometryFieldSchema.cs",
+      "types": [
+        "GeometryFieldDef",
+        "GeometryFieldSchema"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/GeometryFieldSchema.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "8c490c05383194229dcad920a633fbd25f041c082ccfcb3ac73e7281c370149b"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/GeometryJsonConverter.cs",
+      "types": [
+        "GeometryJsonConverter"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/GeometryJsonConverter.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "c4295a489d7e314adf82a4dd14b48d5c18484c5c59ddd2df65be70bde2d0fe49"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/IBindingInputProvider.cs",
+      "types": [
+        "BindingInputReference",
+        "IBindingInputProvider",
+        "IBindingInputActivityProvider",
+        "BindingSourceIdentity"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/IBindingInputProvider.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "8068f8f2a3e857af3dbf0f3d60656530be1050a0cc807566f5f8ef0ce5c02188"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/IDataSourceQueryService.cs",
+      "types": [
+        "NodeExecutionContext",
+        "IDataSourceQueryService",
+        "DataSourceQueryServiceExtensions"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/IDataSourceQueryService.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "699652a8c1ed3f8e27be615ff924b814620a43ad3ddbc4b6fbf3d080441e0aac"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/IInputSlotContract.cs",
+      "types": [
+        "IInputSlotContract"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/IInputSlotContract.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "db6777e9f7c910411c7722a162b1461e9daf6d54a790d6a5d4859b4828fc1652"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/INotifyOutputContractChanged.cs",
+      "types": [
+        "INotifyOutputContractChanged"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/INotifyOutputContractChanged.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "5cfd4be3fa1a65eadef370c20b7db99ed46502e99c5e4b666322580a2e4415ec"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/IOutputContractProvider.cs",
+      "types": [
+        "IOutputContractProvider"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/IOutputContractProvider.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "f2b67155d0f6186cd30b1625c1b49d887b3a8bdcdf7cceb01b5635b879e4456a"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/IParameterContext.cs",
+      "types": [
+        "IParameterContext"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/IParameterContext.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "03296129b70e6a88d73f6d513b858f92e6c5786f367020ee328c5d2cf88ae952"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/IParameterResolver.cs",
+      "types": [
+        "IParameterResolver",
+        "ParameterResolveResult",
+        "ResolveValidationResult"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/IParameterResolver.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "11b0d866a47e9d0ab87b811ab4c81140c9699baa4e0422db4b224e16bd9adf16"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/IPropertyMetadataProvider.cs",
+      "types": [
+        "IPropertyMetadataProvider"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/IPropertyMetadataProvider.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "25b5831f58749322eefe62f366641a687c5b5fb826ee3bfe17825d14d19f8164"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/IRuntimeParameterContract.cs",
+      "types": [
+        "IRuntimeParameterContract"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/IRuntimeParameterContract.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "71bda2d6243a0863d101d97b68edef8ca2d620052978efbe1b5e11753cb1b62b"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/IRuntimeParameterProvider.cs",
+      "types": [
+        "IRuntimeParameterProvider"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/IRuntimeParameterProvider.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "aacbc0b32e34ee9a80e5a3f4d1afb0c9c524d07e9a0d1ed7995933c4d6941993"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ISubWorkflowExecutor.cs",
+      "types": [
+        "ISubWorkflowExecutor"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ISubWorkflowExecutor.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "7ddbda1bbbd9237b9b201c82c9a150708ee519ff6bfbd2ac89ff2078c408fbcb"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ISubroutineDebugService.cs",
+      "types": [
+        "ISubroutineDebugService"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ISubroutineDebugService.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "4d14713c689af190631441bcbcc7c3fd67b6692581f29354de9cf4df393f1e65"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ImageSourceReference.cs",
+      "types": [
+        "ImageSourceReference"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ImageSourceReference.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "b07ac044b85a600cfabf5034d6684c8ad6c37d15676b732182619b47ab88efc0"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/LenientScalarOrArrayConverter.cs",
+      "types": [
+        "LenientScalarOrArrayConverterFactory",
+        "LenientScalarOrArrayConverter"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/LenientScalarOrArrayConverter.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "9cd5cfd110913514a9450f4f5520fb5bdb961f21e6e62d26666e433d79cda1ec"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/MeasureGuideParameters.cs",
+      "types": [
+        "MeasureGuideParameters"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/MeasureGuideParameters.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "6ad723c0ab53707a58c8a7c568007f0c5efb2c03e37bc8b1d631ea254d703ba2"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/MeasureThreshold.cs",
+      "types": [
+        "MeasureThreshold",
+        "MeasureJudgeResult",
+        "MeasureJudge"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/MeasureThreshold.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "8068a218b87f75f69bd0da44ab51bbc9e5653898cd2ceab96cb75996ddb998a4"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/NodeResultsParameterContext.cs",
+      "types": [
+        "NodeResultsParameterContext"
+      ],
+      "target": "src/Runtime.Engine/Execution/Parameters/NodeResultsParameterContext.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "348cd4d47b488bea55da956e09055e1bf187d3e85c602cc807d73001fd82624c"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/OutputVariableResolver.cs",
+      "types": [
+        "OutputVariableResolver"
+      ],
+      "target": "src/Runtime.Engine/Execution/Parameters/OutputVariableResolver.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "a667e3fb7562e0aacb2a99b6f23505f577bf98072476fcaa3ba1861cfc7a9c1b"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ParamSetting.cs",
+      "types": [
+        "ParamSetting",
+        "SettingValidationResult",
+        "JsonElementConverter"
+      ],
+      "target": "src/Tool.SDK/Parameters/ParamSetting.cs",
+      "project": "Tool.SDK",
+      "action": "保留身份并适配",
+      "reason": "已有SourceFieldId/SourceWorkflowId必须保留；外部schema不暴露可变ParamSetting。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "5108d6b5f47de0defabba5d6c7bcd514750f3bdbbeafc88f0fb939e199b92fef"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ParamSettingContainer.cs",
+      "types": [
+        "ParamSettingContainer",
+        "ContainerValidationResult"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ParamSettingContainer.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "50771549c4c686cd28cc9f74303962e90f0dda1d6042e58c7003ae88540547b1"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ParamValue.cs",
+      "types": [
+        "ParamValue"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ParamValue.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "7e98e8d3d6ae4abc59f81a3602f5cab9ef0d862536a9a2bddaba13d95af6a704"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ParamValueBase.cs",
+      "types": [
+        "ParamValueBase"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ParamValueBase.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "ad715170cb0eca8d83cbe8d40ddd6c9d7022fc854535bc2a83e04a78ce4a3444"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ParameterBindingDefinition.cs",
+      "types": [
+        "ParameterBindingDefinition"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ParameterBindingDefinition.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "8ef305900e2912640c8201cf73232fbe997130847f8ad55581e670aebca20e39"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ParameterBindingSet.cs",
+      "types": [
+        "ParameterBindingSet"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ParameterBindingSet.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "67bffa917cbf0c9d28b70b08a21fa3108574d2de4970e1566fdc31278ff5fa13"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ParameterContractDescriptors.cs",
+      "types": [
+        "InputSlotKind",
+        "InputSlotDescriptor",
+        "RuntimeParameterDescriptor"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ParameterContractDescriptors.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "7e66c0444a99c0821c9ff7a2e0b1d3c14bcb638b3c5d32aeb4a291e910fe0ec3"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ParameterContractValidation.cs",
+      "types": [
+        "ParameterContractViolation",
+        "ParameterContractValidator"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ParameterContractValidation.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "3dad3897f6de3791dc9e7589833dbb86bd7492755f422d98cf8e319bcb372ca6"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ParameterResolver.cs",
+      "types": [
+        "ParameterResolver"
+      ],
+      "target": "src/Runtime.Engine/Execution/Parameters/ParameterResolver.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "7ca4f480e58b2a502d3df455c797f6a0a3cbfc15d4a31ec753e4258322b488c4"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ParentNodeInfo.cs",
+      "types": [
+        "ParentNodeInfo",
+        "ParentNodeInfoExtensions"
+      ],
+      "target": "src/Controls.Wpf/Execution/Parameters/ParentNodeInfo.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "d045c2644dadab0739a182dc144bbbe36a5ecb80fa6d7418ea414f3c594324b3"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/Point2D.cs",
+      "types": [
+        "Point2D"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/Point2D.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "824f689fa38c03fd73a6f0edd8ca65f7fe07b3d97a60015d11a47739c7312e1f"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/PropertyMetadata.cs",
+      "types": [
+        "ToolPropertyMetadata"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/PropertyMetadata.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "9bd2836a6eac4c87de3801a0a16ca9757653887fd7ec3089b5cbac8b25295840"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/PropertyPathParser.cs",
+      "types": [
+        "PropertyPathParser"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/PropertyPathParser.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "61c404c4500ea260485aaf7cb7ab549ab4005af257ac99a6ae0dd6bcb181fd37"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ResultPresentationConfig.cs",
+      "types": [
+        "JudgmentRuleKind",
+        "JudgmentScope",
+        "ResultPresentationConfig",
+        "JudgmentConfigItem",
+        "GraphicsPresentationItem",
+        "TextPresentationItem",
+        "JudgmentOutcome",
+        "ResultJudgmentEvaluator"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ResultPresentationConfig.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "b2921122c762a266963b0abe9ed6ed4d9710f11d0018e90e06ad37a30c1204fb"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/RoiCollection.cs",
+      "types": [
+        "RoiCollection"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/RoiCollection.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "5b1507b2d0fa405409246d37c16717800bd54da3b802391fe388eee47dfcad9f"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/RoiComposeResolver.cs",
+      "types": [
+        "RoiComposeResolver"
+      ],
+      "target": "src/Runtime.Engine/Execution/Parameters/RoiComposeResolver.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "35734c416fdddba69e201a62215cc159bc6f7ccb492b10fcee9554d56ff9389b"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/RoiFieldSchema.cs",
+      "types": [
+        "RoiFieldDef",
+        "RoiFieldSchema"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/RoiFieldSchema.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "5c5be80ab885c1069d35a6cfa92551a4fe2a3c1265dc741f07177ded949965d4"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/RoiInput.cs",
+      "types": [
+        "RoiGeometrySource",
+        "Roi"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/RoiInput.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "d135e537ac186de185cb66fc2104bc1d7e07deed201aa076bfc4dbaebb3df60b"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/RoiParameterMode.cs",
+      "types": [
+        "RoiParameterMode"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/RoiParameterMode.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "5e4164f579db33ce7fad4daedbfe61ce169e7f89615c999ea2951c40fe971be9"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/RoiParameters.cs",
+      "types": [
+        "ThresholdParameters",
+        "RoiParameters"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/RoiParameters.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "49c26acfae64e261eaa09e76fd1b90466fd4d95ca1f229fad957e0d275fdc003"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/RoiShape.cs",
+      "types": [
+        "RoiShape"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/RoiShape.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "83cc400654d5a0fb922100b1fc923a19dfc0f2ec7143021a660db91ca3ddf7fe"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/RuntimeParameterSnapshot.cs",
+      "types": [
+        "RuntimeParameterSnapshot"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/RuntimeParameterSnapshot.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "654b4208ae48c97e28dc421aa949daa9f69b7362d13be7b248bdbf52e4bdad54"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/RuntimeParameterSnapshotResolver.cs",
+      "types": [
+        "RuntimeParameterSnapshotResolver"
+      ],
+      "target": "src/Runtime.Engine/Execution/Parameters/RuntimeParameterSnapshotResolver.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "94f8193fbfe95a410e43a87e76378dafb5143f7c5f00ff5a8caefa60ce00ea9f"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ShapeType.cs",
+      "types": [
+        "ShapeType"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ShapeType.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "3d921adbcd4ce38c885162468c3a0d3a3db2f89a5f8d06b39a6a2d12150bbc20"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ShapeTypeJsonConverter.cs",
+      "types": [
+        "ShapeTypeJsonConverter"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ShapeTypeJsonConverter.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "f973fffd16339780b0842d18ae5f547eeb5f524148902cae7db8b309f7b354f7"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ShapeTypeVocabulary.cs",
+      "types": [
+        "ShapeTypeVocabulary"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ShapeTypeVocabulary.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "9894c912dfc33068f6ed1acaa3efeed7965e5f8d5eafda0bf2cbf6551aae8d46"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/SubroutineDebugServiceProvider.cs",
+      "types": [
+        "SubroutineDebugServiceProvider"
+      ],
+      "target": "src/Runtime.Engine/Execution/Parameters/SubroutineDebugServiceProvider.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "781caa234e7adeef1ed7750a88f8c96d6bbfb25e70637805a5f38bcaf46f54d9"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/SubroutineParameters.cs",
+      "types": [
+        "SubroutineParameters"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/SubroutineParameters.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "16886788c678530a973f1410303ff360aa65d8b59a04836186582e0487bd7e2c"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ToolDebugResultSnapshot.cs",
+      "types": [
+        "ToolDebugResultSnapshot"
+      ],
+      "target": "src/Controls.Wpf/Execution/Parameters/ToolDebugResultSnapshot.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "ee4d7c47afdc509ff24d986401eeb6df504dcf7cc12c04c6350aac470b4b730c"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ToolExecutionPreparation.cs",
+      "types": [
+        "ToolExecutionPreparation"
+      ],
+      "target": "src/Runtime.Engine/Execution/Parameters/ToolExecutionPreparation.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "302591b7865abd944f4794ad87ed7ba5f2cde0e106ae1dc03d70f3add927e014"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ToolParameters.cs",
+      "types": [
+        "ThresholdParameters",
+        "ToolParameters",
+        "GenericToolParameters"
+      ],
+      "target": "src/Tool.SDK/Parameters/ToolParameters.cs",
+      "project": "Tool.SDK",
+      "action": "保留基础＋隔离运行附属状态",
+      "reason": "保留Generic/$type识别；只序列化设计态，NodeResults等运行附属数据留内部上下文。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "03c0f3d9eda1a49d00a9ce23d71ba859fe06a29c51b2735973d53c16a3f5706d"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/ToolParametersExtensions.cs",
+      "types": [
+        "MyTool",
+        "ToolParametersExtensions"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/ToolParametersExtensions.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "d07f8fa45321596588225aee070fb375e4b35e4b6e7a13cc3b73fcaa58d1addd"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/TreeNodeData.cs",
+      "types": [
+        "TreeNodeData"
+      ],
+      "target": "src/Controls.Wpf/Execution/Parameters/TreeNodeData.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "f45de357e9caaea7e82b95bcd415ac8aad821fca2463279b72684297adb17be4"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Parameters/TupleBroadcast.cs",
+      "types": [
+        "TupleBroadcast"
+      ],
+      "target": "src/Tool.SDK/Execution/Parameters/TupleBroadcast.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "3566bfcee2f1c3cd8eff622059e69f68ad74fb79a4575370bdee6530eb505aaa"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Results/AffineMatrix.cs",
+      "types": [
+        "AffineMatrix"
+      ],
+      "target": "src/Tool.SDK/Execution/Results/AffineMatrix.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "b23d7ba0b8eb4119d171d872ba7af44cf984016db4f1720b365f6ed4ab88c939"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Results/CommunicationToolResults.cs",
+      "types": [
+        "CommunicationToolResults",
+        "CommunicationAnalysisRow"
+      ],
+      "target": "src/Tool.SDK/Execution/Results/CommunicationToolResults.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "d5305a5d4e7b5f58e191c1be4a0e81f629ce68b77f81b16ab179b4327b977919"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Results/EdgeFitDiagnostics.cs",
+      "types": [
+        "EdgeFitDiagnostics"
+      ],
+      "target": "src/Tool.SDK/Execution/Results/EdgeFitDiagnostics.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "7489aff0c4602215737850c5af0eb2c3cfeb01d8eff71b071f69ad3f3726f0ba"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Results/ExecutionProgress.cs",
+      "types": [
+        "ExecutionProgress",
+        "ExecutionProgressReporter"
+      ],
+      "target": "src/Tool.SDK/Execution/Results/ExecutionProgress.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "19d59a416eaacceb87ca50b381a5fb32fd5a4a9541ec34debb081004947a885b"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Results/ExecutionResult.cs",
+      "types": [
+        "ExecutionResult",
+        "NodeExecutionResult"
+      ],
+      "target": "src/Tool.SDK/Execution/Results/ExecutionResult.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "623234c64f7ff6be67b7e6ded4c1503733c68139b9db8e548a1b629c94e48a1c"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Results/FrameworkContractSchema.cs",
+      "types": [
+        "FrameworkContractEntry",
+        "FrameworkContractSchema"
+      ],
+      "target": "src/Tool.SDK/Execution/Results/FrameworkContractSchema.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "9de83194d509c13d464c5d6fe3934f888119648e29daf65d1cfb4ca4a8918d7b"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Results/OutputVariable.cs",
+      "types": [
+        "OutputVariable",
+        "OutputVariableKind"
+      ],
+      "target": "src/Tool.SDK/Execution/Results/OutputVariable.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "cca7081b5785a6ce5dad6d7db71dd9228ec1d93b053826094a9cefa27523af2d"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Results/OutputVariableArrayPromoter.cs",
+      "types": [
+        "OutputVariableArrayPromoter"
+      ],
+      "target": "src/Tool.SDK/Execution/Results/OutputVariableArrayPromoter.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "9eeae149221452d7f1b6fc68bce69c5f47448a7e36403ae6dfb30d12547aee6d"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Results/SubroutineResults.cs",
+      "types": [
+        "SubroutineResults"
+      ],
+      "target": "src/Tool.SDK/Execution/Results/SubroutineResults.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "d47bfd82203b63b13fdb876ad78c5c0313b10c96c8490b6ab989bfae7cd757a9"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Results/ToolCapabilities.cs",
+      "types": [
+        "ToolCapabilities",
+        "ToolCapabilityAttribute",
+        "ToolCapability"
+      ],
+      "target": "src/Tool.SDK/Execution/Results/ToolCapabilities.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "c8edb76ba2e8565cb1a147b13f3db9b8161d72f1187dd03190c209785e4c54d3"
+    },
+    {
+      "source": "src/Plugin.SDK/Execution/Results/ToolResults.cs",
+      "types": [
+        "PropertyMapEntry",
+        "ExecutionStatus",
+        "ResultItemType",
+        "ResultItem",
+        "CircleFindResults",
+        "ToolResults",
+        "GenericToolResults"
+      ],
+      "target": "src/Tool.SDK/Results/ToolResults.cs",
+      "project": "Tool.SDK",
+      "action": "成员级拆分整改",
+      "reason": "强类型输出与反射输出声明保留；显示投影转Controls.Wpf适配，公开ResultSnapshot另建Contracts。using System.Windows本身不能证明每个成员依赖WPF；移动前逐签名审核。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": true,
+      "sha256": "3d4f0df03e792ea063ff024f32cd00782d81d8e773190642cd3efcf2ccf1c3ef"
+    },
+    {
+      "source": "src/Plugin.SDK/Extensions/AngleConverter.cs",
+      "types": [
+        "AngleConverter"
+      ],
+      "target": "src/Tool.SDK/Extensions/AngleConverter.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "77fd2201741c387ec20f219fa1f9a10ebeec923ecbd4c6829c25fe44833757f2"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/FileLogWriter.cs",
+      "types": [
+        "FileLogWriter"
+      ],
+      "target": "src/Runtime.Engine/Logging/FileLogWriter.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "2000dd88f4ed20fb661af9b25a032af4edb45cccd9d33041782ba5a25f5f0c49"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/ILogWriter.cs",
+      "types": [
+        "ILogWriter"
+      ],
+      "target": "src/Contracts/Logging/ILogWriter.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "380f55ee0654adafc0cb038d093f144d77926cce6094041379b6939679836fda"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/ILogger.cs",
+      "types": [
+        "ILogger"
+      ],
+      "target": "src/Contracts/Logging/ILogger.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "c7fab4ede7c5b88e454d67842f2144e886dbb8a5bb33e6e55b9ec7498a3ccc97"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/ILoggerProvider.cs",
+      "types": [
+        "ILoggerProvider"
+      ],
+      "target": "src/Contracts/Logging/ILoggerProvider.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "25f15e49bc4c28833b8cce8540f8581dc2d597b920c9c9fd8b4ff652f9d966d6"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/LogEntry.cs",
+      "types": [
+        "LogEntry"
+      ],
+      "target": "src/Contracts/Logging/LogEntry.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "eef6f0f66b79f33e69868ce72704f28da1d7a7f89237e7437309bfe0f413e844"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/LogLevel.cs",
+      "types": [
+        "LogLevel"
+      ],
+      "target": "src/Contracts/Logging/LogLevel.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "05f9bd989b081da3b9db72c98867a90b4c02c793e29c8a53e4824bd46792ba21"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/LogSource.cs",
+      "types": [
+        "LogSource"
+      ],
+      "target": "src/Contracts/Logging/LogSource.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "65f4aee9a0df5393b786826cbd197bd987f382acee358d31ccebaa56bf972959"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/LogSources.cs",
+      "types": [
+        "LogSources"
+      ],
+      "target": "src/Contracts/Logging/LogSources.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "483efe430bb6afdc2b1fc85febbb76bfb686cc89653d3bf205e3c9da1ed2375d"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/LogTarget.cs",
+      "types": [
+        "LogTarget"
+      ],
+      "target": "src/Contracts/Logging/LogTarget.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "1164daf2a5135c0a803bd0bbedf4ae1a1ccc31f2f62677c7c61d289dea9fa33d"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/LoggerExtensions.cs",
+      "types": [
+        "LoggerExtensions"
+      ],
+      "target": "src/Contracts/Logging/LoggerExtensions.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "00a1d7b2fe9042446149e7dd386ea2eeb2f49fdd225a8c6ffec7353b3c9b66be"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/PluginLogger.cs",
+      "types": [
+        "PluginLogger",
+        "NullLogger"
+      ],
+      "target": "src/Runtime.Engine/Logging/PluginLogger.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "14e8c8a1f2fb68bb93d5c30f4827ff23b8493b0cc64929b18335d95fe271c3f1"
+    },
+    {
+      "source": "src/Plugin.SDK/Logging/VisionLogger.cs",
+      "types": [
+        "VisionLogger"
+      ],
+      "target": "src/Runtime.Engine/Logging/VisionLogger.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "a0b443f78f0d5ea95e585ed9386661e21cc99df89fe9ae7be52a01a96aef33ff"
+    },
+    {
+      "source": "src/Plugin.SDK/Metadata/ParamAttributes.cs",
+      "types": [
+        "IgnoreBindAttribute"
+      ],
+      "target": "src/Tool.SDK/Metadata/ParamAttributes.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "bcfd4d63ad09361baddff6f426dcacba4246cb35d94a80cf908975fa435bef00"
+    },
+    {
+      "source": "src/Plugin.SDK/Metadata/ToolMetadata.cs",
+      "types": [
+        "ToolMetadata"
+      ],
+      "target": "src/Tool.SDK/Metadata/ToolMetadata.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "6f986cb362fbab22a63861c04b95f805d6155014da9329e21ef0d005669dea8d"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Calibration/PlanarCalibration.cs",
+      "types": [
+        "PlanarSampleKind",
+        "PlanarCalibrationSample",
+        "PlanarCalibrationSettings",
+        "PlanarCalibrationResidual",
+        "PlanarCalibrationFit",
+        "CalibrationAcquisitionEvidence"
+      ],
+      "target": "src/Tool.SDK/Models/Calibration/PlanarCalibration.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "a59670b6498f6b4d456c5254723f610905f1289b9c4f47b2a0a77927f2ffbf0c"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Communication/BinaryPayload.cs",
+      "types": [
+        "BinaryPayload"
+      ],
+      "target": "src/Tool.SDK/Models/Communication/BinaryPayload.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "11a4cce015ae707e8978874de605e54c3ed7d1bfe0d10427869ffec3689cce8b"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Communication/CommunicationDelimiterCatalog.cs",
+      "types": [
+        "CommunicationDelimiterOption",
+        "CommunicationDelimiterCatalog"
+      ],
+      "target": "src/Tool.SDK/Models/Communication/CommunicationDelimiterCatalog.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "5d836da304dde65157fe113c916f8a73cc794f6479c319cb6cd002c6e2ec9ea2"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Communication/CommunicationOutputField.cs",
+      "types": [
+        "CommunicationOutputField"
+      ],
+      "target": "src/Tool.SDK/Models/Communication/CommunicationOutputField.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "cfbb5b5190a41e25241bce55b7de9760cf05fc81b010f95b23183b8ae561c132"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Communication/CommunicationReceiveConsumption.cs",
+      "types": [
+        "CommunicationReceiveService",
+        "MessageBuffer",
+        "Consumer"
+      ],
+      "target": "src/Tool.SDK/Models/Communication/CommunicationReceiveConsumption.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "a3759096562d6027c5894beab0b67d24eb3a480d743325ab42a8c0810483f1be"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Communication/CommunicationReceiveService.cs",
+      "types": [
+        "CommunicationReceiveSource",
+        "CommunicationReceiveSample",
+        "ReceiveVariableSource",
+        "IReceiveVariableInputProvider",
+        "ReceiveVariableValue",
+        "ICommunicationReceiveService",
+        "CommunicationReceiveService"
+      ],
+      "target": "src/Runtime.Engine/Models/Communication/CommunicationReceiveService.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "bcc3db92376d6f29769b786a951c4d2ebaa252ca8b79a93dc3ce7d85d410af30"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Communication/CommunicationSendService.cs",
+      "types": [
+        "CommunicationSendTarget",
+        "CommunicationSendParameter",
+        "CommunicationSendInput",
+        "CommunicationSendTypes",
+        "CommunicationSendOptions",
+        "CommunicationSendRequest",
+        "SendVariablePublication",
+        "PreparedCommunicationSend",
+        "ICommunicationSendService",
+        "ICommunicationBindingInputProvider"
+      ],
+      "target": "src/Runtime.Engine/Models/Communication/CommunicationSendService.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "08c1020ba16bd14568373a5ecc0cc6505a74bbb86a6bb31e226deeb6648618a3"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Communication/ProtocolBindingInput.cs",
+      "types": [
+        "ProtocolBindingInput"
+      ],
+      "target": "src/Tool.SDK/Models/Communication/ProtocolBindingInput.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "f12d964a68743714880ed7a05d72a168ab37ed071f93775224f2714fc5e1d297"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Communication/ProtocolValueCodec.cs",
+      "types": [
+        "ProtocolValueCodec"
+      ],
+      "target": "src/Tool.SDK/Models/Communication/ProtocolValueCodec.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "85670539deab5bb54eaa880ae5ce066bf4c4025576dbf8115ed1b682e2fc5c31"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Communication/RuntimeVariableReceiveService.cs",
+      "types": [
+        "RuntimeVariableReceiveService"
+      ],
+      "target": "src/Runtime.Engine/Models/Communication/RuntimeVariableReceiveService.cs",
+      "project": "Runtime.Engine",
+      "action": "实现迁移＋服务注入整改",
+      "reason": "解析/服务/执行实现不进公共SDK，接口留合同侧。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "d3aa479ce9949ad1c875974ee9c70ebfc462e46cefc14d635a7ceed2f307a13f"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Geometry/Annulus2d.cs",
+      "types": [
+        "Annulus2d"
+      ],
+      "target": "src/Contracts/Models/Geometry/Annulus2d.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "33f1dfe769d4d0d173f059cac6254affb8743769c984adff1f9d0375ade995c6"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Geometry/Arc2d.cs",
+      "types": [
+        "Arc2d"
+      ],
+      "target": "src/Contracts/Models/Geometry/Arc2d.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "93fef3c6ca4ea0b660521c6369e66288b1f6b24884628c441f96a9eed6f39e6a"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Geometry/Circle2d.cs",
+      "types": [
+        "Circle2d"
+      ],
+      "target": "src/Contracts/Models/Geometry/Circle2d.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "8628f1de3e4a2f40c54daa01e985f78e0b3b2a295b55f90f7324f77d8bc61177"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Geometry/HalconArcAdapter.cs",
+      "types": [
+        "HalconArcAdapter"
+      ],
+      "target": "src/Runtime.Engine/Vision/HalconArcAdapter.cs",
+      "project": "Runtime.Engine",
+      "action": "后端适配迁移",
+      "reason": "Geometry目录不等于公共纯几何合同；引擎适配留内部，防止Contracts传递依赖Halcon。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "437a80338bb6389d073db245898120044cdda214a2751400b7b51cf732bfd424"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Geometry/Line2d.cs",
+      "types": [
+        "Line2d"
+      ],
+      "target": "src/Contracts/Models/Geometry/Line2d.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "f75d5820fdb7d6692b21f862007dfc6eb3276cbd9c8d71df58e24709c936be26"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Geometry/Point2d.cs",
+      "types": [
+        "Point2d"
+      ],
+      "target": "src/Contracts/Models/Geometry/Point2d.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "35eb9855f204bbe5e1133ca2707a94ca466362b2efe1f39c5a8796c294421fb9"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Geometry/Polygon2d.cs",
+      "types": [
+        "Polygon2d"
+      ],
+      "target": "src/Contracts/Models/Geometry/Polygon2d.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "3f0767a0825cc74014b0a9ce1ccd0402dc67d34b97a97190cb5ffd30b76c5a12"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Geometry/RotatedRect2d.cs",
+      "types": [
+        "RotatedRect2d"
+      ],
+      "target": "src/Contracts/Models/Geometry/RotatedRect2d.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "1e0156101ecc80122ad5caaca311745f0dafc31f2d5df8f29a8edb2abbe68499"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Imaging/ImageData.cs",
+      "types": [
+        "ImageData"
+      ],
+      "target": "src/Contracts/Models/Imaging/ImageData.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "95abfe34e135d6cf7ae2a3684198cea295e36f4e06e5ff0cea155fa3bad5fc6c"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Imaging/ImageFormat.cs",
+      "types": [
+        "ImageFormat"
+      ],
+      "target": "src/Contracts/Models/Imaging/ImageFormat.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "2cdcbdf447dd2580a93312cf785a4dc9a16eede17ad5abf91a678c4f2c42ef39"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Imaging/ImageLoadState.cs",
+      "types": [
+        "ImageLoadState"
+      ],
+      "target": "src/Contracts/Models/Imaging/ImageLoadState.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "a66f86d587c9bb939fb7466cfb77f7962f8e0fbc9010e8cd7e0c49f67c384bfc"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Imaging/ImageLoadedEventArgs.cs",
+      "types": [
+        "ImageLoadedEventArgs"
+      ],
+      "target": "src/Contracts/Models/Imaging/ImageLoadedEventArgs.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "a0028807419231240c89905e8094f4024e79bcb99d42dfa28684f973608f6506"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Imaging/ImageMetadata.cs",
+      "types": [
+        "ImageMetadata"
+      ],
+      "target": "src/Contracts/Models/Imaging/ImageMetadata.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "28e4ec199de76c64ce1b00d6af9b7eda955d95ae02ae25dd24fdb19c07bea064"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Imaging/PixelFormat.cs",
+      "types": [
+        "PixelFormat",
+        "PixelFormatExtensions"
+      ],
+      "target": "src/Contracts/Models/Imaging/PixelFormat.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "b1cf3ef2a11b874da9630aa9f5ef702e1d74dc1736f773251a408eb95956012f"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/NumericTypes.cs",
+      "types": [
+        "NumericTypes"
+      ],
+      "target": "src/Tool.SDK/Models/NumericTypes.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "ba0ba6fc4f4b6815a8f2b7a630b5cc4f81b75110a7aa179a95c134c13ff65c03"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/ObservableObject.cs",
+      "types": [
+        "PropertyChangeRecord",
+        "PropertyChangeMonitor",
+        "ObservableObject",
+        "NotificationSuppressor",
+        "CallerInfo"
+      ],
+      "target": "src/Tool.SDK/Models/ObservableObject.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "0571d7268f9e77f23745713dd09aadd631dce1d7753f5bf290dcb8b8d161cf20"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/SdkTypeVocabulary.cs",
+      "types": [
+        "SdkTypeVocabulary",
+        "TypeOption"
+      ],
+      "target": "src/Tool.SDK/Models/SdkTypeVocabulary.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "212df645371e3c41dae95284231bd141414473f7f0a91555d4e9e8d650e90dc0"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/SubroutineDisplayItem.cs",
+      "types": [
+        "SubroutineDisplayItem",
+        "SubroutineDisplayType",
+        "DisplayTypeOption",
+        "SubroutineDisplayTypeExtensions"
+      ],
+      "target": "src/Controls.Wpf/Models/SubroutineDisplayItem.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "2036a27128d59ec4125fbb210361fa31c21f535248d8efa374a94529ed9a2a70"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/SubroutineInputConfig.cs",
+      "types": [
+        "SubroutineInputConfig"
+      ],
+      "target": "src/Tool.SDK/Models/SubroutineInputConfig.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "680d916baed41474e683657324c6ca60bb253c9cc4f97e6b9a8979f42361a06c"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/SubroutineLoopConfig.cs",
+      "types": [
+        "SubroutineLoopConfig"
+      ],
+      "target": "src/Tool.SDK/Models/SubroutineLoopConfig.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "7aa70183861af98d90acf8512a74d388d10d29a26c8a15201500161167e8de36"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/SubroutineOutputConfig.cs",
+      "types": [
+        "SubroutineOutputChangeType",
+        "SubroutineOutputChange",
+        "SubroutineOutputConfig"
+      ],
+      "target": "src/Tool.SDK/Models/SubroutineOutputConfig.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "3f73f3891d6aabf8183687e54b165a27796fc9c736421b657106d8e50091367a"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Visualization/DisplayCollector.cs",
+      "types": [
+        "DisplayCollector"
+      ],
+      "target": "src/Tool.SDK/Models/Visualization/DisplayCollector.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "b550c3bededcaae633e2cfe711d5be157d8bac85779491910ece25b7c8ad844d"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Visualization/DisplayItemBase.cs",
+      "types": [
+        "DisplayItemBase"
+      ],
+      "target": "src/Tool.SDK/Models/Visualization/DisplayItemBase.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "f3d50057cfd7fa306a91a7410542f50f5f1fe18468a1209d34fcd125fe6a32b6"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Visualization/DisplayTextData.cs",
+      "types": [
+        "DisplayTextData"
+      ],
+      "target": "src/Tool.SDK/Models/Visualization/DisplayTextData.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "6358e42e1cddd45d6ab4905263457bcd0694d120d668cd6fd271b24d5988176d"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Visualization/GraphicsDisplayItem.cs",
+      "types": [
+        "DisplayRenderMode",
+        "GraphicsDisplayItem"
+      ],
+      "target": "src/Tool.SDK/Models/Visualization/GraphicsDisplayItem.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "ab5b362013646f8a713238eba229f489b0a2ce4de63665f39cebfb962031c78c"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Visualization/GraphicsStyle.cs",
+      "types": [
+        "GraphicsStyle"
+      ],
+      "target": "src/Tool.SDK/Models/Visualization/GraphicsStyle.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "cf667bc7daea954483d2c05ae632c0ec106989af48a75717169e2daa459ec43f"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Visualization/GraphicsType.cs",
+      "types": [
+        "GraphicsType"
+      ],
+      "target": "src/Tool.SDK/Models/Visualization/GraphicsType.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "6999bb68f00d4f65d73f71c9b608e18efbe8b3eddf646607feb07b9e2ccb1711"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Visualization/LineDashStyle.cs",
+      "types": [
+        "LineDashStyle"
+      ],
+      "target": "src/Tool.SDK/Models/Visualization/LineDashStyle.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "a5f2ecaa41e553dbc4bb1fb52753606ba30b43bd9f7e41c2a41182cc67f4e1a4"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Visualization/TextDisplayItem.cs",
+      "types": [
+        "TextDisplayItem"
+      ],
+      "target": "src/Tool.SDK/Models/Visualization/TextDisplayItem.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "ef317912004e35ee01b7866fd7a141f85a75f6807e9904061846ac1c67fde0a1"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Visualization/TextStyle.cs",
+      "types": [
+        "TextStyle"
+      ],
+      "target": "src/Tool.SDK/Models/Visualization/TextStyle.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "3eb2cd25208e1215c2d1c80afa589b1a7d9c4d5cf1653a2392d7f0a3803d7bb1"
+    },
+    {
+      "source": "src/Plugin.SDK/Models/Visualization/VisualElement.cs",
+      "types": [
+        "LineSegment",
+        "ArcGeometry",
+        "CoordinateSystemGeometry",
+        "ContourGeometry",
+        "BatchedContourGeometry"
+      ],
+      "target": "src/Tool.SDK/Models/Visualization/VisualElement.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "4f247cc735bbae26aa8f9a314d1b0ccb3fe16562fe5d441500eb7a4502940e43"
+    },
+    {
+      "source": "src/Plugin.SDK/Scripting/Script.cs",
+      "types": [
+        "Script"
+      ],
+      "target": "src/Tool.SDK/Scripting/Script.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "b2ff493046814ce6c2c529170826663555919f161f8487a9b5040447f8eadf49"
+    },
+    {
+      "source": "src/Plugin.SDK/Scripting/ScriptContext.cs",
+      "types": [
+        "ScriptContext"
+      ],
+      "target": "src/Tool.SDK/Scripting/ScriptContext.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "58f367a305482f1a800a59118735c5375a2c8864561ff60004d9d12800365b39"
+    },
+    {
+      "source": "src/Plugin.SDK/Themes/Generic.xaml",
+      "types": [],
+      "target": "src/Plugin.SDK/Themes/Generic.xaml",
+      "project": "Plugin.SDK",
+      "action": "兼容原位保留",
+      "reason": "原SDK;component/UI/Themes/DefaultTheme.xaml仍可解析；新资源独立，不靠TypeForward修复pack URI。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "aa78850e463fcb00440380c3d5b5792734372419c76b6667735b53bd515a6f19"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Constants/ColorConstants.cs",
+      "types": [
+        "ColorConstants"
+      ],
+      "target": "src/Controls.Wpf/UI/Constants/ColorConstants.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "fc7b654c9d594e047a96f7c9cedbd7b7c57c11c8796cc0ed5368b024b12fa9cb"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Constants/FontConstants.cs",
+      "types": [
+        "FontConstants"
+      ],
+      "target": "src/Controls.Wpf/UI/Constants/FontConstants.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "f45663323b031166238fab0acead7e664649ae531b72da79bba1a523f688ffc2"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Constants/LayoutConstants.cs",
+      "types": [
+        "LayoutConstants"
+      ],
+      "target": "src/Controls.Wpf/UI/Constants/LayoutConstants.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "e680312098896a3f758d20619282e3990ecd752bd13d3f28ccd067290012d059"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/BindingIssueAdorner.cs",
+      "types": [
+        "BindingIssueAdorner"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/BindingIssueAdorner.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "acffe2ee8128b8d7d537122cc4cd721493a5f6bf95c7c154afe37dab1a570de2"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ColorPicker/ColorPicker.cs",
+      "types": [
+        "ColorPicker"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ColorPicker/ColorPicker.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "0a6857b9f5ff08c2f91687d3b76eebe650f9a120ddf33fcd68191ad8bf3020e5"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ColorPicker/ColorPickerPalette.cs",
+      "types": [
+        "ColorSeries",
+        "ColorPickerPalette"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ColorPicker/ColorPickerPalette.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "a576f61924aaeeeab580067c2584a19ae4b87057d8b9a32f5b74bb7b8a5727b5"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ColorPicker/ColorSelector.cs",
+      "types": [
+        "ColorSelector"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ColorPicker/ColorSelector.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "01fe127d7d84abbc1d4faea7dad8c99ae9b198d1e2d2ef4b0aef1c60fd09ef1a"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ColorPicker/HsvColor.cs",
+      "types": [
+        "HsvColor"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ColorPicker/HsvColor.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "8e758f9ae8fea24e094ee5730ab3c5b4cca1cf1e35807ecc3da21de34514da42"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Common/Geometry/GeometryToolkit.cs",
+      "types": [
+        "GeometryToolkit"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Common/Geometry/GeometryToolkit.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "39185abedcc43a71a26315cd284cc095de06796052cdc2065c40c9196392edd7"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Common/Models/ToolItem.cs",
+      "types": [
+        "ToolItem"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Common/Models/ToolItem.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "ba9ea591307e4cd7384b06d08ac73b006fb35c4fce2c5cde5d4e2a02c8929454"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Common/Views/ToolBarControl.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Common/Views/ToolBarControl.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "e85e23bbcd3114a560db3b646677984f7d043afd2af98befc65ad7eddaddacdd"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Common/Views/ToolBarControl.xaml.cs",
+      "types": [
+        "ToolBarControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Common/Views/ToolBarControl.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "2971d577bf903f1b0b65cc22d71ded6bff2dedf040c90ad2948e1c5da4cd6936"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Communication/CommunicationBindingTypes.cs",
+      "types": [
+        "CommunicationBindingTypes"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Communication/CommunicationBindingTypes.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "2e7d5ffa709aee757f3a546508b27453c346fb6bfd00d514719c3e4e8e03f4c2"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Communication/CommunicationDataAnalysisControl.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Communication/CommunicationDataAnalysisControl.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "b010ab40ecb833d6f23687670d59b618266bb860e3353dd44d4790d68487fde4"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Communication/CommunicationDataAnalysisControl.xaml.cs",
+      "types": [
+        "CommunicationDataAnalysisControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Communication/CommunicationDataAnalysisControl.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "0c352d39321ee7cc6e2de07c7680e1d64e6d795f5dfcca8dad709af74dee05ed"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Communication/CommunicationOrdinalConverter.cs",
+      "types": [
+        "CommunicationOrdinalConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Communication/CommunicationOrdinalConverter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "7ba86c54f42dc1d1eda47dc9cc7009dfc2a45824304c9ec8127347da60f08a22"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Communication/ProtocolEditorResources.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Communication/ProtocolEditorResources.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "7755629be0acef67b6398f847ebe05da7ecf4829b7f23fa9c7507d782a8b5b89"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Communication/ProtocolLayoutConverters.cs",
+      "types": [
+        "ProtocolListViewportConverter",
+        "ProtocolMoveAvailableConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Communication/ProtocolLayoutConverters.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "702f2b9d519c8b1f32fd19d0617b48723ba52629f459dbcb47748f675c29b7ad"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Communication/ProtocolRowPosition.cs",
+      "types": [
+        "ProtocolRowPosition",
+        "Tracker"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Communication/ProtocolRowPosition.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "7490a12fb3e52ec9f69172388df2feb90b29de0b2e3fc56a6ebd39cddccaf194"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ConfigSetting.cs",
+      "types": [
+        "ConfigSetting"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ConfigSetting.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "c82d7d8c0bd0c9fc31770ffb12bd7323053e16523830fa9e77a3314c725a7af3"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/DispItemColorControl.cs",
+      "types": [
+        "DispItemColorControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/DispItemColorControl.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "ec262ef978ae65357e51cdbfad627cca63eeaf0b33aa13f9dec6d9b87c952265"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/DispTextColorControl.cs",
+      "types": [
+        "DispTextColorControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/DispTextColorControl.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "be67bae1856f547f08b8a6bf0927c9e452c6ea106b59d0d066c65b1b1e60f541"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/IToolControlDataAnalysis.cs",
+      "types": [
+        "IToolControlDataAnalysis"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/IToolControlDataAnalysis.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "b5c1ec66fb7357f49bbce183fa357c6984b55c5da30a483806d166bba47161d1"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/IToolControlInitializer.cs",
+      "types": [
+        "IToolControlInitializer"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/IToolControlInitializer.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "f52cc41886d2c5a6d763685791a92ad84145af2e9d778e2d4030200db299e65d"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Icons/ToolIcon.cs",
+      "types": [
+        "ToolIcon",
+        "ToolIconGeometry"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Icons/ToolIcon.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "e06b8a7015f643c3a724877bbe50712fc8c3e4972e3b676f7a505a49827c6d16"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/ImageControl/ImageControl.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "b792ec4d3cbff641131e8decfd00ceb67794bd7007396f5c850eec4d5b87c786"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+      "types": [
+        "ImageAutoFitMode",
+        "ImageControl",
+        "ImageSourceSelectionChangedEventArgs"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ImageControl/ImageControl.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ImageControl/ImageLoadedEventArgs.cs",
+      "types": [
+        "ImageLoadedEventArgs"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ImageControl/ImageLoadedEventArgs.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "419579a54b5206994c3ea521898cd43452ca65a87487f3c25d41c26d2c698982"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ImageControl/ImageMouseEventArgs.cs",
+      "types": [
+        "ImageMouseEventArgs"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ImageControl/ImageMouseEventArgs.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "2caa31d74b9215e16369e232fbeb297996215113f96b4638d3a43b173d221628"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ImageControl/PreviewFrameProvenance.cs",
+      "types": [
+        "PreviewFrameProvenance",
+        "Frame"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ImageControl/PreviewFrameProvenance.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "f05c42e9c0f283284fc1b27d63fb5595b15c7cd595687ca89396361233621ba8"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+      "types": [
+        "ResultRenderLayer",
+        "TextDrawingCacheEntry",
+        "TextGroupDrawingEntry",
+        "TextLine"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ImageControl/ResultRenderLayer.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ImageControl/ViewTransformEventArgs.cs",
+      "types": [
+        "ViewTransformEventArgs"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ImageControl/ViewTransformEventArgs.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "44d463daab6e65edea9382986155a0d8e892371bcc98d317b084434430497cfd"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ImageControl/ViewportScaling.cs",
+      "types": [
+        "ViewportScaling"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ImageControl/ViewportScaling.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "3c7b2787b3232fc86314c767045fe8ac678239679967fee71dc793624db34497"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ImageControl/ZoomChangedEventArgs.cs",
+      "types": [
+        "ZoomChangedEventArgs"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ImageControl/ZoomChangedEventArgs.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "fe62b8959ecef0f7c4d537c747d473119e48fa0d6749ca0a0329491c5891f6c1"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ImageSourceSelector.cs",
+      "types": [
+        "ImageSourceSelector"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ImageSourceSelector.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "136f1d72e42b82160cd329283eedcf71c6b14f0c7d55a1c649cecc3b2eff93df"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/LabeledControl.cs",
+      "types": [
+        "LabeledControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/LabeledControl.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "3f4fb205398277e22dcf92f48a50374d203fcad61b8dd3b53af854755ad8e2b5"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Interactions/ArcGuideInteraction.cs",
+      "types": [
+        "ArcGuideInteraction"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Interactions/ArcGuideInteraction.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "19013b3aa8c9ff32202c6b99904c413567a7495d57002d3282f610ca7d1d0170"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Interactions/CircleGuideInteraction.cs",
+      "types": [
+        "CircleGuideInteraction"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Interactions/CircleGuideInteraction.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "0338814f389f88bc7b1ab2a0e9ee58f873acac8c5171f0f6a27d4a1ee4a52af0"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Interactions/GuideInteractionFactory.cs",
+      "types": [
+        "GuideInteractionFactory"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Interactions/GuideInteractionFactory.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "0eea58abdb8f80aae933b88b85c74e72fdc13a52f4702686022cb65dc6bc9f8b"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Interactions/IGuideGeometryInteraction.cs",
+      "types": [
+        "IGuideGeometryInteraction"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Interactions/IGuideGeometryInteraction.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "02d7e3775bbca24098f57e4b96513602893c0c36d3d6de3a4a3821099f9037d6"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Interactions/LineGuideInteraction.cs",
+      "types": [
+        "LineGuideInteraction"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Interactions/LineGuideInteraction.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "e4eefbff1bc5de7fb4110753bf69cc31e401e57bc14a298704b1801053d69dcf"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/MeasureToolIconFactory.cs",
+      "types": [
+        "MeasureToolIconFactory"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/MeasureToolIconFactory.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "5f3fc53786715cdd30671189d3853908bb496907ef0cba12f0c0cc79733ea2f8"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Models/CaliberParamsChangedEventArgs.cs",
+      "types": [
+        "CaliberParamsChangedEventArgs"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Models/CaliberParamsChangedEventArgs.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "07e59a0c0782c92bac18f4eefde6e2ead403c0ecad5995a1d9797abec30af9ec"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Models/GuideGeometryChangedEventArgs.cs",
+      "types": [
+        "GuideGeometryChangedEventArgs"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Models/GuideGeometryChangedEventArgs.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "ad369cc6a79d4ca5cacb6cd3596e27675136b6ac7bcbb8de753b86233938138f"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Models/MeasureInteractionModel.cs",
+      "types": [
+        "MeasureInteractionMode",
+        "MeasureInteractionModel"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Models/MeasureInteractionModel.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "f9a7f10f1c0fb7d2514d21869e7d6519e82a05c9a588f993389126974b953f93"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Models/MeasureToolItem.cs",
+      "types": [
+        "MeasureGeometryType",
+        "MeasureToolItem"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Models/MeasureToolItem.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "b7072d091bd0d4593a33812542831372ea1660ee70e1375417af9fafafd06253"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Models/PointInputMode.cs",
+      "types": [
+        "PointInputMode"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Models/PointInputMode.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "8e8560fe2f50252b6e3ff229a05df6aad4f885b401c3a83ed6762c185710fb58"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
+      "types": [
+        "MeasureBandOverlay"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "342e9a37a84ec28476a35154b0be87f7d9bf3dfbf90640e5025df07bb39551ed"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Views/MeasureEditorControl.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "8222cb49248d722054567a439b3093d5037bf0be4971a063582cdc8cf099340a"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs",
+      "types": [
+        "MeasureEditorControl",
+        "struct"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "15ee12a3671af09037db0c547263cbcb500e60b70d68df4184811771eee3d6b5"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureElementsEditorControl.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Views/MeasureElementsEditorControl.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "6a2b4825f6959bb3bf510e38d366816784b445b60044ddce663e0f46efb6b520"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureElementsEditorControl.xaml.cs",
+      "types": [
+        "MeasureElementsEditorControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Views/MeasureElementsEditorControl.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "0d918667e97ae487e93b32607c116334b5ca001ead9b24049b04e6beb6c087dd"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureGuideParameterPanel.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Views/MeasureGuideParameterPanel.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "e67a179bda926a58a7eeee13132f0b9fdf108414d64baf1e6ee2a1bd0f808f1f"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureGuideParameterPanel.xaml.cs",
+      "types": [
+        "MeasureGuideParameterPanel"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Views/MeasureGuideParameterPanel.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "804e5667bbfc91ec110cfcc8ec54e3392f4847127bc4f83a420fbafe227bc14b"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureToolBar.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Views/MeasureToolBar.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "a121d4a1ecb4021e2b1d1e96778b9a495ce7255a13a59d840c0363086accbd3a"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureToolBar.xaml.cs",
+      "types": [
+        "MeasureToolBar"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Views/MeasureToolBar.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "e47f771e6fae9ff889d63e9f85b8c8cc991fd931578276f350c57293625ff956"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Views/MeasurementEditorManagerControl.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Views/MeasurementEditorManagerControl.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "91b8f3563a8ef008baef37397c73c9a83d0359cbabf9e33316df1c43afe74bbb"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Measure/Views/MeasurementEditorManagerControl.xaml.cs",
+      "types": [
+        "MeasurementEditorManagerControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Measure/Views/MeasurementEditorManagerControl.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "2207184677eac4dcdf4471060729886c441840d4cf7d694d3a1c5daa22ec9bff"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/NumericUpDown.cs",
+      "types": [
+        "NumericUpDown"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/NumericUpDown.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "2a42b003a68d6716953a56887c6b03cbcd9c61ddb1fc076c1fefce90eae45d58"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ParamBinding.cs",
+      "types": [
+        "ParamBinding"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ParamBinding.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "75ea710cf6ed1d8e8e15d43d13b4ed904dc3732fe149efe5b0931010d148968d"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ParamBindingBase.cs",
+      "types": [
+        "ParamBindingBase"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ParamBindingBase.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "42ec0f0ed5b3b8d052e620affd78a78f550bf80133e4f43beba9cdca86c8d6b0"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ParamComboBox.cs",
+      "types": [
+        "ParamComboBox"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ParamComboBox.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "bb13fc3e9af82e120a8e750f3755e0966c81232e46cf90ae703ee1897f231f29"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ParamGroup.cs",
+      "types": [
+        "ParamGroup",
+        "ParamGroupStyle"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ParamGroup.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "5a6c99821902d39b6e796ede4365d9b8a0e17fa8baa17e204f43c97267fba751"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ParamTextBox.cs",
+      "types": [
+        "ParamTextBox"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ParamTextBox.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "ad7a229c514a8caccffab3743f12540d62cb1f64f9c4c9a6c96b1e48ffdbb76d"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/RangeInputControl.cs",
+      "types": [
+        "RangeInputControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/RangeInputControl.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "ff8f728897fc5c70bc90b9402f94bbd2fb09b8e419c15e7432001b1008d0893a"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/RangeSlider.cs",
+      "types": [
+        "RangeSlider"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/RangeSlider.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "45c36d01b780ff15de26318a21718803e51e05d0dd0e5cf5805ee9d883a7b8e7"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "daa9c28768dd5b40b5990a981b745e83dcd50a7dc4d69bc254936cbd18a9fab2"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml.cs",
+      "types": [
+        "GraphicsDisplayEditorControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "db1919ea64f89b01bc178ab6feaabc6a38c17b1bfc7ca5e80703cb1170ef23d3"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "01874390c64a712477a050f467291399b4ed93bbc5e77f0bd926fc57e8019766"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml.cs",
+      "types": [
+        "JudgmentEditorControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "1b4a1e6f5e8e6c9c71282315ad0a3056025c75742eb14ca1980fa784cb6cdc14"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "ef764eb5d5b9eb59dcc09fa4ac3c13cc9a82f7bedb8350fe55070e724f049442"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml.cs",
+      "types": [
+        "TextDisplayEditorControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "bc22e412ce008fc9e8821004ed9ddcd68b47337dcd38a63a64bf1f32a5c65ca3"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Converters/RoiConverters.cs",
+      "types": [
+        "ShapeTypeToIconConverter",
+        "BoolToVisibilityConverter",
+        "ModeToBoolConverter",
+        "ShapeTypeToBoolConverter",
+        "ShapeTypeToVisibilityConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Converters/RoiConverters.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "301c208be0151050f661ebbc89c3d084f124a3442cf05f43655a7943cdbebeff"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Converters/ShapeTypeDisplayNameConverter.cs",
+      "types": [
+        "ShapeTypeDisplayNameConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Converters/ShapeTypeDisplayNameConverter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "ab17db7448f199ce8f238d3b3ebe192149d5840190067af60c9155f0a80da24d"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Logic/DataTypeConverter.cs",
+      "types": [
+        "DataTypeConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Logic/DataTypeConverter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "1884f9d86a3c4bfb6eab3f3564ba8df6d39b862c50be5fbaf8ea06911b451ecb"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Logic/EditHistory.cs",
+      "types": [
+        "IEditAction",
+        "EditHistory",
+        "CreateRoiAction",
+        "DeleteRoiAction",
+        "MoveRoiAction",
+        "ResizeRoiAction",
+        "ModifyRoiAction",
+        "BatchDeleteRoiAction",
+        "ClearAllRoisAction"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Logic/EditHistory.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "2e32aa426fc63551a7c38bdee57171e77f8a4f54ebc9afe2a17c24c6f0dce737"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Logic/RoiEditorIntegration.cs",
+      "types": [
+        "RoiEditorIntegration"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Logic/RoiEditorIntegration.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "b7667e29f1357d02a6231cff83c4c2cc2f21d6351a0ffffa03959694b823e3e2"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Models/NodeOutputInfo.cs",
+      "types": [
+        "NodeOutputInfo"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Models/NodeOutputInfo.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "d6e188199ce50a822d674f89b80b7143dd11ed7200b879f339e5a2f89d55da45"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Models/ParamSettingItem.cs",
+      "types": [
+        "ParamSettingItem"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Models/ParamSettingItem.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "baf8b56154206c2a1b8513dd3fbfcf74aef994bbee01c3a028d7ed86dfc115a7"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Models/RoiEditorSettings.cs",
+      "types": [
+        "RoiEditorSettings"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Models/RoiEditorSettings.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "17b6223556a86e21f5eeca61f448c3d0faac5fade102d579c3c742e660fc4c03"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Models/RoiSourceMode.cs",
+      "types": [
+        "RoiSourceMode"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Models/RoiSourceMode.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "59a7b67e4d2606a82ef16de32e5fc3d30a652805c34d31d3cf246b80c1634c53"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Models/RoiType.cs",
+      "types": [
+        "RoiType"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Models/RoiType.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "ea7afa3f21e294ed528d722f6b7c637e9e9f7937626f56da0d1da79e143c19ce"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Models/ShapeToolItem.cs",
+      "types": [
+        "ShapeToolItem"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Models/ShapeToolItem.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "928190519e807489fed5d46b1c5316f3ada5ee5d674f852f2265ea950fca9871"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Rendering/HandleRenderer.cs",
+      "types": [
+        "HandleType",
+        "EditHandle",
+        "HandleRenderer"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Rendering/HandleRenderer.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "5e1611ae61971e42979c7502397e71fb99b744a0484807e593f0e343d9960e85"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Rendering/IRoiRenderer.cs",
+      "types": [
+        "IRoiRenderer",
+        "RoiRenderContext",
+        "RoiRenderOptions"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Rendering/IRoiRenderer.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "6bdc26001d49e4a6cced4afa9733977f1e00a834d0a518b417d0106634d1ac0c"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Rendering/RegionDcPainter.cs",
+      "types": [
+        "RegionDcPainter"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Rendering/RegionDcPainter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "a2041c056a6fa0b688572fa1a6ae473f0f95f952b54410692e859b353f709ea9"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Rendering/RoiVisualHost.cs",
+      "types": [
+        "RoiVisualHost"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Rendering/RoiVisualHost.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "4fee12875dd2b5783a644b9547c1b945926ebb9a88b24d39737e63d2bf854f75"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Rendering/RotatedCursor.cs",
+      "types": [
+        "RotatedCursor",
+        "IconInfo",
+        "SafeIconHandle"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Rendering/RotatedCursor.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "aa4ecf7dc9507a413c70c5b94e430d367e5f46bdb0cd99df729d8091349995d6"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Rendering/RotatedRectangleHelper.cs",
+      "types": [
+        "RotatedRectangleHelper"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Rendering/RotatedRectangleHelper.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "f3740543a1083e4a4539e058176ab6139d0729575b6fff6da02c831c8198deb8"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Rendering/WpfShapeRenderer.cs",
+      "types": [
+        "WpfShapeRenderer",
+        "RegionVisual"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Rendering/WpfShapeRenderer.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "e897c31114bf5253f1f2bd4a8d4da35226da94fff029e771db2a2c96bc84b09a"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/ViewModels/NodeSelectorViewModel.cs",
+      "types": [
+        "NodeSelectorViewModel"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/ViewModels/NodeSelectorViewModel.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "fff8b10fe4117841490edd9525e27311d5b6e99cd4423a6ab3eaab14cf8aeb0b"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/ViewModels/ParameterPanelViewModel.cs",
+      "types": [
+        "RoiSubscribeSubMode",
+        "ParameterPanelViewModel",
+        "ParameterSettingChangedEventArgs"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/ViewModels/ParameterPanelViewModel.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "869741a62cdd1db6c9369c509058fb8ffa4381f186aa5f35c3796a04ab3c7043"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/ViewModels/RoiEditorViewModel.cs",
+      "types": [
+        "RoiEditorViewModel",
+        "RoiChangedEventArgs",
+        "RoiChangeType",
+        "RelayCommand"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/ViewModels/RoiEditorViewModel.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "77360f166453da0c5791d26e4bd9dd5a9d30b1ef63207f5412d7e1a45aa64ee7"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/DrawingParameterPanel.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/DrawingParameterPanel.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "fe4b9cbfa7e9d84ac6163ecce07246619e7f672dcc9553eeccdcadab608fc55f"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/DrawingParameterPanel.xaml.cs",
+      "types": [
+        "DrawingParameterPanel",
+        "NullToVisibilityConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/DrawingParameterPanel.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "83ad0a165fef20fcf549e13f93447c1fe2973509a6795ab4e49cea854b7918d4"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/NodeSelectorPopup.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/NodeSelectorPopup.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "d2b362f272d2837d9394a43db7fdbb9f8ec10f366d2aeca8fac9453f15916e86"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/NodeSelectorPopup.xaml.cs",
+      "types": [
+        "NodeSelectorPopup"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/NodeSelectorPopup.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "5a02aa341a63f7556d09544e923c342b7589baee4bbe83425b1c4be906e8b87a"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/RoiEditorControl.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "cf9a7689867e19f35f8da6101daa830e64ce2e6ba6c970e2b6eb22c44f721141"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+      "types": [
+        "RoiEditorControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "bce5346e3c9c0cf1a895c1b379edd7fad66af329d30f2cbccd7448f185f304b3"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "fa1eb9ac35dd2a1ae506de27aa15d1c3e3dcfea358f5f0d9ac583079a39aba97"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs",
+      "types": [
+        "RoiEditorManagerControl"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "c0c109f27baac6e46df283000defa7870139dcbd1a5b89d1c69bb9d53469bccd"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiSubscribePanel.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/RoiSubscribePanel.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "b598ff8da70ea48c016ede48d2630f738419765f71fc8257953f9930537f4957"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiSubscribePanel.xaml.cs",
+      "types": [
+        "RoiSubscribePanel"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/RoiSubscribePanel.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "322e111f255f2e4e84f3c9da57f31f0c5433dc31418b97209aab702adb0a7e6e"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/ShapeToolBar.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/ShapeToolBar.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "2d6d1762038eabbf97793a387af84e50757d815749ab6f85fbdd410045b3ad87"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/ShapeToolBar.xaml.cs",
+      "types": [
+        "ShapeToolBar"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/Roi/Views/ShapeToolBar.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "8bb7a56f0f84aa4c136ce45cdc1d071415c2d115732b80701f50c40032c140a8"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ToggleSwitch.cs",
+      "types": [
+        "ToggleSwitch"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ToggleSwitch.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "d32e7855dad1c3907060be5e257deb15eff568953c2e91afaf6c48c3ab9d535b"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.BindingIssues.cs",
+      "types": [
+        "ToolDebugControlBase"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ToolDebugControlBase.BindingIssues.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "5607de25a7d98174aa48a514080431502058eaa4aa772d6f05ff4df5a379b40e"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "types": [
+        "MyToolDebugControl",
+        "ThresholdToolDebugControl",
+        "ToolDebugControlBase"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ToolDebugControlBase.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ToolEditorClose.cs",
+      "types": [
+        "ToolEditorClose"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ToolEditorClose.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "dfe3e0c35236031c5bd38b96bd36defa08eedb95b7b4507246fa576afdfd7792"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs",
+      "types": [
+        "ToolEditorCommit"
+      ],
+      "target": "src/Controls.Wpf/UI/Controls/ToolEditorCommit.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "3ab43d254fa156d964880fe6acc76136dcc05c6a3f5d27f84d7283eff0903b91"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Converters/BindingTypeToBoolConverter.cs",
+      "types": [
+        "BindingTypeToBoolConverter",
+        "BindingTypeToVisibilityConverter",
+        "DataTypeToVisibilityConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Converters/BindingTypeToBoolConverter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "c92b9e3a4336df9804e30ee2488e7bc595dae24b03d2ffe98cfbc3c0f9b566f8"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Converters/ColorToRgbStringConverter.cs",
+      "types": [
+        "ColorToRgbStringConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Converters/ColorToRgbStringConverter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "44bff56b6250af87b547ac2b9987df4c6afae1f83146842642568639eeb2e0fc"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Converters/EnumToBoolConverter.cs",
+      "types": [
+        "EnumToBoolConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Converters/EnumToBoolConverter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "64a5fd33146d9f5cb1f0aa011ed748d3fcfa0d13e5873391455dc42999757532"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Converters/EnumToVisibilityConverter.cs",
+      "types": [
+        "EnumToVisibilityConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Converters/EnumToVisibilityConverter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "1ef021eed0a2634b5dc687b3f4c0c568b867d27398c0254e3a952edc17f79a79"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Converters/InverseBooleanToVisibilityConverter.cs",
+      "types": [
+        "InverseBooleanToVisibilityConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Converters/InverseBooleanToVisibilityConverter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "1a8421d506b685322fc607a8d70be8051c7c10965570ba9254c7884496beb662"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Converters/JudgmentRangeVisibilityConverter.cs",
+      "types": [
+        "JudgmentRangeVisibilityConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Converters/JudgmentRangeVisibilityConverter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "f9ae9c8bca694620978a5c1ae18d21865a8edb3b5f8e8ae8dd7f0cb2738de6a4"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Converters/UIntToBrushConverter.cs",
+      "types": [
+        "UIntToBrushConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Converters/UIntToBrushConverter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "71163a763eec188d404c83c233cad4123d6633f94b63c60dde7a23211abfd48b"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Converters/UIntToColorConverter.cs",
+      "types": [
+        "UIntToColorConverter"
+      ],
+      "target": "src/Controls.Wpf/UI/Converters/UIntToColorConverter.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "cd1af61be699d7c34757c4f2c0f65af5a712f83510dd36896e303397ae9e374a"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Events/ToolExecutionCompletedEvent.cs",
+      "types": [
+        "ToolExecutionCompletedEventArgs"
+      ],
+      "target": "src/Controls.Wpf/UI/Events/ToolExecutionCompletedEvent.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "f9e2af2a8a08849141d1785136ff6ddb4287ad7594d5cdb2f9edf7929d469900"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Previews/AllControlsPreview.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Previews/AllControlsPreview.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "84738169b36e6fa5183992c2947cf154889ff879fb7e4da2d75d1afb22e8b25a"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Previews/AllControlsPreview.xaml.cs",
+      "types": [
+        "AllControlsPreview"
+      ],
+      "target": "src/Controls.Wpf/UI/Previews/AllControlsPreview.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "d479f61d217741b9452c2f273c17a2bd97d794051aa352e65da756d90bf98811"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Themes/DefaultTheme.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Themes/DefaultTheme.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "ac95fd2bbdd8603726eb3c8ef5b240b0452c680f29c266944a35dfa70e620cea"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Themes/DesignTimeThemeLoader.cs",
+      "types": [
+        "DesignTimeThemeLoader"
+      ],
+      "target": "src/Controls.Wpf/UI/Themes/DesignTimeThemeLoader.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "cd1df91d9cc7da62c11f19786f2657b8d36df9843e0d899f13292f081b537028"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Themes/DesignTimeThemeResourceDictionary.cs",
+      "types": [
+        "DesignTimeThemeResourceDictionary"
+      ],
+      "target": "src/Controls.Wpf/UI/Themes/DesignTimeThemeResourceDictionary.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "549469e3531f2f53bb6310a7cd72759ea7461e94f7886b18bdeea312a619a281"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Themes/SdkThemeKeys.cs",
+      "types": [
+        "SdkThemeKeys"
+      ],
+      "target": "src/Controls.Wpf/UI/Themes/SdkThemeKeys.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "855c08f90e26113ebd50527fa7dd0e17e26bd55cd76f092254e03e15784a3882"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Themes/ThemeColorPalette.cs",
+      "types": [
+        "ThemeColorSeries",
+        "ThemeColorPalette"
+      ],
+      "target": "src/Controls.Wpf/UI/Themes/ThemeColorPalette.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "ffa21a4bc5c6afe487a69fb0e6468a00720a06807692e43cc46e77c76c1da5a5"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Windows/CustomDebugWindow.cs",
+      "types": [
+        "CustomDebugWindow"
+      ],
+      "target": "src/Controls.Wpf/UI/Windows/CustomDebugWindow.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "b988390a6e4c8df0919d07b0a180be754752ca4c568fec60f986b72bc1157714"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+      "types": [],
+      "target": "src/Controls.Wpf/UI/Windows/DefaultDebugWindow.xaml",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+      "types": [
+        "DefaultDebugWindow"
+      ],
+      "target": "src/Controls.Wpf/UI/Windows/DefaultDebugWindow.xaml.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Windows/SdkDialogWindow.cs",
+      "types": [
+        "SdkDialogWindow"
+      ],
+      "target": "src/Controls.Wpf/UI/Windows/SdkDialogWindow.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "aebaedb9281cf2f9d2605de5e1cbd7d04144a3baab4f69359435545b9c15d97f"
+    },
+    {
+      "source": "src/Plugin.SDK/UI/Windows/SdkWindowTheme.cs",
+      "types": [
+        "SdkWindowTheme"
+      ],
+      "target": "src/Controls.Wpf/UI/Windows/SdkWindowTheme.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "f1587ea42d6fce42d0486b0fa862951fbdba8a8347704e8160292f210688ea4a"
+    },
+    {
+      "source": "src/Plugin.SDK/Validation/ValidationResult.cs",
+      "types": [
+        "ValidationResult"
+      ],
+      "target": "src/Tool.SDK/Validation/ValidationResult.cs",
+      "project": "Tool.SDK",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "工具作者模型/声明保留；不等于已验证ABI兼容。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "ad06a2e14652b530c5d8682ffb1a041a16ec069b2a804cdbc74b05c70d95440c"
+    },
+    {
+      "source": "src/Plugin.SDK/ViewModels/ToolViewModelBase.cs",
+      "types": [
+        "ToolViewModelBase"
+      ],
+      "target": "src/Controls.Wpf/ViewModels/ToolViewModelBase.cs",
+      "project": "Controls.Wpf",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "WPF界面/交互/展示层；纯运行链不加载。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "1dc560a3420b1ebe06f3a2a62a2281b98aa69627311da9056c8bb4b6ebe18a6e"
+    },
+    {
+      "source": "src/Plugin.SDK/Vision/Contracts/IMonitorable.cs",
+      "types": [
+        "IMonitorable"
+      ],
+      "target": "src/Contracts/Vision/Contracts/IMonitorable.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "59f124aebd72a85f1c491ae26030442b630f134fdbef80a74c956356ecff2634"
+    },
+    {
+      "source": "src/Plugin.SDK/Vision/Contracts/IVisionContour.cs",
+      "types": [
+        "IVisionContour"
+      ],
+      "target": "src/Contracts/Vision/Contracts/IVisionContour.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "351172f593b6d8e41ba2ce68c0123112f8e1e502c25fe9afcf68e9cb749ce69f"
+    },
+    {
+      "source": "src/Plugin.SDK/Vision/Contracts/IVisionImage.cs",
+      "types": [
+        "IVisionImage"
+      ],
+      "target": "src/Contracts/Vision/IVisionImage.cs",
+      "project": "Contracts",
+      "action": "保留旧接口＋新增lease",
+      "reason": "旧Clone/Dispose不改成假Retain；新ImageLease用Owner适配，禁止同一像素双重释放。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "4249b178fe01e6f9f5efece5d8e63ccd35b2b845149c62638973143fe6796089"
+    },
+    {
+      "source": "src/Plugin.SDK/Vision/Contracts/IVisionRegion.cs",
+      "types": [
+        "IVisionRegion"
+      ],
+      "target": "src/Contracts/Vision/Contracts/IVisionRegion.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": true,
+      "sha256": "739e35163889234508ce9e867cd3c2022cfd53264b425c2ce8e52d8b33214609"
+    },
+    {
+      "source": "src/Plugin.SDK/Vision/Contracts/ImageOutputFormat.cs",
+      "types": [
+        "ImageOutputFormat"
+      ],
+      "target": "src/Contracts/Vision/Contracts/ImageOutputFormat.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "53761119d18770fd9cb3da276b30b36f60f34837bee4e521ed7ccae176813333"
+    },
+    {
+      "source": "src/Plugin.SDK/Vision/Contracts/ImageSourceKind.cs",
+      "types": [
+        "ImageSourceKind"
+      ],
+      "target": "src/Contracts/Vision/Contracts/ImageSourceKind.cs",
+      "project": "Contracts",
+      "action": "按职责迁移，成员依赖待实施复核",
+      "reason": "公共数据/能力接口候选；跨平台与可变对象成员须逐签名审核，不能凭目录直接移走。",
+      "review": "全量清单归类；尚未逐成员核兼容",
+      "wpfMentions": false,
+      "sha256": "49a43e782f1493a8927c112527106fc825d8833338854ed5b2f63bf5b6e29e45"
+    },
+    {
+      "source": "src/Plugin.SDK/Vision/Hosting/IVisionImageDisplayBridge.cs",
+      "types": [
+        "IVisionImageDisplayBridge",
+        "VisionImageConverterLocator"
+      ],
+      "target": "src/Controls.Wpf/Imaging/IVisionImageDisplayBridge.cs",
+      "project": "Controls.Wpf",
+      "action": "UI适配分离",
+      "reason": "显示转换服务不由纯合同或工具定位到WPF。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": true,
+      "sha256": "6049d6f4c130f5df590aa012e5bae68f650055f214512218eaf8ca062d5bb926"
+    },
+    {
+      "source": "src/Plugin.SDK/Vision/Hosting/IVisionImageFactory.cs",
+      "types": [
+        "IVisionImageFactory",
+        "VisionImageFactoryLocator"
+      ],
+      "target": "src/Contracts/Vision/IVisionImageFactory.cs",
+      "project": "Contracts",
+      "action": "接口签名复审后迁移",
+      "reason": "实现进Engine，若成员暴露backend类型改DTO/适配；不是已证明可直接转发。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "610e3e3bc0c72b8c3b0d0e450a3a3717ff2b9350e938d549a76bf525d40c380e"
+    },
+    {
+      "source": "src/Plugin.SDK/Vision/Hosting/VisionBackendExtractorLocator.cs",
+      "types": [
+        "VisionBackendExtractorLocator"
+      ],
+      "target": "src/Runtime.Engine/Vision/VisionBackendExtractorLocator.cs",
+      "project": "Runtime.Engine",
+      "action": "重写为注入",
+      "reason": "静态定位改宿主服务实例；旧静态入口仅兼容，首期仍限制单宿主。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": false,
+      "sha256": "ca13964dfe2043fa944b020210a320dbdd88e29e34a7f2c8385289b40aaa9267"
+    },
+    {
+      "source": "src/Plugin.SDK/Vision/Hosting/VisionImage.cs",
+      "types": [
+        "VisionImage"
+      ],
+      "target": "src/Runtime.Engine/Vision/VisionImage.cs",
+      "project": "Runtime.Engine",
+      "action": "拆分工厂与实现",
+      "reason": "Contracts只保留图像接口/格式；工厂和引擎提取不放客户合同。",
+      "review": "关键文件定向复核；实施前仍需ABI测试",
+      "wpfMentions": true,
+      "sha256": "4dff88682f4859a36252796b383e6b3f64d21b4f9cd835e55f658ea699f6f05a"
+    }
+  ],
+  "rewrites": [
+    [
+      "Runtime.SDK/RuntimeHost.cs、ProjectSession.cs、FlowHandle.cs、RunHandle.cs",
+      "新增门面",
+      "现有WorkflowExecutionEngine/WorkflowRunSession/WorkflowRunScope仍是执行基础；新门面负责接纳、修订、Stop/Close可观察终态，不能简单public内部类。"
+    ],
+    [
+      "Contracts/Runtime/IRuntimeBackendFactory.cs、IRuntimeProjectBackend.cs",
+      "新增最小后端协议",
+      "Runtime.SDK → Contracts；Runtime.Engine实现协议，由发行composition注入；不出现SDK↔Engine循环。"
+    ],
+    [
+      "Contracts/Data/FlowSchema.cs、FieldSchema.cs、ResultAddress.cs、ResultQuality.cs",
+      "新增稳定外部合同",
+      "复用已有SourceFieldId与子Scope.RunId映射；不另造重复运行身份；不暴露反射属性路径为长期客户API。"
+    ],
+    [
+      "Runtime.Engine/Results/ResultStore.cs、ResourceOwner.cs；Runtime.SDK/ResultLease.cs、ImageLease.cs",
+      "新增Owner与lease适配",
+      "保留旧IVisionImage.Clone/Dispose；Completion不等待未来Acquire；关项目未排空保留ClosePending/Quarantined。"
+    ],
+    [
+      "Runtime.Engine/Plugins/LegacyToolAdapter.cs、LegacyResultAdapter.cs",
+      "新增兼容适配",
+      "旧插件继续旧参数/结果类型；新合同转换明确copy/borrow/retain，不用强转让两份程序集同名类型混用。"
+    ],
+    [
+      "Runtime.Engine/Persistence/ProjectMigrationService.cs、LegacyDiscriminatorMap.cs",
+      "新增版本迁移",
+      "读取旧格式→候选模型→判别符/字段/资源映射→验证→新路径原子保存；原文件不覆盖。"
+    ],
+    [
+      "Plugin.Infrastructure/Managers/Plugin/PluginAssemblyPolicy.cs、PluginLoadContext.cs",
+      "保留基础＋整改版本策略",
+      "当前宿主同名共享/非collectible需保留事实；增加合同版本/RID诊断、运行与Editor分开清单，清字典不声称卸载。"
+    ],
+    [
+      "Core/Services/Serialization/ParameterTypeRegistry.cs → Runtime.Engine/Persistence/ParameterTypeCatalog.cs",
+      "重写静态注册责任",
+      "保留旧注册入口适配，先单宿主；按目录构建冻结类型表后反序列化，注册失败不返回半方案。"
+    ]
+  ],
+  "chains": [
+    [
+      "插件加载",
+      "PluginLoader → PluginLoadContext / PluginAssemblyPolicy → ToolRegistry → ParameterTypeRegistry → 创建工具",
+      "新Engine装配Catalog及LegacyToolAdapter；旧合同唯一宿主身份；新工具只依赖Tool.SDK；Editor另清单按ToolId关联。"
+    ],
+    [
+      "参数和方案",
+      "WorkflowSerializationOptions → ParameterTypeRegistry.SerializationOptions → WorkflowJsonConverter → WorkflowNodeBase反序列化 / OnDeserialized",
+      "ProjectMigrationService先识别版本和全部插件，冻结Catalog后读取；SourceFieldId保持；未知$type保留诊断/拒绝，不丢字段硬加载。"
+    ],
+    [
+      "执行与发布",
+      "ToolExecutor → ToolExecutionPreparation.Apply → 参数解析 → 工具 → ToolResults.GetOutputValues / GetDisplayImages",
+      "Engine执行→ResultStore接管候选→发布ResultAddress；Runtime.SDK读取lease，Controls.Wpf只投影。错误候选先释放，不能默取上轮成功结果。"
+    ],
+    [
+      "编辑器与主题",
+      "IToolEditorFactory → Window/FrameworkElement → SDK ThemeInfo → Themes/Generic.xaml → SDK;component/UI/Themes/DefaultTheme.xaml",
+      "旧链保持兼容发行；新Controls.Wpf自有资源URI和主题声明。BAML程序集解析桥保留到旧编辑器退出支持。"
+    ]
+  ],
+  "stages": [
+    [
+      "E0 冻结基线",
+      "先不移动任何产品文件",
+      "登记工具ID、公开类型全名/程序集、$type、资源URI、现有方案样本与输出；建立旧版本可启动发行备份。",
+      "目录清单不是ABI验收；缺样本则标未通过。"
+    ],
+    [
+      "E1 增量新包与门面",
+      "Contracts → Tool.SDK → Runtime.SDK；Engine适配旧Workflow",
+      "先用ImageLoad/阈值做新Console路径；旧插件和旧SDK保持；单宿主/单项目能力明确。",
+      "与旧UI同输入同输出，正常/失败/停止/释放；不宣称无WPF运行时。"
+    ],
+    [
+      "E2 双合同插件共存",
+      "LegacyToolAdapter → 新运行插件 → 可选Editor",
+      "保持ToolId不变；同工具两版本不得同时注册；全名签名兼容才允许TypeForward，其他走显式适配。",
+      "旧二进制不重编可加载并运行；新工具不依赖旧SDK/UI，旧BAML可打开。"
+    ],
+    [
+      "E3 方案双读与单独写新",
+      "旧Catalog/判别符映射 → 候选验证 → 新版本另存",
+      "先读旧，再测新格式往返；不把VM .sol当自研旧方案兼容范围；删除/重命名字段要显式迁移规则。",
+      "Script / NPointCalibration / Subroutine样本往返；SourceFieldId、绑定、坐标、文件资源不丢；失败原文件字节不变。"
+    ],
+    [
+      "E4 内部移出与UI分离",
+      "Executor/Resolver/日志实现进Engine；Controls迁移",
+      "分批改调用者；Workflow脱WPF与Core传递依赖同时审计，CommonControl和图像显示现有控件先做适配，不整库盲迁。",
+      "新纯API发行传递闭包无旧SDK/WPF/Editor；旧兼容发行单独验。"
+    ],
+    [
+      "E5 切默认与退兼容",
+      "新格式/新SDK成为默认；旧支持按期限结束",
+      "保留双读迁移工具；回滚用原方案备份＋旧完整发行，新格式不能承诺旧版本直接读。",
+      "所有兼容矩阵通过才切默认；未验证资源/第三方签名的插件继续旧发行，不能直接删兼容层。"
+    ]
+  ],
+  "evidence": [
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginLoadContext.cs",
+      "sha256": "73b92f04265fc83a84672db78bc9ef539657e8e0eea7b19639c3c2331fc43748"
+    },
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginAssemblyPolicy.cs",
+      "sha256": "02dda7683971f48d730c2e04b6a92d83c2dae1796ec853c9d039a7a68379a295"
+    },
+    {
+      "path": "src/Core/Services/Serialization/ParameterTypeRegistry.cs",
+      "sha256": "d28858439aafd5b813259efb0e5d07911cca712cd2285f5ba72b2baf82e749cf"
+    },
+    {
+      "path": "src/Workflow/WorkflowSerializationOptions.cs",
+      "sha256": "c8ffa8b4185c50c3bcdb675e8cf4956ce046f95df36b4a236f78dd6b1b948c35"
+    },
+    {
+      "path": "src/Workflow/WorkflowJsonConverter.cs",
+      "sha256": "483f8025e78a771edf3579f1dbecac56861c818d093efd1408729ee88ab0e50b"
+    },
+    {
+      "path": "src/Workflow/SunEyeVision.Workflow.csproj",
+      "sha256": "e791ce019b1eb76f5e06cb202c94488049c93c4fca4c3edc9f510e437c0cecaf"
+    },
+    {
+      "path": "Directory.Build.targets",
+      "sha256": "8b65f6a49d645a5b507c7cfd79f388f2b965e215dca46617ce7512b87b5c806e"
+    }
+  ],
+  "productModified": false,
+  "plannedOnly": true
+}

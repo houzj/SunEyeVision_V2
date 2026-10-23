@@ -1,0 +1,550 @@
+{
+  "scenes": [
+    {
+      "id": "run",
+      "title": "主界面单次：请求、调度、工具与本轮结果",
+      "point": "UI负责提交目标和显示；ReadyQueue才做依赖/资源准入。插件返回值经节点包装后由队列写上下文，插件不直接操作主窗。",
+      "decision": "保留已证的统一执行器/快照链；必须修停止排空、跨根资源准入与结果身份。",
+      "url": "optimization.html#O02",
+      "nodes": [
+        {
+          "id": "vm",
+          "label": "MainWindowViewModel",
+          "role": "选中目标与命令；不应承担就绪调度"
+        },
+        {
+          "id": "manager",
+          "label": "WorkflowExecutionManager",
+          "role": "准备本轮请求、运行入口与UI事件协调"
+        },
+        {
+          "id": "engine",
+          "label": "WorkflowExecutionEngine",
+          "role": "创建运行会话并进入活动执行路径"
+        },
+        {
+          "id": "ready",
+          "label": "ReadyQueue方法",
+          "role": "按前驱状态、并发profile和租约派发"
+        },
+        {
+          "id": "node",
+          "label": "AlgorithmNode",
+          "role": "构造请求并封装工具结果"
+        },
+        {
+          "id": "executor",
+          "label": "ToolExecutor",
+          "role": "统一输入准备、工具调用与终态包装"
+        },
+        {
+          "id": "tool",
+          "label": "工具插件实例",
+          "role": "IToolPlugin / IAsyncToolPlugin算法实现"
+        },
+        {
+          "id": "context",
+          "label": "WorkflowContext",
+          "role": "本轮节点状态与结果引用缓存"
+        }
+      ],
+      "edges": [
+        {
+          "from": "vm",
+          "to": "manager",
+          "kind": "call",
+          "label": "RunSingleAsync",
+          "fact": "实际传入选中Tab和是否推进输入；不是全部流程单次。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 2174,
+            "token": "await _executionManager.RunSingleAsync",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+            "snippet": "                await _executionManager.RunSingleAsync(WorkflowTabViewModel.SelectedTab, advanceLocalImage: advanceLocalImage);\r\n                // 成功/失败由执行管理器事件报告；等待相机帧失败不能误报成功。\r\n            }\r\n            catch (Exception ex)\r\n            {\r\n                AddLog($\"❌ 执行失败: {ex.Message}\");\r\n                AddLog($\"❌ 异常: {ex.StackTrace}\");\r\n            }\r\n            finally\r\n            {\r\n                IsRunning = false;\r\n            }\r\n        }\r\n\r\n        private void ExecuteStopWorkflow()\r\n        {\r\n            if (WorkflowTabViewModel.SelectedTab == null)\r\n            {\r\n                AddLog(\"⚠️ 没有选中的工作流标签页\");\r\n                return;\r\n            }\r\n\r\n            _executionManager.StopContinuousRun(WorkflowTabViewModel.SelectedTab);\r\n            IsRunning = false;\r\n            AddLog(\"⏹️ 工作流已停止\");\r"
+          }
+        },
+        {
+          "from": "manager",
+          "to": "engine",
+          "kind": "call",
+          "label": "ExecuteWorkflowAsync",
+          "fact": "管理器准备runRequest后调用执行引擎。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+            "line": 841,
+            "token": "await executionEngine.ExecuteWorkflowAsync",
+            "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae",
+            "snippet": "                var result = await executionEngine.ExecuteWorkflowAsync(runRequest, cancellationToken);\r\n                if (sequenceNumbers is not null)\r\n                {\r\n                    foreach (var pair in result.NodeResults)\r\n                    {\r\n                        if (nodeParameterOverrides.ContainsKey(pair.Key) && pair.Value.Success)\r\n                            sequenceNumbers[pair.Key] = checked(sequenceNumbers[pair.Key] + 1);\r\n                    }\r\n                }\r\n                await InvokeOnUIAsync(() =>\r\n                {\r\n                    snapshot.Complete(result, nodeId => GetSnapshotNodeName(rootEngineWorkflow, nodeId));\r\n                    ExecutionSnapshotUpdated?.Invoke(this, snapshot);\r\n                });\r\n\r\n                // 输出结果\r\n                logger.LogInfo($\"工作流执行完成: {rootEngineWorkflow.Name}\");\r\n                var outcomeText = result.Status switch\r\n                {\r\n                    ExecutionStatus.Cancelled => \"已取消\",\r\n                    ExecutionStatus.Success => \"成功\",\r\n                    _ => \"失败\"\r\n                };\r\n                logger.LogInfo($\"执行结果: {outcomeText}\");\r\n                logger.LogInfo($\"执行时间: {result.ExecutionTime.TotalMilliseconds:F2} ms\");\r"
+          }
+        },
+        {
+          "from": "engine",
+          "to": "ready",
+          "kind": "call",
+          "label": "活动就绪队列",
+          "fact": "旧ParallelGroups入口立即转发ReadyQueue，不能把后续不可达层循环当活动调度。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Workflow/WorkflowExecutionEngine.cs",
+            "line": 115,
+            "token": "return await ExecuteWorkflowWithReadyQueue",
+            "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+            "snippet": "            return await ExecuteWorkflowWithReadyQueue(\r\n                session, workflow, context, dependencyGraph, nodeExecutionProfiles);\r\n\r\n#pragma warning disable CS0162 // 保留旧分层实现，便于运行回归期间对照；实际入口已切到全局就绪队列。\r\n            _logger.LogInfo($\"[DEBUG ExecuteWorkflowWithParallelGroups] workflow.Id={workflow.Id}, workflow.Name={workflow.Name}, Nodes.Count={workflow.Nodes.Count}, Connections.Count={workflow.Connections.Count}\");\r\n\r\n            var result = new ExecutionResult();\r\n            int totalExecutedNodes = 0;\r\n\r\n            _logger.LogInfo($\"========== 使用基于执行链的并行组执行模式 ==========\");\r\n\r\n            // 当前仍按组串行执行，但组必须来自完整依赖图：参数绑定也会形成前驱关系。\r\n            // 不能只用画布连线，否则“未画线的结果参数绑定”会被错误放入同一候选组。\r\n            var parallelGroups = dependencyGraph\r\n                .GetTopologicalLayers(workflow.Nodes.Select(node => node.Id))\r\n                .Select(layer => layer.ToList())\r\n                .ToList();\r\n            _logger.LogInfo($\"获取到 {parallelGroups.Count} 个并行执行组\");\r\n\r\n            // 显示执行组信息\r\n            for (int i = 0; i < parallelGroups.Count; i++)\r\n            {\r\n                var group = parallelGroups[i];\r\n                var groupInfo = $\"组{i + 1}: {string.Join(\", \", group.Select(id => \r\n                {\r"
+          }
+        },
+        {
+          "from": "ready",
+          "to": "node",
+          "kind": "call",
+          "label": "ExecuteNode → ExecuteAsync",
+          "fact": "队列Task.Run进入ExecuteNode，再调用节点异步入口；图压缩了同类内部方法。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Workflow/WorkflowExecutionEngine.cs",
+            "line": 1127,
+            "token": "var algorithmResult = await node.ExecuteAsync",
+            "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+            "snippet": "            var algorithmResult = await node.ExecuteAsync(\r\n                toolResultsDict,\r\n                context.GlobalVariables,\r\n                context.CancellationToken);\r\n\r\n            if (algorithmResult.Status == ExecutionStatus.Cancelled)\r\n            {\r\n                throw new OperationCanceledException(\r\n                    algorithmResult.ErrorMessage ?? \"执行被取消\",\r\n                    context.CancellationToken);\r\n            }\r\n\r\n            if (algorithmResult.Success && algorithmResult.ToolResults != null)\r\n            {\r\n                result.Success = true;\r\n                result.Status = ExecutionStatus.Success;\r\n                result.Result = algorithmResult.ToolResults;\r\n            }\r\n            else if (!algorithmResult.Success)\r\n            {\r\n                result.ErrorMessages = new List<string> { algorithmResult.ErrorMessage };\r\n                result.Success = false;\r\n                result.Status = ExecutionStatus.Failed;\r\n                // Diagnostics are visible on failed nodes; scheduling still follows Failed.\r\n                result.Result = algorithmResult.ToolResults;\r"
+          }
+        },
+        {
+          "from": "node",
+          "to": "executor",
+          "kind": "data",
+          "label": "ToolExecutionRequest",
+          "fact": "节点请求带Node/Workflow、取消、参数绑定、全局值和服务引用，引用不等深拷贝。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Workflow/AlgorithmNode.cs",
+            "line": 98,
+            "token": "new ToolExecutionRequest(executionParams)",
+            "sha256": "deb8b8ab4068db0aa4f3188adccc84267b0c54707b3c0ec1ac12fe7c55186177",
+            "snippet": "                        new ToolExecutionRequest(executionParams)\r\n                        {\r\n                            NodeResults = nodeResults,\r\n                            ResolvedInputImage = inputImage,\r\n                            NodeName = Name,\r\n                            NodeId = Id,\r\n                            WorkflowId = ExecutionWorkflowId,\r\n                            CancellationToken = cancellationToken,\r\n                            CameraCaptureService = CameraCaptureService,\r\n                            CommunicationInputs = CommunicationInputs,\r\n                            CommunicationOutputs = CommunicationOutputs,\r\n                            CameraFrame = CameraFrame,\r\n                            GlobalVariables = globalVariables,\r\n                            ParameterBindings = ParameterBindingSet.FromSettings(ParamSettings)\r\n                        }).ConfigureAwait(false);\r\n\r\n                    // Stateful calibration points are committed only after execution, never\r\n                    // by mutating the parameter snapshot seen by the tool. A stale concurrent\r\n                    // capture is rejected by the parameter implementation.\r\n                    if (typedParams is IWorkflowResultCommitter committer\r\n                        && toolResult.Status != ExecutionStatus.Failed\r\n                        && !committer.TryCommit(toolResult, out var commitError))\r\n                    {\r\n                        toolResult.SetError(commitError ?? \"标定点保存失败\");\r\n                    }\r"
+          }
+        },
+        {
+          "from": "executor",
+          "to": "tool",
+          "kind": "call",
+          "label": "异步插件分支",
+          "fact": "IAsyncToolPlugin走异步调用；旧同步工具另有Run兼容路径，不能声称所有插件自动后台可取消。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+            "line": 150,
+            "token": "await asyncTool.ExecuteAsync(request)",
+            "sha256": "0229fd6ea68af49b5aefe58187f0036a5987fc69c15f1486cc73113dce6531e2",
+            "snippet": "                var result = await asyncTool.ExecuteAsync(request).ConfigureAwait(false);\r\n                ImageFrameProvenance.RecordResult(result, inputFrame,\r\n                    (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown);\r\n                stopwatch.Stop();\r\n                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;\r\n                ApplyJudgmentStatus(parameters, result);\r\n                return result;\r\n            }\r\n            catch (OperationCanceledException)\r\n            {\r\n                stopwatch.Stop();\r\n                request.Context.Logger?.Warning(\"工具执行被取消\", request.Context.GetSourceName());\r\n                return CreateTerminalResult(tool.ResultType, ExecutionStatus.Cancelled, \"执行被取消\");\r\n            }\r\n            catch (Exception ex)\r\n            {\r\n                stopwatch.Stop();\r\n                request.Context.Logger?.Error(\r\n                    $\"工具执行异常: {ex.Message}\",\r\n                    request.Context.GetSourceName(),\r\n                    ex);\r\n                return CreateTerminalResult(tool.ResultType, ExecutionStatus.Failed, ex.Message, ex);\r\n            }\r\n        }\r\n\r"
+          }
+        },
+        {
+          "from": "ready",
+          "to": "context",
+          "kind": "data",
+          "label": "SetNodeResult",
+          "fact": "任务完成后队列写结果并发NodeExecutionFinished。锁保护字典不证明其中图像值的寿命安全。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Workflow/WorkflowExecutionEngine.cs",
+            "line": 380,
+            "token": "context.SetNodeResult(completed.Node.Id",
+            "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+            "snippet": "                        context.SetNodeResult(completed.Node.Id, nodeResult);\r\n                        NodeExecutionFinished?.Invoke(completed.Node, nodeResult);\r\n                        var status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed;\r\n                        context.UpdateNodeStatus(completed.Node.Id, status);\r\n                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = completed.Node.Id, Status = status });\r\n                        if (!nodeResult.Success)\r\n                            result.AddError(nodeResult.ErrorMessages?.FirstOrDefault() ?? \"执行失败\", completed.Node.Id);\r\n\r\n                        foreach (var (controlNodeId, targets) in TryExtractControlSignals(\r\n                                     workflow, new List<string> { completed.Node.Id }, context))\r\n                        {\r\n                            var protectedNodes = ComputeProtectedNodes(workflow, targets);\r\n                            pruned.UnionWith(ComputePrunedNodes(workflow, controlNodeId, targets, protectedNodes, pruned));\r\n                        }\r\n                    }\r\n                }\r\n            }\r\n            finally\r\n            {\r\n                foreach (var item in running)\r\n                    item.Lease.Dispose();\r\n            }\r\n\r\n            var allResults = context.GetAllNodeResults().ToDictionary(pair => pair.Key, pair => pair.Value);\r\n            result.NodeResults = allResults;\r"
+          }
+        }
+      ]
+    },
+    {
+      "id": "debug",
+      "title": "工具窗口：可编辑参数与执行快照分开",
+      "point": "编辑参数可共享原引用；真正执行时CreateLiveExecutionRequest另复制配置和查询上游快照。不能把编辑live误写成算法直接读取同一个可变UI参数，也不能把配置复制当图像/服务复制。",
+      "decision": "保留现有提交/解析和执行复制；补每工具草稿政策、迟到结果与可等待关闭Owner。",
+      "url": "tools.html#editing-policy",
+      "nodes": [
+        {
+          "id": "window",
+          "label": "DefaultDebugWindow",
+          "role": "窗口壳：提交、X关闭和生命周期"
+        },
+        {
+          "id": "debug",
+          "label": "ToolDebugControlBase",
+          "role": "具体工具控件继承的参数/执行桥"
+        },
+        {
+          "id": "query",
+          "label": "DataSourceQueryService",
+          "role": "查询当前上游值/结果快照"
+        },
+        {
+          "id": "snapshot",
+          "label": "配置复制",
+          "role": "CopyParameters / 宿主快照委托"
+        },
+        {
+          "id": "request",
+          "label": "ToolExecutionRequest",
+          "role": "本次执行输入、身份及服务引用"
+        },
+        {
+          "id": "executor",
+          "label": "ToolExecutor",
+          "role": "调试与流程共用的执行合同"
+        },
+        {
+          "id": "tool",
+          "label": "工具插件",
+          "role": "同步/异步具体算法实现"
+        }
+      ],
+      "edges": [
+        {
+          "from": "window",
+          "to": "debug",
+          "kind": "call",
+          "label": "确定前TryCommit",
+          "fact": "窗口调用已有提交器；X另经ToolEditorClose，不能统一宣称关闭回滚全部已写参数。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+            "line": 190,
+            "token": "ToolEditorCommit.TryCommit",
+            "sha256": "d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1",
+            "snippet": "            if (!ToolEditorCommit.TryCommit(_control, out var error))\r\n            { PluginLogger.Warning(error, \"DefaultDebugWindow\"); MessageBox.Show(error, \"配置未提交\", MessageBoxButton.OK, MessageBoxImage.Warning); return; }\r\n            // 执行参数验证\r\n            if (ValidateParameters())\r\n            {\r\n                PluginLogger.Success(\"参数验证通过，关闭窗口\", \"DefaultDebugWindow\");\r\n                Close();\r\n            }\r\n            else\r\n            {\r\n                PluginLogger.Warning(\"参数验证失败\", \"DefaultDebugWindow\");\r\n                MessageBox.Show(\"参数验证失败，请检查输入参数。\", \"验证失败\", \r\n                    MessageBoxButton.OK, MessageBoxImage.Warning);\r\n            }\r\n        }\r\n\r\n        /// <summary>\r\n        /// 连续执行命令处理\r\n        /// </summary>\r\n        private void OnContinuousExecuteCommand(object sender, ExecutedRoutedEventArgs e)\r\n        {\r\n            if (_isContinuousRunning)\r\n            {\r\n                // 停止连续运行\r\n                _isContinuousRunning = false;\r"
+          }
+        },
+        {
+          "from": "debug",
+          "to": "query",
+          "kind": "data",
+          "label": "取上游结果快照",
+          "fact": "有数据提供者时查询当前来源，不从可编辑参数上残留旧运行值。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+            "line": 945,
+            "token": "ToolDebugResultSnapshot.Capture",
+            "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0",
+            "snippet": "                    nodeResults = ToolDebugResultSnapshot.Capture(provider, sourceIds, requireAll: false)\r\n                        .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);\r\n            }\r\n\r\n            resolvedInputImage = ToolExecutionPreparation.ResolveInputImage(parameters, nodeResults,\r\n                resolvedInputImage ?? parameters.ResolvedInputImage);\r\n            var executionParameters = (DataProvider as DataSourceQueryService)?.CreateParameterSnapshot?.Invoke(parameters)\r\n                ?? ToolExecutionPreparation.CopyParameters(parameters);\r\n            var request = new ToolExecutionRequest(executionParameters)\r\n            {\r\n                NodeResults = nodeResults,\r\n                ResolvedInputImage = resolvedInputImage,\r\n                NodeId = GetCurrentNodeStringProperty(\"Id\"),\r\n                WorkflowId = (DataProvider as DataSourceQueryService)?.WorkflowId,\r\n                NodeName = GetCurrentNodeStringProperty(\"DisplayName\")\r\n                    ?? GetCurrentNodeStringProperty(\"Name\"),\r\n                ParameterBindings = bindings,\r\n                GlobalVariables = (DataProvider as DataSourceQueryService)?.GlobalVariables,\r\n                CommunicationInputs = (DataProvider as DataSourceQueryService)?.CommunicationReceiveService,\r\n                CommunicationOutputs = (DataProvider as DataSourceQueryService)?.CommunicationSendService,\r\n            };\r\n\r\n            if (DataProvider is DataSourceQueryService sourceService\r\n                && sourceService.GlobalVariables.Count > 0)\r\n            {\r"
+          }
+        },
+        {
+          "from": "debug",
+          "to": "snapshot",
+          "kind": "call",
+          "label": "复制执行配置",
+          "fact": "宿主CreateParameterSnapshot可覆盖复制策略；否则使用公共CopyParameters。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+            "line": 952,
+            "token": "ToolExecutionPreparation.CopyParameters(parameters)",
+            "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0",
+            "snippet": "                ?? ToolExecutionPreparation.CopyParameters(parameters);\r\n            var request = new ToolExecutionRequest(executionParameters)\r\n            {\r\n                NodeResults = nodeResults,\r\n                ResolvedInputImage = resolvedInputImage,\r\n                NodeId = GetCurrentNodeStringProperty(\"Id\"),\r\n                WorkflowId = (DataProvider as DataSourceQueryService)?.WorkflowId,\r\n                NodeName = GetCurrentNodeStringProperty(\"DisplayName\")\r\n                    ?? GetCurrentNodeStringProperty(\"Name\"),\r\n                ParameterBindings = bindings,\r\n                GlobalVariables = (DataProvider as DataSourceQueryService)?.GlobalVariables,\r\n                CommunicationInputs = (DataProvider as DataSourceQueryService)?.CommunicationReceiveService,\r\n                CommunicationOutputs = (DataProvider as DataSourceQueryService)?.CommunicationSendService,\r\n            };\r\n\r\n            if (DataProvider is DataSourceQueryService sourceService\r\n                && sourceService.GlobalVariables.Count > 0)\r\n            {\r\n                var globalResults = new GenericToolResults { Status = ExecutionStatus.Success };\r\n                foreach (var variable in sourceService.GlobalVariables)\r\n                    globalResults.AddResultItem(variable.Key, variable.Value);\r\n                nodeResults[\"__GlobalVars__\"] = globalResults;\r\n            }\r\n\r\n            return request;\r"
+          }
+        },
+        {
+          "from": "snapshot",
+          "to": "request",
+          "kind": "data",
+          "label": "独立参数对象进请求",
+          "fact": "请求持有执行参数副本；NodeResults/输入图像和设备服务仍有各自借用合同。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+            "line": 953,
+            "token": "new ToolExecutionRequest(executionParameters)",
+            "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0",
+            "snippet": "            var request = new ToolExecutionRequest(executionParameters)\r\n            {\r\n                NodeResults = nodeResults,\r\n                ResolvedInputImage = resolvedInputImage,\r\n                NodeId = GetCurrentNodeStringProperty(\"Id\"),\r\n                WorkflowId = (DataProvider as DataSourceQueryService)?.WorkflowId,\r\n                NodeName = GetCurrentNodeStringProperty(\"DisplayName\")\r\n                    ?? GetCurrentNodeStringProperty(\"Name\"),\r\n                ParameterBindings = bindings,\r\n                GlobalVariables = (DataProvider as DataSourceQueryService)?.GlobalVariables,\r\n                CommunicationInputs = (DataProvider as DataSourceQueryService)?.CommunicationReceiveService,\r\n                CommunicationOutputs = (DataProvider as DataSourceQueryService)?.CommunicationSendService,\r\n            };\r\n\r\n            if (DataProvider is DataSourceQueryService sourceService\r\n                && sourceService.GlobalVariables.Count > 0)\r\n            {\r\n                var globalResults = new GenericToolResults { Status = ExecutionStatus.Success };\r\n                foreach (var variable in sourceService.GlobalVariables)\r\n                    globalResults.AddResultItem(variable.Key, variable.Value);\r\n                nodeResults[\"__GlobalVars__\"] = globalResults;\r\n            }\r\n\r\n            return request;\r\n        }\r"
+          }
+        },
+        {
+          "from": "debug",
+          "to": "executor",
+          "kind": "call",
+          "label": "ExecuteWithLiveContext",
+          "fact": "控件建请求后复用ToolExecutor；不证明整个窗口已采用全量草稿事务。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+            "line": 802,
+            "token": "return new ToolExecutor(new ParameterResolver",
+            "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0",
+            "snippet": "            return new ToolExecutor(new ParameterResolver(DataProvider as IDataSourceQueryService, logger), logger)\r\n                .Run(tool, request);\r\n        }\r\n\r\n        /// <summary>\r\n        /// 经统一执行器运行强类型调试工具，并保留工具声明的具体结果类型。\r\n        /// </summary>\r\n        protected TResult ExecuteWithLiveContext<TParameters, TResult>(\r\n            IToolPlugin<TParameters, TResult> tool,\r\n            TParameters parameters,\r\n            IVisionImage? resolvedInputImage = null)\r\n            where TParameters : ToolParameters, new()\r\n            where TResult : ToolResults, new()\r\n        {\r\n            if (tool == null) throw new ArgumentNullException(nameof(tool));\r\n            if (parameters == null) throw new ArgumentNullException(nameof(parameters));\r\n\r\n            var request = CreateLiveExecutionRequest(parameters, resolvedInputImage);\r\n            var logger = VisionLogger.Instance;\r\n            return new ToolExecutor(new ParameterResolver(DataProvider as IDataSourceQueryService, logger), logger)\r\n                .Run(tool, request);\r\n        }\r\n\r\n        private ToolParameters? _previewParameters;\r\n        private readonly List<Measure.Views.MeasureEditorControl> _caliperEditors = new();\r"
+          }
+        },
+        {
+          "from": "executor",
+          "to": "tool",
+          "kind": "call",
+          "label": "工具调用",
+          "fact": "同步工具Run分支真实存在；异步路径另验，不把Task包装当原生可取消。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+            "line": 260,
+            "token": "var result = tool.Run(parameters);",
+            "sha256": "0229fd6ea68af49b5aefe58187f0036a5987fc69c15f1486cc73113dce6531e2",
+            "snippet": "                var result = tool.Run(parameters);\r\n                ImageFrameProvenance.RecordResult(result, inputFrame,\r\n                    (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown);\r\n\r\n                stopwatch.Stop();\r\n                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;\r\n                ApplyJudgmentStatus(parameters, result);\r\n\r\n                if (result.IsSuccess)\r\n                {\r\n                    parameters.LogSuccess($\"工具执行成功，耗时: {stopwatch.ElapsedMilliseconds}ms\");\r\n                }\r\n                else\r\n                {\r\n                    parameters.LogWarning($\"工具执行失败: {result.ErrorMessage}\");\r\n                }\r\n\r\n                return (TResult)result;\r\n            }\r\n            catch (OperationCanceledException)\r\n            {\r\n                stopwatch.Stop();\r\n                parameters.LogWarning(\"工具执行被取消\");\r\n                return ToolResults.CreateCancelled<TResult>();\r\n            }\r"
+          }
+        }
+      ]
+    },
+    {
+      "id": "result",
+      "title": "完成事件：缓存、树、图像、图元与专业分析",
+      "point": "同一结果有多个读者。相机分支先入缓存再合并UI展示；普通分支还按选中节点/成功条件通知分析。显示、历史与算法的Owner不能合并成一个“清空”。",
+      "decision": "统一Run/Scope/Frame与结果有效性；保留专业分析分工，补通知一致性和最后读者，非全部替换为通用表格。",
+      "url": "optimization.html#O07",
+      "nodes": [
+        {
+          "id": "event",
+          "label": "NodeExecutionResultEventArgs",
+          "role": "节点结果/相机标记/UI排队延迟"
+        },
+        {
+          "id": "vm",
+          "label": "主窗完成处理",
+          "role": "相机与普通完成分支"
+        },
+        {
+          "id": "cache",
+          "label": "NodeResultManager",
+          "role": "写节点缓存与选中显示投影"
+        },
+        {
+          "id": "image",
+          "label": "ImageResultViewModel",
+          "role": "图像源选择、结果树/表数据"
+        },
+        {
+          "id": "render",
+          "label": "ResultRenderLayer",
+          "role": "结果图形/文字和区域图元"
+        },
+        {
+          "id": "analysis",
+          "label": "专业分析控件",
+          "role": "IToolControlDataAnalysis消费者"
+        },
+        {
+          "id": "camera",
+          "label": "待呈现槽/计时器",
+          "role": "合并相机显示，非丢业务结果"
+        }
+      ],
+      "edges": [
+        {
+          "from": "event",
+          "to": "vm",
+          "kind": "status",
+          "label": "NodeExecutionCompleted",
+          "fact": "主窗订阅管理器完成事件，不能据事件到达认所有后台资源已释放。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 4456,
+            "token": "private void OnNodeExecutionCompleted",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+            "snippet": "        private void OnNodeExecutionCompleted(object? sender, NodeExecutionResultEventArgs e)\r\n        {\r\n            try\r\n            {\r\n                if (e.IsCameraDriven)\r\n                {\r\n                    if (e.UiQueueDelayMs >= 200 &&\r\n                        DateTime.UtcNow - _lastCameraPerfWarningUtc >= TimeSpan.FromSeconds(5))\r\n                    {\r\n                        _lastCameraPerfWarningUtc = DateTime.UtcNow;\r\n                        AddLog($\"⚠️ 相机结果等待 UI 线程 {e.UiQueueDelayMs:F0} ms\");\r\n                    }\r\n                    // 工作流结果逐轮入缓存；图像/结果树/调试窗口的展示按 UI 节奏合并。\r\n                    // 不读取全部反射属性，避免在 UI 线程触发整幅图像的懒统计。\r\n                    _nodeResultManager.UpdateNodeResult(e.Node, e.Result, refreshDisplay: false);\r\n                    _pendingCameraPresentations[e.Node.Id] = (e.Node, e.Result);\r\n                    if (_cameraPresentationTimer is null)\r\n                    {\r\n                        _cameraPresentationTimer = new System.Windows.Threading.DispatcherTimer(\r\n                            System.Windows.Threading.DispatcherPriority.Background)\r\n                        {\r\n                            Interval = TimeSpan.FromMilliseconds(200)\r\n                        };\r\n                        _cameraPresentationTimer.Tick += (_, _) => FlushCameraResultPresentation();\r\n                    }\r"
+          }
+        },
+        {
+          "from": "vm",
+          "to": "cache",
+          "kind": "data",
+          "label": "更新节点结果",
+          "fact": "普通完成更新缓存；相机分支使用refreshDisplay:false后单独合并。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 4504,
+            "token": "_nodeResultManager.UpdateNodeResult(e.Node, e.Result);",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+            "snippet": "                _nodeResultManager.UpdateNodeResult(e.Node, e.Result);\r\n\r\n                // ★ 节点执行后处理（DSQS 自动读取 SSOT，无需推送）\r\n                OnNodeExecutionPostProcess(e.Node, e.Result);\r\n\r\n                // ★ 通知所有打开调试窗口的控件：上游节点执行完成，可刷新运行时状态\r\n                NotifyAllDebugWindowsExternalResult();\r\n\r\n                // ★ 更新数据分析控件（仅当完成节点是当前选中节点时）\r\n                if (e.Node.Id == SelectedNode?.Id)\r\n                {\r\n                    System.Windows.Application.Current.Dispatcher.Invoke(() =>\r\n                    {\r\n                        if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl\r\n                            && e.Result != null && e.Result.IsSuccess)\r\n                        {\r\n                            try\r\n                            {\r\n                                dataAnalysisControl.OnResultUpdated(e.Result);\r\n                            }\r\n                            catch (Exception updateEx)\r\n                            {\r\n                                AddLog($\"⚠️ 更新数据分析控件失败: {updateEx.Message}\");\r\n                            }\r\n                        }\r"
+          }
+        },
+        {
+          "from": "vm",
+          "to": "camera",
+          "kind": "data",
+          "label": "相机展示合并",
+          "fact": "相机结果逐轮入缓存，显示槽按NodeId合并；这不是完整历史库或传感器无损处理证明。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 4471,
+            "token": "_pendingCameraPresentations[e.Node.Id]",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+            "snippet": "                    _pendingCameraPresentations[e.Node.Id] = (e.Node, e.Result);\r\n                    if (_cameraPresentationTimer is null)\r\n                    {\r\n                        _cameraPresentationTimer = new System.Windows.Threading.DispatcherTimer(\r\n                            System.Windows.Threading.DispatcherPriority.Background)\r\n                        {\r\n                            Interval = TimeSpan.FromMilliseconds(200)\r\n                        };\r\n                        _cameraPresentationTimer.Tick += (_, _) => FlushCameraResultPresentation();\r\n                    }\r\n                    if (!_cameraPresentationTimer.IsEnabled)\r\n                        _cameraPresentationTimer.Start();\r\n                    return;\r\n                }\r\n\r\n                // ★ 关键日志：节点执行完成 - 记录节点类型和顺序\r\n                var outputValues = e.Result?.GetOutputValues();\r\n                bool hasImageOutput = outputValues?.Any(kv => kv.Value is OpenCvSharp.Mat) ?? false;\r\n                AddLog($\"✅ 节点执行完成: {e.Node.Name}({e.Node.ToolType}), ID={e.Node.Id}, 成功={e.Result?.IsSuccess}, 有图像输出={hasImageOutput}\");\r\n\r\n                // ★ 诊断：检查 ShapeMatch 结果中包含的 BestPositionCorrection 属性\r\n                if (outputValues != null)\r\n                {\r\n                    var hasPositionCorrection = outputValues.Any(kv =>\r\n                        kv.Key.Contains(\"PositionCorrection\", StringComparison.Ordinal) ||\r"
+          }
+        },
+        {
+          "from": "cache",
+          "to": "image",
+          "kind": "data",
+          "label": "结果树/显示源",
+          "fact": "先更新模块结果与图像源，再由显示模型选择当前图像。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/UI/Services/Workflow/NodeResultManager.cs",
+            "line": 123,
+            "token": "_viewModel.RefreshDisplayImageFromCurrentSource();",
+            "sha256": "3f0d3bb8be81a0b24d8447cedd90bbfa66f0e47f66676eca78ac7a7a99d83d69",
+            "snippet": "            _viewModel.RefreshDisplayImageFromCurrentSource();\r\n\r\n            // ★ Step 4: 结果几何由执行参数快照生成；在调试页应改用当前参数中的显示样式，\r\n            // 以便切换可见性、颜色和线宽时只重绘而不重复执行算法。\r\n            ApplyLiveResultPresentationStyles(node, result);\r\n\r\n            // ★ Step 5: 工具输出 → 直接传 DisplayCollector\r\n            _resultRenderLayer?.SetDisplayCollector(result.Display);\r\n\r\n            // ★ Step 6: 区域显示\r\n            var regionItems = BuildRegionItems(node);\r\n            _resultRenderLayer?.SetRegionItems(regionItems);\r\n        }\r\n\r\n        private static void ApplyLiveResultPresentationStyles(WorkflowNodeBase node, ToolResults result)\r\n        {\r\n            if (node.Parameters == null || result.Display == null) return;\r\n\r\n            var presentationProperty = node.Parameters.GetType().GetProperty(\"ResultPresentation\");\r\n            if (presentationProperty?.GetValue(node.Parameters) is ResultPresentationConfig presentation)\r\n                presentation.ApplyLiveStyles(result.Display);\r\n        }\r\n\r\n        /// <summary>\r\n        /// 清空结果显示\r"
+          }
+        },
+        {
+          "from": "cache",
+          "to": "render",
+          "kind": "data",
+          "label": "Display与RegionItems",
+          "fact": "DisplayCollector与参数区域分别投影；共享引用/样式和图像帧寿命仍需版本与Owner。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/UI/Services/Workflow/NodeResultManager.cs",
+            "line": 130,
+            "token": "_resultRenderLayer?.SetDisplayCollector(result.Display);",
+            "sha256": "3f0d3bb8be81a0b24d8447cedd90bbfa66f0e47f66676eca78ac7a7a99d83d69",
+            "snippet": "            _resultRenderLayer?.SetDisplayCollector(result.Display);\r\n\r\n            // ★ Step 6: 区域显示\r\n            var regionItems = BuildRegionItems(node);\r\n            _resultRenderLayer?.SetRegionItems(regionItems);\r\n        }\r\n\r\n        private static void ApplyLiveResultPresentationStyles(WorkflowNodeBase node, ToolResults result)\r\n        {\r\n            if (node.Parameters == null || result.Display == null) return;\r\n\r\n            var presentationProperty = node.Parameters.GetType().GetProperty(\"ResultPresentation\");\r\n            if (presentationProperty?.GetValue(node.Parameters) is ResultPresentationConfig presentation)\r\n                presentation.ApplyLiveStyles(result.Display);\r\n        }\r\n\r\n        /// <summary>\r\n        /// 清空结果显示\r\n        /// </summary>\r\n        public void ClearResultDisplay()\r\n        {\r\n            _viewModel.ClearResultDisplay();\r\n            _resultRenderLayer?.Clear();\r\n            _resultRenderLayer?.ClearHighlight();\r\n        }\r"
+          }
+        },
+        {
+          "from": "vm",
+          "to": "analysis",
+          "kind": "data",
+          "label": "成功且选中时通知",
+          "fact": "普通分支仅当前选中且IsSuccess才通知；相机早返回与缓存切换路径不同，不能写所有终态统一到达。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 4522,
+            "token": "dataAnalysisControl.OnResultUpdated(e.Result);",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+            "snippet": "                                dataAnalysisControl.OnResultUpdated(e.Result);\r\n                            }\r\n                            catch (Exception updateEx)\r\n                            {\r\n                                AddLog($\"⚠️ 更新数据分析控件失败: {updateEx.Message}\");\r\n                            }\r\n                        }\r\n                    });\r\n                }\r\n\r\n                // 如果节点是当前显示节点，刷新输出缓存绑定\r\n                if (_currentDisplayNodeId == e.Node.Id)\r\n                {\r\n                    var outputCache = e.Node.OutputCache;\r\n                    if (outputCache != null && outputCache.HasOutput)\r\n                    {\r\n                        AddLog($\"📷 节点 {e.Node.Name} 输出已更新, 输出图像数={outputCache.Count}\");\r\n                    }\r\n                }\r\n            }\r\n            catch (Exception ex)\r\n            {\r\nAddLog($\"⚠️ 节点结果更新异常: {ex.Message}\");\r\n            }\r\n        }\r"
+          }
+        }
+      ]
+    },
+    {
+      "id": "stop",
+      "title": "停止与收尾：请求不等排空，登记不等释放",
+      "point": "当前停止菜单发请求后立即置IsRunning=false并记录“已停止”。关闭路径的StopAndWait轮询宿主活动登记；引擎finally仍只释放剩余租约，没有等待全部running Task。三个层次不能互相代证。",
+      "decision": "必须整改：Stopped只能来自真实终态/排空合同；超时保留隔离与占用。不强杀线程，不提前Dispose仍被工具借用的资源。",
+      "url": "optimization.html#O04",
+      "nodes": [
+        {
+          "id": "button",
+          "label": "主窗停止命令",
+          "role": "当前选择目标与UI状态"
+        },
+        {
+          "id": "manager",
+          "label": "运行管理器",
+          "role": "取消源、活动登记和停止等待"
+        },
+        {
+          "id": "session",
+          "label": "WorkflowRunSession",
+          "role": "根取消CTS与暂停信号"
+        },
+        {
+          "id": "running",
+          "label": "在途节点Task",
+          "role": "可能仍使用图像/设备/原生模型"
+        },
+        {
+          "id": "lease",
+          "label": "资源租约",
+          "role": "工作流/资源准入占用"
+        },
+        {
+          "id": "ui",
+          "label": "UI终态投影",
+          "role": "必须区分Stopping/Stopped/超时"
+        }
+      ],
+      "edges": [
+        {
+          "from": "button",
+          "to": "manager",
+          "kind": "call",
+          "label": "StopContinuousRun",
+          "fact": "主窗调用停止请求后继续执行下一行，不是await真实完成。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 2196,
+            "token": "_executionManager.StopContinuousRun(WorkflowTabViewModel.SelectedTab);",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+            "snippet": "            _executionManager.StopContinuousRun(WorkflowTabViewModel.SelectedTab);\r\n            IsRunning = false;\r\n            AddLog(\"⏹️ 工作流已停止\");\r\n        }\r\n\r\n        private void ExecuteShowSettings()\r\n        {\r\n            // TODO: 显示设置对话框\r\n        }\r\n\r\n        private void ExecuteShowAbout()\r\n        {\r\n            var aboutWindow = new AboutWindow { Owner = Application.Current?.MainWindow };\r\n            aboutWindow.ShowDialog();\r\n        }\r\n\r\n        private void ExecuteShowHelp()\r\n        {\r\n            var helpWindow = new HelpWindow();\r\n            helpWindow.ShowDialog();\r\n        }\r\n\r\n        private void ExecuteShowShortcuts()\r\n        {\r\n            var helpWindow = new HelpWindow();\r"
+          }
+        },
+        {
+          "from": "button",
+          "to": "ui",
+          "kind": "gap",
+          "label": "立即宣告已停止",
+          "fact": "此方法立即IsRunning=false并记录已停止，属于已证缺陷，不是推荐设计。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+            "line": 2188,
+            "token": "private void ExecuteStopWorkflow()",
+            "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+            "snippet": "        private void ExecuteStopWorkflow()\r\n        {\r\n            if (WorkflowTabViewModel.SelectedTab == null)\r\n            {\r\n                AddLog(\"⚠️ 没有选中的工作流标签页\");\r\n                return;\r\n            }\r\n\r\n            _executionManager.StopContinuousRun(WorkflowTabViewModel.SelectedTab);\r\n            IsRunning = false;\r\n            AddLog(\"⏹️ 工作流已停止\");\r\n        }\r\n\r\n        private void ExecuteShowSettings()\r\n        {\r\n            // TODO: 显示设置对话框\r\n        }\r\n\r\n        private void ExecuteShowAbout()\r\n        {\r\n            var aboutWindow = new AboutWindow { Owner = Application.Current?.MainWindow };\r\n            aboutWindow.ShowDialog();\r\n        }\r\n\r\n        private void ExecuteShowHelp()\r"
+          }
+        },
+        {
+          "from": "manager",
+          "to": "session",
+          "kind": "status",
+          "label": "取消信号传播",
+          "fact": "会话创建时链接调用方取消Token；该边是取消信号关系，不声称管理器直接调用RequestStop方法。不同入口的取消及观察仍需统一。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Workflow/WorkflowRunSession.cs",
+            "line": 29,
+            "token": "_cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);",
+            "sha256": "81a4538d84dd800b91f6380ffbb8bc8fee2b59d0284e5f1c2194a2c97f4587c0",
+            "snippet": "        _cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);\r\n        RootWorkflowId = rootWorkflowId;\r\n        RunId = Guid.NewGuid();\r\n        StartedAt = DateTimeOffset.UtcNow;\r\n        State = WorkflowExecutionState.Idle;\r\n        RootScope = new WorkflowRunScope(rootWorkflowId, runId: RunId);\r\n        RootScope.ConsumerScope = rootWorkflowId;\r\n        _scopes.Add(RootScope.RunId, RootScope);\r\n    }\r\n\r\n    public Guid RunId { get; }\r\n\r\n    public string RootWorkflowId { get; }\r\n\r\n    public DateTimeOffset StartedAt { get; }\r\n\r\n    public WorkflowRunScope RootScope { get; }\r\n\r\n    public IReadOnlyList<WorkflowRunScope> Scopes\r\n    {\r\n        get\r\n        {\r\n            lock (_scopeGate)\r\n                return _scopes.Values.ToList();\r\n        }\r"
+          }
+        },
+        {
+          "from": "running",
+          "to": "lease",
+          "kind": "gap",
+          "label": "finally先释放租约",
+          "fact": "当前finally枚举仍在running的项释放Lease，没有await它们结束；图画的是退役缺口。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/Workflow/WorkflowExecutionEngine.cs",
+            "line": 399,
+            "token": "foreach (var item in running)",
+            "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+            "snippet": "                foreach (var item in running)\r\n                    item.Lease.Dispose();\r\n            }\r\n\r\n            var allResults = context.GetAllNodeResults().ToDictionary(pair => pair.Key, pair => pair.Value);\r\n            result.NodeResults = allResults;\r\n            result.Success = result.Errors.Count == 0 && allResults.Values.All(node => node.Success);\r\n            result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;\r\n            result.ExecutionTime = DateTime.Now - context.ExecutionStartTime;\r\n            ExecutionCompleted?.Invoke(this, result);\r\n            return result;\r\n        }\r\n\r\n        /// <summary>\r\n        /// 并行执行一组节点（同一组内节点无依赖关系）\r\n        /// </summary>\r\n        /// <remarks>\r\n        /// 注意：为支持参数绑定解析，组内节点按依赖顺序执行。\r\n        /// 只有当节点间无数据依赖关系时才真正并行执行。\r\n        /// </remarks>\r\n        private async Task<ExecutionResult> ExecuteNodesInParallel(\r\n            Workflow workflow,\r\n            List<string> nodeIds,\r\n            WorkflowContext context,\r\n            WorkflowExecutionDependencyGraph dependencyGraph,\r"
+          }
+        },
+        {
+          "from": "manager",
+          "to": "ui",
+          "kind": "status",
+          "label": "StopAndWait轮询登记",
+          "fact": "发取消后以IsAnyRunning轮询和超时报错；登记归零不补偿引擎在途Task缺边。",
+          "limit": "这里只核局部静态关系，不代表所有失败/取消和运行分支已验收。",
+          "source": {
+            "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+            "line": 64,
+            "token": "public async Task StopAndWaitAsync",
+            "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae",
+            "snippet": "        public async Task StopAndWaitAsync(TimeSpan timeout)\r\n        {\r\n            CancellationTokenSource[] sources;\r\n            lock (_lock)\r\n            {\r\n                sources = _cancellationTokens.Values\r\n                    .Concat(new[] { _solutionRunCts, _communicationRunCts }.OfType<CancellationTokenSource>())\r\n                    .Distinct().ToArray();\r\n            }\r\n            // Cancellation callbacks may acquire the execution lock; never invoke them while holding it.\r\n            foreach (var source in sources) { try { source.Cancel(); } catch (ObjectDisposedException) { } }\r\n            var timer = Stopwatch.StartNew();\r\n            while (IsAnyRunning())\r\n            {\r\n                if (timer.Elapsed > timeout) throw new TimeoutException(\"工作流尚未停止，已取消方案切换，原方案保持打开。\");\r\n                await Task.Delay(50);\r\n            }\r\n        }\r\n        private bool _communicationOperation;\r\n        private readonly AsyncLocal<bool> _communicationOwner = new();\r\n        private readonly AsyncLocal<IReadOnlyList<CommunicationParameterAssignment>?> _communicationAssignments = new();\r\n        private readonly AsyncLocal<CancellationToken> _communicationCancellation = new();\r\n        private readonly AsyncLocal<SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService?> _communicationInputs = new();\r\n        private SynchronizationContext? _synchronizationContext;\r\n\r"
+          }
+        }
+      ]
+    }
+  ],
+  "runtimeExecuted": false,
+  "scope": "四场景的局部静态运行关系，非项目引用图，也非完整动态调用树；每条边附来源，红边表示当前缺陷而非目标设计。"
+}

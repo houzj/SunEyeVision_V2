@@ -1,0 +1,13 @@
+{
+  "status": "sent",
+  "projectLabel": "VN逆向-主程序",
+  "targetTitle": "框架层逆向",
+  "targetThreadId": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+  "hostId": "local",
+  "sentAtUtc": "2026-10-19 10:55:35 UTC",
+  "manifestSha256": "136af835502ed5c7dbfd514a0243b703cdc8b5ec7fc8f66224cb09cd39648633",
+  "manifestPath": "D:/MyWork/SunEyeVision_V2/artifacts/validation/vm-reverse-supplement-tasks.json",
+  "acknowledgement": "工具返回目标threadId；未等待接收方完成，也不代表材料已交付",
+  "userAuthorization": "用户明确指定“vm逆向-主程序 这个是需要通知的项目”；已定位项目VN逆向-主程序和框架层逆向聊天",
+  "executionCompleted": false
+}

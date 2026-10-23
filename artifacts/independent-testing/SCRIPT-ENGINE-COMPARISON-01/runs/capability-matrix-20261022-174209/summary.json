@@ -1,0 +1,2916 @@
+{
+  "label": "capability-matrix",
+  "run": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209",
+  "sourceMatrix": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\matrix.json",
+  "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\inputs\\20261022-173444",
+  "trials": 1,
+  "repeatedQueries": 5,
+  "rows": [
+    {
+      "number": 1,
+      "case": "C01",
+      "category": "local variable names",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 489.8658,
+      "repeatQueryMs": [
+        9.3779,
+        9.1477,
+        27.7707,
+        12.5394,
+        8.8169
+      ],
+      "rawCounts": [
+        2786,
+        2786,
+        2786,
+        2786,
+        2786,
+        2786
+      ],
+      "pid": 96080,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2052.8826,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C01-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 2,
+      "case": "C01",
+      "category": "local variable names",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 270.838,
+      "repeatQueryMs": [
+        23.921,
+        43.801300000000005,
+        34.2742,
+        21.823600000000003,
+        17.4156
+      ],
+      "rawCounts": [
+        344,
+        344,
+        344,
+        344,
+        344,
+        344
+      ],
+      "pid": 80676,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1541.0282,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C01-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 3,
+      "case": "C02",
+      "category": "local receiver type",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 623.3599,
+      "repeatQueryMs": [
+        18.7782,
+        22.9556,
+        17.8031,
+        21.5957,
+        21.7456
+      ],
+      "rawCounts": [
+        88,
+        88,
+        88,
+        88,
+        88,
+        88
+      ],
+      "pid": 95456,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2171.7419,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C02-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 4,
+      "case": "C02",
+      "category": "local receiver type",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 246.0216,
+      "repeatQueryMs": [
+        26.3535,
+        48.372600000000006,
+        43.4045,
+        25.7759,
+        24.7326
+      ],
+      "rawCounts": [
+        84,
+        84,
+        84,
+        84,
+        84,
+        84
+      ],
+      "pid": 86352,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1407.9294,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C02-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 5,
+      "case": "C02",
+      "category": "local receiver type",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 762.1061,
+      "repeatQueryMs": [
+        19.7144,
+        28.0178,
+        22.7131,
+        21.5752,
+        25.7975
+      ],
+      "rawCounts": [
+        88,
+        88,
+        88,
+        88,
+        88,
+        88
+      ],
+      "pid": 46488,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2437.028,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C02-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 6,
+      "case": "C02",
+      "category": "local receiver type",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 290.3481,
+      "repeatQueryMs": [
+        31.5391,
+        37.1918,
+        29.2912,
+        25.3689,
+        24.259900000000002
+      ],
+      "rawCounts": [
+        84,
+        84,
+        84,
+        84,
+        84,
+        84
+      ],
+      "pid": 87736,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1524.7188,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C02-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 7,
+      "case": "C03",
+      "category": "instance members",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 722.5438,
+      "repeatQueryMs": [
+        10.8014,
+        9.3192,
+        9.0648,
+        8.5633,
+        8.0158
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 91092,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2146.7142,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C03-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 8,
+      "case": "C03",
+      "category": "instance members",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 236.0071,
+      "repeatQueryMs": [
+        22.267300000000002,
+        24.799100000000003,
+        42.7528,
+        17.230900000000002,
+        18.1307
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 96888,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1422.1254,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C03-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 9,
+      "case": "C03",
+      "category": "instance members",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 519.713,
+      "repeatQueryMs": [
+        6.8684,
+        5.5807,
+        5.6906,
+        6.1145,
+        6.0813
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 42128,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1887.9668,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C03-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 10,
+      "case": "C03",
+      "category": "instance members",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 276.5195,
+      "repeatQueryMs": [
+        22.8484,
+        31.9675,
+        25.8577,
+        13.590300000000001,
+        15.0922
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 82344,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1402.2994,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C03-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 11,
+      "case": "C04",
+      "category": "static members",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 523.3783,
+      "repeatQueryMs": [
+        4.9716,
+        4.0536,
+        4.3674,
+        4.4668,
+        4.0039
+      ],
+      "rawCounts": [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      "pid": 94764,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1930.849,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C04-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 12,
+      "case": "C04",
+      "category": "static members",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 180.2526,
+      "repeatQueryMs": [
+        11.991100000000001,
+        1.6531,
+        1.4984000000000002,
+        1.5642,
+        1.5224
+      ],
+      "rawCounts": [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      "pid": 85512,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1145.1833,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C04-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 13,
+      "case": "C04",
+      "category": "static members",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 541.1561,
+      "repeatQueryMs": [
+        4.4113,
+        3.9947,
+        3.5967,
+        3.4421,
+        3.852
+      ],
+      "rawCounts": [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      "pid": 94260,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1909.0253,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C04-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 14,
+      "case": "C04",
+      "category": "static members",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 194.3758,
+      "repeatQueryMs": [
+        15.5013,
+        2.85,
+        2.7351,
+        2.2682,
+        1.8888
+      ],
+      "rawCounts": [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      "pid": 62232,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1300.4976,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C04-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 15,
+      "case": "C05",
+      "category": "cross DLL type",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 469.1565,
+      "repeatQueryMs": [
+        7.1792,
+        14.8387,
+        4.7455,
+        5.299,
+        4.7551
+      ],
+      "rawCounts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "pid": 14492,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2062.6226,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C05-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 16,
+      "case": "C05",
+      "category": "cross DLL type",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "candidate-expectation-not-met",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [
+        {
+          "iteration": 0,
+          "name": "SharedMath"
+        },
+        {
+          "iteration": 1,
+          "name": "SharedMath"
+        },
+        {
+          "iteration": 2,
+          "name": "SharedMath"
+        },
+        {
+          "iteration": 3,
+          "name": "SharedMath"
+        },
+        {
+          "iteration": 4,
+          "name": "SharedMath"
+        },
+        {
+          "iteration": 5,
+          "name": "SharedMath"
+        }
+      ],
+      "unexpected": [],
+      "firstQueryMs": 105.04060000000001,
+      "repeatQueryMs": [
+        1.3391,
+        0.8931,
+        0.8407,
+        0.8355,
+        0.802
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 96104,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1547.8691,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C05-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 17,
+      "case": "C05",
+      "category": "cross DLL type",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 373.0723,
+      "repeatQueryMs": [
+        4.7099,
+        3.823,
+        4.2842,
+        14.5095,
+        3.7966
+      ],
+      "rawCounts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "pid": 86232,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1984.2163,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C05-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 18,
+      "case": "C05",
+      "category": "cross DLL type",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "candidate-expectation-not-met",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [
+        {
+          "iteration": 0,
+          "name": "SharedMath"
+        },
+        {
+          "iteration": 1,
+          "name": "SharedMath"
+        },
+        {
+          "iteration": 2,
+          "name": "SharedMath"
+        },
+        {
+          "iteration": 3,
+          "name": "SharedMath"
+        },
+        {
+          "iteration": 4,
+          "name": "SharedMath"
+        },
+        {
+          "iteration": 5,
+          "name": "SharedMath"
+        }
+      ],
+      "unexpected": [],
+      "firstQueryMs": 105.5266,
+      "repeatQueryMs": [
+        7.878900000000001,
+        0.5003000000000001,
+        0.41290000000000004,
+        0.40650000000000003,
+        0.3856
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 26380,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1142.9668,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C05-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 19,
+      "case": "C06",
+      "category": "cross DLL static member",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 554.5656,
+      "repeatQueryMs": [
+        7.0534,
+        17.5285,
+        4.9368,
+        5.3562,
+        4.9238
+      ],
+      "rawCounts": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "pid": 16912,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2024.9056,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C06-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 20,
+      "case": "C06",
+      "category": "cross DLL static member",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 171.6586,
+      "repeatQueryMs": [
+        1.1713,
+        0.5981000000000001,
+        0.5063,
+        0.5261,
+        0.4827
+      ],
+      "rawCounts": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "pid": 43492,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1233.5924,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C06-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 21,
+      "case": "C06",
+      "category": "cross DLL static member",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 461.5002,
+      "repeatQueryMs": [
+        4.1158,
+        13.3156,
+        3.569,
+        3.1266,
+        2.966
+      ],
+      "rawCounts": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "pid": 55260,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1955.4401,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C06-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 22,
+      "case": "C06",
+      "category": "cross DLL static member",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 143.2482,
+      "repeatQueryMs": [
+        0.8196,
+        0.449,
+        0.4393,
+        0.4269,
+        0.4268
+      ],
+      "rawCounts": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "pid": 87520,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1107.8021,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C06-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 23,
+      "case": "C07",
+      "category": "generic List members",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 779.9007,
+      "repeatQueryMs": [
+        15.2603,
+        14.1927,
+        20.1959,
+        14.6161,
+        15.8152
+      ],
+      "rawCounts": [
+        90,
+        90,
+        90,
+        90,
+        90,
+        90
+      ],
+      "pid": 86028,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2216.4962,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C07-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 24,
+      "case": "C07",
+      "category": "generic List members",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 327.8895,
+      "repeatQueryMs": [
+        56.4711,
+        35.6169,
+        22.713800000000003,
+        24.7936,
+        24.802100000000003
+      ],
+      "rawCounts": [
+        84,
+        84,
+        84,
+        84,
+        84,
+        84
+      ],
+      "pid": 89240,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1626.1578,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C07-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 25,
+      "case": "C07",
+      "category": "generic List members",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 571.4055,
+      "repeatQueryMs": [
+        14.5898,
+        14.0866,
+        19.0375,
+        13.069,
+        13.8412
+      ],
+      "rawCounts": [
+        90,
+        90,
+        90,
+        90,
+        90,
+        90
+      ],
+      "pid": 97220,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2147.7283,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C07-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 26,
+      "case": "C07",
+      "category": "generic List members",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 339.6709,
+      "repeatQueryMs": [
+        47.524300000000004,
+        63.447500000000005,
+        38.368300000000005,
+        34.8873,
+        33.9591
+      ],
+      "rawCounts": [
+        84,
+        84,
+        84,
+        84,
+        84,
+        84
+      ],
+      "pid": 89372,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1783.389,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C07-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 27,
+      "case": "C08",
+      "category": "generic Dictionary members",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 900.2973,
+      "repeatQueryMs": [
+        18.6071,
+        17.9276,
+        24.7914,
+        17.5686,
+        17.938
+      ],
+      "rawCounts": [
+        71,
+        71,
+        71,
+        71,
+        71,
+        71
+      ],
+      "pid": 22148,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2728.8084,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C08-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 28,
+      "case": "C08",
+      "category": "generic Dictionary members",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 611.4604,
+      "repeatQueryMs": [
+        85.71520000000001,
+        107.02900000000001,
+        67.6773,
+        71.19290000000001,
+        65.24900000000001
+      ],
+      "rawCounts": [
+        68,
+        68,
+        68,
+        68,
+        68,
+        68
+      ],
+      "pid": 88036,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2462.0719,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C08-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 29,
+      "case": "C08",
+      "category": "generic Dictionary members",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 992.2025,
+      "repeatQueryMs": [
+        17.9346,
+        17.8762,
+        30.5165,
+        20.3714,
+        16.9741
+      ],
+      "rawCounts": [
+        71,
+        71,
+        71,
+        71,
+        71,
+        71
+      ],
+      "pid": 41064,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 3737.687,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C08-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 30,
+      "case": "C08",
+      "category": "generic Dictionary members",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 467.9339,
+      "repeatQueryMs": [
+        67.80380000000001,
+        51.8404,
+        34.8834,
+        35.441700000000004,
+        44.9405
+      ],
+      "rawCounts": [
+        68,
+        68,
+        68,
+        68,
+        68,
+        68
+      ],
+      "pid": 83792,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2297.6348,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C08-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 31,
+      "case": "C09",
+      "category": "extension methods",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 889.9737,
+      "repeatQueryMs": [
+        14.9431,
+        14.3956,
+        24.0605,
+        15.7435,
+        14.5195
+      ],
+      "rawCounts": [
+        78,
+        78,
+        78,
+        78,
+        78,
+        78
+      ],
+      "pid": 79352,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2906.6136,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C09-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 32,
+      "case": "C09",
+      "category": "extension methods",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 291.32980000000003,
+      "repeatQueryMs": [
+        26.587600000000002,
+        46.331500000000005,
+        41.085100000000004,
+        21.4144,
+        27.9023
+      ],
+      "rawCounts": [
+        72,
+        72,
+        72,
+        72,
+        72,
+        72
+      ],
+      "pid": 94056,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1688.7434,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C09-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 33,
+      "case": "C09",
+      "category": "extension methods",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 751.6444,
+      "repeatQueryMs": [
+        11.7282,
+        10.9604,
+        18.3042,
+        10.3441,
+        10.7632
+      ],
+      "rawCounts": [
+        78,
+        78,
+        78,
+        78,
+        78,
+        78
+      ],
+      "pid": 29976,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2413.5991,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C09-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 34,
+      "case": "C09",
+      "category": "extension methods",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 236.7167,
+      "repeatQueryMs": [
+        23.3947,
+        35.6819,
+        37.9412,
+        20.7579,
+        21.608800000000002
+      ],
+      "rawCounts": [
+        72,
+        72,
+        72,
+        72,
+        72,
+        72
+      ],
+      "pid": 92056,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1464.8799,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C09-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 35,
+      "case": "C10",
+      "category": "nearby broken code",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 577.145,
+      "repeatQueryMs": [
+        7.8884,
+        6.483,
+        7.0894,
+        6.2879,
+        6.0216
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 87076,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1860.9112,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C10-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 36,
+      "case": "C10",
+      "category": "nearby broken code",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 257.36400000000003,
+      "repeatQueryMs": [
+        23.4512,
+        21.6202,
+        39.474000000000004,
+        14.154100000000001,
+        15.864700000000001
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 51080,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1441.6008,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C10-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 37,
+      "case": "C10",
+      "category": "nearby broken code",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 542.3405,
+      "repeatQueryMs": [
+        7.7842,
+        6.5676,
+        5.992,
+        6.1648,
+        6.7624
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 86416,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1943.8667,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C10-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 38,
+      "case": "C10",
+      "category": "nearby broken code",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 254.75660000000002,
+      "repeatQueryMs": [
+        20.1268,
+        17.596600000000002,
+        38.5219,
+        24.8812,
+        18.3017
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 90320,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1337.1561,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C10-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 39,
+      "case": "C11",
+      "category": "unfinished EOF",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 662.1915,
+      "repeatQueryMs": [
+        10.3118,
+        9.0549,
+        8.7797,
+        8.4123,
+        7.8786
+      ],
+      "rawCounts": [
+        18,
+        18,
+        18,
+        18,
+        18,
+        18
+      ],
+      "pid": 87804,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2181.6294,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C11-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 40,
+      "case": "C11",
+      "category": "unfinished EOF",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 216.77620000000002,
+      "repeatQueryMs": [
+        20.168300000000002,
+        28.2589,
+        26.052,
+        12.988800000000001,
+        14.971400000000001
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 66980,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1268.1662,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C11-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 41,
+      "case": "C11",
+      "category": "unfinished EOF",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 570.9848,
+      "repeatQueryMs": [
+        6.6626,
+        6.9673,
+        5.7915,
+        5.3977,
+        6.0092
+      ],
+      "rawCounts": [
+        18,
+        18,
+        18,
+        18,
+        18,
+        18
+      ],
+      "pid": 36460,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1876.8186,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C11-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 42,
+      "case": "C11",
+      "category": "unfinished EOF",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 276.2679,
+      "repeatQueryMs": [
+        26.8383,
+        32.089400000000005,
+        29.642000000000003,
+        16.447200000000002,
+        17.992800000000003
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 97200,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1583.8912,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C11-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 43,
+      "case": "C12",
+      "category": "unknown receiver negative",
+      "group": "common",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 562.7847,
+      "repeatQueryMs": [
+        5.7117,
+        4.646,
+        4.6907,
+        4.7289,
+        5.4191
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 13988,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2195.112,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C12-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 44,
+      "case": "C12",
+      "category": "unknown receiver negative",
+      "group": "common",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 232.4641,
+      "repeatQueryMs": [
+        11.2186,
+        13.1019,
+        17.4026,
+        30.579600000000003,
+        22.480600000000003
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 28760,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1662.9212,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C12-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 45,
+      "case": "C12",
+      "category": "unknown receiver negative",
+      "group": "common",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 376.7581,
+      "repeatQueryMs": [
+        6.712,
+        5.0738,
+        4.1528,
+        5.1927,
+        4.9818
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 22128,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2723.9324,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C12-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 46,
+      "case": "C12",
+      "category": "unknown receiver negative",
+      "group": "common",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 200.06660000000002,
+      "repeatQueryMs": [
+        10.7554,
+        12.7085,
+        12.888300000000001,
+        30.078000000000003,
+        22.8522
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 93088,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1531.5022,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\C12-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 47,
+      "case": "M01",
+      "category": "modern interpolation boundary",
+      "group": "modern-boundary",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 747.5004,
+      "repeatQueryMs": [
+        9.9606,
+        9.1608,
+        8.6847,
+        8.7046,
+        8.0102
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 76476,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2894.2094,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M01-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 48,
+      "case": "M01",
+      "category": "modern interpolation boundary",
+      "group": "modern-boundary",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 251.3845,
+      "repeatQueryMs": [
+        20.110300000000002,
+        17.0929,
+        28.8841,
+        29.9833,
+        17.6463
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 69316,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1491.3224,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M01-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 49,
+      "case": "M01",
+      "category": "modern interpolation boundary",
+      "group": "modern-boundary",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 605.997,
+      "repeatQueryMs": [
+        7.9097,
+        7.1423,
+        6.5884,
+        7.2587,
+        6.7392
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 22416,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2382.3525,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M01-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 50,
+      "case": "M01",
+      "category": "modern interpolation boundary",
+      "group": "modern-boundary",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 260.5434,
+      "repeatQueryMs": [
+        21.2701,
+        35.4685,
+        26.0276,
+        13.843900000000001,
+        15.7307
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 81488,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1424.8105,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M01-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 51,
+      "case": "M02",
+      "category": "modern pattern variable boundary",
+      "group": "modern-boundary",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 1352.3848,
+      "repeatQueryMs": [
+        12.159,
+        12.5128,
+        11.2266,
+        11.0126,
+        10.7524
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 87564,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 4133.7298,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M02-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 52,
+      "case": "M02",
+      "category": "modern pattern variable boundary",
+      "group": "modern-boundary",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "candidate-expectation-not-met",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [
+        {
+          "iteration": 0,
+          "name": "Append"
+        },
+        {
+          "iteration": 0,
+          "name": "Length"
+        },
+        {
+          "iteration": 1,
+          "name": "Append"
+        },
+        {
+          "iteration": 1,
+          "name": "Length"
+        },
+        {
+          "iteration": 2,
+          "name": "Append"
+        },
+        {
+          "iteration": 2,
+          "name": "Length"
+        },
+        {
+          "iteration": 3,
+          "name": "Append"
+        },
+        {
+          "iteration": 3,
+          "name": "Length"
+        },
+        {
+          "iteration": 4,
+          "name": "Append"
+        },
+        {
+          "iteration": 4,
+          "name": "Length"
+        },
+        {
+          "iteration": 5,
+          "name": "Append"
+        },
+        {
+          "iteration": 5,
+          "name": "Length"
+        }
+      ],
+      "unexpected": [],
+      "firstQueryMs": 434.59180000000003,
+      "repeatQueryMs": [
+        25.5287,
+        32.8514,
+        33.2104,
+        59.188100000000006,
+        49.179700000000004
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 53096,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 3267.2483,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M02-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 53,
+      "case": "M02",
+      "category": "modern pattern variable boundary",
+      "group": "modern-boundary",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 1150.7444,
+      "repeatQueryMs": [
+        12.8799,
+        10.7373,
+        19.1374,
+        12.3962,
+        12.8318
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 21660,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 5837.0061,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M02-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 54,
+      "case": "M02",
+      "category": "modern pattern variable boundary",
+      "group": "modern-boundary",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "candidate-expectation-not-met",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [
+        {
+          "iteration": 0,
+          "name": "Append"
+        },
+        {
+          "iteration": 0,
+          "name": "Length"
+        },
+        {
+          "iteration": 1,
+          "name": "Append"
+        },
+        {
+          "iteration": 1,
+          "name": "Length"
+        },
+        {
+          "iteration": 2,
+          "name": "Append"
+        },
+        {
+          "iteration": 2,
+          "name": "Length"
+        },
+        {
+          "iteration": 3,
+          "name": "Append"
+        },
+        {
+          "iteration": 3,
+          "name": "Length"
+        },
+        {
+          "iteration": 4,
+          "name": "Append"
+        },
+        {
+          "iteration": 4,
+          "name": "Length"
+        },
+        {
+          "iteration": 5,
+          "name": "Append"
+        },
+        {
+          "iteration": 5,
+          "name": "Length"
+        }
+      ],
+      "unexpected": [],
+      "firstQueryMs": 261.5272,
+      "repeatQueryMs": [
+        12.036200000000001,
+        14.361,
+        16.1034,
+        37.5488,
+        22.9079
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 95312,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2596.0625,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M02-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 55,
+      "case": "M03",
+      "category": "modern target typed new boundary",
+      "group": "modern-boundary",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 1232.2852,
+      "repeatQueryMs": [
+        40.1482,
+        35.1835,
+        28.1178,
+        23.7507,
+        22.0319
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 13024,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 4664.6797,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M03-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 56,
+      "case": "M03",
+      "category": "modern target typed new boundary",
+      "group": "modern-boundary",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 577.4553000000001,
+      "repeatQueryMs": [
+        41.8031,
+        71.2829,
+        58.635600000000004,
+        32.4761,
+        29.2254
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 79592,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 4356.5455,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M03-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 57,
+      "case": "M03",
+      "category": "modern target typed new boundary",
+      "group": "modern-boundary",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 1045.617,
+      "repeatQueryMs": [
+        8.7294,
+        9.237,
+        8.2924,
+        8.3441,
+        9.3668
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 90532,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 5025.4957,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M03-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 58,
+      "case": "M03",
+      "category": "modern target typed new boundary",
+      "group": "modern-boundary",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 419.0332,
+      "repeatQueryMs": [
+        27.206300000000002,
+        49.8918,
+        35.3352,
+        19.320800000000002,
+        20.537200000000002
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 85864,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2730.8554,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M03-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 59,
+      "case": "M04",
+      "category": "modern null conditional boundary",
+      "group": "modern-boundary",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 771.2809,
+      "repeatQueryMs": [
+        12.4257,
+        11.8606,
+        27.7224,
+        9.1137,
+        10.0428
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 73880,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 3177.7842,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M04-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 60,
+      "case": "M04",
+      "category": "modern null conditional boundary",
+      "group": "modern-boundary",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 237.7468,
+      "repeatQueryMs": [
+        18.223200000000002,
+        24.191000000000003,
+        37.3537,
+        12.823500000000001,
+        14.7948
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 95656,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1524.1894,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M04-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 61,
+      "case": "M04",
+      "category": "modern null conditional boundary",
+      "group": "modern-boundary",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 641.6459,
+      "repeatQueryMs": [
+        9.133,
+        7.7187,
+        29.0685,
+        8.3464,
+        7.7508
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 64852,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2838.6702,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M04-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 62,
+      "case": "M04",
+      "category": "modern null conditional boundary",
+      "group": "modern-boundary",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 258.5503,
+      "repeatQueryMs": [
+        21.7533,
+        38.368900000000004,
+        33.5878,
+        19.889,
+        19.7255
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 62232,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1567.9559,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\M04-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 63,
+      "case": "P01",
+      "category": "partial member protocol",
+      "group": "trigger-protocol",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "protocol-observed-no-candidates",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [
+        {
+          "iteration": 0,
+          "name": "Append"
+        },
+        {
+          "iteration": 1,
+          "name": "Append"
+        },
+        {
+          "iteration": 2,
+          "name": "Append"
+        },
+        {
+          "iteration": 3,
+          "name": "Append"
+        },
+        {
+          "iteration": 4,
+          "name": "Append"
+        },
+        {
+          "iteration": 5,
+          "name": "Append"
+        }
+      ],
+      "unexpected": [],
+      "firstQueryMs": 70.5688,
+      "repeatQueryMs": [
+        0.2746,
+        2.458,
+        0.1414,
+        0.2245,
+        0.0907
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 95900,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1624.899,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P01-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 64,
+      "case": "P01",
+      "category": "partial member protocol",
+      "group": "trigger-protocol",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "protocol-suppressed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [
+        {
+          "iteration": 0,
+          "name": "Append"
+        },
+        {
+          "iteration": 1,
+          "name": "Append"
+        },
+        {
+          "iteration": 2,
+          "name": "Append"
+        },
+        {
+          "iteration": 3,
+          "name": "Append"
+        },
+        {
+          "iteration": 4,
+          "name": "Append"
+        },
+        {
+          "iteration": 5,
+          "name": "Append"
+        }
+      ],
+      "unexpected": [],
+      "firstQueryMs": 49.3537,
+      "repeatQueryMs": [
+        0.4711,
+        0.1852,
+        0.17070000000000002,
+        0.16540000000000002,
+        0.1637
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 95696,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 989.6421,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P01-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 65,
+      "case": "P01",
+      "category": "partial member protocol",
+      "group": "trigger-protocol",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 607.0146,
+      "repeatQueryMs": [
+        7.4484,
+        6.2594,
+        6.0728,
+        5.0822,
+        5.7847
+      ],
+      "rawCounts": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "pid": 81108,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2009.2172,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P01-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 66,
+      "case": "P01",
+      "category": "partial member protocol",
+      "group": "trigger-protocol",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 253.31920000000002,
+      "repeatQueryMs": [
+        22.4724,
+        20.8013,
+        33.431000000000004,
+        35.4988,
+        22.3256
+      ],
+      "rawCounts": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "pid": 84024,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1722.557,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P01-invoke-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 67,
+      "case": "P02",
+      "category": "local prefix protocol",
+      "group": "trigger-protocol",
+      "mode": "auto",
+      "side": "a",
+      "trial": 0,
+      "status": "protocol-observed-no-candidates",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [
+        {
+          "iteration": 0,
+          "name": "localValue"
+        },
+        {
+          "iteration": 0,
+          "name": "localText"
+        },
+        {
+          "iteration": 1,
+          "name": "localValue"
+        },
+        {
+          "iteration": 1,
+          "name": "localText"
+        },
+        {
+          "iteration": 2,
+          "name": "localValue"
+        },
+        {
+          "iteration": 2,
+          "name": "localText"
+        },
+        {
+          "iteration": 3,
+          "name": "localValue"
+        },
+        {
+          "iteration": 3,
+          "name": "localText"
+        },
+        {
+          "iteration": 4,
+          "name": "localValue"
+        },
+        {
+          "iteration": 4,
+          "name": "localText"
+        },
+        {
+          "iteration": 5,
+          "name": "localValue"
+        },
+        {
+          "iteration": 5,
+          "name": "localText"
+        }
+      ],
+      "unexpected": [],
+      "firstQueryMs": 72.1166,
+      "repeatQueryMs": [
+        0.2857,
+        2.1694,
+        0.1515,
+        0.221,
+        0.0937
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 86140,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1554.9533,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P02-auto-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 68,
+      "case": "P02",
+      "category": "local prefix protocol",
+      "group": "trigger-protocol",
+      "mode": "auto",
+      "side": "b",
+      "trial": 0,
+      "status": "protocol-suppressed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [
+        {
+          "iteration": 0,
+          "name": "localValue"
+        },
+        {
+          "iteration": 0,
+          "name": "localText"
+        },
+        {
+          "iteration": 1,
+          "name": "localValue"
+        },
+        {
+          "iteration": 1,
+          "name": "localText"
+        },
+        {
+          "iteration": 2,
+          "name": "localValue"
+        },
+        {
+          "iteration": 2,
+          "name": "localText"
+        },
+        {
+          "iteration": 3,
+          "name": "localValue"
+        },
+        {
+          "iteration": 3,
+          "name": "localText"
+        },
+        {
+          "iteration": 4,
+          "name": "localValue"
+        },
+        {
+          "iteration": 4,
+          "name": "localText"
+        },
+        {
+          "iteration": 5,
+          "name": "localValue"
+        },
+        {
+          "iteration": 5,
+          "name": "localText"
+        }
+      ],
+      "unexpected": [],
+      "firstQueryMs": 47.2517,
+      "repeatQueryMs": [
+        0.4466,
+        6.5212,
+        0.2944,
+        0.2159,
+        0.2097
+      ],
+      "rawCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pid": 95948,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1147.304,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P02-auto-b-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 69,
+      "case": "P02",
+      "category": "local prefix protocol",
+      "group": "trigger-protocol",
+      "mode": "invoke",
+      "side": "a",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 504.9363,
+      "repeatQueryMs": [
+        10.7896,
+        10.6531,
+        32.0866,
+        16.454,
+        11.4453
+      ],
+      "rawCounts": [
+        2786,
+        2786,
+        2786,
+        2786,
+        2786,
+        2786
+      ],
+      "pid": 77680,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 2229.9988,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P02-invoke-a-0\\result.json",
+      "detail": ""
+    },
+    {
+      "number": 70,
+      "case": "P02",
+      "category": "local prefix protocol",
+      "group": "trigger-protocol",
+      "mode": "invoke",
+      "side": "b",
+      "trial": 0,
+      "status": "passed",
+      "validInvocation": true,
+      "sameRequestedRefs": true,
+      "missing": [],
+      "unexpected": [],
+      "firstQueryMs": 249.5207,
+      "repeatQueryMs": [
+        27.721300000000003,
+        53.36,
+        45.3558,
+        29.0212,
+        24.6319
+      ],
+      "rawCounts": [
+        344,
+        344,
+        344,
+        344,
+        344,
+        344
+      ],
+      "pid": 86228,
+      "exitCode": 0,
+      "timedOut": false,
+      "exited": true,
+      "wallMs": 1499.9872,
+      "result": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\SCRIPT-ENGINE-COMPARISON-01\\runs\\capability-matrix-20261022-174209\\P02-invoke-b-0\\result.json",
+      "detail": ""
+    }
+  ],
+  "counts": [
+    {
+      "Name": "candidate-expectation-not-met",
+      "Count": 4
+    },
+    {
+      "Name": "passed",
+      "Count": 62
+    },
+    {
+      "Name": "protocol-observed-no-candidates",
+      "Count": 2
+    },
+    {
+      "Name": "protocol-suppressed",
+      "Count": 2
+    }
+  ],
+  "noVmUI": true,
+  "noProductModification": true
+}

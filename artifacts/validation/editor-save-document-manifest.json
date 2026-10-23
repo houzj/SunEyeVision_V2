@@ -1,0 +1,160 @@
+{
+  "taskId": "EDIT-SAVE-11",
+  "input": "artifacts/startup-implementation/unified-editor-save-delivery.json",
+  "inputSha256": "050d62cbfc3662d91bbf3a2df7c08c85d298dc27199c2de20de02b637c232a99",
+  "checks": [
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs",
+      "exists": true,
+      "sha256": "5aa98899bf518def6f3c9a8d8dd944956600a841285d2fdc13b73f791ca5fd63",
+      "observedSha256": "5aa98899bf518def6f3c9a8d8dd944956600a841285d2fdc13b73f791ca5fd63",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+      "exists": true,
+      "sha256": "3bc5df003cc31a1669c06bec5631089540af3037b0ecf0cf7de0cac3b9566a02",
+      "observedSha256": "3bc5df003cc31a1669c06bec5631089540af3037b0ecf0cf7de0cac3b9566a02",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml",
+      "exists": true,
+      "sha256": "9b1f5b5c8dbb712f89f1910c1b1371e2a8279aa231e4d25993d20824f0dc7f2a",
+      "observedSha256": "9b1f5b5c8dbb712f89f1910c1b1371e2a8279aa231e4d25993d20824f0dc7f2a",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml.cs",
+      "exists": true,
+      "sha256": "ddc58a88ac0a91a6355b46ca08356864ece1f516f65aac500ba2770ee69d19cd",
+      "observedSha256": "ddc58a88ac0a91a6355b46ca08356864ece1f516f65aac500ba2770ee69d19cd",
+      "matches": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "exists": true,
+      "sha256": "3a4b5a2145b92c333b39797898b4d2dabafc05ff95b35d2e65cfb17626e8b364",
+      "observedSha256": "3600b99a2180b9200a0a8ef7eefac325fb8f50b7121596def4ebd52e486b4829",
+      "matches": false
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowSolutionEditing.cs",
+      "exists": true,
+      "sha256": "d2b7ebb89565ac010fc55e7b560180692d7c47c06a43442340f8a7330f2004ef",
+      "observedSha256": "d2b7ebb89565ac010fc55e7b560180692d7c47c06a43442340f8a7330f2004ef",
+      "matches": true
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+      "exists": true,
+      "sha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+      "observedSha256": "e1e8fbaf09a7a8a1c8c0555870b8b789ca13fb1194b684d68726538d584b3454",
+      "matches": false
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+      "exists": true,
+      "sha256": "ac3a2200b231ef5b63c4017d27afb63b00113383753ffcd5aca7add0573b79c9",
+      "observedSha256": "648d0bed60384b44d8f60c17d3a89929ea2f965a6e618299d72d93d6f765650f",
+      "matches": false
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.SDK.dll",
+      "exists": true,
+      "sha256": "1fb0a6c574fe27533130918eaf068cc13934c9c66e00fe474d6bc88455bddf4f",
+      "observedSha256": "5b4c3f04190896392d21706e0a260610208648ed6564464bc252a915b4642eb7",
+      "matches": false
+    }
+  ],
+  "currentSourceDrift": [
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "exists": true,
+      "sha256": "3a4b5a2145b92c333b39797898b4d2dabafc05ff95b35d2e65cfb17626e8b364",
+      "observedSha256": "3600b99a2180b9200a0a8ef7eefac325fb8f50b7121596def4ebd52e486b4829",
+      "matches": false
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+      "exists": true,
+      "sha256": "7c891b821cb85b041d52b70e07facfee22285c72e368efca07b7565ba36b474e",
+      "observedSha256": "e1e8fbaf09a7a8a1c8c0555870b8b789ca13fb1194b684d68726538d584b3454",
+      "matches": false
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+      "exists": true,
+      "sha256": "ac3a2200b231ef5b63c4017d27afb63b00113383753ffcd5aca7add0573b79c9",
+      "observedSha256": "648d0bed60384b44d8f60c17d3a89929ea2f965a6e618299d72d93d6f765650f",
+      "matches": false
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.SDK.dll",
+      "exists": true,
+      "sha256": "1fb0a6c574fe27533130918eaf068cc13934c9c66e00fe474d6bc88455bddf4f",
+      "observedSha256": "5b4c3f04190896392d21706e0a260610208648ed6564464bc252a915b4642eb7",
+      "matches": false
+    }
+  ],
+  "historicalDuringB1": true,
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html",
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\global-variables.html"
+  ],
+  "build": {
+    "full": "0 errors / 779 warnings",
+    "ui": "0 errors / 1063 warnings",
+    "logs": [
+      "unified-editor-save-final-release.log",
+      "unified-editor-save-ui-release.log"
+    ]
+  },
+  "productExecuted": false,
+  "designer": "not-run",
+  "independent": {
+    "status": "round-ended-not-closed",
+    "topLevel": {
+      "pass": 0,
+      "total": 12,
+      "blocked": 12,
+      "fail": 0
+    },
+    "observedUiSubscenarios": {
+      "pass": 2,
+      "mode": "user-assisted",
+      "cases": [
+        "ES07 duplicate-name variable Save",
+        "ES08 Integer invalid variable Save"
+      ],
+      "fail": 0
+    },
+    "coreDataChecks": {
+      "fail": 0,
+      "pass": 5
+    },
+    "source": "artifacts/independent-testing/EDIT-SAVE-11/final-results.json",
+    "sourceSha256": "0ce7ee27f146821ecb96a7498592896d2bbc5b6111801d110a3e54fb79f4be94",
+    "reportSha256": "ed17e0636f077465dde996f50080b8f0b4564430adfe9c30bc07cd8b864e50ff"
+  },
+  "latestE2E": {
+    "source": "artifacts/independent-testing/EDIT-SAVE-11/e2e/results.json",
+    "sourceSha256": "2b715d59503875e231a74f049f6753e4415efd18d996767a3bb261515d7f8856",
+    "componentCounts": {
+      "passed": 25,
+      "failed": 0
+    },
+    "e2eCounts": {
+      "blocked": 9,
+      "failed": 0,
+      "passed": 0
+    },
+    "report": "artifacts/independent-testing/EDIT-SAVE-11/e2e/REPORT.md",
+    "blocker": "artifacts/independent-testing/EDIT-SAVE-11/e2e/BLOCKER.md"
+  },
+  "crossEditorRollback": false,
+  "readbackImplemented": false,
+  "fullUndoImplemented": false,
+  "productModifiedByDocRole": false,
+  "wholeSiteRegenerated": false
+}

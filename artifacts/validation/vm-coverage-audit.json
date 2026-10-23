@@ -1,0 +1,1694 @@
+{
+  "source": {
+    "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/ui-entry-navigation.js",
+    "sha256": "a10c81d6328212960c7ef171f4121ef62e89c24ee3a4bcab912010ac35cd027c"
+  },
+  "entries": [
+    {
+      "id": "startup",
+      "label": "启动/恢复",
+      "caps": [
+        {
+          "id": "M01",
+          "title": "启动、方案恢复与主窗装配",
+          "state": "partial",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed",
+        "unknown"
+      ]
+    },
+    {
+      "id": "solution",
+      "label": "方案配置",
+      "caps": [
+        {
+          "id": "M02",
+          "title": "方案配置：新建、打开、切换",
+          "state": "partial",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "save",
+      "label": "保存",
+      "caps": [
+        {
+          "id": "M03",
+          "title": "保存当前方案 / Ctrl+S",
+          "state": "implemented",
+          "choice": "必须整改"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed",
+        "unknown"
+      ]
+    },
+    {
+      "id": "run",
+      "label": "单次运行",
+      "caps": [
+        {
+          "id": "M11",
+          "title": "主工具栏/F5单次运行",
+          "state": "implemented",
+          "choice": "借鉴VM重做"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "continuous",
+      "label": "全部连续",
+      "caps": [
+        {
+          "id": "M13",
+          "title": "全部流程连续运行/停止",
+          "state": "partial",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "stop",
+      "label": "停止",
+      "caps": [
+        {
+          "id": "M15",
+          "title": "停止/Shift+F5",
+          "state": "partial",
+          "choice": "必须整改"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "variables",
+      "label": "变量",
+      "caps": [
+        {
+          "id": "M18",
+          "title": "全局变量管理与选择",
+          "state": "partial",
+          "choice": "必须整改"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "camera",
+      "label": "相机",
+      "caps": [
+        {
+          "id": "M19",
+          "title": "相机管理：连接、参数、预览与正式采集",
+          "state": "partial",
+          "choice": "必须整改"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation",
+        "unknown"
+      ]
+    },
+    {
+      "id": "communication",
+      "label": "通信",
+      "caps": [
+        {
+          "id": "M20",
+          "title": "通信管理：连接、读写、事件与后台触发",
+          "state": "partial",
+          "choice": "必须整改"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "catalog",
+      "label": "分类 / 拖入",
+      "caps": [
+        {
+          "id": "M04",
+          "title": "工具箱分类、浏览与拖入",
+          "state": "partial",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "help",
+      "label": "帮助 / 主题",
+      "caps": [
+        {
+          "id": "M21",
+          "title": "主题、主窗控制、帮助与诊断入口",
+          "state": "implemented",
+          "choice": "必须整改"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "tabs",
+      "label": "Tab管理",
+      "caps": [
+        {
+          "id": "M05",
+          "title": "新增、选中、重命名与删除流程Tab",
+          "state": "partial",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "node",
+      "label": "节点操作",
+      "caps": [
+        {
+          "id": "M06",
+          "title": "节点选中、拖动与多选",
+          "state": "partial",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "links",
+      "label": "连线/路径",
+      "caps": [
+        {
+          "id": "M07",
+          "title": "端口连线、断开与路径显示",
+          "state": "partial",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "undo",
+      "label": "删除/撤销",
+      "caps": [
+        {
+          "id": "M08",
+          "title": "删除节点、撤销与重做",
+          "state": "partial",
+          "choice": "必须整改"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation",
+        "unknown"
+      ]
+    },
+    {
+      "id": "group",
+      "label": "子程序 / Group",
+      "caps": [
+        {
+          "id": "M09",
+          "title": "子程序/Group进入、返回及配置",
+          "state": "partial",
+          "choice": "必须整改"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "tabonce",
+      "label": "Tab单次",
+      "caps": [
+        {
+          "id": "M12",
+          "title": "流程Tab单次运行",
+          "state": "implemented",
+          "choice": "借鉴VM重做"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "tabcontinuous",
+      "label": "Tab连续",
+      "caps": [
+        {
+          "id": "M14",
+          "title": "流程Tab连续运行/停止",
+          "state": "partial",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed"
+      ]
+    },
+    {
+      "id": "viewport",
+      "label": "视口/小地图",
+      "caps": [
+        {
+          "id": "M10",
+          "title": "小地图、画布缩放与主窗全屏",
+          "state": "implemented",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "preview",
+      "label": "图像源 / 预览",
+      "caps": [
+        {
+          "id": "M16",
+          "title": "显示图像源选择、预览与历史",
+          "state": "partial",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation",
+        "unknown"
+      ]
+    },
+    {
+      "id": "result",
+      "label": "结果树 / 表",
+      "caps": [
+        {
+          "id": "M17",
+          "title": "模块结果树/表及绑定到全局变量",
+          "state": "partial",
+          "choice": "借鉴VM重做"
+        },
+        {
+          "id": "M25",
+          "title": "专业数据分析面板与图像高亮",
+          "state": "partial",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed",
+        "unknown"
+      ]
+    },
+    {
+      "id": "close",
+      "label": "关闭 / 切方案",
+      "caps": [
+        {
+          "id": "M22",
+          "title": "关闭主窗/切方案时保存与资源退役",
+          "state": "partial",
+          "choice": "暂不能判断"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation",
+        "unknown"
+      ]
+    },
+    {
+      "id": "status",
+      "label": "状态栏",
+      "caps": [
+        {
+          "id": "M24",
+          "title": "状态栏、运行耗时与执行快照",
+          "state": "partial",
+          "choice": "必须整改"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "history",
+      "label": "历史 / 帮助",
+      "caps": [
+        {
+          "id": "M16",
+          "title": "显示图像源选择、预览与历史",
+          "state": "partial",
+          "choice": "暂不能判断"
+        },
+        {
+          "id": "M21",
+          "title": "主题、主窗控制、帮助与诊断入口",
+          "state": "implemented",
+          "choice": "必须整改"
+        },
+        {
+          "id": "M26",
+          "title": "日志面板、筛选、搜索与诊断级别",
+          "state": "partial",
+          "choice": "必须整改"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "source-confirmed",
+        "independent-implementation"
+      ]
+    },
+    {
+      "id": "data",
+      "label": "数据结构与传递总览",
+      "caps": [
+        {
+          "id": "X01",
+          "title": "图像缓冲、显示缓存与最后读者",
+          "state": "partial",
+          "choice": "暂不能判断"
+        },
+        {
+          "id": "M18",
+          "title": "全局变量管理与选择",
+          "state": "partial",
+          "choice": "必须整改"
+        },
+        {
+          "id": "M16",
+          "title": "显示图像源选择、预览与历史",
+          "state": "partial",
+          "choice": "暂不能判断"
+        },
+        {
+          "id": "M17",
+          "title": "模块结果树/表及绑定到全局变量",
+          "state": "partial",
+          "choice": "借鉴VM重做"
+        }
+      ],
+      "status": "已建立入口索引；不代表双方完整语义等价",
+      "vmFactKinds": [
+        "independent-implementation",
+        "source-confirmed",
+        "unknown"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "name": "图像处理",
+      "total": 21,
+      "candidate": 3,
+      "unpaired": 18,
+      "tools": [
+        {
+          "key": "ImageProcessing/IMVSBinaryModu",
+          "label": "图像二值化",
+          "candidates": [
+            {
+              "id": "Threshold",
+              "file": "tool-standard.html"
+            },
+            {
+              "id": "ImageThreshold",
+              "file": "tool-detail-ImageThreshold.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "ImageProcessing/IMVSAffineTransformModu",
+          "label": "仿射变换",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSFrameMeanModu",
+          "label": "帧平均",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSGeometricTransformModu",
+          "label": "几何变换",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSImageCombineProcessModu",
+          "label": "图像组合",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSImageCorrectCalibModu",
+          "label": "畸变校正",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSImageCorrectManualModu",
+          "label": "图像矫正",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSImageEnhanceModu",
+          "label": "图像增强",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSImageFilterModu",
+          "label": "图像滤波",
+          "candidates": [
+            {
+              "id": "ImageFilter",
+              "file": "tool-detail-ImageFilter.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "ImageProcessing/IMVSImageFixtureModu",
+          "label": "图像修正",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSImageMathModu",
+          "label": "图像运算",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSImageMorphModu",
+          "label": "形态学处理",
+          "candidates": [
+            {
+              "id": "Morphology",
+              "file": "tool-detail-Morphology.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "ImageProcessing/IMVSImageNormlizeModu",
+          "label": "图像归一化",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSImageResizeModu",
+          "label": "图像缩放",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSImageSharpnessModu",
+          "label": "清晰度评估",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSImgStitchCalibModu",
+          "label": "图像拼接",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSInverseAffineTransformModu",
+          "label": "逆仿射变换",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSMultiImageFusionModu",
+          "label": "多图融合",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSPolarUnwarpModu",
+          "label": "圆环展开",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSRegionCopyModu",
+          "label": "拷贝填充",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageProcessing/IMVSShadeCorrectModu",
+          "label": "阴影校正",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "标定",
+      "total": 10,
+      "candidate": 2,
+      "unpaired": 8,
+      "tools": [
+        {
+          "key": "Calibration/CoordinateModule",
+          "label": "坐标系",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calibration/IMVSCalibBoardCalibModu",
+          "label": "标定板标定",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calibration/IMVSCameraMapModu",
+          "label": "相机映射",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calibration/IMVSImageCalibModu",
+          "label": "畸变标定",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calibration/IMVSMapCalibModu",
+          "label": "映射标定",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calibration/IMVSNImageCalibModu",
+          "label": "N图像标定",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calibration/IMVSNPointCalibModu",
+          "label": "N点标定",
+          "candidates": [
+            {
+              "id": "NPointCalibration",
+              "file": "tool-calibration.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Calibration/ReadCalibFileModu",
+          "label": "标定加载",
+          "candidates": [
+            {
+              "id": "NPointCalibration",
+              "file": "tool-calibration.html"
+            },
+            {
+              "id": "NPointVerification",
+              "file": "tool-verification.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Calibration/RotateCalibModu",
+          "label": "旋转标定",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calibration/TranslationCalibModu",
+          "label": "平移旋转标定",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "采集",
+      "total": 5,
+      "candidate": 1,
+      "unpaired": 4,
+      "tools": [
+        {
+          "key": "Collection/ImageAcquisitionModule",
+          "label": "多图采集",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Collection/ImageBufferModule",
+          "label": "缓存图像",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Collection/ImageSourceModule",
+          "label": "图像源",
+          "candidates": [
+            {
+              "id": "ImageLoad",
+              "file": "tool-detail-ImageLoad.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Collection/LightModule",
+          "label": "光源",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Collection/SaveImage",
+          "label": "输出图像",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "定位",
+      "total": 28,
+      "candidate": 4,
+      "unpaired": 24,
+      "tools": [
+        {
+          "key": "Location/IMVSFixtureModu",
+          "label": "位置修正",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSAngleBisectorFindModu",
+          "label": "角平分线查找",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSBlobFindLabelsModu",
+          "label": "Blob标签分析",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSBlobFindModu",
+          "label": "Blob分析",
+          "candidates": [
+            {
+              "id": "BlobAnalysis",
+              "file": "tool-detail-BlobAnalysis.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Location/IMVSCaliperCornerModu",
+          "label": "边缘交点",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSCaliperEdgeModu",
+          "label": "边缘查找",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSCaliperModu",
+          "label": "卡尺工具",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSCircleFindModu",
+          "label": "圆查找",
+          "candidates": [
+            {
+              "id": "CircleDetect",
+              "file": "tool-detail-CircleDetect.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Location/IMVSContourMatchModu",
+          "label": "轮廓匹配",
+          "candidates": [
+            {
+              "id": "ShapeMatch",
+              "file": "tool-detail-ShapeMatch.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Location/IMVSEllipseFindModu",
+          "label": "椭圆查找",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSFastFeatureMatchModu",
+          "label": "快速匹配",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSGluePathConductModu",
+          "label": "路径提取",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSGrayMatchModu",
+          "label": "IMVSGrayMatchModu",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSGrayMatchModuVA",
+          "label": "灰度匹配",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSHPFeatureMatchModu",
+          "label": "高精度匹配",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSLineFindGroupModu",
+          "label": "直线查找组合",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSLineFindModu",
+          "label": "直线查找",
+          "candidates": [
+            {
+              "id": "LineDetect",
+              "file": "tool-detail-LineDetect.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Location/IMVSMarkFindModu",
+          "label": "图形定位",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSMatrixCircleFindModu",
+          "label": "阵列圆查找",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSMedianLineFindModu",
+          "label": "中线查找",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSMultiLineFindModu",
+          "label": "多直线查找",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSPairLineModu",
+          "label": "平行线查找",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSParallelCalculateModu",
+          "label": "平行线计算",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSPeakFindModu",
+          "label": "顶点检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSQuadrangleFindModu",
+          "label": "四边形查找",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSRectFindModu",
+          "label": "矩形检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSTargetTrackModu",
+          "label": "目标跟踪",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Location/IMVSVerticalLineFindModu",
+          "label": "垂线查找",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "逻辑工具",
+      "total": 20,
+      "candidate": 3,
+      "unpaired": 17,
+      "tools": [
+        {
+          "key": "Logic/BranchModule_STD",
+          "label": "分支模块",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/BranchStringCpmL",
+          "label": "分支字符",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/IMVSGroup",
+          "label": "Group",
+          "candidates": [
+            {
+              "id": "Subroutine",
+              "file": "tool-subroutine.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Logic/AndModule",
+          "label": "逻辑",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/DataClassificationModule",
+          "label": "数据分类",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/DataFilterModule",
+          "label": "数据筛选",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/DataRecordModule",
+          "label": "数据记录",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/DataSetModule",
+          "label": "数据集合",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/DataSortModule",
+          "label": "数据排序",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/FormatModule",
+          "label": "格式化",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/GraphicsSetModule",
+          "label": "图形收集",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/IfBranchModule",
+          "label": "条件分支",
+          "candidates": [
+            {
+              "id": "Condition",
+              "file": "tool-detail-Condition.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Logic/IfModule",
+          "label": "条件检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/PointSetMODU_STD",
+          "label": "点集",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/PyShellModule",
+          "label": "Python脚本",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/SaveTextModule",
+          "label": "文本保存",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/ShellModule",
+          "label": "脚本",
+          "candidates": [
+            {
+              "id": "Script",
+              "file": "tool-script.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Logic/StringCompareModule",
+          "label": "字符比较",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/TimeStatisticModule",
+          "label": "耗时统计",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Logic/TriggerModule",
+          "label": "触发模块",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "运算",
+      "total": 11,
+      "candidate": 0,
+      "unpaired": 11,
+      "tools": [
+        {
+          "key": "Calculation/CalculatorModule",
+          "label": "变量计算",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calculation/CoordinateTransform",
+          "label": "坐标转换",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calculation/IMVSCalibTransformModu",
+          "label": "标定转换",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calculation/IMVSLineAlignModu",
+          "label": "线对位",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calculation/IMVSMultiPointAlignModu",
+          "label": "点集对位",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calculation/IMVSRotateCalculateModu",
+          "label": "旋转计算",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calculation/IMVSScaleTransformModu",
+          "label": "单位转换",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calculation/IMVSSinglePointAlignModu",
+          "label": "单点对位",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calculation/SinglePointGrabModu",
+          "label": "单点抓取",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calculation/SinglePointMapAlignModu",
+          "label": "单点映射对位",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Calculation/SinglePointRectifyModu",
+          "label": "单点纠偏",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "颜色处理",
+      "total": 6,
+      "candidate": 0,
+      "unpaired": 6,
+      "tools": [
+        {
+          "key": "ColorProcessing/IMVSColorExtractModu",
+          "label": "颜色抽取",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ColorProcessing/IMVSColorImageGenerationModu",
+          "label": "彩图生成",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ColorProcessing/IMVSColorMeasureModu",
+          "label": "颜色测量",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ColorProcessing/IMVSColorRecognitionModu",
+          "label": "颜色识别",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ColorProcessing/IMVSColorSegmentModu",
+          "label": "颜色分割",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ColorProcessing/IMVSColorTransformModu",
+          "label": "颜色转换",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "通信",
+      "total": 5,
+      "candidate": 4,
+      "unpaired": 1,
+      "tools": [
+        {
+          "key": "Communication/CameraIOModule",
+          "label": "相机IO通信",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Communication/DataAnalysisModule",
+          "label": "协议解析",
+          "candidates": [
+            {
+              "id": "ProtocolParse",
+              "file": "tool-detail-ProtocolParse.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Communication/DataAssembleModule",
+          "label": "协议组装",
+          "candidates": [
+            {
+              "id": "ProtocolAssemble",
+              "file": "tool-detail-ProtocolAssemble.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Communication/ReadDatasModule",
+          "label": "接收数据",
+          "candidates": [
+            {
+              "id": "ReceiveData",
+              "file": "tool-detail-ReceiveData.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Communication/SendDatasModule",
+          "label": "发送数据",
+          "candidates": [
+            {
+              "id": "SendData",
+              "file": "tool-detail-SendData.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        }
+      ]
+    },
+    {
+      "name": "缺陷检测",
+      "total": 14,
+      "candidate": 0,
+      "unpaired": 14,
+      "tools": [
+        {
+          "key": "DefectDetection/IMVSCircleEdgeInspModu",
+          "label": "圆弧边缘缺陷检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSCircleEdgePairInspModu",
+          "label": "圆弧对缺陷检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSEdgeFlawInspModu",
+          "label": "边缘模型缺陷检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSEdgeInspGroupModu",
+          "label": "边缘组合缺陷检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSEdgePairFlawInspModu",
+          "label": "边缘对模型缺陷检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSEdgePairInspGroupModu",
+          "label": "边缘对组合缺陷检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSEdgePairPosTrendAnalyModu",
+          "label": "边缘对位置趋势分析",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSEdgePosTrendAnalyModu",
+          "label": "边缘位置趋势分析",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSInspectModu",
+          "label": "异常检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSLineEdgeInspModu",
+          "label": "直线边缘缺陷检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSLineEdgePairInspModu",
+          "label": "直线对缺陷检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSMarkInspModu",
+          "label": "IMVSMarkInspModu",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSMarkInspModuVA",
+          "label": "字符缺陷检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "DefectDetection/IMVSSurfaceDefectFilterModu",
+          "label": "表面缺陷滤波",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "全局与框架载体",
+      "total": 17,
+      "candidate": 0,
+      "unpaired": 17,
+      "tools": [
+        {
+          "key": "Global/CommDeviceModule",
+          "label": "CommDeviceModule",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/CommManagerModule",
+          "label": "CommManagerModule",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/DataQueueModule",
+          "label": "DataQueueModule",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/DynamicParamCameraModule",
+          "label": "DynamicParamCameraModule",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/GlobalCameraModule",
+          "label": "GlobalCameraModule",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/GlobalTriggerModule",
+          "label": "GlobalTriggerModule",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/GlobalVariableModule",
+          "label": "GlobalVariableModule",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/ImageCollectDalsaModu",
+          "label": "ImageCollectDalsaModu",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/ImageCollectHikModu",
+          "label": "ImageCollectHikModu",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/ImageCollectIKModu",
+          "label": "ImageCollectIKModu",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/ImageCollectModu",
+          "label": "ImageCollectModu",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/LightControl",
+          "label": "LightControl",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/LocalVariableModule",
+          "label": "LocalVariableModule",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/ProcedureComm",
+          "label": "ProcedureComm",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/ProcedureModule",
+          "label": "ProcedureModule",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/SCGlobalCameraModule",
+          "label": "SCGlobalCameraModule",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Global/SolutionModule",
+          "label": "SolutionModule",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "图形生成",
+      "total": 4,
+      "candidate": 0,
+      "unpaired": 4,
+      "tools": [
+        {
+          "key": "ImageGeneration/GeometryCreate",
+          "label": "几何创建",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageGeneration/IMVSCircleFitModu",
+          "label": "圆拟合",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageGeneration/IMVSEllipseFitModu",
+          "label": "椭圆拟合",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "ImageGeneration/IMVSLineFitModu",
+          "label": "直线拟合",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "测量",
+      "total": 11,
+      "candidate": 6,
+      "unpaired": 5,
+      "tools": [
+        {
+          "key": "Measurement/IMVSC2CMeasureModu",
+          "label": "圆圆测量",
+          "candidates": [
+            {
+              "id": "CircleCircleMeasure",
+              "file": "tool-detail-CircleCircleMeasure.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Measurement/IMVSEdgeWidthFindModu",
+          "label": "间距检测",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Measurement/IMVSHistToolModu",
+          "label": "直方图工具",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Measurement/IMVSIntensityMeasureModu",
+          "label": "亮度测量",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Measurement/IMVSL2CMeasureModu",
+          "label": "线圆测量",
+          "candidates": [
+            {
+              "id": "LineCircleMeasure",
+              "file": "tool-detail-LineCircleMeasure.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Measurement/IMVSL2LMeasureModu",
+          "label": "线线测量",
+          "candidates": [
+            {
+              "id": "LineLineMeasure",
+              "file": "tool-detail-LineLineMeasure.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Measurement/IMVSP2CMeasureModu",
+          "label": "点圆测量",
+          "candidates": [
+            {
+              "id": "PointCircleMeasure",
+              "file": "tool-detail-PointCircleMeasure.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Measurement/IMVSP2LMeasureModu",
+          "label": "点线测量",
+          "candidates": [
+            {
+              "id": "PointLineMeasure",
+              "file": "tool-detail-PointLineMeasure.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Measurement/IMVSP2PMeasureModu",
+          "label": "点点测量",
+          "candidates": [
+            {
+              "id": "PointPointMeasure",
+              "file": "tool-detail-PointPointMeasure.html"
+            }
+          ],
+          "status": "候选对照：原算法/全生命周期仍不等价"
+        },
+        {
+          "key": "Measurement/IMVSPixelCountModu",
+          "label": "像素统计",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Measurement/IMVSPixelCountModuVA",
+          "label": "像素统计",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "识别",
+      "total": 4,
+      "candidate": 0,
+      "unpaired": 4,
+      "tools": [
+        {
+          "key": "Recognition/IMVS2dBcrModu",
+          "label": "二维码识别",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Recognition/IMVSBcrModu",
+          "label": "条码识别",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Recognition/IMVSMachineLearningClassifierModu",
+          "label": "ML分类",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "Recognition/IMVSOcrModu",
+          "label": "字符识别",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    },
+    {
+      "name": "拆分组合",
+      "total": 6,
+      "candidate": 0,
+      "unpaired": 6,
+      "tools": [
+        {
+          "key": "SplitCombination/IMVS2dArrayCorrectModu",
+          "label": "二维阵列",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "SplitCombination/IMVSBoxFilterModule",
+          "label": "Box过滤",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "SplitCombination/IMVSBoxMergeModu",
+          "label": "Box融合",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "SplitCombination/IMVSBoxOverlapCalculationModu",
+          "label": "Box重叠率计算",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "SplitCombination/IMVSDivideImageModu",
+          "label": "划片拆分",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        },
+        {
+          "key": "SplitCombination/IMVSMultiLabelFilterModu",
+          "label": "多标签筛选",
+          "candidates": [],
+          "status": "尚未建立逐工具对应；不能判定自研未开发"
+        }
+      ]
+    }
+  ],
+  "oursWithoutCandidate": [],
+  "counts": {
+    "mainEntries": 25,
+    "mainIndexed": 25,
+    "vmTools": 162,
+    "candidateVmTools": 23,
+    "unpairedVmTools": 139,
+    "candidateLinks": 25,
+    "oursDeclared": 24,
+    "oursWithCandidate": 24,
+    "algorithmEquivalenceAccepted": null
+  },
+  "policy": "目录覆盖、候选对应、源码局部分析、算法等价四个口径；未建立完整逐工具等价验收分母，不能算等价完成百分比。"
+}

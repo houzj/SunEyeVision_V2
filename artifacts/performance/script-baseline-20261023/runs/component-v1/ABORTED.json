@@ -1,0 +1,5 @@
+{
+  "reason": "exploratory harness did not await asynchronous VM references; controlled interruption before final matrix; results excluded from final comparison",
+  "completed": 41,
+  "productModified": false
+}

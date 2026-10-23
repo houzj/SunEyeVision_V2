@@ -1,0 +1,16 @@
+{
+  "sha256": "45c57bc46f72fd1f9e0b3a6f9183ff974d14590cfd05ecf4e9fa97a4ff95ae9b",
+  "method": "Static ctor vtable and PE RTTI, not runtime observation",
+  "vtableRVA": "21d420",
+  "name": ".?AVCBaseTopology@@",
+  "entries": [
+    {
+      "slot": 0,
+      "rva": "20d90"
+    },
+    {
+      "slot": 8,
+      "rva": "20dd0"
+    }
+  ]
+}

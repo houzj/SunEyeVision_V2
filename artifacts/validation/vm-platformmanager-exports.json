@@ -1,0 +1,52 @@
+{
+  "target": "D:/Program Files/VisionMaster4.4.0/Applications/Server/PlatformManager.dll",
+  "sha256": "06d86f51bebfeba357d1b79297e20a3b0a70580a40af7b77c8abdd6c38ca0624",
+  "base": "180000000",
+  "exports": [
+    {
+      "name": "PF_M_Deinit",
+      "rva": "69ff50",
+      "va": "18069ff50"
+    },
+    {
+      "name": "PF_M_GetBinaryData",
+      "rva": "6a0520",
+      "va": "1806a0520"
+    },
+    {
+      "name": "PF_M_Init",
+      "rva": "69fc10",
+      "va": "18069fc10"
+    },
+    {
+      "name": "PF_M_MsgDeal",
+      "rva": "6a0250",
+      "va": "1806a0250"
+    },
+    {
+      "name": "PF_M_SetBinaryData",
+      "rva": "6a0320",
+      "va": "1806a0320"
+    },
+    {
+      "name": "PF_M_SetGlobalscriptCallback",
+      "rva": "6a0750",
+      "va": "1806a0750"
+    },
+    {
+      "name": "PF_M_SetMsgCallback",
+      "rva": "6a0130",
+      "va": "1806a0130"
+    },
+    {
+      "name": "PF_M_SetReportModuleDataCallback",
+      "rva": "6a07a0",
+      "va": "1806a07a0"
+    },
+    {
+      "name": "PF_M_SetRunResultCallback",
+      "rva": "6a0180",
+      "va": "1806a0180"
+    }
+  ]
+}

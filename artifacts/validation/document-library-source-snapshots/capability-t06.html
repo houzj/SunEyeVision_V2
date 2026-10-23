@@ -1,0 +1,153 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T06 窗口连续调试：停止</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">T06 窗口连续调试：停止</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>T06 窗口连续调试：停止</h1><article id="compare-T06"><span id="T06"></span><div class="visual-metrics"><div><strong>T06</strong><span>能力条目</span><small>部分实现</small></div><div><strong>差异大</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>混合优化</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>再次点击连续按钮</b></li><li><small>02</small><b>_isContinuousRunning=false</b></li><li><small>03</small><b>按钮文案/可见性恢复</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>停止重触发开关已存在，不等中断当前执行。</p><details><summary>完整缺陷与未闭合调用边</summary><p>停止重触发→当前ExecuteToolAsync的取消；当前执行终态→窗口可复用/关闭；延迟任务→安全结束</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>VM工具停止及回调何时完成需看专业窗口与原生材料，不能只比停按钮。</p><p>原版停止连续任务退出/解绑有实码，当前原生调用中断仍待证。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/DEBUG-SESSION-CONTRACT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">停止分支清连续标志并恢复界面，未在该入口等待当前算法；停止下一轮与本轮结束混淆。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：停止分支清连续标志并恢复界面，未在该入口等待当前算法；停止下一轮与本轮结束混淆。 VM参考边界：原版停止连续任务退出/解绑有实码，当前原生调用中断仍待证。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">引入StopRequested/Drained两阶段，界面说明停止范围，运行终态后才允许会话退役；配合T05不可另造循环。 调试会话提供StopRequested与Drained，区分停下一轮和取消本轮；保留已有循环，不强杀原生线程，UI在终态后恢复，延迟回调带会话版本。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">停止发生在算法、延迟、结果回调各时刻均无新一轮且资源最终释放。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o02.html#O02"><b>统一运行范围、连续与停止完成</b><small class="reference-id">优化方案 · O02</small></a></td></tr></tbody></table></div></section><article id="recommendation-T06"><h2>T06 窗口连续调试：停止 · 必须整改</h2><p><b>代码依据 / 局限：</b>停止分支清连续标志并恢复界面，未在该入口等待当前算法；停止下一轮与本轮结束混淆。</p><p><b>VM可借鉴与不可推断：</b>原版停止连续任务退出/解绑有实码，当前原生调用中断仍待证。</p><p><b>具体改法 / 成本：</b>引入StopRequested/Drained两阶段，界面说明停止范围，运行终态后才允许会话退役；配合T05不可另造循环。 调试会话提供StopRequested与Drained，区分停下一轮和取消本轮；保留已有循环，不强杀原生线程，UI在终态后恢复，延迟回调带会话版本。</p><p><b>验收：</b>停止发生在算法、延迟、结果回调各时刻均无新一轮且资源最终释放。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-T06">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-T06">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S071</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:209</a></p><p><code>OnContinuousExecuteCommand</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnContinuousExecuteCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (_isContinuousRunning)
+            {
+                // 停止连续运行
+                _isContinuousRunning = false;
+                ContinuousRunButton.Content = &quot;连续执行&quot;;
+                RunButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                // 开始连续运行
+                _isContinuousRunning = true;
+                ContinuousRunButton.Content = &quot;停止运行&quot;;</pre></details><details class="source-card"><summary>S072</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:587</a></p><p><code>OnWindowClosed</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnWindowClosed(object? sender, EventArgs e)
+        {
+            // 停止连续运行
+            _isContinuousRunning = false;
+            
+            // 清理路由事件订阅
+            UnsubscribeRoutedEvents();
+        }
+
+        #endregion
+    }
+}
+</pre></details><details class="source-card"><summary>R045</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:209</a></p><p><code>OnContinuousExecuteCommand</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnContinuousExecuteCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (_isContinuousRunning)
+            {
+                // 停止连续运行
+                _isContinuousRunning = false;
+                ContinuousRunButton.Content = &quot;连续执行&quot;;
+                RunButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                // 开始连续运行
+                _isContinuousRunning = true;
+                ContinuousRunButton.Content = &quot;停止运行&quot;;
+                RunButton.Visibility = Visibility.Collapsed;
+                
+                // 触发第一次执行
+                TriggerExecute();
+            }
+        }</pre></details><details class="source-card"><summary>R046</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:587</a></p><p><code>OnWindowClosed</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void OnWindowClosed(object? sender, EventArgs e)
+        {
+            // 停止连续运行
+            _isContinuousRunning = false;
+            
+            // 清理路由事件订阅
+            UnsubscribeRoutedEvents();
+        }
+
+        #endregion
+    }
+}
+</pre></details><details class="source-card"><summary>R047</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs">src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs:272</a></p><p><code>TriggerExecute</code></p><p>SHA256 <code>d483b78646bb69bfb1bbc5831418e1c4b633e4e503a1aa2e711e477056dc73d1</code></p><pre>        private void TriggerExecute()
+        {
+            if (_isExecuting) return;
+
+            _isExecuting = true;
+            SetButtonsEnabled(false);
+
+            // 显式将 Execute 命令路由到工具控件执行
+            ToolCommands.Execute.Execute(null, _control);
+        }
+
+        #endregion
+
+        #region 数据初始化转发
+
+        /// &lt;summary&gt;
+        /// 设置当前节点（委托给内部控件）
+        /// &lt;/summary&gt;
+        /// &lt;remarks&gt;
+        /// 必须在 SetDataProvider 之前调用，因为 SetDataProvider 内部会恢复配置，</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;T06&quot;,
+  &quot;group&quot;: &quot;tool&quot;,
+  &quot;title&quot;: &quot;窗口连续调试：停止&quot;,
+  &quot;state&quot;: &quot;partial&quot;,
+  &quot;chain&quot;: [
+    &quot;再次点击连续按钮&quot;,
+    &quot;_isContinuousRunning=false&quot;,
+    &quot;按钮文案/可见性恢复&quot;
+  ],
+  &quot;current&quot;: &quot;停止重触发开关已存在，不等中断当前执行。&quot;,
+  &quot;gap&quot;: &quot;停止重触发→当前ExecuteToolAsync的取消；当前执行终态→窗口可复用/关闭；延迟任务→安全结束&quot;,
+  &quot;vm&quot;: &quot;VM工具停止及回调何时完成需看专业窗口与原生材料，不能只比停按钮。&quot;,
+  &quot;vmDoc&quot;: &quot;DEBUG-SESSION-CONTRACT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;必须整改&quot;,
+  &quot;reason&quot;: &quot;依据：停止分支清连续标志并恢复界面，未在该入口等待当前算法；停止下一轮与本轮结束混淆。 VM参考边界：原版停止连续任务退出/解绑有实码，当前原生调用中断仍待证。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;引入StopRequested/Drained两阶段，界面说明停止范围，运行终态后才允许会话退役；配合T05不可另造循环。 调试会话提供StopRequested与Drained，区分停下一轮和取消本轮；保留已有循环，不强杀原生线程，UI在终态后恢复，延迟回调带会话版本。&quot;,
+  &quot;accept&quot;: &quot;停止发生在算法、延迟、结果回调各时刻均无新一轮且资源最终释放。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S071&quot;,
+    &quot;S072&quot;,
+    &quot;R045&quot;,
+    &quot;R046&quot;,
+    &quot;R047&quot;
+  ],
+  &quot;optimization&quot;: &quot;O02&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;review&quot;: {
+    &quot;id&quot;: &quot;T06&quot;,
+    &quot;before&quot;: &quot;partial&quot;,
+    &quot;after&quot;: &quot;partial&quot;,
+    &quot;confirmed&quot;: &quot;连续按钮停止分支只清_isContinuousRunning并恢复文案/可见性；Closed也清标志，没有在这些方法等待当前算法。&quot;,
+    &quot;missingEdges&quot;: [
+      &quot;停止重触发→当前ExecuteToolAsync的取消&quot;,
+      &quot;当前执行终态→窗口可复用/关闭&quot;,
+      &quot;延迟任务→安全结束&quot;
+    ],
+    &quot;cause&quot;: &quot;局部已确认缺少可等待排空边&quot;,
+    &quot;change&quot;: &quot;调试会话提供StopRequested与Drained，区分停下一轮和取消本轮；保留已有循环，不强杀原生线程，UI在终态后恢复，延迟回调带会话版本。&quot;,
+    &quot;acceptance&quot;: &quot;停止发生在算法、延迟、结果回调各时刻均无新一轮且资源最终释放。&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S071&quot;,
+      &quot;S072&quot;,
+      &quot;R045&quot;,
+      &quot;R046&quot;,
+      &quot;R047&quot;
+    ],
+    &quot;decision&quot;: &quot;仅明确证据与缺口，不因复核次数或材料交付自动升级&quot;
+  },
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;区分停止下一轮与取消本轮&quot;,
+    &quot;reason&quot;: &quot;直接杀任务风险高；等待当前执行需让UI明确“停止中”。&quot;
+  },
+  &quot;defect&quot;: &quot;停止分支清连续标志并恢复界面，未在该入口等待当前算法；停止下一轮与本轮结束混淆。&quot;,
+  &quot;vmBorrow&quot;: &quot;原版停止连续任务退出/解绑有实码，当前原生调用中断仍待证。&quot;,
+  &quot;difference&quot;: &quot;差异大&quot;,
+  &quot;differenceBasis&quot;: &quot;列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。&quot;,
+  &quot;adoption&quot;: &quot;混合优化&quot;,
+  &quot;adoptionBasis&quot;: &quot;参考VM已确认的职责/行为，结合自有数据与服务实现；不复用VM二进制、协议或密钥。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;必须整改&quot;,
+    &quot;defect&quot;: &quot;停止分支清连续标志并恢复界面，未在该入口等待当前算法；停止下一轮与本轮结束混淆。&quot;,
+    &quot;borrow&quot;: &quot;原版停止连续任务退出/解绑有实码，当前原生调用中断仍待证。&quot;,
+    &quot;action&quot;: &quot;引入StopRequested/Drained两阶段，界面说明停止范围，运行终态后才允许会话退役；配合T05不可另造循环。&quot;,
+    &quot;difference&quot;: &quot;差异大&quot;,
+    &quot;adoption&quot;: &quot;混合优化&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S071&quot;,
+      &quot;S072&quot;,
+      &quot;R045&quot;,
+      &quot;R046&quot;,
+      &quot;R047&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

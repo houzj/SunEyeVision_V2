@@ -1,0 +1,26 @@
+{
+  "file": "D:/Program Files/VisionMaster4.4.0/Applications/ModuleProxy/x64/ModuleProxy.dll",
+  "sha256": "76f09a40184b2b5f99b7173edde23a716d339e3c64955696d6927495efdf68a9",
+  "exports": [
+    {
+      "name": "VM_PROXY_DeInit",
+      "rva": "20b40"
+    },
+    {
+      "name": "VM_PROXY_Init",
+      "rva": "20a90"
+    },
+    {
+      "name": "VM_PROXY_RecvServerCommand",
+      "rva": "20bd0"
+    },
+    {
+      "name": "VM_PROXY_SetSDKCallBack",
+      "rva": "20d10"
+    },
+    {
+      "name": "VM_PROXY_SetServerCallBack",
+      "rva": "20c60"
+    }
+  ]
+}

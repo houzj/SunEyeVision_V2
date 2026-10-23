@@ -1,0 +1,1 @@
+const fs=require('fs'),p='docs/04-工具设计/标定工具/2026/10/19/suneye-vm-design-comparison-plan.html',s=fs.readFileSync(p,'utf8'),ids=new Set([...s.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]));console.log('missing',[...new Set([...s.matchAll(/href="#([^"]+)"/g)].filter(x=>!ids.has(x[1])).map(x=>x[1]))]);console.log('contracts',[...ids].filter(x=>/contract|lifecycle/.test(x)));

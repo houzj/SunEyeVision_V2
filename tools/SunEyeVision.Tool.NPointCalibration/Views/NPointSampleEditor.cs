@@ -16,6 +16,7 @@ public partial class NPointSampleEditor : Window
 {
     private readonly ObservableCollection<NPointSample> _rows;
     private readonly int _translationCount;
+    private readonly NPointSample[] _original;
 
     public IReadOnlyList<NPointSample> Samples { get; private set; } = Array.Empty<NPointSample>();
 
@@ -23,6 +24,7 @@ public partial class NPointSampleEditor : Window
     {
         InitializeComponent();
         _translationCount = parameters.TranslationCount;
+        _original = parameters.Samples.Select(s=>s.Copy()).ToArray();
         int total = parameters.TranslationCount + parameters.RotationCount;
         var source = parameters.Samples.Concat(parameters.ArchivedSamples.AsEnumerable().Reverse());
         _rows = new ObservableCollection<NPointSample>(Enumerable.Range(0, total).Select(index =>
@@ -52,8 +54,7 @@ public partial class NPointSampleEditor : Window
 
     private void Clear_Click(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show("清空编辑表中的全部点？", "确认", MessageBoxButton.YesNo,
-                MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+        if (!CalibrationDialogs.Confirm(this,"清空点表","清空编辑副本？仅按确定后提交，不删除正式文件。")) return;
         foreach (var row in _rows)
         {
             row.Enabled = false;
@@ -75,7 +76,7 @@ public partial class NPointSampleEditor : Window
         if (!SampleGrid.CommitEdit(DataGridEditingUnit.Cell, true)
             || !SampleGrid.CommitEdit(DataGridEditingUnit.Row, true))
         {
-            MessageBox.Show("点表中有未完成或无效的编辑。", "点表错误");
+            CalibrationDialogs.Error(this,"点表错误","点表中有未完成或无效的编辑。");
             return;
         }
         var valid = _rows.Where(r => r.Enabled).ToList();
@@ -83,8 +84,14 @@ public partial class NPointSampleEditor : Window
                            || !double.IsFinite(r.AxisX) || !double.IsFinite(r.AxisY)
                            || !double.IsFinite(r.AxisAngle)))
         {
-            MessageBox.Show("存在非有限数值的标定点。", "点表错误");
+            CalibrationDialogs.Error(this,"点表错误","存在非有限数值的标定点。");
             return;
+        }
+        foreach(var row in valid)
+        {
+            var old=_original.FirstOrDefault(s=>s.Id==row.Id);
+            if(old==null || old.ImageX!=row.ImageX || old.ImageY!=row.ImageY || old.AxisX!=row.AxisX || old.AxisY!=row.AxisY || old.AxisAngle!=row.AxisAngle)
+            {row.Source="ManualModified";row.FrameId=null;row.FrameCapturedAt=null;row.AxisReadAt=null;row.SessionId="";row.StepId=0;row.CameraId="";row.WorkPlaneId="";}
         }
         Samples = _rows.Where(r => r.Source != "Placeholder").Select(r => r.Copy()).ToArray();
         DialogResult = true;
@@ -92,12 +99,10 @@ public partial class NPointSampleEditor : Window
 
     private void Export()
     {
+        if(!SampleGrid.CommitEdit(DataGridEditingUnit.Cell,true) || !SampleGrid.CommitEdit(DataGridEditingUnit.Row,true))return;
         var dialog = new SaveFileDialog { Filter = "标定点 CSV (*.csv)|*.csv" };
         if (dialog.ShowDialog(this) != true) return;
-        var lines = new List<string> { "Id,Kind,Enabled,ImageX,ImageY,AxisX,AxisY,AxisAngle" };
-        lines.AddRange(_rows.Where(r => r.Source != "Placeholder").Select(r => string.Join(",",
-            r.Id, r.Kind, r.Enabled, F(r.ImageX), F(r.ImageY), F(r.AxisX), F(r.AxisY), F(r.AxisAngle))));
-        File.WriteAllLines(dialog.FileName, lines);
+        File.WriteAllLines(dialog.FileName,NPointSampleCsv.Export(_rows));
     }
 
     private void Import()
@@ -106,17 +111,7 @@ public partial class NPointSampleEditor : Window
         if (dialog.ShowDialog(this) != true) return;
         try
         {
-            var lines = File.ReadAllLines(dialog.FileName);
-            if (lines.Length == 0 || lines[0].Trim() != "Id,Kind,Enabled,ImageX,ImageY,AxisX,AxisY,AxisAngle")
-                throw new FormatException("CSV 表头不匹配；旧研发点表不做兼容，请重新采集。");
-            var loaded = lines.Skip(1).Where(line => !string.IsNullOrWhiteSpace(line))
-                .Select(Parse).ToArray();
-            if (loaded.Any(r => r.Id < 0 || r.Id >= _rows.Count)
-                || loaded.Select(r => r.Id).Distinct().Count() != loaded.Length)
-                throw new FormatException("点号超出当前平移/旋转次数或存在重复。");
-            if (loaded.Any(r => r.Kind != (r.Id < _translationCount
-                    ? NPointSampleKind.Translation : NPointSampleKind.Rotation)))
-                throw new FormatException("CSV 点类别与当前平移/旋转点号不一致。");
+            var loaded=NPointSampleCsv.Parse(File.ReadAllLines(dialog.FileName),_translationCount,_rows.Count-_translationCount);
             for (int i = 0; i < _rows.Count; i++)
                 _rows[i] = new NPointSample
                 {
@@ -129,26 +124,8 @@ public partial class NPointSampleEditor : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "导入标定点失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+            CalibrationDialogs.Error(this,"导入标定点失败",ex.Message);
         }
     }
 
-    private static string F(double value) => value.ToString("R", CultureInfo.InvariantCulture);
-
-    private static NPointSample Parse(string line)
-    {
-        var values = line.Split(',');
-        if (values.Length != 8) throw new FormatException("CSV 列数错误。");
-        return new NPointSample
-        {
-            Id = int.Parse(values[0], CultureInfo.InvariantCulture),
-            Kind = Enum.Parse<NPointSampleKind>(values[1]),
-            Enabled = bool.Parse(values[2]),
-            ImageX = double.Parse(values[3], CultureInfo.InvariantCulture),
-            ImageY = double.Parse(values[4], CultureInfo.InvariantCulture),
-            AxisX = double.Parse(values[5], CultureInfo.InvariantCulture),
-            AxisY = double.Parse(values[6], CultureInfo.InvariantCulture),
-            AxisAngle = double.Parse(values[7], CultureInfo.InvariantCulture),
-        };
-    }
 }

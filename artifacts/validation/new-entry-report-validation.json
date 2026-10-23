@@ -1,0 +1,20 @@
+{
+  "capabilities": 46,
+  "main": 23,
+  "tool": 18,
+  "support": 5,
+  "horizontalColumns": 8,
+  "optimizations": 12,
+  "referenceDomains": 23,
+  "sourceLocations": 112,
+  "links": 856,
+  "statusFilters": true,
+  "inspectors": true,
+  "frozenFirstColumn": true,
+  "deepLinks": true,
+  "printRestore": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "networkRequests": 0,
+  "productRun": false
+}

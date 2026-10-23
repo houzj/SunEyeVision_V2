@@ -1,0 +1,236 @@
+{
+  "groups": [
+    {
+      "n": 3,
+      "firstQueryMedian": 366.9717,
+      "firstOpenRange": [
+        1542.7464,
+        4206.2733
+      ],
+      "mode": "cold",
+      "startupMedian": null,
+      "allValid": true,
+      "firstOpenMedian": 1556.1117,
+      "reopenQueryMedian": 99.3559,
+      "reopenMedian": 210.007
+    },
+    {
+      "n": 3,
+      "firstQueryMedian": 359.5951,
+      "firstOpenRange": [
+        994.8647,
+        1903.6941
+      ],
+      "mode": "prewarmed",
+      "startupMedian": 591.6911,
+      "allValid": true,
+      "firstOpenMedian": 1184.443,
+      "reopenQueryMedian": 72.0203,
+      "reopenMedian": 195.1469
+    },
+    {
+      "n": 3,
+      "firstQueryMedian": 368.1043,
+      "firstOpenRange": [
+        1618.835,
+        2038.4373
+      ],
+      "mode": "startup-disabled-probe",
+      "startupMedian": null,
+      "allValid": true,
+      "firstOpenMedian": 1920.1453,
+      "reopenQueryMedian": 83.9236,
+      "reopenMedian": 228.1609
+    }
+  ],
+  "rows": [
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "cold",
+      "round0": {
+        "initializationMs": 846.9551,
+        "constructToContentRenderedMs": 1542.7464,
+        "firstRequestedQueryMs": 362.6072,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 10.3804,
+        "constructToContentRenderedMs": 182.8259,
+        "firstRequestedQueryMs": 69.1083,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2360.6998
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "cold",
+      "round0": {
+        "initializationMs": 836.5169,
+        "constructToContentRenderedMs": 1556.1117,
+        "firstRequestedQueryMs": 366.9717,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 14.3208,
+        "constructToContentRenderedMs": 210.007,
+        "firstRequestedQueryMs": 99.3559,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2429.2604
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "cold",
+      "round0": {
+        "initializationMs": 2533.7884,
+        "constructToContentRenderedMs": 4206.2733,
+        "firstRequestedQueryMs": 410.5486,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 42.8194,
+        "constructToContentRenderedMs": 399.2406,
+        "firstRequestedQueryMs": 177.8575,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 6150.2239
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "startup-disabled-probe",
+      "isolationNote": "Probe-only static guard suppresses background startup preparation; on-demand initialization still runs; product unchanged",
+      "round0": {
+        "initializationMs": 1012.0779,
+        "constructToContentRenderedMs": 2038.4373,
+        "firstRequestedQueryMs": 383.9752,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 13.8703,
+        "constructToContentRenderedMs": 262.0549,
+        "firstRequestedQueryMs": 86.4529,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2981.6583
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "startup-disabled-probe",
+      "isolationNote": "Probe-only static guard suppresses background startup preparation; on-demand initialization still runs; product unchanged",
+      "round0": {
+        "initializationMs": 932.0144,
+        "constructToContentRenderedMs": 1920.1453,
+        "firstRequestedQueryMs": 368.1043,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 14.188,
+        "constructToContentRenderedMs": 228.1609,
+        "firstRequestedQueryMs": 83.9236,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2811.8888
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "startup-disabled-probe",
+      "isolationNote": "Probe-only static guard suppresses background startup preparation; on-demand initialization still runs; product unchanged",
+      "round0": {
+        "initializationMs": 880.7014,
+        "constructToContentRenderedMs": 1618.835,
+        "firstRequestedQueryMs": 347.7042,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 14.6389,
+        "constructToContentRenderedMs": 214.9728,
+        "firstRequestedQueryMs": 76.4341,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2484.8863
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "prewarmed",
+      "startupPreparationMs": 589.0279,
+      "round0": {
+        "initializationMs": 263.0309,
+        "constructToContentRenderedMs": 1184.443,
+        "firstRequestedQueryMs": 359.5951,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 12.564,
+        "constructToContentRenderedMs": 184.8471,
+        "firstRequestedQueryMs": 68.5952,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2575.0341
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "prewarmed",
+      "startupPreparationMs": 591.6911,
+      "round0": {
+        "initializationMs": 271.6971,
+        "constructToContentRenderedMs": 994.8647,
+        "firstRequestedQueryMs": 354.0682,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 12.4844,
+        "constructToContentRenderedMs": 195.1469,
+        "firstRequestedQueryMs": 72.0203,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 2413.395
+    },
+    {
+      "scope": "Release ScriptEditorCore in standalone WPF window; not full ScriptDebugControl/product shell",
+      "mode": "prewarmed",
+      "startupPreparationMs": 1143.0615,
+      "round0": {
+        "initializationMs": 427.2154,
+        "constructToContentRenderedMs": 1903.6941,
+        "firstRequestedQueryMs": 370.1283,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "round1": {
+        "initializationMs": 28.7005,
+        "constructToContentRenderedMs": 343.0359,
+        "firstRequestedQueryMs": 100.8469,
+        "hasAppend": true,
+        "queryExcludesPopup": true
+      },
+      "success": true,
+      "totalMs": 4153.879
+    }
+  ],
+  "productModified": false,
+  "scope": "真实Release编辑器控件隔离WPF窗口，不等完整调试窗口；候选返回不含补全弹窗；3进程每组，未清磁盘缓存"
+}

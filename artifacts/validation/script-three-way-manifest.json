@@ -1,0 +1,39 @@
+{
+  "input": "docs/collaboration/SCRIPT_REFERENCE_THREE_WAY_20261023.json",
+  "inputSHA": "f2adad4e87e2744efc55e60177e67762cd36317382154c04e23b7e566168e878",
+  "rows": 5,
+  "referenceRows": 5,
+  "pages": [
+    {
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+      "sha256": "8c606929af395f7d30f2bbae98a6cd2b0bfbb933d151abf37d459649e13a0a27"
+    },
+    {
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html",
+      "sha256": "2ab3ea5f406fd5e714bc1df72d3dd8cbe87a4ebc200120d5312da3b6c4f0cb07"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "docs/collaboration/SCRIPT_OPTIMIZATION_DECISION_20261023.json",
+      "sha256": "fe38502fa8fe9da014ba8aa7f88a40555fcd688e9a93f7e961c44f35ac5982bc"
+    },
+    {
+      "path": "docs/collaboration/SCRIPT_ASSEMBLY_SCOPE_20261023.json",
+      "sha256": "dbbc6121891dfb13b12ebd1e4cbbed12f00afc10e59fadd7579a78a5bf3127c1"
+    },
+    {
+      "path": "docs/collaboration/SCRIPT_PERFORMANCE_BATCH_20261023.json",
+      "sha256": "ed21bf68c251745b413e09e163cf24397c5efd0e10091c070a640cc3ca231be3"
+    },
+    {
+      "path": "artifacts/performance/script-warmup-window-20261023/final/summary.json",
+      "sha256": "c39bf5e4e2c1d49eb16847a5052e633ec1b8b01e66d37a428749d9bbb995eeb3"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/evidence.json",
+      "sha256": "24f41820024e9afc4bc5a0f3a5a470fe9c47e2c3a6a596e1b785c5d5ff0a13f8"
+    }
+  ],
+  "productModified": false
+}

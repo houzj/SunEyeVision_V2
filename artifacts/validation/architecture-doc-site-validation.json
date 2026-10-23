@@ -1,0 +1,21 @@
+{
+  "pages": 36,
+  "frameworkPages": 20,
+  "decisions": 12,
+  "plannedAcceptance": 24,
+  "executedAcceptance": 0,
+  "officialSources": 15,
+  "sourceHashChecks": 53,
+  "legacyRoutes": 74,
+  "localLinks": 798,
+  "widths": [
+    390,
+    768,
+    1440
+  ],
+  "printRestore": true,
+  "pageErrors": [],
+  "remoteRequests": [],
+  "productModified": false,
+  "checkpointUpgrades": 0
+}

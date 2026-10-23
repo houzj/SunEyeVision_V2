@@ -1,0 +1,138 @@
+{
+  "reviews": [
+    {
+      "id": "ImageFilter",
+      "vmKey": "ImageProcessing/IMVSImageFilterModu",
+      "title": "滤波：共同模式与不同能力不能按枚举值迁移",
+      "rows": [
+        [
+          "高斯",
+          "Gaussian=1",
+          "Gaussian=1",
+          "名称交集；核/Sigma/边界仍需数值样本，不能据同编号直接等价"
+        ],
+        [
+          "中值",
+          "Median=2",
+          "MedianBlur=2",
+          "名称交集；自研调用MedianRect，原VM实现未恢复"
+        ],
+        [
+          "均值",
+          "Mean=3",
+          "Blur=0",
+          "编号不同，必须显式语义映射"
+        ],
+        [
+          "反色",
+          "Invert=4",
+          "无专用模式；Filter2D=4是相关/锐化",
+          "相同数字表示不同能力，禁止直接转换"
+        ],
+        [
+          "边缘",
+          "Edge=5",
+          "无相同专用模式",
+          "自定义核可能完成部分处理，不代证VM Edge相同"
+        ],
+        [
+          "双边/自定义核",
+          "当前VM此枚举未声明",
+          "Bilateral=3 / Filter2D=4",
+          "自研扩展不能证明VM整体不支持，也不等图像增强工具已对应"
+        ]
+      ],
+      "fact": "自研均值/高斯走HalconLinearFilters，中值MedianRect；双边仅Reflect且Sigma驱动邻域；Filter2D是自定义相关或固定锐化。VM XML声明Gaussian/Median/Mean/Invert/Edge，内部公式仍未知。",
+      "change": "按语义键建立兼容表；原Invert/Edge不得落到自研同数值枚举。若产品需要，新增独立反色/边缘合同并列算子、单位、ROI/边界/类型政策；先做数值样本再声称替代VM。",
+      "accept": "逐模式核常量图/阶跃/脉冲/ROI边缘和边界方式；错误编号拒绝或明确映射，旧文件不得默默改模式。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.ImageFilter/ImageFilterParameters.cs",
+          "line": 13,
+          "token": "public enum FilterType",
+          "sha256": "78806440c993dca6cdba4450a1ce6cad6a341ade8b26abae3f5cf8ffb2a9b3cb"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.ImageFilter/ImageFilterTool.cs",
+          "line": 182,
+          "token": "case FilterType.Filter2D:",
+          "sha256": "02677227120662e2d5ae2ecd7007e6cb79d274e1d66ceb25a2660a54be8f16b3"
+        },
+        {
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/ImageProcessing/IMVSImageFilterModu/IMVSImageFilterModuAlgorithmTab.xml",
+          "line": 184,
+          "token": "<EnumEntry Name=\"Invert\">",
+          "sha256": "10f0cc4d88bdb8b487fe9703191f3b0c728abae1f4e63ee77e4fcb73bf8bca41"
+        }
+      ]
+    },
+    {
+      "id": "Morphology",
+      "vmKey": "ImageProcessing/IMVSImageMorphModu",
+      "title": "形态学：算子/形状编号不同，输入域也须先对齐",
+      "rows": [
+        [
+          "膨胀",
+          "Dilate=1",
+          "Dilate=1",
+          "编号相同仅该项；不要推广为全枚举兼容"
+        ],
+        [
+          "腐蚀",
+          "Erode=2",
+          "Erode=0",
+          "必须语义映射"
+        ],
+        [
+          "开/闭",
+          "Open=3 / Close=4",
+          "Open=2 / Close=3",
+          "编号不同，不能直接反序列化迁移"
+        ],
+        [
+          "核形状",
+          "Rectange=0 / Ellipse=1 / Crosss=2",
+          "Rect=0 / Cross=1 / Ellipse=2",
+          "1和2含义互换"
+        ],
+        [
+          "扩展算子",
+          "此VM枚举声明4项",
+          "另有Gradient/TopHat/BlackHat",
+          "资源未声明不等原版产品绝对不支持"
+        ],
+        [
+          "处理对象",
+          "原内部实现未齐",
+          "固定阈值128转区域后做形态学，再裁有效域",
+          "先确认二值区域/灰度语义，不能当通用灰度形态学等价"
+        ]
+      ],
+      "fact": "自研把灰度输入固定128转区域，处理后与有效域求交，再RegionToBin；原VM仅恢复算子/核枚举声明，不能推其是否同样阈值或同样ROI边界。",
+      "change": "明确当前工具叫二值区域形态学，或新增显式二值/灰度模式；阈值由前置输入或显式设置提供。导入迁移用语义键，按核生成方式和迭代合同逐项对齐。",
+      "accept": "灰度渐变/二值掩膜、非对称核、ROI屏蔽、迭代及核形状映射分别验；相同名称不代数值等价。",
+      "sources": [
+        {
+          "path": "tools/SunEyeVision.Tool.Morphology/MorphologyParameters.cs",
+          "line": 14,
+          "token": "public enum MorphOperation",
+          "sha256": "4315f014c6f557470c9f2d79adc02550a7766d3bf21c3543752b3eb5452ffe90"
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.Morphology/MorphologyTool.cs",
+          "line": 145,
+          "token": "// ===== Step 4: 固定阈值二值化",
+          "sha256": "d05abb83f07475fda981008cac8b55c34ccbffb41ed72e5c2162b623abb4a85e"
+        },
+        {
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/ImageProcessing/IMVSImageMorphModu/IMVSImageMorphModuAlgorithmTab.xml",
+          "line": 102,
+          "token": "<Enumeration Name=\"MorphShape\">",
+          "sha256": "3114392281f500531dd914ad56400d2e4d9e9d1bce721d30b5d3fe9d621aef07"
+        }
+      ]
+    }
+  ],
+  "policy": "原始资源模式与当前实现合同；不是原native算法等价",
+  "runtimeExecuted": false
+}

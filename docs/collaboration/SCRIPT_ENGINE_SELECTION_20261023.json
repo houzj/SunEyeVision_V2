@@ -1,0 +1,14 @@
+{
+  "id":"SCRIPT-ENGINE-SELECTION-01",
+  "status":"comparison-in-progress-no-product-change",
+  "paths":[
+    {"id":"A","label":"Roslyn语义与编译，优化集成","measured":"既有Release组件，不是优化后产品","unknown":"优化后端到端收益"},
+    {"id":"B","label":"较轻语义引擎及配套编译方案","measured":"仅原版VM/NRefactory包装和CodeDOM隔离组件","unknown":"自研宿主新适配实现、完整能力及维护代价"},
+    {"id":"C","label":"语义补全与编译分别选型","measured":"仅各独立组件","unknown":"组合后的语言语义一致性、引用一致性、诊断位置与总耗时"}
+  ],
+  "commonCases":["局部变量","实例成员","静态成员","外部DLL成员","泛型与扩展方法","未完成或错误代码"],
+  "triggerModes":["自然dot输入","显式CtrlSpace"],
+  "comparisonRules":["相同源字节、光标与引用身份","候选正确性先于数量与速度","引用准备/首查询/再次查询分开","正常空结果与包装抑制不直接判引擎失败","共同语法与现代语法边界分别统计","组件基准不等完整UI、不把未构建路径当实测"],
+  "selectionGates":["共同必需补全正确性","支持脚本语法与编译器语义一致","引用更新可失效、旧结果不可误用","可验证冷进程与再次使用端到端等待","部署许可与维护成本"],
+  "ownership":{"testing":"独立测试SCRIPT-ENGINE-COMPARISON-01","reverse":"框架与插件逆向有限补证","documentation":"既有主文档唯一维护者","product":"本轮禁止修改"}
+}

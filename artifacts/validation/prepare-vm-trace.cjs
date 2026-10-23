@@ -1,0 +1,4 @@
+const fs=require('fs'),{open}=require('./vm-pe.cjs');
+const target=process.argv[2]||'D:/Program Files/VisionMaster4.4.0/Applications/PublicFile/x64/iMVS-6000PlatformSDK.dll',out=process.argv[3]||'artifacts/validation/vm-native-receiver-seeds.txt';
+const pe=open(target),seeds=process.argv.slice(4).length?process.argv.slice(4).map(s=>{const [name,r]=s.split('=');return [name,parseInt(r,16)];}):[['SlotInit',0x6615b0],['SlotReset',0x661d00],['ManagerInit',0x660680],['SendCommand',0x6c00d0],['CommandOverflow',0x662a70],['StopDispatch',0x6702f0],['ReleaseMemory',0x6af090],['CloseDispatch',0x663ed0]];
+const va=r=>(Number(pe.base)+r).toString(16),lines=seeds.map(([name,r])=>{const ranges=pe.ranges(r),entry=ranges[0]?.begin;if(entry!==r)throw Error('not root '+name);return name+' '+va(r)+' '+ranges.map(x=>va(x.begin)+':'+va(x.end-1)).join(',');});fs.writeFileSync(out,lines.join('\n'));console.log(lines.join('\n'));

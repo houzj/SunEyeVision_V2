@@ -1,0 +1,77 @@
+{
+  "receiptPath": "docs/collaboration/SCRIPT_VM_DIFFERENCE_20261023.json",
+  "receiptSha256": "6eb96418e18f7de24512fbf1a3ce251601aaba9ecfae1d5b14e014b46854245e",
+  "sourceChecks": [
+    {
+      "sha256": "EF3DC431D3F5D83C885C524BDB5704D6094561691A6F62514945E6E5D9F8EB6B",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ShellModuleControl\\ShellModuleControl\\ShellCodeEditor.cs",
+      "actualSha256": "ef3dc431d3f5d83c885c524bdb5704d6094561691a6f62514945e6e5d9f8eb6b",
+      "matches": true
+    },
+    {
+      "sha256": "A034C4A370F4183203808C43B0DD03C3382EAF81DEA17D7F067B44616E986025",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ShellModuleControl\\ShellModuleControl\\ShellRun.xaml.cs",
+      "actualSha256": "a034c4a370f4183203808c43b0dd03c3382eaf81dea17d7f067b44616e986025",
+      "matches": true
+    },
+    {
+      "sha256": "AA704102F2841DB0B61231172283A6B0604FE360ACE215F4067B7A7FBE4733F3",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptComponent\\ScriptComponent\\ScriptCom.cs",
+      "actualSha256": "aa704102f2841db0b61231172283a6b0604fe360ace215f4067b7a7fbe4733f3",
+      "matches": true
+    },
+    {
+      "sha256": "E96F2A7FF5E13783B3E862725BF4A00366AD967BC3B9C13766B330A9C572B2B8",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\BaseScriptSupport.cs",
+      "actualSha256": "e96f2a7ff5e13783b3e862725bf4a00366ad967bc3b9c13766b330a9c572b2b8",
+      "matches": true
+    },
+    {
+      "sha256": "7E3725FB2E6A4D0A589EA85E7356FF1162F3A8916A4D3F05FEB96DC0E0CD3A4F",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\AssemblyManager.cs",
+      "actualSha256": "7e3725fb2e6a4d0a589ea85e7356ff1162f3a8916a4d3f05feb96dc0e0cd3a4f",
+      "matches": true
+    },
+    {
+      "sha256": "BB2F9C7618BD6F66F79785299518102A7CE1D5311143E0181478AEEC2B5BE88A",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\ScriptEditorCore.xaml.cs",
+      "actualSha256": "bb2f9c7618bd6f66f79785299518102a7ce1d5311143e0181478aeec2b5be88a",
+      "matches": true
+    },
+    {
+      "sha256": "5656340E229C9061E431AA8A690D186599F1FCC6F516DDED3B0B3CF164AC288A",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\CommonControl\\SemanticHighlighter.cs",
+      "actualSha256": "5656340e229c9061e431aa8a690d186599f1fcc6f516dded3b0b3cf164ac288a",
+      "matches": true
+    },
+    {
+      "sha256": "9DCD71BBA72E25AF94A858F52D18B0CA573709313F1CB491BC271FB275582048",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+      "actualSha256": "9dcd71bba72e25af94a858f52d18b0ca573709313f1cb491bc271fb275582048",
+      "matches": true
+    },
+    {
+      "sha256": "14A9AE73A34C65D65AC466CA5956FC66D53D4D79B45309217C62D871338B2BF1",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptCompiler.cs",
+      "actualSha256": "14a9ae73a34c65d65ac466ca5956fc66d53d4d79b45309217c62d871338b2bf1",
+      "matches": true
+    }
+  ],
+  "nativeCheck": {
+    "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/b-script/native/process-asm.txt",
+    "actualSha256": "82bd9a14f719d630c568cf772489629fe501dd99f8a2000184a03cee8cfafc00"
+  },
+  "comparisonFigures": 3,
+  "roleMapping": true,
+  "capabilityRows": 5,
+  "attributionRows": 6,
+  "roadmapSteps": 4,
+  "fullImplementationChainConfirmed": false,
+  "officialSources": [
+    "https://github.com/icsharpcode/NRefactory",
+    "https://github.com/dotnet/roslyn/blob/main/src/Features/Core/Portable/Completion/CompletionService.cs"
+  ],
+  "productModified": false,
+  "applicationUiMeasured": false,
+  "navigationModified": false
+}

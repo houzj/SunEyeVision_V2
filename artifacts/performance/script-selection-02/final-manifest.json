@@ -1,0 +1,310 @@
+{
+  "files": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\business-0\\result.json",
+      "sha256": "B4079D52C6539DE4BA05BCC6A116134DADC7F381E6956A3A34701B3565269BE3"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\business-1\\result.json",
+      "sha256": "FD8897B9EEB444AD8A196E18376EE0C6C3ED16132763ED14A189F69A24AEEFDD"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\business-2\\result.json",
+      "sha256": "3EDE60969CB956771971404A22F6B07EF8D45C42D9F15AA0A86B4EB0B4F7E40C"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\business.json",
+      "sha256": "4888C956882E0BE41E42B47CEDC0FD3F3E56CF3AD76F79296DED1A49784B2047"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\default-0\\result.json",
+      "sha256": "371AF649FA48DC7B3307C2AD224CBA5BF16F4A63F573BA527C304B83873F13AE"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\default-1\\result.json",
+      "sha256": "6E1EEEA0163CB1BD3C323C37DC6FB44405E6089597CD72625C3FD84EDA92DBC0"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\default-2\\result.json",
+      "sha256": "13FC572747570D0127C606EE4875700046C9C40A3E147B1205FD4A15C8C378D5"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\default.json",
+      "sha256": "A6C788FC744725EF91C15DD7B0C4F650C1448E986B1ED9CC374676867FD32BED"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\frozen\\halcondotnetxl.dll",
+      "sha256": "A1C8C3EF74F37F751E5CFB08A513B68F36A75511D7B4F9FD4E5A532E45652C57"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\frozen\\OpenCvSharp.dll",
+      "sha256": "90796CE6B45A19755104EC8C3933AB3B62B84E4FCB50B0A1CE8132F755A8D852"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\frozen\\OpenCvSharp.Extensions.dll",
+      "sha256": "A39CFA936C4E4BF0AA452460C76B15EEE0CDAE5E5A8AD70A3A1A49A055B4A300"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\frozen\\SunEyeVision.Plugin.SDK.dll",
+      "sha256": "BEBDFEE09299A7F76F3EFB5EAB0BC8F3906D1E07CB39BC837F5767D42E2837D3"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\frozen\\SunEyeVision.Tool.Kernels.dll",
+      "sha256": "27AA830907BF4AD922C74926BF5E81BC9F7350756FA498517FFCE1831A4C39E0"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\minimal-0\\result.json",
+      "sha256": "7D3777EC9C0D20C5C3275CE27B374F0234A366F45C4BD823573D97BA2EA4837E"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\minimal-1\\result.json",
+      "sha256": "E89E0D3227186FB9FC4E35446BA70555C1765BE56E3DE9F7775C6C510CEB07F1"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\minimal-2\\result.json",
+      "sha256": "85748EC763DBCC413EB29B21D210F31816154B00F0127DB07413201480971E29"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\minimal.json",
+      "sha256": "4BF78F111143328579E680AD109652F5480A02A77C41C374260DB91B6AE4C0E2"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\Probe.cs",
+      "sha256": "C8EBBEC6242647D28ACBBCF49644546B0FF6186E6F3A0C72668A677401BDFD41"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\receipt.json",
+      "sha256": "D9B54894B404CDFCD4B183956F5D1D49154562DEFF42C6F6E5816F0BEFBE06CA"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-cost\\summary.json",
+      "sha256": "8C98C2D94FD85F50916C5277FA4483C8CB610F80560FE5DA4917712722697390"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\bin\\Release\\net9.0\\WorkerA.dll",
+      "sha256": "644B3E403440420E4EE6D7B0563171367CF8E2C52356644D0472E163988E693B"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\Program.cs",
+      "sha256": "E609E2F921491FEF1A156846FDE867BE3962A437D17C62424256EB49CAF6BF0E"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\reference-worker\\WorkerA.csproj",
+      "sha256": "871DEF664F6D9DFF34A8211AFF4D27E25DBE2B611DB31E694793595E659F629F"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M01-a\\result.json",
+      "sha256": "0F14C7D625DB95FBA9143FC9AFE877275508DEF0895BCE3C4634DD97ABEEEFD1"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M01-a\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M01-a\\stdout.log",
+      "sha256": "3C8285F901F4C5A12022774A491F29791047E71C4F70216AEAC1A4203EF5C8F3"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M01-b\\result.json",
+      "sha256": "32AFC97ECCA2959266D37C098DE62A1AFD10D8D76EF16CB2AA66FCE87F76641D"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M01-b\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M01-b\\stdout.log",
+      "sha256": "0AE5DA3D9A171CD4BF88DE74FC662C1DB5DCF85CCF42BD520DC6F78A562FED2F"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M02-a\\result.json",
+      "sha256": "C868066E4B0201682952C4E1436E0FD81FB8F3CB578D60FA5E14EA516660B809"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M02-a\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M02-a\\stdout.log",
+      "sha256": "4095847DF2CC7F96ED2FF7876504A41B5D0761044EBB02DDA705FD746BF6EA53"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M02-b\\result.json",
+      "sha256": "5B5863C3DC8D3D6EEDFCF5433E01148E79A94D549F49ADEBF4084A4D34C76C17"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M02-b\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M02-b\\stdout.log",
+      "sha256": "E565F4E4F6EABC113873EA80D7F0A492A2940A144D56DAFD72CA0D4F84506012"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M03-a\\result.json",
+      "sha256": "E8140718D354AD2CAC11F237BE15B640486DC42EFA09FF8E92577C5DD4AAC048"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M03-a\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M03-a\\stdout.log",
+      "sha256": "AC34FF2329D3C2EFD653180A2BF872F13B356B6A1D41404989CB08E31C42BCA6"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M03-b\\result.json",
+      "sha256": "213C8D03E61EA84FD36A860BED3B3FBAAD7DBF6157093DA62A70A1599BFF17A7"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M03-b\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M03-b\\stdout.log",
+      "sha256": "F1684CAD979978E04260382F3E1D4C8C63E54BEBA8539F9501209695D38A39C7"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M04-a\\result.json",
+      "sha256": "3AD29DAEEE8A75E48E39BC77C06CF1596B9502B5325CD15A47FB5E77FB71CCBD"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M04-a\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M04-a\\stdout.log",
+      "sha256": "4E68197DC0B8A4D5F039DACF8AD1B7E401B93BDA59BB66FBA13369CDA90B411D"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M04-b\\result.json",
+      "sha256": "8A45D837A4D44CFCD789DE01A8895ADF19366E162D2282A84C811D0570BAFF21"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M04-b\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\M04-b\\stdout.log",
+      "sha256": "9430B37230705B0018E822A4B8C7362D5F9CF61269815EF866C8840521E8E370"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\namespace-new-a\\result.json",
+      "sha256": "883FFECCA969E3D250B29355AE5D87FA8E159CAF8E3E86E59B50C8589797D2F6"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\namespace-new-a\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\namespace-new-a\\stdout.log",
+      "sha256": "B6F4899F7B1C2F6539C5E711D552CEE16A0C0C5795D63A52426BA0C29AEAC483"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\namespace-new-b\\result.json",
+      "sha256": "CCD848A9C3361FC12205A1305426875B1BACD9BFC4F6F13049284CB189E08D73"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\namespace-new-b\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\namespace-new-b\\stdout.log",
+      "sha256": "42E0121A6452AFEDADFCD7D10D4D3EA8123298550D7EFCE159E9A1957EA64762"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\namespace-new.cs",
+      "sha256": "4C8AD3D04C6C9DFB1FA58FF28D6BD80A4E2DBECBDA9EA6C1940B33BC2CFA8CFE"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\static-member-a\\result.json",
+      "sha256": "719AC82C24E0F7A183D617E0EE9DD8886118F30A7BC2A5D3A49576EB96A756FE"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\static-member-a\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\static-member-a\\stdout.log",
+      "sha256": "C633C10AD072EEF9191D1E6DC3C71197D112646E55857E6A83B9BE88D4611D37"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\static-member-b\\result.json",
+      "sha256": "7E5D06BC7C9017800E87CC232F18161712B849DC5FE9017813BBCBBD728AF419"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\static-member-b\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\static-member-b\\stdout.log",
+      "sha256": "0D2C9BA7D2D38C3C0E75CD2AC021A77044BC63DC06A76E808D81C6602636CF27"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\static-member.cs",
+      "sha256": "2B0EE39D14D1E9C0EA8CB680CD292F5432A6FB39E6147E8FB0E8327CC2281D50"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\summary.json",
+      "sha256": "0AC2BAEDBF2D0CB946A08FBB8001CC7FCC075678376986F95C975C13A07C685E"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\typeof-a\\result.json",
+      "sha256": "9439B68E6E349F60CE0119F88C601B1345C3CA877DD2DC34AF635A308E9E7DF6"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\typeof-a\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\typeof-a\\stdout.log",
+      "sha256": "A1CACDB73B07A9458FD2F381BE0E5AF9BFC84347079EE5EE2D5BD286AB1923F7"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\typeof-b\\result.json",
+      "sha256": "DB52D39D907F2AAFFA007FD5358CE568BB1301DE1657BFDA6D30F26F45866C92"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\typeof-b\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\typeof-b\\stdout.log",
+      "sha256": "F0F1360D352D2DB74EF803591DFFC4975B34CD5472125EA0041E4B4C1A9A9832"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\typeof.cs",
+      "sha256": "CC6F3F131E0EAA48286330FF220B5729FAFBC8BCB9021B4F960F9053B1429116"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\unqualified-member-a\\result.json",
+      "sha256": "95C1782DAD12059FA8884B478F2E700A3F67A16241FB8042153AE4BD45814094"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\unqualified-member-a\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\unqualified-member-a\\stdout.log",
+      "sha256": "139A65FDA531CCF91CDEB62AD95EC264E38F7D5EF9ED34EBB1D2C786D52FB73C"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\unqualified-member-b\\result.json",
+      "sha256": "147A3224A56647C1F47E657B9D957895D6A4BC16F3724C5608AE7DEDF41CA514"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\unqualified-member-b\\stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\unqualified-member-b\\stdout.log",
+      "sha256": "D0932C218600314DF7BAF8BAF5A97D2D8F078D5942CD4A8C40A22C62EB1607AC"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-selection-02\\targeted-static\\unqualified-member.cs",
+      "sha256": "74BBC0EACF57305A433D2EEE50EB8F4A7665450EEFD548641B0C064D4092D41A"
+    }
+  ],
+  "productModified": false,
+  "scope": "第二轮静态上下文定向测试及引用配置成本证据固定；非产品交付"
+}

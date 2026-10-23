@@ -1,0 +1,111 @@
+{
+  "stages": [
+    {
+      "id": "load",
+      "title": "打开方案：先读候选，再采用",
+      "what": "方案文件保存配置，不保存正在运行的相机连接或任务。",
+      "chain": "OpenSolution → Repository.Load → 检查版本/插件 → 反序列化候选 → 未保存修改检查 → SetCurrentSolution",
+      "fact": "已有Id校验；SchemaVersion出现且不为1则拒绝；缺失版本被允许，并不等于已经有所有旧版本迁移。ValidateTools递归检查ToolType，缺插件拒绝，而不是静默丢节点。",
+      "route": "继续使用自有格式并补兼容合同；原生VM格式内部实现未齐，不能建议直接迁移.sol。",
+      "change": "列格式版本与迁移清单；缺插件拒绝和只读占位是两种产品政策，应选定后实现，不能把当前拒绝当已支持占位。",
+      "accept": "损坏JSON、未知版本、缺插件时原方案和未保存修改保持；完整UI采用阶段失败另验。",
+      "source": {
+        "path": "src/Workflow/SolutionRepository.cs",
+        "line": 75,
+        "token": "private static void ValidateSchema",
+        "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+        "snippet": "    private static void ValidateSchema(JsonElement root)\n    {\n        if (!root.TryGetProperty(\"Id\", out var id) || id.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(id.GetString()))\n            throw new InvalidDataException(\"方案缺少有效身份，不能作为新方案静默载入。\");\n        if (root.TryGetProperty(\"SchemaVersion\", out var schema) && schema.GetInt32() != 1)\n            throw new InvalidDataException(\"当前软件不支持该方案格式版本，请使用兼容的软件打开。\");\n    }\n\n    private bool EnsurePluginsLoaded()\n    {\n        // 检查全局状态\n        if (PluginLoader.IsLoaded)\n        {\r\n            _logger.Log(LogLevel.Info, \"插件已加载（全局状态），跳过重复检查\", \"SolutionRepository\");\r\n            return true;\r\n        }\r\n\r\n        // 如果未加载，触发全局加载\r\n        _logger.Log(LogLevel.Info, \"插件未加载，触发全局加载\", \"SolutionRepository\");\r\n        return PluginLoader.EnsureLoaded();\r\n    }\r\n\r\n\r\n    /// <summary>\r\n    /// 加载完整的解决方案对象\r\n    /// </summary>\r\n    /// <param name=\"filePath\">解决方案文件路径</param>\r\n    /// <returns>解决方案对象，失败返回 null</returns>\r\n    /// <remarks>\r\n    /// Fail Fast 原则：在反序列化前确保插件已加载。\r"
+      }
+    },
+    {
+      "id": "write",
+      "title": "保存文件：已有临时写入，但内存先改变",
+      "what": "把配置序列化到目标旁的临时文件，已有目标先存上一版本，再替换目标。",
+      "chain": "ValidateCommunicationConfigurations → 去除autoConnect/写solution.FilePath → JSON → 临时文件 → recovery → Replace/Move",
+      "fact": "文件不直接截断旧目标，这是已有保护。但solution.FilePath和communication.Settings.Remove在写入之前发生；后续失败没有对应恢复内存的finally。不能把磁盘替换保护说成整个保存事务已原子。",
+      "route": "原方案整改扩展；不重造已有临时替换机制。",
+      "change": "先对候选副本规范化并序列化，写入成功后提交内存路径/配置；或保存旧值并严格回滚。明确磁盘写成而后续失败的结果类型。",
+      "accept": "拒绝覆盖、文件占用、无权限、序列化失败分别核原字节与内存状态；断电耐久性未验证，不用原子替换名词代证。",
+      "source": {
+        "path": "src/Workflow/SolutionRepository.cs",
+        "line": 529,
+        "token": "communication.Settings.Remove(\"autoConnect\")",
+        "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+        "snippet": "                communication.Settings.Remove(\"autoConnect\");\r\n            solution.FilePath = filePath;\r\n\r\n            // 确保目录存在\r\n            var directory = Path.GetDirectoryName(filePath);\r\n            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))\r\n            {\r\n                Directory.CreateDirectory(directory);\r\n                _logger.Log(LogLevel.Info, $\"[Save #{callId}] 创建目录: {directory}\", \"SolutionRepository\");\r\n            }\r\n\r\n            var json = JsonSerializer.Serialize(solution, WorkflowSerializationOptions.Default);\r\n\r\n            _logger.Log(LogLevel.Info, $\"[Save #{callId}] 序列化完成，开始写入文件\", \"SolutionRepository\");\r\n\r\n            // Write beside the target so replacement stays on the same volume. Keep the previous\r\n            // solution as a recoverable .bak; a failed serialization/write never truncates it.\r\n            using (JsonDocument.Parse(json)) { }\r\n            var destination = Path.GetFullPath(filePath);\r\n            temporaryPath = Path.Combine(Path.GetDirectoryName(destination)!,\n                $\".{Path.GetFileName(destination)}.{Guid.NewGuid():N}.tmp\");\n            File.WriteAllText(temporaryPath, json);\n            if (File.Exists(destination))\n            {\n                if (!overwrite) throw new IOException(\"目标方案已存在，不会覆盖：\" + destination);\n                AtomicJsonFile.Write(GetRecoveryPath(destination), File.ReadAllText(destination));\n                File.Replace(temporaryPath, destination, null, ignoreMetadataErrors: true);\n            }\n            else\n                File.Move(temporaryPath, destination);"
+      }
+    },
+    {
+      "id": "commit",
+      "title": "保存完成：文件、索引、界面不是同一步",
+      "what": "用户看到“已保存”应能区分方案文件已写入与目录索引/设置同步情况。",
+      "chain": "SolutionManager.SaveSolution → Repository.Save返回true → CurrentFilePath/元数据 → SolutionSaved/设置/日志",
+      "fact": "Manager会检查Repository的false；主窗入口也检查SaveSolution失败。事件订阅者和后续设置写入属于额外失败边界，不能因此断言整个保存没有错误传播。",
+      "route": "完善分阶段结果；不能默认所有保存入口都已可靠。",
+      "change": "定义文件提交结果与索引/通知结果，提交后通知失败应可修复索引，不能诱导用户以为文件未写入。逐调用者检查false，变量管理器另有已确认误报。",
+      "accept": "注入保存后事件异常、设置失败时提示实际阶段；重启后文件可找到；未保存状态只按明确提交合同清除。",
+      "source": {
+        "path": "src/Workflow/SolutionManager.cs",
+        "line": 499,
+        "token": "bool success = _repository.Save(CurrentSolution, savePath)",
+        "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da",
+        "snippet": "        bool success = _repository.Save(CurrentSolution, savePath);\r\n        if (!success)\r\n        {\r\n            return false;\r\n        }\r\n\r\n        CurrentFilePath = savePath;\r\n\r\n        // ✅ 更新元数据\r\n        if (metadata == null)\r\n        {\r\n            // 如果元数据不存在（不应该发生），从文件加载或创建一个基本的元数据\r\n            metadata = _repository.LoadMetadata(savePath);\r\n            if (metadata == null)\r\n            {\r\n                metadata = new SolutionMetadata\r\n                {\r\n                    Id = CurrentSolution.Id,\r\n                    Name = Path.GetFileNameWithoutExtension(savePath),\r\n                    Description = \"\",\r\n                    Version = CurrentSolution.Version,\r\n                    FilePath = savePath,\r\n                    DirectoryPath = Path.GetDirectoryName(savePath) ?? \"\",\r\n                    CreatedTime = File.GetCreationTime(savePath),\r\n                    ModifiedTime = DateTime.Now\r\n                };\r\n            }\r\n        }\r\n        else\r\n        {\r"
+      }
+    },
+    {
+      "id": "resources",
+      "title": "资源路径：能解析相对路径，不代表另存后都可移植",
+      "what": "图像、模板和标定文件可能存路径；方案JSON与外部资源是一组关联数据。",
+      "chain": "Repository.Load → ResolveResourcePaths → 相对路径按方案基目录转绝对 → 插件参数",
+      "fact": "当前按属性名FilePath/ModelPath/CalibrationFilePath和FilePaths/ForRunPaths处理；它不是每插件资源合同。存在花括号的单值路径跳过，数组路径分支政策也不同，是否为表达式需逐合同核。",
+      "route": "补显式资源清单和插件声明，暂不声称通用移植已完成。",
+      "change": "按插件声明资源角色/路径表达式/嵌入或外置策略；另存按新基目录重定位或复制清单，不盲目替换所有同名字段。",
+      "accept": "换目录/离线重开、缺资源、表达式、数组、插件私有资源分别验；运行前给缺失清单。",
+      "source": {
+        "path": "src/Workflow/SolutionRepository.cs",
+        "line": 211,
+        "token": "internal static string ResolveResourcePaths",
+        "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+        "snippet": "    internal static string ResolveResourcePaths(string json, string directory)\n    {\n        var root = JsonNode.Parse(json)!;\n        void Resolve(JsonNode? node)\n        {\n            if (node is JsonObject obj)\n            {\n                foreach (var pair in obj.ToArray())\n                {\n                    if (pair.Key is \"FilePath\" or \"ModelPath\" or \"CalibrationFilePath\" && pair.Value is JsonValue value && value.TryGetValue<string>(out var path) &&\n                        !string.IsNullOrWhiteSpace(path) && !Path.IsPathRooted(path) && !path.Contains('{'))\n                        obj[pair.Key] = Path.GetFullPath(path, directory);\n                    else if (pair.Key is \"FilePaths\" or \"ForRunPaths\" && pair.Value is JsonArray array)\n                        for (var i = 0; i < array.Count; i++)\n                        {\n                            var entry = array[i]?.GetValue<string>();\n                            if (!string.IsNullOrWhiteSpace(entry) && !Path.IsPathRooted(entry)) array[i] = Path.GetFullPath(entry, directory);\n                        }\n                    else Resolve(pair.Value);\n                }\n            }\n            else if (node is JsonArray list) foreach (var child in list) Resolve(child);\n        }\n        Resolve(root);\n        return root.ToJsonString();\n    }\n\n    private string RemoveDevicesProperty(string json)\n    {\r\n        using var document = JsonDocument.Parse(json);\r"
+      }
+    },
+    {
+      "id": "recover",
+      "title": "恢复：上一保存版本，不是连续编辑备份",
+      "what": "恢复目录用原方案完整路径的哈希定位previous.solution；它保留上一次覆盖前的文件。",
+      "chain": "GetRecoveryPath → 覆盖前保存旧字节 → RestorePreviousSave加载恢复候选 → 写回原位置",
+      "fact": "这是已有上一版本恢复，不等每次编辑自动备份。恢复加载可传原资源目录，避免把恢复目录当资源基目录；临时目录清理与路径改名策略还需发布验收。",
+      "route": "扩展已有恢复机制；不要重复新建一套备份。",
+      "change": "明确保留期限、恢复预览、当前打开方案准入和索引同步；恢复前保护当前目标，提供可撤销恢复策略。",
+      "accept": "原文件损坏、恢复文件损坏、资源相对路径、临时目录被清理、另存/重命名分别核；不把一次恢复方法存在当故障验收。",
+      "source": {
+        "path": "src/Workflow/SolutionManager.cs",
+        "line": 900,
+        "token": "public Solution RestorePreviousSave",
+        "sha256": "22b7588a406cdbe953b43d35c1802e12258e74f819afbe924ebc830edb1a43da",
+        "snippet": "    public Solution RestorePreviousSave(string solutionId)\r\n    {\r\n        var metadata = GetMetadata(solutionId) ?? throw new InvalidOperationException(\"方案记录不存在。\");\r\n        var recovery = _repository.GetRecoveryPath(metadata.FilePath);\r\n        var restored = _repository.Load(recovery, Path.GetDirectoryName(Path.GetFullPath(metadata.FilePath))!)\r\n            ?? throw new InvalidDataException(\"上一保存版本无法恢复：\" + LastError);\r\n        if (restored.Id != metadata.Id) throw new InvalidDataException(\"恢复文件身份不匹配，不会覆盖。\");\r\n        AtomicJsonFile.Write(metadata.FilePath, File.ReadAllText(recovery));\r\n        restored.FilePath = metadata.FilePath;\r\n        return restored;\r\n    }\r\n\r\n    public void UpdateMetadata(SolutionMetadata metadata)\r\n    {\r\n        ArgumentNullException.ThrowIfNull(metadata);\r\n        AtomicJsonFile.ValidateSolutionName(metadata.Name);\r\n        if (!File.Exists(metadata.FilePath)) throw new FileNotFoundException(\"方案文件失效，请先重新定位。\", metadata.FilePath);\r\n        var previous = GetMetadata(metadata.Id)?.Clone();\r\n        var original = File.ReadAllText(metadata.FilePath);\r\n        var document = JsonNode.Parse(original)!.AsObject();\r\n        document[\"Name\"] = metadata.Name; document[\"Description\"] = metadata.Description;\r\n        var updated = document.ToJsonString(new JsonSerializerOptions { WriteIndented = true });\r\n        AtomicJsonFile.Write(_repository.GetRecoveryPath(metadata.FilePath), original);\r\n        AtomicJsonFile.Write(metadata.FilePath, updated);\r\n        try\r\n        {\r\n            _registry.Register(metadata); _cache.Set(metadata.Id, metadata); _settings.AddKnownSolution(metadata);\r\n            ForceSaveSettings();\r\n        }\r\n        catch\r"
+      }
+    },
+    {
+      "id": "trust",
+      "title": "格式与保护：版本、校验、许可、保密分开",
+      "what": "JSON可读性不等安全缺陷已经确定；是否保密取决于产品需求。方案许可和文档加密也不同。",
+      "chain": "自有JSON文件 → 格式验证 → 插件/资源解析；许可准入另走设计服务",
+      "fact": "VM原托管Export/Import到原生SyncSaveSolution/SyncLoadSolution，路径、密码及完成回调有证据；.sol样本外层已恢复但内部密码/旧版/完整往返未知。REA独立.vmx.json及其测试不是原版机制，也不是SunEye已实现。",
+      "route": "不迁移未知VM格式；需要保密时新增自有加密封装与密钥恢复设计。",
+      "change": "自有狗授权与方案加密密钥隔离；先冻结离线转移、丢狗恢复、版本迁移和失败不覆盖原文件政策，再选封装。",
+      "accept": "加密功能尚未实施；需错误密码/损坏/旧版本/密钥丢失验收；未要求复用VM密码或狗。",
+      "source": {
+        "path": "src/Workflow/SolutionRepository.cs",
+        "line": 200,
+        "token": "private static void ValidateTools",
+        "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+        "snippet": "    private static void ValidateTools(JsonElement element)\n    {\n        if (element.ValueKind == JsonValueKind.Object)\n        {\n            if (element.TryGetProperty(\"ToolType\", out var tool) && tool.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(tool.GetString()) &&\n                ToolRegistry.GetToolMetadata(tool.GetString()!) == null)\n                throw new InvalidDataException(\"缺少工具插件：\" + tool.GetString() + \"。原方案保持不变，请安装兼容插件。\");\n            foreach (var property in element.EnumerateObject()) ValidateTools(property.Value);\n        }\n        else if (element.ValueKind == JsonValueKind.Array) foreach (var child in element.EnumerateArray()) ValidateTools(child);\n    }\n    internal static string ResolveResourcePaths(string json, string directory)\n    {\n        var root = JsonNode.Parse(json)!;\n        void Resolve(JsonNode? node)\n        {\n            if (node is JsonObject obj)\n            {\n                foreach (var pair in obj.ToArray())\n                {\n                    if (pair.Key is \"FilePath\" or \"ModelPath\" or \"CalibrationFilePath\" && pair.Value is JsonValue value && value.TryGetValue<string>(out var path) &&\n                        !string.IsNullOrWhiteSpace(path) && !Path.IsPathRooted(path) && !path.Contains('{'))\n                        obj[pair.Key] = Path.GetFullPath(path, directory);\n                    else if (pair.Key is \"FilePaths\" or \"ForRunPaths\" && pair.Value is JsonArray array)\n                        for (var i = 0; i < array.Count; i++)\n                        {\n                            var entry = array[i]?.GetValue<string>();\n                            if (!string.IsNullOrWhiteSpace(entry) && !Path.IsPathRooted(entry)) array[i] = Path.GetFullPath(entry, directory);\n                        }\n                    else Resolve(pair.Value);"
+      }
+    }
+  ],
+  "vm": {
+    "path": "D:/MyWork/REA逆向测试/docs/SOLUTION-PERSISTENCE-BOUNDARY.md",
+    "sha256": "138f7d551fad9fb11a7f4faa6cf3c87191d32f9fc027ad45fd60cb3cbd8cdc10"
+  },
+  "runtimeExecuted": false
+}

@@ -1,0 +1,959 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工具处置 · 全局与框架载体</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">工具处置 · 全局与框架载体</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="../能力对照/capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="../能力对照/capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="audit-overview.html">证据与验收</a></div><h1>工具处置 · 全局与框架载体</h1><aside class="scope-notice">以下沿用2026-10-21分析基线与原有状态；未把本次分页或图示当作新增语义证据。最新目标取舍另见 <a href="../目标架构/architecture-target.html">12项目标决策</a>。</aside><div class="visual-metrics"><div><strong>17</strong><span>本分类目录条目</span><small>目录≠算法等价</small></div></div><div class="filter-bar"><label for="search">搜索本页</label><input id="search" data-filter-input placeholder="输入名称、ID或问题"><output data-filter-count></output></div><div class="record-grid"><section class="record-card" id="tool-10-0" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>CommDeviceModule</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/CommDeviceModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">应用运行时已有设备会话</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">设备描述/原生模块身份与自有会话不是一一类型映射。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；设备描述/原生模块身份与自有会话不是一一类型映射。</td></tr></tbody></table></div><a href="../现状分析/camera-architecture.html#device-admission">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/CommDeviceModule&quot;,
+  &quot;label&quot;: &quot;CommDeviceModule&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;应用运行时已有设备会话&quot;,
+  &quot;gap&quot;: &quot;设备描述/原生模块身份与自有会话不是一一类型映射。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；设备描述/原生模块身份与自有会话不是一一类型映射。&quot;,
+  &quot;url&quot;: &quot;../现状分析/camera-architecture.html#device-admission&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/DeviceDriver/Communications/Runtime/CommunicationRuntimeManager.cs&quot;,
+    &quot;line&quot;: 359,
+    &quot;token&quot;: &quot;public async ValueTask DisposeAsync&quot;,
+    &quot;sha256&quot;: &quot;dba809fe41d0ce4c84e1dc39680b7f7616b96f34a3aaeb3412fe92252d6aaace&quot;
+  },
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommDeviceModule\\CommDeviceModule.xml&quot;,
+      &quot;sha256&quot;: &quot;c78c1f72aa66aaf4edda35a4e808365a06113bf9325460b92329e70b2488b1a4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommDeviceModule\\CommDeviceModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;7d33046b3d4c246b5316a5926b0106e22ba2f1b6c444aaeb29c2ec488a1772d5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommDeviceModule\\CommDeviceModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;8e57bb5a70abe0b6f7d5fd11efb521f512630aa923a48f092d32b1caf171eec1&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommDeviceModule\\CommDeviceModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommDeviceModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;c281f731c84dd810009e8a5f1ba6d2c90a78679fbac731db423d492080de9611&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-1" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>CommManagerModule</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/CommManagerModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已有方案通信应用服务</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">全局配置、工作流入口和每协议接线应对照，不新增同名插件替代管理器。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；全局配置、工作流入口和每协议接线应对照，不新增同名插件替代管理器。</td></tr></tbody></table></div><a href="../现状分析/camera-architecture.html#device-admission">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/CommManagerModule&quot;,
+  &quot;label&quot;: &quot;CommManagerModule&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;已有方案通信应用服务&quot;,
+  &quot;gap&quot;: &quot;全局配置、工作流入口和每协议接线应对照，不新增同名插件替代管理器。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；全局配置、工作流入口和每协议接线应对照，不新增同名插件替代管理器。&quot;,
+  &quot;url&quot;: &quot;../现状分析/camera-architecture.html#device-admission&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/UI/Services/Communication/CommunicationApplicationService.cs&quot;,
+    &quot;line&quot;: 158,
+    &quot;token&quot;: &quot;private void ConfigureReceiveSources&quot;,
+    &quot;sha256&quot;: &quot;8b5a4f0d26cb9a14fc42de8785e48a7cb288edb2ad31c568cca4d6a06fc006b6&quot;
+  },
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\CommManagerModule.xml&quot;,
+      &quot;sha256&quot;: &quot;78333c100b4b2f89b913e909b6def500b5a0a1410d945fc8a1e9012f57c91640&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\CommManagerModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;2eec08b4ed8889d8505a5b63bf2199d299c4f95cb809519e8cf40c5725d25592&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\CommManagerModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;f51b6c17aed8905d4aa10b2397385008f883adcc622daaa59570dfec5d854e11&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\CommManagerModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;d855300e0eca32a165b04abd3962a2cbd911be1468b88fc744256305aed3124f&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\CommManagerModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;b1ee98375a2237e163e8f10f678cca0df7c031f54a6a6af38e620803b94636b2&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-2" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>DataQueueModule</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/DataQueueModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/DataQueueModule&quot;,
+  &quot;label&quot;: &quot;DataQueueModule&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: {
+    &quot;url&quot;: &quot;../现状分析/data-architecture.html#data-tool-DataQueueModule&quot;,
+    &quot;difference&quot;: &quot;高：通用队列工具未实现；已有局部缓冲不等通用队列&quot;,
+    &quot;route&quot;: &quot;条件新增，复用已证的代次/取消/提交原则，不直接把通信缓冲改名。&quot;,
+    &quot;current&quot;: &quot;自研被动通信缓冲已有256消息/4MiB/4096消费者上限，按消费身份游标提交；ReceiveData的队列分支明确抛“尚未实现”。&quot;,
+    &quot;change&quot;: &quot;拟议QueueId+Generation+Sequence+SchemaVersion，元素带Run/Scope/Frame与Owner租约；定单消费者还是多播、容量按条/字节/图像、满队列阻塞/拒绝/丢弃、清空和取消语义。确认后新增服务与工具入口，图像最后读者结束才释放。&quot;,
+    &quot;unknown&quot;: &quot;原队列push/pop/ack/clear实现、触发派发、缓冲拥有与退役实现仍缺。&quot;
+  },
+  &quot;declaredFields&quot;: [],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueConfig.xml&quot;,
+      &quot;sha256&quot;: &quot;77910b516054b4db9665bbe14d9f367cdb20de8104f20eea39bde3b938d0fa09&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModule.xml&quot;,
+      &quot;sha256&quot;: &quot;e347f27b20088e1d3936d1e2983b522e911c4632229e7b35a59291749c2191d0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;a900a63d8118918587c937acb045df3c8750f19d6157a751b54b0fe460c98d17&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;5d56fd74912873a4b934148bcc5b5dd8e3dd16db222772e3101f30e82a593474&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;d2ac90b1a3a29dabaa17324e15c87e27b0bf9592c1287cdc1ecf462ee519e8e8&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;91a5edaeba21eb4f90e4a8ed60a811af5a823d1a5d5ac011968e5f14f30a7808&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-3" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>DynamicParamCameraModule</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/DynamicParamCameraModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">预览参数树与写入读回已有</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">动态schema、参数可用性、批写失败恢复与原模块映射仍需逐项。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；动态schema、参数可用性、批写失败恢复与原模块映射仍需逐项。</td></tr></tbody></table></div><a href="../现状分析/camera-architecture.html#parameters">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/DynamicParamCameraModule&quot;,
+  &quot;label&quot;: &quot;DynamicParamCameraModule&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;预览参数树与写入读回已有&quot;,
+  &quot;gap&quot;: &quot;动态schema、参数可用性、批写失败恢复与原模块映射仍需逐项。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；动态schema、参数可用性、批写失败恢复与原模块映射仍需逐项。&quot;,
+  &quot;url&quot;: &quot;../现状分析/camera-architecture.html#parameters&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/UI/Features/Camera/CameraDetailViewModel.cs&quot;,
+    &quot;line&quot;: 864,
+    &quot;token&quot;: &quot;ApplyParametersAsync&quot;,
+    &quot;sha256&quot;: &quot;1294ac7588efda05f58f106bf41342349381d09d7e5611791b8e356ee927b5c9&quot;
+  },
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;TriggerString&quot;,
+    &quot;TriggerFilter&quot;,
+    &quot;ExposureTimeInput&quot;,
+    &quot;GainInput&quot;,
+    &quot;ImageData&quot;,
+    &quot;Image&quot;,
+    &quot;Width&quot;,
+    &quot;Height&quot;,
+    &quot;PixelFormat&quot;,
+    &quot;FrameNum&quot;,
+    &quot;LostFrameCount&quot;,
+    &quot;LostPacketCount&quot;,
+    &quot;Port&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule\\DynamicParamCameraModule.xml&quot;,
+      &quot;sha256&quot;: &quot;7af64c68315857540cddb7f7e0cba9bd90a2caff159b4155a495ec839fa29f06&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule\\DynamicParamCameraModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;77a6620d4fb600b0169afe2fe72ca488d6e2fa6cbf4617edeeeeefed640e44e4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule\\DynamicParamCameraModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;5314f8438fdae6ee1afc360af033f6861cfe2c5c0433587650bb300c8d42dc61&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule\\DynamicParamCameraModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;c157827b3de8c961c1bd98f7f1d7978b44959f43b78fee792f6ea070add8db88&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;42c2a8459d8d8f10e00fec8b1bc4b9039657e602bcad6416666aa9decad841d0&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-4" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>GlobalCameraModule</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/GlobalCameraModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已有应用相机运行时和Session</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">不能拿一个适配器代表全部厂商；原生连接/回调与最终释放仍缺证。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；不能拿一个适配器代表全部厂商；原生连接/回调与最终释放仍缺证。</td></tr></tbody></table></div><a href="../现状分析/camera-architecture.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/GlobalCameraModule&quot;,
+  &quot;label&quot;: &quot;GlobalCameraModule&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;已有应用相机运行时和Session&quot;,
+  &quot;gap&quot;: &quot;不能拿一个适配器代表全部厂商；原生连接/回调与最终释放仍缺证。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；不能拿一个适配器代表全部厂商；原生连接/回调与最终释放仍缺证。&quot;,
+  &quot;url&quot;: &quot;../现状分析/camera-architecture.html&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/DeviceDriver/Cameras/Contracts/CameraSession.cs&quot;,
+    &quot;line&quot;: 28,
+    &quot;token&quot;: &quot;public async ValueTask DisposeAsync&quot;,
+    &quot;sha256&quot;: &quot;37a6f97a04db7a6744627cad23cf8710f5822ac222427bc47a1d19479b97443a&quot;
+  },
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;TriggerString&quot;,
+    &quot;TriggerFilter&quot;,
+    &quot;ExposureTimeInput&quot;,
+    &quot;GainInput&quot;,
+    &quot;ImageData&quot;,
+    &quot;Image&quot;,
+    &quot;Width&quot;,
+    &quot;Height&quot;,
+    &quot;PixelFormat&quot;,
+    &quot;FrameNum&quot;,
+    &quot;LostFrameCount&quot;,
+    &quot;LostPacketCount&quot;,
+    &quot;Port&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModule.xml&quot;,
+      &quot;sha256&quot;: &quot;8fa17298691dc1cbd2bba154797a21136458bdc29d0909b36bb199490b62af1f&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;09ccedef14ebf5ccf357139ece0f40e58589fcbe62f55409a60302fc4f44efe2&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;130709b2773af7aa1a842dbadf2990eb4040c0ebdd32f511895a3b082bde9a5c&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;04946097fd0f40a7d40c5e7c68b0633df66f0e87f9bc61dd9bb2329f33914c67&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;e6ccbb71a25fc46f62de084bc412d1cced9f4336b9516014726fe433c929b4f5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;43f3e717bd9db5a425d38d0b2dd2876a53115edd30294b4bd6a0246f42279d8f&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-5" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>GlobalTriggerModule</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/GlobalTriggerModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/GlobalTriggerModule&quot;,
+  &quot;label&quot;: &quot;GlobalTriggerModule&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModule.xml&quot;,
+      &quot;sha256&quot;: &quot;70d8e53f68bd78ce4f349da115c9de6b37ea3c32607c2e944cac23a3d21a99e3&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;b7e35d0086d577023d93903f9826c368fc5ad8849165184272e5b8b1cea509f2&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;98e397fdcc5d74fb01a387baaef2f1d91372cdac9a97b036b12f3abf7e63654e&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;5c955c38fefc10f8e428f2eb7b359d8dc6902f66405abc883488a7790f693ca7&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-6" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>GlobalVariableModule</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/GlobalVariableModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已有全局变量模型/快照/持久化链</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">定义、执行值、监视、子调用继承与数组复制分别验，非目录工具数量缺失。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；定义、执行值、监视、子调用继承与数组复制分别验，非目录工具数量缺失。</td></tr></tbody></table></div><a href="../现状分析/global-variables.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/GlobalVariableModule&quot;,
+  &quot;label&quot;: &quot;GlobalVariableModule&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;已有全局变量模型/快照/持久化链&quot;,
+  &quot;gap&quot;: &quot;定义、执行值、监视、子调用继承与数组复制分别验，非目录工具数量缺失。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；定义、执行值、监视、子调用继承与数组复制分别验，非目录工具数量缺失。&quot;,
+  &quot;url&quot;: &quot;../现状分析/global-variables.html&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/Plugin.SDK/Execution/Parameters/RuntimeParameterSnapshot.cs&quot;,
+    &quot;line&quot;: 13,
+    &quot;token&quot;: &quot;public RuntimeParameterSnapshot&quot;,
+    &quot;sha256&quot;: &quot;654b4208ae48c97e28dc421aa949daa9f69b7362d13be7b248bdbf52e4bdad54&quot;
+  },
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalVariableModule\\GlobalVariableModule.xml&quot;,
+      &quot;sha256&quot;: &quot;bd597ffbd3bc2b3621f252b79d957334a008499d24e178be88e04d1966c321e4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalVariableModule\\GlobalVariableModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalVariableModule\\GlobalVariableModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;b7e35d0086d577023d93903f9826c368fc5ad8849165184272e5b8b1cea509f2&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalVariableModule\\GlobalVariableModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;9a889cb8cffd9d58fd7289b25d76a23c659278c191d23646c1a89fe82b08acce&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalVariableModule\\GlobalVariableModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalVariableModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;a9844101cd1fdea87c0398477c077f4f3ca7f81f3e048b86d23de79bf3e45edf&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-7" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>ImageCollectDalsaModu</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/ImageCollectDalsaModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/ImageCollectDalsaModu&quot;,
+  &quot;label&quot;: &quot;ImageCollectDalsaModu&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ImageData&quot;,
+    &quot;Image&quot;,
+    &quot;Width&quot;,
+    &quot;Height&quot;,
+    &quot;PixelFormat&quot;,
+    &quot;ImageDataMono8&quot;,
+    &quot;ImageMono8&quot;,
+    &quot;WidthMono8&quot;,
+    &quot;HeightMono8&quot;,
+    &quot;PixelFormatMono8&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ImageCollectDalsaModu.xml&quot;,
+      &quot;sha256&quot;: &quot;30cb9082872c6a283a8eb82c5a95afb7e9f9396cb6755ce929d36543ea3b469b&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ImageCollectDalsaModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;77a6620d4fb600b0169afe2fe72ca488d6e2fa6cbf4617edeeeeefed640e44e4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ImageCollectDalsaModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;6fcbbb8512ef144106f99773cf0db8427ec26cb071cbd7a4c267051c8f4d72b0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ImageCollectDalsaModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;c68f3bbdb6944e68af59d0ba809a8262521b40387a3d6e893dbda02495c14151&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ImageCollectDalsaModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;c157827b3de8c961c1bd98f7f1d7978b44959f43b78fee792f6ea070add8db88&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;a70652fbafdceac6828d75d1bc98a56556405ac128bdb4295d8edc8959fe90d1&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-8" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>ImageCollectHikModu</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/ImageCollectHikModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">默认MVS适配器已有</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">仅厂商路径相关，型号/SDK/像素格式/触发和原缓冲语义未认等价。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；仅厂商路径相关，型号/SDK/像素格式/触发和原缓冲语义未认等价。</td></tr></tbody></table></div><a href="../现状分析/camera-architecture.html#support">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/ImageCollectHikModu&quot;,
+  &quot;label&quot;: &quot;ImageCollectHikModu&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;默认MVS适配器已有&quot;,
+  &quot;gap&quot;: &quot;仅厂商路径相关，型号/SDK/像素格式/触发和原缓冲语义未认等价。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；仅厂商路径相关，型号/SDK/像素格式/触发和原缓冲语义未认等价。&quot;,
+  &quot;url&quot;: &quot;../现状分析/camera-architecture.html#support&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/DeviceDriver/Cameras/Hikvision/Mvs/MvsCameraAdapter.cs&quot;,
+    &quot;line&quot;: 157,
+    &quot;token&quot;: &quot;Marshal.Copy&quot;,
+    &quot;sha256&quot;: &quot;bc5b365c37e00866c1973c0f9ced07bf69ff53e1880636ff255d9dae5c489257&quot;
+  },
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ImageData&quot;,
+    &quot;Image&quot;,
+    &quot;Width&quot;,
+    &quot;Height&quot;,
+    &quot;PixelFormat&quot;,
+    &quot;FrameNum&quot;,
+    &quot;LostFrameCount&quot;,
+    &quot;LostPacketCount&quot;,
+    &quot;Port&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ImageCollectHikModu.xml&quot;,
+      &quot;sha256&quot;: &quot;ee096320d2ffdfb74857e1944e76f0189bccd0c37f72d6417c38e249e8d6bac7&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ImageCollectHikModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;13e3d63a7954321263aad52dfe733bb547eb41a08be61a10480ee71417c55d4e&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ImageCollectHikModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;85907aea22a83c1f1ec48b39f82184bb2a517030430ee0a6b8758dc8d4dfeb36&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ImageCollectHikModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;73fa4ed01f5e3da7ee278cec48200ca312370f84e00152fe574d8ba43fdb2d8f&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ImageCollectHikModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;e6ccbb71a25fc46f62de084bc412d1cced9f4336b9516014726fe433c929b4f5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;796e769f85009766e42e65b50d64bf0478e9c77a5c5fdb6c71a45407994a11b7&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-9" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>ImageCollectIKModu</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/ImageCollectIKModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/ImageCollectIKModu&quot;,
+  &quot;label&quot;: &quot;ImageCollectIKModu&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ImageData&quot;,
+    &quot;Image&quot;,
+    &quot;Width&quot;,
+    &quot;Height&quot;,
+    &quot;PixelFormat&quot;,
+    &quot;ImageDataMono8&quot;,
+    &quot;ImageMono8&quot;,
+    &quot;WidthMono8&quot;,
+    &quot;HeightMono8&quot;,
+    &quot;PixelFormatMono8&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ImageCollectIKModu.xml&quot;,
+      &quot;sha256&quot;: &quot;cae855ca19a0d654ddcd1aafabd1fe949680a70f1585f4b4c83287adc906ee31&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ImageCollectIKModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ccfb87ba7b591e0903c9c13d93a2b36cf9f1a361362a0b2d99f2fc0c72ad36ae&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ImageCollectIKModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;fe0ab830732186d30bf94fdf4ab5580a29f8243eaef7ce40bed90e445dc9701e&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ImageCollectIKModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;6bb1e9de744e173bb5b566bf81092dce227dfd4d01c1e0bb0d5c8e2b567c33c0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ImageCollectIKModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;c157827b3de8c961c1bd98f7f1d7978b44959f43b78fee792f6ea070add8db88&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;a70652fbafdceac6828d75d1bc98a56556405ac128bdb4295d8edc8959fe90d1&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-10" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>ImageCollectModu</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/ImageCollectModu</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">自研已有相机抽象会话</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">抽象存在不证明原模块全部采集源或厂商已支持。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；抽象存在不证明原模块全部采集源或厂商已支持。</td></tr></tbody></table></div><a href="../现状分析/camera-architecture.html#support">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/ImageCollectModu&quot;,
+  &quot;label&quot;: &quot;ImageCollectModu&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;自研已有相机抽象会话&quot;,
+  &quot;gap&quot;: &quot;抽象存在不证明原模块全部采集源或厂商已支持。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；抽象存在不证明原模块全部采集源或厂商已支持。&quot;,
+  &quot;url&quot;: &quot;../现状分析/camera-architecture.html#support&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/DeviceDriver/Cameras/Contracts/CameraSession.cs&quot;,
+    &quot;line&quot;: 26,
+    &quot;token&quot;: &quot;public ICameraAdapter Adapter&quot;,
+    &quot;sha256&quot;: &quot;37a6f97a04db7a6744627cad23cf8710f5822ac222427bc47a1d19479b97443a&quot;
+  },
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;InputImage&quot;,
+    &quot;InImage&quot;,
+    &quot;InImageWidth&quot;,
+    &quot;InImageHeight&quot;,
+    &quot;InImagePixelFormat&quot;,
+    &quot;InputROI&quot;,
+    &quot;ROI CenterPoint&quot;,
+    &quot;roicenterx&quot;,
+    &quot;roicentery&quot;,
+    &quot;roiwidth&quot;,
+    &quot;roiheight&quot;,
+    &quot;roiangle&quot;,
+    &quot;ModuStatus&quot;,
+    &quot;OutputImage&quot;,
+    &quot;OutImage&quot;,
+    &quot;OutImageWidth&quot;,
+    &quot;OutImageHeight&quot;,
+    &quot;OutImagePixelFormat&quot;,
+    &quot;ROI&quot;,
+    &quot;DetectRectCenterPoint&quot;,
+    &quot;DetectCenterX&quot;,
+    &quot;DetectCenterY&quot;,
+    &quot;DetectWidth&quot;,
+    &quot;DetectHeight&quot;,
+    &quot;DetectAngle&quot;,
+    &quot;ImageData&quot;,
+    &quot;Image&quot;,
+    &quot;Width&quot;,
+    &quot;Height&quot;,
+    &quot;PixelFormat&quot;,
+    &quot;ImageDataMono8&quot;,
+    &quot;ImageMono8&quot;,
+    &quot;WidthMono8&quot;,
+    &quot;HeightMono8&quot;,
+    &quot;PixelFormatMono8&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollect.xml&quot;,
+      &quot;sha256&quot;: &quot;5be8a6c1127ffb8e2c91d49e63392c1ce2e4b84cf8f16666b2e23a21c3f8bde2&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollectModu.xml&quot;,
+      &quot;sha256&quot;: &quot;1c9ca8f1a1414d20a17ce3afbdd46612447deabf1f294e8862ceb5f82e6cee62&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollectModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;578428c0cd1af61ebea178da29d3a2ef33d30cf57fc5fe3c9a75e7bcb9fa2ad0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollectModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;6d4bfb6278dbfd74853b8b053ce46da1579abe32157038addf9ea88af73fa278&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollectModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;12d71d4d139387261ad3c55ddf5dc03c4e11f7b9c2768c5516fad269c0d87673&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollectModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;9ce896bf2465a8d58babd7425063b690f0a1844e5bd2ecd8dd2f9edc6a5d8516&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;5d8d1ee4e5f529b590207245255f5b61cc42fec2bc68c70fd87612732dc011b5&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-11" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>LightControl</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/LightControl</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/LightControl&quot;,
+  &quot;label&quot;: &quot;LightControl&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\LightControl.xml&quot;,
+      &quot;sha256&quot;: &quot;7d9b593ad8209e83101f8653b014f1eb23868e1a6eba686e613600c6458a10e7&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\LightControlAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\LightControlAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;bdb475c3f4c5698e901976179d141e34b99e7f511e9c0d832bb5eed9ab6180b0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\LightControlCs.xml&quot;,
+      &quot;sha256&quot;: &quot;ad7f4fc081ee31fff5bd64ec71957f6e2e4199e60c0fefc69f610cc638f664df&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\LightControlDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;c58202a5642c718a197cd099edcc317ee7abc034042952827a37514c1e9bf10f&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-12" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>LocalVariableModule</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/LocalVariableModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/LocalVariableModule&quot;,
+  &quot;label&quot;: &quot;LocalVariableModule&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LocalVariableModule\\LocalVariableModule.xml&quot;,
+      &quot;sha256&quot;: &quot;144bd0cee3bc6d5778f343962d1a78ac676b70ed850fb3596603869295792ba2&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LocalVariableModule\\LocalVariableModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LocalVariableModule\\LocalVariableModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;b7e35d0086d577023d93903f9826c368fc5ad8849165184272e5b8b1cea509f2&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LocalVariableModule\\LocalVariableModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LocalVariableModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;a9844101cd1fdea87c0398477c077f4f3ca7f81f3e048b86d23de79bf3e45edf&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-13" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>ProcedureComm</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/ProcedureComm</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/ProcedureComm&quot;,
+  &quot;label&quot;: &quot;ProcedureComm&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureComm\\ProcedureComm.xml&quot;,
+      &quot;sha256&quot;: &quot;bd597ffbd3bc2b3621f252b79d957334a008499d24e178be88e04d1966c321e4&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureComm\\ProcedureCommAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureComm\\ProcedureCommAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;b7e35d0086d577023d93903f9826c368fc5ad8849165184272e5b8b1cea509f2&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-14" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>ProcedureModule</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/ProcedureModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已有工作流引擎与独立运行会话</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">原VM native调度/停止完成不能由自研引擎代证；属于宿主职责，不强造工具插件。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；原VM native调度/停止完成不能由自研引擎代证；属于宿主职责，不强造工具插件。</td></tr></tbody></table></div><a href="../现状分析/system-architecture.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/ProcedureModule&quot;,
+  &quot;label&quot;: &quot;ProcedureModule&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;已有工作流引擎与独立运行会话&quot;,
+  &quot;gap&quot;: &quot;原VM native调度/停止完成不能由自研引擎代证；属于宿主职责，不强造工具插件。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；原VM native调度/停止完成不能由自研引擎代证；属于宿主职责，不强造工具插件。&quot;,
+  &quot;url&quot;: &quot;../现状分析/system-architecture.html&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/Workflow/WorkflowRunSession.cs&quot;,
+    &quot;line&quot;: 24,
+    &quot;token&quot;: &quot;public WorkflowRunSession&quot;,
+    &quot;sha256&quot;: &quot;81a4538d84dd800b91f6380ffbb8bc8fee2b59d0284e5f1c2194a2c97f4587c0&quot;
+  },
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ModuRunTime&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureModule\\ProcedureModule.xml&quot;,
+      &quot;sha256&quot;: &quot;bda739355c340fc3a9928d3a73b7075a107bdc6902bb8a92f8a67ddb472742e1&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureModule\\ProcedureModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;abb7d979f3fb32dadc91c75291b232416daaecf92265ee79092a882807058964&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureModule\\ProcedureModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;d3ad1876d01ecd2a9f2932d37f90192ee1fc0becf278360396204ba4cd5aa012&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureModule\\ProcedureModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;70e1f4088b3e9817077acf7ef3a95b3a28a21017ec0ad9c96681a7da26dd02ea&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;d737bac32c21d278add607bae9df587da84618f985529a51a602105e36ded0c3&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-15" data-filter-record><span class="chip">当前24个工具声明中无独立对应；组合能力待核</span><h3>SCGlobalCameraModule</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/SCGlobalCameraModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">独立入口缺失已知，业务语义差异待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">条件新增/暂缓裁决，不默认整库迁移</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。</td></tr></tbody></table></div><a href="">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/SCGlobalCameraModule&quot;,
+  &quot;label&quot;: &quot;SCGlobalCameraModule&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;no-declared-tool&quot;,
+  &quot;status&quot;: &quot;当前24个工具声明中无独立对应；组合能力待核&quot;,
+  &quot;difference&quot;: &quot;独立入口缺失已知，业务语义差异待核&quot;,
+  &quot;adoption&quot;: &quot;条件新增/暂缓裁决，不默认整库迁移&quot;,
+  &quot;current&quot;: &quot;仓库扫描得到24个[Tool]声明；未发现本目录项独立声明，不证明SDK无算子或组合流程不能实现。&quot;,
+  &quot;gap&quot;: &quot;尚欠独立参数界面、算法调用、输入输出、失败取消、缓存释放的端到端对应证据。&quot;,
+  &quot;change&quot;: &quot;先核宿主/全局服务职责与目标产品范围，不能将平台载体机械变成工具插件。&quot;,
+  &quot;url&quot;: null,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: null,
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [
+    &quot;ImageData&quot;,
+    &quot;Image&quot;,
+    &quot;Width&quot;,
+    &quot;Height&quot;,
+    &quot;PixelFormat&quot;,
+    &quot;FrameNum&quot;,
+    &quot;LostFrameCount&quot;,
+    &quot;LostPacketCount&quot;,
+    &quot;Port&quot;
+  ],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SCGlobalCameraModule\\SCGlobalCameraModule.xml&quot;,
+      &quot;sha256&quot;: &quot;48cb2594f64bab3f419ee248edcbcb5aa5a94c3b09fd71c29ba111131580d8dc&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SCGlobalCameraModule\\SCGlobalCameraModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;b81bd62621e49939d1f3e3bd69bb62167edefa344c6a9667dc3f93f44b46b7d0&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SCGlobalCameraModule\\SCGlobalCameraModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;bae1a8c13c172a377a044b48acb12bf24959d7745d1d0b35d8c74ff31b47dec8&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SCGlobalCameraModule\\SCGlobalCameraModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;5cbe2bad44f9f2be04549a45f95287355348e4de84ea782b4ac07d32e9383d97&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SCGlobalCameraModule\\SCGlobalCameraModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;e6ccbb71a25fc46f62de084bc412d1cced9f4336b9516014726fe433c929b4f5&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SCGlobalCameraModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;52eeabc62937fab91233f0e6cb0d9df9967d850a54df184172fe7d64ebd3fc1f&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section><section class="record-card" id="tool-10-16" data-filter-record><span class="chip">已有宿主/局部能力，非独立工具等价</span><h3>SolutionModule</h3><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">目录键</th><td data-label="目录键">Global/SolutionModule</td></tr><tr><th class="row-label" scope="row">现状</th><td data-label="现状">已有自有方案仓库</td></tr><tr><th class="row-label" scope="row">差异</th><td data-label="差异">职责或覆盖有明显差异，具体程度待核</td></tr><tr><th class="row-label" scope="row">推荐</th><td data-label="推荐">复用已证局部能力，补工具合同后再决定</td></tr><tr><th class="row-label" scope="row">缺口</th><td data-label="缺口">原.sol内部、加密、版本兼容仍未齐；自有格式不等原格式兼容。</td></tr><tr><th class="row-label" scope="row">具体改法</th><td data-label="具体改法">先完成差异合同与现有消费者适配，避免重复造平台层；原.sol内部、加密、版本兼容仍未齐；自有格式不等原格式兼容。</td></tr></tbody></table></div><a href="../现状分析/persistence-architecture.html">具体工具入口 ↗</a><details><summary>完整字段与候选源码</summary><pre>{
+  &quot;key&quot;: &quot;Global/SolutionModule&quot;,
+  &quot;label&quot;: &quot;SolutionModule&quot;,
+  &quot;category&quot;: &quot;全局与框架载体&quot;,
+  &quot;kind&quot;: &quot;host-overlap&quot;,
+  &quot;status&quot;: &quot;已有宿主/局部能力，非独立工具等价&quot;,
+  &quot;difference&quot;: &quot;职责或覆盖有明显差异，具体程度待核&quot;,
+  &quot;adoption&quot;: &quot;复用已证局部能力，补工具合同后再决定&quot;,
+  &quot;current&quot;: &quot;已有自有方案仓库&quot;,
+  &quot;gap&quot;: &quot;原.sol内部、加密、版本兼容仍未齐；自有格式不等原格式兼容。&quot;,
+  &quot;change&quot;: &quot;先完成差异合同与现有消费者适配，避免重复造平台层；原.sol内部、加密、版本兼容仍未齐；自有格式不等原格式兼容。&quot;,
+  &quot;url&quot;: &quot;../现状分析/persistence-architecture.html&quot;,
+  &quot;candidates&quot;: [],
+  &quot;relatedSource&quot;: {
+    &quot;path&quot;: &quot;src/Workflow/SolutionRepository.cs&quot;,
+    &quot;line&quot;: 43,
+    &quot;token&quot;: &quot;public class SolutionRepository&quot;,
+    &quot;sha256&quot;: &quot;28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0&quot;
+  },
+  &quot;extendedReview&quot;: null,
+  &quot;declaredFields&quot;: [],
+  &quot;xmlEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SolutionModule\\SolutionModule.xml&quot;,
+      &quot;sha256&quot;: &quot;052294ab085b84f5fbfbeb38daf72b27545cda960c0662dfca14c8b093941124&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SolutionModule\\SolutionModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;90b875f3b69c4500efd912b57e954b4b4f11af203df8bb2a485c74a9dcc0021a&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SolutionModule\\SolutionModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;a3d2be07bafeef6658c41058019420aea1e4ee70a8175ba8784e3c3e9df818ab&quot;,
+      &quot;error&quot;: null
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SolutionModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;57bb198ab0e643d86a7f98224170332e83fa9fd6961fd925c050792b762e256f&quot;,
+      &quot;error&quot;: null
+    }
+  ],
+  &quot;accept&quot;: &quot;如纳入产品范围：逐参数/模式和类型合同、算法边界正确性、结果树/图像传递、异常取消和最后释放全部有证据后，才验收；原材料不足列具体缺函数。&quot;
+}</pre></details></section></div></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

@@ -1,0 +1,15 @@
+{
+  "newImageToolSourceReviews": 6,
+  "sourceLocations": 44,
+  "originalVmDeclarationContracts": 6,
+  "localToolAnalysisCoverage": {
+    "reviewed": 24,
+    "total": 24,
+    "percent": 100
+  },
+  "unintegratedAuditMaterials": 0,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "productExecuted": false,
+  "vmAlgorithmEquivalenceVerified": false
+}

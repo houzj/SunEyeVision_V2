@@ -1,0 +1,465 @@
+{
+  "projects": [
+    {
+      "id": "CommonControl",
+      "file": "src/CommonControl/CommonControl.csproj",
+      "role": "共享控件与脚本编辑基础设施，不能当纯运行内核。",
+      "sha256": "19ed672bf59b91656a30e50a9c44d5f6758e8c88e6d73b1880a32b0b0db5bfa8",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        }
+      ],
+      "packages": [
+        "AvalonEdit",
+        "Microsoft.CodeAnalysis.CSharp",
+        "Microsoft.CodeAnalysis.Features",
+        "Microsoft.CodeAnalysis.CSharp.Features",
+        "IgnoresAccessChecksToGenerator"
+      ]
+    },
+    {
+      "id": "Core",
+      "file": "src/Core/SunEyeVision.Core.csproj",
+      "role": "基础模型/服务；其中旧IPlugin管理器不等启动实际工具管理器。",
+      "sha256": "14147431114caeb84fc0619b19d93b4752ad42d091c9d3529ba7c9af6aa8c324",
+      "useWpf": false,
+      "target": "net9.0-windows",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        }
+      ],
+      "packages": [
+        "Microsoft.Extensions.DependencyInjection.Abstractions",
+        "OpenCvSharp4",
+        "OpenCvSharp4.Extensions",
+        "OpenCvSharp4.runtime.win",
+        "System.Text.Json"
+      ]
+    },
+    {
+      "id": "DeviceDriver",
+      "file": "src/DeviceDriver/SunEyeVision.DeviceDriver.csproj",
+      "role": "设备驱动接口与厂商适配，连接/采集寿命还需逐厂商核实。",
+      "sha256": "6a0e7abd744bde060b9863850fb7fc573aa09bdeb91871d30ed060944064bf2e",
+      "useWpf": false,
+      "target": "net9.0-windows",
+      "references": [
+        {
+          "file": "src/Core/SunEyeVision.Core.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.Infrastructure\\SunEyeVision.Plugin.Infrastructure.csproj\" />"
+        }
+      ],
+      "packages": [
+        "OpenCvSharp4",
+        "OpenCvSharp4.Extensions",
+        "OpenCvSharp4.runtime.win",
+        "NModbus",
+        "OPCFoundation.NetStandard.Opc.Ua.Client",
+        "S7netplus",
+        "System.IO.Ports"
+      ]
+    },
+    {
+      "id": "Plugin.Infrastructure",
+      "file": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+      "role": "工具发现、注册、实例工厂和元数据管理。",
+      "sha256": "22f63f8700c2cea9ed9fd66c012a1b80cf68fbe961026066eec44e70a2bb5069",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "references": [
+        {
+          "file": "src/Core/SunEyeVision.Core.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        }
+      ],
+      "packages": [
+        "OpenCvSharp4",
+        "OpenCvSharp4.Extensions",
+        "OpenCvSharp4.runtime.win"
+      ]
+    },
+    {
+      "id": "Plugin.SDK",
+      "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+      "role": "工具运行/数据合同，同时包含WPF调试扩展；当前不是无UI的纯契约包。",
+      "sha256": "b95650866ebe40e8666a6062458571ca218ed626411d0c3a8bfb4f4facd1f9cf",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "references": [],
+      "packages": [
+        "Microsoft.SourceLink.GitHub",
+        "System.Drawing.Common"
+      ]
+    },
+    {
+      "id": "SunEyeVision.CvAdapter",
+      "file": "src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj",
+      "role": "OpenCV适配与SDK图像/词表桥。",
+      "sha256": "45eda188954af49db2c7702c90b16a0461d4a61e4cd372f0a2fee3710bfff655",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        },
+        {
+          "file": "src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj",
+          "declaration": "<ProjectReference Include=\"..\\SunEyeVision.CvEngine\\SunEyeVision.CvEngine.csproj\" />"
+        }
+      ],
+      "packages": [
+        "OpenCvSharp4",
+        "OpenCvSharp4.runtime.win"
+      ]
+    },
+    {
+      "id": "SunEyeVision.CvEngine",
+      "file": "src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj",
+      "role": "OpenCV后端能力；实际依赖见工程声明。",
+      "sha256": "a7f3170c0595bebb60e22850549b4babc1b8955056c8e0195a07024df47ba9bd",
+      "useWpf": false,
+      "target": "net9.0-windows",
+      "references": [],
+      "packages": [
+        "OpenCvSharp4",
+        "OpenCvSharp4.runtime.win"
+      ]
+    },
+    {
+      "id": "SunEyeVision.HalAdapter",
+      "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+      "role": "HALCON图像/算法适配与拟合助手。",
+      "sha256": "027bdd2f2bac5e925c67fdcfb9281411f5296f5baaaa41303c643f565feff17c",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "references": [
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        }
+      ],
+      "packages": []
+    },
+    {
+      "id": "UI",
+      "file": "src/UI/SunEyeVision.UI.csproj",
+      "role": "主窗口/工具窗、服务装配、显示与设备运行入口。",
+      "sha256": "8185eddfb71e32dac327de4cd8e7cc8eaf462bdf5c92f74442889436d5ceae72",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "references": [
+        {
+          "file": "src/Core/SunEyeVision.Core.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+        },
+        {
+          "file": "src/Workflow/SunEyeVision.Workflow.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Workflow\\SunEyeVision.Workflow.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.Infrastructure\\SunEyeVision.Plugin.Infrastructure.csproj\" />"
+        },
+        {
+          "file": "src/DeviceDriver/SunEyeVision.DeviceDriver.csproj",
+          "declaration": "<ProjectReference Include=\"..\\DeviceDriver\\SunEyeVision.DeviceDriver.csproj\" />"
+        },
+        {
+          "file": "src/CommonControl/CommonControl.csproj",
+          "declaration": "<ProjectReference Include=\"..\\CommonControl\\CommonControl.csproj\" />"
+        },
+        {
+          "file": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj\" />"
+        },
+        {
+          "file": "src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj",
+          "declaration": "<ProjectReference Include=\"..\\SunEyeVision.CvAdapter\\SunEyeVision.CvAdapter.csproj\" />"
+        }
+      ],
+      "packages": [
+        "AIStudio.Wpf.DiagramDesigner",
+        "AvalonEdit",
+        "Microsoft.CodeAnalysis.CSharp",
+        "Microsoft.CodeAnalysis.Features",
+        "Microsoft.CodeAnalysis.CSharp.Features",
+        "OpenCvSharp4",
+        "OpenCvSharp4.Extensions",
+        "OpenCvSharp4.runtime.win",
+        "RoyT.AStar",
+        "SharpDX",
+        "SharpDX.Direct2D1",
+        "SharpDX.Direct3D11",
+        "SharpDX.DXGI",
+        "Vortice.Direct2D1",
+        "Vortice.Direct3D11",
+        "Vortice.DXGI",
+        "Msagl",
+        "Msagl.Drawing",
+        "Msagl.WpfGraphControl"
+      ]
+    },
+    {
+      "id": "Workflow",
+      "file": "src/Workflow/SunEyeVision.Workflow.csproj",
+      "role": "定义、执行计划、会话/作用域、依赖就绪与节点执行。",
+      "sha256": "e791ce019b1eb76f5e06cb202c94488049c93c4fca4c3edc9f510e437c0cecaf",
+      "useWpf": true,
+      "target": "net9.0-windows",
+      "references": [
+        {
+          "file": "src/Core/SunEyeVision.Core.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Core\\SunEyeVision.Core.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.Infrastructure\\SunEyeVision.Plugin.Infrastructure.csproj\" />"
+        },
+        {
+          "file": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "declaration": "<ProjectReference Include=\"..\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj\" />"
+        }
+      ],
+      "packages": [
+        "OpenCvSharp4",
+        "OpenCvSharp4.runtime.win"
+      ]
+    }
+  ],
+  "chains": [
+    {
+      "id": "startup",
+      "title": "启动：谁把系统组装起来？",
+      "chain": "App.OnStartup → Infrastructure.PluginManager.LoadPlugins(path) → ToolRegistry → ServiceInitializer → SolutionManager → MainWindow",
+      "fact": "实际启动使用Plugin.Infrastructure命名空间的PluginManager，先装载插件再进入可能序列化参数的服务。Core也有同名旧管理器，不能按文件名把两条链拼起来。",
+      "vm": "VM只作恢复模型的启动/全局入口参考；本页没有把其DLL布局复制成自研层次，也没有据原目录判断发行完整。",
+      "change": "先把装配职责/缺依赖错误写清；发现、类型注册、实例创建和ready状态分开。不要仅改目录或把LoadPlugins无参日志当加载成功。",
+      "accept": "插件缺失/类型加载失败/参数反序列化失败各有明确阶段；失败不暴露半初始化主界面；干净部署另行运行验证。",
+      "sources": [
+        {
+          "path": "src/UI/App.xaml.cs",
+          "line": 200,
+          "token": "pluginManager.LoadPlugins(pluginsPath)",
+          "sha256": "4eb17734cc543eadd1042afb68324cb7dea3c452a6634cba4aaaa94f3b0846dc",
+          "snippet": "        pluginManager.LoadPlugins(pluginsPath);\r\n        _splashScreen?.UpdateStage(\"正在加载模块\", 35, \"插件加载完成\");\r\n        LogStartupStage(\"Plugin.Load completed\");\r\n\r\n        // 2. 标记插件已加载（全局状态）\r\n        _splashScreen?.UpdateProgress(35);\r\n        PluginLoader.MarkAsLoaded();\r\n\r\n        // 2.5 初始化视觉图像加载入口\r\n        // HalImage 及其静态工厂方法已内置在 Plugin.SDK.Imaging 中\r\n        // 使用 VisionImage.FromFile / VisionImage.FromBitmapSource 直接加载图像\r\n\r\n        // Select/restore the user data root before creating any persistent service.\r\n        try\r\n        {\r\n            var locations = new ApplicationDataLocationService();\r\n            string? reason = null;\r\n            try { _dataPaths = locations.Locate(); } catch (Exception ex) { reason = ex.Message; }\r\n            while (_dataPaths == null)\r\n            {\r"
+        },
+        {
+          "path": "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs",
+          "line": 61,
+          "token": "public void LoadPlugins(string",
+          "sha256": "6fe4240a2154817a8e3270d7949643e33a381661a4355277ca475182995eea5a",
+          "snippet": "        public void LoadPlugins(string pluginDirectory)\r\n        {\r\n            _logger.LogInfo($\"开始从目录加载插件: {pluginDirectory}\");\r\n            \r\n            if (!Directory.Exists(pluginDirectory))\r\n            {\r\n                _logger.LogInfo($\"插件目录不存在: {pluginDirectory}\");\r\n                return;\r\n            }\r\n\r\n            // 插件发现走**唯一策略源**（PluginAssemblyPolicy）：只认「与目录同名的主程序集」。\r\n            // 自包含改造后插件目录里还有契约 / 框架模块 / 第三方副本，逐个载入会把它们也带进宿主\r\n            // ⇒ 契约副本一旦被独立载入，即埋下「两套同名类型」的隐患。\r\n            var pluginAssemblies = PluginAssemblyPolicy.DiscoverPluginAssemblies(pluginDirectory);\r\n            if (pluginAssemblies.Count == 0)\r\n            {\r\n                _logger.LogWarning($\"未发现插件程序集（约定：plugins/<工具名>/<工具名>.dll）: {pluginDirectory}\");\r\n                return;\r\n            }\r\n\r"
+        },
+        {
+          "path": "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.cs",
+          "line": 212,
+          "token": "Activator.CreateInstance(type)",
+          "sha256": "813cfa8862ea46a31d49387f5dfb8a691785a95064ceed06cc51349473fcabb8",
+          "snippet": "                    return Activator.CreateInstance(type) as IToolPlugin;\r\n                }\r\n                return null;\r\n            }\r\n        }\r\n\r\n        /// <summary>\r\n        /// 创建参数实例\r\n        /// </summary>\r\n        /// <param name=\"toolId\">工具ID</param>\r\n        /// <returns>参数实例</returns>\r\n        public static ToolParameters CreateParameters(string toolId)\r\n        {\r\n            VisionLogger.Instance.Log(LogLevel.Info, $\"[ToolRegistry.CreateParameters] 开始创建参数实例 - toolId={toolId}\", \"ToolRegistry\");\r\n\r\n            var tool = CreateToolInstance(toolId);\r\n            if (tool == null)\r\n                throw new InvalidOperationException($\"工具实例创建失败: {toolId}\");\r\n\r\n            if (tool.ParamsType == null)\r"
+        }
+      ]
+    },
+    {
+      "id": "run",
+      "title": "主界面运行：谁真正决定执行顺序？",
+      "chain": "ExecuteRunWorkflow → WorkflowExecutionManager → 定义检查/BuildExecutionPlan → DependencyGraph → ReadyQueue → AlgorithmNode.ExecuteAsync → ToolExecutor",
+      "fact": "活动方法ExecuteWorkflowWithParallelGroups立即转发ReadyQueue；其后旧分层循环不可达。实际按前驱Completed、资源租约与并发profile派发，计算槽上限1–4，ExternalDataWait另计。",
+      "vm": "VM有方案/流程入口、状态和停止回调；原生就绪队列内部未由托管入口证明。不应说自研与其调度等价或更先进。",
+      "change": "复用现有快照、绑定校验和就绪图；优先整改入口范围与终态。资源租约对象在本次运行内部创建，跨根运行/设备冲突仍需宿主服务合同，不能据类名宣称全局互斥。",
+      "accept": "相互独立的链不被层屏障阻塞；失败前驱剪枝；外部等待不占计算槽；同设备跨根运行冲突有确定政策。",
+      "sources": [
+        {
+          "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+          "line": 2124,
+          "token": "private async System.Threading.Tasks.Task ExecuteRunWorkflow",
+          "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+          "snippet": "        private async System.Threading.Tasks.Task ExecuteRunWorkflow(bool advanceLocalImage = true)\r\n        {\r\n            // 防抖：上一次工作流仍在执行时忽略重复执行请求（执行按钮/预览连点过快）\r\n            if (_isRunning)\r\n            {\r\n                AddLog(\"[REJECTED] 工作流正在运行，已拒绝重复执行请求\");\r\n                return;\r\n            }\r\n\r\n            AddLog(\"=== 开始执行工作流 ===\");\r\n\r\n            if (WorkflowTabViewModel == null)\r\n            {\r\n                AddLog(\"❌ WorkflowTabViewModel 为null\");\r\n                return;\r\n            }\r\n\r\n            if (WorkflowTabViewModel.SelectedTab == null)\r\n            {\r\n                AddLog(\"❌ 没有选中的工作流标签页\");\r"
+        },
+        {
+          "path": "src/Workflow/WorkflowExecutionEngine.cs",
+          "line": 115,
+          "token": "return await ExecuteWorkflowWithReadyQueue",
+          "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+          "snippet": "            return await ExecuteWorkflowWithReadyQueue(\r\n                session, workflow, context, dependencyGraph, nodeExecutionProfiles);\r\n\r\n#pragma warning disable CS0162 // 保留旧分层实现，便于运行回归期间对照；实际入口已切到全局就绪队列。\r\n            _logger.LogInfo($\"[DEBUG ExecuteWorkflowWithParallelGroups] workflow.Id={workflow.Id}, workflow.Name={workflow.Name}, Nodes.Count={workflow.Nodes.Count}, Connections.Count={workflow.Connections.Count}\");\r\n\r\n            var result = new ExecutionResult();\r\n            int totalExecutedNodes = 0;\r\n\r\n            _logger.LogInfo($\"========== 使用基于执行链的并行组执行模式 ==========\");\r\n\r\n            // 当前仍按组串行执行，但组必须来自完整依赖图：参数绑定也会形成前驱关系。\r\n            // 不能只用画布连线，否则“未画线的结果参数绑定”会被错误放入同一候选组。\r\n            var parallelGroups = dependencyGraph\r\n                .GetTopologicalLayers(workflow.Nodes.Select(node => node.Id))\r\n                .Select(layer => layer.ToList())\r\n                .ToList();\r\n            _logger.LogInfo($\"获取到 {parallelGroups.Count} 个并行执行组\");\r\n\r\n            // 显示执行组信息\r"
+        },
+        {
+          "path": "src/Workflow/WorkflowExecutionEngine.cs",
+          "line": 303,
+          "token": "var maxConcurrency = Math.Max",
+          "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+          "snippet": "            var maxConcurrency = Math.Max(1, Math.Min(4, Environment.ProcessorCount - 1));\r\n\r\n            try\r\n            {\r\n                while (pending.Count > 0 || running.Count > 0)\r\n                {\r\n                    await session.WaitIfPausedAsync();\r\n                    context.CancellationToken.ThrowIfCancellationRequested();\r\n\r\n                    // 条件分支已剪掉的节点、禁用节点、或失败前驱的消费者均不进入执行队列。\r\n                    bool skippedAny;\r\n                    do\r\n                    {\r\n                        skippedAny = false;\r\n                        foreach (var nodeId in pending.Where(id =>\r\n                                 pruned.Contains(id) ||\r\n                                 !workflow.Nodes.First(node => node.Id == id).IsEnabled ||\r\n                                 dependencyGraph.GetPredecessors(id).Any(parent =>\r\n                                     context.GetNodeStatus(parent) is NodeStatus.Failed or NodeStatus.Skipped)).ToList())\r\n                        {\r"
+        },
+        {
+          "path": "src/Workflow/WorkflowResourceLeaseManager.cs",
+          "line": 15,
+          "token": "private readonly HashSet<string> _leasedResources",
+          "sha256": "4d5ecee12b552e028421b2a485c8489daffc80ad416416441049bd0628d60558",
+          "snippet": "    private readonly HashSet<string> _leasedResources = new(StringComparer.Ordinal);\n\n    public bool TryAcquire(string workflowId, string nodeId, ToolExecutionProfile profile, out IDisposable lease)\n    {\n        if (string.IsNullOrWhiteSpace(workflowId))\n            throw new ArgumentException(\"工作流 ID 不能为空。\", nameof(workflowId));\n        if (string.IsNullOrWhiteSpace(nodeId))\n            throw new ArgumentException(\"节点 ID 不能为空。\", nameof(nodeId));\n\n        profile ??= ToolExecutionProfile.LegacyExclusive;\n        var resourceKeys = GetResourceKeys(workflowId, nodeId, profile).ToList();\n        lock (_gate)\n        {\n            if (resourceKeys.Any(_leasedResources.Contains))\n            {\n                lease = EmptyLease.Instance;\n                return false;\n            }\n\n            foreach (var resourceKey in resourceKeys)"
+        }
+      ]
+    },
+    {
+      "id": "tool",
+      "title": "工具界面执行：和工作流共用哪里？",
+      "chain": "工具控件 → ExecuteWithLiveContext → ToolExecutor → ParameterResolver/执行输入 → 插件 → ToolResults；工作流由AlgorithmNode接入同一执行器",
+      "fact": "共用执行器不等于所有工具控件拥有同样布局或线程行为。脚本/标定/子程序另有专用逻辑，普通图像工具的底图来自宿主注入。",
+      "vm": "参考VM专业参数页的提交/连续/解绑职责；不能拿恢复项目ToolDebugSession代码充原版实现。",
+      "change": "把运行合同与WPF调试扩展分开评审；当前SDK及Workflow都UseWPF。先列消费者和迁移代价，再拆包，不仅因名称“SDK纯契约”宣称已解耦。",
+      "accept": "同输入下调试/流程的解析与错误一致；工具运行程序集不依赖UI宿主；专业窗保留自己的布局、提交和取消规则。",
+      "sources": [
+        {
+          "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+          "line": 792,
+          "token": "ExecuteWithLiveContext",
+          "sha256": "1380204f44ccb4ff9ed4b11eef0b92b4d53d30856783df07dadbf810a976ccb0",
+          "snippet": "        protected ToolResults ExecuteWithLiveContext(\r\n            IToolPlugin tool,\r\n            ToolParameters parameters,\r\n            IVisionImage? resolvedInputImage = null)\r\n        {\r\n            if (tool == null) throw new ArgumentNullException(nameof(tool));\r\n            if (parameters == null) throw new ArgumentNullException(nameof(parameters));\r\n\r\n            var request = CreateLiveExecutionRequest(parameters, resolvedInputImage);\r\n            var logger = VisionLogger.Instance;\r\n            return new ToolExecutor(new ParameterResolver(DataProvider as IDataSourceQueryService, logger), logger)\r\n                .Run(tool, request);\r\n        }\r\n\r\n        /// <summary>\r\n        /// 经统一执行器运行强类型调试工具，并保留工具声明的具体结果类型。\r\n        /// </summary>\r\n        protected TResult ExecuteWithLiveContext<TParameters, TResult>(\r\n            IToolPlugin<TParameters, TResult> tool,\r\n            TParameters parameters,\r"
+        },
+        {
+          "path": "src/Workflow/AlgorithmNode.cs",
+          "line": 96,
+          "token": "var toolResult = await executor.ExecuteAsync",
+          "sha256": "deb8b8ab4068db0aa4f3188adccc84267b0c54707b3c0ec1ac12fe7c55186177",
+          "snippet": "                    var toolResult = await executor.ExecuteAsync(\r\n                        Tool,\r\n                        new ToolExecutionRequest(executionParams)\r\n                        {\r\n                            NodeResults = nodeResults,\r\n                            ResolvedInputImage = inputImage,\r\n                            NodeName = Name,\r\n                            NodeId = Id,\r\n                            WorkflowId = ExecutionWorkflowId,\r\n                            CancellationToken = cancellationToken,\r\n                            CameraCaptureService = CameraCaptureService,\r\n                            CommunicationInputs = CommunicationInputs,\r\n                            CommunicationOutputs = CommunicationOutputs,\r\n                            CameraFrame = CameraFrame,\r\n                            GlobalVariables = globalVariables,\r\n                            ParameterBindings = ParameterBindingSet.FromSettings(ParamSettings)\r\n                        }).ConfigureAwait(false);\r\n\r\n                    // Stateful calibration points are committed only after execution, never\r\n                    // by mutating the parameter snapshot seen by the tool. A stale concurrent\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+          "line": 71,
+          "token": "ResolveRuntimeParameters",
+          "sha256": "0229fd6ea68af49b5aefe58187f0036a5987fc69c15f1486cc73113dce6531e2",
+          "snippet": "            ResolveRuntimeParameters(request);\r\n            ApplyRuntimeSnapshot(request.Parameters, request.RuntimeParameters!);\r\n            request.Parameters.ResolvedInputImage = request.ResolvedInputImage;\r\n            request.Parameters.CommunicationInputs = ScopeCommunicationInputs(request);\r\n            request.Parameters.CommunicationOutputs = request.CommunicationOutputs;\r\n            return Run(\r\n                tool,\r\n                request.Parameters,\r\n                request.NodeResults,\r\n                request.NodeName,\r\n                request.NodeId,\r\n                request.CancellationToken,\r\n                request.GlobalVariables);\r\n        }\r\n\r\n        /// <summary>\r\n        /// 按一次运行请求执行强类型工具，并保留工具声明的具体结果类型。\r\n        /// </summary>\r\n        public TResult Run<TParameters, TResult>(\r\n            IToolPlugin<TParameters, TResult> tool,\r"
+        }
+      ]
+    },
+    {
+      "id": "result",
+      "title": "结果：缓存、树、主图和专业分析如何连接？",
+      "chain": "插件结果 → AlgorithmNode → ReadyQueue.SetNodeResult → NodeExecutionFinished → 协调器UI投影 → 主窗口结果/专业分析/图像",
+      "fact": "节点完成先进入本轮上下文；节点事件可在流程结束前更新快照。主窗结果、分析控件与主图是不同消费者；结果引用被共享，不等于每个视图独立复制。",
+      "vm": "原ModuleResultView切源释放旧decorator/ClearDataStore是局部可参考机制，native最后读者、历史缓存仍待实现材料。",
+      "change": "为来源切换、失败清空和同帧提交规定一致身份；结果字段、图元和底图分别列Owner。大数组投影与历史保留独立设计。",
+      "accept": "切节点/方案拒旧结果；失败不显示上轮成功；树/图形/文字同帧，数组按需加载且旧读者结束才释放。",
+      "sources": [
+        {
+          "path": "src/Workflow/WorkflowExecutionEngine.cs",
+          "line": 380,
+          "token": "context.SetNodeResult(completed.Node.Id",
+          "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+          "snippet": "                        context.SetNodeResult(completed.Node.Id, nodeResult);\r\n                        NodeExecutionFinished?.Invoke(completed.Node, nodeResult);\r\n                        var status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed;\r\n                        context.UpdateNodeStatus(completed.Node.Id, status);\r\n                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = completed.Node.Id, Status = status });\r\n                        if (!nodeResult.Success)\r\n                            result.AddError(nodeResult.ErrorMessages?.FirstOrDefault() ?? \"执行失败\", completed.Node.Id);\r\n\r\n                        foreach (var (controlNodeId, targets) in TryExtractControlSignals(\r\n                                     workflow, new List<string> { completed.Node.Id }, context))\r\n                        {\r\n                            var protectedNodes = ComputeProtectedNodes(workflow, targets);\r\n                            pruned.UnionWith(ComputePrunedNodes(workflow, controlNodeId, targets, protectedNodes, pruned));\r\n                        }\r\n                    }\r\n                }\r\n            }\r\n            finally\r\n            {\r\n                foreach (var item in running)\r"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+          "line": 768,
+          "token": "executionEngine.NodeExecutionFinished +=",
+          "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae",
+          "snippet": "                executionEngine.NodeExecutionFinished += (node, nodeResult) =>\r\n                {\r\n                    InvokeOnUI(() =>\r\n                    {\r\n                        snapshot.UpdateNodeResult(node.Id, GetSnapshotNodeName(rootEngineWorkflow, node.Id), nodeResult);\r\n                        ExecutionSnapshotUpdated?.Invoke(this, snapshot);\r\n                    });\r\n                };\r\n\r\n                // 每轮先复制参数，再覆盖本轮已发布的输入快照，避免 UI 后续切图影响本轮。\r\n                var runtimeParameters = new Dictionary<string, object>(_runtimeParameters);\r\n                var inputSnapshot = _runtimeInputSnapshots.GetSnapshot(workflow.RootWorkflowId);\r\n                if (inputSnapshot != null)\r\n                {\r\n                    runtimeParameters[\"CurrentImagePath\"] = inputSnapshot.ImagePath;\r\n                    runtimeParameters[\"CurrentImageIndex\"] = inputSnapshot.ImageIndex;\r\n                    runtimeParameters[\"CurrentImageVersion\"] = inputSnapshot.Version;\r\n                }\r\n\r\n                foreach (var param in runtimeParameters)\r"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+          "line": 3528,
+          "token": "private System.Threading.Tasks.Task UpdateDataAnalysisControl",
+          "sha256": "cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5",
+          "snippet": "        private System.Threading.Tasks.Task UpdateDataAnalysisControl(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)\r\n        {\r\n            try\r\n            {\r\n                // ★ 清理旧的选中高亮订阅（防止内存泄漏和残留高亮）\r\n                if (SelectedNodeDataAnalysisControl is IToolControlDataAnalysis oldDaControl)\r\n                {\r\n                    oldDaControl.SelectionHighlightChanged -= OnSelectionHighlightChanged;\r\n                }\r\n                _nodeResultManager.ClearHighlight();\r\n\r\n                // 清空当前控件\r\n                SelectedNodeDataAnalysisControl = null;\r\n                HasDataAnalysisControl = false;\r\n                DataAnalysisControlTitle = \"数据分析\";\r\n\r\n                if (selectedNode == null)\r\n                    return System.Threading.Tasks.Task.CompletedTask;\r\n\r\n                if (selectedNode.IsImageLoadNode)\r"
+        }
+      ]
+    },
+    {
+      "id": "stop",
+      "title": "停止：请求取消以后，是否真的全部结束？",
+      "chain": "StopContinuousRun/StopAndWaitAsync → 取消令牌 → ReadyQueue退出 → 外层会话返回/释放准入 → UI终态",
+      "fact": "ReadyQueue的finally仅Dispose仍在running中的Lease，没有await这些Task。取消在下一次循环检查抛出时，尚未响应取消的节点可能仍在运行；WorkflowRunSession.Dispose仅Dispose取消源，不提供任务排空。StopAndWait检查宿主active集合，不能弥补引擎已提前返回的任务。",
+      "vm": "ProcessManager转发停止状态回调有实现，但回调不单独证明VM所有native读者已退役。两边都应按真正完成条件验收。",
+      "change": "必须由运行会话持有全部在途节点：停发新节点 → 请求取消 → 观察/等待全部在途完成 → 释放租约/帧与上下文 → 终态。超时保留会话占用并报超时，不伪报停止，也不强杀原生线程。",
+      "accept": "一个长同步节点+一个快速节点，快速结束后取消：长节点结束前不能释放准入/租约或允许方案退役；异常和超时同样覆盖。此为待执行验收，不运行探针。",
+      "sources": [
+        {
+          "path": "src/Workflow/WorkflowExecutionEngine.cs",
+          "line": 399,
+          "token": "foreach (var item in running)",
+          "sha256": "4afdc12717c26f142cdc325d4ebac68a4d32f7cf31f1e5d137552c32419b07db",
+          "snippet": "                foreach (var item in running)\r\n                    item.Lease.Dispose();\r\n            }\r\n\r\n            var allResults = context.GetAllNodeResults().ToDictionary(pair => pair.Key, pair => pair.Value);\r\n            result.NodeResults = allResults;\r\n            result.Success = result.Errors.Count == 0 && allResults.Values.All(node => node.Success);\r\n            result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;\r\n            result.ExecutionTime = DateTime.Now - context.ExecutionStartTime;\r\n            ExecutionCompleted?.Invoke(this, result);\r\n            return result;\r\n        }\r\n\r\n        /// <summary>\r\n        /// 并行执行一组节点（同一组内节点无依赖关系）\r\n        /// </summary>\r\n        /// <remarks>\r\n        /// 注意：为支持参数绑定解析，组内节点按依赖顺序执行。\r\n        /// 只有当节点间无数据依赖关系时才真正并行执行。\r\n        /// </remarks>\r"
+        },
+        {
+          "path": "src/Workflow/WorkflowRunSession.cs",
+          "line": 146,
+          "token": "public void Dispose() => _cancellationSource.Dispose()",
+          "sha256": "81a4538d84dd800b91f6380ffbb8bc8fee2b59d0284e5f1c2194a2c97f4587c0",
+          "snippet": "    public void Dispose() => _cancellationSource.Dispose();\r\n}\r\n"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+          "line": 64,
+          "token": "public async Task StopAndWaitAsync",
+          "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae",
+          "snippet": "        public async Task StopAndWaitAsync(TimeSpan timeout)\r\n        {\r\n            CancellationTokenSource[] sources;\r\n            lock (_lock)\r\n            {\r\n                sources = _cancellationTokens.Values\r\n                    .Concat(new[] { _solutionRunCts, _communicationRunCts }.OfType<CancellationTokenSource>())\r\n                    .Distinct().ToArray();\r\n            }\r\n            // Cancellation callbacks may acquire the execution lock; never invoke them while holding it.\r\n            foreach (var source in sources) { try { source.Cancel(); } catch (ObjectDisposedException) { } }\r\n            var timer = Stopwatch.StartNew();\r\n            while (IsAnyRunning())\r\n            {\r\n                if (timer.Elapsed > timeout) throw new TimeoutException(\"工作流尚未停止，已取消方案切换，原方案保持打开。\");\r\n                await Task.Delay(50);\r\n            }\r\n        }\r\n        private bool _communicationOperation;\r\n        private readonly AsyncLocal<bool> _communicationOwner = new();\r"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+          "line": 220,
+          "token": "ReleaseExecution(workflowId)",
+          "sha256": "e46b941605407be55cd60fd66d9749bb0d8f595d513f82a718b5ac026a9274ae",
+          "snippet": "                ReleaseExecution(workflowId);\r\n            }\r\n        }\r\n\r\n        /// <summary>\r\n        /// 开始指定工作流的连续执行\r\n        /// </summary>\r\n        public bool StartContinuousRun(WorkflowTabViewModel workflow)\r\n        {\r\n            if (workflow == null)\r\n                throw new ArgumentNullException(nameof(workflow));\r\n\r\n            var workflowId = workflow.RootWorkflowId;\r\n\r\n            if (!TryAcquireExecution(workflowId))\r\n            {\r\n                NotifyExecutionRejected(workflowId);\r\n                return false;\r\n            }\r\n\r"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ProcessManager.cs",
+          "line": 765,
+          "token": "private void GetProcessStopRunStatusCallBack",
+          "sha256": "06fee7c7b5387fea086abe5073be5dd2606ad121d9bc64b0ab9335bace100414",
+          "snippet": "\tprivate void GetProcessStopRunStatusCallBack(ImvsSdkDefine.IMVS_STATUS_PROCESS_STOP_INFO statusInfo)\r\n\t{\r\n\t\tOnModuleStopRunProcessStatusCallBack?.Invoke(statusInfo);\r\n\t}\r\n\r\n\tprivate void GetPorcessContinuouslyProcessStatusCallBack(ImvsSdkDefine.IMVS_STATUS_PROCESS_START_CONTINUOUSLY_INFO statusInfo)\r\n\t{\r\n\t\tOnModuleStartContinuouslyProcessStatusCallBack?.Invoke(statusInfo);\r\n\t}\r\n\r\n\tpublic int AddContainerRelateModule(ref ImvsSdkDefine.IMVS_CONTAINER_RELATE_MODULE_INFO pstRelateModuleInfo)\r\n\t{\r\n\t\tint num = -536870657;\r\n\t\treturn ServerSDKAPI.AddContainerRelateModule(CVmObjectBase.mhandle, ref pstRelateModuleInfo);\r\n\t}\r\n\r\n\tpublic int GetContainerRelateModule(ref ImvsSdkDefine.IMVS_CONTAINER_RELATE_MODULE_INFO pstRelateModuleInfo)\r\n\t{\r\n\t\tint num = -536870657;\r\n\t\treturn ServerSDKAPI.GetContainerRelateModuleInfo(CVmObjectBase.mhandle, ref pstRelateModuleInfo);\r"
+        }
+      ]
+    },
+    {
+      "id": "plugins",
+      "title": "文件与模块：发现、实例和最终销毁不是一件事",
+      "chain": "plugins目录 → Infrastructure.PluginManager → ToolRegistry注册 → CreateInstance → 执行/调试/分析消费者 → 各自退役",
+      "fact": "工程引用表达编译依赖，ToolRegistry负责工具元数据/类型工厂；这不证明发布目录完整，也不证明窗口关闭后模块/native已销毁。",
+      "vm": "VM托管包装器/参数控件/原生模块分工可参考；尚缺完整原生析构就继续标缺，不把Dispose方法存在当最终完成。",
+      "change": "建立实例创建/共享/关闭表；持久配置、运行结果、脚本编译缓存分开退役。部署规则要和插件引用匹配；授权使用自有狗，方案保密/插件信任另设计。",
+      "accept": "缺依赖有可定位诊断；创建失败回滚；反复开关窗不留订阅/实例；确认实例最后消费者后释放；干净环境发布另验。",
+      "sources": [
+        {
+          "path": "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.cs",
+          "line": 212,
+          "token": "Activator.CreateInstance(type)",
+          "sha256": "813cfa8862ea46a31d49387f5dfb8a691785a95064ceed06cc51349473fcabb8",
+          "snippet": "                    return Activator.CreateInstance(type) as IToolPlugin;\r\n                }\r\n                return null;\r\n            }\r\n        }\r\n\r\n        /// <summary>\r\n        /// 创建参数实例\r\n        /// </summary>\r\n        /// <param name=\"toolId\">工具ID</param>\r\n        /// <returns>参数实例</returns>\r\n        public static ToolParameters CreateParameters(string toolId)\r\n        {\r\n            VisionLogger.Instance.Log(LogLevel.Info, $\"[ToolRegistry.CreateParameters] 开始创建参数实例 - toolId={toolId}\", \"ToolRegistry\");\r\n\r\n            var tool = CreateToolInstance(toolId);\r\n            if (tool == null)\r\n                throw new InvalidOperationException($\"工具实例创建失败: {toolId}\");\r\n\r\n            if (tool.ParamsType == null)\r"
+        },
+        {
+          "path": "src/Workflow/SolutionRepository.cs",
+          "line": 505,
+          "token": "public bool Save",
+          "sha256": "28c1be7481a956beeadb7fbf068aac0c5f48f42285ea1bdbe5bafbe42d4157b0",
+          "snippet": "    public bool Save(Solution solution, string filePath, bool overwrite = true)\n    {\r\n        // ✅ 日志监控：生成唯一调用ID\r\n        long callId = System.Threading.Interlocked.Increment(ref _saveCallCount);\r\n\r\n        if (solution == null)\r\n        {\r\n            _logger.Log(LogLevel.Warning, $\"[Save #{callId}] 保存解决方案失败：解决方案对象为空\\n堆栈: {GetShortStackTrace(3)}\", \"SolutionRepository\");\r\n            return false;\r\n        }\r\n\r\n        if (string.IsNullOrEmpty(filePath))\r\n        {\r\n            _logger.Log(LogLevel.Warning, $\"[Save #{callId}] 保存解决方案失败：文件路径为空\\n堆栈: {GetShortStackTrace(3)}\", \"SolutionRepository\");\r\n            return false;\r\n        }\r\n\r\n        string? temporaryPath = null;\r\n        try\r\n        {\r"
+        },
+        {
+          "path": "src/Plugin.SDK/Execution/Results/ToolResults.cs",
+          "line": 276,
+          "token": "public abstract class ToolResults",
+          "sha256": "3d4f0df03e792ea063ff024f32cd00782d81d8e773190642cd3efcf2ccf1c3ef",
+          "snippet": "    public abstract class ToolResults\r\n    {\r\n        /// <summary>\r\n        /// 执行状态\r\n        /// </summary>\r\n        public ExecutionStatus Status { get; set; } = ExecutionStatus.NotExecuted;\r\n\r\n        /// <summary>\r\n        /// 是否成功\r\n        /// </summary>\r\n        public bool IsSuccess => Status == ExecutionStatus.Success || Status == ExecutionStatus.PartialSuccess;\r\n\r\n        /// <summary>\r\n        /// 是否由取消请求结束\r\n        /// </summary>\r\n        public bool IsCancelled => Status == ExecutionStatus.Cancelled;\r\n\r\n        /// <summary>\r\n        /// 节点状态（本次执行的最终结论：执行成功且判定通过 = true）。\r\n        /// 由基类统一下沉，所有工具在结果树\"执行信息\"分组恒定可见，杜绝各工具漏声明/命名不一；\r"
+        }
+      ]
+    }
+  ],
+  "scope": "静态直接声明+六条局部实现链，不代表完整产品运行/VM原生闭合",
+  "productExecuted": false
+}

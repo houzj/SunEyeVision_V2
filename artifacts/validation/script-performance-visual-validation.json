@@ -1,0 +1,224 @@
+{
+  "rows": [
+    {
+      "flat": "tool-script.html",
+      "width": 390,
+      "overflow": false,
+      "comparisonFigures": 6,
+      "lanes": 13,
+      "roadmapSteps": 4,
+      "archivedDetailsClosed": true,
+      "scopeExplicit": true,
+      "unknownExplicit": true
+    },
+    {
+      "flat": "tool-script.html",
+      "width": 768,
+      "overflow": false,
+      "comparisonFigures": 6,
+      "lanes": 13,
+      "roadmapSteps": 4,
+      "archivedDetailsClosed": true,
+      "scopeExplicit": true,
+      "unknownExplicit": true
+    },
+    {
+      "flat": "tool-script.html",
+      "width": 1440,
+      "overflow": false,
+      "comparisonFigures": 6,
+      "lanes": 13,
+      "roadmapSteps": 4,
+      "archivedDetailsClosed": true,
+      "scopeExplicit": true,
+      "unknownExplicit": true
+    },
+    {
+      "flat": "optimization-o01.html",
+      "width": 390,
+      "overflow": false,
+      "comparisonFigures": 1,
+      "lanes": 3,
+      "roadmapSteps": 4,
+      "archivedDetailsClosed": true,
+      "scopeExplicit": true,
+      "unknownExplicit": true
+    },
+    {
+      "flat": "optimization-o01.html",
+      "width": 768,
+      "overflow": false,
+      "comparisonFigures": 1,
+      "lanes": 3,
+      "roadmapSteps": 4,
+      "archivedDetailsClosed": true,
+      "scopeExplicit": true,
+      "unknownExplicit": true
+    },
+    {
+      "flat": "optimization-o01.html",
+      "width": 1440,
+      "overflow": false,
+      "comparisonFigures": 1,
+      "lanes": 3,
+      "roadmapSteps": 4,
+      "archivedDetailsClosed": true,
+      "scopeExplicit": true,
+      "unknownExplicit": true
+    }
+  ],
+  "links": [
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/artifacts/independent-testing/SCRIPT-ENGINE-COMPARISON-01/comparison-summary.json",
+      "label": "",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/artifacts/independent-testing/SCRIPT-ENGINE-COMPARISON-01/runs/capability-matrix-20261022-174209/summary.json",
+      "label": "",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/artifacts/independent-testing/SCRIPT-ENGINE-COMPARISON-01/final-identity-manifest.json",
+      "label": "",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o01.html#script-engine-conditional-recommendation",
+      "label": "本批结果支持的条件推荐与下一步",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o01.html#script-reference-comparison",
+      "label": "三类引用配置的受控比较计划",
+      "valid": true
+    },
+    {
+      "href": "https://github.com/icsharpcode/NRefactory",
+      "label": "",
+      "external": true
+    },
+    {
+      "href": "https://github.com/dotnet/roslyn/blob/main/src/Features/Core/Portable/Completion/CompletionService.cs",
+      "label": "",
+      "external": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#chain-evidence-E01",
+      "label": "E01 配置／原生入口\n配置静态确认；宿主创建者未接通",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#chain-evidence-E02",
+      "label": "E02 窗口／复用／关闭\n同实例初始化已证；跨窗口复用未知",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#chain-evidence-E03",
+      "label": "E03 引用与语言服务\n重建及异步引用已证；真实加载版未知",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#chain-evidence-E04",
+      "label": "E04 自动输入／Ctrl+Space\n两副本入口false/true已证；后续体有差异",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#chain-evidence-E05",
+      "label": "E05 代码IO与引用提交\nSDK托管至native间接调用已证；目标至模块SetParam待证",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#chain-evidence-E06",
+      "label": "E06 编译触发／并发／缓存\ndirty/缓存分支已证；竞态和命中未运行",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#chain-evidence-E07",
+      "label": "E07 装载与Init\nloader与Init静态已证；宿主寿命待补",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#chain-evidence-E08",
+      "label": "E08 执行／IO／结果发布\nCOM执行所选路径已证；动态IO/帧身份待补",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#chain-evidence-E09",
+      "label": "E09 改码／重编／失败\n失败状态路径已证；旧native结果未知",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#chain-evidence-E10",
+      "label": "E10 关闭／切方案／释放\n解绑和Dispose各有证；切方案调用者待补",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/analysis/selfdev-support/VM-SCRIPT-CHAIN/framework/bridge-evidence.json",
+      "label": "",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-FULL-CHAIN-20261023/evidence.json",
+      "label": "",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-component-baseline",
+      "label": "查看30/30组件隔离基线图与完整限制",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o01.html#script-performance-batch",
+      "label": "整批四步改造与验收",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o01.html#script-performance-batch",
+      "label": "",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-preparation-consumers",
+      "label": "",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-engine-capability-results",
+      "label": "共同能力热图、正确性门与单轮原值",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-full-chain-coverage",
+      "label": "回看10段覆盖、所选COM路径与断点",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-assembly-scope",
+      "label": "四层当前引用关系与源码依据",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-performance-chains",
+      "label": "对应VM／自研三张并排证据链",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-component-baseline",
+      "label": "已有组件基线图",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o01.html#script-component-boundary",
+      "label": "组件已测／应用缺测的决策边界",
+      "valid": true
+    },
+    {
+      "href": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90/tool-script.html#script-performance-chains",
+      "label": "",
+      "valid": true
+    }
+  ],
+  "pageErrors": [],
+  "errors": 0
+}

@@ -1,0 +1,1 @@
+const fs=require('fs');for(const p of ['artifacts/validation/build-comparison-plan.cjs','artifacts/validation/comparison-work-packages.json','docs/04-工具设计/标定工具/2026/10/19/suneye-vm-design-comparison-plan.html']){let s=fs.readFileSync(p,'utf8').replaceAll('contract-lifecycle','contract-lifetime').replaceAll('contract-loader','plugins');fs.writeFileSync(p,s);}

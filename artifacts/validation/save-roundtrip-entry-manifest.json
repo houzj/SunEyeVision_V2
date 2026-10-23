@@ -1,0 +1,31 @@
+{
+  "taskId": "SAVE-ROUNDTRIP-12",
+  "pages": [
+    "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\persistence-architecture.html"
+  ],
+  "target": "artifacts/ui-prototypes/save-roundtrip/index.html",
+  "observed": [
+    {
+      "path": "artifacts/ui-prototypes/save-roundtrip/index.html",
+      "observedSha256": "6dbc956776adf77d112b127fe1c471eadabd92adc320911e0308a1eead699fd9"
+    },
+    {
+      "path": "artifacts/ui-prototypes/save-roundtrip/evidence.json",
+      "observedSha256": "16c0eeed5a09694b6242fa15d8c63a82e432e3970692619db5eef5d189a0b532"
+    },
+    {
+      "path": "artifacts/ui-prototypes/save-roundtrip/validation.json",
+      "observedSha256": "259920615af6d44c405cbfac8a4423a8502a0ff6b99825091dea52c7d6d584b3"
+    }
+  ],
+  "status": "static-discussion-pending-confirmation",
+  "evidenceLocatorsReported": 18,
+  "issueGroupsReported": 8,
+  "acceptancePlanned": 20,
+  "acceptanceExecuted": 0,
+  "previousAcceptanceReplaced": false,
+  "prototypeModified": false,
+  "productModified": false,
+  "productExecuted": false,
+  "wholeSiteRegenerated": false
+}

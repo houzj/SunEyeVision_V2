@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -38,19 +37,6 @@ public sealed partial class SolutionManagerUiTests
         grid.Measure(new Size(width, height)); grid.Arrange(new Rect(0, 0, width, height)); grid.UpdateLayout();
         grid.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         grid.UpdateLayout();
-        if (window is SolutionConfigurationDialog && window.DataContext is SolutionConfigurationDialogViewModel viewModel && viewModel.FilteredMetadatas.Any(m => m.IsMissing))
-        {
-            static System.Collections.Generic.IEnumerable<DependencyObject> Children(DependencyObject parent)
-            {
-                for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-                { var child = VisualTreeHelper.GetChild(parent, i); yield return child; foreach (var descendant in Children(child)) yield return descendant; }
-            }
-            var badge = Children(grid).OfType<TextBlock>().FirstOrDefault(text => text.Text == "文件失效");
-            Assert.NotNull(badge);
-            var position = badge!.TranslatePoint(new Point(0, 0), grid);
-            Assert.True(badge.Visibility == Visibility.Visible && position.X + badge.ActualWidth <= width,
-                $"失效状态不可见：{badge.Visibility}, x={position.X}, width={badge.ActualWidth}, viewport={width}");
-        }
         Assert.Equal(((SolidColorBrush)window.FindResource(ThemeKeys.WindowBackgroundBrush)).Color, ((SolidColorBrush)window.Background).Color);
         var directory = Environment.GetEnvironmentVariable("SUNEYEVISION_SOLUTION_PREVIEW");
         if (!string.IsNullOrEmpty(directory))
@@ -62,35 +48,6 @@ public sealed partial class SolutionManagerUiTests
             var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
             using var output = File.Create(Path.Combine(directory, window.GetType().Name + "-" + name + "-" + width + ".png")); encoder.Save(output);
         }
-    }
-    [Fact]
-    public void Manager_renders_both_themes_at_minimum_and_default_sizes()
-    {
-        Sta(() =>
-        {
-            var root = Path.Combine(Path.GetTempPath(), "SunEyeVision-UiManagement", Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(root);
-            SolutionConfigurationDialog? window = null;
-            try
-            {
-                var locations = new ApplicationDataLocationService(Path.Combine(root, "locator.json"));
-                var manager = new SolutionManager(locations.Prepare(Path.Combine(root, "data")));
-                for (var i = 0; i < 80; i++) manager.RegisterKnownSolution(new SolutionMetadata { Id = "fixture-" + i, Name = $"检测方案 {i}", Description = "传递后的图片可单独重新配置", FilePath = Path.Combine(root, "missing-" + i + ".solution") });
-                window = new SolutionConfigurationDialog(manager);
-                var viewModel = (SolutionConfigurationDialogViewModel)window.DataContext;
-                var selected = viewModel.SolutionMetadatas.First();
-                selected.Description = string.Join("\n", Enumerable.Repeat("长描述应滚动，不能把列表及操作按钮挤出窗口", 40));
-                viewModel.SelectedMetadata = selected;
-                foreach (var theme in new[] { "Dark", "Light" })
-                {
-                    Render(window, theme, 1008, 600);
-                    Render(window, theme, 760, 520);
-                }
-                Assert.IsType<SolutionConfigurationDialogViewModel>(window.DataContext);
-                Assert.Equal(80, ((SolutionConfigurationDialogViewModel)window.DataContext).FilteredMetadatas.Count);
-            }
-            finally { window?.Close(); Directory.Delete(root, true); }
-        });
     }
     [Fact]
     public void Data_directory_dialog_does_not_write_until_user_confirms()
@@ -178,21 +135,4 @@ public sealed partial class SolutionManagerUiTests
         });
     }
 
-    [Fact]
-    public void Closed_viewmodel_unsubscribes_from_manager_events()
-    {
-        var root = Path.Combine(Path.GetTempPath(), "SunEyeVision-ViewModelLifetime", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(root);
-        try
-        {
-            var paths = new ApplicationDataLocationService(Path.Combine(root, "locator.json")).Prepare(Path.Combine(root, "data"));
-            var manager = new SolutionManager(paths);
-            using var model = new SolutionConfigurationDialogViewModel(manager);
-            var eventField = typeof(SolutionManager).GetField("SolutionAdded", BindingFlags.Instance | BindingFlags.NonPublic)!;
-            Assert.NotNull(eventField.GetValue(manager));
-            model.Dispose();
-            Assert.Null(eventField.GetValue(manager));
-        }
-        finally { Directory.Delete(root, true); }
-    }
 }

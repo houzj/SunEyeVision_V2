@@ -627,6 +627,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 var executor = new ToolExecutor(new ParameterResolver(), VisionLogger.Instance);
                 var result = await executor.ExecuteAsync(tool, new ToolExecutionRequest(parameters)
                 {
+                    ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution),
                     NodeId = node.Id, NodeName = node.Name, ParameterBindings = bindings,
                     GlobalVariables = globals, ResolvedInputImage = image, CancellationToken = token,
                     CameraCaptureService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime,
@@ -837,7 +838,7 @@ namespace SunEyeVision.UI.Services.Workflow
                         : null,
                     cameraFrames: cameraFrame is not null && cameraNodeId is not null
                         ? new Dictionary<string, CameraFrame> { [cameraNodeId] = cameraFrame }
-                        : null);
+                        : null) { ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution) };
                 var result = await executionEngine.ExecuteWorkflowAsync(runRequest, cancellationToken);
                 if (sequenceNumbers is not null)
                 {

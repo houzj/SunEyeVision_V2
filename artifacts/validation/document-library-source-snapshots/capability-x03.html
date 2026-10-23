@@ -1,0 +1,147 @@
+<!doctype html><html lang="zh-CN"><head><script src="../公共资源/文档路径.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>X03 自有加密狗与功能授权</title><link rel="stylesheet" href="../公共资源/architecture-doc-site.css"><style>.topic-return{display:flex;gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid #3a566c;font-size:13px}.topic-return span{color:#9bb6c8}.evidence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.evidence-columns>section{margin:0;padding:14px;border:1px solid #38566d;border-radius:10px;background:#102638}.evidence-columns h3{margin:0 0 8px;font-size:16px}.evidence-columns p{line-height:1.55}@media(max-width:760px){.evidence-columns{grid-template-columns:1fr}.topic-return{padding:9px 14px;flex-wrap:wrap}}</style></head><body><!-- document-hierarchy:start --><nav class="document-breadcrumb" aria-label="面包屑" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px;font-size:13px;border-bottom:1px solid #3a566c;overflow-wrap:anywhere"><a href="../index.html">文档首页</a><span aria-hidden="true">›</span><span aria-current="page">X03 自有加密狗与功能授权</span><a href="../现状分析/system-architecture.html">整体架构专题</a><a href="../维护记录/文档维护.html">维护记录与目录</a></nav><!-- document-hierarchy:end --><nav aria-label="文档导航"><a href="../index.html">界面导航</a><a href="../关系图解/guide-execution.html">关系图解</a><a href="capability-index.html">能力对照</a><a href="../优化方案/optimization-index.html">优化方案</a><a href="../目标架构/architecture-target.html">目标合同</a><a href="../证据审计/audit-overview.html">证据审计</a></nav><main><div class="page-journey"><a href="../index.html">界面位置</a> → <a href="capability-index.html">能力对照</a> → <a href="../优化方案/optimization-index.html">具体改法</a> → <a href="../目标架构/architecture-target.html">目标合同</a> → <a href="../证据审计/audit-overview.html">证据与验收</a></div><h1>X03 自有加密狗与功能授权</h1><article id="compare-X03"><span id="X03"></span><div class="visual-metrics"><div><strong>X03</strong><span>能力条目</span><small>未实现</small></div><div><strong>缺失</strong><span>差异等级</span><small>不等于优劣排名</small></div><div><strong>新增</strong><span>建议路线</span><small>未实施/验收</small></div></div><figure class="flow-figure" data-visual="flow"><figcaption><b>自研实际调用链</b><span class="chip">历史基线静态路径；完整边界见正文</span></figcaption><ol class="flow-path"><li><small>01</small><b>拟议：启动验狗</b></li><li><small>02</small><b>独立许可服务</b></li><li><small>03</small><b>能力快照</b></li><li><small>04</small><b>服务准入</b></li><li><small>05</small><b>变化/退出</b></li></ol></figure><div class="compare-pair"><section class="ours"><div class="eyebrow">SUN EYE · 自研</div><h2>自研当前实现</h2><p>src扫描未发现产品级加密狗服务；设计时LicenseManager与包MIT声明不算产品授权。</p><details><summary>完整缺陷与未闭合调用边</summary><p>用户确定使用自有狗；型号/SDK、凭据签发、能力/版本/期限、拔狗政策待设计开发。 该方法先await _communicationService.DisposeAsync后才释放_communicationRuntime；前者抛错则后者本次不会执行。App.OnExit分别catch通讯与相机，故相机仍可继续释放，不能误说所有服务都被跳过。OnExit同步GetResult也不等完整异步退出协调器。 DisposeClosedSessionAsync吞Dispose异常并只记日志；Disconnect随后发布Disconnected，ConnectCore用retirement.IsCompleted允许重连。失败Task同样会IsCompleted，单纯删catch不能修准入；物理冲突尚未故障验证。 工作流触发忙则跳过；状态响应每设备responseTails串行Task链，每条Track加入_tasks，未见容量/合并/TTL。已有配置version与设备lifetime检查，不能说全无代次；被动接收另有有界缓冲和游标，不是同一队列。</p></details></section><section class="reference"><div class="eyebrow">VM · 已证与未知</div><h2>VM机制与证据边界</h2><p>VM狗协议/密钥/授权服务不采用；只参考授权应在哪些业务入口生效。</p><p>仅参考授权准入所在业务层，不采用其狗协议/密钥。</p><p>VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。</p><a href="file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/MF01-GLOBAL-ENTRY-AUDIT.md">原参考入口</a></section></div><section class="visual-card "><h2>差异、取舍与具体改法</h2><div class="table-scroll"><table><tbody><tr><th class="row-label" scope="row">差异依据</th><td data-label="差异依据">限定本项列明入口/合同尚未实现，不推全产品不存在。</td></tr><tr><th class="row-label" scope="row">当前缺点</th><td data-label="当前缺点">当前缺独立产品狗授权服务；用户已确定自有狗，不能用VM授权填空。</td></tr><tr><th class="row-label" scope="row">建议与代价</th><td data-label="建议与代价">依据：当前缺独立产品狗授权服务；用户已确定自有狗，不能用VM授权填空。 VM参考边界：仅参考授权准入所在业务层，不采用其狗协议/密钥。 结论仅针对列明范围，不作整体优胜排名。</td></tr><tr><th class="row-label" scope="row">具体修改</th><td data-label="具体修改">新增厂商适配、许可快照、服务准入与签发/恢复政策；型号未定不能写成已实现。 独立狗适配和LicenseService（拟新增），运行/通信触发/脚本等服务检查，私钥不放客户端。</td></tr><tr><th class="row-label" scope="row">验收标准（未执行）</th><td data-label="验收标准（未执行）">无狗/错狗/过期/拔狗/休眠恢复/驱动异常均按明确策略拒绝新副作用；在途安全收尾。 注入上层Dispose失败、底层失败及相机失败分别验后续清理仍被观察；错误汇总不丢失首因，重试不重用已半释放实例。 Dispose部分清理后抛错、迟到退役、新旧连接并发及重试分别验，未确认释放不报安全可用。 慢发送下高频Run/Stop、相机抖动、配置更新/切方案核顺序、积压、过期和取消排空。</td></tr><tr><th class="row-label" scope="row">验证边界</th><td data-label="验证边界">仅静态复核；未运行产品/设备/故障注入</td></tr><tr><th class="row-label" scope="row">关联优化包</th><td data-label="关联优化包"><a href="../优化方案/optimization-o11.html#O11"><b>自有狗授权、文件保护与信任政策</b><small class="reference-id">优化方案 · O11</small></a></td></tr></tbody></table></div></section><article id="recommendation-X03"><h2>X03 自有加密狗与功能授权 · 新增</h2><p><b>代码依据 / 局限：</b>当前缺独立产品狗授权服务；用户已确定自有狗，不能用VM授权填空。</p><p><b>VM可借鉴与不可推断：</b>仅参考授权准入所在业务层，不采用其狗协议/密钥。</p><p><b>具体改法 / 成本：</b>新增厂商适配、许可快照、服务准入与签发/恢复政策；型号未定不能写成已实现。 独立狗适配和LicenseService（拟新增），运行/通信触发/脚本等服务检查，私钥不放客户端。</p><p><b>验收：</b>无狗/错狗/过期/拔狗/休眠恢复/驱动异常均按明确策略拒绝新副作用；在途安全收尾。 注入上层Dispose失败、底层失败及相机失败分别验后续清理仍被观察；错误汇总不丢失首因，重试不重用已半释放实例。 Dispose部分清理后抛错、迟到退役、新旧连接并发及重试分别验，未确认释放不报安全可用。 慢发送下高频Run/Stop、相机抖动、配置更新/切方案核顺序、积压、过期和取消排空。</p><p><a href="../现状分析/suneye-entry-architecture-comparison.html#compare-X03">同项横向表</a> · <a href="../现状分析/suneye-entry-architecture-comparison.html#arch-X03">源码 / 缺失调用边</a></p></article><h2>源码与证据</h2><div class="evidence-grid"><details class="source-card"><summary>S107</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj">src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>b95650866ebe40e8666a6062458571ca218ed626411d0c3a8bfb4f4facd1f9cf</code></p><pre>&lt;Project Sdk=&quot;Microsoft.NET.Sdk&quot;&gt;
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net9.0-windows&lt;/TargetFramework&gt;
+    &lt;PlatformTarget&gt;x64&lt;/PlatformTarget&gt;
+    &lt;ImplicitUsings&gt;disable&lt;/ImplicitUsings&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;UseWPF&gt;true&lt;/UseWPF&gt;
+    &lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;
+    &lt;RootNamespace&gt;SunEyeVision.Plugin.SDK&lt;/RootNamespace&gt;
+    &lt;AssemblyName&gt;SunEyeVision.Plugin.SDK&lt;/AssemblyName&gt;
+    &lt;GenerateDocumentationFile&gt;true&lt;/GenerateDocumentationFile&gt;
+    &lt;DocumentationFile&gt;bin\$(Configuration)\$(TargetFramework)\SunEyeVision.Plugin.SDK.xml&lt;/DocumentationFile&gt;
+    &lt;NoWarn&gt;$(NoWarn);1591&lt;/NoWarn&gt;
+</pre></details><details class="source-card"><summary>S108</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs">src/UI/Shell/Windows/MainWindowViewModel.cs:780</a></p><p><code>RunWorkflowCommand</code></p><p>SHA256 <code>cca7efe4016cf5def050413689d3c246a5e94e5162687dafe3dd314348530dc5</code></p><pre>        public ICommand RunWorkflowCommand { get; }
+        public ICommand StopWorkflowCommand { get; }
+        public ICommand ShowSettingsCommand { get; }
+        public ICommand ShowAboutCommand { get; }
+        public ICommand ShowHelpCommand { get; }
+        public ICommand ShowShortcutsCommand { get; }
+        public ICommand PauseCommand { get; }
+        public ICommand UndoCommand { get; }
+        public ICommand RedoCommand { get; }
+        public ICommand DeleteSelectedNodesCommand { get; }
+        public ICommand OpenDebugWindowCommand { get; }
+        public ICommand TogglePathPointsCommand { get; }
+
+        // 所有工作流</pre></details><details class="source-card"><summary>N044</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs">src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs:145</a></p><p><code>public static async ValueTask DisposeCommunicationRuntimeAsync()</code></p><p>SHA256 <code>95a1a9a2532653831cf510332a33a21279ee2725bc17a5b2945295ab4e603927</code></p><pre>        public static async ValueTask DisposeCommunicationRuntimeAsync()
+        {
+            if (_communicationService is not null)
+            {
+                await _communicationService.DisposeAsync().ConfigureAwait(false);
+                _communicationService = null;
+            }
+            if (_communicationRuntime is null) return;
+            await _communicationRuntime.DisposeAsync().ConfigureAwait(false);
+            _communicationRuntime = null;
+        }
+
+        public static async ValueTask DisposeCameraRuntimeAsync()
+        {
+            if (_cameraRuntime is null)
+                return;
+            await _cameraRuntime.DisposeAsync().ConfigureAwait(false);
+            _cameraRuntime = null;
+        }
+
+        /// &lt;summary&gt;
+        /// 初始化所有服务。</pre></details><details class="source-card"><summary>N063</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/DeviceDriver/Communications/Runtime/CommunicationRuntimeManager.cs">src/DeviceDriver/Communications/Runtime/CommunicationRuntimeManager.cs:424</a></p><p><code>private static async Task DisposeClosedSessionAsync</code></p><p>SHA256 <code>dba809fe41d0ce4c84e1dc39680b7f7616b96f34a3aaeb3412fe92252d6aaace</code></p><pre>    private static async Task DisposeClosedSessionAsync(ICommunicationAdapter session, string communicationId)
+    {
+        try { await session.DisposeAsync().ConfigureAwait(false); }
+        catch (Exception ex)
+        {
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                $&quot;释放已断线通讯会话失败：设备={communicationId}, 错误={ex.Message}&quot;,
+                &quot;CommunicationRuntime&quot;, ex, LogTarget.File);
+        }
+    }
+
+    private static void ValidateSupportedSettings(Communication communication)
+    {
+        if (communication.ProtocolKey is not (&quot;tcp-client&quot; or &quot;tcp-server&quot; or &quot;udp&quot; or &quot;serial&quot; or &quot;modbus&quot; or &quot;modbus-tcp&quot; or &quot;modbus-rtu&quot; or &quot;s7&quot; or &quot;opcua&quot; or &quot;cip&quot;))
+            throw new NotSupportedException($&quot;{communication.ProtocolDisplayName} 的真实协议驱动尚未接入。&quot;);
+        if (communication.ProtocolKey == &quot;opcua&quot;)
+        {
+            if (!Uri.TryCreate(communication.EndpointUrl, UriKind.Absolute, out var endpoint) || endpoint.Scheme != &quot;opc.tcp&quot;)
+                throw new ArgumentException(&quot;OPC UA 服务端点必须是有效的 opc.tcp:// URL。&quot;, nameof(communication));
+        }
+        else if (communication.ProtocolKey == &quot;cip&quot;)
+        {</pre></details><details class="source-card"><summary>N065</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Communication/CommunicationAutomationService.cs">src/UI/Services/Communication/CommunicationAutomationService.cs:319</a></p><p><code>private void QueueResponse</code></p><p>SHA256 <code>b744370248e1a0510fe963f8cac39f4461982895cc828365eb6c455f109ef2d9</code></p><pre>    private void QueueResponse(CommunicationResponseDefinition configured, string content, string? id, double delay = 0)
+    {
+        if (_disposed || !configured.Enabled) return;
+        if (!_devices.TryGetValue(configured.DeviceId, out var device)) { Warn(&quot;响应绑定设备已失效，未发送。&quot;); return; }
+        var config = Copy(configured);
+        var token = _lifetime.Token;
+        var version = _version;
+        var previous = _responseTails.GetValueOrDefault(device.Id, Task.CompletedTask);
+        _responseTails[device.Id] = Track(async () =&gt;
+        {
+            await previous.ConfigureAwait(false);
+            if (!double.IsFinite(delay) || delay &lt; 0 || delay &gt; 86400) throw new FormatException(&quot;响应延迟应在 0～86400 秒之间。&quot;);
+            if (delay &gt; 0) await Task.Delay(TimeSpan.FromSeconds(delay), token).ConfigureAwait(false);
+            token.ThrowIfCancellationRequested();
+            lock (_gate) if (version != _version) return;
+            // Resolve outside the automation gate; the host owns the device policy gate.
+            var deviceToken = DeviceLifetimeReader?.Invoke(device.Id) ?? CancellationToken.None;
+            using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, deviceToken);
+            cancellation.Token.ThrowIfCancellationRequested();
+            lock (_gate) if (version != _version) return;
+            if (!device.IsEnabled || !_runtime.IsConnected(device.Id)) throw new InvalidOperationException(&quot;响应设备未连接，未发送。&quot;);
+            var sender = new CommunicationSendEventService(_runtime);</pre></details></div><details><summary>原始条目（全部字段，便于保真核对）</summary><pre>{
+  &quot;id&quot;: &quot;X03&quot;,
+  &quot;group&quot;: &quot;support&quot;,
+  &quot;title&quot;: &quot;自有加密狗与功能授权&quot;,
+  &quot;state&quot;: &quot;unimplemented&quot;,
+  &quot;chain&quot;: [
+    &quot;拟议：启动验狗&quot;,
+    &quot;独立许可服务&quot;,
+    &quot;能力快照&quot;,
+    &quot;服务准入&quot;,
+    &quot;变化/退出&quot;
+  ],
+  &quot;current&quot;: &quot;src扫描未发现产品级加密狗服务；设计时LicenseManager与包MIT声明不算产品授权。&quot;,
+  &quot;gap&quot;: &quot;用户确定使用自有狗；型号/SDK、凭据签发、能力/版本/期限、拔狗政策待设计开发。 该方法先await _communicationService.DisposeAsync后才释放_communicationRuntime；前者抛错则后者本次不会执行。App.OnExit分别catch通讯与相机，故相机仍可继续释放，不能误说所有服务都被跳过。OnExit同步GetResult也不等完整异步退出协调器。 DisposeClosedSessionAsync吞Dispose异常并只记日志；Disconnect随后发布Disconnected，ConnectCore用retirement.IsCompleted允许重连。失败Task同样会IsCompleted，单纯删catch不能修准入；物理冲突尚未故障验证。 工作流触发忙则跳过；状态响应每设备responseTails串行Task链，每条Track加入_tasks，未见容量/合并/TTL。已有配置version与设备lifetime检查，不能说全无代次；被动接收另有有界缓冲和游标，不是同一队列。&quot;,
+  &quot;vm&quot;: &quot;VM狗协议/密钥/授权服务不采用；只参考授权应在哪些业务入口生效。&quot;,
+  &quot;vmDoc&quot;: &quot;MF01-GLOBAL-ENTRY-AUDIT.md&quot;,
+  &quot;vmLimit&quot;: &quot;VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。&quot;,
+  &quot;choice&quot;: &quot;新增&quot;,
+  &quot;reason&quot;: &quot;依据：当前缺独立产品狗授权服务；用户已确定自有狗，不能用VM授权填空。 VM参考边界：仅参考授权准入所在业务层，不采用其狗协议/密钥。 结论仅针对列明范围，不作整体优胜排名。&quot;,
+  &quot;change&quot;: &quot;新增厂商适配、许可快照、服务准入与签发/恢复政策；型号未定不能写成已实现。 独立狗适配和LicenseService（拟新增），运行/通信触发/脚本等服务检查，私钥不放客户端。&quot;,
+  &quot;accept&quot;: &quot;无狗/错狗/过期/拔狗/休眠恢复/驱动异常均按明确策略拒绝新副作用；在途安全收尾。 注入上层Dispose失败、底层失败及相机失败分别验后续清理仍被观察；错误汇总不丢失首因，重试不重用已半释放实例。 Dispose部分清理后抛错、迟到退役、新旧连接并发及重试分别验，未确认释放不报安全可用。 慢发送下高频Run/Stop、相机抖动、配置更新/切方案核顺序、积压、过期和取消排空。&quot;,
+  &quot;sourceIds&quot;: [
+    &quot;S107&quot;,
+    &quot;S108&quot;,
+    &quot;N044&quot;,
+    &quot;N063&quot;,
+    &quot;N065&quot;
+  ],
+  &quot;optimization&quot;: &quot;O11&quot;,
+  &quot;validation&quot;: &quot;仅静态复核；未运行产品/设备/故障注入&quot;,
+  &quot;previousRecommendation&quot;: {
+    &quot;choice&quot;: &quot;新增自有授权体系&quot;,
+    &quot;reason&quot;: &quot;自主产品不能依赖VM加密狗；服务隔离便于换厂商，但需发行、恢复和测试成本。&quot;
+  },
+  &quot;defect&quot;: &quot;当前缺独立产品狗授权服务；用户已确定自有狗，不能用VM授权填空。&quot;,
+  &quot;vmBorrow&quot;: &quot;仅参考授权准入所在业务层，不采用其狗协议/密钥。&quot;,
+  &quot;difference&quot;: &quot;缺失&quot;,
+  &quot;differenceBasis&quot;: &quot;限定本项列明入口/合同尚未实现，不推全产品不存在。&quot;,
+  &quot;adoption&quot;: &quot;新增&quot;,
+  &quot;adoptionBasis&quot;: &quot;当前缺口按本产品需求开发；狗授权使用自有厂商方案。&quot;,
+  &quot;selectionStatus&quot;: &quot;方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目&quot;,
+  &quot;reviewDecision&quot;: {
+    &quot;category&quot;: &quot;新增&quot;,
+    &quot;defect&quot;: &quot;当前缺独立产品狗授权服务；用户已确定自有狗，不能用VM授权填空。&quot;,
+    &quot;borrow&quot;: &quot;仅参考授权准入所在业务层，不采用其狗协议/密钥。&quot;,
+    &quot;action&quot;: &quot;新增厂商适配、许可快照、服务准入与签发/恢复政策；型号未定不能写成已实现。&quot;,
+    &quot;difference&quot;: &quot;缺失&quot;,
+    &quot;adoption&quot;: &quot;新增&quot;,
+    &quot;confidence&quot;: &quot;代码事实与设计要求分列；整改/借鉴范围不等产品已验收&quot;,
+    &quot;sourceIds&quot;: [
+      &quot;S107&quot;,
+      &quot;S108&quot;,
+      &quot;N044&quot;,
+      &quot;N063&quot;,
+      &quot;N065&quot;
+    ]
+  }
+}</pre></details></article></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

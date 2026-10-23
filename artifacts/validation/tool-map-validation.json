@@ -1,0 +1,18 @@
+{
+  "areas": 21,
+  "toolCapabilities": 18,
+  "layoutModels": 2,
+  "layoutReferences": 23,
+  "sourceHashes": true,
+  "inlineDataAndComparison": true,
+  "parameterTabs": true,
+  "continuousStopSameButton": true,
+  "singleExecuteHiddenWhileContinuous": true,
+  "keyboard": true,
+  "historyReload": true,
+  "printRestore": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "productModified": false,
+  "productRun": false
+}

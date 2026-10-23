@@ -1,0 +1,38 @@
+{
+  "taskId": "STARTUP-PREPARATION-DEDUP-FINAL",
+  "source": "artifacts/ui-prototypes/architecture-health/startup-preparation.html",
+  "archive": "artifacts/ui-prototypes/architecture-health/历史归档/startup-preparation-20261022.html",
+  "originalSha256": "052f75771e8c88fa04366fd2da38215c9492cfeb28e866aaa36c59e2bb7eeb35",
+  "shellSha256": "19be8ccb93ebb195330360f4c36577c7ce55d3695a5ea5f5b96cc36c10ac94b9",
+  "archiveSha256": "b6a3eeb7cd48ece14d8a6b8644dd6beb50975b2d9cd79efbbdda3fe0a79f5086",
+  "canonicalHome": "../../../docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html",
+  "routes": [
+    {
+      "label": "主文档首页",
+      "href": "../../../docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html"
+    },
+    {
+      "label": "M01 · 启动与图像箱消费者",
+      "href": "../../../docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/能力对照/capability-m01.html#startup-consumers"
+    },
+    {
+      "label": "脚本工具 · 补全／编译／实例／缓存",
+      "href": "../../../docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-script.html#script-preparation-consumers"
+    },
+    {
+      "label": "O01 · 取舍与验收方向",
+      "href": "../../../docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o01.html#startup-preparation-decisions"
+    }
+  ],
+  "scope": "仅旧页导航壳及明确历史归档，不改原型生成器/产品",
+  "productModified": false,
+  "browserValidation": {
+    "task": "STARTUP-PREPARATION-DEDUP-FINAL",
+    "widthChecks": 12,
+    "links": 14,
+    "errors": [],
+    "productExecuted": false
+  },
+  "userObservation": "用户感知VM更快；未同条件量化；不是同机AB；不同技术栈不免责",
+  "recommendation": "追上可感知响应，分阶段诊断，不直接替换Roslyn/AvalonEdit"
+}

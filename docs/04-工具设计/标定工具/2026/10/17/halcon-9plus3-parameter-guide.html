@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HALCON 9+3 标定参数说明与精简评审</title>
+<style>
+:root{color-scheme:light;--bg:#f4f6fa;--paper:#fff;--text:#172432;--muted:#576779;--line:#dce3ec;--blue:#1759a2;--soft:#eaf2fc;--amber:#80540b;--amberbg:#fff5df;--green:#236647}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.75 "Segoe UI","Microsoft YaHei",sans-serif}a{color:var(--blue);text-underline-offset:3px}button,input,select{font:inherit}button{cursor:pointer}header{background:#142e49;color:#fff;padding:44px max(28px,calc((100vw - 1220px)/2));}header h1{font-size:32px;line-height:1.3;margin:12px 0}header p{max-width:880px;color:#d4dfed;margin:12px 0}.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#b4d0ed}.layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:30px;max-width:1280px;margin:auto;padding:28px}nav{position:sticky;top:24px;align-self:start;max-height:calc(100vh - 48px);overflow:auto}nav a{display:block;padding:7px 10px;text-decoration:none;border-left:2px solid transparent;font-size:14px}nav a:hover,nav a:focus{background:var(--soft);border-color:var(--blue)}nav .group{margin:18px 10px 4px;font-size:12px;color:var(--muted)}main{min-width:0}section{background:var(--paper);padding:28px;border:1px solid var(--line);border-radius:10px;margin-bottom:22px}h2{font-size:23px;margin:0 0 14px}h3{font-size:17px;margin:22px 0 9px}p{margin:9px 0}.muted,small{color:var(--muted)}.notice{border-left:4px solid #d8a442;background:var(--amberbg);padding:14px 17px;margin:18px 0}.conclusion{font-size:18px;line-height:1.8}.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:4px;background:var(--soft);color:var(--blue);white-space:nowrap}.tag.advanced{background:var(--amberbg);color:var(--amber)}.tag.readonly{background:#eef1f5;color:#4a5968}.tag.internal{background:#eef6f0;color:var(--green)}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border-bottom:1px solid var(--line);padding:13px 10px;vertical-align:top;text-align:left}th{color:var(--muted);font-size:12px;background:#f7f9fc}td:first-child{width:24%;min-width:150px}td:nth-child(2){width:17%;min-width:110px}code{font:12px/1.7 Consolas,monospace;overflow-wrap:anywhere;color:#4c6380}td code{display:block;margin-top:4px}tr:last-child td{border-bottom:0}.toolbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.toolbar input{flex:1;min-width:170px;padding:9px 12px;border:1px solid var(--line);border-radius:6px}.toolbar select,.toolbar button{padding:9px 12px;background:var(--paper);border:1px solid var(--line);border-radius:6px}.toolbar output{font-size:12px;color:var(--muted)}.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:20px 0}.flow div{padding:14px;background:var(--soft);border-radius:6px}.flow b{display:block;font-size:14px}.flow span{display:block;color:var(--muted);font-size:12px;margin-top:4px}details{border-top:1px solid var(--line);padding:13px 0}summary{cursor:pointer;font-weight:600}summary:hover{color:var(--blue)}.proposal{border:1px dashed #9baec4;background:#f8fafd;padding:20px;border-radius:6px}.proposal .line{display:grid;grid-template-columns:140px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}.proposal .line:last-child{border:0}.proposal .field{border:1px solid var(--line);background:var(--paper);padding:5px 10px;border-radius:4px;color:var(--muted)}.comparison td:first-child{width:22%}.footer{font-size:12px;padding:10px 4px 30px;color:var(--muted)}.empty{display:none;padding:15px;background:var(--amberbg)}:focus-visible{outline:3px solid #76a5e0;outline-offset:3px}[hidden]{display:none!important}
+@media(max-width:850px){.layout{display:block;padding:14px}nav{position:static;display:flex;gap:4px;flex-wrap:wrap;max-height:none;margin-bottom:16px}nav a{border-left:0;border-bottom:2px solid transparent}nav .group{display:none}header{padding:26px 20px}header h1{font-size:26px}section{padding:18px}.flow{grid-template-columns:1fr 1fr}.toolbar{top:0}.proposal .line{grid-template-columns:110px 1fr}}
+@media print{body{background:#fff;font-size:11pt}header{background:#fff;color:#000;padding:0 0 18px}header p,.eyebrow{color:#333}.layout{display:block;padding:0;max-width:none}nav,.toolbar{display:none}section{break-inside:auto;border:0;padding:12px 0;border-radius:0}h2,h3{break-after:avoid}tr{break-inside:avoid}.flow{display:flex}.flow div{flex:1}a{color:inherit}details{display:block}details>*{display:block!important}.tag{border:1px solid #ccc}}
+</style>
+</head>
+<body>
+<header>
+<div class="eyebrow">SunEyeVision · Calibration · 2026-10-17</div>
+<h1>HALCON 9+3 标定参数说明书</h1>
+<p>先解释当前程序到底在做什么，再判断哪些参数值得保留。覆盖 N 点标定、独立验证的六个 Tab、点表和采样来源；精简建议仅供评审，尚未改动算法或 UI。</p>
+</header>
+<div class="layout">
+<nav aria-label="说明书目录">
+<a href="#judgment">先看结论</a><a href="#quick">手动标定最短路径</a>
+<div class="group">当前参数 · 按界面位置</div>
+<a href="#nt-basic">标定 · 基本参数</a><a href="#nt-runtime">标定 · 运行参数</a><a href="#nt-result">标定 · 结果显示</a>
+<a href="#vt-basic">验证 · 基本参数</a><a href="#vt-settings">验证 · 验证设置</a><a href="#vt-result">验证 · 验证结果</a>
+<a href="#samples">点表与采样元数据</a><a href="#actions">按钮和弹窗</a>
+<div class="group">设计评审</div><a href="#simplify">哪些设计可以收敛</a><a href="#minimal">精简界面草案</a><a href="#faq">容易误解的地方</a><a href="#sources">核对依据</a>
+</nav>
+<main>
+<section id="judgment">
+<h2>判断：部分界面暴露过多，不等于算法需要全部删除</h2>
+<p class="conclusion">日常标定的主线应是：<strong>输入图像点和轴心 XYR → 求解 → 看误差 → 独立验证 → 发布。</strong>当前把采样协议、工位质量门槛和文件发布策略一起放在工具窗口里，增加了理解成本。</p>
+<p>从现有代码看，最值得收敛的是<strong>重复采点入口、可自动识别的参考设置、分散的文件路径和自动写入开关</strong>。R 方向、现场误差门槛和采样有效性检查有明确物理作用，不宜为了少几个控件直接删除。</p>
+<div class="notice"><strong>当前能力边界：</strong>可信自动采样证据的消费检查已经实现，但宿主上游尚未接通证据生产。现在可以手动编辑点表并求解；“触发获取”或验证“记录本轮”不是只绑定几个数值就一定能用。正式发布仍需真实来源的独立验证。</div>
+<p><span class="tag">日常输入</span> 操作员本次需要提供　<span class="tag advanced">工位高级</span> 调试时确定，不宜每次重填　<span class="tag readonly">只读结果</span> 不参与配置　<span class="tag internal">内部保护</span> 自动维护，不应手填</p>
+</section>
+<section id="quick">
+<h2>先只看手动点表路径</h2>
+<div class="flow"><div><b>1 · 准备 9+3 点</b><span>同一 Mark，图像列/行、轴心 XY、实际编码器 R</span></div><div><b>2 · 确定姿态</b><span>参考 R、R 方向、复拍参考点</span></div><div><b>3 · 执行标定</b><span>填写正的训练误差门槛，检查逐点误差</span></div><div><b>4 · 候选与验证</b><span>设路径生成候选；新样本验证通过才发布</span></div></div>
+<p>手动模式不用配置输入绑定、示教、输入字符或时间差。平移与旋转点数先保留默认 9 和 3。参考 R 不是固定必须为 0°，必须与九个平移点的实际 R 一致。</p>
+<p><strong>复拍要求：</strong>旋转样本中需有一个点回到参考平移点的轴心 XY 和参考 R；默认参考平移点为界面第 5 点。若选择 3 个旋转样本，可安排“参考 R、参考 R−α、参考 R+α”，三个样本轴心 XY 保持不变。α 需结合真实机构和角度覆盖要求确定。</p>
+<p>训练误差默认是 <code>0</code>，这是“尚未配置”的初始值，不是零误差要求，也不是禁用检查。当前代码要求设置<strong>大于 0</strong>的门槛才能成功完成满点求解。</p>
+</section>
+<div class="toolbar" role="search" aria-label="参数检索">
+<input id="search" type="search" aria-label="搜索参数说明" placeholder="搜索参数、代码名或用途，例如：复拍、100、AxisAngle">
+<select id="level" aria-label="按参数类别筛选"><option value="">全部类别</option><option>日常输入</option><option>工位高级</option><option>只读结果</option><option>内部保护</option></select>
+<button id="reset" type="button">清除筛选</button><button id="print" type="button">打印 / 另存 PDF</button><output id="count" aria-live="polite"></output>
+</div>
+<p class="empty" id="empty">没有匹配的参数。可清除筛选后阅读完整说明。</p>
+<div id="parameter-sections"></div>
+<section id="actions">
+<h2>按钮和弹窗不应被当成额外参数</h2>
+<div class="table-wrap"><table><thead><tr><th>入口</th><th>当前行为</th><th>需要注意</th></tr></thead><tbody>
+<tr><td>编辑标定点</td><td>打开副本点表；确认后替换，取消保留原表。支持 CSV 导入导出。</td><td>手动修改点不保留“自动采样”的来源证明。旧 CSV 格式不自动迁移。</td></tr>
+<tr><td>记录本次</td><td>触发模式下请求采集本次点，仍需有效采样证据。</td><td>不是绕过到位、时间配对和重复帧检查的强制按钮。</td></tr>
+<tr><td>执行标定</td><td>用已有点表求解，界面此入口临时使用手动模式，避免顺带采一个点。</td><td>训练质量通过不是正式文件已发布。</td></tr>
+<tr><td>生成候选文件</td><td>写入当前有效、训练合格的求解结果，不重新采点或重新求解。</td><td>先设置路径再求解；路径也是结果指纹的一部分，改路径后旧结果会失效。</td></tr>
+<tr><td>查看逐点误差</td><td>显示每点 X/Y 残差和距离，辅助定位坏点。</td><td>停用或修改点后必须重新求解，不能继续使用旧结论。</td></tr>
+<tr><td>执行验证</td><td>“记录本轮”开：尝试采样再验证；关：验证已存独立样本。</td><td>至少要有独立平移和旋转样本；单次运行成功不代表已经验证通过。</td></tr>
+<tr><td>发布已验证候选</td><td>确认后复查参数、候选摘要及验证结果，原子更新正式文件。</td><td>同名候选内容变化后需重新验证，不能沿用旧通过状态。</td></tr>
+<tr><td>清空标定点 / 验证点</td><td>有确认提示；清空相应样本并使运行结果失效。</td><td>不删除已发布正式文件。正式文件是否仍适用于当前工位须另行确认。</td></tr>
+</tbody></table></div>
+</section>
+<section id="simplify">
+<h2>哪些设计可以收敛</h2>
+<p>以下是基于当前实现的设计判断，<strong>不是已经执行的改动，也不替代已批准的算法基线</strong>。</p>
+<div class="table-wrap"><table class="comparison"><thead><tr><th>当前设计</th><th>建议处理</th><th>理由和不能省略的条件</th></tr></thead><tbody>
+<tr><td>示教、输入字符、触发字符、布尔信号及记录按钮</td><td>统一成一个“记录本点”采集命令；通信条件留给上游事件链。</td><td>多入口分散相同职责。仍需采样步和新帧检查；不能退化成每次工具执行都重复采点。</td></tr>
+<tr><td>平移点数、旋转点数</td><td>默认显示“9+3”，修改数量放高级。</td><td>多数使用者不用调 9..100 / 3..100；如确实要支持 N 点，保留高级扩展。</td></tr>
+<tr><td>参考 R、参考平移点号</td><td>考虑由点表选中参考行自动建立，显示“参考姿态”。</td><td>不能盲取第一行；需验证平移 R 一致、复拍对应正确，并保存选择来源。</td></tr>
+<tr><td>R 正方向</td><td>保留，但归入一次性的工位坐标约定。</td><td>它影响实际物理旋转。近零偏心时不能可靠靠拟合误差自动推断方向。</td></tr>
+<tr><td>四个质量设置加配对时间差</td><td>收进“工位高级设置”，正常操作不展开。</td><td>平移角漂移、轴心漂移、覆盖不足、复拍不一致和时间错配是不同问题，不能简单合并为一个误差阈值。</td></tr>
+<tr><td>标定节点正式路径、旁路候选、验证节点两个路径</td><td>考虑共享一个“标定文件/标定记录”对象，候选与正式文件内部关联。</td><td>可以统一操作入口，不应取消候选与正式状态隔离或独立验证。</td></tr>
+<tr><td>自动更新候选、验证通过自动发布</td><td>交互模式采用明确的“保存候选”“发布”按钮；自动模式策略放高级。</td><td>自动化有价值，但不需要让手动标定使用者先理解所有自动写入开关。</td></tr>
+<tr><td>验证最低平移点数和旋转点数</td><td>作为工位验证方案，不放日常界面。</td><td>默认 1+1 只是代码下限，不等于覆盖充分；不同工艺可规定更多位置/角度。</td></tr>
+<tr><td>算法、相机模式、模型、流程四行常驻显示</td><td>压成一行状态说明。</td><td>当前只支持固定上相机位和仿射，不是四个可选参数。</td></tr>
+<tr><td>会话/帧/时间/摘要/版本</td><td>留在诊断抽屉与文件中，由系统产生。</td><td>有防错价值，但不是操作员参数。不应为了看起来“配置完整”开放手填。</td></tr>
+</tbody></table></div>
+<h3>不建议为了精简而删除</h3>
+<p>轴心与 Mark 的语义区别、R 方向、训练/验证各自的工艺误差门槛、参考复拍、独立验证、取消/过期结果检查，以及候选和正式文件分离。这些约束分别防止不同类型的错误。</p>
+</section>
+<section id="minimal">
+<h2>建议的日常界面草案</h2>
+<p class="muted">说明用草案，不是当前 UI 的截图或已实现交互。保留三 Tab，但将工位和诊断信息折叠。</p>
+<h3>N 点标定</h3>
+<div class="proposal" aria-label="标定精简草案"><div class="line"><span>基本参数</span><span class="field">采点方式：手动点表 / 工作流采集</span></div><div class="line"><span>数据与点表</span><span class="field">9 个平移点 + 3 个旋转点　[编辑点表]</span></div><div class="line"><span>输入绑定</span><span class="field">仅工作流采集时显示：图像点、轴心 XY、编码器 R</span></div><div class="line"><span>标定文件</span><span class="field">[选择文件/记录]　[保存候选]</span></div><div class="line"><span>运行参数</span><span class="field">训练误差上限　▸ 工位坐标与高级质量设置</span></div><div class="line"><span>结果显示</span><span class="field">合格/失败、最大误差、偏心　[逐点误差]　▸ 矩阵/诊断</span></div><div class="line"><span>主要操作</span><span class="field">[清空]　[记录本点，仅采集模式]　[执行标定]</span></div></div>
+<h3>独立验证</h3>
+<div class="proposal" aria-label="验证精简草案"><div class="line"><span>基本参数</span><span class="field">标定记录、独立样本输入　[记录验证点]</span></div><div class="line"><span>验证设置</span><span class="field">验证误差上限　▸ 工位验证方案</span></div><div class="line"><span>验证结果</span><span class="field">是否通过、逐点误差、发布状态</span></div><div class="line"><span>主要操作</span><span class="field">[清空验证点]　[执行验证]　[发布]</span></div></div>
+</section>
+<section id="faq">
+<h2>容易误解的地方</h2>
+<details open><summary>HALCON 原生求解为什么还需要这些设置？</summary><p>原生算子负责仿射拟合、矩阵求解和点变换，不会自动知道哪个机构点是 R 轴轴心、编码器正方向或真实工艺允许误差。部分参数属于物理建模和验收，不是求解器调优。过度设计主要体现在暴露层级和交互入口。</p></details>
+<details><summary>示教是否已经是“上升沿采一个点”？</summary><p>当前实际代码：触发模式，且 TeachSignal=true，或示教已开、非空触发字符与输入字符按区分大小写的完整相等匹配，就尝试采点；再由会话、运动步、帧等证据防重。不是在此处保存上一轮信号并检测上升沿。参数源码中的旧注释与行为不一致，本说明以执行分支为准。</p></details>
+<details><summary>能否把所有容差合并成“最大误差”？</summary><p>不能等价合并。R 角容差和时间差甚至不与残差同单位；几何条件错误时也可能拟合出较小残差。可以把它们收进工位配置，而不是移除检查。</p></details>
+<details><summary>参考点号 5 是否就是物理九宫格中心？</summary><p>不一定。默认只是内部 Id=4、界面点号=5。手动重排数据后它不必是中心。当前算法按该点号查找复拍参考，需确认其实际姿态；不能仅凭行位置猜测。</p></details>
+<details><summary>旋转覆盖 20° 是相对参考角至少转 20° 吗？</summary><p>不是。当前代码取旋转样本两两之间、按跨周最短角差的最大值。比如 −10° 与 +10° 的差为 20°，可达到默认跨度。它也不等于完整圆周覆盖质量评估。</p></details>
+<details><summary>Mark 偏心是不是 TCP 偏置？</summary><p>不是。它是参考姿态下，从机构 R 轴轴心指向同一标定 Mark 的向量。输入 AxisX/Y 仍应为轴心编码器位置。后续 TCP 或抓取工具不能直接把它当末端工具偏置。</p></details>
+<details><summary>训练通过为什么还不能直接使用正式文件？</summary><p>训练点用于求解，不能替代独立验证。候选需用未复用训练观察、不同平移位置和旋转角度的新样本检验，环境一致后才发布。可以简化路径交互，但不宜合并这两个状态。</p></details>
+</section>
+<section id="sources">
+<h2>核对依据与版本</h2>
+<p>核对日期：2026-10-17。内容针对当前未提交的 HALCON 原生迁移工作区，不声称覆盖用户之后的修改；代码基线为 <code>3a5dc6dd54f372699a450ad7862b52c961cd2797</code>。本文件不改变算法基线、业务代码或发布程序。</p>
+<ul><li><a href="../../../../../../tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationParameters.cs">NPointCalibrationParameters.cs</a>：默认值与参数契约。</li>
+<li><a href="../../../../../../tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationTool.cs">NPointCalibrationTool.cs</a>、<a href="../../../../../../tools/SunEyeVision.Tool.NPointCalibration/NPointVerificationTool.cs">NPointVerificationTool.cs</a>：采样条件、误差门槛及发布行为。</li>
+<li><a href="../../../../../../tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml">标定 XAML</a>、<a href="../../../../../../tools/SunEyeVision.Tool.NPointCalibration/Views/NPointVerificationDebugControl.xaml">验证 XAML</a>及对应后台：六 Tab 可见性与按钮行为。</li>
+<li><a href="../../../../../../src/SunEyeVision.HalAdapter/HalconPlanarCalibration.cs">HalconPlanarCalibration.cs</a>、<a href="../../../../../../tools/SunEyeVision.Tool.NPointCalibration/CalibrationRuntime.cs">CalibrationRuntime.cs</a>、<a href="../../../../../../tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationFile.cs">文件契约</a>：几何、复拍、采样来源和独立验证。</li>
+<li><a href="../16/HALCON原生9加3标定算法与界面实施基线-20261016.md">已批准实施基线</a>、<a href="../../../../../collaboration/HANDOFF_CALIBRATION_HALCON_IMPLEMENTATION_20261016.md">实施交接</a>：已实现与待接入范围。</li></ul>
+<p>默认容差只是当前程序初值，不是现场精度承诺。示例只帮助理解，不提供特定设备的验收阈值。</p>
+</section>
+<div class="footer">离线单文件说明书 · 无外部脚本、字体或网络请求 · 可搜索、按类别筛选和打印 · 参数分类与精简建议由本轮源码核对形成</div>
+</main></div>
+<script>
+'use strict';
+// Each row: visible label, source field, default, category, behavior, simplification judgment.
+const groups=[
+{id:'nt-basic',title:'N 点标定 · 基本参数',note:'手动模式主要编辑点表；触发获取才显示上游输入和示教。默认对象为触发获取、按点输入，但证据链未接通时不能完成触发采样。',rows:[
+['标定点获取','AcquisitionMode','触发获取','日常输入','手动：使用已有点表；触发：满足采点条件时尝试追加本轮观察。','保留两种入口；当前离线调试可先选手动。'],
+['输入方式','InputMode','按点','日常输入','触发模式才显示；按点与按坐标二选一，并非都要填。','保留一种主形式，另一种作为可切换输入。'],
+['图像点 / 图像 X、Y','ImagePoint / ImageX / ImageY','空点数组 / 0、0','日常输入','X=列/u，Y=行/v，像素单位；按点要求恰好一个 Point2d。不是机台坐标。','仅显示当前输入形式，不能去掉图像观察。'],
+['机构轴心 XY / 轴心 X、Y','AxisPoint / AxisX / AxisY','空点数组 / 0、0 mm','日常输入','R 轴轴心的绝对机台编码器位置；不是 Mark 测量位置，也不是 TCP。','必须保留语义；不能与图像坐标合并。'],
+['编码器 R','AxisAngle','0°','日常输入','本轮实际回读角；平移阶段应接近参考 R，旋转阶段使用各点实际角度。','保留。不能用识别出的 Mark 图像角度代替。'],
+['平移点数','TranslationCount','9；界面 9..100','工位高级','要求的平移样本数量；需非重复、非共线，R 保持在参考姿态容差内。','默认 9+3；可调数量放高级。'],
+['旋转点数','RotationCount','3；界面 3..100','工位高级','要求的旋转样本数量，需同一轴心 XY，并包括参考姿态复拍。','默认 3；不是自动运动角度列表。'],
+['当前阶段 / 采样进度','StageText / ProgressText','随点表变化','只读结果','根据已有平移/旋转点数显示采样阶段。','保留为一个紧凑进度区，不算配置参数。'],
+['示教','TeachEnabled','关闭','工位高级','开启时允许用输入字符与触发字符相等作为采点请求；仍需触发模式和采样证据。','与其他采点入口职责重叠，建议统一采点命令。'],
+['输入字符','ExternalInputText','空字符串','日常输入','示教开启后显示，可绑定外部字符串；参与完整字符串相等比较。','条件判断宜放上游，不必留在标定算法面板。'],
+['触发字符','TeachTriggerText','TEACH','工位高级','示教开启后显示；非空且与输入字符按 Ordinal 比较相等时请求采点。','不提供物理标定信息；可由上游事件配置替代。'],
+['自动更新候选','UpdateFileAfterSolve','关闭','工位高级','开启后，训练合格且提交成功时按新指纹更新旁路候选，不更新正式文件。','交互模式可只用显式保存按钮；自动化策略留高级。'],
+['正式文件路径','CalibrationFilePath','空','日常输入','用于推导旁路候选路径；例如 cell.json → cell.candidate.json。N 点节点不直接发布正式文件。','命名容易误导；宜统一成标定记录/目标文件。'],
+['候选文件 / 文件状态','CandidatePathText / CandidateStatusText','未设置 / 未生成等','只读结果','显示派生路径、候选及正式文件状态。','自动推导并显示，不应再让使用者重复填写。'],
+['本轮采样信息','SourceInfoText','无采样上下文','只读结果','显示相机、平面、会话、运动步和帧来源；手动点表没有伪造来源。','放诊断抽屉，不参与日常录入。']
+]},
+{id:'nt-runtime',title:'N 点标定 · 运行参数',note:'可编辑项分为坐标约定、训练合格门槛、质量与配对门槛。算法与模型文字为只读，不是四个待选项。',rows:[
+['算法 / 相机模式 / 映射模型 / 求解流程','CameraMode / TransformModel + 固定说明','HALCON / 固定上相机位 / 仿射','只读结果','唯一支持路线：平移映射 → 已知 R 角求偏心 → 最终映射；不支持其他相机模式或变换模型。','四行可压成一行。保留不支持模式的明确失败。'],
+['参考 R 角','ReferenceRAngle','0°','工位高级','定义偏心向量的参考姿态；九个平移点必须在该姿态附近。不是角度补偿量。','可考虑从确认的参考点生成，不能无校验猜测。'],
+['R 正方向','RotationSign','+1；可选 −1','工位高级','实际计算角差 = RotationSign × 跨周角差。需与机台坐标正向一致。','工位设置一次；不应每次标定重选。'],
+['最大允许误差','MaximumTrainingErrorMm','0，必须配置为正数','日常输入','所有训练点的最大二维物理残差不得超过此值，单位 mm。不是平均误差阈值。','保留；可由工艺配方默认，但不能假定所有工位同一精度。'],
+['平移 R 角容差','TranslationAngleToleranceDeg','0.1°','工位高级','每个平移点实际 R 与参考 R 的最短角差绝对值；也用于识别参考角复拍。','防止把不同姿态混进平移拟合，建议隐藏于高级而不是删。'],
+['轴心移动容差','RotationAxisToleranceMm','0.01 mm','工位高级','旋转组每点轴心相对该组首点的 XY 距离上限；也检查复拍轴心是否回到参考点。','不是机器人整体定位精度配置。保留高级门槛。'],
+['最小旋转覆盖','MinimumRotationSpanDeg','20°','工位高级','旋转样本两两最短角差的最大值下限；跨度不足时拒绝。','可以作为采点方案预设；不是插值角步距。'],
+['复拍容差','RepeatToleranceMm','0.01 mm','工位高级','参考姿态复拍与参考平移点，经辅助映射后的物理位置差上限。','检查同姿态重复性，不完全等价于整体拟合残差。'],
+['参考平移点号','ReferencePointNumber → ReferenceSampleId','界面 5 / 内部 4','工位高级','指定复拍对照的平移样本 Id；必须确实存在。行号不自动保证为九宫格中心。','建议在点表选“设为参考”，而不是暴露孤立编号。'],
+['最大时间差','MaxPairingDelayMs','100 ms；界面 1..10000','工位高级','触发采样时，帧时间与轴心回读时间的绝对差上限。','这是配对容差，不是采集周期、通讯扫描周期或等待超时。']
+]},
+{id:'nt-result',title:'N 点标定 · 结果显示',note:'这一 Tab 没有用户输入参数。数值和状态用于诊断；修改点表或相关设置后，旧结果失效。',rows:[
+['状态 / 有效点数','CalibrationReady / TrainingPassed / TranslationSamples / RotationSamples','执行后生成','只读结果','区分采样不足、求解结果、训练合格及失败。求解有矩阵不等于可发布。','合并为状态、进度、误差摘要即可。'],
+['平移 / 旋转 / 整体 RMS','TranslationRmsError / RotationRmsError / RmsError','mm','只读结果','各组或整体物理位置残差平方均值开方；便于看整体质量。','不能用 RMS 替代当前最大误差门槛。'],
+['Mark 偏心 X、Y','AxisToMarkX / AxisToMarkY','mm','只读结果','参考 R 姿态下，从轴心指向 Mark 的向量，不是 TCP 偏置。','核心结果保留；长解释放帮助。'],
+['旋转覆盖 / 复拍误差','RotationSpanDeg / RepeatErrorMm','° / mm','只读结果','实际采样跨度与参考姿态重复差。','放质量详情；无需始终占据结果主区。'],
+['最大误差 / 逐点误差','MaxError / Residuals','mm','只读结果','训练点最大二维残差；逐点表包含 X/Y 残差和距离。','最大误差放主区，逐点表放弹窗。'],
+['最终变换矩阵 / 算法诊断','HomMat2D / MatrixText','6 个仿射分量','只读结果','最终像素到 Mark 机台坐标映射；不是仅九点得到的辅助映射。','放可展开详情，普通操作不必读矩阵。']
+]},
+{id:'vt-basic',title:'独立验证 · 基本参数',note:'验证不重新求解训练模型，只检验候选。当前界面没有手动编辑验证点表的入口；记录新验证点依赖可信采样上下文。',rows:[
+['候选文件','CandidateFilePath','空','日常输入','选择原生新版本候选；文件内容摘要绑定验证样本，候选变化后旧验证失效。','由标定记录直接传入可省重复选择。'],
+['正式文件','ActiveFilePath','空','日常输入','独立验证通过后写入的正式文件路径；与候选必须分离。','可与前一节点共享目标，不应重复维护。'],
+['样本类别','SampleKind','平移','日常输入','说明当前验证观察属于独立平移还是独立旋转；至少各有一个。','可随验证步骤自动确定，仍应显示当前类别。'],
+['输入方式与图像/轴心/编码器 R','InputMode / ImagePoint / AxisPoint / ImageX / ImageY / AxisX / AxisY / AxisAngle','按坐标；数值 0、点数组空','日常输入','语义同标定输入：图像列行、轴心绝对 XY、实际编码器 R。按点时各恰好一个点。','复用标定输入组件，不再造另一套。'],
+['记录本轮','CaptureSample','关闭','日常输入','开：尝试追加本轮独立样本；关：仅复核已有样本。不是验证功能总开关。','建议改为明确的“记录验证点”命令，减少开关状态歧义。'],
+['已采样本 / 本轮采样信息','ValidationSamples / ProgressText / SourceInfoText','初始无样本','只读结果','显示独立平移/旋转数量和来源信息。','数量保留，详细来源折叠。']
+]},
+{id:'vt-settings',title:'独立验证 · 验证设置',note:'训练误差检查“用于拟合的数据”，验证误差检查“新的独立数据”，两者不是同一个开关。',rows:[
+['最大验证误差','MaximumValidationErrorMm','0，验证时必须为正数','日常输入','独立样本最大二维残差上限，单位 mm。应按现场验收要求配置。','保留；可引用同一工艺配方，但不应自动与训练阈值等同。'],
+['通过后自动发布','PublishOnPass','关闭','工位高级','验证通过并且结果提交检查成功后才尝试更新正式文件。','手动操作可只保留“发布”按钮，自动策略放高级。'],
+['最低平移点数','MinimumTranslationSamples','1；界面 1..100','工位高级','通过验证至少需达到配置数量，且仍需旋转新样本。','放工位验证方案；1 只是代码下限。'],
+['最低旋转点数','MinimumRotationSamples','1；界面 1..100','工位高级','通过验证至少需达到配置数量，禁止复用训练旋转角。','多角度覆盖由工位方案确定，增加数量不自动保证覆盖。'],
+['最大时间差','MaxPairingDelayMs','100 ms；界面 1..10000','工位高级','新采样和存储验证样本的帧/XYR时间配对检查。','可共享工位配置，不必与标定页面重复维护。']
+]},
+{id:'vt-result',title:'独立验证 · 验证结果',note:'验证运行无异常、验证通过、正式发布是不同状态，界面需要清楚区分。',rows:[
+['验证状态 / 最大误差','ValidationPassed / MaximumErrorMm / Message','未验证','只读结果','显示等待样本、验证合格或失败及最大残差。','保留为一行明确状态摘要。'],
+['验证逐点误差','Residuals','每个独立样本一行','只读结果','显示点号、类别、X/Y误差、距离。','保留，便于定位失败来源。'],
+['发布状态','Published / PublishedText','未发布','只读结果','只有正式文件发布成功才标记已发布；验证通过不自动等于已发布。','保留，不让“通过”替代“已发布”。']
+]},
+{id:'samples',title:'点表与采样元数据',note:'只有坐标、类别与启用状态属于点表编辑内容。其余是来源或并发一致性保护，不是需要操作者填写的标定参数。',rows:[
+['点号 / 类别 / 启用','Id / Kind / Enabled','界面从 1 开始；启用','日常输入','用于识别平移与旋转样本、停用坏点；有效样本仍需达到设定数量。','点号自动生成；类别可随采样步骤生成。'],
+['图像 X/Y、轴心 X/Y、编码器 R','ImageX / ImageY / AxisX / AxisY / AxisAngle','手动表逐行填写','日常输入','同一次观察的五个物理量；不可把不同拍摄时刻与机构位置拼在一起。','这是核心数据，不属于过度设计。'],
+['相机、图像尺寸/域、工作平面','SourceDeviceId / ImageWidth / ImageHeight / ImageDomain / WorkPlaneId','空 / 0 / Raw / 空','内部保护','候选与验证要求环境一致。当前由可信采样上下文提供；不是六Tab里的手填配置。','由上游或工位记录维护，说明书与UI应区分。'],
+['会话 / 运动步 / 到位','SessionId / StepId / InPosition','上游提供','内部保护','证明本次处于正确采样流程和运动步骤，机构已到位。','保留内部检查，不暴露成需要配置的算法参数。'],
+['帧号 / 帧时间 / 回读时间','FrameId / FrameAt / AxisReadAt','上游提供','内部保护','用于帧一致性、时间配对和防重复。手动编辑/CSV不制造这些证据。','自动维护；无证据不能通过多填文本框来补齐。'],
+['采点布尔信号','TeachSignal','false','内部保护','当前执行时 true 即请求采点；不是此类内部实现的上升沿状态机。','统一采集命令后可去掉重复入口，但需保留防重。'],
+['版本 / 指纹 / 文件摘要 / 修订号','SamplesContractVersion / AlgorithmId / InputFingerprint / CandidateSha256 / SampleRevision','自动维护','内部保护','新文件契约版本3；算法标识 HalconAffineEncoderOffsetV1。防止旧格式、旧运行结果和被替换候选混用。','不应出现在日常参数页，更不应让用户修改版本值绕过检查。']
+]}
+];
+const root=document.getElementById('parameter-sections');
+const text=(tag,value)=>{const el=document.createElement(tag);el.textContent=value;return el;};
+groups.forEach(g=>{
+ const section=document.createElement('section');section.id=g.id;section.className='parameter-section';
+ section.append(text('h2',g.title),text('p',g.note));
+ const wrap=document.createElement('div');wrap.className='table-wrap';
+ const table=document.createElement('table');const head=document.createElement('thead');const hr=document.createElement('tr');
+ ['界面名 / 字段','初始值 / 类别','当前作用和误用后果','精简判断'].forEach(x=>hr.append(text('th',x)));head.append(hr);table.append(head);
+ const body=document.createElement('tbody');
+ g.rows.forEach(r=>{
+  const tr=document.createElement('tr');tr.dataset.level=r[3];tr.dataset.search=r.join(' ').toLowerCase();
+  const name=document.createElement('td');name.append(text('strong',r[0]),text('code',r[1]));
+  const def=document.createElement('td');def.append(text('div',r[2]));const tag=text('span',r[3]);tag.className='tag'+(r[3]==='工位高级'?' advanced':r[3]==='只读结果'?' readonly':r[3]==='内部保护'?' internal':'');def.append(tag);
+  tr.append(name,def,text('td',r[4]),text('td',r[5]));body.append(tr);
+ });table.append(body);wrap.append(table);section.append(wrap);root.append(section);
+});
+const search=document.getElementById('search'),level=document.getElementById('level');
+function filter(){const query=search.value.trim().toLowerCase();let found=0,total=0;root.querySelectorAll('section').forEach(s=>{let visible=0;s.querySelectorAll('tbody tr').forEach(r=>{total++;const show=(!query||r.dataset.search.includes(query))&&(!level.value||r.dataset.level===level.value);r.hidden=!show;if(show){visible++;found++;}});s.hidden=visible===0;});document.getElementById('count').textContent=found+' / '+total+' 项';document.getElementById('empty').style.display=found?'none':'block';}
+search.addEventListener('input',filter);level.addEventListener('change',filter);
+document.getElementById('reset').addEventListener('click',()=>{search.value='';level.value='';filter();});
+document.getElementById('print').addEventListener('click',()=>window.print());
+filter();
+</script>
+<noscript><p>参数逐项表需要启用浏览器 JavaScript。本文件不联网；其余解释和精简建议可直接阅读。</p></noscript>
+</body>
+</html>

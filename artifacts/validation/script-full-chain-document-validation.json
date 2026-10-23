@@ -1,0 +1,74 @@
+{
+  "rows": [
+    {
+      "flat": "tool-script.html",
+      "width": 390,
+      "visible": true,
+      "overflow": false,
+      "coverageNodes": 10,
+      "bridgePresent": true,
+      "plannedTests": 0,
+      "safetyPresent": false,
+      "noChoicePreset": true
+    },
+    {
+      "flat": "tool-script.html",
+      "width": 768,
+      "visible": true,
+      "overflow": false,
+      "coverageNodes": 10,
+      "bridgePresent": true,
+      "plannedTests": 0,
+      "safetyPresent": false,
+      "noChoicePreset": true
+    },
+    {
+      "flat": "tool-script.html",
+      "width": 1440,
+      "visible": true,
+      "overflow": false,
+      "coverageNodes": 10,
+      "bridgePresent": true,
+      "plannedTests": 0,
+      "safetyPresent": false,
+      "noChoicePreset": true
+    },
+    {
+      "evidenceE05Visible": true
+    },
+    {
+      "flat": "optimization-o01.html",
+      "width": 390,
+      "visible": true,
+      "overflow": false,
+      "coverageNodes": 0,
+      "bridgePresent": false,
+      "plannedTests": 12,
+      "safetyPresent": true,
+      "noChoicePreset": true
+    },
+    {
+      "flat": "optimization-o01.html",
+      "width": 768,
+      "visible": true,
+      "overflow": false,
+      "coverageNodes": 0,
+      "bridgePresent": false,
+      "plannedTests": 12,
+      "safetyPresent": true,
+      "noChoicePreset": true
+    },
+    {
+      "flat": "optimization-o01.html",
+      "width": 1440,
+      "visible": true,
+      "overflow": false,
+      "coverageNodes": 0,
+      "bridgePresent": false,
+      "plannedTests": 12,
+      "safetyPresent": true,
+      "noChoicePreset": true
+    }
+  ],
+  "errors": 0
+}

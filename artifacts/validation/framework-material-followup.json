@@ -1,0 +1,46 @@
+{
+  "updatedAt": "2026-10-19T11:12:55.595Z",
+  "targetTitle": "框架层逆向",
+  "targetThreadId": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+  "hostId": "local",
+  "cursor": "dd058cc3-7aab-4a26-ae30-493c22421792:1",
+  "automationId": "vm-suneye",
+  "frequency": "hourly",
+  "followupMessageSent": true,
+  "acknowledged": false,
+  "matchedDeliveryIndexFound": false,
+  "candidates": [
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/reverse/B05-binary-binding-batch9.md",
+      "sha256": "bcdfb443ab5c26fe4d80c4b7a074445ac01e33d31c967590344151f937036ab1",
+      "status": "candidate-not-checkpoint-verified"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/reverse/D01-save-binding-batch9.md",
+      "sha256": "637fcd9d7b3c30273b3439fd2b00b05fa00762ac4b03f94f553d79f623d462cf",
+      "status": "candidate-not-checkpoint-verified"
+    }
+  ],
+  "analysis": {
+    "accepted": 20,
+    "total": 20,
+    "percent": 100
+  },
+  "evidence": {
+    "verified": 24,
+    "partial": 11,
+    "unverified": 7,
+    "total": 42,
+    "percent": 57.1,
+    "delta": 0
+  },
+  "reviewDecision": "No checkpoint upgrade. Batch9 binding code is candidate existing material; no mapped VM-CODE delivery index found in searched locations. Target implementation progress is unrelated.",
+  "pipeline": [
+    "sent",
+    "acknowledged",
+    "material-received",
+    "identity-checked",
+    "content-reviewed",
+    "checkpoint-verified"
+  ]
+}

@@ -956,6 +956,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 ResolvedInputImage = resolvedInputImage,
                 NodeId = GetCurrentNodeStringProperty("Id"),
                 WorkflowId = (DataProvider as DataSourceQueryService)?.WorkflowId,
+                ResourcePaths = (DataProvider as DataSourceQueryService)?.ResourcePaths,
                 NodeName = GetCurrentNodeStringProperty("DisplayName")
                     ?? GetCurrentNodeStringProperty("Name"),
                 ParameterBindings = bindings,

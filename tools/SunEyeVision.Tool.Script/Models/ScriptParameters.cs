@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -268,36 +268,41 @@ namespace SunEyeVision.Tool.Script.Models
         /// 系统生成的字段声明 partial class（不含用户代码，由 Inputs/Outputs 字段声明生成）
         /// </summary>
         [JsonIgnore]
-        public string GeneratedCode => BuildGeneratedCode();
-
-        private string BuildGeneratedCode()
+        public string GeneratedCode
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("using System;");
-            sb.AppendLine("using System.Collections.Generic;");
-            sb.AppendLine("using System.Linq;");
-            sb.AppendLine("using System.Text;");
-            sb.AppendLine("using System.IO;");
-            sb.AppendLine("using SunEyeVision.Plugin.SDK.Scripting;");
-            sb.AppendLine("using SunEyeVision.Plugin.SDK.Vision.Contracts;");
-            sb.AppendLine("using SunEyeVision.Plugin.SDK.Execution;");
-            sb.AppendLine();
-            sb.AppendLine("public partial class UserScript : Script");
-            sb.AppendLine("{");
+            get
+            {
+                if (TryPublishIoContract(out var error)) return _publishedIo!.GeneratedCode;
+                return _publishedIo?.GeneratedCode ?? throw new InvalidOperationException(error);
+            }
+        }
 
-            // 输入字段
-            foreach (var input in Inputs)
-                sb.AppendLine($"    {input.GenerateFieldCode()}");
+        private ScriptIoContractSnapshot? _publishedIo;
+        [JsonIgnore] internal SunEyeVision.Tool.Script.ScriptEngine.ScriptCompiler.CompileResult? PreparedCompilation { get; set; }
+        [JsonIgnore] internal Func<bool>? ExecutionAdmission { get; set; }
+        [JsonIgnore] public string IoValidationError { get; private set; } = "";
+        [JsonIgnore] public string IoIdentity => _publishedIo?.Identity ?? "";
+        public bool TryPublishIoContract(out string error)
+        {
+            try
+            {
+                var snapshot = ScriptIoContractSnapshot.Capture(Inputs, Outputs);
+                _publishedIo = snapshot;
+                error = IoValidationError = "";
+                return true;
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException)
+            {
+                error = IoValidationError = ex.Message;
+                return false;
+            }
+        }
 
-            if (Inputs.Count > 0)
-                sb.AppendLine();
-
-            // 输出字段
-            foreach (var output in Outputs)
-                sb.AppendLine($"    {output.GenerateFieldCode()}");
-
-            sb.AppendLine("}");
-            return sb.ToString();
+        public override SunEyeVision.Plugin.SDK.Validation.ValidationResult Validate()
+        {
+            var result = base.Validate();
+            if (!TryPublishIoContract(out var error)) result.AddError(error);
+            return result;
         }
 
         public new string GetParameterSummary()
@@ -326,7 +331,7 @@ namespace SunEyeVision.Tool.Script.Models
                     Name = cfg.Name,
                     FieldId = cfg.FieldId, IsCollection = cfg.IsAccumulated || cfg.ParamType?.IsArray == true,
                     FixedCount = cfg.IsAccumulated || cfg.ParamType?.IsArray == true ? null : 1,
-                    VariableType = cfg.TypeName,
+                    VariableType = cfg.TypeName, DeclaredType = cfg.ParamType,
                     DisplayName = cfg.Name,
                     Group = string.IsNullOrEmpty(cfg.Group) ? "输出结果" : cfg.Group,
                     Kind = OutputVariableKind.Data,

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -169,9 +169,9 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 $"targetTypeName='{targetTypeName}'",
                 nameof(ScriptBindingResolver));
 
-            if (rawValue == null) return null;
+            if (rawValue == null) return ScriptIoTypeDescriptor.From(targetTypeName).ConvertValue(null);
 
-            var targetType = SdkTypeVocabulary.ToSystemType(targetTypeName);
+            var targetType = ScriptIoTypeDescriptor.From(targetTypeName).ClrType;
 
             // 决策1：数组→单值必须通过 [i] 索引（rule-015 禁止兜底回退）
             if (rawValue is Array && targetType != null && !targetType.IsArray)
@@ -182,6 +182,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                     $"请在绑定路径末尾添加 [i] 索引，例如: {nodeId}.{propertyPath}[0]");
             }
 
+            if (targetType != null && targetType.IsArray && rawValue is Array) return ScriptIoTypeDescriptor.From(targetTypeName).ConvertValue(rawValue);
             if (targetType != null && targetType.IsInstanceOfType(rawValue))
                 return rawValue;
 
@@ -190,6 +191,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
             if (rawValue is string str)
             {
+                if (targetType == typeof(long) && long.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out var vl)) return vl;
                 if (targetType == typeof(int) && int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out var vi)) return vi;
                 if (targetType == typeof(double) && double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out var vd)) return vd;
                 if (targetType == typeof(float) && float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out var vf)) return vf;
@@ -234,9 +236,9 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 $"targetTypeName='{targetTypeName}'",
                 nameof(ScriptBindingResolver));
 
-            if (rawValue == null) return null;
+            if (rawValue == null) return ScriptIoTypeDescriptor.From(targetTypeName).ConvertValue(null);
 
-            var targetType = SdkTypeVocabulary.ToSystemType(targetTypeName);
+            var targetType = ScriptIoTypeDescriptor.From(targetTypeName).ClrType;
 
             // 决策1：数组→单值必须通过 [i] 索引（rule-015 禁止兜底回退）
             if (rawValue is Array && targetType != null && !targetType.IsArray)
@@ -248,6 +250,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             }
 
             // 1. 类型完全匹配 → 直接返回
+            if (targetType != null && targetType.IsArray && rawValue is Array) return ScriptIoTypeDescriptor.From(targetTypeName).ConvertValue(rawValue);
             if (targetType != null && targetType.IsInstanceOfType(rawValue))
                 return rawValue;
 
@@ -258,6 +261,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             // 3. 字符串 → 目标类型（关键：UI 文本框输入统一是 String）
             if (rawValue is string str)
             {
+                if (targetType == typeof(long) && long.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue)) return longValue;
                 if (targetType == typeof(int))
                 {
                     if (int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v))

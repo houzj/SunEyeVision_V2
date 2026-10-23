@@ -38,7 +38,7 @@ namespace SunEyeVision.Tool.Script.Models
 
         /// <summary>参数类型（供 ParamBinding.DataType 类型筛选）</summary>
         [JsonIgnore]
-        public Type? ParamType => SdkTypeVocabulary.ToSystemType(TypeName);
+        public Type? ParamType => ScriptIoTypeDescriptor.From(TypeName).ClrType;
 
         public AvailableDataSource? Source
         {
@@ -48,7 +48,7 @@ namespace SunEyeVision.Tool.Script.Models
                 if (SetProperty(ref _source, value))
                 {
                     if (value != null && SdkTypeVocabulary.ToTypeVocabulary(value.PropertyType) is { } vocabulary)
-                        TypeName = vocabulary;
+                        TypeName = value.PropertyType.IsArray && !ScriptIoTypeDescriptor.From(vocabulary).IsCollection ? vocabulary + "[]" : vocabulary;
                 }
             }
         }

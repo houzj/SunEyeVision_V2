@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -89,6 +90,8 @@ public partial class WarmupScript : Script
             public string CacheKey { get; set; } = "";
             public ScriptReferenceSnapshot? ReferenceSnapshot { get; set; }
             public bool CacheHit { get; set; }
+            public bool JoinedInFlight { get; set; }
+            public double WaitMs { get; set; }
             public double ReferenceMs { get; set; }
             public double ParseMs { get; set; }
             public double EmitMs { get; set; }
@@ -107,6 +110,38 @@ public partial class WarmupScript : Script
 
         public CompileResult Compile(IReadOnlyList<string> codeParts, string assemblyName,
             string? assemblyRefDir = null, IReadOnlyList<string>? assemblyNames = null)
+            => CompileAsync(codeParts, assemblyName, assemblyRefDir, assemblyNames).GetAwaiter().GetResult();
+
+        public async Task<CompileResult> CompileAsync(IReadOnlyList<string> codeParts, string assemblyName,
+            string? assemblyRefDir = null, IReadOnlyList<string>? assemblyNames = null, CancellationToken token = default)
+        {
+            var total = Stopwatch.StartNew();
+            var parts = codeParts.ToArray();
+            var names = assemblyNames?.ToArray();
+            try
+            {
+                var snapshot = await Task.Run(() => ScriptReferenceSnapshot.Capture(names, assemblyRefDir), token).ConfigureAwait(false);
+                var key = ComputeCompilationKey(parts, snapshot);
+                var cached = GetCachedResult(key);
+                if (cached != null)
+                {
+                    cached.CacheHit = true; cached.ReferenceMs = snapshot.PreparationMs;
+                    cached.ParseMs = cached.EmitMs = cached.WaitMs = 0;
+                    cached.TotalMs = snapshot.PreparationMs;
+                    Log(cached); return cached;
+                }
+                var result = await ScriptCompilationCoordinator.GetAsync(key, () => CompileCore(parts, snapshot), token).ConfigureAwait(false);
+                result.ReferenceMs = snapshot.PreparationMs;
+                result.TotalMs = total.Elapsed.TotalMilliseconds;
+                return result;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or BadImageFormatException or InvalidOperationException or ArgumentException)
+            {
+                return new CompileResult { Diagnostics = [$"脚本引用或编译准备失败: {ex.Message}"] };
+            }
+        }
+
+        private CompileResult CompileCore(IReadOnlyList<string> codeParts, ScriptReferenceSnapshot snapshot)
         {
             var timer = Stopwatch.StartNew();
             var result = new CompileResult();
@@ -118,7 +153,6 @@ public partial class WarmupScript : Script
             var parts = codeParts.ToArray();
             try
             {
-                var snapshot = ScriptReferenceSnapshot.Capture(assemblyNames, assemblyRefDir);
                 result.ReferenceSnapshot = snapshot;
                 result.ReferenceMs = snapshot.PreparationMs;
                 result.CacheKey = ComputeCompilationKey(parts, snapshot);
@@ -142,6 +176,9 @@ public partial class WarmupScript : Script
                 using var assemblyStream = new MemoryStream();
                 using var symbolStream = new MemoryStream();
                 var emitTimer = Stopwatch.StartNew();
+                Interlocked.Increment(ref ScriptCompilationCoordinator.EmitOperations);
+                if (ScriptCompilationCoordinator.EmissionCounts.Count >= 256) ScriptCompilationCoordinator.EmissionCounts.Clear();
+                ScriptCompilationCoordinator.EmissionCounts.AddOrUpdate(result.CacheKey, 1, (_, count) => count + 1);
                 var emitted = compilation.Emit(assemblyStream, symbolStream,
                     options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb));
                 result.EmitMs = emitTimer.Elapsed.TotalMilliseconds;
@@ -176,12 +213,13 @@ public partial class WarmupScript : Script
         private static void Log(CompileResult result) => PluginLogger.Info(
             $"[ScriptCompiler] key={result.CacheKey}, refs={result.ReferenceSnapshot?.Identity}, cacheHit={result.CacheHit}, " +
             $"referenceMs={result.ReferenceMs:F2}, parseMs={result.ParseMs:F2}, emitMs={result.EmitMs:F2}, totalMs={result.TotalMs:F2}, success={result.Success}", nameof(ScriptCompiler));
-        private static CompileResult Copy(CompileResult value) => new()
+        internal static CompileResult Copy(CompileResult value) => new()
         {
             Success = value.Success, AssemblyBytes = value.AssemblyBytes?.ToArray(), SymbolBytes = value.SymbolBytes?.ToArray(),
             Diagnostics = new List<string>(value.Diagnostics), EntryClassName = value.EntryClassName,
             UsingLineOffset = value.UsingLineOffset, CacheKey = value.CacheKey, ReferenceSnapshot = value.ReferenceSnapshot,
-            ReferenceMs = value.ReferenceMs, ParseMs = value.ParseMs, EmitMs = value.EmitMs, TotalMs = value.TotalMs
+            ReferenceMs = value.ReferenceMs, ParseMs = value.ParseMs, EmitMs = value.EmitMs, TotalMs = value.TotalMs,
+            CacheHit = value.CacheHit, JoinedInFlight = value.JoinedInFlight, WaitMs = value.WaitMs
         };
         internal static CompileResult? GetCachedResult(string cacheKey)
             => _compileCache.TryGetValue(cacheKey, out var value) ? Copy(value) : null;

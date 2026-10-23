@@ -47,14 +47,20 @@ namespace SunEyeVision.Tool.Script
                 parameters.NodeResults,
                 parameters.Context);
 
-        public ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)
+        public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)
         {
-            var result = ExecuteCore(
-                (ScriptParameters)request.Parameters,
-                request.GlobalVariables,
-                request.NodeResults,
-                request.Context);
-            return ValueTask.FromResult<ToolResults>(result);
+            var parameters = (ScriptParameters)request.Parameters;
+            if (!parameters.TryPublishIoContract(out var error)) throw new InvalidOperationException(error);
+            parameters.PreparedCompilation ??= await new ScriptCompiler().CompileAsync(
+                new[] { parameters.GeneratedCode, parameters.ScriptCode }, "ScriptExecution", parameters.AssemblyReferenceFullPath,
+                parameters.AssemblyReferences, request.CancellationToken).ConfigureAwait(false);
+            request.CancellationToken.ThrowIfCancellationRequested();
+            // 用户代码仍保持逐次实例语义；运行中取消/异常清理的完整合同留S3。
+            return await Task.Run<ToolResults>(() =>
+            {
+                if (parameters.ExecutionAdmission?.Invoke() == false) throw new OperationCanceledException("执行请求已过时。");
+                return ExecuteCore(parameters, request.GlobalVariables, request.NodeResults, request.Context);
+            }, request.CancellationToken).ConfigureAwait(false);
         }
 
         private static ScriptResults ExecuteCore(
@@ -73,6 +79,8 @@ namespace SunEyeVision.Tool.Script
 
             try
             {
+                if (!parameters.TryPublishIoContract(out var ioError))
+                    throw new InvalidOperationException(ioError);
                 if (string.IsNullOrWhiteSpace(parameters.ScriptCode))
                 {
                     if (parameters.IsDebugMode)
@@ -118,6 +126,8 @@ namespace SunEyeVision.Tool.Script
                         $"上游节点结果={nodeResults?.Count ?? 0}");
                 }
 
+                lifecycleManager.PreparedCompilation = parameters.PreparedCompilation;
+                if (parameters.ExecutionAdmission?.Invoke() == false) throw new OperationCanceledException("输入准备期间请求已过时。");
                 var errors = lifecycleManager.Execute(
                     parameters.GeneratedCode,
                     parameters.ScriptCode,

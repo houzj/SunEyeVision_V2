@@ -30,6 +30,7 @@
 
         <!-- ===== 工具栏 ===== -->
         <ToolBar Grid.Row="0" Background="{DynamicResource ThemeToolBarBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" Height="32">
+            <Button x:Name="PreCompileButton" Content="预编译" Click="PreCompileButton_Click" Padding="8,3" Margin="2,0" FontSize="12" />
             <!-- 执行由基窗口 DefaultDebugWindow 底部的统一按钮提供 -->
             <Button x:Name="ClearResultButton" Content="清空结果" Click="ClearResultButton_Click"
                     Background="{DynamicResource ThemeToolBarBackgroundBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderThickness="0"

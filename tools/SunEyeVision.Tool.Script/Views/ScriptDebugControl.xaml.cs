@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -45,11 +45,30 @@ using SunEyeVision.Plugin.SDK.Core;
 
 namespace SunEyeVision.Tool.Script.Views
 {
-    public partial class ScriptDebugControl
+    public partial class ScriptDebugControl : IToolEditorCommitParticipant
     {
+        public IEnumerable<string> VariableNames => _parameters.Inputs.Select(f => f.Name).Concat(_parameters.Outputs.Select(f => f.Name));
+        public bool TryValidateEditor(out string error) => _parameters.TryPublishIoContract(out error);
+        public bool TryCommitEditor(out string error)
+        {
+            if (!InputTabControl.TryCommitEdits(out error) || !OutputTabControl.TryCommitEdits(out error)) return false;
+            SyncCodeToParameters();
+            if (!_parameters.TryPublishIoContract(out error)) { UpdateStatus(error); return false; }
+            OnContractChanged();
+            return true;
+        }
         private ScriptParameters _parameters = new();
         private readonly ObservableCollection<LogEntry> _logEntries = new();
         private ScriptTool? _scriptTool;
+        private CancellationTokenSource? _viewCts;
+        private bool _contractRefreshPending;
+        private string? _analysisGeneratedCode;
+        private string? _observedIoIdentity;
+        public sealed record CompilationTiming(string Key, bool CacheHit, bool JoinedInFlight, double ReferenceMs,
+            double ParseMs, double EmitMs, double WaitMs, double TotalMs);
+        public CompilationTiming? LastCompilationTiming { get; private set; }
+        private void RecordCompilation(ScriptCompiler.CompileResult result) => LastCompilationTiming = new(result.CacheKey,
+            result.CacheHit, result.JoinedInFlight, result.ReferenceMs, result.ParseMs, result.EmitMs, result.WaitMs, result.TotalMs);
 
         // 编辑器能力（workspace/高亮/诊断/补全/签名）已全部封装在公共内核 ScriptEditorCore（CommonControl），
         // 本控件组合 EditorCore 并注入引用/代码/图标/语法高亮来源。变量面板/执行/日志保留在本工具层。
@@ -76,6 +95,13 @@ namespace SunEyeVision.Tool.Script.Views
             // 本控件仅注入工具特有的引用/代码/图标来源，内核自动完成编辑器功能。
             EditorCore.SetCompletionIconProvider(item => item.GetGlyph().ToImageSource());
             EditorCore.SetReferenceSnapshotProvider(() => _parameters.CaptureReferences().AnalysisReferences);
+            EditorCore.SetAnalysisValidator(() => _parameters.TryPublishIoContract(out _));
+            EditorCore.SetAsyncReferenceSnapshotProvider(token =>
+            {
+                var names = _parameters.AssemblyReferences.ToArray();
+                var directory = _parameters.AssemblyReferenceFullPath;
+                return Task.Run(() => ScriptReferenceSnapshot.Capture(names, directory).AnalysisReferences, token);
+            });
             EditorCore.SetCodeSource(() => _parameters.GeneratedCode, () => EditorCore.GetCode());
             EditorCore.SetDocumentProvider(() => EditorCore.Workspace?.CurrentSolution.GetDocument(EditorCore.UserDocumentId));
             EditorCore.SetSuppressDiagnostic(true);   // workspace 就绪前抑制诊断
@@ -87,6 +113,7 @@ namespace SunEyeVision.Tool.Script.Views
             // 关闭埋点：窗口关闭（含 X 关闭）时控件卸载，记录当前是否已同步代码。
             // 用于定位"修改后未执行直接关闭 → 重新打开代码丢失"的根因。
             Unloaded += OnControlUnloaded;
+            Loaded += OnViewLoaded;
 
             perfSw.Stop();
             PluginLogger.Info($"[Perf] ScriptDebugControl 构造函数: {perfSw.ElapsedMilliseconds}ms", GetType().Name);
@@ -99,9 +126,13 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void OnControlUnloaded(object sender, RoutedEventArgs e)
         {
+            _viewCts?.Cancel(); _viewCts?.Dispose(); _viewCts = null;
+            _parameters.InputContractChanged -= OnContractChanged;
+            _parameters.OutputContractChanged -= OnContractChanged;
+            _parameters.PropertyChanged -= OnParametersEnvironmentChanged;
             var editorLen = EditorCore.GetCode()?.Length ?? 0;
             var paramLen = _parameters.ScriptCode?.Length ?? 0;
-            var synced = editorLen == paramLen;
+            var synced = EditorCore.GetCode() == _parameters.ScriptCode;
             PluginLogger.Info(
                 $"[关闭路径] 控件卸载(窗口关闭) | 编辑器代码长度={editorLen}, 参数代码长度={paramLen}, 已同步={synced}",
                 GetType().Name);
@@ -114,7 +145,7 @@ namespace SunEyeVision.Tool.Script.Views
             }
 
             // 关闭时预编译最新代码：保证之后工作流执行命中缓存零编译（编译与执行解耦）
-            PreCompileLatestCode();
+            // 关闭保存编辑内容，不等待Emit。
         }
 
         /// <summary>
@@ -127,7 +158,14 @@ namespace SunEyeVision.Tool.Script.Views
             base.SetParameters(parameters);
             if (parameters is ScriptParameters scriptParams)
             {
+                _parameters.InputContractChanged -= OnContractChanged;
+                _parameters.OutputContractChanged -= OnContractChanged;
+                _parameters.PropertyChanged -= OnParametersEnvironmentChanged;
                 _parameters = scriptParams;
+                _analysisGeneratedCode = null;
+                _parameters.TryPublishIoContract(out _);
+                _observedIoIdentity = _parameters.IoIdentity;
+                _parameters.PropertyChanged += OnParametersEnvironmentChanged;
 
                 // 订阅输入/输出契约变化：改输入输出类型/增删变量后重建 workspace，
                 // 让诊断器用最新字段类型（修复"改类型后诊断仍报旧类型错误"）。
@@ -147,7 +185,8 @@ namespace SunEyeVision.Tool.Script.Views
                 CheckHalconReference();
 
                 // 参数注入完成 → 状态切到"就绪"
-                UpdateStatus("就绪");
+                UpdateStatus("语义准备中，可编辑");
+                if (IsLoaded) OnViewLoaded(this, new RoutedEventArgs());
             }
         }
 
@@ -155,17 +194,34 @@ namespace SunEyeVision.Tool.Script.Views
         /// 异步初始化（窗口 Show 前由宿主 await）：重建 workspace + 完成语义预热，
         /// 实现"打开即着色、无白色过渡"。覆盖基类空实现。
         /// </summary>
-        public override async Task InitializeAsync()
+        public override Task InitializeAsync()
         {
-            await EditorCore.InitializeAndWaitAsync();
+            UpdateStatus("语义准备中，可编辑");
+            return Task.CompletedTask;
+        }
 
-            // ★ 打开调试窗口即预填充输入监视：若上游已有值（工作流执行过/失败保留），
-            //   无需点击执行即可看到输入值。防御：无上游/无 DataProvider/解析异常 → 静默跳过。
-            TryPrefillInputMonitor();
-
-            // ★ 打开调试窗口即预填充输出监视：若当前节点已有执行结果（工作流执行过），
-            //   输出变量直接显示值，无需点击执行。防御：无结果/查询异常 → 静默跳过。
-            TryPrefillOutputMonitor();
+        private async void OnViewLoaded(object sender, RoutedEventArgs e)
+        {
+            _parameters.InputContractChanged -= OnContractChanged; _parameters.InputContractChanged += OnContractChanged;
+            _parameters.OutputContractChanged -= OnContractChanged; _parameters.OutputContractChanged += OnContractChanged;
+            _parameters.PropertyChanged -= OnParametersEnvironmentChanged; _parameters.PropertyChanged += OnParametersEnvironmentChanged;
+            _viewCts?.Cancel(); _viewCts?.Dispose(); _viewCts = new CancellationTokenSource();
+            var token = _viewCts.Token;
+            try
+            {
+                await Dispatcher.Yield(DispatcherPriority.Background);
+                if (!_parameters.TryPublishIoContract(out var error)) { UpdateStatus(error); return; }
+                await EditorCore.PrepareWorkspaceAsync(token);
+                token.ThrowIfCancellationRequested();
+                _analysisGeneratedCode = _parameters.GeneratedCode;
+                TryPrefillInputMonitor(); TryPrefillOutputMonitor();
+                await EditorCore.WaitForSemanticReadyAsync();
+                token.ThrowIfCancellationRequested();
+                EditorCore.ScheduleDiagnosticAsync();
+                UpdateStatus("就绪");
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex) { if (!token.IsCancellationRequested) UpdateStatus("准备失败: " + ex.Message); }
         }
 
         /// <summary>
@@ -269,9 +325,7 @@ namespace SunEyeVision.Tool.Script.Views
             InputTabControl.ShowMonitorMode();
             OutputTabControl.ShowMonitorMode();
             // 退出编辑模式后按最新参数（含生成的字段声明）重建 workspace
-            EditorCore.RebuildWorkspace();
-            EditorCore.ScheduleDiagnosticAsync();
-            EditorCore.RedrawVisibleLines();
+            OnContractChanged();
         }
 
         protected override void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
@@ -280,16 +334,20 @@ namespace SunEyeVision.Tool.Script.Views
             PluginLogger.Info("[关闭路径] 确定按钮 OnConfirmCommand 触发，先同步代码", GetType().Name);
             SyncCodeToParameters();
             // 确认关闭前预编译：代码变化后的最新代码编译入缓存，保证之后工作流执行命中缓存零编译
-            PreCompileLatestCode();
+            if (!TryCommitEditor(out var error)) { UpdateStatus(error); e.Handled = true; return; }
             ExitEditMode();
             base.OnConfirmCommand(sender, e);
         }
 
-        protected override object ExecuteTool()
+        protected override object ExecuteTool() => throw new InvalidOperationException("脚本执行请使用异步入口。");
+
+        protected override async Task<object> ExecuteToolAsync()
         {
-            SyncCodeToParameters();
-            // 执行前预编译：保证本次执行及后续工作流执行命中缓存零编译
-            PreCompileLatestCode();
+            if (!TryCommitEditor(out var commitError)) throw new InvalidOperationException(commitError);
+            var token = _viewCts?.Token ?? CancellationToken.None;
+            await EditorCore.PrepareWorkspaceAsync(token);
+            var session = EditorCore.AnalysisSession;
+            var stamp = session.Capture();
             _logEntries.Clear();
             // 清除所有监视数据（输入 + 输出）
             ClearAllMonitorValues();
@@ -298,8 +356,28 @@ namespace SunEyeVision.Tool.Script.Views
             var request = CreateLiveExecutionRequest(_parameters, null);
             var execution = (ScriptParameters)request.Parameters;
             execution.IsDebugMode = true;
+            UpdateStatus("排队/编译中，可继续编辑");
+            var compiled = await new ScriptCompiler().CompileAsync(new[] { execution.GeneratedCode, execution.ScriptCode },
+                "ScriptDebug", execution.AssemblyReferenceFullPath, execution.AssemblyReferences, token);
+            RecordCompilation(compiled);
+            if (!await IsCurrentCompilationAsync(compiled, execution, stamp, token))
+                throw new OperationCanceledException("编辑内容或引用已变化，请重新执行当前版本。");
+            if (!compiled.Success)
+            {
+                var failure = new ScriptResults { CompileErrors = compiled.Diagnostics };
+                failure.SetError(string.Join("; ", compiled.Diagnostics));
+                foreach (var error in compiled.Diagnostics) _logEntries.Add(new LogEntry { Text = error, IsError = true });
+                UpdateStatus("编译失败"); return failure;
+            }
             var executor = new ToolExecutor(new ParameterResolver(), VisionLogger.Instance);
-            var toolResult = Task.Run(async () => await executor.ExecuteAsync(_scriptTool, request)).GetAwaiter().GetResult();
+            execution.PreparedCompilation = compiled;
+            execution.ExecutionAdmission = () => !token.IsCancellationRequested && session.IsCurrent(stamp);
+            var toolResult = await Task.Run(async () =>
+            {
+                token.ThrowIfCancellationRequested();
+                if (!session.IsCurrent(stamp)) throw new OperationCanceledException("排队请求已过时。");
+                return await executor.ExecuteAsync(_scriptTool, request);
+            }, token);
             if (toolResult is not ScriptResults result)
                 throw new InvalidOperationException(toolResult.ErrorMessage ?? "脚本工具未返回有效结果。");
 
@@ -314,6 +392,7 @@ namespace SunEyeVision.Tool.Script.Views
                 errResult.SetError("执行返回 null");
                 return errResult;
             }
+            if (token.IsCancellationRequested || !IsLoaded) return result;
 
             // 收集编译错误到 UI 日志面板
             foreach (var error in result.CompileErrors)
@@ -619,38 +698,84 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void OnContractChanged()
         {
-            try
+            if (!_parameters.TryPublishIoContract(out var immediateError))
+            { EditorCore.InvalidateAnalysisEnvironment(); UpdateStatus(immediateError); return; }
+            var changedGenerated = _parameters.GeneratedCode;
+            if (_observedIoIdentity != _parameters.IoIdentity)
             {
-                EditorCore.RebuildWorkspace();
-                EditorCore.ScheduleDiagnosticAsync();
-                EditorCore.RedrawVisibleLines();
-                PluginLogger.Info("[契约变化] 输入/输出契约变更，已重建 workspace 并重新诊断", GetType().Name);
+                _observedIoIdentity = _parameters.IoIdentity;
+                EditorCore.AnalysisSession.AdvanceDocument();
             }
-            catch (Exception ex)
+            if (_contractRefreshPending) return;
+            _contractRefreshPending = true;
+            Dispatcher.BeginInvoke(new Action(async () =>
             {
-                PluginLogger.Warning($"[{nameof(ScriptDebugControl)}] 契约变化重建 workspace 失败: {ex.Message}", nameof(ScriptDebugControl));
-            }
+                _contractRefreshPending = false;
+                if (!_parameters.TryPublishIoContract(out var error))
+                { EditorCore.InvalidateAnalysisEnvironment(); UpdateStatus(error); return; }
+                var generated = _parameters.GeneratedCode;
+                if ((_analysisGeneratedCode == generated && EditorCore.IsWorkspaceReady) || !IsLoaded) return;
+                try
+                {
+                    await EditorCore.PrepareWorkspaceAsync(_viewCts?.Token ?? CancellationToken.None);
+                    _analysisGeneratedCode = generated;
+                    EditorCore.ScheduleDiagnosticAsync();
+                    UpdateStatus("就绪");
+                }
+                catch (OperationCanceledException) { }
+                catch (Exception ex) { UpdateStatus("准备失败: " + ex.Message); }
+            }), DispatcherPriority.Background);
         }
 
-        /// <summary>
-        /// 预编译最新代码（编译与执行解耦）：代码变化后的最新代码编译入缓存，
-        /// 保证之后工作流执行命中缓存零编译。失败仅记录告警，不阻塞执行/关闭。
-        /// </summary>
-        private void PreCompileLatestCode()
+        private async Task<bool> IsCurrentCompilationAsync(ScriptCompiler.CompileResult result, ScriptParameters frozen,
+            ScriptAnalysisSession.Stamp stamp, CancellationToken token)
         {
-            try
-            {
-                _scriptTool ??= new ScriptTool();
-                var errors = _scriptTool.PreCompile(_parameters);
-                PluginLogger.Info($"[预编译] 已执行 | 代码长度={_parameters.ScriptCode?.Length ?? 0}, 诊断={errors.Count}",
-                    GetType().Name);
-            }
-            catch (Exception ex)
-            {
-                PluginLogger.Warning($"[{nameof(ScriptDebugControl)}] 预编译失败: {ex.Message}", nameof(ScriptDebugControl));
-            }
+            if (!EditorCore.AnalysisSession.IsCurrent(stamp) || !_parameters.TryPublishIoContract(out _)
+                || EditorCore.GetCode() != frozen.ScriptCode || _parameters.GeneratedCode != frozen.GeneratedCode
+                || _parameters.IoIdentity != frozen.IoIdentity) return false;
+            if (!result.Success && result.ReferenceSnapshot == null) return true;
+            var names = _parameters.AssemblyReferences.ToArray();
+            var directory = _parameters.AssemblyReferenceFullPath;
+            var latest = await Task.Run(() => ScriptReferenceSnapshot.Capture(names, directory), token);
+            return !token.IsCancellationRequested && EditorCore.AnalysisSession.IsCurrent(stamp)
+                && _parameters.TryPublishIoContract(out _) && EditorCore.GetCode() == frozen.ScriptCode
+                && _parameters.GeneratedCode == frozen.GeneratedCode && _parameters.IoIdentity == frozen.IoIdentity
+                && _parameters.AssemblyReferences.SequenceEqual(names) && _parameters.AssemblyReferenceFullPath == directory
+                && latest.Identity == result.ReferenceSnapshot?.Identity;
         }
 
+        private void OnParametersEnvironmentChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(ScriptParameters.AssemblyReferences) or nameof(ScriptParameters.AssemblyReferenceDir))
+                EditorCore.InvalidateAnalysisEnvironment();
+        }
+
+        public async Task<IReadOnlyList<string>> PreCompileAsync(CancellationToken token = default)
+        {
+            if (!TryCommitEditor(out var error)) { UpdateStatus(error); return new[] { error }; }
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, _viewCts?.Token ?? CancellationToken.None);
+            token = linked.Token;
+            await EditorCore.PrepareWorkspaceAsync(token);
+            var stamp = EditorCore.AnalysisSession.Capture();
+            var frozen = (ScriptParameters)ToolExecutionPreparation.CopyParameters(_parameters);
+            UpdateStatus("排队/编译中，可继续编辑");
+            var result = await new ScriptCompiler().CompileAsync(new[] { frozen.GeneratedCode, frozen.ScriptCode }, "ScriptPrecompile",
+                frozen.AssemblyReferenceFullPath, frozen.AssemblyReferences, token);
+            RecordCompilation(result);
+            if (!await IsCurrentCompilationAsync(result, frozen, stamp, token)) throw new OperationCanceledException("编译结果已过时。");
+            CompileTimeLabel.Content = result.CacheHit ? $"缓存命中；等待 {result.WaitMs:F1}ms"
+                : $"编译生成: {result.EmitMs:F1}ms；等待 {result.WaitMs:F1}ms";
+            UpdateStatus(result.Success ? "预编译成功" : "编译失败");
+            foreach (var diagnostic in result.Diagnostics) _logEntries.Add(new LogEntry { Text = diagnostic, IsError = true });
+            return result.Diagnostics;
+        }
+
+        private async void PreCompileButton_Click(object sender, RoutedEventArgs e)
+        {
+            try { await PreCompileAsync(); }
+            catch (OperationCanceledException) { if (IsLoaded) UpdateStatus("编译等待已取消/过时"); }
+            catch (Exception ex) { if (IsLoaded) UpdateStatus("编译失败: " + ex.Message); }
+        }
 
     }
 

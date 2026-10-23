@@ -209,16 +209,24 @@ namespace SunEyeVision.Tool.Script.Views
         /// 不清除选中项，不改变当前编辑状态，仅确保 EditItem 事务结束。
         /// 避免在切换模式/重新绑定时触发 "DeferRefresh is not allowed during AddNew or EditItem transaction" 异常。
         /// </summary>
-        private void CommitDataGridEdit()
+        public bool TryCommitEdits(out string error)
         {
-            if (!_isEditMode) return;
+            error = "";
+            if (!_isEditMode) return true;
 
             // 先提交 Cell 级别编辑（当前激活的单元格）
-            EditGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+            if (!EditGrid.CommitEdit(DataGridEditingUnit.Cell, true)
+                || !EditGrid.CommitEdit(DataGridEditingUnit.Row, true))
+            { error = "变量表提交失败，当前草稿已保留，请检查编辑单元格。"; return false; }
             // 再提交 Row 级别编辑（确保整行的 EditItem 事务结束）
-            EditGrid.CommitEdit(DataGridEditingUnit.Row, true);
-            // 强制取消任何残留的编辑事务（安全调用，无活跃编辑时无副作用）
-            EditGrid.CancelEdit();
+            return true;
+        }
+
+        private bool CommitDataGridEdit()
+        {
+            if (TryCommitEdits(out var error)) return true;
+            ToolTip = error;
+            return false;
         }
 
         /// <summary>
@@ -226,7 +234,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         public void ShowMonitorMode()
         {
-            CommitDataGridEdit();  // ★ 先提交 DataGrid 挂起编辑，再切换模式
+            if (!CommitDataGridEdit()) return;
             _isEditMode = false;
             UpdateModeVisibility();
             RebuildMonitor();
@@ -569,12 +577,16 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void AddVariable_Click(object sender, RoutedEventArgs e)
         {
-            CommitDataGridEdit();  // ★ 先提交 DataGrid 挂起编辑，再操作集合
+            if (!CommitDataGridEdit()) return;
             var list = _sourceItems;
             if (list == null) return;
 
             var selectedType = TypeCombo.SelectedValue as string ?? "Integer";
-            int index = list.Count + 1;
+            var used = new HashSet<string>(list.Cast<object>().Select(item => GetPropertyValue<string>(item, "Name") ?? ""));
+            var parent = FindParent<ScriptDebugControl>(this);
+            if (parent != null) used.UnionWith(parent.VariableNames);
+            int index = 1;
+            while (used.Contains((_isInput ? "input" : "output") + index)) index++;
 
             if (_isInput)
             {
@@ -608,8 +620,8 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void DeleteItem_Click(object sender, RoutedEventArgs e)
         {
-            CommitDataGridEdit();  // ★ 先提交 DataGrid 挂起编辑，再操作集合
-            if (_sourceItems == null || _sourceItems.Count <= 1) return;
+            if (!CommitDataGridEdit()) return;
+            if (_sourceItems == null) return;
 
             var item = (sender as FrameworkElement)?.DataContext;
             if (item == null) return;
@@ -626,7 +638,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void MoveUp_Click(object sender, RoutedEventArgs e)
         {
-            CommitDataGridEdit();  // ★ 先提交 DataGrid 挂起编辑，再操作集合
+            if (!CommitDataGridEdit()) return;
             var item = (sender as FrameworkElement)?.DataContext;
             if (item == null || _sourceItems == null) return;
 
@@ -649,7 +661,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void MoveDown_Click(object sender, RoutedEventArgs e)
         {
-            CommitDataGridEdit();  // ★ 先提交 DataGrid 挂起编辑，再操作集合
+            if (!CommitDataGridEdit()) return;
             var item = (sender as FrameworkElement)?.DataContext;
             if (item == null || _sourceItems == null) return;
 
@@ -673,7 +685,7 @@ namespace SunEyeVision.Tool.Script.Views
         private void UpdateDeleteButtonVisibility()
         {
             int count = _sourceItems?.Count ?? 0;
-            bool showDelete = count > 1;
+            bool showDelete = true;
 
             foreach (var item in EditGrid.Items)
             {

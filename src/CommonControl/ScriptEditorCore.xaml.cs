@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition.Hosting;
@@ -36,6 +36,18 @@ namespace CommonControl;
 /// </summary>
 public partial class ScriptEditorCore : UserControl
 {
+    public static readonly RoutedUICommand CompleteCommand = new("补全", "CompleteScript", typeof(ScriptEditorCore),
+        new InputGestureCollection { new KeyGesture(Key.Space, ModifierKeys.Control) });
+    public sealed record CompletionTiming(double PreparationMs, double QueryMs, double PresentationMs, int Candidates,
+        double PopupConstructionMs, double PopulationMs, double ShowMs);
+    private double _popupConstructionMs, _popupPopulationMs, _popupShowMs;
+    public CompletionTiming? LastCompletionTiming { get; private set; }
+    public async Task RequestCompletionAsync()
+    {
+        _throttleCts?.Cancel(); _throttleCts?.Dispose();
+        _throttleCts = new CancellationTokenSource();
+        await ThrottledRefreshAndShow('\0', _throttleCts.Token);
+    }
     private readonly string typeName = "ScriptEditorCore";
 
     // ── 对外接口（供调用方设置"当前文档"与代码）──
@@ -100,8 +112,35 @@ public partial class ScriptEditorCore : UserControl
     // ── 内部字段（workspace / 高亮 / 补全 / 诊断）──
 
     private ScriptAnalysisSession _analysisSession = new();
+    private ScriptAnalysisScheduler _analysisScheduler = new();
     private bool _sessionClosed;
     private Func<ScriptAnalysisReferences>? _getReferenceSnapshot;
+    private Func<CancellationToken, Task<ScriptAnalysisReferences>>? _getAsyncReferenceSnapshot;
+    private bool _analysisEnvironmentValid = true;
+    private Func<bool>? _canAnalyze;
+    public void SetAnalysisValidator(Func<bool> validator) => _canAnalyze = validator;
+    public void InvalidateAnalysisEnvironment()
+    {
+        _analysisEnvironmentValid = false;
+        _analysisSession.AdvanceDocument();
+        _diagnosticsCts?.Cancel(); _throttleCts?.Cancel();
+        _completionWindow?.Close(); _insightWindow?.Close();
+        _currentDiagnostics = []; DiagnosticsUpdated?.Invoke([]);
+        ResetSemanticHighlighter(); RedrawVisibleLines();
+    }
+    private readonly SemaphoreSlim _workspacePrepareGate = new(1, 1);
+    public bool IsWorkspaceReady => _workspaceInitialized && !_sessionClosed && _analysisEnvironmentValid;
+    public bool IsSemanticReady => !_sessionClosed && _semanticColorizer?.IsReady == true;
+    public async Task WaitForSemanticReadyAsync()
+    {
+        await Dispatcher.Yield(DispatcherPriority.Render);
+        CodeEditor.TextArea.TextView.EnsureVisualLines();
+        _semanticColorizer?.Warmup();
+        if (_semanticColorizer != null) await _semanticColorizer.WarmupCompletion;
+        if (!IsSemanticReady) throw new OperationCanceledException("语义准备已被新版本取代。");
+    }
+    public void SetAsyncReferenceSnapshotProvider(Func<CancellationToken, Task<ScriptAnalysisReferences>> provider)
+        => _getAsyncReferenceSnapshot = provider;
     private string? _referenceIdentity;
     public ScriptAnalysisSession AnalysisSession => _analysisSession;
     public void SetReferenceSnapshotProvider(Func<ScriptAnalysisReferences> provider)
@@ -241,6 +280,11 @@ public partial class ScriptEditorCore : UserControl
     public ScriptEditorCore()
     {
         InitializeComponent();
+        CodeEditor.CommandBindings.Add(new CommandBinding(CompleteCommand, async (_, e) =>
+        {
+            e.Handled = true;
+            try { await RequestCompletionAsync(); } catch (OperationCanceledException) { }
+        }));
         InitializeEditor();
         WarmupForStartup();
         // 控件卸载时释放 workspace 与增量桥资源
@@ -248,6 +292,7 @@ public partial class ScriptEditorCore : UserControl
         {
             _sessionClosed = true;
             _analysisSession.Dispose();
+            _analysisScheduler.Dispose();
             _semanticColorizer?.Release();
             _workspaceInitialized = false;
             _userTextContainer?.Dispose();
@@ -260,12 +305,13 @@ public partial class ScriptEditorCore : UserControl
             if (!_sessionClosed) return;
             _sessionClosed = false;
             _analysisSession = new ScriptAnalysisSession();
+            _analysisScheduler = new ScriptAnalysisScheduler();
             CodeEditor.TextChanged += OnCodeEditorTextChanged;
             CodeEditor.TextArea.MouseMove += TextArea_MouseMove;
             CodeEditor.TextArea.MouseLeave += TextArea_MouseLeave;
             CodeEditor.TextArea.TextEntered += TextArea_TextEntered;
             CodeEditor.TextArea.TextEntering += TextArea_TextEntering;
-            if (_getGeneratedCode != null) InitializeWorkspace();
+            if (_getGeneratedCode != null && _getAsyncReferenceSnapshot == null) InitializeWorkspace();
         };
     }
 
@@ -292,7 +338,7 @@ public partial class ScriptEditorCore : UserControl
         _semanticColorizer = new RoslynHighlightingColorizer(
             CodeEditor.Document,
             () => GetUserDocument(),
-            new ClassificationHighlightColors(ThemeResource.IsDarkTheme()));
+            new ClassificationHighlightColors(ThemeResource.IsDarkTheme()), _analysisScheduler);
 
         // 当前行高亮：光标所在行浅蓝色背景，替代纯光标闪烁
         CodeEditor.Options.HighlightCurrentLine = true;
@@ -350,7 +396,7 @@ public partial class ScriptEditorCore : UserControl
         if (mounted) CodeEditor.TextArea.TextView.LineTransformers.Remove(_semanticColorizer);
         _semanticColorizer?.Release();
         _semanticColorizer = new RoslynHighlightingColorizer(CodeEditor.Document,
-            () => GetUserDocument(), new ClassificationHighlightColors(ThemeResource.IsDarkTheme()));
+            () => GetUserDocument(), new ClassificationHighlightColors(ThemeResource.IsDarkTheme()), _analysisScheduler);
         if (mounted) CodeEditor.TextArea.TextView.LineTransformers.Add(_semanticColorizer);
     }
 
@@ -369,6 +415,81 @@ public partial class ScriptEditorCore : UserControl
         ScheduleDiagnosticAsync();
         RedrawVisibleLines();
         _ = WarmupCompletionAsync();
+    }
+
+    /// <summary>后台准备不可变Roslyn工程，UI线程只安装增量文档桥；输入变化则丢弃并重试当前版。</summary>
+    public async Task PrepareWorkspaceAsync(CancellationToken token = default)
+    {
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, _analysisSession.LifetimeToken);
+        token = linked.Token;
+        await _workspacePrepareGate.WaitAsync(token);
+        try
+        {
+            while (!_sessionClosed)
+            {
+                if (_canAnalyze?.Invoke() == false) { InvalidateAnalysisEnvironment(); throw new InvalidOperationException("输入输出定义无效，请先修正变量表草稿。"); }
+                var stamp = _analysisSession.Capture();
+                var generated = _getGeneratedCode?.Invoke() ?? "";
+                var user = CodeEditor.Text;
+                var references = _getAsyncReferenceSnapshot != null ? await _getAsyncReferenceSnapshot(token)
+                    : _getReferenceSnapshot?.Invoke() ?? new ScriptAnalysisReferences("external-provider", _getReferences!());
+                token.ThrowIfCancellationRequested();
+                if (!_analysisSession.IsCurrent(stamp)) continue;
+                var wasInvalid = !_analysisEnvironmentValid;
+                _analysisEnvironmentValid = true;
+                if (_workspaceInitialized && _referenceIdentity == references.Identity)
+                {
+                    if (_lastGeneratedCode != generated || wasInvalid)
+                    {
+                        _analysisSession.SetEnvironment(references.Identity, generated);
+                        _workspace!.SetCurrentSolution(_workspace.CurrentSolution.WithDocumentText(_documentId!, SourceText.From(generated)));
+                        _lastGeneratedCode = generated;
+                        _lastDiagnosedCode = null;
+                        _currentDiagnostics = [];
+                        DiagnosticsUpdated?.Invoke([]);
+                        ResetSemanticHighlighter(); RedrawVisibleLines();
+                    }
+                    return;
+                }
+                var prepared = await Task.Run(() =>
+                {
+                    var workspace = new ScriptWorkspace(GetSharedMefHost());
+                    try
+                    {
+                        var projectId = ProjectId.CreateNewId();
+                        var project = workspace.CurrentSolution.AddProject(ProjectInfo.Create(projectId, VersionStamp.Create(),
+                            "ScriptCompletion", "ScriptCompletion", LanguageNames.CSharp)).GetProject(projectId)!
+                            .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary).WithAllowUnsafe(true))
+                            .WithMetadataReferences(references.References);
+                        var genId = DocumentId.CreateNewId(project.Id);
+                        var userId = DocumentId.CreateNewId(project.Id);
+                        workspace.SetCurrentSolution(project.Solution.AddDocument(genId, "ScriptGenerated.cs", SourceText.From(generated))
+                            .AddDocument(userId, "ScriptUser.cs", SourceText.From(user)));
+                        return (workspace, genId, userId);
+                    }
+                    catch { workspace.Dispose(); throw; }
+                }, token);
+                if (token.IsCancellationRequested || !_analysisSession.IsCurrent(stamp))
+                { prepared.workspace.Dispose(); token.ThrowIfCancellationRequested(); continue; }
+                _semanticColorizer?.Release();
+                _diagnosticsCts?.Cancel();
+                _completionWindow?.Close(); _insightWindow?.Close();
+                _userTextContainer?.Dispose(); _workspace?.Dispose();
+                _workspace = prepared.workspace; _documentId = prepared.genId; _userDocumentId = prepared.userId;
+                _userTextContainer = new AvalonEditTextContainer(CodeEditor.Document);
+                _workspace.OpenDocument(_userDocumentId, _userTextContainer);
+                _analysisSession.SetEnvironment(references.Identity, generated);
+                _referenceIdentity = references.Identity; _lastGeneratedCode = generated; _lastDiagnosedCode = null;
+                _currentDiagnostics = []; DiagnosticsUpdated?.Invoke([]);
+                _workspaceInitialized = true;
+                ResetSemanticHighlighter(); EnsureSemanticHighlighterMounted(); RedrawVisibleLines();
+                SetSuppressDiagnostic(false);
+                return;
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        { InvalidateAnalysisEnvironment(); throw; }
+        finally { _workspacePrepareGate.Release(); }
     }
 
     /// <summary>
@@ -440,40 +561,30 @@ public partial class ScriptEditorCore : UserControl
     /// 诊断节流入口：500ms 防抖后执行 Roslyn 诊断收集。
     /// 内部通过委托（SetCodeSource 注入）读取 generated/user 代码，不依赖工具参数。
     /// </summary>
-    public void ScheduleDiagnosticAsync()
+    public async void ScheduleDiagnosticAsync()
     {
-        if (_sessionClosed) return;
-        try { RebuildWorkspace(); }
-        catch (Exception ex)
-        {
-            PluginLogger.Warning($"[Diagnostic] 引用快照无效: {ex.Message}", typeName);
-            return;
-        }
-        _diagnosticsCts?.Cancel();
-        _diagnosticsCts?.Dispose();
+        if (_sessionClosed || _suppressDiagnostic) return;
+        _diagnosticsCts?.Cancel(); _diagnosticsCts?.Dispose();
         _diagnosticsCts = new CancellationTokenSource();
         var token = _diagnosticsCts.Token;
-
-        // ★ 治本（rule-008）：在 UI 线程捕获用户代码快照，避免后台线程访问 CodeEditor.Text（WPF UI 对象）
-        //   触发跨线程 InvalidOperationException（诊断波浪线失效的真因）。RunDiagnosticAsync 只消费这份快照。
-        var stamp = _analysisSession.Capture();
-        var generatedCodeSnapshot = _getGeneratedCode?.Invoke() ?? string.Empty;
-        var userCodeSnapshot = _getUserCode?.Invoke() ?? CodeEditor.Text;
-        var diagnosticDocument = GetUserDocument();
-        if (diagnosticDocument == null) return;
-
-        _ = Task.Run(async () =>
+        try
         {
-            try
+            await Task.Delay(500, token);
+            await PrepareWorkspaceAsync(token);
+            var stamp = _analysisSession.Capture();
+            var generated = _getGeneratedCode?.Invoke() ?? "";
+            var user = CodeEditor.Text;
+            var document = GetUserDocument();
+            if (document == null) return;
+            await _analysisScheduler.RunAsync(false, async scheduledToken =>
             {
-                await Task.Delay(500, token);
-                if (!token.IsCancellationRequested)
-                    await RunDiagnosticAsync(diagnosticDocument, userCodeSnapshot, generatedCodeSnapshot, stamp, token);
-            }
-            catch (OperationCanceledException) { }
-        });
+                await RunDiagnosticAsync(document, user, generated, stamp, scheduledToken);
+                return true;
+            }, token);
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { PluginLogger.Warning($"[Diagnostic] {ex.Message}", typeName); }
     }
-
     /// <summary>
     /// 更新 workspace 文本（双文档） → 获取诊断 → 波浪线重绘 + 抛 DiagnosticsUpdated。
     /// user 文档已绑定增量通道，随编辑器实时同步；generated 文档仅在实际变化时 WithDocumentText 更新。
@@ -715,11 +826,7 @@ public partial class ScriptEditorCore : UserControl
     /// </summary>
     private async void TextArea_TextEntered(object? sender, TextCompositionEventArgs e)
     {
-        if (_workspace == null || _userDocumentId == null)
-        {
-            PluginLogger.Warning($"[补全] TextEntered 跳过: workspace={_workspace != null}, userDocumentId={_userDocumentId != null}, text='{e.Text}'", typeName);
-            return;
-        }
+        if (_sessionClosed) return;
 
         bool isTriggerChar = e.Text == "." ||
             (!string.IsNullOrEmpty(e.Text) && (char.IsLetterOrDigit(e.Text[0]) || e.Text[0] == '_'));
@@ -763,10 +870,11 @@ public partial class ScriptEditorCore : UserControl
                 await ThrottledRefreshAndShow(e.Text[0], token);
             }
         }
-        catch (TaskCanceledException)
+        catch (OperationCanceledException)
         {
             // 节流取消，忽略
         }
+        catch (Exception ex) { PluginLogger.Warning($"[补全] 弹窗失败: {ex.Message}", typeName); }
     }
 
     /// <summary>
@@ -817,21 +925,26 @@ public partial class ScriptEditorCore : UserControl
     private async Task TriggerMemberCompletionAfterDot()
     {
         // '.' 是独立触发动作（非连续打字路径），无竞态需取消，用 CancellationToken.None 免分配 CTS
-        await ThrottledRefreshAndShow('.', CancellationToken.None);
+        _throttleCts?.Cancel(); _throttleCts?.Dispose();
+        _throttleCts = new CancellationTokenSource();
+        await ThrottledRefreshAndShow('.', _throttleCts.Token);
     }
 
     /// <summary>单次 Roslyn 解析 + 弹窗/更新窗口（仅从 ThrottledRefreshAndShow 调用）。</summary>
     private async Task ThrottledRefreshAndShow(char triggerChar, CancellationToken token)
     {
         if (_sessionClosed) return;
-        try { RebuildWorkspace(); }
+        var timer = System.Diagnostics.Stopwatch.StartNew();
+        try { await PrepareWorkspaceAsync(token); }
         catch (Exception ex)
         {
             PluginLogger.Warning($"[补全] 引用快照无效: {ex.Message}", typeName);
             return;
         }
         var stamp = _analysisSession.Capture();
+        var preparationMs = timer.Elapsed.TotalMilliseconds;
         var items = await FetchFreshCompletions(triggerChar, token);
+        var queryMs = timer.Elapsed.TotalMilliseconds - preparationMs;
         if (token.IsCancellationRequested || !_analysisSession.IsCurrent(stamp))
         {
             return;
@@ -845,11 +958,15 @@ public partial class ScriptEditorCore : UserControl
         _currentItems = items.ToArray();
 
         ShowCompletionWindow(items);
+        LastCompletionTiming = new(preparationMs, queryMs, timer.Elapsed.TotalMilliseconds - preparationMs - queryMs,
+            items.Length, _popupConstructionMs, _popupPopulationMs, _popupShowMs);
     }
 
     /// <summary>用 Roslyn 结果渲染/更新补全窗口（单次渲染，不重复创建）。</summary>
     private void ShowCompletionWindow(ImmutableArray<CompletionItem> items)
     {
+        var presentation = System.Diagnostics.Stopwatch.StartNew();
+        _popupConstructionMs = _popupPopulationMs = _popupShowMs = 0;
         var caretOffset = CodeEditor.TextArea.Caret.Offset;
         var prefix = GetPrefixFromCaret();
 
@@ -857,6 +974,7 @@ public partial class ScriptEditorCore : UserControl
         {
             // 已有窗口 → 更新数据源（Roslyn 刷新场景）
             PopulateData(_completionWindow.CompletionList.CompletionData, items);
+            _popupPopulationMs = presentation.Elapsed.TotalMilliseconds;
             return;
         }
 
@@ -874,9 +992,17 @@ public partial class ScriptEditorCore : UserControl
         // 列表项背景/选中高亮也跟主题（ListBox 模板内资源）
         window.CompletionList.Background = ThemeResource.GetBrush("ThemePanelBackgroundBrush");
         window.CompletionList.Foreground = ThemeResource.GetBrush("ThemeTextPrimaryBrush");
+        _popupConstructionMs = presentation.Elapsed.TotalMilliseconds;
+        PopulateData(window.CompletionList.CompletionData, items);
+        _popupPopulationMs = presentation.Elapsed.TotalMilliseconds - _popupConstructionMs;
         window.CompletionList.ListBox.Background = ThemeResource.GetBrush("ThemePanelBackgroundBrush");
         window.CompletionList.ListBox.Foreground = ThemeResource.GetBrush("ThemeTextPrimaryBrush");
-        PopulateData(window.CompletionList.CompletionData, items);
+        // 固定可滚动视口，避免首次度量为每个候选创建可视行。
+        window.CompletionList.MaxHeight = 300;
+        window.CompletionList.ListBox.MaxHeight = 300;
+        VirtualizingPanel.SetIsVirtualizing(window.CompletionList.ListBox, true);
+        VirtualizingPanel.SetVirtualizationMode(window.CompletionList.ListBox, VirtualizationMode.Recycling);
+        ScrollViewer.SetCanContentScroll(window.CompletionList.ListBox, true);
 
         window.Closed += (_, _) =>
         {
@@ -885,6 +1011,7 @@ public partial class ScriptEditorCore : UserControl
         };
 
         window.Show();
+        _popupShowMs = presentation.Elapsed.TotalMilliseconds - _popupConstructionMs - _popupPopulationMs;
 
         _completionWindow = window;
     }
@@ -895,7 +1022,7 @@ public partial class ScriptEditorCore : UserControl
         var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
         data.Clear();
         foreach (var item in items)
-            data.Add(new RoslynCompletionData(item, doc, _completionIconProvider));
+            data.Add(new RoslynCompletionData(item, doc, _completionIconProvider, _analysisScheduler, _analysisSession.LifetimeToken));
     }
 
     /// <summary>从光标位置向左提取标识符前缀（字母数字+下划线）。</summary>
@@ -968,7 +1095,8 @@ public partial class ScriptEditorCore : UserControl
                 ? CompletionTrigger.CreateInsertionTrigger(triggerChar)
                 : CompletionTrigger.Default;
 
-            var results = await completionService.GetCompletionsAsync(doc, caretOffset, trigger, cancellationToken: token);
+            var results = await _analysisScheduler.RunAsync(true,
+                scheduledToken => completionService.GetCompletionsAsync(doc, caretOffset, trigger, cancellationToken: scheduledToken), token);
 
             if (token.IsCancellationRequested || !_analysisSession.IsCurrent(stamp) || CodeEditor.TextArea.Caret.Offset != caretOffset)
             {
@@ -1008,7 +1136,7 @@ public partial class ScriptEditorCore : UserControl
             if (completionService == null) return;
 
             var trigger = CompletionTrigger.CreateInsertionTrigger('a');
-            await completionService.GetCompletionsAsync(doc, caretOffset, trigger)
+            await _analysisScheduler.RunAsync(false, ct => completionService.GetCompletionsAsync(doc, caretOffset, trigger, cancellationToken: ct), _analysisSession.LifetimeToken)
                 .ConfigureAwait(false);
         }
         catch { /* 预热失败不阻塞主流程 */ }
@@ -1025,6 +1153,9 @@ public partial class ScriptEditorCore : UserControl
     private async Task ShowSignatureHelpAsync(int position, char triggerChar, CancellationToken token)
     {
         if (_sessionClosed) return;
+        try { await PrepareWorkspaceAsync(token); }
+        catch (OperationCanceledException) { return; }
+        catch (Exception ex) { PluginLogger.Warning($"[签名帮助] {ex.Message}", typeName); return; }
         var stamp = _analysisSession.Capture();
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, _analysisSession.LifetimeToken);
         token = linked.Token;
@@ -1044,19 +1175,20 @@ public partial class ScriptEditorCore : UserControl
         {
             // 手写聚合全部 C# ISignatureHelpProvider（复制 RoslynPad AggregateSignatureHelpProvider.GetItemsAsync：
             // 取 ApplicableSpan 覆盖光标且最靠近光标的那组），不用 SignatureHelpService（其 API 在 4.12 不稳定）。
-            var providers = GetSignatureHelpProviders();
-            Microsoft.CodeAnalysis.SignatureHelp.SignatureHelpItems? best = null;
-            foreach (var provider in providers)
+            items = await _analysisScheduler.RunAsync(true, async scheduledToken =>
             {
-                token.ThrowIfCancellationRequested();
-                var current = await provider.GetItemsAsync(doc, position, triggerInfo, default, token).ConfigureAwait(false);
-                if (current != null && current.ApplicableSpan.IntersectsWith(position))
+                var providers = GetSignatureHelpProviders();
+                Microsoft.CodeAnalysis.SignatureHelp.SignatureHelpItems? best = null;
+                foreach (var provider in providers)
                 {
-                    if (best == null || current.ApplicableSpan.Start > best.ApplicableSpan.Start)
+                    scheduledToken.ThrowIfCancellationRequested();
+                    var current = await provider.GetItemsAsync(doc, position, triggerInfo, default, scheduledToken).ConfigureAwait(false);
+                    if (current != null && current.ApplicableSpan.IntersectsWith(position)
+                        && (best == null || current.ApplicableSpan.Start > best.ApplicableSpan.Start))
                         best = current;
                 }
-            }
-            items = best;
+                return best;
+            }, token);
         }
         catch (OperationCanceledException)
         {
@@ -1308,7 +1440,7 @@ public partial class ScriptEditorCore : UserControl
 
     /// <summary>获取用户文档（补全/诊断/高亮消费）。</summary>
     public Document? GetUserDocument()
-        => _getDocument?.Invoke() ?? _workspace?.CurrentSolution.GetDocument(_userDocumentId);
+        => !_analysisEnvironmentValid || _sessionClosed ? null : _getDocument?.Invoke() ?? _workspace?.CurrentSolution.GetDocument(_userDocumentId);
 
     // =======================================================
     // 支持类型：CompletionData 包装 / OverloadProvider 适配
@@ -1319,7 +1451,8 @@ public partial class ScriptEditorCore : UserControl
     /// 使用 CompletionService.GetChangeAsync 获取精确的 TextChange 插入（含后缀补全如 ()）。
     /// 图标通过委托注入（工具层走 GlyphMapping + Glyphs 资源），未注入时返回 null。
     /// </summary>
-    private sealed class RoslynCompletionData(CompletionItem item, Document? document, Func<CompletionItem, ImageSource?>? iconProvider) : ICompletionData
+    private sealed class RoslynCompletionData(CompletionItem item, Document? document, Func<CompletionItem, ImageSource?>? iconProvider,
+        ScriptAnalysisScheduler scheduler, CancellationToken lifetime) : ICompletionData
     {
         private ImageSource? _image;
         private object? _description;
@@ -1350,8 +1483,10 @@ public partial class ScriptEditorCore : UserControl
             if (document == null) return;
             try
             {
-                var description = await CompletionService.GetService(document)
-                    .GetDescriptionAsync(document, item).ConfigureAwait(true);
+                var service = CompletionService.GetService(document);
+                if (service == null) return;
+                var description = await scheduler.RunAsync(false,
+                    ct => service.GetDescriptionAsync(document, item, cancellationToken: ct), lifetime).ConfigureAwait(false);
                 _description = string.Join(" ", description.TaggedParts.Select(p => p.Text));
             }
             catch

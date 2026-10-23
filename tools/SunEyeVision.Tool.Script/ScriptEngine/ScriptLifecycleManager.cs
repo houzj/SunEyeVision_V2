@@ -18,6 +18,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
     internal sealed class ScriptLifecycleManager : IDisposable
     {
         private readonly ScriptCompiler _compiler = new();
+        internal ScriptCompiler.CompileResult? PreparedCompilation { get; set; }
         private readonly Dictionary<string, object?> _outputValues = new();
         private readonly List<string> _logMessages = new();
         private long _compileTimeMs;
@@ -103,8 +104,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
             // 1. 编译（双语法树：系统生成的字段声明 + 用户完整 partial class）
             var compileSw = Stopwatch.StartNew();
-            var compileResult = _compiler.Compile(
+            var compileResult = PreparedCompilation ?? _compiler.Compile(
                 [generatedCode, userCode], assemblyName, assemblyRefDir, assemblyNames);
+            if (PreparedCompilation != null && (compileResult.ReferenceSnapshot == null ||
+                ScriptCompiler.ComputeCompilationKey(new[] { generatedCode, userCode }, compileResult.ReferenceSnapshot) != compileResult.CacheKey))
+                return new List<string> { "获准编译产物与当前源码/生成合同不匹配。" };
             compileSw.Stop();
             _compileTimeMs = compileSw.ElapsedMilliseconds;
             CompilationCacheHit = compileResult.CacheHit;

@@ -1,469 +1,250 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Text;
-using SunEyeVision.Plugin.SDK.Logging;
-// TextDocument 在 Microsoft.CodeAnalysis（Roslyn 文档）与 AvalonEdit（编辑器文档）中同名冲突，用别名消歧
 using AvalonTextDocument = ICSharpCode.AvalonEdit.Document.TextDocument;
 
 namespace CommonControl;
 
-/// <summary>
-/// Roslyn 语义高亮器（IHighlighter）：按需逐行渲染 + 防闪烁，对齐 RoslynPad-avalonedit RoslynSemanticHighlighter。
-///
-/// 核心机制：
-///  1. AvalonEdit 只对可视行调 HighlightLine，命中行缓存（CompareAge==0 且长度相同）→ 直接复用旧 HighlightedLine（不闪烁）。
-///  2. 未命中 → DoHighlightLine 先用旧 sections + offsetShift 平移上色（对齐参考：编辑后旧色保留对准），再入队异步重算。
-///  3. 单 worker 串行队列（ConcurrentQueue + SemaphoreSlim）逐行 Classifier 分析，回 UI 线程更新 line.Sections。
-/// 打字/Enter/删除全程无"颜色消失→恢复"空档。
-///
-/// AvalonEdit 6.3.1.120 适配：IHighlighter 较 5.0.2 新增 Document/DefaultTextColor/GetNamedColor/GetColorStack/
-/// BeginHighlighting/EndHighlighting/UpdateHighlightingState 成员（参考项目未实现，此处补全）。
-/// </summary>
+/// <summary>UI捕获行/版本，后台只读Roslyn快照；有限队列，首屏优先，不预填全文。</summary>
 internal sealed class RoslynSemanticHighlighter : IHighlighter
 {
     private const int CacheSize = 512;
     private const int WarmupLineCount = 50;
-
+    private const int QueueCapacity = 128;
     private readonly AvalonTextDocument _document;
     private readonly Func<Document?> _getUserDocument;
     private readonly ClassificationHighlightColors _highlightColors;
-    private readonly List<CachedLine> _cachedLines;
-    private readonly SemaphoreSlim _semaphore;
-    private readonly ConcurrentQueue<HighlightedLine> _queue;
-    private readonly SynchronizationContext? _syncContext;
-    private CancellationTokenSource _cts;
-
+    private readonly ScriptAnalysisScheduler? _scheduler;
+    private readonly Dispatcher _dispatcher = Dispatcher.CurrentDispatcher;
+    private readonly Dictionary<int, CachedLine> _cachedLines = new();
+    private readonly ConcurrentQueue<Work> _queue = new();
+    private readonly SemaphoreSlim _signal = new(0);
+    private readonly CancellationTokenSource _cts = new();
+    private readonly CancellationToken _token;
+    private TaskCompletionSource _warmupTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private ITextSourceVersion? _readyVersion;
+    private int _warmupStarted;
     private bool _inHighlightingGroup;
-
-    public RoslynSemanticHighlighter(AvalonTextDocument document, Func<Document?> getUserDocument, ClassificationHighlightColors highlightColors)
+    private bool _disposed;
+    private sealed record LineRange(int Offset, int TotalLength);
+    private sealed record Work(CachedLine Cache, Document Document, ITextSourceVersion Version, LineRange Range, int Number);
+    private sealed class CachedLine(HighlightedLine line, ITextSourceVersion version, object solution)
     {
-        _document = document ?? throw new ArgumentNullException(nameof(document));
-        _getUserDocument = getUserDocument;
-        _highlightColors = highlightColors;
-        _semaphore = new SemaphoreSlim(0);
-        _queue = new ConcurrentQueue<HighlightedLine>();
-        _cachedLines = new List<CachedLine>();
-
-        _syncContext = SynchronizationContext.Current;
-        _cts = new CancellationTokenSource();
-        var cancellationToken = _cts.Token;
-        _ = Task.Run(() => Worker(cancellationToken), cancellationToken);
-
-        // 预热不再在构造函数自动触发：此时 Roslyn workspace（含文档/引用）可能尚未就绪，
-        // 语义分类会因 document 为 null 直接跳过而毫无效果。改为由外部在 RebuildWorkspace
-        // 完成后显式调用 TriggerWarmup()（文档就绪时才能构建 SemanticModel）。
+        public HighlightedLine Line = line;
+        public ITextSourceVersion Version = version;
+        public object Solution = solution;
+        public bool IsValid;
+        public bool Queued;
+        public TaskCompletionSource Completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
-
-    /// <summary>
-    /// 触发语义模型预热：文档就绪后，后台对前 N 行预分类写 _cachedLines，并触发一次完整
-    /// SemanticModel 构建。行进入可视区时 HighlightLine 命中缓存直接复用，避免"打开窗口后
-    /// 逐行白→青渐变"。可重入：已预热/正在进行时调用直接返回。
-    /// </summary>
+    public RoslynSemanticHighlighter(AvalonTextDocument document, Func<Document?> getUserDocument,
+        ClassificationHighlightColors highlightColors, ScriptAnalysisScheduler? scheduler = null)
+    {
+        _document = document; _getUserDocument = getUserDocument; _highlightColors = highlightColors; _scheduler = scheduler;
+        _token = _cts.Token;
+        _ = Task.Run(Worker);
+    }
+    public IDocument Document => _document;
+    public event HighlightingStateChangedEventHandler? HighlightingStateChanged;
+    public Task WarmupCompletion => _warmupTcs.Task;
+    private bool _ready;
+    public bool IsReady => _ready && _readyVersion != null && _document.Version.CompareAge(_readyVersion) == 0;
+    public HighlightingColor DefaultTextColor => _highlightColors.DefaultBrush;
     public void TriggerWarmup()
     {
-        var cts = _cts;
-        if (cts == null) return;
-        if (Interlocked.Exchange(ref _warmupRequested, 1) != 0) return; // 幂等：进程内只预热一次
-        // 全文预热：覆盖所有行，最大化/滚动时无未缓存白行（避免"变白再着色"闪烁）
-        var fullLineCount = _document.LineCount;
-        _ = Task.Run(() => WarmupAsync(maxLines: fullLineCount, cts.Token), cts.Token);
+        if (_disposed || Interlocked.Exchange(ref _warmupStarted, 1) != 0) return;
+        _ = WarmupAsync();
     }
-
-    private int _warmupRequested;
-
-    // 预热完成信号：供"打开前预热"等待（窗口显示前完成语义着色，消除白色过渡）
-    private readonly TaskCompletionSource _warmupTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-    /// <summary>
-    /// 语义预热完成的异步信号。WarmupAsync 完成（前 N 行已分类写缓存）后置位。
-    /// 供 ScriptEditorCore.InitializeAndWaitAsync 在窗口显示前等待，实现"打开即着色"。
-    /// </summary>
-    public Task WarmupCompletion => _warmupTcs.Task;
-
-    public IDocument Document => _document;
-
-    public event HighlightingStateChangedEventHandler HighlightingStateChanged;
-
-    public HighlightedLine HighlightLine(int lineNumber)
+    private async Task WarmupAsync()
     {
-        var documentLine = _document.GetLineByNumber(lineNumber);
-        var newVersion = _document.Version;
-        CachedLine? cachedLine = null;
-        if (_cachedLines.Count > 0)
-        {
-            for (var i = 0; i < _cachedLines.Count; i++)
-            {
-                var line = _cachedLines[i];
-                if (line.DocumentLine != documentLine) continue;
-                if (newVersion == null || !newVersion.BelongsToSameDocumentAs(line.OldVersion))
-                {
-                    // cannot list changes from old to new: remove cache
-                    _cachedLines.RemoveAt(i);
-                }
-                else
-                {
-                    cachedLine = line;
-                }
-            }
-
-            if (cachedLine != null && cachedLine.IsValid && newVersion.CompareAge(cachedLine.OldVersion) == 0 &&
-                cachedLine.DocumentLine.Length == documentLine.Length)
-            {
-                // file hasn't changed since cache: reuse old highlighted line (no flicker)
-                return cachedLine.HighlightedLine;
-            }
-        }
-
-        var wasInHighlightingGroup = _inHighlightingGroup;
-        if (!_inHighlightingGroup)
-        {
-            BeginHighlighting();
-        }
         try
         {
-            return DoHighlightLine(documentLine, cachedLine);
+            while (!_token.IsCancellationRequested)
+            {
+                try
+                {
+                    var document = await _dispatcher.InvokeAsync(_getUserDocument);
+                    if (document == null) return;
+                    if (_scheduler != null) await _scheduler.RunAsync(false, ct => document.GetSemanticModelAsync(ct), _token).ConfigureAwait(false);
+                    else await document.GetSemanticModelAsync(_token).ConfigureAwait(false);
+                    var lines = await _dispatcher.InvokeAsync(() =>
+                    {
+                        if (_disposed || !ReferenceEquals(_getUserDocument()?.Project.Solution, document.Project.Solution))
+                            throw new OperationCanceledException();
+                        var tasks = new List<Task>();
+                        for (var n = 1; n <= Math.Min(WarmupLineCount, _document.LineCount); n++)
+                        {
+                            HighlightLine(n);
+                            if (_cachedLines.TryGetValue(n, out var cached)) tasks.Add(cached.Completion.Task);
+                        }
+                        return tasks.ToArray();
+                    });
+                    await Task.WhenAll(lines).WaitAsync(_token).ConfigureAwait(false);
+                    var ready = await _dispatcher.InvokeAsync(() =>
+                    {
+                        _ready = !_disposed && ReferenceEquals(_getUserDocument()?.Project.Solution, document.Project.Solution)
+                            && _cachedLines.Where(p => p.Key <= WarmupLineCount).All(p => p.Value.IsValid);
+                        if (_ready) _readyVersion = _document.Version;
+                        return IsReady;
+                    });
+                    if (ready) return;
+                }
+                catch (OperationCanceledException) when (!_token.IsCancellationRequested)
+                { await Task.Delay(20, _token).ConfigureAwait(false); }
+            }
         }
-        finally
-        {
-            if (!wasInHighlightingGroup)
-                EndHighlighting();
-        }
-    }
-
-    private HighlightedLine DoHighlightLine(IDocumentLine documentLine, CachedLine? previousCachedLine)
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { _warmupTcs.TrySetException(ex); }
+        finally { _warmupTcs.TrySetResult(); }
+    }    public HighlightedLine HighlightLine(int lineNumber)
     {
-        var line = new HighlightedLine(_document, documentLine);
-
-        // 防闪烁：复用旧 sections + offsetShift 平移（对齐参考 DoHighlightLine:161-183）
-        var previousHighlight = previousCachedLine?.HighlightedLine;
-        if (previousHighlight != null && previousHighlight.Sections.Count > 0)
+        _dispatcher.VerifyAccess();
+        var documentLine = _document.GetLineByNumber(lineNumber);
+        var version = _document.Version;
+        if (!_disposed && !IsReady && _warmupTcs.Task.IsCompleted)
         {
-            var offsetShift = documentLine.Offset - previousCachedLine!.Offset;
-
+            _warmupTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            Interlocked.Exchange(ref _warmupStarted, 0);
+            TriggerWarmup();
+        }
+        var document = _getUserDocument();
+        var solution = document?.Project.Solution;
+        _cachedLines.TryGetValue(lineNumber, out var previous);
+        if (previous != null && ReferenceEquals(previous.Solution, solution) && version.CompareAge(previous.Version) == 0)
+        {
+            if (!previous.IsValid && !previous.Queued && document != null) Enqueue(previous, document, version, lineNumber, documentLine);
+            return previous.Line;
+        }
+        var line = new HighlightedLine(_document, documentLine);
+        var previousHighlight = previous?.Line;
+        if (previousHighlight != null)
+        {
+            var offsetShift = documentLine.Offset - previousHighlight.DocumentLine.Offset;
             foreach (var section in previousHighlight.Sections)
             {
                 var offset = section.Offset + offsetShift;
-
-                // stop if section starts after end of line
-                if (offset >= documentLine.EndOffset)
-                    break;
-
-                // clamp section to not be longer than line
-                line.Sections.Add(new HighlightedSection
-                {
-                    Color = section.Color,
-                    Offset = offset,
-                    Length = Math.Min(section.Length, documentLine.EndOffset - offset),
-                });
+                if (offset >= documentLine.Offset && offset < documentLine.EndOffset)
+                    line.Sections.Add(new HighlightedSection { Color = section.Color, Offset = offset,
+                        Length = Math.Min(section.Length, documentLine.EndOffset - offset) });
             }
+            previous!.Completion.TrySetCanceled();
         }
-
-        // ★ 对齐新版 RoslynPad（Roslyn SemanticColorizer）的异步架构：语义计算一律放后台线程，
-        //   UI 线程绝不阻塞（零同步 GetAwaiter().GetResult()）。AvalonEdit 的 IHighlighter.HighlightLine
-        //   是渲染管线强制的同步调用，无法返回异步结果，故此处只做"旧 sections 平移 + 入队异步重算"：
-        //   语义模型由后台 worker 的 GetClassifiedSpansAsync（ConfigureAwait(false)）计算，结果经
-        //   _syncContext.Post 切回 UI 线程更新 line.Sections（对齐新版 BatchedTagsChanged → UIThread.Post）。
-        //   彻底消除同步分类导致的 UI 卡死（诊断波浪线因此失联的根因）。
-        EnqueueLine(line);
-
-        CacheLine(line);
+        var cache = new CachedLine(line, version, solution!);
+        _cachedLines[lineNumber] = cache;
+        if (_cachedLines.Count > CacheSize)
+            foreach (var key in _cachedLines.Keys.Where(k => k != lineNumber).Take(CacheSize / 2).ToArray())
+            { _cachedLines[key].Completion.TrySetCanceled(); _cachedLines.Remove(key); }
+        if (document != null && !_disposed) Enqueue(cache, document, version, lineNumber, documentLine);
+        else cache.Completion.TrySetResult();
         return line;
     }
-
-    private void EnqueueLine(HighlightedLine line)
+    private void Enqueue(CachedLine cache, Document document, ITextSourceVersion version, int number, IDocumentLine line)
     {
-        _queue.Enqueue(line);
-        _semaphore.Release();
+        if (cache.Completion.Task.IsCompleted && !cache.IsValid) cache.Completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (_queue.Count >= QueueCapacity) { cache.Completion.TrySetCanceled(); return; }
+        cache.Queued = true;
+        _queue.Enqueue(new(cache, document, version, new(line.Offset, line.TotalLength), number));
+        _signal.Release();
     }
-
-    /// <summary>
-    /// 预热：后台对前 N 行预分类，结果写 _cachedLines。
-    /// 这样字段/方法声明行在可视区外时已被缓存，行进入可视区时 HighlightLine 命中 CompareAge==0
-    /// 直接返回已分类行，避免"初始打开时字段显示白色、等用户编辑触发补全后才变金色"问题。
-    /// </summary>
-    private async Task WarmupAsync(int maxLines, CancellationToken cancellationToken)
+    private async Task Worker()
     {
-        try
+        while (!_token.IsCancellationRequested)
         {
-            var document = _getUserDocument();
-            if (document == null) return;
-
-            // 先触发一次完整 SemanticModel 构建（首次几百 ms），确保后续逐行分类拿到语义结果
-            // （否则前几行可能因模型未就绪只回语法分类）。语义分类用 document.GetSemanticModelAsync。
-            try
-            {
-                await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch { /* 构建失败则预热退化为普通分类，不阻塞 */ }
-            if (cancellationToken.IsCancellationRequested) return;
-
-            var lineCount = Math.Min(maxLines, _document.LineCount);
-            for (int lineNumber = 1; lineNumber <= lineCount; lineNumber++)
-            {
-                if (cancellationToken.IsCancellationRequested) return;
-                var documentLine = _document.GetLineByNumber(lineNumber);
-                if (documentLine.TotalLength == 0) continue;
-
-                IEnumerable<ClassifiedSpan> spans;
-                try
-                {
-                    spans = await GetClassifiedSpansAsync(document, documentLine).ConfigureAwait(false);
-                }
-                catch { continue; }
-
-                var highlightedLine = new HighlightedLine(_document, documentLine);
-                foreach (var classifiedSpan in spans)
-                {
-                    if (IsOutsideLine(classifiedSpan, documentLine)) continue;
-                    highlightedLine.Sections.Add(new HighlightedSection
-                    {
-                        Color = _highlightColors.GetBrush(classifiedSpan.ClassificationType),
-                        Offset = classifiedSpan.TextSpan.Start,
-                        Length = classifiedSpan.TextSpan.Length,
-                    });
-                }
-
-                // 写 _cachedLines（行进入可视区时 HighlightLine 命中直接复用）
-                if (cancellationToken.IsCancellationRequested || !IsCurrent(document)) return;
-                if (_document.Version != null)
-                {
-                    _cachedLines.Add(new CachedLine(highlightedLine, _document.Version));
-                    if (_cachedLines.Count > CacheSize)
-                        _cachedLines.RemoveRange(0, CacheSize / 2);
-                }
-            }
-
-            // 预热完成触发重绘（AvalonEdit 对受影响行重画，命中缓存显示分类色）
-            if (!cancellationToken.IsCancellationRequested) HighlightingStateChanged?.Invoke(1, lineCount);
-            _warmupTcs.TrySetResult();
-        }
-        catch { /* 预热失败不阻塞主流程 */ }
-        finally
-        {
-            // 无论是否成功，都置位预热完成信号（避免等待方永久挂起）
-            _warmupTcs.TrySetResult();
-        }
-    }
-
-    private async Task Worker(CancellationToken cancellationToken)
-    {
-        while (true)
-        {
-            if (cancellationToken.IsCancellationRequested) return;
-            try
-            {
-                await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            }
+            try { await _signal.WaitAsync(_token).ConfigureAwait(false); }
             catch (OperationCanceledException) { return; }
-
-            if (!_queue.TryDequeue(out var line)) continue;
-
-            var document = _getUserDocument();
-            // ★ 设计迁移（对齐参考项目时序）：colorizer 在 RebuildWorkspace 完成后才挂载，
-            //   worker 处理行时 document 必已就绪，此分支按参考项目保持纯防御（正常永不触发）。
-            if (document == null) continue;
-
-            var documentLine = line.DocumentLine;
-            IEnumerable<ClassifiedSpan> spans;
+            if (!_queue.TryDequeue(out var work)) continue;
             try
             {
-                spans = await GetClassifiedSpansAsync(document, documentLine).ConfigureAwait(false);
-            }
-            catch
-            {
-                continue;
-            }
-
-            // rebuild sections
-            var sections = new List<HighlightedSection>();
-            foreach (var classifiedSpan in spans)
-            {
-                if (IsOutsideLine(classifiedSpan, documentLine))
-                    continue;
-                sections.Add(new HighlightedSection
+                var current = await _dispatcher.InvokeAsync(() => IsCurrent(work));
+                if (!current) { work.Cache.Completion.TrySetCanceled(); continue; }
+                var spans = await GetClassifiedSpansAsync(work.Document, work.Range, _token).ConfigureAwait(false);
+                await _dispatcher.InvokeAsync(() =>
                 {
-                    Color = _highlightColors.GetBrush(classifiedSpan.ClassificationType),
-                    Offset = classifiedSpan.TextSpan.Start,
-                    Length = classifiedSpan.TextSpan.Length
+                    work.Cache.Queued = false;
+                    if (!IsCurrent(work)) { work.Cache.Completion.TrySetCanceled(); return; }
+                    var line = work.Cache.Line;
+                    line.Sections.Clear();
+                    foreach (var span in spans)
+                    {
+                        if (span.TextSpan.Start < work.Range.Offset || span.TextSpan.End > work.Range.Offset + work.Range.TotalLength) continue;
+                        line.Sections.Add(new HighlightedSection { Color = _highlightColors.GetBrush(span.ClassificationType),
+                            Offset = span.TextSpan.Start, Length = span.TextSpan.Length });
+                    }
+                    work.Cache.IsValid = true;
+                    work.Cache.Completion.TrySetResult();
+                    HighlightingStateChanged?.Invoke(work.Number, work.Number);
                 });
             }
-
-            // post update on UI thread
-            UpdateHighlightingSections(line, sections, cancellationToken, document);
-        }
-    }
-
-    private static bool IsOutsideLine(ClassifiedSpan classifiedSpan, IDocumentLine documentLine)
-    {
-        return classifiedSpan.TextSpan.Start < documentLine.Offset ||
-               classifiedSpan.TextSpan.Start > documentLine.EndOffset ||
-               classifiedSpan.TextSpan.End > documentLine.EndOffset;
-    }
-
-    private bool IsCurrent(Document document)
-        => ReferenceEquals(_getUserDocument()?.Project.Solution, document.Project.Solution);
-
-    private void UpdateHighlightingSections(HighlightedLine line, List<HighlightedSection> sections, CancellationToken token, Document document)
-    {
-        var lineNumber = line.DocumentLine.LineNumber;
-        var sync = _syncContext;
-        if (sync != null)
-        {
-            sync.Post(_ =>
+            catch (OperationCanceledException)
             {
-                if (token.IsCancellationRequested || !IsCurrent(document)) return;
-                line.Sections.Clear();
-                foreach (var section in sections)
-                    line.Sections.Add(section);
-                HighlightingStateChanged?.Invoke(lineNumber, lineNumber);
-            }, null);
-        }
-        else
-        {
-            if (token.IsCancellationRequested || !IsCurrent(document)) return;
-            line.Sections.Clear();
-            foreach (var section in sections)
-                line.Sections.Add(section);
-            HighlightingStateChanged?.Invoke(lineNumber, lineNumber);
-        }
-    }
-
-    private void CacheLine(HighlightedLine line)
-    {
-        if (_document.Version != null)
-        {
-            _cachedLines.Add(new CachedLine(line, _document.Version));
-
-            // Clean cache once it gets too big
-            if (_cachedLines.Count > CacheSize)
-            {
-                _cachedLines.RemoveRange(0, CacheSize / 2);
+                if (_token.IsCancellationRequested) return;
+                await Task.Delay(15, _token).ConfigureAwait(false);
+                await _dispatcher.InvokeAsync(() =>
+                {
+                    work.Cache.Queued = false;
+                    if (IsCurrent(work)) Enqueue(work.Cache, work.Document, work.Version, work.Number, _document.GetLineByNumber(work.Number));
+                    else work.Cache.Completion.TrySetCanceled();
+                });
             }
+            catch (Exception ex) { work.Cache.Completion.TrySetException(ex); }
         }
     }
-
-    private async Task<IEnumerable<ClassifiedSpan>> GetClassifiedSpansAsync(Document document, IDocumentLine documentLine)
+    private bool IsCurrent(Work work) => !_disposed && _cachedLines.TryGetValue(work.Number, out var current)
+        && ReferenceEquals(current, work.Cache) && _document.Version.CompareAge(work.Version) == 0
+        && ReferenceEquals(_getUserDocument()?.Project.Solution, work.Document.Project.Solution);
+    private async Task<IEnumerable<ClassifiedSpan>> GetClassifiedSpansAsync(Document document, LineRange documentLine, CancellationToken token)
     {
-        var text = await document.GetTextAsync().ConfigureAwait(false);
-        if (text.Length >= documentLine.Offset + documentLine.TotalLength)
-        {
-            return await Classifier.GetClassifiedSpansAsync(document,
-                new TextSpan(documentLine.Offset, documentLine.TotalLength), CancellationToken.None)
-                .ConfigureAwait(false);
-        }
-        return Array.Empty<ClassifiedSpan>();
+        var text = await document.GetTextAsync(token).ConfigureAwait(false);
+        if (documentLine.Offset + documentLine.TotalLength > text.Length) return Array.Empty<ClassifiedSpan>();
+        return _scheduler != null
+            ? await _scheduler.RunAsync(false, ct => Classifier.GetClassifiedSpansAsync(document,
+                new TextSpan(documentLine.Offset, documentLine.TotalLength), ct), token).ConfigureAwait(false)
+            : await Classifier.GetClassifiedSpansAsync(document, new TextSpan(documentLine.Offset, documentLine.TotalLength), token).ConfigureAwait(false);
     }
-
     public void Dispose()
     {
-        if (_cts != null)
-        {
-            _cts.Cancel();
-            _cts.Dispose();
-            _cts = null!;
-        }
+        if (_disposed) return;
+        _disposed = true; _cts.Cancel();
+        foreach (var cached in _cachedLines.Values) cached.Completion.TrySetCanceled();
+        _warmupTcs.TrySetResult();
     }
-
-    public HighlightingColor DefaultTextColor => _highlightColors.DefaultBrush;
-
-    public void BeginHighlighting()
-    {
-        if (_inHighlightingGroup)
-            throw new InvalidOperationException();
-        _inHighlightingGroup = true;
-    }
-
-    public void EndHighlighting()
-    {
-        _inHighlightingGroup = false;
-        // AvalonEdit 6.x：缓存清理可在文档版本变化时由 UpdateHighlightingState 驱动
-    }
-
+    public void BeginHighlighting() { if (_inHighlightingGroup) throw new InvalidOperationException(); _inHighlightingGroup = true; }
+    public void EndHighlighting() => _inHighlightingGroup = false;
     public HighlightingColor GetNamedColor(string name) => null!;
-
     public IEnumerable<HighlightingColor> GetColorStack(int lineNumber) => Array.Empty<HighlightingColor>();
-
-    public void UpdateHighlightingState(int lineNumber)
-    {
-        // 无状态高亮（基于 Roslyn 分类），无需维护状态栈
-    }
-
-    private class CachedLine
-    {
-        public readonly HighlightedLine HighlightedLine;
-        public readonly ITextSourceVersion OldVersion;
-        public readonly int Offset;
-        public readonly bool IsValid;
-
-        public IDocumentLine DocumentLine => HighlightedLine.DocumentLine;
-
-        public CachedLine(HighlightedLine highlightedLine, ITextSourceVersion fileVersion)
-        {
-            HighlightedLine = highlightedLine ?? throw new ArgumentNullException(nameof(highlightedLine));
-            OldVersion = fileVersion ?? throw new ArgumentNullException(nameof(fileVersion));
-            IsValid = true;
-            Offset = HighlightedLine.DocumentLine.Offset;
-        }
-    }
+    public void UpdateHighlightingState(int lineNumber) { }
 }
 
-/// <summary>
-/// HighlightingColorizer 派生：接入 RoslynSemanticHighlighter（对齐 RoslynPad RoslynHighlightingColorizer）。
-/// CreateHighlighter(TextView, TextDocument) 签名与 AvalonEdit 5.0.2 一致，6.3.1.120 已验证。
-/// </summary>
 internal sealed class RoslynHighlightingColorizer : HighlightingColorizer
 {
-    public void Release() => _highlighter?.Dispose();
-    private readonly AvalonTextDocument _document;
     private readonly Func<Document?> _getUserDocument;
-    private readonly ClassificationHighlightColors _highlightColors;
+    private readonly ClassificationHighlightColors _colors;
+    private readonly ScriptAnalysisScheduler? _scheduler;
     private RoslynSemanticHighlighter? _highlighter;
-
-    public RoslynHighlightingColorizer(AvalonTextDocument document, Func<Document?> getUserDocument, ClassificationHighlightColors highlightColors)
-    {
-        _document = document;
-        _getUserDocument = getUserDocument;
-        _highlightColors = highlightColors;
-    }
-
+    public RoslynHighlightingColorizer(AvalonTextDocument document, Func<Document?> getUserDocument,
+        ClassificationHighlightColors colors, ScriptAnalysisScheduler? scheduler = null)
+    { _getUserDocument = getUserDocument; _colors = colors; _scheduler = scheduler; }
     protected override IHighlighter CreateHighlighter(TextView textView, AvalonTextDocument document)
     {
-        var highlighter = new RoslynSemanticHighlighter(document, _getUserDocument, _highlightColors);
-        _highlighter = highlighter;
-        // ★ 设计迁移（对齐参考时序）：highlighter 由 AvalonEdit 在首次渲染时创建，此刻 workspace/文档
-        //   必已就绪（colorizer 是 RebuildWorkspace 后才挂载的）。highlighter 一出生即触发语义模型预热
-        //   （TriggerWarmup 幂等，文档就绪才有效），让可见行进入视野即命中缓存，无"白→青"渐变。
-        highlighter.TriggerWarmup();
-        return highlighter;
+        _highlighter = new RoslynSemanticHighlighter(document, _getUserDocument, _colors, _scheduler);
+        _highlighter.TriggerWarmup();
+        return _highlighter;
     }
-
-    /// <summary>
-    /// 转发语义模型预热调用（幂等）。仅当 highlighter 已创建时生效；若尚未创建（首次渲染前），
-    /// 则 CreateHighlighter 已自动触发预热，此处调用为冗余但无害。
-    /// </summary>
+    public void Release() => _highlighter?.Dispose();
     public void Warmup() => _highlighter?.TriggerWarmup();
-
-    /// <summary>
-    /// 语义预热完成信号（供"打开前预热"等待）。highlighter 创建后指向其 WarmupCompletion。
-    /// </summary>
     public Task WarmupCompletion => _highlighter?.WarmupCompletion ?? Task.CompletedTask;
+    public bool IsReady => _highlighter?.IsReady == true;
 }
-
-/// <summary>
-/// 分类颜色映射：Roslyn ClassificationTypeNames → HighlightingColor/Brush（对齐 VS Dark / VS Light 的 C# 语义着色标准）。
-/// 暗色主题（VS Dark）：关键字 #569CD6、类型 #4EC9B0、方法/属性 #DCDCAA、字段/局部/参数/常量 #9CDCFE、字符串 #CE9178、注释 #6A9955。
-/// 浅色主题（VS Light）：关键字 #0000FF、类型 #2B91AF、方法/属性 #74531F、字段/局部/参数/常量 #001080、字符串 #A31515、注释 #008000。
-/// 语义分类对字段声明/引用稳定产出 FieldName（无 005b712 当初担心的"声明/引用变色抖动"问题）。
-/// </summary>
 internal sealed class ClassificationHighlightColors
 {
     private readonly bool _isDark;

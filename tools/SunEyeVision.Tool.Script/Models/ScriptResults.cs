@@ -47,13 +47,14 @@ namespace SunEyeVision.Tool.Script.Models
             var variables = new List<OutputVariable>();
             foreach (var cfg in OutputConfigs)
             {
-                var sysType = SdkTypeVocabulary.ToSystemType(cfg.TypeName)
-                    ?? throw new InvalidOperationException(
-                        $"脚本输出变量 '{cfg.Name}' 类型 '{cfg.TypeName}' 未在 SdkTypeVocabulary 词汇表注册。");
+                var sysType = ScriptIoTypeDescriptor.From(cfg.TypeName).ClrType;
                 var rawValue = OutputValues.TryGetValue(cfg.Name, out var v) ? v : null;
                 variables.Add(new OutputVariable
                 {
                     Name = cfg.Name,
+                    FieldId = cfg.FieldId, DeclaredType = sysType,
+                    IsCollection = cfg.IsAccumulated || sysType.IsArray,
+                    FixedCount = cfg.IsAccumulated || sysType.IsArray ? null : 1,
                     VariableType = cfg.TypeName,
                     DisplayName = cfg.Name,
                     Group = cfg.Group,

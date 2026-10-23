@@ -9,6 +9,13 @@ using System.Windows.Media;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls;
 
+/// <summary>可选的专属编辑事务；未实现此接口的工具保持原有提交规则。</summary>
+public interface IToolEditorCommitParticipant
+{
+    bool TryCommitEditor(out string error);
+    bool TryValidateEditor(out string error);
+}
+
 /// <summary>UI-only pending edit submission. Never reads display text to reconstruct parameters.</summary>
 public static class ToolEditorCommit
 {
@@ -90,6 +97,7 @@ public static class ToolEditorCommit
         foreach (var group in groups)
             if (group.IsDirty && !group.CommitEdit()) { error = "参数编辑提交失败，请检查当前输入。"; return false; }
         if (elements.Any(System.Windows.Controls.Validation.GetHasError)) { error = "参数验证失败，修改已保留，请检查当前输入。"; return false; }
+        if (root is IToolEditorCommitParticipant participant && !participant.TryCommitEditor(out error)) return false;
         if (root is ToolDebugControlBase editor && editor.DataProvider is SunEyeVision.Plugin.SDK.Execution.Parameters.DataSourceQueryService query &&
             editor.CurrentNode?.GetType().GetProperty("Id")?.GetValue(editor.CurrentNode) is string nodeId)
         {
@@ -108,6 +116,7 @@ public static class ToolEditorCommit
         if (bindings.Any(b => !b.ValidateWithoutUpdate()) || groups.Any(g => !g.ValidateWithoutUpdate()) ||
             bindings.Length == 0 && groups.Length == 0 && elements.Any(System.Windows.Controls.Validation.GetHasError))
         { error = "配置中有无效或未完成的编辑，请检查当前输入。"; return false; }
+        if (root is IToolEditorCommitParticipant participant && !participant.TryValidateEditor(out error)) return false;
         error = ""; return true;
     }
 

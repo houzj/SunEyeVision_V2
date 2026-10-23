@@ -77,6 +77,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// </summary>
         public bool IsInSubroutine => _navigationStack.Count > 0;
 
+        /// <summary>Nearest parent first; callers receive a snapshot of navigation context.</summary>
+        public IReadOnlyList<string> NavigationAncestorIds => _navigationStack.ToArray();
+
         /// <summary>
         /// 当前有效显示名称（主工作流显示 Name，子程序显示子程序名）
         /// </summary>

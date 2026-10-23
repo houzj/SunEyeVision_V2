@@ -36,13 +36,30 @@ public sealed partial class SolutionManagerUiTests
     [SunEyeVision.Plugin.SDK.Core.Tool("PreviewPolicyImageLoad", "图像推进测试工具")]
     public sealed class PreviewPolicyTool : SunEyeVision.Plugin.SDK.Core.IToolPlugin<PreviewPolicyParameters, PreviewPolicyResults>
     {
-        public PreviewPolicyResults Run(PreviewPolicyParameters parameters) => parameters.Fail
-            ? throw new InvalidOperationException("expected test failure")
-            : new PreviewPolicyResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+        public static Action<PreviewPolicyParameters>? OnRun { get; set; }
+        public PreviewPolicyResults Run(PreviewPolicyParameters parameters)
+        {
+            OnRun?.Invoke(parameters);
+            if (parameters.Fail) throw new InvalidOperationException("expected test failure");
+            return new PreviewPolicyResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+        }
     }
 
     private static void PreviewCall(ImagePreviewControl control, string method, params object[] args) =>
         typeof(ImagePreviewControl).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(control, args);
+
+    private static void PumpPreviewTask(ImagePreviewControl control, Task task)
+    {
+        var frame = new System.Windows.Threading.DispatcherFrame();
+        var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
+        timer.Tick += (_, _) => frame.Continue = false;
+        timer.Start();
+        _ = task.ContinueWith(_ => control.Dispatcher.BeginInvoke(new Action(() => frame.Continue = false)));
+        System.Windows.Threading.Dispatcher.PushFrame(frame);
+        timer.Stop();
+        Assert.True(task.IsCompleted, "图像导入超时");
+        task.GetAwaiter().GetResult();
+    }
 
     [Fact]
     public void Selection_and_removal_preserve_two_way_binding_and_current_image_identity()
@@ -137,7 +154,7 @@ public sealed partial class SolutionManagerUiTests
             {
                 var source = new ImageInputSource("node"); source.AddImage(new ImageInfo { FilePath = file });
                 var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images, CurrentImageIndex = 0 };
-                PreviewCall(control, "AppendFiles", new object[] { new[] { file, file + ".missing" } });
+                PumpPreviewTask(control, control.ImportFilePathsAsync(new[] { file, file + ".missing" }));
                 Assert.Single(source.Images); Assert.Equal(0, control.CurrentImageIndex);
             }
             finally { File.Delete(file); }
@@ -162,23 +179,27 @@ public sealed partial class SolutionManagerUiTests
             root.AddNode(new WorkflowNodeBase("disabled", "source", "source", "PreviewPolicyImageLoad")
             { Parameters = new PreviewPolicyParameters() });
             var tab = new WorkflowTabViewModel { Id = root.Id, Name = root.Name }; tab.SetNodes(root.Nodes); tab.SetConnections(root.Connections);
-            var snapshots = new RuntimeInputSnapshotService(); var advances = 0;
-            snapshots.ConfigureAdvancer(_ => { advances++; return Task.FromResult(true); });
+            var source = new ImageInputSource("disabled");
+            source.AddImages(new[] { new ImageInfo { FilePath = fixture.CreateImage("one.png") },
+                new ImageInfo { FilePath = fixture.CreateImage("two.png") } });
+            source.CurrentIndex = 0;
+            root.Nodes[0].InputSource = source;
+            var snapshots = new RuntimeInputSnapshotService();
             var input = Substitute.For<IInputProvider>(); input.GetInputImageAsync().Returns(Task.FromResult<object?>(null));
             var manager = new WorkflowExecutionManager(input, engine, snapshots);
             var completed = 0; string? error = null;
             manager.WorkflowExecutionCompleted += (_, _) => completed++;
             manager.WorkflowExecutionError += (_, e) => error = e.ErrorMessage;
             manager.RunSingleAsync(tab, advanceLocalImage: false).GetAwaiter().GetResult();
-            Assert.Null(error); Assert.Equal(1, completed); Assert.Equal(0, advances);
+            Assert.Null(error); Assert.Equal(1, completed); Assert.Equal(0, source.CurrentIndex);
             manager.RunSingleAsync(tab).GetAwaiter().GetResult();
-            Assert.Null(error); Assert.Equal(2, completed); Assert.Equal(1, advances);
+            Assert.Null(error); Assert.Equal(2, completed); Assert.Equal(1, source.CurrentIndex);
             ((PreviewPolicyParameters)root.Nodes[0].Parameters).Fail = true;
             manager.RunSingleAsync(tab).GetAwaiter().GetResult();
-            Assert.NotNull(error); Assert.Equal(1, advances);
+            Assert.NotNull(error); Assert.Equal(1, source.CurrentIndex);
             using var cancel = new System.Threading.CancellationTokenSource(); cancel.Cancel();
             manager.RunSingleAsync(tab, cancel.Token).GetAwaiter().GetResult();
-            Assert.Equal(1, advances);
+            Assert.Equal(1, source.CurrentIndex);
             }
             finally
             {
@@ -192,6 +213,12 @@ public sealed partial class SolutionManagerUiTests
     {
         private readonly string _root = Path.Combine(Path.GetTempPath(), "SunEyeVision-PreviewPolicy", Guid.NewGuid().ToString("N"));
         public SolutionManager Manager { get; }
+        public string CreateImage(string name)
+        {
+            var path = Path.Combine(_root, name);
+            File.WriteAllBytes(path, new byte[] { 1 }); // Policy tool records paths; it does not decode pixels.
+            return path;
+        }
         public PreviewSolutionFixture()
         {
             Directory.CreateDirectory(_root);

@@ -52,11 +52,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
                 ImagePreviewContent.WorkflowExecutionRequested += OnImagePreviewExecutionRequested;
             }
-            // 自动切换推进钩子：每次 run 开始前（单次点执行 / 连续每轮）把输入图切到下一张应运行图
-            if (_viewModel != null)
-            {
-                _viewModel.ConfigureRuntimeInputAdvancer(AdvanceRuntimeInputAsync);
-            }
         }
 
         /// <summary>
@@ -68,10 +63,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
                 ImagePreviewContent.WorkflowExecutionRequested -= OnImagePreviewExecutionRequested;
             }
-            if (_viewModel != null)
-            {
-                _viewModel.ConfigureRuntimeInputAdvancer(null);
-            }
         }
 
         /// <summary>
@@ -79,11 +70,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         public ImageControl? GetImageDisplayControl() => ImageDisplayContent;
 
-        private async System.Threading.Tasks.Task<bool> AdvanceRuntimeInputAsync(System.Threading.CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return await Dispatcher.InvokeAsync(TryAdvancePreviewImageFromPreview);
-        }
 
         /// <summary>
         /// 切换图像显示全屏
@@ -170,28 +156,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             await _viewModel.RunSelectedImageAsync();
         }
 
-        /// <summary>
-        /// 自动切换推进：本轮成功后才选择下一张；失败时保留当前图供重试。
-        /// </summary>
-        private bool TryAdvancePreviewImageFromPreview()
-        {
-            if (ImagePreviewContent == null || _viewModel == null) return false;
-
-            if (!ImagePreviewContent.AutoSwitchEnabled)
-            {
-                return false;
-            }
-
-            if (!ImagePreviewContent.TryStepNextImageForAuto(out var next) || next == null)
-            {
-                // 已到列表末尾 / 无应运行图：沿用当前图
-                return false;
-            }
-
-            int index = ImagePreviewContent.ImageCollection.IndexOf(next);
-            _viewModel.PublishRuntimeInput(next.FilePath, index);
-            return true;
-        }
 
         #region SDK ImageControl 事件处理
 

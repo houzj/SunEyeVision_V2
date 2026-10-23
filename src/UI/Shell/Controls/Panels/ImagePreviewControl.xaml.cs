@@ -50,10 +50,12 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         private int _displayIndex;
         private bool _isSelected;
         private bool _isForRun = false;
-        private BitmapSource? _fullImage;
+        private WeakReference<BitmapSource>? _fullImage;
+        private string? _fullImageVersion;
         private bool _isFullImageLoaded;
         private System.Threading.CancellationTokenSource? _thumbnailCts;
         private ThumbnailState _thumbnailState = ThumbnailState.Pending;
+        private DateTime _lastThumbnailRequestUtc;
 
         /// <summary>
         /// 缩略图加载状态（驱动 DataTemplate 三态反馈：加载中/成功/失败）
@@ -97,18 +99,23 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             get
             {
                 if (!File.Exists(FilePath)) { _fullImage = null; _isFullImageLoaded = false; return null; }
-                if (!_isFullImageLoaded && _fullImage == null && !string.IsNullOrEmpty(FilePath))
-                {
-                    _fullImage = ImagePreviewControl.LoadImageOptimized(FilePath);
-                    _isFullImageLoaded = true;
-                }
-                return _fullImage;
+                string version;
+                try { version = ImageCache.ReadVersion(FilePath); }
+                catch (IOException) { return null; }
+                catch (UnauthorizedAccessException) { return null; }
+                if (_fullImageVersion == version && _fullImage != null && _fullImage.TryGetTarget(out var retained)) return retained;
+                var image = ImagePreviewControl.LoadImageOptimized(FilePath);
+                _fullImage = image == null ? null : new(image);
+                _fullImageVersion = version;
+                _isFullImageLoaded = image != null;
+                return image;
             }
             set
             {
-                if (_fullImage != value)
+                if (!(_fullImage != null && _fullImage.TryGetTarget(out var old) && ReferenceEquals(old, value)))
                 {
-                    _fullImage = value;
+                    _fullImage = value == null ? null : new(value);
+                    _fullImageVersion = File.Exists(FilePath) ? ImageCache.ReadVersion(FilePath) : null;
                     _isFullImageLoaded = (value != null);
                     OnPropertyChanged(nameof(FullImage));
                 }
@@ -121,7 +128,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         public bool IsMissing => !File.Exists(FilePath);
         public string FileStatus => ResourceError ?? (IsMissing ? "图像文件不存在：" + (SourceReference ?? FilePath) : FilePath);
 
-        public bool IsFullImageLoaded => _isFullImageLoaded && _fullImage != null;
+        public bool IsFullImageLoaded => _isFullImageLoaded && _fullImage?.TryGetTarget(out _) == true;
 
         public int DisplayIndex
         {
@@ -174,8 +181,12 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         /// </summary>
         public void EnsureThumbnail()
         {
-            if (Thumbnail != null) return;
+            if (Thumbnail != null && DateTime.UtcNow - _lastThumbnailRequestUtc < TimeSpan.FromMilliseconds(250)) return;
             if (_thumbnailState == ThumbnailState.Loading) return;   // 进行中不重复触发（防抖动）
+
+            var dispatcher = System.Windows.Application.Current?.Dispatcher ?? Dispatcher.FromThread(System.Threading.Thread.CurrentThread);
+            if (dispatcher == null) return;
+            _lastThumbnailRequestUtc = DateTime.UtcNow;
 
             // Pending / Failed → 触发解码；取消上一次仍在进行的解码（如有残留）
             _thumbnailCts?.Cancel();
@@ -186,18 +197,21 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             ThumbnailState = ThumbnailState.Loading;
 
             var path = FilePath;
-            var dispatcher = System.Windows.Application.Current?.Dispatcher;
-            if (dispatcher == null) return;
+            _ = LoadThumbnailForRequestAsync(path, token, dispatcher);
+        }
 
-            System.Threading.Tasks.Task.Run(() =>
+        private async System.Threading.Tasks.Task LoadThumbnailForRequestAsync(string path,
+            System.Threading.CancellationToken token, Dispatcher dispatcher)
+        {
+            try
             {
                 if (token.IsCancellationRequested) return;
-                var thumbnail = ImagePreviewControl.LoadThumbnail(path, token);
+                var thumbnail = await ImagePreviewControl.LoadThumbnailAsync(path, token).ConfigureAwait(false);
                 if (token.IsCancellationRequested) return;
-                dispatcher.InvokeAsync(() =>
+                await dispatcher.InvokeAsync(() =>
                 {
                     // 若已滚动离开（被取消），丢弃结果
-                    if (token.IsCancellationRequested) return;
+                    if (token.IsCancellationRequested || FilePath != path) return;
                     if (thumbnail != null)
                     {
                         Thumbnail = thumbnail;
@@ -209,7 +223,14 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
                         ThumbnailState = ThumbnailState.Failed;
                     }
                 });
-            });
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                VisionLogger.Instance.Log(LogLevel.Warning, $"缩略图加载失败 | {path} | {ex.Message}", "ImageInfo");
+                if (!token.IsCancellationRequested && !dispatcher.HasShutdownStarted)
+                    await dispatcher.InvokeAsync(() => { if (!token.IsCancellationRequested) ThumbnailState = ThumbnailState.Failed; });
+            }
         }
 
         /// <summary>
@@ -220,7 +241,8 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             _thumbnailCts?.Cancel();
             _thumbnailCts?.Dispose();
             _thumbnailCts = null;
-            if (ThumbnailState == ThumbnailState.Loading) ThumbnailState = ThumbnailState.Pending;
+            Thumbnail = null;
+            ThumbnailState = ThumbnailState.Pending;
         }
 
         /// <summary>
@@ -228,7 +250,8 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         /// </summary>
         public void SetFullImage(BitmapSource? image)
         {
-            _fullImage = image;
+            _fullImage = image == null ? null : new(image);
+            _fullImageVersion = File.Exists(FilePath) ? ImageCache.ReadVersion(FilePath) : null;
             _isFullImageLoaded = (image != null);
             OnPropertyChanged(nameof(FullImage));
         }
@@ -264,23 +287,36 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         private readonly int _maxCacheSize;
         private readonly Dictionary<string, LinkedListNode<CacheEntry>> _cacheMap;
         private readonly LinkedList<CacheEntry> _lruList;
+        private readonly long _byteBudget;
+        private long _bytes;
+        public long DecodedBytes { get { lock (_cacheMap) return _bytes; } }
 
-        public ImageCache(int maxCacheSize = 30)
+        public ImageCache(int maxCacheSize = 30, long byteBudget = 64 * 1024 * 1024)
         {
+            if (maxCacheSize <= 0 || byteBudget <= 0) throw new ArgumentOutOfRangeException(nameof(maxCacheSize));
             _maxCacheSize = maxCacheSize;
-            _cacheMap = new Dictionary<string, LinkedListNode<CacheEntry>>();
+            _byteBudget = byteBudget;
+            _cacheMap = new Dictionary<string, LinkedListNode<CacheEntry>>(StringComparer.OrdinalIgnoreCase);
             _lruList = new LinkedList<CacheEntry>();
+        }
+
+        internal static string ReadVersion(string path)
+        {
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(stream));
         }
 
         /// <summary>
         /// 查询缓存（命中则提升 LRU 优先级）。调用方须在外部加锁（仅保护字典，短临界区）。
         /// </summary>
-        public BitmapSource? Get(string filePath)
+        public BitmapSource? Get(string filePath, string? version = null)
         {
+            version ??= ReadVersion(filePath);
             lock (_cacheMap)
             {
             if (_cacheMap.TryGetValue(filePath, out var node))
             {
+                if (node.Value.Version != version) { Remove(filePath); return null; }
                 _lruList.Remove(node);
                 _lruList.AddFirst(node);
                 return node.Value.Bitmap;
@@ -292,22 +328,27 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         /// <summary>
         /// 写入缓存（含 LRU 淘汰）。调用方须在外部加锁。已在缓存中则不重复写入。
         /// </summary>
-        public void Set(string filePath, BitmapSource? bitmap)
+        public void Set(string filePath, BitmapSource? bitmap, string? version = null)
         {
+            if (bitmap == null) return;
+            version ??= ReadVersion(filePath);
             lock (_cacheMap)
             {
-            if (bitmap == null || _cacheMap.ContainsKey(filePath)) return;
+            Remove(filePath);
 
-            var entry = new CacheEntry(filePath, bitmap);
+            var entry = new CacheEntry(filePath, bitmap, version);
+            if (entry.Bytes > _byteBudget) return;
             var newNode = _lruList.AddFirst(entry);
             _cacheMap[filePath] = newNode;
+            _bytes += entry.Bytes;
 
-            if (_lruList.Count > _maxCacheSize)
+            while (_lruList.Count > _maxCacheSize || _bytes > _byteBudget)
             {
                 var lastNode = _lruList.Last;
                 if (lastNode != null)
                 {
                     _cacheMap.Remove(lastNode.Value.FilePath);
+                    _bytes -= lastNode.Value.Bytes;
                     _lruList.RemoveLast();
                 }
             }
@@ -317,7 +358,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         public void Remove(string path)
         {
             lock (_cacheMap)
-                if (_cacheMap.Remove(path, out var node)) _lruList.Remove(node);
+                if (_cacheMap.Remove(path, out var node)) { _bytes -= node.Value.Bytes; _lruList.Remove(node); }
         }
 
         public void Clear()
@@ -326,6 +367,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             {
                 _cacheMap.Clear();
                 _lruList.Clear();
+                _bytes = 0;
             }
         }
 
@@ -333,11 +375,15 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         {
             public string FilePath { get; }
             public BitmapSource Bitmap { get; }
+            public string Version { get; }
+            public long Bytes { get; }
 
-            public CacheEntry(string filePath, BitmapSource bitmap)
+            public CacheEntry(string filePath, BitmapSource bitmap, string version)
             {
                 FilePath = filePath;
                 Bitmap = bitmap;
+                Version = version;
+                Bytes = ((long)bitmap.PixelWidth * bitmap.Format.BitsPerPixel + 7) / 8 * bitmap.PixelHeight;
             }
         }
     }
@@ -358,6 +404,9 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
     {
         // ListBox 控件引用（用于同步选中项）
         private ListBox? _thumbnailListBox;
+        private ImageInfo? _highlightedImage;
+        private readonly HashSet<ImageInfo> _realizedThumbnails = new();
+        private const int MaximumRealizedThumbnails = 128;
 
         // 防止 CurrentImageIndex DP ↔ ListBox.SelectedItem 循环回调
         private bool _isSyncingListBox;
@@ -460,96 +509,36 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         // 全分辨率图像缓存（LRU，上限 30）——保留，供 ImageInfo.FullImage 懒加载
         private static readonly ImageCache s_fullImageCache = new ImageCache(maxCacheSize: 30);
 
-        // 缩略图缓存（LRU，上限 50）——跨实例共享，滚动复用不重复解码
-        private static readonly ImageCache s_thumbnailCache = new ImageCache(maxCacheSize: 50);
-        private static readonly object s_thumbnailLock = new object();
+        private static readonly PreviewBitmapCache s_thumbnailCache = new(DecodeThumbnailCore);
+        public static PreviewBitmapCacheStats ThumbnailCacheStatistics => s_thumbnailCache.Statistics;
 
-        /// <summary>
-        /// 全局缩略图并发上限：clamp(CPU-1, 4, 16)。
-        /// 对齐 ImageGlass Photo.cs:66-67，避免海量缩略图无限并发挤爆线程池（rule-008 治本）。
-        /// </summary>
-        private static readonly int s_thumbnailConcurrency =
-            Math.Clamp(Environment.ProcessorCount - 1, 4, 16);
-        private static readonly SemaphoreSlim s_thumbnailThrottle =
-            new(s_thumbnailConcurrency, s_thumbnailConcurrency);
+        internal static System.Threading.Tasks.Task<BitmapSource?> LoadThumbnailAsync(string filePath,
+            System.Threading.CancellationToken token = default) => s_thumbnailCache.LoadAsync(filePath, token);
 
-        /// <summary>
-        /// 缩略图加载：后台线程 WIC 解码 + DecodePixelWidth 缩小 + Freeze。
-        /// 对齐成熟方案（ImageGlass/微软官方）：
-        /// - 并发节流：全局信号量 clamp(CPU-1,4,16)，避免线程池饱和也不串行（对齐 ImageGlass Photo.cs:66-67）
-        /// - 锁只保护缓存字典（微秒级短临界区），解码在锁外并行（已治本）
-        /// - 解码失败直接返回 null + WARN 日志（rule-015 失败可见），不做无效降级——
-        ///   实测 System.Drawing 兜底转 PNG 后仍走 BitmapImage(WIC)，救不回 WIC 解不了的格式
-        ///   （对齐 ImageGlass 的容错仅靠其真正多引擎，本项目 Win11 标准格式 WIC 全覆盖，无需兜底）
-        /// </summary>
         internal static BitmapImage? LoadThumbnail(string filePath, System.Threading.CancellationToken token = default)
         {
-            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
-                return null;
-
-            // 快路径：锁内只查缓存（微秒级），命中直接返回
-            lock (s_thumbnailLock)
-            {
-                var cached = s_thumbnailCache.Get(filePath);
-                if (cached != null) return cached as BitmapImage;
-            }
-
-            // 节流进入：最多 clamp(CPU-1,4,16) 个并发解码，避免线程池饱和
-            BitmapImage? bitmap = null;
-            try
-            {
-                s_thumbnailThrottle.Wait(token);
-            }
-            catch (System.OperationCanceledException)
-            {
-                // 滚动离开被取消：不降级、不报错，直接丢弃（对齐 ImageGlass 不可见即取消）
-                return null;
-            }
-            try
-            {
-                // 慢路径：锁外并行解码（I/O + CPU，互不阻塞）
-                try
-                {
-                    bitmap = DecodeThumbnailCore(filePath);   // WIC
-                }
-                catch (Exception ex)   // WIC 解不了（NotSupportedException / COM 异常等）
-                {
-                    // rule-015：失败可见，禁止静默吞异常；不做无效降级
-                    VisionLogger.Instance.Log(LogLevel.Warning,
-                        $"缩略图解码失败 | {filePath} | {ex.GetType().Name}: {ex.Message}",
-                        "ImagePreviewControl");
-                }
-            }
-            finally
-            {
-                s_thumbnailThrottle.Release();
-            }
-
-            if (bitmap == null) return null;
-
-            // 写缓存：锁内极短
-            lock (s_thumbnailLock)
-            {
-                s_thumbnailCache.Set(filePath, bitmap);
-            }
-            return bitmap;
+            try { return LoadThumbnailAsync(filePath, token).GetAwaiter().GetResult() as BitmapImage; }
+            catch (OperationCanceledException) { return null; }
+            catch (IOException) { return null; }
         }
 
-        /// <summary>
-        /// WIC 缩略图解码核心（无锁，可在后台线程并行执行）
-        /// </summary>
-        private static BitmapImage DecodeThumbnailCore(string filePath)
+        private static BitmapSource DecodeThumbnailCore(string filePath)
         {
+            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var header = BitmapFrame.Create(stream, BitmapCreateOptions.DelayCreation, BitmapCacheOption.None);
+            var landscape = header.PixelWidth >= header.PixelHeight;
+            stream.Position = 0;
             var bitmap = new BitmapImage();
             bitmap.BeginInit();
-            bitmap.UriSource = new Uri(filePath, UriKind.RelativeOrAbsolute);
-            bitmap.DecodePixelWidth = 100;                // 解码时直接缩小，省内存
-            bitmap.CacheOption = BitmapCacheOption.OnLoad; // 立即解码
+            bitmap.StreamSource = stream;
+            if (landscape) bitmap.DecodePixelWidth = 100;
+            else bitmap.DecodePixelHeight = 100;
+            bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
             bitmap.EndInit();
-            bitmap.Freeze();                              // 冻结后可跨线程
+            bitmap.Freeze();
             return bitmap;
         }
-
         /// <summary>
         /// 全分辨率图像加载（简化版）：ImageInfo.FullImage 懒加载入口。
         /// 用 UriSource + OnLoad 内建解码，替代原自研解码器/CleanupScheduler 链路。
@@ -560,18 +549,21 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
                 return null;
 
             // 全图懒加载在主 UI 线程触发，无并发竞争；查缓存命中直接返回，未命中解码后写入
-            var cached = s_fullImageCache.Get(filePath);
-            if (cached != null) return cached as BitmapImage;
-
             try
             {
+                var version = ImageCache.ReadVersion(filePath);
+                var cached = s_fullImageCache.Get(filePath, version);
+                if (cached != null) return cached as BitmapImage;
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
                 var bitmap = new BitmapImage();
                 bitmap.BeginInit();
-                bitmap.UriSource = new Uri(filePath, UriKind.RelativeOrAbsolute);
+                bitmap.StreamSource = stream;
+                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
                 bitmap.Freeze();
-                s_fullImageCache.Set(filePath, bitmap);
+                if (ImageCache.ReadVersion(filePath) != version) return null;
+                s_fullImageCache.Set(filePath, bitmap, version);
                 return bitmap;
             }
             catch
@@ -589,6 +581,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             AddFolderCommand = new RelayCommand(ExecuteAddFolder);
             DeleteSingleImageCommand = new RelayCommand<ImageInfo>(ExecuteDeleteSingleImage);
             ClearAllCommand = new RelayCommand(ExecuteClearAll, CanExecuteClearAll);
+            CancelImportCommand = new RelayCommand(CancelFileImport, () => IsImporting);
 
             ImageCollection.CollectionChanged += (s, e) => OnPropertyChanged(nameof(ImageCountDisplay));
             ImageCollection.CollectionChanged += (s, e) => ScheduleRefreshVisibleThumbnails();
@@ -628,16 +621,18 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
+            CancelFileImport();
             _refreshDebounceTimer.Stop();
             if (_thumbnailListBox != null) _thumbnailListBox.PreviewKeyDown -= OnThumbnailPreviewKeyDown;
             _thumbnailListBox = null;
             // Unloading a view must not clear the persisted input source.
             if (ImageCollection != null) foreach (var image in ImageCollection) image.CancelThumbnail();
+            _realizedThumbnails.Clear();
         }
 
         #region 命令实现
 
-        private void ExecuteAddImage()
+        private async void ExecuteAddImage()
         {
             try
             {
@@ -650,7 +645,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
                 if (openFileDialog.ShowDialog() == true)
                 {
-                    AppendFiles(openFileDialog.FileNames);
+                    await ImportFilePathsAsync(openFileDialog.FileNames);
                 }
             }
             catch (Exception ex)
@@ -660,7 +655,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             }
         }
 
-        private void ExecuteAddFolder()
+        private async void ExecuteAddFolder()
         {
             try
             {
@@ -671,20 +666,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
                 if (folderDialog.ShowDialog() == true)
                 {
-                    var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif" };
-                    var imageFiles = Directory.GetFiles(folderDialog.FolderName, "*.*", SearchOption.TopDirectoryOnly)
-                        .Where(f => imageExtensions.Contains(Path.GetExtension(f).ToLower()))
-                        .OrderBy(f => f)
-                        .ToArray();
-
-                    if (imageFiles.Length == 0)
-                    {
-                        ThemeMessageDialog.Show("所选文件夹中没有找到图像文件", "提示",
-                            MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
-                        return;
-                    }
-
-                    AppendFiles(imageFiles);
+                    await ImportDirectoryAsync(folderDialog.FolderName);
                 }
             }
             catch (Exception ex)
@@ -692,51 +674,6 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
                 ThemeMessageDialog.Show($"添加文件夹失败: {ex.Message}", "错误",
                     MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
-        }
-
-        /// <summary>
-        /// 追加文件到图像集合（触发后台线程解码缩略图，缓存命中秒出）。
-        /// ★ 治本：直接写 ImageInputSource（真相源）而非 ImageCollection（DP 绑定目标）。
-        /// ImageInputSource.Images 是只读属性，TwoWay 绑定无法建立，往 ImageCollection 加图不会写回 _images，
-        /// 导致 ToConfig() 保存的 FilePaths 为空 → 重启后不恢复（图像源数量空）。
-        /// 改用 ActiveInputSource.AddImages() 写 _images，UI 通过 OneWay 绑定自动刷新。
-        /// 去重以真相源为准（忽略大小写）：ImagePreviewControl 是共享单例，切换节点时 ActiveInputSource
-        /// 重新绑定为另一节点的实例，以实例自身去重天然实现"节点间路径隔离"。
-        /// </summary>
-        private void AppendFiles(string[] fileNames)
-        {
-            var source = ActiveInputSource;
-            if (source == null)
-            {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"无法添加图像：活动输入源为空", "ImagePreviewControl");
-                return;
-            }
-
-            var existing = new HashSet<string>(
-                source.Images.Select(x => x.FilePath),
-                StringComparer.OrdinalIgnoreCase);
-
-            var allImages = fileNames
-                .Where(f => !string.IsNullOrEmpty(f) && File.Exists(f))
-                .Where(f => existing.Add(f))   // ★ 去重：Add 返回 false 表示已存在，跳过
-                .Select(f => new ImageInfo
-                {
-                    Name = Path.GetFileNameWithoutExtension(f),
-                    FilePath = f
-                })
-                .ToArray();
-
-            // 写真相源 _images（触发 CollectionChanged → OneWay 绑定自动刷新 ImageCollection）
-            if (allImages.Length == 0) return;
-            source.AddImages(allImages);
-            if (allImages.Length > 0)
-            {
-                CurrentImageIndex = source.Count - allImages.Length;
-            }
-
-            // 缩略图由虚拟化容器 Loaded 事件 + 主动刷新（RefreshVisibleThumbnails）双驱动按需解码，
-            // 滚动到哪解码到哪，避免海量图片同时排队。
         }
 
         /// <summary>
@@ -748,7 +685,12 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         {
             if (sender is FrameworkElement element && element.DataContext is ImageInfo info)
             {
-                info.EnsureThumbnail();
+                if (ImageCollection?.Contains(info) != true) return;
+                if (_realizedThumbnails.Contains(info) || _realizedThumbnails.Count < MaximumRealizedThumbnails)
+                {
+                    _realizedThumbnails.Add(info);
+                    info.EnsureThumbnail();
+                }
             }
         }
 
@@ -761,6 +703,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         {
             if (sender is FrameworkElement element && element.DataContext is ImageInfo info)
             {
+                _realizedThumbnails.Remove(info);
                 info.CancelThumbnail();
             }
         }
@@ -768,6 +711,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         private void ExecuteDeleteSingleImage(ImageInfo? imageInfo)
         {
             if (imageInfo == null) return;
+            CancelFileImport();
 
             // ★ 走真相源 ActiveInputSource.RemoveImage：改 ImageInputSource._images（与 ImageCollection 同实例，
             // OneWay 绑定自动刷新 UI），并触发 ConfigChanged 实时写回节点 ImageSourceConfig。
@@ -787,6 +731,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
         private void ExecuteClearAll()
         {
+            CancelFileImport();
             if (!CanExecuteClearAll()) return;
             if (ThemeMessageDialog.Show("清空所有图像引用？不会删除磁盘文件。", "清空图像",
                 MessageBoxButton.YesNo, ThemeMessageDialog.MessageIcon.Question) == MessageBoxResult.Yes)
@@ -807,7 +752,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         public static void InvalidateImageCache(string path)
         {
             s_fullImageCache.Remove(path);
-            lock (s_thumbnailLock) s_thumbnailCache.Remove(path);
+            s_thumbnailCache.Invalidate(path);
         }
 
         private bool CanExecuteClearAll() => (ActiveInputSource?.Count ?? ImageCollection?.Count ?? 0) > 0 || CurrentImageIndex >= 0;
@@ -834,8 +779,20 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         private static void OnImageCollectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = (ImagePreviewControl)d;
-            if (e.OldValue is BatchObservableCollection<ImageInfo> oldCollection) oldCollection.CollectionChanged -= control.OnBoundCollectionChanged;
-            if (e.NewValue is BatchObservableCollection<ImageInfo> newCollection) newCollection.CollectionChanged += control.OnBoundCollectionChanged;
+            control.CancelFileImport();
+            if (control._highlightedImage != null) control._highlightedImage.IsSelected = false;
+            control._highlightedImage = null;
+            if (e.OldValue is BatchObservableCollection<ImageInfo> oldCollection)
+            {
+                oldCollection.CollectionChanged -= control.OnBoundCollectionChanged;
+                foreach (var image in oldCollection) image.CancelThumbnail();
+                control._realizedThumbnails.Clear();
+            }
+            if (e.NewValue is BatchObservableCollection<ImageInfo> newCollection)
+            {
+                newCollection.CollectionChanged += control.OnBoundCollectionChanged;
+                foreach (var image in newCollection) image.IsSelected = false;
+            }
             control.UpdateImageSelection();
             control.OnPropertyChanged(nameof(ImageCountDisplay));
             CommandManager.InvalidateRequerySuggested();
@@ -882,14 +839,12 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         /// </summary>
         private void UpdateImageSelection()
         {
-            if (ImageCollection == null) return;
-
-            int count = ImageCollection.Count;
-            int currentIndex = CurrentImageIndex;
-            for (int i = 0; i < count; i++)
-            {
-                ImageCollection[i].IsSelected = (i == currentIndex);
-            }
+            var next = ImageCollection != null && CurrentImageIndex >= 0 && CurrentImageIndex < ImageCollection.Count
+                ? ImageCollection[CurrentImageIndex] : null;
+            if (ReferenceEquals(next, _highlightedImage)) return;
+            if (_highlightedImage != null) _highlightedImage.IsSelected = false;
+            _highlightedImage = next;
+            if (next != null) next.IsSelected = true;
         }
 
         #region 自动切换（流程驱动：宿主在工作流执行完成后调用推进，非固定间隔）
@@ -1128,12 +1083,15 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         private void RefreshVisibleThumbnails()
         {
             if (_thumbnailListBox == null || ImageCollection == null) return;
-            foreach (var item in FindVisualChildren<ListBoxItem>(_thumbnailListBox))
+            var visible = FindVisualChildren<ListBoxItem>(_thumbnailListBox)
+                .Select(item => item.DataContext).OfType<ImageInfo>()
+                .Where(info => ImageCollection.Contains(info)).Take(MaximumRealizedThumbnails).ToHashSet();
+            foreach (var old in _realizedThumbnails.Where(info => !visible.Contains(info)).ToArray()) old.CancelThumbnail();
+            _realizedThumbnails.Clear();
+            foreach (var info in visible)
             {
-                if (item.DataContext is ImageInfo info)
-                {
-                    info.EnsureThumbnail();
-                }
+                _realizedThumbnails.Add(info);
+                info.EnsureThumbnail();
             }
         }
 

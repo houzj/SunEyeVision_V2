@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SunEyeVision.UI.Services
 {
@@ -17,8 +15,6 @@ namespace SunEyeVision.UI.Services
     {
         RuntimeInputSnapshot Publish(string workflowId, string imagePath, int imageIndex);
         RuntimeInputSnapshot? GetSnapshot(string workflowId);
-        void ConfigureAdvancer(Func<CancellationToken, Task<bool>>? advancer);
-        Task<bool> AdvanceAsync(CancellationToken cancellationToken);
     }
 
     public sealed class RuntimeInputSnapshotService : IRuntimeInputSnapshotService
@@ -26,7 +22,6 @@ namespace SunEyeVision.UI.Services
         private readonly object _gate = new();
         private readonly Dictionary<string, RuntimeInputSnapshot> _snapshots = new();
         private long _version;
-        private Func<CancellationToken, Task<bool>>? _advancer;
 
         public RuntimeInputSnapshot Publish(string workflowId, string imagePath, int imageIndex)
         {
@@ -49,16 +44,5 @@ namespace SunEyeVision.UI.Services
             }
         }
 
-        public void ConfigureAdvancer(Func<CancellationToken, Task<bool>>? advancer)
-        {
-            lock (_gate) _advancer = advancer;
-        }
-
-        public Task<bool> AdvanceAsync(CancellationToken cancellationToken)
-        {
-            Func<CancellationToken, Task<bool>>? advancer;
-            lock (_gate) advancer = _advancer;
-            return advancer?.Invoke(cancellationToken) ?? Task.FromResult(false);
-        }
     }
 }

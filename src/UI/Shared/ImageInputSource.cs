@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using SunEyeVision.UI.Services.Thumbnail;
@@ -28,10 +29,14 @@ namespace SunEyeVision.UI.Shared
     public class ImageInputSource : ObservableObject, INotifyCollectionChanged
     {
         private readonly BatchObservableCollection<ImageInfo> _images;
+        private readonly HashSet<ImageInfo> _observedImages = new();
+        private readonly Dictionary<string, int> _entryIndices = new(StringComparer.Ordinal);
         private int _currentIndex = -1;
         private ImageRunMode _runMode = ImageRunMode.运行全部;
         private bool _autoSwitchEnabled = true;
         private bool _isReadOnly = false;
+        private bool _presentingRuntimeCursor;
+        public long EditVersion { get; private set; }
 
         /// <summary>
         /// 关联的节点ID
@@ -133,6 +138,7 @@ namespace SunEyeVision.UI.Shared
         /// 避免"保存入口各自转换"导致的漂移（与全局变量/参数实时同步模式对齐）。
         /// </summary>
         public Action<ImageSourceConfig>? ConfigChanged { get; set; }
+        public event EventHandler? ConfigurationEdited;
 
         /// <summary>
         /// 触发配置同步：把当前状态转成可序列化配置并通知父节点。
@@ -140,8 +146,23 @@ namespace SunEyeVision.UI.Shared
         private bool _loadingConfiguration;
         private void NotifyConfigChanged()
         {
-            if (_loadingConfiguration) return;
+            if (_loadingConfiguration || _presentingRuntimeCursor) return;
+            EditVersion++;
             ConfigChanged?.Invoke(ToConfig());
+            ConfigurationEdited?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>Present a frozen run cursor only while the user's source is unchanged.</summary>
+        public bool TryPresentRuntimeCursor(long expectedEditVersion, string entryId, string reference, string address)
+        {
+            if (EditVersion != expectedEditVersion) return false;
+            if (!_entryIndices.TryGetValue(entryId, out var index)) return false;
+            var image = _images[index];
+            if (image.Id != entryId || (image.SourceReference ?? image.FilePath) != reference || image.FilePath != address) return false;
+            _presentingRuntimeCursor = true;
+            try { CurrentIndex = index; }
+            finally { _presentingRuntimeCursor = false; }
+            return true;
         }
 
         /// <summary>
@@ -161,6 +182,34 @@ namespace SunEyeVision.UI.Shared
         {
             NodeId = nodeId ?? throw new ArgumentNullException(nameof(nodeId));
             _images = new BatchObservableCollection<ImageInfo>();
+            _images.CollectionChanged += OnImagesChanged;
+        }
+
+        private void OnImagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            // Reset and direct collection edits also invalidate pending cursor presentation.
+            EditVersion++;
+            _entryIndices.Clear();
+            for (var index = 0; index < _images.Count; index++) _entryIndices.TryAdd(_images[index].Id, index);
+            // Batch collections can publish Reset without the removed items. Reconcile
+            // subscriptions on structural edits so removed entries cannot edit this source.
+            var current = new HashSet<ImageInfo>(_images);
+            foreach (var image in _observedImages.Where(image => !current.Contains(image)).ToArray())
+            {
+                image.PropertyChanged -= OnImagePropertyChanged;
+                _observedImages.Remove(image);
+            }
+            foreach (var image in current)
+            {
+                if (_observedImages.Add(image)) image.PropertyChanged += OnImagePropertyChanged;
+            }
+        }
+
+        private void OnImagePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(ImageInfo.IsForRun)) return;
+            OnPropertyChanged(nameof(GetSelectedImages));
+            NotifyConfigChanged();
         }
 
         /// <summary>
@@ -205,6 +254,7 @@ namespace SunEyeVision.UI.Shared
             ImagePreviewControl.InvalidateImageCache(image.FilePath);
             var removedIndex = _images.IndexOf(image);
             _images.Remove(image);
+            if (removedIndex >= 0) RemoveRunReferenceIfUnused(image);
             if (removedIndex >= 0 && removedIndex < CurrentIndex) CurrentIndex--;
             if (CurrentIndex >= _images.Count)
             {
@@ -226,6 +276,7 @@ namespace SunEyeVision.UI.Shared
 
             foreach (var image in _images) { image.CancelThumbnail(); image.ReleaseFullImage(); image.Thumbnail = null; ImagePreviewControl.InvalidateImageCache(image.FilePath); }
             _images.Clear();
+            _runReferences.Clear();
             CurrentIndex = -1;
             CurrentImageChanged?.Invoke(this, -1);
             OnPropertyChanged(nameof(Count));
@@ -287,10 +338,11 @@ namespace SunEyeVision.UI.Shared
         private List<string> _runReferences = new();
         public ImageSourceConfig ToConfig()
         {
+            // Preserve unresolved references and existing order on unrelated edits.
+            // Only explicit removal commands prune references, never a view Reset.
             foreach (var group in _images.GroupBy(img => img.SourceReference ?? img.FilePath))
             {
-                var selected = group.Any(img => img.IsForRun);
-                if (!selected) _runReferences.RemoveAll(p => p == group.Key);
+                if (!group.Any(img => img.IsForRun)) _runReferences.RemoveAll(value => value == group.Key);
                 else if (!_runReferences.Contains(group.Key)) _runReferences.Add(group.Key);
             }
             return new ImageSourceConfig
@@ -313,6 +365,7 @@ namespace SunEyeVision.UI.Shared
         public void LoadFromConfig(ImageSourceConfig config, SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver? resourcePaths = null)
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
+            EditVersion++;
 
             _runReferences = new List<string>(config.ForRunPaths ?? new List<string>());
             _loadingConfiguration = true;
@@ -361,9 +414,17 @@ namespace SunEyeVision.UI.Shared
             if (index < 0) return;
             image.CancelThumbnail(); image.ReleaseFullImage(); ImagePreviewControl.InvalidateImageCache(image.FilePath);
             _images[index] = new ImageInfo { FilePath = path, Name = System.IO.Path.GetFileName(path), IsForRun = image.IsForRun };
+            RemoveRunReferenceIfUnused(image);
             OnPropertyChanged(nameof(CurrentImage));
             CurrentImageChanged?.Invoke(this, CurrentIndex);
             NotifyConfigChanged();
+        }
+
+        private void RemoveRunReferenceIfUnused(ImageInfo removed)
+        {
+            var reference = removed.SourceReference ?? removed.FilePath;
+            if (!_images.Any(image => (image.SourceReference ?? image.FilePath) == reference))
+                _runReferences.RemoveAll(value => value == reference);
         }
     }
 }

@@ -254,6 +254,11 @@
                            VerticalAlignment="Center"
                            Margin="0,0,12,0"/>
 
+                <TextBlock Grid.Column="1" Text="{Binding ImportStatus, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           ToolTip="{Binding ImportStatus, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
+                           FontSize="10" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="4,0"/>
+
                 <!-- 按钮组容器 -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
 
@@ -312,20 +317,23 @@
                             Margin="12,6,12,6"
                             VerticalAlignment="Stretch"/>
                     <!-- 添加图片 -->
-                    <Button Content="➕"
+                    <Button Content="&#xE710;" FontFamily="Segoe MDL2 Assets"
                             Command="{Binding AddImageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             Style="{StaticResource IconButton}"
                             ToolTip="添加图片"/>
 
                     <!-- 添加文件夹 -->
-                    <Button Content="📁"
+                    <Button Content="&#xE8B7;" FontFamily="Segoe MDL2 Assets"
                             Command="{Binding AddFolderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             Style="{StaticResource IconButton}"
                             Margin="6,0,0,0"
                             ToolTip="添加文件夹"/>
 
                     <!-- 清除全部 -->
-                    <Button Content="🧹"
+                    <Button Content="取消" Command="{Binding CancelImportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            Style="{StaticResource IconButton}" Margin="6,0,0,0"
+                            ToolTip="{Binding ImportStatus, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    <Button Content="&#xE74D;" FontFamily="Segoe MDL2 Assets"
                             Command="{Binding ClearAllCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             Style="{StaticResource IconButton}"
                             Margin="6,0,0,0"

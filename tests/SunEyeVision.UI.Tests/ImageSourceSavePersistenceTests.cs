@@ -16,6 +16,73 @@ namespace SunEyeVision.UI.Tests;
 public class ImageSourceSavePersistenceTests
 {
     [Fact]
+    public void RuntimeCursorDoesNotPersistOrInvalidateItsOwnVersionButUserEditsRejectOldPresentation()
+    {
+        var source = new ImageInputSource("cursor");
+        var a = new ImageInfo { FilePath = "a", SourceReference = "assets/a" };
+        var b = new ImageInfo { FilePath = "b", SourceReference = "assets/b" };
+        source.AddImages(new[] { a, b });
+        source.CurrentIndex = 0;
+        var writes = 0; source.ConfigChanged = _ => writes++;
+        var captured = source.EditVersion;
+        Assert.True(source.TryPresentRuntimeCursor(captured, b.Id, "assets/b", "b"));
+        Assert.Equal(1, source.CurrentIndex);
+        Assert.Equal(captured, source.EditVersion);
+        Assert.Equal(0, writes);
+        source.CurrentIndex = 0;
+        Assert.False(source.TryPresentRuntimeCursor(captured, b.Id, "assets/b", "b"));
+        Assert.Equal(0, source.CurrentIndex);
+        var beforeEdit = source.EditVersion;
+        b.IsForRun = true;
+        Assert.False(source.TryPresentRuntimeCursor(beforeEdit, b.Id, "assets/b", "b"));
+        var beforeReset = source.EditVersion;
+        source.Images.Refresh();
+        Assert.False(source.TryPresentRuntimeCursor(beforeReset, b.Id, "assets/b", "b"));
+    }
+
+    [Fact]
+    public void CheckOnlyEditImmediatelySurvivesNodeSerialization()
+    {
+        var node = new WorkflowNode("checks", "图像源", "图像源", "ImageLoad");
+        var input = node.EnsureInputSource();
+        var image = new ImageInfo { FilePath = @"C:\samples\a.bmp", SourceReference = "assets/a.bmp" };
+        input.AddImage(image);
+        image.IsForRun = true;
+
+        var json = System.Text.Json.JsonSerializer.Serialize<WorkflowNodeBase>(node, WorkflowSerializationOptions.Default);
+        var restored = System.Text.Json.JsonSerializer.Deserialize<WorkflowNodeBase>(json, WorkflowSerializationOptions.Default);
+        Assert.Equal(new[] { "assets/a.bmp" }, restored!.ImageSourceConfig!.ForRunPaths);
+        image.IsForRun = false;
+        Assert.Empty(node.ImageSourceConfig!.ForRunPaths);
+    }
+
+    [Fact]
+    public void RemovedOrResetEntriesCannotWriteBackToTheirOldSource()
+    {
+        var source = new ImageInputSource("checks");
+        var removed = new ImageInfo { FilePath = @"C:\samples\a.bmp", IsForRun = true };
+        var replaced = new ImageInfo { FilePath = @"C:\samples\b.bmp", IsForRun = true };
+        source.AddImages(new[] { removed, replaced });
+        source.ToConfig();
+        var writes = 0;
+        source.ConfigChanged = _ => writes++;
+        source.RemoveImage(removed);
+        Assert.DoesNotContain(removed.FilePath, source.ToConfig().ForRunPaths);
+        var afterRemove = writes;
+        removed.IsForRun = false;
+        Assert.Equal(afterRemove, writes);
+
+        var replacement = new ImageInfo { FilePath = @"C:\samples\c.bmp" };
+        source.Images.ReplaceRange(new[] { replacement });
+        var afterReset = writes;
+        replaced.IsForRun = false;
+        Assert.Equal(afterReset, writes);
+        Assert.Equal(new[] { replaced.FilePath }, source.ToConfig().ForRunPaths);
+        replacement.IsForRun = true;
+        Assert.Equal(afterReset + 1, writes);
+    }
+
+    [Fact]
     public void LocalPreviewChangesPreserveCameraSelectionAndSourceMode()
     {
         var node = new WorkflowNode("node-merge", "图像源", "图像源", "ImageLoad")

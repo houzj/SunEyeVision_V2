@@ -227,7 +227,20 @@ namespace SunEyeVision.UI.Shell.Windows
         public SunEyeVision.UI.Shared.ImageInputSource? ActiveInputSource
         {
             get => _imageResult.ActiveInputSource;
-            private set => _imageResult.ActiveInputSource = value;
+            private set
+            {
+                if (ReferenceEquals(_imageResult.ActiveInputSource, value)) return;
+                if (_imageResult.ActiveInputSource is { } old) old.ConfigurationEdited -= OnImageInputConfigurationEdited;
+                _imageResult.ActiveInputSource = value;
+                if (value != null) value.ConfigurationEdited += OnImageInputConfigurationEdited;
+            }
+        }
+
+        private void OnImageInputConfigurationEdited(object? sender, EventArgs e)
+        {
+            UpdateCurrentSolutionInfo();
+            if (ReferenceEquals(sender, ActiveInputSource))
+                ImagePreviewSourceMessage = ActiveInputSource?.Count == 0 ? "请添加本地图像" : string.Empty;
         }
 
         /// <summary>
@@ -3385,6 +3398,7 @@ SplitterPosition = position;
                 }
             }
             SetDisplayImageFromSource(selectedSource);
+            UpdateImagePreviewVisibility(_selectedNode as WorkflowNode);
         }
 
         /// <summary>
@@ -4268,9 +4282,6 @@ SplitterPosition = position;
             _runtimeInputSnapshots.Publish(workflowId, imagePath, imageIndex);
         }
 
-        public void ConfigureRuntimeInputAdvancer(Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>? advancer)
-            => _runtimeInputSnapshots.ConfigureAdvancer(advancer);
-
         private bool StartContinuousWorkflow(WorkflowTabViewModel workflow)
         {
             // 连续运行也必须使用与单次运行相同的运行时输入和全局变量。
@@ -4621,6 +4632,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         {
             try
             {
+                _legacyImageDisplayCancellation?.Cancel();
                 DisplayImage = null;
                 ImageScale = 1.0;
                 AddLog("已清除图像");
@@ -4638,8 +4650,11 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <summary>
         /// 更新当前图像显示
         /// </summary>
-        private void UpdateCurrentImageDisplay()
+        private static readonly System.Threading.SemaphoreSlim s_legacyImageDecodeSlot = new(1, 1);
+        private System.Threading.CancellationTokenSource? _legacyImageDisplayCancellation;
+        private async void UpdateCurrentImageDisplay()
         {
+            _legacyImageDisplayCancellation?.Cancel();
             if (CurrentImageIndex < 0 || CurrentImageIndex >= ImageCollection.Count)
             {
                 DisplayImage = null;
@@ -4647,13 +4662,35 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             }
 
             var imageInfo = ImageCollection[CurrentImageIndex];
-            var fullImage = imageInfo.FullImage;
-
-            if (fullImage != null)
+            var path = imageInfo.FilePath;
+            var tab = WorkflowTabViewModel?.SelectedTab;
+            var node = _selectedNode;
+            var priorDisplay = DisplayImage;
+            using var cancellation = new System.Threading.CancellationTokenSource();
+            _legacyImageDisplayCancellation = cancellation;
+            try
             {
-                DisplayImage = fullImage;
-                AddLog($"📷 显示图像: {imageInfo.Name}");
+                var token = cancellation.Token;
+                var fullImage = await System.Threading.Tasks.Task.Run(async () =>
+                {
+                    await s_legacyImageDecodeSlot.WaitAsync(token).ConfigureAwait(false);
+                    try { token.ThrowIfCancellationRequested(); return ImagePreviewControl.LoadImageOptimized(path); }
+                    finally { s_legacyImageDecodeSlot.Release(); }
+                }, token);
+                if (token.IsCancellationRequested || imageInfo.FilePath != path
+                    || CurrentImageIndex < 0 || CurrentImageIndex >= ImageCollection.Count
+                    || !ReferenceEquals(ImageCollection[CurrentImageIndex], imageInfo)
+                    || !ReferenceEquals(WorkflowTabViewModel?.SelectedTab, tab) || !ReferenceEquals(_selectedNode, node)
+                    || !ReferenceEquals(DisplayImage, priorDisplay)) return;
+                if (fullImage != null)
+                {
+                    DisplayImage = fullImage;
+                    AddLog($"📷 显示图像: {imageInfo.Name}");
+                }
             }
+            catch (OperationCanceledException) { }
+            catch (Exception ex) { AddLog($"显示图像失败: {ex.Message}"); }
+            finally { if (ReferenceEquals(_legacyImageDisplayCancellation, cancellation)) _legacyImageDisplayCancellation = null; }
         }
 
         #endregion
@@ -5376,16 +5413,32 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 return;
             }
 
-            var sourceNode = selectedNode.IsImageLoadNode
-                ? selectedNode
-                : FindUpstreamImageLoadNode(selectedNode);
+            var selectedTab = WorkflowTabViewModel?.SelectedTab;
+            if (selectedTab == null)
+            {
+                HideLocalImagePreview();
+                return;
+            }
+            if (!selectedTab.WorkflowNodes.Any(node => ReferenceEquals(node, selectedNode)))
+            {
+                HideLocalImagePreview();
+                return;
+            }
+            var resolution = SunEyeVision.UI.Services.ImageSourceResolver.Resolve(selectedNode.Id,
+                selectedTab.WorkflowNodes, selectedTab.WorkflowConnections);
+            resolution = SunEyeVision.UI.Services.ImageSourceResolver.InheritParentInput(resolution,
+                selectedTab.CurrentWorkflowId, selectedTab.NavigationAncestorIds, _workflowEngine.GetWorkflow);
+            var sourceNode = resolution.Source;
             if (sourceNode == null)
             {
-                // 子程序入口可以沿用父级已绑定的本地列表；没有有效绑定时不能显示空壳。
-                if (WorkflowTabViewModel?.SelectedTab?.IsInSubroutine == true
-                    && ActiveInputSource != null && _currentDisplayNodeId != null)
-                    return;
                 HideLocalImagePreview();
+                ImagePreviewSourceMessage = resolution.Kind switch
+                {
+                    SunEyeVision.UI.Services.ImageSourceResolutionKind.Ambiguous => "存在多个图像来源，请在上方选择显示来源",
+                    SunEyeVision.UI.Services.ImageSourceResolutionKind.InvalidSelection => "所选显示来源已不可用，请重新选择",
+                    _ => string.Empty
+                };
+                if (ImagePreviewSourceMessage.Length > 0) ShowImagePreview = true;
                 return;
             }
 
@@ -5396,7 +5449,20 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 return;
             }
 
-            var source = sourceNode.EnsureInputSource();
+            var source = sourceNode is WorkflowNode uiSource ? uiSource.EnsureInputSource()
+                : sourceNode.InputSource as ImageInputSource;
+            if (source == null)
+            {
+                source = new ImageInputSource(sourceNode.Id);
+                if (sourceNode.ImageSourceConfig != null) source.LoadFromConfig(sourceNode.ImageSourceConfig);
+                source.ConfigChanged = config =>
+                {
+                    sourceNode.ImageSourceConfig ??= new ImageSourceConfig { NodeId = sourceNode.Id };
+                    sourceNode.ImageSourceConfig.UpdateLocalInput(config);
+                };
+                sourceNode.InputSource = source;
+            }
+            ImagePreviewSourceMessage = source.Count == 0 ? "请添加本地图像" : string.Empty;
             if (_currentDisplayNodeId != sourceNode.Id || !ReferenceEquals(ActiveInputSource, source))
             {
                 _currentDisplayNodeId = sourceNode.Id;
@@ -5440,8 +5506,16 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         private void HideLocalImagePreview()
         {
             ShowImagePreview = false;
+            ImagePreviewSourceMessage = string.Empty;
             ActiveInputSource = null;
             _currentDisplayNodeId = null;
+        }
+
+        private string _imagePreviewSourceMessage = string.Empty;
+        public string ImagePreviewSourceMessage
+        {
+            get => _imagePreviewSourceMessage;
+            private set => SetProperty(ref _imagePreviewSourceMessage, value);
         }
 
         /// <summary>
@@ -5452,88 +5526,6 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         {
             UpdateImagePreviewVisibility((SunEyeVision.UI.Shared.WorkflowNode?)_selectedNode);
         }
-
-        /// <summary>
-        /// 逆向追踪选中节点的图像载入节点（BFS）
-        /// </summary>
-        /// <remarks>
-        /// 多个上游来源时优先使用显式选择；否则不猜测，以免展示错误的本地列表。
-        /// </remarks>
-        /// <param name="node">起始节点</param>
-        /// <returns>第一个找到的图像载入节点，未找到返回null</returns>
-        private SunEyeVision.UI.Shared.WorkflowNode? FindUpstreamImageLoadNode(SunEyeVision.UI.Shared.WorkflowNode node)
-        {
-            var selectedTab = WorkflowTabViewModel?.SelectedTab;
-            if (selectedTab == null || selectedTab.WorkflowConnections == null || selectedTab.WorkflowNodes == null)
-            {
-                return null;
-            }
-
-            var visited = new HashSet<string>();
-            var queue = new Queue<SunEyeVision.UI.Shared.WorkflowNode>();
-            var sources = new List<SunEyeVision.UI.Shared.WorkflowNode>();
-            queue.Enqueue(node);
-            visited.Add(node.Id);
-
-            while (queue.Count > 0)
-            {
-                var currentNode = queue.Dequeue();
-
-                // 获取上游节点ID，并在集合中排序后按节点ID验证正确性
-                var upstreamNodeIds = selectedTab.WorkflowConnections
-                    .Where(conn => conn.TargetNodeId == currentNode.Id)
-                    .Select(conn => conn.SourceNodeId)
-                    .Distinct()
-                    .OrderBy(id => id) // 按节点ID排序，保证确定性
-                    .ToList();
-
-                foreach (var upstreamNodeId in upstreamNodeIds)
-                {
-                    if (visited.Contains(upstreamNodeId))
-                    {
-                        continue;
-                    }
-
-                    var upstreamNode = selectedTab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == upstreamNodeId);
-                    if (upstreamNode == null)
-                    {
-                        continue;
-                    }
-
-                    // 收集所有可达来源，而非按节点 ID 随意取一个。
-                    if (upstreamNode.IsImageLoadNode)
-                    {
-                        visited.Add(upstreamNodeId);
-                        sources.Add(upstreamNode);
-                        continue;
-                    }
-
-                    // 不是载入节点，继续追踪
-                    visited.Add(upstreamNodeId);
-                    queue.Enqueue(upstreamNode);
-                }
-            }
-
-            if (sources.Count == 1)
-                return sources[0];
-            if (sources.Count > 1 && node.SelectedDisplaySource != null)
-            {
-                var selectedId = node.SelectedDisplaySource.SourceNodeId;
-                var directSource = sources.FirstOrDefault(source => source.Id == selectedId);
-                if (directSource != null)
-                    return directSource;
-                // 显式显示源可能是中间处理节点，继续沿所选分支追溯。
-                if (selectedId != node.Id && visited.Contains(selectedId))
-                {
-                    var branch = selectedTab.WorkflowNodes.OfType<WorkflowNode>()
-                        .FirstOrDefault(candidate => candidate.Id == selectedId);
-                    if (branch != null)
-                        return FindUpstreamImageLoadNode(branch);
-                }
-            }
-            return null;
-        }
-
 
         #endregion
 

@@ -1,6 +1,123 @@
 {
   "id": "SCRIPT-OPTIMIZATION-DECISION-01",
-  "status": "design-frozen-not-implemented",
+  "status": "s2-approved-implementation-dispatched-awaiting-acceptance",
+  "implementationProgress": {
+    "activeBatch": "S2",
+    "state": "S2已批准并开工；实施进度以实施者角色回执为准；验收待执行；S1独立验收仍排队",
+    "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+    "evidenceState": "已收到固定源码交付与程序副本身份；开发测试/构建通过不等于S1合同全部通过或独立验收通过",
+    "delivery": {
+      "receipt": "docs/collaboration/HANDOFF_SCRIPT_S1_IMPLEMENTATION_20261023.json",
+      "state": "WIP-buildable-not-accepted",
+      "baseCommit": "9e0da65d03815ceb9d0cb3392fd3ac5597227119",
+      "temporaryCommit": "5a700dad",
+      "productFileCount": 11,
+      "targetBuild": {
+        "command": "dotnet build tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj -c Release --no-restore -v quiet",
+        "result": "passed; 22 warnings / 0 errors",
+        "scope": "脚本工具项目构建；不是全量Release、行为验收或性能结果"
+      }
+    },
+    "finalDelivery": {
+      "receipt": "docs/collaboration/HANDOFF_SCRIPT_S1_DELIVERY_20261023.json",
+      "state": "developer-verified-independent-acceptance-pending",
+      "sourceCommit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "baseCommit": "9e0da65d03815ceb9d0cb3392fd3ac5597227119",
+      "changedFileGroups": 17,
+      "fixedProgramFiles": 627,
+      "fixedSourceInputs": 1342,
+      "afterRunDrift": 0,
+      "binaryManifestSHA256": "E3364D01FA7DCCAE73120C830361AC8437FD03F2A2B01A171114B1D9E93900CF",
+      "sourceManifestSHA256": "4A538585FB4711946D4F609916A95379B51B76DA3C59DDD0AC7B96E305B3C638",
+      "sourceZipSHA256": "8DADB66EDD0AFC6AEB4D25C6B37A992D4027DCE9EECE0ABF25543FD199BEFD5C",
+      "sourceArchiveManifestSHA256": "B3831ED9389C66855DA076AE789C171AE5F59F13EB2C623BAA75E4ED976C8588",
+      "sourceManifestMeaning": "source-manifest.json绑定实际构建工作区字节；source.zip按Git归档规范化换行，逐文件比较使用source-archive-manifest.json；不能用不同换行口径比较SHA",
+      "receiptEvidenceCommit": "972f2e0f，仅交付台账/清单更新，无产品源码改动",
+      "scriptTests": "43 passed / 0 failed / 0 skipped",
+      "fullRelease": "0 errors / 1272 warnings",
+      "uiRelease": "0 errors / 1077 warnings",
+      "runtimeProbe": "exit 0; 22 tools discovered before device/service initialization",
+      "independentAcceptance": "ready-awaiting-test-role-start; no tester start receipt; not run"
+    },
+    "latestProgress": {
+      "codeReview": "两份只读审查意见已处理；最终固定源码身份见交付收据。",
+      "localTests": "固定源码重建后43通过/0失败/0跳过；不是SA02/03/04/10/11全部通过。",
+      "fullRelease": "全量Release 0错误/1272警告；UI Release 0错误/1077警告。构建不等独立验收。",
+      "runtimeProbe": "固定程序副本探针退出0并发现22工具；在设备/服务初始化前退出，不代表完整启动或工作流。",
+      "independentTesting": "S1固定包已到且可执行；测试角色尚无开工回执。测试员自主管理队列/子智能体，缺输入任务不阻断其他就绪任务；缺陷直回实施者，修订固定包后独立回归。",
+      "notVerified": "S1共同能力端到端矩阵、SA02/03/04/10/11、成对性能、VS设计器、用户视觉未闭环；S2产品实现与验收未完成；S3仅方案分析已授权，产品实施未批准。"
+    },
+    "remaining": "S1等待测试角色调度并独立验收；S2按授权实施，固定交付后独立验收；S3仅授权方案分析，不得开启产品实施。",
+    "acceptanceMapping": {
+      "S1重点": [
+        "SA02",
+        "SA03",
+        "SA04",
+        "SA10",
+        "SA11"
+      ],
+      "S2后续": [
+        "SA01",
+        "SA05",
+        "SA06"
+      ],
+      "S3后续": [
+        "SA07",
+        "SA08",
+        "SA09"
+      ],
+      "整批门槛": [
+        "SA12"
+      ],
+      "说明": "SA12覆盖全量Release及独立验收；S1开发侧全量Release不代表SA12独立验收闭环。S2已批准实施，SA01、SA05—SA06待实施与独立验收；SA07—SA09属于S3后续验收；目前只授权S3方案分析，产品实施未批准。"
+    },
+    "s2Authorization": {
+      "path": "docs/collaboration/SCRIPT_S2_AUTHORIZATION_20261023.json",
+      "status": "approved-dispatched-awaiting-acceptance",
+      "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "authorization": "用户2026-10-23明确批准第二批实施",
+      "designSource": "docs/collaboration/SCRIPT_S2_DESIGN_20261023.json",
+      "designSourceSha256": "bf764bfa159218c63d55434aa552e9ab90ed5605824b6bc6040947efe4881dca",
+      "analysisBaseline": "5a700dad（保留为方案分析证据基线）",
+      "implementationBaseline": "a254710d31af3a39619f9b7ac50eaca344ac30bf（S1产品交付）；972f2e0f为交接证据提交",
+      "acceptance": "待执行",
+      "implementationFacts": "待实施者回执"
+    },
+    "milestones": [
+      {
+        "name": "S2 实施与验收",
+        "state": "已批准并派发；实施进度待角色回执；验收待执行",
+        "note": "授权卡 docs/collaboration/SCRIPT_S2_AUTHORIZATION_20261023.json；设计源SHA bf764bfa159218c63d55434aa552e9ab90ed5605824b6bc6040947efe4881dca，分析基线5a700dad；实施者01a1663d-2d35-7bd2-bc12-ab0d4051bb8e。15项证据/10合同/10验收/7场景保持为设计输入，不代表产品已经实现。"
+      }
+    ],
+    "testQueuePolicy": {
+      "owner": "自研独立测试",
+      "managesOwnQueueAndSubagents": true,
+      "dispatch": "缺少输入的任务先保留待输入，优先执行其他就绪任务；不得让缺输入任务占住全队列",
+      "executionLabel": "仅实际收到测试员开工/运行回执后标执行中",
+      "defectLoop": "发现缺陷或补输入需求及时直接反馈实施者；新固定包按身份独立回归；根汇总最终闭环",
+      "states": [
+        "待输入",
+        "就绪/可执行",
+        "执行中",
+        "等资源",
+        "待修复回归",
+        "完成"
+      ],
+      "current": {
+        "S1": "固定包可执行；测试员尚无开工回执；独立验收未运行",
+        "S2": "产品实施已开工；独立验收待输入固定交付包；尚无验收结论",
+        "S3": "未授权"
+      }
+    },
+    "s3Analysis": {
+      "authorization": "用户已授权方案分析，不含产品实施",
+      "status": "waiting-for-source-evidence-and-target-design-input",
+      "scope": "脚本执行/停止/异常清理/资源释放实际链；按需VM补证；仅更新现有主文档图示",
+      "productImplementationApproved": false,
+      "productModified": false
+    }
+  },
   "recommendation": "A：保留Roslyn语义与编译，按会话/引用快照/版本任务重构集成",
   "reason": "先比较后选择：共同能力、现代语法、外部类型上下文与长文重复查询，不能用部分首次查询优势替代完整能力。A当前首次成本真实存在，整改收益须以后产品验收证明。",
   "alternatives": [
@@ -32,6 +149,14 @@
   "batches": [
     {
       "id": "S1",
+      "status": "代码交付已收；独立验收待排",
+      "acceptanceCases": [
+        "SA02",
+        "SA03",
+        "SA04",
+        "SA10",
+        "SA11"
+      ],
       "depends": [],
       "scope": "建立会话/版本/引用快照及分段计时，消除源码与引用缓存身份缺口",
       "files": [
@@ -48,6 +173,12 @@
     },
     {
       "id": "S2",
+      "status": "已批准实施；实施者已接收，进度以角色回执为准；验收待执行",
+      "acceptanceCases": [
+        "SA01",
+        "SA05",
+        "SA06"
+      ],
       "depends": [
         "S1"
       ],
@@ -65,6 +196,12 @@
     },
     {
       "id": "S3",
+      "status": "方案分析已授权；待冻结源码证据与目标方案输入；产品实施未批准",
+      "acceptanceCases": [
+        "SA07",
+        "SA08",
+        "SA09"
+      ],
       "depends": [
         "S1",
         "S2"
@@ -75,7 +212,9 @@
         "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
         "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs",
         "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs"
-      ]
+      ],
+      "analysisOnlyAuthorized": true,
+      "implementationApproved": false
     }
   ],
   "acceptance": [
@@ -150,5 +289,6 @@
       "disposition": "静态风险非复现；推荐按自研正确性合同重做，频率不决定选型"
     }
   ],
-  "reopenEngineDecision": "如果A完成上述集成改造后，合法能力通过但目标性能仍失败，按同样例同引用另测具体替代引擎；必须证明语言/引用/诊断一致和端到端净收益，不能只以首查询成绩替换。"
+  "reopenEngineDecision": "如果A完成上述集成改造后，合法能力通过但目标性能仍失败，按同样例同引用另测具体替代引擎；必须证明语言/引用/诊断一致和端到端净收益，不能只以首查询成绩替换。",
+  "currentBatch": "S2"
 }

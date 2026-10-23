@@ -1,0 +1,150 @@
+{
+  "id": "RESULT-LAYER-FINAL-DESIGN-INPUT-20261023",
+  "state": "frozen analysis input only; no implementation approval",
+  "sourceEvidence": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Core\\ToolExecutor.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\00-ToolExecutor.cs",
+      "sha256": "0076a7746999eb09d09aa7545efbf0ed062bf15b859ecc6df8397803a8b6e5fb"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Results\\ToolResults.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\01-ToolResults.cs",
+      "sha256": "a6a4e3dd0a2d203e2165d3e498adf4fa046e5a91c637d61d453cdbfcad6a363d"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Workflow\\WorkflowContext.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\02-WorkflowContext.cs",
+      "sha256": "67d716932fdcada4ed590105b063536ee08bc95606ac208460ed72de9f2069ff"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Services\\Workflow\\NodeResultManager.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\03-NodeResultManager.cs",
+      "sha256": "43634acb08a28968762dd873e040131155d37bcd0a2d1ba602e075a0c376fd78"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\UI\\Controls\\ImageControl\\ResultRenderLayer.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\04-ResultRenderLayer.cs",
+      "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Models\\Visualization\\DisplayCollector.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\05-DisplayCollector.cs",
+      "sha256": "b550c3bededcaae633e2cfe711d5be157d8bac85779491910ece25b7c8ad844d"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Models\\Visualization\\GraphicsDisplayItem.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\06-GraphicsDisplayItem.cs",
+      "sha256": "ab5b362013646f8a713238eba229f489b0a2ce4de63665f39cebfb962031c78c"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Models\\Visualization\\TextDisplayItem.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\07-TextDisplayItem.cs",
+      "sha256": "ef317912004e35ee01b7866fd7a141f85a75f6807e9904061846ac1c67fde0a1"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\ResultPresentationConfig.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\08-ResultPresentationConfig.cs",
+      "sha256": "b2921122c762a266963b0abe9ed6ed4d9710f11d0018e90e06ad37a30c1204fb"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.DataForUI\\ModuleDisplayDecorator.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\09-ModuleDisplayDecorator.cs",
+      "sha256": "ceda24b7fb93bcd9f02b77b23d42a839b1f737bf70cf3abc6b7786d11765740e"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.DataForUI\\RenderDataCenter.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\10-RenderDataCenter.cs",
+      "sha256": "0fbd40abe970a3fe262fdeb6d03e70ab467115ccb89b1918bc931f0f54b07b64"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\11-ModuleResultView.xaml.cs",
+      "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView\\ShapeItemsPage.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\12-ShapeItemsPage.cs",
+      "sha256": "757a42264784eea6f326878aa594fcfc11b17a34724c2f7c1fb64ec8d2106398"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\ShapeCanvas.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\13-ShapeCanvas.cs",
+      "sha256": "36cb3f6645280281eb0448f24e20159cce41d5895113bd894726f6499ae3fd30"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\DrawShapeHelper.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\14-DrawShapeHelper.cs",
+      "sha256": "4f769a1d959e137cb5743fd1e793b2d28d936a20dbe073c744bc1d1a88ca2635"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\TextShape.cs",
+      "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\central-preview-style-review\\result-layer-sources\\15-TextShape.cs",
+      "sha256": "54ba19a70c8731fe25ebbd4a77ac81b3fc8a02385b00f4e846da68c0e493d0c2"
+    }
+  ],
+  "selfChain": [
+    "Tool algorithm populates ToolResults.Display/DisplayCollector and GetDisplayImages",
+    "ToolExecutor assigns request ExecutionIdentity and rejects cancelled/obsolete result",
+    "NodeResultManager.UpdateNodeResult uses identity.TryPublish to target WorkflowContext; context retains new resources and disposes previous owner lease; snapshot readers retain",
+    "RefreshResultDisplay retains result -> result tree -> MainVM selected image source -> live style projection -> SetDisplayCollector -> SetRegionItems; highlight separate",
+    "ResultRenderLayer changes own item subscriptions and invalidates text cache; Dispatcher cycle merges batch build requests",
+    "Only BatchedContourGeometry currently gets background per-tile StreamGeometry building with cancellation/version check; regular ContourGeometry has separate drawing path",
+    "OnRender draws regions, tool collector and highlights in that order; shapes then grouped text within each; visual/text/pen/brush caches exist",
+    "Clear unsubscribes renderer from items and cancels batch builds/clears geometry; does not establish retired display item unlinked from long-lived live Style"
+  ],
+  "vmChain": [
+    "Display mappings and style declared by tools; ModuleDisplayDecorator subscribes MappingChanged/ValueChanged",
+    "RenderDataCenter stores image+shape by ExecuteCount in display/buffer/spare; flow completion BeforeExchange/Exchange",
+    "ModuleResultView flow callback update and active selection/GetValue are separate paths; retrieves shepematrix then type-dispatches graphics and text",
+    "ShapeItemsPage materializes light visuals in ShapeCanvas; text via TextShape; ShapeRenderingMaxNumber cap exists",
+    "ShapeCanvas visual hit testing gives TagDrawingVisual tooltip, not ROI parameter editing",
+    "Switch/module teardown deinitializes subscriptions and stores; native send-state full timeout/cancel chain unproven"
+  ],
+  "retain": [
+    "three logical visual layers and shared viewport",
+    "existing ExecutionIdentity, result resource retain/snapshot lease",
+    "Dispatcher refresh coalescing and batched geometry background work",
+    "grouped text/cache and light visual direction"
+  ],
+  "change": [
+    "publish a complete display scene with workflow/node/source/frame/coordinate/execution/content identity",
+    "renderer receives stable geometry/text projection; no tool accesses global Canvas, no renderer mutates algorithm parameters",
+    "distinct geometry-type/style grouping; fix actual EdgeFit mixed-type source defect",
+    "per-type geometry/text/style/viewport cache invalidation; immutable content or explicit revisions",
+    "retired scene removes style/event ownership, cancels old build, rejects late callback and releases cached/in-flight resources",
+    "spatial blocks and same-style batches for many contours; screen-error-bounded simplification for long individual contours with exact recovery; never silently skip whole NG contours",
+    "hit testing/highlight/tooltip for readonly result permitted, separate from editable geometry",
+    "budget both active/retiring/in-flight geometry/text/pen/brush/image resources; do not equate cache limit with process memory"
+  ],
+  "singleBatchScope": [
+    "tool consumer/toolbar/manager responsibility rewrite in shared UI editing foundation",
+    "7 existing interaction families, VM style/state/source evidence and adapted parameter operations",
+    "complete scene association for bottom image/middle readonly result/top editable layer",
+    "result collect/publish/project/render/retire chain",
+    "interactive-ROI and contour performance, correctness, resource lifecycle and bounded migration"
+  ],
+  "excluded": [
+    "bottom image source panel implementation",
+    "script work or process architecture",
+    "new algorithms or changing actual sampling/Arc semantics",
+    "whole SDK or all tool migration",
+    "a second workflow/render system",
+    "render backend replacement without measured decision"
+  ],
+  "acceptance": [
+    "static example demonstrates main consumer and scene handoff with truthful simulation labels",
+    "7 families create/select/drag/resize/rotate/cancel/capturelost/commit/undo and DPI matrix",
+    "mixed-type actual EdgeFit cross+contour, style updates, image/source/coordinate switches, old generation rejected",
+    "contour count and per-contour point count tested separately; NG and exact details retained",
+    "cold/hot and alternating fixed-release measurements, latency percentiles/UI stall/peak memory/retirement proof",
+    "prototype HTML does not constitute WPF or VM interaction/performance pass"
+  ],
+  "reviewQuestions": [
+    "approve viewport common host+owned edit sessions and removal of old duplicated manager routing?",
+    "approve matching VM visible style and verified gestures while defining explicit self rollback/Undo contract?",
+    "sampling/major arc mappings need separate verification, without automatic algorithm changes",
+    "VM exact physical pixel states/other six families runtime and full Esc/focus behavior not yet accepted",
+    "product scale/latency/memory budgets remain proposed until same-machine baseline; no unsupported speed promise"
+  ]
+}

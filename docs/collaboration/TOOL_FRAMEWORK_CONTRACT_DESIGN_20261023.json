@@ -1,0 +1,452 @@
+{
+  "id": "TOOL-FRAMEWORK-CONSUMER-CONTRACT-20261023",
+  "status": "proposed target for user review; no product implementation authorized",
+  "scope": "framework capabilities and tool consumer contract; tool page optimization and Blob demo deferred",
+  "headline": "工具声明要什么，框架提供编辑、解析、显示；工具不接管视口，不复制管理器。",
+  "businessScenarios": [
+    "普通工具声明可绘制/可绑定几何，无定制窗口也能由框架编辑并运行",
+    "同一工具多个几何字段及集合条目，正确激活/回填，不能硬编码检测区与屏蔽区",
+    "纯几何工具可无图运行；只有需要图像坐标的编辑才要求合法图像/坐标基准",
+    "卡尺等复合编辑关联引导几何与采样参数，原子提交，不能把样式切换改成采样算法变更",
+    "本地/整对象绑定/允许的分量组合按声明约束；引用预览只读、缺来源报错不静默回退",
+    "自定义参数页面可用框架字段操作，运行插件不依赖WPF或UI宿主；无界面宿主也可解析输入并执行",
+    "工具输出图像/几何/文字结果，框架决定当前视图和资源生命周期，不因窗口关闭清掉合法结果"
+  ],
+  "currentEvidence": {
+    "sources": [
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\ParameterContractDescriptors.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\00-ParameterContractDescriptors.cs",
+        "sha256": "7e66c0444a99c0821c9ff7a2e0b1d3c14bcb638b3c5d32aeb4a291e910fe0ec3"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\IInputSlotContract.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\01-IInputSlotContract.cs",
+        "sha256": "db6777e9f7c910411c7722a162b1461e9daf6d54a790d6a5d4859b4828fc1652"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\IRuntimeParameterContract.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\02-IRuntimeParameterContract.cs",
+        "sha256": "71bda2d6243a0863d101d97b68edef8ca2d620052978efbe1b5e11753cb1b62b"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\ParameterBindingDefinition.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\03-ParameterBindingDefinition.cs",
+        "sha256": "8ef305900e2912640c8201cf73232fbe997130847f8ad55581e670aebca20e39"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\RuntimeParameterSnapshot.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\04-RuntimeParameterSnapshot.cs",
+        "sha256": "654b4208ae48c97e28dc421aa949daa9f69b7362d13be7b248bdbf52e4bdad54"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\GeometryFieldSchema.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\05-GeometryFieldSchema.cs",
+        "sha256": "8c490c05383194229dcad920a633fbd25f041c082ccfcb3ac73e7281c370149b"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\RoiInput.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\06-RoiInput.cs",
+        "sha256": "d135e537ac186de185cb66fc2104bc1d7e07deed201aa076bfc4dbaebb3df60b"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Core\\IToolPlugin.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\07-IToolPlugin.cs",
+        "sha256": "03df7cc8b68f544af4474994a2cedda6ce139f92f666b87de73b3e921df8b23c"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Core\\IToolEditorFactory.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\08-IToolEditorFactory.cs",
+        "sha256": "18a3efeee54c9b25addf41a1c38546d8c43995d33ea5c479941de67e6b121529"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Core\\ToolExecutionRequest.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\09-ToolExecutionRequest.cs",
+        "sha256": "3b009d410be1734500f291804b8abd4e23427335b14dd93d997db29eea9efe08"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Core\\ToolExecutor.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\10-ToolExecutor.cs",
+        "sha256": "0076a7746999eb09d09aa7545efbf0ed062bf15b859ecc6df8397803a8b6e5fb"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\11-SunEyeVision.Plugin.SDK.csproj",
+        "sha256": "3015bf533a4891425ee92f288a50fa37192af2aa0b09d61eb6ec6492c71ec256"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\BlobAnalysisParameters.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\12-BlobAnalysisParameters.cs",
+        "sha256": "632afe17eed2fa3e086f9ca340df7d9741f3f9f2bea648794363f7d6cdd314bc"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Models\\Geometry\\Circle2d.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\13-Circle2d.cs",
+        "sha256": "8628f1de3e4a2f40c54daa01e985f78e0b3b2a295b55f90f7324f77d8bc61177"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Models\\Geometry\\Point2d.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\14-Point2d.cs",
+        "sha256": "35eb9855f204bbe5e1133ca2707a94ca466362b2efe1f39c5a8796c294421fb9"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Models\\Visualization\\GraphicsStyle.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\15-GraphicsStyle.cs",
+        "sha256": "cf667bc7daea954483d2c05ae632c0ec106989af48a75717169e2daa459ec43f"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Models\\Visualization\\DisplayCollector.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\16-DisplayCollector.cs",
+        "sha256": "b550c3bededcaae633e2cfe711d5be157d8bac85779491910ece25b7c8ad844d"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\GeometryJsonConverter.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\17-GeometryJsonConverter.cs",
+        "sha256": "c4295a489d7e314adf82a4dd14b48d5c18484c5c59ddd2df65be70bde2d0fe49"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\ParamSetting.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\18-ParamSetting.cs",
+        "sha256": "5108d6b5f47de0defabba5d6c7bcd514750f3bdbbeafc88f0fb939e199b92fef"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\ParameterResolver.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\19-ParameterResolver.cs",
+        "sha256": "7ca4f480e58b2a502d3df455c797f6a0a3cbfc15d4a31ec753e4258322b488c4"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\ResultPresentationConfig.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\20-ResultPresentationConfig.cs",
+        "sha256": "b2921122c762a266963b0abe9ed6ed4d9710f11d0018e90e06ad37a30c1204fb"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Subroutine\\SubroutineTool.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\21-SubroutineTool.cs",
+        "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.ShapeMatch\\ShapeMatchTool.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\22-ShapeMatchTool.cs",
+        "sha256": "a4203919dee2b06c11eaeb0eb0ed92e29813f0919059dfe1788aac6de59937aa"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.CircleDetect\\CircleDetectResults.cs",
+        "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\23-CircleDetectResults.cs",
+        "sha256": "8c2ed0b0593a4b645dfde265282ddd4761d24f2764a76ffd70f470ccf900d9aa"
+      }
+    ],
+    "facts": [
+      "IInputSlotContract/IRuntimeParameterContract已声明输入/参数，OutputVariables已声明输出，GeometryFieldSchema已有可绑定字段，不能写当前完全无声明",
+      "ParameterContractDescriptors只涵盖property/name/type/required/bindable等，尚不足表达完整几何编辑能力/坐标/提交合同",
+      "ToolExecutionRequest已有运行身份/图像/快照/取消/资源服务；RuntimeParameterSnapshot只读字典不能单独证明嵌套对象深不可变",
+      "IToolEditorFactory在Core接口直接返回WPF Window/FrameworkElement；Plugin.SDK同项目UseWPF=true，逻辑分离不等工程依赖隔离",
+      "RoiInput每条目Drawing/WholeRegionSub/GeometricSub已有显式source；注释说明订阅到绘制可能清订阅配置，不能声称现状切换均保留",
+      "工具窗口仍SetMainImageControl给三类Manager，共享Canvas/事件/提交策略分散；纯几何值与结果发布已有部分基础，应复用而非全部否定",
+      "数据定义也有具体UI框架依赖：Circle2d.Center实际为System.Windows.Point，Point2d有WPF转换API，GraphicsStyle使用System.Windows.Media.Color；所以不能只移动IToolEditorFactory就宣称runtime纯化完成。"
+    ]
+  },
+  "recommendedArchitecture": {
+    "runtime": "纯运行契约层：工具/字段/输入输出定义、几何/坐标/绑定值、运行快照及结果资源合同；不引用WPF、中央ImageControl或宿主服务定位器",
+    "editor": "UI扩展契约层：默认字段编辑器/可选定制页面只拿字段句柄和编辑服务，不拿Canvas；WPF实现只存在此侧适配层",
+    "platform": "平台统一解释工具定义，注册校验、字段访问、绑定解析、事务提交、视口会话、结果投影与释放；算法执行仍用现有执行引擎",
+    "reusability": "不是每个工具建一套Manager，也不是所有工具必须用相同自动表单；声明是事实源，默认UI与可选定制UI消费相同字段合同",
+    "dependencyCost": "保持几何数值/坐标语义，运行数据用无WPF值类型与ARGB/样式语义；WPF Point/Color转换及控件工厂放UI适配。此为目标边界与未来改造代价，不授权裁剪当前SDK、不改当前脚本原型真实SDK依赖及验收。"
+  },
+  "contracts": [
+    {
+      "name": "工具定义（拟议）",
+      "toolDeclares": [
+        "ToolTypeId/SchemaVersion、参数与结果类型",
+        "稳定FieldKey/类型/数量/required/default/validation",
+        "输入槽、输出槽及可绑定字段与方向；动态工具带SchemaRevision"
+      ],
+      "frameworkOwns": [
+        "每个工具类型/SchemaRevision只有一个冻结ToolDefinition作为规范目录；工具原生只提供一份DefinitionSource，不能再独立写输入/参数/输出三本目录",
+        "旧InputSlot/RuntimeParameter/OutputVariables只作为同目录的派生视图；迁移中工具只能选择旧定义适配器或原生DefinitionSource之一，不能同时生效；重复字段/路径/输出冲突注册失败，不采用优先级覆盖",
+        "GeometryFieldSchema是框架所有的几何类型成员表（例如圆有Center/Radius），不是第二份工具参数定义；以工具FieldKey+几何成员路径派生绑定树，权限取交集",
+        "稳定FieldKey→唯一类型化成员访问器，在定义编译时验证可读写/类型/集合；集合条目ItemId独立于当前索引；显示名/排序不是身份",
+        "动态工具每次SchemaRevision生成一份不可变目录，编辑句柄与运行快照都绑定该版本；schema变化冲突明确失败，不能混用新旧字段"
+      ]
+    },
+    {
+      "name": "几何参数能力（拟议）",
+      "toolDeclares": [
+        "哪个字段/集合条目可编辑、允许的几何类型与操作",
+        "本地/整体引用/分量组合支持范围；数量限制与空集合语义",
+        "图像或参考坐标关联、单位/角度约定、可无图的资格",
+        "复合字段组：引导几何＋卡尺宽高等必须原子一致"
+      ],
+      "frameworkOwns": [
+        "通用入口和形状策略选择",
+        "按字段/条目身份激活会话，校验图像/坐标与权限",
+        "默认UI显示形状操作；定制UI调用相同服务",
+        "不能把任意有图等于可编辑，也不能靠属性名猜检测/屏蔽语义"
+      ]
+    },
+    {
+      "name": "参数编辑服务（拟议）",
+      "request": [
+        "ScopeId/NodeInstanceId/FieldKey/ItemId、expectedDraftRevision、SchemaRevision及图像/坐标基准身份",
+        "Begin参数Scope持有baseDocumentRevision；字段CommitToDraft比较草稿版本；Scope.Apply比较正式文档版本，两个版本域不能混用",
+        "字段值/来源配置通过该Scope字段句柄读取，不传Canvas；工具只传操作意图及允许能力"
+      ],
+      "lifecycle": [
+        "推荐两级、由平台所有：ParameterEditScope持参数文档的独立草稿；GeometryEditSession仅是其中某字段/复合组的一次手势",
+        "手势Commit只将字段变更合并到Scope草稿并记录草稿Undo，不写正式文档、不改变运行输入；手势Cancel恢复该手势开始前的草稿，不取消其他字段已完成的草稿",
+        "Apply先结束/验证活动手势、校验整个Scope及来源，再以baseDocumentRevision比较后原子写正式ParameterDocument，增加版本/Dirty并记录一次Apply变更组；失败或冲突保留草稿，零部分写入",
+        "确定=Apply成功后结束Scope；窗口取消/关闭丢弃只撤销最近Apply之后的草稿，不能悄悄撤回已经Apply的正式内容。未Apply改动关闭时由平台提供应用/放弃/继续编辑选择",
+        "运行/保存统一入口先请求Scope完成并Apply；失败则不开始运行/不写文件，保留编辑。无界面配置也使用同一校验/Apply服务，不需要WPF",
+        "当前请求只读其版本已冻结快照；Apply不改变已经运行的请求。默认UI/自定义UI不能各造一套提交语义，也不能窗口代码直改实时参数",
+        "Scope草稿是暂存，不是第二份长期参数事实源；正式事实源只有ParameterDocument。具体页面布局/按钮安排仍暂缓"
+      ],
+      "response": [
+        "DraftCommitted / DraftCancelled（字段手势）；Applied / Cancelled（参数Scope）；Rejected / Conflict / SourceUnavailable / CoordinateMismatch / SchemaMismatch",
+        "错误含节点/字段/条目/原因及当前版本；状态区分草稿提交和正式应用，不能只返回bool成功"
+      ]
+    },
+    {
+      "name": "绑定与运行解析（拟议）",
+      "toolDeclares": [
+        "合法来源类型/范围/集合投影、是否支持分量拼装",
+        "空值/无有效区域由工具合同明确，不用通用UI猜全图"
+      ],
+      "frameworkOwns": [
+        "配置与解析值分离；每条目显式active source，只有一种进入本轮",
+        "来源使用workflow/node/field/item稳定引用和类型校验，绑定树由相同schema生成",
+        "本地草稿与来源配置可保留以防误丢，但切回本地不自动物化上游几何；这是推荐自研政策，不声称VM同样保值",
+        "运行开始解析/校验/冻结输入与参数，缺来源或循环明确失败，不回退旧值/空值冒成功",
+        "现有执行器消费RunSnapshot，算法不读取UI或解析全工作流"
+      ],
+      "snapshotAndResources": [
+        "标量/不可变值可共享；集合/字典/多边形点数组/嵌套可变对象必须深复制或转换为有验证的不可变数据，不能仅ReadOnlyDictionary外壳",
+        "大图不默认全量拷贝：运行请求持独立帧只读租约，底层Owner在所有租约结束前不能回收或原地覆盖；算法需改像素时取得私有工作副本或明确独占可写缓冲",
+        "RunSnapshot为算法唯一运行值入口（参数值/已解析输入/本轮身份/取消/只读上下文）；绑定配置/正式参数版本作为不可变来源证据，不可再从活动Parameters拿值兜底",
+        "兼容现工具的内部适配若有，只能映射到请求独占副本，不能传正式参数对象；该适配随消费方迁移退出，不保长期双事实源或旧插件兼容线",
+        "输入资源由请求借用租约，工具不得Dispose借入图像；结果若引用输入，必须显式保留独立结果租约；新建输出显式移交ResultOwner，失败/取消释放未移交输出",
+        "请求结束释放输入租约；结果替换先退役ResultOwner，UI/结果读快照的租约结束后才能真实释放；后台几何任务/取消回调也要finally释放，不能将Clear或Cancel视为已释放证明",
+        "显示场景拥有自己的投影/预览租约，不持活动参数对象；参数编辑、执行、结果和显示各自有生命周期，不因关窗释放仍在运行的数据"
+      ]
+    },
+    {
+      "name": "结果与显示（沿用最终结果层方案）",
+      "toolDeclares": [
+        "输出图像/几何/文字、字段身份/坐标与结果有效性",
+        "纯显示语义/类别与可选样式提示；运行数据不持有WPF控件/事件"
+      ],
+      "frameworkOwns": [
+        "执行代次与数据资源所有权验证",
+        "按场景投影与图像/坐标关联，批绘/LOD完整性/只读高亮与tooltip",
+        "可编辑参数图形和只读结果分开；工具退出只结束自己的编辑会话",
+        "输入借用/结果移交或共享租约明确，退役与在途资源释放"
+      ],
+      "limits": [
+        "不重新设计工作流调度或GPU后端；只是工具与显示平台的边界"
+      ]
+    },
+    {
+      "name": "可选自定义编辑器（拟议）",
+      "toolDeclares": [
+        "需要定制的字段呈现/专业交互策略扩展及能力ID"
+      ],
+      "frameworkOwns": [
+        "注入有限IEditorContext（概念名），提供字段句柄与动作，不提供全局WPF控制器",
+        "扩展只计算几何/变更建议，由平台捕获输入并提交；若需特殊UI，放独立UI扩展包",
+        "无扩展时通用编辑器和无界面运行仍能工作；错误扩展不可直接破坏其他字段或全局画布"
+      ]
+    }
+  ],
+  "illustrativeCalls": {
+    "warning": "以下仅是职责伪代码，不是现有已实现或已批准改造的API签名",
+    "declaration": "声明 field region: GeometryCollection; allow Rect/Circle/Polygon; source image=input.image; modes Local/Reference; empty=WholeImage（仅该工具）",
+    "defaultEditor": "框架读取定义 → 生成该字段的默认编辑入口；工具无需编写SetMainImageControl或鼠标事件",
+    "customEditor": "scope = 平台.BeginParameterEdit(node); field = scope.GetField(\"region\"); session = 编辑服务.BeginGeometryEdit(field); session.CommitToDraft(); // 仅草稿\nscope.Apply(expectedDocumentRevision); // 验证成功才正式生效；不是编辑器直接改运行对象",
+    "runtime": "平台要求活动Scope.Apply成功 → 解析/校验/深冻结参数与输入租约 → 现有统一入口执行工具(RunSnapshot) → ResultOwner接管输出并统一发布",
+    "notAllowed": [
+      "tool.SetMainImageControl(...)",
+      "tool.SubscribeGlobalMouse(...)",
+      "tool.ClearAllOverlays()",
+      "renderer.SetBusinessParameter(...)"
+    ]
+  },
+  "vmComparison": [
+    {
+      "topic": "工具声明",
+      "vm": "Blob/Group.xml 声明输入源、ROISelection/Max/模式、继承选择器；Display.xml声明输出显示映射",
+      "borrow": "工具描述能力、平台解释成参数/来源/显示入口",
+      "doNotCopy": "不要求全工具改VM XML或复制反射静态Draw类树；现有typed descriptor可升级承载"
+    },
+    {
+      "topic": "公共绘图消费",
+      "vm": "ROISelecter互斥/SelectedROI→ModuleResultView绑定Type/State/Add/ROIList→ImageViewBox/ROIItemsPage→参数命令回写",
+      "borrow": "平台统一组织激活与参数回流，不让每个工具接全局Canvas",
+      "selfAdds": "显式版本、可撤销编辑事务、字段级错误、owned会话与无UI宿主消费合同",
+      "unknown": "VM完整事务/取消与所有工具异常路径未证，不能宣称其已有自研目标全部合同"
+    },
+    {
+      "topic": "来源切换",
+      "vm": "检测继承有区域/分量不同模式，屏蔽继承string不同路径；有SetValueNullOperation清字段",
+      "borrow": "类型/字段/来源的声明与解析分工",
+      "doNotCopy": "不直接复制所有清值行为或强制继承string编码；目标采用纯类型化引用与明确活跃来源"
+    },
+    {
+      "topic": "程序集依赖",
+      "vm": "所恢复参数/XML/UI协调链依赖具体宿主模型；不足证明全VM SDK无UI",
+      "selfAdds": "运行契约与可选UI扩展工程边界分开，不以接口方法少就声称解耦完成",
+      "cost": "项目依赖、发布清单、工具适配需单独列实施范围；本轮只评审，不影响当前脚本原型必须用真实SDK的既定验收"
+    },
+    {
+      "topic": "结果",
+      "vm": "Display声明、按执行次数缓冲图像图形、统一形状绘制与清理",
+      "borrow": "工具数据声明、平台投影生命周期",
+      "doNotCopy": "数量硬截断/未证原生等待循环；保现有正确资源/代次保护并完善"
+    }
+  ],
+  "currentDisposition": [
+    {
+      "item": "输入/运行/输出descriptor与纯几何",
+      "decision": "保留语义基础，统一为一个逻辑工具定义；不是再建第二份手工schema"
+    },
+    {
+      "item": "三类Manager视口接管/全清/回写",
+      "decision": "重整退出：参数面板可薄化，公共职责归平台会话；过渡适配只为迁移，旧职责迁走即删除"
+    },
+    {
+      "item": "WPF editor factory与runtime SDK同工程",
+      "decision": "目标拆边界；保持可选UI包，不让运行插件依赖编辑器；工程重排待正式范围批准"
+    },
+    {
+      "item": "执行器/结果资源/图形renderer",
+      "decision": "保已有正确能力，按统一合同接入；不造第二运行或显示系统"
+    }
+  ],
+  "validationGate": [
+    "一个新小工具仅提供声明+算法，无自定义UI/Manager即可默认编辑/绑定/无界面运行",
+    "同定义通过默认UI、定制UI、无界面输入，得到相同参数快照/输出schema",
+    "多字段/多条目/双视口隔离，提交不会写错字段；冲突/非法/取消不丢内容",
+    "纯几何无图工具可以执行；图像坐标编辑不在无效图上运行",
+    "绑定树/运行解析/显示均认同一字段类型与引用；mode切换不默默替换数据",
+    "运行插件依赖图不含WPF/UI宿主，UI扩展缺席仍能运行，部署与扩展验证在实施阶段",
+    "只读结果不改参数、关窗不清合法结果、过期/异坐标拒绝并资源退役",
+    "未编译/未实机验，不把伪接口图当基础能力已实现",
+    "同字段定义重复/访问器错配注册失败，不采用隐式优先级；动态SchemaRevision不匹配拒绝",
+    "手势提交不改正式参数；Scope.Apply/Discard边界及保存/运行前Apply失败均零丢失、零部分提交",
+    "多边形/嵌套集合Apply后继续编辑，运行快照值不变；输入退役/结果替换/显示关闭下租约无提前释放与双释放"
+  ],
+  "nonScope": [
+    "Blob或其他工具页面布局/皮肤继续优化",
+    "全工具迁移/旧方案或旧插件兼容",
+    "插件loader全域/新调度引擎/独立进程强停",
+    "新形状、新图像掩膜功能、新算法采样策略",
+    "产品代码或Release构建"
+  ],
+  "figures": [
+    "需求与工具职责/平台职责分界",
+    "VM/当前/目标三泳道（真实类名在details）",
+    "工具最小声明→默认编辑→执行→结果一条调用示意",
+    "字段手势CommitToDraft/Cancel与参数Scope.Apply/Discard两级状态图；失败/版本冲突保留草稿，不部分写入",
+    "单一正式参数文档→Scope草稿→只读深冻结RunSnapshot；本地/整体引用/分量由唯一目录解析；输入借用/输出移交/显示租约归属",
+    "运行契约/编辑扩展/平台实现依赖箭头与自定义UI边界",
+    "保留/退出旧职责与代表验收；旧Blob演示标暂缓不是架构前提"
+  ],
+  "reviewResolutions": [
+    {
+      "id": "AF-01",
+      "issue": "唯一规范与字段映射",
+      "decision": [
+        "每个工具类型/SchemaRevision只有一个冻结ToolDefinition作为规范目录；工具原生只提供一份DefinitionSource，不能再独立写输入/参数/输出三本目录",
+        "旧InputSlot/RuntimeParameter/OutputVariables只作为同目录的派生视图；迁移中工具只能选择旧定义适配器或原生DefinitionSource之一，不能同时生效；重复字段/路径/输出冲突注册失败，不采用优先级覆盖",
+        "GeometryFieldSchema是框架所有的几何类型成员表（例如圆有Center/Radius），不是第二份工具参数定义；以工具FieldKey+几何成员路径派生绑定树，权限取交集",
+        "稳定FieldKey→唯一类型化成员访问器，在定义编译时验证可读写/类型/集合；集合条目ItemId独立于当前索引；显示名/排序不是身份",
+        "动态工具每次SchemaRevision生成一份不可变目录，编辑句柄与运行快照都绑定该版本；schema变化冲突明确失败，不能混用新旧字段"
+      ]
+    },
+    {
+      "id": "AF-02",
+      "issue": "手势提交与参数应用层级",
+      "decision": [
+        "推荐两级、由平台所有：ParameterEditScope持参数文档的独立草稿；GeometryEditSession仅是其中某字段/复合组的一次手势",
+        "手势Commit只将字段变更合并到Scope草稿并记录草稿Undo，不写正式文档、不改变运行输入；手势Cancel恢复该手势开始前的草稿，不取消其他字段已完成的草稿",
+        "Apply先结束/验证活动手势、校验整个Scope及来源，再以baseDocumentRevision比较后原子写正式ParameterDocument，增加版本/Dirty并记录一次Apply变更组；失败或冲突保留草稿，零部分写入",
+        "确定=Apply成功后结束Scope；窗口取消/关闭丢弃只撤销最近Apply之后的草稿，不能悄悄撤回已经Apply的正式内容。未Apply改动关闭时由平台提供应用/放弃/继续编辑选择",
+        "运行/保存统一入口先请求Scope完成并Apply；失败则不开始运行/不写文件，保留编辑。无界面配置也使用同一校验/Apply服务，不需要WPF",
+        "当前请求只读其版本已冻结快照；Apply不改变已经运行的请求。默认UI/自定义UI不能各造一套提交语义，也不能窗口代码直改实时参数",
+        "Scope草稿是暂存，不是第二份长期参数事实源；正式事实源只有ParameterDocument。具体页面布局/按钮安排仍暂缓"
+      ]
+    },
+    {
+      "id": "AF-03",
+      "issue": "快照深不可变与资源所有权",
+      "decision": [
+        "标量/不可变值可共享；集合/字典/多边形点数组/嵌套可变对象必须深复制或转换为有验证的不可变数据，不能仅ReadOnlyDictionary外壳",
+        "大图不默认全量拷贝：运行请求持独立帧只读租约，底层Owner在所有租约结束前不能回收或原地覆盖；算法需改像素时取得私有工作副本或明确独占可写缓冲",
+        "RunSnapshot为算法唯一运行值入口（参数值/已解析输入/本轮身份/取消/只读上下文）；绑定配置/正式参数版本作为不可变来源证据，不可再从活动Parameters拿值兜底",
+        "兼容现工具的内部适配若有，只能映射到请求独占副本，不能传正式参数对象；该适配随消费方迁移退出，不保长期双事实源或旧插件兼容线",
+        "输入资源由请求借用租约，工具不得Dispose借入图像；结果若引用输入，必须显式保留独立结果租约；新建输出显式移交ResultOwner，失败/取消释放未移交输出",
+        "请求结束释放输入租约；结果替换先退役ResultOwner，UI/结果读快照的租约结束后才能真实释放；后台几何任务/取消回调也要finally释放，不能将Clear或Cancel视为已释放证明",
+        "显示场景拥有自己的投影/预览租约，不持活动参数对象；参数编辑、执行、结果和显示各自有生命周期，不因关窗释放仍在运行的数据"
+      ]
+    },
+    {
+      "id": "AF-04",
+      "issue": "实际消费者与序列化连锁代价",
+      "decision": [
+        "无WPF runtime是目标，当前尚未达成；WPF Point/Rect/Color/Matrix已经进入运行输入、结果图元与参数样式，不能只挪EditorFactory或重排项目引用就完成",
+        "依赖更替必须逐消费方核数值和单位/角度/几何结构、参数类型身份/绑定路径、结果图元顺序/样式Key和资源语义；列Subroutine/ShapeMatch/CircleDetect等代表接缝作为证据，不拿一个样本代表全工具通过",
+        "GeometryJsonConverter的$geom判别、当前Point2D别名/Rect读法及ParamSetting几何JSON是真实在用序列化约束；本轮不顺手删除，也不新增旧方案/旧插件迁移兼容层。正式改造前应清点当前开发版本消费者和往返样本，若改变格式需另明确决策",
+        "这是框架边界目标与实施成本清单，不授权全工具迁移/产品代码；旧descriptor适配退出按AF01，不扩成长期双运行或双参数系统"
+      ],
+      "evidence": [
+        {
+          "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\GeometryJsonConverter.cs",
+          "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\17-GeometryJsonConverter.cs",
+          "sha256": "c4295a489d7e314adf82a4dd14b48d5c18484c5c59ddd2df65be70bde2d0fe49"
+        },
+        {
+          "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\ParamSetting.cs",
+          "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\18-ParamSetting.cs",
+          "sha256": "5108d6b5f47de0defabba5d6c7bcd514750f3bdbbeafc88f0fb939e199b92fef"
+        },
+        {
+          "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\ParameterResolver.cs",
+          "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\19-ParameterResolver.cs",
+          "sha256": "7ca4f480e58b2a502d3df455c797f6a0a3cbfc15d4a31ec753e4258322b488c4"
+        },
+        {
+          "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Parameters\\ResultPresentationConfig.cs",
+          "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\20-ResultPresentationConfig.cs",
+          "sha256": "b2921122c762a266963b0abe9ed6ed4d9710f11d0018e90e06ad37a30c1204fb"
+        },
+        {
+          "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Subroutine\\SubroutineTool.cs",
+          "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\21-SubroutineTool.cs",
+          "sha256": "d466151c621cd2eeed17278a04b2d612f4508540a4535edc73e41afe631221c9"
+        },
+        {
+          "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.ShapeMatch\\ShapeMatchTool.cs",
+          "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\22-ShapeMatchTool.cs",
+          "sha256": "a4203919dee2b06c11eaeb0eb0ed92e29813f0919059dfe1788aac6de59937aa"
+        },
+        {
+          "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.CircleDetect\\CircleDetectResults.cs",
+          "snapshot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\sources\\23-CircleDetectResults.cs",
+          "sha256": "8c2ed0b0593a4b645dfde265282ddd4761d24f2764a76ffd70f470ccf900d9aa"
+        }
+      ]
+    }
+  ],
+  "reviewHistory": {
+    "priorInputSHA256": "d9fd241e46d901a6ff3017339bf8e89c5887b84b296742bb8bfea738eba52dae",
+    "changes": "AF-01/02/03 contract clarifications only; no new product scope",
+    "state": "revised for independent design review",
+    "revisionChain": [
+      {
+        "priorInputSHA256": "00b2408002d38e9370a52ed85f3afec736e5ca1c4433761ca3622e3d16b3baab",
+        "change": "AF-04 source-backed dependency/serialization migration costs; no new implementation scope"
+      },
+      {
+        "priorInputSHA256": "2f62badc338ed4a714f33f1df125de837bf63f49f57add517629b78bcaae98f7",
+        "change": "AF-02 request revision domains clarified; no added scope or source"
+      }
+    ]
+  }
+}

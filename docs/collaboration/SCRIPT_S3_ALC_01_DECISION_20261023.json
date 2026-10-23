@@ -1,0 +1,30 @@
+{
+  "id": "S3-ALC-01",
+  "decisionOwner": "项目成员｜方案主控",
+  "date": "2026-10-23",
+  "decision": "A：允许固定带已知失败的候选包，继续其余合同独立验收与原协议formal-r2；不豁免S3-A07，不宣称S3整体通过或脚本闭环。",
+  "evidenceRead": [
+    "artifacts/validation/script-s3/checkpoint07-cache-evidence.txt",
+    "docs/collaboration/SCRIPT_S3_DESIGN_20261023.json:S3-A07",
+    "docs/collaboration/SCRIPT_S3_AUTHORIZATION_20261023.json"
+  ],
+  "observed": "checkpoint07记录.NET 9.0.20 WindowsBase.SafeSecurityHelper缓存新增脚本Assembly强键（collectible），3窗最小样本弱引用仍存活，slot/Sandbox计数为0。实施者另报100轮97/100存活；完整100轮记录尚需独立测试核收。",
+  "limits": [
+    "缓存强root已记录，不等已排除其他root或已证明全部触发路径；不得扩大为Roslyn无法优化或框架永久无法修复的结论。",
+    "计数归零不等ALC回收，也不能从当前样本推导长时间内存已受控或可无限开关窗口。"
+  ],
+  "required": [
+    "保留S3-A07失败断言和原始记录，不跳过、不降低标准、不以已找到root改报PASS。",
+    "固定源码、完整Release、运行时版本/SHA、失败样本与复现命令同包交付；称候选/交付待验，非验收通过。",
+    "独立测试在固定副本复核持有链与其余Owner/排空结果，分别报告通过、失败和缺测；不要求为等本项解决而停掉其他就绪验收。",
+    "沿用已批准原协议formal-r2一次及停止规则，不因本项增加性能调优循环或变更预算。",
+    "主文档列明程序集回收阻断及长时间使用风险；最终报告S2性能与S3-A07各自状态，不将构建成功或其余通过当全部闭环。"
+  ],
+  "notAuthorized": [
+    "私有反射删除框架缓存作为产品修复",
+    "更换编译/加载体系或运行时升级",
+    "独立进程隔离、强停或新增脚本批次",
+    "继续无界研究以阻断现有候选包固定"
+  ],
+  "coordination": "交付协调执行候选固定、送验、复测和文档同步；普通问题直接处理。只有有证据的另行修复方案需要范围/标准决策时再升级。最终是否接受交付由主控审核，当前没有整体验收通过结论。"
+}

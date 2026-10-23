@@ -1,0 +1,126 @@
+{
+  "taskId": "SCRIPT-S2",
+  "authorization": "用户2026-10-23明确批准第二批实施",
+  "status": "approved-dispatched-awaiting-acceptance",
+  "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+  "priority": "P1",
+  "sourcePlan": "docs/collaboration/SCRIPT_S2_DESIGN_20261023.json",
+  "sourcePlanSha256": "bf764bfa159218c63d55434aa552e9ab90ed5605824b6bc6040947efe4881dca",
+  "analysisBaseline": "5a700dad（保留为方案分析证据基线）",
+  "implementationBaseline": "a254710d31af3a39619f9b7ac50eaca344ac30bf（S1产品交付）；972f2e0f为交接证据提交",
+  "dependencyState": "S1开发交付已收，独立验收排队；可并行推进S2，未验证合同不宣称稳定，阻断反馈优先修复",
+  "scope": [
+    "脚本窗口轻量初始化，正确代码及动态IO表先显示可编辑，语义准备明确状态",
+    "首次补全/首屏分类优先、诊断及预热有界后台调度、取消与会话/文档/IO/引用/光标结果门控",
+    "异步编译协调，同键进行中任务合并，等待者独立取消、失败不执行旧成功产物；脚本复用已有ExecuteToolAsync钩子",
+    "动态IO草稿有效提交与名称/类型/数组形状/FieldId校验，统一生成字段/默认值/输入转换/输出声明，合并重复通知",
+    "同类型绑定和值变化不重新Emit，名称/类型变化推进生成合同；零输入/零输出及先删后加、快速连续修改、立即执行",
+    "保存编辑与执行分开：代码有编译错误仍保留供继续编辑，非法IO草稿明确保留/标错，不静默撤回旧结构执行",
+    "保留有收益基础预热，不执行用户脚本构造，沿用S1引用/版本/缓存基础"
+  ],
+  "contracts": [
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7",
+    "D8",
+    "D9",
+    "D10"
+  ],
+  "acceptance": [
+    "S2-A01",
+    "S2-A02",
+    "S2-A03",
+    "S2-A04",
+    "S2-A05",
+    "S2-A06",
+    "S2-A07",
+    "S2-A08",
+    "S2-A09",
+    "S2-A10"
+  ],
+  "order": [
+    {
+      "step": 1,
+      "scope": "对齐S1最终引用/会话/编译产物身份；记录S1哪些尚待独立验收。",
+      "gate": "不重做第二套缓存/版本管理，不要求中断S1。"
+    },
+    {
+      "step": 2,
+      "scope": "动态IO有效提交、字段差异、命名/类型校验与生成文档；合并重复通知。",
+      "gate": "字段、补全和编译同版本，绑定值与字段定义分离。"
+    },
+    {
+      "step": 3,
+      "scope": "脚本轻量初始化可编辑，首屏语义/补全优先，低优先任务可取消。",
+      "gate": "正确文本/IO先显示；准备中明确标识，不用错误候选伪造就绪。"
+    },
+    {
+      "step": 4,
+      "scope": "异步编译协调器/同键任务合并，脚本异步执行入口；明确取消和失败。",
+      "gate": "UI可响应；同键只Emit一次；输入未提交/错误则不跑旧产物。"
+    },
+    {
+      "step": 5,
+      "scope": "完整窗口和动态IO组合用例/性能采样，固定Release后独立测试。",
+      "gate": "S3运行生命周期/资源回收仍单列，不用S2结果覆盖未验合同。"
+    }
+  ],
+  "allowedFiles": {
+    "retainAndAdjust": [
+      "src/CommonControl/ScriptAnalysisSession.cs",
+      "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptReferenceSnapshot.cs",
+      "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs",
+      "tools/SunEyeVision.Tool.Script/Models/ScriptInputConfig.cs",
+      "tools/SunEyeVision.Tool.Script/Models/ScriptOutputConfig.cs",
+      "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+      "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml",
+      "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+      "src/CommonControl/ScriptEditorCore.xaml.cs",
+      "src/CommonControl/SemanticHighlighter.cs",
+      "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+      "tools/SunEyeVision.Tool.Script/Models/ScriptTypeMapper.cs"
+    ],
+    "candidateNew": [
+      "ScriptIoContractSnapshot/validator（工具层）",
+      "ScriptCompilationCoordinator（工具层）",
+      "ScriptAnalysisScheduler（公共编辑器层，最小职责）",
+      "ScriptIoTypeDescriptor（工具层，由现有SDK词汇派生）"
+    ],
+    "inspectOnlyUnlessNecessary": [
+      "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "src/Plugin.SDK/UI/Controls/IToolControlInitializer.cs",
+      "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "src/Plugin.SDK/Models/SdkTypeVocabulary.cs"
+    ],
+    "outOfScope": [
+      "替换Roslyn/AvalonEdit",
+      "完整自动重命名重构",
+      "全平台绑定迁移/所有工具窗口改造",
+      "S3完整生命周期/运行租约"
+    ]
+  },
+  "exclusions": [
+    "S3完整异常后Release/运行生命周期重做",
+    "S3沙箱池并发租约/完整资源回收",
+    "全平台结果发布/跨工作流执行链改造",
+    "替换Roslyn/AvalonEdit",
+    "自动源码重命名重构、全平台绑定迁移、旧插件兼容、旧方案迁移",
+    "擅自扩大所有工具宿主窗口初始化规则或整个SDK类型系统"
+  ],
+  "delivery": [
+    "按范围实现并审查回归；产品共享目录仍实施者唯一写者，子智能体按协议管理",
+    "全量Release与UI专项构建，安全无设备隔离运行验证，固定源码/产物身份及独立完整副本",
+    "至少10新进程/20再次开窗，固定脚本与引用；记录完整窗口可见/可输入/语义就绪/首补全弹窗及UI心跳；预算非成绩，候选正确性不退化",
+    "动态IO10条用例与原有SA映射交独立测试队列，保持S1固定副本不覆盖",
+    "文档角色更新主文档实现/自测/独立验证/未验证状态与Release身份，HTML图示来源线保留",
+    "实施者主动回报主控阶段阻断与最终完成情况；独立验收未完成不得标已闭环"
+  ],
+  "independentTesting": "独立测试角色01a1620c-5a60-7fb1-a1b1-9b85173896e9负责正式验收，实施自测不替代；与现有用户直接任务/S1按队列协调",
+  "documentation": "文档角色01a160f7-9c99-72c1-b8bf-d689bf19f1ad独占主文档和生成器",
+  "stopCondition": "S2范围交付/构建/固定包和测试材料完成后收验收反馈，S3未获授权不得自动开启",
+  "git": "保护其他dirty，不自动推送"
+}

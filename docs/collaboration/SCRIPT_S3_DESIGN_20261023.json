@@ -1,0 +1,1192 @@
+{
+  "id": "SCRIPT-S3-DESIGN-20261023",
+  "status": "analysis-and-design-only-implementation-not-authorized",
+  "headline": "本轮用哪版、怎样真正停下、异常如何收尾、资源何时释放",
+  "baseline": {
+    "selfCommit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+    "meaning": "S1固定交付作为可复查分析基线；S2正在修改开窗/IO/异步入口，非把旧缺口当S2最终状态。S3实施前按S2固定交付重新对齐必要增量，不重新分析整项目。",
+    "currentHeadWhenStarted": "972f2e0fd947fa7920c77f026bc1a348b968a217",
+    "concurrency": "只读产品，不改src/tools/测试/共享构建，不占S2运行窗口；仅新方案JSON由根写，HTML由文档角色写",
+    "s2InterfaceDirection": {
+      "status": "实施者安全点方向，未固定提交/独立验收",
+      "CompileAsync": "ScriptCompiler.CompileAsync(parts,name,dir,names,callerToken)，共用ScriptCompilationCoordinator；等待者独立WaitAsync取消，已开始Emit可继续",
+      "result": "CompileResult继续S1CacheKey/ReferenceSnapshot/字节，新增JoinedInFlight/WaitMs",
+      "executionGate": "调试ExecuteToolAsync固定请求/有效IO→异步编译→完整版本/引用核验；ScriptParameters.PreparedCompilation(JsonIgnore)→Lifecycle.PreparedCompilation传已获准产物",
+      "boundary": "这只是S2从排队到执行的身份接线；Init异常后Release/运行结果发布/沙箱租约尚未实施。SDK只加可选IToolEditorCommitParticipant，未实现工具不变。"
+    }
+  },
+  "facts": [
+    {
+      "id": "H1",
+      "severity": "P1",
+      "state": "源码确认，运行未验证",
+      "problem": "取消在脚本入口断开",
+      "evidence": "工作流RunSession/AlgorithmNode把取消令牌带到ToolExecutor，执行前检查；ScriptTool.ExecuteAsync未把令牌传给ExecuteCore/Lifecycle，ScriptContext无取消API，Init/Process同步调用。",
+      "consequence": "请求停止后用户代码仍可能运行；S2异步编译/关闭等待取消不等实际用户Process停止。"
+    },
+    {
+      "id": "H2",
+      "severity": "P0待验证",
+      "state": "静态可达风险，非已复现",
+      "problem": "输入注入错误仍继续执行",
+      "evidence": "Lifecycle字段查找/ConvertType失败向errors追加；随后未检查errors就进入Init/Process。",
+      "consequence": "可能用默认或部分输入继续产生副作用；应在用户代码前拒绝。"
+    },
+    {
+      "id": "H3",
+      "severity": "P1",
+      "state": "源码确认，异常样本未运行",
+      "problem": "异常会跳过Release",
+      "evidence": "Init/Process/Release处于同一个外层try，异常直接进入catch；内部finally只记阶段耗时。Dispose仅置_disposed，未调用用户Release。",
+      "consequence": "Init/Process报错后已取得资源缺少确定清理；不能把using生命周期管理器当用户资源已释放。"
+    },
+    {
+      "id": "H4",
+      "severity": "P1",
+      "state": "静态所有权风险，未运行复现",
+      "problem": "Release后读取所有public字段",
+      "evidence": "Lifecycle先Release再反射所有派生public实例字段，包括非输出字段；ScriptResults.OutputValues保存原对象引用。",
+      "consequence": "Release若处理图像，随后读到的输出可能已释放；任意用户类型/委托也可能把ALC留住。"
+    },
+    {
+      "id": "H5",
+      "severity": "P1",
+      "state": "静态并发风险，未运行复现",
+      "problem": "池无运行租约",
+      "evidence": "ConcurrentDictionary.GetOrAdd工厂可并发执行；同键LoadAssembly无同步；LastUsed后直接淘汰超16项，无活跃引用计数；Clear/Invalidate未等待使用者。",
+      "consequence": "丢弃的工厂对象缺显式Dispose，运行中项可能被移出/卸载请求，竞争结果需隔离验证；不是已证永久泄漏。"
+    },
+    {
+      "id": "H6",
+      "severity": "P1",
+      "state": "源码确认作用域，未做跨节点样本",
+      "problem": "new实例不隔离static",
+      "evidence": "池按编译键（代码/引用/选项身份）共享程序集，不含方案/节点域；每次CreateScriptInstance只新建对象。",
+      "consequence": "实例字段逐次重置，static可能跨节点/轮次共享；编译字节缓存和运行状态隔离需要不同的键。"
+    },
+    {
+      "id": "H7",
+      "severity": "P0待验证",
+      "state": "静态调度风险，非已复现",
+      "problem": "取消后未排空任务就归还资源",
+      "evidence": "就绪队列循环检查取消并Task.Run执行节点；finally直接Dispose仍在running列表的资源租约，未在该finally等待这些Task。",
+      "consequence": "存在停止返回/资源被认为可复用而旧节点仍在工作的可达路径；必须补停止排空，不能只修脚本内部。"
+    },
+    {
+      "id": "H8",
+      "severity": "P1",
+      "state": "边界证据不足，局部准入未见",
+      "problem": "运行身份未贯通所有发布点",
+      "evidence": "WorkflowRunSession/Scope已有RunId；ToolExecutionRequest仅NodeId/WorkflowId，调试结果事件→NodeResultManager按node更新；所查入口未见统一方案代次/运行/合同准入。",
+      "consequence": "需沿用已有会话，在脚本结果/受控回调/Dispatcher入队和执行时核验；不泛称全平台已复现旧结果污染。"
+    },
+    {
+      "id": "H9",
+      "severity": "P2",
+      "state": "源码搜索范围内确认",
+      "problem": "卸载入口与真正回收不同",
+      "evidence": "ScriptSandboxPool有Clear/Invalidate，但本次src/tools搜索未发现其产品调用者；ALC.Unload只提出卸载请求，外部结果/事件/栈引用可阻止回收。",
+      "consequence": "编辑器关闭不能清掉其他节点仍在用的全局池；方案/应用退出需要明确Owner与等待策略。"
+    }
+  ],
+  "vmThreeWay": [
+    {
+      "topic": "每轮运行与实例状态",
+      "vm": "活动COM链创建一个UserScript并Init，后续帧SetHandle/Clear/Process复用；编译缓存含moduleId。",
+      "current": "每次new实例/Init/Process/Release，编译键共用池；static不随new自动重置。",
+      "target": "保留逐次实例行为，编译字节可共享；运行ALC隔离域含方案会话+节点+编译代次，同节点同代次static可能常驻，须明示且串行准入。",
+      "borrow": "模块有独立运行身份、编译与运行Owner分开。",
+      "self": "新实例合同、节点隔离域、运行租约和输入快照。",
+      "reject": "不直接改为VM常驻用户实例，避免悄悄改变字段持久性；不将moduleId缓存等同每次static重置。"
+    },
+    {
+      "topic": "停止",
+      "vm": "配置窗停止后续循环并等待本地Task；流程停止进入IMVS_StopExecute_V30并有停止回调，正在跑的脚本能否强制中断未知。",
+      "current": "工作流令牌已存在，脚本生命周期未消费；S2视图取消/编译等待是另一层。",
+      "target": "协作取消穿透到ScriptContext与边界检查；停止后排空运行/清理再释放租约。未响应保持“停止中/超时未结束”，拒绝旧代结果/受控写回，不虚报已停止。",
+      "borrow": "分开停止请求与停止完成回执。",
+      "self": "真实运行台账/完成信号/来源一致的取消归因。",
+      "reject": "不采用方法名或回调出现就推断硬停，也不把Task取消或ALC.Unload当强制终止。"
+    },
+    {
+      "topic": "异常与用户清理",
+      "vm": "CheckClass Init异常清objectClass但未见Dispose；Process异常返回false未即时释放；loader Unload才调用用户Dispose，异常只日志。",
+      "current": "Init/Process异常跳过Release；输入注入错误也可能继续执行。",
+      "target": "输入失败不得进用户代码；实例已成功创建后以finally保证应有Release一次，主异常和清理异常独立记录，不发布成功。",
+      "borrow": "区分用户Dispose、loader引用清除和程序集处理。",
+      "self": "确定异常清理、取消与错误分型。",
+      "reject": "不照搬可见异常分支的清理缺口和失败后清dirty语义。"
+    },
+    {
+      "topic": "资源与关闭",
+      "vm": "编辑器Unloaded只退订/去渲染引用；删除模块/关方案进入原生关闭API，未贯通至DestroyModule→ScriptCom.Dispose；活动COM StartAppdomain并未创建新AppDomain。",
+      "current": "关闭编辑器释放分析会话；静态运行池无活跃租约，结果字典可持有用户对象。",
+      "target": "视图/运行/结果/池四类Owner分开；关窗撤销本视图，节点/方案退役隔离域，活跃项等运行清理后卸载。",
+      "borrow": "编辑器关闭不等模块运行销毁。",
+      "self": "结果所有权、租约、退役/回收验证。",
+      "reject": "不把VM当前链说成每模块AppDomain，也不把ALC称为可强杀沙箱。"
+    },
+    {
+      "topic": "迟到结果准入",
+      "vm": "结果回调按AllModules查moduleId，已删除不存在则丢弃；该入口未见stop代次谓词，实际回调次序未知。",
+      "current": "已有workflow scope RunId，但请求/结果/调试事件未统一贯通该身份。",
+      "target": "运行身份随结果到发布点；当前方案/节点/合同/运行仍有效才更新，丢弃结果按Owner回收。",
+      "borrow": "回调先验证对象仍存在。",
+      "self": "代次/合同/运行ID准入，Dispatcher执行时再次核验。",
+      "reject": "不只按节点ID存在就接收旧运行结果；也不把丢弃UI结果说成停止了用户副作用。"
+    }
+  ],
+  "flows": {
+    "executionCurrent": [
+      "Workflow/调试→ToolExecutionRequest",
+      "ToolExecutor执行前检查取消",
+      "ScriptTool→Lifecycle编译/取池",
+      "new实例→注入输入（错误仍累积）",
+      "Init→Process→Release（异常跳出）",
+      "读取所有public字段→结果事件→按node写回"
+    ],
+    "executionTarget": [
+      "提交有效代码/IO/引用及输入快照",
+      "绑定方案/节点/运行/合同身份",
+      "验证输入→取得运行隔离域租约",
+      "new用户实例→注册运行上下文",
+      "Init→Process→只捕获声明输出（复制/转移Owner）",
+      "finally Release/受控任务收尾",
+      "取消/主错/清理错分别归因",
+      "身份仍有效才发布，否则回收输出",
+      "归还租约→退役项可卸载"
+    ],
+    "stopTarget": [
+      "用户停止/关闭/切换→撤销相关运行准入",
+      "取消后续派发，向当前运行发协作取消",
+      "停止中：运行和清理仍占租约",
+      "合作完成→排空任务→已取消/失败",
+      "超预算仍未退出→明确超时未结束，拒新冲突执行/不释放活跃资源",
+      "若产品要求任意脚本有界硬停→另选进程隔离能力，非本轮静默加入"
+    ],
+    "poolTarget": [
+      "Acquire：隔离域+编译键",
+      "同键Lazy创建一次→运行持有Lease",
+      "使用中不得淘汰",
+      "引用/代码换代→旧项Retiring",
+      "最后Lease归还→退订/清引用/Unload请求",
+      "受控GC弱引用验证，未回收输出具体持有链"
+    ],
+    "publicationTarget": [
+      "结果/日志/受控SetGlobal带RunIdentity",
+      "入队时核当前会话与取消",
+      "Dispatcher执行时再核",
+      "有效→按输出Owner转移结果",
+      "失效→不改当前UI/变量，回收本结果；已发生外部副作用不自动回滚"
+    ]
+  },
+  "contracts": [
+    {
+      "id": "R1",
+      "name": "一轮一个不可变请求",
+      "detail": "沿用S1/S2源码/生成IO/引用/编译身份；增加方案会话、节点隔离域、RunId/调用作用域，输入值固定为本次读取语义。不要重新建第二套版本系统。视图版本和运行版本分开，UI可改下一版但本次不换代码。"
+    },
+    {
+      "id": "R2",
+      "name": "协作停止与停止完成",
+      "detail": "ScriptContext提供当前CancellationToken/ThrowIfCancellationRequested；执行前、输入准备后、Init/Process边界检查，长循环/异步子任务需合作。排空实际用户工作与清理前保持Stopping，超时不能释放其租约或声称Stopped。普通方法中的死循环或阻塞本机调用不会因令牌自动终止。"
+    },
+    {
+      "id": "R3",
+      "name": "输入非法绝不执行",
+      "detail": "在构造/Init前完成可行的字段/类型/绑定验证；实例注入失败也停止进入Init/Process，已创建实例走一次清理。类型/数组形状接S2统一描述子，不能用默认值继续业务。"
+    },
+    {
+      "id": "R4",
+      "name": "清理一次且错误不丢",
+      "detail": "成功创建实例后，不论输入注入/Init/Process/输出捕获异常或取消，finally执行Release一次并释放运行所有资源。构造失败拿不到完整对象，平台只能清自己的环境；用户构造须自清异常前资源，不能承诺调用不存在实例的Release。Release异常单列，不覆盖主错。清理不能直接用已取消令牌提前跳过。"
+    },
+    {
+      "id": "R5",
+      "name": "先取得有效输出再清理",
+      "detail": "Process成功后仅按声明输出提取并验证SDK允许类型，复制/转移/借用租约规则清晰，避免Release后再读被释放的图像。清理成功且未取消才发布成功；清理失败/结果过时，平台回收它已拥有的输出。不得任意Dispose借用的输入，也不重复释放输出别名。"
+    },
+    {
+      "id": "R6",
+      "name": "编译共享、运行按节点隔离",
+      "detail": "共享不可变元数据和编译字节；运行池键增加方案会话+节点隔离域。保留每次new实例，不改成常驻对象；同节点同代次的static仍可常驻，同一隔离域串行执行，不承诺每轮static清零。不允许用户对象/委托逃逸到长期结果缓存。"
+    },
+    {
+      "id": "R7",
+      "name": "有租约的容量与退役",
+      "detail": "总隔离域上限16延续原预算，含活跃与闲置。Lazy/锁保证同键单创建、Load单次，失败构造/竞争失败有清理；LRU仅淘汰无租约项。16项全忙时新键在可取消队列等待或明确繁忙，不卸载运行项、不悄悄扩容；等待容量时不占其他独占执行资源。Clear先停止准入并标退役，最后租约归还才卸载。"
+    },
+    {
+      "id": "R8",
+      "name": "结果准入贯通",
+      "detail": "复用已有WorkflowRunSession/Scope RunId，在请求、脚本上下文、结果和调试事件最小传播；节点结果/变量受控写回/Dispatcher入队及执行均校验当前方案代次、节点、合同、运行ID。失败或取消不冒充成功结果。取消来源匹配当前请求，外来OperationCanceledException不能一律认定本轮取消。"
+    },
+    {
+      "id": "R9",
+      "name": "四类Owner",
+      "detail": "视图拥有编辑语义会话与本视图等待；运行拥有用户实例/子任务/清理注册；结果拥有已移交的输出（输入只借用）；应用池拥有可卸载ALC。关编辑窗不销毁工作流正在跑的节点；关方案必须先排空它的运行，再退役所属域。用户自行启动线程/定时器/外部事件须登记或自行回收，ALC卸载请求不保证立即GC。"
+    },
+    {
+      "id": "R10",
+      "name": "不承诺副作用回滚",
+      "detail": "本批限制取消后的平台结果与受控回调，不可能回滚用户已写文件/设备、已改静态或已发生外部副作用。GetGlobal/SetGlobal保持现有传入语义，增加运行有效性门，不借S3悄悄改为全局变量事务系统。"
+    },
+    {
+      "id": "R11",
+      "name": "必要跨模块只补接缝",
+      "detail": "ToolExecutor/AlgorithmNode/执行引擎只增加身份/取消/在途任务排空与资源归还的必要接线；宿主显示Stopped以实际完成为准。沿用已有运行管理与统一执行入口，UI不调度用户脚本，不重做所有工作流引擎/插件。"
+    }
+  ],
+  "stopDecision": {
+    "recommendation": "默认可信脚本采用进程内协作取消+真实停止状态；把任意脚本硬停作为明确产品能力分支待用户确认，不把前者说成后者。",
+    "optionA": {
+      "name": "进程内合作停止",
+      "pros": "复用图像/SDK对象和既有调用链，数据复制少，迁移范围可控。",
+      "cost": "死循环不检查令牌/阻塞原生调用不能保证有界停止，必须诚实显示未结束并阻止资源重用/危险切换。"
+    },
+    "optionB": {
+      "name": "独立工作进程强制结束",
+      "pros": "宿主可结束自己的工作进程，提供更强隔离和恢复边界。",
+      "cost": "需跨进程序列化/图像内存/设备句柄协议、故障恢复；强杀不保证用户Release/外部副作用回滚，是单独闭环范围，未批准实施。"
+    },
+    "notAdopted": "Task.Run/取消等待/Thread.Abort/ALC.Unload伪装任意脚本硬停；也不默认换为VM实例持久化。"
+  },
+  "scenarios": [
+    {
+      "name": "正常一次执行",
+      "state": "输入有效→租约1→new/Init/Process→输出取得→Release→发布→租约0",
+      "result": "只发布当前声明输出，实例每次新建；可闲置复用程序集。"
+    },
+    {
+      "name": "输入或构造失败",
+      "state": "输入失败→不进入用户代码；构造失败→无完整实例",
+      "result": "不执行默认输入；清平台环境。构造中资源由用户构造异常路径自清，不能伪造Release已调用。"
+    },
+    {
+      "name": "Init/Process失败，Release也失败",
+      "state": "主错误保留→finally Release一次→记录第二错误→失败",
+      "result": "无成功发布，两个错误各有阶段与堆栈，平台资源/租约仍有确定清理。"
+    },
+    {
+      "name": "响应停止的长循环",
+      "state": "运行中→停止中→用户检查令牌退出→Release→租约归还→已取消",
+      "result": "取消不是成功，等待者与调度器看到实际完成；停止耗时单列。"
+    },
+    {
+      "name": "不检查令牌的死循环/原生阻塞",
+      "state": "发停止→超预算仍停止中/超时未结束→占用租约保留",
+      "result": "不显示已停止、不释放它仍用的资源；测试只能在有看门狗的独立测试进程验证。硬停模式另待确认。"
+    },
+    {
+      "name": "关编辑窗/改IO/切方案后旧结果到达",
+      "state": "关闭视图或撤销合同→旧结果到达→准入失败→回收输出",
+      "result": "关窗不杀其他工作流运行；切方案若运行未排空则保留原方案并明确受阻。"
+    },
+    {
+      "name": "同代码跨节点与池满17项",
+      "state": "共享编译字节；节点A/B不同运行域→各持租约；16项全忙→第17项等待/繁忙",
+      "result": "不串static、不淘汰活跃项，最后归还后退役；同节点static跨轮常驻边界明示。"
+    },
+    {
+      "name": "图像输出与用户对象逃逸",
+      "state": "声明图像→复制或转移Owner→Release→结果发布/丢弃→替换时释放结果Owner",
+      "result": "借用输入不被误Dispose；用户自定义对象/委托不进入长期输出字典；不靠一张内存截图判定回收。"
+    }
+  ],
+  "implementationOrder": [
+    {
+      "step": 1,
+      "name": "对齐S2固定交付与身份",
+      "scope": "保留S1/S2接口、取得S2实际改动SHA；先核输入错误仍执行/异常Release和在途排空风险，不重开全面体检。"
+    },
+    {
+      "step": 2,
+      "name": "运行合同与取消边界",
+      "scope": "ScriptRuntimeSession/RunIdentity与上下文取消，正常/失败/取消/停止中状态，输入前置拒绝，finally清理和输出Owner。"
+    },
+    {
+      "step": 3,
+      "name": "池租约与节点隔离域",
+      "scope": "编译缓存继续共享，运行域独立、单创建/加载、容量16与退役排队、明确Clear/关闭归属。"
+    },
+    {
+      "step": 4,
+      "name": "停止排空和结果接缝",
+      "scope": "最小跨SDK/工作流/调试事件身份接线，停止不先归还活跃资源，当前代次准入和过时输出回收。"
+    },
+    {
+      "step": 5,
+      "name": "隔离故障与回收验收",
+      "scope": "固定包/源身份，受控脚本/独立进程看门狗、并发租约/100轮回收、完整入口与独立验收；未验证不能闭环。"
+    }
+  ],
+  "files": {
+    "retainAndAdjust": [
+      "tools/SunEyeVision.Tool.Script/ScriptTool.cs",
+      "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+      "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+      "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs",
+      "tools/SunEyeVision.Tool.Script/Models/ScriptResults.cs",
+      "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+      "src/Plugin.SDK/Scripting/ScriptContext.cs",
+      "src/Plugin.SDK/Scripting/Script.cs"
+    ],
+    "minimumContractSeams": [
+      "src/Plugin.SDK/Core/ToolExecutionRequest.cs",
+      "src/Plugin.SDK/Core/ToolExecutor.cs",
+      "src/Workflow/AlgorithmNode.cs",
+      "src/Workflow/WorkflowExecutionEngine.cs",
+      "src/Workflow/WorkflowRunSession.cs",
+      "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "src/UI/Services/Workflow/NodeResultManager.cs",
+      "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "src/UI/Shell/Windows/MainWindowViewModel.cs"
+    ],
+    "candidateNew": [
+      "ScriptRuntimeSession/ScriptRunIdentity（工具执行与SDK中立身份）",
+      "ScriptSandboxLease（池的活跃使用）",
+      "ScriptOutputOwnership/输出转换（仅脚本SDK支持类型）"
+    ],
+    "outOfScope": [
+      "全面重做工作流调度或全局变量事务",
+      "换脚本语义/编译组件",
+      "照搬VM常驻实例和旧程序集缓存",
+      "默认加入外部进程执行器、设备协议/算法改造",
+      "未经批准实施S3或阻塞S2"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "S3-A01",
+      "assert": "调试单次、工作流单次/连续/子程序入口传递同一轮身份和取消；错误输入/字段类型失败时Init/Process调用数0。"
+    },
+    {
+      "id": "S3-A02",
+      "assert": "正常/Init失败/Process失败/捕获输出失败/取消时成功创建实例Release恰一次；构造失败不声称Release，环境回收；Release再错保留双错误且无成功发布。"
+    },
+    {
+      "id": "S3-A03",
+      "assert": "合作停止覆盖运行前/排队/Init与Process边界/长循环；真正退出和清理前不返回Stopped、不归还活跃资源。"
+    },
+    {
+      "id": "S3-A04",
+      "assert": "不合作脚本/原生阻塞仅在测试者自己创建的带看门狗独立进程执行；超时显示未结束，不能冻结产品或杀用户进程，不能宣称硬停通过。"
+    },
+    {
+      "id": "S3-A05",
+      "assert": "同节点与跨节点并发、两个线程同键取池，只创建/加载一次，运行上下文与实例不串；不同节点static隔离、同节点static常驻语义明确。"
+    },
+    {
+      "id": "S3-A06",
+      "assert": "16项全忙第17项可取消等待/明确繁忙，LRU只淘汰闲置；Clear/Invalidate不释放活跃租约，终态归还与退役计数准确。"
+    },
+    {
+      "id": "S3-A07",
+      "assert": "100轮打开/运行/关窗、代码引用换代及方案退出：会话任务/用户实例/租约计数归零，已退役ALC弱引用受控GC回收；失败给具体root，不用RSS截图替代。"
+    },
+    {
+      "id": "S3-A08",
+      "assert": "旧结果/日志/SetGlobal受控回调，在取消/改IO/关窗/删节点/切方案后不得污染当前代次；含Dispatcher先入队后失效场景，丢弃输出按Owner释放。"
+    },
+    {
+      "id": "S3-A09",
+      "assert": "数组/标量/图像输出，输入与输出别名、Release主动释放、自定义对象/委托泄出，验证只收声明输出和所有权；失败不复用上轮成功值。"
+    },
+    {
+      "id": "S3-A10",
+      "assert": "并行工作流取消时所有实际节点Task排空后才归还资源并允许冲突新运行；停止超时则原方案保持、资源仍占有，不能由manager空闲标志冒充排空。"
+    },
+    {
+      "id": "S3-A11",
+      "assert": "保留逐次实例和既有全局变量传入行为，预热不构造用户对象；外来取消异常与本轮取消来源分开。"
+    },
+    {
+      "id": "S3-A12",
+      "assert": "固定源码/产物，全量Release+UI专项+无设备隔离实际验证，正式独立验收与开发自测分开；VS设计器/用户视觉/不合作硬停能力未测独列。"
+    }
+  ],
+  "officialBasis": [
+    {
+      "title": ".NET程序集卸载是合作式，栈/外部引用可保留ALC",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/assembly/unloadability"
+    },
+    {
+      "title": ".NET托管取消采用协作模型",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/cancellation-in-managed-threads"
+    },
+    {
+      "title": ".NET Core/.NET5+不支持Thread.Abort；非合作第三方执行需进程边界",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/destroying-threads"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptTool.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "a0cc8be2dffaefb75a12d12e2850b0dd58cab6b4eea5983b7b209048e5325564",
+      "locations": [
+        {
+          "needle": "public ValueTask<ToolResults> ExecuteAsync",
+          "line": 50
+        },
+        {
+          "needle": "using var lifecycleManager",
+          "line": 90
+        },
+        {
+          "needle": "foreach (var kvp in lifecycleManager.OutputValues)",
+          "line": 138
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "3ecfd803f76bd92c1bb90fbe05cf64d9321765aee068bb0eaa69e022a98b53c1",
+      "locations": [
+        {
+          "needle": "public List<string> Execute(",
+          "line": 67
+        },
+        {
+          "needle": "errors.Add($\"设置输入字段",
+          "line": 207
+        },
+        {
+          "needle": "try { scriptInstance.Init(); }",
+          "line": 222
+        },
+        {
+          "needle": "try { scriptInstance.Process(); }",
+          "line": 225
+        },
+        {
+          "needle": "try { scriptInstance.Release(); }",
+          "line": 228
+        },
+        {
+          "needle": "// 7. 反射读取输出字段值",
+          "line": 244
+        },
+        {
+          "needle": "_disposed = true;",
+          "line": 408
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "fe49fac8e9a5b7357a773933914fe30615fa1c0829d2515c0df145afebe8817e",
+      "locations": [
+        {
+          "needle": "private const int MaxResident = 16",
+          "line": 20
+        },
+        {
+          "needle": "_pool.GetOrAdd",
+          "line": 44
+        },
+        {
+          "needle": "public static void Clear()",
+          "line": 65
+        },
+        {
+          "needle": "slot.Sandbox.Dispose();",
+          "line": 58
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "c865abeab27814eacdd66a35161425e39b2b5b23e4c5a92ce7f20e84de264fca",
+      "locations": [
+        {
+          "needle": "isCollectible: true",
+          "line": 36
+        },
+        {
+          "needle": "if (LoadedAssembly != null)",
+          "line": 80
+        },
+        {
+          "needle": "Activator.CreateInstance(type)",
+          "line": 102
+        },
+        {
+          "needle": "_alc.Unload();",
+          "line": 52
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptResults.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "54b485edc19052d184cb400eba03035bc7816f196c19cbf54db92bee30f9faf1",
+      "locations": [
+        {
+          "needle": "Dictionary<string, object?> OutputValues",
+          "line": 16
+        },
+        {
+          "needle": "List<ScriptOutputConfig> OutputConfigs",
+          "line": 19
+        }
+      ]
+    },
+    {
+      "path": "src/Plugin.SDK/Scripting/Script.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "be7bf9c3c470ba7086954cd09863f0cbf29d784387b2263462ac22cc3726a294",
+      "locations": [
+        {
+          "needle": "public abstract void Init();",
+          "line": 16
+        },
+        {
+          "needle": "public abstract void Process();",
+          "line": 21
+        },
+        {
+          "needle": "public virtual void Release()",
+          "line": 26
+        }
+      ]
+    },
+    {
+      "path": "src/Plugin.SDK/Scripting/ScriptContext.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "ca8dae63d362cc45dca7c6f76174c962901478603917fdf4abafb1cb8a1df1d3",
+      "locations": [
+        {
+          "needle": "SetGlobalValue",
+          "line": 14
+        },
+        {
+          "needle": "SetGlobal(string name",
+          "line": 29
+        }
+      ]
+    },
+    {
+      "path": "src/Plugin.SDK/Core/ToolExecutionRequest.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "9266c6746a2109c9af164c17a838782e1f701a79bae6f9fdfff2edb868cf5890",
+      "locations": [
+        {
+          "needle": "public string? NodeId",
+          "line": 44
+        },
+        {
+          "needle": "public string? WorkflowId",
+          "line": 45
+        },
+        {
+          "needle": "public CancellationToken CancellationToken",
+          "line": 48
+        }
+      ]
+    },
+    {
+      "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "2e6be56e3e187ab526c46eea30bd26487dd26bbe39665982835208ab64cbf259",
+      "locations": [
+        {
+          "needle": "request.CancellationToken.ThrowIfCancellationRequested();",
+          "line": 145
+        },
+        {
+          "needle": "await asyncTool.ExecuteAsync(request)",
+          "line": 150
+        },
+        {
+          "needle": "catch (OperationCanceledException)",
+          "line": 158
+        }
+      ]
+    },
+    {
+      "path": "src/Workflow/AlgorithmNode.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "8926f66c8d00ca4c0304e526685e0cd16771e6c395bfb93f60095a50019960a4",
+      "locations": [
+        {
+          "needle": "await executor.ExecuteAsync(",
+          "line": 98
+        },
+        {
+          "needle": "CancellationToken = cancellationToken",
+          "line": 107
+        },
+        {
+          "needle": "LastToolResult = toolResult",
+          "line": 129
+        }
+      ]
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "d049436c96f5e62e922ca9129ab6cca3b2583073e5f4b03a4ce278cf90a5f3e2",
+      "locations": [
+        {
+          "needle": "context.CancellationToken.ThrowIfCancellationRequested();",
+          "line": 310
+        },
+        {
+          "needle": "running.Add((node, lease, Task.Run",
+          "line": 362
+        },
+        {
+          "needle": "foreach (var item in running)",
+          "line": 399
+        },
+        {
+          "needle": "item.Lease.Dispose();",
+          "line": 400
+        },
+        {
+          "needle": "_activeSession?.RequestStop();",
+          "line": 1283
+        },
+        {
+          "needle": "session.Dispose();",
+          "line": 1221
+        }
+      ]
+    },
+    {
+      "path": "src/Workflow/WorkflowRunSession.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "8d3b7107a8b6bd1cf1b78b0930c23117320558ca03df0384469ee2fd227dfb0d",
+      "locations": [
+        {
+          "needle": "public Guid RunId",
+          "line": 39
+        },
+        {
+          "needle": "public bool IsActive",
+          "line": 62
+        },
+        {
+          "needle": "public void RequestStop()",
+          "line": 130
+        }
+      ]
+    },
+    {
+      "path": "src/Workflow/WorkflowRunScope.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "db8eb5875564f23ae967a76a323a8d3c50831770737a25ebc51e5e26e2c63532",
+      "locations": [
+        {
+          "needle": "public Guid RunId",
+          "line": 21
+        },
+        {
+          "needle": "public Guid? ParentRunId",
+          "line": 23
+        }
+      ]
+    },
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "47aae53a35a573b3a8de273b49aa5e87095761924f2cafb5dbb406eeca840b64",
+      "locations": [
+        {
+          "needle": "public async Task StopAndWaitAsync",
+          "line": 64
+        },
+        {
+          "needle": "工作流尚未停止",
+          "line": 78
+        },
+        {
+          "needle": "snapshot.Complete(result",
+          "line": 853
+        },
+        {
+          "needle": "public bool IsAnyRunning()",
+          "line": 544
+        }
+      ]
+    },
+    {
+      "path": "src/UI/Services/Workflow/NodeResultManager.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "43967c8b621f81bb6d3130988c628bb50e39870429803251c80c8bb877df4700",
+      "locations": [
+        {
+          "needle": "public void UpdateNodeResult",
+          "line": 76
+        },
+        {
+          "needle": "_getContext()?.SetNodeResult",
+          "line": 92
+        }
+      ]
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "9dcd71bba72e25af94a858f52d18b0ca573709313f1cb491bc271fb275582048",
+      "locations": [
+        {
+          "needle": "private void SubscribeToolExecutionCompleted",
+          "line": 3965
+        },
+        {
+          "needle": "_nodeResultManager?.UpdateNodeResult",
+          "line": 4005
+        },
+        {
+          "needle": "eventInfo.RemoveEventHandler(debugWindow, handler)",
+          "line": 4048
+        }
+      ]
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "b539cbd6a95b56405888153e4ae526213abb09e48fa2819db4a6e0261e0f3dc1",
+      "locations": [
+        {
+          "needle": "await ExecuteToolAsync();",
+          "line": 323
+        },
+        {
+          "needle": "RaiseToolExecutionCompleted(results",
+          "line": 329
+        },
+        {
+          "needle": "OnContinuousExecuteCommand",
+          "line": 293
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+      "source": "fixed-S1-delivery",
+      "commit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "sha256": "0e93fac34ca3ffee2f8a200b7dcb444e56ebc9c789e0fe5d85e86c052f2e6dfd",
+      "locations": [
+        {
+          "needle": "private void OnControlUnloaded",
+          "line": 100
+        },
+        {
+          "needle": "PreCompileLatestCode();",
+          "line": 117
+        },
+        {
+          "needle": "GetAwaiter().GetResult()",
+          "line": 302
+        }
+      ]
+    }
+  ],
+  "vmEvidence": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\selfdev-support\\VM-SCRIPT-S3\\evidence.json",
+      "sha256": "96abca2dc090d30f747c73d272bcdd242a4075b9ca9e1c545fec4e2342536f35",
+      "data": {
+        "id": "VM-SCRIPT-S3-PLUGIN",
+        "date": "2026-10-23",
+        "scope": "VisionMaster 4.4.0 RunType=1 COM static evidence only",
+        "status": "partial",
+        "sources": [
+          {
+            "file": "analysis/b-script/decompiled/ScriptComponent/ScriptComponent/ScriptCom.cs",
+            "sha256": "AA704102F2841DB0B61231172283A6B0604FE360ACE215F4067B7A7FBE4733F3"
+          },
+          {
+            "file": "analysis/b-script/decompiled/ScriptSupport/Script.Support/BaseScriptSupport.cs",
+            "sha256": "E96F2A7FF5E13783B3E862725BF4A00366AD967BC3B9C13766B330A9C572B2B8"
+          },
+          {
+            "file": "analysis/b-script/decompiled/ScriptSupport/Script.Support/RemoteLoaderFactory.cs",
+            "sha256": "40A169046843A5BF2B9A944127D1F7603887E10D8D1C828D7E1AB965BBE79E4A"
+          }
+        ],
+        "findings": [
+          {
+            "question": "Init/Process exceptions and release",
+            "confirmed": "RemoteLoaderFactory.CheckClass:209-259 catches Init exception and clears objectClass without invoking user Dispose; ExecuteProcessMethod:300-327 catches Process exception, returns false without release. User Dispose is invoked by RemoteLoaderFactory.Unload:42-53 -> ExecuteDispose:329-349 only while objectClass nonnull. BaseScriptSupport.objectDispose:262-275 calls loader Unload then AppDomain.Unload.",
+            "unknown": "Whether host subsequently destroys module after these errors. Init failure can leave user resources allocated before objectClass is cleared; no user Dispose in visible branch.",
+            "decision": "Explicit init-failure cleanup matters; do not copy error behavior blindly."
+          },
+          {
+            "question": "interrupt/cancellation",
+            "confirmed": "ScriptCom.Process:128-130 synchronously calls RunCode:676-717 then CodeRun. RemoteLoaderFactory.ExecuteProcessMethod:300-327 directly invokes user Process; no cancellation token, timeout or interrupt branch in these bodies. ScriptCom.Dispose:620-639 waits CompileWait at most 5s then support Dispose; CompileWait is set by LoadShell worker at 317-325, not user Process.",
+            "unknown": "External host/thread abort or process-level interruption outside examined bodies.",
+            "decision": "No evidence that VM can interrupt an executing user Process; choose cancellation policy independently. Static negative limited to these methods."
+          },
+          {
+            "question": "instance reuse and field/handle clearing",
+            "confirmed": "BaseScriptSupport.Compile:86-220 normally objectDispose before new loader. RemoteLoaderFactory.CreateInstanceFromByte constructs UserScript once. ExecuteProcessMethod:300-327 uses same objectClass across calls, SetHandle(input,output), Clear(), then Process; user Process bool return is ignored. LoadExternAssembly:293-320 disposes and reloads on changed DLL timestamp. Unload invokes user Dispose then nulls object fields and releases MyAlgorithm map handle.",
+            "unknown": "Actual user Clear implementation, precise input/output handle lifetime and host-level process concurrency.",
+            "decision": "Reuse object per compiled generation and per-frame Clear are source-confirmed; exact memory parity is not."
+          },
+          {
+            "question": "compile failure/Dispose race/cache/AppDomain",
+            "confirmed": "ScriptCom.SetShellContent:259-267 queues Task.Run; worker sets dirty and MutexCompileCode. MutexCompileCode:720-745 locks objLock but clears dirty regardless compile result. RunCode:676-717 does not check compile result before CodeRun. BaseScriptSupport.Compile:86-220 references-null early failure occurs before objectDispose; normal path disposes old loader before compile/cache lookup. Cache key source+property+moduleId omits references. ScriptCom.Dispose:620-639 waits only CompileWait at most 5s then support Dispose; no visible join of SetShellContent Task.Run.",
+            "unknown": "Actual scheduling of worker vs Process/Dispose, whether loader survives early failure, AppDomain unload success under concurrent user code; no runtime reproduction.",
+            "decision": "Old execution and late worker are conditional static risks, not observed failures. Explicit compile/dispose generation gate would be a design choice."
+          }
+        ],
+        "boundary": "First missing bridge is host invocation/destruction and SDK parameter dispatch. No VM launch or GUI. No claim of full tool parity.",
+        "staticInstanceScope": {
+          "confirmed": "AssemblyManager.cs:8-39 static ConcurrentDictionary<int,Assembly> keyed by (source+property+moduleId).GetHashCode(), max 500; BaseScriptSupport.Compile:112-114 builds key. ComScriptSupport.StartAppdomain:92-115 creates RemoteLoaderFactory in current domain, passes cached Assembly, and does not call AppDomain.CreateDomain. RemoteLoaderFactory.CreateInstanceFromByte:55-125 constructs UserScript once per loader generation; Process reuses it. BaseScriptSupport.objectDispose:262-275 unloads AppDomain only if objAppDomain is nonnull.",
+          "consequence": "Module ID separates compiled assembly cache entries but does not prove static-state reset. New UserScript resets instance fields only. Unload invokes user Dispose and nulls references, but visible COM StartAppdomain does not establish assembly unload from default AppDomain.",
+          "unknown": "Host may use separate COM processes/domains; module ID reuse across solution sessions; static state after recompile not runtime measured.",
+          "designRelevance": "Compiled byte cache identity and runtime static isolation must be decided separately; VM moduleId key alone is insufficient proof of isolation."
+        }
+      }
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-SCRIPT-S3\\framework\\lifecycle-evidence.json",
+      "sha256": "4660a0bc387501235e232af33d4df811856621aae19be327131a579e8ee843be",
+      "data": {
+        "schemaVersion": 1,
+        "date": "2026-10-23",
+        "scope": "VM 4.4.0 script host S3: stop, editor close, module delete, solution close, late result admission",
+        "mode": "read-only-static",
+        "baselineMainHead": "2db7540b0f803bb6f80fd4557d3098d9529ce559",
+        "conflictCheck": "Only the exclusive analysis/selfdev-support/VM-SCRIPT-S3/framework directory was written. Eight pre-existing tracked dirty files were observed and not modified; tool-plugins was not accessed.",
+        "sourceArtifacts": [
+          {
+            "id": "bottom",
+            "path": "analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/BottomCommand.cs",
+            "sha256": "444810ECB1F15627CE14083D53FACC6640947D8AF41A91E613AF557DC012088E"
+          },
+          {
+            "id": "procedure",
+            "path": "analysis/decompiled/VM.Core/VM.Core/VmProcedure.cs",
+            "sha256": "FDDE074D17C50C37F8D0BFE097CF20F904CDB4B59D4AC39612FC023C3F0B69DA"
+          },
+          {
+            "id": "processManager",
+            "path": "analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ProcessManager.cs",
+            "sha256": "06FEE7C7B5387FEA086ABE5073BE5DD2606AD121D9BC64B0AB9335BACE100414"
+          },
+          {
+            "id": "module",
+            "path": "analysis/decompiled/VM.Core/VM.Core/VmModule.cs",
+            "sha256": "53E2F0F9032C4631B59CF0EB2A00E06D50469D94706E7E370E9CC7E1059C72CE"
+          },
+          {
+            "id": "solution",
+            "path": "analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+            "sha256": "C141E2C53913B233B768782D6757FAE5997ECAF638B35DB2DDF98F5EF951A13E"
+          },
+          {
+            "id": "sdkModule",
+            "path": "analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ModuleManager.cs",
+            "sha256": "783A45B1518F713223ECA2B5E59291BE973552C3E08FEF0EA0D4BFCCC2FBD922"
+          },
+          {
+            "id": "sdkSolution",
+            "path": "analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/SolutionManager.cs",
+            "sha256": "46B1D8249E3A30FE3BF7A0ED8E92207835F1A8E272833D5462041BC1756F220A"
+          },
+          {
+            "id": "sdkApi",
+            "path": "analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ServerSDKAPI.cs",
+            "sha256": "F022D4B4E87D4A076DCF42A79B131A0460DDF673D07603B5BA8D6ACA35EF4B14"
+          },
+          {
+            "id": "nativeMethods",
+            "path": "analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/NativeMethods.cs",
+            "sha256": "6A60F612FB385987FF96D6973844A256402F097D1EB371E7AD462C44E57127D0"
+          },
+          {
+            "id": "shellRun",
+            "path": "analysis/full-audit/renderer-gap-projects/ShellModuleControl/ShellModuleControl/ShellRun.xaml.cs",
+            "sha256": "A034C4A370F4183203808C43B0DD03C3382EAF81DEA17D7F067B44616E986025"
+          },
+          {
+            "id": "shellRunXaml",
+            "path": "analysis/full-audit/renderer-gap-projects/ShellModuleControl/ShellModuleControl/ShellRun.xaml",
+            "sha256": "BA641234DB9D950391A9B1035CE076BDA15477AA82D56D9CE69EAD95309FB9A6"
+          },
+          {
+            "id": "platformNative",
+            "path": "D:/Program Files/VisionMaster4.4.0/Applications/PublicFile/x64/iMVS-6000PlatformSDK.dll",
+            "sha256": "B62D7E15588CCDA6671228AEBC11FEC3E27ACA878F0E03067E44B17D5A54A9A1"
+          },
+          {
+            "id": "shellNative",
+            "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/ShellModule/ShellModule.dll",
+            "sha256": "F8095B1CB42778A1C2259B1728D936C27D1BBC647888EABC3A3B884D8D87FD68"
+          }
+        ],
+        "rawArtifacts": [
+          {
+            "path": "analysis/selfdev-support/VM-SCRIPT-S3/framework/raw/platform-lifecycle-exports.txt",
+            "sha256": "10097BB9E452011AB80396EA112F64FC7137E47CB8D4D226E1513CF6C6AEDD71"
+          },
+          {
+            "path": "analysis/selfdev-support/VM-SCRIPT-S3/framework/raw/platform-stop-entry.asm.txt",
+            "sha256": "9ECFED025AE2C8A579D456CBC292929F4217B82FB5BC62365C0BCA17D3717C83"
+          },
+          {
+            "path": "analysis/selfdev-support/VM-SCRIPT-S3/framework/raw/shellmodule-exports.txt",
+            "sha256": "52D47872A5A777E7993AD3F5D0C25E7FA605A417202465C838ED81D1D209F75D"
+          },
+          {
+            "path": "analysis/selfdev-support/VM-SCRIPT-S3/framework/raw/shellmodule-destroy-entry.asm.txt",
+            "sha256": "B1F8CEF331585E53018602FF79CBF377B9D9FC7861FDEC21F38A71E495E997F6"
+          }
+        ],
+        "findings": [
+          {
+            "id": "S3-F1",
+            "operation": "script configuration continuous self-execute stop",
+            "status": "source-confirmed-managed-only",
+            "chain": [
+              "BottomCommand.StartContinuousSelfExecute creates LongRunning task, loops while !cancel, calls ContinuousSelfExcute and sleeps 300 ms (bottom:46-65)",
+              "StopContinuousSelfExecute sets cancel=true, waits the task, unsubscribes ModuleResultCallBackArrived and resets isModuleCallBackArrived (bottom:68-90)",
+              "ContinuousSelfExcute invokes vmModule.Run when prior callback permits; VmModule.Run calls ModuleManager.SelfRun -> IMVS_SelfExecuteOneModule (bottom:133-165, module:3753-3769, sdkModule:256-264)",
+              "StopSelfExcuteModule only sets VmSolution.IsContinuousSelfExecute=false (bottom:237-244)"
+            ],
+            "stateWrites": [
+              "BottomCommand.cancel",
+              "BottomCommand.continuousSelfExecuteTask",
+              "BottomCommand.isModuleCallBackArrived",
+              "VmSolution.IsContinuousSelfExecute"
+            ],
+            "boundary": "The local cancellation flag prevents a later loop iteration; Task.Wait awaits the current iteration. No interrupt of an already running script is visible in this managed stop method. It is not proof that the native run cannot be interrupted through some other path."
+          },
+          {
+            "id": "S3-F2",
+            "operation": "procedure continuous run stop",
+            "status": "source-confirmed-to-native-export",
+            "chain": [
+              "VmProcedure.ContinuousRunEnable=false -> ProcessManager.RefreshUIStopExecute(ID) (procedure:176-198)",
+              "RefreshUIStopExecute starts Task.Run(StopExecute), waits SyncWaitor on isStopEnd (processManager:400-408)",
+              "StopExecute -> ServerSDKAPI.IMVS_StopExecute_V30(handle,processID,3) -> NativeMethods P/Invoke (processManager:411-420, sdkApi:135-137, nativeMethods:41)",
+              "Installed platform DLL exports IMVS_StopExecute_V30 RVA 0x647920 (raw/platform-lifecycle-exports.txt); x64 entry saves RCX handle, EDX processID, R8D waitTime and begins handle lookup (raw/platform-stop-entry.asm.txt)",
+              "ProcessManager stop callback -> VmSolution.MProcessManager_OnModuleStopRunProcessStatusCallBack; sets _updateContinueStatus false, dictProcessIDStopStatus, procedure continuous status false and wait-notify IsRunning=false for stopAction 1/2/3 (processManager:765-768, solution:3866-3911)"
+            ],
+            "stateWrites": [
+              "VmProcedure.continousRunEnable",
+              "VmSolution._updateContinueStatus[processID]",
+              "VmSolution.dictProcessIDStopStatus[processID]",
+              "VmSolution._waitNotifyPages[processID].IsRunning"
+            ],
+            "boundary": "Native stop semantics for an in-flight ShellModule::Process/ScriptCom execution are unproved. The managed nWaitTime=3 argument cannot be treated as measured timeout or forced termination."
+          },
+          {
+            "id": "S3-F3",
+            "operation": "script editor close",
+            "status": "source-confirmed-ui-only",
+            "chain": [
+              "ShellRun.xaml wires UserControl.Unloaded to ShellControl_Unloaded (shellRunXaml:2)",
+              "ShellControl_Unloaded unsubscribes three result/report callbacks and calls SetInputModuleResult(false); it logs and catches exceptions (shellRun:758-777)",
+              "Separate ShellRun.OnUnload clears RenderManager control only (shellRun:468-471)"
+            ],
+            "stateWrites": [
+              "ModuleResultCallBackArrived subscriber list",
+              "SolutionManager.OnReportDataToVM subscriber list",
+              "ModuleManager.OnModuleResultCallBack subscriber list",
+              "render control association"
+            ],
+            "boundary": "No stop or native DestroyModule call is visible in the editor Unloaded handlers. Unsubscription does not itself prove that already queued Dispatcher.BeginInvoke work cannot run; OnModuleResultCallBack and GetModuleResult queue dispatcher actions (shellRun:779-797)."
+          },
+          {
+            "id": "S3-F4",
+            "operation": "delete one module / close solution",
+            "status": "source-confirmed-to-native-api-first-breakpoint",
+            "chain": [
+              "VmModule.Dispose -> InnerDispose sets IsOnDispose, removes bindings/IO/graph links, removes ID from VmSolution.AllModules, then CloseModuleInterface (module:4153-4221)",
+              "CloseModuleInterface -> ModuleManager.CloseOneModule(ID) -> IMVS_CloseOneModule P/Invoke (module:2678-2681, sdkModule:171-179, sdkApi:143-145, nativeMethods:53)",
+              "VmSolution.CloseSolution -> SolutionManager.CloseSolution -> IMVS_CloseSolution P/Invoke (solution:2532-2536, sdkSolution:486-495, sdkApi:206-208, nativeMethods:83)",
+              "Installed platform DLL exports CloseOneModule RVA 0x645950 and CloseSolution RVA 0x646E30; installed ShellModule.dll exports DestroyModule RVA 0x384A0 (raw/platform-lifecycle-exports.txt, raw/shellmodule-exports.txt)",
+              "DestroyModule export RVA 0x384A0 checks incoming RDX module pointer, then tail-jumps through its vtable first slot with EDX=1; null pointer returns (raw/shellmodule-destroy-entry.asm.txt)"
+            ],
+            "stateWrites": [
+              "VmModule.IsOnDispose",
+              "VmModule.disposedValue",
+              "VmSolution.AllModules entry removal"
+            ],
+            "boundary": "No proven call edge from IMVS_CloseOneModule or IMVS_CloseSolution to the installed ShellModule DestroyModule export, and no proven DestroyModule-to-ScriptCom.Dispose edge. These are separate known endpoints, not a connected release chain."
+          },
+          {
+            "id": "S3-F5",
+            "operation": "late result admission after stop/delete",
+            "status": "source-confirmed-managed-predicate; runtime outcome unknown",
+            "chain": [
+              "VmSolution.MModuleManager_OnModuleResultCallBack looks up result.nModuleID in AllModules and returns if absent (solution:4191-4198)",
+              "If present, SetValue initializes current IO, compares ExecuteCount to choose reset/merge behavior, writes fields from result.pInfo, and queues module callbacks (solution:4239-4335)",
+              "Stop callback updates continuous-run status; the inspected result admission path has no stopAction, stopped flag, cancellation generation or solution epoch predicate (solution:3866-3911,4191-4335)",
+              "Deletion removes module from AllModules before CloseOneModule (module:4205-4208), so a later callback for that absent ID returns at the lookup; callbacks racing before removal are not excluded by this predicate"
+            ],
+            "stateWrites": [
+              "VmIO._ExecuteCount",
+              "VmIO._value",
+              "VmIO._valueList",
+              "VmModule.executeCount",
+              "VmModule.IsEmpty",
+              "VmModule.IsRunning"
+            ],
+            "boundary": "The managed source permits a module-ID-present callback to reach SetValue even after a stop status update; native callback ordering, actual late delivery, and whether this produces stale visible values are not runtime-proven. No global claim about VM force-stop or race safety follows."
+          }
+        ],
+        "unresolvedFirstBreakpoints": [
+          "IMVS_StopExecute_V30 native export -> server-side stop dispatch -> in-flight ShellModule::Process/ScriptCom behavior",
+          "IMVS_CloseOneModule/IMVS_CloseSolution native exports -> module registry destruction -> ShellModule DestroyModule export",
+          "ShellModule DestroyModule vtable target -> ScriptCom.Dispose and active execution synchronization",
+          "actual callback ordering around stop, delete, editor unload, and solution close"
+        ],
+        "nativeLimit": "REA native provider was unavailable in the preceding framework slice (Ghidra/Java not configured; IDA unavailable). This slice used bounded read-only dumpbin export/disassembly. No GUI, device, or dynamic probe was run.",
+        "handoff": "Machine-readable source material for the existing main architecture HTML unique writer; no separate user-facing HTML or product implementation in this slice."
+      }
+    }
+  ],
+  "vmSourceVerification": {
+    "verifiedCount": 22,
+    "errors": [],
+    "files": [
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptComponent\\ScriptComponent\\ScriptCom.cs",
+        "sha256": "aa704102f2841db0b61231172283a6b0604fe360ace215f4067b7a7fbe4733f3",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\BaseScriptSupport.cs",
+        "sha256": "e96f2a7ff5e13783b3e862725bf4a00366ad967bc3b9c13766b330a9c572b2b8",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\RemoteLoaderFactory.cs",
+        "sha256": "40a169046843a5bf2b9a944127d1f7603887e10d8d1c828d7e1ab965bbe79e4a",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\BottomCommand.cs",
+        "sha256": "444810ecb1f15627ce14083d53facc6640947d8af41a91e613af557dc012088e",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\VmProcedure.cs",
+        "sha256": "fdde074d17c50c37f8d0bfe097cf20f904cdb4b59d4ac39612fc023c3f0b69da",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\ProcessManager.cs",
+        "sha256": "06fee7c7b5387fea086abe5073be5dd2606ad121d9bc64b0ab9335bace100414",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\VmModule.cs",
+        "sha256": "53e2f0f9032c4631b59cf0eb2a00e06d50469d94706e7e370e9cc7e1059c72ce",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\VmSolution.cs",
+        "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\ModuleManager.cs",
+        "sha256": "783a45b1518f713223eca2b5e59291be973552c3e08fef0ea0d4bfccc2fbd922",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\SolutionManager.cs",
+        "sha256": "46b1d8249e3a30fe3bf7a0ed8e92207835f1a8e272833d5462041bc1756f220a",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\ServerSDKAPI.cs",
+        "sha256": "f022d4b4e87d4a076dcf42a79b131a0460ddf673d07603b5ba8d6aca35ef4b14",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\NativeMethods.cs",
+        "sha256": "6a60f612fb385987ff96d6973844a256402f097d1eb371e7ad462c44e57127d0",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\renderer-gap-projects\\ShellModuleControl\\ShellModuleControl\\ShellRun.xaml.cs",
+        "sha256": "a034c4a370f4183203808c43b0dd03c3382eaf81dea17d7f067b44616e986025",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\renderer-gap-projects\\ShellModuleControl\\ShellModuleControl\\ShellRun.xaml",
+        "sha256": "ba641234db9d950391a9b1035ce076bda15477aa82d56d9ce69ead95309fb9a6",
+        "match": true
+      },
+      {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\PublicFile\\x64\\iMVS-6000PlatformSDK.dll",
+        "sha256": "b62d7e15588ccda6671228aebc11fec3e27aca878f0e03067e44b17d5a54a9a1",
+        "match": true
+      },
+      {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModule.dll",
+        "sha256": "f8095b1cb42778a1c2259b1728d936c27d1bbc647888eabc3a3b884d8d87fd68",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-SCRIPT-S3\\framework\\raw\\platform-lifecycle-exports.txt",
+        "sha256": "10097bb9e452011ab80396ea112f64fc7137e47cb8d4d226e1513cf6c6aedd71",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-SCRIPT-S3\\framework\\raw\\platform-stop-entry.asm.txt",
+        "sha256": "9ecfed025ae2c8a579d456cbc292929f4217b82fb5bc62365c0bca17d3717c83",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-SCRIPT-S3\\framework\\raw\\shellmodule-exports.txt",
+        "sha256": "52d47872a5a777e7993ad3f5d0c25e7fa605a417202465c838ed81d1d209f75d",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-SCRIPT-S3\\framework\\raw\\shellmodule-destroy-entry.asm.txt",
+        "sha256": "b1f8cef331585e53018602ff79cbf377b9d9fc7861fdec21f38a71e495e997f6",
+        "match": true
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\ComScriptSupport.cs",
+        "sha256": "ba2362c1fdeaa516346c2f429b9262a729e1a7394d535482e9e88f37b5d1fb33",
+        "match": true,
+        "note": "主控已读方法体，补充静态实例作用域证据"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\AssemblyManager.cs",
+        "sha256": "7e3725fb2e6a4d0a589ea85e7356ff1162f3a8916a4d3f05feb96dc0e0cd3a4f",
+        "match": true,
+        "note": "主控已读方法体，补充静态实例作用域证据"
+      }
+    ]
+  },
+  "unresolved": [
+    "VM SDK native stop→实际ShellModule执行中断未贯通；不能认定原版任意脚本强停",
+    "原生CloseOneModule/CloseSolution→DestroyModule→ScriptCom.Dispose尚未贯通",
+    "停止/删除/关窗实际回调时序与运行竞态未实测",
+    "S2最终接口与成对UI性能未交付，S3仅按固定S1基线+明确依赖讨论",
+    "进程外硬停是否为当前产品必须能力，需用户在图示取舍中确认；未获实施授权"
+  ],
+  "presentation": "主文档脚本专题/O01使用执行状态机、停止双分支、异常清理表、四类Owner/租约退役图与8场景交互；VM/当前/目标及借鉴/自研/不采用并排；把未证/静态风险/目标分色，详细类型/证据/文件/合同折叠，不堆文字；首页搜脚本第三批/停止/资源释放可到。"
+}

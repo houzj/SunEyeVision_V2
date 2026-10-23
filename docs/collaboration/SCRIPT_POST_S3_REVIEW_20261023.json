@@ -1,0 +1,2110 @@
+{
+  "id": "SCRIPT-POST-S3-REVIEW-20261023",
+  "status": "analysis-and-candidate-design-only-no-implementation-authorization",
+  "title": "脚本工具：前三批之外还缺哪些闭环",
+  "baseline": {
+    "commit": "a59f446c4032e26abafc1c6a83296db78575463e",
+    "kind": "固定S2源码，只读分析，不代表S2交付或独立验收完成",
+    "productModified": false,
+    "buildOrRuntimePerformed": false,
+    "vmNewEvidence": false
+  },
+  "sourceAttribution": "本轮依据固定自研源码和实际调用链；未新增VM证据，不把候选建议说成VM实际实现。静态链已证不等运行缺陷复现。",
+  "scopeBoundary": [
+    {
+      "batch": "S1",
+      "covered": "基础预热、引用/版本/缓存身份及分段计时",
+      "keep": "继续复用内容快照与身份，不再建设第二套缓存"
+    },
+    {
+      "batch": "S2",
+      "covered": "窗口打开、首次补全、编译等待、动态IO有效提交与CLR形状",
+      "keep": "保留合法快照和编辑提交；固定源码不等正式性能/验收通过"
+    },
+    {
+      "batch": "S3",
+      "covered": "执行身份、合作停止、异常清理、输出Owner、池租约及迟到结果准入",
+      "keep": "已批准按依赖推进；本轮不扩其范围，不增加进程强停"
+    }
+  ],
+  "retainedCapabilities": [
+    "已有输入FieldId和字段重命名/删除后的下游绑定维护",
+    "已有方案保存前统一提交编辑，不因旧保存入口存在就判整个主链缺失",
+    "程序集引用名称已经随节点序列化，编译/分析引用身份已有统一基础",
+    "平台已分执行状态和业务判定；无判断项明确未判定",
+    "S3运行身份/资源方案继续作为后续依赖，不新建平行运行系统"
+  ],
+  "groups": [
+    {
+      "id": "A",
+      "title": "候选一：数据接得上，结果说得清",
+      "recommendation": "优先",
+      "reason": "直接影响同一配置能否稳定执行和用户能否信任结果。",
+      "issues": [
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "F05",
+        "F06"
+      ],
+      "dependencies": [
+        "S2字段合同和有效编辑身份",
+        "S3运行身份/获准结果合同",
+        "平台BindingInput/Output合同"
+      ],
+      "order": [
+        "确定当前绑定唯一描述及支持地址",
+        "统一类型/形状适配与设计验证",
+        "统一系统/用户输出合同",
+        "确认失败/NG表达、保留有效零值"
+      ],
+      "exit": "同配置在编辑、保存重开、执行、结果树和下游消费者解释一致；运行错误、业务NG、空值、零值分别可辨"
+    },
+    {
+      "id": "B",
+      "title": "候选二：方案和依赖能一起交付",
+      "recommendation": "随后，与A可并行分析",
+      "reason": "本机能编译不等于导入新版或换环境后仍可用。",
+      "issues": [
+        "F07",
+        "F08",
+        "F09"
+      ],
+      "dependencies": [
+        "S1引用内容身份",
+        "当前方案资源模型",
+        "S3运行域装载与Owner"
+      ],
+      "order": [
+        "确定平台提供/方案附带资源归属",
+        "修导入同名版本决策和失败保护",
+        "统一私有托管依赖及支持的伴随资源清单",
+        "干净目录/离线副本重开验证"
+      ],
+      "exit": "导入结果可解释、依赖缺失可诊断，代表方案离开开发机仍能按声明运行或明确拒绝"
+    },
+    {
+      "id": "C",
+      "title": "候选三：出错能定位，大结果能查看",
+      "recommendation": "合同稳定后收口",
+      "reason": "提升排障与实际规模下的可用性，避免扩成完整IDE。",
+      "issues": [
+        "F10",
+        "F11"
+      ],
+      "dependencies": [
+        "S1/S2源码版本门控",
+        "S3异常/结果与资源合同"
+      ],
+      "order": [
+        "统一结构化诊断和定位入口",
+        "监视摘要/展开/分页和结果身份",
+        "代表业务规模测量后确定预算"
+      ],
+      "exit": "诊断精确对应文档/行列/阶段，监视不为未展开的大结果穷尽创建节点"
+    }
+  ],
+  "dependencyEdges": [
+    [
+      "S2字段/版本",
+      "A数据合同"
+    ],
+    [
+      "S3身份/资源",
+      "A有效结果"
+    ],
+    [
+      "S1引用快照",
+      "B依赖资产"
+    ],
+    [
+      "方案资源模型",
+      "B方案携带"
+    ],
+    [
+      "A输出合同",
+      "C结构化诊断与监视"
+    ],
+    [
+      "S3身份/资源",
+      "C延迟消费安全"
+    ]
+  ],
+  "scenes": [
+    {
+      "id": "array",
+      "name": "上游从1个结果变成多个",
+      "current": [
+        "平台允许绑定",
+        "单元素可能被拆成标量",
+        "脚本数组字段转换失败"
+      ],
+      "target": [
+        "声明数组",
+        "始终保留数组形状",
+        "显式索引才取单值"
+      ],
+      "evidence": "F02，静态条件场景，未运行"
+    },
+    {
+      "id": "zero",
+      "name": "结果是0或false",
+      "current": [
+        "脚本返回合法值",
+        "结果字典保留",
+        "监视过滤后显示无结果"
+      ],
+      "target": [
+        "保留原值",
+        "单列是否运行/是否有值",
+        "如实显示0或false"
+      ],
+      "evidence": "F06，静态三入口已确认"
+    },
+    {
+      "id": "outcome",
+      "name": "日志报错后直接返回",
+      "current": [
+        "LogError写日志",
+        "Process正常返回",
+        "没有执行错误则成功，平台可仍为未判定"
+      ],
+      "target": [
+        "日志仍只表达日志",
+        "显式失败/业务NG/成功合同",
+        "平台结果统一投影"
+      ],
+      "evidence": "F05，目标API尚未确定，非已实现"
+    },
+    {
+      "id": "import",
+      "name": "导入一个同名新版DLL",
+      "current": [
+        "选择新DLL",
+        "目标同名已存在就跳过",
+        "引用仍可能使用旧内容"
+      ],
+      "target": [
+        "比较内容与身份",
+        "去重/冲突/替换选择明确",
+        "成功后发布新环境身份"
+      ],
+      "evidence": "F07，不重复S1内容缓存"
+    },
+    {
+      "id": "move",
+      "name": "把方案交给另一台机器",
+      "current": [
+        "方案保存引用名称",
+        "私有DLL在插件目录",
+        "目标机器未必拥有文件/闭包"
+      ],
+      "target": [
+        "平台依赖与私有资产分开",
+        "声明并携带所需私有文件",
+        "加载校验或点名缺失"
+      ],
+      "evidence": "F08/F09，当前引用名已保存，不表示全部移机必失败"
+    },
+    {
+      "id": "diagnostic",
+      "name": "报错发生在生成字段文档",
+      "current": [
+        "ScriptGenerated/User分别编译",
+        "诊断变成文本",
+        "双击只抓行号跳用户编辑器"
+      ],
+      "target": [
+        "诊断带文档与源码身份",
+        "生成错误定位IO配置",
+        "用户错误精确行列跳转"
+      ],
+      "evidence": "F10，交互只是目标说明"
+    },
+    {
+      "id": "monitor",
+      "name": "查看很大的数组或多边形",
+      "current": [
+        "结果赋给监视面板",
+        "UI同步创建全部节点",
+        "业务规模大时有阻塞风险"
+      ],
+      "target": [
+        "先摘要和总数",
+        "展开/分页才取节点",
+        "有界投影并保留原始索引"
+      ],
+      "evidence": "F11，具体性能预算待测"
+    }
+  ],
+  "issues": [
+    {
+      "id": "F01",
+      "group": "A",
+      "priority": "P1候选",
+      "title": "绑定树认可的全局地址，脚本不一定按同样规则读取",
+      "plain": "平台认识变量ID、数组下标和成员路径；脚本目前主要按完整字符串查名字。",
+      "evidenceState": "解析规则差异已静态确认；具体UI入口和运行触发待验证",
+      "impact": "可能出现配置时看似合法，运行时找不到值。不能推断所有全局绑定都会失败。",
+      "target": "绑定验证和脚本运行共用明确的地址解析合同，支持的路径一致，不支持的配置时拒绝。",
+      "overlap": "S2解决字段声明，不等于全平台地址语法；S3处理执行身份，不重做地址解释。",
+      "acceptance": [
+        "名称、变量ID、成员、[0]、[]逐项验证，普通工具和脚本读到同值或同一明确诊断",
+        "变量改名/删除按稳定身份维护，保持现有跨流程直接连线限制"
+      ],
+      "report": "contracts",
+      "sourceFinding": "CONTRACT-GLOBAL-ADDRESS",
+      "detail": {
+        "id": "CONTRACT-GLOBAL-ADDRESS",
+        "title": "全局变量绑定地址的设计验证与脚本运行解析不一致",
+        "priority": "P1候选，先统一地址解释再扩大脚本跨流程使用",
+        "evidence": [
+          "src/Workflow/OutputBindingChangeService.cs:229-245",
+          "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptBindingResolver.cs:69-108",
+          "src/Workflow/WorkflowExecutionEngine.cs:1116-1131"
+        ],
+        "callChain": "BindingInputCatalog.Describe Inputs → OutputBindingChangeService.Reconcile 全局变量分支验证Value+成员/索引路径或__VariableId__ → WorkflowExecutionEngine把运行字典注入ScriptTool → ScriptBindingResolver.Resolve",
+        "provenFacts": [
+          "平台验证同时识别__GlobalVars__.名称后缀与__VariableId__.Id；前者通过BindingContractValidator验证后续成员/索引。",
+          "ScriptBindingResolver对__GlobalVars__.之后的整个字符串直接TryGetValue，不解析成员/索引；__VariableId__则进入一般节点路径。",
+          "执行引擎只注入__GlobalVars__合成结果，没有在本调用点注入__VariableId__结果。"
+        ],
+        "staticRisk": "例如全局数组samples[0]通过平台路径验证后，脚本实际查名为samples[0]的字典键；通常字典仅有samples。ID地址若进入脚本也不是按变量ID查找。跨流程全局通道会出现编辑时适配、执行时报缺值。",
+        "unknown": "未证明当前UI提供所有这些地址入口；未做实际配置/运行复现。平台能接受某地址不等用户界面必然生成它。",
+        "overlapBoundary": "不是S2字段CLR类型映射或非法草稿问题，是平台已认可的全局地址语法没有端到端执行合同；不是S3字典/图像生命周期问题。",
+        "recommendation": "让脚本消费平台统一全局地址解析结果，显式支持或明确拒绝ID/索引/成员地址；以稳定变量ID保留改名关联，运行按当前快照解析。",
+        "dependencies": [
+          "全局变量ID/名称迁移与运行快照合同",
+          "BindingContractValidator与ScriptBindingResolver统一地址语义"
+        ],
+        "limitedAcceptance": [
+          "固定名称值、数组[0]/[]、成员、变量改名保留ID、删除重建同名五组设计/执行一致断言",
+          "同一地址在普通工具与脚本解析值或诊断一致",
+          "不要求新增跨流程执行调度能力"
+        ]
+      }
+    },
+    {
+      "id": "F02",
+      "group": "A",
+      "priority": "P1候选",
+      "title": "同一数组绑定，结果数量变化时类型可能跟着变",
+      "plain": "平台可能把只有一个元素的数组自动拆成单值；脚本字段却要求数组。",
+      "evidenceState": "宽松兼容、单元素解包和脚本转换分支已确认；0/1/N运行矩阵未跑",
+      "impact": "同一配置可能随检测数量变化而成功或报错；显式[]可以避免部分情况，不能说全部数组都失败。",
+      "target": "声明数组就保留数组；标量是否取首项必须明确。候选验证和执行转换使用同一策略。",
+      "overlap": "复用S2 CLR描述器；新增的是上游解析到脚本字段的适配合同。",
+      "acceptance": [
+        "Double[]到Double[]/Double覆盖0、1、2元素与无后缀/[]/[0]",
+        "空集合、越界和空值显式诊断，不靠基数猜类型"
+      ],
+      "report": "contracts",
+      "sourceFinding": "CONTRACT-BINDING-SHAPE",
+      "detail": {
+        "id": "CONTRACT-BINDING-SHAPE",
+        "title": "平台允许的集合适配与脚本运行转换存在基数相关断层",
+        "priority": "P1候选，与平台绑定合同批次合并",
+        "evidence": [
+          "src/Plugin.SDK/Execution/Parameters/BindingContractValidator.cs:81-98",
+          "src/Plugin.SDK/Execution/Parameters/OutputVariableResolver.cs:83-94",
+          "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptBindingResolver.cs:153-217",
+          "tools/SunEyeVision.Tool.Script/Models/ScriptIoTypeDescriptor.cs:34-48"
+        ],
+        "callChain": "平台Accept允许数组到元素类型/元素到数组 → ScriptBindingResolver.ResolveNodeProperty → OutputVariableResolver按无索引长度1解包 → CoerceNodeValue按目标CLR类型转换",
+        "provenFacts": [
+          "Accept允许array→scalar和scalar→array，而Script的CoerceNodeValue在实际值仍为数组、目标是标量时明确抛错。",
+          "OutputVariableResolver对无显式索引长度1数组解包，[]可显式保留；故声明数组不意味着脚本收到的实际值恒为数组。",
+          "ScriptIoTypeDescriptor.ConvertTo只支持array→array逐元素转换，不提供scalar→array包装；CoerceNodeValue也没有scalar→array分支。"
+        ],
+        "staticRisk": "绑定到Double[]输入的同一上游数组，无[]路径在长度1时可能解包成double并被拒绝；长度0或N则保留数组。绑定到标量的数组也可能长度1成功、N失败。结果依赖业务检测数量而非声明合同。",
+        "unknown": "未执行基数矩阵；具体树选择是否默认附[]仍需实测，不把全部数组订阅都判为失败。",
+        "overlapBoundary": "S2已统一脚本声明与实际CLR形状；这里是跨平台值解析的长度1解包/宽松适配策略没有面向脚本的明确解释，不重报S2类型映射。",
+        "recommendation": "给BindingInputReference声明脚本精确形状适配策略，使候选验证和运行解析使用同策略。数组输入默认保留集合；标量输入要求明确[i]或明确认可的取首语义，避免隐式随基数切换。",
+        "dependencies": [
+          "平台绑定类型/路径策略",
+          "S2已稳定CLR描述器可复用"
+        ],
+        "limitedAcceptance": [
+          "Double[]→Double[]与Double[]→Double分别验证0/1/2元素，含无后缀/[]/[0]",
+          "设计时兼容的绑定运行不得仅因长度1而类型失败",
+          "空值/越界保留明确诊断；不要求重写其他工具的向量化策略"
+        ]
+      }
+    },
+    {
+      "id": "F03",
+      "group": "A",
+      "priority": "P2条件风险",
+      "title": "一个绑定地址存在两份可保存表示",
+      "plain": "Source对象和BindingSource字符串由不同链路读取，普通setter不保证同步。",
+      "evidenceState": "双字段及不同读取优先级已确认；当前常见UI是否产生冲突未复现",
+      "impact": "外部构造或加载不一致数据时，平台验证A、脚本实际读B。不是已证明的新建必现故障。",
+      "target": "开发期统一当前格式的绑定事实源，显示对象和路径是投影；冲突拒绝，不新增旧格式兼容层。",
+      "overlap": "S2合法编辑提交已有，新增的是持久化和多消费者同源。",
+      "acceptance": [
+        "Source空、相同、冲突三种当前格式往返，所有消费者解释同一地址",
+        "编辑后保存重开、改名/删除保持FieldId或明确失效"
+      ],
+      "report": "contracts",
+      "sourceFinding": "CONTRACT-SERIALIZED-SOURCE",
+      "detail": {
+        "id": "CONTRACT-SERIALIZED-SOURCE",
+        "title": "Source对象与BindingSource字符串存在不同消费者与未声明优先级",
+        "priority": "P2候选；先做静态/序列化定向核验再扩大修复",
+        "evidence": [
+          "tools/SunEyeVision.Tool.Script/Models/ScriptInputConfig.cs:43-60",
+          "src/Plugin.SDK/Execution/Parameters/BindingInputCatalog.cs:76-87",
+          "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptBindingResolver.cs:60-108",
+          "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml:235-240"
+        ],
+        "callChain": "可序列化ScriptInputConfig.Source与BindingSource → 平台BindingInputCatalog优先Source.GetBindingPath → 行ParamBinding仅TwoWay写BindingSource → 运行ScriptBindingResolver只读BindingSource",
+        "provenFacts": [
+          "Source与BindingSource均为可写公开属性，未JsonIgnore；两者setter未同步另一地址，Source setter还可修改TypeName。",
+          "BindingInputCatalog的Read优先非空Source，而ScriptBindingResolver只读取BindingSource。",
+          "脚本行XAML绑定BindingSource，没有把Source对象接到该ParamBinding。Catalog.Write会同时重写二者，但普通字符串setter没有该保证。"
+        ],
+        "staticRisk": "条件：加载当前开发配置/外部构造配置使Source非空，随后地址字符串更新或本就不一致。平台可能验证/编译依赖A，脚本实际读取B；保存再加载也可能保留两份不同地址。Source setter的类型副作用还要求明确反序列化顺序合同。",
+        "unknown": "未证明当前常见新建/编辑路径必然产生非空旧Source；未做JSON往返测试，因此属于有源码支持的条件风险，不能标成已复现用户故障。",
+        "overlapBoundary": "S2关注编辑草稿发布和生成字段CLR形状；本项关注地址持久化的唯一真相与平台/运行消费者一致性。已有Catalog.Write修复部分路径，不能推论全部路径一致。",
+        "recommendation": "在当前开发期定义单一持久化绑定描述（工作流/节点/字段ID+路径），字符串与Source均为投影；入口冲突明确拒绝，编辑保存入口原子更新。软件未发布，不保留双写兼容机制、不追加旧格式迁移。",
+        "dependencies": [
+          "当前方案序列化单事实源规则",
+          "平台稳定绑定身份模型"
+        ],
+        "limitedAcceptance": [
+          "Source为空/与字符串相同/不一致三种JSON往返",
+          "非空Source后编辑绑定，验证器/依赖图/执行读取同一地址",
+          "上游改名/删除后保存重开保留正确FieldId或明确重绑状态"
+        ]
+      }
+    },
+    {
+      "id": "F04",
+      "group": "A",
+      "priority": "P1候选",
+      "title": "设计时可选输出和运行结果树不是同一份清单",
+      "plain": "元输出名称、类型存在差别，用户字段还可能撞上系统输出名。",
+      "evidenceState": "两份输出合同和保留名集合差异已确认；具体绑定错误需有限验证",
+      "impact": "执行耗时Integer/Double不一致；部分结果解析链缺字段或先选到同名字段。不能扩大成所有消费者都取不到元信息。",
+      "target": "设计树、运行树、绑定读取共用输出合同；统一系统名称空间及类型，禁止冲突或分离系统字段。",
+      "overlap": "S2字段ID/类型生成保留；S3管结果准入和资源，不解决字段语义清单。",
+      "acceptance": [
+        "声明和运行描述按名称/FieldId/类型/形状一致，值可不同",
+        "ExecutionTimeMs、IsPass和大小写碰撞得到统一诊断；CompileTimeMs取值或明确不开放"
+      ],
+      "report": "contracts",
+      "sourceFinding": "CONTRACT-RESULT-NAMESPACE",
+      "detail": {
+        "id": "CONTRACT-RESULT-NAMESPACE",
+        "title": "脚本输出的设计/运行元数据与平台名称空间未统一",
+        "priority": "P1候选（错误绑定），显示分组修饰可P2",
+        "evidence": [
+          "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs:315-341",
+          "tools/SunEyeVision.Tool.Script/Models/ScriptResults.cs:45-88",
+          "tools/SunEyeVision.Tool.Script/Models/ScriptIoContractSnapshot.cs:33-43",
+          "src/Plugin.SDK/Execution/Parameters/OutputVariableResolver.cs:49-64",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:2710-2724"
+        ],
+        "callChain": "ScriptParameters.GetOutputContract生成设计树/绑定候选 → ScriptResults.GetOutputVariables生成运行树 → OutputVariableResolver按Name忽略大小写取第一个输出",
+        "provenFacts": [
+          "设计输出声明Status、ExecutionTimeMs(Integer)、CompileTimeMs、LogCount、CompileErrorCount；运行override仅附ExecutionTimeMs(Double)、IsPass，未合并基类或附其余元输出。",
+          "合法IO名称去重使用Ordinal，保留词没有ExecutionTimeMs、IsPass等平台元输出名；因此foo/Foo以及用户ExecutionTimeMs/IsPass均可通过该命名验证。",
+          "平台Resolver按OrdinalIgnoreCase且FirstOrDefault寻址，两个C#可区分字段foo/Foo进入平台后地址冲突；用户元输出同名会与附加字段产生重复名称。"
+        ],
+        "staticRisk": "在本项核实的GetOutputVariables→OutputVariableResolver链，设计期声明的CompileTimeMs等运行变量不存在，Resolver不会反射同名CLR属性兜底；不推论平台所有其他消费者也无值。运行树字段增删/类型变化。foo/Foo可能下游引用到第一个值；用户元输出重名则平台语义含混。FieldId重命名维护不能解决运行Name寻址冲突。",
+        "unknown": "未测试绑定树呈现、下游实际选择与分组；只有集合/类型/寻址算法的不一致为已证事实。",
+        "overlapBoundary": "不涉及S3输出Owner/租约和迟到结果；也不是S2用户字段CLR生成问题，是平台输出名称空间与静态/运行合同版本一致性。",
+        "recommendation": "一个公共输出合同生成器同时产出设计/运行描述，统一元输出集合/类型并提供运行取值；定义平台名字大小写和系统字段保留策略，拒绝冲突或采用独立系统命名空间。",
+        "dependencies": [
+          "平台元输出标准",
+          "当前开发格式统一及现有下游绑定诊断；软件未发布，不新增旧格式迁移工程"
+        ],
+        "limitedAcceptance": [
+          "设计/运行输出按名称、类型、FieldId、形状逐项相等（运行值除外）",
+          "绑定CompileTimeMs等元输出后实际解析有值或明确不开放",
+          "foo/Foo及ExecutionTimeMs/IsPass冲突在保存/加载/执行入口得到一致诊断"
+        ]
+      }
+    },
+    {
+      "id": "F05",
+      "group": "A",
+      "priority": "P1合同待确认",
+      "title": "写了错误日志，不等于脚本执行失败",
+      "plain": "默认模板空图像时LogError后return；日志只入日志列表，执行错误列表为空仍可SetSuccess。",
+      "evidenceState": "完整静态分支已确认；未运行此模板复现；是否改变API须设计确认",
+      "impact": "用户容易把红色日志误当失败结论。平台无判断项时显示未判定，不应说必然显示OK。",
+      "target": "保留日志独立含义，明确表达执行失败和业务NG的API/返回合同，再统一进入平台结果；模板改用明确失败路径。",
+      "overlap": "S3保证取消/异常清理和不误发布；本项是正常返回时脚本如何主动表达业务结果，不复制运行系统。",
+      "acceptance": [
+        "只有LogError时日志与结论按明确合同显示，不能靠文本猜失败",
+        "显式失败、业务NG、正常成功/未判定、异常四组结果与流程消费者一致；日志不承担判定"
+      ],
+      "rootEvidence": [
+        {
+          "path": "src/Plugin.SDK/Scripting/Script.cs",
+          "blobSha1": "d35fae92670a8198fb3bc6487ec4b1a5836fba01",
+          "locations": [
+            {
+              "line": 21,
+              "needle": "public abstract void Process();"
+            },
+            {
+              "line": 32,
+              "needle": "protected void LogError"
+            }
+          ]
+        },
+        {
+          "path": "src/Plugin.SDK/Scripting/ScriptContext.cs",
+          "blobSha1": "946793f412a1973f8a36f1dfbb8ac91a5f0acf10",
+          "locations": [
+            {
+              "line": 34,
+              "needle": "public void LogError"
+            }
+          ]
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+          "blobSha1": "ee57d50975bf488c492fef2d893d3a71f1fb9d6c",
+          "locations": [
+            {
+              "line": 186,
+              "needle": "LogErrorAction = msg =>"
+            },
+            {
+              "line": 190,
+              "needle": "_logMessages.Add($\"[错误] {msg}\");"
+            }
+          ]
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.Script/ScriptTool.cs",
+          "blobSha1": "c35fe3e3d9dce84d1f5ef4f8d159846ecf5b6557",
+          "locations": [
+            {
+              "line": 153,
+              "needle": "if (errors.Count == 0)"
+            },
+            {
+              "line": 155,
+              "needle": "result.SetSuccess(lifecycleManager.ExecutionTimeMs);"
+            }
+          ]
+        },
+        {
+          "path": "tools/SunEyeVision.Tool.Script/Resources/MinimalCode.txt",
+          "blobSha1": "adfda035315dcaf1c39cc513caa893b01e0f054f",
+          "locations": [
+            {
+              "line": 19,
+              "needle": "LogError(\"输入图像 input1 为空\");"
+            },
+            {
+              "line": 20,
+              "needle": "return;"
+            }
+          ]
+        },
+        {
+          "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+          "blobSha1": "d3dbf21e3cbfbef584f4094796f86e6f4ece0279",
+          "locations": [
+            {
+              "line": 559,
+              "needle": "private static void ApplyJudgmentStatus"
+            },
+            {
+              "line": 569,
+              "needle": "result.JudgmentStatus = presentation"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F06",
+      "group": "A",
+      "priority": "P1展示可信",
+      "title": "合法的0和false被显示成“无结果”",
+      "plain": "打开预填、本窗执行、外部刷新三条监视入口都会过滤类型默认值。",
+      "evidenceState": "过滤与三入口已静态确认；不是底层输出数据被删除",
+      "impact": "结果字典仍有真实值，但用户监视看到无结果，难以区分测得0、false、空值与没有运行。",
+      "target": "原值如实显示，另列未运行/失败/有值/空值；是否检测未赋值另立合同，不能从值猜。",
+      "overlap": "S3决定哪轮结果有效；这里决定如何解释有效值。",
+      "acceptance": [
+        "0、false、0.0、空字符串、null与无结果在三入口区分",
+        "保存重开不改变底层值；不用零值当执行状态"
+      ],
+      "report": "editing",
+      "sourceFinding": "EDIT-01",
+      "detail": {
+        "id": "EDIT-01",
+        "title": "有效默认值在输出监视被误解释为无结果",
+        "priority": "P1",
+        "disposition": "新增闭环",
+        "status": "源码事实已证，窗口未测",
+        "chain": [
+          "打开 -> OnViewLoaded -> TryPrefillOutputMonitor -> FilterDefaultValues -> ValueSource",
+          "本窗执行完成 -> FilterDefaultValues -> ValueSource",
+          "外部结果刷新 -> DSQS -> FilterDefaultValues -> ValueSource",
+          "SyncValuesFromSource缺键 -> ClearValuesRecursive"
+        ],
+        "gap": "显式输出0/false/0.0/null按等于CLR默认值从监视副本过滤，三个入口都受影响。仅显示信息丢失，原ScriptResults.OutputValues及GetOutputVariables仍保留原值，不宣称下游数据丢失。",
+        "nonOverlap": "S2合法类型提交与S3结果身份/Owner不提供赋值状态。",
+        "recommendation": "保留有效原值，区分无运行结果与有效默认值；若需未赋值提示，必须单独定义状态来源，不能从值猜测。",
+        "dependencies": [
+          "S2合法契约",
+          "S3获准结果身份"
+        ],
+        "minimalAcceptance": [
+          "0/false/0.0在执行后、重开、外部刷新三入口显示一致有效值",
+          "有效null与无运行结果区分；刷新不改真实输出"
+        ],
+        "evidence": [
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+            "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+            "start": 232,
+            "end": 245,
+            "note": "打开预填过滤"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+            "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+            "start": 405,
+            "end": 409,
+            "note": "执行完成过滤"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+            "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+            "start": 428,
+            "end": 439,
+            "note": "外部刷新过滤"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+            "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+            "start": 495,
+            "end": 515,
+            "note": "默认值判断"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+            "blobSha1": "01bf79b7b320e6badd5d60264a6d414e1247a06a",
+            "start": 108,
+            "end": 129,
+            "note": "缺键清除"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Models/ScriptResults.cs",
+            "blobSha1": "e279f9574502782f8180c19dc44c7a37ff7b3bfb",
+            "start": 42,
+            "end": 63,
+            "note": "原始结果未滤"
+          }
+        ]
+      }
+    },
+    {
+      "id": "F07",
+      "group": "B",
+      "priority": "P1候选",
+      "title": "添加同名DLL时可能悄悄沿用旧文件",
+      "plain": "引用导入遇到目标文件存在就跳过，S1内容快照还看不到被跳过的新文件。",
+      "evidenceState": "导入continue分支已确认；用户操作复现未跑",
+      "impact": "用户以为导入了新版，实际仍用旧内容；这不是缓存摘要算法的问题。",
+      "target": "比较内容和程序集身份；同内容去重并提示，不同内容明确冲突/替换选择，宿主保留程序集显示真实来源。",
+      "overlap": "保留S1内容身份；补导入入口的选择结果和文件事务，不重做缓存。",
+      "acceptance": [
+        "同名同内容、同名不同内容、宿主保留名三组结果明确",
+        "取消或复制失败保留旧环境，不伪称新版本生效"
+      ],
+      "report": "dependencies",
+      "sourceFinding": "DEP-02",
+      "detail": {
+        "id": "DEP-02",
+        "priority": "P1",
+        "title": "添加同名 DLL 时静默跳过，用户选择的新版本没有进入引用环境",
+        "entry_chain": "AssemblyReferenceDialog.OnAddButtonClick -> Path.GetFileName -> destPath -> File.Exists continue -> BuildRefList -> 名称勾选 -> CaptureReferences",
+        "evidence": [
+          {
+            "file": "tools/SunEyeVision.Tool.Script/Views/AssemblyReferenceDialog.xaml.cs",
+            "lines": "98-106,141-163",
+            "fact": "仅枚举目录顶层 DLL；添加时同名目标存在即 continue，无版本或内容比较；重建候选但不自动勾选"
+          },
+          {
+            "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+            "lines": "264-275",
+            "fact": "BCL/宿主锚定优先于同名用户文件"
+          },
+          {
+            "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptReferenceSnapshot.cs",
+            "lines": "40-46",
+            "fact": "冲突检查针对已经解析出的条目；被导入入口跳过的文件不会进入快照"
+          }
+        ],
+        "observations": [
+          "已证：先有 Foo.dll v1 后从别处选择 Foo.dll v2，复制循环直接跳过 v2；这是静态确定分支，不需假设缓存失效。",
+          "已证：UI只显示文件名/逻辑名，不展示版本、来源、摘要；无法让用户知道保留的是旧文件。",
+          "风险：用户认为添加/升级成功，补全与编译仍一致使用旧 DLL；S1能够保持三链同版，却不能解释用户想导入的版本未被采用。",
+          "已证：同名宿主可选 API 还可能同时出现在用户候选列表，但 ResolveAssemblyFile 优先锚定宿主，需明确显示来源优先级。"
+        ],
+        "new_vs_s1_s3": "新增导入事务与冲突呈现；不重复 S1同一快照内多版本拒绝或缓存版本检测。",
+        "recommendation": "导入前检查程序集元数据与摘要；同内容去重并提示，不同内容给明确版本冲突结果，再由用户选择替换或方案隔离目录。宿主保留名拒绝作为用户副本导入或显示实际生效源。",
+        "not_adopted": "不自动覆盖共享 ScriptRefs，不仅改缓存失效，因为当前文件从未被复制。",
+        "dependencies": [
+          "DEP-01引用文件归属优先确定"
+        ],
+        "bounded_acceptance": [
+          "同名同内容导入明确去重",
+          "同名不同内容不得静默成功",
+          "宿主同名导入显示实际解析来源",
+          "失败导入不破坏原版本与节点引用"
+        ]
+      }
+    },
+    {
+      "id": "F08",
+      "group": "B",
+      "priority": "P1候选",
+      "title": "方案保存了引用名称，却没有带走引用文件",
+      "plain": "DLL名称列表已能序列化，默认目录仍跟插件走，方案资源解析没管理这类脚本资产。",
+      "evidenceState": "序列化与资源覆盖范围已静态确认；离线移机未测",
+      "impact": "只复制方案文件到另一位置/机器，私有DLL不一定存在。不是引用清单完全没保存。",
+      "target": "明确平台提供和方案附带依赖，记录相对路径、身份和内容摘要；显式导出所需私有文件，缺失时给出清单。",
+      "overlap": "S1提供本机快照；后续补方案资产合同，不新增旧方案迁移。",
+      "acceptance": [
+        "同机换目录与干净副本重开：资源可解析或逐项明确缺失",
+        "平台SDK与私有依赖分开，禁止用复制整个程序目录代替声明"
+      ],
+      "report": "dependencies",
+      "sourceFinding": "DEP-01",
+      "detail": {
+        "id": "DEP-01",
+        "priority": "P1",
+        "title": "引用名称已随方案保存，引用文件与版本并未形成可携带合同",
+        "entry_chain": "SolutionManager.SaveCurrentDocument -> SolutionSnapshot.Prepare -> SolutionSession.Serialize -> WorkflowJsonConverter.Write -> Nodes.Parameters -> ScriptParameters.AssemblyReferences；运行时 CaptureReferences -> AssemblyReferenceFullPath -> ResolveAssemblyFile",
+        "evidence": [
+          {
+            "file": "src/Workflow/SolutionSession.cs",
+            "lines": "25",
+            "fact": "按 WorkflowSerializationOptions 序列化完整方案"
+          },
+          {
+            "file": "src/Workflow/WorkflowJsonConverter.cs",
+            "lines": "58",
+            "fact": "序列化 Nodes"
+          },
+          {
+            "file": "src/Workflow/WorkflowNode.cs",
+            "lines": "165",
+            "fact": "Parameters 为公开序列化属性"
+          },
+          {
+            "file": "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs",
+            "lines": "88-120,139-154",
+            "fact": "AssemblyReferenceDir 与 AssemblyReferences 无 JsonIgnore，完整目录却基于工具程序集所在目录，不是方案目录"
+          },
+          {
+            "file": "src/Workflow/Persistence/SolutionResourceResolver.cs",
+            "lines": "52-59,63-82",
+            "fact": "Inspect/RebaseCopy 处理图像和标定资源，不处理脚本引用目录或列表"
+          }
+        ],
+        "observations": [
+          "已证：不能说引用清单未保存，清单是名称字符串；未保存字节/SHA/依赖版本清单。",
+          "已证：默认 ScriptRefs 相对插件位置，多个方案共用；路径还接受绝对目录，迁移方案文件不会自动迁移该目录。",
+          "风险：同一方案在另一台机器或另一安装目录中缺 DLL，或者同名不同版本；S1运行时内容身份能防缓存误用，却不提供方案依赖交付。",
+          "未知：未实跑方案 roundtrip/跨目录迁移，不宣称所有方案已丢失引用；VM项目打包能力本轮无证据。"
+        ],
+        "new_vs_s1_s3": "新增方案资源归属/锁定/导出合同；不重做 S1快照/哈希/缓存，不重复 S2编辑工作区或 S3池生命周期。",
+        "recommendation": "开发期统一现行方案级引用资源归属与保存格式，明确方案级引用包目录和外部引用模式，保存逻辑名、相对路径、程序集身份与内容摘要；导出显式携带所选依赖清单和文件，加载时给缺失或版本不符诊断。当前 ScriptRefs 属待明确支持范围的现状，不新建旧方案迁移或旧插件兼容层。",
+        "not_adopted": "不把全量宿主 DLL 拷到每方案，不将全部程序集数量当性能缺陷；不把运行时缓存键当可移植项目文件。",
+        "dependencies": [
+          "开发期统一的现行方案持久化格式与资源归属合同",
+          "当前ScriptRefs支持范围决策",
+          "S1引用快照作为消费端"
+        ],
+        "bounded_acceptance": [
+          "两方案同名不同版本 DLL 独立保存并各自恢复",
+          "导出到无原插件 ScriptRefs 的干净安装目录仍可运行",
+          "缺文件与摘要不符定位到节点和引用，不静默换版"
+        ]
+      }
+    },
+    {
+      "id": "F09",
+      "group": "B",
+      "priority": "P1依赖支持边界",
+      "title": "编译看得到的库，不代表运行所需文件都齐全",
+      "plain": "当前只预载选中的托管DLL；实现依赖、native、语言资源及伴随文件没有同一资产合同。",
+      "evidenceState": "装载和导入范围已确认；具体第三方依赖样本未执行",
+      "impact": "A.dll编译可用，在调用需要B/native资源的方法时仍可能失败；宿主已提供依赖时不一定失败。",
+      "target": "区分编译可见项和仅运行依赖；对支持的依赖形态受控解析并校验，对暂不支持的导入前明确拒绝。平台API继续同一类型身份。",
+      "overlap": "复用S1快照/S3运行域，新增依赖闭包/来源协议，不建设第二套执行器。",
+      "acceptance": [
+        "A到B托管依赖、native/RID和资源各有明确支持或拒绝结果",
+        "缺依赖点名文件和来源，正确版本不被默认宿主意外替代"
+      ],
+      "report": "dependencies",
+      "sourceFinding": "DEP-03",
+      "detail": {
+        "id": "DEP-03",
+        "priority": "P1",
+        "title": "显式编译引用一致性已建立，运行依赖闭包仍只覆盖所选托管映像",
+        "entry_chain": "ScriptTool -> ScriptCompiler.CompileAsync -> ScriptReferenceSnapshot -> CompileCore -> ScriptLifecycleManager -> ScriptSandboxPool.GetOrCreate -> ScriptSandbox -> LoadFromStream；缺依赖 -> OnResolving日志并返回null",
+        "evidence": [
+          {
+            "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+            "lines": "126,175",
+            "fact": "编译使用固定引用快照的 AnalysisReferences"
+          },
+          {
+            "file": "src/CommonControl/ScriptEditorCore.xaml.cs",
+            "lines": "462-463",
+            "fact": "编辑器 Workspace 接收相同分析引用形状，且启用 unsafe"
+          },
+          {
+            "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+            "lines": "33-59,66-69,134-143",
+            "fact": "仅预载选中 IsUserReference 字节；默认 ALC 同名冲突直接报错；无用户依赖路径加载或 native resolver，缺依赖只日志返回null"
+          },
+          {
+            "file": "tools/SunEyeVision.Tool.Script/Views/AssemblyReferenceDialog.xaml.cs",
+            "lines": "153-159",
+            "fact": "只复制所选单个 DLL，不复制 .deps.json/native/satellite/伴随资源"
+          },
+          {
+            "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+            "lines": "307-320",
+            "fact": "宿主API从类型锚定文件获得元数据，运行应保持默认 ALC 类型身份"
+          }
+        ],
+        "observations": [
+          "已证：S1语义/编译同内容引用、所选用户托管字节装载已存在，本项不是重复声称三链完全独立。",
+          "已证：用户库 A 的未勾选托管依赖 B，即使位于 ScriptRefs，也不由该 sandbox 的解析器读取；默认 ALC fallback 是否碰巧已含 B 取决宿主。",
+          "风险：A的公共签名不暴露B时编译可成功，执行方法才请求 B；native P/Invoke、卫星程序集和依赖旁数据文件也不在单 DLL 导入合同中。未运行构造样例，不宣称已经复现。",
+          "已证：按字节 LoadFromStream 不建立库文件的原始目录解析合同；不能把“放在 ScriptRefs”日志提示等同于依赖闭包解析。",
+          "未知：实际业务 DLL 是否需要这些依赖、宿主默认 ALC 与锚定 API 版本是否可能分叉，须有限样例确认；本轮无证据证明已有宿主错版。"
+        ],
+        "new_vs_s1_s3": "新增显式引用与运行依赖资产的分工及闭包解析规则；S3池复用/卸载不解决缺少资产或绑定策略。",
+        "recommendation": "在方案依赖清单区分编译可见项和仅运行依赖项；以清单受控解析托管/native/资源依赖，固定 RID/体系结构和版本来源，宿主SDK/API继续共享类型身份并做启动兼容检查。对暂不支持的依赖形态给导入前明确限制。",
+        "not_adopted": "不扫描并预加载整个目录，不把依赖闭包全部暴露为脚本编译 API，不新建独立进程或重做 ALC 池。",
+        "dependencies": [
+          "DEP-01包目录/依赖清单",
+          "DEP-02安全升级与冲突呈现",
+          "宿主API类型身份合同"
+        ],
+        "bounded_acceptance": [
+          "A->B仅实现依赖，B不作为用户可见编译API仍按清单运行",
+          "缺B/错B版本定位依赖链",
+          "一个x64 native库和一个文化资源样例部署并调用",
+          "SDK类型经共享ALC回传可转型，实际装载身份与清单可核对"
+        ]
+      }
+    },
+    {
+      "id": "F10",
+      "group": "C",
+      "priority": "P2候选",
+      "title": "报错要能准确回到那份源码和那一列",
+      "plain": "编译诊断转成字符串，双击只提取中文行号；运行异常提取用户栈时还可能丢失异常消息。",
+      "evidenceState": "诊断压平、导航与栈提取已静态确认；真实窗口跳转未测",
+      "impact": "生成字段错误可能跳用户代码；用户代码与旧版本行号混用风险；看到栈却看不到具体错误原因。",
+      "target": "保存结构化文档/位置/严重级别/错误ID/消息/异常类型与阶段/源码身份；仅有效用户文档可跳转，配置生成错误指向相应配置。",
+      "overlap": "S1/S2已有版本及诊断任务门控；保留它们，补诊断载荷和导航合同。",
+      "acceptance": [
+        "生成文档错误、用户代码行列、运行异常、无源码位置、改代码后旧诊断五组",
+        "保留异常类型消息和关键帧，不用解析本地化显示文字定位"
+      ],
+      "report": "editing",
+      "sourceFinding": "EDIT-02",
+      "detail": {
+        "id": "EDIT-02",
+        "title": "诊断字符串化丢源码定位合同，异常栈提取丢业务消息",
+        "priority": "P1",
+        "disposition": "新增闭环",
+        "status": "源码数据降级及分支已证，实际运行栈语言/窗口未测",
+        "chain": [
+          "CompileCore生成/用户两树 -> Diagnostic.Location -> List<string>",
+          "预编译或执行 -> LogEntry(Text,IsError) -> 双击Regex中文行数字 -> 用户编辑器",
+          "LifecycleManager catch -> ExtractUserScriptFrame -> 仅用户帧/trace -> CompileErrors -> 日志"
+        ],
+        "gap": "编译字符串含文档列，但日志无结构字段，双击只取中文行数并总跳用户文档，生成文档错误可误指用户行；运行栈常见line格式也不匹配。ExtractUserScriptFrame在有StackTrace时仅返回帧或trace，异常类型/Message不保留，业务throw消息可从红色日志丢失。",
+        "nonOverlap": "S1防旧诊断写回不定义坐标；S3异常finally清理不等于异常消息保真。",
+        "recommendation": "统一诊断来源/文档/跨度/严重级别/ID/异常类型消息/阶段/源码身份；只对有效用户文档启用跳转，生成文档说明配置来源；异常先保留类型消息再附帧。",
+        "dependencies": [
+          "S1源码身份",
+          "S3生命周期结果，避免第二套执行事实"
+        ],
+        "minimalAcceptance": [
+          "用户错误正确行列；生成错误不跳同号用户行",
+          "构造/Init/Process/Release异常保留类型消息阶段；无符号仍有消息",
+          "源码已改时旧错误不能按旧行号跳新文档"
+        ],
+        "evidence": [
+          {
+            "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+            "blobSha1": "3750323c69278ab7b77ecf6c24ac99fd513ddb57",
+            "start": 170,
+            "end": 176,
+            "note": "生成/用户文档命名"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+            "blobSha1": "3750323c69278ab7b77ecf6c24ac99fd513ddb57",
+            "start": 197,
+            "end": 202,
+            "note": "诊断字符串化"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Models/LogEntry.cs",
+            "blobSha1": "1a736a5c43ed9196bd3f1cf87c9a7026afb529d6",
+            "start": 1,
+            "end": 12,
+            "note": "仅文本错误标记"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+            "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+            "start": 538,
+            "end": 554,
+            "note": "双击只认中文行号"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+            "blobSha1": "ee57d50975bf488c492fef2d893d3a71f1fb9d6c",
+            "start": 235,
+            "end": 242,
+            "note": "运行异常入CompileErrors"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+            "blobSha1": "ee57d50975bf488c492fef2d893d3a71f1fb9d6c",
+            "start": 363,
+            "end": 381,
+            "note": "存在堆栈时不返回异常类型消息"
+          }
+        ]
+      }
+    },
+    {
+      "id": "F11",
+      "group": "C",
+      "priority": "P2候选",
+      "title": "监视大数组和多边形不应一次构造整棵树",
+      "plain": "支持的数组/多边形也在UI同步逐项创建监视节点，控件虚拟化不等于不创建数据节点。",
+      "evidenceState": "全量同步投影已确认；耗时/内存增长和实际规模未测",
+      "impact": "大结果可能拖慢窗口刷新；不能用未知业务规模断言已复现卡死或具体延迟。",
+      "target": "先显示数量摘要，展开/分页取值，限制总节点/深度；预算据代表规模实测确定，沿用S3有效结果与资源所有权。",
+      "overlap": "S2优化开窗语义/补全，不等结果树性能；S3保证延迟消费期间资源安全。",
+      "acceptance": [
+        "受支持Double[]及Polygon[]小/大规模，不展开时节点数有界，索引仍准确",
+        "切换/停止后不访问已释放结果；真实窗口心跳/内存测量后确定预算"
+      ],
+      "report": "editing",
+      "sourceFinding": "EDIT-03",
+      "detail": {
+        "id": "EDIT-03",
+        "title": "受支持大数组/多边形也会同步无预算构建监视树",
+        "priority": "P1，排期需真实规模",
+        "disposition": "新增闭环；任意对象无限枚举/环暂缓，不作主论据",
+        "status": "源码全量遍历已证，延时内存成本未测",
+        "chain": [
+          "UI赋值ValueSource -> DP回调 -> SyncValuesFromSource -> BuildChildren",
+          "合法Double[] -> 每元素MonitorNode及集合通知",
+          "合法Polygon[] -> Polygon2d.GetMonitorFields逐顶点建List -> SetChildValue递归"
+        ],
+        "gap": "即使S3禁止任意对象逃逸，合法Double[]与Polygon[]顶点仍可很大；赋值同步穷尽全部元素构造节点，不等用户展开，无数量/耗时预算分页。",
+        "nonOverlap": "S2补全呈现不等于监视预算，S3合作停止/Owner不限制受支持数组长度。",
+        "recommendation": "总节点/每容器预算的投影，先数量摘要截断提示，展开或分页构造，保留索引和精确值查看；消费同一获准结果。",
+        "dependencies": [
+          "S3租约保证延迟读取安全",
+          "真实业务规模与预算"
+        ],
+        "minimalAcceptance": [
+          "Double[]/Polygon[]大小样本首屏节点受限，总数和截断分页明确",
+          "折叠不预建全部叶子，分页索引准确",
+          "新结果/关闭/清空中断旧投影，Owner不提前释放"
+        ],
+        "conditionalRisk": "任意IEnumerable无限/一次性及IMonitorable环未证受支持类型必达，不能据此定级。",
+        "evidence": [
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+            "blobSha1": "01bf79b7b320e6badd5d60264a6d414e1247a06a",
+            "start": 75,
+            "end": 79,
+            "note": "同步DP刷新"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+            "blobSha1": "01bf79b7b320e6badd5d60264a6d414e1247a06a",
+            "start": 95,
+            "end": 126,
+            "note": "立即构建子树"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+            "blobSha1": "01bf79b7b320e6badd5d60264a6d414e1247a06a",
+            "start": 382,
+            "end": 407,
+            "note": "数组集合穷尽遍历"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+            "blobSha1": "01bf79b7b320e6badd5d60264a6d414e1247a06a",
+            "start": 449,
+            "end": 469,
+            "note": "IMonitorable递归"
+          },
+          {
+            "path": "src/Plugin.SDK/Models/SdkTypeVocabulary.cs",
+            "blobSha1": "1a268cf26c12d1f76a6ec38f527e9e10a780b160",
+            "start": 92,
+            "end": 110,
+            "note": "受支持Double[]及Polygon"
+          },
+          {
+            "path": "src/Plugin.SDK/Models/Geometry/Polygon2d.cs",
+            "blobSha1": "d9ac502edb2ea83378c7f359e18f8f70637bba3a",
+            "start": 122,
+            "end": 133,
+            "note": "逐顶点物化"
+          }
+        ]
+      }
+    }
+  ],
+  "deferred": [
+    {
+      "title": "显示设置页仍是占位",
+      "state": "已证UI占位；显示能力需求待定义",
+      "basis": "ScriptDebugControl.xaml固定源码含显示设置（占位）",
+      "choice": "先用现有结果展示闭环；若确需图像/图形/文字叠加，再设计共享显示合同，不把空Tab自动升级为新渲染系统"
+    },
+    {
+      "title": "遗留引用初始化脚本",
+      "state": "P2维护风险，未证产品必经",
+      "basis": "DEP-04 Debug/net10参考包脚本与net9产品目标不同",
+      "choice": "先核受支持入口；可废弃则移除说明，不因脚本存在宣称产品引用链必坏"
+    },
+    {
+      "title": "脚本信任与稳定SDK边界",
+      "state": "使用前提须讲明，非本轮权限改造",
+      "basis": "DEP-05 同进程受信扩展、公开Context/宿主API，不能把ALC称权限安全沙箱",
+      "choice": "明确当前支持边界；不新增不可信脚本隔离或独立进程强停"
+    },
+    {
+      "title": "旧保存入口/完整撤销/断点调试/多文件IDE",
+      "state": "UI可达性或业务需求证据不足",
+      "basis": "主方案保存和关闭提交已有S2范围；独立旧保存命令未证UI可达；缺完整IDE功能不等核心设计缺陷",
+      "choice": "待具体业务需求与入口证据，不纳入前三组必需闭环；不新增旧方案/旧插件兼容"
+    }
+  ],
+  "decisionGate": "以上均为后续候选；本轮不批准代码、不改变S2交付或S3实施队列。确认需要哪组、平台合同和验收后再授权整批实施。",
+  "verification": {
+    "method": "fixed-source-static-only",
+    "runtimeReproductions": 0,
+    "productBuilds": 0,
+    "verifiedSourceCount": 38,
+    "sourceDrift": 0,
+    "issues": 11,
+    "scenes": 7,
+    "vmEvidence": "本轮未新增；不推断VM支持/不支持"
+  },
+  "sources": [
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs",
+      "blobSha1": "5062561d8a1ea9f6f5f901f4f19d193ed6c07b53",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptResults.cs",
+      "blobSha1": "e279f9574502782f8180c19dc44c7a37ff7b3bfb",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptInputConfig.cs",
+      "blobSha1": "363e85d6a0982a335f2427f3b15a861629e308e4",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptIoContractSnapshot.cs",
+      "blobSha1": "e1eb84fadb675ec709f4d6b83768a1acb404685e",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptIoTypeDescriptor.cs",
+      "blobSha1": "627398e48b7a6f3c971e72d33e7d492433fdf69d",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptBindingResolver.cs",
+      "blobSha1": "486a73862099e3750bf123e5baf32287474d1fcd",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptTool.cs",
+      "blobSha1": "c35fe3e3d9dce84d1f5ef4f8d159846ecf5b6557",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml",
+      "blobSha1": "d8c35266b9244e62e8c8b2b66a5bc81308b0f7b3",
+      "verified": true
+    },
+    {
+      "path": "src/Plugin.SDK/Execution/Parameters/BindingInputCatalog.cs",
+      "blobSha1": "5b655e155fd5f6aa85f5b96913e8976777068957",
+      "verified": true
+    },
+    {
+      "path": "src/Plugin.SDK/Execution/Parameters/BindingContractValidator.cs",
+      "blobSha1": "eb1a1d6080a46564ee024c6fbf77e7a5943f164b",
+      "verified": true
+    },
+    {
+      "path": "src/Plugin.SDK/Execution/Parameters/OutputVariableResolver.cs",
+      "blobSha1": "8c2e0db5cc7cb30c1aa0b1ae108cef516df4b52e",
+      "verified": true
+    },
+    {
+      "path": "src/Workflow/OutputBindingChangeService.cs",
+      "blobSha1": "8bb20a368c009bd8049e3400df11074e5d7b1da0",
+      "verified": true
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "blobSha1": "b9a66a306137d3066e265ae1bea4a562d1911ba2",
+      "verified": true
+    },
+    {
+      "path": "src/Plugin.SDK/Scripting/ScriptContext.cs",
+      "blobSha1": "946793f412a1973f8a36f1dfbb8ac91a5f0acf10",
+      "verified": true
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "blobSha1": "b3ce71b80cda13250198aac6db033001df29dd88",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+      "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+      "blobSha1": "01bf79b7b320e6badd5d60264a6d414e1247a06a",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+      "blobSha1": "3750323c69278ab7b77ecf6c24ac99fd513ddb57",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Models/LogEntry.cs",
+      "blobSha1": "1a736a5c43ed9196bd3f1cf87c9a7026afb529d6",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+      "blobSha1": "ee57d50975bf488c492fef2d893d3a71f1fb9d6c",
+      "verified": true
+    },
+    {
+      "path": "src/Plugin.SDK/Models/SdkTypeVocabulary.cs",
+      "blobSha1": "1a268cf26c12d1f76a6ec38f527e9e10a780b160",
+      "verified": true
+    },
+    {
+      "path": "src/Plugin.SDK/Models/Geometry/Polygon2d.cs",
+      "blobSha1": "d9ac502edb2ea83378c7f359e18f8f70637bba3a",
+      "verified": true
+    },
+    {
+      "path": "Directory.Build.targets",
+      "blobSha1": "cbd49bbf59f207d9497a799b40f94e49f7bd6296",
+      "verified": true
+    },
+    {
+      "path": "scripts/Init-ScriptRefs.ps1",
+      "blobSha1": "2e0dc781ef8e47d242eb155b6f7c160fcd12ddbd",
+      "verified": true
+    },
+    {
+      "path": "src/CommonControl/ScriptEditorCore.xaml.cs",
+      "blobSha1": "fda699721d0013ab70603cd5f047a43fd392c7d5",
+      "verified": true
+    },
+    {
+      "path": "src/Plugin.SDK/Scripting/Script.cs",
+      "blobSha1": "d35fae92670a8198fb3bc6487ec4b1a5836fba01",
+      "verified": true
+    },
+    {
+      "path": "src/Workflow/Persistence/SolutionResourceResolver.cs",
+      "blobSha1": "ea439ba4e03d5afadc33577a13f3b1c0624574f8",
+      "verified": true
+    },
+    {
+      "path": "src/Workflow/SolutionSession.cs",
+      "blobSha1": "bf6ceab1b12bbb0ecef450e0e204bfa9a43e7b4f",
+      "verified": true
+    },
+    {
+      "path": "src/Workflow/WorkflowJsonConverter.cs",
+      "blobSha1": "e446d8958f3674408bb4656604cbe66261c8ef51",
+      "verified": true
+    },
+    {
+      "path": "src/Workflow/WorkflowNode.cs",
+      "blobSha1": "857f8aef743a56e675c4495930732f65e87b65cf",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+      "blobSha1": "4de0b037978f264a01beb13bb6ec4758ca1973f9",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptReferenceSnapshot.cs",
+      "blobSha1": "1d9f23b827dfeccc3a29d1e772c421182c721409",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+      "blobSha1": "e8c561c46b9e7dc1f045efe51de55e029c6c8e67",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj",
+      "blobSha1": "ed4512f9eda9d1b45f129d95052cb9d5ae941e21",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Views/AssemblyReferenceDialog.xaml.cs",
+      "blobSha1": "2a0796b14b9e9d17d7f91ab65c1f9a8af4f3758e",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Resources/MinimalCode.txt",
+      "blobSha1": "adfda035315dcaf1c39cc513caa893b01e0f054f",
+      "verified": true
+    },
+    {
+      "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+      "blobSha1": "d3dbf21e3cbfbef584f4094796f86e6f4ece0279",
+      "verified": true
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml",
+      "blobSha1": "c51c1f8211377b65c09d6c2e5e02a6afef2fcecf",
+      "verified": true
+    }
+  ],
+  "rootEvidence": [
+    {
+      "path": "src/Plugin.SDK/Scripting/Script.cs",
+      "blobSha1": "d35fae92670a8198fb3bc6487ec4b1a5836fba01",
+      "locations": [
+        {
+          "line": 21,
+          "needle": "public abstract void Process();"
+        },
+        {
+          "line": 32,
+          "needle": "protected void LogError"
+        }
+      ]
+    },
+    {
+      "path": "src/Plugin.SDK/Scripting/ScriptContext.cs",
+      "blobSha1": "946793f412a1973f8a36f1dfbb8ac91a5f0acf10",
+      "locations": [
+        {
+          "line": 34,
+          "needle": "public void LogError"
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+      "blobSha1": "ee57d50975bf488c492fef2d893d3a71f1fb9d6c",
+      "locations": [
+        {
+          "line": 186,
+          "needle": "LogErrorAction = msg =>"
+        },
+        {
+          "line": 190,
+          "needle": "_logMessages.Add($\"[错误] {msg}\");"
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/ScriptTool.cs",
+      "blobSha1": "c35fe3e3d9dce84d1f5ef4f8d159846ecf5b6557",
+      "locations": [
+        {
+          "line": 153,
+          "needle": "if (errors.Count == 0)"
+        },
+        {
+          "line": 155,
+          "needle": "result.SetSuccess(lifecycleManager.ExecutionTimeMs);"
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Resources/MinimalCode.txt",
+      "blobSha1": "adfda035315dcaf1c39cc513caa893b01e0f054f",
+      "locations": [
+        {
+          "line": 19,
+          "needle": "LogError(\"输入图像 input1 为空\");"
+        },
+        {
+          "line": 20,
+          "needle": "return;"
+        }
+      ]
+    },
+    {
+      "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+      "blobSha1": "d3dbf21e3cbfbef584f4094796f86e6f4ece0279",
+      "locations": [
+        {
+          "line": 559,
+          "needle": "private static void ApplyJudgmentStatus"
+        },
+        {
+          "line": 569,
+          "needle": "result.JudgmentStatus = presentation"
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml",
+      "blobSha1": "c51c1f8211377b65c09d6c2e5e02a6afef2fcecf",
+      "locations": [
+        {
+          "line": 158,
+          "needle": "显示设置（占位）"
+        }
+      ]
+    }
+  ],
+  "evidencePackages": [
+    {
+      "name": "editing",
+      "path": "artifacts/validation/script-post-s3-audit/editing.json",
+      "sha256": "da609c04dafdf260e3810a5c5ea5be2565dc57e82c74a82f486df37a37e6754e",
+      "data": {
+        "schemaVersion": 1,
+        "baselineCommit": "a59f446c4032e26abafc1c6a83296db78575463e",
+        "scope": "仅固定git show只读分析，未测试/构建/GUI/产品改动。dirty不作为结论依据。",
+        "excludedBatches": {
+          "S3": "执行身份/停止/异常finally/Owner/租约/迟到结果准入不重复计数",
+          "S2": "开窗/首次补全/编译等待/动态IO合法提交及编辑提交不重复计数",
+          "S1": "引用快照/版本/缓存/分段计时不重复计数"
+        },
+        "findings": [
+          {
+            "id": "EDIT-01",
+            "title": "有效默认值在输出监视被误解释为无结果",
+            "priority": "P1",
+            "disposition": "新增闭环",
+            "status": "源码事实已证，窗口未测",
+            "chain": [
+              "打开 -> OnViewLoaded -> TryPrefillOutputMonitor -> FilterDefaultValues -> ValueSource",
+              "本窗执行完成 -> FilterDefaultValues -> ValueSource",
+              "外部结果刷新 -> DSQS -> FilterDefaultValues -> ValueSource",
+              "SyncValuesFromSource缺键 -> ClearValuesRecursive"
+            ],
+            "gap": "显式输出0/false/0.0/null按等于CLR默认值从监视副本过滤，三个入口都受影响。仅显示信息丢失，原ScriptResults.OutputValues及GetOutputVariables仍保留原值，不宣称下游数据丢失。",
+            "nonOverlap": "S2合法类型提交与S3结果身份/Owner不提供赋值状态。",
+            "recommendation": "保留有效原值，区分无运行结果与有效默认值；若需未赋值提示，必须单独定义状态来源，不能从值猜测。",
+            "dependencies": [
+              "S2合法契约",
+              "S3获准结果身份"
+            ],
+            "minimalAcceptance": [
+              "0/false/0.0在执行后、重开、外部刷新三入口显示一致有效值",
+              "有效null与无运行结果区分；刷新不改真实输出"
+            ],
+            "evidence": [
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+                "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+                "start": 232,
+                "end": 245,
+                "note": "打开预填过滤"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+                "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+                "start": 405,
+                "end": 409,
+                "note": "执行完成过滤"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+                "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+                "start": 428,
+                "end": 439,
+                "note": "外部刷新过滤"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+                "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+                "start": 495,
+                "end": 515,
+                "note": "默认值判断"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+                "blobSha1": "01bf79b7b320e6badd5d60264a6d414e1247a06a",
+                "start": 108,
+                "end": 129,
+                "note": "缺键清除"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Models/ScriptResults.cs",
+                "blobSha1": "e279f9574502782f8180c19dc44c7a37ff7b3bfb",
+                "start": 42,
+                "end": 63,
+                "note": "原始结果未滤"
+              }
+            ]
+          },
+          {
+            "id": "EDIT-02",
+            "title": "诊断字符串化丢源码定位合同，异常栈提取丢业务消息",
+            "priority": "P1",
+            "disposition": "新增闭环",
+            "status": "源码数据降级及分支已证，实际运行栈语言/窗口未测",
+            "chain": [
+              "CompileCore生成/用户两树 -> Diagnostic.Location -> List<string>",
+              "预编译或执行 -> LogEntry(Text,IsError) -> 双击Regex中文行数字 -> 用户编辑器",
+              "LifecycleManager catch -> ExtractUserScriptFrame -> 仅用户帧/trace -> CompileErrors -> 日志"
+            ],
+            "gap": "编译字符串含文档列，但日志无结构字段，双击只取中文行数并总跳用户文档，生成文档错误可误指用户行；运行栈常见line格式也不匹配。ExtractUserScriptFrame在有StackTrace时仅返回帧或trace，异常类型/Message不保留，业务throw消息可从红色日志丢失。",
+            "nonOverlap": "S1防旧诊断写回不定义坐标；S3异常finally清理不等于异常消息保真。",
+            "recommendation": "统一诊断来源/文档/跨度/严重级别/ID/异常类型消息/阶段/源码身份；只对有效用户文档启用跳转，生成文档说明配置来源；异常先保留类型消息再附帧。",
+            "dependencies": [
+              "S1源码身份",
+              "S3生命周期结果，避免第二套执行事实"
+            ],
+            "minimalAcceptance": [
+              "用户错误正确行列；生成错误不跳同号用户行",
+              "构造/Init/Process/Release异常保留类型消息阶段；无符号仍有消息",
+              "源码已改时旧错误不能按旧行号跳新文档"
+            ],
+            "evidence": [
+              {
+                "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+                "blobSha1": "3750323c69278ab7b77ecf6c24ac99fd513ddb57",
+                "start": 170,
+                "end": 176,
+                "note": "生成/用户文档命名"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+                "blobSha1": "3750323c69278ab7b77ecf6c24ac99fd513ddb57",
+                "start": 197,
+                "end": 202,
+                "note": "诊断字符串化"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Models/LogEntry.cs",
+                "blobSha1": "1a736a5c43ed9196bd3f1cf87c9a7026afb529d6",
+                "start": 1,
+                "end": 12,
+                "note": "仅文本错误标记"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+                "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+                "start": 538,
+                "end": 554,
+                "note": "双击只认中文行号"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+                "blobSha1": "ee57d50975bf488c492fef2d893d3a71f1fb9d6c",
+                "start": 235,
+                "end": 242,
+                "note": "运行异常入CompileErrors"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+                "blobSha1": "ee57d50975bf488c492fef2d893d3a71f1fb9d6c",
+                "start": 363,
+                "end": 381,
+                "note": "存在堆栈时不返回异常类型消息"
+              }
+            ]
+          },
+          {
+            "id": "EDIT-03",
+            "title": "受支持大数组/多边形也会同步无预算构建监视树",
+            "priority": "P1，排期需真实规模",
+            "disposition": "新增闭环；任意对象无限枚举/环暂缓，不作主论据",
+            "status": "源码全量遍历已证，延时内存成本未测",
+            "chain": [
+              "UI赋值ValueSource -> DP回调 -> SyncValuesFromSource -> BuildChildren",
+              "合法Double[] -> 每元素MonitorNode及集合通知",
+              "合法Polygon[] -> Polygon2d.GetMonitorFields逐顶点建List -> SetChildValue递归"
+            ],
+            "gap": "即使S3禁止任意对象逃逸，合法Double[]与Polygon[]顶点仍可很大；赋值同步穷尽全部元素构造节点，不等用户展开，无数量/耗时预算分页。",
+            "nonOverlap": "S2补全呈现不等于监视预算，S3合作停止/Owner不限制受支持数组长度。",
+            "recommendation": "总节点/每容器预算的投影，先数量摘要截断提示，展开或分页构造，保留索引和精确值查看；消费同一获准结果。",
+            "dependencies": [
+              "S3租约保证延迟读取安全",
+              "真实业务规模与预算"
+            ],
+            "minimalAcceptance": [
+              "Double[]/Polygon[]大小样本首屏节点受限，总数和截断分页明确",
+              "折叠不预建全部叶子，分页索引准确",
+              "新结果/关闭/清空中断旧投影，Owner不提前释放"
+            ],
+            "conditionalRisk": "任意IEnumerable无限/一次性及IMonitorable环未证受支持类型必达，不能据此定级。",
+            "evidence": [
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+                "blobSha1": "01bf79b7b320e6badd5d60264a6d414e1247a06a",
+                "start": 75,
+                "end": 79,
+                "note": "同步DP刷新"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+                "blobSha1": "01bf79b7b320e6badd5d60264a6d414e1247a06a",
+                "start": 95,
+                "end": 126,
+                "note": "立即构建子树"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+                "blobSha1": "01bf79b7b320e6badd5d60264a6d414e1247a06a",
+                "start": 382,
+                "end": 407,
+                "note": "数组集合穷尽遍历"
+              },
+              {
+                "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+                "blobSha1": "01bf79b7b320e6badd5d60264a6d414e1247a06a",
+                "start": 449,
+                "end": 469,
+                "note": "IMonitorable递归"
+              },
+              {
+                "path": "src/Plugin.SDK/Models/SdkTypeVocabulary.cs",
+                "blobSha1": "1a268cf26c12d1f76a6ec38f527e9e10a780b160",
+                "start": 92,
+                "end": 110,
+                "note": "受支持Double[]及Polygon"
+              },
+              {
+                "path": "src/Plugin.SDK/Models/Geometry/Polygon2d.cs",
+                "blobSha1": "d9ac502edb2ea83378c7f359e18f8f70637bba3a",
+                "start": 122,
+                "end": 133,
+                "note": "逐顶点物化"
+              }
+            ]
+          }
+        ],
+        "editingPersistenceCoverage": {
+          "staticRiskNotPromoted": "ExecuteSaveWorkflow/ExecuteSaveAsWorkflow直调引擎保存实际参数而未提交编辑器；只找到命令声明赋值，未找到UI绑定入口，无法确认用户可达，记S2保存入口审计候选，不单立bug。",
+          "proven": [
+            "InitializeToolControlAsync直接注入node.Parameters，SetParameters读取ScriptCode；未见独立草稿模型",
+            "文本变化只推进分析诊断，TryCommitEditor/执行/预编译/卸载同步参数",
+            "方案保存TryCommitSolutionEditors与关闭ToolEditorClose.TryClose已接线，属S2不新增",
+            "Demo/Reset调用LoadCode替换后同步，LoadCode赋CodeEditor.Text，撤销栈行为未测"
+          ],
+          "unknownOrDeferred": [
+            "未发现独立脚本导入导出按钮/持久草稿链，不堆一般IDE功能清单",
+            "跨会话草稿恢复/撤销栈及Demo Reset是否可撤销未测，需真实业务需求"
+          ],
+          "evidence": [
+            {
+              "path": "src/UI/Shell/Windows/MainWindowSolutionEditing.cs",
+              "blobSha1": "1804e57f05fab952005514176fa414cd67b722bf",
+              "start": 14,
+              "end": 29,
+              "note": "方案提交已有"
+            },
+            {
+              "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+              "blobSha1": "5ff9240f819b7bee3ab6ddcbc9525f73c9b4896e",
+              "start": 126,
+              "end": 145,
+              "note": "卸载同步已有"
+            },
+            {
+              "path": "src/CommonControl/ScriptEditorCore.xaml.cs",
+              "blobSha1": "fda699721d0013ab70603cd5f047a43fd392c7d5",
+              "start": 93,
+              "end": 93,
+              "note": "LoadCode替换"
+            },
+            {
+              "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+              "blobSha1": "b9a66a306137d3066e265ae1bea4a562d1911ba2",
+              "start": 1438,
+              "end": 1444,
+              "note": "旧保存入口"
+            },
+            {
+              "path": "src/Workflow/WorkflowEngine.cs",
+              "blobSha1": "0a1b0c529ab3cce2eba6a92a052f4afaaf4905ad",
+              "start": 209,
+              "end": 220,
+              "note": "序列化真实参数"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "contracts",
+      "path": "artifacts/validation/script-post-s3-audit/contracts.json",
+      "sha256": "f57c8575cc500bccba90a4e688edf9635f59ca2d8cd7b5c4d2814046ac8537f1",
+      "data": {
+        "schema": "script-post-s3-contract-review/v1",
+        "sourceCommit": "a59f446c4032e26abafc1c6a83296db78575463e",
+        "method": "仅git show固定提交及git grep固定树静态分析；未运行复现、未构建、未改产品。行号均属固定提交，hash是Git blob SHA-1。",
+        "scope": "脚本动态IO与平台绑定/全局地址/输出树/持久化合同",
+        "existingCapabilitiesNotNewGaps": [
+          "BindingInputCatalog.cs:66-87已有Script Inputs显式反射适配，输入Key使用FieldId。",
+          "OutputBindingChangeService.cs:261-281已有FieldId跟踪改名、删掉原身份后使引用失效和改类型重绑，不是下游完全不维护。",
+          "OutputBindingChangeService.cs:252-258已拒绝跨工作流直接节点引用并要求全局变量。",
+          "S2合法动态IO快照、实际CLR形状、编辑草稿与编译缓存；S3运行身份、取消、异常清理、资源Owner/租约和迟到门控均不计新项。"
+        ],
+        "findings": [
+          {
+            "id": "CONTRACT-GLOBAL-ADDRESS",
+            "title": "全局变量绑定地址的设计验证与脚本运行解析不一致",
+            "priority": "P1候选，先统一地址解释再扩大脚本跨流程使用",
+            "evidence": [
+              "src/Workflow/OutputBindingChangeService.cs:229-245",
+              "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptBindingResolver.cs:69-108",
+              "src/Workflow/WorkflowExecutionEngine.cs:1116-1131"
+            ],
+            "callChain": "BindingInputCatalog.Describe Inputs → OutputBindingChangeService.Reconcile 全局变量分支验证Value+成员/索引路径或__VariableId__ → WorkflowExecutionEngine把运行字典注入ScriptTool → ScriptBindingResolver.Resolve",
+            "provenFacts": [
+              "平台验证同时识别__GlobalVars__.名称后缀与__VariableId__.Id；前者通过BindingContractValidator验证后续成员/索引。",
+              "ScriptBindingResolver对__GlobalVars__.之后的整个字符串直接TryGetValue，不解析成员/索引；__VariableId__则进入一般节点路径。",
+              "执行引擎只注入__GlobalVars__合成结果，没有在本调用点注入__VariableId__结果。"
+            ],
+            "staticRisk": "例如全局数组samples[0]通过平台路径验证后，脚本实际查名为samples[0]的字典键；通常字典仅有samples。ID地址若进入脚本也不是按变量ID查找。跨流程全局通道会出现编辑时适配、执行时报缺值。",
+            "unknown": "未证明当前UI提供所有这些地址入口；未做实际配置/运行复现。平台能接受某地址不等用户界面必然生成它。",
+            "overlapBoundary": "不是S2字段CLR类型映射或非法草稿问题，是平台已认可的全局地址语法没有端到端执行合同；不是S3字典/图像生命周期问题。",
+            "recommendation": "让脚本消费平台统一全局地址解析结果，显式支持或明确拒绝ID/索引/成员地址；以稳定变量ID保留改名关联，运行按当前快照解析。",
+            "dependencies": [
+              "全局变量ID/名称迁移与运行快照合同",
+              "BindingContractValidator与ScriptBindingResolver统一地址语义"
+            ],
+            "limitedAcceptance": [
+              "固定名称值、数组[0]/[]、成员、变量改名保留ID、删除重建同名五组设计/执行一致断言",
+              "同一地址在普通工具与脚本解析值或诊断一致",
+              "不要求新增跨流程执行调度能力"
+            ]
+          },
+          {
+            "id": "CONTRACT-BINDING-SHAPE",
+            "title": "平台允许的集合适配与脚本运行转换存在基数相关断层",
+            "priority": "P1候选，与平台绑定合同批次合并",
+            "evidence": [
+              "src/Plugin.SDK/Execution/Parameters/BindingContractValidator.cs:81-98",
+              "src/Plugin.SDK/Execution/Parameters/OutputVariableResolver.cs:83-94",
+              "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptBindingResolver.cs:153-217",
+              "tools/SunEyeVision.Tool.Script/Models/ScriptIoTypeDescriptor.cs:34-48"
+            ],
+            "callChain": "平台Accept允许数组到元素类型/元素到数组 → ScriptBindingResolver.ResolveNodeProperty → OutputVariableResolver按无索引长度1解包 → CoerceNodeValue按目标CLR类型转换",
+            "provenFacts": [
+              "Accept允许array→scalar和scalar→array，而Script的CoerceNodeValue在实际值仍为数组、目标是标量时明确抛错。",
+              "OutputVariableResolver对无显式索引长度1数组解包，[]可显式保留；故声明数组不意味着脚本收到的实际值恒为数组。",
+              "ScriptIoTypeDescriptor.ConvertTo只支持array→array逐元素转换，不提供scalar→array包装；CoerceNodeValue也没有scalar→array分支。"
+            ],
+            "staticRisk": "绑定到Double[]输入的同一上游数组，无[]路径在长度1时可能解包成double并被拒绝；长度0或N则保留数组。绑定到标量的数组也可能长度1成功、N失败。结果依赖业务检测数量而非声明合同。",
+            "unknown": "未执行基数矩阵；具体树选择是否默认附[]仍需实测，不把全部数组订阅都判为失败。",
+            "overlapBoundary": "S2已统一脚本声明与实际CLR形状；这里是跨平台值解析的长度1解包/宽松适配策略没有面向脚本的明确解释，不重报S2类型映射。",
+            "recommendation": "给BindingInputReference声明脚本精确形状适配策略，使候选验证和运行解析使用同策略。数组输入默认保留集合；标量输入要求明确[i]或明确认可的取首语义，避免隐式随基数切换。",
+            "dependencies": [
+              "平台绑定类型/路径策略",
+              "S2已稳定CLR描述器可复用"
+            ],
+            "limitedAcceptance": [
+              "Double[]→Double[]与Double[]→Double分别验证0/1/2元素，含无后缀/[]/[0]",
+              "设计时兼容的绑定运行不得仅因长度1而类型失败",
+              "空值/越界保留明确诊断；不要求重写其他工具的向量化策略"
+            ]
+          },
+          {
+            "id": "CONTRACT-RESULT-NAMESPACE",
+            "title": "脚本输出的设计/运行元数据与平台名称空间未统一",
+            "priority": "P1候选（错误绑定），显示分组修饰可P2",
+            "evidence": [
+              "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs:315-341",
+              "tools/SunEyeVision.Tool.Script/Models/ScriptResults.cs:45-88",
+              "tools/SunEyeVision.Tool.Script/Models/ScriptIoContractSnapshot.cs:33-43",
+              "src/Plugin.SDK/Execution/Parameters/OutputVariableResolver.cs:49-64",
+              "src/UI/Shell/Windows/MainWindowViewModel.cs:2710-2724"
+            ],
+            "callChain": "ScriptParameters.GetOutputContract生成设计树/绑定候选 → ScriptResults.GetOutputVariables生成运行树 → OutputVariableResolver按Name忽略大小写取第一个输出",
+            "provenFacts": [
+              "设计输出声明Status、ExecutionTimeMs(Integer)、CompileTimeMs、LogCount、CompileErrorCount；运行override仅附ExecutionTimeMs(Double)、IsPass，未合并基类或附其余元输出。",
+              "合法IO名称去重使用Ordinal，保留词没有ExecutionTimeMs、IsPass等平台元输出名；因此foo/Foo以及用户ExecutionTimeMs/IsPass均可通过该命名验证。",
+              "平台Resolver按OrdinalIgnoreCase且FirstOrDefault寻址，两个C#可区分字段foo/Foo进入平台后地址冲突；用户元输出同名会与附加字段产生重复名称。"
+            ],
+            "staticRisk": "在本项核实的GetOutputVariables→OutputVariableResolver链，设计期声明的CompileTimeMs等运行变量不存在，Resolver不会反射同名CLR属性兜底；不推论平台所有其他消费者也无值。运行树字段增删/类型变化。foo/Foo可能下游引用到第一个值；用户元输出重名则平台语义含混。FieldId重命名维护不能解决运行Name寻址冲突。",
+            "unknown": "未测试绑定树呈现、下游实际选择与分组；只有集合/类型/寻址算法的不一致为已证事实。",
+            "overlapBoundary": "不涉及S3输出Owner/租约和迟到结果；也不是S2用户字段CLR生成问题，是平台输出名称空间与静态/运行合同版本一致性。",
+            "recommendation": "一个公共输出合同生成器同时产出设计/运行描述，统一元输出集合/类型并提供运行取值；定义平台名字大小写和系统字段保留策略，拒绝冲突或采用独立系统命名空间。",
+            "dependencies": [
+              "平台元输出标准",
+              "当前开发格式统一及现有下游绑定诊断；软件未发布，不新增旧格式迁移工程"
+            ],
+            "limitedAcceptance": [
+              "设计/运行输出按名称、类型、FieldId、形状逐项相等（运行值除外）",
+              "绑定CompileTimeMs等元输出后实际解析有值或明确不开放",
+              "foo/Foo及ExecutionTimeMs/IsPass冲突在保存/加载/执行入口得到一致诊断"
+            ]
+          },
+          {
+            "id": "CONTRACT-SERIALIZED-SOURCE",
+            "title": "Source对象与BindingSource字符串存在不同消费者与未声明优先级",
+            "priority": "P2候选；先做静态/序列化定向核验再扩大修复",
+            "evidence": [
+              "tools/SunEyeVision.Tool.Script/Models/ScriptInputConfig.cs:43-60",
+              "src/Plugin.SDK/Execution/Parameters/BindingInputCatalog.cs:76-87",
+              "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptBindingResolver.cs:60-108",
+              "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml:235-240"
+            ],
+            "callChain": "可序列化ScriptInputConfig.Source与BindingSource → 平台BindingInputCatalog优先Source.GetBindingPath → 行ParamBinding仅TwoWay写BindingSource → 运行ScriptBindingResolver只读BindingSource",
+            "provenFacts": [
+              "Source与BindingSource均为可写公开属性，未JsonIgnore；两者setter未同步另一地址，Source setter还可修改TypeName。",
+              "BindingInputCatalog的Read优先非空Source，而ScriptBindingResolver只读取BindingSource。",
+              "脚本行XAML绑定BindingSource，没有把Source对象接到该ParamBinding。Catalog.Write会同时重写二者，但普通字符串setter没有该保证。"
+            ],
+            "staticRisk": "条件：加载当前开发配置/外部构造配置使Source非空，随后地址字符串更新或本就不一致。平台可能验证/编译依赖A，脚本实际读取B；保存再加载也可能保留两份不同地址。Source setter的类型副作用还要求明确反序列化顺序合同。",
+            "unknown": "未证明当前常见新建/编辑路径必然产生非空旧Source；未做JSON往返测试，因此属于有源码支持的条件风险，不能标成已复现用户故障。",
+            "overlapBoundary": "S2关注编辑草稿发布和生成字段CLR形状；本项关注地址持久化的唯一真相与平台/运行消费者一致性。已有Catalog.Write修复部分路径，不能推论全部路径一致。",
+            "recommendation": "在当前开发期定义单一持久化绑定描述（工作流/节点/字段ID+路径），字符串与Source均为投影；入口冲突明确拒绝，编辑保存入口原子更新。软件未发布，不保留双写兼容机制、不追加旧格式迁移。",
+            "dependencies": [
+              "当前方案序列化单事实源规则",
+              "平台稳定绑定身份模型"
+            ],
+            "limitedAcceptance": [
+              "Source为空/与字符串相同/不一致三种JSON往返",
+              "非空Source后编辑绑定，验证器/依赖图/执行读取同一地址",
+              "上游改名/删除后保存重开保留正确FieldId或明确重绑状态"
+            ]
+          }
+        ],
+        "sdkBoundaryObservationNotCountedAsGap": {
+          "evidence": [
+            "src/Plugin.SDK/Scripting/ScriptContext.cs:23-30",
+            "tools/SunEyeVision.Tool.Script/ScriptTool.cs:100-108",
+            "src/Workflow/WorkflowExecutionEngine.cs:742-744"
+          ],
+          "facts": "GetGlobal<T>约束class，SetGlobal直接写运行注入字典，宿主在执行入口拷贝字典。数值并非绝对不可读：用户可GetGlobal<object>后拆箱，或使用公开Context委托。",
+          "notClaimed": "未全追方案级跨工作流提交服务，不能据局部代码声称SetGlobal必然全局持久化或必然无法跨流程，也不能把S3生命周期/快照隔离重复当本批新缺口。"
+        },
+        "blobSha1": {
+          "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs": "5062561d8a1ea9f6f5f901f4f19d193ed6c07b53",
+          "tools/SunEyeVision.Tool.Script/Models/ScriptResults.cs": "e279f9574502782f8180c19dc44c7a37ff7b3bfb",
+          "tools/SunEyeVision.Tool.Script/Models/ScriptInputConfig.cs": "363e85d6a0982a335f2427f3b15a861629e308e4",
+          "tools/SunEyeVision.Tool.Script/Models/ScriptIoContractSnapshot.cs": "e1eb84fadb675ec709f4d6b83768a1acb404685e",
+          "tools/SunEyeVision.Tool.Script/Models/ScriptIoTypeDescriptor.cs": "627398e48b7a6f3c971e72d33e7d492433fdf69d",
+          "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptBindingResolver.cs": "486a73862099e3750bf123e5baf32287474d1fcd",
+          "tools/SunEyeVision.Tool.Script/ScriptTool.cs": "c35fe3e3d9dce84d1f5ef4f8d159846ecf5b6557",
+          "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml": "d8c35266b9244e62e8c8b2b66a5bc81308b0f7b3",
+          "src/Plugin.SDK/Execution/Parameters/BindingInputCatalog.cs": "5b655e155fd5f6aa85f5b96913e8976777068957",
+          "src/Plugin.SDK/Execution/Parameters/BindingContractValidator.cs": "eb1a1d6080a46564ee024c6fbf77e7a5943f164b",
+          "src/Plugin.SDK/Execution/Parameters/OutputVariableResolver.cs": "8c2e0db5cc7cb30c1aa0b1ae108cef516df4b52e",
+          "src/Workflow/OutputBindingChangeService.cs": "8bb20a368c009bd8049e3400df11074e5d7b1da0",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs": "b9a66a306137d3066e265ae1bea4a562d1911ba2",
+          "src/Plugin.SDK/Scripting/ScriptContext.cs": "946793f412a1973f8a36f1dfbb8ac91a5f0acf10",
+          "src/Workflow/WorkflowExecutionEngine.cs": "b3ce71b80cda13250198aac6db033001df29dd88"
+        }
+      }
+    },
+    {
+      "name": "dependencies",
+      "path": "artifacts/validation/script-post-s3-audit/dependencies.json",
+      "sha256": "8f67fcc925d1b7d5830651b3fd5dda318b6e0cdb6a9a1850d09090d58e038b36",
+      "data": {
+        "audit": "script-post-s3-dependencies",
+        "source_commit": "a59f446c4032e26abafc1c6a83296db78575463e",
+        "mode": "只读静态审查；仅写本证据 JSON；未构建、未运行、未访问 GUI；所有产品证据来自 git show/git grep 固定提交，不混入 dirty",
+        "scope": "方案携带、引用导入与运行闭包、SDK脚本边界；不更换编译器、不引入进程强停或扩大安全整改",
+        "findings": [
+          {
+            "id": "DEP-01",
+            "priority": "P1",
+            "title": "引用名称已随方案保存，引用文件与版本并未形成可携带合同",
+            "entry_chain": "SolutionManager.SaveCurrentDocument -> SolutionSnapshot.Prepare -> SolutionSession.Serialize -> WorkflowJsonConverter.Write -> Nodes.Parameters -> ScriptParameters.AssemblyReferences；运行时 CaptureReferences -> AssemblyReferenceFullPath -> ResolveAssemblyFile",
+            "evidence": [
+              {
+                "file": "src/Workflow/SolutionSession.cs",
+                "lines": "25",
+                "fact": "按 WorkflowSerializationOptions 序列化完整方案"
+              },
+              {
+                "file": "src/Workflow/WorkflowJsonConverter.cs",
+                "lines": "58",
+                "fact": "序列化 Nodes"
+              },
+              {
+                "file": "src/Workflow/WorkflowNode.cs",
+                "lines": "165",
+                "fact": "Parameters 为公开序列化属性"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs",
+                "lines": "88-120,139-154",
+                "fact": "AssemblyReferenceDir 与 AssemblyReferences 无 JsonIgnore，完整目录却基于工具程序集所在目录，不是方案目录"
+              },
+              {
+                "file": "src/Workflow/Persistence/SolutionResourceResolver.cs",
+                "lines": "52-59,63-82",
+                "fact": "Inspect/RebaseCopy 处理图像和标定资源，不处理脚本引用目录或列表"
+              }
+            ],
+            "observations": [
+              "已证：不能说引用清单未保存，清单是名称字符串；未保存字节/SHA/依赖版本清单。",
+              "已证：默认 ScriptRefs 相对插件位置，多个方案共用；路径还接受绝对目录，迁移方案文件不会自动迁移该目录。",
+              "风险：同一方案在另一台机器或另一安装目录中缺 DLL，或者同名不同版本；S1运行时内容身份能防缓存误用，却不提供方案依赖交付。",
+              "未知：未实跑方案 roundtrip/跨目录迁移，不宣称所有方案已丢失引用；VM项目打包能力本轮无证据。"
+            ],
+            "new_vs_s1_s3": "新增方案资源归属/锁定/导出合同；不重做 S1快照/哈希/缓存，不重复 S2编辑工作区或 S3池生命周期。",
+            "recommendation": "开发期统一现行方案级引用资源归属与保存格式，明确方案级引用包目录和外部引用模式，保存逻辑名、相对路径、程序集身份与内容摘要；导出显式携带所选依赖清单和文件，加载时给缺失或版本不符诊断。当前 ScriptRefs 属待明确支持范围的现状，不新建旧方案迁移或旧插件兼容层。",
+            "not_adopted": "不把全量宿主 DLL 拷到每方案，不将全部程序集数量当性能缺陷；不把运行时缓存键当可移植项目文件。",
+            "dependencies": [
+              "开发期统一的现行方案持久化格式与资源归属合同",
+              "当前ScriptRefs支持范围决策",
+              "S1引用快照作为消费端"
+            ],
+            "bounded_acceptance": [
+              "两方案同名不同版本 DLL 独立保存并各自恢复",
+              "导出到无原插件 ScriptRefs 的干净安装目录仍可运行",
+              "缺文件与摘要不符定位到节点和引用，不静默换版"
+            ]
+          },
+          {
+            "id": "DEP-02",
+            "priority": "P1",
+            "title": "添加同名 DLL 时静默跳过，用户选择的新版本没有进入引用环境",
+            "entry_chain": "AssemblyReferenceDialog.OnAddButtonClick -> Path.GetFileName -> destPath -> File.Exists continue -> BuildRefList -> 名称勾选 -> CaptureReferences",
+            "evidence": [
+              {
+                "file": "tools/SunEyeVision.Tool.Script/Views/AssemblyReferenceDialog.xaml.cs",
+                "lines": "98-106,141-163",
+                "fact": "仅枚举目录顶层 DLL；添加时同名目标存在即 continue，无版本或内容比较；重建候选但不自动勾选"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+                "lines": "264-275",
+                "fact": "BCL/宿主锚定优先于同名用户文件"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptReferenceSnapshot.cs",
+                "lines": "40-46",
+                "fact": "冲突检查针对已经解析出的条目；被导入入口跳过的文件不会进入快照"
+              }
+            ],
+            "observations": [
+              "已证：先有 Foo.dll v1 后从别处选择 Foo.dll v2，复制循环直接跳过 v2；这是静态确定分支，不需假设缓存失效。",
+              "已证：UI只显示文件名/逻辑名，不展示版本、来源、摘要；无法让用户知道保留的是旧文件。",
+              "风险：用户认为添加/升级成功，补全与编译仍一致使用旧 DLL；S1能够保持三链同版，却不能解释用户想导入的版本未被采用。",
+              "已证：同名宿主可选 API 还可能同时出现在用户候选列表，但 ResolveAssemblyFile 优先锚定宿主，需明确显示来源优先级。"
+            ],
+            "new_vs_s1_s3": "新增导入事务与冲突呈现；不重复 S1同一快照内多版本拒绝或缓存版本检测。",
+            "recommendation": "导入前检查程序集元数据与摘要；同内容去重并提示，不同内容给明确版本冲突结果，再由用户选择替换或方案隔离目录。宿主保留名拒绝作为用户副本导入或显示实际生效源。",
+            "not_adopted": "不自动覆盖共享 ScriptRefs，不仅改缓存失效，因为当前文件从未被复制。",
+            "dependencies": [
+              "DEP-01引用文件归属优先确定"
+            ],
+            "bounded_acceptance": [
+              "同名同内容导入明确去重",
+              "同名不同内容不得静默成功",
+              "宿主同名导入显示实际解析来源",
+              "失败导入不破坏原版本与节点引用"
+            ]
+          },
+          {
+            "id": "DEP-03",
+            "priority": "P1",
+            "title": "显式编译引用一致性已建立，运行依赖闭包仍只覆盖所选托管映像",
+            "entry_chain": "ScriptTool -> ScriptCompiler.CompileAsync -> ScriptReferenceSnapshot -> CompileCore -> ScriptLifecycleManager -> ScriptSandboxPool.GetOrCreate -> ScriptSandbox -> LoadFromStream；缺依赖 -> OnResolving日志并返回null",
+            "evidence": [
+              {
+                "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+                "lines": "126,175",
+                "fact": "编译使用固定引用快照的 AnalysisReferences"
+              },
+              {
+                "file": "src/CommonControl/ScriptEditorCore.xaml.cs",
+                "lines": "462-463",
+                "fact": "编辑器 Workspace 接收相同分析引用形状，且启用 unsafe"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+                "lines": "33-59,66-69,134-143",
+                "fact": "仅预载选中 IsUserReference 字节；默认 ALC 同名冲突直接报错；无用户依赖路径加载或 native resolver，缺依赖只日志返回null"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/Views/AssemblyReferenceDialog.xaml.cs",
+                "lines": "153-159",
+                "fact": "只复制所选单个 DLL，不复制 .deps.json/native/satellite/伴随资源"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+                "lines": "307-320",
+                "fact": "宿主API从类型锚定文件获得元数据，运行应保持默认 ALC 类型身份"
+              }
+            ],
+            "observations": [
+              "已证：S1语义/编译同内容引用、所选用户托管字节装载已存在，本项不是重复声称三链完全独立。",
+              "已证：用户库 A 的未勾选托管依赖 B，即使位于 ScriptRefs，也不由该 sandbox 的解析器读取；默认 ALC fallback 是否碰巧已含 B 取决宿主。",
+              "风险：A的公共签名不暴露B时编译可成功，执行方法才请求 B；native P/Invoke、卫星程序集和依赖旁数据文件也不在单 DLL 导入合同中。未运行构造样例，不宣称已经复现。",
+              "已证：按字节 LoadFromStream 不建立库文件的原始目录解析合同；不能把“放在 ScriptRefs”日志提示等同于依赖闭包解析。",
+              "未知：实际业务 DLL 是否需要这些依赖、宿主默认 ALC 与锚定 API 版本是否可能分叉，须有限样例确认；本轮无证据证明已有宿主错版。"
+            ],
+            "new_vs_s1_s3": "新增显式引用与运行依赖资产的分工及闭包解析规则；S3池复用/卸载不解决缺少资产或绑定策略。",
+            "recommendation": "在方案依赖清单区分编译可见项和仅运行依赖项；以清单受控解析托管/native/资源依赖，固定 RID/体系结构和版本来源，宿主SDK/API继续共享类型身份并做启动兼容检查。对暂不支持的依赖形态给导入前明确限制。",
+            "not_adopted": "不扫描并预加载整个目录，不把依赖闭包全部暴露为脚本编译 API，不新建独立进程或重做 ALC 池。",
+            "dependencies": [
+              "DEP-01包目录/依赖清单",
+              "DEP-02安全升级与冲突呈现",
+              "宿主API类型身份合同"
+            ],
+            "bounded_acceptance": [
+              "A->B仅实现依赖，B不作为用户可见编译API仍按清单运行",
+              "缺B/错B版本定位依赖链",
+              "一个x64 native库和一个文化资源样例部署并调用",
+              "SDK类型经共享ALC回传可转型，实际装载身份与清单可核对"
+            ]
+          },
+          {
+            "id": "DEP-04",
+            "priority": "P2",
+            "title": "遗留 ScriptRefs 初始化脚本使用 Debug 固定目录与 net10 参考程序集，需收敛为明确支持入口",
+            "entry_chain": "人工执行 scripts/Init-ScriptRefs.ps1 -> dev/Debug/plugins/.../ScriptRefs -> AssemblyReferenceDialog候选 -> Capture -> 用户引用LoadFromStream",
+            "evidence": [
+              {
+                "file": "scripts/Init-ScriptRefs.ps1",
+                "lines": "6-11,27-31,39-40",
+                "fact": "固定dev/Debug和Microsoft.WindowsDesktop.App.Ref/10.0.8/ref/net10.0；强制复制System.Windows.Forms参考DLL"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj",
+                "lines": "3-4,40-46",
+                "fact": "产品目标net9.0-windows/x64；Halcon宿主编译期来自libs路径"
+              },
+              {
+                "file": "Directory.Build.targets",
+                "lines": "76-91,105-124,213-220",
+                "fact": "插件有Debug/Release/PackagingRoot不同输出，平台依赖由宿主部署"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+                "lines": "41-47",
+                "fact": "用户引用被作为执行映像装入ALC，未区分reference assembly与implementation assembly"
+              }
+            ],
+            "observations": [
+              "已证：全仓固定提交对ScriptRefs/Init-ScriptRefs的构建项目/props/targets检索，仅发现此人工脚本，没有接入自动构建目标的证据。",
+              "已证：该脚本与当前产品TFM、Release/PackagingRoot目录不一致；要求本机固定SDK RefPack，不适合无SDK部署机器。",
+              "条件风险：若用户选中脚本复制的Forms reference assembly并进入执行加载，会遇到参考程序集不可执行的边界；不是已运行复现。",
+              "限制：此脚本不在已证产品必经调用链，不能据此宣称正式Release包当前损坏；应先审定是受支持开发工具还是废弃入口。"
+            ],
+            "new_vs_s1_s3": "新增部署入口治理及编译参考/运行实现角色；不改 S1核心预热或S2编辑性能。",
+            "recommendation": "若保留，改为接受实际输出根和TFM，平台API不复制为用户库，编译参考与运行资产严格区分；若未受支持，明确废弃并移除使用说明入口。后续修改发布规则必须全量Release和程序运行验证。",
+            "not_adopted": "不把net10参考DLL直接替换成另一个硬编码SDK目录，不因脚本存在就扩大重写全部插件部署。",
+            "dependencies": [
+              "DEP-03依赖角色合同",
+              "构建/发布维护者确认支持状态"
+            ],
+            "bounded_acceptance": [
+              "干净机器无SDK仍可运行受支持脚本API",
+              "Debug/Release/PackagingRoot路径各明确",
+              "参考程序集不作为用户运行映像导入",
+              "平台Halcon/OpenCV调用由宿主部署链验证"
+            ]
+          },
+          {
+            "id": "DEP-05",
+            "priority": "P2",
+            "title": "SDK脚本接口是受信宿主扩展API，现有Sandbox名称不能表达不可信代码权限",
+            "entry_chain": "ScriptLifecycleManager创建实例并注入ScriptContext -> Script.Init/Process/Release；用户源码由Roslyn常规DLL编译，运行于同一进程的collectible ALC",
+            "evidence": [
+              {
+                "file": "src/Plugin.SDK/Scripting/Script.cs",
+                "lines": "9-38",
+                "fact": "公开可写Context，生命周期和protected日志/全局变量API"
+              },
+              {
+                "file": "src/Plugin.SDK/Scripting/ScriptContext.cs",
+                "lines": "9-34",
+                "fact": "公开可写宿主委托；注释称内部实现但类型实际public"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+                "lines": "168-171",
+                "fact": "直接注入get/set全局变量委托"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+                "lines": "103-105",
+                "fact": "LanguageVersion.Latest，AllowUnsafe=true"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+                "lines": "52-71",
+                "fact": "常用BCL包含IO、网络、反射、ALC、Process、Interop"
+              },
+              {
+                "file": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+                "lines": "36,102",
+                "fact": "collectible ALC内直接实例化；没有权限令牌/授权校验"
+              }
+            ],
+            "observations": [
+              "已证：SDK边界给脚本便捷业务API，当前没有细粒度文件/网络/进程/全局变量能力许可表达；引用勾选只是编译可见性。",
+              "已证：ALC提供装载/类型隔离与卸载机制，当前代码未建立OS或CLR权限边界，unsafe亦显式允许。",
+              "风险：若产品将外来方案视为不可信代码，当前脚本能力与信任承诺不符；用户是否需要不可信代码执行尚未知，不能自动升级成隔离整改。",
+              "已证：Context注释“内部实现、用户无需接触”与public可变委托事实不一致；可先明确SDK公共稳定面与宿主注入面，避免后续版本被这些内部细节锁定。"
+            ],
+            "new_vs_s1_s3": "新增信任/能力声明与SDK公开面版本约定；不重做 S3取消/清理，不提出强停保障。",
+            "recommendation": "本轮后续设计只明确“受信代码、进程当前权限”的真实能力与方案来源信任；列出稳定脚本API、宿主注入面和不支持保证。仅在用户明确要运行不可信脚本时另立权限隔离项目。",
+            "not_adopted": "不把删BCL引用或关闭unsafe当沙箱安全，不引入独立进程强停、不扩大安全整改；不为脚本另依赖UI宿主程序集。",
+            "dependencies": [
+              "产品脚本信任定位",
+              "SDK兼容/版本约定"
+            ],
+            "bounded_acceptance": [
+              "用户可见文案与SDK说明不承诺权限隔离",
+              "SDK公共API清单区分稳定接口与宿主注入细节",
+              "程序集勾选说明为编译能力而非权限开关",
+              "不可信代码需求单独决策，不混入S3验收"
+            ]
+          }
+        ],
+        "not_findings": [
+          "程序集总数多本身不是缺陷，无数量归因性能结论",
+          "S1已有统一语义/编译引用快照和内容身份，不重复整改",
+          "引用清单已可序列化，不声称方案未保存列表",
+          "没有本地VM依赖打包/权限证据，标待补，不猜测对照结论"
+        ],
+        "verification_limits": [
+          "仅静态源码证据；没有构建、运行、迁移或native复现",
+          "行号与文件身份均对应固定提交；本文件不代表产品实施授权",
+          "不写CURRENT_TASK共享台账或主HTML，交父代理统一汇总"
+        ],
+        "source_identity": [
+          {
+            "path": "Directory.Build.targets",
+            "git_blob_sha1": "cbd49bbf59f207d9497a799b40f94e49f7bd6296"
+          },
+          {
+            "path": "scripts/Init-ScriptRefs.ps1",
+            "git_blob_sha1": "2e0dc781ef8e47d242eb155b6f7c160fcd12ddbd"
+          },
+          {
+            "path": "src/CommonControl/ScriptEditorCore.xaml.cs",
+            "git_blob_sha1": "fda699721d0013ab70603cd5f047a43fd392c7d5"
+          },
+          {
+            "path": "src/Plugin.SDK/Scripting/Script.cs",
+            "git_blob_sha1": "d35fae92670a8198fb3bc6487ec4b1a5836fba01"
+          },
+          {
+            "path": "src/Plugin.SDK/Scripting/ScriptContext.cs",
+            "git_blob_sha1": "946793f412a1973f8a36f1dfbb8ac91a5f0acf10"
+          },
+          {
+            "path": "src/Workflow/Persistence/SolutionResourceResolver.cs",
+            "git_blob_sha1": "ea439ba4e03d5afadc33577a13f3b1c0624574f8"
+          },
+          {
+            "path": "src/Workflow/SolutionSession.cs",
+            "git_blob_sha1": "bf6ceab1b12bbb0ecef450e0e204bfa9a43e7b4f"
+          },
+          {
+            "path": "src/Workflow/WorkflowJsonConverter.cs",
+            "git_blob_sha1": "e446d8958f3674408bb4656604cbe66261c8ef51"
+          },
+          {
+            "path": "src/Workflow/WorkflowNode.cs",
+            "git_blob_sha1": "857f8aef743a56e675c4495930732f65e87b65cf"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs",
+            "git_blob_sha1": "5062561d8a1ea9f6f5f901f4f19d193ed6c07b53"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+            "git_blob_sha1": "4de0b037978f264a01beb13bb6ec4758ca1973f9"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+            "git_blob_sha1": "3750323c69278ab7b77ecf6c24ac99fd513ddb57"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+            "git_blob_sha1": "ee57d50975bf488c492fef2d893d3a71f1fb9d6c"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptReferenceSnapshot.cs",
+            "git_blob_sha1": "1d9f23b827dfeccc3a29d1e772c421182c721409"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+            "git_blob_sha1": "e8c561c46b9e7dc1f045efe51de55e029c6c8e67"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj",
+            "git_blob_sha1": "ed4512f9eda9d1b45f129d95052cb9d5ae941e21"
+          },
+          {
+            "path": "tools/SunEyeVision.Tool.Script/Views/AssemblyReferenceDialog.xaml.cs",
+            "git_blob_sha1": "2a0796b14b9e9d17d7f91ab65c1f9a8af4f3758e"
+          }
+        ]
+      }
+    }
+  ],
+  "presentation": {
+    "anchor": "script-followup-panorama",
+    "canonicalPages": [
+      "现状分析/tool-script.html",
+      "优化方案/optimization-o01.html"
+    ],
+    "homeSearch": [
+      "脚本后续优化",
+      "前三批之外",
+      "脚本数据合同",
+      "脚本方案依赖"
+    ],
+    "diagramFirst": true,
+    "sourceDetailsCollapsed": true,
+    "noStandaloneMainDocument": true,
+    "qa": [
+      "7场景逐一可切换",
+      "11问题按3候选组筛选",
+      "首页精确搜索直达新锚点",
+      "桌面/768/390/打印/离线链接",
+      "不改变前三批实施与验收状态"
+    ]
+  }
+}

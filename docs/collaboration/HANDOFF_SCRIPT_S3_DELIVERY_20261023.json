@@ -1,0 +1,136 @@
+{
+  "taskId": "SCRIPT-S3",
+  "requestId": "S3-FIXED-64f17888-20261023",
+  "baseline": "a59f446c4032e26abafc1c6a83296db78575463e",
+  "sourceCommit": "64f17888fac6fa10ccc78671fd5bde10e93582b2",
+  "branch": "main",
+  "implementer": "Codex sole product writer",
+  "status": "fixed candidate with known A07 FAIL; not acceptance or script closure",
+  "delivery": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\script-s3\\delivery-64f17888",
+  "identity": {
+    "sourceCommit": "64f17888fac6fa10ccc78671fd5bde10e93582b2",
+    "programFiles": 627,
+    "sourceInputs": 1357,
+    "binaryManifestSha256": "26EA081EE1A6B87DF0AB1166526AFCC08669FBF3307B102CCE0454F1AADC2B2B",
+    "sourceManifestSha256": "7F3C57B24A3EFFBE026031D4355568E1746A911DA76CC2CE11D4FAD59214F768",
+    "sourceZipSha256": "58EFCC36D7A2E30BB2C96CEBD0EBB0281BF9B6BA0A2846F5B606C7B435C2AEA1",
+    "sourceArchiveManifestSha256": "205BBA6C934D9D4C408C93178B26A9A2F6B7024E451899729E6BFE787BD67069",
+    "sourceManifestKind": "actual built worktree bytes",
+    "sourceArchiveKind": "git normalized committed bytes",
+    "foreignProbeFiles": 0,
+    "vendorMatches": 26,
+    "runtimeManifestPath": "runtime-manifest.json",
+    "runtimeManifestSha256": "719BBF9A74111171E345ACBD47F2A3248BC52550A3469DD41C880D9BD20E5170",
+    "acceptanceStatus": "candidate; S3-A07 FAIL; other independent acceptance pending"
+  },
+  "builds": [
+    "full Release Rebuild 0 errors/1272 warnings 2:19.93",
+    "UI Release 0 errors/1175 warnings 26.51s"
+  ],
+  "tests": [
+    "checkpoint05 99/100 pass; 100 windows complete but 97/100 retired ALC alive",
+    "checkpoint06 targeted 1/2 pass; NoInlining unchanged; slot0 sandbox0 assembly97",
+    "checkpoint07 0/2 pass; 3 windows each output/no-output, ALC2 slot0 sandbox0 assembly2; actual WindowsBase strong Assembly keys",
+    "fixed source64f17888 complete 102 tests: 99 pass/3 A07 weak-reference FAIL, 1m51s, full TRX retained",
+    "fixed app A04 owned PID94360 success=true, cancellation preserves actual active task/owner1/lease1, retirement rejected; process exits itself0; not hard-stop/Release pass",
+    "fixed app toolbox PID58664 exit0, 22 tools, commit64f17888; inventory only"
+  ],
+  "acceptance": [
+    {
+      "id": "S3-A01",
+      "assert": "调试单次、工作流单次/连续/子程序入口传递同一轮身份和取消；错误输入/字段类型失败时Init/Process调用数0。",
+      "developmentStatus": "partial development evidence; independent full matrix pending",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    },
+    {
+      "id": "S3-A02",
+      "assert": "正常/Init失败/Process失败/捕获输出失败/取消时成功创建实例Release恰一次；构造失败不声称Release，环境回收；Release再错保留双错误且无成功发布。",
+      "developmentStatus": "partial development evidence; independent full matrix pending",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    },
+    {
+      "id": "S3-A03",
+      "assert": "合作停止覆盖运行前/排队/Init与Process边界/长循环；真正退出和清理前不返回Stopped、不归还活跃资源。",
+      "developmentStatus": "partial development evidence; independent full matrix pending",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    },
+    {
+      "id": "S3-A04",
+      "assert": "不合作脚本/原生阻塞仅在测试者自己创建的带看门狗独立进程执行；超时显示未结束，不能冻结产品或杀用户进程，不能宣称硬停通过。",
+      "developmentStatus": "pending owned-process probe",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    },
+    {
+      "id": "S3-A05",
+      "assert": "同节点与跨节点并发、两个线程同键取池，只创建/加载一次，运行上下文与实例不串；不同节点static隔离、同节点static常驻语义明确。",
+      "developmentStatus": "partial development evidence; independent full matrix pending",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    },
+    {
+      "id": "S3-A06",
+      "assert": "16项全忙第17项可取消等待/明确繁忙，LRU只淘汰闲置；Clear/Invalidate不释放活跃租约，终态归还与退役计数准确。",
+      "developmentStatus": "partial development evidence; independent full matrix pending",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    },
+    {
+      "id": "S3-A07",
+      "assert": "100轮打开/运行/关窗、代码引用换代及方案退出：会话任务/用户实例/租约计数归零，已退役ALC弱引用受控GC回收；失败给具体root，不用RSS截图替代。",
+      "developmentStatus": "FAIL confirmed; main decision permits candidate only",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    },
+    {
+      "id": "S3-A08",
+      "assert": "旧结果/日志/SetGlobal受控回调，在取消/改IO/关窗/删节点/切方案后不得污染当前代次；含Dispatcher先入队后失效场景，丢弃输出按Owner释放。",
+      "developmentStatus": "partial development evidence; independent full matrix pending",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    },
+    {
+      "id": "S3-A09",
+      "assert": "数组/标量/图像输出，输入与输出别名、Release主动释放、自定义对象/委托泄出，验证只收声明输出和所有权；失败不复用上轮成功值。",
+      "developmentStatus": "partial development evidence; independent full matrix pending",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    },
+    {
+      "id": "S3-A10",
+      "assert": "并行工作流取消时所有实际节点Task排空后才归还资源并允许冲突新运行；停止超时则原方案保持、资源仍占有，不能由manager空闲标志冒充排空。",
+      "developmentStatus": "partial development evidence; independent full matrix pending",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    },
+    {
+      "id": "S3-A11",
+      "assert": "保留逐次实例和既有全局变量传入行为，预热不构造用户对象；外来取消异常与本轮取消来源分开。",
+      "developmentStatus": "partial development evidence; independent full matrix pending",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    },
+    {
+      "id": "S3-A12",
+      "assert": "固定源码/产物，全量Release+UI专项+无设备隔离实际验证，正式独立验收与开发自测分开；VS设计器/用户视觉/不合作硬停能力未测独列。",
+      "developmentStatus": "partial development evidence; independent full matrix pending",
+      "independentStatus": "not yet accepted on this fixed candidate"
+    }
+  ],
+  "knownRisks": [
+    "A07 remains FAIL. WindowsBase cache directly holds collectible script Assembly strong keys. Other roots/trigger paths have not all been excluded.",
+    "Long-running memory behavior is not proven controlled; zero pool/owner counts do not mean ALC collection.",
+    "S2 formal-r1 budgets failed and run incomplete; formal-r2 once is pending, no budget exception."
+  ],
+  "manualAcceptance": "Visual Studio designer and user visual acceptance unverified",
+  "remaining": [
+    "formal-r2 original protocol once",
+    "independent acceptance and documentation sync",
+    "S3-ALC-01-TRACE per latest user instruction; A07 still FAIL"
+  ],
+  "excludedDirty": "Other roles docs/HTML/generators and user plans were excluded from product commit",
+  "next": "Coordinator schedules runtime windows and independent fixed candidate acceptance; keep A07 failure intact",
+  "postRuntimeIdentity": {
+    "programFiles": 627,
+    "binaryDrift": 0,
+    "extraFiles": 0,
+    "sourceInputs": 1357,
+    "sourceDrift": 0,
+    "changedBinaryPaths": [],
+    "extraPaths": [],
+    "changedSourcePaths": [],
+    "note": "Fixed S3 candidate app and fixed source identity; A07 FAIL is independent of hash equality."
+  }
+}

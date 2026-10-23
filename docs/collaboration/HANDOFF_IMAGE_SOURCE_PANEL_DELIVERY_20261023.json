@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "taskId": "IMAGE-SOURCE-PANEL-BATCH",
+  "requestId": "IP-FIXED-6C2DEF23-03",
+  "baselineCommit": "64f17888fac6fa10ccc78671fd5bde10e93582b2",
+  "sourceCommit": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
+  "branch": "main",
+  "writer": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+  "authorization": "docs/collaboration/IMAGE_SOURCE_PANEL_AUTHORIZATION_20261023.json",
+  "goal": "原批准D01-D07/IP-A01-A10收尾；正常取消无重复收益的空任务线程池预热，最终新身份验收继续",
+  "allowedDirectories": [
+    "src/UI",
+    "tests/SunEyeVision.UI.Tests",
+    "本实施者自有artifacts及协作记录"
+  ],
+  "changedFiles": [
+    "src/UI/App.xaml.cs",
+    "src/UI/Features/WorkflowUI/WorkflowTabViewModel.cs",
+    "src/UI/Services/ImageSourceResolver.cs",
+    "src/UI/Services/LocalImageSequenceService.cs",
+    "src/UI/Services/RuntimeInputSnapshotService.cs",
+    "src/UI/Services/Startup/StartupLaunchContext.cs",
+    "src/UI/Services/Thumbnail/ImageFileImport.cs",
+    "src/UI/Services/Thumbnail/PreviewBitmapCache.cs",
+    "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+    "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+    "src/UI/Shared/ImageInputSource.cs",
+    "src/UI/Shell/Controls/Panels/ImagePreviewControl.FileImport.cs",
+    "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml",
+    "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs",
+    "src/UI/Shell/Controls/Shell/ImageResultControl.xaml",
+    "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+    "src/UI/Shell/Windows/MainWindowViewModel.cs",
+    "tests/SunEyeVision.UI.Tests/ImagePreviewGeneratedDecodeTests.cs",
+    "tests/SunEyeVision.UI.Tests/ImagePreviewInteractionTests.cs",
+    "tests/SunEyeVision.UI.Tests/ImageSourceResolverTests.cs",
+    "tests/SunEyeVision.UI.Tests/ImageSourceSavePersistenceTests.cs",
+    "tests/SunEyeVision.UI.Tests/LocalImageExecutionTests.cs",
+    "tests/SunEyeVision.UI.Tests/LocalImageSequenceTests.cs",
+    "tests/SunEyeVision.UI.Tests/PreviewBitmapCacheTests.cs",
+    "tests/SunEyeVision.UI.Tests/StartupEntryFlowTests.cs"
+  ],
+  "fixedDelivery": "artifacts/validation/image-source-panel/delivery-6c2def23",
+  "identity": {
+    "sourceCommit": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
+    "programFiles": 627,
+    "sourceInputs": 1395,
+    "binaryManifestSha256": "1E5A2F9C87596D4A9717406EF9358A681DFC319E692E07AA6028A4B5984E477C",
+    "sourceManifestSha256": "09BF4D700AE8D391093C7ACB247DC1053F4C4D25B0C08416A84B3A6F2C76E147",
+    "sourceZipSha256": "AFC38433417254AF146C41CA5CF52ADE11082F6DBEFB548363E4B834E7AFFBB9",
+    "sourceArchiveManifestSha256": "85EF4EE2E17875397B3FE34E3AC3A61311709AD63133654F0F600B94381CACB3",
+    "sourceManifestKind": "all tracked src/tools/tests/build inputs including assets; actual worktree bytes",
+    "sourceArchiveKind": "git archive output of committed revision; not actual worktree bytes",
+    "foreignProbeFiles": 0,
+    "vendorMatches": 26,
+    "actualSourceSnapshotPath": "actual-built-source",
+    "actualSourceSnapshotArchive": "actual-built-source.zip",
+    "actualSourceSnapshotArchiveSha256": "E34396E8A9B519A6311E3F4053830D8D03EAC8F953F320C6BCB4044C86A2E10B",
+    "sourceBytesUnchangedFromPreBuild": true,
+    "preBuildSourceManifest": "artifacts/validation/image-source-panel/warmup-off-release-6c2def23/pre-build-source-manifest.json"
+  },
+  "completed": [
+    "来源纯图解析/显式分支/父级唯一调用点",
+    "每workflow/source/run/iteration冻结输入，成功推进/失败取消保留/同序列末张停止",
+    "勾选保存/配置编辑/解绑与运行游标不持久化",
+    "内容版本/任务合并/取消迟到保护/预算缓存/离屏释放；1ff开发及独测真实5000驻留通过，新身份复核另列",
+    "后台排序目录导入/256批次/取消切源重入，不删磁盘文件",
+    "1ff正式45进程三策略对照经独测复算，无重复收益；6c2正常默认Off，隔离on/deferred保留，其他用途预热未改"
+  ],
+  "developmentValidation": {
+    "fullRelease": "6c2 UI0错1175警告28.58s；全量0错1258警告62.05s；1395输入前后零漂移",
+    "targeted": "40/40通过0跳过3秒，准确filter及raw/TRX warmup-off-checkpoint01；运行默认策略另待",
+    "logs": [
+      "warmup-off-checkpoint01",
+      "warmup-off-release-6c2def23"
+    ],
+    "previousFixedRuntime": "1ff functional/真实5000 residency开发与独测PASS，原始报告保留，不能等同新身份运行",
+    "warmupComparison": "warmup-formal01 45自然exit0/107.149s，n5 raw/median/range/逐轮配对，阈值为本轮取舍参考非业务SLA；协议及正式旧包不改"
+  },
+  "manualAcceptance": "尚无用户人工验收；已做Dark实际150%DPI窗口，Light与VS设计时仍需单列验证",
+  "unfinished": [
+    "新6c2默认无override Off/blocking0/正常退出与新包针对回归",
+    "Light主题/键鼠及VS设计时验证，用户人工验收单列",
+    "最终独验IP矩阵与文档同步，不把候选交包当整批完成"
+  ],
+  "knownBoundaries": [
+    "中央大图/ROI/渲染引擎不扩范围",
+    "程序集管理等待主控结论，历史A07 FAIL不改判",
+    "正式对照来自1ff同包三策略，只作新默认取舍依据，不称6c2性能结果",
+    "本机n5 process-cold非disk-cold，ContentRendered非输入延迟，不作普遍加速结论"
+  ],
+  "next": "以最终IP-A01..10状态索引为准；新固定包静态独审PASS，默认正常关闭与完整矩阵由协调排独测，停止开发新增截图链。",
+  "sourceProvenance": {
+    "actualSnapshot": "actual-built-source.zip",
+    "actualSnapshotFiles": 1395,
+    "prePostBuildDrift": 0,
+    "allTrackedInputPathsIncludingAssets": true,
+    "archiveFiles": 1395,
+    "byteIdentical": 1017,
+    "onlyCrlfLfWithBomPreserved": 378,
+    "otherContentDifferences": 0,
+    "map": "actual-vs-committed-source-map.json",
+    "mapSha256": "602248C7304D4B1B423AF9E47B53F0AA06E995484C4EE7E2FFC0D579D42690BE",
+    "summary": "actual-vs-committed-source-summary.json",
+    "bomMethod": "Exact raw EF BB BF bytes for all files",
+    "supplementaryPaths": 0
+  },
+  "previousCandidate": {
+    "sourceCommit": "1ff63bfa78f3c6d6c028ec8439b730a86d313cf9",
+    "fixedDelivery": "artifacts/validation/image-source-panel/delivery-1ff63bfa",
+    "status": "Preserved prior functional/residency and formal comparison identity",
+    "delta": "Only App5+/5-: defaultOff, accurate comments and effective mode/blocking log"
+  },
+  "latestStatusSupplement": "docs/collaboration/HANDOFF_IMAGE_SOURCE_PANEL_FINAL_STATUS_20261023.json"
+}

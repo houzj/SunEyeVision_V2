@@ -1,0 +1,404 @@
+{
+  "schemaVersion": 1,
+  "owner": "01a16695-701e-7523-9c18-1298b9279428",
+  "updatedAt": "2026-10-24T00:36:59.2682845+08:00",
+  "governanceCommit": "9e58aaa5e9d433c69d076a9b0e19028d2841c7f3",
+  "handoff": "accepted",
+  "authority": "docs/collaboration/HANDOFF_DELIVERY_COORDINATION_20261023.json",
+  "automation": {
+    "status": "deleted",
+    "createReplacement": false,
+    "source": "主控治理完成事件及用户删除要求",
+    "id": "automation"
+  },
+  "mode": "event-driven",
+  "productWrite": false,
+  "independentVerdict": "tester-only",
+  "finalApproval": "control-only",
+  "resourceCoordination": {
+    "testerOccupancy": "正式与短探针均退出；测试侧独占能力补齐/执行窗口，无产品输入阻塞",
+    "exclusiveWindow": "首内部Foundation构建/Verification已结束释放；暂无独测运行，实施者继续首依赖Record/Geometry等实现",
+    "formalSamplingReservation": "全部实施者runtime退出，已通知测试员立即继续实际断言；后续runtime先协调"
+  },
+  "openChecks": [
+    "A03执行探针真实构建/运行证据及A06入口",
+    "formal-r1不完整分布/5001缺测后续有限方案",
+    "独立验收逐项执行/缺陷复测",
+    "主文档实际同步证据"
+  ],
+  "finalReview": "not-requested",
+  "references": [
+    "docs/collaboration/IMPLEMENTATION_QUEUE.json",
+    "artifacts/independent-testing/SCRIPT-S2/readiness.json",
+    "docs/collaboration/SCRIPT_S2_AUTHORIZATION_20261023.json",
+    "docs/collaboration/SCRIPT_S3_AUTHORIZATION_20261023.json"
+  ],
+  "latestEvidence": {
+    "testerStatement": "取消探针隔离build实际失败CS1929 object.ConfigureAwait，已给Task显式转换修复路径；无运行结果，A03/A06既有子集结论不变",
+    "readinessCorrection": "已实读present=true/实际a59f源码和binary SHA；前期false记录已过时",
+    "documentSync": "两canonical/快照新增trigger-review/trace-matrix实际完成，matrix-receipt已实读，旧锚点保留，子停止写已交回Owner；搜索/视觉仍未验",
+    "pairedProtocol": "artifacts/performance/script-s2-window-20261023/Run-Paired.ps1",
+    "uiTargeted": "artifacts/validation/script-s2/sdk-editor-tests.log",
+    "fullRelease": "artifacts/validation/script-s2/fixed-full-release.log",
+    "sourceCommit": "a59f446c4032e26abafc1c6a83296db78575463e",
+    "fullReleaseState": "日志末尾已核0错/1271警告",
+    "sourceVerifiedBy": "git show",
+    "formalState": "已核running=false/aborted-native-process-exit/0xC0000005；summary.json已出现；32成功96窗，5001缺测，根因未知",
+    "packaging": "identity.json已实读：a59f446c，627程序/1347源码，foreignProbe0/vendor26；文件逐SHA验收交测试员",
+    "formalProgress": "artifacts/performance/script-s2-window-20261023/formal-r1/progress.json",
+    "handoff": "docs/collaboration/HANDOFF_SCRIPT_S2_DELIVERY_20261023.json 已实读",
+    "independentIdentity": "测试员报告627/627 SHA匹配，manifest/zip一致；host骨架/C01/C02文件协调已见，尚未运行",
+    "malformedToolboxIncident": "实施者漏输出参数可能进入正常启动，不能排除服务初始化；PID92316退出，不计runtime通过；已交测试/文档披露",
+    "s3FixedSource": "64f17888fac6fa10ccc78671fd5bde10e93582b2，git show已核，src/tools/tests diff为空",
+    "s3IndependentReceipt": "artifacts/independent-testing/SCRIPT-S3/readiness.json accepted=true，协调已核",
+    "formalR2": "已实读13尝试/1失败/12成功36窗，aborted/runningfalse；失败Stage文件MoveFile UnauthorizedAccess，非产品；不重跑"
+  },
+  "roleAcknowledgements": {
+    "adopted": [
+      "自研实施",
+      "独立测试",
+      "自研文档",
+      "VM插件逆向",
+      "VM框架逆向",
+      "逆向插件集成",
+      "逆向源码审核",
+      "VM架构恢复"
+    ],
+    "notification": "主控已成功通知9名；送达不等采用",
+    "scope": "回执不新增任务或恢复暂停审核",
+    "pending": [
+      "逆向文档"
+    ],
+    "pausedScope": "VM架构恢复全局变量专项保持暂停，无新增取证/恢复授权"
+  },
+  "s3Gate": {
+    "fixedSourceReleaseIdentityHandoff": "formed-and-reviewed",
+    "baseline": "a59f446c4032e26abafc1c6a83296db78575463e",
+    "currentAction": "fixed64f开发102=99pass3A07fail；A04自有probe exit0/活跃保持，toolbox58664 exit0/22工具仅inventory已核，fixed漂移待收",
+    "notAcceptanceApproval": true
+  },
+  "adaptiveCoordination": {
+    "observedEffect": "已核A06 csproj/Program无Show及独占配置，checkpoint05实际启动待核",
+    "rollback": "若该拆分仍无产物，针对具体API/构建异常调整，不新增流程表",
+    "reason": "等待A06未知PID造成产品测试空档，实际该探针无UI且固定包隔离，无文件/窗口冲突",
+    "adjustment": "按实际资源冲突串行：允许隔离无UI功能探针与S3非性能回归并行；正式性能/UI同窗仍独占"
+  },
+  "finalCloseout": {
+    "testEstimate": "14:30首轮可能受包迟影响，收包后校准；18点仅覆盖检查点",
+    "plan": "docs/collaboration/DELIVERY_QUEUE.json#finalCloseout.finalPlan",
+    "candidateEstimate": "新13:10–13:25条件目标：先固定源，全量/UI无新错，打包5–10min；A07FAIL不豁免",
+    "nextCheckpoint": "11:35预算差距/有限修复/未知native证据及A03实际运行；11:45测试可运行入口清单",
+    "requestId": "SCRIPT-FINAL-CLOSEOUT-01",
+    "asOf": "2026-10-23 11:14 Asia/Shanghai",
+    "html": "已要求文档立即更新主文档，不等全部未知消除",
+    "priority": "S2预算修复/决策与native缺测诊断优先；S3不冲突实现并行",
+    "formalEstimate": "候选包后15–25min，暂13:25–13:50，runtime探针另协调",
+    "performanceDiagnosis": {
+      "risk": "有界归因结束，无安全因果修复，预算FAIL；候选包已重估12:45–13:15且受S3编译收敛影响",
+      "unknown": "Show长成本定位回调前194–242ms，具体native原因未知；r1退出无栈/阶段，5001缺测",
+      "evidence": "实施者回收r1：candidate101首次input p95约4070ms/visible4027/heartbeat3684，Initialize仅0.26–0.56ms；热呈现217–268ms",
+      "action": "已停止调优/三诊断完成退出；完整最终包r2仍待执行",
+      "requestId": "PERF-CLOSEOUT-01",
+      "result": "diagnostic-pure-show/result.json已核3窗success；纯Show202–288ms，首轮控件构造7081.77ms、重开壳Show629–928ms；非正式成绩",
+      "decision": "主控批准12:00截止有界修复，已通知实施/测试/文档；无有据修复停调优，不自动延窗，不降标准",
+      "phaseResult": "diagnostic-show-phases/result.json已实读：Show约202–332ms，SourceInit约1–7ms/Measure8–29ms/Arrange1–4ms；不能解释完整Show成本，尚无因果修复",
+      "lastDiagnostic": "diagnostic-source-entry/result.json已核：主要Show成本在SourceInitialized前约194–242ms，仍未证明底层原因；局部3窗非正式p95；不再追加诊断",
+      "disposition": "PERF-CLOSEOUT-01.json已实读核收，500/150 FAIL，不自动延窗；原始及混合身份保留"
+    },
+    "planConfirmed": "用户已确认11:14条件计划；按真实变化更新实际/偏差，非完成承诺",
+    "a03Checkpoint": "11:35前已交实际A03结果，加载阻塞已解除；剩余真实编辑/绑定/运行矩阵继续",
+    "testEntryCheckpoint": "检查点延误：A06扩展只有plan.json、STA目录空；已要求父直接实现并构建实跑，当前资源可用",
+    "newBlockingRisk": "S3边界确认缺陷需合同映射/集中修复，候选12:45–13:15可信度降低，待实施者实际工作量更新",
+    "checkpoint04": {
+      "trx": "artifacts/validation/script-s3-checkpoint04/houzhongjie_SZDKSNB076_2026-10-23_12_33_50_net9.0.trx",
+      "actual": "UI0错；测试98通过1失败/无跳过",
+      "next": "核资源创建/访问线程→修复宿主或产品→同强度定向复测，不弱化断言",
+      "failed": "HundredOpenRunCloseGenerations Window.Show跨线程WindowChrome",
+      "log": "artifacts/validation/script-s3-tests-checkpoint04.log"
+    },
+    "checkpoint05": {
+      "trx": "artifacts/validation/script-s3-checkpoint05/houzhongjie_SZDKSNB076_2026-10-23_12_39_48_net9.0.trx",
+      "failed": "S3-ALC-01：97/100退役ALC未回收，持有路径未知，不降低断言",
+      "log": "artifacts/validation/script-s3-tests-checkpoint05.log",
+      "defectId": "S3-ALC-01",
+      "next": "确认退出/引用持有链/原强度定向复测，不能弱化资源回收断言",
+      "actual": "实施者确认100窗循环/Owner active0/分析排空完成；最终97/100 ALC弱引用仍活，其他99项通过"
+    },
+    "checkpoint06": {
+      "conclusion": "NoInlining未解，池/沙箱对象已回收，程序集外部持有待查",
+      "actual": "1通过1失败/2，55s",
+      "layers": "ALC97 slot0 sandbox0 assembly97",
+      "next": "13:05最小同条件对照/持有链检查点，修复后原100窗10GC验证",
+      "trx": "artifacts/validation/script-s3-checkpoint06/houzhongjie_SZDKSNB076_2026-10-23_12_45_25_net9.0.trx"
+    },
+    "checkpoint07": {
+      "next": "13:05有限修复方案/外部约束；清框架私有缓存或改架构需主控决策，不自行实施",
+      "trx": "artifacts/validation/script-s3-checkpoint07/houzhongjie_SZDKSNB076_2026-10-23_12_50_10_net9.0.trx",
+      "finding": "缓存真实新增可卸载非Dynamic程序集强键；有输出/无输出均ALC2/3、slot0/sandbox0",
+      "host": "Microsoft.WindowsDesktop.App9.0.20/WindowsBase SHA202D7B0260611E3A87B369D8BD5213F07F7B2DDC8118B81603EAD9F95374E278",
+      "actual": "两最小对照均弱引用失败，8s"
+    },
+    "alcDecisionRequest": {
+      "noMoreUnjustifiedRuns": true,
+      "status": "A允许带FAIL候选验其他仍有效；用户新增S3-ALC-01-TRACE要求解决，派实施/测试完整链补证和方案，未授权产品绕过",
+      "report": "artifacts/validation/script-s3/S3-ALC-01.json",
+      "raw": "artifacts/validation/script-s3/checkpoint07-cache-evidence.txt",
+      "forbiddenWithoutDecision": "私有缓存清理/换runtime/换加载或编译/IPC/弱化100窗合同",
+      "currentVerdict": "A07 FAIL/交付待验，不宣称唯一根因"
+    },
+    "fixedTests": {
+      "a07": "FAIL unchanged",
+      "source": "64f17888fac6fa10ccc78671fd5bde10e93582b2",
+      "trx": "artifacts/validation/script-s3-fixed-tests/houzhongjie_SZDKSNB076_2026-10-23_13_05_22_net9.0.trx",
+      "actual": "102 total/99 passed/3 ALC failed；not independent acceptance"
+    },
+    "noncooperativeEvidence": "artifacts/validation/script-s3/noncooperative-fixed-64f17888.json，固定包输入SHA/runtime9.0.20已记录，仅开发隔离行为，独立待验"
+  },
+  "imageSourceBatch": {
+    "consumerReceipt": "6c2首默认真实EXE未到MainWindow，AtomicJsonFile.Replace data marker在SolutionManager173抛IO，非policy日志等待导致；根因未证/不归Off，早期mode日志丢失另观测限制。仅自有marker副本诊断/runner观测修，不擅存储产品改造，正常运行未过",
+    "authorization": "hash-verified",
+    "dispatch": "独立raw复算未证重复预热收益后，原授权最小App默认Off/准确注释日志5+/5-已改，定向回归待执行，通过后新提交/UI全量固定及无override默认正常运行，旧formal仅取舍依据",
+    "estimate": "开工后实现/开发回归粗估4–6h+性能/全量固定约1h，独立另排；不挤脚本窗口",
+    "actualStartCommit": "64f17888fac6fa10ccc78671fd5bde10e93582b2",
+    "queuePosition": "approved-unaffected-work-window-released",
+    "scriptProtection": "固定64f封存包和历史FAIL保留，暂停程序集合同不改；构建/runtime报协调，不扩大原授权",
+    "taskId": "IMAGE-SOURCE-PANEL-BATCH"
+  },
+  "sidePerformanceSuggestion": {
+    "review": "已实读，isolated Roslyn非UI，Framework四引用/17候选与正式默认引用/112候选不等价；负载未控，不能正式成绩/下限/因果",
+    "source": "D:/temp/script-side-check-530318b172eb43fbacd08f8967cc2b96/trial-1.json..trial-3.json",
+    "currentPriority": "完成既批S2/S3/最终固定包/原r2与独立验收",
+    "deferred": "三组新正式受控实验不在当前r2协议，调优已停；待集中决策，不自行开跑延窗",
+    "reusable": "分段/缓存命中与实际Emit区分字段，交测试报告复用"
+  },
+  "alcTrace": {
+    "status": "主控直接核human确认暂停；撤销未启动CLI/补丁实验，repair-design为暂停候选非路线，A07历史FAIL不改",
+    "requestId": "S3-ALC-01-TRACE",
+    "finalState": "A07仍FAIL/待解决，非关闭",
+    "protection": "不阻塞候选固定和其他验收，不抢r2",
+    "firstCheckpoint": "2026-10-23 13:30 Asia/Shanghai 静态链/实际栈捕获计划",
+    "dynamicGate": "formal-r2全退出后另排5min上限；新自有VS Hidden/按新PID ROT/仅附自有probe，不开solution不改用户配置，断点绑定和实际栈受限如实报",
+    "preparedProbe": "artifacts/validation/script-s3-alc-trace/probe：普通BAML/Core/control/shell/Show/monitor及装载前后矩阵，ready/continue门4min守卫，未构建运行",
+    "dynamicReceipt": "artifacts/validation/script-s3-alc-trace/owned-stack-01/debugger-receipt.json 已实读；仅新自有PID不改用户配置",
+    "actualStages": "before script/UI空→script-loaded空→ordinary control-constructed新增可卸载非Dynamic脚本键→retired/GC仍键且ALC活；同版WindowsBase SHA已记录，禁R2R诊断环境非性能",
+    "candidateFixture": "私有原版473文件drift0/安装WB不变；候选Cecil未写，token路径缺输入；OR算法机制fixture3–10s与真实WPF源码构建30–60min+分层交主控",
+    "matrixEvidence": "script-s3-alc-trace/phase-comparisons-01三JSON/process-receipts，13:25:04–11均exit0；先UI后load不等修复，需后续普通BAML反证",
+    "narrowDebuggerRetry": "主控允许仅必要时同命令新自有VS/probe5min require_escalated自动审查；拒绝停不绕；当前不为形式补栈执行",
+    "tokenDiagnostic": "主控确认前提不存在，直接停止，不增metadata/不PEhack/不扩工具调试",
+    "proposalCommitment": "实施者接单：10min内REPAIR_PROPOSAL.json，OR两处/三同族/同版源码Arcade/真实载体输入/30–60min+成本依据/部署边界/回归门；当前无runtime build，不跑算法fixture",
+    "proposalCheckpoint": "原13:47补丁方案点被用户新三方案比较替换，时间/范围待方案主控统筹；不继续为现ALC修补辩护",
+    "algorithmFixture": "先前已批但未启动，用户新暂停指令覆盖，当前禁止执行"
+  },
+  "documentWriteTransfer": {
+    "contents": "最终计划实际偏差/A07FAIL候选状态/TRACE用户授权/VM三层五步管理与宿主未知",
+    "owner": "subagent script_doc_closeout",
+    "authorization": "主控明确有限移交，原Owner已暂停",
+    "scope": "tool-script.html/optimization-o01.html及对应快照/新独占增量生成QA",
+    "handoffBack": "新DOC-ASSEMBLY-DIRECTION-02有限预留两页给子写者，已通知原Owner暂停，待主控结构化输入再写",
+    "visualQa": "待formal释放，当前仅静态",
+    "actualReceipt": "artifacts/validation/script-closeout-doc-coordinator/receipt.json 已核，最后链接QA/最新r2事实补充后交回Owner"
+  },
+  "formalR2EnvironmentIncident": {
+    "reportedBy": "主控",
+    "effect": "已知并行CPU/IO，不能声称全程无其他dotnet，不推断失败因果/不删失败",
+    "review": "交独立测试标明相关窗口限制",
+    "overlap": "13:19:23结束约5.3s ILDASM dotnet离线6方法读取，与13:16:07r2重叠"
+  },
+  "assemblyChoiceReadOnly": {
+    "scope": "6实际场景×VM常驻/ALC/进程，只读源码事实/影响/成本/未知",
+    "notAllowed": "代码/实验/默认保ALC或IPC/自行改验收",
+    "status": "撤回实施窗口任务：用户纠正方案比较仅主控，实施窗口不承担分析；本线暂停待选型",
+    "inputOwner": "方案主控统筹，实施窗口无比较任务",
+    "requestId": "ASSEMBLY-CHOICE-READONLY-01",
+    "decisionOwner": "方案主控",
+    "doc": "两专题及快照script-assembly-latest-pause已实际落地，pause-receipt.json"
+  },
+  "directionDocumentation": {
+    "writer": "script_doc_closeout",
+    "generation": "沿script-closeout-doc-coordinator独占增量脚本，基线SHA/漂移核验，禁止全站覆盖",
+    "status": "主控结构化结论已实读，子写者已实际派生成6图/主入口/必要搜索/O01摘要，产品仍暂停，推荐待确认",
+    "requestId": "DOC-ASSEMBLY-DIRECTION-02",
+    "pause": "产品/补丁/CLI保持暂停，实施者不承担方案分析",
+    "scope": "两canonical脚本专题/对应快照，必要搜索仅两专题最小更新",
+    "input": "docs/collaboration/SCRIPT_ASSEMBLY_SCENARIO_COMPARISON_20261023.json + VM-SCRIPT-PRECOMPILE-LIVE/evidence.json，SDK中桥未贯通画虚线",
+    "pendingVmCorrection": "框架实证Confirm也经BottomCommand/ShellContent.ExecuteFunction编译且成功关闭；已通知写者暂不固化旧UI推断，最终重读主控更新JSON/SHA，SDK锁桥待证",
+    "recommendationState": "主控最新：独立进程仅候选，待换版频率/停机边界等场景权重确认；不能入口结论写首选，ALC不预选，VM成熟不等回收实证；写者已收纠正"
+  },
+  "direction02DocumentReceipt": "artifacts/validation/script-closeout-doc-coordinator/direction-02-receipt.json；冻结93844C5A输入已生成6图/页；静态QA通过，浏览器file协议拒绝导致视觉未验；已回主控",
+  "longrun03DocumentReceipt": "artifacts/validation/script-closeout-doc-coordinator/longrun-03-receipt.json；冻结604D203D输入已实际生成两页/快照6图，静态QA通过/视觉未验，已送主控最终核，写者停止",
+  "a06CancelIndependentReceipt": "测试员实跑固定a59插件8D5185...E328C，9/9断言通过；contracts-a06/bin/Release/net10.0/a06-cancel-waiter-result.json及logs/a06-cancel-run-command.json；net10.0.12组件宿主，非产品net9端到端",
+  "longrun03FinalReview": "主控静态审核通过，artifacts/validation/script-closeout-doc-coordinator/longrun-03-root-review.json；最终4输出SHA/锚点/折叠核收，文档写者停止并已通知原Owner交回；设计待用户确认，历史FAIL不变，视觉/宿主PID/长期RAM未验",
+  "prototypeVisibleProgress": "artifacts/validation/script-closeout-doc-coordinator/prototype-progress-receipt.json；两主文档/快照#script-host-prototype-progress，PV四项未运行/0构建及条件预计表已实际写入",
+  "prototypeSlice01": "artifacts/validation/script-host-prototype-coordinator/slice01完整可读包已复制，manifest SHA CB915F47E1F989F4AA081AE04E7DABCB485B56950D524BC1E0C6ED309713B27E；built-not-run，独测核身份中",
+  "prototypeDeveloperSmoke": "run02 PID97320 exit0：7轮两版/语法失败保旧/实例复用/4BAML/worker正常退出与任务图像租约0，主端用户Assembly空；仅开发证据，后续补严源码待slice02重建复跑，非独立验收",
+  "prototypeIndependentA03": "slice03主PID24188 49.72s exit0；101active/100transition，101真实引用/202round/期间101BAML，101worker全退task/image0，主完整表无用户Assembly，recheck5/5；失败候选/会话重开等余项待验；slice02原计数覆盖不足证据保留",
+  "centralPreviewDocumentReceipt": "artifacts/validation/central-preview-doc-coordinator/receipt.json；O06八图/platform局部/最小搜索已生成，静态QA通过，视觉未验，子写者停止/已交回Owner，主控待审",
+  "nextPrototypeWindow": "PV-SLICE03-FUNCTIONAL-MATRIX-01预排：IP四项及全量构建退出即独测深快照/Prepare-Dispose/A02失败/A03失败候选重开/31类型；无需等待IP包整理，A04另约性能；两批身份分开",
+  "prototypeTypeMatrixStatus": "slice03+facilities04独立31/31类型PASS，PID57088 exit0/31Prepare31Apply62round，输出与Globals逐字段一致含Arc真/非空7ROI，31worker全退；A04实际图像成本不在本结论",
+  "centralPreviewStyleHandoff": "主控O06/快照a19290c0a66169d13a7517db4e8c53a2d11600ed8534e5f48c9850f4b07b6cd7写窗口已交回Owner；#preview-style-batch/PREVIEW-STYLE-BATCH整块必须保留；central-preview-style-review/receipt.json，仅方案示意无产品运行，浏览器视觉未验",
+  "imageSourceIndependentProvenance": "独测static PASS：binary627/627、actual1367/1367、归档1394/1394、双侧CRLF规范化993raw+374换行/0正文差异、补充27/27；raw/source-provenance-823cf104/independent-source-provenance-acceptance.json，旧单向分析superseded保留；IP行为仍未闭环",
+  "centralPreviewCompletePackage": "最终O06/快照F7FAD1AD568A4475AE44D25E50F97CA69B96C3CE52AC7A23026F6E2132946F47；root-final-package-review.json finalRevisionRecheck匹配，BB9前版审核留存；子写者停止/Owner已交回，完整静态方案非实施/像素或性能验收，四组未确认保留",
+  "prototypeDeterministicDriver": "独测driver build成功但两次设施启动误用app路径，尚无有效独验；已明确Prototype9部署root与Controller固定64f完整627依赖root分开，静态preflight后接pilot退出继续",
+  "prototypeSlice04Build": "原型99496/driver83080 build均0错，driver53976 exit1因输出缺runtimeconfig/deps worker66028启动失败；首hook登记/深快照断言过但整体未过，设施修待复跑，非产品/原型逻辑归因",
+  "imageSource1ffClosureIssue": "独测v3全闭包PASS：app627/source1395/归档1395 SHA匹配，1017raw+378行尾等价/0内容差异；source-map 324行BOM布尔元数据错误FAIL已派raw头重算并保旧，不锁真实行为",
+  "imageSourceResidency5000": "开发settled03 PID47896 exit0/101.50s，真实uniqueDecoded5000/Decodes5000，item max362000B17/cache2767200B128/在途等待0，关闭item0源5000；进程private134184960/working190947328/peak195665920另列，非独验/正式性能",
+  "nextImageIndependentWindow": "IP-INDEPENDENT-FUNCTIONAL-1FF-01预排3–5min：独测隔离副本/新raw/目录功能与5000真实覆盖，排slice04独立driver首轮后；开发settled03不代独验，预热正式另排",
+  "warmupPilotQueued": "warmup-pilot01准备9进程on/off/deferred各真实App+WIC+HalImage，固定1920x1080PNG，1–3min/180s总界，仅设施pilot非正式成绩；待PV独测退出及clone身份差异闭合",
+  "sourceBomCorrectionV2": "producer source-map-v2 D6148BC7BBBC996DAD7E8DFEB6180AA1D56EE51FC0944FC8292386C2023D71CA按1395原始头重算BOM，旧map保留superseded；程序源字节身份未改，独测pilot后复核，不能称已独验通过",
+  "prototypeIndependentSnapshot": "slice04独测snapshot单项PASS：hook后变原version/node/source/io/ref/bindings/global仍snapshot-original output13，PID98108/worker16268exit0 tasks/image0；product627/prototype9 SHA核过，其余并发待验",
+  "warmupCloseDiagnostic": "fixture-v2仅预置通信workflow编号，真实固定exe PID61288自然exit0/8.69s、fixture前后B976...7084同SHA，无清理；原dirty失败保留，下一显式同fixture pilot02准备，非性能结论",
+  "closeWindowNextDiagnostic": "OnClosing异步Prompt链静态已核，无ThemeDialog准备日志故保存阻塞未证；拟仅自有PID/start绑定窗口树只读采样≤60s，不点窗/不改产品，待准确命令和原型3mode退出后排",
+  "prototypeIndependentBarrierFour": "slice04独立snapshot/latest81676/cancel75304/dispose85492四例PASS，全部worker exit0 task/lease0；aggregate results/slice04-independent-remainder-20261023/aggregate.json；额外hook异常/caller取消/A02失败重开/A04未验",
+  "imageIndependentFunctionalPass": "1ff独测完整功能驻留PASS：101720/73444/98644全exit0，5000真实unique decode，取消256/切源index1/staleRejected，DPI1.5，关闭源5000/item0，cache2767200B128/在途0；非正式预热/跨DPI主题/设计时结论；独测results/IP-INDEPENDENT-FUNCTIONAL-1FF-01",
+  "blobBasicFinalReceipt": "O06/快照F9A86E0A8CEFBADDE4F7C1FED2EE4C13FC08B04EFDE622568FD335B7CCD05EC6协调已核，basic-integration-receipt.json FINAL_STATIC_REVIEW_READY_STOPPED，已交主控审核，未产品实施",
+  "blobBasicRootApproval": "root-basic-integration-review.json审核F9A最终包15输出/5源SHA及模型字段断言通过，仅文档可审阅非产品或VM像素事件验收；writer停止/Owner正式交回，disabled和热区已知简化保留",
+  "frameworkDiscussionScopeCorrection": "用户停止当前Blob基本页/具体工具UI扩修，F9A保留非框架确认；主控接续runtime字段输出声明/可选UI分离/框架通用编辑与host职责合同讨论，当前仅记录无新生成/实施授权；子写者和Owner已通知，IP脚本照常",
+  "frameworkContractDocumentInput": "TOOL_FRAMEWORK_CONTRACT_DESIGN_20261023.json D740A9B7B311558AA65B3BA06EDC9071472E559311FC6C098BC5A62A5EA765FD已派同一唯一文档writer顶部7图6合同增量，13源冻结，旧Blob暂缓，不产品；最终SHA审核前停止",
+  "frameworkAuditTracking": [
+    {
+      "id": "AF-01",
+      "topic": "单一规范定义/字段访问映射",
+      "status": "independent-review-passed-document-contract-only",
+      "reviewer": "01a160ff-e34e-7670-90a4-55194265f8a3",
+      "reviewedO06SHA": "786980B7DD24CCF9A9B5206273E385312F268B962FF6B19A6B5280ABB01940E4"
+    },
+    {
+      "id": "AF-02",
+      "topic": "编辑手势与参数编辑作用域提交取消边界",
+      "status": "independent-review-passed-document-contract-only",
+      "reviewer": "01a160ff-e34e-7670-90a4-55194265f8a3",
+      "reviewedO06SHA": "786980B7DD24CCF9A9B5206273E385312F268B962FF6B19A6B5280ABB01940E4"
+    },
+    {
+      "id": "AF-03",
+      "topic": "运行快照深冻结与资源所有权",
+      "status": "independent-review-passed-document-contract-only",
+      "reviewer": "01a160ff-e34e-7670-90a4-55194265f8a3",
+      "reviewedO06SHA": "786980B7DD24CCF9A9B5206273E385312F268B962FF6B19A6B5280ABB01940E4"
+    },
+    {
+      "id": "AF-04",
+      "topic": "SDK WPF运行消费路径/Point2D别名ROI类型身份及逐消费者迁移成本",
+      "status": "independent-review-passed-document-contract-only",
+      "reviewer": "01a160ff-e34e-7670-90a4-55194265f8a3",
+      "reviewedO06SHA": "786980B7DD24CCF9A9B5206273E385312F268B962FF6B19A6B5280ABB01940E4"
+    },
+    {
+      "id": "AF-05",
+      "topic": "20031中间页单层Commit与AF02两级Scope修订矛盾",
+      "status": "independent-review-passed-document-contract-only",
+      "reviewer": "01a160ff-e34e-7670-90a4-55194265f8a3",
+      "reviewedO06SHA": "786980B7DD24CCF9A9B5206273E385312F268B962FF6B19A6B5280ABB01940E4"
+    }
+  ],
+  "frameworkContractRevisedInput": "最终主控2f62badc338ed4a714f33f1df125de837bf63f49f57add517629b78bcaae98f7/24源含AF04，00B/D9FD历史保留；writer7C06仅AF01-03中间版，正在合唯一最终，AF01-05均待独立复核",
+  "frameworkContractFinalReview": "独立reviewer01a160ff确认AF01–AF05文档合同层闭环，当前O06/快照786980B7DD24CCF9A9B5206273E385312F268B962FF6B19A6B5280ABB01940E4协调实核，输入21C6/24源；writer已停止，非产品实现或运行验收",
+  "frameworkContractRootFinal": "主控root-final-review.json最终静态通过786980B7DD24CCF9A9B5206273E385312F268B962FF6B19A6B5280ABB01940E4；7图24源/版本域资源与依赖成本核过，CURRENT_TASK设计交接已由主控追加，Owner正式交回/writer停止，仅文档无产品工具UI授权",
+  "controllerDocumentWindow": "主控当前独占O06/快照/相关generator设计细化，另短独占JOINT_COLLABORATION_PROTOCOL.md架构正确性优先规则增量；唯一协议源实核该MD，未发现既有协议HTML；其他writer暂停，不扩产品或流程",
+  "architecturePrincipleAcknowledgement": "已实际读JOINT_COLLABORATION_PROTOCOL.md160-170用户确认新节及角色引用；架构同标准/既有实现无优先前提，设计实现缺陷分开，证据备选交主控，不偷改架构/扩范围/新增审批门；已授权就绪交付继续",
+  "frameworkDetailAudit": [
+    {
+      "id": "DETAIL-01",
+      "status": "independent-contract-review-passed-document-only",
+      "observedO06SHA": "F8780883E7D1C6B0D2D0976FC1A71682557BC494BED4AA1FD21B27EE14B5701B",
+      "sourceCount": 26,
+      "topic": "IOutputResources/ToolOutcome唯一输出资源交接时点及未发布资源释放",
+      "reviewer": "01a160ff-e34e-7670-90a4-55194265f8a3",
+      "qaIdentity": "独审最终核receipt/detail-chapter/O06匹配F878，26源/7图ID/本地锚核过，writer已停；非产品或运行验收"
+    }
+  ],
+  "frameworkDetailFinalHandoff": "主控F878最终页/快照/QA同身份，26源/7图静态过，writer停止/Owner恢复；必须保detail-chapter.html/install-detail.py/post-step及旧增量；仅设计无产品工具UI授权，原交付不变",
+  "frameworkChecklistHandoff": "主控全景清单O06/快照47EC1153D826E9FF3849B327BE0DF84B11DB7A9282D082A97548AF970FC364C5，16领域48FT-ID/原章逐字保留/checklist-review静态过；Owner恢复/保generator post-step；48项非实施或缺陷，脚本IP原队列/独测源不重置不重复派工",
+  "prototypeIndependentNegativePass": "slice04-negative-close-20261023 aggregate overallPass：5mode driver75768/97424/57016/50288/19936全0；syntax/missing-ref/init/io各3共12失败保baseline output13；hook/caller/失败候选/重开PASS，cleanup无缺退出/lease非零；A04真实图成本未验",
+  "imageWarmupPilot02Pass": "9进程on/off/deferred各startup WIC HalImage全自然exit0，fixture同v2前后SHA/无强清超时，独立raw保留；仅可运行性验证，非收益/正式统计",
+  "prototypeA04ImageRun": "三profile六进程41064/85424/81560/41504/820/46008全自然exit0，样本/输出已落，逐像素字段断言待正式预热结束做，exit0非内容PASS，无成本采样",
+  "prototypeA04TesterIncident": "独测首次脚本误赋PS只读PID导致中断/一次baseline启动缺完整回执，后查无新增dotnet在途；修正后正式六进程均有PID/exit0/SHA。测试器记账事故历史保留，非产品失败，不重跑；约20MB内容断言待IP正式窗退出",
+  "imageWarmupFormalRunComplete": "warmup-formal01 45/45自然exit0/外层0，无重试改输入，自有runtime全退；首52252 21:54:02.672，逐PID/45JSON保留，汇总identity/fixture及median/range/paired待核，未据此收益或整批PASS",
+  "prototypeCostCollectorDecision": "成本冻结前发现默认RunPlan/Baseline累积完整图像Reply会污染GC/内存；已授权独测测试目录streaming对称逐轮校验hash/摘要，不改原型产品，30测量+warmup单列/echo独立组，明示计时边界与采集器开销，待build命令/协议",
+  "imageWarmupFormalSummary": "summary98CB8D62FB6EDD5EAB1D970172B7014B8BCF94258D6F70891CC0CA8AB2FBFA7E/audit0问题，45自然0/107.149s；On/Deferred未达4of5重复收益参考，实施建议Off待独立raw复算，正常策略未改；n5描述非业务SLA/普遍因果",
+  "prototypeA04ImageCorrectnessPass": "独立3/3真实样本profile baseline+worker逐字节反相/metadata/hash/标量数组points非空ROI样式/绑定全局全PASS，task/imagelease0和workerexit0；independent-content-assertions.json；固定功能非成本/生产代表性，首解析假设错设施史保留",
+  "consumerChainAudit": [
+    {
+      "id": "CHAIN-01",
+      "status": "independent-static-review-passed",
+      "topic": "ConfigSetting经ToParamSetting；ParamBinding.OnShapeBindingChanged直接ParamSetting.CreateBinding，不可合称",
+      "reviewer": "01a160ff-e34e-7670-90a4-55194265f8a3",
+      "identity": "E058A0F34C6B54D5F9CD53499C4D90D90B59366B2C677C201BED8817284EA52F/25源0差异/QA同身份，ROI ConfigSetting ParamBinding三回填路径已独审核，13旧ID/48分母不变；非运行视觉验收"
+    }
+  ],
+  "consumerChainHandoff": "主控E058调用链文档交回Owner，13既有FT-ID/48分母不变，checklist-index派生非队列；必须保consumer-chain安装poststep，原接口章逐字不改，仅文档无产品授权",
+  "markerReplaceProbeResult": "probe02 PID99048/runtime10.0.11/2.44s exit0：副本无锁Replace成功，自持FileShare.Read负控0x80070020；源未变，不能推原97268失败原因。允许一次新根真实6c2默认启动窗口/marker观测，原异常保留未归因，不改存储/不重正式",
+  "latestClosureConstraints": {
+    "defaultRuntime": "PASS：runtime05-close-pwsh7 PID62804约7秒自然exit0，身份/ContentRendered/Closeaccepted/Dispatcher0/前后SHA一致，无强清；仅默认启动关闭，不含视觉画面",
+    "fixed6c2IndependentStatic": "627 binary + 1395 source PASS，1017 exact/378 line-ending only/0 other；runtime未覆盖",
+    "testFacilityIncident": "ControllerDriver首次构建误写共享Release四文件及native marker时间，无前照不恢复；后续隔离；固定交付包627逐SHA独测一致",
+    "a04": "F8冻结方案PS5 preflight阻塞，0/18，未重试；先仅宿主修订pwsh7并同host离线全preflight正控后再排正式窗；不冒称采样在跑",
+    "remaining": "新6c2实际默认/目标回归/IP矩阵/Light/VS设计时人工，原型成本及最终矩阵；不报全批完成"
+  },
+  "documentNavigationHandoff": {
+    "status": "主控有限写入窗口已交回，文档Owner获通知恢复",
+    "sha256": "EE238B6B8816A241A4B8739314B7CC0B5C275CF579F725A03E50C9FAD36BDA37",
+    "scope": "顶部与审核章三入口；保留有限导航及全部post-step，方案语义不变",
+    "access": "navigation-closed-user-confirmed：主控转述用户明确确认已正常打开并看到三个入口；仅导航验收，不构成方案批准或产品运行通过"
+  },
+  "imageFinalIndex": {
+    "path": "docs/collaboration/HANDOFF_IMAGE_SOURCE_PANEL_FINAL_STATUS_20261023.json",
+    "sha256": "4E8D73BB73C11ECCB26608543CBF12B7DD3357D1F28356D994F4ADB52E50E797",
+    "status": "A08/A10默认正常启动关闭05独测已闭环；其余逐IP必要回归与UI/设计时/人工分列，不报全批通过",
+    "next": "执行existing-contract-test-facility-index.json成熟已编译合同回归，逐IP按实际覆盖落项，UI/VS/人工独立；固定产品七依赖当前SHA一致不追溯过去加载"
+  },
+  "markerIncidentDisposition": {
+    "ownerDecision": "主控",
+    "reference": "FT-H02；必要关联FT-N01",
+    "status": "97268原marker Replace启动异常未决，根因未定；05成功不抹",
+    "scope": "不新增批次/全局门，不授权AtomicJsonFile重试或存储重写，不扩IP或公共控件审核",
+    "next": "独测保留复现条件/影响/是否阻断交付判断；明确根因及备选再提交有限修复决策"
+  },
+  "fixed6c2ContractIndependent": {
+    "status": "scoped contract PASS",
+    "result": "TRX Completed40/40 passed0 failed/error/timeout",
+    "identity": "owned host15产品运行资产预检匹配固定6c2；diag测试DLL从owned加载",
+    "processes": "VSTest100236/testhost92976后审均不存在",
+    "limitation": "wrapper赋只读PID失败，无wrapper exitcode/完整进程树监管凭据；TRX完整不重跑；非全端到端视觉或设计时验收",
+    "receipt": "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/ip-contract-6c2def23-run02/reconstructed-receipt.json"
+  },
+  "documentWriteWindow": {
+    "owner": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+    "targets": "O06/对应snapshot及tool-framework-contract文档生成片段",
+    "scope": "O06/snapshot/final-review源，按现有证据统一关系/实施/验收/未闭环/尚需改造，不新测试/批次/产品授权；日常交付原队列继续",
+    "others": "文档Owner与实施者已通知暂停上述目标",
+    "status": "五方向统一总览短窗交回，文档Owner通知恢复",
+    "finalSha256": "97e0debd4f2865d5d4c4ffa9656c34be085f50c1a78b6a525a2d0ca202b070b0",
+    "handoff": "five-directions-overview五节点五列矩阵，291ID/48原项/14原事实源阅读投影非新队列；保final-review嵌入及末端placeholder hook和原导航；限定PASS/历史FAIL/人工/marker未决不改判；原范围收口，不扩Loader/存储/程序集批次"
+  },
+  "manualFixtureStatus": "manual-fixture02合法API往返及独测真实6c2方案加载/自然Close scoped PASS，PID32828约9.78s，方案与app SHA不变，workflow2设备0，未执行工作流/无视觉断言；结构4ImageLoad+1Filter=5nodes2edges",
+  "manualAcceptanceReceipt": {
+    "path": "docs/collaboration/IMAGE_SOURCE_PANEL_MANUAL_ACCEPTANCE_20261023.json",
+    "sha256": "5D9FBCCB432DAE31EC0A25C619280F1ECADD1067DA1DB66BC1B59311A8DF451B",
+    "writeWindow": "closed",
+    "status": "旧图像清单复用为最终整包子项；用户新顺序要求全部实施/自动独验完成后一次HTML人工验证，不再提前散问",
+    "boundaries": "普通固定应用菜单打开测试方案，使用常规应用设置；另存测试副本；视觉与真实VS设计时未验；独测命令仅证据"
+  },
+  "approvedUnifiedImplementation": {
+    "approval": "docs/collaboration/TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json",
+    "approvalSha256": "adf818b9ffdcabb0ee1fa90f698272db7cbbeaa2dd78cc8229ea3b4831eeb03e",
+    "planSha256": "97e0debd4f2865d5d4c4ffa9656c34be085f50c1a78b6a525a2d0ca202b070b0",
+    "baseline": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
+    "scope": "原48项41适配6回归1排除，不新增批次；首依赖不是缩小目标",
+    "productWriter": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e 已接单，src/tools/tests初始clean，无运行",
+    "firstDependency": "复用现纯net9 Plugin.Contracts：新增唯一TypeRef+CountConstraint，Port/OutputReference/冻结ValueRules/Schema fingerprint/Editing跟随；旧DataType仅源码单向映射；现Verification补0/1/N/冻结/指纹/数量拒绝。非全包完成，后续纯几何/资源及Host等沿依赖继续",
+    "tester": "首ID合同/同固定Release身份/基础性能口径已就绪，固化owned原ID收件清单，等首固定收件",
+    "documentation": "Owner准备批准/实现/独验分列，同一HTML最终人工包；不提前标通过",
+    "delivery": "全部获批实现与自动独验收口后，同一最终Release+逐项状态矩阵+一次集中HTML人工真实效果验证；不再散问图像5项",
+    "excluded": "按正式批准凭据排除项；历史FAIL/人工未验/原型未采用不抹",
+    "status": "唯一产品写者已核批准与首依赖，实际开始FT-A01/A02/M03静态代码切片",
+    "lockfileDrift": "约55 packages.lock.json已有内容漂移；实施者本轮确认尚无restore/build/dotnet，来源未知。保留diff分类，不盲恢复不暂存无关锁；构建前核输出属性与冻结全部实际输入，结果明示dirty边界，不冒worktree clean",
+    "firstInternalValidation": {
+      "build": "25.08s0warning0error，7项目隔离输出",
+      "verification": "29PASS0FAIL0BLOCKED，开发侧",
+      "coverage": "TypeRef/Count Scalar/double[]/Image；Record/Geometry及纯几何等未完成，不冒首依赖或整包",
+      "next": "冻结内部receipt/实际输入产物SHA/有意义commit给独测身份核验，同时继续原依赖实现"
+    },
+    "commitIdentityIncident": "共享HEAD出现b221457977ec3f0efeb941994c030a5a565df0f9三合同文件提交，实施者/协调均确认本轮未git add/commit，主控核执行来源；不回滚、不冒完整交付。开发29验证归随后dirty完整输入，独测待完整固定源码/产物identity；产品修改及提交仅唯一实施者"
+  }
+}

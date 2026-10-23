@@ -1,0 +1,80 @@
+{
+  "id": "SCRIPT-ASSEMBLY-SCENARIO-COMPARISON-20261023",
+  "status": "three-route comparison; previous independent-process preference under review following user single-round scenario clarification; no implementation authorized",
+  "latestScenarioCorrection": "用户强调单轮使用场景与VM成熟方案的可比性。单轮稳态无需为长期换版回收预付跨进程成本；上一版将独立进程列首选提前赋予了长期回收更高权重，现撤回无条件首选。保留三路线事实和推荐边界，继续明确频繁换版/维护重启的真实权重后最终选型，不默认保留ALC。",
+  "owner": "方案主控",
+  "businessScenario": [
+    "用户实测VM连续运行中可打开调试窗口编辑；直接关窗不生效，预编译不关窗即可生效，确定也可提交生效。",
+    "实际需求基准：运行版本与编辑草稿分开，支持明确操作提交新版本；不把停止主程序重启作为每次编辑的正常操作。",
+    "长期运行及旧程序集回收是用户明确关注的问题；未要求独立进程强停，本轮也不引入该承诺。"
+  ],
+  "vmEvidence": {
+    "newBundle": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-PRECOMPILE-LIVE/evidence.json",
+    "existingBundle": "docs/collaboration/VM_SCRIPT_ASSEMBLY_MANAGEMENT_20261023.json",
+    "observed": "用户观察到成功修改生效；未观察编译失败、精确切换边界或堆卸载。",
+    "ui": "已补通通用调度：原版XML ExcuteMethodOperation反射BottomCommand.CompileShellCode/SaveShellCode，二者均经ShellContent.ExecuteFunction进入ButtonSelecter_Shell.CompileShellCode(out bool)，先提交IO及SetShellContent，再每500ms轮询编译结果；Confirm还查密码，成功且Owner非空才关窗。不能仅按同名工具SaveShellCode的方法体推断Confirm仅提交。不能把模块执行耗时当编译端到端实测。",
+    "runtime": "ScriptCom.SetParam写strShellContent，Task.Run置isNeedCompile并MutexCompileCode；RunCode也检查标志，然后CodeRun。MutexCompileCode持objLock，CodeRun不在该锁内。",
+    "replacement": "BaseScriptSupport.Compile正常路径先objectDispose，再缓存查找/CodeDom编译，成功后StartAppdomain创建新loader和UserScript、CheckClass/Init，后续CodeRun使用当前loader。",
+    "failure": "正常路径编译报错前已释放旧loader，false返回；MutexCompileCode仍将isNeedCompile置false，CodeRun在loader为空时失败。不存在已证的成功后替换/失败回滚旧实例；references为空的早退发生在释放前，不能概括全部失败都销毁。",
+    "release": "RemoteLoaderFactory.Unload执行用户Dispose、清实例/字段/映射句柄。活动ComScriptSupport并未CreateDomain；Assembly.Load(bytes)+静态AssemblyManager持有程序集，最多500缓存项不等已加载程序集总上限，清字典不等卸载。",
+    "boundary": "新框架报告D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-SCRIPT-PRECOMPILE-LIVE/framework-precompile-bridge.md已补通托管UI→VM.Core.ModuleParam byte[] setter→ModuleManager.SetBinaryData→IMVS_SetBinaryData PInvoke。ShellModule原生SetShellContent→COM接收另已证；平台native服务路由及FUN_1800144e0 ABI尚未恢复，仅该处画虚线。CodeRun不在编译锁内，UI连续执行回调节流不等于与编译串行。不能宣称完整动态栈/全程串行/安全轮次切换。"
+  },
+  "sameCriteria": ["运行中修改及失败保护", "同一轮数据与版本一致", "长期版本换代及资源寿命", "图像/变量交互成本", "异常及停止边界", "部署维护代价"],
+  "routes": [
+    {
+      "name": "VM式进程内常驻复用",
+      "strength": "进程内调用直接；图像与SDK对象无需跨进程编码；同版本复用成本低。",
+      "weakness": "可以另行设计安全提交，但常驻策略本身不解决旧程序集累计；需接受主程序维护重启或另有真正可回收边界；VM原版先释放再编译、漏引用版本的缓存键不应照搬。",
+      "fit": "版本固定或修改很少且接受维护重启；不作为本场景长期可回收的目标。",
+      "decision": "借鉴复用和交互，不采用主进程无限承载已执行版本。"
+    },
+    {
+      "name": "进程内可卸载ALC",
+      "strength": "进程内低传输成本，可为节点/引用版本隔离类型；正常条件下可协作卸载。",
+      "weakness": "仍与WPF共享进程，被外部强引用即可阻止卸载；当前9.0.20真实对照已复现WPF缓存强键，100轮97存活；合作卸载不能终止任意卡死代码。修框架意味着额外运行时发布和维护责任。",
+      "fit": "无外部强引用且已验证可卸载的宿主；不能凭Unload调用承诺回收。",
+      "decision": "不继续把修补私有WPF当产品主路线，也不为保存既有实现维持该设计。"
+    },
+    {
+      "name": "常驻无界面独立脚本进程",
+      "strength": "界面不加载用户脚本执行程序集；以进程退出作为旧执行代的最终回收边界；可后台准备候选而保持旧版本运行。",
+      "weakness": "增加启动和驻留成本；图像、ROI、数组、全局变量需明确协议，不能传主进程对象/委托/指针；候选准备与交接有成本，须真实测量。不是操作系统安全沙箱。",
+      "fit": "运行中编辑、长期换代、主界面寿命与脚本资源寿命分离。",
+      "decision": "候选：当明确要求主程序不重启且长期频繁换版仍有最终回收边界时优先评估；不能仅由运行中编辑推导必须采用。"
+    }
+  ],
+  "recommendation": {
+    "statement": "当前明确推荐先采用VM式用户操作合同：编辑草稿与运行版本分开、预编译可应用、同版本复用；独立补齐候选成功后替换及失败保护。执行载体不因这个场景直接选独立进程：常驻复用适合可接受维护重启，ALC须实际证明可回收，独立进程适合主程序长期不重启仍须确定回收的要求。此前独立进程无条件首选已撤回，以下宿主图作为该候选的具体设计，非已选产品目标。",
+    "granularity": "建议按活动工作流建立脚本运行会话，有脚本且首次需要时才创建；节点实例状态按节点隔离；并行会话数由资源预算限制，不按每次运行或每次开窗创建进程。具体上限以代表场景测量确认。",
+    "publishFlow": ["编辑草稿", "固定源码+引用内容+动态IO合同为候选版本", "编译，加载候选宿主并完成受约束Init/合同校验", "失败：报错并保留草稿，旧运行版本保持", "成功：标记待生效", "当前轮结束后切换整个工作流的脚本版本集合，下一轮采用新版本", "旧轮任务/结果租约排空并退出旧宿主，验证PID结束与资源归还"],
+    "meaningOfPrecompile": "预编译并应用是明确发布动作；界面可保持打开。确定调用相同提交动作，成功后关闭；直接关窗只丢弃尚未提交草稿，不撤销此前已经生效的预编译版本。若需要只检查语法，另命名为检查，不能混为一次发布。",
+    "failurePolicy": "编译、加载、Init或IO合同校验失败均不替换旧版本；Init不得提前写生产全局变量/设备，外部副作用不能承诺自动回滚；不能隔离的Init移到边界受控激活，失败不宣称无损恢复。",
+    "statePolicy": "普通轮次继续复用节点实例；成功换版本新实例重新Init，默认不迁移任意字段/static；需保留的业务数据通过有类型的显式全局状态保存，提交时明确提示状态重置。",
+    "dataPolicy": "进程间仅传有版本的数据合同：数值/字符串/数组/ROI，以及有尺寸、格式、所有者、租约的图像；不用主进程对象、Type、Assembly、委托或裸图像指针跨边界。先用正确可测的复制基线，确有瓶颈再评估共享内存，不能先承诺零拷贝。全局输入快照与受校验写回由平台负责。",
+    "scopeBoundary": "不改变编译器选型，不重写工作流引擎，不承诺独立进程强停/任意挂死脚本不停产恢复；未排空时显示等待/拒绝换代，禁止伪装已停止或强杀。其他工作流是否可继续由既有依赖决定。",
+    "performanceBoundary": "无新原型测量，不能声称比当前更快或达到500/150ms；分别测首窗、首补全、候选编译/启动、轮次交接、纯执行与图像往返。编译器及补全基础预热与执行宿主寿命是两回事，有收益的预热继续保留。"
+  },
+  "sourceLineage": {
+    "borrowVM": ["运行中打开编辑，草稿不自动生效", "预编译可提交并应用，窗口继续使用", "已编译版本与运行实例复用，显式引用管理"],
+    "independent": ["先验证候选成功再发布，失败保留旧版本", "整轮固定版本与动态IO合同，结果带代次", "无WPF进程边界、宿主排空退出、图像与变量传输协议"],
+    "rejectVM": ["编译成功前先释放当前实例", "无已证整轮切换边界", "静态Assembly缓存代替最终回收", "缓存身份遗漏引用内容/版本"]
+  },
+  "designVsImplementation": {
+    "design": "把关窗/清缓存/调用Unload当最终回收保证，或编辑草稿直接覆盖运行事实源，是职责和寿命边界问题。",
+    "implementation": "WPF IsDynamic未覆盖IsCollectible是已定位的具体实现问题；VM先释放再编译是已恢复路径的失败保护问题。修复其中一处不自动证明整个选型满足业务。"
+  },
+  "acceptance": [
+    "连续运行中编辑但不提交：结果仍来自旧版本；预编译成功后不关窗，下一完整轮统一采用新版本；确定走相同提交；直接关闭不暗中提交。",
+    "语法错误、缺引用、Init异常和动态IO不兼容：草稿及诊断保留，旧运行版本及其结果身份不变；不得误报成功。",
+    "多次快速提交只允许最新候选被提交；每轮所有节点与上下游IO使用同一版本集合，旧轮结果不得覆盖新轮。",
+    "同版本重复运行不新建宿主；连续代码/引用换代后旧宿主实际退出，节点实例/任务/图像租约/映射归还，主WPF不加载用户执行Assembly；同时记录进程身份和存活资源，不能仅看RSS或缓存条数。",
+    "覆盖标量、大数组、灰度/彩色大图、ROI、同/跨工作流变量；比较冷/热、同样脚本与引用的执行和往返分位耗时；未测前不给预算通过结论。",
+    "不合作脚本不伪报停止或回收；本轮只证明等待/拒绝换代与状态展示，不扩大强停。"
+  ],
+  "diagrams": ["用户三种操作与提交状态图", "VM成功/失败/释放泳道，SDK未贯通桥用虚线", "同一标准三路线对比图", "推荐的旧版本运行/候选准备/轮末切换/旧宿主退出泳道", "借鉴VM/独立补齐/不采用VM三列来源图", "设计缺陷与实现缺陷对照，验收收口清单"],
+  "officialReferences": [
+    "https://learn.microsoft.com/en-us/dotnet/standard/assembly/load-unload",
+    "https://learn.microsoft.com/en-us/dotnet/standard/assembly/unloadability"
+  ],
+  "deliveryBoundary": "仅主文档图示与取证；现有A07 FAIL、正式性能失败/未完成均保留。推荐尚待用户确认，不启动实现、WPF补丁、CLI实验或Release构建。"
+}

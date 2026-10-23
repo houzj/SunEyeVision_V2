@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "taskId": "IMAGE-SOURCE-PANEL-BATCH",
+  "updatedAt": "2026-10-23T23:23:17.6967405+08:00",
+  "baselineCommit": "64f17888fac6fa10ccc78671fd5bde10e93582b2",
+  "sourceCommit": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
+  "branch": "main",
+  "writer": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+  "authorization": "docs/collaboration/IMAGE_SOURCE_PANEL_AUTHORIZATION_20261023.json",
+  "allowedDirectories": [
+    "src/UI",
+    "tests/SunEyeVision.UI.Tests",
+    "owned validation artifacts and collaboration records"
+  ],
+  "changedSincePriorCandidate": [
+    "src/UI/App.xaml.cs"
+  ],
+  "status": "实施固定交付，自动可执行验收已完成对应覆盖，待统一人工体验/设计时及主控最终审核；不标全批PASS",
+  "matrix": [
+    {
+      "id": "IP-A01",
+      "implementation": "完成：来源解析/显式分支/唯一父调用点/顶部刷新及无关旧源拒绝",
+      "development": "已验纯图解析与持久化相关用例；完整真实UI来源矩阵待独测",
+      "independent": "新6c2对应来源纯图/唯一父调用解析合同在独立40项中通过；实际完整主界面来源/相机/子程序观感不由合同测试代替；人工fixture实际6c2加载2flows/5真实节点、设备通信0/自然Close独测scoped PASS，不冒完整视觉交互",
+      "manual": "无用户人工验收",
+      "evidence": [
+        "src/UI/Services/ImageSourceResolver.cs",
+        "artifacts/validation/image-source-panel/warmup-off-checkpoint01/test-results",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/ip-contract-6c2def23-run02/reconstructed-receipt.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/image-fixture-close01/scenario-load-verification.json"
+      ],
+      "next": "独测覆盖空/普通/多源/相机/子程序/切tab提示"
+    },
+    {
+      "id": "IP-A02",
+      "implementation": "完成：workflow/source/run/iteration冻结身份与UI回写门",
+      "development": "40源码回归中包含运行切选择/多源快照/真正inflight取消/解决方案捕获",
+      "independent": "新6c2独立40项覆盖输入冻结、编辑拒旧游标、多源/解决方案快照与取消合同通过；非全主界面端到端断言",
+      "manual": "不适用自动合同；UI操作另列A09",
+      "evidence": [
+        "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+        "artifacts/validation/image-source-panel/warmup-off-checkpoint01/test-results",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/ip-contract-6c2def23-run02/reconstructed-receipt.json"
+      ],
+      "next": "独测按固定新包验证来源不随当前预览改变"
+    },
+    {
+      "id": "IP-A03",
+      "implementation": "完成：勾选有效序列/成功推进/失败取消保留/回绕/末张先停",
+      "development": "40源码回归含序列模型、manager单次/连续/解决方案/缺失与空选拒绝",
+      "independent": "新6c2独立40项序列/推进/保留/勾选有效子集/末张等对应合同通过；用例真实覆盖范围见TRX，不等全部用户交互",
+      "manual": "未人工验",
+      "evidence": [
+        "src/UI/Services/LocalImageSequenceService.cs",
+        "artifacts/validation/image-source-panel/warmup-off-checkpoint01/test-results",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/ip-contract-6c2def23-run02/reconstructed-receipt.json"
+      ],
+      "next": "独测覆盖原授权运行分支，不用模型测试代所有UI行为"
+    },
+    {
+      "id": "IP-A04",
+      "implementation": "完成：勾选配置同步/解绑/未知引用保存/加载非编辑/运行游标不持久化",
+      "development": "40源码回归内保存/加载/Reset解绑用例通过",
+      "independent": "新6c2独立40项勾选/保存序列化/加载非编辑/解绑等对应合同通过；人工另存再开体验单列",
+      "manual": "无人工验收",
+      "evidence": [
+        "src/UI/Shared/ImageInputSource.cs",
+        "artifacts/validation/image-source-panel/warmup-off-checkpoint01/test-results",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/ip-contract-6c2def23-run02/reconstructed-receipt.json"
+      ],
+      "next": "独测新包实际保存/再开及错误分支"
+    },
+    {
+      "id": "IP-A05",
+      "implementation": "完成：O(1)游标定位/新旧高亮/后台排序/256提交/取消",
+      "development": "真实5000目录首256取消与切源通过；heartbeat观察不作响应SLA，分配量未独立性能闭环",
+      "independent": "新6c2独立40项含真实目录批次取消/切源重入合同通过；既有1ff5000窗口历史保持，响应/分配描述不冒业务SLA",
+      "manual": "未人工验",
+      "evidence": [
+        "artifacts/validation/image-source-panel/functional-02/functional.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/IP-INDEPENDENT-FUNCTIONAL-1FF-01/functional.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/ip-contract-6c2def23-run02/reconstructed-receipt.json"
+      ],
+      "next": "复用独测设施做新包目标回归；不得将观测延时写成业务预算通过"
+    },
+    {
+      "id": "IP-A06",
+      "implementation": "完成：SHA版本/singleflight/取消迟到门/字节LRU/离屏强引用释放",
+      "development": "真实WIC覆盖与cache合同通过；1ff实际5000不同条目全解码，cache2767200B/item峰362000B/关窗0引用/保5000来源",
+      "independent": "新6c2独立40项真实WIC/cache/同版本合并覆盖合同通过；1ff独测实际5000驻留历史单列，不改成新包5000结果",
+      "manual": "已观察Dark150%DPI组件；非人工签收",
+      "evidence": [
+        "artifacts/validation/image-source-panel/cache-budget.json",
+        "artifacts/validation/image-source-panel/residency-settled03/residency.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/IP-INDEPENDENT-FUNCTIONAL-1FF-01/residency.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/ip-contract-6c2def23-run02/reconstructed-receipt.json"
+      ],
+      "next": "最终独测注明旧identity已有结论及新包定向结果，进程内存与bitmap分列"
+    },
+    {
+      "id": "IP-A07",
+      "implementation": "完成：导入代次/切源卸载取消/迟到拒绝/保列表不删磁盘",
+      "development": "40源码回归+1ff真实窗口取消/切源/覆盖通过",
+      "independent": "新6c2独立40项取消/切源/卸载/清空/磁盘保留对应合同通过；1ff真实窗口inflight版本/取消历史不冒新包完整UI",
+      "manual": "未人工验",
+      "evidence": [
+        "artifacts/validation/image-source-panel/functional-02/functional.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/IP-INDEPENDENT-FUNCTIONAL-1FF-01/functional.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/ip-contract-6c2def23-run02/reconstructed-receipt.json"
+      ],
+      "next": "新包针对取消卸载不清来源/不删文件复核"
+    },
+    {
+      "id": "IP-A08",
+      "implementation": "完成：同1ff三策略对照后正常默认Off，保隔离对照/其他用途预热",
+      "development": "45自然exit0/107.149s，n5 raw median range配对；无稳定重复首用收益；开发03截图设施失败保留，不代独测05自然退出",
+      "independent": "45raw/配对复算PASS；6c2单文件静态PASS；新6c2无override默认启动/ContentRendered/自然Close exit0独测PASS，早期策略日志缺失不冒EXE内存测量",
+      "manual": "不把描述性阈值视业务SLA/整批PASS",
+      "evidence": [
+        "artifacts/validation/image-source-panel/warmup-formal01/summary.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/warmup-formal01-independent-audit.json",
+        "artifacts/validation/image-source-panel/default-off-runtime03/receipt.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/delivery-6c2def23-static-audit/source-delta-review.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/default-off-runtime05-close-pwsh7/receipt.json"
+      ],
+      "next": "A08取舍及实际默认正常关闭已独立验证，保留原始启动marker事故/设施失败历史及n5界线"
+    },
+    {
+      "id": "IP-A09",
+      "implementation": "已实现主题资源/标准图标/反馈；UI验收未闭环",
+      "development": "1ff实际Dark/150%DPI组件已看图；Light、完整键鼠/空缺图/多源提示及真实VS设计时未完成",
+      "independent": "Light/Dark目标UI矩阵及设计时记录待独测；不得将普通WPF加载当VS设计时通过",
+      "manual": "用户人工验收尚未进行，独立保留",
+      "evidence": [
+        "artifacts/validation/image-source-panel/residency-settled03/residency.png",
+        "artifacts/validation/image-source-panel/functional-02/functional.png"
+      ],
+      "next": "现在统一人工M01..05；真实VS只ImagePreviewControl与必要ImageResultControl，不扩中央渲染"
+    },
+    {
+      "id": "IP-A10",
+      "implementation": "新固定6c2源码/627程序/1395actual输入与交接已形成",
+      "development": "40/40源码回归；UI0错1175警告28.58s、全量0错1258警告62.05s；输入零漂移；真实默认自然退出已由独测05验证，开发失败历史不改",
+      "independent": "6c2静态闭包PASS、真实默认启动/自然关闭PASS、独立40合同对应范围PASS；视觉/设计时/人工与文档收尾仍单列；人工fixture实际6c2加载2flows/5真实节点、设备通信0/自然Close独测scoped PASS，不冒完整视觉交互",
+      "manual": "无人工签收，未申请主控最终审核",
+      "evidence": [
+        "artifacts/validation/image-source-panel/delivery-6c2def23/identity.json",
+        "artifacts/validation/image-source-panel/warmup-off-release-6c2def23",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/delivery-6c2def23-static-audit/audit.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/default-off-runtime05-close-pwsh7/receipt.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/ip-contract-6c2def23-run02/reconstructed-receipt.json",
+        "artifacts/independent-testing/IMAGE-SOURCE-PANEL-BATCH/results/image-fixture-close01/scenario-load-verification.json"
+      ],
+      "next": "继续新包目标回归和完整UI矩阵/文档，人工体验集中一次后送主控最终审核"
+    }
+  ],
+  "fixedIdentity": {
+    "sourceCommit": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
+    "programFiles": 627,
+    "sourceInputs": 1395,
+    "binaryManifestSha256": "1E5A2F9C87596D4A9717406EF9358A681DFC319E692E07AA6028A4B5984E477C",
+    "sourceManifestSha256": "09BF4D700AE8D391093C7ACB247DC1053F4C4D25B0C08416A84B3A6F2C76E147",
+    "sourceZipSha256": "AFC38433417254AF146C41CA5CF52ADE11082F6DBEFB548363E4B834E7AFFBB9",
+    "sourceArchiveManifestSha256": "85EF4EE2E17875397B3FE34E3AC3A61311709AD63133654F0F600B94381CACB3",
+    "sourceManifestKind": "all tracked src/tools/tests/build inputs including assets; actual worktree bytes",
+    "sourceArchiveKind": "git archive output of committed revision; not actual worktree bytes",
+    "foreignProbeFiles": 0,
+    "vendorMatches": 26,
+    "actualSourceSnapshotPath": "actual-built-source",
+    "actualSourceSnapshotArchive": "actual-built-source.zip",
+    "actualSourceSnapshotArchiveSha256": "E34396E8A9B519A6311E3F4053830D8D03EAC8F953F320C6BCB4044C86A2E10B",
+    "sourceBytesUnchangedFromPreBuild": true,
+    "preBuildSourceManifest": "artifacts/validation/image-source-panel/warmup-off-release-6c2def23/pre-build-source-manifest.json"
+  },
+  "manualAcceptance": "M01..05统一待用户人工：主题/DPI/键鼠/提示/导入体验及真实VS设计视图。本轮无自动设计器交互渠道，不编造E_ACCESSDENIED本轮证据。",
+  "knownRisks": [
+    "97268真实启动data marker File.Replace异常保留未归因，副本正控成功不能抹事故",
+    "33288观测设施漏段；17288黑BMP截图设施失败，均不计正常退出，停止开发新运行/设施迭代",
+    "共享Release被独测设施污染，无事前快照不恢复未知文件；固定6c2另逐627SHA核零漂移/foreign0",
+    "程序集管理暂停等主控，不新增载体/Owner/中央大图ROI范围"
+  ],
+  "next": "用户按普通固定程序→菜单打开已验证测试方案一次完成人工M01..05；收结果后仅具体缺陷修复，协调归档文档并送主控最终审核",
+  "manualChecklist": "docs/collaboration/IMAGE_SOURCE_PANEL_MANUAL_ACCEPTANCE_20261023.json",
+  "startupMarkerIncidentDisposition": {
+    "ownerDecision": "主控2026-10-23归属现有FT-H02配置保存/数据目录可靠性检查，必要关联FT-N01启动",
+    "originalRun": "artifacts/validation/image-source-panel/default-off-runtime01/receipt.json",
+    "status": "未决；后续成功不关闭原事故",
+    "implementationAuthority": "未授权AtomicJsonFile重试/存储重写，不归IP扩大范围",
+    "scopeEffect": "不新增批次或全局门槛；独测记录影响与本交付是否阻断意见，明确根因/备选再有限决策"
+  },
+  "contractRunLimitation": "40TRX Completed/diag证明实际owned测试程序集，15产品依赖预检固定SHA；wrapper误写只读$PID，原captured exitcode/完整树监控回执缺失，后审100236/92976均不存在；独测签scoped PASS，不重跑、不造exitcode。",
+  "manualFixture": {
+    "path": "artifacts/validation/image-source-panel/manual-fixture02/image-source-acceptance.solution",
+    "sha256": "92AA6A5098B118C8CE1D7C92D3CC99E61FF97F36BB56AE4C02A06901311411FD",
+    "validation": "ProductRepository public Save/Load PASS; device0 communication0;2workflows5nodes2edges",
+    "actualAppOpen": "独测PID32828真实加载/正常Close scoped PASS，4 ImageLoad+1 ImageFilter；无画面视觉断言"
+  }
+}

@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "owner": "01a16695-701e-7523-9c18-1298b9279428",
+  "governanceCommit": "9e58aaa5e9d433c69d076a9b0e19028d2841c7f3",
+  "policy": "仅依赖/负责人/证据引用；实现、测试、文档事实由各自唯一源维护",
+  "tasks": [
+    {
+      "evidence": "a59f446c; artifacts/validation/script-s2/fixed-full-release.log; artifacts/performance/script-s2-window-20261023/Run-Paired.ps1",
+      "next": "保留formal-r1失败/缺测/事故与已交漂移证据；明确后续有限补测安排",
+      "id": "S2-DELIVERY",
+      "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "authority": "docs/collaboration/IMPLEMENTATION_QUEUE.json",
+      "status": "fixed-delivery-received-formal-incomplete-budget-failed"
+    },
+    {
+      "next": "A03及A06限定组件已有实跑；A06取消单等待者9/9通过，net10宿主非net9端到端；测试员更新唯一事实源并继续就绪合同",
+      "authority": "artifacts/independent-testing/SCRIPT-S2/readiness.json",
+      "owner": "01a1620c-5a60-7fb1-a1b1-9b85173896e9",
+      "status": "partial-independent-components-executed-full-acceptance-open",
+      "id": "S2-ACCEPTANCE-PREPARATION"
+    },
+    {
+      "next": "A03及A06限定组件已有实跑；A06取消单等待者9/9通过，net10宿主非net9端到端；测试员更新唯一事实源并继续就绪合同",
+      "owner": "01a1620c-5a60-7fb1-a1b1-9b85173896e9",
+      "status": "partial-independent-components-executed-full-acceptance-open",
+      "dependsOn": "S2固定源码/完整Release身份及交接",
+      "id": "S2-INDEPENDENT-ACCEPTANCE"
+    },
+    {
+      "next": "V4职责/事件驱动及真实S2状态同步主文档",
+      "authority": "docs/collaboration/DOC_SYNC_STATUS.json",
+      "owner": "01a160f7-9c99-72c1-b8bf-d689bf19f1ad",
+      "status": "requested",
+      "id": "S2-DOC-SYNC"
+    },
+    {
+      "next": "固定源/全量Release/UI/完整identity，携A07失败及风险直交独立测试；formal-r2原协议一次",
+      "id": "SCRIPT-S3",
+      "dependsOn": "S2固定源码/完整Release源产物身份/交接",
+      "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "authority": "docs/collaboration/SCRIPT_S3_AUTHORIZATION_20261023.json",
+      "status": "decision-a-fixed-candidate-preparation-known-a07-fail"
+    },
+    {
+      "next": "协调汇总授权/身份/正式性能/独立结论/文档/遗留后申请，未验仍交付待验",
+      "owner": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+      "status": "waiting-for-evidence",
+      "id": "S2-FINAL-REVIEW"
+    },
+    {
+      "estimate": "实施者粗估实现/开发回归4–6h，受控性能/全量固定另约1h；独立验收另排。待脚本保护门释放及真实开工文件核对后校准，非具体完成时刻",
+      "acceptance": "IP-A01..IP-A10",
+      "actualImplementationBaseline": "64f17888fac6fa10ccc78671fd5bde10e93582b2",
+      "baselineRule": "实际写入接手时核HEAD/dirty并记录，不冒用分析c58",
+      "authority": "docs/collaboration/IMAGE_SOURCE_PANEL_AUTHORIZATION_20261023.json",
+      "priority": "approved-unaffected-work-window-released",
+      "dependsOn": "保护已固定64f源码/Release及原始失败证据；无采样占用；唯一产品写者；不触及暂停程序集合同",
+      "allowedNow": "按原D01-D07/IP-A01-A10实施无程序集决策依赖部分；先记录跨模块影响，构建/runtime仍协调",
+      "requestId": "IP-START-01",
+      "authorizationSha256": "6517D13D67D115A6F3134C5CBB12E7F7DAEF1A1E431B75CAEE2D904562C4BC2B",
+      "planSha256": "06C3904292193DB428C3834459080FE9D438F3E9B99128670DB15C7CD08EBCCD",
+      "status": "implementation-started-first-source-change-ui-build-window-released",
+      "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "id": "IMAGE-SOURCE-PANEL-BATCH",
+      "next": "IP-UI-CHECKPOINT-01 UI Release构建和定向检查，完成释放窗口；独立新包未到不作验收通过",
+      "consumerReceipt": "实施者确认开工前src/tools/tests clean；ImageInputSource.cs已改IsForRun同步、移除Reset解绑、保存排除删除引用；行为未验",
+      "crossModuleOverlap": "MainVM/WorkflowExecutionManager/输入快照/Owner与S3重叠，禁止在制混写"
+    }
+  ],
+  "handoffReceipts": [
+    {
+      "lastSeen": "2026-10-23T12:30:40.4750357+08:00",
+      "binaryManifestSha256": "2B393677A21AD79F01C278750CF1BA1975DD8D9047B65327BA6440F37F7142E5",
+      "sourceCommit": "a59f446c4032e26abafc1c6a83296db78575463e",
+      "required": true,
+      "delivery": "docs/collaboration/HANDOFF_SCRIPT_S2_DELIVERY_20261023.json",
+      "consumer": "01a1620c-5a60-7fb1-a1b1-9b85173896e9",
+      "remaining": "A06独立取消/A05/STA A04 A10/A07及完整窗口；最终包重验",
+      "coordinatorVerification": "A03有限模型5true、A06并发4true及失败不回退9true原始JSON已实读；net10边界保留，非完整合同",
+      "requestId": "S2-ACCEPTANCE-01",
+      "requirement": "固定包可用并启动实际A项断言",
+      "producer": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "taskId": "SCRIPT-S2",
+      "startupEvidence": "contracts-a03/data-build.log构建0错；data-run.log实际执行在Main依赖解析FileNotFound；环境失败未进入断言",
+      "resultEvidence": "contracts-a03/a03-result.json；contracts-a06/bin/Release/net10.0/a06-result.json及a06-failure-result.json",
+      "consumerReceipt": "已逐SHA核627程序/源zip，readiness.fixedDelivery=true，协调已实读",
+      "producerRequestId": "S2-FIXED-a59f446c-20261023",
+      "linkedRequestId": "S2-ACCEPTANCE-01"
+    },
+    {
+      "coordinatorVerification": "消费者接包可用已核收，仅身份接收非功能通过",
+      "consumerReceipt": "artifacts/independent-testing/SCRIPT-S3/readiness.json 已实读accepted=true/app627 mismatch0/各manifest与zipSHA匹配",
+      "knownFailure": "S3-A07 FAIL及S2预算FAIL/正式缺测",
+      "taskId": "SCRIPT-S3",
+      "producer": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "lastSeen": "2026-10-23T13:05:34.3074796+08:00",
+      "consumer": "01a1620c-5a60-7fb1-a1b1-9b85173896e9",
+      "delivery": "artifacts/validation/script-s3/delivery-64f17888",
+      "requirement": "最终候选固定身份/已知失败/逐合同独立验收",
+      "requestId": "S3-FIXED-64f17888-20261023",
+      "sourceCommit": "64f17888fac6fa10ccc78671fd5bde10e93582b2",
+      "producerRequestId": "S3-FIXED-64f17888-20261023"
+    }
+  ],
+  "finalCloseout": {
+    "criticalPath": [
+      "优先S2预算差距有限诊断/修复或决策，native退出及5001缺测处理，11:35证据检查点",
+      "S3已批准身份/Owner/排空/租约回收实现与开发验证，不冲突并行",
+      "一次最终源码/完整Release固定身份，候选12:15–12:45条件估计",
+      "最终包原协议formal-r2 60进程180窗，失败/预算/缺测保留",
+      "最终包独立S2/S3合同验收与阻断缺陷新身份复测",
+      "主文档统一事实并证据齐后30min整理一次最终审核申请"
+    ],
+    "nonblockingFindings": "F01..F11仅一次归属，无确认阻断不自动实施，禁止继续扩审计",
+    "parallelReady": "测试侧立即修复运行A03，继续A05/A06剩余，准备STA A04/A10，不等待最终包",
+    "requestId": "SCRIPT-FINAL-CLOSEOUT-01",
+    "decision": "docs/collaboration/SCRIPT_FINAL_CLOSEOUT_20261023.json",
+    "terminalScope": "仅已批准S2/S3及确认阻断缺陷；无S4/S5/S6",
+    "estimates": {
+      "testing": "测试方估最终包后无UI1–2h、完整S3半天以上；14:30首轮结果、18:00覆盖与剩余检查点，均非通过承诺；入包后校准",
+      "external": "VS设计器/用户视觉未验，单列不伪造",
+      "implementation": "决策选A后实施者新条件目标13:10–13:25候选包；前提checkpoint08无新编译错，随后打包5–10min；A07仍FAIL"
+    },
+    "planAsOf": "2026-10-23 11:14 Asia/Shanghai",
+    "finalPlan": [
+      {
+        "confidence": "检查点中；修复工期低",
+        "outcome": "优先S2开窗/补全预算差距与native失败/5001缺测诊断，有限修复或明确阻断",
+        "estimate": "11:35首诊断已完成；12:00有界修复实际证据检查点",
+        "basis": "根因未知不能承诺修复时间；交付日志分段/差距/有限动作",
+        "taskId": "PERF-CLOSEOUT-01",
+        "done": "3次有界只计时诊断完成并退出，定位Show长成本在SourceInitialized前194–242ms，无安全因果修复",
+        "remaining": "不再调优；汇总PERF-CLOSEOUT-01原始身份/未解/FAIL；最终包完整r2按协议执行",
+        "dependencies": "读r1原始分段可并行S3；产品改动唯一写者",
+        "owner": "自研实施"
+      },
+      {
+        "confidence": "中低，异常需即时重估",
+        "outcome": "A03真实运行结果及S2/S3逐项可执行入口",
+        "estimate": "11:35 A03检查点；11:45可运行清单",
+        "basis": "已有探针骨架与实际失败，先解除加载阻塞",
+        "taskId": "S2-TEST-READY",
+        "done": "A03有限模型/映射5断言及A06并发单Emit4断言已实际核收",
+        "remaining": "A03修复运行/A05/A06剩余/STA A04 A10及S3入口",
+        "dependencies": "现有固定S2包；独占测试目录，正式性能时暂停负载",
+        "owner": "独立测试"
+      },
+      {
+        "confidence": "低：checkpoint03新增确认边界集中修复，待新工作量",
+        "outcome": "11合同内身份/Owner/排空/租约16容量/回收矩阵实现及验证",
+        "estimate": "S3源码正固定；候选包新条件13:10–13:25，不等A07修复",
+        "basis": "实施者11:50预校准：跨模块Owner接缝比首估广，代码已写但边界/回归/编译问题待收敛",
+        "taskId": "S3-IMPLEMENTATION",
+        "done": "首轮84/84开发回归；租约代码在制",
+        "remaining": "R7/A07退役域复活、R8/A08终态身份、R9/A09监视Lease/批清理及R1/R9浅快照最小边界；真实回归未验",
+        "dependencies": "S2基线已齐；与测试串行构建",
+        "owner": "自研实施"
+      },
+      {
+        "confidence": "中低",
+        "outcome": "一次最终源码+完整Release/UI构建及manifest/zip/关键DLL身份",
+        "estimate": "13:10–13:25候选包，前提全量/UI无新错误；失败撤估",
+        "basis": "随S3完成估算，失败则据日志重估",
+        "taskId": "FINAL-RELEASE",
+        "done": "S2固定包已核",
+        "remaining": "最终新身份与包/交接，非沿用S2旧包",
+        "dependencies": "S3与确认阻断修复完成，独占共享构建",
+        "owner": "自研实施"
+      },
+      {
+        "confidence": "运行时长中；通过低/未承诺",
+        "outcome": "最终包原协议60进程180窗，失败/预算/缺测全保留",
+        "estimate": "已中止，不再承诺完成窗口；是否修采样器重跑需明确决策，不自行循环",
+        "basis": "实施者有限一次重跑估算；再native失败停止并给阻断",
+        "taskId": "FORMAL-R2",
+        "done": "r2首失败停止：12成功36窗/第13 Stage文件权限失败；全协议未完成，环境另有已知5.3sILDASM重叠",
+        "remaining": "新r2完整101/1001/5001，分位数/心跳/身份",
+        "dependencies": "最终固定包，性能独占",
+        "owner": "自研实施"
+      },
+      {
+        "confidence": "低，需入包校准",
+        "outcome": "最终包S2/S3逐项独立验收，确认缺陷新身份定向复测",
+        "estimate": "原14:30首轮结果可能受包延迟影响；18:00仍仅覆盖检查点，收包后重估",
+        "basis": "测试方估无UI1–2h，完整S3半天以上；不含未知缺陷返工",
+        "taskId": "FINAL-INDEPENDENT",
+        "done": "仅S2 A06子集及身份核验",
+        "remaining": "其余已批准断言/失败路径/回收等",
+        "dependencies": "最终包接收，正式性能后runtime",
+        "owner": "独立测试"
+      },
+      {
+        "confidence": "条件式",
+        "outcome": "统一Release身份/正式性能/独立结论/遗留与建议闭环一次送审",
+        "estimate": "证据齐后30min整理目标；不估主控审批完成时刻",
+        "basis": "不能在关键未验时宣称闭环",
+        "taskId": "FINAL-DOC-REVIEW",
+        "done": "终点范围冻结",
+        "remaining": "文档统一状态/一次最终审核材料",
+        "dependencies": "实际证据齐备，关键失败如实待验",
+        "owner": "交付协调；HTML文档维护"
+      }
+    ],
+    "userConfirmation": {
+      "status": "confirmed-conditional-plan",
+      "scope": "已批S2/S3及确认阻断；时间为条件估计，18点非通过承诺",
+      "execution": "自主校准，不重复申请，不重建定时任务",
+      "source": "主控转达用户已确认11:14初版"
+    },
+    "performanceDecision": {
+      "authority": "docs/collaboration/SCRIPT_FINAL_CLOSEOUT_20261023.json#performanceDecision",
+      "scope": "控件构造/popup Show因果归因、最小修复、同条件代表样本",
+      "standard": "500/150不变，局部样本不代表正式p95",
+      "owner": "自研实施",
+      "stopRule": "12点无有据修复则停止调优，固定交付待验+预算FAIL，不自动延窗",
+      "deadline": "2026-10-23 12:00 Asia/Shanghai"
+    },
+    "latestDeviation": {
+      "to": "新候选13:10–13:25条件点",
+      "from": "旧窗口已失效",
+      "finalPassingTime": "A07仍FAIL，候选不等通过；独立结论待执行",
+      "reason": "主控选A允许携A07FAIL固定，源码47文件正在提交；剩余构建/打包5–10min",
+      "action": "checkpoint08已放行，固定源全量/UI，runtime及formal另约"
+    }
+  },
+  "alcTrace": {
+    "requestId": "S3-ALC-01-TRACE",
+    "notAllowed": "产品私清缓存/换框架runtime/IPC/弱化100轮/未确认方案直接扩实施",
+    "checkpoint": "旧13:47补丁检查点已失效，三方案比较由主控统筹",
+    "resourceGate": "保护候选固定/其余验收/原formal-r2，trace不锁就绪队列",
+    "lastSeen": "2026-10-23T13:01:41.7880947+08:00",
+    "authorization": "用户新要求经主控转达：回收仍须解决，完整触发链与有据修复方案",
+    "deliverable": "本机同版WPF/BAML/产品完整链、实际写缓存调用栈、新增键时点、反证、候选最小修复及验证设计；交主控确认",
+    "status": "paused-user-assembly-design-owned-by-control",
+    "implementationOwner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+    "taskId": "SCRIPT-S3",
+    "testingOwner": "01a1620c-5a60-7fb1-a1b1-9b85173896e9",
+    "allowedNow": "方案主控负责三方案比较；实施窗口本线无分析/实施/实验任务，等待明确选型/范围/验收",
+    "executionEvidence": "实施者async-review/editor-review两个只读子任务已启动；独占script-s3-alc-trace，动态另申，13:30初证"
+  }
+}

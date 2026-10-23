@@ -1,0 +1,55 @@
+{
+  "id": "SCRIPT-ASSEMBLY-LONGRUN-RECOMMENDATION-20261023",
+  "status": "final design recommendation for user confirmation; analysis and diagrams only",
+  "supersedes": "前版仅依据运行中编辑提前优先独立进程的结论已撤；本版将已明确的长期换版资源回收要求加入相同标准后给出推荐，不声称用户已批准新架构。",
+  "businessBaseline": [
+    "连续运行时打开脚本窗口、编辑草稿、预编译后生效；不必关闭窗口。确定也会编译，成功才关闭。",
+    "固定脚本长期反复运行与反复修改产生新版本必须分开评价，不能把持续运行等同不断加载新Assembly。",
+    "用户明确程序集回收问题仍需解决；既有S3-A07要求正常执行结束、代码/引用换代、方案退出后退役执行资源可回收。当前合同未被用户豁免。",
+    "未新增不合作脚本强停、任意崩溃后不停产恢复、旧方案迁移等要求。"
+  ],
+  "vmEvidence": {
+    "lifetime": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-ASSEMBLY-LIFETIME/evidence.json",
+    "precompile": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-SCRIPT-PRECOMPILE-LIVE/evidence.json",
+    "bridge": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-SCRIPT-PRECOMPILE-LIVE/framework-precompile-bridge.md",
+    "originalIdentity": "Script.Support.dll/ScriptComponent.dll/ShellModule.dll原版SHA由角色及主控分别核对，3/3一致。",
+    "steadyRun": "ScriptCom.RunCode→CodeRun→RemoteLoaderFactory.ExecuteProcessMethod，沿当前实例反复Process；无代码修改、无外部DLL重载等触发时，不是每轮编译加载新Assembly。",
+    "cacheHit": "BaseScriptSupport.Compile先释放旧实例，查source+property+moduleId的GetHashCode；命中缓存复用同一Assembly但新建UserScript并Init。恢复旧源码可能命中以前Assembly；普通实例字段重建，static不因重建实例自动重置。",
+    "newVersion": "未命中时CodeDom编译DLL，RemoteLoaderFactory Assembly.Load(byte[])进入当前域。成功验证后尝试静态缓存；旧实例Dispose不等旧Assembly卸载。",
+    "capacity": "名义入缓存门槛为500：满额后旧键仍可命中，新键仍会编译加载但不再收录；没有逐项淘汰。Count判断与TryAdd不是同一个原子限额操作，不能把500称并发硬上限，更不能称进程已加载程序集上限。",
+    "clear": "ClearAeembly只有清字典；已恢复的工具及共享托管源码检索只有定义，无调用者。即便调用，也不是.NET Framework单程序集卸载。不能从检索范围推断所有原生/反射路径不存在。",
+    "dispose": "ScriptCom.Dispose→ComScriptSupport.Dispose→取消AssemblyResolve/释放共享内存配置/objectDispose→RemoteLoaderFactory.Unload→用户Dispose/实例及句柄清理。静态AssemblyManager未随这条可见链清理；活动ComScriptSupport不创建独立AppDomain。",
+    "failure": "常规Compile先objectDispose后编译，编译错误时旧实例可能已释放；引用为空的早退在释放前。没有已证的新版本成功后才替换、失败回滚保证。",
+    "hostStatus": "框架最终报告D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-ASSEMBLY-REFERENCE/framework/script-com-lifetime.md：原ShellConfig RunType=1，ShellModule paths.txt:243-257 CLSIDFromProgID(ScriptComponent.ScriptCom)→CoCreateInstance CLSCTX_INPROC_SERVER；HKCR CLSID {8D1561E6-F420-46FA-B570-1C241D8E7EC9} InprocServer32=mscoree.dll/CodeBase=原ScriptComponent.DLL/Runtime v4.0.30319，与原Guid一致。只证明进入ShellModule宿主，不证明宿主是WPF UI。VmModule.Dispose→CloseOneModule→IMVS_CloseOneModule至SDK边；native析构尾部FUN_180014df0无可用provider，不能声称最后COM Release/域退出全贯通。被动核对无原版VM进程，CIM拒绝访问；未启停/操作用户进程，不存在长期内存实测。",
+    "limits": "本轮为原版源码/安装载体/注册和可用的被动宿主核对，不是已完成VM长期运行内存曲线测试；没有每版增长MB或运行多少小时必泄漏的实测结论。没有追通关闭方案到域/进程退出时，不能说关方案已卸载Assembly。"
+  },
+  "plainConclusion": "VM已恢复的活动脚本链把程序集当成域寿命内可复用资源，没有发现按每个旧脚本版本卸载的机制。成熟、流畅的编辑体验与长期换版能否回收是两件事。固定脚本长期运行不会因每轮Process本身不断加载新程序集；连续新版本则会加载更多Assembly，实际内存增长幅度尚未测。",
+  "sameStandardComparison": [
+    {"route":"VM式进程内常驻复用","runtimeEditing":"支持，须另补安全提交/失败保护","steadyCost":"直接调用，无跨进程图像传输","oldVersions":"程序集通常保留至承载域/进程结束；缓存条数不能兜底","price":"若需要确定回收，接受维护重启或增加另一寿命边界","fit":"生产固定版本，调试修改有限，接受维护重启；最简选择，但不等已满足原回收要求"},
+    {"route":"进程内collectible ALC","runtimeEditing":"可设计，须版本租约与边界提交","steadyCost":"直接调用，可隔离类型/引用版本","oldVersions":"协作卸载；当前实际WPF强键已阻断","price":"必须验证运行时修复及其他所有者，私有WPF发布会增加维护责任；未发现已验证的简单应用级修复","fit":"宿主没有外部强引用且回收已验证时合适；不能因现有代码已用它而优先"},
+    {"route":"独立常驻无界面脚本宿主","runtimeEditing":"旧版继续，后台准备候选，轮次边界切换","steadyCost":"多进程驻留、输入输出传输；图像往返须测","oldVersions":"正常排空后退出旧宿主，进程退出提供最终回收边界","price":"数据协议、图像所有权、全局变量写回及部署均要设计；不自动具备安全沙箱或强停能力","fit":"保留主界面长期运行、支持反复改版且要求旧执行程序集最终释放；在当前未豁免的回收目标下推荐"}
+  ],
+  "finalRecommendation": {
+    "headline": "保留VM式使用体验与常驻复用；在继续要求长期换版后可回收的前提下，推荐把执行版本放到独立、常驻、无WPF的脚本宿主。",
+    "reason": "不是因为VM预编译能生效就需要进程，而是当前不能把应用域寿命内持续保留旧Assembly当成回收修复；进程内ALC在当前宿主已被框架缓存阻断，维护定制WPF又把脚本能力绑到UI框架补丁。独立宿主将寿命边界移出主界面，可明确验证退出。",
+    "alternativeBoundary": "如果用户明确同意修改要求：开发调试多次换版后可安排主程序维护重启，生产固定版本，则VM式进程内常驻复用更简单，应改选它；这叫接受另一资源寿命合同，不能把旧A07 FAIL改成PASS。当前未替用户做此决定。",
+    "scope": "只确定脚本执行寿命边界和提交合同；不替换Roslyn/补全组件、不重写工作流引擎、不实施独立进程强停、不修改产品代码。",
+    "ownership": "UI仅编辑/显示诊断，不加载用户执行Assembly/Type；平台固定版本、输入快照及结果代次；宿主持有脚本实例和执行资源。编译字节缓存与执行实例缓存分离，身份含源码、引用内容和动态IO合同。",
+    "lifecycle": "无脚本需求不创建；同版本多轮复用宿主。先固定候选源码/引用/IO，编译与加载/受约束Init完成才就绪；当前完整轮结束后发布，旧任务与结果租约排空再退出旧宿主。候选只保留最新一个，禁止快速编辑排出无限进程。工作流并发和宿主数量必须有上限。",
+    "failure": "编译/加载/IO验证失败保留当前运行版本和草稿。Init若有外部写设备/全局副作用不能声称可回滚，须限制预激活副作用或在边界受控执行；不合作任务未结束时明确等待/拒绝切换，不假报已释放。",
+    "state": "同版本复用每个节点独立实例；新版本重新Init，任意实例字段/static不自动迁移。需跨版本保留的业务状态显式声明；不能以静态Assembly复用偷偷保留状态。",
+    "dataCost": "现有支持的数值、数组、图像、几何、绑定与全局变量都必须覆盖；不因跨进程静默缩减类型。不能传主进程裸指针、任意对象或委托。先有正确传输和所有者/租约基线，再按实测决定共享内存；第三方原生SDK许可/进程约束也必须验证，不能许诺零拷贝和零额外开销。",
+    "performance": "不承诺新架构更快。原首窗/首次补全预算与失败保留；另将候选准备耗时、换代交接、标量/大图往返和纯执行分开测，基础预热保留有收益部分。候选准备异步不能被称为编译成本消失。",
+    "boundedProof": "批准实现前只做一轮有边界的验证：相同脚本/引用/现有支持类型，固定同机冷/热与重复运行/新版本样本；验证数据传输和退出回收。未达业务预算就返回选型，不以减少能力或放宽断言换通过。该验证本轮未执行，也未新增产品改造授权。"
+  },
+  "sourceLineage": {
+    "borrowVM": ["草稿和生效版本分离，运行中可编辑", "预编译提交应用且窗口不必关闭；确定成功再关闭", "固定版本重复运行复用产物/实例，引用显式配置"],
+    "independent": ["候选成功后才切换，失败保留当前版本", "整轮固定代码/引用/IO合同及结果代次", "独立执行寿命、排空后宿主退出、数据传输与资源所有权协议"],
+    "doNotAdopt": ["把500缓存门槛当程序集回收保证", "先释放当前实例再尝试编译", "哈希键不校验源码且遗漏引用内容", "用清对象/清字典/Unload调用代替实际回收验证"]
+  },
+  "contractAndStatus": "既有64f候选A07仍FAIL，S2性能仍失败/不完整；不能把新设计当修复。若批准新执行载体，须显式用正常版本换代后的宿主退出、主进程未加载用户执行Assembly、任务/实例/租约归还等可验证断言修订未来合同；旧ALC弱引用历史不改写。",
+  "figures": ["固定脚本跑很多轮 vs 改很多版的两条时间线", "VM缓存命中/未命中/达到500门槛三分支", "用户实例/缓存Assembly/CLR加载/宿主退出四层寿命图", "三路线同标准对照图", "最终推荐的旧版运行—候选准备—轮末切换—排空退出泳道", "借鉴VM/独立补齐/不采用及原因三列图"],
+  "documentation": "主文档tool-script既有专题增量更新，O01摘要同步，首页唯一入口与搜索别名指向该节；不新增散页。源码方法与SHA折叠显示，正文用普通中文和图示。",
+  "officialReferences": ["https://learn.microsoft.com/en-us/dotnet/standard/assembly/load-unload", "https://learn.microsoft.com/en-us/dotnet/standard/assembly/unloadability"],
+  "productModified": false
+}

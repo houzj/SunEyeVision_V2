@@ -1,3 +1,243 @@
+## 2026-10-24 原48项批准方案继续实施：FT-A01/A02/M03首依赖
+
+- 主控批准记录 TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json，基线6c2def23ce062d2a7802ed8edddd40de113ccfa3；唯一产品写入者仍本实施窗口。协调已准静态完成后定向构建/Verification短窗。
+- 在现有纯net9 Contracts上统一TypeRef与声明Count，保持Definition/Session/Invocation；Port/OutputReference签名变化按合同4.0重编现有foundation消费者，不保旧二进制。
+- 当前仅声明及Scalar/double[]/Image执行覆盖；Record/Geometry/其他Sequence/资源、绑定选择/转换/冻结尚在本批准依赖内继续，不能把声明枚举计作完整接入。
+- 输出先核MSBuild实际TargetPath/OutDir/Targets，定向无restore构建。既有packages.lock漂移在本轮任何dotnet前已存在，保留不暂存不回滚，交协调核原依赖调整归属。
+- 后续沿原ID依赖推进，首固定结果送独测后继续；最终同一Release集中五方向人工/VS验收一次。程序集策略仍等主控，不扩范围。
+## 2026-10-23 自动可执行验收收口，已验证真实测试方案，集中人工M01..05
+
+- 新6c2固定源码/627程序1395actual输入静态独审PASS、默认05正常启动/自然关闭PASS；成熟独立宿主15产品依赖SHA绑定40合同TRX Completed/40pass，wrapper监控限制单列不重跑。按对应合同覆盖落索引，不冒完整主UI/VS通过。
+- 人工fixture01因全插件触发Roslyn及PS解析回调StackOverflow失败保留；经协调缩小metadata-only仅真实ImageLoad/ImageFilter及纯托管重入guard，fixture02 PID69596 2.98秒自然exit0，产品Repository Save/Load往返PASS，device0/communication0，2flow5node（4ImageLoad+1ImageFilter）/2edge/3PNG。方案SHA92AA6A5098B118C8CE1D7C92D3CC99E61FF97F36BB56AE4C02A06901311411FD。
+- 独测成熟参数化同固定exe PID32828实际加载2workflow5node、3图实际工具类型与图像路径日志齐、无相机自动连接/Dispatcher错误，Close true自然exit0约9.78秒，无forced/前后App和fixtureSHA同；scenario-load-verification.json已交接。
+- 唯一人工清单IMAGE_SOURCE_PANEL_MANUAL_ACCEPTANCE_20261023.json更新实际方案/普通固定程序→菜单打开路径，无需用户运行测试参数；M01..04体验及M05真实VS设计视图一次列出。VS18安装可见但本轮无自动交互渠道，不引用未证E_ACCESSDENIED作为本轮结论，不把普通WPF加载代设计时。
+- 保持产品无新增修改/构建；等待用户一次人工结果后仅具体缺陷修复，协调文档与主控最终审核。不标整批PASS。97268归现有FT-H02未决引用（必要FT-N01）非IP扩存储；程序集继续等主控。
+## 2026-10-23 主控裁决marker事故归现有FT-H02，图像验收继续
+
+- 主控将97268真实data marker Replace启动事故引用到现有FT-H02配置保存/数据目录可靠性检查，必要关联FT-N01启动；原事故/日志/身份保留，后续05成功不关闭事故。未授权AtomicJsonFile重试或存储重写，不新增批次/全局门槛。
+- 协调/独测记录影响与是否阻断本交付意见，明确根因及备选后再交主控有限修复决策；本实施者仅更新IP索引归属，不改公共存储/产品代码。图像原批准就绪验收继续，程序集线仍暂停。
+## 2026-10-23 新6c2无override默认启动/自然关闭独测PASS，继续剩余矩阵
+
+- 用户再次要求跟协调/独测收尾而非停交接，设施先确认可用，人工清单一次集中，程序集仍等主控。独测同pwsh7.6.5 parse/dot-source/固定包fixture前置全过后，runtime05-close-pwsh7实际PID62804，约7秒自然exit0，身份/ContentRendered/稳定主窗/Dispatcher0/Close accepted/无forced/前后exeDLLfixtureSHA一致。
+- 原01真实marker Replace异常、02漏段、03黑BMP截图、04 PS5启动前设施阻塞均保留，不借05成功抹历史；05只证明默认真实启动关闭，不含视觉/Light/设计时断言，不冒进程内Off/blocking读取。
+- 最终IP索引A08/A10已引用独测receipt更新；剩余来源/执行/保存/UI矩阵继续要求独测按固定新包覆盖，不停checkpoint。人工统一IMAGE_SOURCE_PANEL_MANUAL_ACCEPTANCE_20261023.json（M01..04体验+条件M05设计器），3PNG副本备好，尚不向用户散问。
+## 2026-10-23 独测默认Close设施启动前阻塞，未算产品失败
+
+- 独测04-close尚未创建目标App进程即因Windows PowerShell5解析UTF8帮助脚本失败，按自动化阻塞记录，不当产品失败或自然Close通过。已向协调/独测说明原设施有效宿主为PowerShell7 pwsh，下一必须同宿主ParseFile与dot-source前置通过再安排运行，实施者不自行新跑设施。
+- 当前资源由协调安排原型成本采样，本实施侧保持无运行/构建/大IO。最终IP索引仍明确默认自然关闭/完整UI矩阵待独验、Light/VS设计时/用户人工待安排；不会用多轮设施阻塞凑验收成绩，程序集线不恢复。
+## 2026-10-23 最终IP-A01..A10实施/开发验/独验/人工状态索引已交
+
+- HANDOFF_IMAGE_SOURCE_PANEL_FINAL_STATUS_20261023.json按原10项逐项列实施、源码开发验证、独测所属identity、待人工与下一动作；SHA7E1CF0228389DAC5DC6C2DEB571D1F83479A9E2441A496C2C10AF6A2B14C6C56。6c2固定包静态独审PASS，40源码回归与UI/全量构建通过，但正常关闭/完整矩阵与Light/VS设计时/用户人工未闭环，整批不标PASS。
+- 协调已明确停止本实施者新运行/验证设施迭代，由独测复用已有成功Close设施做最终6c2目标运行及矩阵。当前无自有进程，原01标记Replace异常/02设施漏段/03截图失败全部保留；03真实ContentRendered已到、身份正确、无DispatcherERROR但Close未发，不改判自然退出。
+- 正常默认Off已在唯一App单文件提交6c2固定，其他预热/程序集管理不动；用户要求不扩范围不反复无效验证。IMPLEMENTATION_QUEUE与canonical交接附最新索引，固定交付目录原handoff/identity/app/source不覆盖。
+## 2026-10-23 用户要求完整脚本核查后收尾；第三轮截图设施失败，停止该链
+
+- 用户要求先完整检查验证脚本，再协调第三轮并收尾IP，不反复无效验证，程序集继续等主控。已完成日志解析历史回放/错误PID与空观察拒绝/异常识别/有界清理审查，default-off-runtime03-preflight-final.json冻结SHA；另实读历史正常61288也缺ContentRendered异步日志，不能以缺行推App未呈现。
+- runtime03按冻结脚本执行PID17288，22:38:46.090至22:38:54.795，RuntimeIdentity实际新6c2路径、主窗visible/enabled、ContentRendered日志真实true、Dispatcher0、前后exe/UI/fixtureSHA同。但新PrintWindow读黑色BMP/distinct1，设施硬门抛错→finally身份核清理exit-1，Close未发，不计自然退出通过。实看BMP为全黑，不能据此定产品渲染缺陷。
+- 未在本机成功正控的截图接口设硬门是实施设施失误；原03/raw/黑BMP保留，停止该截图链不盲重跑。已报协调并请求独测用现有效设施完成新身份正常close与剩余IP/Light/设计时矩阵，当前无自有进程/资源已释放。产品不改，程序集不扩范围。
+- 固定delivery6c2受共享Release污染事件后的静态627全SHA核0漂移/foreignProbe0；仅固定包声明，不清理未知共享文件、不声称共享Release全程未改。
+## 2026-10-23 marker副本替换正控成功，原启动失败原因不改判
+
+- marker-replace-probe01设施无效：PowerShell第三参数null绑定为空字符串，实际未到原生Replace；原receipt保留。静态改NullString后经协调另放行probe02。
+- marker-replace-probe02 PID99048/runtime10.0.11，2.44秒exit0，unlocked同目录副本Replace成功；自己持FileShare.Read负控IOException/HResult0x80070020。原marker前后SHA8A621567F09FFCFB29119C3103838634F9BD25CAD7B2F4E5F3B89285E8D968E0不变，Archive/继承Modify/同卷，原App与失败文件不改。
+- 此为当前文件系统副本机制诊断，非.NET9真实App复现，不证明原97268IOException由同一共享锁/外部负载引起。资源已释放，无默认exe自动重试，正常默认运行仍未过，存储模块不擅修。
+## 2026-10-23 新默认真实运行失败，已停止并释放
+
+- default-off-runtime01真实新exe PID97268，22:22:15.489至22:23:00.680，45秒等待ContentRendered未到，未发Close，身份核自有清理exit-1。exe/UI DLL/fixture前后SHA相同，RuntimeIdentity实际路径/6c2源码号明确；不计默认运行通过、不自动重试。
+- 真实首阻断：22:22:19.185 Dispatcher IOException“无法删除要被替换的文件”，File.Replace→AtomicJsonFile.Write22→SolutionManager(ApplicationDataPaths)173，目标Data/suneyevision-data.json的configRequired更新，不是user-settings。marker事后Archive属性，具体锁/并发/权限原因未定，不归因Off或外部负载，不擅改存储模块。
+- runner等待只看ContentRendered，不看policyLog；末尾成功才要求Off日志。早期prewarm阶段位于日志writer初始化前，确可能丢，故需自有设施最小观测修，不以缺早期行冒称App没启动。本次同时有真实Dispatcher异常且无Show/Loaded/ContentRendered，原日志与receipt保留，已交协调。
+## 2026-10-23 正常默认Off新6c2固定包完成，等待默认运行窗
+
+- 独测正式45raw复算PASS后协调按原IP-A08明确取舍，唯一App5+/5-提交6c2def23ce062d2a7802ed8edddd40de113ccfa3：正常默认Off、保隔离on/deferred、准确注释及effective mode/blocking日志；其他预热/程序集Owner不动。
+- warmup-off-checkpoint01 UI0错1175警告69.62s，实际40/40定向通过0跳过3秒。新提交UI90140 0错1175警告28.58s/全量37856 0错1258警告62.05s，1395全tracked输入前后SHA漂移0。
+- delivery-6c2def23静态封存627app/1395actual源资产/vendor26/foreignProbe0；identity E38F564594F8FDA67957C5F04E4A53FA8E10D7C6A4D05622CFAD4AF9CA1972F0，handoff FC5D0C97C5121389B444FB1C9C93097B093806A3EC976209BE509BE987C6936A。1017raw同/378仅换行/0正文差异，BOM原byte判断。已交独测/文档/协调，旧包及原始formal不覆盖。
+- 默认真实exe无override的Run-DefaultWarmupCheck脚本已备并记exe/UI DLL前后SHA，尚未运行，等协调短窗。Light/VS设计时/最终矩阵仍待验，不报整批完成。
+## 2026-10-23 正式预热对照45进程完成，静态汇总交独测
+
+- warmup-formal01按冻结协议三策略各5fresh×3组件共45进程自然exit0，107.149秒，强清/超时/fixture漂移0；input-result-audit逐PID/源commit/输入SHA核0问题。summary SHA98CB8D62FB6EDD5EAB1D970172B7014B8BCF94258D6F70891CC0CA8AB2FBFA7E，原值/median/range/逐轮配对全列，已交独测静态复算，资源已释放。
+- WIC首解码median On67.02/Off75.25/Deferred68.95ms，但On/Deferred仅3/5轮优于Off；Hal首116.14/120.06/228.39ms，On3/5、Deferred2/5，未达预先4/5重复收益参考。startup ContentRendered median3904.25/3768.47/4681.58ms，On线程池阻塞19.76ms。n5描述非输入延迟/业务SLA/整批PASS，配对中位差与两个中位数差分列。
+- 尚未改正常On策略。原授权内拟按实际收益评估取消空sleep线程池预热，先待独测核数/协调收口，不扩程序集/Owner。其他UI主题/设计时与独验矩阵仍待闭环，不把正式采样完成等整批验收。
+## 2026-10-23 预热pilot02九进程正常退出，正式协议静态冻结
+
+- warmup-pilot02三策略×startup/WIC/HalImage共9进程全部自然exit0，无强清/超时/fixture漂移，9个PID及原分时JSON/commands/completion保留；v2 fixture SHA B976...7084、图像FC22...6D8D一致。仅设施可运行性验证，不计正式收益。
+- warmup-formal01-protocol.json冻结三策略各5fresh×3组件共45进程，轮换顺序/口径/输入SHA/失败停/每进程界/统计与决策阈值，SHA6BC5EDA998E982818D4473865CDD13F3A2F4F95DF3CD2F13DC171A6B3B7F2CD2。n5仅raw/median/range配对，不报p95/显著性；process-cold非disk-cold，ContentRendered非输入延迟。
+- 正式未启动，资源已释放给原型A04真实图功能窗，待协调明确释放才执行。产品代码不变，程序集线继续等待主控结论。
+## 2026-10-23 v2固定fixture真实exe正常关闭通过
+
+- fixture-v2-close-check01真实固定1ff exe PID61288，17:30:56.051至17:31:02.251，Close accepted=true后自然exit0，timedOut=false/forcedOwnedCleanup=false。fixture运行前后SHA均B9768528D690E48BA695D753FD9C9D81B304BD61F16AD692A9EEB75419BE7084，无保存模态拦截或产品改动。
+- 仅预填已定位加载规则所需工作流编号，设备/通信空、同一空工作流；旧fixture与全部失败原始记录保留。此轮只验证正常启动关闭设施，非预热收益；资源已释放，下一三策略统一v2原字节新pilot，未自动启动9进程或正式45。
+## 2026-10-23 只读会话快照定位fixture加载dirty唯一字段
+
+- session-dirty-diag03自有probe构建0错7警告8.55s，probe SHA8F9A0AF7B83856E6560BB99DC46E07D0730A4528F6D964D39E319916AB868B42；真实固定App.Run宿主PID91764读取前后canonical，唯一差异/CommunicationResponses/WorkflowIdentifiers/22222222-2222-2222-2222-222222222222由缺失变1。CommunicationAutomationService.Refresh第77行加载时EnsureIdentifiers补该编号，捕获保存基线在其之前，闭窗故出现保存确认。
+- 只读saved/current未写基线或dirty，原fixture前后SHA65CCD632F0A05F763C4F1C7EE009CDF493D062E4B10FBA55BA897FE8D85895CC不变；未点击确认，60秒界自有清理exit-1。诊断成功不等正常退出/正式性能，资源已释放。
+- 仅静态准备fixture-v2，预填相同固定workflow编号，SHA B9768528D690E48BA695D753FD9C9D81B304BD61F16AD692A9EEB75419BE7084；设备/通信仍空、空workflow同一ID。runner以显式StartupFixture复制同字节，不默换旧样本。待单固定exe确认正常关闭，产品无改动、正式45未起。
+## 2026-10-23 只读窗口诊断已定位实际保存确认模态
+
+- owned-window-close-diag02自有PID98092，17:14:54.416至17:15:54.690，原fixture单On。关闭请求目标主窗33827232 accepted=true；窗口清单实际显示“保存方案”29567732 visible/enabled=true、Owner48307998同PID隐藏WPF窗，主窗visible=true/enabled=false。产品日志17:15:26.808也记录YesNoCancel保存确认准备显示，本轮明确等待保存选择。
+- 全程仅自有PID+StartTime+路径核读窗口，未点击。60秒界核身份清理自有进程，exit-1/forcedOwnedCleanup=true，资源已释放。不能将本轮描述为服务挂起、正常退出或预热成绩；原先两轮未定位结果保留。
+- 独测固定1ff functional与真实5000驻留已PASS退出，由独测原始报告为准。下一静态定位原fixture关闭dirty原因，不自行换fixture/跳关闭/改产品，正式45仍未启动。
+## 2026-10-23 单startup关闭诊断完成，资源已释放
+
+- startup-close-diag01自有PID90280，17:02:33.232至17:03:33.786，启动60秒边界仍未退出，核PID/StartTime/路径后仅清理自有进程，exit-1/forcedOwnedCleanup=true。无自动重跑、无组件测试、无产品改动。
+- 关闭请求17:02:48.402 accepted=true，目标handle70851870/0x4391D1E与真实ContentRendered主窗一致；207次窗口快照均同handle/标题且Responding=true，闭窗后观察约45秒。原日志没有进一步关闭阶段信息，当前只排除错误PID/错误主窗请求，不归因服务挂起或死锁。
+- 本轮仅关闭诊断，不计预热性能成绩。原fixture未更换，全部JSON/log/receipt保留；资源已向协调明确释放，后续定位正常保存提示/排空链须另排明确诊断窗口。
+## 2026-10-23 预热pilot首进程停止，保留原始结果并释放资源
+
+- 协调放行后warmup-pilot01首startup PID56872产生completed，但CloseMainWindow后10秒未退出；核PID/StartTime/路径后仅清理自有进程，exit-1/forcedOwnedCleanup=true。后8进程未启动、无自动重试、无有效预热收益结论，资源已释放给独测。
+- 现有日志停于MainWindow.ContentRendered，原runner未留关闭请求返回值/目标handle，不能归因为产品服务挂起；仅静态补自有runner close-request JSON，不改产品关闭逻辑。下次单startup诊断另排窗口。
+- source-map-v2原始EF BB BF判断已交独测，1395文件仍1017 raw相同+378仅换行/0其他，旧map保留。最新实现记录implementation-progress-20261023-1658.json，程序/源身份不变。
+## 2026-10-23 5000条真实解码驻留完成，程序集线继续暂停
+
+- 用户再次确认程序集管理等主控结论，其他原批准且不受影响实施继续；当前仅IMAGE-SOURCE-PANEL-BATCH，不扩中央渲染/ROI或程序集载体。
+- residency-settled03自有PID47896正常退出0，5000个不同EntryId全部实际解码，遍历90.153秒。缩略缓存2,767,200B/128项，条目图像引用峰值362,000B/17项；关闭窗口后条目图像引用0、来源记录仍5000。原快速遍历仅344解码的结果保留，由本轮补足覆盖。
+- 真实显示150%DPI/Dark；进程关闭后GC private134,184,960B/working190,947,328B/OS peak195,665,920B，独立于位图预算记录；属于开发侧规模验证，非独立验收或正式性能成绩。
+- 独测撤回882文件误报：其路径分隔符处理造成，原包与副本均627文件/91目录逐SHA相同，无需修包。源码BOM元数据改按原始EF BB BF字节判断，旧map保留，新版静态复核中；程序与实际源快照不变。
+- 预热pilot仅已批准三策略9进程试运行准备，整批180秒/单进程45秒；待协调释放独占窗口才起，正式45进程尚未放行。
+## 2026-10-23 1ff功能窗通过，驻留真实覆盖344不得冒充5000
+
+- functional-02实际三PID62064/93816/79076均退出0；目录5000首256取消、提交中切源保护新index1、磁盘仍5000、真实WIC在途覆盖旧结果拒绝后新图重解均实证通过，截图两张缩略正常。
+- 首驻留逻辑滚动5000项21.8秒，但cache实际仅344 decode，因100ms刷新防抖被快速滚动重置；原run保留，不能报5000全解码/完整预算通过。原数据cache2,716,800B128条、max item2,696,400B128项、关闭item0/源5000；private131,715,072/working205,918,208/peak211,058,688分别记录，不混decoded预算。
+- 已只强化owned probe：每视口125ms停稳后排空，目标entry缩略非空，unique EntryId实际解码必须5000且末项显式滚入；新增warmedWindowBaseline区分WPF固定开销。待原型短窗退出后短build+单residency-settled03进程，预计70–100秒、原120秒界限不削断言，当前未重跑。
+- 新1ff固定包627app/1395全部actual源资产快照已直交独测；git/archive与actualSource分列并原始字节完整，旧823真实WIC失败不改判。
+## 2026-10-23 WIC修复1ff63bfa构建通过，新候选封存中
+
+- WIC定向9/9真实图像测试通过1秒，补充提交1ff63bfa78f3c6d6c028ec8439b730a86d313cf9精确1产品+1新测试75+/4-，未改程序集/Owner或WPF私有状态。
+- UI0错1175警告53.42秒，全量0错1273警告99.58秒，wic-fix-release-1ff63bfa保留PID/argv/起止/退出；构建前1395全部tracked输入（含原遗漏27资产）SHA6D6F527F...1178E，构建后1395漂移0。构建窗口已释放，现delivery-1ff63bfa静态拷贝封存并内置actual源快照，823原失败包不覆盖。
+- 后续必须从新identity完整重跑原5000功能/驻留，不能拿9单测代预算/界面通过；拟functional-02新目录，预热另独占性能窗口。probe已补logger与decode异常直达entered，避免再用10秒gate遮具体异常，尚未针对新包build/run。
+## 2026-10-23 真实WIC根因已证，产品定向修复待验证
+
+- functional-01：fixtures100068退出0生成5000真实PNG；functional64268退出1/20.89秒，ownTimeout=false，residency未起。窗口新源缩略红X，后续覆盖用例因解码未到entered而10秒超时；不记预算/在途覆盖通过，原JSON/PNG/receipt留存，所有自有进程退出。
+- probe-diagnostic01隔离build0错7警告8.42秒，自有PID38392退出0约2.11秒仅诊断完成；6 case真实解码均失败，根异常ArgumentNullException(key)→ImagingCache.RemoveFromCache(Uri)→BitmapImage.FinalizeCreation。已证本批StreamSource无UriSource却设置IgnoreImageCache的产品回归，非样本/宿主归因，不私改框架。
+- 已仅移除thumbnail/fullimage两处URI专用flag，保留SHA版本/新流/OnLoad/Freeze，补真实生成PNG/BMP（2尺寸）缩略及原图、真实等长同mtime像素变化与空路径测试。当前1产品+1新测试dirty，申请wic-fix-checkpoint01共9项，无Show/性能，待资源后直接执行；需新源码/新固定包，823保留失败。
+- 独测已实读actual1367/归档1394/双侧保BOM规范化map与补充27，来源链静态PASS、0正文差异，旧单向换行分析superseded；actual快照与原包均未覆盖。行为验收仍未过。
+## 2026-10-23 导入/预热门控4项通过，823cf104全量构建中
+
+- import-warmup-gate01实际4/4通过、0跳过2秒，日志/TRX/argv/PID/起止/退出保留。两项600文件真实Dispatcher-pump覆盖首256取消/切源保护；Parse覆盖标记隔离限定、正常默认On与设备拒绝。
+- 初版临时提交2962cfe46d8f7337d40544c04685e9b467c53d77仅前checkpoint；补充提交823cf104已包含导入重入门与App/StartupLaunchContext最小预热测量接缝，共精确5文件，不含其他角色dirty文档。正常策略仍On；仅隔离测试允许on/off/deferred，ContentRendered/后台完成独立一次JSON，不冒称可交互或收益。
+- 现经协调同窗口执行dotnet build SunEyeVision.slnx -c Release --no-restore，session3038，日志full-release-823cf104；构建未结束，不报全量成功。完成退出即释放CPU/runtime，包拷贝/manifest静态另做；probe后续独占输出禁Directory.Build继承。
+## 2026-10-23 cache retry32项通过，资源已释放
+
+- cache-checkpoint01-retry01实际UI构建退出0，0错误/758警告22.30秒；准确filter32/32通过、0跳过2秒，真实PID/argv/起止/退出/log/TRX保留。首CS0234构建失败仍单列，资源已释放。
+- 本轮实跑含连续有效勾选子集末张/缺失尾项、真正in-flight取消不推进、RunSolution两workflow逐源输入、父级纯helper、缓存字节/版本/取消5项、原持久化/解绑/导入去重/卸载合同。实际驻留/大目录真实窗口取消/在途文件覆盖/UI主题设计时/预热收益仍未测，不报整批通过。
+- 下一临时源码提交+全量Release固定候选身份用于后续同字节测量，已申请全量Release约2–3分钟资源；自有probe后续禁Directory.Build继承/独占输出，不把probe写共享目录。
+## 2026-10-23 cache首构建命名空间冲突失败，已定向修正
+
+- cache-checkpoint01 UI实际退出1，1错794警告51.00秒，ImageFileImport.Path简写被Services.Path遮蔽CS0234；32项测试未启动。资源已释放，原日志/命令/起止/PID/退出保留。
+- 已全限定System.IO.Path.GetExtension，申请同32项范围cache-checkpoint01-retry01，不覆盖首失败、不擅自重启。预算/驻留/预热/UI主题仍未验。
+## 2026-10-23 资源等待期间静态补齐合同测试与编辑提示
+
+- 原cache filter按协调核收追加连续末张/真正in-flight取消/RunSolution三准确方法FQN；父级解析抽同一纯helper并新增唯一/多调用点/无关parent断言，预计32项，仍未构建。文件名LocalImageExecutionTests不是类名，不能用该文件名FQN假匹配。
+- 图像输入源新增ConfigurationEdited事件，仅用户配置编辑触发；MainVM对当前绑定源订阅并刷新方案标题/HasUnsavedSolutionChanges，数据dirty仍由既有SolutionSession语义快照计算。加载与运行游标均不触发编辑事件，切源解绑旧订阅；无额外Dirty账本。
+- 实际驻留/大目录/在途版本变化/UI主题设计时未验，等待独立原型测试资源释放后按核收cache-checkpoint01准确命令构建/执行；没有运行新进程。
+## 2026-10-23 缓存/异步导入首批实际写入，待构建
+
+- 新增PreviewBitmapCache：后台流SHA内容版本，同版任务合并，单等待者取消独立、最后取消或Invalidate后不晚写cache；16MiB/128条/单256KiB/4并发，统计包含已取消仍未退worker。ImageInfo离屏清Thumbnail、全图仅弱引用；既有fullcache64MiB与内容版本校验，物化最多128项，离屏条目/选择/持久列表不删。
+- 确认产品唯一FullImage调用在MainVM旧图像显示路径，已改后台串行（最多1在途）哈希/解码与tab/node/item/path/旧显示引用门，避免新增SHA阻塞UI和迟到覆盖。未改中央渲染引擎、ROI或HalImage链。切图高亮仅新旧两项，集合切换才全清。
+- 新增ImageFileImport与控件FileImport partial：后台枚举排序/存在过滤、256条Dispatcher批次；取消/切源/卸载/删除/清空阻断旧代次，已提交引用取消时保留；导入状态/取消按钮。原重复/缺失导入测试改真实异步路径+Dispatcher pump，保留断言。
+- 新增PreviewBitmapCacheTests5项，尚未运行；已提交cache-checkpoint01准确UI+28项filter申请，原型定向窗口占用，未擅自构建。预算/驻留/性能、大目录实际取消/在途版本覆盖、连续/解决方案/UI主题仍未验；不得以5单测替代整体内存实测。
+## 2026-10-23 manager18项通过，用户明确原IP整批继续
+
+- manager-checkpoint01-retry01 UI0错758警告22.57秒，18/18定向通过、0跳过2秒，真实PID/argv/起止/退出/log/TRX保留；窗口已释放给独立原型smoke。仅本轮合同，不等连续/解决方案/父级/UI主题或整批通过。
+- 用户通过主控/协调明确原IMAGE-SOURCE-PANEL-BATCH整批续行：缓存实际驻留/同路径版本single-flight/异步目录取消确定顺序/切源卸载迟到保护、预热开关移后受控对照、固定独立验收/全量UI Release/运行验证，禁止中央大图缩放ROI扩范围，不停manager。
+- 缓存实施前预算与样本已列artifacts/validation/image-source-panel/cache-budget.json：缩略缓存16MiB/128条、单缩略256KiB、最多128物化条目、4解码在途；保守decoded总49MiB（重复对象加和），WIC/native与进程总量另测；现有全图缓存64MiB、item改弱引用，中央显示外部持有另列。尚未实现/测量，不报满足预算。
+## 2026-10-23 manager定向retry01运行中
+
+- 原型构建窗口退出后协调释放manager-checkpoint01-retry01，已实际串行启动UI Release与原18项filter；UI构建退出0，0错误/758警告22.57秒。测试仍运行，当前不报行为通过。
+- 原首失败日志保留。空勾选用例当前为列表仍有真实文件但全部未选，混合相机/本地分支也接同一StopAtEnd；无新测试范围/Show/性能。退出即释放给原型smoke。
+## 2026-10-23 manager首构建失败，缺失命名空间已修
+
+- manager-checkpoint01 UI构建退出1，1错误/794警告54.58秒，LocalImages.cs引用ImageRunMode漏命名空间CS0103，18项测试未启动。原始build-receipt/log保留，资源已释放给协调；不报测试通过。
+- 已补捕获适配文件enum using，不访问任何WPF控件；申请同范围retry01，等待资源窗口，不扩大测试或覆盖首失败记录。
+## 2026-10-23 图像运行序列manager静态接入、首轮构建中
+
+- 新增WorkflowExecutionManager.LocalImages.cs：UI线程捕获原节点输入源元数据与参数副本，后台过滤文件，冻结每源稳定entry/原引用/解析地址；未选可取首项、显式失效或无有效勾选/文件明确拒绝。禁用来源不阻断。单次/连续/解决方案入口接入context，每轮FilePath覆盖只用冻结序列，不读当前可见预览器。
+- ImageInputSource新增EditVersion/运行游标呈现门：手动索引/勾选/结构Reset/加载失效旧呈现，当前运行输入不变；按workflow/source/run/iteration校验完成，显示时重验会话与实际node.InputSource身份、版本/entry/ref/address；运行游标不触发持久化重建。旧advancer/旧字符串末张判断已核零调用后移除。
+- manager-checkpoint01经协调释放窗口，正在串行UI Release+18项预计定向回归（实际数量以TRX为准），无Show/性能，尚无通过结论。入口覆盖新增冻结路径/用户改选/外workflow快照、多源推进/缺失或空选择拒绝、游标编辑门控，加原manual/success/fail/cancel与模型/解析/持久化。连续与解决方案真实链、父级/UI主题仍未验。
+- 治理补充：SCRIPT-HOST-PROTOTYPE-VALIDATION-01已获独立验证授权，授权单HANDOFF_SCRIPT_HOST_PROTOTYPE_VALIDATION_20261023.json；协调在64f独立worktree安排唯一原型写者/root/script_host_prototype。本主工作区仍只图像批次，产品架构不改、A07不豁免，不把原型代码写入产品src/tools/tests；原型资源另协调。
+## 2026-10-23 序列模型第二轮5项通过
+
+- sequence-model02实际退出0，5通过/0失败/0跳过63ms，原始PID/命令/起止/退出/TRX与日志在artifacts/validation/image-source-panel/sequence-model02；窗口已释放，无Show/性能。
+- 模型合同含初始未选才可默认首项、失效显式ID明确拒绝且原会话保留；冻结多源/跨workflow/同路径不同entry/回绕/失败和手动保留/末张先停/旧代次与重复完成拒绝。仍未接manager，不把模型通过当实际工作流执行通过。
+- 下一静态接入捕获侧与既有nodeParameterOverrides，保持UI只呈现、手动编辑后旧游标门控不回写、执行层不访问WPF控件。程序集线暂停不变。
+## 2026-10-23 序列模型首轮通过、失效选择合同收紧
+
+- sequence-model01实际PID86768退出0，4项全通过102ms（总47.70秒），原始TRX/argv/起止与日志保留；窗口已释放。
+- 随后收紧默认选择：只有SelectedEntryId=null可取首项；显式ID不在有效序列时明确拒绝且不替换既有会话，新增第5项覆盖失效/空序列边界。sequence-model02经协调放行正在定向构建测试，尚未报通过；未接manager，不等实际缺文件/空勾选执行通过。
+## 2026-10-23 运行序列纯模型及跨模块接入边界
+
+- 已新增LocalImageSequenceService与LocalImageSequenceTests（4项待运行）。模型不依赖WPF/IO/执行调度，Begin冻结每源稳定entry ID/原引用/解析地址/原索引与auto/stop设置；workflow/sourceNode/runGeneration/iterationVersion校验，成功推进/失败或手动保留/末张任一源先停、旧代次/旧轮次/错源拒绝。
+- 尚未接入manager。拟接缝为UI线程采集节点输入源→冻结纯序列→每轮nodeParameterOverrides→完成后按ID呈现游标；切tab/选节点不能改变序列，不读WPF控件，不改程序集/Owner合同。已申请sequence-model01仅4项定向单测含依赖构建窗口。
+## 2026-10-23 图像来源解析checkpoint03通过
+
+- UI Release PID87108退出0，0错误/1175警告37.63秒；定向9项全部通过/0跳过（781ms）。真实PID/argv/起止/退出、stdout/stderr与TRX在artifacts/validation/image-source-panel/checkpoint03；资源已释放，无Show/性能。
+- 图解析覆盖显式多源分支、连接顺序不影响、无关选择拒绝、环保护/来源自身/未知节点；加原持久化6项。父级唯一调用点和实际UI/主题/设计时仍未验，不算整批IP通过。
+- 下一已批准接缝：冻结workflow/sourceNode/runGeneration/entry身份的运行序列，执行器决定推进、UI只显示游标，替换依赖当前可见预览器的全局推进。暂停脚本合同不改。
+## 2026-10-23 图像来源解析接缝实施中
+
+- 新增ImageSourceResolver纯图解析，拒绝歧义/无关显式来源并保护环；MainVM统一调用、顶部来源切换即时刷新、当前tab节点身份校验，子程序按导航父级唯一调用点解析，不沿用无关旧面板。新增来源歧义/失效/空列表提示及3项解析测试，尚未构建/运行；已申请checkpoint03九项定向验证窗口。
+- 跨模块限UI导航上下文→纯图解析→既有输入源绑定与提示。运行序列仍未改造，已知全局advancer依赖当前可见预览器待按原批准合同处理，未动执行器/脚本程序集/Owner。
+- 治理补充：SCRIPT_ASSEMBLY_LONGRUN_RECOMMENDATION_20261023.json是最新分析/条件推荐，待用户确认，不是实施授权。未来载体变化不豁免A07、不改历史FAIL；若选进程，须显式批准等价资源合同（进程退出/主进程不加载用户执行Assembly等）再实施，当前不得改断言。
+## 2026-10-23 图像源持久化checkpoint02定向验证完成
+
+- UI Release退出0，0错误/758警告23.60秒；指定6项定向测试6通过/0失败/0跳过，原始日志/TRX及起止命令收据在artifacts/validation/image-source-panel/checkpoint02。构建与测试窗口已释放，无Show/性能，不等整批验收。
+- 最终实现口径：条目IsForRun修改立即同步节点配置；Remove/Replace显式操作仅清无其他同引用条目的旧引用；Clear显式清全部；Reset只解绑旧条目并接入新条目，不隐式清持久引用。加载保持零编辑及缺失/重复引用原顺序，相关原测试未放宽。
+- 本轮修改文件ImageInputSource.cs和ImageSourceSavePersistenceTests.cs，暂无提交/固定新包。下一继续原批准来源解析/运行序列边界，程序集线仍暂停。旧首版全量重建与Reset清引用描述已由本节更正，不作为最终实现。
+## 2026-10-23 图像源首轮UI构建与持久化合同修正
+
+- IP-UI-CHECKPOINT-01实际UI Release构建退出0，0错误/1035警告，77.52秒总耗时，日志与起止收据artifacts/validation/image-source-panel/checkpoint01；构建窗口已释放，未运行UI/性能，不计行为通过。
+- 既有保存合同要求无关编辑保留未知引用与原勾选顺序，首版全重建选择清单会破坏该合同，已在构建后修正：保留原清单口径，明确删除/Reset时仅去掉被移除且无其他同引用条目的勾选；显式清空清全部勾选。加载期间不清未知引用、不触发编辑。
+- 新增两项定向测试覆盖仅勾选立即序列化、移除/批量Reset解绑与新条目订阅；既有加载非编辑/未知引用保留测试继续保留。修正版尚未重新构建/运行测试，下一申请构建及定向测试窗口。程序集暂停边界未动。
+## 2026-10-23 图像来源面板已批准实施恢复，程序集线保持暂停
+
+- 用户直接要求已批准且不受影响任务继续；交付协调已释放 IMAGE-SOURCE-PANEL-BATCH 唯一产品写窗口。实际基线64f17888fac6fa10ccc78671fd5bde10e93582b2，开工前 src/tools/tests 无未提交变更，固定脚本封存副本与原失败不变。
+- 首批文件 src/UI/Shared/ImageInputSource.cs：勾选变更进入节点配置同步，结构变更解除已移除条目订阅，保存选择从当前条目生成，避免删除后残留引用。跨模块影响限输入源→WorkflowNode.ConfigChanged→ImageSourceConfig持久化；不修改脚本程序集、编译、生命周期或Owner合同。
+- 本批仍严格D01-D07/IP-A01-A10，当前仅开始首批，尚未构建或验收。下一检查点：勾选保存/加载非编辑/移除后取消订阅定向验证，随后按批准范围推进来源与运行序列。构建/runtime由协调排窗口。
+## 2026-10-23 用户确认本窗口仅实施，程序集管理线暂停
+
+- 用户明确方案比较发错窗口，由方案主控负责选型；本窗口暂停程序集管理优化、分析和实验，不改产品代码，不运行CLI等价体、VS或框架实验。交付协调已撤回ASSEMBLY-CHOICE-READONLY-01，IMPLEMENTATION_INPUTS/REPAIR_PROPOSAL不再产出，待主控明确选型/实施范围/验收要求后执行。
+- 固定候选64f17888及全部原始失败保留，A07仍FAIL；不因暂停或未来选型改判。formal-r2已中止：12成功进程36完整窗，第13基线101行样本阶段日志File.Move抛UnauthorizedAccessException，非产品/native归因，未自动重跑；另主控披露13:19:23结束5.3秒静态ILDASM与采样重叠，因果未证，不声称全程无外部负载。
+- TRACE已结束：新VS因InitializeAppID E_ACCESSDENIED未附加/未绑定/未取实际栈，自有VS93608与目标95472已退出。普通before/core-before有强键与ALC存活，ordinary-after无后续BAML时可回收；见TRACE_RESULT_01.json。私有runtime正控PID48348退出0，473文件与安装原WB SHA不变；Cecil mixed/R2R写入不支持，候选未写入/未运行，未绕ILOnly/签名/CLR限制。所有自有实验运行窗口已释放。
+
+## 2026-10-23 S3固定64f候选送验，正式r2运行，TRACE接续实际取栈
+
+- 产品源码64f17888fac6fa10ccc78671fd5bde10e93582b2，47文件本地临时提交，明确保留A07FAIL；其他角色文档/HTML/plans未纳入。全量Rebuild0错1272警告2:19.93/UI专项0错1175警告26.51s。完整候选delivery-64f17888含627 app/1357 source、vendor26/foreignProbe0；程序manifest26EA081E...2B2B/source7F3C57B2...F768/zip58EFCC36...AEA1/runtime719BBF9A...5170。
+- 独立测试已确认接包627逐SHA零不匹配，仅身份可用非合同通过。固定102测试99通过/3条A07弱引用FAIL；A04自有PID94360报告取消后Task仍运行/Owner1/PoolLease1/退役被拒，探针自退出0，不等硬停/Release成功；toolbox自有PID58664双参数退出0/22工具仅inventory。post-runtime-identity：627二进制漂移0/extra0、1357源码漂移0；原TRX/argv/PID/退出和主控决策随包，HANDOFF已更新。
+- formal-r2于北京13:16:07实际启动，session63844，采样器SHA9B12375458266E80EBA34178DE9AE9DF64CE6C3C683F56A6E3DF01239B8E1045；原60进程/180窗，基线a254固定627核漂移0，候选64f，预算不变，native失败即停不重跑。progress/live/commands/阶段JSON在artifacts/performance/script-s2-window-20261023/formal-r2；运行期间无VS/TRACE/build。
+- 主控选A只允许带FAIL候选不停其他验收，用户随后明确S3-ALC-01-TRACE继续解决回收：本机同SHA IL已核BAML ResolveAssembly→WindowsBase GetLoadedAssembly→GetAssemblyName强键，但实际首次写入完整栈/产品触发点仍待抓。只读分工已完成静态证据；隔离probe及新隐藏VS/仅自有PID ROT断点脚本已准备，r2全部采样退出/协调接续5min窗口后立即实际取证，不私清缓存/不换框架或IPC，不弱化100窗。13:30为静态/可执行捕获方案检查点，动态按r2实际结束接续。
+
+## 2026-10-23 S3-ALC-01已证本机WindowsBase强键，等待范围决策
+
+- checkpoint05 99/100通过，100真实开/运行/关、Owner0/分析排空完成，最终97/100 ALC存活；checkpoint06 NoInlining生命周期外GC仍97，slot0/sandbox0/assembly97。原100窗/10次GC强断言保留，未弱化。
+- checkpoint07有输出/无输出各3窗均ALC2/slot0/sandbox0/assembly2；本机WindowsBase9.0.20 SafeSecurityHelper._assemblies实际新增脚本Assembly强键（IsCollectible=True/IsDynamic=False）。这是已证直接外部root，不宣称唯一；路径/版本/SHA/前后名称快照及TRX列入artifacts/validation/script-s3/S3-ALC-01.json，提取证据checkpoint07-cache-evidence.txt SHA E6B2FAAA...E3C5。
+- 无已证公开API能从现有BAML InitializeComponent排除该框架缓存扫描；未私反射清缓存/换框架/换编译加载/IPC/改Close→Hide。已向主控提交保留A07 FAIL先固定其他合同验收+正式r2，或阻断固定包另授权研究的具体选项。暂停无因重复100窗，所有checkpoint进程已退、资源已释放；13:05交定位/有限方案检查点，非通过承诺。
+
+## 2026-10-23 S3 checkpoint04 UI通过，98/99回归，修宿主待checkpoint05窗口
+
+- UI Release 0错/1160警告36.31s；脚本99项98通过/1失败13s，日志script-s3-ui-checkpoint04.log/script-s3-tests-checkpoint04.log与script-s3-checkpoint04/*.trx保留。停止真实排空/退役域复活/全局图像分支通过，不扩大为全部S3通过。
+- 100开关窗用例首次Show失败：S2/S3原各自STA共享静态DefaultDebugWindow.DebugWindowChrome，跨线程VerifyAccess异常；未完成100循环/ALC断言。只改测试宿主ScriptTestDispatcher共用长期STA，保留真实Show和100次Owner/ALC断言并增加Chrome线程一致性证据。产品Chrome未改。
+- 全局输入副本转入ScriptResults资源Owner，保证执行返回后输入监视继续读取；新增原值不Dispose/副本独立/生产者释放后监视租约仍保活/最后租约释放才回收断言，待checkpoint05实跑。checkpoint04资源已释放；checkpoint05已申请，协调待独立探针自然退出后放行，目前无自有build/runtime。
+
+## 2026-10-23 S3 checkpoint03编译失败，集中修复后待checkpoint04窗口
+
+- UI checkpoint03 33.26s/2错/336警告：Workflow AttachExecutionOwner与WorkflowRunRequest ExecutionOwner重复声明已删除；本轮未运行测试，构建资源已明确释放给协调/测试。
+- 只读复核确认并集中修复R7退役domain复活（池记录退役、等待者与未来请求拒绝）、R8失败终态身份/旧结果忙状态、R9外部监视租约及批量清理首错短路。全局图像/数组输入按既有副本规则持有至真正执行结束，原值不释放；副本清理异常先释放待返回输出，防止覆盖返回形成泄漏。新增退役域复活回归，尚未运行。
+- checkpoint04已向协调申请UI Release及脚本测试（含100实际窗口/两节点真实排空/ALC弱引用），等待资源授权；无运行进程。12:45–13:15固定包估计已撤，按真实首轮回归校准，不跳验追时。13:05为集中修复/首构建检查点，非承诺通过。
+
+## 2026-10-23 图像来源面板新授权排队，保护脚本收口
+
+- IMAGE-SOURCE-PANEL-BATCH/IP-START-01已核授权6517D13D...BC2B和方案06C39042...BCCD，仅只读接单；覆盖D01-D07/IP-A01-A10，中央大图/ROI/全引擎禁入。当前不混入S3源码，不起构建/运行。
+- 依赖脚本最终固定Release/正式r2及阻断修复完成，交付协调释放写窗口后记录实际HEAD开工；c58仅分析基线。初估实现回归4-6小时，性能/全量固定约1小时，独立另排，开工再校准。此授权覆盖此前图像专题历史未批准记录，不影响当前脚本边界。
+
+## 2026-10-23 S3中间UI与89回归通过；PERF有界止损
+
+- S3 checkpoint02 UI首编3个object结果身份接缝错误已修，retry1 0错/1160警告；脚本89/89中间通过，池16活跃/17busy、同域等待者取消、100次同节点static/跨节点隔离、Owner退役与结果快照租约新增5项。真实两节点排空/注册任务/迟到/弱引用新回归仍待运行，非全部S3合同通过。
+- PERF-CLOSEOUT-01按12点有界决定停止调优，最后诊断11:39结束，自有PID均退。pureShow208–346ms中194–242ms已在OnSourceInitialized前，定位/布局不能解释主段，具体WPF/native原因未知；Close→Hide保留隐藏输入拦截风险已否决，产品仅计时无行为削减。三mixed原始/身份/阶段与r1保留；500/150预算FAIL，完整正式协议待最终包一次r2，不降标不循环。
+- 旁线图像专题仅分析：IMAGE_SOURCE_PANEL_REVIEW_20261023.json及HANDOFF_IMAGE_SOURCE_PANEL_REVIEW_20261023.json完成，13固定源+5native+20VM源包零不匹配；未批准实施，性能未测，无产品修改/构建/运行。主控有限接管该专题文档生成，其他HTML仍文档角色；不新增脚本范围。
+## 2026-10-23 SCRIPT-S3依赖门已核收，实施开工
+
+- S2固定产品a59f446c/证据c58eb088；交付协调确认输入核收可用，测试正确工具箱退出0/22工具（仅inventory）。S2预算失败/不完整native失败及误传探针incident均保留，不因S3开工更改结论。
+- S3已授权11合同/12验收，以a59f446c为产品基线；唯一产品写者，3子角色只读评审停止排空/输出Owner/调试发布接缝。先输入拒绝与清理，再租约/身份/排空，不全面重写调度。构建/runtime先协调资源。
+
 ## 2026-10-23 S2正式采样中止与预算失败已交接
 
 - formal-r1保留32成功进程/96完整窗口+第33基线1001行进程native exit 0xC0000005，原因未知；无结果JSON/空stderr，所有自有runtime已退出，progress running=false。101行有10新进程20重开/每边；1001仅6新进程12重开/每边，5001未测。
@@ -3290,3 +3530,130 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 2026-10-23 框架面向工具合同主章完成，仅设计待用户审核
+
+- 主控复核 O06 工具如何使用框架能力章节，SHA 786980B7DD24CCF9A9B5206273E385312F268B962FF6B19A6B5280ABB01940E4；主文档与快照一致，7图、24冻结源校验通过，独立审核AF01–05文档层通过。root-final-review.json位于artifacts/validation/tool-framework-contract。
+- 推荐声明式能力＋默认编辑器＋受约束扩展；两级草稿/Apply、统一绑定与运行冻结、结果租约归属明确；不沿现有Manager补丁扩张。无WPF运行合同是目标，当前未达成。
+- 本次未改产品代码、未构建或宣称运行验收。工具页面及Blob演示优化暂缓。下一步用户审核合同边界，再确定具体API/工程调整及代表消费者验收，不影响已有交付。
+
+
+## 2026-10-23 接口与工程接入设计、协作架构审核原则完成，待用户审核
+
+- 按用户确认表述更新JOINT_COLLABORATION_PROTOCOL.md“架构设计与审核原则”，JOINT_TASK_ROLES引用规范；已实际通知全部其他10名登记成员，回执architecture-policy-notifications.json；无需等待全员回执阻塞就绪任务。
+- O06新增tool-framework-detail：7张图，具体合同/工程/类保留调整替换、纯几何/Blob/CircleDetect/ShapeMatch四类代表接入、验收与范围；复用权威Definition/Session而非建立平行接口，按架构正确性决定复用。包含后端适配WPF传递依赖成本及输出资源原子发布/失败释放合同。
+- 基线1ff63bfa78f3c6d6c028ec8439b730a86d313cf9；最终O06/快照SHA F8780883E7D1C6B0D2D0976FC1A71682557BC494BED4AA1FD21B27EE14B5701B，26份新证据冻结/0差异/锚点校验通过；独立只读审核DETAIL01资源移交缺口已按同SHA确认闭合。证据artifacts/validation/tool-framework-contract/detail-review.json。
+- 仅协议/设计文档，未改产品代码、未构建或运行验收；UI浏览器视觉未验。工具页面优化暂缓；交付窗口交回文档维护，后续保留该有限章和生成器后处理。性能阈值为待用户审核建议，不是实测承诺。下一步用户审核，不自动实施或扩大现有队列。
+
+## 2026-10-23 框架与工具全景清单V1，继承既有分析避免重开
+
+- 用户要求先列全完整优化清单，再据清单推进，并合理利用已讨论分析内容。O06顶部新增framework-tool-checklist，16领域48个固定FT-ID检查项，纳入基窗口/共享控件/参数Tab/绑定/配置/绘图/结果/执行/资源/后端/预热/部署与验收。
+- 每项索引关联原方案、已有结论与仅剩缺口；领域显示原文入口。既有方案确认、实施、独验分态，不复制动态进度；原脚本/图像源队列和已确认职责不重开。重审仅限新反证/场景变化/跨模块冲突，记录原结论、证据和影响ID，不自动加新批次。
+- 最终O06/快照SHA 47EC1153D826E9FF3849B327BE0DF84B11DB7A9282D082A97548AF970FC364C5；48 ID唯一、原方案引用及本地锚点全有效，既有完整接口设计章逐字未变，JS语法与Python静态校验通过。回执artifacts/validation/tool-framework-contract/checklist-review.json；checklist-index.json为派生数据，不是第二个进度队列。
+- 仅文档清单，48项不是48个已证缺陷或实施授权；尚待按项核全链证据，UI视觉未验。产品无改动，工具页面继续暂缓。生成器有限post-step已维护，短写窗口交回Owner。下一步沿原成果补未覆盖缺口，整体方案收敛后才批准实施包，不改变已授权交付。
+
+## 2026-10-23 工具声明到参数回填代表链静态核对
+
+- 用户要求复用原分析，对照VM核工具声明→基窗口→公共控件→绘图服务→回填，不改产品。O06新增tool-consumer-chain：三泳道及真实打开/共享集合回填链，10行合同满足/调整/替换判定，VM借鉴/自研补齐/不采用和未确认边界。
+- 实际入口MainWindowViewModel→NodeOpenDecisionChain→工具CreateDebugControl→宿主DefaultDebugWindow；已核窗口路径InitializeAsync/Show在ImageControl注入之前，和Initializer注释顺序不一致。Blob通过共享Roi集合编辑；ConfigSetting→基控件ParamSettings是另一回填通道，不能算统一字段Scope.Apply。未否认已有运行快照，未重复其运行验收。
+- 归13个已有FT-ID，48分母不变；新增每项本轮代表链入口，既有合同/整批接口章未改。当前O06/快照SHA D6A82248EC1EAA42C540AF4E722B76790EFA8995D0356869D6F732127F6BD576，25份当前源码及已有VM恢复源冻结，0源差异/0新增重复ID/0锚点缺失，静态QA回执consumer-chain-review.json。独立设计复核已请求，状态以回执后续更新为准。
+- 无产品/构建/运行/视觉验收，无新增批次；IP性能窗口期间仅轻量只读与文档小增量，未起额外测试或扫描。工具页面暂缓；下一步用户审核平台接管公共链的调整范围，再按既有清单批准实施。
+- 本轮最终有限独立复核未发现阻断架构矛盾；已精确拆分ConfigSetting BindingConfigChanged→ToParamSetting和ParamBinding BindingStateChanged/BindingSourceSelected→CreateBinding两条回填路径。最终O06/快照SHA E058A0F34C6B54D5F9CD53499C4D90D90B59366B2C677C201BED8817284EA52F，consumer-chain-review/receipt同步，写入停止交回Owner。该结论仅文档与源码静态核查，不表示产品运行通过。
+
+## 2026-10-23 公共控件能力四代表与关联适配设计完成
+
+- O06新增public-control-capability-audit：14能力组、三层能力图、Blob/圆卡尺/模板/脚本共用与差异链、13类关联适配矩阵；归21已有FT-ID，48分母不变。补入CommonControl脚本内核、SDK/Wpf及UI/Shared实际库范围；无新产品实施授权。
+- 复用旧Blob25份/合同26份及脚本专题；新增23份控件/XML/卡尺/模板/脚本UI/主题冻结。VM框架角色确认HPFeatureMatch专业节点有效但ExternPanal/ConfigPanal类型名在注释，工厂/回调未证，不套另一ExternPanal机制。脚本仍沿原主专题较完整托管证据与native缺口，不因单恢复目录缺失覆盖旧证据。
+- 统一合同新增明确模板子草稿/配置资产/运行输入/运行结果所有权分离，ResultOwner不作为唯一正式模板资产Owner。现有模板直接持参引用与取消风险仅静态核对，不宣称实测失败。
+- 最终O06/快照SHA 4D00E4B6FAC80D9571846C729B3A63797B27063BB6EAF512882A801EF7280096；23源零差异、旧合同与回填纠正保留、新锚点/映射有效。独立有限审核能力分层、模板所有权、影响矩阵无阻断矛盾；仅文档/源码静态，不是运行/视觉通过。回执public-controls-review.json。
+- 用户截图报告IAB file入口ERR_FILE_NOT_FOUND；磁盘文件/章节存在且SHA一致，已用原始中文file URI重开，工具仅queued，加载成功尚未确认，不记入口已修复。主文档内容不丢失，无产品/构建/运行变更，工具页面暂缓。后续文档Owner保留有限post-step和新增章。
+
+## 2026-10-23 O06入口错误根因与导航修正（画面待确认）
+
+- 浏览器库存直接显示原打开路径为“自研架文档维护”（漏构），实际目录“自研架构文档维护”；错误目录不存在，正确文件/审核章节均存在。根因是主控手写长file URI漏字，不是文件丢失或已证浏览器编码问题。
+- 现统一用Path.as_uri从磁盘路径生成入口，decoded URI等于canonical路径；已通过open_in_codex请求正确章节。工具仅queued，不计画面加载通过。
+- 用户要求直接看到三部分，已在文档顶部及public-control-capability-audit章头加入公共控件能力盘点/四类工具对照/关联适配三直达入口，原方案未改变。主文档/快照最终SHA EE238B6B8816A241A4B8739314B7CC0B5C275CF579F725A03E50C9FAD36BDA37。回执document-navigation-repair.json。
+- CUA明确策略拒绝观察file协议页面，只允许HTTP/HTTPS；未用其他浏览器/协议服务器/CDP等绕过。已向用户说明限制并发出实际画面确认问题，尚未收到回复；不能声称UI已确认正常。产品无改动，审核暂停在访问确认。
+
+- 2026-10-23 用户人工确认：主文档“已正常打开，能看到三个入口”。入口修复闭环，document-navigation-repair.json记录navigation-closed-user-confirmed；仅访问与导航验收，不代表方案批准或产品运行通过。
+
+
+## 2026-10-23 公共能力整体架构审核推荐完成，待用户确认
+
+- 主控从整体场景/依赖/数据与资源/扩展角度比较三路，推荐声明驱动公共编辑服务＋受约束专业编辑器；不沿Manager扩权，也不强制所有工具纯表单化。O06新增public-controls-architecture-review及顶部“主控整体审核”入口，三个原导航完整保留。
+- 明确复用定义/执行方向、独立窗口壳、基础控件合法逻辑与算法；调整Schema/真实图像模型资源/版本/上下文和关联适配；替换共享画布Manager编排、共享对象作为正式回填权威、专业窗口持原配置对象。完整适配矩阵作为同包验收前提，不是后续补丁列表。原脚本编译器/进程路线不在此选定。
+- 复用既有VM/自研链；只重核7份影响决策的最小合同/通用面板/模板引用源码；原21项映射、总48项不变。独立有限3点复核无阻断矛盾/无事实修正。最终O06/快照SHA 04D3543C832142D3C2E2E1FEE2DC780A9A1EC7F222A5AC1F9FFD17B231B148EA，回执architecture-verdict-review.json；源哈希/锚点/原导航/映射静态QA通过。
+- 仅推荐与设计审核，等待用户确认，不是产品实现/运行或性能通过；无新增逆向/构建测试，产品代码/工具页面未改。文档窗口交回Owner，保留有限post-step。下一步用户确认架构与关联适配边界，再在原清单收敛一个实施包，不无限追加新批次。
+
+## 2026-10-23 主控完成类型链与窗口壳架构审核，待用户确认
+
+- 用户授权仅文档分析：核对类型声明→数据流→绑定树→模块结果树→图形显示及窗口壳，对照VM，归现有48项；不改产品、工具页面继续暂缓。基线6c2def23ce062d2a7802ed8edddd40de113ccfa3/main。
+- O06新增“类型体系与窗口壳｜同一合同，三条消费投影”，图26～29；原公共控件/四代表/关联适配入口保留，顶部直达类型链与窗口壳。30份实际源码/原厂XML/恢复源码冻结，证据边界区分，不声称恢复源码与二进制逐项验证或运行通过。
+- 推荐同一Schema统一类型/字段/集合及版本，绑定目录、结果树、显示场景独立投影；复用集中解析/快照/资源合同，调整兼容与运行转换，重划窗口上下文/动作/生命周期，移走窗口连续调度。像素区域与几何ROI不默认为等价，资源需求签名前固定；无旧方案迁移或旧插件兼容工程。
+- VM订阅已追到VmIO撤旧/重建→VmModule类型校验→原生IMVS_SubscribeResultEx，结果树常规module→Outputs→Children，与Display对象列表分离；native全部封送及回调顺序仍未贯通。现有数组兼容/运行转换及树消费描述差异已列源码证据。
+- 有限独立文档复核无阻断/必改事实，30源码快照核对；静态QA：255唯一ID、48项不扩、片段引用有效、canonical/snapshot同SHA adf86436b44f8e12cae355e9f0cb696f5db98106d74f437149e0aa26733b6a27。新章未做浏览器视觉或产品运行验收；未构建Release，因为本次禁止产品改造。
+- 交接事实源：artifacts/validation/tool-framework-contract/type-shell-review-receipt.json、type-shell-handoff.json、type-shell-evidence.json；分析已嵌主文档，不另立用户分析入口。下一步用户审核架构推荐，未批准实施；文档短写入窗口交还协调，脚本/图像既有队列不变。
+
+- 本轮最终生成身份补记：O06/snapshot SHA为273b69adc8b293881ea921bf16b709357ad7e7d007d4f0040d5d2351d4116612（以上adf为中间生成版本，最终receipt/handoff以273b69为准）。唯一文档短窗已交回协调；新源生成脚本语法检查通过，未进行产品构建。
+
+## 2026-10-23 四方向确认后的类型/窗口具体合同细化完成，待用户审核
+
+- 用户已确认类型链与窗口壳四项方向，继续授权具体合同/工程/验收文档细化，先不改产品；途中追问VM标量数组绑定，已补源码并在同一章图31回答。基线6c2def23/main不变。
+- 原detail-chapter扩展图30～32，同一ToolSchema/Port.TypeRef/OutputReference/ValueRules，显式集合/索引和数值精度计划；同一IToolEditorContext加State/Stop/Close，原UI扩展改异步Handle，保Apply-CAS和自有调试排空/生产隔离。未另起接口体系，工具页仍暂缓。
+- 复用原30来源，只补10份决策关键源码。VM无索引不分标量集合发All，数字/来源VmIO分别编码固定/动态索引；托管GetValue超界回退0不外推native。仅集合默认All、显式标量/集合规则属自研目标取舍。独立复核唯一精度修正已落实，后续复核无剩余阻断/必改。
+- 工程类复用/调整/替换、四代表接缝、验收与待固定图像布局/坐标映射/资源计数阈值已归原清单26项元数据，总48不扩。273唯一ID、新引用有效、旧入口保留、O06/snapshot一致SHA4a68b2cbf465b1209dd2cd1d683764c2160539f1459cacddc113131a28d8a75f；生成/QA脚本语法通过。无产品代码、构建或运行测试，未声称新章浏览器视觉验收。
+- 新事实源contract-integration-review.json、contract-integration-handoff.json、contract-integration-evidence.json；保留原历史receipt身份。下一步用户审核具体规则/接口/工程范围，不推定实施批准；唯一文档短窗交还协调，其他产品队列不变。
+
+## 2026-10-23 标量/数组/绑定三方同标准比较，修订未批准细则
+
+- 用户要求说明为何不直接VM，主控复用原40份证据，在原ci-binding内新增图33～34 VM/当前/目标并排及0/1/N同源多消费者示例；不改产品，不增48项/新批次。
+- 撤回前版无损标量升集合默认拒绝/AcceptSingleton额外开关及动态集合到标量通常强制索引。推荐稳定Schema＋All/常动态索引＋目标One/Many数量合同：One可All+ExactlyOne，未知数量标Conditional逐轮验0/N失败；Many可无损Singleton且满足计数。挑多项中某项才显式索引，不能默取0或改来源类型；Schema缺失为Unresolved，不混条件兼容。
+- VM全部tuple语义/native数量越界仍未知；三选项同标准比较，不因C#或现有代码预设保留。数值谓词方向经setter→Subscribe→GetSub/GetPub实际身份复核，int输出→float输入文案正确；独立复核曾按变量名误报反向现已明确撤回，无剩余阻断。
+- 静态QA274唯一ID/48项、三方引用及40冻结SHA、旧限制正文同步更新、canonical/snapshot一致，最终SHAed8882304bd6333a920c1e32387654960c218707f86fbc4facbd1f1dc0f2e845。事实源scalar-binding-comparison-review.json；原历史审核保持其范围，当前改订细则待用户审核，不推定实施。无运行/性能新测试，不声称提速。文档短窗交回协调。
+
+## 主控完成框架工具公共链最终整体审核稿，待整体审核
+
+- 用户要求一次收口，不再零散追加；本轮只文档。唯一最终审核出口framework-tool-final-review置于原48项清单之前，图35～37统一声明/类型/绑定/窗口/控件/绘图回填/运行快照/三层与三消费者/资源/工程处置/验收及排除项。原章节保留为依据，统一加最终稿入口及优先规则，不另起待确认方案。
+- 代表统计消歧：Blob/CircleDetect/ShapeMatch完整公共链接入；Script仅受影响合同回归；纯几何是平台夹具，不计第五业务迁移。七类沿既有范围/静态证据，未承诺VM像素全等。补5份现有源码核几何度/弧度/WPF混用和图像布局，基线格式8位Gray8/Bgr24/Bgra32，拒绝未知布局，不强制每轮拷贝；合同角度/坐标与适配等价明确。
+- 原48项全映射：41本包合同适配、6依赖回归/原专项、1排除新增设备通信；此为范围非完成率。基础/压力档、资源/性能和同身份Release独验退出标准固定为审核建议；用户只需整体决定架构范围与基础性能档。不新开预热、载体、存储重写/旧方案迁移等；FT-H02原事故若阻必须验收仍不能绕过。
+- 有限整体独立复核无阻断/必改；283唯一ID、原入口和所有最终链接、48唯一ID、40旧+5当前证据快照及canonical/snapshot一致静态PASS。最终SHAa0642c6490f696b63b922d19784236a1d4ba37450e06d2a97b143545639c2fba。final-review-receipt/handoff/evidence/policy/scope.json为本轮事实源；生成源final-review.html与有限installer已纳旧hook。
+- 未改产品、未构建/运行/性能实测，未声称浏览器视觉验证。下一步用户整体审核；批准后协调组织同包实施/独测/Release，主控只决策和最终审核。文档唯一短窗交还协调，不影响原脚本/图像队列。
+
+## 2026-10-24 五方向总览已统一，已实施部分继续原队列收口
+
+- 用户授权五方向关系/已实施/已验收/未闭环/最终仍需改造归主文档总览，避免重复改造；不加批次。已在最终整体审核稿顶部加入five-directions-overview五节点SVG与五列状态矩阵、复用规则和原队列责任，不改变最终方案待审核及产品暂停边界。
+- 协调核对事实：PluginFoundation续验8 verified/4缺输入；S1限定三组件、S2限定组件非端到端，历史性能FAIL与formal aborted保留；S3原99/102为开发证据，A07失败未解决；宿主原型正确性等限定通过不盖产品失败，成本正式0/18无采用决定。图像源6c2的静态/40合同/启动Close/场景加载Close限定PASS，旧1ff5000与45预热按原身份，M01..05人工及marker FT-H02仍未闭环。
+- 明确①为⑤的原合同基础，⑤为④及工具的公共能力；②脚本、③图像源已实施直接复用，只做受影响关联适配，不重做三批/面板。④有现有三层/批渲染候选但本次整批未实施；⑤仅最终方案，不推定实施。14原事实源快照是阅读投影，不新增进度队列。
+- SVG XML、5节点、291唯一ID、原入口/本总览引用、14来源快照SHA和48原项、canonical/snapshot一致静态PASS；最终SHA97e0debd4f2865d5d4c4ffa9656c34be085f50c1a78b6a525a2d0ca202b070b0。five-directions-overview-review/handoff.json为本轮回执，源five-directions-overview.html与生成hook持久化。
+- 本轮不改产品、不构建/新跑产品测试、不冒称浏览器视觉通过。已要求交付协调继续既有授权收口/送验/修复复测/文档及最终审核，有缺输入保留原ID，必要架构/范围决策才转主控；不新开Loader/存储/程序集改造或新批次。文档短窗交回协调/Owner。
+
+## 2026-10-24 用户正式批准最终方案及基础性能档，原范围依赖推进
+
+- 用户确认最终方案和基础性能档，交交付协调按依赖统一推进；已实施继续收口、未实施复用已有成果，不重复改造、不新增批次。随后要求先完成本次所有优化及可自动验收，再集中手动验证真实影响，完成前不讨论后续优化。
+- 静态批准凭据docs/collaboration/TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json，SHAadf818b9ffdcabb0ee1fa90f698272db7cbbeaa2dd78cc8229ea3b4831eeb03e；冻结批准原文计划97e0debd...70b0于artifacts/validation/tool-framework-contract/approved-final-plan-20261024.html。原48ID（41适配/6回归/1排除）、基础性能档及排除项固定，首依赖工程切片不缩小最终交付范围。
+- 协调已实际向唯一实施者下发首依赖接单，独测获48ID映射/口径/同身份准备，文档Owner获批准/实施/独验分列同步；主控不并发改产品。请求协调回真实首依赖/开工依据，非只登记。仅必要架构/范围决策与最终审核上交主控，日常修复复测队列由协调闭环。
+- 最终交付要求同一Release及manifest、独验逐项通过/失败/受阻/未验矩阵、主文档和一次集中HTML手动验证包（所有本次实际改动、前后真实影响、操作步骤、预期与实测）；人工/真实VS未验证保留pending，不在用户试用前假报全面闭环。原ALC失败、历史性能FAIL、原型成本缺测及原暂停/排除边界不因批准自动清除。
+- 目标仍active；批准与交接不等实施完成，不在此轮声明完成或交付Release。

@@ -1,0 +1,1004 @@
+{
+  "schemaVersion": 1,
+  "title": "图像源面板：整个控件设计与VM对照",
+  "date": "2026-10-23",
+  "status": "分析建议；未批准实施；未执行性能测试",
+  "baseline": "c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2",
+  "scope": {
+    "in": [
+      "底部图像源面板完整控件",
+      "可见性与选中/来源/执行节点关系",
+      "添加、勾选、切换、运行全部/选择、自动推进",
+      "缩略图、原图执行链、缓存、预热、保存恢复和释放"
+    ],
+    "out": [
+      "主图像渲染器本身",
+      "脚本交付范围变更",
+      "本轮产品实现或构建",
+      "把推断当性能成绩"
+    ]
+  },
+  "headline": "优先统一来源身份、运行序列和状态同步，再治理加载与内存；保留现有虚拟化与后台缩略图，不先增加预热。",
+  "sourceEvidence": {
+    "scope": "底部图像源面板整个控件；不是主图像渲染器",
+    "baseline": "c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2",
+    "kind": "static source evidence; no runtime or performance measurement",
+    "files": [
+      {
+        "path": "src/UI/App.xaml.cs",
+        "sourceCommit": "c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2",
+        "sha256": "b573502761aefc71086f230177b1468de734deca39eaa98884933e090e4b1ed8",
+        "excerpts": [
+          {
+            "start": 160,
+            "end": 180,
+            "text": "160:             _startupRejected = true;\n161:             ThemeMessageDialog.Show(\"无法建立单实例保护，启动已取消：\" + ex.Message,\n162:                 \"SunEyeVision\", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);\n163:             Shutdown(1);\n164:             return;\n165:         }\n166:         LogStartupStage(\"OnStartup.Enter\", $\"args={e.Args.Length}\");\n167:         // 设置控制台编码为UTF-8，解决中文乱码问题\n168:         Console.OutputEncoding = System.Text.Encoding.UTF8;\n169: \n170:         // P0优化：预热线程池，消除首次加载延迟\n171:         PrewarmThreadPool();\n172:         _splashScreen?.UpdateStage(\"正在启动\", 8, \"运行环境准备完成\");\n173:         LogStartupStage(\"OnStartup.Pre warm completed\");\n174: \n175:         // 启动页：在插件加载/服务初始化/解决方案加载等耗时阶段提供品牌反馈（含进度+耗时+动画）。\n176:         // 显示失败不阻塞启动（try-catch 跳过，仅告警）。\n177:         try\n178:         {\n179:             _splashScreen = new SunEyeVision.UI.Shell.Windows.SplashScreen();\n180:             _splashScreen.Show();"
+          },
+          {
+            "start": 720,
+            "end": 750,
+            "text": "720: \n721:     /// <summary>\n722:     /// P0优化：预热线程池 - 消除首次Task.Run的冷启动延迟\n723:     /// 预期效果：首张缩略图加载从1783ms降至~50ms\n724:     /// </summary>\n725:     private void PrewarmThreadPool()\n726:     {\n727:         try\n728:         {\n729:             // 设置最小线程数，确保线程池立即可用\n730:             ThreadPool.GetMinThreads(out int minWorker, out int minIO);\n731:             ThreadPool.SetMinThreads(\n732:                 Math.Max(minWorker, 8),  // 至少8个工作线程\n733:                 Math.Max(minIO, 4)       // 至少4个IO线程\n734:             );\n735: \n736:             // 预热：启动几个空任务，强制线程池创建线程\n737:             var warmupTasks = new Task[4];\n738:             for (int i = 0; i < 4; i++)\n739:             {\n740:                 warmupTasks[i] = Task.Run(() => Thread.Sleep(10));\n741:             }\n742:             Task.WaitAll(warmupTasks);\n743:         }\n744:         catch (Exception ex)\n745:         {\n746:             VisionLogger.Instance.Log(LogLevel.Warning, $\"线程池预热失败: {ex.Message}\", \"App\");\n747:         }\n748:     }\n749: \n750:     /// <summary>"
+          }
+        ]
+      },
+      {
+        "path": "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs",
+        "sourceCommit": "c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2",
+        "sha256": "ec18a5fe8927fd1b23ad513558cb94de93a8a038313a1bdfeb8bc2b3e422f25f",
+        "excerpts": [
+          {
+            "start": 90,
+            "end": 125,
+            "text": "90:         public DateTime AddedTime { get; set; } = DateTime.Now;\n91: \n92:         /// <summary>\n93:         /// 懒加载的全分辨率图像，只在首次访问时加载\n94:         /// </summary>\n95:         public BitmapSource? FullImage\n96:         {\n97:             get\n98:             {\n99:                 if (!File.Exists(FilePath)) { _fullImage = null; _isFullImageLoaded = false; return null; }\n100:                 if (!_isFullImageLoaded && _fullImage == null && !string.IsNullOrEmpty(FilePath))\n101:                 {\n102:                     _fullImage = ImagePreviewControl.LoadImageOptimized(FilePath);\n103:                     _isFullImageLoaded = true;\n104:                 }\n105:                 return _fullImage;\n106:             }\n107:             set\n108:             {\n109:                 if (_fullImage != value)\n110:                 {\n111:                     _fullImage = value;\n112:                     _isFullImageLoaded = (value != null);\n113:                     OnPropertyChanged(nameof(FullImage));\n114:                 }\n115:             }\n116:         }\n117: \n118:         /// <summary>\n119:         /// 是否已加载全分辨率图像\n120:         /// </summary>\n121:         public bool IsMissing => !File.Exists(FilePath);\n122:         public string FileStatus => ResourceError ?? (IsMissing ? \"图像文件不存在：\" + (SourceReference ?? FilePath) : FilePath);\n123: \n124:         public bool IsFullImageLoaded => _isFullImageLoaded && _fullImage != null;\n125: "
+          },
+          {
+            "start": 168,
+            "end": 248,
+            "text": "168:         /// <summary>\n169:         /// 异步加载缩略图（后台线程 WIC 解码 + Freeze + 回 UI 线程更新 Thumbnail）。\n170:         /// 缓存命中秒出，未命中后台解码不阻塞 UI。\n171:         /// 幂等：Thumbnail 已完成 或 正在 Loading 中 都直接返回（不取消重建，防高频刷新抖动）。\n172:         /// 仅 Pending / Failed 触发：滚动离开时 CancelThumbnail() 取消，滚动回来由 RefreshVisibleThumbnails 重新触发（对齐 ImageGlass 主动驱动）。\n173:         /// 失败重置状态（Pending），滚动回来允许重试，避免\"永远空白\"（rule-015 失败可见+可重试）。\n174:         /// </summary>\n175:         public void EnsureThumbnail()\n176:         {\n177:             if (Thumbnail != null) return;\n178:             if (_thumbnailState == ThumbnailState.Loading) return;   // 进行中不重复触发（防抖动）\n179: \n180:             // Pending / Failed → 触发解码；取消上一次仍在进行的解码（如有残留）\n181:             _thumbnailCts?.Cancel();\n182:             _thumbnailCts?.Dispose();\n183:             _thumbnailCts = new System.Threading.CancellationTokenSource();\n184:             var token = _thumbnailCts.Token;\n185: \n186:             ThumbnailState = ThumbnailState.Loading;\n187: \n188:             var path = FilePath;\n189:             var dispatcher = System.Windows.Application.Current?.Dispatcher;\n190:             if (dispatcher == null) return;\n191: \n192:             System.Threading.Tasks.Task.Run(() =>\n193:             {\n194:                 if (token.IsCancellationRequested) return;\n195:                 var thumbnail = ImagePreviewControl.LoadThumbnail(path, token);\n196:                 if (token.IsCancellationRequested) return;\n197:                 dispatcher.InvokeAsync(() =>\n198:                 {\n199:                     // 若已滚动离开（被取消），丢弃结果\n200:                     if (token.IsCancellationRequested) return;\n201:                     if (thumbnail != null)\n202:                     {\n203:                         Thumbnail = thumbnail;\n204:                         ThumbnailState = ThumbnailState.Loaded;\n205:                     }\n206:                     else\n207:                     {\n208:                         // 解码失败：标记 Failed 显示占位。滚动离开再回来时 OnItemLoaded 会重新触发解码（rule-015 失败可见+可重试）\n209:                         ThumbnailState = ThumbnailState.Failed;\n210:                     }\n211:                 });\n212:             });\n213:         }\n214: \n215:         /// <summary>\n216:         /// 取消进行中的缩略图解码（滚动离开时调用，对齐 ImageGlass GalleryControl 不可见即取消）。\n217:         /// </summary>\n218:         public void CancelThumbnail()\n219:         {\n220:             _thumbnailCts?.Cancel();\n221:             _thumbnailCts?.Dispose();\n222:             _thumbnailCts = null;\n223:             if (ThumbnailState == ThumbnailState.Loading) ThumbnailState = ThumbnailState.Pending;\n224:         }\n225: \n226:         /// <summary>\n227:         /// 手动设置已加载的全分辨率图像（用于异步加载完成后的更新）\n228:         /// </summary>\n229:         public void SetFullImage(BitmapSource? image)\n230:         {\n231:             _fullImage = image;\n232:             _isFullImageLoaded = (image != null);\n233:             OnPropertyChanged(nameof(FullImage));\n234:         }\n235: \n236:         /// <summary>\n237:         /// 释放全分辨率图像以节省内存\n238:         /// </summary>\n239:         public void ReleaseFullImage()\n240:         {\n241:             bool wasLoaded = (_fullImage != null);\n242:             _fullImage = null;\n243:             _isFullImageLoaded = false;\n244: \n245:             if (wasLoaded)\n246:             {\n247:                 OnPropertyChanged(nameof(FullImage));\n248:             }"
+          },
+          {
+            "start": 258,
+            "end": 340,
+            "text": "258: \n259:     /// <summary>\n260:     /// LRU图像缓存（全分辨率图像，上限 30）\n261:     /// </summary>\n262:     public class ImageCache\n263:     {\n264:         private readonly int _maxCacheSize;\n265:         private readonly Dictionary<string, LinkedListNode<CacheEntry>> _cacheMap;\n266:         private readonly LinkedList<CacheEntry> _lruList;\n267: \n268:         public ImageCache(int maxCacheSize = 30)\n269:         {\n270:             _maxCacheSize = maxCacheSize;\n271:             _cacheMap = new Dictionary<string, LinkedListNode<CacheEntry>>();\n272:             _lruList = new LinkedList<CacheEntry>();\n273:         }\n274: \n275:         /// <summary>\n276:         /// 查询缓存（命中则提升 LRU 优先级）。调用方须在外部加锁（仅保护字典，短临界区）。\n277:         /// </summary>\n278:         public BitmapSource? Get(string filePath)\n279:         {\n280:             lock (_cacheMap)\n281:             {\n282:             if (_cacheMap.TryGetValue(filePath, out var node))\n283:             {\n284:                 _lruList.Remove(node);\n285:                 _lruList.AddFirst(node);\n286:                 return node.Value.Bitmap;\n287:             }\n288:             return null;\n289:             }\n290:         }\n291: \n292:         /// <summary>\n293:         /// 写入缓存（含 LRU 淘汰）。调用方须在外部加锁。已在缓存中则不重复写入。\n294:         /// </summary>\n295:         public void Set(string filePath, BitmapSource? bitmap)\n296:         {\n297:             lock (_cacheMap)\n298:             {\n299:             if (bitmap == null || _cacheMap.ContainsKey(filePath)) return;\n300: \n301:             var entry = new CacheEntry(filePath, bitmap);\n302:             var newNode = _lruList.AddFirst(entry);\n303:             _cacheMap[filePath] = newNode;\n304: \n305:             if (_lruList.Count > _maxCacheSize)\n306:             {\n307:                 var lastNode = _lruList.Last;\n308:                 if (lastNode != null)\n309:                 {\n310:                     _cacheMap.Remove(lastNode.Value.FilePath);\n311:                     _lruList.RemoveLast();\n312:                 }\n313:             }\n314:             }\n315:         }\n316: \n317:         public void Remove(string path)\n318:         {\n319:             lock (_cacheMap)\n320:                 if (_cacheMap.Remove(path, out var node)) _lruList.Remove(node);\n321:         }\n322: \n323:         public void Clear()\n324:         {\n325:             lock (_cacheMap)\n326:             {\n327:                 _cacheMap.Clear();\n328:                 _lruList.Clear();\n329:             }\n330:         }\n331: \n332:         private class CacheEntry\n333:         {\n334:             public string FilePath { get; }\n335:             public BitmapSource Bitmap { get; }\n336: \n337:             public CacheEntry(string filePath, BitmapSource bitmap)\n338:             {\n339:                 FilePath = filePath;\n340:                 Bitmap = bitmap;"
+          },
+          {
+            "start": 460,
+            "end": 637,
+            "text": "460:         // 全分辨率图像缓存（LRU，上限 30）——保留，供 ImageInfo.FullImage 懒加载\n461:         private static readonly ImageCache s_fullImageCache = new ImageCache(maxCacheSize: 30);\n462: \n463:         // 缩略图缓存（LRU，上限 50）——跨实例共享，滚动复用不重复解码\n464:         private static readonly ImageCache s_thumbnailCache = new ImageCache(maxCacheSize: 50);\n465:         private static readonly object s_thumbnailLock = new object();\n466: \n467:         /// <summary>\n468:         /// 全局缩略图并发上限：clamp(CPU-1, 4, 16)。\n469:         /// 对齐 ImageGlass Photo.cs:66-67，避免海量缩略图无限并发挤爆线程池（rule-008 治本）。\n470:         /// </summary>\n471:         private static readonly int s_thumbnailConcurrency =\n472:             Math.Clamp(Environment.ProcessorCount - 1, 4, 16);\n473:         private static readonly SemaphoreSlim s_thumbnailThrottle =\n474:             new(s_thumbnailConcurrency, s_thumbnailConcurrency);\n475: \n476:         /// <summary>\n477:         /// 缩略图加载：后台线程 WIC 解码 + DecodePixelWidth 缩小 + Freeze。\n478:         /// 对齐成熟方案（ImageGlass/微软官方）：\n479:         /// - 并发节流：全局信号量 clamp(CPU-1,4,16)，避免线程池饱和也不串行（对齐 ImageGlass Photo.cs:66-67）\n480:         /// - 锁只保护缓存字典（微秒级短临界区），解码在锁外并行（已治本）\n481:         /// - 解码失败直接返回 null + WARN 日志（rule-015 失败可见），不做无效降级——\n482:         ///   实测 System.Drawing 兜底转 PNG 后仍走 BitmapImage(WIC)，救不回 WIC 解不了的格式\n483:         ///   （对齐 ImageGlass 的容错仅靠其真正多引擎，本项目 Win11 标准格式 WIC 全覆盖，无需兜底）\n484:         /// </summary>\n485:         internal static BitmapImage? LoadThumbnail(string filePath, System.Threading.CancellationToken token = default)\n486:         {\n487:             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))\n488:                 return null;\n489: \n490:             // 快路径：锁内只查缓存（微秒级），命中直接返回\n491:             lock (s_thumbnailLock)\n492:             {\n493:                 var cached = s_thumbnailCache.Get(filePath);\n494:                 if (cached != null) return cached as BitmapImage;\n495:             }\n496: \n497:             // 节流进入：最多 clamp(CPU-1,4,16) 个并发解码，避免线程池饱和\n498:             BitmapImage? bitmap = null;\n499:             try\n500:             {\n501:                 s_thumbnailThrottle.Wait(token);\n502:             }\n503:             catch (System.OperationCanceledException)\n504:             {\n505:                 // 滚动离开被取消：不降级、不报错，直接丢弃（对齐 ImageGlass 不可见即取消）\n506:                 return null;\n507:             }\n508:             try\n509:             {\n510:                 // 慢路径：锁外并行解码（I/O + CPU，互不阻塞）\n511:                 try\n512:                 {\n513:                     bitmap = DecodeThumbnailCore(filePath);   // WIC\n514:                 }\n515:                 catch (Exception ex)   // WIC 解不了（NotSupportedException / COM 异常等）\n516:                 {\n517:                     // rule-015：失败可见，禁止静默吞异常；不做无效降级\n518:                     VisionLogger.Instance.Log(LogLevel.Warning,\n519:                         $\"缩略图解码失败 | {filePath} | {ex.GetType().Name}: {ex.Message}\",\n520:                         \"ImagePreviewControl\");\n521:                 }\n522:             }\n523:             finally\n524:             {\n525:                 s_thumbnailThrottle.Release();\n526:             }\n527: \n528:             if (bitmap == null) return null;\n529: \n530:             // 写缓存：锁内极短\n531:             lock (s_thumbnailLock)\n532:             {\n533:                 s_thumbnailCache.Set(filePath, bitmap);\n534:             }\n535:             return bitmap;\n536:         }\n537: \n538:         /// <summary>\n539:         /// WIC 缩略图解码核心（无锁，可在后台线程并行执行）\n540:         /// </summary>\n541:         private static BitmapImage DecodeThumbnailCore(string filePath)\n542:         {\n543:             var bitmap = new BitmapImage();\n544:             bitmap.BeginInit();\n545:             bitmap.UriSource = new Uri(filePath, UriKind.RelativeOrAbsolute);\n546:             bitmap.DecodePixelWidth = 100;                // 解码时直接缩小，省内存\n547:             bitmap.CacheOption = BitmapCacheOption.OnLoad; // 立即解码\n548:             bitmap.EndInit();\n549:             bitmap.Freeze();                              // 冻结后可跨线程\n550:             return bitmap;\n551:         }\n552: \n553:         /// <summary>\n554:         /// 全分辨率图像加载（简化版）：ImageInfo.FullImage 懒加载入口。\n555:         /// 用 UriSource + OnLoad 内建解码，替代原自研解码器/CleanupScheduler 链路。\n556:         /// </summary>\n557:         public static BitmapImage? LoadImageOptimized(string filePath)\n558:         {\n559:             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))\n560:                 return null;\n561: \n562:             // 全图懒加载在主 UI 线程触发，无并发竞争；查缓存命中直接返回，未命中解码后写入\n563:             var cached = s_fullImageCache.Get(filePath);\n564:             if (cached != null) return cached as BitmapImage;\n565: \n566:             try\n567:             {\n568:                 var bitmap = new BitmapImage();\n569:                 bitmap.BeginInit();\n570:                 bitmap.UriSource = new Uri(filePath, UriKind.RelativeOrAbsolute);\n571:                 bitmap.CacheOption = BitmapCacheOption.OnLoad;\n572:                 bitmap.EndInit();\n573:                 bitmap.Freeze();\n574:                 s_fullImageCache.Set(filePath, bitmap);\n575:                 return bitmap;\n576:             }\n577:             catch\n578:             {\n579:                 return null;\n580:             }\n581:         }\n582: \n583:         public ImagePreviewControl()\n584:         {\n585:             InitializeComponent();\n586:             ImageCollection = new BatchObservableCollection<ImageInfo>();\n587: \n588:             AddImageCommand = new RelayCommand(ExecuteAddImage);\n589:             AddFolderCommand = new RelayCommand(ExecuteAddFolder);\n590:             DeleteSingleImageCommand = new RelayCommand<ImageInfo>(ExecuteDeleteSingleImage);\n591:             ClearAllCommand = new RelayCommand(ExecuteClearAll, CanExecuteClearAll);\n592: \n593:             ImageCollection.CollectionChanged += (s, e) => OnPropertyChanged(nameof(ImageCountDisplay));\n594:             ImageCollection.CollectionChanged += (s, e) => ScheduleRefreshVisibleThumbnails();\n595: \n596:             // 滚动停止后 100ms 触发主动刷新（Debounce，避免拖动中高频遍历）\n597:             _refreshDebounceTimer = new System.Windows.Threading.DispatcherTimer\n598:             {\n599:                 Interval = TimeSpan.FromMilliseconds(100)\n600:             };\n601:             _refreshDebounceTimer.Tick += (s, e) =>\n602:             {\n603:                 _refreshDebounceTimer.Stop();\n604:                 RefreshVisibleThumbnails();\n605:             };\n606: \n607:             Loaded += OnControlLoaded;\n608:             Unloaded += OnUnloaded;\n609:             SizeChanged += (s, e) => ScheduleRefreshVisibleThumbnails();\n610:         }\n611: \n612:         private void OnControlLoaded(object sender, RoutedEventArgs e)\n613:         {\n614:             // 延迟初始化，确保 ListBox 已完全加载\n615:             Dispatcher.BeginInvoke(new Action(() =>\n616:             {\n617:                 _thumbnailListBox = FindName(\"ThumbnailListBox\") as ListBox;\n618:                 if (_thumbnailListBox != null)\n619:                 {\n620:                     // 运行选择模式下方向键只在已勾选（应运行）图之间导航\n621:                     _thumbnailListBox.PreviewKeyDown -= OnThumbnailPreviewKeyDown;\n622:                     _thumbnailListBox.PreviewKeyDown += OnThumbnailPreviewKeyDown;\n623:                 }\n624:                 // 控件加载后立即触发一次主动刷新，保证初始可见项都被解码（主动驱动兜底 Loaded 事件）\n625:                 RefreshVisibleThumbnails();\n626:             }), DispatcherPriority.Loaded);\n627:         }\n628: \n629:         private void OnUnloaded(object sender, RoutedEventArgs e)\n630:         {\n631:             _refreshDebounceTimer.Stop();\n632:             if (_thumbnailListBox != null) _thumbnailListBox.PreviewKeyDown -= OnThumbnailPreviewKeyDown;\n633:             _thumbnailListBox = null;\n634:             // Unloading a view must not clear the persisted input source.\n635:             if (ImageCollection != null) foreach (var image in ImageCollection) image.CancelThumbnail();\n636:         }\n637: "
+          },
+          {
+            "start": 670,
+            "end": 740,
+            "text": "670:                 };\n671: \n672:                 if (folderDialog.ShowDialog() == true)\n673:                 {\n674:                     var imageExtensions = new[] { \".jpg\", \".jpeg\", \".png\", \".bmp\", \".tiff\", \".tif\" };\n675:                     var imageFiles = Directory.GetFiles(folderDialog.FolderName, \"*.*\", SearchOption.TopDirectoryOnly)\n676:                         .Where(f => imageExtensions.Contains(Path.GetExtension(f).ToLower()))\n677:                         .OrderBy(f => f)\n678:                         .ToArray();\n679: \n680:                     if (imageFiles.Length == 0)\n681:                     {\n682:                         ThemeMessageDialog.Show(\"所选文件夹中没有找到图像文件\", \"提示\",\n683:                             MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);\n684:                         return;\n685:                     }\n686: \n687:                     AppendFiles(imageFiles);\n688:                 }\n689:             }\n690:             catch (Exception ex)\n691:             {\n692:                 ThemeMessageDialog.Show($\"添加文件夹失败: {ex.Message}\", \"错误\",\n693:                     MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);\n694:             }\n695:         }\n696: \n697:         /// <summary>\n698:         /// 追加文件到图像集合（触发后台线程解码缩略图，缓存命中秒出）。\n699:         /// ★ 治本：直接写 ImageInputSource（真相源）而非 ImageCollection（DP 绑定目标）。\n700:         /// ImageInputSource.Images 是只读属性，TwoWay 绑定无法建立，往 ImageCollection 加图不会写回 _images，\n701:         /// 导致 ToConfig() 保存的 FilePaths 为空 → 重启后不恢复（图像源数量空）。\n702:         /// 改用 ActiveInputSource.AddImages() 写 _images，UI 通过 OneWay 绑定自动刷新。\n703:         /// 去重以真相源为准（忽略大小写）：ImagePreviewControl 是共享单例，切换节点时 ActiveInputSource\n704:         /// 重新绑定为另一节点的实例，以实例自身去重天然实现\"节点间路径隔离\"。\n705:         /// </summary>\n706:         private void AppendFiles(string[] fileNames)\n707:         {\n708:             var source = ActiveInputSource;\n709:             if (source == null)\n710:             {\n711:                 VisionLogger.Instance.Log(LogLevel.Warning,\n712:                     $\"无法添加图像：活动输入源为空\", \"ImagePreviewControl\");\n713:                 return;\n714:             }\n715: \n716:             var existing = new HashSet<string>(\n717:                 source.Images.Select(x => x.FilePath),\n718:                 StringComparer.OrdinalIgnoreCase);\n719: \n720:             var allImages = fileNames\n721:                 .Where(f => !string.IsNullOrEmpty(f) && File.Exists(f))\n722:                 .Where(f => existing.Add(f))   // ★ 去重：Add 返回 false 表示已存在，跳过\n723:                 .Select(f => new ImageInfo\n724:                 {\n725:                     Name = Path.GetFileNameWithoutExtension(f),\n726:                     FilePath = f\n727:                 })\n728:                 .ToArray();\n729: \n730:             // 写真相源 _images（触发 CollectionChanged → OneWay 绑定自动刷新 ImageCollection）\n731:             if (allImages.Length == 0) return;\n732:             source.AddImages(allImages);\n733:             if (allImages.Length > 0)\n734:             {\n735:                 CurrentImageIndex = source.Count - allImages.Length;\n736:             }\n737: \n738:             // 缩略图由虚拟化容器 Loaded 事件 + 主动刷新（RefreshVisibleThumbnails）双驱动按需解码，\n739:             // 滚动到哪解码到哪，避免海量图片同时排队。\n740:         }"
+          },
+          {
+            "start": 825,
+            "end": 890,
+            "text": "825:             if (control._thumbnailListBox != null && control.ImageCollection != null &&\n826:                 control.CurrentImageIndex >= 0 && control.CurrentImageIndex < control.ImageCollection.Count)\n827:             {\n828:                 control._isSyncingListBox = true;\n829:                 control._thumbnailListBox.SelectedItem = control.ImageCollection[control.CurrentImageIndex];\n830:                 control._isSyncingListBox = false;\n831:             }\n832:         }\n833: \n834:         private static void OnImageCollectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)\n835:         {\n836:             var control = (ImagePreviewControl)d;\n837:             if (e.OldValue is BatchObservableCollection<ImageInfo> oldCollection) oldCollection.CollectionChanged -= control.OnBoundCollectionChanged;\n838:             if (e.NewValue is BatchObservableCollection<ImageInfo> newCollection) newCollection.CollectionChanged += control.OnBoundCollectionChanged;\n839:             control.UpdateImageSelection();\n840:             control.OnPropertyChanged(nameof(ImageCountDisplay));\n841:             CommandManager.InvalidateRequerySuggested();\n842:         }\n843:         private void OnBoundCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)\n844:         {\n845:             OnPropertyChanged(nameof(ImageCountDisplay));\n846:             CommandManager.InvalidateRequerySuggested();\n847:             RefreshImageDisplayState();\n848:         }\n849: \n850:         private static void OnImageRunModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs _)\n851:         {\n852:             var control = (ImagePreviewControl)d;\n853:             control.OnPropertyChanged(nameof(ImageRunMode));\n854:             CommandManager.InvalidateRequerySuggested();\n855:         }\n856: \n857:         /// <summary>\n858:         /// 刷新图像显示状态（删除图片后同步选中项与计数）\n859:         /// </summary>\n860:         private void RefreshImageDisplayState()\n861:         {\n862:             OnPropertyChanged(nameof(ImageCountDisplay));\n863:             UpdateImageSelection();\n864: \n865:             if (_thumbnailListBox != null)\n866:             {\n867:                 if (CurrentImageIndex >= 0 && ImageCollection != null && CurrentImageIndex < ImageCollection.Count)\n868:                 {\n869:                     _isSyncingListBox = true;\n870:                     _thumbnailListBox.SelectedItem = ImageCollection[CurrentImageIndex];\n871:                     _isSyncingListBox = false;\n872:                 }\n873:                 else\n874:                 {\n875:                     _thumbnailListBox.SelectedItem = null;\n876:                 }\n877:             }\n878:         }\n879: \n880:         /// <summary>\n881:         /// 更新图像选中状态（增量更新，仅变更新旧两项）\n882:         /// </summary>\n883:         private void UpdateImageSelection()\n884:         {\n885:             if (ImageCollection == null) return;\n886: \n887:             int count = ImageCollection.Count;\n888:             int currentIndex = CurrentImageIndex;\n889:             for (int i = 0; i < count; i++)\n890:             {"
+          },
+          {
+            "start": 1010,
+            "end": 1075,
+            "text": "1010:         {\n1011:             if (sender is MenuItem { DataContext: ImageInfo image }) ExecuteDeleteSingleImage(image);\n1012:         }\n1013: \n1014:         private void OnThumbnailClick(object sender, MouseButtonEventArgs e)\n1015:         {\n1016:             if (e.ChangedButton != MouseButton.Left) return;\n1017:             // 如果点击的是删除按钮或 CheckBox，跳过处理\n1018:             DependencyObject? current = e.OriginalSource as DependencyObject;\n1019:             while (current != null)\n1020:             {\n1021:                 if (current is Button || current is CheckBox)\n1022:                     return;\n1023:                 current = VisualTreeHelper.GetParent(current);\n1024:             }\n1025: \n1026:             if (sender is Border border && border.Tag is ImageInfo imageInfo)\n1027:             {\n1028:                 int index = ImageCollection.IndexOf(imageInfo);\n1029:                 if (index >= 0)\n1030:                 {\n1031:                     // 运行选择模式：只有已勾选的图片才执行工作流；运行全部模式：点击任意图片执行\n1032:                     if (ImageRunMode == ImageRunMode.运行选择 && !imageInfo.IsForRun)\n1033:                         return;\n1034: \n1035:                     RequestWorkflowExecution(imageInfo, index);\n1036:                 }\n1037:             }\n1038:         }\n1039: \n1040:         private void RequestWorkflowExecution(ImageInfo imageInfo, int index)\n1041:         {\n1042:             if (index < 0 || !File.Exists(imageInfo.FilePath)) return;\n1043:             CurrentImageIndex = index;\n1044:             WorkflowExecutionRequested?.Invoke(this, new WorkflowExecutionRequestEventArgs\n1045:             {\n1046:                 ImageInfo = imageInfo,\n1047:                 Index = index\n1048:             });\n1049:         }\n1050: \n1051:         private void OnThumbnailListBoxSelectionChanged(object sender, SelectionChangedEventArgs e)\n1052:         {\n1053:             if (_isSyncingListBox) return;\n1054: \n1055:             if (e.AddedItems.Count == 0 || e.AddedItems[0] is not ImageInfo selectedImage)\n1056:                 return;\n1057: \n1058:             int index = ImageCollection?.IndexOf(selectedImage) ?? -1;\n1059:             if (index < 0) return;\n1060: \n1061:             // Selection may come from right-click, binding, restore or keyboard.\n1062:             // Only explicit left-click/key handlers may request execution.\n1063:             CurrentImageIndex = index;\n1064:         }\n1065: \n1066:         private void OnRunModeButtonClick(object sender, RoutedEventArgs e)\n1067:         {\n1068:             if (RunModePopup != null)\n1069:             {\n1070:                 RunModePopup.IsOpen = !RunModePopup.IsOpen;\n1071:             }\n1072:         }\n1073: \n1074:         private void OnRunModeListBoxPreviewMouseDown(object sender, MouseButtonEventArgs e)\n1075:         {"
+          },
+          {
+            "start": 1100,
+            "end": 1145,
+            "text": "1100:             e.Handled = true;\n1101:         }\n1102: \n1103:         /// <summary>\n1104:         /// 滚动变化：Debounce 后主动刷新可见缩略图。\n1105:         /// 依赖 Loaded 事件不可靠（虚拟化复用容器时不重新触发），滚动停止后主动遍历物化项保证可见项都被触发。\n1106:         /// 对齐 ImageGlass GalleryControl.RefreshRealizedThumbnails 的主动驱动模型。\n1107:         /// </summary>\n1108:         private void OnScrollChanged(object sender, ScrollChangedEventArgs e)\n1109:         {\n1110:             ScheduleRefreshVisibleThumbnails();\n1111:         }\n1112: \n1113:         /// <summary>\n1114:         /// Debounce 调度主动刷新：拖动中高频滚动只重置计时器，滚动停止 100ms 后才真正刷新一次。\n1115:         /// </summary>\n1116:         private void ScheduleRefreshVisibleThumbnails()\n1117:         {\n1118:             _refreshDebounceTimer.Stop();\n1119:             _refreshDebounceTimer.Start();\n1120:         }\n1121: \n1122:         /// <summary>\n1123:         /// 主动遍历虚拟化系统当前物化的 ListBoxItem，对可见项幂等触发缩略图解码。\n1124:         /// 物化 = 虚拟化系统判定\"即将显示\"（含可视区 + 缓冲），故无需手算视口像素。\n1125:         /// EnsureThumbnail 幂等：已加载 / Loading 中跳过，Pending / Failed 触发。\n1126:         /// 对齐 ImageGlass GalleryControl.axaml.cs:246-252 RefreshRealizedThumbnails。\n1127:         /// </summary>\n1128:         private void RefreshVisibleThumbnails()\n1129:         {\n1130:             if (_thumbnailListBox == null || ImageCollection == null) return;\n1131:             foreach (var item in FindVisualChildren<ListBoxItem>(_thumbnailListBox))\n1132:             {\n1133:                 if (item.DataContext is ImageInfo info)\n1134:                 {\n1135:                     info.EnsureThumbnail();\n1136:                 }\n1137:             }\n1138:         }\n1139: \n1140:         /// <summary>\n1141:         /// 深度优先遍历可视化树，收集所有 T 类型的子节点。\n1142:         /// </summary>\n1143:         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject\n1144:         {\n1145:             int count = VisualTreeHelper.GetChildrenCount(parent);"
+          }
+        ]
+      },
+      {
+        "path": "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml",
+        "sourceCommit": "c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2",
+        "sha256": "b2f574d9cdb63d4903855d030c0724dbae158eb45873a2f3cee5336942341536",
+        "excerpts": [
+          {
+            "start": 295,
+            "end": 365,
+            "text": "295: \n296:                     <!-- 自动切换标签 -->\n297:                     <TextBlock Text=\"自动切换\"\n298:                                FontSize=\"11\"\n299:                                Foreground=\"{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}\"\n300:                                VerticalAlignment=\"Center\"\n301:                                Margin=\"6,0,6,0\"/>\n302: \n303:                     <!-- 自动切换开关 -->\n304:                     <ToggleButton x:Name=\"AutoSwitchToggle\"\n305:                                    IsChecked=\"{Binding AutoSwitchEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}\"\n306:                                    Style=\"{StaticResource SwitchToggleButton}\"\n307:                                    Margin=\"0,0,0,0\"\n308:                                    ToolTip=\"自动切换\"/>\n309:                     <!-- 分隔线 -->\n310:                     <Border Width=\"1\"\n311:                             Background=\"{DynamicResource {x:Static base:ThemeKeys.ThumbnailBorderBrush}}\"\n312:                             Margin=\"12,6,12,6\"\n313:                             VerticalAlignment=\"Stretch\"/>\n314:                     <!-- 添加图片 -->\n315:                     <Button Content=\"➕\"\n316:                             Command=\"{Binding AddImageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}\"\n317:                             Style=\"{StaticResource IconButton}\"\n318:                             ToolTip=\"添加图片\"/>\n319: \n320:                     <!-- 添加文件夹 -->\n321:                     <Button Content=\"📁\"\n322:                             Command=\"{Binding AddFolderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}\"\n323:                             Style=\"{StaticResource IconButton}\"\n324:                             Margin=\"6,0,0,0\"\n325:                             ToolTip=\"添加文件夹\"/>\n326: \n327:                     <!-- 清除全部 -->\n328:                     <Button Content=\"🧹\"\n329:                             Command=\"{Binding ClearAllCommand, RelativeSource={RelativeSource AncestorType=UserControl}}\"\n330:                             Style=\"{StaticResource IconButton}\"\n331:                             Margin=\"6,0,0,0\"\n332:                             ToolTip=\"清除全部\"/>\n333:                 </StackPanel>\n334:             </Grid>\n335: \n336:             <!-- 图像缩略图列表 -->\n337:             <ListBox x:Name=\"ThumbnailListBox\"\n338:                      Grid.Row=\"2\"\n339:                      ItemsSource=\"{Binding ImageCollection, RelativeSource={RelativeSource AncestorType=UserControl}}\"\n340:                      Background=\"Transparent\"\n341:                      BorderThickness=\"0\"\n342:                      HorizontalAlignment=\"Stretch\"\n343:                      HorizontalContentAlignment=\"Stretch\"\n344:                      ScrollViewer.HorizontalScrollBarVisibility=\"Auto\"\n345:                      ScrollViewer.VerticalScrollBarVisibility=\"Disabled\"\n346:                      ScrollViewer.CanContentScroll=\"True\"\n347:                      VirtualizingPanel.IsVirtualizing=\"True\"\n348:                      VirtualizingPanel.VirtualizationMode=\"Recycling\"\n349:                      VirtualizingPanel.IsVirtualizingWhenGrouping=\"True\"\n350:                      ScrollViewer.ScrollChanged=\"OnScrollChanged\"\n351:                     SelectionChanged=\"OnThumbnailListBoxSelectionChanged\">\n352:                 <ListBox.ItemsPanel>\n353:                     <ItemsPanelTemplate>\n354:                         <VirtualizingStackPanel Orientation=\"Horizontal\"/>\n355:                     </ItemsPanelTemplate>\n356:                 </ListBox.ItemsPanel>\n357:                 <ListBox.ItemTemplate>\n358:                     <DataTemplate>\n359:                         <Border MouseLeftButtonDown=\"OnThumbnailClick\"\n360:                                 Tag=\"{Binding}\"\n361:                                 Width=\"70\"\n362:                                 Height=\"70\"\n363:                                 Margin=\"1\"\n364:                                 ToolTip=\"{Binding Name}\">\n365:                             <Border.ContextMenu>"
+          },
+          {
+            "start": 414,
+            "end": 480,
+            "text": "414:                                         Padding=\"2\"\n415:                                         HorizontalAlignment=\"Center\"\n416:                                         VerticalAlignment=\"Center\">\n417:                                     <Grid Width=\"60\" Height=\"60\">\n418:                                         <!-- 缩略图由 ImageInfo.EnsureThumbnail 后台线程解码 + 静态缓存（DecodePixelWidth=100 + Freeze），\n419:                                              滚动时缓存命中秒出。三态反馈：加载中灰底 / 成功图 / 失败占位（rule-015 失败可见） -->\n420: \n421:                                         <!-- 加载中 / 未请求：灰底占位 -->\n422:                                         <Border Background=\"#333333\" CornerRadius=\"2\">\n423:                                             <Border.Style>\n424:                                                 <Style TargetType=\"Border\">\n425:                                                     <Setter Property=\"Visibility\" Value=\"Collapsed\"/>\n426:                                                     <Style.Triggers>\n427:                                                         <DataTrigger Binding=\"{Binding ThumbnailState}\" Value=\"Loading\">\n428:                                                             <Setter Property=\"Visibility\" Value=\"Visible\"/>\n429:                                                         </DataTrigger>\n430:                                                         <DataTrigger Binding=\"{Binding ThumbnailState}\" Value=\"Pending\">\n431:                                                             <Setter Property=\"Visibility\" Value=\"Visible\"/>\n432:                                                         </DataTrigger>\n433:                                                     </Style.Triggers>\n434:                                                 </Style>\n435:                                             </Border.Style>\n436:                                         </Border>\n437: \n438:                                         <!-- 成功：已冻结缩略图 -->\n439:                                         <Image Source=\"{Binding Thumbnail}\"\n440:                                                Stretch=\"Uniform\"\n441:                                                RenderOptions.BitmapScalingMode=\"LowQuality\">\n442:                                             <Image.Style>\n443:                                                 <Style TargetType=\"Image\">\n444:                                                     <Setter Property=\"Visibility\" Value=\"Collapsed\"/>\n445:                                                     <Style.Triggers>\n446:                                                         <DataTrigger Binding=\"{Binding ThumbnailState}\" Value=\"Loaded\">\n447:                                                             <Setter Property=\"Visibility\" Value=\"Visible\"/>\n448:                                                         </DataTrigger>\n449:                                                     </Style.Triggers>\n450:                                                 </Style>\n451:                                             </Image.Style>\n452:                                         </Image>\n453: \n454:                                         <!-- 失败：破图占位 -->\n455:                                         <Border Background=\"#552222\" CornerRadius=\"2\">\n456:                                             <TextBlock Text=\"✕\" Foreground=\"#FF8888\"\n457:                                                        HorizontalAlignment=\"Center\" VerticalAlignment=\"Center\"\n458:                                                        FontSize=\"18\"/>\n459:                                             <Border.Style>\n460:                                                 <Style TargetType=\"Border\">\n461:                                                     <Setter Property=\"Visibility\" Value=\"Collapsed\"/>\n462:                                                     <Style.Triggers>\n463:                                                         <DataTrigger Binding=\"{Binding ThumbnailState}\" Value=\"Failed\">\n464:                                                             <Setter Property=\"Visibility\" Value=\"Visible\"/>\n465:                                                         </DataTrigger>\n466:                                                     </Style.Triggers>\n467:                                                 </Style>\n468:                                             </Border.Style>\n469:                                         </Border>\n470:                                     </Grid>\n471:                                 </Border>\n472: \n473:                                 <!-- 右上角删除按钮 -->\n474:                                 <Button Command=\"{Binding DeleteSingleImageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}\"\n475:                                         CommandParameter=\"{Binding}\"\n476:                                         Width=\"20\" Height=\"20\" Padding=\"0\"\n477:                                         HorizontalAlignment=\"Right\" VerticalAlignment=\"Top\"\n478:                                         Margin=\"0,2,2,0\"\n479:                                         Background=\"Transparent\" BorderThickness=\"0\"\n480:                                         Cursor=\"Hand\" ToolTip=\"删除此图像\">"
+          }
+        ]
+      },
+      {
+        "path": "src/UI/Shared/ImageInputSource.cs",
+        "sourceCommit": "c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2",
+        "sha256": "7c742259cd0744f42c63f0180149c7f185bb61ea96d1fcdcab72145d84d337d9",
+        "excerpts": [
+          {
+            "start": 40,
+            "end": 65,
+            "text": "40: \n41:         /// <summary>\n42:         /// 图像集合（只读访问）\n43:         /// </summary>\n44:         public BatchObservableCollection<ImageInfo> Images => _images;\n45: \n46:         /// <summary>\n47:         /// 当前选中图像索引\n48:         /// </summary>\n49:         public int CurrentIndex\n50:         {\n51:             get => _currentIndex;\n52:             set\n53:             {\n54:                 if (_currentIndex != value)\n55:                 {\n56:                     _currentIndex = value;\n57:                     OnPropertyChanged();\n58:                     OnPropertyChanged(nameof(CurrentImage));\n59:                     CurrentImageChanged?.Invoke(this, value);\n60:                     NotifyConfigChanged();\n61:                 }\n62:             }\n63:         }\n64: \n65:         /// <summary>"
+          },
+          {
+            "start": 134,
+            "end": 150,
+            "text": "134:         /// </summary>\n135:         public Action<ImageSourceConfig>? ConfigChanged { get; set; }\n136: \n137:         /// <summary>\n138:         /// 触发配置同步：把当前状态转成可序列化配置并通知父节点。\n139:         /// </summary>\n140:         private bool _loadingConfiguration;\n141:         private void NotifyConfigChanged()\n142:         {\n143:             if (_loadingConfiguration) return;\n144:             ConfigChanged?.Invoke(ToConfig());\n145:         }\n146: \n147:         /// <summary>\n148:         /// 图像集合变化事件\n149:         /// </summary>\n150:         public event NotifyCollectionChangedEventHandler? CollectionChanged"
+          },
+          {
+            "start": 195,
+            "end": 235,
+            "text": "195: \n196:         /// <summary>\n197:         /// 移除图像（用户操作）\n198:         /// </summary>\n199:         public void RemoveImage(ImageInfo image)\n200:         {\n201:             if (_isReadOnly)\n202:                 throw new InvalidOperationException(\"输入源已锁定为只读，无法移除图像\");\n203: \n204:             image.CancelThumbnail(); image.ReleaseFullImage(); image.Thumbnail = null;\n205:             ImagePreviewControl.InvalidateImageCache(image.FilePath);\n206:             var removedIndex = _images.IndexOf(image);\n207:             _images.Remove(image);\n208:             if (removedIndex >= 0 && removedIndex < CurrentIndex) CurrentIndex--;\n209:             if (CurrentIndex >= _images.Count)\n210:             {\n211:                 CurrentIndex = _images.Count - 1;\n212:             }\n213:             OnPropertyChanged(nameof(Count));\n214:             OnPropertyChanged(nameof(HasImages));\n215:             OnPropertyChanged(nameof(GetSelectedImages));\n216:             NotifyConfigChanged();\n217:         }\n218: \n219:         /// <summary>\n220:         /// 清空所有图像（仅用于用户手动清空，非执行流程）\n221:         /// </summary>\n222:         public void ClearImages()\n223:         {\n224:             if (_isReadOnly)\n225:                 throw new InvalidOperationException(\"输入源已锁定为只读，无法清空图像\");\n226: \n227:             foreach (var image in _images) { image.CancelThumbnail(); image.ReleaseFullImage(); image.Thumbnail = null; ImagePreviewControl.InvalidateImageCache(image.FilePath); }\n228:             _images.Clear();\n229:             CurrentIndex = -1;\n230:             CurrentImageChanged?.Invoke(this, -1);\n231:             OnPropertyChanged(nameof(Count));\n232:             OnPropertyChanged(nameof(HasImages));\n233:             OnPropertyChanged(nameof(GetSelectedImages));\n234:             NotifyConfigChanged();\n235:         }"
+          },
+          {
+            "start": 265,
+            "end": 343,
+            "text": "265:             IsReadOnly = false;\n266:         }\n267: \n268:         /// <summary>\n269:         /// 准备显示（延迟渲染优化）\n270:         /// </summary>\n271:         public int PrepareForDisplay()\n272:         {\n273:             int count = _images.Count;\n274:             foreach (var image in _images)\n275:             {\n276:                 image.Thumbnail = null;\n277:             }\n278:             return count;\n279:         }\n280: \n281:         /// <summary>\n282:         /// 转为可序列化配置（保存方案时调用）\n283:         /// </summary>\n284:         /// <remarks>\n285:         /// 保留本软件原始资源引用与选择状态；不把运行解析地址写入方案。\n286:         /// </remarks>\n287:         private List<string> _runReferences = new();\n288:         public ImageSourceConfig ToConfig()\n289:         {\n290:             foreach (var group in _images.GroupBy(img => img.SourceReference ?? img.FilePath))\n291:             {\n292:                 var selected = group.Any(img => img.IsForRun);\n293:                 if (!selected) _runReferences.RemoveAll(p => p == group.Key);\n294:                 else if (!_runReferences.Contains(group.Key)) _runReferences.Add(group.Key);\n295:             }\n296:             return new ImageSourceConfig\n297:             {\n298:                 NodeId = NodeId,\n299:                 FilePaths = _images.Select(img => img.SourceReference ?? img.FilePath).ToList(),\n300:                 CurrentIndex = CurrentIndex,\n301:                 AutoSwitchEnabled = AutoSwitchEnabled,\n302:                 RunMode = (int)RunMode,\n303:                 ForRunPaths = new List<string>(_runReferences)\n304:             };\n305:         }\n306: \n307:         /// <summary>\n308:         /// 从配置恢复输入源（打开方案时调用）\n309:         /// </summary>\n310:         /// <remarks>\n311:         /// 依据 FilePaths 重建 ImageInfo（保留勾选路径），并恢复当前索引/运行模式/自动切换状态。\n312:         /// </remarks>\n313:         public void LoadFromConfig(ImageSourceConfig config, SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver? resourcePaths = null)\n314:         {\n315:             if (config == null) throw new ArgumentNullException(nameof(config));\n316: \n317:             _runReferences = new List<string>(config.ForRunPaths ?? new List<string>());\n318:             _loadingConfiguration = true;\n319:             try\n320:             {\n321:             var resolver = resourcePaths ?? SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution);\n322:             var infos = config.FilePaths.Select(p =>\n323:             {\n324:                 string address; string? resourceError = null;\n325:                 try { address = resolver.Resolve(\"ImageSourceConfig.FilePaths\", p, SunEyeVision.Plugin.SDK.Execution.Parameters.ResourcePurpose.FileRead).Address; }\n326:                 catch (Exception ex) { address = string.Empty; resourceError = ex.Message; } // Never fall back to process CWD.\n327:                 return new ImageInfo { SourceReference = p, ResourceError = resourceError, FilePath = address, Name = System.IO.Path.GetFileName(p), IsForRun = config.ForRunPaths?.Contains(p) == true };\n328:             }).ToList();\n329: \n330:             foreach (var oldImage in _images) { oldImage.CancelThumbnail(); oldImage.ReleaseFullImage(); }\n331:             _images.Clear();\n332:             if (infos.Count > 0)\n333:             {\n334:                 _images.AddRange(infos);\n335:             }\n336: \n337:             CurrentIndex = config.CurrentIndex;\n338:             AutoSwitchEnabled = config.AutoSwitchEnabled;\n339:             RunMode = config.RunMode == 1 ? ImageRunMode.运行选择 : ImageRunMode.运行全部;\n340: \n341:             // 缩略图由虚拟化容器 Loaded 事件按需解码（OnItemLoaded），恢复路径无需全量触发，\n342:             // 避免海量图片同时排队解码导致首屏/远端延迟。\n343: "
+          }
+        ]
+      },
+      {
+        "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml",
+        "sourceCommit": "c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2",
+        "sha256": "8512aef1fbbf8ca47fae7a81ca8ab03075239396eb8b0b1173a425cc209dd9a9",
+        "excerpts": [
+          {
+            "start": 1,
+            "end": 30,
+            "text": "1: <UserControl x:Class=\"SunEyeVision.UI.Shell.Controls.Shell.ImageResultControl\"\n2:              xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n3:              xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n4:              xmlns:d=\"http://schemas.microsoft.com/expression/blend/2008\"\n5:              xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\"\n6:              xmlns:panels=\"clr-namespace:SunEyeVision.UI.Shell.Controls.Panels\"\n7:              xmlns:sdk=\"clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK\"\n8:              xmlns:convertersUI=\"clr-namespace:SunEyeVision.UI.Converters.UI\"\n9:              xmlns:convertersVisibility=\"clr-namespace:SunEyeVision.UI.Converters.Visibility\"\n10:              xmlns:base=\"clr-namespace:SunEyeVision.UI.Themes.Base\"\n11:              mc:Ignorable=\"d\"\n12:              d:DesignHeight=\"400\" d:DesignWidth=\"700\">\n13: \n14:     <UserControl.Resources>\n15:         <convertersUI:BoolToVisibilityConverter x:Key=\"BoolToVisibilityConverter\"/>\n16:         <convertersVisibility:InverseBoolToVisibilityConverter x:Key=\"InverseBoolToVisibilityConverter\"/>\n17: \n18:         <!-- DataGrid 行样式 -->\n19:         <Style x:Key=\"DarkDataGridRow\" TargetType=\"DataGridRow\">\n20:             <Setter Property=\"MinHeight\" Value=\"24\"/>\n21:             <Setter Property=\"Height\" Value=\"Auto\"/>\n22:             <Setter Property=\"Background\" Value=\"{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}\"/>\n23:             <Style.Triggers>\n24:                 <Trigger Property=\"IsSelected\" Value=\"True\">\n25:                     <Setter Property=\"Background\" Value=\"{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}\"/>\n26:                     <Setter Property=\"Foreground\" Value=\"{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}\"/>\n27:                 </Trigger>\n28:                 <Trigger Property=\"IsMouseOver\" Value=\"True\">\n29:                     <Setter Property=\"Background\" Value=\"{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}\"/>\n30:                 </Trigger>"
+          }
+        ]
+      },
+      {
+        "path": "src/UI/Shell/Controls/Shell/ImageResultViewModel.cs",
+        "sourceCommit": "c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2",
+        "sha256": "23b7ddd38a5c36b935f5efa5a8f6f5604cc4c15e909d44a87e6f111058a63cc9",
+        "excerpts": [
+          {
+            "start": 98,
+            "end": 132,
+            "text": "98:             {\n99:                 if (SetProperty(ref _showImagePreview, value))\n100:                 {\n101:                     OnPropertyChanged(nameof(ImagePreviewHeight));\n102:                 }\n103:             }\n104:         }\n105: \n106:         /// <summary>\n107:         /// 图像预览高度，用于动态控制图像预览模块的空间\n108:         /// </summary>\n109:         public System.Windows.GridLength ImagePreviewHeight\n110:         {\n111:             get => ShowImagePreview ? new System.Windows.GridLength(60) : new System.Windows.GridLength(0);\n112:         }\n113: \n114:         /// <summary>\n115:         /// 当前活动输入源（图像预览器绑定）\n116:         /// </summary>\n117:         public SunEyeVision.UI.Shared.ImageInputSource? ActiveInputSource\n118:         {\n119:             get => _activeInputSource;\n120:             set => SetProperty(ref _activeInputSource, value);\n121:         }\n122: \n123:         /// <summary>\n124:         /// 图像缩放比例\n125:         /// </summary>\n126:         public double ImageScale\n127:         {\n128:             get => _imageScale;\n129:             set\n130:             {\n131:                 if (SetProperty(ref _imageScale, value))\n132:                 {"
+          }
+        ]
+      }
+    ],
+    "confirmed": [
+      {
+        "id": "R01",
+        "finding": "启动预热是线程池最小线程数调整与4个Sleep(10)任务并WaitAll，在闪屏Show前；并未调用WIC解码。1783ms→50ms是预期注释，不是此次测试。",
+        "evidence": "App.xaml.cs:170,724-740"
+      },
+      {
+        "id": "R02",
+        "finding": "缩略图已有横向虚拟化、后台WIC DecodePixelWidth=100、Freeze、全局4..16并发、取消等待和发布、100ms滚动防抖。应保留这些有效基础，实际体验收益尚未测量。",
+        "evidence": "ImagePreviewControl.xaml:340-355; .cs:175-212,460-550,1100-1140"
+      },
+      {
+        "id": "R03",
+        "finding": "50张LRU不等于最多持有50张缩略图：ImageInfo.Thumbnail继续强引用已加载对象；全图也有item字段与30张LRU。整体字节预算和驻留上限未在这些路径实现。",
+        "evidence": "ImagePreviewControl.xaml.cs:77-113,195-204,218-224,460-474"
+      },
+      {
+        "id": "R04",
+        "finding": "缓存键仅路径、不含文件版本；同一路径文件变化未由LoadThumbnail/Get主动验证，明确替换/清空会失效。存在外部覆盖后旧图条件风险，未动态复现。",
+        "evidence": "ImagePreviewControl.xaml.cs:258-340,485-535; ImageInputSource.ReplaceImage"
+      },
+      {
+        "id": "R05",
+        "finding": "PrepareForDisplay每次切换到输入源遍历清空所有Thumbnail，重新可见后依赖共享50张LRU命中；不必要重复加载程度需测量。",
+        "evidence": "ImageInputSource.cs:271-279; MainWindowViewModel.UpdateImagePreviewVisibility"
+      },
+      {
+        "id": "R06",
+        "finding": "缩略图只在入队前查缓存；相同路径并发未合并。信号量限制正在解码数量，但不等价于限制所有等待任务数量；解码开始后token无法中断EndInit。",
+        "evidence": "ImagePreviewControl.xaml.cs:175-212,485-550"
+      },
+      {
+        "id": "R07",
+        "finding": "控件/模型/缓存/枚举聚在同一code-behind文件；ImageInputSource反向依赖控件ImageInfo/静态缓存/运行枚举，非独立数据模型。可拆职责但不必重做全部UI。",
+        "evidence": "ImageInputSource.cs imports and types; ImagePreviewControl.xaml.cs ImageInfo/ImageCache/ImageRunMode"
+      },
+      {
+        "id": "R08",
+        "finding": "已采用主题资源，但局部加载占位硬编码#333333、图标用Unicode/emoji；跨主题/DPI/字体一致性需视觉核验。运行选择与查看选择应明确语义，是否改变交互待确认。",
+        "evidence": "ImagePreviewControl.xaml:315-335,414-480"
+      }
+    ],
+    "cautions": [
+      "FullImage有同步解码方法，但必须证明当前活动入口实际到达，不能仅凭方法存在定性当前选图卡顿。",
+      "首次成本需拆线程池、WIC首用、文件IO、解码、UI布局和真实原图工具执行，未测量不能按注释报收益。",
+      "VM有无预热必须取调用证据；未找到不等于不存在。"
+    ]
+  },
+  "actualChain": {
+    "scope": "Bottom image-source panel, not main image canvas",
+    "baseline": "c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2",
+    "method": "Read-only git show/git grep fixed source. No build, runtime test or VM claims.",
+    "chain": [
+      {
+        "step": "Binding and ownership",
+        "evidence": [
+          "src/UI/Shell/Controls/Shell/ImageResultControl.xaml:227-232",
+          "src/UI/Shared/WorkflowNodeModel.cs:43-69",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:5350-5386"
+        ],
+        "fact": "The single bottom panel binds to the selected/upstream local image-source node's ImageInputSource. ImageCollection is OneWay; index/run mode/auto switch TwoWay. A node owns its own list. Camera sources hide this panel. Ambiguous upstream selection is not arbitrarily guessed."
+      },
+      {
+        "step": "Add",
+        "evidence": [
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:640-739",
+          "src/UI/Shared/ImageInputSource.cs:184-193"
+        ],
+        "fact": "File or folder picker creates metadata entries and appends once via the active truth source. Case-insensitive path deduplication; folder is nonrecursive and sorted. No full-image decode in AppendFiles. The view's current index is set to first newly added item."
+      },
+      {
+        "step": "Choose and explicitly execute",
+        "evidence": [
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:955-1064",
+          "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:99-118",
+          "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:161-170",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:2068",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:4241-4254"
+        ],
+        "fact": "Left click and explicit keyboard entry request execution. SelectionChanged alone only updates index, preventing restore/right-click from executing. Running request is rejected after index synchronization. PublishRuntimeInput publishes selected tab identity. RunSelectedImageAsync passes advanceLocalImage=false, so a manual click runs the chosen image without post-success advancing."
+      },
+      {
+        "step": "Real image loading",
+        "evidence": [
+          "src/UI/Services/Workflow/WorkflowExecutionManager.cs:779-798",
+          "src/UI/Services/Workflow/WorkflowExecutionManager.cs:1229-1297",
+          "tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs:125-205"
+        ],
+        "fact": "Execution clones runtime parameters and extracts each ImageLoad node's current FilePath into node parameter overrides, including child workflows. No valid current image explicitly overrides to empty rather than using an old parameter. The ImageLoad plugin resolves path then calls HalImage.CreateFromFile, output conversion, gray image creation and pixel statistics. This is separate from WIC thumbnails."
+      },
+      {
+        "step": "Successful auto advance",
+        "evidence": [
+          "src/UI/Services/Workflow/WorkflowExecutionManager.cs:178-210",
+          "src/UI/Services/Workflow/WorkflowExecutionManager.cs:287-310",
+          "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:176-194",
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:898-941"
+        ],
+        "fact": "Standard single run and continuous local run advance only after successful execution; failure preserves current selection. View computes next existing runnable file, honors checked subset and wraps at end. A single runnable stays current. Manual thumbnail execution deliberately skips auto advance."
+      },
+      {
+        "step": "Persistence",
+        "evidence": [
+          "src/UI/Shared/ImageInputSource.cs:141-145",
+          "src/UI/Shared/ImageInputSource.cs:288-348",
+          "src/UI/Shared/WorkflowNodeModel.cs:43-69",
+          "src/UI/Shared/WorkflowNodeModel.cs:197-233",
+          "src/Workflow/ImageSourceConfig.cs:65-73"
+        ],
+        "fact": "Most source changes convert to ImageSourceConfig immediately through node callback. Bitmap objects excluded from serialization. Original resource references are retained separately from resolved addresses. Loading retains missing entries with diagnostics and suppresses config rewrite. Local merges preserve camera/source-kind settings."
+      },
+      {
+        "step": "Remove, clear and unload",
+        "evidence": [
+          "src/UI/Shared/ImageInputSource.cs:199-235",
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:629-636",
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:768-811"
+        ],
+        "fact": "Deletion and clear cancel thumbnail work, release item image references, invalidate caches and adjust index; disk files are never removed. View unload cancels pending thumbnails but preserves persisted input list. Shutdown unsubscribes execution event and clears global advancer."
+      }
+    ],
+    "visibilityDecisionTree": {
+      "evidence": [
+        "src/UI/Shell/Windows/MainWindowViewModel.cs:385",
+        "src/UI/Shell/Windows/MainWindowViewModel.cs:398-416",
+        "src/UI/Shell/Windows/MainWindowViewModel.cs:5350-5386",
+        "src/UI/Shell/Windows/MainWindowViewModel.cs:5410-5503",
+        "src/UI/Shell/Controls/Shell/ImageResultControl.xaml:221-232"
+      ],
+      "decisions": [
+        {
+          "if": "Selected node is null",
+          "then": "Hide; ActiveInputSource=null; currentDisplayNodeId=null"
+        },
+        {
+          "if": "Selected node is ImageLoad",
+          "then": "Use that node directly as source, regardless of list count"
+        },
+        {
+          "if": "Selected node is another tool",
+          "then": "BFS upstream across selected tab's graph, collecting all nearest reachable ImageLoad sources, stopping each branch at ImageLoad"
+        },
+        {
+          "if": "Exactly one reachable source",
+          "then": "Use that source"
+        },
+        {
+          "if": "More than one reachable source",
+          "then": "Use node.SelectedDisplaySource when it identifies a reachable ImageLoad; if it identifies a visited intermediate node, recursively resolve only that branch; otherwise unresolved"
+        },
+        {
+          "if": "Unresolved source AND in subroutine AND a previous active input source/currentDisplayNodeId exists",
+          "then": "Retain previous bound local panel without switching source"
+        },
+        {
+          "if": "Unresolved source in other cases",
+          "then": "Hide and clear active source identity"
+        },
+        {
+          "if": "Resolved source is Camera",
+          "then": "Hide local panel; main result canvas independent"
+        },
+        {
+          "if": "Resolved source is local",
+          "then": "Ensure per-node source exists; if source identity/reference changed, PrepareForDisplay clears all item thumbnails then bind ActiveInputSource; show panel even if list is empty"
+        }
+      ],
+      "refreshTriggers": [
+        "SelectedNode property change after result/overlay refresh",
+        "ForceSelectNode for same-reference reselect/doubleclick",
+        "ForceRefreshImagePreview after source-kind change, graph connection creation or related refresh"
+      ],
+      "identityDistinction": "Selected tool node determines which upstream source is presented. Source node owns list/index. Thumbnail execution runs entire selected workflow, not just the source node or selected tool. Execution separately snapshots every ImageLoad node's own CurrentImage. Main result-canvas display-source selection is not the same thing as a runnable input selection.",
+      "conditionalGap": "Subroutine fallback preserves any prior binding when a source cannot be resolved; it does not check that bound source belongs to the current child workflow's parent. It is intended parent-source reuse, but cross-context provenance requires validation. A hidden/unresolved panel also means no usable active list for the global advancer even if another workflow has local sources."
+    },
+    "saveAndRefreshRecheck": {
+      "save": "MainWindowViewModel.SaveCurrentDocumentWithPrompt:1546-1547 calls TryCommitSolutionEditors and SaveSolutionData:1624-1776. MainWindowSolutionEditing.cs:21-29 commits variable windows and ToolEditorCommit open editors; no source-list conversion. SaveSolutionData attaches/reuses engine workflow definitions and synchronizes node ParamSettings; no input ToConfig/ForRunPaths rebuild. WorkflowNodeBase.InputSource is JsonIgnore (src/Workflow/WorkflowNode.cs:262), ImageSourceConfig serialized as plain property:276. WorkflowNode.FromBase:197-233 is load-to-UI, not save-to-base. No ToBase production method found. Bottom CheckBox:506-543 has only TwoWay binding and visual triggers, no Checked/Unchecked handler. All production ToConfig references are in ImageInputSource.NotifyConfigChanged. C01 therefore survives normal save path review; no runtime reproduction performed.",
+      "displaySourceRefresh": "ImageResultViewModel.SelectedDisplayImageSourceIndex setter calls root OnSelectedImageSourceIndexChanged. MainWindowViewModel:293-300 calls UpdateDisplayImageFromCurrentSource only. That method:3358-3383 assigns engine node.SelectedDisplaySource then SetDisplayImageFromSource; neither calls UpdateImagePreviewVisibility/ForceRefreshImagePreview. On a multi-source node whose bottom panel is hidden or bound to prior branch, changing the upper display dropdown does not directly recompute bottom source; a later reselect/ForceSelectNode can repair it. This is a static missing-refresh path, not observed runtime flicker.",
+      "stopAtLastExact": "WorkflowExecutionManager.ShouldStopAfterCurrentLocalImage:1117-1136 iterates root ImageLoad nodes whose config is Local+AutoSwitchEnabled+StopAtLastImage; uses config.FilePaths or config.FilePaths.Where(config.ForRunPaths.Contains), then compares final raw string to RuntimeInputSnapshot.ImagePath ignoring case. InputSource.LoadFromConfig:325-327 resolves raw reference into address while preserving SourceReference; PublishRuntimeInput:4241-4250 publishes ImageInfo.FilePath (address). Config ToConfig:299 retains SourceReference. Panel GetRunnableImages:898-905 filters missing files; stop helper does not. Continuous loop:295 consults stop helper only on success and before AdvanceAsync; true stops instead of advance, false advances/wraps. No proven result for relative resources or absent snapshot; compare semantics differ in source."
+    },
+    "findings": [
+      {
+        "id": "IS-C08",
+        "level": "source-confirmed missing-refresh path; runtime consequence conditional",
+        "title": "Changing upper display-source choice does not immediately recompute bottom source",
+        "evidence": [
+          "src/UI/Shell/Controls/Shell/ImageResultViewModel.cs:66-74",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:293-300",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:3358-3383",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:5487-5503"
+        ],
+        "detail": "Multi-source BFS depends on node.SelectedDisplaySource, but dropdown callback updates result image and serialized source without calling bottom-panel resolution. Until another forced selection/refresh, bottom source can remain hidden or bound to another branch. Engine/UI identity equality also matters because dropdown persists on engine node.",
+        "recommendation": "Explicit display-source selection must atomically refresh resolved input-source context, with no execution side effect; test two local branches and local/camera branch choices."
+      },
+      {
+        "id": "IS-C01",
+        "level": "source-confirmed conditional defect",
+        "title": "Checkbox changes do not immediately reach persisted selection",
+        "evidence": [
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml:506",
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:155-165",
+          "src/UI/Shared/ImageInputSource.cs:141-145",
+          "src/UI/Shared/ImageInputSource.cs:288-304"
+        ],
+        "detail": "IsForRun setter only raises its item PropertyChanged; ImageInputSource does not subscribe to item changes. Only ToConfig gathers checked paths. No production ToConfig call exists outside NotifyConfigChanged. Toggling a checkbox then saving without any index/mode/list/auto-switch change can leave ForRunPaths stale. Toggling a different source property first can mask it.",
+        "recommendation": "Source owns checked-state mutations or subscribes to item changes, synchronizes config/dirty state once; verify toggle-only save and reopen.",
+        "runtimeVerified": false
+      },
+      {
+        "id": "IS-C02",
+        "level": "source-confirmed design gap; runtime consequence conditional",
+        "title": "Auto advance is tied to whichever panel is active, not the running workflow and source",
+        "evidence": [
+          "src/UI/Services/RuntimeInputSnapshotService.cs:16-21",
+          "src/UI/Services/RuntimeInputSnapshotService.cs:52-62",
+          "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:82-85",
+          "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs:176-194",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:4241-4254",
+          "src/UI/Services/Workflow/WorkflowExecutionManager.cs:202-203"
+        ],
+        "detail": "Only one global advancer callback exists and accepts cancellation alone. It advances current ImagePreviewContent and PublishRuntimeInput uses current SelectedTab. If another workflow continues after UI switches tab/source, its completion can advance a different active list. A workflow with several local sources likewise advances only the displayed one. Actual reproduction depends on supported concurrent/switch interaction and must be tested.",
+        "recommendation": "Advance by explicit workflowId + sourceNodeId + run generation using a platform image-sequence service; UI observes source state, never chooses another workflow's next input.",
+        "runtimeVerified": false
+      },
+      {
+        "id": "IS-C03",
+        "level": "source-confirmed scalability cost; duration unmeasured",
+        "title": "Every index advance rebuilds complete persisted configuration",
+        "evidence": [
+          "src/UI/Shared/ImageInputSource.cs:49-60",
+          "src/UI/Shared/ImageInputSource.cs:288-304",
+          "src/Workflow/ImageSourceConfig.cs:65-73",
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:883-891"
+        ],
+        "detail": "CurrentIndex change calls ToConfig which GroupBy-enumerates all entries and creates FilePaths/ForRunPaths; UpdateLocalInput copies lists again. View UpdateImageSelection also visits all items, despite incremental comment. Auto advance repeats this even for view-only selection changes. Read-only does not prevent index change.",
+        "recommendation": "Separate saved list/checked configuration from runtime cursor; use item identity and update old/new highlights. Batch mutation transaction and measure large-list UI allocation/latency.",
+        "runtimeVerified": false
+      },
+      {
+        "id": "IS-C04",
+        "level": "source-confirmed duplicate model; no live bottleneck proven",
+        "title": "Old full-image preview lane is not the actual bottom-panel consumer",
+        "evidence": [
+          "src/UI/Shell/Controls/Shell/ImageResultControl.xaml:227-232",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:606-628",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:815",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:4620-4637",
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:95-108"
+        ],
+        "detail": "ImageInfo.FullImage is referenced only by root VM.UpdateCurrentImageDisplay, triggered only by root CurrentImageIndex. Bottom XAML binds source.CurrentIndex/source.Images instead. Root ImageCollection is initialized but no production add/assignment found. Therefore synchronous WIC full-image lazy decode must not be presented as the proven bottleneck on current click-to-execute chain. Static public reflection/dynamic consumers have not been excluded.",
+        "recommendation": "Classify as leftover parallel model and verify callers before deleting; measure real ImageLoad/HalImage path separately from thumbnails.",
+        "runtimeVerified": false
+      },
+      {
+        "id": "IS-C05",
+        "level": "source-confirmed synchronous work; duration unmeasured",
+        "title": "Folder enumeration and metadata filtering happen on UI thread",
+        "evidence": [
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:663-687",
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:706-736"
+        ],
+        "detail": "Directory.GetFiles+sort+File.Exists+dedup+metadata creation all execute in command callback. Thumbnail decode is asynchronous but does not make this path asynchronous. Slow/network/huge directories can pause the UI; no measured budget or reproduced pause claimed.",
+        "recommendation": "Asynchronous cancellable enumeration with bounded/batched UI append, explicit sort/order and one config transaction."
+      },
+      {
+        "id": "IS-C06",
+        "level": "source-confirmed conditional consistency gap",
+        "title": "Stop-at-last uses path identities different from live runnable set",
+        "evidence": [
+          "src/UI/Services/Workflow/WorkflowExecutionManager.cs:1117-1136",
+          "src/UI/Shared/ImageInputSource.cs:288-304",
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:898-905",
+          "src/UI/Shell/Windows/MainWindowViewModel.cs:4241-4250"
+        ],
+        "detail": "Stop-at-last reads config original references without missing-file filtering and compares final reference to runtime snapshot resolved file path. For relative or resource references, a missing final entry, stale checked config or absent initial runtime snapshot, its notion of last may differ from actual runnable subset. The panel next logic explicitly filters File.Exists and wraps. Runtime proof not taken.",
+        "recommendation": "Single sequence plan with stable entry identity and resolved address; stopping and advancing share the same per-run plan instead of comparing serialized and resolved strings."
+      },
+      {
+        "id": "IS-C07",
+        "level": "source-confirmed shallow read-only boundary",
+        "title": "Read-only flag does not enforce input immutability",
+        "evidence": [
+          "src/UI/Shared/ImageInputSource.cs:44-60",
+          "src/UI/Shared/ImageInputSource.cs:119-123",
+          "src/UI/Shared/ImageInputSource.cs:169-235",
+          "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs:155-165"
+        ],
+        "detail": "Mutator methods check IsReadOnly, but Images exposes mutable BatchObservableCollection and item flags remain mutable; no caller setting IsReadOnly=true found. Current execution uses path overrides, so this is a contract weakness rather than proof of in-run file mutation.",
+        "recommendation": "Read-only collection facade plus explicit source commands; capture immutable per-run ordered entries while user edits apply to next run."
+      }
+    ],
+    "retain": [
+      "Per-node input truth source shared by panel and settings; no second UI list for each consumer",
+      "Selection and execution separated, explicit left-click/key requests and busy rejection",
+      "Current selected image is used first; auto advance after success, retry after failure",
+      "Missing entries preserved and visible; original resource reference separate from resolved address",
+      "View unload does not clear persisted input; user clear does not delete files",
+      "Node execution receives file-path overrides without rewriting design Parameters.FilePath"
+    ],
+    "verificationBoundary": "All conclusions static evidence or explicitly conditional. No runtime durations, no VM comparison assertions, no warmup conclusion (owned by parent), no product edits. UI integration and large-list timing require independent testing under coordinated resource schedule."
+  },
+  "vmEvidence": [
+    {
+      "schemaVersion": 1,
+      "scope": "自研底部图像源面板与原版相近职责链的静态源码对照；本轮未运行原版或自研性能程序，未实施产品变更",
+      "frameworkHead": "2db7540b0f803bb6f80fd4557d3098d9529ce559",
+      "mainHtmlLink": "D:/MyWork/REA逆向测试/docs/framework-architecture.html#image-pipeline",
+      "comparability": {
+        "fact": "原版 VMControls.WPF 的 ModuleResultView 在结果区下方嵌入 LocalImageListView→ImageListPanel；自研 ImageResultControl 在结果区下方嵌入 ImagePreviewControl。两者都承担本地图像列表、选择及运行关联职责。",
+        "limits": "原版 ImageSourceModuleControl 另有工具专属列表；不能把该插件、平台结果列表与自研面板视为完全同一对象。原版关联图像源按所选显示图像所属模块和第一条 IMAGE 输入追溯；自研按工作流连接图做广度遍历并处理多源歧义，二者并非同一规则。"
+      },
+      "originalFacts": [
+        {
+          "topic": "placementAndBinding",
+          "path": "analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml",
+          "lines": "268-269",
+          "sha256": "56AC6BBF9B8839311F4F8EAF0DC4407FC3F9527B39F3AD942080C0BB6C2948FF",
+          "fact": "结果视图第二行 localImageGrid 嵌入 LocalImageListView，Visibility 绑定 IsShowLocalImageList，Root 绑定 ImageAlgorithmTabRoot。"
+        },
+        {
+          "topic": "selectedModuleLifecycle",
+          "path": "analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs",
+          "lines": "439-469,815-860,1177-1189",
+          "sha256": "E165657162322FD6B1CE15758847BED07F8C1E86A637815DF8E87FE19439BB88",
+          "fact": "ModuleSource 改变时释放旧 ModuleDisplayDecorator、创建新 decorator，并把它绑定到结果格与本地图像格；ImageSourceType 显示状态值 1 时设置列表可见。窗口关闭时 ModuleSource=null；Loaded/Unloaded 订阅与退订状态事件。"
+        },
+        {
+          "topic": "selectedNodeToResult",
+          "path": "analysis/decompiled/VMControls.WPF/VMControls.WPF/MainViewControl.xaml",
+          "lines": "33",
+          "sha256": "6043BCAB8597ED0A738E5BB604C25FA647350A15C646239AD0A9B5267285576F",
+          "fact": "主视图 ModuleResultView.ModuleSource 单向绑定 MainViewControl.SelectedItem；选择变化进入结果视图的 DoSourceChanged。"
+        },
+        {
+          "topic": "selectedImageToSource",
+          "path": "analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs",
+          "lines": "318-408,1629-1649",
+          "sha256": "CEDA24B7FB93BCD9F02B77B23D42A839B1F737BF70CF3ABC6B7786D11765740E",
+          "fact": "SelectedImage 从结果图像列表恢复或按本模块输出、首 IMAGE 输入关联、首图回退选取。取其 DisplayObject.Owner，若不是 IImageSourceNode（或其 DepositModule 不是），调用 GetRelatedImageSourceModule。候选源仅在与当前 VMModule 同 Parent 且为本模块或 FrontModules 成员时，才把源模块 ParamRoot 设为 ImageAlgorithmTabRoot；否则置 null。读取源 UserStringData.ImageSourceType == '1' 时本地图像列表可见。"
+        },
+        {
+          "topic": "firstImageInputTraversal",
+          "path": "analysis/decompiled/Apps.XmlParser/Apps.XmlParser.ParamTab.VmModuleExtern.decompiled.cs",
+          "lines": "2070-2084",
+          "sha256": "4D4B726DF4EAC492C955502CB90118E793679EE74718B900E62625CFE2DE2C9C",
+          "fact": "GetRelatedImageSourceModule 只取当前模块第一个 IMAGE 输入的 RelateIO.Root，然后沿每一级第一个 IMAGE 输入继续追，遇 null 或 IVmModuleSet 返回 null；找到 IImageSourceNode 或 ISubjectModel.DepositModule 是 IImageSourceNode 才返回。未遍历所有上游分支。"
+        },
+        {
+          "topic": "visibilityProducer",
+          "path": "analysis/decompiled/ImageSourceModuleControl/Apps.XmlParser.ParamTab/GeneralParamListVisibleOperation.cs",
+          "lines": "20-26",
+          "sha256": "C777C5DA0D1880A985ABA9A0AF5505B70C1381EC1E330F41AB712118E224A355",
+          "fact": "图像源参数控件操作调用 PropertyManager.DisplayExecute('ImageSourceType', Params[0].ToString())；ModuleResultView 订阅此状态并在值 '1' 时显示本地列表，其他值隐藏。HiddenOperation 中也有同名通知。"
+        },
+        {
+          "topic": "panelBinding",
+          "path": "analysis/decompiled/VMControls.WPF/VMControls.WPF/LocalImageListView.xaml",
+          "lines": "84",
+          "sha256": "D22C8A3F7FCE0D94E966A22FCE9865C91DE629471D4F1AD0F93BAA2CF6B19883",
+          "fact": "ImageListPanel 绑定当前模块、当前图像路径、选择模式和列表刷新标志。"
+        },
+        {
+          "topic": "virtualization",
+          "path": "analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanel.xaml",
+          "lines": "190-194",
+          "sha256": "A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF",
+          "fact": "横向 ListBox 启用虚拟化、Recycling 与 5 项缓存。"
+        },
+        {
+          "topic": "thumbnail",
+          "path": "analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs",
+          "lines": "303-372,1245-1306,1403-1437",
+          "sha256": "DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79",
+          "fact": "控件 Loaded 时创建后台低优先级缩略图线程；队列按可见区索引加载本地文件 72×52；滚出可见区将 ImageEntity.ImageSource 置 null；Unloaded 停线程并退订事件。"
+        },
+        {
+          "topic": "listStateAndRun",
+          "path": "analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs",
+          "lines": "455-486,495-547,1314-1395",
+          "sha256": "DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79",
+          "fact": "列表从模块 IUserStringData ImagePath{i} 读路径；当前选择可由模块输出 CurImagePath.Value 回写；用户选项变化写 CurrentImagePath，RunCheck 后异步运行流程；AutoPlay 分支写入当前选项的前一个可运行路径。执行结果回调可刷新当前路径和列表。"
+        },
+        {
+          "topic": "mutation",
+          "path": "analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs",
+          "lines": "580-608,697-747,1021-1053",
+          "sha256": "DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79",
+          "fact": "删除写模块 DeleteImage，清空写 ClearImage；添加文件与目录走控件命令和模块参数链，而不是只改 UI 项集合。"
+        }
+      ],
+      "selfdevFacts": [
+        {
+          "topic": "startup",
+          "path": "D:/MyWork/SunEyeVision_V2/src/UI/App.xaml.cs",
+          "lines": "170-180,721-748",
+          "sha256": "B573502761AEFC71086F230177B1468DE734DECA39EAA98884933E090E4B1ED8",
+          "fact": "OnStartup 在显示 Splash 前调用 PrewarmThreadPool：设置最小 worker/IO 线程数至少 8/4，启动四个短睡眠 Task 并 WaitAll。它预热线程池，不预解码图片；源码中的 1783ms→约 50ms 是注释预期，非本轮实测。"
+        },
+        {
+          "topic": "placementAndVisibility",
+          "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs",
+          "lines": "5360-5396,5420-5425",
+          "sha256": "87A307EE9C3EFD03D0FB58BFF123B8288D76D8A906B837CC490241D795834DFC",
+          "fact": "选中本地图像源节点或能找到上游本地图像源的节点时绑定 ActiveInputSource；相机源隐藏列表；子程序入口可沿用已有本地绑定；切换绑定先 PrepareForDisplay。"
+        },
+        {
+          "topic": "multiSourceTraversal",
+          "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs",
+          "lines": "5444-5515",
+          "sha256": "87A307EE9C3EFD03D0FB58BFF123B8288D76D8A906B837CC490241D795834DFC",
+          "fact": "从选中节点按连接边逆向广度遍历并收集所有可达 ImageLoad 节点；恰一来源直接返回，多来源时按 SelectedDisplaySource 指定源或所选中间分支递归，否则返回 null 隐藏列表。该规则与 VM 第一 IMAGE 输入链不同。"
+        },
+        {
+          "topic": "activeListBinding",
+          "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ImageResultControl.xaml",
+          "lines": "227-232",
+          "sha256": "7B9F9244AEE3305FEBB4E1B64E18BAF7E6A909072310B34BA44B29A51FE4FBE8",
+          "fact": "底部面板绑定 ActiveInputSource.Images/CurrentIndex/RunMode/AutoSwitchEnabled；MainWindowViewModel 另有 ImageCollection 集合，但该 XAML 不绑定它。"
+        },
+        {
+          "topic": "uiAndVirtualization",
+          "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml",
+          "lines": "224-226,261-329,337-359",
+          "sha256": "CFC93D2E44FC64B7C9A967C91497D7FC4F1BA13789276B1B50E6848D19380BDC",
+          "fact": "提供运行全部/运行选择、自动切换、添加文件/文件夹、清空、横向虚拟化缩略图列表与点击处理。"
+        },
+        {
+          "topic": "decodeAndCache",
+          "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs",
+          "lines": "95-105,175-224,460-580,747-765,1116-1137",
+          "sha256": "EC18A5FE8927FD1B23AD513558CB94DE93A8A038313A1BDFEB8BC2B3E422F25F",
+          "fact": "缩略图 Task.Run 后台解码，WIC DecodePixelWidth=100、OnLoad、Freeze；全局并发节流 clamp(CPU-1,4,16)，静态缩略图缓存上限50；全图首次访问时在调用线程用 WIC OnLoad 解码，静态全图缓存上限30。项卸载取消未完成缩略图任务；面板 Unloaded 只取消任务，不清空持久列表。"
+        },
+        {
+          "topic": "interactionAndAdvance",
+          "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs",
+          "lines": "897-943,1014-1064",
+          "sha256": "EC18A5FE8927FD1B23AD513558CB94DE93A8A038313A1BDFEB8BC2B3E422F25F",
+          "fact": "显式左键点击缩略图请求执行；ListBox SelectionChanged 仅更新索引。自动切换按存在文件和运行子集推进，到尾部循环。"
+        },
+        {
+          "topic": "executionConsumer",
+          "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "lines": "48-74,99-115,160-193",
+          "sha256": "2FDF89495C90B5E269CA9E096B186609EB8C83162F9573479AE4D69D117FBFAC",
+          "fact": "控件初始化订阅执行请求并注册运行前推进钩子；手动点击把路径/索引发布成运行输入后执行工作流；运行中拒绝重复请求；关闭时退订。"
+        },
+        {
+          "topic": "runtimeParameterSnapshot",
+          "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs",
+          "lines": "4251-4261",
+          "sha256": "87A307EE9C3EFD03D0FB58BFF123B8288D76D8A906B837CC490241D795834DFC",
+          "fact": "PublishRuntimeInput 写 CurrentImagePath/CurrentImageIndex 运行参数并发布以 workflowId 为键的不可变选择快照。"
+        },
+        {
+          "topic": "runtimeImageLoad",
+          "path": "D:/MyWork/SunEyeVision_V2/tools/SunEyeVision.Tool.ImageLoad/ImageLoadTool.cs",
+          "lines": "125-209",
+          "sha256": "868DDC7262E49C7AFBC15112BD06F10AB82DAA3537BAE0754A5A06F6A9B53F15",
+          "fact": "本地 ImageLoadTool 解析 FilePath 资源地址、验证存在后调用 HalImage.CreateFromFile，并产出 OutputImage/GrayImage；底部面板的 ImageInfo.FullImage 并非该工具执行解码入口。"
+        },
+        {
+          "topic": "ownershipAndPersistence",
+          "path": "D:/MyWork/SunEyeVision_V2/src/UI/Shared/ImageInputSource.cs",
+          "lines": "184-246,271-349",
+          "sha256": "7C742259CD0744F42C63F0180149C7F185BB61EA96D1FCDCAB72145D84D337D9",
+          "fact": "图像列表以 ImageInputSource 为节点状态；增删清引发配置变化；删清取消缩略图、释放 ImageInfo 全图引用并使缓存失效；ToConfig 保存文件资源引用、当前索引、自动切换、运行模式、勾选路径；LoadFromConfig 经资源解析器重建列表并延迟缩略图解码。"
+        }
+      ],
+      "inferences": [
+        "自研 App 全局预热可能给首次 Task.Run 降低调度延迟，但其效果不能从注释推为实测；与 VM 控件 Loaded 时的专属线程不等价。",
+        "自研全图解码入口同步调用 WIC OnLoad；若在 UI 线程首次访问高像素图，可能造成界面停顿。需要受控计时与调用栈证实，不能仅凭源码断言卡死原因。",
+        "VM 的 offscreen ImageSource=null 与自研跨实例 LRU 缓存是不同的保留策略；不能直接推断哪方更快或内存更低。"
+      ],
+      "unknowns": [
+        "VM Apps.Data.ImageData.GetImageDataFromFile/GetImageDataFrom3DFile 的函数体、底层 decoder 缓存与 native 释放策略未在当前证据中恢复。",
+        "VM 多来源时 SelectedImage 的具体选项/CheckedImages 恢复与每个流程页面之间的切换全分支仍需继续核；已证实 GetRelatedImageSourceModule 只沿第一 IMAGE 输入而非全图广度搜索。",
+        "VM AutoPlay 对运行完成、失败、回绕的完整模块内部状态机与自研自动切换等价性未证实。",
+        "本轮未做冷启动、超大图、海量缩略图或长时间滚动的实测；没有性能快慢结论。"
+      ],
+      "roleHandoff": "框架线持有原版平台面板与主界面联动取证；插件线只追图像源工具专属源码/算法并提出缺失的公共合同；架构恢复角色在主 HTML 中维护已证实连线，审核角色复核跨层结论；交付协调收证据后决定分发，不自动改动他工作树。"
+    },
+    {
+      "id": "VM-IMAGE-SOURCE-PANEL-20261023",
+      "scope": "static decompiled VM platform panel vs ImageSource plugin consumer",
+      "sources": [
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs",
+          "sha256": "DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/ImageSourceModuleControl/ImageSourceModuleControl/LocalImageListView.xaml.cs",
+          "sha256": "12F7B31F928C99E2E7F2812FB377D2D9B626854A463CFCA9F0755577DDD61E25"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-0.c",
+          "sha256": "600FAA687D61B61ACBD7207FE2FDEF569647D6BF91F5F34AFBE5719ECCFF61CA"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-2.c",
+          "sha256": "08D2342587E278886925AAECEA6EE5C9A45FC1C9B687A301BB896DEEF8D41B6C"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-3.c",
+          "sha256": "08B8DFCD958B692E5059EC895737202BD5731CD701912CBA5F2EF2F8FD0B8F6E"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-4.c",
+          "sha256": "E04BBCB91354BD68D0AC8C37AB5EE04F6F47CC3B98E9FC907CFAEF5F35F0297F"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-7.c",
+          "sha256": "6FD48677973F78D10B066EAB5BBE79486A98A89064698EA74B682177502B1721"
+        }
+      ],
+      "confirmed": [
+        "Platform ImageListPanelBase:439-486 reads ImageNumber/ImagePathN from module Params, maintains ObservableCollection<ImageEntity>; 1000-1015 adds paths without decoding full image.",
+        "Panel:303-355 thumbnail worker, 1275-1310 only visible indices, 72x52 ImageData.GetImageDataFromFile or raw 3D, caches in ImageEntity.ImageSource; thumbnail is platform panel cache, not ImageSource algorithm preload.",
+        "Panel:1314-1359 selection writes CurrentImagePath and calls VmProcedure.Run asynchronously; AutoPlay chooses predecessor so execution advances to selected item by downstream algorithm, exact native step not recovered.",
+        "Panel:1611-1668 selected subset writes SelectExecutePic/CancelExecutePic; 1362-1395 work-end refresh reads module CurImagePath.Value; LocalImageListView:208-269 maps ExecuteType=2 and SelectEnable.",
+        "Panel:363-375 Unloaded stops thumbnail thread flag and unsubscribes platform events; does not prove ImageSource module buffer release."
+      ],
+      "unknown": [
+        "全格式底层像素解码与色彩转换最终内核",
+        "路径缓存跨格式失效和 Reset/重载的完整释放生命周期",
+        "宿主 Run All/Run Selected 命令调用者与整流程结束语义"
+      ],
+      "boundary": "平台 ImageListPanelBase 负责缩略图、选择和 Procedure.Run；原生 ImageSourceModule 已确认读前推进、原图读取入口及 PathCache。72x52 缩略图不等于运行图或预热。未贯通仅限全格式底层内核、全释放链和宿主批量命令。",
+      "pluginNative": {
+        "original": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Collection/ImageSourceModule/ImageSourceModule.dll",
+        "originalSha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db",
+        "evidence": [
+          "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-0.c SHA600FAA687D61B61ACBD7207FE2FDEF569647D6BF91F5F34AFBE5719ECCFF61CA Process 0x18000d820",
+          "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-2.c SHA08D2342587E278886925AAECEA6EE5C9A45FC1C9B687A301BB896DEEF8D41B6C GetParam",
+          "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-3.c SHA08B8DFCD958B692E5059EC895737202BD5731CD701912CBA5F2EF2F8FD0B8F6E SetParam",
+          "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-4.c SHAE04BBCB91354BD68D0AC8C37AB5EE04F6F47CC3B98E9FC907CFAEF5F35F0297F ConvertFileImage 0x18001c8d0",
+          "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-7.c SHA6FD48677973F78D10B066EAB5BBE79486A98A89064698EA74B682177502B1721 StitchImageOutput 0x180020980"
+        ],
+        "confirmed": [
+          "SetParam CurrentImagePath chooses existing list entry; SelectExecutePic inserts into independent execution subset in main-list order",
+          "Process advances cursor before read and wraps; failed read consumes position, successful output increments SN",
+          "ConvertFileImage delegates original full image decode to MVDMediaProcess; 72x52 platform thumbnail is not run frame",
+          "PathCache stores copy until configured limit and cache hit reuses; no LRU in recovered branch",
+          "AutoPlay and AutoStop depend on owning procedure run parameters; stop request still publishes current frame",
+          "folder watcher marks changes for Process to consume; RefreshImage report updates panel"
+        ],
+        "unknown": [
+          "full decoder final pixel kernels across all formats",
+          "cache invalidation across every format and Reset/reload lifetime",
+          "host Run All/Run Selected command caller and whole workflow finish semantics"
+        ]
+      }
+    }
+  ],
+  "evidenceChecks": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-IMAGE-PANEL/framework/panel-evidence.json",
+      "sha256": "f8cb6db97550e225130e1c7594a0ff80c4e14d9dc787f9b773aaf29c8e49eeaf",
+      "kind": "evidence package"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml",
+      "sha256": "56ac6bbf9b8839311f4f8eaf0dc4407fc3f9527b39f3ad942080c0bb6c2948ff",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs",
+      "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/MainViewControl.xaml",
+      "sha256": "6043bcab8597ed0a738e5bb604c25fa647350a15c646239ad0a9b5267285576f",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs",
+      "sha256": "ceda24b7fb93bcd9f02b77b23d42a839b1f737bf70cf3abc6b7786d11765740e",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser/Apps.XmlParser.ParamTab.VmModuleExtern.decompiled.cs",
+      "sha256": "4d4b726df4eac492c955502cb90118e793679ee74718b900e62625cfe2de2c9c",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/ImageSourceModuleControl/Apps.XmlParser.ParamTab/GeneralParamListVisibleOperation.cs",
+      "sha256": "c777c5da0d1880a985aba9a0af5505b70c1381ec1e330f41ab712118e224a355",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/LocalImageListView.xaml",
+      "sha256": "d22c8a3f7fce0d94e966a22fce9865c91de629471d4f1ad0f93baa2cf6b19883",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanel.xaml",
+      "sha256": "a5ac5a8101e7cccb036a2430e6c1766ec3b4caec18010580db178ec88937c7cf",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs",
+      "sha256": "df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs",
+      "sha256": "df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs",
+      "sha256": "df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-IMAGE-SOURCE-PANEL/evidence.json",
+      "sha256": "f2e1e15ad50a57348bed3d5badedd694f8da6d52c4e855572505f76cc9b6c06c",
+      "kind": "evidence package"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs",
+      "sha256": "df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/ImageSourceModuleControl/ImageSourceModuleControl/LocalImageListView.xaml.cs",
+      "sha256": "12f7b31f928c99e2e7f2812fb377d2d9b626854a463cfca9f0755577ddd61e25",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-0.c",
+      "sha256": "600faa687d61b61acbd7207fe2fdef569647d6bf91f5f34afbe5719eccff61ca",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-2.c",
+      "sha256": "08d2342587e278886925aaecea6ee5c9a45fc1c9b687a301bb896deef8d41b6c",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-3.c",
+      "sha256": "08b8dfcd958b692e5059ec895737202bd5731cd701912cba5f2ef2f8fd0b8f6e",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-4.c",
+      "sha256": "e04bbcb91354bd68d0ac8c37ab5ee04f6f47cc3b98e9fc907cfaef5f35f0297f",
+      "matches": true
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/full-audit/image-source-native-7.c",
+      "sha256": "6fd48677973f78d10b066eab5bbe79486a98a89064698ea74b682177502b1721",
+      "matches": true
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "D01",
+      "topic": "可见性与节点关系",
+      "vm": "从当前显示图像所属模块定位关联源；非图源沿每级首个IMAGE输入追溯，并核同父级/当前模块或FrontModules关系，ImageSourceType=1显示。不是全图BFS。",
+      "ours": "选中节点或BFS上游图像源；多源借用SelectedDisplaySource分支；相机隐藏；子程序解析不到可沿用旧绑定；上方显示源切换未直接重算底部。",
+      "target": "来源解析返回明确的workflowId/sourceNodeId/reason；查看来源与执行输入分离；子程序只允许经验证的父级来源，找不到显示原因；显示源改变统一触发解析。",
+      "choice": "借鉴VM显示图像与来源联动、上下文约束；自研明确多输入分支，不照搬仅首IMAGE输入规则。"
+    },
+    {
+      "id": "D02",
+      "topic": "列表与配置",
+      "vm": "平台列表读写模块参数，添加删除勾选写回模块。",
+      "ours": "节点ImageInputSource是事实源，配置保存资源引用；IsForRun的item变化未被事实源订阅，单独勾选保存条件下可能未同步。",
+      "target": "列表/勾选由源服务命令提交，一次同步配置和修改状态；运行游标与持久配置分开。",
+      "choice": "保留整改当前节点事实源，不新建第二套管理。"
+    },
+    {
+      "id": "D03",
+      "topic": "选择与执行",
+      "vm": "选图写CurrentImagePath并RunCheck后运行所属流程；AutoPlay会先写前一图以配合原生先推进。",
+      "ours": "显式点击/键盘触发当前工作流；普通SelectionChanged不运行；自动推进成功后执行，但全局回调依赖当前可见面板。",
+      "target": "执行与推进携带工作流、来源和运行代次；采用同一序列计划决定下一张与结束，UI只显示。",
+      "choice": "借鉴VM模块拥有原图执行游标；不采用前一图补偿技巧，不退回UI调度。"
+    },
+    {
+      "id": "D04",
+      "topic": "缩略图与缓存",
+      "vm": "横向虚拟化、72×52可见区低优先级线程、滚出清ImageSource；原图PathCache另管。",
+      "ours": "横向虚拟化、WIC100像素、Task.Run+4..16并发、100ms防抖、50张LRU；item还持有已浏览缩略图。",
+      "target": "保留后台按需模型；按字节及可见窗口制定实际驻留预算；同键合并加载、文件版本失效、切源取消旧代次发布。",
+      "choice": "借鉴VM移出视口释放的目标，保留可调窗口缓存；不照搬100ms轮询专属线程。"
+    },
+    {
+      "id": "D05",
+      "topic": "原图执行",
+      "vm": "ImageSource原生模块ConvertFileImage调用MVDMediaProcess；PathCache拷贝至配置上限；具体像素内核与完整释放未贯通。",
+      "ours": "实际执行从每节点快照路径到ImageLoadTool.HalImage.CreateFromFile，不是ImageInfo.FullImage那条遗留WIC显示线。",
+      "target": "测真实工具解码/转换/灰度/统计及显示发布；明确预览与运行不同质量/所有权。",
+      "choice": "保留工具与平台解耦；不因VM有原生缓存就先增全图缓存或替换解码器。"
+    },
+    {
+      "id": "D06",
+      "topic": "启动预热",
+      "vm": "已证控件Loaded创建工作线程并按需加载，尚无完整启动调用证据可证明全局有或无预热。",
+      "ours": "Splash.Show前设置线程池min8/4，4个Sleep10ms Task并WaitAll；没有图像解码。1783→50是注释预期。",
+      "target": "分离启动阻塞成本、线程池调度、WIC冷首用和真实原图工具首用；同条件A/B后才决定保留、移后或取消。",
+      "choice": "自研可验证策略；不预设预热无用，也不把UI结构问题用全量预解码遮盖。"
+    },
+    {
+      "id": "D07",
+      "topic": "界面与可理解性",
+      "vm": "运行子集、自动播放、当前路径均在模块参数中关联。",
+      "ours": "当前高亮、运行勾选、自动切换、运行模式并存；Unicode图标、部分硬编码颜色、错误与来源信息分散。",
+      "target": "用节点名/流程名标明当前来源，区分当前查看与运行勾选；空列表、歧义、多源、缺文件给清楚反馈；统一图标/主题/DPI。",
+      "choice": "保留紧凑面板，先用HTML确认交互，不新增管理页面。"
+    }
+  ],
+  "batchRecommendation": [
+    {
+      "order": 1,
+      "name": "先把“谁的图、谁在运行”固定",
+      "items": [
+        "统一来源解析结果与可见性理由",
+        "工作流+源节点+运行代次的序列计划",
+        "推进、停止最后一张、快照使用相同稳定条目身份"
+      ],
+      "acceptance": [
+        "切tab/选其他节点不改变正在执行的来源",
+        "多源/子程序/相机/空选择来源正确或明确拒绝",
+        "失败保留当前图，尾部与勾选序列一致"
+      ]
+    },
+    {
+      "order": 2,
+      "name": "列表状态可靠提交",
+      "items": [
+        "勾选变化立即同步配置与dirty",
+        "持久列表与运行游标分离",
+        "取消只读假象，显式修改入口；批量增删一次事务"
+      ],
+      "acceptance": [
+        "只勾选后保存重开一致",
+        "加删清/模式/缺文件/资源引用正确",
+        "运行推进不重复全量复制保存配置"
+      ]
+    },
+    {
+      "order": 3,
+      "name": "加载和内存一起治理",
+      "items": [
+        "可取消后台枚举+分批追加",
+        "实际驻留字节预算与窗口缓存",
+        "同文件同版本single-flight，外部覆盖刷新",
+        "切源/卸载/清空后旧任务不可重新污染缓存/界面"
+      ],
+      "acceptance": [
+        "大量路径添加可取消且顺序可重复",
+        "滚动全列表后驻留符合约定预算",
+        "同名文件替换不显示旧图",
+        "快速切源后不出现上一节点缩略图"
+      ]
+    },
+    {
+      "order": 4,
+      "name": "用实测决定预热",
+      "items": [
+        "同固定构建、样本、磁盘缓存状态比较预热开/关/移后",
+        "拆线程池/WIC首解码/首屏绑定/真实原图工具/发布",
+        "报告首次与再次、分位数、内存，不用注释当成绩"
+      ],
+      "acceptance": [
+        "启动到可操作+首屏缩略图+首选图到结果完整报告",
+        "WIC缩略图与HalImage原图分别报告",
+        "不设未经用户确认的毫秒承诺"
+      ]
+    },
+    {
+      "order": 5,
+      "name": "界面一致性与遗留路径收口",
+      "items": [
+        "显示当前来源身份与隐藏理由",
+        "统一图标/主题/焦点与查看/运行提示",
+        "确认无调用后清理遗留FullImage并行模型"
+      ],
+      "acceptance": [
+        "主题与高DPI人工核验",
+        "无第二份图像列表/事实源",
+        "删除仅移引用、卸载不丢保存列表"
+      ]
+    }
+  ],
+  "componentVsIntegration": {
+    "componentCosts": [
+      "磁盘/网络文件读取、WIC解码与首次组件加载",
+      "HalImage原图读取、转换与统计",
+      "WPF可见容器创建、布局及跨线程发布"
+    ],
+    "ourDesignCosts": [
+      "UI线程目录枚举",
+      "每次游标变化重建全列表配置并遍历高亮",
+      "item强引用绕过LRU条数上限",
+      "来源解析、可见面板与运行推进耦合",
+      "切源清全部缩略图与路径键版本不足"
+    ],
+    "notProven": [
+      "没有同条件组件/整控件基准，不能声称WIC或VM decoder更快",
+      "未证明当前FullImage遗留入口在底部活链触发",
+      "未证明线程池预热当前实际收益"
+    ]
+  },
+  "balancedTradeoffs": [
+    {
+      "side": "VM优点",
+      "points": [
+        "显示图像Owner与来源关系明确，并检查同Parent和FrontModules",
+        "滚出视口清缩略图item引用，原图运行缓存另管",
+        "模块参数承接列表/运行状态，平台不自行读原图"
+      ]
+    },
+    {
+      "side": "VM局限与不照搬",
+      "points": [
+        "GetRelatedImageSourceModule仅每级首IMAGE输入，不能直接满足任意多输入显式分支",
+        "lst_ScrollChanged仍遍历全部ImageList；并非滚动成本天然常数",
+        "专属线程Sleep100轮询、部分异常catch空，不作为自研推荐模板",
+        "AutoPlay写前一图配合原生先推进，增加理解和边界成本"
+      ]
+    },
+    {
+      "side": "自研已有优点",
+      "points": [
+        "节点列表统一事实源，保留原资源引用，缺文件不静默删除",
+        "真实执行用每节点输入路径快照，手动选图与成功后推进已有区分",
+        "虚拟化/后台解码/Freeze/并发限制/取消发布已存在",
+        "增删清通过事实源，卸载视图不清持久列表"
+      ]
+    },
+    {
+      "side": "推荐取舍",
+      "points": [
+        "借鉴职责与来源约束，不照抄VM参数名、首输入、轮询或前图补偿",
+        "自研统一来源解析、序列计划、配置事务与缓存预算",
+        "先修状态正确性，再按相同样本测组件和集成成本，最后决定预热"
+      ]
+    }
+  ],
+  "verification": "静态代码链和原始证据SHA核对；未启动两程序、未改产品代码。条件缺陷需独立动态验收，VM未知不计不支持。"
+}

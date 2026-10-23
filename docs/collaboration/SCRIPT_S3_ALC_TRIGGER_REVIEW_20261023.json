@@ -1,0 +1,244 @@
+{
+  "id": "S3-ALC-01-trigger-review",
+  "date": "2026-10-23",
+  "status": "same-runtime CIL plus actual positive/negative phase contrasts verified; no captured runtime stack; repair not yet implemented",
+  "productBaseline": "64f17888fac6fa10ccc78671fd5bde10e93582b2",
+  "localRuntime": "Microsoft.WindowsDesktop.App 9.0.20",
+  "windowsBaseSha256": "202D7B0260611E3A87B369D8BD5213F07F7B2DDC8118B81603EAD9F95374E278",
+  "staticEvidence": "artifacts/validation/script-s3-alc-trace-root/local-framework-il.json",
+  "observedRootEvidence": "artifacts/validation/script-s3/checkpoint07-cache-evidence.txt",
+  "vmReferenceReview": "docs/collaboration/VM_SCRIPT_ASSEMBLY_MANAGEMENT_20261023.json",
+  "chain": [
+    {
+      "from": "ScriptSandbox.LoadAssembly",
+      "to": "collectible ALC.LoadFromStream(PE bytes)",
+      "state": "product source",
+      "meaning": "IsCollectible=true，PE加载通常IsDynamic=false；不是Reflection.Emit动态程序集"
+    },
+    {
+      "from": "ScriptDebugControl/ScriptEditorCore/DefaultDebugWindow constructor",
+      "to": "generated InitializeComponent→Application.LoadComponent",
+      "state": "product source/generated code; actual first trigger under investigation"
+    },
+    {
+      "from": "Application.LoadComponent",
+      "to": "XamlReader.LoadBaml→Baml2006Reader/SchemaContext",
+      "state": "local runtime CIL, pf-load-component.il and pf-load-baml.il"
+    },
+    {
+      "from": "BAML type/assembly resolution",
+      "to": "Baml2006SchemaContext.ResolveAssembly→WindowsBase.SafeSecurityHelper.GetLoadedAssembly",
+      "state": "local runtime CIL, pf-baml-type.il and pf-baml-resolve.il"
+    },
+    {
+      "from": "SafeSecurityHelper.GetLoadedAssembly",
+      "to": "AppDomain.CurrentDomain.GetAssemblies→reverse loop→GetAssemblyName(each assembly)",
+      "state": "local runtime CIL, wb-get-loaded.il IL0000..002d",
+      "meaning": "先取每个程序集的名称再比较是否为所需UI程序集；不匹配的脚本程序集也可能进入名称缓存"
+    },
+    {
+      "from": "SafeSecurityHelper.GetAssemblyName",
+      "to": "IsDynamic ? WeakRefKey : Assembly→_assemblies.Add",
+      "state": "local runtime CIL, wb-get-name.il IL0001..005c",
+      "meaning": "条件检查IsDynamic，不检查IsCollectible；collectible PE脚本仍作Assembly强键"
+    },
+    {
+      "from": "WindowsBase static dictionary",
+      "to": "script Assembly→collectible ALC remains alive after unload request",
+      "state": "actual checkpoint07 cache key and weak-reference observation; not proven sole root"
+    }
+  ],
+  "requiredDynamicProof": [
+    "script loaded before ordinary BAML control vs after ordinary control with no subsequent BAML",
+    "Core constructor vs ScriptDebugControl constructor vs window shell vs Show vs monitor assignment首次新增键时点",
+    "写缓存首次调用栈绑定自有PID、实际脚本程序集名和同版DLL；无法取得时明确分阶段证据不等完整实栈",
+    "不创建WPF界面的等价脚本加载/执行/退役能回收，排除仅Roslyn或池本身归因",
+    "任何候选必须在另一个普通BAML窗口/资源字典加载后仍能回收；只复用脚本窗不算解决全局扫描"
+  ],
+  "candidateGates": [
+    {
+      "candidate": "缩小界面动态类型接触与清理事件/监视",
+      "decision": "只在实际root来自绑定/回调时适用；当前无输出样本也失败，不能单独宣称充分。保留为其他root治理。"
+    },
+    {
+      "candidate": "限定稳定程序集的XAML解析或复用已解析元数据",
+      "decision": "仅待验证候选。标准Baml2006SchemaContext仍全域扫描，公开Baml2006Reader构造未暴露自定义schema上下文。若只能修本窗而其他BAML仍污染则否决为完整修复。"
+    },
+    {
+      "candidate": "减少引用、预热、更多GC、Close改Hide",
+      "decision": "不作为回收修复；未切断静态Assembly强键，Hide还改变窗口生命周期。"
+    },
+    {
+      "candidate": "采用VM当前COM静态Assembly缓存",
+      "decision": "不采用为回收修复。VM活路径未创建AppDomain且缓存强持有Assembly，不满足自研已批准回收合同。"
+    },
+    {
+      "candidate": "已验证的官方框架修复版本",
+      "decision": "若存在可评估，但不能以新版本号替代同版源/原始DLL和相同复现验证；当前未授权运行时升级。"
+    },
+    {
+      "candidate": "私反射清缓存、全局方法detour、自维护框架或进程隔离",
+      "decision": "本轮不实施；前两项不作为产品方案，后两项超当前授权边界，若窄修复均被反证必须明确提出有据决策而不是伪报闭环。"
+    }
+  ],
+  "vmBoundary": "原厂ScriptCom→ComScriptSupport活动COM链在承载它的当前域Assembly.Load(bytes)，静态AssemblyManager缓存；没有证明该COM宿主就是WPF主进程。备用HikScriptSupport.CreateDomain、独立GlobalScript入口不能拼进工具脚本活链。",
+  "officialSupportingSources": [
+    "https://source.dot.net/System.Xaml/src/wpf/src/Microsoft.DotNet.Wpf/src/Shared/MS/Internal/SafeSecurityHelper.cs.html",
+    "https://source.dot.net/PresentationFramework/System/Windows/Markup/Baml2006/Baml2006SchemaContext.cs.html",
+    "https://github.com/dotnet/wpf/issues/1700",
+    "https://learn.microsoft.com/en-us/dotnet/api/system.windows.baml2006.baml2006reader.-ctor?view=windowsdesktop-9.0"
+  ],
+  "verificationBoundary": "源码/CIL边不等运行栈；缓存root观察不等排除全部root；候选尚未验证，不等可实施或已修复。最终仍需独立固定Release的100轮/多节点/引用换代/方案退出验收。",
+  "measurementDeviation": "13:19:23完成的主控离线ILDASM约5.3秒与formal-r2窗口重叠，已向交付协调补录环境干扰，不推native失败因果；之后主控停止dotnet/反汇编工具，仅文件阅读。",
+  "dynamicEvidence": [
+    {
+      "case": "ordinary-before",
+      "path": "artifacts\\validation\\script-s3-alc-trace\\phase-comparisons-01\\ordinary-before.json",
+      "sha256": "a825d201947b48959fac0f7284fcd19d5e18164bfbc7f460b359d1de3b5494c8",
+      "pid": 83916,
+      "runtime": ".NET 9.0.20",
+      "scriptAssembly": "Script_BEFBFF2D8BA2F69586C53C457487D15E9DB3DF73C18AA1459C8F2F6691E519A8, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "windowsBase": {
+        "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App\\9.0.20\\WindowsBase.dll",
+        "version": "9.0.0.0",
+        "sha256": "202D7B0260611E3A87B369D8BD5213F07F7B2DDC8118B81603EAD9F95374E278"
+      },
+      "completed": true,
+      "alcAliveAfterBoundedGc": true,
+      "stages": [
+        {
+          "phase": "before-script-and-ui",
+          "keys": [],
+          "utc": "2026-10-23T05:25:06.1366979Z"
+        },
+        {
+          "phase": "script-loaded-before-ui",
+          "keys": [],
+          "utc": "2026-10-23T05:25:06.2620866Z"
+        },
+        {
+          "phase": "control-constructed",
+          "keys": [
+            "Script_BEFBFF2D8BA2F69586C53C457487D15E9DB3DF73C18AA1459C8F2F6691E519A8, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|collectible=True|dynamic=False"
+          ],
+          "utc": "2026-10-23T05:25:06.4703903Z"
+        },
+        {
+          "phase": "scope-retired",
+          "keys": [
+            "Script_BEFBFF2D8BA2F69586C53C457487D15E9DB3DF73C18AA1459C8F2F6691E519A8, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|collectible=True|dynamic=False"
+          ],
+          "utc": "2026-10-23T05:25:06.4762048Z"
+        },
+        {
+          "phase": "after-unload-gc",
+          "keys": [
+            "Script_BEFBFF2D8BA2F69586C53C457487D15E9DB3DF73C18AA1459C8F2F6691E519A8, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|collectible=True|dynamic=False"
+          ],
+          "utc": "2026-10-23T05:25:06.813601Z"
+        }
+      ]
+    },
+    {
+      "case": "ordinary-after",
+      "path": "artifacts\\validation\\script-s3-alc-trace\\phase-comparisons-01\\ordinary-after.json",
+      "sha256": "94e57af6e6370e0f62a5171ee8ff49b35904fb46bb370be7b5f62e5b7a40cf21",
+      "pid": 77968,
+      "runtime": ".NET 9.0.20",
+      "scriptAssembly": "Script_BEFBFF2D8BA2F69586C53C457487D15E9DB3DF73C18AA1459C8F2F6691E519A8, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "windowsBase": {
+        "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App\\9.0.20\\WindowsBase.dll",
+        "version": "9.0.0.0",
+        "sha256": "202D7B0260611E3A87B369D8BD5213F07F7B2DDC8118B81603EAD9F95374E278"
+      },
+      "completed": true,
+      "alcAliveAfterBoundedGc": false,
+      "stages": [
+        {
+          "phase": "before-script-and-ui",
+          "keys": [],
+          "utc": "2026-10-23T05:25:08.1570879Z"
+        },
+        {
+          "phase": "control-constructed",
+          "keys": [],
+          "utc": "2026-10-23T05:25:08.3517529Z"
+        },
+        {
+          "phase": "script-loaded-after-control",
+          "keys": [],
+          "utc": "2026-10-23T05:25:08.3948844Z"
+        },
+        {
+          "phase": "scope-retired",
+          "keys": [],
+          "utc": "2026-10-23T05:25:08.399267Z"
+        },
+        {
+          "phase": "after-unload-gc",
+          "keys": [],
+          "utc": "2026-10-23T05:25:08.4466887Z"
+        }
+      ]
+    },
+    {
+      "case": "core-before",
+      "path": "artifacts\\validation\\script-s3-alc-trace\\phase-comparisons-01\\core-before.json",
+      "sha256": "7ab94d2228d0a10d311466275e155d3df45a333e3cf4c0727f5c787e6430defa",
+      "pid": 95160,
+      "runtime": ".NET 9.0.20",
+      "scriptAssembly": "Script_BEFBFF2D8BA2F69586C53C457487D15E9DB3DF73C18AA1459C8F2F6691E519A8, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "windowsBase": {
+        "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App\\9.0.20\\WindowsBase.dll",
+        "version": "9.0.0.0",
+        "sha256": "202D7B0260611E3A87B369D8BD5213F07F7B2DDC8118B81603EAD9F95374E278"
+      },
+      "completed": true,
+      "alcAliveAfterBoundedGc": true,
+      "stages": [
+        {
+          "phase": "before-script-and-ui",
+          "keys": [],
+          "utc": "2026-10-23T05:25:09.8457697Z"
+        },
+        {
+          "phase": "script-loaded-before-ui",
+          "keys": [],
+          "utc": "2026-10-23T05:25:09.9620159Z"
+        },
+        {
+          "phase": "control-constructed",
+          "keys": [
+            "Script_BEFBFF2D8BA2F69586C53C457487D15E9DB3DF73C18AA1459C8F2F6691E519A8, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|collectible=True|dynamic=False"
+          ],
+          "utc": "2026-10-23T05:25:10.6779965Z"
+        },
+        {
+          "phase": "scope-retired",
+          "keys": [
+            "Script_BEFBFF2D8BA2F69586C53C457487D15E9DB3DF73C18AA1459C8F2F6691E519A8, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|collectible=True|dynamic=False"
+          ],
+          "utc": "2026-10-23T05:25:10.6839658Z"
+        },
+        {
+          "phase": "after-unload-gc",
+          "keys": [
+            "Script_BEFBFF2D8BA2F69586C53C457487D15E9DB3DF73C18AA1459C8F2F6691E519A8, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|collectible=True|dynamic=False"
+          ],
+          "utc": "2026-10-23T05:25:11.0262128Z"
+        }
+      ]
+    }
+  ],
+  "dynamicConclusions": [
+    "先加载脚本再构造普通MinimalView即出现脚本强键/不能回收，不需要ScriptDebugControl、Show、monitor或执行用户Process。",
+    "先构造普通MinimalView后加载同脚本且不再加载BAML时，缓存始终无脚本键且ALC可回收；排除该最小脚本加载路径自身必然无法卸载。",
+    "先加载脚本再构造ScriptEditorCore同样新增脚本强键/不能回收；支持实际编辑器构造接入同框架链。",
+    "以上是每例一个新进程的阶段对照，不是100轮验收，也不是性能基准；先构造后加载只是负对照，运行中任何其他BAML仍可能重新触发。"
+  ],
+  "debuggerEvidence": {
+    "path": "artifacts/validation/script-s3-alc-trace/owned-stack-01/debugger-receipt.json",
+    "captured": false,
+    "reason": "新自有VS未发布精确PID ROT，实际调用栈未捕获；协调已核自有进程退出，不将静态边冒充实栈。"
+  }
+}

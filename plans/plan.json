@@ -477,6 +477,10 @@
                                     {
                                         "date":  "2026-10-22",
                                         "note":  "[a09ab60535cf11b7c1a3497186dffbf53f2e5288] WIP startup: start page and direct solution file entry for independent acceptance"
+                                    },
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[2962cfe46d8f7337d40544c04685e9b467c53d77] WIP image source: freeze per-node run sequences and bound preview loading; measurements pending"
                                     }
                                 ]
                     },
@@ -2963,21 +2967,21 @@
                                           "name":  "ShapeMatch 核心算法补测（亚像素精度/旋转/缩放/无匹配/多实例）",
                                           "phase":  "测试验证",
                                           "hours":  20,
-                                          "status":  "in_progress"
+                                          "status":  "done"
                                       },
                                       {
                                           "id":  "TEST-3",
                                           "name":  "Blob 补测（多目标/面积过滤/圆度/空图/单目标）",
                                           "phase":  "测试验证",
                                           "hours":  12,
-                                          "status":  "in_progress"
+                                          "status":  "done"
                                       },
                                       {
                                           "id":  "TEST-4",
                                           "name":  "阈值/滤波/形态学补测（边界值/异常参数/8bit16bit图像）",
                                           "phase":  "测试验证",
                                           "hours":  12,
-                                          "status":  "in_progress"
+                                          "status":  "done"
                                       },
                                       {
                                           "id":  "TEST-5",
@@ -3196,6 +3200,26 @@
                                     {
                                         "date":  "2026-10-16",
                                         "note":  "[68cee26e6c754bd354113b05a88c83fdc9e39a06] fix(build): align test lock files with current project references"
+                                    },
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[8daf9fcff197725518cacfe9d413807a593f9295] docs: 固定脚本S1交付身份与独立验收边界"
+                                    },
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[972f2e0fd947fa7920c77f026bc1a348b968a217] docs: 固定脚本S1交付身份与独立验收边界"
+                                    },
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2] docs: 固定S2交付身份并保留正式采样中止与预算失败证据"
+                                    },
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[823cf10428ad9143df1dce9426e5e314cc1c4856] Fix reentrant image imports and gate same-build warmup measurements to isolated startup"
+                                    },
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[1ff63bfa78f3c6d6c028ec8439b730a86d313cf9] Fix stream image decoding without URI cache flags and cover real pixel reloads"
                                     }
                                 ]
                     },
@@ -3323,6 +3347,10 @@
                                     {
                                         "date":  "2026-10-10",
                                         "note":  "[9ae7c47ecca18a8e192b4e08a3c6d0db46eadcbb] chore(version): 打包写回版本声明并同步 NuGet 锁定文件"
+                                    },
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[9e58aaa5e9d433c69d076a9b0e19028d2841c7f3] docs: hand off approved delivery coordination to dedicated role"
                                     }
                                 ]
                     },
@@ -4248,7 +4276,10 @@
                                      "docs/04-工具设计/测量工具/2026/05/圆圆测量工具核心算法设计方案-20260508.md"
                                  ],
                         "log":  [
-
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[64f17888fac6fa10ccc78671fd5bde10e93582b2] WIP S3: freeze execution ownership and drain contracts; retain A07 ALC failure"
+                                    }
                                 ]
                     },
                     {
@@ -4542,6 +4573,18 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[6adb8a1376b3a2bfcf7b3da96f5487223c198467] feat(script): 程序集引用候选纳入 HalAdapter/CvAdapter 适配层"
+                                    },
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[5a700dadbed2778dfca4fef450e07d90a9fcce67] wip: 移交脚本S1基础实现并分离方案与实施职责"
+                                    },
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[a254710d31af3a39619f9b7ac50eaca344ac30bf] fix: 收口脚本S1身份与会话边界并补行为回归"
+                                    },
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[a59f446c4032e26abafc1c6a83296db78575463e] feat: 收口脚本S2编辑提交与异步准备编译并固定采样入口"
                                     }
                                 ]
                     },
@@ -4719,6 +4762,10 @@
                                     {
                                         "date":  "2026-09-28",
                                         "note":  "[9305defe410348248d9b05afde606f73e239bdb2] docs: 归档标定工具链方案与图像源方案修订并同步协作状态与文档索引"
+                                    },
+                                    {
+                                        "date":  "2026-10-23",
+                                        "note":  "[9e0da65d03815ceb9d0cb3392fd3ac5597227119] checkpoint: 保存方案持久化、标定整改与脚本架构文档"
                                     }
                                 ]
                     },
@@ -5402,6 +5449,283 @@
                                         "docs/collaboration/HANDOFF_B1_EXECUTION16_20261022.md",
                                         "docs/collaboration/OPTIMIZATION_BACKLOG.json",
                                         "docs/collaboration/VM_PERSIST14_TASKS.json"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-6c2def2",
+                          "message":  "Disable forced empty-task thread-pool warmup by default after controlled comparison",
+                          "date":  "2026-10-23",
+                          "commit":  "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
+                          "files":  [
+                                        "src/UI/App.xaml.cs"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-b221457",
+                          "message":  "feat(sdk): 端口类型引入 TypeRef 语义声明并统一值校验",
+                          "date":  "2026-10-24",
+                          "commit":  "b221457977ec3f0efeb941994c030a5a565df0f9",
+                          "files":  [
+                                        "src/Plugin.Contracts/Editing.cs",
+                                        "src/Plugin.Contracts/TypeRef.cs",
+                                        "src/Plugin.Contracts/Values.cs"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-45b3ab8",
+                          "message":  "docs: 架构对照站补齐审计页与文档检索索引",
+                          "date":  "2026-10-24",
+                          "commit":  "45b3ab82e3357ba349fbcf913595be94ed025315",
+                          "files":  [
+                                        "artifacts/performance/script-s2-window-20261023/Program.cs",
+                                        "artifacts/performance/script-s2-window-20261023/Run-Paired.ps1",
+                                        "artifacts/validation/architecture-doc-site-manifest.json",
+                                        "artifacts/validation/build-architecture-doc-site.cjs",
+                                        "artifacts/validation/build-document-search-index.cjs",
+                                        "artifacts/validation/build-script-final-decision.cjs",
+                                        "artifacts/validation/build-visual-document-library.cjs",
+                                        "artifacts/validation/check-document-search.cjs",
+                                        "artifacts/validation/check-relationship-guide-focus.cjs",
+                                        "artifacts/validation/document-library-layout.json",
+                                        "artifacts/validation/document-library-source-snapshots/document-maintenance.html",
+                                        "artifacts/validation/document-library-source-snapshots/document-search-index.js",
+                                        "artifacts/validation/document-library-source-snapshots/guide-dataflow.html",
+                                        "artifacts/validation/document-library-source-snapshots/guide-execution.html",
+                                        "artifacts/validation/document-library-source-snapshots/index.html",
+                                        "artifacts/validation/document-library-source-snapshots/optimization-o01.html",
+                                        "artifacts/validation/document-library-source-snapshots/optimization-o06.html",
+                                        "artifacts/validation/document-library-source-snapshots/platform-architecture.html",
+                                        "artifacts/validation/document-library-source-snapshots/tool-script.html",
+                                        "artifacts/validation/document-search-index-manifest.json",
+                                        "artifacts/validation/document-search-validation.json",
+                                        "artifacts/validation/home-maintenance-content.json",
+                                        "artifacts/validation/home-search-root-validation.json",
+                                        "artifacts/validation/relationship-guide-focus-validation.json",
+                                        "artifacts/validation/script-final-decision-manifest.json",
+                                        "artifacts/validation/script-final-decision-validation.json",
+                                        "artifacts/validation/script-three-way-manifest.json",
+                                        "artifacts/validation/visual-document-library-manifest.json",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a01.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a02.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a03.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a04.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a05.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a06.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a07.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a08.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a09.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a10.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a11.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-a12.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-acceptance.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-doc-site.css",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-doc-site.js",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-evidence.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/architecture-target.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c01.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c02.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c03.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c04.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c05.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c06.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c07.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c08.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c09.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c10.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c11.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c12.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c13.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c14.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c15.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c16.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c17.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c18.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c19.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-c20.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-evidence-1.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-evidence-2.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-evidence-3.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-evidence-4.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-evidence-5.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-evidence-6.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-evidence-7.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-menus-1.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-menus-2.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-menus-3.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-menus-4.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-overview.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-1.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-10.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-11.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-12.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-13.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-14.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-2.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-3.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-4.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-5.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-6.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-7.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-8.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-tools-9.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/audit-ui.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/camera-architecture.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-index.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m01.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m02.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m03.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m04.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m05.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m06.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m07.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m08.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m09.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m10.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m11.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m12.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m13.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m14.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m15.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m16.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m17.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m18.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m19.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m20.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m21.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m22.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m23.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m24.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m25.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-m26.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t01.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t02.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t03.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t04.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t05.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t06.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t07.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t08.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t09.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t10.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t11.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t12.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t13.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t14.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t15.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t16.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t17.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-t18.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-x01.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-x02.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-x03.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-x04.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/capability-x05.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/comparison-archive.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/comparison.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/completion-audit-archive.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/completion-audit.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/data-architecture.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/document-maintenance.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/document-search-index.js",
+                                        "docs/04-工具设计/架构对照/2026/10/21/document-search.js",
+                                        "docs/04-工具设计/架构对照/2026/10/21/entry-pages.css",
+                                        "docs/04-工具设计/架构对照/2026/10/21/entry-pages.js",
+                                        "docs/04-工具设计/架构对照/2026/10/21/evidence.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-data.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-design-comparison.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-evidence.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-execution.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-implementation.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-lifetime.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-overview.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-print.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-publication.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-compatibility.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-data.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-engineering.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-events.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-external.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-file-map.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-migration.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-overview.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-packages.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-resources.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-tools.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-sdk-ui.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/framework-target.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/global-variables.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/guide-dataflow.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/guide-dependencies.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/guide-execution.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/guide-lifecycle.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/index.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/internal-secure-export.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/joint-optimization-plan.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/license-design.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-archive.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-diagnostics.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-index.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o01.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o02.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o03.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o04.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o05.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o06.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o07.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o08.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o09.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o10.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o11.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization-o12.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/optimization.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/persistence-architecture.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/platform-architecture.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/recommendation-audit-archive.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/recommendation-audit.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/suneye-entry-architecture-comparison.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/system-architecture.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-calibration.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-BlobAnalysis.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-CircleCircleMeasure.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-CircleDetect.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-Condition.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-ImageFilter.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-ImageLoad.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-ImageThreshold.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-LineCircleMeasure.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-LineDetect.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-LineLineMeasure.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-Morphology.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-PointCircleMeasure.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-PointLineMeasure.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-PointPointMeasure.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-ProtocolAssemble.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-ProtocolParse.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-ReceiveData.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-SendData.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-detail-ShapeMatch.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-script.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-standard.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-subroutine.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-template.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tool-verification.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/tools.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o01.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/blob-preview-demo.css",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/blob-preview-demo.js",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search-index.js",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/图片/vm-blob-basic-user-20261023.png",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/图片/vm-rectangle-selected-user-20261023.png",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/关系图解/guide-dataflow.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/关系图解/guide-execution.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/platform-architecture.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-script.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/维护记录/文档维护.html"
                                     ],
                           "status":  "in_progress"
                       }

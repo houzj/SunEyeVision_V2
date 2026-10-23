@@ -1,0 +1,16 @@
+{
+  "baselineCommit": "c58eb08848f4ba41a692d4c5a0bb22b09eb90ee2",
+  "executor": "项目成员｜方案主控；只读调用链与VM证据分析",
+  "goal": "底部图像源整个控件设计对照，包含可见性与节点关系；不是主图像渲染器",
+  "allowedWrites": ["本专题分析JSON", "对应主文档HTML和验证收据"],
+  "analysis": "docs/collaboration/IMAGE_SOURCE_PANEL_REVIEW_20261023.json",
+  "verification": "artifacts/validation/image-source-review/evidence-verification.json",
+  "completed": ["自研固定提交活链与保存链核对", "VM平台面板与原生图像源消费者证据", "双方来源解析与可见性规则", "预热与组件成本、集成设计问题分离", "保留/借鉴/自研/不采用及整批建议"],
+  "notCompleted": ["条件风险动态复现", "同条件性能/内存基准", "产品优化实施与独立验收"],
+  "buildAndRuntime": "均未执行；不占用脚本交付资源",
+  "humanAcceptance": "尚未进行，供用户审阅方案",
+  "risks": ["不能把FullImage遗留入口当底部当前活链", "不能把1783ms到50ms代码预期当测试成绩", "VM未恢复的底层解码与释放不能称不支持", "本分析不授权新脚本批次或产品写入"],
+  "next": "HTML纳入主文档，交回文档角色持续维护；需要实施时由用户确认整批边界",
+  "productWriter": "维持现有实施者唯一产品写权",
+  "temporaryCommit": "本次仅分析与文档，不移交产品代码写权；未创建产品临时提交，保留其他角色WIP"
+}

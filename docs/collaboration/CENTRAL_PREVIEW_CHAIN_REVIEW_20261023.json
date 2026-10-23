@@ -1,0 +1,122 @@
+{
+  "id": "CENTRAL-PREVIEW-CHAIN-REVIEW-20261023",
+  "status": "analysis and proposed design only; implementation not authorized",
+  "scope": "中央图像预览区的控件、数据及使用者完整链：图像显示、顶部图像选择ComboBox、三层设计，重点交互图形与结果图形/文字；缩放平移是共用基础。不是底部图像源面板。",
+  "headline": "保留三层和轻量绘制，重点统一谁的图、哪轮结果、谁在编辑，以及切换时怎样交接。",
+  "nonInterference": "本轮未改产品、未构建、未启动程序或性能测试；图像源整批实施和脚本独立原型由协调继续，不能因本分析增加依赖或插入未批准修改。",
+  "evidence": {
+    "selfManifest": "artifacts/validation/central-preview-review/self-source-manifest.json",
+    "selfManifestSHA256": "0F6A6B0C411163477CF7C4F74846E12A2BDDBDAB62776DF49F935191B793A1CF",
+    "selfBaseline": "64f17888fac6fa10ccc78671fd5bde10e93582b2；23文件字节已冻结到artifacts/validation/central-preview-review/sources，manifest记录原路径/快照路径/SHA。中央SDK/ROI/结果层无git diff；MainWindowViewModel图像源WIP在读取间变化一次，已保留前SHA并复核diff，新增配置监听/旧解码取消等不改变本次三层及主要预览方法结论，当前快照已冻结。未来实施前只复核受影响接缝。",
+    "vmFramework": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-CENTER-DISPLAY/framework/central-display-evidence.json",
+    "vmFrameworkSHA256": "F49796B945E07B6EBEB0D864D80D8E5BFB4C9731369EA1F15B3B71A09FF20557",
+    "vmVerification": "主控独立核2个原版DLL及11个源文件SHA，13/13匹配；9条静态链。",
+    "vmTools": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/selfdev-support/VM-CENTER-DISPLAY-TOOL-CONTRACT/evidence.json",
+    "independentReview": "项目成员｜逆向源码审核，thread01a160ff-e34e-7670-90a4-55194265f8a3，2026-10-23对三项源码疑点复核3/3支持；仅只读，未运行和写产品。",
+    "limits": "未运行自研或VM交互差分/性能/堆分析，不宣称所有工具、各种图像格式及高DPI都通过。静态证据与拟议目标分开标识。"
+  },
+  "businessScenarios": [
+    "查看节点输入/输出图像，能辨认每个下拉项来自哪个节点/字段；手动选择不会悄悄改工具的算法输入绑定。",
+    "在正确底图上绘制、选择、拖动ROI或测量辅助图形；图形与像素始终对齐，取消不会留下半成品。",
+    "算法结果图形和文字只读，用来检查结果，不能因关闭参数窗口而全部消失，也不能与另一张图误叠加。",
+    "连续运行、切节点、切图、关调试窗时，显示更新与编辑有明确交接，不串帧、不抢操作、不遗留旧图形/事件。",
+    "大图、大量轮廓和标签下，保持交互响应与信息完整；不以无提示漏画NG结果换性能。"
+  ],
+  "actualSelfLayers": {
+    "host": "MainWindow→ImageResultControl.ImageDisplayContent（SDK ImageControl）",
+    "bottom": "WPF Image DisplayImage，SourceImage来自MainWindowViewModel.DisplayImage。",
+    "middle": "ResultRenderLayer: FrameworkElement.OnRender(DrawingContext)，IsHitTestVisible=false；内部绘制顺序为区域→工具输出→高亮，每组含图形和文字。",
+    "top": "InteractionOverlayCanvas：ROI/测量管理器；WpfShapeRenderer以单个RoiVisualHost持有各区域DrawingVisual，手柄另画；数学命中与控件转发鼠标事件负责编辑，不依赖每个图形成为WPF控件。",
+    "commonTransform": "ImageContainer同时包住三层，统一ScaleTransform+TranslateTransform；ScreenToImage反算输入点，ViewTransformed通知结果线宽/文字与编辑手柄。ViewportScaling集中管理反缩放。",
+    "importantDistinction": "控件的图像/结果/交互三层，与结果层内部区域/输出/高亮三组不是同一个层次；图示必须分开。"
+  },
+  "actualSelfChains": [
+    {"name":"候选与选择","chain":"DataSourceQueryService.GetImageDisplaySources→本节点图像输出+上游BFS+额外图像来源→DisplayImageSources→ImageControl.ImageSourceSelector；DropdownDisplayText=节点名.字段显示名；SelectedDisplaySource持久化，控件以SelectedIndex同步。","refs":["DataSourceQueryService.cs:354-443","ImageControl.xaml:234-248","AvailableDataSource.cs:223","MainWindowViewModel.cs:2956-3050,3331-3418"]},
+    {"name":"图像显示","chain":"选中/结果刷新→MainVM.TryResolveDisplaySource→CurrentWorkflowContext.CaptureNodeResults保留结果→ToolResults.GetDisplayImages→VisionImageToBitmapSourceConverter→Hal/Cv专属转换或通用像素转换→BitmapSource附PreviewFrameProvenance→绑定SourceImage→DisplayImage.Source。","refs":["MainWindowViewModel.cs:3363-3460","NodeResultManager.cs:278-293","VisionImageToBitmapSourceConverter.cs:21-62","ImageControl.xaml.cs:745-790"]},
+    {"name":"结果绘制","chain":"工具算法→ToolResults.Display/DisplayCollector→WorkflowContext结果缓存→NodeResultManager.RefreshResultDisplay→当前底图解析、ApplyLiveStyles、SetDisplayCollector、BuildRegionItems/SetRegionItems→ResultRenderLayer→DrawingContext。结果树选中可经SetHighlightItems附加高亮。","refs":["NodeResultManager.cs:75-177","ResultPresentationConfig.cs:62-87","ResultRenderLayer.cs:90-151,390-455"]},
+    {"name":"交互绘制","chain":"节点打开→NodeOpenDecisionChain创建工具编辑器→MainVM.InitializeToolControlAsync把当前参数/查询服务/中央ImageControl交给工具→ROI或测量Manager设置同一交互层并订阅鼠标→ImageControl.ScreenToImage→Manager路由→编辑器数学命中/绘制/拖动→RoiShape.Geometry/参数集合→RenderRequested→DrawingVisual/手柄。新建草稿完成前不入正式集合。","refs":["MainWindowViewModel.cs:2646-2767,3817-3905","RoiEditorManagerControl.xaml.cs:130-178,258-283,340-365,387-485,633-674","RoiEditorControl.xaml.cs:1175-1268,1779-1800,2340-2365"]},
+    {"name":"保存与修改状态","chain":"ROI编辑器使用注入的参数集合；Geometry是持久几何事实源，展示上下文是派生值。SolutionSession.IsDirty以当前文档语义序列化与已保存基线比较；保存仍走既有统一参数提交/快照流程。本轮不重写保存系统，交互会话提交后应复用它。","refs":["RoiEditorManagerControl.xaml.cs:96-112","RoiShape.cs:42-51","SolutionSession.cs:12-30"]},
+    {"name":"切换与清理","chain":"主控限制同时一个工具调试窗；工具Cleanup/Manager.ClearMainOverlay退订并清交互Canvas。MainVM调试窗Closed又ClearResultGraphics，当前把区域与算法结果一并清除。节点/工作流切换、选图变更、结果替换分别发生，尚非一次统一场景提交。","refs":["MainWindowViewModel.cs:2695-2715,2732-2764","ImageThresholdToolDebugControl.xaml.cs:79-88,152-162","RoiEditorManagerControl.xaml.cs:221-248","NodeResultManager.cs:159-172"]}
+  ],
+  "vmActual": [
+    {"topic":"真实宿主","fact":"主界面MainViewControl→ModuleResultView→ModuleDisplayDecorator/RenderDataCenter→ImageViewBox。RenderControlBase是工具配置窗口另一宿主，两者共享基础ImageViewBox，列表、回调和清理不能混用。","refs":"MainViewControl.xaml:33; ModuleResultView.xaml.cs:439-469; RenderControlBase.xaml.cs:48"},
+    {"topic":"三层与基础组件","fact":"同一VGrid内WPF Image、ShapeItemsPage结果图形/文字、ROIItemsPage交互ROI，另有扩展Canvas，共享Scale/Translate。ShapeCanvas承载Visual并支持结果提示命中，ROI为另一集合和命令。两边都有WPF与轻量视觉，不能先断言VM靠某个原生GPU引擎、基础组件必然更强。","refs":"ImageViewBox.xaml:32-45; ImageViewBox.xaml.cs:1360-1372; ShapeCanvas.cs; ShapeItemsPage.cs"},
+    {"topic":"顶部选项","fact":"从相关模块的.[Display]声明筛image/pixelinfoimage/PointCloud3DImage，再核直连图像IO；显示模块名+本地化Display名，CheckedImages以FullName保持。SelectedImage更换输出过滤和弱ValueChanged订阅；选空清图像/结果，选图重绘并重算ROI是否允许。","refs":"ModuleDisplayDecorator.cs:318-365,1341-1389,1552-1680; ModuleResultView.xaml.cs:2146-2273"},
+    {"topic":"结果数据与批次","fact":"工具Display.xml声明形状语义/输出映射/样式，装饰器接收非图像Display回调。RenderDataCenter按ExecuteCount组织buffer/spare图像与图形仓库，流程完成交换后Dispatcher显示。结果先取shepematrix设置ShapeConvertMatrix，再派发图元和文字。","refs":"VM工具证据XML; ModuleDisplayDecorator.cs:1268-1335; RenderDataCenter.cs:167-247; ModuleResultView.xaml.cs:677-755,928-1036,1347-1415"},
+    {"topic":"交互资格","fact":"ROI来自参数ROISelecters；图像直连IO属于当前模块已连接图像输入且状态允许时才可绘制。未开参数窗口时ROI交互层隐藏；单/双图选择指定该在哪个viewport编辑。绘制完成再加ROI集合，命令回参数，结果形状不是同一可编辑集合。","refs":"ModuleDisplayDecorator.cs:445-512; ModuleResultView.xaml:114-166; ModuleResultView.xaml.cs:2250-2273; ImageViewBox.xaml.cs:2035-2094,2244-2257,2291-2310"},
+    {"topic":"清理及限制","fact":"切模块Dispose装饰器，解订阅结果/映射回调并DeInit仓库；选空是另外清理路径。ShapeRenderingMaxNumber会限制图形数量，不能把VM存在的上限当不丢结果的证明；Exchange原生等待状态/完整取消超时未取体。","refs":"ModuleDisplayDecorator.cs:1049-1115; RenderDataCenter.cs:270-287; ShapeItemsPage.cs:170-185"}
+  ],
+  "comparison": [
+    {"responsibility":"控件分层","ours":"图像/结果/交互三层，共享变换；ROI已经DrawingVisual轻量化","vm":"图像/ShapeItemsPage/ROIItemsPage，共享变换，另有扩展层","recommend":"保留整改，不推倒重写；合并重复的坐标/几何规则，不把两个数据集合混成一个万能图形集合"},
+    {"responsibility":"显示数据事实源","ours":"底图选择、结果Collector、参数ROI和高亮由不同入口更新，局部已有帧身份与执行Identity","vm":"显示装饰器组织来源与订阅，按ExecuteCount缓冲图像/图形","recommend":"借鉴VM的统一展示协调和批次概念，自研显式场景身份与一次发布；不照搬VM所有类和等待循环"},
+    {"responsibility":"下拉选择","ours":"通用AvailableDataSource、BFS列表、索引同步、不可用时顺延并持久化回退项","vm":"Display声明+真实IO相关性筛选；显式图像对象订阅和选中恢复","recommend":"借鉴相关性/显式订阅；自研稳定身份、当前/输入/上游分组、可用状态及用户固定选择与自动模式分开"},
+    {"responsibility":"ROI资格与使用者","ours":"普通ROI只检查有图；部分测量已有绑定图像与frame检查、切图取消；各工具注入中央控件并自行清理","vm":"绘制资格关联当前模块图像输入IO，ROI在参数会话中显示","recommend":"借鉴资格和会话边界，统一适配ROI/卡尺/测量，不以每个工具补特例维持；结果查看与参数编辑分开"},
+    {"responsibility":"图形文字渲染","ours":"DrawingContext结果批量、ROI DrawingVisual差量，已有视口裁剪/批构建/文字缓存","vm":"结果ShapeCanvas/Visual和ROI控件分开，具有图元数量限制","recommend":"保留现有轻量方向，修具体错误、给缓存真实预算；不复制无提示裁图上限，不先换DirectX/Halcon窗口"},
+    {"responsibility":"退出与资源","ours":"局部退订具备，清结果/清交互由窗口与节点分散控制；旧结果live Style订阅风险","vm":"Decorator切换时统一DeInit订阅和数据仓库","recommend":"借鉴集中收尾，自研按Owner回收，只清本会话的交互层，保留仍属于当前场景的只读结果"}
+  ],
+  "findings": [
+    {"id":"CP-D01","kind":"设计缺口","priority":"P1","problem":"三层共用变换，但未共享完整的场景发布合同。选图按显示源取图，结果层仍取当前节点Collector，ROI又来自当前参数。","evidence":"NodeResultManager.RefreshResultDisplay先RefreshDisplayImageFromCurrentSource再独立SetDisplayCollector/SetRegionItems；DisplayItemBase没有图像/坐标身份。PreviewFrameProvenance和ExecutionIdentity已有局部保护，不等三层原子关联。","impact":"选择不同图像或异步结果更新时，缺少统一校验来决定哪些图形能叠到该底图；不是声称每次切图都错。","strategy":"重整/合并显示发布职责，保留原三层 renderer；定义同一场景的来源、帧、坐标系、结果代次及图层集合。"},
+    {"id":"CP-D02","kind":"设计缺口","priority":"P1","problem":"编辑资格/切图/运行刷新/关窗由各使用者分别处理。普通ROI仅要求非空图，测量有更多frame检查；关闭调试窗又清整个结果层。","evidence":"RoiEditorManagerControl.EnsureImageAvailable；ToolDebugControlBase.ConfigureCaliperDrawing；MeasurementEditorManagerControl.OnDisplayedImageChanged；MainVM.Closed→ClearResultGraphics。主界面已有单调试窗保护，不能误报当前任意多窗口同时编辑已复现。","impact":"能看到图不等于允许编辑当前工具ROI；清交互与清算法结果混在一起，查看结果的寿命被编辑窗口寿命支配。","strategy":"新增必要的显式编辑会话与输入仲裁；会话拥有自己的临时图形/事件/参数修改，退出仅释放自己。"},
+    {"id":"CP-D03","kind":"设计取舍需明确","priority":"P2","problem":"下拉数据采用绑定候选模型，索引强刷并在图不可用时改选回退源；显示选择和用户偏好/临时回退容易混为一件事。","evidence":"GetImageDisplaySources；ImageControl.OnSelectedImageSourceIndexChanged强制-1/重选/改模板Content；MainVM.SetSelectedDisplayImageSourceIndexDeferred及SetDisplayImageFromSource回退后再次持久化。","impact":"原选择尚未执行可能被别的源替代并保存；长名称/来源状态不易辨认。回退本身是现有策略，不伪装成已复现WPF故障。","strategy":"保留稳定引用，重整view model；自动/用户固定模式分开，显示实际源与不可用原因，分组和状态不只靠索引。"},
+    {"id":"CP-I01","kind":"实现缺陷，静态复核确认","priority":"P1","problem":"同一个Style用于不同图形类型会合并到第一种类型，导致漏画。","evidence":"DisplayCollector.GetOrCreateGraphicsItem只以Style为key；ResultRenderLayer按item.Type派发；实际EdgeFitDiagnostics.FillFailureDisplay同style先AddCrosses再AddContours，轮廓不进入Contour渲染分支。独立源码复核支持，尚未运行复现。","strategy":"保留收集器职责，按Style+GraphicsType及必要渲染语义分组；真实诊断交叉点/轮廓同屏验收。"},
+    {"id":"CP-I02","kind":"实现缺陷，静态复核确认","priority":"P2","problem":"缩放后的ROI强制全重画标志没有在正常渲染完成后复位。","evidence":"WpfShapeRenderer.SetViewportTransform置_forceAllRedraw=true，Render/RedrawIfChanged消费但仅Clear复位；Manager无交互MouseMove也RenderAll。","impact":"缩放一次后后续刷新持续重画所有ROI，差量路径失效；实际卡顿幅度未测。","strategy":"恢复一轮失效语义，按脏项/每渲染周期合并刷新，空悬停不重建全部手柄。"},
+    {"id":"CP-I03","kind":"持有链缺口，静态复核确认、规模未测","priority":"P1","problem":"结果替换后，旧显示项对长期live Style的强事件订阅没有看到解除路径。","evidence":"ApplyLiveStyles绑定参数Style→GraphicsDisplayItem/TextDisplayItem.Style订阅PropertyChanged；替换结果只解除renderer对旧item的订阅，未解除旧item对style的订阅。WorkflowContext退役资源租约不等这些订阅已退。","impact":"长期参数Style可能持有旧结果项与几何；不宣称已经测得每轮内存增长。","strategy":"展示样式由view会话投影或明确弱/可释放订阅，退役显示帧销毁投影与缓存，不靠加GC。"},
+    {"id":"CP-I04","kind":"实现行为确认、业务允许性待确定","priority":"P1","problem":"普通轮廓数超过5000按步长抽样；密集十字也有LOD抽样。","evidence":"ResultRenderLayer.RenderContours contourStep按数量计算，不检查是否NG才保留；RenderCrosses按lodStep走OK/NG分支。批量轮廓路径和普通轮廓路径不同，不泛化所有轮廓都被裁。","impact":"被跳过的索引可能含缺陷结果，显示完整性不能仅凭总数文字保证。","strategy":"优先保留NG/选中/诊断，密度模式必须显式标识且能查看完整；先视口裁剪/分块批量，禁止静默丢结果作为默认优化。"},
+    {"id":"CP-V01","kind":"基础合同及边界待验证","priority":"P2","problem":"通用图像接口只给宽高/通道/GetPixelData，没有像素格式/位深/stride；fallback按Gray8/Bgr24并对短数据补零。","evidence":"IVisionImage契约、VisionImageToBitmapSourceConverter.CreateBitmapSource；Hal/Cv专属转换不走该fallback。ImageControl像素读取把Rgb24与Bgr24同样倒序。","impact":"新相机/非标准格式可能误色或掩盖数据不完整；不是声称当前Hal/Cv图像全部错误。","strategy":"明确像素描述和失败报告；本专题先列边界请求，不借机全面改造SDK/相机。"},
+    {"id":"CP-V02","kind":"性能/显示边界待验证","priority":"P2","problem":"高DPI跨屏、文字缓存失效、极端缩放、长标签及大图尚无本轮测量；不能从DrawingVisual或已有缓存直接推断足够快。","evidence":"ImageControl像素坐标变换、ViewportScaling、ResultRenderLayer.FormattedText缓存及DPI读取，WpfShapeRenderer.RefreshPixelsPerDip已有局部支持。","strategy":"保留方向，计划同一几何/字号/图像的缩放/DPI/文字完整性差分和实际帧耗时，暂不换渲染引擎。"}
+  ],
+  "recommendedTarget": {
+    "summary": "三层保留，围绕同一个预览场景组织数据和使用者；结果只读、交互有会话，坐标统一，选择稳定，更新与清理有明确归属。",
+    "scene": "由展示协调者一次发布PreviewScene：工作流/节点/显示源稳定身份、图像帧、坐标描述、结果代次、图像及只读图形/文字/高亮。使用现有执行Identity和frame元数据，不另造一套执行调度。坐标可映射的上游/输出图允许组合，但要带明确变换；不同来源/坐标不靠同尺寸猜兼容。",
+    "control": "ImageControl只负责显示底图、两个overlay通道、viewport和输入事件适配；不遍历工作流、不改绑定、不安排运行、不自行写持久配置。结果层内区域/输出/高亮仍可分组；临时交互不写到算法输出Collector。",
+    "selection": "显示候选使用专用展示描述（可复用ImageSourceReference稳定ID），从元数据+输入绑定相关性生成。分组显示本节点输出、实际绑定输入、可选上游，条目展示节点/字段与未执行/缺失/失效状态；完整名字可查，避免固定160宽只靠GUID提示。用户固定项暂不可用时保留选择并显示原因；自动模式显式回退但不覆盖用户固定偏好。切显示图不修改算法输入。",
+    "editSession": "一次激活一个视口编辑所有者，绑定工具/参数版本/输入图像与坐标。ROI、卡尺及测量适配同一Begin/Update/Commit/Cancel协议；新图草稿不入正式集合，既有形状拖动按一次动作记录并可取消。命中在统一参考坐标计算，手柄/标签屏幕尺寸由viewport/DPI提供。",
+    "runDuringEdit": "执行输入仍由既有引擎快照负责。拖动时固定编辑基准底图，结果更新可继续缓存，但与当前编辑基准不兼容的新显示帧等待或提示；结束交互后应用最新合法场景。切节点/不同图或关窗先提交或取消该会话，不能一边换底图一边在旧参数上无提示继续拖动。",
+    "render": "只读结果按几何类型/样式批处理；ROI按区域DrawingVisual差量绘制，小量手柄独立；共用几何值和坐标转换，不强合成一个巨大renderer。文字明确图像锚定标签与视口固定状态文字的坐标语义，不让缩放误改数据；缓存有版本/字节预算、取消/代次门和退出释放。结果几何不可被live Style绑定永久反向持有。",
+    "cleanup": "编辑会话只移除自己overlay/事件；当前场景的只读结果在关参数窗后仍可查看，节点/场景失效时统一退役。结果帧/投影/后台几何任务/缓存/图像租约按Owner释放，旧任务不得回写新场景。",
+    "responsibilities": [
+      {"role":"工具插件","owns":"真实算法、参数和纯结果几何/文字语义及其坐标来源","doesNotOwn":"主界面全局画布清空、宿主选择状态和工作流显示调度"},
+      {"role":"平台展示协调","owns":"来源选择、节点/结果订阅、场景身份、输入资格、场景提交与退役","doesNotOwn":"算法计算和工作流调度"},
+      {"role":"显示控件/渲染器","owns":"三层合成、共同viewport、图形文字绘制、事件适配","doesNotOwn":"遍历工作流/持久化参数/更改运行输入"},
+      {"role":"ROI/测量编辑器","owns":"编辑草稿、命中、手柄、提交取消和局部历史","doesNotOwn":"改写算法历史结果/清除其他Owner图形"},
+      {"role":"节点/方案模型","owns":"已提交参数及既有保存/修改状态","doesNotOwn":"缓存、临时手柄和未完成草稿"}
+    ]
+  },
+  "sourceLineage": {
+    "borrowVM": ["图像/结果/ROI逻辑分开而共用viewport", "候选图像按Display及实际输入IO相关性组织", "统一装饰器订阅和按执行批次组织显示数据", "ROI编辑资格关联当前工具输入，随参数会话启闭"],
+    "independent": ["复用自研ExecutionIdentity/Frame元数据构成一致场景", "稳定源身份与自动/固定选择分开，不依赖显示名", "统一ROI/卡尺/测量编辑会话与取消提交", "明确显示投影/缓存/事件所有权和信息完整性验收"],
+    "doNotAdopt": ["照搬VM类树或原生等待轮询；FullName仅已证为其恢复键，不未经核对把它当本地化显示文本或直接移植为自研身份合同", "无提示硬截断结果数量", "为了仿VM改成另一套渲染引擎或把一切图形都做成可编辑控件", "以关闭调试窗清空所有结果或加GC掩盖跨层所有权问题"]
+  },
+  "migrationAndBoundary": {
+    "proposedOrder": ["先冻结场景/来源/坐标/编辑合同，整理平台与插件使用者责任", "修实际漏画、重绘标志和订阅退出缺陷，并用代表工具闭环验证", "让主预览和代表ROI/卡尺/测量工具消费同一场景/编辑协议，移除各自全局清空和选中索引强刷", "最后按同一图像/几何样本验证性能、DPI、缓存和完整性；仅有实测瓶颈才决定更换底层组件"],
+    "businessSlice": "后续若批准实施，应一次覆盖选图→显示→画/拖ROI→运行→查看结果→切图/关窗→保存重开这个完整链，不按每个小bug开新批次；先用阈值/Blob、直线或圆卡尺、测量三类代表，不能据此宣称全部工具通过。",
+    "currentBoundary": "本轮仅分析和HTML，不派产品实施、不修改正在进行的图像源或脚本原型。若未来接缝影响底部面板，只提交明确依赖/评审，不私下合并两批任务。"
+  },
+  "acceptancePlannedNotRun": [
+    "同一图像与ROI/结果/标签在缩放、平移、DPI变化后对齐；显示/命中用同一逆变换，手柄尺寸可操作，数据坐标不因缩放改变。",
+    "下拉重排/节点改名/重新打开保持稳定选择；固定项无图有说明，自动回退不覆盖固定偏好，输入图/输出图能辨认且切显示不改运行绑定。",
+    "同尺寸但不同帧/不同来源、参考坐标不同、连续运行更新时禁止不兼容叠加/编辑；切图与拖动有明确交接。",
+    "新建/移动/缩放/旋转/删除ROI、卡尺、测量辅助图形，提交/取消/失焦/捕获丢失及一次动作历史；绑定订阅模式只读与本地模式资格正确。",
+    "真实EdgeFitDiagnostics同Style交叉点+轮廓均可见；NG/高亮不被抽样静默丢弃，大量文本完整且位置正确。",
+    "缩放后静止悬停不持续全量重画ROI；连续结果替换、改样式、关窗/切节点后旧item/事件/后台任务可释放，真实驻留有预算。",
+    "关闭参数窗只清交互内容，保留当前场景只读结果；切工作流/无图/失败/取消状态下不遗留其他场景图形。",
+    "同一固定版本和样本比较构造/显示/鼠标交互/几何构建/绘制/文字排版分别耗时；不占当前任务测试窗口，不把本轮静态分析标成性能提升。"
+  ],
+  "diagramBrief": [
+    "总链：生产者数据→来源选择→场景→三层→工具/编辑/运行/保存使用者的双向箭头，标谁拥有谁修改谁释放",
+    "自研与VM并排剖面：图像/结果/交互三层，共同变换；另画结果层内部三组，避免混淆",
+    "当前链与目标链对照：分散入口各自刷新 vs 一个完整场景发布，保留已有正确职责",
+    "图像ComboBox示意：分组/完整命名/未执行状态/固定与自动；注明结构示意不是VM实测截图",
+    "四场景泳道：选图、拖ROI中来新结果、关闭调试窗、切节点；区分算法仍运行和显示编辑基准",
+    "坐标图：参考几何→修正矩阵→图像像素→viewport/DPI→屏幕，命中走逆向，标签/手柄语义单列",
+    "设计缺口与实现缺陷分开；留/改/新增/不采用来源三列；方法/SHA/长规则放details",
+    "依赖与完整业务链验收，全部标planned-not-run；只读分析不改变当前其他队列"
+  ],
+  "officialReferences": [
+    "https://learn.microsoft.com/en-us/dotnet/desktop/wpf/advanced/optimizing-performance-2d-graphics-and-imaging",
+    "https://learn.microsoft.com/en-us/dotnet/desktop/wpf/graphics-multimedia/transforms-overview",
+    "https://learn.microsoft.com/en-us/dotnet/desktop/wpf/graphics-multimedia/hit-testing-in-the-visual-layer"
+  ],
+  "documentation": "交协调统一主文档canonical专题。图示优先，正文通俗少字，详细调用/源路径/SHA与风险折叠；从主首页/搜索可进入，保留图像源面板旧专题和进度，不新增游离HTML。",
+  "productChanged": false
+}

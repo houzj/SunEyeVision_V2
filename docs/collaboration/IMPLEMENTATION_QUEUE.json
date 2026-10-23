@@ -53,15 +53,65 @@
     {
       "id": "SCRIPT-S3",
       "priority": "P1-after-S2-fixed-delivery",
-      "status": "approved-queued-dependent",
+      "status": "paused-by-user-pending-controller-architecture-choice",
       "approvedBy": "用户2026-10-23明确批准第三批",
       "authorization": "docs/collaboration/SCRIPT_S3_AUTHORIZATION_20261023.json",
       "dependencies": [
         "S2固定源码提交",
         "S2完整Release源码/产物身份与交接完成"
       ],
-      "scope": "按S3授权卡11合同/12验收；此刻未开始产品改动",
-      "next": "继续S2，固定交付完成后按S2固定SHA对齐必要增量；不等待整批独立测试"
+      "scope": "按S3授权卡11合同/12验收，唯一产品写者；子评审只读",
+      "next": "本窗口仅实施；程序集管理优化/分析/实验暂停，比较报告任务已撤回，等待主控明确选型/实施范围/验收。固定64f及A07FAIL/正式r2中止原始记录保留。",
+      "baseline": "a59f446c4032e26abafc1c6a83296db78575463e",
+      "sourceCommit": "64f17888fac6fa10ccc78671fd5bde10e93582b2",
+      "delivery": "artifacts/validation/script-s3/delivery-64f17888/identity.json",
+      "developmentEvidence": "full Release/UI pass; fixed102 tests99pass/3 A07 weak-ALC FAIL; owned A04 positive active-ownership observation; toolbox22 inventory; fixed627/1357 zero drift"
+    },
+    {
+      "id": "IMAGE-SOURCE-PANEL-BATCH",
+      "status": "fixed-delivery-scoped-independent-checks-complete-awaiting-consolidated-manual-acceptance",
+      "authorization": "docs/collaboration/IMAGE_SOURCE_PANEL_AUTHORIZATION_20261023.json",
+      "requestId": "IP-START-01",
+      "scope": "严格D01-D07/IP-A01-A10；程序集/编译加载/生命周期/Owner合同暂停",
+      "dependencies": [
+        "固定脚本交付已封存，不改历史FAIL；不干扰独立测试固定副本",
+        "协调已释放唯一产品写窗口，构建/runtime另排"
+      ],
+      "next": "用户一次M01..05体验/真实设计视图确认；实施仅按具体缺陷修复，协调文档归档和主控最终审核。程序集仍暂停。",
+      "latestImplementationProgress": "artifacts/validation/image-source-panel/implementation-progress-20261023-1658.json",
+      "finalStatusIndex": "docs/collaboration/HANDOFF_IMAGE_SOURCE_PANEL_FINAL_STATUS_20261023.json",
+      "sourceCommit": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
+      "manualChecklist": "docs/collaboration/IMAGE_SOURCE_PANEL_MANUAL_ACCEPTANCE_20261023.json"
+    },
+    {
+      "id": "FT-A01",
+      "status": "in-progress-approved-dependency",
+      "baseline": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
+      "approval": "docs/collaboration/TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json",
+      "scope": "沿原48项范围：统一类型/数量/纯数据声明，继续深冻结、几何及真实调用",
+      "verification": "内部首切片29PASS，不等完整执行合同/实际工具接入/整包PASS",
+      "receipt": "artifacts/validation/tool-framework-contract/first-dependency/receipt.json",
+      "next": "继续批准依赖，不停交接；程序集管理保持暂停"
+    },
+    {
+      "id": "FT-A02",
+      "status": "in-progress-approved-dependency",
+      "baseline": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
+      "approval": "docs/collaboration/TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json",
+      "scope": "沿原48项范围：统一类型/数量/纯数据声明，继续深冻结、几何及真实调用",
+      "verification": "内部首切片29PASS，不等完整执行合同/实际工具接入/整包PASS",
+      "receipt": "artifacts/validation/tool-framework-contract/first-dependency/receipt.json",
+      "next": "继续批准依赖，不停交接；程序集管理保持暂停"
+    },
+    {
+      "id": "FT-M03",
+      "status": "in-progress-approved-dependency",
+      "baseline": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
+      "approval": "docs/collaboration/TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json",
+      "scope": "沿原48项范围：统一类型/数量/纯数据声明，继续深冻结、几何及真实调用",
+      "verification": "内部首切片29PASS，不等完整执行合同/实际工具接入/整包PASS",
+      "receipt": "artifacts/validation/tool-framework-contract/first-dependency/receipt.json",
+      "next": "继续批准依赖，不停交接；程序集管理保持暂停"
     }
   ]
 }

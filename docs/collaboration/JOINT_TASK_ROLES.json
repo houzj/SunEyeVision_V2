@@ -40,7 +40,7 @@
   ],
   "policy": "已批准范围内事件驱动推进；交付跟进由交付协调负责，主控不承担日常定时巡检；事实源独占，产品唯一写者",
   "protocol": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
-  "protocolVersion": "2026-10-23/V4-delivery-coordination",
+  "protocolVersion": "2026-10-23/V5-evidence-and-blocker-closure",
   "adoptionStatus": "delivery-coordination-handoff-in-progress",
   "acknowledgements": "docs/collaboration/PROTOCOL_ACKNOWLEDGEMENTS_20261022.json",
   "independentTesting": {
@@ -147,6 +147,45 @@
     "canWriteProduct": false,
     "canReplaceIndependentVerdict": false,
     "canGiveFinalApproval": false,
-    "handoff": "docs/collaboration/HANDOFF_DELIVERY_COORDINATION_20261023.json"
+    "handoff": "docs/collaboration/HANDOFF_DELIVERY_COORDINATION_20261023.json",
+    "acceptanceForCoordination": [
+      "每个阻塞有分类/具体责任人/解除证据",
+      "输入交付由消费者确认可用，状态不能只靠转发",
+      "实际启动和结果有进程或用例证据，引用唯一事实源版本",
+      "消息与文件冲突主动核实，不按旧状态推进",
+      "失败缺陷经新固定包实际复测和核收才关闭",
+      "只有需决策事项/最终审核提交主控"
+    ],
+    "adaptiveCoordination": {
+      "authorized": true,
+      "signals": [
+        "反复缺输入/退回",
+        "只有准备无执行",
+        "消息与事实源不一致",
+        "资源空等/重复催促/返工"
+      ],
+      "adjustable": [
+        "任务粒度",
+        "交接清单",
+        "已批准任务内并行/串行安排",
+        "事件反馈节点",
+        "子智能体组织"
+      ],
+      "record": "现有DELIVERY_COORDINATION_STATUS内短记原因/调整/实际效果，禁止另造繁重台账",
+      "success": "减少等待/退回或形成实际执行证据",
+      "limits": [
+        "不改授权范围/用户优先级/验收标准",
+        "不代独立结论/主控最终审核"
+      ],
+      "governanceGate": "流程调整已收口，角色回执及文档不阻塞开发和就绪测试"
+    }
+  },
+  "architectureReviewPolicy": {
+    "source": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
+    "section": "2026-10-23 架构设计与审核原则（用户确认）",
+    "appliesTo": "all project members",
+    "controlRole": "technical director: architecture design, decision approval, final review",
+    "existingImplementationHasPriority": false,
+    "scopeExpansionAuthorized": false
   }
 }

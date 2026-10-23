@@ -1,0 +1,623 @@
+{
+  "id": "SCRIPT-S2-DESIGN-20261023",
+  "status": "design-only-not-approved-for-implementation",
+  "owner": "自研主控方案；HTML由文档角色独占",
+  "implementationOwner": "自研实施者，S1继续，不修改其代码/队列/共享构建",
+  "baseline": {
+    "commit": "5a700dad",
+    "meaning": "S1在制临时提交，非最终S1交付；S2事实按该固定源码讨论，落地前对齐实施者最终合同",
+    "implementationAlignment": "实施者已确认S1接口方向：ScriptAnalysisSession(Id/Version/ReferenceIdentity，SetEnvironment比较generatedCode)、ScriptAnalysisReferences(Identity/不可变References)；ScriptRevision仅通知，不作IO内容合同键。S1仍在修订，非最终验收。"
+  },
+  "headline": "窗口先能编辑，补全跟随当前输入，编译等待可见；动态输入输出与代码始终同版",
+  "facts": [
+    {
+      "id": "F1",
+      "fact": "宿主等待InitializeAsync后Show；脚本InitializeAndWaitAsync等待语义高亮完成；高亮TriggerWarmup实际遍历全文，缓存上限512。",
+      "kind": "static-confirmed",
+      "implication": "打开前置等待链明确；实际占总耗时比例须完整窗口分段测量。"
+    },
+    {
+      "id": "F2",
+      "fact": "自动补全、语义分类、500ms诊断和补全预热各有异步工作，未构成统一查询优先级。",
+      "kind": "static-design-gap",
+      "implication": "竞争存在可能，不把竞争推断当已测瓶颈。"
+    },
+    {
+      "id": "F3",
+      "fact": "脚本ExecuteTool中同步PreCompile，再Task.Run执行并GetAwaiter().GetResult；基类已有ExecuteToolAsync虚方法但默认Task.FromResult(ExecuteTool())仍同步调用。",
+      "kind": "static-confirmed",
+      "implication": "仅外层async不足以解除UI等待；优先脚本override异步钩子，不全工具改造。"
+    },
+    {
+      "id": "F4",
+      "fact": "Inputs/Outputs项目任意PropertyChanged均发合同事件，TypeName变化还通知ParamType，OnContractChanged直接重建/诊断。GeneratedCode将输入输出生成partial class字段。",
+      "kind": "static-confirmed",
+      "implication": "按真正影响字段的差异合并提交，展示/绑定变化不必重新编译。"
+    },
+    {
+      "id": "F5",
+      "fact": "变量表CommitEdit Cell/Row返回bool未核查，随后CancelEdit；新增变量名按count+1生成；删除路径至少保留1项。",
+      "kind": "static-risk-not-runtime-reproduced",
+      "implication": "新增/删除后可能撞名（input1,input3→再新增input3）；非法/未提交编辑不得默默回退并执行旧定义；是否支持零IO需作为目标取舍。"
+    },
+    {
+      "id": "F6",
+      "kind": "static-risk-not-runtime-reproduced",
+      "fact": "SDK词汇Circle/Point等映射为几何数组；ScriptTypeMapper直接处理该映射而GeometryFieldDefaults对无[]词目仍生成单对象默认表达式。显式[]词目还可能在已有数组类型上再次追加[]。",
+      "implication": "动态IO不能只按UI类型名称处理；C#类型、数组维度、默认值、输入转换、输出集合元数据必须一致。例Circle字段可能是Circle2d[]而默认初始化为RoiShape，属于可达源码不一致，未运行复现。"
+    }
+  ],
+  "vmThreeWay": [
+    {
+      "topic": "动态IO进入脚本",
+      "vm": "GenerateUserPropertyCs按IOInfo生成输入getter/输出setter；ScriptCom.CompileCode仅在IsUsePropertyMode时传property代码，另一模式并非此属性生成路径。",
+      "current": "已有动态IO配置→partial class字段→反射输入注入/输出读取；不是没有动态IO。",
+      "target": "保留字段式脚本API，将有效IO定义、生成字段和语义/编译请求固定在同一版本。",
+      "borrow": "配置生成有类型脚本成员，用户只写处理逻辑。",
+      "self": "稳定FieldId、有效定义原子提交、版本/取消/校验与诊断定位。",
+      "reject": "不为追随VM改成原生句柄getter/setter；它依赖VM运行桥和类型体系，现有SDK快照字段链应先闭合。",
+      "limit": "不宣称VM所有18种动态IO ABI已贯通，不推断属性模式运行必然更快。"
+    },
+    {
+      "topic": "编译复用",
+      "vm": "BaseScriptSupport以source+property+moduleId查缓存，property代码传入CodeDOM编译。",
+      "current": "S1正在补齐代码/生成字段/引用/选项/编译器内容身份。",
+      "target": "在S1完整身份之上合并同键进行中的编译任务，区分缓存命中与真实编译。",
+      "borrow": "生成IO也参与产物身份，已有产物复用。",
+      "self": "同键single-flight、请求者独立取消、当前版本准入、失败不得用旧成功产物。",
+      "reject": "不采用缺引用内容的弱缓存键或失败清dirty语义；旧产物可能被误用。"
+    },
+    {
+      "topic": "显示与等待",
+      "vm": "已取证编辑/引用异步准备、编译/执行入口分开；用户观察打开/补全快。",
+      "current": "开窗await全文语义，执行链仍有同步等待。",
+      "target": "正确代码+IO表先显示可编辑；语义准备和编译显式状态，补全优先。",
+      "borrow": "编辑、语义准备、预编译和执行分责。",
+      "self": "分阶段就绪、会话版本、可取消队列。",
+      "reject": "不凭用户观察断言VM也采用本目标调度或声称无首次基础成本。"
+    }
+  ],
+  "flows": {
+    "openCurrent": [
+      "构造控件/加载代码与IO",
+      "Workspace/引用",
+      "语义模型/全文分类",
+      "await完成",
+      "Show窗口"
+    ],
+    "openTarget": [
+      "注入节点与参数/正确代码与IO表",
+      "轻量初始化完成→Show→可输入",
+      "后台创建语义会话和必要引用",
+      "当前可见区域优先着色/补全准备",
+      "诊断与离屏分类低优先"
+    ],
+    "completionTarget": [
+      "确认当前有效IO+生成代码+引用快照",
+      "当前光标补全请求优先",
+      "复用S1元数据及语义会话",
+      "新输入/引用/IO使旧请求过时",
+      "只有会话/文档/IO/引用/光标仍匹配才显示"
+    ],
+    "compileTarget": [
+      "点击预编译/执行→提交代码与IO单元格",
+      "校验失败→保留草稿/定位错误/不执行",
+      "固定代码+IO合同+引用+选项请求",
+      "同键已有产物直接复用；同键进行中共用任务",
+      "后台排队/编译→成功/失败/取消可见",
+      "执行需当前有效成功产物；不回退旧代码"
+    ],
+    "dynamicIO": [
+      "变量表草稿（增加/删除/重命名/类型/绑定）",
+      "提交Cell+Row并检查失败",
+      "校验名称/跨输入输出重名/类型映射/FieldId",
+      "形成有效IO定义快照",
+      "生成字段文档并推进IO语义版本",
+      "补全/诊断/编译共用该版",
+      "绑定值在运行开始另取值快照，不每次值变重新编译"
+    ]
+  },
+  "contracts": [
+    {
+      "id": "D1",
+      "name": "两层编辑状态",
+      "detail": "表格和代码有编辑草稿；有效IO快照只在校验成功后发布。非法草稿不丢失，执行/预编译/确认须先显式提交；保留前一快照用于展示也不能静默按旧定义执行。"
+    },
+    {
+      "id": "D2",
+      "name": "区分三类变化",
+      "detail": "名称/方向/CLR类型/数组维度/字段默认规则改变→语义与编译版本变化。只改绑定来源且类型相同→输入配置版本变化，不触发Emit；Source导致类型推导变化则按字段变更。只改显示分组/顺序→展示刷新（除非它影响实际生成或结果合同）；别用通知次数当内容版本。"
+    },
+    {
+      "id": "D3",
+      "name": "动态成员身份",
+      "detail": "FieldId在重命名时保留，删除后失效；新字段新ID。脚本访问仍按C#字段名。重命名不自动字符串替换用户源码，需提示旧名引用错误；自动重构可后续独立设计。删除/改类型标记受影响下游绑定，不能自动接到同名新字段；全平台绑定修复另属相关批次。"
+    },
+    {
+      "id": "D4",
+      "name": "编译与运行身份分开",
+      "detail": "编译键关注源码/生成字段/引用/选项/编译器，运行请求另带FieldId映射、绑定及当前输入值。只换值不重编译。立即执行先提交有效IO并固定产物和参数；排队期间发生字段变更则旧等待失效，不能自动改跑另一版。运行后结果准入属于S3统一合同，S2须预留身份。"
+    },
+    {
+      "id": "D5",
+      "name": "零输入输出",
+      "detail": "推荐允许0输入、0输出以及仅输入/仅输出；脚本副作用/日志场景合法，生成空partial class仍有效。取消UI至少1项限制前检查运行输入/输出/监视对空集合的处理，用用例验证；不能照搬VM属性生成器空任一侧即空的条件。"
+    },
+    {
+      "id": "D6",
+      "name": "少做无效准备",
+      "detail": "保留MEF/必要元数据/最小Emit基础预热；不构造用户实例，不开窗前全文分类。补全与首屏优先，诊断/离屏着色/推测预编译低优先；有限并发，不能每个任务各自Task.Run无限抢CPU。"
+    },
+    {
+      "id": "D7",
+      "name": "同键编译等待",
+      "detail": "同键多个请求共用一次任务；一个窗口取消仅退出自己的等待，不随意取消其他执行者共用的任务。无人消费且仍可取消才取消后台作业。失败结果不能进入成功缓存；重试可重新编译；关闭后不得更新已关闭视图。"
+    },
+    {
+      "id": "D8",
+      "name": "宿主改动边界",
+      "detail": "优先保留宿主原有Set/await InitializeAsync/Show顺序，把脚本InitializeAsync变为正确文本与IO表的轻量初始化；Loaded之后启动语义准备。不要为了脚本把所有工具全局改成Show后初始化，避免其他工具未准备就运行。脚本override既有ExecuteToolAsync钩子，替代同步GetResult；通用SDK接口新增仅有必要时再评审。"
+    },
+    {
+      "id": "D9",
+      "name": "统一类型形状",
+      "detail": "从同一ScriptIoTypeDescriptor派生CLR类型、C#名称、元素/维度、默认值、输入转换及输出声明；既有SDK词汇是输入依据，不再各自按名称猜是否数组。几何自动数组、显式数组、Image、空值/空集合均须逐项核验。避免为本专题重做SDK全局类型系统，先在脚本适配层闭合同一规则。"
+    },
+    {
+      "id": "D10",
+      "name": "保存编辑与执行分开",
+      "detail": "确认/关闭先提交编辑缓冲，不以真实Emit完成作为关闭前置。用户代码可带编译错误保存供继续编辑；不能把编译失败误报执行成功或丢弃代码。IO结构草稿非法则明确保留并提示，不能静默恢复旧结构；错误如何跨关闭保留须按现有方案持久化合同审查。预编译只检查产物，执行才要求当前快照成功且输入绑定有效。"
+    }
+  ],
+  "scenes": [
+    {
+      "label": "新增输出 score:Double",
+      "result": "生成public double score；补全出现score，新IO版本编译；用户源码不自动补业务代码。"
+    },
+    {
+      "label": "input1由Integer改String",
+      "result": "只发布一次有效类型修改，补全由数字成员变字符串成员；旧数字诊断/候选不得回来覆盖。"
+    },
+    {
+      "label": "重命名score→confidence",
+      "result": "FieldId保留，生成字段换名；源码仍使用score则定位错误并阻止旧产物执行，不盲替换字符串/注释。"
+    },
+    {
+      "label": "只换同类型绑定或输入值",
+      "result": "保留同一编译产物；下一次运行使用新绑定和值，不重新Emit。"
+    },
+    {
+      "label": "非法名称或跨IO重名",
+      "result": "草稿保留并标错，提交失败，预编译/执行不按前一有效定义偷偷成功。"
+    },
+    {
+      "label": "删到0项/先删后加",
+      "result": "空集合可生成并运行；新名字按可用名检查，不用count+1导致碰撞。"
+    },
+    {
+      "label": "修改IO后立刻执行/编译中又改IO",
+      "result": "立即执行提交并捕获新合同；旧编译结果只作对应历史任务结果，不显示当前成功、不执行错误版本。"
+    }
+  ],
+  "implementationOrder": [
+    {
+      "step": 1,
+      "scope": "对齐S1最终引用/会话/编译产物身份；记录S1哪些尚待独立验收。",
+      "gate": "不重做第二套缓存/版本管理，不要求中断S1。"
+    },
+    {
+      "step": 2,
+      "scope": "动态IO有效提交、字段差异、命名/类型校验与生成文档；合并重复通知。",
+      "gate": "字段、补全和编译同版本，绑定值与字段定义分离。"
+    },
+    {
+      "step": 3,
+      "scope": "脚本轻量初始化可编辑，首屏语义/补全优先，低优先任务可取消。",
+      "gate": "正确文本/IO先显示；准备中明确标识，不用错误候选伪造就绪。"
+    },
+    {
+      "step": 4,
+      "scope": "异步编译协调器/同键任务合并，脚本异步执行入口；明确取消和失败。",
+      "gate": "UI可响应；同键只Emit一次；输入未提交/错误则不跑旧产物。"
+    },
+    {
+      "step": 5,
+      "scope": "完整窗口和动态IO组合用例/性能采样，固定Release后独立测试。",
+      "gate": "S3运行生命周期/资源回收仍单列，不用S2结果覆盖未验合同。"
+    }
+  ],
+  "files": {
+    "retainAndAdjust": [
+      "src/CommonControl/ScriptAnalysisSession.cs",
+      "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptReferenceSnapshot.cs",
+      "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs",
+      "tools/SunEyeVision.Tool.Script/Models/ScriptInputConfig.cs",
+      "tools/SunEyeVision.Tool.Script/Models/ScriptOutputConfig.cs",
+      "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+      "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml",
+      "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+      "src/CommonControl/ScriptEditorCore.xaml.cs",
+      "src/CommonControl/SemanticHighlighter.cs",
+      "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+      "tools/SunEyeVision.Tool.Script/Models/ScriptTypeMapper.cs"
+    ],
+    "candidateNew": [
+      "ScriptIoContractSnapshot/validator（工具层）",
+      "ScriptCompilationCoordinator（工具层）",
+      "ScriptAnalysisScheduler（公共编辑器层，最小职责）",
+      "ScriptIoTypeDescriptor（工具层，由现有SDK词汇派生）"
+    ],
+    "inspectOnlyUnlessNecessary": [
+      "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "src/Plugin.SDK/UI/Controls/IToolControlInitializer.cs",
+      "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "src/Plugin.SDK/Models/SdkTypeVocabulary.cs"
+    ],
+    "outOfScope": [
+      "替换Roslyn/AvalonEdit",
+      "完整自动重命名重构",
+      "全平台绑定迁移/所有工具窗口改造",
+      "S3完整生命周期/运行租约"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "S2-A01",
+      "assert": "真实ScriptDebugControl完整外壳、至少10新进程/20再次打开，记录显示/可输入/语义/首次自动dot与CtrlSpace弹窗时刻；固定样本、同引用、合法候选先通过。可输入p95<=500ms、热补全p95<=150ms是预算，不是本轮成绩。"
+    },
+    {
+      "id": "S2-A02",
+      "assert": "101/1001/5001行及超过512行滚动，首屏优先，不开窗前全文分类；代码正确且输入不丢、不出现长白屏等待。"
+    },
+    {
+      "id": "S2-A03",
+      "assert": "0/1/50输入输出，标量/数组/Image/代表几何类型，新增/删除/改名/改类型、同名删除重加及跨IO重名；字段类型与实际映射逐项核验，不能只测int。"
+    },
+    {
+      "id": "S2-A04",
+      "assert": "DataGrid未失焦立即点预编译/执行、非法名称/类型、连续修改，只有提交成功才捕获有效合同；内容保留，不静默CancelEdit后跑旧版。"
+    },
+    {
+      "id": "S2-A05",
+      "assert": "绑定变更类型相同/仅值变，Emit次数不增加；推导类型变化触发新IO语义/编译身份。"
+    },
+    {
+      "id": "S2-A06",
+      "assert": "同键预编译与执行并发只Emit一次；不同IO/源码/引用有新键；取消一个等待者不破坏其他消费者；失败不可执行旧成功产物。"
+    },
+    {
+      "id": "S2-A07",
+      "assert": "补全/诊断/编译返回时逐版本核对，快速切光标/改IO/换引用/关窗后无旧候选覆盖；运行后的跨代结果保护仍需S3验证。"
+    },
+    {
+      "id": "S2-A08",
+      "assert": " UI心跳/输入探针覆盖引用准备、首次补全、真实编译、缓存命中；分段记录等待/Emit/加载/执行，不用总编译缓存命中ms替代实际编译。"
+    },
+    {
+      "id": "S2-A09",
+      "assert": "全量Release、独立固定副本/数据目录验收；VS设计器、用户视觉、未测项分开标，不能仅构建通过标闭环。"
+    },
+    {
+      "id": "S2-A10",
+      "assert": "带语法错误代码确认/关闭仍保留内容并可重新打开，编译失败不误报成功；动态IO结构非法的未提交草稿有明确保留/阻止关闭提示，不以旧定义代替用户编辑。确认不在UI线程等待Emit。"
+    }
+  ],
+  "performanceEvidence": {
+    "path": "artifacts/performance/script-warmup-window-20261023/final/summary.json",
+    "baselineMedians": {
+      "coldOpenMs": 1556,
+      "prewarmedOpenMs": 1182,
+      "warmupPreparationMs": 717,
+      "suppressedStartupOpenMs": 1920,
+      "firstRequestedCompletionMs": "约368–388"
+    },
+    "limits": [
+      "独立WPF ScriptEditorCore，不是完整产品窗口",
+      "每模式3新进程，不是稳定p95",
+      "本轮S2仅分析，不新跑构建/测试，不声称改后速度"
+    ]
+  },
+  "evidence": [
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "9dcd71bba72e25af94a858f52d18b0ca573709313f1cb491bc271fb275582048",
+      "locations": [
+        {
+          "needle": "await initializer.InitializeAsync();",
+          "line": 3855
+        },
+        {
+          "needle": "debugWindow.Show();",
+          "line": 3873
+        }
+      ]
+    },
+    {
+      "path": "src/CommonControl/ScriptEditorCore.xaml.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "5b75309cb6dbe8d1f47814f36c7aa4977bde834220f1aedda2ada8412ac752a0",
+      "locations": [
+        {
+          "needle": "InitializeAndWaitAsync",
+          "line": 365
+        },
+        {
+          "needle": "await _semanticColorizer.WarmupCompletion",
+          "line": 382
+        },
+        {
+          "needle": "GetCompletionsAsync",
+          "line": 966
+        },
+        {
+          "needle": "ScheduleDiagnosticAsync",
+          "line": 355
+        }
+      ]
+    },
+    {
+      "path": "src/CommonControl/SemanticHighlighter.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "df896fcee07a1c1f9af7ba32d445c6bc1bd373b345049879a56c8a1c4e49fa75",
+      "locations": [
+        {
+          "needle": "private const int CacheSize = 512",
+          "line": 33
+        },
+        {
+          "needle": "var fullLineCount = _document.LineCount",
+          "line": 77
+        },
+        {
+          "needle": "WarmupAsync(maxLines: fullLineCount",
+          "line": 78
+        },
+        {
+          "needle": "CancellationToken.None",
+          "line": 354
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "b4eac62f61322c496de5762ff39d1297788e2219fd28bc0adb3cb621f9392d8a",
+      "locations": [
+        {
+          "needle": "private void OnContractChanged()",
+          "line": 619
+        },
+        {
+          "needle": "PreCompileLatestCode();",
+          "line": 117
+        },
+        {
+          "needle": "GetAwaiter().GetResult()",
+          "line": 302
+        },
+        {
+          "needle": "protected override object ExecuteTool()",
+          "line": 288
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "622adc1ad52dc51db7b0b5751086c0431a4d4c7f011e46eef0604186d4472f53",
+      "locations": [
+        {
+          "needle": "public string GeneratedCode",
+          "line": 271
+        },
+        {
+          "needle": "OnInputPropertyChanged",
+          "line": 189
+        },
+        {
+          "needle": "OnOutputPropertyChanged",
+          "line": 221
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "21b281f9aefbcbe406c16e4a6c777e00726d1d9b8696a63722aa50c44dd756ae",
+      "locations": [
+        {
+          "needle": "private void CommitDataGridEdit()",
+          "line": 212
+        },
+        {
+          "needle": "EditGrid.CommitEdit(DataGridEditingUnit.Cell",
+          "line": 217
+        },
+        {
+          "needle": "EditGrid.CancelEdit();",
+          "line": 221
+        },
+        {
+          "needle": "int index = list.Count + 1",
+          "line": 577
+        },
+        {
+          "needle": "_sourceItems.Count <= 1",
+          "line": 612
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptInputConfig.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "f7f94c144420f28edc30b796a37fcd5275dd9e415a40ea361c2de87cf46a6cad",
+      "locations": [
+        {
+          "needle": "public Guid FieldId",
+          "line": 14
+        },
+        {
+          "needle": "TypeName = vocabulary",
+          "line": 51
+        },
+        {
+          "needle": "public string GenerateFieldCode()",
+          "line": 78
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptOutputConfig.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "23ea42872bedd83c68430b2e8d3f2adcf40157a710d454ba4088b5f050e967d8",
+      "locations": [
+        {
+          "needle": "public Guid FieldId",
+          "line": 14
+        },
+        {
+          "needle": "public string GenerateFieldCode()",
+          "line": 96
+        }
+      ]
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "b539cbd6a95b56405888153e4ae526213abb09e48fa2819db4a6e0261e0f3dc1",
+      "locations": [
+        {
+          "needle": "ToolEditorCommit.TryCommit",
+          "line": 320
+        },
+        {
+          "needle": "await ExecuteToolAsync()",
+          "line": 323
+        },
+        {
+          "needle": "Task.FromResult(ExecuteTool())",
+          "line": 1051
+        }
+      ]
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/IToolControlInitializer.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "e428f0bd8f66135a85c3c438f8ab580fe2001a0dd8dd0abfc499648f392bf427",
+      "locations": [
+        {
+          "needle": "Task InitializeAsync()",
+          "line": 74
+        }
+      ]
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/b-script/decompiled/ScriptSupport/Script.Support/GenerateUserPropertyCs.cs",
+      "sourceKind": "retained-vm-decompilation",
+      "commit": null,
+      "sha256": "17cdf495c0598e67f71b83872f81d2434129625dc3cbf78875ed0704f8993d2c",
+      "locations": [
+        {
+          "needle": "private string InputTemplate =",
+          "line": 12
+        },
+        {
+          "needle": "private string OutputTemplate =",
+          "line": 14
+        },
+        {
+          "needle": "public string GeneralPropertyCode",
+          "line": 27
+        },
+        {
+          "needle": "inputIo.Count <= 0 || outputIo.Count <= 0",
+          "line": 30
+        }
+      ]
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/b-script/decompiled/ScriptComponent/ScriptComponent/ScriptCom.cs",
+      "sourceKind": "retained-vm-decompilation",
+      "commit": null,
+      "sha256": "aa704102f2841db0b61231172283a6b0604fe360ace215f4067b7a7fbe4733f3",
+      "locations": [
+        {
+          "needle": "private bool CompileCode",
+          "line": 832
+        },
+        {
+          "needle": "IsUsePropertyMode ? GenerateUserPropertyCs",
+          "line": 840
+        }
+      ]
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/worktrees/tool-plugins/analysis/b-script/decompiled/ScriptSupport/Script.Support/BaseScriptSupport.cs",
+      "sourceKind": "retained-vm-decompilation",
+      "commit": null,
+      "sha256": "e96f2a7ff5e13783b3e862725bf4a00366ad967bc3b9c13766b330a9c572b2b8",
+      "locations": [
+        {
+          "needle": "string sourceCode = source + property + nModuleid",
+          "line": 113
+        },
+        {
+          "needle": "GenerateExecutable = false",
+          "line": 126
+        },
+        {
+          "needle": "CompileAssemblyFromSource(compilerParameters, source, property",
+          "line": 161
+        }
+      ]
+    },
+    {
+      "path": "tools/SunEyeVision.Tool.Script/Models/ScriptTypeMapper.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "883b41c4d9e97dae1bc31c5842ea52c19509b03e1a99d23168b67cc62bdd2c19",
+      "locations": [
+        {
+          "needle": "public static string ToCsTypeName",
+          "line": 99
+        },
+        {
+          "needle": "public static string GetFieldDefault",
+          "line": 118
+        },
+        {
+          "needle": "GeometryFieldDefaults.TryGetValue",
+          "line": 121
+        }
+      ]
+    },
+    {
+      "path": "src/Plugin.SDK/Models/SdkTypeVocabulary.cs",
+      "sourceKind": "fixed-wip-commit",
+      "commit": "5a700dad",
+      "sha256": "c42d9f64c1bff79b11cfe0e56ae679bda0083028e27ed7cd02981873b2bb7c56",
+      "locations": [
+        {
+          "needle": "[\"Circle\"]",
+          "line": 100
+        },
+        {
+          "needle": "[\"Point\"]",
+          "line": 102
+        }
+      ]
+    }
+  ],
+  "disposition": "HTML主专题新增可视化S2章节，首页搜索能找到“脚本第二批”“动态输入输出”；根不改产品/构建/队列。完整S1最终接口依赖未验证，S2未批准实施。"
+}

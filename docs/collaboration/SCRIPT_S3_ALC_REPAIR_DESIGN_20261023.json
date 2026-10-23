@@ -1,0 +1,52 @@
+{
+  "id": "S3-ALC-01-repair-design",
+  "date": "2026-10-23",
+  "status": "recommended mechanism with actual cause contrasts; production patch not authorized or validated",
+  "problem": "WPF名称解析把IsCollectible=true但IsDynamic=false的脚本PE程序集作为静态Dictionary强键，ALC.Unload请求不能切断该外部root。",
+  "sourceOfRecommendation": {
+    "ourActualEvidence": "同版CIL、普通BAML/编辑器构造阶段对照及反向加载顺序负例，见SCRIPT_S3_ALC_TRIGGER_REVIEW_20261023.json",
+    "borrowVM": "只借鉴显式引用解析与编译结果复用；引用配置、语义引用、编译与运行生命周期分层核对。",
+    "independentDesign": "以已批准的可回收合同约束WPF缓存兼容性，保留Roslyn与节点运行接口，修正第三方框架对collectible PE的判定。",
+    "doNotBorrowVM": "VM当前COM路径Assembly.Load(bytes)+静态Assembly缓存没有证明可卸载，不能以常驻模式替代A07。"
+  },
+  "recommendedChange": {
+    "location": "WPF Shared/MS/Internal/SafeSecurityHelper.cs : GetAssemblyName",
+    "rule": "useWeakKey = assembly.IsDynamic || assembly.IsCollectible",
+    "changes": [
+      "缓存key选择使用useWeakKey：保留原IsDynamic行为，同时让collectible PE用WeakRefKey",
+      "GC清理回调注册也使用相同useWeakKey条件，不能只改key而不清理死亡弱键",
+      "GetLoadedAssembly匹配与解析结果、非collectible程序集缓存、编译/执行协议保持原合同"
+    ],
+    "siblings": "该Shared源码在WindowsBase、PresentationCore、System.Xaml有同族；按实际目标构建和消费者路径核对，不能只补一个DLL便宣称全部WPF路径安全。",
+    "alternative": "collectible程序集不进入此名称缓存可作为源码级替代，但会重复构造AssemblyName；需单独测解析成本与语义，不优先悄悄采用。"
+  },
+  "excludedWorkarounds": [
+    "只减少引用、加预热或加GC：没有切断强root",
+    "只给UI投影DTO或清监视：无监视的普通BAML已经可重现",
+    "只先建UI或复用脚本窗口：其他后续BAML仍会扫描",
+    "LocalAssembly/EnterContextualReflection：不先于helper全域扫描生效",
+    "私反射清活缓存、方法detour、把程序集永久缓存来消除卸载断言",
+    "为本项自动换编译器、改SDK或新增进程隔离体系"
+  ],
+  "validationLayers": [
+    {"layer":"真实原版WPF因果定位","status":"已取得正负对照与同版CIL；无已捕获断点运行栈","evidence":"phase-comparisons-01 ordinary-before/ordinary-after/core-before"},
+    {"layer":"私有真实WPF候选","status":"候选未写入、未运行；不是机制被反证","evidence":"private-runtime-fixture-01/result.json：Cecil拒绝mixed/R2R载体；无既存IsCollectible MemberRef，停止等长token路径；473 runtime文件零漂移，安装及产品未改"},
+    {"layer":"完整OR算法等价体","status":"已授权独占CLI对照，实际结果另附；不能替代真实WPF候选","evidence":"原/候选两分支、同PE、外部释放强局部、ALC弱引用与弱键清理"},
+    {"layer":"可部署真实修复与独立验收","status":"尚未实施；需先决定可靠运行时交付路径","evidence":"源码可重复构建或已验证官方修复版本；实际加载路径/SHA+100真实窗口验收"}
+  ],
+  "productionDecisionBoundary": {
+    "preferredIfAvailable": "经本最小复现和原合同实测通过的官方可部署WPF修复版本；当前没有已验证的版本，不能仅凭升级版本号推荐。",
+    "otherwise": "若继续此机制修正，需要应用专用、可重复构建和维护的修复WPF运行时，显式记录源码、补丁、工具链、组件身份与服务更新策略；这是需要用户确认的依赖交付决定，不是主控已授权替换产品运行时。",
+    "notDeployable": "诊断用Cecil输出、绕签名或直接替换系统已安装WindowsBase不作为发布方案。",
+    "cost": "已有实施者估算真实同版源码/Arcade依赖准备与验证至少30–60分钟，依赖未齐且不是交付承诺；需先核工具链/构建输入及程序集身份匹配，再给可靠计划。"
+  },
+  "acceptance": [
+    "四种IsDynamic/IsCollectible组合行为明确，保留既有动态程序集语义；弱键死亡清理及并发查询正确",
+    "真实修复运行时在脚本已加载后反复构造普通BAML、ScriptEditorCore、ScriptDebugControl、窗口与资源字典，不产生脚本Assembly强root",
+    "保留原S3-A07：100真实打开/执行/关闭、代码/引用换代、方案退出，Owner/租约/会话排空与退役ALC弱引用回收均通过",
+    "核WindowsBase/PresentationCore/System.Xaml相关消费者，不漏其他root；只有强键计数减少不算ALC回收",
+    "类型/资源解析、主题、工具窗口、插件加载与脚本执行回归通过；正式采样与诊断开关分离",
+    "固定源码和完整Release加修复运行时身份可重复；独立测试采用同一份完整交付，文档列明通过/失败/未知"
+  ],
+  "closure": "本轮交付根因图与修复设计，不将原版失败、算法佐证、真实修复和生产验收混同。用户确认运行时交付路线后，实施者可在同一S3阻断范围内修复并由独立测试闭环；不新开脚本功能批次。"
+}

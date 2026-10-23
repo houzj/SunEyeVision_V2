@@ -1,0 +1,102 @@
+{
+  "id": "VM-SCRIPT-ASSEMBLY-MANAGEMENT-20261023",
+  "status": "static original-code evidence; no heap/runtime measurement",
+  "originalEvidence": {
+    "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\selfdev-support\\VM-SCRIPT-FULL-CHAIN-20261023\\evidence.json",
+    "sha256": "d5038cf8a74f0e722895f166812c16d8e0830625d1cac51616518c18c81133db"
+  },
+  "files": [
+    {
+      "role": "script-com",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptComponent\\ScriptComponent\\ScriptCom.cs",
+      "sha256": "aa704102f2841db0b61231172283a6b0604fe360ace215f4067b7a7fbe4733f3"
+    },
+    {
+      "role": "compiler",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\BaseScriptSupport.cs",
+      "sha256": "e96f2a7ff5e13783b3e862725bf4a00366ad967bc3b9c13766b330a9c572b2b8"
+    },
+    {
+      "role": "active-loader",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\ComScriptSupport.cs",
+      "sha256": "ba2362c1fdeaa516346c2f429b9262a729e1a7394d535482e9e88f37b5d1fb33"
+    },
+    {
+      "role": "runtime-loader",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\RemoteLoaderFactory.cs",
+      "sha256": "40a169046843a5bf2b9a944127d1f7603887e10d8d1c828d7e1ab965bbe79e4a"
+    },
+    {
+      "role": "cache",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\AssemblyManager.cs",
+      "sha256": "7e3725fb2e6a4d0a589ea85e7356ff1162f3a8916a4d3f05feb96dc0e0cd3a4f"
+    },
+    {
+      "role": "alternate-domain",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ScriptSupport\\Script.Support\\HikScriptSupport.cs",
+      "sha256": "df596fded4ce44943764537f05c68e953eb348bd298576ea40ab5c8e5a8788fc"
+    },
+    {
+      "role": "editor",
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\b-script\\decompiled\\ShellModuleControl\\ShellModuleControl\\ShellCodeEditor.cs",
+      "sha256": "ef3dc431d3f5d83c885c524bdb5704d6094561691a6f62514945e6e5d9f8eb6b"
+    }
+  ],
+  "conclusion": "VM活动COM路径显式配置引用、补全和编译分别解析，编译DLL加载后静态缓存；不能据此声称可动态卸载。",
+  "flow": [
+    "引用界面JSON/name+type",
+    "ScriptCom.GetRefrences→CodeDom CompilerParameters",
+    "UserScript_<moduleId>.dll，非EXE",
+    "ComScriptSupport→RemoteLoaderFactory→Assembly.Load(bytes)",
+    "UserScript实例与AssemblyManager静态Assembly缓存"
+  ],
+  "layers": [
+    {
+      "name": "配置引用",
+      "fact": "默认mscorlib.dll、System.dll、System.Core.dll、System.Windows.Forms.dll、Script.Methods.dll；用户引用按name/type保存，框架名、模块根和DLL子目录分别解析。",
+      "evidence": "ShellRun:542-595 / ScriptCom:768-840,923-1052",
+      "limit": "五项不等进程只加载五个程序集；添加删除控件完整方法体和版本冲突验证未恢复。"
+    },
+    {
+      "name": "补全引用",
+      "fact": "ShellCodeEditor.GetAssemblies使用对应Assembly并创建NRefactory CSharpCompletion，Cecil读取Assembly.Location建立语义引用；修改引用重建补全对象，部分用户DLL后台导入。",
+      "evidence": "ShellCodeEditor:153-159,224-361；原版myLibs-CSharpCompletion IL",
+      "limit": "补全集与CodeDom引用相关，但不同路径；不能从引用列表推断首次补全已全部准备。"
+    },
+    {
+      "name": "编译引用",
+      "fact": "CodeDom CSharpCodeProvider，GenerateExecutable=false，GenerateInMemory=false，传ReferencedAssemblies及/lib目录，输出UserScript_<moduleId>.dll。",
+      "evidence": "BaseScriptSupport:86-220",
+      "limit": "编译缓存key为source+property+moduleId，不包含引用；引用变更失效是静态条件风险，未动态复现。"
+    },
+    {
+      "name": "运行加载与释放",
+      "fact": "ScriptCom构造new ComScriptSupport；其StartAppdomain override直接new RemoteLoaderFactory；CreateInstanceFromByte用Assembly.Load(byte[])或缓存Assembly创建实例。AssemblyResolve先匹配已加载FullName，再查DLL/根目录读字节加载。",
+      "evidence": "ScriptCom:122-125；ComScriptSupport:30-115；RemoteLoaderFactory:55-125",
+      "limit": "当前活动COM分支没有CreateDomain；HikScriptSupport另一分支才创建AppDomain，不能拼接成活动链。"
+    },
+    {
+      "name": "程序集缓存",
+      "fact": "AssemblyManager静态ConcurrentDictionary<int,Assembly>最多接纳500项，以sourceCode.GetHashCode查找；ClearAeembly清字典。loader.Unload释放实例/字段/句柄，不等CLR程序集卸载。",
+      "evidence": "AssemblyManager:6-39；BaseScriptSupport:112-114,212-220,262-275",
+      "limit": "500不是全部进程已加载程序集上限；哈希碰撞/引用漏键为设计风险，实际堆增长与宿主全清理调用未测。"
+    }
+  ],
+  "borrow": [
+    "显式列出脚本引用，分清平台程序集和用户引用的解析职责",
+    "编辑补全、编译引用、执行产物分层管理",
+    "复用编译结果和已验证环境，但身份须含引用版本/内容"
+  ],
+  "doNotBorrow": [
+    "静态强持有Assembly作为回收修复",
+    "source.GetHashCode且遗漏引用的缓存键",
+    "把备用AppDomain分支当活动COM卸载保证"
+  ],
+  "ourALCImplication": "减少编译引用可能降低准备成本，但不消除已加载脚本PE被WPF全域扫描并以强键持有的路径。需追实际触发调用；不能以VM常驻策略取消我们已批准的回收合同。",
+  "unknown": [
+    "VM实际宿主进程中的完整加载模块与堆持有",
+    "当前COM链完整销毁到全局缓存清理的时点",
+    "VM是否在其他未恢复代码规避WPF缓存扫描"
+  ],
+  "productModified": false
+}

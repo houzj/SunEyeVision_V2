@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "ownerThreadId": "01a160f7-9c99-72c1-b8bf-d689bf19f1ad",
-  "date": "2026-10-22",
+  "date": "2026-10-23",
   "objective": "以明确交付驱动文档增量维护，让现状、证据、目标、合同和验收始终可追溯；文档进度与产品进度分别记录。",
   "batchId": "DOC-UX-SPLIT-20261022",
   "currentMilestoneStatus": "本批文档分页、界面导航、关系图与中文目录交付；产品实施和24用例运行均未执行",
@@ -304,7 +304,68 @@
     "completionAudit": "artifacts/validation/visual-document-library-completion-audit.json",
     "compatibilityReport": "artifacts/validation/document-library-compatibility-validation.json",
     "directoryIsolationReport": "artifacts/validation/document-library-isolation-validation.json",
-    "finalPrintContrastVerified": true
+    "finalPrintContrastVerified": true,
+    "s3Design": {
+      "path": "artifacts/validation/script-s3-design-validation.json",
+      "status": "analysis-and-design-only-implementation-not-authorized",
+      "authorizationStatus": "approved-queued-waiting-s2-fixed-delivery",
+      "authorizationSha256": "0d15efc24f5fc8e0192bba59cd24a57f21f5a4c5f52d7b209c71890f31adf804",
+      "sourceSha256": "de8abb31da6f858ea383ebf6f0f36401bd081afeb56f765fbd74179edf5a54a7",
+      "baseline": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "selfEvidence": 18,
+      "vmEvidencePackages": 2,
+      "vmVerified": 22,
+      "vmHashErrors": 0,
+      "scenarios": 8,
+      "contracts": 11,
+      "acceptance": 12,
+      "implementationSteps": 5,
+      "officialBasis": 3,
+      "layouts": 6,
+      "sceneInteractions": 48,
+      "links": 36,
+      "searchResults": [
+        {
+          "query": "脚本第三批",
+          "resultCount": 2,
+          "visibleApprovalGate": true,
+          "matchedPages": [
+            "tool-script.html#script-s3-design",
+            "optimization-o01.html#script-s3-design"
+          ]
+        },
+        {
+          "query": "停止",
+          "resultCount": 12,
+          "matchedPages": [
+            "tool-script.html#script-s3-design"
+          ]
+        },
+        {
+          "query": "资源释放",
+          "resultCount": 3,
+          "visibleApprovalGate": true,
+          "matchedPages": [
+            "tool-script.html#script-s3-design",
+            "optimization-o01.html#script-s3-design"
+          ]
+        }
+      ],
+      "searchPolicy": {
+        "exactQueriesRequireBothS3Pages": true,
+        "broadStopRequiresAnyS3Page": true
+      },
+      "printVisible": true,
+      "horizontalOverflow": false,
+      "pageErrors": 0,
+      "remoteRequests": [],
+      "implementationApproved": true,
+      "implementationStatus": "approved-queued-waiting-s2-fixed-delivery",
+      "implementationStarted": false,
+      "releaseCompleted": false,
+      "independentAcceptanceCompleted": false,
+      "productModified": false
+    }
   },
   "policy": {
     "allowed": [
@@ -390,7 +451,7 @@
     "originalBodyClosed": 0,
     "numericParityRun": 0,
     "performanceRun": 0,
-    "productModified": false,
+    "productModified": true,
     "validation": "artifacts/validation/tool-core-algorithm-validation.json",
     "validationSummary": {
       "pages": 26,
@@ -2636,8 +2697,84 @@
   "scriptOptimizationGoal": {
     "objective": "确定脚本工具整批优化方案",
     "updatedAt": "2026-10-23",
-    "productModified": false,
-    "status": "设计方案已冻结；产品实施与验收未执行",
+    "productModified": true,
+    "status": "S1局部独立探针3/3通过但整批待验；S2源码a59f446c已固定，开发测试与Release构建日志通过，正式采样/固定Release身份/独立验收未完成；S3已批准排队，等待S2完整固定交付与身份交接。",
+    "activeBatch": "S2",
+    "writerRoles": {
+      "schemeAndPriority": "项目成员｜方案主控：方案设计、决策审批、最终审核；不承担日常队列巡检",
+      "deliveryCoordination": "项目成员｜交付协调：已批准范围内日常派工、队列依赖、交付检查/送验、缺陷修复复测、资源和缺输入协调、主文档同步；不写产品或测试结论、不扩大范围、不代替最终审核",
+      "productImplementation": "项目成员｜自研实施：已批准队列的唯一共享目录产品写者，负责实现、构建/固定交付与产品缺陷修复；不得自行扩大范围",
+      "documentation": "项目成员｜自研文档维护：独占架构HTML、对应生成器、文档验证与DOC_SYNC_STATUS；按实证同步，不写产品代码",
+      "independentTesting": "项目成员｜独立测试：独立测试队列/宿主/样本/依赖/隔离/排障/运行与报告，产品缺陷直交实施者、日常协作交交付协调；不写产品代码或共享HTML/台账"
+    },
+    "implementationEvidence": "收到最终开发交付收据：源码a254710d31af3a39619f9b7ac50eaca344ac30bf；17个改动文件组；固定程序627项/源码输入1342项，运行后漂移0。固定源码测试43通过；全量Release 0错/1272警告、UI Release 0错/1077警告；隔离工具箱探针0退出/22工具。固定交付可执行、测试员开工回执待收且尚未独立验收；性能、VS设计器和用户视觉未通过核验。",
+    "finalDelivery": {
+      "receipt": "docs/collaboration/HANDOFF_SCRIPT_S1_DELIVERY_20261023.json",
+      "sourceCommit": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "baseCommit": "9e0da65d03815ceb9d0cb3392fd3ac5597227119",
+      "changedFileGroups": 17,
+      "fixedProgramFiles": 627,
+      "fixedSourceInputs": 1342,
+      "afterRunDrift": 0,
+      "scriptTests": "43 passed / 0 failed / 0 skipped",
+      "fullRelease": "0 errors / 1272 warnings",
+      "uiRelease": "0 errors / 1077 warnings",
+      "runtimeProbe": "exit 0; 22 tools before device/service initialization",
+      "binaryManifestSHA256": "E3364D01FA7DCCAE73120C830361AC8437FD03F2A2B01A171114B1D9E93900CF",
+      "sourceManifestSHA256": "4A538585FB4711946D4F609916A95379B51B76DA3C59DDD0AC7B96E305B3C638",
+      "sourceArchiveManifestSHA256": "B3831ED9389C66855DA076AE789C171AE5F59F13EB2C623BAA75E4ED976C8588",
+      "sourceZipSHA256": "8DADB66EDD0AFC6AEB4D25C6B37A992D4027DCE9EECE0ABF25543FD199BEFD5C",
+      "identityNote": "source-manifest对应实际构建工作区字节；source.zip为Git归档规范换行字节，逐文件对照用source-archive-manifest，不混用SHA口径",
+      "receiptEvidenceCommit": "972f2e0f，仅交付台账/清单更新，无产品源码改动",
+      "independentAcceptance": "S1局部独立探针3/3通过并由测试员采用；S1整批验收未闭环。报告：artifacts/independent-testing/SCRIPT-S1/ready-execution/report.html；首次宿主共享输出事故和隔离边界见incident.json。",
+      "performanceAndVisual": "not verified"
+    },
+    "s2Design": {
+      "source": "docs/collaboration/SCRIPT_S2_DESIGN_20261023.json",
+      "state": "S2冻结设计图为方案输入（基线5a700dad）；真实实现已固定源码提交a59f446c，79项合同回归与8项编辑器定向测试通过，Release构建日志0错/1271警告；完整产物身份、正式性能与独立验收仍未完成。",
+      "evidenceSources": 15,
+      "contractCount": 10,
+      "acceptanceCount": 10,
+      "scope": [
+        "窗口打开",
+        "首次补全",
+        "编译等待",
+        "动态输入输出7种场景"
+      ],
+      "implementationApproved": true,
+      "implementationAlignment": "实施者提供的S1接口方向：ScriptAnalysisSession(Id/Version/ReferenceIdentity，SetEnvironment比较generatedCode)；ScriptAnalysisReferences(Identity/不可变References)；ScriptRevision仅通知而非IO内容键。仍在修订，不视为最终合同或验收。",
+      "unknowns": "S1最终接口合同待实施者交付后对齐；运行时行为、改后性能及全量验收未证明",
+      "authorization": "docs/collaboration/SCRIPT_S2_AUTHORIZATION_20261023.json",
+      "authorizationSha256": "430479eca2d84f1da53538b564b89ca953d2ed8baa5ed4f7347b61ef9ba7dd50",
+      "designSourceSha256": "bf764bfa159218c63d55434aa552e9ab90ed5605824b6bc6040947efe4881dca",
+      "implementationOwner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "implementationStatus": "源码提交a59f446c4032e26abafc1c6a83296db78575463e已固定（24个改动文件）；R6开发回归79/79、SDK编辑器定向8/8通过；全量Release构建日志0错/1271警告。最终Release身份/manifest、正式性能采样和独立验收未完成。",
+      "acceptance": "独立验收尚未开始；10项验收及正式样本待最终固定包和身份交接后执行",
+      "designSimulation": "HTML图示仍为设计模拟，不代表产品已经实现"
+    },
+    "acceptanceMapping": {
+      "S1重点": [
+        "SA02",
+        "SA03",
+        "SA04",
+        "SA10",
+        "SA11"
+      ],
+      "S2后续": [
+        "SA01",
+        "SA05",
+        "SA06"
+      ],
+      "S3后续": [
+        "SA07",
+        "SA08",
+        "SA09"
+      ],
+      "整批门槛": [
+        "SA12"
+      ],
+      "说明": "SA12为全量Release与隔离独立验收门槛，不作S1开发交付通过证据；SA01、SA05—SA06属于已批准S2，待实施交付与独立验收；SA07—SA09属于已批准排队的S3；S2固定交付后实施，当前未开始。"
+    },
     "recommendation": "A：保留Roslyn语义与编译，按会话/引用快照/版本任务重构集成",
     "decisionInput": "docs/collaboration/SCRIPT_OPTIMIZATION_DECISION_20261023.json",
     "batches": [
@@ -2678,7 +2815,17 @@
       {
         "name": "文件、批次与验收冻结",
         "state": "完成：设计冻结",
-        "note": "S1-S3范围和依赖、SA01-SA12断言已冻结；产品仍未实施/验收"
+        "note": "S1-S3范围和依赖、SA01-SA12断言已冻结；方案仍为当前设计基线"
+      },
+      {
+        "name": "S1 实施与验收",
+        "state": "开发交付已收；独立验收待排",
+        "note": "固定源码a254710d；43通过/0失败/0跳过，全量Release0错/1272警告，UI Release0错/1077警告，探针22工具并在设备/服务初始化前退出。独立验收、SA02/03/04/10/11全项、成对性能、VS与用户视觉仍未闭环"
+      },
+      {
+        "name": "S2 实施与验收",
+        "state": "已批准并开工；进度待角色回执；验收待执行",
+        "note": "授权卡docs/collaboration/SCRIPT_S2_AUTHORIZATION_20261023.json SHA 430479eca2d84f1da53538b564b89ca953d2ed8baa5ed4f7347b61ef9ba7dd50；冻结设计源SHA bf764bfa159218c63d55434aa552e9ab90ed5605824b6bc6040947efe4881dca，分析基线5a700dad；实施者01a1663d-2d35-7bd2-bc12-ab0d4051bb8e。设计图是模拟，不代表产品实现。"
       }
     ],
     "reopenCondition": "A实施后合法能力通过但性能仍失败时，以同样例、引用和语义合同比较替代引擎",
@@ -2696,7 +2843,131 @@
       "homepageGoalLinkClicked": true,
       "maintenanceAnchorOpened": true,
       "headingMatched": true,
-      "snapshotUpdated": true
+      "snapshotUpdated": true,
+      "batchStatePresentation": "S1局部独立探针3/3通过但整批待验；S2源码a59f446c已固定，开发测试与Release构建日志通过，正式采样/固定Release身份/独立验收未完成；S3已批准排队，等待S2完整固定交付与身份交接。",
+      "decisionLayouts": 6,
+      "decisionErrors": 0,
+      "threeWayLayouts": 6,
+      "threeWayErrors": 0,
+      "offlineSearch": {
+        "records": 696,
+        "pages": 134,
+        "errors": 0,
+        "remoteRequests": 0
+      },
+      "s2Design": {
+        "baseline": "5a700dad",
+        "state": "approved-dispatched-awaiting-acceptance",
+        "evidenceSources": 15,
+        "contracts": 10,
+        "acceptance": "待执行",
+        "responsiveLayouts": 6,
+        "sceneInteractions": 42,
+        "checkedLinks": 24,
+        "offlineSearch": {
+          "queries": [
+            "脚本第二批",
+            "动态输入输出"
+          ],
+          "errors": 0,
+          "remoteRequests": 0
+        },
+        "roleProgress": true,
+        "printVisible": true,
+        "horizontalOverflow": false,
+        "pageErrors": 0,
+        "screenshots": [
+          "script-s2-design-desktop.png",
+          "script-s2-design-mobile.png",
+          "script-role-progress.png"
+        ],
+        "implementationOwner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+        "designSimulationOnly": true,
+        "authorization": "docs/collaboration/SCRIPT_S2_AUTHORIZATION_20261023.json",
+        "designSourceSha256": "bf764bfa159218c63d55434aa552e9ab90ed5605824b6bc6040947efe4881dca",
+        "authorizationSha256": "430479eca2d84f1da53538b564b89ca953d2ed8baa5ed4f7347b61ef9ba7dd50",
+        "dynamicTypeExample": {
+          "sdkWord": "Integer",
+          "clrType": "long",
+          "descriptorDerived": true
+        },
+        "statusOverlaySync": {
+          "updatedAt": "2026-10-23",
+          "visualRetest": "not-run-after-status-copy-update",
+          "priorLayoutReceiptRemainsHistorical": true
+        }
+      },
+      "maintenanceContentSync": {
+        "updatedAt": "2026-10-23",
+        "staticChecks": "passed",
+        "visualRetest": "not-run-after-role/status-content-update"
+      }
+    },
+    "s2Authorization": {
+      "path": "docs/collaboration/SCRIPT_S2_AUTHORIZATION_20261023.json",
+      "sha256": "430479eca2d84f1da53538b564b89ca953d2ed8baa5ed4f7347b61ef9ba7dd50",
+      "status": "approved-dispatched-awaiting-acceptance",
+      "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "designSource": "docs/collaboration/SCRIPT_S2_DESIGN_20261023.json",
+      "designSourceSha256": "bf764bfa159218c63d55434aa552e9ab90ed5605824b6bc6040947efe4881dca",
+      "analysisBaseline": "5a700dad",
+      "implementationBaseline": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "implementationStatus": "源码提交a59f446c4032e26abafc1c6a83296db78575463e已固定（24个改动文件）；R6开发回归79/79、SDK编辑器定向8/8通过；全量Release构建日志0错/1271警告。最终Release身份/manifest、正式性能采样和独立验收未完成。",
+      "acceptance": "待执行"
+    },
+    "testQueuePolicy": {
+      "owner": "自研独立测试",
+      "managesOwnQueueAndSubagents": true,
+      "dispatch": "缺少输入的任务先保留待输入，优先执行其他就绪任务；不得让缺输入任务占住全队列",
+      "executionLabel": "仅实际收到测试员开工/运行回执后标执行中",
+      "defectLoop": "发现缺陷或补输入需求及时直接反馈实施者；新固定包按身份独立回归；根汇总最终闭环",
+      "states": [
+        "待输入",
+        "就绪/可执行",
+        "执行中",
+        "等资源",
+        "待修复回归",
+        "完成"
+      ],
+      "current": {
+        "S1": "固定包可执行；测试员尚无开工回执；独立验收未运行",
+        "S2": "产品实施已开工；独立验收待输入固定交付包；无验收结论",
+        "S3": "方案分析已授权但待冻结源码证据与目标方案输入；产品实施未批准"
+      }
+    },
+    "s3Analysis": {
+      "authorization": "用户已授权方案分析，不含产品实施",
+      "status": "waiting-for-source-evidence-and-target-design-input",
+      "scope": "脚本执行/停止/异常清理/资源释放实际链；按需VM补证；仅更新现有主文档图示",
+      "productImplementationApproved": false,
+      "productModified": false
+    },
+    "s1IndependentExecution": {
+      "summary": "artifacts/independent-testing/SCRIPT-S1/ready-execution/summary.json",
+      "summarySha256": "a6d375f40dfe8b2ad8bdff041b94d2e5e26a3fc34bb7eba4455eb03b5ba813e7",
+      "report": "artifacts/independent-testing/SCRIPT-S1/ready-execution/report.html",
+      "reportSha256": "943421027beeedce750975cae909d6bc6dbab81c016e163171e587eb45b657ee",
+      "cases": [
+        {
+          "id": "repeat",
+          "status": "PASS"
+        },
+        {
+          "id": "replace",
+          "status": "PASS"
+        },
+        {
+          "id": "missing",
+          "status": "PASS"
+        }
+      ],
+      "fixedBinaryFiles": 627,
+      "fixedBinaryDrift": 0,
+      "fixedExtraFiles": 0,
+      "sourceArchiveMatches": true,
+      "incident": "artifacts/independent-testing/SCRIPT-S1/ready-execution/incident.json",
+      "acceptedByIndependentTester": true,
+      "fullBatchClosed": false
     }
   },
   "suneyeRelationshipGuides": {
@@ -2737,13 +3008,13 @@
   },
   "homeDocumentSearch": {
     "scope": "自研架构文档维护首页离线搜索；首页及搜索资源/生成源专属写入，不改脚本专题正文",
-    "status": "完成；当前主文档标题与关键段落搜索，可直达专题锚点",
+    "status": "完成；首页离线搜索覆盖当前专题锚点，可直达脚本第二批设计",
     "index": {
       "manifest": "artifacts/validation/document-search-index-manifest.json",
-      "records": 696,
+      "records": 702,
       "pages": 134,
-      "bytes": 414110,
-      "canonicalPages": 696,
+      "bytes": 417850,
+      "canonicalPages": 702,
       "legacyFallbacks": 0,
       "remoteFetch": false,
       "thirdParty": false
@@ -2751,11 +3022,11 @@
     "files": [
       {
         "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html",
-        "sha256": "35a69622efc27e95da0d720645f97ae1100c209084d84fb547a6c2930d2f75dc"
+        "sha256": "3188bbdb7fa977ac90a82e21a9913c3dc8a2d220013d32b87e9594a17bdd6a04"
       },
       {
         "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search-index.js",
-        "sha256": "b4066b735c1cc744fd5f70c0290507730fedae5cec28bbcabc3c495a436da5d2"
+        "sha256": "8784eaf2d691539b6af81ed88f3df203a5ffdd43a6bbd707705f07b1c312f6da"
       },
       {
         "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search.js",
@@ -2763,7 +3034,7 @@
       },
       {
         "path": "artifacts/validation/build-document-search-index.cjs",
-        "sha256": "abd1268a80e6a9c518adb204f9503130718a2c8d10f0199232b881ed06045b39"
+        "sha256": "354458bd8a2398df3d0bebdd4c62589186c1be2fb9ddcde5ad6d85712c99937b"
       },
       {
         "path": "artifacts/validation/document-search-runtime.js",
@@ -2779,7 +3050,7 @@
       },
       {
         "path": "artifacts/validation/check-document-search.cjs",
-        "sha256": "9e0a022aeba7cb019fc1aeca1fd2b5ac12d839dfbcf9b6d8cdec48bb4758c2ba"
+        "sha256": "396c8ef03f54675f557b68c38c9f954fd38b08dbd7c502cf3419faefb10d2243"
       }
     ],
     "generationChain": [
@@ -2794,8 +3065,14 @@
       "引用管理 → #script-reference-three-way",
       "最终推荐 → #script-final-decision",
       "首次补全",
+      "脚本第二批 → #script-s2-design",
+      "动态输入输出 → #script-s2-design",
       "脚本 编译",
-      "无结果提示"
+      "无结果提示",
+      "脚本后续优化 → #script-followup-panorama",
+      "前三批之外 → #script-followup-panorama",
+      "脚本数据合同 → #script-followup-panorama",
+      "脚本方案依赖 → #script-followup-panorama"
     ],
     "keyboard": [
       "Ctrl+K聚焦",
@@ -2809,6 +3086,482 @@
       1366
     ],
     "errors": 0,
-    "productModified": false
+    "productModified": false,
+    "newAnchorValidation": "artifacts/validation/script-followup-source-search-review.json"
+  },
+  "s2": {
+    "scriptDesignValidation": {
+      "baseline": "5a700dad",
+      "status": "approved-dispatched-awaiting-acceptance",
+      "evidence": 15,
+      "contracts": 10,
+      "acceptance": 10,
+      "layouts": 6,
+      "rows": [
+        {
+          "page": "tool-script.html",
+          "width": 390,
+          "visible": true,
+          "overflow": false,
+          "scenes": 7,
+          "facts": 6,
+          "vmThreeWay": 3,
+          "typeRows": 3
+        },
+        {
+          "page": "tool-script.html",
+          "width": 768,
+          "visible": true,
+          "overflow": false,
+          "scenes": 7,
+          "facts": 6,
+          "vmThreeWay": 3,
+          "typeRows": 3
+        },
+        {
+          "page": "tool-script.html",
+          "width": 1366,
+          "visible": true,
+          "overflow": false,
+          "scenes": 7,
+          "facts": 6,
+          "vmThreeWay": 3,
+          "typeRows": 3
+        },
+        {
+          "page": "optimization-o01.html",
+          "width": 390,
+          "visible": true,
+          "overflow": false,
+          "scenes": 7,
+          "facts": 6,
+          "vmThreeWay": 3,
+          "typeRows": 3
+        },
+        {
+          "page": "optimization-o01.html",
+          "width": 768,
+          "visible": true,
+          "overflow": false,
+          "scenes": 7,
+          "facts": 6,
+          "vmThreeWay": 3,
+          "typeRows": 3
+        },
+        {
+          "page": "optimization-o01.html",
+          "width": 1366,
+          "visible": true,
+          "overflow": false,
+          "scenes": 7,
+          "facts": 6,
+          "vmThreeWay": 3,
+          "typeRows": 3
+        }
+      ],
+      "sceneInteractions": 42,
+      "links": 24,
+      "searchQueries": [
+        "脚本第二批",
+        "动态输入输出"
+      ],
+      "dynamicTypeExample": {
+        "sdkWord": "Integer",
+        "clrType": "long",
+        "descriptorDerived": true
+      },
+      "roleProgress": true,
+      "print": true,
+      "horizontalOverflow": false,
+      "remoteRequests": [],
+      "pageErrors": [],
+      "screenshots": [
+        "script-s2-design-desktop.png",
+        "script-s2-design-mobile.png",
+        "script-role-progress.png"
+      ],
+      "state": "approved-dispatched-awaiting-acceptance",
+      "authorization": "docs/collaboration/SCRIPT_S2_AUTHORIZATION_20261023.json",
+      "statusOverlaySync": {
+        "updatedAt": "2026-10-23",
+        "visualRetest": "not-run-after-status-copy-update",
+        "priorLayoutReceiptRemainsHistorical": true
+      }
+    },
+    "authorization": {
+      "path": "docs/collaboration/SCRIPT_S2_AUTHORIZATION_20261023.json",
+      "sha256": "430479eca2d84f1da53538b564b89ca953d2ed8baa5ed4f7347b61ef9ba7dd50",
+      "status": "approved-dispatched-awaiting-acceptance",
+      "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "designSource": "docs/collaboration/SCRIPT_S2_DESIGN_20261023.json",
+      "designSourceSha256": "bf764bfa159218c63d55434aa552e9ab90ed5605824b6bc6040947efe4881dca",
+      "analysisBaseline": "5a700dad",
+      "implementationBaseline": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "implementationStatus": "源码a59f446c已固定；完整Release产物身份与交接已形成。开发回归79/79、SDK编辑器定向8/8（均为固定提交前开发侧记录）；全量Release 0错/1271警告、UI Release 0错/1175警告。formal-r1成对采样仍运行，独立验收尚未开工。",
+      "acceptance": "待执行"
+    },
+    "implementationStatus": "源码提交a59f446c4032e26abafc1c6a83296db78575463e已固定（24个改动文件）；R6开发回归79/79、SDK编辑器定向8/8通过；全量Release构建日志0错/1271警告。最终Release身份/manifest、正式性能采样和独立验收未完成。",
+    "designSource": {
+      "path": "docs/collaboration/SCRIPT_S2_DESIGN_20261023.json",
+      "sha256": "bf764bfa159218c63d55434aa552e9ab90ed5605824b6bc6040947efe4881dca",
+      "analysisBaseline": "5a700dad"
+    },
+    "testQueuePolicy": {
+      "owner": "项目成员｜独立测试",
+      "managesOwnQueueAndSubagents": true,
+      "dispatch": "缺少输入的任务先保留待输入，优先执行其他就绪任务；不得让缺输入任务占住全队列",
+      "executionLabel": "仅实际收到测试员开工/运行回执后标执行中",
+      "defectLoop": "测试发现直接反馈实施者；交付协调负责日常依赖、送验、修复复测与文档同步；新固定包按身份独立回归，主控只处理决策和最终审核",
+      "states": [
+        "待输入",
+        "就绪/可执行",
+        "执行中",
+        "等资源",
+        "待修复回归",
+        "完成"
+      ],
+      "current": {
+        "S1": "独立测试员已采用3项组件探针PASS（repeat/replace/missing）；固定627文件复测漂移0/extra0、源码归档匹配。整批S1验收未闭环；首次宿主构建误写共享输出的incident和逐SHA隔离收据已保留。",
+        "S2": "固定交付身份已核实（627程序/1347源码、vendor26、foreignProbe0）；全量/UI Release分别0错/1271、0错/1175。formal-r1中止：32成功进程/96窗，baseline-1001-6以0xC0000005退出，原因未知；101行候选输入/热补全预算FAIL，5001行缺测。malformed toolbox probe绕过有效分支，不计运行通过。A01..A10尚未执行；测试员已获开始指令，等待开工回执。",
+        "S3": "用户已批准排队；S2固定源码、完整Release身份与交接门槛已形成，队列仍标approved-queued-dependent；尚无S3开工回执，不将其写成已实施。"
+      }
+    },
+    "s3Analysis": {
+      "authorization": "用户已批准S3方案，排队等待S2固定交付后实施",
+      "status": "approved-queued-dependent-after-s2-fixed-delivery",
+      "scope": "S2固定源码/完整Release身份与交接门槛已形成；S3仍按授权卡排队，记录开工前以a59f446c为基线；目前无实施开工回执。",
+      "productImplementationApproved": true,
+      "productModified": false,
+      "source": {
+        "path": "docs/collaboration/SCRIPT_S3_DESIGN_20261023.json",
+        "baseline": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+        "selfEvidence": 18,
+        "vmEvidencePackages": 2,
+        "vmVerified": 22,
+        "vmHashErrors": 0,
+        "scenarios": 8,
+        "contracts": 11,
+        "acceptance": 12,
+        "implementationSteps": 5,
+        "officialBasis": 3,
+        "sha256": "de8abb31da6f858ea383ebf6f0f36401bd081afeb56f765fbd74179edf5a54a7"
+      },
+      "delivery": "分析材料已收并同步至现有脚本工具主文档和O01；未执行产品实现、运行或性能验收。",
+      "documentPages": [
+        {
+          "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+          "sha256": "615d9049c3e42b46baeac9391d0bc1231fbfdefbf4aff4ac4dfb4eb87de8f117"
+        },
+        {
+          "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html",
+          "sha256": "17bbea47138d3a46bde831201f6cda8c34ec9dded40ae7f751049bf84f33184a"
+        }
+      ],
+      "implementationStarted": false,
+      "releaseCompleted": false,
+      "independentAcceptanceCompleted": false,
+      "implementationStatus": "已批准排队；S2固定交付门已形成；未收到开工回执",
+      "releaseStatus": "尚未开始S3 Release",
+      "acceptanceStatus": "S3尚未执行",
+      "analysisSourceStatus": "analysis-and-design-only-implementation-not-authorized（冻结分析源，不改写）",
+      "authorizationCard": {
+        "path": "docs/collaboration/SCRIPT_S3_AUTHORIZATION_20261023.json",
+        "sha256": "0d15efc24f5fc8e0192bba59cd24a57f21f5a4c5f52d7b209c71890f31adf804",
+        "status": "approved-queued-waiting-s2-fixed-delivery",
+        "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+        "dispatchHead": "972f2e0fd947fa7920c77f026bc1a348b968a217",
+        "startGate": "实施者先完成S2固定源码提交、完整Release产物及源/产物身份、交接和已知未验证清单，再以S2固定SHA为S3基线；不以S2整批独立验收结束为默认开工条件，但阻断反馈优先修复，未验证合同不当稳定",
+        "sourcePlanSha256": "de8abb31da6f858ea383ebf6f0f36401bd081afeb56f765fbd74179edf5a54a7"
+      },
+      "startGateStatus": "met-s2-fixed-source-release-identity-handoff"
+    },
+    "sourceDelivery": {
+      "commit": "a59f446c4032e26abafc1c6a83296db78575463e",
+      "changedFiles": 24,
+      "commitTime": "2026-10-23T10:33:00+08:00",
+      "subject": "feat: 收口脚本S2编辑提交与异步准备编译并固定采样入口"
+    },
+    "developmentVerification": {
+      "scriptContracts": {
+        "path": "artifacts/validation/script-s2/tests/s2-contracts-r6.trx",
+        "sha256": "55e75422b61328de060b634aed30f9581fb05959832e4a9a2b90bb9fdd692954",
+        "trx": {
+          "total": 79,
+          "passed": 79,
+          "failed": 0,
+          "notExecuted": 0
+        },
+        "run": "R6开发侧合同回归；2026-10-23 10:22:33–10:22:45，发生在a59f446c提交前，未记录提交后复跑"
+      },
+      "sdkEditor": {
+        "path": "artifacts/validation/script-s2/tests/s2-sdk-editor.trx",
+        "sha256": "c11f81afda23d909e1ee18fca74cadcfde104c4adb347a7723dda0f3c995b88b",
+        "trx": {
+          "total": 8,
+          "passed": 8,
+          "failed": 0,
+          "notExecuted": 0
+        },
+        "scope": "ToolEditorCommitTests：绑定文本提交/非法文本保留、来源选择、清空绑定、发送网格等编辑提交行为；开发侧定向测试",
+        "run": "8项编辑器提交/UI定向开发测试；2026-10-23 10:31:20–10:31:35，发生在a59f446c提交前，未记录提交后复跑"
+      }
+    },
+    "fullReleaseBuild": {
+      "path": "artifacts/validation/script-s2/fixed-full-release.log",
+      "sha256": "2cc93234fd02db080daac981eedc16dd10f5c5368140297f17c0b72f12ca227e",
+      "recordedAt": "2026-10-23T10:36:12+08:00",
+      "result": "日志记录已成功生成；0 errors / 1271 warnings",
+      "scope": "全量Release 0错/1271警告；固定Release身份由独立identity.json列明，manifest与交接分开核验；独立验收未完成。",
+      "fixedArtifactIdentity": true,
+      "sourceIdentity": "日志生成时点晚于a59f446c提交且当前HEAD为该提交；日志本身没有嵌入输入/产物manifest，不能替代固定Release身份核验",
+      "identityPath": "artifacts/validation/script-s2/delivery-a59f446c/identity.json"
+    },
+    "performance": {
+      "formalStatus": "aborted-incomplete-results-retained",
+      "terminalStatus": "aborted-native-process-exit",
+      "formalProgress": "33/60",
+      "successfulProcesses": 32,
+      "completedWindows": 96,
+      "plannedWindows": 180,
+      "failedProcesses": 1,
+      "failedVariant": "baseline",
+      "failedLines": 1001,
+      "failedIndex": 6,
+      "failedExitCode": "0xC0000005",
+      "failureCause": "unknown; do not attribute to candidate",
+      "failedOutputFilesAbsent": [
+        "JSON",
+        "stdout",
+        "stderr"
+      ],
+      "lastResult": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\performance\\script-s2-window-20261023\\formal-r1\\baseline-1001-6.json",
+      "summaryPath": "artifacts/performance/script-s2-window-20261023/formal-r1/summary.json",
+      "progressPath": "artifacts/performance/script-s2-window-20261023/formal-r1/progress.json",
+      "snapshotAt": "2026-10-23T02:53:29.233Z",
+      "candidateBudgetMs": {
+        "input": 500,
+        "hotPopup": 150
+      },
+      "budgetMet": false,
+      "partial101": {
+        "candidateFirstInputP95Ms": 4070.4218,
+        "candidateReopenInputP95Ms": 543.9664999999986,
+        "candidateFirstHotPopupP95Ms": 443.34989999999925,
+        "candidateReopenHotPopupP95Ms": 318.5121999999992,
+        "inputBudget": "FAIL",
+        "hotPopupBudget": "FAIL",
+        "candidateFreshProcesses": 10,
+        "candidateReopenWindows": 10
+      },
+      "partial1001": {
+        "baselineFirstProcesses": 6,
+        "baselineFirstFailed": 1,
+        "candidateFirstProcesses": 6,
+        "candidateReopenProcesses": 6,
+        "interpretation": "partial only"
+      },
+      "lines5001": "not measured",
+      "verdict": "正式成对采样中止，只有局部样本；101行候选输入/热补全预算失败。不得标正式整批P95或通过。",
+      "note": "32个成功进程/96窗口；baseline 1001行第6进程native exit 0xC0000005，原因未知；5001行缺测。"
+    },
+    "independentAcceptance": {
+      "status": "not-started",
+      "scope": "协调最新事实：S2-A01..A10独立动作尚未执行；测试员已收到开始实际断言的指令，等待真实开工/运行回执。",
+      "sourceCommit": "a59f446c4032e26abafc1c6a83296db78575463e"
+    },
+    "documentationSync": {
+      "updatedAt": "2026-10-23",
+      "sources": [
+        "artifacts/validation/home-maintenance-content.json",
+        "artifacts/validation/build-script-s2-design.cjs",
+        "artifacts/validation/build-script-final-decision.cjs",
+        "artifacts/validation/check-script-s2-design.cjs",
+        "artifacts/validation/build-script-post-s3-panorama.cjs",
+        "artifacts/validation/check-script-post-s3-panorama.cjs",
+        "artifacts/validation/check-followup-search-source.cjs",
+        "artifacts/validation/build-document-search-index.cjs"
+      ],
+      "pages": [
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/维护记录/文档维护.html#script-tool-goal",
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-script.html#script-s1-progress",
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o01.html#script-s1-progress",
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-script.html#script-s2-design",
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o01.html#script-s2-design",
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-script.html#script-followup-panorama",
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o01.html#script-followup-panorama"
+      ],
+      "staticChecks": [
+        "源提交/测试TRX/Release日志SHA记录并核对计数",
+        "S1独立报告链接存在；S1/S2/S3旧输入SHA不变",
+        "维护页角色/状态文本与块标签结构静态检查通过",
+        "生成页关键状态、稳定锚点和维护页快照身份检查通过",
+        "产品src/tools/tests未见未提交修改"
+      ],
+      "browserVisualValidation": "本轮未执行当前Edge/IAB的file:视觉QA：浏览器安全策略拒绝获取本地页面内容，未采用本地HTTP服务、Playwright或CDP绕过。根先前有限离线headless receipt仅作历史证据，不冒充本轮应用内验收。",
+      "postS3Panorama": {
+        "source": "docs/collaboration/SCRIPT_POST_S3_REVIEW_20261023.json",
+        "sourceSha256": "1993e51a541b5dbbe4420689043e157fb4f8462def8e1a9df81255ec990b73be",
+        "builder": "artifacts/validation/build-script-post-s3-panorama.cjs",
+        "builderSha256": "fe05fbd3f04f7fcf5071f80349d1471cd6288fa0ab06fe9c9a4d5d2fa0957cd5",
+        "staticQa": "artifacts/validation/script-post-s3-panorama-static-qa.json",
+        "staticQaSha256": "4a53824f8520ac5a91f2d183572fc73b2f2b6be6e77b591f2b31aec617adee4f",
+        "searchQa": "artifacts/validation/script-followup-source-search-review.json",
+        "searchQaSha256": "0b9bb4333aae7dc10a081408d8c0932db82a6bc4485ca3b9bdacb5a71de5f1d4",
+        "rootReview": "artifacts/validation/script-followup-final-review.json",
+        "rootReviewStatus": "accepted-for-design-discussion-not-implementation",
+        "anchor": "script-followup-panorama",
+        "pages": [
+          {
+            "flat": "现状分析/tool-script.html",
+            "sha256": "615d9049c3e42b46baeac9391d0bc1231fbfdefbf4aff4ac4dfb4eb87de8f117",
+            "groups": 3,
+            "issues": 11,
+            "issueCounts": {
+              "A": 6,
+              "B": 3,
+              "C": 2
+            },
+            "scenes": 7,
+            "collapsedEvidence": true,
+            "f05RootEvidenceLines": 12,
+            "localLinks": 4,
+            "interactionScripts": 1,
+            "printRules": true,
+            "snapshotSynchronized": true
+          },
+          {
+            "flat": "优化方案/optimization-o01.html",
+            "sha256": "17bbea47138d3a46bde831201f6cda8c34ec9dded40ae7f751049bf84f33184a",
+            "groups": 3,
+            "issues": 11,
+            "issueCounts": {
+              "A": 6,
+              "B": 3,
+              "C": 2
+            },
+            "scenes": 7,
+            "collapsedEvidence": true,
+            "f05RootEvidenceLines": 12,
+            "localLinks": 4,
+            "interactionScripts": 1,
+            "printRules": true,
+            "snapshotSynchronized": true
+          }
+        ],
+        "groups": 3,
+        "issues": 11,
+        "scenes": 7,
+        "verifiedSources": 38,
+        "sourceDrift": 0,
+        "runtimeReproductions": 0,
+        "productBuilds": 0,
+        "vmNewEvidence": false,
+        "implementationAuthorization": false,
+        "productModified": false,
+        "sourceSnapshotsSynchronized": true,
+        "visual": {
+          "priorLimitedOfflineHeadlessReceipt": "artifacts/validation/script-followup-final-review.json",
+          "appBrowserVisual": "not-performed-file-protocol-policy-blocked-observation",
+          "bypassAttempted": false
+        }
+      },
+      "manualGeneratorRun": {
+        "status": "targeted-generators-completed",
+        "generators": [
+          "build-script-final-decision.cjs",
+          "build-script-three-way.cjs",
+          "build-script-s2-design.cjs",
+          "build-script-s3-design.cjs",
+          "build-script-post-s3-panorama.cjs",
+          "build-document-search-index.cjs",
+          "sync-document-search-home.cjs",
+          "normalize-document-home.cjs",
+          "normalize-document-hierarchy.cjs"
+        ],
+        "fullSiteBuild": {
+          "status": "incomplete-environment-copy-error",
+          "command": "node artifacts/validation/build-architecture-doc-site.cjs",
+          "error": "Node fs.copyFileSync UNKNOWN: guide-execution.html -> document-library-source-snapshots/guide-execution.html; target专题随后由独立生成器完成。"
+        },
+        "lastSyncAttempt": {
+          "status": "source-snapshot-write-error-after-search-index-regeneration",
+          "path": "artifacts/validation/document-library-source-snapshots/index.html",
+          "canonicalHomeAndTopicSnapshotsCurrentlyEqual": true
+        }
+      }
+    },
+    "fixedDeliveryIdentity": {
+      "path": "artifacts/validation/script-s2/delivery-a59f446c/identity.json",
+      "sourceCommit": "a59f446c4032e26abafc1c6a83296db78575463e",
+      "programFiles": 627,
+      "sourceInputs": 1347,
+      "vendorMatches": 26,
+      "foreignProbeFiles": 0,
+      "binaryManifestSha256": "2B393677A21AD79F01C278750CF1BA1975DD8D9047B65327BA6440F37F7142E5",
+      "sourceManifestSha256": "9E5C71D77E0D7EDB1AD6BF5F9B832D0A32AA3627F5549A0E8BD780372A782CD3",
+      "sourceZipSha256": "FBD4DFBD7AE59E9B1C701614B0CFD671E7F91FBB8547B180E693248BC8E885E4",
+      "sourceArchiveManifestSha256": "7736C4FB93F8ACBED38BC03C4F5B496F8AD9DCA1B706139817395A65AAFD6405"
+    },
+    "uiReleaseBuild": {
+      "path": "artifacts/validation/script-s2/fixed-ui-release.log",
+      "errors": 0,
+      "warnings": 1175
+    },
+    "toolboxIncident": {
+      "path": "artifacts/validation/script-s2/malformed-toolbox-probe-receipt.json",
+      "pid": 92316,
+      "validToolboxProbe": false,
+      "malformedArguments": "--toolbox-probe missing required output path",
+      "exitCode": null,
+      "interpretation": "缺第二输出路径绕过probe分支；参数解析忽略未知参数，可能进入正常启动。PID已退出，但无法确定是否初始化设备/服务；不计runtime通过。"
+    }
+  },
+  "s3Analysis": {
+    "authorization": "用户已批准S3方案，排队等待S2固定交付后实施",
+    "status": "approved-queued-waiting-s2-fixed-delivery",
+    "scope": "沿用冻结分析材料；S2固定源码/Release/身份与交接完成后，按授权卡范围实施",
+    "productImplementationApproved": true,
+    "productModified": false,
+    "source": {
+      "path": "docs/collaboration/SCRIPT_S3_DESIGN_20261023.json",
+      "baseline": "a254710d31af3a39619f9b7ac50eaca344ac30bf",
+      "selfEvidence": 18,
+      "vmEvidencePackages": 2,
+      "vmVerified": 22,
+      "vmHashErrors": 0,
+      "scenarios": 8,
+      "contracts": 11,
+      "acceptance": 12,
+      "implementationSteps": 5,
+      "officialBasis": 3,
+      "sha256": "de8abb31da6f858ea383ebf6f0f36401bd081afeb56f765fbd74179edf5a54a7"
+    },
+    "delivery": "分析材料已收并同步至现有脚本工具主文档和O01；未执行产品实现、运行或性能验收。",
+    "documentPages": [
+      {
+        "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+        "sha256": "34bc56d4773c2a86972b9b2be6311b97d18355a624564aa669551f71cef98e30"
+      },
+      {
+        "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html",
+        "sha256": "bb9419bcd243e049ec1a48e91ab2b0ed86f8d5d2821cf28d294c673af26a3d4f"
+      }
+    ],
+    "implementationStarted": false,
+    "releaseCompleted": false,
+    "independentAcceptanceCompleted": false,
+    "implementationStatus": "已批准排队；尚未开工",
+    "releaseStatus": "未完成",
+    "acceptanceStatus": "未执行",
+    "analysisSourceStatus": "analysis-and-design-only-implementation-not-authorized（冻结分析源，不改写）",
+    "authorizationCard": {
+      "path": "docs/collaboration/SCRIPT_S3_AUTHORIZATION_20261023.json",
+      "sha256": "0d15efc24f5fc8e0192bba59cd24a57f21f5a4c5f52d7b209c71890f31adf804",
+      "status": "approved-queued-waiting-s2-fixed-delivery",
+      "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "dispatchHead": "972f2e0fd947fa7920c77f026bc1a348b968a217",
+      "startGate": "实施者先完成S2固定源码提交、完整Release产物及源/产物身份、交接和已知未验证清单，再以S2固定SHA为S3基线；不以S2整批独立验收结束为默认开工条件，但阻断反馈优先修复，未验证合同不当稳定",
+      "sourcePlanSha256": "de8abb31da6f858ea383ebf6f0f36401bd081afeb56f765fbd74179edf5a54a7"
+    }
   }
 }

@@ -1,0 +1,88 @@
+{
+  "taskId": "IMAGE-SOURCE-PANEL-BATCH",
+  "sourceCommit": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
+  "purpose": "一次集中人工体验确认；自动合同由独测负责，不要求用户重复性能/源码/生命周期验证",
+  "app": "D:/MyWork/SunEyeVision_V2/artifacts/validation/image-source-panel/delivery-6c2def23/app/SunEyeVision.UI.exe",
+  "samples": "D:/MyWork/SunEyeVision_V2/artifacts/validation/image-source-panel/manual-fixture02/images",
+  "precondition": "自动可执行验收已完成对应范围，现在一次集中人工确认；使用提供的测试方案/副本图片，修改另存副本，不执行包含故意空/缺图的全部流程",
+  "items": [
+    {
+      "id": "M01",
+      "action": "在常用缩放比例下分别切换浅色、深色主题，选中“多图与双来源”的图像源A，查看底部图像源面板、图标、文字、选中态和取消提示",
+      "expected": "文字清楚、无截断或错位，选中与禁用状态容易分辨",
+      "status": "待人工"
+    },
+    {
+      "id": "M02",
+      "action": "选中图像源A（三图），用鼠标和方向键切图、修改运行勾选，另存为测试副本manual-review-edited.solution并重新打开",
+      "expected": "当前图与勾选表现符合操作直觉，重新打开保留勾选",
+      "status": "待人工"
+    },
+    {
+      "id": "M03",
+      "action": "在“多图与双来源”依次点1图像源A、2图像源B（倒序）、3多来源提示（不必运行）；切到“空列表与缺图提示”依次点4空图像源、5缺图测试",
+      "expected": "面板跟随正确来源，不显示无关旧图；提示能说明如何继续",
+      "status": "待人工"
+    },
+    {
+      "id": "M04",
+      "action": "用已备测试副本目录D:/MyWork/SunEyeVision_V2/artifacts/validation/image-source-panel/samples-functional-02/images导入，在进行中取消，随后清空面板并重新导入少量manual-fixture02/images副本；若导入已完成，只记录完成状态，不反复追抢取消时机",
+      "expected": "取消状态明确，界面能继续操作，副本图片仍在磁盘",
+      "status": "待人工"
+    },
+    {
+      "id": "M05",
+      "action": "在Visual Studio打开D:/MyWork/SunEyeVision_V2/SunEyeVision.slnx，再打开src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml设计视图（必要时一并看ImageResultControl.xaml）",
+      "expected": "设计器可加载，无设计时XAML错误；面板布局可预览；运行时验证不替代此项",
+      "status": "待人工真实设计视图确认；本轮无可用自动设计器交互渠道，未宣称通过"
+    }
+  ],
+  "developerOwnedNotUserTasks": [
+    "新包默认启动/自然关闭、40合同独验、缓存/取消/预热数据核收已有结果，不要求用户重复",
+    "真实VS设计器本轮无自动交互渠道，已并入M05集中人工；不把安装检测或普通WPF加载当设计时通过",
+    "程序集管理不在本清单"
+  ],
+  "submission": "完成时一次回复每项通过/不通过及简短说明；验收结果未返回前不标人工通过",
+  "automationSplit": [
+    {
+      "area": "真实程序启动/身份/自然关闭",
+      "owner": "独测",
+      "available": "已有成功Close流程；pwsh7预检后按协调单进程",
+      "userNeeded": false
+    },
+    {
+      "area": "Light/Dark、DPI、键鼠和提示的可操作性",
+      "owner": "独测先跑+用户体验确认",
+      "available": "已知WPF组件设施可做自动合同；真实观感留人工一次确认",
+      "userNeeded": true
+    },
+    {
+      "area": "Visual Studio真实设计器",
+      "owner": "集中人工",
+      "available": "已确认VS18安装，但本轮无可用自动设计器交互渠道、无实际设计器加载结果；不保留未证拒绝原因，普通运行不代设计时",
+      "userNeeded": true
+    }
+  ],
+  "actualFixture": {
+    "path": "D:/MyWork/SunEyeVision_V2/artifacts/validation/image-source-panel/manual-fixture02/image-source-acceptance.solution",
+    "sha256": "92AA6A5098B118C8CE1D7C92D3CC99E61FF97F36BB56AE4C02A06901311411FD",
+    "validation": "Product SolutionRepository Save/Load roundtrip PASS; devices0/communications0; real ImageLoad parameters",
+    "uiOpenValidation": "PASS-SCOPED: 独测真实6c2 PID32828加载2flows5nodes（4 ImageLoad+1 ImageFilter），设备通信0，Dispatcher0，Close accepted自然exit0约9.78s，App/fixture SHA未变；不含视觉断言",
+    "scenarioGuide": [
+      "多图与双来源：点1图像源A（三图），再点2图像源B（倒序），观察对应列表；点3多来源提示（不必运行）查看双上游来源选择提示",
+      "空列表与缺图提示：点4空图像源、5缺图测试，观察明确空/缺图反馈；缺图路径故意不存在，不运行全部流程"
+    ],
+    "prohibition": "不连接相机通信；保留故意缺图项，不改用户原始文件"
+  },
+  "launch": {
+    "command": "用户普通操作：打开固定delivery-6c2def23/app/SunEyeVision.UI.exe → 菜单“打开方案” → manual-fixture02/image-source-acceptance.solution；无需命令行或marker参数",
+    "effect": "打开固定程序与测试方案；修改方案另存测试副本，使用普通应用设置；无预热override",
+    "preparation": "方案固定API保存加载与独测真实程序加载关闭均已通过；3PNG/空缺图与双来源测试节点已备，可直接按普通菜单打开",
+    "initialSelection": "点击“多图与双来源”工作流中1图像源A（三图）；新方案初始未选节点时底部面板可不显示",
+    "saveRule": "人工修改请另存测试副本，保留原fixture及其SHA",
+    "doNotRun": "第3多来源提示、第4空源、第5故意缺图主要验提示，不执行全部检测",
+    "automationEvidenceCommand": "& 'D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\image-source-panel\\delivery-6c2def23\\app\\SunEyeVision.UI.exe' --startup-test-root 'D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\image-source-panel\\manual-fixture02' 'D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\image-source-panel\\manual-fixture02\\image-source-acceptance.solution'"
+  },
+  "fixtureCoverageBoundary": "此人工fixture覆盖本地多图/双来源/空/缺图；不含真实相机设备或子程序。子程序/相机来源合同按独测40项实际覆盖单列，不冒本fixture全UI覆盖；不要求用户手搭工作流。",
+  "largeImportCopies": "D:/MyWork/SunEyeVision_V2/artifacts/validation/image-source-panel/samples-functional-02/images（已备5000张测试副本，非用户原图；自动批次取消断言已有40合同覆盖）"
+}

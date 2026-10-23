@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "taskId": "IMAGE-SOURCE-PANEL-BATCH",
+  "requestId": "IP-FIXED-1FF63BFA-02",
+  "baselineCommit": "64f17888fac6fa10ccc78671fd5bde10e93582b2",
+  "sourceCommit": "1ff63bfa78f3c6d6c028ec8439b730a86d313cf9",
+  "branch": "main",
+  "writer": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+  "authorization": "docs/collaboration/IMAGE_SOURCE_PANEL_AUTHORIZATION_20261023.json",
+  "goal": "原批准D01-D07/IP-A01-A10整批实施；本次固定候选交独立验收，驻留/预热/实际UI仍进行中",
+  "allowedDirectories": [
+    "src/UI",
+    "tests/SunEyeVision.UI.Tests",
+    "本实施者自有artifacts及协作记录"
+  ],
+  "changedFiles": [
+    "src/UI/App.xaml.cs",
+    "src/UI/Features/WorkflowUI/WorkflowTabViewModel.cs",
+    "src/UI/Services/ImageSourceResolver.cs",
+    "src/UI/Services/LocalImageSequenceService.cs",
+    "src/UI/Services/RuntimeInputSnapshotService.cs",
+    "src/UI/Services/Startup/StartupLaunchContext.cs",
+    "src/UI/Services/Thumbnail/ImageFileImport.cs",
+    "src/UI/Services/Thumbnail/PreviewBitmapCache.cs",
+    "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+    "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+    "src/UI/Shared/ImageInputSource.cs",
+    "src/UI/Shell/Controls/Panels/ImagePreviewControl.FileImport.cs",
+    "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml",
+    "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs",
+    "src/UI/Shell/Controls/Shell/ImageResultControl.xaml",
+    "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+    "src/UI/Shell/Windows/MainWindowViewModel.cs",
+    "tests/SunEyeVision.UI.Tests/ImagePreviewGeneratedDecodeTests.cs",
+    "tests/SunEyeVision.UI.Tests/ImagePreviewInteractionTests.cs",
+    "tests/SunEyeVision.UI.Tests/ImageSourceResolverTests.cs",
+    "tests/SunEyeVision.UI.Tests/ImageSourceSavePersistenceTests.cs",
+    "tests/SunEyeVision.UI.Tests/LocalImageExecutionTests.cs",
+    "tests/SunEyeVision.UI.Tests/LocalImageSequenceTests.cs",
+    "tests/SunEyeVision.UI.Tests/PreviewBitmapCacheTests.cs",
+    "tests/SunEyeVision.UI.Tests/StartupEntryFlowTests.cs"
+  ],
+  "fixedDelivery": "artifacts/validation/image-source-panel/delivery-1ff63bfa",
+  "identity": {
+    "sourceCommit": "1ff63bfa78f3c6d6c028ec8439b730a86d313cf9",
+    "programFiles": 627,
+    "sourceInputs": 1395,
+    "binaryManifestSha256": "4AEDA39A7B78D47072A55F7DD530A0A173F79A8CA6A4F39CBBC3614D8393F584",
+    "sourceManifestSha256": "6D6F527F3DE70F889789889CDFBDFEF75A2A1F58BFBC5E643ACCA8BB87A1178E",
+    "sourceZipSha256": "9A9F891B51C579FD41872A817FAB134A602FB78979036031DB2D0043C584CE3D",
+    "sourceArchiveManifestSha256": "263A80052FBC78DCF03DC374F9E28B7733FFEB4B531BF35C0F34FC42F9E85BAB",
+    "sourceManifestKind": "all tracked src/tools/tests/build inputs including assets; actual worktree bytes",
+    "sourceArchiveKind": "git archive output of committed revision; not actual worktree bytes",
+    "foreignProbeFiles": 0,
+    "vendorMatches": 26,
+    "actualSourceSnapshotPath": "actual-built-source",
+    "actualSourceSnapshotArchive": "actual-built-source.zip",
+    "actualSourceSnapshotArchiveSha256": "A1EC7854A665173657B8F346E38405F6CD9A2F0E24BA13AB8AC4E75DA37791FE",
+    "sourceBytesUnchangedFromPreBuild": true,
+    "preBuildSourceManifest": "pre-build-source-manifest.json",
+    "actualSourceSnapshotArchiveManifestSha256": "9F0159A183E7B4EF202A5FE7D281FDCC8E3086EDEF86915C63F2E23E45CA3DDC",
+    "sourceMapSha256": "4EA6D3A8107F7D34FC3946B9A722C1F8375BD4E3308E5FF0C8DE8A3A8233821C",
+    "sourceMapSummarySha256": "4DA79AF60A84B01C25C751CCA62FBA39D7BD9B4E3DC90C48B8E35A2C6C99E828",
+    "actualSourceSnapshotFiles": 1395,
+    "actualSourceSnapshotDrift": 0
+  },
+  "completed": [
+    "来源纯图解析/显式分支/父级唯一调用点；UI不沿用无关旧源",
+    "每workflow+source+runGeneration+iteration冻结序列与逐节点参数快照，成功推进/失败取消保留/末张同序列停止",
+    "勾选即时配置同步/保存原引用/解绑与运行游标不持久化，现有语义dirty不另建账本",
+    "缩略内容SHA版本single-flight/取消门/字节LRU与离屏引用释放；全图item弱引用/64MiB cache；驻留尚未实测",
+    "目录后台枚举排序/256批次/取消切源重入门，不删除磁盘文件",
+    "仅隔离验收允许预热on/off/deferred，正常仍On，尚未据测量决定策略"
+  ],
+  "developmentValidation": {
+    "fullRelease": "1ff63bfa UI0错1175警告53.42s；全量0错1273警告99.58s；1395全部源/资产构建前后零漂移",
+    "logs": [
+      "cache-checkpoint01-retry01",
+      "import-warmup-gate01",
+      "full-release-823cf104"
+    ],
+    "targeted": "此前32+4通过；823真实窗口暴露产品WIC回归。最小修复后9/9真实生成PNG/BMP/像素覆盖与cache用例通过1s；新固定包5000重跑尚待，不把源码测试当固定运行通过",
+    "ui": "cache retry UI0错758警告22.30s，源工作区checkpoint而非固定823产物运行"
+  },
+  "manualAcceptance": "未进行用户人工验收；主题/高DPI/VS设计时未完成",
+  "unfinished": [
+    "实际5000图遍历驻留含item引用/native/进程实测",
+    "同固定构建预热全App启动与WIC/HalImage首次/再次对照及收益取舍",
+    "真实窗口主题/键鼠/DPI/子程序与切tab回归，VS设计时单列",
+    "固定823副本独立验收和缺陷修复复测，最终UI专项/Release运行及文档闭环"
+  ],
+  "knownBoundaries": [
+    "中央大图/ROI/渲染引擎未重做",
+    "脚本程序集/Owner合同保持暂停；本候选身份一致不豁免历史A07 FAIL",
+    "预算JSON是实施前设计边界不是实测成绩",
+    "候选交付不等整批通过；预热正常默认仍On，未来取舍须报告同包数据"
+  ],
+  "next": "独测核收新1ff固定627app与1395actual源快照后按既有IP矩阵定向验证；实施者优先functional-02新5000全样本实际窗口/驻留，再独占预热对照。旧823静态来源PASS不等旧行为通过。",
+  "sourceProvenance": {
+    "actualSnapshot": "actual-built-source.zip",
+    "actualSnapshotFiles": 1395,
+    "actualSnapshotDrift": 0,
+    "allTrackedInputPathsIncludingAssets": true,
+    "preBuildManifest": "pre-build-source-manifest.json",
+    "prePostBuildDrift": 0,
+    "archiveFiles": 1395,
+    "byteIdentical": 1017,
+    "onlyCrlfLfWithBomPreserved": 378,
+    "otherContentDifferences": 0,
+    "map": "actual-vs-committed-source-map.json",
+    "summary": "actual-vs-committed-source-summary.json",
+    "supplementaryPaths": 0
+  },
+  "previousCandidate": {
+    "sourceCommit": "823cf10428ad9143df1dce9426e5e314cc1c4856",
+    "fixedDelivery": "artifacts/validation/image-source-panel/delivery-823cf104",
+    "functional": "FAIL: StreamSource+IgnoreImageCache null URI ArgumentNullException; fixtures5000完成/functional失败/residency未起",
+    "repair": "Remove URI-only IgnoreImageCache flag from fresh-stream thumbnail/full decode. Keep content SHA/OnLoad/Freeze; real generated-image regressions added",
+    "history": "Original app/source/raw failure and diagnostic preserved; not overwritten or reclassified"
+  }
+}

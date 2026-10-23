@@ -69,6 +69,9 @@ public partial class App : Application
     // 监控定时器
     private DispatcherTimer? _monitorTimer;
     private int _monitorReportInterval = 30; // 每30秒报告一次
+    private double _imageWarmupBlockingMs;
+    private bool _imageWarmupContentRecorded;
+    private ImageWarmupMode EffectiveImageWarmupMode => StartupLaunchContext.Current.ImageWarmupOverride ?? ImageWarmupMode.On;
 
     // 启动页（OnStartup 创建，HandleStartupDecision 关闭）。
     // 用全限定名避免与 System.Windows.SplashScreen（WPF 官方类）冲突。
@@ -168,7 +171,12 @@ public partial class App : Application
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
         // P0优化：预热线程池，消除首次加载延迟
-        PrewarmThreadPool();
+        if (EffectiveImageWarmupMode == ImageWarmupMode.On)
+        {
+            var warmupClock = Stopwatch.StartNew();
+            PrewarmThreadPool();
+            _imageWarmupBlockingMs = warmupClock.Elapsed.TotalMilliseconds;
+        }
         _splashScreen?.UpdateStage("正在启动", 8, "运行环境准备完成");
         LogStartupStage("OnStartup.Pre warm completed");
 
@@ -505,7 +513,11 @@ public partial class App : Application
     {
         mainWindow.SourceInitialized += (_, _) => LogMainWindowState(mainWindow, "SourceInitialized");
         mainWindow.Loaded += (_, _) => LogMainWindowState(mainWindow, "Loaded");
-        mainWindow.ContentRendered += (_, _) => LogMainWindowState(mainWindow, "ContentRendered");
+        mainWindow.ContentRendered += (_, _) =>
+        {
+            LogMainWindowState(mainWindow, "ContentRendered");
+            RecordImageWarmupContentRendered();
+        };
         mainWindow.Activated += (_, _) => LogMainWindowState(mainWindow, "Activated");
         mainWindow.StateChanged += (_, _) => LogMainWindowState(mainWindow, "StateChanged");
         mainWindow.Closed += (_, _) => LogMainWindowState(mainWindow, "Closed");
@@ -745,6 +757,59 @@ public partial class App : Application
         {
             VisionLogger.Instance.Log(LogLevel.Warning, $"线程池预热失败: {ex.Message}", "App");
         }
+    }
+
+    private async void RecordImageWarmupContentRendered()
+    {
+        if (_imageWarmupContentRecorded) return;
+        _imageWarmupContentRecorded = true;
+        var contentRenderedMs = _startupStopwatch.Elapsed.TotalMilliseconds;
+        var mode = EffectiveImageWarmupMode;
+        WriteImageWarmupMeasurement("content-rendered", contentRenderedMs, null, null, null);
+        if (mode != ImageWarmupMode.Deferred)
+        {
+            WriteImageWarmupMeasurement("completed", contentRenderedMs, null, null, null);
+            return;
+        }
+        var queuedMs = _startupStopwatch.Elapsed.TotalMilliseconds;
+        try
+        {
+            var timing = await Task.Run(() =>
+            {
+                var startedMs = _startupStopwatch.Elapsed.TotalMilliseconds;
+                PrewarmThreadPool();
+                return (Started: startedMs, Ended: _startupStopwatch.Elapsed.TotalMilliseconds);
+            });
+            WriteImageWarmupMeasurement("completed", contentRenderedMs, queuedMs, timing.Started, timing.Ended);
+        }
+        catch (Exception ex) { LogStartupStage("Image warmup measurement failed", ex.Message); }
+    }
+
+    private void WriteImageWarmupMeasurement(string phase, double contentRenderedMs,
+        double? queuedMs, double? workerStartedMs, double? workerEndedMs)
+    {
+        var context = StartupLaunchContext.Current;
+        if (!context.IsIsolated || context.ImageWarmupOverride == null) return;
+        try
+        {
+            ThreadPool.GetMinThreads(out var workers, out var io);
+            var data = new
+            {
+                phase, processId = Environment.ProcessId, sourceCommit = SunEyeVision.Core.Versioning.AppVersionInfo.Commit,
+                mode = EffectiveImageWarmupMode.ToString(), runtime = Environment.Version.ToString(),
+                startupBlockingMs = _imageWarmupBlockingMs, contentRenderedElapsedMs = contentRenderedMs,
+                backgroundQueuedElapsedMs = queuedMs, backgroundStartedElapsedMs = workerStartedMs,
+                backgroundCompletedElapsedMs = workerEndedMs,
+                backgroundWorkMs = workerEndedMs - workerStartedMs,
+                minimumWorkerThreads = workers, minimumIoThreads = io,
+                boundary = "ContentRendered is a rendered-window timestamp; it is not an input-latency assertion"
+            };
+            var path = Path.Combine(context.IsolatedRoot!, "image-warmup-" + phase + ".json");
+            var temporary = path + ".tmp";
+            File.WriteAllText(temporary, System.Text.Json.JsonSerializer.Serialize(data));
+            File.Move(temporary, path); // Each phase is created once in a fresh isolated root.
+        }
+        catch (Exception ex) { LogStartupStage("Image warmup measurement write failed", ex.Message); }
     }
 
     /// <summary>

@@ -7,12 +7,15 @@ using SunEyeVision.Workflow;
 
 namespace SunEyeVision.UI.Services.Startup;
 
+public enum ImageWarmupMode { On, Off, Deferred }
+
 /// <summary>显式隔离根仅用于受控启动验收；不重定向用户配置、不修改进程环境变量。</summary>
 public sealed class StartupLaunchContext
 {
     public string? SolutionPath { get; private init; }
     public string? IsolatedRoot { get; private init; }
     public bool IsIsolated => IsolatedRoot != null;
+    public ImageWarmupMode? ImageWarmupOverride { get; private init; }
     public static StartupLaunchContext Current { get; internal set; } = new();
     public static StartupLaunchContext Parse(string[] args)
     {
@@ -25,10 +28,23 @@ public sealed class StartupLaunchContext
             if (!File.Exists(System.IO.Path.Combine(root, ".suneye-startup-test")))
                 throw new InvalidDataException("隔离验收目录必须有 .suneye-startup-test 标记。");
         }
+        ImageWarmupMode? warmup = null;
+        var warmAt = Array.IndexOf(args, "--image-warmup-mode");
+        if (warmAt >= 0)
+        {
+            if (root == null) throw new InvalidDataException("预热对照仅允许在有效隔离验收目录运行。");
+            if (warmAt + 1 >= args.Length || args.Count(arg => arg == "--image-warmup-mode") != 1)
+                throw new ArgumentException("预热对照需要唯一的 on/off/deferred 参数。");
+            warmup = args[warmAt + 1].ToLowerInvariant() switch
+            {
+                "on" => ImageWarmupMode.On, "off" => ImageWarmupMode.Off, "deferred" => ImageWarmupMode.Deferred,
+                _ => throw new ArgumentException("预热对照参数必须是 on/off/deferred。")
+            };
+        }
         var files = args.Where((s,i) => i != at + 1 || at < 0)
             .Where(x => x.EndsWith(".solution", StringComparison.OrdinalIgnoreCase)).ToArray();
         if (files.Length > 1) throw new ArgumentException("一次只能打开一个方案文件。");
-        var result = new StartupLaunchContext { SolutionPath = files.FirstOrDefault(), IsolatedRoot = root };
+        var result = new StartupLaunchContext { SolutionPath = files.FirstOrDefault(), IsolatedRoot = root, ImageWarmupOverride = warmup };
         if (result.SolutionPath != null) result.ValidatePath(result.SolutionPath);
         return result;
     }

@@ -68,6 +68,9 @@ public partial class ImagePreviewControl
                     if (additions.Length == 0) return;
                     var first = source.Count;
                     source.AddImages(additions);
+                    // Collection observers can cancel, clear, or switch source during the commit.
+                    if (cancellation.IsCancellationRequested || generation != _fileImportGeneration
+                        || !ReferenceEquals(ActiveInputSource, source)) return;
                     imported += additions.Length;
                     ImportStatus = $"已导入 {imported} 个图像引用";
                     if (!selectedNew) { CurrentImageIndex = first; selectedNew = true; }

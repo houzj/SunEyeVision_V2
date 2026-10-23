@@ -12,6 +12,25 @@ using Xunit;
 namespace SunEyeVision.UI.Tests;
 public sealed class StartupEntryFlowTests
 {
+    [Fact]
+    public void Image_warmup_override_requires_marked_isolation_and_keeps_normal_default()
+    {
+        Assert.Null(StartupLaunchContext.Parse(Array.Empty<string>()).ImageWarmupOverride);
+        Assert.Throws<InvalidDataException>(() => StartupLaunchContext.Parse(new[] { "--image-warmup-mode", "off" }));
+        var root = Root(); File.WriteAllText(Path.Combine(root, ".suneye-startup-test"), "isolated");
+        try
+        {
+            foreach (var mode in new[] { "on", "off", "deferred" })
+                Assert.Equal(Enum.Parse<ImageWarmupMode>(mode, true), StartupLaunchContext.Parse(new[]
+                    { "--startup-test-root", root, "--image-warmup-mode", mode }).ImageWarmupOverride);
+            Assert.Throws<ArgumentException>(() => StartupLaunchContext.Parse(new[] { "--startup-test-root", root, "--image-warmup-mode", "invalid" }));
+            Assert.Throws<ArgumentException>(() => StartupLaunchContext.Parse(new[] { "--startup-test-root", root, "--image-warmup-mode" }));
+            var context = StartupLaunchContext.Parse(new[] { "--startup-test-root", root, "--image-warmup-mode", "off" });
+            var solution = Solution.Create(); solution.Devices.Add(new Device());
+            Assert.Throws<InvalidDataException>(() => context.ValidateCandidate(solution));
+        }
+        finally { Directory.Delete(root, true); }
+    }
     private static string Root()
     {
         var path = Path.Combine(Path.GetTempPath(), "SunEyeVision.StartupTests", Guid.NewGuid().ToString("N"));

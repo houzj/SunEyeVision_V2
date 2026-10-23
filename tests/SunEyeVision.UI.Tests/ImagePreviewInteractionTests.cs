@@ -162,6 +162,57 @@ public sealed partial class SolutionManagerUiTests
     }
 
     [Fact]
+    public void Import_cancel_after_first_batch_keeps_committed_references_and_stops_late_appends()
+    {
+        Sta(() =>
+        {
+            var directory = Path.Combine(Path.GetTempPath(), "SunEyeVision-ImportCancel", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(directory);
+            try
+            {
+                var paths = Enumerable.Range(0, 600).Select(index => Path.Combine(directory, index.ToString("D4") + ".png")).ToArray();
+                foreach (var path in paths) File.WriteAllBytes(path, new byte[] { 1 });
+                var source = new ImageInputSource("import");
+                var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images };
+                source.CollectionChanged += (_, _) => { if (source.Count >= 256) control.CancelImportCommand.Execute(null); };
+                PumpPreviewTask(control, control.ImportDirectoryAsync(directory));
+                Assert.Equal(256, source.Count); Assert.Equal(256, source.ToConfig().FilePaths.Count);
+                Assert.False(control.IsImporting); Assert.Contains("取消", control.ImportStatus);
+                Assert.All(paths, path => Assert.True(File.Exists(path)));
+            }
+            finally { Directory.Delete(directory, true); }
+        });
+    }
+
+    [Fact]
+    public void Import_source_switch_during_commit_cannot_change_new_source_selection()
+    {
+        Sta(() =>
+        {
+            var directory = Path.Combine(Path.GetTempPath(), "SunEyeVision-ImportSwitch", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(directory);
+            try
+            {
+                var paths = Enumerable.Range(0, 600).Select(index => Path.Combine(directory, index.ToString("D4") + ".png")).ToArray();
+                foreach (var path in paths) File.WriteAllBytes(path, new byte[] { 1 });
+                var old = new ImageInputSource("old"); var next = new ImageInputSource("next");
+                next.AddImages(paths.Take(2).Select(path => new ImageInfo { FilePath = path })); next.CurrentIndex = 1;
+                var control = new ImagePreviewControl { ActiveInputSource = old, ImageCollection = old.Images };
+                old.CollectionChanged += (_, _) =>
+                {
+                    if (old.Count < 256) return;
+                    control.ActiveInputSource = next; control.ImageCollection = next.Images; control.CurrentImageIndex = 1;
+                };
+                PumpPreviewTask(control, control.ImportFilePathsAsync(paths));
+                Assert.Equal(256, old.Count); Assert.Equal(2, next.Count);
+                Assert.Equal(1, control.CurrentImageIndex); Assert.Equal(1, next.CurrentIndex);
+                Assert.False(control.IsImporting);
+            }
+            finally { Directory.Delete(directory, true); }
+        });
+    }
+
+    [Fact]
     public void Manual_execution_does_not_advance_but_default_successful_execution_does()
     {
         Sta(() =>

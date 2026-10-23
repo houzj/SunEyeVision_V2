@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -257,30 +257,22 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// </summary>
         public static MetadataReference ResolveAssemblyPath(string name, string? userRefDir = null)
         {
-            // 1. BCL 白名单：从 TPA 精确匹配
-            var bclPath = ResolveBclPath(name);
-            if (bclPath != null)
-            {
-                return MetadataReference.CreateFromFile(bclPath);
-            }
+            var resolved = ResolveAssemblyFile(name, userRefDir);
+            return SharedMetadataReferenceProvider.Capture(resolved.Path, resolved.IsUserReference).Reference;
+        }
 
-            // 2. 宿主 API：类型锚定（Script 基类 / halcon / OpenCvSharp）
-            var hostPath = ResolveHostApiPath(name);
-            if (hostPath != null)
-            {
-                return MetadataReference.CreateFromFile(hostPath);
-            }
-
-            // 3. 用户 DLL：ScriptRefs 目录
+        internal static (string Path, bool IsUserReference) ResolveAssemblyFile(string name, string? userRefDir)
+        {
+            var logicalName = name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ? name[..^4] : name;
+            var systemPath = ResolveBclPath(logicalName) ?? ResolveHostApiPath(logicalName);
+            if (systemPath != null) return (Path.GetFullPath(systemPath), false);
             if (!string.IsNullOrEmpty(userRefDir))
             {
-                var userPath = Path.Combine(userRefDir, name);
-                if (File.Exists(userPath))
-                    return MetadataReference.CreateFromFile(userPath);
+                var candidate = Path.GetFullPath(Path.IsPathRooted(name) ? name : Path.Combine(userRefDir, name));
+                if (!File.Exists(candidate) && !name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) candidate += ".dll";
+                if (File.Exists(candidate)) return (candidate, true);
             }
-
-            throw new InvalidOperationException(
-                $"脚本引用的程序集 '{name}' 无法解析到路径。请通过\"程序集引用\"添加，或确认 ScriptRefs 目录存在该 DLL。");
+            throw new InvalidOperationException($"脚本引用 '{name}' 不存在，请检查程序集引用及 ScriptRefs 目录。");
         }
 
         /// <summary>
@@ -344,7 +336,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
             try
             {
-                refs[key] = MetadataReference.CreateFromFile(path);
+                refs[key] = SharedMetadataReferenceProvider.Capture(path, false).Reference;
                 return true;
             }
             catch (Exception ex)

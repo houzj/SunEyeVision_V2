@@ -1,0 +1,22 @@
+{
+  "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+  "scope": "仅用户已批准任务",
+  "tasks": [
+    {
+      "id": "SCRIPT-S1",
+      "priority": "P1",
+      "status": "handoff-awaiting-writer-transfer",
+      "baseline": "9e0da65d03815ceb9d0cb3392fd3ac5597227119",
+      "approvedBy": "用户2026-10-23继续实施第一批",
+      "scope": "会话/版本/引用快照/缓存身份和分段计时，保留有效基础预热",
+      "dependencies": [],
+      "independentTesting": "queued-behind-user-plugin-acceptance",
+      "next": "接收临时提交并审核在制代码，补测试/全量Release/隔离运行及独立验收",
+      "excluded": [
+        "S2首屏/优先调度/编译任务合并",
+        "S3完整执行门/异常释放/池租约",
+        "旧插件兼容/旧方案迁移"
+      ]
+    }
+  ]
+}

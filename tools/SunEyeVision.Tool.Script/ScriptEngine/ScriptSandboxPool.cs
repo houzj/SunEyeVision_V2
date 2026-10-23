@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
 
@@ -39,9 +39,9 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// <param name="cacheKey">编译缓存键（决定程序集与引用环境）</param>
         /// <param name="refDir">用户 DLL 引用目录（ScriptRefs），供新沙箱预加载</param>
         /// <returns>常驻沙箱（调用方不 Dispose，归还池复用）</returns>
-        public static ScriptSandbox GetOrCreate(string cacheKey, string? refDir)
+        public static ScriptSandbox GetOrCreate(string cacheKey, string? refDir, ScriptReferenceSnapshot? references = null)
         {
-            var slot = _pool.GetOrAdd(cacheKey, k => new SandboxSlot(new ScriptSandbox($"ScriptSandboxPool_{k[..8]}", refDir)));
+            var slot = _pool.GetOrAdd(cacheKey, k => new SandboxSlot(new ScriptSandbox($"ScriptSandboxPool_{k[..8]}", refDir, references)));
             slot.LastUsed = DateTime.UtcNow;
             EvictIfNeeded();
             return slot.Sandbox;

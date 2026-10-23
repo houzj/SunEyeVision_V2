@@ -75,7 +75,7 @@ namespace SunEyeVision.Tool.Script.Views
             // 编辑器能力（语义高亮/补全/签名/诊断/workspace）全部封装在公共内核 ScriptEditorCore。
             // 本控件仅注入工具特有的引用/代码/图标来源，内核自动完成编辑器功能。
             EditorCore.SetCompletionIconProvider(item => item.GetGlyph().ToImageSource());
-            EditorCore.SetReferenceProvider(BuildReferences);
+            EditorCore.SetReferenceSnapshotProvider(() => _parameters.CaptureReferences().AnalysisReferences);
             EditorCore.SetCodeSource(() => _parameters.GeneratedCode, () => EditorCore.GetCode());
             EditorCore.SetDocumentProvider(() => EditorCore.Workspace?.CurrentSolution.GetDocument(EditorCore.UserDocumentId));
             EditorCore.SetSuppressDiagnostic(true);   // workspace 就绪前抑制诊断
@@ -122,18 +122,6 @@ namespace SunEyeVision.Tool.Script.Views
         /// 经 ResolveAssemblyPath 逐个解析（BCL/宿主锚定/ScriptRefs），与编译引用保持一致。
         /// 供内核 ScriptEditorCore.SetReferenceProvider 使用。
         /// </summary>
-        private IEnumerable<MetadataReference> BuildReferences()
-        {
-            var refDir = _parameters.AssemblyReferenceFullPath;
-            var list = new List<MetadataReference>();
-            foreach (var name in _parameters.AssemblyReferences)
-            {
-                if (string.IsNullOrWhiteSpace(name)) continue;
-                list.Add(MetadataReferenceProvider.ResolveAssemblyPath(name.Trim(), refDir));
-            }
-            return list;
-        }
-
         public override void SetParameters(ToolParameters parameters)
         {
             base.SetParameters(parameters);
@@ -580,7 +568,7 @@ namespace SunEyeVision.Tool.Script.Views
                     _parameters.AssemblyReferences, StringComparer.OrdinalIgnoreCase);
 
                 // ScriptRefs 目录 DLL 变化 → 失效引用缓存；引用列表变化 → 重建 workspace
-                if (refsChanged)
+                // 同名 DLL 内容替换不改变勾选名称，也必须重新核验快照。
                 {
                     SharedMetadataReferenceProvider.InvalidateScriptRefs(refDir);
                     EditorCore.RebuildWorkspace(refreshReferences: true);

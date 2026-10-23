@@ -30,33 +30,20 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// </summary>
         public Assembly? LoadedAssembly { get; private set; }
 
-        public ScriptSandbox(string contextName, string? userLibDir = null)
+        public ScriptSandbox(string contextName, string? userLibDir = null, ScriptReferenceSnapshot? references = null)
         {
             _contextName = contextName;
             _alc = new AssemblyLoadContext(contextName, isCollectible: true);
 
-            // 预加载用户自定义第三方 DLL（来自 userLibDir，通常为 ScriptRefs 中的用户 DLL）。
-            // 宿主系统 DLL（已在默认 ALC 中的程序集）跳过预加载，由默认 ALC fallback 解析，
-            // 保证脚本基类 Script 与沙箱校验用的 ScriptBase 是同一 CLR 类型身份。
-            if (!string.IsNullOrEmpty(userLibDir) && Directory.Exists(userLibDir))
-            {
-                foreach (var dll in Directory.EnumerateFiles(userLibDir, "*.dll"))
+            // 只加载本次选中的用户引用字节；目录其他 DLL 不得混入运行环境。
+            if (references != null)
+                foreach (var image in references.Entries.Where(e => e.IsUserReference))
                 {
-                    if (IsHostAssembly(Path.GetFileNameWithoutExtension(dll)))
-                        continue;
-
-                    try
-                    {
-                        _alc.LoadFromAssemblyPath(dll);
-                    }
-                    catch (Exception ex)
-                    {
-                        PluginLogger.Warning(
-                            $"[Sandbox] 预加载用户自定义 DLL 失败: {dll}, 错误={ex.Message}",
-                            nameof(ScriptSandbox));
-                    }
+                    if (IsHostAssembly(image.AssemblyName))
+                        throw new InvalidOperationException($"用户引用 '{image.AssemblyName}' 与宿主已加载程序集冲突，请使用不同程序集名或重启应用。");
+                    using var stream = new MemoryStream(image.Image.ToArray(), writable: false);
+                    _alc.LoadFromStream(stream);
                 }
-            }
 
             // OnResolving 兜底（rule-008 报错优先）：
             // 脚本引用但未预加载的 DLL 触发本回调，记录诊断信息后返回 null，
@@ -82,6 +69,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             if (_disposed)
                 throw new ObjectDisposedException(nameof(ScriptSandbox));
 
+            if (LoadedAssembly != null) return LoadedAssembly;
             if (symbolBytes != null)
                 LoadedAssembly = _alc.LoadFromStream(new MemoryStream(assemblyBytes), new MemoryStream(symbolBytes));
             else

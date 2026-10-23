@@ -113,7 +113,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             // 2. 在沙箱中加载并执行（从常驻池获取，复用 ALC + 程序集 + JIT 缓存）。
             //    沙箱按编译缓存键分组：相同代码+引用复用，代码变化自动建新沙箱（旧沙箱由池 LRU 淘汰）。
             var combinedCode = string.Join("\n", new[] { generatedCode, userCode });
-            var sandbox = ScriptSandboxPool.GetOrCreate(ScriptCompiler.ComputeCacheKey(combinedCode, assemblyNames), assemblyRefDir);
+            var sandbox = ScriptSandboxPool.GetOrCreate(compileResult.CacheKey, assemblyRefDir, compileResult.ReferenceSnapshot);
             Exception? loadError = null;
 
             try
@@ -288,7 +288,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 }
 
                 var combinedCode = string.Join("\n", new[] { generatedCode, userCode });
-                var cacheKey = ScriptCompiler.ComputeCacheKey(combinedCode, assemblyNames);
+                var snapshot = ScriptReferenceSnapshot.Capture(assemblyNames, assemblyRefDir);
+                var cacheKey = ScriptCompiler.ComputeCompilationKey(new[] { generatedCode, userCode }, snapshot);
                 var compileResult = ScriptCompiler.GetCachedResult(cacheKey);
                 if (compileResult?.Success != true || compileResult.AssemblyBytes == null
                     || compileResult.EntryClassName == null)
@@ -298,16 +299,16 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 }
 
                 // 1. 常驻沙箱按实际缓存键就位（后续执行 GetOrCreate 命中，跳过创建）
-                var sandbox = ScriptSandboxPool.GetOrCreate(cacheKey, assemblyRefDir);
+                var sandbox = ScriptSandboxPool.GetOrCreate(cacheKey, assemblyRefDir, compileResult.ReferenceSnapshot);
 
                 // 2. 加载实际程序集（后续执行 LoadAssembly 命中，跳过加载）
                 sandbox.LoadAssembly(compileResult.AssemblyBytes, compileResult.SymbolBytes);
 
                 // 3. 实例化触发构造函数 JIT + PrepareMethod 预编译方法体（不执行，无副作用）
-                var instance = sandbox.CreateScriptInstance(compileResult.EntryClassName);
+                var scriptType = sandbox.LoadedAssembly!.GetType(compileResult.EntryClassName, throwOnError: true)!;
                 foreach (var methodName in new[] { "Init", "Process", "Release" })
                 {
-                    var method = instance.GetType().GetMethod(
+                    var method = scriptType.GetMethod(
                         methodName, BindingFlags.Public | BindingFlags.Instance);
                     if (method != null)
                     {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -62,6 +62,12 @@ namespace SunEyeVision.Tool.Script.Models
             // 默认引用系统必需项（BCL + Script 基类）— 编译基线最小化，halcon/OpenCvSharp 按需勾选
             _assemblyReferences = new ObservableCollection<string>(
                 SunEyeVision.Tool.Script.ScriptEngine.MetadataReferenceProvider.RequiredAssemblyNames);
+            _assemblyReferences.CollectionChanged += OnReferencesChanged;
+            PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName is nameof(ScriptCode) or nameof(AssemblyReferenceDir) or nameof(AssemblyReferences))
+                    System.Threading.Interlocked.Increment(ref _scriptRevision);
+            };
             SubscribeInputsCollection();
             SubscribeOutputsCollection();
         }
@@ -86,6 +92,14 @@ namespace SunEyeVision.Tool.Script.Models
             set => SetProperty(ref _assemblyReferenceDir, value, "程序集引用目录");
         }
 
+        private long _scriptRevision;
+        [JsonIgnore]
+        public long ScriptRevision => System.Threading.Interlocked.Read(ref _scriptRevision);
+        private void OnReferencesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+            => OnPropertyChanged(nameof(AssemblyReferences));
+        internal SunEyeVision.Tool.Script.ScriptEngine.ScriptReferenceSnapshot CaptureReferences()
+            => SunEyeVision.Tool.Script.ScriptEngine.ScriptReferenceSnapshot.Capture(AssemblyReferences.ToArray(), AssemblyReferenceFullPath);
+
         private ObservableCollection<string> _assemblyReferences;
 
         /// <summary>
@@ -97,7 +111,14 @@ namespace SunEyeVision.Tool.Script.Models
         public ObservableCollection<string> AssemblyReferences
         {
             get => _assemblyReferences;
-            set => SetProperty(ref _assemblyReferences, value, "程序集引用");
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                if (ReferenceEquals(_assemblyReferences, value)) return;
+                _assemblyReferences.CollectionChanged -= OnReferencesChanged;
+                SetProperty(ref _assemblyReferences, value, "程序集引用");
+                _assemblyReferences.CollectionChanged += OnReferencesChanged;
+            }
         }
 
         /// <summary>
@@ -146,7 +167,8 @@ namespace SunEyeVision.Tool.Script.Models
                 UnsubscribeInputsCollection();
                 SetProperty(ref _inputs, value, "输入");
                 SubscribeInputsCollection();
-                InputContractChanged?.Invoke();
+                System.Threading.Interlocked.Increment(ref _scriptRevision);
+            InputContractChanged?.Invoke();
             }
         }
 
@@ -182,11 +204,13 @@ namespace SunEyeVision.Tool.Script.Models
             if (e.OldItems != null)
                 foreach (ScriptInputConfig item in e.OldItems)
                     item.PropertyChanged -= OnInputPropertyChanged;
+            System.Threading.Interlocked.Increment(ref _scriptRevision);
             InputContractChanged?.Invoke();
         }
 
         private void OnInputPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            System.Threading.Interlocked.Increment(ref _scriptRevision);
             InputContractChanged?.Invoke();
         }
 
@@ -212,11 +236,13 @@ namespace SunEyeVision.Tool.Script.Models
             if (e.OldItems != null)
                 foreach (ScriptOutputConfig item in e.OldItems)
                     item.PropertyChanged -= OnOutputPropertyChanged;
+            System.Threading.Interlocked.Increment(ref _scriptRevision);
             OutputContractChanged?.Invoke();
         }
 
         private void OnOutputPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            System.Threading.Interlocked.Increment(ref _scriptRevision);
             OutputContractChanged?.Invoke();
         }
 
@@ -233,7 +259,8 @@ namespace SunEyeVision.Tool.Script.Models
                 UnsubscribeOutputsCollection();
                 SetProperty(ref _outputs, value, "输出");
                 SubscribeOutputsCollection();
-                OutputContractChanged?.Invoke();
+                System.Threading.Interlocked.Increment(ref _scriptRevision);
+            OutputContractChanged?.Invoke();
             }
         }
 

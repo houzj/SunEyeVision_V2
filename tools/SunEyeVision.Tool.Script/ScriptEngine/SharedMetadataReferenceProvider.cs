@@ -1,104 +1,59 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
+using System.Security.Cryptography;
 using Microsoft.CodeAnalysis;
-using SunEyeVision.Plugin.SDK.Logging;
 
-namespace SunEyeVision.Tool.Script.ScriptEngine
+namespace SunEyeVision.Tool.Script.ScriptEngine;
+
+/// <summary>宿主引用随进程固定；用户引用每次按字节核验，只共享不可变元数据。</summary>
+internal static class SharedMetadataReferenceProvider
 {
-    /// <summary>
-    /// 共享元数据引用缓存 — AdhocWorkspace（IntelliSense）和 CSharpCompilation（Emit）共用同一份引用。
-    /// 消除重复的 MetadataReference.CreateFromFile 加载，降低内存占用。
-    /// </summary>
-    internal static class SharedMetadataReferenceProvider
+    private static readonly object Gate = new();
+    private static readonly Dictionary<string, ScriptReferenceImage> HostImages = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, ScriptReferenceImage> UserImages = new(StringComparer.Ordinal);
+    private const int MaxUserImages = 128;
+
+    internal static ScriptReferenceImage Capture(string file, bool isUserReference)
     {
-        /// <summary>
-        /// ScriptRefs 目录引用缓存（按目录缓存，目录变化时重新加载）
-        /// </summary>
-        private static List<MetadataReference>? _cachedScriptRefs;
-        private static string? _lastRefDir;
-
-        /// <summary>
-        /// 获取 ScriptRefs 目录的元数据引用（跳过非托管 DLL，按目录缓存）
-        /// </summary>
-        public static List<MetadataReference> GetScriptRefs(string refDir)
+        var path = Path.GetFullPath(file);
+        lock (Gate)
         {
-            if (_cachedScriptRefs != null && _lastRefDir == refDir)
+            if (!isUserReference && HostImages.TryGetValue(path, out var host)) return host;
+            // 摘要和元数据从相同字节生成，不存在 hash 后再次打开另一份 DLL 的窗口。
+            var bytes = ImmutableArray.CreateRange(File.ReadAllBytes(path));
+            var sha = Convert.ToHexString(SHA256.HashData(bytes.AsSpan()));
+            var key = path.ToUpperInvariant() + "|" + sha;
+            if (isUserReference && UserImages.TryGetValue(key, out var cached)) return cached;
+            using var pe = new PEReader(bytes);
+            if (!pe.HasMetadata) throw new BadImageFormatException($"脚本引用不是托管程序集: {path}");
+            var reader = pe.GetMetadataReader();
+            if (!reader.IsAssembly) throw new BadImageFormatException($"脚本引用不是程序集: {path}");
+            var definition = reader.GetAssemblyDefinition();
+            var name = new AssemblyName
             {
-                PluginLogger.Info($"[SharedMetadataRef] ScriptRefs 缓存命中: {_cachedScriptRefs.Count} 个引用",
-                    nameof(SharedMetadataReferenceProvider));
-                return _cachedScriptRefs;
-            }
-
-            if (!Directory.Exists(refDir))
+                Name = reader.GetString(definition.Name), Version = definition.Version,
+                CultureName = definition.Culture.IsNil ? null : reader.GetString(definition.Culture)
+            };
+            if (!definition.PublicKey.IsNil) name.SetPublicKey(reader.GetBlobBytes(definition.PublicKey));
+            var image = new ScriptReferenceImage(path, name.Name!, name.FullName!, sha, isUserReference,
+                bytes, MetadataReference.CreateFromImage(bytes, filePath: path));
+            if (isUserReference)
             {
-                PluginLogger.Warning($"[SharedMetadataRef] 引用目录不存在: {refDir}",
-                    nameof(SharedMetadataReferenceProvider));
-                _cachedScriptRefs = [];
-                _lastRefDir = refDir;
-                return _cachedScriptRefs;
+                if (UserImages.Count >= MaxUserImages) UserImages.Clear();
+                UserImages[key] = image;
             }
-
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            var refs = new List<MetadataReference>();
-            int totalDlls = 0, skipped = 0;
-
-            foreach (var dll in Directory.EnumerateFiles(refDir, "*.dll"))
-            {
-                totalDlls++;
-                if (!IsManagedAssembly(dll))
-                {
-                    skipped++;
-                    continue;
-                }
-                try
-                {
-                    refs.Add(MetadataReference.CreateFromFile(dll));
-                }
-                catch (Exception ex)
-                {
-                    PluginLogger.Warning($"[SharedMetadataRef] 加载 DLL 失败: {dll}, 错误: {ex.Message}",
-                        nameof(SharedMetadataReferenceProvider));
-                    skipped++;
-                }
-            }
-
-            sw.Stop();
-            PluginLogger.Info(
-                $"[SharedMetadataRef] ScriptRefs 加载: 总DLL={totalDlls}, 已加载={refs.Count}, 跳过={skipped}, 耗时={sw.ElapsedMilliseconds}ms",
-                nameof(SharedMetadataReferenceProvider));
-
-            _cachedScriptRefs = refs;
-            _lastRefDir = refDir;
-            return refs;
+            else HostImages[path] = image;
+            return image;
         }
+    }
 
-        /// <summary>
-        /// 失效 ScriptRefs 引用缓存（用户增删 DLL 后调用），强制下次 GetScriptRefs 重载目录。
-        /// </summary>
-        public static void InvalidateScriptRefs(string refDir)
-        {
-            _cachedScriptRefs = null;
-            _lastRefDir = null;
-            PluginLogger.Info($"[SharedMetadataRef] ScriptRefs 缓存已失效: {refDir}", nameof(SharedMetadataReferenceProvider));
-        }
-
-        /// <summary>
-        /// 判断 DLL 是否为有效托管程序集（跳过原生 C++ DLL，避免 Roslyn 编译报 CS0006）。
-        /// 使用 AssemblyName.GetAssemblyName：既能排除原生 C++ DLL，也能排除无有效 .NET 元数据的文件。
-        /// </summary>
-        private static bool IsManagedAssembly(string filePath)
-        {
-            try
-            {
-                AssemblyName.GetAssemblyName(filePath);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+    public static void InvalidateScriptRefs(string directory)
+    {
+        lock (Gate) UserImages.Clear();
     }
 }

@@ -4,9 +4,9 @@
     "title": "自研主程序",
     "threadId": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
     "owns": [
-      "唯一日常派工与验收入口（用户授权范围内）",
-      "产品实现",
-      "开发交接CURRENT_TASK"
+      "方案讨论与用户确认",
+      "唯一优先级/范围决策及最终验收汇总",
+      "联合协议和角色登记"
     ]
   },
   "documentation": {
@@ -40,8 +40,8 @@
   ],
   "policy": "事件驱动增量维护；不创建定时任务；送达、核实、采用、验证分开；同目录产品唯一写者",
   "protocol": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
-  "protocolVersion": "2026-10-22/V1",
-  "adoptionStatus": "all-seven-recipient-roles-acknowledged-safe-handoff",
+  "protocolVersion": "2026-10-23/V2-implementation-role",
+  "adoptionStatus": "implementation-handoff-pending-acknowledgement",
   "acknowledgements": "docs/collaboration/PROTOCOL_ACKNOWLEDGEMENTS_20261022.json",
   "independentTesting": {
     "title": "自研独立测试",
@@ -69,5 +69,18 @@
     "accountability": "父对话汇总核证及交付",
     "productWriter": "同目录唯一产品写者；并行开发须独立分支或Worktree",
     "noAutomaticResume": true
+  },
+  "implementation": {
+    "title": "自研实施者",
+    "threadId": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+    "owns": [
+      "已批准任务实施队列",
+      "唯一共享目录产品写入者",
+      "子智能体组织与集成",
+      "构建/固定交付/修复",
+      "已授权范围与测试、文档、取证角色互动"
+    ],
+    "queue": "docs/collaboration/IMPLEMENTATION_QUEUE.json",
+    "canExpandScope": false
   }
 }

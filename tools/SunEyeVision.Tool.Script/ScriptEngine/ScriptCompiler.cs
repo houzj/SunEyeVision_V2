@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Loader;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -16,10 +14,7 @@ using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.Tool.Script.ScriptEngine
 {
-    /// <summary>
-    /// 脚本编译器 — 使用 Roslyn 编译 C# 代码为程序集。
-    /// 程序集引用全部从指定目录下的 *.dll 文件扫描获取。
-    /// </summary>
+    /// <summary>引用先于缓存校验，成功产物按完整内容身份缓存，失败不进入成功缓存。</summary>
     internal sealed class ScriptCompiler
     {
         private static volatile bool _warmupStarted;
@@ -82,9 +77,7 @@ public partial class WarmupScript : Script
             });
         }
 
-        /// <summary>
-        /// 编译结果
-        /// </summary>
+
         public sealed class CompileResult
         {
             public bool Success { get; set; }
@@ -93,209 +86,106 @@ public partial class WarmupScript : Script
             public List<string> Diagnostics { get; set; } = [];
             public string? EntryClassName { get; set; }
             public int UsingLineOffset { get; set; }
+            public string CacheKey { get; set; } = "";
+            public ScriptReferenceSnapshot? ReferenceSnapshot { get; set; }
+            public bool CacheHit { get; set; }
+            public double ReferenceMs { get; set; }
+            public double ParseMs { get; set; }
+            public double EmitMs { get; set; }
+            public double TotalMs { get; set; }
         }
-
-        // =====================================================
-        // 编译结果缓存（按代码哈希 + 引用目录，相同代码跳过 Emit）
-        // =====================================================
-
-        /// <summary>
-        /// 编译结果缓存（键 = 代码SHA256[:8] + | + 引用目录路径）
-        /// </summary>
+        private const int MaxCachedCompilations = 32;
         private static readonly ConcurrentDictionary<string, CompileResult> _compileCache = new();
+        private static readonly object CacheGate = new();
+        private static readonly CSharpParseOptions _parseOptions = new(LanguageVersion.Latest);
+        private static readonly CSharpCompilationOptions _compilationOptions = new CSharpCompilationOptions(
+            OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release).WithAllowUnsafe(true);
+        internal static string ComputeCompilationKey(IReadOnlyList<string> parts, ScriptReferenceSnapshot snapshot)
+            => ScriptReferenceSnapshot.Hash(new[] { "script-contract-v1", snapshot.Identity,
+                typeof(CSharpCompilation).Assembly.FullName!, typeof(CSharpCompilation).Assembly.ManifestModule.ModuleVersionId.ToString(),
+                "Latest|Regular|DLL|Release|Unsafe|PortablePdb|UTF8" }.Concat(parts));
 
-        // =====================================================
-        // 缓存区：进程生命周期内不变的对象
-        // =====================================================
-
-        /// <summary>
-        /// 语法解析选项（LanguageVersion.Latest 不变）
-        /// </summary>
-        private static readonly CSharpParseOptions _parseOptions =
-            new CSharpParseOptions(LanguageVersion.Latest);
-
-        /// <summary>
-        /// 编译选项（OutputKind/OptimizationLevel 不变）
-        /// </summary>
-        private static readonly CSharpCompilationOptions _compilationOptions =
-            new CSharpCompilationOptions(
-                OutputKind.DynamicallyLinkedLibrary,
-                optimizationLevel: OptimizationLevel.Release)
-            .WithAllowUnsafe(true);
-
-        /// <summary>
-        /// 编译 C# 脚本代码（多代码段，每个代码段构建独立语法树，通过 partial class 合并）
-        /// </summary>
-        /// <param name="codeParts">多个 C# 代码段（如 [generatedCode, userCode]）</param>
-        /// <param name="assemblyName">程序集名称（每次不同，避免 ALC 缓存冲突）</param>
-        /// <param name="assemblyRefDir">程序集引用目录路径（用户 DLL ScriptRefs 来源）</param>
-        /// <param name="assemblyNames">每节点启用的程序集引用列表（唯一真相源）。提供时按此列表组装引用；
-        /// 不提供则回退到 GetHostReferences() + ScriptRefs 目录全部 DLL。</param>
-        /// <returns>编译结果</returns>
-        public CompileResult Compile(
-            IReadOnlyList<string> codeParts,
-            string assemblyName,
-            string? assemblyRefDir = null,
-            IReadOnlyList<string>? assemblyNames = null)
+        public CompileResult Compile(IReadOnlyList<string> codeParts, string assemblyName,
+            string? assemblyRefDir = null, IReadOnlyList<string>? assemblyNames = null)
         {
-            var totalSw = Stopwatch.StartNew();
+            var timer = Stopwatch.StartNew();
             var result = new CompileResult();
-            result.UsingLineOffset = 0;
-
             if (codeParts == null || codeParts.Count == 0 || codeParts.All(string.IsNullOrWhiteSpace))
             {
                 result.Diagnostics.Add("脚本代码为空");
                 return result;
             }
-
-            // 合并所有代码段用于缓存哈希 + 类名提取
-            var combinedCode = string.Join("\n", codeParts);
-
-            // 0a. 检查编译缓存（相同代码 + 宿主程序集指纹 + 引用列表指纹）
-            // 缓存键包含宿主已加载程序集版本指纹（升级自动重编译）与引用列表指纹
-            // （勾选/取消程序集后缓存键变化，自动重新编译，杜绝错误命中）。
-            var cacheKey = ComputeCacheKey(combinedCode, assemblyNames);
-            if (_compileCache.TryGetValue(cacheKey, out var cached))
+            var parts = codeParts.ToArray();
+            try
             {
-                PluginLogger.Info(
-                    $"[ScriptCompiler] 编译缓存命中: hash={cacheKey[..8]}..., 代码长度={combinedCode.Length}",
-                    nameof(ScriptCompiler));
-                return new CompileResult
+                var snapshot = ScriptReferenceSnapshot.Capture(assemblyNames, assemblyRefDir);
+                result.ReferenceSnapshot = snapshot;
+                result.ReferenceMs = snapshot.PreparationMs;
+                result.CacheKey = ComputeCompilationKey(parts, snapshot);
+                if (_compileCache.TryGetValue(result.CacheKey, out var cached))
                 {
-                    Success = cached.Success,
-                    AssemblyBytes = cached.AssemblyBytes,
-                    SymbolBytes = cached.SymbolBytes,
-                    Diagnostics = cached.Diagnostics,
-                    EntryClassName = cached.EntryClassName,
-                    UsingLineOffset = cached.UsingLineOffset,
-                };
-            }
-
-            // 2. 构建多个语法树（每个代码段独立语法树）
-            var parseSw = Stopwatch.StartNew();
-            var syntaxTrees = new SyntaxTree[codeParts.Count];
-            for (int i = 0; i < codeParts.Count; i++)
-            {
-                syntaxTrees[i] = SyntaxFactory.ParseSyntaxTree(
-                    SourceText.From(codeParts[i]), _parseOptions);
-            }
-            parseSw.Stop();
-
-            // 3. 获取元数据引用：按每节点引用列表（唯一真相源）组装。
-            //    assemblyNames 提供时，遍历列表经 ResolveAssemblyPath 逐个解析（BCL/宿主锚定/ScriptRefs），
-            //    找不到抛异常（rule-015）。不提供则回退到 GetHostReferences + ScriptRefs 目录全部 DLL。
-            var refSw = Stopwatch.StartNew();
-            var metadataReferences = new List<MetadataReference>();
-            var addedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            int hostRefCount = 0, scriptRefCount = 0;
-
-            if (assemblyNames != null && assemblyNames.Count > 0)
-            {
-                // 按节点引用列表组装：每个名称经 ResolveAssemblyPath 解析，找不到直接抛错
-                foreach (var name in assemblyNames)
-                {
-                    if (string.IsNullOrWhiteSpace(name)) continue;
-                    var mdRef = MetadataReferenceProvider.ResolveAssemblyPath(name.Trim(), assemblyRefDir);
-                    if (TryAddMetadataRef(metadataReferences, addedPaths, mdRef)) hostRefCount++;
+                    result = Copy(cached);
+                    result.CacheHit = true;
+                    result.ReferenceMs = snapshot.PreparationMs;
+                    result.ParseMs = result.EmitMs = 0;
+                    result.TotalMs = timer.Elapsed.TotalMilliseconds;
+                    Log(result);
+                    return result;
                 }
-            }
-            else
-            {
-                foreach (var mdRef in MetadataReferenceProvider.GetHostReferences())
+                var parseTimer = Stopwatch.StartNew();
+                var trees = parts.Select((code, index) => SyntaxFactory.ParseSyntaxTree(
+                    SourceText.From(code, Encoding.UTF8), _parseOptions,
+                    path: index == 0 ? "ScriptGenerated.cs" : $"ScriptUser{index}.cs")).ToArray();
+                result.ParseMs = parseTimer.Elapsed.TotalMilliseconds;
+                var compilation = CSharpCompilation.Create("Script_" + result.CacheKey,
+                    trees, snapshot.AnalysisReferences.References, _compilationOptions);
+                using var assemblyStream = new MemoryStream();
+                using var symbolStream = new MemoryStream();
+                var emitTimer = Stopwatch.StartNew();
+                var emitted = compilation.Emit(assemblyStream, symbolStream,
+                    options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb));
+                result.EmitMs = emitTimer.Elapsed.TotalMilliseconds;
+                result.Success = emitted.Success;
+                if (result.Success)
                 {
-                    if (TryAddMetadataRef(metadataReferences, addedPaths, mdRef)) hostRefCount++;
-                }
-                // 3b. ScriptRefs 目录（仅用户自定义第三方 DLL），通过共享缓存加载
-                if (!string.IsNullOrEmpty(assemblyRefDir))
-                {
-                    var sharedRefs = SharedMetadataReferenceProvider.GetScriptRefs(assemblyRefDir);
-                    scriptRefCount = sharedRefs.Count;
-                    foreach (var mdRef in sharedRefs)
+                    result.AssemblyBytes = assemblyStream.ToArray();
+                    result.SymbolBytes = symbolStream.ToArray();
+                    result.EntryClassName = ExtractClassName(string.Join("\n", parts));
+                    lock (CacheGate)
                     {
-                        TryAddMetadataRef(metadataReferences, addedPaths, mdRef);
+                        if (_compileCache.Count >= MaxCachedCompilations) _compileCache.Clear();
+                        _compileCache[result.CacheKey] = Copy(result);
                     }
                 }
-            }
-            refSw.Stop();
-
-            // 4. 创建编译（传入多个语法树）
-            var createSw = Stopwatch.StartNew();
-            var compilation = CSharpCompilation.Create(
-                assemblyName,
-                syntaxTrees,
-                metadataReferences,
-                _compilationOptions);
-            createSw.Stop();
-
-            // 5. 编译并输出
-            var emitSw = Stopwatch.StartNew();
-            using var assemblyStream = new MemoryStream();
-            using var symbolStream = new MemoryStream();
-
-            var emitResult = compilation.Emit(assemblyStream, symbolStream,
-                options: new EmitOptions(
-                    debugInformationFormat: DebugInformationFormat.PortablePdb));
-            emitSw.Stop();
-
-            totalSw.Stop();
-
-            PluginLogger.Info($"[ScriptCompiler] 编译性能: 语法树={codeParts.Count}({parseSw.ElapsedMilliseconds}ms), " +
-                $"引用={refSw.ElapsedMilliseconds}ms(宿主={hostRefCount},ScriptRefs={scriptRefCount}), " +
-                $"创建编译={createSw.ElapsedMilliseconds}ms, Emit={emitSw.ElapsedMilliseconds}ms, " +
-                $"总={totalSw.ElapsedMilliseconds}ms, 成功={emitResult.Success}, " +
-                $"代码长度={combinedCode.Length}",
-                nameof(ScriptCompiler));
-
-            if (emitResult.Success)
-            {
-                result.Success = true;
-                result.AssemblyBytes = assemblyStream.ToArray();
-                result.SymbolBytes = symbolStream.ToArray();
-                result.EntryClassName = ExtractClassName(combinedCode);
-
-                // 编译成功，加入缓存
-                _compileCache[cacheKey] = result;
-            }
-            else
-            {
-                foreach (var diagnostic in emitResult.Diagnostics)
-                {
-                    if (diagnostic.Severity == DiagnosticSeverity.Error)
+                else
+                    foreach (var diagnostic in emitted.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error))
                     {
-                        var location = diagnostic.Location.GetLineSpan();
-                        // 行号相对于所在语法树，已自然对应各代码段内的行号
-                        var actualLine = location.StartLinePosition.Line + 1;
-                        result.Diagnostics.Add(
-                            $"错误 (行 {actualLine}, 列 {location.StartLinePosition.Character + 1}): {diagnostic.GetMessage()}");
+                        var line = diagnostic.Location.GetLineSpan();
+                        result.Diagnostics.Add($"错误 ({line.Path}, 行 {line.StartLinePosition.Line + 1}, 列 {line.StartLinePosition.Character + 1}): {diagnostic.GetMessage()}");
                     }
-                }
             }
-
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or BadImageFormatException or InvalidOperationException or ArgumentException)
+            {
+                result.Success = false;
+                result.Diagnostics.Add($"脚本引用或编译准备失败: {ex.Message}");
+            }
+            result.TotalMs = timer.Elapsed.TotalMilliseconds;
+            Log(result);
             return result;
         }
-
-        /// <summary>
-        /// 按元数据引用的文件路径去重后加入引用列表，避免重复引用导致 Roslyn CS1703。
-        /// 文件型引用以规范化全路径为键；无路径的引用（如内存引用）直接加入。
-        /// </summary>
-        private static bool TryAddMetadataRef(
-            List<MetadataReference> list, HashSet<string> addedPaths, MetadataReference mdRef)
+        private static void Log(CompileResult result) => PluginLogger.Info(
+            $"[ScriptCompiler] key={result.CacheKey}, refs={result.ReferenceSnapshot?.Identity}, cacheHit={result.CacheHit}, " +
+            $"referenceMs={result.ReferenceMs:F2}, parseMs={result.ParseMs:F2}, emitMs={result.EmitMs:F2}, totalMs={result.TotalMs:F2}, success={result.Success}", nameof(ScriptCompiler));
+        private static CompileResult Copy(CompileResult value) => new()
         {
-            var p = (mdRef as PortableExecutableReference)?.FilePath;
-            if (p != null)
-            {
-                string key;
-                try { key = Path.GetFullPath(p); }
-                catch { key = p; }
-                if (!addedPaths.Add(key)) return false;
-            }
-            list.Add(mdRef);
-            return true;
-        }
+            Success = value.Success, AssemblyBytes = value.AssemblyBytes?.ToArray(), SymbolBytes = value.SymbolBytes?.ToArray(),
+            Diagnostics = new List<string>(value.Diagnostics), EntryClassName = value.EntryClassName,
+            UsingLineOffset = value.UsingLineOffset, CacheKey = value.CacheKey, ReferenceSnapshot = value.ReferenceSnapshot,
+            ReferenceMs = value.ReferenceMs, ParseMs = value.ParseMs, EmitMs = value.EmitMs, TotalMs = value.TotalMs
+        };
+        internal static CompileResult? GetCachedResult(string cacheKey)
+            => _compileCache.TryGetValue(cacheKey, out var value) ? Copy(value) : null;
 
-        /// <summary>
-        /// 从合并的代码中提取继承 Script 的类名
-        /// </summary>
         private static string? ExtractClassName(string combinedCode)
         {
             // 简单解析：查找 "class XXX : Script" 模式
@@ -334,76 +224,6 @@ public partial class WarmupScript : Script
                 }
             }
             return string.Empty;
-        }
-
-        /// <summary>
-        /// 计算宿主程序集版本指纹（用于编译缓存键）。
-        /// 仅关注脚本实际依赖的宿主 DLL（SunEyeVision.* / halcondotnetxl / OpenCvSharp / System.Windows.Forms），
-        /// 这些 DLL 升级会改变 API 表面，必须触发脚本重新编译。
-        /// <summary>
-        /// 计算编译缓存键（供编译缓存与沙箱池分组共用）。
-        /// 键 = 代码哈希 | 宿主程序集指纹 | 引用列表指纹。相同键表示编译产物与沙箱环境一致。
-        /// </summary>
-        /// <param name="combinedCode">合并后的代码段（系统生成字段声明 + 用户代码）</param>
-        /// <param name="assemblyNames">每节点启用的程序集引用列表</param>
-        /// <returns>缓存键</returns>
-        internal static string ComputeCacheKey(string combinedCode, IReadOnlyList<string>? assemblyNames)
-        {
-            var codeHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(combinedCode)));
-            var refListFingerprint = ComputeRefListFingerprint(assemblyNames);
-            return $"{codeHash}|{ComputeHostFingerprint()}|{refListFingerprint}";
-        }
-
-        /// BCL 程序集版本在进程生命周期内不变，不计入指纹以保证缓存命中率。
-        /// </summary>
-        internal static string ComputeHostFingerprint()
-        {
-            var nativeHostNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "halcondotnetxl",
-                "OpenCvSharp",
-                "System.Windows.Forms",
-            };
-
-            var sb = new StringBuilder();
-            foreach (var asm in AssemblyLoadContext.Default.Assemblies
-                .Where(a => !a.IsDynamic && a.GetName().Name != null)
-                .Where(a =>
-                    a.GetName().Name!.StartsWith("SunEyeVision.", StringComparison.OrdinalIgnoreCase)
-                    || nativeHostNames.Contains(a.GetName().Name!))
-                .OrderBy(a => a.GetName().Name))
-            {
-                var name = asm.GetName();
-                sb.Append($"{name.Name}:{name.Version}|");
-            }
-
-            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
-        }
-
-        /// <summary>
-        /// 计算引用列表指纹（用于编译缓存键）。引用列表变化（勾选/取消程序集）→ 指纹变化 → 缓存自动失效。
-        /// 空/未提供列表返回固定占位符（保持与旧缓存兼容路径一致）。
-        /// </summary>
-        internal static string ComputeRefListFingerprint(IReadOnlyList<string>? assemblyNames)
-        {
-            if (assemblyNames == null || assemblyNames.Count == 0)
-                return "none";
-            var sb = new StringBuilder();
-            foreach (var name in assemblyNames.OrderBy(n => n, StringComparer.OrdinalIgnoreCase))
-                sb.Append($"{name}|");
-            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
-        }
-
-        /// <summary>
-        /// 按缓存键读取已编译结果（不含缓存写入逻辑）。
-        /// 供预编译后的沙箱预热读取实际编译产物，与执行路径共用同一缓存键与编译产物。
-        /// 未命中返回 null（由调用方决定是否回退，不抛异常）。
-        /// </summary>
-        /// <param name="cacheKey">编译缓存键（由 <see cref="ComputeCacheKey"/> 生成）</param>
-        /// <returns>已缓存的编译结果；未命中返回 null</returns>
-        internal static CompileResult? GetCachedResult(string cacheKey)
-        {
-            return _compileCache.TryGetValue(cacheKey, out var cached) ? cached : null;
         }
 
     }

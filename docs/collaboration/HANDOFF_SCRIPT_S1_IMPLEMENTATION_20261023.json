@@ -1,0 +1,53 @@
+{
+  "batchId": "SCRIPT-S1-HANDOFF-20261023",
+  "baseCommit": "9e0da65d03815ceb9d0cb3392fd3ac5597227119",
+  "branch": "main",
+  "from": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+  "to": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+  "state": "WIP-buildable-not-accepted",
+  "files": [
+    "src/CommonControl/ScriptEditorCore.xaml.cs",
+    "src/CommonControl/ScriptAnalysisSession.cs",
+    "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/SharedMetadataReferenceProvider.cs",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptReferenceSnapshot.cs",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+    "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs",
+    "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs"
+  ],
+  "completed": [
+    "不可变内容引用快照（路径/AssemblyName/SHA）及元数据复用",
+    "编译键包含代码段边界、引用内容、选项及编译器身份，成功缓存上限32，返回副本",
+    "编辑会话文档/生成代码/引用版本基础与补全/诊断版本检查",
+    "保留MEF/Workspace/最小Emit基础预热，预热不调用用户构造函数",
+    "生命周期沙箱键使用编译结果身份，选中用户引用从快照字节加载"
+  ],
+  "validation": [
+    {
+      "command": "dotnet build tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj -c Release --no-restore -v quiet",
+      "result": "passed; 22 warnings / 0 errors",
+      "log": "artifacts/validation/script-s1-build.log"
+    }
+  ],
+  "remaining": [
+    "先审查WIP，不把编译通过当正确；原测试ScriptSandboxWarmupTests反射ComputeCacheKey与GetOrCreate参数已需按新快照接口更新",
+    "新增内容相同时间戳DLL替换/目录差异/引用增删/空与缺失/无旧缓存成功/源码段边界/返回结果隔离/基础会话的行为测试",
+    "ThrottledRefreshAndShow重建时会话stamp需核实首个换引用请求及取消；ScriptAnalysisSession关闭重开、诊断旧结果和语义高亮缓存实际行为需验证",
+    "ScriptParameters引用集合通知/输入输出变更版本需核实；不能把观察计数代替源码+生成合同身份",
+    "SandboxPool现有并发GetOrAdd/加载及无租约淘汰问题是S3未闭环，S1不能宣称资源生命周期完成",
+    "共享默认宿主元数据按进程固定，用户引用按字节核验；缺失引用处理与错误呈现需核实",
+    "所有旧测试、全量Release、安全隔离运行、性能对照和独立测试均尚未执行",
+    "元数据共享与编译缓存容量/内存成本、读取大DLL成本需实际测，不承诺开窗/首次补全目标达成"
+  ],
+  "manualAcceptance": "VS设计时/用户运行时视觉均未执行",
+  "constraints": [
+    "不覆盖文档角色正在更新的HTML/生成器和源快照",
+    "保护plans/plan.json与_capture*/_probe.txt",
+    "独立测试角色当前直接用户插件任务优先，S1排队",
+    "不自动推送，不连接设备或终止他人进程"
+  ],
+  "next": "产品写权消息后实施者唯一写入，继续S1收口并交独立测试，向主控报告"
+}

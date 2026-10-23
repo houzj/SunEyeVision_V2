@@ -99,6 +99,14 @@ public partial class ScriptEditorCore : UserControl
 
     // ── 内部字段（workspace / 高亮 / 补全 / 诊断）──
 
+    private ScriptAnalysisSession _analysisSession = new();
+    private bool _sessionClosed;
+    private Func<ScriptAnalysisReferences>? _getReferenceSnapshot;
+    private string? _referenceIdentity;
+    public ScriptAnalysisSession AnalysisSession => _analysisSession;
+    public void SetReferenceSnapshotProvider(Func<ScriptAnalysisReferences> provider)
+        => _getReferenceSnapshot = provider ?? throw new ArgumentNullException(nameof(provider));
+
     private Func<Document?>? _getDocument;
     private Func<IEnumerable<MetadataReference>>? _getReferences;
     private Func<string>? _getGeneratedCode;
@@ -238,9 +246,25 @@ public partial class ScriptEditorCore : UserControl
         // 控件卸载时释放 workspace 与增量桥资源
         Unloaded += (_, _) =>
         {
+            _sessionClosed = true;
+            _analysisSession.Dispose();
+            _workspaceInitialized = false;
             _userTextContainer?.Dispose();
             _userTextContainer = null;
             _workspace?.Dispose();
+            _workspace = null;
+        };
+        Loaded += (_, _) =>
+        {
+            if (!_sessionClosed) return;
+            _sessionClosed = false;
+            _analysisSession = new ScriptAnalysisSession();
+            CodeEditor.TextChanged += OnCodeEditorTextChanged;
+            CodeEditor.TextArea.MouseMove += TextArea_MouseMove;
+            CodeEditor.TextArea.MouseLeave += TextArea_MouseLeave;
+            CodeEditor.TextArea.TextEntered += TextArea_TextEntered;
+            CodeEditor.TextArea.TextEntering += TextArea_TextEntering;
+            if (_getGeneratedCode != null) InitializeWorkspace();
         };
     }
 
@@ -390,6 +414,7 @@ public partial class ScriptEditorCore : UserControl
     /// </summary>
     private void OnCodeEditorTextChanged(object? sender, EventArgs e)
     {
+        _analysisSession.AdvanceDocument();
         // 初始化期间抑制诊断（workspace 尚未就绪时触发只会打印日志噪声）
         if (_suppressDiagnostic) return;
 
@@ -410,6 +435,9 @@ public partial class ScriptEditorCore : UserControl
 
         // ★ 治本（rule-008）：在 UI 线程捕获用户代码快照，避免后台线程访问 CodeEditor.Text（WPF UI 对象）
         //   触发跨线程 InvalidOperationException（诊断波浪线失效的真因）。RunDiagnosticAsync 只消费这份快照。
+        if (_sessionClosed) return;
+        var stamp = _analysisSession.Capture();
+        var generatedCodeSnapshot = _getGeneratedCode?.Invoke() ?? string.Empty;
         var userCodeSnapshot = _getUserCode?.Invoke() ?? CodeEditor.Text;
 
         _ = Task.Run(async () =>
@@ -418,7 +446,7 @@ public partial class ScriptEditorCore : UserControl
             {
                 await Task.Delay(500, token);
                 if (!token.IsCancellationRequested)
-                    await RunDiagnosticAsync(userCodeSnapshot, token);
+                    await RunDiagnosticAsync(userCodeSnapshot, generatedCodeSnapshot, stamp, token);
             }
             catch (OperationCanceledException) { }
         });
@@ -428,7 +456,7 @@ public partial class ScriptEditorCore : UserControl
     /// 更新 workspace 文本（双文档） → 获取诊断 → 波浪线重绘 + 抛 DiagnosticsUpdated。
     /// user 文档已绑定增量通道，随编辑器实时同步；generated 文档仅在实际变化时 WithDocumentText 更新。
     /// </summary>
-    private async Task RunDiagnosticAsync(string userCodeSnapshot, CancellationToken token)
+    private async Task RunDiagnosticAsync(string userCodeSnapshot, string generatedCode, ScriptAnalysisSession.Stamp stamp, CancellationToken token)
     {
         if (_workspace == null || _userDocumentId == null)
         {
@@ -436,15 +464,14 @@ public partial class ScriptEditorCore : UserControl
             return;
         }
 
-        var generatedCode = _getGeneratedCode?.Invoke() ?? string.Empty;
 
         // 代码未变则跳过诊断（避免同段代码重复 Roslyn 分析）
-        if (userCodeSnapshot == _lastDiagnosedCode)
+        if (!_analysisSession.IsCurrent(stamp) || userCodeSnapshot + generatedCode == _lastDiagnosedCode)
         {
             PluginLogger.Info("[Diagnostic] 代码未变，跳过诊断", typeName);
             return;
         }
-        _lastDiagnosedCode = userCodeSnapshot;
+
 
         try
         {
@@ -504,7 +531,7 @@ public partial class ScriptEditorCore : UserControl
                 }
                 diagnostics.Add(d);
             }
-            _currentDiagnostics = diagnostics.ToImmutableArray();
+            if (!_analysisSession.IsCurrent(stamp) || token.IsCancellationRequested) return;
 
             PluginLogger.Info($"[Diagnostic] Errors+Warnings={rawDiagnostics.Length}", typeName);
 
@@ -517,7 +544,7 @@ public partial class ScriptEditorCore : UserControl
             }
 
             // 通过事件抛出诊断结果（内核不绑死显示方式，由调用方决定如何展示）
-            DiagnosticsUpdated?.Invoke(diagnostics);
+
 
             // 2. UI 线程重绘诊断波浪线：重绘"旧诊断行 ∪ 新诊断行"。
             //    ★ 诊断清空（错误已修复）时只重绘新行会漏掉旧行，旧波浪线像素残留直到
@@ -525,6 +552,10 @@ public partial class ScriptEditorCore : UserControl
             var diag = diagnostics;
             await Dispatcher.InvokeAsync(() =>
             {
+                if (!_analysisSession.IsCurrent(stamp) || token.IsCancellationRequested) return;
+                _lastDiagnosedCode = userCodeSnapshot + generatedCode;
+                _currentDiagnostics = diagnostics.ToImmutableArray();
+                DiagnosticsUpdated?.Invoke(diagnostics);
                 var textView = CodeEditor.TextArea.TextView;
                 var lineCount = CodeEditor.Document.LineCount;
 
@@ -787,8 +818,16 @@ public partial class ScriptEditorCore : UserControl
     /// <summary>单次 Roslyn 解析 + 弹窗/更新窗口（仅从 ThrottledRefreshAndShow 调用）。</summary>
     private async Task ThrottledRefreshAndShow(char triggerChar, CancellationToken token)
     {
+        if (_sessionClosed) return;
+        try { RebuildWorkspace(); }
+        catch (Exception ex)
+        {
+            PluginLogger.Warning($"[补全] 引用快照无效: {ex.Message}", typeName);
+            return;
+        }
+        var stamp = _analysisSession.Capture();
         var items = await FetchFreshCompletions(triggerChar, token);
-        if (token.IsCancellationRequested)
+        if (token.IsCancellationRequested || !_analysisSession.IsCurrent(stamp))
         {
             return;
         }
@@ -886,6 +925,10 @@ public partial class ScriptEditorCore : UserControl
             return default;
         }
 
+        if (_sessionClosed) return default;
+        var stamp = _analysisSession.Capture();
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, _analysisSession.LifetimeToken);
+        token = linked.Token;
         var code = CodeEditor.Text;
         var caretOffset = CodeEditor.TextArea.Caret.Offset;
 
@@ -920,9 +963,9 @@ public partial class ScriptEditorCore : UserControl
                 ? CompletionTrigger.CreateInsertionTrigger(triggerChar)
                 : CompletionTrigger.Default;
 
-            var results = await completionService.GetCompletionsAsync(doc, caretOffset, trigger);
+            var results = await completionService.GetCompletionsAsync(doc, caretOffset, trigger, cancellationToken: token);
 
-            if (token.IsCancellationRequested)
+            if (token.IsCancellationRequested || !_analysisSession.IsCurrent(stamp) || CodeEditor.TextArea.Caret.Offset != caretOffset)
             {
                 return default;
             }
@@ -1091,22 +1134,42 @@ public partial class ScriptEditorCore : UserControl
     /// <param name="refreshReferences">用户增删 DLL 时传 true，强制刷新引用并完整重建；默认 false 走复用路径。</param>
     public void RebuildWorkspace(bool refreshReferences = false)
     {
-        if (_getReferences == null)
+        if (_getReferences == null && _getReferenceSnapshot == null)
             throw new InvalidOperationException("未注入引用来源：请先调用 SetReferenceProvider（rule-008 报错优先）。");
         if (_getGeneratedCode == null || _getUserCode == null)
             throw new InvalidOperationException("未注入代码来源：请先调用 SetCodeSource（rule-008 报错优先）。");
 
-        // 实例级复用：workspace 已建且非强制刷新引用 → 只更新 generated 文档文本（user 文档由增量容器自动同步）
-        if (_workspaceInitialized && !refreshReferences)
-        {
-            var genCode = _getGeneratedCode();
-            _workspace!.SetCurrentSolution(_workspace.CurrentSolution
-                .WithDocumentText(_documentId!, SourceText.From(genCode)));
-            return;
-        }
-
         var generatedCode = _getGeneratedCode();
         var userCode = _getUserCode();
+        ScriptAnalysisReferences? snapshot;
+        try { snapshot = _getReferenceSnapshot?.Invoke(); }
+        catch
+        {
+            _analysisSession.AdvanceDocument();
+            _diagnosticsCts?.Cancel();
+            _throttleCts?.Cancel();
+            _completionWindow?.Close();
+            _currentDiagnostics = [];
+            _workspaceInitialized = false;
+            _userTextContainer?.Dispose();
+            _userTextContainer = null;
+            _workspace?.Dispose();
+            _workspace = null;
+            throw;
+        }
+        var identity = snapshot?.Identity ?? "external-provider";
+        _analysisSession.SetEnvironment(identity, generatedCode);
+        if (_workspaceInitialized && !refreshReferences && _referenceIdentity == identity)
+        {
+            _workspace!.SetCurrentSolution(_workspace.CurrentSolution
+                .WithDocumentText(_documentId!, SourceText.From(generatedCode)));
+            return;
+        }
+        _referenceIdentity = identity;
+        _lastDiagnosedCode = null;
+        _diagnosticsCts?.Cancel();
+        _completionWindow?.Close();
+        _currentDiagnostics = [];
         var totalSw = System.Diagnostics.Stopwatch.StartNew();
 
         PluginLogger.Info($"[补全] RebuildWorkspace 开始: generatedCodeLen={generatedCode.Length}, userCodeLen={userCode.Length}", typeName);
@@ -1119,10 +1182,10 @@ public partial class ScriptEditorCore : UserControl
         PluginLogger.Info($"[补全] MefHostServices 创建完成: {sw.ElapsedMilliseconds}ms", typeName);
 
         Project project;
-        if (_preWarmedWorkspace != null)
+        var preparedWorkspace = Interlocked.Exchange(ref _preWarmedWorkspace, null);
+        if (preparedWorkspace != null)
         {
-            _workspace = _preWarmedWorkspace;
-            _preWarmedWorkspace = null;
+            _workspace = preparedWorkspace;
             PluginLogger.Info("[补全] 复用预热 Workspace", typeName);
         }
         else
@@ -1152,7 +1215,7 @@ public partial class ScriptEditorCore : UserControl
 
         // 扫描引用：引用来源由调用方（工具层）注入，合并 host 引用 + ScriptRefs 目录引用
         sw.Restart();
-        var refs = _getReferences().ToList();
+        var refs = snapshot?.References.ToList() ?? _getReferences!().ToList();
         var seenRefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var refCount = 0;
         foreach (var mdRef in refs)

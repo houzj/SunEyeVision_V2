@@ -148,7 +148,7 @@
   "deliveryCoordination": {
     "title": "交付经理｜协调与收口",
     "threadId": "01a16695-701e-7523-9c18-1298b9279428",
-    "accountability": "对已批准范围的计划兑现、时间偏差处置和验收收口负责，不以转发或登记作为完成",
+    "accountability": "对完整使用链闭合、在制容量、关键路径与计划兑现、修复复测和统一交付负责；主动优化协作，不以转发、登记或局部PASS代替交付",
     "progressLedger": "docs/collaboration/DELIVERY_LEDGER.json",
     "dispatchRequirements": [
       "原任务ID与责任人",
@@ -158,14 +158,16 @@
       "执行者可行性反馈和估算依据"
     ],
     "scheduleControl": "保留原目标、偏差原因、纠偏措施、新预测及整体影响；无法可靠估时须有调查时限和重估节点，不静默顺延",
-    "reporting": "在对话及主文档同源报告总数/状态数、实际变化、关键剩余负责人/时间、偏差和交付结论；未知单列待核，有限测试不算整项完成",
+    "reporting": "在对话和主文档同源报告本次闭合的使用链/缺口、剩余项/责任人/目标、实际执行或等待及解除条件、偏差措施与整体预测；原ID六态另列，有限通过不冒整项完成",
     "owns": [
-      "原范围依赖、关键路径与整体交付预测",
-      "任务时限/检查点/估算依据/延期纠偏",
-      "资源安排、交接核收、送验修复复测",
-      "唯一总账与对话主动汇报、文档同步",
-      "统一Release及手验清单、最终审核材料",
-      "依据等待/退回/返工改善协调策略"
+      "完整使用链交付边界与原ID验收映射",
+      "在制容量、依赖、关键路径及整体交付预测",
+      "各岗及其子线的并行调度、资源与输入交接",
+      "任务时限、检查点、估算依据与延期纠偏",
+      "固定交付送验、消费者实收执行、缺陷修复复测闭环",
+      "唯一总账与真实执行/等待状态、对话主动汇报和文档同步",
+      "统一Release、独验及正式性能证据、集中手验清单和最终审核材料",
+      "基于等待与返工效果持续调整协调策略"
     ],
     "queue": "docs/collaboration/DELIVERY_QUEUE.json",
     "statusFile": "docs/collaboration/DELIVERY_COORDINATION_STATUS.json",
@@ -205,7 +207,15 @@
         "不代独立结论/主控最终审核"
       ],
       "governanceGate": "流程调整已收口，角色回执及文档不阻塞开发和就绪测试"
-    }
+    },
+    "responsibilitySource": "JOINT_COLLABORATION_PROTOCOL.md 第2.1、3.1、3.2节",
+    "outcomeMeasures": [
+      "完整交付与原验收缺口闭合",
+      "关键路径等待和返工下降",
+      "目标兑现或提前明确偏差与新预测",
+      "输入交接、实际测试与修复复测完成",
+      "同一Release最终审核材料完整"
+    ]
   },
   "architectureReviewPolicy": {
     "source": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",

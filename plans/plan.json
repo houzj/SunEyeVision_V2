@@ -216,6 +216,10 @@
                                     {
                                         "date":  "2026-10-22",
                                         "note":  "[d3a7dff427a2ace7fe3f96109974b0c811da4ea2] 修复插件基础独立验收：结构指纹、取消归因与编辑初值"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[c96ea15300391344b096efad83afcc213a0532e0] feat(plugin-wpf): project declared structured constants read-only"
                                     }
                                 ]
                     },
@@ -481,6 +485,30 @@
                                     {
                                         "date":  "2026-10-23",
                                         "note":  "[2962cfe46d8f7337d40544c04685e9b467c53d77] WIP image source: freeze per-node run sequences and bound preview loading; measurements pending"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[97f1326c42dbfe75fb516731be9df0ec76ed2da7] Add UI-free binding plans and validate actual workflow binding dependencies"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[a45f8d6ae59064faaa66ed168408d3d2e282259c] feat(binding): execute frozen admitted plans with checked CLR materialization"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[28b98ffd758e9a1eb0db03f424fe07ad1533e3b6] feat(results): capture explicit run outcomes with retained readers"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[682c3886fad97e7cec8e25fdb832c63f827322d3] feat(editor): isolate ProtocolParse drafts and flush pending numeric edits"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[17bc36884611f0be1ae6874c59e2354012c19b66] refactor(ui): own node editor factories and preserve formal editing identity"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[9dc6b86189ed5afb55bd153c5cf273d816a88c1e] fix: keep preview preferences outside parameter editor conflict scope"
                                     }
                                 ]
                     },
@@ -2209,6 +2237,10 @@
                                     {
                                         "date":  "2026-10-22",
                                         "note":  "[f22a5f7490554103fc90014ba848fb87e8fbe665] wip: unify pending editor commit and global variable save for acceptance"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[1ecda90fc329737b21250f77b78d1e6d93757935] fix(editing): publish node and variable drafts in one document transaction"
                                     }
                                 ]
                     },
@@ -2474,7 +2506,7 @@
                         "type":  "module",
                         "layer":  "source",
                         "stage":  "P4",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2026-11-30",
                         "end":  "2026-12-04",
                         "goal":  "OutputVariable 支持 Pose 类型，定位工具位姿可绑定",
@@ -2489,7 +2521,7 @@
                                           "name":  "Pose 类型扩展（SdkTypeVocabulary + OutputVariable）",
                                           "phase":  "算法实现",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W49"
                                       },
                                       {
@@ -2505,7 +2537,10 @@
                                      "docs/01-方案设计/2026/07/输出变量契约统一重构方案-20260716.md"
                                  ],
                         "log":  [
-
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[e029f9b851b8498580c035ff9e371abb7135a129] feat(contracts): expose paged readers over frozen declared values"
+                                    }
                                 ]
                     },
                     {
@@ -3220,6 +3255,70 @@
                                     {
                                         "date":  "2026-10-23",
                                         "note":  "[1ff63bfa78f3c6d6c028ec8439b730a86d313cf9] Fix stream image decoding without URI cache flags and cover real pixel reloads"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[71d1dcc05d93945f3d0a1cf34ecdc7adeb5beffc] feat(ui): add contract rectangle display projection"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[5b2bed791b9823fb26db0ca7d996f9776106888e] fix(execution): preserve explicit subworkflow service in invocation snapshot"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[aa51c5f40b5067fa32be6ae3eb8f4d6b499f5f93] feat(plugins): require tool contract 3.0 from shared SDK constants"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[1b799480937ffe132d1ee29261cc88a71e869dde] fix(ui): reject stale dynamic output tree refresh callbacks"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[0641c98bfaa4989b675d6e5077d47e09d3477d95] fix(ui): clear tree and flat declarations for an empty current contract"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[d62156ffb965f6eddff3259ec16cb97a7ec8e9ef] feat(ui): add paged declared result presentation model"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[07b0413fc95cc88ae76c263e7437da054fc442be] feat(ui): present declared run results with lazy pages"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[fc08012df94f89e03288929ec43bf2e87aec0aab] fix(binding): preserve explicit numeric operations through SDK constants"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[353f12f9c9b8261338bdce159be32f510db5c13d] feat(sdk): retain explicit source addresses on contour batches"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[f1feb5b02a84387d6404318051e64d1f30c1be04] test(results): verify native contour identity after sorting and filtering"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[de72beee162a573faa0b7faf6830e753c62794db] feat(results): present immutable geometry values with coordinate units"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[3ab90ca41dbc1ccba0f4c0296d5405ee1836c42c] feat(results): page immutable polygon vertices without copying geometry"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[a33637af0cbd9fa7c0bd86315e93dcfe493285db] fix(editor): release retired drafts and reject lossy integers"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[bc1869410acc547bae1276714f8b71ceac384203] feat(ui): edit image threshold through production drafts"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[115f77b040e11e14b457875daf8e27b600e71a73] fix: give custom editor shell a real single-commit confirm action"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[748f6bb087d3c32bbc22bc1a17920fd2037fecb5] test: expect stable-field downstream rewrite in preview isolation case"
                                     }
                                 ]
                     },
@@ -3244,7 +3343,7 @@
                                           "name":  "完整测试套件（相机/标定/定位/测量/通信/运行UI回归）",
                                           "phase":  "测试验证",
                                           "hours":  16,
-                                          "status":  "in_progress",
+                                          "status":  "done",
                                           "week":  "2027-W13"
                                       },
                                       {
@@ -3351,6 +3450,42 @@
                                     {
                                         "date":  "2026-10-23",
                                         "note":  "[9e58aaa5e9d433c69d076a9b0e19028d2841c7f3] docs: hand off approved delivery coordination to dedicated role"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[c2d3b13fa5cb2a950ebc024bc2252451e248241b] chore(docs): 同步协作交付状态与计划看板"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[eb8416e0139057b6234a2ee224fb921c810785a4] wip(a11): preserve catalog and payload work for governance handoff"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[a156cc314cc2981749638c7cbff198097539d994] docs: consolidate role accountability and delivery protocol V8"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[3fccb9a746cc286bb4fc06897530205f68a62813] docs: define role-owned parallel delivery responsibilities"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[29e432497d5c1c9c415c15f75f0ddabef2b586ba] feat(release): verify one payload authority and publish plugin catalogs atomically"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[eebde309d947934f839f33b7830913e1e40ab65a] fix(release): seal archived builds with their explicit source identity"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[d9f2fb481ffdf008f29d845a8bc8004261f337a7] docs: focus delivery on complete usage chains with WIP limits"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[cb4f244d308d150483999aed0a554de7b008f224] docs: make delivery manager accountable for end-to-end closure"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[098486c408aeb16cb67bcd800b436d831275f6fe] fix(release): bind payload headers to approved Core identity"
                                     }
                                 ]
                     },
@@ -3911,7 +4046,7 @@
                                           "name":  "目标筛选与输出扩展",
                                           "phase":  "算法实现",
                                           "hours":  10,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W52"
                                       },
                                       {
@@ -3919,7 +4054,7 @@
                                           "name":  "Blob 增强测试",
                                           "phase":  "测试验证",
                                           "hours":  6,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W52"
                                       }
                                   ],
@@ -3946,6 +4081,18 @@
                                     {
                                         "date":  "2026-09-19",
                                         "note":  "[fb7c25c93139e91ab85e0b701dee3f2182df24dc] perf(blob): Blob 分析接入批量区域显示与显示预算"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[eab3336ae006af5a38457878d8a751a141e221f8] feat(results): connect frozen Blob outputs to paged host presentation"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[9f052ce4702ed6aea5477d77f98b6980399ef4d6] docs: integrate Blob five-layer and shared-control review into O06"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[25e66c5a47ddd382509ef0cb1a977ffdba514d3a] docs: integrate reviewed VM Blob control evidence and dispositions"
                                     }
                                 ]
                     },
@@ -4585,6 +4732,10 @@
                                     {
                                         "date":  "2026-10-23",
                                         "note":  "[a59f446c4032e26abafc1c6a83296db78575463e] feat: 收口脚本S2编辑提交与异步准备编译并固定采样入口"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[560330de8713c5016f87bc947c33618a95a13b3f] fix(execution): preserve admitted attempt and invocation resource ownership"
                                     }
                                 ]
                     },
@@ -4989,6 +5140,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[92ba19fdd339e94bb7b7eee7079c4235ed25e0fd] feat(hal): 新增 HalconImageOpPipeline 公共区域前置管线并接入图像阈值化"
+                                    },
+                                    {
+                                        "date":  "2026-10-24",
+                                        "note":  "[c787f9de9db66e4989530e04e4ca5636466274a7] docs: seal threshold candidate and continue independent acceptance"
                                     }
                                 ]
                     },
@@ -5726,6 +5881,167 @@
                                         "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/platform-architecture.html",
                                         "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-script.html",
                                         "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/维护记录/文档维护.html"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-6bfc4a3",
+                          "message":  "Implement frozen structured values and explicit geometry contracts",
+                          "date":  "2026-10-24",
+                          "commit":  "6bfc4a383e89483807501363e5538439f758225b",
+                          "files":  [
+                                        "docs/collaboration/HANDOFF_TOOL_FRAMEWORK_STRUCTURED_DEPENDENCY_20261024.md",
+                                        "samples/PluginFoundation/HalconSample/ThresholdDefinition.cs",
+                                        "samples/PluginFoundation/Host/ImageOwnership.cs",
+                                        "samples/PluginFoundation/Host/InvocationHost.cs",
+                                        "samples/PluginFoundation/README.md",
+                                        "samples/PluginFoundation/Samples/SampleTools.cs",
+                                        "samples/PluginFoundation/Verification/Program.cs",
+                                        "samples/PluginFoundation/Verification/StructuredContractCases.cs",
+                                        "src/Plugin.Contracts/Editing.cs",
+                                        "src/Plugin.Contracts/GeometryValues.cs",
+                                        "src/Plugin.Contracts/README.md",
+                                        "src/Plugin.Contracts/StructuredValues.cs",
+                                        "src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj",
+                                        "src/Plugin.Contracts/ToolContracts.cs",
+                                        "src/Plugin.Contracts/TypeRef.cs",
+                                        "src/Plugin.Contracts/Values.cs"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-147668b",
+                          "message":  "fix(editor): give custom windows the same draft initialization and close boundary",
+                          "date":  "2026-10-24",
+                          "commit":  "147668bb3b34bfc2def9a16566c46efc7971e4b0",
+                          "files":  [
+                                        "docs/collaboration/CURRENT_TASK.md",
+                                        "src/Plugin.SDK/UI/Windows/CustomDebugWindow.cs"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-13447dc",
+                          "message":  "docs: hand off fixed editor chain and keep acceptance running",
+                          "date":  "2026-10-24",
+                          "commit":  "13447dc6c231cf90b10ef70618a95c5c014dc6b9",
+                          "files":  [
+                                        "docs/collaboration/CURRENT_TASK.md",
+                                        "docs/collaboration/HANDOFF_EDITOR_CHAIN_FIXED_20261024.md"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-5f4a72d",
+                          "message":  "docs: clarify evidence-based architecture leadership responsibilities",
+                          "date":  "2026-10-24",
+                          "commit":  "5f4a72d60d96faa3fd4c76d911980878043f8f76",
+                          "files":  [
+                                        "docs/collaboration/HANDOFF_ARCHITECTURE_RESPONSIBILITY_20261024.md",
+                                        "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
+                                        "docs/collaboration/JOINT_TASK_ROLES.json"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-c9b52a9",
+                          "message":  "docs: record fixed payload header candidate and remaining acceptance",
+                          "date":  "2026-10-24",
+                          "commit":  "c9b52a95880b71064ab186f60ae8d4c2db259c0b",
+                          "files":  [
+                                        "docs/collaboration/CURRENT_TASK.md",
+                                        "docs/collaboration/HANDOFF_A11_HEADER_FIXED_20261024.md"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-b8bd878",
+                          "message":  "docs: review node lifecycle and associated controls from architecture evidence",
+                          "date":  "2026-10-24",
+                          "commit":  "b8bd878f8b80104c865a45f6b8a5b46dd64cebfb",
+                          "files":  [
+                                        "artifacts/analysis/blob-architecture-v81-review-20261024.json",
+                                        "artifacts/analysis/blob-architecture-v81-static-verification-20261024.json",
+                                        "artifacts/analysis/blob-control-consumer-closure-20261024.json",
+                                        "artifacts/analysis/blob-review-funnel-20261024.png",
+                                        "artifacts/analysis/build_blob_review_html_20261024.py",
+                                        "artifacts/analysis/inventory_blob_control_usage_20261024.py",
+                                        "artifacts/analysis/render_blob_peripherals_review_20261024.py",
+                                        "artifacts/analysis/review_blob_architecture_v81_20261024.py",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+                                        "docs/collaboration/HANDOFF_BLOB_ARCHITECTURE_REVIEW_V81_20261024.md"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-5b30d58",
+                          "message":  "docs: record independent payload header acceptance",
+                          "date":  "2026-10-24",
+                          "commit":  "5b30d5851db8c8a9b9ec33987215bcc07270e653",
+                          "files":  [
+                                        "docs/collaboration/CURRENT_TASK.md",
+                                        "docs/collaboration/HANDOFF_A11_HEADER_FIXED_20261024.md"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-5146de6",
+                          "message":  "docs: restore executable maintenance and O06 navigation",
+                          "date":  "2026-10-24",
+                          "commit":  "5146de60648bc5352ae2c841236ca85118e4ab49",
+                          "files":  [
+                                        "artifacts/analysis/backend-review-navigation-recovery-20261024/application-receipt.json",
+                                        "artifacts/analysis/backend-review-navigation-recovery-20261024/current-final-static-qa.json",
+                                        "artifacts/analysis/backend-review-navigation-recovery-20261024/search-runtime-applied-qa.json",
+                                        "artifacts/analysis/blob-backend-boundary-20261024/key-evidence.json",
+                                        "artifacts/analysis/blob-backend-boundary-20261024/review.json",
+                                        "artifacts/analysis/blob-backend-boundary-20261024/verification.json",
+                                        "artifacts/analysis/delivery-live-status-recovery-20261024/application-receipt.json",
+                                        "artifacts/analysis/review_blob_architecture_v81_20261024.py",
+                                        "artifacts/analysis/review_blob_backend_boundary_20261024.py",
+                                        "artifacts/validation/build-document-search-index.cjs",
+                                        "artifacts/validation/document-library-source-snapshots/document-search-index.js",
+                                        "artifacts/validation/document-library-source-snapshots/optimization-o06.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+                                        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search-index.js",
+                                        "docs/collaboration/DELIVERY_LEDGER.json",
+                                        "docs/collaboration/DOC_SYNC_STATUS.json",
+                                        "docs/collaboration/HANDOFF_DOCUMENT_EXECUTION_RECOVERY_20261024.md"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-62b0255",
+                          "message":  "docs: formalize evidence and impartial architecture governance",
+                          "date":  "2026-10-24",
+                          "commit":  "62b02556a8e69a9961b53bc54c38543172f8d8b3",
+                          "files":  [
+                                        "docs/collaboration/HANDOFF_ARCHITECTURE_EVIDENCE_V82_20261024.md",
+                                        "docs/collaboration/HANDOFF_EVIDENCE_SELECTION_V83_20261024.md",
+                                        "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
+                                        "docs/collaboration/JOINT_TASK_ROLES.json"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-f7fc6f1",
+                          "message":  "docs: approve bounded variable save transaction implementation",
+                          "date":  "2026-10-24",
+                          "commit":  "f7fc6f18586ed2eae03840125ed23f2e52821549",
+                          "files":  [
+                                        "docs/collaboration/VARIABLE_SAVE_TRANSACTION_DECISION_20261024.json"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-25d33b7",
+                          "message":  "docs: record user pause at unverified variable transaction source checkpoint",
+                          "date":  "2026-10-24",
+                          "commit":  "25d33b73787f47fd0d2e3eac34bb1c8c08de09c5",
+                          "files":  [
+                                        "docs/collaboration/CURRENT_TASK.md",
+                                        "docs/collaboration/HANDOFF_VARIABLE_SAVE_TRANSACTION_20261024.md",
+                                        "docs/collaboration/IMPLEMENTATION_QUEUE.json"
                                     ],
                           "status":  "in_progress"
                       }

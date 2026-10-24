@@ -164,6 +164,9 @@ build_temp/
 src/UI/*.xml
 
 # Temporary files (SunEyeVision specific)
+/_capture_log*.txt
+/_capture_main*.ps1
+/_probe.txt
 temp_*.txt
 temp_*.ps1
 temp_*.cs

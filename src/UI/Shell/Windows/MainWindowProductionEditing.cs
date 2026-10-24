@@ -20,14 +20,15 @@ public partial class MainWindowViewModel
         out DataSourceQueryService? provider)
     {
         provider = null;
-        // First production consumer only. Other editors remain an explicit follow-up.
-        if (node.Parameters?.GetType().FullName != "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters") return null;
+        // Explicit production consumers only. Other editors remain a follow-up.
+        if (!EditorDraftAdapter.Supports(node.Parameters)) return null;
         var control = target switch
         {
             DefaultDebugWindow window => window.EditorControl,
+            CustomDebugWindow window => window.EditorControl,
             ToolDebugControlBase editor => editor,
             _ => null
-        } ?? throw new InvalidOperationException("ProtocolParse 编辑器缺少草稿提交接缝。");
+        } ?? throw new InvalidOperationException("生产编辑器缺少草稿提交接缝。");
         var session = DocumentManager.Session ?? throw new InvalidOperationException("当前没有方案编辑会话。");
         var flow = session.Document.Workflows.Single(w => w.Nodes.Any(n => ReferenceEquals(n, node)));
         if (!ReferenceEquals(_productionEditorSession, session)) ReleaseProductionEditors();

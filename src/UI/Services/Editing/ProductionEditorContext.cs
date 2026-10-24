@@ -39,7 +39,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDisposab
         try
         {
             EnsureCurrent();
-            EditorDraftAdapter.ForProtocolParse(_draft.Node.Parameters).Validate();
+            EditorDraftAdapter.ForProduction(_draft.Node.Parameters).Validate();
             _host.Validate(_draft);
             error = ""; return true;
         }

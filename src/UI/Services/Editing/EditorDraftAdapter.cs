@@ -11,6 +11,7 @@ namespace SunEyeVision.UI.Services.Editing;
 public sealed class EditorDraftAdapter
 {
     private readonly ToolParameters _parameters;
+    private Action? _validateConfiguration;
     private readonly (Port Port, PropertyInfo Property)[] _slots;
     public EditorDraftAdapter(ToolParameters parameters, IReadOnlyDictionary<string, Type> slots)
     {
@@ -29,6 +30,7 @@ public sealed class EditorDraftAdapter
             slot => (SunEyeVision.Plugin.Contracts.ParameterSetting)new ConstantSetting(BindingClrAdapter.NormalizeValue(slot.Port, slot.Property.GetValue(_parameters))), StringComparer.Ordinal);
         var session = new ParameterEditSession(_slots.Select(slot => slot.Port), values);
         if (!session.TryCommit()) throw new InvalidOperationException("参数草稿不符合声明。");
+        _validateConfiguration?.Invoke();
     }
     // InputText is intentionally absent: its existing binding descriptor accepts String/Binary.
     // Outputs are validated by the existing output contract and binding graph, never a fabricated union.
@@ -39,5 +41,43 @@ public sealed class EditorDraftAdapter
         return new(parameters, new Dictionary<string, Type>(StringComparer.Ordinal)
         { ["Mode"] = typeof(string), ["Separator"] = typeof(string), ["InputFormat"] = typeof(string),
           ["StringEncoding"] = typeof(string), ["AsciiData"] = typeof(bool) });
+    }
+    internal static bool Supports(ToolParameters? parameters) => parameters?.GetType().FullName is
+        "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters" or "SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters";
+
+    public static EditorDraftAdapter ForProduction(ToolParameters parameters) => parameters.GetType().FullName switch
+    {
+        "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters" => ForProtocolParse(parameters),
+        "SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters" => ForImageThreshold(parameters),
+        _ => throw new ArgumentException("此工具尚未接入生产草稿适配器。", nameof(parameters))
+    };
+
+    private static EditorDraftAdapter ForImageThreshold(ToolParameters parameters)
+    {
+        // Only this known enum member is read; no fabricated integer port or general object traversal.
+        var method = parameters.GetType().GetProperty("Method", BindingFlags.Public | BindingFlags.Instance);
+        if (method is null || !method.PropertyType.IsEnum ||
+            method.PropertyType.FullName != "SunEyeVision.Tool.ImageThreshold.ThresholdMethod")
+            throw new ArgumentException("ImageThreshold.Method 与明确枚举声明不一致。");
+        var adapter = new EditorDraftAdapter(parameters, new Dictionary<string, Type>(StringComparer.Ordinal)
+        {
+            ["Threshold"] = typeof(int), ["MaxValue"] = typeof(int), ["Invert"] = typeof(bool),
+            ["BlockSize"] = typeof(int), ["C"] = typeof(double),
+            ["MinThreshold"] = typeof(int), ["MaxThreshold"] = typeof(int)
+        });
+        adapter._validateConfiguration = () =>
+        {
+            var value = method.GetValue(parameters);
+            if (value is null || !Enum.IsDefined(method.PropertyType, value))
+                throw new InvalidOperationException("二值化方法不是已声明的枚举值。");
+            // RoiParameters/MeasureGuideParameters add no image-readiness validation.
+            // This existing override checks configuration, including cross-field/result rules.
+            var presentation = parameters.GetType().GetProperty("ResultPresentation", BindingFlags.Public | BindingFlags.Instance)?.GetValue(parameters) as ResultPresentationConfig;
+            if (presentation is not null && presentation.ValidateContract() is { Length: > 0 } issues)
+                throw new InvalidOperationException(issues[0]);
+            var result = parameters.Validate();
+            if (!result.IsValid) throw new InvalidOperationException(result.Errors.FirstOrDefault() ?? "二值化配置无效。");
+        };
+        return adapter;
     }
 }

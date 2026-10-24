@@ -99,6 +99,8 @@ public sealed class ImageThresholdProductionEditorTests
             Assert.Same(Control, ancestor);
             return Assert.IsType<TextBox>(numeric.Template.FindName("PART_TextBox", numeric));
         }
+        public Button CustomConfirmButton() => Visuals(Window).OfType<Button>().Single(button =>
+            System.Windows.Automation.AutomationProperties.GetAutomationId(button) == "ConfirmButton");
         public void Dispose() { Context.Discard(); Window.Close(); }
     }
     [Theory]
@@ -116,6 +118,33 @@ public sealed class ImageThresholdProductionEditorTests
         Assert.Equal(value, Get(f.Published, "Threshold")); Assert.Equal(1, f.Publications);
         Assert.Equal(version + 1, f.Host.Capture().Version); Assert.Equal(0, f.LegacyCommits);
         Assert.NotSame(f.Published, f.Draft);
+    });
+    [Fact]
+    public void Custom_host_visible_confirm_rejects_invalid_then_invokes_exactly_one_publication_and_closes() => Sta(() =>
+    {
+        using var f = new Fixture(custom: true);
+        var text = f.ThresholdText(); var version = f.Host.Capture().Version;
+        var window = Assert.IsType<CustomDebugWindow>(f.Window);
+        var button = f.CustomConfirmButton();
+        Assert.True(button.IsVisible); Assert.True(button.IsEnabled);
+        Assert.Same(PresentationSource.FromVisual(f.Control), PresentationSource.FromVisual(button));
+        text.Text = "not-int";
+        Assert.False(window.TryConfirm(out var error)); Assert.NotEmpty(error);
+        Assert.True(window.IsVisible); Assert.Equal("not-int", text.Text);
+        Assert.Equal(version, f.Host.Capture().Version); Assert.Equal(0, f.Publications);
+        Assert.Equal(128, Get(f.Published, "Threshold"));
+        text.Text = "173";
+        var peer = new System.Windows.Automation.Peers.ButtonAutomationPeer(button);
+        var invoke = Assert.IsAssignableFrom<System.Windows.Automation.Provider.IInvokeProvider>(
+            peer.GetPattern(System.Windows.Automation.Peers.PatternInterface.Invoke));
+        invoke.Invoke();
+        var frame = new System.Windows.Threading.DispatcherFrame();
+        button.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+            new Action(() => frame.Continue = false));
+        System.Windows.Threading.Dispatcher.PushFrame(frame);
+        Assert.False(window.IsVisible); Assert.Equal(173, Get(f.Published, "Threshold"));
+        Assert.Equal(1, f.Publications); Assert.Equal(0, f.LegacyCommits);
+        Assert.False(f.Context.IsActive); Assert.Empty(f.Active);
     });
     [Fact]
     public void Invalid_pending_keeps_real_text_and_formal_config_confirm_fails_and_close_discards() => Sta(() =>

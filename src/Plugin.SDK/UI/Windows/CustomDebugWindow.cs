@@ -82,9 +82,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             // 创建窗口容器
             CreateWindowContainer();
 
-            // 尝试订阅确认按钮点击事件（如果控件有）
-            SubscribeConfirmEvent(_control);
-
             // 窗口关闭时清理
             Closed += OnWindowClosed;
             Closing += (_, e) => { if (!_confirmed) e.Cancel = !SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorClose.TryClose(_control, this); };
@@ -111,43 +108,42 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             _windowBorder.SetResourceReference(BackgroundProperty, SdkThemeKeys.PanelBackgroundBrush);
             _windowBorder.SetResourceReference(BorderBrushProperty, SdkThemeKeys.BorderBrush);
 
-            // 设置控件为内容（WindowChrome 接管标题栏拖拽，移除手动 DragMove）
-            _windowBorder.Child = _control;
+            // Publication belongs to the host shell, including controls without their own footer.
+            var layout = new DockPanel();
+            var footer = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(12, 8, 12, 8) };
+            var confirm = new Button { Content = "确定", Name = "ConfirmButton", MinWidth = 72, Padding = new Thickness(12, 4, 12, 4) };
+            System.Windows.Automation.AutomationProperties.SetAutomationId(confirm, "ConfirmButton");
+            confirm.SetResourceReference(BackgroundProperty, SdkThemeKeys.ButtonBackgroundBrush);
+            confirm.SetResourceReference(ForegroundProperty, SdkThemeKeys.ButtonTextBrush);
+            confirm.SetResourceReference(BorderBrushProperty, SdkThemeKeys.ButtonBorderBrush);
+            confirm.Click += OnConfirmClicked;
+            footer.Children.Add(confirm);
+            DockPanel.SetDock(footer, Dock.Bottom);
+            layout.Children.Add(footer);
+            layout.Children.Add(_control);
+            _windowBorder.Child = layout;
             Content = _windowBorder;
         }
 
         /// <summary>
-        /// 订阅确认按钮事件
+        /// Commit once through the same host contract as the standard shell.
         /// </summary>
-        private void SubscribeConfirmEvent(UserControl control)
+        public bool TryConfirm(out string error)
         {
-            // 使用反射查找 ConfirmClicked 事件
-            var eventType = control.GetType().GetEvent("ConfirmClicked");
-            if (eventType != null)
-            {
-                try
-                {
-                    var handler = Delegate.CreateDelegate(eventType.EventHandlerType, this, nameof(OnConfirmClicked));
-                    eventType.AddEventHandler(control, handler);
-                    PluginLogger.Info("已订阅 ConfirmClicked 事件", "CustomDebugWindow");
-                }
-                catch (Exception ex)
-                {
-                    PluginLogger.Warning($"订阅 ConfirmClicked 事件失败: {ex.Message}", "CustomDebugWindow");
-                }
-            }
+            if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryCommit(_control, out error)) return false;
+            _confirmed = true;
+            Close();
+            return true;
         }
 
         /// <summary>
         /// 确认按钮点击事件处理
         /// </summary>
-        private void OnConfirmClicked(object? sender, EventArgs e)
+        private void OnConfirmClicked(object sender, RoutedEventArgs e)
         {
-            if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryCommit(_control, out var error))
+            if (!TryConfirm(out var error))
             { MessageBox.Show(this, error, "配置未提交", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-            _confirmed = true;
             PluginLogger.Info("确认按钮已点击，关闭窗口", "CustomDebugWindow");
-            Close();
         }
 
         /// <summary>
@@ -158,24 +154,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             PluginLogger.Info($"[绑定诊断] 自定义调试窗口 Closed | 控件={_control.GetType().Name}", "BindingDiag");
             // The close decision already committed or discarded the draft.
             // Closed only releases handlers; it must never publish bindings again.
-
-            // 清理事件绑定
-            if (_control != null)
-            {
-                var eventType = _control.GetType().GetEvent("ConfirmClicked");
-                if (eventType != null)
-                {
-                    try
-                    {
-                        var handler = Delegate.CreateDelegate(eventType.EventHandlerType, this, nameof(OnConfirmClicked));
-                        eventType.RemoveEventHandler(_control, handler);
-                    }
-                    catch
-                    {
-                        // 忽略清理失败
-                    }
-                }
-            }
 
             PluginLogger.Info("窗口已关闭，事件已清理", "CustomDebugWindow");
         }

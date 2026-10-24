@@ -1,3 +1,9 @@
+## 2026-10-24 17:55 原D02/B02 Custom确认入口缺陷后继
+
+- 独测17bc身份门与19项已PASS；主窗priority01仅selector找不到x:Name暴露UIA导致0业务case，设施BLOCK非产品FAIL，修单次selector后继续，不重19。实施保持WPF窗让独测。
+- FT-D02-CUSTOM-CONFIRM-ENTRY-01父实查确认：Custom反射ConfirmClicked无repo控件合同，Threshold没有可点确认；原Apply测试不足以证明确认。按协调原范围修壳承担确认：实际可见按钮+UIA ID、TryCommit一次成功后关闭、invalid保留draft/窗口、Closed只释放，删除无合同反射。新增真实Threshold+可见按钮Automation Invoke实际Click回归，含invalid后修正单次发布；不动17bc frozen。
+- SDK影响所有工具装载副本与窗口，后继必须新完整Release及真实exe，再仅受影响Custom回归。预计18:10–18:20后继fixed（设施前检/离线restore/全构建/封存），非独验完成承诺；17bc主窗验收继续不等后继。程序集载体/Blob新实施仍不启动。
+
 ## 2026-10-24 17:40 Threshold/NodeOpen完整候选已直交，继续原主窗口独验
 
 - 基线/固定产品源码17bc36884611f0be1ae6874c59e2354012c19b66。threshold-integrated-ready-17bc3688已封存停止写，receipt3E2C3933B9267B36885D2E43A4937883D904CDAD2EC798C150A9C0BDF280159D；evidenceEDD9DBF7237BFFEDC4EA606FA79198763CF8ECF39ED113D4D94A743E4553A2F1。Source3870逐SHA0差、6明确publicizer编译输入；app/UItests权威626文件、121产品PE路径精确17bc、实际HostDebugRoot同app。已直交独测/协调，不停在交接。

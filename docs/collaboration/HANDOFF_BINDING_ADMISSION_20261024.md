@@ -12,3 +12,5 @@
 - 人工验收结果：尚未进行；统一最终Release集中列一次，不能以此定向结果替代真实VS设计时/交互验收。
 - 未完成：生产Workflow准入expected与同BindingPlan.Resolve/checked物化、M03物理窄类型与实际属性权威、树时效门及正式投影、资源/资产/代表工具及统一Release性能；此包不宣称它们完成。
 - 下一步：封存后直送协调/独测实际有限验证，同时合入协调独立B01/B03人类有限授权3.0片并重新编译下一同源闭包。旧97f/本2.1固定目录不再写；程序集载体不在本批准范围，原S3 ALC未闭环，不扩改ALC或新carrier。
+
+最终封存前补证：静态交叉核发现SubroutineParameters.JsonIgnore的工作流调用委托会在中央JSON副本丢失，已用其CreateExecutionSnapshot显式携带这一现有调用服务（不泛复制computed/服务/Owner）。新增实际ToolExecutor异步委托调用控；最终sdk-final-build02零错364警告8.73s、admission-final01为24/24；script-final-build02零错35警告9.22s、script-admission-final01为16/16。三个SDK副本前置SHA同BA4CB4E276F4BC3FAC9DB5A516999C3A5548897DC6C45F958FBDDA1D5B9C4E27；此前E3EA/D449差异只记preliminary，不作为固定交付。Foundation47仍使用其自有完整纯Foundation闭包；不合并不同验证组的依赖。后继提交记录额外两必要源改动，实际最后构建HEAD560330de+dirt，不冒后继commit内stamp。

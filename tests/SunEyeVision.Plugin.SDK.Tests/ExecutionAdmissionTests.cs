@@ -73,6 +73,31 @@ public sealed class ExecutionAdmissionTests
         public int Number { get; set; } = 7;
         public AvailableDataSource? Choice { get; set; }
     }
+    [Fact]
+    public async Task ConfigurationCopyPreservesTheExplicitSubworkflowInvocationService()
+    {
+        var calls = 0;
+        var configuration = new SubroutineParameters { SubroutineId = "child", ExecuteSubWorkflowAsync = (id, image, context) =>
+        { Assert.Equal("child", id); calls++; return Task.FromResult(ExecutionResult.CreateSuccess()); } };
+        var request = new ToolExecutionRequest(configuration) { NodeId = "subroutine" };
+        var result = await new ToolExecutor(new ParameterResolver()).ExecuteAsync(new SubworkflowServiceTool(), request);
+        Assert.True(result.IsSuccess, result.ErrorMessage);
+        Assert.Equal(1, calls);
+        Assert.NotSame(configuration, request.Parameters);
+        Assert.NotSame(configuration.Inputs, ((SubroutineParameters)request.Parameters).Inputs);
+        Assert.Null(configuration.Context);
+        Assert.Equal(0, request.ExecutionIdentity!.Owner.ActiveRuns);
+    }
+    private sealed class SubworkflowServiceTool : IToolPlugin<SubroutineParameters, Results>, IAsyncToolPlugin
+    {
+        public Results Run(SubroutineParameters parameters) => throw new InvalidOperationException();
+        public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)
+        {
+            var parameters = (SubroutineParameters)request.Parameters;
+            await parameters.ExecuteSubWorkflowAsync!(parameters.SubroutineId, null, null);
+            return new Results { Status = ExecutionStatus.Success };
+        }
+    }
     [Theory]
     [InlineData(false, 0)]
     [InlineData(false, 1)]

@@ -13,6 +13,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
     public class SubroutineParameters : ToolParameters, ISubWorkflowExecutor, IOutputContractProvider
     {
+        public override ToolParameters CreateExecutionSnapshot()
+        {
+            var copy = (SubroutineParameters)ToolExecutionPreparation.CopyParameters(this);
+            // The workflow owner injects this invocation service after configuration freezing.
+            // It is deliberately excluded from persistence, but must reach the execution copy.
+            copy.ExecuteSubWorkflowAsync = ExecuteSubWorkflowAsync;
+            return copy;
+        }
         public string SubroutineId { get; set; } = string.Empty;
         public string SubroutineName { get; set; } = string.Empty;
 

@@ -1,3 +1,7 @@
+## 2026-10-24 2.1有限新包最终闭包已对齐：24/16/47通过待独验，继续原接线
+
+- 最终SDK/Script/app三SDK副本SHA同BA4CB4E276F4BC3FAC9DB5A516999C3A5548897DC6C45F958FBDDA1D5B9C4E27；final SDK24/24、Script16/16真实过；Foundation自身完整闭包47/47。原preliminary不同SDK SHA记录保留未冒固定。显式保Subroutine工作流注入委托并加真实异步工具调用控；不泛复制所有运行服务。当前限定2.1/Foundation4.0封存后交独测，B01原3.0片随后合入新root重编，不混旧包。
+
 ## 2026-10-24 本轮有限集成收件前验证完成
 
 - Foundation47/47、中央admission04 23/23、实际Script admission02 16/16均通过，限定SDK2.1/Foundation4.0诊断包封存中；继续原生产接线，非整包PASS。Script监视改实际结果入口及租约，保原配置不回写，原失败记录不抹。

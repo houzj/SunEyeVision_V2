@@ -30,7 +30,8 @@ public partial class MainWindowViewModel
         } ?? throw new InvalidOperationException("ProtocolParse 编辑器缺少草稿提交接缝。");
         var session = DocumentManager.Session ?? throw new InvalidOperationException("当前没有方案编辑会话。");
         var flow = session.Document.Workflows.Single(w => w.Nodes.Any(n => ReferenceEquals(n, node)));
-        if (!ReferenceEquals(_productionEditorSession, session) || _productionEditors.Count == 0)
+        if (!ReferenceEquals(_productionEditorSession, session)) ReleaseProductionEditors();
+        if (_productionEditors.Count == 0)
         {
             _productionEditorHost = new NodeConfigurationEditHost(session.Document);
             _productionEditorSession = session;
@@ -64,10 +65,52 @@ public partial class MainWindowViewModel
             if (id != node.Id) throw new InvalidOperationException("编辑节点作用域不一致。");
             if (!ToolEditorCommit.TryCommit(control, out var error)) throw new InvalidOperationException(error);
         };
-        _productionEditors.Add(context);
-        if (target is Window owner)
-            owner.Closed += (_, _) => { context.Dispose(); _productionEditors.Remove(context); };
+        TrackProductionEditor(_productionEditors, context, target, ClearProductionEditorHost);
         provider = query;
         return context;
+    }
+    private void ClearProductionEditorHost()
+    {
+        _productionEditorHost = null;
+        _productionEditorSession = null;
+    }
+    private void ReleaseProductionEditors()
+    {
+        ReleaseProductionEditorContexts(_productionEditors);
+        ClearProductionEditorHost();
+    }
+    internal static void ReleaseProductionEditorContexts(ISet<ProductionEditorContext> active)
+    { foreach (var context in active.ToArray()) context.Discard(); }
+
+    // The same ownership hook is used for Window and embedded-control initialization.
+    // Unloaded can be temporary (reparenting/template changes), so only Closed/Discard releases.
+    internal static void TrackProductionEditor(ISet<ProductionEditorContext> active, ProductionEditorContext context,
+        object target, Action whenEmpty)
+    {
+        if (!context.IsActive) return;
+        if (!active.Add(context)) return;
+        var control = target as ToolDebugControlBase;
+        Window? owner = null;
+        void Closed(object? sender, EventArgs e) => context.Discard();
+        void BindOwner()
+        {
+            var next = target as Window ?? (control is null ? null : Window.GetWindow(control));
+            if (ReferenceEquals(next, owner)) return;
+            if (owner is not null) owner.Closed -= Closed;
+            owner = next;
+            if (owner is not null) owner.Closed += Closed;
+        }
+        void Loaded(object sender, RoutedEventArgs e) => BindOwner();
+        void Released()
+        {
+            context.Deactivated -= Released;
+            if (control is not null) control.Loaded -= Loaded;
+            if (owner is not null) owner.Closed -= Closed;
+            active.Remove(context);
+            if (active.Count == 0) whenEmpty();
+        }
+        context.Deactivated += Released;
+        if (control is not null) control.Loaded += Loaded;
+        BindOwner();
     }
 }

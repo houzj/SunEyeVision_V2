@@ -19,6 +19,8 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDisposab
     public ScopedNodeIdentity Identity => _draft.Identity;
     public long OpenedVersion { get; }
     public string? LastRefreshError { get; private set; }
+    public bool IsActive => _active;
+    internal event Action? Deactivated;
 
     public ProductionEditorContext(NodeConfigurationEditHost host, string workflowId, WorkflowNodeBase formalNode,
         Func<bool> isCurrent, Action<WorkflowNodeBase> bindDraft, Action<BindingConfigurationPublication>? published = null)
@@ -64,7 +66,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDisposab
                 _bindDraft(_draft.Node);
             }
         }
-        catch (Exception ex) { LastRefreshError = ex.Message; _active = false; }
+        catch (Exception ex) { LastRefreshError = ex.Message; Discard(); }
         try { if (_active && _isCurrent()) _published?.Invoke(publication); }
         catch (Exception ex) { LastRefreshError = ex.Message; }
         finally { _committing = false; }
@@ -72,9 +74,18 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDisposab
     }
     private void EnsureCurrent()
     {
-        if (!_active || !_isCurrent() || !_host.OwnsNode(Identity.WorkflowId, (WorkflowNodeBase)FormalNode))
-            throw new InvalidOperationException("编辑所属方案、工作流或节点实例已失效，草稿不能提交。");
+        if (_active && (!_isCurrent() || !_host.OwnsNode(Identity.WorkflowId, (WorkflowNodeBase)FormalNode))) Discard();
+        if (!_active) throw new InvalidOperationException("编辑所属方案、工作流或节点实例已失效，草稿不能提交。");
     }
-    public void Discard() => _active = false;
+    public void Discard()
+    {
+        if (!_active) return;
+        _active = false;
+        var handlers = Deactivated;
+        Deactivated = null;
+        if (handlers is not null)
+            foreach (Action handler in handlers.GetInvocationList())
+                try { handler(); } catch (Exception ex) { LastRefreshError ??= ex.Message; }
+    }
     public void Dispose() => Discard();
 }

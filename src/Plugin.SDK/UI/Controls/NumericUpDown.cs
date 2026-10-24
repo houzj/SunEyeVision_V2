@@ -434,15 +434,35 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             Dispatcher.VerifyAccess(); value = Value; error = "";
             if (!_hasPendingText || _textBox is null || IsReadOnly || !IsEnabled) return true;
-            if (!double.TryParse(_textBox.Text, out var entered) || !double.IsFinite(entered))
+            var integerType = System.Windows.Data.BindingOperations.IsDataBound(this, IntValueProperty) ? TypeCode.Int32 :
+                TemplatedParent is ConfigSetting setting ? Type.GetTypeCode(setting.DataType) : TypeCode.Empty;
+            double entered;
+            if (integerType is TypeCode.SByte or TypeCode.Byte or TypeCode.Int16 or TypeCode.UInt16 or TypeCode.Int32 or TypeCode.UInt32 or TypeCode.Int64 or TypeCode.UInt64)
+            {
+                // Parse the integer before any double conversion: 2^53+1 must never round into 2^53.
+                if (!System.Numerics.BigInteger.TryParse(_textBox.Text,
+                    System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowThousands,
+                    System.Globalization.CultureInfo.CurrentCulture, out var exact))
+                { error = "此参数需要格式正确的精确整数。"; return false; }
+                var (minimum, maximum) = integerType switch
+                {
+                    TypeCode.SByte => ((System.Numerics.BigInteger)sbyte.MinValue, (System.Numerics.BigInteger)sbyte.MaxValue),
+                    TypeCode.Byte => ((System.Numerics.BigInteger)byte.MinValue, (System.Numerics.BigInteger)byte.MaxValue),
+                    TypeCode.Int16 => ((System.Numerics.BigInteger)short.MinValue, (System.Numerics.BigInteger)short.MaxValue),
+                    TypeCode.UInt16 => ((System.Numerics.BigInteger)ushort.MinValue, (System.Numerics.BigInteger)ushort.MaxValue),
+                    TypeCode.Int32 => ((System.Numerics.BigInteger)int.MinValue, (System.Numerics.BigInteger)int.MaxValue),
+                    TypeCode.UInt32 => ((System.Numerics.BigInteger)uint.MinValue, (System.Numerics.BigInteger)uint.MaxValue),
+                    TypeCode.Int64 => ((System.Numerics.BigInteger)long.MinValue, (System.Numerics.BigInteger)long.MaxValue),
+                    _ => ((System.Numerics.BigInteger)ulong.MinValue, (System.Numerics.BigInteger)ulong.MaxValue)
+                };
+                if (exact < minimum || exact > maximum)
+                { error = "整数超出参数声明的 CLR 范围。"; return false; }
+                entered = (double)exact;
+                if (!double.IsFinite(entered) || new System.Numerics.BigInteger(entered) != exact)
+                { error = "此整数无法无损通过当前数值控件，请保留精确输入并使用支持该范围的编辑器。"; return false; }
+            }
+            else if (!double.TryParse(_textBox.Text, out entered) || !double.IsFinite(entered))
             { error = "数值输入无效，请输入有限数值。"; return false; }
-            var integer = System.Windows.Data.BindingOperations.IsDataBound(this, IntValueProperty) ||
-                TemplatedParent is ConfigSetting setting && Type.GetTypeCode(setting.DataType) is
-                    TypeCode.SByte or TypeCode.Byte or TypeCode.Int16 or TypeCode.UInt16 or TypeCode.Int32 or TypeCode.UInt32 or TypeCode.Int64 or TypeCode.UInt64;
-            if (integer && entered != Math.Truncate(entered))
-            { error = "此参数需要整数，不能使用小数。"; return false; }
-            if (System.Windows.Data.BindingOperations.IsDataBound(this, IntValueProperty) && (entered < int.MinValue || entered > int.MaxValue))
-            { error = "整数超出 Int32 范围。"; return false; }
             if (entered < Minimum || entered > Maximum)
             { error = "数值超出允许范围。"; return false; }
             value = Math.Round(entered, DecimalPlaces);

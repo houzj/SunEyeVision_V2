@@ -1604,6 +1604,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnCurrentSolutionChanged(object? sender, SolutionMetadataEventArgs e)
         {
+            ReleaseProductionEditors();
             _logger?.LogInfo($"[StartupTrace] MainWindowViewModel.OnCurrentSolutionChanged begin | solutionId={e.SolutionId}", "MainWindowViewModel");
             foreach (var window in _nodeDebugWindows.Values.Concat(_openDebugWindow == null ? Array.Empty<Window>() : new[] { _openDebugWindow }).Distinct().ToArray())
                 window.Close();
@@ -4004,7 +4005,8 @@ SplitterPosition = position;
             }
             catch (Exception ex)
             {
-                if (editorContext != null) { editorContext.Dispose(); _productionEditors.Remove(editorContext); }
+                if (editorContext != null) editorContext.Dispose();
+                if (_productionEditors.Count == 0) ClearProductionEditorHost();
                 var errorDetails = new System.Text.StringBuilder();
                 errorDetails.AppendLine($"❌ 初始化调试目标失败: {ex.Message}");
                 var innerEx = ex.InnerException;

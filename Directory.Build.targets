@@ -31,8 +31,10 @@
        不再把 SDK 的 AssemblyVersion 当成契约版本。 -->
   <ItemGroup Condition="'$(IsToolPlugin)'=='true'">
     <AssemblyAttribute Include="SunEyeVision.Plugin.SDK.Core.ToolContractVersionAttribute">
-      <_Parameter1>2</_Parameter1>
-      <_Parameter2>1</_Parameter2>
+      <_Parameter1>global::SunEyeVision.Plugin.SDK.Core.ToolContract.Major</_Parameter1>
+      <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
+      <_Parameter2>global::SunEyeVision.Plugin.SDK.Core.ToolContract.Minor</_Parameter2>
+      <_Parameter2_IsLiteral>true</_Parameter2_IsLiteral>
     </AssemblyAttribute>
   </ItemGroup>
 

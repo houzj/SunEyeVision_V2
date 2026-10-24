@@ -20,10 +20,10 @@ namespace SunEyeVision.Plugin.SDK.Core
     public static class ToolContract
     {
         /// <summary>契约主版本：变化表示**不兼容** —— 宿主必须拒绝旧插件并说明原因。</summary>
-        public const int Major = 2;
+        public const int Major = 3;
 
         /// <summary>当前开发契约次版本；全部插件必须按同一基线重新构建。</summary>
-        public const int Minor = 1;
+        public const int Minor = 0;
 
         /// <summary>契约版本字符串（形如 <c>"2.0"</c>）。</summary>
         public static string Version => $"{Major}.{Minor}";

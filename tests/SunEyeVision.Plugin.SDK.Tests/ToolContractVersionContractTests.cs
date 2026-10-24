@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using SunEyeVision.Plugin.SDK.Core;
 using Xunit;
@@ -23,7 +23,9 @@ public class ToolContractVersionContractTests
     [Fact]
     public void Version_IsMajorDotMinor()
     {
-        Assert.Equal($"{ToolContract.Major}.{ToolContract.Minor}", ToolContract.Version);
+        Assert.Equal(3, ToolContract.Major);
+        Assert.Equal(0, ToolContract.Minor);
+        Assert.Equal("3.0", ToolContract.Version);
         Assert.Equal("SunEyeVision.Plugin.SDK", ToolContract.AssemblyName);
     }
 
@@ -32,7 +34,7 @@ public class ToolContractVersionContractTests
     {
         // 开发期只接受同一契约，拒绝旧或未来构建产物。
         Assert.True(ToolContract.IsCompatible(new Version(ToolContract.Major, ToolContract.Minor)));
-        Assert.False(ToolContract.IsCompatible(new Version(ToolContract.Major, ToolContract.Minor - 1)));
+        Assert.False(ToolContract.IsCompatible(new Version(2, 1)));
         Assert.False(ToolContract.IsCompatible(new Version(ToolContract.Major, ToolContract.Minor + 1)));
     }
 
@@ -71,6 +73,12 @@ public class ToolContractVersionContractTests
         var compatible = ToolContract.Describe(new Version(ToolContract.Major, ToolContract.Minor));
         Assert.Contains(ToolContract.Version, compatible);
         Assert.Contains("兼容", compatible);
+
+        var historical = ToolContract.Describe(new Version(2, 1));
+        Assert.Contains("2.1", historical);
+        Assert.Contains("3.0", historical);
+        Assert.Contains("不兼容", historical);
+        Assert.Contains("未声明", ToolContract.Describe(null));
 
         var incompatible = ToolContract.Describe(new Version(ToolContract.Major + 1, 0, 0, 0));
         Assert.Contains(ToolContract.Version, incompatible);

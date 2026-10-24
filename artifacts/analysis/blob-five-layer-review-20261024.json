@@ -1,0 +1,79 @@
+{
+  "kind": "architecture-review-input-for-existing-o06-html",
+  "date": "2026-10-24",
+  "observedHead": "17bc36884611f0be1ae6874c59e2354012c19b66",
+  "status": "design-review-only-not-implementation-or-acceptance",
+  "destinationAnchor": "blob-five-layer-full-chain-review",
+  "scope": "从工具箱拖入画布到UI、公共控件、绑定及ROI、HALCON执行、结果消费、保存重开与释放；复用原FT覆盖，不新增批次，不改产品代码。",
+  "decision": "以Blob实际消费链验证公共能力；工具声明业务输入参数与结果，宿主提供节点生命周期及编辑事务，公共控件只适配合同和交互，执行层使用同代快照，结果消费者持reader并按同一运行及元素身份显示。复用已有合同和实现，不增加平行参数仓库、绘图管理器或资产系统。",
+  "notPrerequisites": ["模板专有native模型缓存与lease", "先完成所有工具页面改造", "先实现全局泛型资产records仓库"],
+  "evidenceLevels": {
+    "source": "源码可证明具体调用和当前设计，不能代替真实用户整链验收",
+    "finiteTests": "C67和geometry、Editor有限独验仅证明各自已测范围，不升级原FT整项",
+    "vmResources": "XML证明声明、模板入口和可选参数，不证明native实际算法顺序或释放",
+    "unknown": "未贯通的VM原生函数体和真实UI操作效果必须明确标待证，不能用示意图补作事实"
+  },
+  "layers": [
+    {"id":"L1","name":"用户场景及节点生命周期","current":"Toolbox ToolItem拖放到WorkflowDragDropHandler.Canvas_Drop，经WorkflowTabViewModel.CreateNode和MainWindowViewModel.AddNodeToWorkflow创建正式节点。当前代码明确Drop不等于选中节点。双击/打开转宿主UI的NodeOpen与编辑初始化入口，在途调整中。","vm":"已有ToolItemGrid拖放入口证据；不能从拖放事件直接宣称模块实例创建、Undo和端口连接均已贯通。","recommendation":"节点类型身份、节点实例身份及节点参数分别管理；沿既有添加命令和Undo链。自动选中、自动连线、自动开窗应由明确场景决定，未确认前不当作现有能力。"},
+    {"id":"L2","name":"UI实现与公共控件","current":"Blob调试页继承ToolDebugControlBase；XAML直接组合ImageSourceSelector、RoiEditorManagerControl、ParamBinding、ConfigSetting、ToggleSwitch和三类ResultPresentation编辑控件。代码额外持有DataSourceQueryService与主ImageControl，Loaded时订阅Window.Closing，Cleanup可清整个结果层。","vm":"原Blob是IMVSBlobFindModu，无专属Control DLL；ParamsConfigControlBase创建/复用AlgorithmTabRoot，XML引用ImageSourceGroup、RoiSelectGroup、ROISelecter、InheritWayGroup2等公共组。不可套用BlobFindLabels专用面板。","recommendation":"复用控件能力，收敛数据来源、编辑状态及生命周期；由宿主会话管理控件与视口归属，工具避免直接清其他节点的全局结果层。逐件设计与消费者见本章共享控件清单，行为仍须验证。"},
+    {"id":"L3","name":"数据、绑定与执行","current":"BlobAnalysisParameters继承RoiParameters，并实现IInputSlotContract、IRuntimeParameterContract、IOutputContractProvider；参数Validate已有阈值范围及跨字段、筛选和结果配置校验。调试控件SetParameters和ExecuteWithLiveContext需要与在途ProductionEditorContext实际接入范围区分，不能因Threshold已接就称Blob完成草稿事务。","vm":"AlgorithmTab/模块XML声明图像输入、ROI和继承/输出参数；公共绑定树已有源码报告。参数发布、运行同代快照及失败回滚需实际桥体或实机证据。","recommendation":"沿既有Store-CAS和CaptureForRun统一外层参数、绑定与ROI草稿；配置参数与执行结果分开。先校验所有pending文本及跨字段规则再提交，取消不污染正式配置，执行只读明确版本。"},
+    {"id":"L4","name":"核心图像处理算法","current":"实际Run调用：输入解包→校验→灰度转换→位置修正与HalconRegionPipeline检测/屏蔽差集→按域处理→可选预处理→阈值及域内反相→可选形态学并交回有效域→Connection→SelectShape联合筛选→特征与判断→排序及数量截断→按需轮廓→图像/区域输出及批量显示。函数注释不是唯一依据，以当前函数体为准。","vm":"已证managed Run到SyncSelfRun及结果查询；native导入和SDK接口已库存。补得Process分配及DeInit局部释放体，但ProcessAlg/ProcessOutput顺序、尾跳及析构目标未贯通，不等于核心连通域实现已还原。","recommendation":"先冻结同输入像素/ROI/屏蔽/坐标/阈值/筛选/排序/输出需求，比较数值正确性与分段耗时。不能从UI更快推断VM算法更强，也不因现用HALCON便默认保留；需要同能力结果与性能证据后选型。"},
+    {"id":"L5","name":"结果、下游与资源","current":"BlobOutputContract有稳定FieldId和Sequence<Record>投影，记录含ElementId/Label、数值及几何。显示批次携带DeclaredElementAddress，图形按同一次筛选/排序/截断后的Blob构建。ResultResourceOwner、DeclaredOutputReader和ResultPresentationPresenter的分页/退休已有有限证据。树选择到SourceElements和同run/frame渲染消费尚未完整接通。","vm":"Display.xml有name/type/feature对象映射；Cs结果暴露集合和图像等输出。原生ProcessOutput及Clear/DeInit/Destroy的实际所有权和失败保留行为仍待证，不能只据SDK头文件声称释放闭合。","recommendation":"树、轮廓、下游均从同一输出快照消费，元素身份与排序索引分离；选择必须携带运行/字段/元素/子字段与Frame，禁止误选旧运行。读者释放租约，最后持有者回收资源；配置关闭与运行结果退休是不同动作。"}
+  ],
+  "diagramSpecifications": [
+    {"name":"五层泳道","content":"用户动作横轴：工具箱拖入→建节点→连接/绑定→打开/配置/ROI→提交或取消→执行→结果树/图形/下游→保存重开→删除/释放；五层纵轴各列真实类与证据等级。"},
+    {"name":"VM/当前/目标并排","content":"每个阶段三列；实线已读源码，虚线待取证；绿色复用、黄色调整、红色替换责任，不能把设计目标画成已实现。"},
+    {"name":"参数和结果双链","content":"配置草稿→全量校验→唯一CAS→CaptureForRun→算法；输出快照→reader→树/renderer/downstream；Owner-retire与last-reader-release分两步。"},
+    {"name":"算法与耗时","content":"按实际函数体画输入/域/预处理/分割/形态学/连通域/筛选/特征/排序截断/轮廓/发布，耗时用待采标记；算法耗时与UI可见帧延迟分开。"}
+  ],
+  "verification": [
+    {"id":"BV01","action":"工具箱拖入空流程、有上游流程；取消拖放、连续拖放、Undo/Redo","oracle":"一次有效落点只创建一个独立节点；类型/实例身份正确；取消和撤销不残留连接或订阅；自动连接/开窗行为按审核合同执行。"},
+    {"id":"BV02","action":"打开、关闭、重开及切换两个Blob配置窗","oracle":"正确节点、来源与参数；不重复订阅；关闭A不清B或后来运行的图形；无UI宿主程序集反向依赖。"},
+    {"id":"BV03","action":"图像绑定、未绑定、空值、已删除来源与不兼容类型","oracle":"声明与来源树一致；拒绝不兼容及失效引用，不能静默取旧帧或错误节点图像；0/false与missing分别处理。"},
+    {"id":"BV04","action":"检测/屏蔽绘制及继承、拖动旋转、数值回填、位置修正和不同缩放","oracle":"同一几何参数双向一致；屏蔽从检测域扣除；坐标与单位一致；继承可编辑边界明确；Esc/取消不污染正式ROI。"},
+    {"id":"BV05","action":"合法pending文本、非法文本、上下界颠倒、筛选条件更改；确定/取消/主保存/变量保存/运行入口","oracle":"全部先校验后一次提交；一个字段非法时不部分提交；合法未失焦输入被包含；取消/直接关闭语义由审核确定，不能由控件各自写正式状态。"},
+    {"id":"BV06","action":"独立标注的合成图：0/1/3目标、屏蔽一个目标、触边/孔洞/噪声/相连目标、灰度和彩色","oracle":"独立像素/区域基准给数量、面积、质心及轮廓误差界；与VM同配置比较但不把VM输出自动当真值；原生阈值端点/连通性未知先核。"},
+    {"id":"BV07","action":"预处理/形态学开关、面积/圆度/矩形度筛选、排序及数量限制组合","oracle":"结果记录、区域、显示轮廓和统计使用同一最终集合；排序后ElementId与Label含义不混；输入与配置不被算法回写。"},
+    {"id":"BV08","action":"执行、连续执行、失败与停止；运行中编辑或切换窗口","oracle":"一次执行使用明确同代配置；输出带运行身份；失败/取消/空结果与未运行可区分，不显示上一成功结果为本次结果。"},
+    {"id":"BV09","action":"展开结果树、分页、选某Blob及其轮廓/质心；切到新运行后点旧行","oracle":"选中同一run/frame/field/element；双向联动不按排序下标误选；旧行拒绝或明确只读；分页不复制全部轮廓。"},
+    {"id":"BV10","action":"下游绑定整个记录集合、单元素/字段、标量和数组；结果数从3到0再到1","oracle":"类型合同、路径和空集合行为一致；下游不借UI树读取数据，不将数组静默压成标量或沿旧索引绑定错误元素。"},
+    {"id":"BV11","action":"保存、退出、重开；复制节点、撤销重做、切换方案","oracle":"参数/绑定/ROI按现有Snapshot/Repository原子恢复；运行结果按约定重算或显示，不误保存裸native句柄；复制不共享可变草稿。"},
+    {"id":"BV12","action":"旧结果有树/视口/下游读者时替换输出、关闭窗、删除节点及释放最后读者","oracle":"不提前Dispose，不重复Dispose；窗口关闭不等于销毁其他消费者仍用的结果；异常路径资源也退休；资源预算和正式性能另按原批准门验。"}
+  ],
+  "optimizationList": [
+    {"id":"BO01","kind":"复用","scope":"Tool/输入输出声明、唯一节点添加命令、现有Store-CAS/Undo/Snapshot、C67输出投影、Geometry/ResultOwner和Presenter分页","gate":"分别引用已有有限证据，补真实Blob生产接线，不重造接口或重复已过测试。"},
+    {"id":"BO02","kind":"调整设计","scope":"Blob外层参数和ROI接同一编辑会话；公共控件由host context提供来源、提交与图形作用域","gate":"BV02–05及BV11；不沿现管理器增加第二套正式参数状态。"},
+    {"id":"BO03","kind":"替换越界责任","scope":"工具Loaded重复挂Window.Closing且无对应卸载路径；Cleanup清整个主结果层","gate":"将订阅/关闭释放和显示图层归属交给宿主会话；BV02/BV12证明关闭A不误清其他消费者，不直接移植VM未知生命周期。"},
+    {"id":"BO04","kind":"补齐消费者接线","scope":"结果树DeclaredElementAddress/SourceElements到同run/frame渲染选择和下游","gate":"BV07–10，复用现有稳定身份而非另发明索引地址。"},
+    {"id":"BO05","kind":"已证实现边界缺陷，运行影响待测","scope":"Blob Run在参数Validate及try之前调用parameters.GetHalconImage；HalconHelpers明确在未初始化或无兼容图像时throw，故这些错误不进入该Run自己的统一失败结果catch。外围执行器是否捕获不能由此推断。","gate":"以缺输入/不兼容载体样本分别验证工具直接Run和正式执行器的错误结果；修复应覆盖解包和参数校验共同边界，不宣称整应用必然崩溃。"},
+    {"id":"BO06","kind":"算法与性能证据","scope":"补实际输入格式、预处理及域边界、筛选排序一致性、按需轮廓/大结果集的独立正确性和分段成本","gate":"BV06–08，沿批准基础性能档；不得仅依源码注释称按需计算或根据肉眼快慢替换算法。"},
+    {"id":"BO07","kind":"公共控件逐件治理","scope":"按每个public控件的声明、输入/输出、状态归属、生命周期、消费者与测试建立能力表；重复组件合并、越界职责迁移","gate":"控件台账与Blob五层互相链接；没有消费者证据的控件标未核，不凭目录名判断管理或完成度。"}
+  ],
+  "openDecisions": [
+    "拖放后的自动选中、连线、开窗应先核VM/当前并与用户确认期望，不能从当前注释倒推需求。",
+    "直接关闭、取消、Apply、单次/连续试运行分别使用草稿还是正式配置须统一合同；沿已批准编辑事务，不由Blob各按钮独立决定。",
+    "VM真正native算法顺序、连通/阈值谓词、结果排序及释放仍有证据缺口；有限静态取证中。",
+    "41项控件已完成声明/直接消费者及逐项设计盘点；模板与反射路径可能未被静态引用搜索覆盖，真实生命周期和交互行为尚未验收。"
+  ],
+  "sources": [
+    "src/UI/Services/Interaction/DragDropHandler.cs:270",
+    "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml:45",
+    "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml.cs:96",
+    "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml.cs:153",
+    "tools/SunEyeVision.BlobAnalysis/BlobAnalysisParameters.cs:95",
+    "tools/SunEyeVision.BlobAnalysis/BlobAnalysisParameters.cs:425",
+    "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs:65",
+    "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs:158",
+    "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs:319",
+    "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs:434",
+    "tools/SunEyeVision.BlobAnalysis/BlobOutputContract.cs:13",
+    "tools/SunEyeVision.BlobAnalysis/BlobAnalysisResults.cs:17",
+    "src/Plugin.SDK/Execution/Results/ResultResourceOwner.cs:7",
+    "src/SunEyeVision.HalAdapter/HalconHelpers.cs:11",
+    "src/UI/Services/Monitoring/ResultPresentationPresenter.cs:64",
+    "D:/MyWork/REA逆向测试/docs/plugins/BLOB-ANALYSIS-IDENTITY-SOURCE-INVENTORY.md",
+    "D:/MyWork/REA逆向测试/docs/architecture-recovery/tool-rendering-entry-audit.resources/IMVSBlobFindModuAlgorithmTab.xml:84",
+    "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ParamsConfigControlBase.xaml.cs:206",
+    "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.Base/ToolItemGrid.cs:166"
+  ]
+}

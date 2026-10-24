@@ -1,0 +1,16 @@
+{
+  "kind": "documentation-static-verification-only",
+  "controls": 41,
+  "controlRows": 41,
+  "chapterAnchors": 11,
+  "newLinks": 202,
+  "badLinks": [],
+  "duplicateNewIds": [],
+  "homeEntry": true,
+  "chapterEntry": true,
+  "productRun": false,
+  "productCodeChangedByThisTask": false,
+  "pageSHA256": "592b63218e0e864aad366a1f1faeb29960e903558e3582430821d36834a28af3",
+  "homeSHA256": "0b312eb800ae0598b7fdb3e24604073d7076e8349f14fa2348b8927e69e894b1",
+  "pass": true
+}

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Security.Cryptography;
 using System.Text.Json;
+using SunEyeVision.Core.Versioning;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 
@@ -43,6 +44,7 @@ internal sealed class ReleasePayloadAuthority
             if(!_entries.TryAdd(relative,new(relative,hash,identity)))throw new InvalidDataException("Duplicate payload path: "+relative);
             VerifyFile(path,_entries[relative]);
         }
+        VerifyHostProductIdentity(payload);
         foreach(var name in payload.GetProperty("expectedPluginAssemblies").EnumerateArray())
         {
             var simpleName=name.GetString();
@@ -86,6 +88,27 @@ internal sealed class ReleasePayloadAuthority
                 throw new InvalidDataException("Framework has no managed publish winners: "+name);
         }
         if(!_frameworkNames.Contains("Microsoft.NETCore.App"))throw new InvalidDataException("Core framework declaration is missing.");
+    }
+
+    private void VerifyHostProductIdentity(JsonElement payload)
+    {
+        // The existing Core PE is the product identity anchor. A fixture/root copy
+        // is approved only when it has the exact bytes and identity of that host.
+        const string corePath="SunEyeVision.Core.dll";
+        var core=typeof(AppVersionInfo).Assembly;
+        if(!_entries.TryGetValue(corePath,out var entry)||string.IsNullOrWhiteSpace(entry.Identity))
+            throw new InvalidDataException("The host Core product identity is not approved by the release payload.");
+        if(AssemblyLoadContext.GetLoadContext(core)!=AssemblyLoadContext.Default||core.FullName!=entry.Identity)
+            throw new FileLoadException("The loaded Core identity differs from the release payload.",core.Location);
+        VerifyFile(core.Location,entry);
+        if(string.IsNullOrWhiteSpace(AppVersionInfo.Product)||string.IsNullOrWhiteSpace(AppVersionInfo.Commit)||string.IsNullOrWhiteSpace(AppVersionInfo.Channel))
+            throw new InvalidDataException("The approved host Core product identity metadata is missing.");
+        if(!string.Equals(payload.GetProperty("sourceCommit").GetString(),AppVersionInfo.Commit,StringComparison.Ordinal))
+            throw new InvalidDataException("Payload sourceCommit differs from the approved host Core product identity.");
+        var artifact=AppVersionInfo.Product+(AppVersionInfo.Channel=="stable"?"":"_"+AppVersionInfo.Channel);
+        if(!string.Equals(payload.GetProperty("artifactVersion").GetString(),artifact,StringComparison.Ordinal))
+            throw new InvalidDataException("Payload artifactVersion differs from the approved host Core product identity.");
+        // buildId is an opaque generator-run identifier; there is no PE buildId anchor.
     }
 
     private static void RejectDuplicateProperties(JsonElement element)

@@ -106,6 +106,38 @@ namespace SunEyeVision {
         public string TypeName {get;set;}
     }
     public static class ReleaseToolMetadataReader {
+        public static Dictionary<string,string> ReadProductIdentity(string path) {
+            using(var stream=File.OpenRead(path))using(var pe=new PEReader(stream)) {
+                var reader=pe.GetMetadataReader();
+                if(reader.GetString(reader.GetAssemblyDefinition().Name)!="SunEyeVision.Core")throw new InvalidDataException("Product identity anchor is not Core.");
+                string informational=null,channel=null;
+                foreach(var handle in reader.GetAssemblyDefinition().GetCustomAttributes()) {
+                    var attribute=reader.GetCustomAttribute(handle);
+                    if(attribute.Constructor.Kind!=HandleKind.MemberReference)continue;
+                    var member=reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
+                    if(member.Parent.Kind!=HandleKind.TypeReference)continue;
+                    var type=reader.GetTypeReference((TypeReferenceHandle)member.Parent);
+                    if(reader.GetString(type.Namespace)!="System.Reflection")continue;
+                    var name=reader.GetString(type.Name);
+                    if(name!="AssemblyInformationalVersionAttribute"&&name!="AssemblyMetadataAttribute")continue;
+                    var blob=reader.GetBlobReader(attribute.Value);
+                    if(blob.ReadUInt16()!=1)throw new InvalidDataException("Invalid product identity metadata.");
+                    if(name=="AssemblyInformationalVersionAttribute") {
+                        if(informational!=null)throw new InvalidDataException("Duplicate product informational version.");
+                        informational=blob.ReadSerializedString();
+                    } else {
+                        var key=blob.ReadSerializedString();var value=blob.ReadSerializedString();
+                        if(key=="Channel") {
+                            if(channel!=null)throw new InvalidDataException("Duplicate product channel.");
+                            channel=value;
+                        }
+                    }
+                }
+                var parts=(informational??"").Split(new[]{'+'},2);
+                if(parts.Length!=2||string.IsNullOrWhiteSpace(parts[0])||string.IsNullOrWhiteSpace(parts[1])||string.IsNullOrWhiteSpace(channel))throw new InvalidDataException("Core product identity metadata is missing.");
+                return new Dictionary<string,string>{{"Product",parts[0].Trim()},{"Commit",parts[1].Trim()},{"Channel",channel}};
+            }
+        }
         private static string TypeName(MetadataReader reader,TypeDefinitionHandle handle) {
             var type=reader.GetTypeDefinition(handle);
             var parent=type.GetDeclaringType();
@@ -184,6 +216,11 @@ function New-ReleasePayload {
         [Parameter(Mandatory)][string]$SourceCommit,
         [Parameter(Mandatory)][string]$ArtifactVersion,[string[]]$ExpectedPluginAssemblies=@(),[string]$FrameworkOriginPath)
     Initialize-ReleaseToolMetadataReader
+    $productIdentity=[SunEyeVision.ReleaseToolMetadataReader]::ReadProductIdentity((Join-Path $AppPath 'SunEyeVision.Core.dll'))
+    $actualArtifact=$productIdentity['Product']
+    if($productIdentity['Channel'] -cne 'stable'){$actualArtifact+='_'+$productIdentity['Channel']}
+    if($SourceCommit -cne $productIdentity['Commit']){throw 'Payload sourceCommit differs from the Core PE product identity.'}
+    if($ArtifactVersion -cne $actualArtifact){throw 'Payload artifactVersion differs from the Core PE product identity.'}
     $appRoot=(Resolve-Path -LiteralPath $AppPath).Path
     $sdkIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.SDK.dll')).FullName
     $entries=@(Get-ChildItem -LiteralPath $appRoot -Recurse -File | Sort-Object FullName | ForEach-Object {

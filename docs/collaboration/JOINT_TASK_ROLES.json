@@ -3,9 +3,11 @@
   "development": {
     "threadId": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
     "owns": [
-      "实际场景与整体架构设计",
-      "方案取舍、范围与关联影响决策",
-      "验收标准和最终审核",
+      "首席架构师责任：基于实际场景、自研与VM实现证据，独立分析架构合理性",
+      "统一职责、合同、数据所有权、生命周期、状态事务与依赖方向",
+      "同标准比较现有实现、VM参考与合理备选，决定复用/调整/替换及跨模块适配",
+      "同标准论证后形成目标架构和迁移安排，主动整合完整方案并给出明确推荐与取舍依据",
+      "验收标准、实施条件与最终架构一致性审核；独测与用户人工验收各自保留",
       "协作协议与角色登记"
     ],
     "title": "技术总监｜架构与决策"
@@ -42,7 +44,7 @@
   ],
   "policy": "已批准范围内事件驱动推进；交付跟进由交付协调负责，主控不承担日常定时巡检；事实源独占，产品唯一写者",
   "protocol": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
-  "protocolVersion": "2026-10-24/V8-role-accountability",
+  "protocolVersion": "2026-10-24/V8.1-architecture-accountability",
   "adoptionStatus": "V8-issued-awaiting-role-acknowledgements",
   "acknowledgements": "docs/collaboration/PROTOCOL_ACKNOWLEDGEMENTS_20261022.json",
   "independentTesting": {
@@ -316,7 +318,48 @@
     }
   },
   "currentResponsibilitySource": "JOINT_COLLABORATION_PROTOCOL.md 第2节 岗位责任矩阵",
-  "historyPolicy": "Historical titles, task-specific initialMode/firstTask and retired role records are traceability only; V8 governs current responsibilities.",
+  "historyPolicy": "Historical titles, task-specific initialMode/firstTask and retired role records are traceability only; V8.1 governs current responsibilities; V8 adoption history is retained.",
+  "architectureReviewPolicy": {
+    "source": "JOINT_COLLABORATION_PROTOCOL.md 第2.2节",
+    "owner": "技术总监｜架构与决策",
+    "sequence": [
+      "实际场景与质量要求，以及自研/VM实现证据",
+      "独立架构合理性分析与关键缺口核实",
+      "同标准候选比较与风险验证",
+      "明确推荐及目标架构决策",
+      "迁移与交付"
+    ],
+    "requiredBasis": [
+      "职责、合同、数据模型、所有权、生命周期与依赖方向",
+      "正常、失败、取消和关闭路径及跨模块适配",
+      "VM借鉴、独立设计、不采用内容及证据与取舍",
+      "复用、调整、替换范围及各自目标依据",
+      "可观察验收、实施条件、兼容与回退"
+    ],
+    "prohibitions": [
+      "预设自有目标架构再选择性寻找支持证据",
+      "以已有实现或最小改动默认限定架构选择",
+      "以VM成熟或已有投入代替方案比较",
+      "将示意、静态或局部测试冒充整链与架构验证",
+      "把关键架构判断留给实现者或依赖用户反复补漏"
+    ],
+    "scope": "已实现和尚未实现设计采用同一架构标准；成本、时间与迁移风险显式权衡，不自动整体重写",
+    "competencies": [
+      "需求、业务场景与质量要求",
+      "证据诊断、根因与设计/实现缺陷区分",
+      "领域模型、合同、分层、依赖、状态事务和所有权",
+      "同标准方案取舍、复杂度、成本与技术债",
+      "性能、容量、并发、缓存与资源上界",
+      "正确性、可靠性、异常取消和恢复",
+      "安全、信任边界与必要约束",
+      "可维护性、可验证性与可观测性",
+      "兼容、工程发布、迁移、回退和演进",
+      "风险原型、代表业务链、证据沟通与自我纠偏",
+      "合同落地、架构一致性和最终技术质量"
+    ],
+    "currentReview": "Blob五层与共享控件建议须先架构复审再提实施决策；原已批准在途交付继续，不新增批次",
+    "amendmentAdoption": "issued-awaiting-member-acknowledgements; manager records actual receipts without resetting V8 history or pausing in-flight delivery"
+  },
   "commonAccountability": [
     "接单确认输入/交付/验收/目标/检查点及估算依据",
     "缺输入推进其他就绪任务；环境自行排障，跨角色问题交经理",

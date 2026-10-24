@@ -1,6 +1,6 @@
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const {pathToFileURL,fileURLToPath}=require('url');
-const {chromium}=require('C:/Users/houzhongjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+
 const layout=JSON.parse(fs.readFileSync('artifacts/validation/document-library-layout.json'));
 const root=path.resolve(layout.root),snapshot=layout.sourceSnapshotDirectory;
 const pages=['guide-dataflow.html','guide-execution.html'];
@@ -15,9 +15,14 @@ for(const page of pages){
  const graph=html.indexOf('data-visual="'+(page==='guide-dataflow.html'?'data-current':'current')+'"'),analysis=html.indexOf('class="evidence-columns"');
  assert(graph>=0&&analysis>graph,page+' should show the current relationship graph before its analysis');
  assert.equal(html,flat,page+' output and canonical snapshot differ');
+ assert(!html.includes('class="compare-pair"'),page+' repeats boundary navigation cards');
+ assert(html.includes('id="relationship-analysis"'),page+' missing direct comparison analysis');
+ assert(/<details id="relationship-target-design"><summary>/.test(html),page+' target design should be secondary');
+ const ids=[...html.matchAll(/(?<![\w-])id="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length,page+' duplicate anchors');
  for(const m of html.matchAll(/href="([^"]+)"/g)){const href=m[1];if(/^(?:file:|https?:|mailto:|#)/.test(href))continue;const u=new URL(href,pathToFileURL(file));const target=fileURLToPath(new URL(u.pathname,u));assert(fs.existsSync(target),page+' missing local link '+href);}
 }
-(async()=>{
+if(process.argv.includes('--static-only')){const out={pages,staticChecks:'passed',singleNav:true,currentGraphFirst:true,directAnalysis:true,targetDesignCollapsed:true,snapshotPairsConsistent:true,visualReview:false};fs.writeFileSync('artifacts/validation/relationship-guide-static-validation.json',JSON.stringify(out,null,2));console.log(JSON.stringify(out));}else (async()=>{
+ const {chromium}=require('C:/Users/houzhongjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
  const browser=await chromium.launch({headless:true,channel:'msedge'}),errors=[],remote=[];
  try{const p=await browser.newPage({viewport:{width:1366,height:900}});p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url())});
   for(const page of pages){const file=path.join(root,layout.files[page]),url=pathToFileURL(file).href;

@@ -95,6 +95,7 @@ module.exports=function(){
   if(fs.existsSync('docs/collaboration/SCRIPT_S2_DESIGN_20261023.json'))require('./build-script-s2-design.cjs')();
   if(fs.existsSync('docs/collaboration/SCRIPT_S3_DESIGN_20261023.json'))require('./build-script-s3-design.cjs')();
   if(fs.existsSync('docs/collaboration/SCRIPT_POST_S3_REVIEW_20261023.json'))require('./build-script-post-s3-panorama.cjs')();
+ if(fs.existsSync('artifacts/validation/tool-framework-contract/live-implementation-status.json'))require('./tool-framework-contract/build-live-implementation-status.cjs')({o06Only:true});
  require('./build-document-search-index.cjs')();
  require('./sync-document-search-home.cjs')();
   require('./normalize-document-home.cjs')();

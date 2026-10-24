@@ -26,7 +26,11 @@ assert(!fs.readFileSync('artifacts/validation/document-search-runtime.js','utf8'
  try{const page=await browser.newPage({viewport:{width:1366,height:900}});page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url())});
   await page.goto(pathToFileURL(home).href);
   for(const width of [390,768,1366]){await page.setViewportSize({width,height:900});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'home overflow at '+width);}
-  const input=page.locator('#document-search-input'),results=page.locator('#document-search-results a');
+   const input=page.locator('#document-search-input'),results=page.locator('#document-search-results a');
+   assert(await page.locator('#reading-task-entry').isVisible(),'reading-task shortcuts missing');
+   const taskLinks=await page.locator('#reading-task-entry a').evaluateAll(es=>es.map(a=>a.href));
+   assert(taskLinks.some(h=>h.includes('optimization-o06.html#five-directions-overview')),'five-direction overview shortcut missing');
+   for(const q of ['五方向总览','整体进展','审核方案','实际效果','技术依据']){await input.fill(q);const aliasLinks=await results.evaluateAll(es=>es.map(a=>a.href));assert(aliasLinks.some(h=>h.includes('optimization-o06.html#five-directions-overview')),'home-task search alias missed O06 for '+q);}
   await input.fill('引用管理');let links=await results.evaluateAll(es=>es.map(a=>({text:a.textContent,href:a.href})));assert(links.some(x=>x.href.includes('tool-script.html#script-reference-three-way')));assert(links.some(x=>x.href.includes('optimization-o01.html#script-reference-three-way')));
   await input.fill('最终推荐');links=await results.evaluateAll(es=>es.map(a=>a.href));assert(links.some(h=>h.includes('tool-script.html#script-final-decision')));
   await input.fill('首次补全');const visibleText=await page.locator('#document-search-results').innerText();assert(visibleText.includes('首次补全'));links=await results.evaluateAll(es=>es.map(a=>a.href));assert(links.some(h=>h.includes('tool-script.html')));
@@ -35,10 +39,10 @@ assert(!fs.readFileSync('artifacts/validation/document-search-runtime.js','utf8'
    await input.fill('动态输入输出');const dynamicText=await page.locator('#document-search-results').innerText();assert(dynamicText.includes('动态输入输出'));links=await results.evaluateAll(es=>es.map(a=>a.href));assert(links.some(h=>h.includes('#script-s2-design')));
   for(const q of ['脚本第三批','停止','资源释放']){await input.fill(q);links=await results.evaluateAll(es=>es.map(a=>a.href));const tool=links.some(h=>h.includes('tool-script.html#script-s3-design')),o01=links.some(h=>h.includes('optimization-o01.html#script-s3-design'));if(q==='停止')assert(tool||o01,'S3 search missing broad stop entry');else assert(tool&&o01,'S3 exact search missing one of two entries '+q);}
   await input.fill('脚本 编译');const multi=await page.locator('#document-search-results').innerText();assert(multi.includes('脚本')&&multi.includes('编译'));
-  await input.fill('不存在的测试词987654');assert.match(await page.locator('#document-search-status').innerText(),/没有找到/);assert.equal(await results.count(),0);
+   await input.fill('不存在的测试词987654');assert.match(await page.locator('#document-search-status').innerText(),/没有找到/);assert.equal(await results.count(),0);assert(await page.locator('.search-recommendations a').count()>=3,'empty search has no recommended entries');
   await page.keyboard.press('Control+k');assert.equal(await page.evaluate(()=>document.activeElement.id),'document-search-input');await input.fill('脚本');await input.press('ArrowDown');assert.equal(await page.evaluate(()=>document.activeElement.tagName),'A');await page.locator('#document-search-clear').click();assert.equal(await input.inputValue(),'');assert.equal(await results.count(),0);
   assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
-   const output={records:manifest.records,pages:manifest.pages,indexBytes:manifest.bytes,queries:['引用管理','最终推荐','首次补全','脚本第二批','动态输入输出','脚本第三批','停止','资源释放','脚本 编译','无结果'],keyboard:true,clear:true,widths:[390,768,1366],horizontalOverflow:false,remoteRequests:remote,pageErrors:errors,canonicalSourceOnly:true,offline:true,thirdParty:false};
+    const output={records:manifest.records,pages:manifest.pages,indexBytes:manifest.bytes,queries:['五方向总览','整体进展','审核方案','实际效果','技术依据','引用管理','最终推荐','首次补全','脚本第二批','动态输入输出','脚本第三批','停止','资源释放','脚本 编译','无结果推荐'],keyboard:true,clear:true,widths:[390,768,1366],horizontalOverflow:false,remoteRequests:remote,pageErrors:errors,canonicalSourceOnly:true,offline:true,thirdParty:false};
   fs.writeFileSync('artifacts/validation/document-search-validation.json',JSON.stringify(output,null,2)+'\n');console.log(JSON.stringify(output));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

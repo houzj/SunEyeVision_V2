@@ -1,5 +1,5 @@
 """Node-associated control, preview, analysis and rendering review. HTML only."""
-import json,os
+import json,os,runpy
 from pathlib import Path
 from html import escape as E
 from urllib.parse import quote
@@ -19,6 +19,9 @@ def render(root,page,ref,table,flow):
       ('版本和维护','合同、模板、主题和控件行为有同源兼容约束；记录消费者/替代关系/验收覆盖。','生成依赖和使用矩阵作为文档事实，不凭文件数量宣布公共能力完整。','重命名不改变稳定字段身份；重大行为改变先核所有关联消费者。'),
       ('质量及可访问性','样式与交互分开，主题/DPI/键盘/诊断、性能与资源预算分别验。','保留WPF原生布局/表格能力；只在证据支持时替换后端或引入复杂缓存。','同场景、同能力、同发布身份实测；复用不等于已有行为全部PASS。')]))
     parts.append(f'<h3 id="br-blob-controls">Blob实际控件使用矩阵：{inventory["count"]}项静态可达控件/基类与宿主</h3>')
+    compared=runpy.run_path(str(root/'artifacts/analysis/review_blob_controls_algorithm_structure_20261024.py'))
+    parts.append(compared['render']())
+    parts.append('<details data-blob-self-inventory><summary>本方31项静态类型明细（用于追溯，不替代VM对照）</summary>')
     parts.append('<p>从Blob调试页与Blob数据分析页出发，递归核XAML实例、代码new、已知自研基类及Generic默认模板；另明确纳入主视口、图像预览及默认/专业壳的关联候选。<b>不是31项全部同时实例化，也不是整个公共库总数。</b>反射、外部主题覆盖和动态factory仍需运行验证；静态使用图不能证明运行闭包或性能。</p>')
     rows=[]
     for c in inventory['controls']:
@@ -40,6 +43,7 @@ def render(root,page,ref,table,flow):
     parts.append(table(['实际类型','使用路径','处置候选与依据（服从整体架构）','源码'],rows))
     parts.append('<details><summary>原生WPF基元、非视觉数据与静态边界</summary><p>原生元素：'+E('、'.join(inventory['nativeWpfElements']))+'</p><p>值/排序声明，不算控件：'+E('、'.join(inventory['nonVisualValueTags']))+'</p><p>WPF布局、输入、表格原语按宿主合同使用，不能因“全部控件分析”就重写系统控件。静态未解析自定义标签：'+E('、'.join(inventory['unresolvedCustomTags']) or '本次限定规则内未发现；不代表动态运行已验证')+'</p></details>')
 
+    parts.append('</details>')
     parts.append('<h3 id="br-region-result-rendering">区域编辑与结果渲染：两条机制分别审，围绕同一节点/场景闭合</h3>')
     parts.append(flow([('区域编辑','字段声明 → 绘制/继承 → 手势/命中/坐标 → 私有草稿'),('编辑发布','数值回填/校验 → 一次确认或取消 → 正式配置版本'),('结果显示','算法输出 → 同次快照 → 图像/轮廓/文字/只读选择'),('作用域退役','旧任务拒收 → 编辑层/显示层各自退出 → reader最后释放')]))
     parts.append(table(['能力','当前实际机制/历史优化','架构及实现复核','推荐与验证'],[

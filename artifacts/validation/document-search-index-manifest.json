@@ -1,10 +1,11 @@
 {
   "version": 1,
-  "records": 702,
-  "pages": 134,
-  "bytes": 417850,
+  "records": 730,
+  "pages": 135,
+  "bytes": 438320,
   "topics": [
     "现状分析",
+    "交付进度",
     "目标架构",
     "框架设计",
     "SDK设计",
@@ -13,7 +14,7 @@
     "关系图解"
   ],
   "source": "Canonical current topic pages; short visible headings/excerpts only. Scripts, styles, navigation, details, tables, history, audits and snapshots excluded.",
-  "canonicalPages": 702,
+  "canonicalPages": 730,
   "legacyFallbacks": [],
   "remoteFetch": false,
   "thirdParty": false

@@ -5,9 +5,11 @@ module.exports=function(){
  let html=fs.readFileSync(file,'utf8');
  html=html.replace(/<section class="document-search" id="document-search"[\s\S]*?<\/section>/g,'');
  html=html.replace(/<style>\.sr-only\{[\s\S]*?<\/style>/g,'');
+ const taskMarker=/(<section id="reading-task-entry"[^>]*>[\s\S]*?<\/section>)/;
  const marker='</span></div><section id="interface-entry">';
- if(html.includes(marker))html=html.replace(marker,'</span></div>'+require('./document-search-home-section.cjs')()+'<section id="interface-entry">');
- else if(!html.includes('id="document-search"'))throw new Error('Cannot find homepage hero insertion point');
+ if(taskMarker.test(html))html=html.replace(taskMarker,(_,section)=>section+require('./document-search-home-section.cjs')());
+ else if(html.includes(marker))html=html.replace(marker,'</span></div>'+require('./document-search-home-section.cjs')()+'<section id="interface-entry">');
+ else if(!html.includes('id="document-search"'))throw new Error('Cannot find homepage task or hero insertion point');
  html=html.replace(/<script src="(?:\.\.\/)?公共资源\/document-search-index\.js"><\/script>/g,'').replace(/<script src="(?:\.\.\/)?公共资源\/document-search\.js"><\/script>/g,'');
  const scripts='<script src="公共资源/document-search-index.js"></script><script src="公共资源/document-search.js"></script>';
  const siteScript='<script src="公共资源/architecture-doc-site.js"></script>';

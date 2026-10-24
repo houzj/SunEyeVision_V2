@@ -1,0 +1,144 @@
+{
+  "at": "2026-10-24T22:01:59.645436+08:00",
+  "reviewSHA": "30F8D805B0325C795666F5E6A1F77443F7E96E542EB0CD6E76FA63BD88C373BB",
+  "fragmentSHA": "C404D86F5E306554E62C72F6D7F668A93BA744ADE6F22BF94D5F5D1D7A8443DC",
+  "checks": [
+    {
+      "kind": "selfEvidence",
+      "path": "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/ConfigSetting.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/ParamBindingBase.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.Contracts/Editing.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.Contracts/ToolContracts.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.Wpf/ParameterEditorControl.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/LabeledControl.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/Icons/ToolIcon.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/ColorPicker/ColorSelector.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/ColorPicker/ColorPicker.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/NumericUpDown.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/RangeSlider.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "tools/SunEyeVision.BlobAnalysis/BlobOutputContract.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "selfEvidence",
+      "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisResults.cs",
+      "shaMatches": true
+    },
+    {
+      "kind": "received",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\delivery.json",
+      "shaMatches": true
+    },
+    {
+      "kind": "received",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\roi-input-bridge-review.json",
+      "shaMatches": true
+    },
+    {
+      "kind": "received",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\coverage-boundary.json",
+      "shaMatches": true
+    },
+    {
+      "kind": "received",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\source-findings.json",
+      "shaMatches": true
+    },
+    {
+      "kind": "received",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\root-findings.json",
+      "shaMatches": true
+    },
+    {
+      "kind": "received",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\library-layer-inventory.json",
+      "shaMatches": true
+    },
+    {
+      "kind": "received",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\blob-group-links.json",
+      "shaMatches": true
+    },
+    {
+      "kind": "received",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\template-map.json",
+      "shaMatches": true
+    }
+  ],
+  "decisions": 10,
+  "directorDisposition": "主控集中复核B01-B07/依赖边界后确认10项处置不变，准予经理提前受控合并原O06，仅文档。",
+  "directorSupplement": "输入订阅/显示选择/ROI字节分开；整体ROI/标量分开；数值手势同桥；异步拖动门及本方会话运行身份；无XML DeIniters不等于无清理，关窗不等于回滚。",
+  "productImplementationApproved": false,
+  "wholeAccepted": false,
+  "runtimeExecuted": false,
+  "docApplication": "待经理应用后另出receipt，不冒已合并"
+}

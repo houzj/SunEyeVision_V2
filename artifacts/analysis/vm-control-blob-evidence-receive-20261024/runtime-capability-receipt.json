@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-24T21:49:22.493277+08:00",
+  "inputPath": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\runtime\\finite-review.json",
+  "sha256": "43ED15BD3A1ADD7CDE6A4126F92CCA92331277B1C0D4396AE83A14C2EA9150A9",
+  "snapshot": "artifacts\\analysis\\vm-control-blob-evidence-receive-20261024\\runtime-capability-snapshot-2141.json",
+  "actualCheckTime": "2026-10-24T21:41:00+08:00",
+  "runtimeExecuted": false,
+  "primaryBlocker": "本会话没有获支持的原VM桌面控制路径，native禁用不能用终端/UIA绕过",
+  "owners": {
+    "existingCapabilityVerification": "VM实机取证岗",
+    "versionInstanceAndSampleCoordination": "VM逆向负责人",
+    "supportedFacilityAndExclusiveWindowCoordination": "交付经理"
+  },
+  "candidateImage": "examples/assets/circle-sample.bmp",
+  "candidateImageSHA": "690B17333CE8A9F6FE8961C90D7F21FBD6472DBF0F7CC3443FC89DA43BB33ABA",
+  "sampleQualification": "已盘点候选，尚非原VM当次运行样本；有支持的控制能力后可按原授权使用自有非设备样本/新建可丢弃方案，不重复要授权",
+  "noCallbackQuestion": "无现成安全场景时保持未知，不新增故障注入设施",
+  "readyEstimate": null,
+  "investigationDeadline": "2026-10-24T21:49:00+08:00",
+  "nextReestimate": "2026-10-24T22:04:00+08:00",
+  "doesNotBlockVariableSaveOrRelease": true
+}

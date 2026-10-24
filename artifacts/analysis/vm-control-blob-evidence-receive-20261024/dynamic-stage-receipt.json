@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "changes": [
+    {
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o06.html",
+      "proposal": "artifacts\\analysis\\vm-control-blob-evidence-receive-20261024\\dynamic-stage-0.html",
+      "beforeSHA": "5FDA4BF4CD7E13DB5657854459FE5BFDAB96F36777ACF8EEA7BE3A96540D69FA",
+      "afterSHA": "A5752EF598583D6F3370D35534CF52C039EF6C2BAA7BEBF085B727B3F69F296D",
+      "protectedPrefixSHA": "1F2D307266A965B5E83FFE7C9EAACD2DD8CC91AD046329EDE63EDB5ADBDBD06B",
+      "protectedSuffixSHA": "7BDD5EA91A84E28A182CD29A67FFB8284FAF264E4121E37E008F128B32FD2DCE"
+    },
+    {
+      "path": "artifacts\\validation\\document-library-source-snapshots\\optimization-o06.html",
+      "proposal": "artifacts\\analysis\\vm-control-blob-evidence-receive-20261024\\dynamic-stage-1.html",
+      "beforeSHA": "6FB37A9765991AB1F7E2F7F4D7B2D032E357E43DD24DD5158F8FC1E2CDC07BF7",
+      "afterSHA": "0EA22DDCA4D9EB61D40964E6ABB979B64453EB63AA6845F99652F67BF4DCFAF7",
+      "protectedPrefixSHA": "096E32724E7A9A9A54318B7CE374AEAE8A151BA2B2766E9D02B2598515830E3C",
+      "protectedSuffixSHA": "7C7ABC9C7F1B5CFAEBD434D4C09E778852863A861CB2BB72868424FA5564316F"
+    }
+  ],
+  "outsideDynamicBytesPreserved": true,
+  "newGovernanceLinksResolve": true,
+  "canonicalIdsUnique": 626,
+  "productChanges": 0,
+  "productRuns": 0,
+  "browserVisual": "NOT_VERIFIED",
+  "qaCorrection": "首次验证使用read_text换行归一化及正则误匹配data-id，造成保护区和重复ID假失败；改按原始字节解码及HTMLParser，实际文件未再次修改。"
+}

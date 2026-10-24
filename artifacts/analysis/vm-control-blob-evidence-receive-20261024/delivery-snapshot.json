@@ -1,0 +1,290 @@
+{
+  "schemaVersion": 1,
+  "parentTaskId": "O06",
+  "createdAt": "2026-10-24T21:52:33.0798839+08:00",
+  "status": "bounded-static-package-delivered-runtime-unverified",
+  "reports": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\task.json",
+      "sha256": "521FAA7228D6405A5953EA267AC49F2474A461FBE53564260DCE7CC5CDEC62AB"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\decision-questions.json",
+      "sha256": "BFA903444717318992D2937F0DC511C952D997EB2A1E67FAD3178CB27E4066C1"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\library-layer-inventory.json",
+      "sha256": "E64556334A5D97A645B3AC5160AADBEE533D84165FA525D4E1BA5A59DBADEBEF"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\root-findings.json",
+      "sha256": "852D55134360088FE2EB12864A4A95E4305F464C46BEA1A8BD75DACEAB788021"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\blob-group-links.json",
+      "sha256": "DF5B9B7AF06470823AAD5B27BD713825429DA8B799482ED6F811CB8CA8F71E46"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\template-map.json",
+      "sha256": "E8038CE3AC0A8D196A3F203E896E530938F6FDCF32BB3EB81805E778E0281470"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\xmlui-provenance.json",
+      "sha256": "8F44C758AA76204E06C1836233461ADD2E9EAA480F0BA9FAAA54E2C82467432B"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-provenance.json",
+      "sha256": "991A603A1E64915F844AE77EEC4E241893DB83C1443E285CBE27F5EE70F386E4"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\enumeration-provenance.json",
+      "sha256": "2946BAF57BEB77537C4DB1306FC788C8D6BB1E8DC12138370817E15200A73FAB"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\roi-input-bridge-review.json",
+      "sha256": "1B0425C2AAECEC72A7672A9782189D8353320DE3156F7E1A9388A700A261B70F"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\coverage-boundary.json",
+      "sha256": "785723398B50D97E96186CFBA41137F6ED5DD6DBA2F4C1251431C76724838ED4"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\integrated-verification.json",
+      "sha256": "C4751302C8DE384124A0ABDD6F8BEC75F29518E78DFE8B722F51C575933FEEEA"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\source-findings.json",
+      "sha256": "BA52428728B7C3254D65125FA49E096E417643D61DD44B7398E036C989673E8F"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\verification.json",
+      "sha256": "674872545A945C1E20D474392FE097ED7DE1E8FDD8DC835AFAFAF8AEAB3CA458"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\decompilation-manifest.json",
+      "sha256": "AD3D908EA6D54448CA4E88C42D11ADC558B6D12F0FAF1FADFAFADADA4882B081"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\decompilation-additional-manifest.json",
+      "sha256": "FDA6FF6E87889F9672A6D1CE83F0D4AC7B0F8A946B3A622C51F055654410BFEC"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\decompilation-ownership-manifest.json",
+      "sha256": "B1C4C13A3D857D0317EE5EC05E301AEE8219290D0F3D686C30F5476C01BE1697"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\runtime\\finite-review.json",
+      "sha256": "5C9D184F7A8878F1DB5548AF6649C445DFD92EC5CD10A6D36A06481876DC8A8E"
+    }
+  ],
+  "staticChain": [
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "source:F01",
+        "source:F02"
+      ],
+      "name": "Double-click and guards"
+    },
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "source:F03",
+        "source:F04",
+        "root:coverage-boundary"
+      ],
+      "name": "Ordinary/extension window selection"
+    },
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "source:F05",
+        "root:blob-group-links"
+      ],
+      "name": "XML root and shared groups"
+    },
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "root:root-findings",
+        "root:template-map",
+        "source:F18"
+      ],
+      "name": "DisplayType/template and control layering"
+    },
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "bridge:B01",
+        "bridge:B02"
+      ],
+      "name": "Input candidates and selected source text"
+    },
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "bridge:B03",
+        "bridge:B04"
+      ],
+      "name": "ROI draw/inherit and subscription"
+    },
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "bridge:B05",
+        "bridge:B06"
+      ],
+      "name": "Numeric/drawing writes and result backfill"
+    },
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "source:F06",
+        "source:F07",
+        "source:F10",
+        "source:F11"
+      ],
+      "name": "Single execution and result callback"
+    },
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "source:F08",
+        "source:F09"
+      ],
+      "name": "Continuous execution and stop"
+    },
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "source:F12"
+      ],
+      "name": "Confirm/live setter/close route"
+    },
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "source:F13",
+        "source:F14",
+        "source:F15",
+        "bridge:B07"
+      ],
+      "name": "Window close/unsubscribe/drawing finish"
+    },
+    {
+      "completionMeaning": "Selected static path only; not full branch/native or runtime equivalence",
+      "runtimeObserved": false,
+      "staticPathLocated": true,
+      "refs": [
+        "source:F16",
+        "source:F17"
+      ],
+      "name": "Borrowed view ownership and final cleanup boundary"
+    }
+  ],
+  "coverage": "13 selected core libraries plus targeted caller and resource evidence. Not all VM control libraries, complete dependency closure, all tools, or full native algorithms.",
+  "integrity": "115 path/hash/range/recorded-anchor reference checks and 13 selected binary hashes passed. These are integrity checks, not runtime tests.",
+  "remaining": [
+    {
+      "question": "Actually loaded tool Control assembly and parameter-window type",
+      "impact": "May change concrete window/ROI assembly branch",
+      "evidence": "Static optional branch known; Blob disk directory lacks Control DLL",
+      "status": "runtime-unobserved"
+    },
+    {
+      "question": "Continuous stop/close when callback is absent or root remains busy",
+      "impact": "No deadlock or bounded-stop claim",
+      "evidence": "Guard/wait/cancel order recovered",
+      "status": "runtime-unobserved-no-safe-scenario"
+    },
+    {
+      "question": "CloseWindowCommand focus/routing target",
+      "impact": "Cannot treat VM confirm as private draft commit",
+      "evidence": "Execute(null,null), live setters, no explicit Save/Commit in confirm path",
+      "status": "runtime-unobserved"
+    },
+    {
+      "question": "Actual ROI gesture/edit/backfill and late event interleaving",
+      "impact": "No UI responsiveness/timing/numeric performance claim",
+      "evidence": "Static subscription/byte writes/result gates recovered",
+      "status": "runtime-unobserved"
+    },
+    {
+      "question": "Native final reader, subscription and algorithm semantics",
+      "impact": "Retrieve only if tied to a specific remaining architecture decision",
+      "evidence": "Managed bridge endpoints located",
+      "status": "outside-selected-native-boundary"
+    },
+    {
+      "question": "Excluded theme/localization/styles/WinForms and dynamic extension coverage",
+      "impact": "No complete-library or pixel-equivalence claim",
+      "evidence": "coverage-boundary.json",
+      "status": "explicitly-limited"
+    }
+  ],
+  "decisionCautions": [
+    "VM live setters plus confirm-to-Close are not evidence for a private draft model.",
+    "ModuleParam.Data shared roots and template caches have lifetimes beyond a single window; do not copy them by default.",
+    "WPF UI Run uses ModuleManager.SelfRun, not the SDK Blob wrapper SyncSelfRun.",
+    "IGetROI serialization and displayed-image selection do not replace input/ROI inheritance subscriptions.",
+    "Architecture choices remain with the technical director; source matching alone does not determine delete/replace/rebuild/reuse."
+  ],
+  "resourceResponsibility": {
+    "supportedDesktop": {
+      "owner": "交付经理｜协调与收口",
+      "action": "Coordinate a supported desktop observation/control facility and an exclusively owned window; do not bypass disabled native controls"
+    },
+    "identityAndSample": {
+      "owner": "逆向负责人｜VM取证统筹",
+      "action": "Fix original installed/loaded identity, owned instance and non-device sample provenance/SHA/applicability; select within existing authorized finite scope; create disposable empty solution after supported control is available"
+    },
+    "capabilityAndObservation": {
+      "owner": "验证工程师｜VM实机取证",
+      "action": "Verify supported capability and perform only bounded original-VM observations after readiness; no unsupported UIA fallback"
+    },
+    "readyWhen": [
+      "Supported desktop capability",
+      "Exclusively owned original VM instance and verified identity",
+      "Suitable selected non-device sample with hash",
+      "Disposable solution, which may be newly created"
+    ],
+    "noExtraHumanApprovalForExistingScope": true,
+    "license": "unknown; installed files do not establish entitlement",
+    "noCallbackScenario": "No existing safe scenario; retain unknown. Do not create a fault-injection facility for R2.",
+    "runtimeStartEstimate": null,
+    "reestimate": "At 2026-10-24T22:04:00+08:00 or on meaningful capability/resource change; if still unavailable, no runtime start promised"
+  },
+  "parentProgress": {
+    "newAcceptedItems": 0,
+    "parentClosed": false,
+    "parentPercentage": "Unchanged; maintained by delivery manager in the existing O06/47-item ledger",
+    "internalSegmentsNotNewDenominator": true
+  },
+  "productChanged": false,
+  "originalVmExecuted": false,
+  "toolPluginsTouched": false,
+  "allVmRecoveryOpened": false,
+  "automaticMergeOrPush": false
+}

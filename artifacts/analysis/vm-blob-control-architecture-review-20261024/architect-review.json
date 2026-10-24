@@ -1,0 +1,810 @@
+{
+  "role": "技术总监｜架构与决策",
+  "status": "bounded-static-architecture-review; whole evidence/runtime verification pending, not product implementation approval",
+  "requirements": [
+    "工具声明业务字段与能力，不持有全局UI",
+    "多个消费者使用同一运行结果与身份",
+    "本地/继承/数值编辑同一草稿，明确发布/取消",
+    "窗口、视口、运行、资源各有所有者",
+    "HALCON本轮，未来后端可替换",
+    "多工具可复用但不强制自动生成全部页面"
+  ],
+  "alternatives": [
+    {
+      "option": "在原Manager和页面上补补丁",
+      "assessment": "迁移成本低，但保留错误的视口/事务权限与多权威类型；退回"
+    },
+    {
+      "option": "整套复制VM XML/operation/控件体系",
+      "assessment": "可减少部分手工页面，但继承VM直接写值/反射和静态缓存，未证明符合本方事务与资源需求；不采用整套复制"
+    },
+    {
+      "option": "按统一字段/会话/运行/结果合同重做公共接入与协调，视觉及独立原语逐项复用",
+      "assessment": "推荐；明确删除旧公开协调协议和全局清理路径，接受真实迁移成本；接口沿现有工程演进，不另起平行体系"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D01",
+      "action": "删除旧路径",
+      "object": "Blob页面 Cleanup 中清共享交互层/主结果层，以及页面直接接主视口与旁路执行的公开接线",
+      "evidenceAndCause": "本方Cleanup直接调用Manager.ClearMainOverlay及主ResultRenderLayer.Clear；VM F04/F13–17分开窗口、借用视口、主视图和模块寿命。",
+      "replacementAndReason": "窗口退出只能退还自己的编辑作用域，不能清共享结果；由宿主维护编辑层租约与执行入口。删除这些调用及其工具侧权限。",
+      "acceptance": "Blob关窗不清其他节点/在途结果；运行仍由同一准入快照链；关闭/切节点/异常与迟到回调独验。"
+    },
+    {
+      "id": "D02",
+      "action": "整体替换并退役",
+      "object": "RoiEditorManagerControl作为工具层公开绘图协调器的旧合同",
+      "evidenceAndCause": "本方Manager持ImageControl/Canvas/renderer/窗体事件，固定两组RoiEditor并可Children.Clear；VM ROOT-F04/F06和F16表明字段模型、控件、视图桥可分层。",
+      "replacementAndReason": "现有公共类及SetMainImageControl/ClearMainOverlay模式不作为目标接口延续。迁移消费者后删除旧公开协调入口；交互仲裁/场景所有权归宿主，局部视觉组合可提取内部部件，不能让旧Manager继续拥有全局视口。",
+      "acceptance": "所有调用者先有映射及过渡退出条件；工具只声明区域字段/能力，不能获得全局Canvas；不在本轮擅自改全部消费者。"
+    },
+    {
+      "id": "R01",
+      "action": "整体重做职责组织",
+      "object": "RoiEditorControl中的编辑状态、手势、订阅与画布回填组织",
+      "evidenceAndCause": "本方公开OverlayCanvas/SetMainImageControl/LoadImage/ProcessMouse等，控件同时持字段集合与手势状态；VM字段节点→模板→ROI桥有直接源码。",
+      "replacementAndReason": "以字段会话组织本地/继承/数值编辑，由宿主授予交互作用域，模型/手势/视觉分开。已有几何计算可逐函数验证后复用，不保留整类作为未审默认。",
+      "acceptance": "绘制/继承/参数拼装切换、旋转/取消/数值回填同一草稿；切换工具后旧会话不能操作新场景。"
+    },
+    {
+      "id": "R02",
+      "action": "重做公共字段合同及接入",
+      "object": "ConfigSetting/ParamBindingBase/ParamBinding/来源选择的旧字符串接线",
+      "evidenceAndCause": "ConfigSetting直接维护BindingSource/AvailableDataSources及__GlobalVars__名称重写；已有Contracts具稳定Port/OutputReference/编译绑定与草稿，但仅覆盖其已证边界。",
+      "replacementAndReason": "控件消费同一字段和绑定计划，不自行成为类型、数量、来源或重命名权威。淘汰旧字符串协议作为公共合同；映射旧数据由适配层完成，不能再造平行类型系统。",
+      "acceptance": "重命名/作用域/数量/非法常量/失效引用/取消/保存均从同一合同判定；现有基础合同不能冒已覆盖ROI完整手势。"
+    },
+    {
+      "id": "R03",
+      "action": "重做运行与可选UI装配边界",
+      "object": "ToolDebugControlBase/工具IToolEditorFactory到执行、视口和保存的整套接入",
+      "evidenceAndCause": "Blob工具同时实现运行接口与FrameworkElement工厂；专业页ExecuteWithLiveContext及主图接线。VM F03–05存在公共/扩展视图选择，不能据其DLL结构推导我们必须照拆。",
+      "replacementAndReason": "运行合同、编辑服务和可选专业视图分别注册/适配，优先扩现有Contracts/Runtime/Plugin.Wpf。旧基类混合职责合同退役，不以给旧基类继续加字段解决；是否拆物理程序集以无UI依赖验证决定。",
+      "acceptance": "缺少UI扩展仍能执行；UI退出不影响运行实例；发布依赖沿既有规则，不能用开发目录DLL冒正式来源。"
+    },
+    {
+      "id": "R04",
+      "action": "重做数据分析消费者通道",
+      "object": "BlobDataAnalysisControl的裸ToolResults/图元高亮通道",
+      "evidenceAndCause": "已有分析表持BlobResult裸对象并构造无Run身份高亮，结果合同已有Field/Element/Run及reader。VM输出索引映射只能证明VM字段对应，不能证明跨帧稳定身份。",
+      "replacementAndReason": "表格/树/高亮改为同一只读结果会话的投影；可保留业务列与表格视觉。数据请求/选择发稳定地址，不由控件掌握native寿命。",
+      "acceptance": "旧行、迟到回调、排序/分页、0结果/失败、关窗最后reader及图形联动同源验证。"
+    },
+    {
+      "id": "K01",
+      "action": "复用有限视觉原语",
+      "object": "LabeledControl、ToolIcon、ToggleSwitch、颜色部件及纯ItemsSource编辑视图",
+      "evidenceAndCause": "已读标签/图标/颜色组件及19行ItemsSource编辑壳，职责集中在WPF布局、绘制、局部输入；未见其拥有工作流/全局主窗。",
+      "replacementAndReason": "保留这些局部表现能力的理由是职责单一与实际输入合同匹配，不是已经写了。样式资源沿既有已确认VM规格；业务协调和状态不随视觉部件保留。",
+      "acceptance": "复用不等于已验DPI/主题/所有手势。NumericUpDown/RangeSlider的double API仅在浮点/可表示区间使用，不能因此充当完整Int64字段编辑器。"
+    },
+    {
+      "id": "K02",
+      "action": "复用经证实的数据基础",
+      "object": "中立声明、不可变输出、稳定字段与reader/owner机制",
+      "evidenceAndCause": "本方Contracts、BlobOutputContract及已有T01/T02有限独验证据符合运行数据与显示分离需求。",
+      "replacementAndReason": "按其已证能力复用，并核消费者和图像/区域桥缺口；不因新代码较新就自动优先，也不为对齐VM重造一套接口。",
+      "acceptance": "原有限PASS保留；新显示/编辑适配仍须全链验证，不能用1992断言等数量代完整用户链。"
+    },
+    {
+      "id": "K03",
+      "action": "复用已确认规格与有边界算法实现",
+      "object": "VM区域样式规格、HALCON算子路径、已有批量渲染原语",
+      "evidenceAndCause": "用户已要求HALCON本轮使用且未来保留迁移；原VM样式证据和已有批量路径各有来源。",
+      "replacementAndReason": "复用规格及职责正确的算法/渲染函数，不默认保留当前调度/缓存/交互组织。性能与资源预算另验；HALCON类型只留在专用实现与适配边界。",
+      "acceptance": "不重画自拟VM样式；不强求算法参数/特征数值相同，不冒OpenCV可立即替换。"
+    },
+    {
+      "id": "X01",
+      "action": "明确不采用VM做法",
+      "object": "普通字段直接写模块+确认路由关闭、共享静态模板缓存/程序集保留与全局UI引用",
+      "evidenceAndCause": "VM F12证明确定链没有统一Commit，ROOT-F08证明共享模板/ExternAssembly缓存；F08–09关闭和连续循环存在未测边界。",
+      "replacementAndReason": "只借鉴可证机制，不复制这些生命周期与写入策略。我们的配置发布、可卸载边界和编辑作用域由实际需求决定；不能声称VM当前有本方私有草稿事务。",
+      "acceptance": "实机验证VM路由和关闭时序；不以未知VM缺陷作为我们方案必然更优的证据。"
+    }
+  ],
+  "correction": "此前将Manager描述为直接运行调度者过宽；本方实际执行在Blob页面ExecuteTool/ExecuteWithLiveContext，Manager主要路由输入/窗体事件与共享overlay。删除重构决定依据实际权限，不依据错误概括。",
+  "vmKnown": [
+    {
+      "id": "F01",
+      "kind": "source-confirmed",
+      "claim": "普通模块节点 MouseDoubleClick 绑定 DiagramArea.ConfigParamsCommand；拒绝 IsForbidden 或 IsLoadFailed 后以 ObjectEventArgs.Param 传递装饰器，ProcedureConfigControl 解包 IDecorate.DecorateSource。CanOpenConfigurationInterface 检查 ConfigAvailable 与用户权限，再返回 ConfigCheck。",
+      "evidence": [
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05"
+      ]
+    },
+    {
+      "id": "F02",
+      "kind": "source-confirmed",
+      "claim": "OpenParams 先 Close 旧 curTabControlBase；OpenParamsTabControl 若引用仍非空直接返回。检查 ModuleDir 与模块 xml、AlgorithmTab.xml、Display.xml 三资源，缺失显示提示并退出；非全局模块注册 ModifyConfig undo 根操作。此顺序不能被概括为任意重入都创建新窗。",
+      "evidence": [
+        "E04",
+        "E06",
+        "E07"
+      ]
+    },
+    {
+      "id": "F03",
+      "kind": "source-confirmed-with-conditional-runtime-selection",
+      "claim": "GetExternTabWin 先在已加载程序集找 ModuleTypeName+Control，再检查 Params.XmlPath 同目录同名 Control.dll；找到程序集就取第一个 TabWinBase 派生类型创建实例。返回 null 才 new ParamsTabControlBase。当前 Blob 目录 11 文件无 Control.dll，支持公共窗候选；尚未观察目标进程已加载程序集，不能把缺文件直接等同本次实机必走公共窗。",
+      "evidence": [
+        "E06",
+        "E08"
+      ],
+      "observation": "blobDirectoryInventory"
+    },
+    {
+      "id": "F04",
+      "kind": "source-confirmed",
+      "claim": "开窗将 ROIPartUI、IsEditState、vmModule.Params 赋给窗口；Owner 优先所在 WPF Window，退回 Application.MainWindow；无 Application 时设 HwndSource.Handle 为 Win32 Owner。调用 EnableModelessKeyboardInterop 和 Show 而非 ShowDialog；随后设置 IsOpenParams、curTabControlBase、弱 Closed 回调、共享视图 Tag 和所选数据。",
+      "evidence": [
+        "E06",
+        "E10",
+        "E11"
+      ]
+    },
+    {
+      "id": "F05",
+      "kind": "source-confirmed",
+      "claim": "公共窗 ParamsConfig 委托给 ParamsConfigControlBase，模板内部为 ParamsTabUserControl。Params 改变先 Dispose 旧 DataContext 根；ModuleParam 经 GetParamRoot 缓存在 param.Data，非 ModuleParam 才直接 new AlgorithmTabRoot。AlgorithmTabRoot Owner 来自 IParent.Parent，构造时调用 ISubjectModel.InitLoad、loadXml(ignoreUnknown:true) 和 DynamicSetProperty。DoIniter、GetItemsValueUnit 后设 DataContext 与订阅浮窗双向绑定。关闭根 Dispose 不清空 ModuleParam.Data，因此不能推定每次开窗重建根模型。",
+      "evidence": [
+        "E10",
+        "E11",
+        "E12",
+        "E13",
+        "E14",
+        "E15",
+        "E16",
+        "E17",
+        "E45",
+        "E50"
+      ]
+    },
+    {
+      "id": "F06",
+      "kind": "source-confirmed",
+      "claim": "Blob BottomExcuteButtons 引用公共 BottomCommandGroup；Group.xml 连续/停止/单次/确定分别声明 ContinuousSelfExcuteModule、StopSelfExcuteModule、SelfExcuteModule、CloseParamsTabControl。ClickCommand 经 Setter.Operate → ExcuteMethodOperation → 按 OperationParams 反射调用当前 NameValueItem 方法；具体 GroupLink 实例化与 DisplayType 总映射由负责人根线取证负责。",
+      "evidence": [
+        "E19",
+        "E20",
+        "E21",
+        "E22",
+        "E23"
+      ],
+      "scopeBoundary": "Root sibling packet provides GroupLink and template assembly; this packet cites declaration and invocation without duplicating their full analysis."
+    },
+    {
+      "id": "F07",
+      "kind": "source-confirmed",
+      "claim": "单次 SelfExcuteModule 检查 IsBusy、AlgorithmTabRoot.Owner 是 VmModule、IsReady（仅明确 false 拒绝，null 不按 false 拒绝）、solution.IsLoading。随后遍历模块 [Display] 的显示对象 ClearValueStore，再 owner.Run；VmException 转错误提示。ExecuteBottomCommand.IsBusy 对应所在 Procedure.IsRunning，而非一律全 solution busy。",
+      "evidence": [
+        "E24",
+        "E25"
+      ]
+    },
+    {
+      "id": "F08",
+      "kind": "source-confirmed",
+      "claim": "连续启动检查 busy/ready，将 solution.IsContinuousSelfExecute=true，先 -= 再 += 模块 ModuleResultCallBackArrived，并启动唯一 Task(LongRunning)。任务 while(!cancel) 调用 ContinuousSelfExcute 后 Sleep(300)；若未收到回调或流程 Root.IsRunning，内部还 Sleep(300)。实际轮次受结果回调节流，不能把 300ms 常量当实测吞吐或结束上界。",
+      "evidence": [
+        "E26",
+        "E27",
+        "E28"
+      ]
+    },
+    {
+      "id": "F09",
+      "kind": "source-confirmed",
+      "claim": "OnModuleCallBackArrived 在锁内将 isModuleCallBackArrived=true。StopSelfExcuteModule 只将 solution.IsContinuousSelfExecute=false；ContinuousSelfExcute 的相应分支 Task.Run(StopContinuousSelfExecute)。后者 cancel=true，Wait 当前任务，置任务 null，取消模块结果事件订阅并重置 arrived 标志。",
+      "evidence": [
+        "E26",
+        "E27",
+        "E28"
+      ]
+    },
+    {
+      "id": "F10",
+      "kind": "source-confirmed",
+      "claim": "VmModule.Run 在非连续单步时设流程 inner-self-running 与模块 IsRunning=true，然后 mModuleManager.SelfRun(nodeID)，异常恢复两标志并重抛；ModuleManager.SelfRun 调用 ServerSDKAPI.IMVS_SelfExecuteOneModule(handle,id)，非零抛 VmException。该 UI 路径没有调用 BlobFindModuTool.Run/SyncSelfRun，不能把 SDK 工具包装器路径当调试窗口实际入口。",
+      "evidence": [
+        "E34",
+        "E35"
+      ]
+    },
+    {
+      "id": "F11",
+      "kind": "source-confirmed",
+      "claim": "VmSolution 模块结果入口按 nModuleID 查 AllModules，并将普通模块转 SetValue；后者更新/重置输出值与 ExecuteCount，普通分支设置输入输出轮次，触发 module.OnModuleResultCallBack 后入队异步回调；非连续 bIsSelfExecute==1 时清 inner-self-running 和 IsRunning。VmModule.OnModuleResultCallBack 触发前述节流事件。原生执行与回调产生机制仍在本包静态停止边界之外。",
+      "evidence": [
+        "E36",
+        "E37",
+        "E49"
+      ]
+    },
+    {
+      "id": "F12",
+      "kind": "source-confirmed",
+      "claim": "普通确定按钮 CloseParamsTabControl 仅 SystemCommands.CloseWindowCommand.Execute(null,null)。该命令没有显式目标窗参数；静态源码不能代替实机确认路由命中。此按钮调用链没有 Save/Commit/rollback。ModuleParam 参数 setter 直接经 SetValueBySDK 写入模块并登记 undo 与 ModuleParamChanged，因此不可将确定描述为延迟提交全部参数。",
+      "evidence": [
+        "E20",
+        "E29",
+        "E46",
+        "E53"
+      ],
+      "qualification": "No-save statement is bounded to this ordinary Confirm invocation, not all module-specific confirmation windows."
+    },
+    {
+      "id": "F13",
+      "kind": "source-confirmed",
+      "claim": "ParamsConfigControlBase 在 Loaded 对所在 Window.Closed 先移除后添加弱处理器；Window_Closed 若有 AlgorithmTabRoot，先将 solution 连续单步标志 false，再注销 10 个 FunctionCameraManager 条目，随后 root.Dispose() 与 root.DoFinish()。没有在此直接 Wait 连续任务、Dispose VmModule 或调用 Blob 原生 DestroyModule。",
+      "evidence": [
+        "E30",
+        "E48"
+      ]
+    },
+    {
+      "id": "F14",
+      "kind": "source-confirmed",
+      "claim": "AlgorithmTabRoot.Dispose 仅设置 IsSubscribeInWindow=false。该状态经双向绑定引发浮窗 CloseSubWindow：移除浮窗 Closed 处理器、清 DataContext、Close、清引用；独立用户关浮窗时处理器也解除并设 IsOpenSubWindow=false。ParamSubscribeWindow 由参数窗作 Owner，关闭时解除 Owner LocationChanged/SizeChanged。DoFinish 遍历 Tabs→Tab.Collection 各 NameValueItem.OnShownFinish→DeIniters.OnTrigger；并非此方法同时遍历所有底栏按钮或释放整个模块。",
+      "evidence": [
+        "E17",
+        "E18",
+        "E30",
+        "E31",
+        "E32",
+        "E33",
+        "E51"
+      ]
+    },
+    {
+      "id": "F15",
+      "kind": "source-confirmed",
+      "claim": "ProcedureConfigControl.Closed 回调经 Dispatcher 清窗口引用和 ModuleResultView.Tag，将 IsOpenParams=false，重算 ROI 可见性，移除空 undo 操作。SetRoiVisible(false) 对 ModuleResultView 实际调用无参重算；该视图依据 IsOpenParams/双图/IsCanDrawROI 决定两个 ImageView ROIVisible，不应把传入 false 机械当作执行了统一 ROI 赋值。",
+      "evidence": [
+        "E09",
+        "E39",
+        "E40"
+      ]
+    },
+    {
+      "id": "F16",
+      "kind": "source-confirmed",
+      "claim": "ROIPartUI 借自 MainViewControl 模板 m_ModuleView，而非参数窗新建。MainViewControl.Dispose 或 ModuleResultView.OwnerWin_Closed 设 ModuleSource=null；DoSourceChanged Dispose 旧 ModuleDisplayDecorator 并清缓存；装饰器 DeInit 解除模块异步结果、参数重载、流程状态、前置模块集合、映射变化、显示对象值与输入关联事件，并清显示结构、RenderDataCenter.DeInit。该链属于主视图/模块切换生命周期，不是每次参数窗关闭的动作。Native 图像及 ROI 数据最后读者释放规则不能仅由这些托管清理调用判定。",
+      "evidence": [
+        "E38",
+        "E41",
+        "E42",
+        "E43"
+      ]
+    },
+    {
+      "id": "F17",
+      "kind": "source-confirmed",
+      "claim": "ProcedureConfigControl 卸载解除 PropertyChanged、全局 OnCloseParamsTabControl 注册、全局模块动作和 DiagramArea 双击处理；语言切换全局回调关闭现有参数窗。参数窗关闭与主控件 Unloaded 是两种收尾路径，不能互相替代。",
+      "evidence": [
+        "E47"
+      ]
+    },
+    {
+      "id": "F18",
+      "kind": "source-confirmed-correction",
+      "claim": "MyDataTemplateSelector 检查 item.Type.ToString()==PointF，仅在 PointFParam 与 ParamObject 两资源中选一个；不构成整个 DisplayType 分派器。根线已另查 ParamUserControl/UserTempConverter；本包不由这个 selector 推断工具面板系统。",
+      "evidence": [
+        "E44"
+      ]
+    }
+  ],
+  "bridgeEvidence": [
+    {
+      "id": "B01",
+      "status": "static-source-and-resource-confirmed",
+      "claim": "Blob输入源为ImageSourceGroup的EnumerationG，不是结果视图图像选择器，也不是默认的ButtonSelecter树。初始化GetFrontParamItemsOperation(IMAGE)把候选写入EnumEntrysA，再GetSelectedCombinationOperation(InputImage)恢复订阅显示。EnumerationG模板的ComboBox双向绑定CurValueA。候选来自前置模块/允许父输入/全局与局部变量的类型组合，过滤CanSubscribeA、Visible后使用ModulePathName。",
+      "evidence": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.GetFrontParamItemsOperation.decompiled.cs",
+          "sha256": "7DE4AF80A1228CD36FEEA628EE24868A656809CAD84E60D1CD8D629325F07132",
+          "startLine": 23,
+          "endLine": 58
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.GetSelectedCombinationOperation.decompiled.cs",
+          "sha256": "2E284885B38F2FAB0D93FD74C64DB482A25255DE4DEC14136CFBAD9BD888D86C",
+          "startLine": 23,
+          "endLine": 90
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.VmModule.cs",
+          "sha256": "53E2F0F9032C4631B59CF0EB2A00E06D50469D94706E7E370E9CC7E1059C72CE",
+          "startLine": 4049,
+          "endLine": 4077
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+          "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63",
+          "startLine": 846,
+          "endLine": 852
+        }
+      ],
+      "limitation": "Actual connected candidate values depend on graph and runtime state; no executed Blob ComboBox claim."
+    },
+    {
+      "id": "B02",
+      "status": "static-source-confirmed",
+      "claim": "EnumerationG.CurValueA removes a bracket suffix before changing/notifying its string value. VmIO.ModulePathName emits Root.ID + space + Root.UniqueName + dot + localized IO UniqueName. The text is an upstream identity/IO display projection, not a manually chosen UI label.",
+      "evidence": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.EnumerationG.decompiled.cs",
+          "sha256": "6665B85DCDBB5727F77CC62FCC398FF49A71ACDB124047CA37AEE7516711C332",
+          "startLine": 11,
+          "endLine": 32
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\VM.Core.VmIO.decompiled.cs",
+          "sha256": "15E1832243422B6BFA2714F300B796D54C365950573639EB1039C5DF58E99CB0",
+          "startLine": 661,
+          "endLine": 677
+        }
+      ],
+      "limitation": "No claim that a particular node ID/name or localization is present in a live window."
+    },
+    {
+      "id": "B03",
+      "status": "static-source-and-resource-confirmed",
+      "claim": "绘制/继承选择通过RoiSelect.CurValue触发RoiDisplayOperation重算主ModuleResultView的ROI可见性，并切换RoiType/InheritWay字段可见性。InheritWayGroup2声明矩形区域、矩形参数、圆环区域、圆环参数四种模式；按模式显示/初始化对应订阅字段并清空其他字段。Region通过ROIBOX候选与SetCombinationSourceOperation(InputROI)订阅组合；ROICenterX等通过SetFilterSourceOperation订阅float字段。不能把IGetROI.SetRoiList辅助序列化接口称为继承的入口。",
+      "evidence": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.RoiDisplayOperation.decompiled.cs",
+          "sha256": "720CEBCB38AF65860807909EC2CD53E27B2A771777C43DE160EFE01D47CD1118",
+          "startLine": 28,
+          "endLine": 32
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.SetCombinationSourceOperation.decompiled.cs",
+          "sha256": "7CE50140DF9BC50B1E954A3C604B5FA294F91DB1318A22253FEEBB9811BE9444",
+          "startLine": 26,
+          "endLine": 98
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.SetFilterSourceOperation.decompiled.cs",
+          "sha256": "197EC3EB19974776DB4DC9AB293CABABED6319EF2A5A1C0DA6A8A9BFD5EB0401",
+          "startLine": 27,
+          "endLine": 130
+        }
+      ],
+      "limitation": "Actual transitions and visual/numeric effect need runtime; XML mode names are configuration facts, not observed results."
+    },
+    {
+      "id": "B04",
+      "status": "static-source-confirmed-to-native-boundary",
+      "claim": "SetCombinationSourceOperation resolves the current module input and upstream path, then assigns RelateIO and RelateIndex; empty source clears RelateIO. VmIO setter records subscription undo, unsubscribes previous relation, sets new relation, subscribes, notifies RelatedIOChanged and refreshes readiness. VmModule.Subscribe type-checks and maps leaf/child combinations to ModuleManager.SubscribeResult→IMVS_SubscribeResultEx; UnSubscribe follows IMVS_UnSubscribeResultEx. This is framework input binding, separate from view selection and ROI byte writes.",
+      "evidence": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.SetCombinationSourceOperation.decompiled.cs",
+          "sha256": "7CE50140DF9BC50B1E954A3C604B5FA294F91DB1318A22253FEEBB9811BE9444",
+          "startLine": 26,
+          "endLine": 98
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\VM.Core.VmIO.decompiled.cs",
+          "sha256": "15E1832243422B6BFA2714F300B796D54C365950573639EB1039C5DF58E99CB0",
+          "startLine": 157,
+          "endLine": 215
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.VmModule.cs",
+          "sha256": "53E2F0F9032C4631B59CF0EB2A00E06D50469D94706E7E370E9CC7E1059C72CE",
+          "startLine": 1823,
+          "endLine": 1884
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.PlatformSDKCS.ModuleManager.cs",
+          "sha256": "783A45B1518F713223ECA2B5E59291BE973552C3E08FEF0EA0D4BFCCC2FBD922",
+          "startLine": 204,
+          "endLine": 236
+        }
+      ],
+      "limitation": "Native subscription lifetime, errors and output correctness are not executed or fully decompiled by this packet."
+    },
+    {
+      "id": "B05",
+      "status": "static-source-confirmed",
+      "claim": "ROI数值编辑通过BoxROIStack对ROIData.CenterX/Y/Width/Height等双向绑定及ROIValueChangedCommand进入SetValue；绘图对象DataChangedCommand也进入RoiParamChange→SetValue。SetValue检查w权限、序列化与PreValue去重，写参数字节、图像尺寸/序列并调用PreExecuteRun。ModuleParam IUserBytesData把普通Blob字节参数送ModuleManager.SetBinaryData；自动执行受VmSolution.IsParamModifyExecute及CanTriggerExecute等条件控制，并非每次任意编辑必执行。",
+      "evidence": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml",
+          "sha256": "2C55FE06BB710704155C77F0F0AE1EB0F7EB8A01A9CDB3C667EE54D9DA93D893",
+          "startLine": 19,
+          "endLine": 102
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+          "sha256": "B96735A3A474F02B9F6D3767E340BED4DC6E0FFD4C8C123547540B08665BC3C8",
+          "startLine": 1256,
+          "endLine": 1269
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+          "sha256": "B96735A3A474F02B9F6D3767E340BED4DC6E0FFD4C8C123547540B08665BC3C8",
+          "startLine": 1315,
+          "endLine": 1376
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+          "sha256": "B96735A3A474F02B9F6D3767E340BED4DC6E0FFD4C8C123547540B08665BC3C8",
+          "startLine": 2191,
+          "endLine": 2206
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+          "sha256": "B96735A3A474F02B9F6D3767E340BED4DC6E0FFD4C8C123547540B08665BC3C8",
+          "startLine": 2456,
+          "endLine": 2485
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.ModuleParam.cs",
+          "sha256": "AF392BF2D3AF006C6A16021A271D67DD8EF2017B268580841874AB6FEDE1DA48",
+          "startLine": 55,
+          "endLine": 110
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.NameValueItem.cs",
+          "sha256": "90B4742E79243F46C46FD6B38187EE7F5BE49D4C6677F994133215A3796FED46",
+          "startLine": 1330,
+          "endLine": 1350
+        }
+      ],
+      "limitation": "No gesture/float precision/performance guarantee; explicit byte encoding semantics and native algorithm lie outside this selected assembly review."
+    },
+    {
+      "id": "B06",
+      "status": "static-source-confirmed",
+      "claim": "结果回填的静态调用者是ModuleResultView.OnModuleCallBackArrived，使用Dispatcher.BeginInvoke，在未关闭、ROIVisible且!IsDragROI时调用ModuleSource.UpdateROI；扩展VmModuleExtern.GetParamRoot().UpdateROI遍历IROISelecter。ROISelecter.UpdateRoi又要求CustomVisible和CanUpdateROI，再读参数字节回写已有ROI模型；拖动时通过DragingChangedCommand关闭更新门。不能将异步回填解释为每次编辑同步回调。",
+      "evidence": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ModuleResultView.cs",
+          "sha256": "EB13E32BE99737BB8B7C8B3AF372F4FBFAB1A05BF34A27D96C6357CE804ED6A4",
+          "startLine": 613,
+          "endLine": 703
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.VmModuleExtern.cs",
+          "sha256": "4D4B726DF4EAC492C955502CB90118E793679EE74718B900E62625CFE2DE2C9C",
+          "startLine": 2112,
+          "endLine": 2116
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.AlgorithmTabRoot.cs",
+          "sha256": "31C8AAFDBCCD0E034316A54E2959F451E135298FAD9F618E8234BC6CBC1BC72E",
+          "startLine": 468,
+          "endLine": 476
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+          "sha256": "B96735A3A474F02B9F6D3767E340BED4DC6E0FFD4C8C123547540B08665BC3C8",
+          "startLine": 1266,
+          "endLine": 1270
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+          "sha256": "B96735A3A474F02B9F6D3767E340BED4DC6E0FFD4C8C123547540B08665BC3C8",
+          "startLine": 2703,
+          "endLine": 2780
+        }
+      ],
+      "limitation": "Exact callback interleaving, late events and whether all current instances satisfy guards are runtime unknown."
+    },
+    {
+      "id": "B07",
+      "status": "static-source-and-resource-confirmed",
+      "claim": "ROISelecter.OnShownFinish calls base then StopDrawROI, which clears selection/draw state. Blob及其9个直接公共组无XML DeIniters声明，不能推导没有清理逻辑：实际还有该override、主视图事件解除及模块生命周期。不存在可用依据把确定/关窗等同为取消回滚。",
+      "evidence": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+          "sha256": "B96735A3A474F02B9F6D3767E340BED4DC6E0FFD4C8C123547540B08665BC3C8",
+          "startLine": 2191,
+          "endLine": 2206
+        },
+        "blob-deinit-resource-scan.json",
+        "../source/source-findings.json#F12-F17"
+      ],
+      "limitation": "No claim of all dynamic extensions unsubscribed, native final-reader safety, or measured long-term release."
+    }
+  ],
+  "bridgeDecisionImplications": [
+    [
+      "B01–B02",
+      "输入图像来源是EnumerationG的上游订阅投影，独立于显示图像选择；不能共用一个含混的选择器合同。来源显示文本不应作为本方稳定地址。"
+    ],
+    [
+      "B03–B04",
+      "绘制/继承是字段模式与订阅关系切换；区域整体与标量参数继承分开。复用既有中立绑定合同，ROI字段模式适配重做，不能把辅助序列化当继承入口。"
+    ],
+    [
+      "B05",
+      "数值与手势共用参数写入桥值得借鉴；本方接到同一私有草稿，按明确准入触发预览，不复制VM直接写正式模块。"
+    ],
+    [
+      "B06",
+      "回填跨Dispatcher且受拖动/可见性门控制；本方必须有会话和运行身份，丢弃迟到更新，不能只靠可见性防串帧。"
+    ],
+    [
+      "B07",
+      "清理必须沿控件、视图、模块三种所有权分别验证；无XML DeIniters不能推导无清理，关闭也不能推导事务回滚。"
+    ]
+  ],
+  "coverageBoundary": {
+    "parentTaskId": "O06",
+    "selectedLibraryCount": 13,
+    "selectedLibraries": [
+      "Apps.PcUI",
+      "Apps.XmlParser",
+      "Apps.XmlUI",
+      "VM.Controls",
+      "VM.ModuleControl",
+      "VM.PcUI",
+      "VMBaseControls",
+      "VMControls.BaseInterface",
+      "VMControls.Data",
+      "VMControls.Interface",
+      "VMControls.RenderInterface",
+      "VMControls.WPF",
+      "VMControls.WPF.Release"
+    ],
+    "isAllVmControlLibraries": false,
+    "isDependencyClosure": false,
+    "outsideSelection": [
+      {
+        "name": "Apps.Style",
+        "role": "Merged WPF styles and images",
+        "identity": {
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+          "sha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63"
+        },
+        "blobImpact": "Direct template dependency: ComboBox, buttons, text boxes, scroll bars and radio styles. Render/template behavior not completely reviewed.",
+        "evidence": {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+          "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63",
+          "startLine": 5,
+          "endLine": 12,
+          "excerpt": "    <ResourceDictionary Source=\"/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml\" />\n    <ResourceDictionary Source=\"/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml\" />\n    <ResourceDictionary Source=\"/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml\" />\n    <ResourceDictionary Source=\"/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml\" />\n    <ResourceDictionary Source=\"/Apps.Style;component/RadioButtonStyle/RadioButtonStyle.xaml\" />\n    <ResourceDictionary Source=\"/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml\" />\n    <ResourceDictionary Source=\"/Apps.Style;component/TextBlockStyle/TextBlockStyle.xaml\" />\n    <ResourceDictionary Source=\"/Apps.Style;component/TextBoxStyle/TextBoxStyle.xaml\" />"
+        },
+        "coverage": "Reference confirmed; library internals excluded"
+      },
+      {
+        "name": "Apps.ColorFun",
+        "role": "Theme resource dictionary",
+        "identity": {
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.ColorFun.dll",
+          "sha256": "22C277C4E2D384593265EE0D40830252F8317C60A7EBE782D31AEE426C5D8688"
+        },
+        "blobImpact": "Direct merged ColorThemesResourceDictionary.Instance and dynamic color resource use; concrete theme behavior not recovered here.",
+        "evidence": {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+          "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63",
+          "startLine": 2,
+          "endLine": 4,
+          "excerpt": "<ResourceDictionary xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\" xmlns:localcontrol=\"clr-namespace:Apps.XmlUI.ParamTabControl\" xmlns:localParamTab=\"clr-namespace:Apps.XmlUI.ParamTab\" xmlns:localParserTab=\"clr-namespace:Apps.XmlParser.ParamTab;assembly=Apps.XmlParser\" xmlns:PControl=\"clr-namespace:Apps.PcUI.Controls;assembly=Apps.PcUI\" xmlns:i=\"clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity\" xmlns:PCommon=\"clr-namespace:Apps.PcUI.Common;assembly=Apps.PcUI\" xmlns:ei=\"http://schemas.microsoft.com/expression/2010/interactions\" xmlns:local=\"clr-namespace:Apps.XmlUI\" xmlns:Lang=\"clr-namespace:Apps.Localization;assembly=Apps.Localization\" xmlns:PCImage=\"clr-namespace:HikPcUI.ImageView;assembly=VM.PcUI\" xmlns:PCListView=\"clr-namespace:HikPcUI.ListView;assembly=VM.PcUI\" xmlns:HPCommom=\"clr-namespace:HikPcUI.Commom;assembly=VM.PcUI\" xmlns:Color=\"clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun\" xmlns:VMInterface=\"clr-namespace:VMControls.Interface;assembly=VMControls.Interface\" xmlns:core=\"clr-namespace:VM.Core;assembly=VM.Core\" xmlns:DisplayForGroupControl=\"clr-namespace:Apps.XmlUI.ParamTabControl.DisplayForGroupControl\" xmlns:input=\"clr-namespace:System.Windows.Input;assembly=PresentationCore\" xmlns:baseData=\"clr-namespace:Apps.BaseData;assembly=Apps.BaseData\" xmlns:system=\"clr-namespace:System;assembly=mscorlib\" xmlns:sys=\"clr-namespace:System;assembly=mscorlib\" xmlns:xmlParser=\"clr-namespace:Apps.XmlParser.ItemInterface;assembly=Apps.XmlParser\">\n  <ResourceDictionary.MergedDictionaries>\n    <x:StaticExtension Member=\"Color:ColorThemesResourceDictionary.Instance\" />"
+        },
+        "coverage": "Reference confirmed; library internals excluded"
+      },
+      {
+        "name": "Apps.Localization",
+        "role": "Localized resource bindings/display names",
+        "identity": {
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Localization.dll",
+          "sha256": "EF43C79E30AAA5DB98775569D7FE5F9B23F41AF6280C7E4ED7CF5A902FCF2381"
+        },
+        "blobImpact": "Direct ResourceBinding/LangResource dependency in shared parameter templates; actual locale/text/update behavior not observed.",
+        "evidence": {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+          "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63",
+          "startLine": 33,
+          "endLine": 36,
+          "excerpt": "  </DataTemplate>\n  <ControlTemplate x:Key=\"TextLeft\" TargetType=\"{x:Type Control}\">\n    <TextBlock VerticalAlignment=\"Center\" Foreground=\"{DynamicResource Col_ModuleConfig_List_Foreground}\" TextTrimming=\"CharacterEllipsis\" Text=\"{Lang:ResourceBinding DisplayNameA}\" ToolTip=\"{Lang:ResourceBinding DescriptionA}\" />\n  </ControlTemplate>"
+        },
+        "coverage": "Reference confirmed; library internals excluded"
+      },
+      {
+        "name": "VMControls.Winform.Release",
+        "role": "Separate WinForms release surface (name-based classification only in this supplement)",
+        "identity": {
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VMControls.Winform.Release.dll",
+          "sha256": "2DF94E84D186F08D36FAE02B9CE3786EBDD1AA741510731716E85D1605E77BAB"
+        },
+        "blobImpact": "Not established as a dependency of the selected WPF Blob chain. No conclusion of global absence or dispensability.",
+        "coverage": "Disk identity only; API and internal dependency graph not inspected"
+      },
+      {
+        "name": "Tool-specific Control extensions",
+        "role": "Optional TabWinBase implementation loaded from AppDomain or module directory",
+        "blobImpact": "Can change the actual parameter-window branch. No Control DLL in the selected Blob directory does not exclude an already-loaded assembly.",
+        "evidence": {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
+          "sha256": "A1C233068DB35667F7DD49B05839701364CC2EBE9CA699F5F413317ABBE4DFB4",
+          "startLine": 808,
+          "endLine": 839,
+          "excerpt": "\tprivate TabWinBase GetExternTabWin(IVmModule vmModule)\n\t{\n\t\tstring moduleName = vmModule.ModuleTypeName;\n\t\tAssembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + \"Control\"));\n\t\tif (assembly == null)\n\t\t{\n\t\t\tstring text = Path.GetDirectoryName(vmModule.Params.XmlPath) + \"\\\\\" + moduleName + \"Control.dll\";\n\t\t\tif (File.Exists(text))\n\t\t\t{\n\t\t\t\tActivatorWrap.LoadAssembly(text);\n\t\t\t\tassembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + \"Control\")) ?? AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName.Remove(moduleName.LastIndexOf('C')) + \"Control\"));\n\t\t\t}\n\t\t}\n\t\tif (assembly != null)\n\t\t{\n\t\t\tList<Type> list = (from p in assembly.GetTypes()\n\t\t\t\twhere typeof(TabWinBase).IsAssignableFrom(p)\n\t\t\t\tselect p).ToList();\n\t\t\tif (list.Count > 0)\n\t\t\t{\n\t\t\t\treturn ActivatorWrap.CreateInstance(list[0]) as TabWinBase;\n\t\t\t}\n\t\t}\n\t\treturn null;\n\t}\n\n\tprivate void CurTabControlBase_Closed(object sender, EventArgs e)\n\t{\n\t\tDispatcher.Invoke(() =>\n\t\t{\n\t\t\tcurTabControlBase = null;\n\t\t\tif (ROIPartUI is ModuleResultView moduleResultView)"
+        },
+        "coverage": "Selection mechanism and selected directory inventory confirmed; live selected type unknown"
+      }
+    ],
+    "additionalBoundaries": [
+      "The 13-library metadata set and targeted VM.Core/PlatformSDK caller exports are different scopes.",
+      "System/WPF/native/runtime dependencies are not recursively enumerated.",
+      "2517 TypeDefs and 321 bounded public visual-base classifications are not complete control/API counts.",
+      "No new all-VM recovery task is opened."
+    ],
+    "architectureCautions": [
+      "Live parameter setters and route-based Close do not establish a private draft/commit transaction.",
+      "ModuleParam.Data shares a cached parameter root across window openings; template dictionaries/caches can outlive a window. These are evidence of VM behavior, not prescriptions for the product.",
+      "The technical director owns delete/replace/rebuild/reuse choices; this package supplies supporting and counter evidence only."
+    ],
+    "futureRetrievalRule": "Only retrieve additional facts tied to a named unresolved decision; preserve unknowns without widening to full VM."
+  },
+  "runtimeUnknowns": [
+    {
+      "id": "U01",
+      "question": "在既有实机验证中，Blob 开窗实际创建哪个 Window 类型、是否存在预加载 IMVSBlobFindModuControl 程序集？",
+      "status": "runtime-not-observed",
+      "owner": "验证工程师｜VM实机取证，经逆向负责人安排",
+      "stopCondition": "记录本次窗口类型/程序集来源，或明确只能观察 UI 不能安全读取类型；不据目录缺文件冒称进程无预加载。",
+      "related": [
+        "F03"
+      ]
+    },
+    {
+      "id": "U02",
+      "question": "在一轮连续单步已启动且尚未收到结果事件时关闭窗，实际何时退出任务并解除 ModuleResultCallBackArrived？",
+      "status": "static-counterexample-not-confirmed-runtime-defect",
+      "owner": "逆向负责人按必要性安排有限实机核实",
+      "staticCounterexample": "ContinuousSelfExcute 先检查 !arrived || Root.IsRunning 并 sleep；只有通过这一 guard 后才检查全局 IsContinuousSelfExecute。Window_Closed 仅将全局标志 false，不能静态证明丢回调/持续 busy 时必达 StopContinuousSelfExecute。",
+      "evidence": [
+        "E26",
+        "E27",
+        "E28",
+        "E30"
+      ],
+      "stopCondition": "不进行注入丢回调或设备故障实验；如无现成安全条件，保留未知与分支证据。"
+    },
+    {
+      "id": "U03",
+      "question": "CloseWindowCommand.Execute(null,null) 在实际焦点/订阅浮窗条件下具体关闭哪个窗口？",
+      "status": "runtime-not-observed",
+      "owner": "实机验证岗在既有可操作条件下核实",
+      "evidence": [
+        "E29",
+        "E31"
+      ],
+      "stopCondition": "记录普通确定、独立浮窗焦点条件下目标；若不可操作明确未测。"
+    },
+    {
+      "id": "U04",
+      "question": "原生 SelfExecuteOneModule 的算法/执行所有权、未完成执行与 UI 关闭竞争、图像/ROI 原生缓冲最后读者安全何时成立？",
+      "status": "native-boundary-not-recovered-in-this-packet",
+      "owner": "逆向负责人决定是否影响当前设计再追加",
+      "stopCondition": "本包止于精确托管 SDK 调用与托管回调接收；不将既有 Blob 最小 native 片段称作完整原生链。"
+    },
+    {
+      "id": "U05",
+      "question": "所有嵌套 Group/工具扩展 DeIniters 是否覆盖每个业务订阅？",
+      "status": "bounded-traversal-only",
+      "owner": "根线 GroupLink/模板组装取证与具体必要消费者",
+      "stopCondition": "本包只证明 DoFinish 的显式遍历和 DeIniters 入口；完整实例化图与所有扩展触发器由根包/具体控件证据核对，不能泛化一次 Dispose 清尽全部。"
+    }
+  ],
+  "received": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\delivery.json",
+      "sha256": "2FC716D0DB273ACC4B4BC37940A0EBDDF16144893962E1D5B0D974C07742DD0D"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\roi-input-bridge-review.json",
+      "sha256": "1B0425C2AAECEC72A7672A9782189D8353320DE3156F7E1A9388A700A261B70F"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\coverage-boundary.json",
+      "sha256": "785723398B50D97E96186CFBA41137F6ED5DD6DBA2F4C1251431C76724838ED4"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\source-findings.json",
+      "sha256": "BA52428728B7C3254D65125FA49E096E417643D61DD44B7398E036C989673E8F"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\root-findings.json",
+      "sha256": "852D55134360088FE2EB12864A4A95E4305F464C46BEA1A8BD75DACEAB788021"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\library-layer-inventory.json",
+      "sha256": "E64556334A5D97A645B3AC5160AADBEE533D84165FA525D4E1BA5A59DBADEBEF"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\blob-group-links.json",
+      "sha256": "DF5B9B7AF06470823AAD5B27BD713825429DA8B799482ED6F811CB8CA8F71E46"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\template-map.json",
+      "sha256": "E8038CE3AC0A8D196A3F203E896E530938F6FDCF32BB3EB81805E778E0281470"
+    }
+  ],
+  "selfEvidence": [
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml.cs",
+      "sha256": "c4a491032094d4ac6738d0e9dd139a893e5ebb488bda69fde1ef824c8550781a"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs",
+      "sha256": "c0c109f27baac6e46df283000defa7870139dcbd1a5b89d1c69bb9d53469bccd"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+      "sha256": "bce5346e3c9c0cf1a895c1b379edd7fad66af329d30f2cbccd7448f185f304b3"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ConfigSetting.cs",
+      "sha256": "c82d7d8c0bd0c9fc31770ffb12bd7323053e16523830fa9e77a3314c725a7af3"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ParamBindingBase.cs",
+      "sha256": "42ec0f0ed5b3b8d052e620affd78a78f550bf80133e4f43beba9cdca86c8d6b0"
+    },
+    {
+      "path": "src/Plugin.Contracts/Editing.cs",
+      "sha256": "a2131b07e0dedae65ea0a3cfa94ac3109e8abac7a6aceeac0095be217c5bbffd"
+    },
+    {
+      "path": "src/Plugin.Contracts/ToolContracts.cs",
+      "sha256": "04abf0cc7159e7bfdf45079fad3b87a458d95681bd16a2c24f59027ecb1ff6db"
+    },
+    {
+      "path": "src/Plugin.Wpf/ParameterEditorControl.cs",
+      "sha256": "365a77d50c6b882c883d10b7c006c3935eab9e5bd56584778142ec63437b820e"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/LabeledControl.cs",
+      "sha256": "3f4fb205398277e22dcf92f48a50374d203fcad61b8dd3b53af854755ad8e2b5"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/Icons/ToolIcon.cs",
+      "sha256": "e06b8a7015f643c3a724877bbe50712fc8c3e4972e3b676f7a505a49827c6d16"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ColorPicker/ColorSelector.cs",
+      "sha256": "01fe127d7d84abbc1d4faea7dad8c99ae9b198d1e2d2ef4b0aef1c60fd09ef1a"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ColorPicker/ColorPicker.cs",
+      "sha256": "0a6857b9f5ff08c2f91687d3b76eebe650f9a120ddf33fcd68191ad8bf3020e5"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/NumericUpDown.cs",
+      "sha256": "bd68a00584440e1bd9ec1b01ed5fef1001894290ebc0c41ea1f5ea2f62e79ccb"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/RangeSlider.cs",
+      "sha256": "45c36d01b780ff15de26318a21718803e51e05d0dd0e5cf5805ee9d883a7b8e7"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml.cs",
+      "sha256": "db1919ea64f89b01bc178ab6feaabc6a38c17b1bfc7ca5e80703cb1170ef23d3"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml.cs",
+      "sha256": "1b4a1e6f5e8e6c9c71282315ad0a3056025c75742eb14ca1980fa784cb6cdc14"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/BlobOutputContract.cs",
+      "sha256": "35068683026d5f34b05154fbbe0beb99cc94ada98d0d2d18c0f758f4695233b2"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisResults.cs",
+      "sha256": "5691d6b997ef9fa704d63826709fe9a4a6fa890cc889499b84269e40188c002c"
+    }
+  ],
+  "delivery": "经理22:04核静态整合，21:49核实机解除条件；文档由经理统排原O06。不改变变量修复和Release队列，不在本次改产品"
+}

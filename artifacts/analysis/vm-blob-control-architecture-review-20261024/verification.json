@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "selfSources": 18,
+  "receivedFiles": 8,
+  "assemblies": 13,
+  "decisions": 10,
+  "scope": "static architecture material only; runtime and main-document application not verified by this script",
+  "reviewSHA": "30f8d805b0325c795666f5e6a1f77443f7e96e542eb0cd6e76fa63bd88c373bb",
+  "fragmentSHA": "116DE8BFAC708BE3FFF31ABF8E3BB251DDB4FBD058C80A55BEC92B93748316D4",
+  "wordingCorrection": "主控成品审核要求：静态整合已核收，实机未验；语义处置不变。"
+}

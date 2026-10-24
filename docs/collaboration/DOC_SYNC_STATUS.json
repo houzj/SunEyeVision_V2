@@ -4,7 +4,7 @@
   "date": "2026-10-24",
   "objective": "以明确交付驱动文档增量维护，让现状、证据、目标、合同和验收始终可追溯；文档进度与产品进度分别记录。",
   "batchId": "DOC-UX-SPLIT-20261022",
-  "currentMilestoneStatus": "交付经理恢复实际文档执行：O06动态事实及后端章节导航/搜索已应用并定向验证；未执行产品构建或验收，不代表S2整体完成",
+  "currentMilestoneStatus": "原O06已实际合并主控最终静态复审及12段证据链，成品获主控接受；生成链持久化/锚点/链接/幂等通过，实机无支持控制路径仍未执行，不代S2交付",
   "stableBaseCommit": "3a5dc6dd54f372699a450ad7862b52c961cd2797",
   "baselineKind": "HEAD plus explicitly identified dirty file snapshots; not a stable accepted product release",
   "handoff": {
@@ -4852,35 +4852,24 @@
     }
   },
   "latestDocumentationReceipt": {
-    "ownerThreadId": "01a16695-701e-7523-9c18-1298b9279428",
-    "kind": "temporary-delivery-manager-execution-recovery",
-    "at": "2026-10-24T13:23:58.072Z",
-    "baselineCommit": "5b30d5851db8c8a9b9ec33987215bcc07270e653",
-    "dynamicReceipt": "artifacts/analysis/delivery-live-status-recovery-20261024/application-receipt.json",
-    "dynamicReceiptSHA": "11F8ECE54B66CF2D95F9C5C656ACDE33BCD00E3F27FBA7CB57B53EB89E1E7C97",
-    "navigationReceipt": "artifacts/analysis/backend-review-navigation-recovery-20261024/application-receipt.json",
-    "navigationReceiptSHA": "EEEEF0E76A1DA012270AA3161647BEDE7411C27FA9C101D6F6B17453BF66EA63",
-    "actualModifiedFiles": [
-      "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
-      "artifacts/validation/document-library-source-snapshots/optimization-o06.html",
-      "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search-index.js",
-      "artifacts/validation/document-library-source-snapshots/document-search-index.js",
-      "artifacts/validation/build-document-search-index.cjs"
-    ],
-    "searchRecords": 734,
-    "priorRecordsPreserved": 730,
-    "newRecords": 4,
-    "queriesPassed": 6,
-    "QA": "artifacts/analysis/backend-review-navigation-recovery-20261024/applied-static-qa.json",
-    "qaSHA": "3B5125E7B2F56EC82AB301E3F68A3B9758212BF659D5EF9DA745527DFE36124B",
-    "visual": "未验：file协议浏览器预览被拒，未绕过",
-    "productModified": false,
-    "fullSiteRegenerated": false,
-    "acceptanceBoundary": "只验文档导航/搜索与身份保护；产品有限验收和整体未闭门仍以独测矩阵与交付总账为准",
-    "currentFinalQA": "artifacts/analysis/backend-review-navigation-recovery-20261024/current-final-static-qa.json",
-    "currentFinalQASHA": "51C6584EE10CE5353009BCB4D06AB1A387CDA182C27DB008F3A52D0641AA6E9E",
-    "searchQueryQASHA": "04EC5F5B4663F2ABFFE9B1B8316C08DD277F48010A4C3046A67DE53C3C612402",
-    "handoff": "docs/collaboration/HANDOFF_DOCUMENT_EXECUTION_RECOVERY_20261024.md"
+    "at": "2026-10-24T22:12:07.572042+08:00",
+    "path": "artifacts/analysis/vm-control-blob-document-merge-20261024/final-application-receipt.json",
+    "sha256": "4ABFB6F82067DBB58F5E2070B15D022FFEAF002984E990883E9865759C64B4E4",
+    "page": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+    "pageSHA": "F6CB8DE5A7CF3A48B95B024D0381CC9A8BA56A8B60A0A41D377A076AFE81609B",
+    "anchor": "br-controls-vm-compare",
+    "status": "主控已亲读成品并接受有限静态文档合并；实机/整体产品验收false",
+    "dispositions": 10,
+    "selectedStaticSegments": 12,
+    "segmentsAreAcceptanceDenominator": false,
+    "uniqueIds": 643,
+    "directorAddenda": "artifacts/analysis/vm-blob-control-architecture-review-20261024/director-final-addenda.json",
+    "oldRecommendation": "明确撤回，原正文及锚点保留",
+    "generationPersistence": "V81→peripherals→controls.render→pure h4 merger，未全站生成",
+    "runtimeReassessment": "2026-10-24T22:05:10+08:00实际复核，支持设施未交接，无法可靠估开测时刻",
+    "visualReview": false,
+    "productChanged": false,
+    "wholeAccepted": false
   },
   "navigationSeparation": {
     "receipt": "artifacts/validation/home-delivery-overview-receipts/20261024-1640-editor-finite-acceptance-sync.json",
@@ -5240,6 +5229,53 @@
       "protocol": "V8.2 §2.2",
       "status": "经理已实读采用，无冲突",
       "rule": "真实证据与中立判断约束保留、复用、删除、重构及暂不实施；未知不冒批准，消息送达不冒采用。"
+    },
+    "latestGovernanceAndVariableUpdate": {
+      "at": "2026-10-24T13:41:53.189Z",
+      "receipt": "artifacts/analysis/vm-control-blob-evidence-receive-20261024/dynamic-stage-receipt.json",
+      "sha256": "091412D344382B933BA6737B59E27D0B1D59DCB849159E9E7B286F539BC3959E",
+      "protocol": "V8.3",
+      "variableDecisionCommit": "f7fc6f18586ed2eae03840125ed23f2e52821549",
+      "implementation": "开发实际恢复，源码fixture2–4h条件估计，开工后30min接口检查点；核心整合成功后fixed另估30–60min，不承诺独验完成",
+      "vmInitialIntegrity": "53锚点与5DLL零差，已交主控先审；不代运行/整链验收",
+      "vmCheckpoints": [
+        "2026-10-24T21:49:00+08:00",
+        "2026-10-24T22:04:00+08:00"
+      ],
+      "protectedMainArchitectureRegion": true,
+      "productChanged": false,
+      "visualReview": false
     }
+  },
+  "previousDocumentationReceiptBeforeVmMerge": {
+    "ownerThreadId": "01a16695-701e-7523-9c18-1298b9279428",
+    "kind": "temporary-delivery-manager-execution-recovery",
+    "at": "2026-10-24T13:23:58.072Z",
+    "baselineCommit": "5b30d5851db8c8a9b9ec33987215bcc07270e653",
+    "dynamicReceipt": "artifacts/analysis/delivery-live-status-recovery-20261024/application-receipt.json",
+    "dynamicReceiptSHA": "11F8ECE54B66CF2D95F9C5C656ACDE33BCD00E3F27FBA7CB57B53EB89E1E7C97",
+    "navigationReceipt": "artifacts/analysis/backend-review-navigation-recovery-20261024/application-receipt.json",
+    "navigationReceiptSHA": "EEEEF0E76A1DA012270AA3161647BEDE7411C27FA9C101D6F6B17453BF66EA63",
+    "actualModifiedFiles": [
+      "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+      "artifacts/validation/document-library-source-snapshots/optimization-o06.html",
+      "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search-index.js",
+      "artifacts/validation/document-library-source-snapshots/document-search-index.js",
+      "artifacts/validation/build-document-search-index.cjs"
+    ],
+    "searchRecords": 734,
+    "priorRecordsPreserved": 730,
+    "newRecords": 4,
+    "queriesPassed": 6,
+    "QA": "artifacts/analysis/backend-review-navigation-recovery-20261024/applied-static-qa.json",
+    "qaSHA": "3B5125E7B2F56EC82AB301E3F68A3B9758212BF659D5EF9DA745527DFE36124B",
+    "visual": "未验：file协议浏览器预览被拒，未绕过",
+    "productModified": false,
+    "fullSiteRegenerated": false,
+    "acceptanceBoundary": "只验文档导航/搜索与身份保护；产品有限验收和整体未闭门仍以独测矩阵与交付总账为准",
+    "currentFinalQA": "artifacts/analysis/backend-review-navigation-recovery-20261024/current-final-static-qa.json",
+    "currentFinalQASHA": "51C6584EE10CE5353009BCB4D06AB1A387CDA182C27DB008F3A52D0641AA6E9E",
+    "searchQueryQASHA": "04EC5F5B4663F2ABFFE9B1B8316C08DD277F48010A4C3046A67DE53C3C612402",
+    "handoff": "docs/collaboration/HANDOFF_DOCUMENT_EXECUTION_RECOVERY_20261024.md"
   }
 }

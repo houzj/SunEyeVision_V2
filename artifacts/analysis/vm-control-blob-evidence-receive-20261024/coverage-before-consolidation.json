@@ -1,0 +1,174 @@
+{
+  "at": "2026-10-24T21:42:56.894473+08:00",
+  "purpose": "交付核收覆盖表，只描述静态已证与缺口，不代主控删除/重做/复用决策",
+  "sourceReport": "source/source-findings.json",
+  "rootReport": "root/root-findings.json",
+  "runtimeReport": "runtime/finite-review.json",
+  "rows": [
+    {
+      "segment": "开窗入口与门禁",
+      "sourceFindingRefs": [
+        "F01",
+        "F02"
+      ],
+      "sourceUnknownRefs": [],
+      "staticCoverage": "双击命令、权限/加载检查、旧窗关闭与重入检查已有静态链",
+      "remaining": "实际用户路径与失败提示未运行",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "普通/扩展窗口选择",
+      "sourceFindingRefs": [
+        "F03"
+      ],
+      "sourceUnknownRefs": [
+        "U01"
+      ],
+      "staticCoverage": "先已加载程序集再磁盘Control.dll，null才公共窗",
+      "remaining": "Blob本次实际运行类型/加载程序集未知",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "窗口Owner及模式",
+      "sourceFindingRefs": [
+        "F04"
+      ],
+      "sourceUnknownRefs": [],
+      "staticCoverage": "Owner回退、Modeless互操作及Show调用已证",
+      "remaining": "实际焦点/Owner命中未运行",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "ParamRoot所有权与缓存",
+      "sourceFindingRefs": [
+        "F05"
+      ],
+      "sourceUnknownRefs": [],
+      "staticCoverage": "ModuleParam.Data缓存根、替换Dispose、InitLoad/XML/DynamicSetProperty已证",
+      "remaining": "缓存根跨重开时状态是否完整重置未运行",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "公共组装配",
+      "sourceFindingRefs": [
+        "ROOT-F04",
+        "ROOT-F05"
+      ],
+      "sourceUnknownRefs": [
+        "U05"
+      ],
+      "staticCoverage": "GroupLink展开/克隆/重设parent，Blob三个页签九组声明已证",
+      "remaining": "未据九组个数断言全部具体实例/DeInit覆盖",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "模板与视觉实例",
+      "sourceFindingRefs": [
+        "ROOT-F02",
+        "ROOT-F03",
+        "ROOT-F06",
+        "ROOT-F07",
+        "ROOT-F08",
+        "ROOT-F09",
+        "F18"
+      ],
+      "sourceUnknownRefs": [],
+      "staticCoverage": "DisplayType/ExternDisplayType/Default与具体模板连接已证",
+      "remaining": "实际挂载模板实例及外部字典本次命中未运行",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "输入来源及参数订阅",
+      "sourceFindingRefs": [],
+      "sourceUnknownRefs": [],
+      "staticCoverage": "runtime报告S4提供InputROI.RelateIO/RelateIndex和标量参数过滤树静态边",
+      "remaining": "lead正整合精确出处，显示图像选择不能代算法输入来源",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "ROI手势与值写回",
+      "sourceFindingRefs": [],
+      "sourceUnknownRefs": [],
+      "staticCoverage": "runtime报告S5提供DataChangedCommand→NormalizeReversParse→模块字节静态链",
+      "remaining": "手势/字节/UI变化时序未运行，lead需核原DLL身份与实例边",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "结果到ROI反向回填",
+      "sourceFindingRefs": [],
+      "sourceUnknownRefs": [],
+      "staticCoverage": "runtime报告S5提供ModuleResultView→VmModuleExtern→AlgorithmTabRoot→IROISelecter静态caller",
+      "remaining": "ROIVisible/非拖拽条件下实际同实例回填时序未运行",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "单次/连续执行与停止",
+      "sourceFindingRefs": [
+        "F06",
+        "F07",
+        "F08",
+        "F09",
+        "F10",
+        "F11"
+      ],
+      "sourceUnknownRefs": [
+        "U02",
+        "U04"
+      ],
+      "staticCoverage": "主程序SDK SelfExecuteOneModule及回调节流/Stop入口已证",
+      "remaining": "不能用Blob包装器SyncSelfRun代入口；回调未到时关闭无可靠退出上界",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "确认/取消语义",
+      "sourceFindingRefs": [
+        "F12"
+      ],
+      "sourceUnknownRefs": [
+        "U03"
+      ],
+      "staticCoverage": "确定调用CloseWindowCommand，参数setter即时写SDK，非统一延迟Commit",
+      "remaining": "独立取消/rollback合同未建立；焦点浮窗时关闭命中未运行",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "参数窗/订阅浮窗关闭",
+      "sourceFindingRefs": [
+        "F13",
+        "F14",
+        "F15",
+        "F17"
+      ],
+      "sourceUnknownRefs": [
+        "U02",
+        "U03",
+        "U05"
+      ],
+      "staticCoverage": "弱Closed/订阅浮窗解绑/DoFinish及ROI可见性重算各路径有静态证据",
+      "remaining": "关闭不能概括为释放整个模块或所有业务订阅，延迟事件未运行",
+      "runtimeVerified": false
+    },
+    {
+      "segment": "主视图/模块/native资源",
+      "sourceFindingRefs": [
+        "F16"
+      ],
+      "sourceUnknownRefs": [
+        "U04"
+      ],
+      "staticCoverage": "借主视图、主视图切换/关闭DeInit与事件解除已证",
+      "remaining": "参数窗关闭不等于主视图Dispose，native最后读者与执行竞态未知",
+      "runtimeVerified": false
+    }
+  ],
+  "allRuntimeRowsUnverified": true,
+  "notInferred": [
+    "目录无Control.dll不等于本次一定公共窗",
+    "流程Group ROI面板不等于公共参数GroupLink",
+    "显示图像选择不等于算法输入来源",
+    "Close不等于事务Commit/完整销毁",
+    "类型/锚点数量不等于完整链完成"
+  ],
+  "decisionOwner": "技术总监",
+  "state": "先交已证静态，22:04核整合与缺口，允许提前可用结果"
+}

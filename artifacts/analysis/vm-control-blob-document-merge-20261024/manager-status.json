@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "integrationState": "received-limited-static-director-reviewed",
+  "reviewSHA": "30F8D805B0325C795666F5E6A1F77443F7E96E542EB0CD6E76FA63BD88C373BB",
+  "fragmentSHA": "116DE8BFAC708BE3FFF31ABF8E3BB251DDB4FBD058C80A55BEC92B93748316D4",
+  "wholeAccepted": false,
+  "productImplementationApproved": false,
+  "owner": "delivery manager; update only after actual static receipt review",
+  "notes": "Root direct receipt confirms director concentrated static review and document-only merge authorization. B01-B07 supplement boundaries;10 dispositions unchanged. O06 whole acceptance and product implementation approval remain false. 主控成品审核后明确要求修正过时核收时态，片段/生成源/冻SHA同步，10处置语义不变。",
+  "integratedReceipt": {
+    "path": "artifacts\\analysis\\vm-control-blob-evidence-receive-20261024\\integrated-static-receipt.json",
+    "sha256": "2921F61BA00DDBC62AB044735D2D69FAC51C6AD3AE5935E448181AC6A93B59BC"
+  },
+  "vmDeliverySHA": "2FC716D0DB273ACC4B4BC37940A0EBDDF16144893962E1D5B0D974C07742DD0D",
+  "receivedScope": "18 reports/115 references/13 DLL zero drift;12 segments are static evidence not acceptance denominator; originalVMruntime0",
+  "deliverySnapshot": {
+    "path": "artifacts/analysis/vm-control-blob-evidence-receive-20261024/delivery-snapshot.json",
+    "sha256": "2FC716D0DB273ACC4B4BC37940A0EBDDF16144893962E1D5B0D974C07742DD0D"
+  },
+  "directorReviewedStateRequirements": "received-limited-static-director-reviewed requires actual manager addendaPath and addendaSHA; not selected until received",
+  "addendaPath": "artifacts/analysis/vm-blob-control-architecture-review-20261024/director-final-addenda.json",
+  "addendaSHA": "20474805019F7A15F1D60918E2BA84F7A5F7F585775DC0F84089141CB8A7AA6E",
+  "historicalInputIdentities": {
+    "reviewSHA": "BEF525CDCA96ADBC3BC41A4F2A2FC7EB92205E3DE17692F8B962DB136589D4CB",
+    "fragmentSHA": "9EA92FC444949575B0D5FD1474FDEEDA30A08AAEE4B998AD1F25591416687D69"
+  },
+  "runtimeCheckpoint": {
+    "path": "artifacts\\analysis\\vm-control-blob-evidence-receive-20261024\\runtime-checkpoint-2204.json",
+    "sha256": "28B32BAE23E379EF1429C3441AB826A41340D513CDA2C23A20C11D474BEEDA43"
+  }
+}

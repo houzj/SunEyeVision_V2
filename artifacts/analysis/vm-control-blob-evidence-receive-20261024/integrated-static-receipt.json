@@ -1,0 +1,620 @@
+{
+  "at": "2026-10-24T21:53:46.584802+08:00",
+  "status": "STATIC_PACKAGE_INTEGRITY_RECEIVED",
+  "deliveryPath": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\delivery.json",
+  "deliverySHA": "2FC716D0DB273ACC4B4BC37940A0EBDDF16144893962E1D5B0D974C07742DD0D",
+  "reports": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\task.json",
+      "matches": true,
+      "actualSHA": "521FAA7228D6405A5953EA267AC49F2474A461FBE53564260DCE7CC5CDEC62AB"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\decision-questions.json",
+      "matches": true,
+      "actualSHA": "BFA903444717318992D2937F0DC511C952D997EB2A1E67FAD3178CB27E4066C1"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\library-layer-inventory.json",
+      "matches": true,
+      "actualSHA": "E64556334A5D97A645B3AC5160AADBEE533D84165FA525D4E1BA5A59DBADEBEF"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\root-findings.json",
+      "matches": true,
+      "actualSHA": "852D55134360088FE2EB12864A4A95E4305F464C46BEA1A8BD75DACEAB788021"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\blob-group-links.json",
+      "matches": true,
+      "actualSHA": "DF5B9B7AF06470823AAD5B27BD713825429DA8B799482ED6F811CB8CA8F71E46"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\template-map.json",
+      "matches": true,
+      "actualSHA": "E8038CE3AC0A8D196A3F203E896E530938F6FDCF32BB3EB81805E778E0281470"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\xmlui-provenance.json",
+      "matches": true,
+      "actualSHA": "8F44C758AA76204E06C1836233461ADD2E9EAA480F0BA9FAAA54E2C82467432B"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-provenance.json",
+      "matches": true,
+      "actualSHA": "991A603A1E64915F844AE77EEC4E241893DB83C1443E285CBE27F5EE70F386E4"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\enumeration-provenance.json",
+      "matches": true,
+      "actualSHA": "2946BAF57BEB77537C4DB1306FC788C8D6BB1E8DC12138370817E15200A73FAB"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\roi-input-bridge-review.json",
+      "matches": true,
+      "actualSHA": "1B0425C2AAECEC72A7672A9782189D8353320DE3156F7E1A9388A700A261B70F"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\coverage-boundary.json",
+      "matches": true,
+      "actualSHA": "785723398B50D97E96186CFBA41137F6ED5DD6DBA2F4C1251431C76724838ED4"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\integrated-verification.json",
+      "matches": true,
+      "actualSHA": "C4751302C8DE384124A0ABDD6F8BEC75F29518E78DFE8B722F51C575933FEEEA"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\source-findings.json",
+      "matches": true,
+      "actualSHA": "BA52428728B7C3254D65125FA49E096E417643D61DD44B7398E036C989673E8F"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\verification.json",
+      "matches": true,
+      "actualSHA": "674872545A945C1E20D474392FE097ED7DE1E8FDD8DC835AFAFAF8AEAB3CA458"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\decompilation-manifest.json",
+      "matches": true,
+      "actualSHA": "AD3D908EA6D54448CA4E88C42D11ADC558B6D12F0FAF1FADFAFADADA4882B081"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\decompilation-additional-manifest.json",
+      "matches": true,
+      "actualSHA": "FDA6FF6E87889F9672A6D1CE83F0D4AC7B0F8A946B3A622C51F055654410BFEC"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\decompilation-ownership-manifest.json",
+      "matches": true,
+      "actualSHA": "B1C4C13A3D857D0317EE5EC05E301AEE8219290D0F3D686C30F5476C01BE1697"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\runtime\\finite-review.json",
+      "matches": true,
+      "actualSHA": "5C9D184F7A8878F1DB5548AF6649C445DFD92EC5CD10A6D36A06481876DC8A8E"
+    }
+  ],
+  "referenceChecks": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\JOINT_COLLABORATION_PROTOCOL.md",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.WPF.dll",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlParser.dll",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlUI.dll",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.Core.dll",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\PublicFile\\x64\\VM.PlatformSDKCS.dll",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\decompilation-manifest.json",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\decompilation-additional-manifest.json",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\decompilation-ownership-manifest.json",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\diagramitemtemplate.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\mainviewcontrol.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\moduleresultview.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\paramsconfigcontrolbase.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\paramstabcontrolbase.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\procedureconfigcontrol.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\ParamSubscribeWindow.xaml.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\diagramitemtemplate.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.Base.DiagramArea.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\procedureconfigcontrol.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ParamsTabControlBase.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\paramstabcontrolbase.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\paramsconfigcontrolbase.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ParamsConfigControlBase.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.VmModuleExtern.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.AlgorithmTabRoot.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.AlgorithmTabRoot.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.AlgorithmTabRoot.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.AlgorithmTabRoot.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.Command.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.Setter.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.ExcuteMethodOperation.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.ExecuteBottomCommand.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.BottomCommand.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.BottomCommand.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.BottomCommand.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.BottomCommand.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.BottomCommand.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ParamsConfigControlBase.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ParamsConfigControlBase.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.Tab.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.NameValueItem.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.VmModule.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.PlatformSDKCS.ModuleManager.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.VmSolution.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.VmSolution.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.MainViewControl.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\mainviewcontrol.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ModuleResultView.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ModuleResultView.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ModuleResultView.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.DataForUI.ModuleDisplayDecorator.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlUI.MyDataTemplateSelector.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.ModuleParam.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.ModuleParam.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ParamsConfigControlBase.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.VmModule.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.VmModule.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\ParamSubscribeWindow.xaml.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.ModuleParam.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\ParamUserControl.xaml.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\UserTempConverter.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\MyDataTemplateSelector.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\GroupsRoot.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\GroupLinkItem.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\ParamsTabUserControl.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\ParamUserControl.xaml.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\UserTempConverter.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\BridgeItemBase.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.GetFrontParamItemsOperation.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.GetSelectedCombinationOperation.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.VmModule.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.EnumerationG.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\VM.Core.VmIO.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.RoiDisplayOperation.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.SetCombinationSourceOperation.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.SetFilterSourceOperation.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.SetCombinationSourceOperation.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\VM.Core.VmIO.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.VmModule.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.PlatformSDKCS.ModuleManager.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VM.Core.ModuleParam.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.NameValueItem.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ModuleResultView.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.VmModuleExtern.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.AlgorithmTabRoot.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\selected-original\\Apps.XmlParser.ParamTab.ROISelecter.decompiled.cs",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.Style.dll",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.ColorFun.dll",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.Localization.dll",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.Winform.Release.dll",
+      "shaMatches": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
+      "shaMatches": true
+    }
+  ],
+  "binaryChecks": [
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.PcUI.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.XmlParser.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.XmlUI.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VM.Controls.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VM.ModuleControl.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VM.PcUI.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VMBaseControls.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VMControls.BaseInterface.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VMControls.Data.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VMControls.Interface.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VMControls.RenderInterface.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VMControls.WPF.dll",
+      "matches": true
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VMControls.WPF.Release.dll",
+      "matches": true
+    }
+  ],
+  "problems": [],
+  "chainSegments": 12,
+  "originalVmExecuted": false,
+  "wholeAccepted": false,
+  "architectureSupplementReview": "已交主控，待补证是否改变10项处置的集中复核，不由经理改判",
+  "checkpointMeaning": "22:04为目标检查点，提前交付提前核完整性，不空等；实机能力仍到点重估"
+}

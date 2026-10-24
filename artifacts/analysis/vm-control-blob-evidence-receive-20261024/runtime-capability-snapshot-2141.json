@@ -1,0 +1,518 @@
+{
+  "schemaVersion": 1,
+  "taskId": "O06-VM-CONTROL-BLOB-ASSEMBLY-20261024",
+  "status": "finite-static-review-delivered-runtime-unverified",
+  "createdAt": "2026-10-24T21:23:40.9061619+08:00",
+  "reviewer": "01a159e5-6571-7ab2-a12d-6ece9db18e69",
+  "requestedBy": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+  "scope": "bounded O06 control-library and Blob ROI UI evidence review; no product edits and no application/device/probe launch",
+  "capability": {
+    "computerUseApi": "CUA available for browser inventory",
+    "nativeWindowsApps": [],
+    "browserTabs": [
+      {
+        "url": "file:///D:/MyWork/SunEyeVision_V2/docs/04-%E5%B7%A5%E5%85%B7%E8%AE%BE%E8%AE%A1/%E6%9E%B6%E6%9E%84%E5%AF%B9%E7%85%A7/2026/10/21/%E8%87%AA%E7%A0%94%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%E7%BB%B4%E6%8A%A4/%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/optimization-o06.html#br-blob-controls",
+        "title": "O06 图像、ROI、图形文字及坐标一致性"
+      }
+    ],
+    "actualWindowEnumeration": "cua.listWindows was present in docs but unavailable at runtime (is not a function)",
+    "processNameQuery": [
+      "VisionMaster",
+      "VmModule",
+      "SunEye",
+      "VMPlatform"
+    ],
+    "matchingProcesses": 0,
+    "installedVmExecutableFound": true,
+    "currentVmGuiCapability": "No verified owned, controllable VM window/process was available in this session; no launch attempted. The process-name query returned zero matches only for the four names listed.",
+    "filesExecuted": [],
+    "realDeviceAccessed": false,
+    "performanceSampled": false
+  },
+  "versionIdentity": {
+    "installedFiles": [
+      {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\VisionMaster.exe",
+        "bytes": 1425920,
+        "fileVersion": "4.4.1.1334440(2024/08/01 17:25:50)",
+        "sha256": "42e2437780ec21c9d1ade2d07ace0a26635961f5c90559934a7fde7e233e0c23",
+        "identityType": "installed-file",
+        "loadedByRunningProcess": false
+      },
+      {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlUI.dll",
+        "bytes": 1039872,
+        "fileVersion": "4.4.2.1533753(2025/04/29 13:58:28)",
+        "sha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+        "identityType": "installed-file",
+        "loadedByRunningProcess": false
+      },
+      {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlParser.dll",
+        "bytes": 713728,
+        "fileVersion": "4.4.2.1532435(2025/05/10 14:13:33)",
+        "sha256": "78ec7ae1e5adefff29197099c7109b153a3f75d092b7c3e9dc253d8c1b25a8d1",
+        "identityType": "installed-file",
+        "loadedByRunningProcess": false
+      },
+      {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMBaseControls.dll",
+        "bytes": 561664,
+        "fileVersion": "4.3.0.1066097(2023/07/17 17:19:51)",
+        "sha256": "d3ed7ce6cca860ac89d671dc0fe4ee239a97063d18bed94d3ad97595d5d52555",
+        "identityType": "installed-file",
+        "loadedByRunningProcess": false
+      },
+      {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModu.dll",
+        "bytes": 248832,
+        "fileVersion": null,
+        "sha256": "4de695d8c3051045c9010739686f94c32d66a36ee486207fe749fb183fff4c9a",
+        "identityType": "installed-file",
+        "loadedByRunningProcess": false
+      }
+    ],
+    "conclusion": "These installed identities are not proven as a single coherent loaded runtime: executable reports 4.4.1.1334440, Apps.XmlUI 4.4.2.1533753, Apps.XmlParser 4.4.2.1532435, VMBaseControls 4.3.0.1066097. No active process exists to prove which files a real debug window would load."
+  },
+  "priorRuntimeEvidence": {
+    "qualifyingOriginalVmBlobRoiCaptureLocated": false,
+    "inspectedArchives": [
+      "analysis/selfdev-support/VM-BLOB-NATIVE-MINIMAL",
+      "analysis/selfdev-support/VM-BINDING-TREE-INTERACTION",
+      "analysis/manual-acceptance"
+    ],
+    "blobEvidencePath": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-BLOB-NATIVE-MINIMAL\\native-minimal-evidence.json",
+    "blobEvidenceAuthority": "static-only native fragments",
+    "blobRuntimeExecuted": false,
+    "blobGuiDeviceDotnetProbeStarted": false,
+    "matchedSampleIdentity": null,
+    "whyNotReusable": "No qualifying original-VM UI/ROI capture in the inspected records, no sample identity tied to such a capture, and no active original VM process/window to establish a loaded-file baseline. Existing reconstructed-product manual acceptance artifacts cannot substitute for original VM runtime evidence."
+  },
+  "staticFindings": [
+    {
+      "id": "S1",
+      "area": "control template and ROI tool choices",
+      "authority": "decompiled source and XAML",
+      "refs": [
+        "Apps.XmlUI.ParamTabControl.RoiSelectControl: class exposes image width/height and CanUpDateROI dependency properties; XAML ROI type buttons bind ValueChangedCommand and expose ImageViewBox with DrawROIType, IsStateForDrawROI, RoiAddCommand, RoiSelectedCommand."
+      ],
+      "conclusion": "The view layer supplies the control template and command bindings; behavior lives in ROISelecter and ImageViewBox, not the small code-behind.",
+      "unknown": "Whether the displayed control in the requested Blob debug scenario is this exact template instance was not runtime-confirmed."
+    },
+    {
+      "id": "S2",
+      "area": "public Group ROI display",
+      "authority": "decompiled source and XAML",
+      "refs": [
+        "ROIConfigControl.xaml binds RoiSelectControl.DataContext to IDecorate.DecorateSource; ImageViewBox binds ImageDataSource=ImageSource, ROIList, DrawROIType, IsStateForDrawROI, AddROICommand and selection command. ROIConfigControl code-behind moves ImageViewBox to FullScreen, ShowDialog, then removes it, clears DataContext and reattaches the child after normal dialog return."
+      ],
+      "conclusion": "This is a Group ROI display/fullscreen panel connected through IDecorate.DecorateSource; it is a different UI semantic from the Blob public parameter GroupLink ROI configuration. It does not establish the Blob public-window caller or inheritance source.",
+      "unknown": "Blob public parameter-window caller, top-level GroupLink expansion route, and actual close/error lifecycle are not established by this panel evidence. The framework ROI registration can be statically traced separately through Tab.OnXmlLoaded."
+    },
+    {
+      "id": "S3",
+      "area": "image source selection",
+      "authority": "decompiled source and XAML",
+      "refs": [
+        "RenderControlBase.xaml binds image list ComboBox ItemsSource=ImageViewList and SelectedItem=SelectedImage TwoWay; ParamsConfigWithRenderControlBase exposes SetSelectedImage/GetSelectedImageDisplayName and sends selected-image changes."
+      ],
+      "conclusion": "This is a generic render-control display-image selector. It describes displayed-image selection, not the Blob algorithm input-image binding/source. It cannot establish which image the Blob algorithm receives.",
+      "unknown": "Blob input source is declared through the shipped Blob/Group XML and must be followed through the existing Group binding-tree evidence; no UI selection or algorithm input was executed in this review."
+    },
+    {
+      "id": "S4",
+      "area": "ROI draw and inheritance/normalization",
+      "authority": "decompiled source",
+      "refs": [
+        "Blob Group.xml Region：候选树 GetFrontCombinationTreeOperation(ROIBOX)，CurValue trigger 调用 SetCombinationSourceOperation(InputROI)，初始化 GetSelectedCombinationOperation(InputROI)。该 operation 写 vmModule.GetIO(InputROI).RelateIO=GetIoByPathFromAround(selected path)，并按选中的 combination filter 设置 RelateIndex。",
+        "ROICenterX/ROICenterY/ROIWidth/ROIHeight/ROIAngle 等参数字段使用 GetFrontFilterTreeOperation(float) 与 SetFilterSourceOperation(field name)，这是参数/标量源订阅，不等同 ROI 字节序列化。",
+        "独立的 IGetROI.SetRoiList/GetRoiList 与 IUserBytesData[ComName] 是 ROI 模型列表编码/解码路径；不能把 InheritWayGroup2 选择值解释成该接口调用。",
+        "源码：Group.xml:1119-1147、1150-1178、1308 起；DynamicIO.cs:186-255；SetCombinationSourceOperation.cs:25-90。"
+      ],
+      "conclusion": "静态证据已建立两种不同传递：Region 以 ROIBOX 组合树选择来源，写到 Blob InputROI 的 VmIO.RelateIO/RelateIndex；ROICenterX 等按参数字段使用过滤树并设置 RelateIO。ROISelecter 的 GetRoiList/SetRoiList 另处理 ROI 列表字节序列化。已确认声明与关系设置，不声称实机当次选择或算法消费值已运行。",
+      "unknown": "运行时实际选择的来源、不同 InheritWay 数值下 ROI/参数模式的可见分支和值结果仍未测；Group.xml 的 InheritWayGroup2 声明本身不证明执行 IGetROI.SetRoiList。"
+    },
+    {
+      "id": "S5",
+      "area": "numeric backfill and write bridge",
+      "authority": "decompiled source and XAML",
+      "refs": [
+        "ROIStackControl data template sends selected CurROIData to the shape editor; BoxROIStack coordinate/size fields are TwoWay bindings to ROIData properties and OnStartValueChange calls ROIValueChangedCommand. ROISelecter.InitRoi installs DataChangedCommand; changes invoke RoiParamChange→SetValue→NormalizeReversParse→SetBinaryData→IUserBytesData[ComName], followed by sequence/image-size writes and PreExecuteRun when changed. UpdateROI reads current module bytes and applies decoded values to existing ROI objects while visible and CanUpdateROI.",
+        "调用方已静态确认：ModuleResultView.OnModuleResultChanged（decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs:601-605）在 ROIVisible && !IsDragROI 时调用 ModuleSource.UpdateROI；VmModuleExtern.UpdateROI（:2112-2116）取 Params.GetParamRoot().UpdateROI；AlgorithmTabRoot.UpdateROI（:469-474）遍历 ROISelecters 调用各 IROISelecter.UpdateROI。"
+      ],
+      "conclusion": "绘制/数值编辑的静态写回链成立；反向回填 caller 也已定位：模块结果变化时仅当 ROI 可见且未拖动，ModuleResultView 才调用 ModuleSource.UpdateROI，经 VmModuleExtern→AlgorithmTabRoot→IROISelecter.UpdateROI，将当前模块参数字节回填到 ROI 对象。具体事件时序与 VM 窗体内观察结果仍未运行确认。",
+      "unknown": "同一 Blob 参数实例在实际一次绘制、编辑和模块结果刷新时的先后顺序、字节值及 UI 可见变化尚未运行观察。"
+    },
+    {
+      "id": "S6",
+      "area": "release/close lifecycle",
+      "authority": "decompiled source",
+      "refs": [
+        "ROIConfigControl fullscreen normal-return path detaches, clears DataContext, and reattaches ImageViewBox; ROISelecter CustomVisibleA=false and OnShownFinish call StopDrawROI, clearing selected draw type/state; ParamsConfigControlBase OnParamsConfigChanged disposes previous AlgorithmTabRoot before replacing DataContext (separate Apps.XmlUI path)."
+      ],
+      "conclusion": "Several explicit UI/model cleanup points exist for draw-state stop and replacement/fullscreen transitions.",
+      "unknown": "Dialog cancellation/error, Blob debug window owner close, ROI collection/event unsubscription and native control destruction were not verified."
+    }
+  ],
+  "sourceEvidence": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml.cs",
+      "sha256": "dccfea1f6206cbbccaac11e788fa8fe57c78a9f5e2f52274c9017dc5f219a7df",
+      "bytes": 1293
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml",
+      "sha256": "d8a7b7d07ab9d06d781f5a4a1b10020d137007d0e5e973f701ca6239a83381eb",
+      "bytes": 18212
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl.DisplayForGroupControl\\ROIConfigControl.xaml.cs",
+      "sha256": "32d482054548c7e0a7001f59236d907c9c68b2c8a5f2f0796a465359927c469f",
+      "bytes": 1092
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl.DisplayForGroupControl\\ROIConfigControl.xaml",
+      "sha256": "f0d9b9e524afb0e78bef6c4ad6e9a2cd213124622b5a5d3a95af536aef21703d",
+      "bytes": 3499
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\paramtabcontrol\\listview\\roiselectdatatemplate.xaml",
+      "sha256": "16748f53467c58c978581b25c0233c4359e6c70770c63b551c1d0e0fff4e8f03",
+      "bytes": 8356
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ROIStackControl.cs",
+      "sha256": "a2042dee4151fe4551b50846b54995add1d4e4bff5d8fa8c269e64d2baa1008c",
+      "bytes": 1535
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml",
+      "sha256": "2c55fe06bb710704155c77f0f0ae1eb0f7eb8a01a9cdb3c667ee54d9da93d893",
+      "bytes": 9118
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ItemInterface\\IROISelecter.cs",
+      "sha256": "8fa7c0e70a9c7de8485fe9f98ad9c4b8896769a2fd1dde2137ab65a4e682e332",
+      "bytes": 574
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\ROISelecter.cs",
+      "sha256": "b96735a3a474f02b9f6d3767e340bed4dc6e0ffd4c8c123547540b08665bc3c8",
+      "bytes": 59225
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\ROISelecter_Extern.cs",
+      "sha256": "b2c14433c458328de2e39d93b336f41077e7f6889d09889e5934db381e250c62",
+      "bytes": 324
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\RenderControlBase.xaml",
+      "sha256": "a778eb6188612c3ec33b37e3d488602862ab79d34c7feaae818fe0335f6c1f26",
+      "bytes": 12140
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\RenderControlBase.xaml.cs",
+      "sha256": "e13f97e8e82616056bf1ca02efb61f15527fa7ce8ca0724ef501c9a8f5efac67",
+      "bytes": 77260
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ParamsConfigWithRenderControlBase.xaml.cs",
+      "sha256": "9329132dd3c5965b7ee3a492b9010c707421e182b029f72b69b97f38e166befd",
+      "bytes": 18103
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.DataForUI\\ModuleDisplayDecorator.cs",
+      "sha256": "ceda24b7fb93bcd9f02b77b23d42a839b1f737bf70cf3abc6b7786d11765740e",
+      "bytes": 61764
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-BLOB-NATIVE-MINIMAL\\native-minimal-evidence.json",
+      "sha256": "fb607e58c82f6abceb3eb485c371e7b2063a619e368fffc2da1bd96e36a617d8",
+      "bytes": 35534
+    }
+  ],
+  "runtimeConclusion": "Static source call paths were extended for source inheritance and ROI backfill. Three behavior questions still require a controlled runtime: actual loaded Control window type, continuous single-step close when a callback does not arrive, and CloseWindowCommand focus target. No original VM UI operation occurred because no verified owned, controllable instance/sample or safe no-callback harness was available. The queried-process zero-match applies only to four names.",
+  "nextActions": [
+    "Static Blob ROI inheritance and result-update backfill callers are now recorded with source paths, members and line ranges.",
+    "VM runtime owner: only when an owned controlled instance, approved non-device sample, disposable solution copy and safe no-callback harness are confirmed, perform the three runtimeOnlyQuestions in a bounded run and capture version/loaded assembly identity/sample hash.",
+    "Keep runtime-only behaviors unverified; do not launch or operate without controlled ownership and sample identity."
+  ],
+  "handoff": {
+    "testsRun": false,
+    "sourceAndProductUnmodified": true,
+    "otherWorktreeUnmodified": true,
+    "consumerAcceptance": "not yet recorded",
+    "state": "report written to assigned runtime directory; VM lead to review"
+  },
+  "architectureEvidencePolicy": {
+    "protocol": "JOINT_COLLABORATION_PROTOCOL.md V8.2 §2.2",
+    "adopted": true,
+    "rule": "只按实际观测记录UI/交互/运行；版本、输入、步骤和结果逐项可追溯；静态源码结论与运行观测分列；截图不证明实现完整或精确性能；未知保持待核",
+    "effect": "This review contains no executed UI observations and makes no architecture recommendation; static control-chain facts are inputs for the VM lead and technical director."
+  },
+  "observations": {
+    "actualObserved": [
+      "Installed executable and selected assemblies exist at listed paths; file versions and SHA256 were read from disk.",
+      "CUA inventory reports no native apps and provides one Edge documentation tab.",
+      "The documented cua.listWindows function was unavailable at runtime.",
+      "PowerShell query returned zero matches for the four queried process names VisionMaster, VmModule, SunEye and VMPlatform; this does not establish that no related process exists."
+    ],
+    "notObserved": [
+      "Blob public parameter-window instantiation of the ROI selector; actual ImageSource/group inheritance source selection; drawing and numeric backfill in that window; confirm/close and late event behavior."
+    ],
+    "inputs": [
+      "No approved non-device image sample was provided or selected; no sample was opened."
+    ],
+    "steps": [
+      "Read existing decompiled C# and XAML call/binding paths.",
+      "Read prior Blob static-only evidence and inspected existing manual-acceptance/evidence folders for qualifying original-VM ROI runtime records.",
+      "Read installed file version and SHA256 values without executing the files."
+    ],
+    "results": "No qualifying original-VM ROI runtime capture with a linked sample identity was located in inspected records; original UI flow not executed."
+  },
+  "deliveryTime": {
+    "target": "finite JSON within approximately 30 minutes of assignment",
+    "recordedAssignmentTime": "not captured in this execution context",
+    "status": "delivered in current turn",
+    "timeVariance": "cannot calculate without a recorded assignment timestamp",
+    "nextCheckpoint": "VM facility/resource decision at 2026-10-24T21:49:00+08:00; if blocked, re-estimate at 22:04 without inventing runtime ETA"
+  },
+  "provenanceBinding": {
+    "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\xmlui-provenance.json",
+    "sha256": "8F44C758AA76204E06C1836233461ADD2E9EAA480F0BA9FAAA54E2C82467432B",
+    "input": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlUI.dll",
+    "inputSha256": "639D0FB9DFCA81E38DF690E201B73874CE006D1361B689DDC6D5F41F7B0B04FD",
+    "decompiler": "ilspycmd 11.1.0.9782",
+    "targetExecuted": false,
+    "matches": [
+      {
+        "sha256": "DCCFEA1F6206CBBCCAAC11E788FA8FE57C78A9F5E2F52274C9017DC5F219A7DF",
+        "oldSourceByteIdentical": true,
+        "file": "RoiSelectControl.xaml.cs"
+      },
+      {
+        "sha256": "D8A7B7D07AB9D06D781F5A4A1B10020D137007D0E5E973F701CA6239A83381EB",
+        "file": "RoiSelectControl.xaml"
+      },
+      {
+        "sha256": "F0D9B9E524AFB0E78BEF6C4AD6E9A2CD213124622B5A5D3A95AF536AEF21703D",
+        "file": "ROIConfigControl.xaml"
+      },
+      {
+        "sha256": "16748F53467C58C978581B25C0233C4359E6C70770C63B551C1D0E0FFF4E8F03",
+        "file": "roiselectdatatemplate.xaml"
+      },
+      {
+        "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63",
+        "oldSourceByteIdentical": true,
+        "file": "paramusercontroldatatemplate.xaml"
+      }
+    ]
+  },
+  "decisionQuestions": [
+    {
+      "id": "D1-blob-public-roi-wiring",
+      "decisionImpact": "判断 Blob 参数窗口是否实际复用公共 ROI 控件，决定该工具可否接入公共绘制/回填链。",
+      "existingEvidence": "Blob XML SHA256 34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC 声明 RoiSelectGroup/RoiSelect；Tab.OnXmlLoaded（analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/Tab.cs:234-245）遍历 _Collection 并将 IROISelecter 加入 AlgorithmTabRoot.ROISelecters。当前 Apps.XmlUI 资源 paramusercontroldatatemplate.xaml:853-855 明确 ROISelecter DataTemplate → RoiSelectControl，并把 CanUpDateROI 绑定到 IROISelecter.CanUpdateROI；RoiSelectControl.xaml.cs 与 XAML 的当前 DLL 导出哈希已由 provenanceBinding 记录，旧/新 C# 字节一致。",
+      "exactGap": "静态模板声明与 `GetExternTabWin` 类型装配策略已确认；剩余缺口是目标进程当次加载了哪个 Control 程序集、实际创建哪一个 TabWinBase 派生窗及其 DataContext，需运行时身份核对。",
+      "evidenceMode": "先静态追 XML、MyDataTemplateSelector、参数模板和 Tab.OnXmlLoaded；实机只确认最终实例及交互绑定。",
+      "allowedSample": "当前无样本；后续只用所有者批准的非设备图像并记录 SHA256。",
+      "stopCondition": "出现真实设备、未知安装实例、非批准样本或需改变他任务窗口时立即停止。",
+      "ownerAndTiming": "静态补链：当前验证工程师；运行：VM runtime owner，受控实例和样本到位后安排。"
+    },
+    {
+      "id": "D2-inheritance-input-source",
+      "decisionImpact": "确定 ROI 继承读自哪个图像/Group 来源及继承值如何落到 Blob 参数，影响数据流与参数所有权模型。",
+      "existingEvidence": "Group.xml Region 在 1119-1147 行选择 ROIBOX 候选并通过 SetCombinationSourceOperation(InputROI) 写入 Blob InputROI 的 VmIO.RelateIO/RelateIndex；参数模式 ROICenterX 等在 1150-1178 行通过 SetFilterSourceOperation 单独订阅。底层 operation 静态成员在 DynamicIO.cs:186-255、SetCombinationSourceOperation.cs:25-90、SetFilterSourceOperation.cs。IGetROI 字节列表 API 是不同链。",
+      "exactGap": "以上静态关系建立完成；实机未确认 InheritWay 各模式的当前选择、所选来源及应用后数值/显示结果。",
+      "evidenceMode": "源 XML、DynamicIO 和 operation 成员已经静态确定来源/字段写入关系；只将当次 UI 选择和运行结果留给实机核验。",
+      "allowedSample": "当前无样本；后续仅批准的非设备图像。",
+      "stopCondition": "不能静态确认时标未知；不得拿 Group ROI 显示面板或 RenderControl 显示图像选择替代。",
+      "ownerAndTiming": "静态复核：当前验证工程师；运行：VM runtime owner，资源到位后。"
+    },
+    {
+      "id": "D3-draw-numeric-writeback",
+      "decisionImpact": "确认画布拖动与数值编辑之间的方向、写回事件和序列化边界，决定 ROI 修改的即时性及持久化点。",
+      "existingEvidence": "ROISelecter/ROIStack/BoxROIStack 源码有 TwoWay 字段、ROIValueChangedCommand、DataChangedCommand、RoiParamChange→SetValue→SetBinaryData→IUserBytesData[ComName]；UpdateROI 读取模块字节并受 visible/CanUpdateROI 门控。",
+      "exactGap": "静态回填调用方已经定位：ModuleResultView 模块结果变化且 ROIVisible && !IsDragROI → ModuleSource.UpdateROI → VmModuleExtern.UpdateROI → AlgorithmTabRoot.UpdateROI → 每个 IROISelecter.UpdateROI。待测为该受控实例中的先后事件与可见最终值/参数字节。",
+      "evidenceMode": "现有成员静态建立写回链；实机验证指定参数实例的事件顺序和最终字节。",
+      "allowedSample": "当前无样本；后续用批准非设备样本与可丢弃方案副本。",
+      "stopCondition": "需保存生产方案、调用设备或外部写入时停止。",
+      "ownerAndTiming": "静态链：已查；运行：VM runtime owner，受控实例和样本到位后。"
+    },
+    {
+      "id": "D4-close-late-event-release",
+      "decisionImpact": "判断确认/关闭后绘制状态、订阅和迟到回调是否仍可写回，决定关闭生命周期安全性。",
+      "existingEvidence": "源码有 StopDrawROI、fullscreen 正常返回后的 detach/clear/reattach、参数 DataContext 替换前 dispose；它们属于不同控件生命周期。",
+      "exactGap": "Blob 公共参数窗口的 owner/confirm/cancel/close 路径、异常关闭、事件退订与迟到写回尚未直接追完；需先查静态 close/dispose/unsubscribe caller，不能将结构未知归因于实机。",
+      "evidenceMode": "静态先查 owner/command/dialog close 和 dispose/unsubscribe；仅无法从调用时序确定的异步结果再用实机验证。",
+      "allowedSample": "只允许自有受控 VM、可丢弃方案副本及批准非设备样本。",
+      "stopCondition": "无自有控制窗口或批准方案副本，或涉及设备/其他进程即停止；不做破坏性事件注入。",
+      "ownerAndTiming": "静态缺口由 VM source analyst/验证工程师按任务分派；实机由 VM runtime owner，环境就绪后。"
+    }
+  ],
+  "blobPublicRoiTemplateTrace": {
+    "declaredModule": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+    "declaredModuleSha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC",
+    "groupDeclaration": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+    "groupSha256": "9129B82A0F9906DDE591347498A80E2E8C019C0FB959A721ECFD24FBBB5207DC",
+    "staticPath": [
+      {
+        "effect": "对 XML _Collection 中实现 IROISelecter 的 NameValueItem 执行 XmlLoadedTask 后加入 AlgorithmTabRoot.ROISelecters",
+        "lines": "234-245",
+        "member": "Tab.OnXmlLoaded",
+        "source": "analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/Tab.cs"
+      },
+      {
+        "effect": "RoiSelectControl 接收 CurImageWidth/CurImageHeight，CanUpDateROI 绑定 IROISelecter.CanUpdateROI",
+        "lines": "853-855",
+        "member": "ROISelecter DataTemplate",
+        "source": "root/current-xmlui/styles/paramusercontroldatatemplate.xaml"
+      },
+      {
+        "effect": "ROI buttons / ImageViewBox commands and draw-state bindings; hash recorded in provenanceBinding",
+        "lines": "resource hash only; source line locations not in this JSON",
+        "member": "RoiSelectControl",
+        "source": "root/current-xmlui/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml"
+      }
+    ],
+    "status": "static declaration and framework registration confirmed; exact resource-key dispatch and Blob window runtime instance remain unverified",
+    "semanticsWarning": "ROIConfigControl Group display panel and generic RenderControlBase image selector are different UI semantics and do not establish Blob public parameter wiring or algorithm input source."
+  },
+  "runtimeOnlyQuestions": [
+    {
+      "id": "R1-loaded-control-window-type",
+      "decisionImpact": "区分 Blob 实际打开自研专用 Control 窗，还是公共 ParamsTabControlBase；决定本工具 ROI 接线取证入口。",
+      "sourceKnown": "ProcedureConfigControl.GetExternTabWin 按当前 AppDomain 加载程序集和模块目录中的 ModuleTypeName+Control.dll 查找 TabWinBase 子类并选择第一个；Blob 目录静态盘点未见 Control.dll，但这不能排除已加载程序集。",
+      "exactGap": "目标进程本次实际加载的 Control 程序集身份和打开窗口运行时类型。",
+      "evidenceMode": "必须在独占自有实例记录 loaded module/assembly identity 和创建类型；不以磁盘目录推断代替。",
+      "allowedSample": "仅获批非设备样本和可丢弃方案副本；先确认实例归属。",
+      "stopCondition": "无独占自有实例、无法核实程序集身份或窗口归属时不启动/不操作。",
+      "status": "not executed; no controlled VM instance available"
+    },
+    {
+      "id": "R2-continuous-single-step-close-no-callback",
+      "decisionImpact": "确认连续模式中的单次执行在结果回调缺失时如何返回/关窗，影响执行停止与 ROI 更新的边界判断。",
+      "sourceKnown": "运行/停止 command 与结果回调订阅、等待路径已有静态证据；静态链不能替代特定时序下窗口是否闭合的观察。",
+      "exactGap": "只在获批隔离场景观察一次单步/连续交互中人为不触发结果回调时的退出和窗口状态；不得通过真实设备制造异常。",
+      "evidenceMode": "受控 UI 运行观察；仅当 VM runtime owner 提供安全可重置测试替身或非设备输入时执行。",
+      "allowedSample": "自有受控 VM、隔离方案副本、获批非设备输入；无回调条件须由测试替身安全产生。",
+      "stopCondition": "没有可控测试替身或操作会启动设备/持续后台任务时停止，不构造无回调故障。",
+      "status": "not executed; no controlled VM instance or safe no-callback harness available"
+    },
+    {
+      "id": "R3-close-window-command-focus-target",
+      "decisionImpact": "确定确定/关闭命令实际关闭参数窗还是焦点所在的其他窗口，影响关闭后旧事件和回填生命周期判断。",
+      "sourceKnown": "CloseParamsTabControl 静态调用 SystemCommands.CloseWindowCommand.Execute(null,null)，没有显式目标窗；源代码不能判定实际焦点路由。",
+      "exactGap": "在目标 VM 窗口与焦点条件下命令实际命中的窗口和关闭后回调。",
+      "evidenceMode": "必须用自有可丢弃参数窗运行并记录窗口身份；不触碰其他任务或用户窗口。",
+      "allowedSample": "自有受控 VM 和临时方案副本；确认仅目标参数窗口可被关闭。",
+      "stopCondition": "窗口所有权/焦点目标不能被隔离识别时不执行命令。",
+      "status": "not executed; no controlled VM window available"
+    }
+  ],
+  "capabilityAndSampleInventory": {
+    "checkedAt": "2026-10-24T21:41:00+08:00",
+    "taskScope": "O06 existing finite review only; read-only capability and sample inventory; no VM/device/application launch and no new harness/fault-injection facilities",
+    "uiAutomation": {
+      "powershellVersion": "7.6.5",
+      "powershellUiAutomationCommands": [],
+      "powershellUiAutomationModules": [],
+      "dotnetUiAutomationAssembliesPresent": [
+        "C:\\Windows\\Microsoft.NET\\assembly\\GAC_MSIL\\UIAutomationClient\\v4.0_4.0.0.0__31bf3856ad364e35\\UIAutomationClient.dll",
+        "C:\\Windows\\Microsoft.NET\\assembly\\GAC_MSIL\\UIAutomationTypes\\v4.0_4.0.0.0__31bf3856ad364e35\\UIAutomationTypes.dll",
+        "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\WPF\\UIAutomationClient.dll"
+      ],
+      "invoked": false,
+      "reason": "CUA native app inventory has no native VM window. Invoking UIAutomation from PowerShell would bypass the native desktop restriction; assembly presence alone is not permission or usable controlled access. No native UIA calls were made."
+    },
+    "existingExecutors": [
+      {
+        "path": "tests/VisionConfiguration.RoiHostChecks/Run.ps1",
+        "classification": "self-developed reconstructed WPF host checks; builds and launches its own test executable, explicitly not original VM desktop acceptance",
+        "used": false,
+        "decision": "not a substitute for original VM evidence"
+      },
+      {
+        "path": "tests/ContourMatch.TrainingPlaneChecks/Run-BoundedNative.ps1",
+        "classification": "bounded native algorithm child-process harness unrelated to UI/Blob runtime",
+        "used": false,
+        "decision": "not relevant; not launched"
+      },
+      {
+        "path": "tests/NativeEvidence/OriginalImageSourceProbe.cs",
+        "classification": "SDK-hosted original control probe; reports itself as not the installed desktop application process",
+        "used": false,
+        "decision": "does not answer original application window ownership/loaded Control type and was not launched"
+      }
+    ],
+    "installationIdentityReadOnly": {
+      "executable": "VisionMaster.exe 4.4.1.1334440 (2024/08/01 17:25:50); sha256 42e2437780ec21c9d1ade2d07ace0a26635961f5c90559934a7fde7e233e0c23",
+      "xmlUi": "Apps.XmlUI.dll 4.4.2.1533753 (2025/04/29 13:58:28); sha256 639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+      "xmlParser": "Apps.XmlParser.dll 4.4.2.1532435 (2025/05/10 14:13:33); sha256 78ec7ae1e5adefff29197099c7109b153a3f75d092b7c3e9dc253d8c1b25a8d1",
+      "loadedInTargetProcess": false,
+      "licenseStatus": "unknown; no application or licensing endpoint was run, and no license entitlement was inferred from installed files"
+    },
+    "sampleInventory": [
+      {
+        "path": "examples/assets/circle-sample.bmp",
+        "bytes": 3981366,
+        "sha256": "690B17333CE8A9F6FE8961C90D7F21FBD6472DBF0F7CC3443FC89DA43BB33ABA",
+        "repositoryTracked": true,
+        "knownUse": "referenced by self-developed editor/execution/image-source example plans and VisionWorkbench.LoadDemo",
+        "provenance": "repository-owned static BMP; acquisition provenance not established in this audit",
+        "approvedForOriginalVm": false,
+        "decision": "candidate only; do not open in original VM without owner approval"
+      },
+      {
+        "path": "analysis/images/circle-find-sample.png",
+        "bytes": 657006,
+        "sha256": "E21239F78B62411D015163F26B723842C495DFB0519836ADB7D8D22556B143F6",
+        "repositoryTracked": false,
+        "knownUse": "derived review image adjacent to the tracked BMP",
+        "approvedForOriginalVm": false,
+        "decision": "not selected; untracked and provenance/approval not established"
+      },
+      {
+        "path": "analysis/rejected-input-check.sol",
+        "bytes": 228,
+        "sha256": "CCD9452BE1F5613AEBF919E1A555823445E40C97BE2EA0C4BCD6D6D91E2A3A16",
+        "repositoryTracked": false,
+        "knownUse": "docs/SOLUTION-PERSISTENCE-BOUNDARY.md identifies this as an external-entity rejection fixture, not a valid vendor .sol solution",
+        "approvedForOriginalVm": false,
+        "decision": "must not use as runnable solution"
+      },
+      {
+        "path": "examples/editor-demo.vmx.json; examples/execution-subscription-demo.vmx.json; examples/image-source-plugin.vmx.json",
+        "repositoryTracked": true,
+        "knownUse": "self-developed .vmx.json demo plans; not original vendor .sol solutions",
+        "approvedForOriginalVm": false,
+        "decision": "not a disposable original-VM solution copy"
+      }
+    ],
+    "safeNoCallbackHarness": {
+      "found": false,
+      "search": "read-only search of existing tests and O06 evidence for no-callback/timeout/stall harness",
+      "newFacilityCreated": false,
+      "decision": "cannot safely execute R2 without an owner-provided controlled test harness; no fault injection created"
+    },
+    "releasePlan": {
+      "currentBlocker": "No verified owned/controllable original VM window or process, no owner-approved sample and disposable vendor solution copy; current UI Automation path is not authorized under native desktop restriction; safe no-callback harness absent.",
+      "owner": "逆向负责人｜VM取证统筹 coordinates the controlled facility and authorization; VM runtime owner provides the owned instance, disposable solution, approved sample and safe no-callback harness; verification engineer runs only the bounded observations.",
+      "releaseActions": [
+        "Provide a VM instance explicitly owned by this task and a supported/native-visible observation mechanism without bypassing desktop restrictions.",
+        "Approve one non-device image by exact path/SHA256 and provide a disposable original-format solution copy.",
+        "For R2, provide an existing safe callback-miss test path; otherwise leave R2 unexecuted."
+      ],
+      "readyEstimate": "not estimable until those resources are handed off; after handoff, first revalidate identity/capability, then estimate the bounded run rather than promise a runtime duration now",
+      "investigationDeadline": "2026-10-24T21:49:00+08:00",
+      "reestimateCondition": "If any required resource is still absent at 21:49, record the precise blocker and re-estimate at 22:04 against the resource handoff only; VM/GUI work remains paused until released.",
+      "ownerCoordination": "resource handoff is for the VM evidence lead/manager to coordinate; verification engineer does not start or take over other users' processes"
+    },
+    "computerUseSkillRead": {
+      "path": "C:\\Users\\houzhongjie\\.codex\\plugins\\cache\\openai-bundled\\computer-use\\26.1016.62342\\skills\\computer-use\\SKILL.md",
+      "result": "filesystem returned Access denied and path unavailable to this execution environment",
+      "effect": "did not escalate or use alternate desktop control; adhered to provided CUA API policy and did not invoke UIAutomation"
+    }
+  }
+}

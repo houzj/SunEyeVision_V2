@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-24T22:04:33.318218+08:00",
+  "status": "PASS",
+  "changes": [
+    {
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o06.html",
+      "proposal": "artifacts\\analysis\\vm-control-blob-document-merge-20261024\\application-proposed.html",
+      "beforeSHA": "A5752EF598583D6F3370D35534CF52C039EF6C2BAA7BEBF085B727B3F69F296D",
+      "afterSHA": "3CA8A8E1190B6A2C0046D3BC7801B58E66273D9BE47868655F8CC0ADF05EC9BF"
+    },
+    {
+      "path": "artifacts\\analysis\\review_blob_controls_algorithm_structure_20261024.py",
+      "proposal": "artifacts\\analysis\\vm-control-blob-document-merge-20261024\\hook-application-proposed.py",
+      "beforeSHA": "C840FD954330FF27B7B8786F3D41F052DC04F359BF98978E370AA506B3FC47F4",
+      "afterSHA": "D2C8C1ACBB3030980EB65562F1CE2835A15A1D456822A9580726602E48CA0020"
+    }
+  ],
+  "actualPageSHA": "3CA8A8E1190B6A2C0046D3BC7801B58E66273D9BE47868655F8CC0ADF05EC9BF",
+  "uniqueIds": 643,
+  "oldIdsAndLinksRetained": true,
+  "outsideControlsH4BytesIdentical": true,
+  "fullPageAndActualGeneratorIdempotent": true,
+  "dispositions": 10,
+  "runtimeUnknownRows": 5,
+  "selectedStaticChainRows": 12,
+  "newLocalLinksVerified": [
+    "../../../../../../../../artifacts/analysis/vm-blob-control-architecture-review-20261024/architect-review.json",
+    "../../../../../../../../artifacts/analysis/vm-control-blob-evidence-receive-20261024/delivery-snapshot.json",
+    "../../../../../../../../artifacts/analysis/vm-control-blob-evidence-receive-20261024/integrated-static-receipt.json",
+    "../../../../../../../../artifacts/analysis/vm-control-blob-evidence-receive-20261024/runtime-capability-receipt.json"
+  ],
+  "directorDecisionPath": "artifacts/analysis/vm-blob-control-architecture-review-20261024/director-final-addenda.json",
+  "directorDecisionSHA": "20474805019F7A15F1D60918E2BA84F7A5F7F585775DC0F84089141CB8A7AA6E",
+  "originalVmExecuted": false,
+  "productImplementationApproved": false,
+  "wholeAccepted": false,
+  "productBuilds": 0,
+  "browserVisual": "NOT_VERIFIED",
+  "wholeSiteRegenerated": false
+}

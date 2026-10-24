@@ -1,0 +1,42 @@
+{
+  "plannedCheckpoint": "2026-10-24T22:04:00+08:00",
+  "actualReassessmentAt": "2026-10-24T22:05:10+08:00",
+  "checkpointVariance": "文档应用/QA结束后1分10秒实际复核，如实记钟，不反造准点。",
+  "status": "BOUNDED_CAPABILITY_REVIEW_COMPLETE_RUNTIME_UNAVAILABLE",
+  "newSupportedDesktopFacilityHandedOff": false,
+  "nativeCapability": "当前任务工具明确禁用native desktop，未获新支持环境；禁止终端/UIA绕过",
+  "ownedWindowHandedOff": false,
+  "boundedProcessNameQuery": [
+    "VisionMaster",
+    "VmModule",
+    "SunEye",
+    "VMPlatform"
+  ],
+  "matchingQueriedProcesses": 0,
+  "processQueryLimit": "仅这四个名称无匹配，不推全机所有VM实例都不存在",
+  "runtimeStarted": false,
+  "runtimeStartEstimate": null,
+  "license": "unknown",
+  "owners": [
+    {
+      "owner": "交付经理",
+      "missing": "支持的原VM桌面设施及独占窗口",
+      "action": "协调获支持的执行环境；当前任务无法自行启用被禁native能力",
+      "readyEstimate": null
+    },
+    {
+      "owner": "VM逆向负责人",
+      "missing": "独占原实例及实际加载版本组合、选定非设备样本/可丢弃方案",
+      "action": "支持设施到位后固定实例/版本，按已有授权选候选图并创建自有可丢弃方案",
+      "readyEstimate": "依赖支持设施交接，暂无可靠时刻"
+    },
+    {
+      "owner": "VM实机取证岗",
+      "missing": "可执行有限原VM观察的支持路径",
+      "action": "设施交接后复核能力/身份再给有界观察时长；R2无安全现成场景保未知，不注入故障",
+      "readyEstimate": "依赖设施与实例就绪，未开测"
+    }
+  ],
+  "nextReestimate": "支持设施/独占实例交接发生时立即重估；无新交接不编造开测时刻，保留未知，不阻原变量/Release。",
+  "wholeAccepted": false
+}

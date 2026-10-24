@@ -418,6 +418,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         { if (!_isUpdatingText) _hasPendingText = true; }
 
         /// <summary>Check the actual template input without changing its text or numeric value.</summary>
+        public bool HasPendingEdit => _hasPendingText && !IsReadOnly && IsEnabled;
         public bool TryValidatePendingEdit(out string error) => TryReadPendingNumber(out _, out error);
         public bool TryCommitPendingEdit(out string error)
         {

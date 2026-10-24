@@ -1,5 +1,7 @@
 using System;
 using System.Text.Json;
+using System.Linq;
+using System.Text.Json.Serialization.Metadata;
 using SunEyeVision.Workflow.Persistence;
 using SunEyeVision.Core.Services.Serialization;
 
@@ -22,7 +24,22 @@ public sealed class SolutionSession
         }
     }
     internal SolutionSession(Solution document) => Document = document;
-    internal static string Serialize(Solution document) => JsonSerializer.Serialize(document, WorkflowSerializationOptions.Default);
+    internal static string Serialize(Solution document)
+    {
+        // Capture one value generation; JSON converters and IO run after releasing ValueGate.
+        var variables = GlobalVariable.CaptureDefinitions(document.GlobalVariables).ToList();
+        var source = WorkflowSerializationOptions.Default;
+        var options = new JsonSerializerOptions(source)
+        {
+            TypeInfoResolver = (source.TypeInfoResolver ?? new DefaultJsonTypeInfoResolver()).WithAddedModifier(info =>
+            {
+                if (info.Type != typeof(Solution)) return;
+                var value = info.Properties.FirstOrDefault(p => p.Name == nameof(Solution.GlobalVariables));
+                if (value != null) value.Get = _ => variables;
+            })
+        };
+        return JsonSerializer.Serialize(document, options);
+    }
     internal void CaptureBaseline() => _savedContent = SolutionSemanticComparer.Canonicalize(Serialize(Document));
     internal void CommitSave(string path, string writtenContent)
     {

@@ -23,6 +23,10 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
     /// </summary>
     public partial class GlobalVariableManagerDialog : ThemeDialogWindow
     {
+        private readonly System.Collections.Generic.HashSet<string> _valueEdits = new(StringComparer.Ordinal);
+        private readonly System.Collections.Generic.Dictionary<string, string> _pendingNames = new(StringComparer.Ordinal);
+        private readonly System.Collections.Generic.Dictionary<string, string> _pendingValues = new(StringComparer.Ordinal);
+        private bool _refreshing;
         public GlobalVariableManagerDialog(GlobalVariableManagerViewModel viewModel)
         {
             InitializeComponent();
@@ -237,7 +241,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             error = "";
             if (box.DataContext is not GlobalVariable variable || DataContext is not GlobalVariableManagerViewModel vm) return true;
             var name = box.Text.Trim();
-            var variables = vm.EditingDocument?.GlobalVariables;
+            var variables = vm.DraftDocument.GlobalVariables;
             if (name.Length == 0) error = "变量名称不能为空，请修改当前输入后再保存。";
             else if (variables != null && GlobalVariable.IsNameDuplicate(variables, name, variable.Id)) error = $"变量名称“{name}”已存在。";
             var binding = box.GetBindingExpression(TextBox.TextProperty);
@@ -250,6 +254,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         }
         private void VariableNameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
+            if (_refreshing) return;
             if (sender is TextBox box && box.DataContext is GlobalVariable variable &&
                 DataContext is GlobalVariableManagerViewModel vm && TryValidateNameEditor(box, out _) && box.Text.Trim() != variable.Name)
                 vm.ConfirmVariableRename(variable, box.Text.Trim(), variable.Name);
@@ -261,14 +266,52 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         private void VariableValueTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
+            if (_refreshing) return;
             if (sender is not TextBox textBox || textBox.DataContext is not GlobalVariable variable)
                 return;
             if (textBox.IsReadOnly)
                 return;
 
-            if (!TryParseValueEditor(textBox, out var value, out _)) return;
-            if (value != null) variable.Value = value;
+            if (!TryParseValueEditor(textBox, out var value, out _, _valueEdits.Contains(variable.Id))) return;
+            if (value != null && DataContext is GlobalVariableManagerViewModel vm) vm.SetDraftValue(variable, value);
 
+        }
+        private void VariableValueTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_refreshing || sender is not TextBox { IsLoaded: true, IsReadOnly: false } box ||
+                box.DataContext is not GlobalVariable variable) return;
+            var current = new GlobalVariableValueTextConverter().Convert(variable.Value!, typeof(string), null!, CultureInfo.InvariantCulture)?.ToString() ?? "";
+            if (box.Text != current || _valueEdits.Contains(variable.Id))
+            {
+                _valueEdits.Add(variable.Id);
+                _pendingValues[variable.Id] = box.Text;
+            }
+        }
+        private void VariableNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!_refreshing && sender is TextBox { IsLoaded: true } box && box.DataContext is GlobalVariable variable && box.Text != variable.Name)
+                _pendingNames[variable.Id] = box.Text;
+        }
+        private void VariableEditor_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not TextBox box || box.DataContext is not GlobalVariable variable) return;
+            var pending = box.Name == "VariableNameEditor" ? _pendingNames : _pendingValues;
+            if (!pending.TryGetValue(variable.Id, out var raw)) return;
+            _refreshing = true;
+            try { box.SetCurrentValue(TextBox.TextProperty, raw); }
+            finally { _refreshing = false; }
+        }
+        internal void AcceptPublication()
+        {
+            _refreshing = true;
+            try
+            {
+                _valueEdits.Clear();
+                _pendingNames.Clear();
+                _pendingValues.Clear();
+                if (DataContext is GlobalVariableManagerViewModel vm) vm.AcceptPublication();
+            }
+            finally { _refreshing = false; }
         }
         private static System.Collections.Generic.IEnumerable<DependencyObject> Visuals(DependencyObject root)
         {
@@ -276,13 +319,13 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             for (var i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
                 foreach (var child in Visuals(System.Windows.Media.VisualTreeHelper.GetChild(root, i))) yield return child;
         }
-        private static bool TryParseValueEditor(TextBox box, out object? parsed, out string error)
+        private static bool TryParseValueEditor(TextBox box, out object? parsed, out string error, bool explicitEdit = false)
         {
             parsed = null; error = "";
             if (box.IsReadOnly || box.DataContext is not GlobalVariable variable) return true;
             var binding = box.GetBindingExpression(TextBox.TextProperty);
             var currentText = new GlobalVariableValueTextConverter().Convert(variable.Value!, typeof(string), null!, CultureInfo.InvariantCulture)?.ToString() ?? "";
-            if (box.Text == currentText)
+            if (!explicitEdit && box.Text == currentText)
             { if (binding != null) System.Windows.Controls.Validation.ClearInvalid(binding); return true; }
             parsed = GlobalVariableValueTextConverter.ParseText(box.Text, variable.Type);
             if (parsed == null)
@@ -297,11 +340,33 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         }
         public bool TryValidatePendingEdits(out string error)
         {
+            if (DataContext is GlobalVariableManagerViewModel vm && !vm.TryPrepare(out error)) return false;
+            if (!TryValidateRetainedEdits(out error)) return false;
             foreach (var box in Visuals(this).OfType<TextBox>().Where(b => b.Name == "VariableNameEditor"))
                 if (!TryValidateNameEditor(box, out error)) return false;
             foreach (var box in Visuals(this).OfType<TextBox>().Where(b => b.Name == "VariableValueEditor"))
-                if (!TryParseValueEditor(box, out _, out error)) return false;
+                if (!TryParseValueEditor(box, out _, out error,
+                    box.DataContext is GlobalVariable v && _valueEdits.Contains(v.Id))) return false;
             return SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryValidate(this, out error);
+        }
+        private bool TryValidateRetainedEdits(out string error)
+        {
+            error = "";
+            if (DataContext is not GlobalVariableManagerViewModel vm) return true;
+            var variables = vm.DraftDocument.GlobalVariables;
+            foreach (var variable in variables)
+            {
+                var name = _pendingNames.TryGetValue(variable.Id, out var rawName) ? rawName.Trim() : variable.Name;
+                if (string.IsNullOrWhiteSpace(name)) { error = "变量名称不能为空，当前输入已保留。"; return false; }
+                if (variables.Any(other => other.Id != variable.Id && string.Equals(
+                    _pendingNames.TryGetValue(other.Id, out var otherName) ? otherName.Trim() : other.Name,
+                    name, StringComparison.OrdinalIgnoreCase)))
+                { error = $"变量名称“{name}”已存在，当前输入已保留。"; return false; }
+                if (_pendingValues.TryGetValue(variable.Id, out var rawValue) &&
+                    GlobalVariableValueTextConverter.ParseText(rawValue, variable.Type) is null)
+                { error = $"变量“{name}”的{variable.Type}值无效，当前输入已保留。"; return false; }
+            }
+            return true;
         }
         public bool TryCommitPendingEdits(out string error)
         {
@@ -311,7 +376,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 .Where(b => b.Name == "VariableValueEditor" && !b.IsReadOnly)
                 .Select(b => (Box: b, Text: b.Text)).ToArray();
             // Commit normal bindings and DataGrid rows first; invalid edits are not cancelled.
-            if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryCommit(this, out error)) return false;
+            if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryPrepare(this, out error)) return false;
             foreach (var entry in nameEditors)
             {
                 entry.Box.SetCurrentValue(TextBox.TextProperty, entry.Text);
@@ -325,10 +390,20 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             {
                 // A DataGrid commit can refresh OneWay displays. Restore the pending text before parsing.
                 entry.Box.SetCurrentValue(TextBox.TextProperty, entry.Text);
-                if (!TryParseValueEditor(entry.Box, out var value, out error)) return false;
+                if (!TryParseValueEditor(entry.Box, out var value, out error,
+                    entry.Box.DataContext is GlobalVariable v && _valueEdits.Contains(v.Id))) return false;
                 if (value != null && entry.Box.DataContext is GlobalVariable variable) parsed.Add((variable, value));
             }
-            foreach (var item in parsed) item.Variable.Value = item.Value;
+            if (DataContext is GlobalVariableManagerViewModel model)
+            {
+                foreach (var item in parsed) model.SetDraftValue(item.Variable, item.Value);
+                foreach (var variable in model.DraftDocument.GlobalVariables)
+                {
+                    if (_pendingNames.TryGetValue(variable.Id, out var rawName)) variable.Name = rawName.Trim();
+                    if (_pendingValues.TryGetValue(variable.Id, out var rawValue))
+                        model.SetDraftValue(variable, GlobalVariableValueTextConverter.ParseText(rawValue, variable.Type));
+                }
+            }
             error = ""; return true;
         }
     }
@@ -390,7 +465,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                         return new[] { l };
                     break;
                 case "Double":
-                    if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var d))
+                    if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var d) && double.IsFinite(d))
                         return new[] { d };
                     break;
                 case "Boolean":

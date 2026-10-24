@@ -156,16 +156,50 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         public List<TypeOption> TypeOptions { get; } = SdkTypeVocabulary.GetAllTypeOptions();
 
         public Solution? EditingDocument { get; }
-        public GlobalVariableManagerViewModel(SolutionManager solutionManager)
+        internal NodeConfigurationEditHost Host { get; }
+        internal GlobalVariableConfigurationEditDraft Draft { get; private set; }
+        internal Solution DraftDocument => Draft.Configuration;
+        private readonly Func<bool> _isCurrent;
+        private bool _active = true;
+        public string? LastRefreshError { get; private set; }
+        public GlobalVariableManagerViewModel(SolutionManager solutionManager,
+            NodeConfigurationEditHost? host = null, Func<bool>? isCurrent = null)
         {
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             EditingDocument = solutionManager.CurrentSolution;
+            Host = host ?? new NodeConfigurationEditHost(EditingDocument ?? throw new InvalidOperationException("当前没有方案。"));
+            _isCurrent = isCurrent ?? (() => ReferenceEquals(EditingDocument, solutionManager.CurrentSolution));
+            Draft = Host.BeginVariableEdit();
 
             Groups = new ObservableCollection<VariableGroupViewModel>();
             CurrentVariables = new ObservableCollection<GlobalVariable>();
 
             InitializeCommands();
             LoadGroups();
+        }
+
+        internal bool TryPrepare(out string error)
+        {
+            if (!_active || !_isCurrent())
+            { _active = false; error = "变量编辑所属方案或会话已失效，草稿不能提交。"; return false; }
+            error = ""; return true;
+        }
+        internal void SetDraftValue(GlobalVariable variable, object? value)
+        {
+            if (!DraftDocument.GlobalVariables.Any(v => ReferenceEquals(v, variable)))
+                throw new InvalidOperationException("变量不属于当前私有草稿。");
+            Draft.SetValue(variable.Id, value);
+        }
+        internal void Discard() => _active = false;
+        internal void AcceptPublication()
+        {
+            try
+            {
+                if (!TryPrepare(out var error)) throw new InvalidOperationException(error);
+                Draft = Host.BeginVariableEdit();
+                LoadGroups();
+            }
+            catch (Exception ex) { LastRefreshError = ex.Message; Discard(); }
         }
 
         private void InitializeCommands()
@@ -186,7 +220,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         private void LoadGroups()
         {
-            var currentSolution = _solutionManager.CurrentSolution;
+            var currentSolution = DraftDocument;
 
             // 清空现有分组
             Groups.Clear();
@@ -373,7 +407,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             var variablesToRemove = SelectedGroup.Variables.ToList();
 
             // 1. 从 Solution 中移除变量
-            var solution = _solutionManager.CurrentSolution;
+            var solution = DraftDocument;
             if (solution != null)
             {
                 foreach (var variable in variablesToRemove)
@@ -431,7 +465,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             };
 
             SelectedGroup.AddVariable(variable);
-            _solutionManager.CurrentSolution?.GlobalVariables.Add(variable);
+            DraftDocument.GlobalVariables.Add(variable);
             CurrentVariables.Add(variable);
             SelectedVariable = variable;
 
@@ -462,7 +496,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             _releasedIndices.Add(variable.Index);
 
             SelectedGroup?.RemoveVariable(variable);
-            _solutionManager.CurrentSolution?.GlobalVariables.Remove(variable);
+            DraftDocument.GlobalVariables.Remove(variable);
             CurrentVariables.Remove(variable);
 
             if (SelectedVariable == variable)
@@ -495,7 +529,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 return index;
             }
 
-            var allVariables = _solutionManager.CurrentSolution?.GlobalVariables;
+            var allVariables = DraftDocument.GlobalVariables;
             return allVariables != null && allVariables.Count > 0
                 ? allVariables.Max(v => v.Index) + 1
                 : 1;
@@ -506,7 +540,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         private string GenerateUniqueName(string baseName)
         {
-            var allNames = _solutionManager.CurrentSolution?.GlobalVariables
+            var allNames = DraftDocument.GlobalVariables
                 .Select(v => v.Name)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase)
                 ?? new HashSet<string>();
@@ -538,7 +572,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 return false;
             }
 
-            var allVariables = _solutionManager.CurrentSolution?.GlobalVariables;
+            var allVariables = DraftDocument.GlobalVariables;
             if (allVariables == null)
                 return true;
 
@@ -555,51 +589,10 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 variable.Name = newName;
 
                 // ★ 传播到所有引用处（节点 ParamSettings + 模块结果行）
-                UpdateGlobalVariableNameReferences(variable, oldName, newName);
+                LogInfo($"变量草稿重命名: {oldName} → {newName}");
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// 全局变量重命名后，更新所有引用处的显示名称
-        /// </summary>
-        private void UpdateGlobalVariableNameReferences(GlobalVariable variable, string oldName, string newName)
-        {
-            var solution = _solutionManager.CurrentSolution;
-            if (solution == null) return;
-
-            LogInfo($"全局变量重命名传播: '{oldName}' → '{newName}'");
-
-            // 1. 更新所有节点 ParamSettings 中的绑定定义
-            foreach (var workflow in solution.Workflows)
-            {
-                foreach (var node in workflow.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
-                {
-                    if (node?.Parameters == null) continue;
-
-                    foreach (var setting in node.ParamSettings?.Settings ?? Enumerable.Empty<ParamSetting>())
-                    {
-                        if (setting.BindingType == BindingType.Binding
-                            && setting.SourceNodeId == "__GlobalVars__"
-                            && setting.SourceProperty == oldName)
-                        {
-                            setting.SourceProperty = newName;
-                            setting.SourceDisplayName = newName;
-                        }
-                    }
-                }
-            }
-
-            // 2. 发布全局变量重命名事件（通知 MainWindowViewModel 更新模块结果 UI、ConfigSetting 等）
-            var eventBus = ServiceLocator.Instance.GetService<SunEyeVision.Core.Events.IEventBus>();
-            eventBus?.Publish(new UIEvents.GlobalVariableRenamedEvent(
-                source: "GlobalVariableManagerViewModel",
-                variableId: variable.Id,
-                oldName: oldName,
-                newName: newName));
-
-            LogInfo($"全局变量重命名传播完成");
         }
 
         #endregion
@@ -636,7 +629,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 foreach (var variable in variables)
                 {
                     variable.Id = Guid.NewGuid().ToString();
-                    _solutionManager.CurrentSolution?.GlobalVariables.Add(variable);
+                    DraftDocument.GlobalVariables.Add(variable);
 
                     // 查找或创建分组
                     var group = Groups.FirstOrDefault(g => g.Name == variable.Group);
@@ -726,7 +719,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             }
             catch (Exception ex) { LogError("保存未完成，当前编辑保留：" + ex.Message); }
         }
-        private bool CanSave() => EditingDocument != null && ReferenceEquals(EditingDocument, _solutionManager.CurrentSolution) && SaveRequested != null;
+        private bool CanSave() => _active && _isCurrent() && SaveRequested != null;
 
         /// <summary>
         /// 关闭
@@ -746,7 +739,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
 
             try
             {
-                var currentSolution = _solutionManager.CurrentSolution;
+                var currentSolution = DraftDocument;
                 if (currentSolution == null || currentSolution.Workflows.Count == 0)
                 {
                     LogWarning("当前解决方案没有工作流，无法管理消费者");
@@ -784,8 +777,6 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                         ClearNodeParamBinding(currentSolution, binding);
 
                     variable.NotifyOutputDisplayChanged();
-                    SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
-                    SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
                     LogSuccess($"更新目标输出 (共 {result.Count} 个消费者)");
                 }
             }

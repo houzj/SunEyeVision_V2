@@ -163,6 +163,8 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             _globalVariables = globalVariables;
         }
+        internal Action? PrepareDocumentEditors { get; set; }
+        internal bool AllowLegacyEditorCommitForTests { get; set; }
 
         /// <summary>
         /// 获取运行时参数
@@ -277,9 +279,13 @@ namespace SunEyeVision.UI.Services.Workflow
                                     TimeSpan.FromMilliseconds(cameraSource.Value.TimeoutMs),
                                     cts.Token);
                             }
+                            var firstIteration = true;
                             while (true)
                             {
                                 cts.Token.ThrowIfCancellationRequested();
+                                if (!firstIteration && !_communicationOwner.Value)
+                                    await InvokeOnUIAsync(() => CommitPendingEditors(workflow.RootWorkflowId));
+                                firstIteration = false;
                                 ExecutionResult? execution = null;
                                 try
                                 {
@@ -450,7 +456,8 @@ namespace SunEyeVision.UI.Services.Workflow
                 await InvokeOnUIAsync(() => CommitPendingEditors(null));
             var tabsById = tabs.ToDictionary(tab => tab.RootWorkflowId, StringComparer.Ordinal);
             var plan = SolutionExecutionDependencyGraph.Compile(solution);
-            var runtimeGlobals = solution.GlobalVariables.Where(variable => variable.ProducerBinding == null && string.IsNullOrEmpty(variable.RebindingReason) && string.IsNullOrEmpty(variable.BindingValidationPending))
+            var globalDefinitions = GlobalVariable.CaptureDefinitions(solution.GlobalVariables);
+            var runtimeGlobals = globalDefinitions.Where(variable => variable.ProducerBinding == null && string.IsNullOrEmpty(variable.RebindingReason) && string.IsNullOrEmpty(variable.BindingValidationPending))
                 .ToDictionary(variable => variable.Name, variable => variable.Value, StringComparer.Ordinal);
             var workflowPredecessors = BuildWorkflowPredecessors(plan, tabsById.Keys);
             var completed = new HashSet<string>(StringComparer.Ordinal);
@@ -480,8 +487,6 @@ namespace SunEyeVision.UI.Services.Workflow
                 try
                 {
                     tab.IsRunning = true;
-                    if (!_communicationOwner.Value)
-                        await InvokeOnUIAsync(() => CommitPendingEditors(tab.RootWorkflowId));
                     using var localImages = await BeginLocalImagesAsync(tab, cancellationToken);
                     OnWorkflowExecutionStarted(workflowId);
                     using var executionResult = await ExecuteSingleTriggeredAsync(tab, cancellationToken, runtimeGlobals, localImages: localImages);
@@ -587,7 +592,12 @@ namespace SunEyeVision.UI.Services.Workflow
             _communicationAssignments.Value = assignments?.ToArray();
             _communicationInputs.Value = receiveInputs;
             _communicationCancellation.Value = token;
-            try { token.ThrowIfCancellationRequested(); await operation(token); return true; }
+            try
+            {
+                token.ThrowIfCancellationRequested();
+                await InvokeOnUIAsync(() => CommitPendingEditors(null));
+                await operation(token); return true;
+            }
             finally
             {
                 _communicationOwner.Value = false;
@@ -604,6 +614,8 @@ namespace SunEyeVision.UI.Services.Workflow
 
         public async Task RunCommunicationNodeAsync(string workflowId, string nodeId, CancellationToken token)
         {
+            if (!_communicationOwner.Value)
+                await InvokeOnUIAsync(() => CommitPendingEditors(workflowId));
             var workflow = _workflowEngine.GetWorkflow(workflowId) ?? throw new InvalidOperationException("触发流程已删除。");
             var node = FindNodeRecursive(workflow, nodeId) ?? throw new InvalidOperationException("触发模块已删除。");
             if (!node.IsEnabled) throw new InvalidOperationException("触发模块已禁用，未执行。");
@@ -689,8 +701,6 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             var frozenImageOverrides = localImages?.CaptureIteration();
             var snapshot = GetOrCreateExecutionSnapshot(workflow.RootWorkflowId, workflow.Name);
-            if (!_communicationOwner.Value)
-                await InvokeOnUIAsync(() => CommitPendingEditors(workflow.RootWorkflowId));
             await InvokeOnUIAsync(() =>
             {
                 BeginRunPresentation(workflow.RootWorkflowId, workflow.Name, snapshot);
@@ -1146,6 +1156,13 @@ namespace SunEyeVision.UI.Services.Workflow
 
         private void CommitPendingEditors(string? workflowId)
         {
+            if (PrepareDocumentEditors is { } prepare)
+            {
+                prepare(); // UI owner validates/publishes all document participants once, then captures globals.
+                return;
+            }
+            if (!AllowLegacyEditorCommitForTests)
+                throw new InvalidOperationException("运行准备缺少当前文档的统一编辑事务入口。");
             var ids = new HashSet<string>();
             var nodes = new HashSet<object>(ReferenceEqualityComparer.Instance);
             var document = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution;
@@ -1179,8 +1196,6 @@ namespace SunEyeVision.UI.Services.Workflow
             Dictionary<string, long>? sequenceNumbers = null,
             LocalImageExecution? localImages = null)
         {
-            if (!_communicationOwner.Value)
-                await InvokeOnUIAsync(() => CommitPendingEditors(workflow.RootWorkflowId));
             var cameraSource = ResolveSingleCameraSource(workflow, localImages?.BaseOverrides);
             if (cameraSource is null)
                 return await ExecuteWorkflowInternal(workflow, cancellationToken, globalVariablesOverride,

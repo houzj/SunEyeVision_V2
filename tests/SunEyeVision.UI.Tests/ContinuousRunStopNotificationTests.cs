@@ -1,4 +1,4 @@
-using NSubstitute;
+﻿using NSubstitute;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Services;
@@ -28,7 +28,7 @@ public sealed class ContinuousRunStopNotificationTests
                 var engine = new WorkflowEngine(Substitute.For<ILogger>());
                 var workflow = engine.CreateWorkflow(Guid.NewGuid().ToString(), "停止通知测试");
                 tab = new WorkflowTabViewModel { Id = workflow.Id, Name = workflow.Name };
-                manager = new WorkflowExecutionManager(input, engine, new RuntimeInputSnapshotService());
+                manager = new WorkflowExecutionManager(input, engine, new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
                 manager.WorkflowExecutionCompleted += (_, _) => manager.StopContinuousRun(tab);
                 manager.WorkflowExecutionStopped += (_, _) => stopped.TrySetResult();
                 manager.WorkflowExecutionError += (_, args) => failed.TrySetResult(args.ErrorMessage ?? "执行错误");

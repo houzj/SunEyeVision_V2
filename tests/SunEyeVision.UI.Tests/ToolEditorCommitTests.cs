@@ -67,6 +67,42 @@ public sealed class ToolEditorCommitTests(ITestOutputHelper output)
     private sealed class Value { public int Number { get; set; } = 1; }
     private sealed class Editor : ToolDebugControlBase { protected override object ExecuteTool() => new GenericToolResults(); }
     [Fact]
+    public void Document_prepare_leaves_clean_legacy_open_but_rejects_pending_binding_before_source_write() => Sta(() =>
+    {
+        var parameters = new SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters { Separator = "," };
+        var node = new WorkflowNodeBase("legacy", "legacy", "legacy", "ProtocolParse") { Parameters = parameters };
+        var text = new TextBox();
+        text.SetBinding(TextBox.TextProperty, new Binding(nameof(parameters.Separator))
+        { Source = parameters, Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.Explicit });
+        var editor = new Editor { Content = text }; editor.SetCurrentNode(node); editor.SetParameters(parameters);
+        var window = new Window { Content = editor, ShowActivated = false, Left = -10000, Top = -10000 };
+        try
+        {
+            window.Show(); editor.UpdateLayout();
+            Assert.True(ToolEditorCommit.TryPrepareOpenDraftEditors(n => ReferenceEquals(n, node), out var clean, out var error), error);
+            Assert.Empty(clean); Assert.Equal(",", parameters.Separator);
+            text.Text = ";";
+            Assert.False(ToolEditorCommit.TryPrepareOpenDraftEditors(n => ReferenceEquals(n, node), out _, out error));
+            Assert.Contains("尚未接入", error); Assert.Equal(",", parameters.Separator); Assert.Equal(";", text.Text);
+        }
+        finally { editor.SuppressClosePersistence = true; window.Close(); }
+    });
+    [Fact]
+    public void Document_prepare_detects_legacy_live_edit_even_after_lost_focus_clears_binding_dirty() => Sta(() =>
+    {
+        var parameters = new SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters { Separator = "," };
+        var node = new WorkflowNodeBase("legacy", "legacy", "legacy", "ProtocolParse") { Parameters = parameters };
+        var editor = new Editor(); editor.SetCurrentNode(node); editor.SetParameters(parameters);
+        var window = new Window { Content = editor, ShowActivated = false, Left = -10000, Top = -10000 };
+        try
+        {
+            window.Show(); editor.UpdateLayout(); parameters.Separator = ";";
+            Assert.False(ToolEditorCommit.TryPrepareOpenDraftEditors(n => ReferenceEquals(n, node), out _, out var error));
+            Assert.Contains("尚未接入", error); Assert.Equal(";", parameters.Separator);
+        }
+        finally { editor.SuppressClosePersistence = true; window.Close(); }
+    });
+    [Fact]
     public void Confirming_point_coordinate_constants_clears_orphan_rebinding_markers_in_real_editor()
     {
         Sta(() =>

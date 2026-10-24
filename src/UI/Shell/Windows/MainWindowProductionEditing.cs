@@ -15,6 +15,18 @@ public partial class MainWindowViewModel
     private SolutionSession? _productionEditorSession;
     private NodeConfigurationEditHost? _productionEditorHost;
     private readonly HashSet<ProductionEditorContext> _productionEditors = new();
+    private readonly HashSet<SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerViewModel> _variableEditors = new();
+
+    private NodeConfigurationEditHost GetProductionEditorHost(SolutionSession session)
+    {
+        if (!ReferenceEquals(_productionEditorSession, session)) ReleaseProductionEditors();
+        if (_productionEditorHost is null)
+        {
+            _productionEditorHost = new NodeConfigurationEditHost(session.Document);
+            _productionEditorSession = session;
+        }
+        return _productionEditorHost;
+    }
 
     private ProductionEditorContext? CreateProductionEditorContext(object target, SunEyeVision.UI.Shared.WorkflowNode node,
         out DataSourceQueryService? provider)
@@ -31,14 +43,9 @@ public partial class MainWindowViewModel
         } ?? throw new InvalidOperationException("生产编辑器缺少草稿提交接缝。");
         var session = DocumentManager.Session ?? throw new InvalidOperationException("当前没有方案编辑会话。");
         var flow = session.Document.Workflows.Single(w => w.Nodes.Any(n => ReferenceEquals(n, node)));
-        if (!ReferenceEquals(_productionEditorSession, session)) ReleaseProductionEditors();
-        if (_productionEditors.Count == 0)
-        {
-            _productionEditorHost = new NodeConfigurationEditHost(session.Document);
-            _productionEditorSession = session;
-        }
+        var host = GetProductionEditorHost(session);
         var query = CreateDataSourceQueryService(flow.Id); // Never change a shared cached provider's live callback.
-        var context = new ProductionEditorContext(_productionEditorHost!, flow.Id, node,
+        var context = new ProductionEditorContext(host, flow.Id, node,
             () => ReferenceEquals(DocumentManager.Session, session) &&
                 session.Document.Workflows.Any(w => ReferenceEquals(w, flow) && w.Nodes.Any(n => ReferenceEquals(n, node))),
             draft =>
@@ -48,17 +55,7 @@ public partial class MainWindowViewModel
                 control.SetDataProvider(query);
             }, publication =>
             {
-                SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.Reset(session.Document);
-                var globals = session.Document.GlobalVariables.Where(v => string.IsNullOrEmpty(v.RebindingReason) && string.IsNullOrEmpty(v.BindingValidationPending))
-                    .ToDictionary(v => v.Name, v => v.Value);
-                query.SetGlobalVariables(globals);
-                foreach (var cached in _workflowDsqsCache.Values) cached.SetGlobalVariables(globals);
-                ToolEditorCommit.RefreshCommittedBindings();
-                if (!IsRunning)
-                    foreach (var affected in publication.InvalidatedNodes.Where(n => n.WorkflowId == _workflowEngine.CurrentWorkflow?.Id))
-                        CurrentWorkflowContext?.RemoveNodeResult(affected.NodeId);
-                if (ReferenceEquals(SelectedNode, node) && node.Parameters is IOutputContractProvider outputs)
-                    UpdateModuleResults(new ContractToolResults(outputs.GetOutputContract()), node.Name, node.ToolType, node.Id, node.Parameters);
+                RefreshProductionPublication(session, publication, query);
             });
         ToolEditorCommit.AttachDraftContext(control, context);
         query.CommitOutputConfiguration = id =>
@@ -72,13 +69,38 @@ public partial class MainWindowViewModel
     }
     private void ClearProductionEditorHost()
     {
+        if (_productionEditors.Count != 0 || _variableEditors.Count != 0) return;
         _productionEditorHost = null;
         _productionEditorSession = null;
     }
     private void ReleaseProductionEditors()
     {
         ReleaseProductionEditorContexts(_productionEditors);
+        foreach (var model in _variableEditors) model.Discard();
+        _variableEditors.Clear();
         ClearProductionEditorHost();
+    }
+    private void RefreshProductionPublication(SolutionSession session, BindingConfigurationPublication publication,
+        DataSourceQueryService? query = null)
+    {
+        if (!ReferenceEquals(DocumentManager.Session, session)) return;
+        SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.Reset(session.Document);
+        var globals = CaptureGlobalVariables(session.Document);
+        query?.SetGlobalVariables(globals);
+        foreach (var cached in _workflowDsqsCache.Values) cached.SetGlobalVariables(globals);
+        ToolEditorCommit.RefreshCommittedBindings();
+        if (!IsRunning)
+            foreach (var affected in publication.InvalidatedNodes.Where(n => n.WorkflowId == _workflowEngine.CurrentWorkflow?.Id))
+                CurrentWorkflowContext?.RemoveNodeResult(affected.NodeId);
+        if (SelectedNode is { } selected && selected.Parameters is IOutputContractProvider outputs)
+            UpdateModuleResults(new ContractToolResults(outputs.GetOutputContract()), selected.Name, selected.ToolType, selected.Id, selected.Parameters);
+        BuildFlatRows();
+    }
+    private static System.Collections.Generic.Dictionary<string, object?> CaptureGlobalVariables(Solution document)
+    {
+        var definitions = GlobalVariable.CaptureDefinitions(document.GlobalVariables);
+        return definitions.Where(v => string.IsNullOrEmpty(v.RebindingReason) && string.IsNullOrEmpty(v.BindingValidationPending))
+            .ToDictionary(v => v.Name, v => v.Value);
     }
     internal static void ReleaseProductionEditorContexts(ISet<ProductionEditorContext> active)
     { foreach (var context in active.ToArray()) context.Discard(); }

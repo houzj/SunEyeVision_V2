@@ -1,10 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Workflow;
+
+/// <summary>A value/revision pair captured under ValueGate. Editable primitive arrays are copied.
+/// Other legacy values remain borrowed and read-only; this type confers no resource ownership.</summary>
+public sealed record GlobalVariableValueSnapshot(object? Value, long Revision);
 
 /// <summary>
 /// 消费者绑定：标记哪个工具的哪个参数绑定到此全局变量
@@ -107,6 +111,7 @@ public class GlobalVariable : ObservableObject
     private string _group = "默认分组";
     private int _index = 0;
     private object? _value = null;
+    private long _valueRevision;
     private string _type = "String";
     private string _description = "";
     private bool _isInitialized = false;
@@ -160,9 +165,135 @@ public class GlobalVariable : ObservableObject
         get { lock (ValueGate) return _value; }
         set
         {
-            lock (ValueGate) { if (Equals(_value, value)) return; _value = value; }
+            lock (ValueGate)
+            {
+                if (Equals(_value, value)) return;
+                var revision = checked(_valueRevision + 1);
+                _value = value;
+                _valueRevision = revision;
+            }
             OnPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(ValueRevision));
         }
+    }
+
+    /// <summary>Instance-local runtime revision. Never persisted or copied into configuration history.</summary>
+    [JsonIgnore]
+    public long ValueRevision { get { lock (ValueGate) return _valueRevision; } }
+
+    public GlobalVariableValueSnapshot CaptureValue()
+    {
+        lock (ValueGate) return new(CopyEditableValue(_value), _valueRevision);
+    }
+
+    /// <summary>Capture one coherent runtime value set. Pass the document's concrete List
+    /// or an already fixed array; no caller-defined enumerator executes under ValueGate.</summary>
+    public static IReadOnlyDictionary<string, GlobalVariableValueSnapshot> CaptureValues(IReadOnlyList<GlobalVariable> variables)
+    {
+        CheckCaptureCollection(variables);
+        var result = new Dictionary<string, GlobalVariableValueSnapshot>(StringComparer.Ordinal);
+        lock (ValueGate)
+            foreach (var variable in CaptureMembers(variables))
+                result.Add(variable.Id, new(CopyEditableValue(variable._value), variable._valueRevision));
+        return new System.Collections.ObjectModel.ReadOnlyDictionary<string, GlobalVariableValueSnapshot>(result);
+    }
+
+    /// <summary>Capture members, configuration, bindings and runtime values in one value-lock
+    /// interval. Definitions and primitive arrays are independent copies. Native/complex values
+    /// remain borrowed and read-only, with no ownership or serialization implied.</summary>
+    public static IReadOnlyList<GlobalVariable> CaptureDefinitions(IReadOnlyList<GlobalVariable> variables)
+    {
+        CheckCaptureCollection(variables);
+        GlobalVariable[] result;
+        lock (ValueGate)
+            result = CaptureMembers(variables).Select(v => v.CopyDefinitionRaw()).ToArray();
+        return Array.AsReadOnly(result);
+    }
+
+    private static void CheckCaptureCollection(IReadOnlyList<GlobalVariable> variables)
+    {
+        ArgumentNullException.ThrowIfNull(variables);
+        if (variables is not List<GlobalVariable> && variables is not GlobalVariable[])
+            throw new ArgumentException("Capture requires the document variable List or a fixed array.", nameof(variables));
+    }
+    private static GlobalVariable[] CaptureMembers(IReadOnlyList<GlobalVariable> variables) => variables is List<GlobalVariable> list
+        ? list.ToArray() : (GlobalVariable[])((GlobalVariable[])variables).Clone();
+
+    private GlobalVariable CopyDefinitionRaw()
+    {
+        RequireValueGate();
+        var copy = new GlobalVariable { Id = Id, CreatedTime = CreatedTime };
+        var producer = _producerBinding == null ? null : new ProducerBinding
+        {
+            SourceFieldId = _producerBinding.SourceFieldId, WorkflowId = _producerBinding.WorkflowId,
+            WorkflowName = _producerBinding.WorkflowName, NodeId = _producerBinding.NodeId, NodeName = _producerBinding.NodeName,
+            ResultName = _producerBinding.ResultName, ResultDisplayName = _producerBinding.ResultDisplayName
+        };
+        var consumers = _consumerBindings.Select(c => new ConsumerBinding
+        {
+            WorkflowId = c.WorkflowId, WorkflowName = c.WorkflowName, NodeId = c.NodeId, NodeName = c.NodeName,
+            ParameterName = c.ParameterName, InputKey = c.InputKey, ParameterDisplayName = c.ParameterDisplayName
+        }).ToList();
+        copy.ApplyConfigurationRaw(new(_name, _group, _index, _type, _description, producer, consumers,
+            RebindingReason, BindingValidationPending, AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()), ModifiedTime));
+        copy.ApplyValueRaw(new(CopyEditableValue(_value), _valueRevision));
+        copy._isInitialized = _isInitialized;
+        return copy;
+    }
+    // These raw operations are the existing configuration host's projection adapter. They
+    // never run setters, logging or observers while the shared runtime value lock is held.
+    internal sealed record ConfigurationState(string Name, string Group, int Index, string Type,
+        string Description, ProducerBinding? Producer, List<ConsumerBinding> Consumers,
+        string Required, string Pending, Dictionary<string, System.Text.Json.JsonElement>? AdditionalData,
+        DateTime ModifiedTime);
+    internal readonly record struct ValueState(object? Value, long Revision);
+
+    internal ConfigurationState CaptureConfiguration() => new(_name, _group, _index, _type,
+        _description, _producerBinding, _consumerBindings, RebindingReason, BindingValidationPending,
+        AdditionalData, ModifiedTime);
+
+    internal void ApplyConfigurationRaw(ConfigurationState state)
+    {
+        RequireValueGate();
+        _name = state.Name; _group = state.Group; _index = state.Index; _type = state.Type;
+        _description = state.Description; _producerBinding = state.Producer; _consumerBindings = state.Consumers;
+        RebindingReason = state.Required; BindingValidationPending = state.Pending;
+        AdditionalData = state.AdditionalData; ModifiedTime = state.ModifiedTime;
+    }
+
+    internal ValueState CaptureValueRaw()
+    { RequireValueGate(); return new(_value, _valueRevision); }
+
+    internal void ApplyValueRaw(ValueState state)
+    { RequireValueGate(); _value = state.Value; _valueRevision = state.Revision; }
+
+    private static void RequireValueGate()
+    {
+        if (!System.Threading.Monitor.IsEntered(ValueGate))
+            throw new InvalidOperationException("Runtime value projection requires ValueGate.");
+    }
+
+    // Only the four existing text-editable primitive families participate in value editing.
+    // Do not clone, inspect or take ownership of native/image/other complex payloads here.
+    internal static object? CopyEditableValue(object? value) => value switch
+    {
+        int[] a => (int[])a.Clone(), long[] a => (long[])a.Clone(),
+        float[] a => (float[])a.Clone(), double[] a => (double[])a.Clone(),
+        string[] a => (string[])a.Clone(), bool[] a => (bool[])a.Clone(),
+        _ => value
+    };
+
+    internal void EmitConfigurationNotifications(bool valueChanged, List<Exception> errors)
+    {
+        var names = new[] { nameof(Name), nameof(Group), nameof(Index), nameof(Type), nameof(Description),
+            nameof(ProducerBinding), nameof(ConsumerBindings), nameof(InputSourceDisplayText),
+            nameof(OutputTargetDisplayText), nameof(IsComplexValue), nameof(RebindingReason),
+            nameof(BindingValidationPending), nameof(AdditionalData), nameof(ModifiedTime) };
+        foreach (var name in names)
+            try { OnPropertyChanged(name); } catch (Exception error) { errors.Add(error); }
+        if (!valueChanged) return;
+        try { OnPropertyChanged(nameof(Value)); } catch (Exception error) { errors.Add(error); }
+        try { OnPropertyChanged(nameof(ValueRevision)); } catch (Exception error) { errors.Add(error); }
     }
 
     /// <summary>

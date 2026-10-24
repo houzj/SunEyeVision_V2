@@ -20,6 +20,8 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDisposab
     public long OpenedVersion { get; }
     public string? LastRefreshError { get; private set; }
     public bool IsActive => _active;
+    internal NodeConfigurationEditHost Host => _host;
+    internal NodeConfigurationEditDraft PreparedDraft => _draft;
     internal event Action? Deactivated;
 
     public ProductionEditorContext(NodeConfigurationEditHost host, string workflowId, WorkflowNodeBase formalNode,
@@ -45,6 +47,29 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDisposab
         }
         catch (Exception ex) { error = ex.Message; return false; }
     }
+    public bool TryPrepareEditor(out string error)
+    {
+        try
+        {
+            EnsureCurrent();
+            EditorDraftAdapter.ForProduction(_draft.Node.Parameters).Validate();
+            error = ""; return true;
+        }
+        catch (Exception ex) { error = ex.Message; return false; }
+    }
+    internal void AcceptPublication(BindingConfigurationPublication publication, bool notify = true)
+    {
+        // The host has already accepted the entire batch. View failures cannot undo it.
+        try
+        {
+            EnsureCurrent();
+            _draft = _host.BeginEdit(Identity.WorkflowId, Identity.NodeId);
+            _bindDraft(_draft.Node);
+        }
+        catch (Exception ex) { LastRefreshError = ex.Message; Discard(); }
+        try { if (notify && _active && _isCurrent()) _published?.Invoke(publication); }
+        catch (Exception ex) { LastRefreshError = ex.Message; }
+    }
     public bool TryCommitEditor(out string error)
     {
         if (_committing) { error = "编辑提交不能重入。"; return false; }
@@ -57,18 +82,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDisposab
             publication = _host.Commit(_draft);
         }
         catch (Exception ex) { error = ex.Message; _committing = false; return false; }
-        // Publication is final. A view callback cannot change its successful outcome.
-        try
-        {
-            if (_active && _isCurrent())
-            {
-                _draft = _host.BeginEdit(Identity.WorkflowId, Identity.NodeId);
-                _bindDraft(_draft.Node);
-            }
-        }
-        catch (Exception ex) { LastRefreshError = ex.Message; Discard(); }
-        try { if (_active && _isCurrent()) _published?.Invoke(publication); }
-        catch (Exception ex) { LastRefreshError = ex.Message; }
+        try { AcceptPublication(publication); }
         finally { _committing = false; }
         error = ""; return true;
     }

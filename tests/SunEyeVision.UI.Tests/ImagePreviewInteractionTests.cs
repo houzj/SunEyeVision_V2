@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -237,7 +237,7 @@ public sealed partial class SolutionManagerUiTests
             root.Nodes[0].InputSource = source;
             var snapshots = new RuntimeInputSnapshotService();
             var input = Substitute.For<IInputProvider>(); input.GetInputImageAsync().Returns(Task.FromResult<object?>(null));
-            var manager = new WorkflowExecutionManager(input, engine, snapshots);
+            var manager = new WorkflowExecutionManager(input, engine, snapshots) { AllowLegacyEditorCommitForTests = true };
             var completed = 0; string? error = null;
             manager.WorkflowExecutionCompleted += (_, _) => completed++;
             manager.WorkflowExecutionError += (_, e) => error = e.ErrorMessage;

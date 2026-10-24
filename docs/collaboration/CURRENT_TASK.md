@@ -1,3 +1,19 @@
+﻿## 2026-10-24 22:08 变量事务核心已集成，进入同源保存点与设施前检
+
+- 原基线f7fc6f18；隔离核心临时提交aa95df8b2a38df2e906cda5f0a07204bb1f3d472已由父亲读Host/Store/GlobalVariable/专用37预期case源码和交接后，cherry-pick --no-commit集入主树。5路径暂存明确告知经理，未夹入其文档。父UI/SDK实际改为私有变量与节点Prepare→整体Validate→一次Publish，生命周期覆盖两类窗口，原节点单独确认入口保留；raw Name/Value按稳定Id跨隐藏/切组保留。
+- 主控在实际消息进一步批准UI WorkflowExecutionManager运行准备复用同文档入口、缺入口生产拒绝、每新准入轮次一次；已去除单次/整方案/相机内部重复提交，连续后继轮/通信准备接线，成功后再捕获最新globals。旧隔离测试通过internal显式兼容标识保旧fixture，不作为生产fallback。核心执行层未加入UI回调/新调度；增加4运行准备源码测试，扩大原LocalImage/Continuous/Communication受影响回归。
+- GlobalVariable.CaptureDefinitions在单ValueGate内固定成员/metadata/bindings/基础数组值；保存用局部Options的Solution.GlobalVariables getter消费完整私有变量快照，运行同源构字典；不修改共享Json选项，不持锁JSON/IO/通知，不声称任意native或跨线程全节点配置深冻结。
+- 设施新脚本Prepare/Run/Seal语法通过，26 vendor逐SHA0差、WPF9.0.20可用。尚未启动restore/build/tests/GUI，新源码保存点后才评估56项目输出归属/source stamp、offline restore、完整Release和sealed PE/HostDebugRoot；不向旧frozen回写或重跑旧有效矩阵。
+- 首22:08检查点已实际回经理/独测；原2–4小时条件估计提前到集成，当前预测22:20前源码保存点、随后fixed 22:40–23:10仍有编译/定向结果条件，不承诺独验结束。当前无build/GUI，经理获知产品Git优先，最终指定Release与一次人工/VS仍未完成。
+
+## 2026-10-24 21:38 变量Save正式决定放行，原交付恢复实际实施
+
+- 已实读 VARIABLE_SAVE_TRANSACTION_DECISION_20261024.json（f7fc6f18586ed2eae03840125ed23f2e52821549），状态approved；原变量私有草稿、同Document Prepare→Validate→一次Publish、显式Value revision CAS、未编辑值保最新、UndoRedo仅配置、通知锁外、磁盘失败dirty与legacy前置拒按正式决定实施。程序集/Blob/VM新架构不进入本次产品范围。
+- 13:38:26 UTC（北京时间21:38:26）记录实际恢复；父唯一主树写UI/SDK/必要持久化及输入快照接缝，原f01隔离worktree codex/variable-batch-host基线f7fc6f18写Host/Store/GlobalVariable及专用测试，无build/Show。核心接口已实际落盘；父UI私有模型与批量Save接线、当前值显式意图、legacy检查和定向测试WIP，未编译、未运行，不冒通过。首检查点22:08；源码/fixture2–4小时条件估算，集成成功后fixed再加30–60分钟重估，独验结束未承诺。
+- 已读采用 HANDOFF_ARCHITECTURE_EVIDENCE_V82_20261024.md 与V8.3协议；已有实现/VM/自主方案同标准，不拿低改动量作为保留理由。无新治理台账；主控明确必要Serialize/输入混代捕获属于原修复接缝，复制基础数组后锁外沿原JSON合同，禁止共享序列化选项串扰。
+- 原独测最终回执已实读并逐13证据SHA核对：independent-final-handoff-20261024.json C8CE9296EE9F01A012E914932E81D0FA7720C99E8BF224B2290DE7EDDFD98198；acceptance-current E4056BA037C7BBDF658A08ABCCC94419232C79A905EC57DB1D4F07328F3F760B、remaining-five 862BEBCDAACF341217536D0617CEBE88BD8FF01BF6664376D73EA1EEAF22708C。098头6项独验与748有限通过沿用，wholeAccepted=false；不重放旧矩阵，变量原FAIL保留待新fixed独验。
+- 当前无实施GUI/build占用，测试先准备新9组设施和Preflight；旧frozen目录不写。最终同源Release仍须实际部署用户指定Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe，人工/VS清单集中一次，当前尚未交最终包。
+
 ## 2026-10-24 20:00 新头实际独验6项通过，原变量保存仍待主控结论
 
 - 已亲读独测a11-header-successor-preparation/revision02/r01/aggregate.json：6实际进程全PASS，FD63204/SCD62904正控自然0、完整工具集合；sourceCommit46260/59276、artifactVersion55768/35332负控均自然1并实际Rejected。最后子进程19:58:25.1089660自然结束，454实际assembly rows；各例original/baseline/nonTarget postdiff0、extra0。aggregate SHA9865CA59F57EBB1C663EF7AEE81593EB1464C1B02D9D1234592DDF837A34C2D4，cases53009841AF2671AC41D7CBF61DF465CB11114F4FBA0B9B8C07A443AB7EF02B23。旧eebFAIL保留，wholeA11Accepted=false；只闭具体头身份缺陷后继，不冒整B01/B03或47。

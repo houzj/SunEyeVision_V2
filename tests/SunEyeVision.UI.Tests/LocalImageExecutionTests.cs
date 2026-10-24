@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using NSubstitute;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -37,7 +37,7 @@ public sealed partial class SolutionManagerUiTests
             Tab = new WorkflowTabViewModel { Id = Root.Id, Name = Root.Name };
             Tab.SetNodes(Root.Nodes); Tab.SetConnections(Root.Connections);
             Input.GetInputImageAsync().Returns(Task.FromResult<object?>(null));
-            Manager = new WorkflowExecutionManager(Input, Engine, Snapshots);
+            Manager = new WorkflowExecutionManager(Input, Engine, Snapshots) { AllowLegacyEditorCommitForTests = true };
             Manager.WorkflowExecutionError += (_, e) => Errors.Add(e.ErrorMessage);
         }
         public ImageInputSource AddSource(string id, int images, SunEyeVision.Workflow.Workflow? owner = null)

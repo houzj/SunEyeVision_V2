@@ -450,7 +450,8 @@
                                      VerticalContentAlignment="Center"
                                      BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
                                      BorderThickness="1" Padding="4,2"
-                                     LostFocus="VariableNameTextBox_LostFocus"/>
+                                     LostFocus="VariableNameTextBox_LostFocus"
+                                     TextChanged="VariableNameTextBox_TextChanged" Loaded="VariableEditor_Loaded"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -498,6 +499,8 @@
                                      BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
                                      BorderThickness="1" Padding="4,2"
                                      LostFocus="VariableValueTextBox_LostFocus"
+                                     TextChanged="VariableValueTextBox_TextChanged"
+                                     Loaded="VariableEditor_Loaded"
                                      ToolTip="{Binding Value, Converter={StaticResource ValueTextConverter}}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

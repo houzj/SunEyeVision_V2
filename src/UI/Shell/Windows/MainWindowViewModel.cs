@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -859,6 +859,12 @@ SplitterPosition = position;
 
             // 初始化执行管理器（传入共享的 WorkflowEngine，子程序工作流已注册在其中）
             _executionManager = new Services.Workflow.WorkflowExecutionManager(new SunEyeVision.UI.Services.Interaction.DefaultInputProvider(), _workflowEngine, _runtimeInputSnapshots);
+            _executionManager.PrepareDocumentEditors = () =>
+            {
+                if (!TryCommitSolutionEditors(out var error)) throw new InvalidOperationException(error);
+                _executionManager.SetGlobalVariables(DocumentManager.CurrentSolution is { } document
+                    ? CaptureGlobalVariables(document) : null);
+            };
             WorkflowTabViewModel.StartContinuousExecution = StartContinuousWorkflow;
             WorkflowTabViewModel.StopContinuousExecution = StopContinuousWorkflow;
 
@@ -2138,8 +2144,8 @@ SplitterPosition = position;
 
                 // ★ 传递全局变量到执行管理器（用于 __GlobalVars__ 绑定解析）
                 var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-                var globalVars = solutionManager.CurrentSolution?.GlobalVariables?
-                    .ToDictionary(gv => gv.Name, gv => gv.Value);
+                var globalVars = solutionManager.CurrentSolution is { } globalsDocument
+                    ? CaptureGlobalVariables(globalsDocument) : null;
                 _executionManager.SetGlobalVariables(globalVars);
 
                 await _executionManager.RunSingleAsync(WorkflowTabViewModel.SelectedTab, advanceLocalImage: advanceLocalImage);
@@ -4331,8 +4337,8 @@ SplitterPosition = position;
             _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
 
             var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-            var globalVars = solutionManager.CurrentSolution?.GlobalVariables?
-                .ToDictionary(gv => gv.Name, gv => gv.Value);
+            var globalVars = solutionManager.CurrentSolution is { } globalsDocument
+                ? CaptureGlobalVariables(globalsDocument) : null;
             _executionManager.SetGlobalVariables(globalVars);
 
             var accepted = _executionManager.StartContinuousRun(workflow);
@@ -5734,8 +5740,17 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     return;
                 }
 
-                var viewModel = new SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerViewModel(solutionManager);
+                var session = DocumentManager.Session ?? throw new InvalidOperationException("当前没有方案编辑会话。");
+                var viewModel = new SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerViewModel(solutionManager,
+                    GetProductionEditorHost(session), () => ReferenceEquals(DocumentManager.Session, session));
                 var dialog = new SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerDialog(viewModel);
+                _variableEditors.Add(viewModel);
+                dialog.Closed += (_, _) =>
+                {
+                    viewModel.Discard();
+                    _variableEditors.Remove(viewModel);
+                    ClearProductionEditorHost();
+                };
 
                 dialog.Owner = Application.Current?.MainWindow;
                 viewModel.SaveRequested = () => SaveCurrentDocumentWithPrompt(dialog);

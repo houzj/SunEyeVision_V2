@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.IO;
 using System.Collections.Concurrent;
 using System.Net;
@@ -93,7 +93,7 @@ public sealed class CommunicationAutomationTests
     [Fact]
     public async Task Busy_trigger_is_skipped_warned_and_never_queued()
     {
-        var manager = new WorkflowExecutionManager(new EmptyInput(), new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService());
+        var manager = new WorkflowExecutionManager(new EmptyInput(), new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var active = manager.RunCommunicationOperationAsync(async _ => { entered.TrySetResult(); await release.Task; }, default);
@@ -129,7 +129,7 @@ public sealed class CommunicationAutomationTests
     public async Task Manual_run_lease_also_rejects_communication_operations()
     {
         var input = new BlockingInput();
-        var manager = new WorkflowExecutionManager(input, new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService());
+        var manager = new WorkflowExecutionManager(input, new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
         var running = manager.RunSingleAsync(new WorkflowTabViewModel());
         try
         {
@@ -313,7 +313,7 @@ public sealed class CommunicationAutomationTests
     [Fact]
     public async Task Failed_workflow_does_not_publish_success_completion()
     {
-        var manager = new WorkflowExecutionManager(new EmptyInput(), new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService());
+        var manager = new WorkflowExecutionManager(new EmptyInput(), new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
         var completed = 0; var failed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         manager.WorkflowExecutionCompleted += (_, _) => Interlocked.Increment(ref completed);
         manager.WorkflowExecutionError += (_, _) => failed.TrySetResult();
@@ -331,7 +331,7 @@ public sealed class CommunicationAutomationTests
         var parameters = new AutomationProbeParameters { Value = 17 };
         var node = new WorkflowNodeBase("probe-node", "探针", "探针", "CommunicationAutomationProbe") { Parameters = parameters };
         workflow.Nodes.Add(node);
-        var manager = new WorkflowExecutionManager(new EmptyInput(), engine, new RuntimeInputSnapshotService());
+        var manager = new WorkflowExecutionManager(new EmptyInput(), engine, new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
         Assert.True(await manager.RunCommunicationOperationAsync(token =>
             manager.RunCommunicationNodeAsync(workflow.Id, node.Id, token), default));
         Assert.Equal(17, AutomationProbeTool.SeenValue);
@@ -353,7 +353,7 @@ public sealed class CommunicationAutomationTests
         var node = new WorkflowNodeBase("mapping-probe-node", "探针", "探针", "CommunicationAutomationProbe") { Parameters = parameters };
         node.ParamSettings.SetSetting(ParamSetting.CreateConstant("Value", 23));
         workflow.Nodes.Add(node);
-        var manager = new WorkflowExecutionManager(new EmptyInput(), engine, new RuntimeInputSnapshotService());
+        var manager = new WorkflowExecutionManager(new EmptyInput(), engine, new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
         Assert.True(await manager.RunCommunicationOperationAsync(token => manager.RunCommunicationNodeAsync(workflow.Id, node.Id, token),
             default, new[] { new CommunicationParameterAssignment(node.Id, "Value", "运行参数", 42) }));
         Assert.Equal(42, AutomationProbeTool.SeenValue);

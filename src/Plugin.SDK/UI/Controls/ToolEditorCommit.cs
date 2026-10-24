@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -20,6 +22,7 @@ public interface IToolEditorCommitParticipant
 public interface IToolEditorDraftContext : IToolEditorCommitParticipant
 {
     object FormalNode { get; }
+    bool TryPrepareEditor(out string error) => TryValidateEditor(out error);
     void Discard();
 }
 
@@ -27,6 +30,8 @@ public interface IToolEditorDraftContext : IToolEditorCommitParticipant
 public static class ToolEditorCommit
 {
     private static readonly List<WeakReference<ToolDebugControlBase>> Editors = new();
+    private sealed record LegacyBaseline(string? Signature);
+    private static readonly ConditionalWeakTable<ToolDebugControlBase, LegacyBaseline> LegacyBaselines = new();
     private static readonly DependencyProperty DraftContextProperty = DependencyProperty.RegisterAttached(
         "DraftContext", typeof(IToolEditorDraftContext), typeof(ToolEditorCommit));
     public static void AttachDraftContext(FrameworkElement editor, IToolEditorDraftContext context)
@@ -48,7 +53,11 @@ public static class ToolEditorCommit
         { binding.UpdateTarget(); System.Windows.Controls.Validation.ClearInvalid(binding); }
     }
     internal static void Register(ToolDebugControlBase editor)
-    { lock (Editors) { Editors.RemoveAll(e => !e.TryGetTarget(out var target) || ReferenceEquals(target, editor)); Editors.Add(new(editor)); } }
+    {
+        lock (Editors) { Editors.RemoveAll(e => !e.TryGetTarget(out var target) || ReferenceEquals(target, editor)); Editors.Add(new(editor)); }
+        // Keep the first baseline through temporary Unloaded/Loaded cycles.
+        if (GetDraftContext(editor) is null) LegacyBaselines.GetValue(editor, e => new(LegacySignature(e)));
+    }
     internal static void Unregister(ToolDebugControlBase editor)
     { lock (Editors) Editors.RemoveAll(e => !e.TryGetTarget(out var target) || ReferenceEquals(target, editor)); }
 
@@ -76,6 +85,59 @@ public static class ToolEditorCommit
     }
 
     public static bool TryCommitOpenEditors(Func<string, bool>? includeNode, out string error) => TryCommitOpenEditors(includeNode, out error, null);
+
+    /// <summary>Prepare only private drafts. Detect legacy pending changes before any source flush.</summary>
+    public static bool TryPrepareOpenDraftEditors(Func<object, bool> ownsNode,
+        out IReadOnlyList<IToolEditorDraftContext> contexts, out string error)
+    {
+        ToolDebugControlBase[] selected;
+        lock (Editors) selected = Editors.Select(e => e.TryGetTarget(out var target) ? target : null)
+            .OfType<ToolDebugControlBase>().Where(e => e.Dispatcher.CheckAccess() && e.IsLoaded &&
+                PresentationSource.FromVisual(e) != null && FormalNode(e) is { } node && ownsNode(node)).ToArray();
+        contexts = Array.Empty<IToolEditorDraftContext>();
+        foreach (var editor in selected.Where(e => GetDraftContext(e) is null))
+        {
+            var elements = Walk(editor).OfType<FrameworkElement>().ToArray();
+            var signature = LegacySignature(editor);
+            var baseline = LegacyBaselines.GetValue(editor, e => new(LegacySignature(e)));
+            if (signature is null || baseline.Signature != signature ||
+                elements.OfType<NumericUpDown>().Any(n => n.HasPendingEdit) ||
+                elements.SelectMany(Bindings).Any(b => b.IsDirty) ||
+                elements.Any(e => e.BindingGroup?.IsDirty == true || System.Windows.Controls.Validation.GetHasError(e)))
+            {
+                error = "此工具尚未接入方案草稿事务，存在未提交编辑；请保留当前编辑并先处理该工具窗口。";
+                return false;
+            }
+        }
+        foreach (var editor in selected.Where(e => GetDraftContext(e) != null))
+            if (!TryPrepare(editor, out error)) return false;
+        contexts = selected.Select(GetDraftContext).OfType<IToolEditorDraftContext>().Distinct().ToArray();
+        error = ""; return true;
+    }
+    private static string? LegacySignature(ToolDebugControlBase editor)
+    {
+        try
+        {
+            var node = editor.CurrentNode;
+            var parameters = node?.GetType().GetProperty("Parameters")?.GetValue(node);
+            var settings = node?.GetType().GetProperty("ParamSettings")?.GetValue(node);
+            return JsonSerializer.Serialize(new {
+                Parameters = parameters is null ? null : JsonSerializer.Serialize(parameters, parameters.GetType()),
+                Settings = settings is null ? null : JsonSerializer.Serialize(settings, settings.GetType()) });
+        }
+        catch { return null; }
+    }
+    public static bool TryPrepare(FrameworkElement root, out string error)
+    {
+        if (!TryFlush(root, out error)) return false;
+        if (root is ToolDebugControlBase control)
+        {
+            control.PersistParameterBindings();
+            if (!control.ValidateParameters()) { error = "参数验证失败，请检查输入参数。"; return false; }
+        }
+        if (GetDraftContext(root) is { } context) return context.TryPrepareEditor(out error);
+        error = ""; return true;
+    }
     public static bool TryCommitOpenEditors(Func<string, bool>? includeNode, out string error, Func<object, bool>? ownsNode)
     {
         ToolDebugControlBase[] editors;

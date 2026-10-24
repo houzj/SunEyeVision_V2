@@ -127,7 +127,7 @@ public sealed class NodeConfigurationEditHostTests
     }
 
     [Fact]
-    public void Throwing_binding_notifications_restore_all_fields_and_allow_the_same_draft_to_retry()
+    public void Throwing_binding_notifications_report_refresh_error_after_final_publication_without_replay()
     {
         var model = Model(); var variable = new GlobalVariable("v", "runtime", "String")
         { ProducerBinding = new() { WorkflowId = "f", NodeId = "source", ResultName = "value" } };
@@ -137,13 +137,14 @@ public sealed class NodeConfigurationEditHostTests
         System.ComponentModel.PropertyChangedEventHandler handler = (_, e) =>
         { if (e.PropertyName is nameof(GlobalVariable.ProducerBinding) or nameof(GlobalVariable.ConsumerBindings)) throw new InvalidOperationException("observer failure"); };
         variable.PropertyChanged += handler;
-        Assert.Throws<AggregateException>(() => host.Commit(edit));
-        Assert.Same(before, host.Capture()); Assert.False(host.CanUndo);
-        Assert.Same(producer, variable.ProducerBinding); Assert.Same(consumers, variable.ConsumerBindings);
-        Assert.Empty(variable.RebindingReason); Assert.Equal("runtime", variable.Value);
-        Assert.Equal("String", ((BindingAdaptationB2Tests.SourceParameters)model.Workflows[0].Nodes[0].Parameters).TypeName);
-        Assert.Equal("source.value", ((ProtocolParseParameters)model.Workflows[0].Nodes[1].Parameters).InputText);
+        host.Commit(edit);
+        Assert.Equal(before.Version + 1, host.Capture().Version); Assert.True(host.CanUndo);
+        Assert.NotNull(host.LastRefreshError);
+        Assert.Null(variable.ProducerBinding); Assert.NotEmpty(variable.RebindingReason); Assert.Equal("runtime", variable.Value);
+        Assert.Equal("Double", ((BindingAdaptationB2Tests.SourceParameters)model.Workflows[0].Nodes[0].Parameters).TypeName);
+        Assert.Empty(((ProtocolParseParameters)model.Workflows[0].Nodes[1].Parameters).InputText);
         variable.PropertyChanged -= handler;
-        host.Commit(edit); Assert.Null(variable.ProducerBinding); Assert.True(host.CanUndo);
+        Assert.Throws<InvalidOperationException>(() => host.Commit(edit));
+        Assert.Equal(before.Version + 1, host.Capture().Version);
     }
 }

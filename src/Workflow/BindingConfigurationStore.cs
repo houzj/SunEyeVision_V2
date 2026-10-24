@@ -78,48 +78,71 @@ public sealed class BindingConfigurationStore
         => Publish(draft, null);
 
     internal BindingConfigurationPublication Publish(BindingConfigurationDraft draft,
-        Action<BindingConfigurationSnapshot>? accept)
+        Action<BindingConfigurationSnapshot>? accept, bool forcePublication = false,
+        Action<Solution>? validate = null)
     {
         ArgumentNullException.ThrowIfNull(draft);
         lock (_gate)
         {
-            if (_accepting) throw new InvalidOperationException("配置接受过程中不能重入提交。");
-            if (draft.Owner != _owner) throw new InvalidOperationException("配置草稿不属于当前方案发布器。");
-            if (draft.BaseVersion != _published.Version) throw new InvalidOperationException("配置草稿版本已过期，请重新打开编辑。");
-            // Never validate or publish the caller's mutable object. Failure leaves both the
-            // published model and the editable draft untouched (including attempted bindings).
-            var candidate = draft.Configuration;
-            if (candidate.Id != _published.SolutionId)
-                throw new InvalidOperationException("不能通过绑定配置草稿切换方案身份。");
-            candidate = Copy(candidate);
-            var previous = _published.CopyConfiguration();
-            foreach (var oldFlow in previous.Workflows)
-            {
-                var nextFlow = candidate.Workflows.FirstOrDefault(w => w.Id == oldFlow.Id);
-                if (nextFlow == null) continue;
-                foreach (var edge in oldFlow.Connections)
-                    if (!nextFlow.Connections.Any(c => c.Id == edge.Id && c.SourceNodeId == edge.SourceNodeId &&
-                        c.TargetNodeId == edge.TargetNodeId && c.SourcePort == edge.SourcePort && c.TargetPort == edge.TargetPort) &&
-                        nextFlow.Nodes.FirstOrDefault(n => n.Id == edge.TargetNodeId) is { } target)
-                        ConnectionBindingPolicy.RemoveAutomaticImageBinding(target, edge.Id);
-            }
-            var validator = _validator.ForCandidate(candidate);
-            var changes = validator.ReconcileAll();
-            var graph = SolutionExecutionDependencyGraph.Compile(candidate, checkReadiness: false);
-            var invalidated = ChangedNodes(previous, candidate,
-                _published.Dependencies, graph.Dependencies, validator.InvalidatedNodes);
-            if (invalidated.Length == 0 && ConfigurationSignature(previous) == ConfigurationSignature(candidate))
-                return new(_published, Array.AsReadOnly(changes.ToArray()), Array.Empty<ScopedNodeIdentity>());
-            var next = new BindingConfigurationSnapshot(checked(_published.Version + 1), candidate, graph);
-            // The host projection must accept the whole generation before it becomes formal.
-            // A throwing host adapter is required to roll back its own projection.
+            var prepared = Prepare(draft, validate);
+            // An explicit runtime-value command must execute CAS/accept even if its payload
+            // equals the old history value. One accepted command is one publication.
+            if (prepared.Unchanged && !forcePublication)
+                return new(_published, Array.AsReadOnly(prepared.Changes.ToArray()), Array.Empty<ScopedNodeIdentity>());
+            var next = new BindingConfigurationSnapshot(checked(_published.Version + 1), prepared.Configuration, prepared.Graph);
+            var publication = new BindingConfigurationPublication(next,
+                Array.AsReadOnly(prepared.Changes.ToArray()), Array.AsReadOnly(prepared.Invalidated));
+            // Allocate the history slot before invoking the host's raw acceptance adapter.
+            // After acceptance there are only non-callback state assignments/stack operations.
+            _undo.EnsureCapacity(checked(_undo.Count + 1));
             Accept(next, accept);
             _undo.Push(_published);
             _redo.Clear();
-            _validator = validator;
+            _validator = prepared.Validator;
             _published = next;
-            return new(next, Array.AsReadOnly(changes.ToArray()), Array.AsReadOnly(invalidated));
+            return publication;
         }
+    }
+
+    internal void Validate(BindingConfigurationDraft draft, Action<Solution> validate)
+    {
+        ArgumentNullException.ThrowIfNull(draft);
+        ArgumentNullException.ThrowIfNull(validate);
+        lock (_gate) Prepare(draft, validate);
+    }
+
+    private sealed record PreparedConfiguration(Solution Configuration, OutputBindingChangeService Validator,
+        IReadOnlyList<OutputBindingChange> Changes, SolutionExecutionDependencyGraph Graph,
+        ScopedNodeIdentity[] Invalidated, bool Unchanged);
+
+    // Validation and publication use the same reconciled private candidate. A failed prepare
+    // never modifies the caller's draft, the live design or the published dependency graph.
+    private PreparedConfiguration Prepare(BindingConfigurationDraft draft, Action<Solution>? validate)
+    {
+        if (_accepting) throw new InvalidOperationException("配置接受过程中不能重入提交或校验。");
+        if (draft.Owner != _owner) throw new InvalidOperationException("配置草稿不属于当前方案发布器。");
+        if (draft.BaseVersion != _published.Version) throw new InvalidOperationException("配置草稿版本已过期，请重新打开编辑。");
+        if (draft.Configuration.Id != _published.SolutionId)
+            throw new InvalidOperationException("不能通过绑定配置草稿切换方案身份。");
+        var candidate = Copy(draft.Configuration);
+        var previous = _published.CopyConfiguration();
+        foreach (var oldFlow in previous.Workflows)
+        {
+            var nextFlow = candidate.Workflows.FirstOrDefault(w => w.Id == oldFlow.Id);
+            if (nextFlow == null) continue;
+            foreach (var edge in oldFlow.Connections)
+                if (!nextFlow.Connections.Any(c => c.Id == edge.Id && c.SourceNodeId == edge.SourceNodeId &&
+                    c.TargetNodeId == edge.TargetNodeId && c.SourcePort == edge.SourcePort && c.TargetPort == edge.TargetPort) &&
+                    nextFlow.Nodes.FirstOrDefault(n => n.Id == edge.TargetNodeId) is { } target)
+                    ConnectionBindingPolicy.RemoveAutomaticImageBinding(target, edge.Id);
+        }
+        var validator = _validator.ForCandidate(candidate);
+        var changes = validator.ReconcileAll();
+        var graph = SolutionExecutionDependencyGraph.Compile(candidate, checkReadiness: false);
+        validate?.Invoke(candidate);
+        var invalidated = ChangedNodes(previous, candidate, _published.Dependencies, graph.Dependencies, validator.InvalidatedNodes);
+        return new(candidate, validator, changes, graph, invalidated,
+            invalidated.Length == 0 && ConfigurationSignature(previous) == ConfigurationSignature(candidate));
     }
 
     private static ScopedNodeIdentity[] ChangedNodes(Solution before, Solution after,
@@ -208,6 +231,7 @@ public sealed class BindingConfigurationStore
             var validator = new OutputBindingChangeService();
             validator.Reset(configuration);
             var next = new BindingConfigurationSnapshot(checked(_published.Version + 1), configuration, graph);
+            destination.EnsureCapacity(checked(destination.Count + 1));
             Accept(next, accept);
             source.Pop(); destination.Push(_published);
             _validator = validator; _published = next;

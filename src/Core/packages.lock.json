@@ -71,11 +71,25 @@
         "resolved": "10.0.3",
         "contentHash": "l8QNBPp92bVzl9Kw8nNtm1uYRNNhUrdulZjM4a8YK/QGNa8z9utKsC0bDoPB+Vq8LOlbD3fIyGlabtz80jT7cw=="
       },
+      "suneyevision.plugin.contracts": {
+        "type": "Project"
+      },
+      "suneyevision.plugin.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.plugin.sdk": {
         "type": "Project",
         "dependencies": {
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )",
           "System.Drawing.Common": "[9.0.0, )"
         }
+      },
+      "suneyevision.tool.kernels": {
+        "type": "Project"
       }
     },
     "net9.0-windows7.0/win-x64": {

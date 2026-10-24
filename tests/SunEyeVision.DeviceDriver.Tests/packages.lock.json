@@ -413,7 +413,7 @@
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.Extensions": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
           "System.Text.Json": "[10.0.3, )"
         }
       },
@@ -426,10 +426,13 @@
           "OpenCvSharp4.Extensions": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
           "S7netplus": "[0.20.0, )",
-          "SunEyeVision.Core": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.7, )",
+          "SunEyeVision.Core": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",
           "System.IO.Ports": "[9.0.0, )"
         }
+      },
+      "suneyevision.plugin.contracts": {
+        "type": "Project"
       },
       "suneyevision.plugin.infrastructure": {
         "type": "Project",
@@ -437,15 +440,26 @@
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.Extensions": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.Core": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )"
+          "SunEyeVision.Core": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.plugin.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.sdk": {
         "type": "Project",
         "dependencies": {
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )",
           "System.Drawing.Common": "[9.0.0, )"
         }
+      },
+      "suneyevision.tool.kernels": {
+        "type": "Project"
       }
     },
     "net9.0-windows7.0/win-x64": {

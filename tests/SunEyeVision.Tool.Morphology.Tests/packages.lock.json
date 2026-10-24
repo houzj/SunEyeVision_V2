@@ -172,20 +172,34 @@
       "suneyevision.haladapter": {
         "type": "Project",
         "dependencies": {
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )"
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.plugin.contracts": {
+        "type": "Project"
+      },
+      "suneyevision.plugin.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.sdk": {
         "type": "Project",
         "dependencies": {
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )",
           "System.Drawing.Common": "[9.0.0, )"
         }
+      },
+      "suneyevision.tool.kernels": {
+        "type": "Project"
       },
       "suneyevision.tool.morphology": {
         "type": "Project",
         "dependencies": {
-          "SunEyeVision.HalAdapter": "[2.0.0-alpha.7, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.7, )",
+          "SunEyeVision.HalAdapter": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
           "System.Text.Json": "[10.0.3, )"
         }
       }

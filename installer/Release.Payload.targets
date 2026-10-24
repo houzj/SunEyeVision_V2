@@ -28,6 +28,9 @@
           Condition="'$(MSBuildProjectName)'=='SunEyeVision.UI' And '$(SelfContained)'!='true' And '$(DesignTimeBuild)'!='true' And '$(BuildingProject)'!='false'">
     <MSBuild Projects="@(_ReleaseToolProject)" Targets="Build" BuildInParallel="false"
              Properties="Configuration=$(Configuration)" />
-    <Exec Command="pwsh -NoProfile -File &quot;$(MSBuildThisFileDirectory)Seal-ReleasePayload.ps1&quot; -AppPath &quot;$(OutDir).&quot;" />
+    <PropertyGroup>
+      <_ReleaseSealSourceArgument Condition="'$(SourceRevisionId)'!=''">-SourceCommit &quot;$(SourceRevisionId)&quot;</_ReleaseSealSourceArgument>
+    </PropertyGroup>
+    <Exec Command="pwsh -NoProfile -File &quot;$(MSBuildThisFileDirectory)Seal-ReleasePayload.ps1&quot; -AppPath &quot;$(OutDir).&quot; $(_ReleaseSealSourceArgument)" />
   </Target>
 </Project>

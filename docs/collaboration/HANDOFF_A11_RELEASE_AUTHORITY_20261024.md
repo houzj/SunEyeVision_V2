@@ -13,3 +13,4 @@
 - 人工验收结果：本片无用户/VS人工结论。最终同一Release集中一次清单。
 - 已知风险或禁止改动：noncollectible ALC不能回滚任意插件构造外部IO/静态线程；不承诺卸载。不覆盖旧FAIL、旧C67/几何/数值/空合同包，不重已闭验证、不动未知dirty。
 - 下一步：完成新干净SCD规则实测，当前源码精确固定送独测；随后审合已父核并直交独测的Editor c795+dd6d及Shape候选6ef，按原资产合同继续。Editor原E06/E07真实保存FAIL保持开放。
+- 精确归档构建补充：development seal显式接收构建SourceRevisionId；嵌套归档不会把父checkout后继HEAD误记为本源码来源。SourceRevisionId空时保留普通checkout Git获取。此后继只改seal来源传递，最终固定将以其精确commit重编；原29e边界保留。

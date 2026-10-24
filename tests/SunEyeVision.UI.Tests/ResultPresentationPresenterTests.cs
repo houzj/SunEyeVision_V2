@@ -17,6 +17,41 @@ namespace SunEyeVision.UI.Tests;
 public sealed class ResultPresentationPresenterTests
 {
     [Fact]
+    public void Immutable_geometry_values_show_coordinates_frame_and_explicit_angle_units() => Sta(() =>
+    {
+        var frame=new CoordinateFrame("image:test",CoordinateDomain.Image,CoordinateUnit.Pixel);
+        GeometryValue[] shapes={new PointGeometry(frame,new(1.25,2.5)),new LineGeometry(frame,new(0,0),new(3,4)),
+            new CircleGeometry(frame,new(2,3),4),new ArcGeometry(frame,new(2,3),4,.25,1.5),
+            new OrientedRectangleGeometry(frame,new(2,3),4,5,.75),new EllipseGeometry(frame,new(2,3),4,5,.25),
+            new PolygonGeometry(frame,new[]{new Point2(0,0),new Point2(4,0),new Point2(0,3)})};
+        var schema=Schema(shapes.Select((shape,i)=>new Port("shape"+i,TypeRef.GeometryOf(shape.Kind,frame))).ToArray());
+        using var run=Success(schema,shapes.Select((shape,i)=>(shape,i)).ToDictionary(item=>"shape"+item.i,item=>(object?)item.shape));
+        var rows=new ObservableCollection<FlatResultRow>();using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        var previous=CultureInfo.CurrentCulture;
+        try{CultureInfo.CurrentCulture=CultureInfo.GetCultureInfo("de-DE");presenter.ShowRun(run.Snapshot);}
+        finally{CultureInfo.CurrentCulture=previous;}
+        Assert.Equal(8,rows.Count);Assert.Contains("点 (1.25, 2.5)",rows[1].DisplayValue);
+        Assert.All(rows.Skip(1),row=>{Assert.Contains("image:test",row.DisplayValue);Assert.Contains("Pixel",row.DisplayValue);});
+        Assert.All(rows.Skip(4).Take(3),row=>Assert.Contains(" rad",row.DisplayValue));
+        Assert.Contains("3 顶点",rows[7].DisplayValue);
+    });
+
+    [Fact]
+    public void Large_immutable_polygon_summary_does_not_enumerate_or_clone_vertices() => Sta(() =>
+    {
+        var frame=new CoordinateFrame("image:test",CoordinateDomain.Image,CoordinateUnit.Pixel);
+        var geometry=new PolygonGeometry(frame,Enumerable.Range(0,100_000).Select(i=>new Point2(i,i%17)));
+        var schema=Schema(new Port("polygon",TypeRef.GeometryOf(GeometryKind.Polygon,frame)));
+        using var run=Success(schema,new(){["polygon"]=geometry});
+        var rows=new ObservableCollection<FlatResultRow>();using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        var before=GC.GetAllocatedBytesForCurrentThread();presenter.ShowRun(run.Snapshot);
+        Assert.Equal(2,rows.Count);Assert.Contains("100000 顶点",rows[1].DisplayValue);
+        Assert.True(GC.GetAllocatedBytesForCurrentThread()-before<256*1024);
+        using var reader=run.Snapshot.AcquireReader();
+        Assert.Same(geometry,reader.Values!.Read("polygon").GetGeometry());
+        Assert.Throws<InvalidOperationException>(()=>new InputValues(new[]{new Port("n",DataType.Number)},new Dictionary<string,object?>{["n"]=1d}).Read("n").GetGeometry());
+    });
+    [Fact]
     public void Display_flags_change_without_changing_the_binding_schema()
     {
         var schema=Schema(new Port("visible",DataType.Number),new Port("hidden",DataType.Number));

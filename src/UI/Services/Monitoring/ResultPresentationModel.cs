@@ -94,6 +94,8 @@ public sealed class ResultPresentationNode
             ScalarKind.Text => _reader.GetScalar<string>(),
             _ => null
         } : null;
+    public GeometryValue? GeometryValue => _reader != null && Declaration.Shape==ValueShape.Geometry
+        ? _reader.GetGeometry() : null;
     // A declared count range is not an observed element count, including Exactly(0/1/N).
     public int? ChildCount => Declaration.Shape switch
     {

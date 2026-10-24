@@ -276,7 +276,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         {
             ValueShape.Sequence => node.ChildCount == 0 ? "空序列 (0)" : "[" + node.ChildCount!.Value.ToString(CultureInfo.InvariantCulture) + " 项]",
             ValueShape.Record => "记录",
-            ValueShape.Geometry => "几何值待接入",
+            ValueShape.Geometry => GeometryText(node.GeometryValue!),
             _ => node.ScalarValue switch
             {
                 string text => text.Length == 0 ? "empty" : text,
@@ -287,4 +287,21 @@ public sealed class ResultPresentationPresenter : IDisposable
             }
         }
     };
+    private static string GeometryText(GeometryValue geometry)
+    {
+        static string N(double value)=>value.ToString("R",CultureInfo.InvariantCulture);
+        static string P(Point2 point)=>"("+N(point.X)+", "+N(point.Y)+")";
+        var value=geometry switch
+        {
+            PointGeometry point=>"点 "+P(point.Point),
+            LineGeometry line=>"线 "+P(line.Start)+" → "+P(line.End),
+            CircleGeometry circle=>"圆 "+P(circle.Center)+" r="+N(circle.Radius),
+            ArcGeometry arc=>"弧 "+P(arc.Center)+" r="+N(arc.Radius)+" start="+N(arc.StartRadians)+" rad sweep="+N(arc.SweepRadians)+" rad",
+            OrientedRectangleGeometry rectangle=>"旋转矩形 "+P(rectangle.Center)+" "+N(rectangle.Width)+" × "+N(rectangle.Height)+" angle="+N(rectangle.AngleRadians)+" rad",
+            EllipseGeometry ellipse=>"椭圆 "+P(ellipse.Center)+" rx="+N(ellipse.RadiusX)+" ry="+N(ellipse.RadiusY)+" angle="+N(ellipse.AngleRadians)+" rad",
+            PolygonGeometry polygon=>"多边形 ["+polygon.Vertices.Count.ToString(CultureInfo.InvariantCulture)+" 顶点]",
+            _=>throw new InvalidOperationException("Unknown immutable geometry.")
+        };
+        return value+" · "+geometry.Frame.Id+" · "+geometry.Frame.Unit;
+    }
 }

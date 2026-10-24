@@ -45,4 +45,11 @@ public sealed class DeclaredValueReader
             throw new InvalidOperationException("Only immutable canonical scalars can be read directly.");
         return _value is T scalar?scalar:throw new InvalidOperationException("Scalar representation does not match the declaration.");
     }
+    /// <summary>Geometry values are closed immutable data; no resource handle or mutable container escapes.</summary>
+    public GeometryValue GetGeometry()
+    {
+        RequireValue();
+        return Declaration.Shape==ValueShape.Geometry && _value is GeometryValue geometry
+            ?geometry:throw new InvalidOperationException("A geometry declaration is required.");
+    }
 }

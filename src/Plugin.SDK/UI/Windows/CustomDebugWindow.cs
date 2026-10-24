@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shell;
@@ -24,11 +24,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
     /// 不适用场景：
     /// - 需要标准窗口样式的工具（使用 DefaultDebugWindow）
     /// </remarks>
-    public class CustomDebugWindow : Window
+    public class CustomDebugWindow : Window, SunEyeVision.Plugin.SDK.UI.Controls.IToolControlInitializer
     {
         #region 字段
 
         private readonly UserControl _control;
+        private bool _confirmed;
+        public SunEyeVision.Plugin.SDK.UI.Controls.ToolDebugControlBase? EditorControl => _control as SunEyeVision.Plugin.SDK.UI.Controls.ToolDebugControlBase;
+        private SunEyeVision.Plugin.SDK.UI.Controls.IToolControlInitializer Initializer =>
+            _control as SunEyeVision.Plugin.SDK.UI.Controls.IToolControlInitializer ?? throw new InvalidOperationException("编辑控件未实现初始化合同。");
+        public void SetCurrentNode(object node) => Initializer.SetCurrentNode(node);
+        public void SetParameters(SunEyeVision.Plugin.SDK.Execution.Parameters.ToolParameters parameters) => Initializer.SetParameters(parameters);
+        public void SetDataProvider(object provider) => Initializer.SetDataProvider(provider);
+        public void SetMainImageControl(SunEyeVision.Plugin.SDK.UI.Controls.ImageControl? imageControl) => Initializer.SetMainImageControl(imageControl);
+        public System.Threading.Tasks.Task InitializeAsync() => Initializer.InitializeAsync();
         private Border? _windowBorder;
 
         /// <summary>
@@ -78,7 +87,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
 
             // 窗口关闭时清理
             Closed += OnWindowClosed;
-            Closing += (_, e) => e.Cancel = !SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorClose.TryClose(_control, this);
+            Closing += (_, e) => { if (!_confirmed) e.Cancel = !SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorClose.TryClose(_control, this); };
 
             PluginLogger.Success("CustomDebugWindow 构造函数完成", "CustomDebugWindow");
         }
@@ -136,6 +145,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         {
             if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryCommit(_control, out var error))
             { MessageBox.Show(this, error, "配置未提交", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            _confirmed = true;
             PluginLogger.Info("确认按钮已点击，关闭窗口", "CustomDebugWindow");
             Close();
         }
@@ -146,19 +156,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         private void OnWindowClosed(object? sender, EventArgs e)
         {
             PluginLogger.Info($"[绑定诊断] 自定义调试窗口 Closed | 控件={_control.GetType().Name}", "BindingDiag");
-            // 关闭窗口时显式提交工具调试控件的绑定状态。
-            // 不能只依赖 UserControl.Unloaded：窗口复用、关闭动画或宿主切换
-            // 都可能让 Unloaded 回调晚于节点清理。
-            try
-            {
-                var persistMethod = _control.GetType().GetMethod("PersistParameterBindings");
-                persistMethod?.Invoke(_control, null);
-                PluginLogger.Info($"[绑定诊断] 自定义调试窗口提交完成 | 控件={_control.GetType().Name}", "BindingDiag");
-            }
-            catch (Exception ex)
-            {
-                PluginLogger.Warning($"关闭调试窗口时持久化绑定失败: {ex.Message}", "CustomDebugWindow");
-            }
+            // The close decision already committed or discarded the draft.
+            // Closed only releases handlers; it must never publish bindings again.
 
             // 清理事件绑定
             if (_control != null)

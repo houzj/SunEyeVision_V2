@@ -47,7 +47,6 @@ public sealed class NodeConfigurationEditHostTests
     {
         var model = Model(); var source = model.Workflows[0].Nodes[0]; var parse = model.Workflows[0].Nodes[1];
         var host = new NodeConfigurationEditHost(model); var edit = host.BeginEdit("f", "source");
-        var parseParameters = parse.Parameters;
         var sourcePreview = new SunEyeVision.Plugin.SDK.Execution.Parameters.ImageSourceReference("source", "OutputImage", "source", "图像");
         var parsePreview = new SunEyeVision.Plugin.SDK.Execution.Parameters.ImageSourceReference("source", "OutputImage", "source", "图像");
         source.SelectedDisplaySource = sourcePreview; parse.SelectedDisplaySource = parsePreview;
@@ -55,7 +54,8 @@ public sealed class NodeConfigurationEditHostTests
         host.Validate(edit); host.Commit(edit);
         Assert.Equal("edited", ((BindingAdaptationB2Tests.SourceParameters)source.Parameters).Name);
         Assert.Same(sourcePreview, source.SelectedDisplaySource); Assert.Same(parsePreview, parse.SelectedDisplaySource);
-        Assert.Same(parseParameters, parse.Parameters);
+        // Renaming the source output legitimately updates its stable-ID downstream binding.
+        Assert.Equal("source.edited", ((ProtocolParseParameters)parse.Parameters).InputText);
         host.Undo(); Assert.Same(sourcePreview, source.SelectedDisplaySource); Assert.Same(parsePreview, parse.SelectedDisplaySource);
         host.Redo(); Assert.Same(sourcePreview, source.SelectedDisplaySource); Assert.Same(parsePreview, parse.SelectedDisplaySource);
         Assert.Equal("edited", ((BindingAdaptationB2Tests.SourceParameters)source.Parameters).Name);

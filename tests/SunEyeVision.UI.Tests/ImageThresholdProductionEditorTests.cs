@@ -222,5 +222,5 @@ public sealed class ImageThresholdProductionEditorTests
         thread.SetApartmentState(ApartmentState.STA); thread.Start();
         Assert.True(ready.Wait(TimeSpan.FromSeconds(10))); return dispatcher!;
     });
-    private static void Sta(Action action) => UiThread.Value.Invoke(action);
+    internal static void Sta(Action action) => UiThread.Value.Invoke(action);
 }

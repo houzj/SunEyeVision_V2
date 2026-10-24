@@ -1,9 +1,10 @@
-﻿using System;
+using System;
+using SunEyeVision.Workflow;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
-namespace SunEyeVision.Workflow.Nodes
+namespace SunEyeVision.UI.Services.Editing
 {
     /// <summary>
     /// 节点打开决策链 - 集中处理节点双击/打开的决策流程
@@ -23,7 +24,7 @@ namespace SunEyeVision.Workflow.Nodes
         /// <summary>
         /// 执行决策链
         /// </summary>
-        public bool Execute(WorkflowNodeBase node, NodeOpenContext context)
+        public bool Execute(WorkflowNodeBase node, NodeOpenContext context, Func<System.Windows.FrameworkElement?>? createEditor = null)
         {
             try
             {
@@ -44,7 +45,8 @@ namespace SunEyeVision.Workflow.Nodes
                 if (context.WindowStyle == DebugWindowStyle.None)
                     return true;
 
-                CreateDebugControl(context);
+                if (createEditor is null) CreateDebugControl(context);
+                else context.DebugControl = createEditor();
 
                 // Step 4: 创建并显示调试窗口
                 DefaultOpenWindow(context);
@@ -90,7 +92,7 @@ namespace SunEyeVision.Workflow.Nodes
                 return;
             }
 
-            if (metadata?.DebugWindowStyle != DebugWindowStyle.Default)
+            if (metadata is not null && metadata.DebugWindowStyle != DebugWindowStyle.Default)
             {
                 context.WindowStyle = metadata.DebugWindowStyle;
                 return;
@@ -159,10 +161,15 @@ namespace SunEyeVision.Workflow.Nodes
                 return;
             }
 
-            context.CreatedWindow = null;
-            VisionLogger.Instance.Log(LogLevel.Info,
-                "调试控件需要由调用方包装为窗口（DefaultDebugWindow）",
-                "NodeOpenDecisionChain");
-        }
+            if (context.DebugControl is System.Windows.Controls.UserControl control)
+            {
+                System.Windows.Window window = context.WindowStyle == DebugWindowStyle.Custom
+                    ? new SunEyeVision.Plugin.SDK.UI.Windows.CustomDebugWindow(control)
+                    : new SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow(control);
+                if (context.MainWindow is not null) window.Owner = context.MainWindow;
+                context.CreatedWindow = window;
+                return;
+            }
+            context.CreatedWindow = null;        }
     }
 }

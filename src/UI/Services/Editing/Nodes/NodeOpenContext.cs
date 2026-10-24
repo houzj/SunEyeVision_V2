@@ -1,9 +1,9 @@
-﻿using System.Windows;
+using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.Workflow.Nodes
+namespace SunEyeVision.UI.Services.Editing
 {
     /// <summary>
     /// 节点打开上下文 - 封装节点打开过程中的所有数据

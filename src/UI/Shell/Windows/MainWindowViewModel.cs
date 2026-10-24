@@ -14,7 +14,7 @@ using Microsoft.Win32;
 using AppCommands = SunEyeVision.UI.Features.WorkflowUI.Commands;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
-using SunEyeVision.Workflow.Nodes;
+using SunEyeVision.UI.Services.Editing;
 
 
 using SunEyeVision.Plugin.SDK;
@@ -2734,42 +2734,23 @@ SplitterPosition = position;
                 LogNodeStorageIdentity(node, "打开调试窗口");
                 var mainImageControl = GetMainImageControl?.Invoke();
                 var context = new NodeOpenContext(Application.Current.MainWindow, mainImageControl);
-                // 图像源的配置由 UI 宿主提供；工具插件只负责执行，不依赖 WPF 编辑器。
-                // 使用原始 UI 节点，确保弹窗直接编辑当前方案中的 ImageSourceConfig。
-                var success = true;
-                if (node.IsImageLoadNode)
-                {
-                    context.DebugControl = new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(node, this);
-                }
-                else
-                {
-                    var decisionChain = new NodeOpenDecisionChain();
-                    success = decisionChain.Execute(node.ToWorkflowNode(), context);
-                }
-
+                // UI owns editor creation. Use the formal node so identity and style
+                // overrides are not lost in an incomplete execution-node conversion.
+                var decisionChain = new NodeOpenDecisionChain();
+                var success = decisionChain.Execute(node, context, node.IsImageLoadNode
+                    ? () => new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(node, this)
+                    : null);
                 if (!success)
                 {
                     AddLog($"❌ 节点打开失败: {node.Name}");
                     return;
                 }
 
-                if (context.CreatedWindow == null)
+                if (context.CreatedWindow is null)
                 {
-                    if (context.DebugControl is System.Windows.Controls.UserControl userControl)
-                    {
-                        // DecisionChain 将 FrameworkElement 留待调用方包装为 DefaultDebugWindow
-                        var debugWindow = new SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow(userControl);
-                        if (context.MainWindow != null)
-                            debugWindow.Owner = context.MainWindow;
-                        context.CreatedWindow = debugWindow;
-                    }
-                    else
-                    {
-                        AddLog($"ℹ️ 节点 '{node.Name}' 无调试界面，无需打开窗口");
-                        return;
-                    }
+                    AddLog($"ℹ️ 节点 '{node.Name}' 无调试界面，无需打开窗口");
+                    return;
                 }
-
                 if (context.CreatedWindow is SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow iconWindow)
                     iconWindow.ToolIconKey = node.Icon;
 

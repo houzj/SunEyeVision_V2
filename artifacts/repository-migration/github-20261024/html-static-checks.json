@@ -1,0 +1,86 @@
+[
+  {
+    "path": "artifacts\\validation\\document-library-source-snapshots\\document-maintenance.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\维护记录\\文档维护.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "artifacts\\validation\\document-library-source-snapshots\\guide-dataflow.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\关系图解\\guide-dataflow.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "artifacts\\validation\\document-library-source-snapshots\\guide-execution.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\关系图解\\guide-execution.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "artifacts\\validation\\document-library-source-snapshots\\index.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\index.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "artifacts\\validation\\document-library-source-snapshots\\optimization-o01.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "artifacts\\validation\\document-library-source-snapshots\\optimization-o06.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o06.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "artifacts\\validation\\document-library-source-snapshots\\tool-script.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o01.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o06.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o06.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\关系图解\\guide-dataflow.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\关系图解\\guide-dataflow.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\关系图解\\guide-execution.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\关系图解\\guide-execution.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\现状分析\\tool-script.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\维护记录\\文档维护.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\维护记录\\文档维护.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  },
+  {
+    "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\交付总览.html",
+    "linkResolutionBase": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\交付总览.html",
+    "newDuplicateIds": [],
+    "addedLinksMissing": []
+  }
+]

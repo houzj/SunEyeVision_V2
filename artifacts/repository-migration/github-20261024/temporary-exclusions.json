@@ -1,0 +1,32 @@
+[
+  {
+    "original": "_capture_log.txt",
+    "localOnly": "artifacts\\repository-migration\\github-20261024\\excluded-temporary\\_capture_log.txt",
+    "sha256": "130085af3f5ac5bc3f0f8e7600fa98a0c43f421f767a86ddb1f1f6a966feba3a",
+    "reason": "临时抓取/探测脚本或日志，保留本地隔离，不执行、不提交"
+  },
+  {
+    "original": "_capture_log2.txt",
+    "localOnly": "artifacts\\repository-migration\\github-20261024\\excluded-temporary\\_capture_log2.txt",
+    "sha256": "b0a7ed44f3334b243c9c4e3ee98bad9a1187c40839f145c61f0535dd258898ee",
+    "reason": "临时抓取/探测脚本或日志，保留本地隔离，不执行、不提交"
+  },
+  {
+    "original": "_capture_main.ps1",
+    "localOnly": "artifacts\\repository-migration\\github-20261024\\excluded-temporary\\_capture_main.ps1",
+    "sha256": "d47e54cf180ea74c46d95878b9b0cfa2f486d9fc184a03446f2dc9ad7587b976",
+    "reason": "临时抓取/探测脚本或日志，保留本地隔离，不执行、不提交"
+  },
+  {
+    "original": "_capture_main2.ps1",
+    "localOnly": "artifacts\\repository-migration\\github-20261024\\excluded-temporary\\_capture_main2.ps1",
+    "sha256": "b2e023d3c87ccb88a776eca8e4105078154a430be3ac669e6b11dc2b44f3bd56",
+    "reason": "临时抓取/探测脚本或日志，保留本地隔离，不执行、不提交"
+  },
+  {
+    "original": "_probe.txt",
+    "localOnly": "artifacts\\repository-migration\\github-20261024\\excluded-temporary\\_probe.txt",
+    "sha256": "8eaa097d6c3e24b0bed445e473ddba75b520c13b6044b7eac4991b1bb454ab5e",
+    "reason": "临时抓取/探测脚本或日志，保留本地隔离，不执行、不提交"
+  }
+]

@@ -1,0 +1,69 @@
+{
+  "at": "2026-10-24T22:26:34.041807+08:00",
+  "status": "MIGRATION_VERIFIED",
+  "target": "https://github.com/houzj/SunEyeVision_V2.git",
+  "head": "25d33b73787f47fd0d2e3eac34bb1c8c08de09c5",
+  "checks": [
+    {
+      "ref": "refs/heads/main",
+      "expected": "25d33b73787f47fd0d2e3eac34bb1c8c08de09c5",
+      "actual": "25d33b73787f47fd0d2e3eac34bb1c8c08de09c5",
+      "matches": true
+    },
+    {
+      "ref": "refs/heads/archive/hdrawing-experiment",
+      "expected": "4e5c8097b07bba2e7cac19f87613518aa3c04f93",
+      "actual": "4e5c8097b07bba2e7cac19f87613518aa3c04f93",
+      "matches": true
+    },
+    {
+      "ref": "refs/heads/codex/sync-main-20260921",
+      "expected": "bf0949cc087c4e3d428ce639026b5cdc7b4c56e1",
+      "actual": "bf0949cc087c4e3d428ce639026b5cdc7b4c56e1",
+      "matches": true
+    },
+    {
+      "ref": "refs/heads/feature/comm",
+      "expected": "3c4dd1234f8a96eee8834c6f4243684bf268dced",
+      "actual": "3c4dd1234f8a96eee8834c6f4243684bf268dced",
+      "matches": true
+    },
+    {
+      "ref": "refs/heads/feature/render-quantity",
+      "expected": "63d421af17266db0f9710b6292592c153e79e6a8",
+      "actual": "63d421af17266db0f9710b6292592c153e79e6a8",
+      "matches": true
+    },
+    {
+      "ref": "refs/heads/feature/script-tool",
+      "expected": "d6074d8f6a3f9ee85b9eb47717fadc6ea6abaa63",
+      "actual": "d6074d8f6a3f9ee85b9eb47717fadc6ea6abaa63",
+      "matches": true
+    },
+    {
+      "ref": "refs/tags/v2.0.0.1-alpha",
+      "expected": "7c49b36b321e3aaa2917899f5cfef8bf277c42ef",
+      "actual": "7c49b36b321e3aaa2917899f5cfef8bf277c42ef",
+      "matches": true
+    }
+  ],
+  "githubMainAhead": 0,
+  "githubMainBehind": 0,
+  "remotes": {
+    "origin": "https://github.com/houzj/SunEyeVision_V2.git",
+    "gitee": "https://gitee.com/houzj_magichan/sun-eye-vision_-v2.git",
+    "upstream": "d:/MyWork/SunEyeVision_Dev"
+  },
+  "defaultPushRemote": "origin",
+  "pushDefault": "simple",
+  "workingTreeNotAutoCommitted": true,
+  "dirtyEntriesAtEnd": 91,
+  "indexEmpty": true,
+  "headUnchangedDuringMigration": true,
+  "historyRewritten": false,
+  "existingLimitations": [
+    "Five historical blobs exceed GitHub recommended 50MiB; push accepted, none exceeds 100MiB.",
+    "third_party/adaptagrams gitlink has no .gitmodules mapping; recursive submodule setup is an existing unresolved issue."
+  ],
+  "pausedOptimizationResumed": false
+}

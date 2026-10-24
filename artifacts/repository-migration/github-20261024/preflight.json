@@ -1,0 +1,81 @@
+{
+  "at": "2026-10-24T22:18:40.856147+08:00",
+  "source": "https://gitee.com/houzj_magichan/sun-eye-vision_-v2.git",
+  "target": "https://github.com/houzj/SunEyeVision_V2.git",
+  "head": "25d33b73787f47fd0d2e3eac34bb1c8c08de09c5",
+  "plannedRefs": [
+    {
+      "source": "HEAD",
+      "destination": "refs/heads/main",
+      "sha": "25d33b73787f47fd0d2e3eac34bb1c8c08de09c5"
+    },
+    {
+      "source": "refs/remotes/origin/archive/hdrawing-experiment",
+      "destination": "refs/heads/archive/hdrawing-experiment",
+      "sha": "4e5c8097b07bba2e7cac19f87613518aa3c04f93"
+    },
+    {
+      "source": "refs/remotes/origin/codex/sync-main-20260921",
+      "destination": "refs/heads/codex/sync-main-20260921",
+      "sha": "bf0949cc087c4e3d428ce639026b5cdc7b4c56e1"
+    },
+    {
+      "source": "refs/remotes/origin/feature/comm",
+      "destination": "refs/heads/feature/comm",
+      "sha": "3c4dd1234f8a96eee8834c6f4243684bf268dced"
+    },
+    {
+      "source": "refs/remotes/origin/feature/render-quantity",
+      "destination": "refs/heads/feature/render-quantity",
+      "sha": "63d421af17266db0f9710b6292592c153e79e6a8"
+    },
+    {
+      "source": "refs/remotes/origin/feature/script-tool",
+      "destination": "refs/heads/feature/script-tool",
+      "sha": "d6074d8f6a3f9ee85b9eb47717fadc6ea6abaa63"
+    },
+    {
+      "source": "refs/tags/v2.0.0.1-alpha",
+      "destination": "refs/tags/v2.0.0.1-alpha",
+      "sha": "7c49b36b321e3aaa2917899f5cfef8bf277c42ef"
+    }
+  ],
+  "objectCount": 25659,
+  "blobsAtLeast50MiB": [
+    {
+      "oid": "cb5bdd186c25acfa90f6031a6464f61d3cb71313",
+      "bytes": 79219712,
+      "path": "libs/halcon/runtime/x64-win64/halcon.dll"
+    },
+    {
+      "oid": "dd268c595f2cb4e83905036aed35d91a2021ade5",
+      "bytes": 56360936,
+      "path": "libs/halcon/runtime/x64-win64/halcondl.dll"
+    },
+    {
+      "oid": "68bb451fa5fcaffb826afb71db2d980a5934c8e6",
+      "bytes": 56359912,
+      "path": "libs/halcon/runtime/x64-win64/halcondlxl.dll"
+    },
+    {
+      "oid": "f57a370dceba0a81dcd218354730b65565d6a786",
+      "bytes": 78704616,
+      "path": "libs/halcon/runtime/x64-win64/halconxl.dll"
+    },
+    {
+      "oid": "ef8c4b0e424e5f0f393b12657d5e812242925987",
+      "bytes": 66764288,
+      "path": "build_output/runtimes/win-x64/native/OpenCvSharpExtern.dll"
+    }
+  ],
+  "over100MiB": [],
+  "indexEmpty": true,
+  "dirtyStatusSHA": "1a73909894963a45772d94f9178183a212db7f86e8d482d3d3635b2c43d7883a",
+  "dirtyEntries": 90,
+  "incompleteGitlink": {
+    "path": "third_party/adaptagrams",
+    "sha": "840ebcff20dbba36ad03a2160edf7cbaf9859984",
+    "gitmodulesPresent": false
+  },
+  "policy": "No history rewrite, no dirty auto-commit, no force/mirror push, scratch/worktree branches stay local, Gitee retained"
+}

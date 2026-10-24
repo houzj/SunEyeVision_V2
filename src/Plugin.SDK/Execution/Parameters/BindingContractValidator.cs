@@ -1,4 +1,5 @@
 using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
+using BindingConversion = SunEyeVision.Plugin.Contracts.BindingConversion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,11 @@ public sealed record BindingValidation(BindingCompatibility State, string Reason
 /// <summary>Formal-path checking; previous runtime contents never decide compatibility.</summary>
 public static partial class BindingContractValidator
 {
-    public static BindingValidation Validate(IReadOnlyList<OutputVariable>? contract, string path, IReadOnlyList<Type> allowed)
+    public static BindingValidation Validate(IReadOnlyList<OutputVariable>? contract, string path, IReadOnlyList<Type> allowed,BindingConversion conversion=BindingConversion.Automatic)
     {
         BindingValidation Bad(string message) => new(BindingCompatibility.Incompatible, message);
         BindingValidation Pending(string message) => new(BindingCompatibility.Unresolved, message);
+        if(!Enum.IsDefined(conversion))return Bad("Unknown conversion operation.");
         if (contract == null) return Pending("上游输出契约暂不可用，等待校验");
         var parts = path.Split('.');
         if (parts.Length == 0 || parts.Any(p => !Regex.IsMatch(p, @"^[A-Za-z_\p{L}][\w]*(?:\[Type=[A-Za-z]+\])?(?:\[(?:[0-9]+)?\])?$")))
@@ -75,15 +77,15 @@ public static partial class BindingContractValidator
             else if (segment.arrayIndex == -1 && !collection) return Bad("All集合表达式要求声明为集合的来源");
         }
         var actual = collection ? type.MakeArrayType() : type;
-        var canonical = CompileDeclaredAdaptation(type, collection, count, selectedIndex, selectedSourceCount, allowed);
+        var canonical = CompileDeclaredAdaptation(type, collection, count, selectedIndex, selectedSourceCount, allowed,conversion);
         if (canonical != null) return canonical;
         // Geometry/transform adapters still use their existing declared CLR element contract,
         // but quantity compatibility comes from the same contract rule as the pure runtime.
-        if (Accept(actual, allowed) == true)
+        if (Accept(actual, allowed,conversion) == true)
         {
             var sourceCount = collection ? count.HasValue ? SunEyeVision.Plugin.Contracts.CountConstraint.Exactly(count.Value) : SunEyeVision.Plugin.Contracts.CountConstraint.Any
                 : SunEyeVision.Plugin.Contracts.CountConstraint.Exactly(1);
-            var states = allowed.Where(target => Accept(actual, new[] { target }) == true)
+            var states = allowed.Where(target => Accept(actual, new[] { target },conversion) == true)
                 .Select(target => sourceCount.CompatibilityWith(target.IsArray ? SunEyeVision.Plugin.Contracts.CountConstraint.Any : SunEyeVision.Plugin.Contracts.CountConstraint.Exactly(1))).ToArray();
             if (states.Contains(BindingCompatibility.Compatible) && !(selectedIndex.HasValue && !selectedSourceCount.HasValue))
                 return new(BindingCompatibility.Compatible, "适配", actual);
@@ -91,7 +93,7 @@ public static partial class BindingContractValidator
                 return new(BindingCompatibility.Conditional, "可绑定；本轮数量或索引须满足声明", actual);
             return Bad("来源声明数量不满足当前输入要求");
         }
-        return Accept(actual, allowed) switch
+        return Accept(actual, allowed,conversion) switch
         {
             true => new(BindingCompatibility.Compatible, "适配", actual),
             false => Bad("来源类型或集合形状不符合当前输入要求，请重新绑定"),
@@ -99,11 +101,12 @@ public static partial class BindingContractValidator
         };
     }
 
-    public static bool? Accept(Type? type, IReadOnlyList<Type> allowed)
+    public static bool? Accept(Type? type, IReadOnlyList<Type> allowed,BindingConversion conversion=BindingConversion.Automatic)
     {
+        if(!Enum.IsDefined(conversion))return false;
         if (type == null || type == typeof(object) || allowed.Count == 0) return null;
         var element=type.IsArray?type.GetElementType()!:type;
-        var declared=CompileDeclaredAdaptation(element,type.IsArray,null,null,null,allowed);
+        var declared=CompileDeclaredAdaptation(element,type.IsArray,null,null,null,allowed,conversion);
         if(declared!=null)return declared.State==BindingCompatibility.Unresolved?null:declared.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional;
         if(IsNumeric(element)||allowed.Any(t=>IsNumeric(t.IsArray?t.GetElementType()!:t)))return false;
         Type Normalize(Type t)
@@ -116,9 +119,9 @@ public static partial class BindingContractValidator
         type = Normalize(type);
         return allowed.Any(t => t == typeof(object) || Normalize(t).IsAssignableFrom(type) ||
             type.IsArray && Normalize(t).IsArray &&
-                Accept(type.GetElementType(), new[] { Normalize(t).GetElementType()! }) == true ||
+                Accept(type.GetElementType(), new[] { Normalize(t).GetElementType()! },conversion) == true ||
             type.IsArray && !Normalize(t).IsArray &&
-                Accept(type.GetElementType(), new[] { t }) == true ||
+                Accept(type.GetElementType(), new[] { t },conversion) == true ||
             !type.IsArray && !Normalize(t).IsArray && IsNumeric(type) && IsNumeric(Normalize(t)) ||
             Normalize(t).IsArray && !type.IsArray && Normalize(t).GetElementType()!.IsAssignableFrom(type));
     }

@@ -13,7 +13,7 @@ public static partial class BindingContractValidator
     // No runtime value or previous result determines the declaration. Legacy geometric accessors remain
     // on their existing path until their explicit coordinate/field adapters are migrated.
     private static BindingValidation? CompileDeclaredAdaptation(Type element,bool collection,int? count,
-        int? selectedIndex,int? selectedSourceCount,IReadOnlyList<Type> allowed)
+        int? selectedIndex,int? selectedSourceCount,IReadOnlyList<Type> allowed,BindingConversion conversion=BindingConversion.Automatic)
     {
         var scalar = CanonicalScalar(element);
         if (scalar == null || allowed.Count == 0) return null;
@@ -35,7 +35,7 @@ public static partial class BindingContractValidator
         for(var targetIndex=0;targetIndex<targets.Length;targetIndex++)
         {
             BindingClrAdapter.TryDescribe(allowed[targetIndex],out _,out var targetStorage);
-            var result = compiler.CompileBinding(reference, new Port("target", targets[targetIndex]!,Nullable:Nullable.GetUnderlyingType(allowed[targetIndex])!=null,Storage:targetStorage), scope);
+            var result = compiler.CompileBinding(reference, new Port("target", targets[targetIndex]!,Nullable:Nullable.GetUnderlyingType(allowed[targetIndex])!=null,Storage:targetStorage), scope,conversion);
             if (result.Compatibility == Compatibility.Compatible)
                 return new(Compatibility.Compatible, "适配", collection ? element.MakeArrayType() : element);
             if (result.Compatibility == Compatibility.Conditional) conditional = result;

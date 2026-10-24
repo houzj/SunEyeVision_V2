@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
+using BindingConversion = SunEyeVision.Plugin.Contracts.BindingConversion;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
@@ -59,6 +60,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             ParamSetting binding,
             IDictionary<string, ToolResults> nodeResults)
         {
+            if(!Enum.IsDefined(binding.Conversion))return ParameterResolveResult.Failure("Unknown conversion operation.");
             return binding.BindingType switch
             {
                 BindingType.Constant => ResolveConstant(binding),
@@ -94,7 +96,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 }
 
                 // 尝试类型转换
-                var convertedValue = ConvertValue(result.Value, targetType);
+                var convertedValue = ConvertValue(result.Value, targetType,binding.Conversion);
                 if (convertedValue.IsSuccess)
                 {
                     result.Value = convertedValue.Value;
@@ -251,7 +253,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 类型转换
         /// </summary>
-        private ParameterResolveResult ConvertValue(object value, Type targetType)
+        private ParameterResolveResult ConvertValue(object value, Type targetType,BindingConversion conversion)
         {
             try
             {
@@ -267,9 +269,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 var sourceType = value.GetType();
 
                 if (targetType.IsArray && targetType.GetArrayRank() == 1 && value is not Array &&
-                    BindingContractValidator.Accept(sourceType, new[] { targetType }) == true)
+                    BindingContractValidator.Accept(sourceType, new[] { targetType },conversion) == true)
                 {
-                    var element = ConvertValue(value, targetType.GetElementType()!);
+                    var element = ConvertValue(value, targetType.GetElementType()!,conversion);
                     if (!element.IsSuccess) return element;
                     var promoted = Array.CreateInstance(targetType.GetElementType()!, 1);
                     promoted.SetValue(element.Value, 0);
@@ -279,29 +281,29 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // Outputs use arrays even for a single value. Adapt only at the typed
                 // scalar input boundary, without changing the stored binding expression.
                 if (value is Array array && !targetType.IsArray && targetType != typeof(object) &&
-                    BindingContractValidator.Accept(sourceType, new[] { targetType }) == true)
+                    BindingContractValidator.Accept(sourceType, new[] { targetType },conversion) == true)
                 {
                     if (array.Rank != 1 || array.Length != 1)
                         return ParameterResolveResult.Failure(
                             $"当前输入需要单值，但绑定数组包含 {array.Length} 个元素；仅单元素数组可自动适配，请明确选择元素或使用集合输入。");
-                    return ConvertValue(array.GetValue(0)!, targetType);
+                    return ConvertValue(array.GetValue(0)!, targetType,conversion);
                 }
 
                 var numericTarget=Nullable.GetUnderlyingType(targetType)??targetType;
                 if(IsNumericType(sourceType)&&IsNumericType(numericTarget))
-                    return ParameterResolveResult.Success(BindingClrAdapter.ConvertNumeric(value,numericTarget),targetType);
+                    return ParameterResolveResult.Success(BindingClrAdapter.ConvertNumeric(value,numericTarget,conversion),targetType);
                 if(IsNumericType(numericTarget)&&sourceType!=typeof(string))
                     return ParameterResolveResult.Failure("Numeric targets require a declared numeric mapping; arbitrary type converters are not used.");
 
                 if(value is Array numericItems&&numericItems.Rank==1&&targetType.IsArray&&targetType.GetArrayRank()==1&&
                     (IsNumericType(sourceType.GetElementType()!)||IsNumericType(targetType.GetElementType()!)))
                 {
-                    if(BindingContractValidator.Accept(sourceType,new[]{targetType})!=true)
+                    if(BindingContractValidator.Accept(sourceType,new[]{targetType},conversion)!=true)
                         return ParameterResolveResult.Failure("Numeric sequence requires a declared checked mapping.");
                     var converted=Array.CreateInstance(targetType.GetElementType()!,numericItems.Length);
                     for(int index=0;index<numericItems.Length;index++)
                     {
-                        var item=ConvertValue(numericItems.GetValue(index)!,targetType.GetElementType()!);
+                        var item=ConvertValue(numericItems.GetValue(index)!,targetType.GetElementType()!,conversion);
                         if(!item.IsSuccess)return ParameterResolveResult.Failure($"Item {index}: {item.ErrorMessage}");
                         converted.SetValue(item.Value,index);
                     }
@@ -315,12 +317,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 }
 
                 if (value is Array items && items.Rank == 1 && targetType.IsArray && targetType.GetArrayRank() == 1 &&
-                    BindingContractValidator.Accept(sourceType, new[] { targetType }) == true)
+                    BindingContractValidator.Accept(sourceType, new[] { targetType },conversion) == true)
                 {
                     var converted = Array.CreateInstance(targetType.GetElementType()!, items.Length);
                     for (var index = 0; index < items.Length; index++)
                     {
-                        var item = ConvertValue(items.GetValue(index)!, targetType.GetElementType()!);
+                        var item = ConvertValue(items.GetValue(index)!, targetType.GetElementType()!,conversion);
                         if (!item.IsSuccess) return item;
                         converted.SetValue(item.Value, index);
                     }

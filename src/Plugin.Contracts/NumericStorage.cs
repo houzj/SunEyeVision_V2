@@ -65,6 +65,7 @@ public static class NumericStorageRules
     }
     public static object ConvertNumber(object value,ScalarKind from,ScalarKind to,BindingConversion conversion,NumericStorage? target=null)
     {
+        if(!Enum.IsDefined(conversion))throw new ArgumentOutOfRangeException(nameof(conversion),"Unknown conversion operation.");
         object converted=value;
         if(from==ScalarKind.Int64&&to==ScalarKind.Float64&&value is long integer)
         {

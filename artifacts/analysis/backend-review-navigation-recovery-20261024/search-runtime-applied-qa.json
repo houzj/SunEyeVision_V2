@@ -1,0 +1,44 @@
+{
+  "status": "PASS",
+  "scope": "Exact existing search runtime in Node DOM stub; source/index logic only, not browser visual",
+  "input": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search-index.js",
+  "queries": [
+    {
+      "query": "统一合同",
+      "href": "优化方案/optimization-o06.html#br-backend-contract-decisions",
+      "heading": "统一合同：图像、ROI与结果语义",
+      "returnedTopics": 1
+    },
+    {
+      "query": "HALCON OpenCV",
+      "href": "优化方案/optimization-o06.html#br-backend-project-changes",
+      "heading": "工程与消费者调整：HALCON / OpenCV 迁移边界",
+      "returnedTopics": 1
+    },
+    {
+      "query": "后端迁移",
+      "href": "优化方案/optimization-o06.html#br-backend-options",
+      "heading": "后端方案比较与最终取舍",
+      "returnedTopics": 1
+    },
+    {
+      "query": "位深 步长",
+      "href": "优化方案/optimization-o06.html#br-backend-contract-decisions",
+      "heading": "统一合同：图像、ROI与结果语义",
+      "returnedTopics": 1
+    },
+    {
+      "query": "适配桥",
+      "href": "优化方案/optimization-o06.html#br-backend-options",
+      "heading": "后端方案比较与最终取舍",
+      "returnedTopics": 1
+    },
+    {
+      "query": "VM Blob",
+      "href": "优化方案/optimization-o06.html#br-vm-decision-evidence",
+      "heading": "VM Blob 决策证据与统一闭环范围",
+      "returnedTopics": 3
+    }
+  ],
+  "records": 734
+}

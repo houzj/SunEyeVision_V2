@@ -316,6 +316,10 @@ new=new.replace('<h3 id="br-basis">','\n'.join(independent+funnel)+'<h3 id="br-b
 peripherals=runpy.run_path(str(OUT/'render_blob_peripherals_review_20261024.py'))
 new=new.replace('<h3 id="br-controls">',peripherals['render'](ROOT,PAGE,ref,table,flow)+'<h3 id="br-controls">',1)
 start='<!-- BLOB-FIVE-LAYER-REVIEW:BEGIN -->';end='<!-- BLOB-FIVE-LAYER-REVIEW:END -->'
+backend_review=runpy.run_path(str(ROOT/'artifacts/analysis/review_blob_backend_boundary_20261024.py'))
+new=new.replace('当前保留HALCON算法作为基线候选，不批准引擎替换','本轮固定使用HALCON，设计保留未来后端迁移能力，不实施引擎替换')
+new=new.replace('<h3 id="br-basis">','<p><a href="#br-backend-migration-review">本轮HALCON与未来OpenCV迁移边界复审 →</a></p><h3 id="br-basis">',1)
+new=new+backend_review['render']()
 page=PAGE.read_text(encoding='utf-8')
 match=re.search(re.escape(start)+r'(.*?)'+re.escape(end),page,re.S)
 if not match:raise RuntimeError('Original chapter marker missing')
@@ -352,6 +356,7 @@ duplicates=[x for x in set(new_ids) if p.ids.count(x)!=1]
 if p.ids.count('shared-control-design-inventory')!=1:duplicates.append('shared-control-design-inventory')
 bad=[]
 for link in re.findall(r'href="([^"]+)"',new):
+    if link.startswith(('https://','http://')):continue
     path,_,anchor=unquote(link).partition('#')
     if path and not (PAGE.parent/path).resolve().exists():bad.append(link)
     if not path and anchor and anchor not in p.ids:bad.append(link)

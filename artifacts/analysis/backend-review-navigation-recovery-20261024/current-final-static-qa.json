@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-24T21:22:09.883088+08:00",
+  "status": "PASS",
+  "idsUnique": 625,
+  "ownedNavHash": "2220E6AD75E78B6314B1137E3BCD411D0992D3B7B5A9D6458A7C4AA4DA8C60C7",
+  "actualCurrentFiles": [
+    {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+      "sha256": "5FDA4BF4CD7E13DB5657854459FE5BFDAB96F36777ACF8EEA7BE3A96540D69FA"
+    },
+    {
+      "path": "artifacts/validation/document-library-source-snapshots/optimization-o06.html",
+      "sha256": "6FB37A9765991AB1F7E2F7F4D7B2D032E357E43DD24DD5158F8FC1E2CDC07BF7"
+    },
+    {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search-index.js",
+      "sha256": "0E420BDCD5DD47AB1F78EF9CE3F8CC4F20BA70AE2864AF61A93EC278E55827BF"
+    },
+    {
+      "path": "artifacts/validation/document-library-source-snapshots/document-search-index.js",
+      "sha256": "0E420BDCD5DD47AB1F78EF9CE3F8CC4F20BA70AE2864AF61A93EC278E55827BF"
+    },
+    {
+      "path": "artifacts/validation/build-document-search-index.cjs",
+      "sha256": "AC61D21A776D96DEEE08F375B7641072AA13BC1BEE1641AA07ABD4C5486A5CE3"
+    }
+  ],
+  "sourceAndCanonicalIndexEqual": true,
+  "wholePageUpdatedByMainAfterNavigation": true,
+  "boundary": "Current nav/targets checked. Main may update own BLOB region after original application; original receipt remains time-specific, no full-page overwrite or browser visual claim."
+}

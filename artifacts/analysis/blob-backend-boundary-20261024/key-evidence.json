@@ -1,0 +1,2338 @@
+{
+  "authority": "shipped SDK declarations, code-generation mapping and sample source; not VM product runtime or recovered core body",
+  "parameters": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\MVDTools\\ExportMVDCode\\components\\data\\paramKey\\BlobFind.xml",
+      "sha256": "3af9dba5b328888e13f7ccf66c74c257e61b6a2d5fa6b81bfe77489afec6b7ec",
+      "nodes": [
+        {
+          "tag": "Enumeration",
+          "name": "ThresholdType",
+          "default": "0x2",
+          "max": null,
+          "entries": [
+            {
+              "name": "BinaryImage",
+              "value": "0x1",
+              "description": "已是二值图,不需要二值化"
+            },
+            {
+              "name": "SingleThreshold",
+              "value": "0x2",
+              "description": "单阈值"
+            },
+            {
+              "name": "DoubleThreshold",
+              "value": "0x3",
+              "description": "双阈值"
+            },
+            {
+              "name": "AutoThreshold",
+              "value": "0x4",
+              "description": "自动阈值"
+            },
+            {
+              "name": "FixedSoftThreshold",
+              "value": "0x5",
+              "description": "软阈值(固定)"
+            },
+            {
+              "name": "RelativeSoftThreshold",
+              "value": "0x6",
+              "description": "软阈值(相对)"
+            }
+          ]
+        },
+        {
+          "tag": "Enumeration",
+          "name": "Polarity",
+          "default": "0x1",
+          "max": null,
+          "entries": [
+            {
+              "name": "DarkOnBright",
+              "value": "0x0",
+              "description": "目标物体亮于背景"
+            },
+            {
+              "name": "BrightOnDark",
+              "value": "0x1",
+              "description": "目标物体暗于背景"
+            },
+            {
+              "name": "BrightObject",
+              "value": "0x0",
+              "description": "目标物体亮于背景"
+            },
+            {
+              "name": "DarkObject",
+              "value": "0x1",
+              "description": "目标物体暗于背景"
+            }
+          ]
+        },
+        {
+          "tag": "Enumeration",
+          "name": "connectivity",
+          "default": "0x8",
+          "max": null,
+          "entries": [
+            {
+              "name": "EightConnected",
+              "value": "0x8",
+              "description": "8连通"
+            },
+            {
+              "name": "FourConnected",
+              "value": "0x4",
+              "description": "4连通"
+            }
+          ]
+        },
+        {
+          "tag": "Integer",
+          "name": "HoleMinArea",
+          "default": "0x0",
+          "max": "0x895440",
+          "entries": []
+        },
+        {
+          "tag": "Integer",
+          "name": "FindNum",
+          "default": "0x64",
+          "max": "0xBB8",
+          "entries": []
+        },
+        {
+          "tag": "Enumeration",
+          "name": "SortFeature",
+          "default": "0x1",
+          "max": null,
+          "entries": [
+            {
+              "name": "SortFeatureArea",
+              "value": "0x1",
+              "description": "面积"
+            },
+            {
+              "name": "SortFeaturePerimeter",
+              "value": "0x2",
+              "description": "周长"
+            },
+            {
+              "name": "SortFeatureCircularity",
+              "value": "0x3",
+              "description": "圆形度"
+            },
+            {
+              "name": "SortFeatureRect",
+              "value": "0x4",
+              "description": "矩形度"
+            },
+            {
+              "name": "SortFeatureCentroidX",
+              "value": "0x5",
+              "description": "连通域中心x"
+            },
+            {
+              "name": "SortFeatureCentroidY",
+              "value": "0x6",
+              "description": "连通域中心y"
+            },
+            {
+              "name": "SortFeatureBoxAngle",
+              "value": "0x7",
+              "description": "box角度"
+            },
+            {
+              "name": "SortFeatureBoxWidth",
+              "value": "0x8",
+              "description": "box长轴(宽)"
+            },
+            {
+              "name": "SortFeatureBoxHeight",
+              "value": "0x9",
+              "description": "box短轴(高)"
+            },
+            {
+              "name": "SortFeatureRectX",
+              "value": "0xA",
+              "description": "rect左上顶点x"
+            },
+            {
+              "name": "SortFeatureRectY",
+              "value": "0xB",
+              "description": "rect左上顶点y"
+            },
+            {
+              "name": "SortFeatureAxisAngle",
+              "value": "0xC",
+              "description": "二阶中心距主轴角度"
+            },
+            {
+              "name": "SortFeatureAxisRatio",
+              "value": "0xD",
+              "description": "轴比:box短轴 / box长轴"
+            }
+          ]
+        },
+        {
+          "tag": "Enumeration",
+          "name": "SortMode",
+          "default": "0x2",
+          "max": null,
+          "entries": [
+            {
+              "name": "Ascend",
+              "value": "0x1",
+              "description": "升序"
+            },
+            {
+              "name": "Decend",
+              "value": "0x2",
+              "description": "降序"
+            },
+            {
+              "name": "NotSort",
+              "value": "0x3",
+              "description": "放弃排序"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\architecture-recovery\\tool-rendering-entry-audit.resources\\IMVSBlobFindModuAlgorithmTab.xml",
+      "sha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec",
+      "nodes": [
+        {
+          "tag": "Enumeration",
+          "name": "ThresholdType",
+          "default": "0x2",
+          "max": null,
+          "entries": []
+        },
+        {
+          "tag": "Enumeration",
+          "name": "Polarity",
+          "default": "0",
+          "max": null,
+          "entries": []
+        },
+        {
+          "tag": "Integer",
+          "name": "FindNum",
+          "default": "100",
+          "max": "20000",
+          "entries": []
+        },
+        {
+          "tag": "Integer",
+          "name": "HoleMinArea",
+          "default": "0",
+          "max": "999999999",
+          "entries": []
+        },
+        {
+          "tag": "Enumeration",
+          "name": "BlobContourType",
+          "default": "0",
+          "max": null,
+          "entries": []
+        },
+        {
+          "tag": "Enumeration",
+          "name": "SortFeature",
+          "default": "1",
+          "max": null,
+          "entries": []
+        },
+        {
+          "tag": "Enumeration",
+          "name": "SortMode",
+          "default": "2",
+          "max": null,
+          "entries": []
+        },
+        {
+          "tag": "Enumeration",
+          "name": "connectivity",
+          "default": "0x8",
+          "max": null,
+          "entries": []
+        }
+      ]
+    }
+  ],
+  "sourceExcerpts": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Includes\\Algorithms\\BlobFindCpp.h",
+      "sha256": "4305608bc0bf620c85bcaf5862a34d39f2f96218b8064b438ed6bd81f3c2c805",
+      "matches": [
+        {
+          "line": 203,
+          "context": [
+            {
+              "line": 196,
+              "text": "            /**"
+            },
+            {
+              "line": 197,
+              "text": "             * @par 说明"
+            },
+            {
+              "line": 198,
+              "text": "             * 获取轮廓个数"
+            },
+            {
+              "line": 199,
+              "text": "             * @par 权限"
+            },
+            {
+              "line": 200,
+              "text": "             * 只读"
+            },
+            {
+              "line": 201,
+              "text": "             *"
+            },
+            {
+              "line": 202,
+              "text": "             */"
+            },
+            {
+              "line": 203,
+              "text": "            virtual int GetSequentialContourNum() = 0;"
+            },
+            {
+              "line": 204,
+              "text": "            /**"
+            }
+          ]
+        },
+        {
+          "line": 211,
+          "context": [
+            {
+              "line": 204,
+              "text": "            /**"
+            },
+            {
+              "line": 205,
+              "text": "             * @par 说明"
+            },
+            {
+              "line": 206,
+              "text": "             * 获取轮廓点集"
+            },
+            {
+              "line": 207,
+              "text": "             * @par 权限"
+            },
+            {
+              "line": 208,
+              "text": "             * 只读"
+            },
+            {
+              "line": 209,
+              "text": "             *"
+            },
+            {
+              "line": 210,
+              "text": "             */"
+            },
+            {
+              "line": 211,
+              "text": "            virtual MVD_CONTOUR_S* GetSequentialContour(int nContourIndex) = 0;"
+            },
+            {
+              "line": 212,
+              "text": "        };"
+            }
+          ]
+        },
+        {
+          "line": 254,
+          "context": [
+            {
+              "line": 247,
+              "text": "            /**"
+            },
+            {
+              "line": 248,
+              "text": "            * @par 说明"
+            },
+            {
+              "line": 249,
+              "text": "            * Blob分析结果是否输出Blob图像, true为输出, false为放弃输出,可加速"
+            },
+            {
+              "line": 250,
+              "text": "            * @par 权限"
+            },
+            {
+              "line": 251,
+              "text": "            * 读写"
+            },
+            {
+              "line": 252,
+              "text": "            *"
+            },
+            {
+              "line": 253,
+              "text": "            */"
+            },
+            {
+              "line": 254,
+              "text": "            virtual void SetShowBlobImageStatus(bool bShowBlobImage) = 0;"
+            },
+            {
+              "line": 255,
+              "text": "             /**"
+            }
+          ]
+        },
+        {
+          "line": 270,
+          "context": [
+            {
+              "line": 263,
+              "text": "            /**"
+            },
+            {
+              "line": 264,
+              "text": "            * @par 说明"
+            },
+            {
+              "line": 265,
+              "text": "            * Blob分析结果是否输出二值化图像, true为输出, false为放弃输出,可加速"
+            },
+            {
+              "line": 266,
+              "text": "            * @par 权限"
+            },
+            {
+              "line": 267,
+              "text": "            * 读写"
+            },
+            {
+              "line": 268,
+              "text": "            *"
+            },
+            {
+              "line": 269,
+              "text": "            */"
+            },
+            {
+              "line": 270,
+              "text": "            virtual void SetShowBinaryImageStatus(bool bShowBinaryImage) = 0;"
+            },
+            {
+              "line": 271,
+              "text": "        };"
+            }
+          ]
+        },
+        {
+          "line": 337,
+          "context": [
+            {
+              "line": 330,
+              "text": "             * @param 无"
+            },
+            {
+              "line": 331,
+              "text": "             * @return 无，出错时抛出异常"
+            },
+            {
+              "line": 332,
+              "text": "             * @par 注解"
+            },
+            {
+              "line": 333,
+              "text": "             * 无"
+            },
+            {
+              "line": 334,
+              "text": "             *"
+            },
+            {
+              "line": 335,
+              "text": "             */"
+            },
+            {
+              "line": 336,
+              "text": "            /* note: Release result cache to save memory, after this operation you should not use this object to obtain results again */"
+            },
+            {
+              "line": 337,
+              "text": "            virtual void Clear() = 0;"
+            },
+            {
+              "line": 338,
+              "text": "        };"
+            }
+          ]
+        },
+        {
+          "line": 404,
+          "context": [
+            {
+              "line": 397,
+              "text": "             * Blob分析结果，未执行或执行失败返回NULL"
+            },
+            {
+              "line": 398,
+              "text": "             * @par 权限"
+            },
+            {
+              "line": 399,
+              "text": "             * 只读"
+            },
+            {
+              "line": 400,
+              "text": "             *"
+            },
+            {
+              "line": 401,
+              "text": "             */"
+            },
+            {
+              "line": 402,
+              "text": "             "
+            },
+            {
+              "line": 403,
+              "text": "            /*  Note: Result from the last invocation of Run.  */"
+            },
+            {
+              "line": 404,
+              "text": "            virtual IBlobFindResult* GetResult() = 0;"
+            },
+            {
+              "line": 405,
+              "text": "             "
+            }
+          ]
+        },
+        {
+          "line": 539,
+          "context": [
+            {
+              "line": 532,
+              "text": "            /**"
+            },
+            {
+              "line": 533,
+              "text": "            * @par 和SetRegionImage接口配合使用，优化算子运行效率"
+            },
+            {
+              "line": 534,
+              "text": "            * 获运行区域图像配置工具"
+            },
+            {
+              "line": 535,
+              "text": "            * @par 权限"
+            },
+            {
+              "line": 536,
+              "text": "            * 读"
+            },
+            {
+              "line": 537,
+              "text": "            * 此处配置的ROI和运行区域图像(由SetRegionImage设置)生成时所使用的ROI必须一致;未设置任何ROI表示不开启优化"
+            },
+            {
+              "line": 538,
+              "text": "            */"
+            },
+            {
+              "line": 539,
+              "text": "            virtual IMVDRegionImageAssistant* GetRegionImageAssistant() = 0;"
+            },
+            {
+              "line": 540,
+              "text": "             "
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Samples\\CSharp\\BasicSamples\\MVD_GeoFind\\BlobFindCsDemo\\BlobFindCsDemo.cs",
+      "sha256": "a7e88f2017f60401c30f9aedf7d39aa053df59dc02b5356c899bcbb9a016597a",
+      "matches": [
+        {
+          "line": 121,
+          "context": [
+            {
+              "line": 114,
+              "text": "                foreach (var item in m_lBlobBoxRender2)"
+            },
+            {
+              "line": 115,
+              "text": "                {"
+            },
+            {
+              "line": 116,
+              "text": "                    mvdRenderActivex2.MVD_DeleteShape(item);"
+            },
+            {
+              "line": 117,
+              "text": "                }"
+            },
+            {
+              "line": 118,
+              "text": ""
+            },
+            {
+              "line": 119,
+              "text": "                if (null != m_stBlobFindToolObj)"
+            },
+            {
+              "line": 120,
+              "text": "                {"
+            },
+            {
+              "line": 121,
+              "text": "                    m_stBlobFindToolObj.Dispose();"
+            },
+            {
+              "line": 122,
+              "text": "                    m_stBlobFindToolObj = null;"
+            }
+          ]
+        },
+        {
+          "line": 336,
+          "context": [
+            {
+              "line": 329,
+              "text": "                {"
+            },
+            {
+              "line": 330,
+              "text": "                    throw new MvdException(MVD_MODULE_TYPE.MVD_MODUL_APP, MVD_ERROR_CODE.MVD_E_CALLORDER);"
+            },
+            {
+              "line": 331,
+              "text": "                }"
+            },
+            {
+              "line": 332,
+              "text": ""
+            },
+            {
+              "line": 333,
+              "text": "                m_stBlobFindToolObj.InputImage = m_stInputImage;"
+            },
+            {
+              "line": 334,
+              "text": "                if (comboBoxImage.SelectedIndex == 1)"
+            },
+            {
+              "line": 335,
+              "text": "                {"
+            },
+            {
+              "line": 336,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBlobImageStatus = true;"
+            },
+            {
+              "line": 337,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBinaryImageStatus = false;"
+            }
+          ]
+        },
+        {
+          "line": 337,
+          "context": [
+            {
+              "line": 330,
+              "text": "                    throw new MvdException(MVD_MODULE_TYPE.MVD_MODUL_APP, MVD_ERROR_CODE.MVD_E_CALLORDER);"
+            },
+            {
+              "line": 331,
+              "text": "                }"
+            },
+            {
+              "line": 332,
+              "text": ""
+            },
+            {
+              "line": 333,
+              "text": "                m_stBlobFindToolObj.InputImage = m_stInputImage;"
+            },
+            {
+              "line": 334,
+              "text": "                if (comboBoxImage.SelectedIndex == 1)"
+            },
+            {
+              "line": 335,
+              "text": "                {"
+            },
+            {
+              "line": 336,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBlobImageStatus = true;"
+            },
+            {
+              "line": 337,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBinaryImageStatus = false;"
+            },
+            {
+              "line": 338,
+              "text": "                }"
+            }
+          ]
+        },
+        {
+          "line": 341,
+          "context": [
+            {
+              "line": 334,
+              "text": "                if (comboBoxImage.SelectedIndex == 1)"
+            },
+            {
+              "line": 335,
+              "text": "                {"
+            },
+            {
+              "line": 336,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBlobImageStatus = true;"
+            },
+            {
+              "line": 337,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBinaryImageStatus = false;"
+            },
+            {
+              "line": 338,
+              "text": "                }"
+            },
+            {
+              "line": 339,
+              "text": "                else"
+            },
+            {
+              "line": 340,
+              "text": "                {"
+            },
+            {
+              "line": 341,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBlobImageStatus = false;"
+            },
+            {
+              "line": 342,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBinaryImageStatus = true;"
+            }
+          ]
+        },
+        {
+          "line": 342,
+          "context": [
+            {
+              "line": 335,
+              "text": "                {"
+            },
+            {
+              "line": 336,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBlobImageStatus = true;"
+            },
+            {
+              "line": 337,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBinaryImageStatus = false;"
+            },
+            {
+              "line": 338,
+              "text": "                }"
+            },
+            {
+              "line": 339,
+              "text": "                else"
+            },
+            {
+              "line": 340,
+              "text": "                {"
+            },
+            {
+              "line": 341,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBlobImageStatus = false;"
+            },
+            {
+              "line": 342,
+              "text": "                    m_stBlobFindToolObj.BasicParam.ShowBinaryImageStatus = true;"
+            },
+            {
+              "line": 343,
+              "text": "                }"
+            }
+          ]
+        },
+        {
+          "line": 353,
+          "context": [
+            {
+              "line": 346,
+              "text": "                    m_stBlobFindToolObj.ROI = new VisionDesigner.CMvdRectangleF(m_stInputImage.Width / 2, m_stInputImage.Height / 2, m_stInputImage.Width, m_stInputImage.Height);"
+            },
+            {
+              "line": 347,
+              "text": "                }"
+            },
+            {
+              "line": 348,
+              "text": "                else"
+            },
+            {
+              "line": 349,
+              "text": "                {"
+            },
+            {
+              "line": 350,
+              "text": "                    m_stBlobFindToolObj.ROI = m_stROIShape;"
+            },
+            {
+              "line": 351,
+              "text": "                }"
+            },
+            {
+              "line": 352,
+              "text": ""
+            },
+            {
+              "line": 353,
+              "text": "                m_stBlobFindToolObj.ClearMasks();"
+            },
+            {
+              "line": 354,
+              "text": "                foreach (var item in m_lMaskShapes)"
+            }
+          ]
+        },
+        {
+          "line": 359,
+          "context": [
+            {
+              "line": 352,
+              "text": ""
+            },
+            {
+              "line": 353,
+              "text": "                m_stBlobFindToolObj.ClearMasks();"
+            },
+            {
+              "line": 354,
+              "text": "                foreach (var item in m_lMaskShapes)"
+            },
+            {
+              "line": 355,
+              "text": "                {"
+            },
+            {
+              "line": 356,
+              "text": "                    m_stBlobFindToolObj.AddMask(item);"
+            },
+            {
+              "line": 357,
+              "text": "                }"
+            },
+            {
+              "line": 358,
+              "text": "                double fStartTime = GetTimeStamp();"
+            },
+            {
+              "line": 359,
+              "text": "                m_stBlobFindToolObj.Run();"
+            },
+            {
+              "line": 360,
+              "text": "                double fCostTime = GetTimeStamp() - fStartTime;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\MVDTools\\ExportMVDCode\\components\\data\\moduleio\\IMVSBlobFindModu.xml",
+      "sha256": "22f0efb1ab4ae81cd75cb08807a5e3fb63f73b1a768d4153e2645b288c33ffb8",
+      "matches": [
+        {
+          "line": 53,
+          "context": [
+            {
+              "line": 46,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 47,
+              "text": "\t\t<!--<Filter Name=\"Area\" IsArray=\"true\"></Filter>-->"
+            },
+            {
+              "line": 48,
+              "text": "\t\t<Filter Name=\"TotalArea\" ValueType=\"float\">"
+            },
+            {
+              "line": 49,
+              "text": "\t\t\t<Cpp>$resultObj->GetBlobTotalArea()</Cpp>"
+            },
+            {
+              "line": 50,
+              "text": "\t\t\t<CSharp>$resultObj.BlobTotalArea</CSharp>"
+            },
+            {
+              "line": 51,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 52,
+              "text": "\t\t<Filter Name=\"CentroidX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 53,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetCenteroid().fX</Cpp>"
+            },
+            {
+              "line": 54,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Centroid.fX</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 54,
+          "context": [
+            {
+              "line": 47,
+              "text": "\t\t<!--<Filter Name=\"Area\" IsArray=\"true\"></Filter>-->"
+            },
+            {
+              "line": 48,
+              "text": "\t\t<Filter Name=\"TotalArea\" ValueType=\"float\">"
+            },
+            {
+              "line": 49,
+              "text": "\t\t\t<Cpp>$resultObj->GetBlobTotalArea()</Cpp>"
+            },
+            {
+              "line": 50,
+              "text": "\t\t\t<CSharp>$resultObj.BlobTotalArea</CSharp>"
+            },
+            {
+              "line": 51,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 52,
+              "text": "\t\t<Filter Name=\"CentroidX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 53,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetCenteroid().fX</Cpp>"
+            },
+            {
+              "line": 54,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Centroid.fX</CSharp>"
+            },
+            {
+              "line": 55,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 57,
+          "context": [
+            {
+              "line": 50,
+              "text": "\t\t\t<CSharp>$resultObj.BlobTotalArea</CSharp>"
+            },
+            {
+              "line": 51,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 52,
+              "text": "\t\t<Filter Name=\"CentroidX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 53,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetCenteroid().fX</Cpp>"
+            },
+            {
+              "line": 54,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Centroid.fX</CSharp>"
+            },
+            {
+              "line": 55,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 56,
+              "text": "\t\t<Filter Name=\"CentroidY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 57,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetCenteroid().fY</Cpp>"
+            },
+            {
+              "line": 58,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Centroid.fY</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 58,
+          "context": [
+            {
+              "line": 51,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 52,
+              "text": "\t\t<Filter Name=\"CentroidX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 53,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetCenteroid().fX</Cpp>"
+            },
+            {
+              "line": 54,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Centroid.fX</CSharp>"
+            },
+            {
+              "line": 55,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 56,
+              "text": "\t\t<Filter Name=\"CentroidY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 57,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetCenteroid().fY</Cpp>"
+            },
+            {
+              "line": 58,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Centroid.fY</CSharp>"
+            },
+            {
+              "line": 59,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 61,
+          "context": [
+            {
+              "line": 54,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Centroid.fX</CSharp>"
+            },
+            {
+              "line": 55,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 56,
+              "text": "\t\t<Filter Name=\"CentroidY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 57,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetCenteroid().fY</Cpp>"
+            },
+            {
+              "line": 58,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Centroid.fY</CSharp>"
+            },
+            {
+              "line": 59,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 60,
+              "text": "\t\t<Filter Name=\"CenterX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 61,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterX()</Cpp>"
+            },
+            {
+              "line": 62,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.CenterX</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 62,
+          "context": [
+            {
+              "line": 55,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 56,
+              "text": "\t\t<Filter Name=\"CentroidY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 57,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetCenteroid().fY</Cpp>"
+            },
+            {
+              "line": 58,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Centroid.fY</CSharp>"
+            },
+            {
+              "line": 59,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 60,
+              "text": "\t\t<Filter Name=\"CenterX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 61,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterX()</Cpp>"
+            },
+            {
+              "line": 62,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.CenterX</CSharp>"
+            },
+            {
+              "line": 63,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 65,
+          "context": [
+            {
+              "line": 58,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Centroid.fY</CSharp>"
+            },
+            {
+              "line": 59,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 60,
+              "text": "\t\t<Filter Name=\"CenterX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 61,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterX()</Cpp>"
+            },
+            {
+              "line": 62,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.CenterX</CSharp>"
+            },
+            {
+              "line": 63,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 64,
+              "text": "\t\t<Filter Name=\"CenterY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 65,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterY()</Cpp>"
+            },
+            {
+              "line": 66,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.CenterY</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 66,
+          "context": [
+            {
+              "line": 59,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 60,
+              "text": "\t\t<Filter Name=\"CenterX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 61,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterX()</Cpp>"
+            },
+            {
+              "line": 62,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.CenterX</CSharp>"
+            },
+            {
+              "line": 63,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 64,
+              "text": "\t\t<Filter Name=\"CenterY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 65,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterY()</Cpp>"
+            },
+            {
+              "line": 66,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.CenterY</CSharp>"
+            },
+            {
+              "line": 67,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 69,
+          "context": [
+            {
+              "line": 62,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.CenterX</CSharp>"
+            },
+            {
+              "line": 63,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 64,
+              "text": "\t\t<Filter Name=\"CenterY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 65,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterY()</Cpp>"
+            },
+            {
+              "line": 66,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.CenterY</CSharp>"
+            },
+            {
+              "line": 67,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 68,
+              "text": "\t\t<Filter Name=\"BoxWidth\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 69,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetWidth()</Cpp>"
+            },
+            {
+              "line": 70,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Width</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 70,
+          "context": [
+            {
+              "line": 63,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 64,
+              "text": "\t\t<Filter Name=\"CenterY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 65,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterY()</Cpp>"
+            },
+            {
+              "line": 66,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.CenterY</CSharp>"
+            },
+            {
+              "line": 67,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 68,
+              "text": "\t\t<Filter Name=\"BoxWidth\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 69,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetWidth()</Cpp>"
+            },
+            {
+              "line": 70,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Width</CSharp>"
+            },
+            {
+              "line": 71,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 73,
+          "context": [
+            {
+              "line": 66,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.CenterY</CSharp>"
+            },
+            {
+              "line": 67,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 68,
+              "text": "\t\t<Filter Name=\"BoxWidth\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 69,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetWidth()</Cpp>"
+            },
+            {
+              "line": 70,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Width</CSharp>"
+            },
+            {
+              "line": 71,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 72,
+              "text": "\t\t<Filter Name=\"BoxHeight\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 73,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetHeight()</Cpp>"
+            },
+            {
+              "line": 74,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Height</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 74,
+          "context": [
+            {
+              "line": 67,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 68,
+              "text": "\t\t<Filter Name=\"BoxWidth\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 69,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetWidth()</Cpp>"
+            },
+            {
+              "line": 70,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Width</CSharp>"
+            },
+            {
+              "line": 71,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 72,
+              "text": "\t\t<Filter Name=\"BoxHeight\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 73,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetHeight()</Cpp>"
+            },
+            {
+              "line": 74,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Height</CSharp>"
+            },
+            {
+              "line": 75,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 77,
+          "context": [
+            {
+              "line": 70,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Width</CSharp>"
+            },
+            {
+              "line": 71,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 72,
+              "text": "\t\t<Filter Name=\"BoxHeight\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 73,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetHeight()</Cpp>"
+            },
+            {
+              "line": 74,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Height</CSharp>"
+            },
+            {
+              "line": 75,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 76,
+              "text": "\t\t<Filter Name=\"Angle\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 77,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetAngle()</Cpp>"
+            },
+            {
+              "line": 78,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Angle</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 78,
+          "context": [
+            {
+              "line": 71,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 72,
+              "text": "\t\t<Filter Name=\"BoxHeight\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 73,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetHeight()</Cpp>"
+            },
+            {
+              "line": 74,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Height</CSharp>"
+            },
+            {
+              "line": 75,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 76,
+              "text": "\t\t<Filter Name=\"Angle\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 77,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetAngle()</Cpp>"
+            },
+            {
+              "line": 78,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Angle</CSharp>"
+            },
+            {
+              "line": 79,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 81,
+          "context": [
+            {
+              "line": 74,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Height</CSharp>"
+            },
+            {
+              "line": 75,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 76,
+              "text": "\t\t<Filter Name=\"Angle\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 77,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetAngle()</Cpp>"
+            },
+            {
+              "line": 78,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Angle</CSharp>"
+            },
+            {
+              "line": 79,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 80,
+              "text": "\t\t<Filter Name=\"BlobRectX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 81,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterX()</Cpp>"
+            },
+            {
+              "line": 82,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.CenterX</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 82,
+          "context": [
+            {
+              "line": 75,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 76,
+              "text": "\t\t<Filter Name=\"Angle\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 77,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetAngle()</Cpp>"
+            },
+            {
+              "line": 78,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Angle</CSharp>"
+            },
+            {
+              "line": 79,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 80,
+              "text": "\t\t<Filter Name=\"BlobRectX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 81,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterX()</Cpp>"
+            },
+            {
+              "line": 82,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.CenterX</CSharp>"
+            },
+            {
+              "line": 83,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 85,
+          "context": [
+            {
+              "line": 78,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].BoxInfo.Angle</CSharp>"
+            },
+            {
+              "line": 79,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 80,
+              "text": "\t\t<Filter Name=\"BlobRectX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 81,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterX()</Cpp>"
+            },
+            {
+              "line": 82,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.CenterX</CSharp>"
+            },
+            {
+              "line": 83,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 84,
+              "text": "\t\t<Filter Name=\"BlobRectY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 85,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterY()</Cpp>"
+            },
+            {
+              "line": 86,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.CenterY</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 86,
+          "context": [
+            {
+              "line": 79,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 80,
+              "text": "\t\t<Filter Name=\"BlobRectX\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 81,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterX()</Cpp>"
+            },
+            {
+              "line": 82,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.CenterX</CSharp>"
+            },
+            {
+              "line": 83,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 84,
+              "text": "\t\t<Filter Name=\"BlobRectY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 85,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterY()</Cpp>"
+            },
+            {
+              "line": 86,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.CenterY</CSharp>"
+            },
+            {
+              "line": 87,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 89,
+          "context": [
+            {
+              "line": 82,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.CenterX</CSharp>"
+            },
+            {
+              "line": 83,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 84,
+              "text": "\t\t<Filter Name=\"BlobRectY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 85,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterY()</Cpp>"
+            },
+            {
+              "line": 86,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.CenterY</CSharp>"
+            },
+            {
+              "line": 87,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 88,
+              "text": "\t\t<Filter Name=\"BlobRectWidth\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 89,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetWidth()</Cpp>"
+            },
+            {
+              "line": 90,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.Width</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 90,
+          "context": [
+            {
+              "line": 83,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 84,
+              "text": "\t\t<Filter Name=\"BlobRectY\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 85,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCenterY()</Cpp>"
+            },
+            {
+              "line": 86,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.CenterY</CSharp>"
+            },
+            {
+              "line": 87,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 88,
+              "text": "\t\t<Filter Name=\"BlobRectWidth\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 89,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetWidth()</Cpp>"
+            },
+            {
+              "line": 90,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.Width</CSharp>"
+            },
+            {
+              "line": 91,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 93,
+          "context": [
+            {
+              "line": 86,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.CenterY</CSharp>"
+            },
+            {
+              "line": 87,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 88,
+              "text": "\t\t<Filter Name=\"BlobRectWidth\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 89,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetWidth()</Cpp>"
+            },
+            {
+              "line": 90,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.Width</CSharp>"
+            },
+            {
+              "line": 91,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 92,
+              "text": "\t\t<Filter Name=\"BlobRectHeight\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 93,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetHeight()</Cpp>"
+            },
+            {
+              "line": 94,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.Height</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 94,
+          "context": [
+            {
+              "line": 87,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 88,
+              "text": "\t\t<Filter Name=\"BlobRectWidth\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 89,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetWidth()</Cpp>"
+            },
+            {
+              "line": 90,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.Width</CSharp>"
+            },
+            {
+              "line": 91,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 92,
+              "text": "\t\t<Filter Name=\"BlobRectHeight\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 93,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetHeight()</Cpp>"
+            },
+            {
+              "line": 94,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.Height</CSharp>"
+            },
+            {
+              "line": 95,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 101,
+          "context": [
+            {
+              "line": 94,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].RectInfo.Height</CSharp>"
+            },
+            {
+              "line": 95,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 96,
+              "text": "\t\t<Filter Name=\"BlobRectUpLeftX\" ValueType=\"float\" IsArray=\"true\"></Filter>"
+            },
+            {
+              "line": 97,
+              "text": "\t\t<Filter Name=\"BlobRectUpLeftY\" ValueType=\"float\" IsArray=\"true\"></Filter>"
+            },
+            {
+              "line": 98,
+              "text": "\t\t<Filter Name=\"BlobRectBottomRightX\" ValueType=\"float\" IsArray=\"true\"></Filter>"
+            },
+            {
+              "line": 99,
+              "text": "\t\t<Filter Name=\"BlobRectBottomRightY\" ValueType=\"float\" IsArray=\"true\"></Filter>"
+            },
+            {
+              "line": 100,
+              "text": "\t\t<Filter Name=\"BlobAngle\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 101,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetAngle()</Cpp>"
+            },
+            {
+              "line": 102,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Angle</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 102,
+          "context": [
+            {
+              "line": 95,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 96,
+              "text": "\t\t<Filter Name=\"BlobRectUpLeftX\" ValueType=\"float\" IsArray=\"true\"></Filter>"
+            },
+            {
+              "line": 97,
+              "text": "\t\t<Filter Name=\"BlobRectUpLeftY\" ValueType=\"float\" IsArray=\"true\"></Filter>"
+            },
+            {
+              "line": 98,
+              "text": "\t\t<Filter Name=\"BlobRectBottomRightX\" ValueType=\"float\" IsArray=\"true\"></Filter>"
+            },
+            {
+              "line": 99,
+              "text": "\t\t<Filter Name=\"BlobRectBottomRightY\" ValueType=\"float\" IsArray=\"true\"></Filter>"
+            },
+            {
+              "line": 100,
+              "text": "\t\t<Filter Name=\"BlobAngle\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 101,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetAngle()</Cpp>"
+            },
+            {
+              "line": 102,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Angle</CSharp>"
+            },
+            {
+              "line": 103,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 105,
+          "context": [
+            {
+              "line": 98,
+              "text": "\t\t<Filter Name=\"BlobRectBottomRightX\" ValueType=\"float\" IsArray=\"true\"></Filter>"
+            },
+            {
+              "line": 99,
+              "text": "\t\t<Filter Name=\"BlobRectBottomRightY\" ValueType=\"float\" IsArray=\"true\"></Filter>"
+            },
+            {
+              "line": 100,
+              "text": "\t\t<Filter Name=\"BlobAngle\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 101,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetAngle()</Cpp>"
+            },
+            {
+              "line": 102,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Angle</CSharp>"
+            },
+            {
+              "line": 103,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 104,
+              "text": "\t\t<Filter Name=\"Perimeter\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 105,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetPerimeter()</Cpp>"
+            },
+            {
+              "line": 106,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Perimeter</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 106,
+          "context": [
+            {
+              "line": 99,
+              "text": "\t\t<Filter Name=\"BlobRectBottomRightY\" ValueType=\"float\" IsArray=\"true\"></Filter>"
+            },
+            {
+              "line": 100,
+              "text": "\t\t<Filter Name=\"BlobAngle\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 101,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetAngle()</Cpp>"
+            },
+            {
+              "line": 102,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Angle</CSharp>"
+            },
+            {
+              "line": 103,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 104,
+              "text": "\t\t<Filter Name=\"Perimeter\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 105,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetPerimeter()</Cpp>"
+            },
+            {
+              "line": 106,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Perimeter</CSharp>"
+            },
+            {
+              "line": 107,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 109,
+          "context": [
+            {
+              "line": 102,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Angle</CSharp>"
+            },
+            {
+              "line": 103,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 104,
+              "text": "\t\t<Filter Name=\"Perimeter\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 105,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetPerimeter()</Cpp>"
+            },
+            {
+              "line": 106,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Perimeter</CSharp>"
+            },
+            {
+              "line": 107,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 108,
+              "text": "\t\t<Filter Name=\"LongAxis\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 109,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetLongAxis()</Cpp>"
+            },
+            {
+              "line": 110,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].LongAxis</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 110,
+          "context": [
+            {
+              "line": 103,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 104,
+              "text": "\t\t<Filter Name=\"Perimeter\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 105,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetPerimeter()</Cpp>"
+            },
+            {
+              "line": 106,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Perimeter</CSharp>"
+            },
+            {
+              "line": 107,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 108,
+              "text": "\t\t<Filter Name=\"LongAxis\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 109,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetLongAxis()</Cpp>"
+            },
+            {
+              "line": 110,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].LongAxis</CSharp>"
+            },
+            {
+              "line": 111,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 113,
+          "context": [
+            {
+              "line": 106,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Perimeter</CSharp>"
+            },
+            {
+              "line": 107,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 108,
+              "text": "\t\t<Filter Name=\"LongAxis\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 109,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetLongAxis()</Cpp>"
+            },
+            {
+              "line": 110,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].LongAxis</CSharp>"
+            },
+            {
+              "line": 111,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 112,
+              "text": "\t\t<Filter Name=\"ShortAxis\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 113,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetShortAxis()</Cpp>"
+            },
+            {
+              "line": 114,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].ShortAxis</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 114,
+          "context": [
+            {
+              "line": 107,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 108,
+              "text": "\t\t<Filter Name=\"LongAxis\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 109,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetLongAxis()</Cpp>"
+            },
+            {
+              "line": 110,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].LongAxis</CSharp>"
+            },
+            {
+              "line": 111,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 112,
+              "text": "\t\t<Filter Name=\"ShortAxis\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 113,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetShortAxis()</Cpp>"
+            },
+            {
+              "line": 114,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].ShortAxis</CSharp>"
+            },
+            {
+              "line": 115,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 117,
+          "context": [
+            {
+              "line": 110,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].LongAxis</CSharp>"
+            },
+            {
+              "line": 111,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 112,
+              "text": "\t\t<Filter Name=\"ShortAxis\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 113,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetShortAxis()</Cpp>"
+            },
+            {
+              "line": 114,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].ShortAxis</CSharp>"
+            },
+            {
+              "line": 115,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 116,
+              "text": "\t\t<Filter Name=\"Circularity\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 117,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCircularity()</Cpp>"
+            },
+            {
+              "line": 118,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Circularity</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 118,
+          "context": [
+            {
+              "line": 111,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 112,
+              "text": "\t\t<Filter Name=\"ShortAxis\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 113,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetShortAxis()</Cpp>"
+            },
+            {
+              "line": 114,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].ShortAxis</CSharp>"
+            },
+            {
+              "line": 115,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 116,
+              "text": "\t\t<Filter Name=\"Circularity\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 117,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCircularity()</Cpp>"
+            },
+            {
+              "line": 118,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Circularity</CSharp>"
+            },
+            {
+              "line": 119,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 121,
+          "context": [
+            {
+              "line": 114,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].ShortAxis</CSharp>"
+            },
+            {
+              "line": 115,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 116,
+              "text": "\t\t<Filter Name=\"Circularity\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 117,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCircularity()</Cpp>"
+            },
+            {
+              "line": 118,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Circularity</CSharp>"
+            },
+            {
+              "line": 119,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 120,
+              "text": "\t\t<Filter Name=\"Rectangularity\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 121,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetRectangularity()</Cpp>"
+            },
+            {
+              "line": 122,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Rectangularity</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 122,
+          "context": [
+            {
+              "line": 115,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 116,
+              "text": "\t\t<Filter Name=\"Circularity\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 117,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetCircularity()</Cpp>"
+            },
+            {
+              "line": 118,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Circularity</CSharp>"
+            },
+            {
+              "line": 119,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 120,
+              "text": "\t\t<Filter Name=\"Rectangularity\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 121,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetRectangularity()</Cpp>"
+            },
+            {
+              "line": 122,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Rectangularity</CSharp>"
+            },
+            {
+              "line": 123,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        },
+        {
+          "line": 125,
+          "context": [
+            {
+              "line": 118,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Circularity</CSharp>"
+            },
+            {
+              "line": 119,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 120,
+              "text": "\t\t<Filter Name=\"Rectangularity\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 121,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetRectangularity()</Cpp>"
+            },
+            {
+              "line": 122,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Rectangularity</CSharp>"
+            },
+            {
+              "line": 123,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 124,
+              "text": "\t\t<Filter Name=\"Score\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 125,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetScore()</Cpp>"
+            },
+            {
+              "line": 126,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Score</CSharp>"
+            }
+          ]
+        },
+        {
+          "line": 126,
+          "context": [
+            {
+              "line": 119,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 120,
+              "text": "\t\t<Filter Name=\"Rectangularity\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 121,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetRectangularity()</Cpp>"
+            },
+            {
+              "line": 122,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Rectangularity</CSharp>"
+            },
+            {
+              "line": 123,
+              "text": "\t\t</Filter>"
+            },
+            {
+              "line": 124,
+              "text": "\t\t<Filter Name=\"Score\" ValueType=\"float\" IsArray=\"true\">"
+            },
+            {
+              "line": 125,
+              "text": "\t\t\t<Cpp NumsCode=\"$resultObj->GetBlobNum()\">$resultObj->GetBlobInfo($index)->GetBoxInfo()->GetScore()</Cpp>"
+            },
+            {
+              "line": 126,
+              "text": "\t\t\t<CSharp NumsCode=\"$resultObj.BlobInfo.Count\">$resultObj.BlobInfo[$index].Score</CSharp>"
+            },
+            {
+              "line": 127,
+              "text": "\t\t</Filter>"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "decisionScope": "B1-B7 are one proposed Blob lifecycle scope, not new implementation batches; existing implementations need revalidation, not automatic rewrite"
+}

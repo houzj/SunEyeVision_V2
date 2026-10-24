@@ -1,0 +1,132 @@
+{
+  "time": "2026-10-24T20:22:08.993254+08:00",
+  "scope": "read-only source/native inventory and official attribution; documentation only; not migration/runtime acceptance",
+  "recommendation": "HALCON now; reuse neutral contracts/adapters; adjust ownership, layout and consumers; future OpenCV requires algorithm implementation and semantic verification",
+  "pageBefore": "b5fd4fc10a03d7e5ef8fc6f17a9094550ee351b1ff3f945a9b16d10d9c69ab28",
+  "pageAfter": "8ae9877941944ec8f7e7dbe469a2227db0c8e0399952aa4a5a21794cff229e4f",
+  "outsideReviewBytesUnchanged": true,
+  "evidence": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Contracts\\SunEyeVision.Plugin.Contracts.csproj",
+      "sha256": "c5f1a010759c6a0a5b55b6a7cdb0576392abd36f236f555dec3e85e7303c1d33"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Contracts\\Resources.cs",
+      "sha256": "50acf309c6a1c5c34896d8bdb85e002415f7952ca3f5925b5e7215845281ad59"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Core\\Interfaces\\IDeviceManager.cs",
+      "sha256": "d37bbbb1e7b3c8c642649938d84b60eeeabb54fe8335b57f97e3a071f234dcc8"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Runtime\\SunEyeVision.Plugin.Runtime.csproj",
+      "sha256": "f47acd37c494e68eb266dbd1d45aee607417c47a7d13a0930a04db5b0c799543"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\SunEyeVision.Plugin.Wpf.csproj",
+      "sha256": "3ccab4274f8f217158f196672e7f01040ccfb67fe554361ca2d02a37bbfc0773"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Vision\\Contracts\\IVisionImage.cs",
+      "sha256": "4249b178fe01e6f9f5efece5d8e63ccd35b2b845149c62638973143fe6796089"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Vision\\Contracts\\IVisionRegion.cs",
+      "sha256": "739e35163889234508ce9e867cd3c2022cfd53264b425c2ce8e52d8b33214609"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Vision\\Hosting\\VisionBackendExtractorLocator.cs",
+      "sha256": "ca13964dfe2043fa944b020210a320dbdd88e29e34a7f2c8385289b40aaa9267"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\Models\\SdkTypeVocabulary.cs",
+      "sha256": "212df645371e3c41dae95284231bd141414473f7f0a91555d4e9e8d650e90dc0"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\SunEyeVision.HalAdapter\\SunEyeVision.HalAdapter.csproj",
+      "sha256": "027bdd2f2bac5e925c67fdcfb9281411f5296f5baaaa41303c643f565feff17c"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\SunEyeVision.HalAdapter\\HalconHelpers.cs",
+      "sha256": "891a23ca3c1f31976da0adad2f93bc16f4409922f32ab5a7622446a20f5da45c"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\SunEyeVision.HalAdapter\\HalRegion.cs",
+      "sha256": "5593f022841130d3d6179489fe73850b8075ef9514e16e91439da8124d959d7c"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\SunEyeVision.HalAdapter\\HalImage.cs",
+      "sha256": "fb1170a2175d9db651e577d6fbc6cfbf33f30404e9a568aabc100db4954a703b"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\SunEyeVision.CvAdapter\\CvRegionBridge.cs",
+      "sha256": "577114a6cc5ec2551acd5bcc01589208b1f004fa4adcd2bcadaf19a8082b6ce1"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\SunEyeVision.CvAdapter\\CvVisionRegionAdapter.cs",
+      "sha256": "cda320d83cd86f599fef82e5313de6c6a1c6b349915e16e706cef94a75dded3f"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\App.xaml.cs",
+      "sha256": "e1f4588a6bfd7293933346c687041898597823cc43450e7cb6282b16a96406e5"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Converters\\VisionImageToBitmapSourceConverter.cs",
+      "sha256": "f8d33a067875ac3704399dcc76beaa95eed503655952d66b73781fb5b4dbf8ed"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Services\\Workflow\\NodeResultManager.cs",
+      "sha256": "43634acb08a28968762dd873e040131155d37bcd0a2d1ba602e075a0c376fd78"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\BlobAnalysisTool.cs",
+      "sha256": "bc324efadae6085df6c8b3c67a71d5da2f5828de81a80112948dbe82510eb638"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\BlobAnalysisParameters.cs",
+      "sha256": "a37662c1865c195bec4799f7f9f17f17623dca45234857aff64682cf92f9863a"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\BlobAnalysisResults.cs",
+      "sha256": "5691d6b997ef9fa704d63826709fe9a4a6fa890cc889499b84269e40188c002c"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\blob-analysis\\identity-first\\inventory.json",
+      "sha256": "9d859a6e39a8803613eb0828fa3a3f3add171f3536e4cb8cbcad916c59e43584"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Includes\\Algorithms\\BlobFindCpp.h",
+      "sha256": "4305608bc0bf620c85bcaf5862a34d39f2f96218b8064b438ed6bd81f3c2c805"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Runtime\\x64\\MVDBlobFindCpp.dll",
+      "sha256": "d819529a0a29a935c994cbf8136a8841834b90437a2d842dd22d407bf8743932"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Runtime\\x64\\MVD_Algorithm.dll",
+      "sha256": "85d17ecc87d52e9a62d8bb86c8d5208ac999bcd31ec6d0806453f8165733f549"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\MVDTools\\ExportMVDCode\\components\\data\\paramKey\\BlobFind.xml",
+      "sha256": "3af9dba5b328888e13f7ccf66c74c257e61b6a2d5fa6b81bfe77489afec6b7ec"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\MVDTools\\ExportMVDCode\\components\\data\\moduleio\\IMVSBlobFindModu.xml",
+      "sha256": "22f0efb1ab4ae81cd75cb08807a5e3fb63f73b1a768d4153e2645b288c33ffb8"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Samples\\CSharp\\BasicSamples\\MVD_GeoFind\\BlobFindCsDemo\\BlobFindCsDemo.cs",
+      "sha256": "a7e88f2017f60401c30f9aedf7d39aa053df59dc02b5356c899bcbb9a016597a"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Includes\\Common\\VisionDesigner\\MVDCore.h",
+      "sha256": "2703f48028e8b57d1a2639c0171155d3cfa397b4d448f87b6263ce4da4bdb6fc"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\architecture-recovery\\tool-rendering-entry-audit.resources\\IMVSBlobFindModuAlgorithmTab.xml",
+      "sha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec"
+    }
+  ],
+  "official": "https://www.hikrobotics.com/en/machinevision/visionmaster/",
+  "nativeLimit": "Original Blob ProcessAlg/ProcessOutput not fully recovered; imports prove dependency, not execution order or absence of third-party internals"
+}

@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "newIds": [
+    "br-backend-migration-review",
+    "br-backend-title",
+    "br-vm-blob-library-evidence",
+    "br-vm-decision-evidence",
+    "br-backend-contract-decisions",
+    "br-backend-project-changes",
+    "br-backend-options",
+    "br-blob-unified-scope",
+    "br-backend-acceptance"
+  ],
+  "linksChecked": 28,
+  "brokenLocalLinks": [],
+  "pythonSyntax": "pass",
+  "keyEvidenceFilesVerified": 5,
+  "productExecuted": false,
+  "visualInspection": "not performed",
+  "scope": "consolidated Blob backend/lifecycle review only; not runtime acceptance",
+  "pageSha256": "8ae9877941944ec8f7e7dbe469a2227db0c8e0399952aa4a5a21794cff229e4f"
+}

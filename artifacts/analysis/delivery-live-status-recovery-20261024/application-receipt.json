@@ -1,0 +1,90 @@
+{
+  "kind": "O06_DYNAMIC_SECTION_SINGLE_AUTHOR_CAS_APPLIED",
+  "at": "2026-10-24T20:07:46.7021354+08:00",
+  "author": "01a16695-701e-7523-9c18-1298b9279428",
+  "authorization": "Main controller directly approved this one dynamic-section recovery",
+  "canonical": "D:\\MyWork\\SunEyeVision_V2\\docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o06.html",
+  "beforeSHA": "6AA5884FF838AA3D75DEF91DD47A9F72EEABD470F9FAF215999EDFD38A6BE103",
+  "afterSHA": "D41FDB8A96873D8B540B6232754D2899F9925D52343B77431A17D387A1209821",
+  "sectionSHA": "EDB3609BEAC3FFED3E3583E9B61709539758FCBFA03B36AFC446E50A79AC9821",
+  "sectionOnlyCompositionVerified": true,
+  "outsideBytesExact": true,
+  "historyPreserved": {
+    "originalInnerSHA": "9452B512B7980F1E7191111F3ABF37E3FC0507AE6791C13A31FC66C0E929BFF5",
+    "preservedInnerSHA": "9452B512B7980F1E7191111F3ABF37E3FC0507AE6791C13A31FC66C0E929BFF5",
+    "originalInnerBytes": 234464,
+    "exactBytesInProposal": true,
+    "emptyAnchorStubsAdded": false
+  },
+  "protectedArchitecture": {
+    "sha256": "21B857D1F3294FDA8A9F9D96BABAA37B125E453F7791514A46330FE70297C10E",
+    "proposedSHA": "21B857D1F3294FDA8A9F9D96BABAA37B125E453F7791514A46330FE70297C10E",
+    "bytesExact": true
+  },
+  "QA": {
+    "allDocumentIdsUnique": true,
+    "allOriginalIdsAndCountsRetained": true,
+    "documentIDCount": 616,
+    "historicalLinksRetained": 687,
+    "historicalInnerBytesExact": true,
+    "manualVSChecklistPreserved": true,
+    "outsideBytesExact": true,
+    "newEvidenceLinksExisting": 9,
+    "sixCaseAggregateVerified": true,
+    "allSixNaturalExit": true,
+    "formalFiniteReceipt": "sealing, not wholeA11/FTacceptance",
+    "noPublicWrite": false
+  },
+  "inputSnapshot": [
+    {
+      "name": "ledger",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\DELIVERY_LEDGER.json",
+      "sha256": "33289145CF6E831048F2A3D0D7DAF93CF28224A3DC9B9041C35533509DC0A607"
+    },
+    {
+      "name": "architecture",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\HANDOFF_BLOB_ARCHITECTURE_REVIEW_V81_20261024.md",
+      "sha256": "B172EA5286BD9F202C09CDF310D77F38AD648FDFDD79F3CF7A200C1B0E2357C2"
+    },
+    {
+      "name": "acceptance",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\PLUGIN-FOUNDATION-01\\reports\\acceptance-current-20261024.json",
+      "sha256": "D9239EBA66D322FF5551D5AC0F2D409EB5BF35F4038E3CD1A31AA92F38D25C74"
+    },
+    {
+      "name": "invalidMainSave",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\tool-framework-first-dependency\\runs\\editor-748-20261024\\invalid-main-save05-assessment.json",
+      "sha256": "AE3A9048CFC7983C320F2A23A738F2018281903A2C426713C41456616BFDFCD1"
+    },
+    {
+      "name": "customModalDisclosure",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\tool-framework-first-dependency\\runs\\editor-748-20261024\\own-editor\\custom03\\external-modal-button-observation.json",
+      "sha256": "B7270C535049F5334766465CFA5D38AC55A7813197E4CD7E589106CAEA958BA7"
+    },
+    {
+      "name": "candidate098",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\a11-header-ready-098486c4\\receipt.json",
+      "sha256": "DC76A60C3D5F069D4AAB4D1CDEDE33D23A7A059DD41F3EB67FAFA40E24169B2E"
+    },
+    {
+      "name": "independentReceive",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\tool-framework-first-dependency\\received-20261024-a11-header-098-fixed01\\receive-receipt.json",
+      "sha256": "C2F0C0B26232F41E19FF13770C89DAA3F05BFFBA7B5352DEB4C176D8724E6E23"
+    },
+    {
+      "name": "sixCaseAggregate",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\tool-framework-first-dependency\\a11-header-successor-preparation\\revision02\\r01\\aggregate.json",
+      "sha256": "9865CA59F57EBB1C663EF7AEE81593EB1464C1B02D9D1234592DDF837A34C2D4"
+    },
+    {
+      "name": "identity03",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\independent-testing\\tool-framework-first-dependency\\a11-header-successor-preparation\\identity03\\identity-gate-receipt.json",
+      "sha256": "6B31DE73707DDD3A3CC15A7CAFF5F6AC0971C7251E6A814B114BE34B25894DF6"
+    }
+  ],
+  "visual": "NOT_VERIFIED: file protocol browser preview denied; no workaround",
+  "productChanges": 0,
+  "productBuilds": 0,
+  "productRuns": 0,
+  "receiptCorrection": "Initial QA copied preparation noPublicWrite=true; corrected to false after actual scoped write. Initial receipt retained; no second page application."
+}

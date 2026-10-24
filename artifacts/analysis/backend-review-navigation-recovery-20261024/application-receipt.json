@@ -1,0 +1,206 @@
+{
+  "kind": "BACKEND_NAVIGATION_RECOVERY_CAS_APPLIED",
+  "at": "2026-10-24T20:27:39.9501519+08:00",
+  "author": "01a16695-701e-7523-9c18-1298b9279428",
+  "authorization": "Main assigned delivery manager documentation recovery, limited write window and scoped savepoint",
+  "files": [
+    {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+      "change": {
+        "kind": "one existing global document navigation partition only",
+        "offset": 1478,
+        "oldNavSHA": "87CF42912A430513CBC28A56F7D5982C5E3707CE1ED4E58D364839702FC61958",
+        "newNavSHA": "2220E6AD75E78B6314B1137E3BCD411D0992D3B7B5A9D6458A7C4AA4DA8C60C7",
+        "outsideNavBytesExact": true,
+        "protectedBlocks": {
+          "BLOB-FIVE-LAYER-REVIEW": "8ED9A8F0E952FE8EF4546CF5958CD735552B2F62F6F7553C7895F92B3BD1B391",
+          "BLOB-BACKEND-BOUNDARY": "496A0561A0DF99B3D292AE0F84F637DD7C4F73EA4F6A4CD1628653558038835E",
+          "implementation-live-status": "EDB3609BEAC3FFED3E3583E9B61709539758FCBFA03B36AFC446E50A79AC9821"
+        }
+      },
+      "beforeSHA": "8AE9877941944EC8F7E7DBE469A2227DB0C8E0399952AA4A5A21794CFF229E4F",
+      "afterSHA": "A94224737C18D0C219B78FB2C206B67F39955950E0A4FA9A071542B87F9B80BE"
+    },
+    {
+      "path": "artifacts/validation/document-library-source-snapshots/optimization-o06.html",
+      "change": {
+        "kind": "one existing global document navigation partition only",
+        "offset": 1478,
+        "oldNavSHA": "87CF42912A430513CBC28A56F7D5982C5E3707CE1ED4E58D364839702FC61958",
+        "newNavSHA": "2220E6AD75E78B6314B1137E3BCD411D0992D3B7B5A9D6458A7C4AA4DA8C60C7",
+        "outsideNavBytesExact": true,
+        "protectedBlocks": {
+          "implementation-live-status": "D3089B4F7343D6E78D206781C53428EBD3574FA12AE4FA03566B82B77014E21B"
+        },
+        "approvedDynamicGenerationFloorSync": {
+          "beforeSHA": "D3089B4F7343D6E78D206781C53428EBD3574FA12AE4FA03566B82B77014E21B",
+          "afterSHA": "EDB3609BEAC3FFED3E3583E9B61709539758FCBFA03B36AFC446E50A79AC9821",
+          "outsideOwnedSectionBytesExact": true,
+          "purpose": "Keep completed current status from reverting to16:12 when this floor is packed; no BLOB region copied"
+        }
+      },
+      "beforeSHA": "1C1C7D670AE7E9D5FAFAD2639EA714ED460063F50DD41E246608CAA89823522E",
+      "afterSHA": "6FB37A9765991AB1F7E2F7F4D7B2D032E357E43DD24DD5158F8FC1E2CDC07BF7"
+    },
+    {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search-index.js",
+      "change": {
+        "kind": "append only existing search schema, no existing record replacement",
+        "oldRecords": 730,
+        "newRecords": 734,
+        "addedRecords": 4,
+        "oldAllRecordBytesRetained": true,
+        "allNonO06RecordObjectsUnchanged": true,
+        "nonO06Count": 697,
+        "oldArrayPayloadSHA": "76FF1032456CA7349BEA2F203AABC85CF865CFFD82CB6D2ADAAA31155B2EBD8F",
+        "appendedRecords": [
+          {
+            "title": "O06 图像、ROI、图形文字及坐标一致性",
+            "topic": "优化方案",
+            "pageTitle": "O06 图像、ROI、图形文字及坐标一致性",
+            "path": "优化方案/optimization-o06.html",
+            "heading": "统一合同：图像、ROI与结果语义",
+            "excerpt": "算法库迁移复审：本轮固定 HALCON，公共输入图像、ROI区域集合、算法请求、结果、显示持久化和所有权统一业务语义；引擎内部实现可以不同。格式、位深、通道顺序、步长和坐标身份明确，不承诺全格式零拷贝。",
+            "href": "优化方案/optimization-o06.html#br-backend-contract-decisions",
+            "source": "canonical"
+          },
+          {
+            "title": "O06 图像、ROI、图形文字及坐标一致性",
+            "topic": "优化方案",
+            "pageTitle": "O06 图像、ROI、图形文字及坐标一致性",
+            "path": "优化方案/optimization-o06.html",
+            "heading": "工程与消费者调整：HALCON / OpenCV 迁移边界",
+            "excerpt": "复用 Contracts / Runtime / Plugin.Wpf 与 Hal/Cv 适配工程，补齐图像资源桥和中立结果合同，调整 WPF 几何、原生 object 逃逸、缓存恢复硬编码与消费者；不另建平行接口或权威。本轮不替换 HALCON，未来 OpenCV 接入仍需实现与验证。",
+            "href": "优化方案/optimization-o06.html#br-backend-project-changes",
+            "source": "canonical"
+          },
+          {
+            "title": "O06 图像、ROI、图形文字及坐标一致性",
+            "topic": "优化方案",
+            "pageTitle": "O06 图像、ROI、图形文字及坐标一致性",
+            "path": "优化方案/optimization-o06.html",
+            "heading": "后端方案比较与最终取舍",
+            "excerpt": "后端迁移明确推荐：中立业务与数据合同、可替换算法实现、专用适配桥。复用现有工程并承担显式转换成本；不把只换工厂当迁移完成，不包装所有库算子成通用引擎。复审待用户整体审核，未批准 Blob 产品改造。",
+            "href": "优化方案/optimization-o06.html#br-backend-options",
+            "source": "canonical"
+          },
+          {
+            "title": "O06 图像、ROI、图形文字及坐标一致性",
+            "topic": "优化方案",
+            "pageTitle": "O06 图像、ROI、图形文字及坐标一致性",
+            "path": "优化方案/optimization-o06.html",
+            "heading": "VM Blob 决策证据与统一闭环范围",
+            "excerpt": "原 SDK 与模块 XML、头文件、样例和代码生成映射共同约束 Blob 合同：4/8 邻域、可选输出、多段轮廓、Clear 后不可续读、FindNum 两载体差异及 ROI 优化一致性条件。B1–B7 归入同一闭环；原 ProcessAlg 未完整恢复，不据旁置 OpenCvSharp.Blob.dll 归因算法后端。",
+            "href": "优化方案/optimization-o06.html#br-vm-decision-evidence",
+            "source": "canonical"
+          }
+        ],
+        "summaryRefresh": "Removed default-retention wording per controller latest independent delete/rebuild/reuse review direction; only the2 new owned records changed",
+        "queryPhraseRepair": "Retained discoverable 后端迁移/适配桥 while removing preset-retention recommendation"
+      },
+      "beforeSHA": "76FF1032456CA7349BEA2F203AABC85CF865CFFD82CB6D2ADAAA31155B2EBD8F",
+      "afterSHA": "0E420BDCD5DD47AB1F78EF9CE3F8CC4F20BA70AE2864AF61A93EC278E55827BF",
+      "previousNavigationSHA": "EF8B18653829707C55C74A363D07428DF3E95006AA3462154433346C42FAD393"
+    },
+    {
+      "path": "artifacts/validation/document-library-source-snapshots/document-search-index.js",
+      "change": {
+        "kind": "append only existing search schema, no existing record replacement",
+        "oldRecords": 730,
+        "newRecords": 734,
+        "addedRecords": 4,
+        "oldAllRecordBytesRetained": true,
+        "allNonO06RecordObjectsUnchanged": true,
+        "nonO06Count": 697,
+        "oldArrayPayloadSHA": "76FF1032456CA7349BEA2F203AABC85CF865CFFD82CB6D2ADAAA31155B2EBD8F",
+        "appendedRecords": [
+          {
+            "title": "O06 图像、ROI、图形文字及坐标一致性",
+            "topic": "优化方案",
+            "pageTitle": "O06 图像、ROI、图形文字及坐标一致性",
+            "path": "优化方案/optimization-o06.html",
+            "heading": "统一合同：图像、ROI与结果语义",
+            "excerpt": "算法库迁移复审：本轮固定 HALCON，公共输入图像、ROI区域集合、算法请求、结果、显示持久化和所有权统一业务语义；引擎内部实现可以不同。格式、位深、通道顺序、步长和坐标身份明确，不承诺全格式零拷贝。",
+            "href": "优化方案/optimization-o06.html#br-backend-contract-decisions",
+            "source": "canonical"
+          },
+          {
+            "title": "O06 图像、ROI、图形文字及坐标一致性",
+            "topic": "优化方案",
+            "pageTitle": "O06 图像、ROI、图形文字及坐标一致性",
+            "path": "优化方案/optimization-o06.html",
+            "heading": "工程与消费者调整：HALCON / OpenCV 迁移边界",
+            "excerpt": "复用 Contracts / Runtime / Plugin.Wpf 与 Hal/Cv 适配工程，补齐图像资源桥和中立结果合同，调整 WPF 几何、原生 object 逃逸、缓存恢复硬编码与消费者；不另建平行接口或权威。本轮不替换 HALCON，未来 OpenCV 接入仍需实现与验证。",
+            "href": "优化方案/optimization-o06.html#br-backend-project-changes",
+            "source": "canonical"
+          },
+          {
+            "title": "O06 图像、ROI、图形文字及坐标一致性",
+            "topic": "优化方案",
+            "pageTitle": "O06 图像、ROI、图形文字及坐标一致性",
+            "path": "优化方案/optimization-o06.html",
+            "heading": "后端方案比较与最终取舍",
+            "excerpt": "后端迁移明确推荐：中立业务与数据合同、可替换算法实现、专用适配桥。复用现有工程并承担显式转换成本；不把只换工厂当迁移完成，不包装所有库算子成通用引擎。复审待用户整体审核，未批准 Blob 产品改造。",
+            "href": "优化方案/optimization-o06.html#br-backend-options",
+            "source": "canonical"
+          },
+          {
+            "title": "O06 图像、ROI、图形文字及坐标一致性",
+            "topic": "优化方案",
+            "pageTitle": "O06 图像、ROI、图形文字及坐标一致性",
+            "path": "优化方案/optimization-o06.html",
+            "heading": "VM Blob 决策证据与统一闭环范围",
+            "excerpt": "原 SDK 与模块 XML、头文件、样例和代码生成映射共同约束 Blob 合同：4/8 邻域、可选输出、多段轮廓、Clear 后不可续读、FindNum 两载体差异及 ROI 优化一致性条件。B1–B7 归入同一闭环；原 ProcessAlg 未完整恢复，不据旁置 OpenCvSharp.Blob.dll 归因算法后端。",
+            "href": "优化方案/optimization-o06.html#br-vm-decision-evidence",
+            "source": "canonical"
+          }
+        ],
+        "summaryRefresh": "Removed default-retention wording per controller latest independent delete/rebuild/reuse review direction; only the2 new owned records changed",
+        "queryPhraseRepair": "Retained discoverable 后端迁移/适配桥 while removing preset-retention recommendation"
+      },
+      "beforeSHA": "76FF1032456CA7349BEA2F203AABC85CF865CFFD82CB6D2ADAAA31155B2EBD8F",
+      "afterSHA": "0E420BDCD5DD47AB1F78EF9CE3F8CC4F20BA70AE2864AF61A93EC278E55827BF",
+      "previousNavigationSHA": "EF8B18653829707C55C74A363D07428DF3E95006AA3462154433346C42FAD393"
+    },
+    {
+      "path": "artifacts/validation/build-document-search-index.cjs",
+      "change": {
+        "kind": "only O06 explicit alias generator source branch",
+        "offset": 6675,
+        "outsideInsertionBytesExact": false,
+        "noGlobalGenerationRun": true,
+        "postApplyCorrection": "Removed one trailing space in the same O06 alias branch reported by git diff --check; initial receipt preserved.",
+        "outsideO06AliasBranchPreserved": true,
+        "summaryRefresh": "Same2 owned alias summaries updated to independent review, no preset retention",
+        "queryPhraseRepair": "Retained discoverable 后端迁移/适配桥 while removing preset-retention recommendation"
+      },
+      "beforeSHA": "86424FB285E6BFCB43251F57E0BAFD7DE0E94FE6DEEB359731A039F7951AD6ED",
+      "afterSHA": "AC61D21A776D96DEEE08F375B7641072AA13BC1BEE1641AA07ABD4C5486A5CE3",
+      "initialAfterSHA": "9C37169848CC732EEA57907B2E34B85F8F066704A3DC21111E16C1935511E254",
+      "previousNavigationSHA": "A9B5D420CD9593826474BF2FF549A205BCD30E87BE342B1FBE28A46F67CBF0A7"
+    }
+  ],
+  "staticQA": {
+    "existingOptimizationTopicReachesO06": true,
+    "canonicalChapterUnique": true,
+    "canonicalNavigationReachesChapter": true,
+    "searchRecordsTextNotOnlyLink": true,
+    "allOtherIndexRecordBytesRetained": true,
+    "canonicalProtectedArchitectureAndLiveBytesExact": true,
+    "snapshotNavigationOnly": false,
+    "snapshotRawChapterAbsent": true,
+    "snapshotNotStandalone": "Existing staging floor lacks BLOB/target; only nav partition changed. Architecture posthook rebuild_blob -> V81 review -> backend.render -> canonical PAGE.write supplies target. Do not sync whole canonical into old snapshot.",
+    "homeUnchanged": true,
+    "searchRuntimeUnchanged": true,
+    "allSiteRegenerationRun": false,
+    "browserAttempted": false,
+    "snapshotNavigationAndOwnedDynamicOnly": true,
+    "canonicalAndSnapshotIdsAndCountsRetained": true
+  },
+  "allFilesCASVerifiedBeforeAnyWrite": true,
+  "postWriteBytesVerified": true,
+  "productChanges": 0,
+  "productRuns": 0,
+  "fullSiteRegeneration": false,
+  "visual": "NOT_VERIFIED: browser file-protocol attempt previously blocked; no workaround"
+}

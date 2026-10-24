@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "ownerThreadId": "01a160f7-9c99-72c1-b8bf-d689bf19f1ad",
-  "date": "2026-10-23",
+  "date": "2026-10-24",
   "objective": "以明确交付驱动文档增量维护，让现状、证据、目标、合同和验收始终可追溯；文档进度与产品进度分别记录。",
   "batchId": "DOC-UX-SPLIT-20261022",
-  "currentMilestoneStatus": "本批文档分页、界面导航、关系图与中文目录交付；产品实施和24用例运行均未执行",
+  "currentMilestoneStatus": "交付经理恢复实际文档执行：O06动态事实及后端章节导航/搜索已应用并定向验证；未执行产品构建或验收，不代表S2整体完成",
   "stableBaseCommit": "3a5dc6dd54f372699a450ad7862b52c961cd2797",
   "baselineKind": "HEAD plus explicitly identified dirty file snapshots; not a stable accepted product release",
   "handoff": {
@@ -3008,13 +3008,13 @@
   },
   "homeDocumentSearch": {
     "scope": "自研架构文档维护首页离线搜索；首页及搜索资源/生成源专属写入，不改脚本专题正文",
-    "status": "完成；首页离线搜索覆盖当前专题锚点，可直达脚本第二批设计",
+    "status": "首页任务导航及既有界面入口保留；可搜最新实施验收、树层级、图像传输成本和原型最终采用审查",
     "index": {
       "manifest": "artifacts/validation/document-search-index-manifest.json",
-      "records": 702,
+      "records": 729,
       "pages": 134,
-      "bytes": 417850,
-      "canonicalPages": 702,
+      "bytes": 438597,
+      "canonicalPages": 729,
       "legacyFallbacks": 0,
       "remoteFetch": false,
       "thirdParty": false
@@ -3022,11 +3022,11 @@
     "files": [
       {
         "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html",
-        "sha256": "3188bbdb7fa977ac90a82e21a9913c3dc8a2d220013d32b87e9594a17bdd6a04"
+        "sha256": "6ad23c1e40541679765eb78f0d5e223634301d1906663289553792e9ec16dda5"
       },
       {
         "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search-index.js",
-        "sha256": "8784eaf2d691539b6af81ed88f3df203a5ffdd43a6bbd707705f07b1c312f6da"
+        "sha256": "74ff75ff80a1fcb2b304cd4dc6fe18329043cff74e57cf0cae595254b7aae8d2"
       },
       {
         "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search.js",
@@ -3034,7 +3034,7 @@
       },
       {
         "path": "artifacts/validation/build-document-search-index.cjs",
-        "sha256": "354458bd8a2398df3d0bebdd4c62589186c1be2fb9ddcde5ad6d85712c99937b"
+        "sha256": "5405df7225216c75efa4dea4b274a4a209c1726058474e2fa0339b8a88fa1806"
       },
       {
         "path": "artifacts/validation/document-search-runtime.js",
@@ -3042,15 +3042,31 @@
       },
       {
         "path": "artifacts/validation/document-search-home-section.cjs",
-        "sha256": "72b75f0a1ecca24ea44c1854df3fc5bb4c030e6366138edee1a0c986ffcf8254"
+        "sha256": "ead6eeba90676e13c37542758bdca7a8b6b6d6c9a91770e0e468326e24519916"
       },
       {
         "path": "artifacts/validation/sync-document-search-home.cjs",
-        "sha256": "bf9aba199dcf866073a7749e073cfa6038021086f5c6679f0449feba22b8022a"
+        "sha256": "4f2aaefdd5f4e9f7e7bf50db2b6746cc3c250df0ba729fafd419a9f05bf2688e"
+      },
+      {
+        "path": "artifacts/validation/interface-document-navigation.cjs",
+        "sha256": "aaabab51df90507a923c6da463a5a9b9730cea45809740291b66b8ae42f3b67d"
+      },
+      {
+        "path": "artifacts/validation/normalize-document-home.cjs",
+        "sha256": "d4945460ecd0e4bc646cd1c2e52b7e2e64bcbbe4f017dcb05529ddc74cd0a0e2"
       },
       {
         "path": "artifacts/validation/check-document-search.cjs",
-        "sha256": "396c8ef03f54675f557b68c38c9f954fd38b08dbd7c502cf3419faefb10d2243"
+        "sha256": "5af8da1d6f2cff54f0fb30499dafcf49b49661ccac60802fb8ad672134d77d25"
+      },
+      {
+        "path": "artifacts/validation/document-search-index-manifest.json",
+        "sha256": "983fd0f5fd774981cb8a263f501456272bf787656dca250c07b7fed238385a7a"
+      },
+      {
+        "path": "artifacts/validation/home-reading-navigation-review.json",
+        "sha256": "14ddca9ffc66d77a9f90f4ab4a6e771084783cc2a64988432e55ae3812caed20"
       }
     ],
     "generationChain": [
@@ -3059,8 +3075,8 @@
       "artifacts/validation/document-library-layout.cjs",
       "artifacts/validation/build-architecture-doc-site.cjs"
     ],
-    "validation": "artifacts/validation/document-search-validation.json",
-    "additionalValidation": "artifacts/validation/home-search-root-validation.json",
+    "validation": "artifacts/validation/home-reading-navigation-review.json",
+    "additionalValidation": "artifacts/validation/document-search-validation.json",
     "queries": [
       "引用管理 → #script-reference-three-way",
       "最终推荐 → #script-final-decision",
@@ -3072,7 +3088,19 @@
       "脚本后续优化 → #script-followup-panorama",
       "前三批之外 → #script-followup-panorama",
       "脚本数据合同 → #script-followup-panorama",
-      "脚本方案依赖 → #script-followup-panorama"
+      "脚本方案依赖 → #script-followup-panorama",
+      "五方向总览 → docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#five-directions-overview",
+      "整体进展 → docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#five-directions-overview",
+      "审核方案 → docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#five-directions-overview",
+      "审核整体方案 → docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#five-directions-overview",
+      "实际效果 → docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#five-directions-overview",
+      "效果验证 → docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#five-directions-overview",
+      "技术依据 → docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#five-directions-overview",
+      "五方向总览 → #five-directions-overview",
+      "整体进展 → #five-directions-overview",
+      "审核方案 → #five-directions-overview",
+      "实际效果 → #five-directions-overview",
+      "技术依据 → #five-directions-overview"
     ],
     "keyboard": [
       "Ctrl+K聚焦",
@@ -3087,7 +3115,47 @@
     ],
     "errors": 0,
     "productModified": false,
-    "newAnchorValidation": "artifacts/validation/script-followup-source-search-review.json"
+    "newAnchorValidation": "artifacts/validation/script-followup-source-search-review.json",
+    "staticNavigationReview": {
+      "taskRoutes": [
+        "五方向总览",
+        "审核方案",
+        "实际效果",
+        "技术依据"
+      ],
+      "searchQueries": [
+        "五方向总览",
+        "整体进展",
+        "审核方案",
+        "审核整体方案",
+        "实际效果",
+        "效果验证",
+        "技术依据"
+      ],
+      "localLinksChecked": 27,
+      "brokenLinks": 0,
+      "snapshotSynchronized": true,
+      "visualBrowserReview": false,
+      "productModified": false
+    },
+    "latestStatusEntry": "#implementation-live-status",
+    "latestStatusSearchQA": "artifacts/validation/tool-framework-contract/live-implementation-status-qa.json",
+    "latestStatusQueries": [
+      "最新实施验收状态",
+      "旋转矩形投影",
+      "M03显示点独验",
+      "绑定树层级对照",
+      "结果树层级",
+      "结果声明消费链",
+      "动态声明回调",
+      "图像资源桥",
+      "图像传输成本",
+      "原型最终采用审查",
+      "整图JSON不采用",
+      "脚本后续优化",
+      "引用管理",
+      "五方向总览"
+    ]
   },
   "s2": {
     "scriptDesignValidation": {
@@ -3562,6 +3630,1616 @@
       "dispatchHead": "972f2e0fd947fa7920c77f026bc1a348b968a217",
       "startGate": "实施者先完成S2固定源码提交、完整Release产物及源/产物身份、交接和已知未验证清单，再以S2固定SHA为S3基线；不以S2整批独立验收结束为默认开工条件，但阻断反馈优先修复，未验证合同不当稳定",
       "sourcePlanSha256": "de8abb31da6f858ea383ebf6f0f36401bd081afeb56f765fbd74179edf5a54a7"
+    }
+  },
+  "unifiedImplementationStatus": {
+    "date": "2026-10-24",
+    "entry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#implementation-live-status",
+    "pageSha256": "c6b90434192cf2277f366040ffdebd5488cb38b767190a19c7a20a23090c53e6",
+    "source": "artifacts/validation/tool-framework-contract/live-implementation-status.json",
+    "sourceSha256": "5e57a5f02c39de8d63c92a45a6e94bee7ecb581228755fde9ba8110667a494f1",
+    "generator": "artifacts/validation/tool-framework-contract/build-live-implementation-status.cjs",
+    "receipt": "artifacts/validation/tool-framework-contract/live-implementation-status-receipt.json",
+    "receiptSha256": "ab082bf49a2c557e926278cc0936a316c2c3bb0b2e0bd91d1fc5506fcb417654",
+    "qa": "artifacts/validation/tool-framework-contract/live-implementation-status-qa.json",
+    "layers": 4,
+    "status": {
+      "bindingFixed01": "390source/48bin旧SDK2.1；43开发/43固定DLL回放＋net9独立8组91断言有限PASS；原42/1阻塞及Foundation旧4项阻塞保留",
+      "scriptB2": "同97f独立回放11/11PASS/Completed/natural0；非Script体执行，插件实际来自原专用冻结SUT，allTesterOwned=false/nonsharedRelease",
+      "uiB2": "97f冻结开发filter独立执行34/34PASS/Completed/natural0；非自写业务断言/GUI/VS，原16/5失败保留",
+      "engineEntry": "legacy生产依赖/失效子集有限独验闭环：7630AC最终acceptance，成熟5回放＋自有5组28，owned及原固定SUT4000postSHA0差异/extra/在途；不关整G03、目标新Plan或R2新Foundation接缝、③④及整包",
+      "a04": "formal03已真实18进程完成，540round270echo/132901.454ms；final result、summary、final audit、manifest核收，不再写零样本或高IO暂停",
+      "performance": "callWall、原型EndToEnd、独立echo分口径；每profile/role三fresh进程×30轮描述性，非SLA证明。当前整图JSON传输不采用生产默认",
+      "versions": "ToolContract3.0/Foundation4.0/产品version与CLR AssemblyVersion分责；3.0实际门、RequestId/Conditional变型守卫待新包验",
+      "clrNarrowing": "FT-M03-CLR-NARROWING-01静态确认待修；未证silent wrap，不由旧34/91成绩关闭",
+      "production": "首Engine5开发有限通过；生产完整冻结解析发布、目录树/结果树消费者、资产/三工具七交互/最终同源Release仍待",
+      "geometryProjection": "849d/baseline97f的旋转矩形数据→显示点子能力有限独验并主控接受：成熟11＋自有10组180/108managed/216post，主线71d1有限合入；不关整个M03、CLR物化、生产发布/7交互/校准/GUI/VS/最终Release"
+    },
+    "frozenApprovedReviewUnchanged": "b61cd2de108d5c616825bc83d4de51c05689b822ca22e4fd23d2d569754f370b",
+    "oldAnchorsPreserved": true,
+    "localLinksChecked": 366,
+    "canonicalSnapshotSame": true,
+    "visualBrowserReview": false,
+    "productModified": false,
+    "ioWindow": "A04正式成本批次已结束，高IO暂停已解除；本次仅有限文档/索引生成，无产品构建/采样/测试重跑",
+    "latestDocumentIdentities": [
+      {
+        "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+        "sha256": "c6b90434192cf2277f366040ffdebd5488cb38b767190a19c7a20a23090c53e6",
+        "approvedBlockSha256": "b61cd2de108d5c616825bc83d4de51c05689b822ca22e4fd23d2d569754f370b",
+        "oldAnchorsPreserved": true
+      },
+      {
+        "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-script.html",
+        "sha256": "b29de3a4898c9f51ea7f512fab85705044424009deeea7122d64883a482d575b",
+        "oldAnchorsPreserved": true,
+        "renderedThisRun": false,
+        "acceptedPrototypeHtmlPreserved": true
+      },
+      {
+        "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o01.html",
+        "sha256": "bcaf03e4e79fa354b9ec849d316c78e7b09beb784cf61233c913f2f7add6eb0d",
+        "oldAnchorsPreserved": true,
+        "renderedThisRun": false,
+        "acceptedPrototypeHtmlPreserved": true
+      }
+    ],
+    "generatorSha256": "dde6b809ba08d4421e158affe18896a854791b536c3ca0ecdbe99c66edbf4f3c",
+    "generationHook": "build-architecture-doc-site.cjs invokes build-live-implementation-status({o06Only:true}); accepted script/O01 preserved without writes",
+    "qaSha256": "00065367b7546646bc3664182086f7e76bf64ff0ecf71ee892d745eef412c8a0",
+    "sourceSnapshots": 80,
+    "treeComparison": {
+      "entry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#implementation-tree-projections",
+      "authority": "artifacts/validation/tool-framework-contract/controller-tree-workflow-review-20261024.json",
+      "authoritySha256": "2150b7d9db43ce73f76d85bf4964a6b02feba6fe28820946337c5e645c6eced6",
+      "architectureReviewed": true,
+      "implementationAndVisualAcceptance": false,
+      "clickCountsMeasured": false,
+      "finiteConsumerSourceReview": "artifacts/validation/tool-framework-contract/independent-review-inputs/FT-tree-consumer-finite-review-20261024.json"
+    },
+    "prototypeAdoptionReview": {
+      "entries": [
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/现状分析/tool-script.html#script-prototype-final-review",
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o01.html#script-prototype-final-review"
+      ],
+      "adoptionSource": "artifacts/validation/script-host-prototype-coordinator/final-adoption-review.json",
+      "adoptionSourceSha256": "05715f7da98d6774f60bab792bf9affaaf7892b55c64ac17cbeb9e02ee89f735",
+      "independentIndex": "artifacts/independent-testing/SCRIPT-HOST-PROTOTYPE/results/prototype-four-item-evidence-index-20261024.json",
+      "independentIndexSha256": "449ec811a8283095553887c40cb408715506da4b6f0cb66c38eff294045d744c",
+      "referencedPathsShaVerified": 18,
+      "decision": "当前整图JSON实现不采用，结论明确且有限审核认可；原产品S3 ALC未闭环，载体改造不在本批准实施范围；不阻塞原48/树/工具/统一Release"
+    },
+    "searchChecks": 14,
+    "canonicalSnapshotsSame": true,
+    "engineFixedIdentity": {
+      "sourceFiles": 1432,
+      "binaryFiles": 568,
+      "copiedFiles": 2000,
+      "copiedBytes": 1858853441,
+      "manifestMismatches": 0,
+      "toolContract": "2.1 transitional",
+      "foundation": "4.0",
+      "identityNote": "构建输入为6bfc＋实际dirty源码；97f1326c为事后同内容限定提交绑定，不改写DLL内build stamp。",
+      "finalPostIdentityReceiptPending": false,
+      "laterCorrespondingCodeCommit": "97f1326c42dbfe75fb516731be9df0ec76ed2da7",
+      "commitBinding": {
+        "rows": 29,
+        "byteExact": 15,
+        "lineEndingOnly": 14
+      }
+    },
+    "engineMatureReplay": {
+      "ownedCopy": "artifacts/independent-testing/tool-framework-first-dependency/received-20261024-engine-entry-01/independent-owned-copy-receipt.json",
+      "ownedCopySha256": "7ceee17475c7d1f81605fd64f14443552b5adbed2ea4dced0444a6e8724fb187",
+      "trx": "artifacts/independent-testing/tool-framework-first-dependency/runs/engine-entry01-20261024/mature-engine/engine-owned-replay.trx",
+      "trxSha256": "28c33432fcfc6987eeec8ef1e546a77f6834eaf41a98d1a20e4ae99267436d7d",
+      "matureReplayPassed": 5,
+      "testerAuthoredAndAggregate": "final bounded acceptance filed; own5groups28PASS; target production Plan chain remains open",
+      "productToolContract": "2.1 transitional; 3.0 pending"
+    },
+    "engineOwnProbe": {
+      "passed": 5,
+      "failed": 0,
+      "blocked": 0,
+      "assertions": 28,
+      "pid": 22184,
+      "exitCode": 0,
+      "runtime": ".NET 9.0.20",
+      "reportSha256": "9deb8cd0fa91dfefb8c0f1ac3119342323309c34a2630a4813648373ff893a5f",
+      "aggregateReceiptPending": false
+    },
+    "engineStaticReview": {
+      "selectedSources": 25,
+      "selectedBinaries": 23,
+      "fullManifestReview": false,
+      "productBuildOrRun": false,
+      "sha256": "90f7615d97d779b909b7fece17392f3b459c87631ada9e15abdc7aa39c9e4176",
+      "scope": "Existing implemented legacy production Workflow/Solution binding dependency chain only"
+    },
+    "engineBoundedAcceptance": {
+      "decision": "LIMITED_PASS_LEGACY_PRODUCTION_ENGINE_DEPENDENCY_AND_FAILURE_SCOPE",
+      "source": "artifacts/independent-testing/tool-framework-first-dependency/runs/engine-entry01-20261024/acceptance.json",
+      "sha256": "7630ac709ee2585e7c9994ad3e6b51848203ce8bda127ae85351df7eaf7609f5",
+      "productFullyAccepted": false,
+      "wholeGoalComplete": false,
+      "postChecks": 4000,
+      "postMismatches": 0,
+      "postExtra": 0,
+      "runningRecordedOwned": 0,
+      "evidenceManifest": "artifacts/independent-testing/tool-framework-first-dependency/runs/engine-entry01-20261024/evidence-manifest.json",
+      "evidenceManifestSha256": "ebf5a851f09798e39a21d2024560a996fe0efae6d8283a39b362733f939f100b",
+      "originalIds": [
+        "FT-G02",
+        "FT-G03",
+        "FT-F02",
+        "FT-K01",
+        "FT-K03"
+      ],
+      "notVerified": [
+        "Guid RequestId/admitted expected source identity ordinary and AtField/root-child mapping/newplan retries",
+        "New Definition/Session/Invocation seam and target common Plan.Resolve production path; historical FoundationR2 A03 remains open",
+        "Checked actual narrow CLR property policy including saved TargetType mismatch",
+        "Conditional source schema/type/stableField invalidation and exact persisted major/minor",
+        "SDK ToolContract3.0 actual loader/register and whole-tool recompilation",
+        "Original Apply/Undo dirty/undo-stack observables beyond cycle configuration preservation",
+        "Formal AssetRef/version/owner and other approved consumers",
+        "Binding/results tree schema/run/lazy/reader lease actual UI",
+        "UI34 and Script11 independent replay in this new package; their developer receipts retained separately",
+        "Full same Release build/runtime/performance/VS/manual acceptance"
+      ],
+      "uiScriptSupplement": {
+        "source": "artifacts/independent-testing/tool-framework-first-dependency/runs/ui-script97f-20261024/acceptance.json",
+        "sha256": "1377e3e363b9bd506cdd9fc57453a7005d753066134ae347c18a83c4a9a784eb",
+        "supersedesOnly": "prior acceptance time-point pending for these exact UI34/Script11 filters; original immutable receipt retained"
+      },
+      "currentNotVerified": [
+        "Guid RequestId/admitted expected source identity ordinary and AtField/root-child mapping/newplan retries",
+        "New Definition/Session/Invocation seam and target common Plan.Resolve production path; historical FoundationR2 A03 remains open",
+        "Checked actual narrow CLR property policy including saved TargetType mismatch",
+        "Conditional source schema/type/stableField invalidation and exact persisted major/minor",
+        "SDK ToolContract3.0 actual loader/register and whole-tool recompilation",
+        "Original Apply/Undo dirty/undo-stack observables beyond cycle configuration preservation",
+        "Formal AssetRef/version/owner and other approved consumers",
+        "Binding/results tree schema/run/lazy/reader lease actual UI",
+        "Full same Release build/runtime/performance/VS/manual acceptance"
+      ]
+    },
+    "engineIntegrationGate": {
+      "source": "artifacts/validation/tool-framework-contract/controller-production-binding-integration-gate-20261024.json",
+      "sha256": "5394273a8fd3a848d5587eab0eb79aee804d7e768e5289375bdbf1538edc3688",
+      "existingIds": [
+        "FT-F02",
+        "FT-G03",
+        "FT-M03"
+      ],
+      "state": "后继原批准适配，待新包；不是新设计批次"
+    },
+    "uiScriptSupplement": {
+      "decision": "LIMITED_PASS_FROZEN_UI34_SCRIPT11_REGRESSION",
+      "source": "artifacts/independent-testing/tool-framework-first-dependency/runs/ui-script97f-20261024/acceptance.json",
+      "sha256": "1377e3e363b9bd506cdd9fc57453a7005d753066134ae347c18a83c4a9a784eb",
+      "uiPassed": 34,
+      "scriptPassed": 11,
+      "developerAuthoredReplay": true,
+      "testerAuthored45BusinessAssertions": false,
+      "sourceFilesRehashed": 0,
+      "fixedCopies": 0,
+      "applicableRuntimeFiles": 568,
+      "observedAssemblyPaths": 241,
+      "checkedActualFixedDlls": 63,
+      "unexpectedNonPlatform": 0,
+      "newFiles": 0,
+      "scriptAllTesterOwned": false,
+      "scriptDedicatedOriginalRoot": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\binding-b2-regression\\build\\app\\plugins\\SunEyeVision.Tool.Script\\SunEyeVision.Tool.Script.dll",
+      "scriptPluginSha256": "24E1C4CC86FE83FF2014673F0EC8B6706E956C23B2D2C72FEA4C7ADAD8D1F735",
+      "sharedRelease": false,
+      "notVerified": [
+        "Actual GUI visual interaction/VS design-time/manual acceptance",
+        "New production common BindingPlan.Resolve -> checked actual property -> Invocation chain and original FoundationR2 A03 seam",
+        "Guid RequestId/expected producer and dynamic-index identities; callback alias close gate and unique execution admission",
+        "Numeric narrowing/precision actual CLR property policy and saved TargetType authority",
+        "All Conditional schema/type change guards, member/nullability and exact major/minor persistence",
+        "SDK3.0 actual loader/register and complete all-tool rebuild",
+        "Editor full dirty/undo/ApplyDiscard scopes, AssetRef/version/owner",
+        "Binding/result tree selected-run/lazy/reader lease consumers",
+        "Complete same Release/performance/whole48 acceptance"
+      ],
+      "engineOrPerformanceRerun": false
+    },
+    "renderedSourceSha256": "5e57a5f02c39de8d63c92a45a6e94bee7ecb581228755fde9ba8110667a494f1",
+    "currentCarrierDisposition": {
+      "decision": "当前整图JSON实现不采用，结论已明确并有限审核认可",
+      "productS3": "原产品S3 ALC未闭环；未宣布修复",
+      "implementationScope": "载体改造不在本批准实施范围",
+      "dependency": "原48/树/工具/统一Release继续，不等待载体采用结论"
+    },
+    "carrierStatusFieldCorrection": {
+      "kind": "source/status fields only",
+      "sourceShaBefore": "286c425b2b2487467a0d1bab3cecb1a342d8fa81a4b5f80074c50d9a86032fa0",
+      "sourceShaAfter": "d0b566dc422257d9598b344f1d11ec5c89dd4b816471162b401b7207cfd8bfdf",
+      "htmlRegenerated": false,
+      "acceptedFourPartHtmlChanged": false,
+      "reason": "Remove stale awaiting-adoption wording; no scope expansion",
+      "subsequentO06ProjectionApplied": true
+    },
+    "renderScope": "O06-only; accepted script/O01 HTML preserved without writes",
+    "acceptedPrototypeHtmlPreserved": true,
+    "treeConsumerSeams": {
+      "entry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#tree-consumer-seams",
+      "source": "artifacts/validation/tool-framework-contract/independent-review-inputs/FT-tree-consumer-finite-review-20261024.json",
+      "sourceSha256": "7abfb38727157c074a2040f34f5334d7ded536514bb4de8905e20ec9490fcc45",
+      "currentSources": 18,
+      "existingVmSources": 2,
+      "columns": [
+        "已设计",
+        "实际接入｜源码已证",
+        "独验状态",
+        "未确认与后继验收"
+      ],
+      "seams": 4,
+      "schemaJoin": "静态属性声明/CLR→OutputVariable字段存在；当前UI entries丢弃FieldId/DeclaredType/count并VariableType反解CLR，生产统一Schema消费待接",
+      "resourceBridge": "IVisionImage与新IReadOnlyImage/资源种类桥未封口；不增Region或新Manager，不冒HALCON/CV几何转换等价",
+      "dynamicCallbackDefect": "FT-G03-TREE-DYNAMIC-SELECTION-GUARD：A的Background声明回调派发未核当前node/doc/generation，会清替共享树；源码缺陷已交原ID修复",
+      "runtimeReproductionVerified": false,
+      "existingProtection": "结果lease/取消/current identity/selected及Camera flush门保留，不称全部缺失",
+      "scriptEmptyContract": "Script仍有5框架元信息行，删除最后自定义输出未证为空合同故障",
+      "filters": "Image字符串可显示分组；候选合法性须由唯一TypeRef/Plan兼容结果接管",
+      "fixedDeliveryAcceptance": false,
+      "buildOrProbe": false,
+      "productModified": false
+    },
+    "m03RectangleProjection": {
+      "entry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#m03-rectangle-projection",
+      "sourceCommit": "849d0523f7ae81c21e2791792ca92732d7bead79",
+      "baseline": "97f1326c42dbfe75fb516731be9df0ec76ed2da7",
+      "limitedMainlineMerge": "71d1dcc0",
+      "decision": "LIMITED_COMPONENT_PASS; controller accepted",
+      "acceptance": "artifacts/independent-testing/tool-framework-first-dependency/runs/m03-projection01-20261024/acceptance.json",
+      "acceptanceSha256": "5a397f5d7308678e291fc06b6b98f5cc8e8effa4242233e1396cf8e77053f834",
+      "managedFiles": 108,
+      "matureReplayPassed": 11,
+      "independentGroups": 10,
+      "independentAssertions": 180,
+      "actualMethod": "SunEyeVision.UI.Services.Rendering.ContractGeometryDisplayProjection.Project",
+      "managedPostChecks": 216,
+      "actualLoadedFixedDlls": 36,
+      "fullM03Accepted": false,
+      "clrNarrowingClosed": false,
+      "guiOrSevenInteractionsAccepted": false,
+      "finalSameReleaseAccepted": false,
+      "nativeSupplemented": false,
+      "limitations": [
+        "post-build源码/二进制绑定，不宣称pre-build捕获或确定性重建",
+        "两源码raw/gitraw双身份保留，仅各1处CRLF→LF；不删BOM、不trim末尾",
+        "ui-build04首失败日志曾覆盖，完整初始失败历史不可重建；首raw-git严格相等停点为设施假设问题，不计产品失败",
+        "plans/plan.json未知漂移未读取/修改/归属；本包纯托管，无native补入"
+      ]
+    }
+  },
+  "reverseFrameworkEvidenceTransfer": {
+    "id": "AR-001-P-framework-transfer-20261024",
+    "parent": "AR-001-P",
+    "subrequest": "AR-001-P-FRAMEWORK-CONTRACT",
+    "source": "D:/MyWork/REA逆向测试/analysis/framework-independent-review/AR-001-P-framework-transfer-20261024.json",
+    "sourceSha256": "eca82806cbdf8d9ca794a64ea658d66c573d8ec4d8910aaff5eb114a02b64b70",
+    "snapshot": "artifacts/validation/document-reference-transfers/AR-001-P-framework-transfer-20261024.json",
+    "sourceBaseline": "2db7540b0f803bb6f80fd4557d3098d9529ce559",
+    "limitedSourceClarification": "completed and acknowledged",
+    "parentState": "open",
+    "previousOwner": "01a1529c-d351-73c2-bc9c-79e92b0e7582",
+    "currentOwner": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+    "sourceFilesReviewed": 8,
+    "missingEvidence": [
+      "统一入口owned/borrowed所有权与借用lease保活合同",
+      "保留输出跨scope取消/Dispose后读取像素的实际操作回执"
+    ],
+    "notClaimed": [
+      "A dangling pointer product defect",
+      "Native VM lifetime parity",
+      "Runtime verification from static managed-array survival",
+      "Implementation/merge approval or changed priorities"
+    ],
+    "htmlReferenceCorrection": "No AR-001-P references found in current SunEye HTML; reference registry only, no new topic",
+    "suneyeApprovedQueueChanged": false,
+    "newNativeBatch": false,
+    "buildOrRuntime": false,
+    "repeatUnsupportedRequests": false
+  },
+  "relationshipTopicReview": {
+    "date": "2026-10-24",
+    "pages": [
+      "关系图解/guide-dataflow.html",
+      "关系图解/guide-execution.html"
+    ],
+    "scope": "single return link, relationship graph first, three evidence categories, direct difference analysis, secondary target design",
+    "localLinksAndAnchorsChecked": 24,
+    "staticValidation": "artifacts/validation/relationship-guide-static-validation.json",
+    "receipt": "artifacts/validation/relationship-analysis-receipt.json",
+    "generator": "artifacts/validation/focus-relationship-analysis.cjs",
+    "sourceGeneratorHook": "artifacts/validation/build-visual-document-library.cjs",
+    "originalAnchorsPreserved": true,
+    "canonicalSnapshotsConsistent": true,
+    "visualReview": false,
+    "productCodeChanged": false
+  },
+  "b01B03FiniteVersionGateSync": {
+    "date": "2026-10-24",
+    "decision": "LIMITED_VERSION_GATE_AND_TOOLBOX_PASS",
+    "sourceCommit": "6b82ec7de624bf83b1ee16d7849004181e9192f6",
+    "baseline": "97f1326c42dbfe75fb516731be9df0ec76ed2da7",
+    "mainlineSourceMerge": "aa51 (source integration only; not identity of the independently tested package)",
+    "acceptanceSha256": "5550aba31894b461eb9496af3e82a4f400228ecae6d180ced385ec8648b75b5f",
+    "evidenceManifestSha256": "49821eb75af365f5f59c3e664cc82896fe258ad02669a3cba3c0bb64d11d3506",
+    "handoffSha256": "042ea17c612e9a9f063804d41d5ca94b795df16cf9f72f83d04fbe77ebcbbc99",
+    "evidenceFiles": 53,
+    "evidenceFilesShaVerified": 53,
+    "matureReplay": 7,
+    "independentAssertions": 65,
+    "actualPrimaryTools": 22,
+    "includesNewGuid": false,
+    "wholeFrameworkAccepted": false,
+    "foundationA11Closed": false,
+    "html": {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+      "sha256": "becf38b520cb38c3acd4e4c0a1ebacc170fc43195683568289a1062f20769974",
+      "approvedBlockSha256": "b61cd2de108d5c616825bc83d4de51c05689b822ca22e4fd23d2d569754f370b",
+      "oldAnchorsPreserved": true
+    },
+    "qa": "artifacts/validation/tool-framework-contract/live-implementation-status-qa.json",
+    "checks": "375 links and 14 offline query groups passed; 3 canonical/snapshot pairs consistent",
+    "approvedPrototypeHtmlChanged": false,
+    "productCodeChanged": false,
+    "visualReview": false
+  },
+  "deferredReverseTopicReadingReview": {
+    "id": "TOPIC-READING-01",
+    "scope": "旧VM文档显示、报告身份、重复生成未验",
+    "state": "registered only; follow-up approval required before repair",
+    "repairStarted": false,
+    "existingSelfDevHtmlPassDoesNotVerifyOldVm": true
+  },
+  "g03Fixed5b2ReceiptPending": {
+    "state": "LIMITED_ADMISSION_MONITOR_AND_BINDING_COMPONENT_PASS",
+    "acceptance": "artifacts/independent-testing/tool-framework-first-dependency/runs/admission01-20261024/acceptance.json",
+    "sha256": "cbf556d0f4a6472d7014105a0b16d889962c28b633fdda6877bc128a98e517d4",
+    "formalPostReceiptPending": false,
+    "matureReplay": {
+      "Foundation": 47,
+      "SDK": 24,
+      "Script": 16
+    },
+    "ownGroups": 23,
+    "ownAssertions": 304,
+    "postChecks": 3474,
+    "positiveLoadedPaths": 108,
+    "shaReferencesVerified": 14,
+    "evidenceManifestFilesVerified": 80,
+    "motherItemPassed": false,
+    "notClosed": [
+      "production common Plan expected/actual checked property/Invocation",
+      "real Subroutine parent-child Workflow",
+      "WPF monitor rendering",
+      "formal tree consumers",
+      "final3.0 Release/performance/GUI/VS"
+    ]
+  },
+  "collaborationRolesV6": {
+    "protocolVersion": "2026-10-24/V8-role-accountability",
+    "roleIndexVersion": "2026-10-24/V8-role-accountability",
+    "inputs": [
+      {
+        "path": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
+        "sha256": "0640810663dd2d179b2d6c3366f38cb140a7886f4aac69566cec8f832bcf0fe1",
+        "snapshot": "artifacts/validation/collaboration-roles-v6/inputs/0640810663dd-protocol.md"
+      },
+      {
+        "path": "docs/collaboration/JOINT_TASK_ROLES.json",
+        "sha256": "fdff9f0d90a46ed2693e68fffcd55cb3545602bf122e32a308b5878c81bb724d",
+        "snapshot": "artifacts/validation/collaboration-roles-v6/inputs/fdff9f0d90a4-roles.json"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/vm-evidence-handoff-20261024/index.json",
+        "sha256": "727db3e1604ee7de6ef07c2d63b2c3e2336449bceb1edaf8f597be6bae6a7799",
+        "snapshot": "artifacts/validation/collaboration-roles-v6/inputs/727db3e1604e-handoff.json"
+      }
+    ],
+    "source": "artifacts/validation/home-maintenance-content.json",
+    "activeRoles": 8,
+    "retiringRoles": [
+      {
+        "title": "项目成员｜VM插件逆向",
+        "threadId": "01a1529c-d351-73c2-bc9c-79e92b0e7582",
+        "status": "handoff-accepted-thread-archived"
+      },
+      {
+        "title": "项目成员｜逆向插件集成",
+        "threadId": "01a160f7-5d5f-7e50-a52e-76ee63f33491",
+        "status": "handoff-accepted-thread-archived"
+      },
+      {
+        "title": "项目成员｜逆向文档维护",
+        "threadId": "01a16169-2c2b-7001-8dda-7bc623dd98bf",
+        "status": "handoff-accepted-thread-archived"
+      }
+    ],
+    "vmSingleEntry": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+    "adoptionStatus": "V8-issued-awaiting-role-acknowledgements",
+    "sourceOnly": false,
+    "outputs": [
+      {
+        "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/维护记录/文档维护.html",
+        "sha256": "50ecde7263f5669a66db9566487015ddee3a71fc5f57ffcf2cb5321ecd435008",
+        "oldAnchorsPreserved": true
+      },
+      {
+        "path": "artifacts/validation/document-library-source-snapshots/document-maintenance.html",
+        "sha256": "50ecde7263f5669a66db9566487015ddee3a71fc5f57ffcf2cb5321ecd435008",
+        "oldAnchorsPreserved": true
+      }
+    ],
+    "fragmentSha256": "c25caf895dfda3c6d569780d6c6bd26f325feb8f987b537dd9221f25b0ad9994",
+    "newHtmlPages": 0,
+    "productChanged": false,
+    "oldTasksClosedByRename": false,
+    "handoffVerified": true,
+    "retiredThreadsArchived": true,
+    "browserVisualReview": false,
+    "currentProtocol": "V8 sole current",
+    "historyThroughV7OnlyForTraceability": true,
+    "documentationAdoptedWithoutConflict": true,
+    "sourceExplanation": "Current eight-role result/deliverable/boundary matrix rendered from V8 protocol; stable legacy role anchor retained; no new role or batch"
+  },
+  "implementationEtaSnapshot": {
+    "asOf": "2026-10-24 fc080正式有限独验回执（北京时间）",
+    "entry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#implementation-eta-snapshot",
+    "factSource": "artifacts/validation/tool-framework-contract/live-implementation-status.json",
+    "sourceSha256": "395ec51c33a707775c7ba6ef98100bc89773fa8be73b920543aacef6826e7c5c",
+    "htmlSha256": "a0bb236cda4dfa213fa2295e03b5457ba4c95dbcea97d75885dd74882b69615a",
+    "scope": "next binding-production-03 fixed package only",
+    "wholePackageEtaKnown": false,
+    "confidence": "中低",
+    "independentEtaKnown": false,
+    "productCodeChanged": false,
+    "acceptedPrototypeHtmlChanged": false,
+    "visualReview": false,
+    "independentConditionalEffortKnown": true,
+    "schedulingAuthority": "DELIVERY_COORDINATION_STATUS.deliveryEstimate",
+    "g03FormalReceiptNowReceived": true,
+    "nextFixedDelivered": true,
+    "completedAt": "2026-10-24 12:11",
+    "independentAccepted": false,
+    "oldWaitingWindowSuperseded": true,
+    "nextReestimate": "协调集中重估：13:30，或数值修复fixed / 实际主窗图形身份联动结果先到者",
+    "independentConditionalStageEtasFromActualReply": true,
+    "independentReceptionSha": "BF959382E6902513705412B0B45027EC14B7FBF39E1079BB6E92779DBB3D3E60",
+    "previous14to16UnconditionalEstimateWithdrawn": true,
+    "priorityNumericClosure": {
+      "sourceCommit": "fc08012df94f89e03288929ec43bf2e87aec0aab",
+      "state": "LIMITED_FIXED_INDEPENDENTLY_VERIFIED",
+      "root": "artifacts/validation/parallel-worktrees/m03-explicit-conversion-closure/artifacts/validation/m03-explicit-conversion-closure/",
+      "sourceCount": 1409,
+      "binaryCount": 135,
+      "receiptSha256": "cbe9bb1446b7e02cc02a51c652146a1a3fd4cdf8aca509e15d68b4a6eaa96f4c",
+      "sourceFinalSha256": "b3a61fe7ca5df8c89b3b8d4bc1c5961da3676cc93ec5b7d6bf452c81788cb56c",
+      "binaryManifestSha256": "fdc565ec3dd7a5718b13e28edab6a492ffb21c101424c07e5d11cf17d34f8597",
+      "freshMaturePassed": 8,
+      "skipped": 0,
+      "previous1345to1415DeliveryEstimateFulfilledEarly": true,
+      "independentPrepared": "17 boundaries each sync/async plus mature8",
+      "independentTiming": "as of13:20,20–40min approximately13:40–14:00 finite conclusion, conditional on facilities",
+      "independentAccepted": true,
+      "notWholeDeliveryEstimate": true,
+      "independentReceiveSha256": "9b82f3358862c186eeb2d7cc93966fafc08eff42a3bca6ed1f2484ece06ca234",
+      "receivedFileCount": 1544,
+      "receivedBytes": 970788975,
+      "receivedDifferences": 0,
+      "defectClosed": "FT-M03-CLR-OPERATION-PROPAGATION-01",
+      "finalAcceptanceSha256": "ac2e28a0a1ad116538f69b6855a191c9449a3b7b0697a55dedc031451cde71cc",
+      "finalEvidenceManifestSha256": "e4642b0e10ee7d948b5c24ece71a6816907706a609852a0faea1002d99f5680d",
+      "finalHandoffSha256": "89df096bf8e8f4d15d17d2e9c6268b530fc60fcf1773e55d2329d4b8e37fc9d8",
+      "maturePassed": 8,
+      "ownGroups": 34,
+      "assertions": 218,
+      "manifestChecks": 3088,
+      "verifiedNonPlatformLoads": 30,
+      "previous1340to1400FiniteEstimateFulfilledEarly": true,
+      "wholeProductAccepted": false
+    }
+  },
+  "admissionComponentSync": {
+    "acceptance": "artifacts/independent-testing/tool-framework-first-dependency/runs/admission01-20261024/acceptance.json",
+    "sha256": "cbf556d0f4a6472d7014105a0b16d889962c28b633fdda6877bc128a98e517d4",
+    "decision": "LIMITED_ADMISSION_MONITOR_AND_BINDING_COMPONENT_PASS",
+    "commit": "5b2bed791b9823fb26db0ca7d996f9776106888e",
+    "contract": "SDK ToolContract 2.1; Foundation 4.0",
+    "referencedShaVerified": 14,
+    "evidenceManifestVerified": 80,
+    "finiteCounts": {
+      "ownGroups": 23,
+      "currentFiniteBlocked": 0,
+      "matureDeveloperCases": 87,
+      "matureFailed": 0,
+      "currentProductFailures": 0,
+      "matureSkipped": 0,
+      "ownAssertions": 304
+    },
+    "postIdentityChecks": 3474,
+    "loadedPaths": 108,
+    "wholeGoalComplete": false,
+    "productionMotherItemClosed": false,
+    "html": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+    "qaLinks": 386,
+    "qaQueryGroups": 14,
+    "acceptedPrototypeHtmlChanged": false,
+    "productCodeChanged": false,
+    "visualReview": false
+  },
+  "resultTreeScopeClarification": {
+    "date": "2026-10-24",
+    "entry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#implementation-tree-projections",
+    "source": "existing live-implementation-status.json.treeComparison.resultTreeScope",
+    "ids": [
+      "FT-J02",
+      "FT-J03",
+      "FT-L01"
+    ],
+    "schemaAndSpecifiedRunProjectionRequiredNow": true,
+    "oldBlobGroupingIsFinalParity": false,
+    "stringJoinAndTimingGuardOnlyLimited": true,
+    "blobLayoutArrayExpansionAndLinkageFullyVerified": false,
+    "noNewInterfaceOrTopic": true,
+    "frozenReviewBlockUnchanged": "b61cd2de108d5c616825bc83d4de51c05689b822ca22e4fd23d2d569754f370b",
+    "htmlSha256": "22b97a5f2216d6ae55ecc62f80bc6bea0f27a6e365b31975297915449bd50557",
+    "qaLinks": 394,
+    "queryGroups": 14,
+    "visualReview": false,
+    "productCodeChanged": false,
+    "sourceSha256": "17a6ec23efcacfcda44f1fb4437ef73e611b87c740f771fdf5069d9df4fa2a36",
+    "explicitFieldElementMappingRequired": true,
+    "groupingOnlyReadingConfiguration": true,
+    "blobCurrentScalarRecordSequence0_1_NAndMultiRunRequired": true,
+    "emptyContract": "0641正式有限独验修复通过；仅关闭FT-G03-J03-M01-EMPTY-CONTRACT-01，整公共树仍OPEN",
+    "publicProjectionWholeItemClosed": false
+  },
+  "bindingInteractionScopeClarification": {
+    "date": "2026-10-24",
+    "entry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#implementation-tree-projections",
+    "sourceSha256": "79b499b85f545901a733c80f6ebf06b7eaa3b59967b84a0a02d8a8a79c0006d9",
+    "htmlSha256": "5b2b32d3548280e356ea8ced6ad2bee103646a034618ad22950742a916318854",
+    "bottomContractUnchanged": true,
+    "withdrawnSideSketchNotApprovedUi": true,
+    "relateIndexDoesNotProveInteraction": true,
+    "pickerSearchDoesNotProveParamBindingSearch": true,
+    "flowInputsRequireEntryEvidence": true,
+    "sixPointVmEvidence": "finite static delivery received with caller/provenance limits; runtime unverified",
+    "existingEvidenceDiagramsPreserved": true,
+    "frozenReviewUnchanged": "b61cd2de108d5c616825bc83d4de51c05689b822ca22e4fd23d2d569754f370b",
+    "noNewTopic": true,
+    "productCodeChanged": false,
+    "visualReview": false,
+    "deliverySha256": "d4fcc1c761966ae0606d5be75f16defc9dd8086a71ae33435a774d9e629880d0",
+    "sourceReportSha256": "bd78812ec1b07172e0a3fd8efe9d4aa3ebd1252e6896cb908fde164252991325",
+    "sourceFilesHashVerified": 35,
+    "installationOriginalHashVerified": 5,
+    "exactBinaryToSourceMappingIncompleteFor": 4,
+    "currentSelfDevUiReviewed": false,
+    "runtimeVerified": false,
+    "qaLinks": 412,
+    "queryGroups": 14
+  },
+  "production03DocumentationSync": {
+    "frozenAt": "2026-10-24T12:11:33.4279081+08:00",
+    "commit": "a45f8d6ae59064faaa66ed168408d3d2e282259c",
+    "contract": "ToolContract 3.0; Foundation 4.0",
+    "sourceCount": 1445,
+    "binaryCount": 777,
+    "developmentChecks": [
+      {
+        "name": "SDK",
+        "passed": 38
+      },
+      {
+        "name": "Workflow",
+        "passed": 11
+      },
+      {
+        "name": "Script",
+        "passed": 16
+      }
+    ],
+    "foundation": 49,
+    "independentAccepted": false,
+    "receiptSha256": "170e3ae34c6f55c3dc341a38b79c78659137a0a2e05541a5f6078a716f6ebc39",
+    "toolboxReportedCommit": "0641c98bfaa4989b675d6e5077d47e09d3477d95",
+    "sourceSha256": "395ec51c33a707775c7ba6ef98100bc89773fa8be73b920543aacef6826e7c5c",
+    "html": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+    "htmlSha256": "a0bb236cda4dfa213fa2295e03b5457ba4c95dbcea97d75885dd74882b69615a",
+    "receipt": "artifacts/validation/tool-framework-contract/live-implementation-status-receipt.json",
+    "qaLinks": 627,
+    "queryGroups": 16,
+    "guardFixedReceiptSha256": "3c3370a44402565a68d5738bf85958b8438aba57933fe8e23ec339a7e51c2a7e",
+    "oldTree16Pass1FailPreserved": true,
+    "bindingStaticSixItemsAndResultTreeScopePreserved": true,
+    "frozenReviewUnchanged": "b61cd2de108d5c616825bc83d4de51c05689b822ca22e4fd23d2d569754f370b",
+    "acceptedPrototypeHtmlChanged": false,
+    "productCodeChanged": false,
+    "visualReview": false,
+    "readerCommitted": "e029f9b851b8498580c035ff9e371abb7135a129",
+    "reader51OnlyDevelopment": true,
+    "finalReleaseIdentityPending": true,
+    "binaryEmbeddedCommit": "0641c98bfaa4989b675d6e5077d47e09d3477d95",
+    "sourceBinding": "a45 post-build actual workspace bytes; not pre-build clean-a45",
+    "independentMature": {
+      "passed": 114,
+      "SDK": 38,
+      "Script": 16,
+      "Workflow": 11,
+      "Foundation": 49,
+      "reportShasVerified": 4,
+      "naturalExitReceiptsVerified": 4,
+      "finalAcceptance": false
+    },
+    "directExplicitConversion": {
+      "state": "existing approved contract implementation defect; repair required without approval wait",
+      "input": "12d",
+      "actualClr": "NumericParameters.NarrowInt: System.Int32",
+      "conversion": "Float64ToInt64Checked",
+      "expected": 12,
+      "path": "ToSetting preserves Conversion; RuntimeParameterSnapshotResolver fallback Resolve->ParameterResolver.ConvertValue drops binding.Conversion->BindingClrAdapter.ConvertNumeric defaults Automatic",
+      "scope": "directSDK/constant path; pure BindingPlan mature pass does not cover this ingress",
+      "changePositiveExpectedToRejection": false,
+      "otherNegativeExceptionClassificationPending": false,
+      "formalDefectReceiptPending": false,
+      "all16GroupsAreProductDefects": false,
+      "repairPassed": true,
+      "stalePersistedHint": "System.Int64 is not actual property authority",
+      "controllerDecision": "Same Conversion through debug/directSDK/Workflow and array elements; checked12d->int succeeds; Automatic refusal, fractional and overflow remain refusal",
+      "ownGroupsPassed": 19,
+      "ownPassedBreakdown": {
+        "workflow": 9,
+        "root": 1,
+        "numericPositive": 9
+      },
+      "negativeFixtureCasesToRepair": 0,
+      "negativeFixtureCasesAreProductFailures": false,
+      "constantPositiveDefects": 1,
+      "approvalWait": false,
+      "newRules": false,
+      "developerAttempt01": {
+        "passed": 6,
+        "failed": 2,
+        "failuresArePositives": true,
+        "report": "artifacts/validation/tool-framework-contract/result-bridge-01/results/explicit-conversion01.trx",
+        "alreadyPassed": "scalar checked12/Automatic refusal/fractional overflow unknownenum refusal",
+        "remaining": "Automatic-only prevalidation before singleton and sequence explicit recursive conversion",
+        "sourceFixInProgress": true,
+        "correctedFixedAccepted": false
+      },
+      "negativeFixtureCasesVerified": 15,
+      "negativeIndependentAssertions": 75,
+      "negativeExecutionPid": 29520,
+      "negativeReportSha256": "3cc20837c9cf65b220ad80631e6f405df9494b1e86431779a2e2a6c680a5e940",
+      "originalRaw19Pass16FailedPreserved": true,
+      "formalDefectId": "FT-M03-CLR-OPERATION-PROPAGATION-01",
+      "formalDefectStatus": "LIMITED_FIXED_INDEPENDENTLY_VERIFIED",
+      "failedRoutes": [
+        "scalar 12d to Int32 with exact Int32 hint",
+        "scalar 12d to Int32 with stale Int64 hint",
+        "double[12,13] to Int32[]",
+        "scalar 12d to singleton Int32[]",
+        "singleton double[12] to Int32"
+      ],
+      "pairedActualInt12Control": true,
+      "bodyCallsOnFailure": 0,
+      "activeRunsOnFailure": 0,
+      "originalConfigUnchanged": true,
+      "workflowPlanPathCalledFailure": false,
+      "developerAttempt02": {
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "reportSha256": "8f319946bb45d7baa07b9d57cd42ebbdab82c87e4a7f17d2024020ae5cfbb74a"
+      },
+      "repairPassLevel": "finite new fixed independent acceptance",
+      "fixedIndependentAccepted": true,
+      "correctedFixedDelivered": true,
+      "correctedFixedSource": "fc08012df94f89e03288929ec43bf2e87aec0aab",
+      "defectClosed": true,
+      "resolutionCommit": "fc08012df94f89e03288929ec43bf2e87aec0aab",
+      "independentMaturePassed": 8,
+      "independentOwnGroups": 34,
+      "independentOwnAssertions": 218,
+      "wholeWorkflowReadinessVerified": false,
+      "wholeGoalComplete": false
+    },
+    "ownInterim": {
+      "uniqueOwnLogicalGroups": 35,
+      "ownPassed": 34,
+      "confirmedProductDefects": 1,
+      "diagnosticFailedRoutes": 5,
+      "original19And15NegativeEvidenceRetained": true,
+      "formalDecision": "FAILED_ONE_PRODUCT_DEFECT_AWAITING_NEW_FIXED",
+      "correctedFixedAccepted": false
+    },
+    "explicitConversionDeveloperAttempt01": {
+      "passed": 6,
+      "failedPositive": 2,
+      "sourceSnapshot": {
+        "key": "explicitConversionDevelopment01",
+        "path": "artifacts/validation/tool-framework-contract/result-bridge-01/results/explicit-conversion01.trx",
+        "sha256": "7d6e8d261d8c8e1776af6df5a47133c063765ee30b395456c4a341668715afc8",
+        "snapshotPath": "artifacts/validation/tool-framework-contract/live-status-evidence-20261024/explicitConversionDevelopment01-7d6e8d261d8c.trx"
+      },
+      "numericGateClosed": false,
+      "fixedIndependentAccepted": false
+    },
+    "independentNegativeRefusals": {
+      "groups": 15,
+      "assertions": 75,
+      "passed": true,
+      "pid": 29520,
+      "naturalExit": true,
+      "reportSha256": "3cc20837c9cf65b220ad80631e6f405df9494b1e86431779a2e2a6c680a5e940",
+      "finalNumericGateAccepted": false
+    },
+    "explicitConversionDeveloperAttempt02": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "reportSha256": "8f319946bb45d7baa07b9d57cd42ebbdab82c87e4a7f17d2024020ae5cfbb74a",
+      "attempt01_6pass2failPreserved": true,
+      "formalDefectId": "FT-M03-CLR-OPERATION-PROPAGATION-01",
+      "oldA45FiveRoutesFailureConfirmed": true,
+      "newFixedIndependentAccepted": false
+    },
+    "formalAcceptance": {
+      "decision": "FAILED_ONE_PRODUCT_DEFECT_AWAITING_NEW_FIXED",
+      "acceptanceSha256": "96d9608df67f36c72109d7fece38b2fff573b3d828fc8413ef75e66cfd546291",
+      "handoffSha256": "280446827e16b77f1f33a4156d46f0a916dc521bcfe83b5fcf58c91179bfc4b7",
+      "evidenceManifestSha256": "169c116365c6d435dd7ffe7fdf905064a1219d6005fcd5760af65197197d0ddd",
+      "evidenceFilesVerified": 78,
+      "maturePassed": 114,
+      "uniqueOwnLogicalGroups": 35,
+      "ownPassed": 34,
+      "productDefects": 1,
+      "diagnosticRoutes": 5,
+      "identity": {
+        "manifestChecks": 4444,
+        "differences": 0,
+        "sourceFilesCompared": 32,
+        "sourceByteIdentical": 15,
+        "sourceOnlyCRLFLF": 17,
+        "verifiedNonPlatformLoads": 140,
+        "unexpectedLoads": 0,
+        "ownedExtraFiles": 0,
+        "all13TracesHaveExitSnapshot": true,
+        "all7OwnedLaunchesNaturalExit": true,
+        "currentOriginalScriptHostDebugRootException": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\tool-framework-contract\\binding-production-03\\build\\app"
+      },
+      "wholeProductAccepted": false,
+      "formalReceiptPublished": true,
+      "independentAccepted": false
+    },
+    "foundationRemainingFive": "A03 partially verified with confirmed product failure; A10 limited pass; A09/A11/whole A12 remain open; d3a7/6b82/a45 identities separate",
+    "fc080CorrectedPackage": {
+      "sourceCommit": "fc08012df94f89e03288929ec43bf2e87aec0aab",
+      "state": "LIMITED_FIXED_INDEPENDENTLY_VERIFIED",
+      "root": "artifacts/validation/parallel-worktrees/m03-explicit-conversion-closure/artifacts/validation/m03-explicit-conversion-closure/",
+      "sourceCount": 1409,
+      "binaryCount": 135,
+      "receiptSha256": "cbe9bb1446b7e02cc02a51c652146a1a3fd4cdf8aca509e15d68b4a6eaa96f4c",
+      "sourceFinalSha256": "b3a61fe7ca5df8c89b3b8d4bc1c5961da3676cc93ec5b7d6bf452c81788cb56c",
+      "binaryManifestSha256": "fdc565ec3dd7a5718b13e28edab6a492ffb21c101424c07e5d11cf17d34f8597",
+      "freshMaturePassed": 8,
+      "skipped": 0,
+      "previous1345to1415DeliveryEstimateFulfilledEarly": true,
+      "independentPrepared": "17 boundaries each sync/async plus mature8",
+      "independentTiming": "as of13:20,20–40min approximately13:40–14:00 finite conclusion, conditional on facilities",
+      "independentAccepted": true,
+      "notWholeDeliveryEstimate": true,
+      "independentReceiveSha256": "9b82f3358862c186eeb2d7cc93966fafc08eff42a3bca6ed1f2484ece06ca234",
+      "receivedFileCount": 1544,
+      "receivedBytes": 970788975,
+      "receivedDifferences": 0,
+      "defectClosed": "FT-M03-CLR-OPERATION-PROPAGATION-01",
+      "finalAcceptanceSha256": "ac2e28a0a1ad116538f69b6855a191c9449a3b7b0697a55dedc031451cde71cc",
+      "finalEvidenceManifestSha256": "e4642b0e10ee7d948b5c24ece71a6816907706a609852a0faea1002d99f5680d",
+      "finalHandoffSha256": "89df096bf8e8f4d15d17d2e9c6268b530fc60fcf1773e55d2329d4b8e37fc9d8",
+      "maturePassed": 8,
+      "ownGroups": 34,
+      "assertions": 218,
+      "manifestChecks": 3088,
+      "verifiedNonPlatformLoads": 30,
+      "previous1340to1400FiniteEstimateFulfilledEarly": true,
+      "wholeProductAccepted": false
+    },
+    "fc080FiniteAcceptance": {
+      "decision": "LIMITED_FIXED_INDEPENDENTLY_VERIFIED",
+      "defectClosed": "FT-M03-CLR-OPERATION-PROPAGATION-01",
+      "sourceCommit": "fc08012df94f89e03288929ec43bf2e87aec0aab",
+      "passed": {
+        "matureCases": 8,
+        "ownGroups": 34,
+        "ownAssertions": 218,
+        "manifestChecks": 3088,
+        "fileDifferences": 0,
+        "extraFiles": 0,
+        "verifiedNonPlatformLoads": 30,
+        "unexpectedLoads": 0,
+        "traceFilesWithExitSnapshot": 4,
+        "changedProductAndTestSourcesVsCommit": 5,
+        "sourceOnlyCRLFLF": 5
+      },
+      "acceptanceSha256": "ac2e28a0a1ad116538f69b6855a191c9449a3b7b0697a55dedc031451cde71cc",
+      "evidenceManifestSha256": "e4642b0e10ee7d948b5c24ece71a6816907706a609852a0faea1002d99f5680d",
+      "handoffSha256": "89df096bf8e8f4d15d17d2e9c6268b530fc60fcf1773e55d2329d4b8e37fc9d8",
+      "evidenceFilesShaVerified": 27,
+      "oldA45FailedUnchanged": true,
+      "wholeGoalComplete": false
+    },
+    "a45FailedReceiptUnchanged": true
+  },
+  "finalUnifiedManualPreparation": {
+    "entry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#final-unified-manual-validation",
+    "source": "live-implementation-status.json.finalUnifiedManual",
+    "directions": 5,
+    "perDirectionFields": [
+      "before",
+      "current",
+      "steps",
+      "expected",
+      "automatic evidence",
+      "pending",
+      "user result"
+    ],
+    "finalReleaseIdentity": null,
+    "currentDiagnosticIdentitiesNotMerged": true,
+    "userAskedToStartNow": false,
+    "userResultsReturned": false,
+    "releaseReady": false,
+    "approvedPrototypeHtmlChanged": false,
+    "productCodeChanged": false,
+    "visualReview": false
+  },
+  "publicResultDevelopmentSync": {
+    "asOf": "2026-10-24 12:24 Asia/Shanghai",
+    "presentation": {
+      "child": "6028822d966d0fddb2376667319f4b9ff7930e9d",
+      "integration": "d62156ff",
+      "developerPassed": 17,
+      "previousModelEtaFulfilled": true
+    },
+    "bridge": {
+      "sdkDeveloperPassed": 2,
+      "workflowDeveloperPassed": 12,
+      "trxShaVerified": true,
+      "independentAccepted": false
+    },
+    "guard": {
+      "matureObservedPassed": 1,
+      "ownObservedPassed": 3,
+      "initialAuditFalsePreserved": true,
+      "identityDispositionPass": true,
+      "unusedVariantLoads": 0,
+      "actualNonPlatformPathsMatched": 66,
+      "sourceProductDrift": false,
+      "formalAcceptancePublished": true,
+      "decision": "LIMITED_DEFECT_FIXED_INDEPENDENTLY_VERIFIED",
+      "defectClosed": "FT-G03-J03-M01-EMPTY-CONTRACT-01",
+      "acceptanceSha256": "18d031c8803400980c0fcac3f6c11c3450c6ffa2e302609159379f748c29bc9c",
+      "manifestSha256": "f3ab9063b3a96ad02760df6d7751ea0813085c3d61a0cfcaeeeb3a6018953870",
+      "handoffSha256": "68787c7cacef8dc5eb8a90e74fea2952b1d04498da2d0696c34f61176f60a222",
+      "evidenceFilesVerified": 164,
+      "maturePassed": 1,
+      "ownPassed": 3,
+      "oldFailureAndInitialFalsePreserved": true,
+      "original12And4NotRerun": true,
+      "publicTreeWholeItemClosed": false,
+      "wholeReleaseAccepted": false
+    },
+    "wholeThreeProjectionAccepted": false,
+    "actualBlobAndControlsPending": true,
+    "sourceSha256": "525c7662218426b8a69d5c084248a91d348f3325d84120cb268241ed26b43854",
+    "htmlSha256": "6f78dc23eb6c0644765c17c13bb2873678140df83d1f0a7aff9375df9d0d79fa",
+    "qaLinks": 610,
+    "queryGroups": 16,
+    "receipt": "artifacts/validation/tool-framework-contract/live-implementation-status-receipt.json",
+    "frozenReviewUnchanged": "b61cd2de108d5c616825bc83d4de51c05689b822ca22e4fd23d2d569754f370b",
+    "productCodeChanged": false,
+    "visualReview": false,
+    "blobNative04": {
+      "developerPassed": 4,
+      "failed": 0,
+      "zeroExpectationPreserved": true,
+      "history01to03Preserved": true,
+      "newFixedIndependentlyAccepted": false
+    },
+    "presenterHost": {
+      "source": "318d9a75",
+      "integration": "07b0413f",
+      "developerUiPassed": 12,
+      "fullGuiAccepted": false
+    },
+    "host01": {
+      "developerPassed": 1,
+      "sha256": "6f63413071c3a853282ca1a16fd2dc877e2e19183439e9cd5de0ed7406a939b7",
+      "wpfRenderingP95Verified": false
+    },
+    "blob05": {
+      "developerPassed": 4,
+      "reportSha256": "33a7662f834c0341867bfbd057f5511429f66917bd5ce5920526ef07005f8ad5",
+      "wholeBridgeIndependentAccepted": false,
+      "graphicsMappingMatrixAccepted": false
+    },
+    "validationWindows": {
+      "newOwnedFullReleaseAndActualProgram": "preparing, no success claim",
+      "parallelWithFc080PureSdkAllowed": true,
+      "formalPerformanceWindowStarted": false,
+      "formalPerformanceNeeds": "CPU / disk / GPU exclusive window",
+      "fixedRootsWritten": false,
+      "host01Proves": "actual MainVM paging and lease only, not WPF rendering P95",
+      "equalAreaBlobProves": "ID belongs-set only; no proven mismatch and no proven reordered contour pairing",
+      "mappingMatrixRequired": "unequal area/position; sorting/filter changes actual order; contour geometry to recordEID/center/bounds; duplicate/omission; selection locate identity",
+      "newBatch": false
+    },
+    "formalCostOriginalShaRecheck": {
+      "final": "43f926425320292bf06a9edd210012408bab2e04dff36434e6354d9e8f76fd4a",
+      "manifest": "d857f8936544838c99271e58abc864499b6d4c937ea0e71890a0c420fbeeec2d",
+      "unchanged": true,
+      "newPerformancePassClaim": false
+    },
+    "bridgeFiniteAcceptance": {
+      "sha256": "0eda4e83b9959ff5e7acffe74a22f26e1a581a2e47525978f651fb15b00f0b2b",
+      "mature": 69,
+      "ownGroups": 9,
+      "assertions": 398,
+      "postChecks": 4760,
+      "verifiedLoads": 195,
+      "originalMotherItemsClosed": false
+    }
+  },
+  "guardFiniteClosureSync": {
+    "decision": "LIMITED_DEFECT_FIXED_INDEPENDENTLY_VERIFIED",
+    "defectClosed": "FT-G03-J03-M01-EMPTY-CONTRACT-01",
+    "acceptanceSha256": "18d031c8803400980c0fcac3f6c11c3450c6ffa2e302609159379f748c29bc9c",
+    "manifestSha256": "f3ab9063b3a96ad02760df6d7751ea0813085c3d61a0cfcaeeeb3a6018953870",
+    "handoffSha256": "68787c7cacef8dc5eb8a90e74fea2952b1d04498da2d0696c34f61176f60a222",
+    "evidenceFilesVerified": 164,
+    "maturePassed": 1,
+    "ownPassed": 3,
+    "oldFailureAndInitialFalsePreserved": true,
+    "original12And4NotRerun": true,
+    "publicTreeWholeItemClosed": false,
+    "wholeReleaseAccepted": false,
+    "receipt": "artifacts/validation/tool-framework-contract/live-implementation-status-receipt.json",
+    "htmlSha256": "d8d3e9513941dbab04411c254b69c310e0e5f0ee2c0ab9d3a8712692c57d9206",
+    "qaLinks": 515,
+    "queryGroups": 16,
+    "productCodeChanged": false,
+    "visualReview": false
+  },
+  "blobRealEntryFailureSync": {
+    "asOf": "2026-10-24 12:42 coordinator report plus later TRX static read",
+    "counts": {
+      "blob-native01": {
+        "passed": 0,
+        "failed": 3
+      },
+      "blob-native02": {
+        "passed": 0,
+        "failed": 3
+      },
+      "readers02": {
+        "passed": 2,
+        "failed": 0
+      },
+      "workflow-presentation02": {
+        "passed": 29,
+        "failed": 0
+      }
+    },
+    "firstCause": "Context image did not reach legacy AlgorithmNode fallback",
+    "secondCause": "coordinator confirmed: old manual clone lost ValueDeclaration/AllowsNull metadata; CopyDeclaration/Registry now preserve it",
+    "newProductWipOutsideA45": true,
+    "repairPass": true,
+    "readerSource": "28b98ffd758e9a1eb0db03f424fe07ad1533e3b6",
+    "readerResultsAreOnlyDevelopment": true,
+    "wholeThreeProjectionClosed": false,
+    "latestAsOf": "2026-10-24 12:47 coordinator verified",
+    "latestDevelopment": {
+      "passed": 4,
+      "failed": 0,
+      "cases": "actual native Workflow0/1/3 plus explicit missing image source refuses fallback",
+      "reportSha256": "6e5844bd2d288aaa1c28a56f258b9409ee74f53c5828f67c089ba1090163a7c1"
+    },
+    "thirdFailure": "expected0 actual1 from empty region counted as Blob; original0 expectation retained; area<=0 excluded",
+    "repairPassLevel": "development only; new independent fixed delivery not yet accepted",
+    "independentAccepted": false,
+    "rootInputImageSuccessClaimedAtFirstFailure": false,
+    "actualWorkflowRootImageDeveloperCasesPassed": true,
+    "receipt": "artifacts/validation/tool-framework-contract/live-implementation-status-receipt.json",
+    "htmlSha256": "84a20d1699d1bcd8df6b794e3be5fe1c126e1c410888bdc5f4de02153f15b468",
+    "qaLinks": 547,
+    "queryGroups": 16,
+    "productCodeChanged": false,
+    "visualReview": false
+  },
+  "homeDeliveryOverview": {
+    "entry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html#delivery-home-overview",
+    "countsAuthority": "docs/collaboration/DELIVERY_LEDGER.json",
+    "ledgerSha256": "e7b0c2aa9bb713e388a4782de5153bc8504b3038c7bf810fdb94d16bc623ef02",
+    "scope": {
+      "original": 48,
+      "included": 47,
+      "adaptation": 41,
+      "regression": 6,
+      "excluded": 1,
+      "excludedId": "FT-O02"
+    },
+    "counts": {
+      "accepted": 0,
+      "implemented_pending": 0,
+      "independent_testing": 0,
+      "implementing": 39,
+      "not_started": 0,
+      "blocked": 0,
+      "pending": 8,
+      "awaiting_acceptance": 0
+    },
+    "countsAreOriginalWholeItems": true,
+    "implementationPercentInvented": false,
+    "implementationDoesNotMeanParallel": true,
+    "fiveDirectionsShareOriginalDenominator": true,
+    "originalIdRows": 47,
+    "sourceScheduleActionsVisible": true,
+    "publishedHome": {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/index.html",
+      "sha256": "c3cf21320067405b25b68b8d711d446373ba3178d019f716eeea2750ed40fa1a",
+      "oldAnchorsPreserved": true
+    },
+    "generator": "artifacts/validation/build-delivery-home-overview.cjs",
+    "qa": "artifacts/validation/delivery-home-overview-qa.json",
+    "homeLinks": 224,
+    "topicLinks": 707,
+    "offlineQueryGroups": 17,
+    "pipelineHooks": [
+      "interface-document-navigation.cjs",
+      "normalize-document-home.cjs",
+      "tool-framework-contract/build-live-implementation-status.cjs"
+    ],
+    "noNewLedger": true,
+    "productCodeChanged": false,
+    "browserVisualReview": false,
+    "V8Navigation": true,
+    "ledgerSnapshot": "artifacts/validation/home-delivery-overview-inputs/e7b0c2aa9bb713e388a4782de5153bc8504b3038c7bf810fdb94d16bc623ef02-DELIVERY_LEDGER.json",
+    "latestReceiptPath": "artifacts/validation/home-delivery-overview-receipts/20261024-1724-delivery-overview-rewrite.json",
+    "latestReceiptSha256": "19c22ef2bb46bec5f5c1969b55c362bbc5a8b0e460d0628cd4d553a4d37f8339",
+    "delta": "FT-F03 and FT-N02 unknown->implementing only; no completed or accepted original item added",
+    "sourceCountsNotGuessed": true,
+    "implementationIsNotParallelCount": true,
+    "phaseModel": {
+      "implementation": {
+        "notStarted": 0,
+        "implementing": 39,
+        "implementedAwaitingTest": 0,
+        "statusReviewPending": 8
+      },
+      "testing": {
+        "notEnteredWholeItemTesting": 39,
+        "wholeItemTesting": 0,
+        "wholeItemTestPassed": 0,
+        "statusReviewPending": 8
+      },
+      "acceptance": {
+        "signedOff": 0,
+        "notYetSignedOff": 47
+      },
+      "countsArePerOriginalId": true,
+      "crossPhaseCountsAreNotAdditive": true
+    },
+    "latestFiniteResult": {
+      "decision": "FINITE_EDITOR_COMPONENT_PASS_COMPLETE_EDITOR_USAGE_CHAIN_OPEN",
+      "completedAt": "2026-10-24T16:26:27.8417654+08:00",
+      "evidence": [
+        {
+          "path": "artifacts/independent-testing/tool-framework-first-dependency/runs/editor-dd6-20261024/acceptance.json",
+          "sha256": "7fc7a046d36a065cd2b2488612742a5f7709247177b94635cf7e0a2b0e99be86",
+          "kind": "正式有限独立验收原件"
+        },
+        {
+          "path": "artifacts/independent-testing/tool-framework-first-dependency/runs/editor-dd6-20261024/evidence-manifest.json",
+          "sha256": "4dbe6ff5b6c6e3c641c238f288accc57e496c2a5ce67a35b62a72241e808c9fe",
+          "kind": "74项证据清单"
+        }
+      ],
+      "wholeOriginalIdsAccepted": [],
+      "wholeGoalComplete": false,
+      "originalFailuresRetained": [
+        "Original E06 pending tool parameter omitted during unified variable save",
+        "Original E07 invalid tool parameter did not block main save/file rewrite"
+      ]
+    },
+    "deliveryDetail": {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/交付总览.html",
+      "sha256": "67f15c9e0749f52e323eff002e23e4c184ce34c7d0b93b7b494678e51c3c5a35",
+      "snapshotPath": "artifacts/validation/document-library-source-snapshots/交付总览.html",
+      "snapshotSha256": "67f15c9e0749f52e323eff002e23e4c184ce34c7d0b93b7b494678e51c3c5a35"
+    },
+    "rewrite": {
+      "scope": "范围→实施/测试/验收→两条实际工作链→后续主题与估时；独立报告结果和整项验收不混写",
+      "stageCardsIndependent": true,
+      "all47UsageMapped": true,
+      "originalRows": 47,
+      "oldAnchorsPreserved": true,
+      "productChanged": false,
+      "browserVisualReview": false
+    },
+    "latestManagerEstimate": {
+      "calendar": "3–5完整工作日仅后继资产/图形/Release低置信规划，尚非全47可信截止",
+      "blob": "不是模板资产前置，最小链6–10有效小时低置信，当前用户讨论步骤未启动",
+      "currentRecommendation": "收口现A11/Threshold，用户确认Blob步骤后仅按必要依赖接续；不新建资产仓库/泛型框架",
+      "ledgerUpdatedAt": "2026-10-24T09:18:23.505Z"
+    }
+  },
+  "documentationSafetyHandoff": {
+    "state": "prior safety closure retained; V8 read/adopted; current role/navigation update complete",
+    "baselineAtSafetyCheck": "3ab90ca41dbc1ccba0f4c0296d5405ee1836c42c",
+    "ownedCommands": "all generation/search/static-QA commands naturally exited0; no product build/test/run owned",
+    "wipSaved": true,
+    "headCommitWasNotInventedAsDocumentCommit": true,
+    "noGovernanceSourceWrites": true,
+    "noHistoricalEvidenceWritesDuringSafeClosure": true,
+    "acceptedScriptAndO01HtmlPreserved": true,
+    "originalReceiptTarget": "2026-10-24T14:05:00+08:00",
+    "timingDeviation": "actual closure timestamp reported separately to coordinator; original target retained, no silent extension",
+    "waitingForV8RoleNotification": false,
+    "actualReceiptObservedAt": "2026-10-24T14:07:10+08:00",
+    "originalTargetRetained": true,
+    "deviationSeconds": 130,
+    "deviationReason": "Final 14:04:18 authoritative-ledger refresh plus governance-transition integrity/receipt checks; existing page generation only",
+    "correctiveState": "Already safely completed; receipt delivered, no new product scheduling or standards changes",
+    "productResourceImpact": "No product build/run/test owned; no change to product ETA",
+    "V8Adopted": true,
+    "governanceCommit": "a156cc314cc2981749638c7cbff198097539d994",
+    "prior1405TargetAnd140710DeviationUnchanged": true,
+    "productResumeReportedByManagerAt": "2026-10-24T14:08:42+08:00"
+  },
+  "protocolV8DocumentationAdoption": {
+    "protocolCommit": "a156cc314cc2981749638c7cbff198097539d994",
+    "protocolSha256": "2502ec165a19a0eb0e0a450b2f609e236a488ba6910b773ea91925fe133779d3",
+    "rolesSha256": "53144016b0f600d9f3b9bd4175cabb96a8057038cb1d2f6e01c40f3357f3e629",
+    "readFullCurrentSources": true,
+    "adopted": true,
+    "conflicts": [],
+    "reportedToDeliveryManager": true,
+    "html": {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/维护记录/文档维护.html",
+      "sha256": "292c447618fb00a2d81bf7fbef64d2fb80a45dce6440ff5947ebb1b5edd7b31a",
+      "oldAnchorsPreserved": true
+    },
+    "entry": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/维护记录/文档维护.html#collaboration-roles-v8",
+    "oldV6AnchorPreserved": true,
+    "eightSourceMatrixRows": 8,
+    "homeNavigationAdded": true,
+    "consumerAcceptanceAndIndependentTestingExplicit": true,
+    "originalTargetsAndDeviationPreserved": true,
+    "governanceSourcesModified": false,
+    "currentTaskModified": false,
+    "productCodeModified": false,
+    "productResumeOwner": "delivery manager",
+    "managerProductResumeReportedAt": "2026-10-24T14:08:42+08:00",
+    "qaRoleLinks": 5,
+    "qaHomeLinks": 222,
+    "qaTopicLinks": 707,
+    "queries": 17,
+    "visualReview": false,
+    "completedObservedAt": "2026-10-24T14:14:25+08:00",
+    "estimatedDurationMinutes": 5,
+    "approximateAdditionalMinutes": 1,
+    "deviationReason": "Eight source-matrix role mappings plus consumer/timing/history boundaries and current home/role link-source consistency checks",
+    "originalEarlier1405TargetAnd140710ActualPreserved": true,
+    "productResumeNotBlockedByDocumentation": true,
+    "actualDeveloperResumeReportedAt": "2026-10-24T14:09:13+08:00",
+    "reportedDeveloperSafetySegmentSeconds": 164,
+    "a11OriginalForecastRangesRetained": "source16–17 / fixed18–20, leaning upper17/20, checkpoint15:00; not whole-scope ETA",
+    "managerResults": {
+      "responsibilities": 6,
+      "wipLimit": 2,
+      "completeUseChain": true,
+      "evaluationBasis": true,
+      "sourceIndependentFinalReviewSeparated": true,
+      "oldAnchorsPreserved": true
+    }
+  },
+  "latestDocumentationReceipt": {
+    "ownerThreadId": "01a16695-701e-7523-9c18-1298b9279428",
+    "kind": "temporary-delivery-manager-execution-recovery",
+    "at": "2026-10-24T13:23:58.072Z",
+    "baselineCommit": "5b30d5851db8c8a9b9ec33987215bcc07270e653",
+    "dynamicReceipt": "artifacts/analysis/delivery-live-status-recovery-20261024/application-receipt.json",
+    "dynamicReceiptSHA": "11F8ECE54B66CF2D95F9C5C656ACDE33BCD00E3F27FBA7CB57B53EB89E1E7C97",
+    "navigationReceipt": "artifacts/analysis/backend-review-navigation-recovery-20261024/application-receipt.json",
+    "navigationReceiptSHA": "EEEEF0E76A1DA012270AA3161647BEDE7411C27FA9C101D6F6B17453BF66EA63",
+    "actualModifiedFiles": [
+      "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+      "artifacts/validation/document-library-source-snapshots/optimization-o06.html",
+      "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/公共资源/document-search-index.js",
+      "artifacts/validation/document-library-source-snapshots/document-search-index.js",
+      "artifacts/validation/build-document-search-index.cjs"
+    ],
+    "searchRecords": 734,
+    "priorRecordsPreserved": 730,
+    "newRecords": 4,
+    "queriesPassed": 6,
+    "QA": "artifacts/analysis/backend-review-navigation-recovery-20261024/applied-static-qa.json",
+    "qaSHA": "3B5125E7B2F56EC82AB301E3F68A3B9758212BF659D5EF9DA745527DFE36124B",
+    "visual": "未验：file协议浏览器预览被拒，未绕过",
+    "productModified": false,
+    "fullSiteRegenerated": false,
+    "acceptanceBoundary": "只验文档导航/搜索与身份保护；产品有限验收和整体未闭门仍以独测矩阵与交付总账为准",
+    "currentFinalQA": "artifacts/analysis/backend-review-navigation-recovery-20261024/current-final-static-qa.json",
+    "currentFinalQASHA": "51C6584EE10CE5353009BCB4D06AB1A387CDA182C27DB008F3A52D0641AA6E9E",
+    "searchQueryQASHA": "04EC5F5B4663F2ABFFE9B1B8316C08DD277F48010A4C3046A67DE53C3C612402",
+    "handoff": "docs/collaboration/HANDOFF_DOCUMENT_EXECUTION_RECOVERY_20261024.md"
+  },
+  "navigationSeparation": {
+    "receipt": "artifacts/validation/home-delivery-overview-receipts/20261024-1640-editor-finite-acceptance-sync.json",
+    "homepageCompactEntry": true,
+    "detailPage": {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/交付总览.html",
+      "sha256": "14a70dc895d67682902082d4ea3767c31728d6504e2ecbac1b73a54189131856",
+      "oldAnchorsPreserved": true
+    },
+    "legacyAnchorsPreserved": true,
+    "productChanged": false,
+    "browserVisualReview": false
+  },
+  "geometry3abFiniteAcceptance": {
+    "decision": "FINITE_COMPONENT_PASS_ORIGINAL_MOTHER_ITEMS_REMAIN_OPEN",
+    "completedAt": "2026-10-24T14:46:34.7285347+08:00",
+    "evidenceFilesVerified": 43,
+    "acceptanceSha256": "dfd5f39f85b4520437d116eb8184c68e5f737d570945a90d678db07f619e48bb",
+    "originalMotherItemsRemainOpen": true,
+    "evidenceCheck": "artifacts/validation/geometry3ab-document-evidence-check.json",
+    "evidenceManifestSha256": "7a098c1934fa8c7faa1d4578ebe58a1868cfce2a9aea0b35a8a4ff56eb05c1e4"
+  },
+  "e03StageUpdate": {
+    "ledgerSha256": "80085929585b2b35b2069d14ff5c2f4a527ca577179fefdcf3aaa8faba12b41b",
+    "status": "实施中",
+    "priorPendingReview": 12,
+    "commit": "6ef63a35df1d938a4b5cc34d040b8f2440a63ce6",
+    "productFiles": 3,
+    "developerCases": 6,
+    "mergedToMain": false,
+    "independentAcceptance": false,
+    "originalEditSaveFailuresPreserved": [
+      "E06",
+      "E07"
+    ]
+  },
+  "latestCoordinator15Update": {
+    "receipt": "artifacts/validation/home-delivery-overview-receipts/20261024-1601-three-stage-sync.json",
+    "reportedAt": "2026-10-24T16:01:00+08:00",
+    "ledgerSha256": "5bf0041d2dc4f9867f33f51fb8de4e5e3e01126d00b67fb9358fcaeee93bb943",
+    "counts": {
+      "accepted": 0,
+      "implemented_pending": 0,
+      "independent_testing": 0,
+      "implementing": 39,
+      "not_started": 0,
+      "blocked": 0,
+      "pending": 8,
+      "awaiting_acceptance": 0
+    },
+    "release09": "started; no pass claim",
+    "tests": "idle pending new fixed, no repeat",
+    "nextCheckpoint": "2026-10-24T15:30:00+08:00",
+    "note": "Documentation sync only; this does not change coordinator deadlines or product status."
+  },
+  "a11HostPolicyAndToolbox02": {
+    "decision": "policy-decided-implementation-pending",
+    "toolbox01": "Rejected; original failure preserved",
+    "toolbox02": "Rejected at plugin admission, natural exit 1; whole toolbox not passed",
+    "officialSource": "Microsoft Learn AssemblyLoadContext versioning rules",
+    "counts": {
+      "accepted": 0,
+      "implemented_pending": 0,
+      "independent_testing": 0,
+      "implementing": 35,
+      "not_started": 0,
+      "blocked": 0,
+      "pending": 12,
+      "awaiting_acceptance": 0
+    }
+  },
+  "deliveryOverviewTable": {
+    "receipt": "artifacts/validation/home-delivery-overview-receipts/20261024-1640-editor-finite-acceptance-sync.json",
+    "scopeAndAcceptanceDenominator": true,
+    "statusMeaningTable": true,
+    "fiveDirectionTable": true,
+    "productChanged": false,
+    "receiptSha256": "078eb576c1e9624062249599f64f794f9a6219305cb5c8d670c12d39bd46f41a",
+    "ledgerSha256": "44261f60c3e6808f6e50e54e734756a3865b4bdb198db415ade0921f593a040e",
+    "threePhasesSeparated": true,
+    "phaseSpecificStatusCards": true,
+    "clickCardFiltersOriginalItemRows": true,
+    "counts": {
+      "accepted": 0,
+      "implemented_pending": 0,
+      "independent_testing": 0,
+      "implementing": 39,
+      "not_started": 0,
+      "blocked": 0,
+      "pending": 8,
+      "awaiting_acceptance": 0
+    },
+    "legacyAnchorsPreserved": true,
+    "browserVisualReview": false,
+    "sourceReviewAsOf": "2026-10-24 16:12 北京时间",
+    "generatedAt": "2026-10-24 16:40 北京时间",
+    "managerCheckpointOverdueButUnreported": true,
+    "editorFirstResultTargetOverdueButUnreported": false,
+    "editorFiniteComponentResultSynced": true,
+    "managerLatestDirectUpdatePresent": true,
+    "managerCheckpointNote": "DELIVERY_LEDGER仍为16:12快照，16:15节点未回写；经理直接更新为最迟16:45补有依据整体预计，仍待正式回写。",
+    "wholeItemAcceptanceCountsUnchanged": true
+  },
+  "latestManagerWorkChainSync": {
+    "asOfLedger": "2026-10-24T09:18:23.505Z",
+    "asOfLocal": "2026-10-24 17:18 北京时间",
+    "generatedAtLocal": "2026-10-24 17:25:14 北京时间",
+    "receipt": "artifacts/validation/home-delivery-overview-receipts/20261024-1724-delivery-overview-rewrite.json",
+    "receiptSha256": "19c22ef2bb46bec5f5c1969b55c362bbc5a8b0e460d0628cd4d553a4d37f8339",
+    "ledgerSha256": "e7b0c2aa9bb713e388a4782de5153bc8504b3038c7bf810fdb94d16bc623ef02",
+    "productWipLimit": 2,
+    "workUnits": [
+      {
+        "name": "发布加载完整链",
+        "ids": [
+          "FT-B01",
+          "FT-B03"
+        ],
+        "linkedIds": [
+          "FT-A01",
+          "FT-A02",
+          "FT-A03",
+          "FT-C01",
+          "FT-C03",
+          "FT-N02",
+          "FT-O01",
+          "FT-P02",
+          "FT-P03"
+        ],
+        "state": "独测声明27/27 PASS；独立矩阵在途，真实runtime等待已协调WPF释放",
+        "actual": "FD/SCD全量Release与22工具、真实Script/Roslyn、WPF/BAML、wrong99拒绝、throwlogger均自然0；安装器仅编译未安装未发布",
+        "remaining": "固定封存→独测身份/入口门→功能与负控→post审计；旧失败保留"
+      },
+      {
+        "name": "生产编辑至运行、保存重开完整链",
+        "ids": [
+          "FT-B02",
+          "FT-C02",
+          "FT-D01",
+          "FT-D02",
+          "FT-D03",
+          "FT-E01",
+          "FT-E02",
+          "FT-E03",
+          "FT-F01",
+          "FT-F02",
+          "FT-F03",
+          "FT-H01",
+          "FT-H02"
+        ],
+        "linkedIds": [
+          "FT-G01",
+          "FT-G02",
+          "FT-G03",
+          "FT-K01",
+          "FT-K03"
+        ],
+        "state": "17bc整合完整Release成功，NodeOpen6+Threshold13新身份19/19 PASS；纯exe及完整候选封存接续",
+        "actual": "dd6有限acceptance 7FC7A046D36A065CD2B2488612742A5F7709247177B94635CF7E0A2B0E99BE86：12成熟+6组125断言PASS；不重跑",
+        "remaining": "Threshold正式draft及全字段Validate；专业窗同Context初始化与关闭；NodeOpen WPF职责移UI及style保留；实际主/变量Save→磁盘→reopen→run，原E06/E07复验"
+      }
+    ],
+    "manager": {
+      "nextCheckpoint": "A11独测矩阵/runtime/post与Editor真实MainWindow保存重开运行；完整交付仍无可信截止",
+      "overallCompletion": "3–5完整工作日仅后继资产/图形/Release低置信规划，尚非全47可信截止",
+      "blobEstimate": "不是模板资产前置，最小链6–10有效小时低置信，当前用户讨论步骤未启动",
+      "currentRecommendation": "收口现A11/Threshold，用户确认Blob步骤后仅按必要依赖接续；不新建资产仓库/泛型框架",
+      "managerLedgerUpdatedAt": "2026-10-24T09:18:23.505Z"
+    },
+    "a11": {
+      "sealedAt": "2026-10-24T08:56:05.712207Z",
+      "receiveGateState": "PASS",
+      "receiveGateActual": "2026-10-24T17:11:38.2651628+08:00",
+      "receiveReceiptPath": "artifacts/independent-testing/tool-framework-first-dependency/received-20261024-a11-eeb-fixed01/receive-receipt.json",
+      "receiveReceiptSha256": "7259647095CEB3D2A06BD59B029FF0792A333E8B4C4388CA26BA278E11F38DBF",
+      "receiveReceiptShaVerified": true,
+      "uniqueFiles": 6421,
+      "bytes": 4897694300,
+      "differences": 0,
+      "productRunsAtReceiveGate": 0,
+      "declaredPassed": 27,
+      "firstActualReportedAt": "2026-10-24T17:17:00+08:00",
+      "firstActualNaturalExit0": true,
+      "independentMatrixInProgress": true,
+      "remaining": "自有故障/私有矩阵、FD/SCD runtime4、post审计；整链OPEN",
+      "fullExecutionEarliest": "2026-10-24T18:11:00+08:00",
+      "fullExecutionLatest": "2026-10-24T18:51:00+08:00",
+      "wholeChainAccepted": false,
+      "installerPublished": false
+    },
+    "editor": {
+      "integrationCommit": "bc1869410acc547bae1276714f8b71ceac384203",
+      "build": "build03自然0/0错1283警告180.97秒",
+      "sourcePrefix": "17bc",
+      "nodeOpenPass": 6,
+      "thresholdPass": 13,
+      "totalPass": 19,
+      "naturalExit0": true,
+      "notVerified": "原实际MainWindow E06/E07与Run→Save→Reopen，最终统一人工/VS",
+      "wholeChainAccepted": false
+    },
+    "phaseCounts": {
+      "implementation": "39实施中，8待核",
+      "wholeItemTesting": "0整项独测中",
+      "acceptance": "0/47签收"
+    },
+    "usageChainMap": {
+      "mappedUniqueOriginalIds": 47,
+      "included": 47,
+      "excludedId": "FT-O02",
+      "activeChains": 2
+    },
+    "legacyAnchorsPreserved": true,
+    "productCodeChanged": false,
+    "browserVisualReview": false
+  },
+  "latestDeliveryDocumentRewrite": {
+    "receipt": "artifacts/validation/home-delivery-overview-receipts/20261024-1724-delivery-overview-rewrite.json",
+    "receiptSha256": "19c22ef2bb46bec5f5c1969b55c362bbc5a8b0e460d0628cd4d553a4d37f8339",
+    "generatedAtLocal": "2026-10-24 17:25:14 北京时间",
+    "structure": [
+      "范围",
+      "实施",
+      "测试",
+      "验收",
+      "两条实际工作链",
+      "后续主题与估时"
+    ],
+    "factsAuthority": "docs/collaboration/DELIVERY_LEDGER.json",
+    "ledgerSha256": "e7b0c2aa9bb713e388a4782de5153bc8504b3038c7bf810fdb94d16bc623ef02",
+    "stageCounts": {
+      "accepted": 0,
+      "implemented_pending": 0,
+      "independent_testing": 0,
+      "implementing": 39,
+      "not_started": 0,
+      "blocked": 0,
+      "pending": 8,
+      "awaiting_acceptance": 0
+    },
+    "usageChainMap": {
+      "mappedUniqueOriginalIds": 47,
+      "included": 47,
+      "excludedId": "FT-O02",
+      "activeChains": 2
+    },
+    "a11": {
+      "sealedAt": "2026-10-24T08:56:05.712207Z",
+      "receiveGateState": "PASS",
+      "receiveGateActual": "2026-10-24T17:11:38.2651628+08:00",
+      "receiveReceiptPath": "artifacts/independent-testing/tool-framework-first-dependency/received-20261024-a11-eeb-fixed01/receive-receipt.json",
+      "receiveReceiptSha256": "7259647095CEB3D2A06BD59B029FF0792A333E8B4C4388CA26BA278E11F38DBF",
+      "receiveReceiptShaVerified": true,
+      "uniqueFiles": 6421,
+      "bytes": 4897694300,
+      "differences": 0,
+      "productRunsAtReceiveGate": 0,
+      "declaredPassed": 27,
+      "firstActualReportedAt": "2026-10-24T17:17:00+08:00",
+      "firstActualNaturalExit0": true,
+      "independentMatrixInProgress": true,
+      "remaining": "自有故障/私有矩阵、FD/SCD runtime4、post审计；整链OPEN",
+      "fullExecutionEarliest": "2026-10-24T18:11:00+08:00",
+      "fullExecutionLatest": "2026-10-24T18:51:00+08:00",
+      "wholeChainAccepted": false,
+      "installerPublished": false
+    },
+    "editor": {
+      "integrationCommit": "bc1869410acc547bae1276714f8b71ceac384203",
+      "build": "build03自然0/0错1283警告180.97秒",
+      "sourcePrefix": "17bc",
+      "nodeOpenPass": 6,
+      "thresholdPass": 13,
+      "totalPass": 19,
+      "naturalExit0": true,
+      "notVerified": "原实际MainWindow E06/E07与Run→Save→Reopen，最终统一人工/VS",
+      "wholeChainAccepted": false
+    },
+    "editorFiniteAcceptance": {
+      "completedAt": "2026-10-24T16:26:27.8417654+08:00",
+      "maturePass": 12,
+      "matureCases": 12,
+      "independentValidGroups": 6,
+      "independentValidAssertions": 125,
+      "wholeOriginalIdsAccepted": [],
+      "wholeGoalComplete": false
+    },
+    "estimate": {
+      "calendar": "3–5完整工作日仅后继资产/图形/Release低置信规划，尚非全47可信截止",
+      "blob": "不是模板资产前置，最小链6–10有效小时低置信，当前用户讨论步骤未启动",
+      "currentRecommendation": "收口现A11/Threshold，用户确认Blob步骤后仅按必要依赖接续；不新建资产仓库/泛型框架",
+      "ledgerUpdatedAt": "2026-10-24T09:18:23.505Z"
+    },
+    "priorReceiptsModified": false,
+    "legacyAnchorsPreserved": true
+  },
+  "previousDocumentationReceiptAtRecovery": {
+    "path": "artifacts/validation/home-delivery-overview-receipts/20261024-1724-delivery-overview-rewrite.json",
+    "sha256": "19c22ef2bb46bec5f5c1969b55c362bbc5a8b0e460d0628cd4d553a4d37f8339",
+    "ledgerSha256": "e7b0c2aa9bb713e388a4782de5153bc8504b3038c7bf810fdb94d16bc623ef02",
+    "ledgerSnapshot": "artifacts/validation/home-delivery-overview-inputs/e7b0c2aa9bb713e388a4782de5153bc8504b3038c7bf810fdb94d16bc623ef02-DELIVERY_LEDGER.json",
+    "classificationEvent": "17:18账本快照：三阶段分开；A11输入收件门PASS且27/27阶段报告通过、独立矩阵/runtime/post仍在途；编辑链17bc整合19/19定向通过，真实主窗保存重开运行未验",
+    "counts": {
+      "accepted": 0,
+      "implemented_pending": 0,
+      "independent_testing": 0,
+      "implementing": 39,
+      "not_started": 0,
+      "blocked": 0,
+      "pending": 8,
+      "awaiting_acceptance": 0
+    },
+    "previousReceipt": {
+      "path": "artifacts/validation/home-delivery-overview-receipts/20261024-1716-a11-input-gate-sync.json",
+      "sha256": "66eb90200b75943135adb2985f5876835b66b330f0b0d34d636c4bfeb053a73e",
+      "unchanged": true
+    },
+    "phaseModel": {
+      "implementation": {
+        "notStarted": 0,
+        "implementing": 39,
+        "implementedAwaitingTest": 0,
+        "statusReviewPending": 8
+      },
+      "testing": {
+        "notEnteredWholeItemTesting": 39,
+        "wholeItemTesting": 0,
+        "wholeItemTestPassed": 0,
+        "statusReviewPending": 8
+      },
+      "acceptance": {
+        "signedOff": 0,
+        "notYetSignedOff": 47
+      },
+      "countsArePerOriginalId": true,
+      "crossPhaseCountsAreNotAdditive": true
+    },
+    "generatedAtLocal": "2026-10-24 17:25:14 北京时间",
+    "stageSeparated": true,
+    "oldAnchorsPreserved": true,
+    "browserVisualReview": false,
+    "productChanged": false,
+    "receiptLineage": {
+      "previousDocSyncStatusSha256": "b260e505edcded06a93efe6d163bce0601968d29b23b04b6a0590a8ceb51cac5",
+      "previousReceipt": "artifacts/validation/home-delivery-overview-receipts/20261024-1716-a11-input-gate-sync.json"
+    }
+  },
+  "executionRecovery": {
+    "originalThread": "01a160f7-9c99-72c1-b8bf-d689bf19f1ad",
+    "observed": "多轮completed/error=null/空final且0工具动作，最小只读Get-Location探针同样未执行；无工具或权限拒绝证据，原因未知",
+    "action": "停止向该线程重复投递；交付经理使用现有可执行文档子代理准备，经理单一作者审查/CAS应用/验链/保存",
+    "permanentRoleReassignment": false,
+    "mainArchitecture": "主控仅架构区及对应生成链，已保护；本轮HALCON/未来OpenCV复审未批准产品实现",
+    "temporaryExecutionRoute": "交付经理接收文档更新事实，已有可执行子代理准备，经理按单一作者窗口落盘；原线程未恢复工具动作，不以空回执算完成",
+    "acceptanceRule": "任务必须给出实际修改文件、验证结果和提交/证据身份；仅送达或空回执不算完成。原线程恢复前，经理持续负责实际落盘。",
+    "governanceAdoption": {
+      "protocol": "V8.2 §2.2",
+      "status": "经理已实读采用，无冲突",
+      "rule": "真实证据与中立判断约束保留、复用、删除、重构及暂不实施；未知不冒批准，消息送达不冒采用。"
     }
   }
 }

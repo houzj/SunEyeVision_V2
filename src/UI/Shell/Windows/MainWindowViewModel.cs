@@ -218,6 +218,7 @@ namespace SunEyeVision.UI.Shell.Windows
         // 确保每个Tab都是独立的
 
         private WorkflowNodeBase? _selectedNode;
+        private long _outputContractSelectionGeneration;
         private string? _currentDisplayNodeId = null;  // 记录当前显示的采集节点ID，避免重复切换
 
         /// <summary>
@@ -350,7 +351,7 @@ namespace SunEyeVision.UI.Shell.Windows
             set
             {
                 var oldNode = _selectedNode;
-                bool changed = SetProperty(ref _selectedNode, value);
+                bool changed = SetSelectedNodeIdentity(value);
 
                 if (changed)
                 {
@@ -2656,6 +2657,67 @@ SplitterPosition = position;
             AddLog($"🗑️ 已删除 {string.Join("和 ", parts)}");
         }
 
+        // Keep selection identity and its epoch together; the setter retains all presentation work.
+        internal bool SetSelectedNodeIdentity(WorkflowNodeBase? node)
+        {
+            if (ReferenceEquals(_selectedNode, node)) return false;
+            System.Threading.Interlocked.Increment(ref _outputContractSelectionGeneration);
+            return SetProperty(ref _selectedNode, node, propertyName: nameof(SelectedNode));
+        }
+
+        /// <summary>Only the live editor of the selected document node may refresh its shared result tree.</summary>
+        internal void SubscribeOutputContractRefresh(Window window, SunEyeVision.UI.Shared.WorkflowNode node)
+        {
+            var parameters = node.Parameters;
+            if (parameters is not INotifyOutputContractChanged notifier || parameters is not IOutputContractProvider provider)
+                return;
+
+            var session = DocumentManager.Session;
+            var tab = WorkflowTabViewModel?.SelectedTab;
+            var displayedNodes = tab?.WorkflowNodes;
+            var workflow = session?.Document.Workflows.FirstOrDefault(flow => flow.Nodes.Any(item => ReferenceEquals(item, node)));
+            var dispatcher = window.Dispatcher;
+            int closed = 0;
+            long latestNotification = 0;
+            Action refreshContract = () =>
+            {
+                if (System.Threading.Volatile.Read(ref closed) != 0 || dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
+                    return;
+                var notification = System.Threading.Interlocked.Increment(ref latestNotification);
+                var selection = System.Threading.Volatile.Read(ref _outputContractSelectionGeneration);
+                _ = dispatcher.BeginInvoke(new Action(() =>
+                {
+                    bool IsCurrent() => System.Threading.Volatile.Read(ref closed) == 0
+                        && notification == System.Threading.Volatile.Read(ref latestNotification)
+                        && selection == System.Threading.Volatile.Read(ref _outputContractSelectionGeneration)
+                        && window.IsLoaded && ReferenceEquals(_openDebugWindow, window)
+                        && session != null && ReferenceEquals(DocumentManager.Session, session)
+                        && ReferenceEquals(SelectedNode, node) && ReferenceEquals(node.Parameters, parameters)
+                        && tab != null && ReferenceEquals(WorkflowTabViewModel?.SelectedTab, tab)
+                        && displayedNodes != null && ReferenceEquals(tab.WorkflowNodes, displayedNodes)
+                        && displayedNodes.Any(item => ReferenceEquals(item, node))
+                        && workflow != null && session.Document.Workflows.Any(flow => ReferenceEquals(flow, workflow))
+                        && workflow.Nodes.Any(item => ReferenceEquals(item, node));
+
+                    if (!IsCurrent()) return;
+                    var contract = provider.GetOutputContract();
+                    // A provider can notify again or reenter selection/document/window changes while reading.
+                    if (IsCurrent() && contract.Count > 0)
+                        UpdateModuleResults(new ContractToolResults(contract), node.Name, node.ToolType, node.Id);
+                }), System.Windows.Threading.DispatcherPriority.Background);
+            };
+            notifier.OutputContractChanged += refreshContract;
+            window.Closed += OnClosed;
+            void OnClosed(object? sender, EventArgs args)
+            {
+                System.Threading.Interlocked.Exchange(ref closed, 1);
+                System.Threading.Interlocked.Increment(ref latestNotification);
+                // Unsubscribe the captured instance even if node.Parameters was replaced meanwhile.
+                notifier.OutputContractChanged -= refreshContract;
+                window.Closed -= OnClosed;
+            }
+        }
+
         private async void ExecuteOpenDebugWindow(SunEyeVision.UI.Shared.WorkflowNode? node)
         {
             if (node == null) return;
@@ -2725,31 +2787,10 @@ SplitterPosition = position;
                 _openDebugWindow = context.CreatedWindow;
                 _openDebugWindow.Title = node.Name;
 
-                // ★ 动态工具（Script）：输出变更时实时刷新模块结果树（类似子程序的 onOutputsChanged 机制）
-                Action? refreshContract = null;
-                if (node.Parameters is INotifyOutputContractChanged contractNotifier)
-                {
-                    refreshContract = () =>
-                    {
-                        _ = System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            if (node.Parameters is IOutputContractProvider provider)
-                            {
-                                var contract = provider.GetOutputContract();
-                                if (contract.Count > 0)
-                                    UpdateModuleResults(new ContractToolResults(contract), node.Name, node.ToolType, node.Id);
-                            }
-                        }), System.Windows.Threading.DispatcherPriority.Background);
-                    };
-                    contractNotifier.OutputContractChanged += refreshContract;
-                }
+                SubscribeOutputContractRefresh(_openDebugWindow, node);
 
                 _openDebugWindow.Closed += (s, e) =>
                 {
-                    // 清理输出变更订阅
-                    if (refreshContract != null && node.Parameters is INotifyOutputContractChanged notifier)
-                        notifier.OutputContractChanged -= refreshContract;
-
                     _openDebugWindow = null;
                     if (node.IsImageLoadNode && ReferenceEquals(SelectedNode, node))
                         _ = UpdateDataAnalysisControl(node);

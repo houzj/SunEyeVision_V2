@@ -209,7 +209,7 @@
   },
   "architectureReviewPolicy": {
     "source": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
-    "section": "2026-10-23 架构设计与审核原则（用户确认）",
+    "section": "1. 决策与架构原则（V8当前有效）",
     "appliesTo": "all project members",
     "controlRole": "technical director: architecture design, decision approval, final review",
     "existingImplementationHasPriority": false,
@@ -305,7 +305,7 @@
       "repositoriesPreserved": true
     }
   },
-  "currentResponsibilitySource": "JOINT_COLLABORATION_PROTOCOL.md#2",
+  "currentResponsibilitySource": "JOINT_COLLABORATION_PROTOCOL.md 第2节 岗位责任矩阵",
   "historyPolicy": "Historical titles, task-specific initialMode/firstTask and retired role records are traceability only; V8 governs current responsibilities.",
   "commonAccountability": [
     "接单确认输入/交付/验收/目标/检查点及估算依据",
@@ -313,5 +313,11 @@
     "预计延期提前报告原目标/原因/措施/新预测/整体影响",
     "交接由消费者核收，真实证据支撑状态",
     "原ID闭环与有限子证据分开；不扩范围不降标准"
-  ]
+  ],
+  "parallelDeliveryPolicy": {
+    "source": "JOINT_COLLABORATION_PROTOCOL.md 第3.1节",
+    "responsibility": "各岗位负责人主动拆分独立工作包、管理子智能体并核收集成；交付经理管理跨岗关键路径与资源",
+    "report": "沿原taskId报告子线负责人、实际状态、依赖、目标时间、下一集成时间",
+    "boundary": "共享主树唯一产品写者；并行实现独立Worktree；正式性能及排他资源串行；不新增批次或验收分母"
+  }
 }

@@ -96,8 +96,13 @@ public partial class App : Application
         catch (Exception ex)
         {
             _startupRejected = true;
-            if (e.Args.Length == 0 || e.Args[0] != "--release-probe")
+            if (e.Args.Length == 0 || (e.Args[0] != "--release-probe"&&e.Args[0]!="--toolbox-probe"))
                 MessageBox.Show($"无法启动 SunEyeVision：{ex.Message}", "SunEyeVision", MessageBoxButton.OK, MessageBoxImage.Information);
+            else if(e.Args.Length==2)
+            {
+                try{File.WriteAllText(e.Args[1],System.Text.Json.JsonSerializer.Serialize(new{status="Rejected",stage="startup-admission",error=ex.Message}));}
+                catch { /* A rejected probe must still exit when its diagnostic path is unavailable. */ }
+            }
             Shutdown(1);
             return;
         }

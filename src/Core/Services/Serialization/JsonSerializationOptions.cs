@@ -1,4 +1,4 @@
-﻿using System.Text.Encodings.Web;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -22,6 +22,7 @@ namespace SunEyeVision.Core.Services.Serialization
     public static class JsonSerializationOptions
     {
         private static JsonSerializerOptions? _compact;
+        private static JsonSerializerOptions? _compactSource;
         private static readonly object _compactLock = new();
 
         /// <summary>
@@ -56,24 +57,16 @@ namespace SunEyeVision.Core.Services.Serialization
         {
             get
             {
-                if (_compact == null)
+                var source=ParameterTypeRegistry.SerializationOptions;
+                lock(_compactLock)
                 {
-                    lock (_compactLock)
+                    if(!ReferenceEquals(_compactSource,source))
                     {
-                        if (_compact == null)
-                        {
-                            // 创建新实例，复制基础配置
-                            _compact = new JsonSerializerOptions(ParameterTypeRegistry.SerializationOptions)
-                            {
-                                WriteIndented = false
-                            };
-                            
-                            // ★ 关键：手动复制 TypeInfoResolver（复制构造函数不会复制它）
-                            _compact.TypeInfoResolver = ParameterTypeRegistry.SerializationOptions.TypeInfoResolver;
-                        }
+                        _compact=new JsonSerializerOptions(source){WriteIndented=false};
+                        _compactSource=source;
                     }
+                    return _compact!;
                 }
-                return _compact;
             }
         }
     }

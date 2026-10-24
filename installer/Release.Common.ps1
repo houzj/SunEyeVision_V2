@@ -90,6 +90,47 @@ function Get-ReleaseBinaryFileVersion {
     @($VersionInfo.FileMajorPart, $VersionInfo.FileMinorPart, $VersionInfo.FileBuildPart, $VersionInfo.FilePrivatePart) -join '.'
 }
 
+function New-ReleasePayload {
+    param([Parameter(Mandatory)][string]$AppPath,
+        [Parameter(Mandatory)][string]$BuildId,
+        [Parameter(Mandatory)][string]$SourceCommit,
+        [Parameter(Mandatory)][string]$ArtifactVersion)
+    $appRoot=(Resolve-Path -LiteralPath $AppPath).Path
+    $entries=@(Get-ChildItem -LiteralPath $appRoot -Recurse -File | Sort-Object FullName | ForEach-Object {
+        $relative=[IO.Path]::GetRelativePath($appRoot,$_.FullName).Replace('\','/')
+        if($relative -ne 'release-payload.json') {
+            $entry=[ordered]@{path=$relative;sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash}
+            if($_.Extension -in '.dll','.exe') {
+                try {$entry.assemblyIdentity=[Reflection.AssemblyName]::GetAssemblyName($_.FullName).FullName}
+                catch [BadImageFormatException] { } # Native binaries have hashes, not managed identities.
+            }
+            $entry
+        }
+    })
+    [ordered]@{payloadSchemaVersion=1;buildId=$BuildId;sourceCommit=$SourceCommit;artifactVersion=$ArtifactVersion;entries=$entries}
+}
+
+function Write-ReleasePayload {
+    param([Parameter(Mandatory)][string]$AppPath,[Parameter(Mandatory)][System.Collections.IDictionary]$Payload)
+    if($Payload.payloadSchemaVersion -ne 1){throw 'Unsupported payload schema.'}
+    $path=Join-Path $AppPath 'release-payload.json'
+    [IO.File]::WriteAllText($path,($Payload|ConvertTo-Json -Depth 10),[Text.UTF8Encoding]::new($false))
+    (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+}
+
+function Assert-ReleasePayloadUnchanged {
+    param([Parameter(Mandatory)][string]$AppPath,[Parameter(Mandatory)][System.Collections.IDictionary]$Payload,
+        [Parameter(Mandatory)][string]$PayloadSha256)
+    $root=(Resolve-Path -LiteralPath $AppPath).Path
+    if((Get-FileHash -LiteralPath (Join-Path $root 'release-payload.json') -Algorithm SHA256).Hash -ne $PayloadSha256){throw 'Payload manifest changed after sealing.'}
+    $expected=@($Payload.entries.path)+@('release-payload.json')
+    $actual=@(Get-ChildItem -LiteralPath $root -Recurse -File|ForEach-Object{[IO.Path]::GetRelativePath($root,$_.FullName).Replace('\','/')})
+    if(Compare-Object ($expected|Sort-Object) ($actual|Sort-Object)){throw 'Payload file set changed after sealing.'}
+    foreach($entry in $Payload.entries) {
+        if((Get-FileHash -LiteralPath (Join-Path $root $entry.path) -Algorithm SHA256).Hash -ne $entry.sha256){throw ('Payload bytes changed after sealing: '+$entry.path)}
+    }
+}
+
 function Write-ReleaseArtifacts {
     param([string]$OutputPath, [System.Collections.IDictionary]$Manifest)
     $setup = Join-Path $OutputPath $Manifest.installer

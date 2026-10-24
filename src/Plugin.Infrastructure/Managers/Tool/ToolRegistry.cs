@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using System.Threading;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -24,9 +25,10 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
     /// </remarks>
     public static class ToolRegistry
     {
-        private static readonly Dictionary<string, Type> _toolTypes = new();
-        private static readonly Dictionary<string, ToolMetadata> _metadataCache = new();
+        private static Dictionary<string, Type> _toolTypes = new();
+        private static Dictionary<string, ToolMetadata> _metadataCache = new();
         private static readonly object _lock = new();
+        private static long _registrationGeneration;
 
         // ========================================
         // 缓存结构：基于具体类型的缓存池（优化方案）
@@ -46,7 +48,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// 2. 类型精确匹配（不会误判）
         /// 3. 符合视觉软件特点（OpenCvSharp API 主要使用数组）
         /// </remarks>
-        private static readonly Dictionary<string, Dictionary<string, List<ToolPropertyMetadata>>> _typeCache = new();
+        private static Dictionary<string, Dictionary<string, List<ToolPropertyMetadata>>> _typeCache = new();
 
         /// <summary>
         /// 注册工具类型（从 [Tool] 特性提取元数据）
@@ -54,76 +56,99 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// <param name="toolType">工具类型</param>
         public static void RegisterTool(Type toolType)
         {
-            if (toolType == null)
-                throw new ArgumentNullException(nameof(toolType));
-
-            var attr = toolType.GetCustomAttribute<ToolAttribute>();
-            if (attr == null)
-                throw new ArgumentException($"类型 {toolType.Name} 缺少 [Tool] 特性");
-
-            lock (_lock)
-            {
-                _toolTypes[attr.Id] = toolType;
-                
-                // 提取参数类型信息（用于诊断）
-                Type? paramsType = null;
-                foreach (var iface in toolType.GetInterfaces())
-                {
-                    if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IToolPlugin<,>))
-                    {
-                        var genericArgs = iface.GetGenericArguments();
-                        if (genericArgs.Length >= 2)
-                        {
-                            paramsType = genericArgs[0];
-                            break;
-                        }
-                    }
-                }
-                
-                // 主动注册参数类型到多态序列化配置
-                if (paramsType != null && typeof(ToolParameters).IsAssignableFrom(paramsType))
-                {
-                    RegisterParameterTypeToRegistry(paramsType);
-                }
-                
-                // ✅ 基于输出变量契约（IToolPlugin.OutputVariables）提取并缓存属性元数据
-                var pluginInstance = CreateToolInstance(attr.Id);
-                if (pluginInstance != null)
-                    ExtractPropertyMetadata(attr.Id, pluginInstance);
-                
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"工具注册成功: {attr.DisplayName} (Id={attr.Id}, ParamsType={paramsType?.Name ?? "未指定"})",
-                    "ToolRegistry");
-            }
+            var prepared=PrepareRegistration(new[]{toolType});
+            using var commit=prepared.EnterCommit();
+            commit.Publish();
         }
 
-        /// <summary>
-        /// 注册参数类型到 ParameterTypeRegistry
-        /// </summary>
-        /// <param name="paramsType">参数类型</param>
-        private static void RegisterParameterTypeToRegistry(Type paramsType)
+        public static IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> toolTypes)
         {
-            try
+            ArgumentNullException.ThrowIfNull(toolTypes);
+            Dictionary<string,Type> types;
+            Dictionary<string,ToolMetadata> metadata;
+            Dictionary<string,Dictionary<string,List<ToolPropertyMetadata>>> properties;
+            long generation;
+            lock(_lock)
             {
-                // 从 [JsonDerivedType] 特性提取类型鉴别器
-                var jsonDerivedAttr = paramsType.GetCustomAttribute<JsonDerivedTypeAttribute>();
-                string typeDiscriminator = jsonDerivedAttr?.TypeDiscriminator?.ToString() ?? paramsType.Name;
-                
-                ParameterTypeRegistry.RegisterParameterType(paramsType, typeDiscriminator);
+                generation=_registrationGeneration;
+                types=new(_toolTypes);metadata=new(_metadataCache);
+                properties=_typeCache.ToDictionary(item=>item.Key,item=>item.Value.ToDictionary(field=>field.Key,field=>field.Value.ToList()));
             }
-            catch (Exception ex)
+            var candidates=new List<(Type Type,ToolAttribute Attribute)>();
+            var ids=new HashSet<string>(StringComparer.Ordinal);
+            foreach(var type in toolTypes)
             {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"参数类型注册失败: {paramsType.Name}, 错误: {ex.Message}",
-                    "ToolRegistry");
+                if(type is null||type.IsAbstract||!typeof(IToolPlugin).IsAssignableFrom(type))throw new ArgumentException("A concrete tool plugin type is required.");
+                var attribute=type.GetCustomAttribute<ToolAttribute>()??throw new ArgumentException("The candidate has no Tool attribute.");
+                if(string.IsNullOrWhiteSpace(attribute.Id)||!ids.Add(attribute.Id))throw new InvalidOperationException("Plugin assembly contains a missing or duplicate ToolId.");
+                if(types.TryGetValue(attribute.Id,out var current))
+                {
+                    if(current!=type)throw new InvalidOperationException("ToolId is already owned by another type: "+attribute.Id);
+                    continue;
+                }
+                candidates.Add((type,attribute));
             }
+            var parameters=new List<KeyValuePair<Type,string>>();
+            foreach(var candidate in candidates)
+            {
+                var plugin=(IToolPlugin)(Activator.CreateInstance(candidate.Type)??throw new InvalidOperationException("Tool construction returned null."));
+                var parameterType=plugin.ParamsType;
+                if(parameterType is null||parameterType.IsAbstract||!typeof(ToolParameters).IsAssignableFrom(parameterType))throw new InvalidOperationException("Invalid plugin parameter type.");
+                foreach(var contract in candidate.Type.GetInterfaces().Where(type=>type.IsGenericType&&type.GetGenericTypeDefinition()==typeof(IToolPlugin<,>)))
+                    if(contract.GetGenericArguments()[0]!=parameterType||contract.GetGenericArguments()[1]!=plugin.ResultType)throw new InvalidOperationException("Generic tool signature differs from its published parameter/result types.");
+                if(plugin.ResultType is null||plugin.ResultType.IsAbstract||!typeof(ToolResults).IsAssignableFrom(plugin.ResultType))throw new InvalidOperationException("Invalid plugin result type.");
+                var discriminator=parameterType==typeof(GenericToolParameters)?"Generic":parameterType.GetCustomAttribute<JsonDerivedTypeAttribute>()?.TypeDiscriminator?.ToString()??parameterType.Name;
+                parameters.Add(new(parameterType,discriminator));
+                var id=candidate.Attribute.Id;
+                var fields=BuildPropertyMetadata(id,plugin);
+                foreach(var field in fields)
+                {
+                    if(!properties.TryGetValue(field.Key,out var byTool)){byTool=new();properties.Add(field.Key,byTool);}
+                    byTool.Add(id,field.Value);
+                }
+                var info=ToolMetadata.FromToolType(candidate.Type,id,candidate.Attribute.DisplayName,candidate.Attribute.Description,candidate.Attribute.Icon,candidate.Attribute.Category);
+                info.DebugWindowStyle=candidate.Attribute.DebugWindowStyle;
+                types.Add(id,candidate.Type);metadata.Add(id,info);
+            }
+            var parameterRegistration=ParameterTypeRegistry.PrepareRegistration(parameters);
+            return new PreparedRegistration(generation,types,metadata,properties,parameterRegistration,candidates.Count>0);
         }
 
-        /// <summary>
-        /// 获取工具元数据（带缓存）
-        /// </summary>
-        /// <param name="toolId">工具ID</param>
-        /// <returns>工具元数据，未找到则返回null</returns>
+        private sealed class PreparedRegistration(long generation,Dictionary<string,Type> types,Dictionary<string,ToolMetadata> metadata,
+            Dictionary<string,Dictionary<string,List<ToolPropertyMetadata>>> properties,ParameterTypeRegistry.PreparedRegistration parameters,bool changed) : IPreparedToolRegistration
+        {
+            public IToolCatalogCommitScope EnterCommit()=>new CommitScope(generation,types,metadata,properties,parameters,changed);
+        }
+        private sealed class CommitScope : IToolCatalogCommitScope
+        {
+            private readonly Dictionary<string,Type> _types;
+            private readonly Dictionary<string,ToolMetadata> _metadata;
+            private readonly Dictionary<string,Dictionary<string,List<ToolPropertyMetadata>>> _properties;
+            private readonly ParameterTypeRegistry.CommitScope _parameters;
+            private readonly bool _changed;
+            private bool _closed,_published;
+            internal CommitScope(long generation,Dictionary<string,Type> types,Dictionary<string,ToolMetadata> metadata,
+                Dictionary<string,Dictionary<string,List<ToolPropertyMetadata>>> properties,ParameterTypeRegistry.PreparedRegistration parameters,bool changed)
+            {
+                _types=types;_metadata=metadata;_properties=properties;_changed=changed;
+                Monitor.Enter(_lock);
+                try
+                {
+                    if(generation!=_registrationGeneration)throw new InvalidOperationException("Tool registration preparation is stale.");
+                    _parameters=parameters.EnterCommit();
+                }
+                catch{Monitor.Exit(_lock);throw;}
+            }
+            public void Publish()
+            {
+                ObjectDisposedException.ThrowIf(_closed,this);
+                if(_published)throw new InvalidOperationException("Tool registration was already published.");
+                _parameters.Publish();
+                if(_changed){_toolTypes=_types;_metadataCache=_metadata;_typeCache=_properties;_registrationGeneration++;}
+                _published=true;
+            }
+            public void Dispose(){if(_closed)return;_closed=true;_parameters.Dispose();Monitor.Exit(_lock);}
+        }
         public static ToolMetadata? GetToolMetadata(string toolId)
         {
             lock (_lock)
@@ -205,14 +230,9 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// <returns>工具实例，未找到则返回null</returns>
         public static IToolPlugin? CreateToolInstance(string toolId)
         {
-            lock (_lock)
-            {
-                if (_toolTypes.TryGetValue(toolId, out var type))
-                {
-                    return Activator.CreateInstance(type) as IToolPlugin;
-                }
-                return null;
-            }
+            Type? type;
+            lock (_lock) _toolTypes.TryGetValue(toolId,out type);
+            return type is null?null:Activator.CreateInstance(type) as IToolPlugin;
         }
 
         /// <summary>
@@ -280,8 +300,9 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             lock (_lock)
             {
                 var removed = _toolTypes.Remove(toolId);
+                _registrationGeneration++;
                 _metadataCache.Remove(toolId);
-                ClearToolCache(toolId);
+                foreach(var cache in _typeCache.Values)cache.Remove(toolId);
                 return removed;
             }
         }
@@ -295,7 +316,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// </summary>
         public static void ClearAllCaches()
         {
-            _typeCache.Clear();
+            lock(_lock){_typeCache.Clear();_registrationGeneration++;}
             
             VisionLogger.Instance.Log(LogLevel.Success, 
                 "✅ 清除所有属性元数据缓存池", 
@@ -307,9 +328,10 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// </summary>
         public static void ClearToolCache(string toolId)
         {
-            foreach (var typeCache in _typeCache.Values)
+            lock(_lock)
             {
-                typeCache.Remove(toolId);
+                foreach (var typeCache in _typeCache.Values)typeCache.Remove(toolId);
+                _registrationGeneration++;
             }
             
             VisionLogger.Instance.Log(LogLevel.Success, 
@@ -346,13 +368,16 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             if (string.IsNullOrEmpty(typeFullName))
                 return new List<ToolPropertyMetadata>();
             
+            lock(_lock)
+            {
             if (_typeCache.TryGetValue(typeFullName, out var toolCache) &&
                 toolCache.TryGetValue(toolId, out var properties))
             {
-                return properties;
+                return properties.ToList();
             }
             
             return new List<ToolPropertyMetadata>();
+            }
         }
 
         /// <summary>
@@ -369,6 +394,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             if (string.IsNullOrEmpty(typeFullName))
                 return new List<ToolPropertyMetadata>();
             
+            lock(_lock)
+            {
             if (_typeCache.TryGetValue(typeFullName, out var toolCache))
             {
                 var allProperties = new List<ToolPropertyMetadata>();
@@ -380,6 +407,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             }
             
             return new List<ToolPropertyMetadata>();
+            }
         }
 
         /// <summary>
@@ -391,7 +419,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             {
                 _toolTypes.Clear();
                 _metadataCache.Clear();
-                ClearAllCaches();
+                _typeCache.Clear();
+                _registrationGeneration++;
             }
         }
 
@@ -428,94 +457,36 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// </summary>
         /// <param name="toolId">工具ID</param>
         /// <param name="plugin">工具插件实例（已注册，持有 OutputVariables 契约）</param>
-        private static void ExtractPropertyMetadata(string toolId, IToolPlugin plugin)
+        private static Dictionary<string,List<ToolPropertyMetadata>> BuildPropertyMetadata(string toolId,IToolPlugin plugin)
         {
-            try
+            var fields=new Dictionary<string,List<ToolPropertyMetadata>>(StringComparer.Ordinal);
+            var variables=plugin.OutputVariables??throw new InvalidOperationException("Output declaration returned null: "+toolId);
+            var names=new HashSet<string>(StringComparer.Ordinal);
+            foreach(var variable in variables)
             {
-                var variables = plugin.OutputVariables;
-                if (variables == null)
-                    return;
-
-                int dataVariableCount = 0;
-                foreach (var v in variables)
+                if(variable is null)throw new InvalidOperationException("Output declaration contains a null field.");
+                if(variable.Kind!=OutputVariableKind.Data)continue;
+                if(string.IsNullOrWhiteSpace(variable.Name)||!names.Add(variable.Name))throw new InvalidOperationException("Output declaration contains a missing or duplicate field name.");
+                var declaredClr=variable.ValueDeclaration is not null?variable.DeclaredType:null;
+                var type=declaredClr??SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(variable.VariableType);
+                if(type?.FullName is not { } key)
                 {
-                    // 控制信号（如 NextNodeId）不进数据面板 / 绑定候选
-                    if (v.Kind != OutputVariableKind.Data)
-                        continue;
-
-                    var declaredClr=v.ValueDeclaration is not null?v.DeclaredType:null;
-                    if ((declaredClr??SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(v.VariableType)) is not { } varType)
-                    {
-                        VisionLogger.Instance.Log(LogLevel.Error,
-                            $"工具 '{toolId}' 的输出变量 '{v.Name}' 类型 '{v.VariableType}' 未在 SdkTypeVocabulary 词汇表注册，已跳过。",
-                            "ToolRegistry");
-                        continue;
-                    }
-
-                    var typeFullName = varType.FullName;
-                    if (string.IsNullOrEmpty(typeFullName))
-                        continue;
-
-                    var metadata = new ToolPropertyMetadata
-                    {
-                        PropertyName = v.Name,
-                        DeclaredType = v.DeclaredType, ValueDeclaration=v.ValueDeclaration,AllowsNull=v.AllowsNull, IsCollection = v.IsCollection, FixedCount = v.FixedCount, FieldId = v.FieldId,
-                        DisplayName = string.IsNullOrEmpty(v.DisplayName) ? v.Name : v.DisplayName,
-                        GroupName = v.Group,
-                        // 对外元数据提升为数组（绑定树据此展开 [i]）；缓存键仍按标量 typeFullName，不破坏存量查询
-                        PropertyType = (v.VariableType == "Image")
-                            ? varType
-                            : (varType.IsArray ? varType : varType.MakeArrayType()),
-                        // P0.6-5：分组占位（单层折叠）声明随契约缓存，设计期结果树同样按声明折叠
-                        IsGroupPlaceholder = v.IsGroupPlaceholder,
-                        Description = null
-                    };
-
-                    // 直接按类型全名缓存（关键优化：直接按具体类型缓存）
-                    if (!_typeCache.ContainsKey(typeFullName))
-                    {
-                        _typeCache[typeFullName] = new Dictionary<string, List<ToolPropertyMetadata>>();
-                    }
-
-                    if (!_typeCache[typeFullName].ContainsKey(toolId))
-                    {
-                        _typeCache[typeFullName][toolId] = new List<ToolPropertyMetadata>();
-                    }
-
-                    _typeCache[typeFullName][toolId].Add(metadata);
-                    dataVariableCount++;
-
-                    VisionLogger.Instance.Log(LogLevel.Debug,
-                        $"属性元数据已提取(契约): {toolId}.{metadata.PropertyName} ({varType.Name})",
-                        "ToolRegistry");
+                    VisionLogger.Instance.Log(LogLevel.Error,$"工具 '{toolId}' 的输出变量 '{variable.Name}' 类型 '{variable.VariableType}' 未在 SdkTypeVocabulary 词汇表注册，已跳过。","ToolRegistry");
+                    continue;
                 }
-
-                // ★ 单源铁律（决策 17）：框架契约条目**不在此处另行注册**。
-                // 上面的 OutputVariables 遍历已把它们产出 —— ToolResults.GetOutputVariables() 是框架契约的
-                // **唯一产出点**，设计期与运行期共用同一个方法，能力门槛（[ToolCapability]）也随之自动生效。
-                //
-                // 历史教训：此处曾有一份**等价注册**，用途是补偿"空值跳过"（b593533c 回归）造成的设计期结构缺失。
-                // 该病根已由 P0.6-3（结构与值分离，契约层不再跳空值）根治；病根既除，补丁必须同生共死地下线 ——
-                // 否则结构**产出两遍**，表现为「选择绑定源 → 输入」下出现**两套**「检测区图形/屏蔽区图形」。
-
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"属性元数据提取完成(契约): {toolId}, 共 {dataVariableCount} 个数据变量",
-                    "ToolRegistry");
+                var metadata=new ToolPropertyMetadata
+                {
+                    PropertyName=variable.Name,DeclaredType=variable.DeclaredType,ValueDeclaration=variable.ValueDeclaration,AllowsNull=variable.AllowsNull,
+                    IsCollection=variable.IsCollection,FixedCount=variable.FixedCount,FieldId=variable.FieldId,
+                    DisplayName=string.IsNullOrEmpty(variable.DisplayName)?variable.Name:variable.DisplayName,GroupName=variable.Group,
+                    PropertyType=variable.VariableType=="Image"?type:type.IsArray?type:type.MakeArrayType(),
+                    IsGroupPlaceholder=variable.IsGroupPlaceholder,Description=null
+                };
+                if(!fields.TryGetValue(key,out var list)){list=new();fields.Add(key,list);}
+                list.Add(metadata);
             }
-            catch (Exception ex)
-            {
-                VisionLogger.Instance.Log(LogLevel.Error,
-                    $"提取属性元数据失败(契约): {toolId}, 错误: {ex.Message}",
-                    "ToolRegistry", ex);
-            }
+            return fields;
         }
-
-        /// <summary>
-        /// 获取属性元数据（从类型缓存）
-        /// </summary>
-        /// <param name="toolId">工具ID</param>
-        /// <param name="propertyName">属性名</param>
-        /// <returns>属性元数据，未找到返回 null</returns>
         public static ToolPropertyMetadata? GetPropertyMetadata(string toolId, string propertyName)
         {
             lock (_lock)
@@ -544,39 +515,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// <returns>属性元数据列表，未找到返回空列表</returns>
         public static List<ToolPropertyMetadata> GetAllPropertyMetadata(string toolId)
         {
-            var allMetadata = new List<ToolPropertyMetadata>();
-
-            foreach (var typeCache in _typeCache.Values)
-            {
-                if (typeCache.TryGetValue(toolId, out var properties))
-                {
-                    allMetadata.AddRange(properties);
-                }
-            }
-
-            // ★ 诊断：查询结果为空时输出缓存状态
-            if (allMetadata.Count == 0)
-            {
-                var registeredKeys = new HashSet<string>();
-                foreach (var kvp in _typeCache)
-                {
-                    foreach (var key in kvp.Value.Keys)
-                        registeredKeys.Add(key);
-                }
-
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[诊断:GetAllPropertyMetadata] toolId='{toolId}' 查询结果为空 | " +
-                    $"_typeCache.Count={_typeCache.Count} | " +
-                    $"已注册的 toolId 列表: [{string.Join(", ", registeredKeys.OrderBy(k => k))}]",
-                    "ToolRegistry");
-            }
-
-            return allMetadata;
+            lock(_lock)return _typeCache.Values.Where(cache=>cache.ContainsKey(toolId)).SelectMany(cache=>cache[toolId]).ToList();
         }
-
-        /// <summary>
-        /// 判断是否为特殊属性
-        /// </summary>
         private static bool IsSpecialProperty(string propertyName)
         {
             return propertyName == "Status" ||

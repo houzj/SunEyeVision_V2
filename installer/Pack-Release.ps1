@@ -101,14 +101,6 @@ try {
     $app="$stage/app"
     $tools=@($projects | Where-Object {(Get-Content $_.FullName -Raw) -match '<IsToolPlugin>true</IsToolPlugin>'})
     Assert-ReleasePayload $app $releaseVersion $tools.BaseName -IconSourceRoot "$root/src/UI/Icons"
-    $probePath="$stage/probe.json"
-    $probe=Start-Process "$app/SunEyeVision.UI.exe" -ArgumentList @('--release-probe',"`"$probePath`"") -PassThru -WindowStyle Hidden
-    if (!$probe.WaitForExit(30000)) {$probe.Kill();throw '程序探针超时。'}
-    if ($probe.ExitCode -ne 0 -or !(Test-Path $probePath)) {throw '程序探针失败。'}
-    $runtime=Get-Content $probePath -Raw | ConvertFrom-Json
-    if ($runtime.releaseVersion -ne $releaseVersion -or $runtime.channel -ne $channel -or $runtime.commit -ne $head -or $runtime.releaseDate -ne $identity.ReleaseDate) {
-        throw '程序版本、渠道、发布日期或提交身份不一致。'
-    }
     Get-ChildItem $app -Recurse -File | Where-Object {$_.Extension -in '.pdb','.log' -or
         ($_.Extension -eq '.xml' -and (Test-Path (Join-Path $_.DirectoryName ($_.BaseName+'.dll')))) -or $_.Name -eq '.halcon-native-deployed'} | Remove-Item -Force
     if ($signed) {
@@ -117,11 +109,23 @@ try {
             Invoke-ReleaseNative $SignToolPath @('verify','/pa',$file.FullName)
         }
     }
+    $payload=New-ReleasePayload -AppPath $app -BuildId $buildId -SourceCommit $head -ArtifactVersion $artifactVersion
+    $payloadSha256=Write-ReleasePayload -AppPath $app -Payload $payload
+    $probePath="$stage/probe.json"
+    $probe=Start-Process "$app/SunEyeVision.UI.exe" -ArgumentList @('--toolbox-probe',"`"$probePath`"") -PassThru -WindowStyle Hidden
+    if (!$probe.WaitForExit(30000)) {$probe.Kill();throw '程序探针超时。'}
+    if ($probe.ExitCode -ne 0 -or !(Test-Path $probePath)) {throw '程序探针失败。'}
+    $runtime=Get-Content $probePath -Raw | ConvertFrom-Json
+    if ($runtime.releaseVersion -ne $releaseVersion -or $runtime.channel -ne $channel -or $runtime.commit -ne $head -or $runtime.releaseDate -ne $identity.ReleaseDate) {
+        throw '程序版本、渠道、发布日期或提交身份不一致。'
+    }
+    Assert-ReleasePayloadUnchanged -AppPath $app -Payload $payload -PayloadSha256 $payloadSha256
     $branding=Get-InstallerBranding $channel $artifactVersion
     $definitions=[ordered]@{AppVersion=$releaseVersion;ReleaseVersion=$artifactVersion;Channel=$channel;AppDisplayName=$branding.DisplayName;AppId=$branding.AppId;
         DefaultDir=$branding.DefaultDir;ReleaseDir=$app;OutputDir="$stage/output";OutputBaseName=$setupName;AppIcon="$app/Icons/suneyevision.ico";AssociationId=$branding.AssociationId}
     $isccArgs=@('/Qp');foreach($key in $definitions.Keys){$isccArgs+="/D$key=$($definitions[$key])"};$isccArgs+="$PSScriptRoot/SunEyeVision.iss"
     Invoke-ReleaseNative $IsccPath $isccArgs
+    Assert-ReleasePayloadUnchanged -AppPath $app -Payload $payload -PayloadSha256 $payloadSha256
     $setup="$stage/output/$setupName.exe"
     if ($signed) {
         Invoke-ReleaseNative $SignToolPath @('sign','/sha1',$CertificateThumbprint,'/fd','SHA256','/tr',$TimestampUrl,'/td','SHA256',$setup)
@@ -144,7 +148,7 @@ try {
         installerAppId=$branding.AppId;associationId=$branding.AssociationId;installer="$setupName.exe";sha256='';plugins=@($tools.BaseName);tests=$tests;
         icons=@{application='Icons/suneyevision.ico';shortcut='Icons/suneyevision.ico';solution='Icons/solution.ico';sourceHashesVerified=$true};
         externalPrerequisites=@('HALCON runtime license','Camera vendor SDK where required');
-        payload=@(Get-ChildItem $app -Recurse -File | ForEach-Object {@{path=[IO.Path]::GetRelativePath($app,$_.FullName);sha256=(Get-FileHash $_.FullName).Hash}})}
+        payload=$payload;payloadFileSha256=$payloadSha256}
     $sha=Write-ReleaseArtifacts "$stage/output" $manifest
     $destination=if($Local){"$root/dist/local/$buildId"}elseif($Repack){"$root/dist/repack/$artifactVersion/$buildId"}else{"$root/dist/$artifactVersion"}
     if(Test-Path $destination){throw "目标已存在：$destination"}

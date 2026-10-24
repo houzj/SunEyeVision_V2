@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 
@@ -61,7 +62,7 @@ namespace SunEyeVision.Core.Services.Serialization
         private static readonly object _lock = new();
         
         // 已注册的类型集合（用于去重）
-        private static readonly HashSet<Type> _registeredTypes = new();
+        private static HashSet<Type> _registeredTypes = new();
 
         /// <summary>
         /// 序列化选项（包含多态配置）
@@ -71,7 +72,7 @@ namespace SunEyeVision.Core.Services.Serialization
             get
             {
                 EnsureInitialized();
-                return _serializationOptions!;
+                lock(_lock) return _serializationOptions!;
             }
         }
 
@@ -134,7 +135,8 @@ namespace SunEyeVision.Core.Services.Serialization
             var defaultResolver = new DefaultJsonTypeInfoResolver();
 
             // 添加类型修饰器，将多态配置应用到 ToolParameters 类型
-            _typeResolver = defaultResolver.WithAddedModifier(ApplyPolymorphismOptions);
+            var initialCatalog=_polymorphismOptions.DerivedTypes.ToArray();
+            _typeResolver = defaultResolver.WithAddedModifier(info=>ApplyPolymorphismOptions(info,initialCatalog));
 
             _serializationOptions = new JsonSerializerOptions
             {
@@ -146,12 +148,13 @@ namespace SunEyeVision.Core.Services.Serialization
                 IncludeFields = true,
                 TypeInfoResolver = _typeResolver
             };
+            _serializationOptions.MakeReadOnly();
         }
 
         /// <summary>
         /// 将多态配置应用到 ToolParameters 类型
         /// </summary>
-        private static void ApplyPolymorphismOptions(JsonTypeInfo typeInfo)
+        private static void ApplyPolymorphismOptions(JsonTypeInfo typeInfo,IReadOnlyList<JsonDerivedType> catalog)
         {
             if (typeInfo.Type != typeof(ToolParameters))
                 return;
@@ -159,18 +162,13 @@ namespace SunEyeVision.Core.Services.Serialization
             // JsonPolymorphismOptions belongs to exactly one JsonTypeInfo. Workflow
             // copies the serializer options, so each resolver call needs its own
             // metadata rather than assigning the registration catalog itself.
-            lock (_lock)
-            {
-                var catalog = _polymorphismOptions!;
                 var snapshot = new JsonPolymorphismOptions
                 {
-                    TypeDiscriminatorPropertyName = catalog.TypeDiscriminatorPropertyName,
-                    IgnoreUnrecognizedTypeDiscriminators = catalog.IgnoreUnrecognizedTypeDiscriminators,
-                    UnknownDerivedTypeHandling = catalog.UnknownDerivedTypeHandling
+                    TypeDiscriminatorPropertyName = "$type",
+                    IgnoreUnrecognizedTypeDiscriminators = false
                 };
-                foreach (var derived in catalog.DerivedTypes) snapshot.DerivedTypes.Add(derived);
+                foreach (var derived in catalog) snapshot.DerivedTypes.Add(derived);
                 typeInfo.PolymorphismOptions = snapshot;
-            }
         }
 
         /// <summary>
@@ -180,49 +178,74 @@ namespace SunEyeVision.Core.Services.Serialization
         /// <param name="typeDiscriminator">类型鉴别器（从 [JsonDerivedType] 特性提取）</param>
         public static void RegisterParameterType(Type parameterType, string typeDiscriminator)
         {
-            if (parameterType == null)
-            {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    "参数类型注册失败: 类型为 null",
-                    "ParameterTypeRegistry");
-                return;
-            }
+            var prepared=PrepareRegistration(new[]{new KeyValuePair<Type,string>(parameterType,typeDiscriminator)});
+            using var commit=prepared.EnterCommit();
+            commit.Publish();
+        }
 
-            if (!typeof(ToolParameters).IsAssignableFrom(parameterType))
-            {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"参数类型注册失败: {parameterType.Name} 不是 ToolParameters 的派生类",
-                    "ParameterTypeRegistry");
-                return;
-            }
-
-            if (parameterType == typeof(GenericToolParameters))
-            {
-                // GenericToolParameters 已在初始化时注册
-                return;
-            }
-
+        /// <summary>Builds a complete serializer generation without publishing candidate parameter types.</summary>
+        public static PreparedRegistration PrepareRegistration(IEnumerable<KeyValuePair<Type,string>> additions)
+        {
+            ArgumentNullException.ThrowIfNull(additions);
+            var requested=additions.ToArray();
             EnsureInitialized();
-
-            lock (_lock)
+            JsonSerializerOptions expected;
+            JsonDerivedType[] previous;
+            lock(_lock){expected=_serializationOptions!;previous=_polymorphismOptions!.DerivedTypes.ToArray();}
+            var byType=previous.ToDictionary(item=>item.DerivedType,item=>(string)item.TypeDiscriminator!);
+            var byName=previous.ToDictionary(item=>(string)item.TypeDiscriminator!,item=>item.DerivedType,StringComparer.Ordinal);
+            foreach(var item in requested)
             {
-                // 检查是否已注册
-                if (_registeredTypes.Contains(parameterType))
-                {
-                    return;
-                }
-
-                // 添加到多态配置
-                _polymorphismOptions!.DerivedTypes.Add(
-                    new JsonDerivedType(parameterType, typeDiscriminator));
-
-                // 记录已注册
-                _registeredTypes.Add(parameterType);
-
-                VisionLogger.Instance.Log(LogLevel.Debug,
-                    $"参数类型已注册: {parameterType.Name} → '{typeDiscriminator}'",
-                    "ParameterTypeRegistry");
+                if(item.Key is null||item.Key.IsAbstract||!typeof(ToolParameters).IsAssignableFrom(item.Key)||string.IsNullOrWhiteSpace(item.Value))
+                    throw new ArgumentException("A concrete parameter type and discriminator are required.",nameof(additions));
+                if(byType.TryGetValue(item.Key,out var oldName)&&oldName!=item.Value)
+                    throw new InvalidOperationException("A parameter type cannot change its registered discriminator.");
+                if(byName.TryGetValue(item.Value,out var oldType)&&oldType!=item.Key)
+                    throw new InvalidOperationException("A parameter discriminator is already owned by another type: "+item.Value);
+                byType[item.Key]=item.Value;byName[item.Value]=item.Key;
             }
+            if(byType.Count==previous.Length)return new(expected,expected,_polymorphismOptions!,new HashSet<Type>(byType.Keys));
+            var catalog=byType.Select(item=>new JsonDerivedType(item.Key,item.Value)).ToArray();
+            var resolver=new DefaultJsonTypeInfoResolver().WithAddedModifier(info=>ApplyPolymorphismOptions(info,catalog));
+            var options=new JsonSerializerOptions(expected){TypeInfoResolver=resolver};
+            options.MakeReadOnly();
+            options.GetTypeInfo(typeof(ToolParameters));
+            foreach(var item in requested)options.GetTypeInfo(item.Key);
+            var policy=new JsonPolymorphismOptions{TypeDiscriminatorPropertyName="$type",IgnoreUnrecognizedTypeDiscriminators=false};
+            foreach(var item in catalog)policy.DerivedTypes.Add(item);
+            return new(expected,options,policy,new HashSet<Type>(byType.Keys));
+        }
+
+        public sealed class PreparedRegistration
+        {
+            internal readonly JsonSerializerOptions Expected,Options;
+            internal readonly JsonPolymorphismOptions Policy;
+            internal readonly HashSet<Type> Types;
+            internal PreparedRegistration(JsonSerializerOptions expected,JsonSerializerOptions options,JsonPolymorphismOptions policy,HashSet<Type> types)
+            {Expected=expected;Options=options;Policy=policy;Types=types;}
+            /// <summary>Acquire after the tool catalog gate; never hold across await or plugin callbacks.</summary>
+            public CommitScope EnterCommit()=>new(this);
+        }
+
+        public sealed class CommitScope : IDisposable
+        {
+            private readonly PreparedRegistration _prepared;
+            private bool _closed,_published;
+            internal CommitScope(PreparedRegistration prepared)
+            {
+                _prepared=prepared;Monitor.Enter(_lock);
+                if(!ReferenceEquals(_serializationOptions,prepared.Expected))
+                {Monitor.Exit(_lock);throw new InvalidOperationException("Parameter registration preparation is stale.");}
+            }
+            /// <summary>Only swaps already prepared state; all participating gates must remain held until publication finishes.</summary>
+            public void Publish()
+            {
+                ObjectDisposedException.ThrowIf(_closed,this);
+                if(_published)throw new InvalidOperationException("Parameter registration was already published.");
+                _polymorphismOptions=_prepared.Policy;_registeredTypes=_prepared.Types;
+                _typeResolver=_prepared.Options.TypeInfoResolver;_serializationOptions=_prepared.Options;_published=true;
+            }
+            public void Dispose(){if(_closed)return;_closed=true;Monitor.Exit(_lock);}
         }
 
         /// <summary>
@@ -349,21 +372,11 @@ namespace SunEyeVision.Core.Services.Serialization
         {
             lock (_lock)
             {
-                _polymorphismOptions?.DerivedTypes.Clear();
-                _registeredTypes.Clear();
-
-                // 重新注册 GenericToolParameters
-                if (_polymorphismOptions != null)
-                {
-                    _polymorphismOptions.DerivedTypes.Add(
-                        new JsonDerivedType(typeof(GenericToolParameters), "Generic"));
-                    _registeredTypes.Add(typeof(GenericToolParameters));
-                }
-
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    "参数类型注册已清除",
-                    "ParameterTypeRegistry");
+                _registeredTypes=new HashSet<Type>();
+                InitializeSerializationOptions();
+                _isInitialized=true;
             }
+            VisionLogger.Instance.Log(LogLevel.Info,"参数类型注册已清除","ParameterTypeRegistry");
         }
 
     }

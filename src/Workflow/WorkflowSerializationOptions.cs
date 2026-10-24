@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.Json;
 using SunEyeVision.Core.Services.Serialization;
 
@@ -24,6 +24,7 @@ namespace SunEyeVision.Workflow
     public static class WorkflowSerializationOptions
     {
         private static JsonSerializerOptions? _default;
+        private static JsonSerializerOptions? _defaultSource;
         private static readonly object _lock = new object();
 
         /// <summary>
@@ -44,29 +45,22 @@ namespace SunEyeVision.Workflow
         {
             get
             {
-                if (_default == null)
+                var source=ParameterTypeRegistry.SerializationOptions;
+                lock(_lock)
                 {
-                    lock (_lock)
+                    if(!ReferenceEquals(_defaultSource,source))
                     {
-                        if (_default == null)
-                        {
-                            // 直接使用 ParameterTypeRegistry.SerializationOptions
-                            // 这确保动态多态类型注册生效
-                            _default = new JsonSerializerOptions(ParameterTypeRegistry.SerializationOptions);
-                            
-                            // ★ 关键：手动复制 TypeInfoResolver（复制构造函数不会复制它）
-                            _default.TypeInfoResolver = ParameterTypeRegistry.SerializationOptions.TypeInfoResolver;
-                            
-                            // 注册 Workflow 层的转换器
-                            _default.Converters.Add(new WorkflowJsonConverter());
-                        }
+                        var options=new JsonSerializerOptions(source){WriteIndented=true};
+                        options.Converters.Add(new WorkflowJsonConverter());
+                        _default=options;_defaultSource=source;
                     }
+                    return _default!;
                 }
-                return _default;
             }
         }
 
         private static JsonSerializerOptions? _compact;
+        private static JsonSerializerOptions? _compactSource;
         private static readonly object _compactLock = new object();
 
         /// <summary>
@@ -84,28 +78,17 @@ namespace SunEyeVision.Workflow
         {
             get
             {
-                if (_compact == null)
+                var source=ParameterTypeRegistry.SerializationOptions;
+                lock(_compactLock)
                 {
-                    lock (_compactLock)
+                    if(!ReferenceEquals(_compactSource,source))
                     {
-                        if (_compact == null)
-                        {
-                            // 直接使用 ParameterTypeRegistry.SerializationOptions
-                            // 这确保动态多态类型注册生效
-                            _compact = new JsonSerializerOptions(ParameterTypeRegistry.SerializationOptions)
-                            {
-                                WriteIndented = false
-                            };
-                            
-                            // ★ 关键：手动复制 TypeInfoResolver（复制构造函数不会复制它）
-                            _compact.TypeInfoResolver = ParameterTypeRegistry.SerializationOptions.TypeInfoResolver;
-                            
-                            // 注册 Workflow 层的转换器
-                            _compact.Converters.Add(new WorkflowJsonConverter());
-                        }
+                        var options=new JsonSerializerOptions(source){WriteIndented=false};
+                        options.Converters.Add(new WorkflowJsonConverter());
+                        _compact=options;_compactSource=source;
                     }
+                    return _compact!;
                 }
-                return _compact;
             }
         }
     }

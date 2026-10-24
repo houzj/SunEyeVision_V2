@@ -16,6 +16,8 @@ public sealed class ToolRegistryCatalog : IToolCatalog
 
     public void Register(Type toolType) => ToolRegistry.RegisterTool(toolType);
 
+    public IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> toolTypes)=>ToolRegistry.PrepareRegistration(toolTypes);
+
     public void Clear() => ToolRegistry.ClearAll();
 
     public bool Contains(string toolId) => ToolRegistry.ToolExists(toolId);

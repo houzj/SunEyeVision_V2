@@ -15,6 +15,8 @@ public interface IToolCatalog
 
     void Register(Type toolType);
 
+    IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> toolTypes);
+
     void Clear();
 
     bool Contains(string toolId);
@@ -26,4 +28,16 @@ public interface IToolCatalog
     ToolMetadata? GetMetadata(string toolId);
 
     IReadOnlyList<ToolMetadata> GetAllMetadata();
+}
+
+/// <summary>One complete plugin assembly's prepared, unpublished catalog state.</summary>
+public interface IPreparedToolRegistration
+{
+    IToolCatalogCommitScope EnterCommit();
+}
+
+/// <summary>Synchronous scope. Validate all participating scopes before Publish; publication only swaps prepared state.</summary>
+public interface IToolCatalogCommitScope : IDisposable
+{
+    void Publish();
 }

@@ -1,3 +1,11 @@
+## 2026-10-24 18:41 双缺陷后继748已固定直交，继续实际主窗独验
+
+- 固定源码748f6bb087d3c32bbc22bc1a17920fd2037fecb5，产品修复9dc/Custom115f；748仅修新增正控的错误对象身份期望。editor-chain-ready-748f6bb0停止写，receiptBB578B4A675BB94B22E930C4CB732774D1C1AEFDCFFE73A53D5E1333DD55DF61，evidence012A10A9C508D89040D3251968CFE09DD29A0161E786A4684C0945F692D56F51，已直接交独测/协调/主控。
+- Source3877逐SHA0差+6明确publicizer编译输入，app/UItests权威626、121产品PE精确748、实际HostDebugRoot同fixedapp；postruntime626无漂移/extra0。fullRelease03自然0/0错1279警告169.14秒；修正1case PID56468自然0，实际exe31148自然0/精确748/全部22工具。
+- 前继9dc producer15项为14PASS+1新增fixture错断言FAIL，原TRX/log保history，不冒新15PASS。该正控改SourceParameters.Name会合法按稳定FieldId重写下游source.value→source.edited，不应Assert.Same参数对象；748仅改oracle。1201个产品文件9dc→748实际Source清单逐SHA相等，14有效PASS保留不重跑；新只补修正1case。Custom真实按钮Invoke、preview173/UndoRedo以及配置拒绝负控在原14有效PASS内，不能代真实主窗独验。
+- 两端消息交叉已按实际时间排除运行重叠：实施56468 18:37:30.517–33.407、31148 18:37:33.467–37.895均自然0；独测60236在18:38:09.329才启动，间隔31.4秒，无需为消息顺序重跑功能，不作性能结论。实施当前无runtime，独测身份门后统排Main保存/invalid/重开、真实Run及Custom确认，实施继续跟进不止于交接。
+- 原A11 header sourceCommit/Core一致性负控已确诊，但协调最新安全边界要求先待主控核原批准；实施尚未写任何N03产品/测试改动，ReleasePayloadAuthority/Release.Common/相应测试无自有dirty。先前19:00源码/19:20–40预测不再启动承诺。程序集载体继续暂停，Blob新实施未自启，人工/VS由文档协调合并最终同Release一次。
+
 ## 2026-10-24 18:16 真实主窗保存冲突根因已定位，双缺陷同源后继
 
 - FT-H02-EDITOR-BASELINE-SAVE-01：17bc独测r3真实main173保存被EnsureBaseline拒，disk128未写；唯一独立产品FAIL，变量181/invalid/182/重开前置未成立，不冒4个产品缺陷。assessment43E247DDFE6497417F91CC8F2B14A05F982D8E254890CD56F9078363094FDD60；独测原/owned9110检查0漂移。停止旧17bc重跑，WPF已释放。

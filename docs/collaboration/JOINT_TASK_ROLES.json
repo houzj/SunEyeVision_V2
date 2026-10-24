@@ -319,5 +319,16 @@
     "responsibility": "各岗位负责人主动拆分独立工作包、管理子智能体并核收集成；交付经理管理跨岗关键路径与资源",
     "report": "沿原taskId报告子线负责人、实际状态、依赖、目标时间、下一集成时间",
     "boundary": "共享主树唯一产品写者；并行实现独立Worktree；正式性能及排他资源串行；不新增批次或验收分母"
+  },
+  "deliveryFlowPolicy": {
+    "source": "JOINT_COLLABORATION_PROTOCOL.md 第3.2节",
+    "productWipLimit": 2,
+    "currentChains": [
+      "发布加载完整链",
+      "生产编辑至保存重开完整链"
+    ],
+    "accountability": "交付经理对使用链闭合、在制容量、依赖交接和可核收口预测负责",
+    "scope": "原47项验收覆盖不变，不新增优化批次或完成率分母",
+    "exceptions": "真实共同基础依赖造成闭合冲突时带最小依赖与边界交技术总监确认，不自行放宽或制造死锁"
   }
 }

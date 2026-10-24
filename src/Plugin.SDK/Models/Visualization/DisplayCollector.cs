@@ -107,13 +107,18 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         /// <summary>
         /// 添加一个带统一判定状态的批量轮廓。用于大量区域显示，避免每个区域创建
         /// 一个 ContourGeometry 对象；OK/NG 应分别调用此方法。
+        /// sourceElements 由生产者逐轮廓显式提供；null 保持未映射，不从数量或名称推导。
         /// </summary>
         public void AddContourBatch(GraphicsStyle style, IReadOnlyList<Point[]> contours,
-            bool isPass = true, bool isClosed = true)
+            bool isPass = true, bool isClosed = true, IReadOnlyList<DeclaredElementAddress>? sourceElements = null)
         {
-            if (contours == null || contours.Count == 0) return;
+            // Keep legacy null/empty unmapped calls as no-ops, while validating any supplied map.
+            if (contours == null && sourceElements == null) return;
+            var geometry = new BatchedContourGeometry(contours!, isClosed, sourceElements);
+            if (geometry.Contours.Count == 0) return;
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Contour);
-            AppendGeometry(item, new BatchedContourGeometry(contours, isClosed), isPass);
+            AppendGeometry(item, geometry, isPass);
+            _isFinalized = false;
         }
 
         /// <summary>添加圆（真圆，由 Circle2d 定义圆心与半径，渲染层按 GraphicsType.Circle 绘制椭圆）</summary>
@@ -206,6 +211,8 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         public void Merge(DisplayCollector other)
         {
             if (other == null) return;
+
+            _isFinalized = false;
 
             // 合并图形：按 Style + Type 匹配并入，否则新建条目
             foreach (var (style, srcItem) in other._graphicsAccum)

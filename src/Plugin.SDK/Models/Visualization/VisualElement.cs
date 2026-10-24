@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Linq;
+using System.Windows;
 using System.Windows.Media;
 using System.Collections.Generic;
 
@@ -79,12 +81,27 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
     /// </summary>
     public sealed class BatchedContourGeometry
     {
+        /// <summary>Frozen outer list; the point arrays retain the existing borrowed geometry semantics.</summary>
         public IReadOnlyList<Point[]> Contours { get; }
         public bool IsClosed { get; }
+        /// <summary>Explicit per-contour sources, or null when the producer supplied no mapping.</summary>
+        public IReadOnlyList<DeclaredElementAddress>? SourceElements { get; }
 
-        public BatchedContourGeometry(IReadOnlyList<Point[]> contours, bool isClosed = true)
+        public BatchedContourGeometry(IReadOnlyList<Point[]> contours, bool isClosed = true,
+            IReadOnlyList<DeclaredElementAddress>? sourceElements = null)
         {
-            Contours = contours;
+            ArgumentNullException.ThrowIfNull(contours);
+            var frozenContours = contours.ToArray();
+            if (sourceElements != null)
+            {
+                var addresses = sourceElements.ToArray();
+                if (addresses.Length != frozenContours.Length)
+                    throw new ArgumentException("Each contour requires exactly one explicit source address.", nameof(sourceElements));
+                if (addresses.Any(address => address == null))
+                    throw new ArgumentException("Source addresses cannot contain null entries.", nameof(sourceElements));
+                SourceElements = Array.AsReadOnly(addresses);
+            }
+            Contours = Array.AsReadOnly(frozenContours);
             IsClosed = isClosed;
         }
     }

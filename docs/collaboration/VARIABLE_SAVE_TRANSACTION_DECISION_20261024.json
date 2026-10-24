@@ -1,0 +1,65 @@
+{
+  "decisionId": "VARIABLE-SAVE-TRANSACTION-20261024",
+  "baselineCommit": "5b30d5851db8c8a9b9ec33987215bcc07270e653",
+  "status": "approved-for-existing-variable-save-defect-implementation",
+  "authority": "用户已要求总监尽快定变量保存事务架构并交开发修复/独测复测；本决定解除原交付阻断，不授权Blob产品改造",
+  "evidence": [
+    "独立测试FT-H02变量Save失败：变量Name失焦先写正式变量和ParamSettings，再触发正确的Host外写冲突",
+    "MainWindowSolutionEditing当前先验证后逐窗口提交，不等于同代原子发布",
+    "NodeConfigurationEditHost当前只发布节点参数/绑定，变量投影仅含绑定且拒绝变量集合变化",
+    "GlobalVariable.Value同时为运行可变值及既有持久化值；ValueGate存在，当前没有ValueRevision"
+  ],
+  "decision": {
+    "configuration": "节点及变量使用同一Document/Session所属的私有草稿，收集全部参与写集后Prepare、整体Validate，再经现有Host/BindingConfigurationStore一次Publish；任何准备或校验失败不改变正式配置、不消耗或清空草稿",
+    "variableDefinition": "变量稳定Id为身份，名称/类型/分组/顺序/描述/绑定及原窗口已支持的增删操作均在配置事务内；保留存活变量对象身份。重命名按Id解析后投影必要的旧名称引用，不以字符串替换全方案或排除Name/Type校验绕过冲突",
+    "currentValue": "本修复保留当前值UI和既有JSON语义，不擅自引入新的InitialValue业务模型。未显式编辑的Value保留提交时最新运行值；显式Value修改使用预期运行态revision的写集，提交前统一CAS，任一冲突整批拒绝并保留草稿；增加JsonIgnore的单调ValueRevision/原子读取值与版本以检测ABA，不以深比较代替版本",
+    "runtimeIsolation": "运行值不作为配置版本历史的权威或由旧配置Undo/Redo回灌；既有运行输入快照不被编辑覆盖。显式改值影响之后读取/下一轮，不能改变已冻结输入；类型变更或删除若无法安全适配当前使用/绑定，应明确拒绝相关操作，不能隐式破坏消费者",
+    "publication": "所有参与者共享同一Host生命周期与配置版本。复用现有Store发布与依赖重算，不增加第二Store/全局保存管理器。先准备可失败步骤与验证，配置接受失败完整恢复且不推进版本；成功后才统一刷新草稿和通知消费者",
+    "locksAndNotifications": "按实际Com._gate→ValueGate等路径分析锁序，不持ValueGate调用任意UI/订阅回调或做磁盘IO。状态接受与通知分离；发布后通知异常记录为刷新错误，不能报告整批回滚失败并诱发重复发布",
+    "diskSave": "复用现有SaveCurrentDocument/Session dirty与Repository保存路径。磁盘失败保留已接受的内存配置和dirty未保存状态、保留旧磁盘文件，不误报成功；重试无新编辑时不得重复发布。持久化取一致的配置/值快照，不拿旧Store值覆盖最新运行值",
+    "explicitValueNoOp": "有显式当前值写集时，即使candidate配置或其值与旧Store快照相同，也必须通过版本CAS和完整接受，不得被Store的配置no-op提前返回跳过；每次接受最多一次代际发布。纯无编辑保存仍可no-op",
+    "valueUndoRedo": "本修复的Undo/Redo是配置历史，保留最新运行Value，不重放已提交的当前值写意图，不从Store旧值恢复Value。当前值编辑仍是显式运行值命令；不新增值时间旅行业务。旧快照Value不能作为运行真值"
+  },
+  "consumerBoundary": {
+    "currentConfirmedProductionDraftAdapters": [
+      "ProtocolParse",
+      "Threshold"
+    ],
+    "legacy": "本修复不自动迁移全部legacy工具。参与本次保存的未迁移legacy编辑必须在任何正式写入/Publish之前被识别；有未准备草稿时明确拒绝并保留编辑，不能先live flush后冒同批原子。干净legacy不受影响。若原批准合同要求其他消费者，经理保持对应未闭项并交总监定适配范围，不得将本限制静默当原合同已通过",
+    "noExpansion": [
+      "Blob及VM控件重构",
+      "程序集载体/ALC/全局加载器",
+      "全工具新接口系统",
+      "新Value业务语义或全局数据仓库"
+    ]
+  },
+  "implementation": {
+    "owner": "开发工程师｜实现与修复",
+    "allowedAreas": [
+      "src/Workflow/NodeConfigurationEditHost.cs",
+      "src/Workflow/BindingConfigurationStore.cs",
+      "src/Workflow/GlobalVariable.cs",
+      "src/UI/Services/Editing",
+      "src/UI/Shell/Windows/MainWindowSolutionEditing.cs",
+      "src/UI/Features/GlobalVariableManager",
+      "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs",
+      "相关定向测试"
+    ],
+    "allowedAdaptation": "在上述已定合同内由开发确定最小完整文件集与方法命名；可复用BeginVariableEdit/ValidateBatch/CommitBatch等候选命名但不强制新增平行接口。允许为已有变更通知/持久化快照的必要接缝作有限适配，超出上述责任边界报告影响",
+    "existingDraft": "未批准旧草案不能直接恢复；须按显式Value revision CAS、锁序及legacy前置检测重审差异。其他成员dirty按SHA识别保护，唯一产品写权仍归开发",
+    "delivery": "开发定向验证后构建全量Release并固定同源源码/产物交独测；开发自测不代独验，经理协调GUI/构建资源"
+  },
+  "independentAcceptance": [
+    "实际主窗节点pending181与变量Count重命名CountSaved及19/Ratio3.25/Label等合法编辑同批保存，一次配置发布；自然关闭重开与新Run一致",
+    "节点或变量非法输入使整批拒绝，正式对象和磁盘不变，所有草稿及非法文本保留；修正后可保存",
+    "未编辑Value在运行更新后不回灌旧值；显式Value修改遇并发或ABA revision冲突整批拒绝",
+    "stale Session/Host/正式拓扑或绑定冲突被拒，不能重建基线掩盖冲突",
+    "变量增删/名称/类型及绑定重写按稳定Id处理，集合与消费者语义正确；失败无部分接受",
+    "接受阶段故障恢复全部正式状态、不推进配置代；发布后通知异常与发布失败明确分开",
+    "磁盘保存失败保dirty与原磁盘，重试无新编辑不重复发布；配置Undo/Redo不覆盖后续运行值",
+    "未迁移legacy有编辑时在正式写入前明确拒绝；干净legacy不误阻塞；实际Main/变量保存按钮走同一文档入口",
+    "Store值0/live10/显式设置0等配置JSON看似no-op仍必须CAS及接受，冲突被拒；同值显式写意图不绕过版本检查"
+  ],
+  "coordination": "交付经理立即按此正式决定恢复已批准修复，核开发实际估算与首检查点，测试并行准备样本；修复→新固定包→独立定向复测→剩余合同核收→统一Release/用户指定路径及人工清单。不得再等待VM取证或额外人类重复授权；如发现架构冲突带证据回总监",
+  "completionLimit": "本缺陷有限通过不冒原47整体验收；未验证性能、VS/运行时与最终用户目录部署仍由经理沿原合同明确列出"
+}

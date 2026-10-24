@@ -44,7 +44,7 @@
   ],
   "policy": "已批准范围内事件驱动推进；交付跟进由交付协调负责，主控不承担日常定时巡检；事实源独占，产品唯一写者",
   "protocol": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
-  "protocolVersion": "2026-10-24/V8.1-architecture-accountability",
+  "protocolVersion": "2026-10-24/V8.3-source-runtime-evidence-boundaries",
   "adoptionStatus": "V8-issued-awaiting-role-acknowledgements",
   "acknowledgements": "docs/collaboration/PROTOCOL_ACKNOWLEDGEMENTS_20261022.json",
   "independentTesting": {
@@ -220,12 +220,63 @@
     ]
   },
   "architectureReviewPolicy": {
-    "source": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
-    "section": "1. 决策与架构原则（V8当前有效）",
-    "appliesTo": "all project members",
-    "controlRole": "technical director: architecture design, decision approval, final review",
-    "existingImplementationHasPriority": false,
-    "scopeExpansionAuthorized": false
+    "source": "JOINT_COLLABORATION_PROTOCOL.md 第2.2节",
+    "owner": "技术总监｜架构与决策",
+    "sequence": [
+      "实际场景与质量要求，以及自研/VM实现证据",
+      "独立架构合理性分析与关键缺口核实",
+      "同标准候选比较与风险验证",
+      "明确推荐及目标架构决策",
+      "迁移与交付"
+    ],
+    "requiredBasis": [
+      "职责、合同、数据模型、所有权、生命周期与依赖方向",
+      "正常、失败、取消和关闭路径及跨模块适配",
+      "VM借鉴、独立设计、不采用内容及证据与取舍",
+      "复用、调整、替换范围及各自目标依据",
+      "可观察验收、实施条件、兼容与回退"
+    ],
+    "prohibitions": [
+      "预设自有目标架构再选择性寻找支持证据",
+      "以已有实现或最小改动默认限定架构选择",
+      "以VM成熟或已有投入代替方案比较",
+      "将示意、静态或局部测试冒充整链与架构验证",
+      "把关键架构判断留给实现者或依赖用户反复补漏"
+    ],
+    "scope": "已实现和尚未实现设计采用同一架构标准；成本、时间与迁移风险显式权衡，不自动整体重写",
+    "competencies": [
+      "需求、业务场景与质量要求",
+      "证据诊断、根因与设计/实现缺陷区分",
+      "领域模型、合同、分层、依赖、状态事务和所有权",
+      "同标准方案取舍、复杂度、成本与技术债",
+      "性能、容量、并发、缓存与资源上界",
+      "正确性、可靠性、异常取消和恢复",
+      "安全、信任边界与必要约束",
+      "可维护性、可验证性与可观测性",
+      "兼容、工程发布、迁移、回退和演进",
+      "风险原型、代表业务链、证据沟通与自我纠偏",
+      "合同落地、架构一致性和最终技术质量"
+    ],
+    "currentReview": "Blob五层与共享控件建议须先架构复审再提实施决策；原已批准在途交付继续，不新增批次",
+    "amendmentAdoption": "issued-awaiting-member-acknowledgements; manager records actual receipts without resetting V8 history or pausing in-flight delivery",
+    "evidenceAndImpartiality": {
+      "source": "JOINT_COLLABORATION_PROTOCOL.md 第2.2节 必须遵守：真实证据与中立架构决策",
+      "appliesTo": [
+        "保留",
+        "复用",
+        "局部修复",
+        "删除",
+        "整体重构",
+        "替换",
+        "暂不实施"
+      ],
+      "principle": "所有设计决策有可追溯真实依据；现有实现、VM、自拟候选同标准，均无优先权",
+      "decisionBasis": "已确认需求、版本绑定的源码和完整调用/数据/状态/资源链、实际观测/可重复测试及真实约束；保留反证和局限",
+      "unknownGate": "事实/推论/候选/目标/未知分开；关键假设未证只可进入有边界取证或原型，不作为依赖它的产品改造批准依据",
+      "correction": "证据错配、猜测或选择性采信须撤回或修正结论，明确关联影响",
+      "accountability": "总监作架构判断；经理调度交付；逆向核原版事实；独测独立验证",
+      "adoption": "issued; manager collects actual member receipts without pausing approved delivery or resetting history"
+    }
   },
   "reverseEvidence": {
     "projectId": "49b15fdf-9181-43e2-87b2-4b6a20f952dc",
@@ -315,51 +366,32 @@
       "archiveConfirmed": true,
       "date": "2026-10-24",
       "repositoriesPreserved": true
+    },
+    "evidenceSelectionPolicy": {
+      "source": "JOINT_COLLABORATION_PROTOCOL.md 第6.1–6.3节",
+      "selector": "按待证明结论和决策风险选择，不按岗位空闲或工具便利选择",
+      "sourceOnly": "版本绑定的结构/类型/合同/资源及已贯通静态接线；不冒运行行为",
+      "runtimeRequired": "实际交互与生效时机、输出数值、错误恢复/并发、性能与长期资源；动态分支关键或源码与观测矛盾时定向补证",
+      "taskFields": [
+        "决策用途",
+        "待证明结论",
+        "已有证据与缺口",
+        "方式及理由",
+        "版本样本允许动作写入范围",
+        "负责人时间检查点",
+        "完成停止升级条件",
+        "未知及影响"
+      ],
+      "stop": "证据足以支持有界决策且关键矛盾已解释；无关未知保留，不无限恢复VM",
+      "blocked": "记录实际失败与解除责任/重估点，继续其他就绪任务，不靠推测结案",
+      "roles": "经理管跨岗计划资源与核收推进；VM负责人唯一入口组织源码实机；总监作架构决策；文档统一既有HTML",
+      "noNewBatch": true,
+      "productChangesAuthorizedByThisAmendment": false,
+      "currentApplication": "VM控件库清单与Blob开窗/模板/绑定/ROI回填/运行/确认关闭及解绑链；复用原证据，仅补决策缺口"
     }
   },
   "currentResponsibilitySource": "JOINT_COLLABORATION_PROTOCOL.md 第2节 岗位责任矩阵",
   "historyPolicy": "Historical titles, task-specific initialMode/firstTask and retired role records are traceability only; V8.1 governs current responsibilities; V8 adoption history is retained.",
-  "architectureReviewPolicy": {
-    "source": "JOINT_COLLABORATION_PROTOCOL.md 第2.2节",
-    "owner": "技术总监｜架构与决策",
-    "sequence": [
-      "实际场景与质量要求，以及自研/VM实现证据",
-      "独立架构合理性分析与关键缺口核实",
-      "同标准候选比较与风险验证",
-      "明确推荐及目标架构决策",
-      "迁移与交付"
-    ],
-    "requiredBasis": [
-      "职责、合同、数据模型、所有权、生命周期与依赖方向",
-      "正常、失败、取消和关闭路径及跨模块适配",
-      "VM借鉴、独立设计、不采用内容及证据与取舍",
-      "复用、调整、替换范围及各自目标依据",
-      "可观察验收、实施条件、兼容与回退"
-    ],
-    "prohibitions": [
-      "预设自有目标架构再选择性寻找支持证据",
-      "以已有实现或最小改动默认限定架构选择",
-      "以VM成熟或已有投入代替方案比较",
-      "将示意、静态或局部测试冒充整链与架构验证",
-      "把关键架构判断留给实现者或依赖用户反复补漏"
-    ],
-    "scope": "已实现和尚未实现设计采用同一架构标准；成本、时间与迁移风险显式权衡，不自动整体重写",
-    "competencies": [
-      "需求、业务场景与质量要求",
-      "证据诊断、根因与设计/实现缺陷区分",
-      "领域模型、合同、分层、依赖、状态事务和所有权",
-      "同标准方案取舍、复杂度、成本与技术债",
-      "性能、容量、并发、缓存与资源上界",
-      "正确性、可靠性、异常取消和恢复",
-      "安全、信任边界与必要约束",
-      "可维护性、可验证性与可观测性",
-      "兼容、工程发布、迁移、回退和演进",
-      "风险原型、代表业务链、证据沟通与自我纠偏",
-      "合同落地、架构一致性和最终技术质量"
-    ],
-    "currentReview": "Blob五层与共享控件建议须先架构复审再提实施决策；原已批准在途交付继续，不新增批次",
-    "amendmentAdoption": "issued-awaiting-member-acknowledgements; manager records actual receipts without resetting V8 history or pausing in-flight delivery"
-  },
   "commonAccountability": [
     "接单确认输入/交付/验收/目标/检查点及估算依据",
     "缺输入推进其他就绪任务；环境自行排障，跨角色问题交经理",

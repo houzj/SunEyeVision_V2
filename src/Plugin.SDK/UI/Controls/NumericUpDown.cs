@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -46,6 +46,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private Slider _slider;
         private Popup _sliderPopup;
         private bool _isUpdatingText;
+        private bool _hasPendingText;
         private bool _isSyncingValues; // 防止 Value 和 IntValue 循环更新
 
         static NumericUpDown()
@@ -209,6 +210,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // 取消旧事件订阅
             if (_textBox != null)
             {
+                _textBox.TextChanged -= OnPendingTextChanged;
                 _textBox.PreviewKeyDown -= OnTextBoxKeyDown;
                 _textBox.PreviewMouseWheel -= OnTextBoxMouseWheel;
                 _textBox.LostFocus -= OnTextBoxLostFocus;
@@ -237,6 +239,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // 订阅新事件
             if (_textBox != null)
             {
+                _textBox.TextChanged += OnPendingTextChanged;
                 _textBox.PreviewKeyDown += OnTextBoxKeyDown;
                 _textBox.PreviewMouseWheel += OnTextBoxMouseWheel;
                 _textBox.LostFocus += OnTextBoxLostFocus;
@@ -384,6 +387,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     string format = DecimalPlaces > 0 ? $"F{DecimalPlaces}" : "F0";
                     _textBox.Text = Value.ToString(format);
+                    _hasPendingText = false;
                 }
                 finally
                 {
@@ -410,18 +414,43 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
         }
 
-        private void ParseAndApplyText()
+        private void OnPendingTextChanged(object sender, TextChangedEventArgs e)
+        { if (!_isUpdatingText) _hasPendingText = true; }
+
+        /// <summary>Check the actual template input without changing its text or numeric value.</summary>
+        public bool TryValidatePendingEdit(out string error) => TryReadPendingNumber(out _, out error);
+        public bool TryCommitPendingEdit(out string error)
         {
-            if (_textBox == null || _isUpdatingText) return;
-
-            if (double.TryParse(_textBox.Text, out var newValue))
+            if (!TryReadPendingNumber(out var value, out error)) return false;
+            if (_hasPendingText && !IsReadOnly && IsEnabled)
             {
-                newValue = Math.Round(newValue, DecimalPlaces);
-                SetCurrentValue(ValueProperty, Clamp(newValue));
+                SetCurrentValue(ValueProperty, value);
+                UpdateText();
             }
-            UpdateText();
+            return true;
         }
-
+        public void DiscardPendingEdit() => UpdateText();
+        private bool TryReadPendingNumber(out double value, out string error)
+        {
+            Dispatcher.VerifyAccess(); value = Value; error = "";
+            if (!_hasPendingText || _textBox is null || IsReadOnly || !IsEnabled) return true;
+            if (!double.TryParse(_textBox.Text, out var entered) || !double.IsFinite(entered))
+            { error = "数值输入无效，请输入有限数值。"; return false; }
+            var integer = System.Windows.Data.BindingOperations.IsDataBound(this, IntValueProperty) ||
+                TemplatedParent is ConfigSetting setting && Type.GetTypeCode(setting.DataType) is
+                    TypeCode.SByte or TypeCode.Byte or TypeCode.Int16 or TypeCode.UInt16 or TypeCode.Int32 or TypeCode.UInt32 or TypeCode.Int64 or TypeCode.UInt64;
+            if (integer && entered != Math.Truncate(entered))
+            { error = "此参数需要整数，不能使用小数。"; return false; }
+            if (System.Windows.Data.BindingOperations.IsDataBound(this, IntValueProperty) && (entered < int.MinValue || entered > int.MaxValue))
+            { error = "整数超出 Int32 范围。"; return false; }
+            if (entered < Minimum || entered > Maximum)
+            { error = "数值超出允许范围。"; return false; }
+            value = Math.Round(entered, DecimalPlaces);
+            if (!double.IsFinite(value) || value < Minimum || value > Maximum)
+            { error = "数值精度或范围无效。"; return false; }
+            return true;
+        }
+        private void ParseAndApplyText() => TryCommitPendingEdit(out _);
         #endregion
 
         #region 回调方法

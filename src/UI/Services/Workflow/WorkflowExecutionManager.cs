@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -1147,6 +1147,8 @@ namespace SunEyeVision.UI.Services.Workflow
         private void CommitPendingEditors(string? workflowId)
         {
             var ids = new HashSet<string>();
+            var nodes = new HashSet<object>(ReferenceEqualityComparer.Instance);
+            var document = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution;
             var visited = new HashSet<string>();
             void Include(string id)
             {
@@ -1156,11 +1158,15 @@ namespace SunEyeVision.UI.Services.Workflow
                 foreach (var node in flow.Nodes)
                 {
                     ids.Add(node.Id);
+                    nodes.Add(node);
                     if (!string.IsNullOrWhiteSpace(node.SubroutineId)) Include(node.SubroutineId);
                 }
             }
             if (workflowId != null) Include(workflowId);
-            if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryCommitOpenEditors(workflowId == null ? null : ids.Contains, out var error))
+            else if (document != null) foreach (var flow in document.Workflows) Include(flow.Id);
+            if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryCommitOpenEditors(workflowId == null ? null : ids.Contains, out var error,
+                node => document != null && ReferenceEquals(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution, document) &&
+                    nodes.Contains(node) && document.Workflows.Any(w => w.Nodes.Any(n => ReferenceEquals(n, node)))))
                 throw new InvalidOperationException(error);
             SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
             SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();

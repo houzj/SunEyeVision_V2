@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -3888,6 +3888,7 @@ SplitterPosition = position;
             // ★ 性能剪口：首次打开调试窗口的完整耗时
             var perfSw = System.Diagnostics.Stopwatch.StartNew();
 
+            SunEyeVision.UI.Services.Editing.ProductionEditorContext? editorContext = null;
             try
             {
                 // 获取初始化接口
@@ -3898,25 +3899,27 @@ SplitterPosition = position;
                     return;
                 }
 
+                editorContext = CreateProductionEditorContext(target, node, out var editorDataProvider);
+                var editingNode = editorContext?.DraftNode ?? node;
                 // ① 设置当前节点
                 var stepSw = System.Diagnostics.Stopwatch.StartNew();
-                initializer.SetCurrentNode(node);
+                initializer.SetCurrentNode(editingNode);
                 stepSw.Stop();
                 _logger?.LogInfo($"[Perf] SetCurrentNode: {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
                 AddLog($"✅ 已设置当前节点");
 
                 // ② 设置节点参数
-                if (node.Parameters != null)
+                if (editingNode.Parameters != null)
                 {
                     stepSw.Restart();
-                    initializer.SetParameters(node.Parameters);
+                    initializer.SetParameters(editingNode.Parameters);
                     stepSw.Stop();
                     _logger?.LogInfo($"[Perf] SetParameters: {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
                     AddLog($"✅ 已初始化节点参数");
                 }
 
                 // ③ 设置数据提供者
-                var dataProvider = GetDataProviderForNode(node);
+                var dataProvider = editorDataProvider ?? GetDataProviderForNode(node);
                 if (dataProvider != null)
                 {
                     stepSw.Restart();
@@ -4001,6 +4004,7 @@ SplitterPosition = position;
             }
             catch (Exception ex)
             {
+                if (editorContext != null) { editorContext.Dispose(); _productionEditors.Remove(editorContext); }
                 var errorDetails = new System.Text.StringBuilder();
                 errorDetails.AppendLine($"❌ 初始化调试目标失败: {ex.Message}");
                 var innerEx = ex.InnerException;

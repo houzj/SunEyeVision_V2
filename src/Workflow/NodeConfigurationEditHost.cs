@@ -38,6 +38,8 @@ public sealed class NodeConfigurationEditHost
     }
 
     public BindingConfigurationSnapshot Capture() => _store.Capture();
+    public bool OwnsNode(string workflowId, WorkflowNodeBase node)
+    { lock (_gate) return _design.Workflows.Any(w => w.Id == workflowId && w.Nodes.Any(n => ReferenceEquals(n, node))); }
     public bool CanUndo => _store.CanUndo;
     public bool CanRedo => _store.CanRedo;
 
@@ -51,6 +53,43 @@ public sealed class NodeConfigurationEditHost
         }
     }
 
+    /// <summary>Validate a private editor candidate without publishing or consuming it.</summary>
+    public void Validate(NodeConfigurationEditDraft editor)
+    {
+        ArgumentNullException.ThrowIfNull(editor);
+        lock (_gate)
+        {
+            CheckEditor(editor);
+            var baseline = _store.Capture().CopyConfiguration();
+            var validator = new OutputBindingChangeService();
+            validator.Reset(baseline);
+            var candidate = _store.Capture().CopyConfiguration();
+            SetEditorCandidate(candidate, editor);
+            validator = validator.ForCandidate(candidate);
+            validator.ReconcileAll();
+            SolutionExecutionDependencyGraph.Compile(candidate, checkReadiness: false);
+            var flow = candidate.Workflows.Single(w => w.Id == editor.Identity.WorkflowId);
+            if (OutputBindingChangeService.GetExecutionInputIssues(flow, flow.Id).TryGetValue(editor.Identity.NodeId, out var issues) && issues.Count > 0)
+                throw new InvalidOperationException(issues[0].Message);
+        }
+    }
+
+    private void CheckEditor(NodeConfigurationEditDraft editor)
+    {
+        if (editor.Owner != _owner || editor.Consumed) throw new InvalidOperationException("编辑草稿已提交或不属于当前方案。");
+        EnsureBaseline();
+        var node = Find(_store.Capture().CopyConfiguration(), editor.Identity);
+        if (BindingConfigurationStore.NodeSignature(node) != editor.Signature)
+            throw new InvalidOperationException("当前节点正式配置已变化，草稿已保留，请重新确认后编辑。");
+        if (editor.Node.Id != node.Id || editor.Node.ToolType != node.ToolType)
+            throw new InvalidOperationException("参数编辑不能更换节点身份或工具类型。");
+    }
+    private static void SetEditorCandidate(Solution candidate, NodeConfigurationEditDraft editor)
+    {
+        var node = Find(candidate, editor.Identity);
+        node.Parameters = ToolParameterSnapshot.Create(editor.Node.Parameters);
+        node.ParamSettings = Copy(editor.Node.ParamSettings);
+    }
     public BindingConfigurationPublication Commit(NodeConfigurationEditDraft editor)
     {
         ArgumentNullException.ThrowIfNull(editor);

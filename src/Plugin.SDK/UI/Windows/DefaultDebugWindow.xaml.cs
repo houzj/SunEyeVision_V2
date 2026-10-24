@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -50,6 +50,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
 
         private readonly UserControl _control;
         private readonly ToolDebugControlBase? _toolControl;
+        public ToolDebugControlBase? EditorControl => _toolControl;
         
         // 状态
         private bool _isContinuousRunning;
@@ -187,20 +188,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </summary>
         private void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
         {
-            if (!ToolEditorCommit.TryCommit(_control, out var error))
+            if (!TryConfirm(out var error))
             { PluginLogger.Warning(error, "DefaultDebugWindow"); MessageBox.Show(error, "配置未提交", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-            // 执行参数验证
-            if (ValidateParameters())
-            {
-                PluginLogger.Success("参数验证通过，关闭窗口", "DefaultDebugWindow");
-                Close();
-            }
-            else
-            {
-                PluginLogger.Warning("参数验证失败", "DefaultDebugWindow");
-                MessageBox.Show("参数验证失败，请检查输入参数。", "验证失败", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+            PluginLogger.Success("参数验证通过，关闭窗口", "DefaultDebugWindow");
+        }
+        public bool TryConfirm(out string error)
+        {
+            if (!ToolEditorCommit.TryCommit(_control, out error)) return false;
+            Close();
+            return true;
         }
 
         /// <summary>
@@ -581,7 +577,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             }
             // 绑定状态必须在窗口关闭前提交到节点 ParamSettings，不能只依赖
             // 内部控件的 Unloaded 事件顺序。
-            _toolControl?.PersistParameterBindings();
+            if (ToolEditorCommit.GetDraftContext(_control) is null) _toolControl?.PersistParameterBindings();
             PluginLogger.Info($"[绑定诊断] 标准调试窗口 Closing 完成 | 控件={_control.GetType().Name}", "BindingDiag");
         }
 

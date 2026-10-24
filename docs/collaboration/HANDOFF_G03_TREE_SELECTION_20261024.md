@@ -21,3 +21,4 @@
 - 验证限制/人工结果：为避免 VM 构造中的设备/通讯/应用初始化，fixture 通过 RuntimeHelpers.GetUninitializedObject 建最小 VM，装入真实 Tab/Session/Window/图像结果子VM与集合，并调用生产选择身份核心及生产订阅/树写入方法。完整 SelectedNode setter 后续图像/数据分析呈现、ExecuteOpenDebugWindow 的工具创建链、完整真实主窗操作均未运行；12项不能冒称端到端人工UI验收。真实 VS 设计时/集中用户人工仍 pending，留父实施者统一 Release 一次验收，不另造散手验。
 - 已知风险或禁止改动：只修异步树时效门，不重设计树，不新增持久化类型/新 Manager/载体/加载改造；关闭后旧订阅不会自动改订新参数实例，仍沿原重新开窗口路径。未 push、不删未知文件、不修改其他执行者文档/locks。
 - 下一步：父实施者有限 cherry-pick 本3文件，再在统一Release/独验及最终集中手验中覆盖真实主窗选择/调试窗/文档切换。不能将本12项局部开发验证标为原G/J/M/L完整或整包验收。
+- 2026-10-24 空合同补充（主树基线1b799480）：独测固定旧片已实复现有效合同1→0仍留旧树。有限修改仍仅MainWindowViewModel及原测试：保留全部IsCurrent双守卫，移除Count>0；UpdateModuleResults同时清ModuleResultTree和FlatResultRows，空声明不保旧显示。production-new01新增3项中2通过1失败，失败显示树已空而flat残留；补同步清空后ui-build03真实0错1028警告27.37秒，tree-empty02真实1通过0失败自然exit0。日志/TRX位于artifacts/validation/tool-framework-contract/binding-production-03，编译闭包同时含尚未提交生产接线，不冒独立guard固定二进制。原12项已独验，不重复；后续独测新源仅复核新增空场景及受影响显示路径。指定run历史结果不改。最终人工/VS仍统一一次。

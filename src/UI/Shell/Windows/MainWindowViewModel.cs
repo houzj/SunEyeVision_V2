@@ -2702,7 +2702,7 @@ SplitterPosition = position;
                     if (!IsCurrent()) return;
                     var contract = provider.GetOutputContract();
                     // A provider can notify again or reenter selection/document/window changes while reading.
-                    if (IsCurrent() && contract.Count > 0)
+                    if (IsCurrent())
                         UpdateModuleResults(new ContractToolResults(contract), node.Name, node.ToolType, node.Id);
                 }), System.Windows.Threading.DispatcherPriority.Background);
             };
@@ -4793,6 +4793,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             ToolParameters? parameters = null)
         {
             ModuleResultTree.Clear();
+            FlatResultRows.Clear();
             HasModuleResults = false;
 
             // 统一以「输出变量契约 SSOT」为数据来源：

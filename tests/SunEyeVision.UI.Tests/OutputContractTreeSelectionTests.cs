@@ -21,6 +21,17 @@ namespace SunEyeVision.UI.Tests;
 public sealed class OutputContractTreeSelectionTests
 {
     [Fact]
+    public void Current_empty_contract_clears_previous_declarations() => Sta(() =>
+    {
+        using var f = new Fixture();
+        f.Parameters.Raise(); Drain();
+        Assert.NotEmpty(f.Model.ModuleResultTree);
+        f.Parameters.Empty = true; f.Parameters.Raise(); Drain();
+        Assert.Empty(f.Model.ModuleResultTree);
+        Assert.Empty(f.Model.FlatResultRows);
+    });
+
+    [Fact]
     public void Selected_live_editor_refreshes_the_real_tree_and_coalesces_latest_notifications() => Sta(() =>
     {
         using var f = new Fixture();
@@ -145,6 +156,7 @@ public sealed class OutputContractTreeSelectionTests
         private Action? _changed;
         public event Action? OutputContractChanged { add => _changed += value; remove => _changed -= value; }
         public string Name { get; set; } = "value";
+        public bool Empty { get; set; }
         [JsonIgnore] public int ReadCount { get; private set; }
         [JsonIgnore] public int SubscriberCount => _changed?.GetInvocationList().Length ?? 0;
         [JsonIgnore] public Action? BeforeRead { get; set; }
@@ -154,6 +166,7 @@ public sealed class OutputContractTreeSelectionTests
             ReadCount++;
             var name = Name;
             BeforeRead?.Invoke();
+            if (Empty) return Array.Empty<OutputVariable>();
             return new[] { new OutputVariable { Name = name, DisplayName = name, VariableType = "Double", Group = "结果", IsCollection = false, FixedCount = 1 } };
         }
     }

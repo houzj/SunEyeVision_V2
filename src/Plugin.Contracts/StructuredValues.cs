@@ -18,6 +18,7 @@ public sealed class SequenceValue : IReadOnlyList<object?>
     public TypeRef Declaration { get; }
     public int Count=>_items.Length;
     public object? this[int index]=>ValueRules.Copy(_items[index]);
+    public DeclaredValueReader Read(int index)=>new(Declaration.Element!,_items[index]);
     public IEnumerator<object?> GetEnumerator(){for(int i=0;i<Count;i++)yield return this[i];}
     IEnumerator IEnumerable.GetEnumerator()=>GetEnumerator();
 }
@@ -33,6 +34,7 @@ public sealed class RecordValue
     }
     public TypeRef Declaration { get; }
     public bool Contains(string fieldId)=>_fields.Contains(fieldId);
+    public DeclaredValueReader Read(string fieldId)=>_fields.Read(fieldId);
     public T Get<T>(string fieldId)=>_fields.Get<T>(fieldId);
     public IReadOnlyDictionary<string,object?> CopyFields()=>_fields.CopyValues();
     internal IEnumerable<IReadOnlyImage> Images()=>_fields.Images();

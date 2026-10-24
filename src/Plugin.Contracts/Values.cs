@@ -40,9 +40,11 @@ public sealed class ToolSchema
 public sealed class InputValues
 {
     private readonly Dictionary<string,object?> _values;
+    private readonly IReadOnlyDictionary<string,Port> _ports;
     public InputValues(IEnumerable<Port> ports,IReadOnlyDictionary<string,object?> values)
     {
         var specs=ports.ToDictionary(p=>p.Id,StringComparer.Ordinal);
+        _ports=new ReadOnlyDictionary<string,Port>(specs);
         if(values.Keys.Any(k=>!specs.ContainsKey(k)))throw new ArgumentException("Undeclared input/output identity.");
         _values=new(StringComparer.Ordinal);
         foreach(var p in specs.Values)
@@ -52,6 +54,11 @@ public sealed class InputValues
         }
     }
     public bool Contains(string id)=>_values.ContainsKey(id);
+    public DeclaredValueReader Read(string id)
+    {
+        if(!_ports.TryGetValue(id,out var port))throw new KeyNotFoundException(id);
+        return _values.TryGetValue(id,out var value)?new(port.Type,value):new(port.Type,null,true);
+    }
     public T Get<T>(string id)
     {
         if(!_values.TryGetValue(id,out var v))throw new KeyNotFoundException(id);

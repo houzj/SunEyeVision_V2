@@ -6,6 +6,33 @@ internal static partial class Program
     private static Task BindingCases()=>RunBindingCases();
     private static async Task RunBindingCases()
     {
+        await Case("FT-J03-readonly-paging","Frozen large arrays and nested sequences can be navigated without copying the collection",()=>Sync(()=>{
+            var declaration=TypeRef.SequenceOf(DataType.Number);
+            var source=Enumerable.Range(0,100000).Select(i=>(double)i).ToArray();
+            var input=new InputValues(new[]{new Port("values",declaration)},new Dictionary<string,object?>{{"values",source}});
+            source[0]=-1;
+            var reader=input.Read("values");
+            Require(reader.Count==100000&&reader.GetElement(0).GetScalar<double>()==0,"input was not frozen");
+            var before=GC.GetAllocatedBytesForCurrentThread();
+            for(var i=0;i<256;i++)Require(input.Read("values").GetElement(i).GetScalar<double>()==i,"page value drift");
+            Require(GC.GetAllocatedBytesForCurrentThread()-before<256*1024,"a small page copied the full collection");
+            var copy=input.Get<double[]>("values");copy[1]=-1;
+            Require(reader.GetElement(1).GetScalar<double>()==1,"legacy copying API mutated reader");
+            var outer=TypeRef.SequenceOf(declaration);
+            var nested=new SequenceValue(outer,new object?[]{new double[]{7,8}});
+            Require(nested.Read(0).GetElement(1).GetScalar<double>()==8,"nested array reader lost value");
+            Throws<ArgumentOutOfRangeException>(()=>reader.GetElement(reader.Count));
+            Throws<InvalidOperationException>(()=>reader.GetScalar<object>());
+        }));
+        await Case("FT-J03-missing-null","Declared optional absence, explicit null and present values remain distinct",()=>Sync(()=>{
+            var recordType=TypeRef.RecordOf("r",new[]{new Port("absent",DataType.Text,false,true),new Port("nil",DataType.Text,false,true),new Port("v",DataType.Integer)});
+            var record=new RecordValue(recordType,new Dictionary<string,object?>{{"nil",null},{"v",3L}});
+            Require(record.Read("absent").IsMissing&&!record.Read("absent").IsNull,"absence became null");
+            Require(!record.Read("nil").IsMissing&&record.Read("nil").IsNull,"explicit null became absence");
+            Require(record.Read("v").GetScalar<long>()==3,"scalar drift");
+            Throws<KeyNotFoundException>(()=>record.Read("undeclared"));
+            Throws<InvalidOperationException>(()=>record.Read("nil").GetScalar<string>());
+        }));
         await Case("FT-G03-binding-persistence","Typed reference roundtrip preserves stable IDs, shape/count, coordinate frame and index intent",()=>Sync(()=>{
             var record=TypeRef.RecordOf("measurement",new[]{new Port("p",TypeRef.GeometryOf(GeometryKind.Point,GeometryFixture.Frame)),new Port("v",DataType.Number,false,true)});
             var type=TypeRef.SequenceOf(record,new CountConstraint(0,8));

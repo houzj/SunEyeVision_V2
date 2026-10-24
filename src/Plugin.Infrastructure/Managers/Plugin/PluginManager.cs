@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,6 +24,20 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         private readonly ILogger _logger;
         private readonly IToolCatalog _toolCatalog;
         private readonly Dictionary<Type, List<object>> _plugins = new();
+        private ReleasePayloadAuthority? _releaseAuthority;
+        private int _lastRejectedCount;
+        private readonly List<string> _admissionFailures=new();
+        public string? LastAdmissionError {get;private set;}
+        public IReadOnlyList<string> AdmissionFailures=>_admissionFailures.ToArray();
+
+        public void AssertCompleteReleaseToolSet(IEnumerable<string> actualToolIds)
+        {
+            if(_releaseAuthority is null||LastAdmissionError is not null||_lastRejectedCount!=0)
+                throw new InvalidDataException("Release plugin admission failed: "+(LastAdmissionError??string.Join("; ",_admissionFailures)));
+            var actual=actualToolIds.OrderBy(id=>id,StringComparer.Ordinal).ToArray();
+            var expected=_releaseAuthority.ExpectedTools.Keys.OrderBy(id=>id,StringComparer.Ordinal).ToArray();
+            if(!actual.SequenceEqual(expected,StringComparer.Ordinal))throw new InvalidDataException("Registered toolbox differs from the complete declared release ToolId set.");
+        }
 
         public PluginManager(ILogger logger)
             : this(logger, new ToolRegistryCatalog())
@@ -32,8 +46,19 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
 
         public PluginManager(ILogger logger, IToolCatalog toolCatalog)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = new AdmissionLogger(logger ?? throw new ArgumentNullException(nameof(logger)));
             _toolCatalog = toolCatalog ?? throw new ArgumentNullException(nameof(toolCatalog));
+        }
+
+        // Logging is outside publication gates and cannot turn an already-published
+        // assembly into a reported rejection (or prevent rejection diagnostics).
+        private sealed class AdmissionLogger : ILogger
+        {
+            private readonly ILogger _inner;
+            internal AdmissionLogger(ILogger inner){_inner=inner;}
+            public void Log(LogLevel level,string message,string? source=null,Exception? exception=null,LogTarget target=LogTarget.All)
+            {try{_inner.Log(level,message,source,exception,target);}catch{System.Diagnostics.Trace.WriteLine("Plugin admission diagnostic sink failed: "+message);}}
+            public ILogger ForSource(string source)=>new AdmissionLogger(_inner.ForSource(source));
         }
 
         /// <summary>
@@ -61,9 +86,18 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         public void LoadPlugins(string pluginDirectory)
         {
             _logger.LogInfo($"开始从目录加载插件: {pluginDirectory}");
+            LastAdmissionError=null;_lastRejectedCount=0;_releaseAuthority=null;_admissionFailures.Clear();
+            try{_releaseAuthority=new ReleasePayloadAuthority(AppContext.BaseDirectory);}
+            catch(Exception ex)
+            {
+                LastAdmissionError=ex.GetType().Name+": "+ex.Message;
+                _logger.LogError("[发布准入] "+LastAdmissionError);
+                return;
+            }
             
             if (!Directory.Exists(pluginDirectory))
             {
+                LastAdmissionError="Plugin directory does not exist: "+pluginDirectory;
                 _logger.LogInfo($"插件目录不存在: {pluginDirectory}");
                 return;
             }
@@ -74,6 +108,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             var pluginAssemblies = PluginAssemblyPolicy.DiscoverPluginAssemblies(pluginDirectory);
             if (pluginAssemblies.Count == 0)
             {
+                LastAdmissionError="No plugin assemblies were discovered: "+pluginDirectory;
                 _logger.LogWarning($"未发现插件程序集（约定：plugins/<工具名>/<工具名>.dll）: {pluginDirectory}");
                 return;
             }
@@ -105,6 +140,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
 
             // 加载结果**必须可见**（方案 §十一 防御机制 #3/#4）：
             // 多人协作下「插件没生效却不知为何」是最难排查的一类问题。
+            _lastRejectedCount=rejectedCount;
             _logger.LogInfo($"插件加载完成：成功 {loadedCount} 个，未加载 {rejectedCount} 个，"
                 + $"共注册工具 {_toolCatalog.Count} 个");
         }
@@ -137,7 +173,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
 
             try
             {
-                var context = new PluginLoadContext(dllPath);
+                var context = new PluginLoadContext(dllPath,_releaseAuthority??throw new InvalidOperationException("Release authority is unavailable."));
                 var assembly = context.LoadFromAssemblyPath(dllPath);
 
                 // 证件核对（ToolContract）：判定依据是插件程序集显式契约元数据，
@@ -145,6 +181,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 var pluginContractVersion = ToolContract.GetPluginContractVersion(assembly);
                 if (!ToolContract.IsCompatible(pluginContractVersion))
                 {
+                    _admissionFailures.Add(pluginFileName+": "+ToolContract.Describe(pluginContractVersion));
                     _logger.LogError($"[插件契约] 拒绝加载 {pluginFileName}：{ToolContract.Describe(pluginContractVersion)}");
                     return PluginLoadOutcome.Rejected;
                 }
@@ -159,6 +196,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                     // 依赖不全时把**每个**加载异常都列出来，否则只有一句"类型加载失败"，无从下手
                     var details = string.Join("; ",
                         ex.LoaderExceptions.Where(e => e != null).Select(e => e!.Message).Distinct());
+                    _admissionFailures.Add(pluginFileName+": type scan failed: "+details);
                     _logger.LogError($"[插件] {pluginFileName} 类型扫描失败（依赖缺失？）: {details}");
                     return PluginLoadOutcome.Rejected;
                 }
@@ -169,43 +207,35 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
 
                 if (toolTypes.Length == 0)
                 {
+                    _admissionFailures.Add(pluginFileName+": no declared tool types.");
                     _logger.LogWarning($"[插件] {pluginFileName} 未发现带 [Tool] 的工具类型"
                         + "（约定：主程序集须与所在目录同名，请确认拷入的是工具主程序集）");
                     return PluginLoadOutcome.Rejected;
                 }
 
-                var registeredCount = 0;
-                foreach (var toolType in toolTypes)
+                _releaseAuthority.VerifyToolSet(dllPath,toolTypes);
+
+                // Prepare the whole assembly before any tool, serializer or WPF bridge becomes visible.
+                var registration=_toolCatalog.PrepareRegistration(toolTypes);
+                var bridge=context.PrepareBridge();
+                using(var catalogCommit=registration.EnterCommit())
+                using(var bridgeCommit=bridge.EnterCommit())
                 {
-                    try
-                    {
-                        // 类型身份依赖"契约只留一份"：契约被回落宿主，故此判定才为真
-                        if (!typeof(IToolPlugin).IsAssignableFrom(toolType))
-                        {
-                            _logger.LogWarning($"类型 {toolType.Name} 有 [Tool] 特性但未实现 IToolPlugin 接口");
-                            continue;
-                        }
-
-                        _toolCatalog.Register(toolType);
-                        registeredCount++;
-                        _logger.LogInfo($"已加载工具: {toolType.Name}");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"加载工具失败: {toolType.Name} - {ex.Message}");
-                    }
+                    catalogCommit.Publish();
+                    bridgeCommit.Publish();
                 }
-
+                foreach(var toolType in toolTypes)_logger.LogInfo($"已加载工具: {toolType.Name}");
                 // 可诊断输出（本次事故的盲区）：把"目录里带了什么"与"实际在隔间里解析了什么"分开记。
                 // 否则"工具自带了某库、却被宿主共享"这类情况完全不可见 —— 而这正是
                 // 「[JsonDerivedType] 特性读不到 ⇒ 判别符未注册」那类问题的第一现场。
                 _logger.LogInfo($"[插件] {pluginFileName}：隔间内解析依赖 {context.LocallyResolvedDependencies.Count} 个"
                     + "（其余同名副本由宿主提供/未被使用）");
 
-                return registeredCount > 0 ? PluginLoadOutcome.Loaded : PluginLoadOutcome.Rejected;
+                return PluginLoadOutcome.Loaded;
             }
             catch (Exception ex)
             {
+                _admissionFailures.Add(pluginFileName+": "+ex.GetType().Name+": "+ex.Message);
                 // 报错优先（rule-008）：绝不静默吞掉加载失败
                 _logger.LogError($"[插件] 加载失败: {pluginFileName} - {ex.GetType().Name}: {ex.Message}");
                 return PluginLoadOutcome.Rejected;

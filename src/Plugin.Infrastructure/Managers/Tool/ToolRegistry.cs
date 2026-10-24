@@ -92,6 +92,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             foreach(var candidate in candidates)
             {
                 var plugin=(IToolPlugin)(Activator.CreateInstance(candidate.Type)??throw new InvalidOperationException("Tool construction returned null."));
+                using var candidateLifetime=plugin as IDisposable;
                 var parameterType=plugin.ParamsType;
                 if(parameterType is null||parameterType.IsAbstract||!typeof(ToolParameters).IsAssignableFrom(parameterType))throw new InvalidOperationException("Invalid plugin parameter type.");
                 foreach(var contract in candidate.Type.GetInterfaces().Where(type=>type.IsGenericType&&type.GetGenericTypeDefinition()==typeof(IToolPlugin<,>)))
@@ -151,68 +152,18 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         }
         public static ToolMetadata? GetToolMetadata(string toolId)
         {
-            lock (_lock)
-            {
-                if (!_toolTypes.TryGetValue(toolId, out var toolType))
-                    return null;
-
-                var attr = toolType.GetCustomAttribute<ToolAttribute>();
-                if (attr == null)
-                    return null;
-
-                if (_metadataCache.TryGetValue(toolId, out var cachedMetadata))
-                    return cachedMetadata;
-
-                var metadata = ToolMetadata.FromToolType(
-                    toolType,
-                    attr.Id,
-                    attr.DisplayName,
-                    attr.Description,
-                    attr.Icon,
-                    attr.Category
-                );
-
-                // 提取 DebugWindowStyle 属性
-                metadata.DebugWindowStyle = attr.DebugWindowStyle;
-
-                _metadataCache[toolId] = metadata;
-                return metadata;
-            }
+            // Every visible type and its metadata are prepared together. Readers
+            // never run reflection or attribute constructors inside the catalog gate.
+            lock (_lock) return _metadataCache.TryGetValue(toolId,out var metadata)?metadata:null;
         }
-
         /// <summary>
         /// 获取所有工具元数据（带缓存）
         /// </summary>
         /// <returns>所有工具元数据列表</returns>
         public static List<ToolMetadata> GetAllToolMetadata()
         {
-            lock (_lock)
-            {
-                return _toolTypes.Values.Select(toolType =>
-                {
-                    var attr = toolType.GetCustomAttribute<ToolAttribute>();
-                    if (attr == null)
-                        return null;
-
-                    var toolId = attr.Id;
-                    if (_metadataCache.TryGetValue(toolId, out var cachedMetadata))
-                        return cachedMetadata;
-
-                    var metadata = ToolMetadata.FromToolType(
-                        toolType,
-                        attr.Id,
-                        attr.DisplayName,
-                        attr.Description,
-                        attr.Icon,
-                        attr.Category
-                    );
-
-                    _metadataCache[toolId] = metadata;
-                    return metadata;
-                }).Where(m => m != null).ToList()!;
-            }
+            lock (_lock) return _metadataCache.Values.ToList();
         }
-
         /// <summary>
         /// 获取指定分类的工具元数据
         /// </summary>
@@ -471,8 +422,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                 var type=declaredClr??SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(variable.VariableType);
                 if(type?.FullName is not { } key)
                 {
-                    VisionLogger.Instance.Log(LogLevel.Error,$"工具 '{toolId}' 的输出变量 '{variable.Name}' 类型 '{variable.VariableType}' 未在 SdkTypeVocabulary 词汇表注册，已跳过。","ToolRegistry");
-                    continue;
+                    throw new InvalidOperationException($"工具 '{toolId}' 的输出变量 '{variable.Name}' 类型 '{variable.VariableType}' 没有正式 CLR 声明或已注册词汇。");
                 }
                 var metadata=new ToolPropertyMetadata
                 {

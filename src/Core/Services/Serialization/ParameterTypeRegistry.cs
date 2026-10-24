@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -81,39 +81,20 @@ namespace SunEyeVision.Core.Services.Serialization
         /// </summary>
         private static void EnsureInitialized()
         {
-            if (_isInitialized && _serializationOptions != null)
-            {
-                return;
-            }
-
             lock (_lock)
             {
-                if (_isInitialized && _serializationOptions != null)
-                {
-                    return;
-                }
-
+                if (_isInitialized && _serializationOptions != null) return;
                 try
                 {
                     InitializeSerializationOptions();
                     _isInitialized = true;
-                    
-                    VisionLogger.Instance.Log(LogLevel.Success,
-                        $"参数类型注册系统初始化完成，已注册类型数: {_registeredTypes.Count}",
-                        "ParameterTypeRegistry");
                 }
                 catch (Exception ex)
                 {
-                    VisionLogger.Instance.Log(LogLevel.Fatal,
-                        $"参数类型注册系统初始化失败: {ex.GetType().Name} - {ex.Message}",
-                        "ParameterTypeRegistry", ex);
-
-                    throw new InvalidOperationException(
-                        $"ParameterTypeRegistry 初始化失败，无法继续。原因: {ex.Message}", ex);
+                    throw new InvalidOperationException($"ParameterTypeRegistry 初始化失败，无法继续。原因: {ex.Message}", ex);
                 }
             }
         }
-
         /// <summary>
         /// 初始化序列化选项（创建空的多态配置）
         /// </summary>
@@ -190,8 +171,9 @@ namespace SunEyeVision.Core.Services.Serialization
             var requested=additions.ToArray();
             EnsureInitialized();
             JsonSerializerOptions expected;
+            JsonPolymorphismOptions previousPolicy;
             JsonDerivedType[] previous;
-            lock(_lock){expected=_serializationOptions!;previous=_polymorphismOptions!.DerivedTypes.ToArray();}
+            lock(_lock){expected=_serializationOptions!;previousPolicy=_polymorphismOptions!;previous=previousPolicy.DerivedTypes.ToArray();}
             var byType=previous.ToDictionary(item=>item.DerivedType,item=>(string)item.TypeDiscriminator!);
             var byName=previous.ToDictionary(item=>(string)item.TypeDiscriminator!,item=>item.DerivedType,StringComparer.Ordinal);
             foreach(var item in requested)
@@ -204,7 +186,7 @@ namespace SunEyeVision.Core.Services.Serialization
                     throw new InvalidOperationException("A parameter discriminator is already owned by another type: "+item.Value);
                 byType[item.Key]=item.Value;byName[item.Value]=item.Key;
             }
-            if(byType.Count==previous.Length)return new(expected,expected,_polymorphismOptions!,new HashSet<Type>(byType.Keys));
+            if(byType.Count==previous.Length)return new(expected,expected,previousPolicy,new HashSet<Type>(byType.Keys));
             var catalog=byType.Select(item=>new JsonDerivedType(item.Key,item.Value)).ToArray();
             var resolver=new DefaultJsonTypeInfoResolver().WithAddedModifier(info=>ApplyPolymorphismOptions(info,catalog));
             var options=new JsonSerializerOptions(expected){TypeInfoResolver=resolver};

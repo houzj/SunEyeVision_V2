@@ -96,8 +96,9 @@ try {
         '--filter',$filter,'--logger','trx','--results-directory',"$stage/tests")+$buildArgs)
     $tests=Get-ReleaseTestSummary "$stage/tests"
     $uiProject=$projects | Where-Object {$_.Name -eq 'SunEyeVision.UI.csproj'} | Select-Object -First 1
+    $frameworkOriginPath="$stage/release-framework-origin.tsv"
     Invoke-ReleaseNative dotnet (@('publish',$uiProject.FullName,'-c','Release','-r','win-x64','--self-contained','true','--no-build','--no-restore',
-        '-p:PublishSingleFile=false',"-p:PublishDir=$stage/app/")+$buildArgs)
+        '-p:PublishSingleFile=false',"-p:PublishDir=$stage/app/","-p:ReleaseFrameworkOriginPath=$frameworkOriginPath")+$buildArgs)
     $app="$stage/app"
     $tools=@($projects | Where-Object {(Get-Content $_.FullName -Raw) -match '<IsToolPlugin>true</IsToolPlugin>'})
     Assert-ReleasePayload $app $releaseVersion $tools.BaseName -IconSourceRoot "$root/src/UI/Icons"
@@ -109,7 +110,7 @@ try {
             Invoke-ReleaseNative $SignToolPath @('verify','/pa',$file.FullName)
         }
     }
-    $payload=New-ReleasePayload -AppPath $app -BuildId $buildId -SourceCommit $head -ArtifactVersion $artifactVersion
+    $payload=New-ReleasePayload -AppPath $app -BuildId $buildId -SourceCommit $head -ArtifactVersion $artifactVersion -ExpectedPluginAssemblies $tools.BaseName -FrameworkOriginPath $frameworkOriginPath
     $payloadSha256=Write-ReleasePayload -AppPath $app -Payload $payload
     $probePath="$stage/probe.json"
     $probe=Start-Process "$app/SunEyeVision.UI.exe" -ArgumentList @('--toolbox-probe',"`"$probePath`"") -PassThru -WindowStyle Hidden

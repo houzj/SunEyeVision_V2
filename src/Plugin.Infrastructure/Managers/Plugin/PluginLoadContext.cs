@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Threading;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
 {
@@ -46,27 +47,32 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
     internal sealed class PluginLoadContext : AssemblyLoadContext
     {
         /// <summary>隔间注册表：程序集简单名 → 隔间（供默认上下文重定向使用）。</summary>
-        private static readonly Dictionary<string, PluginLoadContext> RegisteredContexts =
+        private static Dictionary<string, PluginLoadContext> RegisteredContexts =
             new Dictionary<string, PluginLoadContext>(StringComparer.Ordinal);
 
         private static readonly object RegistryLock = new object();
-        private static bool _defaultResolvingHooked;
+        private readonly AssemblyName _mainAssemblyIdentity;
+        static PluginLoadContext(){Default.Resolving+=OnDefaultContextResolving;}
 
         private readonly AssemblyDependencyResolver _resolver;
         private readonly string _pluginDirectory;
         private readonly string _mainAssemblySimpleName;
+        private readonly ReleasePayloadAuthority _authority;
         private readonly List<string> _locallyResolvedDependencies = new List<string>();
 
         /// <param name="mainAssemblyPath">插件主程序集绝对路径（<c>plugins/&lt;Name&gt;/&lt;Name&gt;.dll</c>）</param>
-        internal PluginLoadContext(string mainAssemblyPath)
+        internal PluginLoadContext(string mainAssemblyPath,ReleasePayloadAuthority? authority=null)
             : base($"Plugin:{Path.GetFileNameWithoutExtension(mainAssemblyPath)}", isCollectible: false)
         {
             var fullPath = Path.GetFullPath(mainAssemblyPath);
+            _authority=authority??new ReleasePayloadAuthority(AppContext.BaseDirectory);
+            _authority.VerifyPlugin(fullPath);
             _resolver = new AssemblyDependencyResolver(fullPath);
             _pluginDirectory = Path.GetDirectoryName(fullPath) ?? string.Empty;
             _mainAssemblySimpleName = Path.GetFileNameWithoutExtension(fullPath);
 
-            Register(this);
+            _mainAssemblyIdentity=AssemblyName.GetAssemblyName(fullPath);
+            if(!string.Equals(_mainAssemblyIdentity.Name,_mainAssemblySimpleName,StringComparison.Ordinal))throw new InvalidDataException("Plugin filename differs from its assembly identity.");
         }
 
         /// <summary>插件所在目录（自带依赖的解析基准）。</summary>
@@ -85,23 +91,49 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         internal IReadOnlyList<string> LocallyResolvedDependencies => _locallyResolvedDependencies;
 
         /// <summary>登记隔间，并（只做一次）挂载默认上下文的重定向桥。</summary>
-        private static void Register(PluginLoadContext context)
+        internal BridgePreparation PrepareBridge()
         {
-            lock (RegistryLock)
+            lock(RegistryLock)
             {
-                RegisteredContexts[context._mainAssemblySimpleName] = context;
-
-                if (_defaultResolvingHooked)
-                    return;
-
-                AssemblyLoadContext.Default.Resolving += OnDefaultContextResolving;
-                _defaultResolvingHooked = true;
+                if(RegisteredContexts.TryGetValue(_mainAssemblySimpleName,out var owner)&&!ReferenceEquals(owner,this))
+                    throw new InvalidOperationException("The plugin assembly name already has a published WPF bridge: "+_mainAssemblySimpleName);
+                var next=new Dictionary<string,PluginLoadContext>(RegisteredContexts,StringComparer.Ordinal){[_mainAssemblySimpleName]=this};
+                return new(RegisteredContexts,next);
             }
         }
-
-        /// <summary>
-        /// 默认上下文解析失败时的重定向：若请求的是已登记的插件程序集，就交给它的隔间加载。
-        /// </summary>
+        internal sealed class BridgePreparation
+        {
+            private readonly Dictionary<string,PluginLoadContext> _expected,_next;
+            internal BridgePreparation(Dictionary<string,PluginLoadContext> expected,Dictionary<string,PluginLoadContext> next)
+            {_expected=expected;_next=next;}
+            internal BridgeCommitScope EnterCommit()=>new(_expected,_next);
+        }
+        internal sealed class BridgeCommitScope : IDisposable
+        {
+            private readonly Dictionary<string,PluginLoadContext> _next;
+            private bool _closed,_published;
+            internal BridgeCommitScope(Dictionary<string,PluginLoadContext> expected,Dictionary<string,PluginLoadContext> next)
+            {
+                _next=next;Monitor.Enter(RegistryLock);
+                if(!ReferenceEquals(RegisteredContexts,expected))
+                {Monitor.Exit(RegistryLock);throw new InvalidOperationException("WPF bridge preparation is stale.");}
+            }
+            internal void Publish()
+            {
+                ObjectDisposedException.ThrowIf(_closed,this);
+                if(_published)throw new InvalidOperationException("WPF bridge already published.");
+                RegisteredContexts=_next;_published=true;
+            }
+            public void Dispose(){if(_closed)return;_closed=true;Monitor.Exit(RegistryLock);}
+        }
+        internal static bool MatchesRequestedIdentity(AssemblyName requested,AssemblyName actual)
+        {
+            if(!string.Equals(requested.Name,actual.Name,StringComparison.OrdinalIgnoreCase))return false;
+            if(requested.Version is not null&&requested.Version!=actual.Version)return false;
+            if(requested.CultureName is not null&&!string.Equals(requested.CultureName,actual.CultureName??"",StringComparison.OrdinalIgnoreCase))return false;
+            var token=requested.GetPublicKeyToken();
+            return (token is null||token.SequenceEqual(actual.GetPublicKeyToken()??Array.Empty<byte>()))&&requested.ContentType==actual.ContentType;
+        }
         private static Assembly? OnDefaultContextResolving(AssemblyLoadContext context, AssemblyName assemblyName)
         {
             var simpleName = assemblyName.Name;
@@ -114,6 +146,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 RegisteredContexts.TryGetValue(simpleName, out pluginContext);
             }
 
+            if(pluginContext is not null&&!MatchesRequestedIdentity(assemblyName,pluginContext._mainAssemblyIdentity))
+                throw new FileLoadException("The requested WPF plugin identity differs from the published bridge.",assemblyName.FullName);
             return pluginContext?.LoadFromAssemblyName(assemblyName);
         }
 
@@ -136,22 +170,18 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             if (string.Equals(simpleName, _mainAssemblySimpleName, StringComparison.Ordinal))
             {
                 var selfPath = Path.Combine(_pluginDirectory, _mainAssemblySimpleName + ".dll");
+                _authority.VerifyPlugin(selfPath);
                 return File.Exists(selfPath) ? LoadFromAssemblyPath(selfPath) : null;
             }
 
-            // ② 契约与框架模块（SunEyeVision.*）→ 交回宿主，类型身份唯一
-            if (PluginAssemblyPolicy.IsHostProvided(simpleName))
-                return null;
-
-            // ③ 宿主**已加载**的同名程序集 → 共用（跨边界类型必须同源）
-            if (IsLoadedInHost(simpleName))
-                return null;
-
-            // ④ 宿主**运行目录可解析**的同名程序集 → 共用。
-            //    这是"共享优先"的兜底事实判定：与构建期行为天然一致（构建期剔除的正是宿主已有的那批），
-            //    故加载期**不需要**再维护第二份平台清单（消除构建期/加载期清单分叉的可能）。
-            if (IsResolvableFromHostDirectory(simpleName))
-                return null;
+            if(PluginAssemblyPolicy.IsHostProvided(simpleName)||IsLoadedInHost(simpleName)||IsResolvableFromHostDirectory(simpleName))
+            {
+                var host=Default.LoadFromAssemblyName(assemblyName);
+                var candidate=Path.Combine(_pluginDirectory,simpleName+".dll");
+                if(!File.Exists(candidate))candidate=_resolver.ResolveAssemblyToPath(assemblyName);
+                _authority.VerifyShared(assemblyName,host,File.Exists(candidate)?candidate:null);
+                return host;
+            }
 
             // ⑤ 工具自带依赖：依赖清单优先，其次插件目录同名 dll
             var resolvedPath = _resolver.ResolveAssemblyToPath(assemblyName);
@@ -171,7 +201,10 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             {
                 var nativePath = _resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
                 if (!string.IsNullOrEmpty(nativePath) && File.Exists(nativePath))
+                {
+                    _authority.VerifyApprovedFile(nativePath);
                     return LoadUnmanagedDllFromPath(nativePath);
+                }
             }
 
             // 交回默认探测（宿主运行目录）—— 不静默吞掉失败，最终由调用方抛出可读异常
@@ -181,6 +214,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         /// <summary>在隔间内载入依赖并登记（供可诊断输出）。</summary>
         private Assembly LoadLocalDependency(string path, string simpleName)
         {
+            _authority.VerifyApprovedFile(path);
             _locallyResolvedDependencies.Add(simpleName);
             return LoadFromAssemblyPath(path);
         }

@@ -113,6 +113,19 @@
     </ItemGroup>
   </Target>
 
+  <!-- Self-contained applies to the process host. Its SDK runtime-pack files
+       must not become plugin-local alternatives to the host publish winners.
+       Match SDK source items, never a System.* filename guess; NuGet/private
+       dependency copies remain subject to normal resolution and admission. -->
+  <!-- Resolve SDK/NuGet conflicts first, so removing the host's runtime winner
+       does not resurrect an older NuGet loser as a plugin-local copy. -->
+  <Target Name="RemoveRuntimePackCopiesFromToolPlugins" AfterTargets="_HandlePackageFileConflicts"
+          Condition="'$(IsToolPlugin)'=='true'">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(RuntimePackAsset)" />
+    </ItemGroup>
+  </Target>
+
   <!-- Step 2: 禁止 NuGet 原生运行时 DLL 复制 (OpenCvSharp4 等 runtimes 子目录)
        Content/None Link 包含 'runtimes' 路径的项会被复制到输出目录,
        这些是原生 dll(opencv_world、halcon native 等),必须拦截。
@@ -249,4 +262,5 @@
     <Copy SourceFiles="$(_HalconManagedAssembly)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
     <Message Text="[Halcon] 已部署托管程序集 -> $(OutDir)" Importance="high" />
   </Target>
+  <Import Project="$(MSBuildThisFileDirectory)installer/Release.Payload.targets" />
 </Project>

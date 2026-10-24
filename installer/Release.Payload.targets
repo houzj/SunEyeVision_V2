@@ -1,0 +1,33 @@
+<Project>
+  <!-- Capture SDK facts, including publish conflict winners, before signing. These
+       build inputs stay outside app; Release.Common seals the final bytes once. -->
+  <Target Name="CaptureReleaseFrameworkOrigin" AfterTargets="ComputeFilesToPublish"
+          Condition="'$(MSBuildProjectName)'=='SunEyeVision.UI' And '$(DesignTimeBuild)'!='true'">
+    <PropertyGroup>
+      <ReleaseFrameworkOriginPath Condition="'$(ReleaseFrameworkOriginPath)'==''">$(IntermediateOutputPath)release-framework-origin.tsv</ReleaseFrameworkOriginPath>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(ReleaseFrameworkOriginPath)" Overwrite="true"
+                      Lines="@(RuntimeFramework->'framework|%(Identity)|%(Version)|%(FrameworkName)|%(Profile)')" />
+    <WriteLinesToFile File="$(ReleaseFrameworkOriginPath)" Overwrite="false"
+                      Lines="@(RuntimePackAsset->'asset|%(FullPath)|%(DestinationSubPath)|%(NuGetPackageId)|%(NuGetPackageVersion)')" />
+    <WriteLinesToFile File="$(ReleaseFrameworkOriginPath)" Overwrite="false"
+                      Lines="@(ResolvedFileToPublish->'winner|%(FullPath)|%(RelativePath)')" />
+  </Target>
+
+  <Target Name="ResolveReleaseToolProjects" Condition="'$(MSBuildProjectName)'=='SunEyeVision.UI'">
+    <XmlPeek XmlInputPath="$(MSBuildThisFileDirectory)..\SunEyeVision.slnx" Query="//Project/@Path">
+      <Output TaskParameter="Result" ItemName="_ReleaseSolutionProjectPaths" />
+    </XmlPeek>
+    <ItemGroup>
+      <_ReleaseCandidateProject Include="@(_ReleaseSolutionProjectPaths->'$(MSBuildThisFileDirectory)..\%(Identity)')" />
+      <_ReleaseToolProject Include="@(_ReleaseCandidateProject)"
+                           Condition="$([System.IO.File]::ReadAllText('%(_ReleaseCandidateProject.FullPath)').Contains('&lt;IsToolPlugin&gt;true&lt;/IsToolPlugin&gt;'))" />
+    </ItemGroup>
+  </Target>
+  <Target Name="SealDevelopmentReleasePayload" AfterTargets="Build" DependsOnTargets="ResolveReleaseToolProjects"
+          Condition="'$(MSBuildProjectName)'=='SunEyeVision.UI' And '$(SelfContained)'!='true' And '$(DesignTimeBuild)'!='true' And '$(BuildingProject)'!='false'">
+    <MSBuild Projects="@(_ReleaseToolProject)" Targets="Build" BuildInParallel="false"
+             Properties="Configuration=$(Configuration)" />
+    <Exec Command="pwsh -NoProfile -File &quot;$(MSBuildThisFileDirectory)Seal-ReleasePayload.ps1&quot; -AppPath &quot;$(OutDir).&quot;" />
+  </Target>
+</Project>

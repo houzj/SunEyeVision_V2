@@ -115,11 +115,11 @@ public partial class App : Application
                 // Optional toolbox validation loads plugins and presentation metadata only.
                 // It still exits before device/service/solution initialization.
                 var inspectToolbox = e.Args[0] == "--toolbox-probe";
+                var probePluginManager=inspectToolbox?new PluginManager():null;
                 if (inspectToolbox)
-                    new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginManager().LoadPlugins(Path.Combine(AppContext.BaseDirectory, "plugins"));
+                    probePluginManager!.LoadPlugins(Path.Combine(AppContext.BaseDirectory, "plugins"));
                 var toolbox = inspectToolbox ? new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel() : null;
-                if (inspectToolbox && (toolbox!.AllTools.Count == 0 || !toolbox.AllTools.Any(t => t.ToolId == "ProtocolParse") || !toolbox.AllTools.Any(t => t.ToolId == "ProtocolAssemble")))
-                    throw new InvalidOperationException("Release通信工具未注册。");
+                if(inspectToolbox)probePluginManager!.AssertCompleteReleaseToolSet(toolbox!.AllTools.Select(t=>t.ToolId));
                 var info = new
                 {
                     releaseVersion = SunEyeVision.Core.Versioning.AppVersionInfo.Product,
@@ -135,7 +135,11 @@ public partial class App : Application
                 File.WriteAllText(e.Args[1], System.Text.Json.JsonSerializer.Serialize(info));
                 Shutdown(0);
             }
-            catch { Shutdown(1); }
+            catch(Exception ex)
+            {
+                try{File.WriteAllText(e.Args[1],System.Text.Json.JsonSerializer.Serialize(new{status="Rejected",stage="toolbox-admission",error=ex.Message}));}catch{ }
+                Shutdown(1);
+            }
             return;
         }
         try

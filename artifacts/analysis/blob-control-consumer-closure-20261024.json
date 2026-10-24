@@ -1,0 +1,1418 @@
+{
+  "kind": "Blob-static-control-and-template-consumer-closure",
+  "entryRoots": [
+    "BlobAnalysisToolDebugControl",
+    "BlobDataAnalysisControl"
+  ],
+  "associatedHostRoots": [
+    "ImageControl",
+    "ImagePreviewControl",
+    "DefaultDebugWindow",
+    "CustomDebugWindow"
+  ],
+  "controls": [
+    {
+      "name": "BlobAnalysisToolDebugControl",
+      "source": "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml.cs",
+      "role": "节点周边实际消费者",
+      "recommendation": "按所属应用会话和输出reader适配",
+      "design": "核输入/输出身份、状态、异步及资源边界，不直接把现有接线认作正确",
+      "via": [
+        "Blob直接入口"
+      ],
+      "files": [
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml"
+      ]
+    },
+    {
+      "name": "BlobDataAnalysisControl",
+      "source": "tools/SunEyeVision.BlobAnalysis/Views/BlobDataAnalysisControl.xaml.cs",
+      "role": "节点周边实际消费者",
+      "recommendation": "按所属应用会话和输出reader适配",
+      "design": "核输入/输出身份、状态、异步及资源边界，不直接把现有接线认作正确",
+      "via": [
+        "Blob直接入口"
+      ],
+      "files": [
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobDataAnalysisControl.xaml.cs",
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobDataAnalysisControl.xaml"
+      ]
+    },
+    {
+      "name": "ImageControl",
+      "base": "UserControl, INotifyPropertyChanged",
+      "source": "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+      "line": 45,
+      "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68",
+      "directConsumerFiles": [
+        "src/UI/Features/Camera/CameraPreviewHost.xaml",
+        "src/UI/Shell/Controls/Shell/ImageResultControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml"
+      ],
+      "dependencyProperties": [
+        "SourceImage",
+        "ShowToolBar",
+        "ShowImageSourceSelector",
+        "ShowStatusBar",
+        "EnablePanning",
+        "EnableZoom",
+        "ShowChessboardBackground",
+        "ImageSources",
+        "SelectedImageSourceIndex",
+        "AutoFitMode"
+      ],
+      "lifecycleMarkers": [
+        "Loaded",
+        "Closed"
+      ],
+      "category": "图像与结果显示",
+      "role": "底图/交互图形/结果图形的视口组合",
+      "recommendation": "调整",
+      "design": "保留三层能力；Frame/坐标/DPI/图像寿命由同一呈现批次约束，不让每工具清全局层。",
+      "via": [
+        "节点关联宿主/视口，非声明同时创建"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+        "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml"
+      ]
+    },
+    {
+      "name": "ImagePreviewControl",
+      "source": "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs",
+      "role": "节点周边实际消费者",
+      "recommendation": "按所属应用会话和输出reader适配",
+      "design": "核输入/输出身份、状态、异步及资源边界，不直接把现有接线认作正确",
+      "via": [
+        "节点关联宿主/视口，非声明同时创建"
+      ],
+      "files": [
+        "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs",
+        "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml",
+        "src/UI/Shell/Controls/Panels/ImagePreviewControl.FileImport.cs"
+      ]
+    },
+    {
+      "name": "DefaultDebugWindow",
+      "base": "Window, IToolControlInitializer",
+      "source": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+      "line": 36,
+      "sha256": "8b28dc2cf30df3ec3def413d4480fbcfb5145bc63b7edf1d0a252a0f958d2d4c",
+      "directConsumerFiles": [
+        "tools/SunEyeVision.Tool.Script/ScriptPlugin.cs",
+        "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs"
+      ],
+      "dependencyProperties": [
+        "ToolIconKey"
+      ],
+      "lifecycleMarkers": [
+        "Unloaded",
+        "Closed",
+        "Closing",
+        "Dispose"
+      ],
+      "category": "窗口与会话",
+      "role": "默认工具窗口壳",
+      "recommendation": "调整",
+      "design": "只负责布局、命令转发和关闭意图，不拥有第二份正式参数或调度器。",
+      "via": [
+        "节点关联宿主/视口，非声明同时创建"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+        "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml"
+      ]
+    },
+    {
+      "name": "CustomDebugWindow",
+      "base": "Window, SunEyeVision.Plugin.SDK.UI.Controls.IToolControlInitializer",
+      "source": "src/Plugin.SDK/UI/Windows/CustomDebugWindow.cs",
+      "line": 27,
+      "sha256": "062afd6ddbe23706e72e6a3ad76e73089ce093a189dc295e17a9e3d57678327a",
+      "directConsumerFiles": [],
+      "dependencyProperties": [],
+      "lifecycleMarkers": [
+        "Closed",
+        "Closing"
+      ],
+      "category": "窗口与会话",
+      "role": "专业窗口壳",
+      "recommendation": "调整",
+      "design": "与默认壳共享初始化/编辑会话/关闭合同；工具专有内容保留，不再各自持久化。",
+      "via": [
+        "节点关联宿主/视口，非声明同时创建"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Windows/CustomDebugWindow.cs"
+      ]
+    },
+    {
+      "name": "ParamBinding",
+      "base": "ParamBindingBase",
+      "source": "src/Plugin.SDK/UI/Controls/ParamBinding.cs",
+      "line": 26,
+      "sha256": "75ea710cf6ed1d8e8e15d43d13b4ed904dc3732fe149efe5b0931010d148968d",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/Themes/Generic.xaml",
+        "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiSubscribePanel.xaml",
+        "src/Plugin.SDK/UI/Previews/AllControlsPreview.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationManagerDialog.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationSendEventsView.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationTriggersView.xaml",
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Condition/Views/ConditionDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ProtocolAssemble/Views/ProtocolAssembleEditor.xaml",
+        "tools/SunEyeVision.Tool.ProtocolParse/Views/ProtocolParseEditor.xaml",
+        "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml",
+        "tools/SunEyeVision.Tool.SendData/Views/SendDataEditor.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "ParameterName",
+        "NodeId",
+        "NodeName",
+        "IsBound",
+        "BindingDisplayText",
+        "BindingSource",
+        "AvailableDataSources",
+        "TreeNodes",
+        "CornerRadius",
+        "SyncEditingToSource",
+        "ShapeTypeFilter",
+        "AllowGlobalVariableBinding"
+      ],
+      "lifecycleMarkers": [
+        "OnApplyTemplate"
+      ],
+      "category": "参数与绑定",
+      "role": "只绑定的来源选择",
+      "recommendation": "调整",
+      "design": "统一稳定来源地址、兼容类型和失效提示，不凭显示字符串解析正式引用。",
+      "via": [
+        "BlobAnalysisToolDebugControl / XAML",
+        "ConfigSetting / Generic模板",
+        "RoiSubscribePanel / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ParamBinding.cs"
+      ]
+    },
+    {
+      "name": "GraphicsDisplayEditorControl",
+      "base": "UserControl",
+      "source": "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml.cs",
+      "line": 6,
+      "sha256": "db1919ea64f89b01bc178ab6feaabc6a38c17b1bfc7ca5e80703cb1170ef23d3",
+      "directConsumerFiles": [
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "ItemsSource"
+      ],
+      "lifecycleMarkers": [],
+      "category": "结果配置与分析",
+      "role": "图形显示配置编辑",
+      "recommendation": "复用并调整",
+      "design": "编辑声明字段及显示样式，不拥有运行结果或renderer实例。",
+      "via": [
+        "BlobAnalysisToolDebugControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml.cs",
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml"
+      ]
+    },
+    {
+      "name": "ToggleSwitch",
+      "base": "Control",
+      "source": "src/Plugin.SDK/UI/Controls/ToggleSwitch.cs",
+      "line": 20,
+      "sha256": "d32e7855dad1c3907060be5e257deb15eff568953c2e91afaf6c48c3ab9d535b",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml",
+        "src/UI/Features/Camera/CameraManagerDialog.xaml",
+        "src/UI/Features/Camera/CameraParameterPanel.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationDeviceDialog.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationHeartbeatsView.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationManagerDialog.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationResponsesView.xaml",
+        "src/UI/Features/CommunicationManager/ModbusAddressPointDialog.xaml",
+        "src/UI/Shell/Controls/Panels/LogPanelControl.xaml",
+        "src/UI/Templates/Camera/GenericParamsTemplate.xaml",
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "IsChecked",
+        "SwitchWidth",
+        "SwitchHeight",
+        "CornerRadius",
+        "OnBackground",
+        "OffBackground",
+        "ThumbColor",
+        "OnText",
+        "OffText",
+        "ShowText"
+      ],
+      "lifecycleMarkers": [],
+      "category": "基础呈现",
+      "role": "布尔开关",
+      "recommendation": "复用并验",
+      "design": "保持纯值控件；false不是missing，开关不直接调度工作流。",
+      "via": [
+        "BlobAnalysisToolDebugControl / XAML",
+        "JudgmentEditorControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ToggleSwitch.cs"
+      ]
+    },
+    {
+      "name": "JudgmentEditorControl",
+      "base": "UserControl",
+      "source": "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml.cs",
+      "line": 6,
+      "sha256": "1b4a1e6f5e8e6c9c71282315ad0a3056025c75742eb14ca1980fa784cb6cdc14",
+      "directConsumerFiles": [
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "ItemsSource"
+      ],
+      "lifecycleMarkers": [],
+      "category": "结果配置与分析",
+      "role": "判断条件编辑",
+      "recommendation": "复用并调整",
+      "design": "编辑结果判断配置草稿，条件组合和非法范围在提交前统一验证。",
+      "via": [
+        "BlobAnalysisToolDebugControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml.cs",
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml"
+      ]
+    },
+    {
+      "name": "ImageSourceSelector",
+      "base": "Control",
+      "source": "src/Plugin.SDK/UI/Controls/ImageSourceSelector.cs",
+      "line": 37,
+      "sha256": "136f1d72e42b82160cd329283eedcf71c6b14f0c7d55a1c649cecc3b2eff93df",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Previews/AllControlsPreview.xaml",
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "SelectedDataSource",
+        "AvailableDataSources",
+        "PlaceholderText",
+        "SelectorWidth",
+        "FilteredImageSources"
+      ],
+      "lifecycleMarkers": [
+        "OnApplyTemplate"
+      ],
+      "category": "参数与绑定",
+      "role": "图像输入来源选择",
+      "recommendation": "调整",
+      "design": "复用选择器；来源归查询服务，预览reader与正式输入引用分离，换源清理订阅。",
+      "via": [
+        "BlobAnalysisToolDebugControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ImageSourceSelector.cs"
+      ]
+    },
+    {
+      "name": "ConfigSetting",
+      "base": "ParamBindingBase",
+      "source": "src/Plugin.SDK/UI/Controls/ConfigSetting.cs",
+      "line": 36,
+      "sha256": "c82d7d8c0bd0c9fc31770ffb12bd7323053e16523830fa9e77a3314c725a7af3",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/Themes/Generic.xaml",
+        "src/Plugin.SDK/UI/Controls/DispTextColorControl.cs",
+        "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+        "src/Plugin.SDK/UI/Previews/AllControlsPreview.xaml",
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "ParameterName",
+        "BindingType",
+        "BindingSource",
+        "BindingDisplayText",
+        "Value",
+        "InternalNumericValue",
+        "Minimum",
+        "Maximum",
+        "InternalNumericMinimum",
+        "InternalNumericMaximum",
+        "SmallChange",
+        "LargeChange",
+        "DecimalPlaces",
+        "ShowSlider",
+        "AvailableDataSources",
+        "AvailableBindings",
+        "NumericEditorVisibility",
+        "StringTextBoxVisibility",
+        "BoolCheckBoxVisibility",
+        "ParamBindingVisibility"
+      ],
+      "lifecycleMarkers": [
+        "Loaded",
+        "Unloaded",
+        "OnApplyTemplate"
+      ],
+      "category": "参数与绑定",
+      "role": "常量/绑定模式、多类型参数编辑",
+      "recommendation": "调整",
+      "design": "复用外观及模式切换；pending文本、CLR精度、0/false/missing和校验交给同一会话合同。",
+      "via": [
+        "BlobAnalysisToolDebugControl / XAML",
+        "DispTextColorControl / Generic模板"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ConfigSetting.cs"
+      ]
+    },
+    {
+      "name": "ToolDebugControlBase",
+      "base": "UserControl, System.ComponentModel.INotifyPropertyChanged, IToolControlInitializer",
+      "source": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "line": 132,
+      "sha256": "27a1a11db48804b6f4e2dced782543e9bd7140560acdba407a814323971765c3",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs",
+        "src/UI/App.xaml.cs",
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Condition/Views/ConditionDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ProtocolAssemble/Views/ProtocolAssembleEditor.xaml",
+        "tools/SunEyeVision.Tool.ProtocolParse/Views/ProtocolParseEditor.xaml",
+        "tools/SunEyeVision.Tool.ReceiveData/Views/ReceiveDataEditor.xaml",
+        "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml",
+        "tools/SunEyeVision.Tool.SendData/Views/SendDataEditor.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml"
+      ],
+      "dependencyProperties": [],
+      "lifecycleMarkers": [
+        "Loaded",
+        "Unloaded",
+        "Closed",
+        "Dispose"
+      ],
+      "category": "窗口与会话",
+      "role": "工具调试内容基类、初始化/执行与绑定问题呈现",
+      "recommendation": "调整",
+      "design": "收敛为宿主编辑上下文适配器；运行、保存与取消只走一个正式事务入口。",
+      "via": [
+        "BlobAnalysisToolDebugControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+        "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.BindingIssues.cs"
+      ]
+    },
+    {
+      "name": "RangeInputControl",
+      "base": "Control",
+      "source": "src/Plugin.SDK/UI/Controls/RangeInputControl.cs",
+      "line": 34,
+      "sha256": "ff8f728897fc5c70bc90b9402f94bbd2fb09b8e419c15e7432001b1008d0893a",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml",
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Condition/Views/ConditionDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "Unit",
+        "Minimum",
+        "Maximum",
+        "MinValue",
+        "MaxValue",
+        "DecimalPlaces",
+        "ShowSlider",
+        "MinGap",
+        "SmallChange",
+        "LargeChange",
+        "IsVisible",
+        "NumericWidth"
+      ],
+      "lifecycleMarkers": [
+        "Closed",
+        "OnApplyTemplate"
+      ],
+      "category": "参数与绑定",
+      "role": "上下界输入",
+      "recommendation": "调整",
+      "design": "上下界原子验证和提交，保留非法草稿而不写半个范围；明确开闭区间与无界值。",
+      "via": [
+        "BlobAnalysisToolDebugControl / XAML",
+        "JudgmentEditorControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/RangeInputControl.cs"
+      ]
+    },
+    {
+      "name": "TextDisplayEditorControl",
+      "base": "UserControl",
+      "source": "src/Plugin.SDK/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml.cs",
+      "line": 6,
+      "sha256": "bc22e412ce008fc9e8821004ed9ddcd68b47337dcd38a63a64bf1f32a5c65ca3",
+      "directConsumerFiles": [
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "ItemsSource",
+        "AvailableDataSources"
+      ],
+      "lifecycleMarkers": [],
+      "category": "结果配置与分析",
+      "role": "结果文字配置编辑",
+      "recommendation": "复用并调整",
+      "design": "字段选择/格式/坐标单位有类型约束，长文字与不同缩放按显示合同验。",
+      "via": [
+        "BlobAnalysisToolDebugControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml.cs",
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml"
+      ]
+    },
+    {
+      "name": "LabeledControl",
+      "base": "HeaderedContentControl",
+      "source": "src/Plugin.SDK/UI/Controls/LabeledControl.cs",
+      "line": 19,
+      "sha256": "3f4fb205398277e22dcf92f48a50374d203fcad61b8dd3b53af854755ad8e2b5",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml",
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml",
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml",
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiSubscribePanel.xaml",
+        "src/Plugin.SDK/UI/Previews/AllControlsPreview.xaml",
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "Label",
+        "LabelWidth",
+        "Orientation",
+        "Required",
+        "ContentHorizontalAlignment",
+        "LabelVerticalAlignment",
+        "ContentVerticalAlignment"
+      ],
+      "lifecycleMarkers": [],
+      "category": "基础呈现",
+      "role": "标签与内容布局",
+      "recommendation": "复用并验",
+      "design": "仅管对齐/可访问性/主题，不夹带参数解析或业务状态。",
+      "via": [
+        "BlobAnalysisToolDebugControl / XAML",
+        "GraphicsDisplayEditorControl / XAML",
+        "JudgmentEditorControl / XAML",
+        "TextDisplayEditorControl / XAML",
+        "RoiSubscribePanel / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/LabeledControl.cs"
+      ]
+    },
+    {
+      "name": "RoiEditorManagerControl",
+      "base": "UserControl",
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs",
+      "line": 23,
+      "sha256": "c0c109f27baac6e46df283000defa7870139dcbd1a5b89d1c69bb9d53469bccd",
+      "directConsumerFiles": [
+        "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "InspectionRoisSource",
+        "MaskRoisSource",
+        "AvailableDataSources"
+      ],
+      "lifecycleMarkers": [
+        "Dispose"
+      ],
+      "category": "ROI与绘图",
+      "role": "检测/屏蔽两编辑器的事件路由与渲染协调",
+      "recommendation": "替换越界职责",
+      "design": "保留可复用外观和renderer适配；正式状态/会话/视口归属迁回宿主合同，不在管理器继续叠加仓库和调度。",
+      "via": [
+        "BlobAnalysisToolDebugControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs",
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml"
+      ]
+    },
+    {
+      "name": "ResultRenderLayer",
+      "base": "FrameworkElement",
+      "source": "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+      "line": 21,
+      "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml"
+      ],
+      "dependencyProperties": [],
+      "lifecycleMarkers": [
+        "Dispose"
+      ],
+      "category": "图像与结果显示",
+      "role": "批量结果图形绘制层",
+      "recommendation": "复用并调整",
+      "design": "复用批量绘制；补同run/frame/SourceElements选择消费、裁剪/失效与正式性能实测。",
+      "via": [
+        "ImageControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs"
+      ]
+    },
+    {
+      "name": "ToolIcon",
+      "base": "FrameworkElement",
+      "source": "src/Plugin.SDK/UI/Controls/Icons/ToolIcon.cs",
+      "line": 9,
+      "sha256": "e06b8a7015f643c3a724877bbe50712fc8c3e4972e3b676f7a505a49827c6d16",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml",
+        "src/UI/Shell/Controls/Toolbox/ToolboxControl.xaml"
+      ],
+      "dependencyProperties": [
+        "Key",
+        "Foreground"
+      ],
+      "lifecycleMarkers": [],
+      "category": "基础呈现",
+      "role": "工具图标绘制",
+      "recommendation": "复用并验",
+      "design": "复用统一图标与主题/DPI规则，避免工具私有重复资源。",
+      "via": [
+        "DefaultDebugWindow / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/Icons/ToolIcon.cs"
+      ]
+    },
+    {
+      "name": "ParamBindingBase",
+      "base": "Control, INotifyPropertyChanged",
+      "source": "src/Plugin.SDK/UI/Controls/ParamBindingBase.cs",
+      "line": 25,
+      "sha256": "42ec0f0ed5b3b8d052e620affd78a78f550bf80133e4f43beba9cdca86c8d6b0",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.BindingIssues.cs"
+      ],
+      "dependencyProperties": [
+        "BindingIssue",
+        "DataType",
+        "AllowedDataTypes"
+      ],
+      "lifecycleMarkers": [
+        "Loaded",
+        "Unloaded",
+        "DataContextChanged"
+      ],
+      "category": "参数与绑定",
+      "role": "来源树、类型过滤、绑定问题基类",
+      "recommendation": "调整",
+      "design": "来源结构与兼容判断由统一类型/绑定合同提供，控件不自建另一份类型系统。",
+      "via": [
+        "ParamBinding / 基类",
+        "ConfigSetting / 基类"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ParamBindingBase.cs"
+      ]
+    },
+    {
+      "name": "DispItemColorControl",
+      "base": "Control",
+      "source": "src/Plugin.SDK/UI/Controls/DispItemColorControl.cs",
+      "line": 12,
+      "sha256": "ec262ef978ae65357e51cdbfad627cca63eeaf0b33aa13f9dec6d9b87c952265",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml",
+        "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "Item",
+        "ContentHorizontalAlignment"
+      ],
+      "lifecycleMarkers": [
+        "OnApplyTemplate"
+      ],
+      "category": "颜色与样式",
+      "role": "图形显示颜色设置",
+      "recommendation": "调整",
+      "design": "绑定显示配置草稿，不直接修改共享renderer；线宽/DPI规则由显示合同约束。",
+      "via": [
+        "GraphicsDisplayEditorControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/DispItemColorControl.cs"
+      ]
+    },
+    {
+      "name": "NumericUpDown",
+      "base": "Control",
+      "source": "src/Plugin.SDK/UI/Controls/NumericUpDown.cs",
+      "line": 35,
+      "sha256": "4c544477268218478ee770e5380bd6289536801859bec556a92ba77e5fe335a6",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/Themes/Generic.xaml",
+        "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs",
+        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureGuideParameterPanel.xaml",
+        "src/Plugin.SDK/UI/Controls/Roi/Views/DrawingParameterPanel.xaml",
+        "src/Plugin.SDK/UI/Previews/AllControlsPreview.xaml",
+        "src/UI/Features/Camera/CameraParameterPanel.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationDeviceDialog.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationHeartbeatsView.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationManagerDialog.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationResponsesView.xaml",
+        "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml",
+        "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointSampleEditor.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml"
+      ],
+      "dependencyProperties": [
+        "Value",
+        "Minimum",
+        "Maximum",
+        "SmallChange",
+        "LargeChange",
+        "DecimalPlaces",
+        "IsReadOnly",
+        "ShowUpDownButtons",
+        "IntValue",
+        "ShowSlider"
+      ],
+      "lifecycleMarkers": [
+        "Closed",
+        "OnApplyTemplate"
+      ],
+      "category": "参数与绑定",
+      "role": "数值文本与步进",
+      "recommendation": "复用并补验",
+      "design": "复用已验证pending/整数改动；全UInt64、文化与各宿主入口尚需真实控件验证，不冒全范围通过。",
+      "via": [
+        "ConfigSetting / Generic模板",
+        "RangeInputControl / Generic模板",
+        "DispItemColorControl / Generic模板",
+        "DispTextColorControl / Generic模板",
+        "DrawingParameterPanel / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/NumericUpDown.cs"
+      ]
+    },
+    {
+      "name": "RangeSlider",
+      "base": "Control",
+      "source": "src/Plugin.SDK/UI/Controls/RangeSlider.cs",
+      "line": 28,
+      "sha256": "45c36d01b780ff15de26318a21718803e51e05d0dd0e5cf5805ee9d883a7b8e7",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/Themes/Generic.xaml"
+      ],
+      "dependencyProperties": [
+        "Minimum",
+        "Maximum",
+        "MinValue",
+        "MaxValue",
+        "SmallChange",
+        "LargeChange",
+        "MinGap"
+      ],
+      "lifecycleMarkers": [
+        "OnApplyTemplate"
+      ],
+      "category": "参数与绑定",
+      "role": "范围拖动交互",
+      "recommendation": "复用并补验",
+      "design": "只产生草稿编辑意图；拖动反馈节流与最终提交分开，避免每像素运行算法。",
+      "via": [
+        "RangeInputControl / Generic模板"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/RangeSlider.cs"
+      ]
+    },
+    {
+      "name": "DispTextColorControl",
+      "base": "Control",
+      "source": "src/Plugin.SDK/UI/Controls/DispTextColorControl.cs",
+      "line": 21,
+      "sha256": "be67bae1856f547f08b8a6bf0927c9e452c6ea106b59d0d066c65b1b1e60f541",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml",
+        "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml"
+      ],
+      "dependencyProperties": [
+        "Item",
+        "AvailableDataSources"
+      ],
+      "lifecycleMarkers": [
+        "OnApplyTemplate"
+      ],
+      "category": "颜色与样式",
+      "role": "文字显示颜色设置",
+      "recommendation": "调整",
+      "design": "文字坐标、缩放与样式合同独立明确；样式变化只失效所属显示批次。",
+      "via": [
+        "TextDisplayEditorControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/DispTextColorControl.cs"
+      ]
+    },
+    {
+      "name": "RoiEditorControl",
+      "base": "UserControl, INotifyPropertyChanged",
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+      "line": 31,
+      "sha256": "bce5346e3c9c0cf1a895c1b379edd7fad66af329d30f2cbccd7448f185f304b3",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasurementEditorManagerControl.xaml",
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml"
+      ],
+      "dependencyProperties": [
+        "Rois",
+        "AvailableDataSources",
+        "DefaultRegionType",
+        "RegionTypeTitle",
+        "RegionTypeTitleBrush"
+      ],
+      "lifecycleMarkers": [
+        "Loaded",
+        "Unloaded"
+      ],
+      "category": "ROI与绘图",
+      "role": "单组ROI编辑内容",
+      "recommendation": "调整",
+      "design": "绘制/继承/选择编辑统一作用于字段草稿；Apply/Cancel/Undo与外层参数同事务。",
+      "via": [
+        "RoiEditorManagerControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs",
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml"
+      ]
+    },
+    {
+      "name": "ColorSelector",
+      "base": "Control",
+      "source": "src/Plugin.SDK/UI/Controls/ColorPicker/ColorSelector.cs",
+      "line": 34,
+      "sha256": "01fe127d7d84abbc1d4faea7dad8c99ae9b198d1e2d2ef4b0aef1c60fd09ef1a",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/Themes/Generic.xaml",
+        "src/Plugin.SDK/UI/Previews/AllControlsPreview.xaml"
+      ],
+      "dependencyProperties": [
+        "SelectedColor"
+      ],
+      "lifecycleMarkers": [
+        "Closed",
+        "OnApplyTemplate"
+      ],
+      "category": "颜色与样式",
+      "role": "颜色选择器内部可视部件",
+      "recommendation": "复用并验",
+      "design": "作为ColorPicker实现部件管理，不升成第二套业务颜色配置服务。",
+      "via": [
+        "DispItemColorControl / Generic模板",
+        "DispTextColorControl / Generic模板"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ColorPicker/ColorSelector.cs"
+      ]
+    },
+    {
+      "name": "RoiSubscribePanel",
+      "base": "UserControl",
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiSubscribePanel.xaml.cs",
+      "line": 15,
+      "sha256": "322e111f255f2e4e84f3c9da57f31f0c5433dc31418b97209aab702adb0a7e6e",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml"
+      ],
+      "dependencyProperties": [
+        "AvailableDataSources"
+      ],
+      "lifecycleMarkers": [
+        "DataContextChanged"
+      ],
+      "category": "ROI与绘图",
+      "role": "ROI继承/来源面板",
+      "recommendation": "调整",
+      "design": "继承地址及模式由合同声明；不能复制上游运行对象当正式配置或允许越界编辑。",
+      "via": [
+        "RoiEditorControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiSubscribePanel.xaml.cs",
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiSubscribePanel.xaml"
+      ]
+    },
+    {
+      "name": "ShapeToolBar",
+      "base": "UserControl",
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/ShapeToolBar.xaml.cs",
+      "line": 20,
+      "sha256": "8bb7a56f0f84aa4c136ce45cdc1d071415c2d115732b80701f50c40032c140a8",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml"
+      ],
+      "dependencyProperties": [
+        "ShapeTools"
+      ],
+      "lifecycleMarkers": [],
+      "category": "ROI与绘图",
+      "role": "ROI形状命令工具栏",
+      "recommendation": "复用并调整",
+      "design": "复用命令呈现；可绘形态由字段声明，不硬编码为全工具一套能力。",
+      "via": [
+        "RoiEditorControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/ShapeToolBar.xaml.cs",
+        "src/Plugin.SDK/UI/Controls/Roi/Views/ShapeToolBar.xaml"
+      ]
+    },
+    {
+      "name": "DrawingParameterPanel",
+      "base": "UserControl",
+      "source": "src/Plugin.SDK/UI/Controls/Roi/Views/DrawingParameterPanel.xaml.cs",
+      "line": 14,
+      "sha256": "83ad0a165fef20fcf549e13f93447c1fe2973509a6795ab4e49cea854b7918d4",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml"
+      ],
+      "dependencyProperties": [],
+      "lifecycleMarkers": [
+        "DataContextChanged"
+      ],
+      "category": "ROI与绘图",
+      "role": "ROI几何参数面板",
+      "recommendation": "调整",
+      "design": "数值和拖动双向一致；共享坐标/单位/角度及校验，不自成一套参数回填。",
+      "via": [
+        "RoiEditorControl / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/DrawingParameterPanel.xaml.cs",
+        "src/Plugin.SDK/UI/Controls/Roi/Views/DrawingParameterPanel.xaml"
+      ]
+    },
+    {
+      "name": "ColorPicker",
+      "base": "Control",
+      "source": "src/Plugin.SDK/UI/Controls/ColorPicker/ColorPicker.cs",
+      "line": 39,
+      "sha256": "0a6857b9f5ff08c2f91687d3b76eebe650f9a120ddf33fcd68191ad8bf3020e5",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/Themes/Generic.xaml",
+        "src/Plugin.SDK/UI/Previews/AllControlsPreview.xaml"
+      ],
+      "dependencyProperties": [
+        "SelectedColor"
+      ],
+      "lifecycleMarkers": [
+        "OnApplyTemplate"
+      ],
+      "category": "颜色与样式",
+      "role": "颜色选择组合控件",
+      "recommendation": "复用并验",
+      "design": "明确草稿颜色/确认取消、Alpha与颜色编码；复用主题资源。",
+      "via": [
+        "ColorSelector / Generic模板"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/ColorPicker/ColorPicker.cs"
+      ]
+    },
+    {
+      "name": "ToolBarControl",
+      "base": "UserControl",
+      "source": "src/Plugin.SDK/UI/Controls/Common/Views/ToolBarControl.xaml.cs",
+      "line": 21,
+      "sha256": "2971d577bf903f1b0b65cc22d71ded6bff2dedf040c90ad2948e1c5da4cd6936",
+      "directConsumerFiles": [
+        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureToolBar.xaml",
+        "src/Plugin.SDK/UI/Controls/Roi/Views/ShapeToolBar.xaml"
+      ],
+      "dependencyProperties": [
+        "ItemsSource",
+        "SelectedValue"
+      ],
+      "lifecycleMarkers": [],
+      "category": "公共交互",
+      "role": "通用工具栏呈现",
+      "recommendation": "复用并调整",
+      "design": "只呈现可用命令与选中态；工具栏不管理正式ROI、视口资源或业务运行。",
+      "via": [
+        "ShapeToolBar / XAML"
+      ],
+      "files": [
+        "src/Plugin.SDK/UI/Controls/Common/Views/ToolBarControl.xaml.cs",
+        "src/Plugin.SDK/UI/Controls/Common/Views/ToolBarControl.xaml"
+      ]
+    }
+  ],
+  "count": 31,
+  "edges": [
+    {
+      "parent": "BlobAnalysisToolDebugControl",
+      "child": "ParamBinding",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "BlobAnalysisToolDebugControl",
+      "child": "GraphicsDisplayEditorControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "BlobAnalysisToolDebugControl",
+      "child": "ToggleSwitch",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "BlobAnalysisToolDebugControl",
+      "child": "JudgmentEditorControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "BlobAnalysisToolDebugControl",
+      "child": "ImageSourceSelector",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "BlobAnalysisToolDebugControl",
+      "child": "ConfigSetting",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "BlobAnalysisToolDebugControl",
+      "child": "ToolDebugControlBase",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "BlobAnalysisToolDebugControl",
+      "child": "RangeInputControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "BlobAnalysisToolDebugControl",
+      "child": "TextDisplayEditorControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "BlobAnalysisToolDebugControl",
+      "child": "LabeledControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "BlobAnalysisToolDebugControl",
+      "child": "RoiEditorManagerControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "ImageControl",
+      "child": "ResultRenderLayer",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "DefaultDebugWindow",
+      "child": "ToolIcon",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "ParamBinding",
+      "child": "ParamBindingBase",
+      "kind": "自研基类"
+    },
+    {
+      "parent": "GraphicsDisplayEditorControl",
+      "child": "DispItemColorControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "GraphicsDisplayEditorControl",
+      "child": "LabeledControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "JudgmentEditorControl",
+      "child": "ToggleSwitch",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "JudgmentEditorControl",
+      "child": "RangeInputControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "JudgmentEditorControl",
+      "child": "LabeledControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "ConfigSetting",
+      "child": "ParamBindingBase",
+      "kind": "自研基类"
+    },
+    {
+      "parent": "ConfigSetting",
+      "child": "NumericUpDown",
+      "kind": "默认模板"
+    },
+    {
+      "parent": "ConfigSetting",
+      "child": "ParamBinding",
+      "kind": "默认模板"
+    },
+    {
+      "parent": "RangeInputControl",
+      "child": "NumericUpDown",
+      "kind": "默认模板"
+    },
+    {
+      "parent": "RangeInputControl",
+      "child": "RangeSlider",
+      "kind": "默认模板"
+    },
+    {
+      "parent": "TextDisplayEditorControl",
+      "child": "DispTextColorControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "TextDisplayEditorControl",
+      "child": "LabeledControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "RoiEditorManagerControl",
+      "child": "RoiEditorControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "DispItemColorControl",
+      "child": "NumericUpDown",
+      "kind": "默认模板"
+    },
+    {
+      "parent": "DispItemColorControl",
+      "child": "ColorSelector",
+      "kind": "默认模板"
+    },
+    {
+      "parent": "DispTextColorControl",
+      "child": "ConfigSetting",
+      "kind": "默认模板"
+    },
+    {
+      "parent": "DispTextColorControl",
+      "child": "NumericUpDown",
+      "kind": "默认模板"
+    },
+    {
+      "parent": "DispTextColorControl",
+      "child": "ColorSelector",
+      "kind": "默认模板"
+    },
+    {
+      "parent": "RoiEditorControl",
+      "child": "RoiSubscribePanel",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "RoiEditorControl",
+      "child": "ShapeToolBar",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "RoiEditorControl",
+      "child": "DrawingParameterPanel",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "ColorSelector",
+      "child": "ColorPicker",
+      "kind": "默认模板"
+    },
+    {
+      "parent": "RoiSubscribePanel",
+      "child": "ParamBinding",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "RoiSubscribePanel",
+      "child": "LabeledControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "ShapeToolBar",
+      "child": "ToolBarControl",
+      "kind": "XAML实例"
+    },
+    {
+      "parent": "DrawingParameterPanel",
+      "child": "NumericUpDown",
+      "kind": "XAML实例"
+    }
+  ],
+  "nativeWpfElements": [
+    "BeginStoryboard",
+    "Binding",
+    "BooleanToVisibilityConverter",
+    "Border",
+    "Button",
+    "Canvas",
+    "CheckBox",
+    "CollectionViewSource",
+    "ColumnDefinition",
+    "ComboBox",
+    "CommandBinding",
+    "Condition",
+    "ContentControl",
+    "ContentPresenter",
+    "ContextMenu",
+    "ControlTemplate",
+    "DataGrid",
+    "DataGridTextColumn",
+    "DataTemplate",
+    "DataTrigger",
+    "DockPanel",
+    "DoubleAnimation",
+    "Ellipse",
+    "EventSetter",
+    "Expander",
+    "GradientStop",
+    "Grid",
+    "GroupBox",
+    "GroupStyle",
+    "HierarchicalDataTemplate",
+    "Image",
+    "ItemsControl",
+    "ItemsPanelTemplate",
+    "ItemsPresenter",
+    "LinearGradientBrush",
+    "ListBox",
+    "MenuItem",
+    "MultiBinding",
+    "MultiDataTrigger",
+    "Path",
+    "Popup",
+    "PropertyGroupDescription",
+    "RadioButton",
+    "Rectangle",
+    "RepeatButton",
+    "ResourceDictionary",
+    "RotateTransform",
+    "RowDefinition",
+    "ScaleTransform",
+    "ScrollViewer",
+    "Separator",
+    "Setter",
+    "Slider",
+    "StackPanel",
+    "StatusBar",
+    "StatusBarItem",
+    "Storyboard",
+    "Style",
+    "TabControl",
+    "TabItem",
+    "TextBlock",
+    "TextBox",
+    "Thumb",
+    "ToggleButton",
+    "TransformGroup",
+    "TranslateTransform",
+    "TreeView",
+    "Trigger",
+    "UniformGrid",
+    "UserControl",
+    "Viewbox",
+    "VirtualizingStackPanel",
+    "Window",
+    "WrapPanel"
+  ],
+  "nonVisualValueTags": [
+    "ImageRunMode",
+    "SortDescription",
+    "String"
+  ],
+  "unresolvedCustomTags": [],
+  "files": {
+    "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml.cs": "c4a491032094d4ac6738d0e9dd139a893e5ebb488bda69fde1ef824c8550781a",
+    "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml": "d17f35a0f530686d85d12e0779271dd7999b1a6b893136c3159dc87091324b50",
+    "tools/SunEyeVision.BlobAnalysis/Views/BlobDataAnalysisControl.xaml.cs": "399e84821ae389239ae1a991e5bed549ee561f6dbff220f22c02960b2224114a",
+    "tools/SunEyeVision.BlobAnalysis/Views/BlobDataAnalysisControl.xaml": "02691e1f7397817e8adc70434c49bf6f405174dc9704914063461527f399191c",
+    "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68",
+    "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml": "b792ec4d3cbff641131e8decfd00ceb67794bd7007396f5c850eec4d5b87c786",
+    "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs": "080beedfac4c8c086b1d2d0e0227203f66c6436dca8c295224de7e20859ab947",
+    "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml": "83d0d13fb4a3b0dba4bd13d71446f5f72c1ac372505637a5f8c8518821df2e13",
+    "src/UI/Shell/Controls/Panels/ImagePreviewControl.FileImport.cs": "6d69c8db3a2214eb2221be7a8cb1aa55913b6791ffad70f2cda2a58d2a332879",
+    "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs": "8b28dc2cf30df3ec3def413d4480fbcfb5145bc63b7edf1d0a252a0f958d2d4c",
+    "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml": "f8c1df8aba749dadd379d759913f8dc8f8d7ba6037320222743b40f234314356",
+    "src/Plugin.SDK/UI/Windows/CustomDebugWindow.cs": "062afd6ddbe23706e72e6a3ad76e73089ce093a189dc295e17a9e3d57678327a",
+    "src/Plugin.SDK/UI/Controls/ParamBinding.cs": "75ea710cf6ed1d8e8e15d43d13b4ed904dc3732fe149efe5b0931010d148968d",
+    "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml.cs": "db1919ea64f89b01bc178ab6feaabc6a38c17b1bfc7ca5e80703cb1170ef23d3",
+    "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml": "daa9c28768dd5b40b5990a981b745e83dcd50a7dc4d69bc254936cbd18a9fab2",
+    "src/Plugin.SDK/UI/Controls/ToggleSwitch.cs": "d32e7855dad1c3907060be5e257deb15eff568953c2e91afaf6c48c3ab9d535b",
+    "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml.cs": "1b4a1e6f5e8e6c9c71282315ad0a3056025c75742eb14ca1980fa784cb6cdc14",
+    "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml": "01874390c64a712477a050f467291399b4ed93bbc5e77f0bd926fc57e8019766",
+    "src/Plugin.SDK/UI/Controls/ImageSourceSelector.cs": "136f1d72e42b82160cd329283eedcf71c6b14f0c7d55a1c649cecc3b2eff93df",
+    "src/Plugin.SDK/UI/Controls/ConfigSetting.cs": "c82d7d8c0bd0c9fc31770ffb12bd7323053e16523830fa9e77a3314c725a7af3",
+    "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs": "27a1a11db48804b6f4e2dced782543e9bd7140560acdba407a814323971765c3",
+    "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.BindingIssues.cs": "5607de25a7d98174aa48a514080431502058eaa4aa772d6f05ff4df5a379b40e",
+    "src/Plugin.SDK/UI/Controls/RangeInputControl.cs": "ff8f728897fc5c70bc90b9402f94bbd2fb09b8e419c15e7432001b1008d0893a",
+    "src/Plugin.SDK/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml.cs": "bc22e412ce008fc9e8821004ed9ddcd68b47337dcd38a63a64bf1f32a5c65ca3",
+    "src/Plugin.SDK/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml": "ef764eb5d5b9eb59dcc09fa4ac3c13cc9a82f7bedb8350fe55070e724f049442",
+    "src/Plugin.SDK/UI/Controls/LabeledControl.cs": "3f4fb205398277e22dcf92f48a50374d203fcad61b8dd3b53af854755ad8e2b5",
+    "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs": "c0c109f27baac6e46df283000defa7870139dcbd1a5b89d1c69bb9d53469bccd",
+    "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml": "fa1eb9ac35dd2a1ae506de27aa15d1c3e3dcfea358f5f0d9ac583079a39aba97",
+    "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350",
+    "src/Plugin.SDK/UI/Controls/Icons/ToolIcon.cs": "e06b8a7015f643c3a724877bbe50712fc8c3e4972e3b676f7a505a49827c6d16",
+    "src/Plugin.SDK/UI/Controls/ParamBindingBase.cs": "42ec0f0ed5b3b8d052e620affd78a78f550bf80133e4f43beba9cdca86c8d6b0",
+    "src/Plugin.SDK/UI/Controls/DispItemColorControl.cs": "ec262ef978ae65357e51cdbfad627cca63eeaf0b33aa13f9dec6d9b87c952265",
+    "src/Plugin.SDK/UI/Controls/NumericUpDown.cs": "4c544477268218478ee770e5380bd6289536801859bec556a92ba77e5fe335a6",
+    "src/Plugin.SDK/UI/Controls/RangeSlider.cs": "45c36d01b780ff15de26318a21718803e51e05d0dd0e5cf5805ee9d883a7b8e7",
+    "src/Plugin.SDK/UI/Controls/DispTextColorControl.cs": "be67bae1856f547f08b8a6bf0927c9e452c6ea106b59d0d066c65b1b1e60f541",
+    "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs": "bce5346e3c9c0cf1a895c1b379edd7fad66af329d30f2cbccd7448f185f304b3",
+    "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml": "cf9a7689867e19f35f8da6101daa830e64ce2e6ba6c970e2b6eb22c44f721141",
+    "src/Plugin.SDK/UI/Controls/ColorPicker/ColorSelector.cs": "01fe127d7d84abbc1d4faea7dad8c99ae9b198d1e2d2ef4b0aef1c60fd09ef1a",
+    "src/Plugin.SDK/UI/Controls/Roi/Views/RoiSubscribePanel.xaml.cs": "322e111f255f2e4e84f3c9da57f31f0c5433dc31418b97209aab702adb0a7e6e",
+    "src/Plugin.SDK/UI/Controls/Roi/Views/RoiSubscribePanel.xaml": "b598ff8da70ea48c016ede48d2630f738419765f71fc8257953f9930537f4957",
+    "src/Plugin.SDK/UI/Controls/Roi/Views/ShapeToolBar.xaml.cs": "8bb7a56f0f84aa4c136ce45cdc1d071415c2d115732b80701f50c40032c140a8",
+    "src/Plugin.SDK/UI/Controls/Roi/Views/ShapeToolBar.xaml": "2d6d1762038eabbf97793a387af84e50757d815749ab6f85fbdd410045b3ad87",
+    "src/Plugin.SDK/UI/Controls/Roi/Views/DrawingParameterPanel.xaml.cs": "83ad0a165fef20fcf549e13f93447c1fe2973509a6795ab4e49cea854b7918d4",
+    "src/Plugin.SDK/UI/Controls/Roi/Views/DrawingParameterPanel.xaml": "fe4b9cbfa7e9d84ac6163ecce07246619e7f672dcc9553eeccdcadab608fc55f",
+    "src/Plugin.SDK/UI/Controls/ColorPicker/ColorPicker.cs": "0a6857b9f5ff08c2f91687d3b76eebe650f9a120ddf33fcd68191ad8bf3020e5",
+    "src/Plugin.SDK/UI/Controls/Common/Views/ToolBarControl.xaml.cs": "2971d577bf903f1b0b65cc22d71ded6bff2dedf040c90ad2948e1c5da4cd6936",
+    "src/Plugin.SDK/UI/Controls/Common/Views/ToolBarControl.xaml": "e85e23bbcd3114a560db3b646677984f7d043afd2af98befc65ad7eddaddacdd",
+    "src/Plugin.SDK/Themes/Generic.xaml": "aa78850e463fcb00440380c3d5b5792734372419c76b6667735b53bd515a6f19"
+  },
+  "boundary": "Static XAML, code new expressions, known custom bases, Generic.xaml target styles; includes declared host candidates, not simultaneous runtime instantiation. Reflection, custom external theme overrides and dynamic factory branches require runtime validation. No full-runtime or performance acceptance.",
+  "productModified": false,
+  "runtimeStarted": false
+}

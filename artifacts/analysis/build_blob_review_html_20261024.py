@@ -1,6 +1,6 @@
 """Documentation-only integration. No product build, probe, or code change."""
 from pathlib import Path
-import hashlib, html, json, os, re
+import hashlib, html, json, os, re, runpy
 from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -177,6 +177,13 @@ if start in page:
 else:
     page=page.replace('<main>','<main>\n'+block+'\n',1)
 PAGE.write_text(page,encoding='utf-8')
+
+# Keep the later architecture review authoritative when refreshing this evidence
+# inventory. Do not recreate per-article home banners in the V8.1 review workflow.
+review_script=ROOT/'artifacts/analysis/review_blob_architecture_v81_20261024.py'
+if (ROOT/'artifacts/analysis/blob-architecture-v81-review-20261024.json').exists():
+    runpy.run_path(str(review_script),run_name='__main__')
+    raise SystemExit(0)
 
 home=DOCROOT/'index.html'
 home_start='<!-- BLOB-REVIEW-ENTRY:BEGIN -->';home_end='<!-- BLOB-REVIEW-ENTRY:END -->'

@@ -1,0 +1,429 @@
+{
+  "kind": "V8.1-evidence-based-Blob-architecture-review",
+  "observedHead": "c9b52a95880b71064ab186f60ae8d4c2db259c0b",
+  "productChanges": false,
+  "newRuntimeOrPerformanceTests": false,
+  "recommendation": "C: semantic contracts + host application services + optional UI composition",
+  "status": "recommendation-for-whole-review-not-implementation-approval",
+  "evidence": [
+    {
+      "id": "S01",
+      "title": "节点创建",
+      "path": "src/UI/Services/Interaction/DragDropHandler.cs",
+      "line": 270,
+      "located": true,
+      "sha256": "25bf5554daba42045d5b27b68d3adcfe81b2ac1d1c934d446fa7e70b511c28b4"
+    },
+    {
+      "id": "S02",
+      "title": "Blob窗口持有主视口、查询与清理",
+      "path": "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml.cs",
+      "line": 153,
+      "located": true,
+      "sha256": "c4a491032094d4ac6738d0e9dd139a893e5ebb488bda69fde1ef824c8550781a"
+    },
+    {
+      "id": "S03",
+      "title": "公共ROI管理器持有视口及renderer",
+      "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs",
+      "line": 130,
+      "located": true,
+      "sha256": "c0c109f27baac6e46df283000defa7870139dcbd1a5b89d1c69bb9d53469bccd"
+    },
+    {
+      "id": "S04",
+      "title": "UI类型筛选规则",
+      "path": "src/Plugin.SDK/UI/Controls/ParamBindingBase.cs",
+      "line": 345,
+      "located": true,
+      "sha256": "42ec0f0ed5b3b8d052e620affd78a78f550bf80133e4f43beba9cdca86c8d6b0"
+    },
+    {
+      "id": "S05",
+      "title": "UI持有生产草稿适配",
+      "path": "src/UI/Services/Editing/ProductionEditorContext.cs",
+      "line": 8,
+      "located": true,
+      "sha256": "e57d51fa0e67bc4410c23cb26f87446c5a4b3e71c0287ae1fd7b28e49e7b5308"
+    },
+    {
+      "id": "S06",
+      "title": "唯一节点编辑发布宿主",
+      "path": "src/Workflow/NodeConfigurationEditHost.cs",
+      "line": 25,
+      "located": true,
+      "sha256": "8f50c9a69fa396e8847d321a13b76e27aaacf7029cfe917e16fd6c8b7a22f5d2"
+    },
+    {
+      "id": "S07",
+      "title": "实际Blob算法与输入异常边界",
+      "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs",
+      "line": 65,
+      "located": true,
+      "sha256": "bc324efadae6085df6c8b3c67a71d5da2f5828de81a80112948dbe82510eb638"
+    },
+    {
+      "id": "S08",
+      "title": "稳定声明、记录投影及WPF点桥",
+      "path": "tools/SunEyeVision.BlobAnalysis/BlobOutputContract.cs",
+      "line": 11,
+      "located": true,
+      "sha256": "35068683026d5f34b05154fbbe0beb99cc94ada98d0d2d18c0f758f4695233b2"
+    },
+    {
+      "id": "S09",
+      "title": "结果持有者引用计数",
+      "path": "src/Plugin.SDK/Execution/Results/ResultResourceOwner.cs",
+      "line": 7,
+      "located": true,
+      "sha256": "29756aa5805529189d48e1c0b785187e36ed4020cb3897d12300f758186824bf"
+    },
+    {
+      "id": "S10",
+      "title": "结果树显式Run与reader",
+      "path": "src/UI/Services/Monitoring/ResultPresentationPresenter.cs",
+      "line": 66,
+      "located": true,
+      "sha256": "16c8d5b79fe22cbe7898ff1d1ae523dd869577682554dea7f066b1160c767f5f"
+    },
+    {
+      "id": "S11",
+      "title": "UI-free合同已有实现",
+      "path": "src/Plugin.Contracts/ToolContracts.cs",
+      "line": 35,
+      "located": true,
+      "sha256": "04abf0cc7159e7bfdf45079fad3b87a458d95681bd16a2c24f59027ecb1ff6db"
+    },
+    {
+      "id": "S12",
+      "title": "图像合同实际能力边界",
+      "path": "src/Plugin.Contracts/Resources.cs",
+      "line": 3,
+      "located": true,
+      "sha256": "50acf309c6a1c5c34896d8bdb85e002415f7952ca3f5925b5e7215845281ad59"
+    },
+    {
+      "id": "S13",
+      "title": "绑定编译器与数量合同",
+      "path": "src/Plugin.Contracts/BindingPlans.cs",
+      "line": 16,
+      "located": true,
+      "sha256": "3e5da4aab2a7e6264db5cade2f87a255e4f3b3cc6d4f105189fa142a7ce00c92"
+    },
+    {
+      "id": "S14",
+      "title": "单字段编辑会话并非整节点CAS",
+      "path": "src/Plugin.Contracts/Editing.cs",
+      "line": 8,
+      "located": true,
+      "sha256": "a2131b07e0dedae65ea0a3cfa94ac3109e8abac7a6aceeac0095be217c5bbffd"
+    },
+    {
+      "id": "S15",
+      "title": "旧SDK真实WPF依赖",
+      "path": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+      "line": 7,
+      "located": true,
+      "sha256": "cefb629ab78ab7436d01ae341b469e778916a320f0f10294d5cf60dbdcec84a2"
+    },
+    {
+      "id": "S16",
+      "title": "Blob算法和View同一WPF插件",
+      "path": "tools/SunEyeVision.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj",
+      "line": 8,
+      "located": true,
+      "sha256": "21574236cfba8b7ff9e14cf28a0202e477218fe38dcc0d95bf0c4e4a421fdd06"
+    },
+    {
+      "id": "S17",
+      "title": "公共控件和模板装配",
+      "path": "src/Plugin.SDK/Themes/Generic.xaml",
+      "line": 1,
+      "located": true,
+      "sha256": "aa78850e463fcb00440380c3d5b5792734372419c76b6667735b53bd515a6f19"
+    },
+    {
+      "id": "S18",
+      "title": "运行前准备仍在控件基类",
+      "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "line": 965,
+      "located": true,
+      "sha256": "27a1a11db48804b6f4e2dced782543e9bd7140560acdba407a814323971765c3"
+    },
+    {
+      "id": "S19",
+      "title": "工具定义注册与按类型创建",
+      "path": "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.cs",
+      "line": 182,
+      "located": true,
+      "sha256": "37e67c62c3e8e679fd9e0e5caaa6b6a5f4f5bf59acf3c3b88ff8db6470c3730c"
+    },
+    {
+      "id": "S20",
+      "title": "节点移除连接与退役入口",
+      "path": "src/Workflow/Workflow.cs",
+      "line": 468,
+      "located": true,
+      "sha256": "6cb1ad094444cf73e6f8e3ec02eaabba91cb145ccef6c0526281fb8aeba99dfd"
+    },
+    {
+      "id": "S21",
+      "title": "工作流执行会话与统一结束",
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "line": 1242,
+      "located": true,
+      "sha256": "9301019599268bd6d8e31ee04f9d694c9bfd60afd1b13cb596aa874120becf03"
+    },
+    {
+      "id": "S22",
+      "title": "执行器实际请求入口",
+      "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+      "line": 66,
+      "located": true,
+      "sha256": "6cb257d31f9832cb445f086785e6b90db7cc38175fea839cb24ba41ebc87e8e1"
+    },
+    {
+      "id": "S23",
+      "title": "持久化写入快照",
+      "path": "src/Workflow/Persistence/SolutionSnapshot.cs",
+      "line": 16,
+      "located": true,
+      "sha256": "76e0b0682ed71362c99de2c2301d377a565939936a57c48c4bc87e9b262e7985"
+    },
+    {
+      "id": "S24",
+      "title": "节点配置与实例创建入口",
+      "path": "src/Workflow/WorkflowNode.cs",
+      "line": 652,
+      "located": true,
+      "sha256": "7cbebf37a1ff4b141dfb65ff87832fbf5855653b5750d6e2913b907b0dd7e395"
+    },
+    {
+      "id": "S25",
+      "title": "工具窗口另创建实例",
+      "path": "src/UI/Services/Editing/Nodes/NodeOpenDecisionChain.cs",
+      "line": 107,
+      "located": true,
+      "sha256": "11ecdcf0952df1e6768d438b9ce0761f48dff6239c1655113209c298a1c95cd6"
+    },
+    {
+      "id": "S26",
+      "title": "无UI绑定工程实际包含内容",
+      "path": "src/Plugin.Runtime/BindingScopeSnapshot.cs",
+      "line": 52,
+      "located": true,
+      "sha256": "d636e68bcf1bc92a12c7265808f5a2f64ad0437a1d7d4cfd7998292bb6f0d1ea"
+    },
+    {
+      "id": "S27",
+      "title": "可选WPF呈现工程已有边界",
+      "path": "src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj",
+      "line": 1,
+      "located": true,
+      "sha256": "3ccab4274f8f217158f196672e7f01040ccfb67fe554361ca2d02a37bbfc0773"
+    },
+    {
+      "id": "S28",
+      "title": "有限字段消费者而非生产编辑器",
+      "path": "src/Plugin.Wpf/ParameterEditorControl.cs",
+      "line": 8,
+      "located": true,
+      "sha256": "365a77d50c6b882c883d10b7c006c3935eab9e5bd56584778142ec63437b820e"
+    },
+    {
+      "id": "S29",
+      "title": "中央三层图像控件",
+      "path": "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+      "line": 45,
+      "located": true,
+      "sha256": "e363ba4b3fb6d9264e5381874c49dc68305ad9b9e8651d6e32f4d70b456feb68"
+    },
+    {
+      "id": "S30",
+      "title": "结果层批量/普通路径、缓存和异步",
+      "path": "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+      "line": 21,
+      "located": true,
+      "sha256": "bec2090ab138ed1a030c532e7a93ee47e1cefb3cc8718c43d22a27895decf350"
+    },
+    {
+      "id": "S31",
+      "title": "交互ROI轻量Visual与失效标志",
+      "path": "src/Plugin.SDK/UI/Controls/Roi/Rendering/WpfShapeRenderer.cs",
+      "line": 21,
+      "located": true,
+      "sha256": "e897c31114bf5253f1f2bd4a8d4da35226da94fff029e771db2a2c96bc84b09a"
+    },
+    {
+      "id": "S32",
+      "title": "图形收集分组键",
+      "path": "src/Plugin.SDK/Models/Visualization/DisplayCollector.cs",
+      "line": 280,
+      "located": true,
+      "sha256": "3e1ce9d8bce93949347485464801abf81b075c5402b232209741f784b59f2dae"
+    },
+    {
+      "id": "S33",
+      "title": "节点分析控件创建、缓存读取和高亮桥",
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "line": 3533,
+      "located": true,
+      "sha256": "eec8ba451670be55c57a3675bce8650469e2a8c741b87850caf13704b9107863"
+    },
+    {
+      "id": "S34",
+      "title": "数据分析协议实际边界",
+      "path": "src/Plugin.SDK/UI/Controls/IToolControlDataAnalysis.cs",
+      "line": 23,
+      "located": true,
+      "sha256": "b5c1ec66fb7357f49bbce183fa357c6984b55c5da30a483806d166bba47161d1"
+    },
+    {
+      "id": "S35",
+      "title": "Blob分析表格、聚合及高亮",
+      "path": "tools/SunEyeVision.BlobAnalysis/Views/BlobDataAnalysisControl.xaml.cs",
+      "line": 17,
+      "located": true,
+      "sha256": "399e84821ae389239ae1a991e5bed549ee561f6dbff220f22c02960b2224114a"
+    },
+    {
+      "id": "S36",
+      "title": "节点图像预览与版本/取消",
+      "path": "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs",
+      "line": 46,
+      "located": true,
+      "sha256": "080beedfac4c8c086b1d2d0e0227203f66c6436dca8c295224de7e20859ab947"
+    },
+    {
+      "id": "S37",
+      "title": "预览内容版本缓存与并发预算",
+      "path": "src/UI/Services/Thumbnail/PreviewBitmapCache.cs",
+      "line": 10,
+      "located": true,
+      "sha256": "0c503fd8186a2d8e1b86fbb3c4743159994848b511a08299efa674fd8d97987f"
+    },
+    {
+      "id": "S38",
+      "title": "已存在生产视口/模态/帧/格式/计量实际入口图",
+      "path": "artifacts/analysis/a11-host-identity-review-20261024/viewport-production-entry-map.json",
+      "line": 11,
+      "located": true,
+      "sha256": "8e8f7075a50c875be6e270bde2e8f2fda7006e54bdc25201b85d32e37fcf72dd"
+    },
+    {
+      "id": "T01",
+      "title": "已有几何/reader/Presenter有限独验",
+      "path": "artifacts/independent-testing/tool-framework-first-dependency/runs/geometry-3ab-20261024/acceptance.json",
+      "line": 1,
+      "located": true,
+      "sha256": "dfd5f39f85b4520437d116eb8184c68e5f737d570945a90d678db07f619e48bb"
+    },
+    {
+      "id": "T02",
+      "title": "已有真实Blob/native/输出有限独验",
+      "path": "artifacts/independent-testing/tool-framework-first-dependency/runs/declared-blob-host01-20261024/acceptance.json",
+      "line": 1,
+      "located": true,
+      "sha256": "0eda4e83b9959ff5e7acffe74a22f26e1a581a2e47525978f651fb15b00f0b2b"
+    },
+    {
+      "id": "V01",
+      "title": "VM原模块身份与managed调用库存",
+      "path": "D:/MyWork/REA逆向测试/docs/plugins/BLOB-ANALYSIS-IDENTITY-SOURCE-INVENTORY.md",
+      "line": 5,
+      "located": true,
+      "sha256": "dd0ce07b20c368aafce205abea5e6145d47d04b01969be641b377d2151c8fb4d"
+    },
+    {
+      "id": "V02",
+      "title": "VM公共组与控件能力声明",
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/tool-rendering-entry-audit.resources/IMVSBlobFindModuAlgorithmTab.xml",
+      "line": 84,
+      "located": true,
+      "sha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec"
+    },
+    {
+      "id": "V03",
+      "title": "VM配置根创建、初始化和Dispose",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ParamsConfigControlBase.xaml.cs",
+      "line": 206,
+      "located": true,
+      "sha256": "6e625d0a505d37e17e59d6a357353aafaffb3d9a4bf4e4f8f87ee31087436f58"
+    },
+    {
+      "id": "V04",
+      "title": "VM本体片段与未贯通native边界",
+      "path": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-BLOB-NATIVE-MINIMAL/native-minimal-evidence.json",
+      "line": 2,
+      "located": true,
+      "sha256": "fb607e58c82f6abceb3eb485c371e7b2063a619e368fffc2da1bd96e36a617d8"
+    }
+  ],
+  "existingAPINameCorrection": "CaptureForRun is a behavioral requirement, not a located src method; use actual existing publication/snapshot interfaces after consumer verification.",
+  "inheritedCoverage": "Original BV01–12/41 visual-class inventory, finite tests retained at original scope; no new batch or acceptance denominator.",
+  "funnel": {
+    "originalIds": [
+      "FT-A01",
+      "FT-A02",
+      "FT-A03",
+      "FT-B01",
+      "FT-B02",
+      "FT-B03",
+      "FT-C01",
+      "FT-C02",
+      "FT-C03",
+      "FT-H01",
+      "FT-H02",
+      "FT-H03",
+      "FT-D01",
+      "FT-D02",
+      "FT-D03",
+      "FT-E01",
+      "FT-E02",
+      "FT-E03",
+      "FT-F01",
+      "FT-F02",
+      "FT-F03",
+      "FT-G01",
+      "FT-G02",
+      "FT-G03",
+      "FT-I01",
+      "FT-I02",
+      "FT-I03",
+      "FT-K01",
+      "FT-K02",
+      "FT-K03",
+      "FT-M01",
+      "FT-M02",
+      "FT-M03",
+      "FT-J01",
+      "FT-J02",
+      "FT-J03",
+      "FT-L01",
+      "FT-L02",
+      "FT-L03",
+      "FT-N01",
+      "FT-N02",
+      "FT-N03",
+      "FT-O01",
+      "FT-O02",
+      "FT-O03",
+      "FT-P01",
+      "FT-P02",
+      "FT-P03"
+    ],
+    "total": 48,
+    "included": 47,
+    "excluded": [
+      "FT-O02"
+    ],
+    "architectureDomains": 10,
+    "architectureReviewLeaves": 30,
+    "legacyMappingDomains": 16,
+    "lifecycleStages": 12,
+    "scopeSha256": "44304e3e8ce653ed629a86e0467b94f0452e1cc6b2da081a6d6d8c8acf117980",
+    "ledgerSha256": "1f8753f44308ada822cc0030fc0bbd0ce9cfc3197218d2de40010310f2483cb1",
+    "ledgerUpdatedAt": "2026-10-24T11:49:42.074Z",
+    "statusAuthority": "Read-only snapshot of delivery manager ledger; no status reclassification"
+  }
+}

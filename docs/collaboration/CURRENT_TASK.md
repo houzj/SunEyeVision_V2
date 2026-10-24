@@ -1,3 +1,11 @@
+## 2026-10-24 17:40 Threshold/NodeOpen完整候选已直交，继续原主窗口独验
+
+- 基线/固定产品源码17bc36884611f0be1ae6874c59e2354012c19b66。threshold-integrated-ready-17bc3688已封存停止写，receipt3E2C3933B9267B36885D2E43A4937883D904CDAD2EC798C150A9C0BDF280159D；evidenceEDD9DBF7237BFFEDC4EA606FA79198763CF8ECF39ED113D4D94A743E4553A2F1。Source3870逐SHA0差、6明确publicizer编译输入；app/UItests权威626文件、121产品PE路径精确17bc、实际HostDebugRoot同app。已直交独测/协调，不停在交接。
+- full-release03自然0/0错1283警告180.97秒；editor-routing04 PID59016自然0、NodeOpen6+Threshold13共19PASS/0skip；toolbox05真实exe22720自然0/全部22。独测先身份门，再原E06/E07真实MainWindow有效保存/重开/非法draft阻断；生产Run尚未验，不冒完整B02或47项签收。
+- 外部threshold-run-input-17bc3688以原safe-threshold方案副本构造ImageLoad.OutputImage→Threshold真实引用/连接、256x32灰度BMP；不运行额外.NET宿主、不改原fixture。Binary无ROI、包含阈值边界，173/181/182白像素数及面积2656/2400/2368；input-oracle明确输入仅准备、生产Load/Run待独验。Main F5/运行命令、结果分析白色像素数/输出面积可观测，不能仅读保存参数替代运行。
+- 桌面崩溃弹窗由协调/独测定位测试负控宿主缺依赖及调度首错未停；涉事调度冻结。实施17:18后无新增runtime，全部已知自有PID退出，只做静态封存/输入准备。故障系列未经设施修复不重试，不杀未知/用户进程。人工/VS由文档与协调合并同最终Release一张，当前不散问用户。
+- A11原eeb fixed继续独验，四正式runtime自然0，独立故障矩阵尚未完整签收。程序集载体继续等主控；Blob/资产新实施未自启，范围不扩。
+
 ## 2026-10-24 17:03 A11固定已实收独验；Threshold源码交父审合
 
 - A11 eeb固定已16:57正式直交，receipt46D8373D…BF819/evidenceC7C65424…1F19A；协调实收16:56:38（14点时序按各消息实际记录），独测身份门17:11:38。Source3859+6明确生成编译输入，四权威bin1351、208产品路径stamp精确eeb，两实际runtime各115物理loads/30项目无逸出；原/diagnostic payload无漂移，所有目标进程自然退出。固定根停止写，不重wrapper。非整47结论。

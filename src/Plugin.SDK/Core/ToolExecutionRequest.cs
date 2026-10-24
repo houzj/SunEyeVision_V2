@@ -111,6 +111,18 @@ namespace SunEyeVision.Plugin.SDK.Core
 
         /// <summary>本次运行使用的绑定定义。</summary>
         public ParameterBindingSet ParameterBindings { get; init; } = ParameterBindingSet.Empty;
+        public IReadOnlyDictionary<string, SunEyeVision.Plugin.Contracts.BindingPlan> BindingPlans { get; init; }
+            = new Dictionary<string, SunEyeVision.Plugin.Contracts.BindingPlan>();
+        public SunEyeVision.Plugin.Contracts.IBindingRunSnapshot? BindingSnapshot { get; init; }
+        /// <summary>Formal output projection frozen by this invocation's workflow plan.</summary>
+        public SunEyeVision.Plugin.Contracts.ToolSchema? BindingOutputSchema { get; init; }
+        public long BindingSchemaRevision { get; init; }
+        internal void AttachResultMetadata(ToolResults result)
+        {
+            result.ExecutionIdentity=ExecutionIdentity;
+            result.BindingOutputSchema=BindingOutputSchema;
+            result.BindingSchemaRevision=BindingSchemaRevision;
+        }
 
         /// <summary>本次运行解析后的只读参数快照。</summary>
         public RuntimeParameterSnapshot? RuntimeParameters { get; internal set; }

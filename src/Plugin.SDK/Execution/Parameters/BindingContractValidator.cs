@@ -102,6 +102,10 @@ public static partial class BindingContractValidator
     public static bool? Accept(Type? type, IReadOnlyList<Type> allowed)
     {
         if (type == null || type == typeof(object) || allowed.Count == 0) return null;
+        var element=type.IsArray?type.GetElementType()!:type;
+        var declared=CompileDeclaredAdaptation(element,type.IsArray,null,null,null,allowed);
+        if(declared!=null)return declared.State==BindingCompatibility.Unresolved?null:declared.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional;
+        if(IsNumeric(element)||allowed.Any(t=>IsNumeric(t.IsArray?t.GetElementType()!:t)))return false;
         Type Normalize(Type t)
         {
             var array = t.IsArray; var item = array ? t.GetElementType()! : t;

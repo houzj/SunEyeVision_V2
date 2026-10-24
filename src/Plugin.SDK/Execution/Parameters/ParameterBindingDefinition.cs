@@ -13,6 +13,8 @@ public sealed record ParameterBindingDefinition
     public string? SourceNodeId { get; init; }
     public string? SourceWorkflowId { get; init; }
     public Guid? SourceFieldId { get; init; }
+    public string? ReferenceExpression { get; init; }
+    public SunEyeVision.Plugin.Contracts.BindingConversion Conversion { get; init; }
     public string? SourceProperty { get; init; }
     public string? SourceNodeName { get; init; }
     public string? SourceDisplayName { get; init; }
@@ -28,6 +30,7 @@ public sealed record ParameterBindingDefinition
             ConstantValue = setting.ConstantValue,
             SourceNodeId = setting.SourceNodeId,
             SourceWorkflowId = setting.SourceWorkflowId, SourceFieldId = setting.SourceFieldId,
+            ReferenceExpression = setting.ReferenceExpression, Conversion = setting.Conversion,
             SourceProperty = setting.SourceProperty,
             SourceNodeName = setting.SourceNodeName,
             SourceDisplayName = setting.SourceDisplayName,
@@ -43,6 +46,7 @@ public sealed record ParameterBindingDefinition
             ConstantValue = ConstantValue,
             SourceNodeId = SourceNodeId,
             SourceWorkflowId = SourceWorkflowId, SourceFieldId = SourceFieldId,
+            ReferenceExpression = ReferenceExpression, Conversion = Conversion,
             SourceProperty = SourceProperty,
             SourceNodeName = SourceNodeName,
             SourceDisplayName = SourceDisplayName,

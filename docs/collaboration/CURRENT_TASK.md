@@ -1,3 +1,10 @@
+## 2026-10-24 实施继续：准入独验通过，空合同有限修复，生产接线新root验证中
+
+- 准入包独验 acceptance CBF556D0F4A6472D7014105A0B16D889962C28B633FDDA6877BC128A98E517D4：Foundation47/SDK24/Script16及23组304断言通过，不重跑旧固定包。ToolContract3.0有限片已合aa51c5f4，树守卫已合1b799480。
+- 独测旧固定树片真实复现有效合同1→0留旧树；主树有限修复0641c98b仅VM/原测试/交接：保双IsCurrent，空合同进入刷新并同步清树与flat。新增控先真实FAIL发现flat残留，补后tree-empty02真实1PASS；协调封独立新guard包再验，主production-03二进制不冒纯guard闭包。
+- 新生产WIP统一原Owner root授权与scope尝试、冻结expected源身份、正式数值物理约束、typed引用及依赖图、同BindingPlan解析和实际CLR物化。owned binding-production-03首次UI编译0错1184警告82.74s，真实Engine5PASS；typed普通引用/坏引用禁legacy回退2PASS。新AtField生产控在编译，未计通过。SDK数值20/Foundation49/root原语1为较早局部结果，须随最新源闭包定向核实，不冒新全包。
+- 唯一主树产品写入者继续实施；程序集载体不在本批准范围，不新增方案。最终同一Release人工/VS一次清单仍待统一。下一固定包前或北京时间16:00先到者向协调重估，非整包承诺。
+
 ## 2026-10-24 2.1有限新包最终闭包已对齐：24/16/47通过待独验，继续原接线
 
 - 最终SDK/Script/app三SDK副本SHA同BA4CB4E276F4BC3FAC9DB5A516999C3A5548897DC6C45F958FBDDA1D5B9C4E27；final SDK24/24、Script16/16真实过；Foundation自身完整闭包47/47。原preliminary不同SDK SHA记录保留未冒固定。显式保Subroutine工作流注入委托并加真实异步工具调用控；不泛复制所有运行服务。当前限定2.1/Foundation4.0封存后交独测，B01原3.0片随后合入新root重编，不混旧包。
@@ -3707,3 +3714,17 @@
 - O06新增 #implementation-live-status，同页区分类型/BindingPlan基础、生产Workflow、绑定目录与树、结果仓库与树；批准方案冻结块逐字保留，canonical/源快照一致。
 - Binding固定390source/48bin独立回放43PASS限定旧SDK2.1基础Runtime样例；ScriptB2 11PASS，UIB2 18PASS/16FAIL待修复复测，A04 formal02零样本保留，formal03短窗不填未来成绩。ToolContract3.0/Foundation4.0/产品版本职责分列。
 - 事实源与生成器：artifacts/validation/tool-framework-contract/live-implementation-status.json / build-live-implementation-status.cjs；静态QA67链接、无重复ID、旧锚点保留，视觉未验。不改产品/原队列；最终人工仍同Release集中一次。
+
+
+## 2026-10-24 主控：VM角色与协议V6调整
+
+- 已将原VM框架逆向改名VM取证负责人、原逆向源码审核改名VM源码取证、原VM架构恢复改名VM实机取证；复用原对话，不新建角色。
+- JOINT_TASK_ROLES.json与JOINT_COLLABORATION_PROTOCOL.md已更新；10个相关成员消息已送达，接收/核收尚需分别确认。插件逆向、逆向插件集成和重复逆向文档停止新独立派工，交VM负责人核收后归档；尚未归档，不删除证据/仓库/dirty。
+- 主控本轮仅写上述协议、登记与此交接记录，不改产品。产品唯一写者与交付协调继续原范围；两份协议改动待现有协调核收保存，不由主控并行提交产品树。
+
+- 2026-10-24 主控补充：按用户“成员职位｜职责”要求，8个保留对话已完成职位式更名；JOINT_TASK_ROLES及协议命名表同步，对话ID/职责/产品任务未改变。
+
+## 2026-10-24 主控：多余角色交接核收后归档完成
+
+- VM负责人5/5材料及未结义务核收，交付经理已确认自研未结项承接；原VM插件逆向、逆向插件集成、逆向文档维护三个对话已由工具确认归档。仓库、dirty与证据保留。
+- JOINT_TASK_ROLES.json 与 JOINT_COLLABORATION_PROTOCOL.md同步归档状态及核收索引。本轮只改协作记录，不改产品、不构建、不终止进程；原实施/独测/统一Release交付继续，不新增批次。协议改动交协调统一纳入后续交付记录。

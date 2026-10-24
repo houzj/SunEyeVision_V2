@@ -27,7 +27,7 @@ public interface IBindingCompilationScope
     bool TryGetSource(BindingNodeId node,out BindingSource source);
     Diagnostic? ValidateDependencies(IReadOnlyList<BindingNodeId> sources);
 }
-public sealed record BindingReferencePlan(OutputReference Reference,BindingSource Source,TypeRef SelectedType,BindingReferencePlan? Index,bool Conditional);
+public sealed record BindingReferencePlan(OutputReference Reference,BindingSource Source,TypeRef SelectedType,BindingReferencePlan? Index,bool Conditional,NumericStorage? Storage=null);
 /// <summary>Immutable compiled instructions. Execution belongs to the existing parameter resolution service.</summary>
 public sealed class BindingPlan
 {

@@ -85,7 +85,7 @@ public partial class ToolExecutor
             request.CancellationToken.ThrowIfCancellationRequested();
             ToolExecutionPreparation.Apply(parameters,parameters.NodeResults);
             var input=ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
-            var result=tool.Run(parameters);result.ExecutionIdentity=request.ExecutionIdentity;
+            var result=tool.Run(parameters);request.AttachResultMetadata(result);
             if(request.CancellationToken.IsCancellationRequested||request.ExecutionIdentity?.IsCurrent==false)
             {
                 (result as IDisposable)?.Dispose();
@@ -98,6 +98,6 @@ public partial class ToolExecutor
         {return Terminal(ExecutionStatus.Cancelled,fault.Message);}
         catch(Exception fault){return Terminal(ExecutionStatus.Failed,fault.Message,fault);}
         ToolResults Terminal(ExecutionStatus status,string message,Exception? fault=null)
-        {var result=CreateTerminalResult(tool.ResultType,status,message,fault);result.ExecutionIdentity=request.ExecutionIdentity;return result;}
+        {var result=CreateTerminalResult(tool.ResultType,status,message,fault);request.AttachResultMetadata(result);return result;}
     }
 }

@@ -25,6 +25,12 @@ public sealed class WorkflowExecutionDependencyGraph
     public IReadOnlyList<WorkflowExecutionDependency> Dependencies => _dependencies;
     public IReadOnlyDictionary<string, IReadOnlyList<ExecutionInputIssue>> InputIssues { get; private set; }
         = new Dictionary<string, IReadOnlyList<ExecutionInputIssue>>();
+    internal void AddInputIssues(IReadOnlyDictionary<string,IReadOnlyList<ExecutionInputIssue>> additional)
+    {
+        var merged=InputIssues.ToDictionary(p=>p.Key,p=>p.Value,StringComparer.Ordinal);
+        foreach(var item in additional)merged[item.Key]=merged.TryGetValue(item.Key,out var existing)?existing.Concat(item.Value).Distinct().ToArray():item.Value;
+        InputIssues=merged;
+    }
 
     public IReadOnlyCollection<string> GetPredecessors(string nodeId) =>
         _predecessors.TryGetValue(nodeId, out var predecessors)
@@ -106,6 +112,7 @@ public sealed class WorkflowExecutionDependencyGraph
         {
             foreach (var input in BindingRelationCatalog.Describe(node).Where(i => i.Active))
             {
+                if(node.ParamSettings.GetSetting(input.Key)?.ReferenceExpression is not null)continue;
                 if (input.InternalProjection) continue; // Runs within the called workflow, not the caller's local DAG.
                 if (inputIssues?.TryGetValue(node.Id, out var failures) == true && failures.Any(f => f.InputKey == input.Key)) continue;
                 if (!BindingInputCatalog.TryReference(input.Read(), knownNodes, input.ReferenceOnly, out var sourceId, out var path)) continue;
@@ -122,6 +129,18 @@ public sealed class WorkflowExecutionDependencyGraph
                 if (BindingRelationCatalog.SourceWorkflowId(node, input, sourceWorkflowId ?? workflow.Id) != (sourceWorkflowId ?? workflow.Id))
                     throw new InvalidOperationException("节点绑定跨出工作流作用域，请使用全局变量。");
                 AddDependency(sourceId, node.Id, WorkflowDependencyKind.ParameterBinding, input.Key);
+            }
+            foreach(var setting in node.ParamSettings.Settings.Where(s=>s.BindingType==BindingType.Binding&&s.ReferenceExpression is not null&&BindingInputCatalog.IsInputActive(node.Parameters,s.ParameterName)))
+            {
+                if(inputIssues?.TryGetValue(node.Id,out var failures)==true&&failures.Any(f=>f.InputKey==setting.ParameterName))continue;
+                SunEyeVision.Plugin.Contracts.OutputReference reference;
+                try{reference=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Deserialize(setting.ReferenceExpression!);}
+                catch(System.Text.Json.JsonException){continue;} // Invalid expressions remain blocked inputs, never legacy fallbacks.
+                foreach(var dependency in WorkflowBindingContext.ReferenceNodes(reference,sourceWorkflowId??workflow.Id))
+                {
+                    if(dependency.ScopeId!=(sourceWorkflowId??workflow.Id))throw new InvalidOperationException("Typed binding crosses the workflow scope.");
+                    AddDependency(dependency.NodeId,node.Id,WorkflowDependencyKind.ParameterBinding,setting.ParameterName);
+                }
             }
             if (node.Parameters is SunEyeVision.Plugin.SDK.Models.Communication.IReceiveVariableInputProvider receive)
                 foreach (var id in receive.GetReceiveVariableIds())

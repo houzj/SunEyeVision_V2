@@ -278,6 +278,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         [System.Text.Json.Serialization.JsonIgnore]
         public SunEyeVision.Plugin.SDK.Core.ToolExecutionIdentity? ExecutionIdentity { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
+        public SunEyeVision.Plugin.Contracts.ToolSchema? BindingOutputSchema { get; internal set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public long BindingSchemaRevision { get; internal set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public ResultResourceOwner? Resources { get; protected set; }
         /// <summary>
         /// 执行状态

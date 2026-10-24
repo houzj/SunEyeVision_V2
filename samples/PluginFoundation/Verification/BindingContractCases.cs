@@ -131,18 +131,53 @@ internal static partial class Program
             var nullValue=resolver.ResolveBinding(nullableScalarPlan,nullableScalar.Snapshot(new Dictionary<string,object?>{{"v",null}}));
             Require(nullValue.Success&&nullValue.Value is null,"nullable scalar target lost null semantics");
         }));
+        await Case("FT-M03-physical-storage", "Semantic numeric fields retain physical range and exact precision",()=>Sync(()=>{
+            var resolver=new ParameterBindingService();
+            var integers=new BindingFixture(DataType.Integer);
+            var narrow=resolver.CompileBinding(integers.Reference,new("target",DataType.Integer,Storage:NumericStorage.Int32),integers.Scope);
+            Require(narrow.Compatibility==BindingCompatibility.Conditional,"Int64-to-Int32 was unconditional");
+            Require(!resolver.ResolveBinding(narrow.Plan!,integers.Snapshot(long.MaxValue)).Success,"integer overflow accepted");
+            Require(resolver.ResolveBinding(narrow.Plan!,integers.Snapshot((long)int.MaxValue)).Success,"checked integer boundary rejected");
+            var unsigned=resolver.CompileBinding(integers.Reference,new("target",DataType.Integer,Storage:NumericStorage.UInt32),integers.Scope).Plan!;
+            Require(!resolver.ResolveBinding(unsigned,integers.Snapshot(-1L)).Success,"negative unsigned conversion accepted");
+            Require(resolver.ResolveBinding(unsigned,integers.Snapshot((long)uint.MaxValue)).Success,"unsigned boundary rejected");
+            var doubles=new BindingFixture(DataType.Number);
+            var single=resolver.CompileBinding(doubles.Reference,new("target",DataType.Number,Storage:NumericStorage.Float32),doubles.Scope);
+            Require(single.Compatibility==BindingCompatibility.Conditional,"Float64-to-Float32 was unconditional");
+            Require(!resolver.ResolveBinding(single.Plan!,doubles.Snapshot(16777217d)).Success,"float precision silently rounded");
+            Require(resolver.ResolveBinding(single.Plan!,doubles.Snapshot(1.5d)).Success,"exact single rejected");
+            var ints32=new BindingFixture(DataType.Integer,NumericStorage.Int32);
+            Require(resolver.CompileBinding(ints32.Reference,new("target",DataType.Number),ints32.Scope).Compatibility==BindingCompatibility.Compatible,"safe Int32-to-Float64 widening conditional");
+            var singles=new BindingFixture(DataType.Number,NumericStorage.Float32);
+            Require(resolver.CompileBinding(singles.Reference,new("target",DataType.Number),singles.Scope).Compatibility==BindingCompatibility.Compatible,"safe Float32-to-Float64 widening conditional");
+        }));
+        await Case("FT-M03-storage-fingerprint", "Member storage survives projection and typed serialization; sequence conversion is atomic",()=>Sync(()=>{
+            var resolver=new ParameterBindingService();
+            var narrowRecord=TypeRef.RecordOf("record",new[]{new Port("n",DataType.Integer,Storage:NumericStorage.Int32)});
+            var wideRecord=TypeRef.RecordOf("record",new[]{new Port("n",DataType.Integer)});
+            Require(narrowRecord!=wideRecord,"field physical constraint absent from fingerprint");
+            var reference=new OutputReference("source","value",narrowRecord,new[]{"n"});
+            Require(BindingReferenceSerializer.Deserialize(BindingReferenceSerializer.Serialize(reference)).Type==narrowRecord,"storage lost in serialization");
+            var record=new BindingFixture(narrowRecord);
+            Require(resolver.CompileBinding(reference,new("target",DataType.Number),record.Scope).Compatibility==BindingCompatibility.Compatible,"required member widening lost its physical constraint");
+            var many=new BindingFixture(DataType.NumberArray);
+            var plan=resolver.CompileBinding(many.Reference,new("target",DataType.NumberArray,Storage:NumericStorage.Float32),many.Scope).Plan!;
+            var result=resolver.ResolveBinding(plan,many.Snapshot(new[]{1d,16777217d}));
+            Require(!result.Success&&result.Value is null,"partial numeric array escaped");
+            Throws<ArgumentException>(()=>new ToolSchema(Array.Empty<Port>(),new[]{new Port("bad",DataType.Integer,Storage:NumericStorage.Float32)}));
+        }));
     }
 
     private sealed class BindingFixture
     {
         private readonly Dictionary<BindingNodeId,RunIdentity> _expected=new();
         public IReadOnlyDictionary<BindingNodeId,RunIdentity> Expected=>_expected;
-        public BindingFixture(TypeRef type)
+        public BindingFixture(TypeRef type,NumericStorage? storage=null)
         {
             Type=type;Consumer=new("flow","consumer");ExecutionScope=Guid.NewGuid();Identity=new(Guid.NewGuid(),Guid.NewGuid(),ExecutionScope,"consumer",Guid.NewGuid());
-            Source=new(new("flow","source"),ExecutionScope,new ToolSchema(Array.Empty<Port>(),new[]{new Port("value",type)}),1);
+            Source=new(new("flow","source"),ExecutionScope,new ToolSchema(Array.Empty<Port>(),new[]{new Port("value",type,Storage:storage)}),1);
             Admit(Source);
-            Reference=new("source","value",type);Scope=WithSources(new[]{Source},new[]{Source.Node});
+            Reference=new("source","value",type,storage:storage);Scope=WithSources(new[]{Source},new[]{Source.Node});
         }
         public TypeRef Type {get;} public BindingNodeId Consumer {get;} public Guid ExecutionScope {get;} public RunIdentity Identity {get;}
         public BindingSource Source {get;} public OutputReference Reference {get;} public BindingScopeSnapshot Scope {get;}

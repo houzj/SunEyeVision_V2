@@ -48,6 +48,7 @@ public sealed class TypeRef : IEquatable<TypeRef>
             Fields.Select(p => p.Id).Distinct(StringComparer.Ordinal).Count() != Fields.Count)
             throw new ArgumentException("Record fields require unique nonempty identities.");
         Geometry = geometry;
+        foreach(var field in Fields)NumericStorageRules.ValidateDeclaration(field);
         Frame = frame;
         Resource = resource;
         using var stream = new MemoryStream();
@@ -70,6 +71,7 @@ public sealed class TypeRef : IEquatable<TypeRef>
                 writer.Write(field.Type.Fingerprint);
                 writer.Write(field.Required);
                 writer.Write(field.Nullable);
+                writer.Write(field.Storage is null?-1:(int)field.Storage.Value);
             }
         }
         Fingerprint = Convert.ToHexString(SHA256.HashData(stream.ToArray()));

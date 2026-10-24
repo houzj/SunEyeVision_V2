@@ -17,22 +17,25 @@ public static partial class BindingContractValidator
     {
         var scalar = CanonicalScalar(element);
         if (scalar == null || allowed.Count == 0) return null;
+        if(allowed.Any(type=>type==typeof(object)))return new(Compatibility.Unresolved,"目标类型尚未声明完整，等待校验");
         var targets = allowed.Select(CanonicalType).ToArray();
         if (targets.Any(type => type == null)) return null;
         var sourceType = selectedIndex.HasValue
             ? TypeRef.SequenceOf(scalar, selectedSourceCount.HasValue ? CountConstraint.Exactly(selectedSourceCount.Value) : CountConstraint.Any)
             : collection ? TypeRef.SequenceOf(scalar, count.HasValue ? CountConstraint.Exactly(count.Value) : CountConstraint.Any) : scalar;
-        var schema = new ToolSchema(Array.Empty<Port>(), new[] { new Port("value", sourceType) });
+        BindingClrAdapter.TryDescribe(element,out _,out var sourceStorage);
+        var schema = new ToolSchema(Array.Empty<Port>(), new[] { new Port("value", sourceType,Storage:sourceStorage) });
         var source = new BindingSource(new("declaration", "source"), Guid.Empty, schema, 0);
         var scope = new BindingScopeSnapshot(new("declaration", "consumer"), Guid.Empty, 0, new[] { source }, new[] { source.Node },
             Array.Empty<KeyValuePair<BindingNodeId, IReadOnlyList<BindingNodeId>>>());
         var reference = new OutputReference("source", "value", sourceType,
-            selection: selectedIndex.HasValue ? new BindingSelection.AtConstant(selectedIndex.Value) : BindingSelection.All);
+            selection: selectedIndex.HasValue ? new BindingSelection.AtConstant(selectedIndex.Value) : BindingSelection.All,storage:sourceStorage);
         var compiler = new ParameterBindingService();
         BindingCompilation? conditional = null;
-        foreach (var target in targets)
+        for(var targetIndex=0;targetIndex<targets.Length;targetIndex++)
         {
-            var result = compiler.CompileBinding(reference, new Port("target", target!), scope);
+            BindingClrAdapter.TryDescribe(allowed[targetIndex],out _,out var targetStorage);
+            var result = compiler.CompileBinding(reference, new Port("target", targets[targetIndex]!,Nullable:Nullable.GetUnderlyingType(allowed[targetIndex])!=null,Storage:targetStorage), scope);
             if (result.Compatibility == Compatibility.Compatible)
                 return new(Compatibility.Compatible, "适配", collection ? element.MakeArrayType() : element);
             if (result.Compatibility == Compatibility.Conditional) conditional = result;
@@ -43,17 +46,10 @@ public static partial class BindingContractValidator
     }
     private static TypeRef? CanonicalType(Type type)
     {
-        if (type.IsArray && type.GetArrayRank() == 1)
-        { var element = CanonicalScalar(type.GetElementType()!); return element == null ? null : TypeRef.SequenceOf(element); }
-        return CanonicalScalar(type);
+        return BindingClrAdapter.TryDescribe(type,out var declaration,out _)?declaration:null;
     }
     private static TypeRef? CanonicalScalar(Type type)
     {
-        if (type == typeof(bool)) return TypeRef.ScalarOf(ScalarKind.Boolean);
-        if (type == typeof(string)) return TypeRef.ScalarOf(ScalarKind.Text);
-        if (type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort) ||
-            type == typeof(int) || type == typeof(uint) || type == typeof(long)) return TypeRef.ScalarOf(ScalarKind.Int64);
-        if (type == typeof(float) || type == typeof(double)) return TypeRef.ScalarOf(ScalarKind.Float64);
-        return null;
+        return BindingClrAdapter.TryDescribe(type,out var declaration,out _)&&declaration.Shape==ValueShape.Scalar?declaration:null;
     }
 }

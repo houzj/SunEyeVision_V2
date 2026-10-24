@@ -11,6 +11,7 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
     {
         try
         {
+            NumericStorageRules.ValidateDeclaration(target);
             if(!Enum.IsDefined(conversion))throw new BindingFault("conversion","Unknown conversion operation.");
             var dependencies=new List<BindingNodeId>();
             var source=CompileReference(reference,scope,dependencies);
@@ -22,11 +23,14 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             bool conditional=source.Conditional;
             if(elementFrom!=elementTo)
             {
-                if(elementFrom.Scalar==ScalarKind.Int64 && elementTo.Scalar==ScalarKind.Float64)conditional=true;
+                if(elementFrom.Scalar==ScalarKind.Int64 && elementTo.Scalar==ScalarKind.Float64)
+                    conditional|=!NumericStorageRules.IsWidening(ScalarKind.Int64,source.Storage,ScalarKind.Float64,target.Storage);
                 else if(!(conversion==BindingConversion.Float64ToInt64Checked && elementFrom.Scalar==ScalarKind.Float64 && elementTo.Scalar==ScalarKind.Int64))
                     throw new BindingFault("incompatible-type","Declared element types are incompatible; an explicit mapping is required.");
                 else conditional=true;
             }
+            if(elementFrom.Scalar is ScalarKind.Int64 or ScalarKind.Float64 && elementTo.Scalar is ScalarKind.Int64 or ScalarKind.Float64)
+                conditional|=!NumericStorageRules.IsWidening(elementFrom.Scalar.Value,source.Storage,elementTo.Scalar.Value,target.Storage);
             var countState=(sourceMany?from.Count:CountConstraint.Exactly(1)).CompatibilityWith(targetMany?to.Count:CountConstraint.Exactly(1));
             if(countState==BindingCompatibility.Incompatible)throw new BindingFault("count","Declared count ranges do not intersect.");
             conditional|=countState==BindingCompatibility.Conditional;
@@ -36,6 +40,7 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
                 new BindingPlan(scope.Consumer,scope.DocumentSessionId,scope.DocumentRevision,source,target,conversion,dependencies),null);
         }
         catch(BindingFault fault){return new(fault.Unresolved?BindingCompatibility.Unresolved:BindingCompatibility.Incompatible,null,new(fault.Code,fault.Message));}
+        catch(ArgumentException fault){return new(BindingCompatibility.Incompatible,null,new("invalid-declaration",fault.Message));}
     }
 
     private static BindingReferencePlan CompileReference(OutputReference reference,IBindingCompilationScope scope,List<BindingNodeId> dependencies)
@@ -46,6 +51,8 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
         var port=source.Schema.Outputs.SingleOrDefault(p=>p.Id==reference.PortId)
             ??throw new BindingFault("missing-output","Declared source field no longer exists.",true);
         if(port.Type!=reference.Type)throw new BindingFault("schema-changed","Source declaration changed; rebind or recompile explicitly.");
+        if(NumericStorageRules.Effective(port.Type,port.Storage)!=reference.Storage)
+            throw new BindingFault("schema-changed","Source physical numeric declaration changed; rebind explicitly.");
         dependencies.Add(node);
         var selected=port.Type;BindingReferencePlan? index=null;bool conditional=false;
         if(reference.Selection is not BindingSelection.AllItems)
@@ -66,17 +73,19 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             else throw new BindingFault("selection","Unknown selection operation.");
             selected=selected.Element!;
         }
-        foreach(var member in reference.MemberFieldPath)selected=ProjectType(selected,member,ref conditional);
-        return new(reference,source,selected,index,conditional);
+        var storage=port.Storage;
+        foreach(var member in reference.MemberFieldPath)selected=ProjectType(selected,member,ref conditional,ref storage);
+        return new(reference,source,selected,index,conditional,storage);
     }
 
-    private static TypeRef ProjectType(TypeRef type,string field,ref bool conditional)
+    private static TypeRef ProjectType(TypeRef type,string field,ref bool conditional,ref NumericStorage? storage)
     {
-        if(type.Shape==ValueShape.Sequence)return TypeRef.SequenceOf(ProjectType(type.Element!,field,ref conditional),type.Count);
+        if(type.Shape==ValueShape.Sequence)return TypeRef.SequenceOf(ProjectType(type.Element!,field,ref conditional,ref storage),type.Count);
         if(type.Shape!=ValueShape.Record)throw new BindingFault("member-shape","Member projection requires declared record fields.");
         var member=type.Fields.SingleOrDefault(p=>p.Id==field)
             ??throw new BindingFault("missing-member","Declared member field no longer exists.",true);
         conditional|=!member.Required||member.Nullable;
+        storage=member.Storage;
         return member.Type;
     }
 
@@ -99,8 +108,8 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
                 var elementFrom=from.Shape==ValueShape.Sequence?from.Element!:from;
                 var converted=elements.Select((item,index)=>
                 {
-                    var convertedItem=ConvertElement(item,elementFrom,target.Element!,plan.Conversion);
-                    try{return ValueRules.Freeze(new Port(plan.Target.Id,target.Element!),convertedItem);}
+                    var convertedItem=ConvertElement(item,elementFrom,target.Element!,plan.Conversion,plan.Target.Storage);
+                    try{return ValueRules.Freeze(new Port(plan.Target.Id,target.Element!,Storage:plan.Target.Storage),convertedItem);}
                     catch(ArgumentException fault)
                     {throw new BindingFault("invalid-element",$"Field {plan.Target.Id}, item {index}: {fault.Message}");}
                 }).ToArray();
@@ -115,7 +124,7 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
                     if(elements.Length!=1)throw new BindingFault("exactly-one","This consumer requires exactly one item; zero or multiple items cannot be used.");
                     source=elements[0];from=from.Element!;
                 }
-                value=ConvertElement(source,from,target,plan.Conversion);
+                value=ConvertElement(source,from,target,plan.Conversion,plan.Target.Storage);
             }
             return new(true,ValueRules.Freeze(plan.Target,value),null);
         }
@@ -169,22 +178,11 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
         Array array when array.Rank==1=>array.Cast<object?>().ToArray(),
         _=>throw new BindingFault("sequence-value","Runtime value is not a declared sequence.")
     };
-    private static object? ConvertElement(object? value,TypeRef from,TypeRef to,BindingConversion conversion)
+    private static object? ConvertElement(object? value,TypeRef from,TypeRef to,BindingConversion conversion,NumericStorage? storage)
     {
+        if(value is not null && from.Scalar is ScalarKind.Int64 or ScalarKind.Float64 && to.Scalar is ScalarKind.Int64 or ScalarKind.Float64)
+            return NumericStorageRules.ConvertNumber(value,from.Scalar.Value,to.Scalar.Value,conversion,storage);
         if(from==to)return value;
-        if(from.Scalar==ScalarKind.Int64 && to.Scalar==ScalarKind.Float64 && value is long integer)
-        {
-            double converted=integer;
-            if(converted>=9223372036854775808d || checked((long)converted)!=integer)
-                throw new BindingFault("precision","Int64 value cannot be represented exactly as Float64.");
-            return converted;
-        }
-        if(conversion==BindingConversion.Float64ToInt64Checked && from.Scalar==ScalarKind.Float64 && to.Scalar==ScalarKind.Int64 && value is double number)
-        {
-            if(!double.IsFinite(number) || Math.Truncate(number)!=number || number< -9223372036854775808d || number>=9223372036854775808d)
-                throw new BindingFault("conversion-range","Explicit Float64-to-Int64 conversion requires a finite integral value within Int64 range.");
-            return checked((long)number);
-        }
         throw new BindingFault("conversion","No declared conversion operation applies.");
     }
     private sealed class BindingFault(string code,string message,bool unresolved=false):Exception(message)

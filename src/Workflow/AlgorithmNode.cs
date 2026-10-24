@@ -36,6 +36,11 @@ namespace SunEyeVision.Workflow
         public Guid ExecutionRunId { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
         public Guid ExecutionRootRunId { get; set; }
+        internal ToolExecutionIdentity? AdmittedIdentity { get; set; }
+        internal WorkflowBindingContext? BindingContext { get; set; }
+        internal IReadOnlyDictionary<string,SunEyeVision.Plugin.Contracts.BindingPlan> CompiledBindings { get; set; }
+            = new Dictionary<string,SunEyeVision.Plugin.Contracts.BindingPlan>();
+        internal SunEyeVision.Plugin.Contracts.ToolSchema? BindingOutputSchema { get; set; }
 
         /// <summary>本轮运行在启动节点前绑定的帧；节点不拥有其生命周期。</summary>
         public CameraFrame? CameraFrame { get; set; }
@@ -111,6 +116,7 @@ namespace SunEyeVision.Workflow
                             NodeId = Id,
                             WorkflowId = ExecutionWorkflowId,
                             ExecutionOwner = ExecutionOwner,
+                            ExecutionIdentity = AdmittedIdentity,
                             RunId = ExecutionRunId,
                             RootRunId = ExecutionRootRunId,
                             CancellationToken = cancellationToken,
@@ -120,6 +126,9 @@ namespace SunEyeVision.Workflow
                             CommunicationOutputs = CommunicationOutputs,
                             CameraFrame = CameraFrame,
                             GlobalVariables = globalVariables,
+                            BindingPlans = CompiledBindings,
+                            BindingSnapshot = BindingContext?.Capture(this,nodeResults),
+                            BindingOutputSchema = BindingOutputSchema,
                             ParameterBindings = ParameterBindingSet.FromSettings(ParamSettings)
                         }).ConfigureAwait(false);
 

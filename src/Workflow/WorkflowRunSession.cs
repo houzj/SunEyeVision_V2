@@ -37,6 +37,7 @@ public sealed class WorkflowRunSession : IDisposable
     }
 
     public Guid RunId { get; }
+    internal SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? ExecutionOwner { get; set; }
 
     public string RootWorkflowId { get; }
 

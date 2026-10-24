@@ -8,6 +8,33 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 
 public sealed class ExecutionAdmissionTests
 {
+    [Fact]
+    public void ActiveRootAuthorityKeepsChildScopesIndependentAndRejectsDelayedOldAdmission()
+    {
+        var owner=new ToolExecutionOwner();var root=Guid.NewGuid();var aScope=Guid.NewGuid();var bScope=Guid.NewGuid();
+        owner.ActivateRoot(root);
+        var a=owner.Begin("flow/node",aScope,"schema",rootRunId:root);
+        var b=owner.Begin("flow/node",bScope,"schema",rootRunId:root);
+        Assert.True(a.IsCurrent);Assert.True(b.IsCurrent);Assert.Equal(a.Domain,b.Domain);
+        using(owner.EnterRun(a))using(owner.EnterRun(b))
+        { Assert.Equal(2,owner.ActiveRuns);Assert.Throws<InvalidOperationException>(()=>owner.ActivateRoot(Guid.NewGuid())); }
+        a.CompleteCallbacks();b.CompleteCallbacks();
+        var retry=owner.Begin("flow/node",aScope,"schema",rootRunId:root);
+        Assert.False(a.IsCurrent);Assert.True(retry.IsCurrent);Assert.True(b.IsCurrent);
+        owner.CompleteRoot(root);
+        Assert.Throws<InvalidOperationException>(()=>owner.Begin("flow/node",aScope,"schema",rootRunId:root));
+        var nextRoot=Guid.NewGuid();owner.ActivateRoot(nextRoot);
+        var current=owner.Begin("flow/node",Guid.NewGuid(),"schema",rootRunId:nextRoot);
+        Assert.False(b.IsCurrent);Assert.False(retry.IsCurrent);Assert.Equal(b.Domain,current.Domain);
+        Assert.Throws<InvalidOperationException>(()=>owner.Begin("flow/node",aScope,"late",rootRunId:root));
+        owner.CompleteRoot(root);Assert.True(current.IsCurrent);
+        var stillCurrent=owner.Begin("flow/other",Guid.NewGuid(),"schema",rootRunId:nextRoot);
+        Assert.True(stillCurrent.IsCurrent);
+        owner.RetireNode("flow/node");Assert.False(current.IsCurrent);
+        var recreated=owner.Begin("flow/node",current.RunId,"schema",rootRunId:nextRoot);
+        Assert.NotEqual(current.Domain,recreated.Domain);Assert.True(recreated.IsCurrent);
+        owner.CompleteRoot(nextRoot);owner.Retire();
+    }
     [Theory]
     [InlineData(0)]
     [InlineData(1)]

@@ -72,6 +72,12 @@ public sealed class OutputBindingChangeService
                 void Add(string reason) => nodeIssues.Add(new(input.Key, input.Name, $"{node.Name}.{input.Name} [{input.Key}]：{reason}"));
                 if (node.Parameters.RebindingRequired.TryGetValue(input.Key, out var required)) { Add("需要重新绑定：" + required); continue; }
                 if (node.Parameters.BindingValidationPending.TryGetValue(input.Key, out var pending)) { Add("待校验：" + pending); continue; }
+                if(node.ParamSettings.GetSetting(input.Key) is {ReferenceExpression:not null} typed)
+                {
+                    var validation=WorkflowBindingContext.ValidateTyped(workflow,node,typed,sourceWorkflowId??workflow.Id);
+                    if(validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)Add(validation.Reason);
+                    continue;
+                }
                 var expression = input.Read();
                 if (!BindingInputCatalog.TryReference(expression, nodes.Keys, input.ReferenceOnly, out var id, out var path))
                 {
@@ -218,6 +224,17 @@ public sealed class OutputBindingChangeService
         {
             var input = relation.Input; var expression = input.Read();
             var parameters = relation.Node.Parameters;
+            if(relation.Node.ParamSettings.GetSetting(input.Key) is {ReferenceExpression:not null} typed)
+            {
+                var workflow=_solution.Workflows.Single(w=>w.Id==relation.Target.WorkflowId);
+                var typedValidation=WorkflowBindingContext.ValidateTyped(workflow,relation.Node,typed,workflow.Id);
+                if(typedValidation.State==BindingCompatibility.Unresolved)Mark(relation.Target,relation.Node,input.Key,typedValidation.Reason,true);
+                else if(typedValidation.State==BindingCompatibility.Incompatible)
+                {Mark(relation.Target,relation.Node,input.Key,typedValidation.Reason,false);UpdateMarker(parameters.BindingValidationPending,input.Key,null);}
+                else
+                {UpdateMarker(parameters.BindingValidationPending,input.Key,null);if(all||committed==relation.Target)UpdateMarker(parameters.RebindingRequired,input.Key,null);}
+                continue;
+            }
             // A cleared marker is not a new empty constant. Explicit ordinary constants have their own descriptor.
             if (expression.Length == 0 && input.ValidateLiteral == null)
             {

@@ -9,12 +9,41 @@ public sealed class ToolExecutionOwner
 {
     private readonly object _gate = new();
     private readonly Dictionary<string, Guid> _domains = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, Guid> _latest = new(StringComparer.Ordinal);
+    private sealed class ScopeAdmissions(Guid root)
+    {
+        internal Guid Root = root;
+        internal readonly Dictionary<Guid, Guid> Requests = new();
+    }
+    private readonly Dictionary<string, ScopeAdmissions> _latest = new(StringComparer.Ordinal);
+    private Guid _activeRoot;
     private bool _retired;
     private int _activeRuns;
     public int ActiveRuns { get { lock (_gate) return _activeRuns; } }
     public Guid Id { get; } = Guid.NewGuid();
     public event Action<string>? DomainRetired;
+
+    /// <summary>Called only by the host's active root session, never by a late node admission.</summary>
+    public void ActivateRoot(Guid rootRunId)
+    {
+        if(rootRunId==Guid.Empty)throw new ArgumentException("A root session identity is required.",nameof(rootRunId));
+        lock(_gate)
+        {
+            if(_retired)throw new InvalidOperationException("运行Owner已退役。");
+            if(_activeRoot!=Guid.Empty)throw new InvalidOperationException("A root session is already active.");
+            if(_activeRuns!=0)throw new InvalidOperationException("Existing executions must drain before activating a root session.");
+            _activeRoot=rootRunId;
+            _latest.Clear();
+        }
+    }
+    public void CompleteRoot(Guid rootRunId)
+    {
+        lock(_gate)
+        {
+            if(_activeRoot!=rootRunId)return;
+            if(_activeRuns!=0)throw new InvalidOperationException("Root execution has not drained.");
+            _activeRoot=Guid.Empty;
+        }
+    }
 
     public ToolExecutionIdentity Begin(string nodeId, Guid runId, string contractIdentity,
         CancellationToken cancellationToken = default, Func<bool>? admission = null, Guid rootRunId = default)
@@ -22,9 +51,14 @@ public sealed class ToolExecutionOwner
         lock (_gate)
         {
             if (_retired) throw new InvalidOperationException("运行Owner已退役。");
+            var root=rootRunId==Guid.Empty?runId:rootRunId;
+            if((rootRunId!=Guid.Empty && _activeRoot!=root) || (rootRunId==Guid.Empty && _activeRoot!=Guid.Empty))
+                throw new InvalidOperationException("Node admission does not belong to the host's active root session.");
             if (!_domains.TryGetValue(nodeId, out var generation)) _domains[nodeId] = generation = Guid.NewGuid();
             var requestId = Guid.NewGuid();
-            _latest[nodeId] = requestId;
+            if(!_latest.TryGetValue(nodeId,out var admitted) || admitted.Root!=root)
+                _latest[nodeId]=admitted=new ScopeAdmissions(root);
+            admitted.Requests[runId]=requestId;
             return new ToolExecutionIdentity(this, nodeId, generation, runId, requestId, contractIdentity, cancellationToken, admission, rootRunId);
         }
     }
@@ -35,7 +69,8 @@ public sealed class ToolExecutionOwner
         {
             if (_retired || (callback && !identity.CallbacksOpen) || identity.CancellationToken.IsCancellationRequested ||
                 !_domains.TryGetValue(identity.NodeId, out var generation) || generation != identity.NodeGeneration ||
-                !_latest.TryGetValue(identity.NodeId, out var request) || request != identity.RequestId || identity.Admission?.Invoke() == false)
+                !_latest.TryGetValue(identity.NodeId, out var admitted) || admitted.Root!=identity.RootRunId ||
+                !admitted.Requests.TryGetValue(identity.RunId,out var request) || request != identity.RequestId || identity.Admission?.Invoke() == false)
                 return false;
             publish?.Invoke();
             return true;

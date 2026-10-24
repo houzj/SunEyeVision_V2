@@ -287,6 +287,27 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     return ConvertValue(array.GetValue(0)!, targetType);
                 }
 
+                var numericTarget=Nullable.GetUnderlyingType(targetType)??targetType;
+                if(IsNumericType(sourceType)&&IsNumericType(numericTarget))
+                    return ParameterResolveResult.Success(BindingClrAdapter.ConvertNumeric(value,numericTarget),targetType);
+                if(IsNumericType(numericTarget)&&sourceType!=typeof(string))
+                    return ParameterResolveResult.Failure("Numeric targets require a declared numeric mapping; arbitrary type converters are not used.");
+
+                if(value is Array numericItems&&numericItems.Rank==1&&targetType.IsArray&&targetType.GetArrayRank()==1&&
+                    (IsNumericType(sourceType.GetElementType()!)||IsNumericType(targetType.GetElementType()!)))
+                {
+                    if(BindingContractValidator.Accept(sourceType,new[]{targetType})!=true)
+                        return ParameterResolveResult.Failure("Numeric sequence requires a declared checked mapping.");
+                    var converted=Array.CreateInstance(targetType.GetElementType()!,numericItems.Length);
+                    for(int index=0;index<numericItems.Length;index++)
+                    {
+                        var item=ConvertValue(numericItems.GetValue(index)!,targetType.GetElementType()!);
+                        if(!item.IsSuccess)return ParameterResolveResult.Failure($"Item {index}: {item.ErrorMessage}");
+                        converted.SetValue(item.Value,index);
+                    }
+                    return ParameterResolveResult.Success(converted,targetType);
+                }
+
                 // 相同类型
                 if (sourceType == targetType)
                 {
@@ -315,13 +336,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                         var converted = Convert.ChangeType(value, underlyingType);
                         return ParameterResolveResult.Success(converted, targetType);
                     }
-                }
-
-                // 数值类型转换
-                if (IsNumericType(sourceType) && IsNumericType(targetType))
-                {
-                    var converted = Convert.ChangeType(value, targetType);
-                    return ParameterResolveResult.Success(converted, targetType);
                 }
 
                 // 字符串转换

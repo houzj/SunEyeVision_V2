@@ -33,6 +33,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     {
         public string? SourceWorkflowId { get; set; }
         public Guid? SourceFieldId { get; set; }
+        /// <summary>Versioned semantic reference. When present it is authoritative; name/path fields are display projections.</summary>
+        public string? ReferenceExpression { get; set; }
+        public SunEyeVision.Plugin.Contracts.BindingConversion Conversion { get; set; }
         /// <summary>
         /// 参数名称
         /// </summary>
@@ -169,6 +172,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     break;
 
                 case BindingType.Binding:
+                    if (ReferenceExpression is not null)
+                    {
+                        try { SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Deserialize(ReferenceExpression); }
+                        catch (Exception fault) when (fault is System.Text.Json.JsonException or ArgumentException or InvalidOperationException or FormatException)
+                        {
+                            result.IsValid = false;
+                            result.Errors.Add("动态绑定引用无效：" + fault.Message);
+                        }
+                        break;
+                    }
                     if (string.IsNullOrWhiteSpace(SourceNodeId))
                     {
                         result.IsValid = false;
@@ -198,6 +211,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 ConstantValue = ConstantValue,
                 SourceNodeId = SourceNodeId,
                 SourceWorkflowId = SourceWorkflowId, SourceFieldId = SourceFieldId,
+                ReferenceExpression = ReferenceExpression, Conversion = Conversion,
                 SourceProperty = SourceProperty,
                 SourceNodeName = SourceNodeName,
                 SourceDisplayName = SourceDisplayName,
@@ -231,6 +245,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 ["ParameterName"] = ParameterName,
                 ["BindingType"] = (int)BindingType
             };
+            if(ReferenceExpression!=null)dict["ReferenceExpression"]=ReferenceExpression;
+            dict["Conversion"]=(int)Conversion;
 
             if (ConstantValue != null)
             {
@@ -265,6 +281,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 ParameterName = dict.TryGetValue("ParameterName", out var name) ? name?.ToString() ?? string.Empty : string.Empty
             };
+            if(dict.TryGetValue("ReferenceExpression",out var reference))setting.ReferenceExpression=reference?.ToString();
+            if(dict.TryGetValue("Conversion",out var conversion)&&int.TryParse(conversion?.ToString(),out var operation))setting.Conversion=(SunEyeVision.Plugin.Contracts.BindingConversion)operation;
 
             // ✅ 修复：BindingType 可能是 JsonElement，需要先转换为字符串
             if (dict.TryGetValue("BindingType", out var type))

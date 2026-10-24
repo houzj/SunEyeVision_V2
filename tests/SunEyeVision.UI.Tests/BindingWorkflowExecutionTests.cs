@@ -13,6 +13,79 @@ namespace SunEyeVision.UI.Tests;
 
 public sealed class BindingWorkflowExecutionTests
 {
+    [Theory]
+    [InlineData(17d,false,false)]
+    [InlineData(17d,true,true)]
+    [InlineData(1e20,true,false)]
+    public async Task Actual_integer_property_requires_explicit_checked_conversion(double value,bool explicitConversion,bool expected)
+    {
+        using var fixture=new Fixture();var target=fixture.Add("target",false,777);
+        var parameters=(ProbeParameters)target.Parameters;parameters.UseInt=true;parameters.IntInput=777;
+        fixture.Add("source",true,value);fixture.Add("independent",true,9);
+        var reference=new SunEyeVision.Plugin.Contracts.OutputReference("source","field:7784e373d39b4375b2f7d911e42e9181",
+            (SunEyeVision.Plugin.Contracts.TypeRef)SunEyeVision.Plugin.Contracts.DataType.Number,scopeId:fixture.Flow.Id);
+        target.ParamSettings.SetSetting(new ParamSetting{ParameterName="IntInput",BindingType=BindingType.Binding,
+            ReferenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference),
+            Conversion=explicitConversion?SunEyeVision.Plugin.Contracts.BindingConversion.Float64ToInt64Checked:SunEyeVision.Plugin.Contracts.BindingConversion.Automatic});
+        using var result=await fixture.Run();
+        Assert.Equal(expected,result.Success);Assert.Contains("independent",fixture.Trace);
+        if(expected)Assert.Equal(17,((ProbeResults)result.NodeResults["target"].Result!).Value);
+        else Assert.DoesNotContain("target",fixture.Trace);
+        Assert.Equal(777,parameters.IntInput);
+    }
+
+    [Fact]
+    public async Task Typed_dynamic_index_orders_both_sources_without_canvas_edges()
+    {
+        using var fixture=new Fixture();var target=fixture.Add("target",false,777);
+        fixture.Add("array",true,23);fixture.Add("index",true,1);
+        var index=new SunEyeVision.Plugin.Contracts.OutputReference("index","name:Index",
+            SunEyeVision.Plugin.Contracts.TypeRef.ScalarOf(SunEyeVision.Plugin.Contracts.ScalarKind.Int64),scopeId:fixture.Flow.Id,
+            storage:SunEyeVision.Plugin.Contracts.NumericStorage.Int32);
+        var reference=new SunEyeVision.Plugin.Contracts.OutputReference("array","name:Values",
+            SunEyeVision.Plugin.Contracts.TypeRef.SequenceOf((SunEyeVision.Plugin.Contracts.TypeRef)SunEyeVision.Plugin.Contracts.DataType.Number,
+                SunEyeVision.Plugin.Contracts.CountConstraint.Exactly(2)),
+            selection:new SunEyeVision.Plugin.Contracts.BindingSelection.AtField(index),scopeId:fixture.Flow.Id);
+        target.ParamSettings.SetSetting(new ParamSetting{ParameterName="Input",BindingType=BindingType.Binding,
+            ReferenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference)});
+        using var result=await fixture.Run();
+        Assert.True(result.Success,string.Join(";",result.Errors));
+        Assert.Equal(24,((ProbeResults)result.NodeResults["target"].Result!).Value);
+        Assert.Equal("target",fixture.Trace.Last());Assert.Empty(fixture.Flow.Connections);
+        Assert.Equal(777,((ProbeParameters)target.Parameters).Input);
+    }
+
+    [Fact]
+    public async Task Typed_reference_uses_actual_admitted_source_and_preserves_distinct_request_identity()
+    {
+        using var fixture=new Fixture();
+        var target=fixture.Add("target",false,777);fixture.Add("source",true,17);
+        var reference=new SunEyeVision.Plugin.Contracts.OutputReference("source","field:7784e373d39b4375b2f7d911e42e9181",
+            (SunEyeVision.Plugin.Contracts.TypeRef)SunEyeVision.Plugin.Contracts.DataType.Number,scopeId:fixture.Flow.Id);
+        target.ParamSettings.SetSetting(new ParamSetting{ParameterName="Input",BindingType=BindingType.Binding,
+            ReferenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference)});
+        using var result=await fixture.Run();
+        Assert.True(result.Success,string.Join(";",result.Errors));
+        Assert.Equal(17,((ProbeResults)result.NodeResults["target"].Result!).Value);
+        var sourceIdentity=result.NodeResults["source"].Result!.ExecutionIdentity!;
+        var targetIdentity=result.NodeResults["target"].Result!.ExecutionIdentity!;
+        Assert.NotEqual(sourceIdentity.RequestId,targetIdentity.RequestId);
+        Assert.Equal(sourceIdentity.RootRunId,targetIdentity.RootRunId);
+        Assert.NotNull(result.NodeResults["source"].Result!.BindingOutputSchema);
+        Assert.Equal(777,((ProbeParameters)target.Parameters).Input);
+    }
+
+    [Fact]
+    public async Task Invalid_typed_reference_never_falls_back_to_valid_legacy_names()
+    {
+        using var fixture=new Fixture();var target=fixture.Add("target",false,777);fixture.Add("source",true,17);
+        var setting=ParamSetting.CreateBinding("Input","source","Value");setting.ReferenceExpression="{}";
+        target.ParamSettings.SetSetting(setting);
+        using var result=await fixture.Run();
+        Assert.False(result.Success);Assert.DoesNotContain("target",fixture.Trace);
+        Assert.Contains("source",fixture.Trace);
+    }
+
     private const string ProbeId="BindingWorkflowExecutionProbe";
     private const string MissingSchemaId="BindingWorkflowMissingSchemaProbe";
     private static readonly ConcurrentDictionary<string,ConcurrentQueue<string>> Traces=new();
@@ -108,17 +181,22 @@ public sealed class BindingWorkflowExecutionTests
     {
         public string CaseId {get;set;}="";public string Label {get;set;}="";public bool Source {get;set;}public bool Fail {get;set;}
         public double Input {get;set;}public double Value {get;set;}
-        public IReadOnlyList<OutputVariable> GetOutputContract()=>new[]{new OutputVariable{Name="Value",VariableType="Double",DeclaredType=typeof(double),IsCollection=false,FixedCount=1,FieldId=Guid.Parse("7784E373-D39B-4375-B2F7-D911E42E9181")}};
+        public int IntInput {get;set;}public bool UseInt {get;set;}
+        public IReadOnlyList<OutputVariable> GetOutputContract()=>new[]{
+            new OutputVariable{Name="Value",VariableType="Double",DeclaredType=typeof(double),IsCollection=false,FixedCount=1,FieldId=Guid.Parse("7784E373-D39B-4375-B2F7-D911E42E9181")},
+            new OutputVariable{Name="Values",VariableType="Double",DeclaredType=typeof(double[]),IsCollection=true,FixedCount=2},
+            new OutputVariable{Name="Index",VariableType="Int32",DeclaredType=typeof(int),IsCollection=false,FixedCount=1}};
     }
     public sealed class ProbeResults:ToolResults
-    {public double Value {get;set;}public override List<PropertyMapEntry> GetPropertyMap()=>new(){new("Value","Value")};}
+    {public double Value {get;set;}public double[] Values {get;set;}=Array.Empty<double>();public int Index {get;set;}
+        public override List<PropertyMapEntry> GetPropertyMap()=>new(){new("Value","Value"),new("Values","Values"),new("Index","Index")};}
     [Tool(id:ProbeId,displayName:"Binding workflow execution probe")]
     public sealed class ProbeTool:IToolPlugin<ProbeParameters,ProbeResults>
     {
         public ProbeResults Run(ProbeParameters parameters)
         {
             Traces[parameters.CaseId].Enqueue(parameters.Label);
-            var result=new ProbeResults{Value=parameters.Source?parameters.Value:parameters.Input};
+            var result=new ProbeResults{Value=parameters.Source?parameters.Value:parameters.UseInt?parameters.IntInput:parameters.Input,Values=new[]{parameters.Value,parameters.Value+1},Index=parameters.Value>=int.MinValue&&parameters.Value<=int.MaxValue?(int)parameters.Value:0};
             if(parameters.Fail)result.SetError("controlled source failure");else result.SetSuccess();return result;
         }
     }

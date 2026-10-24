@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters;
 
@@ -20,7 +21,9 @@ public sealed class RuntimeParameterSnapshotResolver
     public RuntimeParameterSnapshot Resolve(
         ParameterBindingSet bindings,
         IDictionary<string, ToolResults> nodeResults,
-        IReadOnlyDictionary<string, Type>? targetTypes = null)
+        IReadOnlyDictionary<string, Type>? targetTypes = null,
+        IReadOnlyDictionary<string, BindingPlan>? plans = null,
+        IBindingRunSnapshot? bindingSnapshot = null)
     {
         ArgumentNullException.ThrowIfNull(bindings);
         ArgumentNullException.ThrowIfNull(nodeResults);
@@ -29,10 +32,21 @@ public sealed class RuntimeParameterSnapshotResolver
         var errors = new List<string>();
         foreach (var binding in bindings.Bindings)
         {
-            var targetType = binding.TargetType
-                ?? (targetTypes != null && targetTypes.TryGetValue(binding.ParameterName, out var type)
-                    ? type
-                    : null);
+            // A persisted hint cannot override the actual writable property on this tool version.
+            var targetType = targetTypes != null && targetTypes.TryGetValue(binding.ParameterName, out var type)
+                ? type : binding.TargetType;
+            if(plans?.TryGetValue(binding.ParameterName,out var plan)==true)
+            {
+                if(bindingSnapshot is null){errors.Add($"参数 {binding.ParameterName} 缺少冻结运行输入。");continue;}
+                var resolved=_resolver.ResolveBinding(plan,bindingSnapshot);
+                if(!resolved.Success){errors.Add($"参数 {binding.ParameterName} 解析失败: {resolved.Diagnostic?.Message}");continue;}
+                try{values[binding.ParameterName]=BindingClrAdapter.Materialize(plan.Target,targetType??throw new InvalidOperationException("Target property is not declared."),resolved.Value);}
+                catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException)
+                {errors.Add($"参数 {binding.ParameterName} 物化失败: {fault.Message}");}
+                continue;
+            }
+            if(binding.ReferenceExpression is not null)
+            {errors.Add($"参数 {binding.ParameterName} 的正式绑定计划未编译，拒绝回退到名称路径。");continue;}
             var result = _resolver.Resolve(binding.ToSetting(), nodeResults, targetType ?? typeof(object));
             if (!result.IsSuccess)
             {

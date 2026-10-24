@@ -138,12 +138,12 @@ namespace SunEyeVision.Plugin.SDK.Core
                 request.Context.Logger?.Info("开始异步执行工具", request.Context.GetSourceName());
                 var inputFrame = ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
                 var result = await asyncTool.ExecuteAsync(request).ConfigureAwait(false);
-                result.ExecutionIdentity = request.ExecutionIdentity;
+                request.AttachResultMetadata(result);
                 if (request.CancellationToken.IsCancellationRequested || request.ExecutionIdentity?.IsCurrent == false)
                 {
                     (result as IDisposable)?.Dispose();
                     var cancelled = CreateTerminalResult(tool.ResultType, ExecutionStatus.Cancelled, "运行已取消或身份失效");
-                    cancelled.ExecutionIdentity = request.ExecutionIdentity;
+                    request.AttachResultMetadata(cancelled);
                     return cancelled;
                 }
                 ImageFrameProvenance.RecordResult(result, inputFrame,
@@ -158,7 +158,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 stopwatch.Stop();
                 request.Context.Logger?.Warning("工具执行被取消", request.Context.GetSourceName());
                 var cancelled = CreateTerminalResult(tool.ResultType, ExecutionStatus.Cancelled, ex.Message);
-                cancelled.ExecutionIdentity = request.ExecutionIdentity;
+                request.AttachResultMetadata(cancelled);
                 return cancelled;
             }
             catch (Exception ex)
@@ -169,7 +169,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                     request.Context.GetSourceName(),
                     ex);
                 var failed = CreateTerminalResult(tool.ResultType, ExecutionStatus.Failed, ex.Message, ex);
-                failed.ExecutionIdentity = request.ExecutionIdentity;
+                request.AttachResultMetadata(failed);
                 return failed;
             }
         }
@@ -348,7 +348,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             var snapshot = resolver.Resolve(
                 new ParameterBindingSet(executableBindings),
                 request.NodeResults ?? new Dictionary<string, ToolResults>(),
-                targetTypes);
+                targetTypes,request.BindingPlans,request.BindingSnapshot);
             request.RuntimeParameters = snapshot;
             return snapshot;
         }

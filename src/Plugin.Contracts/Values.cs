@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 namespace SunEyeVision.Plugin.Contracts;
 public enum DataType { Boolean, Integer, Number, Text, NumberArray, Image }
-public sealed record Port(string Id, TypeRef Type, bool Required=true, bool Nullable=false);
+public sealed record Port(string Id, TypeRef Type, bool Required=true, bool Nullable=false, NumericStorage? Storage=null);
 public sealed class ToolSchema
 {
     public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs)
@@ -14,6 +14,7 @@ public sealed class ToolSchema
                 throw new ArgumentException("Port identities must be nonempty and unique.");
         if (Inputs.Concat(Outputs).Any(p => p.Type is null))
             throw new ArgumentException("Ports require a declared type.");
+        foreach(var port in Inputs.Concat(Outputs))NumericStorageRules.ValidateDeclaration(port);
         // IDs may contain punctuation. Length-prefixed fields avoid delimiter collisions
         // between one compound ID and several different ports.
         using var buffer=new MemoryStream();
@@ -26,6 +27,7 @@ public sealed class ToolSchema
                 {
                     writer.Write(port.Id);writer.Write(port.Type.Fingerprint);
                     writer.Write(port.Required);writer.Write(port.Nullable);
+                    writer.Write(port.Storage is null?-1:(int)port.Storage.Value);
                 }
             }
         }
@@ -64,6 +66,7 @@ public static class ValueRules
 {
     public static object? Freeze(Port port,object? value)
     {
+        NumericStorageRules.ValidateValue(port,value);
         if(value is null)return port.Nullable?null:throw new ArgumentException($"Port {port.Id} disallows null");
         if(port.Type.Shape==ValueShape.Record)
         {
@@ -101,11 +104,13 @@ public static class ValueRules
 public sealed class OutputReference
 {
     public OutputReference(string nodeId,string portId,TypeRef type,IEnumerable<string>? memberFieldPath=null,
-        BindingSelection? selection=null,string? scopeId=null)
+        BindingSelection? selection=null,string? scopeId=null,NumericStorage? storage=null)
     {
         if(string.IsNullOrWhiteSpace(nodeId)||string.IsNullOrWhiteSpace(portId))throw new ArgumentException("Stable node and field identities are required.");
         if(scopeId is not null && string.IsNullOrWhiteSpace(scopeId))throw new ArgumentException("An explicit scope identity cannot be empty.",nameof(scopeId));
         NodeId=nodeId;PortId=portId;Type=type??throw new ArgumentNullException(nameof(type));
+        NumericStorageRules.ValidateDeclaration(new Port(portId,type,Storage:storage));
+        Storage=NumericStorageRules.Effective(type,storage);
         MemberFieldPath=Array.AsReadOnly((memberFieldPath??Array.Empty<string>()).ToArray());
         if(MemberFieldPath.Any(string.IsNullOrWhiteSpace))throw new ArgumentException("Member field identities must be nonempty.");
         Selection=selection??BindingSelection.All;ScopeId=scopeId;
@@ -113,6 +118,7 @@ public sealed class OutputReference
     public string NodeId {get;}
     public string PortId {get;}
     public TypeRef Type {get;}
+    public NumericStorage? Storage {get;}
     public string? ScopeId {get;}
     public IReadOnlyList<string> MemberFieldPath {get;}
     public BindingSelection Selection {get;}

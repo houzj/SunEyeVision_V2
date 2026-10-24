@@ -7,18 +7,20 @@ namespace SunEyeVision.Workflow;
 /// <summary>
 /// 一次运行冻结后的可执行计划。源工作流只用于编辑，执行器只消费此计划中的节点图。
 /// </summary>
-public sealed class WorkflowExecutionPlan
+public sealed class WorkflowExecutionPlan : IDisposable
 {
     internal WorkflowExecutionPlan(
         WorkflowRunScope scope,
         Workflow executableWorkflow,
         WorkflowExecutionDependencyGraph dependencyGraph,
-        IReadOnlyDictionary<string, ToolExecutionProfile> nodeExecutionProfiles)
+        IReadOnlyDictionary<string, ToolExecutionProfile> nodeExecutionProfiles,
+        WorkflowBindingContext bindingContext)
     {
         Scope = scope ?? throw new ArgumentNullException(nameof(scope));
         ExecutableWorkflow = executableWorkflow ?? throw new ArgumentNullException(nameof(executableWorkflow));
         DependencyGraph = dependencyGraph ?? throw new ArgumentNullException(nameof(dependencyGraph));
         NodeExecutionProfiles = nodeExecutionProfiles ?? throw new ArgumentNullException(nameof(nodeExecutionProfiles));
+        _bindingContext=bindingContext;
         CreatedAt = DateTimeOffset.UtcNow;
     }
 
@@ -42,4 +44,6 @@ public sealed class WorkflowExecutionPlan
     internal WorkflowRunScope Scope { get; }
 
     internal Workflow ExecutableWorkflow { get; }
+    private readonly WorkflowBindingContext _bindingContext;
+    public void Dispose()=>_bindingContext.Dispose();
 }

@@ -12,9 +12,14 @@ public static class BindingReferenceSerializer
     public static string Serialize(OutputReference reference)=>JsonSerializer.Serialize(new Document(FoundationContract.Major,FoundationContract.Minor,reference),Options);
     public static OutputReference Deserialize(string json)
     {
+        try
+        {
         var document=JsonSerializer.Deserialize<Document>(json,Options)??throw new JsonException("Binding document is missing.");
         if(document.ContractMajor!=FoundationContract.Major||document.ContractMinor!=FoundationContract.Minor)throw new JsonException("Binding contract version must match the current major and minor; old documents are not migrated.");
         return document.Reference??throw new JsonException("Binding reference is missing.");
+        }
+        catch(Exception fault) when(fault is KeyNotFoundException or InvalidOperationException or ArgumentException or FormatException or OverflowException)
+        { throw new JsonException("Binding reference contains an invalid or missing declaration.",fault); }
     }
     private static JsonSerializerOptions CreateOptions()
     {
@@ -26,6 +31,12 @@ public static class BindingReferenceSerializer
         {
             using var document=JsonDocument.ParseValue(ref reader);var root=document.RootElement;
             TypeRef ReadType(JsonElement item)=>JsonSerializer.Deserialize<TypeRef>(item.GetRawText(),options)??throw new JsonException("Type declaration is missing.");
+            NumericStorage? ReadStorage(JsonElement item)
+            {
+                var stored=item.GetProperty("storage");
+                if(stored.ValueKind==JsonValueKind.Null)return null;
+                return Enum.TryParse<NumericStorage>(stored.GetString(),out var result)&&Enum.IsDefined(result)?result:throw new JsonException("Unknown numeric storage constraint.");
+            }
             T Kind<T>(string name) where T:struct,Enum
             {
                 if(!Enum.TryParse<T>(root.GetProperty(name).GetString(),out var kind)||!Enum.IsDefined(kind))throw new JsonException("Unknown declaration kind.");
@@ -37,7 +48,7 @@ public static class BindingReferenceSerializer
                 {
                     ValueShape.Scalar=>TypeRef.ScalarOf(Kind<ScalarKind>("scalar")),
                     ValueShape.Sequence=>TypeRef.SequenceOf(ReadType(root.GetProperty("element")),new(root.GetProperty("minimum").GetInt32(),root.GetProperty("maximum").ValueKind==JsonValueKind.Null?null:root.GetProperty("maximum").GetInt32())),
-                    ValueShape.Record=>TypeRef.RecordOf(root.GetProperty("recordId").GetString()!,root.GetProperty("fields").EnumerateArray().Select(field=>new Port(field.GetProperty("id").GetString()!,ReadType(field.GetProperty("type")),field.GetProperty("required").GetBoolean(),field.GetProperty("nullable").GetBoolean())).ToArray()),
+                    ValueShape.Record=>TypeRef.RecordOf(root.GetProperty("recordId").GetString()!,root.GetProperty("fields").EnumerateArray().Select(field=>new Port(field.GetProperty("id").GetString()!,ReadType(field.GetProperty("type")),field.GetProperty("required").GetBoolean(),field.GetProperty("nullable").GetBoolean(),ReadStorage(field))).ToArray()),
                     ValueShape.Geometry=>TypeRef.GeometryOf(Kind<GeometryKind>("geometry"),new CoordinateFrame(root.GetProperty("frameId").GetString()!,Kind<CoordinateDomain>("domain"),Kind<CoordinateUnit>("unit"))),
                     ValueShape.Resource=>TypeRef.ResourceOf(Kind<ResourceKind>("resource")),
                     _=>throw new JsonException("Unsupported declaration shape.")
@@ -58,7 +69,7 @@ public static class BindingReferenceSerializer
                 case ValueShape.Record:
                     writer.WriteString("recordId",value.RecordId);writer.WriteStartArray("fields");
                     foreach(var field in value.Fields)
-                    {writer.WriteStartObject();writer.WriteString("id",field.Id);writer.WritePropertyName("type");JsonSerializer.Serialize(writer,field.Type,options);writer.WriteBoolean("required",field.Required);writer.WriteBoolean("nullable",field.Nullable);writer.WriteEndObject();}
+                    {writer.WriteStartObject();writer.WriteString("id",field.Id);writer.WritePropertyName("type");JsonSerializer.Serialize(writer,field.Type,options);writer.WriteBoolean("required",field.Required);writer.WriteBoolean("nullable",field.Nullable);if(field.Storage is NumericStorage storage)writer.WriteString("storage",storage.ToString());else writer.WriteNull("storage");writer.WriteEndObject();}
                     writer.WriteEndArray();break;
                 case ValueShape.Geometry:
                     writer.WriteString("geometry",value.Geometry!.Value.ToString());writer.WriteString("frameId",value.Frame!.Id);writer.WriteString("domain",value.Frame.Domain.ToString());writer.WriteString("unit",value.Frame.Unit.ToString());break;
@@ -83,11 +94,14 @@ public static class BindingReferenceSerializer
             };
             return new(root.GetProperty("nodeId").GetString()!,root.GetProperty("fieldId").GetString()!,type,
                 root.GetProperty("memberFieldPath").EnumerateArray().Select(item=>item.GetString()!).ToArray(),selected,
-                root.GetProperty("scopeId").ValueKind==JsonValueKind.Null?null:root.GetProperty("scopeId").GetString());
+                root.GetProperty("scopeId").ValueKind==JsonValueKind.Null?null:root.GetProperty("scopeId").GetString(),
+                root.GetProperty("storage").ValueKind==JsonValueKind.Null?null:
+                    Enum.TryParse<NumericStorage>(root.GetProperty("storage").GetString(),out var storage)&&Enum.IsDefined(storage)?storage:throw new JsonException("Invalid numeric storage constraint."));
         }
         public override void Write(Utf8JsonWriter writer,OutputReference value,JsonSerializerOptions options)
         {
             writer.WriteStartObject();writer.WriteString("nodeId",value.NodeId);writer.WriteString("fieldId",value.PortId);writer.WriteString("scopeId",value.ScopeId);
+            if(value.Storage is NumericStorage storage)writer.WriteString("storage",storage.ToString());else writer.WriteNull("storage");
             writer.WritePropertyName("expectedType");JsonSerializer.Serialize(writer,value.Type,options);
             writer.WriteStartArray("memberFieldPath");foreach(var member in value.MemberFieldPath)writer.WriteStringValue(member);writer.WriteEndArray();
             writer.WriteStartObject("selection");

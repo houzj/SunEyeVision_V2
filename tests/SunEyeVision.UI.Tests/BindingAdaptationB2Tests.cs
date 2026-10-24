@@ -1,3 +1,4 @@
+using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
 using System.Text.Json;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -107,28 +108,29 @@ public sealed class BindingAdaptationB2Tests
     public void Invalid_paths_are_confirmed_incompatible(string path) => Assert.Equal(BindingCompatibility.Incompatible, Validate(Output(typeof(double[])), path, typeof(double)).State);
 
     [Fact]
-    public void Scalar_tuple_only_allows_index_zero_and_array_shape_is_explicit()
+    public void Scalar_stays_scalar_and_all_to_one_requires_runtime_exactly_one()
     {
-        Assert.Equal(BindingCompatibility.Compatible, Validate(Output(typeof(double), false, 1), "value[0]", typeof(double)).State);
+        Assert.Equal(BindingCompatibility.Compatible, Validate(Output(typeof(double), false, 1), "value", typeof(double)).State);
+        Assert.Equal(BindingCompatibility.Incompatible, Validate(Output(typeof(double), false, 1), "value[0]", typeof(double)).State);
         Assert.Equal(BindingCompatibility.Incompatible, Validate(Output(typeof(double), false, 1), "value[1]", typeof(double)).State);
-        Assert.Equal(BindingCompatibility.Incompatible, Validate(Output(typeof(double[])), "value[]", typeof(double)).State);
+        Assert.Equal(BindingCompatibility.Conditional, Validate(Output(typeof(double[])), "value[]", typeof(double)).State);
         Assert.Equal(BindingCompatibility.Compatible, Validate(Output(typeof(double[])), "value[]", typeof(double[])).State);
     }
 
     [Fact]
     public void Variable_length_index_is_runtime_data_validation_not_binding_deletion()
     {
-        Assert.Equal(BindingCompatibility.Compatible, Validate(Output(typeof(double[])), "value[1000]", typeof(double)).State);
+        Assert.Equal(BindingCompatibility.Conditional, Validate(Output(typeof(double[])), "value[1000]", typeof(double)).State);
         Assert.Equal(BindingCompatibility.Incompatible, Validate(Output(typeof(double[]), true, 3), "value[3]", typeof(double)).State);
     }
 
     [Fact]
     public void Geometry_members_and_filtered_roi_projection_are_formally_validated()
     {
-        Assert.Equal(BindingCompatibility.Compatible, Validate(Output(typeof(Circle2d[])), "value[0].Center.X", typeof(double)).State);
+        Assert.Equal(BindingCompatibility.Conditional, Validate(Output(typeof(Circle2d[])), "value[0].Center.X", typeof(double)).State);
         Assert.Equal(BindingCompatibility.Compatible, Validate(Output(typeof(RoiShape[])), "value[Type=Circle][].Geometry.Center.X", typeof(double[])).State);
         Assert.Equal(BindingCompatibility.Incompatible, Validate(Output(typeof(RoiShape[])), "value[Type=Circle][].Geometry.NoSuchField", typeof(double[])).State);
-        Assert.Equal(BindingCompatibility.PendingValidation, Validate(Output(typeof(RoiShape[])), "value[0].Geometry.Center.X", typeof(double)).State);
+        Assert.Equal(BindingCompatibility.Unresolved, Validate(Output(typeof(RoiShape[])), "value[0].Geometry.Center.X", typeof(double)).State);
     }
 
     [Fact]
@@ -235,7 +237,7 @@ public sealed class BindingAdaptationB2Tests
         Assert.False(contract.Single(o => o.Name == "Scalar").IsCollection);
         Assert.True(contract.Single(o => o.Name == "Items").IsCollection);
         Assert.Equal(BindingCompatibility.Incompatible, BindingContractValidator.Validate(contract, "Scalar[1]", new[] { typeof(double) }).State);
-        Assert.Equal(BindingCompatibility.Compatible, BindingContractValidator.Validate(contract, "Items[500]", new[] { typeof(double) }).State);
+        Assert.Equal(BindingCompatibility.Conditional, BindingContractValidator.Validate(contract, "Items[500]", new[] { typeof(double) }).State);
     }
 
     [Fact]
@@ -259,7 +261,11 @@ public sealed class BindingAdaptationB2Tests
         var (solution, service) = Setup(Flow("f", Node("source", new GenericToolParameters()), Node("parse", parse)));
         solution.GlobalVariables.Add(new() { Id = "id", Name = "v", Type = "String", ProducerBinding = new() { WorkflowId = "f", NodeId = "source", ResultName = "value" } }); service.Reset(solution);
         service.ReconcileAll(); Assert.NotEmpty(solution.GlobalVariables[0].BindingValidationPending); Assert.Single(parse.BindingValidationPending); Assert.NotEmpty(parse.InputText);
-        Assert.Throws<InvalidOperationException>(() => SolutionExecutionDependencyGraph.Compile(solution));
+        var issues = OutputBindingChangeService.GetExecutionInputIssues(solution.Workflows[0]);
+        Assert.Contains("parse", issues.Keys);
+        Assert.DoesNotContain("source", issues.Keys);
+        Assert.Throws<InvalidOperationException>(() => OutputBindingChangeService.EnsureExecutable(solution.Workflows[0]));
+        _ = SolutionExecutionDependencyGraph.Compile(solution); // Unrelated nodes remain schedulable.
     }
 
     [Fact]
@@ -369,7 +375,9 @@ public sealed class BindingAdaptationB2Tests
         var frozen = Flow("f", Node("source", new MatrixSourceParameters()), Node("target", ToolParameterSnapshot.Create(p)));
         OutputBindingChangeService.EnsureExecutable(frozen);
         Assert.Equal("source.value[]", ((SubroutineParameters)frozen.Nodes[1].Parameters).Inputs[0].BindingSource);
-        Assert.Equal(BindingCompatibility.Incompatible, Validate(Output(typeof(AffineMatrix[]), true), "value[]", typeof(AffineMatrix)).State);
+        Assert.Equal(BindingCompatibility.Conditional, Validate(Output(typeof(AffineMatrix[]), true), "value[]", typeof(AffineMatrix)).State);
+        Assert.Equal(BindingCompatibility.Incompatible, Validate(Output(typeof(AffineMatrix[]), true, 0), "value[]", typeof(AffineMatrix)).State);
+        Assert.Equal(BindingCompatibility.Incompatible, Validate(Output(typeof(AffineMatrix[]), true, 2), "value[]", typeof(AffineMatrix)).State);
     }
 
     [Theory]

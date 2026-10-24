@@ -12,8 +12,13 @@ public sealed class ParameterEditSession
     private readonly Dictionary<string,ParameterSetting> _pending=new(StringComparer.Ordinal);
     private readonly Dictionary<string,string> _invalid=new(StringComparer.Ordinal);
     private readonly Dictionary<string,object?> _constantBackup=new(StringComparer.Ordinal);
-    public ParameterEditSession(IEnumerable<Port> ports,IReadOnlyDictionary<string,ParameterSetting> initial)
+    private readonly IBindingPlanCompiler? _bindingCompiler;
+    private readonly IBindingCompilationScope? _bindingScope;
+    public ParameterEditSession(IEnumerable<Port> ports,IReadOnlyDictionary<string,ParameterSetting> initial,
+        IBindingPlanCompiler? bindingCompiler=null,IBindingCompilationScope? bindingScope=null)
     {
+        if((bindingCompiler is null)!=(bindingScope is null))throw new ArgumentException("Binding compiler and scope must be supplied together.");
+        _bindingCompiler=bindingCompiler;_bindingScope=bindingScope;
         _ports=ports.ToDictionary(p=>p.Id,StringComparer.Ordinal); _committed=new(StringComparer.Ordinal);
         foreach(var (id,s) in initial){_committed[id]=Freeze(id,s);if(s is ConstantSetting c)_constantBackup[id]=ValueRules.Freeze(_ports[id],c.Value);}
     }
@@ -27,7 +32,18 @@ public sealed class ParameterEditSession
                 throw new ArgumentException("Borrowed images cannot be stored as configuration constants; bind an invocation source instead.");
             return new ConstantSetting(value);
         }
-        if(s is ReferenceSetting b && b.Reference.Type==p.Type && !string.IsNullOrWhiteSpace(b.Reference.NodeId) && !string.IsNullOrWhiteSpace(b.Reference.PortId))return b;
+        if(s is ReferenceSetting b)
+        {
+            if(_bindingCompiler is not null)
+            {
+                var result=_bindingCompiler.CompileBinding(b.Reference,p,_bindingScope!);
+                if(result.Plan is not null && result.Compatibility is BindingCompatibility.Compatible or BindingCompatibility.Conditional)return b;
+                throw new ArgumentException(result.Diagnostic?.Message??"Binding could not be compiled.");
+            }
+            // Standalone foundation editing has no graph owner. It only supports the original exact direct reference.
+            // Production editing supplies the existing parameter service and authoritative scope, including quantity adaptation.
+            if(b.Reference.Type==p.Type && b.Reference.Selection is BindingSelection.AllItems && b.Reference.MemberFieldPath.Count==0)return b;
+        }
         throw new ArgumentException("Invalid binding");
     }
     public bool HasInvalidDraft=>_invalid.Count>0;

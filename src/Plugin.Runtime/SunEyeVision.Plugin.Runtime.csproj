@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net9.0</TargetFramework><Description>UI-free invocation and binding runtime.</Description></PropertyGroup>
+  <ItemGroup><ProjectReference Include="../Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" /></ItemGroup>
+</Project>

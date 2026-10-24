@@ -36,6 +36,15 @@
         "resolved": "9.0.0",
         "contentHash": "z8FfGIaoeALdD+KF44A2uP8PZIQQtDGiXsOLuN8nohbKhkyKt7zGaZb+fKiCxTuBqG22Q7myIAioSWaIcOOrOw=="
       },
+      "suneyevision.plugin.contracts": {
+        "type": "Project"
+      },
+      "suneyevision.plugin.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.tool.kernels": {
         "type": "Project"
       }

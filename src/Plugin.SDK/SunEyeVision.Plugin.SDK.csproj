@@ -45,6 +45,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SunEyeVision.Tool.Script" />
     <ProjectReference Include="../Tool.Kernels/SunEyeVision.Tool.Kernels.csproj" />
+    <ProjectReference Include="../Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
   </ItemGroup>
 
   <!-- WPF 主题配置说明：

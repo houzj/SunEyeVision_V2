@@ -22,7 +22,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// 3. 嵌套属性访问（如 Center.X）
     /// 4. 类型转换
     /// </remarks>
-    public class ParameterResolver : IParameterResolver
+    public partial class ParameterResolver : IParameterResolver
     {
         /// <summary>
         /// 日志记录器

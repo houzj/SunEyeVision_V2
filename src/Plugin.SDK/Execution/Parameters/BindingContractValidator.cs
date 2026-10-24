@@ -1,3 +1,4 @@
+using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,16 +9,16 @@ using SunEyeVision.Plugin.SDK.Models.Geometry;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters;
 
-public enum BindingCompatibility { Compatible, Incompatible, PendingValidation }
+
 public sealed record BindingValidation(BindingCompatibility State, string Reason, Type? ValueType = null);
 
 /// <summary>Formal-path checking; previous runtime contents never decide compatibility.</summary>
-public static class BindingContractValidator
+public static partial class BindingContractValidator
 {
     public static BindingValidation Validate(IReadOnlyList<OutputVariable>? contract, string path, IReadOnlyList<Type> allowed)
     {
         BindingValidation Bad(string message) => new(BindingCompatibility.Incompatible, message);
-        BindingValidation Pending(string message) => new(BindingCompatibility.PendingValidation, message);
+        BindingValidation Pending(string message) => new(BindingCompatibility.Unresolved, message);
         if (contract == null) return Pending("上游输出契约暂不可用，等待校验");
         var parts = path.Split('.');
         if (parts.Length == 0 || parts.Any(p => !Regex.IsMatch(p, @"^[A-Za-z_\p{L}][\w]*(?:\[Type=[A-Za-z]+\])?(?:\[(?:[0-9]+)?\])?$")))
@@ -32,6 +33,8 @@ public static class BindingContractValidator
         var collection = output.IsCollection ?? type.IsArray;
         if (type.IsArray) type = type.GetElementType()!;
         int? count = output.FixedCount ?? (collection ? null : 1);
+        int? selectedIndex = null;
+        int? selectedSourceCount = null;
         string? filter = null;
         for (var i = 0; i < parsed.Count; i++)
         {
@@ -64,12 +67,30 @@ public static class BindingContractValidator
             }
             if (segment.arrayIndex is >= 0)
             {
+                if (!collection) return Bad("元素索引只适用于声明为集合的来源");
                 if (count.HasValue && segment.arrayIndex >= count.Value) return Bad("绑定元素索引超出声明的固定数量，请重新绑定");
+                selectedIndex = segment.arrayIndex; selectedSourceCount = count;
                 collection = false; count = 1;
             }
-            else if (segment.arrayIndex == -1) collection = true;
+            else if (segment.arrayIndex == -1 && !collection) return Bad("All集合表达式要求声明为集合的来源");
         }
         var actual = collection ? type.MakeArrayType() : type;
+        var canonical = CompileDeclaredAdaptation(type, collection, count, selectedIndex, selectedSourceCount, allowed);
+        if (canonical != null) return canonical;
+        // Geometry/transform adapters still use their existing declared CLR element contract,
+        // but quantity compatibility comes from the same contract rule as the pure runtime.
+        if (Accept(actual, allowed) == true)
+        {
+            var sourceCount = collection ? count.HasValue ? SunEyeVision.Plugin.Contracts.CountConstraint.Exactly(count.Value) : SunEyeVision.Plugin.Contracts.CountConstraint.Any
+                : SunEyeVision.Plugin.Contracts.CountConstraint.Exactly(1);
+            var states = allowed.Where(target => Accept(actual, new[] { target }) == true)
+                .Select(target => sourceCount.CompatibilityWith(target.IsArray ? SunEyeVision.Plugin.Contracts.CountConstraint.Any : SunEyeVision.Plugin.Contracts.CountConstraint.Exactly(1))).ToArray();
+            if (states.Contains(BindingCompatibility.Compatible) && !(selectedIndex.HasValue && !selectedSourceCount.HasValue))
+                return new(BindingCompatibility.Compatible, "适配", actual);
+            if (states.Any(state => state is BindingCompatibility.Compatible or BindingCompatibility.Conditional))
+                return new(BindingCompatibility.Conditional, "可绑定；本轮数量或索引须满足声明", actual);
+            return Bad("来源声明数量不满足当前输入要求");
+        }
         return Accept(actual, allowed) switch
         {
             true => new(BindingCompatibility.Compatible, "适配", actual),

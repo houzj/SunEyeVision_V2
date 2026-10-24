@@ -98,7 +98,25 @@ public static class ValueRules
         else if(value is SequenceValue sequence){foreach(var element in sequence)foreach(var item in Images(element))yield return item;}
     }
 }
-public sealed record OutputReference(string NodeId,string PortId,TypeRef Type);
+public sealed class OutputReference
+{
+    public OutputReference(string nodeId,string portId,TypeRef type,IEnumerable<string>? memberFieldPath=null,
+        BindingSelection? selection=null,string? scopeId=null)
+    {
+        if(string.IsNullOrWhiteSpace(nodeId)||string.IsNullOrWhiteSpace(portId))throw new ArgumentException("Stable node and field identities are required.");
+        if(scopeId is not null && string.IsNullOrWhiteSpace(scopeId))throw new ArgumentException("An explicit scope identity cannot be empty.",nameof(scopeId));
+        NodeId=nodeId;PortId=portId;Type=type??throw new ArgumentNullException(nameof(type));
+        MemberFieldPath=Array.AsReadOnly((memberFieldPath??Array.Empty<string>()).ToArray());
+        if(MemberFieldPath.Any(string.IsNullOrWhiteSpace))throw new ArgumentException("Member field identities must be nonempty.");
+        Selection=selection??BindingSelection.All;ScopeId=scopeId;
+    }
+    public string NodeId {get;}
+    public string PortId {get;}
+    public TypeRef Type {get;}
+    public string? ScopeId {get;}
+    public IReadOnlyList<string> MemberFieldPath {get;}
+    public BindingSelection Selection {get;}
+}
 public static class BindingValidator
 {
     public static Diagnostic? Validate(OutputReference reference,ToolSchema source)

@@ -22,6 +22,13 @@ public readonly record struct CountConstraint
     public bool Accepts(int count) => count >= Minimum && (Maximum is null || count <= Maximum);
     public static CountConstraint Exactly(int count) => new(count, count);
     public static CountConstraint Any => new(0);
+    public BindingCompatibility CompatibilityWith(CountConstraint target)
+    {
+        if ((Maximum is int maximum && maximum < target.Minimum) ||
+            (target.Maximum is int targetMaximum && targetMaximum < Minimum)) return BindingCompatibility.Incompatible;
+        return Minimum >= target.Minimum && (target.Maximum is null || Maximum is int upper && upper <= target.Maximum)
+            ? BindingCompatibility.Compatible : BindingCompatibility.Conditional;
+    }
 }
 
 /// <summary>Immutable semantic declaration. A runtime value never changes this descriptor.</summary>

@@ -27,6 +27,7 @@ internal static partial class Program
     {
         string report=args.Length>0?args[0]:"plugin-report.json";
         await StructuredCases();
+        await BindingCases();
         await Case("FT-A02-count", "Declared sequence count rejects zero/many without inferring schema",()=>Sync(()=>{
             var type=TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Float64),CountConstraint.Exactly(1));
             var port=new Port("one",type);

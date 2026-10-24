@@ -1,3 +1,4 @@
+using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
 using System.Text.Json;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Tool.Script.Models;

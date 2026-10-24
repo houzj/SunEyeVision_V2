@@ -1,3 +1,4 @@
+using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,13 +86,11 @@ public sealed class OutputBindingChangeService
                 }
                 if (BindingRelationCatalog.SourceWorkflowId(node, input, sourceWorkflowId ?? workflow.Id) != (sourceWorkflowId ?? workflow.Id))
                 { Add("绑定来源跨出当前工作流作用域，请使用全局变量。"); continue; }
-                if (!workflow.GetParentNodeIds(node.Id).Contains(id))
-                { Add("绑定来源不是画布连接的上游节点，请先建立执行连接或改用全局变量。"); continue; }
                 try
                 {
                     var validation = nodes.TryGetValue(id, out var upstream) ? BindingContractValidator.Validate(reader.ReadContract(upstream), path, input.AllowedTypes)
                         : new BindingValidation(BindingCompatibility.Incompatible, "来源节点不存在");
-                    if (validation.State != BindingCompatibility.Compatible) Add(validation.Reason);
+                    if (validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved) Add(validation.Reason);
                 }
                 catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidOperationException)
                 {
@@ -116,7 +115,21 @@ public sealed class OutputBindingChangeService
     {
         var flow = _solution?.Workflows.FirstOrDefault(w => w.Id == workflowId);
         if (flow == null) return Array.Empty<string>();
-        return flow.GetParentNodeIds(targetId).Where(id => id != targetId).Distinct().ToArray();
+        if (!flow.Nodes.Any(node => node.Id == targetId)) return Array.Empty<string>();
+        var graph = SolutionExecutionDependencyGraph.Compile(_solution!, checkReadiness: false);
+        var target = SolutionExecutionDependencyGraph.GetScopedNodeId(workflowId, targetId);
+        bool DependsOnTarget(string candidate)
+        {
+            var pending = new Stack<string>(); var seen = new HashSet<string>(StringComparer.Ordinal);
+            pending.Push(SolutionExecutionDependencyGraph.GetScopedNodeId(workflowId, candidate));
+            while (pending.Count > 0)
+            {
+                var node = pending.Pop(); if (node == target) return true;
+                if (seen.Add(node)) foreach (var predecessor in graph.GetPredecessors(node)) pending.Push(predecessor);
+            }
+            return false;
+        }
+        return flow.Nodes.Select(node => node.Id).Where(id => id != targetId && !DependsOnTarget(id)).ToArray();
     }
 
     public IReadOnlyList<string> GetExistingBindingSourceNodeIds(string workflowId, string targetId)
@@ -160,7 +173,7 @@ public sealed class OutputBindingChangeService
             if (variable.ProducerBinding is not { } producer) continue;
             var owners = nodes.Keys.Where(k => k.NodeId == producer.NodeId && (string.IsNullOrEmpty(producer.WorkflowId) || k.WorkflowId == producer.WorkflowId)).ToArray();
             BindingValidation validation;
-            if (owners.Length > 1) validation = new(BindingCompatibility.PendingValidation, "变量生产来源缺少工作流作用域，等待重新确认");
+            if (owners.Length > 1) validation = new(BindingCompatibility.Unresolved, "变量生产来源缺少工作流作用域，等待重新确认");
             else if (owners.Length == 0) validation = new(BindingCompatibility.Incompatible, "全局变量生产节点已删除，请重新绑定");
             else
             {
@@ -180,7 +193,7 @@ public sealed class OutputBindingChangeService
                         SdkTypeVocabulary.ToSystemType(variable.Type) is { } type ? new[] { type } : Array.Empty<Type>());
             }
             var priorPending = variable.BindingValidationPending;
-            if (validation.State == BindingCompatibility.PendingValidation)
+            if (validation.State == BindingCompatibility.Unresolved)
             {
                 pendingVariables[variable.Id] = validation.Reason;
                 plan.Add((() => variable.BindingValidationPending = validation.Reason, () => variable.BindingValidationPending = priorPending));
@@ -223,7 +236,7 @@ public sealed class OutputBindingChangeService
                 var parents = nodes.Values.Where(n => n.Parameters is SubroutineParameters p &&
                     (string.IsNullOrEmpty(n.SubroutineId) ? p.SubroutineId : n.SubroutineId) == relation.Target.WorkflowId).ToArray();
                 var ports = parents.SelectMany(n => ((SubroutineParameters)n.Parameters).Inputs).Where(p => p.Name == PropertyPathParser.ExtractPropertyName(path)).ToArray();
-                validation = ports.Length == 0 ? new(BindingCompatibility.PendingValidation, "子程序输入端口契约暂不可用，等待校验")
+                validation = ports.Length == 0 ? new(BindingCompatibility.Unresolved, "子程序输入端口契约暂不可用，等待校验")
                     : BindingContractValidator.Validate(ports.Select(p => new OutputVariable { Name = p.Name, VariableType = p.TypeName, IsCollection = false }).ToArray(), path, input.AllowedTypes);
             }
             else if (bound && (sourceId == "__GlobalVars__" || sourceId == "__VariableId__"))
@@ -240,7 +253,7 @@ public sealed class OutputBindingChangeService
                 }
                 validation = variable == null || invalidVariables.Contains(variable.Id) || !string.IsNullOrEmpty(variable.RebindingReason)
                     ? new(BindingCompatibility.Incompatible, "全局变量不存在或输入来源已失效，请重新绑定")
-                    : pendingVariables.TryGetValue(variable.Id, out var pendingVariable) ? new(BindingCompatibility.PendingValidation, pendingVariable)
+                    : pendingVariables.TryGetValue(variable.Id, out var pendingVariable) ? new(BindingCompatibility.Unresolved, pendingVariable)
                     : BindingContractValidator.Validate(new[] { new OutputVariable { Name = "Value", VariableType = variable.Type, IsCollection = SdkTypeVocabulary.ToSystemType(variable.Type)?.IsArray } },
                         sourceId == "__VariableId__" ? "Value" : "Value" + path[variable.Name.Length..], input.AllowedTypes);
                 if (validation.State == BindingCompatibility.Compatible && variable != null && !input.AllowsTypeChange &&
@@ -253,9 +266,6 @@ public sealed class OutputBindingChangeService
                 if (source == relation.Target) throw new InvalidOperationException("输入绑定不能引用节点自身。");
                 if (source.WorkflowId != relation.Target.WorkflowId && !input.InternalProjection || !nodes.ContainsKey(source))
                     validation = new(BindingCompatibility.Incompatible, "来源不在当前工作流中；跨流程请使用全局变量，请重新绑定");
-                else if (!input.InternalProjection && !_solution.Workflows.First(w => w.Id == relation.Target.WorkflowId)
-                    .GetParentNodeIds(relation.Target.NodeId).Contains(source.NodeId))
-                    validation = new(BindingCompatibility.Incompatible, "来源不是画布连接的上游节点，请先建立执行连接或改用全局变量");
                 else
                 {
                     _contracts.TryGetValue(source, out var previous);
@@ -286,10 +296,10 @@ public sealed class OutputBindingChangeService
                 ? new(BindingCompatibility.Incompatible, error) : new(BindingCompatibility.Compatible, "常量适配");
             else continue;
 
-            if (validation.State == BindingCompatibility.Compatible && bound && _policies.TryGetValue((relation.Target, input.Key), out var policy) &&
+            if (validation.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional && bound && _policies.TryGetValue((relation.Target, input.Key), out var policy) &&
                 policy.Expression == expression && policy.Interpretation != input.InterpretationKey)
                 validation = new(BindingCompatibility.Incompatible, "输入解释规则已变化，请重新绑定");
-            if (validation.State == BindingCompatibility.PendingValidation)
+            if (validation.State == BindingCompatibility.Unresolved)
                 Mark(relation.Target, relation.Node, input.Key, validation.Reason, true);
             else if (validation.State == BindingCompatibility.Incompatible)
             {

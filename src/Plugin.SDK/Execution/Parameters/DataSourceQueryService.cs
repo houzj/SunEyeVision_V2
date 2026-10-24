@@ -215,9 +215,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             // 获取父节点ID列表
             var upstream = _connectionProvider.GetParentNodeIds(nodeId).Distinct().ToArray();
             var allowed = BindingCandidateNodeIds?.Invoke(nodeId);
-            // A binding never creates execution order. Old/disconnected references stay
-            // in the model for diagnosis, but are not selectable candidates.
-            var parentNodeIds = upstream.Where(id => id != nodeId && (allowed == null || allowed.Contains(id)));
+            // The owning workflow graph validates binding dependencies, including sources without a canvas edge.
+            var candidates = includeOtherSources && allowed != null ? upstream.Concat(allowed) : upstream;
+            var parentNodeIds = candidates.Where(id => id != nodeId && (allowed == null || allowed.Contains(id))).Distinct();
 
             int order = 0;
 
@@ -226,7 +226,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // 直接创建父节点信息
                 var nodeInfo = new ParentNodeInfo
                 {
-                    CandidateSection = "上游节点",
+                    CandidateSection = upstream.Contains(parentNodeId) ? "上游节点" : "其他可绑定节点",
                     NodeId = parentNodeId,
                     NodeName = _nodeInfoProvider?.GetNodeName(parentNodeId) ?? parentNodeId,
                     NodeType = _nodeInfoProvider?.GetNodeType(parentNodeId) ?? "Unknown",
@@ -297,8 +297,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // SdkTypeVocabulary.ToTypeVocabulary 自动提升为 T[]。
                 if (targetType != null)
                 {
-                    var targetVarType = SdkTypeVocabulary.ToTypeVocabulary(targetType);
-                    if (targetVarType != null)
+                    if (FormalOutputContractReader != null)
+                    {
+                        var declaration = FormalOutputContractReader(parent.NodeId);
+                        outputProps = outputProps.Where(property => BindingContractValidator.Validate(declaration, property.PropertyName, new[] { targetType }).State
+                            is SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional).ToList();
+                    }
+                    else if (SdkTypeVocabulary.ToTypeVocabulary(targetType) is { } targetVarType)
                     {
                         outputProps = outputProps
                             .Where(p => p.VariableType == targetVarType)

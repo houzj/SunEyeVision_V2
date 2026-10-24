@@ -95,7 +95,9 @@ public sealed class SolutionExecutionDependencyGraph
             }
 
             // Local input faults are owned by their consumer, not by the whole solution.
-            var localIssues = OutputBindingChangeService.GetExecutionInputIssues(workflow, workflow.Id);
+            // Candidate reconciliation must retain unresolved-but-explicit binding edges for cycle checking.
+            // Runtime readiness still omits failed inputs so unrelated nodes can execute.
+            var localIssues = checkReadiness ? OutputBindingChangeService.GetExecutionInputIssues(workflow, workflow.Id) : null;
             var local = WorkflowExecutionDependencyGraph.Compile(workflow, null, workflow.Id, localIssues);
             foreach (var dependency in local.Dependencies)
             {

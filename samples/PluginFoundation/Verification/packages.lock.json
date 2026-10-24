@@ -24,6 +24,12 @@
           "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )"
         }
       },
+      "suneyevision.plugin.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.plugin.wpf": {
         "type": "Project",
         "dependencies": {

@@ -34,8 +34,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// }
     /// </code>
     /// </remarks>
-    public interface IParameterResolver
+    public interface IParameterResolver : SunEyeVision.Plugin.Contracts.IBindingPlanCompiler
     {
+        SunEyeVision.Plugin.Contracts.BindingResolution ResolveBinding(
+            SunEyeVision.Plugin.Contracts.BindingPlan plan,
+            SunEyeVision.Plugin.Contracts.IBindingRunSnapshot snapshot);
         /// <summary>
         /// 解析单个参数绑定
         /// </summary>

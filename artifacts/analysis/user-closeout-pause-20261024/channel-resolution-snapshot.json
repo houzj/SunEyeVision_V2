@@ -1,0 +1,146 @@
+{
+  "parentTaskId": "O06",
+  "createdAt": "2026-10-24T22:15:45.4552298+08:00",
+  "status": "prepared-analysis-only-user-execution-not-scheduled",
+  "capabilityEvidence": [
+    {
+      "fact": "Native computer APIs are disabled.",
+      "source": "Current mcp__cua_repl tool declaration",
+      "meaning": "No supported native input/observation exposed for this session"
+    },
+    {
+      "fact": "apps=[]; browser surfaces present",
+      "source": "Root cua.getState at 2026-10-24 22:12 Asia/Shanghai",
+      "meaning": "Only enabled surfaces observed; not proof no Windows apps or VM processes exist"
+    },
+    {
+      "fact": "Already-running native app bound to active Mach-O",
+      "source": "REA observe_native_ui tool description",
+      "meaning": "Not a Windows desktop capability; not invoked"
+    },
+    {
+      "fact": "VisionMaster.exe exists, version 4.4.1.1334440",
+      "source": "Installed file read/hash",
+      "meaning": "Installation evidence, not running/license/loaded-module evidence"
+    }
+  ],
+  "rootBlocker": "This session has no supported Windows native desktop channel. No documented enable control is exposed; no automatic readiness ETA can be promised.",
+  "separateConditions": {
+    "sample": "prepared and visually inspected; no device input required",
+    "solution": "create new disposable blank solution, no preexisting vendor.sol required",
+    "license": "unknown; determine on first permitted human launch",
+    "loadedIdentity": "not yet observed"
+  },
+  "original": {
+    "sha256": "42E2437780EC21C9D1ADE2D07ACE0A26635961F5C90559934A7FDE7E233E0C23",
+    "fileVersion": "4.4.1.1334440(2024/08/01 17:25:50)",
+    "path": "D:/Program Files/VisionMaster4.4.0/Applications/VisionMaster.exe"
+  },
+  "sample": {
+    "copy": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\assisted-evidence\\circle-sample.bmp",
+    "sha256": "690B17333CE8A9F6FE8961C90D7F21FBD6472DBF0F7CC3443FC89DA43BB33ABA",
+    "selectedWithinExistingAuthorization": true,
+    "provenance": "Tracked repository asset, used in three existing example plans; original acquisition before repository baseline unknown",
+    "visualReview": "Readable disk/circular object image with dark and light regions, suitable as a non-device UI/ROI interaction sample; not algorithm ground truth",
+    "source": "D:/MyWork/REA逆向测试/examples/assets/circle-sample.bmp",
+    "repositoryCommit": "bf52c1305b6558e1ecbcc8f48f8e21f438c1ea97"
+  },
+  "solutions": [
+    {
+      "action": "Only if a platform-supported Windows native surface is explicitly made available, verify exact owned window and screenshot/observation first. No shell/UIA bypass or speculative install/reset.",
+      "eta": "Provisioning time unknown. After availability, capability check budget 2 minutes, then estimate observation based on actual state.",
+      "route": "Supported automatic channel",
+      "owner": "交付经理 coordinates platform facilities; 验证工程师 checks exposed capability",
+      "currentlyReady": false
+    },
+    {
+      "action": "Six grouped actions below; one recording may cover all. No new sample approval gate.",
+      "eta": "Checklist/sample ready now; estimated human actions 10–15 minutes after VM opens successfully, review 15–25 minutes after evidence arrives (25–40 minutes combined, excludes licensing/environment issues).",
+      "route": "Human-assisted finite observation",
+      "owner": "Human performs UI actions; evidence lead prepares sample/identity; verifier reviews evidence; manager coordinates session",
+      "currentlyReady": true
+    }
+  ],
+  "steps": [
+    {
+      "id": "H1",
+      "minutes": "2–3",
+      "action": "人工打开指定原版 VisionMaster.exe 的独占实例，不接设备；录下关于页版本和主窗。新建临时空方案，添加文件图像源和两个 Blob 工具，形成图像源→Blob A→Blob B 的前置关系；工具界面中文名称以当前安装目录为准。图像源读取随包 BMP。",
+      "evidence": "启动路径、关于页、空方案与节点关系、文件源路径、图像可见；若许可拦截只记录提示并停止，不修改许可。",
+      "limit": "关于页和标题不能证明所有加载DLL哈希或CLR窗体类型。无支持诊断时实际运行类型保持未知。"
+    },
+    {
+      "id": "H2",
+      "minutes": "1–2",
+      "action": "双击 Blob A，记录完整参数窗、各页签和 ROI 所在视图；切回主窗再回参数窗，记录是否允许交互。",
+      "evidence": "可见窗口装配、窗口与主窗的交互表现；记录标题、布局、操作顺序。",
+      "limit": "外观相似不证明走普通窗还是专用TabWinBase，也不证明程序集加载身份。"
+    },
+    {
+      "id": "H3",
+      "minutes": "2–3",
+      "action": "在临时方案先记录 Blob B 未建立输入订阅时输入源显示，再建立前置关系并打开候选，选文件图像源实际暴露的图像输出。Blob A 单次执行后，Blob B 切到继承/矩形区域，展开来源候选。若有 A 的 ROI 或矩形结果，选明确下标并记录；若没有候选或结果，如实记录并停止这一子步。",
+      "evidence": "空态、候选完整显示名、选中项、继承方式、来源下标、执行后显示；不得假定节点号13或固定译名。",
+      "limit": "原XML声明ROIBOX数组ROI/MinBoudingRect/MaxAreaInnerRect，可作候选依据；实际可订阅项/非空输出未预先保证，不为造结果无限调参。"
+    },
+    {
+      "id": "H4",
+      "minutes": "2–3",
+      "action": "Blob A 切绘制，在图像内画一个矩形；记录中心/宽高，拖动一次，再把一个有效数值改为另一个图像范围内值，单次执行并观察回填。",
+      "evidence": "连续录下手势前后数值、图形、单次运行结果；记录是否弹回旧值、延迟或无响应。",
+      "limit": "录屏证明可见前后状态，不能证明内部字节精度、所有事件先后或性能上界。"
+    },
+    {
+      "id": "H5",
+      "minutes": "2–3",
+      "action": "只在正常单次成功且无设备的临时方案中，连续执行3–5秒后点击停止并记录响应；正常停止后先改一项并点确定重开，再改一项点标题关闭重开。若已有订阅浮窗可打开，聚焦该浮窗后点参数窗确定，记录哪个窗口关闭；不要用快捷键代替该按钮。",
+      "evidence": "连续开始/正常停止、确定和标题关闭分别影响哪个窗、重开值；每个动作留时间顺序。",
+      "limit": "正常停止不证明缺回调竞争安全；浮窗不可用则留该分支未知，不构造无回调故障，不终止他人进程。"
+    },
+    {
+      "id": "H6",
+      "minutes": "1",
+      "action": "把本次录屏或上述关键截图及按H1–H5排列的操作结果交回；若保存方案，仅保存到本包assisted-evidence新文件，不覆盖原方案。",
+      "evidence": "媒体/方案实际路径、文件哈希由取证负责人补记；验证岗逐项对照静态链并区分通过、差异、未测。",
+      "limit": "未提交媒体不计已观察；不把人机验证包装成自动实机验证。"
+    }
+  ],
+  "unknownsRetained": [
+    "Actual CLR window type/loaded assembly identity without supported diagnostics",
+    "Native image/ROI last-reader ownership",
+    "No-callback and late-callback races",
+    "Unobserved localized/extension branches and full algorithm parity"
+  ],
+  "stopRules": [
+    "License/startup fails: record actual message and stop; do not bypass.",
+    "Operation hangs: record last action and elapsed time; do not force-close unrelated windows or infer deadlock cause.",
+    "No safe existing callback-miss scenario: leave unknown, no injection harness.",
+    "No human artifacts yet: observation remains not executed."
+  ],
+  "responsibility": {
+    "manager": "交付经理｜协调与收口: facilities, exclusive session and schedule",
+    "verifier": "验证工程师｜VM实机取证: supported capability and evidence classification",
+    "lead": "逆向负责人｜VM取证统筹: version/sample and plan"
+  },
+  "frozenRuntimeSupplement": {
+    "sha256": "3E452A8D9B315FE6ED5B7C0D2D1A1637F01056374E0F0E7EBD78A47B5C49311A",
+    "supersedesRuntimeHash": "5C9D184F7A8878F1DB5548AF6649C445DFD92EC5CD10A6D36A06481876DC8A8E",
+    "note": "Earlier delivery.json records the older runtime revision; this explicit supplement updates runtime capability only. Static frozen findings remain unchanged.",
+    "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\runtime-capability-2216.snapshot.json"
+  },
+  "parentProgress": {
+    "parentClosed": false,
+    "newAcceptedItems": 0,
+    "percentage": "unchanged; no new percentage inferred from preparation"
+  },
+  "productChanged": false,
+  "vmExecutedByAgent": false,
+  "latestSteering": "Human paused variable/Release closeout. VM/Blob analysis continues read-only. This is a contingency plan only; no immediate user test session, product implementation, build, SDK probe or device use is organized.",
+  "requiredNormalQuestions": [
+    "普通开窗与可见输入/继承链；CLR类型保持另列未知",
+    "ROI绘制/数值编辑/运行后可见回填",
+    "确定/关闭/重开及正常连续执行停止"
+  ],
+  "excludedFaultQuestion": "R2缺回调竞争：无现成安全场景不测，不让用户造异常",
+  "processOwnership": "Root has launched no original VM, SDK probe, reconstructed application or device process in this task. All root offline hashing/source/file commands completed. apps=[] is not a global process census."
+}

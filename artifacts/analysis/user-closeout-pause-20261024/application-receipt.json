@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "scope": "USER_PAUSE_DYNAMIC_ONLY",
+  "changes": [
+    {
+      "path": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o06.html",
+      "proposal": "artifacts\\analysis\\user-closeout-pause-20261024\\proposed-0.html",
+      "beforeSHA": "F6CB8DE5A7CF3A48B95B024D0381CC9A8BA56A8B60A0A41D377A076AFE81609B",
+      "afterSHA": "45D5C94881147ABB686C0CE6FF700E1C8C5D0AACEC0D502795FE2F1802A55332",
+      "prefixSHA": "10465E29BCEC2F64D0889FFA74EDAD601AC5A6B03E7735A77329E549EBDCB697",
+      "suffixSHA": "7BDD5EA91A84E28A182CD29A67FFB8284FAF264E4121E37E008F128B32FD2DCE"
+    },
+    {
+      "path": "artifacts\\validation\\document-library-source-snapshots\\optimization-o06.html",
+      "proposal": "artifacts\\analysis\\user-closeout-pause-20261024\\proposed-1.html",
+      "beforeSHA": "0EA22DDCA4D9EB61D40964E6ABB979B64453EB63AA6845F99652F67BF4DCFAF7",
+      "afterSHA": "003FA18F280D30882982E6A88859565A63D8B71135D0D5D509750140E2A2D589",
+      "prefixSHA": "096E32724E7A9A9A54318B7CE374AEAE8A151BA2B2766E9D02B2598515830E3C",
+      "suffixSHA": "7C7ABC9C7F1B5CFAEBD434D4C09E778852863A861CB2BB72868424FA5564316F"
+    }
+  ],
+  "outsideDynamicBytesUnchanged": true,
+  "mainArchitectureReviewUnchanged": true,
+  "noGitWrites": true,
+  "productChanges": false,
+  "productBuilds": 0
+}

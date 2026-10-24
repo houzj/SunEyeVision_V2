@@ -4,7 +4,7 @@
   "date": "2026-10-24",
   "objective": "以明确交付驱动文档增量维护，让现状、证据、目标、合同和验收始终可追溯；文档进度与产品进度分别记录。",
   "batchId": "DOC-UX-SPLIT-20261022",
-  "currentMilestoneStatus": "原O06已实际合并主控最终静态复审及12段证据链，成品获主控接受；生成链持久化/锚点/链接/幂等通过，实机无支持控制路径仍未执行，不代S2交付",
+  "currentMilestoneStatus": "用户主动暂停当前变量/送验复测/统一Release收口，待新方案架构影响复核；保留源码1ecda90及已验历史，VM/Blob只读分析独立继续，不自动恢复或沿旧ETA推进",
   "stableBaseCommit": "3a5dc6dd54f372699a450ad7862b52c961cd2797",
   "baselineKind": "HEAD plus explicitly identified dirty file snapshots; not a stable accepted product release",
   "handoff": {
@@ -5277,5 +5277,33 @@
     "currentFinalQASHA": "51C6584EE10CE5353009BCB4D06AB1A387CDA182C27DB008F3A52D0641AA6E9E",
     "searchQueryQASHA": "04EC5F5B4663F2ABFFE9B1B8316C08DD277F48010A4C3046A67DE53C3C612402",
     "handoff": "docs/collaboration/HANDOFF_DOCUMENT_EXECUTION_RECOVERY_20261024.md"
+  },
+  "executionPause": {
+    "status": "USER_PAUSED_PENDING_ARCHITECTURE_IMPACT_REVIEW",
+    "receivedByCoordinatorAt": "2026-10-24T22:14:46+08:00",
+    "recordedAt": "2026-10-24T22:16:34.683938+08:00",
+    "userReason": "当前方案改了，当前收口可能需跟着改，继续闭环未必可靠。",
+    "scope": [
+      "变量修复继续实施",
+      "后续送验/修复复测",
+      "统一Release封包/部署"
+    ],
+    "allowedIndependentWork": "VM/Blob架构及通道可行性只读分析仍可继续；不启动产品改动或新的产品测试。",
+    "automaticResume": false,
+    "resumeCondition": "用户明确恢复并由主控完成新方案架构影响复核，不能沿旧ETA自动恢复。",
+    "sourceSnapshot": "1ecda90fc329737b21250f77b78d1e6d93757935",
+    "sourceMeaning": "暂停前完成源码保存；未restore/build/test/GUI/fixed，不冒已验收。",
+    "previousTargetsWithdrawn": [
+      "2026-10-24T22:20:00+08:00源码目标",
+      "2026-10-24T22:40:00+08:00—23:10:00+08:00生产fixed条件窗口"
+    ],
+    "newCompletionEstimate": null,
+    "preserve": "保留源码/dirty/worktree/暂存/fixed/证据；不回滚删除，不杀未知进程。",
+    "actualOwnerStopReceipt": {
+      "path": "artifacts\\analysis\\user-closeout-pause-20261024\\owner-stop-receipts.json",
+      "sha256": "6DB3409239299317178F20C64837B629315B4C2D0F1A51BBFAE2F097BD7CFD58",
+      "actualSafeStopReceived": true
+    },
+    "pauseDocsCommit": "25d33b73787f47fd0d2e3eac34bb1c8c08de09c5"
   }
 }

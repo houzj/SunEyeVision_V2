@@ -198,7 +198,7 @@ public sealed class OutputBindingChangeService
                 pendingVariables[variable.Id] = validation.Reason;
                 plan.Add((() => variable.BindingValidationPending = validation.Reason, () => variable.BindingValidationPending = priorPending));
             }
-            else if (validation.State == BindingCompatibility.Compatible)
+            else if (validation.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional)
                 plan.Add((() => variable.BindingValidationPending = "", () => variable.BindingValidationPending = priorPending));
             else
             {
@@ -256,7 +256,7 @@ public sealed class OutputBindingChangeService
                     : pendingVariables.TryGetValue(variable.Id, out var pendingVariable) ? new(BindingCompatibility.Unresolved, pendingVariable)
                     : BindingContractValidator.Validate(new[] { new OutputVariable { Name = "Value", VariableType = variable.Type, IsCollection = SdkTypeVocabulary.ToSystemType(variable.Type)?.IsArray } },
                         sourceId == "__VariableId__" ? "Value" : "Value" + path[variable.Name.Length..], input.AllowedTypes);
-                if (validation.State == BindingCompatibility.Compatible && variable != null && !input.AllowsTypeChange &&
+                if ((validation.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional) && variable != null && !input.AllowsTypeChange &&
                     _variableTypes.TryGetValue(variable.Id, out var oldVariableType) && oldVariableType != variable.Type)
                     validation = new(BindingCompatibility.Incompatible, "全局变量类型已变化，请重新绑定");
             }
@@ -287,7 +287,7 @@ public sealed class OutputBindingChangeService
                     validation = fieldId != null && nextOutput == null && current[source] != null
                         ? new(BindingCompatibility.Incompatible, "原输出身份已删除，请重新绑定")
                         : BindingContractValidator.Validate(current[source], path, input.AllowedTypes);
-                    if (validation.State == BindingCompatibility.Compatible && !input.AllowsTypeChange && oldOutput != null && nextOutput != null && oldOutput.VariableType != nextOutput.VariableType)
+                    if ((validation.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional) && !input.AllowsTypeChange && oldOutput != null && nextOutput != null && oldOutput.VariableType != nextOutput.VariableType)
                         validation = new(BindingCompatibility.Incompatible, "上游输出类型已变化，请重新绑定");
                 }
             }

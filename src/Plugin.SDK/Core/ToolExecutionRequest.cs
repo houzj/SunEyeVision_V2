@@ -33,6 +33,23 @@ namespace SunEyeVision.Plugin.SDK.Core
         public ToolExecutionOwner? ExecutionOwner { get; init; }
         public Guid RunId { get; init; }
         public Guid RootRunId { get; init; }
+        internal bool ExecutionLeaseHeld { get; set; }
+        private int _executionClaimed;
+        internal void ClaimExecution()
+        {
+            if (Interlocked.CompareExchange(ref _executionClaimed, 1, 0) != 0)
+                throw new InvalidOperationException("This execution request has already been claimed. Retry with a new request.");
+        }
+        private int _bodyClaimed;
+        /// <summary>Claim the single tool body when delegating an admitted request to an asynchronous tool.</summary>
+        public void ClaimToolBody()
+        {
+            if (Interlocked.CompareExchange(ref _bodyClaimed, 1, 0) != 0)
+                throw new InvalidOperationException("The tool body for this request has already been entered.");
+        }
+        public SunEyeVision.Plugin.Contracts.RunIdentity GetInvocationIdentity()
+            => (ExecutionIdentity ?? throw new InvalidOperationException("The execution request has not been admitted."))
+                .ToInvocationIdentity(NodeId ?? throw new InvalidOperationException("A scope-local node identity is required."));
         internal IDisposable? InputResources { get; set; }
         public IDisposable? TakeInputResources()
         {
@@ -50,10 +67,13 @@ namespace SunEyeVision.Plugin.SDK.Core
         public ToolExecutionRequest(ToolParameters parameters)
         {
             Parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
+            DefaultExecutionOwner = (parameters as IExecutionAdmissionProvider)?.RuntimeExecutionOwner;
         }
 
-        /// <summary>持久化的工具配置。</summary>
-        public ToolParameters Parameters { get; }
+        /// <summary>准入前为调用方配置；中央入口声明请求后替换为本次执行独占的配置快照。</summary>
+        public ToolParameters Parameters { get; private set; }
+        internal ToolExecutionOwner? DefaultExecutionOwner { get; }
+        internal void FreezeParameters() => Parameters = Parameters.CreateExecutionSnapshot();
 
         /// <summary>本次运行可见的上游节点结果。</summary>
         public IDictionary<string, ToolResults>? NodeResults { get; init; }

@@ -425,7 +425,7 @@ namespace SunEyeVision.Tool.Script.Views
             OutputTabControl.ValueSource = FilterDefaultValues(result.OutputValues);
 
             // ★ 数据驱动：设置输入数据源
-            InputTabControl.ValueSource = execution.ResolvedInputValues;
+            InputTabControl.ValueSource = result.ResolvedInputValues;
 
             CompileTimeLabel.Content = $"编译: {result.CompileTimeMs}ms";
             ExecTimeLabel.Content = $"执行: {result.ExecutionTimeMs}ms";

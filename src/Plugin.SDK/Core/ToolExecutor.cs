@@ -40,7 +40,7 @@ namespace SunEyeVision.Plugin.SDK.Core
     ///     nodeName: "节点1");
     /// </code>
     /// </remarks>
-    public class ToolExecutor
+    public partial class ToolExecutor
     {
         private readonly IParameterResolver _parameterResolver;
         private readonly ILogger? _logger;
@@ -65,24 +65,21 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// </remarks>
         public ToolResults Run(IToolPlugin tool, ToolExecutionRequest request)
         {
+            if (tool == null) throw new ArgumentNullException(nameof(tool));
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
             if (tool is IAsyncToolPlugin) return ExecuteAsync(tool, request).AsTask().GetAwaiter().GetResult();
-            using var inputResources = request;
+            using var inputResources = ClaimRequest(request);
+            using var admission = EnterExecution(request, tool);
 
             ResolveRuntimeParameters(request);
             ApplyRuntimeSnapshot(request.Parameters, request.RuntimeParameters!);
             request.Parameters.ResolvedInputImage = request.ResolvedInputImage;
             request.Parameters.CommunicationInputs = ScopeCommunicationInputs(request);
             request.Parameters.CommunicationOutputs = request.CommunicationOutputs;
-            return Run(
-                tool,
-                request.Parameters,
-                request.NodeResults,
-                request.NodeName,
-                request.NodeId,
-                request.CancellationToken,
-                request.GlobalVariables);
+            request.Context = CreateExecutionContext(tool, request);
+            request.Parameters.Context = request.Context;
+            return RunSynchronousCore(tool, request);
         }
 
         /// <summary>
@@ -96,26 +93,12 @@ namespace SunEyeVision.Plugin.SDK.Core
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
-            if (tool is IAsyncToolPlugin) return (TResult)ExecuteAsync(tool, request).AsTask().GetAwaiter().GetResult();
-            using var inputResources = request;
             if (request.Parameters is not TParameters parameters)
                 throw new ArgumentException(
                     $"执行请求参数类型应为 {typeof(TParameters).Name}，实际为 {request.Parameters.GetType().Name}",
                     nameof(request));
 
-            ResolveRuntimeParameters(request);
-            ApplyRuntimeSnapshot(parameters, request.RuntimeParameters!);
-            parameters.ResolvedInputImage = request.ResolvedInputImage;
-            parameters.CommunicationInputs = ScopeCommunicationInputs(request);
-            parameters.CommunicationOutputs = request.CommunicationOutputs;
-            return Run(
-                tool,
-                parameters,
-                request.NodeResults,
-                request.NodeName,
-                request.NodeId,
-                request.CancellationToken,
-                request.GlobalVariables);
+            return (TResult)Run((IToolPlugin)tool, request);
         }
 
         /// <summary>
@@ -128,10 +111,10 @@ namespace SunEyeVision.Plugin.SDK.Core
                 throw new ArgumentNullException(nameof(tool));
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
-            using var inputResources = request;
-
             if (tool is not IAsyncToolPlugin asyncTool)
                 return Run(tool, request);
+            using var inputResources = ClaimRequest(request);
+            using var admission = EnterExecution(request, tool);
 
             var parameters = request.Parameters;
             var stopwatch = Stopwatch.StartNew();
@@ -148,7 +131,9 @@ namespace SunEyeVision.Plugin.SDK.Core
             try
             {
                 request.CancellationToken.ThrowIfCancellationRequested();
-                ToolExecutionPreparation.Apply(parameters, request.NodeResults ?? new Dictionary<string, ToolResults>());
+                // Async tools consume the request. Preparation must not attach runtime node results
+                // to the configuration object that the caller supplied.
+                ToolExecutionPreparation.Apply(parameters, request.NodeResults ?? new Dictionary<string, ToolResults>(), attachNodeResults: false);
                 request.SetResolvedInputImage(parameters.ResolvedInputImage);
                 request.Context.Logger?.Info("开始异步执行工具", request.Context.GetSourceName());
                 var inputFrame = ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
@@ -205,7 +190,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 nodeId: request.NodeId,
                 cancellationToken: request.CancellationToken,
                 globalVariables: request.GlobalVariables, communicationInputs: request.CommunicationInputs, communicationOutputs: request.CommunicationOutputs)
-                { WorkflowId = request.WorkflowId, ResourcePaths = request.ResourcePaths };
+                { WorkflowId = request.WorkflowId, ResourcePaths = request.ResourcePaths, ExecutionIdentity = request.ExecutionIdentity };
         }
 
         private static ToolResults CreateTerminalResult(
@@ -247,64 +232,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             IDictionary<string, object?>? globalVariables = null)
             where TResult : ToolResults, new()
         {
-            if (tool == null)
-                throw new ArgumentNullException(nameof(tool));
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            var stopwatch = Stopwatch.StartNew();
-
-            // ★ 强制非 null：工具只需通过 TryGetValue 探测上游数据是否存在，无需判空
-            parameters.NodeResults = context ?? new Dictionary<string, ToolResults>();
-
-            // 注入执行上下文
-            parameters.Context = new ToolExecutionContext(
-                logger: _logger,
-                toolName: tool.ParamsType.Name.Replace("Parameters", ""),
-                nodeName: nodeName ?? tool.ParamsType.Name.Replace("Parameters", ""),
-                nodeId: nodeId,
-                cancellationToken: cancellationToken,
-                globalVariables: globalVariables, communicationInputs: parameters.CommunicationInputs, communicationOutputs: parameters.CommunicationOutputs);
-
-            try
-            {
-                // 执行工具（图像通过 parameters.ResolvedInputImage 获取）
-                cancellationToken.ThrowIfCancellationRequested();
-                ToolExecutionPreparation.Apply(parameters, parameters.NodeResults);
-                parameters.LogInfo($"开始执行工具");
-                var inputFrame = ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
-                var result = tool.Run(parameters);
-                ImageFrameProvenance.RecordResult(result, inputFrame,
-                    (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown);
-
-                stopwatch.Stop();
-                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
-                ApplyJudgmentStatus(parameters, result);
-
-                if (result.IsSuccess)
-                {
-                    parameters.LogSuccess($"工具执行成功，耗时: {stopwatch.ElapsedMilliseconds}ms");
-                }
-                else
-                {
-                    parameters.LogWarning($"工具执行失败: {result.ErrorMessage}");
-                }
-
-                return (TResult)result;
-            }
-            catch (OperationCanceledException)
-            {
-                stopwatch.Stop();
-                parameters.LogWarning("工具执行被取消");
-                return ToolResults.CreateCancelled<TResult>();
-            }
-            catch (Exception ex)
-            {
-                stopwatch.Stop();
-                parameters.LogError($"工具执行异常: {ex.Message}", ex);
-                return ToolResults.CreateError<TResult>(ex.Message, ex);
-            }
+            return (TResult)Run((IToolPlugin)tool, LegacyRequest(tool, parameters, context, nodeName, nodeId, cancellationToken, globalVariables));
         }
 
         /// <summary>
@@ -327,64 +255,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             CancellationToken cancellationToken = default,
             IDictionary<string, object?>? globalVariables = null)
         {
-            if (tool == null)
-                throw new ArgumentNullException(nameof(tool));
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            var stopwatch = Stopwatch.StartNew();
-
-            // ★ 强制非 null：工具只需通过 TryGetValue 探测上游数据是否存在
-            parameters.NodeResults = context ?? new Dictionary<string, ToolResults>();
-
-            // 注入执行上下文
-            parameters.Context = new ToolExecutionContext(
-                logger: _logger,
-                toolName: tool.ParamsType.Name.Replace("Parameters", ""),
-                nodeName: nodeName ?? tool.ParamsType.Name.Replace("Parameters", ""),
-                nodeId: nodeId,
-                cancellationToken: cancellationToken,
-                globalVariables: globalVariables, communicationInputs: parameters.CommunicationInputs, communicationOutputs: parameters.CommunicationOutputs);
-
-            try
-            {
-                // 执行工具（图像通过 parameters.ResolvedInputImage 获取）
-                cancellationToken.ThrowIfCancellationRequested();
-                ToolExecutionPreparation.Apply(parameters, parameters.NodeResults);
-                parameters.LogInfo($"开始执行工具");
-                var inputFrame = ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
-                var result = tool.Run(parameters);
-                ImageFrameProvenance.RecordResult(result, inputFrame,
-                    (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown);
-
-                stopwatch.Stop();
-                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
-                ApplyJudgmentStatus(parameters, result);
-
-                if (result.IsSuccess)
-                {
-                    parameters.LogSuccess($"工具执行成功，耗时: {stopwatch.ElapsedMilliseconds}ms");
-                }
-                else
-                {
-                    parameters.LogWarning($"工具执行失败: {result.ErrorMessage}");
-                }
-
-                return result;
-            }
-            catch (OperationCanceledException)
-            {
-                stopwatch.Stop();
-                parameters.LogWarning("工具执行被取消");
-                return ToolResults.CreateCancelled<GenericToolResults>();
-            }
-            catch (Exception ex)
-            {
-                stopwatch.Stop();
-                parameters.LogError($"工具执行异常: {ex.Message}", ex);
-                return ToolResults.CreateError<GenericToolResults>(ex.Message, ex);
-            }
+            return Run(tool, LegacyRequest(tool, parameters, context, nodeName, nodeId, cancellationToken, globalVariables));
         }
 
         /// <summary>
@@ -411,64 +282,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             where TParams : ToolParameters, new()
             where TResult : ToolResults, new()
         {
-            if (tool == null)
-                throw new ArgumentNullException(nameof(tool));
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            var stopwatch = Stopwatch.StartNew();
-
-            // ★ 强制非 null：工具只需通过 TryGetValue 探测上游数据是否存在
-            parameters.NodeResults = context ?? new Dictionary<string, ToolResults>();
-
-            // 注入执行上下文
-            parameters.Context = new ToolExecutionContext(
-                logger: _logger,
-                toolName: typeof(TParams).Name.Replace("Parameters", ""),
-                nodeName: nodeName ?? typeof(TParams).Name.Replace("Parameters", ""),
-                nodeId: nodeId,
-                cancellationToken: cancellationToken,
-                globalVariables: globalVariables, communicationInputs: parameters.CommunicationInputs, communicationOutputs: parameters.CommunicationOutputs);
-
-            try
-            {
-                // 执行工具（图像通过 parameters.ResolvedInputImage 获取）
-                cancellationToken.ThrowIfCancellationRequested();
-                ToolExecutionPreparation.Apply(parameters, parameters.NodeResults);
-                parameters.LogInfo($"开始执行工具");
-                var inputFrame = ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
-                var result = tool.Run(parameters);
-                ImageFrameProvenance.RecordResult(result, inputFrame,
-                    (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown);
-
-                stopwatch.Stop();
-                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
-                ApplyJudgmentStatus(parameters, result);
-
-                if (result.IsSuccess)
-                {
-                    parameters.LogSuccess($"工具执行成功，耗时: {stopwatch.ElapsedMilliseconds}ms");
-                }
-                else
-                {
-                    parameters.LogWarning($"工具执行失败: {result.ErrorMessage}");
-                }
-
-                return result;
-            }
-            catch (OperationCanceledException)
-            {
-                stopwatch.Stop();
-                parameters.LogWarning("工具执行被取消");
-                return ToolResults.CreateCancelled<TResult>();
-            }
-            catch (Exception ex)
-            {
-                stopwatch.Stop();
-                parameters.LogError($"工具执行异常: {ex.Message}", ex);
-                return ToolResults.CreateError<TResult>(ex.Message, ex);
-            }
+            return (TResult)Run((IToolPlugin)tool, LegacyRequest(tool, parameters, context, nodeName, nodeId, cancellationToken, globalVariables));
         }
 
         /// <summary>

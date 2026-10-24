@@ -51,9 +51,9 @@ public static class ToolExecutionPreparation
         parameters is MeasureGuideParameters guide && (guide.HasMeasureGuide || parameters is not RoiParameters);
 
     /// <summary>Only call on a runtime parameter copy. Never writes values into shared candidate objects.</summary>
-    public static void Apply(ToolParameters parameters, IDictionary<string, ToolResults> results)
+    public static void Apply(ToolParameters parameters, IDictionary<string, ToolResults> results, bool attachNodeResults = true)
     {
-        parameters.NodeResults = results;
+        if (attachNodeResults) parameters.NodeResults = results;
         parameters.ResolvedInputImage = ResolveInputImage(parameters, results, parameters.ResolvedInputImage);
         parameters.ResolvedPositionCorrection = null;
         var correction = PositionCorrectionResolution.Capture(parameters,

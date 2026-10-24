@@ -112,7 +112,8 @@ public class ScriptS3LifecycleTests
         Assert.False(((TestImage)result.OutputValues["a"]!).Disposed);
         Assert.False(input.Disposed);
         Assert.Equal(aliasInput ? 2 : 3, tracker.Clones);
-        var monitoredInput = (TestImage)p.ResolvedInputValues["img"]!;
+        Assert.Null(p.ResolvedInputValues);
+        var monitoredInput = (TestImage)result.ResolvedInputValues["img"]!;
         Assert.NotSame(input, monitoredInput);
         Assert.False(monitoredInput.Disposed);
         var monitorLease = result.Resources!.Retain();

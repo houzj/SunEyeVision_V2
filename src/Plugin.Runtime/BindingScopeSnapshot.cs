@@ -52,10 +52,18 @@ public sealed class BindingScopeSnapshot:IBindingCompilationScope
 public sealed class BindingRunSnapshot:IBindingRunSnapshot
 {
     private readonly Dictionary<BindingNodeId,BindingNodeResult> _results;
-    public BindingRunSnapshot(BindingNodeId consumer,RunIdentity identity,long documentRevision,IEnumerable<BindingNodeResult> results)
-    {Consumer=consumer;ConsumerIdentity=identity;DocumentRevision=documentRevision;_results=results.ToDictionary(result=>result.Node);}
+    private readonly Dictionary<BindingNodeId,RunIdentity> _expected;
+    public BindingRunSnapshot(BindingNodeId consumer,RunIdentity identity,long documentRevision,IEnumerable<BindingNodeResult> results,
+        IReadOnlyDictionary<BindingNodeId,RunIdentity> expectedSourceIdentities)
+    {
+        Consumer=consumer;ConsumerIdentity=identity;DocumentRevision=documentRevision;
+        _results=results.ToDictionary(result=>result.Node);
+        // Expected identities come from admission, independently of the result candidates being validated.
+        _expected=expectedSourceIdentities.ToDictionary(pair=>pair.Key,pair=>pair.Value);
+    }
     public BindingNodeId Consumer {get;}
     public RunIdentity ConsumerIdentity {get;}
     public long DocumentRevision {get;}
+    public bool TryGetExpectedSourceIdentity(BindingNodeId node,out RunIdentity identity)=>_expected.TryGetValue(node,out identity);
     public bool TryGetResult(BindingNodeId node,out BindingNodeResult result)=>_results.TryGetValue(node,out result!);
 }

@@ -53,6 +53,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     [JsonDerivedType(typeof(GenericToolParameters), "Generic")]
     public abstract class ToolParameters : ObservableObject
     {
+        /// <summary>Create the invocation-owned configuration copy before runtime fields are applied.</summary>
+        public virtual ToolParameters CreateExecutionSnapshot() => ToolExecutionPreparation.CopyParameters(this);
         /// <summary>Persisted inputs invalidated by a committed upstream contract change.</summary>
         public Dictionary<string, string> RebindingRequired { get; set; } = new();
         /// <summary>References retained because their formal contract cannot yet be proved. Not executable.</summary>

@@ -43,14 +43,23 @@ public sealed class ToolExecutionOwner
     }
     internal void CompleteCallbacks(ToolExecutionIdentity identity)
     {
-        lock (_gate) identity.CallbacksOpen = false;
+        lock (_gate) identity.CloseCallbacks();
+    }
+    internal void RefineContract(ToolExecutionIdentity identity, string contractIdentity)
+    {
+        lock (_gate)
+        {
+            if (!Publish(identity, null)) throw new InvalidOperationException("运行身份已失效，不能修改合同元数据。");
+            identity.SetContractIdentity(contractIdentity);
+        }
     }
 
     public IDisposable EnterRun(ToolExecutionIdentity identity)
     {
         lock (_gate)
         {
-            if (!Publish(identity, null)) throw new InvalidOperationException("脚本运行身份已失效。");
+            if (!identity.CallbacksOpen || !Publish(identity, null) || !identity.TryStartExecution())
+                throw new InvalidOperationException("运行身份已失效、已执行或回调已关闭。");
             _activeRuns++;
             return new RunLease(this);
         }
@@ -92,24 +101,48 @@ public sealed class ToolExecutionOwner
 
 public sealed class ToolExecutionIdentity
 {
+    private sealed class AttemptState(string contractIdentity)
+    {
+        internal string ContractIdentity = contractIdentity;
+        internal bool CallbacksOpen = true;
+        internal bool ExecutionStarted;
+    }
+    private readonly AttemptState _attempt;
     internal ToolExecutionIdentity(ToolExecutionOwner owner, string nodeId, Guid generation, Guid runId, Guid requestId,
         string contractIdentity, CancellationToken cancellationToken, Func<bool>? admission, Guid rootRunId = default)
-    { Owner = owner; NodeId = nodeId; NodeGeneration = generation; RunId = runId; RootRunId = rootRunId == Guid.Empty ? runId : rootRunId; RequestId = requestId; ContractIdentity = contractIdentity; CancellationToken = cancellationToken; Admission = admission; }
+        : this(owner,nodeId,generation,runId,requestId,cancellationToken,admission,rootRunId,new AttemptState(contractIdentity)) { }
+    private ToolExecutionIdentity(ToolExecutionOwner owner, string nodeId, Guid generation, Guid runId, Guid requestId,
+        CancellationToken cancellationToken, Func<bool>? admission, Guid rootRunId, AttemptState attempt)
+    { Owner = owner; NodeId = nodeId; NodeGeneration = generation; RunId = runId; RootRunId = rootRunId == Guid.Empty ? runId : rootRunId; RequestId = requestId; CancellationToken = cancellationToken; Admission = admission; _attempt=attempt; }
     public ToolExecutionOwner Owner { get; }
     public string NodeId { get; }
     public Guid NodeGeneration { get; }
     public Guid RunId { get; }
     public Guid RootRunId { get; }
     public Guid RequestId { get; }
-    public string ContractIdentity { get; }
+    public string ContractIdentity => Volatile.Read(ref _attempt.ContractIdentity);
     public CancellationToken CancellationToken { get; }
     internal Func<bool>? Admission { get; }
-    internal bool CallbacksOpen = true;
+    internal bool CallbacksOpen => _attempt.CallbacksOpen;
+    internal bool HasStartedExecution => _attempt.ExecutionStarted;
+    internal bool TryStartExecution()
+    { if(_attempt.ExecutionStarted)return false;_attempt.ExecutionStarted=true;return true; }
+    internal void CloseCallbacks() => _attempt.CallbacksOpen=false;
+    internal void SetContractIdentity(string value) => Volatile.Write(ref _attempt.ContractIdentity,value);
     public string Domain => Owner.Domain(NodeId, NodeGeneration);
     public bool IsCurrent => Owner.Publish(this, null);
     public bool TryPublish(Action publish) => Owner.Publish(this, publish);
     public bool TryInvokeCallback(Action callback) => Owner.Publish(this, callback, callback: true);
     public void CompleteCallbacks() => Owner.CompleteCallbacks(this);
     public ToolExecutionIdentity WithContractIdentity(string contractIdentity)
-        => new(Owner, NodeId, NodeGeneration, RunId, RequestId, contractIdentity, CancellationToken, Admission, RootRunId);
+    {
+        Owner.RefineContract(this,contractIdentity);
+        return new(Owner, NodeId, NodeGeneration, RunId, RequestId, CancellationToken, Admission, RootRunId, _attempt);
+    }
+    /// <summary>Project the existing admission identity without parsing the composite SDK node key or minting another request.</summary>
+    public SunEyeVision.Plugin.Contracts.RunIdentity ToInvocationIdentity(string localNodeId)
+    {
+        if (string.IsNullOrWhiteSpace(localNodeId)) throw new ArgumentException("A scope-local node identity is required.", nameof(localNodeId));
+        return new(Owner.Id, RootRunId, RunId, localNodeId, RequestId);
+    }
 }

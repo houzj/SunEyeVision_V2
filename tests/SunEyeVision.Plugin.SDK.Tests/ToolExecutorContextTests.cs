@@ -80,7 +80,7 @@ public class ToolExecutorContextTests
     }
 
     [Fact]
-    public void Run_WhenToolThrowsOperationCanceled_ReturnsCancelledInsteadOfFailed()
+    public void Run_WhenToolThrowsUnrequestedOperationCanceled_ReturnsFailed()
     {
         var executor = new ToolExecutor(new ParameterResolver());
 
@@ -89,9 +89,9 @@ public class ToolExecutorContextTests
             new TestParameters());
 
         Assert.False(result.IsSuccess);
-        Assert.True(result.IsCancelled);
-        Assert.Equal(ExecutionStatus.Cancelled, result.Status);
-        Assert.Equal("执行被取消", result.ErrorMessage);
+        Assert.False(result.IsCancelled);
+        Assert.Equal(ExecutionStatus.Failed, result.Status);
+        Assert.NotEmpty(result.ErrorMessage);
     }
 
     [Fact]
@@ -134,6 +134,7 @@ public class ToolExecutorContextTests
 
     private sealed class JudgedParameters : ToolParameters
     {
+        [System.Text.Json.Serialization.JsonObjectCreationHandling(System.Text.Json.Serialization.JsonObjectCreationHandling.Populate)]
         public ResultPresentationConfig ResultPresentation { get; } = new();
     }
 

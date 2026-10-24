@@ -26,7 +26,8 @@ public sealed record ToolOutcome<T>(bool Success, T? Output, BusinessJudgment Ju
     public static ToolOutcome<T> Completed(T output, BusinessJudgment judgment=BusinessJudgment.NotEvaluated) => new(true,output,judgment,Array.Empty<Diagnostic>());
     public static ToolOutcome<T> Failed(string code,string message) => new(false,null,BusinessJudgment.NotEvaluated,new[]{new Diagnostic(code,message)});
 }
-public readonly record struct RunIdentity(Guid DocumentSessionId, Guid RunId, Guid ScopeId, string NodeId, long Sequence);
+/// <summary>RequestId is the original admission Guid, never a derived counter or hash.</summary>
+public readonly record struct RunIdentity(Guid DocumentSessionId, Guid RunId, Guid ScopeId, string NodeId, Guid RequestId);
 public sealed record ToolCapabilities(IReadOnlyList<string> ResourceKeys)
 {
     public static ToolCapabilities None { get; } = new(Array.Empty<string>());

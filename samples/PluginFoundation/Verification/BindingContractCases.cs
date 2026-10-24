@@ -14,6 +14,9 @@ internal static partial class Program
             Require(restored.NodeId=="source"&&restored.PortId=="stable-field"&&restored.ScopeId=="flow"&&restored.Type==type&&restored.MemberFieldPath.Single()=="p","declaration/identity drift");
             Require(restored.Selection is BindingSelection.AtField at && at.Reference.PortId=="stable-index"&&at.Reference.Type==TypeRef.ScalarOf(ScalarKind.Int64),"dynamic index intent lost");
             Throws<System.Text.Json.JsonException>(()=>BindingReferenceSerializer.Deserialize(json.Replace("\"ContractMajor\":4","\"ContractMajor\":3")));
+            var minor=System.Text.Json.Nodes.JsonNode.Parse(json)!.AsObject();minor["ContractMinor"]=FoundationContract.Minor+1;
+            Throws<System.Text.Json.JsonException>(()=>BindingReferenceSerializer.Deserialize(minor.ToJsonString()));
+            minor.Remove("ContractMinor");Throws<System.Text.Json.JsonException>(()=>BindingReferenceSerializer.Deserialize(minor.ToJsonString()));
             Require(!json.Contains("$type")&&!json.Contains("RunId"),"runtime/CLR identity persisted as declaration");
         }));
         await Case("FT-A01-runtime-closure","Pure Runtime has no WPF, SDK, Workflow or native dependency",()=>Sync(()=>{
@@ -57,6 +60,7 @@ internal static partial class Program
             var fixture=new BindingFixture(TypeRef.SequenceOf(DataType.Number));var resolver=new ParameterBindingService();
             var indexNode=new BindingNodeId("flow","index");var indexType=TypeRef.ScalarOf(ScalarKind.Int64);
             var indexSource=new BindingSource(indexNode,fixture.ExecutionScope,new ToolSchema(Array.Empty<Port>(),new[]{new Port("index",indexType)}),1);
+            fixture.Admit(indexSource);
             var scope=fixture.WithSources(new[]{fixture.Source,indexSource},new[]{fixture.Source.Node,indexNode});
             var reference=new OutputReference("source","value",fixture.Type,selection:new BindingSelection.AtField(new("index","index",indexType)));
             var compilation=resolver.CompileBinding(reference,new Port("target",DataType.Number),scope);
@@ -72,7 +76,7 @@ internal static partial class Program
             Require(resolver.CompileBinding(reference,new("target",DataType.Number),hidden).Compatibility==BindingCompatibility.Unresolved,"invisible index source accepted");
             Require(!resolver.ResolveBinding(compilation.Plan!,fixture.Snapshot(new[]{10d,20d})).Success,"missing index reused an older result");
             var validIndex=fixture.Result(indexSource,new Dictionary<string,object?>{{"index",1L}});
-            foreach(var invalidIndex in new[]{validIndex with{Success=false},validIndex with{Identity=validIndex.Identity with{RunId=Guid.NewGuid()}},validIndex with{Identity=validIndex.Identity with{ScopeId=Guid.NewGuid()}}})
+            foreach(var invalidIndex in new[]{validIndex with{Success=false},validIndex with{Identity=validIndex.Identity with{RunId=Guid.NewGuid()}},validIndex with{Identity=validIndex.Identity with{ScopeId=Guid.NewGuid()}},validIndex with{Identity=validIndex.Identity with{RequestId=Guid.NewGuid()}}})
                 Require(!resolver.ResolveBinding(compilation.Plan!,fixture.Snapshot(new[]{10d,20d},invalidIndex)).Success,"invalid index result reused");
             var cyclic=fixture.WithSources(new[]{fixture.Source,indexSource},new[]{fixture.Source.Node,indexNode},new[]{KeyValuePair.Create(indexNode,(IReadOnlyList<BindingNodeId>)new[]{fixture.Consumer})});
             Require(resolver.CompileBinding(reference,new("target",DataType.Number),cyclic).Diagnostic?.Code=="cycle","index cycle ignored");
@@ -91,15 +95,21 @@ internal static partial class Program
         await Case("FT-G03-plan-invalidation","Compiled plans reject changed schema/document and failed or stale source results",()=>Sync(()=>{
             var fixture=new BindingFixture(DataType.Number);var resolver=new ParameterBindingService();var plan=resolver.CompileBinding(fixture.Reference,new("target",DataType.Number),fixture.Scope).Plan!;
             var original=fixture.Result(fixture.Source,new Dictionary<string,object?>{{"value",1d}});
-            foreach(var invalid in new[]{original with{Success=false},original with{SchemaRevision=2},original with{SchemaFingerprint="changed"},original with{Identity=original.Identity with{RunId=Guid.NewGuid()}},original with{Identity=original.Identity with{ScopeId=Guid.NewGuid()}},original with{Identity=original.Identity with{NodeId="different"}}})
+            foreach(var invalid in new[]{original with{Success=false},original with{SchemaRevision=2},original with{SchemaFingerprint="changed"},original with{Identity=original.Identity with{RunId=Guid.NewGuid()}},original with{Identity=original.Identity with{ScopeId=Guid.NewGuid()}},original with{Identity=original.Identity with{NodeId="different"}},original with{Identity=original.Identity with{RequestId=Guid.NewGuid()}}})
                 Require(!resolver.ResolveBinding(plan,fixture.SnapshotWith(invalid)).Success,"invalid result reused");
-            var changed=new BindingRunSnapshot(fixture.Consumer,fixture.Identity,5,new[]{original});Require(!resolver.ResolveBinding(plan,changed).Success,"document revision ignored");
-            var reopened=new BindingRunSnapshot(fixture.Consumer,fixture.Identity with{DocumentSessionId=Guid.NewGuid()},4,new[]{original});Require(!resolver.ResolveBinding(plan,reopened).Success,"document session ignored");
+            var changed=new BindingRunSnapshot(fixture.Consumer,fixture.Identity,5,new[]{original},fixture.Expected);Require(!resolver.ResolveBinding(plan,changed).Success,"document revision ignored");
+            var reopened=new BindingRunSnapshot(fixture.Consumer,fixture.Identity with{DocumentSessionId=Guid.NewGuid()},4,new[]{original},fixture.Expected);Require(!resolver.ResolveBinding(plan,reopened).Success,"document session ignored");
+            Require(original.Identity.RequestId!=fixture.Identity.RequestId&&resolver.ResolveBinding(plan,fixture.SnapshotWith(original)).Success,"different legitimate source/consumer request IDs rejected");
+            var frozen=fixture.SnapshotWith(original);fixture.Admit(fixture.Source);
+            Require(!resolver.ResolveBinding(plan,fixture.SnapshotWith(original)).Success,"new admitted request accepted old source result");
+            Require(resolver.ResolveBinding(plan,fixture.Snapshot(9d)).Value is 9d,"new expected source request rejected");
+            Require(resolver.ResolveBinding(plan,frozen).Value is 1d,"frozen snapshot chased a later source admission");
         }));
         await Case("FT-A02-member-projection","Stable member identities project records without last-value type inference",()=>Sync(()=>{
             var record=TypeRef.RecordOf("measurement",new[]{new Port("distance",DataType.Number)});var fixture=new BindingFixture(record);var resolver=new ParameterBindingService();
             string[] path={"distance"};var reference=new OutputReference("source","value",record,path);path[0]="renamed";
             var compilation=resolver.CompileBinding(reference,new("target",DataType.Number),fixture.Scope);
+            Require(compilation.Compatibility==BindingCompatibility.Compatible,"required non-nullable member projection was incorrectly conditional");
             Require(resolver.ResolveBinding(compilation.Plan!,fixture.Snapshot(new Dictionary<string,object?>{{"distance",5d}})).Value is 5d,"member identity changed");
             Require(resolver.CompileBinding(new("source","value",record,new[]{"missing"}),new("target",DataType.Number),fixture.Scope).Compatibility==BindingCompatibility.Unresolved,"missing member silently rebound");
             var records=new BindingFixture(TypeRef.SequenceOf(record));
@@ -109,6 +119,7 @@ internal static partial class Program
             var nullableRecord=TypeRef.RecordOf("nullable-record",new[]{new Port("v",DataType.Number,false,true)});
             var nullableRows=new BindingFixture(TypeRef.SequenceOf(nullableRecord));
             var nullableProjection=resolver.CompileBinding(new("source","value",nullableRows.Type,new[]{"v"}),new("target",TypeRef.SequenceOf(DataType.Number)),nullableRows.Scope).Plan!;
+            Require(resolver.CompileBinding(new("source","value",nullableRows.Type,new[]{"v"}),new("target",TypeRef.SequenceOf(DataType.Number)),nullableRows.Scope).Compatibility==BindingCompatibility.Conditional,"optional nullable member was incorrectly unconditional");
             foreach(var fields in new[]{new Dictionary<string,object?>{{"v",null}},new Dictionary<string,object?>()})
             {
                 var result=resolver.ResolveBinding(nullableProjection,nullableRows.Snapshot(new[]{fields}));
@@ -124,19 +135,23 @@ internal static partial class Program
 
     private sealed class BindingFixture
     {
+        private readonly Dictionary<BindingNodeId,RunIdentity> _expected=new();
+        public IReadOnlyDictionary<BindingNodeId,RunIdentity> Expected=>_expected;
         public BindingFixture(TypeRef type)
         {
-            Type=type;Consumer=new("flow","consumer");ExecutionScope=Guid.NewGuid();Identity=new(Guid.NewGuid(),Guid.NewGuid(),ExecutionScope,"consumer",1);
+            Type=type;Consumer=new("flow","consumer");ExecutionScope=Guid.NewGuid();Identity=new(Guid.NewGuid(),Guid.NewGuid(),ExecutionScope,"consumer",Guid.NewGuid());
             Source=new(new("flow","source"),ExecutionScope,new ToolSchema(Array.Empty<Port>(),new[]{new Port("value",type)}),1);
+            Admit(Source);
             Reference=new("source","value",type);Scope=WithSources(new[]{Source},new[]{Source.Node});
         }
         public TypeRef Type {get;} public BindingNodeId Consumer {get;} public Guid ExecutionScope {get;} public RunIdentity Identity {get;}
         public BindingSource Source {get;} public OutputReference Reference {get;} public BindingScopeSnapshot Scope {get;}
+        public void Admit(BindingSource source)=>_expected[source.Node]=Identity with{NodeId=source.Node.NodeId,ScopeId=source.ExecutionScopeId,RequestId=Guid.NewGuid()};
         public BindingScopeSnapshot WithSources(IEnumerable<BindingSource> sources,IEnumerable<BindingNodeId> visible,IEnumerable<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>? graph=null)
             =>new(Consumer,Identity.DocumentSessionId,4,sources,visible,graph??Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>());
         public BindingNodeResult Result(BindingSource source,IReadOnlyDictionary<string,object?> values)
-            =>new(source.Node,Identity with{NodeId=source.Node.NodeId},source.SchemaRevision,source.Schema.Fingerprint,true,new(source.Schema.Outputs,values));
+            =>new(source.Node,_expected[source.Node],source.SchemaRevision,source.Schema.Fingerprint,true,new(source.Schema.Outputs,values));
         public BindingRunSnapshot Snapshot(object value,params BindingNodeResult[] extra)=>SnapshotWith(new[]{Result(Source,new Dictionary<string,object?>{{"value",value}})}.Concat(extra).ToArray());
-        public BindingRunSnapshot SnapshotWith(params BindingNodeResult[] results)=>new(Consumer,Identity,4,results);
+        public BindingRunSnapshot SnapshotWith(params BindingNodeResult[] results)=>new(Consumer,Identity,4,results,_expected);
     }
 }

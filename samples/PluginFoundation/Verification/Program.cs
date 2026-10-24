@@ -13,7 +13,7 @@ internal static partial class Program
 {
     private static readonly List<object> Results=new();private static int Failures,Blocked;
     private static readonly IReadOnlyDictionary<string,object?> Empty=new Dictionary<string,object?>();
-    static RunIdentity Id()=>new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"node",1);
+    static RunIdentity Id()=>new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"node",Guid.NewGuid());
     static void Require(bool condition,string message){if(!condition)throw new Exception(message);}
     static void Throws<T>(Action action) where T:Exception {try{action();}catch(T){return;}throw new Exception("Expected "+typeof(T).Name);}
     static async Task Case(string id,string name,Func<Task> run)
@@ -26,6 +26,7 @@ internal static partial class Program
     static async Task<int> Main(string[] args)
     {
         string report=args.Length>0?args[0]:"plugin-report.json";
+        await StructuredProjectionCases();
         await StructuredCases();
         await BindingCases();
         await Case("FT-A02-count", "Declared sequence count rejects zero/many without inferring schema",()=>Sync(()=>{

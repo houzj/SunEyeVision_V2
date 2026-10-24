@@ -18,8 +18,16 @@ namespace SunEyeVision.Tool.Script.Models
     /// 脚本工具参数 — 包含脚本代码、DLL 引用目录、输入/输出变量定义
     /// </summary>
     [JsonDerivedType(typeof(ScriptParameters), "Script")]
-    public class ScriptParameters : ToolParameters, IOutputContractProvider, INotifyOutputContractChanged
+    public class ScriptParameters : ToolParameters, IOutputContractProvider, INotifyOutputContractChanged, SunEyeVision.Plugin.SDK.Core.IExecutionAdmissionProvider
     {
+        public override ToolParameters CreateExecutionSnapshot()
+        {
+            var copy = (ScriptParameters)ToolExecutionPreparation.CopyParameters(this);
+            copy.PreparedCompilation = PreparedCompilation;
+            copy.ExecutionAdmission = ExecutionAdmission;
+            copy.IsDebugMode = IsDebugMode;
+            return copy;
+        }
         /// <summary>
         /// 最简代码模板 — Init + Process 空壳骨架，无示例注释，仅含 null 检查和输出传递。
         /// 默认新建工具时显示的代码。如果代码不小心被删除，可通过"复位最简"按钮恢复到此模板。
@@ -280,6 +288,8 @@ namespace SunEyeVision.Tool.Script.Models
         private ScriptIoContractSnapshot? _publishedIo;
         [JsonIgnore] internal SunEyeVision.Tool.Script.ScriptEngine.ScriptCompiler.CompileResult? PreparedCompilation { get; set; }
         [JsonIgnore] internal Func<bool>? ExecutionAdmission { get; set; }
+        Func<bool>? SunEyeVision.Plugin.SDK.Core.IExecutionAdmissionProvider.ExecutionAdmission => ExecutionAdmission;
+        SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? SunEyeVision.Plugin.SDK.Core.IExecutionAdmissionProvider.RuntimeExecutionOwner => RuntimeOwner;
         [JsonIgnore] internal SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner RuntimeOwner { get; } = new();
         [JsonIgnore] public string IoValidationError { get; private set; } = "";
         [JsonIgnore] public string IoIdentity => _publishedIo?.Identity ?? "";

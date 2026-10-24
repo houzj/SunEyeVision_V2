@@ -85,33 +85,58 @@
     },
     {
       "id": "FT-A01",
-      "status": "in-progress-approved-dependency",
+      "status": "in-progress-limited-projections-merged-admission-wip",
       "baseline": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
       "approval": "docs/collaboration/TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json",
       "scope": "沿原48项范围：统一类型/数量/纯数据声明，继续深冻结、几何及真实调用",
-      "verification": "内部首切片29PASS，不等完整执行合同/实际工具接入/整包PASS",
-      "receipt": "artifacts/validation/tool-framework-contract/first-dependency/receipt.json",
-      "next": "继续批准依赖，不停交接；程序集管理保持暂停"
+      "verification": "97f Engine固定独验通过；F01 47/47独立开发、M03 11/11+独测10组180断言；新中央admission04开发23/23，非新固定全量通过",
+      "receipt": "artifacts/validation/tool-framework-contract/structured-dependency-02/receipt.json",
+      "next": "完成Script实际准入/配置隔离固定包并交独测；生产Workflow expected身份与BindingPlan.Resolve/checked物化、树原范围接线；B01版本片由协调独立实施；最终统一Release与集中人工"
     },
     {
       "id": "FT-A02",
-      "status": "in-progress-approved-dependency",
+      "status": "in-progress-limited-projections-merged-admission-wip",
       "baseline": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
       "approval": "docs/collaboration/TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json",
       "scope": "沿原48项范围：统一类型/数量/纯数据声明，继续深冻结、几何及真实调用",
-      "verification": "内部首切片29PASS，不等完整执行合同/实际工具接入/整包PASS",
-      "receipt": "artifacts/validation/tool-framework-contract/first-dependency/receipt.json",
-      "next": "继续批准依赖，不停交接；程序集管理保持暂停"
+      "verification": "97f Engine固定独验通过；F01 47/47独立开发、M03 11/11+独测10组180断言；新中央admission04开发23/23，非新固定全量通过",
+      "receipt": "artifacts/validation/tool-framework-contract/structured-dependency-02/receipt.json",
+      "next": "完成Script实际准入/配置隔离固定包并交独测；生产Workflow expected身份与BindingPlan.Resolve/checked物化、树原范围接线；B01版本片由协调独立实施；最终统一Release与集中人工"
     },
     {
       "id": "FT-M03",
-      "status": "in-progress-approved-dependency",
+      "status": "in-progress-limited-projections-merged-admission-wip",
       "baseline": "6c2def23ce062d2a7802ed8edddd40de113ccfa3",
       "approval": "docs/collaboration/TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json",
       "scope": "沿原48项范围：统一类型/数量/纯数据声明，继续深冻结、几何及真实调用",
-      "verification": "内部首切片29PASS，不等完整执行合同/实际工具接入/整包PASS",
-      "receipt": "artifacts/validation/tool-framework-contract/first-dependency/receipt.json",
-      "next": "继续批准依赖，不停交接；程序集管理保持暂停"
+      "verification": "97f Engine固定独验通过；F01 47/47独立开发、M03 11/11+独测10组180断言；新中央admission04开发23/23，非新固定全量通过",
+      "receipt": "artifacts/validation/tool-framework-contract/structured-dependency-02/receipt.json",
+      "next": "完成Script实际准入/配置隔离固定包并交独测；生产Workflow expected身份与BindingPlan.Resolve/checked物化、树原范围接线；B01版本片由协调独立实施；最终统一Release与集中人工"
+    },
+    {
+      "id": "FT-F02",
+      "status": "in-progress-limited-projections-merged-admission-wip",
+      "approval": "docs/collaboration/TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json",
+      "scope": "原绑定选择/数量/可见域/依赖/版本失效；同一Runtime实现经SDK入口委托",
+      "verification": "97f Engine固定独验通过；F01 47/47独立开发、M03 11/11+独测10组180断言；新中央admission04开发23/23，非新固定全量通过",
+      "next": "完成Script实际准入/配置隔离固定包并交独测；生产Workflow expected身份与BindingPlan.Resolve/checked物化、树原范围接线；B01版本片由协调独立实施；最终统一Release与集中人工"
+    },
+    {
+      "id": "FT-G02",
+      "status": "in-progress-limited-projections-merged-admission-wip",
+      "approval": "docs/collaboration/TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json",
+      "scope": "原绑定选择/数量/可见域/依赖/版本失效；同一Runtime实现经SDK入口委托",
+      "verification": "97f Engine固定独验通过；F01 47/47独立开发、M03 11/11+独测10组180断言；新中央admission04开发23/23，非新固定全量通过",
+      "next": "完成Script实际准入/配置隔离固定包并交独测；生产Workflow expected身份与BindingPlan.Resolve/checked物化、树原范围接线；B01版本片由协调独立实施；最终统一Release与集中人工"
+    },
+    {
+      "id": "FT-G03",
+      "status": "in-progress-limited-projections-merged-admission-wip",
+      "approval": "docs/collaboration/TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json",
+      "scope": "原绑定选择/数量/可见域/依赖/版本失效；同一Runtime实现经SDK入口委托",
+      "verification": "97f Engine固定独验通过；F01 47/47独立开发、M03 11/11+独测10组180断言；新中央admission04开发23/23，非新固定全量通过",
+      "next": "完成Script实际准入/配置隔离固定包并交独测；生产Workflow expected身份与BindingPlan.Resolve/checked物化、树原范围接线；B01版本片由协调独立实施；最终统一Release与集中人工"
     }
-  ]
+  ],
+  "latestImplementationNote": "2026-10-24 HEAD71d1dcc0；新binding-attempt-followup-01未冻结，旧97f包immutable。原产品S3 ALC未闭环且载体改造不在本批准范围，不阻批准48项。"
 }

@@ -16,6 +16,11 @@ internal sealed class ScriptOutputSnapshot : IDisposable
     private readonly Dictionary<object, object> _copies = new(ReferenceEqualityComparer.Instance);
     private readonly List<IDisposable> _owned = new();
     private bool _disposed;
+    internal void Own(IDisposable resource)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        _owned.Add(resource ?? throw new ArgumentNullException(nameof(resource)));
+    }
 
     internal object? Copy(object? value, Type declaredType)
     {

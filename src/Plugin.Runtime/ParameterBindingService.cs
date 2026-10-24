@@ -31,7 +31,7 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             if(countState==BindingCompatibility.Incompatible)throw new BindingFault("count","Declared count ranges do not intersect.");
             conditional|=countState==BindingCompatibility.Conditional;
             var root=source.Source.Schema.Outputs.Single(p=>p.Id==reference.PortId);
-            conditional|=root.Nullable||!root.Required||reference.MemberFieldPath.Count>0;
+            conditional|=root.Nullable||!root.Required;
             return new(conditional?BindingCompatibility.Conditional:BindingCompatibility.Compatible,
                 new BindingPlan(scope.Consumer,scope.DocumentSessionId,scope.DocumentRevision,source,target,conversion,dependencies),null);
         }
@@ -66,22 +66,26 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             else throw new BindingFault("selection","Unknown selection operation.");
             selected=selected.Element!;
         }
-        foreach(var member in reference.MemberFieldPath)selected=ProjectType(selected,member);
+        foreach(var member in reference.MemberFieldPath)selected=ProjectType(selected,member,ref conditional);
         return new(reference,source,selected,index,conditional);
     }
 
-    private static TypeRef ProjectType(TypeRef type,string field)
+    private static TypeRef ProjectType(TypeRef type,string field,ref bool conditional)
     {
-        if(type.Shape==ValueShape.Sequence)return TypeRef.SequenceOf(ProjectType(type.Element!,field),type.Count);
+        if(type.Shape==ValueShape.Sequence)return TypeRef.SequenceOf(ProjectType(type.Element!,field,ref conditional),type.Count);
         if(type.Shape!=ValueShape.Record)throw new BindingFault("member-shape","Member projection requires declared record fields.");
-        return type.Fields.SingleOrDefault(p=>p.Id==field)?.Type
+        var member=type.Fields.SingleOrDefault(p=>p.Id==field)
             ??throw new BindingFault("missing-member","Declared member field no longer exists.",true);
+        conditional|=!member.Required||member.Nullable;
+        return member.Type;
     }
 
     public BindingResolution ResolveBinding(BindingPlan plan,IBindingRunSnapshot snapshot)
     {
         try
         {
+            if(snapshot.ConsumerIdentity.RequestId==Guid.Empty)
+                throw new BindingFault("consumer-unplanned","Consumer has no admitted request identity.");
             if(snapshot.Consumer!=plan.Consumer || snapshot.DocumentRevision!=plan.DocumentRevision || snapshot.ConsumerIdentity.DocumentSessionId!=plan.DocumentSessionId)
                 throw new BindingFault("document-changed","Binding plan belongs to another consumer or document revision.");
             var source=ReadReference(plan.Source,snapshot);
@@ -122,10 +126,12 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
 
     private static object? ReadReference(BindingReferencePlan plan,IBindingRunSnapshot snapshot)
     {
+        if(!snapshot.TryGetExpectedSourceIdentity(plan.Source.Node,out var expected) || expected.RequestId==Guid.Empty)
+            throw new BindingFault("source-unplanned","Source has no admitted request in this frozen dependency snapshot.");
         if(!snapshot.TryGetResult(plan.Source.Node,out var result) || !result.Success)
             throw new BindingFault("source-unavailable","Source did not produce a successful result in this invocation.");
         var identity=snapshot.ConsumerIdentity;
-        if(result.Node!=plan.Source.Node || result.Identity.NodeId!=plan.Source.Node.NodeId || result.Identity.ScopeId!=plan.Source.ExecutionScopeId ||
+        if(result.Identity!=expected || result.Node!=plan.Source.Node || result.Identity.NodeId!=plan.Source.Node.NodeId || result.Identity.ScopeId!=plan.Source.ExecutionScopeId ||
             result.Identity.DocumentSessionId!=identity.DocumentSessionId || result.Identity.RunId!=identity.RunId)
             throw new BindingFault("run-mismatch","Source result belongs to another node, document session or run.");
         if(result.SchemaRevision!=plan.Source.SchemaRevision || result.SchemaFingerprint!=plan.Source.Schema.Fingerprint)

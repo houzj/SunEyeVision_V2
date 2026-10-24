@@ -1,3 +1,43 @@
+## 2026-10-24 本轮有限集成收件前验证完成
+
+- Foundation47/47、中央admission04 23/23、实际Script admission02 16/16均通过，限定SDK2.1/Foundation4.0诊断包封存中；继续原生产接线，非整包PASS。Script监视改实际结果入口及租约，保原配置不回写，原失败记录不抹。
+
+## 2026-10-24 新准入副本/重入与取消开发23PASS；F01/M03有限片合入，继续实际Script与生产接线
+
+- HEAD71d1dcc0：F01源eb308有限合入c96ea153（独立47/47含新增4）；M03源849d0523有限三文件合入71d1dcc0，主树协作记录保留未覆盖。M03独测已实际成熟11PASS及真实UI helper自有10组180断言PASS，最终108文件post/receipt正收口；不计生产发布/七交互/全量Release。F01全量string.Join只作有限只读投影，不关闭正式树按需/虚拟化及性能。
+- 原97f真实Engine5固定独验及5组28断言通过，最终acceptance SHA7630AC709EE2585E7C9994AD3E6B51848203CE8BDA127AE85351DF7EAF7609F5；UI34/Script11已封存，不重复跑。旧binding-b2-regression目录保持immutable。
+- 新主树WIP：原Guid RequestId投影、expected-source身份独立冻结、required成员/Conditional守卫/精确major+minor；Foundation43开发通过。中央Claim CAS成功才获得输入释放权和创建执行参数副本，原ToolExecutionPreparation.CopyParameters唯一JSON复制；Script保PreparedCompilation/Admission/IsDebugMode并在copy前保原RuntimeOwner，禁止同request二次body。共享callback gate别名关后不可重开，最终正常publication仍独立。
+- 新owned root binding-attempt-followup-01：admission01实际12=10PASS2FAIL保留；admission03实际21=20PASS1FAIL保留；admission04实际23/23PASS0skip。旧泛OCE取消期望按主控改为仅本请求已取消且fault同token才Cancelled，入口预取消与工具体sync/async真取消/foreign/default齐；非空图像/AvailableDataSource/绑定值成功失败取消均核原配置、lease1/ActiveRuns0。NG夹具get-only显式Populate后通过，只代表声明可序列化fixture，不冒通用get-only复制支持，真实代表工具配置仍需验证。
+- Script真实闭包build06成功，HostDebugRoot已PEReader实读为新专用build/app，实际plugin/SDK/managed及native前置SHA确认；新ScriptAdmission+S3Lifecycle第二轮16/16PASS，第一轮14/16原TRX保留、不重复ALC窗口或成本。脚本05缺System.IO编译失败原日志保留，修后才运行。
+- 协调已接管B01/B03独立97f版本合同片，人类有限授权ToolContract3.0/同源attribute/现拒绝门，不重复编辑其三文件。主树下一为实际Script收件、生产Workflow准入expected+同BindingPlan.Resolve与checked物化、树选择/文档/窗口有效门等原48依赖；尚非整包完成。
+- 主控口径更正：现整图JSON原型不采用；原产品S3 ALC未闭环、载体改造不在本批准实施范围。不得把程序集等待当原48/树/代表工具/统一Release的阻塞，不扩载体/共享buffer/loader；最终人工与VS项目同一Release集中一次列出。
+
+## 2026-10-24 97f1326c真实Engine5/UI34/Script11收件已送独测，继续后继
+
+- 有意义限定提交97f1326c（完整SHA见固定commit-binding），30必要文件；自有gc.auto=0未触发packing。baseline6bfc；实际产品/测试源码与新提交逐文本核一致仅换行归一，构建时HEAD仍6bfc+实际dirty源，不伪称DLL内stamp为97。
+- 原UI16fail→5fail→34PASS；共用SDK变更后Script新bin11PASS；实际WorkflowExecutionEngine5PASS。新engine-delivery-receipt.json SHA A2684883E8A3D66406D9D045F35C444CE1001F38CDDDB0C5DBEE347F1CDA8D26，source-input E2C29958A4CC4DB004C6EDAEB661E2DE69DE4782E36A9B844576AD45A95276D8，binary D4AE493789FE33F2C03146DCB5CB2F78B73F8C257E53B87F0F2C2E32D3AAE526。
+- 固定root artifacts/validation/tool-framework-contract/binding-b2-regression 已直发协调/独测；完整source与app/UItest/Scripttest bin/原TRX日志/精确filters/props/config齐。Script编译期HostDebugRoot已PEReader实读为本专用build\app，冻结后不再构建写入；独测可owned testbin但插件从该manifest核定固定原root加载，非shared Release。后继一律新PackagingRoot。
+- 此包仍SDK2.1/Foundation4.0诊断子集，不是最终生产3.0。明确pending Guid RequestId/冻结expected源身份、M03物理窄CLR与实际属性权威、Conditional变型守卫/required成员及精确minor、3.0真实loader门/全工具重编、EditorScope/资产/树/代表工具与最终Release手验；不把Engine局部通过计完整新BindingPlan或Editor dirty/undo。
+- A04 18成本已结束，高IO窗口已释放；新Engine独验排队，实施不停交接继续原依赖，程序集载体策略仍暂停。
+## 2026-10-24 环境已恢复；Binding固定43独验通过，UI B2实际缺陷修复中，A04成本窗已释放
+
+- HEAD仍6bfc4a383e89483807501363e5538439f758225b；新增纯Plugin.Runtime/Binding/旧入口适配为当前唯一实施者dirty代码，未冒已提交。原runner pipe故障保留，不算产品失败；恢复核原binding-dependency-02无manifest/log，未把261计作构建。
+- 实际恢复构建：Foundation16.28s0错0警告；SDK→Runtime→Contracts17.13s0错232警告；既有Verification43PASS。binding-runtime-delivery-01冻结390源48bin及receipt4F22795085AB8498A1EAFD33113ADEC710018A33DD8C60853EA44D43CBD0612C；构建后静态封存不冒pre-manifest。独测原42pass1native-block保留，补已核owned native后43PASS，原审静态逐SHA闭包通过；均非整包/最终3.0。
+- A04formal03实际18fresh自然exit0已结束，协调明确释放全部高IO。controller-a04-formal03-review-20261024.json仅引用实际审计；数据不构成载体迁移授权，程序集线仍暂停。
+- B2受控props实核.Tests各owned输出、Script真实plugins子目录/HostDebugRoot正确；首离线restore因source mapping NU1100保留，用owned offline.NuGet.Config映射既有cache后成功，不改repo配置/不联网/不降包。
+- Script原B2精确filter11PASS/0FAIL/0SKIP（build61.35s0错399警告）。UI原34项首18PASS16FAIL（build49s0错805警告）；修scope/真实绑定图后fixed02为29PASS5FAIL（build41.8s0错1168警告），两TRX保留。当前build03在途，处理剩5具体因，不报已过。
+- 原G02/F02真实修复：canvas-only限制移除；候选复用Solution执行图排self/真实后继；checkReadiness:false保未就绪声明边在原Apply/Undo事务核环，默认true保节点局部失败隔离。类型/数量使用同Runtime compiler；共享CountConstraint数量比较。DataSourceQueryService真正消费owner允许集合及正式声明过滤，未知数量/索引Conditional不混Compatible/Unresolved；已知0/N不含1必须拒绝。
+- 新RunIdentity裁定：controller-binding-attempt-identity-decision-20261024.json，SHA a040b2614b57d2ed7b0d9ed4e088f00a6c13461589911e4d5a764fd9a23b88ef。Sequence将改原ToolExecutionOwner.Begin Guid RequestId；每依赖expected身份由准入计划冻结，不从待验result/latest反推，不比较source与consumer RequestId相等，禁止平行long/hash/注册表。同一请求不得二次Begin，生产适配待实施验证。
+- 后续原依赖：Conditional也须做源类型/稳定FieldID/策略失效守卫；required/non-null成员投影可Compatible、optional/nullable按实际条件；绑定序列化精确Foundation major+minor且缺minor拒绝；SDK ToolContract3.0/Foundation4.0分别要求同源重编/旧证件构造前拒绝。版本常量/生成属性一致，不改CLR版本/ALC。
+- 真实Workflow入口同轮执行/失败不回旧值、树正式目录与指定run结果独立投影、AssetRef/owner、三工具与七交互、基础性能、最终全量Release真实程序/集中人工VS验收仍pending。继续原48依赖不缩范围，不新增批次，不停交接。
+## 2026-10-24 结构化基础6bfc固定独验，继续原绑定依赖；A04成本窗暂停高IO
+
+- 自有有意义提交6bfc4a383e89483807501363e5538439f758225b，16必要文件；固定structured-dependency-02实际source/bin/manifests/receipt及commit-binding，34开发PASS。独测已报真实强类型5组负控PASS（宿主net10限制单列），实际net9固定DLL replay归其receipt，不冒全包。
+- 独审修复普通编辑参数长期保存borrowed Image：直接及Record/Sequence嵌套常量明确拒绝，绑定/运行租约保留；正式AssetRef/version/Owner配置正路仍是批准未完成项。七Geometry数据合同不等七类ROI交互通过。
+- 下一原FT-F02/G02/G03/A01依赖静态中：扩展不可变OutputReference选择/成员路径、统一BindingCompatibility状态，唯一纯编译/解析在Plugin.Runtime(net9，仅Contracts)，现有SDK ParameterResolver委托。Runtime graph/snapshot来自实际Workflow所有者，生产Workflow→Invocation贯通尚未完成，不冒仅接口已接通。
+- SDK首构建3错为同名旧enum冲突，原日志保留；删除旧enum，现有validator/Workflow/Script及UI状态引用迁唯一Contracts，PendingValidation→Unresolved，原判断规则保留。SDK过渡build02 0错232警告9.8秒，不代表后来纯Runtime提取已验证。
+- 已写现有Verification真实Runtime计划矩阵，All0/1/N/Singleton/固定与动态索引/真实依赖cycle/可见域/数值精度/Schema与DocSession/RunScope失效/成员投影；尚未构建。Runtime及新增引用下一轮需本地restore与整个闭包构建，旧Script/UI分支定向回归待做。
+- 当前0自有构建/运行/packing；协调A04正式成本窗期间暂停高IO，仅小文本静态，释放后恢复成熟验证。程序集策略仍暂停，无关原locks不暂存不回滚；本次必要SDK Runtime/Contracts新闭包锁变更需单列。
 ## 2026-10-24 原48项批准方案继续实施：FT-A01/A02/M03首依赖
 
 - 主控批准记录 TOOL_FRAMEWORK_FINAL_APPROVAL_20261024.json，基线6c2def23ce062d2a7802ed8edddd40de113ccfa3；唯一产品写入者仍本实施窗口。协调已准静态完成后定向构建/Verification短窗。
@@ -3657,3 +3697,9 @@
 - 协调已实际向唯一实施者下发首依赖接单，独测获48ID映射/口径/同身份准备，文档Owner获批准/实施/独验分列同步；主控不并发改产品。请求协调回真实首依赖/开工依据，非只登记。仅必要架构/范围决策与最终审核上交主控，日常修复复测队列由协调闭环。
 - 最终交付要求同一Release及manifest、独验逐项通过/失败/受阻/未验矩阵、主文档和一次集中HTML手动验证包（所有本次实际改动、前后真实影响、操作步骤、预期与实测）；人工/真实VS未验证保留pending，不在用户试用前假报全面闭环。原ALC失败、历史性能FAIL、原型成本缺测及原暂停/排除边界不因批准自动清除。
 - 目标仍active；批准与交接不等实施完成，不在此轮声明完成或交付Release。
+
+## 2026-10-24 文档维护：原范围四层实际状态同步
+
+- O06新增 #implementation-live-status，同页区分类型/BindingPlan基础、生产Workflow、绑定目录与树、结果仓库与树；批准方案冻结块逐字保留，canonical/源快照一致。
+- Binding固定390source/48bin独立回放43PASS限定旧SDK2.1基础Runtime样例；ScriptB2 11PASS，UIB2 18PASS/16FAIL待修复复测，A04 formal02零样本保留，formal03短窗不填未来成绩。ToolContract3.0/Foundation4.0/产品版本职责分列。
+- 事实源与生成器：artifacts/validation/tool-framework-contract/live-implementation-status.json / build-live-implementation-status.cjs；静态QA67链接、无重复ID、旧锚点保留，视觉未验。不改产品/原队列；最终人工仍同Release集中一次。

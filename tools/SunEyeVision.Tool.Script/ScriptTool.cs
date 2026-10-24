@@ -42,13 +42,12 @@ namespace SunEyeVision.Tool.Script
 
         public ScriptResults Run(ScriptParameters parameters)
         {
-            var frozen = (ScriptParameters)ToolExecutionPreparation.CopyParameters(parameters);
-            frozen.PreparedCompilation = parameters.PreparedCompilation;
-            frozen.ExecutionAdmission = parameters.ExecutionAdmission;
+            var frozen = (ScriptParameters)parameters.CreateExecutionSnapshot();
             var globals = parameters.Context?.GlobalVariables;
             using var globalResources = new ScriptOutputSnapshot();
             var globalSnapshot = SnapshotGlobals(globals, globalResources);
-            using var inputs = parameters.NodeResults == null ? null : new ToolResultSnapshot(new Dictionary<string, ToolResults>(parameters.NodeResults));
+            var inputs = parameters.NodeResults == null ? null : new ToolResultSnapshot(new Dictionary<string, ToolResults>(parameters.NodeResults));
+            if (inputs != null) globalResources.Own(inputs);
             var nodes = inputs?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
             nodes = SnapshotGlobalBindings(nodes, globalSnapshot);
             if (!frozen.TryPublishIoContract(out _)) return ReleaseGlobalInputs(globalResources, ExecuteCore(frozen, globalSnapshot, nodes, parameters.Context));
@@ -64,34 +63,45 @@ namespace SunEyeVision.Tool.Script
 
         public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)
         {
-            var parameters = (ScriptParameters)request.Parameters;
+            request.ClaimToolBody();
+            var original = (ScriptParameters)request.Parameters;
+            var parameters = request.ExecutionLeaseHeld ? original : (ScriptParameters)original.CreateExecutionSnapshot();
             using var globalResources = new ScriptOutputSnapshot();
-            var owner = request.ExecutionOwner ?? new ToolExecutionOwner();
-            ScriptSandboxPool.Attach(owner);
-            request.ExecutionIdentity = owner.Begin((request.WorkflowId ?? "standalone") + "/" + (request.NodeId ?? "script"),
+            var inputs = request.NodeResults == null ? null
+                : new ToolResultSnapshot(new Dictionary<string, ToolResults>(request.NodeResults));
+            if (inputs != null) globalResources.Own(inputs);
+            var owner = request.ExecutionIdentity?.Owner ?? request.ExecutionOwner ?? original.RuntimeOwner;
+            request.ExecutionIdentity ??= owner.Begin((request.WorkflowId ?? "standalone") + "/" + (request.NodeId ?? "script"),
                 request.RunId == Guid.Empty ? Guid.NewGuid() : request.RunId,
                 parameters.IoIdentity, request.CancellationToken, parameters.ExecutionAdmission, request.RootRunId);
-            if (!parameters.TryPublishIoContract(out var error)) throw new InvalidOperationException(error);
-            var globalSnapshot = SnapshotGlobals(request.GlobalVariables, globalResources);
-            var nodeSnapshot = SnapshotGlobalBindings(request.NodeResults, globalSnapshot);
-            var compiled = parameters.PreparedCompilation ?? await new ScriptCompiler().CompileAsync(
-                new[] { parameters.GeneratedCode, parameters.ScriptCode }, "ScriptExecution", parameters.AssemblyReferenceFullPath,
-                parameters.AssemblyReferences, request.CancellationToken).ConfigureAwait(false);
-            request.CancellationToken.ThrowIfCancellationRequested();
-            request.ExecutionIdentity = request.ExecutionIdentity.WithContractIdentity(parameters.IoIdentity + "/" + compiled.CacheKey);
-            // 用户代码仍保持逐次实例语义；运行中取消/异常清理的完整合同留S3。
-            var result = await Task.Run<ToolResults>(() =>
+            var ownsLease = !request.ExecutionLeaseHeld;
+            IDisposable? activeRun = null;
+            try
             {
-                if (parameters.ExecutionAdmission?.Invoke() == false) throw new OperationCanceledException("执行请求已过时。");
-                using var activeRun = owner.EnterRun(request.ExecutionIdentity);
-                try
+                if (ownsLease) activeRun = owner.EnterRun(request.ExecutionIdentity);
+                ScriptSandboxPool.Attach(owner);
+                if (!parameters.TryPublishIoContract(out var error)) throw new InvalidOperationException(error);
+                var globalSnapshot = SnapshotGlobals(request.GlobalVariables, globalResources);
+                var nodeSnapshot = SnapshotGlobalBindings(inputs, globalSnapshot);
+                var compiled = parameters.PreparedCompilation ?? await new ScriptCompiler().CompileAsync(
+                    new[] { parameters.GeneratedCode, parameters.ScriptCode }, "ScriptExecution", parameters.AssemblyReferenceFullPath,
+                    parameters.AssemblyReferences, request.CancellationToken).ConfigureAwait(false);
+                request.CancellationToken.ThrowIfCancellationRequested();
+                request.ExecutionIdentity = request.ExecutionIdentity.WithContractIdentity(parameters.IoIdentity + "/" + compiled.CacheKey);
+                var result = await Task.Run<ToolResults>(() =>
                 {
+                    if (parameters.ExecutionAdmission?.Invoke() == false) throw new OperationCanceledException("执行请求已过时。");
                     return ExecuteCore(parameters, globalSnapshot, nodeSnapshot, request.Context, request.CancellationToken,
                         request.ExecutionIdentity, request.GlobalVariables, compiled);
-                }
-                finally { request.ExecutionIdentity.CompleteCallbacks(); }
-            }, request.CancellationToken).ConfigureAwait(false);
-            return ReleaseGlobalInputs(globalResources, result);
+                }, request.CancellationToken).ConfigureAwait(false);
+                return ReleaseGlobalInputs(globalResources, result);
+            }
+            finally
+            {
+                if (ownsLease && (activeRun != null || !request.ExecutionIdentity.HasStartedExecution))
+                    request.ExecutionIdentity.CompleteCallbacks();
+                activeRun?.Dispose();
+            }
         }
 
         private static T ReleaseGlobalInputs<T>(ScriptOutputSnapshot inputs, T result) where T : ToolResults
@@ -198,6 +208,7 @@ namespace SunEyeVision.Tool.Script
 
                 // ★ 捕获解析后的输入值（供调试监视面板显示）
                 parameters.ResolvedInputValues = inputValues;
+                result.SetResolvedInputs(inputValues);
 
                 if (parameters.Inputs.Count > 0 && !parameters.IsDebugMode)
                 {

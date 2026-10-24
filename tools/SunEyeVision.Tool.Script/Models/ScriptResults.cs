@@ -10,13 +10,21 @@ namespace SunEyeVision.Tool.Script.Models
     /// </summary>
     public class ScriptResults : ToolResults, IDisposable
     {
+        private readonly Dictionary<string, object?> _inputValues = new();
+        /// <summary>Input monitoring belongs to this invocation and its Resources lease, never to editable configuration.</summary>
+        public IDictionary<string, object?> ResolvedInputValues => new System.Collections.ObjectModel.ReadOnlyDictionary<string, object?>(_inputValues);
+        internal void SetResolvedInputs(IDictionary<string, object?> values)
+        {
+            _inputValues.Clear();
+            foreach (var pair in values) _inputValues.Add(pair.Key, pair.Value);
+        }
         internal void OwnInputs(IDisposable inputs)
         {
             var outputs = Resources;
             Resources = new ResultResourceOwner(() =>
             {
                 try { outputs?.Dispose(); }
-                finally { inputs.Dispose(); }
+                finally { try { inputs.Dispose(); } finally { _inputValues.Clear(); } }
             });
         }
         internal void OwnOutputs(ScriptEngine.ScriptOutputSnapshot? outputs)

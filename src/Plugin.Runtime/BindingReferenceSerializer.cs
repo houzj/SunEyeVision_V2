@@ -8,12 +8,12 @@ namespace SunEyeVision.Plugin.Runtime;
 public static class BindingReferenceSerializer
 {
     private static readonly JsonSerializerOptions Options=CreateOptions();
-    private sealed record Document(int ContractMajor,OutputReference Reference);
-    public static string Serialize(OutputReference reference)=>JsonSerializer.Serialize(new Document(FoundationContract.Major,reference),Options);
+    private sealed record Document([property:JsonRequired]int ContractMajor,[property:JsonRequired]int ContractMinor,[property:JsonRequired]OutputReference Reference);
+    public static string Serialize(OutputReference reference)=>JsonSerializer.Serialize(new Document(FoundationContract.Major,FoundationContract.Minor,reference),Options);
     public static OutputReference Deserialize(string json)
     {
         var document=JsonSerializer.Deserialize<Document>(json,Options)??throw new JsonException("Binding document is missing.");
-        if(document.ContractMajor!=FoundationContract.Major)throw new JsonException("Binding contract version is unsupported; old documents are not migrated.");
+        if(document.ContractMajor!=FoundationContract.Major||document.ContractMinor!=FoundationContract.Minor)throw new JsonException("Binding contract version must match the current major and minor; old documents are not migrated.");
         return document.Reference??throw new JsonException("Binding reference is missing.");
     }
     private static JsonSerializerOptions CreateOptions()

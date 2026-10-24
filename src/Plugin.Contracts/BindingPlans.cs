@@ -48,6 +48,7 @@ public interface IBindingRunSnapshot
     RunIdentity ConsumerIdentity {get;}
     BindingNodeId Consumer {get;}
     long DocumentRevision {get;}
+    bool TryGetExpectedSourceIdentity(BindingNodeId node,out RunIdentity identity);
     bool TryGetResult(BindingNodeId node,out BindingNodeResult result);
 }
 public sealed record BindingResolution(bool Success,object? Value,Diagnostic? Diagnostic);

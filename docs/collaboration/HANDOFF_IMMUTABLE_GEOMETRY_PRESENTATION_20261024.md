@@ -6,3 +6,4 @@
 - 验证：geometry-presentation-01，UI-build01实际0错1192警告37.29s；新增2项真实Presenter测试PASS/0skip，七类值在de-DE下坐标格式仍Invariant、单位明确；100000顶点展示分配<256KiB且reader返回同一不可变Geometry实例；错误Scalar声明取Geometry拒绝。与既有资源不持有规则保持一致。
 - 未闭环：Polygon顶点逐页展开、资源元数据显示、树图选择、七类交互/性能、完整固定后继包及独验仍原范围；本片非几何交互或三投影整项完成。
 - 旧C67 immutable包不回写；后继新root继续，最终Release/人工VS统一一次。
+- 后继补齐Polygon顶点按页展开：几何顶点只在点击页时创建Point显示节点，无全量Sequence副本；稳定vertex index key，读过的页与展开状态保留。ui-build02实际0错1192警告27.99s，geometry02增强原2项全部PASS：100000顶点首128行/下一128行/折叠再展开同节点，首展开分配<1MiB。未重复原已闭guard或数值用例。

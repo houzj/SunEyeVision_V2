@@ -59,9 +59,10 @@ public sealed class ResultPresentationNode
 {
     private readonly int _pageSize;
     private readonly DeclaredValueReader? _reader;
+    private readonly GeometryValue? _geometry;
     private readonly Dictionary<int, ResultPresentationNode> _children = new();
 
-    internal ResultPresentationNode(string key, TypeRef declaration, Port? port, int? elementIndex, int pageSize, DeclaredValueReader? reader = null)
+    internal ResultPresentationNode(string key, TypeRef declaration, Port? port, int? elementIndex, int pageSize, DeclaredValueReader? reader = null,GeometryValue? geometry=null)
     {
         Key = key;
         Declaration = declaration;
@@ -71,11 +72,12 @@ public sealed class ResultPresentationNode
         if (reader != null && reader.Declaration != declaration)
             throw new ArgumentException("The supplied run value does not match the declared field type.", nameof(reader));
         ValueState = ResultPresentationModel.ContainsResource(declaration) ? ResultPresentationValueState.ResourcePending
-            : reader == null ? ResultPresentationValueState.Unavailable
+            : reader == null ? geometry is null?ResultPresentationValueState.Unavailable:ResultPresentationValueState.Available
             : reader.IsMissing ? ResultPresentationValueState.Missing
             : reader.IsNull ? ResultPresentationValueState.Null
             : ResultPresentationValueState.Available;
         _reader = ValueState == ResultPresentationValueState.Available ? reader : null;
+        _geometry=geometry??(_reader is not null&&declaration.Shape==ValueShape.Geometry?_reader.GetGeometry():null);
     }
 
     public string Key { get; }
@@ -94,13 +96,13 @@ public sealed class ResultPresentationNode
             ScalarKind.Text => _reader.GetScalar<string>(),
             _ => null
         } : null;
-    public GeometryValue? GeometryValue => _reader != null && Declaration.Shape==ValueShape.Geometry
-        ? _reader.GetGeometry() : null;
+    public GeometryValue? GeometryValue => _geometry;
     // A declared count range is not an observed element count, including Exactly(0/1/N).
     public int? ChildCount => Declaration.Shape switch
     {
         ValueShape.Record => Declaration.Fields.Count,
         ValueShape.Sequence => _reader?.Count,
+        ValueShape.Geometry => _geometry is PolygonGeometry polygon?polygon.Vertices.Count:0,
         _ => 0
     };
 
@@ -117,7 +119,13 @@ public sealed class ResultPresentationNode
             var index = offset + position;
             if (!_children.TryGetValue(index, out var child))
             {
-                if (Declaration.Shape == ValueShape.Record)
+                if (_geometry is PolygonGeometry polygon)
+                {
+                    var key=Key+"/vertex"+index.ToString(CultureInfo.InvariantCulture);
+                    child=new ResultPresentationNode(key,TypeRef.GeometryOf(GeometryKind.Point,polygon.Frame),null,index,_pageSize,
+                        geometry:new PointGeometry(polygon.Frame,polygon.Vertices[index]));
+                }
+                else if (Declaration.Shape == ValueShape.Record)
                 {
                     var field = Declaration.Fields[index];
                     var key = Key + "/f" + field.Id.Length.ToString(CultureInfo.InvariantCulture) + ":" + field.Id;

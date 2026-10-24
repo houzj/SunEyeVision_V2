@@ -47,6 +47,14 @@ public sealed class ResultPresentationPresenterTests
         var before=GC.GetAllocatedBytesForCurrentThread();presenter.ShowRun(run.Snapshot);
         Assert.Equal(2,rows.Count);Assert.Contains("100000 顶点",rows[1].DisplayValue);
         Assert.True(GC.GetAllocatedBytesForCurrentThread()-before<256*1024);
+        var expansionBefore=GC.GetAllocatedBytesForCurrentThread();
+        rows[1].IsExpanded=true;
+        Assert.Equal(131,rows.Count);Assert.Equal("[0]",rows[2].DisplayName);Assert.Equal("[127]",rows[129].DisplayName);
+        Assert.Contains("点 (127, 8)",rows[129].DisplayValue);
+        Assert.True(GC.GetAllocatedBytesForCurrentThread()-expansionBefore<1024*1024);
+        var firstVertex=rows[2];rows.Last().IsExpanded=true;
+        Assert.Equal(259,rows.Count);Assert.Equal("[255]",rows[257].DisplayName);Assert.Same(firstVertex,rows[2]);
+        rows[1].IsExpanded=false;rows[1].IsExpanded=true;Assert.Same(firstVertex,rows[2]);
         using var reader=run.Snapshot.AcquireReader();
         Assert.Same(geometry,reader.Values!.Read("polygon").GetGeometry());
         Assert.Throws<InvalidOperationException>(()=>new InputValues(new[]{new Port("n",DataType.Number)},new Dictionary<string,object?>{["n"]=1d}).Read("n").GetGeometry());

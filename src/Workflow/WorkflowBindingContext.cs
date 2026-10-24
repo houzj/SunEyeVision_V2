@@ -13,7 +13,7 @@ namespace SunEyeVision.Workflow;
 /// <summary>One workflow plan's frozen declarations and admitted attempts. No latest-result identity inference.</summary>
 internal sealed class WorkflowBindingContext : IDisposable
 {
-    private sealed record Declaration(BindingSource Source,IReadOnlyDictionary<string,OutputVariable> Outputs);
+    private sealed record Declaration(BindingSource Source,IReadOnlyDictionary<string,OutputVariable> Outputs,bool Complete);
     private readonly Dictionary<string,Declaration> _declarations;
     private readonly Dictionary<string,AlgorithmNode> _nodes;
     private readonly IReadOnlyDictionary<BindingNodeId,RunIdentity> _expected;
@@ -28,6 +28,7 @@ internal sealed class WorkflowBindingContext : IDisposable
         {
             var outputs=new Dictionary<string,OutputVariable>(StringComparer.Ordinal);
             var ports=new List<Port>();
+            var complete=true;
             foreach(var output in reader.ReadContract(node)??Array.Empty<OutputVariable>())
             {
                 if(output.Kind!=OutputVariableKind.Data)continue;
@@ -38,12 +39,13 @@ internal sealed class WorkflowBindingContext : IDisposable
                 }
                 catch(ArgumentException)
                 {
+                    complete=false;
                     // An unsupported declaration is never inferred from a value. Its existing dedicated
                     // adapter remains responsible until its explicit canonical bridge is implemented.
                 }
             }
             var schema=new ToolSchema(Array.Empty<Port>(),ports);
-            result.Add(node.Id,new(new(new(scope,node.Id),executionScope,schema,0),new ReadOnlyDictionary<string,OutputVariable>(outputs)));
+            result.Add(node.Id,new(new(new(scope,node.Id),executionScope,schema,0),new ReadOnlyDictionary<string,OutputVariable>(outputs),complete));
         }
         return result;
     }
@@ -184,7 +186,17 @@ internal sealed class WorkflowBindingContext : IDisposable
             catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException or KeyNotFoundException)
             {result.SetError("输出不符合冻结声明："+fault.Message);values.Clear();}
         }
-        DeclaredOutputSnapshot.Publish(result,node.AdmittedIdentity!.ToInvocationIdentity(node.Id),result.IsSuccess?values:null);
+        var fields=declaration.Outputs.ToDictionary(item=>item.Key,item=>new DeclaredOutputField(item.Value.Name,item.Value.DisplayName,
+            item.Value.VariableType,item.Value.DeclaredType,item.Value.FieldId,item.Value.Group,item.Value.DisplayInResultPanel),StringComparer.Ordinal);
+        DeclaredOutputSnapshot.Publish(result,node.AdmittedIdentity!.ToInvocationIdentity(node.Id),result.IsSuccess?values:null,fields,_scope,declaration.Complete);
+    }
+    internal DeclaredOutputSnapshot WithoutResult(AlgorithmNode node,ExecutionStatus status,IEnumerable<Diagnostic> diagnostics)
+    {
+        var declaration=_declarations[node.Id];
+        var fields=declaration.Outputs.ToDictionary(item=>item.Key,item=>new DeclaredOutputField(item.Value.Name,item.Value.DisplayName,
+            item.Value.VariableType,item.Value.DeclaredType,item.Value.FieldId,item.Value.Group,item.Value.DisplayInResultPanel),StringComparer.Ordinal);
+        return DeclaredOutputSnapshot.WithoutValues(declaration.Source.Schema,declaration.Source.SchemaRevision,
+            node.AdmittedIdentity!.ToInvocationIdentity(node.Id),status,diagnostics,fields,_scope,declaration.Complete);
     }
     public void Dispose()
     {foreach(var node in _nodes.Values)node.AdmittedIdentity?.CompleteCallbacks();}

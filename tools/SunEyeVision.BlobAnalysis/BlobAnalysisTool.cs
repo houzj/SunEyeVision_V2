@@ -263,6 +263,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         {
                                             var tupleIndex = i - 1;
                                             var area = areas[tupleIndex];
+                                            // HALCON may retain one empty region object; it is not a detected Blob.
+                                            if (area.L <= 0) continue;
                                             var row = rows[tupleIndex];
                                             var col = cols[tupleIndex];
                                             var r1 = r1s[tupleIndex];
@@ -279,6 +281,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                                             var blob = new BlobResult
                                             {
+                                                ElementId = i,
                                                 Area = area.L,
                                                 Perimeter = contLength.D,
                                                 CentroidX = col.D,
@@ -424,25 +427,27 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         {
                                             var okContours = contourBlobs
                                                 .Where(b => b.JudgmentPassed)
-                                                .Select(b => b.Contour!)
                                                 .ToList();
                                             var ngContours = contourBlobs
                                                 .Where(b => !b.JudgmentPassed)
-                                                .Select(b => b.Contour!)
                                                 .ToList();
-                                            display.AddContourBatch(contourStyle, okContours, true);
-                                            display.AddContourBatch(contourStyle, ngContours, false);
+                                            display.AddContourBatch(contourStyle, okContours.Select(b => b.Contour!).ToList(), true,
+                                                sourceElements: okContours.Select(b => new DeclaredElementAddress(BlobOutputContract.BlobsPortId, b.ElementId, new[] { "contour" })).ToList());
+                                            display.AddContourBatch(contourStyle, ngContours.Select(b => b.Contour!).ToList(), false,
+                                                sourceElements: ngContours.Select(b => new DeclaredElementAddress(BlobOutputContract.BlobsPortId, b.ElementId, new[] { "contour" })).ToList());
                                         }
 
                                         // 外接矩形（根据 JudgmentPassed 显示 OK/NG 颜色）
                                         // 可见性由渲染层按样式控制，执行期不过滤 —— 否则"隐藏后执行、再显示"时几何根本不存在
                                         var blobStyle = parameters.ResultPresentation.GetGraphicsStyle("blobs");
                                         var okBoxes = displayBlobs.Where(b => b.JudgmentPassed && b.RotatedBoundingBox is { Length: >= 4 })
-                                            .Select(b => b.RotatedBoundingBox!).ToList();
+                                            .ToList();
                                         var ngBoxes = displayBlobs.Where(b => !b.JudgmentPassed && b.RotatedBoundingBox is { Length: >= 4 })
-                                            .Select(b => b.RotatedBoundingBox!).ToList();
-                                        display.AddContourBatch(blobStyle, okBoxes, true);
-                                        display.AddContourBatch(blobStyle, ngBoxes, false);
+                                            .ToList();
+                                        display.AddContourBatch(blobStyle, okBoxes.Select(b => b.RotatedBoundingBox!).ToList(), true,
+                                            sourceElements: okBoxes.Select(b => new DeclaredElementAddress(BlobOutputContract.BlobsPortId, b.ElementId, new[] { "rotated-bounds" })).ToList());
+                                        display.AddContourBatch(blobStyle, ngBoxes.Select(b => b.RotatedBoundingBox!).ToList(), false,
+                                            sourceElements: ngBoxes.Select(b => new DeclaredElementAddress(BlobOutputContract.BlobsPortId, b.ElementId, new[] { "rotated-bounds" })).ToList());
 
                                         // 质心十字（根据 JudgmentPassed 显示 OK/NG 颜色）
                                         var centroidStyle = parameters.ResultPresentation.GetGraphicsStyle("centroids");

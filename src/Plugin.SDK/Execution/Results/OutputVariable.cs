@@ -11,6 +11,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// <summary>Declared, never inferred from a previous result's value or length.</summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public System.Type? DeclaredType { get; set; }
+        /// <summary>Explicit semantic declaration for structured outputs; never inferred from runtime values.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public SunEyeVision.Plugin.Contracts.TypeRef? ValueDeclaration { get; set; }
+        public bool AllowsNull { get; set; }
         public bool? IsCollection { get; set; }
         public int? FixedCount { get; set; }
         /// <summary>变量名（工具内唯一，对应绑定路径的 PropertyName）</summary>
@@ -39,6 +43,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
 
         /// <summary>运行期填充的实际值（设计时契约无值则为 null）</summary>
         public object? RuntimeValue { get; set; }
+        public OutputVariable CopyDeclaration()=>new()
+        {
+            FieldId=FieldId,DeclaredType=DeclaredType,ValueDeclaration=ValueDeclaration,AllowsNull=AllowsNull,
+            IsCollection=IsCollection,FixedCount=FixedCount,Name=Name,VariableType=VariableType,DisplayName=DisplayName,
+            Group=Group,IsGroupPlaceholder=IsGroupPlaceholder,DisplayInResultPanel=DisplayInResultPanel,Kind=Kind
+        };
     }
 
     /// <summary>

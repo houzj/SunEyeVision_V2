@@ -41,6 +41,7 @@ namespace SunEyeVision.Workflow
         internal IReadOnlyDictionary<string,SunEyeVision.Plugin.Contracts.BindingPlan> CompiledBindings { get; set; }
             = new Dictionary<string,SunEyeVision.Plugin.Contracts.BindingPlan>();
         internal SunEyeVision.Plugin.Contracts.ToolSchema? BindingOutputSchema { get; set; }
+        internal IVisionImage? WorkflowInputImage { get; set; }
 
         /// <summary>本轮运行在启动节点前绑定的帧；节点不拥有其生命周期。</summary>
         public CameraFrame? CameraFrame { get; set; }
@@ -99,7 +100,7 @@ namespace SunEyeVision.Workflow
                     // Shared executor prepares image, source values, correction and text bindings.
                     var executionParams = CreateExecutionParameters(typedParams);
                     var inputImage = ToolExecutionPreparation.ResolveInputImage(executionParams,
-                        nodeResults ?? new Dictionary<string, ToolResults>(), null);
+                        nodeResults ?? new Dictionary<string, ToolResults>(), WorkflowInputImage);
                     var resolver = new ParameterResolver(VisionLogger.Instance);
 
                     // ★ 通过 ToolExecutor 统一执行路径（与工具调试共享同一执行器）

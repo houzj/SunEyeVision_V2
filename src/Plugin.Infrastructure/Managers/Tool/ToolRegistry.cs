@@ -443,7 +443,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     if (v.Kind != OutputVariableKind.Data)
                         continue;
 
-                    if (SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(v.VariableType) is not { } varType)
+                    var declaredClr=v.ValueDeclaration is not null?v.DeclaredType:null;
+                    if ((declaredClr??SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(v.VariableType)) is not { } varType)
                     {
                         VisionLogger.Instance.Log(LogLevel.Error,
                             $"工具 '{toolId}' 的输出变量 '{v.Name}' 类型 '{v.VariableType}' 未在 SdkTypeVocabulary 词汇表注册，已跳过。",
@@ -458,7 +459,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     var metadata = new ToolPropertyMetadata
                     {
                         PropertyName = v.Name,
-                        DeclaredType = v.DeclaredType, IsCollection = v.IsCollection, FixedCount = v.FixedCount, FieldId = v.FieldId,
+                        DeclaredType = v.DeclaredType, ValueDeclaration=v.ValueDeclaration,AllowsNull=v.AllowsNull, IsCollection = v.IsCollection, FixedCount = v.FixedCount, FieldId = v.FieldId,
                         DisplayName = string.IsNullOrEmpty(v.DisplayName) ? v.Name : v.DisplayName,
                         GroupName = v.Group,
                         // 对外元数据提升为数组（绑定树据此展开 [i]）；缓存键仍按标量 typeFullName，不破坏存量查询

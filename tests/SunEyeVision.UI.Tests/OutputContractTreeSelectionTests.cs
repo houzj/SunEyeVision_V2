@@ -21,6 +21,42 @@ namespace SunEyeVision.UI.Tests;
 public sealed class OutputContractTreeSelectionTests
 {
     [Fact]
+    public void Declared_run_uses_frozen_values_pages_and_releases_owner_on_selection() => Sta(() =>
+    {
+        using var f = new Fixture();
+        var schema = new SunEyeVision.Plugin.Contracts.ToolSchema(Array.Empty<SunEyeVision.Plugin.Contracts.Port>(),
+            new[] { new SunEyeVision.Plugin.Contracts.Port("items", SunEyeVision.Plugin.Contracts.DataType.NumberArray) });
+        var request = new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters())
+            { NodeId = "a", BindingOutputSchema = schema };
+        int released = 0;
+        var result = new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(() => released++), request);
+        DeclaredOutputSnapshot.Publish(result, request.GetInvocationIdentity(),
+            new Dictionary<string, object?> { ["items"] = new double[2_000_000] });
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        f.Model.UpdateModuleResults(result, "A", nodeId: "a");
+        Assert.True(f.Model.HasModuleResults); Assert.Empty(f.Model.ModuleResultTree);
+        Assert.Equal(2, f.Model.FlatResultRows.Count);
+        f.Model.FlatResultRows[1].IsExpanded = true;
+        Assert.InRange(f.Model.FlatResultRows.Count, 3, 131);
+        Assert.True(GC.GetAllocatedBytesForCurrentThread() - before < 1024 * 1024);
+        result.Resources!.Dispose(); Assert.Equal(0, released);
+        var retired = f.Model.FlatResultRows[1];
+        f.Select(f.B); Assert.Equal(1, released); Assert.Empty(f.Model.FlatResultRows);
+        retired.IsExpanded = false; retired.IsExpanded = true;
+        Assert.Empty(f.Model.FlatResultRows);
+        f.Model.CloseResultPresentation(); Assert.Equal(1, released);
+    });
+
+    private sealed class FrozenResults : ToolResults
+    {
+        public FrozenResults() { }
+        public FrozenResults(Action release) { Resources = new(release); SetSuccess(); }
+        public override IReadOnlyList<OutputVariable> GetOutputVariables() => throw new InvalidOperationException("Frozen run must not reflect result properties again.");
+    }
+    private sealed class FrozenProbe(Action release) : SunEyeVision.Plugin.SDK.Core.IToolPlugin<ProbeParameters, FrozenResults>
+    { public FrozenResults Run(ProbeParameters parameters) => new(release); }
+
+    [Fact]
     public void Current_empty_contract_clears_previous_declarations() => Sta(() =>
     {
         using var f = new Fixture();

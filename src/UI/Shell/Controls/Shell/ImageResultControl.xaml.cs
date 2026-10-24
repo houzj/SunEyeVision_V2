@@ -59,6 +59,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         public void Shutdown()
         {
+            _viewModel?.CloseResultPresentation();
             if (ImagePreviewContent != null)
             {
                 ImagePreviewContent.WorkflowExecutionRequested -= OnImagePreviewExecutionRequested;
@@ -133,6 +134,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 NodeId = row.BindingInfo.SourceNodeId,
                 NodeName = sourceNode?.DispName ?? row.SourceNodeName ?? row.BindingInfo.SourceNodeId,
                 ResultName = row.BindingInfo.ResultPath,
+                SourceFieldId=row.BindingInfo.SourceFieldId,
                 ResultDisplayName = row.DisplayName
             };
             variable.NotifyInputSourceDisplayChanged();

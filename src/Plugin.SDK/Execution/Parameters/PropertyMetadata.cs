@@ -17,6 +17,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     public class ToolPropertyMetadata
     {
         public Type? DeclaredType { get; set; }
+        public SunEyeVision.Plugin.Contracts.TypeRef? ValueDeclaration {get;set;}
+        public bool AllowsNull {get;set;}
         public bool? IsCollection { get; set; }
         public int? FixedCount { get; set; }
         public Guid? FieldId { get; set; }

@@ -9,6 +9,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// </summary>
     public class BlobResult
     {
+        /// <summary>Invocation-local source region identity, assigned before sorting/filter presentation.</summary>
+        public long ElementId {get;set;}
         /// <summary>连通域序号（筛选后从1开始）</summary>
         public int Label { get; set; }
 

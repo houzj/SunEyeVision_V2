@@ -513,6 +513,11 @@ namespace SunEyeVision.UI.Shell.Windows
         /// 扁平化结果行列表（用于 DataGrid 绑定，与图像结果子 VM 共享同一集合实例）
         /// </summary>
         public ObservableCollection<FlatResultRow> FlatResultRows => _flatResultRows;
+        private SunEyeVision.UI.Services.Monitoring.ResultPresentationPresenter? _declaredResultPresenter;
+        private bool _declaredResultActive;
+        private bool _declaredHistoricalResult;
+        private SunEyeVision.UI.Services.Monitoring.ResultPresentationPresenter DeclaredResultPresenter
+            =>_declaredResultPresenter??=new(FlatResultRows,value=>HasModuleResults=value);
 
         /// <summary>
         /// 是否有模块结果（用于空状态显示）
@@ -2661,6 +2666,7 @@ SplitterPosition = position;
         internal bool SetSelectedNodeIdentity(WorkflowNodeBase? node)
         {
             if (ReferenceEquals(_selectedNode, node)) return false;
+            _declaredResultPresenter?.Clear();_declaredResultActive=false;_declaredHistoricalResult=false;
             System.Threading.Interlocked.Increment(ref _outputContractSelectionGeneration);
             return SetProperty(ref _selectedNode, node, propertyName: nameof(SelectedNode));
         }
@@ -2699,7 +2705,7 @@ SplitterPosition = position;
                         && workflow != null && session.Document.Workflows.Any(flow => ReferenceEquals(flow, workflow))
                         && workflow.Nodes.Any(item => ReferenceEquals(item, node));
 
-                    if (!IsCurrent()) return;
+                    if (!IsCurrent()||_declaredHistoricalResult) return;
                     var contract = provider.GetOutputContract();
                     // A provider can notify again or reenter selection/document/window changes while reading.
                     if (IsCurrent())
@@ -3116,7 +3122,14 @@ SplitterPosition = position;
             var isSelectedSubroutine = (_selectedNode as SunEyeVision.UI.Shared.WorkflowNode)?.Id == nodeId;
 
             // 1. 结果树局部更新：仅当主界面选中该子程序节点时
-            if (isSelectedSubroutine)
+            if (isSelectedSubroutine&&_declaredResultActive)
+            {
+                if(!_declaredHistoricalResult&&SelectedNode?.Parameters is IOutputContractProvider provider)
+                {
+                    if(!TryShowDeclaredSchema(provider.GetOutputContract(),SelectedNode.Name,SelectedNode.Id))ClearResultDisplay();
+                }
+            }
+            else if (isSelectedSubroutine)
             {
                 switch (change.ChangeType)
                 {
@@ -3524,8 +3537,10 @@ SplitterPosition = position;
         /// </summary>
         public void ClearResultDisplay()
         {
+            _declaredResultPresenter?.Clear();_declaredResultActive=false;_declaredHistoricalResult=false;
             CalculationResults.Clear();
             ModuleResultTree.Clear();
+            FlatResultRows.Clear();
             HasModuleResults = false;
         }
 
@@ -4789,9 +4804,57 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <param name="toolId">工具ID，用于从 _typeCache 查询属性元数据</param>
         /// <param name="nodeId">节点ID，用于绑定状态反查</param>
         /// <param name="parameters">工具参数（设计态时用于回退读取检测区/屏蔽区 RoI 结构）</param>
+        private bool TryShowDeclaredSchema(IReadOnlyList<OutputVariable> contract,string? nodeName,string? nodeId)
+        {
+            var fields=contract.Where(output=>output.Kind==OutputVariableKind.Data).ToArray();
+            SunEyeVision.Plugin.Contracts.ToolSchema schema;
+            try{schema=new(Array.Empty<SunEyeVision.Plugin.Contracts.Port>(),fields.Select(BindingClrAdapter.DescribeOutput));}
+            catch(ArgumentException){return false;}
+            var metadata=fields.ToDictionary(BindingClrAdapter.OutputPortId,output=>new DeclaredOutputField(output.Name,output.DisplayName,
+                output.VariableType,output.DeclaredType,output.FieldId,output.Group,output.DisplayInResultPanel),StringComparer.Ordinal);
+            ModuleResultTree.Clear();_declaredResultActive=true;
+            DeclaredResultPresenter.ShowSchema(schema,metadata.ToDictionary(field=>field.Key,field=>field.Value.DisplayName),
+                DeclaredBindings(metadata,nodeId),metadata.Where(field=>field.Value.DisplayInResultPanel).Select(field=>field.Key).ToHashSet(StringComparer.Ordinal));
+            if(FlatResultRows.FirstOrDefault() is { } root)root.DisplayName=nodeName??"结果";
+            return true;
+        }
+        private static IReadOnlyDictionary<string,ResultBindingInfo> DeclaredBindings(IReadOnlyDictionary<string,DeclaredOutputField> fields,string? nodeId)
+            =>fields.Where(field=>nodeId is not null&&SdkTypeVocabulary.ToSystemType(field.Value.VariableType) is not null)
+                .ToDictionary(field=>field.Key,field=>new ResultBindingInfo(nodeId!,field.Value.Name,field.Value.VariableType,field.Value.ClrType,field.Value.FieldId),StringComparer.Ordinal);
+        private void ShowDeclaredSnapshot(DeclaredOutputSnapshot snapshot,string? nodeName)
+        {
+            ModuleResultTree.Clear();_declaredResultActive=true;
+            DeclaredResultPresenter.ShowRun(snapshot,snapshot.Fields.ToDictionary(field=>field.Key,field=>field.Value.DisplayName),
+                DeclaredBindings(snapshot.Fields,snapshot.Identity.NodeId));
+            if(FlatResultRows.FirstOrDefault() is { } root)root.DisplayName=nodeName??"结果";
+        }
+        internal void ShowDeclaredRun(ExecutionResult run,SunEyeVision.Plugin.Contracts.RunIdentity identity,string? nodeName=null)
+        {
+            try
+            {
+                using var reader=run.AcquireDeclaredOutput(identity);
+                if(!reader.Snapshot.IsComplete)throw new InvalidOperationException("This run has no complete declared output projection.");
+                ShowDeclaredSnapshot(reader.Snapshot,nodeName);_declaredHistoricalResult=true;
+            }
+            catch{ClearResultDisplay();throw;}
+        }
+        public void CloseResultPresentation()
+        {
+            _declaredResultPresenter?.Dispose();_declaredResultPresenter=null;
+            _declaredResultActive=false;_declaredHistoricalResult=false;
+        }
         public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null,
             ToolParameters? parameters = null)
         {
+            if(_declaredHistoricalResult)return;
+            if(result?.DeclaredOutput is {IsComplete:true} snapshot)
+            {ShowDeclaredSnapshot(snapshot,nodeName);return;}
+            if(result is ContractToolResults contractResult)
+            {
+                var contract=contractResult.GetOutputVariables();
+                if(contract.Any(output=>output.ValueDeclaration is not null)&&TryShowDeclaredSchema(contract,nodeName,nodeId))return;
+            }
+            _declaredResultPresenter?.Clear();_declaredResultActive=false;
             ModuleResultTree.Clear();
             FlatResultRows.Clear();
             HasModuleResults = false;
@@ -5347,6 +5410,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// </summary>
         public void BuildFlatRows()
         {
+            if(_declaredResultActive){_declaredResultPresenter!.RefreshRows();return;}
             FlatResultRows.Clear();
 
             foreach (var rootNode in ModuleResultTree)
@@ -6008,17 +6072,19 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
     /// <summary>模块结果可绑定终点的运行时寻址信息。</summary>
     public sealed class ResultBindingInfo
     {
-        public ResultBindingInfo(string sourceNodeId, string resultPath, string valueVocabulary, Type? valueType)
+        public ResultBindingInfo(string sourceNodeId, string resultPath, string valueVocabulary, Type? valueType,Guid? sourceFieldId=null)
         {
             SourceNodeId = sourceNodeId;
             ResultPath = resultPath;
             ValueVocabulary = valueVocabulary;
             ValueType = valueType;
+            SourceFieldId=sourceFieldId;
         }
         public string SourceNodeId { get; }
         public string ResultPath { get; }
         public string ValueVocabulary { get; }
         public Type? ValueType { get; }
+        public Guid? SourceFieldId {get;}
     }
 
     /// <summary>

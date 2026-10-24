@@ -16,6 +16,19 @@ namespace SunEyeVision.UI.Tests;
 [Collection("Editor commit UI")]
 public sealed class ResultPresentationPresenterTests
 {
+    [Fact]
+    public void Display_flags_change_without_changing_the_binding_schema()
+    {
+        var schema=Schema(new Port("visible",DataType.Number),new Port("hidden",DataType.Number));
+        var rows=new ObservableCollection<FlatResultRow>();bool has=false;
+        using var presenter=new ResultPresentationPresenter(rows,value=>has=value);
+        presenter.ShowSchema(schema,displayedPorts:new HashSet<string>{"visible"});
+        Assert.True(has);Assert.Equal(new[]{"结果","visible"},rows.Select(row=>row.DisplayName));
+        presenter.ShowSchema(schema,displayedPorts:new HashSet<string>{"hidden"});
+        Assert.Equal(new[]{"结果","hidden"},rows.Select(row=>row.DisplayName));
+        presenter.ShowSchema(schema,displayedPorts:new HashSet<string>());
+        Assert.Empty(rows);Assert.False(has);Assert.Equal(2,schema.Outputs.Count);
+    }
     private static ToolSchema Schema(params Port[] ports) => new(Array.Empty<Port>(), ports);
     private static RunIdentity Identity() => new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "source", Guid.NewGuid());
 

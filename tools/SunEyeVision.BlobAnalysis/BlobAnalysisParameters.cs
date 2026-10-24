@@ -92,8 +92,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "BlobAnalysis"。
     /// </remarks>
     [JsonDerivedType(typeof(BlobAnalysisParameters), "BlobAnalysis")]
-    public class BlobAnalysisParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract
+    public class BlobAnalysisParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract, IOutputContractProvider
     {
+        public IReadOnlyList<SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable> GetOutputContract()=>BlobOutputContract.Describe();
         /// <summary>
         /// Blob 分析的输入与运行参数契约。
         /// 这些描述是参数模型的唯一语义来源，UI 只负责展示和选择绑定。

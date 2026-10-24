@@ -13,7 +13,15 @@ public static class BindingClrAdapter
     public static Port DescribeOutput(OutputVariable output)
     {
         if(output.Kind!=OutputVariableKind.Data)throw new ArgumentException("Only formal data outputs can be bound.");
+        if(output.ValueDeclaration is { } explicitType)
+        {
+            NumericStorage? storage=null;
+            if(output.DeclaredType is { } clr&&TryDescribe(clr,out var from,out var physical)&&
+                (from.Shape==ValueShape.Sequence?from.Element:from)==(explicitType.Shape==ValueShape.Sequence?explicitType.Element:explicitType))storage=physical;
+            return new(OutputPortId(output),explicitType,Nullable:output.AllowsNull,Storage:storage);
+        }
         var declared=output.DeclaredType??SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(output.VariableType);
+        if(declared==typeof(RoiShape[]))return new(OutputPortId(output),RoiShapeValueAdapter.SequenceDeclaration);
         if(declared is null||declared==typeof(object))throw new ArgumentException("Output type is not formally declared.");
         return DescribePort(OutputPortId(output),declared,output.FixedCount,output.IsCollection);
     }
@@ -59,6 +67,10 @@ public static class BindingClrAdapter
     public static object? NormalizeValue(Port port,object? value)
     {
         if(value is null)return ValueRules.Freeze(port,null);
+        if(port.Type==RoiShapeValueAdapter.Declaration&&value is RoiShape shape)return RoiShapeValueAdapter.Freeze(shape);
+        if(value is RecordValue or SequenceValue or GeometryValue)return ValueRules.Freeze(port,value);
+        if(port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image&&value is SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage image)
+            return ValueRules.Freeze(port,new BorrowedImage(image));
         // Existing SDK scalar outputs have a one-item transport wrapper. It does not change their declaration.
         if(port.Type.Shape!=ValueShape.Sequence&&value is Array transport)
         {
@@ -80,6 +92,12 @@ public static class BindingClrAdapter
             value=port.Type.Scalar==ScalarKind.Int64?(object)Convert.ToInt64(value,System.Globalization.CultureInfo.InvariantCulture):Convert.ToDouble(value,System.Globalization.CultureInfo.InvariantCulture);
         }
         return ValueRules.Freeze(port,value);
+    }
+    private sealed class BorrowedImage(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage image):IReadOnlyImage
+    {
+        public int Width=>image.Width;
+        public int Height=>image.Height;
+        public byte[] CopyPixels()=>image.GetPixelData().ToArray();
     }
     public static object? Materialize(Port port,Type targetType,object? canonical)
     {

@@ -21,6 +21,7 @@
     <PackageReference Include="NSubstitute" Version="5.*" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../src/Workflow/SunEyeVision.Workflow.csproj" />
     <!-- 工具插件真实部署在 plugins/<Tool>/，测试运行时从该目录显式加载（共享 Loader），
          不 copy-local 到测试输出目录，避免 dev/Debug 根产生第二份工具 dll。 -->
     <ProjectReference Include="../../tools/SunEyeVision.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj">

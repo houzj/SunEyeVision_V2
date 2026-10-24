@@ -14,6 +14,21 @@ namespace SunEyeVision.Tool.BlobAnalysis
         | ToolCapabilities.RoiInput)]
     public class BlobAnalysisResults : ToolResults
     {
+        public BlobAnalysisResults(){Resources=new ResultResourceOwner(ReleaseOwnedOutputs);}
+        private void ReleaseOwnedOutputs()
+        {
+            var owned=new IDisposable?[]{GrayImage,BinaryMask,OverlayImage,BlobRegions,OkBlobRegions,NgBlobRegions};
+            var errors=new List<Exception>();
+            foreach(var item in owned.Where(value=>value is not null).Distinct(ReferenceEqualityComparer.Instance).Cast<IDisposable>())
+                try{item.Dispose();}catch(Exception fault){errors.Add(fault);}
+            if(errors.Count>0)throw new AggregateException(errors);
+        }
+        public override IReadOnlyList<OutputVariable> GetOutputVariables()
+        {
+            var variables=base.GetOutputVariables().ToList();
+            BlobOutputContract.Apply(variables,this);
+            return variables;
+        }
         /// <summary>
         /// 原始灰度输入图像。预处理和 ROI 限定后的中间图像不应冒充原始输入。
         /// </summary>

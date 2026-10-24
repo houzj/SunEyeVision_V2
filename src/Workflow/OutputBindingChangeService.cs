@@ -94,7 +94,8 @@ public sealed class OutputBindingChangeService
                 { Add("绑定来源跨出当前工作流作用域，请使用全局变量。"); continue; }
                 try
                 {
-                    var validation = nodes.TryGetValue(id, out var upstream) ? BindingContractValidator.Validate(reader.ReadContract(upstream), path, input.AllowedTypes)
+                    var validation = nodes.TryGetValue(id, out var upstream) ? BindingContractValidator.Validate(reader.ReadContract(upstream), path, input.AllowedTypes,
+                        node.ParamSettings.GetSetting(input.Key)?.Conversion??SunEyeVision.Plugin.Contracts.BindingConversion.Automatic)
                         : new BindingValidation(BindingCompatibility.Incompatible, "来源节点不存在");
                     if (validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved) Add(validation.Reason);
                 }
@@ -157,10 +158,9 @@ public sealed class OutputBindingChangeService
             contract = ToolRegistry.GetAllPropertyMetadata(node.ToolType).Select(m => new OutputVariable
             {
                 Name = m.PropertyName, DisplayName = m.DisplayName, VariableType = SdkTypeVocabulary.ToTypeVocabulary(m.DeclaredType ?? m.PropertyType!) ?? "",
-                DeclaredType = m.DeclaredType, IsCollection = m.IsCollection, FixedCount = m.FixedCount, FieldId = m.FieldId, Group = m.GroupName
+                DeclaredType = m.DeclaredType, ValueDeclaration=m.ValueDeclaration,AllowsNull=m.AllowsNull, IsCollection = m.IsCollection, FixedCount = m.FixedCount, FieldId = m.FieldId, Group = m.GroupName
             }).ToArray();
-        return contract?.Select(o => new OutputVariable { Name = o.Name, DisplayName = o.DisplayName, VariableType = o.VariableType,
-            Kind = o.Kind, FieldId = o.FieldId, DeclaredType = o.DeclaredType, IsCollection = o.IsCollection, FixedCount = o.FixedCount, Group = o.Group }).ToArray();
+        return contract?.Select(o => o.CopyDeclaration()).ToArray();
     }
 
     private IReadOnlyList<OutputBindingChange> Reconcile(ScopedNodeIdentity? committed, bool all)
@@ -303,7 +303,8 @@ public sealed class OutputBindingChangeService
                     }
                     validation = fieldId != null && nextOutput == null && current[source] != null
                         ? new(BindingCompatibility.Incompatible, "原输出身份已删除，请重新绑定")
-                        : BindingContractValidator.Validate(current[source], path, input.AllowedTypes);
+                        : BindingContractValidator.Validate(current[source], path, input.AllowedTypes,
+                            relation.Node.ParamSettings.GetSetting(input.Key)?.Conversion??SunEyeVision.Plugin.Contracts.BindingConversion.Automatic);
                     if ((validation.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional) && !input.AllowsTypeChange && oldOutput != null && nextOutput != null && oldOutput.VariableType != nextOutput.VariableType)
                         validation = new(BindingCompatibility.Incompatible, "上游输出类型已变化，请重新绑定");
                 }
@@ -409,5 +410,5 @@ public sealed class OutputBindingChangeService
             identities[relation.Input.Key] = new(expression, scope, id, relation.Input.ReadFieldId?.Invoke() ?? field?.FieldId, variable?.Id);
         }
     }
-    private static string Signature(OutputVariable o) => $"{o.FieldId}/{o.Name}/{o.VariableType}/{o.DeclaredType}/{o.IsCollection}/{o.FixedCount}/{o.Kind}/{o.DisplayName}";
+    private static string Signature(OutputVariable o) => $"{o.FieldId}/{o.Name}/{o.VariableType}/{o.DeclaredType}/{o.IsCollection}/{o.FixedCount}/{o.Kind}/{o.DisplayName}/{o.ValueDeclaration?.Fingerprint}/{o.AllowsNull}";
 }

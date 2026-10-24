@@ -1,3 +1,9 @@
+## 2026-10-24 验收继续：a45仅一处缺陷，数值有限新包由协调封存
+
+- 独测正式收口 a45：114成熟PASS，自有唯一35组34PASS+1显式转换策略传播产品缺陷；15负控跟进75断言PASS，旧19组不重跑。acceptance SHA96D9608DF67F36C72109D7FECE38B2FFF573B3D828FC8413EF75E66CFD546291；handoff SHA280446827E16B77F1F33A4156D46F0A916DC521BCFE83B5FCF58C91179BFC4B7，原失败记录保留。修复fc08012df94f89e03288929ec43bf2e87aec0aab精确6文件、自有8PASS；协调fresh m03-explicit-conversion-closure正在独立完整SDK闭包封包，后仅受影响五路径及必要负控，不等主窗。
+- 0641空合同有限缺陷已独验通过，acceptance SHA18D031C8803400980C0FCAC3F6C11C3450C6FFA2E302609159379F748C29BC9C：成熟1+独立3PASS，不重跑旧guard12/4；公共母项仍OPEN。
+- 只读reader e029、模型d621、指定run桥28b、Presenter07b已接续。显式图形地址片68e3267b有限合353f12f9，独立SDK21PASS。主线Blob正式record/原Owner资源/实际根输入接线自有native04真实4PASS；结果宿主与Blob地址消费仍WIP，当前UI-build03实际0错1192警告37.49s，新增宿主/图形关联定向验证中，不算整项完成。
+- 继续原批准48项依赖，唯一主树写者；程序集载体改造不在本范围。最终同一Release人工与VS只集中一次清单，当前不散问用户、不把交接作为停止点。
 ## 2026-10-24 实施继续：准入独验通过，空合同有限修复，生产接线新root验证中
 
 - 公共树后继：e029f9b8 Frozen只读reader51通过；纯presentation源6028822d已有限合d62156ff。主线指定run/原resource-owner桥已实际SDK2通过、UI+Engine/模型29通过，准确API见HANDOFF_DECLARED_RUN_READERS_20261024；未把尚未接的Blob record/resources/控件算整项。原固定production03已送独测，不回写；继续实际Blob和三投影机制。

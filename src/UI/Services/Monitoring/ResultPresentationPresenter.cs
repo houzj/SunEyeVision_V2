@@ -45,11 +45,13 @@ public sealed class ResultPresentationPresenter : IDisposable
     }
 
     public void ShowSchema(ToolSchema schema, IReadOnlyDictionary<string, string>? displayNames = null,
-        IReadOnlyDictionary<string, ResultBindingInfo>? bindings = null)
+        IReadOnlyDictionary<string, ResultBindingInfo>? bindings = null,IReadOnlySet<string>? displayedPorts=null)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(schema);
-        if (_snapshot == null && _model?.Schema.Fingerprint == schema.Fingerprint)
+        if (_snapshot == null && _model?.Schema.Fingerprint == schema.Fingerprint &&
+            _outputs.Select(entry=>entry.Node.DeclaredPort!.Id).SequenceEqual(
+                schema.Outputs.Where(port=>displayedPorts is null||displayedPorts.Contains(port.Id)).Select(port=>port.Id)))
         {
             UpdateRootMetadata(displayNames, bindings);
             RefreshRows();
@@ -57,7 +59,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         }
         var generation = Retire();
         if (generation != _generation || _disposed) return;
-        Install(ResultPresentationModel.ForSchema(schema, _pageSize), displayNames, bindings);
+        Install(ResultPresentationModel.ForSchema(schema, _pageSize), displayNames, bindings,displayedPorts);
         RefreshRows();
     }
 
@@ -91,7 +93,7 @@ public sealed class ResultPresentationPresenter : IDisposable
             _reader = reader;
             reader = null;
             _snapshot = snapshot;
-            Install(model, displayNames, bindings);
+            Install(model, displayNames, bindings,snapshot.Fields.Where(field=>field.Value.DisplayInResultPanel).Select(field=>field.Key).ToHashSet(StringComparer.Ordinal));
             RefreshRows();
         }
         catch
@@ -159,12 +161,13 @@ public sealed class ResultPresentationPresenter : IDisposable
     }
 
     private void Install(ResultPresentationModel model, IReadOnlyDictionary<string, string>? names,
-        IReadOnlyDictionary<string, ResultBindingInfo>? bindings)
+        IReadOnlyDictionary<string, ResultBindingInfo>? bindings,IReadOnlySet<string>? displayedPorts=null)
     {
         _model = model;
         _root = new FlatResultRow { DisplayName = "结果", DisplayValue = StatusText(model.State), IsGroup = true, IsExpanded = true };
         Subscribe(_root, () => RefreshRows());
-        foreach (var node in model.Outputs) _outputs.Add(GetEntry(node, 1));
+        foreach (var node in model.Outputs.Where(node=>displayedPorts is null||displayedPorts.Contains(node.DeclaredPort!.Id))) _outputs.Add(GetEntry(node, 1));
+        if(_outputs.Count==0&&model.State!=ResultPresentationState.Failed)_root=null;
         UpdateRootMetadata(names, bindings);
     }
 

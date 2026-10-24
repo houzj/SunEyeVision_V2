@@ -654,7 +654,7 @@ namespace SunEyeVision.Workflow
                 sourceWorkflow.ExecutionOwner.ActivateRoot(session.RunId);
                 session.ExecutionOwner=sourceWorkflow.ExecutionOwner;
             }
-            using var executionPlan = BuildExecutionPlan(session, scope, sourceWorkflow, request);
+            using var executionPlan = BuildExecutionPlan(session, scope, sourceWorkflow, request,inputImage);
             var execWorkflow = executionPlan.ExecutableWorkflow;
             _logger.LogInfo($"[DEBUG ExecuteWorkflow] execWorkflow 创建完成: Id={execWorkflow.Id}, Name={execWorkflow.Name}, Nodes.Count={execWorkflow.Nodes.Count}, Connections.Count={execWorkflow.Connections.Count}");
 
@@ -836,10 +836,10 @@ namespace SunEyeVision.Workflow
             result.CaptureDeclaredOutputs(workflow.Nodes.OfType<AlgorithmNode>()
                 .Where(node=>node.AdmittedIdentity is not null&&node.BindingOutputSchema is not null)
                 .Select(node=>node.LastToolResult?.DeclaredOutput??(result.NodeResults.TryGetValue(node.Id,out var outcome)
-                    ?DeclaredOutputSnapshot.WithoutValues(node.BindingOutputSchema!,0,node.AdmittedIdentity!.ToInvocationIdentity(node.Id),
+                    ?node.BindingContext!.WithoutResult(node,
                         outcome.Success?ExecutionStatus.NotExecuted:outcome.Status is ExecutionStatus.NotExecuted?ExecutionStatus.Failed:outcome.Status,
                         outcome.ErrorMessages.Select(message=>new SunEyeVision.Plugin.Contracts.Diagnostic("execution",message)))
-                    :DeclaredOutputSnapshot.NotExecuted(node.BindingOutputSchema!,0,node.AdmittedIdentity!.ToInvocationIdentity(node.Id)))));
+                    :node.BindingContext!.WithoutResult(node,ExecutionStatus.NotExecuted,Array.Empty<SunEyeVision.Plugin.Contracts.Diagnostic>()))));
         }
 
         private void ReleaseExecutionResources(WorkflowContext? context, Workflow workflow)
@@ -857,11 +857,12 @@ namespace SunEyeVision.Workflow
             WorkflowRunSession session,
             WorkflowRunScope scope,
             Workflow sourceWorkflow,
-            WorkflowRunRequest? request)
+            WorkflowRunRequest? request,IVisionImage? inputImage)
         {
             var executableWorkflow = new Workflow(Guid.NewGuid().ToString(), sourceWorkflow.Name);
             if(session.ExecutionOwner!=null)sourceWorkflow.AttachExecutionOwner(session.ExecutionOwner);
             ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow, request);
+            foreach(var node in executableWorkflow.Nodes.OfType<AlgorithmNode>())node.WorkflowInputImage=inputImage;
             var inputIssues = OutputBindingChangeService.GetExecutionInputIssues(executableWorkflow, sourceWorkflow.Id);
             var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, request?.CommunicationInputs?.GetVariables(), sourceWorkflow.Id, inputIssues);
             var nodeExecutionProfiles = executableWorkflow.Nodes.ToDictionary(

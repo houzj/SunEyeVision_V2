@@ -13,6 +13,24 @@ namespace SunEyeVision.UI.Tests;
 
 public sealed class BindingWorkflowExecutionTests
 {
+    [Fact]
+    public async Task Explicit_run_reader_keeps_history_and_never_substitutes_the_new_run()
+    {
+        using var fixture=new Fixture();var source=fixture.Add("source",true,5);
+        using var oldRun=await fixture.Run();var old=Assert.Single(oldRun.DeclaredOutputs);
+        using var oldReader=oldRun.AcquireDeclaredOutput(old.Identity);
+        ((ProbeParameters)source.Parameters).Value=9;
+        using var newRun=await fixture.Run();var current=Assert.Single(newRun.DeclaredOutputs);
+        Assert.NotEqual(old.Identity,current.Identity);
+        Assert.False(oldRun.NodeResults["source"].Result!.ExecutionIdentity!.IsCurrent);
+        using var historical=oldRun.AcquireDeclaredOutput(old.Identity);
+        using var currentReader=newRun.AcquireDeclaredOutput(current.Identity);
+        const string field="field:7784e373d39b4375b2f7d911e42e9181";
+        Assert.Equal(5,historical.Values!.Read(field).GetScalar<double>());
+        Assert.Equal(9,currentReader.Values!.Read(field).GetScalar<double>());
+        Assert.Throws<KeyNotFoundException>(()=>newRun.AcquireDeclaredOutput(old.Identity));
+    }
+
     [Theory]
     [InlineData(17d,false,false)]
     [InlineData(17d,true,true)]

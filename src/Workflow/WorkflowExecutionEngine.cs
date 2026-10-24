@@ -279,6 +279,7 @@ namespace SunEyeVision.Workflow
             _logger.LogInfo($"  总耗时: {(DateTime.Now - context.ExecutionStartTime).TotalMilliseconds:F2} ms");
             _logger.LogInfo($"======================================");
 
+            CaptureDeclaredRunOutputs(result,workflow);
             ExecutionCompleted?.Invoke(this, result);
             return result;
 #pragma warning restore CS0162
@@ -412,6 +413,7 @@ namespace SunEyeVision.Workflow
             result.Success = result.Errors.Count == 0 && allResults.Values.All(node => node.Success);
             result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;
             result.ExecutionTime = DateTime.Now - context.ExecutionStartTime;
+            CaptureDeclaredRunOutputs(result,workflow);
             ExecutionCompleted?.Invoke(this, result);
             return result;
         }
@@ -801,14 +803,20 @@ namespace SunEyeVision.Workflow
                 session.State = WorkflowExecutionState.Stopped;
                 scope.State = WorkflowExecutionState.Stopped;
                 _logger.LogWarning("工作流执行被取消");
-                return ExecutionResult.CreateCancelled();
+                var cancelled=ExecutionResult.CreateCancelled();
+                cancelled.NodeResults=session.RootContext.GetAllNodeResults();
+                CaptureDeclaredRunOutputs(cancelled,execWorkflow);
+                return cancelled;
             }
             catch (Exception ex)
             {
                 session.State = WorkflowExecutionState.Error;
                 scope.State = WorkflowExecutionState.Error;
                 _logger.LogError($"工作流执行失败: {ex.Message}", ex);
-                return ExecutionResult.CreateFailure($"{ex.Message}\n{ex.StackTrace}");
+                var failed=ExecutionResult.CreateFailure($"{ex.Message}\n{ex.StackTrace}");
+                failed.NodeResults=session.RootContext.GetAllNodeResults();
+                CaptureDeclaredRunOutputs(failed,execWorkflow);
+                return failed;
             }
             finally
             {
@@ -823,6 +831,17 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 从 UI 编辑模型生成一次运行专属的可执行计划。
         /// </summary>
+        private static void CaptureDeclaredRunOutputs(ExecutionResult result,Workflow workflow)
+        {
+            result.CaptureDeclaredOutputs(workflow.Nodes.OfType<AlgorithmNode>()
+                .Where(node=>node.AdmittedIdentity is not null&&node.BindingOutputSchema is not null)
+                .Select(node=>node.LastToolResult?.DeclaredOutput??(result.NodeResults.TryGetValue(node.Id,out var outcome)
+                    ?DeclaredOutputSnapshot.WithoutValues(node.BindingOutputSchema!,0,node.AdmittedIdentity!.ToInvocationIdentity(node.Id),
+                        outcome.Success?ExecutionStatus.NotExecuted:outcome.Status is ExecutionStatus.NotExecuted?ExecutionStatus.Failed:outcome.Status,
+                        outcome.ErrorMessages.Select(message=>new SunEyeVision.Plugin.Contracts.Diagnostic("execution",message)))
+                    :DeclaredOutputSnapshot.NotExecuted(node.BindingOutputSchema!,0,node.AdmittedIdentity!.ToInvocationIdentity(node.Id)))));
+        }
+
         private void ReleaseExecutionResources(WorkflowContext? context, Workflow workflow)
         {
             try { context?.ClearNodeResults(); }

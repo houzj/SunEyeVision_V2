@@ -1,5 +1,7 @@
 ## 2026-10-24 实施继续：准入独验通过，空合同有限修复，生产接线新root验证中
 
+- 公共树后继：e029f9b8 Frozen只读reader51通过；纯presentation源6028822d已有限合d62156ff。主线指定run/原resource-owner桥已实际SDK2通过、UI+Engine/模型29通过，准确API见HANDOFF_DECLARED_RUN_READERS_20261024；未把尚未接的Blob record/resources/控件算整项。原固定production03已送独测，不回写；继续实际Blob和三投影机制。
+
 - 更新：生产绑定有限a45f8d6a封存production-delivery-receipt SHA170E3AE34C6F55C3DC341A38B79C78659137A0A2E05541A5F6078A716F6EBC39，1445source/777bin，已直送独测。全量Release02实际0错1136警告52.29s；Engine最终11/SDK38/Script16/Foundation49通过，toolbox probe实际3.0/22工具PID52652自然0。旧fixed根不再写。公共树本次完整机制归原J02/J03/L01，不以guard/string.Join代闭环；独立presentation worktree正在实施稳定模型。主线补Frozen值只读reader，Foundation51开发通过，无全数组Clone；资源reader桥仍下一步，不冒完成。
 
 - 准入包独验 acceptance CBF556D0F4A6472D7014105A0B16D889962C28B633FDDA6877BC128A98E517D4：Foundation47/SDK24/Script16及23组304断言通过，不重跑旧固定包。ToolContract3.0有限片已合aa51c5f4，树守卫已合1b799480。

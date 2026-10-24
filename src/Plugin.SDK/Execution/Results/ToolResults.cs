@@ -282,6 +282,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         [System.Text.Json.Serialization.JsonIgnore]
         public long BindingSchemaRevision { get; internal set; }
         [System.Text.Json.Serialization.JsonIgnore]
+        public DeclaredOutputSnapshot? DeclaredOutput => _declaredOutput;
+        private DeclaredOutputSnapshot? _declaredOutput;
+        internal void PublishDeclaredOutput(DeclaredOutputSnapshot output)
+        {
+            if(System.Threading.Interlocked.CompareExchange(ref _declaredOutput,output,null) is not null)
+                throw new InvalidOperationException("The invocation output was already frozen.");
+        }
+        [System.Text.Json.Serialization.JsonIgnore]
         public ResultResourceOwner? Resources { get; protected set; }
         /// <summary>
         /// 执行状态

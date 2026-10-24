@@ -152,22 +152,39 @@ internal sealed class WorkflowBindingContext : IDisposable
         foreach(var dependency in consumer.CompiledBindings.Values.SelectMany(p=>p.Dependencies).Distinct())
         {
             if(dependency.ScopeId!=_scope||results?.TryGetValue(dependency.NodeId,out var result)!=true||
-                result.ExecutionIdentity is null||result.BindingOutputSchema is null||!_declarations.TryGetValue(dependency.NodeId,out var declaration))continue;
+                result.ExecutionIdentity is null||result.BindingOutputSchema is null||result.DeclaredOutput is null)continue;
             try
             {
-                var values=new Dictionary<string,object?>(StringComparer.Ordinal);
-                foreach(var port in result.BindingOutputSchema.Outputs)
-                {
-                    if(!declaration.Outputs.TryGetValue(port.Id,out var output))throw new InvalidOperationException("Result field identity is not in the frozen declaration.");
-                    values.Add(port.Id,BindingClrAdapter.NormalizeValue(port,OutputVariableResolver.Resolve(result,output.Name,dependency.NodeId)));
-                }
+                using var reader=result.DeclaredOutput.AcquireReader();
+                if(reader.Values is not { } values)continue;
                 candidates.Add(new(dependency,result.ExecutionIdentity.ToInvocationIdentity(dependency.NodeId),result.BindingSchemaRevision,
-                    result.BindingOutputSchema.Fingerprint,result.IsSuccess,new(result.BindingOutputSchema.Outputs,values)));
+                    result.BindingOutputSchema.Fingerprint,result.IsSuccess,values));
             }
             catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException or KeyNotFoundException)
             { /* A malformed source is unavailable; never fall back to old or inferred values. */ }
         }
         return new BindingRunSnapshot(new(_scope,consumer.Id),consumer.AdmittedIdentity!.ToInvocationIdentity(consumer.Id),_documentRevision,candidates,_expected);
+    }
+    internal void FreezeResult(AlgorithmNode node,ToolResults result)
+    {
+        var declaration=_declarations[node.Id];
+        var values=new Dictionary<string,object?>(StringComparer.Ordinal);
+        if(result.IsSuccess&&declaration.Source.Schema.Outputs.Count>0)
+        {
+            try
+            {
+                var actual=result.GetOutputVariables().Where(v=>v.Kind==OutputVariableKind.Data).ToDictionary(v=>v.Name,StringComparer.Ordinal);
+                foreach(var port in declaration.Source.Schema.Outputs)
+                {
+                    var output=declaration.Outputs[port.Id];
+                    if(!actual.TryGetValue(output.Name,out var value))throw new InvalidOperationException("The formal output is absent from this invocation.");
+                    values.Add(port.Id,BindingClrAdapter.NormalizeValue(port,value.RuntimeValue));
+                }
+            }
+            catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException or KeyNotFoundException)
+            {result.SetError("输出不符合冻结声明："+fault.Message);values.Clear();}
+        }
+        DeclaredOutputSnapshot.Publish(result,node.AdmittedIdentity!.ToInvocationIdentity(node.Id),result.IsSuccess?values:null);
     }
     public void Dispose()
     {foreach(var node in _nodes.Values)node.AdmittedIdentity?.CompleteCallbacks();}

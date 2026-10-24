@@ -7,6 +7,32 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
 {
     public class ExecutionResult : IDisposable
     {
+        private readonly object _declaredGate = new();
+        private bool _disposed;
+        private bool _declaredCaptured;
+        private IReadOnlyDictionary<SunEyeVision.Plugin.Contracts.RunIdentity,DeclaredOutputSnapshot> _declaredOutputs
+            = new Dictionary<SunEyeVision.Plugin.Contracts.RunIdentity,DeclaredOutputSnapshot>();
+        public IReadOnlyList<DeclaredOutputSnapshot> DeclaredOutputs
+        {get{lock(_declaredGate){ObjectDisposedException.ThrowIf(_disposed,this);return Array.AsReadOnly(_declaredOutputs.Values.ToArray());}}}
+        public void CaptureDeclaredOutputs(IEnumerable<DeclaredOutputSnapshot> outputs)
+        {
+            var frozen=outputs.ToDictionary(output=>output.Identity);
+            lock(_declaredGate)
+            {
+                ObjectDisposedException.ThrowIf(_disposed,this);
+                if(_declaredCaptured)throw new InvalidOperationException("Declared run outputs were already captured.");
+                _declaredOutputs=new System.Collections.ObjectModel.ReadOnlyDictionary<SunEyeVision.Plugin.Contracts.RunIdentity,DeclaredOutputSnapshot>(frozen);
+                _declaredCaptured=true;
+            }
+        }
+        public DeclaredOutputReader AcquireDeclaredOutput(SunEyeVision.Plugin.Contracts.RunIdentity identity)
+        {
+            lock(_declaredGate)
+            {
+                ObjectDisposedException.ThrowIf(_disposed,this);
+                return _declaredOutputs.TryGetValue(identity,out var output)?output.AcquireReader():throw new KeyNotFoundException("This exact invocation is not in the selected run.");
+            }
+        }
         public bool Success { get; set; }
         public ExecutionStatus Status { get; set; } = ExecutionStatus.NotExecuted;
         public Dictionary<string, object> Outputs { get; set; }
@@ -21,9 +47,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             set
             {
                 var snapshot = new NodeResultSnapshot(value);
-                var previous = _resultSnapshot;
-                _resultSnapshot = snapshot;
-                _nodeResults = snapshot.Results;
+                NodeResultSnapshot? previous;
+                bool rejected;
+                lock(_declaredGate)
+                {
+                    rejected=_disposed||_declaredCaptured;
+                    previous=rejected?null:_resultSnapshot;
+                    if(!rejected){_resultSnapshot = snapshot;_nodeResults = snapshot.Results;}
+                }
+                if(rejected){snapshot.Dispose();throw new InvalidOperationException("The run output has already closed or frozen.");}
                 previous?.Dispose();
             }
         }
@@ -34,9 +66,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         }
         public void Dispose()
         {
-            var snapshot = _resultSnapshot;
-            _resultSnapshot = null;
-            _nodeResults = new Dictionary<string, NodeExecutionResult>();
+            NodeResultSnapshot? snapshot;
+            lock(_declaredGate)
+            {
+                if(_disposed)return;
+                _disposed=true;
+                snapshot = _resultSnapshot;
+                _resultSnapshot = null;
+                _nodeResults = new Dictionary<string, NodeExecutionResult>();
+                _declaredOutputs=new Dictionary<SunEyeVision.Plugin.Contracts.RunIdentity,DeclaredOutputSnapshot>();
+            }
             snapshot?.Dispose();
         }
 

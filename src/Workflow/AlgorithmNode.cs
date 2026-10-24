@@ -148,6 +148,7 @@ namespace SunEyeVision.Workflow
                         toolResult.SetError(commitError ?? "标定点保存失败");
                     }
 
+                    BindingContext?.FreezeResult(this,toolResult);
                     if (toolResult.Status == ExecutionStatus.Failed && !string.IsNullOrWhiteSpace(toolResult.ErrorMessage))
                     {
                         StoreLastToolResult(toolResult);

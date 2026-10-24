@@ -1,3 +1,11 @@
+## 2026-10-24 18:16 真实主窗保存冲突根因已定位，双缺陷同源后继
+
+- FT-H02-EDITOR-BASELINE-SAVE-01：17bc独测r3真实main173保存被EnsureBaseline拒，disk128未写；唯一独立产品FAIL，变量181/invalid/182/重开前置未成立，不冒4个产品缺陷。assessment43E247DDFE6497417F91CC8F2B14A05F982D8E254890CD56F9078363094FDD60；独测原/owned9110检查0漂移。停止旧17bc重跑，WPF已释放。
+- 单次新115f无Show诊断02 PID36040自然0：实际Repo.Load→UI.FromBase→Host/BeginEdit/Validate各signature0diff；主UI3432同款预览引用写入后，唯一差异$.Workflows[0].Nodes[1].Signature[json].SelectedDisplaySource，随后Validate重现同错误。baseline02.json SHA A923A04BBA7262786E424B3D4CB3EEC32BAE862120F2FA7FC212AD452D12BB59。01因SolutionManager未初始化在Host阶段前自然1，明确设施失败，修明确初始化后仅02执行，不循环。两轮均无Show/局部无交互错误模式/60秒owned watchdog。
+- 修复只限定Host专用NodeEditSignature排除顶层预览偏好，Begin/Check/Shape/Apply一致；原BindingConfigurationStore全域签名不改、参数内部字段照常覆盖。Host仅发布params/settings，从不覆盖SelectedDisplaySource，预览偏好保独立持久化；参数/绑定/图/输入/全局绑定实际变更仍拒、无无条件rebase。新增预览后真实Threshold pending173确认/单次发布/UndoRedo保预览与四外部配置拒绝负控；原外部参数/stale已有检查保留。
+- 与115f Custom确认修复合一次新完整Release；115f full03已自然0/0错1279警告189.67秒，因保存缺陷新增不做孤立GUI/封包。原18:10–20预测失效，当前18:35–45新fixed条件目标，独测再验主窗与Run，不冒已通过。
+- 设计文档交接：主控9f052ce4702ed6aea5477d77f98b6980399ef4d6仅O06/home及生成校验，基线115f77b0，Blob实施仍未批准，不影响在途。程序集载体仍等主控。
+
 ## 2026-10-24 17:55 原D02/B02 Custom确认入口缺陷后继
 
 - 独测17bc身份门与19项已PASS；主窗priority01仅selector找不到x:Name暴露UIA导致0业务case，设施BLOCK非产品FAIL，修单次selector后继续，不重19。实施保持WPF窗让独测。

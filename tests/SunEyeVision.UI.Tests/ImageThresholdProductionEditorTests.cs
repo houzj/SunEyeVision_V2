@@ -120,6 +120,21 @@ public sealed class ImageThresholdProductionEditorTests
         Assert.NotSame(f.Published, f.Draft);
     });
     [Fact]
+    public void Deferred_preview_preference_does_not_block_real_pending_int32_confirmation()
+        => Sta(() =>
+    {
+        using var f = new Fixture();
+        var text = f.ThresholdText(); text.Text = "173";
+        var preview = new ImageSourceReference(f.Formal.Id, "OutputImage", f.Formal.Name, "输出图像");
+        f.Formal.SelectedDisplaySource = preview;
+        Assert.True(Assert.IsType<DefaultDebugWindow>(f.Window).TryConfirm(out var error), error);
+        Assert.Equal(173, Get(f.Published, "Threshold")); Assert.Equal(1, f.Publications);
+        Assert.Same(preview, f.Formal.SelectedDisplaySource); Assert.False(f.Window.IsVisible);
+        f.Host.Undo(); Assert.Equal(128, Get(f.Published, "Threshold")); Assert.Same(preview, f.Formal.SelectedDisplaySource);
+        f.Host.Redo(); Assert.Equal(173, Get(f.Published, "Threshold")); Assert.Same(preview, f.Formal.SelectedDisplaySource);
+    });
+
+    [Fact]
     public void Custom_host_visible_confirm_rejects_invalid_then_invokes_exactly_one_publication_and_closes() => Sta(() =>
     {
         using var f = new Fixture(custom: true);

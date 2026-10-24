@@ -37,6 +37,8 @@ public sealed class NodeConfigurationEditHost
         Apply(_store.Capture());
     }
 
+    /// <summary>Parameter/binding publication history, not a complete live solution export.
+    /// Independently persisted preview preferences must be saved from the live solution.</summary>
     public BindingConfigurationSnapshot Capture() => _store.Capture();
     public bool OwnsNode(string workflowId, WorkflowNodeBase node)
     { lock (_gate) return _design.Workflows.Any(w => w.Id == workflowId && w.Nodes.Any(n => ReferenceEquals(n, node))); }
@@ -49,7 +51,7 @@ public sealed class NodeConfigurationEditHost
         {
             EnsureBaseline();
             var node = Find(_store.Capture().CopyConfiguration(), new(workflowId, nodeId));
-            return new(_owner, new(workflowId, nodeId), node, BindingConfigurationStore.NodeSignature(node));
+            return new(_owner, new(workflowId, nodeId), node, NodeEditSignature(node));
         }
     }
 
@@ -79,7 +81,7 @@ public sealed class NodeConfigurationEditHost
         if (editor.Owner != _owner || editor.Consumed) throw new InvalidOperationException("编辑草稿已提交或不属于当前方案。");
         EnsureBaseline();
         var node = Find(_store.Capture().CopyConfiguration(), editor.Identity);
-        if (BindingConfigurationStore.NodeSignature(node) != editor.Signature)
+        if (NodeEditSignature(node) != editor.Signature)
             throw new InvalidOperationException("当前节点正式配置已变化，草稿已保留，请重新确认后编辑。");
         if (editor.Node.Id != node.Id || editor.Node.ToolType != node.ToolType)
             throw new InvalidOperationException("参数编辑不能更换节点身份或工具类型。");
@@ -98,7 +100,7 @@ public sealed class NodeConfigurationEditHost
             if (editor.Owner != _owner || editor.Consumed) throw new InvalidOperationException("编辑草稿已提交或不属于当前方案。");
             EnsureBaseline();
             var draft = _store.BeginEdit(); var node = Find(draft.Configuration, editor.Identity);
-            if (BindingConfigurationStore.NodeSignature(node) != editor.Signature)
+            if (NodeEditSignature(node) != editor.Signature)
                 throw new InvalidOperationException("当前节点正式配置已变化，草稿已保留，请重新确认后编辑。");
             if (editor.Node.Id != node.Id || editor.Node.ToolType != node.ToolType)
                 throw new InvalidOperationException("参数编辑不能更换节点身份或工具类型。");
@@ -128,11 +130,21 @@ public sealed class NodeConfigurationEditHost
     {
         model.Id,
         Workflows = model.Workflows.Select(w => new { w.Id, w.IsSubroutine,
-            Nodes = w.Nodes.Select(n => new { n.Id, Signature = BindingConfigurationStore.NodeSignature(n) }),
+            Nodes = w.Nodes.Select(n => new { n.Id, Signature = NodeEditSignature(n) }),
             Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort }) }),
         // Device values and variable runtime values are not node editor configuration.
         Variables = model.GlobalVariables.Select(v => new { v.Id, v.Name, v.Type, v.ProducerBinding,
             v.ConsumerBindings, v.RebindingReason, v.BindingValidationPending })
+    }, WorkflowSerializationOptions.Compact);
+
+    // Display-source preferences are owned and persisted by the preview host. This gateway
+    // never publishes them; including them in its CAS would reject unrelated parameter edits.
+    // Keep the configuration and dependency guards; do not silently adopt a changed baseline.
+    private static string NodeEditSignature(WorkflowNodeBase node) => JsonSerializer.Serialize(new
+    {
+        node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
+        Parameters = JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact),
+        node.ParamSettings, node.ImageSourceConfig
     }, WorkflowSerializationOptions.Compact);
 
     private void Apply(BindingConfigurationSnapshot snapshot)
@@ -146,7 +158,7 @@ public sealed class NodeConfigurationEditHost
         foreach (var pair in nextNodes)
         {
             var target = originalNodes[pair.Key]; var next = pair.Value;
-            if (BindingConfigurationStore.NodeSignature(target) == BindingConfigurationStore.NodeSignature(next)) continue;
+            if (NodeEditSignature(target) == NodeEditSignature(next)) continue;
             var oldParameters = target.Parameters; var oldSettings = target.ParamSettings;
             changes.Add((() => { target.Parameters = next.Parameters; target.ParamSettings = next.ParamSettings; },
                 () => { target.Parameters = oldParameters; target.ParamSettings = oldSettings; }));

@@ -43,6 +43,49 @@ public sealed class NodeConfigurationEditHostTests
     }
 
     [Fact]
+    public void Preview_preferences_remain_independent_of_parameter_commit_undo_and_redo()
+    {
+        var model = Model(); var source = model.Workflows[0].Nodes[0]; var parse = model.Workflows[0].Nodes[1];
+        var host = new NodeConfigurationEditHost(model); var edit = host.BeginEdit("f", "source");
+        var parseParameters = parse.Parameters;
+        var sourcePreview = new SunEyeVision.Plugin.SDK.Execution.Parameters.ImageSourceReference("source", "OutputImage", "source", "图像");
+        var parsePreview = new SunEyeVision.Plugin.SDK.Execution.Parameters.ImageSourceReference("source", "OutputImage", "source", "图像");
+        source.SelectedDisplaySource = sourcePreview; parse.SelectedDisplaySource = parsePreview;
+        ((BindingAdaptationB2Tests.SourceParameters)edit.Node.Parameters).Name = "edited";
+        host.Validate(edit); host.Commit(edit);
+        Assert.Equal("edited", ((BindingAdaptationB2Tests.SourceParameters)source.Parameters).Name);
+        Assert.Same(sourcePreview, source.SelectedDisplaySource); Assert.Same(parsePreview, parse.SelectedDisplaySource);
+        Assert.Same(parseParameters, parse.Parameters);
+        host.Undo(); Assert.Same(sourcePreview, source.SelectedDisplaySource); Assert.Same(parsePreview, parse.SelectedDisplaySource);
+        host.Redo(); Assert.Same(sourcePreview, source.SelectedDisplaySource); Assert.Same(parsePreview, parse.SelectedDisplaySource);
+        Assert.Equal("edited", ((BindingAdaptationB2Tests.SourceParameters)source.Parameters).Name);
+    }
+
+    [Theory]
+    [InlineData("binding")]
+    [InlineData("topology")]
+    [InlineData("image-input")]
+    [InlineData("enabled")]
+    [InlineData("global-binding")]
+    public void Independent_preview_does_not_adopt_real_external_configuration_changes(string change)
+    {
+        var model = Model(); model.GlobalVariables.Add(new GlobalVariable("v", "initial", "String"));
+        var host = new NodeConfigurationEditHost(model); var before = host.Capture(); var edit = host.BeginEdit("f", "source");
+        model.Workflows[0].Nodes[0].SelectedDisplaySource = new("source", "OutputImage", "source", "图像");
+        switch (change)
+        {
+            case "binding": model.Workflows[0].Nodes[1].ParamSettings.SetSetting(SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSetting.CreateBinding("InputText", "source", "value")); break;
+            case "topology": model.Workflows[0].Connections.Add(new("edge", "source", "parse")); break;
+            case "image-input": model.Workflows[0].Nodes[0].ImageSourceConfig = new() { NodeId = "source" }; break;
+            case "enabled": model.Workflows[0].Nodes[0].IsEnabled = false; break;
+            default: model.GlobalVariables[0].ConsumerBindings.Add(new() { WorkflowId = "f", NodeId = "parse", ParameterName = "InputText" }); break;
+        }
+        Assert.Throws<InvalidOperationException>(() => host.Validate(edit));
+        Assert.Throws<InvalidOperationException>(() => host.Commit(edit));
+        Assert.Same(before, host.Capture()); Assert.False(host.CanUndo);
+    }
+
+    [Fact]
     public void External_design_changes_are_rejected_instead_of_silently_overwritten()
     {
         var model = Model(); var host = new NodeConfigurationEditHost(model); var edit = host.BeginEdit("f", "source");

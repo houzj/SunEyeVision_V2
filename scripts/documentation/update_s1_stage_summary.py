@@ -249,13 +249,14 @@ def render_s4_stage(page):
     if not path.exists():
         return page
     s4 = json.loads(path.read_text(encoding='utf-8-sig'))
-    if s4['status'] != 'ACTIVE_IMPLEMENTATION':
+    if s4['status'] not in ('ACTIVE_IMPLEMENTATION', 'READY_FOR_MANUAL'):
         return page
+    ready = s4['status'] == 'READY_FOR_MANUAL'
     state = escape(s4['current'])
     page = re.sub(r'(<div class="br-note" id="o06-blob-final-review"><h3>当前做到哪里？</h3><p><b>).*?(</b></p>)',
                   lambda m: m[1] + state + m[2], page, count=1, flags=re.S)
     page = re.sub(r'<!-- S4-CURRENT-STATUS:BEGIN -->.*?<!-- S4-CURRENT-STATUS:END -->', '', page, flags=re.S)
-    block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4现在改到哪里？</h3>'
+    block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4实施和试用状态</h3>'
              + table(['优化项', '现在已实现', '验证与剩余'], s4['rows'])
              + ('<details><summary>查看当前真实页面</summary><p>正式Release的自动检查宿主渲染，尚未人工验收。</p><img alt="当前Blob默认编辑页" style="max-width:100%;height:auto" src="'
                 + quote(os.path.relpath(ROOT / s4['uiPreview']['path'], PAGE.parent).replace('\\', '/')) + '"></details>' if s4.get('uiPreview') else '')
@@ -275,7 +276,7 @@ def render_s4_stage(page):
     live_start = page.index('<section id="implementation-live-status"')
     live_end = page.index('<details><summary>历史实施与独测记录', live_start)
     page = page[:live_start] + re.sub(r'<h2>.*?</h2><p>.*?</p>',
-        lambda _: '<h2>当前实施状态：S1—S3自动闭合，S4实施中</h2><p>' + state + '</p>',
+        lambda _: '<h2>' + ('当前状态：S1—S4集中试用，人工结果待反馈' if ready else '当前实施状态：S1—S3自动闭合，S4实施中') + '</h2><p>' + state + '</p>',
         page[live_start:live_end], count=1, flags=re.S) + page[live_end:]
     old = ('Plugin.Wpf真实存在，但目前只有PluginFoundation样例消费者，未进入主slnx且无src/UI/tools生产消费者；'
            'OutDir指向artifacts/validation/plugin-foundation-01/bin；ParameterEditorControl自称Minimal editor contract consumer，'
@@ -296,7 +297,10 @@ def render_s4_stage(page):
         'blobanalysistooldebugcontrol': 'S4当前：旧Wpf/Views/BlobAnalysisToolDebugControl.xaml及后台、专用BlobAnalysisConverters.cs已删除；不再沿旧整页重构。正常打开入口由UI/Services/Editing/Nodes/DeclaredToolConfigurationControl及其Sources/RegionSources/Regions分部组装，Plugin.Wpf只含局部字段和几何编辑，事务/交互归宿主。VM对标沿本行控件→模板→宿主组装证据。Wpf组件保留现行BlobDataAnalysisControl只读结果视图，S5未启动。',
         'roisubscribepanel': 'S4当前：RegionSources宿主适配按检测/屏蔽与几何/像素Region分别配置，几何为独立订阅项，切换不删本地底稿。VM对应ROISelecter模板与ButtonSelecter订阅链；现行SDK存储与运行校验归宿主，不能把模板相似当成底层实现相同。',
         'imagesourceselector': 'S4当前：Plugin.Wpf/Fields/SourceSelectionField仅展示宿主提供的声明候选；UI/Sources适配持久引用、当前作用域和显式集合序号，禁止猜默认来源。VM对应ButtonSelecter_sub:255→SubTreeView:296–302选择组合链。现行SDK矩阵缺完整中立空间元数据，保留明确适配而不伪造坐标标识；同帧校验继续生效。',
+        'blobdataanalysiscontrol': 'S4关联修复：保留现有专用表格和列；Wpf/Presentation/BlobAnalysisRow将同一Runtime声明记录投影为无资源句柄的标量行，不再强转隔离加载的SDK门面结果，Wpf工程改引Runtime而非门面项目。主窗口真实调试、表/摘要、选中高亮及失败清理已有连续链验证。VM当前结果声明/宿主链作为本行对标证据；S5通用声明结果平台未启动。',
     }
+    if ready:
+        updates['configsetting'] = updates['configsetting'].replace('整链尚未核收；不能把新默认页局部通过算成完整交付。', '真实宿主连续链和同提交自动回归已核收，人工体验仍待用户反馈。')
     for key, note in updates.items():
         pattern = r'(<tr id="o06-control-' + key + r'"[^>]*>)(.*?)(</tr>)'
         def update_row(match):
@@ -312,6 +316,32 @@ def render_s4_stage(page):
         page, count = re.subn(pattern, update_row, page, count=1, flags=re.S)
         if count != 1:
             raise ValueError('Missing original control row: ' + key)
+    if ready:
+        trial=s4['trial']
+        release_path=escape(trial['program'])
+        sample_path=escape(trial['sample'])
+        trial_intro=('<div class="br-note" id="o06-blob-final-review"><h3>S1—S4可以集中试用了</h3>'
+                     '<p><b>'+state+'</b></p><p>固定程序：<code>'+release_path+'</code></p>'
+                     '<p><a href="#blob-verification-steps">直接看试用步骤、预期效果和反馈清单</a>。自动验证已完成，人工结果尚未确认。</p></div>')
+        page=re.sub(r'<!-- O06-BLOB-FINAL-REVIEW:BEGIN -->.*?<!-- O06-BLOB-FINAL-REVIEW:END -->',
+                    lambda _: '<!-- O06-BLOB-FINAL-REVIEW:BEGIN -->\n'+trial_intro+'\n<!-- O06-BLOB-FINAL-REVIEW:END -->',page,count=1,flags=re.S)
+        a=page.index('<h3 id="blob-verification-steps">')
+        b=page.index('<h3 id="blob-optimization-list">',a)
+        historical=page[a:b].replace('<h3 id="blob-verification-steps">','<h4>',1).replace('</h3>','</h4>',1)
+        manual=('<h3 id="blob-verification-steps">⑤ S1—S4集中试用：改了什么、怎么验证</h3>'
+                '<p><b>版本：</b>'+escape(trial['version'])+'，产品提交 <code>'+escape(trial['productCommit'][:8])+'</code>。'
+                '已完成同提交正式Release构建、真实宿主连续链和关联自动回归；等待你的实际试用反馈。</p>'
+                '<p><b>启动程序：</b><code>'+release_path+'</code><br><b>打开示例方案：</b><code>'+sample_path+'</code></p>'
+                '<p>'+escape(trial['example'])+'</p>'
+                +table(['要验证什么','怎么操作','预期效果'],trial['checklist'])
+                +'<p><b>反馈方式：</b>告诉我“哪一步、做了什么、实际看到了什么”；异常可附截图。'
+                '目前人工状态为“待反馈”，不会代你填写通过。'+escape(trial['limitations'])+'</p>'
+                '<details><summary>查看S1早期实施与原验证记录（历史，不是当前待办）</summary>'+historical+'</details>\n')
+        page=page[:a]+manual+page[b:]
+        page=re.sub(r'<div class="br-note"><b>当前S1状态：</b>.*?</div>',
+                    '<div class="br-note"><b>当前总状态：</b>'+state+' <a href="#blob-verification-steps">集中试用与反馈</a>。</div>',page,flags=re.S)
+        page=page.replace('架构方案与阶段进度 · S1实施及本轮自动验证已闭合 · 完整Blob交互链仍待后续实施',
+                          '架构方案与阶段进度 · S1—S4实施及自动验证完成 · 集中人工试用待反馈')
     return page
 
 

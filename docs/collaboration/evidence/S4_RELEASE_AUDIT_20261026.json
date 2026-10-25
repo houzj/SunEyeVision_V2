@@ -1,0 +1,106 @@
+{
+  "status": "IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED_MANUAL_PENDING",
+  "productCommit": "69d844e29e5ec198dadff5e62615d02dfe3afb88",
+  "artifactVersion": "2.0.0.8_alpha",
+  "runtimeProbeCommit": "69d844e29e5ec198dadff5e62615d02dfe3afb88",
+  "payloadSha256": "4f22dae352d62f5d48e72f56915c492cd4506e559e4ed9c342e2efbd647c6d1b",
+  "loadedFileComparisons": 332,
+  "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+  "uiAssemblySha256": "5eb34c9b0ebba7cc55e9a09b77e8ebeab63296d4ac3c24400bb73f677ef69c06",
+  "checks": [
+    {
+      "name": "同提交全量正式Release",
+      "result": "0错误/1281警告，产品提交69d844e2",
+      "path": "Release/_validation/S4-release-69d844e2-build.log",
+      "sha256": "2fa3260c54d626f48447cbc627f65582aaa4fbcdf381c13f2c8599f997de6e8b"
+    },
+    {
+      "name": "真实宿主连续链8组",
+      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+      "path": "Release/_validation/S4-20261025/FullChain/attempt-017/receipt.json",
+      "sha256": "5e54160b3566c2b777c944323cd11092b4ebc4e5b2f340a59dfb82b980f520b9"
+    },
+    {
+      "name": "字段编辑8组",
+      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+      "path": "Release/_validation/S4-20261025/FieldEditing/attempt-009/receipt.json",
+      "sha256": "04be602c184d2d9a5c8a74ab56a9cd32c00fe58b07ff93cd7c70c7a5b4d488a3"
+    },
+    {
+      "name": "来源与绑定10组",
+      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+      "path": "Release/_validation/S4-20261025/BindingEditing/attempt-017/receipt.json",
+      "sha256": "4838b71043852603a337345af7f23d69a4d44eaaf41b2d9eb10cd03498b4b160"
+    },
+    {
+      "name": "区域编辑6组",
+      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+      "path": "Release/_validation/S4-20261025/RoiEditing/attempt-008/receipt.json",
+      "sha256": "579c302f07c0b7fe0f5bcab162ced1f8e331e4b59b4ff53fc5fc87fbede7a195"
+    },
+    {
+      "name": "窗口和文档事务28项",
+      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+      "path": "Release/_validation/S2-20261025/DocumentEditing/attempt-029/receipt.json",
+      "sha256": "ed1d7f673d1b79b27e760d8e84e6354124b09f4ca89c566643f3fd2fc61250b4"
+    },
+    {
+      "name": "关联回归52项",
+      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+      "path": "Release/_validation/S2-20261025/Related/attempt-022/receipt.json",
+      "sha256": "383b84e630a037916c2674425cd395fe35477c9a2ccb39b818d5f416c4880598"
+    },
+    {
+      "name": "真实内核8组",
+      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+      "path": "Release/_validation/S3-20261025/RuntimeKernel/attempt-015/receipt.json",
+      "sha256": "0db344ea05a03d0a60e550d582d18f72f18694116ccc967c3a21bbd464d817b6"
+    },
+    {
+      "name": "输入边界4组",
+      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+      "path": "Release/_validation/S3-20261025/InputBoundaries/attempt-014/receipt.json",
+      "sha256": "469cd0b2992e444ceb5a682ffda7eeb16e4f2e0da4068bf751e5ec19759c1aee"
+    },
+    {
+      "name": "真实消费链7组",
+      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+      "path": "Release/_validation/S3-20261025/Consumption/attempt-018/receipt.json",
+      "sha256": "2f7155c57652a4dbcb0c3f3c8630008119b510fdeb42011070ae014d14668ba8"
+    },
+    {
+      "name": "S1完整轨道",
+      "result": "Contracts/Owner/Fields/Native/Workflow/Snapshot/Dialog均exit0",
+      "path": "Release/_validation/S4-release-69d844e2-S1.log",
+      "sha256": "afee4c780873ed7360394af5deb36f82982ef219dab6fa076a274dc8c49cc141"
+    },
+    {
+      "name": "组件部署11项",
+      "result": "有/无Wpf均可配置并执行；拒绝缺失/重复/错误组件；3文件及清单原SHA还原",
+      "path": "Release/_validation/S3-20261025/ComponentDeployment/attempt-008/results.json",
+      "sha256": "b1a075968f20c8f7a93b7eace0e4b9bda2c4c21b69122f9fd02cb84637d4accb"
+    },
+    {
+      "name": "设计时路径",
+      "result": "UI设计时Compile路径通过；实际VS设计器未打开",
+      "path": "Release/_validation/S4-ui-design-time-check.log",
+      "sha256": "244e20da43b002af2dd95dc97a732f648ad5a0523ef181cf94b3bae63ca14367"
+    }
+  ],
+  "sample": {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\BlobTrial\\Blob试用.solution",
+    "sha256": "32713704f9d976762a2bc4b8f96f9f775df194b4dde300b039aa413300dbe1a0",
+    "imageSha256": "46e9f95121f20440bd86ae8dde91c67417c91db4bb197b0a4b275409d6e88daa",
+    "derivedFrom": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FullChain\\attempt-017\\document\\full-chain.solution",
+    "changes": "仅改方案名和固定图片引用；数据和图像来自同版已通过连续链方案。"
+  },
+  "manual": {
+    "status": "AWAITING_USER_FEEDBACK",
+    "results": []
+  },
+  "limitations": [
+    "实际物理鼠标手感和用户自己的图像/流程待人工反馈。",
+    "实际VS设计器未打开；已检查设计时编译路径。",
+    "未声称VM native逐值等价；S5通用结果平台及正式性能基准不在本阶段自动结论内。"
+  ]
+}

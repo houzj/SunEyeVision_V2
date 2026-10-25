@@ -1,0 +1,119 @@
+{
+  "date": "2026-10-25",
+  "authorization": "用户要求整理D盘，其他副本不再需要；代码已分类提交且GitHub远程已复核",
+  "mainCommit": "5912b33acb39eeb2debc3568b83dc560ebdab3e5",
+  "scope": [
+    "artifacts/validation/tool-framework-contract",
+    "artifacts/independent-testing/tool-framework-first-dependency"
+  ],
+  "operation": "仅删除已核无Git跟踪的重复验证DLL，保留源码/日志/正式Release",
+  "candidateCount": 74316,
+  "removedCount": 74316,
+  "removedLogicalBytes": 246551877847,
+  "freeBefore": 367353856,
+  "freeAfter": 230173421568,
+  "actualFreeIncrease": 229806067712,
+  "failed": [],
+  "fileLedger": "artifacts/repository-migration/removed-redundant-dlls-20261025.csv",
+  "fileLedgerSha": "B5F419E58268DAF1666A3F4F874BE14E413526229ECA3A704986C464634491AB",
+  "futureTests": "正式Release同一产物；旧二进制已清理，不再声称历史现场可直接运行",
+  "retiredWorktrees": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\parallel-worktrees\\b01-toolcontract-version",
+      "head": "6b82ec7de624bf83b1ee16d7849004181e9192f6",
+      "savedFiles": 898
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\parallel-worktrees\\m03-contract-projection",
+      "head": "849d0523f7ae81c21e2791792ca92732d7bead79",
+      "savedFiles": 784
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\parallel-worktrees\\m03-explicit-conversion-closure",
+      "head": "fc08012df94f89e03288929ec43bf2e87aec0aab",
+      "savedFiles": 758
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\validation\\parallel-worktrees\\tree-empty-0641",
+      "head": "0641c98bfaa4989b675d6e5077d47e09d3477d95",
+      "savedFiles": 795
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\blob-s1-component-metadata-20261025",
+      "head": "0799918373bb5f00ac5a00f30591a7e79463a84e",
+      "savedFiles": 782
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\blob-s1-field-schema-20261025",
+      "head": "40b03fc051036f9707b46ce40b309d6fab257b74",
+      "savedFiles": 807
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\blob-s1-image-bridge-20261025",
+      "head": "84d88634430a54e6d141e4bb0e02ceef7e4a1a31",
+      "savedFiles": 786
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\blob-s1-integration-20261025",
+      "head": "36062daff1a0ebecee93fdd119fc490edb935e23",
+      "savedFiles": 808
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\blob-s1-owner-migration-20261025",
+      "head": "dd380367620eec0d92bd540e8111e1a7289fba37",
+      "savedFiles": 795
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\blob-s1-resource-contracts-20261025",
+      "head": "611759f44f7127df1d78d137adae929a541f4d87",
+      "savedFiles": 765
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\blob-s1-schema-regression-20261025",
+      "head": "57a33874ba1adb11ebfba3cc9c7c4641afbd20f2",
+      "savedFiles": 828
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\blob-s1-snapshot-fix-20261025",
+      "head": "72f67609ae840528cd0d043a4aadffdbc143ebea",
+      "savedFiles": 891
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\f01-structured-projection-20261024",
+      "head": "97f1326c42dbfe75fb516731be9df0ec76ed2da7",
+      "savedFiles": 715
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\j02-result-projection-20261024",
+      "head": "6028822d966d0fddb2376667319f4b9ff7930e9d",
+      "savedFiles": 741
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\j03-contour-address-20261024",
+      "head": "68e3267b060a71b975f21e394ce14db99aa94b57",
+      "savedFiles": 787
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\worktrees\\j03-result-presenter-20261024",
+      "head": "318d9a75f0c52e338e9069945f93cff4e0e3065d",
+      "savedFiles": 838
+    }
+  ],
+  "archivedRecords": {
+    "archive": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\repository-migration\\retired-worktree-records-20261025.zip",
+    "sha256": "99578F1EE10A5F0B7FF1E7127159B644050321F4036E3486794C54C996A206CF",
+    "uniqueEntries": 1259,
+    "fileMappings": 12778,
+    "receipt": "artifacts/repository-migration/retired-worktree-records-receipt.json",
+    "status": "16个artifacts内工作树已移除；Git分支历史保留；归档保留本地"
+  },
+  "remainingWorktrees": [
+    "D:/MyWork/SunEyeVision_V2",
+    "C:/Users/houzhongjie/.codex/visualizations/2026/10/23/01a1663d-2d35-7bd2-bc12-ab0d4051bb8e/blob-s1-final-acceptance-20261025",
+    "C:/Users/houzhongjie/.codex/visualizations/2026/10/23/01a1663d-2d35-7bd2-bc12-ab0d4051bb8e/s1-dialog-owner",
+    "C:/Users/houzhongjie/.codex/visualizations/2026/10/23/01a1663d-2d35-7bd2-bc12-ab0d4051bb8e/s1-release-configuration",
+    "D:/MyWork/SunEyeVision_V2-comm",
+    "D:/MyWork/SunEyeVision_V2-script"
+  ],
+  "finalDFreeBytes": 245738012672
+}

@@ -2,7 +2,7 @@
   "date": "2026-10-25",
   "baseline": "30d9407872c52ea647174f9ec92ac70c9bd49b87",
   "sourceCommit": "496e1e004f449f5b3ea5913cc206b0d0b3ff6c2f",
-  "status": "分类同步中，最终验收未完成",
+  "status": "代码已按用途分类同步并推送GitHub；未重新构建测试，S1/G1和人工验收均未完成",
   "groups": {
     "公共合同与编辑展示边界": [
       "src/Plugin.Contracts/DeclaredValueReader.cs",
@@ -122,5 +122,7 @@
   "resourceBranch": "611759相关最终文件已包含，不重复合并",
   "verification": "此次仅内容/提交核对，未运行构建或测试；旧证据仍限其原版本。S1/G1与人工验收未完成。",
   "remote": "origin https://github.com/houzj/SunEyeVision_V2.git",
-  "cleanup": "代码及未提交材料保存且远程确认后才删除副本"
+  "cleanup": "代码及未提交材料保存且远程确认后才删除副本",
+  "githubMain": "5912b33acb39eeb2debc3568b83dc560ebdab3e5",
+  "sourceBranchPushed": "codex/blob-s1-dialog-owner"
 }

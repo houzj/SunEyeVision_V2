@@ -16,6 +16,8 @@ public sealed class BlobInputField
         Func<BlobAnalysisParameters,object?>? readStoredLiteral,ParameterSetting? declaredDefault)
         =>(LogicalKey,LegacyPath,Port,Presentation,_readStoredLiteral,_declaredDefault)=(logicalKey,legacyPath,port,presentation,readStoredLiteral,declaredDefault);
     public string LogicalKey{get;} public string LegacyPath{get;} public Port Port{get;} public FieldPresentation Presentation{get;}
+    internal bool HasStoredLiteral=>_readStoredLiteral is not null;
+    internal object? ReadStored(BlobAnalysisParameters parameters)=>_readStoredLiteral?.Invoke(parameters);
     internal ParameterSetting Default(BlobAnalysisParameters defaults)=>_readStoredLiteral is null
         ?_declaredDefault??new UnsetSetting():new ConstantSetting(ValueRules.Freeze(Port,_readStoredLiteral(defaults)));
     internal void ValidateLiteral(BlobAnalysisParameters settings)

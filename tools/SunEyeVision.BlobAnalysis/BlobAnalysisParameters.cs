@@ -92,7 +92,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "BlobAnalysis"。
     /// </remarks>
     [JsonDerivedType(typeof(BlobAnalysisParameters), "BlobAnalysis")]
-    public class BlobAnalysisParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract, IOutputContractProvider, IStoredConfigurationValidator, IBindingInputActivityProvider
+    public class BlobAnalysisParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract, IOutputContractProvider, IStoredConfigurationValidator, IBindingInputActivityProvider, IConfigurationFieldProvider
     {
         public SunEyeVision.Plugin.Contracts.RegionFieldMode InspectionMode { get; set; }
         public SunEyeVision.Plugin.Contracts.RegionFieldMode MaskMode { get; set; }
@@ -131,6 +131,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
             new InputSlotDescriptor(nameof(MaskRegionInput), "屏蔽像素区域", InputSlotKind.Roi,
                 ValueType: typeof(SunEyeVision.Plugin.Contracts.IReadOnlyRegion), Required: false)
         };
+
+        public IReadOnlyList<ConfigurationFieldAccessor> GetConfigurationFields()=>BlobConfigurationFields.Describe(this);
 
         public IReadOnlyList<RuntimeParameterDescriptor> GetRuntimeParameters() => new[]
         {

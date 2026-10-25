@@ -244,10 +244,78 @@ def render_s2_stage(page):
     return page
 
 
+def render_s4_stage(page):
+    path = ROOT / 'docs/collaboration/S4_IMPLEMENTATION_PLAN_20261026.json'
+    if not path.exists():
+        return page
+    s4 = json.loads(path.read_text(encoding='utf-8-sig'))
+    if s4['status'] != 'ACTIVE_IMPLEMENTATION':
+        return page
+    state = escape(s4['current'])
+    page = re.sub(r'(<div class="br-note" id="o06-blob-final-review"><h3>当前做到哪里？</h3><p><b>).*?(</b></p>)',
+                  lambda m: m[1] + state + m[2], page, count=1, flags=re.S)
+    page = re.sub(r'<!-- S4-CURRENT-STATUS:BEGIN -->.*?<!-- S4-CURRENT-STATUS:END -->', '', page, flags=re.S)
+    block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4现在改到哪里？</h3>'
+             + table(['优化项', '现在已实现', '验证与剩余'], s4['rows'])
+             + '<p><b>接下来：</b>' + escape(s4['next']) + '</p><p>' + escape(s4['estimate']) + '</p>'
+             + '<details><summary>VM对应源、工程组织与实际检查</summary>'
+             + table(['原清单对象', 'VM对应模板或组合链', '本方实现与边界'], s4['vmMappings'])
+             + '<p>' + '<br>'.join(escape(item) for item in s4['projectOrganization']) + '</p>'
+             + table(['检查', '实际结果'], [[item['name'], item['result']] for item in s4['checks']])
+             + '<p>' + escape(s4['productIdentity']) + '</p></details></section><!-- S4-CURRENT-STATUS:END -->')
+    page = page.replace('<section id="s3-implementation-status">', block + '<section id="s3-implementation-status">', 1)
+    overview_start = page.index('<section id="o06-stage-overview">')
+    overview_end = page.index('</section>', overview_start)
+    overview = page[overview_start:overview_end]
+    overview = re.sub(r'(<tr><td>S4 窗口与控件交互</td>.*?<td>)([^<]*)(</td></tr>)',
+                      lambda m: m[1] + escape(s4['summaryStatus']) + m[3], overview, count=1, flags=re.S)
+    page = page[:overview_start] + overview + page[overview_end:]
+    live_start = page.index('<section id="implementation-live-status"')
+    live_end = page.index('<details><summary>历史实施与独测记录', live_start)
+    page = page[:live_start] + re.sub(r'<h2>.*?</h2><p>.*?</p>',
+        lambda _: '<h2>当前实施状态：S1—S3自动闭合，S4实施中</h2><p>' + state + '</p>',
+        page[live_start:live_end], count=1, flags=re.S) + page[live_end:]
+    old = ('Plugin.Wpf真实存在，但目前只有PluginFoundation样例消费者，未进入主slnx且无src/UI/tools生产消费者；'
+           'OutDir指向artifacts/validation/plugin-foundation-01/bin；ParameterEditorControl自称Minimal editor contract consumer，'
+           '并非生产编辑器替代，当前没有本表31类实现或Generic.xaml/ThemeInfo。')
+    page = page.replace(old, 'S4已将Plugin.Wpf接入主slnx和UI，Release输出进入正式目录；Fields现有DeclaredFieldEditor、DeclaredFieldsView与ReferenceSelectionControl，仅依赖Contracts。原ParameterEditorControl仍为样例，不充当生产默认页。当前字段/绑定已有实际验证，ROI、专业页与其余消费者尚未完成迁移；旧SDK控件不能据此全局删除。')
+    page = page.replace('Plugin.Wpf正式生产接入、设计器/资源/输出迁移仍待批准。Plugin.Wpf本身目前只在PluginFoundation样例验证接入，不是生产控件层。',
+                        '字段与绑定的生产接入见本页S4实际进度；设计时编译已做，实际VS设计器未验证。ROI及其余控件、资源和消费者迁移仍待实施核收。')
+    page = page.replace('目标项目位置均为候选，不表示批准或现行实施。',
+                        '原始候选与历史工程事实保留追溯；S4已落地部分直接标在对应行，其余尚未实施，不因字段层接入算31类整体完成。')
+    page = page.replace('Blob完整方案实施准入（设计决策已闭口，全部未执行）',
+                        '实施准入与历史门（设计条件保留；S1—S3自动闭合，S4实施中）')
+    updates = {
+        'configsetting': 'S4当前：原默认页改用Plugin.Wpf/Fields/DeclaredFieldEditor和DeclaredFieldsView，按原Port类型编辑109项常量，BlobConfigurationFields仅适配本工具模型；来源为本行VM类型模板。完整图像/ROI特殊字段及专业页替换仍未完成。',
+        'parambinding': 'S4当前：来源选择由Plugin.Wpf/Fields/ReferenceSelectionControl承接，UI宿主组织窗口及草稿；已实测声明成员、显式/绑定序号、真实执行与保存重开。本行VM订阅组合链只作职责对标，不照搬字符串绑定。',
+        'parambindingbase': 'S4当前：不再为Blob默认字段新建旧式万能绑定基类；局部字段保存非法原文，宿主登记草稿与验证，执行层编译唯一声明。旧SDK基类的其他消费者仍在，未宣称已全局删除。',
+    }
+    for key, note in updates.items():
+        pattern = r'(<tr id="o06-control-' + key + r'"[^>]*>)(.*?)(</tr>)'
+        def update_row(match):
+            cell_index = -1
+            def update_cell(cell):
+                nonlocal cell_index
+                cell_index += 1
+                if cell_index != 3:
+                    return cell[0]
+                body = re.sub(r'<!-- S4-ROW:BEGIN -->.*?<!-- S4-ROW:END -->', '', cell[2], flags=re.S)
+                return cell[1] + '<!-- S4-ROW:BEGIN --><p><b>' + escape(note) + '</b></p><!-- S4-ROW:END -->' + body + cell[3]
+            return match[1] + re.sub(r'(<td\b[^>]*>)(.*?)(</td>)', update_cell, match[2], flags=re.S) + match[3]
+        page, count = re.subn(pattern, update_row, page, count=1, flags=re.S)
+        if count != 1:
+            raise ValueError('Missing original control row: ' + key)
+    return page
+
+
+def render_document(page):
+    return render_s4_stage(render_s1_stage(page))
+
+
 def main():
     original = PAGE.read_text(encoding='utf-8-sig')
-    page = render_s1_stage(original)
-    if render_s1_stage(page) != page:
+    page = render_document(original)
+    if render_document(page) != page:
         raise ValueError('S1 document update is not idempotent')
     class Anchors(HTMLParser):
         def __init__(self):

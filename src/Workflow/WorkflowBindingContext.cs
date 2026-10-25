@@ -56,8 +56,11 @@ internal sealed class WorkflowBindingContext : IDisposable
         if(setting.BindingType!=BindingType.Binding)return null;
         var explicitReference=setting.ReferenceExpression is not null;
         var property=node.Parameters.GetType().GetProperty(setting.ParameterName);
-        if(property is not {CanWrite:true} || !BindingClrAdapter.TryDescribe(property.PropertyType,out _,out _))
+        var declared=(node.Parameters as IConfigurationFieldProvider)?.GetConfigurationFields().SingleOrDefault(field=>field.StoragePath==setting.ParameterName);
+        if(declared is null&&(property is not {CanWrite:true} || !BindingClrAdapter.TryDescribe(property.PropertyType,out _,out _)))
             return explicitReference?Unavailable("target-declaration","This input has no canonical writable-property declaration."):null;
+        if(declared is not null&&(declared.Port.EditModes&FieldEditModes.Reference)==0)
+            return Unavailable("target-mode","This declared field does not allow a reference.");
         OutputReference reference;
         try
         {
@@ -80,7 +83,7 @@ internal sealed class WorkflowBindingContext : IDisposable
                     :BindingSelection.All;
                 reference=new(setting.SourceNodeId,port.Id,port.Type,path.Skip(1).Select(part=>part.propertyName),selection,scope.Consumer.ScopeId,port.Storage);
             }
-            var target=BindingClrAdapter.DescribePort(setting.ParameterName,property.PropertyType);
+            var target=declared?.Port??BindingClrAdapter.DescribePort(setting.ParameterName,property!.PropertyType);
             return new ParameterBindingService().CompileBinding(reference,target,scope,setting.Conversion);
         }
         catch(Exception fault) when(fault is System.Text.Json.JsonException or ArgumentException or InvalidOperationException or FormatException)

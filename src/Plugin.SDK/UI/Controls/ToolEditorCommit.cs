@@ -18,6 +18,12 @@ public interface IToolEditorCommitParticipant
     bool TryValidateEditor(out string error);
 }
 
+/// <summary>Raw typed-control drafts that have not produced a valid model value yet.</summary>
+public interface IToolEditorPendingState
+{
+    bool HasPendingEdits { get; }
+}
+
 /// <summary>Optional UI host draft; its implementation owns publication and document scope.</summary>
 public interface IToolEditorDraftContext : IToolEditorCommitParticipant
 {
@@ -131,7 +137,8 @@ public static class ToolEditorCommit
     {
         root.Dispatcher.VerifyAccess();
         var elements = Walk(root).OfType<FrameworkElement>().ToArray();
-        return elements.OfType<NumericUpDown>().Any(n => n.HasPendingEdit) ||
+        return elements.OfType<IToolEditorPendingState>().Any(editor=>editor.HasPendingEdits) ||
+            elements.OfType<NumericUpDown>().Any(n => n.HasPendingEdit) ||
             elements.SelectMany(Bindings).Any(b => b.IsDirty) ||
             elements.Any(e => e.BindingGroup?.IsDirty == true || System.Windows.Controls.Validation.GetHasError(e));
     }

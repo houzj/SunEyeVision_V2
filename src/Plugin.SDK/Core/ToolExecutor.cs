@@ -330,6 +330,16 @@ namespace SunEyeVision.Plugin.SDK.Core
                 .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
                 .Where(property => property.CanWrite)
                 .ToDictionary(property => property.Name, property => property.PropertyType, StringComparer.Ordinal);
+            var declaredFields=(request.Parameters as IConfigurationFieldProvider)?.GetConfigurationFields()
+                .ToDictionary(field=>field.StoragePath,StringComparer.Ordinal);
+            if(declaredFields is not null)
+                foreach(var field in declaredFields)
+                    if(!targetTypes.TryGetValue(field.Key,out var target)||target.IsEnum)
+                        targetTypes[field.Key]=field.Value.Port.Type.Scalar switch {
+                            SunEyeVision.Plugin.Contracts.ScalarKind.Boolean=>typeof(bool),
+                            SunEyeVision.Plugin.Contracts.ScalarKind.Int64=>typeof(long),
+                            SunEyeVision.Plugin.Contracts.ScalarKind.Float64=>typeof(double),
+                            SunEyeVision.Plugin.Contracts.ScalarKind.Text=>typeof(string),_=>typeof(object)};
 
             // ParamSettings 可能包含调试控件的展示绑定（例如“位置修正”）。
             // 这类名称不是 ToolParameters 的可写属性，运行时由对应的
@@ -349,7 +359,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             var snapshot = resolver.Resolve(
                 new ParameterBindingSet(executableBindings),
                 request.NodeResults ?? new Dictionary<string, ToolResults>(),
-                targetTypes,request.BindingPlans,request.BindingSnapshot);
+                targetTypes,request.BindingPlans,request.BindingSnapshot,declaredFields?.ToDictionary(field=>field.Key,field=>field.Value.Port,StringComparer.Ordinal));
             request.RuntimeParameters = snapshot;
             return snapshot;
         }
@@ -367,6 +377,8 @@ namespace SunEyeVision.Plugin.SDK.Core
 
             foreach (var item in snapshot.Values)
             {
+                var field=(parameters as IConfigurationFieldProvider)?.GetConfigurationFields().SingleOrDefault(field=>field.StoragePath==item.Key);
+                if(field is not null){field.Write(item.Value);continue;}
                 var property = parameters.GetType().GetProperty(
                     item.Key,
                     System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);

@@ -49,6 +49,7 @@
     <ProjectReference Include="..\..\tools\SunEyeVision.BlobAnalysis\Wpf\SunEyeVision.Tool.BlobAnalysis.Wpf.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Workflow\SunEyeVision.Workflow.csproj" />
     <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
+    <ProjectReference Include="..\Plugin.Wpf\SunEyeVision.Plugin.Wpf.csproj" />
     <ProjectReference Include="..\Plugin.Infrastructure\SunEyeVision.Plugin.Infrastructure.csproj" />
     <ProjectReference Include="..\DeviceDriver\SunEyeVision.DeviceDriver.csproj" />
     <!-- CommonControl: 脚本编辑器共享内核（高亮/补全/诊断/workspace）。

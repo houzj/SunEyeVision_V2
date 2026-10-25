@@ -89,9 +89,13 @@ internal static class SolutionLegacyBindingMigration
             foreach (var item in pending)
             {
                 var property = item.Node.Parameters.GetType().GetProperty(item.Setting.ParameterName);
-                if (property is not { CanWrite: true }) throw new JsonException("Legacy consumer input is not declared writable.");
+                var declared=(item.Node.Parameters as IConfigurationFieldProvider)?.GetConfigurationFields()
+                    .SingleOrDefault(field=>field.StoragePath==item.Setting.ParameterName);
+                if (declared is null&&property is not { CanWrite: true }) throw new JsonException("Consumer input is not declared writable.");
+                if(declared is not null&&(declared.Port.EditModes&FieldEditModes.Reference)==0)
+                    throw new JsonException("This declared consumer field does not allow a reference.");
                 Port target;
-                try { target = BindingClrAdapter.DescribePort(item.Setting.ParameterName, property.PropertyType); }
+                try { target = declared?.Port??BindingClrAdapter.DescribePort(item.Setting.ParameterName, property!.PropertyType); }
                 catch (ArgumentException exception) { throw new JsonException("Legacy consumer requires an explicit typed adapter.", exception); }
                 var scope = new BindingScopeSnapshot(new(workflow.Id, item.Node.Id), candidate.ExecutionOwner.Id, 0,
                     declarations.Values, declarations.Values.Select(source => source.Node),

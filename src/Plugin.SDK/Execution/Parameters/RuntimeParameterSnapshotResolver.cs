@@ -23,7 +23,8 @@ public sealed class RuntimeParameterSnapshotResolver
         IDictionary<string, ToolResults> nodeResults,
         IReadOnlyDictionary<string, Type>? targetTypes = null,
         IReadOnlyDictionary<string, BindingPlan>? plans = null,
-        IBindingRunSnapshot? bindingSnapshot = null)
+        IBindingRunSnapshot? bindingSnapshot = null,
+        IReadOnlyDictionary<string, Port>? declaredFieldTargets = null)
     {
         ArgumentNullException.ThrowIfNull(bindings);
         ArgumentNullException.ThrowIfNull(nodeResults);
@@ -40,7 +41,9 @@ public sealed class RuntimeParameterSnapshotResolver
                 if(bindingSnapshot is null){errors.Add($"参数 {binding.ParameterName} 缺少冻结运行输入。");continue;}
                 var resolved=_resolver.ResolveBinding(plan,bindingSnapshot);
                 if(!resolved.Success){errors.Add($"参数 {binding.ParameterName} 解析失败: {resolved.Diagnostic?.Message}");continue;}
-                try{values[binding.ParameterName]=BindingClrAdapter.Materialize(plan.Target,targetType??throw new InvalidOperationException("Target property is not declared."),resolved.Value);}
+                try{values[binding.ParameterName]=declaredFieldTargets?.ContainsKey(binding.ParameterName)==true
+                    ?ValueRules.Freeze(plan.Target,resolved.Value)
+                    :BindingClrAdapter.Materialize(plan.Target,targetType??throw new InvalidOperationException("Target property is not declared."),resolved.Value);}
                 catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException)
                 {errors.Add($"参数 {binding.ParameterName} 物化失败: {fault.Message}");}
                 continue;
@@ -54,7 +57,10 @@ public sealed class RuntimeParameterSnapshotResolver
                 continue;
             }
 
-            values[binding.ParameterName] = result.Value;
+            try{values[binding.ParameterName] = declaredFieldTargets?.TryGetValue(binding.ParameterName,out var field)==true
+                ?BindingClrAdapter.NormalizeValue(field,result.Value):result.Value;}
+            catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException)
+            {errors.Add($"参数 {binding.ParameterName} 声明转换失败: {fault.Message}");}
         }
 
         return new RuntimeParameterSnapshot(values, errors);

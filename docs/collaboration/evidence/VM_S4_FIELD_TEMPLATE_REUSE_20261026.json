@@ -1,0 +1,35 @@
+{
+  "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
+  "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
+  "scope": "复用已核VM字段模板证据；不宣称VM原始工程目录、源码或运行值等价。",
+  "fragments": [
+    {
+      "lines": "113-120",
+      "text": "113:   <DataTemplate x:Key=\"Boolean\">\n114:     <localParamTab:LeftRightControl Height=\"32\" Margin=\"{Binding MarginA}\">\n115:       <localParamTab:LeftRightControl.RightContent>\n116:         <ContentControl ContentTemplate=\"{StaticResource Boolean_sub}\" Content=\"{Binding}\" />\n117:       </localParamTab:LeftRightControl.RightContent>\n118:     </localParamTab:LeftRightControl>\n119:   </DataTemplate>\n120:   <DataTemplate x:Key=\"BooleanConfirm\">"
+    },
+    {
+      "lines": "255-260",
+      "text": "255:   <DataTemplate x:Key=\"ButtonSelecter_sub\">\n256:     <Grid>\n257:       <Grid.ColumnDefinitions>\n258:         <ColumnDefinition Width=\"*\" />\n259:         <ColumnDefinition Width=\"32\" />\n260:       </Grid.ColumnDefinitions>"
+    },
+    {
+      "lines": "296-302",
+      "text": "296:               <localParamTab:SubTreeView Width=\"180\" Height=\"180\">\n297:                 <i:Interaction.Triggers>\n298:                   <i:EventTrigger EventName=\"OnTreeNodeDoubleClick\">\n299:                     <PCommon:ParamsEventCommand Command=\"{Binding IndexClickCommand}\" />\n300:                   </i:EventTrigger>\n301:                 </i:Interaction.Triggers>\n302:               </localParamTab:SubTreeView>"
+    },
+    {
+      "lines": "379-386",
+      "text": "379:   <DataTemplate x:Key=\"Enumeration\">\n380:     <localParamTab:LeftRightControl Height=\"32\">\n381:       <localParamTab:LeftRightControl.RightContent>\n382:         <ContentControl ContentTemplate=\"{StaticResource Enumeration_Sub}\" Content=\"{Binding}\" />\n383:       </localParamTab:LeftRightControl.RightContent>\n384:     </localParamTab:LeftRightControl>\n385:   </DataTemplate>\n386:   <DataTemplate x:Key=\"Enumeration_SubParam\">"
+    },
+    {
+      "lines": "550-567",
+      "text": "550:   <DataTemplate x:Key=\"Integer_Sub\">\n551:     <PCListView:SliderArrange SubscribeTemplate=\"{StaticResource ButtonSelecter_sub}\" SliderTickFrequency=\"{Binding IncValueA}\" StartValue=\"{Binding CurValueA, Mode=TwoWay}\" Minimum=\"{Binding MinValueA}\" Maximum=\"{Binding MaxValueA}\" IsSubscribeLeft=\"{Binding IsSubA, Mode=TwoWay}\" SubscribeDataLeft=\"{Binding SubData}\" IsSubscribeVisible=\"{Binding SubscribeVisibleA, Converter={StaticResource bool2VisibilityConverter}}\">\n552:       <i:Interaction.Triggers>\n553:         <i:EventTrigger EventName=\"OnStartValueChange\">\n554:           <i:InvokeCommandAction Command=\"{Binding ValueChangedCommand}\" />\n555:         </i:EventTrigger>\n556:         <i:EventTrigger EventName=\"OnLeftTypeChange\">\n557:           <i:InvokeCommandAction Command=\"{Binding TypeChangeCommand}\" />\n558:         </i:EventTrigger>\n559:       </i:Interaction.Triggers>\n560:     </PCListView:SliderArrange>\n561:   </DataTemplate>\n562:   <DataTemplate x:Key=\"Integer\">\n563:     <localParamTab:LeftRightControl Height=\"32\">\n564:       <localParamTab:LeftRightControl.RightContent>\n565:         <ContentControl ContentTemplate=\"{StaticResource Integer_Sub}\" Content=\"{Binding}\" />\n566:       </localParamTab:LeftRightControl.RightContent>\n567:     </localParamTab:LeftRightControl>"
+    },
+    {
+      "lines": "2589-2605",
+      "text": "2589:             <localParamTab:SubTreeView Width=\"180\" Height=\"180\">\n2590:               <i:Interaction.Triggers>\n2591:                 <i:EventTrigger EventName=\"OnTreeNodeDoubleClick\">\n2592:                   <HPCommom:ParamsEventCommand Command=\"{Binding IndexClickCommand}\" />\n2593:                 </i:EventTrigger>\n2594:               </i:Interaction.Triggers>\n2595:             </localParamTab:SubTreeView>\n2596:           </Border>\n2597:         </DataTemplate>\n2598:       </PControl:PopupButton.SubContent>\n2599:     </PControl:PopupButton>\n2600:   </DataTemplate>\n2601:   <DataTemplate x:Key=\"StringConfig\">\n2602:     <localParamTab:LeftRightControl Height=\"32\">\n2603:       <localParamTab:LeftRightControl.RightContent>\n2604:         <ContentControl VerticalAlignment=\"Stretch\" HorizontalAlignment=\"Stretch\" VerticalContentAlignment=\"Stretch\" HorizontalContentAlignment=\"Stretch\" ContentTemplate=\"{StaticResource StringConfig_sub}\" Content=\"{Binding}\" />\n2605:       </localParamTab:LeftRightControl.RightContent>"
+    },
+    {
+      "lines": "2608-2624",
+      "text": "2608:   <DataTemplate x:Key=\"ColorConfig\">\n2609:     <localParamTab:LeftRightControl Height=\"32\">\n2610:       <localParamTab:LeftRightControl.RightContent>\n2611:         <PCListView:ColorPickerControlView HPCommom:AttachBinding.BindingString=\"{Binding Path=BindingPathA, StringFormat=CurrentColor:{0}}\" />\n2612:       </localParamTab:LeftRightControl.RightContent>\n2613:     </localParamTab:LeftRightControl>\n2614:   </DataTemplate>\n2615:   <DataTemplate x:Key=\"FloatConfig_sub\">\n2616:     <PCListView:SliderArrangeFloat SliderTickFrequency=\"{Binding IncValueA}\" Minimum=\"{Binding MinValueA}\" Maximum=\"{Binding MaxValueA}\" HPCommom:AttachBinding.BindingString=\"{Binding Path=BindingPathA, StringFormat=StartValue:{0}}\" />\n2617:   </DataTemplate>\n2618:   <DataTemplate x:Key=\"FloatConfig\">\n2619:     <localParamTab:LeftRightControl Height=\"32\">\n2620:       <localParamTab:LeftRightControl.RightContent>\n2621:         <ContentControl VerticalAlignment=\"Stretch\" HorizontalAlignment=\"Stretch\" VerticalContentAlignment=\"Stretch\" HorizontalContentAlignment=\"Stretch\" ContentTemplate=\"{StaticResource FloatConfig_sub}\" Content=\"{Binding}\" />\n2622:       </localParamTab:LeftRightControl.RightContent>\n2623:     </localParamTab:LeftRightControl>\n2624:   </DataTemplate>"
+    }
+  ]
+}

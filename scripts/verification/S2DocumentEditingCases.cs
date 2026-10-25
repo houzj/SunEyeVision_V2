@@ -86,7 +86,8 @@ internal static class S2DocumentEditingCases
         {
             var tool = new BlobAnalysisTool();
             Control = (SunEyeVision.Plugin.SDK.UI.Controls.ToolDebugControlBase)
-                ((SunEyeVision.Plugin.SDK.Core.IToolEditorFactory)tool).CreateDebugControl(tool)!;
+                (SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.CreateEditorFactory(tool)
+                    ??throw new Exception("正式发布没有Blob可选编辑器")).CreateDebugControl(tool)!;
             Window = new(Control) { ShowActivated = false, ShowInTaskbar = false, Left = -10000, Width = 460, Height = 650 };
             var query = new SunEyeVision.Plugin.SDK.Execution.Parameters.DataSourceQueryService();
             void Bind(WorkflowNodeBase draft)
@@ -136,7 +137,26 @@ internal static class S2DocumentEditingCases
     }
     static int Run()
     {
-        SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.RegisterTool(typeof(BlobAnalysisTool));
+        // This scope fixture deliberately constructs strongly typed Blob models. Register that
+        // exact loaded type, with the real payload-verified component factories, instead of mixing
+        // a default-context model with another model loaded by the isolated plugin context.
+        // Actual isolated discovery/registration is exercised by S3 Components and S4 field checks.
+        var authorityType=typeof(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginManager).Assembly
+            .GetType("SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ReleasePayloadAuthority",true)!;
+        var authority=Activator.CreateInstance(authorityType,BindingFlags.Instance|BindingFlags.NonPublic,null,
+            new object[]{Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!},null)!;
+        var components=(IReadOnlyList<SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolComponentRegistration>)authorityType
+            .GetMethod("LoadToolComponents",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(authority,null)!;
+        using(var commit=SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.PrepareRegistration(new[]{typeof(BlobAnalysisTool)},components).EnterCommit())commit.Publish();
+        if(System.Windows.Application.Current is null)
+        {
+            var app=new System.Windows.Application {ShutdownMode=System.Windows.ShutdownMode.OnExplicitShutdown};
+            foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/NodeStyleResources.xaml",
+                "Resources/Styles/ConnectionStyleResources.xaml","Resources/Styles/CanvasStyleResources.xaml",
+                "Resources/Styles/CommonStyleResources.xaml","Resources/Styles/MenuStyleResources.xaml",
+                "Resources/Styles/ToolTipStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})
+                app.Resources.MergedDictionaries.Add(new System.Windows.ResourceDictionary {Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
+        }
         int passed = 0;
         void Case(string name, Action action) { action(); Console.WriteLine("通过：" + name); passed++; }
         Case("Apply仅当前范围，不接受另一个未确认草稿", () => {

@@ -140,7 +140,8 @@ def render_stage_overview():
     s3_path = ROOT / 'docs/collaboration/S3_IMPLEMENTATION_PLAN_20261025.json'
     if s3_path.exists() and json.loads(s3_path.read_text(encoding='utf-8-sig'))['status'] in ('ACTIVE_IMPLEMENTATION','IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED'):
         rows[2][-1] = json.loads(s3_path.read_text(encoding='utf-8-sig')).get('stageStatus', '实施中：依赖/线程语义与中立图像桥首批通过；算法本体及装配未完成')
-    rows[3][-1] = 'S3闭合后开始；实施完成且有明显操作变化后，集中人工测试S1—S4'
+    s3_closed = s3_path.exists() and json.loads(s3_path.read_text(encoding='utf-8-sig'))['status'] == 'IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED'
+    rows[3][-1] = ('当前接续阶段；' if s3_closed else 'S3闭合后开始；') + '实施完成且有明显操作变化后，集中人工测试S1—S4'
     return ('<section id="o06-stage-overview"><h3>整个Blob优化分几步？每一步解决什么？</h3>'
             '<p><b>基础规则（S1） → 编辑与运行（S2） → 算法与工程（S3） → 窗口操作（S4） → 结果联动（S5） → 最终验收（S6）</b></p>'
             + table(['阶段', '主要解决的问题', '主要改什么', '你能看到的效果', '当前状态'], rows)
@@ -165,6 +166,9 @@ def render_s2_stage(page):
     s3 = json.loads(s3_path.read_text(encoding='utf-8-sig')) if s3_path.exists() else None
     active_s3 = s3 is not None and s3['status'] in ('ACTIVE_IMPLEMENTATION','IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED')
     s3_closed = active_s3 and s3['status'] == 'IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED'
+    if s3_closed:
+        page = page.replace('完整方案已批准分阶段实施；S1必要图像桥及基础边界已完成本轮自动验证。新Runtime完整装配、七类手势、完整Blob交互链与正式性能仍在后续范围，不能据S1通过宣布整体已验收。',
+                            '完整方案已批准分阶段实施；S1—S3实施及本轮自动验证已闭合，Runtime与可选编辑器的真实装配已验证。S4完整窗口/ROI交互、S5通用结果及正式性能仍未完成；S1—S4人工测试待S4形成明显体验变化后集中进行。')
     if active_s3:
         state = s3['current']
     top = ('<div class="br-note" id="o06-blob-final-review"><h3>当前做到哪里？</h3><p><b>' + state + '</b></p>'

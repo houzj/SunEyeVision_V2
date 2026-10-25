@@ -1,9 +1,9 @@
 {
   "stage": "S3",
-  "status": "ACTIVE_IMPLEMENTATION",
+  "status": "IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED",
   "sourceBaseline": "30bc9c2fe7dabe68d4f4c0e48c248156074225e0",
   "title": "S3：Blob算法运行、资源交接与工程拆分",
-  "current": "S3算法、输入边界和资源消费接线已补齐：缺专用界面可配置与执行；空区域、错帧和失效来源明确处理；节点、变量发布和子流程返回均按需求供数。候选自动验证通过，正在固定提交与正式Release身份，S3尚未最终核收；S4未开始。",
+  "current": "S3已完成：算法与界面拆开，ROI/位置输入及真实下游资源消费已贯通；提交a3c796e7对应的正式Release构建、运行和关联回归通过。现在进入S4窗口、绑定与ROI完整编辑链；尚未进行S1—S4用户人工验收。",
   "scope": [
     "运行/界面物理拆分，运行层不得依赖WPF/SDK显示类型，旧facade只委派同一算法producer",
     "HALCON继续使用；中立图像/Region/Domain/pose与完整轮廓接口，最后读者释放",
@@ -59,63 +59,69 @@
   },
   "productRoot": "Release/SunEyeVision_v1.0.0/SunEyeVision",
   "excluded": "S4完整窗口/共享控件/ROI手势仍未开始；S3只补必要基础配置入口。S5通用结果呈现不自动启动。",
-  "checkpoint": "当前仅剩固定源码提交、重建同版正式Release、验证身份及文档核收；这些完成前不启动S4。",
+  "checkpoint": "S3实施、自动验证、版本身份和原文档核收完成；接续S4，检查点不停工。",
   "manual": "S3闭合不等待人工验证。S3实施、正式Release自动验证/关联回归、版本身份和文档核收齐备后开始S4；S4完成且有明显体验变化后统一人工测试S1—S4，结合用户反馈修复复测并阶段性测试闭合，不代用户验收。",
   "tests": "仅正式Release产物；日志及测试数据在Release/_validation/S3-20261025，失败保留。",
   "checks": [
     {
-      "name": "全量Release",
-      "result": "0错误/785警告；串行构建通过；前次并行复制失败保留",
-      "path": "Release/_validation/S3-20261025/s3-closure-build-04.log",
-      "sha256": "86cfcadb0862d4962116d75478a0037c1471c7fa627091703b9d35ab697e8b7a"
+      "name": "提交后全量Release",
+      "result": "0错误/1280警告",
+      "path": "Release/_validation/S3-20261025/s3-committed-release-build.log",
+      "sha256": "2d0fe2c17c8e7b466624f88b984c39c60797dba4b11055a8e3762136b0f12033"
     },
     {
-      "name": "唯一中立内核",
+      "name": "中立算法",
       "result": "8组通过",
-      "path": "Release/_validation/S3-20261025/RuntimeKernel/attempt-012/receipt.json",
-      "sha256": "cff5cda10d95c31bf710f216814cd2f6d71cb166563fd17f27e7cfa52ec5a36d"
+      "path": "Release/_validation/S3-20261025/RuntimeKernel/attempt-013/receipt.json",
+      "sha256": "048669423edbc9216f7b7e2701b5bec1b3e0ae36693180fc3be69fa4c7fd124d"
     },
     {
-      "name": "真实下游消费",
-      "result": "7组通过，含变量生产者与父子流程返回",
-      "path": "Release/_validation/S3-20261025/Consumption/attempt-011/receipt.json",
-      "sha256": "e5539225cb3e66facd40147c7b1089139c3d5314548fef301edd465d1d764bef"
+      "name": "实际消费",
+      "result": "7组通过",
+      "path": "Release/_validation/S3-20261025/Consumption/attempt-012/receipt.json",
+      "sha256": "2ed1b405a52e7f137ac4ace01d4667bc92a850dc59fb20e2f1db6b2aed6b77e2"
     },
     {
-      "name": "区域与位置输入",
-      "result": "4组通过，含无效输出请求拒绝",
-      "path": "Release/_validation/S3-20261025/InputBoundaries/attempt-009/receipt.json",
-      "sha256": "b342643c41ede47d80713c0a9482a89ddb32842164d52b8724cf7b52b036bca2"
+      "name": "ROI与位置边界",
+      "result": "4组通过",
+      "path": "Release/_validation/S3-20261025/InputBoundaries/attempt-010/receipt.json",
+      "sha256": "67cd7f5c08cb0cbe4519d339c6d16ae09f6d7874af7b0807f3c1d06e96e79cf1"
     },
     {
-      "name": "现行宿主算法入口",
+      "name": "现行宿主入口",
       "result": "5组通过",
-      "path": "Release/_validation/S3-20261025/DocumentEditing/attempt-011/receipt.json",
-      "sha256": "5ec0c3a77473b9d56614ac0879ddef8334d9a911db1c3aaf223172277b41bcf6"
+      "path": "Release/_validation/S3-20261025/DocumentEditing/attempt-012/receipt.json",
+      "sha256": "e84ae4d25ddb40ee03233d6a270ae9c4ab1f89c84695a4d96282138381b93c83"
     },
     {
-      "name": "实际组件部署",
-      "result": "11项通过，缺Wpf默认配置编辑及执行、错误组件拒绝，原件和清单均还原",
-      "path": "Release/_validation/S3-20261025/ComponentDeployment/attempt-004/results.json",
-      "sha256": "899742a174a064d0d9371706f898926f0218c8d918bb6ef175a54bc116324126"
+      "name": "组件与缺编辑器运行",
+      "result": "11项通过，含真实默认配置窗口；原件还原",
+      "path": "Release/_validation/S3-20261025/ComponentDeployment/attempt-005/results.json",
+      "sha256": "973612995a2e6eae0e9040b7c7ae1543ddac6eab4188efa3678d99bb66ace0ce"
     },
     {
       "name": "S2关联回归",
       "result": "52项通过",
-      "path": "Release/_validation/S2-20261025/Related/attempt-015/receipt.json",
-      "sha256": "9e77fe914a8de76bb268e5e21c55628ded11ba2a8378b184d7dc0cda00f1054e"
+      "path": "Release/_validation/S2-20261025/Related/attempt-016/receipt.json",
+      "sha256": "51a632aabfb27d605c62fdbec9c9a70b7c9127cc63a4869d849de116e4daada6"
     },
     {
-      "name": "S1基础关联回归",
-      "result": "Owner/Fields/Workflow/Snapshot通过；33输出/9资源检查/15保存快照检查",
-      "path": "Release/_validation/S3-20261025/closure-foundation-final.log",
-      "sha256": "b5108db50ea0730614927ac9baf1fa168463f1cb4be559626a7bb906712caa4b"
+      "name": "S1相关基础",
+      "result": "Owner/Fields/Workflow/Snapshot全部通过",
+      "path": "Release/_validation/S3-20261025/committed-foundation.log",
+      "sha256": "ad6baa5cdceb905498cacaa0eeda8c60479c15beb247a29a2b10e26d93e15936"
     },
     {
       "name": "设计时编译",
-      "result": "通过；实际VS设计器仍未打开，不冒称通过",
-      "path": "Release/_validation/S3-20261025/closure-design-final-02.log",
+      "result": "通过；实际VS设计器未打开",
+      "path": "Release/_validation/S3-20261025/committed-design.log",
       "sha256": "244e20da43b002af2dd95dc97a732f648ad5a0523ef181cf94b3bae63ca14367"
+    },
+    {
+      "name": "阶段最终核收",
+      "result": "实际产品身份、源码和加载SHA对齐；S3实施关闭，非用户验收",
+      "path": "docs/collaboration/evidence/S3_IMPLEMENTATION_AUDIT_20261026.json",
+      "sha256": "a29648a9dae7caf0602d3ac26807280bfef7bc51aa03e6fa284a9cd10167d902"
     }
   ],
   "failuresPreserved": [
@@ -128,7 +134,7 @@
     "测试字段数量和来源帧旧断言按唯一正式合同更新，不保留旧项目双轨；矩阵几何基准以实际HALCON栅格举证。",
     "s3-closure-build-03并行复制MSB3021，串行build-04通过；设计时首次项目路径拼写错误保留，修正路径后通过。"
   ],
-  "next": "固定并核验提交对应的正式Release身份、集中核收本轮自动结果与文档；通过后结束S3实施阶段，按新目标接续S4。S3不等待人工验证。",
+  "next": "开始S4：按VM控件/模板/组合链证据完成默认配置与可选专业布局、宿主ROI交互、Debug/确定取消及保存重开。S4形成明显体感变化后统一手验S1—S4。",
   "checkpointSourceManifest": [
     {
       "path": "src/SunEyeVision.HalAdapter/Runtime/HalImageSnapshotSource.cs",
@@ -144,9 +150,10 @@
     }
   ],
   "candidateIdentity": {
-    "embeddedBase": "ceeb0a522e185a1716ec624035945baf600ab489",
-    "workingTreeContainsS3Changes": true,
-    "isFinalRelease": false
+    "embeddedBase": "a3c796e7afb73dd4f675357b73c20be1e49a1a98",
+    "workingTreeContainsS3Changes": false,
+    "isFinalRelease": false,
+    "scope": "S3阶段正式产物；不是S1—S4人工验收或最终发布。"
   },
   "checkpointEvidence": {
     "archive": "docs/collaboration/evidence/S3-first-checkpoint-20261025.zip",
@@ -156,7 +163,7 @@
     "scope": "首个检查点，最新两条轨实际产品身份；旧构建/失败日志保留但不与当前产物混同。无程序副本，非S3完成"
   },
   "continuousGoal": "新目标active：完整S3自动闭合后继续S4；S4形成明显体验变化后集中人工验证S1—S4。",
-  "stageStatus": "实施已补齐，候选自动验证通过；等待提交后正式Release身份与最终核收，不含人工验证",
+  "stageStatus": "S3实施与正式Release自动验证已闭合；S4接续实施，人工测试统一等待S4。",
   "implementationSummary": [
     [
       "算法与窗口分开",
@@ -176,7 +183,7 @@
     [
       "资源和阶段交付",
       "读者可以独立持有结果；子流程返回保留资源，运行副本不再误退役源Owner。",
-      "本轮最后核对提交、正式Release身份和原文档；人工测试统一等S4完成。"
+      "S3实施/自动核收完成；S4完成后统一手验S1—S4。"
     ]
   ],
   "runtimeCheckpointSourceManifest": [
@@ -237,7 +244,7 @@
       "sha256": "1e8098dd73aa93d584c5355e595e5d10253a13306042b5caa15db21b4c7ebf46"
     }
   ],
-  "productIdentity": "当前正式候选以ceeb0a52加本轮增量构建，尚未冒称提交后最终产物。",
+  "productIdentity": "正式产品提交a3c796e7afb73dd4f675357b73c20be1e49a1a98；UI内嵌身份与release-payload一致，实际加载路径和SHA均核对。后续文档提交不改变本产品身份。",
   "vmComparison": [
     [
       "Blob托管壳只直接引用Core和平台SDK，Run调用SyncSelfRun；专用编辑器另由宿主查找并可回退通用界面。",
@@ -269,7 +276,7 @@
     [
       "宿主/注册/发布",
       "沿用ToolRegistry与PluginManager，宿主按声明提供缺编辑器时的基础参数配置；角色、版本和发布身份统一校验。",
-      "组件11项部署检查、真实默认窗口参数编辑与无效数字拒绝通过；最终提交身份待核。"
+      "组件11项、真实默认窗口编辑通过；正式产物与产品提交a3c796e7身份一致。"
     ],
     [
       "HALCON中立桥",
@@ -479,5 +486,15 @@
       "path": "Release/_validation/S3-20261025/optional-editor-design-time-02.log",
       "sha256": "244e20da43b002af2dd95dc97a732f648ad5a0523ef181cf94b3bae63ca14367"
     }
-  ]
+  ],
+  "finalAudit": {
+    "path": "docs/collaboration/evidence/S3_IMPLEMENTATION_AUDIT_20261026.json",
+    "sha256": "a29648a9dae7caf0602d3ac26807280bfef7bc51aa03e6fa284a9cd10167d902",
+    "archive": {
+      "path": "docs/collaboration/evidence/S3-implementation-closure-20261026.zip",
+      "sha256": "0966e0153c05be40097c802e922591da60e1edbfb1b5b9981dc5ff719dda7b2b",
+      "bytes": 292852,
+      "entries": 77
+    }
+  }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -104,11 +104,65 @@ public sealed class BindingConfigurationStore
         }
     }
 
+    /// <summary>Rebase parameter history onto an already accepted canvas structure.
+    /// Undo remains parameter/variable undo: it never removes a newly added node or resurrects a deleted one.</summary>
+    internal BindingConfigurationSnapshot RebaseStructure(Solution topology, ISet<ScopedNodeIdentity> retained,
+        Action<BindingConfigurationSnapshot> accept)
+    {
+        lock (_gate)
+        {
+            if (_accepting) throw new InvalidOperationException("配置接受过程中不能重入结构同步。");
+            if (topology.Id != _published.SolutionId) throw new InvalidOperationException("不能跨方案同步结构。");
+            var candidate = Copy(topology);
+            var validator = new OutputBindingChangeService(); validator.Reset(candidate); validator.ReconcileAll();
+            var next = new BindingConfigurationSnapshot(checked(_published.Version + 1), candidate,
+                SolutionExecutionDependencyGraph.Compile(candidate, checkReadiness: false));
+            BindingConfigurationSnapshot Transform(BindingConfigurationSnapshot historical)
+            {
+                var old = historical.CopyConfiguration(); var projected = Copy(candidate);
+                var oldNodes = old.Workflows.SelectMany(w => w.Nodes.Select(n => (Id: new ScopedNodeIdentity(w.Id, n.Id), Node: n)))
+                    .ToDictionary(p => p.Id, p => p.Node);
+                foreach (var flow in projected.Workflows)
+                    foreach (var node in flow.Nodes)
+                        if (retained.Contains(new(flow.Id, node.Id)) && oldNodes.TryGetValue(new(flow.Id, node.Id), out var saved))
+                        { node.Parameters = ToolParameterSnapshot.Create(saved.Parameters); node.ParamSettings = CopySettings(saved.ParamSettings); }
+                projected.GlobalVariables.Clear(); projected.GlobalVariables.AddRange(old.GlobalVariables);
+                var historyValidator = new OutputBindingChangeService(); historyValidator.Reset(projected); historyValidator.ReconcileAll();
+                return new(historical.Version, projected, SolutionExecutionDependencyGraph.Compile(projected, checkReadiness: false));
+            }
+            // Complete all allocation/validation before accepting anything in the live document.
+            var undo = _undo.Reverse().Select(Transform).ToArray();
+            var redo = _redo.Reverse().Select(Transform).ToArray();
+            _undo.EnsureCapacity(undo.Length); _redo.EnsureCapacity(redo.Length);
+            Accept(next, accept);
+            _undo.Clear(); foreach (var entry in undo) _undo.Push(entry);
+            _redo.Clear(); foreach (var entry in redo) _redo.Push(entry);
+            _validator = validator; _published = next;
+            return next;
+        }
+    }
+
     internal void Validate(BindingConfigurationDraft draft, Action<Solution> validate)
     {
         ArgumentNullException.ThrowIfNull(draft);
         ArgumentNullException.ThrowIfNull(validate);
         lock (_gate) Prepare(draft, validate);
+    }
+
+    /// <summary>Accept explicit live-value CAS without creating configuration history or a new configuration revision.</summary>
+    internal BindingConfigurationPublication AcceptRuntimeValues(BindingConfigurationDraft draft,
+        Action<BindingConfigurationSnapshot> accept, Action<Solution> validate)
+    {
+        lock (_gate)
+        {
+            var prepared = Prepare(draft, validate);
+            var next = new BindingConfigurationSnapshot(_published.Version, prepared.Configuration, prepared.Graph);
+            var publication = new BindingConfigurationPublication(next, Array.Empty<OutputBindingChange>(), Array.Empty<ScopedNodeIdentity>());
+            Accept(next, accept);
+            _validator = prepared.Validator;
+            _published = next;
+            return publication;
+        }
     }
 
     private sealed record PreparedConfiguration(Solution Configuration, OutputBindingChangeService Validator,
@@ -261,7 +315,7 @@ public sealed class BindingConfigurationStore
                     SubroutineId = node.SubroutineId, GlobalIndex = node.GlobalIndex, LocalIndex = node.LocalIndex,
                     IsEnabled = node.IsEnabled, PositionX = node.PositionX, PositionY = node.PositionY,
                     Width = node.Width, Height = node.Height, Parameters = ToolParameterSnapshot.Create(node.Parameters),
-                    ParamSettings = JsonCopy(node.ParamSettings) ?? new ParamSettingContainer(), SelectedDisplaySource = JsonCopy(node.SelectedDisplaySource),
+                    ParamSettings = CopySettings(node.ParamSettings), SelectedDisplaySource = JsonCopy(node.SelectedDisplaySource),
                     ImageSourceConfig = JsonCopy(node.ImageSourceConfig)
                 });
             foreach (var connection in workflow.Connections)
@@ -283,6 +337,23 @@ public sealed class BindingConfigurationStore
                     type, WorkflowSerializationOptions.Compact);
             }
             copy.GlobalVariables.Add(clone);
+        }
+        return copy;
+    }
+
+    internal static ParamSettingContainer CopySettings(ParamSettingContainer? source)
+    {
+        if (source is null) return new ParamSettingContainer();
+        var copy = source.Clone();
+        foreach (var setting in copy.Settings)
+        {
+            if (setting.ConstantValue is not { } value) continue;
+            if (value is JsonElement element) { setting.ConstantValue = element.Clone(); continue; }
+            var type = value.GetType();
+            // Object-typed constants must preserve their declared runtime scalar/array type.
+            // A container-wide JSON roundtrip silently turns int into JsonElement.
+            setting.ConstantValue = JsonSerializer.Deserialize(JsonSerializer.Serialize(value, type, WorkflowSerializationOptions.Compact),
+                type, WorkflowSerializationOptions.Compact);
         }
         return copy;
     }

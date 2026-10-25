@@ -41,7 +41,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
     /// 3. 搜索过滤：按名称、类型搜索
     /// 4. 导入导出：JSON格式的变量配置
     /// </remarks>
-    public class GlobalVariableManagerViewModel : ViewModelBase
+    public class GlobalVariableManagerViewModel : ViewModelBase, IDocumentEditParticipant
     {
         private readonly SolutionManager _solutionManager;
         private string _searchText = "";
@@ -161,10 +161,23 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         internal Solution DraftDocument => Draft.Configuration;
         private readonly Func<bool> _isCurrent;
         private bool _active = true;
+        private readonly DocumentEditSession? _documentEdits;
+        public Guid ScopeId { get; } = Guid.NewGuid();
+        public string ScopeKey => "variables";
+        public bool IsValid => _active && _isCurrent();
+        public bool HasPendingChanges => _active && (Host.HasPendingChanges(Draft) || HasPendingViewEdits?.Invoke() == true);
+        internal Func<string?>? PrepareView { get; set; }
+        internal Func<bool>? HasPendingViewEdits { get; set; }
+        internal Action? AcceptView { get; set; }
+        internal Func<string>? PendingViewStamp { get; set; }
+        internal Action<string>? AcknowledgeViewEdits { get; set; }
+        private sealed record PreparationToken(GlobalVariableConfigurationEditDraft Draft, string? ViewStamp);
+
         public string? LastRefreshError { get; private set; }
         public GlobalVariableManagerViewModel(SolutionManager solutionManager,
-            NodeConfigurationEditHost? host = null, Func<bool>? isCurrent = null)
+            NodeConfigurationEditHost? host = null, Func<bool>? isCurrent = null, DocumentEditSession? documentEdits = null)
         {
+            _documentEdits = documentEdits;
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             EditingDocument = solutionManager.CurrentSolution;
             Host = host ?? new NodeConfigurationEditHost(EditingDocument ?? throw new InvalidOperationException("当前没有方案。"));
@@ -176,7 +189,31 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
 
             InitializeCommands();
             LoadGroups();
+            documentEdits?.Register(this);
         }
+
+        public DocumentEditProposal Prepare(NodeConfigurationEditHost host)
+        {
+            if (!ReferenceEquals(host, Host)) throw new InvalidOperationException("变量编辑属于另一个文档。");
+            if (!TryPrepare(out var error)) throw new InvalidOperationException(error);
+            // An unchanged scope may follow another node's Apply without publishing anything itself.
+            if (Draft.BaseVersion != Host.Capture().Version && !HasPendingChanges) AcceptPublication();
+            var viewError = PrepareView?.Invoke();
+            if (!string.IsNullOrEmpty(viewError)) throw new InvalidOperationException(viewError);
+            return DocumentEditProposal.ForVariables(host, Draft, new PreparationToken(Draft, PendingViewStamp?.Invoke()));
+        }
+        public void Acknowledge(DocumentEditProposal prepared, BindingConfigurationPublication publication)
+        {
+            if (prepared.Token is not PreparationToken token || !ReferenceEquals(token.Draft, Draft)) return;
+            if (!prepared.Matches(Draft) || token.ViewStamp != PendingViewStamp?.Invoke())
+            {
+                Draft = prepared.PreserveNewerVariableEdits(Host, Draft);
+                if (token.ViewStamp is not null) AcknowledgeViewEdits?.Invoke(token.ViewStamp);
+                return;
+            }
+            if (AcceptView is { } accept) accept(); else AcceptPublication();
+        }
+        public void Cancel() => Discard();
 
         internal bool TryPrepare(out string error)
         {
@@ -190,7 +227,11 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 throw new InvalidOperationException("变量不属于当前私有草稿。");
             Draft.SetValue(variable.Id, value);
         }
-        internal void Discard() => _active = false;
+        internal void Discard()
+        {
+            _active = false;
+            _documentEdits?.Unregister(ScopeId);
+        }
         internal void AcceptPublication()
         {
             try

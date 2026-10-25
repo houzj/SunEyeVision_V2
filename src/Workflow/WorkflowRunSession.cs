@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -40,6 +40,7 @@ public sealed class WorkflowRunSession : IDisposable
     internal SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? ExecutionOwner { get; set; }
 
     public string RootWorkflowId { get; }
+    internal WorkflowRunConfiguration? Configuration { get; set; }
 
     public DateTimeOffset StartedAt { get; }
 

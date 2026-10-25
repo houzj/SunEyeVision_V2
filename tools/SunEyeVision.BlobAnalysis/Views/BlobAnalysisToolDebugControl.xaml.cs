@@ -19,6 +19,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         #region 字段
 
         private DataSourceQueryService? _dataProvider;
+        private Window? _ownerWindow;
 
         #endregion
 
@@ -100,10 +101,10 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             this.Loaded += (s, e) =>
             {
                 var window = System.Windows.Window.GetWindow(this);
-                if (window != null)
-                {
-                    window.Closing += OnWindowClosing;
-                }
+                if (ReferenceEquals(window, _ownerWindow)) return;
+                if (_ownerWindow != null) _ownerWindow.Closed -= OnWindowClosed;
+                _ownerWindow = window;
+                if (_ownerWindow != null) _ownerWindow.Closed += OnWindowClosed;
             };
 
             Parameters = new BlobAnalysisParameters();
@@ -157,12 +158,13 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 regionManager.ClearMainOverlay();
             }
 
-            // ★ 防御性清理：同时清空主窗口结果层，避免 Blob 结果轮廓/矩形/十字/文本残留
-            //   （主窗口 ImageControl 的结果渲染层是独立于交互层的第二通道）
-            _mainImageControl?.ResultRenderLayerControl?.Clear();
+            // 正式结果/调试预览由宿主按结果所有者恢复，工具不得清空共享结果层。
+            _mainImageControl = null;
+            if (_ownerWindow != null) _ownerWindow.Closed -= OnWindowClosed;
+            _ownerWindow = null;
         }
 
-        private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+        private void OnWindowClosed(object? sender, EventArgs e)
         {
             Cleanup();
         }

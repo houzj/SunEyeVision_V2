@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -621,7 +621,7 @@ namespace SunEyeVision.Workflow
             WorkflowRunRequest? request,
             bool isSubworkflow)
         {
-            var sourceWorkflow = _workflowEngine.GetWorkflow(workflowId);
+            var sourceWorkflow = session.Configuration?.Find(workflowId);
             if (sourceWorkflow == null)
             {
                 _logger.LogError($"工作流不存在: {workflowId}");
@@ -631,7 +631,7 @@ namespace SunEyeVision.Workflow
             // 在生成运行快照前一次性校验定义。执行器不接收不完整或分裂的工作流对象。
             var definitionErrors = WorkflowDefinitionValidator.Validate(
                 sourceWorkflow,
-                _workflowEngine.GetWorkflowById, validateBindings: false);
+                id => session.Configuration?.Find(id), validateBindings: false);
             if (definitionErrors.Count > 0)
             {
                 var definitionError =
@@ -1271,6 +1271,7 @@ namespace SunEyeVision.Workflow
 
             try
             {
+                session.Configuration = request.Configuration ?? WorkflowRunConfiguration.Capture(request.WorkflowId, _workflowEngine.GetWorkflow);
                 // 不把取消令牌传给 Task.Run：若任务尚未排队即被取消，Task.Run 会在进入统一
                 // 错误转换逻辑前直接抛 TaskCanceledException。执行链内部通过 WorkflowContext 的
                 // 令牌检测取消并返回标准 ExecutionResult。

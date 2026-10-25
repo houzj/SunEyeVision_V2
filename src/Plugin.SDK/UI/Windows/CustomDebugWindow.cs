@@ -84,7 +84,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
 
             // 窗口关闭时清理
             Closed += OnWindowClosed;
-            Closing += (_, e) => { if (!_confirmed) e.Cancel = !SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorClose.TryClose(_control, this); };
+            Closing += (_, e) => {
+                // A later Closing handler can veto. Draft disposal belongs to Closed.
+                if (!_confirmed && !e.Cancel && SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.GetDraftContext(_control) is null
+                    && !SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorClose.TryClose(_control, this)) e.Cancel = true;
+            };
 
             PluginLogger.Success("CustomDebugWindow 构造函数完成", "CustomDebugWindow");
         }
@@ -151,9 +155,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </summary>
         private void OnWindowClosed(object? sender, EventArgs e)
         {
+            if (SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.GetDraftContext(_control) is not null)
+                SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.DiscardPendingEdits(_control);
             PluginLogger.Info($"[绑定诊断] 自定义调试窗口 Closed | 控件={_control.GetType().Name}", "BindingDiag");
-            // The close decision already committed or discarded the draft.
-            // Closed only releases handlers; it must never publish bindings again.
+            // Closed retires an optional draft; it must never publish bindings again.
 
             PluginLogger.Info("窗口已关闭，事件已清理", "CustomDebugWindow");
         }

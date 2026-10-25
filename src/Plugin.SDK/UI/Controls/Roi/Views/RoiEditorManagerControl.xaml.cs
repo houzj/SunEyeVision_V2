@@ -24,6 +24,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
     {
         private ImageControl? _mainImageControl;
         private WpfShapeRenderer? _renderer;
+        private Canvas? _editingCanvas;
 
         // Viewport zoom tracking
         private double _viewportZoom = 1.0;
@@ -132,12 +133,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
             if (_mainImageControl == imageControl)
                 return;
 
-            // Unsubscribe old events
-            if (_mainImageControl != null)
-            {
-                UnsubscribeImageControlEvents();
-                UnsubscribeWindowEvents();
-            }
+            // Release only this editor's borrowed display scope before rebinding.
+            ClearMainOverlay();
 
             _mainImageControl = imageControl;
 
@@ -148,7 +145,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                 _mainImageControl.OverlayHitTestVisible = false;
 
                 // Pass OverlayCanvas to both editors for handle/rubber band drawing
-                var overlayCanvas = _mainImageControl.InteractionOverlayCanvasControl;
+                var overlayCanvas = _editingCanvas = new Canvas();
+                _mainImageControl.InteractionOverlayCanvasControl.Children.Add(overlayCanvas);
                 inspectionsEditor.OverlayCanvas = overlayCanvas;
                 masksEditor.OverlayCanvas = overlayCanvas;
 
@@ -232,14 +230,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                     _renderer = null;
                 }
 
-                if (_mainImageControl?.InteractionOverlayCanvasControl != null)
+                if (_editingCanvas != null)
                 {
-                    _mainImageControl.OverlayHitTestVisible = false;
-                    _mainImageControl.InteractionOverlayCanvasControl.Children.Clear();
+                    _editingCanvas.Children.Clear();
+                    _mainImageControl?.InteractionOverlayCanvasControl?.Children.Remove(_editingCanvas);
+                    _editingCanvas = null;
                 }
 
                 inspectionsEditor.OverlayCanvas = null;
                 masksEditor.OverlayCanvas = null;
+                inspectionsEditor.DrawingAvailabilityCheck = null;
+                masksEditor.DrawingAvailabilityCheck = null;
 
                 _mainImageControl = null;
 
@@ -656,7 +657,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
             _renderer.Render(allContexts, new RoiRenderOptions { ShowLabels = true, ShowHandles = false });
 
             // ── Always clear stale handles first ──
-            Rendering.HandleRenderer.ClearHandles(_mainImageControl.InteractionOverlayCanvasControl);
+            if (_editingCanvas != null) Rendering.HandleRenderer.ClearHandles(_editingCanvas);
 
             // ── Draw handles for selected regions ──
             // ★ 只隐藏绘制新形状时的手柄，拖动/编辑手柄时保持可见（恢复上版行为）

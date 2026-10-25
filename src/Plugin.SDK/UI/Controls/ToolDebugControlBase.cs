@@ -317,7 +317,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var stopwatch = Stopwatch.StartNew();
 
                 // 执行工具逻辑
-                if (!ToolEditorCommit.TryCommit(this, out var commitError))
+                if (!ToolEditorCommit.TryPrepare(this, out var commitError))
                     throw new InvalidOperationException(commitError);
                 PersistParameterBindings();
                 var results = await ExecuteToolAsync();
@@ -920,6 +920,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             System.Threading.CancellationToken cancellationToken = default)
         {
 
+            if (DataProvider is DataSourceQueryService query && query.CapturePublishedGlobals is { } captureGlobals)
+                query.SetGlobalVariables(captureGlobals());
             var provider = DataProvider as IDataSourceQueryService;
             var bindings = ParameterBindingSet.FromSettings(
                 CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
@@ -968,7 +970,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 NodeResults = nodeResults,
                 ResolvedInputImage = resolvedInputImage,
                 NodeId = GetCurrentNodeStringProperty("Id") ?? _currentNodeId,
-                CancellationToken = cancellationToken,
+                CancellationToken = cancellationToken.CanBeCanceled ? cancellationToken
+                    : (DataProvider as DataSourceQueryService)?.EditScopeCancellation ?? default,
                 WorkflowId = (DataProvider as DataSourceQueryService)?.WorkflowId,
                 ExecutionOwner = (DataProvider as DataSourceQueryService)?.ExecutionOwner,
                 RunId = Guid.NewGuid(),

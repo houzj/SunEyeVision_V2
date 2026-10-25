@@ -30,6 +30,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public Action<string>? CommitOutputConfiguration { get; set; }
         public string? WorkflowId { get; set; }
         public SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? ExecutionOwner { get; set; }
+        /// <summary>Optional private editor lifetime; production queries leave this unset.</summary>
+        public System.Threading.CancellationToken EditScopeCancellation { get; set; }
+        /// <summary>Editor run boundary captures published values, never another scope's pending variables.</summary>
+        public Func<IDictionary<string, object?>?>? CapturePublishedGlobals { get; set; }
         /// <summary>Host's configuration snapshot factory, shared with workflow execution.</summary>
         public Func<ToolParameters, ToolParameters>? CreateParameterSnapshot { get; set; }
         public Func<string, IReadOnlyList<string>>? BindingCandidateNodeIds { get; set; }

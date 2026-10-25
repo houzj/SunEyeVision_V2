@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text.Json;
 using System.Linq;
 using System.Text.Json.Serialization.Metadata;
@@ -11,6 +11,8 @@ namespace SunEyeVision.Workflow;
 public sealed class SolutionSession
 {
     public Solution Document { get; }
+    private DocumentEditSession? _editing;
+    public DocumentEditSession Editing => _editing ??= new DocumentEditSession(Document);
     public string? FilePath => Document.FilePath;
     public bool IsUntitled => string.IsNullOrEmpty(FilePath);
     private string? _savedContent;
@@ -18,7 +20,7 @@ public sealed class SolutionSession
     {
         get
         {
-            try { return SolutionSemanticComparer.Canonicalize(Serialize(Document)) != _savedContent; }
+            try { return _editing?.HasPendingChanges == true || SolutionSemanticComparer.Canonicalize(Serialize(Document)) != _savedContent; }
             catch (Exception)
             { return true; } // Incomplete editor values must not appear clean or break the status display.
         }

@@ -1,9 +1,9 @@
 [CmdletBinding()]
-param([ValidateSet('Contracts','Owner','Fields','Native','Workflow','Snapshot','Dialog')][string[]]$Tracks=@('Contracts','Owner','Fields','Native','Workflow','Snapshot','Dialog'),[string]$SnapshotFilter='',[string]$CrossVolumeDataRoot='')
+param([ValidateSet('Contracts','Owner','Fields','Native','Workflow','Snapshot','Dialog')][string[]]$Tracks=@('Contracts','Owner','Fields','Native','Workflow','Snapshot','Dialog'),[string]$SnapshotFilter='',[string]$CrossVolumeDataRoot='',[ValidatePattern('^[A-Za-z0-9_-]+$')][string]$ValidationName='S1-20261025')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
-$validation=Join-Path $root 'Release/_validation/S1-20261025'
+$validation=Join-Path $root ('Release/_validation/' + $ValidationName)
 $sources=@{
  Contracts='artifacts/validation/blob-s1-contracts-next/Runner/Program.cs'
  Owner='artifacts/validation/blob-s1-owner/Host/Program.cs'

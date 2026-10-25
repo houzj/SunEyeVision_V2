@@ -301,6 +301,18 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             try { box.SetCurrentValue(TextBox.TextProperty, raw); }
             finally { _refreshing = false; }
         }
+        internal bool HasRetainedPendingEdits => _pendingNames.Count != 0 || _pendingValues.Count != 0 ||
+            SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.HasPendingEdits(this);
+        internal string PendingEditStamp => System.Text.Json.JsonSerializer.Serialize(new { Names = _pendingNames, Values = _pendingValues });
+        internal void AcknowledgeRetainedEdits(string stamp)
+        {
+            using var saved = System.Text.Json.JsonDocument.Parse(stamp);
+            foreach (var item in saved.RootElement.GetProperty("Names").EnumerateObject())
+                if (_pendingNames.TryGetValue(item.Name, out var current) && current == item.Value.GetString()) _pendingNames.Remove(item.Name);
+            foreach (var item in saved.RootElement.GetProperty("Values").EnumerateObject())
+                if (_pendingValues.TryGetValue(item.Name, out var current) && current == item.Value.GetString())
+                { _pendingValues.Remove(item.Name); _valueEdits.Remove(item.Name); }
+        }
         internal void AcceptPublication()
         {
             _refreshing = true;

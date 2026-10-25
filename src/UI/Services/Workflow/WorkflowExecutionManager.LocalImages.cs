@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.SDK.Logging;
+﻿using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Shared;
@@ -10,22 +10,79 @@ public partial class WorkflowExecutionManager
 {
     private readonly LocalImageSequenceService _localImageSequences = new();
     private sealed record LocalSourcePresentation(ImageInputSource Source, long EditVersion);
+    private sealed record PreparedLocalImages(IReadOnlyList<LocalImageSourcePlan> Plans,
+        Dictionary<string, IReadOnlyDictionary<string, object?>> Overrides,
+        Dictionary<string, LocalSourcePresentation> Presentations, string DefinitionSignature);
+
+    // Called only at the UI-owned complete-run boundary. No file IO and no publishing.
+    private PreparedLocalImages CaptureLocalImageInputs(string rootId, SunEyeVision.Workflow.WorkflowRunConfiguration configuration)
+    {
+        var plans = new List<LocalImageSourcePlan>();
+        var presentations = new Dictionary<string, LocalSourcePresentation>();
+        var overrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
+        var visited = new HashSet<string>();
+        void Capture(string id)
+        {
+            if (!visited.Add(id) || configuration.CopyWorkflow(id) is not { } frozen) return;
+            var formal = _workflowEngine.GetWorkflow(id);
+            foreach (var node in frozen.Nodes)
+            {
+                if (!node.IsEnabled) continue;
+                if (!string.IsNullOrEmpty(node.SubroutineId)) Capture(node.SubroutineId);
+                if (!ImageSourceResolver.IsImageSource(node.ToolType)) continue;
+                var config = node.ImageSourceConfig;
+                if (config?.SourceKind == ImageSourceKind.Camera)
+                {
+                    overrides[node.Id] = new Dictionary<string, object?> {
+                        ["SourceKind"] = ImageSourceKind.Camera, ["CameraDeviceId"] = config.CameraDeviceId,
+                        ["CameraTimeoutMs"] = config.CameraTimeoutMs, ["OutputFormat"] = config.OutputFormat,
+                        ["SequenceNumber"] = config.SNInitialValue, ["FilePath"] = string.Empty };
+                    continue;
+                }
+                var source = formal?.Nodes.FirstOrDefault(n => n.Id == node.Id)?.InputSource as ImageInputSource;
+                if (source is null)
+                {
+                    source = new ImageInputSource(node.Id);
+                    if (config is not null) source.LoadFromConfig(config);
+                }
+                var entries = source.Images.Select((image, index) => (image, index))
+                    .Where(item => source.RunMode != ImageRunMode.运行选择 || item.image.IsForRun)
+                    .Select(item => new LocalImageSequenceEntry(item.image.Id,
+                        item.image.SourceReference ?? item.image.FilePath, item.image.FilePath, item.index)).ToArray();
+                plans.Add(new(node.Id, entries, source.CurrentImage?.Id, source.AutoSwitchEnabled, config?.StopAtLastImage == true));
+                presentations.Add(node.Id, new(source, source.EditVersion));
+                overrides[node.Id] = new Dictionary<string, object?> {
+                    ["SourceKind"] = ImageSourceKind.Local, ["OutputFormat"] = config?.OutputFormat ?? ImageOutputFormat.Original,
+                    ["SequenceNumber"] = config?.SNInitialValue ?? 1L, ["FilePath"] = source.CurrentImage?.FilePath ?? string.Empty };
+            }
+        }
+        Capture(rootId);
+        // Runtime cursor advancement is not a configuration edit. Reuse its sequence until
+        // a real source/configuration change, then install the new definition next whole round.
+        var signature = System.Text.Json.JsonSerializer.Serialize(new {
+            Plans = plans.Select(p => new { p.SourceNodeId, p.Entries, p.AutoAdvance, p.StopAtLast }),
+            Settings = overrides.Select(p => new { p.Key, Values = p.Value.Where(v => v.Key != "FilePath").ToArray() }),
+            Views = presentations.Select(p => new { p.Key, p.Value.EditVersion }) });
+        return new(plans, overrides, presentations, signature);
+    }
+
 
     private sealed class LocalImageExecution : IDisposable
     {
         private readonly LocalImageSequenceService _sequences;
         public string WorkflowId { get; }
         public long Generation { get; }
+        public string DefinitionSignature { get; }
         public Dictionary<string, IReadOnlyDictionary<string, object?>> BaseOverrides { get; }
         public Dictionary<string, LocalSourcePresentation> Presentations { get; }
         public IReadOnlyList<LocalImageRunInput> Consumed { get; private set; } = Array.Empty<LocalImageRunInput>();
 
         public LocalImageExecution(LocalImageSequenceService sequences, string workflowId, long generation,
             Dictionary<string, IReadOnlyDictionary<string, object?>> overrides,
-            Dictionary<string, LocalSourcePresentation> presentations)
+            Dictionary<string, LocalSourcePresentation> presentations, string definitionSignature)
         {
             _sequences = sequences; WorkflowId = workflowId; Generation = generation;
-            BaseOverrides = overrides; Presentations = presentations;
+            BaseOverrides = overrides; Presentations = presentations; DefinitionSignature = definitionSignature;
         }
 
         public Dictionary<string, IReadOnlyDictionary<string, object?>> CaptureIteration()
@@ -47,52 +104,11 @@ public partial class WorkflowExecutionManager
 
     private async Task<LocalImageExecution> BeginLocalImagesAsync(WorkflowTabViewModel workflow, CancellationToken token)
     {
-        var plans = new List<LocalImageSourcePlan>();
-        var presentations = new Dictionary<string, LocalSourcePresentation>();
-        var overrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
-        await InvokeOnUIAsync(() =>
-        {
-            token.ThrowIfCancellationRequested();
-            var root = _workflowEngine.GetWorkflow(workflow.RootWorkflowId)
-                ?? throw new InvalidOperationException("图像输入所属流程已删除。");
-            var visited = new HashSet<string>();
-            void Capture(SunEyeVision.Workflow.Workflow flow)
-            {
-                if (!visited.Add(flow.Id)) return;
-                foreach (var node in flow.Nodes)
-                {
-                    if (!node.IsEnabled) continue;
-                    if (!string.IsNullOrEmpty(node.SubroutineId)
-                        && _workflowEngine.GetWorkflow(node.SubroutineId) is { } child) Capture(child);
-                    if (!ImageSourceResolver.IsImageSource(node.ToolType)
-                        || node.ImageSourceConfig?.SourceKind == ImageSourceKind.Camera) continue;
-                    var source = node.InputSource as ImageInputSource;
-                    if (source == null)
-                    {
-                        source = node is WorkflowNode uiNode ? uiNode.EnsureInputSource() : new ImageInputSource(node.Id);
-                        if (node.ImageSourceConfig is { } saved) source.LoadFromConfig(saved);
-                        if (node is not WorkflowNode)
-                        {
-                            node.InputSource = source;
-                            source.ConfigChanged = config =>
-                            {
-                                node.ImageSourceConfig ??= new() { NodeId = node.Id };
-                                node.ImageSourceConfig.UpdateLocalInput(config);
-                            };
-                        }
-                    }
-                    var entries = source.Images.Select((image, index) => (image, index))
-                        .Where(item => source.RunMode != ImageRunMode.运行选择 || item.image.IsForRun)
-                        .Select(item => new LocalImageSequenceEntry(item.image.Id,
-                            item.image.SourceReference ?? item.image.FilePath, item.image.FilePath, item.index)).ToArray();
-                    plans.Add(new(node.Id, entries, source.CurrentImage?.Id,
-                        source.AutoSwitchEnabled, node.ImageSourceConfig?.StopAtLastImage == true));
-                    presentations.Add(node.Id, new(source, source.EditVersion));
-                }
-            }
-            Capture(root);
-            overrides = CreateImageLoadParameterOverrides(root, VisionLogger.Instance, new HashSet<string>());
-        });
+        PreparedLocalImages captured;
+        lock (_lock)
+            captured = _preparedRunInputs.TryGetValue(workflow.RootWorkflowId, out var inputs) ? inputs.LocalImages
+                : throw new InvalidOperationException("图像输入缺少本轮正式配置快照。");
+        var plans = captured.Plans;
         // File/network checks run away from the dispatcher. Original references stay in the plan.
         var validPlans = await Task.Run(() => plans.Select(plan =>
         {
@@ -104,7 +120,7 @@ public partial class WorkflowExecutionManager
         if (empty != null)
             throw new InvalidOperationException($"图像来源 {empty.SourceNodeId} 没有可运行的有效图片，请检查勾选和文件状态。");
         var generation = _localImageSequences.Begin(workflow.RootWorkflowId, validPlans);
-        return new(_localImageSequences, workflow.RootWorkflowId, generation, overrides, presentations);
+        return new(_localImageSequences, workflow.RootWorkflowId, generation, captured.Overrides, captured.Presentations, captured.DefinitionSignature);
     }
 
     private async Task<LocalImageCompletion> CompleteLocalImagesAsync(LocalImageExecution images,

@@ -43,7 +43,7 @@ public class WorkflowRunPresentationTests
             NodeId = downstream.Id, Success = true, Status = ExecutionStatus.Success,
             StartTime = DateTime.Now.AddSeconds(-1), EndTime = DateTime.Now, Result = new CommunicationToolResults { ExecutionTimeMs = 12 }
         });
-        var manager = new WorkflowExecutionManager(Substitute.For<IInputProvider>(), engine, new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
+        var manager = new WorkflowExecutionManager(Substitute.For<IInputProvider>(), engine, new RuntimeInputSnapshotService()) { AllowUnhostedRunForTests = true };
         try
         {
         manager.BeginRunPresentation(root.Id, root.Name, snapshot);

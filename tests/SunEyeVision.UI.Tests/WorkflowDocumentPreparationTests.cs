@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +19,7 @@ public sealed class WorkflowDocumentPreparationTests
     private static (WorkflowExecutionManager Manager, WorkflowTabViewModel Tab, Solution Document) Fixture()
     {
         SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.InitializeSolutionManager(
-            System.IO.Path.Combine(AppContext.BaseDirectory, "s1-preparation-data"));
+            System.IO.Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT") ?? AppContext.BaseDirectory, "s2-preparation-data"));
         var engine = new WorkflowEngine(Substitute.For<ILogger>());
         var flow = engine.CreateWorkflow(Guid.NewGuid().ToString(), "document preparation");
         var input = Substitute.For<IInputProvider>(); input.GetInputImageAsync().Returns(Task.FromResult<object?>(null));
@@ -30,7 +30,7 @@ public sealed class WorkflowDocumentPreparationTests
     public void RunSingle_and_solution_prepare_document_once_before_nested_execution() => Sta(() =>
     {
         var f = Fixture(); var manager = f.Manager; using var cleanup = new ManagerCleanup(manager); var calls = 0;
-        manager.PrepareDocumentEditors = () => { Assert.False(Monitor.IsEntered(GlobalVariable.ValueGate)); calls++; };
+        manager.CapturePublishedConfiguration = () => { Assert.False(Monitor.IsEntered(GlobalVariable.ValueGate)); calls++; };
         manager.RunSingleAsync(f.Tab).GetAwaiter().GetResult(); Assert.Equal(1, calls);
         calls = 0;
         manager.RunSolutionAsync(new[] { f.Tab }, f.Document).GetAwaiter().GetResult(); Assert.Equal(1, calls);
@@ -41,13 +41,13 @@ public sealed class WorkflowDocumentPreparationTests
         var f = Fixture(); var manager = f.Manager; using var cleanup = new ManagerCleanup(manager); string? error = null;
         manager.WorkflowExecutionError += (_, e) => error = e.ErrorMessage;
         manager.RunSingleAsync(f.Tab).GetAwaiter().GetResult();
-        Assert.NotNull(error); Assert.Contains("统一编辑事务入口", error);
+        Assert.NotNull(error); Assert.Contains("正式配置快照入口", error);
     });
     [Fact]
     public void Communication_admission_prepares_once_and_nested_run_does_not_prepare_again() => Sta(() =>
     {
         var f = Fixture(); var manager = f.Manager; using var cleanup = new ManagerCleanup(manager); var calls = 0;
-        manager.PrepareDocumentEditors = () => calls++;
+        manager.CapturePublishedConfiguration = () => calls++;
         Assert.True(manager.RunCommunicationOperationAsync(token => manager.RunSingleAsync(f.Tab, token), CancellationToken.None).GetAwaiter().GetResult());
         Assert.Equal(1, calls);
     });
@@ -57,7 +57,7 @@ public sealed class WorkflowDocumentPreparationTests
         var f = Fixture(); var manager = f.Manager; using var cleanup = new ManagerCleanup(manager); var calls = 0; var completed = 0;
         var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         string? failure = null;
-        manager.PrepareDocumentEditors = () => Interlocked.Increment(ref calls);
+        manager.CapturePublishedConfiguration = () => Interlocked.Increment(ref calls);
         manager.WorkflowExecutionCompleted += (_, _) => { if (Interlocked.Increment(ref completed) == 2) manager.StopContinuousRun(f.Tab); };
         manager.WorkflowExecutionStopped += (_, _) => stopped.TrySetResult();
         manager.WorkflowExecutionError += (_, e) => { failure = e.ErrorMessage; stopped.TrySetResult(); };

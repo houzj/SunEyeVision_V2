@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -88,12 +88,12 @@ public static class ToolEditorCommit
 
     /// <summary>Prepare only private drafts. Detect legacy pending changes before any source flush.</summary>
     public static bool TryPrepareOpenDraftEditors(Func<object, bool> ownsNode,
-        out IReadOnlyList<IToolEditorDraftContext> contexts, out string error)
+        out IReadOnlyList<IToolEditorDraftContext> contexts, out string error, bool includeDrafts = true)
     {
         ToolDebugControlBase[] selected;
         lock (Editors) selected = Editors.Select(e => e.TryGetTarget(out var target) ? target : null)
             .OfType<ToolDebugControlBase>().Where(e => e.Dispatcher.CheckAccess() && e.IsLoaded &&
-                PresentationSource.FromVisual(e) != null && FormalNode(e) is { } node && ownsNode(node)).ToArray();
+                PresentationSource.FromVisual(e) != null && (includeDrafts || GetDraftContext(e) is null) && FormalNode(e) is { } node && ownsNode(node)).ToArray();
         contexts = Array.Empty<IToolEditorDraftContext>();
         foreach (var editor in selected.Where(e => GetDraftContext(e) is null))
         {
@@ -127,6 +127,15 @@ public static class ToolEditorCommit
         }
         catch { return null; }
     }
+    public static bool HasPendingEdits(FrameworkElement root)
+    {
+        root.Dispatcher.VerifyAccess();
+        var elements = Walk(root).OfType<FrameworkElement>().ToArray();
+        return elements.OfType<NumericUpDown>().Any(n => n.HasPendingEdit) ||
+            elements.SelectMany(Bindings).Any(b => b.IsDirty) ||
+            elements.Any(e => e.BindingGroup?.IsDirty == true || System.Windows.Controls.Validation.GetHasError(e));
+    }
+
     public static bool TryPrepare(FrameworkElement root, out string error)
     {
         if (!TryFlush(root, out error)) return false;

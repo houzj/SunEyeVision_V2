@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.Json;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Tool.ProtocolParse;
@@ -89,17 +89,17 @@ public sealed class GlobalVariableConfigurationEditHostTests
     }
 
     [Fact]
-    public void Explicit_store_equal_value_still_executes_acceptance_and_consumes_exactly_one_generation()
+    public void Explicit_store_equal_value_executes_CAS_without_configuration_history()
     {
         var model = Model(); var count = Variable(model, "count"); var host = new NodeConfigurationEditHost(model);
         count.Value = new long[] { 10 }; var variables = host.BeginVariableEdit(); var before = host.Capture(); var revision = count.ValueRevision;
         variables.SetValue("count", new long[] { 0 });
         var publication = host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(), variables);
-        Assert.Equal(before.Version + 1, publication.Snapshot.Version); Assert.Equal(revision + 1, count.ValueRevision);
-        Assert.Equal(new long[] { 0 }, Assert.IsType<long[]>(count.Value)); Assert.True(host.CanUndo);
+        Assert.Equal(before.Version, publication.Snapshot.Version); Assert.Equal(revision + 1, count.ValueRevision);
+        Assert.Equal(new long[] { 0 }, Assert.IsType<long[]>(count.Value)); Assert.False(host.CanUndo);
         Assert.Throws<InvalidOperationException>(() => host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(), variables));
         count.Value = new long[] { 33 }; var latestRevision = count.ValueRevision;
-        host.Undo(); host.Redo();
+        Assert.Throws<InvalidOperationException>(() => host.Undo());
         Assert.Equal(new long[] { 33 }, Assert.IsType<long[]>(count.Value)); Assert.Equal(latestRevision, count.ValueRevision);
     }
 
@@ -300,12 +300,15 @@ public sealed class GlobalVariableConfigurationEditHostTests
     }
 
     [Fact]
-    public void Stale_or_other_host_variable_draft_is_rejected_and_duplicate_node_participants_do_not_publish()
+    public void Nonoverlapping_node_publish_keeps_variable_scope_valid_but_foreign_and_duplicate_scopes_reject()
     {
         var model = Model(); var host = new NodeConfigurationEditHost(model); var stale = host.BeginVariableEdit();
         var edit = host.BeginEdit("f", "parse"); Parameters(edit).Separator = ";"; host.Commit(edit);
         stale.SetValue("count", new long[] { 19 });
-        Assert.Throws<InvalidOperationException>(() => host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(), stale));
+        var version = host.Capture().Version;
+        host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(), stale);
+        Assert.Equal(version, host.Capture().Version);
+        Assert.Equal(new long[] { 19 }, Assert.IsType<long[]>(Variable(model, "count").Value));
         var foreign = new NodeConfigurationEditHost(Model()).BeginVariableEdit();
         Assert.Throws<InvalidOperationException>(() => host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(), foreign));
         var duplicate = host.BeginEdit("f", "parse"); var before = host.Capture();

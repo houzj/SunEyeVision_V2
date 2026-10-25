@@ -570,6 +570,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             PluginLogger.Info($"[绑定诊断] 标准调试窗口 Closing | 控件={_control.GetType().Name}", "BindingDiag");
+            if (ToolEditorCommit.GetDraftContext(_control) is not null) return;
             if (!ToolEditorClose.TryClose(_control, this))
             {
                 e.Cancel = true;
@@ -586,6 +587,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </summary>
         private void OnWindowClosed(object? sender, EventArgs e)
         {
+            if (ToolEditorCommit.GetDraftContext(_control) is not null)
+                ToolEditorCommit.DiscardPendingEdits(_control);
             // 停止连续运行
             _isContinuousRunning = false;
             

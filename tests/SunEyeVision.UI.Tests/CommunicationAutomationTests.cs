@@ -93,7 +93,7 @@ public sealed class CommunicationAutomationTests
     [Fact]
     public async Task Busy_trigger_is_skipped_warned_and_never_queued()
     {
-        var manager = new WorkflowExecutionManager(new EmptyInput(), new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
+        var manager = new WorkflowExecutionManager(new EmptyInput(), new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService()) { AllowUnhostedRunForTests = true };
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var active = manager.RunCommunicationOperationAsync(async _ => { entered.TrySetResult(); await release.Task; }, default);
@@ -129,7 +129,7 @@ public sealed class CommunicationAutomationTests
     public async Task Manual_run_lease_also_rejects_communication_operations()
     {
         var input = new BlockingInput();
-        var manager = new WorkflowExecutionManager(input, new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
+        var manager = new WorkflowExecutionManager(input, new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService()) { AllowUnhostedRunForTests = true };
         var running = manager.RunSingleAsync(new WorkflowTabViewModel());
         try
         {
@@ -313,7 +313,7 @@ public sealed class CommunicationAutomationTests
     [Fact]
     public async Task Failed_workflow_does_not_publish_success_completion()
     {
-        var manager = new WorkflowExecutionManager(new EmptyInput(), new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
+        var manager = new WorkflowExecutionManager(new EmptyInput(), new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService()) { AllowUnhostedRunForTests = true };
         var completed = 0; var failed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         manager.WorkflowExecutionCompleted += (_, _) => Interlocked.Increment(ref completed);
         manager.WorkflowExecutionError += (_, _) => failed.TrySetResult();
@@ -331,7 +331,7 @@ public sealed class CommunicationAutomationTests
         var parameters = new AutomationProbeParameters { Value = 17 };
         var node = new WorkflowNodeBase("probe-node", "探针", "探针", "CommunicationAutomationProbe") { Parameters = parameters };
         workflow.Nodes.Add(node);
-        var manager = new WorkflowExecutionManager(new EmptyInput(), engine, new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
+        var manager = new WorkflowExecutionManager(new EmptyInput(), engine, new RuntimeInputSnapshotService()) { AllowUnhostedRunForTests = true };
         Assert.True(await manager.RunCommunicationOperationAsync(token =>
             manager.RunCommunicationNodeAsync(workflow.Id, node.Id, token), default));
         Assert.Equal(17, AutomationProbeTool.SeenValue);
@@ -353,7 +353,7 @@ public sealed class CommunicationAutomationTests
         var node = new WorkflowNodeBase("mapping-probe-node", "探针", "探针", "CommunicationAutomationProbe") { Parameters = parameters };
         node.ParamSettings.SetSetting(ParamSetting.CreateConstant("Value", 23));
         workflow.Nodes.Add(node);
-        var manager = new WorkflowExecutionManager(new EmptyInput(), engine, new RuntimeInputSnapshotService()) { AllowLegacyEditorCommitForTests = true };
+        var manager = new WorkflowExecutionManager(new EmptyInput(), engine, new RuntimeInputSnapshotService()) { AllowUnhostedRunForTests = true };
         Assert.True(await manager.RunCommunicationOperationAsync(token => manager.RunCommunicationNodeAsync(workflow.Id, node.Id, token),
             default, new[] { new CommunicationParameterAssignment(node.Id, "Value", "运行参数", 42) }));
         Assert.Equal(42, AutomationProbeTool.SeenValue);
@@ -387,6 +387,88 @@ public sealed class CommunicationAutomationTests
         Assert.Equal(23, node.ParamSettings.GetSetting("Value")!.ConstantValue);
     }
 
+    [Fact]
+    public async Task Solution_admission_blocks_other_manual_runs_and_releases_all_snapshots()
+    {
+        ToolRegistry.RegisterTool(typeof(AutomationProbeTool));
+        var engine = new WorkflowEngine(VisionLogger.Instance);
+        var flow = engine.CreateWorkflow("solution-owned", "solution-owned");
+        var other = engine.CreateWorkflow("other-owned", "other-owned");
+        flow.Nodes.Add(new WorkflowNodeBase("one", "one", "one", "CommunicationAutomationProbe") { Parameters = new AutomationProbeParameters { Value = 17 } });
+        other.Nodes.Add(new WorkflowNodeBase("two", "two", "two", "CommunicationAutomationProbe") { Parameters = new AutomationProbeParameters { Value = 23 } });
+        var tab = new WorkflowTabViewModel { Id = flow.Id, Name = flow.Name, WorkflowNodes = flow.Nodes, WorkflowConnections = flow.Connections };
+        var otherTab = new WorkflowTabViewModel { Id = other.Id, Name = other.Name, WorkflowNodes = other.Nodes, WorkflowConnections = other.Connections };
+        var input = new BlockingInput();
+        var manager = new WorkflowExecutionManager(input, engine, new RuntimeInputSnapshotService()) { AllowUnhostedRunForTests = true };
+        using var lifetime = new ManagerLease(manager);
+        var running = manager.RunSolutionAsync(new[] { tab }, new Solution { Workflows = new() { flow, other } });
+        await input.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        try
+        {
+            await manager.RunSingleAsync(otherTab);
+            Assert.False(manager.StartContinuousRun(otherTab));
+        }
+        finally { input.Release.TrySetResult(null); }
+        await running.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.False(manager.IsAnyRunning()); Assert.Equal(0, PreparedSnapshotCount(manager));
+        await manager.RunSingleAsync(otherTab); Assert.Equal(23, AutomationProbeTool.SeenValue);
+        Assert.Equal(0, PreparedSnapshotCount(manager));
+    }
+
+    [Fact]
+    public async Task Repeated_communication_nodes_share_admission_snapshot_and_failure_releases_it()
+    {
+        ToolRegistry.RegisterTool(typeof(AutomationProbeTool));
+        var engine = new WorkflowEngine(VisionLogger.Instance); var flow = engine.CreateWorkflow("repeated", "repeated");
+        var parameters = new AutomationProbeParameters { Value = 17 };
+        var node = new WorkflowNodeBase("one", "one", "one", "CommunicationAutomationProbe") { Parameters = parameters }; flow.Nodes.Add(node);
+        var manager = new WorkflowExecutionManager(new EmptyInput(), engine, new RuntimeInputSnapshotService()) { AllowUnhostedRunForTests = true };
+        using var lifetime = new ManagerLease(manager);
+        Assert.True(await manager.RunCommunicationOperationAsync(async token => {
+            await manager.RunCommunicationNodeAsync(flow.Id, node.Id, token); Assert.Equal(17, AutomationProbeTool.SeenValue);
+            parameters.Value = 23;
+            await manager.RunCommunicationNodeAsync(flow.Id, node.Id, token); Assert.Equal(17, AutomationProbeTool.SeenValue);
+        }, default));
+        Assert.Equal(0, PreparedSnapshotCount(manager));
+        await manager.RunCommunicationNodeAsync(flow.Id, node.Id, default); Assert.Equal(23, AutomationProbeTool.SeenValue);
+        Assert.Equal(0, PreparedSnapshotCount(manager));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => manager.RunCommunicationOperationAsync(_ => throw new InvalidOperationException("意图注入失败"), default));
+        Assert.Equal(0, PreparedSnapshotCount(manager)); Assert.False(manager.IsAnyRunning());
+    }
+
+    [Fact]
+    public async Task Continuous_apply_during_first_node_only_changes_the_next_whole_round()
+    {
+        ToolRegistry.RegisterTool(typeof(AutomationProbeTool));
+        var engine = new WorkflowEngine(VisionLogger.Instance); var flow = engine.CreateWorkflow("rounds", "rounds");
+        flow.Nodes.Add(new WorkflowNodeBase("a", "a", "a", "CommunicationAutomationProbe") { Parameters = new AutomationProbeParameters { Value = 11 } });
+        flow.Nodes.Add(new WorkflowNodeBase("b", "b", "b", "CommunicationAutomationProbe") { Parameters = new AutomationProbeParameters { Value = 22 } });
+        flow.Connections.Add(new WorkflowConnection { Id = "a-b", SourceNodeId = "a", TargetNodeId = "b" });
+        var host = new NodeConfigurationEditHost(new Solution { Workflows = new() { flow } });
+        var observed = new System.Collections.Concurrent.ConcurrentQueue<int>(); int applied = 0, completed = 0;
+        var manager = new WorkflowExecutionManager(new EmptyInput(), engine, new RuntimeInputSnapshotService()) { AllowUnhostedRunForTests = true };
+        using var lifetime = new ManagerLease(manager);
+        var tab = new WorkflowTabViewModel { Id = flow.Id, Name = flow.Name, WorkflowNodes = flow.Nodes, WorkflowConnections = flow.Connections };
+        var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously); string? failure = null;
+        AutomationProbeTool.OnRun = parameter => {
+            observed.Enqueue(parameter.Value);
+            if (parameter.Value == 11 && Interlocked.Exchange(ref applied, 1) == 0) {
+                var draft = host.BeginEdit(flow.Id, "b"); ((AutomationProbeParameters)draft.Node.Parameters).Value = 99; host.Commit(draft);
+            }
+        };
+        manager.WorkflowExecutionCompleted += (_, _) => { if (Interlocked.Increment(ref completed) == 2) manager.StopContinuousRun(tab); };
+        manager.WorkflowExecutionStopped += (_, _) => stopped.TrySetResult();
+        manager.WorkflowExecutionError += (_, e) => { failure = e.ErrorMessage; manager.StopContinuousRun(tab); };
+        try {
+            Assert.True(manager.StartContinuousRun(tab)); await stopped.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            Assert.Null(failure); Assert.Equal(new[] { 11, 22, 11, 99 }, observed.ToArray()); Assert.Equal(0, PreparedSnapshotCount(manager));
+        }
+        finally { AutomationProbeTool.OnRun = null; await manager.StopAndWaitAsync(TimeSpan.FromSeconds(5)); }
+    }
+    private sealed class ManagerLease(WorkflowExecutionManager manager) : IDisposable { public void Dispose() => manager.Dispose(); }
+    private static int PreparedSnapshotCount(WorkflowExecutionManager manager) =>
+        ((System.Collections.IDictionary)typeof(WorkflowExecutionManager).GetField("_preparedRunInputs", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(manager)!).Count;
+
     public sealed class AutomationProbeParameters : ToolParameters, IRuntimeParameterContract
     {
         public int Value { get; set; }
@@ -397,8 +479,10 @@ public sealed class CommunicationAutomationTests
     public sealed class AutomationProbeTool : IToolPlugin<AutomationProbeParameters, AutomationProbeResults>
     {
         public static int SeenValue;
+        public static Action<AutomationProbeParameters>? OnRun;
         public AutomationProbeResults Run(AutomationProbeParameters parameters)
         {
+            OnRun?.Invoke(parameters);
             SeenValue = parameters.Value; parameters.Value = 999;
             return new() { Status = ExecutionStatus.Success };
         }

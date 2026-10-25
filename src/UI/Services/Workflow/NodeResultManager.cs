@@ -142,6 +142,19 @@ namespace SunEyeVision.UI.Services.Workflow
             _resultRenderLayer?.SetRegionItems(regionItems);
         }
 
+        /// <summary>Display a scope-owned preview without publishing to the production WorkflowContext.</summary>
+        public void RefreshDebugPreview(WorkflowNodeBase draft, ToolResults result)
+        {
+            using var lease = result.Resources?.Retain();
+            if (result.ExecutionIdentity?.IsCurrent == false) return;
+            _viewModel.UpdateModuleResults(result, draft.Name, draft.ToolType, draft.Id, draft.Parameters);
+            var image = result.GetDisplayImages().FirstOrDefault(p => p.Value is { IsEmpty: false });
+            _viewModel.DisplayImage = image.Value is null ? null : GetDisplayImageFromSource(result, image.Key);
+            ApplyLiveResultPresentationStyles(draft, result);
+            _resultRenderLayer?.SetDisplayCollector(result.Display);
+            _resultRenderLayer?.SetRegionItems(BuildRegionItems(draft));
+        }
+
         private static void ApplyLiveResultPresentationStyles(WorkflowNodeBase node, ToolResults result)
         {
             if (node.Parameters == null || result.Display == null) return;

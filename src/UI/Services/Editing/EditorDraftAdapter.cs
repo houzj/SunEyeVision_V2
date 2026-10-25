@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -43,14 +43,30 @@ public sealed class EditorDraftAdapter
           ["StringEncoding"] = typeof(string), ["AsciiData"] = typeof(bool) });
     }
     internal static bool Supports(ToolParameters? parameters) => parameters?.GetType().FullName is
-        "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters" or "SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters";
+        "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters" or "SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters" or
+        "SunEyeVision.Tool.BlobAnalysis.BlobAnalysisParameters";
 
     public static EditorDraftAdapter ForProduction(ToolParameters parameters) => parameters.GetType().FullName switch
     {
+        "SunEyeVision.Tool.BlobAnalysis.BlobAnalysisParameters" => ForBlob(parameters),
         "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters" => ForProtocolParse(parameters),
         "SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters" => ForImageThreshold(parameters),
         _ => throw new ArgumentException("此工具尚未接入生产草稿适配器。", nameof(parameters))
     };
+
+    private static EditorDraftAdapter ForBlob(ToolParameters parameters)
+    {
+        // The plugin owns its input declarations and configuration validation. Do not duplicate
+        // the 117-field contract in the UI or add a UI-to-plugin assembly dependency.
+        var adapter = new EditorDraftAdapter(parameters, new Dictionary<string, Type>());
+        adapter._validateConfiguration = () =>
+        {
+            var result = parameters.Validate();
+            if (!result.IsValid)
+                throw new InvalidOperationException(result.Errors.FirstOrDefault() ?? "Blob配置无效。");
+        };
+        return adapter;
+    }
 
     private static EditorDraftAdapter ForImageThreshold(ToolParameters parameters)
     {

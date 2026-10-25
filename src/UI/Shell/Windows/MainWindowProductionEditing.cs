@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -22,7 +22,7 @@ public partial class MainWindowViewModel
         if (!ReferenceEquals(_productionEditorSession, session)) ReleaseProductionEditors();
         if (_productionEditorHost is null)
         {
-            _productionEditorHost = new NodeConfigurationEditHost(session.Document);
+            _productionEditorHost = session.Editing.Host;
             _productionEditorSession = session;
         }
         return _productionEditorHost;
@@ -56,7 +56,17 @@ public partial class MainWindowViewModel
             }, publication =>
             {
                 RefreshProductionPublication(session, publication, query);
-            });
+            }, session.Editing);
+        context.PrepareView = () => ToolEditorCommit.TryPrepare(control, out var error) ? null : error;
+        context.HasPendingViewEdits = () => ToolEditorCommit.HasPendingEdits(control);
+        query.ExecutionOwner = context.DebugOwner;
+        query.EditScopeCancellation = context.DebugCancellation;
+        query.CapturePublishedGlobals = () =>
+        {
+            if (!context.IsValid || !ReferenceEquals(DocumentManager.Session, session))
+                throw new InvalidOperationException("调试所属方案或编辑范围已经失效。");
+            return CaptureGlobalVariables(session.Document);
+        };
         ToolEditorCommit.AttachDraftContext(control, context);
         query.CommitOutputConfiguration = id =>
         {
@@ -70,15 +80,16 @@ public partial class MainWindowViewModel
     private void ClearProductionEditorHost()
     {
         if (_productionEditors.Count != 0 || _variableEditors.Count != 0) return;
-        _productionEditorHost = null;
-        _productionEditorSession = null;
+        // The document, not the last window, owns publication history and registered scopes.
     }
     private void ReleaseProductionEditors()
     {
+        _productionEditorSession?.Editing.Close();
         ReleaseProductionEditorContexts(_productionEditors);
         foreach (var model in _variableEditors) model.Discard();
         _variableEditors.Clear();
-        ClearProductionEditorHost();
+        _productionEditorHost = null;
+        _productionEditorSession = null;
     }
     private void RefreshProductionPublication(SolutionSession session, BindingConfigurationPublication publication,
         DataSourceQueryService? query = null)

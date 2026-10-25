@@ -869,9 +869,9 @@ SplitterPosition = position;
 
             // 初始化执行管理器（传入共享的 WorkflowEngine，子程序工作流已注册在其中）
             _executionManager = new Services.Workflow.WorkflowExecutionManager(new SunEyeVision.UI.Services.Interaction.DefaultInputProvider(), _workflowEngine, _runtimeInputSnapshots);
-            _executionManager.PrepareDocumentEditors = () =>
+            _executionManager.CapturePublishedConfiguration = () =>
             {
-                if (!TryCommitSolutionEditors(out var error)) throw new InvalidOperationException(error);
+                // Production execution never accepts a pending editor draft.
                 _executionManager.SetGlobalVariables(DocumentManager.CurrentSolution is { } document
                     ? CaptureGlobalVariables(document) : null);
             };
@@ -3944,7 +3944,7 @@ SplitterPosition = position;
                     // 缓存数据提供者（已在 _workflowDsqsCache 中按 WorkflowId 缓存）
 
                     // 订阅执行完成事件
-                    SubscribeToolExecutionCompleted(debugWindow, node, dataProvider!);
+                    SubscribeToolExecutionCompleted(debugWindow, node, dataProvider!, editorContext);
 
                     // 🔍 日志监控：准备调用 SetMainImageControl
                     AddLog($"🔍 [监控] 准备显示窗口并设置 ImageControl");
@@ -4046,7 +4046,7 @@ SplitterPosition = position;
         /// 订阅调试窗口的执行完成事件
         /// </summary>
         private void SubscribeToolExecutionCompleted(System.Windows.Window debugWindow, SunEyeVision.UI.Shared.WorkflowNode node,
-            IDataSourceQueryService dataProvider)
+            IDataSourceQueryService dataProvider, ProductionEditorContext? editorContext = null)
         {
             var resultContext = CurrentWorkflowContext;
             var eventInfo = debugWindow.GetType().GetEvent("ToolExecutionCompleted");
@@ -4083,25 +4083,30 @@ SplitterPosition = position;
                             if (toolResult != null)
                             {
                                 if (toolResult.ExecutionIdentity is { } identity && (!identity.IsCurrent ||
-                                    !ReferenceEquals(identity.Owner, DocumentManager.CurrentSolution?.ExecutionOwner)))
+                                    !ReferenceEquals(identity.Owner, editorContext?.DebugOwner ?? DocumentManager.CurrentSolution?.ExecutionOwner)))
                                 {
                                     (toolResult as IDisposable)?.Dispose();
                                     return;
                                 }
-                                // 执行结果已通过 NodeResultManager.UpdateNodeResult 存储到 WorkflowContext
-                                // 这里不再需要直接赋值给 node.LastResult
-
-                                // 更新图像显示（内部已存储到 WorkflowContext，DSQS 通过 _ssotReader 实时读取）
-                                _nodeResultManager?.UpdateNodeResult(node, toolResult,
-                                    refreshDisplay: ReferenceEquals(resultContext, CurrentWorkflowContext), targetContext: resultContext);
-
-                                // ★ 通知调试窗口外部结果已到达（用于刷新位置修正矩阵等运行时状态）
-                                NotifyDebugWindowExternalResult(node.Id);
+                                if (editorContext is not null)
+                                {
+                                    // Draft results belong to this editor scope. Production consumers
+                                    // continue reading the last published production result.
+                                    if (!editorContext.TryAcceptDebugResult(toolResult)) return;
+                                    if (ReferenceEquals(resultContext, CurrentWorkflowContext) && ReferenceEquals(SelectedNode, node))
+                                        _nodeResultManager?.RefreshDebugPreview(editorContext.DraftNode, toolResult);
+                                }
+                                else
+                                {
+                                    _nodeResultManager?.UpdateNodeResult(node, toolResult,
+                                        refreshDisplay: ReferenceEquals(resultContext, CurrentWorkflowContext), targetContext: resultContext);
+                                    NotifyDebugWindowExternalResult(node.Id);
+                                }
 
                                 // ★ 更新数据分析控件（调试窗口执行后立即刷新）
                                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    if (toolResult.ExecutionIdentity?.IsCurrent == false || !ReferenceEquals(resultContext, CurrentWorkflowContext)) return;
+                                    if (toolResult.ExecutionIdentity?.IsCurrent == false || !ReferenceEquals(resultContext, CurrentWorkflowContext) || !ReferenceEquals(SelectedNode, node)) return;
                                     if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis daCtrl)
                                     {
                                         try
@@ -4133,6 +4138,25 @@ SplitterPosition = position;
 
                 // 订阅事件
                 eventInfo.AddEventHandler(debugWindow, handler);
+                if (editorContext is not null)
+                {
+                    void RestoreProductionDisplay()
+                    {
+                        editorContext.Deactivated -= RestoreProductionDisplay;
+                        if (!ReferenceEquals(resultContext, CurrentWorkflowContext) || !ReferenceEquals(SelectedNode, node)) return;
+                        if (resultContext?.GetNodeResult(node.Id)?.Result is { } productionResult)
+                            _nodeResultManager?.RefreshResultDisplay(node, productionResult);
+                        else
+                        {
+                            _nodeResultManager?.ClearResultDisplay();
+                            DisplayImage = null;
+                        }
+                        // Recreate the analysis view from the formal context. Passing null to a
+                        // legacy analysis control can leave the previous preview rows visible.
+                        _ = UpdateDataAnalysisControl(node);
+                    }
+                    editorContext.Deactivated += RestoreProductionDisplay;
+                }
 
                 // 窗口关闭时取消订阅（防止内存泄漏）
                 debugWindow.Closed += (s, e) =>
@@ -5671,7 +5695,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     if (discard != MessageBoxResult.OK) { EndSolutionTransition(); return false; }
                     return true;
                 }
-                if (!TryCommitSolutionEditors(out var editError)) throw new InvalidOperationException(editError);
+                // A transition prompt is not Apply/Save. Cancel must leave private drafts private.
                 SaveSolutionData(manager);
                 if (!manager.HasUnsavedChanges) return true;
                 var result = ThemeMessageDialog.Show("当前方案有未保存修改。是否保存？", "保存方案", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question, owner);
@@ -5754,8 +5778,13 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
                 var session = DocumentManager.Session ?? throw new InvalidOperationException("当前没有方案编辑会话。");
                 var viewModel = new SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerViewModel(solutionManager,
-                    GetProductionEditorHost(session), () => ReferenceEquals(DocumentManager.Session, session));
+                    GetProductionEditorHost(session), () => ReferenceEquals(DocumentManager.Session, session), session.Editing);
                 var dialog = new SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerDialog(viewModel);
+                viewModel.PrepareView = () => dialog.TryCommitPendingEdits(out var error) ? null : error;
+                viewModel.HasPendingViewEdits = () => dialog.HasRetainedPendingEdits;
+                viewModel.AcceptView = dialog.AcceptPublication;
+                viewModel.PendingViewStamp = () => dialog.PendingEditStamp;
+                viewModel.AcknowledgeViewEdits = dialog.AcknowledgeRetainedEdits;
                 _variableEditors.Add(viewModel);
                 dialog.Closed += (_, _) =>
                 {

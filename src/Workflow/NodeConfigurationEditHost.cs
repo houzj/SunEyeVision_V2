@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -32,6 +32,7 @@ public sealed class GlobalVariableConfigurationEditDraft
     public long BaseVersion { get; }
     public Solution Configuration { get; }
     public bool HasValueEdits => ExplicitValues.Count != 0;
+    internal Dictionary<string, long> ValueCommandRevisions { get; } = new(StringComparer.Ordinal);
 
     internal GlobalVariableConfigurationEditDraft(Guid owner, long version, Solution configuration,
         Solution baseline, IReadOnlyDictionary<string, OpeningValue> openingValues)
@@ -46,6 +47,7 @@ public sealed class GlobalVariableConfigurationEditDraft
         var owned = GlobalVariable.CopyEditableValue(value);
         // Keep the command separate from the editable display object's array storage.
         ExplicitValues[variableId] = owned;
+        ValueCommandRevisions[variableId] = ValueCommandRevisions.GetValueOrDefault(variableId) + 1;
         variable.Value = GlobalVariable.CopyEditableValue(owned);
     }
 }
@@ -64,6 +66,7 @@ public sealed class NodeConfigurationEditHost
     // This is host-local history backing, not a resource owner or a global registry.
     private readonly Dictionary<string, GlobalVariable> _variableInstances;
     private bool _projecting;
+    private readonly List<(GlobalVariable Variable, bool ValueChanged)> _structureNotifications = new();
     // Deterministic acceptance-failure injection only; disabled in production. Tests set
     // this private counter by reflection. It is not an observer/callback under ValueGate.
     private int _acceptanceFailureAfterRawMutation = -1;
@@ -93,36 +96,153 @@ public sealed class NodeConfigurationEditHost
     public bool OwnsNode(string workflowId, WorkflowNodeBase node)
     { lock (_gate) return _design.Workflows.Any(w => w.Id == workflowId && w.Nodes.Any(n => ReferenceEquals(n, node))); }
 
+    public void SynchronizeStructure()
+    {
+        try { lock (_gate) EnsureBaseline(); }
+        finally { FlushStructureNotifications(); }
+    }
+    public bool HasPublishedNodeChanged(NodeConfigurationEditDraft editor)
+    {
+        lock (_gate) return NodeEditSignature(Find(_store.Capture().CopyConfiguration(), editor.Identity)) != editor.Signature;
+    }
+
     public NodeConfigurationEditDraft BeginEdit(string workflowId, string nodeId)
     {
-        lock (_gate)
+        try
         {
-            EnsureBaseline();
-            var identity = new ScopedNodeIdentity(workflowId, nodeId);
-            var node = Find(_store.Capture().CopyConfiguration(), identity);
-            return new(_owner, identity, node, NodeEditSignature(node));
+
+            lock (_gate)
+            {
+                EnsureBaseline();
+                var identity = new ScopedNodeIdentity(workflowId, nodeId);
+                var node = Find(_store.Capture().CopyConfiguration(), identity);
+                return new(_owner, identity, node, NodeEditSignature(node));
+            }
         }
+        finally { FlushStructureNotifications(); }
     }
 
     public GlobalVariableConfigurationEditDraft BeginVariableEdit()
     {
+        try
+        {
+
+            lock (_gate)
+            {
+                EnsureBaseline();
+                var published = _store.Capture();
+                var configuration = published.CopyConfiguration();
+                var captures = GlobalVariable.CaptureValues(_variableCollection);
+                var openings = new Dictionary<string, GlobalVariableConfigurationEditDraft.OpeningValue>(StringComparer.Ordinal);
+                foreach (var variable in _variableCollection)
+                {
+                    var captured = captures[variable.Id];
+                    openings.Add(variable.Id, new(variable, captured.Revision));
+                    // The existing native/complex display remains read-only. Never inspect a
+                    // borrowed native payload to implement the four primitive value editors.
+                    if (!variable.IsComplexValue)
+                        configuration.GlobalVariables.Single(v => v.Id == variable.Id).Value = GlobalVariable.CopyEditableValue(captured.Value);
+                }
+                return new(_owner, published.Version, configuration, BindingConfigurationStore.Copy(configuration), openings);
+            }
+        }
+        finally { FlushStructureNotifications(); }
+    }
+
+    public bool HasPendingChanges(NodeConfigurationEditDraft editor) => NodeEditSignature(editor.Node) != editor.Signature;
+    public bool HasPendingChanges(GlobalVariableConfigurationEditDraft editor)
+        => editor.HasValueEdits || ShapeSignature(editor.Configuration) != ShapeSignature(editor.Baseline);
+
+    public static bool SamePendingEdits(GlobalVariableConfigurationEditDraft left, GlobalVariableConfigurationEditDraft right)
+        => ShapeSignature(left.Configuration) == ShapeSignature(right.Configuration) &&
+            left.ValueCommandRevisions.Count == right.ValueCommandRevisions.Count &&
+            left.ValueCommandRevisions.All(p => right.ValueCommandRevisions.TryGetValue(p.Key, out var revision) && revision == p.Value) &&
+            left.ExplicitValues.All(p => right.ExplicitValues.TryGetValue(p.Key, out var value) && SameEditableValue(p.Value, value));
+    public GlobalVariableConfigurationEditDraft RebaseAcceptedDraft(GlobalVariableConfigurationEditDraft edited,
+        GlobalVariableConfigurationEditDraft prepared)
+    {
+        try
+        {
+
+            lock (_gate)
+            {
+                if (edited.Owner != _owner || prepared.Owner != _owner)
+                    throw new InvalidOperationException("变量草稿不属于当前文档。");
+                var fresh = BeginVariableEdit();
+                var latestNodes = Nodes(fresh.Configuration);
+                var preparedNodes = Nodes(prepared.Configuration);
+                foreach (var pair in Nodes(edited.Configuration))
+                    if (preparedNodes.TryGetValue(pair.Key, out var old) && ParametersSignature(pair.Value) == ParametersSignature(old))
+                        SetParameters(pair.Value, latestNodes[pair.Key]);
+                var result = new GlobalVariableConfigurationEditDraft(_owner, fresh.BaseVersion,
+                    edited.Configuration, fresh.Baseline, fresh.OpeningValues);
+                foreach (var variable in edited.Configuration.GlobalVariables)
+                {
+                    var newerCommand = edited.ValueCommandRevisions.TryGetValue(variable.Id, out var revision) &&
+                        (!prepared.ValueCommandRevisions.TryGetValue(variable.Id, out var acceptedRevision) || revision != acceptedRevision);
+                    if (newerCommand && edited.ExplicitValues.TryGetValue(variable.Id, out var value))
+                    {
+                        result.ExplicitValues[variable.Id] = GlobalVariable.CopyEditableValue(value);
+                        result.ValueCommandRevisions[variable.Id] = revision;
+                    }
+                    else if (fresh.Configuration.GlobalVariables.SingleOrDefault(v => v.Id == variable.Id) is { } current && !variable.IsComplexValue)
+                        variable.Value = GlobalVariable.CopyEditableValue(current.Value);
+                }
+                edited.Consumed = true;
+                return result;
+            }
+        }
+        finally { FlushStructureNotifications(); }
+    }
+
+    public static bool SamePendingEdits(NodeConfigurationEditDraft left, NodeConfigurationEditDraft right)
+        => left.Identity == right.Identity && NodeEditSignature(left.Node) == NodeEditSignature(right.Node);
+    public NodeConfigurationEditDraft RebaseAcceptedDraft(NodeConfigurationEditDraft editor)
+    {
+        try
+        {
+
+            lock (_gate)
+            {
+                if (editor.Owner != _owner) throw new InvalidOperationException("草稿不属于当前文档。");
+                EnsureBaseline();
+                var accepted = Find(_store.Capture().CopyConfiguration(), editor.Identity);
+                editor.Consumed = true;
+                // Keep the same private object so raw view input and newer edits are not rebound away.
+                return new(_owner, editor.Identity, editor.Node, NodeEditSignature(accepted));
+            }
+        }
+        finally { FlushStructureNotifications(); }
+    }
+
+    /// <summary>Copy a proposal while retaining its original owner/baseline for conflict checks.</summary>
+    public NodeConfigurationEditDraft Freeze(NodeConfigurationEditDraft editor)
+    {
         lock (_gate)
         {
-            EnsureBaseline();
-            var published = _store.Capture();
-            var configuration = published.CopyConfiguration();
-            var captures = GlobalVariable.CaptureValues(_variableCollection);
-            var openings = new Dictionary<string, GlobalVariableConfigurationEditDraft.OpeningValue>(StringComparer.Ordinal);
-            foreach (var variable in _variableCollection)
-            {
-                var captured = captures[variable.Id];
-                openings.Add(variable.Id, new(variable, captured.Revision));
-                // The existing native/complex display remains read-only. Never inspect a
-                // borrowed native payload to implement the four primitive value editors.
-                if (!variable.IsComplexValue)
-                    configuration.GlobalVariables.Single(v => v.Id == variable.Id).Value = GlobalVariable.CopyEditableValue(captured.Value);
-            }
-            return new(_owner, published.Version, configuration, BindingConfigurationStore.Copy(configuration), openings);
+            if (editor.Owner != _owner || editor.Consumed)
+                throw new InvalidOperationException("节点草稿已接受或不属于当前文档。");
+            var shell = new Solution();
+            var flow = new Workflow(editor.Identity.WorkflowId, "prepared");
+            flow.Nodes.Add(editor.Node);
+            shell.Workflows.Add(flow);
+            var copy = BindingConfigurationStore.Copy(shell).Workflows[0].Nodes[0];
+            return new(_owner, editor.Identity, copy, editor.Signature);
+        }
+    }
+    public GlobalVariableConfigurationEditDraft Freeze(GlobalVariableConfigurationEditDraft editor)
+    {
+        lock (_gate)
+        {
+            if (editor.Owner != _owner || editor.Consumed)
+                throw new InvalidOperationException("变量草稿已接受或不属于当前文档。");
+            var copy = new GlobalVariableConfigurationEditDraft(_owner, editor.BaseVersion,
+                BindingConfigurationStore.Copy(editor.Configuration), BindingConfigurationStore.Copy(editor.Baseline),
+                new Dictionary<string, GlobalVariableConfigurationEditDraft.OpeningValue>(editor.OpeningValues));
+            foreach (var entry in editor.ExplicitValues)
+                copy.ExplicitValues.Add(entry.Key, GlobalVariable.CopyEditableValue(entry.Value));
+            foreach (var entry in editor.ValueCommandRevisions) copy.ValueCommandRevisions.Add(entry.Key, entry.Value);
+            return copy;
         }
     }
 
@@ -133,69 +253,90 @@ public sealed class NodeConfigurationEditHost
 
     public void ValidateBatch(IReadOnlyList<NodeConfigurationEditDraft> editors, GlobalVariableConfigurationEditDraft? variables)
     {
-        ArgumentNullException.ThrowIfNull(editors);
-        lock (_gate)
+        try
         {
-            var prepared = Compose(editors, variables);
-            _store.Validate(prepared.Draft, c => ValidateCandidate(c, prepared.Participants, variables != null));
-            lock (GlobalVariable.ValueGate)
+
+            ArgumentNullException.ThrowIfNull(editors);
+            lock (_gate)
             {
-                CheckValueWrites(variables);
-                CheckValueTypes(prepared.Draft.Configuration, variables);
+                var prepared = Compose(editors, variables);
+                _store.Validate(prepared.Draft, c => ValidateCandidate(c, prepared.Participants, variables != null));
+                lock (GlobalVariable.ValueGate)
+                {
+                    CheckValueWrites(variables);
+                    CheckValueTypes(prepared.Draft.Configuration, variables);
+                }
             }
         }
+        finally { FlushStructureNotifications(); }
     }
 
     public BindingConfigurationPublication CommitBatch(IReadOnlyList<NodeConfigurationEditDraft> editors,
         GlobalVariableConfigurationEditDraft? variables)
     {
-        ArgumentNullException.ThrowIfNull(editors);
-        BindingConfigurationPublication publication;
-        List<(GlobalVariable Variable, bool ValueChanged)> notifications;
-        lock (_gate)
+        try
         {
-            var prepared = Compose(editors, variables);
-            var projection = new Projection();
-            try
+
+            ArgumentNullException.ThrowIfNull(editors);
+            BindingConfigurationPublication publication;
+            List<(GlobalVariable Variable, bool ValueChanged)> notifications;
+            lock (_gate)
             {
-                publication = _store.Publish(prepared.Draft,
-                    snapshot => AcceptProjection(snapshot, variables, projection),
-                    forcePublication: variables?.HasValueEdits == true,
-                    validate: c => ValidateCandidate(c, prepared.Participants, variables != null));
-                foreach (var editor in editors) editor.Consumed = true;
-                if (variables != null) variables.Consumed = true;
-                notifications = projection.Notifications;
+                var prepared = Compose(editors, variables);
+                var projection = new Projection();
+                try
+                {
+                    var valueOnly = variables?.HasValueEdits == true &&
+                        ShapeSignature(prepared.Draft.Configuration) == ShapeSignature(_store.Capture().CopyConfiguration());
+                    publication = valueOnly
+                        ? _store.AcceptRuntimeValues(prepared.Draft,
+                            snapshot => AcceptProjection(snapshot, variables, projection),
+                            c => ValidateCandidate(c, prepared.Participants, variables != null))
+                        : _store.Publish(prepared.Draft,
+                            snapshot => AcceptProjection(snapshot, variables, projection),
+                            forcePublication: variables?.HasValueEdits == true,
+                            validate: c => ValidateCandidate(c, prepared.Participants, variables != null));
+                    foreach (var editor in editors) editor.Consumed = true;
+                    if (variables != null) variables.Consumed = true;
+                    notifications = projection.Notifications;
+                }
+                catch { projection.Restore(this); throw; }
+                finally { ReleaseProjection(projection); }
             }
-            catch { projection.Restore(this); throw; }
-            finally { ReleaseProjection(projection); }
+            Emit(notifications);
+            return publication;
         }
-        Emit(notifications);
-        return publication;
+        finally { FlushStructureNotifications(); }
     }
 
     public BindingConfigurationSnapshot Undo() => RestoreHistory(undo: true);
     public BindingConfigurationSnapshot Redo() => RestoreHistory(undo: false);
     private BindingConfigurationSnapshot RestoreHistory(bool undo)
     {
-        BindingConfigurationSnapshot snapshot;
-        List<(GlobalVariable Variable, bool ValueChanged)> notifications;
-        lock (_gate)
+        try
         {
-            EnsureBaseline();
-            var projection = new Projection();
-            try
+
+            BindingConfigurationSnapshot snapshot;
+            List<(GlobalVariable Variable, bool ValueChanged)> notifications;
+            lock (_gate)
             {
-                var version = _store.Capture().Version;
-                // No explicit value write set is replayed by configuration history.
-                snapshot = undo ? _store.Undo(version, s => AcceptProjection(s, null, projection))
-                    : _store.Redo(version, s => AcceptProjection(s, null, projection));
-                notifications = projection.Notifications;
+                EnsureBaseline();
+                var projection = new Projection();
+                try
+                {
+                    var version = _store.Capture().Version;
+                    // No explicit value write set is replayed by configuration history.
+                    snapshot = undo ? _store.Undo(version, s => AcceptProjection(s, null, projection))
+                        : _store.Redo(version, s => AcceptProjection(s, null, projection));
+                    notifications = projection.Notifications;
+                }
+                catch { projection.Restore(this); throw; }
+                finally { ReleaseProjection(projection); }
             }
-            catch { projection.Restore(this); throw; }
-            finally { ReleaseProjection(projection); }
+            Emit(notifications);
+            return snapshot;
         }
-        Emit(notifications);
-        return snapshot;
+        finally { FlushStructureNotifications(); }
     }
 
     private sealed record PreparedBatch(BindingConfigurationDraft Draft, HashSet<ScopedNodeIdentity> Participants);
@@ -219,7 +360,10 @@ public sealed class NodeConfigurationEditHost
         var participants = byId.Keys.ToHashSet();
         if (variables != null)
         {
-            if (variables.Owner != _owner || variables.Consumed || variables.BaseVersion != _store.Capture().Version)
+            if (variables.Owner != _owner || variables.Consumed ||
+                variables.BaseVersion != _store.Capture().Version &&
+                !variables.Baseline.GlobalVariables.Select(VariableConfigurationSignature).SequenceEqual(
+                    baseline.GlobalVariables.Select(VariableConfigurationSignature)))
                 throw new InvalidOperationException("变量草稿不属于当前方案或配置版本已过期，草稿已保留。");
             if (VariableDraftStructure(variables.Configuration) != VariableDraftStructure(variables.Baseline))
                 throw new InvalidOperationException("变量编辑不能改变方案、节点身份、画布或拓扑。");
@@ -230,6 +374,9 @@ public sealed class NodeConfigurationEditHost
             {
                 var changed = ParametersSignature(pair.Value) != ParametersSignature(openingNodes[pair.Key]);
                 if (!changed) continue;
+                var publishedParameters = ParametersSignature(Find(baseline, pair.Key));
+                if (publishedParameters != ParametersSignature(openingNodes[pair.Key]) && publishedParameters != ParametersSignature(pair.Value))
+                    throw new InvalidOperationException("变量编辑涉及的节点配置已被另一个范围修改，不能覆盖；草稿保留。");
                 participants.Add(pair.Key);
                 if (byId.TryGetValue(pair.Key, out var editor))
                 {
@@ -468,15 +615,63 @@ public sealed class NodeConfigurationEditHost
     {
         if (_projecting) throw new InvalidOperationException("配置投影过程中不能重入编辑或恢复。");
         if (!ReferenceEquals(_design.GlobalVariables, _variableCollection)) throw new InvalidOperationException("正式变量集合已被替换。");
-        var nodes = Nodes(_design);
-        if (nodes.Count != _nodeInstances.Count || nodes.Any(p => !_nodeInstances.TryGetValue(p.Key, out var original) || !ReferenceEquals(original, p.Value)))
-            throw new InvalidOperationException("正式节点身份或拓扑已在编辑事务之外变化。");
         if (_variableCollection.Any(v => !_variableInstances.TryGetValue(v.Id, out var original) || !ReferenceEquals(original, v)))
             throw new InvalidOperationException("正式变量实例已在编辑事务之外变化。");
+        var currentNodes = Nodes(_design);
         var formal = _store.Capture().CopyConfiguration();
+        var publishedNodes = Nodes(formal);
+        var sameInstances = currentNodes.Count == _nodeInstances.Count &&
+            currentNodes.All(p => _nodeInstances.TryGetValue(p.Key, out var old) && ReferenceEquals(old, p.Value));
+        if (!sameInstances || StructureSignature(formal) != StructureSignature(_design))
+        {
+            // Canvas edits are already explicit formal actions. They may change structure/metadata,
+            // but must not smuggle live parameter or variable-definition writes into this gateway.
+            foreach (var pair in currentNodes)
+                if (_nodeInstances.TryGetValue(pair.Key, out var original) && ReferenceEquals(original, pair.Value) &&
+                    publishedNodes.TryGetValue(pair.Key, out var published) && ParametersSignature(published) != ParametersSignature(pair.Value))
+                    throw new InvalidOperationException("结构同步同时发现事务外参数修改，不能覆盖；草稿保留。");
+            if (!formal.GlobalVariables.Select(VariableMetadataSignature).SequenceEqual(_design.GlobalVariables.Select(VariableMetadataSignature)))
+                throw new InvalidOperationException("结构同步不能接受事务外变量定义修改。");
+            var previousNodes = _nodeInstances.ToArray();
+            var retained = currentNodes.Where(p => _nodeInstances.TryGetValue(p.Key, out var original) && ReferenceEquals(original, p.Value) &&
+                publishedNodes.TryGetValue(p.Key, out var published) && published.ToolType == p.Value.ToolType).Select(p => p.Key).ToHashSet();
+            var projection = new Projection();
+            try
+            {
+                _nodeInstances.Clear(); foreach (var pair in currentNodes) _nodeInstances.Add(pair.Key, pair.Value);
+                _store.RebaseStructure(_design, retained, snapshot => AcceptProjection(snapshot, null, projection));
+                _structureNotifications.AddRange(projection.Notifications);
+            }
+            catch
+            {
+                projection.Restore(this);
+                _nodeInstances.Clear(); foreach (var pair in previousNodes) _nodeInstances.Add(pair.Key, pair.Value);
+                throw;
+            }
+            finally { ReleaseProjection(projection); }
+            formal = _store.Capture().CopyConfiguration();
+        }
+        if (_variableCollection.Any(v => !_variableInstances.TryGetValue(v.Id, out var original) || !ReferenceEquals(original, v)))
+            throw new InvalidOperationException("正式变量实例已在编辑事务之外变化。");
         if (ShapeSignature(formal) != ShapeSignature(_design))
             throw new InvalidOperationException("正式方案在编辑事务之外发生变化，不能覆盖；请重新建立编辑基线。");
     }
+    private void FlushStructureNotifications()
+    {
+        if (Monitor.IsEntered(_gate)) return;
+        List<(GlobalVariable Variable, bool ValueChanged)> notifications;
+        lock (_gate) { notifications = _structureNotifications.ToList(); _structureNotifications.Clear(); }
+        if (notifications.Count != 0) Emit(notifications);
+    }
+    private static string VariableMetadataSignature(GlobalVariable variable) => JsonSerializer.Serialize(new {
+        variable.Id, variable.Name, variable.Type, variable.Group, variable.Index, variable.Description, variable.AdditionalData
+    }, WorkflowSerializationOptions.Compact);
+    private static string StructureSignature(Solution model) => JsonSerializer.Serialize(new {
+        model.Id, Workflows = model.Workflows.Select(w => new { w.Id, w.Name, w.IsSubroutine,
+            Nodes = w.Nodes.Select(n => new { n.Id, n.Name, n.DispName, n.ToolType, n.SubroutineId, n.IsEnabled,
+                n.PositionX, n.PositionY, n.Width, n.Height, n.GlobalIndex, n.LocalIndex, n.ImageSourceConfig }),
+            Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort }) })
+    }, WorkflowSerializationOptions.Compact);
 
     private static string ShapeSignature(Solution model) => JsonSerializer.Serialize(new
     {
@@ -525,7 +720,7 @@ public sealed class NodeConfigurationEditHost
         configuration.Workflows.SingleOrDefault(w => w.Id == identity.WorkflowId)?.Nodes.SingleOrDefault(n => n.Id == identity.NodeId)
         ?? throw new InvalidOperationException("编辑来源节点已删除。");
     private static void SetParameters(WorkflowNodeBase target, WorkflowNodeBase source)
-    { target.Parameters = ToolParameterSnapshot.Create(source.Parameters); target.ParamSettings = Copy(source.ParamSettings); }
+    { target.Parameters = ToolParameterSnapshot.Create(source.Parameters); target.ParamSettings = BindingConfigurationStore.CopySettings(source.ParamSettings); }
     private static T Copy<T>(T value) => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(value, WorkflowSerializationOptions.Compact), WorkflowSerializationOptions.Compact)
         ?? throw new InvalidOperationException("无法复制编辑绑定设置。");
 }

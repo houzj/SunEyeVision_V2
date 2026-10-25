@@ -154,7 +154,8 @@ internal static class Program
             File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "partial-recovery.json"), JsonSerializer.Serialize(new
             {
                 signal.TargetPath, signal.LocalPreviousTargetPath, signal.CentralPreviousPath, signal.PendingPath,
-                signal.ObservedTargetState, signal.RecoveryInstructions, before, after = Stamp(s.Target), backupBefore = backup, backupAfter = Stamp(s.Backup)
+                signal.ObservedTargetState, signal.RecoveryInstructions, signal.TargetRestored, signal.CentralRestored, signal.RetainedFiles,
+                before, after = Stamp(s.Target), backupBefore = backup, backupAfter = Stamp(s.Backup)
             }, new JsonSerializerOptions { WriteIndented = true }));
             var partial = Stamp(s.Target); var priorBackup = Stamp(s.Backup);
             bool blocked = false; try { _ = application.Save(s.Target, () => { }); } catch (SolutionSaveRecoveryRequiredException) { blocked = true; }
@@ -164,6 +165,12 @@ internal static class Program
             var copy = Path.Combine(Path.GetDirectoryName(s.Target)!, "explicit-manual-recovery.tmp");
             File.Copy(signal.LocalPreviousTargetPath, copy); File.Replace(copy, s.Target, null, true);
             Require(before == Stamp(s.Target), "explicit recovery lost original identity");
+            var priorCentralBytes = File.ReadAllBytes(s.Backup); var priorCentralTime = File.GetLastWriteTimeUtc(s.Backup);
+            File.WriteAllText(s.Backup, "separate-central-disturbance");
+            bool centralRejected = false; try { s.Repository.ConfirmSaveRecovery(s.Target); } catch (SolutionSaveRecoveryRequiredException) { centralRejected = true; }
+            Require(centralRejected, "confirmation ignored a separately disturbed central backup");
+            File.WriteAllBytes(s.Backup, priorCentralBytes); File.SetLastWriteTimeUtc(s.Backup, priorCentralTime);
+            Require(priorBackup == Stamp(s.Backup), "central restoration did not restore SHA/length/mtime");
             s.Repository.ConfirmSaveRecovery(s.Target);
             var accepted = application.Save(s.Target, () => { });
             Require(accepted.FileWritten && !manager.HasUnsavedChanges, "confirmed recovery did not permit a real save");

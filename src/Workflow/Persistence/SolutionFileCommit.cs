@@ -1,26 +1,35 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace SunEyeVision.Workflow.Persistence;
 
+public sealed record SolutionRecoveryFile(string Role, string Path, bool Exists);
+
 /// <summary>The two-file operation could not compensate a detected failure. This is deliberately
 /// not an ordinary false save result: callers must retain the previous document baseline and recover explicitly.</summary>
 public sealed class SolutionSaveRecoveryRequiredException : IOException
 {
     internal SolutionSaveRecoveryRequiredException(string target, string localPrevious, string? centralPrevious,
-        string pending, string observedTargetState, Exception cause)
+        string pending, string observedTargetState, bool targetRestored, bool centralRestored,
+        IReadOnlyList<SolutionRecoveryFile> retainedFiles, Exception cause)
         : base("保存失败且补偿未完成；目标可能已写入。保留恢复文件：" + localPrevious
-            + "；中央前版：" + centralPrevious + "；暂存文件：" + pending + "。请核对后恢复。", cause)
-    { TargetPath = target; LocalPreviousTargetPath = localPrevious; CentralPreviousPath = centralPrevious; PendingPath = pending; ObservedTargetState = observedTargetState; }
+            + "；目标已恢复=" + targetRestored + "，中央已恢复=" + centralRestored + "。保留位置："
+            + string.Join("；", retainedFiles.Select(file => file.Role + "=" + file.Path + "（存在=" + file.Exists + "）")), cause)
+    { TargetPath = target; LocalPreviousTargetPath = localPrevious; CentralPreviousPath = centralPrevious; PendingPath = pending; ObservedTargetState = observedTargetState; TargetRestored = targetRestored; CentralRestored = centralRestored; RetainedFiles = retainedFiles; }
     public string TargetPath { get; }
     public string LocalPreviousTargetPath { get; }
     public string? CentralPreviousPath { get; }
     public string PendingPath { get; }
     public string ObservedTargetState { get; }
-    public string RecoveryInstructions => "停止对该目标的继续保存；解除外部锁后核对目标与暂存文件身份。若本地前版存在，先保留当前目标，再以该前版恢复；不要推进文档已保存基线。";
+    public bool TargetRestored { get; }
+    public bool CentralRestored { get; }
+    public IReadOnlyList<SolutionRecoveryFile> RetainedFiles { get; }
+    public string RecoveryInstructions => "停止继续保存并解除外部锁；仅使用存在的暂存文件，先保留当前内容。目标已恢复时不要再找已消耗的本地前版；中央未恢复时核对中央前版暂存文件。双盘均恢复原SHA/长度/mtime后显式ConfirmSaveRecovery，不推进未确认的已保存基线。";
     public SolutionSnapshot? AttemptedSnapshot { get; internal set; }
 }
 
@@ -92,6 +101,7 @@ internal static class SolutionFileCommit
             }
             if (!overwrite) throw new IOException("目标方案已存在，不会覆盖：" + destination);
             previousTarget = Stamp.Read(destination);
+            var preflightTarget = previousTarget;
             previousRecovery = File.Exists(recovery) ? Stamp.Read(recovery) : null;
             // Prepare central-volume storage before changing either visible file.
             Directory.CreateDirectory(Path.GetDirectoryName(recovery)!);
@@ -102,9 +112,10 @@ internal static class SolutionFileCommit
                 throw new IOException("方案在准备保存时被外部修改，未提交。");
             File.Replace(pending, destination, oldTarget, ignoreMetadataErrors: true);
             targetReplaced = true;
+            previousTarget = Stamp.Read(oldTarget);
             installedTarget = Stamp.Read(destination);
             // The same-volume backup is the actual replaced file, not a later live read.
-            if (!previousTarget.Matches(oldTarget)) throw new IOException("目标在替换时被外部修改。");
+            if (previousTarget != preflightTarget) throw new IOException("目标在替换时被外部修改；恢复实际被替换的盘前态。");
             if (previousRecovery is null ? File.Exists(recovery) : !previousRecovery.Matches(recovery))
                 throw new IOException("恢复备份在保存时被外部修改。");
             if (previousRecovery is null) File.Move(pendingRecovery, recovery);
@@ -143,7 +154,15 @@ internal static class SolutionFileCommit
                     string observed;
                     try { observed = File.Exists(destination) ? Stamp.Read(destination).ToString()! : "Target missing"; }
                     catch (Exception read) { observed = "Target state unavailable: " + read.Message; }
+                    bool SafeMatches(Stamp? stamp, string path) { try { return stamp is null ? !File.Exists(path) : stamp.Matches(path); } catch { return false; } }
+                    var files = new[]
+                    {
+                        (Role: "target", Path: destination), (Role: "local-previous-target", Path: oldTarget),
+                        (Role: "replaced-content", Path: pending), (Role: "pending-central-copy", Path: pendingRecovery),
+                        (Role: "central-previous", Path: oldRecovery), (Role: "central", Path: recovery)
+                    }.Where(file => file.Path is not null).Select(file => new SolutionRecoveryFile(file.Role, file.Path!, File.Exists(file.Path))).ToArray();
                     var signal = new SolutionSaveRecoveryRequiredException(destination, oldTarget, oldRecovery, pending, observed,
+                        SafeMatches(previousTarget, destination), SafeMatches(previousRecovery, recovery), Array.AsReadOnly(files),
                         new AggregateException(failure, rollback));
                     Blocked[destination] = new(signal, previousTarget!, previousRecovery, recovery);
                     throw signal;

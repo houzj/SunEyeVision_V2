@@ -23,3 +23,10 @@
 - 同 target 补偿失败后保存 gate 保留恢复态，后续保存直接抛同一专异常；`ConfirmSaveRecovery(target)` 只读验证 target 与中央备份均回到已记录 SHA/长度/mtime 才解除。未恢复时拒绝确认；不自动选择版本或覆盖外部写入。
 - 定向实测增量：真实 Manager→ApplicationService 的 partial 专异常、dirty 不变、再次 Save 无新增写、未恢复 Confirm 拒绝、按保留前版显式恢复后 Confirm 解锁并可再次保存均 PASS；真实 Manager 正常 WrittenSnapshot 与盘字节一致/普通坏引用失败保 dirty 与双盘身份均 PASS。该服务源文件直接链接到定向 Host 编译；未构建完整 UI 工程，未运行 GUI 或 VS 设计器。
 - 当前累计 11 个唯一场景有限 PASS。保留 run01 的跨卷假设失败和 run02 的 C LocalTemp 权限失败；run03 用授权 C workspace 验证 D/C 实际跨卷成功/失败补偿。不是 G1 结论。
+
+## root 源审补件
+
+- 首 Replace 后以实际 oldTarget 的 Stamp 作为恢复身份；preflight 与实际不一致则拒绝提交，并恢复实际被替换版本，不以过期 preflight 身份锁死确认。
+- 恢复异常增加 RetainedFiles 列出 target、本地前版、替换内容、pending central copy、central previous、central 路径及当时存在性；TargetRestored/CentralRestored 区分“目标已恢复但中央未恢复”，不要求用户寻找已消耗的 oldTarget。
+- 已补真实 partial 场景中的中央备份单独扰动：target 恢复后，单独修改中央备份，Confirm 必须拒绝；恢复中央原 SHA/长度/mtime 后 Confirm 通过，再保存可用。run07 有限 PASS。
+- 原 4e6617e8 的 Host/bin、原 source/PE/log manifests 与日志保持；后继 Host 输出 bin-v2，后继 manifest 使用 v2 名称，不覆盖旧证据。actual-old 与 preflight 竞争分支目前仅代码复核，未宣称该纳秒窗口已确定性实测。

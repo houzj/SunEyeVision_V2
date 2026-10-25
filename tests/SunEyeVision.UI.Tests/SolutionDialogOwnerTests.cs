@@ -100,16 +100,30 @@ public sealed class SolutionDialogOwnerTests
             catch (Exception error) { failed(error); dialog?.Close(); }
         }));
     }
-    private static void Sta(Action action)
+    private static readonly Lazy<Dispatcher> TestDispatcher = new(() =>
     {
-        Exception? failure = null;
+        var ready = new TaskCompletionSource<Dispatcher>(TaskCreationOptions.RunContinuationsAsynchronously);
         var thread = new Thread(() =>
         {
-            try { action(); } catch (Exception error) { failure = error; }
-            finally { Dispatcher.CurrentDispatcher.InvokeShutdown(); }
-        }) { IsBackground = true };
-        thread.SetApartmentState(ApartmentState.STA); thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(20)), "Owned-dialog STA test timed out.");
-        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
+            try
+            {
+                var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+                app.Resources.MergedDictionaries.Add(new ResourceDictionary
+                {
+                    Source = new Uri("/SunEyeVision.UI;component/Themes/Dark/DarkTheme.xaml", UriKind.Relative)
+                });
+                ready.SetResult(Dispatcher.CurrentDispatcher);
+                Dispatcher.Run();
+            }
+            catch (Exception error) { ready.TrySetException(error); }
+        }) { IsBackground = true, Name = "Owned dialog test dispatcher" };
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        return ready.Task.WaitAsync(TimeSpan.FromSeconds(20)).GetAwaiter().GetResult();
+    });
+
+    private static void Sta(Action action)
+    {
+        TestDispatcher.Value.InvokeAsync(action).Task.WaitAsync(TimeSpan.FromSeconds(20)).GetAwaiter().GetResult();
     }
 }

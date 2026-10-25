@@ -133,6 +133,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
         };
 
         public IReadOnlyList<ConfigurationFieldAccessor> GetConfigurationFields()=>BlobConfigurationFields.Describe(this);
+        SunEyeVision.Plugin.Contracts.ToolSchema? IConfigurationFieldProvider.ConfigurationSchema=>BlobInputContract.Describe();
+        IReadOnlyDictionary<string,string> IConfigurationFieldProvider.RegionInputStorage=>new Dictionary<string,string>
+        {{"inspection",nameof(InspectionRegionInput)},{"mask",nameof(MaskRegionInput)}};
 
         public IReadOnlyList<RuntimeParameterDescriptor> GetRuntimeParameters() => new[]
         {

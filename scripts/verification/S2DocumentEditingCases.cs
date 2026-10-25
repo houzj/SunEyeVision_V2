@@ -3,6 +3,7 @@ using System.Reflection;
 using SunEyeVision.Workflow;
 using SunEyeVision.Tool.BlobAnalysis;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
 internal static class S2DocumentEditingCases
 {
@@ -86,8 +87,8 @@ internal static class S2DocumentEditingCases
         {
             var tool = new BlobAnalysisTool();
             Control = (SunEyeVision.Plugin.SDK.UI.Controls.ToolDebugControlBase)
-                (SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.CreateEditorFactory(tool)
-                    ??throw new Exception("正式发布没有Blob可选编辑器")).CreateDebugControl(tool)!;
+                (SunEyeVision.UI.Services.Editing.ToolConfigurationEditors.CreateControl(tool)
+                    ??throw new Exception("正式发布没有Blob配置入口"));
             Window = new(Control) { ShowActivated = false, ShowInTaskbar = false, Left = -10000, Width = 460, Height = 650 };
             var query = new SunEyeVision.Plugin.SDK.Execution.Parameters.DataSourceQueryService();
             void Bind(WorkflowNodeBase draft)
@@ -117,11 +118,13 @@ internal static class S2DocumentEditingCases
         }
         public System.Windows.Controls.TextBox ThresholdText()
         {
-            var tabs = Visuals(Control).OfType<System.Windows.Controls.TabControl>().First(); tabs.SelectedIndex = 1; Pump(); Window.UpdateLayout();
-            var config = (SunEyeVision.Plugin.SDK.UI.Controls.ConfigSetting)Control.FindName("thresholdParam"); config.ApplyTemplate();
-            var numeric = (SunEyeVision.Plugin.SDK.UI.Controls.NumericUpDown)config.Template.FindName("PART_NumericEditor", config); numeric.ApplyTemplate();
-            return (System.Windows.Controls.TextBox)numeric.Template.FindName("PART_TextBox", numeric);
+            var tabs = Logicals(Control).OfType<System.Windows.Controls.TabControl>().First(); tabs.SelectedIndex = 1; Pump(); Window.UpdateLayout();
+            var fields=Logicals(Control).OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView>().Single();
+            var key=((IConfigurationFieldProvider)Context.DraftNode.Parameters).GetConfigurationFields().Single(item=>item.StoragePath=="Threshold").Port.Id;
+            return (System.Windows.Controls.TextBox)fields.Fields.Single(item=>item.FieldId==key).InputElement!;
         }
+        static IEnumerable<System.Windows.DependencyObject> Logicals(System.Windows.DependencyObject root)
+        {yield return root;foreach(var item in System.Windows.LogicalTreeHelper.GetChildren(root))if(item is System.Windows.DependencyObject child)foreach(var next in Logicals(child))yield return next;}
         public void Dispose() { Context.Discard(); Window.Close(); }
     }
     sealed record Fixture(Solution Document, DocumentEditSession Editing, WorkflowNodeBase A, WorkflowNodeBase B);

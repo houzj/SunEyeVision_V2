@@ -45,9 +45,10 @@ internal static class S2DocumentEditingCases
             if(editor is not null)
             {
                 if(Application.Current is null){var app=new SunEyeVision.UI.App();app.InitializeComponent();}
-                var debug=editor.CreateDebugControl(tool);var data=editor.CreateDataAnalysisControl();
-                Require(debug is not null&&data is not null&&debug.GetType().Assembly.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf","真实BAML控件没有来自独立Wpf组件");
-                Console.WriteLine("通过：共享契约与真实BAML控件实例化，编辑器来自独立Wpf组件");
+                var debug=SunEyeVision.UI.Services.Editing.ToolConfigurationEditors.CreateControl(tool);var data=editor.CreateDataAnalysisControl();
+                Require(debug is SunEyeVision.UI.Services.Editing.DeclaredToolConfigurationControl&&data is not null&&data.GetType().Assembly.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf","默认配置或独立Wpf结果视图装配错误");
+                Require(editor.CreateDebugControl(tool) is null,"已删除的Blob专业页仍被工厂创建");
+                Console.WriteLine("通过：默认声明配置由宿主组装，可选Wpf只提供现行结果BAML；无第二套Blob专业编辑器");
             }
             else Console.WriteLine("通过：缺少Wpf时节点明确无专用编辑器，保留算法入口");
             if(!expectEditor)

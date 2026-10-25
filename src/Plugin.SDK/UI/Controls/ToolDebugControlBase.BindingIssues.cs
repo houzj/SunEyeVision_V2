@@ -14,6 +14,11 @@ public abstract partial class ToolDebugControlBase
     private TextBlock? _bindingIssueText;
     private ScrollViewer? _bindingIssueSummary;
     private bool _bindingIssueRefreshQueued;
+    private System.Windows.Documents.AdornerDecorator? _bindingContentHost;
+
+    /// <summary>Replace a dynamically composed editor without removing the host's issue summary.</summary>
+    protected void SetEditorContent(UIElement content)
+    {if(_bindingContentHost is not null)_bindingContentHost.Child=content;else Content=content;}
 
     private void InstallBindingIssueSummary()
     {
@@ -29,6 +34,7 @@ public abstract partial class ToolDebugControlBase
         Content = null;
         layout.Children.Add(_bindingIssueSummary);
         var adornerHost = new System.Windows.Documents.AdornerDecorator { Child = original };
+        _bindingContentHost=adornerHost;
         Grid.SetRow(adornerHost, 1);
         layout.Children.Add(adornerHost);
         Content = layout;

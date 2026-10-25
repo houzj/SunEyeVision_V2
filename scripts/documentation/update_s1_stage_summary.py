@@ -257,6 +257,8 @@ def render_s4_stage(page):
     page = re.sub(r'<!-- S4-CURRENT-STATUS:BEGIN -->.*?<!-- S4-CURRENT-STATUS:END -->', '', page, flags=re.S)
     block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4现在改到哪里？</h3>'
              + table(['优化项', '现在已实现', '验证与剩余'], s4['rows'])
+             + ('<details><summary>查看当前真实页面</summary><p>正式Release的自动检查宿主渲染，尚未人工验收。</p><img alt="当前Blob默认编辑页" style="max-width:100%;height:auto" src="'
+                + quote(os.path.relpath(ROOT / s4['uiPreview']['path'], PAGE.parent).replace('\\', '/')) + '"></details>' if s4.get('uiPreview') else '')
              + '<p><b>接下来：</b>' + escape(s4['next']) + '</p><p>' + escape(s4['estimate']) + '</p>'
              + '<details><summary>VM对应源、工程组织与实际检查</summary>'
              + table(['原清单对象', 'VM对应模板或组合链', '本方实现与边界'], s4['vmMappings'])
@@ -286,9 +288,14 @@ def render_s4_stage(page):
     page = page.replace('Blob完整方案实施准入（设计决策已闭口，全部未执行）',
                         '实施准入与历史门（设计条件保留；S1—S3自动闭合，S4实施中）')
     updates = {
-        'configsetting': 'S4当前：原默认页改用Plugin.Wpf/Fields/DeclaredFieldEditor和DeclaredFieldsView，按原Port类型编辑109项常量，BlobConfigurationFields仅适配本工具模型；来源为本行VM类型模板。完整图像/ROI特殊字段及专业页替换仍未完成。',
+        'configsetting': 'S4当前：正常Blob入口已改用Plugin.Wpf/Fields声明字段；109项常量与图像、位置、区域来源分开呈现，沿用原117项合同。旧专业调试页及其转换器已删除，整链尚未核收；不能把新默认页局部通过算成完整交付。',
         'parambinding': 'S4当前：来源选择由Plugin.Wpf/Fields/ReferenceSelectionControl承接，UI宿主组织窗口及草稿；已实测声明成员、显式/绑定序号、真实执行与保存重开。本行VM订阅组合链只作职责对标，不照搬字符串绑定。',
         'parambindingbase': 'S4当前：不再为Blob默认字段新建旧式万能绑定基类；局部字段保存非法原文，宿主登记草稿与验证，执行层编译唯一声明。旧SDK基类的其他消费者仍在，未宣称已全局删除。',
+        'roieditorcontrol': 'S4当前：Plugin.Wpf/Regions/RegionGeometryEditor与RoiGeometryEditing承接七类几何的数值、选择及编辑意图；只依赖Contracts。VM对应RoiSelectControl.xaml:15–16,23–79,101–121及roiselectdatatemplate.xaml:27–35,76–132的形状/数值模板链；不声称每个鼠标手势已经VM实机核等价。',
+        'roieditormanagercontrol': 'S4当前：正常Blob入口改由UI/Services/Editing/Regions/RoiViewportEditScope独占图像交互范围，旧Blob页与Manager接线已删除。共享字段只接收受限IRoiEditViewport，不能清主结果或持有全局Canvas。VM对应BoxROIStack.xaml:15–115及ROI模板→宿主交互链。本地草稿、换帧取消、关闭只释放自身已有定向验证；其他工具旧Manager消费者尚存，未全局删除。',
+        'blobanalysistooldebugcontrol': 'S4当前：旧Wpf/Views/BlobAnalysisToolDebugControl.xaml及后台、专用BlobAnalysisConverters.cs已删除；不再沿旧整页重构。正常打开入口由UI/Services/Editing/Nodes/DeclaredToolConfigurationControl及其Sources/RegionSources/Regions分部组装，Plugin.Wpf只含局部字段和几何编辑，事务/交互归宿主。VM对标沿本行控件→模板→宿主组装证据。Wpf组件保留现行BlobDataAnalysisControl只读结果视图，S5未启动。',
+        'roisubscribepanel': 'S4当前：RegionSources宿主适配按检测/屏蔽与几何/像素Region分别配置，几何为独立订阅项，切换不删本地底稿。VM对应ROISelecter模板与ButtonSelecter订阅链；现行SDK存储与运行校验归宿主，不能把模板相似当成底层实现相同。',
+        'imagesourceselector': 'S4当前：Plugin.Wpf/Fields/SourceSelectionField仅展示宿主提供的声明候选；UI/Sources适配持久引用、当前作用域和显式集合序号，禁止猜默认来源。VM对应ButtonSelecter_sub:255→SubTreeView:296–302选择组合链。现行SDK矩阵缺完整中立空间元数据，保留明确适配而不伪造坐标标识；同帧校验继续生效。',
     }
     for key, note in updates.items():
         pattern = r'(<tr id="o06-control-' + key + r'"[^>]*>)(.*?)(</tr>)'

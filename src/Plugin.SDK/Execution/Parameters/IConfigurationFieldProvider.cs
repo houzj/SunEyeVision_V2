@@ -8,6 +8,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters;
 public interface IConfigurationFieldProvider
 {
     IReadOnlyList<ConfigurationFieldAccessor> GetConfigurationFields();
+    ToolSchema? ConfigurationSchema=>null;
+    IReadOnlyDictionary<string,string> RegionInputStorage=>new Dictionary<string,string>();
 }
 
 public sealed record ConfigurationFieldAccessor(Port Port, FieldPresentation Presentation, string StoragePath,

@@ -23,7 +23,7 @@ public sealed record RegionFieldGroup(string Role, string ModeFieldId, string Lo
 public sealed class FieldPresentation
 {
     public FieldPresentation(string fieldId,string displayName,string group,int order,FieldEditorKind editor,
-        IEnumerable<string>? choiceKeys=null)
+        IEnumerable<string>? choiceKeys=null,IReadOnlyDictionary<string,string>? choiceLabels=null)
     {
         if(string.IsNullOrWhiteSpace(fieldId)||!Enum.IsDefined(editor))throw new ArgumentException("A declared field and known editor kind are required.");
         FieldId=fieldId;DisplayName=displayName??throw new ArgumentNullException(nameof(displayName));Group=group??"";Order=order;Editor=editor;
@@ -32,8 +32,13 @@ public sealed class FieldPresentation
             ||editor==FieldEditorKind.Choice&&choices.Length==0||editor!=FieldEditorKind.Choice&&choices.Length!=0)
             throw new ArgumentException("Only choice editors have a nonempty closed set of unique keys.");
         ChoiceKeys=Array.AsReadOnly(choices);
+        var labels=choiceLabels?.ToDictionary(item=>item.Key,item=>item.Value,StringComparer.Ordinal)??new Dictionary<string,string>();
+        if(labels.Any(item=>!choices.Contains(item.Key,StringComparer.Ordinal)||string.IsNullOrWhiteSpace(item.Value)))
+            throw new ArgumentException("Choice display labels must address declared keys.");
+        ChoiceLabels=new System.Collections.ObjectModel.ReadOnlyDictionary<string,string>(labels);
     }
     public string FieldId{get;} public string DisplayName{get;} public string Group{get;} public int Order{get;}
+    public IReadOnlyDictionary<string,string> ChoiceLabels{get;}
     public FieldEditorKind Editor{get;} public IReadOnlyList<string> ChoiceKeys{get;}
 }
 public sealed class ToolPresentation

@@ -6,6 +6,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf;
 
 public sealed class BlobEditorFactory : IToolEditorFactory
 {
-    public FrameworkElement CreateDebugControl(IToolPlugin tool) => new BlobAnalysisToolDebugControl("BlobAnalysis", tool, null);
+    // Configuration is provided completely by the host's declaration/ROI editor.
+    // This optional companion currently supplies the specialized read-only result view only.
     public FrameworkElement CreateDataAnalysisControl() => new BlobDataAnalysisControl();
 }

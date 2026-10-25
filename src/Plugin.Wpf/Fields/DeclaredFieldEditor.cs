@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Data;
 using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Plugin.Wpf.Fields;
@@ -13,6 +14,7 @@ public sealed class DeclaredFieldEditor : UserControl
     private readonly Action<ParameterSetting> _write;
     private readonly Func<Port, ReferenceSetting?>? _selectReference;
     private readonly Func<OutputReference,string>? _formatReference;
+    private readonly IReadOnlyDictionary<string,string>? _choiceLabels;
     private readonly StackPanel _body = new();
     private readonly TextBlock _error = new() { Foreground = Brushes.OrangeRed, TextWrapping = TextWrapping.Wrap };
     private readonly List<DeclaredFieldEditor> _children = new();
@@ -28,10 +30,10 @@ public sealed class DeclaredFieldEditor : UserControl
 
     public DeclaredFieldEditor(Port port, string label, ParameterSetting initial, Action<ParameterSetting> write,
         Func<Port, ReferenceSetting?>? selectReference = null, ConstantSetting? constantBackup = null,
-        Func<OutputReference,string>? formatReference = null)
+        Func<OutputReference,string>? formatReference = null,IReadOnlyDictionary<string,string>? choiceLabels=null)
     {
         _port = port; _setting = initial; _constant = initial as ConstantSetting ?? constantBackup; _write = write; _selectReference = selectReference;
-        _formatReference=formatReference;
+        _formatReference=formatReference;_choiceLabels=choiceLabels;
         Tag = port.Id; Margin = new Thickness(0, 3, 0, 5);
         var panel = new StackPanel();
         var header = new DockPanel { Margin = new Thickness(0, 0, 0, 4) };
@@ -93,6 +95,12 @@ public sealed class DeclaredFieldEditor : UserControl
             else if (_port.Choices is { } choices)
             {
                 var input = new ComboBox { ItemsSource = choices.Keys, SelectedItem = value };
+                if(_choiceLabels is {Count:>0})
+                {
+                    var label=new FrameworkElementFactory(typeof(TextBlock));
+                    label.SetBinding(TextBlock.TextProperty,new Binding{Converter=new ChoiceLabelConverter(_choiceLabels)});
+                    input.ItemTemplate=new DataTemplate{VisualTree=label};
+                }
                 input.SelectionChanged += (_, _) => { if (input.SelectedItem is string key) Set(new ConstantSetting(key)); }; InputElement = input; _body.Children.Add(input);
             }
             else
@@ -137,6 +145,12 @@ public sealed class DeclaredFieldEditor : UserControl
             // ToString textbox is an editable typed value, or inspect a borrowed resource.
             _body.Children.Add(new TextBlock { Text = "此字段由专用区域或集合编辑器处理。", TextWrapping = TextWrapping.Wrap });
         }
+    }
+
+    private sealed class ChoiceLabelConverter(IReadOnlyDictionary<string,string> labels):IValueConverter
+    {
+        public object Convert(object value,Type target,object parameter,CultureInfo culture)=>value is string key?labels.GetValueOrDefault(key,key):value;
+        public object ConvertBack(object value,Type target,object parameter,CultureInfo culture)=>throw new NotSupportedException();
     }
 
     private static object? Default(TypeRef type) => type.Shape switch

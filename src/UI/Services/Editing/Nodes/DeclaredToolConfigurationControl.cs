@@ -17,14 +17,14 @@ using ConfigurationSetting = SunEyeVision.Plugin.Contracts.ParameterSetting;
 namespace SunEyeVision.UI.Services.Editing;
 
 /// <summary>Host adapter for the optional-editor fallback. Publication remains owned by the existing S2 edit scope.</summary>
-public sealed class DeclaredToolConfigurationControl : ToolDebugControlBase, IToolEditorCommitParticipant, IToolEditorPendingState
+public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlBase, IToolEditorCommitParticipant, IToolEditorPendingState
 {
     private readonly IToolPlugin _tool;
     private ToolParameters? _parameters;
     private DeclaredFieldsView? _fields;
     private IReadOnlyList<ConfigurationFieldAccessor> _accessors=Array.Empty<ConfigurationFieldAccessor>();
-    public bool HasPendingEdits=>_fields?.Fields.Any(editor=>editor.HasInvalidText)==true;
-    public DeclaredToolConfigurationControl(IToolPlugin tool){_tool=tool;}
+    public bool HasPendingEdits=>_fields?.Fields.Any(editor=>editor.HasInvalidText)==true||HasPendingRegions||HasPendingSources;
+    public DeclaredToolConfigurationControl(IToolPlugin tool){_tool=tool;Loaded+=(_,_)=>AttachRegionLifetime();}
     public override void SetParameters(ToolParameters parameters)
     {
         base.SetParameters(parameters);_parameters=parameters;
@@ -33,7 +33,7 @@ public sealed class DeclaredToolConfigurationControl : ToolDebugControlBase, ITo
             _accessors=provider.GetConfigurationFields();
             _fields=new(_accessors.Select(field=>(field.Port,field.Presentation,ReadDraft(field))),WriteDraft,SelectReference,
                 id=>new ConstantSetting(_accessors.Single(field=>field.Port.Id==id).Read()),FormatReference);
-            Content=_fields;return;
+            SetEditorContent(_fields);BuildRegionEditors(provider);BuildSourceEditors(provider);return;
         }
         var slots=new Dictionary<string,PropertyInfo>(StringComparer.Ordinal);
         var fields=new List<(Port Port,FieldPresentation Presentation,ConfigurationSetting Value)>();
@@ -65,10 +65,12 @@ public sealed class DeclaredToolConfigurationControl : ToolDebugControlBase, ITo
                 BindingClrAdapter.Materialize(fields.Single(field=>field.Port.Id==id).Port,property.PropertyType,literal);
             property.SetValue(parameters,value);
         });
-        Content=_fields;
+        SetEditorContent(_fields);
     }
     public bool TryValidateEditor(out string error)
     {
+        if(HasPendingSources){error=_sourceFields.First(view=>view.HasPendingEdits).Error; if(string.IsNullOrEmpty(error))error="请先应用来源选择，或撤销尚未应用的选择。";return false;}
+        if(!ValidateRegionEditors(out error))return false;
         if(_fields is not null&&!_fields.TryValidate(out error))return false;
         var validation=_parameters?.Validate();
         error=validation is null?"配置尚未初始化。":validation.IsValid?"":string.Join("；",validation.Errors);
@@ -109,6 +111,7 @@ public sealed class DeclaredToolConfigurationControl : ToolDebugControlBase, ITo
             else node.ParamSettings.RemoveSetting(field.StoragePath);
             node.Parameters.RebindingRequired.Remove(field.StoragePath);node.Parameters.BindingValidationPending.Remove(field.StoragePath);
         }
+        RefreshRegionScene();
     }
     private ParamSetting ToSetting(ConfigurationFieldAccessor field,OutputReference reference)
     {
@@ -172,7 +175,7 @@ public static class ToolConfigurationEditors
 {
     public static FrameworkElement? CreateControl(IToolPlugin tool)
     {
-        if(ToolRegistry.CreateEditorFactory(tool) is { } factory)return factory.CreateDebugControl(tool);
+        if(ToolRegistry.CreateEditorFactory(tool)?.CreateDebugControl(tool) is { } specialized)return specialized;
         var id=tool.GetType().GetCustomAttributes(typeof(ToolAttribute),false).OfType<ToolAttribute>().SingleOrDefault()?.Id;
         return ToolRegistry.GetComponentMetadata().Any(c=>c.ToolId==id&&c.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Runtime)
             ?new DeclaredToolConfigurationControl(tool):null;

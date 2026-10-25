@@ -9,6 +9,25 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters;
 /// <summary>Explicit data projection of the existing ROI definitions, preserving their parameter conventions.</summary>
 public static class RoiShapeValueAdapter
 {
+    /// <summary>Explicit current-model adapter for an existing neutral ROI record. No control or native handle.</summary>
+    public static RoiShape Materialize(RecordValue value)
+    {
+        if(value.Declaration!=Declaration)throw new ArgumentException("Expected the declared ROI record.");
+        double Number(string key)=>value.Get<double>(key);
+        System.Windows.Point Center(){var p=value.Get<PointGeometry>("center").Point;return new(p.X,p.Y);}
+        var geometry=value.Get<string>("kind") switch
+        {
+            "point"=>(object)new Point2d(Center().X,Center().Y),
+            "line"=>new Line2d(Center(),new(Number("direction-x"),Number("direction-y"))),
+            "circle"=>new Circle2d(Center(),Number("radius")),
+            "rectangle"=>new RotatedRect2d(Center(),Number("width"),Number("height"),Number("angle-degrees")),
+            "arc"=>new Arc2d(Center(),Number("radius"),Number("start-radians"),Number("end-radians"),value.Contains("major-arc")&&value.Get<bool>("major-arc")),
+            "annulus"=>new Annulus2d(Center(),Number("inner-radius"),Number("outer-radius"),Number("start-radians"),Number("end-radians")),
+            "polygon"=>new Polygon2d(value.Get<SequenceValue>("vertices").Cast<PointGeometry>().Select(point=>new System.Windows.Point(point.Point.X,point.Point.Y)).ToArray(),!value.Contains("closed")||value.Get<bool>("closed")),
+            _=>throw new ArgumentException("Unsupported ROI kind.")
+        };
+        return new RoiShape{Geometry=geometry};
+    }
     public static CoordinateFrame ImageFrame {get;}=RoiDeclarations.ImageFrame;
     private static TypeRef PointType=>TypeRef.GeometryOf(GeometryKind.Point,ImageFrame);
     public static TypeRef Declaration {get;}=RoiDeclarations.Shape;

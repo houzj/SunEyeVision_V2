@@ -127,6 +127,69 @@ internal static class S2DocumentEditingCases
             Require(BindingReferenceSerializer.Deserialize(target.ParamSettings.GetSetting("Threshold")!.ReferenceExpression!).PortId==Output("FilteredBlobCount").Id,"窗口选择没有成为正式字段引用");
             Require(saveService.Save(file,()=>solutions.Session!.Editing.AcceptAll()).FileWritten,"窗口确认后的绑定无法保存："+solutions.LastError);
             Console.WriteLine("通过：真实宿主来源窗口按声明选择，确定只写当前草稿，经范围确认后可保存");
+            SourceSelectionField ImageSelector()=>Descendants(fallback).OfType<SourceSelectionField>().Single(view=>Equals(view.Tag,
+                ((IConfigurationFieldProvider)context.DraftNode.Parameters).ConfigurationSchema!.Inputs.Single(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image)).Id));
+            var imageOutput=((IOutputContractProvider)source.Parameters).GetOutputContract().Single(output=>output.Name=="GrayImage");
+            var imageIdentity=source.Id+"/"+BindingClrAdapter.OutputPortId(imageOutput);
+            ImageSelector().Select(source.Id+"/"+Output("FilteredBlobCount").Id);
+            Require(!ImageSelector().ApplySelection()&&((MeasureGuideParameters)context.DraftNode.Parameters).ImageSourceRef is null,"数值字段误作图像来源或失败修改了草稿");
+            ImageSelector().Select(imageIdentity);
+            Require(ImageSelector().ApplySelection(),"实际声明图像无法选择："+ImageSelector().Error);
+            Require(((MeasureGuideParameters)target.Parameters).ImageSourceRef is null,"选择来源提前污染正式节点");
+            Require(context.TryCommitEditor(out var sourceError),sourceError);
+            Require(((MeasureGuideParameters)target.Parameters).ImageSourceRef?.SourceFieldId==imageOutput.FieldId,"稳定图像字段ID未发布");
+            using(var run=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(workflow.Id,image)).GetAwaiter().GetResult())
+                Require(run.Success,string.Join(";",run.Errors));
+            Require(saveService.Save(file,()=>solutions.Session!.Editing.AcceptAll()).FileWritten,"图像来源实际保存失败："+solutions.LastError);
+            var sourceReopen=solutions.LoadSolutionOnly(file)!.Workflows.Single().Nodes.Single(node=>node.Id==target.Id);
+            Require(((MeasureGuideParameters)sourceReopen.Parameters).ImageSourceRef?.SourceFieldId==imageOutput.FieldId,"保存重开丢失图像来源身份");
+            Console.WriteLine("通过：图像来源只列正式图像声明，私有草稿确认、真实Workflow/HALCON消费及保存重开保留稳定身份");
+
+            // The current SDK pose source adapter does not fabricate canonical affine frame labels.
+            var poseId=Guid.Parse("a4210000-0000-4000-8000-000000000001");
+            var poseHost=new SunEyeVision.UI.Services.Editing.DeclaredToolConfigurationControl(ToolRegistry.CreateToolInstance("BlobAnalysis")!);
+            var poseParameters=ToolRegistry.CreateParameters("BlobAnalysis");poseHost.SetCurrentNode(new WorkflowNodeBase("pose-target","pose-target","pose-target","BlobAnalysis"){Parameters=poseParameters});poseHost.SetParameters(poseParameters);
+            var poseDeclaration=new OutputVariable{Name="Poses",FieldId=poseId,DeclaredType=typeof(AffineMatrix[]),VariableType="Transform",IsCollection=true};
+            poseHost.SetDataProvider(new DataSourceQueryService{WorkflowId=workflow.Id,BindingCandidateNodeIds=_=>new[]{"pose-source"},FormalOutputContractReader=_=>new[]{poseDeclaration}});
+            var posePort=((IConfigurationFieldProvider)poseParameters).ConfigurationSchema!.Inputs.Single(port=>port.Type==SpatialDeclarations.Affine2D);
+            var poseSelector=Descendants(poseHost).OfType<SourceSelectionField>().Single(view=>Equals(view.Tag,posePort.Id));
+            var poseIdentity="pose-source/"+BindingClrAdapter.OutputPortId(poseDeclaration);
+            poseSelector.Select(poseIdentity,"-1");Require(!poseSelector.ApplySelection()&&poseHost.HasPendingEdits,"矩阵集合接受负序号或丢失未应用状态");
+            poseSelector.Select(poseIdentity,"0");Require(poseSelector.ApplySelection(),poseSelector.Error);
+            poseSelector.Select(poseIdentity,"1");Require(poseSelector.ApplySelection(),poseSelector.Error);
+            var poseGuide=(MeasureGuideParameters)poseParameters;
+            Require(poseGuide.PositionCorrectionSource?.PropertyName=="Poses[1]"&&poseGuide.PositionCorrectionBindingSource?.GetBindingPath()=="pose-source.Poses[1]","同一输出换序号仍保留旧运行时来源");
+            Require(poseSelector.ClearSource()&&poseGuide.PositionCorrectionSource is null&&poseGuide.PositionCorrectionBindingSource is null,"清除矩阵来源留下旧引用");
+            Console.WriteLine("通过：现行SDK位置来源显式选序号、拒绝非法原文、更换同源序号与清除；同帧与真实位置消费另由输入边界轨验证");
+            var regionGroup=((IConfigurationFieldProvider)context.DraftNode.Parameters).ConfigurationSchema!.Presentation!.Regions.Single(group=>group.Role=="inspection");
+            var regionSelector=Descendants(fallback).OfType<SourceSelectionField>().Single(view=>Equals(view.Tag,regionGroup.RegionSourceFieldId));
+            var regionOutput=((IOutputContractProvider)source.Parameters).GetOutputContract().Single(output=>output.Name=="Region");
+            regionSelector.Select(source.Id+"/"+BindingClrAdapter.OutputPortId(regionOutput));
+            Require(regionSelector.ApplySelection(),regionSelector.Error);
+            var draftMode=((IConfigurationFieldProvider)context.DraftNode.Parameters).GetConfigurationFields().Single(field=>field.StoragePath=="InspectionMode");
+            draftMode.Write("InheritedRegion");fallback.OnExternalResultArrived();
+            Require(context.TryCommitEditor(out var regionError),regionError);
+            Require(target.ParamSettings.GetSetting("InspectionRegionInput")?.SourceFieldId==regionOutput.FieldId,"像素Region未存稳定引用");
+            using(var run=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(workflow.Id,image)).GetAwaiter().GetResult())
+                Require(run.Success&&Convert.ToInt32(run.NodeResults[target.Id].Result!.GetType().GetProperty("FilteredBlobCount")!.GetValue(run.NodeResults[target.Id].Result))==1,string.Join(";",run.Errors));
+            Require(saveService.Save(file,()=>solutions.Session!.Editing.AcceptAll()).FileWritten,"Region来源实际保存失败："+solutions.LastError);
+            var regionReopen=solutions.LoadSolutionOnly(file)!.Workflows.Single().Nodes.Single(node=>node.Id==target.Id);
+            Require(regionReopen.ParamSettings.GetSetting("InspectionRegionInput")?.SourceFieldId==regionOutput.FieldId,"Region来源重开丢失身份");
+            Console.WriteLine("通过：实际像素Region来源绑定经确认、同帧Workflow/HALCON消费及保存重开；不复制资源到设置");
+
+            var geometryOutput=new OutputVariable{Name="Shapes",FieldId=Guid.Parse("a4210000-0000-4000-8000-000000000002"),DeclaredType=typeof(RoiShape[]),VariableType="ROI",IsCollection=true};
+            poseHost.SetDataProvider(new DataSourceQueryService{WorkflowId=workflow.Id,BindingCandidateNodeIds=_=>new[]{"geometry-source"},FormalOutputContractReader=_=>new[]{geometryOutput}});
+            var geometryParameters=(RoiParameters)poseParameters;
+            var local=Roi.CreateLocal("本地底稿",new SunEyeVision.Plugin.SDK.Models.Geometry.Circle2d(4,4,2));geometryParameters.InspectionRois.Rois.Add(local);
+            var geometryGroup=((IConfigurationFieldProvider)poseParameters).ConfigurationSchema!.Presentation!.Regions.Single(group=>group.Role=="inspection");
+            var geometrySelector=Descendants(poseHost).OfType<SourceSelectionField>().Single(view=>Equals(view.Tag,geometryGroup.GeometrySourceFieldId));
+            geometrySelector.Select("geometry-source/"+BindingClrAdapter.OutputPortId(geometryOutput));Require(geometrySelector.ApplySelection(),geometrySelector.Error);
+            var subscribed=geometryParameters.InspectionRois.Rois.Single(item=>item.IsSubscribed);
+            Require(ReferenceEquals(geometryParameters.InspectionRois.Rois.Single(item=>item.IsLocal),local)&&subscribed.Binding?.SourceFieldId==geometryOutput.FieldId,"几何订阅覆盖本地底稿或丢失字段ID");
+            var declaredInput=BindingInputCatalog.Describe(poseParameters).Single(input=>input.Key=="InspectionRois:"+subscribed.Id);
+            Require(declaredInput.ReadFieldId?.Invoke()==geometryOutput.FieldId,"几何订阅输入目录遗漏稳定字段身份");
+            Require(geometrySelector.ClearSource()&&geometryParameters.InspectionRois.Rois.Count==1&&ReferenceEquals(geometryParameters.InspectionRois.Rois[0],local),"清除订阅删除了本地底稿");
+            Console.WriteLine("通过：几何来源只接正式ROI集合，独立订阅项保留稳定身份；清除只删除该项，本地底稿不受影响");
             var original=File.ReadAllBytes(file);
             var minField=((IConfigurationFieldProvider)context.DraftNode.Parameters).GetConfigurationFields().Single(field=>field.StoragePath=="FilterAreaMax");
             var invalidText=(System.Windows.Controls.TextBox)((DeclaredFieldsView)fallback.Content).Fields.Single(field=>field.FieldId==minField.Port.Id).InputElement!;
@@ -134,7 +197,7 @@ internal static class S2DocumentEditingCases
             Require(fallback.HasPendingEdits&&!saveService.Save(file,()=>solutions.Session!.Editing.AcceptAll()).FileWritten
                 &&invalidText.Text=="invalid"&&original.SequenceEqual(File.ReadAllBytes(file)),"隐藏的非法文本被保存或丢弃，或原文件被覆盖");
             Console.WriteLine("通过：默认页非法原文进入正式保存准备；拒绝保存并保留原文件和原文");
-            Console.WriteLine("S4声明绑定：6组通过；完整ROI及整链仍待核收。");return 0;
+            Console.WriteLine("S4声明绑定：10组通过；完整窗口组装及整链仍待核收。");return 0;
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
     }

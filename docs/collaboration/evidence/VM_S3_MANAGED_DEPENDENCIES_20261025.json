@@ -1,0 +1,2026 @@
+{
+  "scope": "VM 4.4.0五个指定程序集静态AssemblyRef，不是运行加载闭包、native依赖或无编辑器执行验证",
+  "records": [
+    {
+      "evidence_id": "ev_22697cccc2f26bd806da658c3f0a7217a16a9f900a5ac474834b84a33f904f6d",
+      "artifact": {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuCs.dll",
+        "sha256": "3106af2e9344a97288553bfbbfa86afd81e2384188b452734f56825f63e0a78d",
+        "byte_length": 37376,
+        "format": "pe"
+      },
+      "assembly": {
+        "name": "IMVSBlobFindModuCs",
+        "version": "1.0.0.0",
+        "culture": null,
+        "flags": 1,
+        "hash_algorithm": 32772,
+        "public_key": {
+          "kind": "public-key",
+          "byte_length": 160,
+          "sha256": "c2e53dc076adfeb2f92e71d0f2af7ac0b0f3c4154c06f5bde6dce652da6c9546",
+          "token": "7fe8bad26cdedb7b"
+        },
+        "token": "0x20000001",
+        "row_offset": 19238
+      },
+      "references": [
+        {
+          "name": "mscorlib",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000001",
+          "row_offset": 19260
+        },
+        {
+          "name": "VM.Core",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "3f5c3549df9ec2a15bb19108c5a6c97002574298a58db22191a5d198b95e23f1",
+            "token": "61600122bc9264b9"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000002",
+          "row_offset": 19280
+        },
+        {
+          "name": "VM.PlatformSDKCS",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "941ec072b07dc1d1b18a6a989789793b32c30550ed1c0e685205424745811cbe",
+            "token": "c1484a72052ee3d4"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000003",
+          "row_offset": 19300
+        }
+      ],
+      "coverage": {
+        "state": "complete",
+        "issues": []
+      },
+      "limitations": [
+        "Static inspection did not load the assembly, resolve dependencies through a CLR, decompile C#, or execute target code."
+      ]
+    },
+    {
+      "evidence_id": "ev_758f593356d11c17370747b341d4b1992a0fe8ab3fd3176f70d4a6831c3d8517",
+      "artifact": {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.Core.dll",
+        "sha256": "936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d",
+        "byte_length": 436736,
+        "format": "pe"
+      },
+      "assembly": {
+        "name": "VM.Core",
+        "version": "1.0.0.0",
+        "culture": null,
+        "flags": 1,
+        "hash_algorithm": 32772,
+        "public_key": {
+          "kind": "public-key",
+          "byte_length": 160,
+          "sha256": "304eb52bf4480cadc2a47f4989ef324037320c756e9c5e0e2f79bc466690317d",
+          "token": "61600122bc9264b9"
+        },
+        "token": "0x20000001",
+        "row_offset": 317208
+      },
+      "references": [
+        {
+          "name": "mscorlib",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000001",
+          "row_offset": 317234
+        },
+        {
+          "name": "VM.PlatformSDKCS",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "941ec072b07dc1d1b18a6a989789793b32c30550ed1c0e685205424745811cbe",
+            "token": "c1484a72052ee3d4"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000002",
+          "row_offset": 317258
+        },
+        {
+          "name": "System.Core",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000003",
+          "row_offset": 317282
+        },
+        {
+          "name": "VMControls.Interface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "234d35a720dc4cfbfc8828b5eb8c77ec878e0d6b8ed092c0396ff5285a501ac8",
+            "token": "cb41614600cf774b"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000004",
+          "row_offset": 317306
+        },
+        {
+          "name": "VM.Util",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "6d3b65b904eba26124297cce88f467d21a632e69cc3112c648766de6b059c142",
+            "token": "a8f590f1c0b8da86"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000005",
+          "row_offset": 317330
+        },
+        {
+          "name": "Apps.UIHelper",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "6ba50d24a930f29507fa5f9ffcb62fb3ee65e119d16a29ecafd68dd77c5f1dd1",
+            "token": "74fbc55729e22a3e"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000006",
+          "row_offset": 317354
+        },
+        {
+          "name": "Apps.Data",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "9cfe5151bd1209b654320ee7308842ef60b2ea9374724e46ad2d03119a8b5db7",
+            "token": "5defd79a1cc9b45b"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000007",
+          "row_offset": 317378
+        },
+        {
+          "name": "System",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000008",
+          "row_offset": 317402
+        },
+        {
+          "name": "UIVersionControlManager",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "00183ce9dd31f3143caf09930a7336a090780fdb109a67d45054e97ebf930e48",
+            "token": "2f13f6578db0572b"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000009",
+          "row_offset": 317426
+        },
+        {
+          "name": "VMControls.BaseInterface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "fe752ee6388cd1d2adba25bf70e340d2434c3a781fb63d195c943c565121455d",
+            "token": "14444b8df74b6e6a"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000a",
+          "row_offset": 317450
+        },
+        {
+          "name": "WindowsBase",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1c19eb88bafee465979426da46f9b79289521d4681a8adb232b92abad75cebb7",
+            "token": "31bf3856ad364e35"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000b",
+          "row_offset": 317474
+        },
+        {
+          "name": "System.ComponentModel.DataAnnotations",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1c19eb88bafee465979426da46f9b79289521d4681a8adb232b92abad75cebb7",
+            "token": "31bf3856ad364e35"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000c",
+          "row_offset": 317498
+        },
+        {
+          "name": "VM.ExternalCall",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "07c990bb852e7cba97e62330791cdc72fff91031e49df49ff1653ecfab761044",
+            "token": "692a5e6dc57fa151"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000d",
+          "row_offset": 317522
+        },
+        {
+          "name": "Apps.Log",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "b43cd7fb34e3133cf3d28e1d145d1d360a537de358e558ffae00d003d75fb76e",
+            "token": "80977b3c63aee056"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000e",
+          "row_offset": 317546
+        },
+        {
+          "name": "Apps.Localization",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "bbe586b79e54e86d4daeab108a976f48261f1aa5a1d635a4168579940ece4e3d",
+            "token": "198e508d4a1bea30"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000f",
+          "row_offset": 317570
+        },
+        {
+          "name": "Apps.ErrorCode",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "5cedf89dcd1c21cdcb3e76ab76f6d5273d0275936e93cdee1dc9fd35899cb6a8",
+            "token": "55bc2deae8b36113"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000010",
+          "row_offset": 317594
+        },
+        {
+          "name": "VM.Controls",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "61c014591f8a1eb13c6d093269b86cb1d0a2576352e90321c65524d62a3133df",
+            "token": "48472957e1d7b05f"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000011",
+          "row_offset": 317618
+        },
+        {
+          "name": "VM.Utility",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "d38da4793146586325c9e52fd9e06b89bc0797a548e95ab78360e2547f281d0b",
+            "token": "11e824e986ec8874"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000012",
+          "row_offset": 317642
+        },
+        {
+          "name": "PresentationCore",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1c19eb88bafee465979426da46f9b79289521d4681a8adb232b92abad75cebb7",
+            "token": "31bf3856ad364e35"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000013",
+          "row_offset": 317666
+        }
+      ],
+      "coverage": {
+        "state": "complete",
+        "issues": []
+      },
+      "limitations": [
+        "Static inspection did not load the assembly, resolve dependencies through a CLR, decompile C#, or execute target code."
+      ]
+    },
+    {
+      "evidence_id": "ev_f7be1556d1c1f0da99dd1b08f8123e6bc1998e5194f19d85c28edfc0b6aca764",
+      "artifact": {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\PublicFile\\x64\\VM.PlatformSDKCS.dll",
+        "sha256": "34c0c90b00cb75a701685b96670b6490f61376f62eacc0ab29d240157db401c1",
+        "byte_length": 515072,
+        "format": "pe"
+      },
+      "assembly": {
+        "name": "VM.PlatformSDKCS",
+        "version": "1.0.0.0",
+        "culture": null,
+        "flags": 1,
+        "hash_algorithm": 32772,
+        "public_key": {
+          "kind": "public-key",
+          "byte_length": 160,
+          "sha256": "8116646ffbb97cfbf9953571ac017a69ff0bb992d1c10d161409586229a150b2",
+          "token": "c1484a72052ee3d4"
+        },
+        "token": "0x20000001",
+        "row_offset": 263184
+      },
+      "references": [
+        {
+          "name": "mscorlib",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000001",
+          "row_offset": 263210
+        },
+        {
+          "name": "System.Windows.Forms",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000002",
+          "row_offset": 263234
+        },
+        {
+          "name": "VM.CostomDialog",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "54551649f9e0263b25ae32e29033146a34dd95f9de3af19eb79df0d21a01cec1",
+            "token": "bca1e8d4ee35227f"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000003",
+          "row_offset": 263258
+        },
+        {
+          "name": "System.Core",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000004",
+          "row_offset": 263282
+        },
+        {
+          "name": "System",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000005",
+          "row_offset": 263306
+        },
+        {
+          "name": "VMControls.RenderInterface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "0cac55fc68c17e81021038de7afec907c554198d0819fb769ac71265c251d507",
+            "token": "4bcfc50547abbb24"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000006",
+          "row_offset": 263330
+        },
+        {
+          "name": "System.Drawing",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "971150dd73dc318e68a98cce9b91ac7dea2d43c562b4f5a9a2f4272c7e29477e",
+            "token": "b03f5f7f11d50a3a"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000007",
+          "row_offset": 263354
+        },
+        {
+          "name": "VMControls.BaseInterface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "fe752ee6388cd1d2adba25bf70e340d2434c3a781fb63d195c943c565121455d",
+            "token": "14444b8df74b6e6a"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000008",
+          "row_offset": 263378
+        },
+        {
+          "name": "VM.Util",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "6d3b65b904eba26124297cce88f467d21a632e69cc3112c648766de6b059c142",
+            "token": "a8f590f1c0b8da86"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000009",
+          "row_offset": 263402
+        },
+        {
+          "name": "Apps.Localization",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "bbe586b79e54e86d4daeab108a976f48261f1aa5a1d635a4168579940ece4e3d",
+            "token": "198e508d4a1bea30"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000a",
+          "row_offset": 263426
+        },
+        {
+          "name": "Apps.Log",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "b43cd7fb34e3133cf3d28e1d145d1d360a537de358e558ffae00d003d75fb76e",
+            "token": "80977b3c63aee056"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000b",
+          "row_offset": 263450
+        },
+        {
+          "name": "VM.ExternalCall",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "07c990bb852e7cba97e62330791cdc72fff91031e49df49ff1653ecfab761044",
+            "token": "692a5e6dc57fa151"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000c",
+          "row_offset": 263474
+        },
+        {
+          "name": "VM.Utility",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "d38da4793146586325c9e52fd9e06b89bc0797a548e95ab78360e2547f281d0b",
+            "token": "11e824e986ec8874"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000d",
+          "row_offset": 263498
+        }
+      ],
+      "coverage": {
+        "state": "complete",
+        "issues": []
+      },
+      "limitations": [
+        "Static inspection did not load the assembly, resolve dependencies through a CLR, decompile C#, or execute target code."
+      ]
+    },
+    {
+      "evidence_id": "ev_3eb1fd75ae8c1c32c6ae332a1cf0b6d1ea816b3794cf22eee230719d5af4dcd6",
+      "artifact": {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.WPF.dll",
+        "sha256": "99ffa401c8784472913ad43813d68a8a5577890c00e149506e3e5664fa61c97d",
+        "byte_length": 2279936,
+        "format": "pe"
+      },
+      "assembly": {
+        "name": "VMControls.WPF",
+        "version": "1.0.0.0",
+        "culture": null,
+        "flags": 1,
+        "hash_algorithm": 32772,
+        "public_key": {
+          "kind": "public-key",
+          "byte_length": 160,
+          "sha256": "294caeb528e5db7101ec068d97ba944ac96e761d8371f5dc1d074c1cdbecd386",
+          "token": "fef8a9e4baab915f"
+        },
+        "token": "0x20000001",
+        "row_offset": 572772
+      },
+      "references": [
+        {
+          "name": "mscorlib",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000001",
+          "row_offset": 572798
+        },
+        {
+          "name": "PresentationFramework",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1c19eb88bafee465979426da46f9b79289521d4681a8adb232b92abad75cebb7",
+            "token": "31bf3856ad364e35"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000002",
+          "row_offset": 572822
+        },
+        {
+          "name": "System",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000003",
+          "row_offset": 572846
+        },
+        {
+          "name": "WindowsBase",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1c19eb88bafee465979426da46f9b79289521d4681a8adb232b92abad75cebb7",
+            "token": "31bf3856ad364e35"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000004",
+          "row_offset": 572870
+        },
+        {
+          "name": "PresentationCore",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1c19eb88bafee465979426da46f9b79289521d4681a8adb232b92abad75cebb7",
+            "token": "31bf3856ad364e35"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000005",
+          "row_offset": 572894
+        },
+        {
+          "name": "VM.Core",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "3f5c3549df9ec2a15bb19108c5a6c97002574298a58db22191a5d198b95e23f1",
+            "token": "61600122bc9264b9"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000006",
+          "row_offset": 572918
+        },
+        {
+          "name": "VMControls.Interface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "234d35a720dc4cfbfc8828b5eb8c77ec878e0d6b8ed092c0396ff5285a501ac8",
+            "token": "cb41614600cf774b"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000007",
+          "row_offset": 572942
+        },
+        {
+          "name": "VMControls.RenderInterface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "0cac55fc68c17e81021038de7afec907c554198d0819fb769ac71265c251d507",
+            "token": "4bcfc50547abbb24"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000008",
+          "row_offset": 572966
+        },
+        {
+          "name": "Mvvm",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "ec160488ab97d5bb72b48869713a6b6a6b19354af5914c8cea74de34373e6d07",
+            "token": "e8271a241819f1f2"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000009",
+          "row_offset": 572990
+        },
+        {
+          "name": "System.Xaml",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000a",
+          "row_offset": 573014
+        },
+        {
+          "name": "Apps.XmlParser",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "ee114ea694db07d295fc57991df4895c678144d154c712d90350a7d7860cc022",
+            "token": "ea83335d1d9bd50f"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000b",
+          "row_offset": 573038
+        },
+        {
+          "name": "Apps.UIHelper",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "6ba50d24a930f29507fa5f9ffcb62fb3ee65e119d16a29ecafd68dd77c5f1dd1",
+            "token": "74fbc55729e22a3e"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000c",
+          "row_offset": 573062
+        },
+        {
+          "name": "VM.PlatformSDKCS",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "941ec072b07dc1d1b18a6a989789793b32c30550ed1c0e685205424745811cbe",
+            "token": "c1484a72052ee3d4"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000d",
+          "row_offset": 573086
+        },
+        {
+          "name": "DirectoryBrowser",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "0202267bf2f76091ec8be3fe5b9057d1ab76c1c9cb9c8bc26886d2242f77360c",
+            "token": "eb098805b2299e3c"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000e",
+          "row_offset": 573110
+        },
+        {
+          "name": "Microsoft.WindowsAPICodePack.Shell",
+          "version": "1.1.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "870712e32bfcd961064ce6ab11737e09cfaded50f4c2c95ec03f1e6c5977d8d0",
+            "token": "3256f6ee9712a2e5"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000f",
+          "row_offset": 573134
+        },
+        {
+          "name": "Apps.Data",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "9cfe5151bd1209b654320ee7308842ef60b2ea9374724e46ad2d03119a8b5db7",
+            "token": "5defd79a1cc9b45b"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000010",
+          "row_offset": 573158
+        },
+        {
+          "name": "Apps.BaseData",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "7951b95b3812e52baab5551591e2b9903d6418a2d4e85912cc68edf5a8a6a99b",
+            "token": "ba359f6a6d28aed3"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000011",
+          "row_offset": 573182
+        },
+        {
+          "name": "VM.Controls",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "61c014591f8a1eb13c6d093269b86cb1d0a2576352e90321c65524d62a3133df",
+            "token": "48472957e1d7b05f"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000012",
+          "row_offset": 573206
+        },
+        {
+          "name": "Apps.XmlUI",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "03277bee2c9f3bc3d2786353666545c38d14455bd838bf7d02f619fafb1a467d",
+            "token": "528e6ab420e6ad4a"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000013",
+          "row_offset": 573230
+        },
+        {
+          "name": "System.Core",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000014",
+          "row_offset": 573254
+        },
+        {
+          "name": "VM.Utility",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "d38da4793146586325c9e52fd9e06b89bc0797a548e95ab78360e2547f281d0b",
+            "token": "11e824e986ec8874"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000015",
+          "row_offset": 573278
+        },
+        {
+          "name": "VMControls.BaseInterface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "fe752ee6388cd1d2adba25bf70e340d2434c3a781fb63d195c943c565121455d",
+            "token": "14444b8df74b6e6a"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000016",
+          "row_offset": 573302
+        },
+        {
+          "name": "VM.Xml",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "217a6892c8c2ef05f24e59b1f88e95fbb512b4a9f78d423a9aea82143acad8fb",
+            "token": "709cd60c51e2a7fb"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000017",
+          "row_offset": 573326
+        },
+        {
+          "name": "VMControls.Data",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "7807ca37ba065ec94e51f32bc6369611682743e078901d09f236aaf6556d0f8e",
+            "token": "d3a6b40f3e34b5af"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000018",
+          "row_offset": 573350
+        },
+        {
+          "name": "Apps.PcUI",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "70aab5751d16db03146f402362392f755c80ab6b75eb417600ccc7e150e8cf7a",
+            "token": "4315d3e87bfe508f"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000019",
+          "row_offset": 573374
+        },
+        {
+          "name": "System.Windows.Forms",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300001a",
+          "row_offset": 573398
+        },
+        {
+          "name": "VMBaseControls",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "145dd4b4f25417c1b7eaf5e9353ed07ffae47a779c78476cfaf4dfec408a5613",
+            "token": "71707d2e549a163e"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300001b",
+          "row_offset": 573422
+        },
+        {
+          "name": "VM.PcUI",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "387d8976d39bb7e6d6092421447c0235e93bd65f7abf7a708372a70e8efcb3a1",
+            "token": "84c8e2f6f2c615bf"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300001c",
+          "row_offset": 573446
+        },
+        {
+          "name": "Apps.Interface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "7e0a72a3808242e9a73f473071bfa335cf664be3e7f5756dd867e70f52f625f6",
+            "token": "0a3479feab7b77be"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300001d",
+          "row_offset": 573470
+        },
+        {
+          "name": "VM.User",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "615dc83504f23eb2d8ddb11ca76edbabf57e0dec9f9652a244f20860cc882c7b",
+            "token": "31fe0faf9d9529c8"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300001e",
+          "row_offset": 573494
+        },
+        {
+          "name": "System.Drawing",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "971150dd73dc318e68a98cce9b91ac7dea2d43c562b4f5a9a2f4272c7e29477e",
+            "token": "b03f5f7f11d50a3a"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300001f",
+          "row_offset": 573518
+        },
+        {
+          "name": "GlobalScriptUI",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "a61499f8bf614a72c0dcfc6299b475a6c0b4f7631e356b453feece3797b8297c",
+            "token": "e823fa1154066cf0"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000020",
+          "row_offset": 573542
+        },
+        {
+          "name": "PasswordWindowUI",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "cd3666b9e2f4cd3d3c63b96cb1552bcdb104892458c06a1513785fecbd06509d",
+            "token": "fcb81ef3d4890577"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000021",
+          "row_offset": 573566
+        },
+        {
+          "name": "VM.CostomDialog",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "54551649f9e0263b25ae32e29033146a34dd95f9de3af19eb79df0d21a01cec1",
+            "token": "bca1e8d4ee35227f"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000022",
+          "row_offset": 573590
+        },
+        {
+          "name": "System.Xml",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000023",
+          "row_offset": 573614
+        },
+        {
+          "name": "GateWayFrameworkMain",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "39ca96c0ff8c89212be5ade6afac0bad5ddbf24f00ba83c992611430822259fd",
+            "token": "bdd41757d11490cc"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000024",
+          "row_offset": 573638
+        },
+        {
+          "name": "GateWayFrameworkData",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "fb35a2d4a1a5d5794a53cbc66e1ba0a6e178a80b3381dc403955b17b5b285254",
+            "token": "980be01f98ce2e95"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000025",
+          "row_offset": 573662
+        },
+        {
+          "name": "ICSharpCode.SharpZipLib",
+          "version": "1.0.0.999",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "0656b40c35485d60c4d9d1d7f99c694edd61996031da9b3a9f0064fda27509e0",
+            "token": "1b03e6acf1164f73"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000026",
+          "row_offset": 573686
+        },
+        {
+          "name": "VM.Util",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "6d3b65b904eba26124297cce88f467d21a632e69cc3112c648766de6b059c142",
+            "token": "a8f590f1c0b8da86"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000027",
+          "row_offset": 573710
+        },
+        {
+          "name": "MvCameraControl.Net",
+          "version": "3.4.0.1",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "e8fb237efe39a7fd2b38d4c0fed7d2adae30d57884850e32ab977bc31511c327",
+            "token": "52fddfb3f94be800"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000028",
+          "row_offset": 573734
+        },
+        {
+          "name": "Apps.Localization",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "bbe586b79e54e86d4daeab108a976f48261f1aa5a1d635a4168579940ece4e3d",
+            "token": "198e508d4a1bea30"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000029",
+          "row_offset": 573758
+        },
+        {
+          "name": "Apps.Log",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "b43cd7fb34e3133cf3d28e1d145d1d360a537de358e558ffae00d003d75fb76e",
+            "token": "80977b3c63aee056"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300002a",
+          "row_offset": 573782
+        },
+        {
+          "name": "Apps.ErrorCode",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "5cedf89dcd1c21cdcb3e76ab76f6d5273d0275936e93cdee1dc9fd35899cb6a8",
+            "token": "55bc2deae8b36113"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300002b",
+          "row_offset": 573806
+        },
+        {
+          "name": "VM.AppData",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "62c8df1ec7783f6fd3a2af042d5d88f20c63ef3a77681aca22221e28bf7f937a",
+            "token": "d08364abe153bcd0"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300002c",
+          "row_offset": 573830
+        },
+        {
+          "name": "WindowsFormsIntegration",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1c19eb88bafee465979426da46f9b79289521d4681a8adb232b92abad75cebb7",
+            "token": "31bf3856ad364e35"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300002d",
+          "row_offset": 573854
+        },
+        {
+          "name": "VM.ExternalCall",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "07c990bb852e7cba97e62330791cdc72fff91031e49df49ff1653ecfab761044",
+            "token": "692a5e6dc57fa151"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300002e",
+          "row_offset": 573878
+        },
+        {
+          "name": "UIVersionControlManager",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "00183ce9dd31f3143caf09930a7336a090780fdb109a67d45054e97ebf930e48",
+            "token": "2f13f6578db0572b"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300002f",
+          "row_offset": 573902
+        },
+        {
+          "name": "GateWayServer",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "3bd9def5ceb9677f49b76aa3daa9e0ef35327d13ec074a49376769cb5f23958e",
+            "token": "5f8d29af3307bea5"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000030",
+          "row_offset": 573926
+        },
+        {
+          "name": "Apps.BaseLog",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "47f811fc62a3ce0d66cd110bf2e8450d8583ea889a68641899de1a8d7b914895",
+            "token": "41b44cf0cfa707e3"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000031",
+          "row_offset": 573950
+        },
+        {
+          "name": "Apps.ColorFun",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "ecfe56895651238154579d4ad033c6b34aa81fbbb105755a6fed3fad534a1592",
+            "token": "cfdb8c430127f15b"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000032",
+          "row_offset": 573974
+        },
+        {
+          "name": "Apps.Json",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "3b6388672cb551cb3119dede2f8ec66955fc4096eee7c1d64967551f6a6a841c",
+            "token": "bdc9268157ee4f09"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000033",
+          "row_offset": 573998
+        },
+        {
+          "name": "Microsoft.CSharp",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "971150dd73dc318e68a98cce9b91ac7dea2d43c562b4f5a9a2f4272c7e29477e",
+            "token": "b03f5f7f11d50a3a"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000034",
+          "row_offset": 574022
+        }
+      ],
+      "coverage": {
+        "state": "complete",
+        "issues": []
+      },
+      "limitations": [
+        "Static inspection did not load the assembly, resolve dependencies through a CLR, decompile C#, or execute target code."
+      ]
+    },
+    {
+      "evidence_id": "ev_0b720b58c29ebc598cf14b4033d1cf52c913afcb9c9d066a53d694437e997b36",
+      "artifact": {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlUI.dll",
+        "sha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+        "byte_length": 1039872,
+        "format": "pe"
+      },
+      "assembly": {
+        "name": "Apps.XmlUI",
+        "version": "1.0.0.0",
+        "culture": null,
+        "flags": 1,
+        "hash_algorithm": 32772,
+        "public_key": {
+          "kind": "public-key",
+          "byte_length": 160,
+          "sha256": "723fa4eb2aff2beb2009cca181dc20782e856cde7fac87b10cc9f5d08b01e112",
+          "token": "528e6ab420e6ad4a"
+        },
+        "token": "0x20000001",
+        "row_offset": 184128
+      },
+      "references": [
+        {
+          "name": "mscorlib",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000001",
+          "row_offset": 184150
+        },
+        {
+          "name": "PresentationFramework",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1c19eb88bafee465979426da46f9b79289521d4681a8adb232b92abad75cebb7",
+            "token": "31bf3856ad364e35"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000002",
+          "row_offset": 184170
+        },
+        {
+          "name": "System",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000003",
+          "row_offset": 184190
+        },
+        {
+          "name": "WindowsBase",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1c19eb88bafee465979426da46f9b79289521d4681a8adb232b92abad75cebb7",
+            "token": "31bf3856ad364e35"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000004",
+          "row_offset": 184210
+        },
+        {
+          "name": "System.Xaml",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000005",
+          "row_offset": 184230
+        },
+        {
+          "name": "PresentationCore",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1c19eb88bafee465979426da46f9b79289521d4681a8adb232b92abad75cebb7",
+            "token": "31bf3856ad364e35"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000006",
+          "row_offset": 184250
+        },
+        {
+          "name": "VM.Controls",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "61c014591f8a1eb13c6d093269b86cb1d0a2576352e90321c65524d62a3133df",
+            "token": "48472957e1d7b05f"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000007",
+          "row_offset": 184270
+        },
+        {
+          "name": "System.Drawing",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "971150dd73dc318e68a98cce9b91ac7dea2d43c562b4f5a9a2f4272c7e29477e",
+            "token": "b03f5f7f11d50a3a"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000008",
+          "row_offset": 184290
+        },
+        {
+          "name": "VM.Core",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "3f5c3549df9ec2a15bb19108c5a6c97002574298a58db22191a5d198b95e23f1",
+            "token": "61600122bc9264b9"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000009",
+          "row_offset": 184310
+        },
+        {
+          "name": "VMControls.Interface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "234d35a720dc4cfbfc8828b5eb8c77ec878e0d6b8ed092c0396ff5285a501ac8",
+            "token": "cb41614600cf774b"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000a",
+          "row_offset": 184330
+        },
+        {
+          "name": "System.Core",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000b",
+          "row_offset": 184350
+        },
+        {
+          "name": "Apps.Data",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "9cfe5151bd1209b654320ee7308842ef60b2ea9374724e46ad2d03119a8b5db7",
+            "token": "5defd79a1cc9b45b"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000c",
+          "row_offset": 184370
+        },
+        {
+          "name": "Apps.UIHelper",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "6ba50d24a930f29507fa5f9ffcb62fb3ee65e119d16a29ecafd68dd77c5f1dd1",
+            "token": "74fbc55729e22a3e"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000d",
+          "row_offset": 184390
+        },
+        {
+          "name": "Apps.XmlParser",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "ee114ea694db07d295fc57991df4895c678144d154c712d90350a7d7860cc022",
+            "token": "ea83335d1d9bd50f"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000e",
+          "row_offset": 184410
+        },
+        {
+          "name": "System.Windows.Forms",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "1b960802b155541df3837ade50790da7e91762d14b8e011fa8223424ff75acdb",
+            "token": "b77a5c561934e089"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300000f",
+          "row_offset": 184430
+        },
+        {
+          "name": "VM.PlatformSDKCS",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "941ec072b07dc1d1b18a6a989789793b32c30550ed1c0e685205424745811cbe",
+            "token": "c1484a72052ee3d4"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000010",
+          "row_offset": 184450
+        },
+        {
+          "name": "VM.PcUI",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "387d8976d39bb7e6d6092421447c0235e93bd65f7abf7a708372a70e8efcb3a1",
+            "token": "84c8e2f6f2c615bf"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000011",
+          "row_offset": 184470
+        },
+        {
+          "name": "Apps.PcUI",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "70aab5751d16db03146f402362392f755c80ab6b75eb417600ccc7e150e8cf7a",
+            "token": "4315d3e87bfe508f"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000012",
+          "row_offset": 184490
+        },
+        {
+          "name": "Apps.Interface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "7e0a72a3808242e9a73f473071bfa335cf664be3e7f5756dd867e70f52f625f6",
+            "token": "0a3479feab7b77be"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000013",
+          "row_offset": 184510
+        },
+        {
+          "name": "VMControls.RenderInterface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "0cac55fc68c17e81021038de7afec907c554198d0819fb769ac71265c251d507",
+            "token": "4bcfc50547abbb24"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000014",
+          "row_offset": 184530
+        },
+        {
+          "name": "Apps.BaseData",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "7951b95b3812e52baab5551591e2b9903d6418a2d4e85912cc68edf5a8a6a99b",
+            "token": "ba359f6a6d28aed3"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000015",
+          "row_offset": 184550
+        },
+        {
+          "name": "VMBaseControls",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "145dd4b4f25417c1b7eaf5e9353ed07ffae47a779c78476cfaf4dfec408a5613",
+            "token": "71707d2e549a163e"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000016",
+          "row_offset": 184570
+        },
+        {
+          "name": "Apps.Localization",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "bbe586b79e54e86d4daeab108a976f48261f1aa5a1d635a4168579940ece4e3d",
+            "token": "198e508d4a1bea30"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000017",
+          "row_offset": 184590
+        },
+        {
+          "name": "Apps.Log",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "b43cd7fb34e3133cf3d28e1d145d1d360a537de358e558ffae00d003d75fb76e",
+            "token": "80977b3c63aee056"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000018",
+          "row_offset": 184610
+        },
+        {
+          "name": "Apps.BaseLog",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "47f811fc62a3ce0d66cd110bf2e8450d8583ea889a68641899de1a8d7b914895",
+            "token": "41b44cf0cfa707e3"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x23000019",
+          "row_offset": 184630
+        },
+        {
+          "name": "Mvvm",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "ec160488ab97d5bb72b48869713a6b6a6b19354af5914c8cea74de34373e6d07",
+            "token": "e8271a241819f1f2"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300001a",
+          "row_offset": 184650
+        },
+        {
+          "name": "VM.Xml",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "217a6892c8c2ef05f24e59b1f88e95fbb512b4a9f78d423a9aea82143acad8fb",
+            "token": "709cd60c51e2a7fb"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300001b",
+          "row_offset": 184670
+        },
+        {
+          "name": "Microsoft.CSharp",
+          "version": "4.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "971150dd73dc318e68a98cce9b91ac7dea2d43c562b4f5a9a2f4272c7e29477e",
+            "token": "b03f5f7f11d50a3a"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300001c",
+          "row_offset": 184690
+        },
+        {
+          "name": "VMControls.BaseInterface",
+          "version": "1.0.0.0",
+          "culture": null,
+          "flags": 0,
+          "public_key_or_token": {
+            "kind": "public-key-token",
+            "byte_length": 8,
+            "sha256": "fe752ee6388cd1d2adba25bf70e340d2434c3a781fb63d195c943c565121455d",
+            "token": "14444b8df74b6e6a"
+          },
+          "hash_value_sha256": null,
+          "hash_value_length": 0,
+          "token": "0x2300001d",
+          "row_offset": 184710
+        }
+      ],
+      "coverage": {
+        "state": "complete",
+        "issues": []
+      },
+      "limitations": [
+        "Static inspection did not load the assembly, resolve dependencies through a CLR, decompile C#, or execute target code."
+      ]
+    }
+  ]
+}

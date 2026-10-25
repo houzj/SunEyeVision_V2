@@ -6,6 +6,8 @@ namespace SunEyeVision.Plugin.Runtime;
 public sealed class FrozenImageResource : IReadOnlyImage, IDisposable
 {
     private readonly Retain _root;
+    private FrozenImageResource(Retain root) => _root = root;
+    public FrozenImageResource RetainSnapshot() => new(_root.Fork());
     public FrozenImageResource(ImageLayout layout, ImageFrameAddress frame, CoordinateFrame domainFrame,
         ReadOnlySpan<byte> pixels, ReadOnlySpan<RegionRun> domain)
     {

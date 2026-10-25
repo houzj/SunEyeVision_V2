@@ -15,6 +15,13 @@
           "Microsoft.Win32.SystemEvents": "9.0.0"
         }
       },
+      "suneyevision.haladapter.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.plugin.contracts": {
         "type": "Project"
       },

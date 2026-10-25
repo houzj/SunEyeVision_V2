@@ -10,6 +10,15 @@ namespace SunEyeVision.HalAdapter;
 public static class HalImageSnapshotSource
 {
     public static FrozenImageResource Capture(HImage captured,ImageFrameAddress frame)
+        => CaptureCore(captured, frame, (layout, coordinates, pixels, runs) => new FrozenImageResource(layout, frame, coordinates, pixels, runs));
+
+    public static IReadOnlyImage Capture(HImage captured, ImageFrameAddress frame, IOutputResources resources)
+        => CaptureCore(captured, frame, (layout, coordinates, pixels, runs) => {
+            using var domain = new FrozenRegionResource(coordinates, frame, runs);
+            return resources.CreateImage(layout, frame, domain, pixels);
+        });
+
+    private static T CaptureCore<T>(HImage captured, ImageFrameAddress frame, Func<ImageLayout, CoordinateFrame, byte[], RegionRun[], T> create)
     {
         ArgumentNullException.ThrowIfNull(frame);
         using var count=captured.CountChannels();
@@ -48,7 +57,7 @@ public static class HalImageSnapshotSource
             var runs=new RegionRun[rows.Length];
             for(int i=0;i<runs.Length;i++)runs[i]=new RegionRun(rows[i].I,first[i].I,last[i].I);
             var coordinates=new CoordinateFrame("image:"+frame.SourceId,CoordinateDomain.Image,CoordinateUnit.Pixel);
-            return new FrozenImageResource(layout,frame,coordinates,pixels,runs);
+            return create(layout,coordinates,pixels,runs);
         }
     }
 }

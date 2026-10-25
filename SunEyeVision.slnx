@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/Src/" />
+  <Folder Name="/Tools/BlobRuntime/">
+    <Project Path="tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.Tool.BlobAnalysis.Runtime.csproj" />
+  </Folder>
   <Folder Name="/Src/CommonControl/">
     <Project Path="Src/CommonControl/CommonControl.csproj" />
   </Folder>

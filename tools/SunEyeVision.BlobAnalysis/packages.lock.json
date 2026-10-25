@@ -38,7 +38,15 @@
       "suneyevision.haladapter": {
         "type": "Project",
         "dependencies": {
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.haladapter.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.contracts": {
@@ -56,6 +64,13 @@
           "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
           "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )",
           "System.Drawing.Common": "[9.0.0, )"
+        }
+      },
+      "suneyevision.tool.blobanalysis.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.tool.kernels": {

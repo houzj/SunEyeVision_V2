@@ -1,16 +1,16 @@
 using System;
 using HalconDotNet;
 
-namespace SunEyeVision.Tool.BlobAnalysis.Internal;
+namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 /// <summary>算法同步执行期间固定8邻域，并在原线程恢复调用者设置；不改HALCON全局上限。</summary>
-internal sealed class HalconBlobExecutionScope : IDisposable
+public sealed class HalconBlobExecutionScope : IDisposable
 {
     private readonly int _threadId = Environment.CurrentManagedThreadId;
     private readonly HTuple _previousNeighborhood;
     private bool _disposed;
 
-    internal HalconBlobExecutionScope()
+    public HalconBlobExecutionScope()
     {
         RequireUnlimitedConnection();
         HOperatorSet.GetSystem("tsp_neighborhood", out _previousNeighborhood);
@@ -18,7 +18,7 @@ internal sealed class HalconBlobExecutionScope : IDisposable
         catch { _previousNeighborhood.Dispose(); throw; }
     }
 
-    internal static void RequireUnlimitedConnection()
+    public static void RequireUnlimitedConnection()
     {
         HOperatorSet.GetSystem("max_connection", out var limit);
         using (limit)

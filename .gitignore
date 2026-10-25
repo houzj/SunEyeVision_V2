@@ -195,6 +195,10 @@ runtime/
 !/src/SunEyeVision.HalAdapter/Runtime/*.cs
 !/src/SunEyeVision.HalAdapter/Runtime/*.csproj
 !/src/SunEyeVision.HalAdapter/Runtime/packages.lock.json
+!/tools/SunEyeVision.BlobAnalysis/Runtime/
+!/tools/SunEyeVision.BlobAnalysis/Runtime/*.cs
+!/tools/SunEyeVision.BlobAnalysis/Runtime/*.csproj
+!/tools/SunEyeVision.BlobAnalysis/Runtime/packages.lock.json
 
 # 安装包第三方工具（Inno Setup 安装器 10.3MB，按需从官网下载）
 installer/third-party/

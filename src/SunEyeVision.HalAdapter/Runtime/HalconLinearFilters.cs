@@ -4,7 +4,7 @@ using HalconDotNet;
 
 namespace SunEyeVision.HalAdapter;
 
-/// <summary>Finite filter masks passed to HALCON's native correlation operator; no pixel filtering in C#.</summary>
+/// <summary>UI-free vendor filter masks; HALCON performs correlation, no C# pixel filtering.</summary>
 public static class HalconLinearFilters
 {
     public static HImage Apply(HImage image, int width, int height, double sigmaX, double sigmaY,

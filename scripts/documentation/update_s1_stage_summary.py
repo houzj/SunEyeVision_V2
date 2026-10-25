@@ -139,7 +139,7 @@ def render_stage_overview():
     ]
     s3_path = ROOT / 'docs/collaboration/S3_IMPLEMENTATION_PLAN_20261025.json'
     if s3_path.exists() and json.loads(s3_path.read_text(encoding='utf-8-sig'))['status'] == 'ACTIVE_IMPLEMENTATION':
-        rows[2][-1] = '实施中：依赖/线程语义与中立图像桥首批通过；算法本体及装配未完成'
+        rows[2][-1] = json.loads(s3_path.read_text(encoding='utf-8-sig')).get('stageStatus', '实施中：依赖/线程语义与中立图像桥首批通过；算法本体及装配未完成')
     return ('<section id="o06-stage-overview"><h3>整个Blob优化分几步？每一步解决什么？</h3>'
             '<p><b>基础规则（S1） → 编辑与运行（S2） → 算法与工程（S3） → 窗口操作（S4） → 结果联动（S5） → 最终验收（S6）</b></p>'
             + table(['阶段', '主要解决的问题', '主要改什么', '你能看到的效果', '当前状态'], rows)
@@ -171,6 +171,7 @@ def render_s2_stage(page):
            '<p><a href="#o06-stage-overview">先看S1—S6各阶段解决什么</a> · ' + link + ' · <a href="#blob-verification-steps">S1实施总结与验证</a></p>'
            + render_stage_overview()
            + ('<section id="s3-implementation-status"><h3>S3现在改到哪里？</h3>'
+              + (table(['优化项', '已实现的效果', '还缺什么'], s3['implementationSummary']) if s3.get('implementationSummary') else '')
               + table(['内容', '实际结果'], [[x['name'], x['result']] for x in s3.get('checks', [])])
               + '<p><b>还没完成：</b>' + escape(s3['next']) + '</p>'
               + '<p>本轮不重做窗口/共享控件，不原样恢复旧变量批次；未安排新的人工验收。'

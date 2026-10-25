@@ -71,6 +71,9 @@ public interface IRegionReadLease : IDisposable
 }
 public interface IOutputResources
 {
+    /// <summary>Creates an independently owned output set. On success the result owns this scope;
+    /// on failure the producer disposes it. Already acquired readers survive scope disposal.</summary>
+    IOutputResourceScope CreateScope();
     IReadOnlyImage CreateGray8(int width,int height,ReadOnlySpan<byte> pixels);
     IReadOnlyImage RetainInput(IReadOnlyImage borrowedInput);
     /// <summary>Copies pixels and retains the explicit same-frame actual Domain. No dimensions-based inference.</summary>
@@ -78,6 +81,8 @@ public interface IOutputResources
     IReadOnlyRegion CreateRegion(CoordinateFrame frame,ImageFrameAddress sourceFrame,ReadOnlySpan<RegionRun> runs);
     IReadOnlyRegion RetainRegion(IReadOnlyRegion borrowedRegion);
 }
+
+public interface IOutputResourceScope : IOutputResources, IDisposable { }
 
 /// <summary>Admission checks; native implementations remain responsible for same-owner freezing and leases.</summary>
 public static class ResourceContractRules

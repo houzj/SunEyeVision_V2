@@ -16,6 +16,7 @@ using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.BlobAnalysis.Views;
 using WpfPoint = System.Windows.Point;
+using Internal = SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 namespace SunEyeVision.Tool.BlobAnalysis
 {

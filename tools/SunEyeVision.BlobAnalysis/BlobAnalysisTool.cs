@@ -102,17 +102,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                 // ===== Step 1: 灰度转换 =====
                 stepSw.Restart();
-                int channels = hImage.CountChannels();
-                HImage grayImage;
-                if (channels == 3 || channels == 4)
-                {
-                    HOperatorSet.Rgb1ToGray(hImage, out var grayObj);
-                    grayImage = new HImage(grayObj);
-                }
-                else
-                {
-                    grayImage = hImage.Clone();
-                }
+                HImage grayImage = HalImage.CreateGrayNative(hImage);
                 stepSw.Stop();
                 stepTimings.Add(("灰度转换", stepSw.ElapsedMilliseconds));
 

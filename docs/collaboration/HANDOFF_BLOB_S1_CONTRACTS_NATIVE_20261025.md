@@ -1,0 +1,17 @@
+# Blob S1 编辑/展示合同与必要图像消费者修复检查点
+
+- 基线提交：02090ef7c8e889b9bb70cfa55e309c9045e7fc10，产品父保存点dd380367；本隔离树codex/blob-s1-schema-regression，唯一写者Codex/root。旧079/84/dd380源码/PE及02090验证目录冻结，主树未合入、未推送。
+- 任务目标及允许修改目录：已批准S1的Contracts/Runtime合同、精确中立Image target接缝、HalAdapter通用灰度和Blob必要调用点；隔离验证入口及本交接单。程序集管理、S3新Runtime生产发现/物理拆分和UI不在本件。
+- 已修改文件：Editing/EditingScopes、FieldPresentation、Values/TypeRef、Results/Presentation/ResultProjectionDescriptor、ParameterBindingService、BindingClrAdapter、HalImage及Blob灰度调用点；精确源码及PE身份见artifacts/validation/blob-s1-contracts-next/delivery清单。
+- 已完成：显式scope身份/不可变Prepare proposal/发布后确认；晚到ack刷新正式基线、按字段revision保留后续草稿/非法raw或后续Cancel，不把已发布当回滚；configurationChanged须推进revision，no-op可同revision；可选字段Clear以UnsetSetting表示，与null/有效空集合不同。接口声明不等于S2 DocumentSession已接线。
+- 编辑元数据：Port声明编辑模式/default-presence与不可变闭集text选择；ValueRules对常量/冻结输入/绑定resolved值统一守闭集，未知source域binding编译为Conditional；展示ChoiceKeys须等于Port权威约束。label/layout不改变schema fingerprint；编辑允许模式/default-presence/closed keys/region-role关系改变schema兼容。default-presence当前只描述是否需显式值，不自动生成值；执行必需性仍由Required/实际Settings Validate负责。闭集设置当前作为显式根输入Port；record TypeRef不携带编辑闭集，117映射尚未接通时不能宣旧SDK文件/默认页全面消费完成。
+- 展示合同：只指向现Port/record ID，不反射任意CLR，不含WPF/HALCON或脚本。Many要求同一个声明的record集合和required/nonnullable整数或文字stable identity，ValidWhen是已发布Bool；StandardTable One只标量，复杂对象由PropertyList/tree或注册Renderer承接；声明本身不计算业务/不持native owner。
+- 图像修复及影响：原4通道实际Workflow HALCON9009已独测FAIL。HalImage.CreateGrayNative统一1通道CopyImage、3通道原RGB灰度、4通道取实际RGB三平面Compose3后灰度，Alpha不参与亮度。CreateGrayFromColor锁内委派；Blob灰度入口同委派，ImageLoad现3个helper调用点受影响。Domain由HALCON实际运算传递，不扩大到全图。未改阈值/区域/连通等业务算法。
+- 必要资源binding接缝：TryDescribe仅精确IReadOnlyImage→ResourceOf(Image)，Materialize返回同借用对象并校验Frame/Domain；跨调用需要显式reader retain。无IVisionImage/native任意反转，无多图输入。Blob生产参数本身仍无该可写属性；独测自有consumer将证明实际Workflow compiler/materialize/reader路径，不冒生产Blob新admission。
+- 已执行构建与测试：隔离offline restore；真实Contracts→Runtime→SDK/Core/Infrastructure→Workflow/HalAdapter/Blob→Repository Host编译通过（既有警告见逐次log）；ImageLoad受影响Release编译0警告0错误。Contracts Runner18项通过；NativeCheck非等RGB与Alpha0/255、full/reduced/empty共六个不同情形通过，原FAIL和修正oracle日志保留。最终source/PE及实际测试版本以delivery清单为准，不把增量0warning写成全仓0warning。
+- 保留失败：Runner初fixture params数组目标类型三编译错误后显式类型修复；NativeCheck GenRectangle1整数重载二义两错误后显式double修复；full两例通过而reduced/empty四例初失败，因错误比较HALCON未在Domain外计算的灰度bytes；保存原源码/PE/FAIL后，只在真实Domain内比亮度、比较actual runs及source完整buffer/alpha不变，针对性复测四例通过，未改产品迎合错误oracle。
+- 人工验收结果：尚无完整Blob/UI可试包；本Host不交用户操作，VS设计时/运行时和集中人工清单待完整包统一一次。
+- 已知风险/未完成：G1开放。117具体输入/33顶层/79展示叶映射与旧SDK文件/默认页消费尚未闭合；S2真实文档事务/通知RefreshError处理未接。独测已实证Snapshot四FAIL：三类合法语法的失效引用可Save后Load拒绝；Replace失败时旧target保持但旧backup被提前更新。新修另树继续，本件尚未修Snapshot。资源binding自有consumer/实际RGBA Workflow复验待独测；不以18合同/六helper自测宣布整链通过。来源frame lineage、完整场景/新Runtime发现/无WPF闭包和统一Release仍后续。
+- 下一步：独测立即接固定PE并行验新合同与RGBA/resource consumer；root转后继隔离树修已证Snapshot语义/备份失败门，验证成功/目标替换失败/备份提交失败及跨卷恢复路径，随后完成字段映射，不新增批次。产品仓完整Release和实际Release程序运行仍在统一交付门，当前仅受影响闭包，不混称完成。
+
+复现入口：contracts-next/Runner（Contracts/Runtime ProjectReference开发定向验证）；NativeCheck仅引用本树blob-s1-owner/Host/bin固定PE，运行PATH只在当前进程前置本树libs/halcon/runtime/x64-win64。独测采用自己的输入与只读PE引用，不在本冻结目录重跑。Source/PE/PDB/依赖/日志/native来源清单均在delivery，原失败不覆盖。

@@ -28,6 +28,7 @@ public static class BindingClrAdapter
     public static bool TryDescribe(Type clrType,out TypeRef type,out NumericStorage? storage)
     {
         var plain=Nullable.GetUnderlyingType(clrType)??clrType;
+        if(plain==typeof(IReadOnlyImage)){type=TypeRef.ResourceOf(ResourceKind.Image);storage=null;return true;}
         if(plain.IsArray&&plain.GetArrayRank()==1)
         {
             if(TryDescribe(plain.GetElementType()!,out var element,out storage)&&element.Shape==ValueShape.Scalar)
@@ -114,6 +115,7 @@ public static class BindingClrAdapter
         var target=Nullable.GetUnderlyingType(targetType)??targetType;
         if(target.IsArray&&target.GetArrayRank()==1)
         {
+            if(target.GetElementType()==typeof(IReadOnlyImage))throw new ArgumentException("Multiple image inputs require an explicit per-element provenance adapter.");
             IEnumerable<object?> items=canonical switch { SequenceValue sequence=>sequence,Array array when array.Rank==1=>array.Cast<object?>(),_=>throw new ArgumentException("Canonical sequence required.") };
             var values=items.Select(item=>MaterializeScalar(item!,target.GetElementType()!)).ToArray();
             var result=Array.CreateInstance(target.GetElementType()!,values.Length);
@@ -124,6 +126,12 @@ public static class BindingClrAdapter
     }
     private static object MaterializeScalar(object value,Type target)
     {
+        if(target==typeof(IReadOnlyImage))
+        {
+            if(value is not IReadOnlyImage image)throw new ArgumentException("An exact declared read-only image is required; native images are not converted implicitly.");
+            ResourceContractRules.ValidateImage(image);
+            return image; // Borrowed for this invocation. Retain a pixel/Domain reader explicitly to keep it longer.
+        }
         if(!TryDescribe(target,out var type,out var storage)||type.Shape!=ValueShape.Scalar)throw new ArgumentException("Scalar target required.");
         if(storage is NumericStorage numeric)NumericStorageRules.EnsureFits(value,numeric);
         checked

@@ -44,6 +44,7 @@ public sealed class TypeRef : IEquatable<TypeRef>
         Count = count ?? CountConstraint.Exactly(1);
         RecordId = recordId;
         Fields = Array.AsReadOnly((fields ?? Array.Empty<Port>()).ToArray());
+        if(Fields.Any(field=>field.Choices is not null))throw new ArgumentException("Closed text settings are declared as root input ports; record TypeRef members do not carry editor constraints.");
         if (Fields.Any(p => p is null || string.IsNullOrWhiteSpace(p.Id) || p.Type is null) ||
             Fields.Select(p => p.Id).Distinct(StringComparer.Ordinal).Count() != Fields.Count)
             throw new ArgumentException("Record fields require unique nonempty identities.");

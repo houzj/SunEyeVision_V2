@@ -215,15 +215,27 @@ namespace SunEyeVision.HalAdapter
         public static HalImage CreateGrayFromColor(IVisionImage colorImage)
         {
             ArgumentNullException.ThrowIfNull(colorImage);
-            if (colorImage.Channels <= 1)
-            {
-                var cloned = colorImage.Clone();
-                return cloned as HalImage ?? throw new InvalidOperationException("Image type mismatch");
-            }
             var halImage = colorImage as HalImage ?? throw new ArgumentException($"Expected {nameof(HalImage)}, got {colorImage.GetType().Name}");
-            var hWrapped = halImage.Unwrap();
-            HOperatorSet.Rgb1ToGray(hWrapped, out var grayObj);
-            return new HalImage(new HImage(grayObj));
+            lock(halImage._snapshotGate)
+            {
+                ObjectDisposedException.ThrowIf(halImage._disposed,halImage);
+                return new HalImage(CreateGrayNative(halImage._image));
+            }
+        }
+
+        /// <summary>Creates an owned gray image, preserving the actual source Domain. Alpha is not luminance.</summary>
+        public static HImage CreateGrayNative(HImage source)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            var channels=source.CountChannels();
+            if(channels==1)return source.CopyImage();
+            if(channels==3)return source.Rgb1ToGray();
+            if(channels!=4)throw new NotSupportedException($"Gray conversion requires 1, 3 or 4 channels; actual {channels}.");
+            using var red=source.AccessChannel(1);
+            using var green=source.AccessChannel(2);
+            using var blue=source.AccessChannel(3);
+            using var rgb=red.Compose3(green,blue);
+            return rgb.Rgb1ToGray();
         }
 
         #endregion

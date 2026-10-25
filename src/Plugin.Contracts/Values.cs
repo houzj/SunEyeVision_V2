@@ -3,10 +3,11 @@ using System.Security.Cryptography;
 using System.Text;
 namespace SunEyeVision.Plugin.Contracts;
 public enum DataType { Boolean, Integer, Number, Text, NumberArray, Image }
-public sealed record Port(string Id, TypeRef Type, bool Required=true, bool Nullable=false, NumericStorage? Storage=null);
+public sealed record Port(string Id, TypeRef Type, bool Required=true, bool Nullable=false, NumericStorage? Storage=null,
+    FieldEditModes EditModes=FieldEditModes.None,FieldDefaultPresence DefaultPresence=FieldDefaultPresence.Unset,TextChoiceConstraint? Choices=null);
 public sealed class ToolSchema
 {
-    public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs)
+    public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs,ToolPresentation? presentation=null)
     {
         Inputs=Array.AsReadOnly(inputs.ToArray()); Outputs=Array.AsReadOnly(outputs.ToArray());
         foreach(var group in new[]{Inputs,Outputs})
@@ -15,6 +16,11 @@ public sealed class ToolSchema
         if (Inputs.Concat(Outputs).Any(p => p.Type is null))
             throw new ArgumentException("Ports require a declared type.");
         foreach(var port in Inputs.Concat(Outputs))NumericStorageRules.ValidateDeclaration(port);
+        foreach(var port in Inputs.Concat(Outputs))
+            if((port.EditModes&~(FieldEditModes.Constant|FieldEditModes.Reference|FieldEditModes.NumericGeometry|FieldEditModes.Gesture))!=0
+                ||!Enum.IsDefined(port.DefaultPresence))throw new ArgumentException("Unknown editing capability or default-presence policy.");
+        if(Inputs.Concat(Outputs).Any(port=>port.Choices is not null&&port.Type!=TypeRef.ScalarOf(ScalarKind.Text)))throw new ArgumentException("Closed text choices require a scalar text port.");
+        presentation?.Validate(Inputs);Presentation=presentation;
         // IDs may contain punctuation. Length-prefixed fields avoid delimiter collisions
         // between one compound ID and several different ports.
         using var buffer=new MemoryStream();
@@ -28,13 +34,19 @@ public sealed class ToolSchema
                     writer.Write(port.Id);writer.Write(port.Type.Fingerprint);
                     writer.Write(port.Required);writer.Write(port.Nullable);
                     writer.Write(port.Storage is null?-1:(int)port.Storage.Value);
+                    writer.Write((int)port.EditModes);writer.Write((int)port.DefaultPresence);
+                    writer.Write(port.Choices?.Keys.Count??0);foreach(var choice in port.Choices?.Keys.OrderBy(key=>key,StringComparer.Ordinal)??Enumerable.Empty<string>())writer.Write(choice);
                 }
             }
+            // Labels/layout do not affect compatibility. Region-role relationships affect which source is consumed.
+            var regions=presentation?.Regions??Array.Empty<RegionFieldGroup>();writer.Write(regions.Count);
+            foreach(var region in regions.OrderBy(region=>region.Role,StringComparer.Ordinal)){writer.Write(region.Role);writer.Write(region.ModeFieldId);writer.Write(region.LocalGeometryFieldId);writer.Write(region.GeometrySourceFieldId);writer.Write(region.RegionSourceFieldId);}
         }
         Fingerprint=Convert.ToHexString(SHA256.HashData(buffer.ToArray()));
     }
     public IReadOnlyList<Port> Inputs { get; }
     public IReadOnlyList<Port> Outputs { get; }
+    public ToolPresentation? Presentation { get; }
     public string Fingerprint { get; }
 }
 public sealed class InputValues
@@ -75,6 +87,8 @@ public static class ValueRules
     public static object? Freeze(Port port,object? value)
     {
         NumericStorageRules.ValidateValue(port,value);
+        if(value is not null&&port.Choices is not null&&(value is not string text||!port.Choices.Keys.Contains(text,StringComparer.Ordinal)))
+            throw new ArgumentException($"Value is outside the closed text choices for {port.Id}");
         if(value is null)return port.Nullable?null:throw new ArgumentException($"Port {port.Id} disallows null");
         if(port.Type.Shape==ValueShape.Record)
         {

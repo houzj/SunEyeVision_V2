@@ -121,7 +121,8 @@ public class SolutionRepository
             var json = new UTF8Encoding(false, true).GetString(bytes).TrimStart('\uFEFF');
             SolutionCompatibilityAdapter.CheckDuplicateKeys(json);
             root = JsonNode.Parse(json) ?? throw new JsonException("Empty document.");
-            SolutionCompatibilityAdapter.Prepare(root, diagnostics);
+            var legacyDocument = SolutionFormatPolicy.ReadVersion(root) == SolutionFormatPolicy.Legacy;
+            SolutionCompatibilityAdapter.Prepare(root, diagnostics, deferLegacyBindingOwner: legacyDocument);
             new SolutionResourceResolver(directory).Inspect(root, diagnostics);
             var hasTools = root["Workflows"] is JsonArray flowArray && flowArray.OfType<JsonObject>().Any(w => w["Nodes"] is JsonArray nodes && nodes.Count > 0);
             if (hasTools && !EnsurePluginsLoaded()) throw new InvalidDataException("插件元数据加载未完成。");
@@ -131,6 +132,12 @@ public class SolutionRepository
             var solution = JsonSerializer.Deserialize<Solution>(RemoveDevicesProperty(root.ToJsonString()), new JsonSerializerOptions(WorkflowSerializationOptions.Default) { UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow })
                 ?? throw new JsonException("Null solution.");
             solution.Devices = devices;
+            SolutionLegacyBindingMigration.Prepare(solution, diagnostics, legacyDocument);
+            if (legacyDocument)
+            {
+                diagnostics.Add(new("COMPAT_FORMAT_1_TO_2", "Compatibility", "Warning", "$.SchemaVersion",
+                    "Format 1 candidate and its known references validated in memory; the source file is unchanged."));
+            }
             solution.FilePath = path;
             solution.ResourceBaseDirectory = directory;
             if (string.IsNullOrWhiteSpace(solution.Name)) solution.Name = Path.GetFileNameWithoutExtension(path);

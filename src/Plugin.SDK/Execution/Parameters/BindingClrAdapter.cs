@@ -64,24 +64,38 @@ public static class BindingClrAdapter
         NumericStorageRules.EnsureFits(canonical,sourceStorage.Value);
         return MaterializeScalar(NumericStorageRules.ConvertNumber(canonical,from.Scalar!.Value,to.Scalar!.Value,conversion,targetStorage),target);
     }
-    public static object? NormalizeValue(Port port,object? value)
+    public static object? NormalizeValue(Port port,object? value,ImageFrameAddress? frame=null,Action<IDisposable>? registerResource=null)
     {
         if(value is null)return ValueRules.Freeze(port,null);
         if(port.Type==RoiShapeValueAdapter.Declaration&&value is RoiShape shape)return RoiShapeValueAdapter.Freeze(shape);
         if(value is RecordValue or SequenceValue or GeometryValue)return ValueRules.Freeze(port,value);
         if(port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image&&value is SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage image)
-            return ValueRules.Freeze(port,new BorrowedImage(image));
+        {
+            if(frame is null || registerResource is null)
+                throw new ArgumentException("An admitted image frame and output resource registration are required.");
+            if(image is not SunEyeVision.Plugin.SDK.Vision.Contracts.ITypedImageSnapshotSource source)
+                throw new ArgumentException("This image source cannot capture typed pixels and its actual Domain.");
+            var snapshot=source.CaptureSnapshot(frame);
+            try
+            {
+                if(snapshot.Frame!=frame)throw new ArgumentException("Image provider returned a different physical frame.");
+                var frozen=ValueRules.Freeze(port,snapshot);
+                registerResource(snapshot);
+                return frozen;
+            }
+            catch{snapshot.Dispose();throw;}
+        }
         // Existing SDK scalar outputs have a one-item transport wrapper. It does not change their declaration.
         if(port.Type.Shape!=ValueShape.Sequence&&value is Array transport)
         {
             if(transport.Rank!=1||transport.Length!=1)throw new ArgumentException("A scalar output requires exactly one transport item.");
-            return NormalizeValue(port,transport.GetValue(0));
+            return NormalizeValue(port,transport.GetValue(0),frame,registerResource);
         }
         if(port.Type.Shape==ValueShape.Sequence)
         {
             if(value is not Array { Rank:1 } array)throw new ArgumentException("The formal sequence requires a one-dimensional array.");
             var element=new Port(port.Id,port.Type.Element!,Storage:port.Storage);
-            var items=array.Cast<object?>().Select(item=>NormalizeValue(element,item)).ToArray();
+            var items=array.Cast<object?>().Select(item=>NormalizeValue(element,item,frame,registerResource)).ToArray();
             return ValueRules.Freeze(port,port.Type.Element==TypeRef.ScalarOf(ScalarKind.Float64)?items.Cast<double>().ToArray():new SequenceValue(port.Type,items));
         }
         if(port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64)
@@ -92,12 +106,6 @@ public static class BindingClrAdapter
             value=port.Type.Scalar==ScalarKind.Int64?(object)Convert.ToInt64(value,System.Globalization.CultureInfo.InvariantCulture):Convert.ToDouble(value,System.Globalization.CultureInfo.InvariantCulture);
         }
         return ValueRules.Freeze(port,value);
-    }
-    private sealed class BorrowedImage(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage image):IReadOnlyImage
-    {
-        public int Width=>image.Width;
-        public int Height=>image.Height;
-        public byte[] CopyPixels()=>image.GetPixelData().ToArray();
     }
     public static object? Materialize(Port port,Type targetType,object? canonical)
     {

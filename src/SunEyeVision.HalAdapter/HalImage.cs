@@ -8,10 +8,22 @@ using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.HalAdapter
 {
-    public sealed class HalImage : IVisionImage, IMonitorable
+    public sealed class HalImage : IVisionImage, IMonitorable, ITypedImageSnapshotSource
     {
         private readonly HImage _image;
         private bool _disposed;
+        private readonly object _snapshotGate = new();
+
+        public SunEyeVision.Plugin.Runtime.FrozenImageResource CaptureSnapshot(SunEyeVision.Plugin.Contracts.ImageFrameAddress frame)
+        {
+            HImage captured;
+            lock(_snapshotGate)
+            {
+                ObjectDisposedException.ThrowIf(_disposed,this);
+                captured=_image.CopyImage();
+            }
+            using(captured)return HalImageSnapshotSource.Capture(captured,frame);
+        }
 
         public HalImage(HImage image)
         {
@@ -135,10 +147,13 @@ namespace SunEyeVision.HalAdapter
 
         public void Dispose()
         {
-            if (!_disposed)
+            lock(_snapshotGate)
             {
-                _disposed = true;
-                _image.Dispose();
+                if (!_disposed)
+                {
+                    _disposed = true;
+                    _image.Dispose();
+                }
             }
         }
 

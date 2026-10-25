@@ -9,7 +9,7 @@ namespace SunEyeVision.Workflow.Persistence;
 /// <summary>Reads the actual ParamSettingContainer.Settings list, never an invented property-to-setting dictionary.</summary>
 internal static class SolutionBindingExpressionPolicy
 {
-    public static void Validate(JsonNode? container, string path)
+    public static void Validate(JsonNode? container, string path, bool deferLegacyEnvelopeToOwner = false)
     {
         if (container is null) return;
         if (container is not JsonObject settings) throw new JsonException("Expected parameter settings object.", path, null, null);
@@ -49,6 +49,17 @@ internal static class SolutionBindingExpressionPolicy
             var bindingPath = path + ".Settings[" + i + "].ReferenceExpression";
             try
             {
+                if (deferLegacyEnvelopeToOwner)
+                {
+                    using var envelope = JsonDocument.Parse(parameter["ReferenceExpression"]!.GetValue<string>());
+                    if (envelope.RootElement.TryGetProperty("ContractMajor", out var major)
+                        && major.TryGetInt32(out var number) && number == 4)
+                    {
+                        // This is not acceptance or version conversion. Repository must run the candidate
+                        // owner migration before it can return this document; that path performs strict legacy parsing.
+                        continue;
+                    }
+                }
                 // Unknown old identities cannot be promoted by changing the document's format number.
                 _ = BindingReferenceSerializer.Deserialize(parameter["ReferenceExpression"]!.GetValue<string>());
             }

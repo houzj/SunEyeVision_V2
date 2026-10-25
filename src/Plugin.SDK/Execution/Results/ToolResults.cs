@@ -284,10 +284,50 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         [System.Text.Json.Serialization.JsonIgnore]
         public DeclaredOutputSnapshot? DeclaredOutput => _declaredOutput;
         private DeclaredOutputSnapshot? _declaredOutput;
+        private readonly object _outputResourceGate = new();
+        private readonly List<IDisposable> _registeredOutputResources = new();
+        private bool _outputResourcesReleased;
         internal void PublishDeclaredOutput(DeclaredOutputSnapshot output)
         {
-            if(System.Threading.Interlocked.CompareExchange(ref _declaredOutput,output,null) is not null)
-                throw new InvalidOperationException("The invocation output was already frozen.");
+            lock(_outputResourceGate)
+            {
+                if(_outputResourcesReleased)throw new ObjectDisposedException(nameof(ToolResults));
+                if(System.Threading.Interlocked.CompareExchange(ref _declaredOutput,output,null) is not null)
+                    throw new InvalidOperationException("The invocation output was already frozen.");
+            }
+        }
+        /// <summary>Transfers an owned typed snapshot before publication; release follows the result's last resource lease.</summary>
+        public void RegisterOutputResource(IDisposable resource)
+        {
+            ArgumentNullException.ThrowIfNull(resource);
+            lock(_outputResourceGate)
+            {
+                if(_declaredOutput is not null)throw new InvalidOperationException("Cannot register resources after output publication.");
+                if(_outputResourcesReleased)throw new ObjectDisposedException(nameof(ToolResults));
+                if(_registeredOutputResources.Any(item=>ReferenceEquals(item,resource)))return;
+                if(_registeredOutputResources.Count==0)
+                {
+                    var previous=Resources;
+                    var previousLease=previous?.Retain();
+                    Resources=new ResultResourceOwner(()=>
+                    {
+                        IDisposable[] release;
+                        lock(_outputResourceGate)
+                        {
+                            _outputResourcesReleased=true;
+                            release=_registeredOutputResources.ToArray();
+                            _registeredOutputResources.Clear();
+                        }
+                        var failures=new List<Exception>();
+                        foreach(var owned in release)
+                            try{owned.Dispose();}catch(Exception ex){failures.Add(ex);}
+                        try{previous?.Dispose();}catch(Exception ex){failures.Add(ex);}
+                        try{previousLease?.Dispose();}catch(Exception ex){failures.Add(ex);}
+                        if(failures.Count>0)throw new AggregateException("Output resource release failed.",failures);
+                    });
+                }
+                _registeredOutputResources.Add(resource);
+            }
         }
         [System.Text.Json.Serialization.JsonIgnore]
         public ResultResourceOwner? Resources { get; protected set; }

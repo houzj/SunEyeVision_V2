@@ -136,6 +136,7 @@ namespace SunEyeVision.UI.Shell.Windows
         {
             InitializeComponent();
             _viewModel = new MainWindowViewModel();
+            _viewModel.SolutionDialogOwner = this;
             DataContext = _viewModel;
             // ★ 中间工作区注入 ViewModel 并订阅缩放事件（替代直接操作 ZoomTextBlock 的跨区域耦合）
             WorkspaceHost.Initialize(_viewModel);
@@ -259,7 +260,7 @@ namespace SunEyeVision.UI.Shell.Windows
         {
             try
             {
-                  if (await _viewModel.PrepareSolutionTransitionAsync())
+                  if (await _viewModel.PrepareSolutionTransitionAsync(owner: this))
                   {
                       SaveLayoutConfig();
                       SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.SaveUserSettings();
@@ -273,11 +274,12 @@ namespace SunEyeVision.UI.Shell.Windows
             {
                 _isClosingPromptInProgress = false;
                 _viewModel.EndSolutionTransition();
-                ThemeMessageDialog.Show(ex.Message, "退出未完成", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+                ThemeMessageDialog.Show(ex.Message, "退出未完成", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, this);
             }
         }
         protected override void OnClosed(EventArgs e)
         {
+            _viewModel.SolutionDialogOwner = null;
             // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
             // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。
             var childWindows = Application.Current?.Windows

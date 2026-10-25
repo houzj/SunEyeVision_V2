@@ -70,6 +70,16 @@ namespace SunEyeVision.UI.Shell.Windows
     /// </summary>
     public partial class MainWindowViewModel : ViewModelBase, Services.Workflow.INodeResultSink, SunEyeVision.UI.Core.IRootCoordinator
     {
+        // Set by the actual MainWindow host; never infer ownership from the active/global window.
+        internal Window? SolutionDialogOwner { get; set; }
+        private Window? ResolveSolutionDialogOwner(Window? owner)
+        {
+            owner ??= SolutionDialogOwner;
+            if (owner is null) return null;
+            owner.Dispatcher.VerifyAccess();
+            // Startup may prepare a document before its host is shown; a closed host is not a valid Owner.
+            return owner.IsLoaded && owner.IsVisible && !owner.Dispatcher.HasShutdownStarted ? owner : null;
+        }
         private string _title = "太阳眼视觉";
         private bool _isRunning = false;
         private string _status = "";
@@ -1544,13 +1554,14 @@ SplitterPosition = position;
         /// <summary>
         /// 保存当前解决方案
         /// </summary>
-        private void ExecuteSaveCurrentSolution() => SaveCurrentDocumentWithPrompt();
+        private void ExecuteSaveCurrentSolution() => SaveCurrentDocumentWithPrompt(SolutionDialogOwner);
 
         private bool SaveCurrentDocumentWithPrompt(Window? owner = null)
         {
             var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             try
             {
+                owner = ResolveSolutionDialogOwner(owner);
                 if (manager.CurrentSolution == null) return false;
                 if (!TryValidateSolutionEditors(out var validationError)) throw new InvalidOperationException(validationError);
                 var target = manager.CurrentFilePath;
@@ -1562,7 +1573,7 @@ SplitterPosition = position;
                         AddExtension = true, OverwritePrompt = true,
                         InitialDirectory = manager.SolutionsDirectory, FileName = manager.CurrentSolution.Name
                     };
-                    if (dialog.ShowDialog(owner ?? Application.Current?.MainWindow) != true) return false;
+                    if (dialog.ShowDialog(owner) != true) return false;
                     target = dialog.FileName;
                 }
                 Services.Startup.StartupLaunchContext.Current.ValidatePath(target);
@@ -5640,38 +5651,39 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         internal bool CanAcceptExternalActivation => _solutionTransitionLease == null && !_transitionPreparationInProgress
             && (Application.Current is not App app || !app.HasPendingWorkspaceDeviceRestore);
         public void EndSolutionTransition() { _solutionTransitionLease?.Dispose(); _solutionTransitionLease = null; }
-        public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync(bool reload = false)
+        public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync(bool reload = false, Window? owner = null)
         {
             if (_transitionPreparationInProgress) return false;
+            owner = ResolveSolutionDialogOwner(owner);
             _transitionPreparationInProgress = true;
             try
             {
                 var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
                 if (_executionManager.IsAnyRunning() &&
                     ThemeMessageDialog.Show("方案正在运行。停止全部执行后继续？", "切换方案", MessageBoxButton.OKCancel,
-                        ThemeMessageDialog.MessageIcon.Question) != MessageBoxResult.OK) return false;
+                        ThemeMessageDialog.MessageIcon.Question, owner) != MessageBoxResult.OK) return false;
                 _solutionTransitionLease ??= _executionManager.BeginSolutionTransition();
                 await _executionManager.StopAndWaitAsync(TimeSpan.FromSeconds(30));
                 if (manager.CurrentSolution == null) return true;
                 if (reload)
                 {
-                    var discard = ThemeMessageDialog.Show("从磁盘重新加载会放弃当前未保存的编辑，不会自动保存。是否继续？", "重新加载方案", MessageBoxButton.OKCancel, ThemeMessageDialog.MessageIcon.Question);
+                    var discard = ThemeMessageDialog.Show("从磁盘重新加载会放弃当前未保存的编辑，不会自动保存。是否继续？", "重新加载方案", MessageBoxButton.OKCancel, ThemeMessageDialog.MessageIcon.Question, owner);
                     if (discard != MessageBoxResult.OK) { EndSolutionTransition(); return false; }
                     return true;
                 }
                 if (!TryCommitSolutionEditors(out var editError)) throw new InvalidOperationException(editError);
                 SaveSolutionData(manager);
                 if (!manager.HasUnsavedChanges) return true;
-                var result = ThemeMessageDialog.Show("当前方案有未保存修改。是否保存？", "保存方案", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question);
+                var result = ThemeMessageDialog.Show("当前方案有未保存修改。是否保存？", "保存方案", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question, owner);
                 if (result == MessageBoxResult.Cancel || result == MessageBoxResult.None) { EndSolutionTransition(); return false; }
-                if (result == MessageBoxResult.Yes && (!SaveCurrentDocumentWithPrompt() || manager.HasUnsavedChanges))
+                if (result == MessageBoxResult.Yes && (!SaveCurrentDocumentWithPrompt(owner) || manager.HasUnsavedChanges))
                 { EndSolutionTransition(); return false; }
                 return true;
             }
             catch (Exception ex)
             {
                 EndSolutionTransition();
-                ThemeMessageDialog.Show("操作未完成，原方案保持打开：" + ex.Message, "方案切换", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+                ThemeMessageDialog.Show("操作未完成，原方案保持打开：" + ex.Message, "方案切换", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, owner);
                 return false;
             }
             finally { _transitionPreparationInProgress = false; }

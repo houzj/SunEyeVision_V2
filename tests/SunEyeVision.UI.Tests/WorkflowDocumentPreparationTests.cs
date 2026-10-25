@@ -24,7 +24,7 @@ public sealed class WorkflowDocumentPreparationTests
         var flow = engine.CreateWorkflow(Guid.NewGuid().ToString(), "document preparation");
         var input = Substitute.For<IInputProvider>(); input.GetInputImageAsync().Returns(Task.FromResult<object?>(null));
         var manager = new WorkflowExecutionManager(input, engine, new RuntimeInputSnapshotService());
-        return (manager, new WorkflowTabViewModel { Id = flow.Id, Name = flow.Name }, new Solution { Workflows = new() { flow } });
+        return (manager, new WorkflowTabViewModel { Id = flow.Id, Name = flow.Name, WorkflowNodes = flow.Nodes, WorkflowConnections = flow.Connections }, new Solution { Workflows = new() { flow } });
     }
     [Fact]
     public void RunSingle_and_solution_prepare_document_once_before_nested_execution() => Sta(() =>

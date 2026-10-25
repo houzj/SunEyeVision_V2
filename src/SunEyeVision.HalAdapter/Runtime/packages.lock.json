@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net9.0": {
+      "suneyevision.plugin.contracts": {
+        "type": "Project"
+      },
+      "suneyevision.plugin.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      }
+    },
+    "net9.0/win-x64": {}
+  }
+}

@@ -1,9 +1,10 @@
 ﻿[CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related')][string]$Track='DocumentEditing')
+param([ValidateSet('DocumentEditing','Related')][string]$Track='DocumentEditing',
+      [ValidateSet('S2','S3')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
-$dir=Join-Path $root ('Release/_validation/S2-20261025/' + $Track)
+$dir=Join-Path $root ('Release/_validation/'+$Stage+'-20261025/' + $Track)
 New-Item -ItemType Directory -Path $dir -Force | Out-Null
 $attempt=1;while(Test-Path -LiteralPath (Join-Path $dir ('attempt-{0:d3}' -f $attempt))){$attempt++}
 $logDir=Join-Path $dir ('attempt-{0:d3}' -f $attempt)
@@ -18,6 +19,8 @@ $project='<Project><PropertyGroup><ImportDirectoryBuildProps>false</ImportDirect
 [IO.File]::WriteAllText((Join-Path $dir 'Check.csproj'),$project)
 [IO.File]::WriteAllText((Join-Path $dir 'NuGet.Config'),'<configuration><packageSources><clear/></packageSources></configuration>')
 $source=if($Track -eq 'Related'){'S2RelatedCases.cs'}else{'S2DocumentEditingCases.cs'}
+if($Stage -eq 'S3' -and $Track -eq 'DocumentEditing'){$source='S3BlobRuntimeCases.cs'}
+if($Stage -eq 'S3' -and $Track -eq 'Related'){$source='S3NeutralBridgeCases.cs'}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot $source) -Destination (Join-Path $dir 'Cases.cs')
 $entry=@'
 using System.IO;
@@ -63,6 +66,6 @@ $launch=@{FilePath='dotnet';WorkingDirectory=$product;WindowStyle='Hidden';PassT
 $launch.ArgumentList=@('exec','--depsfile',(Join-Path $product 'SunEyeVision.UI.deps.json'),'--runtimeconfig',(Join-Path $product 'SunEyeVision.UI.runtimeconfig.json'),(Join-Path $dir 'out/Check.dll')) | ForEach-Object {'"'+$_+'"'}
 $process=Start-Process @launch
 if(-not $process.WaitForExit(90000)){$process.Kill();throw 'S2自有检查进程超时，已停止该自有进程'}
-[ordered]@{attempt=$attempt;pid=$process.Id;exit=$process.ExitCode;productRoot=$product;scope='当前实施者针对正式Release的文档事务有限检查，不是完整UI或独立验收';logDir=$logDir} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8
+[ordered]@{stage=$Stage;attempt=$attempt;pid=$process.Id;exit=$process.ExitCode;productRoot=$product;scope='当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收';logDir=$logDir} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8
 Get-Content (Join-Path $logDir 'run.log') -Encoding utf8
 if($process.ExitCode -ne 0){Get-Content (Join-Path $logDir 'run-error.log');throw 'S2检查失败，保留原日志'}

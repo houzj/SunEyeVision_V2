@@ -7,9 +7,9 @@ using SunEyeVision.Plugin.Runtime;
 namespace SunEyeVision.HalAdapter;
 
 /// <summary>Copies one owned HALCON image and its actual Domain into a neutral managed snapshot.</summary>
-internal static class HalImageSnapshotSource
+public static class HalImageSnapshotSource
 {
-    internal static FrozenImageResource Capture(HImage captured,ImageFrameAddress frame)
+    public static FrozenImageResource Capture(HImage captured,ImageFrameAddress frame)
     {
         ArgumentNullException.ThrowIfNull(frame);
         using var count=captured.CountChannels();

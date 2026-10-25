@@ -124,6 +124,31 @@ def render_s1_stage(page):
     return render_s2_stage(page[:live_start] + live + page[live_end:])
 
 
+def render_stage_overview():
+    source = ROOT / 'artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/blob-complete-final-review-design-input-20261025.json'
+    sequence = json.loads(source.read_text(encoding='utf-8-sig'))['implementationSequence']
+    if [x['id'] for x in sequence] != ['S1', 'S2', 'S3', 'S4', 'S5', 'S6']:
+        raise ValueError('Approved stage sequence changed; review the plain-language overview')
+    rows = [
+        ['S1 基础规则', '参数、输出和图像怎样传递，旧方案怎样兼容与可靠保存。', '字段与绑定合同、旧格式迁移、图像/区域桥接和保存基础。', '主要是底层可靠性改善，不是新界面。', '实施及本轮自动验证已闭合；未代用户验收'],
+        ['S2 编辑与运行', '调试、确定、取消、保存和正式运行各用哪份数据，避免相互污染。', '草稿隔离、当前确认、整体保存、变量冲突与完整轮次快照。', '试参数不误改生产；取消不撤已确定内容；保存不漏隐藏窗口。', '实施及本轮自动验证已闭合；未代用户验收'],
+        ['S3 算法运行与工程拆分', '让Blob算法不依赖窗口运行，明确算法步骤、图像/区域与结果的交接及释放。', '分开运行层与WPF界面；沿用HALCON，落实分割→连通→筛选→排序→限数；统一结果集合、图像/区域/完整轮廓和资源生命期；核验插件装配与发布。', '主要改善运行与结果的正确性、结构和可维护性；界面体感仍可能有限。', '完整阶段未启动；S1已有图像桥可作基础'],
+        ['S4 窗口与控件交互', '把工具箱拖入节点后的配置操作做完整、做清楚。', '按VM已证控件/模板/组合链组织窗口、输入绑定和ROI绘制/数值编辑；接通调试、确定/取消、保存重开。', '这是窗口布局、控件和区域编辑等明显体验变化的重点，形成可操作包后集中试用。', '未启动'],
+        ['S5 结果显示与关联使用', '结果表、图像、下游工具是否使用同一份结果，运行久了是否正确释放与保持性能。', '统一表格/结果树/图像场景/下游消费；实现选中联动，核验空结果、失败、多轮运行、最后读者释放及受影响工具回归。', '结果可读、表图联动一致，下游可用；同时核查稳定性和性能。', '未启动'],
+        ['S6 最终交付与人工验收', '把前面改造汇总为同一正式版本，处理实际反馈。', '集中修复与复测，统一Release、版本身份、操作清单和已知问题，记录真实人工反馈。', '在指定Release目录集中验收，清楚知道测什么、哪些已解决、哪些仍有限制。', '未启动；不能代用户通过'],
+    ]
+    s3_path = ROOT / 'docs/collaboration/S3_IMPLEMENTATION_PLAN_20261025.json'
+    if s3_path.exists() and json.loads(s3_path.read_text(encoding='utf-8-sig'))['status'] == 'ACTIVE_IMPLEMENTATION':
+        rows[2][-1] = '实施中：依赖/线程语义与中立图像桥首批通过；算法本体及装配未完成'
+    return ('<section id="o06-stage-overview"><h3>整个Blob优化分几步？每一步解决什么？</h3>'
+            '<p><b>基础规则（S1） → 编辑与运行（S2） → 算法与工程（S3） → 窗口操作（S4） → 结果联动（S5） → 最终验收（S6）</b></p>'
+            + table(['阶段', '主要解决的问题', '主要改什么', '你能看到的效果', '当前状态'], rows)
+            + '<p><b>S3下一步重点：</b>先把Blob的算法运行层、结果含义和工程依赖理顺，HALCON继续使用；保留未来其他算法库接入的边界。'
+            'S3不是重新做窗口，也不以界面变漂亮作为完成标准。窗口与控件重点在S4，结果显示与联动重点在S5。</p>'
+            '<p>以上沿用原方案的六个阶段，不新增批次、不自动启动后续实施。后续设计继续区分VM已证事实、独立设计选择和待实机确认项；'
+            '详细合同、对标证据及完整验收要求保留在原方案正文。已有基础实现不等于后续完整阶段已完成。</p></section>')
+
+
 def render_s2_stage(page):
     """Show the active phase beside the existing S1 summary, retaining its evidence."""
     plan_path = ROOT / 'docs/collaboration/S2_IMPLEMENTATION_PLAN_20261025.json'
@@ -135,10 +160,21 @@ def render_s2_stage(page):
     closed = plan['status'] == 'IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED'
     link = '<a href="#s2-implementation-plan">S2优化项、顺序、验证与旧变量修复关系</a>'
     state = plan.get('summaryStatus', 'S1基础实施及本轮自动验证已闭合；S2已进入范围与源码核对，产品尚未改动、S2尚未验证。')
+    s3_path = ROOT / 'docs/collaboration/S3_IMPLEMENTATION_PLAN_20261025.json'
+    s3 = json.loads(s3_path.read_text(encoding='utf-8-sig')) if s3_path.exists() else None
+    active_s3 = s3 is not None and s3['status'] == 'ACTIVE_IMPLEMENTATION'
+    if active_s3:
+        state = s3['current']
     top = ('<div class="br-note" id="o06-blob-final-review"><h3>当前做到哪里？</h3><p><b>' + state + '</b></p>'
            '<p>S2解决“编辑、确认、保存和运行各用正确的配置”，不等于完整Blob新界面已经交付。'
            '底层变化先自动验证，有明显操作变化后集中人工验证。当前仅本对话推进，不恢复旧变量批次。</p>'
-           '<p>' + link + ' · <a href="#blob-verification-steps">S1实施总结与验证</a></p></div>')
+           '<p><a href="#o06-stage-overview">先看S1—S6各阶段解决什么</a> · ' + link + ' · <a href="#blob-verification-steps">S1实施总结与验证</a></p>'
+           + render_stage_overview()
+           + ('<section id="s3-implementation-status"><h3>S3现在改到哪里？</h3>'
+              + table(['内容', '实际结果'], [[x['name'], x['result']] for x in s3.get('checks', [])])
+              + '<p><b>还没完成：</b>' + escape(s3['next']) + '</p>'
+              + '<p>本轮不重做窗口/共享控件，不原样恢复旧变量批次；未安排新的人工验收。'
+              'VM已有材料只支持已证范围，不把本方HALCON通过说成VM内部算法已确认。</p></section>' if active_s3 else '') + '</div>')
     page = re.sub(r'<!-- O06-BLOB-FINAL-REVIEW:BEGIN -->.*?<!-- O06-BLOB-FINAL-REVIEW:END -->',
                   lambda _: '<!-- O06-BLOB-FINAL-REVIEW:BEGIN -->' + top + '<!-- O06-BLOB-FINAL-REVIEW:END -->',
                   page, count=1, flags=re.S)
@@ -167,8 +203,10 @@ def render_s2_stage(page):
     start = page.index(live_head, page.index('<!-- FRAMEWORK-LIVE-STATUS:BEGIN -->'))
     end = page.index('<details><summary>历史实施与独测记录', start)
     live_title = '当前实施状态：S2实施与本轮自动验证已闭合' if closed else '当前实施状态：S1已闭合，S2实施与验证中'
+    if active_s3:
+        live_title = '当前实施状态：S1/S2已闭合，S3实施中'
     page = page[:start] + ('<h2>' + live_title + '</h2><p>' + state + '</p><p>' + link + '</p>'
-                           '<p>旧变量批次未原样恢复，S3未启动；历史多岗位记录仅用于追溯。</p>') + page[end:]
+                           '<p>旧变量批次未原样恢复；历史多岗位记录仅用于追溯。</p>') + page[end:]
     return page
 
 

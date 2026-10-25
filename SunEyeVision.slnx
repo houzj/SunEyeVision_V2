@@ -25,6 +25,7 @@
     <Project Path="Src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj" />
   </Folder>
   <Folder Name="/Src/SunEyeVision.HalAdapter/">
+    <Project Path="Src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj" />
     <Project Path="Src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj" />
   </Folder>
   <Folder Name="/Src/SunEyeVision.DeviceDriver/">

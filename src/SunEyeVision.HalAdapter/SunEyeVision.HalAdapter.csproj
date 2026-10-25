@@ -16,6 +16,9 @@
   <!-- 适配层：依赖 SDK 契约 + Halcon 第三方算法库（与 CvAdapter 对称，两者互不引用） -->
   <ItemGroup>
     <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
+    <ProjectReference Include="Runtime\SunEyeVision.HalAdapter.Runtime.csproj" />
+    <!-- 子工程单独编译；同一桥实现不得在两个程序集重复生成。 -->
+    <Compile Remove="Runtime\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,130 @@
+{
+  "stage": "S3",
+  "status": "ACTIVE_IMPLEMENTATION",
+  "sourceBaseline": "30bc9c2fe7dabe68d4f4c0e48c248156074225e0",
+  "title": "S3：Blob算法运行、资源交接与工程拆分",
+  "current": "S3首个检查点：受控HALCON依赖与线程/候选语义已落地，中立图像桥已物理拆出并在无SDK/WPF加载进程中真实运行；原Blob资源链和22工具加载回归通过。Blob算法本体与可选编辑器尚未拆分，S3未完成。",
+  "scope": [
+    "运行/界面物理拆分，运行层不得依赖WPF/SDK显示类型，旧facade只委派同一算法producer",
+    "HALCON继续使用；中立图像/Region/Domain/pose与完整轮廓接口，最后读者释放",
+    "FD05–07：有效域内分割/形态学/8连通，筛选→稳定排序→限数，NG保留，同最终集摘要与输出",
+    "Runtime唯一ToolId，可选Wpf editor；真实宿主发现/打开/部署消费同一组件声明",
+    "无Wpf组件实际执行、同源全量Release、相关回归与版本身份"
+  ],
+  "work": [
+    {
+      "item": "受控HALCON编译来源",
+      "status": "PASSED_FIRST_CHECKPOINT",
+      "details": "Blob及12个现存工程直接指向libs/halcon/net；不再为了编译创建dev/Debug中转。首轮统一Reference覆盖误影响系统引用已撤，改为各csproj显式路径，207个系统/项目引用核对正常。"
+    },
+    {
+      "item": "算法线程设置与候选完整性",
+      "status": "PASSED_3_NATIVE_CASES",
+      "details": "同步作用域设tsp_neighborhood=8并恢复原值；max_connection非0明确失败，不擅改全局上限；实际对角连通/恢复/排序限数样本待正式产物运行。"
+    },
+    {
+      "item": "中立HALCON桥物理工程",
+      "status": "PASSED_2_HEADLESS_BRIDGE_CASES",
+      "details": "已有HalImageSnapshotSource迁入src/SunEyeVision.HalAdapter/Runtime物理工程，仅引用Contracts/Runtime及HALCON。原HalImage消费同一桥；非满域、独立reader和实际无SDK/WPF加载检查通过。非Blob整体无UI通过。"
+    },
+    {
+      "item": "Blob运行工程与唯一算法producer",
+      "status": "PENDING"
+    },
+    {
+      "item": "完整Region/boundary与同集输出",
+      "status": "PENDING"
+    },
+    {
+      "item": "组件注册/可选Wpf/正式发布与回归",
+      "status": "PENDING"
+    }
+  ],
+  "evidenceBoundary": {
+    "vmExisting": "artifacts/analysis/blob-backend-boundary-20261024/key-evidence.json；是VM交付SDK声明/映射/样例证据，不是VM native核心函数或实机真值。",
+    "approvedDesign": "FD02、FD04–07及S3原阶段范围；不新增软阈值、填孔、4邻域或更换HALCON。",
+    "officialHalcon": "https://www.mvtec.com/doc/halcon/2411/en/set_system.html：tsp_neighborhood和max_connection语义；还需以当前24.5托管/正式native实际运行证明本地支持。",
+    "notProven": "VM native内部公式/逐数值等价、VM实机时序，以及尚未完成的无WPF运行/完整组装均不声明通过。"
+  },
+  "productRoot": "Release/SunEyeVision_v1.0.0/SunEyeVision",
+  "excluded": "S4窗口/共享控件/ROI交互重做、S5通用结果表与选中高亮；不启动旧变量批次或其他角色。",
+  "checkpoint": "首个检查点约30分钟：实际产物验证受控依赖/线程语义，并交代中立桥物理拆分进展与下一阻断。不是完工承诺。",
+  "manual": "没有稳定明显体验变化时不单独安排用户手验。",
+  "tests": "仅正式Release产物；日志及测试数据在Release/_validation/S3-20261025，失败保留。",
+  "checks": [
+    {
+      "name": "全量Release",
+      "result": "0错误/1096条警告",
+      "path": "Release/_validation/S3-20261025/neutral-bridge-integration-build.log",
+      "sha256": "de994096078323c0342919ee6e8c15239e38ee3c6b74de19abe2922fcd661b1b"
+    },
+    {
+      "name": "HALCON算法局部",
+      "result": "3通过，非S3全部通过",
+      "path": "Release/_validation/S3-20261025/DocumentEditing/attempt-002/receipt.json",
+      "sha256": "8ea1d1dac719f22ad3da4a5c9941be08401bc133674d7ba7e32c9abdb55c7d46"
+    },
+    {
+      "name": "中立桥无界面进程",
+      "result": "2通过，非Blob整体无UI通过",
+      "path": "Release/_validation/S3-20261025/Related/attempt-002/receipt.json",
+      "sha256": "0d383635915a6b1003b50eff541870c0d42dfef507717d5a9be6565c5ec6a97f"
+    },
+    {
+      "name": "既有Blob真实资源链",
+      "result": "9项断言通过",
+      "path": "Release/_validation/S3-neutral-bridge-regression-20261025/validation-receipt.json",
+      "sha256": "4d219f48136da7e72604725d0c2ea247ed7efab9bb8eaf705e73d21ccf119c19"
+    },
+    {
+      "name": "实际工具加载",
+      "result": "22个工具正常加载",
+      "path": "Release/_validation/S3-20261025/first-toolbox-probe.json",
+      "sha256": "29f012a909da4e838f14ee60bed35713f652cd79540882b55cad190b09084aa2"
+    },
+    {
+      "name": "受影响图像桥组合回归",
+      "result": "6组实际HALCON像素/Domain组合通过",
+      "path": "Release/_validation/S3-native-regression-20261025/validation-receipt.json",
+      "sha256": "fe0104a934f14444e8aa866f2d9ab2639e22eb9994fa4e7ecf89bf08e08348d0"
+    },
+    {
+      "name": "S2编辑/变量/运行关联回归",
+      "result": "52项通过/0失败（在S3候选复测，不改S2历史分母）",
+      "path": "Release/_validation/S2-20261025/Related/attempt-009/related-report.json",
+      "sha256": "20765abe73b448129061258c96c0ff035fedce57c7a997bfd8a520c19ed6cd2f"
+    }
+  ],
+  "failuresPreserved": [
+    "首轮Reference覆盖误改系统引用，已撤并改显式工程路径；首轮679编译错误日志保留。",
+    "无界面桥夹具HRegion整数构造重载二义，改显式double后通过；不是产品失败。",
+    "还原出现NuGet漏洞数据源不可访问警告，所需依赖缓存还原及编译成功；不宣称联网漏洞检查通过。"
+  ],
+  "next": "Blob算法核心与Wpf物理分离，统一中立设置/结果与旧facade委派，再接真实角色装配；不会将桥的局部通过写成整个Blob已无UI运行。",
+  "checkpointSourceManifest": [
+    {
+      "path": "src/SunEyeVision.HalAdapter/Runtime/HalImageSnapshotSource.cs",
+      "sha256": "76ae3f031cfdc846c6d733f9c16b18e5d40cd0db91b4cbb1128d39619b37b3b9"
+    },
+    {
+      "path": "src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj",
+      "sha256": "792e3129ffe600fffc123f4ec834240235c8641f27c27f3a31427e99f1627aa1"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Internal/HalconBlobExecutionScope.cs",
+      "sha256": "82901f62b612a6a4060324a4997833925fc34474c9302ff27c449be405132b78"
+    }
+  ],
+  "candidateIdentity": {
+    "embeddedBase": "30bc9c2fe7dabe68d4f4c0e48c248156074225e0",
+    "workingTreeContainsS3Changes": true,
+    "isFinalRelease": false
+  },
+  "checkpointEvidence": {
+    "archive": "docs/collaboration/evidence/S3-first-checkpoint-20261025.zip",
+    "sha256": "9f0cfa5f7ea4f8dbbfe563614df8c232111a1797a497c5bd302bd18e22e461d3",
+    "bytes": 191728,
+    "verifiedCurrentS3ProductLoads": 8,
+    "scope": "首个检查点，最新两条轨实际产品身份；旧构建/失败日志保留但不与当前产物混同。无程序副本，非S3完成"
+  }
+}

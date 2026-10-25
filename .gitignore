@@ -190,6 +190,11 @@ runtime/
 # 通讯设备运行时是源码，不属于二进制运行目录。
 !/src/DeviceDriver/Communications/Runtime/
 !/src/DeviceDriver/Communications/Runtime/*.cs
+# HALCON中立运行桥是源码工程，不是部署运行库目录。
+!/src/SunEyeVision.HalAdapter/Runtime/
+!/src/SunEyeVision.HalAdapter/Runtime/*.cs
+!/src/SunEyeVision.HalAdapter/Runtime/*.csproj
+!/src/SunEyeVision.HalAdapter/Runtime/packages.lock.json
 
 # 安装包第三方工具（Inno Setup 安装器 10.3MB，按需从官网下载）
 installer/third-party/

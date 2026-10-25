@@ -91,9 +91,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                     result.SetError($"参数验证失败: {string.Join(", ", validationResult.Errors)}");
                     return result;
                 }
-
-
-
+                using var halconScope = new Internal.HalconBlobExecutionScope();
                 // ===== 图像尺寸获取（图像已在 GetHalconImage 中验证） =====
                 HOperatorSet.GetImageSize(hImage, out var imgW, out var imgH);
                 int imgWidth = (int)imgW.L;
@@ -190,12 +188,14 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                                     // ===== Step 5: 连通域分析 =====
                                     stepSw.Restart();
+                                    Internal.HalconBlobExecutionScope.RequireUnlimitedConnection();
                                     HOperatorSet.Connection(binaryRegion, out var connectedRegions);
                                     stepSw.Stop();
                                     stepTimings.Add(("连通域分析", stepSw.ElapsedMilliseconds));
 
                                     using (connectedRegions)
                                     {
+                                        Internal.HalconBlobExecutionScope.RequireUnlimitedConnection();
                                         HOperatorSet.CountObj(connectedRegions, out var numReg);
                                         int rawBlobCount = (int)numReg.L;
 

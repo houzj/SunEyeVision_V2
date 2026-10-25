@@ -21,7 +21,7 @@
   <ItemGroup>
     <!-- 大件平台：仅用于编译，不复制（宿主提供） -->
     <Reference Include="halcondotnetxl">
-      <HintPath>..\..\dev\Debug\halcondotnetxl.dll</HintPath>
+      <HintPath>..\..\libs\halcon\net\halcondotnetxl.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

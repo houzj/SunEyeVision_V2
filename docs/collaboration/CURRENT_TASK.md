@@ -1,6 +1,27 @@
+## 当前活动：S3算法运行与工程拆分，首个检查点已核收（2026-10-25）
+
+基线30bc9c2f（产品S2为2165ba0d）。当前仅本对话单写者，不建副本/工作树/旧角色、不扩至S4/S5；用户已授权继续S3。上轮阶段总览维护保留。完整范围及状态见S3_IMPLEMENTATION_PLAN_20261025.json。
+
+实际落地并通过首批验证：
+- Blob及其他12个工程HALCON编译HintPath直接指向libs/halcon/net，移除为编译创建dev/Debug中转的全局Target。第一版统一Reference更新误污染系统引用已撤；现为各工程明确路径，207项引用核对正常。
+- Blob的Internal/HalconBlobExecutionScope同步固定tsp_neighborhood=8且原线程恢复；max_connection非0拒绝，不擅改全局上限。正式Release 3个实际HALCON反例通过：对角连通、设置恢复/上限拒绝、排序后限数。
+- 已有HalImageSnapshotSource从旧HalAdapter物理迁到src/SunEyeVision.HalAdapter/Runtime工程（net9.0，只引用Contracts/Runtime/HALCON）。旧HalImage消费同一实现，父项目排除子工程Compile，解决方案接入；.gitignore已定向放行源码，避免Runtime目录被误忽略。
+- 正式Release全量构建0错误/1096警告；无SDK/WPF加载的自有进程中立桥2项通过：实际非满Domain、像素及来源身份、源/快照退出后reader有效、最终释放拒读。旧Blob真实Workflow资源链9项复测通过，22工具加载探针exit0。仅证明已验证范围，不报S3整体/Blob无UI运行通过。
+
+日志：Release/_validation/S3-20261025/neutral-bridge-integration-build.log；DocumentEditing/attempt-002；Related/attempt-002；S3-neutral-bridge-regression-20261025。首轮679构建错误和夹具HRegion重载编译失败原记录保留，后者仅夹具改显式double。NuGet还原有漏洞数据源不可达警告，依赖缓存还原与编译成功，不冒联网漏洞审计通过。正式产物是S3实施候选，嵌入版本基线30bc9c2f，不是已提交S3最终Release。
+
+原O06首屏/阶段表/实施状态已集中同步S3首个检查点及未完成项；689唯一锚点、生成幂等。不逐条小变化重写整份文档；详细源位置、失败与阶段事实保留。
+
+下一项必须继续：Blob算法本体与Wpf物理拆分（现BlobAnalysisTool/Parameters/Results仍依赖SDK/WPF，不能把中立桥通过冒称它们已拆完），把HALCON业务只保留一个producer；落实FD04–07完整Region/boundary/pose与同最终集合摘要输出；真实宿主接Runtime唯一ToolId/可选editor/缺UI可执行及发布规则。VM已有SDK声明/样例不是native实现，现不宣称VM逐值等价；未有稳定明显体验变化不单独要求用户手验。
+
+---
+## S2完成与原有阶段记录
+
 ## 当前状态：S2实施与本轮正式Release自动验证已闭合（2026-10-25）
 
-S2产品提交：2165ba0d4a5f483940dfd67131e2d6f9815af460，中文标题“实现：统一S2编辑保存事务与整轮运行快照”。当前对话单写者；未启用旧角色、未复制仓库/程序、未恢复旧变量批次、未进入S3。正式Release已按该提交构建并核验，目标仅在本轮文档核收与远程同步后完成。
+最新文档维护：按用户要求在O06首屏加入S1—S6阶段总览，逐阶段说明主要问题、改造内容、可感知效果和状态。纠正前条对话的阶段混称：S3为算法运行与工程拆分，S4为窗口/控件交互，S5为结果显示/关联消费。沿用原六阶段，不修改产品、不启动S3；本次小幅文档更新先留主仓，后续有意义阶段归并中文提交。688锚点唯一、页内链接完整、生成幂等。
+
+S2产品提交：2165ba0d4a5f483940dfd67131e2d6f9815af460，中文标题“实现：统一S2编辑保存事务与整轮运行快照”。当前对话单写者；未启用旧角色、未复制仓库/程序、未恢复旧变量批次、未进入S3。正式Release已按该提交构建并核验，原文档核收与GitHub同步已完成，S2持续目标已完成。
 
 已实现：方案会话显式登记节点/变量scope；Debug私有冻结与结果隔离；确定/Apply当前范围；Save全部登记统一准备校验接受；取消仅撤未接受内容；根/子流程及变量在生产准入冻结，连续下一完整轮接新代；CAS/ABA、失败补偿和锁外通知复用，运行值不进配置Undo；保存磁盘失败/重试与迟到回执保护。结构变化保留其他草稿与参数历史，删除/同ID重建使旧scope失效。最终关闭修复为Closed才释放，只清自身编辑覆盖，不清共享正式结果。
 

@@ -1,0 +1,58 @@
+{
+  "stage": "S2",
+  "status": "IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED",
+  "entries": [
+    [
+      "节点窗口",
+      "MainWindowViewModel.InitializeToolControlAsync → CreateProductionEditorContext → ToolEditorCommit.AttachDraftContext",
+      "Blob已接ProductionEditorContext，私有节点/参数与正式对象隔离；真实窗口验证保存、无效输入与取消。"
+    ],
+    [
+      "调试",
+      "ToolDebugControlBase.OnExecuteCommand → ExecuteToolAsync → CreateLiveExecutionRequest",
+      "TryPrepare只准备草稿；每次请求冻结最新已发布变量，结果进入私有DebugResults/Owner，不进入正式工作流；实际HALCON已验证。"
+    ],
+    [
+      "确定",
+      "DefaultDebugWindow/CustomDebugWindow → ToolEditorCommit.TryCommit → ProductionEditorContext.TryCommitEditor",
+      "确认路由文档会话Apply当前Scope；准备复制冻结，接受回执保留之后的新输入。"
+    ],
+    [
+      "保存",
+      "SaveCurrentDocumentWithPrompt → TryValidateSolutionEditors → SolutionApplication.Save回调 → TryCommitSolutionEditors → SaveSolutionData",
+      "文档会话统一收集登记范围，准备/校验全部后一次接受，再由ApplicationService/Repository保存；锁盘失败保留旧盘并可重试。"
+    ],
+    [
+      "变量",
+      "ExecuteGlobalVariableManager → GlobalVariableManagerViewModel私有Draft → Dialog.TryCommitPendingEdits",
+      "变量作为显式scope；非冲突发布后刷新基线，显式值执行CAS/ABA；纯值不占配置Undo，配置Undo不倒退实时值。"
+    ],
+    [
+      "单次和连续",
+      "WorkflowExecutionManager.RunSingleAsync/StartContinuousRun → 原CommitPendingEditors",
+      "运行不接受草稿；根和子流程冻结一个已发布配置；连续每一完整轮重新采显式发布；本地图像计划与游标状态隔离。"
+    ],
+    [
+      "解决方案/通信",
+      "RunSolutionAsync/RunCommunicationOperationAsync/RunCommunicationNodeAsync",
+      "整方案准入拒绝其他生产运行插入，通信操作共用一个准入快照；结束/异常/Dispose清缓存；52项关联检查覆盖。"
+    ],
+    [
+      "方案切换/关闭",
+      "PrepareSolutionTransitionAsync → TryCommitSolutionEditors发生在询问是否保存之前",
+      "取消切换不再提前接受；明确保存才接受登记范围，放弃/成功切换释放旧会话。"
+    ],
+    [
+      "临时卸载/最终关闭",
+      "TrackProductionEditor保留Unloaded但Closed调用Discard；SDK登记Editors在Unloaded移除",
+      "隐藏/Unload保留scope；Closed才释放。取消关闭不撤草稿；Blob只释放自己的编辑覆盖，不清正式结果/其他范围，真实窗口反例通过。"
+    ],
+    [
+      "底层事务",
+      "NodeConfigurationEditHost.CommitBatch/Undo/Redo → BindingConfigurationStore",
+      "复用Store/Host，不复制第二事务系统；结构同步保留其他草稿和参数历史，删除/同ID重建失效旧scope，失败不部分接受。"
+    ]
+  ],
+  "remaining": "S2无已知实施阻断；VM实机等价、VS实际设计器及人工交互未确认，明确不计本轮通过。",
+  "productBuild": "2165ba0d正式Release全量/UI构建0错误；28项事务及52项关联检查通过，身份和原始证据见S2_PROGRESS。"
+}

@@ -1,0 +1,158 @@
+{
+  "stage": "S2",
+  "status": "IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED",
+  "sourceCommit": "2165ba0d4a5f483940dfd67131e2d6f9815af460",
+  "productRoot": "Release/SunEyeVision_v1.0.0/SunEyeVision",
+  "version": "2.0.0.8",
+  "channel": "alpha",
+  "sdkToolContract": "3.0",
+  "checks": {
+    "core": {
+      "passed": 28,
+      "failed": 0,
+      "receipt": "Release/_validation/S2-20261025/DocumentEditing/attempt-016/receipt.json"
+    },
+    "related": {
+      "passed": 52,
+      "failed": 0,
+      "receipt": "Release/_validation/S2-20261025/Related/attempt-008/related-report.json"
+    },
+    "compatibility": {
+      "receipt": "Release/_validation/S2-committed-regression-20261025/validation-receipt.json",
+      "scope": "旧格式/绑定迁移、真实HALCON Blob工作流9项资源链、Snapshot15项；本轮未重复跨卷"
+    },
+    "fullBuild": {
+      "errors": 0,
+      "warnings": 1280,
+      "log": "Release/_validation/S2-committed-release-build.log"
+    },
+    "uiBuild": {
+      "errors": 0,
+      "warnings": 1264,
+      "log": "Release/_validation/S2-ui-release-build.log"
+    },
+    "designTime": "设计时编译成功，未在Visual Studio设计器实际打开",
+    "releaseProbe": "Release/_validation/S2-release-probe.json",
+    "toolboxProbe": "Release/_validation/S2-toolbox-probe.json",
+    "loadedIdentity": "Release/_validation/S2-final-loaded-identity.json"
+  },
+  "blockingGap": null,
+  "remaining": [],
+  "notClaimed": [
+    "S3控件/ROI/动态结果表重构及完整Blob新UI未做",
+    "VM实际编辑/执行/关闭时序等价未验证，本轮无新增VM取证",
+    "实际VS设计器及完整主窗口人工交互未确认",
+    "用户人工验收未执行，随下一次明显体验变化集中验证"
+  ],
+  "failuresPreserved": "关联类型/引用失败、结构变化编辑失败和关闭取消失败均保留。保存oracle由错误标量改为既定long[] tuple，未修改产品迎合错误。",
+  "evidenceArchive": {
+    "path": "docs/collaboration/evidence/S2-20261025.zip",
+    "sha256": "4c190bb7f2be3852230ccd23a3b5bacec8b089f7f39df52373b126ba07045ed0",
+    "files": 194,
+    "bytes": 1149057,
+    "scope": "仅日志、回执和身份清单，保留失败；无程序或仓库副本"
+  },
+  "sourceManifest": [
+    {
+      "path": "src/Plugin.SDK/Execution/Parameters/DataSourceQueryService.cs",
+      "sha256": "8175f861c7fc1ce251e757c7f4064192cd9be0e1010f4b23dbf2a80d5aa480db"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs",
+      "sha256": "8a1c3c8e027cfe27bacabdf1d0c034a71712d4f47821a4f6b849cee4702f5bb8"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "sha256": "5c85d75ad71d8439bc6452a2000013ce0eb6e0f96a990820c91e39a6520ef14e"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs",
+      "sha256": "67cf673de984e7ae247082b3ea55483a3f3fc46ed00d4c39c845c2404e2c5c7d"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Windows/CustomDebugWindow.cs",
+      "sha256": "9aff83bbdeee620353f902739183e871bf191d7f8b9a875cb1fac85d657cf8d5"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+      "sha256": "a6494cc334a3d573e9ff4cc5ea1debc8c9bf359003635544100c342dc43e0552"
+    },
+    {
+      "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml.cs",
+      "sha256": "5e514f434088651093c2ef2b54404610443c7f51c210adb5121a0bdf417aacac"
+    },
+    {
+      "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+      "sha256": "878b16b0c7da692a61d5220ed6d8874f6e985ce4abfef7b128a048871371cb71"
+    },
+    {
+      "path": "src/UI/Services/Editing/EditorDraftAdapter.cs",
+      "sha256": "a916f05909a91a166fc8aef9ace92d69626d6d5ba16a7c4cf7aff26e7f711e87"
+    },
+    {
+      "path": "src/UI/Services/Editing/ProductionEditorContext.cs",
+      "sha256": "3a1b4c2d7006fd0e12a87d600c94d61ba517544faaa03f350fb613a7647d80ec"
+    },
+    {
+      "path": "src/UI/Services/Workflow/NodeResultManager.cs",
+      "sha256": "204e1cef6b2677afdb7548c0d30b7da376c6a6a30b9d64fd7d5c80f91c23bc75"
+    },
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+      "sha256": "e54ae19e563e8335c4f676f7662328e5d3962604f044c7d88ca83452d79dfd83"
+    },
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "sha256": "2eea8d8ff2bf757c158b01b4e9af164a5e8787332612b514773ea433db5d9575"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowProductionEditing.cs",
+      "sha256": "33a9e9c9c08fbf5739ea17aa209ce819c9236a28fdeb3b01a9bccffcf0bd4db0"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowSolutionEditing.cs",
+      "sha256": "410515e3de2591e3382008c27dd4197b8404abf76575c9b1ec86dac2f88001df"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "ff8b5a5af5539ba7cf71540eac20392b616c33366ea10fa95ec295e5a24f7809"
+    },
+    {
+      "path": "src/Workflow/BindingConfigurationStore.cs",
+      "sha256": "2339cbc32e1cfc7f5636dec5e1accf1154d449ae2706d19635553bee211b81aa"
+    },
+    {
+      "path": "src/Workflow/DocumentEditSession.cs",
+      "sha256": "b3ca2c26590e4c23f098b08a84be0cc54f30005c154312d5d538c2530c82dbed"
+    },
+    {
+      "path": "src/Workflow/NodeConfigurationEditHost.cs",
+      "sha256": "90eefb11d42298e53452ae549a5e32fc246e2cdd2b0eabe8a7ea5aa59add383c"
+    },
+    {
+      "path": "src/Workflow/SolutionSession.cs",
+      "sha256": "d45e2b26d99c4c998e60481bb697db0bea6ba3a44ed84a828f44f72c939ff2dc"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "sha256": "f29e0ccb1a2cf2d28edd4fe74e127dcecc8080fa9da85aaa65acab6038df2f79"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunConfiguration.cs",
+      "sha256": "7a2f5df66e447afe248bac96fd9484fe1905200b74456066d90f0049973ebffc"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunRequest.cs",
+      "sha256": "0ce18a1069ae5c55c84b12ff9eec4a064f074fb6bff441bf339820031ac496c4"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunSession.cs",
+      "sha256": "9c652511a63eb5ad8bb877356ae847c70d57323e78b75768badd67b11fd1668c"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Views/BlobAnalysisToolDebugControl.xaml.cs",
+      "sha256": "2e6d72e6f6456693f8fd0c91770d6b9e4cee8381854cd7d3447763fce9a254b4"
+    }
+  ],
+  "manualAcceptance": "未执行、未代签；随后续明显体验变化集中验证。"
+}

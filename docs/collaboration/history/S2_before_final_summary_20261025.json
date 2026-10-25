@@ -1,0 +1,149 @@
+{
+  "stage": "S2",
+  "status": "IMPLEMENTED_CORE_AND_REGRESSION_PASSED_ONE_FINAL_AUDIT_GAP",
+  "productRoot": "Release/SunEyeVision_v1.0.0/SunEyeVision",
+  "checks": {
+    "coreTransactionAndRealBlobWindow": {
+      "passed": 21,
+      "receipt": "Release/_validation/S2-20261025/DocumentEditing/attempt-011/receipt.json"
+    },
+    "related": {
+      "passed": 49,
+      "failed": 0,
+      "receipt": "Release/_validation/S2-20261025/Related/attempt-003/related-report.json"
+    },
+    "compatibility": "真实旧方案迁移、真实Blob Workflow9项、Snapshot15项常规检查均通过，详见引用回执；非本轮跨卷重测"
+  },
+  "blockingGap": {
+    "name": "关闭编辑后增添节点无法重新打开编辑",
+    "evidence": "Release/_validation/S2-20261025/DocumentEditing/attempt-012",
+    "cause": "DocumentEditSession持有固定Host，NodeConfigurationEditHost在初始化固定节点集合，拓扑改变后EnsureBaseline拒绝；需要协调结构变化与编辑历史，不能简单重建Host丢弃现有草稿。"
+  },
+  "remaining": [
+    "修复新增/删除/重建节点后的会话与配置历史适配，并加入存在其他未确认草稿的反例",
+    "核对调试引用到的已发布变量是否每次开始均更新，不能只用窗口打开时的值",
+    "必要准入/最终产物身份及原文档阶段总结，未完成前不交人工试用"
+  ],
+  "failuresPreserved": "关联首轮8个失败：产品快照引用比较/常量类型已修；旧变量跨独立范围断言已按批准语义调整并增加重叠拒绝反例。保存重开首次检查错误地期待标量，现按既定tuple长整型数组检查，非产品变更。所有原日志保留。",
+  "evidence": [
+    {
+      "path": "Release/_validation/S2-20261025/DocumentEditing/attempt-012/receipt.json",
+      "sha256": "f5b212160464ed74c2958ff0eb096bb8be22386d22bfebda6ad00f5e1ee2005a"
+    },
+    {
+      "path": "Release/_validation/S2-20261025/DocumentEditing/attempt-012/run.log",
+      "sha256": "b2a30c566fb048355f9a2444e26be5a06e73053a4b952c5c6982edb9dfbd23e2"
+    },
+    {
+      "path": "Release/_validation/S2-20261025/DocumentEditing/attempt-012/run-error.log",
+      "sha256": "4a2125b8e8012366ace3a17ee21115122ada67a62af6a9603a5bd52e2dff7765"
+    },
+    {
+      "path": "Release/_validation/S2-20261025/DocumentEditing/attempt-011/receipt.json",
+      "sha256": "ae6a5ccfaf158820f3ecc9ca943e5216958d071409862e2bd8ef3363a240bf76"
+    },
+    {
+      "path": "Release/_validation/S2-20261025/Related/attempt-001/related-report.json",
+      "sha256": "374b020e6870def226d5b058b8793a7a022fe7c7fcb7f7ee65c71c6998f0e308"
+    },
+    {
+      "path": "Release/_validation/S2-20261025/Related/attempt-003/related-report.json",
+      "sha256": "20731809ced8ba7fad7ce5ab050d80b15da56e86da41d2e4dd48d6a57fe66012"
+    },
+    {
+      "path": "Release/_validation/S2-compat-regression-20261025/validation-receipt.json",
+      "sha256": "01a6fee6235e567e093776495e4e19a864754d5bb0568aa67446ea593fce4074"
+    },
+    {
+      "path": "Release/_validation/S2-solution-snapshot-build.log",
+      "sha256": "2469727978a9f92d377d7e1a857b5452b9dff2410cf41bc1cc16617917fb57bd"
+    }
+  ],
+  "sourceManifest": [
+    {
+      "path": "src/Plugin.SDK/Execution/Parameters/DataSourceQueryService.cs",
+      "sha256": "4e9abba5e51f6f874763fe415e4f5e7c3ad467fa56ae1d356afbecebb7f6912f"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "sha256": "af856d4cfd6e289aafdd1a033ebceb74750f40035a90e2e45d6af6e9eeba3c1a"
+    },
+    {
+      "path": "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs",
+      "sha256": "67cf673de984e7ae247082b3ea55483a3f3fc46ed00d4c39c845c2404e2c5c7d"
+    },
+    {
+      "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml.cs",
+      "sha256": "5e514f434088651093c2ef2b54404610443c7f51c210adb5121a0bdf417aacac"
+    },
+    {
+      "path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+      "sha256": "3d70f04ec1dcc0629e17741007d4cd6576214ebd2664079abf5b5b2a5ccf6484"
+    },
+    {
+      "path": "src/UI/Services/Editing/EditorDraftAdapter.cs",
+      "sha256": "a916f05909a91a166fc8aef9ace92d69626d6d5ba16a7c4cf7aff26e7f711e87"
+    },
+    {
+      "path": "src/UI/Services/Editing/ProductionEditorContext.cs",
+      "sha256": "b6e84311d5a001ab53645e267d757ad4308c8d89a55a74d7d8b53c4778ab1148"
+    },
+    {
+      "path": "src/UI/Services/Workflow/NodeResultManager.cs",
+      "sha256": "204e1cef6b2677afdb7548c0d30b7da376c6a6a30b9d64fd7d5c80f91c23bc75"
+    },
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+      "sha256": "e54ae19e563e8335c4f676f7662328e5d3962604f044c7d88ca83452d79dfd83"
+    },
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "sha256": "16764683468ba0ea0c87e0ae17f211f5bed7b794c362ac8459d73c3637e46898"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowProductionEditing.cs",
+      "sha256": "abd0d5dde83ffd73d380368c83c76bdec43445e73c393db3db94ec4fbac62187"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowSolutionEditing.cs",
+      "sha256": "410515e3de2591e3382008c27dd4197b8404abf76575c9b1ec86dac2f88001df"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "ff8b5a5af5539ba7cf71540eac20392b616c33366ea10fa95ec295e5a24f7809"
+    },
+    {
+      "path": "src/Workflow/BindingConfigurationStore.cs",
+      "sha256": "8e47d2a5f20e58dc2e4d404264b320d40bcd8b708977618d52f0a1e509ad4389"
+    },
+    {
+      "path": "src/Workflow/DocumentEditSession.cs",
+      "sha256": "52169688e261c9be3df780d6dda76ad52515e22ffb8649e64e5fab9b23972fd5"
+    },
+    {
+      "path": "src/Workflow/NodeConfigurationEditHost.cs",
+      "sha256": "2bc9c64f8146099764e7998d1a7f820fd14e1f68c8311f5a645e53154e8aadf2"
+    },
+    {
+      "path": "src/Workflow/SolutionSession.cs",
+      "sha256": "d45e2b26d99c4c998e60481bb697db0bea6ba3a44ed84a828f44f72c939ff2dc"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "sha256": "f29e0ccb1a2cf2d28edd4fe74e127dcecc8080fa9da85aaa65acab6038df2f79"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunConfiguration.cs",
+      "sha256": "7a2f5df66e447afe248bac96fd9484fe1905200b74456066d90f0049973ebffc"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunRequest.cs",
+      "sha256": "0ce18a1069ae5c55c84b12ff9eec4a064f074fb6bff441bf339820031ac496c4"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunSession.cs",
+      "sha256": "9c652511a63eb5ad8bb877356ae847c70d57323e78b75768badd67b11fd1668c"
+    }
+  ],
+  "manualAcceptance": "未安排/未通过；当前候选仍验证中，不代用户验收"
+}

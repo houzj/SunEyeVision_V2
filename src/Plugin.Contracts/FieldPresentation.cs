@@ -1,6 +1,6 @@
 namespace SunEyeVision.Plugin.Contracts;
 
-public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation }
+public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image }
 [Flags] public enum FieldEditModes { None=0, Constant=1, Reference=2, NumericGeometry=4, Gesture=8 }
 public enum FieldDefaultPresence { Unset, ExplicitValueRequired }
 public enum RegionFieldMode { LocalGeometry, InheritedGeometry, InheritedRegion }
@@ -61,6 +61,7 @@ public sealed class ToolPresentation
                 FieldEditorKind.Sequence=>port.Type.Shape==ValueShape.Sequence,
                 FieldEditorKind.Geometry=>IsGeometryDefinition(port.Type),
                 FieldEditorKind.Region=>port.Type==TypeRef.ResourceOf(ResourceKind.Region)||IsGeometryDefinition(port.Type),
+                FieldEditorKind.Image=>port.Type==TypeRef.ResourceOf(ResourceKind.Image),
                 _=>false};
             if(!compatible)throw new ArgumentException("Editor kind disagrees with its declared field type.");
         }

@@ -18,6 +18,14 @@ internal static class SolutionLegacyBindingMigration
         var contractReader = new OutputBindingChangeService();
         foreach (var workflow in candidate.Workflows)
         {
+            foreach(var node in workflow.Nodes)
+                if(node.Parameters is IStoredConfigurationValidator configuration)
+                {
+                    var issues=configuration.ValidateStoredConfiguration(node.ParamSettings.Settings
+                        .Where(setting=>setting.BindingType!=BindingType.Constant).Select(setting=>setting.ParameterName).ToArray());
+                    if(issues.Count!=0)throw new JsonException(issues[0].Message,
+                        "$.Workflows[Id="+workflow.Id+"].Nodes[Id="+node.Id+"].Parameters["+issues[0].FieldId+"]",null,null);
+                }
             var nodes = workflow.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
             var declarations = nodes.ToDictionary(pair => pair.Key, pair =>
             {

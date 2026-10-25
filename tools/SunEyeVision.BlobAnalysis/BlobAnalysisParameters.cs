@@ -92,7 +92,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "BlobAnalysis"。
     /// </remarks>
     [JsonDerivedType(typeof(BlobAnalysisParameters), "BlobAnalysis")]
-    public class BlobAnalysisParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract, IOutputContractProvider
+    public class BlobAnalysisParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract, IOutputContractProvider, IStoredConfigurationValidator
     {
         public IReadOnlyList<SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable> GetOutputContract()=>BlobOutputContract.Describe();
         /// <summary>
@@ -425,6 +425,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public override ValidationResult Validate()
         {
             var result = base.Validate();
+            foreach(var issue in ValidateStoredConfiguration())result.AddError(issue.Message);
 
             // 阈值范围检查
             if (Threshold < ThresholdMin || Threshold > ThresholdMax)
@@ -492,6 +493,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
             return result;
         }
+
+        public IReadOnlyList<SunEyeVision.Plugin.Contracts.Diagnostic> ValidateStoredConfiguration(IReadOnlyCollection<string>? boundParameterNames=null)
+            =>BlobInputContract.ValidateStoredConfiguration(this,boundParameterNames);
 
         /// <summary>
         /// 验证结果判断配置

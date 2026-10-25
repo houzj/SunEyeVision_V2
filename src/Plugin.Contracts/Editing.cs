@@ -75,7 +75,7 @@ public sealed class ParameterEditSession
         DraftRevision=checked(DraftRevision+1);
         _fieldRevisions[id]=DraftRevision;
         try{var frozen=Freeze(id,setting);_pending[id]=frozen;_invalid.Remove(id);if(frozen is ConstantSetting c)_constantBackup[id]=c.Value;return true;}
-        catch(ArgumentException ex){_invalid[id]=ex.Message;return false;}
+        catch(Exception ex) when(ex is ArgumentException or OverflowException){_invalid[id]=ex.Message;return false;}
     }
     public bool SetText(string id,string text)
     {
@@ -112,7 +112,7 @@ public sealed class ParameterEditSession
         foreach(var (id,setting) in _pending)
         {
             try{changes.Add(id,Freeze(id,setting,currentScope));}
-            catch(ArgumentException exception){errors.Add(new("edit-binding",exception.Message,id));}
+            catch(Exception exception) when(exception is ArgumentException or OverflowException){errors.Add(new("edit-binding",exception.Message,id));}
         }
         issues=errors.AsReadOnly();
         if(errors.Count!=0)return false;

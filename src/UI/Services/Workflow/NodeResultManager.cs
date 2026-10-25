@@ -433,12 +433,16 @@ namespace SunEyeVision.UI.Services.Workflow
 
             // 检测区域（蓝色）— 使用参数中的样式实例，UI 的 DispItemColorControl 可绑定控制可见性
             // ★ 组级运行时出口：订阅/拼装组内本地绘制 Roi 不参与显示（按模式过滤），根治"订阅模式双画"。
-            var activeRegions = regionParams.InspectionRois.GetRuntimeActiveInputs();
+            var activeRegions = regionParams is IBindingInputActivityProvider
+                ?regionParams.InspectionRois.Rois.Where(roi=>roi.IsEnabled&&BindingInputCatalog.IsInputActive(regionParams,nameof(RoiParameters.InspectionRois)+":"+roi.Id))
+                :regionParams.InspectionRois.GetRuntimeActiveInputs();
             var inspectionStyle = regionParams.InspectionRoiStyle ?? DefaultInspectionRoiStyle;
             AddRoiDisplayItems(items, activeRegions, inspectionStyle, correctionMatrix, context);
 
             // 屏蔽区域（橙色）
-            var activeMasks = regionParams.MaskRois.GetRuntimeActiveInputs();
+            var activeMasks = regionParams is IBindingInputActivityProvider
+                ?regionParams.MaskRois.Rois.Where(roi=>roi.IsEnabled&&BindingInputCatalog.IsInputActive(regionParams,nameof(RoiParameters.MaskRois)+":"+roi.Id))
+                :regionParams.MaskRois.GetRuntimeActiveInputs();
             var maskStyle = regionParams.MaskRoiStyle ?? DefaultMaskRoiStyle;
             AddRoiDisplayItems(items, activeMasks, maskStyle, correctionMatrix, context);
 

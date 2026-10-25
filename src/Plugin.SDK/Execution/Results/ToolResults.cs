@@ -669,6 +669,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 {
                     Name = entry.PropertyName,
                     DeclaredType = prop.PropertyType, IsCollection = prop.PropertyType.IsArray, FixedCount = prop.PropertyType.IsArray ? null : 1,
+                    AllowsNull = IsNullableImageOutput(prop),
                     VariableType = variableType,
                     DisplayName = entry.DisplayName,
                     Group = entry.GroupName,
@@ -713,6 +714,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             {
                 Name = entry.PropertyName,
                 DeclaredType = prop.PropertyType, IsCollection = prop.PropertyType.IsArray, FixedCount = prop.PropertyType.IsArray ? null : 1,
+                AllowsNull = IsNullableImageOutput(prop),
                 VariableType = variableType,
                 DisplayName = entry.DisplayName,
                 Group = entry.GroupName,
@@ -720,6 +722,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 RuntimeValue = OutputVariableArrayPromoter.Promote(runtimeValue, variableType, prop.PropertyType)
             });
         }
+
+        private static bool IsNullableImageOutput(PropertyInfo property)
+            =>typeof(IVisionImage).IsAssignableFrom(property.PropertyType)
+                &&new NullabilityInfoContext().Create(property).ReadState==NullabilityState.Nullable;
 
         #endregion
     }

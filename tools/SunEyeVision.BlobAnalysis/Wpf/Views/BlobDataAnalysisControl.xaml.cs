@@ -8,6 +8,10 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
+using SunEyeVision.Tool.BlobAnalysis.Presentation;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Views
 {
@@ -17,7 +21,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
     public partial class BlobDataAnalysisControl : UserControl, IToolControlDataAnalysis, System.ComponentModel.INotifyPropertyChanged
     {
         /// <summary>Blob 特征数据列表</summary>
-        public ObservableCollection<BlobResult> FilteredBlobs { get; } = new();
+        public ObservableCollection<BlobAnalysisRow> FilteredBlobs { get; } = new();
 
         /// <summary>筛选后数量</summary>
         public int FilteredBlobCount => FilteredBlobs.Count;
@@ -45,10 +49,10 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
 
         #region 选中 Blob
 
-        private BlobResult? _selectedBlob;
+        private BlobAnalysisRow? _selectedBlob;
 
         /// <summary>当前选中的 Blob（由 DataGrid SelectionChanged 驱动）</summary>
-        public BlobResult? SelectedBlob
+        public BlobAnalysisRow? SelectedBlob
         {
             get => _selectedBlob;
             private set
@@ -76,14 +80,14 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         /// <summary>DataGrid 行选择变化 → 更新 SelectedBlob 属性并触发事件</summary>
         private void BlobDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (BlobDataGrid.SelectedItem is BlobResult blob)
+            if (BlobDataGrid.SelectedItem is BlobAnalysisRow blob)
                 SelectedBlob = blob;
             else
                 SelectedBlob = null;
         }
 
         /// <summary>构建选中 Blob 的高亮 DisplayItem（黄色外接矩形）</summary>
-        private static IEnumerable<DisplayItemBase>? BuildHighlightItems(BlobResult? blob)
+        private static IEnumerable<DisplayItemBase>? BuildHighlightItems(BlobAnalysisRow? blob)
             {
                 if (blob == null) return null;
 
@@ -112,42 +116,38 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         {
             PluginLogger.Info($"[OnResultUpdated] 收到结果 | Type={result?.GetType().Name ?? "null"}", "BlobDataAnalysis");
 
-            if (result is BlobAnalysisResults blobResult)
+            SelectedBlob=null;
+            FilteredBlobs.Clear();TotalArea=0;ThresholdRangeText="-";ThresholdTypeText="-";
+            NotifySummary(); // A rejected or failed update cannot leave old summary values beside an empty table.
+            if (result is {IsSuccess:true})
             {
-                PluginLogger.Info($"[OnResultUpdated] BlobAnalysisResults | Blob数量={blobResult.FilteredBlobs?.Count ?? 0} | 总面积={blobResult.FilteredTotalArea:F0}", "BlobDataAnalysis");
-
-                // Step 1: 先清空并填充 Blob 列表数据
-                FilteredBlobs.Clear();
-                if (blobResult.FilteredBlobs != null)
+                using var lease=result.Resources?.Retain();
+                using var reader=result.DeclaredOutput?.AcquireReader();
+                var catalog=result.GetOutputVariables().Where(output=>output.Kind==OutputVariableKind.Data).ToArray();
+                object? Read(string id)
                 {
-                    foreach (var blob in blobResult.FilteredBlobs)
-                    {
-                        FilteredBlobs.Add(blob);
-                    }
+                    if(reader?.Values is { } values)return values.Get<object?>(id);
+                    // Direct debug invocations expose the same declarations before workflow publication.
+                    // No result class cast across plugin load contexts and no CLR property reflection.
+                    var output=catalog.Single(variable=>BindingClrAdapter.OutputPortId(variable)==id);
+                    return BindingClrAdapter.NormalizeValue(BindingClrAdapter.DescribeOutput(output),output.RuntimeValue);
                 }
+                var records=Read(BlobSchema.BlobsPort) as SequenceValue??throw new InvalidOperationException("Blob记录缺失。");
+                if(records.Declaration!=BlobSchema.BlobsType)throw new InvalidOperationException("Blob记录类型不符合声明。");
+                var rows=records.Cast<RecordValue>().Select(BlobAnalysisRow.From).ToArray();
+                var total=Convert.ToDouble(Read(BlobSchema.Field(12)),System.Globalization.CultureInfo.InvariantCulture);
+                var minimum=Read(BlobSchema.Field(8));var maximum=Read(BlobSchema.Field(9));var thresholdType=(string)Read(BlobSchema.Field(10))!;
+                foreach(var row in rows)FilteredBlobs.Add(row);
+                TotalArea=total;ThresholdRangeText=$"{minimum}–{maximum}";
+                ThresholdTypeText=thresholdType=="Binary"?"正向阈值":thresholdType=="BinaryInv"?"反向阈值":thresholdType;
 
-                // 更新统计摘要（字段）
-                TotalArea = blobResult.FilteredTotalArea;
-                ThresholdRangeText = $"{blobResult.ThresholdMinUsed}–{blobResult.ThresholdMaxUsed}";
-                ThresholdTypeText = blobResult.TypeUsed.ToString();
-
-                // Step 2: 数据就绪后，再通知所有计算属性重新计算
-                NotifyPropertyChanged(nameof(FilteredBlobCount));
-                NotifyPropertyChanged(nameof(TotalArea));
-                NotifyPropertyChanged(nameof(FilteredTotalArea));
-                NotifyPropertyChanged(nameof(AverageArea));
-                NotifyPropertyChanged(nameof(MaxArea));
-                NotifyPropertyChanged(nameof(MinArea));
-                NotifyPropertyChanged(nameof(ThresholdRangeText));
-                NotifyPropertyChanged(nameof(ThresholdTypeText));
+                NotifySummary();
 
                 PluginLogger.Success($"[OnResultUpdated] UI通知完成 | 实际Blob数={FilteredBlobs.Count} | 总面积={FilteredTotalArea:F0}", "BlobDataAnalysis");
             }
-            else
-            {
-                PluginLogger.Warning($"[OnResultUpdated] 类型不匹配: 期望 BlobAnalysisResults, 实际 {result?.GetType().Name ?? "null"}", "BlobDataAnalysis");
-            }
         }
+        private void NotifySummary()
+        {foreach(var property in new[]{nameof(FilteredBlobCount),nameof(TotalArea),nameof(FilteredTotalArea),nameof(AverageArea),nameof(MaxArea),nameof(MinArea),nameof(ThresholdRangeText),nameof(ThresholdTypeText)})NotifyPropertyChanged(property);}
 
         #endregion
 

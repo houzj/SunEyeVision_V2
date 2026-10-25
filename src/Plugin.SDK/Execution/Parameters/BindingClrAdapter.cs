@@ -21,6 +21,13 @@ public static class BindingClrAdapter
             return new(OutputPortId(output),explicitType,Nullable:output.AllowsNull,Storage:storage);
         }
         var declared=output.DeclaredType??SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(output.VariableType);
+        // Existing SDK image outputs have an explicit typed-pixel/Domain snapshot adapter in
+        // NormalizeValue. Admit their declaration too; otherwise a real ImageLoad source is
+        // silently absent from its frozen output catalog even though native image resolution works.
+        // This does not make native image objects writable canonical parameter fields.
+        if(declared is not null&&typeof(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage).IsAssignableFrom(declared)
+            &&output.IsCollection!=true)
+            return new(OutputPortId(output),TypeRef.ResourceOf(ResourceKind.Image),Nullable:output.AllowsNull);
         if(declared==typeof(RoiShape[]))return new(OutputPortId(output),RoiShapeValueAdapter.SequenceDeclaration);
         if(declared is null||declared==typeof(object))throw new ArgumentException("Output type is not formally declared.");
         return DescribePort(OutputPortId(output),declared,output.FixedCount,output.IsCollection);

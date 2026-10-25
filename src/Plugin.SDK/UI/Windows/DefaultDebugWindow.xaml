@@ -170,6 +170,10 @@
                     BorderThickness="0,1,0,0"
                     Padding="16,6,16,6">
 
+                <DockPanel>
+                <TextBlock x:Name="ExecutionMessage" DockPanel.Dock="Top" Visibility="Collapsed"
+                           Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.ErrorBrush}}"
+                           TextWrapping="Wrap" Margin="0,0,0,6"/>
                 <StackPanel Orientation="Horizontal"
                            HorizontalAlignment="Right">
 
@@ -199,6 +203,7 @@
                             Style="{StaticResource DebugToolbarButtonStyle}"
                             Command="commands:ToolCommands.Confirm"/>
                 </StackPanel>
+                </DockPanel>
             </Border>
         </Grid>
     </Border>

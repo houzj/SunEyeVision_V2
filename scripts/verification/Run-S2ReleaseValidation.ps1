@@ -1,9 +1,9 @@
 ﻿[CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','Components','Consumption','InputBoundaries') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
-if($Track -in @('FieldEditing','BindingEditing','RoiEditing') -and $Stage -ne 'S4'){throw '字段/绑定/区域编辑检查仅用于S4正式产物验证'}
+if($Track -in @('FieldEditing','BindingEditing','RoiEditing','FullChain') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
 $dir=Join-Path $root ('Release/_validation/'+$Stage+'-20261025/' + $Track)
@@ -30,6 +30,7 @@ if($Stage -eq 'S3' -and $Track -eq 'InputBoundaries'){$source='S3InputBoundaryCa
 if($Stage -eq 'S4' -and $Track -eq 'FieldEditing'){$source='S4FieldEditingCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'BindingEditing'){$source='S4BindingEditingCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'RoiEditing'){$source='S4RoiEditingCases.cs'}
+if($Stage -eq 'S4' -and $Track -eq 'FullChain'){$source='S4FullChainCases.cs'}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot $source) -Destination (Join-Path $dir 'Cases.cs')
 Copy-Item -LiteralPath (Join-Path $dir 'Cases.cs') -Destination (Join-Path $logDir 'cases.cs.txt')
 $caseSourceSha=(Get-FileHash -LiteralPath (Join-Path $logDir 'cases.cs.txt') -Algorithm SHA256).Hash

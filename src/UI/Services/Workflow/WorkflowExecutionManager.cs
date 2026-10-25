@@ -803,12 +803,31 @@ namespace SunEyeVision.UI.Services.Workflow
                     return consistencyResult;
                 }
 
+                // Execution copies intentionally contain model-only nodes. Presentation must
+                // address the admitted formal UI instances, never try to cast those copies.
+                var presentationNodes=new Dictionary<string,SunEyeVision.UI.Shared.WorkflowNode>(StringComparer.Ordinal);
+                var presentationFlows=new HashSet<string>(StringComparer.Ordinal);
+                void CapturePresentationNodes(SunEyeVision.Workflow.Workflow definition)
+                {
+                    if(!presentationFlows.Add(definition.Id))return;
+                    foreach(var item in definition.Nodes)
+                    {
+                        if(item is SunEyeVision.UI.Shared.WorkflowNode ui)presentationNodes[item.Id]=ui;
+                        if(!string.IsNullOrEmpty(item.SubroutineId)&&_workflowEngine.GetWorkflow(item.SubroutineId) is { } child)CapturePresentationNodes(child);
+                    }
+                }
+                CapturePresentationNodes(formalRoot!);
+                SunEyeVision.UI.Shared.WorkflowNode? PresentationNode(string id)
+                    =>ReferenceEquals(_workflowEngine.GetWorkflow(workflow.RootWorkflowId),formalRoot)
+                        &&presentationNodes.TryGetValue(id,out var original)
+                        &&ReferenceEquals(FindNodeRecursive(formalRoot!,id),original)?original:null;
+
                 // ★ 订阅节点状态事件：引擎状态 → 画布节点（解决状态断点）
                 //   引擎在 Running/Completed/Failed/Skipped 时发事件，此处映射到 UI 节点 Status。
                 //   找不到节点记日志跳过（Fail-Forward），不中断流程。
                 executionEngine.NodeStatusChanged += (_, e) =>
                 {
-                    var node = FindNodeRecursive(rootEngineWorkflow, e.NodeId);
+                    var node = PresentationNode(e.NodeId);
                     var snapshotNodeName = GetSnapshotNodeName(rootEngineWorkflow, e.NodeId);
                     var statusText = e.Status switch
                     {
@@ -822,6 +841,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     {
                         InvokeOnUI(() =>
                         {
+                            if(!ReferenceEquals(PresentationNode(e.NodeId),uiNode))return;
                             uiNode.Status = statusText;
                             snapshot.UpdateNodeStatus(e.NodeId, snapshotNodeName, statusText);
                             ExecutionSnapshotUpdated?.Invoke(this, snapshot);
@@ -957,7 +977,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     foreach (var nodeResult in result.NodeResults)
                     {
-                        var node = FindNodeRecursive(rootEngineWorkflow, nodeResult.Key);
+                        var node = PresentationNode(nodeResult.Key);
                         if (node is SunEyeVision.UI.Shared.WorkflowNode uiNode)
                         {
                             // 创建一个包含结果的 ToolResults

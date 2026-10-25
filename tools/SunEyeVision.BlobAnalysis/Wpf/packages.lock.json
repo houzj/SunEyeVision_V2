@@ -15,32 +15,6 @@
           "Microsoft.Win32.SystemEvents": "9.0.0"
         }
       },
-      "System.IO.Pipelines": {
-        "type": "Transitive",
-        "resolved": "10.0.3",
-        "contentHash": "WMxiA2jGdHnRBmoVK55YUq5VPaxW0Sg2frPtXV+urUMvpqHIga6lleV/YuryHIuGsAKVjQAjv6PrQ6IJpoLohQ=="
-      },
-      "System.Text.Encodings.Web": {
-        "type": "Transitive",
-        "resolved": "10.0.3",
-        "contentHash": "l8QNBPp92bVzl9Kw8nNtm1uYRNNhUrdulZjM4a8YK/QGNa8z9utKsC0bDoPB+Vq8LOlbD3fIyGlabtz80jT7cw=="
-      },
-      "System.Text.Json": {
-        "type": "Transitive",
-        "resolved": "10.0.3",
-        "contentHash": "NTUt9DL+maqbgrIYCAmeZUbX0NoXaueySyjW/bdOlFdSUDC1l51XnsbVEuj5tuad12vdq5Sviskp9uMVGgCNLw==",
-        "dependencies": {
-          "System.IO.Pipelines": "10.0.3",
-          "System.Text.Encodings.Web": "10.0.3"
-        }
-      },
-      "suneyevision.haladapter": {
-        "type": "Project",
-        "dependencies": {
-          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
-        }
-      },
       "suneyevision.haladapter.runtime": {
         "type": "Project",
         "dependencies": {
@@ -65,15 +39,6 @@
           "System.Drawing.Common": "[9.0.0, )"
         }
       },
-      "suneyevision.tool.blobanalysis": {
-        "type": "Project",
-        "dependencies": {
-          "SunEyeVision.HalAdapter": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Tool.BlobAnalysis.Runtime": "[2.0.0-alpha.8, )",
-          "System.Text.Json": "[10.0.3, )"
-        }
-      },
       "suneyevision.tool.blobanalysis.runtime": {
         "type": "Project",
         "dependencies": {
@@ -90,11 +55,6 @@
         "type": "Transitive",
         "resolved": "9.0.0",
         "contentHash": "z8FfGIaoeALdD+KF44A2uP8PZIQQtDGiXsOLuN8nohbKhkyKt7zGaZb+fKiCxTuBqG22Q7myIAioSWaIcOOrOw=="
-      },
-      "System.Text.Encodings.Web": {
-        "type": "Transitive",
-        "resolved": "10.0.3",
-        "contentHash": "l8QNBPp92bVzl9Kw8nNtm1uYRNNhUrdulZjM4a8YK/QGNa8z9utKsC0bDoPB+Vq8LOlbD3fIyGlabtz80jT7cw=="
       }
     }
   }

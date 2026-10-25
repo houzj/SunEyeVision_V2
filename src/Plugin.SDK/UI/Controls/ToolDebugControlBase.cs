@@ -334,7 +334,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 try { RaiseToolExecutionCompleted(results, ExecutionTime); }
                 finally { (results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.Resources?.Dispose(); }
 
-                PluginLogger.Success($"工具执行完成，耗时 {ExecutionTime}ms", GetType().Name);
+                if(results is SunEyeVision.Plugin.SDK.Execution.Results.ToolResults {IsSuccess:false} failed)
+                    PluginLogger.Error(failed.ErrorMessage??"工具执行失败。",GetType().Name);
+                else PluginLogger.Success($"工具执行完成，耗时 {ExecutionTime}ms", GetType().Name);
             }
             catch (Exception ex)
             {

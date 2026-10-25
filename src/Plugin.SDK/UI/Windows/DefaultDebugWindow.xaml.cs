@@ -167,6 +167,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
 
             _isExecuting = true;
             SetButtonsEnabled(false);
+            ExecutionMessage.Visibility=Visibility.Collapsed;
 
             PluginLogger.Info("执行命令触发", "DefaultDebugWindow");
 
@@ -241,6 +242,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             {
                 _isExecuting = false;
                 SetButtonsEnabled(true);
+                ExecutionMessage.Text=e.IsSuccess?"":e.ErrorMessage??"执行失败。";
+                ExecutionMessage.Visibility=e.IsSuccess?Visibility.Collapsed:Visibility.Visible;
+                if(!e.IsSuccess)
+                {
+                    _isContinuousRunning=false;ContinuousRunButton.Content="连续执行";RunButton.Visibility=Visibility.Visible;
+                }
                 if ((e.Results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.ExecutionIdentity?.IsCurrent == false)
                 {
                     (e.Results as IDisposable)?.Dispose();
@@ -275,6 +282,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
 
             _isExecuting = true;
             SetButtonsEnabled(false);
+            ExecutionMessage.Visibility=Visibility.Collapsed;
 
             // 显式将 Execute 命令路由到工具控件执行
             ToolCommands.Execute.Execute(null, _control);

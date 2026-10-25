@@ -1,0 +1,34 @@
+{
+  "status": "ACCEPTED_STATIC_EVIDENCE_NOT_RUNTIME_PROOF",
+  "sourceRoot": "D:/MyWork/REA逆向测试",
+  "copiedReport": "docs/collaboration/evidence/VM_S3_FRAMEWORK_AND_OWNERSHIP_20261025.md",
+  "reportSha256": "9E8A878C5033A4066216F30959EB8B0B604CDA68062A6B7944A2365EEE3D1472",
+  "directorSpotChecks": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.cs",
+      "location": "708–827，尤其GetExternTabWin回退与XML文件门槛",
+      "sha256": "36be1620196c60a72efb03dab8afb4fa302ba1ba8ec4acf7eb1f5f61883678bd"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ModuleManager.cs",
+      "location": "1045–1067：查询指针转结构",
+      "sha256": "783a45b1518f713223eca2b5e59291be973552c3e08fef0ea0d4bfccc2fbd922"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/result-query-ownership.resources/VM.Core.VmModule.decompiled.cs",
+      "location": "143：ModuResultMemType默认深复制，可配置",
+      "sha256": "53e2f0f9032c4631b59cf0eb2a00e06d50469d94706e7e370e9cc7e1059c72ce"
+    }
+  ],
+  "adopted": "职责分离/可选专用编辑器、有限直接入口；本方中立合同和独立lease是已批准的独立设计，不声称复刻VM的UI耦合或native生命期。",
+  "open": [
+    "native SDK内部由模块名解析/加载Blob算法DLL的后半链（托管前半链已查清）",
+    "native结果pData拥有者与释放时点",
+    "原机缺Control.dll实际执行对照"
+  ],
+  "stopBoundary": "当前静态证据足以支持本轮职责设计；以上缺口不能写成已确认，也不阻塞本项目独立资源设计，不要求扩为全项目native逆向。",
+  "historyReportSha256": "C89AC4316F9C0DF11A4337832C7AF61421AEC146557474498FED98508D0666A3",
+  "historyLocation": "docs/collaboration/evidence/S3-facade-delegation-checkpoint-20261025.zip:history/VM_S3_FRAMEWORK_AND_OWNERSHIP_v1.md",
+  "additionalStaticChain": "VmSolution.LoadModules→VmModuleSet.CreateModuleToolRe/LoadModuleDLL：托管Cs包装器与可选Control独立装载；VmModule.CreateToModuleSet→SyncAddOneModule→IMVS_AddOneModule传模块名到native SDK。native内部解析/加载算法DLL仍未闭合。",
+  "nativeProviderLimit": "逆向报告记录Ghidra/Hopper/IDA provider不可用，不能把未取到native函数体写成实现不存在；本轮不安装新工具或扩查全项目。"
+}

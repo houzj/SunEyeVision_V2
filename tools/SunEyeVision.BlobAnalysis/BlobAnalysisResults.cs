@@ -15,13 +15,19 @@ namespace SunEyeVision.Tool.BlobAnalysis
     public class BlobAnalysisResults : ToolResults
     {
         public BlobAnalysisResults(){Resources=new ResultResourceOwner(ReleaseOwnedOutputs);}
+        internal Runtime.BlobOutput? RuntimeOutput { get; set; }
         private void ReleaseOwnedOutputs()
         {
-            var owned=new IDisposable?[]{GrayImage,BinaryMask,OverlayImage,BlobRegions,OkBlobRegions,NgBlobRegions};
+            var owned=new IDisposable?[]{GrayImage,BinaryMask,OverlayImage,BlobRegions,OkBlobRegions,NgBlobRegions,RuntimeOutput};
             var errors=new List<Exception>();
             foreach(var item in owned.Where(value=>value is not null).Distinct(ReferenceEqualityComparer.Instance).Cast<IDisposable>())
                 try{item.Dispose();}catch(Exception fault){errors.Add(fault);}
             if(errors.Count>0)throw new AggregateException(errors);
+        }
+        internal void ClearPartialOutputs()
+        {
+            try { ReleaseOwnedOutputs(); }
+            finally { GrayImage=null; BinaryMask=null; OverlayImage=null; BlobRegions=null; OkBlobRegions=null; NgBlobRegions=null; RuntimeOutput=null; }
         }
         public override IReadOnlyList<OutputVariable> GetOutputVariables()
         {

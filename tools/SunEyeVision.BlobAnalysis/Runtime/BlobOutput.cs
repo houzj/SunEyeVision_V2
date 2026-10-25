@@ -14,16 +14,20 @@ public sealed class BlobOutput : IToolOutput, IDisposable
 {
     private readonly IDisposable[] _owned;
     private int _disposed;
-    internal BlobOutput(IEnumerable<BlobMeasurement> measurements, IReadOnlyImage? gray, IReadOnlyImage? binary,
+    internal BlobOutput(BlobSettings settings, IEnumerable<BlobMeasurement> measurements, IReadOnlyImage? gray, IReadOnlyImage? binary,
         IReadOnlyRegion region, IReadOnlyRegion ok, IReadOnlyRegion ng, double whiteRatio,
         double[] histogram, double[] means, bool isPass, IEnumerable<string> messages, IEnumerable<IDisposable> owned)
     {
+        ThresholdMinUsed=settings.Threshold; ThresholdMaxUsed=settings.MaxValue; TypeUsed=settings.Type.ToString();
         Measurements = Array.AsReadOnly(measurements.ToArray()); GrayImage = gray; BinaryImage = binary;
         Region = region; OkRegion = ok; NgRegion = ng; WhitePixelRatio = whiteRatio;
         Histogram = Array.AsReadOnly(histogram.ToArray()); ChannelMeans = Array.AsReadOnly(means.ToArray());
         IsPass = isPass; JudgmentMessages = Array.AsReadOnly(messages.ToArray()); _owned = owned.Distinct<IDisposable>(ReferenceEqualityComparer.Instance).ToArray();
     }
     public IReadOnlyList<BlobMeasurement> Measurements { get; }
+    public int ThresholdMinUsed { get; }
+    public int ThresholdMaxUsed { get; }
+    public string TypeUsed { get; }
     public IReadOnlyImage? GrayImage { get; }
     public IReadOnlyImage? BinaryImage { get; }
     public IReadOnlyRegion Region { get; }
@@ -45,8 +49,18 @@ public sealed class BlobOutput : IToolOutput, IDisposable
         return new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?> {
             [BlobSchema.BlobsPort] = new SequenceValue(BlobSchema.BlobsType, Measurements.Select(x => (object?)BlobSchema.Freeze(x))),
             [BlobSchema.Field(5)] = GrayImage, [BlobSchema.Field(6)] = BinaryImage,
+            [BlobSchema.Field(4)] = IsPass,
+            [BlobSchema.Field(8)] = (long)ThresholdMinUsed, [BlobSchema.Field(9)] = (long)ThresholdMaxUsed, [BlobSchema.Field(10)] = TypeUsed,
             [BlobSchema.Field(11)] = (long)Count, [BlobSchema.Field(12)] = TotalArea,
             [BlobSchema.Field(13)] = AverageArea, [BlobSchema.Field(16)] = WhitePixelRatio,
+            [BlobSchema.Field(14)] = Count==0?0:Measurements.Average(x=>x.Circularity),
+            [BlobSchema.Field(15)] = Count==0?0:Measurements.Average(x=>x.Rectangularity),
+            [BlobSchema.Field(17)] = Histogram.ToArray(), [BlobSchema.Field(18)] = ChannelMeans.ToArray(),
+            [BlobSchema.Field(19)] = Measurements.Select(x=>x.Area).ToArray(), [BlobSchema.Field(20)] = Measurements.Select(x=>x.Perimeter).ToArray(),
+            [BlobSchema.Field(21)] = Measurements.Select(x=>x.CentroidX).ToArray(), [BlobSchema.Field(22)] = Measurements.Select(x=>x.CentroidY).ToArray(),
+            [BlobSchema.Field(23)] = Measurements.Select(x=>x.Circularity).ToArray(), [BlobSchema.Field(24)] = Measurements.Select(x=>x.Rectangularity).ToArray(),
+            [BlobSchema.Field(25)] = Measurements.Select(x=>x.Bounds.Width).ToArray(), [BlobSchema.Field(26)] = Measurements.Select(x=>x.Bounds.Height).ToArray(),
+            [BlobSchema.Field(27)] = new SequenceValue(TypeRef.SequenceOf((TypeRef)DataType.Text), Measurements.Select(x=>(object?)$"{(int)x.Bounds.Width}×{(int)x.Bounds.Height}")),
             [BlobSchema.RegionPort] = Region
         });
     }

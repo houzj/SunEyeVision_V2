@@ -2,6 +2,10 @@ using System;
 using HalconDotNet;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Tool.BlobAnalysis;
+using System.Reflection;
+using System.Linq;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 // Reuse the guarded official-Release harness entry; this is S3, not an S2 pass claim.
 internal static class S2DocumentEditingCases
@@ -53,7 +57,34 @@ internal static class S2DocumentEditingCases
                 "应先生成全部候选、按面积降序，再取数量上限，而非提前取到小区域：" + final.ErrorMessage); }
             finally { final.Resources.Dispose(); }
             Console.WriteLine("通过：候选完整生成，筛选排序后才执行数量限制");
-            Console.WriteLine("S3算法局部检查：3通过。工程拆分/中立运行/完整轮廓与装配仍未核收。");
+            var ringPixels=new byte[32*24];
+            for(int r=2;r<=16;r++)for(int c=2;c<=16;c++)
+                if(!(r>=5&&r<=7&&c>=5&&c<=7)&&!(r>=10&&r<=12&&c>=10&&c<=12))ringPixels[r*32+c]=200;
+            for(int r=20;r<=21;r++)for(int c=25;c<=26;c++)ringPixels[r*32+c]=200;
+            using var rings=HalImage.CreateFromBytes(ringPixels,32,24,1);
+            var delegated=Settings();delegated.ResolvedInputImage=rings;delegated.OutputContours=true;delegated.OutputBinaryImage=true;
+            var areaRule=delegated.ResultPresentation.Judgments.Single(x=>x.Key=="per-blob-area");
+            areaRule.Enabled=true;areaRule.Min=10;areaRule.Max=9999;
+            var actual=new BlobAnalysisTool().Run(delegated);
+            try
+            {
+                Require(actual.IsSuccess&&actual.FilteredBlobCount==2&&actual.FilteredTotalArea==211&&!actual.IsPass,"兼容入口丢失最终集合/NG："+actual.ErrorMessage);
+                var core=(BlobOutput?)typeof(BlobAnalysisResults).GetProperty("RuntimeOutput",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(actual);
+                Require(core is not null&&core.Measurements[0].Boundary.Count==3&&core.Measurements[0].Area==207,"入口未持有真实Runtime完整边界");
+                Require(actual.BlobAreas.SequenceEqual(core!.Measurements.Select(x=>x.Area))&&actual.BlobRegions!.PixelCount==211,"兼容输出数组/区域与内核不一致");
+                using var retained=core.Region.AcquireReader();actual.Resources.Dispose();
+                Require(retained.RunCount>0,"旧结果释放破坏已有Runtime读者");
+            }
+            finally{actual.Resources.Dispose();}
+            Console.WriteLine("通过：旧入口委派真实内核，双孔/NG/数组/区域一致，旧结果释放由scope承接");
+            using var dark=HalImage.CreateFromBytes(new byte[64],8,8,1);
+            var empty=Settings();empty.ResolvedInputImage=dark;
+            empty.ResultPresentation.Judgments.Single(x=>x.Key=="output-not-empty").Enabled=true;
+            var noBlob=new BlobAnalysisTool().Run(empty);
+            try{Require(noBlob.IsSuccess&&!noBlob.IsPass&&noBlob.FilteredBlobCount==0,"布尔非空判定被错当成范围判定");}
+            finally{noBlob.Resources.Dispose();}
+            Console.WriteLine("通过：空结果保持执行成功/业务NG，兼容布尔判断语义");
+            Console.WriteLine("S3算法/兼容入口检查：5组通过；可选编辑器、正式发现装配及完整阶段仍未核收。");
             return 0;
         }
         catch (Exception error) { Console.Error.WriteLine(error); return 1; }

@@ -20,6 +20,21 @@ public static class BlobSchema
         new Port("contour", TypeRef.SequenceOf(PointType), false), new Port("judgment-passed", DataType.Boolean),
         new Port("boundary", BoundaryType, false), new Port("region", TypeRef.ResourceOf(ResourceKind.Region)) });
     public static TypeRef BlobsType { get; } = TypeRef.SequenceOf(BlobType);
+    public static IReadOnlyList<Port> Outputs { get; } = Array.AsReadOnly(new[] {
+        new Port(Field(4), DataType.Boolean),
+        new Port(Field(5), TypeRef.ResourceOf(ResourceKind.Image), Nullable:true),
+        new Port(Field(6), TypeRef.ResourceOf(ResourceKind.Image), Nullable:true),
+        new Port(Field(8), DataType.Integer), new Port(Field(9), DataType.Integer), new Port(Field(10), DataType.Text),
+        new Port(Field(11), DataType.Integer), new Port(Field(12), DataType.Number), new Port(Field(13), DataType.Number),
+        new Port(Field(14), DataType.Number), new Port(Field(15), DataType.Number), new Port(Field(16), DataType.Number),
+        new Port(Field(17), DataType.NumberArray), new Port(Field(18), DataType.NumberArray),
+        new Port(Field(19), DataType.NumberArray), new Port(Field(20), DataType.NumberArray),
+        new Port(Field(21), DataType.NumberArray), new Port(Field(22), DataType.NumberArray),
+        new Port(Field(23), DataType.NumberArray), new Port(Field(24), DataType.NumberArray),
+        new Port(Field(25), DataType.NumberArray), new Port(Field(26), DataType.NumberArray),
+        new Port(Field(27), TypeRef.SequenceOf((TypeRef)DataType.Text)),
+        new Port(BlobsPort, BlobsType), new Port(RegionPort, TypeRef.ResourceOf(ResourceKind.Region))
+    });
 
     public static RecordValue Freeze(BlobMeasurement blob)
     {
@@ -33,6 +48,9 @@ public static class BlobSchema
         };
         if (blob.Boundary.Count != 0)
         {
+            // Explicit legacy projection: one unsmoothed outer path. Complete paths/holes remain in boundary.
+            if(blob.Boundary.FirstOrDefault(p=>p.Role=="outer"&&p.ParentId is null) is { } outer)
+                values["contour"]=new SequenceValue(TypeRef.SequenceOf(PointType),outer.Points.Select(p=>(object?)new PointGeometry(ImageFrame,p)));
             var pathType = BoundaryType.Fields.Single(x => x.Id == "paths").Type.Element!;
             var paths = blob.Boundary.Select(path => {
                 var fields = new Dictionary<string, object?> { ["path-id"] = path.Id, ["role"] = path.Role, ["closed"] = true,

@@ -48,11 +48,26 @@ public interface IToolSession<TSettings,TOutput> : IAsyncDisposable
 }
 public sealed class ToolInvocation<TSettings> where TSettings : IToolSettings<TSettings>
 {
-    public ToolInvocation(TSettings settings, InputValues inputs, IToolExecutionContext context)
-    { Settings=settings; Inputs=inputs; Context=context; }
+    public ToolInvocation(TSettings settings, InputValues inputs, IToolExecutionContext context, IEnumerable<OutputValueRequest>? outputRequests = null)
+    { Settings=settings; Inputs=inputs; Context=context; OutputRequests=Array.AsReadOnly((outputRequests??Array.Empty<OutputValueRequest>()).ToArray()); }
     public TSettings Settings { get; }
     public InputValues Inputs { get; }
     public IToolExecutionContext Context { get; }
+    public IReadOnlyList<OutputValueRequest> OutputRequests { get; }
+}
+
+/// <summary>Frozen downstream demand. Visibility switches cannot suppress resources needed by a consumer.</summary>
+public sealed class OutputValueRequest
+{
+    public OutputValueRequest(string portId, IEnumerable<string>? fieldPath = null)
+    {
+        if(string.IsNullOrWhiteSpace(portId))throw new ArgumentException("Output identity is required.",nameof(portId));
+        var path=(fieldPath??Array.Empty<string>()).ToArray();
+        if(path.Any(string.IsNullOrWhiteSpace))throw new ArgumentException("Output field path contains an empty identity.",nameof(fieldPath));
+        PortId=portId; FieldPath=Array.AsReadOnly(path);
+    }
+    public string PortId { get; }
+    public IReadOnlyList<string> FieldPath { get; }
 }
 /// <summary>Restricted invocation capabilities; deliberately no graph, UI, arbitrary service locator or writable globals.</summary>
 public interface IToolExecutionContext

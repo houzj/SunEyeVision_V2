@@ -172,6 +172,7 @@ def render_s2_stage(page):
            + render_stage_overview()
            + ('<section id="s3-implementation-status"><h3>S3现在改到哪里？</h3>'
               + (table(['优化项', '已实现的效果', '还缺什么'], s3['implementationSummary']) if s3.get('implementationSummary') else '')
+              + (table(['VM已证事实', '本方案怎样采用', '证据边界'], s3['vmComparison']) if s3.get('vmComparison') else '')
               + table(['内容', '实际结果'], [[x['name'], x['result']] for x in s3.get('checks', [])])
               + '<p><b>还没完成：</b>' + escape(s3['next']) + '</p>'
               + '<p>本轮不重做窗口/共享控件，不原样恢复旧变量批次；未安排新的人工验收。'

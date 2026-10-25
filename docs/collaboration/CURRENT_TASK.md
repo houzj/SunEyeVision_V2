@@ -1,4 +1,17 @@
-## 当前活动：持续完成S3，首个检查点已核收、完整阶段未完成（2026-10-25）
+## 当前活动：持续完成S3，旧入口已委派同一内核，完整阶段未完成（2026-10-25）
+
+23:06第三检查点：已删除BlobAnalysisTool原分割/形态学/特征/判定算法本体，保留约147行旧入口/显示适配；新增BlobLegacyAdapter明确映射旧设置、旧ROI/位置修正及显示结果，经中立BlobDefinition/IToolSession调用唯一BlobSession算法。独立定义声明25个中立输出，统一数组/统计/Region及完整boundary；ToolInvocation可携带冻结OutputValueRequest，执行期校验字段路径并按真实消费请求生成资源。旧facade目前还未把工作流消费者需求传入，完整boundary/Region旧声明兼容仍未完成；不冒称全部输出接线完成。旧Contour明确只投影一个未平滑外环，完整拓扑仍在内核输出。
+
+正式Release全量构建0错误/1265条警告；当前同版RuntimeKernel/attempt-006八组通过、DocumentEditing/attempt-006五组通过（含兼容入口双孔/NG/数组/区域/资源释放与空结果布尔判定），S3-facade-definition-regression-20261025的真实Workflow资源链9项、Fields13项通过，S2 Related/attempt-010已有52项复测通过。正式UI工具探针自然exit0、22工具含Blob。工具探针嵌入提交1a775a7f加当前增量候选，不能冒称新提交后重建身份；尚无新用户验收。
+
+复核发现上检查点1a775a7f中的RuntimeKernel脚本漏收两组扩展case及System.IO导入（七组通过日志保留），已补回并新增声明消费case，现八组重新通过。检查宿主现每次保存cases.cs.txt及源码SHA，防止只留结果不能重现。失败attempt-004保留，属于夹具编译错误，不写成产品失败。
+
+逆向证据已收到并核对SHA及关键源码位置：evidence/VM_S3_FRAMEWORK_AND_OWNERSHIP_20261025.md最新版SHA 9E8A878C5033A4066216F30959EB8B0B604CDA68062A6B7944A2365EEE3D1472。静态已确认Blob壳Run→SyncSelfRun、托管包装器/可选Control独立加载及通用编辑器回退、模块名传入IMVS_AddOneModule、默认深复制（可配置）；已在原O06的S3章节说明采用与未知。native内部装载/原生pData释放/原机缺Control运行仍未确认，逆向native provider不可用不影响本方独立scope/lease方案；本次有界取证已足够，已通知停止扩查，不再等待这些无关断点。
+
+下一项必须继续：可选Wpf工程物理拆分，真实ToolRegistry/PluginManager/NodeOpen、组件角色与发布元数据共同接入；验证缺Wpf可执行与重复/缺失/错版本拒绝；补工作流资源需求、完整输出兼容及ROI空/无效来源边界。下一检查点预计30–45分钟内据实报告实际工程/发布进度，不是S3完工承诺。原O06仍689唯一锚点/幂等，阶段证据归档evidence/S3-facade-delegation-checkpoint-20261025.zip约178KB，无程序副本。
+
+---
+### 前一检查点事实（以下保留历史，不覆盖上述当前状态）
 
 最新协作调整：用户明确要求继续实施、让逆向项目查证；逆向主程序保留取证统筹、源码分析、实机验证三个既有对话。本项目仍只有当前实施对话，通过取证统筹集中对接，不恢复旧经理/文档链。协议及AGENTS已修正。逆向已开始查Blob依赖/SDK资源缓冲区，但最新最终回复转为其内部框架协议，尚未交付本次问题的集中证据；已请求把已查事实固化并补具体位置与缺口，不能把派工或静态AssemblyRef等同完整取证。
 

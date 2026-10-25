@@ -7,7 +7,8 @@ public enum BlobSort { None, AreaAsc, AreaDesc, CircularityAsc, CircularityDesc,
 public enum BlobPreprocess { None, Mean, Gaussian, Median, HistogramEqualization }
 public enum BlobMorphology { Erosion, Dilation, Opening, Closing, TopHat, BottomHat }
 public enum BlobElementShape { Rectangle, Circle }
-public sealed record BlobJudgment(string Key, bool PerItem, bool Enabled, double Minimum, double Maximum);
+public enum BlobJudgmentKind { Range, Empty, Boolean }
+public sealed record BlobJudgment(string Key, bool PerItem, bool Enabled, double Minimum, double Maximum, BlobJudgmentKind Kind = BlobJudgmentKind.Range);
 
 /// <summary>Business settings only: no bindings, brushes, view state, backend handles or writable globals.</summary>
 public sealed record BlobSettings : IToolSettings<BlobSettings>
@@ -57,7 +58,13 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         Range(IsCircularityFilterEnabled, FilterCircularityMin, FilterCircularityMax, 1);
         Range(IsRectangularityFilterEnabled, FilterRectangularityMin, FilterRectangularityMax, 1);
         Check(Judgments.Select(x => x.Key).Distinct(StringComparer.Ordinal).Count() == Judgments.Count, "结果判定键不得重复。");
-        foreach (var rule in Judgments) Check(!rule.Enabled || double.IsFinite(rule.Minimum) && double.IsFinite(rule.Maximum) && rule.Minimum <= rule.Maximum, "结果判定范围无效。");
+        foreach (var rule in Judgments)
+        {
+            Check(Enum.IsDefined(rule.Kind), "结果判定类型无效。");
+            Check(!rule.Enabled || rule.Kind != BlobJudgmentKind.Range || double.IsFinite(rule.Minimum) && double.IsFinite(rule.Maximum) && rule.Minimum <= rule.Maximum, "结果判定范围无效。");
+            Check(rule.PerItem ? rule.Key is "per-blob-area" or "per-blob-circularity" or "per-blob-rectangularity"
+                : rule.Key is "output-not-empty" or "white-ratio" or "blob-count" or "total-area" or "average-area" or "max-area" or "min-area" or "average-circularity" or "average-rectangularity", "结果判定键与作用范围不匹配。");
+        }
         return errors;
     }
 }

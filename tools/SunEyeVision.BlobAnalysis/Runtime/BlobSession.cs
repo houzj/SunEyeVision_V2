@@ -8,8 +8,45 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 public enum BlobOutputRequest { None = 0, GrayImage = 1, BinaryImage = 2, Boundary = 4 }
 
 /// <summary>One synchronous HALCON invocation; all public inputs/outputs are vendor-neutral.</summary>
-public sealed partial class BlobSession
+public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
 {
+    private int _disposed;
+    public ValueTask DisposeAsync() { Interlocked.Exchange(ref _disposed, 1); return ValueTask.CompletedTask; }
+
+    public ValueTask<ToolOutcome<BlobOutput>> ExecuteAsync(ToolInvocation<BlobSettings> invocation)
+    {
+        try
+        {
+            ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
+            var schema=new BlobDefinition().Describe(invocation.Settings);
+            var requested=BlobOutputRequest.None;
+            foreach(var demand in invocation.OutputRequests)
+            {
+                var port=schema.Outputs.SingleOrDefault(p=>p.Id==demand.PortId)
+                    ?? throw new ArgumentException("Unknown requested Blob output: "+demand.PortId);
+                var type=port.Type;
+                foreach(var field in demand.FieldPath)
+                {
+                    while(type.Shape==ValueShape.Sequence)type=type.Element!;
+                    if(type.Shape!=ValueShape.Record)throw new ArgumentException("Requested field is not a record member.");
+                    type=type.Fields.SingleOrDefault(p=>p.Id==field)?.Type
+                        ?? throw new ArgumentException("Unknown requested Blob field: "+field);
+                }
+                if(port.Id==BlobSchema.Field(5))requested|=BlobOutputRequest.GrayImage;
+                if(port.Id==BlobSchema.Field(6))requested|=BlobOutputRequest.BinaryImage;
+                if(port.Id==BlobSchema.BlobsPort&&(demand.FieldPath.Count==0||demand.FieldPath[0] is "boundary" or "contour"))requested|=BlobOutputRequest.Boundary;
+            }
+            var input=invocation.Inputs;
+            var output=Execute(invocation.Settings,input.Get<IReadOnlyImage>(BlobDefinition.ImageInput),invocation.Context.Resources,
+                input.Contains(BlobDefinition.InspectionInput)?input.Get<IReadOnlyRegion>(BlobDefinition.InspectionInput):null,
+                input.Contains(BlobDefinition.MaskInput)?input.Get<IReadOnlyRegion>(BlobDefinition.MaskInput):null,
+                input.Contains(BlobDefinition.PoseInput)?input.Get<RecordValue>(BlobDefinition.PoseInput):null,
+                invocation.Context.Cancellation,requested);
+            return ValueTask.FromResult(ToolOutcome<BlobOutput>.Completed(output,output.IsPass?BusinessJudgment.Pass:BusinessJudgment.Fail));
+        }
+        catch(OperationCanceledException) { return ValueTask.FromResult(ToolOutcome<BlobOutput>.Failed("BLOB_CANCELLED","Blob执行已取消。")); }
+        catch(Exception e) { return ValueTask.FromResult(ToolOutcome<BlobOutput>.Failed("BLOB_EXECUTION_FAILED",e.Message)); }
+    }
     private sealed record Candidate(int Index, double Area, double Perimeter, double X, double Y,
         double Circularity, double Rectangularity, BlobBounds Bounds, Point2[] Corners, bool IsPass);
 
@@ -17,6 +54,7 @@ public sealed partial class BlobSession
         IReadOnlyRegion? mask = null, RecordValue? pose = null, CancellationToken cancellation = default,
         BlobOutputRequest requested = BlobOutputRequest.None)
     {
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
         ArgumentNullException.ThrowIfNull(settings); ArgumentNullException.ThrowIfNull(input); ArgumentNullException.ThrowIfNull(resources);
         settings = settings.Freeze();
         var errors = settings.Validate();
@@ -112,12 +150,14 @@ public sealed partial class BlobSession
                     "average-rectangularity" => ordered.Length == 0 ? 0 : ordered.Average(x => x.Rectangularity),
                     _ => throw new ArgumentException("Unknown overall Blob judgment: " + rule.Key)
                 };
-                bool passed = value >= rule.Minimum && value <= rule.Maximum;
+                bool passed = Judge(rule, value);
                 isPass &= passed; messages.Add($"[{(passed ? "OK" : "NG")}] {rule.Key}: {value}");
             }
             if (ordered.Any(x => !x.IsPass)) messages.Add($"[NG] {ordered.Count(x => !x.IsPass)} Blob未通过单项判断。");
             cancellation.ThrowIfCancellationRequested();
-            return new(measurements, grayOutput, binaryOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources });
+            var output = new BlobOutput(settings, measurements, grayOutput, binaryOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources });
+            _ = new InputValues(BlobSchema.Outputs, output.ToValues());
+            return output;
         }
         catch (Exception failure)
         {
@@ -182,7 +222,7 @@ public sealed partial class BlobSession
             {
                 double value = rule.Key switch { "per-blob-area" => areas[i].D, "per-blob-circularity" => circ, "per-blob-rectangularity" => rect,
                     _ => throw new ArgumentException("Unknown per-Blob judgment: " + rule.Key) };
-                pass &= value >= rule.Minimum && value <= rule.Maximum;
+                pass &= Judge(rule, value);
             }
             result.Add(new(i + 1, areas[i].D, perimeter[i].D, cols[i].D, rows[i].D, circ, rect,
                 new(c1[i].D, r1[i].D, c2[i].D - c1[i].D + 1, r2[i].D - r1[i].D + 1),
@@ -190,6 +230,12 @@ public sealed partial class BlobSession
         }
         return result.ToArray();
     }
+
+    private static bool Judge(BlobJudgment rule, double value) => rule.Kind switch {
+        BlobJudgmentKind.Range => value >= rule.Minimum && value <= rule.Maximum,
+        BlobJudgmentKind.Boolean => value != 0,
+        _ => false
+    };
 
     private static IEnumerable<Candidate> Sort(IEnumerable<Candidate> source, BlobSort mode) => mode switch {
         BlobSort.AreaAsc => source.OrderBy(x => x.Area), BlobSort.AreaDesc => source.OrderByDescending(x => x.Area),

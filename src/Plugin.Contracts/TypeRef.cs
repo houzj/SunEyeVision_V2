@@ -6,7 +6,7 @@ namespace SunEyeVision.Plugin.Contracts;
 public enum ValueShape { Scalar, Sequence, Record, Geometry, Resource }
 public enum ScalarKind { Boolean, Int64, Float64, Text }
 public enum GeometryKind { Point, Line, Circle, Arc, OrientedRectangle, Ellipse, Polygon }
-public enum ResourceKind { Image, Model, Contour }
+public enum ResourceKind { Image, Model, Contour, Region }
 
 public readonly record struct CountConstraint
 {

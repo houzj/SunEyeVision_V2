@@ -68,6 +68,7 @@ public sealed class InputValues
     }
     public IReadOnlyDictionary<string,object?> CopyValues()=>new ReadOnlyDictionary<string,object?>(_values.ToDictionary(p=>p.Key,p=>ValueRules.Copy(p.Value),StringComparer.Ordinal));
     public IEnumerable<IReadOnlyImage> Images()=>_values.Values.SelectMany(ValueRules.Images).Distinct(ReferenceEqualityComparer.Instance).Cast<IReadOnlyImage>();
+    public IEnumerable<IReadOnlyRegion> Regions()=>_values.Values.SelectMany(ValueRules.Regions).Distinct(ReferenceEqualityComparer.Instance).Cast<IReadOnlyRegion>();
 }
 public static class ValueRules
 {
@@ -94,10 +95,15 @@ public static class ValueRules
                 _ => false },
             ValueShape.Sequence => port.Type.Element == (TypeRef)DataType.Number &&
                 value is double[] a && port.Type.Count.Accepts(a.Length) && a.All(double.IsFinite),
-            ValueShape.Resource => port.Type.Resource == ResourceKind.Image && value is IReadOnlyImage,
+            ValueShape.Resource => port.Type.Resource switch {
+                ResourceKind.Image => value is IReadOnlyImage,
+                ResourceKind.Region => value is IReadOnlyRegion,
+                _ => false },
             ValueShape.Geometry => value is GeometryValue geometry && geometry.Kind==port.Type.Geometry && geometry.Frame==port.Type.Frame,
             _ => false };
         if(!valid)throw new ArgumentException($"Invalid value type for {port.Id} ({port.Type})");
+        if(value is IReadOnlyImage image)ResourceContractRules.ValidateImage(image);
+        if(value is IReadOnlyRegion region)ResourceContractRules.ValidateRegion(region);
         return value is double[] array?array.Clone():value;
     }
     internal static object? Copy(object? value)=>value is double[] array?array.Clone():value;
@@ -106,6 +112,13 @@ public static class ValueRules
         if(value is IReadOnlyImage image)yield return image;
         else if(value is RecordValue record){foreach(var item in record.Images())yield return item;}
         else if(value is SequenceValue sequence){foreach(var element in sequence)foreach(var item in Images(element))yield return item;}
+    }
+    internal static IEnumerable<IReadOnlyRegion> Regions(object? value)
+    {
+        if(value is IReadOnlyRegion region)yield return region;
+        else if(value is IReadOnlyImage image)yield return image.EffectiveDomain;
+        else if(value is RecordValue record){foreach(var item in record.Regions())yield return item;}
+        else if(value is SequenceValue sequence){foreach(var element in sequence)foreach(var item in Regions(element))yield return item;}
     }
 }
 public sealed class OutputReference

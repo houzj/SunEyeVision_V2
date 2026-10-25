@@ -1,53 +1,38 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Reflection;
+using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Workflow.Persistence;
 
-/// <summary>Only documented V1 conversions; never writes the input file.</summary>
+/// <summary>Validates current documents and applies documented V1 conversions in memory; never writes the input file.</summary>
 internal static class SolutionCompatibilityAdapter
 {
     public static void Prepare(JsonNode root, List<PersistenceDiagnostic> diagnostics)
     {
         CheckDuplicateKeys(root.ToJsonString());
         RequireId(root, "$");
-        if (root["SchemaVersion"] != null && root["SchemaVersion"]!.GetValue<int>() != 1)
-            throw new JsonException("Unsupported SchemaVersion.", "$.SchemaVersion", null, null);
+        var legacy = SolutionFormatPolicy.ReadVersion(root) == SolutionFormatPolicy.Legacy;
+        var knownRootFields = typeof(Solution).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(property => property.GetCustomAttribute<JsonExtensionDataAttribute>() is null
+                && property.GetCustomAttribute<JsonIgnoreAttribute>()?.Condition != JsonIgnoreCondition.Always)
+            .Select(property => property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name)
+            .ToHashSet(StringComparer.Ordinal);
+        foreach (var property in (JsonObject)root)
+            if (!knownRootFields.Contains(property.Key))
+                throw new JsonException("Unknown solution field; no approved migration exists.", "$." + property.Key, null, null);
         if (root["GlobalVariables"] is JsonArray variables)
         for (int i = 0; i < variables.Count; i++)
         {
             var variable = variables[i] ?? throw new JsonException("Null variable.");
             var path = "$.GlobalVariables[" + i + "]";
             RequireId(variable, path);
-            if (variable["Value"] == null) continue;
-            var wrapper = variable["Value"] as JsonObject ?? throw new JsonException("Value wrapper must be an object.", path + ".Value", null, null);
-            var type = wrapper["Type"]?.GetValue<string>();
-            if (string.IsNullOrWhiteSpace(type) || !wrapper.ContainsKey("Value") || SdkTypeVocabulary.ToSystemType(type) == null)
-                throw new JsonException("Invalid variable wrapper.", path + ".Value", null, null);
-            var declared = variable["Type"]?.GetValue<string>() ?? throw new JsonException("Variable Type is required.", path + ".Type", null, null);
-            if (CanonicalType(declared) != CanonicalType(type))
-                throw new JsonException("Variable Type disagrees with value Type.", path + ".Value.Type", null, null);
-            var normalizedType = CanonicalType(type) switch
-            {
-                "System.Int64" => "Integer", "System.Double" => "Double",
-                "System.String" => "String", "System.Boolean" => "Boolean", _ => type
-            };
-            if (normalizedType != type)
-            {
-                wrapper["Type"] = normalizedType;
-                variable["Type"] = normalizedType;
-                diagnostics.Add(new("COMPAT_TYPE_ALIAS", "Compatibility", "Warning", path + ".Type", "Known legacy type alias normalized in candidate only."));
-                type = normalizedType;
-            }
-            if (wrapper["Value"] == null)
-                diagnostics.Add(new("COMPAT_TYPED_NULL", "Compatibility", "Warning", path + ".Value", "Typed null retained as an empty value."));
-            else if (type is "Integer" or "Double" or "String" or "Boolean" && wrapper["Value"] is not JsonArray)
-            {
-                wrapper["Value"] = new JsonArray(wrapper["Value"]!.DeepClone());
-                diagnostics.Add(new("COMPAT_SCALAR", "Compatibility", "Warning", path + ".Value.Value", "V1 scalar promoted to a single-element tuple in candidate only."));
-            }
+            SolutionVariableValuePolicy.Prepare(variable, path, legacy, CanonicalType,
+                (code, diagnosticPath, message) => diagnostics.Add(new(code, "Compatibility", "Warning", diagnosticPath, message)));
         }
         if (root["Devices"] is JsonArray devices)
         for (int i = 0; i < devices.Count; i++)
@@ -110,6 +95,7 @@ internal static class SolutionCompatibilityAdapter
                 var node = nodes[n] ?? throw new JsonException("Null node.", path + ".Nodes[" + n + "]", null, null);
                 RequireId(node, path + ".Nodes[" + n + "]");
                 if (!ids.Add(node["Id"]!.GetValue<string>())) throw new JsonException("Duplicate node identity.", path + ".Nodes[" + n + "].Id", null, null);
+                SolutionBindingExpressionPolicy.Validate(node["ParamSettings"], path + ".Nodes[" + n + "].ParamSettings");
             }
             else if (workflow["Nodes"] != null) throw new JsonException("Nodes must be an array.", path + ".Nodes", null, null);
             if (workflow["Connections"] is JsonArray edges)
@@ -127,6 +113,12 @@ internal static class SolutionCompatibilityAdapter
                 }
             }
             else if (workflow["Connections"] != null) throw new JsonException("Connections must be an array.", path + ".Connections", null, null);
+        }
+        if (legacy)
+        {
+            SolutionFormatPolicy.PromoteCandidate(root);
+            diagnostics.Add(new("COMPAT_FORMAT_1_TO_2", "Compatibility", "Warning", "$.SchemaVersion",
+                "Format 1 was adapted to format 2 in memory; the source file is unchanged."));
         }
     }
 

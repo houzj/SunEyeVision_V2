@@ -27,6 +27,8 @@ public sealed class ParameterEditSession
         var p=_ports[id];
         if(s is ConstantSetting c)
         {
+            if (ContainsResource(p.Type))
+                throw new ArgumentException("Resources cannot be stored as configuration constants; bind an invocation source instead.");
             var value=ValueRules.Freeze(p,c.Value);
             if(ValueRules.Images(value).Any())
                 throw new ArgumentException("Borrowed images cannot be stored as configuration constants; bind an invocation source instead.");
@@ -46,6 +48,9 @@ public sealed class ParameterEditSession
         }
         throw new ArgumentException("Invalid binding");
     }
+    private static bool ContainsResource(TypeRef type) => type.Shape == ValueShape.Resource
+        || (type.Element is not null && ContainsResource(type.Element))
+        || type.Fields.Any(field => ContainsResource(field.Type));
     public bool HasInvalidDraft=>_invalid.Count>0;
     public string? DraftError(string id)=>_invalid.GetValueOrDefault(id);
     public bool Set(string id,ParameterSetting setting)

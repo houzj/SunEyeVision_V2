@@ -18,6 +18,7 @@ public sealed class SolutionSnapshot
 
     internal static SolutionSnapshot PrepareJson(string json, string targetPath, bool untitled)
     {
+        SolutionCompatibilityAdapter.CheckDuplicateKeys(json);
         var root = JsonNode.Parse(json) ?? throw new System.Text.Json.JsonException("Empty solution snapshot.");
         if (untitled && (string.IsNullOrWhiteSpace(root["Name"]?.GetValue<string>()) || root["Name"]?.GetValue<string>() == "未命名方案"))
             root["Name"] = Path.GetFileNameWithoutExtension(targetPath);

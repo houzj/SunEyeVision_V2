@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net9.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets><OutputPath>$(MSBuildThisFileDirectory)bin/</OutputPath><OutDir>$(OutputPath)</OutDir></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
+    <Compile Include="../../../../samples/PluginFoundation/Verification/ResourceContractCases.cs" Link="ResourceContractCases.cs" />
+    <Compile Include="../../../../samples/PluginFoundation/Verification/S1ContractMigrationCases.cs" Link="S1ContractMigrationCases.cs" />
+    <Compile Include="../../../../src/Workflow/Persistence/SolutionFormatPolicy.cs" Link="SolutionFormatPolicy.cs" />
+    <Compile Include="../../../../src/Workflow/Persistence/SolutionVariableValuePolicy.cs" Link="SolutionVariableValuePolicy.cs" />
+    <Compile Include="../../../../src/Workflow/Persistence/SolutionBindingExpressionPolicy.cs" Link="SolutionBindingExpressionPolicy.cs" />
+    <Compile Include="../../../../src/Plugin.SDK/Execution/Parameters/BindingType.cs" Link="BindingType.cs" />
+    <Compile Include="../../../../src/Plugin.SDK/Execution/Parameters/ParamSetting.cs" Link="ParamSetting.cs" />
+    <Compile Include="../../../../src/Plugin.SDK/Execution/Parameters/ParamSettingContainer.cs" Link="ParamSettingContainer.cs" />
+  </ItemGroup>
+</Project>
+
+
+

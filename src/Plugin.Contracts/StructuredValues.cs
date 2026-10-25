@@ -38,4 +38,5 @@ public sealed class RecordValue
     public T Get<T>(string fieldId)=>_fields.Get<T>(fieldId);
     public IReadOnlyDictionary<string,object?> CopyFields()=>_fields.CopyValues();
     internal IEnumerable<IReadOnlyImage> Images()=>_fields.Images();
+    internal IEnumerable<IReadOnlyRegion> Regions()=>_fields.Regions();
 }

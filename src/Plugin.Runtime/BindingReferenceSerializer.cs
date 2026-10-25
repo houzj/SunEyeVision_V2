@@ -11,11 +11,27 @@ public static class BindingReferenceSerializer
     private sealed record Document([property:JsonRequired]int ContractMajor,[property:JsonRequired]int ContractMinor,[property:JsonRequired]OutputReference Reference);
     public static string Serialize(OutputReference reference)=>JsonSerializer.Serialize(new Document(FoundationContract.Major,FoundationContract.Minor,reference),Options);
     public static OutputReference Deserialize(string json)
+        => DeserializeVersion(json, FoundationContract.Major, FoundationContract.Minor);
+
+    /// <summary>Explicit in-memory legacy conversion. The document owner must resolve every old identity and declaration.
+    /// This does not change the strict current-version reader and never writes a file.</summary>
+    public static string MigrateVersion4(string json, Func<OutputReference, OutputReference> resolveLegacy)
+    {
+        ArgumentNullException.ThrowIfNull(resolveLegacy);
+        var legacy = DeserializeVersion(json, 4, 0);
+        var resolved = resolveLegacy(legacy) ?? throw new JsonException("Legacy binding has no approved mapping.");
+        var current = Serialize(resolved);
+        _ = Deserialize(current);
+        return current;
+    }
+
+    private static OutputReference DeserializeVersion(string json, int major, int minor)
     {
         try
         {
+        using (var parsed = JsonDocument.Parse(json)) RejectDuplicateProperties(parsed.RootElement);
         var document=JsonSerializer.Deserialize<Document>(json,Options)??throw new JsonException("Binding document is missing.");
-        if(document.ContractMajor!=FoundationContract.Major||document.ContractMinor!=FoundationContract.Minor)throw new JsonException("Binding contract version must match the current major and minor; old documents are not migrated.");
+        if(document.ContractMajor!=major||document.ContractMinor!=minor)throw new JsonException("Binding contract version must match the explicitly requested version; implicit migration is forbidden.");
         return document.Reference??throw new JsonException("Binding reference is missing.");
         }
         catch(Exception fault) when(fault is KeyNotFoundException or InvalidOperationException or ArgumentException or FormatException or OverflowException)
@@ -23,7 +39,30 @@ public static class BindingReferenceSerializer
     }
     private static JsonSerializerOptions CreateOptions()
     {
-        var options=new JsonSerializerOptions();options.Converters.Add(new TypeConverter());options.Converters.Add(new ReferenceConverter());return options;
+        var options=new JsonSerializerOptions { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
+        options.Converters.Add(new TypeConverter());options.Converters.Add(new ReferenceConverter());return options;
+    }
+    private static void RejectDuplicateProperties(JsonElement item)
+    {
+        if (item.ValueKind == JsonValueKind.Object)
+        {
+            var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var property in item.EnumerateObject())
+            {
+                if (!names.Add(property.Name)) throw new JsonException("Duplicate binding property: " + property.Name);
+                RejectDuplicateProperties(property.Value);
+            }
+        }
+        else if (item.ValueKind == JsonValueKind.Array)
+            foreach (var child in item.EnumerateArray()) RejectDuplicateProperties(child);
+    }
+    private static void RequireProperties(JsonElement item, params string[] names)
+    {
+        if (item.ValueKind != JsonValueKind.Object) throw new JsonException("Expected binding object.");
+        var expected = names.ToHashSet(StringComparer.Ordinal);
+        foreach (var property in item.EnumerateObject())
+            if (!expected.Remove(property.Name)) throw new JsonException("Unknown binding property: " + property.Name);
+        if (expected.Count > 0) throw new JsonException("Missing binding property: " + expected.First());
     }
     private sealed class TypeConverter:JsonConverter<TypeRef>
     {
@@ -44,7 +83,20 @@ public static class BindingReferenceSerializer
             }
             try
             {
-                return Kind<ValueShape>("shape") switch
+                var shape = Kind<ValueShape>("shape");
+                RequireProperties(root, shape switch
+                {
+                    ValueShape.Scalar => new[] { "shape", "scalar" },
+                    ValueShape.Sequence => new[] { "shape", "element", "minimum", "maximum" },
+                    ValueShape.Record => new[] { "shape", "recordId", "fields" },
+                    ValueShape.Geometry => new[] { "shape", "geometry", "frameId", "domain", "unit" },
+                    ValueShape.Resource => new[] { "shape", "resource" },
+                    _ => throw new JsonException("Unknown declaration shape.")
+                });
+                if (shape == ValueShape.Record)
+                    foreach (var field in root.GetProperty("fields").EnumerateArray())
+                        RequireProperties(field, "id", "type", "required", "nullable", "storage");
+                return shape switch
                 {
                     ValueShape.Scalar=>TypeRef.ScalarOf(Kind<ScalarKind>("scalar")),
                     ValueShape.Sequence=>TypeRef.SequenceOf(ReadType(root.GetProperty("element")),new(root.GetProperty("minimum").GetInt32(),root.GetProperty("maximum").ValueKind==JsonValueKind.Null?null:root.GetProperty("maximum").GetInt32())),
@@ -83,8 +135,16 @@ public static class BindingReferenceSerializer
         public override OutputReference Read(ref Utf8JsonReader reader,Type typeToConvert,JsonSerializerOptions options)
         {
             using var document=JsonDocument.ParseValue(ref reader);var root=document.RootElement;
+            RequireProperties(root, "nodeId", "fieldId", "scopeId", "storage", "expectedType", "memberFieldPath", "selection");
             var type=JsonSerializer.Deserialize<TypeRef>(root.GetProperty("expectedType").GetRawText(),options)??throw new JsonException("Expected declaration is missing.");
             var selection=root.GetProperty("selection");
+            RequireProperties(selection, selection.GetProperty("kind").GetString() switch
+            {
+                "All" => new[] { "kind" },
+                "AtConstant" => new[] { "kind", "index" },
+                "AtField" => new[] { "kind", "reference" },
+                _ => throw new JsonException("Unknown binding selection.")
+            });
             BindingSelection selected=selection.GetProperty("kind").GetString() switch
             {
                 "All"=>BindingSelection.All,

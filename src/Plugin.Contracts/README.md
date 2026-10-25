@@ -1,4 +1,4 @@
-# SunEyeVision Plugin.Contracts — foundation 4.0
+# SunEyeVision Plugin.Contracts — foundation 5.0
 
 This first-batch SDK is UI-free and does not reference the production UI, workflow implementation or native engines.
 A tool definition describes stable input/output identities, validates frozen settings and creates a non-reentrant session.
@@ -15,4 +15,11 @@ Model/Contour resource execution, full BindingPlan adaptation and production rep
 This internal foundation is not a complete native image or device SDK, a sandbox or a production workflow replacement.
 
 See samples/PluginFoundation/README.md for four representative samples, the independent harness and verification instructions.
-No old solution conversion or legacy plugin binary compatibility is provided. All participants require contract 4.0.
+No old solution conversion or legacy plugin binary compatibility is provided. All participants require contract 5.0.
+
+S1 version 5 introduces explicit pixel layout/stride, frozen physical frame and effective Domain,
+Region read leases, and neutral pose/boundary declarations. Existing resource adapters must migrate;
+there is no dimension-derived Domain fallback. Component role validation is a neutral candidate
+consumer; production discovery, registration, optional-editor loading and deployment are not yet connected.
+Disk document format 2 (controlled read of 1), binding-envelope migration, and plugin ABI are separate policies.
+An explicit old binding mapping does not allow an old plugin binary to load.

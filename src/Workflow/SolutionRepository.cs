@@ -76,8 +76,7 @@ public class SolutionRepository
     {
         if (!root.TryGetProperty("Id", out var id) || id.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(id.GetString()))
             throw new JsonException("方案缺少有效身份。", "$.Id", null, null);
-        if (root.TryGetProperty("SchemaVersion", out var version) && (!version.TryGetInt32(out var number) || number != 1))
-            throw new JsonException("当前软件不支持该方案格式版本。", "$.SchemaVersion", null, null);
+        SolutionFormatPolicy.ValidateReadable(root);
     }
 
     private bool EnsurePluginsLoaded()

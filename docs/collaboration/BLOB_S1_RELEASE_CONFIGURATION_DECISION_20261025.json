@@ -1,0 +1,15 @@
+{
+  "decision": "S1正式Release必须使用同次Release配置的Contracts与Runtime，不接受Debug基础依赖替代。",
+  "status": "APPROVED_MINIMAL_S1_BUILD_FIX_G1_OPEN",
+  "frozenAffectedCommit": "afc93e9b084f7ffd978e19ff354d7f0c18a68d82",
+  "evidence": "实施者追加identity-audit/report.json：SDK/Workflow/HalAdapter/UI/Blob共863源码PDB校验匹配，Contracts/Runtime的root Release文件却与本树Debug输出相同而与Release输出不同；两基础工程未纳入SunEyeVision.slnx。总监实际读取slnx/SDK ProjectReference/两个基础工程Directory.Build.props，确认本轮需修正构建配置入口。Windows PDB解析设施不支持本身不是产品FAIL，实际Debug文件身份才是本决策依据。",
+  "approvedChanges": [
+    "开发作为唯一写者，将实际Plugin.Contracts和Plugin.Runtime工程纳入SunEyeVision.slnx，核对解决方案Release配置传递。",
+    "核evaluated Configuration/OutDir及实际Release根目录、插件依赖来源；若发现具体复制target仍错误，仅修必要构建链并记录。",
+    "新中文提交、全量Release构建、源与正式PE清单、必要运行身份补证和受影响独立复测。"
+  ],
+  "preservation": "afc冻结源码、清单、原产物及测试失败/通过证据保留，不回写为新版本通过；独测旧PE仅作旧版本诊断和可复用场景准备。",
+  "notAuthorizedByThisDecision": ["S2实施", "S3工程物理拆分", "程序集管理扩展", "清理或改写无关旧sln/PPT/Word", "自动合并或推送"],
+  "acceptance": "最终Contracts/Runtime与消费方须来自新固定源的实际Release构建，配置、版本、PE/PDB和发布复制链一致；合同/保存/图像链按受影响范围独验，不能用先前Debug混入包PASS替代。",
+  "owners": { "implementation": "开发工程师", "independentValidation": "测试工程师", "checkpointsAndAcceptance": "交付经理", "architectureAndFinalReview": "技术总监", "phaseDocumentation": "文档工程师" }
+}

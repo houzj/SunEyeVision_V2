@@ -72,6 +72,60 @@
       "consumerReceipt": "实施者确认开工前src/tools/tests clean；ImageInputSource.cs已改IsForRun同步、移除Reset解绑、保存排除删除引用；行为未验",
       "crossModuleOverlap": "MainVM/WorkflowExecutionManager/输入快照/Owner与S3重叠，禁止在制混写",
       "statusBeforeUserPause20261024": "fixed-6c2-scoped-independent-pass-final-integration-and-manual-pending"
+    },
+    {
+      "id": "O06-BLOB-S1",
+      "parent": "原O06 Blob S1–S6落地计划；非新批次",
+      "status": "active-S1-source-in-progress-fixture-audit-pass-environment-partial",
+      "owner": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "coordinator": "01a16695-701e-7523-9c18-1298b9279428",
+      "tester": "01a1620c-5a60-7fb1-a1b1-9b85173896e9",
+      "authorization": "docs/collaboration/BLOB_IMPLEMENTATION_AUTHORIZATION_20261025.json",
+      "baseline": "30d9407872c52ea647174f9ec92ac70c9bd49b87",
+      "worktrees": {
+        "integration": "artifacts/worktrees/blob-s1-component-metadata-20261025 (codex/blob-s1-component-metadata)",
+        "resourceContracts": "artifacts/worktrees/blob-s1-resource-contracts-20261025 (codex/blob-s1-resource-contracts)"
+      },
+      "scope": "G1前只做隔离S1合同/兼容实现及测试夹具准备；S2/S3正式接线须等G1；Blob完整链先试用，八工具后继。",
+      "T0": null,
+      "nextCheckpoints": [
+        "2026-10-25T13:35:00+08:00",
+        "2026-10-25T14:00:00+08:00"
+      ],
+      "productBuildOrRun": "not-started-environment-gate-pending",
+      "blockers": [
+        "PID 16392 dotnet归属/写入情况未知且进程信息受系统ACL限制，禁止终止；要求隔离输出"
+      ],
+      "releaseAuthorized": "是，仍需用户试用及G1–G5/独验和最终Release门按序通过",
+      "automaticMergeOrPush": false,
+      "latestCheckpoint": {
+        "at": "2026-10-25T13:34:00+08:00",
+        "sourceWorktreesCleanBaseline": "30d9407872c52ea647174f9ec92ac70c9bd49b87",
+        "sourceFilesChangedInWorktrees": true,
+        "mainProductDiffEmpty": true,
+        "fixtureManifestSHA256": "061E03B5E4DCBD949E578671777768197C20633D607FBC8B611935850FD5500D",
+        "fixtureAuditSHA256": "6CF6384D549A9656212E42483353C4884E99929E9B223DE25DA538D75BE20795",
+        "environmentPreflightSHA256": "00424B9A872A597525795F78A942D80A74F0EF225C75A0CE7EE3B2A1C4804432",
+        "unknownDotnetPid": "16392; start 2026-10-24 16:20:54+08:00; path/cmdline access denied; untouched",
+        "halconLicense": "unknown; no native execution",
+        "T0": null,
+        "G1": false,
+        "G2G5": false,
+        "productRunOrAcceptance": false,
+        "contractIntentSHA256": "F36855CF64E77778A22D250C0BAFA8A25613575F27E3DCACCAEF31D226BF7823",
+        "migrationIntentSHA256": "399666C9DAD409860CEA21E812A9E8A8699A05F752BE59038DD0CF79187E5383",
+        "migrationManifestSHA256": "DC62CAC31EB58DBF9E99E04A7325814D1D4D0A9E69FAF0FCDE5E67A380155BEE",
+        "parentContractAuditSHA256": "69FA84E1697FCDB17E944E59514E2522E123F30A65A039561E19FA2E9AEBCA81",
+        "licenseProbe": "WAIVED_BY_USER"
+      },
+      "environmentClarification": "HALCON现有加密狗授权已由用户确认；无需独立许可探测或等待。native实际DLL加载和算子调用仍须按功能验证，如真实执行报错再处理。",
+      "nextResourceWindow": {
+        "start": "2026-10-25T13:40:00+08:00",
+        "end": "2026-10-25T13:45:00+08:00",
+        "owner": "01a1620c-5a60-7fb1-a1b1-9b85173896e9",
+        "scope": "隔离native加载和1x1算子正负控，不是license-only probe，不跑产品/UI/性能，不触未知PID",
+        "status": "scheduled-not-run"
+      }
     }
   ],
   "handoffReceipts": [
@@ -255,7 +309,7 @@
     },
     "uiScriptIndependentAcceptance": "artifacts/independent-testing/tool-framework-first-dependency/runs/ui-script97f-20261024/acceptance.json"
   },
-  "updatedAt": "2026-10-24T22:16:34.683938+08:00",
+  "updatedAt": "2026-10-25T13:36:30+08:00",
   "deliveryEstimate": {
     "status": "USER_PAUSED_PENDING_ARCHITECTURE_IMPACT_REVIEW",
     "currentTargetsWithdrawn": true,

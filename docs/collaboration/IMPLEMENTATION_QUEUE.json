@@ -136,7 +136,83 @@
       "scope": "原绑定选择/数量/可见域/依赖/版本失效；同一Runtime实现经SDK入口委托",
       "verification": "97f Engine固定独验通过；F01 47/47独立开发、M03 11/11+独测10组180断言；新中央admission04开发23/23，非新固定全量通过",
       "next": "完成Script实际准入/配置隔离固定包并交独测；生产Workflow expected身份与BindingPlan.Resolve/checked物化、树原范围接线；B01版本片由协调独立实施；最终统一Release与集中人工"
+    },
+    {
+      "id": "O06-BLOB-S1",
+      "priority": "用户明确优先；原O06计划阶段，不新增批次",
+      "status": "S1实施中-隔离worktree已有源码增量-定向构建待完成",
+      "baseline": "30d9407872c52ea647174f9ec92ac70c9bd49b87",
+      "authorization": "docs/collaboration/BLOB_IMPLEMENTATION_AUTHORIZATION_20261025.json",
+      "approvedInput": "artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/blob-complete-final-review-design-input-20261025.json",
+      "approvedPlan": "artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/implementation/blob-implementation-master-plan-20261025.md",
+      "scope": "S1 Contracts5.0、typed Region/boundary/spatial.affine2d、图像stride/Domain资源reader、ToolId/runtime+optional editor元数据、格式2写/格式1受控读与坏引用/未知字段保原盘；先G1后准入S2/S3生产接线。",
+      "owners": {
+        "integrationAndSerializer": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e，公共合同/serializer/persistence唯一集成owner",
+        "resourceContractFiles": "codex/blob-s1-resource-contracts worktree内隔离资源合同子线，具体子owner待开发岗回报",
+        "nativeMetadataConsumers": "先只读映射，任何写入需经理核准精确文件白名单",
+        "independentTest": "01a1620c-5a60-7fb1-a1b1-9b85173896e9，准备专属fixtures/环境，不写产品源码",
+        "delivery": "01a16695-701e-7523-9c18-1298b9279428",
+        "documentation": "01a160f7-9c99-72c1-b8bf-d689bf19f1ad，仅O06事实同步"
+      },
+      "worktrees": {
+        "integration": "artifacts/worktrees/blob-s1-component-metadata-20261025 (codex/blob-s1-component-metadata)",
+        "resourceContracts": "artifacts/worktrees/blob-s1-resource-contracts-20261025 (codex/blob-s1-resource-contracts)"
+      },
+      "checkpoints": {
+        "13:35": "采用/岗位/路径/写权/准入或具体阻塞",
+        "14:00": "S1实际文件/字段/迁移产物与定向检查结果"
+      },
+      "T0": "未记录；待环境及写入准入/受控正负控通过后经理赋时",
+      "productBuildRun": "未执行；先确认隔离输出、依赖、HALCON license/version/sample与未知PID归属风险",
+      "noScopeExpansion": true,
+      "noAutomaticMergeOrPush": true,
+      "currentFiles": {
+        "integration": [
+          "src/Plugin.Contracts/ToolContracts.cs",
+          "src/Plugin.Contracts/Editing.cs",
+          "src/Workflow/Persistence/SolutionCompatibilityAdapter.cs",
+          "src/Workflow/Persistence/SolutionFormatPolicy.cs",
+          "src/Workflow/Solution.cs",
+          "src/Workflow/SolutionRepository.cs"
+        ],
+        "resource": [
+          "src/Plugin.Contracts/Resources.cs",
+          "src/Plugin.Contracts/TypeRef.cs",
+          "src/Plugin.Contracts/Values.cs",
+          "src/Plugin.Contracts/DeclaredValueReader.cs",
+          "src/Plugin.Contracts/StructuredValues.cs",
+          "src/Plugin.Contracts/SpatialDeclarations.cs",
+          "samples/PluginFoundation/Verification/ResourceContractCases.cs"
+        ]
+      },
+      "environmentGate": {
+        "status": "部分准入-完整T0未记录",
+        "net": "SDK 10.0.401，.NET与WindowsDesktop 9.0.20参考包缓存存在；WorktreeBasePath/OutDir/IntermediateOutputPath经msbuild属性查询指向隔离worktree",
+        "halcon": {
+          "managed": "24.5.0.0 SHA A1C8C3EF74F37F751E5CFB08A513B68F36A75511D7B4F9FD4E5A532E45652C57",
+          "native": "24.05.0.0 SHA 1054836E23F053657671E142B86C98864BCAE9E926D658C622E3121DC735AF27",
+          "authorization": "用户确认现有加密狗，可直接用于执行；不做独立许可探测",
+          "status": "隔离native加载/算子正负控安排13:40–13:45，尚未运行"
+        },
+        "PID16392": "进程路径/命令行受ACL拒绝；自10/24 16:20:54存在，无主窗口，未终止；隔离输出可用",
+        "offlineRestore": "未执行；等 S1 最小项目restore/build准入"
+      },
+      "testPreparation": {
+        "fixtureManifestSHA256": "061E03B5E4DCBD949E578671777768197C20633D607FBC8B611935850FD5500D",
+        "independentAuditSHA256": "6CF6384D549A9656212E42483353C4884E99929E9B223DE25DA538D75BE20795",
+        "preflightSHA256": "00424B9A872A597525795F78A942D80A74F0EF225C75A0CE7EE3B2A1C4804432",
+        "cases": 12,
+        "files": 36,
+        "negativeControls": 3,
+        "productAcceptance": "未执行",
+        "contractIntentSHA256": "F36855CF64E77778A22D250C0BAFA8A25613575F27E3DCACCAEF31D226BF7823",
+        "migrationIntentSHA256": "399666C9DAD409860CEA21E812A9E8A8699A05F752BE59038DD0CF79187E5383",
+        "migrationManifestSHA256": "DC62CAC31EB58DBF9E99E04A7325814D1D4D0A9E69FAF0FCDE5E67A380155BEE",
+        "parentContractAuditSHA256": "69FA84E1697FCDB17E944E59514E2522E123F30A65A039561E19FA2E9AEBCA81",
+        "note": "意图向量和静态schema自检不等于产品/格式兼容PASS；文档format1→2适配不得放宽二进制Plugin Contracts 4→5 strict gate。"
+      },
+      "latestCheckpointAt": "2026-10-25T13:36:30+08:00"
     }
   ],
-  "latestImplementationNote": "2026-10-24 22:15 用户经主控/经理明确主动暂停本轮收口，等待架构影响复核，不自动恢复。源码保存点1ecda90fc329737b21250f77b78d1e6d93757935（14src/10tests/4docs）已完成，未restore/build/test/GUI/fixed/送验/部署，本方owned活动PID空。原22:20/22:40–23:10目标撤下，index空无锁、其他dirty保留。CURRENT/HANDOFF_VARIABLE_SAVE_TRANSACTION为停点；旧748/098有效结果和FAIL原样保留，程序集/Blob不扩范围。"
+  "latestImplementationNote": "2026-10-25 13:34 checkpoint：用户13:23授权原O06 Blob方案启动。HEAD30d940主树src/tools/tests仍零差异；两隔离worktree当前已有S1合同/格式和资源/typed源增量。开发分工按文件owner隔离；格式入口已定位两处。独测12样本/36文件manifest 061E03B5E4DCBD949E578671777768197C20633D607FBC8B611935850FD5500D，scanline独审12/12、3负控通过（仅oracle置信）；HALCON文件身份绑定，许可/native load/GUI待准入；未知PID16392未触。13:35反馈，14:00真实S1首交付目标。T0/G1未通过。"
 }

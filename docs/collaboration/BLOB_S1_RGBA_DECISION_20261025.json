@@ -1,0 +1,32 @@
+{
+  "scope": "O06 Blob S1 approved image-contract consumer repair",
+  "status": "APPROVED_IMPLEMENTATION_AND_INDEPENDENT_RETEST_REQUIRED",
+  "observedFailure": "Independent fixed-dd380 Workflow RGBA input fails with HALCON 9009 at rgb1_to_gray; Gray, RGB and valid-empty Domain scenarios passed in their reported scope.",
+  "sourceEvidence": [
+    "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs: channels==3||channels==4 both call Rgb1ToGray",
+    "src/SunEyeVision.HalAdapter/HalImage.cs: CreateGrayFromColor does not distinguish four channels",
+    "artifacts/independent-testing/START-BLOB-01/workflow-incremental-dd380367/report.json"
+  ],
+  "decision": "Repair the minimal actual image-adapter and Blob consumer seam within S1. Four-channel support is already part of the approved image contract; do not defer this failure to S3 or remove the accepted format.",
+  "semantics": {
+    "gray": "Preserve gray values and actual Domain.",
+    "rgb": "Preserve existing RGB grayscale semantics.",
+    "rgba": "Convert the actual RGB color planes to gray; alpha does not affect grayscale intensity. Preserve alpha in the independent BGRA image snapshot contract.",
+    "domainAndOwnership": "Preserve actual effective Domain, source immutability and independent owner/reader lifecycle. Do not infer full Domain or dispose borrowed native inputs."
+  },
+  "owners": {
+    "implementation": "开发工程师｜实现与修复; one product writer per isolated worktree",
+    "independentRetest": "测试工程师｜独立验收",
+    "acceptanceAndSchedule": "交付经理｜协调与收口",
+    "architectureReview": "技术总监｜架构与决策"
+  },
+  "requiredEvidence": [
+    "Keep original FAIL and fixed source/PE/dependency identities.",
+    "Same RGB with different alpha produces equal gray values; include unequal color channels.",
+    "Reduced and valid-empty Domain cases retain their exact semantics.",
+    "Input pixels/Domain remain unchanged and readers retain required lifetime.",
+    "Assess actual helper consumers and build affected projects; do not claim full Blob UI or Release acceptance."
+  ],
+  "documentation": "Collect into the next S1 stage package; do not regenerate the whole main document for this individual decision.",
+  "g1": "OPEN"
+}

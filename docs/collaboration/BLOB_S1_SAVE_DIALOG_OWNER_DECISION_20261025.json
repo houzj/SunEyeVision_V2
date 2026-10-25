@@ -1,0 +1,19 @@
+{
+  "status": "APPROVED_MINIMAL_USER_REPORTED_SAVE_ENTRY_FIX_G1_OPEN",
+  "input": "开发工程师转述用户直接反馈保存弹窗没有owner、经常找不到；总监已只读复核de58实际调用链。",
+  "evidence": [
+    "MainWindow.OnClosing先取消关闭，再Dispatcher.BeginInvoke调用PromptAndMaybeClose；该延迟回调调用PrepareSolutionTransitionAsync时未传宿主。",
+    "PrepareSolutionTransitionAsync保存确认、重载/运行停止确认及错误提示未传owner，保存调用也未透传已有SaveCurrentDocumentWithPrompt(Window? owner)。",
+    "ThemeMessageDialog仅显式owner非空才设Owner，否则CenterScreen且无独立任务栏入口。旧注释把关闭栈中owner风险泛化到已延迟的回调。"
+  ],
+  "decision": "在现UI保存/切换入口显式传递真实宿主Window；保持事务和用户按钮语义，不修改全局弹窗策略。",
+  "implementationBoundary": [
+    "MainWindow延迟关闭传this，退出异常提示同样指定this。",
+    "PrepareSolutionTransitionAsync可选owner贯穿运行停止、重载、保存确认、保存错误及SaveCurrentDocumentWithPrompt。",
+    "其余直接入口从实际所属窗口传入宿主，不能全局猜测活动窗口、强制Topmost或增加新弹窗框架。",
+    "纠正过时注释，保Yes/No/Cancel、重入防护、transition lease、失败保打开和原保存事务。"
+  ],
+  "validation": "自有STA真实窗口测试Owner关系、三个保存分支与错误反馈、重入/lease语义及受影响UI构建；不反复向用户弹测试窗口或要求截图。独测对de58未变合同/Repository/图像核心继续，UI增量单列核验，最终版本身份整合。",
+  "preservation": "de58冻结包及全部历史证据不变，新中文提交保存增量；不得把旧PE通过写为新UI通过。",
+  "excluded": ["S2或旧变量收口", "全局Topmost", "弹窗框架重做", "程序集管理", "自动合并推送"]
+}

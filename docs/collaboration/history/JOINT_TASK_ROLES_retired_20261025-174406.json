@@ -1,0 +1,424 @@
+{
+  "date": "2026-10-25",
+  "development": {
+    "threadId": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+    "owns": [
+      "首席架构师责任：基于实际场景、自研与VM实现证据，独立分析架构合理性",
+      "统一职责、合同、数据所有权、生命周期、状态事务与依赖方向",
+      "同标准比较现有实现、VM参考与合理备选，决定复用/调整/替换及跨模块适配",
+      "同标准论证后形成目标架构和迁移安排，主动整合完整方案并给出明确推荐与取舍依据",
+      "验收标准、实施条件与最终架构一致性审核；独测与用户人工验收各自保留",
+      "协作协议与角色登记",
+      "按协议第2.3节实读最终成品，审核唯一当前方案、证据与推荐、工程适配及完整阅读路径；不得以派工或静态链接检查代替最终审核"
+    ],
+    "title": "技术总监｜架构与决策"
+  },
+  "documentation": {
+    "threadId": "01a160f7-9c99-72c1-b8bf-d689bf19f1ad",
+    "owns": [
+      "唯一HTML主文档、唯一当前有效方案、图示、导航与搜索",
+      "将新结论回写原控件清单、去留表、工程结构及关联章节；替换旧结论、保留旧锚点指向同一现行正文",
+      "生成验证和DOC_SYNC_STATUS同步水位；在对应方案处呈现证据、版本、边界与未知",
+      "按协议第2.3节将新证据和结论原位整合到原清单、去留表及工程结构，替换过时内容并打通导航搜索，维护唯一完整当前方案",
+      "历史/未知/有限与整项验收状态准确表达"
+    ],
+    "initialMode": "按V8在明确文件边界内自主维护",
+    "title": "文档工程师｜主文档维护",
+    "acceptanceGate": "交付经理按文件实际内容核收覆盖、唯一推荐、过时文本替换、导航/关联章节和静态QA并记录SHA/时间/遗漏；技术总监最终只读审查完整性和架构一致性。文档通过仅供用户审核，不等于实施批准。"
+  },
+  "reverseIntegration": {
+    "threadId": "01a160f7-5d5f-7e50-a52e-76ee63f33491",
+    "initialMode": "停止独立派工；已有证据和未结项交VM取证负责人核收后归档对话，不删除仓库或文件。",
+    "title": "项目成员｜逆向插件集成",
+    "status": "handoff-accepted-thread-archived"
+  },
+  "deliveryFields": [
+    "batchId",
+    "baseCommit",
+    "headCommit",
+    "closedScope",
+    "files",
+    "contractChanges",
+    "ownership",
+    "compatibility",
+    "evidence",
+    "validation",
+    "unknowns",
+    "rollback"
+  ],
+  "policy": "已批准范围内事件驱动推进；交付跟进由交付协调负责，主控不承担日常定时巡检；事实源独占，产品唯一写者",
+  "protocol": "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
+  "protocolVersion": "2026-10-25/V8.4-single-current-document-three-party-acceptance",
+  "adoptionStatus": "V8.4-issued-awaiting-role-acknowledgements",
+  "acknowledgements": "docs/collaboration/PROTOCOL_ACKNOWLEDGEMENTS_20261022.json",
+  "independentTesting": {
+    "threadId": "01a1620c-5a60-7fb1-a1b1-9b85173896e9",
+    "owns": [
+      "独立场景覆盖与验收标准落实",
+      "测试队列/环境/宿主/夹具/依赖/排障自主完成",
+      "固定身份实际执行和缺陷复测",
+      "开发直连反馈并同步经理，有限/整项结论分开"
+    ],
+    "forbidden": [
+      "产品代码",
+      "共享台账/HTML",
+      "自行扩大目标"
+    ],
+    "firstTask": "START-TEST-01",
+    "status": "autonomous-execution-and-infrastructure-owner",
+    "output": "artifacts/independent-testing/START-TEST-01/",
+    "firstResult": "artifacts/independent-testing/START-TEST-01/REPORT.md",
+    "dispatchPolicy": {
+      "authorization": "用户2026-10-23明确要求自主调度，不等催促",
+      "skipMissingInput": true,
+      "parallelIsolatedTasks": true,
+      "exclusiveResources": [
+        "共享UI",
+        "共享构建",
+        "性能采样"
+      ],
+      "feedbackToImplementation": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+      "finalSummaryToControl": "经交付协调汇总审核材料后提交主控最终审核",
+      "selfTestIsNotAcceptance": true,
+      "noScopeExpansion": true,
+      "adoption": "acknowledged-by-independent-tester-and-implementer",
+      "operationalSummaryTo": "01a16695-701e-7523-9c18-1298b9279428"
+    },
+    "title": "测试工程师｜独立验收",
+    "testInfrastructureOwnership": {
+      "owns": [
+        "隔离测试宿主/夹具/样本/依赖/构建与运行辅助",
+        "自主环境排障和子智能体",
+        "运行后身份核验及原始日志"
+      ],
+      "hostMissingIsNotProductBlock": true,
+      "beforeBuild": "核所有输出/部署不指向共享产物",
+      "preRun": "固定产品源码与产物身份",
+      "postRun": "测试方生成运行后身份回执",
+      "escalation": "产品缺陷直接实施者；日常跨角色问题交付协调；重大方案/外部约束由协调提交主控"
+    }
+  },
+  "protocolSupplement": "2026-10-22/自研独立测试",
+  "subagentPolicy": {
+    "authorized": true,
+    "date": "2026-10-22",
+    "scope": "仅主控已派发任务，按复杂度自主拆分",
+    "accountability": "父对话汇总核证及交付",
+    "productWriter": "同目录唯一产品写者；并行开发须独立分支或Worktree",
+    "noAutomaticResume": true
+  },
+  "implementation": {
+    "threadId": "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+    "owns": [
+      "已批准合同实现及关联适配",
+      "接单可行性/估算/偏差反馈",
+      "唯一共享产品写者及子任务集成",
+      "开发验证、完整固定Release交付、修复与影响/回退说明"
+    ],
+    "queue": "docs/collaboration/IMPLEMENTATION_QUEUE.json",
+    "canExpandScope": false,
+    "title": "开发工程师｜实现与修复",
+    "operationalCoordinator": "01a16695-701e-7523-9c18-1298b9279428"
+  },
+  "roleNaming": {
+    "date": "2026-10-24",
+    "label": "成员职位与职责",
+    "convention": "职位｜职责",
+    "threadTitles": {
+      "01a1528e-6c4c-7663-8f2e-d2f243a1ed84": "技术总监｜架构与决策",
+      "01a16695-701e-7523-9c18-1298b9279428": "交付经理｜协调与收口",
+      "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e": "开发工程师｜实现与修复",
+      "01a1620c-5a60-7fb1-a1b1-9b85173896e9": "测试工程师｜独立验收",
+      "01a160f7-9c99-72c1-b8bf-d689bf19f1ad": "文档工程师｜主文档维护",
+      "01a15280-de08-7361-80d8-92d9b1ddeb25": "逆向负责人｜VM取证统筹",
+      "01a160ff-e34e-7670-90a4-55194265f8a3": "逆向工程师｜VM源码分析",
+      "01a159e5-6571-7ab2-a12d-6ece9db18e69": "验证工程师｜VM实机取证"
+    },
+    "historicalThreadTitles": {
+      "01a1529c-d351-73c2-bc9c-79e92b0e7582": "项目成员｜VM插件逆向",
+      "01a160f7-5d5f-7e50-a52e-76ee63f33491": "项目成员｜逆向插件集成",
+      "01a16169-2c2b-7001-8dda-7bc623dd98bf": "项目成员｜逆向文档维护"
+    },
+    "previousTitles": {
+      "01a1528e-6c4c-7663-8f2e-d2f243a1ed84": "项目成员｜方案主控",
+      "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e": "项目成员｜自研实施",
+      "01a1620c-5a60-7fb1-a1b1-9b85173896e9": "项目成员｜独立测试",
+      "01a160f7-9c99-72c1-b8bf-d689bf19f1ad": "项目成员｜自研文档维护",
+      "01a15280-de08-7361-80d8-92d9b1ddeb25": "项目成员｜VM取证负责人",
+      "01a160ff-e34e-7670-90a4-55194265f8a3": "项目成员｜VM源码取证",
+      "01a159e5-6571-7ab2-a12d-6ece9db18e69": "项目成员｜VM实机取证",
+      "01a16695-701e-7523-9c18-1298b9279428": "项目成员｜交付协调"
+    },
+    "titleChangesApplied": true
+  },
+  "deliveryCoordination": {
+    "title": "交付经理｜协调与收口",
+    "threadId": "01a16695-701e-7523-9c18-1298b9279428",
+    "accountability": "对完整使用链闭合、在制容量、关键路径与计划兑现、修复复测和统一交付负责；主动优化协作，不以转发、登记或局部PASS代替交付",
+    "progressLedger": "docs/collaboration/DELIVERY_LEDGER.json",
+    "dispatchRequirements": [
+      "原任务ID与责任人",
+      "输入依赖与交付物",
+      "验收条件",
+      "目标完成时间与下一检查点",
+      "执行者可行性反馈和估算依据"
+    ],
+    "scheduleControl": "保留原目标、偏差原因、纠偏措施、新预测及整体影响；无法可靠估时须有调查时限和重估节点，不静默顺延",
+    "reporting": "在对话和主文档同源报告本次闭合的使用链/缺口、剩余项/责任人/目标、实际执行或等待及解除条件、偏差措施与整体预测；原ID六态另列，有限通过不冒整项完成",
+    "owns": [
+      "完整使用链交付边界与原ID验收映射",
+      "在制容量、依赖、关键路径及整体交付预测",
+      "各岗及其子线的并行调度、资源与输入交接",
+      "任务时限、检查点、估算依据与延期纠偏",
+      "固定交付送验、消费者实收执行、缺陷修复复测闭环",
+      "唯一总账与真实执行/等待状态、对话主动汇报和文档同步",
+      "统一Release、独验及正式性能证据、集中手验清单和最终审核材料",
+      "基于等待与返工效果持续调整协调策略",
+      "按协议第2.3节核收最终页面实际内容、原位更新和证据版本，组织缺项修正复核后提交总监，不以新增章节或自报完成代替核收"
+    ],
+    "queue": "docs/collaboration/DELIVERY_QUEUE.json",
+    "statusFile": "docs/collaboration/DELIVERY_COORDINATION_STATUS.json",
+    "canApproveScope": false,
+    "canChangeAcceptance": false,
+    "canWriteProduct": false,
+    "canReplaceIndependentVerdict": false,
+    "canGiveFinalApproval": false,
+    "handoff": "docs/collaboration/HANDOFF_DELIVERY_COORDINATION_20261023.json",
+    "acceptanceForCoordination": [
+      "每个阻塞有分类/具体责任人/解除证据",
+      "输入交付由消费者确认可用，状态不能只靠转发",
+      "实际启动和结果有进程或用例证据，引用唯一事实源版本",
+      "消息与文件冲突主动核实，不按旧状态推进",
+      "失败缺陷经新固定包实际复测和核收才关闭",
+      "只有需决策事项/最终审核提交主控"
+    ],
+    "adaptiveCoordination": {
+      "authorized": true,
+      "signals": [
+        "反复缺输入/退回",
+        "只有准备无执行",
+        "消息与事实源不一致",
+        "资源空等/重复催促/返工"
+      ],
+      "adjustable": [
+        "任务粒度",
+        "交接清单",
+        "已批准任务内并行/串行安排",
+        "事件反馈节点",
+        "子智能体组织"
+      ],
+      "record": "现有DELIVERY_COORDINATION_STATUS内短记原因/调整/实际效果，禁止另造繁重台账",
+      "success": "减少等待/退回或形成实际执行证据",
+      "limits": [
+        "不改授权范围/用户优先级/验收标准",
+        "不代独立结论/主控最终审核"
+      ],
+      "governanceGate": "流程调整已收口，角色回执及文档不阻塞开发和就绪测试"
+    },
+    "responsibilitySource": "JOINT_COLLABORATION_PROTOCOL.md 第2.1、3.1、3.2节",
+    "outcomeMeasures": [
+      "完整交付与原验收缺口闭合",
+      "关键路径等待和返工下降",
+      "目标兑现或提前明确偏差与新预测",
+      "输入交接、实际测试与修复复测完成",
+      "同一Release最终审核材料完整"
+    ]
+  },
+  "architectureReviewPolicy": {
+    "source": "JOINT_COLLABORATION_PROTOCOL.md 第2.2节",
+    "owner": "技术总监｜架构与决策",
+    "sequence": [
+      "实际场景与质量要求，以及自研/VM实现证据",
+      "独立架构合理性分析与关键缺口核实",
+      "同标准候选比较与风险验证",
+      "明确推荐及目标架构决策",
+      "迁移与交付"
+    ],
+    "requiredBasis": [
+      "职责、合同、数据模型、所有权、生命周期与依赖方向",
+      "正常、失败、取消和关闭路径及跨模块适配",
+      "VM借鉴、独立设计、不采用内容及证据与取舍",
+      "复用、调整、替换范围及各自目标依据",
+      "可观察验收、实施条件、兼容与回退"
+    ],
+    "prohibitions": [
+      "预设自有目标架构再选择性寻找支持证据",
+      "以已有实现或最小改动默认限定架构选择",
+      "以VM成熟或已有投入代替方案比较",
+      "将示意、静态或局部测试冒充整链与架构验证",
+      "把关键架构判断留给实现者或依赖用户反复补漏"
+    ],
+    "scope": "已实现和尚未实现设计采用同一架构标准；成本、时间与迁移风险显式权衡，不自动整体重写",
+    "competencies": [
+      "需求、业务场景与质量要求",
+      "证据诊断、根因与设计/实现缺陷区分",
+      "领域模型、合同、分层、依赖、状态事务和所有权",
+      "同标准方案取舍、复杂度、成本与技术债",
+      "性能、容量、并发、缓存与资源上界",
+      "正确性、可靠性、异常取消和恢复",
+      "安全、信任边界与必要约束",
+      "可维护性、可验证性与可观测性",
+      "兼容、工程发布、迁移、回退和演进",
+      "风险原型、代表业务链、证据沟通与自我纠偏",
+      "合同落地、架构一致性和最终技术质量"
+    ],
+    "currentReview": "Blob五层与共享控件建议须先架构复审再提实施决策；原已批准在途交付继续，不新增批次",
+    "amendmentAdoption": "issued-awaiting-member-acknowledgements; manager records actual receipts without resetting V8 history or pausing in-flight delivery",
+    "evidenceAndImpartiality": {
+      "source": "JOINT_COLLABORATION_PROTOCOL.md 第2.2节 必须遵守：真实证据与中立架构决策",
+      "appliesTo": [
+        "保留",
+        "复用",
+        "局部修复",
+        "删除",
+        "整体重构",
+        "替换",
+        "暂不实施"
+      ],
+      "principle": "所有设计决策有可追溯真实依据；现有实现、VM、自拟候选同标准，均无优先权",
+      "decisionBasis": "已确认需求、版本绑定的源码和完整调用/数据/状态/资源链、实际观测/可重复测试及真实约束；保留反证和局限",
+      "unknownGate": "事实/推论/候选/目标/未知分开；关键假设未证只可进入有边界取证或原型，不作为依赖它的产品改造批准依据",
+      "correction": "证据错配、猜测或选择性采信须撤回或修正结论，明确关联影响",
+      "accountability": "总监作架构判断；经理调度交付；逆向核原版事实；独测独立验证",
+      "adoption": "issued; manager collects actual member receipts without pausing approved delivery or resetting history"
+    }
+  },
+  "reverseEvidence": {
+    "projectId": "49b15fdf-9181-43e2-87b2-4b6a20f952dc",
+    "projectRoot": "D:/MyWork/REA逆向测试",
+    "singleExternalEntry": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+    "roles": [
+      {
+        "threadId": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+        "title": "逆向负责人｜VM取证统筹",
+        "owns": [
+          "接收自研待决策问题，复用已有原版证据",
+          "管理VM内部源码与实机任务、证据索引和核收",
+          "覆盖UI、公共控件、框架、所有工具插件、执行数据资源链",
+          "向交付协调统一交付已核实结论及未知"
+        ],
+        "doesNotOwn": [
+          "自研日常交付协调",
+          "独立产品验收",
+          "完整恢复VM产品"
+        ]
+      },
+      {
+        "threadId": "01a160ff-e34e-7670-90a4-55194265f8a3",
+        "title": "逆向工程师｜VM源码分析",
+        "owns": [
+          "VM原版数据结构与完整调用链取证",
+          "程序集版本、哈希、源码位置及调用者/被调者",
+          "区分原版事实、恢复实现、推断和未知"
+        ],
+        "previousRole": "逆向源码审核",
+        "handoff": "既有自研审核未结项交交付协调和独立测试，保留原证据；不得因换角色标关闭。"
+      },
+      {
+        "threadId": "01a159e5-6571-7ab2-a12d-6ece9db18e69",
+        "title": "验证工程师｜VM实机取证",
+        "owns": [
+          "VM实机UI、交互、运行行为及必要性能取证",
+          "记录输入、操作、结果与源码互证"
+        ],
+        "previousRole": "VM架构恢复",
+        "capabilityStatus": "本地控制与运行环境需接岗核实；未核实时不得宣称可操作或已验证。"
+      }
+    ],
+    "retiringThreads": [
+      {
+        "threadId": "01a1529c-d351-73c2-bc9c-79e92b0e7582",
+        "status": "handoff-accepted-thread-archived",
+        "successor": "01a15280-de08-7361-80d8-92d9b1ddeb25"
+      },
+      {
+        "threadId": "01a160f7-5d5f-7e50-a52e-76ee63f33491",
+        "status": "handoff-accepted-thread-archived",
+        "successor": "01a15280-de08-7361-80d8-92d9b1ddeb25"
+      },
+      {
+        "threadId": "01a16169-2c2b-7001-8dda-7bc623dd98bf",
+        "status": "handoff-accepted-thread-archived",
+        "successor": "01a15280-de08-7361-80d8-92d9b1ddeb25"
+      }
+    ],
+    "pluginProjectPolicy": "退出独立派工与供给；先核收tool-plugins独有证据、资源、dirty和在途任务，再归档多余对话。未删除、移动或归档仓库；UI项目移除须另按实际工具支持处理。",
+    "collaboration": "交付协调管理跨项目优先级、依赖、送验和闭环；VM负责人管理内部取证；自研文档维护统一主文档；主控负责方案、决策和最终审核。",
+    "authorization": "用户侧聊转交方案后于主控直接要求先调整角色、更新角色和协作协议；现有成员在此范围内互发交接、取证请求和结果。",
+    "closure": "派发不等于核收；负责人逐项核收后由主控归档多余对话；不以组织交接阻塞现有实施、测试和Release。",
+    "notifications": {
+      "status": "messages-delivered-acknowledgements-pending",
+      "date": "2026-10-24",
+      "recipients": [
+        "01a15280-de08-7361-80d8-92d9b1ddeb25",
+        "01a160ff-e34e-7670-90a4-55194265f8a3",
+        "01a159e5-6571-7ab2-a12d-6ece9db18e69",
+        "01a1529c-d351-73c2-bc9c-79e92b0e7582",
+        "01a160f7-5d5f-7e50-a52e-76ee63f33491",
+        "01a16169-2c2b-7001-8dda-7bc623dd98bf",
+        "01a16695-701e-7523-9c18-1298b9279428",
+        "01a1663d-2d35-7bd2-bc12-ab0d4051bb8e",
+        "01a1620c-5a60-7fb1-a1b1-9b85173896e9",
+        "01a160f7-9c99-72c1-b8bf-d689bf19f1ad"
+      ]
+    },
+    "handoffReceipt": {
+      "path": "D:/MyWork/REA逆向测试/analysis/vm-evidence-handoff-20261024/index.json",
+      "sha256": "727DB3E1604EE7DE6EF07C2D63B2C3E2336449BCEB1EDAF8F597BE6BAE6A7799",
+      "acceptedMembers": 5,
+      "totalMembers": 5,
+      "scope": "材料与未结义务核收，不代表产品或VM逆向完成",
+      "archiveConfirmed": true,
+      "date": "2026-10-24",
+      "repositoriesPreserved": true
+    },
+    "evidenceSelectionPolicy": {
+      "source": "JOINT_COLLABORATION_PROTOCOL.md 第6.1–6.3节",
+      "selector": "按待证明结论和决策风险选择，不按岗位空闲或工具便利选择",
+      "sourceOnly": "版本绑定的结构/类型/合同/资源及已贯通静态接线；不冒运行行为",
+      "runtimeRequired": "实际交互与生效时机、输出数值、错误恢复/并发、性能与长期资源；动态分支关键或源码与观测矛盾时定向补证",
+      "taskFields": [
+        "决策用途",
+        "待证明结论",
+        "已有证据与缺口",
+        "方式及理由",
+        "版本样本允许动作写入范围",
+        "负责人时间检查点",
+        "完成停止升级条件",
+        "未知及影响"
+      ],
+      "stop": "证据足以支持有界决策且关键矛盾已解释；无关未知保留，不无限恢复VM",
+      "blocked": "记录实际失败与解除责任/重估点，继续其他就绪任务，不靠推测结案",
+      "roles": "经理管跨岗计划资源与核收推进；VM负责人唯一入口组织源码实机；总监作架构决策；文档统一既有HTML",
+      "noNewBatch": true,
+      "productChangesAuthorizedByThisAmendment": false,
+      "currentApplication": "VM控件库清单与Blob开窗/模板/绑定/ROI回填/运行/确认关闭及解绑链；复用原证据，仅补决策缺口"
+    }
+  },
+  "currentResponsibilitySource": "JOINT_COLLABORATION_PROTOCOL.md 第2节 岗位责任矩阵",
+  "historyPolicy": "Historical titles, task-specific initialMode/firstTask and retired role records are traceability only; V8.1 governs current responsibilities; V8 adoption history is retained.",
+  "commonAccountability": [
+    "接单确认输入/交付/验收/目标/检查点及估算依据",
+    "缺输入推进其他就绪任务；环境自行排障，跨角色问题交经理",
+    "预计延期提前报告原目标/原因/措施/新预测/整体影响",
+    "交接由消费者核收，真实证据支撑状态",
+    "原ID闭环与有限子证据分开；不扩范围不降标准"
+  ],
+  "parallelDeliveryPolicy": {
+    "source": "JOINT_COLLABORATION_PROTOCOL.md 第3.1节",
+    "responsibility": "各岗位负责人主动拆分独立工作包、管理子智能体并核收集成；交付经理管理跨岗关键路径与资源",
+    "report": "沿原taskId报告子线负责人、实际状态、依赖、目标时间、下一集成时间",
+    "boundary": "共享主树唯一产品写者；并行实现独立Worktree；正式性能及排他资源串行；不新增批次或验收分母"
+  },
+  "deliveryFlowPolicy": {
+    "source": "JOINT_COLLABORATION_PROTOCOL.md 第3.2节",
+    "productWipLimit": 2,
+    "currentChains": [
+      "发布加载完整链",
+      "生产编辑至保存重开完整链"
+    ],
+    "accountability": "交付经理对使用链闭合、在制容量、依赖交接和可核收口预测负责",
+    "scope": "原47项验收覆盖不变，不新增优化批次或完成率分母",
+    "exceptions": "真实共同基础依赖造成闭合冲突时带最小依赖与边界交技术总监确认，不自行放宽或制造死锁"
+  }
+}

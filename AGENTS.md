@@ -5,7 +5,7 @@
 - 同一工作目录同一时间只允许一个 AI 修改代码；另一个 AI 仅可分析或评审。
 - 开始任务先读取 `docs/collaboration/CURRENT_TASK.md`；交接前更新该文件。
 - 跨 AI 交接前记录基线提交号并创建说明明确的临时提交；不要为每次小改动创建无意义提交。
-- 需要并行开发时使用独立 Git 分支或 Worktree。
+- 当前只在本总监对话中工作，不跨对话派工、不自行启用其他角色或子智能体；主仓库是唯一日常工作目录。确需并行开发时先取得用户明确要求，再使用独立 Git 分支或 Worktree。
 - 后续所有 Git 提交的标题和正文均使用中文描述；必要的类名、路径、命令及版本号可保留原文。适用于正式提交、临时保存点和合并提交，不改写已有历史提交。
 
 ## 架构边界
@@ -17,6 +17,8 @@
 
 ## 构建与验收
 
+- 自动测试与手动测试均针对主仓库正式 Release 目录 `Release/SunEyeVision_v1.0.0/SunEyeVision` 的同一版本产物；测试数据与日志在 Release 下按用途隔离，不另复制仓库、程序或算法库，不以其他隔离包代替正式 Release 验收。
+
 - UI：`dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore`
 - 全量 Release：`dotnet build SunEyeVision.slnx -c Release --no-restore`
 - 涉及工具插件或发布规则时必须做全量 Release 构建并运行 Release 程序验证。
@@ -25,4 +27,4 @@
 ## 交接
 
 - 使用 `docs/collaboration/HANDOFF_TEMPLATE.md` 记录交接内容。
-- CodeBuddy 处理常规、边界明确的增量实现；架构、跨模块执行链、复杂编译链和发布问题转交 Codex。
+- 形成完整且可追溯的变更后，按优化用途分类使用中文提交并按需推送 GitHub origin；不强制推送，不改写已有历史。代码同步、构建通过、独测通过与用户人工验收分别记录，禁止混称完成。

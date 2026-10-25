@@ -1,0 +1,17 @@
+{
+  "status": "APPROVED_INCREMENTAL_S1_VERIFICATION_PACKAGE_PENDING_INDEPENDENT_COMBINATION_CHECK",
+  "base": "已独验de58d829980defd1ad61e38fe8ed1c39aea7dd09完整Release",
+  "uiProductChange": "66ff2c200bc98c776cbc481f68063baae4d07234，3个UI源",
+  "testFixtureChange": "496e1e004f449f5b3ea5913cc206b0d0b3ff6c2f，仅真实主题测试夹具",
+  "reason": "Owner重编目录产生无源码变动的基础库新字节且缺少底包18个Kernels.pdb。为避免无意义重编或缺文件整树替换，使用保留完整已验核心的受控UI增量，并验证最终组合。不能把新字节默认为已验，也不能只拼包而不检查。",
+  "approved": [
+    "在全新C目录复制已验de58完整Release，仅覆盖Owner UI实际必需exe/dll/xml等明确列出的文件。",
+    "保留其他文件和原18个PDB，不覆盖afc/de58原冻结包。",
+    "逐文件记录来源提交、原包SHA和最终SHA、总包身份；证明非UI源与de58相同，UI引用的实际版本/契约与核心匹配。",
+    "独测对最终组合进行接收身份和Owner/必要UI保存入口验证；不变核心PE可引用de58独验及其明确范围，不冒称全部单提交重编。"
+  ],
+  "scope": "S1隔离技术验证包；不构成用户手工验收包或后继统一Release交付。",
+  "userPath": "用户指定D:/MyWork/SunEyeVision_V2/Release/SunEyeVision_v1.0.0/SunEyeVision保持；不得擅自改成C路径要求用户验收。",
+  "notInThisGoal": "主D交付部署、installer及后继S2至完整Blob统一Release。D现有可用空间不足整包，后继部署需明确保护与空间安排；当前不清理用户数据。",
+  "gate": "G1仍待最终组合专项独验、旧格式迁移同PE补验及阶段文档/经理/总监核收。"
+}

@@ -1,4 +1,114 @@
-﻿## 2026-10-24 仓库迁移后分类保存，产品收口继续暂停
+## 当前授权：优化代码分类同步主仓库、推送GitHub及整理副本（2026-10-25）
+
+用户现明确授权将已实现优化按用途分类同步到本主仓库，并推送远程GitHub；先保存代码与必要证据，再清理不再需要的副本。日常工作仅当前总监对话，旧角色/协议保持归档，不恢复多角色协作。
+
+- 主仓库同步前基线：30d9407872c52ea647174f9ec92ac70c9bd49b87；待同步S1完整来源：496e1e004f449f5b3ea5913cc206b0d0b3ff6c2f（包含de58 Release配置及66ff保存弹窗修复）。
+- 通讯/脚本与此前f01、j02、j03分支补丁已在主仓库；资源合同611759分支的最终相关文件与S1来源相同，不重复覆盖。
+- 本轮只做既有代码归并、中文分类提交/推送及磁盘整理，不新增优化实现、不把S1标完成；G1仍未最终签收，用户人工验收未通过，主Release尚未更新。
+- 后续全部自动/手动测试只针对主仓库正式Release的同一版本；本轮代码归并本身不冒称已重新构建或重新测试。需要验收时先构建该目录，再记录真实测试结果。
+- 其他副本删除前必须保全未提交源码、分支提交与必要记录；当前正在盘点，尚未删除任何源码工作树。
+
+---
+## 当前有效状态：只保留总监，全部工作停止（2026-10-25）
+
+用户明确取消原多成员协作协议和角色定义。后续只在当前总监对话中讨论、决策、执行与汇报，不再跨岗位对话派工，不自行启用子智能体，不继续原核收链。
+
+- 产品实施、测试、构建、文档业务维护、打包部署和清理均保持停止，持续目标已暂停。仅本次治理记录变更获授权，不代表恢复任何S1工作。
+- 原协议与角色定义已完整保存至history，并将原文件改为停用说明/单对话状态；历史任务、失败、源码及产物证据均保留，不改写为完成。
+- 当前未完成S1，G1未放行，用户主Release未更新。本段优先于下文一切旧的“持续推进”“活动目标”或旧岗位派工描述。
+- 本次治理变更基线提交：30d9407872c52ea647174f9ec92ac70c9bd49b87；未修改产品代码，未构建测试，未清理产物，未提交或推送。
+
+---
+## 2026-10-25 14:35 Asia/Shanghai：目标重定为持续完成 S1 并形成真实 G1 结论
+
+用户最新明确要求已替代前一条四目标终点：当前唯一活动目标是 S1，不推进 S2/S3，不以 Blob 用户试用、关联总回归或统一 Release 作为本目标终点。S1 完成条件：Contracts 5 / format2 与受控 format1 读取、真实旧 binding owner 迁移、必要图像桥、受影响生产读取/保存入口与角色字段版本规则一致；由独立测试基于固定源码与 PE 形成有证据的 G1 放行/不放行结论。保留后续完整 Blob、回归及 Release 计划，但本目标完成后须等待新的明确阶段授权。
+
+- **总监当前证据核审：**`artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/implementation/s1-director-current-evidence-audit-20261025.json` SHA `15984D8068FC215761D216E873C63A00149F9E9886625D6A1D7BBF0684870EE0`；已核3份独测回执共17项引用SHA吻合，37合同/20桥/路径修正后19 Repository有限证据认可；结论 G1 OPEN，不构成S1完成。独立Workflow pre-cancel 首轮把声明数量误作发布结果导致oracle FAIL，最终实测 `ExecutionResult.Status=Cancelled`、NotExecuted/Values=null、NodeResults空，追加正确断言通过；旧FAIL与各次日志保留，未改产品。
+- **独立Workflow断言范围补件：**`artifacts/independent-testing/START-BLOB-01/workflow-own-dd380367/assertion-scope-addendum.json` SHA `E02F177916A86A688F4B734E5250ED756E8E31D99E13B6437C75E347C090716D`；逐case记录PID/输入/断言。WF01 已实际验证 Domain.Dispose 两次后 ReadRuns 抛 ObjectDisposedException（在整体exit1的PID42880中，该用例本身PASS）；WF03首次 `Count==0` oracle误报已单独纠正，不用重跑WF01。独测共3场景有限PASS，无产品失败确认；异常清理、空域与三格式完整Workflow、下游binding/scene、input lineage、完整Snapshot仍未验证。
+- **文档节奏（用户最新指示）：**阶段性开发/独测事实先进入本任务账本和证据回执；O06页、去留表、工程结构和导航等阶段成果在G1核收或可审阶段包后集中更新并一次完成QA。每条小步结果不触发整页生成器；仅范围/安全变化或已知错误结论按影响段落及时纠正。正文以易懂结论/理由/改动/影响/未知和需决策事项为先；不删信息，完整接口字段工程路径兼容来源/失败/验收细节须在同一主文档明细中保留且可定位，可用表或图帮助理解。文档岗整理原始开发/测试材料、经理核完整性和易读性、总监核技术；此要求记入下次协作协议集中维护，不单独触发当前文档重写。
+- **已固定并独立验证（有限范围）：**基线 30d940；S1 首件 07999183 的独立合同套件 37 PASS/0 FAIL；图像桥 84d88634 的固定 PE 身份补证已通过，20 个唯一桥接用例 PASS/0 FAIL。Repository owner 提交 `dd380367620eec0d92bd540e8111e1a7289fba37`，path-preserved 独立回执 `artifacts/independent-testing/START-BLOB-01/owner-own-pathfix-dd380367/corrected-receipt.json` SHA `21E6F3D7B4DE615C5D217525C4B8F31E1F347D20004333F606A68CE9837F8D33`；真实 Repository 用固定 PE、自有 fixture/Host、无产品 ProjectReference/重建，19 PASS/0 FAIL；真实 format1/binding4 owner→format2/binding5、跨 Workflow 重复 nodeId、format2/legacy 拒绝、双 Save / exact prior backup / reopen、受控锁文件 Save 失败保留目标/前备份、源文件 SHA/长度/mtime 不变均通过。接收目录按完整相对路径复制64项、原始/副本128项0差异；加载的 .NET9 Encodings.Web 与固定清单SHA吻合、HALCON/OpenCV native未加载。旧扁平回执4条basename RID/TFM碰撞记录保留，旧“接收副本零差异”说法已撤回；新回执明确纠正且不回写旧记录。
+- **最新开发自测（待独立复现，非 G1）：**在 `codex/blob-s1-schema-regression` worktree（基于 dd380），动态整数索引、浮点索引拒绝、跨域/缺失节点、unknownTool、非法转换、无显式转换拒绝、显式checked转换等8个用例在 `artifacts/validation/blob-s1-regression/cases-01.log` PASS，SHA `2934AD73CE0AFC4CB0BC06D9A1D66D4031513C7935527EF704AFD626C64CA3A3`。随后开发以冻结 dd380 PE 在隔离 Host 实际运行 32×32 HALCON Blob Workflow：`HalImage.CreateFromBytes`→`WorkflowRunRequest`/`WorkflowExecutionEngine`→HALCON Blob→FreezeResult/Normalize/RegisterOutputResource/Publish→声明/pixel/Domain reader 和分层 Dispose；9项状态 PASS，`artifacts/validation/blob-s1-regression/workflow-native-01.log` SHA `20A6062BB495F761FE4DF4542DD0882B7DA5BFCC3AEDC5F7143799F11A3FA4C8`，area=16。此为开发 Host 自测、非独立结果，且没有新产品重建/新Runtime producer/discovery。独测已完成固定dd380 PE/自有Host的3个实际Workflow资源场景有限PASS：9×7 Blob结果与双Run旧reader保留/分层退租、真实减域pixel/Domain传递、预取消状态核验。首次把NotExecuted声明数量误作发布结果的oracle FAIL/PID42880 exit1、诊断PID34436、最终PID26180 exit0均保留；最终为ExecutionResult.Cancelled、唯一declared snapshot=NotExecuted/Values=null、NodeResults空，未发现产品失败。累计receipt `artifacts/independent-testing/START-BLOB-01/workflow-own-dd380367/aggregate-receipt.json` SHA `553C1623256F142C821FD6415646DEB78AF6EC639E7B5D1AE0AE39198E35D537`。固定dd380关键程序集SHA吻合，HALCON native 24.05 SHA `1054836E23F053657671E142B86C98864BCAE9E926D658C622E3121DC735AF27`；64路径副本与原件128检查0差。仍未验证异常清理、空域/三格式Workflow、真实下游binding/scene及原始输入lineage。
+- **S1 必需门与责任人（依据 master plan SHA `947F6C82C022F63D99B8DE6D5590F21594D502CC5BC05B2B259C8E4304F9A74D`）：**(1) 核齐 Blob FieldId、稳定旧 alias、声明类型/storage、基数、单位、Unset 语义并在 Contracts/editor/neutral presentation projection/Region-boundary-pose/runtime-editor metadata 中一致；实现并独验完整 FieldId/旧别名/类型/基数/单位/Unset 表。(2) format1→format2 仅在真实 owner identity/schema 证明后做显式旧 binding 映射；format2 strict read 与文件列表/打开/保存入口一致；ABI/serializer/unknown field/坏引用/错 owner 拒绝且失败不改原盘；ToolId唯一。(3) 必要图像桥真实作用于 Workflow execution/result freeze/Normalize/resource publish/read，独测固定 PE 确认帧/run/port/Domain 和 reader lease 生命周期。(4) 受影响 Contracts、Runtime、Workflow 及生产 load/list/save/editor 入口按实际改动完成编译/固定产物身份回执，独测复核这些门后由主控/总监给 G1 放行结论。当前 schema regression owner `codex/blob-s1-schema-regression` 已在 dd380 固定PE上做8项开发自测；15:00前交固定源/PE/alias表/日志/入口说明。独测岗 `01a1620c-5a60-7fb1-a1b1-9b85173896e9` 已准备 Path-preserved owner 19项和实际Workflow 9项自有场景，立即基于固定产物执行，未独验前不计入G1。主控/总监负责界定必要门和结论，不把开发自测当独立通过。
+- **S3 后继门（明确不前置到当前 S1 目标）：**Blob 工具物理拆分、新 RuntimeDefinition 完整 Registry/Discovery/NodeOpen 接线、发布无 WPF 闭包属于 master plan 的 S3；当前仅验证 S1 中立合同、实际组件声明/编辑/展示描述与受影响兼容入口，不把 S3 的完整 producer/discovery 当作 S1 隐性前置，亦不得宣称已完成。
+- **状态分栏与估时：**Contracts/Runtime/旧owner/桥接及 Repository limited cases = 已实现/有限验证；真实 Workflow 资源链 = 开发9项自测；独立3个场景有限PASS；最初取消oracle FAIL已归类并保留，最终状态无产品FAIL确认；生产全部角色接线 = 未闭合；用户可试用/人工验收 = 不属于当前 S1 终点，不视为已验收。原 master plan 的 S1 总估算为10–18有效工作小时；3–6小时剩余估算已撤回，因为仍需Edit scope/Prepare/AcceptPublished、ToolSchema编辑metadata与中立ResultProjectionDescriptor、117个input ports及33 top/79 leaf字段完整类型映射、完整Snapshot原盘保护和受影响构建独验。owner `codex/blob-s1-schema-regression` 于14:38冻结验证提交 `02090ef7c8e889b9bb70cfa55e309c9045e7fc10`（仅5个测试/交接文件，未改产品；产品PE仍dd380）；30 alias基线 SHA `A386BE561467E89A9CFFA55DA7A784F81FDE2C5AC0737064430863E11F5BAC87`。下一检查点15:00交 scope/projection 声明与受影响编译/用例；15:30前交117/33/79字段映射差异和实际工时重估。未收到开发按剩余范围/独测依赖的重估前不造新ETA，且本阶段只含S1、不含S3。旧“Blob试用60–110h / 全交付110–240h”仅留历史，不适用于本S1目标。
+## 2026-10-25 14:30 Asia/Shanghai：持续 Blob 交付目标与 S1 独立 Repository 门结果（历史checkpoint；其四目标活动表述已由14:35 S1目标替代）
+
+本目标持续推进，不在阶段检查点停工：T1 合同/兼容实际独验；T2 完整可运行 Blob 链并交用户试用；T3 关联回归、缺陷修复和复测；T4 指定统一 Release、构建清单及人工验收记录。每目标分别记“已实现、已验证、可试用、已验收”，报告证据/责任人/下一可验证产物/条件 ETA；不编百分比。用户批准范围内可继续实施/独测，检查点用于调排而不是重新授权。不得新增批次、自动 merge/push、原样恢复旧变量收口或代用户判定人工验收通过；等待用户人工反馈期间继续独立可做的回归和准备工作。终止目标前须完成交付闭环，或遇到必须由用户决定的明确范围变更。
+
+- **T1 合同与兼容（部分完成，未闭门）：**固定源 `0799918373bb5f00ac5a00f30591a7e79463a84e` 的 Contracts/Runtime 首件独立合同套件为 37 PASS/0 FAIL；桥接提交 `84d88634430a54e6d141e4bb0e02ceef7e4a1a31` 已完成 20 个唯一桥接场景独立 PASS/0 FAIL，桥接捕获 PE 与 6 个源码的内嵌 PDB/Git blob 已绑定。新 Repository 固定提交 `dd380367620eec0d92bd540e8111e1a7289fba37` 已由独测方用自有 Host、固定 PE、无产品 ProjectReference/重建，实际调用 `SolutionRepository.LoadCandidate/Save/GetRecoveryPath`：19 PASS/0 FAIL。覆盖真实 format1/binding4 按实际 owner 映射到 format2/binding5、跨 Workflow 重复 nodeId、format2/legacy 拒绝项、两次 Save 与精确前版备份、锁文件导致 Save 失败时目标和旧备份 SHA/长度/mtime 不变、源 legacy 文件前后 SHA/长度/mtime 不变。初次 2 个未知 Workflow/Node 负例失败及开发修复记录保留。独立包的 `receive-manifest` 仍报告 4 个扁平目录差异，初查是同 basename 的 RID/TFM 项覆盖（SystemEvents、Encodings.Web、OpenCvSharpExtern），不是固定源提交改动；独测正在按相对路径补核并更新回执，不将该收件副本写成零差异。回执 `artifacts/independent-testing/START-BLOB-01/owner-own-dd380367/receipt.json` SHA `C8D995AE7DCE00A64A6C9B675768D3EDC1C1B126CA617ABFF564CA929795B926`，报表 SHA `D4AD91265852E0C50961F4EC7B933F5E50C7FAA762E40010569783BEA9806068`；已完成路径修复：最初扁平 receive-manifest 的4条差异是同 basename RID/TFM覆盖，旧回执/接收记录保留，先前接收副本“0差异”说法已撤回。新回执 `artifacts/independent-testing/START-BLOB-01/owner-own-pathfix-dd380367/corrected-receipt.json` SHA `21E6F3D7B4DE615C5D217525C4B8F31E1F347D20004333F606A68CE9837F8D33`；64文件按完整相对路径接收，原始/副本128项检查0差异；用修复接收目录重跑同一19例，19 PASS/0 FAIL，PID18464自然退出0；实际加载 .NET 9 Encodings.Web SHA与清单吻合，OpenCV/HALCON native加载0。尚未覆盖参数/变量/Device 的完整深层保留和完整 Snapshot 事务；真实 Workflow 资源链仅开发自测，独立复现待办。新 RuntimeDefinition/完整生产 Registry 与 PluginManager discovery 是 S3 后继，不作为当前 S1 隐性门。责任人：独测岗 `/root/script_host_prototype` 复核收件路径与有限结论；开发 owner `codex/blob-s1-schema-regression` 继续 alias 源身份、动态 index/类型转换/unknownTool 负控、Snapshot 受影响链。
+- **T2 完整 Blob 链/可试用（未就绪/不可试用）：**图像桥的 `FrozenImageResource`、Normalize、ToolResults 资源所有权与读取已有 20 项有限独立验收，但真实 `WorkflowBindingContext.FreezeResult → RegisterOutputResource → 发布 → reader` 工作流尚未实际运行。当前固定 Repository Host 使用旧 SDK Blob 声明和显式测试注册；这不是新 Runtime producer admission。新 producer 的输出 admission/RuntimeDefinition 注册、生产 consumer 资源闭包、SDK3/ABI5 桥和 Registry/PluginManager 发现均未完成；真实 Blob UI/编辑链、用户可操作包均未形成。责任人：实施 owner 按 `codex/blob-s1-schema-regression` 推进当前边界测试；G1/T1 必要缺项先闭合，再按六阶段授权推进 S2/S3。G1 保持开放，不能将合同、测试 Host 或旧 SDK 声明目录报告成完整 Blob 通过。
+- **T3 关联回归（未开始完整链回归）：**完成 producer/consumer/Workflow/Repository/UI 接线后，安排 fixed PE 独立 Host、像素/Domain/生命周期、保存与重开、跨 Workflow 身份、旧格式/ABI、异常清理等关联矩阵；所有开发与独测缺陷保留原记录，修复后追加复测。性能测试与普通功能验证按实际 PID/资源冲突排程，不默认互斥。
+- **T4 统一 Release 与人工验收（未开始）：**按项目 Release 规则生成指定固定包和产物清单，执行全量 Release 构建及 Release 程序验证；交给用户集中进行可操作首包验收，记录用户反馈并继续修复/复测。VS 设计时/运行时与 GUI 结果按要求分别记录；人工验收未收到用户结果前只能标待用户，不可标通过。
+- **本检查点与 ETA：**下一技术检查点为 schema-regression worktree 的 alias 证据、dynamic index/转换/unknownTool/Snapshot 范围实况和独测收件回执补件，目标 15:00 Asia/Shanghai 前报告实际结果（不是停工点）。旧的“首个真实 Blob 60–110 有效工时、统一交付 110–240 有效工时”为早期条件区间，因 S1 新增真实 Repository 独测而尚未按剩余 producer/consumer/Registry/UI/Release 工作重估；不再把旧估计当承诺。当前 T2 无可用试包，需在 owner 接线清单和 S2/S3 实际任务拆分后给出新的条件 ETA。
+## 2026-10-25 O06 Blob完整链实施已授权，S1环境/合同工作启动中（G1–G5未通过，产品功能未验）
+## 2026-10-25 14:00 Asia/Shanghai：S1首件冻结与有限独测通过；G1仍开放
+
+- 固定基线为 `30d9407872c52ea647174f9ec92ac70c9bd49b87`。S1 首批隔离提交 `0799918373bb5f00ac5a00f30591a7e79463a84e`，branch `codex/blob-s1-component-metadata`，worktree `artifacts/worktrees/blob-s1-component-metadata-20261025`，当前冻结且 git clean；没有合并/推送，主树产品源码仍未改变。
+- 首件交付回执 `artifacts/worktrees/blob-s1-component-metadata-20261025/artifacts/validation/blob-s1/delivery/s1-first-checkpoint.json` SHA-256 `4EE87330DE1A2538E782628A815032DADC1DD24D36C782CFAC767B26D92AC078`；26 项源码清单 SHA `781A6D2A3FA96139F3228B025B39F676257D7D68743DAE5ED5D954CA3FD9705C`；字段/迁移清单 SHA `873899EEAB9004BB403FDF7B0EC6D96E8078C5F55169AD5311C8D41F446B0B1D`。协调方逐项复核源码、payload 与日志 41/41 的路径、字节数和 SHA 一致。
+- Contracts、Runtime 和 Runner 在隔离树实际 Release build 成功，0 警告、0 错误；两组定向 runner 阶段 PASS，设施意图负控预期 exit 1。真实 SDK ParamSetting 序列化、IsValid 只读字段、空/重复参数名、缺 typed reference 等已有针对性用例。此为中立合同/源链接策略和组件程序集验证，不是完整 Workflow/Repository/Blob 产品验收。
+- 独测已复制固定产物到自有接收目录，41 项零差异；独立 runner 仅引用固定 Contracts/Runtime DLL、没有 ProjectReference，37 项独立断言 PASS、0 FAIL，自有 PID 16780 自然 exit 0。独立回执 `artifacts/independent-testing/START-BLOB-01/s1-own-contracts-07999183/receipt.json` SHA `9A8E4C523F3B2F5D79F343BC9CD4277BFA20405D8D2561F568057F47C718DD9A`，报表 SHA `892A52202883F22CF01835232E1758587DD588D9382680F2CC3DFF1F90E52133`；测试 harness 构建补件 SHA `A05A07E72D7ACE4F0E81ADEEFFA84571A35AB5D3415E8DE76F952348D9423114`。覆盖 catalog candidate ABI4 拒绝、strict serializer4拒绝、资源布局/区域/批次边界、affine 声明等有限合同；显式4→5 callback仅 API 形状用例，非真实 owner 映射。真实持久 ABI4 PE admission 仍未验。
+- 独测准备回执 `artifacts/independent-testing/START-BLOB-01/first-preparation-delivery.json` SHA `71633DEE89FC1E01867DFF8B40B208B4CEDFED528FF4337C1DBD1606207045A0`，其 15 个证据引用的路径/字节数/SHA 均已核对。12 组像素/36文件与6组布局原始样本共33,554,576字节已独立审计；这些是 fixture/oracle 证据。隔离 net8 vendor native 设施正控 `GenImageConst→Threshold→Connection→CountObj=1` 与坏 native 路径负控均自然 exit 0；managed/native 版本与 SHA 已绑定，5文件 post-diff=0。它证明 HALCON 设施可用，不是 Blob net9/Contracts5/native provider 产品通过；没有读许可内容，未知 PID 16392 未触碰。
+- 为按总监许可解决 S1 编译/owner 接缝，已从固定提交新建隔离图像桥 branch `codex/blob-s1-image-bridge` / worktree `artifacts/worktrees/blob-s1-image-bridge-20261025`，单一实现 owner `/root/s1_resource_contracts`。固定提交 `84d88634430a54e6d141e4bb0e02ceef7e4a1a31`，worktree clean，handoff receipt `artifacts/validation/blob-s1-image-bridge/handoff-receipt.json` SHA `901E68F4EC03A199701D9C6400BD151FE20EA472D9F58F92ED6BE15609CBBC42`；6项源哈希/大小逐项吻合。实现为 `FrozenImageResource`、显式 `ITypedImageSnapshotSource.CaptureSnapshot(frame)`、`BindingClrAdapter` 与 ToolResults owner、HalAdapter 实际像素/Domain 复制；HALCON 仅在 adapter，公共 Contracts 不引用 HALCON。隔离部署的25个native DLL源/目标/manifest SHA相符（387,223,024 bytes），managed DLL SHA相符；Runtime/SDK/HalAdapter Release build实际0警告/0错误。开发BridgeCheck累计13个用例自测PASS：真实HALCON Gray1×1、奇宽BGR/BGRA、非满Domain/空域、source释放后reader、padding和Normalize→Publish→reader。首轮circle fixture有一失败（HALCON circle(1)离散成2×2而oracle预期cross），原失败保留，改显式RegionRuns cross后针对性复测通过；此为fixture纠正，不改产品迎合oracle。父owner-migration树暂存仅这6源做桥接闭包集成，Workflow Release after-bridge exit0/0错误/360警告，log SHA `02FF4BE11679B08E82866A7C61A399FD2290C3AA2100FDCA84E4AE0A1AAF27F1`。均为开发自测/构建，非独立验收；独测收件指出handoff尚缺compiled PE身份manifest，开发正在补且独验待执行。14:00 pre-bridge Workflow首轮exit1日志SHA `4597CE6E2AD167F05600406F145CC3C2CCB9BB6260305BA0C75BCC25BAFB162B`，4个CS0535均为旧BorrowedImage缺新Layout/Frame/EffectiveDomain/AcquirePixels；作为依赖重排实证，不计PASS。
+- 父集成 owner 在另一个 `codex/blob-s1-owner-migration` worktree（同从 `07999183` 分支）负责真实 document format 1 中识别旧 binding 后按身份/声明显式映射到候选5，以及静态 schema/合法字段规则，随后接真实 Repository fixture。其代码未构建/验收；identity callback不可算 owner 映射通过。14:30 交映射/fixture代码实况；完整 Repository + Blob 声明 fixture 预计 15:00–15:30，依赖桥接 API/SDK 编译闭包。
+- G1/T0仍未通过。真实旧引用 owner 映射、Workflow/Node/Device AdditionalData精确合法字段与嵌套未知策略、完整 Repository/Snapshot原盘保护、resource consumer的真实Domain/owner/retain、SDK3/Registry/PluginManager/Release发现接线、native provider与真实 Blob UI/编辑链、用户首包试用、VS设计时/运行时和完整统一 Release 尚未完成。strict current binding4仍拒绝；只允许document format1内核实owner身份后显式映射候选5，再经strict5校验；ABI4二进制始终拒绝。首个真实 Blob 估时仍为60–110有效工时条件区间，统一交付110–240有效工时；不因局部合同测试缩短日历预测。
+- 后续检查点：桥接 fixed 已提前交付，managed PE identity补件及独立桥验待办；14:30核验父owner旧引用映射/Repository候选接线的真实源增量与受影响编译，不宣布G1；完整Repository + Blob声明fixture预计15:00–15:30，依赖桥接稳定API/SDK闭包。S2/S3其他消费者接线仍服从G1门槛；Blob首真实链优先于八消费者，不新增批次，不恢复旧变量收口，不自动merge/push。
+
+- 用户13:23明确批准U1/U2及原O06实施范围，授权按六阶段计划先交完整可运行Blob链试用，再做关联回归和统一Release；不新增批次、不原样恢复旧变量收口。授权原文及边界见 `docs/collaboration/BLOB_IMPLEMENTATION_AUTHORIZATION_20261025.json`，含13:31 HALCON加密狗Clarification；当前SHA `BBD44F5A3EABB5F30A089E3E9D1ED54CF08064270E094FDBC77B6457902FF778`。
+- 基线HEAD `30d9407872c52ea647174f9ec92ac70c9bd49b87`；主树 `src/tools/tests` 产品diff为空，既有文档/治理dirty保留。S1已建两个隔离worktree：集成owner工作树 `artifacts/worktrees/blob-s1-component-metadata-20261025`（`codex/blob-s1-component-metadata`）目前已修改ToolContracts.cs、Editing.cs、SolutionCompatibilityAdapter.cs、Solution.cs、SolutionRepository.cs并新增SolutionFormatPolicy.cs；资源合同工作树 `artifacts/worktrees/blob-s1-resource-contracts-20261025`（`codex/blob-s1-resource-contracts`）目前已改Resources/TypeRef/Values/DeclaredValueReader/StructuredValues并新增SpatialDeclarations.cs和定向cases。两边均基于HEAD30d940；主树产品diff仍零。metadata/native消费者先只读。
+- 当前准入实测：.NET SDK 10.0.401，.NET/WindowsDesktop 9.0.20参考包缓存存在；HALCON托管DLL存在且libs下25个native DLL存在。PID 16392 dotnet自10/24 16:20运行；命令行/路径读取被系统拒绝、无主窗，归属未知，不停止；用户已明确现有加密狗可直接用于执行、无需单独许可探测；实际native版本加载/算子正负控安排13:40–13:45，GUI输入/采帧及真实Blob包仍需后续准入。隔离输出和12组独立样本已验证。故S1源工作已启动，完整环境T0仍未记录，G1–G5未通过、没有产品运行/验收结论。
+- 13:34首检查点实况：开发已按文件白名单分为父集成/格式迁移owner与资源typed合同子线，metadata/native保持只读；先建工作树失败因.git refs lock写权限，正式授权后建成且未改主树。开发定位打开/方案列表两处格式门及旧兼容路径。独测独立建立12×3=36个像素真值文件，manifest SHA `061E03B5E4DCBD949E578671777768197C20633D607FBC8B611935850FD5500D`；独立scanline复核12/12、36项哈希通过及3个错误oracle负控，audit SHA `6CF6384D549A9656212E42483353C4884E99929E9B223DE25DA538D75BE20795`；环境回执 SHA `00424B9A872A597525795F78A942D80A74F0EF225C75A0CE7EE3B2A1C4804432`。HALCON managed 24.5/native24.05哈希已静态绑定；用户明确现有加密狗可直接使用，不单独探测许可；不再独立许可探测或等待；13:40–13:45安排隔离native加载/算子正负控，实际运行尚未验证；GUI采帧仍待首个真实目标。dotnet PID16392受系统ACL阻止识别，保持运行。12组真值审计不是产品运行PASS。
+- 检查点：13:35交实际岗位采用、写权/branch/path、准入通过项或具体阻塞；14:00交S1合同/字段/迁移实际差异及定向检查结果，并据实重估。经理总账和产品实现队列持续更新；独测岗并行准备夹具，O06文档岗只更新当前授权状态。估时仍为条件区间：Blob首试60–110有效工时，统一交付110–240有效工时；不作为日历承诺，不重复累加独测时间。
+- 本轮不得把历史PASS/FAIL改写。仍禁止未知进程终止、共享构建输出写入、未固定包产品运行、GUI/性能窗口抢占。统一Release按用户授权目标推进但须G5/独测/总监/用户相应门真实通过；不自动合并或push。
+
+### 历史记录：Blob完整方案静态核收（总监终审通过；后续用户于13:23明确恢复实施）
+
+- 正式冻结输入 `artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/blob-complete-final-review-design-input-20261025.json` SHA-256 `8798577FECDB611C3A2BEF14E0ABA8B09D3509AA4069294A1EB9F75410494E05`；9项技术决定、R1–R6、G1–G5、S1–S6已明确，技术选型未决0，集中用户审核U1范围/兼容代价、U2编辑行为。现阶段仅供整体审核，不恢复实施。
+- O06原位页面 `docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html` 当前SHA-256 `9FD6B5E0A41A5260FD3620BDC9A58EF8215A5993ACF589D7FBC2AB9517E72858`（1,552,405 bytes）；owner receipt `artifacts/analysis/document-owner-o06-20261024/blob-final-whole-plan-owner-receipt-20261025.json` SHA `400027D20BD2F9B95BBDA1118A943039FFFCA383BAD68436FC71F96F7A169F29`。经理修订02静态核收 `artifacts/analysis/vm-control-blob-document-merge-20261024/blob-final-whole-plan-manager-acceptance-v2-20261025.json` SHA-256 `87BAE2D816B7852DBAB24B8B554CAB82AB74FD617556C17191C331ED305AD449`。专项QA `artifacts/analysis/blob-controls-algorithm-structure-20261024/blob-final-o06-static-qa-20261025.json` SHA `D572F4110BFDCFA47A28FB582FDA84D589634E3A807C6F40EDCBE72425BB54E6` 复跑通过：31/4/8/19、686唯一ID/0重复、锚点/链接/幂等、receipt哈希通过；已修正Blob数据表动态列链和input.pose/input.image/presentationLeaves映射。产品源码staged/unstaged diff为空。
+- 条件式工程估算 `artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/implementation/blob-six-stage-conditional-estimate-20261025.md` SHA `89D28FA80DCD57A479EF446CCE20D1C7F44EE120510EA783F647D5711C4758BA`：首试60–110有效工作小时，整体实现至统一Release关键路径110–240小时。独测估算 `artifacts/analysis/validation/blob-complete-independent-plan-20261025/conditional-independent-validation-plan.json` SHA `8F69834F50DFEBA30921D0488BBD2F079AE71A22701B672630DE9ED1B9DAE5D3`：新fixed后独验至Release核验14–26小时，包前准备3–6小时，可见帧计时设施排障另4–12小时。均为未来用户恢复授权且环境准入后起算的规划区间，时钟不同不可直接相加，非已派工或交付承诺。
+- 条件式主计划 `artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/implementation/blob-implementation-master-plan-20261025.md` SHA `947F6C82C022F63D99B8DE6D5590F21594D502CC5BC05B2B259C8E4304F9A74D` 已汇总文件归属、依赖顺序、门禁、估算、失败回退及U1/U2；与估算区间配套供方案审核，不是实施排期或实施授权。
+- 总监终审 `artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/blob-complete-final-director-review-20261025.json` SHA `42B8BE7F4712F0A70B01BC6ED219CCDC22F4AE67E6E7AF6BF1F2C114A7F58896`，结论 `FINAL_STATIC_REVIEW_PASS_FOR_USER_PACKAGE_REVIEW`；核对冻结输入15个源SHA、页面/owner/manager/专项QA一致，原工程行与input.image/input.pose/presentation映射修正、历史旧句仅留1处、686唯一ID/31条分组/8项已定；产品staged/unstaged diff为空。
+- 本轮完整方案静态交审完成：技术决定未决0；实施门G1–G5尚未执行；用户待审U1范围/兼容代价、U2编辑行为。未改产品代码、未build/run/test/Release、未提交/push；产品暂停保持。是否恢复实施仍需用户明确授权。
+### 上一阶段已完成：八个null工厂工具逐项方案闭口（总监终审通过，待用户审核；产品暂停）
+
+- 技术总监冻结输入 `artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/cross-tool-result-declaration-design-input-v3-20261025.json` SHA-256 `1C59DD560CC58FD846779494392767EFB14AAD38FE169B0808F9CE11A17D7132`；逐项决定八项全部为 `StandardTable + One`，None/其他呈现/专用分析UserControl/未决定均0。已核VM Display与我方Results/Tool字段映射、声明/数据源/宿主/有效行/工程去向；实机运行公式与差异只限制未来数值对标，不再作为需求待决。
+- 文档岗在原O06跨工具结果与迁移门原位更新，八行直接附双方来源/行号/SHA；31条主记录和4/8/19/0/0分组、原锚点保留。正式页 `docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html` SHA-256 `A4FDA6064E2501CC78AE1F44944ED1452B2DEA4FFA90673395F76DD5F293FA7D`（1,534,172 bytes）；独立静态QA、双次字节幂等通过。
+- 文档岗回执 `artifacts/analysis/document-owner-o06-20261024/cross-tool-result-declaration-owner-receipt-v3-20261025.json` SHA-256 `EAF315DD9563B2B4E56695DBF498B9107582AC628B7B6449626D4BD6BBAB0AAC`；交付经理只读核收回执 `artifacts/analysis/vm-control-blob-document-merge-20261024/cross-tool-result-declaration-manager-acceptance-v3-20261025.json` SHA-256 `A68B581AD3D02C90999C1C8D82B7FB4B941159A71C74BDF2AD989E821290537C`。实际文件哈希、八项字段、685唯一ID/片段目标、旧v2与既有回执未变均复核通过。写窗已释放。技术总监终审 `artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/cross-tool-result-declaration-director-review-v3-20261025.json` SHA-256 `C9ECD9085F0DF530C6F5AD45575D1E03A27D14A0CB86455B933AF83B0C692AFA`，结论 `FINAL_STATIC_REVIEW_PASS_FOR_USER_REVIEW`。
+- 设计决定已阶段性闭口，非产品实施批准。未改产品源码、未build/run/Release/产品测试，未提交/push；产品暂停保持。后续人工/实机与产品验收留在原迁移门，不回写成需求未决。
+### 历史记录：此前四项与跨工具边界审核已完成（不代表本轮已完成）
+
+- 用户授权继续核清 `BlobDataAnalysisControl`、`JudgmentEditorControl`、`ToolIcon`、`ToolBarControl`：按实际职责追踪VM控件/模板/完整消费链，先证据、再架构去留与功能承接、最后由文档岗原位更新；交付经理核收后交技术总监整体审。当前主页面基线SHA-256 `9B0401B85C438444F7C0782C70C4B964CBCC7291FADCF302C1A5F58D51E97D63`；仓库基线HEAD `30d9407872c52ea647174f9ec92ac70c9bd49b87`。
+- VM取证负责人已开始限定范围的静态追踪，范围为Blob页及其直接宿主、调用者和结果消费者；不启动/构建产品、不改页面。已请其统筹源码岗与文档岗，文档岗等待证据和架构决定后再独占写入。用户已直接向VM负责人提出相同技术问题，经理不重复派发问题。
+- 首轮进度检查目标：2026-10-25 11:15（Asia/Shanghai，约自派工后12分钟），先交已有源码链、逐项已核缺口及真实剩余时间；证据产物就绪即逐项回报，不等全部完成。后续检查目标12:30，覆盖四对象证据位置/形态、直接消费者链、SHA/来源边界、缺口与建议状态；不能闭合的对象报告具体阻塞和可行续期，不以“未找到”推断“确认无源”。最终验收需实际页面SHA及与原记录、工程组织和功能承接的一致性。
+- 逆向负责人已确认执行分工：BlobDataAnalysisControl 由 /root/blob_data_analysis、JudgmentEditorControl 由 /root/judgment_editor、ToolIcon 由 /root/tool_icon 作只读证据核对；ToolBarControl 由逆向负责人直接核查。11:15首轮进度检查已改为先报有界成果/缺口/剩余ETA；12:30作完整检查目标，证据输出将在取证工作区完成JSON/MD及SHA校验后回报。
+- 11:05 首轮实质进展（逆向负责人回报，尚待冻结包核收）：BlobDataAnalysisControl我方链到CreateDataAnalysisControl→宿主节点→结果回调→FilteredBlobs表→SelectedBlob/SelectionHighlightChanged及黄色BoundingBox graphics；VM通用SDK逐Blob信息/graphics可证；随后定向追查已发现VM Blob显示XML声明逐Blob列，结果表行选择驱动矩形高亮。筛选/摘要统计口径仍未闭合，仍属部分组合链，不据此认定完整等价或退役。JudgmentEditor原ResultShow阈值/开关和通用Bool/range模板、参数树传输已证，但native算法及OK/NG计算边未证，属配置UI+状态链部分组合。ToolIcon已证工具箱目录解析→ImageEnablePath→模板Image绑定，以及VmModuleDecorator状态图标到画布XAML绑定；窗口标题动态图标边界未证。ToolBarControl已证RoiSelectControl按钮→ValueChangedCommand/IsChecked及ROISelecter模板局部形状选择链；测量编辑器对应选择条及IROISelecter执行体未证。负责人预计10–20分钟内提交第一版冻结包（约11:15–11:25）；尚未作最终去留判断，四项均不按无源/退役结案。
+- 11:06 后续线索（逆向负责人进行中回报，证据包尚未冻结）：Blob数据表已有VM XML逐Blob列声明及行选择→矩形高亮的相关源码链，筛选/摘要统计和口径仍待界定。该发现更新11:05初报中“VM表格未闭合”的部分结论，但不等于完整功能等价或最终去留。四项完整材料预计随后冻结核验。
+- 11:06 用户新截图定位（经理已实看）：`D:/Temp/codex-clipboard-245f54f9-4f8b-4580-b0bf-960afb9ffdd4.png`，SHA-256 `F1FF72C266C590D18774041E3B7DBDDD668B2EBC085B9815944A6AF7D61C9000`，94,478 bytes。图像区下方“当前结果”Tab表头依次为序号、面积、周长、质心X、质心Y、角度、长轴、短轴、圆形度、矩形度，表格为空。仅证明界面位置和列，不证明运行数据、高亮行为或截图与VM二进制同版本。已转取证与文档岗，要求更新原BlobDataAnalysisControl唯一主记录及相关承接/验收，不另设平行专题。
+- 11:11定向源码进一步定位（逆向负责人进行中回报，待证据包冻结）：VM表格属于下方 `CurResultTabItem`，宿主数据源为 `ModuleCurrentResultList`；`BlobDisplay.xml`包含逐项列、计数及图形映射声明。当前继续核行构建、数组消费和选中索引转换，不能把XML配置声明直接表述为运行行为。
+- 11:15经理核收四项定向静态包（前一预览版F97D…已被此最终冻结版替代）：JSON `D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/interface-deepening/o06-four-candidate-duty-audit-20261025.json` SHA-256 `0B8B31EF2F3A6A11D4B57729FD5B7B490ED3AC97816CBC7A35B9FC5E018D19D9`，16,705 bytes；Python `json.loads`通过，4候选齐全、noDispositionDecision=true、confirmedGlobalNoSourceCount=0。人读摘要同目录 `.md` SHA-256 `7DCA47E770096708F6DE906B74130CA8635C63C67DF4E08FC001FAA6A27749EB`，3,881 bytes。Blob项补全CurResultTabItem→ModuleCurrentResultList、BlobDisplay.xml列/Num/数组映射、行选中→一基序号高亮请求，并明示逆序构建/500行分页造成的稳定ID/行序未知；其余三项保留证据链和有界缺口。尚无最终去留决定，文档岗仅准备原四行草案不写。
+- 11:16技术总监复核确认VM使用宿主通用表格：Blob显示XML提供列/数量，宿主动态组列与行并处理选中高亮；当前结果与历史结果使用不同数据集合。决策焦点是我方专用UserControl的职责哪些可由通用结果投影承接、哪些Blob统计口径需专属保留。文档岗已备原4行差异草案，仍等待总监明确各项去留/功能承接决定后再写。
+- 技术总监补充Blob决策边界：我方对照对象为 `BlobDataAnalysisControl.xaml` 专业数据分析UserControl；VM对应是图像区下方“当前结果”Tab内表格，不是Tab壳或上方模块结果树。需核VM宿主是否按BlobDisplay.xml组列/行及联动选择，以及与专业UserControl的职责差异；仅位置相同不足以决定保留。文档岗须待VM证据包和总监明确去留后再写，不预先给整类保留结论。
+- 技术总监提供我方职责/消费者静态输入：`artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/four-pending-self-duty-review-20261025.json`，SHA-256 `F92F3715697E7D8A0358A6A1AFBFE6AA7D14561FAA7443A1AEE2D86DFEA35A43`，10,883 bytes。其当前判断：ToolBarControl为ShapeToolBar/MeasureToolBar共同使用的类型选择条；JudgmentEditor负责配置而不执行判定；Blob数据表是工具专属结果消费者；ToolIcon偏纯视觉但硬编码字典存在扩展边界问题。此材料仅是我方事实输入，不是VM最终去留结论；文档岗仅在VM证据包与总监最终决策齐备后原位更新四条记录，不提前重写整表。
+- 本轮明确禁止产品修改、build/run/Release/提交/push，既有产品暂停不变。登记HEAD基线但不创建临时提交，遵从本轮禁止提交的明确授权。
+## 2026-10-25 O06交付经理与文档岗回执核收完成
+
+- 交付经理基于实际文件核收通过（仅静态方案交用户审核）：正式页 `docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html` SHA-256 `9B0401B85C438444F7C0782C70C4B964CBCC7291FADCF302C1A5F58D51E97D63`，1,425,518 bytes。
+- 独立静态QA记录 `artifacts/analysis/vm-control-blob-document-merge-20261024/o06-five-group-qa-20261025.json` SHA-256 `E62FB524FC086A9CE5BDFBE4045770ACC707178ABD846573862E56AD1B1EDBB6`：31条唯一记录，分组4/8/15/4/0；10项事项导航与对象映射一致；英文自然语言摘要已翻译；本地链接可达、重复合并幂等、产品build/run/tests为0。独立幂等记录见 `pure-merger-qa.json`，SHA-256 `F45F3538A54FA3D7E14BC65391573543C49D04BA4199039D0E57B75BEE6CD0BC`。
+- 技术总监最终静态审查记录 `artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/five-group-final-director-review-20261025.json` SHA-256 `7DB8DA5DDC915CCB201F1E27F99A73C41C2E0CBF4B38CBD26D06159F49C8CF2B`，已接受供用户审核；未解决的VM二进制/实机行为/外部消费者/正式设计器与Release验证仍如审查记录所列。
+- 经理回执：`artifacts/analysis/vm-control-blob-document-merge-20261024/manager-final-acceptance-20261025.json`。文档维护者自有回执已同步最终页SHA：`artifacts/analysis/document-owner-o06-20261024/final-merge-receipt.json`，SHA-256 `C7BDB47A7ADDC1BD732E28BFF6FD8DA4AC5B1EF2D251E76F06855935609466BD`，页面SHA匹配状态为true；三方核收记录已同步。
+- 文档工程师继续独占O06 HTML、生成器、hook、fragment及其自有回执维护；经理只负责协调和核收记录。产品暂停保持：无产品代码修改、build/run/GUI/Release/产品测试/提交/push；本次文档核收不构成实施批准。
+## 2026-10-25 00:49 文档维护与三方核收规则补充，O06原位整合进行中
+
+- 用户授权将最新静态对标原位整合到既有控件清单、去留表、工程段和关联正文；仍由文档岗唯一写者负责。主控最新验收要求：更新原10维/31类控件表与10项处置，不以新增矩阵替代；工程B推荐及前后树进入原工程段；旧锚点与导航搜索指向同一现行方案；过时结论标历史/替换，证据与未知在对应行同处。当前文档尚未完成本次整合，不能沿用此前交审SHA声称本轮已完成。
+- 根已按授权将JOINT_COLLABORATION_PROTOCOL.md升至V8.4，并更新JOINT_TASK_ROLES.json：文档唯一当前方案职责、经理按文件实际核收、主控最终一致性审查及交接门。已向文档、经理、独立测试、开发、VM负责人/源码/实机岗位发送采用通知并请求回报。
+- V8.4不授权产品修改、不恢复产品暂停、不新增批次；无build/run/Release/产品测试/提交/push。待本轮原位整合实际完成，再由经理核收并由主控只读审核；审核通过仍只供用户审阅，不等用户实施批准。
+
+## 2026-10-25 00:27 O06静态对照交审核，产品保持暂停
+
+- 本轮文档核收于2026-10-25 00:27（Asia/Shanghai）；O06页面在00:26:46更新并完成最终静态核对。页面SHA-256 `C9F19999B3CDBDB10CEBCCDBE6212F65B4121DD2ADC0A1FC8C3EF8AD5D590981`，回执SHA-256 `56F938D1C1ED3C60B3C5286C9AB475D8116EA698606CF20128BB82A8F10CD8DB`。已纠正截图映射；VM岗位意见明确为证据而非架构处置，最终建议来源层级已写清。
+- 延期来自截图与说明错位、页面生成/回执版本未同步及反复整合；现按最终文件而非消息状态核收。结构、锚点、链接、幂等重生成和`git diff --check`通过；源码、工具、测试无改动，无产品build/run/Release。
+- O06仅作为静态方案交用户整体审核；这不构成实施批准。既有产品暂停、源码基线与既有验收状态保持不变；不恢复产品闭口、不新开批次、不构建/运行/发布、不push。等待用户整体审核后再按指示处理。
+
+## 2026-10-24 仓库迁移后分类保存，产品收口继续暂停
 
 - 用户授权核对迁移后原91项未提交内容，按用途分类提交GitHub；后续所有提交标题及正文使用中文，已写入AGENTS和协作协议并通知各成员。
 - 本次仅整理依赖锁快照、文档导航与生成源码、已有进度与暂停记录、历史计划及仓库管理说明。不启动restore/build/产品测试/GUI/fixed/Release交付，不自动恢复优化收口。
@@ -1390,7 +1500,6 @@
 - 本轮文档结构/清单/逐项取舍交付已完成，不能继承旧文档100%当新实现或全链完成；产品完整度保留46项状态，专业工具未逐算法核完仍明确未知。旧42证据24/42=57.1%仅归档基线，本轮无升级。后续应按新能力ID做具体源码/运行复核，而非再堆旧视角页面。
 
 
-
 ## 2026-10-21 分析方法改为主界面/工具界面入口驱动（不是仅模块换皮）
 
 - 用户指出恢复模型按主界面和工具界面入口追链，旧模块分类差异过大。本轮将自研默认页改为两类入口，保留架构图/领域仅作辅助；新增entry-M01..M06与T01..T05首批11卡，每卡用户动作→真实命令/事件/方法→结果→失败取消关闭边界→同入口VM恢复材料→改法与验收，源文件方法行/SHA记entry-driven-architecture-review.json。
@@ -1399,7 +1508,6 @@
 - 明列12组尚未入口复核动作（M07–M14、T06–T09）：启动打开、工具箱、连线撤销、流程Group、变量、通信、结果历史、退出及工具绑定/ROI/重置导出/其他工具。旧模块分析不算这些新入口方法已完成；本轮只完成首批11追踪，不宣称全业务链已转换。原20包100%是旧文档范围。
 - 验证check-entry-driven-reader：6主+5工具、22个桌面/390px深链、入口页签自动打开、键盘、打印恢复、无溢出与页面错误；check-aligned-reader-full的81跨视角/刷新历史继续通过；全局31节/8兼容视图/2087链接通过。入口页目视通过。entry-M/T深链同时映射对应F/S状态摘要，避免显示无关领域。
 - 不改产品、不新增逆向或运行探针/构建/提交/跨聊通知，不恢复定时。原证据24/42=57.1%（部分11未知7），本轮+0；新入口追踪为单独覆盖而非旧验收重置。
-
 
 
 ## 2026-10-21 全面交互复核及最新定位：自研模型内对照，VM仅快捷入口
@@ -1413,7 +1521,6 @@
 - 分析文档原20/20=100%，证据24/42=57.1%（11部分7未核实）本轮+0。本轮为结构/交互和范围查漏改造，不宣称新增27领域完整实现核实。
 
 
-
 ## 2026-10-21 正文图卡化、自有狗规划及参考文档导航对齐
 
 - 用户要求不仅首页，双方架构/对照/优化正文同参考页排版交互，并明确将使用自有加密狗。现18架构域均有责任路径图、当前实现/缺口卡和折叠源码；9同场景卡并排VM/SunEye调用链/收益代价/取舍；优化正文20任务卡含当前链、选择理由、具体改法和验收，原历史优化记录折叠保留。
@@ -1424,14 +1531,12 @@
 - 产品代码未改；不新增逆向/运行探针/构建提交或跨聊通知，定时任务不恢复。原分析100%，证据24/42=57.1%，11部分/7未核实，本轮+0。新授权方案仅文档，不计实施完成。产物body-architecture-redesign.json、aligned-document-navigation.json及各截图，发布脚本不可重复运行。
 
 
-
 ## 2026-10-21 参照框架架构页调整阅读格式
 
 - 原HTML首页改为架构地图+节点检查器+统计卡+四个局部页签（架构全景/实际调用链/领域对照/优化落地），20领域可筛选，6条调用链卡片，优化阶段卡片，原专题索引折叠。保留全局8视图、31节、所有旧锚点与详细证据，统一增加留白/卡片/表格与标题层级，非仅换颜色。
 - 节点点击更新职责/边界/实施入口，页签支持方向/Home/End键，打印展开局部面板并恢复选中态，窄屏两列节点/单列卡片。沿用浅/深主题，未重建定时任务，无产品修改或新分析证据。
 - check-research-reader通过31节/8视图/1785链接/旧锚点/历史/全局搜索/打印主题/窄屏，0页面错误和网络；新增交互验证节点、4页签、20领域筛选、键盘、打印恢复、390px无溢出通过。截图architecture-map-desktop.png/mobile.png，桌面目视已检查。
 - 进度只改展示，分析20/20=100%，证据24/42=57.1%，部分11/未核实7，本轮+0。产物redesign-architecture-reader.cjs不可重复运行。
-
 
 
 ## 2026-10-21 单文档优化工作台：当前架构→对照→实现验收
@@ -1443,13 +1548,11 @@
 - 产物artifacts/validation/implementation-optimization-hub.json及发布脚本（不可重复运行）；原文件结构和旧锚点保持。
 
 
-
 ## 2026-10-20 图像渲染与结果树9项补证清单已通知
 
 - 用户明确授权更新HTML并通知框架层逆向。新增display-tree-reverse-tasks，VM-DISPLAY-01..05、VM-TREE-01..04共9静态任务，P0六项/P1三项，含文件方法行、链、材料、验收及原42关联/新专项范围区分。原42定义不变，分析100%，证据24/42=57.1%（部分11/未核实7），本轮+0。
 - 清单artifacts/validation/vm-display-tree-supplement-tasks.json，SHA256 c1ae6919a37db36546f241c2c7ac47a340efaac57bd9fe8a70b5b11085d63676；官方send_message_to_thread已发送至local框架层逆向01a15280-de08-7361-80d8-92d9b1ddeb25，工具返回ID，receipt见vm-display-tree-supplement-dispatch.json。不声称确认/排期/交付，不要求自动跨聊回复，定时任务保持删除。
 - 只交静态材料，复用既有源码和VM-CODE-07等，不改产品/新增逆向/运行VM设备探针/构建/提交；材料到达后先验载体身份和完整性，再按固定检查点判定，清单已发送不得静默改版。
-
 
 
 - 2026-10-20同轮用户追加模块结果树：新增module-result-tree-design及ui-results入口，6维度双方实际链/优缺点/推荐；明确VM输出TreeView与datalist表分开，自研树模型展平为DataGrid；T01–T04材料与未运行验收。原42项进度不变。主图像专项10维度深链及390px已通过，原HTML1617链接/固定42验收通过（加树后再验）。
@@ -1462,7 +1565,6 @@
 - 自研文字最终幂律约base/zoom^0.15，非严格恒屏幕；FormattedText键无DPI/文化、fingerprint按对象/数组身份及长度，只有事件链完整才可保证原位修改刷新。均为条件风险，未宣称运行故障。VM有批量/低质量路径，不能称逐图元均重控件，未做性能优胜判断。
 - R01–R05明确像素转换/图元映射/文字语义/刷新退出/导出性能材料及验收；不新增原42定义或虚报闭合。本专项10/10分析维度交付，原20/20分析100%仅原范围；证据24/42=57.1%，11部分7未知，本轮+0。
 - 不改产品/新逆向/运行VM或设备/构建/提交。HEAD基线3a5dc6dd54f372699a450ad7862b52c961cd2797，原修改保留。定时任务已按用户要求于前轮删除，后续仅用户通知继续；下方ACTIVE为历史记录。
-
 
 
 ## 2026-10-19 跟进框架层逆向补码：按原42项验收，进度不因交付升级
@@ -3605,23 +3707,7 @@
 - 补码跟进本轮验证结果：check-research-reader通过31节/8视图/1574链接、搜索/历史/打印/窄屏，无页面错误或网络；check-evidence-checkpoints通过42项、24/11/7、冻结定义哈希和材料定位，进度57.1%不变。
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 - 回归修正：工具声明上一轮已改默认折叠参数，旧全页测试仍断言FilePath默认可见；本轮改为先展开参数区再验证实际FilePath字段，保留字段检查而适配新交互。全页重跑结果见输出。
-
 
 
 ### 本轮继续整合C09（同轮结果，以此更新上文9/20）
@@ -3629,25 +3715,6 @@
 - Shape已有模板子编辑直接_resultTemplate=template，取消不保证回滚；NPoint点表Copy草稿不可混同。NPointVerification Run后的TryCommit在PublishAfterCommit可写正式文件，不再暗示只有按钮发布。标准X先提交有效pending/无效可明确弃pending，已live写入不回滚，不能误写成全部取消。
 - C09正文已回填可评审，当前新版文档10/20=50%，余10包；6产物中R3已交付正文，其余待根主审。历史100%和固定证据57.1%保持各自独立。check-tool-editing-policies通过24行/源码SHA/每专页对应/特殊政策；全页37页261主引用2073链接/零脚本错误通过。
 - 三子智能体本批有限交付均已返回；无仍在跑的分析需等待。根将剩余原材料摘要存parallel-matrices-awaiting-root-review.json（14 Owner、8设备、8坐标、5诊断、8基准及UI/控件来源），状态明确awaiting-root-review，不计自动验收。下一轮直接回填剩余5产物，不重复启动相同分析。所有实验/输入生成均未运行，未改产品代码。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ## 2026-10-22 EDIT-SAVE-11 独立副本九项整链最终验收
@@ -3779,35 +3846,6 @@
 - CURRENT_TASK产品事实和IMPLEMENTATION_QUEUE由实施者维护；主控修改共享记录前协调。其他dirty（尤其plans/plan.json、临时探针、文档）完整保护。
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## 2026-10-23 框架面向工具合同主章完成，仅设计待用户审核
 
 - 主控复核 O06 工具如何使用框架能力章节，SHA 786980B7DD24CCF9A9B5206273E385312F268B962FF6B19A6B5280ABB01940E4；主文档与快照一致，7图、24冻结源校验通过，独立审核AF01–05文档层通过。root-final-review.json位于artifacts/validation/tool-framework-contract。
@@ -3912,6 +3950,65 @@
 - 最终交付要求同一Release及manifest、独验逐项通过/失败/受阻/未验矩阵、主文档和一次集中HTML手动验证包（所有本次实际改动、前后真实影响、操作步骤、预期与实测）；人工/真实VS未验证保留pending，不在用户试用前假报全面闭环。原ALC失败、历史性能FAIL、原型成本缺测及原暂停/排除边界不因批准自动清除。
 - 目标仍active；批准与交接不等实施完成，不在此轮声明完成或交付Release。
 
+## 2026-10-25 15:20 Asia/Shanghai：57a33874资源生命周期S1有界负载补证4项通过
+
+- 独立补证 receipt `artifacts/independent-testing/START-BLOB-01/resource-boundary-57a33874/receipt.json` SHA `73CD41D4D674F76175D8921FF7B532153BD61694BBDE282C37FC13C63C3F938F`，固定57a，无产品源码变化，270原/副本检查0差。Windows 10 / .NET9.0.20 / PID28796 exit0；Gray8/Bgr24/Bgra32 2048² fixtures（33,554,432 pixel bytes），每格式256 reader循环（总768），每格式4096 Domain runs及边界/批次拒绝、owner先退租后独立reader有效、各自dispose后拒读、一次刻意非法批量/退租异常后创建新reader恢复，4 PASS，6,625.469ms、峰值工作集89,079,808B。该时长/内存仅观察值，不是SLO/长期无泄漏保证。
+- 明确没做 HALCON native压力/全资源耗尽/OOM恢复、长期耐久、UI 50/33ms、全统一Release性能。只补原S1生命周期相关有界负载，不扩大为整包压力任务。Snapshot4FAIL及117 field map仍OPEN。
+
+## 2026-10-25 15:17 Asia/Shanghai：57a33874关键代码/证据独立审阅通过，范围限制保留
+
+- 技术总监对固定57a33874进行关键产品代码和接口调用点审阅，审查回执 `artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/implementation/s1-57a-director-code-evidence-review-20261025.json` SHA `9D9CD7A335592BA4C818C154F6A5FC9A3789A7FEFC1886ACE39D8C1111CB6B38`。实际覆盖10个产品改动文件的变更、合同和调用入口，不代表全仓或逐行审查；10个工作树源文件SHA与manifest吻合，7文件仅CRLF/LF与git差异，已分别记录raw/content身份；30条独测引用哈希吻合。技术审阅限定范围通过，仍不等G1。
+- V8.5协作协议SHA `100A540941277115A28FF6DB2735140D34773B4ABC5D99CF6C9ED9BDDCB9D018`已通知相关角色；经理已读第2.3/6.4及矩阵并明确采用、无冲突。文档节奏仍按阶段集中原位更新，本次不因协议更新重写O06整页。
+- 57a限定独测21合同/4choice runtime/6 RGBA real Workflow/3 resource consumer均通过，receipt记录了历史失败和限制。Snapshot独测4FAIL及117 input/33 top/79 leaf字段映射仍为S1未结门，继续独立修复/制表。
+
+## 2026-10-25 15:12 Asia/Shanghai：57a33874固定包有限独测汇总完成
+
+- 独立汇总 `artifacts/independent-testing/START-BLOB-01/57a33874-independent-summary/receipt.json` SHA `1A345A996D6FCD3B21CBA65900F89192C5310880063DB33F4C434B710645637D`，状态 `LIMITED_NEW_CONTRACT_RGBA_RESOURCE_PASS_NOT_G1`。57a固定提交上合同独测21 unique PASS（PID27096首轮20P/1个SequenceValue测试fixture InvalidCast FAIL保留；修正fixture仅重跑E10，PID2124 exit0）；闭集引用真实 `CompileBinding Conditional→ResolveBinding` 4 PASS（PID41700：2合法、future/automatic 2非法均返回invalid-value/null，不消费）。RGBA真实Workflow6 PASS（PID26432）；真实Workflow资源绑定/lease/throw消费自有consumer3 PASS（PID34528）。均附真实产品装载PE/SHA引用；没有产品重建/源码修改，独测总exit PASS。独测路径接收270个原/副本项0差异。
+- 限定与开门项：choice拒绝的“consumer gate”仍为test-only，不是现生产Blob运行工具入口；资源consumer测试自有且不证明Blob已提供writable image input；owner/reader可观测生命周期通过但无global native-allocation计数，不能量化每项原生分配；input lineage仍只到output invocation provenance。Snapshot语义/backup原盘保护 dd380 4FAIL尚未修、117input+33top+79leaf正式字段映射未完成、全部生产load/list/save/editor与完整S1 G1、full Release/UI仍未通过。G1保持OPEN。历史9009、测试oracle/fixture/接收失败记录均保留。
+
+## 2026-10-25 15:11 Asia/Shanghai：57a33874新包独测阶段性行为结果
+
+- 独测在接收的57a固定PE上报告 RGBA真实Workflow 6项均PASS：非等RGB、Alpha 0/255、完整域/非全域/ValidEmpty；只比较定义Domain内灰度像素，另验Domain runs及输入完整buffer/Alpha保持。资源适配自有consumer真实Workflow初轮3项PASS（声明资源引用Compile/Materialize、错误消费者读取后reader独立保留、错类型/已Dispose owner拒绝）。以上为阶段性结果，最终receipt/逐case PID及源/PE引用SHA待测试岗收口。
+- Contracts独测初轮20项PASS，另有1项因测试脚本把不可变`SequenceValue`误转数组而FAIL；原失败留存、修正Harness后该case已通过。Choice闭集尚未独立覆盖source→binding resolved value正负控；此时Contracts整套不报已闭合，测试岗正在补该项。开发18项仍仅开发自测。Snapshot dd380四项独测FAIL需后继固定新包复测。
+
+## 2026-10-25 15:06 Asia/Shanghai：57a33874固定包交接独测并完成逐文件接收
+
+- 开发冻结提交 `57a33874ba1adb11ebfba3cc9c7c4641afbd20f2`，路径 `artifacts/worktrees/blob-s1-schema-regression-20261025`，Git clean。交付`artifacts/validation/blob-s1-contracts-next/delivery/`：checkpoint SHA `1A92B28BCB0016B565EEE16A8BE5859C150400E5A5874EB8A24EFE172DBCBEA2`；source-manifest `18F6B3AD73D3355CB25B491397F749FCFA062DB500F02D09B2807A5B49081D37`；binary-manifest `6F7A5EC7295334A2904F49E5E6F34B2D15216781F0D6BC80D63234E1ECA1763F`；evidence-manifest `A636D10E5291EAC28715030017C7ECAD1C459BF4DC07E7796DA434B811341C51`。新版闭包摘要228 warnings/0 errors，ImageLoad受影响构建0/0，开发用18 Contracts断言与6 RGBA用例通过；首轮4个domain外灰度oracle FAIL、前期Runner重载歧义失败均保留，非产品FAIL/不计独测。
+- 独测接收 `artifacts/independent-testing/START-BLOB-01/received-57a33874/receive-manifest.json` SHA `64D28FDC5E12FAD830A8555F49DE93A53528810509C8A73D26BF3808F415A5E5`，固定57a源/PE/evidence后按全路径复制17源+64 binaries+28 evidence共109项，SHA/字节0差。独测已启动两轨：18项Contracts/scope/projection/closed-choice；RGBA＋真实Workflow精确 `IReadOnlyImage` resource consumer＋异常清理。独测估接收identity已用时/结果按其后回执计，开发自测不能代独验。未改/覆盖079、84、dd380、02090旧验证输入。
+- Snapshot原S1 gate 另有dd380独立4 FAIL，由开发唯一产品写者在57a冻结后隔离修复；交付经理仅协调与核收。该修复不得改57a或旧dd380冻结树。G1 OPEN。
+
+## 2026-10-25 14:59 Asia/Shanghai：总监新增要求复核既有Snapshot保存前语义与Replace失败原盘保护
+
+- 总监指出完整Snapshot门仍有两条未直接证：`SolutionRepository` 仅做 `CompatibilityAdapter` 而在保存前漏掉 current format5 语法合法但owner/reference无效时，是否会 Save 成功、Load 才拒绝；以及 backup 已写/更新后 target `File.Replace` 失败的中间时序，旧目标和旧backup是否同时保留。只读核对实际调用序列：`SolutionSnapshot.PrepareJson` 调 `SolutionCompatibilityAdapter.Prepare`；读取侧 `LoadCandidate` 随后还做 `ValidateTools`。`WriteSnapshot` 先 `AtomicJsonFile.Write(recovery, old target)`、再 `File.Replace(temp,target)`，指出该时序会在target替换前改变backup；此后已由下方独立回执实际确认。此前受控deny-read锁失败通过不覆盖此后者时序。该要求属于原S1完整Snapshot门，不是新批次。
+- 总监又核出 `SolutionManager.SaveCurrentDocument` 只检 `WriteSnapshot(...).FileWritten`、基于预保存 `snapshot.Json` 推进 `session.CommitSave`，当前不消费 `Warning` / `WrittenSnapshot` 字段。Repository缺陷修复后必须单独核真实上层入口：磁盘写入和session dirty baseline绑定同一实际written candidate；恢复/备份提示按结果显露，文件失败时不得CommitSave或更新metadata。仅纳入必要的结果类型和该入口适配，不扩整UI、旧变量事务或不相关管理流程。
+- 独测已基于固定 `dd380367620eec0d92bd540e8111e1a7289fba37` 实际复现4项FAIL，PID 44712，自然exit 1；回执 `artifacts/independent-testing/START-BLOB-01/snapshot-counterexamples-dd380367/receipt.json` SHA `430A4B3C3E1B2D67AC3A675BDC6C171B726E56BAAC4764C696F9AEBB3D4FA999`，report SHA `D9F8528D4F16D3578E5683AFB7B4D7D01D815911FF0EC7DAE8AECED00D9417A5`。missing-node/wrong-owner/changed-schema三种语法合法但语义失效的binding5均 `Prepare`未拒绝、`Save=true` 并改变target/backup、随后 `LoadCandidate`拒绝；真实Windows readable-target/no-delete-share锁使target replace失败，`Save=false`且target SHA/长度/mtime保持，但旧backup已改变。独测指出既有Repository19项仍是有限有效证据，不覆盖这四项安全门；目标/备份128路径检查0差异，无产品重建/源码改动。开发已获准对这两项做S1最小修复，必须保留4项旧FAIL，新fixed再由独测复验；禁止宣称G1通过。
+- 我另在独立临时目录实测.NET `File.Replace(source,destination,backup,true)`行为：同卷且backup路径已存在时成功为target=new/backup=old-target；target持有可读但不共享Delete的真实handle时Replace抛IOException，target与既有backup都保持原值。跨卷（D盘source/target，C盘backup）失败“无法删除要被替换的文件”，target和backup保持原值。该单调用仅支持同卷；本机当前`Path.GetTempPath`可能与D盘目标同卷，部署/用户环境可能位于不同卷，因此产品恢复路径及实际卷仍须在固定PE验证。未证明进程中断时两文件原子。
+- 已请独测在固定 `dd380` Repository实际PE与自有fixture上分别定向复现；若无既有可观测故障注入点，明确具体阻塞，不加产品全局探针。已请开发列清该保存路径owner/failure seam，并仅在证实产品缺陷后提S1最小修复。测试保留旧S1独立数据和此前失败记录，不等待RGBA/Contracts新fixed包。
+
+## 2026-10-25 14:58 Asia/Shanghai：S1产品受影响编译通过，独测RGBA Host设施仍有编译错误
+
+- 15:00检查点前直接核到开发受影响 Release 闭包日志 `closure-build-02-closed-choice.log` SHA `1E9B9FCBFD8169B433281DD30D1E17D1DCE7EA8CBF13C77AF00609D7D29AC1C0`，0 errors / 摘要360 warnings；ImageLoad三处灰度调用受影响编译日志 `imageload-build.log` SHA `8C05B0249B570FB8D9887197EC58ED74355A687E18E4EFB3F2751A54CD663030`，0 warnings / 0 errors。开发表示18合同自测均通过，闭包含RGBA helper、精确resource adapter、scope/projection、闭集键检查；尚未冻结新源+PE manifest，故仍非固定可独验件。
+- 独测RGBA Host设施首次编译失败 `nativecheck-build.log` SHA `72FABD481160D3CFBE22992CB17DEFDA53FAACABB552A44FFAADE00B4242E3EF`：自有 `NativeCheck/Program.cs:17` 两处 `GenRectangle1` HTuple/double 重载二义，3 warnings / 2 errors。此为测试设施错误而非产品闭包失败，开发已被通知修正并保留失败记录；未据此启动独测。开发目标15:05交固定源/PE/编译及Host设施复核manifest，若超时需给新预计时间。
+
+## 2026-10-25 14:55 Asia/Shanghai：开发合同负控与测试设施编译，固定件仍待
+
+- 开发 `contract-cases-01.json` SHA `D938E5FEE42340647A27C7BD58BE67699FBFC45DCD75043A5AC9378A6D231B15` 的18项自测全 `passed=true`，覆盖Late ack、wrong owner/stale scope、Unset/null/empty区分、无效projection/编辑类型及闭集选择直接常量/冻结输入/运行引用拒绝。此为开发自测，不算独测。测试Runner设施第一次编译失败记录保留；修正版 `runner-build-02-fixture-types.log` SHA `6B2248EB598EB267C814EACFDB58CEFE6F03DD9C7ECF779A2E9DF368D466A190` 为0 warning / 0 error。closed-choice受影响Closure复编 `closure-build-02-closed-choice.log` SHA `1E9B9FCBFD8169B433281DD30D1E17D1DCE7EA8CBF13C77AF00609D7D29AC1C0`，MSBuild摘要360 warnings / 0 errors；warning文件分布口径如下一节。独测已排在fixed source/PE SHA交接后立即跑18项合同及RGBA/resource binding/异常清理；不得把18开发用例算独测。开发截至此检查点预计15:05冻结件，等待实际manifest确认。
+
+## 2026-10-25 14:52 Asia/Shanghai：S1新增Contracts/受影响Closure编译实证
+
+- 在 schema-regression worktree `artifacts/worktrees/blob-s1-schema-regression-20261025` 中复核实际日志：`artifacts/validation/blob-s1-contracts-next/contracts-build-01.log` SHA `4609E5249DC3FCF716F9E42E36FA25A7E1441D6BC66A59F8778D05076273754E`，Contracts 0 warning / 0 error；受影响 Closure `closure-build-01.log` SHA `7E64455A605BE3026E67B2277CF6F6CF4051D379B8F133FAE3FE4FC5ED40F045`，0 error，MSBuild最终摘要口径360 warnings；日志逐行含720条warning记录（含重复），按源文件/行/code/消息归一为246项唯一诊断，SDK 456行、Workflow 202行。本轮改动的 Editing.cs、Values.cs、BindingClrAdapter.cs、HalImage.cs、BlobAnalysisTool.cs及新EditingScopes/FieldPresentation/Results均无warning。尚无同基线告警对比，故不把所有其余warning笼统标为历史，也不写“新增warning=0”。编译成功只代表受影响源码编译，不等独立运行、固定新PE或G1。
+
+## 2026-10-25 14:46 Asia/Shanghai：独测增补确认 RGBA 缺陷与最小 binding 接缝裁定
+
+- 独测在固定 `dd380` 上的新增实际Workflow出现 3 PASS / 1 FAIL：Gray、RGB、ValidEmpty 通过；RGBA 实际失败于 HALCON 9009 `rgb1_to_gray` 不支持4通道。失败回执 SHA `CE09D004F7D7306A0DCD4AD99DFF20145D49C1725E2DFFA9189C73EEB7A3440E` 保留。总监裁定这是当前 S1 已承诺图像格式接缝，必须最小修复，不能降为S3；按真实RGB三平面求灰度、Alpha不参与亮度、灰度/Domain正确、输入不变独测。回归fixture manifest SHA `A8E8C1C0E49D64061CC00BA9A68C5B2DED085B688ABFD62E9ED8DFA5DB9B9AB3` 已准备。
+- 独测真实标量producer→consumer binding通过（PID48784、自然exit0；`workflow-scalar-binding-dd380367/receipt.json`）：ThresholdMinUsed=100经显式typed scope引用到 FilterAreaMin，两个小Blob被下游过滤且设计参数未被运行值改写；该证据仅覆盖scalar，不替代resource binding。静态确认原 `BindingClrAdapter` 不接受 `IVisionImage` / `IReadOnlyImage` target。主控已裁定S1允许精确最小接缝：仅支持 `IReadOnlyImage` target 与 `ResourceOf(Image)` 借用物化，以独测自有最小consumer通过真实Workflow binding compile+reader消费验证；不扩IVisionImage/native任意转换/多图，不宣称Blob现已具生产image-input接线。
+- 开发已开始RGBA适配helper，并需重编 `ImageLoad3` 调用点；独测待固定源码/PE后复验上述RGBA差异Alpha/非等通道/Domain/输入不变，以及最小resource binding接缝。G1仍OPEN，尚无独立新PASS。
+
+## 2026-10-25 14:45 Asia/Shanghai：O06 文档岗恢复写窗并完成页/回执闭环
+
+- 核查发现文档岗先前回执绑定旧页（`EE73F434…`），而 canonical 页已变更为 `ED2E9845…`，先前“已完成”回执不能代表当前页面，属于真实维护闭环缺口。用户要求先处理后，文档岗在其已释放的唯一写窗内修复生成器/QA并重新生成，无并行文档写入。
+- 当前页 SHA-256 `75B225AF6D20B9E661F0A1158D2F2E83683AB3A4437E4BBE74B34B5E4002FC39`，1,558,415字节；最终回执 `artifacts/analysis/document-owner-o06-20261024/final-merge-receipt.json` SHA `34AC953FAD8708A787A2D3D23ABB19A056CA55130472404942449ED0011FC5CD`；静态QA `artifacts/analysis/blob-controls-algorithm-structure-20261024/o06-current-maintenance-final-qa-20261025.json` SHA `74AC1B9DDCF6EF64B36F484CBFDEAB8DBB1CF62EE6A8CB35E844ABE9B7885713`。完整流水双跑字节幂等；精确“能力维度”表10行，10项导航、31类主记录与31×5非空证据/处置格、686个唯一ID、1963链接、details平衡、工程依赖图一处均核验通过。补入captured bridge PE精确事实和当前仅S1目标；静态QA不构成产品/G1验收，G1仍OPEN。文档岗已释放写窗，本轮未改产品、协作队列或Git。
+
 ## 2026-10-24 文档维护：原范围四层实际状态同步
 
 - O06新增 #implementation-live-status，同页区分类型/BindingPlan基础、生产Workflow、绑定目录与树、结果仓库与树；批准方案冻结块逐字保留，canonical/源快照一致。
@@ -3931,3 +4028,36 @@
 
 - VM负责人5/5材料及未结义务核收，交付经理已确认自研未结项承接；原VM插件逆向、逆向插件集成、逆向文档维护三个对话已由工具确认归档。仓库、dirty与证据保留。
 - JOINT_TASK_ROLES.json 与 JOINT_COLLABORATION_PROTOCOL.md同步归档状态及核收索引。本轮只改协作记录，不改产品、不构建、不终止进程；原实施/独测/统一Release交付继续，不新增批次。协议改动交协调统一纳入后续交付记录。
+
+
+## 2026-10-25 O06四项v2主记录原位更新完成
+
+- 按最终四项架构推荐v2，只更新原31类唯一主记录中的BlobDataAnalysisControl、JudgmentEditorControl、ToolIcon、ToolBarControl及对应能力映射/工程依赖图；分组为4控件/8模板/19组合链/0待核/0确认无源。VM源码位置与SHA、自研职责、承接/验收/未知均写回原记录；图中明确UI当前结果宿主→通用结果表/摘要/稳定选择投影→Contracts结果/元素引用，Blob.Wpf不承载本表。10项导航和旧锚点保留。
+- 正式页SHA-256 `48321D628A08F4B00A62EE3B81AD0957DA20BF63F7F6436E7830BB126B24380E`，1,450,484 bytes。静态QA `o06-five-group-qa-20261025.json`、pure merge QA 均PASS；31条唯一、683个唯一ID、0重复ID、锚点/本地链接有效、整页合并幂等，生成器连续两次字节一致。
+- 自有回执 `artifacts/analysis/document-owner-o06-20261024/final-merge-receipt.json` 已绑定页面、v2决定SHA `815EC47E4EE2ED6096E912EFE653C5646F62E3C68B91EA69ED295230086F7113`、VM证据快照SHA `0B8B31EF2F3A6A11D4B57729FD5B7B490ED3AC97816CBC7A35B9FC5E018D19D9`、源文件/QA SHA。建议仍待用户审核，不构成实施批准；本轮未改产品源码、未构建或运行。
+
+## 2026-10-25 O06四项v2原位更新与交付经理核收
+
+- 文档岗已在唯一原31项清单内更新 BlobDataAnalysisControl、JudgmentEditorControl、ToolIcon、ToolBarControl 四项；原工程依赖图补入“当前结果宿主→通用表/摘要/稳定元素选择投影→Contracts”承接节点。四项职责、VM来源位置与SHA、v2去向、功能承接和局部未知均在原记录；全表分组4控件/8模板/19组合链/0待核/0确认无源。文档岗确认写窗已释放、无待写操作。
+- 最终正式页 `docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html` SHA-256 `48321D628A08F4B00A62EE3B81AD0957DA20BF63F7F6436E7830BB126B24380E`，1,450,484 bytes。实际文件含总监决策v2 SHA `815EC47E4EE2ED6096E912EFE653C5646F62E3C68B91EA69ED295230086F7113`、VM证据SHA `0B8B31EF2F3A6A11D4B57729FD5B7B490ED3AC97816CBC7A35B9FC5E018D19D9`。静态核对工程图节点、四名对象和新分组均存在。
+- 文档岗回执 `artifacts/analysis/document-owner-o06-20261024/final-merge-receipt.json` SHA-256 `E254121DB04787F265F824A0FEC32089AE75C0DA3B53BB88987C5DBDCE911A5A`，27,029 bytes；回执页面SHA、v2和VM证据SHA与实际文件相符。pure merge QA `pure-merger-qa.json` SHA-256 `9FC789FB7370CD9D1855F50418789FFD4A1BBC550C9AC9A35C130612E3CA2935`，绑定最终页并报告全页/控件渲染幂等、ID唯一、本地链接有效；本轮静态QA `o06-five-group-qa-20261025.json` SHA-256 `2F19F85F3C96A92E4C5F4D1A0DF61EDDC15CF912FBD6F8108CE1EEB758326354`。`git diff --check`通过（仅换行风格提示）。
+- 本轮经理回执 `manager-final-acceptance-20261025.json` SHA-256 `FA8157FB016C0BEF2CF59BB4A7BE06D0356BB06D55148A36662799D4EFF0E70A`；仅静态文档核收，现提交技术总监基于最终页/回执SHA做只读终审，再供用户审核。无产品代码修改、构建、运行、GUI、Release、产品测试、提交或push；产品暂停保持。
+
+## 2026-10-25 O06四项技术总监最终静态终审通过
+
+- 技术总监对最终正式页SHA `48321D628A08F4B00A62EE3B81AD0957DA20BF63F7F6436E7830BB126B24380E`（1,450,484 bytes）、文档岗回执SHA `E254121DB04787F265F824A0FEC32089AE75C0DA3B53BB88987C5DBDCE911A5A`、交付经理回执SHA `FA8157FB016C0BEF2CF59BB4A7BE06D0356BB06D55148A36662799D4EFF0E70A`完成最终只读审查，结论 `FINAL_STATIC_REVIEW_PASS_FOR_USER_REVIEW`，仅供用户整体审核。
+- 终审记录 `artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/four-duty-final-director-review-20261025.json` SHA-256 `48A443DDE624DC5AB9D5FE4417EF6B8D0B24E26EB0F0738AA07C731784B2948E`。实际确认31条唯一记录、4/8/19/0/0、683唯一HTML ID、本地锚点/证据链接/图片齐全、四项原记录与冻结v2逐项相符、现有工程图含结果宿主承接、合并幂等；owner/manager回执绑定同一页面，产品源码diff为空。
+- 未知项及限制保留：VM截图版本/Blob统计行映射及运行时序、阈值OK/NG原生链、标题图标、测量选择/取消行为仍未知；产品正式接入、设计器、运行、性能、发布和人工验收未执行。产品暂停保持，不实施、不构建/运行、不提交/push；等待用户整体审核。
+
+## 2026-10-25 O06当前结果责任图窄范围增补（经理核收，待总监终审）
+
+- 用户授权仅补充原Blob当前结果记录责任链图和原工程文件组织，不改四项v2推荐、不改产品代码。新增设计输入 `artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/current-result-side-by-side-design-input-20261025.json` SHA-256 `59B6AD113515795C78797780FEAF7693FB9509E41F6D78BE89E793A223A0CFED`。
+- 最终页面 `docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html` SHA-256 `'+$hashes.page+'`，'+(Get-Item $page).Length+' bytes。图示独立全宽、三栏四责任、可返回原记录；当前/目标工程树与冻结输入一致，候选目标均标未创建/未实施。保留31条唯一记录及4/8/19/0/0；MinArea属性与未绑定可见摘要已分清。
+- 文档岗窄范围回执 `'+$base+'` SHA-256 `'+$hashes.owner+'`；经理回执 `'+$manager+'` SHA-256 `'+$managerHash+'`。两份QA报告、渲染器幂等及合并幂等已核；本轮未改旧48321页回执/旧经理回执/旧总监审查回执。
+- 等技术总监对本轮最终页及本轮owner/manager回执做只读终审。产品暂停不变，无产品改动、构建、运行、测试、提交或push。
+
+## 2026-10-25 跨工具结果声明生成分析输入冻结，文档原位整合进行中
+
+- 双方源码对标输入 `artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/cross-tool-result-declaration-design-input-20261025.json` SHA-256 `0FEBEB20A69F0B7DEC55D21A102A2518D894F32623FE26D0C4917C3784F8089D`，status标明架构审核输入而非实现/验收PASS；含VM轮廓匹配/P2P单行/直方图/形态学代表样本、我方6分析视图、三档边界、工程文件建议、验收及非推广未知。
+- 文档岗唯一写窗已开放，仅原位改 `#o06-blob-result-responsibility-triptych`、`#o06-current-control-mapping` / `#o06-capability-matrix`、`#br-tool-project-compare` / `#o06-control-migration-gate`；文档/生成器/静态QA/本轮独立owner receipt。保持31项与4/8/19/0/0、不新开专题/批次/第二协议，不改旧冻结回执或四项v2决策。VM负责人做限定交叉核对，有实质矛盾写前纠正。
+- 目标交付：页面SHA、更新文件/QA/receipt SHA与bytes；经理核实际通用/扩展/专用边界、代表性范围/未知、链接/锚点/ID/工程路径/幂等，再交总监终审。产品不改、不构建/运行/测试/提交/push，暂停保持。

@@ -1,0 +1,299 @@
+{
+  "date": "2026-10-25",
+  "baseline": "b771db7d72c4c0fe4aabdfb55eff4dd7854e0b70",
+  "archive": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\repository-migration\\remaining-copy-records-20261025.zip",
+  "archiveSha256": "907A72417CAF86BDA06ECF20151F70175421C3923DE8E7F5300E65EF575576A1",
+  "archiveEntries": 8369,
+  "fileLedger": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\repository-migration\\remaining-copy-file-ledger-20261025.jsonl",
+  "ledgerSha256": "4A2008BD86822A1AF189845AF7EDDA67D25B0FA489D64C2F7EBBBEF89E6EE7C3",
+  "removed": [
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\22\\01a1620c-5a60-7fb1-a1b1-9b85173896e9\\independent-final-s1-20261025",
+      "files": 4031,
+      "bytes": 3692240076,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\23\\01a1663d-2d35-7bd2-bc12-ab0d4051bb8e\\blob-s1-final-acceptance-20261025",
+      "files": 7424,
+      "bytes": 2817031211,
+      "head": "afc93e9b084f7ffd978e19ff354d7f0c18a68d82",
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\23\\01a1663d-2d35-7bd2-bc12-ab0d4051bb8e\\s1-dialog-owner",
+      "files": 5859,
+      "bytes": 1896298915,
+      "head": "496e1e004f449f5b3ea5913cc206b0d0b3ff6c2f",
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\23\\01a1663d-2d35-7bd2-bc12-ab0d4051bb8e\\s1-owner-validation-package-20261025",
+      "files": 373,
+      "bytes": 647458952,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\23\\01a1663d-2d35-7bd2-bc12-ab0d4051bb8e\\s1-release-configuration",
+      "files": 6704,
+      "bytes": 2795008125,
+      "head": "de58d829980defd1ad61e38fe8ed1c39aea7dd09",
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\23\\01a1663d-2d35-7bd2-bc12-ab0d4051bb8e\\SunEyeVision-snapshot-fix-1920449d8d3d496a9f879dfc48b76d40",
+      "files": 1,
+      "bytes": 31557,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\23\\01a1663d-2d35-7bd2-bc12-ab0d4051bb8e\\SunEyeVision-snapshot-fix-1cbf98a56c7642bfabdfff097b05566a",
+      "files": 1,
+      "bytes": 31557,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\23\\01a1663d-2d35-7bd2-bc12-ab0d4051bb8e\\SunEyeVision-snapshot-fix-411f39fc4d87470db3a6f4837de5c2fe",
+      "files": 1,
+      "bytes": 31557,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\23\\01a1663d-2d35-7bd2-bc12-ab0d4051bb8e\\SunEyeVision-snapshot-fix-4641fe2b4b274295849082489f6496f2",
+      "files": 1,
+      "bytes": 31557,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\23\\01a1663d-2d35-7bd2-bc12-ab0d4051bb8e\\SunEyeVision-snapshot-fix-e5cbb32d20e64789b19e27218160f325",
+      "files": 1,
+      "bytes": 31570,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2-comm",
+      "files": 36431,
+      "bytes": 21912875256,
+      "head": "3a5dc6dd54f372699a450ad7862b52c961cd2797",
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2-render-restore",
+      "files": 0,
+      "bytes": 0,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2-script",
+      "files": 14186,
+      "bytes": 11213556758,
+      "head": "d6074d8f6a3f9ee85b9eb47717fadc6ea6abaa63",
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\s2-a06-readonly-src",
+      "files": 3,
+      "bytes": 19190,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\s2-source-read",
+      "files": 1374,
+      "bytes": 11522341,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEye-B1",
+      "files": 8,
+      "bytes": 11272,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEye-B1-read",
+      "files": 38,
+      "bytes": 2772,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEye-B1-session",
+      "files": 7,
+      "bytes": 10853,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEye-Foundation-External-23_m38d0",
+      "files": 39,
+      "bytes": 486013,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEye-Foundation-External-64f9ektt",
+      "files": 7,
+      "bytes": 1382,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEye-Foundation-External-7ye6ql1a",
+      "files": 38,
+      "bytes": 484098,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEye-Foundation-External-g3k7h33t",
+      "files": 39,
+      "bytes": 485854,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEye-Foundation-External-ivm0s8hz",
+      "files": 19,
+      "bytes": 83029,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEye-Independent-Foundation-76a8c995f14946dd9608bc2308a2fd62",
+      "files": 929,
+      "bytes": 146472392,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEye-Independent-Foundation-R2-1d54d0d6bb20491d82926108e3af3d1e",
+      "files": 925,
+      "bytes": 124199028,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-Cards",
+      "files": 0,
+      "bytes": 0,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-ImageReference",
+      "files": 0,
+      "bytes": 0,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-ImportCancel",
+      "files": 0,
+      "bytes": 0,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-ImportSwitch",
+      "files": 0,
+      "bytes": 0,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-independent-snapshot-bafc4d2406f54c88895d29346b254dd9",
+      "files": 1,
+      "bytes": 31570,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-PreviewCache",
+      "files": 0,
+      "bytes": 0,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-PreviewPolicy",
+      "files": 0,
+      "bytes": 0,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-RealWic",
+      "files": 0,
+      "bytes": 0,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-snapshot-fix-a82165e63b2548fda66494acc0fa290b",
+      "files": 1,
+      "bytes": 31570,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-SolutionManagement",
+      "files": 0,
+      "bytes": 0,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-UiManagement",
+      "files": 0,
+      "bytes": 0,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision-ViewModelLifetime",
+      "files": 0,
+      "bytes": 0,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    },
+    {
+      "path": "D:\\temp\\SunEyeVision.StartupTests",
+      "files": 13,
+      "bytes": 1732,
+      "head": null,
+      "status": "已删除，必要内容已归档"
+    }
+  ],
+  "excluded": [
+    "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\09\\28\\01a0e6ce-ee29-71d3-9287-f79132d95f2f\\suneye-release-20261015",
+    "D:\\MyWork\\build_temp",
+    "D:\\MyWork\\dev",
+    "D:\\MyWork\\SunEyeVision_Dev",
+    "D:\\MyWork\\SunEyeVision_Dev-camera",
+    "D:\\MyWork\\SunEyeVision_Dev-tool"
+  ],
+  "freeBefore": {
+    "C": 32305442816,
+    "D": 245436551168
+  },
+  "freeAfter": {
+    "C": 44207837184,
+    "D": 278969548800
+  },
+  "releaseIdentityBefore": "082C73832D55D2E8F8B632CE7E1AF2FE1A93536B3B36351480D56B08CE30612B",
+  "releaseIdentityAfter": "082C73832D55D2E8F8B632CE7E1AF2FE1A93536B3B36351480D56B08CE30612B",
+  "remainingCurrentWorktrees": [
+    "worktree D:/MyWork/SunEyeVision_V2"
+  ],
+  "state": "仅清理当前项目副本；其他仓库保留；未构建测试；未恢复优化收口"
+}

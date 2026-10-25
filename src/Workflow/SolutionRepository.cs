@@ -44,6 +44,7 @@ public class SolutionRepository
 {
     private readonly ILogger _logger;
     private readonly string _recoveryDirectory;
+    private readonly Action<string>? _saveBoundary;
     public string? LastError { get; private set; }
 
     /// <summary>
@@ -55,6 +56,11 @@ public class SolutionRepository
         _logger = VisionLogger.Instance;
         _logger.Log(LogLevel.Info, "解决方案文件仓库初始化完成", "SolutionRepository");
     }
+
+    // Instance-scoped deterministic filesystem boundary facility for the isolated verification host.
+    // Production construction never installs an observer; no process-wide hook or IO policy override.
+    internal SolutionRepository(string? recoveryDirectory, Action<string> saveBoundary) : this(recoveryDirectory)
+        => _saveBoundary = saveBoundary;
 
     /// <summary>
     /// 确保插件已加载（使用全局状态管理）
@@ -490,7 +496,7 @@ public class SolutionRepository
             _logger.Log(LogLevel.Info, $"[Save #{callId}] 序列化完成，开始写入文件", "SolutionRepository");
 
             var destination = Path.GetFullPath(filePath);
-            var warning = SolutionFileCommit.Write(destination, GetRecoveryPath(destination), json, overwrite);
+            var warning = SolutionFileCommit.Write(destination, GetRecoveryPath(destination), json, overwrite, _saveBoundary);
             committed = true;
             // After the two-file commit, diagnostics may warn but cannot turn a completed save into false.
             try { _logger.Log(LogLevel.Success, $"[Save #{callId}] 保存解决方案成功: -> {filePath}", "SolutionRepository"); }

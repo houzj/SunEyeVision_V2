@@ -30,3 +30,11 @@
 - 恢复异常增加 RetainedFiles 列出 target、本地前版、替换内容、pending central copy、central previous、central 路径及当时存在性；TargetRestored/CentralRestored 区分“目标已恢复但中央未恢复”，不要求用户寻找已消耗的 oldTarget。
 - 已补真实 partial 场景中的中央备份单独扰动：target 恢复后，单独修改中央备份，Confirm 必须拒绝；恢复中央原 SHA/长度/mtime 后 Confirm 通过，再保存可用。run07 有限 PASS。
 - 原 4e6617e8 的 Host/bin、原 source/PE/log manifests 与日志保持；后继 Host 输出 bin-v2，后继 manifest 使用 v2 名称，不覆盖旧证据。actual-old 与 preflight 竞争分支目前仅代码复核，未宣称该纳秒窗口已确定性实测。
+
+## v3 修复目标所有权误认
+
+- 主控指出 v2 在 Replace 后读取 destination 再定义 installed identity，会把窗口内外部写入 C 误认成自身 payload。v3 改为在 Replace 前从本次 pending 固定 hash/长度/mtime，之后 destination 读取只验证相等，绝不赋成 own identity。
+- 在 target Replace 后、central commit 前、central commit 后验证目标仍是自己的 pending 身份；检测到外部现物则不覆盖，保留实际全部角色文件并进入恢复专态。
+- 增加 Repository 实例级 internal boundary observer，仅内部构造接受、公开生产构造默认 null，无 static/global 注册、无 UI/配置入口，不替代真实文件 IO。隔离 Host 反射注入，在指定点用 File.WriteAllText 写真实外部文件。
+- run08 五项有限 PASS：Windows Replace 确认 pending 与目标 hash/len/mtime 相同；三个 named 窗口写外部 C 后均保留 C 原身份并明确恢复专态/禁止重试写；before-target-replace 改盘后真实恢复 actual old C，不用旧 preflight 身份。此前 actual-old/preflight 仅代码复核的限制由此项实证替代。
+- 新 Host 输出 bin-v3；bin、bin-v2 和原 source/PE/log/receipt 保留。最终固定结果使用 v3 独立命名清单。仍不宣称所有外部并发窗口或掉电跨文件原子。

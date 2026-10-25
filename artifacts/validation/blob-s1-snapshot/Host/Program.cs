@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -188,6 +189,62 @@ internal static class Program
             setting.ReferenceExpression = "malformed";
             var rejected = manager.SaveCurrentDocument(s.Target);
             Require(!rejected.FileWritten && manager.HasUnsavedChanges && before == Stamp(s.Target) && backup == Stamp(s.Backup), "normal manager failure changed baseline or disk");
+        });
+        SolutionRepository ObservedRepository(string recovery, Action<string> observer) => (SolutionRepository)
+            typeof(SolutionRepository).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null,
+                new[] { typeof(string), typeof(Action<string>) }, null)!.Invoke(new object[] { recovery, observer });
+        Case("boundary-pending-identity-windows-replace", () =>
+        {
+            var s = Setup("pending-identity"); const string own = "own-payload-identity-positive"; s.Candidate.Name = own;
+            string? pendingIdentity = null, targetIdentity = null;
+            var repository = ObservedRepository(Path.GetDirectoryName(s.Backup)!, point =>
+            {
+                if (point == "before-target-replace")
+                    pendingIdentity = Stamp(Directory.GetFiles(Path.GetDirectoryName(s.Target)!, ".document.solution.*.tmp")
+                        .Single(path => File.ReadAllText(path).Contains(own, StringComparison.Ordinal)));
+                if (point == "target-replaced") targetIdentity = Stamp(s.Target);
+            });
+            Require(repository.Save(s.Candidate, s.Target), repository.LastError ?? "observed positive save failed");
+            Require(pendingIdentity is not null && pendingIdentity == targetIdentity, "Windows changed pending hash/length/mtime across Replace");
+            File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "pending-identity.json"), JsonSerializer.Serialize(new { pendingIdentity, targetIdentity }));
+        });
+        foreach (var point in new[] { "target-replaced", "before-central-commit", "central-committed" }) Case("boundary-external-" + point, () =>
+        {
+            var s = Setup("external-" + point); var previousTarget = Stamp(s.Target); var previousBackup = Stamp(s.Backup);
+            var external = JsonNode.Parse(Baseline)!; external["Name"] = "external-C-at-" + point;
+            var externalText = external.ToJsonString(); string? externalIdentity = null; var triggers = 0;
+            s.Candidate.Name = "own-N-at-" + point;
+            var repository = ObservedRepository(Path.GetDirectoryName(s.Backup)!, stage =>
+            {
+                if (stage != point) return;
+                triggers++; File.WriteAllText(s.Target, externalText); externalIdentity = Stamp(s.Target);
+            });
+            SolutionSaveRecoveryRequiredException? signal = null;
+            try { _ = repository.Save(s.Candidate, s.Target); } catch (SolutionSaveRecoveryRequiredException recovery) { signal = recovery; }
+            Require(triggers == 1 && signal is not null, "external payload was accepted as the operation's own identity");
+            Require(externalIdentity == Stamp(s.Target) && File.ReadAllText(s.Target) == externalText, "compensation overwrote external C");
+            Require(previousTarget == Stamp(signal!.LocalPreviousTargetPath), "actual previous target was not retained");
+            if (point != "central-committed") Require(previousBackup == Stamp(s.Backup), "central changed before commit");
+            else Require(signal.CentralPreviousPath is not null && previousBackup == Stamp(signal.CentralPreviousPath), "actual central previous file not retained");
+            bool blocked = false; try { _ = repository.Save(s.Candidate, s.Target); } catch (SolutionSaveRecoveryRequiredException) { blocked = true; }
+            Require(blocked && triggers == 1 && externalIdentity == Stamp(s.Target), "blocked retry changed external file");
+            File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "external-" + point + ".json"), JsonSerializer.Serialize(new
+            {
+                point, triggers, externalIdentity, actualTarget = Stamp(s.Target), previousTarget, previousBackup,
+                actualBackup = Stamp(s.Backup), signal.TargetRestored, signal.CentralRestored, signal.ObservedTargetState, signal.RetainedFiles
+            }, new JsonSerializerOptions { WriteIndented = true }));
+        });
+        Case("boundary-actual-old-differs-from-preflight", () =>
+        {
+            var s = Setup("actual-old-race"); var backup = Stamp(s.Backup); string? externalBefore = null;
+            var repository = ObservedRepository(Path.GetDirectoryName(s.Backup)!, point =>
+            {
+                if (point != "before-target-replace") return;
+                File.WriteAllText(s.Target, "actual-external-previous-C"); externalBefore = Stamp(s.Target);
+            });
+            s.Candidate.Name = "own-should-not-commit";
+            Require(!repository.Save(s.Candidate, s.Target), "preflight race committed own payload");
+            Require(externalBefore == Stamp(s.Target) && backup == Stamp(s.Backup), "did not restore actual replaced external previous file");
         });
         Case("format1-direct-save-owner-migration", () =>
         {

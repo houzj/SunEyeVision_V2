@@ -47,7 +47,7 @@ internal static class SolutionFileCommit
         internal bool Matches(string path) => File.Exists(path) && this == Read(path);
     }
 
-    internal static string? Write(string destination, string recovery, string json, bool overwrite)
+    internal static string? Write(string destination, string recovery, string json, bool overwrite, Action<string>? boundary = null)
     {
         destination = Path.GetFullPath(destination);
         recovery = Path.GetFullPath(recovery);
@@ -55,7 +55,7 @@ internal static class SolutionFileCommit
         lock (Gates.GetOrAdd(destination, _ => new object()))
         {
             ThrowIfRecoveryRequired(destination);
-            return WriteLocked(destination, recovery, json, overwrite);
+            return WriteLocked(destination, recovery, json, overwrite, boundary);
         }
     }
 
@@ -79,7 +79,7 @@ internal static class SolutionFileCommit
         }
     }
 
-    private static string? WriteLocked(string destination, string recovery, string json, bool overwrite)
+    private static string? WriteLocked(string destination, string recovery, string json, bool overwrite, Action<string>? boundary)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
         string Temporary(string path) => Path.Combine(Path.GetDirectoryName(path)!,
@@ -93,6 +93,14 @@ internal static class SolutionFileCommit
         try
         {
             File.WriteAllText(pending, json, new UTF8Encoding(false));
+            // Ownership is fixed from our own closed staging file BEFORE replacement. A later
+            // destination read may prove equality, but can never redefine what this operation wrote.
+            installedTarget = Stamp.Read(pending);
+            void RequireOwnPayload(string point)
+            {
+                if (!installedTarget.Matches(destination))
+                    throw new IOException("保存目标在" + point + "被外部替换；不覆盖外部现物。");
+            }
             if (!File.Exists(destination))
             {
                 File.Move(pending, destination);
@@ -110,16 +118,22 @@ internal static class SolutionFileCommit
             File.Copy(destination, pendingRecovery);
             if (!previousTarget.Matches(destination) || !previousTarget.Matches(pendingRecovery))
                 throw new IOException("方案在准备保存时被外部修改，未提交。");
+            boundary?.Invoke("before-target-replace");
             File.Replace(pending, destination, oldTarget, ignoreMetadataErrors: true);
             targetReplaced = true;
             previousTarget = Stamp.Read(oldTarget);
-            installedTarget = Stamp.Read(destination);
+            boundary?.Invoke("target-replaced");
+            RequireOwnPayload("目标替换后");
             // The same-volume backup is the actual replaced file, not a later live read.
             if (previousTarget != preflightTarget) throw new IOException("目标在替换时被外部修改；恢复实际被替换的盘前态。");
+            boundary?.Invoke("before-central-commit");
+            RequireOwnPayload("中央提交前");
             if (previousRecovery is null ? File.Exists(recovery) : !previousRecovery.Matches(recovery))
                 throw new IOException("恢复备份在保存时被外部修改。");
             if (previousRecovery is null) File.Move(pendingRecovery, recovery);
             else File.Replace(pendingRecovery, recovery, oldRecovery, ignoreMetadataErrors: true);
+            boundary?.Invoke("central-committed");
+            RequireOwnPayload("中央提交后");
             committed = true;
         }
         catch (Exception failure) when (!committed)

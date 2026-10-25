@@ -21,7 +21,7 @@ using SunEyeVision.Plugin.Runtime;
 
 namespace SunEyeVision.Tool.BlobAnalysis
 {
-    /// <summary>旧SDK入口和显示适配；算法仅由独立Runtime执行。</summary>
+    /// <summary>现行SDK入口和显示适配；算法仅由独立Runtime执行。</summary>
 [Tool(
         id: "BlobAnalysis",
         displayName: "Blob分析",
@@ -32,8 +32,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
         RuntimeComponentId = "SunEyeVision.Tool.BlobAnalysis.Runtime",
         HasDebugWindow = true
     )]
-    public class BlobAnalysisTool : IToolPlugin<BlobAnalysisParameters, BlobAnalysisResults>
+    public class BlobAnalysisTool : IToolPlugin<BlobAnalysisParameters, BlobAnalysisResults>, IImageFramePolicyProvider
     {
+        ImageFramePolicy IImageFramePolicyProvider.ImageFramePolicy => ImageFramePolicy.PreserveCoordinates;
         private readonly ToolAttribute? _attribute;
         public BlobAnalysisTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();
 
@@ -48,27 +49,21 @@ namespace SunEyeVision.Tool.BlobAnalysis
             {
                 var validation = ValidateParameters(parameters);
                 if (!validation.IsValid) { result.SetError("参数验证失败: " + string.Join(", ", validation.Errors)); return result; }
-                var native = parameters.GetHalconImage();
-                var frame = new ImageFrameAddress(Guid.NewGuid(), "input");
-                using var input = parameters.ResolvedInputImage is ITypedImageSnapshotSource source
-                    ? source.CaptureSnapshot(frame) : HalImageSnapshotSource.Capture(native, frame);
                 using var resources = new FrozenOutputResources();
-                // Legacy geometry bindings/shape-specific correction remain an explicit compatibility adapter.
+                var input = BlobInputAdapter.CaptureImage(parameters,resources);
+                // Current SDK geometry bindings are resolved explicitly at the input boundary.
                 // The neutral kernel receives the resulting same-frame regions and must not transform them twice.
-                var correction = PositionCorrectionResolver.Resolve(parameters);
-                using var legacyRegions = HalconRegionPipeline.Resolve(input.Width, input.Height,
-                    parameters.GetRoisByType(RoiParameterMode.InspectionRoi), parameters.GetRoisByType(RoiParameterMode.MaskRoi),
-                    parameters.NodeResults, correction);
-                var inspection = legacyRegions.InspectionRegion is { } inspectionNative
-                    ? HalconResourceBridge.CaptureRegion(inspectionNative, BlobRuntime.BlobSchema.ImageFrame, frame, resources) : null;
-                var mask = legacyRegions.MaskRegion is { } maskNative
-                    ? HalconResourceBridge.CaptureRegion(maskNative, BlobRuntime.BlobSchema.ImageFrame, frame, resources) : null;
-                var settings = BlobLegacyAdapter.Settings(parameters);
-                result.RuntimeOutput = BlobLegacyAdapter.Execute(parameters, settings, input, resources, inspection, mask);
-                BlobLegacyAdapter.CopyResult(result.RuntimeOutput, result, settings, input.Width, input.Height);
+                var correction = BlobInputAdapter.ResolveCorrection(parameters);
+                var inspection = BlobInputAdapter.ResolveRegion(parameters,false,input,resources,correction);
+                var mask = BlobInputAdapter.ResolveRegion(parameters,true,input,resources,correction);
+                var settings = BlobSdkAdapter.Settings(parameters);
+                result.RuntimeOutput = BlobSdkAdapter.Execute(parameters, settings, input, resources, inspection, mask);
+                BlobSdkAdapter.CopyResult(result.RuntimeOutput, result, settings, input.Width, input.Height);
                 BuildDisplay(parameters, result);
-                ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRois?.Rois, parameters.NodeResults, correction);
-                ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRois?.Rois, parameters.NodeResults, correction);
+                if(parameters.InspectionMode!=RegionFieldMode.InheritedRegion)
+                    ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRois?.Rois, parameters.NodeResults, correction);
+                if(parameters.MaskMode!=RegionFieldMode.InheritedRegion)
+                    ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRois?.Rois, parameters.NodeResults, correction);
                 result.SetSuccess(elapsed.Elapsed.TotalMilliseconds);
                 parameters.LogInfo($"Blob运行层执行完成：{result.FilteredBlobCount}个，面积{result.FilteredTotalArea:G}，{elapsed.Elapsed.TotalMilliseconds:F1}ms");
             }

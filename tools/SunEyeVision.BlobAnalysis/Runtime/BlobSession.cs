@@ -22,19 +22,10 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             var requested=BlobOutputRequest.None;
             foreach(var demand in invocation.OutputRequests)
             {
-                var port=schema.Outputs.SingleOrDefault(p=>p.Id==demand.PortId)
-                    ?? throw new ArgumentException("Unknown requested Blob output: "+demand.PortId);
-                var type=port.Type;
-                foreach(var field in demand.FieldPath)
-                {
-                    while(type.Shape==ValueShape.Sequence)type=type.Element!;
-                    if(type.Shape!=ValueShape.Record)throw new ArgumentException("Requested field is not a record member.");
-                    type=type.Fields.SingleOrDefault(p=>p.Id==field)?.Type
-                        ?? throw new ArgumentException("Unknown requested Blob field: "+field);
-                }
-                if(port.Id==BlobSchema.Field(5))requested|=BlobOutputRequest.GrayImage;
-                if(port.Id==BlobSchema.Field(6))requested|=BlobOutputRequest.BinaryImage;
-                if(port.Id==BlobSchema.BlobsPort&&(demand.FieldPath.Count==0||demand.FieldPath[0] is "boundary" or "contour"))requested|=BlobOutputRequest.Boundary;
+                demand.Validate(schema);
+                if(demand.PortId==BlobSchema.Field(5))requested|=BlobOutputRequest.GrayImage;
+                if(demand.PortId==BlobSchema.Field(6))requested|=BlobOutputRequest.BinaryImage;
+                if(demand.PortId==BlobSchema.BlobsPort&&(demand.FieldPath.Count==0||demand.FieldPath[0] is "boundary" or "contour" or "contour-lossy"))requested|=BlobOutputRequest.Boundary;
             }
             var input=invocation.Inputs;
             var output=Execute(invocation.Settings,input.Get<IReadOnlyImage>(BlobDefinition.ImageInput),invocation.Context.Resources,
@@ -42,7 +33,10 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                 input.Contains(BlobDefinition.MaskInput)?input.Get<IReadOnlyRegion>(BlobDefinition.MaskInput):null,
                 input.Contains(BlobDefinition.PoseInput)?input.Get<RecordValue>(BlobDefinition.PoseInput):null,
                 invocation.Context.Cancellation,requested);
-            return ValueTask.FromResult(ToolOutcome<BlobOutput>.Completed(output,output.IsPass?BusinessJudgment.Pass:BusinessJudgment.Fail));
+            IReadOnlyList<Diagnostic> diagnostics=output.Measurements.Any(blob=>blob.Boundary.Count>1)
+                ?new[]{new Diagnostic("BLOB_CONTOUR_LOSSY","单轮廓仅投影一个外环；多环和孔洞应读取boundary/Region。",BlobSchema.BlobsPort)}
+                :Array.Empty<Diagnostic>();
+            return ValueTask.FromResult(new ToolOutcome<BlobOutput>(true,output,output.IsPass?BusinessJudgment.Pass:BusinessJudgment.Fail,diagnostics));
         }
         catch(OperationCanceledException) { return ValueTask.FromResult(ToolOutcome<BlobOutput>.Failed("BLOB_CANCELLED","Blob执行已取消。")); }
         catch(Exception e) { return ValueTask.FromResult(ToolOutcome<BlobOutput>.Failed("BLOB_EXECUTION_FAILED",e.Message)); }
@@ -81,8 +75,8 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         using var domain = gray.GetDomain();
         using var inspectionRegion = inspection is null ? domain.Clone() : HalconResourceBridge.CopyRegion(inspection, frame, width, height);
         using var maskRegion = mask is null ? EmptyRegion() : HalconResourceBridge.CopyRegion(mask, frame, width, height);
-        using var correctedInspection = inspection is null ? inspectionRegion.Clone() : Transform(inspectionRegion, pose);
-        using var correctedMask = Transform(maskRegion, pose);
+        using var correctedInspection = inspection is null ? inspectionRegion.Clone() : HalconResourceBridge.TransformRegion(inspectionRegion, pose);
+        using var correctedMask = HalconResourceBridge.TransformRegion(maskRegion, pose);
         using var difference = correctedInspection.Difference(correctedMask);
         using var effectiveDomain = domain.Intersection(difference);
         using var cropped = gray.ReduceDomain(effectiveDomain);
@@ -175,19 +169,6 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         using var r = source.AccessChannel(1); using var g = source.AccessChannel(2); using var b = source.AccessChannel(3);
         HOperatorSet.Compose3(r, g, b, out var composed);
         using (composed) using (var rgb = new HImage(composed)) return rgb.Rgb1ToGray();
-    }
-
-    private static HRegion Transform(HRegion source, RecordValue? pose)
-    {
-        if (pose is null) return source.Clone();
-        SpatialDeclarations.ValidateAffine2D(pose);
-        // Contract: X=column/Y=row, pixel centers. HALCON: X=row/Y=column, pixel corners.
-        double a = pose.Get<double>("m22"), b = pose.Get<double>("m12"),
-            d = pose.Get<double>("m21"), e = pose.Get<double>("m11");
-        using var homography = new HTuple(new[] { a, b, pose.Get<double>("offset-y") + .5 - .5 * (a + b),
-            d, e, pose.Get<double>("offset-x") + .5 - .5 * (d + e) });
-        HOperatorSet.AffineTransRegion(source, out var transformed, homography, "nearest_neighbor");
-        using (transformed) return new HRegion(transformed);
     }
 
     private static HRegion SelectFeatures(HRegion regions, BlobSettings s)

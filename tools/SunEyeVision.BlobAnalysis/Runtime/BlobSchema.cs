@@ -17,7 +17,7 @@ public static class BlobSchema
         new Port("centroid-x", DataType.Number), new Port("centroid-y", DataType.Number), new Port("centroid", PointType),
         new Port("circularity", DataType.Number), new Port("rectangularity", DataType.Number), new Port("bounds", BoundsType),
         new Port("rotated-bounds", TypeRef.SequenceOf(PointType, CountConstraint.Exactly(4)), false),
-        new Port("contour", TypeRef.SequenceOf(PointType), false), new Port("judgment-passed", DataType.Boolean),
+        new Port("contour", TypeRef.SequenceOf(PointType), false), new Port("contour-lossy", DataType.Boolean, false), new Port("judgment-passed", DataType.Boolean),
         new Port("boundary", BoundaryType, false), new Port("region", TypeRef.ResourceOf(ResourceKind.Region)) });
     public static TypeRef BlobsType { get; } = TypeRef.SequenceOf(BlobType);
     public static IReadOnlyList<Port> Outputs { get; } = Array.AsReadOnly(new[] {
@@ -33,6 +33,7 @@ public static class BlobSchema
         new Port(Field(23), DataType.NumberArray), new Port(Field(24), DataType.NumberArray),
         new Port(Field(25), DataType.NumberArray), new Port(Field(26), DataType.NumberArray),
         new Port(Field(27), TypeRef.SequenceOf((TypeRef)DataType.Text)),
+        new Port(Field(30),DataType.Number),new Port(Field(31),DataType.Number),
         new Port(BlobsPort, BlobsType), new Port(RegionPort, TypeRef.ResourceOf(ResourceKind.Region))
     });
 
@@ -48,6 +49,7 @@ public static class BlobSchema
         };
         if (blob.Boundary.Count != 0)
         {
+            values["contour-lossy"]=blob.Boundary.Count!=1;
             // Explicit legacy projection: one unsmoothed outer path. Complete paths/holes remain in boundary.
             if(blob.Boundary.FirstOrDefault(p=>p.Role=="outer"&&p.ParentId is null) is { } outer)
                 values["contour"]=new SequenceValue(TypeRef.SequenceOf(PointType),outer.Points.Select(p=>(object?)new PointGeometry(ImageFrame,p)));

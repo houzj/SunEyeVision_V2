@@ -8,6 +8,20 @@ namespace SunEyeVision.HalAdapter;
 /// <summary>Vendor boundary only. Public plugin contracts carry readers, never HImage/HRegion.</summary>
 public static class HalconResourceBridge
 {
+    public static HRegion TransformRegion(HRegion source, RecordValue? pose)
+    {
+        if (pose is null) return source.Clone();
+        SpatialDeclarations.ValidateAffine2D(pose);
+        // Contract: X=column/Y=row, pixel centers. HALCON: X=row/Y=column, pixel corners.
+        double a = pose.Get<double>("m22"), b = pose.Get<double>("m12"),
+            d = pose.Get<double>("m21"), e = pose.Get<double>("m11");
+        using var homography = new HTuple(new[] { a, b, pose.Get<double>("offset-y") + .5 - .5 * (a + b),
+            d, e, pose.Get<double>("offset-x") + .5 - .5 * (d + e) });
+        HOperatorSet.AffineTransRegion(source, out var transformed, homography, "nearest_neighbor");
+        using (transformed) return new HRegion(transformed);
+    }
+
+
     public static HImage CopyImage(IReadOnlyImage source)
     {
         ArgumentNullException.ThrowIfNull(source);

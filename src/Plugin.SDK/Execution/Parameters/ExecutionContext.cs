@@ -39,6 +39,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     {
         public SunEyeVision.Plugin.SDK.Core.ToolExecutionIdentity? ExecutionIdentity { get; internal set; }
         public IResourcePathResolver? ResourcePaths { get; init; }
+        /// <summary>来自已冻结工作流计划的下游输出需求；单工具调用默认无需求。</summary>
+        public IReadOnlyList<SunEyeVision.Plugin.Contracts.OutputValueRequest> OutputRequests { get; init; }
+            = System.Array.Empty<SunEyeVision.Plugin.Contracts.OutputValueRequest>();
 
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; init; }
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationOutputs { get; init; }

@@ -190,7 +190,8 @@ namespace SunEyeVision.Plugin.SDK.Core
                 nodeId: request.NodeId,
                 cancellationToken: request.CancellationToken,
                 globalVariables: request.GlobalVariables, communicationInputs: request.CommunicationInputs, communicationOutputs: request.CommunicationOutputs)
-                { WorkflowId = request.WorkflowId, ResourcePaths = request.ResourcePaths, ExecutionIdentity = request.ExecutionIdentity };
+                { WorkflowId = request.WorkflowId, ResourcePaths = request.ResourcePaths, ExecutionIdentity = request.ExecutionIdentity,
+                  OutputRequests = request.OutputRequests };
         }
 
         private static ToolResults CreateTerminalResult(

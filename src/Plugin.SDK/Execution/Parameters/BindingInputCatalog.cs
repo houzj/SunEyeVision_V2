@@ -113,7 +113,9 @@ public static class BindingInputCatalog
                     Active: loop.EnableLoop && (!inner || loop.EnableBreak), InternalProjection: inner));
             }
         }
-        return inputs.GroupBy(i => i.Key, StringComparer.Ordinal).Select(g => g.First()).ToArray();
+        return inputs.GroupBy(i => i.Key, StringComparer.Ordinal).Select(g => g.First())
+            .Select(input=>parameters is IBindingInputActivityProvider activity
+                ?input with {Active=input.Active&&activity.IsBindingInputActive(input.Key)}:input).ToArray();
 
         void AddSetting(string key, string name, Func<ParamSetting?> get, Action<ParamSetting?> set, Type type, bool active = true)
         {

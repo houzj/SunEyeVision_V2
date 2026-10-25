@@ -1,8 +1,8 @@
 ﻿[CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','Components')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','Components','Consumption','InputBoundaries')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
-if($Track -in @('RuntimeKernel','Components') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
+if($Track -in @('RuntimeKernel','Components','Consumption','InputBoundaries') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
 $dir=Join-Path $root ('Release/_validation/'+$Stage+'-20261025/' + $Track)
@@ -24,6 +24,8 @@ if($Stage -eq 'S3' -and $Track -eq 'DocumentEditing'){$source='S3BlobRuntimeCase
 if($Stage -eq 'S3' -and $Track -eq 'Related'){$source='S3NeutralBridgeCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeKernel'){$source='S3RuntimeKernelCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'Components'){$source='S3ComponentCases.cs'}
+if($Stage -eq 'S3' -and $Track -eq 'Consumption'){$source='S3ConsumptionCases.cs'}
+if($Stage -eq 'S3' -and $Track -eq 'InputBoundaries'){$source='S3InputBoundaryCases.cs'}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot $source) -Destination (Join-Path $dir 'Cases.cs')
 Copy-Item -LiteralPath (Join-Path $dir 'Cases.cs') -Destination (Join-Path $logDir 'cases.cs.txt')
 $caseSourceSha=(Get-FileHash -LiteralPath (Join-Path $logDir 'cases.cs.txt') -Algorithm SHA256).Hash

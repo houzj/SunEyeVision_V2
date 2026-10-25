@@ -16,6 +16,15 @@ namespace SunEyeVision.Tool.BlobAnalysis
     {
         public BlobAnalysisResults(){Resources=new ResultResourceOwner(ReleaseOwnedOutputs);}
         internal Runtime.BlobOutput? RuntimeOutput { get; set; }
+        public override bool TryGetDeclaredOutputValue(string portId, out object? value)
+        {
+            if(RuntimeOutput is { } output)
+            {
+                if(portId==Runtime.BlobSchema.Field(5)){value=output.GrayImage;return true;}
+                if(portId==Runtime.BlobSchema.Field(6)){value=output.BinaryImage;return true;}
+            }
+            return base.TryGetDeclaredOutputValue(portId,out value);
+        }
         private void ReleaseOwnedOutputs()
         {
             var owned=new IDisposable?[]{GrayImage,BinaryMask,OverlayImage,BlobRegions,OkBlobRegions,NgBlobRegions,RuntimeOutput};
@@ -114,6 +123,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 筛选后平均面积
         /// </summary>
         public double AverageArea => FilteredBlobs?.Count > 0 ? FilteredBlobs.Average(b => b.Area) : 0;
+        public double MinimumArea => RuntimeOutput?.MinimumArea ?? 0;
+        public double MaximumArea => RuntimeOutput?.MaximumArea ?? 0;
 
         /// <summary>
         /// 筛选后平均圆度
@@ -218,9 +229,11 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("FilteredBlobCount",        "Blob数量",               "统计"),
                 new("FilteredTotalArea",        "总面积",                 "统计"),
                 new("AverageArea",              "平均面积",               "统计"),
+                new("MinimumArea",              "最小面积",               "统计"),
+                new("MaximumArea",              "最大面积",               "统计"),
                 new("AverageCircularity",       "平均圆度",               "统计"),
                 new("AverageRectangularity",    "平均矩形度",             "统计"),
-                new("WhitePixelRatio",          "白色像素比例",           "统计"),
+                new("WhitePixelRatio",          "分割白像素占全图比例",   "统计"),
                 new("HistogramData",            "直方图数据",             "统计"),
                 new("ChannelMeans",             "通道均值",               "统计"),
                 // Blob详细数据（支持 / 分隔的层级分组）

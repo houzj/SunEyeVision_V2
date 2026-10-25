@@ -29,6 +29,7 @@ public static class BindingClrAdapter
     {
         var plain=Nullable.GetUnderlyingType(clrType)??clrType;
         if(plain==typeof(IReadOnlyImage)){type=TypeRef.ResourceOf(ResourceKind.Image);storage=null;return true;}
+        if(plain==typeof(IReadOnlyRegion)){type=TypeRef.ResourceOf(ResourceKind.Region);storage=null;return true;}
         if(plain.IsArray&&plain.GetArrayRank()==1)
         {
             if(TryDescribe(plain.GetElementType()!,out var element,out storage)&&element.Shape==ValueShape.Scalar)
@@ -126,6 +127,12 @@ public static class BindingClrAdapter
     }
     private static object MaterializeScalar(object value,Type target)
     {
+        if(target==typeof(IReadOnlyRegion))
+        {
+            if(value is not IReadOnlyRegion region)throw new ArgumentException("An exact declared read-only region is required; native regions are not converted implicitly.");
+            ResourceContractRules.ValidateRegion(region);
+            return region;
+        }
         if(target==typeof(IReadOnlyImage))
         {
             if(value is not IReadOnlyImage image)throw new ArgumentException("An exact declared read-only image is required; native images are not converted implicitly.");

@@ -40,29 +40,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
         IReadOnlyList<OutputVariable> IOutputContractProvider.GetOutputContract()
         {
-            var variables = new List<OutputVariable>();
-
-            // 元信息：执行信息分组
-            variables.Add(new OutputVariable { Name = "Status", VariableType = "String", DisplayName = "运行状态", Group = "执行信息", Kind = OutputVariableKind.Data });
-            variables.Add(new OutputVariable { Name = "ExecutionTimeMs", VariableType = "Integer", DisplayName = "执行耗时(ms)", Group = "执行信息", Kind = OutputVariableKind.Data });
-            variables.Add(new OutputVariable { Name = "SubWorkflowExecutionTimeMs", VariableType = "Integer", DisplayName = "子流程耗时(ms)", Group = "执行信息", Kind = OutputVariableKind.Data });
-            variables.Add(new OutputVariable { Name = "ExecutedNodeCount", VariableType = "Integer", DisplayName = "执行节点数", Group = "执行信息", Kind = OutputVariableKind.Data });
-
-            // 用户配置的输出
-            foreach (var cfg in Outputs)
-            {
-                variables.Add(new OutputVariable
-                {
-                    Name = cfg.Name,
-                    FieldId = cfg.FieldId, IsCollection = cfg.IsAccumulated || cfg.ParamType?.IsArray == true,
-                    FixedCount = cfg.IsAccumulated || cfg.ParamType?.IsArray == true ? null : 1,
-                    VariableType = cfg.TypeName,
-                    DisplayName = cfg.Name,
-                    Group = string.IsNullOrEmpty(cfg.Group) ? "输出结果" : cfg.Group,
-                    Kind = OutputVariableKind.Data,
-                });
-            }
-
+            var prototype = new SubroutineResults { OutputConfigs = Outputs.ToList() };
+            var variables = prototype.GetOutputVariables();
+            foreach (var variable in variables) variable.RuntimeValue = null;
             return variables;
         }
     }

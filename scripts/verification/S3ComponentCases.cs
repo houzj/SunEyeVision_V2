@@ -50,6 +50,27 @@ internal static class S2DocumentEditingCases
                 Console.WriteLine("通过：共享契约与真实BAML控件实例化，编辑器来自独立Wpf组件");
             }
             else Console.WriteLine("通过：缺少Wpf时节点明确无专用编辑器，保留算法入口");
+            if(!expectEditor)
+            {
+                if(Application.Current is null){var app=new SunEyeVision.UI.App();app.InitializeComponent();}
+                var context=new SunEyeVision.UI.Services.Editing.NodeOpenContext(null!,null);
+                Require(new SunEyeVision.UI.Services.Editing.NodeOpenDecisionChain().Execute(node,context)
+                    &&context.DebugControl is SunEyeVision.UI.Services.Editing.DeclaredToolConfigurationControl
+                    &&context.CreatedWindow is not null,"缺编辑器时真实节点打开链没有基础配置入口");
+                var fallback=(SunEyeVision.UI.Services.Editing.DeclaredToolConfigurationControl)context.DebugControl;
+                fallback.SetParameters(parameters);
+                var scroll=(System.Windows.Controls.ScrollViewer)fallback.Content;
+                var panel=(System.Windows.Controls.StackPanel)scroll.Content;
+                var threshold=panel.Children.OfType<System.Windows.Controls.Grid>().SelectMany(g=>g.Children.OfType<System.Windows.Controls.TextBox>()).Single(t=>t.Name=="Threshold");
+                threshold.Text="210";threshold.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)!.UpdateSource();
+                Require(Convert.ToInt32(parameters.GetType().GetProperty("Threshold")!.GetValue(parameters))==210,"默认配置页未写入当前配置草稿");
+                threshold.Text="invalid";threshold.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)!.UpdateSource();
+                Require(!fallback.TryValidateEditor(out var invalid)&&invalid.Length>0,"基础配置入口接受了无效数字");
+                threshold.Text="100";threshold.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)!.UpdateSource();
+                Require(fallback.TryValidateEditor(out _),"基础配置入口无法从无效草稿恢复");
+                context.CreatedWindow.Close();
+                Console.WriteLine("通过：缺专用编辑器时，真实节点打开基础配置窗口并按声明编辑参数");
+            }
             using var image=HalImage.CreateFromBytes(Enumerable.Repeat((byte)200,64).ToArray(),8,8,1);
             var engine=new WorkflowEngine(new CheckLogger());var flow=engine.CreateWorkflow("S3-component-flow","组件验证");flow.Nodes.Add(node);
             var executor=new WorkflowExecutionEngine(engine,manager,new CheckLogger());
@@ -59,7 +80,7 @@ internal static class S2DocumentEditingCases
             Require(result.IsSuccess&&Convert.ToInt32(result.GetType().GetProperty("FilteredBlobCount")!.GetValue(result))==1&&Convert.ToDouble(result.GetType().GetProperty("FilteredTotalArea")!.GetValue(result))==64,"真实节点结果不符");
             Require(execution.DeclaredOutputs.Count==1,"正式执行未发布声明结果");
             Console.WriteLine("通过：正式节点与WorkflowExecutionEngine真实HALCON执行、声明结果发布，Blob面积64");
-            Console.WriteLine($"S3组件消费：3组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
+            Console.WriteLine($"S3组件消费：{(expectEditor?3:4)}组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
         }
         catch(Exception e){Console.Error.WriteLine(e);return 1;}
     }

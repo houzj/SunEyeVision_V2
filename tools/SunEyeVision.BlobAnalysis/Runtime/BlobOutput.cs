@@ -53,6 +53,7 @@ public sealed class BlobOutput : IToolOutput, IDisposable
             [BlobSchema.Field(8)] = (long)ThresholdMinUsed, [BlobSchema.Field(9)] = (long)ThresholdMaxUsed, [BlobSchema.Field(10)] = TypeUsed,
             [BlobSchema.Field(11)] = (long)Count, [BlobSchema.Field(12)] = TotalArea,
             [BlobSchema.Field(13)] = AverageArea, [BlobSchema.Field(16)] = WhitePixelRatio,
+            [BlobSchema.Field(30)] = MinimumArea, [BlobSchema.Field(31)] = MaximumArea,
             [BlobSchema.Field(14)] = Count==0?0:Measurements.Average(x=>x.Circularity),
             [BlobSchema.Field(15)] = Count==0?0:Measurements.Average(x=>x.Rectangularity),
             [BlobSchema.Field(17)] = Histogram.ToArray(), [BlobSchema.Field(18)] = ChannelMeans.ToArray(),

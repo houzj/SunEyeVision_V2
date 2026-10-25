@@ -68,6 +68,19 @@ public sealed class OutputValueRequest
     }
     public string PortId { get; }
     public IReadOnlyList<string> FieldPath { get; }
+    public TypeRef Validate(ToolSchema schema)
+    {
+        var type=schema.Outputs.SingleOrDefault(port=>port.Id==PortId)?.Type
+            ??throw new ArgumentException("Unknown requested output: "+PortId);
+        foreach(var field in FieldPath)
+        {
+            while(type.Shape==ValueShape.Sequence)type=type.Element!;
+            if(type.Shape!=ValueShape.Record)throw new ArgumentException("Requested field is not a record member.");
+            type=type.Fields.SingleOrDefault(port=>port.Id==field)?.Type
+                ??throw new ArgumentException("Unknown requested output field: "+field);
+        }
+        return type;
+    }
 }
 /// <summary>Restricted invocation capabilities; deliberately no graph, UI, arbitrary service locator or writable globals.</summary>
 public interface IToolExecutionContext

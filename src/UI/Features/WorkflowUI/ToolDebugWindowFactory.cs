@@ -81,8 +81,9 @@ return window;
 }
             }
 
-            // ★ 优先级3：返回 null（不再提供通用调试窗口）
-return null;
+            // The host supplies the basic declaration editor when the specialized companion is absent.
+            return tool is not null && SunEyeVision.UI.Services.Editing.ToolConfigurationEditors.CreateControl(tool) is System.Windows.Controls.UserControl control
+                ? new SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow(control) : null;
         }
 
         /// <summary>
@@ -100,7 +101,7 @@ return null;
                 return editorFactory.HasDebugWindow;
             }
 
-            return false;
+            return tool is not null&&ToolRegistry.GetComponentMetadata().Any(c=>c.ToolId==toolId&&c.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Runtime);
         }
 
         /// <summary>

@@ -33,6 +33,7 @@ public sealed class WorkflowRunConfiguration
         return new(sources);
     }
     internal Workflow? Find(string id) => _workflows.GetValueOrDefault(id);
+    internal IEnumerable<Workflow> Definitions => _workflows.Values;
     public IReadOnlyList<Workflow> CopyWorkflows()
     {
         var copy = BindingConfigurationStore.Copy(new Solution { Workflows = _workflows.Values.ToList() }).Workflows;

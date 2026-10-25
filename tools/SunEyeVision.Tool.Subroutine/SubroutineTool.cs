@@ -60,6 +60,16 @@ namespace SunEyeVision.Tool.Subroutine
             // 单一 ParameterResolver 实例，消除 4 处重复 new
             var resolver = new ParameterResolver(parameters.Context?.Logger);
             var nodeResults = parameters.NodeResults;
+            var retainedOwners = new HashSet<ResultResourceOwner>(ReferenceEqualityComparer.Instance);
+            void RetainChildren(IEnumerable<ToolResults> children)
+            {
+                foreach(var owner in children.Select(child=>child.Resources).OfType<ResultResourceOwner>())
+                    if(retainedOwners.Add(owner))
+                    {
+                        var lease=owner.Retain();
+                        try{result.RegisterOutputResource(lease);}catch{lease.Dispose();throw;}
+                    }
+            }
 
             try
             {
@@ -94,12 +104,13 @@ namespace SunEyeVision.Tool.Subroutine
                 if (parameters.IsLoopEnabled)
                 {
                     (execResult, loopAccumulatedOutputs, loopAccumulatedDisplay) =
-                        ExecuteWithLoop(parameters, inputImage, contextVariables, resolver, nodeResults);
+                        ExecuteWithLoop(parameters, inputImage, contextVariables, resolver, nodeResults, RetainChildren);
                 }
                 else
                 {
                     execResult = ExecuteSubWorkflowOnce(parameters, inputImage, contextVariables);
                 }
+                using var completedSubRun = execResult;
 
                 // ===== 收集结果 =====
                 var subWorkflowNodeResults = new Dictionary<string, ToolResults>();
@@ -115,6 +126,7 @@ namespace SunEyeVision.Tool.Subroutine
                     }
                 }
 
+                RetainChildren(subWorkflowNodeResults.Values);
                 result.OutputConfigs = parameters.Outputs.ToList();
 
                 // ===== 解析输出项 =====
@@ -336,7 +348,8 @@ namespace SunEyeVision.Tool.Subroutine
 
         private static (ExecutionResult ExecResult, Dictionary<string, object> AccumulatedOutputs, DisplayCollector AccumulatedDisplay) ExecuteWithLoop(
             SubroutineParameters parameters, IVisionImage? inputImage,
-            Dictionary<string, object> contextVariables, ParameterResolver resolver, IDictionary<string, ToolResults>? nodeResults)
+            Dictionary<string, object> contextVariables, ParameterResolver resolver, IDictionary<string, ToolResults>? nodeResults,
+            Action<IEnumerable<ToolResults>> retainChildren)
         {
             var config = parameters.LoopConfig;
             var result = new ExecutionResult();
@@ -358,7 +371,7 @@ namespace SunEyeVision.Tool.Subroutine
             for (int i = start; i < end; i++)
             {
                 parameters.CurrentIteration = i;
-                var iterResult = ExecuteSubWorkflowOnce(parameters, inputImage, contextVariables);
+                using var iterResult = ExecuteSubWorkflowOnce(parameters, inputImage, contextVariables);
                 result.Merge(iterResult);
 
                 if (!iterResult.Success)
@@ -366,6 +379,12 @@ namespace SunEyeVision.Tool.Subroutine
 
                 // ===== 逐轮解析输出与图形（循环核心：真正产生 N 轮数据）=====
                 var iterToolResults = ExtractToolResults(iterResult);
+                // Earlier iteration images remain borrowed in the accumulated output. Keep only
+                // their declared source owners; ordinary numeric accumulation needs no native retain.
+                var accumulatedImageSources=parameters.Outputs.Where(output=>output.IsAccumulated&&output.ParamType is { } type&&typeof(IVisionImage).IsAssignableFrom(type))
+                    .Select(output=>output.Source?.GetBindingPath()??output.BindingSource)
+                    .Where(path=>path.Contains('.')).Select(path=>path[..path.IndexOf('.')]).ToHashSet(StringComparer.Ordinal);
+                retainChildren(iterToolResults.Where(pair=>accumulatedImageSources.Contains(pair.Key)).Select(pair=>pair.Value));
 
                 // 输出解析：单轮输出值
                 var iterResolved = new Dictionary<string, object>();

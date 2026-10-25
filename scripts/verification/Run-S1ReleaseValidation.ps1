@@ -7,7 +7,7 @@ $validation=Join-Path $root ('Release/_validation/' + $ValidationName)
 $sources=@{
  Contracts='artifacts/validation/blob-s1-contracts-next/Runner/Program.cs'
  Owner='artifacts/validation/blob-s1-owner/Host/Program.cs'
- Fields='artifacts/validation/blob-s1-field-schema/Host/Program.cs'
+ Fields='scripts/verification/BlobFieldSchemaCases.cs'
  Native='artifacts/validation/blob-s1-contracts-next/NativeCheck/Program.cs'
  Snapshot='artifacts/validation/blob-s1-snapshot/Host/Program.cs'
 }
@@ -101,7 +101,7 @@ foreach($track in $Tracks){
  [IO.File]::WriteAllText((Join-Path $dir 'Program.cs'),$program)
  [IO.File]::WriteAllText((Join-Path $dir 'ReleaseBootstrap.cs'),$bootstrap.Replace('AppContext.BaseDirectory','Environment.GetEnvironmentVariable("S1_CASE_ROOT")!'))
  [IO.File]::WriteAllText((Join-Path $dir 'SafeEntry.cs'),$safeEntry)
- if($track -eq 'Workflow'){Copy-Item -LiteralPath (Join-Path $root 'artifacts/validation/blob-s1-regression/Host/WorkflowCases.cs') -Destination (Join-Path $dir 'WorkflowCases.cs')}
+ if($track -eq 'Workflow'){Copy-Item -LiteralPath (Join-Path $root 'scripts/verification/BlobWorkflowResourceCases.cs') -Destination (Join-Path $dir 'WorkflowCases.cs')}
  $project='<Project><PropertyGroup><ImportDirectoryBuildProps>false</ImportDirectoryBuildProps><ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets></PropertyGroup><Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/><PropertyGroup><TargetFramework>net9.0-windows</TargetFramework><UseWPF>true</UseWPF><OutputType>Exe</OutputType><StartupObject>SafeEntry</StartupObject><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><OutputPath>out/</OutputPath><AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath><GenerateAssemblyInfo>false</GenerateAssemblyInfo><NuGetAudit>false</NuGetAudit></PropertyGroup><ItemGroup>'+$refs+'</ItemGroup><Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk"/></Project>'
  [IO.File]::WriteAllText((Join-Path $dir 'Check.csproj'),$project)
  [IO.File]::WriteAllText((Join-Path $dir 'NuGet.Config'),'<configuration><packageSources><clear/></packageSources></configuration>')

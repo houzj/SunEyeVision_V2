@@ -275,6 +275,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
     /// </remarks>
     public abstract class ToolResults
     {
+        /// <summary>显式提供已中立化的正式输出，保留原生来源身份。默认走现有CLR适配，禁止推断新来源。</summary>
+        public virtual bool TryGetDeclaredOutputValue(string portId, out object? value)
+        { value = null; return false; }
         [System.Text.Json.Serialization.JsonIgnore]
         public SunEyeVision.Plugin.SDK.Core.ToolExecutionIdentity? ExecutionIdentity { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]

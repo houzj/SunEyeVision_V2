@@ -106,7 +106,8 @@ internal sealed class WorkflowBindingContext : IDisposable
             foreach(var dependency in ReferenceNodes(index.Reference,defaultScope))yield return dependency;
     }
 
-    internal WorkflowBindingContext(WorkflowRunSession session,WorkflowRunScope scope,Workflow workflow,WorkflowExecutionDependencyGraph graph)
+    internal WorkflowBindingContext(WorkflowRunSession session,WorkflowRunScope scope,Workflow workflow,WorkflowExecutionDependencyGraph graph,
+        IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>? variables=null)
     {
         _scope=scope.WorkflowId;
         // Plans are recreated for every actual scope; no document-level plan cache or invented revision counter.
@@ -136,6 +137,50 @@ internal sealed class WorkflowBindingContext : IDisposable
             node.CompiledBindings=new ReadOnlyDictionary<string,BindingPlan>(plans);
         }
         graph.AddInputIssues(additional);
+        // Freeze demand from this scope's compiled consumers before any producer starts.
+        // Include dynamic-index sources; never infer demand from mutable last results or UI visibility.
+        var demands=_nodes.Keys.ToDictionary(id=>id,_=>new List<OutputValueRequest>(),StringComparer.Ordinal);
+        foreach(var consumer in _nodes.Values.Where(n=>n.IsEnabled))
+        {
+            foreach(var plan in consumer.CompiledBindings.Values)CollectDemand(plan.Source);
+            // Existing image/geometry source slots have dedicated CLR adapters rather than a
+            // writable canonical property. Their frozen relation descriptors are still real consumers.
+            foreach(var input in BindingRelationCatalog.Describe(consumer).Where(i=>i.Active&&!i.InternalProjection))
+            {
+                if(consumer.ParamSettings.GetSetting(input.Key)?.ReferenceExpression is not null)continue;
+                if(BindingRelationCatalog.SourceWorkflowId(consumer,input,_scope)!=_scope)continue;
+                if(BindingInputCatalog.TryReference(input.Read(),_nodes.Keys,input.ReferenceOnly,out var sourceId,out var path))
+                    CollectDeclaredDemand(sourceId,path,input.ReadFieldId?.Invoke());
+            }
+        }
+        // Published variables and subroutine returns are consumers too, even when no local
+        // algorithm node reads this port. Only the admitted configuration/catalog supplies demand.
+        foreach(var variable in variables??Array.Empty<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>())
+            if(variable.HasProducer&&(variable.ProducerWorkflowId==_scope||string.IsNullOrEmpty(variable.ProducerWorkflowId)))
+                CollectDeclaredDemand(variable.ProducerNodeId,variable.ProducerField);
+        foreach(var caller in session.Configuration?.Definitions??Array.Empty<Workflow>())
+            foreach(var consumer in caller.Nodes.Where(n=>n.IsEnabled))
+                foreach(var input in BindingRelationCatalog.Describe(consumer).Where(i=>i.Active&&i.InternalProjection))
+                    if(BindingRelationCatalog.SourceWorkflowId(consumer,input,caller.Id)==_scope
+                        &&BindingInputCatalog.TryReference(input.Read(),_nodes.Keys,input.ReferenceOnly,out var sourceId,out var path))
+                        CollectDeclaredDemand(sourceId,path,input.ReadFieldId?.Invoke());
+        foreach(var node in _nodes.Values)
+            node.OutputRequests=Array.AsReadOnly(demands[node.Id]
+                .DistinctBy(d=>System.Text.Json.JsonSerializer.Serialize(new {d.PortId,d.FieldPath})).ToArray());
+        void CollectDemand(BindingReferencePlan reference)
+        {
+            if(reference.Source.Node.ScopeId==_scope&&demands.TryGetValue(reference.Source.Node.NodeId,out var list))
+                list.Add(new(reference.Reference.PortId,reference.Reference.MemberFieldPath));
+            if(reference.Index is { } index)CollectDemand(index);
+        }
+        void CollectDeclaredDemand(string sourceId,string path,Guid? fieldId=null)
+        {
+            if(!demands.TryGetValue(sourceId,out var list)||!_declarations.TryGetValue(sourceId,out var source))return;
+            var root=PropertyPathParser.ExtractPropertyName(path.Split('.')[0]);
+            var output=source.Outputs.Values.FirstOrDefault(o=>fieldId is Guid id?o.FieldId==id:
+                string.Equals(o.Name,root,StringComparison.OrdinalIgnoreCase));
+            if(output is not null)list.Add(new(BindingClrAdapter.OutputPortId(output)));
+        }
         var expected=new Dictionary<BindingNodeId,RunIdentity>();
         foreach(var node in _nodes.Values)
         {
@@ -179,13 +224,14 @@ internal sealed class WorkflowBindingContext : IDisposable
                 foreach(var port in declaration.Source.Schema.Outputs)
                 {
                     var output=declaration.Outputs[port.Id];
-                    if(!actual.TryGetValue(output.Name,out var value))throw new InvalidOperationException("The formal output is absent from this invocation.");
+                    if(!actual.TryGetValue(output.Name,out var value))throw new InvalidOperationException("The formal output is absent from this invocation: "+output.Name+" ("+port.Id+").");
                     // This identity labels the actual immutable output capture, not an inferred camera frame.
                     // Physical source provenance comes from this admitted invocation and its stable output port.
                     var frame = port.Type.Shape == ValueShape.Resource && port.Type.Resource == ResourceKind.Image
                         ? new ImageFrameAddress(Guid.NewGuid(), node.Id, node.AdmittedIdentity!.ToInvocationIdentity(node.Id),
                             port.Id, declaration.Source.SchemaRevision) : null;
-                    values.Add(port.Id,BindingClrAdapter.NormalizeValue(port,value.RuntimeValue,frame,result.RegisterOutputResource));
+                    var actualValue=result.TryGetDeclaredOutputValue(port.Id,out var canonical)?canonical:value.RuntimeValue;
+                    values.Add(port.Id,BindingClrAdapter.NormalizeValue(port,actualValue,frame,result.RegisterOutputResource));
                 }
             }
             catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException or KeyNotFoundException)

@@ -650,7 +650,9 @@ namespace SunEyeVision.Workflow
                 }
                 // This root task owns the host slot until its outer await/finally completes.
                 // Do not invoke owner callbacks while holding the host's session gate.
-                if(request?.ExecutionOwner!=null)sourceWorkflow.AttachExecutionOwner(request.ExecutionOwner);
+                // This is a frozen run copy borrowing the document's owner, not a document
+                // ownership transfer. Retiring it here would retire the still-live source workflow.
+                if(request?.ExecutionOwner!=null)sourceWorkflow.ExecutionOwner=request.ExecutionOwner;
                 sourceWorkflow.ExecutionOwner.ActivateRoot(session.RunId);
                 session.ExecutionOwner=sourceWorkflow.ExecutionOwner;
             }
@@ -860,11 +862,12 @@ namespace SunEyeVision.Workflow
             WorkflowRunRequest? request,IVisionImage? inputImage)
         {
             var executableWorkflow = new Workflow(Guid.NewGuid().ToString(), sourceWorkflow.Name);
-            if(session.ExecutionOwner!=null)sourceWorkflow.AttachExecutionOwner(session.ExecutionOwner);
+            if(session.ExecutionOwner!=null)sourceWorkflow.ExecutionOwner=session.ExecutionOwner;
             ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow, request);
             foreach(var node in executableWorkflow.Nodes.OfType<AlgorithmNode>())node.WorkflowInputImage=inputImage;
             var inputIssues = OutputBindingChangeService.GetExecutionInputIssues(executableWorkflow, sourceWorkflow.Id);
-            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, request?.CommunicationInputs?.GetVariables(), sourceWorkflow.Id, inputIssues);
+            var variableDefinitions=request?.CommunicationInputs?.GetVariables().ToArray();
+            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, variableDefinitions, sourceWorkflow.Id, inputIssues);
             var nodeExecutionProfiles = executableWorkflow.Nodes.ToDictionary(
                 node => node.Id,
                 node => inputIssues.ContainsKey(node.Id) ? ToolExecutionProfile.LegacyExclusive
@@ -873,7 +876,7 @@ namespace SunEyeVision.Workflow
             _logger.LogInfo(
                 $"执行计划已编译: 节点={executableWorkflow.Nodes.Count}, 依赖={dependencyGraph.Dependencies.Count}, " +
                 $"可并行声明={nodeExecutionProfiles.Values.Count(profile => profile.ConcurrencyKind == ToolConcurrencyKind.ParallelSafe)}");
-            var bindings=new WorkflowBindingContext(session,scope,executableWorkflow,dependencyGraph);
+            var bindings=new WorkflowBindingContext(session,scope,executableWorkflow,dependencyGraph,variableDefinitions);
             return new WorkflowExecutionPlan(scope, executableWorkflow, dependencyGraph, nodeExecutionProfiles,bindings);
         }
 

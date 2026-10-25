@@ -21,6 +21,19 @@ internal static class S2DocumentEditingCases
                 Require(ring.Boundary.Count==3 && ring.Boundary.Count(p=>p.Role=="hole"&&p.ParentId is not null)==2, "双孔边界拓扑丢失");
                 var values=result.ToValues();
                 Require(values.ContainsKey(BlobSchema.BlobsPort)&&result.GrayImage is not null&&result.BinaryImage is not null, "请求资源被开关抑制");
+                Require((double)values[BlobSchema.Field(30)]! ==4&&(double)values[BlobSchema.Field(31)]! ==207,"公开最小/最大面积没有来自同一最终集合");
+                var definition=new BlobDefinition();var declaration=definition.Describe(Basic);
+                var session=definition.CreateSession();
+                var outcome=session.ExecuteAsync(new(Basic,
+                    new InputValues(declaration.Inputs,new Dictionary<string,object?>{{BlobDefinition.ImageInput,input}}),
+                    new Context(factory),new[]{new OutputValueRequest(BlobSchema.BlobsPort,new[]{"contour-lossy"})})).GetAwaiter().GetResult();
+                session.DisposeAsync().GetAwaiter().GetResult();
+                using(var projected=outcome.Output)
+                {
+                    Require(outcome.Success&&projected is not null&&outcome.Diagnostics.Any(d=>d.Code=="BLOB_CONTOUR_LOSSY"),"多孔投影缺少明确诊断");
+                    var records=(SequenceValue)projected!.ToValues()[BlobSchema.BlobsPort]!;
+                    Require(((RecordValue)records[0]!).Get<bool>("contour-lossy")&&((RecordValue)records[0]!).Contains("boundary"),"请求投影状态未生成完整边界或有损标记");
+                }
                 using var limited = new BlobSession().Execute(Basic with {IsBlobCountFilterEnabled=true,BlobCountLimit=1},input,factory);
                 Require(limited.Count==1 && limited.TotalArea==207 && Math.Abs(limited.WhitePixelRatio-211.0/768*100)<1e-9, "排序限数、最终统计或分割白像素语义错误");
             });

@@ -138,14 +138,15 @@ def render_stage_overview():
         ['S6 最终交付与人工验收', '把前面改造汇总为同一正式版本，处理实际反馈。', '集中修复与复测，统一Release、版本身份、操作清单和已知问题，记录真实人工反馈。', '在指定Release目录集中验收，清楚知道测什么、哪些已解决、哪些仍有限制。', '未启动；不能代用户通过'],
     ]
     s3_path = ROOT / 'docs/collaboration/S3_IMPLEMENTATION_PLAN_20261025.json'
-    if s3_path.exists() and json.loads(s3_path.read_text(encoding='utf-8-sig'))['status'] == 'ACTIVE_IMPLEMENTATION':
+    if s3_path.exists() and json.loads(s3_path.read_text(encoding='utf-8-sig'))['status'] in ('ACTIVE_IMPLEMENTATION','IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED'):
         rows[2][-1] = json.loads(s3_path.read_text(encoding='utf-8-sig')).get('stageStatus', '实施中：依赖/线程语义与中立图像桥首批通过；算法本体及装配未完成')
+    rows[3][-1] = 'S3闭合后开始；实施完成且有明显操作变化后，集中人工测试S1—S4'
     return ('<section id="o06-stage-overview"><h3>整个Blob优化分几步？每一步解决什么？</h3>'
             '<p><b>基础规则（S1） → 编辑与运行（S2） → 算法与工程（S3） → 窗口操作（S4） → 结果联动（S5） → 最终验收（S6）</b></p>'
             + table(['阶段', '主要解决的问题', '主要改什么', '你能看到的效果', '当前状态'], rows)
-            + '<p><b>S3下一步重点：</b>先把Blob的算法运行层、结果含义和工程依赖理顺，HALCON继续使用；保留未来其他算法库接入的边界。'
-            'S3不是重新做窗口，也不以界面变漂亮作为完成标准。窗口与控件重点在S4，结果显示与联动重点在S5。</p>'
-            '<p>以上沿用原方案的六个阶段，不新增批次、不自动启动后续实施。后续设计继续区分VM已证事实、独立设计选择和待实机确认项；'
+            + '<p><b>当前推进顺序：</b>S3完整实施、自动验证及文档核收闭合（不等待人工验证）→S4窗口与控件交互→集中人工测试S1—S4，修复复测后阶段性测试闭合。'
+            'HALCON继续使用；算法运行与工程在S3，窗口与控件重点在S4，通用结果显示与联动重点在S5。</p>'
+            '<p>以上沿用原方案的六个阶段，不新增批次；本次已授权S3完成后接续S4，S5不自动启动。后续设计继续区分VM已证事实、独立设计选择和待实机确认项；'
             '详细合同、对标证据及完整验收要求保留在原方案正文。已有基础实现不等于后续完整阶段已完成。</p></section>')
 
 
@@ -162,7 +163,8 @@ def render_s2_stage(page):
     state = plan.get('summaryStatus', 'S1基础实施及本轮自动验证已闭合；S2已进入范围与源码核对，产品尚未改动、S2尚未验证。')
     s3_path = ROOT / 'docs/collaboration/S3_IMPLEMENTATION_PLAN_20261025.json'
     s3 = json.loads(s3_path.read_text(encoding='utf-8-sig')) if s3_path.exists() else None
-    active_s3 = s3 is not None and s3['status'] == 'ACTIVE_IMPLEMENTATION'
+    active_s3 = s3 is not None and s3['status'] in ('ACTIVE_IMPLEMENTATION','IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED')
+    s3_closed = active_s3 and s3['status'] == 'IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED'
     if active_s3:
         state = s3['current']
     top = ('<div class="br-note" id="o06-blob-final-review"><h3>当前做到哪里？</h3><p><b>' + state + '</b></p>'
@@ -170,12 +172,13 @@ def render_s2_stage(page):
            '底层变化先自动验证，有明显操作变化后集中人工验证。当前仅本对话推进，不恢复旧变量批次。</p>'
            '<p><a href="#o06-stage-overview">先看S1—S6各阶段解决什么</a> · ' + link + ' · <a href="#blob-verification-steps">S1实施总结与验证</a></p>'
            + render_stage_overview()
-           + ('<section id="s3-implementation-status"><h3>S3现在改到哪里？</h3>'
+           + ('<section id="s3-implementation-status"><h3>' + ('S3实施及自动验证总结' if s3_closed else 'S3现在改到哪里？') + '</h3>'
               + (table(['优化项', '已实现的效果', '还缺什么'], s3['implementationSummary']) if s3.get('implementationSummary') else '')
+              + '<details><summary>VM依据、自动验证明细和未确认边界</summary>'
               + (table(['VM已证事实', '本方案怎样采用', '证据边界'], s3['vmComparison']) if s3.get('vmComparison') else '')
-              + table(['内容', '实际结果'], [[x['name'], x['result']] for x in s3.get('checks', [])])
-              + '<p><b>还没完成：</b>' + escape(s3['next']) + '</p>'
-              + '<p>本轮不重做窗口/共享控件，不原样恢复旧变量批次；未安排新的人工验收。'
+              + table(['内容', '实际结果'], [[x['name'], x['result']] for x in s3.get('checks', [])]) + '</details>'
+              + '<p><b>' + ('下一步：' if s3_closed else '还没完成：') + '</b>' + escape(s3['next']) + '</p>'
+              + '<p>' + escape(s3['manual']) + '</p><p>本轮不原样恢复旧变量批次。'
               'VM已有材料只支持已证范围，不把本方HALCON通过说成VM内部算法已确认。</p></section>' if active_s3 else '') + '</div>')
     page = re.sub(r'<!-- O06-BLOB-FINAL-REVIEW:BEGIN -->.*?<!-- O06-BLOB-FINAL-REVIEW:END -->',
                   lambda _: '<!-- O06-BLOB-FINAL-REVIEW:BEGIN -->' + top + '<!-- O06-BLOB-FINAL-REVIEW:END -->',
@@ -206,7 +209,7 @@ def render_s2_stage(page):
     end = page.index('<details><summary>历史实施与独测记录', start)
     live_title = '当前实施状态：S2实施与本轮自动验证已闭合' if closed else '当前实施状态：S1已闭合，S2实施与验证中'
     if active_s3:
-        live_title = '当前实施状态：S1/S2已闭合，S3实施中'
+        live_title = '当前实施状态：S3实施及自动验证已闭合，接续S4' if s3_closed else '当前实施状态：S1/S2已闭合，S3实施中'
     page = page[:start] + ('<h2>' + live_title + '</h2><p>' + state + '</p><p>' + link + '</p>'
                            '<p>旧变量批次未原样恢复；历史多岗位记录仅用于追溯。</p>') + page[end:]
     if active_s3 and s3.get('engineeringRows'):

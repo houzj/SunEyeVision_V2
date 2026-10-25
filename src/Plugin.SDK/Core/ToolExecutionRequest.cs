@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -117,6 +118,13 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <summary>Formal output projection frozen by this invocation's workflow plan.</summary>
         public SunEyeVision.Plugin.Contracts.ToolSchema? BindingOutputSchema { get; init; }
         public long BindingSchemaRevision { get; init; }
+        private IReadOnlyList<SunEyeVision.Plugin.Contracts.OutputValueRequest> _outputRequests = Array.Empty<SunEyeVision.Plugin.Contracts.OutputValueRequest>();
+        /// <summary>本轮冻结的实际下游消费需求，不受显示开关控制。</summary>
+        public IReadOnlyList<SunEyeVision.Plugin.Contracts.OutputValueRequest> OutputRequests
+        {
+            get => _outputRequests;
+            init => _outputRequests = Array.AsReadOnly((value ?? throw new ArgumentNullException(nameof(value))).ToArray());
+        }
         internal void AttachResultMetadata(ToolResults result)
         {
             result.ExecutionIdentity=ExecutionIdentity;

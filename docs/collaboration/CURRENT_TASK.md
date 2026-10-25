@@ -1,3 +1,22 @@
+## 最新实际进展（2026-10-26，本条替换下方旧检查点）
+
+当前基线ceeb0a52加本轮增量；当前对话单产品写者。S3算法、ROI来源/同帧/位置和下游需求已补齐，真实变量发布与父子流程返回接通；缺Wpf可使用宿主基础配置并执行。全量正式Release串行构建0错误/785警告；内核8组、消费7组、输入边界4组、现行算法入口5组、组件部署11项、S2关联52项和S1 Owner/Fields/Workflow/Snapshot均通过。设计时编译通过，VS设计器未实际打开。临时移动的组件及清单按原SHA还原。
+
+当前只差固定本轮产品提交、重建提交对应正式Release、最终版本身份与原O06文档核收，尚不冒称S3已闭合。完成后才进入S4。新持续目标active，S3闭合不等待人工验证；S4完成后集中人工测试S1—S4，不能代用户验收。HALCON加密狗直接使用，不建副本、不恢复旧角色/变量批次。详细现行结果见S3_IMPLEMENTATION_PLAN_20261025.json。
+
+---
+下方为历史检查点，不代表当前仍有同样缺口。
+
+## 最新目标补充（2026-10-26）
+
+旧目标已由用户删除，新的S3→S4→S1—S4集中人工测试持续目标已实际创建成功，状态active；完整范围保留，不再受旧卡片“不扩至S4”的限制。S3未闭合前不启动S4。
+
+本轮实际进展：ceeb0a52之后的未提交增量，全量Release consumer-output-build-02.log为0错误/1265警告；Consumption/attempt-002真实消费3组通过，关闭显示输出仍按实际下游图像与boundary字段绑定生成，完整记录/Region/灰度和二值图保留同帧，独立reader有效。RuntimeKernel与DocumentEditing定向复测已通过，S2关联回归结果见consumer-s2-regression.log。Consumption/attempt-001仅为夹具误用AcquireReader的编译失败，已改AcquirePixels，记录保留。统一完整Runtime记录类型，不再添加兼容用第二记录端口；新增SDK上下文需求只为当前工作流集成。ROI来源/同帧输入链仍未闭合，不冒称S3完成。
+
+按用户授权持续完成S3，S3闭合只要求实施/正式Release自动验证和关联回归/版本身份/文档核收，不等待人工验证。S3真正闭合后才开始S4的原批准编辑交互范围；S4实施完成且有明显体感变化后，统一安排S1—S4人工测试、按反馈修复复测并阶段性测试闭合。完整目标见ACTIVE_GOAL.md。当前仍在S3，不提前启动S4。
+
+用户同时明确尚未发布，不为旧开发方案/接口/测试做架构妥协，已写入AGENTS.md和EVIDENCE_AGREEMENT.md。当前输出接线已撤销双记录兼容方案，统一引用Runtime完整记录声明；消费者需求和ROI边界仍在实现，尚未新一轮核收。当前提交基线ceeb0a52；不得将先前局部PASS当当前增量通过。
+
 ## 当前活动：持续完成S3，可选编辑器及真实组件装配已验证，完整阶段未完成（2026-10-25 23:48）
 
 当前源码基线f8eb9fde加本轮增量，当前对话唯一产品写者。新增Wpf独立工程并迁入原Views/Converters，BlobEditorFactory只创建界面；旧Blob入口不再兼任编辑器，Runtime为唯一算法。实际组件PE声明进入ToolRegistry/PluginManager/节点打开与发布清单，Runtime必须匹配同ToolId，Editor可选。UI正常启动及全局PluginLoader补完整工具集核验，失败不标记已完成；打包组件输出指向真实app根，MSBuild属性求值已核，本轮未另造安装包。

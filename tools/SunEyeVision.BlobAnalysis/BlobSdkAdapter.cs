@@ -10,8 +10,8 @@ using BlobRuntime = SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 namespace SunEyeVision.Tool.BlobAnalysis;
 
-/// <summary>旧SDK设置/显示结果的边界适配，不含Blob算法、统计或判定的第二实现。</summary>
-internal static class BlobLegacyAdapter
+/// <summary>现行SDK设置/显示结果的边界适配，不含Blob算法、统计或判定的第二实现。</summary>
+internal static class BlobSdkAdapter
 {
     internal static BlobRuntime.BlobOutput Execute(BlobAnalysisParameters parameters, BlobRuntime.BlobSettings settings,
         IReadOnlyImage image, IOutputResources resources, IReadOnlyRegion? inspection, IReadOnlyRegion? mask)
@@ -20,23 +20,25 @@ internal static class BlobLegacyAdapter
         var values=new Dictionary<string,object?> { [BlobRuntime.BlobDefinition.ImageInput]=image };
         if(inspection is not null)values[BlobRuntime.BlobDefinition.InspectionInput]=inspection;
         if(mask is not null)values[BlobRuntime.BlobDefinition.MaskInput]=mask;
-        var context=new LegacyContext(parameters,resources);
-        var invocation=new ToolInvocation<BlobRuntime.BlobSettings>(settings,new InputValues(definition.Describe(settings).Inputs,values),context);
+        var context=new SdkContext(parameters,resources);
+        var invocation=new ToolInvocation<BlobRuntime.BlobSettings>(settings,new InputValues(definition.Describe(settings).Inputs,values),context,
+            BlobOutputContract.ToRuntimeRequests(parameters.Context?.OutputRequests??Array.Empty<OutputValueRequest>()));
         var session=definition.CreateSession();
         try
         {
             // Runtime is synchronous so thread-local HALCON settings cannot move across an await.
             var outcome=session.ExecuteAsync(invocation).GetAwaiter().GetResult();
             if(!outcome.Success||outcome.Output is null)throw new InvalidOperationException(string.Join("; ",outcome.Diagnostics.Select(d=>d.Message)));
+            foreach(var diagnostic in outcome.Diagnostics)parameters.LogWarning(diagnostic.Code+": "+diagnostic.Message);
             return outcome.Output;
         }
         finally { session.DisposeAsync().GetAwaiter().GetResult(); }
     }
 
-    private sealed class LegacyContext : IToolExecutionContext
+    private sealed class SdkContext : IToolExecutionContext
     {
         private readonly BlobAnalysisParameters _parameters;
-        internal LegacyContext(BlobAnalysisParameters parameters,IOutputResources resources)
+        internal SdkContext(BlobAnalysisParameters parameters,IOutputResources resources)
         {
             _parameters=parameters;Resources=resources;
             var context=parameters.Context;
@@ -77,7 +79,7 @@ internal static class BlobLegacyAdapter
             Circularity=b.Circularity,Rectangularity=b.Rectangularity,JudgmentPassed=b.JudgmentPassed,
             BoundingBox=new Rect(b.Bounds.X,b.Bounds.Y,b.Bounds.Width,b.Bounds.Height),
             RotatedBoundingBox=b.RotatedBounds.Select(p=>new Point(p.X,p.Y)).ToArray(),
-            // Legacy contour is explicitly lossy: one outer path, no smoothing. Full topology stays in RuntimeOutput.
+            // Current single-contour display projection is explicitly lossy: one outer path, no smoothing. Full topology stays in RuntimeOutput.
             Contour=b.Boundary.FirstOrDefault(p=>p.Role=="outer"&&p.ParentId is null)?.Points.Select(p=>new Point(p.X,p.Y)).ToArray()
         }).ToList();
         target.ThresholdMinUsed=settings.Threshold;target.ThresholdMaxUsed=settings.MaxValue;target.TypeUsed=settings.Type.ToString();

@@ -67,6 +67,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 variables.Add(new OutputVariable
                 {
                     Name = entry.PropertyName,
+                    DeclaredType = prop.PropertyType, IsCollection = prop.PropertyType.IsArray,
                     VariableType = variableType,
                     DisplayName = entry.DisplayName,
                     Group = entry.GroupName,
@@ -88,6 +89,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 variables.Add(new OutputVariable
                 {
                     Name = cfg.Name,
+                    FieldId = cfg.FieldId, DeclaredType = sysType,
+                    IsCollection = cfg.IsAccumulated || sysType.IsArray,
+                    ValueDeclaration = typeof(IVisionImage).IsAssignableFrom(sysType)
+                        ? cfg.IsAccumulated ? SunEyeVision.Plugin.Contracts.TypeRef.SequenceOf(SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image))
+                            : SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image) : null,
                     VariableType = cfg.TypeName,
                     DisplayName = cfg.Name,
                     Group = cfg.Group,

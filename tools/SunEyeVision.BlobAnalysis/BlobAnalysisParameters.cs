@@ -92,8 +92,27 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "BlobAnalysis"。
     /// </remarks>
     [JsonDerivedType(typeof(BlobAnalysisParameters), "BlobAnalysis")]
-    public class BlobAnalysisParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract, IOutputContractProvider, IStoredConfigurationValidator
+    public class BlobAnalysisParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract, IOutputContractProvider, IStoredConfigurationValidator, IBindingInputActivityProvider
     {
+        public SunEyeVision.Plugin.Contracts.RegionFieldMode InspectionMode { get; set; }
+        public SunEyeVision.Plugin.Contracts.RegionFieldMode MaskMode { get; set; }
+        [JsonIgnore] public SunEyeVision.Plugin.Contracts.IReadOnlyRegion? InspectionRegionInput { get; set; }
+        [JsonIgnore] public SunEyeVision.Plugin.Contracts.IReadOnlyRegion? MaskRegionInput { get; set; }
+        public bool IsBindingInputActive(string key)
+        {
+            if(key==nameof(InspectionRegionInput))return InspectionMode==SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedRegion;
+            if(key==nameof(MaskRegionInput))return MaskMode==SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedRegion;
+            return ActiveGeometry(key,nameof(InspectionRois),InspectionRois,InspectionMode)
+                ??ActiveGeometry(key,nameof(MaskRois),MaskRois,MaskMode)??true;
+        }
+        private static bool? ActiveGeometry(string key,string name,RoiCollection collection,SunEyeVision.Plugin.Contracts.RegionFieldMode mode)
+        {
+            if(key==name)return mode!=SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedRegion;
+            if(!key.StartsWith(name+":",System.StringComparison.Ordinal))return null;
+            if(mode==SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedRegion)return false;
+            var roi=collection.Rois.FirstOrDefault(r=>key==name+":"+r.Id||key.StartsWith(name+":"+r.Id+":",System.StringComparison.Ordinal));
+            return roi is not null&&(mode==SunEyeVision.Plugin.Contracts.RegionFieldMode.LocalGeometry?roi.IsLocal:!roi.IsLocal);
+        }
         public IReadOnlyList<SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable> GetOutputContract()=>BlobOutputContract.Describe();
         /// <summary>
         /// Blob 分析的输入与运行参数契约。
@@ -106,7 +125,11 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 ValueType: typeof(RoiCollection), Required: false),
             new InputSlotDescriptor(
                 nameof(MaskRois), "屏蔽区域", InputSlotKind.Collection,
-                ValueType: typeof(RoiCollection), Required: false)
+                ValueType: typeof(RoiCollection), Required: false),
+            new InputSlotDescriptor(nameof(InspectionRegionInput), "检测像素区域", InputSlotKind.Roi,
+                ValueType: typeof(SunEyeVision.Plugin.Contracts.IReadOnlyRegion), Required: false),
+            new InputSlotDescriptor(nameof(MaskRegionInput), "屏蔽像素区域", InputSlotKind.Roi,
+                ValueType: typeof(SunEyeVision.Plugin.Contracts.IReadOnlyRegion), Required: false)
         };
 
         public IReadOnlyList<RuntimeParameterDescriptor> GetRuntimeParameters() => new[]

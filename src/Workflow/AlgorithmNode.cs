@@ -41,6 +41,8 @@ namespace SunEyeVision.Workflow
         internal IReadOnlyDictionary<string,SunEyeVision.Plugin.Contracts.BindingPlan> CompiledBindings { get; set; }
             = new Dictionary<string,SunEyeVision.Plugin.Contracts.BindingPlan>();
         internal SunEyeVision.Plugin.Contracts.ToolSchema? BindingOutputSchema { get; set; }
+        internal IReadOnlyList<SunEyeVision.Plugin.Contracts.OutputValueRequest> OutputRequests { get; set; }
+            = Array.Empty<SunEyeVision.Plugin.Contracts.OutputValueRequest>();
         internal IVisionImage? WorkflowInputImage { get; set; }
 
         /// <summary>本轮运行在启动节点前绑定的帧；节点不拥有其生命周期。</summary>
@@ -130,6 +132,7 @@ namespace SunEyeVision.Workflow
                             BindingPlans = CompiledBindings,
                             BindingSnapshot = BindingContext?.Capture(this,nodeResults),
                             BindingOutputSchema = BindingOutputSchema,
+                            OutputRequests = OutputRequests,
                             ParameterBindings = ParameterBindingSet.FromSettings(ParamSettings)
                         }).ConfigureAwait(false);
 

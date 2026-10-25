@@ -62,8 +62,8 @@ namespace SunEyeVision.UI.Features.Dialogs
         /// <param name="title">标题</param>
         /// <param name="button">按钮组合</param>
         /// <param name="icon">消息图标类型</param>
-        /// <param name="owner">宿主窗口（决定居中与置顶层级，可为 null）。注意：窗口关闭流程（OnClosing）中传入正在关闭的窗口作为 owner，
-        /// 会导致 ShowDialog 静默不显示，此时必须传 null。</param>
+        /// <param name="owner">已显示且仍存活的宿主窗口（决定居中与所属窗口层级，可为 null）。关闭确认应先取消本次关闭，
+        /// 再由 Dispatcher 延迟执行，此时继续传递原宿主；不要因关闭流程而丢弃 Owner。</param>
         /// <returns>用户选择结果（兼容 MessageBoxResult）</returns>
         public static MessageBoxResult Show(
             string message,

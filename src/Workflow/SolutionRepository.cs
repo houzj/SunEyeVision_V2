@@ -124,15 +124,7 @@ public class SolutionRepository
             var legacyDocument = SolutionFormatPolicy.ReadVersion(root) == SolutionFormatPolicy.Legacy;
             SolutionCompatibilityAdapter.Prepare(root, diagnostics, deferLegacyBindingOwner: legacyDocument);
             new SolutionResourceResolver(directory).Inspect(root, diagnostics);
-            var hasTools = root["Workflows"] is JsonArray flowArray && flowArray.OfType<JsonObject>().Any(w => w["Nodes"] is JsonArray nodes && nodes.Count > 0);
-            if (hasTools && !EnsurePluginsLoaded()) throw new InvalidDataException("插件元数据加载未完成。");
-            using var document = JsonDocument.Parse(root.ToJsonString());
-            ValidateTools(document.RootElement);
-            var devices = ReadPersistedDevices(document.RootElement, Stopwatch.StartNew());
-            var solution = JsonSerializer.Deserialize<Solution>(RemoveDevicesProperty(root.ToJsonString()), new JsonSerializerOptions(WorkflowSerializationOptions.Default) { UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow })
-                ?? throw new JsonException("Null solution.");
-            solution.Devices = devices;
-            SolutionLegacyBindingMigration.Prepare(solution, diagnostics, legacyDocument);
+            var solution = ReadFrozenCandidate(root, diagnostics, legacyDocument);
             if (legacyDocument)
             {
                 diagnostics.Add(new("COMPAT_FORMAT_1_TO_2", "Compatibility", "Warning", "$.SchemaVersion",
@@ -161,6 +153,23 @@ public class SolutionRepository
             _logger.Log(LogLevel.Error, "方案候选读取失败：" + LastError, "SolutionRepository", ex);
             return new(null, sha, directory, diagnostics.AsReadOnly());
         }
+    }
+
+    /// <summary>Read only the supplied frozen candidate. Both disk reads and save preparation use
+    /// the same device restoration, registered declarations and owning-workflow binding validation.</summary>
+    internal Solution ReadFrozenCandidate(JsonNode root, List<PersistenceDiagnostic> diagnostics, bool legacyDocument)
+    {
+        var hasTools = root["Workflows"] is JsonArray flowArray && flowArray.OfType<JsonObject>().Any(w => w["Nodes"] is JsonArray nodes && nodes.Count > 0);
+        if (hasTools && !EnsurePluginsLoaded()) throw new InvalidDataException("插件元数据加载未完成。");
+        using var document = JsonDocument.Parse(root.ToJsonString());
+        ValidateTools(document.RootElement);
+        var devices = ReadPersistedDevices(document.RootElement, Stopwatch.StartNew());
+        var solution = JsonSerializer.Deserialize<Solution>(RemoveDevicesProperty(root.ToJsonString()),
+            new JsonSerializerOptions(WorkflowSerializationOptions.Default) { UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow })
+            ?? throw new JsonException("Null solution.");
+        solution.Devices = devices;
+        SolutionLegacyBindingMigration.Prepare(solution, diagnostics, legacyDocument);
+        return solution;
     }
 
     private static void ValidateTools(JsonElement root)
@@ -431,7 +440,7 @@ public class SolutionRepository
             if (success) solution.FilePath = Path.GetFullPath(filePath);
             return success;
         }
-        catch (Exception ex) { LastError = ex.Message; return false; }
+        catch (Exception ex) when (ex is not SolutionSaveRecoveryRequiredException) { LastError = ex.Message; return false; }
     }
 
     internal bool SaveSnapshot(Solution solution, string serializedSnapshot, string filePath, bool overwrite = true)
@@ -448,9 +457,12 @@ public class SolutionRepository
             return new SolutionSaveResult(false, LastError ?? "保存失败：路径为空。");
         }
 
-        string? temporaryPath = null;
+        bool committed = false;
         try
         {
+            // The public entry point has the same owner/schema gate as Prepare and Save.
+            // Revalidation consumes only the immutable captured JSON, never the live document.
+            prepared = SolutionSnapshot.PrepareJson(prepared.Json, prepared.TargetPath, untitled: false);
             // Communication validation consumes the same frozen JSON that will be written.
             var snapshot = JsonNode.Parse(prepared.Json)!;
             if (snapshot["Communications"] is JsonArray communications)
@@ -471,41 +483,26 @@ public class SolutionRepository
 
             _logger.Log(LogLevel.Info, $"[Save #{callId}] 序列化完成，开始写入文件", "SolutionRepository");
 
-            // Write beside the target so replacement stays on the same volume. Keep the previous
-            // solution as a recoverable .bak; a failed serialization/write never truncates it.
-            using (JsonDocument.Parse(json)) { }
             var destination = Path.GetFullPath(filePath);
-            temporaryPath = Path.Combine(Path.GetDirectoryName(destination)!,
-                $".{Path.GetFileName(destination)}.{Guid.NewGuid():N}.tmp");
-            File.WriteAllText(temporaryPath, json);
-            if (File.Exists(destination))
-            {
-                if (!overwrite) throw new IOException("目标方案已存在，不会覆盖：" + destination);
-                AtomicJsonFile.Write(GetRecoveryPath(destination), File.ReadAllText(destination));
-                File.Replace(temporaryPath, destination, null, ignoreMetadataErrors: true);
-            }
-            else
-                File.Move(temporaryPath, destination);
-            temporaryPath = null;
-
-            var fileInfo = new FileInfo(filePath);
-            _logger.Log(LogLevel.Success, $"[Save #{callId}] 保存解决方案成功: -> {filePath}, 文件大小: {fileInfo.Length} 字节\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository");
-            return new SolutionSaveResult(true) { WrittenSnapshot = prepared };
+            var warning = SolutionFileCommit.Write(destination, GetRecoveryPath(destination), json, overwrite);
+            committed = true;
+            // After the two-file commit, diagnostics may warn but cannot turn a completed save into false.
+            try { _logger.Log(LogLevel.Success, $"[Save #{callId}] 保存解决方案成功: -> {filePath}", "SolutionRepository"); }
+            catch (Exception notification) { warning = "保存已成功，日志通知失败：" + notification.Message; }
+            return new SolutionSaveResult(true, Warning: warning) { WrittenSnapshot = prepared };
+        }
+        catch (SolutionSaveRecoveryRequiredException recovery)
+        {
+            recovery.AttemptedSnapshot = prepared;
+            LastError = recovery.Message;
+            throw;
         }
         catch (Exception ex)
         {
+            if (committed) return new SolutionSaveResult(true, Warning: ex.Message) { WrittenSnapshot = prepared };
             LastError = ex.Message;
             _logger.Log(LogLevel.Error, $"[Save #{callId}] 保存解决方案失败: {filePath}, 错误: {ex.Message}\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository", ex);
             return new SolutionSaveResult(false, LastError ?? "保存失败：路径为空。");
-        }
-        finally
-        {
-            if (temporaryPath != null && File.Exists(temporaryPath))
-            {
-                try { File.Delete(temporaryPath); }
-                catch (IOException) { /* The original file is still intact. */ }
-                catch (UnauthorizedAccessException) { /* Report the save failure, not cleanup. */ }
-            }
         }
     }
 

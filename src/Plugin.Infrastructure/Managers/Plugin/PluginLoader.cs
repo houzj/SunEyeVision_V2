@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 
@@ -128,14 +129,13 @@ public static class PluginLoader
             if (!Directory.Exists(pluginDirectory))
             {
                 logger.Log(LogLevel.Warning, $"插件目录不存在: {pluginDirectory}", "PluginLoader");
-                // 目录不存在不算失败，可能用户没有安装插件
-                _isLoaded = true;
-                return true;
+                return false;
             }
 
             // 使用 PluginManager 加载插件（传入 VisionLogger 以便输出日志）
             var pluginManager = new PluginManager(logger);
             pluginManager.LoadPlugins(pluginDirectory);
+            pluginManager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(tool => tool.Id));
 
             // 验证加载结果
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -143,7 +143,7 @@ public static class PluginLoader
                 .Where(a => a.GetName().Name?.StartsWith("SunEyeVision.Tool.") == true)
                 .ToList();
 
-            logger.Log(LogLevel.Success, $"插件加载完成，共加载 {toolAssemblies.Count} 个工具插件", "PluginLoader");
+            logger.Log(LogLevel.Success, $"插件加载完成，共注册 {ToolRegistry.GetAllToolMetadata().Count()} 个工具", "PluginLoader");
 
             foreach (var assembly in toolAssemblies)
             {

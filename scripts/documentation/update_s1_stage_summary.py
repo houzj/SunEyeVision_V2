@@ -209,6 +209,31 @@ def render_s2_stage(page):
         live_title = '当前实施状态：S1/S2已闭合，S3实施中'
     page = page[:start] + ('<h2>' + live_title + '</h2><p>' + state + '</p><p>' + link + '</p>'
                            '<p>旧变量批次未原样恢复；历史多岗位记录仅用于追溯。</p>') + page[end:]
+    if active_s3 and s3.get('engineeringRows'):
+        anchor = '<h6 id="o06-engineering-class-map">'
+        start = page.index(anchor)
+        first_table = page.index('<table', start)
+        first_end = page.index('</table>', first_table) + len('</table>')
+        if page[first_end:].startswith('</div>'):
+            first_end += len('</div>')
+        if page[first_end:].startswith('<pre>'):
+            first_end = page.index('</pre>', first_end) + len('</pre>')
+        replacement = (anchor + '工程B：运行、兼容与可选编辑器的实际组织</h6>'
+                       '<p>S3已实施部分如下；共享控件交互仍属S4，不因搬入Wpf工程就算已重做。'
+                       '拆工程本身不提高速度或精度，收益是算法可脱离窗口、界面可替换、只有一个算法实现。</p>'
+                       + table(['对象', '当前工程与职责', '实际验证 / 剩余边界'], s3['engineeringRows'])
+                       + '<pre>' + escape(s3['engineeringTree']) + '</pre>')
+        page = page[:start] + replacement + page[first_end:]
+        second_start = page.index('<table', start + len(replacement))
+        second_end = page.index('</table>', second_start) + len('</table>')
+        if page[second_end:].startswith('</div>'):
+            second_end += len('</div>')
+        wrapper = page.rfind('<div class="br-scroll">', start + len(replacement), second_start)
+        if wrapper >= 0:
+            second_start = wrapper
+        page = page[:second_start] + table(['对照点', 'VM已证结构', '本方实际落地 / 未完成'], s3['engineeringComparison']) + page[second_end:]
+        page = page.replace('以上算法/输出/工程调整均为本轮待审建议，现有代码与有限验收事实另列，未进行产品修改。',
+                            'S3实际工程状态以本节和首屏进度为准；S4/S5仍待实施，原候选及源码快照保留在历史证据中。')
     return page
 
 

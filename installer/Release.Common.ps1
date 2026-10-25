@@ -104,8 +104,43 @@ namespace SunEyeVision {
     public sealed class ReleasedToolDeclaration {
         public string Id {get;set;}
         public string TypeName {get;set;}
+        public string RuntimeComponentId {get;set;}
+    }
+    public sealed class ReleasedComponentDeclaration {
+        public string ComponentId {get;set;} public string ToolId {get;set;} public string Role {get;set;}
+        public int ContractMajor {get;set;} public int ContractMinor {get;set;}
+        public string EntryType {get;set;} public string CompanionToolId {get;set;}
     }
     public static class ReleaseToolMetadataReader {
+        public static ReleasedComponentDeclaration[] ReadComponents(string path,string approvedContractsIdentity) {
+            using(var stream=File.OpenRead(path))using(var pe=new PEReader(stream)) {
+                var reader=pe.GetMetadataReader();var result=new List<ReleasedComponentDeclaration>();
+                foreach(var handle in reader.GetAssemblyDefinition().GetCustomAttributes()) {
+                    var attribute=reader.GetCustomAttribute(handle);
+                    if(attribute.Constructor.Kind!=HandleKind.MemberReference)continue;
+                    var member=reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
+                    if(member.Parent.Kind!=HandleKind.TypeReference)continue;
+                    var type=reader.GetTypeReference((TypeReferenceHandle)member.Parent);
+                    if(reader.GetString(type.Namespace)!="SunEyeVision.Plugin.Contracts"||reader.GetString(type.Name)!="ToolComponentAttribute")continue;
+                    if(type.ResolutionScope.Kind!=HandleKind.AssemblyReference)throw new InvalidDataException("Component contract identity is missing.");
+                    var ar=reader.GetAssemblyReference((AssemblyReferenceHandle)type.ResolutionScope);
+                    var identity=new AssemblyName{Name=reader.GetString(ar.Name),Version=ar.Version,CultureName=ar.Culture.IsNil?"":reader.GetString(ar.Culture)};
+                    var key=reader.GetBlobBytes(ar.PublicKeyOrToken);
+                    if((ar.Flags&AssemblyFlags.PublicKey)!=0)identity.SetPublicKey(key);else identity.SetPublicKeyToken(key);
+                    if(identity.FullName!=approvedContractsIdentity)throw new InvalidDataException("Component references an unapproved contract identity.");
+                    if(!reader.GetBlobBytes(member.Signature).SequenceEqual(new byte[]{0x20,0x07,0x01,0x0e,0x0e,0x0e,0x08,0x08,0x0e,0x0e}))throw new InvalidDataException("Unsupported component constructor.");
+                    var blob=reader.GetBlobReader(attribute.Value);
+                    if(blob.ReadUInt16()!=1)throw new InvalidDataException("Invalid component prolog.");
+                    var declaration=new ReleasedComponentDeclaration{ComponentId=blob.ReadSerializedString(),ToolId=blob.ReadSerializedString(),Role=blob.ReadSerializedString(),ContractMajor=blob.ReadInt32(),ContractMinor=blob.ReadInt32(),EntryType=blob.ReadSerializedString(),CompanionToolId=blob.ReadSerializedString()};
+                    if(string.IsNullOrEmpty(declaration.CompanionToolId))declaration.CompanionToolId=null;
+                    if(blob.ReadUInt16()!=0||blob.RemainingBytes!=0)throw new InvalidDataException("Unexpected component attribute fields.");
+                    if(string.IsNullOrWhiteSpace(declaration.ComponentId)||string.IsNullOrWhiteSpace(declaration.ToolId)||string.IsNullOrWhiteSpace(declaration.EntryType)||!(declaration.Role=="Runtime"||declaration.Role=="Editor")||declaration.ContractMajor<0||declaration.ContractMinor<0)throw new InvalidDataException("Invalid component declaration.");
+                    result.Add(declaration);
+                }
+                return result.ToArray();
+            }
+        }
+
         public static Dictionary<string,string> ReadProductIdentity(string path) {
             using(var stream=File.OpenRead(path))using(var pe=new PEReader(stream)) {
                 var reader=pe.GetMetadataReader();
@@ -186,20 +221,22 @@ namespace SunEyeVision {
                         var id=blob.ReadSerializedString();
                         if(blob.ReadSerializedString()==null)throw new InvalidDataException("Tool display name is null.");
                         if(String.IsNullOrWhiteSpace(id))throw new InvalidDataException("A tool declaration has no identity.");
+                        string runtimeComponentId=null;
                         var named=blob.ReadUInt16();var seen=new HashSet<string>(StringComparer.Ordinal);
                         for(var index=0;index<named;index++) {
                             if(blob.ReadByte()!=0x54)throw new InvalidDataException("Unsupported Tool attribute field.");
                             var kind=blob.ReadByte();var enumType=kind==0x55?blob.ReadSerializedString():null;
                             var property=blob.ReadSerializedString();
                             if(property==null||!seen.Add(property))throw new InvalidDataException("Duplicate Tool attribute property.");
-                            if(new[]{"Description","Icon","Category","Version","Author"}.Contains(property)&&kind==0x0e)blob.ReadSerializedString();
+                            if(property=="RuntimeComponentId"&&kind==0x0e)runtimeComponentId=blob.ReadSerializedString();
+                            else if(new[]{"Description","Icon","Category","Version","Author"}.Contains(property)&&kind==0x0e)blob.ReadSerializedString();
                             else if(property=="Order"&&kind==0x08)blob.ReadInt32();
                             else if(property=="HasDebugWindow"&&kind==0x02){if(blob.ReadByte()>1)throw new InvalidDataException("Invalid Tool Boolean.");}
                             else if(property=="DebugWindowStyle"&&kind==0x55&&enumType=="SunEyeVision.Plugin.SDK.Core.DebugWindowStyle, "+approvedSdkIdentity)blob.ReadInt32();
                             else throw new InvalidDataException("Unsupported Tool attribute property: "+property);
                         }
                         if(blob.RemainingBytes!=0)throw new InvalidDataException("Trailing Tool attribute bytes.");
-                        tools.Add(new ReleasedToolDeclaration{Id=id,TypeName=TypeName(reader,handle)});
+                        tools.Add(new ReleasedToolDeclaration{Id=id,TypeName=TypeName(reader,handle),RuntimeComponentId=runtimeComponentId});
                     }
                 }
                 return tools.ToArray();
@@ -223,6 +260,7 @@ function New-ReleasePayload {
     if($ArtifactVersion -cne $actualArtifact){throw 'Payload artifactVersion differs from the Core PE product identity.'}
     $appRoot=(Resolve-Path -LiteralPath $AppPath).Path
     $sdkIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.SDK.dll')).FullName
+    $contractsIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.Contracts.dll')).FullName
     $entries=@(Get-ChildItem -LiteralPath $appRoot -Recurse -File | Sort-Object FullName | ForEach-Object {
         $relative=[IO.Path]::GetRelativePath($appRoot,$_.FullName).Replace('\','/')
         if($relative -ne 'release-payload.json') {
@@ -230,17 +268,40 @@ function New-ReleasePayload {
             if($_.Extension -in '.dll','.exe') {
                 try {
                     $entry.assemblyIdentity=[Reflection.AssemblyName]::GetAssemblyName($_.FullName).FullName
-                    $entry.tools=@([SunEyeVision.ReleaseToolMetadataReader]::Read($_.FullName,$sdkIdentity)|ForEach-Object{[ordered]@{id=$_.Id;typeName=$_.TypeName}})
+                    $entry.components=@([SunEyeVision.ReleaseToolMetadataReader]::ReadComponents($_.FullName,$contractsIdentity)|ForEach-Object{[ordered]@{componentId=$_.ComponentId;toolId=$_.ToolId;role=$_.Role;contractMajor=$_.ContractMajor;contractMinor=$_.ContractMinor;entryType=$_.EntryType;companionToolId=$_.CompanionToolId}})
+                    $entry.tools=@([SunEyeVision.ReleaseToolMetadataReader]::Read($_.FullName,$sdkIdentity)|ForEach-Object{[ordered]@{id=$_.Id;typeName=$_.TypeName;runtimeComponentId=$_.RuntimeComponentId}})
                 }
                 catch [BadImageFormatException] { } # Native binaries have hashes, not managed identities.
             }
             $entry
         }
     })
+    $componentEntries=@($entries|Where-Object{$_.Contains('components') -and $_.components.Count -gt 0})
+    $components=@($componentEntries|ForEach-Object{$_.components})
+    if(@($components|ForEach-Object{$_.componentId}|Sort-Object -Unique).Count -ne $components.Count){throw 'Duplicate tool component identity.'}
+    foreach($group in @($components|Group-Object { $_.toolId+'|'+$_.role })){if($group.Count -gt 1){throw 'Duplicate tool component role.'}}
+    foreach($component in $components) {
+        if($component.role -eq 'Editor') {
+            if($component.companionToolId -cne $component.toolId -or @($components|Where-Object{$_.role -eq 'Runtime' -and $_.toolId -ceq $component.toolId}).Count -ne 1){throw 'Editor has no same-ToolId runtime companion.'}
+        } elseif($null -ne $component.companionToolId){throw 'Runtime cannot be a companion.'}
+    }
+    foreach($owner in $componentEntries) {
+        if(@($owner.components|Where-Object{$_.role -ne 'Editor'}).Count -eq 0) {
+            if($owner.components.Count -ne 1){throw 'Optional editor assembly must have one component owner.'}
+            $prefix=$owner.path.Substring(0,$owner.path.Length-4)+'.'
+            foreach($entry in $entries){if($entry.path.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){$entry.optionalComponentId=$owner.components[0].componentId}}
+        }
+    }
     foreach($name in $ExpectedPluginAssemblies) {
         $main="plugins/$name/$name.dll"
         $declared=@($entries|Where-Object path -eq $main)
         if($declared.Count -ne 1 -or $declared[0].tools.Count -eq 0){throw "Expected plugin has no managed tool declaration: $main"}
+        foreach($tool in $declared[0].tools) {
+            if(-not [string]::IsNullOrWhiteSpace($tool.runtimeComponentId)) {
+                $producer=@($components|Where-Object{$_.componentId -ceq $tool.runtimeComponentId -and $_.toolId -ceq $tool.id -and $_.role -eq 'Runtime'})
+                if($producer.Count -ne 1){throw "Tool has no unique required runtime: $($tool.id)"}
+            }
+        }
     }
     $toolIds=@($entries|Where-Object{$ExpectedPluginAssemblies -contains [IO.Path]::GetFileNameWithoutExtension($_.path) -and $_.path -eq ('plugins/'+[IO.Path]::GetFileNameWithoutExtension($_.path)+'/'+[IO.Path]::GetFileName($_.path))}|ForEach-Object{$_.tools}|ForEach-Object{$_.id})
     if(@($toolIds|Sort-Object -Unique).Count -ne $toolIds.Count){throw 'Release contains duplicate declared ToolIds.'}

@@ -1,3 +1,18 @@
+## 当前活动：持续完成S3，可选编辑器及真实组件装配已验证，完整阶段未完成（2026-10-25 23:48）
+
+当前源码基线f8eb9fde加本轮增量，当前对话唯一产品写者。新增Wpf独立工程并迁入原Views/Converters，BlobEditorFactory只创建界面；旧Blob入口不再兼任编辑器，Runtime为唯一算法。实际组件PE声明进入ToolRegistry/PluginManager/节点打开与发布清单，Runtime必须匹配同ToolId，Editor可选。UI正常启动及全局PluginLoader补完整工具集核验，失败不标记已完成；打包组件输出指向真实app根，MSBuild属性求值已核，本轮未另造安装包。
+
+正式Release全量构建optional-editor-build-04.log：0错误/973条警告；build-03缺命名空间编译失败已修，前次打包Group-Object误判失败也保留。ComponentDeployment/attempt-002十一项通过：有/无编辑器实际节点与WorkflowExecutionEngine真实HALCON执行和声明发布；缺Runtime、重复Runtime、错合同、孤立Editor、错入口明确拒绝；全局装载入口完整执行及失败状态也通过。临时移动的3个文件和发布清单均已按原SHA还原，无持有程序副本。RuntimeKernel/attempt-008八组、DocumentEditing/attempt-008五组（具体回执以阶段JSON为准），S2 Related/attempt-011五十二项通过。设计时编译通过，未实际打开VS设计器；用户验收无新增结果。
+
+主文档原S3进度和工程B结构已集中替换当前状态，旧候选原文存history；689唯一锚点/生成幂等。精简日志/夹具/身份归档evidence/S3-optional-editor-checkpoint-20261025.zip，不含程序。当前正式产物仍是f8eb9fde加本轮增量候选，不冒称最终提交后重建身份。
+
+必须继续：工作流消费者OutputRequests尚未接入；完整Region/boundary旧声明兼容、ROI的Unset/有效空/无效来源/同帧适配尚需闭合。已验证的内核机制不能替代生产链接线。下一检查点预计30–45分钟报告实际接线与反例验证，不是S3完工承诺。目标保持active，不进入S4/S5，不恢复旧变量批次，不新建角色/副本，不因检查点停工。
+
+VM本次静态取证已足够且停止扩查：托管壳/装配/默认可配置深复制已核收；native核心算法/释放与原机缺Control实际运行仍未证，不影响当前独立设计。今后只补会改变设计的具体缺口。HALCON加密狗直接使用。
+
+---
+### 前一检查点记录（历史）
+
 ## 当前活动：持续完成S3，旧入口已委派同一内核，完整阶段未完成（2026-10-25）
 
 23:06第三检查点：已删除BlobAnalysisTool原分割/形态学/特征/判定算法本体，保留约147行旧入口/显示适配；新增BlobLegacyAdapter明确映射旧设置、旧ROI/位置修正及显示结果，经中立BlobDefinition/IToolSession调用唯一BlobSession算法。独立定义声明25个中立输出，统一数组/统计/Region及完整boundary；ToolInvocation可携带冻结OutputValueRequest，执行期校验字段路径并按真实消费请求生成资源。旧facade目前还未把工作流消费者需求传入，完整boundary/Region旧声明兼容仍未完成；不冒称全部输出接线完成。旧Contour明确只投影一个未平滑外环，完整拓扑仍在内核输出。

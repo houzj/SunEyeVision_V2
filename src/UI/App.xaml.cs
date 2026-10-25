@@ -130,7 +130,8 @@ public partial class App : Application
                     defaultTheme = Services.ThemeManager.DefaultTheme.ToString(),
                     startupWindowBackground = (TryFindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WindowBackgroundBrush) as SolidColorBrush)?.Color.ToString(),
                     toolboxCategories = toolbox?.Categories.Select(c => new { name = c.Name, icon = c.Icon, count = c.ToolCount }).ToArray(),
-                    toolboxTools = toolbox?.AllTools.Select(t => new { id = t.ToolId, name = t.Name, category = t.Category, icon = t.Icon }).ToArray()
+                    toolboxTools = toolbox?.AllTools.Select(t => new { id = t.ToolId, name = t.Name, category = t.Category, icon = t.Icon }).ToArray(),
+                    toolComponents = inspectToolbox ? SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.GetComponentMetadata() : null
                 };
                 File.WriteAllText(e.Args[1], System.Text.Json.JsonSerializer.Serialize(info));
                 Shutdown(0);
@@ -228,6 +229,17 @@ public partial class App : Application
         string pluginsPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins");
         LogStartupStage("Plugin.Load begin", $"path={pluginsPath}");
         pluginManager.LoadPlugins(pluginsPath);
+        try
+        {
+            pluginManager.AssertCompleteReleaseToolSet(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.GetAllToolMetadata().Select(tool => tool.Id));
+        }
+        catch (Exception ex)
+        {
+            _startupRejected = true;
+            _splashScreen?.CloseImmediately(); _splashScreen = null;
+            ThemeMessageDialog.Show("模块加载不完整：" + ex.Message, "启动失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+            Shutdown(1); return;
+        }
         _splashScreen?.UpdateStage("正在加载模块", 35, "插件加载完成");
         LogStartupStage("Plugin.Load completed");
 

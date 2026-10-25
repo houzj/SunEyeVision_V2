@@ -34,6 +34,7 @@
     <Compile Include="Managers\Plugin\PluginLoader.cs" />
     <Compile Include="Managers\Plugin\PluginManager.cs" />
     <Compile Include="Managers\Tool\ToolRegistry.cs" />
+    <Compile Include="Managers\Tool\ToolRegistry.Components.cs" />
     <Compile Include="Managers\Tool\IToolCatalog.cs" />
     <Compile Include="Managers\Tool\ToolRegistryCatalog.cs" />
     <Compile Include="Managers\Tool\PropertyMetadataProviderAdapter.cs" />

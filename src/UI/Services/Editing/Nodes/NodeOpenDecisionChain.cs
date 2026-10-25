@@ -121,7 +121,7 @@ namespace SunEyeVision.UI.Services.Editing
                     return;
                 }
 
-                var debugControl = (toolInstance as IToolEditorFactory)?.CreateDebugControl(toolInstance);
+                var debugControl = ToolRegistry.CreateEditorFactory(toolInstance)?.CreateDebugControl(toolInstance);
                 context.DebugControl = debugControl;
 
                 if (debugControl == null)

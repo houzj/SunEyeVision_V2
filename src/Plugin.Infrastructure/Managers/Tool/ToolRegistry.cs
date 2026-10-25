@@ -23,7 +23,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
     /// - 元数据按需创建（延迟创建，减少内存占用）
     /// - 从 [Tool] 特性自动提取基本信息
     /// </remarks>
-    public static class ToolRegistry
+    public static partial class ToolRegistry
     {
         private static Dictionary<string, Type> _toolTypes = new();
         private static Dictionary<string, ToolMetadata> _metadataCache = new();
@@ -61,16 +61,18 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             commit.Publish();
         }
 
-        public static IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> toolTypes)
+        public static IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> toolTypes,IReadOnlyList<ToolComponentRegistration>? components=null)
         {
             ArgumentNullException.ThrowIfNull(toolTypes);
             Dictionary<string,Type> types;
             Dictionary<string,ToolMetadata> metadata;
             Dictionary<string,Dictionary<string,List<ToolPropertyMetadata>>> properties;
+            Dictionary<string,ToolComponentRegistration> runtimes,editors;
             long generation;
             lock(_lock)
             {
                 generation=_registrationGeneration;
+                runtimes=new(_runtimeComponents,StringComparer.Ordinal);editors=new(_editorComponents,StringComparer.Ordinal);
                 types=new(_toolTypes);metadata=new(_metadataCache);
                 properties=_typeCache.ToDictionary(item=>item.Key,item=>item.Value.ToDictionary(field=>field.Key,field=>field.Value.ToList()));
             }
@@ -101,6 +103,15 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                 var discriminator=parameterType==typeof(GenericToolParameters)?"Generic":parameterType.GetCustomAttribute<JsonDerivedTypeAttribute>()?.TypeDiscriminator?.ToString()??parameterType.Name;
                 parameters.Add(new(parameterType,discriminator));
                 var id=candidate.Attribute.Id;
+                if(components is not null&&candidate.Attribute.RuntimeComponentId is { } required)
+                {
+                    var runtime=components.SingleOrDefault(c=>c.Metadata.ToolId==id&&c.Metadata.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Runtime)
+                        ?? throw new InvalidOperationException("Required runtime is missing: "+id);
+                    if(runtime.Metadata.ComponentId!=required)throw new InvalidOperationException("Runtime component identity differs from the tool requirement.");
+                    ValidateComponentEntry(runtime);runtimes.Add(id,runtime);
+                    var editor=components.SingleOrDefault(c=>c.Metadata.ToolId==id&&c.Metadata.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Editor);
+                    if(editor is not null){ValidateComponentEntry(editor);editors.Add(id,editor);}
+                }
                 var fields=BuildPropertyMetadata(id,plugin);
                 foreach(var field in fields)
                 {
@@ -112,13 +123,13 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                 types.Add(id,candidate.Type);metadata.Add(id,info);
             }
             var parameterRegistration=ParameterTypeRegistry.PrepareRegistration(parameters);
-            return new PreparedRegistration(generation,types,metadata,properties,parameterRegistration,candidates.Count>0);
+            return new PreparedRegistration(generation,types,metadata,properties,parameterRegistration,candidates.Count>0,runtimes,editors);
         }
 
         private sealed class PreparedRegistration(long generation,Dictionary<string,Type> types,Dictionary<string,ToolMetadata> metadata,
-            Dictionary<string,Dictionary<string,List<ToolPropertyMetadata>>> properties,ParameterTypeRegistry.PreparedRegistration parameters,bool changed) : IPreparedToolRegistration
+            Dictionary<string,Dictionary<string,List<ToolPropertyMetadata>>> properties,ParameterTypeRegistry.PreparedRegistration parameters,bool changed,Dictionary<string,ToolComponentRegistration> runtimes,Dictionary<string,ToolComponentRegistration> editors) : IPreparedToolRegistration
         {
-            public IToolCatalogCommitScope EnterCommit()=>new CommitScope(generation,types,metadata,properties,parameters,changed);
+            public IToolCatalogCommitScope EnterCommit()=>new CommitScope(generation,types,metadata,properties,parameters,changed,runtimes,editors);
         }
         private sealed class CommitScope : IToolCatalogCommitScope
         {
@@ -127,11 +138,12 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             private readonly Dictionary<string,Dictionary<string,List<ToolPropertyMetadata>>> _properties;
             private readonly ParameterTypeRegistry.CommitScope _parameters;
             private readonly bool _changed;
+            private readonly Dictionary<string,ToolComponentRegistration> _runtimes,_editors;
             private bool _closed,_published;
             internal CommitScope(long generation,Dictionary<string,Type> types,Dictionary<string,ToolMetadata> metadata,
-                Dictionary<string,Dictionary<string,List<ToolPropertyMetadata>>> properties,ParameterTypeRegistry.PreparedRegistration parameters,bool changed)
+                Dictionary<string,Dictionary<string,List<ToolPropertyMetadata>>> properties,ParameterTypeRegistry.PreparedRegistration parameters,bool changed,Dictionary<string,ToolComponentRegistration> runtimes,Dictionary<string,ToolComponentRegistration> editors)
             {
-                _types=types;_metadata=metadata;_properties=properties;_changed=changed;
+                _types=types;_metadata=metadata;_properties=properties;_changed=changed;_runtimes=runtimes;_editors=editors;
                 Monitor.Enter(_lock);
                 try
                 {
@@ -145,7 +157,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                 ObjectDisposedException.ThrowIf(_closed,this);
                 if(_published)throw new InvalidOperationException("Tool registration was already published.");
                 _parameters.Publish();
-                if(_changed){_toolTypes=_types;_metadataCache=_metadata;_typeCache=_properties;_registrationGeneration++;}
+                if(_changed){_toolTypes=_types;_metadataCache=_metadata;_typeCache=_properties;_runtimeComponents=_runtimes;_editorComponents=_editors;_registrationGeneration++;}
                 _published=true;
             }
             public void Dispose(){if(_closed)return;_closed=true;_parameters.Dispose();Monitor.Exit(_lock);}
@@ -223,7 +235,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         public static System.Windows.Window? CreateDebugWindow(string toolId)
         {
             var tool = CreateToolInstance(toolId);
-            return tool is IToolEditorFactory { HasDebugWindow: true } editorFactory
+            return CreateEditorFactory(tool) is { HasDebugWindow: true } editorFactory
                 ? editorFactory.CreateDebugWindow()
                 : null;
         }
@@ -251,6 +263,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             lock (_lock)
             {
                 var removed = _toolTypes.Remove(toolId);
+                _runtimeComponents.Remove(toolId);_editorComponents.Remove(toolId);
                 _registrationGeneration++;
                 _metadataCache.Remove(toolId);
                 foreach(var cache in _typeCache.Values)cache.Remove(toolId);
@@ -369,6 +382,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             lock (_lock)
             {
                 _toolTypes.Clear();
+                _runtimeComponents.Clear();_editorComponents.Clear();
                 _metadataCache.Clear();
                 _typeCache.Clear();
                 _registrationGeneration++;

@@ -35,6 +35,8 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// 工具ID（唯一标识符）
         /// </summary>
         public string Id { get; }
+        /// <summary>Required neutral producer component. Null retains the existing single-assembly plugin contract.</summary>
+        public string? RuntimeComponentId { get; set; }
 
         /// <summary>
         /// 显示名称（UI显示）

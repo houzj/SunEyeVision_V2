@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SunEyeVision.Tool.BlobAnalysis.Wpf</AssemblyName>
+    <RootNamespace>SunEyeVision.Tool.BlobAnalysis</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.BlobAnalysis.Wpf</ToolComponentId>
+    <ToolComponentToolId>BlobAnalysis</ToolComponentToolId>
+    <ToolComponentRole>Editor</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.BlobAnalysis.Wpf.BlobEditorFactory</ToolComponentEntryType>
+    <ToolComponentCompanionToolId>BlobAnalysis</ToolComponentCompanionToolId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../SunEyeVision.Tool.BlobAnalysis.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"><Private>false</Private></ProjectReference>
+  </ItemGroup>
+</Project>

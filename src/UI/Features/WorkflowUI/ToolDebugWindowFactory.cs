@@ -58,7 +58,7 @@ return window;
 
             // ★ 优先级2：通过 ToolRegistry 创建工具实例
             var tool = ToolRegistry.CreateToolInstance(toolId);
-            if (tool is IToolEditorFactory editorFactory)
+            if (ToolRegistry.CreateEditorFactory(tool) is { } editorFactory)
             {
                 // 检查工具是否支持调试窗口
                 if (!editorFactory.HasDebugWindow)
@@ -95,7 +95,7 @@ return null;
         {
             // 运行时检查：使用 ToolRegistry 创建工具实例检查
             var tool = ToolRegistry.CreateToolInstance(toolId);
-            if (tool is IToolEditorFactory editorFactory)
+            if (ToolRegistry.CreateEditorFactory(tool) is { } editorFactory)
             {
                 return editorFactory.HasDebugWindow;
             }

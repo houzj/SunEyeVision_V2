@@ -1,4 +1,24 @@
 <Project>
+  <!-- 角色组件不另建工具目录；打包时也须部署到实际宿主根，尤其是无静态引用的可选编辑器。 -->
+  <PropertyGroup Condition="'$(ToolComponentId)'!='' And '$(PackagingRoot)'!=''">
+    <OutDir>$(PackagingRoot)\app\</OutDir>
+    <OutputPath>$(OutDir)</OutputPath>
+    <TargetDir>$(OutDir)</TargetDir>
+    <TargetPath>$(OutDir)$(TargetName)$(TargetExt)</TargetPath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(ToolComponentId)'!=''">
+    <AssemblyAttribute Include="SunEyeVision.Plugin.Contracts.ToolComponentAttribute">
+      <_Parameter1>$(ToolComponentId)</_Parameter1>
+      <_Parameter2>$(ToolComponentToolId)</_Parameter2>
+      <_Parameter3>$(ToolComponentRole)</_Parameter3>
+      <_Parameter4>global::SunEyeVision.Plugin.Contracts.FoundationContract.Major</_Parameter4>
+      <_Parameter4_IsLiteral>true</_Parameter4_IsLiteral>
+      <_Parameter5>global::SunEyeVision.Plugin.Contracts.FoundationContract.Minor</_Parameter5>
+      <_Parameter5_IsLiteral>true</_Parameter5_IsLiteral>
+      <_Parameter6>$(ToolComponentEntryType)</_Parameter6>
+      <_Parameter7>$(ToolComponentCompanionToolId)</_Parameter7>
+    </AssemblyAttribute>
+  </ItemGroup>
   <!-- A framework-dependent apphost must not load a leftover self-contained host.
        Quarantine only three runtime-owned files, only from our ordinary UI output roots.
        Do not touch packaging, self-contained builds, design-time builds or custom directories. -->

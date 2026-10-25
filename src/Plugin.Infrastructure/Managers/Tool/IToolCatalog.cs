@@ -16,6 +16,11 @@ public interface IToolCatalog
     void Register(Type toolType);
 
     IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> toolTypes);
+    IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> toolTypes, IReadOnlyList<ToolComponentRegistration> components)
+    {
+        if(components.Count!=0)throw new NotSupportedException("This catalog does not support physical tool components.");
+        return PrepareRegistration(toolTypes);
+    }
 
     void Clear();
 
@@ -29,6 +34,8 @@ public interface IToolCatalog
 
     IReadOnlyList<ToolMetadata> GetAllMetadata();
 }
+
+public sealed record ToolComponentRegistration(SunEyeVision.Plugin.Contracts.ToolComponentMetadata Metadata, Type EntryType);
 
 /// <summary>One complete plugin assembly's prepared, unpublished catalog state.</summary>
 public interface IPreparedToolRegistration

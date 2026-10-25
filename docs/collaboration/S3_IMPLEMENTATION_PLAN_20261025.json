@@ -3,7 +3,7 @@
   "status": "ACTIVE_IMPLEMENTATION",
   "sourceBaseline": "30bc9c2fe7dabe68d4f4c0e48c248156074225e0",
   "title": "S3：Blob算法运行、资源交接与工程拆分",
-  "current": "S3实施中：正式Blob旧入口已改为调用同一个中立BlobDefinition/Session，原算法本体已删除。正式Release真实内核8组、兼容入口5组、Workflow资源链9项、字段13项与S2关联52项复测通过；可选编辑器物理拆分、角色发现与发布、完整ROI/输出兼容接线仍未完成。",
+  "current": "S3实施中：算法内核、旧入口委派和可选Wpf物理拆分已落地。正式Release中，有/无编辑器均能经真实节点和工作流执行HALCON；11项部署检查通过。还需完成下游资源需求、完整输出兼容及ROI来源边界，尚未达到S3整体闭合。",
   "scope": [
     "运行/界面物理拆分，运行层不得依赖WPF/SDK显示类型，旧facade只委派同一算法producer",
     "HALCON继续使用；中立图像/Region/Domain/pose与完整轮廓接口，最后读者释放",
@@ -30,7 +30,7 @@
     {
       "item": "Blob运行工程与唯一算法producer",
       "status": "SINGLE_KERNEL_FACADE_DELEGATED_NATIVE_VERIFIED",
-      "details": "旧算法本体已删除，旧入口经BlobDefinition/Session调用唯一内核。中立定义/会话、25个输出声明与按需资源机制已接真实旧入口。编辑器仍在旧程序集，不能宣称完成物理可选拆分。"
+      "details": "旧算法本体已删除；独立Runtime为唯一算法producer，旧SDK入口只适配/委派。独立Wpf组件承载原Views与Converters，旧入口不再实现IToolEditorFactory。"
     },
     {
       "item": "完整Region/boundary与同集输出",
@@ -39,24 +39,247 @@
     },
     {
       "item": "组件注册/可选Wpf/正式发布与回归",
-      "status": "PENDING"
+      "status": "REAL_COMPONENT_DISCOVERY_AND_OPTIONAL_EDITOR_VERIFIED",
+      "details": "组件声明生成到PE；真实ToolRegistry/PluginManager/节点/窗口工厂与发布清单共同消费。缺Wpf实际工作流可执行；缺Runtime、重复、错版本、孤立编辑器和错入口明确拒绝。全局装载器失败不会标记完成。"
     }
   ],
   "evidenceBoundary": {
     "vmExisting": "artifacts/analysis/blob-backend-boundary-20261024/key-evidence.json；是VM交付SDK声明/映射/样例证据，不是VM native核心函数或实机真值。",
     "approvedDesign": "FD02、FD04–07及S3原阶段范围；不新增软阈值、填孔、4邻域或更换HALCON。",
     "officialHalcon": "https://www.mvtec.com/doc/halcon/2411/en/set_system.html：tsp_neighborhood和max_connection语义；还需以当前24.5托管/正式native实际运行证明本地支持。",
-    "notProven": "VM native算法/逐值等价、native结果释放责任及原机缺专用编辑器的运行；本项目可选Wpf组件装配、完整ROI/输出兼容和工作流资源需求接入仍未完成。",
-    "vmNewStatic": "docs/collaboration/evidence/VM_S3_MANAGED_DEPENDENCIES_20261025.json：5份VM4.4.0程序集静态AssemblyRef。Blob管理包装器直接引用2个VM库，而Core/PlatformSDKCS有UI间接依赖；不证明运行闭包、native实现或缺编辑器可执行。逆向项目正在补调用与所有权证据。",
+    "notProven": "VM native算法/逐值等价、native结果释放责任和原机缺专用Control运行；本方完整ROI/输出兼容和工作流消费者资源需求仍未完成。",
+    "vmNewStatic": "docs/collaboration/evidence/VM_S3_MANAGED_DEPENDENCIES_20261025.json：5份VM4.4.0程序集静态AssemblyRef。Blob管理包装器直接引用2个VM库，而Core/PlatformSDKCS有UI间接依赖；不证明运行闭包、native实现或缺编辑器可执行。调用与所有权已在集中报告核收；本次有界取证停止扩查。",
     "officialPose": "HALCON官方affine_trans_region文档：其x/y按行/列且原点在像素角；本合同X/Y按列/行和像素中心。已作行列交换和0.5补偿，正式native平移/90度旋转单像素反例通过。https://www.mvtec.com/doc/halcon/2411/en/affine_trans_region.html",
     "vmCallChain": "已核收逆向报告evidence/VM_S3_FRAMEWORK_AND_OWNERSHIP_20261025.md，SHA 9E8A878C5033A4066216F30959EB8B0B604CDA68062A6B7944A2365EEE3D1472；静态复核原ProcedureConfigControl的GetExternTabWin→通用ParamsTabControlBase回退、Blob壳Run→SyncSelfRun、ModuResult→QueryModuleOneResult→SetModuleResult(ModuResultMemType)。VmModule默认Memory_Deep_Copy但可配置，不能宣称所有运行均深复制。native loader/原生释放/原机无专用Control运行尚未闭合。 补充：托管模块Cs包装器的加载与模块名传入IMVS_AddOneModule已静态闭合，native内部算法DLL解析/装载后半链仍未闭合；原版缺Control实际运行仍待验证。"
   },
   "productRoot": "Release/SunEyeVision_v1.0.0/SunEyeVision",
   "excluded": "S4窗口/共享控件/ROI交互重做、S5通用结果表与选中高亮；不启动旧变量批次或其他角色。",
-  "checkpoint": "23:02检查点：旧入口委派、新声明与资源请求已真实验证。继续可选编辑器及生产角色装配，下一检查点预计30–45分钟内报告工程/发布实际结果，不将时间当作完工承诺。",
-  "manual": "本轮仍属算法/结构检查，旧入口尚未切换；无新增稳定可感知操作包，不单独要求手验，不代用户验收。",
+  "checkpoint": "组件拆分检查点：全量Release 0错误/973警告，11项部署检查与内核8组/兼容5组通过。下一检查点预计30–45分钟内报告输出需求接线实际成果；不是整个S3交付时间。",
+  "manual": "本轮是算法与工程变化，没有新的稳定操作界面，不单独要求人工验证。VS设计时编译通过，未实际打开设计器；用户人工验收尚无新增结果。",
   "tests": "仅正式Release产物；日志及测试数据在Release/_validation/S3-20261025，失败保留。",
   "checks": [
+    {
+      "name": "当前全量Release",
+      "result": "0错误/973条警告；本轮首个build-03缺using失败记录保留",
+      "path": "Release/_validation/S3-20261025/optional-editor-build-04.log",
+      "sha256": "7fa66ca121209a25026b04181ec25a83bb00f7834d4e2b997961ca3965742480"
+    },
+    {
+      "name": "真实组件部署",
+      "result": "11项通过：有/无Editor实际工作流、缺Runtime/重复/错版本/孤立/错入口拒绝；3文件及清单还原",
+      "path": "Release/_validation/S3-20261025/ComponentDeployment/attempt-002/results.json",
+      "sha256": "a091fcbba850383296d478526a2731574652a6ecda8cb6eb4bc5b4f86ecd665e"
+    },
+    {
+      "name": "中立内核",
+      "result": "8组通过；无SDK/WPF、完整拓扑与资源请求",
+      "path": "Release/_validation/S3-20261025/RuntimeKernel/attempt-008/receipt.json",
+      "sha256": "44438da51423d52c60721d2647076d0b474337b80b4c2d930e67929888be8e1f"
+    },
+    {
+      "name": "正式兼容入口",
+      "result": "5组通过；同一内核、双孔/NG/数组/资源释放",
+      "path": "Release/_validation/S3-20261025/DocumentEditing/attempt-008/receipt.json",
+      "sha256": "e4d0291a7412e5880cd6d7922e60a3c17cd1998e37c80d866b79484639965707"
+    },
+    {
+      "name": "S2关联回归",
+      "result": "52项通过；组件拆分后已有同版关联复测",
+      "path": "Release/_validation/S2-20261025/Related/attempt-011/receipt.json",
+      "sha256": "51d43575a720486e7190146a950095b348e53a967b4635b571fa95acacaac930"
+    },
+    {
+      "name": "设计时编译",
+      "result": "成功；不等于实际打开VS设计器",
+      "path": "Release/_validation/S3-20261025/optional-editor-design-time-02.log",
+      "sha256": "244e20da43b002af2dd95dc97a732f648ad5a0523ef181cf94b3bae63ca14367"
+    }
+  ],
+  "failuresPreserved": [
+    "首轮Reference覆盖误改系统引用，已撤并改显式工程路径；首轮679编译错误日志保留。",
+    "无界面桥夹具HRegion整数构造重载二义，改显式double后通过；不是产品失败。",
+    "还原出现NuGet漏洞数据源不可访问警告，所需依赖缓存还原及编译成功；不宣称联网漏洞检查通过。",
+    "RuntimeKernel首轮缺System.IO导入导致夹具编译失败，原attempt-001保留；修正后5组及扩展7组均通过，不记作产品失败。",
+    "核对发现1a775a7f漏收两组扩展测试源码并缺System.IO导入；原七组通过日志保留。已补回颜色/共享像素case并新增声明请求case，正式产物8组重新通过。检查宿主现在每次保存cases.cs.txt和源码SHA，避免只留结果无法重现。"
+  ],
+  "next": "继续接通工作流消费者的资源需求，完成完整Region/多环输出的旧声明兼容与ROI空值、无效引用、同帧来源检查；最后核对同版Release身份和完整S3验收。不进入S4/S5。",
+  "checkpointSourceManifest": [
+    {
+      "path": "src/SunEyeVision.HalAdapter/Runtime/HalImageSnapshotSource.cs",
+      "sha256": "76ae3f031cfdc846c6d733f9c16b18e5d40cd0db91b4cbb1128d39619b37b3b9"
+    },
+    {
+      "path": "src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj",
+      "sha256": "792e3129ffe600fffc123f4ec834240235c8641f27c27f3a31427e99f1627aa1"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Internal/HalconBlobExecutionScope.cs",
+      "sha256": "82901f62b612a6a4060324a4997833925fc34474c9302ff27c449be405132b78"
+    }
+  ],
+  "candidateIdentity": {
+    "embeddedBase": "30bc9c2fe7dabe68d4f4c0e48c248156074225e0",
+    "workingTreeContainsS3Changes": true,
+    "isFinalRelease": false
+  },
+  "checkpointEvidence": {
+    "archive": "docs/collaboration/evidence/S3-first-checkpoint-20261025.zip",
+    "sha256": "9f0cfa5f7ea4f8dbbfe563614df8c232111a1797a497c5bd302bd18e22e461d3",
+    "bytes": 191728,
+    "verifiedCurrentS3ProductLoads": 8,
+    "scope": "首个检查点，最新两条轨实际产品身份；旧构建/失败日志保留但不与当前产物混同。无程序副本，非S3完成"
+  },
+  "continuousGoal": "已按用户明确要求创建，状态active；完成完整S3实施/正式产物验证/文档核收后才结束，检查点只汇报、不停工。",
+  "stageStatus": "实施中：单一内核、可选编辑器及正式组件装配已验证；下游需求/完整输出兼容/ROI边界未完成",
+  "implementationSummary": [
+    [
+      "同一套算法",
+      "独立Runtime不依赖WPF/旧SDK；旧入口委派唯一内核，HALCON保持不变。",
+      "下游资源需求和完整旧输出投影尚待接通。"
+    ],
+    [
+      "可选界面",
+      "原调试/分析控件迁入独立Wpf工程；缺编辑器时真实工作流仍可算出Blob。",
+      "只是隔离已有界面，S4布局/控件交互重做尚未开始。"
+    ],
+    [
+      "实际发现与部署",
+      "22个工具仍唯一；Runtime/Editor角色与版本有声明，发布清单控制文件身份，错误组件明确拒绝。",
+      "安装包组件路径已核对MSBuild求值，本轮未另生成安装包。"
+    ],
+    [
+      "结果与资源",
+      "完整多环/孔洞、NG保留、最终集数组/区域和独立读者通过内核及兼容入口验证。",
+      "旧Contour仍是单外环有损投影，完整边界尚未全部公开到旧声明。"
+    ],
+    [
+      "编辑/运行基础",
+      "S1/S2冻结输入和事务继续复用，关联52项通过。",
+      "不把既有S1/S2成果记成S3新增，不恢复旧变量批次。"
+    ]
+  ],
+  "runtimeCheckpointSourceManifest": [
+    {
+      "path": "scripts/verification/S3BlobRuntimeCases.cs",
+      "sha256": "9b21ef3b8fa1c38d5c7c4ef3176fbacdf549eb2d51ce43dc2340690b70b2c9b5"
+    },
+    {
+      "path": "scripts/verification/S3RuntimeKernelCases.cs",
+      "sha256": "e6e626960e9f7a5982499330ad0d0fa5173f63fcbd057e54f714bac2222332c0"
+    },
+    {
+      "path": "src/Plugin.Contracts/ToolContracts.cs",
+      "sha256": "4de3cd1e9b330587e79bb8c115f2e9658141546b7c8aa9020d91fd1a281d00ab"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisResults.cs",
+      "sha256": "154753854416cd5007f8a7591b4b53926730587c643b132e02495864521ef819"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs",
+      "sha256": "41b264720a008e00f6e889eba443e1c6d09096b1389c418dbf50aad228988e74"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/BlobLegacyAdapter.cs",
+      "sha256": "73239a6f7145773543111f45d7f608c5dfa2e2eb51a7858d734f83b4642fae06"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobDefinition.cs",
+      "sha256": "9dbc705540750ec626a5df79b08666df71055dc045cbe2a8c39eae546cc22707"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobOutput.cs",
+      "sha256": "083da28094ced33a8f59b6c8a7a1c8b9c38ae762263edfa62a00e1f954357f50"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobSchema.cs",
+      "sha256": "e468a8a35b84cf32a6a81f92b4bf7f0325c85a2ff06e9f92784f0e83d2c5c69d"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobSession.Boundary.cs",
+      "sha256": "003bb9794f0c0c731a8467cdd5a49f03041c223ee4595ceb5d934cb515fec310"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobSession.cs",
+      "sha256": "f89169f8b9edf9d849fae8ecf3957c147b6ece777b131fc9ea094bf2a807ff4b"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobSession.Operations.cs",
+      "sha256": "ce9f6e78134b7c1e25162c105ac5a3ea414c48c490bde6d2917d491b0ea3e272"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobSettings.cs",
+      "sha256": "744f9add961318b77a2431d901ddf90b3fe06d71f93fe9e40d9e1b26bf09b6c0"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/HalconBlobExecutionScope.cs",
+      "sha256": "1e8098dd73aa93d584c5355e595e5d10253a13306042b5caa15db21b4c7ebf46"
+    }
+  ],
+  "productIdentity": "正式Release为f8eb9fde加当前组件拆分增量候选；尚不能冒称新提交后的最终重建身份。",
+  "vmComparison": [
+    [
+      "Blob托管壳只直接引用Core和平台SDK，Run调用SyncSelfRun；专用编辑器另由宿主查找并可回退通用界面。",
+      "算法和可选编辑器已拆开，旧入口只委派；本方缺Wpf的正式工作流已实测通过。",
+      "原始DLL/CIL及反编译静态证据；尚未在原机缺专用Control.dll条件下验证。"
+    ],
+    [
+      "VM.Core/平台SDK仍有UI/framework依赖；默认结果深复制，另有可选浅复制和其他SDK回调裸指针路径。",
+      "借鉴职责划分，不照搬其耦合；本方采用中立合同、明确作用域和独立读者，运行内核已无SDK/WPF加载。",
+      "不同SDK包装路径分开记录；原生指针释放者/时点未闭合，不据此推断或复制其生命周期。"
+    ]
+  ],
+  "engineeringRows": [
+    [
+      "Runtime/",
+      "BlobDefinition、BlobSettings、BlobSchema、BlobSession、BlobOutput；net9.0，唯一HALCON业务内核。",
+      "内核8组；无SDK/WPF实际加载。"
+    ],
+    [
+      "旧工具工程根目录",
+      "BlobAnalysisTool/Parameters/Results、BlobLegacyAdapter、BlobOutputContract；保留旧方案/SDK调用兼容，不含第二算法。",
+      "兼容入口5组；完整输出投影和ROI来源边界仍未完成。"
+    ],
+    [
+      "Wpf/",
+      "独立net9.0-windows工程；BlobEditorFactory、Views两种UserControl及Converters。仅界面层。",
+      "真实BAML实例化；移走编辑器后算法仍可执行；设计时编译通过，VS设计器未实际打开。"
+    ],
+    [
+      "宿主/注册/发布",
+      "沿用ToolRegistry与PluginManager；PE组件声明、同ToolId角色、companion、发布清单和默认装载上下文统一校验。",
+      "11项部署检查通过；UI正常启动及全局装载入口不再忽略不完整工具集。"
+    ],
+    [
+      "HALCON中立桥",
+      "HalAdapter/Runtime负责像素、Domain、Region桥和资源读取，不承担Blob业务。",
+      "桥及内核实际资源测试通过；算法库暂不更换。"
+    ]
+  ],
+  "engineeringTree": "tools/SunEyeVision.BlobAnalysis/\n├─ SunEyeVision.Tool.BlobAnalysis.csproj  旧SDK兼容入口\n├─ BlobAnalysisTool.cs / BlobLegacyAdapter.cs\n├─ BlobAnalysisParameters.cs / BlobAnalysisResults.cs / BlobOutputContract.cs / BlobResult.cs\n├─ Runtime/  独立运行工程，不引用WPF/旧SDK\n│  ├─ SunEyeVision.Tool.BlobAnalysis.Runtime.csproj\n│  └─ BlobDefinition / BlobSettings / BlobSchema / BlobSession* / BlobOutput\n└─ Wpf/  同一ToolId的可选Editor工程\n   ├─ SunEyeVision.Tool.BlobAnalysis.Wpf.csproj / BlobEditorFactory.cs\n   ├─ Views/BlobAnalysisToolDebugControl.xaml(.cs)\n   ├─ Views/BlobDataAnalysisControl.xaml(.cs)\n   └─ Converters/BlobAnalysisConverters.cs\n宿主 → 注册/准入 → 旧入口适配 → Runtime唯一算法\n宿主 → 可选Editor工厂 → Wpf界面；Runtime不反向引用Wpf或宿主",
+  "engineeringComparison": [
+    [
+      "入口与界面",
+      "托管Cs包装器与可选Control独立查找；缺专用界面可回退通用入口。",
+      "本方Runtime/可选Wpf已拆开，旧facade委派同一算法；已实测缺编辑器执行，未冒称VM原机同条件通过。"
+    ],
+    [
+      "算法实现",
+      "Run→SyncSelfRun及native调用边界已证；核心公式未完整恢复。",
+      "HALCON流水线独立落实批准语义，不宣称VM逐值等价。"
+    ],
+    [
+      "参数与结果呈现",
+      "模板/XML及动态结果装配有证据；不等于VM原始工程目录。",
+      "当前旧设置/结果保留兼容适配，原界面移到Wpf；S4/S5再重做交互与通用结果呈现。"
+    ],
+    [
+      "依赖与发布",
+      "SDK/控件分布式部署，部分SDK路径仍含UI依赖。",
+      "中立内核与界面物理隔离；HALCON来源为libs，组件声明/发布身份在真实加载时校验。"
+    ]
+  ],
+  "previousCheckpointChecks": [
     {
       "name": "当前全量Release",
       "result": "0错误/1265条警告；委派与声明接线同版",
@@ -160,133 +383,40 @@
       "sha256": "20765abe73b448129061258c96c0ff035fedce57c7a997bfd8a520c19ed6cd2f"
     }
   ],
-  "failuresPreserved": [
-    "首轮Reference覆盖误改系统引用，已撤并改显式工程路径；首轮679编译错误日志保留。",
-    "无界面桥夹具HRegion整数构造重载二义，改显式double后通过；不是产品失败。",
-    "还原出现NuGet漏洞数据源不可访问警告，所需依赖缓存还原及编译成功；不宣称联网漏洞检查通过。",
-    "RuntimeKernel首轮缺System.IO导入导致夹具编译失败，原attempt-001保留；修正后5组及扩展7组均通过，不记作产品失败。",
-    "核对发现1a775a7f漏收两组扩展测试源码并缺System.IO导入；原七组通过日志保留。已补回颜色/共享像素case并新增声明请求case，正式产物8组重新通过。检查宿主现在每次保存cases.cs.txt和源码SHA，避免只留结果无法重现。"
-  ],
-  "next": "拆出可选Wpf编辑器，并使ToolRegistry/实际PluginManager/NodeOpen及发布清单按同ToolId识别唯一Runtime与可选Editor；接工作流下游需求、ROI来源/空引用边界与完整输出兼容，验证缺编辑器仍执行和重复/缺失/错版本拒绝。",
-  "checkpointSourceManifest": [
-    {
-      "path": "src/SunEyeVision.HalAdapter/Runtime/HalImageSnapshotSource.cs",
-      "sha256": "76ae3f031cfdc846c6d733f9c16b18e5d40cd0db91b4cbb1128d39619b37b3b9"
-    },
-    {
-      "path": "src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj",
-      "sha256": "792e3129ffe600fffc123f4ec834240235c8641f27c27f3a31427e99f1627aa1"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/Internal/HalconBlobExecutionScope.cs",
-      "sha256": "82901f62b612a6a4060324a4997833925fc34474c9302ff27c449be405132b78"
-    }
-  ],
-  "candidateIdentity": {
-    "embeddedBase": "30bc9c2fe7dabe68d4f4c0e48c248156074225e0",
-    "workingTreeContainsS3Changes": true,
-    "isFinalRelease": false
+  "componentCheckpointEvidence": {
+    "path": "docs/collaboration/evidence/S3-optional-editor-checkpoint-20261025.zip",
+    "sha256": "41b595563951bfe4adf8ffc7da0f65829f78d2bb7615c54e75631412bca06eaf",
+    "bytes": 259334,
+    "scope": "仅日志、源码夹具、回执和加载路径/身份；保留失败，不含程序副本。"
   },
-  "checkpointEvidence": {
-    "archive": "docs/collaboration/evidence/S3-first-checkpoint-20261025.zip",
-    "sha256": "9f0cfa5f7ea4f8dbbfe563614df8c232111a1797a497c5bd302bd18e22e461d3",
-    "bytes": 191728,
-    "verifiedCurrentS3ProductLoads": 8,
-    "scope": "首个检查点，最新两条轨实际产品身份；旧构建/失败日志保留但不与当前产物混同。无程序副本，非S3完成"
-  },
-  "continuousGoal": "已按用户明确要求创建，状态active；完成完整S3实施/正式产物验证/文档核收后才结束，检查点只汇报、不停工。",
-  "stageStatus": "实施中：旧入口已委派同一内核；8组内核/5组入口通过，可选编辑器和装配未完成",
-  "implementationSummary": [
-    [
-      "同一套算法",
-      "旧BlobAnalysisTool从约840行缩到约147行，删除分割/形态学/特征/判定副本；经BlobDefinition/Session执行。",
-      "现旧SDK参数/几何/显示适配仍保留；须完成可选Wpf组件、真实角色发现和发布。"
-    ],
-    [
-      "声明和资源请求",
-      "中立声明统一记录、统计、数组与Region；输出按声明校验。下游请求图像/完整边界时，显示开关不能抑制。",
-      "请求机制已通过真实内核验证，但工作流消费者需求尚未接入；完整边界/Region的旧输出兼容与声明迁移仍待接线。"
-    ],
-    [
-      "结果与资源一致",
-      "兼容入口验证双孔拓扑、NG保留、最终数组/区域一致；空结果为执行成功、业务NG；结果释放不破坏已有读者。",
-      "旧Contour只投影一个未平滑外环，明确有损；完整多环保留在内核输出，不能冒称旧显示层已完整呈现。"
-    ],
-    [
-      "旧用法与部署",
-      "正式Workflow资源链9项、字段13项、S2关联52项及22工具实际加载通过。",
-      "兼容ROI/位置修正当前先经原SDK解析，再交中立区域，避免二次变换；完整来源/空引用边界及缺Wpf运行仍待验证。"
-    ]
-  ],
-  "runtimeCheckpointSourceManifest": [
+  "componentCheckpointSourceManifest": [
     {
-      "path": "scripts/verification/S3BlobRuntimeCases.cs",
-      "sha256": "9b21ef3b8fa1c38d5c7c4ef3176fbacdf549eb2d51ce43dc2340690b70b2c9b5"
+      "path": "src/Plugin.Contracts/ToolComponentAttribute.cs",
+      "sha256": "e29b72788047bec60f993c7c1443723495b8a06f1f77de087f7aa212e01cc597"
     },
     {
-      "path": "scripts/verification/S3RuntimeKernelCases.cs",
-      "sha256": "e6e626960e9f7a5982499330ad0d0fa5173f63fcbd057e54f714bac2222332c0"
+      "path": "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.Components.cs",
+      "sha256": "012c568078f8cc3fe2bd4db2928bc8ba8977c029b7aae520cd452c590f4f9f96"
     },
     {
-      "path": "src/Plugin.Contracts/ToolContracts.cs",
-      "sha256": "4de3cd1e9b330587e79bb8c115f2e9658141546b7c8aa9020d91fd1a281d00ab"
+      "path": "src/Plugin.Infrastructure/Managers/Plugin/ReleasePayloadAuthority.cs",
+      "sha256": "e07458c180be0b74c135917322dfe5475c2e732dd421590c733f056b93b23462"
     },
     {
-      "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisResults.cs",
-      "sha256": "154753854416cd5007f8a7591b4b53926730587c643b132e02495864521ef819"
+      "path": "scripts/verification/S3ComponentCases.cs",
+      "sha256": "c4b656cae706b9a828479967e7970fea398f2e773aae84b926472cb4cacd8b23"
     },
     {
-      "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs",
-      "sha256": "41b264720a008e00f6e889eba443e1c6d09096b1389c418dbf50aad228988e74"
+      "path": "scripts/verification/Run-S3ComponentDeploymentValidation.ps1",
+      "sha256": "7a8468b770e942dcd4fb8dc74f4b043096d1fd2eff70a91e70b859252216bcfa"
     },
     {
-      "path": "tools/SunEyeVision.BlobAnalysis/BlobLegacyAdapter.cs",
-      "sha256": "73239a6f7145773543111f45d7f608c5dfa2e2eb51a7858d734f83b4642fae06"
+      "path": "Directory.Build.targets",
+      "sha256": "da519dff5e18ef2594f829ba47c1b1655089773412952b6c8c5f15c26494ad26"
     },
     {
-      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobDefinition.cs",
-      "sha256": "9dbc705540750ec626a5df79b08666df71055dc045cbe2a8c39eae546cc22707"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobOutput.cs",
-      "sha256": "083da28094ced33a8f59b6c8a7a1c8b9c38ae762263edfa62a00e1f954357f50"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobSchema.cs",
-      "sha256": "e468a8a35b84cf32a6a81f92b4bf7f0325c85a2ff06e9f92784f0e83d2c5c69d"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobSession.Boundary.cs",
-      "sha256": "003bb9794f0c0c731a8467cdd5a49f03041c223ee4595ceb5d934cb515fec310"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobSession.cs",
-      "sha256": "f89169f8b9edf9d849fae8ecf3957c147b6ece777b131fc9ea094bf2a807ff4b"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobSession.Operations.cs",
-      "sha256": "ce9f6e78134b7c1e25162c105ac5a3ea414c48c490bde6d2917d491b0ea3e272"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobSettings.cs",
-      "sha256": "744f9add961318b77a2431d901ddf90b3fe06d71f93fe9e40d9e1b26bf09b6c0"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/HalconBlobExecutionScope.cs",
-      "sha256": "1e8098dd73aa93d584c5355e595e5d10253a13306042b5caa15db21b4c7ebf46"
+      "path": "installer/Release.Common.ps1",
+      "sha256": "e00a2686a21a272c7c80f59c3b77f335c3d606742c0cc86150bca0a20d774171"
     }
-  ],
-  "productIdentity": "本轮候选正式目录，源码基线提交1a775a7f加当前明确增量；工具加载探针嵌入1a775a7f，不冒称尚未提交的当前增量已具最终提交身份。",
-  "vmComparison": [
-    [
-      "Blob托管壳只直接引用Core和平台SDK，Run调用SyncSelfRun；专用编辑器另由宿主查找并可回退通用界面。",
-      "算法与编辑器分开；旧入口只适配并委派，下一步让专用编辑器成为可选组件。",
-      "原始DLL/CIL及反编译静态证据；尚未在原机缺专用Control.dll条件下验证。"
-    ],
-    [
-      "VM.Core/平台SDK仍有UI/framework依赖；默认结果深复制，另有可选浅复制和其他SDK回调裸指针路径。",
-      "借鉴职责划分，不照搬其耦合；本方采用中立合同、明确作用域和独立读者，运行内核已无SDK/WPF加载。",
-      "不同SDK包装路径分开记录；原生指针释放者/时点未闭合，不据此推断或复制其生命周期。"
-    ]
   ]
 }

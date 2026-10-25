@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -3588,7 +3588,7 @@ SplitterPosition = position;
                 }
 
                 // ★ 创建数据分析控件（独立于调试窗口）
-                var dataAnalysisControl = (tool as IToolEditorFactory)?.CreateDataAnalysisControl();
+                var dataAnalysisControl = ToolRegistry.CreateEditorFactory(tool)?.CreateDataAnalysisControl();
                 if (dataAnalysisControl == null)
                 {
                     // 工具未实现数据分析控件，隐藏Tab

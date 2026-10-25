@@ -25,6 +25,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         private readonly IToolCatalog _toolCatalog;
         private readonly Dictionary<Type, List<object>> _plugins = new();
         private ReleasePayloadAuthority? _releaseAuthority;
+        private IReadOnlyList<ToolComponentRegistration> _components=Array.Empty<ToolComponentRegistration>();
         private int _lastRejectedCount;
         private readonly List<string> _admissionFailures=new();
         public string? LastAdmissionError {get;private set;}
@@ -87,7 +88,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         {
             _logger.LogInfo($"开始从目录加载插件: {pluginDirectory}");
             LastAdmissionError=null;_lastRejectedCount=0;_releaseAuthority=null;_admissionFailures.Clear();
-            try{_releaseAuthority=new ReleasePayloadAuthority(AppContext.BaseDirectory);}
+            try{_releaseAuthority=new ReleasePayloadAuthority(AppContext.BaseDirectory);_components=_releaseAuthority.LoadToolComponents();}
             catch(Exception ex)
             {
                 LastAdmissionError=ex.GetType().Name+": "+ex.Message;
@@ -216,7 +217,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 _releaseAuthority.VerifyToolSet(dllPath,toolTypes);
 
                 // Prepare the whole assembly before any tool, serializer or WPF bridge becomes visible.
-                var registration=_toolCatalog.PrepareRegistration(toolTypes);
+                var registration=_toolCatalog.PrepareRegistration(toolTypes,_components);
                 var bridge=context.PrepareBridge();
                 using(var catalogCommit=registration.EnterCommit())
                 using(var bridgeCommit=bridge.EnterCommit())

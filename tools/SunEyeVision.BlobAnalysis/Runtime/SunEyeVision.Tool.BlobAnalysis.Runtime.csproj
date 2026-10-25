@@ -6,6 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>SunEyeVision.Tool.BlobAnalysis.Runtime</AssemblyName>
     <RootNamespace>SunEyeVision.Tool.BlobAnalysis.Runtime</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.BlobAnalysis.Runtime</ToolComponentId>
+    <ToolComponentToolId>BlobAnalysis</ToolComponentToolId>
+    <ToolComponentRole>Runtime</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.BlobAnalysis.Runtime.BlobDefinition</ToolComponentEntryType>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />

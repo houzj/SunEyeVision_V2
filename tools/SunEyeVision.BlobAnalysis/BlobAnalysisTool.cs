@@ -14,7 +14,6 @@ using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Validation;
-using SunEyeVision.Tool.BlobAnalysis.Views;
 using WpfPoint = System.Windows.Point;
 using BlobRuntime = SunEyeVision.Tool.BlobAnalysis.Runtime;
 using SunEyeVision.Plugin.Contracts;
@@ -30,9 +29,10 @@ namespace SunEyeVision.Tool.BlobAnalysis
         Icon = "blob", Order = 10,
         Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Region,
         Version = "3.1.0",
+        RuntimeComponentId = "SunEyeVision.Tool.BlobAnalysis.Runtime",
         HasDebugWindow = true
     )]
-    public class BlobAnalysisTool : IToolPlugin<BlobAnalysisParameters, BlobAnalysisResults>, IToolEditorFactory
+    public class BlobAnalysisTool : IToolPlugin<BlobAnalysisParameters, BlobAnalysisResults>
     {
         private readonly ToolAttribute? _attribute;
         public BlobAnalysisTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();
@@ -84,8 +84,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         public ValidationResult ValidateParameters(BlobAnalysisParameters parameters)
             => parameters is null ? ValidationResult.Failure("参数不能为空") : parameters.Validate();
-        public FrameworkElement? CreateDebugControl(IToolPlugin tool) => new BlobAnalysisToolDebugControl("BlobAnalysis", tool, null);
-        public FrameworkElement? CreateDataAnalysisControl() => new BlobDataAnalysisControl();
 
         private static void BuildDisplay(BlobAnalysisParameters parameters, BlobAnalysisResults result)
         {

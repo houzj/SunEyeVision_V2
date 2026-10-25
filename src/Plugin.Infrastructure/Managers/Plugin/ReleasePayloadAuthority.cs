@@ -7,6 +7,8 @@ using System.Runtime.Loader;
 using System.Security.Cryptography;
 using System.Text.Json;
 using SunEyeVision.Core.Versioning;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 
@@ -14,6 +16,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 /// catalogs prove the origin selected by the CLR; they never approve application files.</summary>
 internal sealed class ReleasePayloadAuthority
 {
+    private sealed record Component(ToolComponentMetadata Metadata,string EntryType,string Path);
+    private readonly List<Component> _components=new();
     private sealed record Entry(string Path,string Hash,string? Identity);
     private readonly string _root;
     private readonly Dictionary<string,Entry> _entries=new(StringComparer.OrdinalIgnoreCase);
@@ -35,6 +39,22 @@ internal sealed class ReleasePayloadAuthority
             if(string.IsNullOrWhiteSpace(payload.GetProperty(field).GetString()))throw new InvalidDataException("Missing payload identity: "+field);
         foreach(var item in payload.GetProperty("entries").EnumerateArray())
         {
+            if(!item.TryGetProperty("components",out var components))continue;
+            foreach(var component in components.EnumerateArray())
+            {
+                var role=component.GetProperty("role").GetString();
+                if(role is not ("Runtime" or "Editor"))throw new InvalidDataException("Unknown tool component role.");
+                var metadata=new ToolComponentMetadata(component.GetProperty("componentId").GetString()!,component.GetProperty("toolId").GetString()!,
+                    Enum.Parse<ToolComponentRole>(role),component.GetProperty("contractMajor").GetInt32(),component.GetProperty("contractMinor").GetInt32(),
+                    component.TryGetProperty("companionToolId",out var companion)?companion.GetString():null);
+                var type=component.GetProperty("entryType").GetString();
+                if(string.IsNullOrWhiteSpace(type))throw new InvalidDataException("Component entry type is missing.");
+                _components.Add(new(metadata,type,item.GetProperty("path").GetString()!));
+            }
+        }
+        _=SunEyeVision.Plugin.Runtime.ToolComponentCatalog.Prepare(_components.Select(c=>c.Metadata));
+        foreach(var item in payload.GetProperty("entries").EnumerateArray())
+        {
             var relative=item.GetProperty("path").GetString()??throw new InvalidDataException("Missing payload path.");
             var path=Resolve(relative);
             if(relative.Equals("release-payload.json",StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Recursive payload entry.");
@@ -42,7 +62,14 @@ internal sealed class ReleasePayloadAuthority
             if(hash.Length!=64||!hash.All(Uri.IsHexDigit))throw new InvalidDataException("Invalid payload SHA: "+relative);
             var identity=item.TryGetProperty("assemblyIdentity",out var value)?value.GetString():null;
             if(!_entries.TryAdd(relative,new(relative,hash,identity)))throw new InvalidDataException("Duplicate payload path: "+relative);
-            VerifyFile(path,_entries[relative]);
+            var optional=false;
+            if(item.TryGetProperty("optionalComponentId",out var optionalOwner))
+            {
+                var owner=_components.SingleOrDefault(c=>c.Metadata.ComponentId==optionalOwner.GetString()&&c.Metadata.Role==ToolComponentRole.Editor);
+                if(owner is null||!relative.StartsWith(owner.Path[..^4]+".",StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Invalid optional editor payload ownership.");
+                optional=true;
+            }
+            if(!optional||File.Exists(path))VerifyFile(path,_entries[relative]);
         }
         VerifyHostProductIdentity(payload);
         foreach(var name in payload.GetProperty("expectedPluginAssemblies").EnumerateArray())
@@ -62,6 +89,7 @@ internal sealed class ReleasePayloadAuthority
             }
         }
         if(_pluginPaths.Count==0)throw new InvalidDataException("Release payload has no expected plugins.");
+        if(_components.Any(c=>!_tools.ContainsKey(c.Metadata.ToolId)))throw new InvalidDataException("Tool component has no published tool consumer.");
         var frameworks=payload.GetProperty("runtimeFrameworks");
         _mode=frameworks.GetProperty("deploymentMode").GetString()??"";
         if(_mode is not ("frameworkDependent" or "selfContained"))throw new InvalidDataException("Unknown framework deployment mode.");
@@ -88,6 +116,28 @@ internal sealed class ReleasePayloadAuthority
                 throw new InvalidDataException("Framework has no managed publish winners: "+name);
         }
         if(!_frameworkNames.Contains("Microsoft.NETCore.App"))throw new InvalidDataException("Core framework declaration is missing.");
+    }
+
+    internal IReadOnlyList<ToolComponentRegistration> LoadToolComponents()
+    {
+        var result=new List<ToolComponentRegistration>();
+        foreach(var group in _components.GroupBy(c=>c.Path,StringComparer.OrdinalIgnoreCase))
+        {
+            var path=Resolve(group.Key);
+            if(!File.Exists(path)&&group.All(c=>c.Metadata.Role==ToolComponentRole.Editor))continue;
+            VerifyApprovedFile(path);
+            var assembly=AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+            VerifyApprovedAssembly(assembly);
+            var actual=assembly.GetCustomAttributes<ToolComponentAttribute>().ToArray();
+            if(actual.Length!=group.Count()||actual.Any(a=>!group.Any(c=>a.Metadata==c.Metadata&&a.EntryType==c.EntryType)))
+                throw new InvalidDataException("Component PE declarations differ from the release payload: "+group.Key);
+            foreach(var declaration in group)
+            {
+                var type=assembly.GetType(declaration.EntryType,throwOnError:true)!;
+                result.Add(new(declaration.Metadata,type));
+            }
+        }
+        return result;
     }
 
     private void VerifyHostProductIdentity(JsonElement payload)
@@ -134,7 +184,7 @@ internal sealed class ReleasePayloadAuthority
             throw new InvalidDataException("Payload path escapes its root.");
         // Reparse points would make a lexical path an approval for a different location.
         for(var current=full;!string.Equals(current,_root,StringComparison.OrdinalIgnoreCase);current=Path.GetDirectoryName(current)!)
-            if((File.GetAttributes(current)&FileAttributes.ReparsePoint)!=0)throw new InvalidDataException("Payload reparse points are not supported: "+relative);
+            if((File.Exists(current)||Directory.Exists(current))&&(File.GetAttributes(current)&FileAttributes.ReparsePoint)!=0)throw new InvalidDataException("Payload reparse points are not supported: "+relative);
         return full;
     }
     private static string Hash(string path){using var stream=File.OpenRead(path);return Convert.ToHexString(SHA256.HashData(stream));}

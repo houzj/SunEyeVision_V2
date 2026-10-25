@@ -1,0 +1,127 @@
+{
+  "date": "2026-10-25",
+  "status": "S1_IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED",
+  "sourceCommit": "6e8d5f1ddf07b218436646d3ae516fd5b585b424",
+  "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+  "productVersion": "2.0.0.8 alpha",
+  "build": {
+    "exitCode": 0,
+    "warnings": 1087,
+    "log": "Release/_validation/S1-20261025/build-02.log",
+    "logSha256": "86509EFB7954A61DD7BBEBF516BFDA15263789CDA5D464FCBB429F397EABF272"
+  },
+  "checks": [
+    {
+      "name": "编辑合同、声明与引用约束",
+      "scope": "18个场景",
+      "status": "PASS",
+      "log": "Release\\_validation\\S1-20261025\\Contracts\\attempt-004\\run.log",
+      "logSha256": "D938E5FEE42340647A27C7BD58BE67699FBFC45DCD75043A5AC9378A6D231B15",
+      "loadedProduct": "Release\\_validation\\S1-20261025\\Contracts\\attempt-004\\loaded-product.tsv",
+      "loadedProductSha256": "ED86A3ACAA4CE2D0CDF37133CAD649B3EE2018C874FB473F77FBF611A52D9975"
+    },
+    {
+      "name": "旧方案迁移、保存重开与12个拒绝反例",
+      "scope": "实际迁移/保存/重开及12个拒绝反例",
+      "status": "PASS",
+      "log": "Release\\_validation\\S1-20261025\\Owner\\attempt-004\\run.log",
+      "logSha256": "49B7535FEC5D481A0AD82A119BC9FEAEC72784271359EC727D907D5B99471CBB",
+      "loadedProduct": "Release\\_validation\\S1-20261025\\Owner\\attempt-004\\loaded-product.tsv",
+      "loadedProductSha256": "636A8573BA0AE684603389C598418942D35CF06172F2D8B961F276436F9E8CCB"
+    },
+    {
+      "name": "Blob字段、默认值与配置校验",
+      "scope": "13个场景",
+      "status": "PASS",
+      "log": "Release\\_validation\\S1-20261025\\Fields\\attempt-003\\run.log",
+      "logSha256": "A9AB64C0A83B58219C7FC8750B6617A8C12E2B335C7E73E2E91EFD3F8A9C25AC",
+      "loadedProduct": "Release\\_validation\\S1-20261025\\Fields\\attempt-003\\loaded-product.tsv",
+      "loadedProductSha256": "C1AF18A8C5952CDF2317A188E237ABE586056DC2867BF68E74C8D64A9E90E65B"
+    },
+    {
+      "name": "HALCON图像与有效区域转换",
+      "scope": "6个格式/区域组合",
+      "status": "PASS",
+      "log": "Release\\_validation\\S1-20261025\\Native\\attempt-002\\run.log",
+      "logSha256": "A0F0DD67272577398505828E416EFF1B8B627D8F5A9C8D0B8B1093BC51B1CB5A",
+      "loadedProduct": "Release\\_validation\\S1-20261025\\Native\\attempt-002\\loaded-product.tsv",
+      "loadedProductSha256": "4017A7E3DD264CFE8ABD52147709D934689EC6016893602FB0C4F186FE6DDBC2"
+    },
+    {
+      "name": "真实Blob执行及资源读取释放",
+      "scope": "1条真实工作流，9项断言",
+      "status": "PASS",
+      "log": "Release\\_validation\\S1-20261025\\Workflow\\attempt-002\\run.log",
+      "logSha256": "5F92033BC97874FE1B8295C26AA81F52D4C44085BD0D1417B1D9A918CE0ED283",
+      "loadedProduct": "Release\\_validation\\S1-20261025\\Workflow\\attempt-002\\loaded-product.tsv",
+      "loadedProductSha256": "57999455527BF72E6E39F3961E9284FA90F2C55D59412E556B2BB1096A396FA9"
+    },
+    {
+      "name": "保存、备份、失败补偿与恢复",
+      "scope": "15个常规场景及1个跨卷场景",
+      "status": "PASS",
+      "log": "Release\\_validation\\S1-20261025\\Snapshot\\attempt-002\\run.log",
+      "logSha256": "7B85B658B64F4ABCC11D5B85F61717772FF38924843DD259DDA9456AA302DDCF",
+      "loadedProduct": "Release\\_validation\\S1-20261025\\Snapshot\\attempt-002\\loaded-product.tsv",
+      "loadedProductSha256": "910A6CE2B93F5489A80888A335BCDBD58A0D204F6ECE152FB32F77825462B5F7"
+    },
+    {
+      "name": "保存弹窗归属及三个按钮和错误分支",
+      "scope": "4个场景",
+      "status": "PASS",
+      "log": "Release\\_validation\\S1-20261025\\Dialog\\attempt-002\\run.log",
+      "logSha256": "305CAFE664702CFD235958FAC9C991539DB5BACCD10D8C6EB6535F78E654B1E6",
+      "loadedProduct": "Release\\_validation\\S1-20261025\\Dialog\\attempt-002\\loaded-product.tsv",
+      "loadedProductSha256": "9E6F81A8796B6EA51EDC915259D9935BFCFAA0C6E63AA6F3077512DB1744CD41"
+    }
+  ],
+  "crossVolume": {
+    "status": "PASS",
+    "log": "Release\\_validation\\S1-20261025\\Snapshot\\attempt-003\\run.log",
+    "sha256": "0048F1B872AD15B675DA27F98EB601CC6305376F46124318BBDB651F28CE1EA8",
+    "dataCleanup": "Release/_validation/S1-20261025/cross-volume-data-cleanup.json",
+    "temporaryBytes": 16151,
+    "temporaryRootRemoved": true
+  },
+  "runtime": {
+    "releaseProbeExit": 0,
+    "toolboxProbeExit": 0,
+    "registeredTools": 22,
+    "blobPresent": true,
+    "scope": "实际正式程序探针：启动/主题/工具发现/正常退出；不宣称完整主窗口交互或完整Blob新界面验收"
+  },
+  "designTime": {
+    "compileExit": 0,
+    "scope": "设计时构建通过；未在Visual Studio设计器中实际打开，新界面设计器实看留待对应UI阶段"
+  },
+  "integrity": {
+    "payloadFileCount": 742,
+    "payloadMismatches": 0,
+    "payloadSha256": "10E733296CF57E803E8CE8A6921FC43523ED5969BD78CACA9C034C18DDD23C45",
+    "loadedProductPathAndShaChecks": 43,
+    "record": "Release/_validation/S1-20261025/loaded-product-final-audit.json"
+  },
+  "manual": "按用户最新要求，S1无明显新增操作体验，不单独安排人工验收；待参数/ROI/结果联动等明显变化阶段集中验证。不得代用户通过。",
+  "limits": [
+    "本轮为当前对话执行的自动检查，不冒称独立测试或旧多角色G1正式签收。",
+    "不代表S2编辑事务、新Blob Runtime/Wpf工程与完整Blob交互链已经完成，S2/S3未启动。",
+    "保存补偿不是掉电跨文件原子事务；外部竞争导致恢复专态时仍须显式恢复。",
+    "1087条构建警告保留，未作为本轮全部消除目标。"
+  ],
+  "failureHistory": [
+    "首轮发布清单生成被构建日志占用；已将日志移到Release验证区，后继全量构建通过。",
+    "早期检查宿主有编译/依赖/数据输出目录问题，原attempt日志保留。",
+    "用户截图Check.exe为检查宿主JSON 9/10依赖冲突；改用正式程序deps/runtimeconfig及受控异常入口后通过，未将该失败计作产品通过。",
+    "工具测试夹具额外依赖ProtocolParse；补齐从正式插件目录解析后弹窗四项通过。"
+  ],
+  "next": "本目标完成后停止，不自动启动后续阶段；人工验证按明显体感变化合并安排。",
+  "evidenceRoot": "Release/_validation/S1-20261025",
+  "notes": "当前收尾提交只含验证脚本、规则与记录，产品源码未变；正式产物对应上述源码基线。",
+  "evidenceArchive": {
+    "path": "docs/collaboration/evidence/S1-release-validation-20261025.zip",
+    "sha256": "196D3BD4C16F77858D362F7AC620723FD0E26C3560D01478B48603F770EEC339",
+    "verifiedFiles": 121,
+    "bytes": 265556,
+    "scope": "阶段构建及各次失败/通过日志、运行身份和最终检查材料；无程序/算法库副本"
+  }
+}

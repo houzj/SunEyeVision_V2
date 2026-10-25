@@ -1,7 +1,7 @@
 {
   "passed": true,
   "page": "D:\\MyWork\\SunEyeVision_V2\\docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o06.html",
-  "reviewAnchors": 112,
+  "reviewAnchors": 121,
   "evidenceFiles": 44,
   "architectureDomains": 10,
   "architectureReviewLeaves": 30,
@@ -10,6 +10,6 @@
   "lifecycleStages": 12,
   "brokenReviewLinks": [],
   "duplicateReviewIds": [],
-  "pageSha256": "94fe052e8391b56e86be0732e5ff96cd9dc31b5070fc54d62d6d639096632a61",
+  "pageSha256": "03d17842461501e03cba6288d15b14969eec16a3d4afd82b07895251294ee81f",
   "scope": "New review anchors and local links only; no product/runtime acceptance."
 }

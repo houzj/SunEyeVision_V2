@@ -192,7 +192,7 @@
       "base": "Control",
       "source": "src/Plugin.SDK/UI/Controls/NumericUpDown.cs",
       "line": 35,
-      "sha256": "4c544477268218478ee770e5380bd6289536801859bec556a92ba77e5fe335a6",
+      "sha256": "bd68a00584440e1bd9ec1b01ed5fef1001894290ebc0c41ea1f5ea2f62e79ccb",
       "directConsumerFiles": [
         "src/Plugin.SDK/Themes/Generic.xaml",
         "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs",

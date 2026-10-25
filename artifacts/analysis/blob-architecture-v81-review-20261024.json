@@ -1,6 +1,6 @@
 {
   "kind": "V8.1-evidence-based-Blob-architecture-review",
-  "observedHead": "c9b52a95880b71064ab186f60ae8d4c2db259c0b",
+  "observedHead": "30d9407872c52ea647174f9ec92ac70c9bd49b87",
   "productChanges": false,
   "newRuntimeOrPerformanceTests": false,
   "recommendation": "C: semantic contracts + host application services + optional UI composition",
@@ -44,15 +44,15 @@
       "path": "src/UI/Services/Editing/ProductionEditorContext.cs",
       "line": 8,
       "located": true,
-      "sha256": "e57d51fa0e67bc4410c23cb26f87446c5a4b3e71c0287ae1fd7b28e49e7b5308"
+      "sha256": "2191f77c65b392655db31a61528e6e7725c5674dea904ca66eb0b601e550d599"
     },
     {
       "id": "S06",
       "title": "唯一节点编辑发布宿主",
       "path": "src/Workflow/NodeConfigurationEditHost.cs",
-      "line": 25,
+      "line": 55,
       "located": true,
-      "sha256": "8f50c9a69fa396e8847d321a13b76e27aaacf7029cfe917e16fd6c8b7a22f5d2"
+      "sha256": "e8cb124b60bdb65efbc931417f755921a6871a1368bfcbce074cebc91acc515f"
     },
     {
       "id": "S07",
@@ -266,9 +266,9 @@
       "id": "S33",
       "title": "节点分析控件创建、缓存读取和高亮桥",
       "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
-      "line": 3533,
+      "line": 3539,
       "located": true,
-      "sha256": "eec8ba451670be55c57a3675bce8650469e2a8c741b87850caf13704b9107863"
+      "sha256": "c86f67f2689949036fe0bc78e73e15c8c180d1e088a1aeb4931495574b0ff7b1"
     },
     {
       "id": "S34",
@@ -422,8 +422,8 @@
     "legacyMappingDomains": 16,
     "lifecycleStages": 12,
     "scopeSha256": "44304e3e8ce653ed629a86e0467b94f0452e1cc6b2da081a6d6d8c8acf117980",
-    "ledgerSha256": "1f8753f44308ada822cc0030fc0bbd0ce9cfc3197218d2de40010310f2483cb1",
-    "ledgerUpdatedAt": "2026-10-24T11:49:42.074Z",
+    "ledgerSha256": "dbf6d1275db2b2a9b005fc04c0c508ecdd984c474036f0d469cadacb1e710d4b",
+    "ledgerUpdatedAt": "2026-10-24T13:30:20.190Z",
     "statusAuthority": "Read-only snapshot of delivery manager ledger; no status reclassification"
   }
 }

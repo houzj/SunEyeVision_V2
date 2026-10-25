@@ -19,10 +19,9 @@ def render(root,page,ref,table,flow):
       ('版本和维护','合同、模板、主题和控件行为有同源兼容约束；记录消费者/替代关系/验收覆盖。','生成依赖和使用矩阵作为文档事实，不凭文件数量宣布公共能力完整。','重命名不改变稳定字段身份；重大行为改变先核所有关联消费者。'),
       ('质量及可访问性','样式与交互分开，主题/DPI/键盘/诊断、性能与资源预算分别验。','保留WPF原生布局/表格能力；只在证据支持时替换后端或引入复杂缓存。','同场景、同能力、同发布身份实测；复用不等于已有行为全部PASS。')]))
     parts.append(f'<h3 id="br-blob-controls">Blob实际控件使用矩阵：{inventory["count"]}项静态可达控件/基类与宿主</h3>')
-    compared=runpy.run_path(str(root/'artifacts/analysis/review_blob_controls_algorithm_structure_20261024.py'))
-    parts.append(compared['render']())
-    parts.append('<details data-blob-self-inventory><summary>本方31项静态类型明细（用于追溯，不替代VM对照）</summary>')
-    parts.append('<p>从Blob调试页与Blob数据分析页出发，递归核XAML实例、代码new、已知自研基类及Generic默认模板；另明确纳入主视口、图像预览及默认/专业壳的关联候选。<b>不是31项全部同时实例化，也不是整个公共库总数。</b>反射、外部主题覆盖和动态factory仍需运行验证；静态使用图不能证明运行闭包或性能。</p>')
+    parts.append('<p>本节只保留31类静态使用关系作为历史覆盖索引。VM能力映射与唯一现行去留建议已整合到页面原控件对照表和10项处置表；本表不重复生成另一张方案表。</p>')
+    parts.append('<details data-blob-self-inventory><summary>本方31类静态证据覆盖索引（历史清单；当前唯一推荐见原10项处置表）</summary>')
+    parts.append('<p>从Blob调试页与Blob数据分析页出发，递归核XAML实例、代码new、已知自研基类及Generic默认模板；另明确纳入主视口、图像预览及默认/专业壳的关联候选。<b>不是31项全部同时实例化，也不是整个公共库总数。</b>该表只记录静态来源与类型覆盖，不是当前处置；反射、外部主题覆盖和动态factory仍需运行验证，静态使用图不能证明运行闭包或性能。</p>')
     rows=[]
     for c in inventory['controls']:
         name=c['name']
@@ -39,8 +38,8 @@ def render(root,page,ref,table,flow):
             recommendation=c.get('recommendation','按能力适配')
             design=c.get('design','核所属会话、语义、生命周期和验收边界')
         path=root/c['source'];url=quote(os.path.relpath(path,page.parent).replace('\\','/'),safe='/:')
-        rows.append([E(name),E('；'.join(c['via'])),E(recommendation)+'<br>'+E(design),f'<a href="{url}">{E(c["source"])}</a>'])
-    parts.append(table(['实际类型','使用路径','处置候选与依据（服从整体架构）','源码'],rows))
+        rows.append([E(name),E('；'.join(c['via'])),'<b>历史候选（不作现行推荐）</b><br>'+E(recommendation)+'<br>'+E(design),f'<a href="{url}">{E(c["source"])}</a>'])
+    parts.append(table(['实际类型','使用路径','历史候选处置（以原10项处置表为准）','源码'],rows))
     parts.append('<details><summary>原生WPF基元、非视觉数据与静态边界</summary><p>原生元素：'+E('、'.join(inventory['nativeWpfElements']))+'</p><p>值/排序声明，不算控件：'+E('、'.join(inventory['nonVisualValueTags']))+'</p><p>WPF布局、输入、表格原语按宿主合同使用，不能因“全部控件分析”就重写系统控件。静态未解析自定义标签：'+E('、'.join(inventory['unresolvedCustomTags']) or '本次限定规则内未发现；不代表动态运行已验证')+'</p></details>')
 
     parts.append('</details>')

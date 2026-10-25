@@ -6,6 +6,12 @@
   <Folder Name="/Src/Core/">
     <Project Path="Src/Core/SunEyeVision.Core.csproj" />
   </Folder>
+  <Folder Name="/Src/Plugin.Contracts/">
+    <Project Path="Src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Src/Plugin.Runtime/">
+    <Project Path="Src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
+  </Folder>
   <Folder Name="/Src/Plugin.Infrastructure/">
     <Project Path="Src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj" />
   </Folder>

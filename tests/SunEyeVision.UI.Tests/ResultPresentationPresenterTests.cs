@@ -218,6 +218,7 @@ public sealed class ResultPresentationPresenterTests
         var schema = Schema(new Port("image", image), new Port("record", aggregate));
         var poison = new PoisonImage(); int released = 0;
         using var run = Success(schema, new() { ["image"] = poison, ["record"] = new Dictionary<string, object?> { ["image"] = poison, ["label"] = "secret" } }, () => released++);
+        poison.BeginPresentation();
         var rows = new ObservableCollection<FlatResultRow>();
         var presenter = new ResultPresentationPresenter(rows, _ => { });
         presenter.ShowRun(run.Snapshot); run.Dispose(); Assert.Equal(0, released);
@@ -300,9 +301,23 @@ public sealed class ResultPresentationPresenterTests
     private sealed class PoisonImage : IReadOnlyImage, IDisposable
     {
         internal int Accesses; internal int Disposals;
-        public int Width { get { Accesses++; throw new InvalidOperationException("No payload access"); } }
-        public int Height { get { Accesses++; throw new InvalidOperationException("No payload access"); } }
-        public byte[] CopyPixels() { Accesses++; throw new InvalidOperationException("No payload access"); }
+        private bool _presentationPhase;
+        private readonly SunEyeVision.Plugin.Runtime.FrozenImageResource _admitted = new(
+            new ImageLayout(1, 1, 1, PixelLayout.Gray8), new ImageFrameAddress(Guid.NewGuid(), "presentation-test"),
+            new CoordinateFrame("image:input", CoordinateDomain.Image, CoordinateUnit.Pixel), new byte[] { 0 }, new[] { new RegionRun(0, 0, 0) });
+        internal void BeginPresentation() { _presentationPhase = true; Accesses = 0; }
+        private T Metadata<T>(Func<T> value)
+        {
+            if (_presentationPhase) { Accesses++; throw new InvalidOperationException("Presentation accessed admitted image metadata"); }
+            return value();
+        }
+        public int Width => Metadata(() => _admitted.Width);
+        public int Height => Metadata(() => _admitted.Height);
+        public ImageLayout Layout => Metadata(() => _admitted.Layout);
+        public ImageFrameAddress Frame => Metadata(() => _admitted.Frame);
+        public IReadOnlyRegion EffectiveDomain => Metadata(() => _admitted.EffectiveDomain);
+        public byte[] CopyPixels() { Accesses++; throw new InvalidOperationException("No pixel payload access"); }
+        public IImagePixelReadLease AcquirePixels() { Accesses++; throw new InvalidOperationException("No pixel payload access"); }
         public void Dispose() { Disposals++; throw new InvalidOperationException("The presenter cannot dispose borrowed images"); }
     }
     private static void Drain()

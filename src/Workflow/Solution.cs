@@ -46,7 +46,7 @@ public class Solution : ObservableObject
 
     public string Name { get; set; } = "";
     public string Description { get; set; } = "";
-    public int SchemaVersion { get; set; } = 1;
+    public int SchemaVersion { get; set; } = Persistence.SolutionFormatPolicy.Current;
     [JsonExtensionData] public Dictionary<string, JsonElement>? AdditionalData { get; set; }
 
     /// <summary>

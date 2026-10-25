@@ -477,6 +477,7 @@ public class SolutionManager
         catch (Exception ex)
         {
             _logger.Log(LogLevel.Error, $"[SaveSolutionDirect] 保存解决方案失败: {ex.Message}", "SolutionManager", ex);
+            if (ex is SolutionSaveRecoveryRequiredException) throw;
             return false;
         }
     }
@@ -504,14 +505,20 @@ public class SolutionManager
             if (!ReferenceEquals(Session, session)) return SaveFailure("保存准备期间方案已切换，请重试。");
             snapshot = SolutionSnapshot.Prepare(session.Document, savePath);
             written = snapshot.Json;
-            if (!_repository.WriteSnapshot(snapshot, overwrite).FileWritten)
+            var result = _repository.WriteSnapshot(snapshot, overwrite);
+            if (!result.FileWritten)
                 return SaveFailure(_repository.LastError ?? "方案文件写入失败。");
+            snapshot = result.WrittenSnapshot ?? throw new InvalidOperationException("保存已提交但未返回实际快照。");
+            written = snapshot.Json;
+            LastSaveWarning = result.Warning;
         }
+        catch (SolutionSaveRecoveryRequiredException recovery) { _saveError = recovery.Message; throw; }
         catch (Exception ex) { return SaveFailure(ex.Message); }
         if (session.IsUntitled && (string.IsNullOrWhiteSpace(session.Document.Name) || session.Document.Name == "未命名方案"))
             session.Document.Name = Path.GetFileNameWithoutExtension(savePath);
         session.CommitSave(savePath, written);
         var warnings = new List<string>();
+        if (LastSaveWarning is { Length: > 0 } repositoryWarning) warnings.Add(repositoryWarning);
         try
         {
             var document = session.Document;

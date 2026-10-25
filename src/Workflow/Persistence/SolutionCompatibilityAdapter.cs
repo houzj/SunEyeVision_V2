@@ -1,59 +1,39 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Reflection;
+using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Workflow.Persistence;
 
-/// <summary>Only documented V1 conversions; never writes the input file.</summary>
+/// <summary>Validates current documents and applies documented V1 conversions in memory; never writes the input file.</summary>
 internal static class SolutionCompatibilityAdapter
 {
-    public static void Prepare(JsonNode root, List<PersistenceDiagnostic> diagnostics)
+    public static void Prepare(JsonNode root, List<PersistenceDiagnostic> diagnostics, bool deferLegacyBindingOwner = false)
     {
         CheckDuplicateKeys(root.ToJsonString());
         RequireId(root, "$");
-        if (root["SchemaVersion"] != null && root["SchemaVersion"]!.GetValue<int>() != 1)
-            throw new JsonException("Unsupported SchemaVersion.", "$.SchemaVersion", null, null);
+        var legacy = SolutionFormatPolicy.ReadVersion(root) == SolutionFormatPolicy.Legacy;
+        RejectUnknownMembers(root, "$", SerializableFields(typeof(Solution)));
         if (root["GlobalVariables"] is JsonArray variables)
         for (int i = 0; i < variables.Count; i++)
         {
             var variable = variables[i] ?? throw new JsonException("Null variable.");
             var path = "$.GlobalVariables[" + i + "]";
             RequireId(variable, path);
-            if (variable["Value"] == null) continue;
-            var wrapper = variable["Value"] as JsonObject ?? throw new JsonException("Value wrapper must be an object.", path + ".Value", null, null);
-            var type = wrapper["Type"]?.GetValue<string>();
-            if (string.IsNullOrWhiteSpace(type) || !wrapper.ContainsKey("Value") || SdkTypeVocabulary.ToSystemType(type) == null)
-                throw new JsonException("Invalid variable wrapper.", path + ".Value", null, null);
-            var declared = variable["Type"]?.GetValue<string>() ?? throw new JsonException("Variable Type is required.", path + ".Type", null, null);
-            if (CanonicalType(declared) != CanonicalType(type))
-                throw new JsonException("Variable Type disagrees with value Type.", path + ".Value.Type", null, null);
-            var normalizedType = CanonicalType(type) switch
-            {
-                "System.Int64" => "Integer", "System.Double" => "Double",
-                "System.String" => "String", "System.Boolean" => "Boolean", _ => type
-            };
-            if (normalizedType != type)
-            {
-                wrapper["Type"] = normalizedType;
-                variable["Type"] = normalizedType;
-                diagnostics.Add(new("COMPAT_TYPE_ALIAS", "Compatibility", "Warning", path + ".Type", "Known legacy type alias normalized in candidate only."));
-                type = normalizedType;
-            }
-            if (wrapper["Value"] == null)
-                diagnostics.Add(new("COMPAT_TYPED_NULL", "Compatibility", "Warning", path + ".Value", "Typed null retained as an empty value."));
-            else if (type is "Integer" or "Double" or "String" or "Boolean" && wrapper["Value"] is not JsonArray)
-            {
-                wrapper["Value"] = new JsonArray(wrapper["Value"]!.DeepClone());
-                diagnostics.Add(new("COMPAT_SCALAR", "Compatibility", "Warning", path + ".Value.Value", "V1 scalar promoted to a single-element tuple in candidate only."));
-            }
+            RejectUnknownMembers(variable, path, SerializableFields(typeof(GlobalVariable)));
+            SolutionVariableValuePolicy.Prepare(variable, path, legacy, CanonicalType,
+                (code, diagnosticPath, message) => diagnostics.Add(new(code, "Compatibility", "Warning", diagnosticPath, message)));
         }
         if (root["Devices"] is JsonArray devices)
         for (int i = 0; i < devices.Count; i++)
         {
             var device = devices[i]!;
             var path = "$.Devices[" + i + "]";
+            RejectUnknownMembers(device, path, SerializableFields(typeof(Device)));
             foreach (var field in new[] { "Name", "Manufacturer", "Model", "SerialNumber", "IpAddress", "Description", "Port", "IsEnabled", "Settings", "CreatedTime", "ModifiedTime", "Type", "Status" })
                 if (device is JsonObject deviceObject && deviceObject.ContainsKey(field) && device[field] == null)
                     throw new JsonException("Explicit null is not valid for this device field.", path + "." + field, null, null);
@@ -103,13 +83,17 @@ internal static class SolutionCompatibilityAdapter
         {
             var workflow = workflows[w]!;
             var path = "$.Workflows[" + w + "]";
+            // WorkflowJsonConverter writes exactly these structural fields; extension data is not an approved schema.
+            RejectUnknownMembers(workflow, path, new[] { "Id", "Name", "IsSubroutine", "Nodes", "Connections" });
             var ids = new HashSet<string>(StringComparer.Ordinal);
             if (workflow["Nodes"] is JsonArray nodes)
             for (int n = 0; n < nodes.Count; n++)
             {
                 var node = nodes[n] ?? throw new JsonException("Null node.", path + ".Nodes[" + n + "]", null, null);
                 RequireId(node, path + ".Nodes[" + n + "]");
+                RejectUnknownMembers(node, path + ".Nodes[" + n + "]", SerializableFields(typeof(WorkflowNodeBase)));
                 if (!ids.Add(node["Id"]!.GetValue<string>())) throw new JsonException("Duplicate node identity.", path + ".Nodes[" + n + "].Id", null, null);
+                SolutionBindingExpressionPolicy.Validate(node["ParamSettings"], path + ".Nodes[" + n + "].ParamSettings", legacy && deferLegacyBindingOwner);
             }
             else if (workflow["Nodes"] != null) throw new JsonException("Nodes must be an array.", path + ".Nodes", null, null);
             if (workflow["Connections"] is JsonArray edges)
@@ -120,6 +104,7 @@ internal static class SolutionCompatibilityAdapter
                     var edge = edges[e] ?? throw new JsonException("Null connection.");
                     var edgePath = path + ".Connections[" + e + "]";
                     RequireId(edge, edgePath);
+                    RejectUnknownMembers(edge, edgePath, SerializableFields(typeof(WorkflowConnection)));
                     if (!edgeIds.Add(edge["Id"]!.GetValue<string>())) throw new JsonException("Duplicate connection.", edgePath + ".Id", null, null);
                     foreach (var endpoint in new[] { "SourceNodeId", "TargetNodeId" })
                         if (edge[endpoint] is not JsonValue value || !value.TryGetValue<string>(out var id) || !ids.Contains(id))
@@ -127,6 +112,12 @@ internal static class SolutionCompatibilityAdapter
                 }
             }
             else if (workflow["Connections"] != null) throw new JsonException("Connections must be an array.", path + ".Connections", null, null);
+        }
+        if (legacy && !deferLegacyBindingOwner)
+        {
+            SolutionFormatPolicy.PromoteCandidate(root);
+            diagnostics.Add(new("COMPAT_FORMAT_1_TO_2", "Compatibility", "Warning", "$.SchemaVersion",
+                "Format 1 was adapted to format 2 in memory; the source file is unchanged."));
         }
     }
 
@@ -137,6 +128,21 @@ internal static class SolutionCompatibilityAdapter
         if (type == typeof(int)) type = typeof(long);
         if (type == typeof(float)) type = typeof(double);
         return type?.FullName ?? throw new JsonException("Unknown variable type: " + name);
+    }
+
+    private static IEnumerable<string> SerializableFields(Type type) => type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+        .Where(property => property.GetIndexParameters().Length == 0
+            && property.GetCustomAttribute<JsonExtensionDataAttribute>() is null
+            && property.GetCustomAttribute<JsonIgnoreAttribute>()?.Condition != JsonIgnoreCondition.Always)
+        .Select(property => property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name);
+
+    private static void RejectUnknownMembers(JsonNode node, string path, IEnumerable<string> names)
+    {
+        if (node is not JsonObject value) throw new JsonException("Expected a declared object.", path, null, null);
+        var known = names.ToHashSet(StringComparer.Ordinal);
+        foreach (var property in value)
+            if (!known.Contains(property.Key))
+                throw new JsonException("Unknown field; no approved migration exists.", path + "." + property.Key, null, null);
     }
 
     private static void RequireId(JsonNode node, string path)

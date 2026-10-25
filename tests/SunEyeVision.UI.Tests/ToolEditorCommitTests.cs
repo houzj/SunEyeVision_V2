@@ -85,7 +85,7 @@ public sealed class ToolEditorCommitTests(ITestOutputHelper output)
             Assert.False(ToolEditorCommit.TryPrepareOpenDraftEditors(n => ReferenceEquals(n, node), out _, out error));
             Assert.Contains("尚未接入", error); Assert.Equal(",", parameters.Separator); Assert.Equal(";", text.Text);
         }
-        finally { editor.SuppressClosePersistence = true; window.Close(); }
+        finally { ToolEditorCommit.DiscardPendingEdits(editor); window.Close(); }
     });
     [Fact]
     public void Document_prepare_detects_legacy_live_edit_even_after_lost_focus_clears_binding_dirty() => Sta(() =>
@@ -100,7 +100,7 @@ public sealed class ToolEditorCommitTests(ITestOutputHelper output)
             Assert.False(ToolEditorCommit.TryPrepareOpenDraftEditors(n => ReferenceEquals(n, node), out _, out var error));
             Assert.Contains("尚未接入", error); Assert.Equal(";", parameters.Separator);
         }
-        finally { editor.SuppressClosePersistence = true; window.Close(); }
+        finally { ToolEditorCommit.DiscardPendingEdits(editor); window.Close(); }
     });
     [Fact]
     public void Confirming_point_coordinate_constants_clears_orphan_rebinding_markers_in_real_editor()

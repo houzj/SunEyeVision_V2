@@ -203,13 +203,23 @@ public sealed class ResultPresentationModelTests
     private sealed class BorrowedImage : IReadOnlyImage, IDisposable
     {
         public static int Disposals;
-        public int Width => throw new Exception("Presentation accessed image metadata");
-        public int Height => throw new Exception("Presentation accessed image metadata");
-        public ImageLayout Layout => throw new Exception("Presentation accessed image layout");
-        public ImageFrameAddress Frame => throw new Exception("Presentation accessed image frame");
-        public IReadOnlyRegion EffectiveDomain => throw new Exception("Presentation accessed image Domain");
-        public IImagePixelReadLease AcquirePixels() => throw new Exception("Presentation accessed image pixel reader");
-        public byte[] CopyPixels() => throw new Exception("Presentation accessed image pixels");
+        private bool _presentationPhase;
+        private readonly SunEyeVision.Plugin.Runtime.FrozenImageResource _admitted = new(
+            new ImageLayout(1, 1, 1, PixelLayout.Gray8), new ImageFrameAddress(Guid.NewGuid(), "presentation-test"),
+            new CoordinateFrame("image:input", CoordinateDomain.Image, CoordinateUnit.Pixel), new byte[] { 0 }, new[] { new RegionRun(0, 0, 0) });
+        internal void BeginPresentation() { _presentationPhase = true;  }
+        private T Metadata<T>(Func<T> value)
+        {
+            if (_presentationPhase) {  throw new InvalidOperationException("Presentation accessed admitted image metadata"); }
+            return value();
+        }
+        public int Width => Metadata(() => _admitted.Width);
+        public int Height => Metadata(() => _admitted.Height);
+        public ImageLayout Layout => Metadata(() => _admitted.Layout);
+        public ImageFrameAddress Frame => Metadata(() => _admitted.Frame);
+        public IReadOnlyRegion EffectiveDomain => Metadata(() => _admitted.EffectiveDomain);
+        public byte[] CopyPixels() {  throw new InvalidOperationException("No pixel payload access"); }
+        public IImagePixelReadLease AcquirePixels() {  throw new InvalidOperationException("No pixel payload access"); }
         public void Dispose() => Interlocked.Increment(ref Disposals);
     }
 
@@ -222,6 +232,7 @@ public sealed class ResultPresentationModelTests
         var schema = Schema(new Port("direct", imageType), new Port("mixed", record), new Port("images", sequence), new Port("plain", DataType.Integer));
         var values = Values(schema, ("direct", image), ("mixed", new Dictionary<string, object?> { { "image", image }, { "number", 7L } }),
             ("images", new SequenceValue(sequence, new object?[] { image })), ("plain", 5L));
+        image.BeginPresentation();
         return (ResultPresentationModel.ForRun(schema, Run(), ResultPresentationState.Success, values), new WeakReference(image));
     }
 

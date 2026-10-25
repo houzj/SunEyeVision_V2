@@ -52,4 +52,16 @@ public sealed class DeclaredValueReader
         return Declaration.Shape==ValueShape.Geometry && _value is GeometryValue geometry
             ?geometry:throw new InvalidOperationException("A geometry declaration is required.");
     }
+    public IImagePixelReadLease AcquireImagePixels()
+    {
+        RequireValue();
+        return Declaration.Shape==ValueShape.Resource && Declaration.Resource==ResourceKind.Image && _value is IReadOnlyImage image
+            ?image.AcquirePixels():throw new InvalidOperationException("An image declaration is required.");
+    }
+    public IRegionReadLease AcquireRegionReader()
+    {
+        RequireValue();
+        return Declaration.Shape==ValueShape.Resource && Declaration.Resource==ResourceKind.Region && _value is IReadOnlyRegion region
+            ?region.AcquireReader():throw new InvalidOperationException("A region declaration is required.");
+    }
 }

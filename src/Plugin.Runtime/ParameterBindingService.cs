@@ -20,7 +20,7 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             var from=source.SelectedType;var to=target.Type;
             var sourceMany=from.Shape==ValueShape.Sequence;var targetMany=to.Shape==ValueShape.Sequence;
             var elementFrom=sourceMany?from.Element!:from;var elementTo=targetMany?to.Element!:to;
-            bool conditional=source.Conditional;
+            bool conditional=source.Conditional||target.Choices is not null;
             if(elementFrom!=elementTo)
             {
                 if(elementFrom.Scalar==ScalarKind.Int64 && elementTo.Scalar==ScalarKind.Float64)

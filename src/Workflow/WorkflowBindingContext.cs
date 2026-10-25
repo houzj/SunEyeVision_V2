@@ -180,7 +180,12 @@ internal sealed class WorkflowBindingContext : IDisposable
                 {
                     var output=declaration.Outputs[port.Id];
                     if(!actual.TryGetValue(output.Name,out var value))throw new InvalidOperationException("The formal output is absent from this invocation.");
-                    values.Add(port.Id,BindingClrAdapter.NormalizeValue(port,value.RuntimeValue));
+                    // This identity labels the actual immutable output capture, not an inferred camera frame.
+                    // Physical source provenance comes from this admitted invocation and its stable output port.
+                    var frame = port.Type.Shape == ValueShape.Resource && port.Type.Resource == ResourceKind.Image
+                        ? new ImageFrameAddress(Guid.NewGuid(), node.Id, node.AdmittedIdentity!.ToInvocationIdentity(node.Id),
+                            port.Id, declaration.Source.SchemaRevision) : null;
+                    values.Add(port.Id,BindingClrAdapter.NormalizeValue(port,value.RuntimeValue,frame,result.RegisterOutputResource));
                 }
             }
             catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException or KeyNotFoundException)

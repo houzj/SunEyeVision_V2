@@ -302,6 +302,10 @@ public sealed class ResultPresentationPresenterTests
         internal int Accesses; internal int Disposals;
         public int Width { get { Accesses++; throw new InvalidOperationException("No payload access"); } }
         public int Height { get { Accesses++; throw new InvalidOperationException("No payload access"); } }
+        public ImageLayout Layout => throw new Exception("Presentation accessed image layout");
+        public ImageFrameAddress Frame => throw new Exception("Presentation accessed image frame");
+        public IReadOnlyRegion EffectiveDomain => throw new Exception("Presentation accessed image Domain");
+        public IImagePixelReadLease AcquirePixels() => throw new Exception("Presentation accessed image pixel reader");
         public byte[] CopyPixels() { Accesses++; throw new InvalidOperationException("No payload access"); }
         public void Dispose() { Disposals++; throw new InvalidOperationException("The presenter cannot dispose borrowed images"); }
     }

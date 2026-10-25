@@ -205,6 +205,10 @@ public sealed class ResultPresentationModelTests
         public static int Disposals;
         public int Width => throw new Exception("Presentation accessed image metadata");
         public int Height => throw new Exception("Presentation accessed image metadata");
+        public ImageLayout Layout => throw new Exception("Presentation accessed image layout");
+        public ImageFrameAddress Frame => throw new Exception("Presentation accessed image frame");
+        public IReadOnlyRegion EffectiveDomain => throw new Exception("Presentation accessed image Domain");
+        public IImagePixelReadLease AcquirePixels() => throw new Exception("Presentation accessed image pixel reader");
         public byte[] CopyPixels() => throw new Exception("Presentation accessed image pixels");
         public void Dispose() => Interlocked.Increment(ref Disposals);
     }

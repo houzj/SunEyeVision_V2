@@ -1,0 +1,40 @@
+# Blob S1 Snapshot 定向修复交接
+
+- 基线提交：`57a33874ba1adb11ebfba3cc9c7c4641afbd20f2`。
+- 当前分支：`codex/blob-s1-snapshot-fix`。
+- 当前执行者：Codex Snapshot 子线，独立 worktree 唯一产品写者。
+- 任务目标：修复 Snapshot 保存前缺少真实 binding owner/schema 验证，以及目标替换失败后中央备份已被覆盖的问题；仅 S1，不推进 S2/S3。
+- 允许修改目录：本 worktree 的 SolutionSnapshot、SolutionRepository、必要候选/IO helper、隔离 Host 和本交接单。共享 CURRENT_TASK 及治理账本由 root/经理维护，本子线不写。
+- 已修改文件：`src/Workflow/Persistence/SolutionSnapshot.cs`、`src/Workflow/SolutionRepository.cs`、`src/Workflow/Persistence/SolutionFileCommit.cs`；定向入口 `artifacts/validation/blob-s1-snapshot/Host/{Host.csproj,Directory.Build.props,Program.cs}`。
+- 已完成：读和保存共用 ReadFrozenCandidate；从同一次捕获 JSON 恢复特殊 Devices、反序列化、调用现有真实 owner 迁移/声明编译；WriteSnapshot 也执行该门并写最终规范化 JSON，不重读源 document。
+- IO 行为：同 target 进程内串行；target replace 使用同目录实际 oldTarget；中央备份独立同卷 staging/replace，跨卷只复制。中央提交失败补偿 target，并核对字节/长度/mtime。中央提交成功后清理/日志异常仅 Warning，不改成普通失败。
+- 部分写入：补偿失败抛 `SolutionSaveRecoveryRequiredException`，携带 AttemptedSnapshot、TargetPath、LocalPreviousTargetPath、CentralPreviousPath、PendingPath、ObservedTargetState 与恢复指引，不把目标可能已写藏成 Repository 普通 false；保留唯一回退文件。
+- 已执行构建与测试：离线 restore 必要 10 项；必要 Workflow/Repository/Blob closure Release 编译通过。首次 Host 缺 using 编译失败保留，补后成功。首次 8 PASS/1 跨卷设施失败（GetTempPath 实际 D）；第二次 C LocalTemp 权限设施失败；改用已授权 C 盘 workspace 后跨 D/C 成功与 central 锁补偿 PASS。真实竞争锁使 rollback 失败的专用异常/回退保留已 PASS。最终固定版本结果见本任务 `artifacts/validation/blob-s1-snapshot/` source/PE/log manifests 与 report，先前失败不覆盖。
+- 人工验收结果：无 GUI，无用户人工验收；不是 G1 结论。
+- 已知风险：不是掉电/崩溃跨两文件原子事务；外部并发修改或补偿失败须停止继续保存并显式恢复。进程内 gate 不阻止外部进程写入。
+- 调用方只读评估：SolutionManager.SaveCurrentDocument catch 将异常消息送 SaveFailure，CommitSave 在 try/catch 后，因此不推进 dirty baseline；SaveSolutionDirect 与 SolutionApplicationService 也有 general catch。类型化恢复属性在这些上层被压成消息，但消息带明确目标可能已写及恢复路径。未越白名单修改这些调用方，交 root 审查是否需要后继结构化承接。
+- 未完成：root 串行源审、固定 PE 独立复现与整合后的字段闭集 validator 消费；本子线不改 LegacyBindingMigration，后者集成 validator 后共享候选门自动消费。
+- 下一步：root 核收保存点与 manifest 后交独测；只合入本交接列明的自有文件。未改旧冻结树、未写 UI/算法/契约/程序集加载，未提交或推送主树。
+
+## 生产入口必要扩展（root 转达主控批准）
+
+- 白名单增加 `src/Workflow/SolutionManager.cs` 的 SaveCurrentDocument/SaveSolutionDirect，以及 `src/UI/Services/Solutions/SolutionApplicationService.cs` 唯一必要 catch；无新 UI/事务行为。
+- SaveCurrentDocument 采用 Repository 实际 WrittenSnapshot.Json 作为 CommitSave 基线与返回快照，携带其 Warning；普通失败仍保 dirty，专用恢复异常继续上抛。MainWindowViewModel 已有 SaveCurrentDocumentWithPrompt 的 catch，原样显示恢复消息，不需要新增控件。
+- 同 target 补偿失败后保存 gate 保留恢复态，后续保存直接抛同一专异常；`ConfirmSaveRecovery(target)` 只读验证 target 与中央备份均回到已记录 SHA/长度/mtime 才解除。未恢复时拒绝确认；不自动选择版本或覆盖外部写入。
+- 定向实测增量：真实 Manager→ApplicationService 的 partial 专异常、dirty 不变、再次 Save 无新增写、未恢复 Confirm 拒绝、按保留前版显式恢复后 Confirm 解锁并可再次保存均 PASS；真实 Manager 正常 WrittenSnapshot 与盘字节一致/普通坏引用失败保 dirty 与双盘身份均 PASS。该服务源文件直接链接到定向 Host 编译；未构建完整 UI 工程，未运行 GUI 或 VS 设计器。
+- 当前累计 11 个唯一场景有限 PASS。保留 run01 的跨卷假设失败和 run02 的 C LocalTemp 权限失败；run03 用授权 C workspace 验证 D/C 实际跨卷成功/失败补偿。不是 G1 结论。
+
+## root 源审补件
+
+- 首 Replace 后以实际 oldTarget 的 Stamp 作为恢复身份；preflight 与实际不一致则拒绝提交，并恢复实际被替换版本，不以过期 preflight 身份锁死确认。
+- 恢复异常增加 RetainedFiles 列出 target、本地前版、替换内容、pending central copy、central previous、central 路径及当时存在性；TargetRestored/CentralRestored 区分“目标已恢复但中央未恢复”，不要求用户寻找已消耗的 oldTarget。
+- 已补真实 partial 场景中的中央备份单独扰动：target 恢复后，单独修改中央备份，Confirm 必须拒绝；恢复中央原 SHA/长度/mtime 后 Confirm 通过，再保存可用。run07 有限 PASS。
+- 原 4e6617e8 的 Host/bin、原 source/PE/log manifests 与日志保持；后继 Host 输出 bin-v2，后继 manifest 使用 v2 名称，不覆盖旧证据。actual-old 与 preflight 竞争分支目前仅代码复核，未宣称该纳秒窗口已确定性实测。
+
+## v3 修复目标所有权误认
+
+- 主控指出 v2 在 Replace 后读取 destination 再定义 installed identity，会把窗口内外部写入 C 误认成自身 payload。v3 改为在 Replace 前从本次 pending 固定 hash/长度/mtime，之后 destination 读取只验证相等，绝不赋成 own identity。
+- 在 target Replace 后、central commit 前、central commit 后验证目标仍是自己的 pending 身份；检测到外部现物则不覆盖，保留实际全部角色文件并进入恢复专态。
+- 增加 Repository 实例级 internal boundary observer，仅内部构造接受、公开生产构造默认 null，无 static/global 注册、无 UI/配置入口，不替代真实文件 IO。隔离 Host 反射注入，在指定点用 File.WriteAllText 写真实外部文件。
+- run08 五项有限 PASS：Windows Replace 确认 pending 与目标 hash/len/mtime 相同；三个 named 窗口写外部 C 后均保留 C 原身份并明确恢复专态/禁止重试写；before-target-replace 改盘后真实恢复 actual old C，不用旧 preflight 身份。此前 actual-old/preflight 仅代码复核的限制由此项实证替代。
+- 新 Host 输出 bin-v3；bin、bin-v2 和原 source/PE/log/receipt 保留。最终固定结果使用 v3 独立命名清单。仍不宣称所有外部并发窗口或掉电跨文件原子。

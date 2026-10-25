@@ -1,0 +1,269 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using SunEyeVision.Workflow;
+using SunEyeVision.Workflow.Persistence;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
+using SunEyeVision.Tool.BlobAnalysis;
+
+internal static class Program
+{
+    private static readonly List<object> Cases = new();
+    private static string Baseline = "", Root = "", Filter = "", CrossRecoveryRoot = "";
+    private static int Failures;
+    private static string Stamp(string path) => File.Exists(path) ? JsonSerializer.Serialize(new
+    {
+        sha = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))),
+        length = new FileInfo(path).Length, mtime = File.GetLastWriteTimeUtc(path)
+    }) : "missing";
+    private static void Require(bool condition, string detail) { if (!condition) throw new Exception(detail); }
+    private static void Case(string name, Action action)
+    {
+        if (Filter.Length > 0 && !name.Contains(Filter, StringComparison.Ordinal)) return;
+        try { action(); Cases.Add(new { name, status = "PASS" }); Console.WriteLine("PASS " + name); }
+        catch (Exception fault) { Failures++; Cases.Add(new { name, status = "FAIL", error = fault.ToString() }); Console.WriteLine("FAIL " + name + ": " + fault); }
+    }
+    private static (SolutionRepository Repository, Solution Candidate, string Target, string Backup) Setup(string name, bool crossVolume = false)
+    {
+        var folder = Path.Combine(Root, name); Directory.CreateDirectory(folder);
+        var target = Path.Combine(folder, "document.solution"); File.WriteAllText(target, Baseline);
+        var recovery = crossVolume ? Path.Combine(CrossRecoveryRoot, "SunEyeVision-snapshot-fix-" + Guid.NewGuid().ToString("N")) : Path.Combine(folder, "recovery");
+        var repository = new SolutionRepository(recovery);
+        var loaded = repository.LoadCandidate(target);
+        var candidate = loaded.Candidate ?? throw new Exception(string.Join(";", loaded.Diagnostics.Select(d => d.Message)));
+        candidate.Name = "existing-version";
+        Require(repository.Save(candidate, target), "setup save: " + repository.LastError);
+        return (repository, candidate, target, repository.GetRecoveryPath(target));
+    }
+    [STAThread] private static int Main(string[] args)
+    {
+        ToolRegistry.RegisterTool(typeof(BlobAnalysisTool)); PluginLoader.MarkAsLoaded();
+        Filter = args.Length > 1 ? args[1] : "";
+        CrossRecoveryRoot = args.Length > 2 ? args[2] : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Temp");
+        Baseline = File.ReadAllText(args[0]); Root = Path.Combine(AppContext.BaseDirectory, "fixtures-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(Root);
+        foreach (var mode in new[] { "missing-node", "wrong-owner", "changed-schema" }) Case(mode, () =>
+        {
+            var s = Setup(mode); var targetBefore = Stamp(s.Target); var backupBefore = Stamp(s.Backup);
+            var setting = s.Candidate.Workflows[0].Nodes.Single(n => n.Id == "filter-consumer").ParamSettings.GetSetting("FilterAreaMin")!;
+            var original = setting.ReferenceExpression!; var expression = JsonNode.Parse(original)!;
+            if (mode == "missing-node") expression["Reference"]!["nodeId"] = "missing-source";
+            else if (mode == "wrong-owner") expression["Reference"]!["scopeId"] = "absent-scope";
+            else expression["Reference"]!["expectedType"]!["maximum"] = 0;
+            setting.ReferenceExpression = expression.ToJsonString();
+            bool rejected = false; try { _ = SolutionSnapshot.Prepare(s.Candidate, s.Target); } catch { rejected = true; }
+            Require(rejected, "snapshot accepted bad owner/schema"); Require(!s.Repository.Save(s.Candidate, s.Target), "Save accepted bad owner/schema");
+            Require(targetBefore == Stamp(s.Target) && backupBefore == Stamp(s.Backup), "rejected save changed target/backup");
+            Require(setting.ReferenceExpression == expression.ToJsonString(), "validation modified source document");
+        });
+        Case("readable-target-deny-delete", () =>
+        {
+            var s = Setup("target-locked"); var before = Stamp(s.Target); var backup = Stamp(s.Backup); s.Candidate.Name = "must-not-commit";
+            using (var held = new FileStream(s.Target, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            { Require(File.ReadAllText(s.Target).Length > 0, "target must be readable"); Require(!s.Repository.Save(s.Candidate, s.Target), "locked target save succeeded"); }
+            Require(before == Stamp(s.Target) && backup == Stamp(s.Backup), "target failure changed visible files");
+        });
+        Case("central-commit-failure-compensates-target", () =>
+        {
+            var s = Setup("backup-locked"); var before = Stamp(s.Target); var backup = Stamp(s.Backup); s.Candidate.Name = "must-rollback";
+            using (var held = new FileStream(s.Backup, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                Require(!s.Repository.Save(s.Candidate, s.Target), "locked backup save succeeded");
+            Require(before == Stamp(s.Target), "target rollback changed bytes/length/mtime"); Require(backup == Stamp(s.Backup), "failed backup changed bytes/length/mtime");
+            Require(s.Repository.LoadCandidate(s.Target).Candidate!.Name == "existing-version", "rollback target rejected");
+        });
+        Case("cross-volume-success-and-central-lock", () =>
+        {
+            var s = Setup("cross-volume", true);
+            Require(Path.GetPathRoot(s.Target) != Path.GetPathRoot(s.Backup), "fixture is not cross-volume");
+            var previous = File.ReadAllBytes(s.Target); s.Candidate.Name = "cross-volume-success";
+            Require(s.Repository.Save(s.Candidate, s.Target), s.Repository.LastError ?? "cross-volume failed");
+            Require(previous.SequenceEqual(File.ReadAllBytes(s.Backup)), "cross-volume backup not actual prior target");
+            var before = Stamp(s.Target); var backup = Stamp(s.Backup); s.Candidate.Name = "cross-volume-rollback";
+            using (var held = new FileStream(s.Backup, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                Require(!s.Repository.Save(s.Candidate, s.Target), "cross-volume locked backup accepted");
+            Require(before == Stamp(s.Target) && backup == Stamp(s.Backup), "cross-volume compensation changed visible files");
+        });
+        Case("public-write-snapshot-frozen-json-and-bytes", () =>
+        {
+            var s = Setup("frozen"); s.Candidate.Name = "captured"; var captured = SolutionSnapshot.Prepare(s.Candidate, s.Target);
+            s.Candidate.Name = "later-live-edit";
+            var setting = s.Candidate.Workflows[0].Nodes.Single(n => n.Id == "filter-consumer").ParamSettings.GetSetting("FilterAreaMin")!;
+            setting.ReferenceExpression = "invalid-live-edit";
+            var result = s.Repository.WriteSnapshot(captured); Require(result.FileWritten, result.Error ?? "WriteSnapshot failed");
+            Require(File.ReadAllText(s.Target) == result.WrittenSnapshot!.Json, "written bytes differ from WrittenSnapshot.Json");
+            Require(result.WrittenSnapshot.CanonicalContent == result.WrittenSnapshot.Json, "canonical snapshot differs");
+            Require(s.Repository.LoadCandidate(s.Target).Candidate!.Name == "captured", "read live document after capture");
+            Require(s.Candidate.Name == "later-live-edit" && setting.ReferenceExpression == "invalid-live-edit", "source mutated");
+        });
+        Case("new-target-and-no-overwrite", () =>
+        {
+            var s = Setup("new-target"); var fresh = Path.Combine(Path.GetDirectoryName(s.Target)!, "new.solution");
+            Require(s.Repository.Save(s.Candidate, fresh), "new target rejected"); var before = Stamp(fresh);
+            Require(!s.Repository.Save(s.Candidate, fresh, false), "overwrite=false accepted"); Require(before == Stamp(fresh), "overwrite=false changed target");
+        });
+        Case("rollback-denied-explicit-recovery-signal", () =>
+        {
+            var s = Setup("rollback-denied");
+            var managerRoot = Path.Combine(Root, "manager-partial");
+            var manager = new SolutionManager(managerRoot, recoveryDirectory: Path.GetDirectoryName(s.Backup));
+            manager.SetCurrentSolution(s.Candidate, registerInCatalog: false);
+            var application = new SunEyeVision.UI.Services.Solutions.SolutionApplicationService(manager);
+            // A real large existing backup makes the central identity check observable to the
+            // competing reader. No production hook or injected filesystem is used.
+            File.WriteAllBytes(s.Backup, new byte[64 * 1024 * 1024]);
+            var before = Stamp(s.Target); var backup = Stamp(s.Backup);
+            const string marker = "compensation-lock-probe"; s.Candidate.Name = marker;
+            using var heldSignal = new ManualResetEventSlim(); using var release = new ManualResetEventSlim();
+            var competitor = Task.Run(() =>
+            {
+                var deadline = DateTime.UtcNow.AddSeconds(8);
+                while (DateTime.UtcNow < deadline)
+                {
+                    try
+                    {
+                        if (File.ReadAllText(s.Target).Contains(marker, StringComparison.Ordinal))
+                        {
+                            using var targetLock = new FileStream(s.Target, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                            heldSignal.Set(); release.Wait(TimeSpan.FromSeconds(8)); return;
+                        }
+                    }
+                    catch (IOException) { }
+                    Thread.Sleep(1);
+                }
+            });
+            SolutionSaveRecoveryRequiredException? signal = null;
+            try
+            {
+                using var backupLock = new FileStream(s.Backup, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                try { _ = application.Save(s.Target, () => { }); }
+                catch (SolutionSaveRecoveryRequiredException recovery) { signal = recovery; }
+            }
+            finally { release.Set(); competitor.GetAwaiter().GetResult(); }
+            Require(heldSignal.IsSet && signal is not null, "real competing lock did not enter the compensation window");
+            Require(File.Exists(signal!.LocalPreviousTargetPath), "only rollback file was deleted");
+            Require(manager.HasUnsavedChanges, "partial save advanced the document baseline");
+            Require(signal.AttemptedSnapshot is not null && signal.AttemptedSnapshot.Json.Contains(marker), "attempted immutable snapshot missing");
+            Require(before != Stamp(s.Target) && backup == Stamp(s.Backup), "partial-write fixture state differs");
+            File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "partial-recovery.json"), JsonSerializer.Serialize(new
+            {
+                signal.TargetPath, signal.LocalPreviousTargetPath, signal.CentralPreviousPath, signal.PendingPath,
+                signal.ObservedTargetState, signal.RecoveryInstructions, signal.TargetRestored, signal.CentralRestored, signal.RetainedFiles,
+                before, after = Stamp(s.Target), backupBefore = backup, backupAfter = Stamp(s.Backup)
+            }, new JsonSerializerOptions { WriteIndented = true }));
+            var partial = Stamp(s.Target); var priorBackup = Stamp(s.Backup);
+            bool blocked = false; try { _ = application.Save(s.Target, () => { }); } catch (SolutionSaveRecoveryRequiredException) { blocked = true; }
+            Require(blocked && partial == Stamp(s.Target) && priorBackup == Stamp(s.Backup), "subsequent save was not blocked without writing");
+            bool confirmRejected = false; try { s.Repository.ConfirmSaveRecovery(s.Target); } catch (SolutionSaveRecoveryRequiredException) { confirmRejected = true; }
+            Require(confirmRejected, "unrestored target was acknowledged");
+            var copy = Path.Combine(Path.GetDirectoryName(s.Target)!, "explicit-manual-recovery.tmp");
+            File.Copy(signal.LocalPreviousTargetPath, copy); File.Replace(copy, s.Target, null, true);
+            Require(before == Stamp(s.Target), "explicit recovery lost original identity");
+            var priorCentralBytes = File.ReadAllBytes(s.Backup); var priorCentralTime = File.GetLastWriteTimeUtc(s.Backup);
+            File.WriteAllText(s.Backup, "separate-central-disturbance");
+            bool centralRejected = false; try { s.Repository.ConfirmSaveRecovery(s.Target); } catch (SolutionSaveRecoveryRequiredException) { centralRejected = true; }
+            Require(centralRejected, "confirmation ignored a separately disturbed central backup");
+            File.WriteAllBytes(s.Backup, priorCentralBytes); File.SetLastWriteTimeUtc(s.Backup, priorCentralTime);
+            Require(priorBackup == Stamp(s.Backup), "central restoration did not restore SHA/length/mtime");
+            s.Repository.ConfirmSaveRecovery(s.Target);
+            var accepted = application.Save(s.Target, () => { });
+            Require(accepted.FileWritten && !manager.HasUnsavedChanges, "confirmed recovery did not permit a real save");
+            Require(accepted.WrittenSnapshot!.Json == File.ReadAllText(s.Target), "manager returned a stale written snapshot");
+        });
+        Case("manager-actual-written-snapshot-and-normal-failure-dirty", () =>
+        {
+            var s = Setup("manager-normal"); var manager = new SolutionManager(Path.Combine(Root, "manager-normal-state"), recoveryDirectory: Path.GetDirectoryName(s.Backup));
+            manager.SetCurrentSolution(s.Candidate, registerInCatalog: false); s.Candidate.Name = "manager-written";
+            var result = manager.SaveCurrentDocument(s.Target);
+            Require(result.FileWritten && result.WrittenSnapshot!.Json == File.ReadAllText(s.Target), "manager ignored actual WrittenSnapshot");
+            Require(!manager.HasUnsavedChanges, "successful manager save left a stale baseline");
+            var before = Stamp(s.Target); var backup = Stamp(s.Backup);
+            var setting = s.Candidate.Workflows[0].Nodes.Single(n => n.Id == "filter-consumer").ParamSettings.GetSetting("FilterAreaMin")!;
+            setting.ReferenceExpression = "malformed";
+            var rejected = manager.SaveCurrentDocument(s.Target);
+            Require(!rejected.FileWritten && manager.HasUnsavedChanges && before == Stamp(s.Target) && backup == Stamp(s.Backup), "normal manager failure changed baseline or disk");
+        });
+        SolutionRepository ObservedRepository(string recovery, Action<string> observer) => (SolutionRepository)
+            typeof(SolutionRepository).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null,
+                new[] { typeof(string), typeof(Action<string>) }, null)!.Invoke(new object[] { recovery, observer });
+        Case("boundary-pending-identity-windows-replace", () =>
+        {
+            var s = Setup("pending-identity"); const string own = "own-payload-identity-positive"; s.Candidate.Name = own;
+            string? pendingIdentity = null, targetIdentity = null;
+            var repository = ObservedRepository(Path.GetDirectoryName(s.Backup)!, point =>
+            {
+                if (point == "before-target-replace")
+                    pendingIdentity = Stamp(Directory.GetFiles(Path.GetDirectoryName(s.Target)!, ".document.solution.*.tmp")
+                        .Single(path => File.ReadAllText(path).Contains(own, StringComparison.Ordinal)));
+                if (point == "target-replaced") targetIdentity = Stamp(s.Target);
+            });
+            Require(repository.Save(s.Candidate, s.Target), repository.LastError ?? "observed positive save failed");
+            Require(pendingIdentity is not null && pendingIdentity == targetIdentity, "Windows changed pending hash/length/mtime across Replace");
+            File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "pending-identity.json"), JsonSerializer.Serialize(new { pendingIdentity, targetIdentity }));
+        });
+        foreach (var point in new[] { "target-replaced", "before-central-commit", "central-committed" }) Case("boundary-external-" + point, () =>
+        {
+            var s = Setup("external-" + point); var previousTarget = Stamp(s.Target); var previousBackup = Stamp(s.Backup);
+            var external = JsonNode.Parse(Baseline)!; external["Name"] = "external-C-at-" + point;
+            var externalText = external.ToJsonString(); string? externalIdentity = null; var triggers = 0;
+            s.Candidate.Name = "own-N-at-" + point;
+            var repository = ObservedRepository(Path.GetDirectoryName(s.Backup)!, stage =>
+            {
+                if (stage != point) return;
+                triggers++; File.WriteAllText(s.Target, externalText); externalIdentity = Stamp(s.Target);
+            });
+            SolutionSaveRecoveryRequiredException? signal = null;
+            try { _ = repository.Save(s.Candidate, s.Target); } catch (SolutionSaveRecoveryRequiredException recovery) { signal = recovery; }
+            Require(triggers == 1 && signal is not null, "external payload was accepted as the operation's own identity");
+            Require(externalIdentity == Stamp(s.Target) && File.ReadAllText(s.Target) == externalText, "compensation overwrote external C");
+            Require(previousTarget == Stamp(signal!.LocalPreviousTargetPath), "actual previous target was not retained");
+            if (point != "central-committed") Require(previousBackup == Stamp(s.Backup), "central changed before commit");
+            else Require(signal.CentralPreviousPath is not null && previousBackup == Stamp(signal.CentralPreviousPath), "actual central previous file not retained");
+            bool blocked = false; try { _ = repository.Save(s.Candidate, s.Target); } catch (SolutionSaveRecoveryRequiredException) { blocked = true; }
+            Require(blocked && triggers == 1 && externalIdentity == Stamp(s.Target), "blocked retry changed external file");
+            File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "external-" + point + ".json"), JsonSerializer.Serialize(new
+            {
+                point, triggers, externalIdentity, actualTarget = Stamp(s.Target), previousTarget, previousBackup,
+                actualBackup = Stamp(s.Backup), signal.TargetRestored, signal.CentralRestored, signal.ObservedTargetState, signal.RetainedFiles
+            }, new JsonSerializerOptions { WriteIndented = true }));
+        });
+        Case("boundary-actual-old-differs-from-preflight", () =>
+        {
+            var s = Setup("actual-old-race"); var backup = Stamp(s.Backup); string? externalBefore = null;
+            var repository = ObservedRepository(Path.GetDirectoryName(s.Backup)!, point =>
+            {
+                if (point != "before-target-replace") return;
+                File.WriteAllText(s.Target, "actual-external-previous-C"); externalBefore = Stamp(s.Target);
+            });
+            s.Candidate.Name = "own-should-not-commit";
+            Require(!repository.Save(s.Candidate, s.Target), "preflight race committed own payload");
+            Require(externalBefore == Stamp(s.Target) && backup == Stamp(s.Backup), "did not restore actual replaced external previous file");
+        });
+        Case("format1-direct-save-owner-migration", () =>
+        {
+            var s = Setup("legacy-direct");
+            var legacy = JsonNode.Parse(Baseline)!; legacy["SchemaVersion"] = 1;
+            foreach (var workflow in legacy["Workflows"]!.AsArray()) foreach (var node in workflow!["Nodes"]!.AsArray())
+            foreach (var setting in node!["ParamSettings"]!["Settings"]!.AsArray()) if (setting!["ReferenceExpression"] is JsonValue expression)
+            { var reference = JsonNode.Parse(expression.GetValue<string>())!; reference["ContractMajor"] = 4; setting["ReferenceExpression"] = reference.ToJsonString(); }
+            var source = Path.Combine(Root, "legacy-input.solution"); File.WriteAllText(source, legacy.ToJsonString()); var before = Stamp(source);
+            var loaded = s.Repository.LoadCandidate(source).Candidate; Require(loaded is not null, "legacy load rejected");
+            Require(s.Repository.Save(loaded!, s.Target), "migrated save failed: " + s.Repository.LastError);
+            Require(before == Stamp(source), "legacy source changed"); Require(s.Repository.LoadCandidate(s.Target).Candidate!.SchemaVersion == 2, "format2 reopen failed");
+        });
+        File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "report.json"), JsonSerializer.Serialize(new
+        {
+            processId = Environment.ProcessId, finishedUtc = DateTime.UtcNow, args,
+            baselineSha256 = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Baseline))),
+            passed = Cases.Count - Failures, failed = Failures, root = Root, cases = Cases
+        }, new JsonSerializerOptions { WriteIndented = true }));
+        Console.WriteLine($"SUMMARY {Cases.Count - Failures} PASS / {Failures} FAIL"); return Failures == 0 ? 0 : 1;
+    }
+}

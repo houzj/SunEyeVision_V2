@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><TargetFramework>net9.0-windows</TargetFramework><UseWPF>true</UseWPF><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets><OutputPath>$(MSBuildThisFileDirectory)bin-v3/</OutputPath><OutDir>$(OutputPath)</OutDir></PropertyGroup>
+<ItemGroup>
+<Compile Include="../../../../src/UI/Services/Solutions/SolutionApplicationService.cs" Link="SolutionApplicationService.cs" />
+<ProjectReference Include="../../../../src/Workflow/SunEyeVision.Workflow.csproj" />
+<ProjectReference Include="../../../../tools/SunEyeVision.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj" />
+<ProjectReference Include="../../../../src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj" />
+<Reference Include="halcondotnetxl"><HintPath>../../../../libs/halcon/net/halcondotnetxl.dll</HintPath><Private>true</Private></Reference>
+</ItemGroup>
+</Project>

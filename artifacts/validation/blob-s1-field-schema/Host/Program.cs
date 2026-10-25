@@ -39,5 +39,18 @@ Test("unknown-and-duplicate-presentation-keys-rejected",()=>{var unknown=new Blo
 Test("declarative-unset-defaults-prepare-publish-ack",()=>{var contract=schema??BlobInputContract.Describe();var document=Guid.NewGuid();var node=new BindingNodeId("flow","blob");var scope=new BindingScopeSnapshot(node,document,0,Array.Empty<BindingSource>(),Array.Empty<BindingNodeId>(),Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>());var identity=new EditScopeIdentity(document,Guid.NewGuid(),node,0);var draft=new ParameterEditSession(contract.Inputs,BlobInputContract.CreateDefaults(),new ParameterBindingService(),scope,identity);Check(draft.Committed.Values.All(value=>value is not UnsetSetting),"declarative Unset leaked into committed settings");Check(draft.TryPrepare(identity,scope,out var proposal,out _),"default prepare rejected");draft.AcceptPublished(proposal!,draft.Committed,scope,false);Check(draft.Identity==identity&&!draft.HasInvalidDraft,"no-op default acknowledgement changed state");});
 Test("integer-physical-overflow-is-invalid-draft",()=>{var contract=schema??BlobInputContract.Describe();var threshold=BlobInputContract.Fields.Single(field=>field.LogicalKey=="setting.Threshold").Port;var draft=new ParameterEditSession(contract.Inputs,BlobInputContract.CreateDefaults());Check(!draft.Set(threshold.Id,new ConstantSetting(long.MaxValue))&&draft.HasInvalidDraft,"Int32 overflow escaped draft validation");});
 Test("style-aliases-cover-original-canonical-leaves",()=>{Check(BlobInputContract.LegacyStyleAliases.Count==2,"style aliases missing");foreach(var list in BlobInputContract.LegacyStyleAliases.Values)Check(list.Count==7&&list.All(id=>BlobInputContract.Fields.Any(field=>field.Port.Id==id&&field.LogicalKey.StartsWith("presentation.graphics."))),"style alias lost canonical leaves");});
+Test("integrated-save-rejects-closed-choice-before-target-or-backup-change",()=>{
+    var folder=Path.Combine(AppContext.BaseDirectory,"integrated-save");Directory.CreateDirectory(folder);
+    var repository=new SolutionRepository(Path.Combine(folder,"recovery"));
+    var solution=new Solution{Id="save-fields",SchemaVersion=2};var flow=new Workflow("flow","flow");
+    var parameters=new BlobAnalysisParameters();flow.Nodes.Add(new WorkflowNodeBase("blob","blob","blob","BlobAnalysis"){Parameters=parameters});solution.Workflows.Add(flow);
+    var path=Path.Combine(folder,"field.solution");Check(repository.Save(solution,path),"initial valid Save failed");
+    solution.Name="second-valid";Check(repository.Save(solution,path),"second valid Save failed");
+    var backup=repository.GetRecoveryPath(path);var bytes=File.ReadAllBytes(path);var oldBackup=File.ReadAllBytes(backup);var targetTime=File.GetLastWriteTimeUtc(path);var backupTime=File.GetLastWriteTimeUtc(backup);
+    parameters.Type=(ThresholdType)999;
+    Check(!repository.Save(solution,path),"invalid choice Save succeeded");
+    Check(bytes.SequenceEqual(File.ReadAllBytes(path))&&oldBackup.SequenceEqual(File.ReadAllBytes(backup))&&targetTime==File.GetLastWriteTimeUtc(path)&&backupTime==File.GetLastWriteTimeUtc(backup),"rejected Save changed target or prior backup");
+    Check(repository.LoadCandidate(path).Candidate is not null,"last valid disk state cannot reopen");
+});
 Console.WriteLine(JsonSerializer.Serialize(rows,new JsonSerializerOptions{WriteIndented=true}));
 return rows.All(row=>JsonSerializer.SerializeToElement(row).GetProperty("passed").GetBoolean())?0:1;

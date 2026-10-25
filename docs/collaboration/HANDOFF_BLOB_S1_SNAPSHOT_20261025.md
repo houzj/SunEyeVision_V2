@@ -15,3 +15,11 @@
 - 调用方只读评估：SolutionManager.SaveCurrentDocument catch 将异常消息送 SaveFailure，CommitSave 在 try/catch 后，因此不推进 dirty baseline；SaveSolutionDirect 与 SolutionApplicationService 也有 general catch。类型化恢复属性在这些上层被压成消息，但消息带明确目标可能已写及恢复路径。未越白名单修改这些调用方，交 root 审查是否需要后继结构化承接。
 - 未完成：root 串行源审、固定 PE 独立复现与整合后的字段闭集 validator 消费；本子线不改 LegacyBindingMigration，后者集成 validator 后共享候选门自动消费。
 - 下一步：root 核收保存点与 manifest 后交独测；只合入本交接列明的自有文件。未改旧冻结树、未写 UI/算法/契约/程序集加载，未提交或推送主树。
+
+## 生产入口必要扩展（root 转达主控批准）
+
+- 白名单增加 `src/Workflow/SolutionManager.cs` 的 SaveCurrentDocument/SaveSolutionDirect，以及 `src/UI/Services/Solutions/SolutionApplicationService.cs` 唯一必要 catch；无新 UI/事务行为。
+- SaveCurrentDocument 采用 Repository 实际 WrittenSnapshot.Json 作为 CommitSave 基线与返回快照，携带其 Warning；普通失败仍保 dirty，专用恢复异常继续上抛。MainWindowViewModel 已有 SaveCurrentDocumentWithPrompt 的 catch，原样显示恢复消息，不需要新增控件。
+- 同 target 补偿失败后保存 gate 保留恢复态，后续保存直接抛同一专异常；`ConfirmSaveRecovery(target)` 只读验证 target 与中央备份均回到已记录 SHA/长度/mtime 才解除。未恢复时拒绝确认；不自动选择版本或覆盖外部写入。
+- 定向实测增量：真实 Manager→ApplicationService 的 partial 专异常、dirty 不变、再次 Save 无新增写、未恢复 Confirm 拒绝、按保留前版显式恢复后 Confirm 解锁并可再次保存均 PASS；真实 Manager 正常 WrittenSnapshot 与盘字节一致/普通坏引用失败保 dirty 与双盘身份均 PASS。该服务源文件直接链接到定向 Host 编译；未构建完整 UI 工程，未运行 GUI 或 VS 设计器。
+- 当前累计 11 个唯一场景有限 PASS。保留 run01 的跨卷假设失败和 run02 的 C LocalTemp 权限失败；run03 用授权 C workspace 验证 D/C 实际跨卷成功/失败补偿。不是 G1 结论。

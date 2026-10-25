@@ -29,6 +29,8 @@ public sealed class SolutionSaveRecoveryRequiredException : IOException
 internal static class SolutionFileCommit
 {
     private static readonly ConcurrentDictionary<string, object> Gates = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, RecoveryState> Blocked = new(StringComparer.OrdinalIgnoreCase);
+    private sealed record RecoveryState(SolutionSaveRecoveryRequiredException Signal, Stamp Target, Stamp? Recovery, string RecoveryPath);
     private sealed record Stamp(long Length, DateTime Modified, string Hash)
     {
         internal static Stamp Read(string path) => new(new FileInfo(path).Length, File.GetLastWriteTimeUtc(path),
@@ -42,7 +44,30 @@ internal static class SolutionFileCommit
         recovery = Path.GetFullPath(recovery);
         if (AtomicJsonFile.SamePath(destination, recovery)) throw new IOException("Target and recovery must differ.");
         lock (Gates.GetOrAdd(destination, _ => new object()))
+        {
+            ThrowIfRecoveryRequired(destination);
             return WriteLocked(destination, recovery, json, overwrite);
+        }
+    }
+
+    internal static void ThrowIfRecoveryRequired(string destination)
+    {
+        if (Blocked.TryGetValue(Path.GetFullPath(destination), out var pending)) throw pending.Signal;
+    }
+
+    /// <summary>Explicit acknowledgement after external recovery. Never guesses which version to retain,
+    /// changes files or releases the gate unless both visible files have the exact pre-save identity.</summary>
+    internal static void ConfirmRecovery(string destination)
+    {
+        destination = Path.GetFullPath(destination);
+        lock (Gates.GetOrAdd(destination, _ => new object()))
+        {
+            if (!Blocked.TryGetValue(destination, out var pending)) return;
+            if (!pending.Target.Matches(destination) || (pending.Recovery is null
+                ? File.Exists(pending.RecoveryPath) : !pending.Recovery.Matches(pending.RecoveryPath)))
+                throw pending.Signal;
+            Blocked.TryRemove(destination, out _);
+        }
     }
 
     private static string? WriteLocked(string destination, string recovery, string json, bool overwrite)
@@ -96,6 +121,8 @@ internal static class SolutionFileCommit
                         throw new IOException("目标已被外部修改，不覆盖外部写入。");
                     // Windows replacement preserves the timestamp of the actual original file.
                     File.Replace(oldTarget, destination, pending, ignoreMetadataErrors: true);
+                    if (!installedTarget.Matches(pending))
+                        throw new IOException("补偿期间目标被外部修改，已保留被替换内容而不清理。");
                     if (previousTarget is null || !previousTarget.Matches(destination))
                         throw new IOException("目标恢复后的字节或时间戳不符。");
                     if (previousRecovery is null ? File.Exists(recovery) : !previousRecovery.Matches(recovery))
@@ -116,8 +143,10 @@ internal static class SolutionFileCommit
                     string observed;
                     try { observed = File.Exists(destination) ? Stamp.Read(destination).ToString()! : "Target missing"; }
                     catch (Exception read) { observed = "Target state unavailable: " + read.Message; }
-                    throw new SolutionSaveRecoveryRequiredException(destination, oldTarget, oldRecovery, pending, observed,
+                    var signal = new SolutionSaveRecoveryRequiredException(destination, oldTarget, oldRecovery, pending, observed,
                         new AggregateException(failure, rollback));
+                    Blocked[destination] = new(signal, previousTarget!, previousRecovery, recovery);
+                    throw signal;
                 }
             }
             throw;

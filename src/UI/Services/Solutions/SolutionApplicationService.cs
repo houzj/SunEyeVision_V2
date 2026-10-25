@@ -1,5 +1,6 @@
 using System;
 using SunEyeVision.Workflow;
+using SunEyeVision.Workflow.Persistence;
 
 namespace SunEyeVision.UI.Services.Solutions;
 
@@ -12,6 +13,6 @@ public sealed class SolutionApplicationService
     public SolutionSaveResult Save(string? target, Action commitEditors)
     {
         try { commitEditors(); return _manager.SaveCurrentDocument(target); }
-        catch (Exception ex) { return new SolutionSaveResult(false, ex.Message); }
+        catch (Exception ex) when (ex is not SolutionSaveRecoveryRequiredException) { return new SolutionSaveResult(false, ex.Message); }
     }
 }

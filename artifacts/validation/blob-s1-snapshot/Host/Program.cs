@@ -111,6 +111,10 @@ internal static class Program
         Case("rollback-denied-explicit-recovery-signal", () =>
         {
             var s = Setup("rollback-denied");
+            var managerRoot = Path.Combine(Root, "manager-partial");
+            var manager = new SolutionManager(managerRoot, recoveryDirectory: Path.GetDirectoryName(s.Backup));
+            manager.SetCurrentSolution(s.Candidate, registerInCatalog: false);
+            var application = new SunEyeVision.UI.Services.Solutions.SolutionApplicationService(manager);
             // A real large existing backup makes the central identity check observable to the
             // competing reader. No production hook or injected filesystem is used.
             File.WriteAllBytes(s.Backup, new byte[64 * 1024 * 1024]);
@@ -138,12 +142,13 @@ internal static class Program
             try
             {
                 using var backupLock = new FileStream(s.Backup, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                try { _ = s.Repository.Save(s.Candidate, s.Target); }
+                try { _ = application.Save(s.Target, () => { }); }
                 catch (SolutionSaveRecoveryRequiredException recovery) { signal = recovery; }
             }
             finally { release.Set(); competitor.GetAwaiter().GetResult(); }
             Require(heldSignal.IsSet && signal is not null, "real competing lock did not enter the compensation window");
             Require(File.Exists(signal!.LocalPreviousTargetPath), "only rollback file was deleted");
+            Require(manager.HasUnsavedChanges, "partial save advanced the document baseline");
             Require(signal.AttemptedSnapshot is not null && signal.AttemptedSnapshot.Json.Contains(marker), "attempted immutable snapshot missing");
             Require(before != Stamp(s.Target) && backup == Stamp(s.Backup), "partial-write fixture state differs");
             File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "partial-recovery.json"), JsonSerializer.Serialize(new
@@ -151,6 +156,31 @@ internal static class Program
                 signal.TargetPath, signal.LocalPreviousTargetPath, signal.CentralPreviousPath, signal.PendingPath,
                 signal.ObservedTargetState, signal.RecoveryInstructions, before, after = Stamp(s.Target), backupBefore = backup, backupAfter = Stamp(s.Backup)
             }, new JsonSerializerOptions { WriteIndented = true }));
+            var partial = Stamp(s.Target); var priorBackup = Stamp(s.Backup);
+            bool blocked = false; try { _ = application.Save(s.Target, () => { }); } catch (SolutionSaveRecoveryRequiredException) { blocked = true; }
+            Require(blocked && partial == Stamp(s.Target) && priorBackup == Stamp(s.Backup), "subsequent save was not blocked without writing");
+            bool confirmRejected = false; try { s.Repository.ConfirmSaveRecovery(s.Target); } catch (SolutionSaveRecoveryRequiredException) { confirmRejected = true; }
+            Require(confirmRejected, "unrestored target was acknowledged");
+            var copy = Path.Combine(Path.GetDirectoryName(s.Target)!, "explicit-manual-recovery.tmp");
+            File.Copy(signal.LocalPreviousTargetPath, copy); File.Replace(copy, s.Target, null, true);
+            Require(before == Stamp(s.Target), "explicit recovery lost original identity");
+            s.Repository.ConfirmSaveRecovery(s.Target);
+            var accepted = application.Save(s.Target, () => { });
+            Require(accepted.FileWritten && !manager.HasUnsavedChanges, "confirmed recovery did not permit a real save");
+            Require(accepted.WrittenSnapshot!.Json == File.ReadAllText(s.Target), "manager returned a stale written snapshot");
+        });
+        Case("manager-actual-written-snapshot-and-normal-failure-dirty", () =>
+        {
+            var s = Setup("manager-normal"); var manager = new SolutionManager(Path.Combine(Root, "manager-normal-state"), recoveryDirectory: Path.GetDirectoryName(s.Backup));
+            manager.SetCurrentSolution(s.Candidate, registerInCatalog: false); s.Candidate.Name = "manager-written";
+            var result = manager.SaveCurrentDocument(s.Target);
+            Require(result.FileWritten && result.WrittenSnapshot!.Json == File.ReadAllText(s.Target), "manager ignored actual WrittenSnapshot");
+            Require(!manager.HasUnsavedChanges, "successful manager save left a stale baseline");
+            var before = Stamp(s.Target); var backup = Stamp(s.Backup);
+            var setting = s.Candidate.Workflows[0].Nodes.Single(n => n.Id == "filter-consumer").ParamSettings.GetSetting("FilterAreaMin")!;
+            setting.ReferenceExpression = "malformed";
+            var rejected = manager.SaveCurrentDocument(s.Target);
+            Require(!rejected.FileWritten && manager.HasUnsavedChanges && before == Stamp(s.Target) && backup == Stamp(s.Backup), "normal manager failure changed baseline or disk");
         });
         Case("format1-direct-save-owner-migration", () =>
         {

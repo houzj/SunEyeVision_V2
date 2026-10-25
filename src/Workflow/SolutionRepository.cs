@@ -435,6 +435,7 @@ public class SolutionRepository
         if (solution == null) { LastError = "方案为空。"; return false; }
         try
         {
+            SolutionFileCommit.ThrowIfRecoveryRequired(filePath);
             var success = SaveSnapshot(solution, SolutionSession.Serialize(solution), filePath, overwrite);
             // Preserve the repository API's location update, but only after the file exists.
             if (success) solution.FilePath = Path.GetFullPath(filePath);
@@ -445,6 +446,10 @@ public class SolutionRepository
 
     internal bool SaveSnapshot(Solution solution, string serializedSnapshot, string filePath, bool overwrite = true)
         => WriteSnapshot(SolutionSnapshot.PrepareJson(serializedSnapshot, filePath, solution.FilePath == null), overwrite).FileWritten;
+
+    /// <summary>Explicitly unblock a save only after target and central backup have been restored
+    /// to their exact pre-failure identities. Does not perform recovery IO or accept a new baseline.</summary>
+    public void ConfirmSaveRecovery(string filePath) => SolutionFileCommit.ConfirmRecovery(filePath);
 
     public SolutionSaveResult WriteSnapshot(SolutionSnapshot prepared, bool overwrite = true)
     {
@@ -460,6 +465,7 @@ public class SolutionRepository
         bool committed = false;
         try
         {
+            SolutionFileCommit.ThrowIfRecoveryRequired(filePath);
             // The public entry point has the same owner/schema gate as Prepare and Save.
             // Revalidation consumes only the immutable captured JSON, never the live document.
             prepared = SolutionSnapshot.PrepareJson(prepared.Json, prepared.TargetPath, untitled: false);
@@ -493,7 +499,7 @@ public class SolutionRepository
         }
         catch (SolutionSaveRecoveryRequiredException recovery)
         {
-            recovery.AttemptedSnapshot = prepared;
+            recovery.AttemptedSnapshot ??= prepared;
             LastError = recovery.Message;
             throw;
         }

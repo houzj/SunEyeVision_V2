@@ -58,6 +58,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public ShellWorkspaceControl()
         {
             InitializeComponent();
+            Loaded += (_, _) => { if (_viewModel != null) RefreshMiniMap(); };
+            Unloaded += (_, _) => { _miniMapThrottleTimer.Stop(); UnbindMiniMapContent(); };
 
             // 小地图重绘节流定时器：单次触发，Tick 时重绘一次后停止
             _miniMapThrottleTimer = new System.Windows.Threading.DispatcherTimer
@@ -996,25 +998,31 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// 遍历节点/连线数据画简化缩略图，节点增删/移动时自动重绘
         /// 触发通道：节点 Position 变化 + 40ms 节流合并，避免 LayoutUpdated 每帧风暴饿死连接线定时器
         /// </summary>
+        private WorkflowTabViewModel? _miniMapObservedTab;
+        private System.Collections.Specialized.INotifyCollectionChanged? _miniMapObservedNodes, _miniMapObservedEdges;
+        private void UnbindMiniMapContent()
+        {
+            if (_miniMapObservedTab != null) _miniMapObservedTab.WorkflowContentChanged -= MiniMap_WorkflowContentChanged;
+            if (_miniMapObservedNodes != null) _miniMapObservedNodes.CollectionChanged -= MiniMapContent_CollectionChanged;
+            if (_miniMapObservedEdges != null) _miniMapObservedEdges.CollectionChanged -= MiniMapContent_CollectionChanged;
+            foreach (var node in _miniMapSubscribedNodes.Values) node.PropertyChanged -= MiniMapNode_PropertyChanged;
+            _miniMapSubscribedNodes.Clear();
+            _miniMapObservedTab=null; _miniMapObservedNodes=null; _miniMapObservedEdges=null;
+        }
+
         private void RefreshMiniMap()
         {
             var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
             if (selectedTab == null || MiniMapCanvas == null)
-                return;
+            { UnbindMiniMapContent(); return; }
 
-            // 订阅画布内容变更：SetNodes/SetConnections 整体替换集合引用时
-            // （子程序导航/返回路径），重挂接小地图并重绘，不依赖 Tab 切换事件。
-            selectedTab.WorkflowContentChanged -= MiniMap_WorkflowContentChanged;
-            selectedTab.WorkflowContentChanged += MiniMap_WorkflowContentChanged;
-
-            // 挂接节点/连线集合变化监听（增删时重绘并增量订阅节点位置）
-            selectedTab.WorkflowNodes.CollectionChanged -= MiniMapContent_CollectionChanged;
-            selectedTab.WorkflowNodes.CollectionChanged += MiniMapContent_CollectionChanged;
-            if (selectedTab.WorkflowConnections != null)
-            {
-                selectedTab.WorkflowConnections.CollectionChanged -= MiniMapContent_CollectionChanged;
-                selectedTab.WorkflowConnections.CollectionChanged += MiniMapContent_CollectionChanged;
-            }
+            UnbindMiniMapContent();
+            _miniMapObservedTab=selectedTab;
+            _miniMapObservedNodes=selectedTab.WorkflowNodes;
+            _miniMapObservedEdges=selectedTab.WorkflowConnections;
+            _miniMapObservedTab.WorkflowContentChanged += MiniMap_WorkflowContentChanged;
+            _miniMapObservedNodes.CollectionChanged += MiniMapContent_CollectionChanged;
+            _miniMapObservedEdges.CollectionChanged += MiniMapContent_CollectionChanged;
 
             // 订阅当前全部节点的位置变化（节点移动时触发节流重绘）
             SubscribeMiniMapNodes(selectedTab.WorkflowNodes);
@@ -1043,8 +1051,9 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 if (node == null || string.IsNullOrEmpty(node.Id))
                     continue;
                 currentIds.Add(node.Id);
-                if (!_miniMapSubscribedNodes.ContainsKey(node.Id))
+                if (!_miniMapSubscribedNodes.TryGetValue(node.Id,out var previous) || !ReferenceEquals(previous,node))
                 {
+                    if (previous != null) previous.PropertyChanged -= MiniMapNode_PropertyChanged;
                     node.PropertyChanged += MiniMapNode_PropertyChanged;
                     _miniMapSubscribedNodes[node.Id] = node;
                 }

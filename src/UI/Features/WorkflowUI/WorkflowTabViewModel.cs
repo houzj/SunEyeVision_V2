@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -320,20 +320,12 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         public ObservableCollection<WorkflowNodeBase> WorkflowNodes
         {
             get => _workflowNodes;
-            set
-            {
-                if (_workflowNodes != null)
-                {
-                    _workflowNodes.CollectionChanged -= OnWorkflowNodesChanged;
-                }
-                SetProperty(ref _workflowNodes, value);
-                if (_workflowNodes != null)
-                {
-                    _workflowNodes.CollectionChanged += OnWorkflowNodesChanged;
-                }
-            }
+            set => SetNodes(value);
         }
 
+        /// <summary>
+        /// 设置连接集合（直接绑定外部集合，实现自动同步）
+        /// </summary>
         private void OnWorkflowNodesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             // 处理删除节点，释放索引到空洞池
@@ -379,65 +371,33 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             }
         }
 
-        /// <summary>
-        /// 设置连接集合（直接绑定外部集合，实现自动同步）
-        /// </summary>
-        public void SetConnections(ObservableCollection<WorkflowConnection> connections)
-        {
-            if (connections == null)
-            {
-                throw new ArgumentNullException(nameof(connections));
-            }
+        public void SetConnections(ObservableCollection<WorkflowConnection> connections) => SetContent(_workflowNodes, connections);
 
-            _workflowConnections.CollectionChanged -= (s, e) => { };
-            _workflowConnections = connections;
-            _workflowConnections.CollectionChanged += (s, e) => { };
-
-            OnPropertyChanged(nameof(WorkflowConnections));
-            CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
-            WorkflowContentChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        /// <summary>
-        /// 连接线集合
-        /// </summary>
         public ObservableCollection<WorkflowConnection> WorkflowConnections
         {
             get => _workflowConnections;
-            set
-            {
-                if (_workflowConnections != null)
-                {
-                    _workflowConnections.CollectionChanged -= (s, e) => { };
-                }
-                SetProperty(ref _workflowConnections, value);
-                if (_workflowConnections != null)
-                {
-                    _workflowConnections.CollectionChanged += (s, e) => { };
-                }
-            }
+            set => SetConnections(value);
         }
 
-        /// <summary>
-        /// 设置节点集合 — 直接绑定引擎中的同一对象实例（单一数据源）
-        /// 与 SetConnections 对齐：UI 与引擎共享同一集合，节点增删自动双向同步。
-        /// </summary>
-        public void SetNodes(ObservableCollection<WorkflowNodeBase> nodes)
+        public void SetNodes(ObservableCollection<WorkflowNodeBase> nodes) => SetContent(nodes, _workflowConnections);
+
+        private readonly Dictionary<(ObservableCollection<WorkflowNodeBase> Nodes, ObservableCollection<WorkflowConnection> Edges), CommandManager> _containerHistories = new();
+
+        /// <summary>成对绑定一个实际容器；同一容器返回时恢复其编辑历史，不发布半份图。</summary>
+        public void SetContent(ObservableCollection<WorkflowNodeBase> nodes, ObservableCollection<WorkflowConnection> connections)
         {
-            if (nodes == null)
-                throw new ArgumentNullException(nameof(nodes));
-
-            // 直接赋值引擎工作流的节点集合，消除 UI/引擎两套集合的同步问题。
-            if (!ReferenceEquals(_workflowNodes, nodes))
-            {
-                _workflowNodes.CollectionChanged -= OnWorkflowNodesChanged;
-                _workflowNodes = nodes;
-                _workflowNodes.CollectionChanged += OnWorkflowNodesChanged;
-            }
-
-            OnPropertyChanged(nameof(WorkflowNodes));
-            CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
-            WorkflowContentChanged?.Invoke(this, EventArgs.Empty);
+            ArgumentNullException.ThrowIfNull(nodes); ArgumentNullException.ThrowIfNull(connections);
+            if (ReferenceEquals(_workflowNodes,nodes) && ReferenceEquals(_workflowConnections,connections)) return;
+            _containerHistories.TryAdd((_workflowNodes,_workflowConnections),CommandManager);
+            _workflowNodes.CollectionChanged -= OnWorkflowNodesChanged;
+            _workflowNodes=nodes; _workflowConnections=connections;
+            _workflowNodes.CollectionChanged += OnWorkflowNodesChanged;
+            if (!_containerHistories.TryGetValue((nodes,connections),out var history))
+                _containerHistories[(nodes,connections)] = history = new CommandManager(nodes,connections);
+            CommandManager=history;
+            OnPropertyChanged(nameof(WorkflowNodes)); OnPropertyChanged(nameof(WorkflowConnections));
+            OnPropertyChanged(nameof(CommandManager));
+            WorkflowContentChanged?.Invoke(this,EventArgs.Empty);
         }
 
         /// <summary>

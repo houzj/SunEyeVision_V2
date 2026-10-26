@@ -1137,7 +1137,6 @@ SplitterPosition = position;
                         workflow.AddNode(node);
                 }
 
-                tab.SetNodes(workflow.Nodes);
             }
 
             if (!ReferenceEquals(tab.WorkflowConnections, workflow.Connections))
@@ -1154,8 +1153,9 @@ SplitterPosition = position;
                     }
                 }
 
-                tab.SetConnections(workflow.Connections);
             }
+
+            tab.SetContent(workflow.Nodes, workflow.Connections);
 
             _logger?.LogInfo(
                 $"工作流定义绑定完成: workflow={workflow.Name}({workflow.Id}), " +
@@ -1857,7 +1857,7 @@ SplitterPosition = position;
             try
             {
                 _logger?.LogInfo($"[StartupTrace] CreateWorkflowTab.SetNodes begin | name={workflow.Name}", "MainWindowViewModel");
-                tabViewModel.SetNodes(workflow.Nodes);
+                tabViewModel.SetContent(workflow.Nodes, workflow.Connections);
                 _logger?.LogInfo($"[StartupTrace] CreateWorkflowTab.SetNodes completed | name={workflow.Name}", "MainWindowViewModel");
             }
             catch (Exception ex)
@@ -1869,7 +1869,6 @@ SplitterPosition = position;
             LogInfo($"节点加载完成，数量: {tabViewModel.WorkflowNodes.Count}/{workflow.Nodes.Count}");
 
             // ✅ 优化：直接绑定 Solution 层的连接集合，实现自动同步
-            tabViewModel.SetConnections(workflow.Connections);
             LogInfo($"连接绑定完成，数量: {workflow.Connections.Count}");
 
             // 初始化空洞池（从现有节点恢复索引池）
@@ -2934,8 +2933,9 @@ SplitterPosition = position;
             }
 
             // 直接绑定引擎中的节点和连接集合到 Tab
-            selectedTab.SetNodes(workflow.Nodes);
-            selectedTab.SetConnections(workflow.Connections);
+            selectedTab.SetContent(workflow.Nodes, workflow.Connections);
+            SubscribeToCurrentCommandManager();
+            UpdateUndoRedoCommands();
 
             // ★ 子程序/主工作流导航加载时，重建该工作流的局部空洞池（仅局部索引，不动全局）
             //   解决：子程序工作流加载后，其节点序号未进空洞池，新建节点序号从 1 重新分配而冲突。

@@ -159,7 +159,7 @@ namespace SunEyeVision.UI.Shell.Windows
         /// <summary>
         /// 调试窗口是否打开（用于锁定画布操作，避免Delete键冲突）
         /// </summary>
-        public bool IsDebugWindowOpen => _openDebugWindow != null && _openDebugWindow.IsLoaded;
+        public bool IsDebugWindowOpen => (_openDebugWindow != null && _openDebugWindow.IsLoaded) || _auxiliaryParameterWindows.Count != 0;
 
         // 按 Workflow 缓存的 DSQS（key: WorkflowId，替代旧的按节点缓存的 _nodeDataProviders）
         private readonly Dictionary<string, DataSourceQueryService> _workflowDsqsCache = new();
@@ -5645,6 +5645,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             _transitionPreparationInProgress = true;
             try
             {
+                if (!_auxiliaryParameterWindows.TryCloseAll()) return false;
                 var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
                 if (_executionManager.IsAnyRunning() &&
                     ThemeMessageDialog.Show("方案正在运行。停止全部执行后继续？", "切换方案", MessageBoxButton.OKCancel,

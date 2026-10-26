@@ -5,6 +5,18 @@ using SunEyeVision.Plugin.SDK.UI.Controls;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
+    private readonly SunEyeVision.UI.Services.Editing.ParameterWindowRegistry _auxiliaryParameterWindows=new();
+    public IDisposable TrackParameterWindow(System.Windows.Window window)
+    {
+        _auxiliaryParameterWindows.Changed-=AuxiliaryParameterWindowsChanged;
+        _auxiliaryParameterWindows.Changed+=AuxiliaryParameterWindowsChanged;
+        return _auxiliaryParameterWindows.Track(window);
+    }
+    private void AuxiliaryParameterWindowsChanged(object? sender,EventArgs e)
+    {
+        OnPropertyChanged(nameof(IsDebugWindowOpen));OnPropertyChanged(nameof(CanEditWorkflowCanvas));
+        System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+    }
     /// <summary>实际编辑入口共用：运行、参数窗口和方案切换/关闭准备均阻止图修改。</summary>
     public bool CanEditWorkflowCanvas
     {

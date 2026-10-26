@@ -31,6 +31,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private MainWindowViewModel _viewModel = null!;
         private bool _isTabItemClick;  // 标记是否是通过点击TabItem触发的切换
         private WorkflowCanvasControl? _currentWorkflowCanvas;  // 当前显示的WorkflowCanvasControl
+        private (string Workflow,string Node)? _openSubroutineDebugIdentity;
         private Window? _openSubroutineDebugWindow;  // 子程序调试窗口单例跟踪
         private ScrollViewer? _canvasScrollViewer;  // 当前工作流的画布 ScrollViewer（用于视口框 1:1 同步与跳转）
 
@@ -660,13 +661,16 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             string nodeDispName,
             SubroutineParameters parameters)
         {
-            // 单例管理：如果同一子程序的调试窗口已打开，激活并返回
+            var identity=(subroutineId,nodeId);
             if (_openSubroutineDebugWindow?.IsLoaded == true)
             {
-                _openSubroutineDebugWindow.Activate();
-                _openSubroutineDebugWindow.Focus();
-                return;
+                if (_openSubroutineDebugIdentity == identity)
+                { _openSubroutineDebugWindow.Activate(); _openSubroutineDebugWindow.Focus(); return; }
+                var previous=_openSubroutineDebugWindow;
+                previous.Close();
+                if (previous.IsLoaded) { previous.Activate();return; }
             }
+            if (_viewModel?.CanEditWorkflowCanvas != true) return;
             // 1. 找到父工作流 ID
             var parentWorkflowId = FindParentWorkflowId(subroutineId);
             // 2. 父工作流作用域查询服务 → 输入绑定
@@ -708,9 +712,15 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 nodeId, queryService, parameters, internalSources, onOutputsChanged);
             debugWindow.Title = nodeDispName;
             // 单例跟踪：关闭时清理引用
-            debugWindow.Closed += (s, e) => _openSubroutineDebugWindow = null;
-            _openSubroutineDebugWindow = debugWindow;
-            debugWindow.Show();
+            debugWindow.Closed += (s, e) =>
+            {
+                if(ReferenceEquals(_openSubroutineDebugWindow,debugWindow))
+                { _openSubroutineDebugWindow=null;_openSubroutineDebugIdentity=null; }
+            };
+            _openSubroutineDebugWindow = debugWindow;_openSubroutineDebugIdentity=identity;
+            var registration=_viewModel.TrackParameterWindow(debugWindow);
+            try { debugWindow.Show(); }
+            catch { registration.Dispose();_openSubroutineDebugWindow=null;_openSubroutineDebugIdentity=null;throw; }
         }
 
         /// <summary>

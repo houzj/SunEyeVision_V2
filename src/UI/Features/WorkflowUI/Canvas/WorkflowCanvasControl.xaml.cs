@@ -2862,12 +2862,16 @@ _viewModel.SelectedNode = targetNode;
         private void SubroutineNodeSettings_Click(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
-            if (!CanEditVmCanvas) return;
+            var canEdit=CanEditVmCanvas;
+            if (!canEdit && _viewModel?.IsDebugWindowOpen != true) return;
 
             if (sender is FrameworkElement element && element.DataContext is WorkflowNode node)
             {
-                node.IsSelected = true;
-                if (_viewModel != null) _viewModel.SelectedNode = node;
+                if(canEdit)
+                {
+                    node.IsSelected = true;
+                    if (_viewModel != null) _viewModel.SelectedNode = node;
+                }
                 var mainWindow = Window.GetWindow(this) as MainWindow;
                 if (mainWindow != null)
                 {

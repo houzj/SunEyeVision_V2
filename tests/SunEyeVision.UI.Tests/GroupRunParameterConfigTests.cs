@@ -306,7 +306,7 @@ public sealed class GroupRunParameterConfigTests
     [Fact]
     public void File_save_reopen_preserves_Group_metadata_and_all_related_values_and_rejects_invalid_draft_before_rewrite()
     {
-        using var f=new Fixture();var root=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")??throw new InvalidOperationException("Missing test root"),"group-file",Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);
+        using var f=new Fixture(configure:flow=>{var output=(ProtocolParseParameters)flow.Nodes.Single(n=>n.Id=="a").Parameters;output.Outputs[0].Name="Value";output.Outputs[0].DataType="float";output.InputText="7";});var root=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")??throw new InvalidOperationException("Missing test root"),"group-file",Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);
         SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.RegisterTool(typeof(ProtocolParseTool));
         var hostRoot=typeof(GroupRunParameterConfigTests).Assembly.GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
         var plugin=System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(hostRoot,"plugins","SunEyeVision.Tool.Subroutine","SunEyeVision.Tool.Subroutine.dll"));
@@ -314,22 +314,41 @@ public sealed class GroupRunParameterConfigTests
         // Persistence fixture: register the actual two required tools. Full release admission
         // is tested by the real Release executable; never pretend tests/bin is a release root.
         SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginLoader.MarkAsLoaded();
+        var producer=(ProtocolParseParameters)f.Child.Nodes.Single(n=>n.Id=="a").Parameters;
         var manager=new SolutionManager(Path.Combine(root,"solutions"),Path.Combine(root,"settings.json"),Path.Combine(root,"recovery"),root);manager.SetCurrentSolution(f.Model,registerInCatalog:false);
         var session=manager.Session!;
         using var context=new ProductionEditorContext(session.Editing.Host,f.Parent.Id,f.Group,()=>ReferenceEquals(manager.Session,session),_=>{},documentEdits:session.Editing,
             allowRelated:(id,node)=>WorkflowOwnership.IsInternalNode(f.Model,f.Child,f.Parent.Id,id,node));
         var editor=new GroupRunParameterSession(context,f.Model,(id,node)=>WorkflowOwnership.IsInternalNode(f.Model,f.Child,f.Parent.Id,id,node));
         var group=editor.AddGroup();group.Name="通信";var source=editor.Available().Single(s=>s.Target.NodeId=="a"&&s.Target.PropertyName==nameof(ProtocolParseParameters.Separator));var item=editor.Add(group,source);editor.AddTarget(item,editor.Available().Single(s=>s.Target.NodeId=="b"&&s.Target.PropertyName==nameof(ProtocolParseParameters.Separator)));editor.Write(item,";");
+        var fieldId=producer.Outputs[0].FieldId;var fieldKey=producer.Outputs[0].OutputDefinition().BindingKey;
+        var display=new SubroutineDisplayItem{DisplayName="数值",DisplayType=SubroutineDisplayType.Text,TextStyle=new(),BindingSource="a."+fieldKey,IsAccumulated=true,
+            BoundDataSource=new(){SourceWorkflowId="child",SourceNodeId="a",SourceFieldId=fieldId,PropertyName=fieldKey,PropertyType=typeof(double),VariableType="Double"}};
+        display.GraphicsStyle.LineWidth=5;display.GraphicsStyle.Opacity=0.6;
+        ((SubroutineParameters)context.DraftNode.Parameters).DisplayConfigs.Add(display);
+        ((SubroutineParameters)context.DraftNode.Parameters).DisplayConfigs.Add(new(){DisplayName="圆弧",DisplayType=SubroutineDisplayType.Arc});
         EventHandler<Solution> prepare=(_,_)=>session.Editing.AcceptAll();manager.SolutionSaving+=prepare;
         var path=Path.Combine(root,"group.solution");var result=manager.SaveCurrentDocument(path);Assert.True(result.FileWritten,result.Error);Assert.False(manager.HasUnsavedChanges);
-        var bytes=File.ReadAllBytes(path);((SubroutineParameters)context.DraftNode.Parameters).RunParameterGroups[0].Name="";
+        var bytes=File.ReadAllBytes(path);
+        var invalidDisplay=((SubroutineParameters)context.DraftNode.Parameters).DisplayConfigs[0];invalidDisplay.DisplayName="";
+        Assert.False(manager.SaveCurrentDocument(path).FileWritten);Assert.Equal(bytes,File.ReadAllBytes(path));invalidDisplay.DisplayName="数值";
+        ((SubroutineParameters)context.DraftNode.Parameters).RunParameterGroups[0].Name="";
         Assert.False(manager.SaveCurrentDocument(path).FileWritten);Assert.Equal(bytes,File.ReadAllBytes(path));
         manager.SolutionSaving-=prepare;manager.CloseSolution(saveChanges:false);
         var reader=new SolutionManager(Path.Combine(root,"reader-solutions"),Path.Combine(root,"reader-settings.json"),Path.Combine(root,"reader-recovery"),root);
         var reopened=reader.OpenSolution(path)!;Assert.NotNull(reopened);Assert.NotSame(f.Model,reopened);
         var saved=(SubroutineParameters)reopened.Workflows.Single(w=>w.Id=="parent").Nodes.Single().Parameters;
+        Assert.Equal(2,saved.DisplayConfigs.Count);Assert.Equal(typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Arc2d[]),saved.DisplayConfigs.Single(d=>d.DisplayType==SubroutineDisplayType.Arc).ParamType);var restoredDisplay=saved.DisplayConfigs.Single(d=>d.DisplayType==SubroutineDisplayType.Text);Assert.Equal(display.FieldId,restoredDisplay.FieldId);Assert.Equal(SubroutineDisplayType.Text,restoredDisplay.DisplayType);Assert.Equal("a."+fieldKey,restoredDisplay.BindingSource);Assert.True(restoredDisplay.IsAccumulated);
+        Assert.Equal("child",restoredDisplay.BoundDataSource!.SourceWorkflowId);Assert.Equal("a",restoredDisplay.BoundDataSource.SourceNodeId);Assert.Equal(fieldId,restoredDisplay.BoundDataSource.SourceFieldId);Assert.Equal(typeof(double),restoredDisplay.BoundDataSource.PropertyType);Assert.Null(restoredDisplay.BoundDataSource.CurrentValue);
+        Assert.NotSame(display.GraphicsStyle,restoredDisplay.GraphicsStyle);Assert.Equal(5,restoredDisplay.GraphicsStyle.LineWidth);Assert.Equal(0.6,restoredDisplay.GraphicsStyle.Opacity);
         var alias=Assert.Single(Assert.Single(saved.RunParameterGroups).Parameters);Assert.Equal(item.Id,alias.Id);Assert.Equal(2,alias.Targets.Count);Assert.Equal("ProtocolParse",alias.SourceToolType);Assert.Equal(nameof(ProtocolParseParameters.Separator),alias.SourceParameterName);
-        Assert.All(reopened.Workflows.Single(w=>w.Id=="child").Nodes,n=>Assert.Equal(";",((ProtocolParseParameters)n.Parameters).Separator));reader.CloseSolution(saveChanges:false);
+        Assert.All(reopened.Workflows.Single(w=>w.Id=="child").Nodes,n=>Assert.Equal(";",((ProtocolParseParameters)n.Parameters).Separator));
+        var actualChild=new ProtocolParseTool().Run((ProtocolParseParameters)reopened.Workflows.Single(w=>w.Id=="child").Nodes.Single(n=>n.Id=="a").Parameters);Assert.True(actualChild.IsSuccess,actualChild.ErrorMessage);
+        saved.ExecuteSubWorkflowAsync=(_,_,_)=>System.Threading.Tasks.Task.FromResult(new SunEyeVision.Plugin.SDK.Execution.Results.ExecutionResult{Success=true,NodeResults=new Dictionary<string,SunEyeVision.Plugin.SDK.Execution.Results.NodeExecutionResult>{["a"]=new(){Result=actualChild}}});
+        var actualGroup=(SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)plugin.GetType("SunEyeVision.Tool.Subroutine.SubroutineTool",true)!.GetMethod("Run",new[]{typeof(SubroutineParameters)})!.Invoke(Activator.CreateInstance(plugin.GetType("SunEyeVision.Tool.Subroutine.SubroutineTool",true)!),new object[]{saved})!;
+        try{Assert.True(actualGroup.IsSuccess,actualGroup.ErrorMessage);var text=Assert.IsType<SunEyeVision.Plugin.SDK.Models.Visualization.TextDisplayItem>(Assert.Single(actualGroup.Display.Items));Assert.Equal("7",Assert.Single(text.Texts).Content);}
+        finally{actualGroup.Resources?.Dispose();actualChild.Resources?.Dispose();reader.CloseSolution(saveChanges:false);}
+
     }
     private static IEnumerable<T> Visual<T>(DependencyObject root) where T:DependencyObject
     {for(var i=0;i<VisualTreeHelper.GetChildrenCount(root);i++){var child=VisualTreeHelper.GetChild(root,i);if(child is T value)yield return value;foreach(var nested in Visual<T>(child))yield return nested;}}

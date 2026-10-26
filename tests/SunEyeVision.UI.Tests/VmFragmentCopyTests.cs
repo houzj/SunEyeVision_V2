@@ -153,4 +153,19 @@ public sealed class VmFragmentCopyTests
         Assert.Empty(Copy(root,new[]{"b"}).Connections);
     }
 
+    [Fact]
+    public void Owned_Group_display_binding_keeps_field_identity_but_remaps_scope_and_detaches_style()
+    {
+        var child=new Flow("child","child"){IsSubroutine=true};child.Nodes.Add(Make("inside"));
+        var field=Guid.NewGuid();var p=new SubroutineParameters{SubroutineId="child"};
+        var display=new SubroutineDisplayItem{DisplayName="圆弧",DisplayType=SubroutineDisplayType.Arc,BindingSource="inside.Arcs[]",IsAccumulated=true,
+            BoundDataSource=new(){SourceNodeId="inside",SourceWorkflowId="child",SourceFieldId=field,PropertyName="Arcs",PropertyType=typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Arc2d[]),VariableType="Arc"}};
+        display.GraphicsStyle.LineWidth=7;display.GraphicsStyle.Opacity=0.4;p.DisplayConfigs.Add(display);
+        var owner=Make("owner",p);owner.SubroutineId=child.Id;var root=new Flow("parent","root");root.Nodes.Add(owner);
+        var copied=Copy(root,new[]{"owner"},child);var inside=Assert.Single(copied.OwnedWorkflows);var candidate=Assert.IsType<SubroutineParameters>(Assert.Single(copied.Nodes).Parameters);var item=Assert.Single(candidate.DisplayConfigs);
+        Assert.Equal(inside.Id,item.BoundDataSource!.SourceWorkflowId);Assert.Equal(inside.Nodes[0].Id,item.BoundDataSource.SourceNodeId);Assert.Equal(inside.Nodes[0].Id+".Arcs[]",item.BindingSource);Assert.Equal(field,item.BoundDataSource.SourceFieldId);Assert.Equal(typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Arc2d[]),item.BoundDataSource.PropertyType);
+        Assert.True(item.IsAccumulated);Assert.NotSame(display,item);Assert.NotSame(display.BoundDataSource,item.BoundDataSource);Assert.NotSame(display.GraphicsStyle,item.GraphicsStyle);Assert.Equal(7,item.GraphicsStyle.LineWidth);Assert.Equal(0.4,item.GraphicsStyle.Opacity);
+        item.GraphicsStyle.LineWidth=2;Assert.Equal(7,display.GraphicsStyle.LineWidth);Assert.Equal("child",display.BoundDataSource!.SourceWorkflowId);Assert.Equal("inside.Arcs[]",display.BindingSource);
+    }
+
 }

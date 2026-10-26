@@ -2287,6 +2287,7 @@ SplitterPosition = position;
         /// </summary>
         public void AddNodeToWorkflow(WorkflowNodeBase node)
         {
+            if (!CanEditWorkflowCanvas) throw new InvalidOperationException("当前画布不可编辑，已取消添加节点。");
             if (WorkflowTabViewModel.SelectedTab == null)
                 return;
 

@@ -76,6 +76,7 @@ public partial class WorkflowCanvasControl
     private void CancelVmCanvasGesture()
     {
         // 清状态先于释放捕获，防止 LostMouseCapture 重入。
+        CancelVmNodeRename();
         CancelVmNodeMove();
         _isPanning = false; _isBoxSelecting = false; _isDraggingConnection = false;
         _dragConnectionSourceNode = null; _dragConnectionSourcePort = null;

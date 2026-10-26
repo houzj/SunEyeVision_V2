@@ -530,27 +530,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         }
 
         /// <summary>
-        /// 释放节点的局部序号到空洞池（节点重命名时使用）
-        /// </summary>
-        public void ReleaseNodeLocalIndex(WorkflowNodeBase node)
-        {
-            if (node == null || node.LocalIndex < 0)
-                return;
-
-            // ★ 用 CurrentWorkflowId 而非 Id：与创建节点(CreateNode)的归属工作流保持一致，
-            //   确保子程序内节点重命名释放的序号进入正确的子程序上下文，不污染主工作流空洞池。
-            _sequenceManager.ReleaseLocalIndex(CurrentWorkflowId, node.ToolType ?? string.Empty, node.LocalIndex);
-
-            VisionLogger.Instance.Log(
-                LogLevel.Info,
-                $"节点重命名，释放局部序号: {node.LocalIndex}, 节点ID: {node.Id}",
-                "WorkflowTabViewModel"
-            );
-
-            node.LocalIndex = -1;
-        }
-
-        /// <summary>
         /// 重置节点序号
         /// </summary>
         public void ResetNodeSequences()

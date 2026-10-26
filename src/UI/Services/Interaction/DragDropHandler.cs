@@ -260,6 +260,8 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
 #if DEBUG
                 LogTimestamp("Drop", "▶ 调用 WorkflowTabViewModel.CreateNode...");
 #endif
+                var viewModel = GetOwningViewModel();
+                if (!viewModel.CanEditWorkflowCanvas) return;
                 var newNode = workflowTab.CreateNode(item.ToolId, item.Name);
 #if DEBUG
                 LogTimestamp("Drop", $"✓ 节点创建完成: Id={newNode.Id}, Name={newNode.Name}");
@@ -279,7 +281,6 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
 #if DEBUG
                 LogTimestamp("Drop", "▶ 添加节点到集合...");
 #endif
-                var viewModel = GetOwningViewModel();
                 // 统一管道：节点添加必须经 AddNodeToWorkflow（日志/命令/绑定/预编译）。
                 // viewModel 由 GetCachedViewModel 保证非 null（失败即抛异常，无回退分支）。
                 using (var transaction = workflowTab.CommandManager.BeginTransaction())

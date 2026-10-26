@@ -488,27 +488,6 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
-        /// 确认重命名
-        /// </summary>
-        public bool ConfirmRename()
-        {
-            var trimmed = RenameBuffer?.Trim();
-            if (string.IsNullOrEmpty(trimmed))
-            {
-                // 名称为空时不关闭编辑框，让用户继续输入
-                return false;
-            }
-
-            if (DispName != trimmed)
-            {
-                DispName = trimmed;
-                Name = $"{GlobalIndex} {trimmed}";
-            }
-            IsEditingName = false;
-            return true;
-        }
-
-        /// <summary>
         /// 取消重命名
         /// </summary>
         public void CancelRename()

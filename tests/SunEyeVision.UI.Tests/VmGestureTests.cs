@@ -315,6 +315,15 @@ public sealed class VmGestureTests
         control.DataContext=null;Assert.Null(Field(control,"_vmSelectedWirePath"));Assert.False(tab.WorkflowConnections.Single().IsSelected);
     });
 
+    [Fact] public void Rename_session_rejects_nested_config_change_and_switching_owner_cancels_editor() => Sta(() =>
+    {
+        var control=Create(out var node);node.Parameters=new VmFragmentCopyTests.Parameters{Values=new(){1}};
+        Assert.True((bool)Call(control,"BeginVmNodeRename",node)!);Assert.True(node.IsEditingName);
+        Assert.True((bool)Call(control,"ValidVmNodeRename",node)!);
+        ((VmFragmentCopyTests.Parameters)node.Parameters).Values.Add(2);Assert.False((bool)Call(control,"ValidVmNodeRename",node)!);
+        control.DataContext=null;Assert.False(node.IsEditingName);Assert.Null(Field(control,"_vmRenameNode"));
+    });
+
 }
 [CollectionDefinition("VM canvas UI", DisableParallelization = true)]
 public sealed class VmCanvasUiCollection { }

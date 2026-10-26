@@ -39,4 +39,15 @@ public partial class MainWindowViewModel
         return true;
     }
 
+    public bool RenameCanvasNode(WorkflowNodeBase node,string name)
+    {
+        var tab=WorkflowTabViewModel?.SelectedTab;
+        if(!CanEditWorkflowCanvas||tab==null||!tab.WorkflowNodes.Contains(node))return false;
+        var trimmed=name.Trim();if(trimmed.Length==0||trimmed.Length>64)return false;
+        if(node.DispName==trimmed)return true;
+        var child=string.Equals(node.ToolType,"Subroutine",StringComparison.OrdinalIgnoreCase)&&!string.IsNullOrEmpty(node.SubroutineId)?_workflowEngine.GetWorkflowById(node.SubroutineId):null;
+        tab.CommandManager.Execute(new RenameCanvasNodeCommand(node,trimmed,child,()=>{BuildFlatRows();ToolEditorCommit.RefreshCommittedBindings();}));
+        return true;
+    }
+
 }

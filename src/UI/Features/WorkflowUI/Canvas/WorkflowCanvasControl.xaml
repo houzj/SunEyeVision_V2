@@ -297,7 +297,7 @@
                                             </Style>
                                         </TextBlock.Style>
                                     </TextBlock>
-                                    <TextBox Text="{Binding RenameBuffer, UpdateSourceTrigger=PropertyChanged}"
+                                    <TextBox MaxLength="64" Text="{Binding RenameBuffer, UpdateSourceTrigger=PropertyChanged}"
                                              Background="White"
                                              BorderBrush="#FF6600"
                                              BorderThickness="1"

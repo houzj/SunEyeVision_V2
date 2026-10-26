@@ -924,35 +924,17 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void CanvasScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (_viewModel.WorkflowTabViewModel.SelectedTab == null)
-                return;
-            var workflow = _viewModel.WorkflowTabViewModel.SelectedTab;
-            // 直接使用滚轮进行缩放（不要求Ctrl键）
-            e.Handled = true;
-            // sender 就是 ScrollViewer
-            if (sender is not ScrollViewer scrollViewer)
-                return;
-            // 获取鼠标位置
-            var mousePositionInScrollViewer = e.GetPosition(scrollViewer);
-            if (e.Delta > 0)
+            var tab = _viewModel.WorkflowTabViewModel.SelectedTab;
+            if (tab == null || sender is not ScrollViewer viewer) return;
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
             {
-                // 向上滚动，放大（每次 +10%，线性步进）
-                if (workflow.CurrentScale < MaxScale)
-                {
-                    var oldScale = workflow.CurrentScale;
-                    var newScale = Math.Min(Math.Round(oldScale + 0.1, 1), MaxScale);
-                    ApplyZoom(oldScale, newScale, mousePositionInScrollViewer, scrollViewer); // 鼠标位置作为缩放中心
-                }
+                if (e.Delta < 0) viewer.LineRight(); else if (e.Delta > 0) viewer.LineLeft();
+                e.Handled = true;
             }
-            else
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
             {
-                // 向下滚动，缩小（每次 -10%，线性步进）
-                if (workflow.CurrentScale > MinScale)
-                {
-                    var oldScale = workflow.CurrentScale;
-                    var newScale = Math.Max(Math.Round(oldScale - 0.1, 1), MinScale);
-                    ApplyZoom(oldScale, newScale, mousePositionInScrollViewer, scrollViewer); // 鼠标位置作为缩放中心
-                }
+                var next = Math.Clamp(Math.Round(tab.CurrentScale + (e.Delta > 0 ? .1 : e.Delta < 0 ? -.1 : 0), 1), MinScale, MaxScale);
+                ApplyZoom(tab.CurrentScale, next, e.GetPosition(viewer), viewer);
             }
         }
 
@@ -1255,7 +1237,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 var center=new Point(point.X/MiniMapWidth*CanvasSize*tab.CurrentScale-viewer.HorizontalOffset,
                     point.Y/MiniMapHeight*CanvasSize*tab.CurrentScale-viewer.VerticalOffset);
                 ApplyZoom(tab.CurrentScale,Math.Clamp(tab.CurrentScale+(e.Delta>0?.1:e.Delta<0?-.1:0),MinScale,MaxScale),center,viewer);
-                e.Handled=true;
             }
         }
         private Point _miniMapPointerStart,_miniMapRegionStart;

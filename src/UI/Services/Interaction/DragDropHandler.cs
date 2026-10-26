@@ -37,9 +37,7 @@ namespace SunEyeVision.UI.Services.Interaction
         private WorkflowTabControlViewModel? _tabViewModel;
 
         // 缓存 ViewModel 引用，避免每次通过 Application.Current 获取（回退方案）
-        private static MainWindowViewModel? _cachedViewModel;
-        private static DateTime _viewModelCacheTime = DateTime.MinValue;
-        private static readonly TimeSpan _cacheExpiry = TimeSpan.FromSeconds(30);
+
 
         // 临时拖拽节点（拖拽工具箱工具时跟随鼠标的视觉元素，完全复刻真实节点外观）
         private Border? _tempDragNode;
@@ -71,40 +69,8 @@ namespace SunEyeVision.UI.Services.Interaction
         /// <summary>
         /// 获取缓存的 MainWindowViewModel（带过期时间）
         /// </summary>
-        private static MainWindowViewModel? GetCachedViewModel()
-        {
-            // 检查缓存是否有效
-            if (_cachedViewModel != null && (DateTime.Now - _viewModelCacheTime) < _cacheExpiry)
-            {
-                return _cachedViewModel;
-            }
-
-            // 重新获取并缓存：遍历所有窗口找 MainWindow（比 Application.Current.MainWindow
-            // 更可靠，规避多窗口/时序场景下 MainWindow 属性为 null 或指向非主窗口的问题）。
-            if (Application.Current != null)
-            {
-                foreach (var window in Application.Current.Windows)
-                {
-                    if (window is MainWindow mainWindow
-                        && mainWindow.DataContext is MainWindowViewModel vm)
-                    {
-                        _cachedViewModel = vm;
-                        _viewModelCacheTime = DateTime.Now;
-                        break;
-                    }
-                }
-            }
-
-            // 根因显性化（rule-015 不静默回退）：获取失败必须暴露，而非让调用方裸操作集合绕过业务管道。
-            // 节点添加必须经 AddNodeToWorkflow 统一处理（日志/命令/绑定/预编译），缓存失败即报错。
-            if (_cachedViewModel == null)
-            {
-                throw new InvalidOperationException(
-                    "无法获取 MainWindowViewModel，节点添加无法走统一管道。应修复 ViewModel 获取逻辑，而非回退裸操作集合。");
-            }
-
-            return _cachedViewModel;
-        }
+        private MainWindowViewModel GetOwningViewModel() => Window.GetWindow(_canvasControl)?.DataContext as MainWindowViewModel
+            ?? throw new InvalidOperationException("当前画布没有有效宿主窗口。");
 
         public WorkflowDragDropHandler(
             WorkflowCanvasControl canvasControl)
@@ -135,6 +101,8 @@ namespace SunEyeVision.UI.Services.Interaction
         private void UpdateTempNodePosition(Point position)
         {
             position=SnapVmPoint(position);
+            _canvasControl.UpdateVmPlacementFeedback(position, _tempNodeHeight);
+            _canvasControl.UpdateVmInsertionWire(position, Array.Empty<string>());
             if (_tempDragNode != null)
             {
                 ControlsCanvas.SetLeft(_tempDragNode, position.X - _tempNodeWidth / 2);
@@ -205,6 +173,7 @@ namespace SunEyeVision.UI.Services.Interaction
         public void Canvas_DragLeave(object sender, DragEventArgs e)
         {
             HideTempNode();
+            _canvasControl.ClearVmPlacementFeedback(); _canvasControl.ClearVmInsertionWire();
             e.Handled = true;
         }
 
@@ -223,7 +192,7 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
             try
             {
                 // 隐藏临时节点（即将创建真正的节点）
-                HideTempNode();
+                // 落点处理结束后统一清理幽灵与热区。
 
                 // 检查 sender
                 if (sender is not System.Windows.Controls.Canvas canvas)
@@ -297,7 +266,11 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
 #endif
 
                 // 应用边界限制（使用新的统一方法，默认策略为 Both - 画布和视口都限制）
-                newNode.Position = CanvasHelper.ClampNodeToBounds(newNode, SnapVmPoint(dropPosition), canvas);
+                _canvasControl.UpdateVmPlacementFeedback(SnapVmPoint(dropPosition), _tempNodeHeight);
+                var insertion = _canvasControl.FindVmInsertionWire(dropPosition, Array.Empty<string>());
+                var predecessor = insertion == null ? _canvasControl.VmAvailableHotPredecessor() : null;
+                var placement = _canvasControl.ResolveVmPlacement(SnapVmPoint(dropPosition), _tempNodeHeight);
+                newNode.Position = new Point(Math.Clamp(placement.X, 55, 4945), Math.Clamp(placement.Y, 15, 4985));
 #if DEBUG
                 LogTimestamp("Drop", "✓ 节点属性设置完成");
 #endif
@@ -306,10 +279,25 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
 #if DEBUG
                 LogTimestamp("Drop", "▶ 添加节点到集合...");
 #endif
-                var viewModel = GetCachedViewModel();
+                var viewModel = GetOwningViewModel();
                 // 统一管道：节点添加必须经 AddNodeToWorkflow（日志/命令/绑定/预编译）。
                 // viewModel 由 GetCachedViewModel 保证非 null（失败即抛异常，无回退分支）。
-                viewModel.AddNodeToWorkflow(newNode);
+                using (var transaction = workflowTab.CommandManager.BeginTransaction())
+                {
+                    viewModel.AddNodeToWorkflow(newNode);
+                    if (insertion != null)
+                    {
+                        if (!viewModel.InsertNodeIntoConnection(newNode, insertion, newNode.Position))
+                            throw new InvalidOperationException(viewModel.StatusText);
+                    }
+                    else if (predecessor != null)
+                    {
+                        var link = new SunEyeVision.Workflow.WorkflowConnection(Guid.NewGuid().ToString("N"), predecessor, newNode.Id)
+                        { SourcePort = "BottomPort", TargetPort = "TopPort" };
+                        viewModel.AddConnectionToWorkflow(link);
+                    }
+                    transaction.Complete();
+                }
 #if DEBUG
                 LogTimestamp("Drop", $"✓ 节点已添加, 当前节点数: {workflowTab.WorkflowNodes.Count}");
                 LogTimestamp("Drop", "═══ 节点添加完成 ═══");
@@ -323,59 +311,13 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
                 ThemeMessageDialog.Show($"拖放节点失败: {ex.Message}\n\n类型: {ex.GetType().Name}", "错误",
                     MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
+            finally { HideTempNode(); _canvasControl.ClearVmPlacementFeedback(); _canvasControl.ClearVmInsertionWire(); }
         }
 
         /// <summary>
         /// 获取当前选中的工作流 Tab（优先使用直接引用）
         /// </summary>
-        private WorkflowTabViewModel? GetCurrentWorkflowTab()
-        {
-            try
-            {
-                // 优先使用直接引用（O(1) 访问）
-                if (_tabViewModel != null)
-                {
-                    var selectedTab = _tabViewModel.SelectedTab;
-                    if (selectedTab != null)
-                    {
-#if DEBUG
-                        LogTimestamp("GetTab", $"✓ 通过直接引用获取成功: {selectedTab.Name}");
-#endif
-                        return selectedTab;
-                    }
-                }
+        private WorkflowTabViewModel? GetCurrentWorkflowTab() => _canvasControl.CurrentWorkflowTab;
 
-                // 回退：使用缓存方式
-                var viewModel = GetCachedViewModel();
-                if (viewModel == null)
-                {
-#if DEBUG
-                    LogTimestamp("GetTab", "✗ 缓存的 ViewModel 为 null");
-#endif
-                    return null;
-                }
-
-                var tab = viewModel.WorkflowTabViewModel?.SelectedTab;
-                if (tab != null)
-                {
-#if DEBUG
-                    LogTimestamp("GetTab", $"✓ 通过缓存获取成功: {tab.Name}");
-#endif
-                    return tab;
-                }
-
-#if DEBUG
-                LogTimestamp("GetTab", "✗ SelectedTab 为 null");
-#endif
-                return null;
-            }
-            catch (Exception ex)
-            {
-#if DEBUG
-                LogTimestamp("GetTab", $"✗ 异常: {ex.Message}");
-#endif
-                return null;
-            }
-        }
     }
 }

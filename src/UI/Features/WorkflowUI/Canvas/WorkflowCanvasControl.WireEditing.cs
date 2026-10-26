@@ -15,7 +15,8 @@ public partial class WorkflowCanvasControl
     private Point[]? _vmBeforePath,_vmOriginalRendered;
     private Window? _vmWireWindow;
     private object? _vmWireOwner;
-    private bool CanEditVmWire=>IsEnabled&&_viewModel?.IsRunning!=true;
+    private bool CanEditVmCanvas => IsEnabled && _viewModel?.IsRunning != true && _viewModel?.IsDebugWindowOpen != true;
+    private bool CanEditVmWire => CanEditVmCanvas;
     private void InitializeVmWireEditing()
     {
         WorkflowCanvas.PreviewMouseMove+=VmWireMove;

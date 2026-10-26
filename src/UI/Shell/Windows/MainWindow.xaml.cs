@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -220,9 +221,9 @@ namespace SunEyeVision.UI.Shell.Windows
             InputBindings.Add(new KeyBinding(_viewModel.ShowHelpCommand, Key.F1, ModifierKeys.None));
             InputBindings.Add(new KeyBinding(new PauseCommandWrapper(_viewModel.PauseCommand), Key.Pause, ModifierKeys.None));
             // 编辑快捷键
-            InputBindings.Add(new KeyBinding(new UndoCommandWrapper(_viewModel.UndoCommand), Key.Z, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(new RedoCommandWrapper(_viewModel.RedoCommand), Key.Y, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(_viewModel.DeleteSelectedNodesCommand, Key.Delete, ModifierKeys.None));
+            InputBindings.Add(new KeyBinding(new CanvasEditCommandWrapper(_viewModel.UndoCommand), Key.Z, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(new CanvasEditCommandWrapper(_viewModel.RedoCommand), Key.Y, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(new CanvasEditCommandWrapper(_viewModel.DeleteSelectedNodesCommand), Key.Delete, ModifierKeys.None));
         }
         #region 窗口事件
         /// <summary>
@@ -568,39 +569,32 @@ if (DataContext is MainWindowViewModel viewModel)
                 _command?.Execute(parameter);
             }
         }
-        private class UndoCommandWrapper : ICommand
+        private sealed class CanvasEditCommandWrapper : ICommand
         {
             private readonly ICommand? _command;
-            public UndoCommandWrapper(ICommand? command)
+            public CanvasEditCommandWrapper(ICommand? command) => _command = command;
+            public event EventHandler? CanExecuteChanged
             {
-                _command = command;
+                add { if (_command != null) _command.CanExecuteChanged += value; }
+                remove { if (_command != null) _command.CanExecuteChanged -= value; }
             }
-            public event EventHandler? CanExecuteChanged;
             public bool CanExecute(object? parameter)
             {
-                return _command?.CanExecute(parameter) ?? false;
+                var focus = Keyboard.FocusedElement as DependencyObject;
+                while (focus != null)
+                {
+                    if (focus is System.Windows.Controls.Primitives.TextBoxBase || focus is ComboBox || focus is PasswordBox) return false;
+                    if (focus is SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl canvas)
+                    {
+                        var vm = Window.GetWindow(canvas)?.DataContext as MainWindowViewModel;
+                        return canvas.IsEnabled && vm?.IsRunning != true && vm?.IsDebugWindowOpen != true && _command?.CanExecute(parameter) == true;
+                    }
+                    focus = focus is Visual || focus is System.Windows.Media.Media3D.Visual3D
+                        ? VisualTreeHelper.GetParent(focus) : LogicalTreeHelper.GetParent(focus);
+                }
+                return false;
             }
-            public void Execute(object? parameter)
-            {
-                _command?.Execute(parameter);
-            }
-        }
-        private class RedoCommandWrapper : ICommand
-        {
-            private readonly ICommand? _command;
-            public RedoCommandWrapper(ICommand? command)
-            {
-                _command = command;
-            }
-            public event EventHandler? CanExecuteChanged;
-            public bool CanExecute(object? parameter)
-            {
-                return _command?.CanExecute(parameter) ?? false;
-            }
-            public void Execute(object? parameter)
-            {
-                _command?.Execute(parameter);
-            }
+            public void Execute(object? parameter) { if (CanExecute(parameter)) _command?.Execute(parameter); }
         }
         #endregion
 

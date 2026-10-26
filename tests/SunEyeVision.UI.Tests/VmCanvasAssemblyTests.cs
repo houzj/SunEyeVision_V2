@@ -11,6 +11,7 @@ using Xunit;
 using NodeBase=SunEyeVision.Workflow.WorkflowNodeBase;
 using Connection=SunEyeVision.Workflow.WorkflowConnection;
 namespace SunEyeVision.UI.Tests;
+[Collection("VM canvas UI")]
 public sealed class VmCanvasAssemblyTests
 {
     private static IEnumerable<SunEyeVision.UI.Services.Rendering.VmExecutionPort> VisualPorts(DependencyObject parent)

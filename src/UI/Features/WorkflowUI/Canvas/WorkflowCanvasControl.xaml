@@ -213,7 +213,10 @@
                     <Border Width="{DynamicResource HitAreaWidth}" Height="{DynamicResource HitAreaHeight}"
                             Background="Transparent"
                             Tag="{Binding}"
-                            x:Name="HitAreaBorder">
+                            x:Name="HitAreaBorder"
+                            MouseLeftButtonDown="Node_MouseLeftButtonDown"
+                            MouseLeftButtonUp="Node_MouseLeftButtonUp"
+                            MouseMove="Node_MouseMove">
                         <Border.ContextMenu>
                             <ContextMenu Background="#FFFFFFFF"
                                          BorderBrush="#FFCCCCCC"
@@ -228,9 +231,9 @@
                                     BorderBrush="{Binding IsSelected, Converter={StaticResource NodeBorderColorConverter}}"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    MouseLeftButtonDown="Node_MouseLeftButtonDown"
-                                    MouseLeftButtonUp="Node_MouseLeftButtonUp"
-                                    MouseMove="Node_MouseMove"
+
+
+
                                     Tag="{Binding}"
                                     x:Name="NodeBorder">
                                 <Border.Background>

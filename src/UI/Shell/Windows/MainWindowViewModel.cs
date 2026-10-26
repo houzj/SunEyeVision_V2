@@ -2374,6 +2374,28 @@ SplitterPosition = position;
         /// <summary>
         /// 添加连接到当前工作流（通过命令模式，支持连线覆盖）
         /// </summary>
+        public bool InsertNodeIntoConnection(WorkflowNode inserted, WorkflowConnection original, Point position)
+        {
+            var tab = WorkflowTabViewModel.SelectedTab;
+            if (tab == null || IsRunning || IsDebugWindowOpen || !tab.WorkflowNodes.Contains(inserted)) return false;
+            var definition = _workflowDefinitions.GetRequired(tab.CurrentWorkflowId);
+            if (!ReferenceEquals(tab.WorkflowConnections, definition.Connections) || !ReferenceEquals(tab.WorkflowNodes, definition.Nodes))
+                throw new InvalidOperationException("当前画布未绑定工作流定义。");
+            try
+            {
+                AppCommands.InsertNodeIntoConnectionCommand? command = null;
+                command = new AppCommands.InsertNodeIntoConnectionCommand(tab.WorkflowConnections, tab.WorkflowNodes.OfType<WorkflowNode>(),
+                    original, inserted, position, () =>
+                    {
+                        var target = tab.WorkflowNodes.FirstOrDefault(n => n.Id == original.TargetNodeId);
+                        AutoBindImageSourceOnConnectionRemoved(original.SourceNodeId, target, original.Id);
+                        foreach (var edge in command!.AddedConnections) AutoBindImageSourceOnConnectionAdded(edge);
+                    }, () => ForceRefreshImagePreview());
+                tab.CommandManager.Execute(command); return true;
+            }
+            catch (InvalidOperationException error) { StatusText = error.Message; AddLog("插线已取消: " + error.Message); return false; }
+        }
+
         public void AddConnectionToWorkflow(WorkflowConnection connection)
         {
             if (WorkflowTabViewModel.SelectedTab == null)

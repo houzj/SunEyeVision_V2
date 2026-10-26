@@ -14,6 +14,7 @@ public partial class ShellWorkspaceControl
     }
     private void WorkspaceContentChanging(object? sender,EventArgs e)
     {
+        WorkflowSearch.CloseSearch();
         _viewModel?.CloseExecutionSnapshotDetails();
         CaptureWorkspaceView(sender as WorkflowTabViewModel);
         ++_viewRestoreGeneration;_restoringContainerView=true;

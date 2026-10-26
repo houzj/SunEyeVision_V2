@@ -999,13 +999,7 @@ SplitterPosition = position;
         /// </summary>
         private WorkflowContext? CurrentWorkflowContext
         {
-            get
-            {
-                var selectedTab = WorkflowTabViewModel?.SelectedTab;
-                if (selectedTab == null) return null;
-
-                return _workflowContextService.GetOrCreate(selectedTab.Id, selectedTab.Name);
-            }
+            get => ResolveCanvasContext(_workflowContextService, WorkflowTabViewModel?.SelectedTab);
         }
 
         /// <summary>

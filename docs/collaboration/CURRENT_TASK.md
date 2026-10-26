@@ -1,5 +1,7 @@
 ﻿# 独立工作区当前任务：节点样式、交互与连线移植
 
+2026-10-27 工作区搜索批：基线f7b6864c。复用原件SearchDryPopup静态源码/模板及六PNG，接当前或全部根流程名称搜索、100ms延迟、键鼠提交/失焦关闭、逐层Group真实身份导航及ContextIdle居中；切定义/工作区/卸载清理，当前结果上下文按CurrentWorkflowId。286全量0错误/757警告/40.89秒；288专项5通过，289扩大328通过/0失败/25秒；290实际probe退出0/22程序集，三DLL同版及六资源原件SHA见receipt-workflow-search-290.json。四张暗亮WPF组件图已看，287测试事件路由失败和首截图偏移问题保留说明；真实MainVM整窗跳转/视口/属性联动及设计器人工未验，主方案/W03已归并。独立ID搜索/标题注释、W01-W05余项、完整Group和76项继续，092两失败不变，active，不同步主仓。
+
 2026-10-27 耗时单窗生命周期批：基线ffffb369。按原件ShowTimeClick先关旧窗/CurDiagramArea变化关闭，新增Presenter管理实际owned只读Window；Closed退订清DataContext/引用，不释放共享快照；取消关闭拒开第二窗。MainVM切Tab/方案、Shell内容切换/卸载、主窗最终关闭已接清理。273全量0错误/1350警告/90.48秒，274/275专项3通过，首图漏Window背景未认可，275 Window层暗亮重新渲染已看；276扩大UI323通过/0失败/29秒；277实际probe exit0/22程序集，三DLL同版receipt-snapshot-lifetime-277.json。主方案/W04已归并；整窗物理退出链/原厂详情布局/当前Group模块算法选择、W01-W05剩余及Group/76项仍待，092两失败与原厂设计器人工未验不变，active，不同步主仓。
 
 2026-10-27 底栏根流程耗时批：基线0400cc20。实际底栏复用StatusBar正式快照文字/详情命令，明确根流程；修复MainVM用RootId却传Group可见节点的错误，Manager.EnsureRootExecutionSnapshot统一读引擎根定义。269最终全量0错误/755警告/49.85秒（268新测试命名空间编译失败保留）；270专项5及暗亮实际渲染已看，271扩大320通过/0失败/39秒；272实际probe exit0/22程序集，同版SHA receipt-workspace-timing-272.json。原主方案和W04同步；当前Group/模块/算法耗时、原厂图标/详情布局及单窗策略仍待，W01-W05及Group/76项完整范围不缩；092两失败、原厂设计器人工未验不变，active，不同步主仓。

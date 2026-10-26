@@ -2,9 +2,14 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27新Runtime实际调度已有证据，现又接通XML设置字段和可选Wpf编辑创建API，直接编辑唯一强类型模型。工具箱和参数窗口默认入口仍SDK，输入/设置订阅、本地ROI和文档编辑适配尚待接通，最终两工程及M1/M2/M3均未完成。",
-  "summaryStatus": "本批纯Runtime16、设置/组件有无Wpf9/10、Runtime工作流8、原文档事务28、原窗口整链9、发布扰动13通过；最终串行UI/全量0错误。",
+  "current": "2026-10-27中立Runtime调度和XML设置编辑创建API已有证据，本批设置字段订阅、数值转换和临时常量覆盖也进入真实执行与保存重开。默认工具箱/参数窗口、UI来源选择/本地ROI/调试和全局变量仍待接入；旧Blob根SDK工程未删，M1/M2/M3均未完成。",
+  "summaryStatus": "本批新Runtime工作流有无Wpf各10、纯Runtime16、组件9/10、原文档事务28、原窗口整链9/9、发布扰动13通过；最终串行UI/全量0错误。",
   "rows": [
+    [
+      "设置字段订阅实际执行及保存",
+      "Runtime配置公开输入/设置共同绑定目标并拒绝身份冲突；编译和保存按稳定设置声明准入。订阅值在源读者租约内解析，整批应用到本次强类型设置并校验，未修改设计配置；若改变已准入端口/资源键则拒绝。临时设置覆盖屏蔽本次引用，持久化拒绝第二份设置常量。",
+      "最终串行UI001为0错误/6613警告166.02秒，全量001为0错误/6527警告85.33秒。正式RuntimeWorkflow007/008有无Wpf各10组、纯Runtime025十六组、组件127九组/125无Wpf十组、DocumentEditing033二十八组、原窗口FullChain057/056有无Wpf各九组，部署037十三项通过；768发布项/192加载记录SHA一致。设置引用真实HALCON、转换、保存重开、设计编辑隔离、临时覆盖、非法提案拒绝和恢复均通过。 UI来源选择及默认参数窗口/文档编辑适配、工具箱中立登记、本地ROI和调试生命周期仍待接入；新Runtime的全局变量绑定仍未实现。根SDK Blob工程/旧模型/转换和VM原件/显示XML完整消费、VS设计时与真实人工验收未闭合。"
+    ],
     [
       "XML强类型设置编辑及可选Wpf入口",
       "BlobParameters.xml声明54个稳定设置字段（20运行值/12判定开关/22判定端点）的分组、选项、显隐、范围和配对；IToolSettingsFields直接读写实际BlobSettings，私有编辑会话整批冻结校验，拒绝提案不污染原配置。BlobParameterEditor/工厂和公共注册表接同一合同，缺专属Wpf用通用声明视图。",
@@ -5108,6 +5113,15 @@
     "sourceBaseCommit": "5674ff75bb6d0130f06cce949a0f768b3f0e19c6",
     "implementation": "BlobParameters.xml声明54个稳定设置字段（20运行值/12判定开关/22判定端点）的分组、选项、显隐、范围和配对；IToolSettingsFields直接读写实际BlobSettings，私有编辑会话整批冻结校验，拒绝提案不污染原配置。BlobParameterEditor/工厂和公共注册表接同一合同，缺专属Wpf用通用声明视图。",
     "verification": "最终UI003为0错误/6471警告，全量002为0错误/6632警告；正式目录RuntimeKernel024共16组，组件有/无Wpf9/10组，RuntimeWorkflow8组、DocumentEditing28组、原窗口FullChain9组和部署036十三项通过。768发布项/158加载记录同源。设置字段经真实事务、保存重开及HALCON执行；新增设置视图为定向API检查，不冒充完整交互/视觉验收。",
-    "remaining": "节点打开/文档编辑参与者与工具箱默认入口、设置订阅/全局变量、本地ROI和调试生命周期仍待切换；旧SDK Blob工程/参数与转换未退出；全部所需VM原件/显示XML完整消费、VS设计时及真实用户验收未完成。"
+    "remaining": "节点打开/文档编辑参与者与工具箱默认入口、设置订阅/全局变量、本地ROI和调试生命周期仍待切换；旧SDK Blob工程/参数与转换未退出；全部所需VM原件/显示XML完整消费、VS设计时及真实用户验收未完成。",
+    "subsequentProgress": "设置字段的生产编译/执行/保存及临时覆盖已接通，见runtimeSettingBindingsCheckpoint；UI来源选择/默认参数窗口、全局变量及本地ROI仍待接入。原检查点证据不改写。"
+  },
+  "runtimeSettingBindingsCheckpoint": {
+    "status": "SCOPED_RUNTIME_SETTING_BINDINGS_VERIFIED_NOT_M1_COMPLETE",
+    "evidence": "docs/collaboration/evidence/O06_RUNTIME_SETTING_BINDINGS_CHECKPOINT_20261027.json",
+    "sourceBaseCommit": "082454c7f6b24521526c11ad0f336cca7e0768c3",
+    "implementation": "Runtime配置公开输入/设置共同绑定目标并拒绝身份冲突；编译和保存按稳定设置声明准入。订阅值在源读者租约内解析，整批应用到本次强类型设置并校验，未修改设计配置；若改变已准入端口/资源键则拒绝。临时设置覆盖屏蔽本次引用，持久化拒绝第二份设置常量。",
+    "verification": "最终串行UI001为0错误/6613警告166.02秒，全量001为0错误/6527警告85.33秒。正式RuntimeWorkflow007/008有无Wpf各10组、纯Runtime025十六组、组件127九组/125无Wpf十组、DocumentEditing033二十八组、原窗口FullChain057/056有无Wpf各九组，部署037十三项通过；768发布项/192加载记录SHA一致。设置引用真实HALCON、转换、保存重开、设计编辑隔离、临时覆盖、非法提案拒绝和恢复均通过。",
+    "remaining": "UI来源选择及默认参数窗口/文档编辑适配、工具箱中立登记、本地ROI和调试生命周期仍待接入；新Runtime的全局变量绑定仍未实现。根SDK Blob工程/旧模型/转换和VM原件/显示XML完整消费、VS设计时与真实人工验收未闭合。"
   }
 }

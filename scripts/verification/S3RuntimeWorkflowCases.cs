@@ -62,6 +62,67 @@ internal static class S2DocumentEditingCases
                     Require(changed.Success&&((BlobOutput)Result(changed,second.Id).Output!).Count==0,"运行覆盖未生效");
                 using(var normal=Run(flow))Require(normal.Success&&((BlobOutput)Result(normal,second.Id).Output!).TotalArea==16,"覆盖污染了正式设置");
             });
+            Case("设置字段订阅进入本次唯一模型，运行期间的设计编辑不污染快照",()=>
+            {
+                var threshold=Setting("Threshold");
+                second.RuntimeConfiguration=initial.WithFieldValues(new Dictionary<string,object?>{{threshold,200L}});
+                Bind(second,threshold,first.Id,BlobSchema.Field(11),DataType.Integer,flow.Id);
+                EventHandler<NodeExecutionStatus> edit=(_,status)=>{if(status.NodeId==first.Id&&status.Status==NodeStatus.Running)second.ParamSettings.RemoveSetting(threshold);};
+                executor.NodeStatusChanged+=edit;
+                try
+                {
+                    using var current=Run(flow);Require(current.Success&&((BlobOutput)Result(current,second.Id).Output!).TotalArea==16,
+                        "订阅结果未替换本次阈值或设计修改污染已冻结绑定");
+                }
+                finally{executor.NodeStatusChanged-=edit;}
+                try
+                {
+                    Require(((BlobSettings)second.RuntimeConfiguration.CaptureSettings()).Threshold==200,"订阅值回写设计模型");
+                    using(var next=Run(flow))Require(next.Success&&((BlobOutput)Result(next,second.Id).Output!).Count==0,"下一次未采用已移除订阅后的正式值");
+                    Bind(second,threshold,first.Id,BlobSchema.Field(12),DataType.Number,flow.Id);
+                    second.ParamSettings.GetSetting(threshold)!.Conversion=BindingConversion.Float64ToInt64Checked;
+                    using(var converted=Run(flow))Require(converted.Success&&((BlobOutput)Result(converted,second.Id).Output!).TotalArea==16,"显式数值转换未进入设置模型");
+                    var document=new Solution{Name="设置字段订阅"};document.Workflows.Add(flow);
+                    var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"runtime-setting-binding.solution");
+                    var repository=new SolutionRepository();Require(repository.Save(document,path),repository.LastError??"设置引用保存失败");
+                    var restored=repository.LoadCandidate(path).Candidate?.Workflows.Single()??throw new Exception(repository.LastError);
+                    Require(restored.Nodes[1].ParamSettings.GetSetting(threshold)?.Conversion==BindingConversion.Float64ToInt64Checked
+                        &&((BlobSettings)restored.Nodes[1].RuntimeConfiguration!.CaptureSettings()).Threshold==200,"保存丢失设置引用或回写订阅值");
+                    engine.RegisterWorkflow(restored);
+                    try{using var replay=Run(restored);Require(replay.Success&&((BlobOutput)Result(replay,second.Id).Output!).TotalArea==16,"重开后设置订阅未执行");}
+                    finally{engine.RegisterWorkflow(flow);}
+                    using var forced=WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image,
+                        nodeBindingOverrides:new Dictionary<string,IReadOnlyDictionary<string,object?>>{{second.Id,new Dictionary<string,object?>{{threshold,200L}}}})));
+                    Require(forced.Success&&((BlobOutput)Result(forced,second.Id).Output!).Count==0
+                        &&second.ParamSettings.GetSetting(threshold)!.BindingType==BindingType.Binding,"临时常量覆盖没有屏蔽本次引用或污染正式引用");
+                }
+                finally{second.RuntimeConfiguration=initial;second.ParamSettings.RemoveSetting(threshold);}
+            });
+            Case("非法设置订阅与重复常量存储拒绝消费并可恢复",()=>
+            {
+                var minimum=Setting("FilterCircularityMin");
+                Bind(second,minimum,first.Id,BlobSchema.Field(12),DataType.Number,flow.Id);
+                try
+                {
+                    using var invalid=Run(flow);Require(!invalid.Success&&invalid.NodeResults[first.Id].Success&&!invalid.NodeResults[second.Id].Success,"越界设置订阅仍进入算法");
+                }
+                finally{second.ParamSettings.RemoveSetting(minimum);}
+                var mode=Setting("SegmentationMode");Bind(second,mode,first.Id,BlobSchema.Field(10),DataType.Text,flow.Id);
+                try
+                {
+                    using var invalid=Run(flow);Require(!invalid.Success&&invalid.NodeResults[first.Id].Success&&!invalid.NodeResults[second.Id].Success,"常量专用字段接受订阅");
+                }
+                finally{second.ParamSettings.RemoveSetting(mode);}
+                var threshold=Setting("Threshold");second.ParamSettings.SetSetting(ParamSetting.CreateConstant(threshold,100L));
+                try
+                {
+                    using var invalid=Run(flow);Require(!invalid.Success&&invalid.NodeResults[first.Id].Success&&!invalid.NodeResults[second.Id].Success,"重复设置常量未拒绝");
+                    var document=new Solution{Name="拒绝重复常量"};document.Workflows.Add(flow);
+                    var repository=new SolutionRepository();Require(!repository.Save(document,Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"invalid-settings.solution")),"重复设置常量可持久化");
+                }
+                finally{second.ParamSettings.RemoveSetting(threshold);}
+                using var normal=Run(flow);Require(normal.Success&&((BlobOutput)Result(normal,second.Id).Output!).TotalArea==16,"非法提案污染正式设置或下一次运行");
+            });
             Case("未知输出引用只阻断消费节点，修正后同一工作流可继续执行",()=>
             {
                 Bind(second,BlobTool.InspectionInput,first.Id,"missing-port",TypeRef.ResourceOf(ResourceKind.Region),flow.Id);
@@ -143,6 +204,11 @@ internal static class S2DocumentEditingCases
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
     }
     private static RuntimeToolResults Result(ExecutionResult run,string id)=>run.NodeResults[id].Result as RuntimeToolResults??throw new Exception("没有中立宿主结果："+id);
+    private static string Setting(string property)
+    {
+        var label=BlobParameterDefinition.Instance.Label(property);
+        return ((IToolSettingsFields)new BlobTool()).SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==label).FieldId;
+    }
     private static void Bind(WorkflowNodeBase consumer,string target,string source,string port,TypeRef type,string scope)
         =>consumer.ParamSettings.SetSetting(new ParamSetting{ParameterName=target,BindingType=BindingType.Binding,
             ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(source,port,type,scopeId:scope)),SourceNodeId=source,SourceProperty=port,SourceWorkflowId=scope});

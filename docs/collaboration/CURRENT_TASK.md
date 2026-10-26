@@ -182,3 +182,16 @@
 - 证据docs/collaboration/evidence/O06_RUNTIME_SETTINGS_CHECKPOINT_20261027.json：15份源码增量、768发布项、158加载记录SHA核对一致；清单/Core仍5674ff75加所列增量，不用随后提交号改写已编译身份。原S4 JSON/O06已同步；目标树未改，生成器697锚点/幂等成立。
 - 下一步直接把节点打开/文档编辑参与者与默认工具箱接入中立编辑视图，同步设置订阅/全局变量、本地ROI、调试生命周期，随后删除根SDK Blob工程/旧参数/转换。不要加SDK参数包装桥。全部所需VM原件和显示XML完整消费仍待完成。
 - M1/M2/M3均未完成。VS设计时未验证，新候选无真实人工验收；原视觉未通过反馈保留。新设置页定向API检查不冒充完整焦点/物理鼠标/VM视觉通过。
+
+## 2026-10-27 Runtime设置字段实际订阅与持久化（最新）
+
+- Codex/main，基线082454c7，单工作树单产品写者。上一目标轮已有XML字段和可选Wpf编辑创建API，本轮把这些字段接到真实工作流编译、执行和保存链；不是重述状态或只写新接口。
+- 跨模块影响已核：共同改动Workflow配置、绑定编译/校验、调度快照、执行及持久化。沿用原Owner准入、原结果发布/输入读者租约和ConfigureAwait(false)，不向UI反调、不把设置回写设计节点；未改变公共VM视觉控件和发布依赖图。
+- RuntimeToolConfiguration公开输入/设置的共同绑定目标，拒绝两类稳定身份冲突；WithFieldValues直接构造冻结校验后的真实强类型模型。引用仍只存ParamSettings，常量只存BlobSettings。执行准入、文档事务及保存重开均拒绝设置常量的第二份绑定存储；没有增加Blob参数DTO或SDK包装桥。
+- WorkflowBindingContext与候选持久化直接按同一声明编译设置引用。AlgorithmNode持有生产者读者租约，解析输入/设置到各自集合，整批应用本次设置并校验；改变已准入端口声明或资源键时拒绝。Runtime输入值仍只按算法输入端口构造，不把54个设置字段混入图像/ROI资源输入。
+- NodeBindingOverrides对设置字段直接修改本次强类型快照，屏蔽本次引用，不把临时常量写入持久化绑定。未改变公共NodeParameterOverrides按强类型属性覆盖的现有行为。
+- 新RuntimeWorkflow用例证明：正式值阈值200、订阅上游数量/面积后实际HALCON得到面积16；整数及显式Float64ToInt64Checked转换生效；运行期间删除设计引用不污染当前快照，下一次恢复正式值；保存重开保留引用/转换及正式200；临时200覆盖屏蔽本次订阅且不污染正式引用。越界/禁止订阅模式/重复常量拒绝消费，修正后可重跑。负向节点错误日志是预期检查，不隐去或冒充用例失败。
+- 串行UI blob-setting-binding-ui-001：0错误/6613警告166.02秒；全量blob-setting-binding-release-001：0错误/6527警告85.33秒。正式RuntimeWorkflow007/008有无Wpf各十组，RuntimeKernel025十六组，Components127九组/125无Wpf十组，DocumentEditing033二十八组，原窗口FullChain057/056有无Wpf各九组，ComponentDeployment037十三项通过。实际EXE缺件/恢复准入正常，3文件及清单均原SHA还原。
+- 证据docs/collaboration/evidence/O06_RUNTIME_SETTING_BINDINGS_CHECKPOINT_20261027.json：8份源码增量、768发布项、192加载记录SHA核对一致。清单/Core编译身份082454c7加所列增量，不用随后提交号改写本次产物。原O06/目标JSON同步，硬性目标树未改，生成器697锚点且幂等。
+- 默认工具箱/参数窗口仍SDK入口，公共新编辑视图尚未进入真实窗口文档/调试生命周期；UI来源选择、本地ROI和新Runtime全局变量绑定仍未实现。ToolRegistry当前工具箱元数据只从SDK工具候选登记、Runtime登记也在其循环中，是移除根SDK工程前必须改掉的明确缺口；后续同时接中立工具目录及窗口/文档入口，不能只删除根工程或复制另一套Blob参数。
+- 根SDK Blob工程、旧模型与转换尚未全部退出；全部所需VM原件、显示XML完整图形文本消费、VS设计时和真实用户验收仍待完成。原视觉未通过反馈保留；本批功能/旧窗口回归不等于新窗口或VM视觉验收，M1/M2/M3均未完成，目标保持active。

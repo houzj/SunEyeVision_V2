@@ -24,7 +24,10 @@ public partial class AlgorithmNode
         if(RuntimeInputError is not null)throw new InvalidOperationException(RuntimeInputError);
         var configuration=RuntimeConfiguration!;
         var schema=configuration.Schema;
+        var settingFields=configuration.SettingsSchema?.Inputs.ToDictionary(p=>p.Id,StringComparer.Ordinal)??new();
+        var targets=configuration.BindingTargets.ToDictionary(p=>p.Id,StringComparer.Ordinal);
         var values=new Dictionary<string,object?>(StringComparer.Ordinal);
+        var settingValues=new Dictionary<string,object?>(StringComparer.Ordinal);
         var leases=new List<IDisposable>();
         var resources=new FrozenOutputResources();
         bool transferred=false;
@@ -40,25 +43,35 @@ public partial class AlgorithmNode
             var snapshot=BindingContext!.Capture(this,results);
             foreach(var setting in ParamSettings.Settings)
             {
-                var port=schema.Inputs.SingleOrDefault(p=>p.Id==setting.ParameterName)
-                    ??throw new InvalidOperationException("Unknown Runtime input: "+setting.ParameterName);
+                if(!targets.TryGetValue(setting.ParameterName,out var port))
+                    throw new InvalidOperationException("Unknown Runtime input or setting: "+setting.ParameterName);
+                var destination=settingFields.ContainsKey(port.Id)?settingValues:values;
                 if(setting.BindingType==BindingType.Constant)
                 {
+                    if(settingFields.ContainsKey(port.Id))throw new InvalidOperationException("Runtime setting literals cannot have duplicate binding storage.");
                     if((port.EditModes&FieldEditModes.Constant)==0)throw new InvalidOperationException("Runtime input cannot use a persisted constant.");
-                    values.Add(port.Id,RuntimeInputBindings.Constant(port,setting.ConstantValue));
+                    destination.Add(port.Id,RuntimeInputBindings.Constant(port,setting.ConstantValue));
                 }
                 else
                 {
                     if(!CompiledBindings.TryGetValue(port.Id,out var plan))throw new InvalidOperationException("Runtime input has no admitted binding plan: "+port.Id);
                     var resolution=new ParameterBindingService().ResolveBinding(plan,snapshot);
                     if(!resolution.Success)throw new InvalidOperationException(resolution.Diagnostic?.Message??"Runtime binding resolution failed.");
-                    values.Add(port.Id,resolution.Value);
+                    destination.Add(port.Id,resolution.Value);
                 }
+            }
+            if(settingValues.Count>0)
+            {
+                var effective=configuration.WithFieldValues(settingValues);
+                if(effective.Schema.Fingerprint!=schema.Fingerprint||!effective.Capabilities.ResourceKeys.ToHashSet(StringComparer.Ordinal)
+                    .SetEquals(configuration.Capabilities.ResourceKeys))
+                    throw new InvalidOperationException("Bound settings changed the admitted Runtime schema or resource capabilities.");
+                configuration=effective;
             }
             if(schema.WorkflowImageInputId is { } imagePort&&!values.ContainsKey(imagePort)&&FrozenWorkflowImage is { } image)
                 values.Add(imagePort,image);
             var inputs=new InputValues(schema.Inputs,values);
-            outcome=await ExecuteRuntimeAsync(inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources),OutputRequests).ConfigureAwait(false);
+            outcome=await ExecuteRuntimeAsync(configuration,inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources),OutputRequests).ConfigureAwait(false);
             transferred=true; // The envelope also disposes both owners when its constructor fails.
             prepared=new RuntimeToolResults(ToolType,schema,identity,outcome,resources,timer.Elapsed.TotalMilliseconds);
             return prepared;

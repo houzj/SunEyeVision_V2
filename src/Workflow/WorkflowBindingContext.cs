@@ -56,7 +56,7 @@ internal sealed class WorkflowBindingContext : IDisposable
         if(setting.BindingType!=BindingType.Binding)return null;
         if(node.RuntimeConfiguration is { } runtime)
         {
-            var target=runtime.Schema.Inputs.SingleOrDefault(port=>port.Id==setting.ParameterName);
+            var target=runtime.BindingTargets.SingleOrDefault(port=>port.Id==setting.ParameterName);
             if(target is null)return Unavailable("target-declaration","Unknown Runtime input port.");
             if((target.EditModes&FieldEditModes.Reference)==0)return Unavailable("target-mode","Runtime input does not allow a reference.");
             if(setting.ReferenceExpression is null)return Unavailable("target-reference","Runtime input requires an explicit semantic reference.");

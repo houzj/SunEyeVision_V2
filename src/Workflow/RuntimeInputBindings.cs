@@ -27,7 +27,8 @@ internal static class RuntimeInputBindings
     }
     internal static IReadOnlyList<ExecutionInputIssue> Validate(Workflow flow,WorkflowNodeBase node,string scope)
     {
-        var ports=node.RuntimeConfiguration!.Schema.Inputs.ToDictionary(p=>p.Id,StringComparer.Ordinal);
+        var configuration=node.RuntimeConfiguration!;
+        var ports=configuration.BindingTargets.ToDictionary(p=>p.Id,StringComparer.Ordinal);
         var issues=new List<ExecutionInputIssue>();
         foreach(var setting in node.ParamSettings.Settings)
         {
@@ -36,6 +37,8 @@ internal static class RuntimeInputBindings
                 if(!ports.TryGetValue(setting.ParameterName,out var port))throw new ArgumentException("Unknown Runtime input port.");
                 if(setting.BindingType==BindingType.Constant)
                 {
+                    if(configuration.SettingsSchema?.Inputs.Any(p=>p.Id==port.Id)==true)
+                        throw new ArgumentException("Runtime setting literals belong in the strong settings model, not duplicate binding storage.");
                     if((port.EditModes&FieldEditModes.Constant)==0)throw new ArgumentException("This input does not allow a persisted constant.");
                     Constant(port,setting.ConstantValue);
                 }

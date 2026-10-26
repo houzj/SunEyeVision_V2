@@ -177,6 +177,14 @@ namespace SunEyeVision.Workflow
             IEnumerable<SunEyeVision.Plugin.Contracts.OutputValueRequest>? outputRequests = null)
         {
             var configuration = RuntimeConfiguration ?? throw new InvalidOperationException("节点没有Runtime配置。");
+            return ExecuteRuntimeAsync(configuration,inputs,context,outputRequests);
+        }
+
+        internal System.Threading.Tasks.ValueTask<SunEyeVision.Plugin.Contracts.ToolOutcome> ExecuteRuntimeAsync(
+            RuntimeToolConfiguration configuration,SunEyeVision.Plugin.Contracts.InputValues inputs,
+            SunEyeVision.Plugin.Contracts.IToolExecutionContext context,
+            IEnumerable<SunEyeVision.Plugin.Contracts.OutputValueRequest>? outputRequests)
+        {
             if (configuration.ToolId != ToolType || context.Identity.NodeId != Id)
                 throw new InvalidOperationException("Runtime配置或执行上下文与节点身份不符。");
             return SunEyeVision.Plugin.Runtime.ToolRuntimeExecutor.ExecuteAsync(ToolRegistry.CreateRuntime(configuration.ToolId),

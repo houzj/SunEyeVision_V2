@@ -25,6 +25,9 @@ public sealed class RuntimeToolConfiguration
         if (_settings.GetType() != definition.SettingsType) throw new ArgumentException("Runtime settings identity differs.");
         var errors = definition.Validate(_settings);
         if (errors.Count != 0) throw new ArgumentException(string.Join("; ", errors.Select(x => x.Message)), nameof(settings));
+        if(definition is IToolSettingsFields fields&&definition.Describe(_settings).Inputs.Select(p=>p.Id)
+            .Intersect(fields.SettingsSchema.Inputs.Select(p=>p.Id),StringComparer.Ordinal).Any())
+            throw new ArgumentException("Runtime input and settings field identities must be distinct.");
     }
 
     public string ToolId => _definition.ToolId;
@@ -35,6 +38,13 @@ public sealed class RuntimeToolConfiguration
     public IReadOnlyList<Diagnostic> Validate() => _definition.Validate(CaptureSettings());
     public ToolSchema Schema => _definition.Describe(CaptureSettings());
     public ToolCapabilities Capabilities => _definition.Capabilities(CaptureSettings());
+    public ToolSchema? SettingsSchema => (_definition as IToolSettingsFields)?.SettingsSchema;
+    public IReadOnlyList<Port> BindingTargets => Schema.Inputs.Concat(SettingsSchema?.Inputs??Array.Empty<Port>()).ToArray();
+    public RuntimeToolConfiguration WithFieldValues(IReadOnlyDictionary<string,object?> changes)
+    {
+        var fields=_definition as IToolSettingsFields??throw new InvalidOperationException("Runtime has no settings field declaration.");
+        return new(_definition,fields.ApplySettings(CaptureSettings(),changes));
+    }
     public RuntimeToolConfiguration WithOverrides(IReadOnlyDictionary<string,object?> overrides)
     {
         var value=JsonSerializer.SerializeToNode(CaptureSettings(),SettingsType,RuntimeToolConfigurationJsonConverter.SettingsOptions)!.AsObject();

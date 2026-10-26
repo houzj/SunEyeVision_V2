@@ -980,8 +980,22 @@ namespace SunEyeVision.Workflow
                 // 复制参数绑定配置
                 executionNode.ParamSettings = node.ParamSettings?.Clone() ?? new ParamSettingContainer();
                 if (request != null && request.NodeBindingOverrides.TryGetValue(node.Id, out var overrides))
+                {
+                    var settingsFields=executionNode.RuntimeConfiguration?.SettingsSchema?.Inputs.ToDictionary(p=>p.Id,StringComparer.Ordinal);
+                    var settingsValues=new Dictionary<string,object?>();
                     foreach (var value in overrides)
-                        executionNode.ParamSettings.SetSetting(ParamSetting.CreateConstant(value.Key, value.Value));
+                    {
+                        if(settingsFields?.TryGetValue(value.Key,out var field)==true)
+                        {
+                            if((field.EditModes&SunEyeVision.Plugin.Contracts.FieldEditModes.Constant)==0)
+                                throw new InvalidOperationException("Runtime settings field does not allow a literal override.");
+                            settingsValues.Add(value.Key,RuntimeInputBindings.Constant(field,value.Value));
+                            executionNode.ParamSettings.RemoveSetting(value.Key);
+                        }
+                        else executionNode.ParamSettings.SetSetting(ParamSetting.CreateConstant(value.Key, value.Value));
+                    }
+                    if(settingsValues.Count>0)executionNode.RuntimeConfiguration=executionNode.RuntimeConfiguration!.WithFieldValues(settingsValues);
+                }
                 executionNode.CameraCaptureService = request?.CameraCaptureService;
                 executionNode.ResourcePaths = request?.ResourcePaths;
                 executionNode.CommunicationOutputs = request?.CommunicationOutputs;

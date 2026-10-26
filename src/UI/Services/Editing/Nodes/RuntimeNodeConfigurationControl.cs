@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.Runtime;
@@ -26,9 +28,17 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     private readonly List<DeclaredFieldEditor> _inputs=new();
     private bool _syncing,_disposed;
     private long _generation;
+    private bool _running;
+    private Func<WorkflowNodeBase,RuntimeDebugInvocation>? _captureDebug;
     public bool HasPendingEdits=>_view?.HasInvalidInput==true||_inputs.Any(editor=>editor.HasInvalidText);
     public RuntimeNodeConfigurationControl(WorkflowNodeBase node)
     {
+        CommandBindings.Add(new CommandBinding(Plugin.SDK.Commands.ToolCommands.Execute,async (_,e)=>
+        {
+            e.Handled=true;
+            try{await RunDebugAsync();}
+            catch(Exception error){Plugin.SDK.Logging.PluginLogger.Error(error.Message,nameof(RuntimeNodeConfigurationControl),error);}
+        },(_,e)=>{e.CanExecute=!_disposed&&!_running&&_captureDebug is not null;e.Handled=true;}));
         BindDraft(node.Clone());
         Loaded+=(_,_)=>
         {
@@ -37,6 +47,31 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         };
     }
     public void SetDataProvider(DataSourceQueryService query)=>_query=query;
+    public void SetDebugCapture(Func<WorkflowNodeBase,RuntimeDebugInvocation> capture)=>_captureDebug=capture;
+    public async Task RunDebugAsync()
+    {
+        Dispatcher.VerifyAccess();
+        if(_running)throw new InvalidOperationException("调试正在执行。");
+        _running=true;RuntimeToolResults? result=null;var generation=_generation;
+        try
+        {
+            if(!TryValidateEditor(out var error))throw new InvalidOperationException(error);
+            using var invocation=(_captureDebug??throw new InvalidOperationException("调试宿主尚未就绪。"))(_node);
+            result=await Task.Run(()=>invocation.ExecuteAsync());
+            if(_disposed||generation!=_generation)
+            {
+                if(!_disposed)RaiseEvent(new Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs("草稿已重新绑定，旧调试结果已丢弃。",ToolDebugControlBase.ToolExecutionCompletedEvent,this));
+                return;
+            }
+            RaiseEvent(new Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs(result,(long)result.ExecutionTimeMs,ToolDebugControlBase.ToolExecutionCompletedEvent,this));
+        }
+        catch(Exception error)
+        {
+            if(!_disposed)RaiseEvent(new Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs(error.Message,ToolDebugControlBase.ToolExecutionCompletedEvent,this));
+            throw;
+        }
+        finally{try{result?.Resources?.Dispose();}finally{_running=false;CommandManager.InvalidateRequerySuggested();}}
+    }
     public void BindDraft(WorkflowNodeBase node)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
@@ -162,5 +197,5 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         window.ShowDialog();return !_disposed&&generation==_generation&&context.IsValid?result:null;
     }
     public void Dispose()
-    {if(_disposed)return;_disposed=true;_generation++;if(_view is not null){_view.Changed-=Changed;Content=null;_view.Dispose();}_inputs.Clear();}
+    {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;if(_view is not null){_view.Changed-=Changed;Content=null;_view.Dispose();}_inputs.Clear();}
 }

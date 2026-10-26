@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -50,6 +51,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
 
         private readonly UserControl _control;
         private readonly ToolDebugControlBase? _toolControl;
+        private readonly bool _hasExecutionCommands;
         public ToolDebugControlBase? EditorControl => _toolControl;
         
         // 状态
@@ -84,6 +86,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             
             _control = control;
             _toolControl = control as ToolDebugControlBase;
+            _hasExecutionCommands=_toolControl is not null||control.CommandBindings.OfType<CommandBinding>().Any(binding=>binding.Command==ToolCommands.Execute);
 
             // 设置内容
             ContentHost.Content = _control;
@@ -97,7 +100,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
                     ? Visibility.Visible
                     : Visibility.Collapsed;
             }
-            else
+            else if(!_hasExecutionCommands)
             {
                 // 非单工具执行控件（如子程序调试窗口）："执行/连续执行"路由命令无人接收，
                 // 属于无效按钮，一律隐藏，仅保留"确定"。脚本工具等继承 ToolDebugControlBase 不受影响。
@@ -201,7 +204,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </summary>
         private void CanExecuteCommand(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = !_isExecuting;
+            e.CanExecute = _hasExecutionCommands&&!_isExecuting;
         }
 
         /// <summary>

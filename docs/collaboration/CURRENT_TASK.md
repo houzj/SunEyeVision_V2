@@ -224,3 +224,19 @@
 - 失败保留：UI001同名ParameterSetting冲突、UI002属性lambda的field关键字误用；RuntimeEditor001测试调用错层CreateNode，002测试绕过真实保存命令而误判。改用实际SelectedTab.CreateNode和SaveCurrentSolutionCommand后通过；不把002当产品保存故障。009来源图标空白图保留，旧六组功能成绩不作视觉通过。
 - 下一步接新Runtime窗口单次/连续调试的真实冻结输入与结果生命周期，再切UI自身默认节点工厂和输入自动绑定；不得伪造来源执行身份、隐式重跑有副作用上游或增加SDK Blob参数包装。当前新窗口运行按钮未显示，不能称调试链已完成；默认UI工具箱仍SDK。
 - 本地ROI/位置常量、新Runtime全局变量、根SDK Blob工程/旧模型/转换删除、全部所需VM原件、显示XML完整图形文本消费、VS设计时和真实人工验收仍待完成。原视觉未通过反馈保留，M1/M2/M3均未完成，目标active。
+
+## 2026-10-27 Runtime窗口真实调试及已发布输入快照（最新）
+
+- Codex/main，基线caf26581，单工作树单产品写者。上一轮为实际源码/验证进展；本轮继续同一active目标，未重建或缩减目标。此条取代“新Runtime窗口调试尚未接通”的当前状态，不改写原六组检查点。
+- 跨模块影响已核：Plugin.Runtime绑定解析、Workflow单次调试宿主、SDK通用窗口路由及UI文档私有结果。Runtime Blob插件仍无SDK/WPF/UI依赖；不新增工程、不创建SDK Blob参数/工具/结果DTO，不隐式重跑上游。
+- PublishedBindingSnapshot/ResolvePublishedBinding明确表达编辑器选定的已发布输入，保留来源原始Owner/运行身份和物理帧。普通ResolveBinding仍要求同一次运行，不把旧来源身份改成当前调试身份；新测试同时证明普通入口拒绝、明确发布快照入口通过。
+- RuntimeDebugInvocation在文档Owner边界冻结实际设置及语义引用；核对当前正式声明、真实生产Owner/工作流/原准入身份/成功状态，双读拒绝捕获中替换，持有正式输出读者至执行清理结束。画布与语义绑定共同编译循环检查；缺/失败/其他文档来源、缺图像在算法前拒绝。
+- 设置订阅只应用到本次强类型配置，不回写设计值。捕获后修改/移除草稿引用、释放原生产运行仍不影响本次调用；输出图像在输入读者释放后仍可读取。取消/退役前置拒绝也会排空资源，下一次可运行；同一输入快照只能执行一次。
+- 新Runtime参数控件接标准执行命令，通用壳仅为实际存在执行处理的控件显示运行按钮。UI先冻结调用，再Task.Run；算法及收尾ConfigureAwait(false)，完成后才由UI发布私有DebugResults/实际结果表。单次与连续停止有真实窗口检查，正式配置及正式结果保持不变。
+- 补齐输入捕获失败的显示分支：不伪造失败结果身份，清空上一份私有预览、结果表和显示；保留正式结果。真实窗口先成功显示一行、清除来源后执行失败，私有结果与实际表均为空。关闭/确认仍走既有文档作用域及取消/Owner退役；保存重绑后的旧调试结果按代次丢弃。
+- 最终串行UI006：0错误/6574警告99.95秒；全量003：0错误/6607警告60.45秒（blob-runtime-debug前缀）。早期UI001/002误把DisplayImage及ImageControl.SourceImage的BitmapSource传作IVisionImage，编译拒绝；已移除这条伪输入接法，保留失败日志。UI003—005/全量001—002为前序候选，不套最终产物。
+- 正式RuntimeDebug005/004有无Wpf各七组；RuntimeEditor016/017有SDK与无SDK/Wpf各八组（含实际工作流→已发布来源→单次/连续调试→私有表、失败清空）；RuntimeKernel030十六组、RuntimeWorkflow019十组、RuntimeCatalog011四组、Components152九组/149无Wpf十组、Algorithm016九组、DocumentEditing038二十八组、FieldEditing017八组、原SDK窗口FullChain068九组通过。
+- ComponentDeployment043十七项通过，真实EXE缺件及恢复准入正常，临时4文件及清单原SHA恢复。证据汇总曾拒绝沿用前候选中与最终程序集SHA不一致的旧成绩；已按最终产物补跑关联轨道。11份源码增量、768发布项及399加载记录同源；证据docs/collaboration/evidence/O06_RUNTIME_DEBUG_CHECKPOINT_20261027.json。
+- 当前清单buildId=o06-runtime-debug-20261027-003；Core/清单编译身份仍caf26581加列明增量，不用随后提交号改写已编译身份。原O06/目标JSON同步，目标树和完整s4GoalPlan保持一致，697锚点且幂等。真实WPF运行图已核运行按钮及当前状态，不作全部VM视觉通过。
+- 下一步直接切UI自身默认节点工厂及语义图像自动绑定，再移除根SDK Blob工程/旧模型/转换并改消费者/测试，不保留兼容包装。新UI目前只调试已发布来源；缺省工作流图像仍需非推进的真实输入快照合同，未绑定来源会明确提示选择图像，不能拿显示位图伪装像素/Domain。
+- 本地ROI/位置常量、新Runtime全局变量、全部所需VM原件/完整交互、显示XML完整图形文本、VS设计时及真实人工验收仍未完成。原视觉未通过反馈保留，M1/M2/M3未完成，目标active。

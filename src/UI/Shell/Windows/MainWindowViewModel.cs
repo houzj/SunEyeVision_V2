@@ -4130,6 +4130,18 @@ SplitterPosition = position;
                                 _ => null
                             };
 
+                            if(toolResult is null&&result is SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs {IsSuccess:false}
+                                &&editorContext is {IsValid:true}&&editorContext.DraftNode.RuntimeConfiguration is not null)
+                            {
+                                if(ReferenceEquals(resultContext,CurrentWorkflowContext)&&ReferenceEquals(SelectedNode,node))
+                                {
+                                    _activeResultView?.Update(null);
+                                    _nodeResultManager?.ClearResultDisplay();
+                                    DisplayImage=null;
+                                }
+                                editorContext.DebugResults.RemoveNodeResult(node.Id);
+                                return;
+                            }
                             if (toolResult != null)
                             {
                                 if (toolResult.ExecutionIdentity is { } identity && (!identity.IsCurrent ||

@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -8,6 +9,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.Plugin.Wpf.Fields;
@@ -39,7 +41,8 @@ internal static class S2DocumentEditingCases
         ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(folder);
         var solutions=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel();solutions.CreateUntitledSolution();
         if(vm.WorkflowTabViewModel.SelectedTab is null)vm.NewWorkflowCommand.Execute(null);
-        var shell=new Window{Width=100,Height=100,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();
+        var resultHost=new ContentControl();resultHost.SetBinding(ContentControl.ContentProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=vm});
+        var shell=new Window{Width=620,Height=400,Content=resultHost,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();
         var baseNode=SunEyeVision.Workflow.WorkflowNodeFactory.CreateAlgorithmNode(BlobTool.Id,"runtime-editor-node","Runtime Blob","Blob")??throw new Exception("Runtime节点创建失败");
         var node=SunEyeVision.UI.Shared.WorkflowNode.FromBase(baseNode);vm.AddNodeToWorkflow(node);
         node.DebugWindowStyle=DebugWindowStyle.Custom;
@@ -57,9 +60,11 @@ internal static class S2DocumentEditingCases
             return (TextBox)Logical(control).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==threshold).InputElement!;
         }
         int Formal()=>(int)((BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold;
+        WorkflowContext Context()=>(WorkflowContext)typeof(MainWindowViewModel).GetProperty("CurrentWorkflowContext",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
         var path=Path.Combine(folder,"runtime-editor.solution");
         Require(solutions.SaveCurrentDocument(path).FileWritten,"初始化测试文件位置失败");
         DeclaredFieldEditor? oldInput=null;
+        string? sourceNodeId=null;
         var first=Open();
         Case("真实MainWindow命令打开中立Runtime窗口，UI投影保留实际设置与58个XML字段",()=>
         {
@@ -75,10 +80,14 @@ internal static class S2DocumentEditingCases
         Case("实际来源弹窗从声明选择图像，未确认引用只写私有节点",()=>
         {
             var source=vm.WorkflowTabViewModel.SelectedTab!.CreateNode("ImageLoad");
+            sourceNodeId=source.Id;
             var imageFile=Path.Combine(folder,"input.png");var png=new PngBitmapEncoder();
             png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(8,8,96,96,PixelFormats.Gray8,null,Enumerable.Repeat((byte)200,64).ToArray(),8)));
             using(var output=File.Create(imageFile))png.Save(output);
             source.Parameters.GetType().GetProperty("FilePath")!.SetValue(source.Parameters,imageFile);vm.AddNodeToWorkflow(source);
+            source.IsSelected=true;vm.SelectedNode=source;
+            (vm.ActiveInputSource??throw new Exception("正式输入源面板未建立")).AddImage(new SunEyeVision.UI.Shell.Controls.Panels.ImageInfo{Name="Runtime调试输入",FilePath=imageFile,SourceReference=imageFile,IsForRun=true});
+            source.IsSelected=false;node.IsSelected=true;vm.SelectedNode=node;Pump();
             var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
             oldInput=input;
             var pick=Logical(input).OfType<Button>().Single(b=>Equals(b.ToolTip,"选择订阅来源"));
@@ -114,6 +123,44 @@ internal static class S2DocumentEditingCases
             Logical(oldInput!).OfType<Button>().Single(b=>Equals(b.Content,"×")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Require(context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)?.ReferenceExpression==prior,"旧控件事件写入了新草稿");
         });
+        Case("真实工作流发布来源后，窗口执行命令只更新私有调试结果，连续运行可停止",()=>
+        {
+            var run=vm.RunSelectedImageAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();
+            var production=Context().GetNodeResult(node.Id)?.Result??throw new Exception("正式工作流没有Blob结果");
+            Require(production.IsSuccess,"正式工作流准备失败："+production.ErrorMessage);
+            var source=Context().GetNodeResult(sourceNodeId!)!.Result;
+            var table=Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single();Require(table.Items.Count==1,"正式结果没有进入实际表格");
+            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
+            Threshold(first).Text="255";Pump();
+            SunEyeVision.Plugin.SDK.Commands.ToolCommands.Execute.Execute(null,first);
+            PumpUntil(()=>context.DebugResults.GetNodeResult(node.Id)?.Result is RuntimeToolResults);
+            var preview=(RuntimeToolResults)context.DebugResults.GetNodeResult(node.Id)!.Result!;
+            Require(preview.Output is BlobOutput{Count:0}&&Formal()==73,"调试未采用私有阈值或污染正式设置");
+            Require(ReferenceEquals(source,Context().GetNodeResult(sourceNodeId!)!.Result)&&ReferenceEquals(production,Context().GetNodeResult(node.Id)!.Result),"调试重跑或替换正式结果");
+            Require(table.Items.Count==0,"私有调试结果未刷新实际结果表");Capture(first,"runtime-editor-debug.png");
+            var request=preview.ExecutionIdentity!.RequestId;
+            SunEyeVision.Plugin.SDK.Commands.ToolCommands.ContinuousExecute.Execute(null,first);
+            PumpUntil(()=>context.DebugResults.GetNodeResult(node.Id)?.Result?.ExecutionIdentity?.RequestId is Guid next&&next!=request);
+            SunEyeVision.Plugin.SDK.Commands.ToolCommands.ContinuousExecute.Execute(null,first);
+            var stopped=context.DebugResults.GetNodeResult(node.Id)!.Result!.ExecutionIdentity!.RequestId;
+            var until=DateTime.UtcNow.AddMilliseconds(650);while(DateTime.UtcNow<until){Pump();Thread.Sleep(5);}
+            Require(context.DebugResults.GetNodeResult(node.Id)!.Result!.ExecutionIdentity!.RequestId==stopped&&context.DebugOwner.ActiveRuns==0,"连续运行停止后仍执行或未排空");
+            Threshold(first).Text="73";Pump();
+        });
+        Case("输入捕获失败清空私有预览与实际结果表，正式结果保持不变",()=>
+        {
+            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
+            var formal=Context().GetNodeResult(node.Id)!.Result;
+            var ready=Control(first).RunDebugAsync();PumpUntil(()=>ready.IsCompleted);ready.GetAwaiter().GetResult();
+            var table=Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single();Require(table.Items.Count==1,"有效调试未恢复结果表");
+            var prior=context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.Clone();
+            var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
+            Logical(input).OfType<Button>().Single(b=>Equals(b.Content,"×")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            var failed=Control(first).RunDebugAsync();PumpUntil(()=>failed.IsCompleted);
+            try{failed.GetAwaiter().GetResult();throw new Exception("缺少来源的调试竟然成功");}catch(InvalidOperationException){}
+            Require(context.DebugResults.GetNodeResult(node.Id) is null&&table.Items.Count==0&&ReferenceEquals(formal,Context().GetNodeResult(node.Id)!.Result),"失败未清空私有预览或污染正式结果");
+            context.DraftNode.ParamSettings.SetSetting(prior);Control(first).BindDraft(context.DraftNode);Pump();
+        });
         Case("非法输入隐藏后仍阻断保存及确定，取消关闭保留正式配置并退出范围",()=>
         {
             var before=File.ReadAllBytes(path);var text=Threshold(first);text.Focus();text.Text="invalid";Pump();first.Hide();
@@ -132,12 +179,14 @@ internal static class S2DocumentEditingCases
         var wpfPresent=File.Exists(Path.Combine(product,"SunEyeVision.Tool.BlobAnalysis.Wpf.dll"));
         if(!sdkPresent)Require(!AppDomain.CurrentDomain.GetAssemblies().Any(a=>a.GetName().Name=="SunEyeVision.Tool.BlobAnalysis"),"SDK入口缺席时仍加载了旧Blob");
         if(!wpfPresent)Require(!AppDomain.CurrentDomain.GetAssemblies().Any(a=>a.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf"),"Wpf缺席时仍加载了专属视图");
-        Console.WriteLine($"S4 Runtime窗口：{_passed}组通过；SDK入口={(sdkPresent?"存在":"缺席")}，Wpf={(wpfPresent?"存在":"缺席")}；真实打开/编辑/文档保存/确定取消；未验证调试运行、本地ROI、全部VM外观或人工验收。");return 0;
+        Console.WriteLine($"S4 Runtime窗口：{_passed}组通过；SDK入口={(sdkPresent?"存在":"缺席")}，Wpf={(wpfPresent?"存在":"缺席")}；真实打开/编辑/保存/确定取消/调试命令与连续停止；未验证本地ROI、全部VM外观或人工验收。");return 0;
     }
     private static IEnumerable<DependencyObject> Logical(DependencyObject root)
     {yield return root;foreach(var child in LogicalTreeHelper.GetChildren(root).OfType<DependencyObject>())foreach(var found in Logical(child))yield return found;}
     private static void Pump()
     {var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);}
+    private static void PumpUntil(Func<bool> complete)
+    {var until=DateTime.UtcNow.AddSeconds(30);while(!complete()){if(DateTime.UtcNow>until)throw new TimeoutException("真实窗口/工作流操作未完成");Pump();Thread.Sleep(5);}Pump();}
     private static void Capture(FrameworkElement view,string name)
     {
         view.UpdateLayout();var bitmap=new RenderTargetBitmap((int)Math.Ceiling(view.ActualWidth),(int)Math.Ceiling(view.ActualHeight),96,96,PixelFormats.Pbgra32);

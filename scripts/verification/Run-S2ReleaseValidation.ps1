@@ -1,8 +1,8 @@
 ﻿[CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeWorkflow','RuntimeCatalog','RuntimeEditor','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeWorkflow','RuntimeDebug','RuntimeCatalog','RuntimeEditor','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
-if($Track -in @('RuntimeKernel','RuntimeWorkflow','RuntimeCatalog','Components','Consumption','InputBoundaries','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
+if($Track -in @('RuntimeKernel','RuntimeWorkflow','RuntimeDebug','RuntimeCatalog','Components','Consumption','InputBoundaries','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
 if($Track -in @('RuntimeEditor','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
@@ -30,6 +30,7 @@ if($Stage -eq 'S3' -and $Track -eq 'RoiBindings'){$source='O06RoiBindingCases.cs
 if($Stage -eq 'S3' -and $Track -eq 'Algorithm'){$source='O06AlgorithmCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeKernel'){$source='S3RuntimeKernelCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeWorkflow'){$source='S3RuntimeWorkflowCases.cs'}
+if($Stage -eq 'S3' -and $Track -eq 'RuntimeDebug'){$source='S3RuntimeDebugCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeCatalog'){$source='S3RuntimeCatalogCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'Components'){$source='S3ComponentCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'Consumption'){$source='S3ConsumptionCases.cs'}

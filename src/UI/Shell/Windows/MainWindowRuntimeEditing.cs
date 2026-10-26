@@ -29,6 +29,13 @@ public partial class MainWindowViewModel
         try
         {
             control.BindDraft(context.DraftNode);
+            control.SetDebugCapture(draft=>
+            {
+                if(!context.IsValid||IsRunning)throw new InvalidOperationException("请在当前方案停止工作流后调试此节点。");
+                return SunEyeVision.Workflow.RuntimeDebugInvocation.Capture(flow,draft,context.DebugOwner,host.Capture().Version,
+                    id=>query.GetNodeContext(id)?.Result,context.DebugCancellation,publishedOwner:session.Document.ExecutionOwner);
+            });
+            SubscribeToolExecutionCompleted(window,node,query,context);
             TrackProductionEditor(_productionEditors,context,window,ClearProductionEditorHost);
             _nodeDebugWindows[node.Id]=window;
             window.Closed+=(_,_)=>_nodeDebugWindows.Remove(node.Id);

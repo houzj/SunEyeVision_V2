@@ -67,3 +67,24 @@ public sealed class BindingRunSnapshot:IBindingRunSnapshot
     public bool TryGetExpectedSourceIdentity(BindingNodeId node,out RunIdentity identity)=>_expected.TryGetValue(node,out identity);
     public bool TryGetResult(BindingNodeId node,out BindingNodeResult result)=>_results.TryGetValue(node,out result!);
 }
+
+/// <summary>Explicit preview inputs selected from already published invocations.
+/// Source identities stay original; this is never a workflow run snapshot. The host
+/// must retain the selected output readers for the entire preview invocation.</summary>
+public sealed class PublishedBindingSnapshot : IBindingRunSnapshot
+{
+    private readonly BindingRunSnapshot _snapshot;
+    public PublishedBindingSnapshot(BindingNodeId consumer,RunIdentity identity,long revision,IEnumerable<BindingNodeResult> sources)
+    {
+        var frozen=sources.ToArray();
+        if(identity.RequestId==Guid.Empty||identity.NodeId!=consumer.NodeId||frozen.Any(s=>s.Node.ScopeId!=consumer.ScopeId||s.Node==consumer||
+            s.Identity.NodeId!=s.Node.NodeId||s.Identity.RequestId==Guid.Empty||s.Identity.ScopeId==Guid.Empty))
+            throw new ArgumentException("Published input identities do not belong to the captured preview scope.");
+        _snapshot=new(consumer,identity,revision,frozen,frozen.ToDictionary(s=>s.Node,s=>s.Identity));
+    }
+    public RunIdentity ConsumerIdentity=>_snapshot.ConsumerIdentity;
+    public BindingNodeId Consumer=>_snapshot.Consumer;
+    public long DocumentRevision=>_snapshot.DocumentRevision;
+    public bool TryGetExpectedSourceIdentity(BindingNodeId node,out RunIdentity identity)=>_snapshot.TryGetExpectedSourceIdentity(node,out identity);
+    public bool TryGetResult(BindingNodeId node,out BindingNodeResult result)=>_snapshot.TryGetResult(node,out result!);
+}

@@ -90,6 +90,14 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
     }
 
     public BindingResolution ResolveBinding(BindingPlan plan,IBindingRunSnapshot snapshot)
+        =>Resolve(plan,snapshot,published:false);
+
+    /// <summary>Resolve an explicitly captured published input for an editor preview.
+    /// Does not relabel the source as a member of the new preview run.</summary>
+    public BindingResolution ResolvePublishedBinding(BindingPlan plan,PublishedBindingSnapshot snapshot)
+        =>Resolve(plan,snapshot,published:true);
+
+    private BindingResolution Resolve(BindingPlan plan,IBindingRunSnapshot snapshot,bool published)
     {
         try
         {
@@ -97,7 +105,7 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
                 throw new BindingFault("consumer-unplanned","Consumer has no admitted request identity.");
             if(snapshot.Consumer!=plan.Consumer || snapshot.DocumentRevision!=plan.DocumentRevision || snapshot.ConsumerIdentity.DocumentSessionId!=plan.DocumentSessionId)
                 throw new BindingFault("document-changed","Binding plan belongs to another consumer or document revision.");
-            var source=ReadReference(plan.Source,snapshot);
+            var source=ReadReference(plan.Source,snapshot,published);
             if(source is null)return new(true,ValueRules.Freeze(plan.Target,null),null);
             var from=plan.Source.SelectedType;var target=plan.Target.Type;
             object? value;
@@ -133,7 +141,7 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
         {return new(false,null,new("invalid-value",fault.Message,plan.Target.Id));}
     }
 
-    private static object? ReadReference(BindingReferencePlan plan,IBindingRunSnapshot snapshot)
+    private static object? ReadReference(BindingReferencePlan plan,IBindingRunSnapshot snapshot,bool published)
     {
         if(!snapshot.TryGetExpectedSourceIdentity(plan.Source.Node,out var expected) || expected.RequestId==Guid.Empty)
             throw new BindingFault("source-unplanned","Source has no admitted request in this frozen dependency snapshot.");
@@ -141,7 +149,7 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             throw new BindingFault("source-unavailable","Source did not produce a successful result in this invocation.");
         var identity=snapshot.ConsumerIdentity;
         if(result.Identity!=expected || result.Node!=plan.Source.Node || result.Identity.NodeId!=plan.Source.Node.NodeId || result.Identity.ScopeId!=plan.Source.ExecutionScopeId ||
-            result.Identity.DocumentSessionId!=identity.DocumentSessionId || result.Identity.RunId!=identity.RunId)
+            (!published&&(result.Identity.DocumentSessionId!=identity.DocumentSessionId || result.Identity.RunId!=identity.RunId)))
             throw new BindingFault("run-mismatch","Source result belongs to another node, document session or run.");
         if(result.SchemaRevision!=plan.Source.SchemaRevision || result.SchemaFingerprint!=plan.Source.Schema.Fingerprint)
             throw new BindingFault("schema-changed","Runtime schema differs from the compiled binding plan.");
@@ -152,7 +160,7 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
         {
             if(value is null)throw new BindingFault("index-null","Cannot select an item from null.");
             long index=plan.Reference.Selection is BindingSelection.AtConstant fixedIndex?fixedIndex.Index:
-                ReadReference(plan.Index!,snapshot) is long dynamicIndex?dynamicIndex:throw new BindingFault("index-value","Dynamic index is unavailable or is not an Int64 scalar.");
+                ReadReference(plan.Index!,snapshot,published) is long dynamicIndex?dynamicIndex:throw new BindingFault("index-value","Dynamic index is unavailable or is not an Int64 scalar.");
             var elements=Elements(value);
             if(index<0 || index>=elements.Length)throw new BindingFault("index-range","Index is outside this invocation's sequence; no fallback item is used.");
             value=elements[(int)index];

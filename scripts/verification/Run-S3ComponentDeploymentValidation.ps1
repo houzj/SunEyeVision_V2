@@ -80,6 +80,9 @@ try {
     & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeWorkflow
     if($LASTEXITCODE -ne 0){throw '缺少Wpf时中立Runtime调度/引用/保存重开失败'}
     $results.Add([ordered]@{name='without-editor-runtime-workflow';passed=$true;scope='中立配置→实际调度器→HALCON→输入引用与同帧ROI→保存重开→取消与资源租约'})
+    & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeDebug
+    if($LASTEXITCODE -ne 0){throw '缺少Wpf时Runtime已发布输入调试快照失败'}
+    $results.Add([ordered]@{name='without-editor-runtime-debug';passed=$true;scope='已发布输入快照→真实HALCON，不重跑上游/不改来源身份；冻结设置、取消与资源排空'})
     $sdkBlob='plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll'
     Move-IntoHold $sdkBlob
     $runtimeOnly=[Text.Encoding]::UTF8.GetString($original)|ConvertFrom-Json -AsHashtable -Depth 100

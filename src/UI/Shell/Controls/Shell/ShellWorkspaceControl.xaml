@@ -1,15 +1,17 @@
-<UserControl x:Class="SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl"
+﻿<UserControl x:Class="SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:canvas="clr-namespace:SunEyeVision.UI.Features.WorkflowUI.Canvas"
              xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+             xmlns:shell="clr-namespace:SunEyeVision.UI.Shell.Controls.Shell"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="900">
 
   <!-- ========== 工作区（含右下角小地图覆盖层） ========== -->
   <Grid>
+    <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <Border Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="0">
       <TabControl x:Name="WorkflowTabControl"
                     Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}"
@@ -488,5 +490,6 @@
         <Image Stretch="None"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_expand_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_expand_click.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image>
       </Button>
     </Grid>
+    <shell:WorkspaceStatusBarControl x:Name="WorkspaceStatusBar" Grid.Row="1"/>
   </Grid>
 </UserControl>

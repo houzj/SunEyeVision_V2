@@ -59,6 +59,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public ShellWorkspaceControl()
         {
             InitializeComponent();
+            WorkspaceStatusBar.ScaleRequested += WorkspaceScaleRequested;
             Loaded += (_, _) => { if (_viewModel != null) { RefreshMiniMap(); QueueRestoreWorkspaceView(); } };
             Unloaded += (_, _) => { CaptureWorkspaceView(_viewModel?.WorkflowTabViewModel?.SelectedTab); ++_viewRestoreGeneration; _restoringContainerView=false; _miniMapThrottleTimer.Stop(); UnbindMiniMapContent(); };
 
@@ -80,6 +81,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public void Initialize(MainWindowViewModel viewModel)
         {
             _viewModel = viewModel;
+            WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.StatusTextProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.StatusText)){Source=viewModel});
+            WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.ScaleProperty,new System.Windows.Data.Binding("SelectedTab.CurrentScale"){Source=viewModel.WorkflowTabViewModel,Mode=System.Windows.Data.BindingMode.OneWay});
         }
 
         /// <summary>
@@ -760,6 +763,14 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         #endregion
+
+        private void WorkspaceScaleRequested(double scale)
+        {
+            var tab=_viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if(tab==null||!double.IsFinite(scale))return;
+            var viewer=GetCurrentScrollViewer();
+            ApplyZoom(tab.CurrentScale,Math.Clamp(Math.Round(scale,1),MinScale,MaxScale),viewer==null?null:new Point(viewer.ViewportWidth/2,viewer.ViewportHeight/2),viewer);
+        }
 
         #region 缩放功能
 

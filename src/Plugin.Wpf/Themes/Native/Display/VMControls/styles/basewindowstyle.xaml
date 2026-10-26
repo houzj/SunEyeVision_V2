@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:Color="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun;assembly=SunEyeVision.Plugin.Wpf">
   <ResourceDictionary.MergedDictionaries>
     <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
   </ResourceDictionary.MergedDictionaries>

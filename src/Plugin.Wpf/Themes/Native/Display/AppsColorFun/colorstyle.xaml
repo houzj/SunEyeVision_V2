@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <SolidColorBrush x:Key="CheckBoxFillNormal" Color="#F4F4F4" />
+  <SolidColorBrush x:Key="CheckBoxStroke" Color="#8E8F8F" />
+  <SolidColorBrush x:Key="TextBox.Static.Border" Color="#CCCCCD" />
+  <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="#FF7EB4EA" />
+  <SolidColorBrush x:Key="TextBox.Focus.Border" Color="#FF569DE5" />
+  <SolidColorBrush x:Key="TextBox.Normal.Forground" Color="#808080" />
+  <SolidColorBrush x:Key="NormalBorderBrush" Color="#e6e6e6" />
+  <SolidColorBrush x:Key="TextDisenabledForground" Color="#FF949494" />
+  <LinearGradientBrush x:Key="ComboBoxBorder">
+    <GradientStop Offset="0.0" Color="#FCFCFC" />
+    <GradientStop Offset="0.15" Color="#FCFCFC" />
+    <GradientStop Offset="1" Color="#F7F7F7" />
+  </LinearGradientBrush>
+  <SolidColorBrush x:Key="ComboBoxBorderS" Color="#F7F7F7" />
+  <SolidColorBrush x:Key="TitleBackGround" Color="#1E1E20" />
+  <SolidColorBrush x:Key="TopMaskHover" Color="#99626266" />
+  <SolidColorBrush x:Key="SubMaskHover" Color="#26F2F4F6" />
+  <SolidColorBrush x:Key="ForegroundHover" Color="#FCFCFA" />
+  <SolidColorBrush x:Key="SplitLineStroke" Color="#FF46484C" />
+  <SolidColorBrush x:Key="LogoForground" Color="#FFF9F9F9" />
+  <SolidColorBrush x:Key="TabItemNormalBack" Color="#FF383A3c" />
+  <SolidColorBrush x:Key="TabItemHoverBack" Color="#FF414141" />
+  <SolidColorBrush x:Key="TabItemSelectedBack" Color="#FF46474A" />
+  <SolidColorBrush x:Key="TabItemPanalBack" Color="#FF3B3E40" />
+  <SolidColorBrush x:Key="DashedLineStroke" Color="#FF575858" />
+  <SolidColorBrush x:Key="SeparatorStroke" Color="#FF575757" />
+  <LinearGradientBrush x:Key="RectStoke" StartPoint="0,0.5" EndPoint="1,0.5">
+    <GradientStop Color="#FFFD4F41" Offset="0" />
+    <GradientStop Color="#FFF76900" Offset="0.5" />
+    <GradientStop Color="#FFFD4F41" Offset="1" />
+  </LinearGradientBrush>
+  <SolidColorBrush x:Key="RectStokeS" Color="#FFFD4F41" />
+  <LinearGradientBrush x:Key="GridBackground" EndPoint="0.5,1" StartPoint="0.5,0">
+    <GradientStop Color="#FF1E1F22" Offset="0" />
+    <GradientStop Color="#FF1E1E1E" Offset="1" />
+  </LinearGradientBrush>
+  <SolidColorBrush x:Key="ImageTitleBackground" Color="#282828" />
+  <SolidColorBrush x:Key="ButtonBorder" Color="#646464" />
+  <SolidColorBrush x:Key="ButtonBackground" Color="#99AC4D06" />
+  <SolidColorBrush x:Key="ButtonForground" Color="#F2F2F2" />
+  <SolidColorBrush x:Key="TabPanalBack" Color="#4b4d52" />
+  <SolidColorBrush x:Key="ButtonBorderBrush" Color="#1F0E01" />
+  <SolidColorBrush x:Key="WinAreaColor" Color="#FF999999" />
+  <SolidColorBrush x:Key="BorderColor" Color="#FF797979" />
+  <SolidColorBrush x:Key="OKColor" Color="#FF00d53c" />
+  <SolidColorBrush x:Key="NGColor" Color="#FFCA0831" />
+  <SolidColorBrush x:Key="ListBorder" Color="#828790" />
+  <SolidColorBrush x:Key="NoCameraForground" Color="#BEBEBE" />
+  <SolidColorBrush x:Key="LogForeground" Color="#d9d9d9" />
+  <SolidColorBrush x:Key="TextBox.Foreground" Color="#BFBFBF" />
+  <SolidColorBrush x:Key="Popup.BorderBrush" Color="#161617" />
+  <SolidColorBrush x:Key="NormalTextBlockColor" Color="#D1D1D1" />
+  <SolidColorBrush x:Key="DeepBlackBackgroundColor" Color="#313131" />
+  <SolidColorBrush x:Key="DeepBlackTextBlcokBackgroundColor" Color="#333335" />
+  <SolidColorBrush x:Key="OutsideDarkBorderBrushColor" Color="#626262" />
+  <SolidColorBrush x:Key="DarkLineBorderBrushColor" Color="#5B5B5B" />
+  <SolidColorBrush x:Key="ModuleForeground" Color="#4C4C4C" />
+  <SolidColorBrush x:Key="ImgPanelForeground" Color="#ccBEBEBE" />
+  <SolidColorBrush x:Key="ImageListdBorderBrush" Color="#3876CB" />
+  <SolidColorBrush x:Key="ResultTabBoBrush" Color="#28292a" />
+  <SolidColorBrush x:Key="ResultGridBaground" Color="#FFF0F0F0" />
+  <SolidColorBrush x:Key="TreeTabItemBaground" Color="#46494D" />
+  <SolidColorBrush x:Key="TreeTabItemBoBaground" Color="#000000" />
+  <SolidColorBrush x:Key="TreeTabItemGridBaground" Color="#686A6F" />
+  <SolidColorBrush x:Key="MainviewBaground" Color="#FF3B3E41" />
+  <SolidColorBrush x:Key="WindowShadow" Color="#44F0F4F9" />
+  <SolidColorBrush x:Key="ImageListRectFill" Color="#595a5c" />
+  <SolidColorBrush x:Key="TabPanalLight" Color="White" />
+  <SolidColorBrush x:Key="ParamsTabForeground" Color="#FF666666" />
+  <SolidColorBrush x:Key="StatusBarFg" Color="#7FF92D2D" />
+  <SolidColorBrush x:Key="StatusBarButtonBg" Color="#FFD6CFCF" />
+  <SolidColorBrush x:Key="StatusBarButtonBB" Color="#FFB8ADAD" />
+  <SolidColorBrush x:Key="StatusBarButtonFg" Color="#FF807C7C" />
+  <SolidColorBrush x:Key="ListViewComboBoxBordBrush" Color="#CCCCCC" />
+  <SolidColorBrush x:Key="ListViewComboBoxBackground" Color="#FCFCFC" />
+  <SolidColorBrush x:Key="ListViewComboBoxIsSelected" Color="#E7E5E4" />
+  <SolidColorBrush x:Key="btnEditTemplateBorderBG" Color="#E1DEDE" />
+  <SolidColorBrush x:Key="btnEditTemplateEnableBG" Color="#E7E7E8" />
+  <SolidColorBrush x:Key="btnEditTemplateEnableBB" Color="#CFCFD0" />
+  <SolidColorBrush x:Key="btnEditTemplateEnableFG" Color="#80666666" />
+  <SolidColorBrush x:Key="BottomLineBtnEnableBG" Color="#80D6D5D4" />
+  <SolidColorBrush x:Key="BottomLineBtnEnableBB" Color="#B8B6B6" />
+  <SolidColorBrush x:Key="TextButtonBB" Color="DarkGray" />
+  <SolidColorBrush x:Key="ScrollBarFill" Color="#FFE5EAF0" />
+  <SolidColorBrush x:Key="ScrollBarStroke" Color="#FFC1CCD6" />
+  <SolidColorBrush x:Key="ScrollBarFillTg" Color="#CFDDEA" />
+  <SolidColorBrush x:Key="ScrollBarStrokeTg" Color="#CCA7C6E5" />
+  <SolidColorBrush x:Key="GridLinesBrush" Color="#00E9ECF1" />
+  <SolidColorBrush x:Key="HikTextBoxFg" Color="#777777" />
+  <SolidColorBrush x:Key="ListViewFg" Color="#FF042271" />
+  <SolidColorBrush x:Key="LogicTypeButtonBB" Color="#FFB8B6B6" />
+  <SolidColorBrush x:Key="LogicTypeStroke" Color="#4CA9A9A9" />
+  <SolidColorBrush x:Key="LogicTypeFill" Color="#4CD5D6D4" />
+  <SolidColorBrush x:Key="LogicTypeFG" Color="#66666666" />
+  <SolidColorBrush x:Key="GloCameraComboBB" Color="#4e5054" />
+  <SolidColorBrush x:Key="GloCameraComboSelectBg" Color="#474747" />
+  <SolidColorBrush x:Key="GloCameraComboSelectFg" Color="#efefef" />
+  <SolidColorBrush x:Key="GloCameraComboBorderBg" Color="#2c2d2f" />
+  <SolidColorBrush x:Key="ImageProcessSelectBg" Color="#D8D8D8" />
+  <SolidColorBrush x:Key="ToolBarBorderBrush" Color="#FF171716" />
+  <SolidColorBrush x:Key="ToolBarRectStroke" Color="#FFB34F05" />
+  <SolidColorBrush x:Key="ToolBarPopupGridBg" Color="#02FFFFFF" />
+  <SolidColorBrush x:Key="GlobalHeadGrid" Color="#FAFAFC" />
+  <SolidColorBrush x:Key="GlobalGridBg" Color="#E3E4E6" />
+  <SolidColorBrush x:Key="GlobalMouseOverBg" Color="#FFF2F3F5" />
+  <SolidColorBrush x:Key="GlobalBorderBrush" Color="#C8C4C1" />
+  <SolidColorBrush x:Key="GlobalBorderBg" Color="#E4E5E7" />
+  <SolidColorBrush x:Key="GlobalRectFill" Color="#E0DFDE" />
+  <SolidColorBrush x:Key="BaseWindowBg" Color="#46FFFFFF" />
+  <SolidColorBrush x:Key="BaseWindowBgPress" Color="#28FFFFFF" />
+  <SolidColorBrush x:Key="WhiteButtonBB" Color="#D1CFCF" />
+  <SolidColorBrush x:Key="LockWindowNumberButtonBB" Color="#DB3B3B3B" />
+  <SolidColorBrush x:Key="IconMenuItemFg" Color="#AFAFAF" />
+  <SolidColorBrush x:Key="MenuItemSeparatorBB" Color="#888888" />
+  <SolidColorBrush x:Key="MenuItemHighLightBB" Color="#3579d5" />
+  <SolidColorBrush x:Key="MenuItemHighLightBg" Color="#5697ef" />
+  <SolidColorBrush x:Key="MenuItemFocusBg" Color="#316fc2" />
+  <SolidColorBrush x:Key="VerticalScrollBarStroke" Color="#CCCCD5DF " />
+  <SolidColorBrush x:Key="UpItemFg" Color="#333333 " />
+  <SolidColorBrush x:Key="UpItemEnableBg" Color="#FFF5F7FA " />
+  <SolidColorBrush x:Key="OutputHighlightBackground" Color="#FFDDE6F2" />
+  <SolidColorBrush x:Key="FouerColorBorderBB" Color="#151516 " />
+  <SolidColorBrush x:Key="ToggleButtonFg" Color="#6a6A69 " />
+  <SolidColorBrush x:Key="TextBlockFg" Color="#5C5C5C" />
+  <SolidColorBrush x:Key="GuideTextBlockFg" Color="#B8B8B8 " />
+  <SolidColorBrush x:Key="GuideWindowTextBlockFg" Color="#a6a6a6 " />
+  <SolidColorBrush x:Key="TitleColor" Color="#4d4d4d" />
+  <SolidColorBrush x:Key="MultiImageControlBlack" Color="#1f0f01" />
+</ResourceDictionary>

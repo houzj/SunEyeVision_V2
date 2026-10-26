@@ -18,7 +18,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shell;
 using System.Windows.Threading;
-using Apps.ColorFun;
+using SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun;
 using Apps.Localization;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.VMControls;

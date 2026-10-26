@@ -22,9 +22,11 @@ NAMESPACES = {'VM.Controls': PREFIX + '.VMControls',
               'VMBaseControls': PREFIX + '.VMBaseControls',
               'VM.Utility': PREFIX + '.VMUtility',
               'HikVision.Styles': PREFIX + '.HikVision.Styles',
-              'VisionUi': PREFIX + '.VisionUi'}
-LIBRARIES = ('VM.Controls', 'VMBaseControls')
-LIB_FOLDER = {'VM.Controls': 'VMControls', 'VMBaseControls': 'VMBaseControls'}
+              'VisionUi': PREFIX + '.VisionUi',
+              'Apps.ColorFun': PREFIX + '.Apps.ColorFun'}
+LIBRARIES = ('VM.Controls', 'VMBaseControls', 'Apps.ColorFun')
+LIB_FOLDER = {'VM.Controls': 'VMControls', 'VMBaseControls': 'VMBaseControls',
+              'Apps.ColorFun': 'AppsColorFun'}
 ASSET_SUFFIXES = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.cur', '.ttf'}
 
 
@@ -59,7 +61,10 @@ def replace_namespaces(text):
     for name in sorted(NUMERIC_TYPES, key=len, reverse=True):
         text = re.sub(r'\bVM\.Controls\.' + re.escape(name) + r'\b', NUMERIC + '.' + name, text)
     for old, new in sorted(NAMESPACES.items(), key=lambda item: -len(item[0])):
-        text = re.sub(r'(?<![\w.])' + re.escape(old) + r'(?=[.;:\s"\'<,)}\]]|$)', new, text)
+        # The exported VMControls contains visual VM.Utility helpers, but not the
+        # vendor CurrentPathHelper contract. Do not fabricate ownership of it.
+        external = r'(?!\.SingleInstance\b)' if old == 'VM.Utility' else ''
+        text = re.sub(r'(?<![\w.])' + re.escape(old) + external + r'(?=[.;:\s"\'<,)}\]]|$)', new, text)
     return text
 
 
@@ -96,6 +101,8 @@ def main():
     excluded_files = []
     uri_map = {}
     logical_pages = {}
+    original_build_items = []
+    resource_xaml_targets = set()
     for library in LIBRARIES:
         source = exports / library
         for path in sorted(source.rglob('*')):
@@ -119,16 +126,23 @@ def main():
     # BAML resource path lives in Page.LogicalName and is the base of relative merges.
     for library in LIBRARIES:
         project = ET.parse(exports / library / (library + '.csproj')).getroot()
-        for item in project.iter('Page'):
+        for item in project.iter():
+            if item.tag not in ('Page', 'Resource', 'EmbeddedResource'):
+                continue
             source_name = item.get('Include')
             logical = item.get('LogicalName')
-            if not source_name or not logical:
+            if not source_name:
                 continue
             key = (library.lower(), source_name.replace('\\', '/').lower())
             mapped = uri_map.get(key)
             if mapped is not None:
-                logical_pages[key] = logical
-                uri_map[(library.lower(), logical.lower())] = mapped
+                original_build_items.append({'library': library, 'sourceRelative': source_name,
+                                             'itemType': item.tag, 'logicalName': logical, 'target': mapped.as_posix()})
+                if item.tag == 'Resource' and mapped.suffix.lower() == '.xaml':
+                    resource_xaml_targets.add(mapped.as_posix())
+                if logical:
+                    logical_pages[key] = logical
+                    uri_map[(library.lower(), logical.lower())] = mapped
 
     for name in ('generic.xaml', 'aero2.normalcolor.xaml'):
         uri_map[('vm.controls', 'controls/numericupdown/themes/' + name)] = Path(
@@ -143,6 +157,11 @@ def main():
         destination = ('src/Plugin.Wpf/Themes/Native/Display/VisionUi' if name == 'SourceColorPickerStyles.xaml'
                        else 'src/Plugin.Wpf/Controls/Native/Display/VisionUi')
         entries.append(('VisionUi', source, Path(name), Path(destination) / name, data))
+
+    colorchart = local / 'SourceAssets/colorchart.png'
+    colorchart_target = Path('src/Plugin.Wpf/Themes/Assets/Native/Display/VisionUi/SourceAssets/colorchart.png')
+    entries.append(('VisionUi', colorchart, Path('SourceAssets/colorchart.png'), colorchart_target, colorchart.read_bytes()))
+    uri_map[('visionui', 'sourceassets/colorchart.png')] = colorchart_target
 
     records = []
     unhandled_uris = []
@@ -165,11 +184,11 @@ def main():
                     return match[0]
                 changes.append('assembly component URI')
                 return '/SunEyeVision.Plugin.Wpf;component/' + mapped.relative_to('src/Plugin.Wpf').as_posix()
-            text = re.sub(r'/(VM\.Controls|VMBaseControls|VM\.PcUI);component/([^"\s<>;]+)', component,
+            text = re.sub(r'/?(VM\.Controls|VMBaseControls|VM\.PcUI|Apps\.ColorFun|VisionUi);component/([^"\s<>;]+)', component,
                           text, flags=re.IGNORECASE)
             if library in LIBRARIES and source.suffix.lower() == '.xaml':
                 def relative_dictionary(match):
-                    value = match.group(1)
+                    attribute, value = match.group(1), match.group(2)
                     if value.startswith('/') or ':' in value:
                         return match[0]
                     base_resource = logical_pages.get((library.lower(), relative.as_posix().lower()), relative.as_posix())
@@ -178,14 +197,15 @@ def main():
                     if mapped is None:
                         unhandled_uris.append({'source': str(source), 'assembly': library, 'resource': resolved})
                         return match[0]
-                    changes.append('relative dictionary URI relocated to exact component path')
-                    return 'Source="/SunEyeVision.Plugin.Wpf;component/' + mapped.relative_to('src/Plugin.Wpf').as_posix() + '"'
-                text = re.sub(r'Source="([^"]+\.xaml)"', relative_dictionary, text, flags=re.IGNORECASE)
+                    changes.append('relative resource URI relocated to exact component path')
+                    return attribute + '="/SunEyeVision.Plugin.Wpf;component/' + mapped.relative_to('src/Plugin.Wpf').as_posix() + '"'
+                text = re.sub(r'(Source|ImageSource|UriSource)="([^"]+\.(?:xaml|png|jpg|jpeg|gif|bmp|ico|cur|ttf))"',
+                              relative_dictionary, text, flags=re.IGNORECASE)
             for namespace, assembly in re.findall(r'clr-namespace:([^;"\s]+);assembly=([^"\s]+)', original):
                 if assembly not in LIBRARIES and assembly not in ('mscorlib', 'System', 'System.Core', 'WindowsBase', 'PresentationCore', 'PresentationFramework'):
                     xaml_dependencies.setdefault(assembly, []).append({'namespace': namespace, 'target': target.as_posix()})
             # Original fully qualified namespaces and self-assembly names in XAML.
-            text = re.sub(r';assembly=(?:VM\.Controls|VMBaseControls)(?=["\s])',
+            text = re.sub(r';assembly=(?:VM\.Controls|VMBaseControls|Apps\.ColorFun)(?=["\s])',
                           ';assembly=SunEyeVision.Plugin.Wpf', text)
             text = replace_namespaces(text)
             if library == 'VMBaseControls' and relative.name == 'EditRoundedWindow.xaml':
@@ -199,7 +219,7 @@ def main():
                 # Preserve all original behavior, but give cross-group numeric types an explicit import.
                 text = 'using ' + NUMERIC + ';\nusing ' + NUMERIC + '.PropertyGrid.Editors;\n' + text
                 for namespace in re.findall(r'^using\s+([\w.]+)\s*;', original, re.M):
-                    if namespace in ('System.Windows.Interactivity', 'System.Management') or not namespace.startswith(('System', 'VM.Controls', 'VMBaseControls', 'VM.Utility', 'HikVision.Styles')):
+                    if namespace in ('System.Windows.Interactivity', 'System.Management', 'VM.Utility.SingleInstance') or not namespace.startswith(('System', 'VM.Controls', 'VMBaseControls', 'VM.Utility', 'HikVision.Styles')):
                         clr_dependencies.setdefault(namespace, []).append(target.as_posix())
                 for dll in re.findall(r'DllImport\("([^"]+)"', original):
                     native_dependencies.append({'library': dll, 'source': target.as_posix()})
@@ -255,7 +275,7 @@ def main():
     manifest = {'baseline': 'b87fb6857212ce8e1a7d0d0cb47c6c9a00c8e86b',
                 'status': 'source_port_only_not_built_or_run',
                 'namespace': PREFIX, 'sourceRoots': [str(exports / lib) for lib in LIBRARIES],
-                'scope': 'VM.Controls非数值族全部源码与支撑、VMBaseControls视觉/ROI源码与原资源及VisionUi颜色还原；不导入厂商业务模型或调度',
+                'scope': 'VM.Controls非数值族全部源码与支撑、VMBaseControls视觉/ROI源码与原资源、Apps.ColorFun视觉依赖及VisionUi颜色还原；不导入厂商业务模型或调度',
                 'files': records, 'types': controls, 'excludedFiles': excluded_files,
                 'type_map': dict(sorted(type_map.items())),
                 'source_to_target': {record['source'].replace('\\', '/'): record['target'] for record in records},
@@ -263,13 +283,15 @@ def main():
                                       for key, value in sorted(uri_map.items())},
                 'localReconstructionControls': [PREFIX + '.VisionUi.SourceAdvancedColorPicker', PREFIX + '.VisionUi.SourceColorPalette'],
                 'build_items_for_root': {'Compile': [r['target'] for r in records if r['target'].endswith('.cs')],
-                                         'Page': [r['target'] for r in records if r['target'].endswith('.xaml')],
-                                         'Resource': [r['target'] for r in records if Path(r['target']).suffix.lower() in ASSET_SUFFIXES]},
+                                         'Page': [r['target'] for r in records if r['target'].endswith('.xaml') and r['target'] not in resource_xaml_targets] + ['src/Plugin.Wpf/Themes/Native/Display/DisplayResources.xaml'],
+                                         'Resource': [r['target'] for r in records if Path(r['target']).suffix.lower() in ASSET_SUFFIXES or r['target'] in resource_xaml_targets]},
                 'externalNamespaces': {k: sorted(set(v)) for k, v in sorted(clr_dependencies.items())},
                 'externalXamlAssemblyReferences': xaml_dependencies,
-                'originalProjectAssemblyReferences': {lib['name']: lib['references'] for lib in inventory['libraries'] if lib['name'] in LIBRARIES},
+                'originalProjectAssemblyReferences': {lib: [item.get('Include') for item in ET.parse(exports / lib / (lib + '.csproj')).getroot().iter('Reference')]
+                                                     for lib in LIBRARIES},
                 'nativeDependencies': native_dependencies, 'unresolvedComponentUris': unhandled_uris,
                 'embeddedResourcesForRootBuildIntegration': embedded_resources,
+                'originalBuildItems': original_build_items,
                 'originalPageLogicalNames': [{'library': key[0], 'sourceRelative': key[1], 'originalLogicalName': value}
                                              for key, value in sorted(logical_pages.items())],
                 'entryDictionary': 'src/Plugin.Wpf/Themes/Native/Display/DisplayResources.xaml',
@@ -277,6 +299,10 @@ def main():
                                 'Numeric组提供排除类型及numericupdown两主题；本文不复制其代码',
                                 'Apps.BaseData/Mvvm/VMControls.RenderInterface等外部合同需根承接，未生成空stub或第二套业务ROI模型',
                                 '反编译源码及原XAML已保留完整行为；源可用不等于编译/运行已通过'],
+                'dependencyBoundary': ['Apps.ColorFun保留原ColorCFG/ColorStyle外部加载及Apps.BaseData/Apps.Log/VM.Utility.SingleInstance依赖，未造配置或日志替代',
+                                       'Apps.ColorFun原colorstyle1/2/3.xaml为Resource非Page，按originalBuildItems保留构建身份',
+                                       'ColorPicker/PropertyGrid模板指向实际原图，本地VisionUi色彩图保留',
+                                       'aero2/common.xaml的resize_grip.png在现有原导出和本地还原树未找到，保留未解析身份，不以别图或手绘替代'],
                 'built': False, 'tested': False}
     manifest_path = ROOT / 'src/Plugin.Wpf/Controls/Native/Display/display-migration-manifest.json'
     manifest_path.parent.mkdir(parents=True, exist_ok=True)

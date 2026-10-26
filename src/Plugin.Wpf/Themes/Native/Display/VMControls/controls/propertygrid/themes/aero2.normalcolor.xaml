@@ -602,10 +602,10 @@
                 <Grid Name="sortButtonContainer" Margin="4" Visibility="{Binding ShowSortOptions, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}">
                   <StackPanel Orientation="Horizontal" Margin="1">
                     <RadioButton VerticalAlignment="Center" ToolTip="Categorized" Style="{StaticResource OptionsToggleButtonStyle}" IsChecked="{Binding IsCategorized, RelativeSource={RelativeSource TemplatedParent}}">
-                      <Image Source="./../Images/Categorize16.png" Width="16" Height="16" />
+                      <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/categorize16.png" Width="16" Height="16" />
                     </RadioButton>
                     <RadioButton VerticalAlignment="Center" ToolTip="Alphabetical" Style="{StaticResource OptionsToggleButtonStyle}" IsChecked="{Binding IsCategorized, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource InverseBoolConverter}}">
-                      <Image Source="./../Images/SortAscending16.png" Width="16" Height="16" />
+                      <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/sortascending16.png" Width="16" Height="16" />
                     </RadioButton>
                   </StackPanel>
                 </Grid>
@@ -628,7 +628,7 @@
                       </FrameworkElement.Style>
                     </local:WatermarkTextBox>
                     <Button Grid.Column="1" Command="commands:PropertyGridCommands.ClearFilter" HorizontalAlignment="Left" Style="{StaticResource ClearFilterButtonStyle}">
-                      <Image Source="./../Images/ClearFilter16.png" Width="16" Height="16" />
+                      <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/clearfilter16.png" Width="16" Height="16" />
                     </Button>
                   </Grid>
                 </Border>

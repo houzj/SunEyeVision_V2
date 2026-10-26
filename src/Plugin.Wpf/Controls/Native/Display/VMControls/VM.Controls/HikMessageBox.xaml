@@ -166,7 +166,7 @@
           <Control.Template>
             <ControlTemplate TargetType="{x:Type Button}">
               <Grid Background="#00FFFFFF">
-                <Image Name="Image" Stretch="None" Source="../Resources/ic_log_fold_normal.png" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                <Image Name="Image" Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Display/VMControls/resources/ic_log_fold_normal.png" VerticalAlignment="Center" HorizontalAlignment="Center" />
               </Grid>
               <ControlTemplate.Triggers>
                 <Trigger Property="UIElement.IsMouseOver" Value="True">
@@ -180,7 +180,7 @@
           <Control.Template>
             <ControlTemplate TargetType="{x:Type Button}">
               <Grid Background="#00FFFFFF">
-                <Image Name="Image" Stretch="None" Source="../Resources/msg_close_normal.png" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                <Image Name="Image" Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Display/VMControls/resources/msg_close_normal.png" VerticalAlignment="Center" HorizontalAlignment="Center" />
               </Grid>
               <ControlTemplate.Triggers>
                 <Trigger Property="UIElement.IsMouseOver" Value="True">

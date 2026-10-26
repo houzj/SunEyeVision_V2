@@ -148,7 +148,7 @@ public class ROIControlBase : ROIControlFrame
 			{
 				resource = new ResourceDictionary
 				{
-					Source = new Uri("SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;component/Base/ImageView/ROI/ROIControlBaseStyle.xaml", UriKind.Relative)
+					Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/roicontrolbasestyle.xaml", UriKind.Relative)
 				};
 			}
 			return resource[key];

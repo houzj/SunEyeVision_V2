@@ -70,7 +70,7 @@
                     <Path Fill="#FF000000" Data="M4,0 L8,0 L8,5 L12,5 L6,12 L0,5 L4,5" />
                   </Button>
                   <Button Margin="0,7,0,0" Command="Delete" Style="{StaticResource CollectionControlButtonStyle}" CommandParameter="{Binding SelectedItem, ElementName=PART_ListBox}">
-                    <Image Stretch="None" Height="16" Width="16" Margin="1" Source="./../Images/Delete16.png" />
+                    <Image Stretch="None" Height="16" Width="16" Margin="1" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Display/VMControls/controls/collectioncontrol/images/delete16.png" />
                   </Button>
                 </StackPanel>
               </Grid>

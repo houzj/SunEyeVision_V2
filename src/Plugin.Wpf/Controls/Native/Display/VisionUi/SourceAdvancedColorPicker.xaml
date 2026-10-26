@@ -602,7 +602,7 @@
         <StackPanel Orientation="Horizontal">
           <Border Name="borderColorChart" Margin="10,10,0,0" VerticalAlignment="Top" Width="138">
             <Grid>
-              <Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf.Native.Display.VisionUi;component/SourceAssets/colorchart.png" MouseDown="Image_MouseDown" MouseMove="Image_MouseMove" />
+              <Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Display/VisionUi/SourceAssets/colorchart.png" MouseDown="Image_MouseDown" MouseMove="Image_MouseMove" />
               <Ellipse Name="colorMarker" Width="12" Height="12" StrokeThickness="2" Stroke="#FFA52A2A" />
             </Grid>
           </Border>

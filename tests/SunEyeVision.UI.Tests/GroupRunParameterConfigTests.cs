@@ -160,7 +160,11 @@ public sealed class GroupRunParameterConfigTests
             Assert.Equal("second",input.Source!.SourceNodeId);Assert.Equal(replacement.GetBindingPath(),input.BindingSource);
             binding.BindingSource="";binding.RaiseEvent(new RoutedEventArgs(SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingSourceSelectedEvent));Assert.Null(input.Source);Assert.Empty(input.BindingSource);
             var display=new SubroutineDisplayItem{DisplayName="文本",DisplayType=SubroutineDisplayType.Text,TextStyle=new()};p.DisplayConfigs.Add(display);
-            Visual<TabControl>(control).First().SelectedIndex=3;window.UpdateLayout();
+            Visual<TabControl>(control).First().SelectedIndex=3;window.UpdateLayout();window.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);window.UpdateLayout();
+            var displayGrid=Visual<DataGrid>(control).Single(g=>ReferenceEquals(g.ItemsSource,p.DisplayConfigs));
+            Assert.Equal(70,displayGrid.Columns[0].ActualWidth);Assert.True(displayGrid.Columns[2].ActualWidth>400);Assert.Equal(70,displayGrid.Columns[0].Width.Value);Assert.Equal(68,displayGrid.Columns[1].Width.Value);Assert.Equal("累积显示",displayGrid.Columns[^2].Header);Assert.Equal(42,displayGrid.Columns[^1].Width.Value);
+            Assert.Equal(32,Visual<TextBox>(displayGrid).Single(t=>t.GetBindingExpression(TextBox.TextProperty)?.ParentBinding.Path.Path=="DisplayName").MaxLength);
+            var displayBitmap=new RenderTargetBitmap(1100,680,96,96,PixelFormats.Pbgra32);displayBitmap.Render((FrameworkElement)window.Content);var displayEncoder=new PngBitmapEncoder();displayEncoder.Frames.Add(BitmapFrame.Create(displayBitmap));using(var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"group-display-Dark.png")))displayEncoder.Save(file);
             var displayBinding=Visual<SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding>(control).Single(b=>ReferenceEquals(b.DataContext,display));
             displayBinding.BindingSource=replacement.GetBindingPath();displayBinding.RaiseEvent(new SunEyeVision.Plugin.SDK.UI.Controls.ParamBindingSourceEventArgs(SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingSourceSelectedEvent,replacement));
             Assert.Equal("second",display.BoundDataSource!.SourceNodeId);Assert.NotSame(replacement,display.BoundDataSource);Assert.Equal("parent",display.BoundDataSource.SourceWorkflowId);

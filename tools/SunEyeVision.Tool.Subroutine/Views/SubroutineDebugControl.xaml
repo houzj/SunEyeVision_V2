@@ -329,19 +329,19 @@
                                   Background="Transparent"
                                   RowHeight="32"
                                   HeadersVisibility="Column"
-                                  Margin="0,4,0,0">
+                                  Margin="18,4,2,0">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="参数名称" Width="*">
+                                <DataGridTemplateColumn Header="参数名称" Width="70">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox MaxLength="32" Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"
                                                      VerticalContentAlignment="Center"
                                                      BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="类型" Width="60">
+                                <DataGridTemplateColumn Header="类型" Width="68">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBox Text="{Binding DisplayType, Converter={StaticResource TypeDisplayConverter}}"
@@ -361,7 +361,7 @@
                                                 BindingSourceSelected="OnDisplayBindingChanged"
                                                 BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 BindingDisplayText="{Binding BindingDisplayText, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                                                Height="26"/>
+                                                Height="32"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -383,23 +383,24 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="操作" Width="Auto">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="✕" Style="{StaticResource TabHeaderButton}"
-                                                    Command="{Binding DataContext.RemoveDisplayItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                    CommandParameter="{Binding}" ToolTip="删除此显示项"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="累积显示" Width="70">
+
+                                <DataGridTemplateColumn Header="累积显示" Width="95">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <controls:ToggleSwitch
                                                 IsChecked="{Binding IsAccumulated, Mode=TwoWay}"
                                                 SwitchWidth="36" SwitchHeight="18"
                                                 HorizontalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="" Width="42">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource VmIoDeleteButton}"
+                                                    Command="{Binding DataContext.RemoveDisplayItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}" ToolTip="删除此显示项"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -419,8 +420,8 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <Button Content="+" Height="26" Margin="4,0,0,0"
-                                        Style="{StaticResource AddButton}"
+                                <Button Margin="4,0,0,0"
+                                        Style="{StaticResource VmIoAddButton}"
                                         Command="{Binding AddDisplayItemCommand}"
                                         ToolTip="添加显示项"/>
                             </StackPanel>

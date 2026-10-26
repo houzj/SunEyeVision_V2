@@ -216,9 +216,13 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
         private void AddDisplayItem()
         {
+            var prefix=SelectedDisplayType.GetChineseName();
+            var names=DisplayItems.Select(d=>d.DisplayName).ToHashSet(StringComparer.Ordinal);
+            var name=prefix;
+            for(var suffix=0;names.Contains(name);suffix++)name=prefix+suffix.ToString(System.Globalization.CultureInfo.InvariantCulture);
             var item = new SubroutineDisplayItem
             {
-                DisplayName = SelectedDisplayType.GetChineseName(),
+                DisplayName = name,
                 DisplayType = SelectedDisplayType
             };
 

@@ -159,4 +159,22 @@ public sealed class SubroutineIoMigrationTests
         }
     }
 
+    [Fact]
+    public void Display_names_are_unique_independent_of_IO_and_validate_32_character_contract()
+    {
+        var p=new SubroutineParameters();var vm=Open(p);
+        try
+        {
+        vm.AddDisplayItemCommand.Execute(null);vm.AddDisplayItemCommand.Execute(null);
+        Assert.Equal(new[]{"圆","圆0"},p.DisplayConfigs.Select(d=>d.DisplayName));Assert.True(p.Validate().IsValid);
+        p.DisplayConfigs[0].DisplayName=new string('字',32);Assert.True(p.Validate().IsValid);
+        p.DisplayConfigs[0].DisplayName=new string('字',33);Assert.False(p.Validate().IsValid);
+        p.DisplayConfigs[0].DisplayName="圆0";Assert.False(p.Validate().IsValid);
+        p.DisplayConfigs[0].DisplayName="bad.name";Assert.False(p.Validate().IsValid);
+        p.DisplayConfigs[0].DisplayName="圆";p.DisplayConfigs[0].FieldId=p.DisplayConfigs[1].FieldId;Assert.False(p.Validate().IsValid);
+        p.DisplayConfigs[0].FieldId=Guid.NewGuid();vm.RemoveDisplayItemCommand.Execute(p.DisplayConfigs[0]);vm.RemoveDisplayItemCommand.Execute(p.DisplayConfigs[0]);Assert.Empty(p.DisplayConfigs);Assert.True(p.Validate().IsValid);
+        }
+        finally{vm.Dispose();}
+    }
+
 }

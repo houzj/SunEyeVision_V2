@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,7 +9,7 @@ public static class SubroutineIoRules
     public const int MaximumItems=1024;
     public const int MaximumNameLength=31;
     private static readonly char[] InvalidCharacters={'?',';','.','/','\\','`','{','}','[',']','<','>','(',')','%'};
-    public static bool IsValidName(string? name)=>!string.IsNullOrWhiteSpace(name)&&name.Length<=MaximumNameLength&&name.IndexOfAny(InvalidCharacters)<0;
+    public static bool IsValidName(string? name,int maximumLength=MaximumNameLength)=>!string.IsNullOrWhiteSpace(name)&&name.Length<=maximumLength&&name.IndexOfAny(InvalidCharacters)<0;
     public static string SuggestName(string? value,string fallback)
     {
         var name=new string((value??"").Select(c=>InvalidCharacters.Contains(c)?'_':c).ToArray()).Trim();

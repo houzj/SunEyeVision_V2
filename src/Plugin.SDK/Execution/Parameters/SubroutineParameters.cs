@@ -36,6 +36,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     if(LoopConfig.ComparisonOperator is not (">" or "<" or "==" or "!=" or ">=" or "<="))result.AddError("循环比较运算符无效。");
                 }
             }
+            if(DisplayConfigs.Any(d=>d is null)){result.AddError("Group显示项缺失。");return result;}
+            if(DisplayConfigs.Any(d=>!SubroutineIoRules.IsValidName(d.DisplayName,32)))result.AddError("Group显示名称不能为空、超过32字符或包含非法字符。");
+            if(DisplayConfigs.Select(d=>d.DisplayName).Distinct(StringComparer.Ordinal).Count()!=DisplayConfigs.Count)result.AddError("Group显示名称不能重复。");
+            if(DisplayConfigs.Any(d=>d.FieldId==Guid.Empty)||DisplayConfigs.Select(d=>d.FieldId).Distinct().Count()!=DisplayConfigs.Count)result.AddError("Group显示字段身份无效或重复。");
             if (RunParameterGroups is null) { result.AddError("运行参数分组缺失。"); return result; }
             var groups = RunParameterGroups.ToArray();
             if (groups.Any(g => g is null || g.Id == Guid.Empty || string.IsNullOrWhiteSpace(g.Name) || g.Name.Length > SubroutineRunParameterGroup.MaximumNameLength || g.Parameters is null))

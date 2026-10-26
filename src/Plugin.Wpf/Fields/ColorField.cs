@@ -53,7 +53,16 @@ public sealed class ColorField : Control
     private void Apply(object sender,RoutedEventArgs e)=>ApplyEdit();
     private void Cancel(object sender,RoutedEventArgs e)=>CancelEdit();
     private void OnKey(object sender,KeyEventArgs e)
-    {if(e.Key==Key.Escape){CancelEdit();e.Handled=true;}else if(ReferenceEquals(sender,_surface)&&e.Key is Key.Enter or Key.Space){BeginEdit();e.Handled=true;}}
+    {
+        if(e.Key==Key.Escape&&_popup?.IsOpen==true)
+        {
+            CancelEdit();
+            if(_surface?.IsVisible==true)_surface.Focus();
+            e.Handled=true;
+        }
+        else if(ReferenceEquals(sender,_surface)&&e.Key is Key.Enter or Key.Space)
+        {BeginEdit();e.Handled=true;}
+    }
     private void OnPaletteChosen(object? sender,EventArgs e)=>ApplyEdit();
     private void OnPendingColorChanged(object sender,RoutedPropertyChangedEventArgs<Color> e)
     {

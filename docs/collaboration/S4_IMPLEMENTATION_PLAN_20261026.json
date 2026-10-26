@@ -2,8 +2,8 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "本地检查点602cf8a1后继续实施：接入实际Mvvm命令源码与原资源，恢复ROIStackControl并修正IsShow布尔DP类型。新增窗口级本地化适配、原中英文词条及两个原标记扩展；引用归一已去重，连续再生无源码变化。真实ColorField已从旧手绘取色器接到VmColorPicker，组合原70色色板、原默认/更多模板及原高级取色算法，直接编辑外层窗口草稿；已加重开基色同步及冻结渐变Clone。019全量Release仍有95错误/445警告23.80秒，尚未运行/视觉/人工验收；图形样式父层仍为modal，需继续改就地四行弹层，不能按HTML已实现认定产品完成。用户明确要求构建通过前只保留本地提交，不推送主仓。",
-  "summaryStatus": "原命令与本地化依赖已接，ColorField开始消费原色板；全量构建仍95错误，未可试用",
+  "current": "真实DisplayObjectField已从子modal重组为就地弹层：VM四行主区与-90横偏移、102列起点和原渐变承接，现有十字/线型放在更多；字段直接写外层窗口草稿，保留外层确定/取消职责。嵌套Popup归属和逐层Escape、卸载/失活关闭及输入监听解除已有代码。数值有效键入即时同步滑条，Enter校验后失焦；非法输入/Enter保留待校验文本，初始显示不作用户改值，非聚焦滚轮不改值。024全量Release仍95错误/136警告20.62秒，未运行或人工验收。图形数值范围/步长和存量值兼容仍待对齐，不能称VM完整等价。按用户要求构建通过前不推送。",
+  "summaryStatus": "就地样式弹层与数值交互代码已接；完整构建仍95错误，真实运行验收未开始",
   "rows": [
     [
       "整套库范围",
@@ -12,8 +12,8 @@
     ],
     [
       "本轮真实颜色组合",
-      "ColorField → VmColorPicker → SourceColorPalette / SourceAdvancedColorPicker及SourceColorPickerStyles；选色修改窗口草稿，外层确定/取消承担保存；旧ColorPicker类尚未删除。",
-      "本候选尚未编译运行通过；图形样式父层modal仍待重组；仅资源/源码身份及模板静态检查通过。"
+      "ColorField → VmColorPicker → 原色板/高级色谱；父层DisplayObjectField为就地四行主区，原有扩展收在更多。选色和样式直接写外层草稿，外层确认/取消负责保存；旧类尚未删除。",
+      "本候选未运行/视觉验收；样式数值范围、步长及存量值兼容仍待对齐；仅当前源码语法解析通过。"
     ],
     [
       "原资源实际导入",
@@ -142,9 +142,21 @@
   "checks": [
     {
       "name": "当前源码候选全量Release（未通过）",
-      "result": "019：95错误/445警告23.80秒；命令/本地化/ROI基类及ColorField原色板组合已修改，未作本候选运行或视觉验收。",
-      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-019.log",
-      "sha256": "28b2aef55152d8784f71f2ff3d10116bf1e119cad1811512cb901ec4d4131605"
+      "result": "024：95错误/136警告20.62秒；就地弹层、逐层Escape、数值同步/Enter及滚轮焦点代码在当前候选内，未运行或人工验收。",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-024.log",
+      "sha256": "7ce4c63bd945369df6a812b7b5b3c51dec62269d6ce7248501fa33afaf0661ee"
+    },
+    {
+      "name": "本轮C#语法解析（有限范围）",
+      "result": "可用Roslyn 5.0解析6个当前源文件无语法错误；不验证语义引用或运行。最初尝试额外加载SDK Roslyn因绑定冲突失败，未当作检查通过依据；随后用已装载解析器独立复核。",
+      "path": "Release/_validation/O06-RoiCore-20261026/popup-numeric-syntax-check-003.json",
+      "sha256": "a9fc911d19cccc76e087d5b3d9ca90fc9abe2ba63385fe9bc0647743280df614"
+    },
+    {
+      "name": "预览换行/资源版本/再生检查",
+      "result": "按.gitattributes统一LF，资源SHA版本链接与当前字节一致、连续再生无变化；不是浏览器或WPF视觉验收。",
+      "path": "Release/_validation/O06-RoiCore-20261026/preview-stable-hashes-001.json",
+      "sha256": "aa776e78ea63334253caed941dcbf7026727d467e4d30a0f9d34d8da356027f3"
     },
     {
       "name": "本轮颜色资源及消费模板静态检查",
@@ -193,9 +205,9 @@
       "result": "四继承backend12/面板9等原成绩保各候选；当前5style/17PNG不等于全库完成，typed调试新run、布局/弹窗、旧消费者、VS和人工仍未闭合。"
     }
   ],
-  "sourceBaseline": "602cf8a1 + 本轮命令/本地化、ROI基类及ColorField组合增量；只保留本地，构建通过前不推送",
-  "productIdentity": "当前为HEAD a6f58334+未提交ROI与原资源增量；本轮native资源002全量0/881/30.25秒，RoiEditing018/Window007/FullChain030实跑通过。006独评7组只对应006旧候选，F28算法资源成绩仅保历史；不是最终已提交交付版本。",
-  "next": "处理剩余厂商参数/多边形模型及源码-XAML配对，完成图形四行就地弹层、typed调试同run与31项消费者退出；全量构建通过后才推送，并在正式Release目录运行当前候选、关联回归及集中人工验收。",
+  "sourceBaseline": "8a82648b + 当前就地样式弹层/数值交互增量；构建通过前只留本地",
+  "productIdentity": "交付目标目录固定为 D:/MyWork/SunEyeVision_V2/Release/SunEyeVision_v1.0.0/SunEyeVision。当前完整构建未通过，目录含本轮部分基础工程输出和历史文件，尚未标记为可试用候选，也不再视作b87历史完整二进制快照。源码只保留本地；成功构建、依赖与实际回归闭合后再记录可交付产物身份。",
+  "next": "闭合剩余厂商视觉/参数依赖及源码-XAML配对，补齐样式范围/步长与存量值兼容；构建通过后运行新弹层/数值回归和Blob完整链，继续typed调试同run及原31项消费者退出，不以HTML或旧PASS替代本候选验收。",
   "estimate": "当前为ROI分层实施检查点；下一实际进度/阻塞负责人和检查点时间由根主动报告，不把后台或窗口局部通过当完整ROI交付。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",
@@ -4361,6 +4373,20 @@
         "radioStatus": "当前橙色Radio为本方新增模板，已编译且有渲染图/功能检查，不是原VM资源复用，样式未最终核收",
         "boundary": "先复用已有原件/本地还原并核必要依赖，移植可用资源，不引用逆向工程DLL；来源候选/typed执行/草稿/调度维持当前职责边界"
       }
+    }
+  ],
+  "incrementalBuildHistory": [
+    {
+      "name": "当前源码候选全量Release（未通过）",
+      "result": "019：95错误/445警告23.80秒；命令/本地化/ROI基类及ColorField原色板组合已修改，未作本候选运行或视觉验收。",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-019.log",
+      "sha256": "28b2aef55152d8784f71f2ff3d10116bf1e119cad1811512cb901ec4d4131605"
+    },
+    {
+      "name": "当前源码候选全量Release（未通过）",
+      "result": "023：95错误/136警告16.94秒；本轮就地弹层、嵌套关闭、数值同步/Enter与字段校验代码在候选内，未执行当前候选运行/人工验收。",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-023.log",
+      "sha256": "3bcd25103ee5ab860bb0eee734d468525ce2cca46cb34e1289ef6317f2d337bf"
     }
   ]
 }

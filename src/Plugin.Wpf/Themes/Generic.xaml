@@ -369,7 +369,7 @@
 
                             
                             <Popup x:Name="PART_ColorPickerPopup" PlacementTarget="{Binding ElementName=PART_SelectorBorder}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
-                                <Border Background="{DynamicResource O06.ContextMenuBackgroundBrush}" BorderBrush="{DynamicResource O06.BorderBrush}" BorderThickness="1" CornerRadius="4" Margin="0,6,0,0" Padding="0" Effect="{StaticResource PopupShadowEffect}">
+                                <Border Background="White" BorderBrush="#CCCCCD" BorderThickness="1" CornerRadius="0" Margin="0" Padding="0">
                                     <controls:VmColorPicker x:Name="PART_ColorPicker"/>
                                 </Border>
                             </Popup>

@@ -111,13 +111,13 @@
         "tools\\SunEyeVision.Tool.NPointCalibration\\Views\\NPointSampleEditor.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchTemplateEditorDialog.xaml"
       ],
-      "currentState": "纯数值控件已提取并用于声明字段，浮点保真/文化/单滑条交互已有窗口检查点。",
+      "currentState": "Plugin.Wpf/NumericUpDown已补有效键入即时更新Value及滑条、保持输入文本/光标；有效Enter校验后失焦收起，非法Enter保留编辑，Escape只消费已打开的内层滑条。DeclaredFieldEditor对初始显示和待校验数值分开处理。023构建仍失败，未运行验证。",
       "actualFiles": [
         "src/Plugin.Wpf/Controls/NumericUpDown.cs",
         "src/Plugin.Wpf/Themes/Generic.xaml",
         "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs"
       ],
-      "consumerState": "新声明字段已使用独立Wpf控件；旧SDK数值控件及上游工具消费者仍在。"
+      "consumerState": "新声明字段已使用独立Wpf控件；旧SDK数值控件及上游工具消费者仍在。 本轮只改Blob新字段消费链；旧SDK类及其他消费者仍未按退出门全部关闭，未删除。"
     },
     {
       "id": "rangeslider",
@@ -274,14 +274,17 @@
         "src\\Plugin.SDK\\UI\\Converters\\UIntToColorConverter.cs",
         "src\\Plugin.SDK\\UI\\Previews\\AllControlsPreview.xaml"
       ],
-      "currentState": "取色器、HSV与调色板已提取到独立Wpf资源闭包，供ColorField草稿使用。",
+      "currentState": "Blob的ColorField现消费VmColorPicker，组合迁入的SourceColorPalette、SourceAdvancedColorPicker及原页签模板；源scRGB公式保留，宿主重开基色同步和冻结渐变Clone已有代码。原手绘ColorPicker类未删除，当前候选未运行验收。",
       "actualFiles": [
         "src/Plugin.Wpf/Controls/ColorPicker.cs",
         "src/Plugin.Wpf/Controls/HsvColor.cs",
         "src/Plugin.Wpf/Themes/ThemeColorPalette.cs",
-        "src/Plugin.Wpf/Themes/Generic.xaml"
+        "src/Plugin.Wpf/Themes/Generic.xaml",
+        "src/Plugin.Wpf/Controls/VmColorPicker.cs",
+        "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceColorPalette.xaml",
+        "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceAdvancedColorPicker.xaml.cs"
       ],
-      "consumerState": "Blob取色走独立Wpf；旧SDK取色器和ColorSelector资源链仍在，未作全局删除。"
+      "consumerState": "Blob取色走独立Wpf；旧SDK取色器和ColorSelector资源链仍在，未作全局删除。 本轮只改Blob新字段消费链；旧SDK类及其他消费者仍未按退出门全部关闭，未删除。"
     },
     {
       "id": "colorselector",
@@ -306,13 +309,13 @@
         "src\\Plugin.SDK\\Themes\\Generic.xaml",
         "src\\Plugin.SDK\\UI\\Previews\\AllControlsPreview.xaml"
       ],
-      "currentState": "色块、RGBA编辑与确定/取消由ColorField承接；实际为cs+Generic模板，不存在拟ColorField.xaml。",
+      "currentState": "ColorField直接编辑外层窗口草稿，原色板就地弹出，取消持久化由外层窗口承担；无独立取色确定/取消按钮。色板Escape返回色值焦点，下一次Escape可交给样式父层。尚未运行/视觉验收。",
       "actualFiles": [
         "src/Plugin.Wpf/Fields/ColorField.cs",
         "src/Plugin.Wpf/Controls/ColorPicker.cs",
         "src/Plugin.Wpf/Themes/Generic.xaml"
       ],
-      "consumerState": "Blob颜色字段已承接；旧ColorSelector/旧SDK内部消费者未核清，词法外部0不等于退休。"
+      "consumerState": "Blob颜色字段已承接；旧ColorSelector/旧SDK内部消费者未核清，词法外部0不等于退休。 本轮只改Blob新字段消费链；旧SDK类及其他消费者仍未按退出门全部关闭，未删除。"
     },
     {
       "id": "configsetting",
@@ -595,15 +598,16 @@
         "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "5类实际显示对象已配眼睛/编辑与私有样式草稿；不新增拟DisplayObjectField.xaml或虚造VM对象。 眼睛改用原eyeToggleButton，编辑图用原PNG状态；全部VM显示对象及整页组装仍未完成。",
+      "currentState": "DisplayObjectField已将子modal改为就地弹层，使用同一DeclaredFieldEditor实例写调用方草稿。原模板260宽/102输入列起点/四行/渐变及-90横偏移承接；现有十字大小和线型收在更多，不称VM有这两个扩展。嵌套Popup归属、逐层Escape、卸载/失活关闭及输入监听解除已有代码，未运行验收。",
       "actualFiles": [
         "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
         "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
         "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs",
         "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
-        "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json"
+        "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json",
+        "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs"
       ],
-      "consumerState": "Blob对象配置已由新字段承接；旧GraphicsDisplayEditorControl多工具消费者仍在。"
+      "consumerState": "Blob对象配置已由新字段承接；旧GraphicsDisplayEditorControl多工具消费者仍在。 本轮只改Blob新字段消费链；旧SDK类及其他消费者仍未按退出门全部关闭，未删除。"
     },
     {
       "id": "textdisplayeditorcontrol",
@@ -1723,6 +1727,12 @@
     {
       "path": "Release/_validation/O06-Window-20261026/roi-ui-frozen-independent/receipt-roi-ui-006-independent.json",
       "sha256": "8787cf73d16513f883f7adc3a312d91a18cd501abdfb9194aeb73465613c82d1"
+    },
+    {
+      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-024.log",
+      "sha256": "7ce4c63bd945369df6a812b7b5b3c51dec62269d6ce7248501fa33afaf0661ee",
+      "result": "FAIL:95 errors; no current runtime acceptance",
+      "sourceBaseline": "8a82648b + 就地弹层/数值交互增量"
     }
   ],
   "visualAcceptance": "用户最新范围：整套VM控件库有哪些就移植全部，不限Blob当前可见控件或原31类；样式/模板/图标优先直接移植原资源及已核本地还原，不再近似自画。保留原目录/版本/依赖与来源，仅作pack URI、现行中立合同和必要两态绑定适配，不依赖逆向工程DLL；正式去重控件数以inventory为准，不用cs文件数冒充。 原实图同页同态核最终布局/样式；本轮资源已来自原件，不等于整套库/整体组装达标，旧006近似Radio图保其历史身份。",
@@ -1765,5 +1775,29 @@
       "Apps.XmlUI"
     ],
     "inventoryStatus": "去重控件数待inventory JSON，不以cs数计数；本31类仅既有责任映射，不是整套控件库总数"
+  },
+  "currentCompositionEvidence": {
+    "baseline": "8a82648b + 当前就地弹层/数值交互增量",
+    "reference": {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending",
+      "sha256": "8499c1903f08edb1f91ef4609970d8fbcd0cf64a27c3f6f54db653efb3e59639",
+      "keys": [
+        "ImageViewConfig_subContent",
+        "ImageViewConfig"
+      ]
+    },
+    "consumerChain": [
+      "DeclaredToolConfigurationControl / ProductionEditorContext.DraftNode",
+      "DeclaredFieldsView.DialogGroup声明",
+      "DisplayObjectField：同一字段实例的就地呈现",
+      "ColorField → VmColorPicker → 原色板/高级算法；NumericUpDown → Value/Slider",
+      "writeDraft；外层TryCommitEditor或Discard承担持久化/撤销"
+    ],
+    "verification": "024全量仍95错误/136警告；新增回归脚本未执行；C#语法和预览版本字节一致性通过，不等于构建、运行或人工验收。",
+    "remaining": [
+      "图形透明度/粗细的声明范围和步长尚未完整按VM源配置接入，须核存量值兼容，不悄悄截断保存值。",
+      "VM截图同状态对照、嵌套弹层实际鼠标/焦点、释放与外层真实提交撤销待完整候选运行。",
+      "原31项消费者退出门仍适用，当前不宣布整套迁移或旧类退出完成。"
+    ]
   }
 }

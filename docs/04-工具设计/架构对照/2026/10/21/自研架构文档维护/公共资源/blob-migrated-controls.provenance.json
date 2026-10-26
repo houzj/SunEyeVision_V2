@@ -136,8 +136,8 @@
     {
       "label": "ROI及颜色组合",
       "type": "RoiSelectControl / ROIStack / VmColorPicker / ImageViewConfig_subContent",
-      "source": "src/Plugin.Wpf/Controls/VmColorPicker.cs",
-      "scope": "预览含就地样式面板及默认/更多色板；真实ColorField已接原色板、页签及高级算法，尚未运行验收。真实图形样式父层仍待从modal重组为就地四行面板；复杂ROI图标仍为示意"
+      "source": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
+      "scope": "真实ColorField已接原色板、页签及高级算法，父层已改就地四行主区，现有扩展字段收在“更多”；嵌套弹层、Enter失焦已有代码，完整构建及真实交互尚未通过。复杂ROI图标仍为示意"
     }
   ],
   "remaining": [

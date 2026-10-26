@@ -77,7 +77,7 @@ internal static class BlobConfigurationFields
         "per-blob-circularity"=>"各Blob圆度","per-blob-rectangularity"=>"各Blob矩形度","blobs"=>"Blob",
         "centroids"=>"质心","contours"=>"轮廓","inspection-roi"=>"检测区域","mask-roi"=>"屏蔽区域","area"=>"面积文字",
         "Enabled"=>"启用","Min"=>"下限","Max"=>"上限","IsVisible"=>"显示","OkColor"=>"OK颜色","NgColor"=>"NG颜色",
-        "Opacity"=>"透明度","LineWidth"=>"线宽","CrossSize"=>"十字大小","LineDashStyle"=>"线型","FontSize"=>"字号",
+        "Opacity"=>"透明度","LineWidth"=>"粗细","CrossSize"=>"十字大小","LineDashStyle"=>"线型","FontSize"=>"字号",
         "IsBold"=>"加粗","PositionX"=>"位置X","PositionY"=>"位置Y",_=>key};
     private static string ChoiceLabel(string key)=>key switch {
         "LocalGeometry"=>"本地绘制 / 数值编辑","InheritedGeometry"=>"继承上游几何","InheritedRegion"=>"继承上游像素区域",

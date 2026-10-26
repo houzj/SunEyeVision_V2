@@ -34,6 +34,11 @@ public sealed class DeclaredFieldEditor : UserControl
     public void UseRegionSourceSelector(){_regionSourceSelector=true;HideLabel();Render();}
     public UIElement EditorBody => _row;
     public void SetLabel(string text)=>_label.Text=text;
+    internal void SetLabelWidth(double width)
+    {
+        _row.ColumnDefinitions[0].Width=new GridLength(width);
+        _error.Margin=new Thickness(width,2,0,0);
+    }
     internal DeclaredFieldEditor CreateStagedCopy(string label)=>new(_port,label,_setting,_=>{},_selectReference,_constant,_formatReference,_choiceLabels,_presentation);
     internal bool TryApplySetting(ParameterSetting setting){if(!Set(setting))return false;_referenceMode=setting is ReferenceSetting;Render();return true;}
     public void UsePairedSlider(){_pairedSlider=true;if(_numeric is not null){_numeric.ShowSlider=false;_numeric.Padding=new Thickness(2,0,2,0);}}
@@ -54,8 +59,9 @@ public sealed class DeclaredFieldEditor : UserControl
     public string FieldId => _port.Id;
     public ParameterSetting Setting => _setting;
     public FrameworkElement? InputElement { get; private set; }
-    public bool HasInvalidText => (_referenceMode && _setting is not ReferenceSetting) || _error.Text.Length != 0 || _children.Any(child => child.HasInvalidText);
-    public string Error => _referenceMode && _setting is not ReferenceSetting ? "请选择订阅来源，或切回数值模式。" : _error.Text.Length != 0 ? _error.Text : _children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
+    private string NumericError => _numeric is not null&&!_numeric.TryValidatePendingEdit(out var error)?error:"";
+    public bool HasInvalidText => (_referenceMode && _setting is not ReferenceSetting) || _error.Text.Length != 0 || NumericError.Length!=0 || _children.Any(child => child.HasInvalidText);
+    public string Error => _referenceMode && _setting is not ReferenceSetting ? "请选择订阅来源，或切回数值模式。" : _error.Text.Length != 0 ? _error.Text : NumericError is {Length:>0} numericError?numericError:_children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
     public event Action? Changed;
 
     public DeclaredFieldEditor(Port port, string label, ParameterSetting initial, Action<ParameterSetting> write,
@@ -175,6 +181,8 @@ public sealed class DeclaredFieldEditor : UserControl
                     if(_updatingInput)return;
                     try
                     {
+                        if(_numeric is not null&&!_numeric.TryValidatePendingEdit(out var numericError))
+                        { _error.Text=numericError;Changed?.Invoke();return; }
                         object parsed = _port.Type.Scalar switch
                         {
                             ScalarKind.Int64 => long.Parse(input.Text, CultureInfo.InvariantCulture),
@@ -185,6 +193,14 @@ public sealed class DeclaredFieldEditor : UserControl
                     }
                     catch (Exception exception) when (exception is FormatException or OverflowException)
                     { _error.Text = "请输入有效的" + (_port.Type.Scalar == ScalarKind.Int64 ? "整数。" : "数字。"); Changed?.Invoke(); }
+                };
+                input.KeyDown+=(_,args)=>
+                {
+                    if(args.Key!=System.Windows.Input.Key.Enter)return;
+                    args.Handled=true;
+                    if(HasInvalidText)return;
+                    System.Windows.Input.FocusManager.SetFocusedElement(System.Windows.Input.FocusManager.GetFocusScope(input),null);
+                    System.Windows.Input.Keyboard.ClearFocus();
                 };
 
                 }
@@ -201,7 +217,7 @@ public sealed class DeclaredFieldEditor : UserControl
                         IntegerType=_port.Type.Scalar==ScalarKind.Int64?TypeCode.Int32:TypeCode.Empty};
                     if(_pairedSlider){input.ShowSlider=false;input.Padding=new Thickness(2,0,2,0);}
                     TextBox? attached=null;
-                    input.Loaded+=(_,_)=>{input.ApplyTemplate();if(input.TextEditor is {} box&&!ReferenceEquals(box,attached)){attached=box;Attach(box);}};
+                    input.Loaded+=(_,_)=>{input.ApplyTemplate();if(input.TextEditor is {} box&&!ReferenceEquals(box,attached)){attached=box;Attach(box);input.AcceptInitialDisplayText();}};
                     _numeric=input;InputElement=input;_body.Children.Add(input);
                 }
                 else {var input=new TextBox{Height=30,FontSize=14,VerticalContentAlignment=VerticalAlignment.Center};Attach(input);_body.Children.Add(input);}

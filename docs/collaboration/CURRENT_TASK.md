@@ -1,52 +1,35 @@
-# 当前任务：VM 控件代码统一，随后集中测试修复
+# 当前任务：落实O06 Blob与原31类控件方案，交付真实Release
 
-用户最新顺序：四路先完成代码、模板、原图和组装引用的移植，再统一构建、测试和修复；功能通过不能代替 VM 界面达标。
+## 写入与版本
 
-## 现在完成了什么
+- 当前主对话是主工作树唯一产品写者；不恢复旧角色、批次或副本。
+- 远端历史可运行检查点为 `b87fb685`；其通过成绩不适用于当前迁移候选。
+- 本地已保存 `602cf8a1`（源码整合/发布路径）及 `8a82648b`（命令/语言/ROI基类/原色板消费）。本轮增量为就地样式弹层和数值交互；最后保存点以当前Git HEAD为准，构建日志按基线加增量记录。
+- 用户明确要求：构建通过前只保留本地，不推送主仓。不重问或重试此前被拒绝的推送。
 
-- 已提交并推送的可运行检查点：`b87fb685`，含四类 ROI 继承及首组 VM 原模板。该检查点的正式 Release 运行记录见历史，不适用于后续新移植代码。
-- 三路源码和首轮公共整合已保存在本地检查点 `602cf8a1`（构建未通过）。远端仍为历史可运行b87fb685；用户明确要求：构建通过前只留本地，不推送。本轮命令/本地化、ROI基类及颜色组合增量仍在未提交区。
-- 新源码有精确来源、类型与资源映射。缺厂商依赖、缺原函数体的项明确保留；源码文件数量不作为控件数量，也不作为迁移验收结果。
+## 本轮实际代码
 
-## 四路分工和下一检查点
+- `DisplayObjectField`由独立子modal改为就地弹层，同一DeclaredFieldEditor实例直接写调用方窗口草稿；外层ProductionEditorContext/窗口确认或Discard承担保存撤销。
+- 主区按原ImageViewConfig_subContent承接260宽、102列起点、四行、原渐变及-90横偏移。已有十字大小/线型收在更多，不宣称VM原面板有这两个扩展。
+- 父层不依赖单一鼠标捕获；按Popup.PlacementTarget/TemplatedParent归属处理外部点击。逐层Escape、卸载/窗口失活关闭、输入监听和窗口事件解除已有代码，尚未真实运行验证。
+- `ColorField`消费VmColorPicker组合原70色色板、原默认/更多模板与高级色谱。选色写外层草稿，无独立确定/取消；Escape先收子色板并回焦，下一次交给父层。源scRGB公式保留，重开基色同步/冻结渐变Clone为明确适配。
+- `NumericUpDown`有效键入即时同步Value/滑条且保留编辑文本；有效Enter确认后失焦收起，非法Enter保留。仅控件内聚焦允许滚轮改值；初始显示与用户改值分开，DeclaredFieldEditor拦截数值校验失败并让外层验证看到待校验错误。
+- 原31行来源/职责/去留和本轮4项实际文件集中更新在 `evidence/O06_CONTROL_REORGANIZATION_20261026.json`，原方案/预览共用；原目标文件和退出门保留，不把已有实现改名当作架构完成。
 
-| 路线 | 本轮负责 | 写入位置 |
-| --- | --- | --- |
-| 当前主对话 | 公共样式、组合链、跨组引用、共享工程与最后整合 | 主仓 |
-| 数值路 | 数值/区间/滑条原控件及完整焦点弹出链 | 隔离 numeric worktree |
-| 输入路 | 输入源 ComboBox、订阅输入、原模板与原图闭包 | 隔离 input worktree |
-| 显示路 | 颜色、属性表、显示控件及原资源闭包 | 隔离 display worktree |
+## 验证事实
 
-各路不单独构建或宣布验收通过；根按中文提交逐一核收合并。只迁源码和必要资源，不复制正式 Release 或大体积运行库。
+- 最新全量：`dotnet build SunEyeVision.slnx -c Release --no-restore`，日志 `Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-024.log`：95错误、136警告、20.62秒。当前候选未编译通过，未可试用；正式目录已有部分基础工程新输出，不当作历史b87的完整二进制快照。
+- 6个当前C#文件使用可用Roslyn 5.0解析无语法错误，记录 `popup-numeric-syntax-check-003.json`；不是完整语义编译或运行验收。额外加载SDK解析器曾绑定冲突，未计通过。
+- 现有O06WindowPresentationCases已补同实例草稿、嵌套逐层Escape、数值同步/Enter、卸载关闭及真实ProductionEditorContext颜色不污染正式节点/Discard检查；本候选尚未执行这些用例。
+- 预览资源按.gitattributes统一LF，SHA版本链接和连续再生稳定性检查通过；不是渲染/视觉验证。
+- 原HTML已含数值双向同步、数量滑条、Enter失焦、就地样式/二层色板及内侧焦点提示；浏览器file协议被策略拒绝，未绕过，不称浏览器视觉通过。
+- 基础三工程Release路径及Tool.Kernels解决方案归属已修；实际日志确认正式Release路径。新候选不复用旧构建/回归PASS。所有后续运行/验收基于D盘Release。
 
-已合齐三路追加修正并统一工程资源入口。首次全量 Release 构建日志 `Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-001.log`：44错误、519警告、2分09秒；主要是跨组类型/XAML映射/外部依赖，尚未进入新候选运行测试。
+## 下一步与未完成
 
-用户补充澄清：本轮界面接入以 Blob 实际使用的控件及完整依赖为边界，不默认将 VM 所有业务页面并入共享层；扩大迁入的原源码需继续按实际职责区分，不能直接认定可复用或全部完成。
+- 根继续处理厂商视觉/参数依赖与源码-XAML配对，不能制造旧工作流/变量模型或空接口来凑编译。
+- 图形透明度/粗细的声明范围、步长和存量值兼容仍未完整按VM源对齐；须保真承接，不悄悄截断保存值。
+- 完整typed调试同run、原31项提取/重组及旧SDK消费者退出、VM同状态截图、VS设计时、真实运行/关闭释放与用户人工验收均未完成。旧类需消费者/资源/新合同承接及回归通过后再删。
+- HALCON沿用加密狗，不单独检查许可；不恢复旧变量收口。构建通过后先核发布依赖，再运行组件/Blob完整链及关联回归，集中交付正式Release供用户试用，不代用户通过。
 
-原 `optimization-o06-ui-preview.html` 已按迁入资源更新：23张原图、7组部件的对应文件与交互边界，原截图和31类清单保留；新增可复现脚本 `scripts/documentation/update_vm_migrated_preview.py`。资源路径/原图哈希/JS语法已检查，浏览器安全策略拒绝本地file协议自动打开，未做浏览器实看，不称视觉验收通过。
-
-用户要求单/双端交互直接遵循VM原实现。已读取NumericControl、SliderArrange及RangeRule源码：预览独立脚本 `blob-vm-numeric-interaction.js` 替换原浏览器即时跳值逻辑，落实轨道按字段步长增减、双端中点分区/限界、拖动保持指针偏移、文本失焦/关闭提交、拖动松手通知与仅聚焦滚轮。7项边界/拖动计算断言和JS语法通过；尚未浏览器实看或WPF运行验收。原源码路径与哈希记录在预览provenance，不把HTML改动当作产品控件已经接入。
-
-后续用户实测补正已落实到预览：输入数值即时更新滑块但不发已提交change；数量上限按现行BlobPresentation的1—1000000补齐聚焦滑条；有效Enter确认后失焦并收起，无效值保留编辑提示。Release下preview-numeric-sync-check.cjs覆盖输入/两端同步/非法交叉/Enter/失焦/键盘步进，使用DOM替身，不能作浏览器或WPF验收。
-
-用户补齐VM颜色弹层4张实图后，原预览已新增就地ImageViewConfig四行面板（OK/NG、透明度、粗细）及Default/More二层颜色弹层；默认70色从迁入SourceColorPalette提取，More取原colorchart像素和SourceAdvancedColorPicker的linear-scRGB亮度公式。文本颜色直接共用色板；图形面板两个数值复用同一预览数值控制器。取消前先处理弹层数值，再恢复窗口草稿，防止延迟change把取消值写回。源码/原图哈希、边界记录在provenance，尚无浏览器实看或用户通过结论；新JS有版本hash防旧缓存。
-
-第二次全量构建为42错误/19警告/55.98秒（build-vm-library-integration-002.log）；引用归一脚本中OutputConfigTreeView无Style.Setters的分支异常已修，仍需完整再生后重建，不能按局部错误下降认定构建修复。
-
-下一检查点：集中修复构建错误，随后运行控件交互、VM实图对照与Blob完整链回归。不据旧PASS报新候选达标。
-
-## 仍需注意
-
-用户最新焦点边框反馈已处理到原HTML预览：去掉全页及开关旧的外侧2px橙色outline，含窗口外的颜色/样式弹层；数值、下拉等沿用1px原边框变橙色，键盘焦点为内侧1px细虚线，不增加尺寸和间距。生成脚本同步修正并验证幂等、CSS版本哈希；只作静态检查，未新增浏览器或WPF视觉通过结论。
-
-构建状态补记：007通过XAML阶段后，008暴露191个C#错误；009因Forms全局导入增加到834。已保留平台引用并移除Drawing/Forms隐式全局using；010为153错误。按5个实际安装原件SHA迁入114个依赖源码文件/类型映射（含接口/事件/转换器，不是控件数），015现为121错误/233警告14.01秒。原日志均保留，新候选仍未编译通过，不使用历史PASS冒充本轮验收。
-
-发布工程修正：Plugin.Contracts/Plugin.Runtime/Tool.Kernels不再覆盖全局输出到早期artifacts验证目录，Tool.Kernels补入解决方案；013/015实际日志确认三者均输出正式Release且无旧Debug路径或复制失败。主题跨模块影响已评估，Native ColorFun仅向调用窗口合并项目内原主题，不读VM安装配置、不修改Application全局资源；visual-host-adaptations.json保留原源码及适配哈希，显示导入脚本保护适配不被覆盖。运行、三主题与设计时尚待本候选构建闭合。
-
-完整 typed 调试同 run、旧 SDK 消费者退出、整体 VM 视觉、VS 设计时及用户人工验收仍未完成。用户验收等待实际反馈。HALCON 沿用加密狗，不单独检查许可；不恢复旧变量收口。
-
-必要的此前记录完整保留在 [前期记录](history/CURRENT_TASK_before_four_lane_import_20261026.md)，其中旧写权、版本和进行中状态均只作历史。
-
-本轮续推：原Mvvm命令族及资源已接入；ROIStackControl恢复编译并将IsShow依赖属性的IROI/null注册改为与bool封装一致的bool/false（适配记录保留）。窗口级本地化查询和原中英词条不读写VM配置、不修改Application全局资源；原ResourceBinding/LangResource只改namespace。引用归一去重后连续两次运行第二次changed_files=0。019全量仍95错误/445警告23.80秒，无本候选运行结果。
-
-真实ColorField现消费VmColorPicker组合原70色色板、原页签和原高级色谱算法；去掉独立确定/取消，颜色直接写外层窗口草稿；重开基色同步和冻结渐变Clone已适配，原scRGB公式不改。旧ColorPicker未删除；图形样式父层仍是DisplayObjectField旧modal，须继续改就地四行弹层。native-color-source-check-001仅静态身份/模板通过，原先过期哈希失败已保留为未通过事实；完整产品、关闭/取消及用户验收仍待真实运行。
+此前详细记录保留于Git检查点及 `history/CURRENT_TASK_before_four_lane_import_20261026.md`；原方案是统一实施/验证入口。

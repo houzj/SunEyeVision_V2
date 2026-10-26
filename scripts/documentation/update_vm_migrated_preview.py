@@ -80,7 +80,7 @@ mapping = {
 }
 for token in sorted(mapping, key=len, reverse=True):
     css = css.replace(token, image(mapping[token]))
-CSS.write_text(css, encoding='utf-8')
+CSS.write_text(css, encoding='utf-8', newline='\n')
 palette_source = ROOT / 'src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceColorPalette.xaml'
 palette_tree = ET.parse(palette_source)
 ns = '{http://schemas.microsoft.com/winfx/2006/xaml/presentation}'
@@ -90,7 +90,7 @@ chart = ROOT / 'src/Plugin.Wpf/Themes/Assets/Native/Display/VisionUi/SourceAsset
 chart_image = Image.open(chart).convert('RGB')
 color_data = {'rows':palette_rows,'width':chart_image.width,'height':chart_image.height,'rgbBase64':base64.b64encode(chart_image.tobytes()).decode('ascii'),
               'chartUrl':url(chart,PAGE.parent),'source':palette_source.relative_to(ROOT).as_posix(),'chartSha256':hashlib.sha256(chart.read_bytes()).hexdigest()}
-(PUBLIC / 'blob-vm-color-data.js').write_text('window.VMColorEvidence='+json.dumps(color_data,ensure_ascii=False,separators=(',',':'))+';\n',encoding='utf-8')
+(PUBLIC / 'blob-vm-color-data.js').write_text('window.VMColorEvidence='+json.dumps(color_data,ensure_ascii=False,separators=(',',':'))+';\n',encoding='utf-8',newline='\n')
 
 rows = [
     ('输入源下拉','SourceComboBoxes.xaml / ComboBox样式','src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml','原三角图、选项行、鼠标/选中态；候选仍是演示数据'),
@@ -99,7 +99,7 @@ rows = [
     ('数值与范围','NumericControl / SliderArrange / SliderArrangeFloat','src/Plugin.Wpf/Controls/Native/Numeric/numeric-migration-manifest.json','步进、聚焦弹滑条、失焦或Esc收起、双端不交叉'),
     ('眼睛与编辑','eyeToggleButton / NativeDisplayPopupButton','src/Plugin.Wpf/Themes/VmFieldStyles.xaml','原显隐/编辑图标，控制示意叠加层及样式弹窗'),
     ('页签与底部按钮','TopTabItemStyle / Orange_ButtonStyle','src/Plugin.Wpf/Themes/VmFieldStyles.xaml','按原模板对应规则呈现选中、悬停与三按钮布局'),
-    ('ROI及颜色组合','RoiSelectControl / ROIStack / VmColorPicker / ImageViewConfig_subContent','src/Plugin.Wpf/Controls/VmColorPicker.cs','预览含就地样式面板及默认/更多色板；真实ColorField已接原色板、页签及高级算法，尚未运行验收。真实图形样式父层仍待从modal重组为就地四行面板；复杂ROI图标仍为示意'),
+    ('ROI及颜色组合','RoiSelectControl / ROIStack / VmColorPicker / ImageViewConfig_subContent','src/Plugin.Wpf/Fields/DisplayObjectField.cs','真实ColorField已接原色板、页签及高级算法，父层已改就地四行主区，现有扩展字段收在“更多”；嵌套弹层、Enter失焦已有代码，完整构建及真实交互尚未通过。复杂ROI图标仍为示意'),
 ]
 table = '<table class="migration-table"><thead><tr><th>部件</th><th>对应迁入对象</th><th>本次呈现和边界</th></tr></thead><tbody>'
 for label, kind, path, state in rows:
@@ -121,6 +121,9 @@ if old_start in s:
     start = s.index(old_start)
     end = s.index('function sourceOpen(open)', start)
     s = s[:start] + 'subscriptionPaint();\nfunction closeValueSliders(){window.vmNumericInteraction?.closeAll();}\n' + s[end:]
+for controller_name in ('blob-vm-numeric-interaction.js','blob-vm-color-interaction.js'):
+    controller=PUBLIC/controller_name
+    controller.write_text(controller.read_text(encoding='utf-8'),encoding='utf-8',newline='\n')
 interaction_hash = hashlib.sha256((PUBLIC / 'blob-vm-numeric-interaction.js').read_bytes()).hexdigest()[:12]
 interaction_script = '<script src="../公共资源/blob-vm-numeric-interaction.js?v=' + interaction_hash + '"></script>'
 interaction_pattern = r'<script src="\.\./公共资源/blob-vm-numeric-interaction\.js(?:\?v=[a-f0-9]+)?"></script>'
@@ -160,7 +163,7 @@ s=s.replace('当前以代码创建WPF元素','当前按声明创建WPF元素，�
 s=s.replace('步进、聚焦弹滑条、失焦或Esc收起、双端不交叉','按原源码：聚焦弹出、文本失焦提交、拖动松手通知、轨道按步长增减；双端按中点分区且不交叉')
 s=s.replace('<div class="note" id="migrated">','<div class="note active" id="migrated">').replace('<div class="note active" id="differences">','<div class="note" id="differences">')
 s=s.replace('<button data-note="migrated">','<button class="active" data-note="migrated">').replace('<button class="active" data-note="differences">','<button data-note="differences">')
-PAGE.write_text(s,encoding='utf-8')
+PAGE.write_text(s,encoding='utf-8',newline='\n')
 receipt = {'date':'2026-10-26','preview':PAGE.relative_to(ROOT).as_posix(),
            'kind':'browser translation of migrated WPF resources, not WPF rendering',
            'assets':assets,'components':[{'label':a,'type':b,'source':c,'scope':d} for a,b,c,d in rows],
@@ -186,5 +189,5 @@ receipt['user_requested_keyboard_behavior']='Valid Enter validates numeric draft
 for name in ('NumericControl.xaml','NumericControl.xaml.cs','SliderArrange.xaml','SliderArrange.xaml.cs','SliderArrangeBase.cs','RangeRule.cs'):
     source = ROOT / 'src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi' / name
     receipt['numeric_source_files'].append({'path':source.relative_to(ROOT).as_posix(),'sha256':hashlib.sha256(source.read_bytes()).hexdigest()})
-(PUBLIC / 'blob-migrated-controls.provenance.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+(PUBLIC / 'blob-migrated-controls.provenance.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
 print(json.dumps({'assets':len(assets),'component_groups':len(rows),'preview':PAGE.relative_to(ROOT).as_posix()},ensure_ascii=True))

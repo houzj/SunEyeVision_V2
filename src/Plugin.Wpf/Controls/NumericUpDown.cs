@@ -313,7 +313,7 @@ namespace SunEyeVision.Plugin.Wpf.Controls
 
         protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
         {
-            if (!IsReadOnly && IsFocused)
+            if (!IsReadOnly && (IsKeyboardFocusWithin || _slider?.IsKeyboardFocusWithin==true))
             {
                 ChangeValue(e.Delta > 0 ? SmallChange : -SmallChange);
                 e.Handled = true;
@@ -328,8 +328,7 @@ namespace SunEyeVision.Plugin.Wpf.Controls
                 switch (e.Key)
                 {
                     case Key.Escape:
-                        if(_sliderPopup is not null)_sliderPopup.IsOpen=false;
-                        e.Handled=true;
+                        if(_sliderPopup?.IsOpen==true){_sliderPopup.IsOpen=false;e.Handled=true;}
                         break;
                     case Key.Up:
                         ChangeValue(SmallChange);
@@ -413,7 +412,15 @@ namespace SunEyeVision.Plugin.Wpf.Controls
         }
 
         private void OnPendingTextChanged(object sender, TextChangedEventArgs e)
-        { if (!_isUpdatingText) _hasPendingText = true; }
+        {
+            if (_isUpdatingText) return;
+            _hasPendingText = true;
+            if (!TryReadPendingNumber(out var value, out _)) return;
+            // Preview a valid typed value in the slider without reformatting the input or moving its caret.
+            _isUpdatingText = true;
+            try { SetCurrentValue(ValueProperty, value); }
+            finally { _isUpdatingText = false; }
+        }
 
         /// <summary>Check the actual template input without changing its text or numeric value.</summary>
         public bool HasPendingEdit => _hasPendingText && !IsReadOnly && IsEnabled;
@@ -429,6 +436,10 @@ namespace SunEyeVision.Plugin.Wpf.Controls
             return true;
         }
         public void DiscardPendingEdit() => UpdateText();
+        internal void AcceptInitialDisplayText()
+        {
+            if(TryReadPendingNumber(out var value,out _)&&value==Value)_hasPendingText=false;
+        }
         private bool TryReadPendingNumber(out double value, out string error)
         {
             Dispatcher.VerifyAccess(); value = Value; error = "";
@@ -555,14 +566,17 @@ namespace SunEyeVision.Plugin.Wpf.Controls
         {
             if (e.Key == Key.Enter)
             {
-                ParseAndApplyText();
                 e.Handled = true;
+                if (!TryCommitPendingEdit(out _)) return;
+                if (_sliderPopup != null) _sliderPopup.IsOpen = false;
+                if (_textBox != null) FocusManager.SetFocusedElement(FocusManager.GetFocusScope(_textBox), null);
+                Keyboard.ClearFocus();
             }
         }
 
         private void OnTextBoxMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (!IsReadOnly)
+            if (!IsReadOnly && (IsKeyboardFocusWithin || _slider?.IsKeyboardFocusWithin==true))
             {
                 ChangeValue(e.Delta > 0 ? SmallChange : -SmallChange);
                 e.Handled = true;

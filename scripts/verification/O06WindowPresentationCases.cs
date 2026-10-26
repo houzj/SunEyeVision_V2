@@ -17,7 +17,7 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using ColorPicker=SunEyeVision.Plugin.Wpf.Controls.ColorPicker;
+using NumericUpDown=SunEyeVision.Plugin.Wpf.Controls.NumericUpDown;
 using ToggleSwitch=SunEyeVision.Plugin.Wpf.Native.Common.SourceBooleanToggle;
 using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.Workflow;
@@ -61,12 +61,19 @@ internal static class S2DocumentEditingCases
  static IEnumerable<T> Find<T>(DependencyObject root) where T:DependencyObject
  {if(root is T item)yield return item;foreach(var child in LogicalTreeHelper.GetChildren(root))if(child is DependencyObject d)foreach(var found in Find<T>(d))yield return found;}
  static void Click(ButtonBase button)=>button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
- static void Modal(DisplayObjectField display,Action<Window> edit)
+ static void StylePopup(DisplayObjectField display,Action<FrameworkElement> edit)
  {
-  Exception? failure=null;
-  Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>
-  {var dialog=Application.Current.Windows.Cast<Window>().Single(w=>w!=owner);try{dialog.UpdateLayout();Pump();edit(dialog);}catch(Exception e){failure=e;}finally{if(dialog.IsVisible)dialog.Close();}}));
-  display.OpenStyleEditor();if(failure is not null)throw failure;
+  var count=Application.Current.Windows.Count;
+  display.OpenStyleEditor();Pump();
+  Require(display.IsStyleEditorOpen,"样式弹层未打开");
+  Require(Application.Current.Windows.Count==count,"样式编辑仍创建独立Window");
+  var surface=display.StyleEditorContent;surface.UpdateLayout();Pump();
+  try{edit(surface);}finally{display.CloseStyleEditor();Pump();}
+ }
+ static KeyEventArgs SendKey(UIElement target,Key key,bool preview=false)
+ {
+  var args=new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(target)!,Environment.TickCount,key){RoutedEvent=preview?Keyboard.PreviewKeyDownEvent:Keyboard.KeyDownEvent};
+  target.RaiseEvent(args);Pump();return args;
  }
  static int Main()
  {
@@ -79,20 +86,39 @@ internal static class S2DocumentEditingCases
    {var value=.12345;var writes=0;var field=new DeclaredFieldEditor(new("float",DataType.Number,Storage:NumericStorage.Float64),"比例",new ConstantSetting(value),p=>{value=(double)((ConstantSetting)p).Value!;writes++;});Show(field);var text=(TextBox)field.InputElement!;text.Focus();Pump();var button=new Button{Content="离开"};host.Children.Add(button);button.Focus();Pump();Require(value==.12345,"仅焦点变化将0.12345改成"+value.ToString("R")+"；写入"+writes+"次");});
    Test("de-DE浮点输入不被二次误解析",()=>
    {var previous=CultureInfo.CurrentCulture;try{CultureInfo.CurrentCulture=CultureInfo.GetCultureInfo("de-DE");var value=.5;var field=new DeclaredFieldEditor(new("float",DataType.Number,Storage:NumericStorage.Float64),"比例",new ConstantSetting(value),p=>value=(double)((ConstantSetting)p).Value!);Show(field);var text=(TextBox)field.InputElement!;text.Focus();Pump();var button=new Button();host.Children.Add(button);button.Focus();Pump();Require(value==.5&&!field.HasInvalidText,"0.5在de-DE焦点提交后="+value.ToString("R",CultureInfo.InvariantCulture)+"；"+field.Error);}finally{CultureInfo.CurrentCulture=previous;}});
-   Test("显示样式确定取消关闭及宿主拒绝",()=>
+   Test("样式就地弹层草稿编辑、校验与卸载关闭",()=>
    {
     var writes=0;var width=3d;var reject=false;var color=PresentationDeclarations.Color(10,20,30,200);
     var visible=new DeclaredFieldEditor(new("visible",DataType.Boolean),"显示",new ConstantSetting(true),_=>{});
-    var line=new DeclaredFieldEditor(new("width",DataType.Number,Storage:NumericStorage.Float64),"线宽",new ConstantSetting(width),p=>{if(reject)throw new InvalidOperationException("范围失效");width=(double)((ConstantSetting)p).Value!;writes++;});
-    var rgba=new DeclaredFieldEditor(new("color",PresentationDeclarations.Rgba),"颜色",new ConstantSetting(color),p=>{color=(RecordValue)((ConstantSetting)p).Value!;writes++;});
-    var display=new DisplayObjectField("Blob",visible,new[]{(rgba,"OK颜色"),(line,"线宽")});Show(display);
-    Modal(display,w=>{var edit=Find<DeclaredFieldEditor>(w).Single(e=>e.FieldId=="width");((TextBox)edit.InputElement!).Text="7";Click(Find<Button>(w).Single(b=>Equals(b.Content,"取消")));});Require(width==3&&writes==0,"取消泄漏样式草稿");
-    Modal(display,w=>{((TextBox)Find<DeclaredFieldEditor>(w).Single(e=>e.FieldId=="width").InputElement!).Text="8";w.Close();});Require(width==3&&writes==0,"关闭泄漏样式草稿");
-    Modal(display,w=>{var field=(ColorField)Find<DeclaredFieldEditor>(w).Single(e=>e.FieldId=="color").InputElement!;field.BeginEdit();var picker=(VmColorPicker)field.Template.FindName("PART_ColorPicker",field);picker.SelectedColor=Color.FromArgb(123,32,64,128);field.ApplyEdit();((TextBox)Find<DeclaredFieldEditor>(w).Single(e=>e.FieldId=="width").InputElement!).Text="7";Click(Find<Button>(w).Single(b=>Equals(b.Content,"确定")));Require(!w.IsVisible,"有效确定未关闭");});Require(width==7&&color.Get<long>("a")==123&&color.Get<long>("b")==128,"确定丢失RGBA/线宽");
-    reject=true;
-    Modal(display,w=>{((TextBox)Find<DeclaredFieldEditor>(w).Single(e=>e.FieldId=="width").InputElement!).Text="9";Click(Find<Button>(w).Single(b=>Equals(b.Content,"确定")));Require(w.IsVisible&&width==7&&color.Get<long>("a")==123,"宿主拒绝仍关闭或半写");});
-    reject=false;
-    Modal(display,w=>{((TextBox)Find<DeclaredFieldEditor>(w).Single(e=>e.FieldId=="width").InputElement!).Text="bad";Click(Find<Button>(w).Single(b=>Equals(b.Content,"确定")));Require(w.IsVisible&&width==7,"非法文本确认仍写入");});
+    var line=new DeclaredFieldEditor(new("width",DataType.Number,Storage:NumericStorage.Float64),"粗细",new ConstantSetting(width),setting=>{if(reject)throw new InvalidOperationException("范围失效");width=(double)((ConstantSetting)setting).Value!;writes++;});
+    var rgba=new DeclaredFieldEditor(new("color",PresentationDeclarations.Rgba),"颜色",new ConstantSetting(color),setting=>{color=(RecordValue)((ConstantSetting)setting).Value!;writes++;});
+    var display=new DisplayObjectField("Blob",visible,new[]{(rgba,"OK颜色"),(line,"粗细")});Show(display);
+    StylePopup(display,surface=>
+    {
+     Require(Find<DeclaredFieldEditor>(surface).Contains(line),"样式字段仍为第二套临时副本");
+     ((TextBox)line.InputElement!).Text="7";Require(width==7&&writes>0,"样式未更新调用方草稿");
+     var field=(ColorField)rgba.InputElement!;field.BeginEdit();Pump();Require(display.IsStyleEditorOpen,"嵌套色板打开关闭了样式父层");
+     var picker=(VmColorPicker)field.Template.FindName("PART_ColorPicker",field);picker.SelectedColor=Color.FromArgb(123,32,64,128);
+     Require(color.Get<long>("a")==123&&color.Get<long>("b")==128,"颜色没有进入窗口草稿或丢失RGBA");field.ApplyEdit();
+     Require(!Find<Button>(surface).Any(button=>Equals(button.Content,"确定")||Equals(button.Content,"取消")),"样式层仍保留独立保存按钮");
+     field.BeginEdit();Pump();SendKey(picker,Key.Escape,true);
+     Require(display.IsStyleEditorOpen&&!((Popup)field.Template.FindName("PART_ColorPickerPopup",field)).IsOpen,"第一次Escape没有只关闭嵌套色板");
+     SendKey((UIElement)field.Template.FindName("PART_SelectorBorder",field),Key.Escape);
+     Require(!display.IsStyleEditorOpen,"第二次Escape没有关闭样式父层");
+    });
+    Require(width==7&&color.Get<long>("a")==123&&!display.IsStyleEditorOpen,"收起样式层丢失草稿或弹层残留");
+    StylePopup(display,_=>{reject=true;((TextBox)line.InputElement!).Text="9";Require(line.HasInvalidText&&width==7,"草稿写入拒绝未保留错误和值");reject=false;((TextBox)line.InputElement!).Text="7";Require(!line.HasInvalidText,"修正后错误未清除");((TextBox)line.InputElement!).Text="bad";Require(line.HasInvalidText&&width==7,"非法输入写入草稿");((TextBox)line.InputElement!).Text="7";});
+    display.OpenStyleEditor();Pump();Show(new TextBlock{Text="卸载弹层宿主"});Require(!display.IsStyleEditorOpen,"宿主卸载后样式弹层仍打开");
+   });
+   Test("真实数值模板输入同步及Enter失焦",()=>
+   {
+    var input=new NumericUpDown{Minimum=0,Maximum=255,Value=100,DecimalPlaces=0,ShowSlider=true};Show(input);input.ApplyTemplate();
+    var box=input.TextEditor!;box.Focus();Pump();var slider=(Slider)input.Template.FindName("PART_Slider",input);var popup=(Popup)input.Template.FindName("PART_SliderPopup",input);
+    box.Text="175";Require(input.Value==175&&slider.Value==175&&box.Text=="175","有效键入未同步滑条或被重排文本");
+    box.Text="bad";box.Focus();var invalid=SendKey(box,Key.Enter);Require(invalid.Handled&&box.IsKeyboardFocused&&input.Value==175,"非法Enter未保留输入焦点或改变数值");
+    box.Text="200";var valid=SendKey(box,Key.Enter);Require(valid.Handled&&!box.IsKeyboardFocused&&!popup.IsOpen&&input.Value==200,"有效Enter未确认失焦收起滑条");
+    var outside=new Button{Content="其他焦点"};host.Children.Add(outside);outside.Focus();Pump();box.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice,Environment.TickCount,120){RoutedEvent=Mouse.MouseWheelEvent});Require(input.Value==200,"无焦点滚轮改变了数值");
+    box.Focus();Pump();box.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice,Environment.TickCount,120){RoutedEvent=Mouse.MouseWheelEvent});Require(input.Value==201,"聚焦滚轮未按步长改变数值");
    });
    Test("正式Blob五显示对象与ROI真实Combo条件",()=>
    {
@@ -109,7 +135,12 @@ internal static class S2DocumentEditingCases
     foreach(var editor in fields.Fields){var error=(TextBlock)typeof(DeclaredFieldEditor).GetField("_error",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(editor)!;Require(error.Text.Length>0||error.Visibility==Visibility.Collapsed,"无错误字段仍保留错误空白行");}
     foreach(var source in Find<SourceSelectionField>(fields)){var error=(TextBlock)typeof(SourceSelectionField).GetField("_error",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(source)!;Require(error.Text.Length>0||error.Visibility==Visibility.Collapsed,"无错误来源仍保留错误空白行");}
     foreach(var entry in descriptors.Where(f=>f.StoragePath.StartsWith("ResultPresentation.Judgments")&&f.StoragePath.EndsWith(".Enabled")))Require(!entry.Presentation.DisplayName.Contains("·"),"判定开关仍含冗余后缀："+entry.Presentation.DisplayName);
-    foreach(var display in Find<DisplayObjectField>(fields).ToArray())Modal(display,w=>{LightText(w,w.Background);var editors=Find<DeclaredFieldEditor>(w).ToArray();Require(editors.Length>0,"样式弹窗为空");foreach(var field in editors)Require(observedStyles.Add(field.FieldId),"样式字段重复进入弹窗");Click(Find<Button>(w).Single(b=>Equals(b.Content,"取消")));});Require(declaredStyles.SetEquals(observedStyles),"弹窗字段集合与正式DialogGroup声明不符");
+    foreach(var display in Find<DisplayObjectField>(fields).ToArray())StylePopup(display,surface=>{LightText(surface,new SolidColorBrush(Color.FromRgb(247,247,247)));var editors=Find<DeclaredFieldEditor>(surface).ToArray();Require(editors.Length>0,"样式弹层为空");foreach(var field in editors)Require(observedStyles.Add(field.FieldId),"样式字段重复进入弹层");});Require(declaredStyles.SetEquals(observedStyles),"弹窗字段集合与正式DialogGroup声明不符");
+    var colorDescriptor=descriptors.First(descriptor=>descriptor.StoragePath.StartsWith("ResultPresentation.Graphics")&&descriptor.StoragePath.EndsWith(".Style.OkColor"));
+    var originalColor=(RecordValue)colorDescriptor.Read()!;var draftColor=fields.Fields.Single(field=>field.FieldId==colorDescriptor.Port.Id);
+    var colorDisplay=Find<DisplayObjectField>(fields).Single(display=>Find<DeclaredFieldEditor>(display.StyleEditorContent).Any(editor=>editor.FieldId==colorDescriptor.Port.Id));StylePopup(colorDisplay,_=>{var colorField=(ColorField)draftColor.InputElement!;colorField.BeginEdit();var picker=(VmColorPicker)colorField.Template.FindName("PART_ColorPicker",colorField);picker.SelectedColor=Color.FromArgb(201,17,34,51);colorField.ApplyEdit();});
+    Require(((RecordValue)((ConstantSetting)draftColor.Setting).Value!).Get<long>("a")==201,"正式编辑上下文未接收颜色草稿");
+    Require(((RecordValue)colorDescriptor.Read()!).Get<long>("a")==originalColor.Get<long>("a")&&((RecordValue)colorDescriptor.Read()!).Get<long>("r")==originalColor.Get<long>("r"),"选色直接污染正式节点");
     tabs.SelectedIndex=0;Pump();var group=((IConfigurationFieldProvider)parameters).ConfigurationSchema!.Presentation!.Regions.Single(g=>g.Role=="inspection");var mode=fields.Fields.Single(f=>f.FieldId==group.ModeFieldId);Require(mode.InputElement is RegionSourceModeSelector,"ROI模式未使用新组合选择器");
     var correction=descriptors.Single(f=>f.StoragePath=="IsPositionCorrectionEnabled");var enabled=fields.Fields.Single(f=>f.FieldId==correction.Port.Id);var sourceCorrection=Find<SourceSelectionField>(fields).Single(s=>s.ToolTip?.ToString()?.StartsWith("位置修正来源")==true);Require(sourceCorrection.Visibility==Visibility.Collapsed,"修正关闭仍显示来源");((ToggleSwitch)enabled.InputElement!).IsChecked=true;Pump();Require(sourceCorrection.Visibility==Visibility.Visible,"修正开启来源未出现");((ToggleSwitch)enabled.InputElement!).IsChecked=false;Pump();Require(sourceCorrection.Visibility==Visibility.Collapsed,"修正关闭来源未收起");
     var geometry=Find<RegionGeometryEditor>(root).First();Require(geometry.Visibility==Visibility.Visible,"本地ROI编辑未显示");Require(mode.TrySetConstant(nameof(RegionFieldMode.InheritedRectangle)),mode.Error);Pump();Require(geometry.Visibility==Visibility.Collapsed&&!geometry.IsEnabled,"继承几何仍显示/启用本地编辑");
@@ -118,7 +149,7 @@ internal static class S2DocumentEditingCases
     Require(mode.TrySetConstant(nameof(RegionFieldMode.InheritedRegion)),mode.Error);Pump();Require(((IConfigurationFieldProvider)node.Parameters).GetConfigurationFields().Single(f=>f.Port.Id==group.ModeFieldId).Read()?.ToString()==nameof(RegionFieldMode.LocalGeometry),"ROI条件选择直接污染正式参数");Require(((IConfigurationFieldProvider)node.Parameters).GetConfigurationFields().Single(f=>f.Port.Id==group.ModeFieldId).Read()?.ToString()==nameof(RegionFieldMode.LocalGeometry),"外层取消改变正式模式");
     host.Children.Clear();var shell=new SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow(root);shell.Show();shell.UpdateLayout();Pump();Require(shell.ActualWidth==420&&shell.ActualHeight==500&&root.IsLoaded,"紧凑DefaultDebugWindow实际装载/420×500尺寸不符");
     var closeText=Visuals<TextBlock>(shell).Single(t=>t.Text=="✕");Contrast(closeText.Foreground,new SolidColorBrush(Color.FromRgb(43,43,43)),"暗标题关闭×");var continuous=(Button)shell.FindName("ContinuousRunButton");var caption=Visuals<TextBlock>(continuous).Single(t=>t.Text=="连续执行");var measured=new FormattedText(caption.Text,CultureInfo.InvariantCulture,FlowDirection.LeftToRight,new Typeface(caption.FontFamily,caption.FontStyle,caption.FontWeight,caption.FontStretch),caption.FontSize,caption.Foreground,VisualTreeHelper.GetDpi(caption).PixelsPerDip);Require(measured.WidthIncludingTrailingWhitespace<=continuous.ActualWidth-continuous.Padding.Left-continuous.Padding.Right-continuous.BorderThickness.Left-continuous.BorderThickness.Right,"连续执行完整文字超过按钮可用宽度");
-    var visualFailures=new List<string>();for(var page=0;page<tabs.Items.Count;page++){tabs.SelectedIndex=page;shell.UpdateLayout();Pump();if(page==1)try{AreaRangeVisible(fields,descriptors);}catch(Exception error){visualFailures.Add("面积范围可视宽度："+error.Message);}LightText(fields,fields.Background);visualFailures.AddRange(VisualContrast(fields,fields.Background).Select(s=>"page="+page+" "+s));var bitmap=new RenderTargetBitmap((int)shell.ActualWidth,(int)shell.ActualHeight,96,96,PixelFormats.Pbgra32);bitmap.Render(shell);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using(var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"scrollbar-minwidth-window-page-"+page+".png")))encoder.Save(stream);}VerifyPageScroll(fields,tabs,descriptors,shell);File.WriteAllLines(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"visual-contrast-scrollbar-minwidth-failures.txt"),visualFailures);shell.Close();context.Discard();Require(((IConfigurationFieldProvider)node.Parameters).GetConfigurationFields().Single(f=>f.Port.Id==group.ModeFieldId).Read()?.ToString()==nameof(RegionFieldMode.LocalGeometry),"实际外层取消改变正式模式");edits.Close();Require(visualFailures.Count==0,string.Join("；",visualFailures));
+    var visualFailures=new List<string>();for(var page=0;page<tabs.Items.Count;page++){tabs.SelectedIndex=page;shell.UpdateLayout();Pump();if(page==1)try{AreaRangeVisible(fields,descriptors);}catch(Exception error){visualFailures.Add("面积范围可视宽度："+error.Message);}LightText(fields,fields.Background);visualFailures.AddRange(VisualContrast(fields,fields.Background).Select(s=>"page="+page+" "+s));var bitmap=new RenderTargetBitmap((int)shell.ActualWidth,(int)shell.ActualHeight,96,96,PixelFormats.Pbgra32);bitmap.Render(shell);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using(var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"scrollbar-minwidth-window-page-"+page+".png")))encoder.Save(stream);}VerifyPageScroll(fields,tabs,descriptors,shell);File.WriteAllLines(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"visual-contrast-scrollbar-minwidth-failures.txt"),visualFailures);shell.Close();context.Discard();Require(((RecordValue)colorDescriptor.Read()!).Get<long>("a")==originalColor.Get<long>("a")&&((RecordValue)colorDescriptor.Read()!).Get<long>("r")==originalColor.Get<long>("r"),"外层取消后正式颜色改变");Require(((IConfigurationFieldProvider)node.Parameters).GetConfigurationFields().Single(f=>f.Port.Id==group.ModeFieldId).Read()?.ToString()==nameof(RegionFieldMode.LocalGeometry),"实际外层取消改变正式模式");edits.Close();Require(visualFailures.Count==0,string.Join("；",visualFailures));
    });
    Console.WriteLine($"O06独立窗口检查：{passed}组通过，{failed}组失败。仅自动交互，不代人工外观验收。");return failed==0?0:1;
   }
